@@ -152,13 +152,16 @@ namespace AZ
 
         bool ShaderResourceGroup::HasShaderVariantKeyFallbackEntry() const
         {
-            return GetLayout()->HasShaderVariantKeyFallbackEntry();            
+            return GetLayout()->HasShaderVariantKeyFallbackEntry();
         }
         
-
-        bool ShaderResourceGroup::SetImage(RHI::ShaderInputImageIndex inputIndex, const Data::Instance<Image>& image)
+        bool ShaderResourceGroup::SetImage(RHI::ShaderInputNameIndex& inputIndex, const Data::Instance<Image>& image, uint32_t arrayIndex)
         {
-            return SetImage(inputIndex, image, 0);
+            if (inputIndex.ValidateOrFindImageIndex(GetLayout()))
+            {
+                return SetImage(inputIndex.GetImageIndex(), image, arrayIndex);
+            }
+            return false;
         }
 
         bool ShaderResourceGroup::SetImage(RHI::ShaderInputImageIndex inputIndex, const Data::Instance<Image>& image, uint32_t arrayIndex)
@@ -178,9 +181,13 @@ namespace AZ
             return false;
         }
 
-        bool ShaderResourceGroup::SetImageArray(RHI::ShaderInputImageIndex inputIndex, AZStd::array_view<Data::Instance<Image>> images)
+        bool ShaderResourceGroup::SetImageArray(RHI::ShaderInputNameIndex& inputIndex, AZStd::array_view<Data::Instance<Image>> images, uint32_t arrayIndex)
         {
-            return SetImageArray(inputIndex, images, 0);
+            if (inputIndex.ValidateOrFindImageIndex(GetLayout()))
+            {
+                return SetImageArray(inputIndex.GetImageIndex(), images, arrayIndex);
+            }
+            return false;
         }
 
         bool ShaderResourceGroup::SetImageArray(RHI::ShaderInputImageIndex inputIndex, AZStd::array_view<Data::Instance<Image>> images, uint32_t arrayIndex)
@@ -197,9 +204,13 @@ namespace AZ
             return false;
         }
 
-        const Data::Instance<Image>& ShaderResourceGroup::GetImage(RHI::ShaderInputImageIndex inputIndex) const
+        const Data::Instance<Image>& ShaderResourceGroup::GetImage(RHI::ShaderInputNameIndex& inputIndex, uint32_t arrayIndex) const
         {
-            return GetImage(inputIndex, 0);
+            if (inputIndex.ValidateOrFindImageIndex(GetLayout()))
+            {
+                return GetImage(inputIndex.GetImageIndex(), arrayIndex);
+            }
+            return s_nullImage;
         }
 
         const Data::Instance<Image>& ShaderResourceGroup::GetImage(RHI::ShaderInputImageIndex inputIndex, uint32_t arrayIndex) const
@@ -212,6 +223,15 @@ namespace AZ
             return s_nullImage;
         }
 
+        AZStd::array_view<Data::Instance<Image>> ShaderResourceGroup::GetImageArray(RHI::ShaderInputNameIndex& inputIndex) const
+        {
+            if (inputIndex.ValidateOrFindImageIndex(GetLayout()))
+            {
+                return GetImageArray(inputIndex.GetImageIndex());
+            }
+            return {};
+        }
+
         AZStd::array_view<Data::Instance<Image>> ShaderResourceGroup::GetImageArray(RHI::ShaderInputImageIndex inputIndex) const
         {
             if (m_layout->ValidateAccess(inputIndex, 0))
@@ -222,9 +242,13 @@ namespace AZ
             return {};
         }
 
-        bool ShaderResourceGroup::SetImageView(RHI::ShaderInputImageIndex inputIndex, const RHI::ImageView* imageView)
+        bool ShaderResourceGroup::SetImageView(RHI::ShaderInputNameIndex& inputIndex, const RHI::ImageView* imageView, uint32_t arrayIndex)
         {
-            return SetImageView(inputIndex, imageView, 0);
+            if (inputIndex.ValidateOrFindImageIndex(GetLayout()))
+            {
+                return SetImageView(inputIndex.GetImageIndex(), imageView, arrayIndex);
+            }
+            return false;
         }
 
         bool ShaderResourceGroup::SetImageView(RHI::ShaderInputImageIndex inputIndex, const RHI::ImageView* imageView, uint32_t arrayIndex)
@@ -241,9 +265,13 @@ namespace AZ
             return false;
         }
 
-        bool ShaderResourceGroup::SetImageViewArray(RHI::ShaderInputImageIndex inputIndex, AZStd::array_view<const RHI::ImageView*> imageViews)
+        bool ShaderResourceGroup::SetImageViewArray(RHI::ShaderInputNameIndex& inputIndex, AZStd::array_view<const RHI::ImageView*> imageViews, uint32_t arrayIndex)
         {
-            return SetImageViewArray(inputIndex, imageViews, 0);
+            if (inputIndex.ValidateOrFindImageIndex(GetLayout()))
+            {
+                return SetImageViewArray(inputIndex.GetImageIndex(), imageViews, arrayIndex);
+            }
+            return false;
         }
 
         bool ShaderResourceGroup::SetImageViewArray(RHI::ShaderInputImageIndex inputIndex, AZStd::array_view<const RHI::ImageView*> imageViews, uint32_t arrayIndex)
@@ -260,9 +288,13 @@ namespace AZ
             return false;
         }
 
-        bool ShaderResourceGroup::SetBufferView(RHI::ShaderInputBufferIndex inputIndex, const RHI::BufferView* bufferView)
+        bool ShaderResourceGroup::SetBufferView(RHI::ShaderInputNameIndex& inputIndex, const RHI::BufferView* bufferView, uint32_t arrayIndex)
         {
-            return SetBufferView(inputIndex, bufferView, 0);
+            if (inputIndex.ValidateOrFindBufferIndex(GetLayout()))
+            {
+                return SetBufferView(inputIndex.GetBufferIndex(), bufferView, arrayIndex);
+            }
+            return false;
         }
 
         bool ShaderResourceGroup::SetBufferView(RHI::ShaderInputBufferIndex inputIndex, const RHI::BufferView* bufferView, uint32_t arrayIndex)
@@ -279,9 +311,13 @@ namespace AZ
             return false;
         }
 
-        bool ShaderResourceGroup::SetBufferViewArray(RHI::ShaderInputBufferIndex inputIndex, AZStd::array_view<const RHI::BufferView*> bufferViews)
+        bool ShaderResourceGroup::SetBufferViewArray(RHI::ShaderInputNameIndex& inputIndex, AZStd::array_view<const RHI::BufferView*> bufferViews, uint32_t arrayIndex)
         {
-            return SetBufferViewArray(inputIndex, bufferViews, 0);
+            if (inputIndex.ValidateOrFindBufferIndex(GetLayout()))
+            {
+                return SetBufferViewArray(inputIndex.GetBufferIndex(), bufferViews, arrayIndex);
+            }
+            return false;
         }
 
         bool ShaderResourceGroup::SetBufferViewArray(RHI::ShaderInputBufferIndex inputIndex, AZStd::array_view<const RHI::BufferView*> bufferViews, uint32_t arrayIndex)
@@ -298,9 +334,13 @@ namespace AZ
             return false;
         }
 
-        bool ShaderResourceGroup::SetSampler(RHI::ShaderInputSamplerIndex inputIndex, const RHI::SamplerState& sampler)
+        bool ShaderResourceGroup::SetSampler(RHI::ShaderInputNameIndex& inputIndex, const RHI::SamplerState& sampler, uint32_t arrayIndex)
         {
-            return m_data.SetSampler(inputIndex, sampler);
+            if (inputIndex.ValidateOrFindSamplerIndex(GetLayout()))
+            {
+                return SetSampler(inputIndex.GetSamplerIndex(), sampler, arrayIndex);
+            }
+            return false;
         }
 
         bool ShaderResourceGroup::SetSampler(RHI::ShaderInputSamplerIndex inputIndex, const RHI::SamplerState& sampler, uint32_t arrayIndex)
@@ -308,9 +348,13 @@ namespace AZ
             return m_data.SetSampler(inputIndex, sampler, arrayIndex);
         }
 
-        bool ShaderResourceGroup::SetSamplerArray(RHI::ShaderInputSamplerIndex inputIndex, AZStd::array_view<RHI::SamplerState> samplers)
+        bool ShaderResourceGroup::SetSamplerArray(RHI::ShaderInputNameIndex& inputIndex, AZStd::array_view<RHI::SamplerState> samplers, uint32_t arrayIndex)
         {
-            return m_data.SetSamplerArray(inputIndex, samplers);
+            if (inputIndex.ValidateOrFindSamplerIndex(GetLayout()))
+            {
+                return SetSamplerArray(inputIndex.GetSamplerIndex(), samplers, arrayIndex);
+            }
+            return false;
         }
 
         bool ShaderResourceGroup::SetSamplerArray(RHI::ShaderInputSamplerIndex inputIndex, AZStd::array_view<RHI::SamplerState> samplers, uint32_t arrayIndex)
@@ -318,9 +362,27 @@ namespace AZ
             return m_data.SetSamplerArray(inputIndex, samplers, arrayIndex);
         }
 
+        bool ShaderResourceGroup::SetConstantRaw(RHI::ShaderInputNameIndex& inputIndex, const void* bytes, uint32_t byteCount)
+        {
+            if (inputIndex.ValidateOrFindConstantIndex(GetLayout()))
+            {
+                return SetConstantRaw(inputIndex.GetConstantIndex(), bytes, byteCount);
+            }
+            return false;
+        }
+
         bool ShaderResourceGroup::SetConstantRaw(RHI::ShaderInputConstantIndex inputIndex, const void* bytes, uint32_t byteCount)
         {
             return m_data.SetConstantRaw(inputIndex, bytes, byteCount);
+        }
+
+        bool ShaderResourceGroup::SetConstantRaw(RHI::ShaderInputNameIndex& inputIndex, const void* bytes, uint32_t byteOffset, uint32_t byteCount)
+        {
+            if (inputIndex.ValidateOrFindConstantIndex(GetLayout()))
+            {
+                return SetConstantRaw(inputIndex.GetConstantIndex(), bytes, byteOffset, byteCount);
+            }
+            return false;
         }
 
         bool ShaderResourceGroup::SetConstantRaw(RHI::ShaderInputConstantIndex inputIndex, const void* bytes, uint32_t byteOffset, uint32_t byteCount)
@@ -344,9 +406,10 @@ namespace AZ
             return success;
         }
 
-        const RHI::ConstPtr<RHI::ImageView>& ShaderResourceGroup::GetImageView(RHI::ShaderInputImageIndex inputIndex) const
+        const RHI::ConstPtr<RHI::ImageView>& ShaderResourceGroup::GetImageView(RHI::ShaderInputNameIndex& inputIndex, uint32_t arrayIndex) const
         {
-            return m_data.GetImageView(inputIndex, 0);
+            inputIndex.ValidateOrFindImageIndex(GetLayout());
+            return GetImageView(inputIndex.GetImageIndex(), arrayIndex);
         }
 
         const RHI::ConstPtr<RHI::ImageView>& ShaderResourceGroup::GetImageView(RHI::ShaderInputImageIndex inputIndex, uint32_t arrayIndex) const
@@ -354,14 +417,21 @@ namespace AZ
             return m_data.GetImageView(inputIndex, arrayIndex);
         }
 
+        AZStd::array_view<RHI::ConstPtr<RHI::ImageView>> ShaderResourceGroup::GetImageViewArray(RHI::ShaderInputNameIndex& inputIndex) const
+        {
+            inputIndex.ValidateOrFindImageIndex(GetLayout());
+            return GetImageViewArray(inputIndex.GetImageIndex());
+        }
+
         AZStd::array_view<RHI::ConstPtr<RHI::ImageView>> ShaderResourceGroup::GetImageViewArray(RHI::ShaderInputImageIndex inputIndex) const
         {
             return m_data.GetImageViewArray(inputIndex);
         }
 
-        const RHI::ConstPtr<RHI::BufferView>& ShaderResourceGroup::GetBufferView(RHI::ShaderInputBufferIndex inputIndex) const
+        const RHI::ConstPtr<RHI::BufferView>& ShaderResourceGroup::GetBufferView(RHI::ShaderInputNameIndex& inputIndex, uint32_t arrayIndex) const
         {
-            return m_data.GetBufferView(inputIndex, 0);
+            inputIndex.ValidateOrFindBufferIndex(GetLayout());
+            return GetBufferView(inputIndex.GetBufferIndex(), arrayIndex);
         }
 
         const RHI::ConstPtr<RHI::BufferView>& ShaderResourceGroup::GetBufferView(RHI::ShaderInputBufferIndex inputIndex, uint32_t arrayIndex) const
@@ -369,14 +439,24 @@ namespace AZ
             return m_data.GetBufferView(inputIndex, arrayIndex);
         }
 
+        AZStd::array_view<RHI::ConstPtr<RHI::BufferView>> ShaderResourceGroup::GetBufferViewArray(RHI::ShaderInputNameIndex& inputIndex) const
+        {
+            inputIndex.ValidateOrFindBufferIndex(GetLayout());
+            return GetBufferViewArray(inputIndex.GetBufferIndex());
+        }
+
         AZStd::array_view<RHI::ConstPtr<RHI::BufferView>> ShaderResourceGroup::GetBufferViewArray(RHI::ShaderInputBufferIndex inputIndex) const
         {
             return m_data.GetBufferViewArray(inputIndex);
         }
 
-        bool ShaderResourceGroup::SetBuffer(RHI::ShaderInputBufferIndex inputIndex, const Data::Instance<Buffer>& buffer)
+        bool ShaderResourceGroup::SetBuffer(RHI::ShaderInputNameIndex& inputIndex, const Data::Instance<Buffer>& buffer, uint32_t arrayIndex)
         {
-            return SetBuffer(inputIndex, buffer, 0);
+            if (inputIndex.ValidateOrFindBufferIndex(GetLayout()))
+            {
+                return SetBuffer(inputIndex.GetBufferIndex(), buffer, arrayIndex);
+            }
+            return false;
         }
 
         bool ShaderResourceGroup::SetBuffer(RHI::ShaderInputBufferIndex inputIndex, const Data::Instance<Buffer>& buffer, uint32_t arrayIndex)
@@ -396,9 +476,13 @@ namespace AZ
             return false;
         }
 
-        bool ShaderResourceGroup::SetBufferArray(RHI::ShaderInputBufferIndex inputIndex, AZStd::array_view<Data::Instance<Buffer>> buffers)
+        bool ShaderResourceGroup::SetBufferArray(RHI::ShaderInputNameIndex& inputIndex, AZStd::array_view<Data::Instance<Buffer>> buffers, uint32_t arrayIndex)
         {
-            return SetBufferArray(inputIndex, buffers, 0);
+            if (inputIndex.ValidateOrFindBufferIndex(GetLayout()))
+            {
+                return SetBufferArray(inputIndex.GetBufferIndex(), buffers, arrayIndex);
+            }
+            return false;
         }
 
         bool ShaderResourceGroup::SetBufferArray(RHI::ShaderInputBufferIndex inputIndex, AZStd::array_view<Data::Instance<Buffer>> buffers, uint32_t arrayIndex)
@@ -415,9 +499,13 @@ namespace AZ
             return false;
         }
 
-        const Data::Instance<Buffer>& ShaderResourceGroup::GetBuffer(RHI::ShaderInputBufferIndex inputIndex) const
+        const Data::Instance<Buffer>& ShaderResourceGroup::GetBuffer(RHI::ShaderInputNameIndex& inputIndex, uint32_t arrayIndex) const
         {
-            return GetBuffer(inputIndex, 0);
+            if (inputIndex.ValidateOrFindBufferIndex(GetLayout()))
+            {
+                return GetBuffer(inputIndex.GetBufferIndex(), arrayIndex);
+            }
+            return s_nullBuffer;
         }
 
         const Data::Instance<Buffer>& ShaderResourceGroup::GetBuffer(RHI::ShaderInputBufferIndex inputIndex, uint32_t arrayIndex) const
@@ -430,6 +518,15 @@ namespace AZ
             return s_nullBuffer;
         }
 
+        AZStd::array_view<Data::Instance<Buffer>> ShaderResourceGroup::GetBufferArray(RHI::ShaderInputNameIndex& inputIndex) const
+        {
+            if (inputIndex.ValidateOrFindBufferIndex(GetLayout()))
+            {
+                return GetBufferArray(inputIndex.GetBufferIndex());
+            }
+            return {};
+        }
+
         AZStd::array_view<Data::Instance<Buffer>> ShaderResourceGroup::GetBufferArray(RHI::ShaderInputBufferIndex inputIndex) const
         {
             if (m_layout->ValidateAccess(inputIndex, 0))
@@ -440,9 +537,21 @@ namespace AZ
             return {};
         }
 
+        const RHI::SamplerState& ShaderResourceGroup::GetSampler(RHI::ShaderInputNameIndex& inputIndex, uint32_t arrayIndex) const
+        {
+            inputIndex.ValidateOrFindSamplerIndex(GetLayout());
+            return GetSampler(inputIndex.GetSamplerIndex(), arrayIndex);
+        }
+
         const RHI::SamplerState& ShaderResourceGroup::GetSampler(RHI::ShaderInputSamplerIndex inputIndex, uint32_t arrayIndex) const
         {
             return m_data.GetSampler(inputIndex, arrayIndex);
+        }
+
+        AZStd::array_view<RHI::SamplerState> ShaderResourceGroup::GetSamplerArray(RHI::ShaderInputNameIndex& inputIndex) const
+        {
+            inputIndex.ValidateOrFindSamplerIndex(GetLayout());
+            return GetSamplerArray(inputIndex.GetSamplerIndex());
         }
 
         AZStd::array_view<RHI::SamplerState> ShaderResourceGroup::GetSamplerArray(RHI::ShaderInputSamplerIndex inputIndex) const
@@ -450,9 +559,16 @@ namespace AZ
             return m_data.GetSamplerArray(inputIndex);
         }
 
+        AZStd::array_view<uint8_t> ShaderResourceGroup::GetConstantRaw(RHI::ShaderInputNameIndex& inputIndex) const
+        {
+            inputIndex.ValidateOrFindConstantIndex(GetLayout());
+            return GetConstantRaw(inputIndex.GetConstantIndex());
+        }
+
         AZStd::array_view<uint8_t> ShaderResourceGroup::GetConstantRaw(RHI::ShaderInputConstantIndex inputIndex) const
         {
             return m_data.GetConstantRaw(inputIndex);
         }
+
     } // namespace RPI
 } // namespace AZ

@@ -46,6 +46,9 @@ import logging as _logging
 import azpy
 from azpy.constants import *
 from azpy.env_base import _BASE_ENVVAR_DICT
+from azpy.env_bool import env_bool
+from azpy.constants import ENVAR_DCCSI_GDEBUG
+from azpy.constants import ENVAR_DCCSI_DEV_MODE
 
 # -- maya imports
 import maya.cmds as cmds
@@ -55,10 +58,6 @@ import maya.mel as mel
 
 
 # -------------------------------------------------------------------------
-from azpy import env_bool
-from azpy.constants import ENVAR_DCCSI_GDEBUG
-from azpy.constants import ENVAR_DCCSI_DEV_MODE
-
 #  global space
 _G_DEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)

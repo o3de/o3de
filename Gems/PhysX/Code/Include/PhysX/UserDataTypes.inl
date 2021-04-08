@@ -9,6 +9,7 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 *
 */
+#include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 
 namespace PhysX
 {
@@ -74,22 +75,32 @@ namespace PhysX
         m_payload.m_entityId = entityId;
     }
 
-    inline Physics::RigidBody* ActorData::GetRigidBody() const
+    inline AzPhysics::SimulatedBodyHandle ActorData::GetBodyHandle() const
+    {
+        AzPhysics::SimulatedBody* body = GetWorldBody();
+        if (body)
+        {
+            return body->m_bodyHandle;
+        }
+        return AzPhysics::InvalidSimulatedBodyHandle;
+    }
+
+    inline AzPhysics::RigidBody* ActorData::GetRigidBody() const
     {
         return m_payload.m_rigidBody;
     }
 
-    inline void ActorData::SetRigidBody(Physics::RigidBody* rigidBody)
+    inline void ActorData::SetRigidBody(AzPhysics::RigidBody* rigidBody)
     {
         m_payload.m_rigidBody = rigidBody;
     }
 
-    inline Physics::RigidBodyStatic* ActorData::GetRigidBodyStatic() const
+    inline AzPhysics::StaticRigidBody* ActorData::GetRigidBodyStatic() const
     {
         return m_payload.m_staticRigidBody;
     }
 
-    inline void ActorData::SetRigidBodyStatic(Physics::RigidBodyStatic* rigidBody)
+    inline void ActorData::SetRigidBodyStatic(AzPhysics::StaticRigidBody* rigidBody)
     {
         m_payload.m_staticRigidBody = rigidBody;
     }
@@ -114,7 +125,7 @@ namespace PhysX
         m_payload.m_ragdollNode = ragdollNode;
     }
 
-    inline Physics::WorldBody* ActorData::GetWorldBody() const
+    inline AzPhysics::SimulatedBody* ActorData::GetWorldBody() const
     {
         if (m_payload.m_rigidBody)
         {

@@ -16,6 +16,7 @@
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshInstance.h>
 #include <Atom/Feature/MorphTargets/MorphTargetInputBuffers.h>
 #include <Atom/RPI.Reflect/Model/ModelLodAsset.h>
+#include <Atom/RPI.Reflect/Model/MorphTargetMetaAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RHI.Reflect/Base.h>
 #include <AtomCore/Instance/InstanceData.h>
@@ -111,15 +112,13 @@ namespace AZ
             const AZStd::vector<SkinnedSubMeshProperties>& GetSubMeshProperties() const;
 
             //! Add a single morph target that can be applied to an instance of this skinned mesh
-            //! @param minWeight The minimum weight. Used in combination with the min/max deltas to determine the maximum value this morph could possibly offset a vertex.
-            //! @param maxWeight The maximum weight. Used in combination with the min/max deltas to determine the maximum value this morph could possibly offset a vertex.
-            //! @param minDelta The minimum value of all the deltas. Used for decoding the deltas.
-            //! @param maxDelta The maximum value of all the deltas. Used for decoding the deltas.
-            //! @param vertexCount The total number of vertices that are deformed.
-            //! @param vertexNumbers The indices of the vertices that are deformed, since the morph target can deform a sparse set of vertices.
-            //! @param deltas The encoded deltas, stored as a raw buffer of 4 byte components.
-            //! @param bufferNamePrefix A prefix that can be used to identify this morph target when creating names for the buffers.
-            void AddMorphTarget(float minWeight, float maxWeight, float minDelta, float maxDelta, uint32_t vertexCount, const AZStd::vector<uint32_t>& deltas, const AZStd::string& bufferNamePrefix);
+            //! Creates a view into the larger morph target buffer to be used for applying an individual morph
+            //! @param metaAsset The metadata that has info such as the min/max weight, offset, and vertex count for the morph
+            //! @param morphBufferAsset The the combined buffer that has all the deltas for all morph targets in the model lod
+            //! @param bufferNamePrefix A prefix that can be used to identify this morph target when creating the view into the morph target buffer.
+            //! @param minWeight The minimum weight that might be applied to this morph target. It's possible for the weight of a morph target to be outside the 0-1 range. Defaults to 0
+            //! @param maxWeight The maximum weight that might be applied to this morph target. It's possible for the weight of a morph target to be outside the 0-1 range. Defaults to 1
+            void AddMorphTarget(const RPI::MorphTargetMetaAsset::MorphTarget& metaAsset, const Data::Asset<RPI::BufferAsset>& morphBufferAsset, const AZStd::string& bufferNamePrefix, float minWeight, float maxWeight);
 
             //! Get the MetaDatas for all the morph targets that can be applied to an instance of this skinned mesh
             const AZStd::vector<MorphTargetMetaData>& GetMorphTargetMetaDatas() const;

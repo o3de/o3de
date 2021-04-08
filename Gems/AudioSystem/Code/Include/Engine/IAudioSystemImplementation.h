@@ -84,7 +84,7 @@ namespace Audio
         //! Updates all of the internal sub-systems that require regular updates, and pumps the audio
         //! middleware api.
         //! @param updateIntervalMS Time since the last call to Update in milliseconds.
-        virtual void Update(const float updateIntervalMS) = 0;
+        virtual void Update(float updateIntervalMS) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Initialize all internal components of the audio middleware implementation.
@@ -116,7 +116,7 @@ namespace Audio
         //! @prarm objectData Implementation-specific audio object data.
         //! @param objectName The name of the audio object to be shown in debug info.
         //! @return eARS_SUCCESS if the object was registered, eARS_FAILURE otherwise.
-        virtual EAudioRequestStatus RegisterAudioObject(IATLAudioObjectData* const objectData, const char* const objectName = nullptr) = 0;
+        virtual EAudioRequestStatus RegisterAudioObject(IATLAudioObjectData* objectData, const char* objectName = nullptr) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Unregister an audio object with the audio middleware.
@@ -124,20 +124,20 @@ namespace Audio
         //! an effect on the audio object.
         //! @prarm objectData Implementation-specific audio object data
         //! @return eARS_SUCCESS if the object was unregistered, eARS_FAILURE otherwise.
-        virtual EAudioRequestStatus UnregisterAudioObject(IATLAudioObjectData* const objectData) = 0;
+        virtual EAudioRequestStatus UnregisterAudioObject(IATLAudioObjectData* objectData) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Clear out the audio object's internal state and reset it.
         //! After this action, the object can be recycled back to the pool of available audio objects.
         //! @param objectData Implementation-specific audio object data.
         //! @return eARS_SUCCESS if the object was reset, eARS_FAILURE otherwise.
-        virtual EAudioRequestStatus ResetAudioObject(IATLAudioObjectData* const objectData) = 0;
+        virtual EAudioRequestStatus ResetAudioObject(IATLAudioObjectData* objectData) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Performs actions that need to be executed regularly on an audio object.
         //! @param objectData Implementation-specific audio object data.
         //! @return eARS_SUCCESS if the object was updated, eARS_FAILURE otherwise.
-        virtual EAudioRequestStatus UpdateAudioObject(IATLAudioObjectData* const objectData) = 0;
+        virtual EAudioRequestStatus UpdateAudioObject(IATLAudioObjectData* objectData) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Prepare a trigger synchronously for execution.
@@ -146,8 +146,8 @@ namespace Audio
         //! @param triggerData Implementation-specific trigger data.
         //! @return eARS_SUCCESS if the the trigger was successfully prepared, eARS_FAILURE otherwise.
         virtual EAudioRequestStatus PrepareTriggerSync(
-            IATLAudioObjectData* const audioObjectData,
-            const IATLTriggerImplData* const triggerData) = 0;
+            IATLAudioObjectData* audioObjectData,
+            const IATLTriggerImplData* triggerData) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Unprepare a trigger synchronously when no longer needed.
@@ -156,8 +156,8 @@ namespace Audio
         //! @param triggerData Implementation-specific trigger data.
         //! @return eARS_SUCCESS if the trigger data was successfully unloaded, eARS_FAILURE otherwise.
         virtual EAudioRequestStatus UnprepareTriggerSync(
-            IATLAudioObjectData* const objectData,
-            const IATLTriggerImplData* const triggerData) = 0;
+            IATLAudioObjectData* objectData,
+            const IATLTriggerImplData* triggerData) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Prepare a trigger asynchronously for execution.
@@ -171,9 +171,9 @@ namespace Audio
         //! @return eARS_SUCCESS if the trigger prepare event was successfully sent to the audio
         //!     middleware, eARS_FAILURE otherwise.
         virtual EAudioRequestStatus PrepareTriggerAsync(
-            IATLAudioObjectData* const objectData,
-            const IATLTriggerImplData* const triggerData,
-            IATLEventData* const eventData) = 0;
+            IATLAudioObjectData* objectData,
+            const IATLTriggerImplData* triggerData,
+            IATLEventData* eventData) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Unprepare a trigger asynchronously when no longer needed.
@@ -186,9 +186,9 @@ namespace Audio
         //! @return eARS_SUCCESS if the trigger unprepare event was successfully sent to the audio
         //!     middleware, eARS_FAILURE otherwise.
         virtual EAudioRequestStatus UnprepareTriggerAsync(
-            IATLAudioObjectData* const pAudioObjectData,
-            const IATLTriggerImplData* const pTriggerData,
-            IATLEventData* const pEventData) = 0;
+            IATLAudioObjectData* pAudioObjectData,
+            const IATLTriggerImplData* pTriggerData,
+            IATLEventData* pEventData) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Activate a trigger on an audio object.
@@ -198,10 +198,10 @@ namespace Audio
         //! @return eARS_SUCCESS if the trigger was activated and the event posted to the audio
         //!     middleware, eARS_FAILURE otherwise.
         virtual EAudioRequestStatus ActivateTrigger(
-            IATLAudioObjectData* const objectData,
-            const IATLTriggerImplData* const triggerData,
-            IATLEventData* const tventData,
-            const SATLSourceData* const sourceData) = 0;
+            IATLAudioObjectData* objectData,
+            const IATLTriggerImplData* triggerData,
+            IATLEventData* tventData,
+            const SATLSourceData* sourceData) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Stop an event active on an audio object.
@@ -209,15 +209,15 @@ namespace Audio
         //! @param eventData Implementation-specific event data.
         //! @return eARS_SUCCESS if the event was successfully stopped, eARS_FAILURE otherwise.
         virtual EAudioRequestStatus StopEvent(
-            IATLAudioObjectData* const objectData,
-            const IATLEventData* const eventData) = 0;
+            IATLAudioObjectData* objectData,
+            const IATLEventData* eventData) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Stop all events currently active on an audio object.
         //! @param objectData Implementation-specific audio object data.
         //! @return eARS_SUCCESS if the events were successfully stopped, eARS_FAILURE otherwise.
         virtual EAudioRequestStatus StopAllEvents(
-            IATLAudioObjectData* const objectData) = 0;
+            IATLAudioObjectData* objectData) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Set the world position of an audio object.
@@ -225,7 +225,7 @@ namespace Audio
         //! @param worldPosition The transform to set the audio object to.
         //! @return eARS_SUCCESS if the position was successfully set, eARS_FAILURE otherwise.
         virtual EAudioRequestStatus SetPosition(
-            IATLAudioObjectData* const objectData,
+            IATLAudioObjectData* objectData,
             const SATLWorldPosition& worldPosition) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -234,7 +234,7 @@ namespace Audio
         //! @param multiPositions Position parameter object containing world positions.
         //! @return eARS_SUCCESS if the position's were successfully set, eARS_FAILURE otherwise.
         virtual EAudioRequestStatus SetMultiplePositions(
-            IATLAudioObjectData* const objectData,
+            IATLAudioObjectData* objectData,
             const MultiPositionParams& multiPositions) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -244,9 +244,9 @@ namespace Audio
         //! @param value The value to be set, normally in the range [0.0, 1.0].
         //! @return eARS_SUCCESS if the rtpc value was set on the audio object, eARS_FAILURE otherwise.
         virtual EAudioRequestStatus SetRtpc(
-            IATLAudioObjectData* const objectData,
-            const IATLRtpcImplData* const rtpcData,
-            const float value) = 0;
+            IATLAudioObjectData* objectData,
+            const IATLRtpcImplData* rtpcData,
+            float value) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Set the audio switchstate on a given audio object.
@@ -255,8 +255,8 @@ namespace Audio
         //! @return eARS_SUCCESS if the audio switchstate has been successfully set, eARS_FAILURE
         //!     otherwise.
         virtual EAudioRequestStatus SetSwitchState(
-            IATLAudioObjectData* const objectData,
-            const IATLSwitchStateImplData* const switchStateData) = 0;
+            IATLAudioObjectData* objectData,
+            const IATLSwitchStateImplData* switchStateData) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Set the Obstruction and Occlusion amounts on a given audio object.
@@ -267,9 +267,9 @@ namespace Audio
         //!     Occlusion describes all paths being blocked, direct and environmental reflection paths.
         //! @return eARS_SUCCESS if the values were set, eARS_FAILURE otherwise.
         virtual EAudioRequestStatus SetObstructionOcclusion(
-            IATLAudioObjectData* const objectData,
-            const float obstruction,
-            const float occlusion) = 0;
+            IATLAudioObjectData* objectData,
+            float obstruction,
+            float occlusion) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Set the amount of an audio environment associated with an audio object.
@@ -278,9 +278,9 @@ namespace Audio
         //! @param amount The float value to set, in the range [0.0, 1.0].
         //! @return eARS_SUCCESS if the environment amount was set, eARS_FAILURE otherwise.
         virtual EAudioRequestStatus SetEnvironment(
-            IATLAudioObjectData* const objectData,
-            const IATLEnvironmentImplData* const environmentData,
-            const float amount) = 0;
+            IATLAudioObjectData* objectData,
+            const IATLEnvironmentImplData* environmentData,
+            float amount) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Set the world transform of an audio listener.
@@ -289,7 +289,7 @@ namespace Audio
         //! @return eARS_SUCCESS if the audio listener's world transform has been successfully set,
         //!     eARS_FAILURE otherwise.
         virtual EAudioRequestStatus SetListenerPosition(
-            IATLListenerData* const listenerData,
+            IATLListenerData* listenerData,
             const SATLWorldPosition& newPosition) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -299,8 +299,8 @@ namespace Audio
         //! @return eARS_SUCCESS if the provided rtpc has been successfully reset, eARS_FAILURE
         //!     otherwise.
         virtual EAudioRequestStatus ResetRtpc(
-            IATLAudioObjectData* const objectData,
-            const IATLRtpcImplData* const rtpcData) = 0;
+            IATLAudioObjectData* objectData,
+            const IATLRtpcImplData* rtpcData) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Inform the audio middleware about the memory location of loaded audio data file.
@@ -308,7 +308,7 @@ namespace Audio
         //!     registered.
         //! @return eARS_SUCCESS if the audio middleware successfully registered the file, eARS_FAILURE
         //!     otherwise.
-        virtual EAudioRequestStatus RegisterInMemoryFile(SATLAudioFileEntryInfo* const audioFileEntry) = 0;
+        virtual EAudioRequestStatus RegisterInMemoryFile(SATLAudioFileEntryInfo* audioFileEntry) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Inform the audio middleware that the memory containing the audio data file should no longer
@@ -316,7 +316,7 @@ namespace Audio
         //! @param audioFileEntry ATL-specific information describing the file being invalidated.
         //! @return eARS_SUCCESS if the audio middleware unregistered the file contents, eARS_FAILURE
         //!     otherwise.
-        virtual EAudioRequestStatus UnregisterInMemoryFile(SATLAudioFileEntryInfo* const audioFileEntry) = 0;
+        virtual EAudioRequestStatus UnregisterInMemoryFile(SATLAudioFileEntryInfo* audioFileEntry) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Parse the implementation-specific XML node that represents an audio file entry.
@@ -329,19 +329,19 @@ namespace Audio
         //! @return eARS_SUCCESS if the XML node was parsed successfully, eARS_FAILURE otherwise.
         virtual EAudioRequestStatus ParseAudioFileEntry(
             const AZ::rapidxml::xml_node<char>* audioFileEntryNode,
-            SATLAudioFileEntryInfo* const fileEntryInfo) = 0;
+            SATLAudioFileEntryInfo* fileEntryInfo) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Free the memory and resources of the supplied audio file entry data.
         //! @param oldAudioFileEntryData Implementation-specific audio file entry data.
-        virtual void DeleteAudioFileEntryData(IATLAudioFileEntryData* const oldAudioFileEntryData) = 0;
+        virtual void DeleteAudioFileEntryData(IATLAudioFileEntryData* oldAudioFileEntryData) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Get the full path to the folder containing the file described by fileEntryInfo.
         //! @param fileEntryInfo ATL-specific information describing the file whose location is being
         //!     queried.
         //! @return A zero-terminated C-string containing the path to the file.
-        virtual const char* const GetAudioFileLocation(SATLAudioFileEntryInfo* const fileEntryInfo) = 0;
+        virtual const char* const GetAudioFileLocation(SATLAudioFileEntryInfo* fileEntryInfo) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Parse the implementation-specific XML node that represents an audio trigger.
@@ -355,7 +355,7 @@ namespace Audio
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Free the memory and resources of the supplied audio trigger object.
         //! @param oldTriggerData Implementation-specific audio trigger data.
-        virtual void DeleteAudioTriggerImplData(IATLTriggerImplData* const oldTriggerData) = 0;
+        virtual void DeleteAudioTriggerImplData(IATLTriggerImplData* oldTriggerData) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Parse the implementation-specific XML node that represents an audio rtpc.
@@ -368,7 +368,7 @@ namespace Audio
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Free the memory and resources of the supplied audio rtpc object.
         //! @param oldRtpcData Implementation-specific audio rtpc data.
-        virtual void DeleteAudioRtpcImplData(IATLRtpcImplData* const oldRtpcData) = 0;
+        virtual void DeleteAudioRtpcImplData(IATLRtpcImplData* oldRtpcData) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Parse the implementation-specific XML node that represents an audio switchstate.
@@ -383,7 +383,7 @@ namespace Audio
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Free the memory and resources of the supplied audio switchstate object.
         //! @param oldAudioSwitchStateData Implementation-specific audio switchstate data.
-        virtual void DeleteAudioSwitchStateImplData(IATLSwitchStateImplData* const oldAudioSwitchStateData) = 0;
+        virtual void DeleteAudioSwitchStateImplData(IATLSwitchStateImplData* oldAudioSwitchStateData) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Parse the implementation-specific XML node that represents an audio environment.
@@ -398,59 +398,59 @@ namespace Audio
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Free the memory and resources of the supplied audio environment object.
         //! @param oldEnvironmentData Implementation-specific audio environment data.
-        virtual void DeleteAudioEnvironmentImplData(IATLEnvironmentImplData* const oldEnvironmentData) = 0;
+        virtual void DeleteAudioEnvironmentImplData(IATLEnvironmentImplData* oldEnvironmentData) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Create an implementation-specific global audio object.
         //! @param objectId Unique ID to assign to the global audio object.
         //! @return Pointer to the newly created global audio object, or nullptr if it was not created.
-        virtual IATLAudioObjectData* NewGlobalAudioObjectData(const TAudioObjectID objectId) = 0;
+        virtual IATLAudioObjectData* NewGlobalAudioObjectData(TAudioObjectID objectId) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Create an implementation-specific audio object.
         //! @param objectId Unique ID of the audio object.
         //! @return Pointer to the newly created audio object, or nullptr if it was not created.
-        virtual IATLAudioObjectData* NewAudioObjectData(const TAudioObjectID objectId) = 0;
+        virtual IATLAudioObjectData* NewAudioObjectData(TAudioObjectID objectId) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Free the memory and resources of the supplied audio object data.
         //! @param oldObjectData Implementation-specific audio object data.
-        virtual void DeleteAudioObjectData(IATLAudioObjectData* const oldObjectData) = 0;
+        virtual void DeleteAudioObjectData(IATLAudioObjectData* oldObjectData) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Create an implementation-specific listener object data that will be the default listener.
         //! @param objectId Unique ID of the default listener.
         //! @return Pointer to the newly created default listener object, or nullptr if it was not
         //!     created.
-        virtual IATLListenerData* NewDefaultAudioListenerObjectData(const TATLIDType objectId) = 0;
+        virtual IATLListenerData* NewDefaultAudioListenerObjectData(TATLIDType objectId) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Create an implementation-specific listener object data.
         //! @param objectId Unique ID of the listener.
         //! @return Pointer to the newly created listener object, or nullptr if it was not created.
-        virtual IATLListenerData* NewAudioListenerObjectData(const TATLIDType objectId) = 0;
+        virtual IATLListenerData* NewAudioListenerObjectData(TATLIDType objectId) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Free the memory and resources of the supplied listener object.
         //! @param oldListenerData Implementation-specific listener object.
-        virtual void DeleteAudioListenerObjectData(IATLListenerData* const oldListenerData) = 0;
+        virtual void DeleteAudioListenerObjectData(IATLListenerData* oldListenerData) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Create an implementation-specific event object data.
         //! @param eventId Unique ID for the event.
         //! @return Pointer to the newly created event object, or nullptr if it was not created.
-        virtual IATLEventData* NewAudioEventData(const TAudioEventID eventID) = 0;
+        virtual IATLEventData* NewAudioEventData(TAudioEventID eventID) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Free the memory and resources of the supplied event object.
         //! @param oldEventData Implementation-specific event object.
-        virtual void DeleteAudioEventData(IATLEventData* const oldEventData) = 0;
+        virtual void DeleteAudioEventData(IATLEventData* oldEventData) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Reset all the members of an audio event instance without releasing the memory.
         //! This is used so the event object can be recycled back to the pool.
         //! @param eventData Implementation-specific event data.
-        virtual void ResetAudioEventData(IATLEventData* const eventData) = 0;
+        virtual void ResetAudioEventData(IATLEventData* eventData) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Set the language used by the audio middleware.
@@ -458,7 +458,7 @@ namespace Audio
         //! use a different language.  This function does not unload or reload the currently
         //! loaded audio files.
         //! @param language A zero-terminated C-string representing the language.
-        virtual void SetLanguage(const char* const language) = 0;
+        virtual void SetLanguage(const char* language) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Get the canonical subfolder for this audio middleware implementation.

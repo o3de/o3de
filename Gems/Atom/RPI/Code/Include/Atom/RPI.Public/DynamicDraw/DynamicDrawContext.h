@@ -60,9 +60,15 @@ namespace AZ
             };
 
             // Required initialization functions
+            //! Initialize this context with the input shader/shader asset with only one shader variant
+            //! DynamicDrawContext initialized with this function can't use other variant later (AddShaderVariant and SetShaderVariant).
+            void InitShaderWithVariant(Data::Asset<ShaderAsset> shaderAsset, const ShaderOptionList* optionAndValues);
+            void InitShaderWithVariant(Data::Instance<Shader> shader, const ShaderOptionList* optionAndValues);
+
             //! Initialize this context with the input shader/shader asset.
-            void InitShader(Data::Asset<ShaderAsset> shaderAsset, const ShaderOptionList* optionAndValues = nullptr);
-            void InitShader(Data::Instance<Shader> shader, const ShaderOptionList* optionAndValues = nullptr);
+            //! DynamicDrawContext initialized with this function may use shader variant later (AddShaderVariant and SetShaderVariant).
+            void InitShader(Data::Asset<ShaderAsset> shaderAsset);
+            void InitShader(Data::Instance<Shader> shader);
 
             // Optional initialization functions
             //! Initialize input stream layout with vertex channel information
@@ -87,6 +93,11 @@ namespace AZ
             //! Return if some draw state options change are enabled. 
             bool HasDrawStateOptions(DrawStateOptions options);
 
+            //! Tell DynamicDrawContext it will use the shader variant specified by ShaderOptionList. 
+            //! The returned ShaderVariantId can be used via SetShaderVariant() before making any draw calls.
+            //! Note, if the DynamicDrawContext was initialized with default shader variant, it won't return a valid variant Id.
+            ShaderVariantId UseShaderVariant(const ShaderOptionList& optionAndValues);
+
             // States which can be changed for this DyanimcDrawContext
 
             //! Set DepthState if DrawStateOptions::DepthState option is enabled
@@ -99,6 +110,9 @@ namespace AZ
             void SetTarget0BlendState(RHI::TargetBlendState blendState);
             //! Set PrimitiveType if DrawStateOptions::PrimitiveType option is enabled
             void SetPrimitiveType(RHI::PrimitiveTopology topology);
+            //! Set the shader variant as the current variant which is used for any following draw calls. 
+            //! Note, SetShaderVariant() needs to be called before NewDrawSrg() if a draw srg is used in following draw calls.
+            void SetShaderVariant(ShaderVariantId shaderVariantId);
 
             //! Setup scissor for following draws which are added to this DynamicDrawContext
             //! Note: it won't effect any draws submitted out of this DynamicDrawContext
@@ -138,6 +152,9 @@ namespace AZ
 
             //! return whether the vertex data size is valid
             bool IsVertexSizeValid(uint32_t vertexSize);
+                        
+            //! Get the shader which is associated with this DynamicDrawContext
+            const Data::Instance<Shader>& GetShader() const;
 
         private:
             DynamicDrawContext() = default;
@@ -212,6 +229,12 @@ namespace AZ
             };
 
             AZStd::vector<DrawItemInfo> m_cachedDrawItems;
+
+            // Flags if this DynamicDrawContext can change shader variants
+            bool m_supportShaderVariants = false;
+            ShaderVariantId m_currentShaderVariantId;
+
+            Data::Instance<Shader> m_shader;
 
             // This variable is used to see if the context is initialized.
             // You can only add draw calls when the context is initialized.

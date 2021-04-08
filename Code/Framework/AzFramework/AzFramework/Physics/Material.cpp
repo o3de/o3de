@@ -71,7 +71,7 @@ namespace Physics
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)
         {
-            serializeContext->Class<MaterialConfiguration>()
+            serializeContext->Class<Physics::MaterialConfiguration>()
                 ->Version(3, &VersionConverter)
                 ->Field("SurfaceType", &MaterialConfiguration::m_surfaceType)
                 ->Field("DynamicFriction", &MaterialConfiguration::m_dynamicFriction)
@@ -88,7 +88,7 @@ namespace Physics
             {
                 AZStd::unordered_set<AZStd::string> forbiddenSurfaceTypeNames;
                 forbiddenSurfaceTypeNames.insert("Default");
-                editContext->Class<MaterialConfiguration>("", "")
+                editContext->Class<Physics::MaterialConfiguration>("", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "Physics Material")
                     ->DataElement(MaterialConfiguration::s_configLineEdit, &MaterialConfiguration::m_surfaceType, "Surface type", "Game surface type") // Uses ConfigStringLineEditCtrl in PhysX gem.
                         ->Attribute(AZ::Edit::Attributes::MaxLength, 64)
@@ -168,7 +168,7 @@ namespace Physics
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)
         {
-            serializeContext->Class<MaterialLibraryAsset, AZ::Data::AssetData>()
+            serializeContext->Class<Physics::MaterialLibraryAsset, AZ::Data::AssetData>()
                 ->Version(2, &ClassConverters::MaterialLibraryAssetConverter)
                 ->Attribute(AZ::Edit::Attributes::EnableForAssetEditor, true)
                 ->EventHandler<MaterialLibraryAssetEventHandler>()
@@ -178,7 +178,7 @@ namespace Physics
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
             {
-                editContext->Class<MaterialLibraryAsset>("", "")
+                editContext->Class<Physics::MaterialLibraryAsset>("", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialLibraryAsset::m_materialLibrary, "Physics Materials", "List of physics materials")
@@ -196,7 +196,7 @@ namespace Physics
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)
         {
-            serializeContext->Class<MaterialLibraryAssetReflectionWrapper>()
+            serializeContext->Class<Physics::MaterialLibraryAssetReflectionWrapper>()
                 ->Version(1)
                 ->Field("Asset", &MaterialLibraryAssetReflectionWrapper::m_asset)
                 ;
@@ -204,7 +204,7 @@ namespace Physics
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
             {
-                editContext->Class<MaterialLibraryAssetReflectionWrapper>("", "")
+                editContext->Class<Physics::MaterialLibraryAssetReflectionWrapper>("", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
@@ -223,7 +223,7 @@ namespace Physics
          AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)
         {
-            serializeContext->Class<DefaultMaterialLibraryAssetReflectionWrapper>()
+            serializeContext->Class<Physics::DefaultMaterialLibraryAssetReflectionWrapper>()
                 ->Version(1)
                 ->Field("Asset", &DefaultMaterialLibraryAssetReflectionWrapper::m_asset)
                 ;
@@ -231,7 +231,7 @@ namespace Physics
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
             {
-                editContext->Class<DefaultMaterialLibraryAssetReflectionWrapper>("", "")
+                editContext->Class<Physics::DefaultMaterialLibraryAssetReflectionWrapper>("", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
@@ -250,7 +250,7 @@ namespace Physics
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)
         {
-            serializeContext->Class<MaterialFromAssetConfiguration>()
+            serializeContext->Class<Physics::MaterialFromAssetConfiguration>()
                 ->Version(1)
                 ->Field("Configuration", &MaterialFromAssetConfiguration::m_configuration)
                 ->Field("UID", &MaterialFromAssetConfiguration::m_id)
@@ -259,7 +259,7 @@ namespace Physics
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
             {
-                editContext->Class<MaterialFromAssetConfiguration>("", "")
+                editContext->Class<Physics::MaterialFromAssetConfiguration>("", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialFromAssetConfiguration::m_configuration, "Physics Material", "Physics Material properties")
@@ -369,7 +369,7 @@ namespace Physics
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<MaterialSelection>()
+            serializeContext->Class<Physics::MaterialSelection>()
                 ->Version(2, &ClassConverters::MaterialSelectionConverter)
                 ->EventHandler<MaterialSelectionEventHandler>()
                 ->Field("Material", &MaterialSelection::m_materialLibrary)
@@ -378,7 +378,7 @@ namespace Physics
 
             if (auto editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<MaterialSelection>("Physics Material", "Select physics material library and which materials to use for the object")
+                editContext->Class<Physics::MaterialSelection>("Physics Material", "Select physics material library and which materials to use for the object")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialSelection::m_materialLibrary, "Library", "Physics material library to use for this object")

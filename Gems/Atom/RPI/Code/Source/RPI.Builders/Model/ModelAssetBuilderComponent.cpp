@@ -27,6 +27,7 @@
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Model/ModelAssetCreator.h>
 #include <Atom/RPI.Reflect/Model/ModelLodAssetCreator.h>
+#include <Atom/RPI.Reflect/Model/MorphTargetDelta.h>
 #include <Atom/RPI.Reflect/Model/SkinMetaAssetCreator.h>
 
 #include <SceneAPI/SceneCore/Containers/Scene.h>
@@ -36,6 +37,7 @@
 #include <SceneAPI/SceneCore/Containers/Views/SceneGraphUpwardsIterator.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IBoneData.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IBlendShapeData.h>
+#include <SceneAPI/SceneCore/DataTypes/Rules/ICoordinateSystemRule.h>
 #include <SceneAPI/SceneCore/DataTypes/Rules/ILodRule.h>
 #include <SceneAPI/SceneCore/DataTypes/Rules/ISkinRule.h>
 #include <SceneAPI/SceneCore/Events/ExportEventContext.h>
@@ -43,6 +45,7 @@
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 #include <SceneAPI/SceneData/Groups/MeshGroup.h>
 #include <SceneAPI/SceneData/Rules/StaticMeshAdvancedRule.h>
+#include <SceneAPI/SceneCore/Containers/Utilities/SceneUtilities.h>
 #include <SceneAPI/SceneCore/Containers/Utilities/Filters.h>
 
  /**
@@ -84,7 +87,7 @@ namespace
     const AZ::RHI::Format SkinWeightFormat = AZ::RHI::Format::R32_FLOAT; // Single-component, 32-bit floating point per weight
 
     // Morph targets
-    const char* ShaderSemanticName_MorphTargetVertexIndices = "MORPHTARGET_VERTEXINDICES";
+    const char* ShaderSemanticName_MorphTargetDeltas = "MORPHTARGET_VERTEXDELTAS";
     const AZ::RHI::Format MorphTargetVertexIndexFormat = AZ::RHI::Format::R32_UINT; // Single-component, 32-bit integer as vertex index
     const char* ShaderSemanticName_MorphTargetPositionDeltas = "MORPHTARGET_POSITIONDELTAS";
     const AZ::RHI::Format MorphTargetPositionDeltaFormat = AZ::RHI::Format::R16_UINT; // 16-bit integer per compressed position delta component
@@ -105,7 +108,7 @@ namespace AZ
             if (auto* serialize = azrtti_cast<SerializeContext*>(context))
             {
                 serialize->Class<ModelAssetBuilderComponent, SceneAPI::SceneCore::ExportingComponent>()
-                    ->Version(24);  // [ATOM-14876]
+                    ->Version(25);  // [ATOM-14876]
             }
         }
 
@@ -303,7 +306,8 @@ namespace AZ
                     sourceMesh.m_name = meshName;
 
                     const auto node = sceneGraph.Find(meshPath);
-                    sourceMesh.m_worldTransform = GetWorldTransform(sceneGraph, node);
+                    sourceMesh.m_worldTransform = AZ::SceneAPI::Utilities::DetermineWorldTransform(scene, node, context.m_group.GetRuleContainerConst());
+
                     auto sibling = sceneGraph.GetNodeChild(node);
 
                     AddToMeshContent(viewIt.second, sourceMesh);
@@ -712,6 +716,22 @@ namespace AZ
                         colorSet.reserve(vertexCount * ColorFloatsPerVert);
                     }
 
+                    if (!sourceMesh.m_skinData.empty())
+                    {
+                        // Skinned meshes require that positions, normals, tangents, bitangents, all exist and have the same number
+                        // of total elements. Pad buffers with missing data to make them align with positions and normals
+                        if (!sourceMesh.m_meshTangents)
+                        {
+                            tangents.resize(vertexCount * TangentFloatsPerVert, 1.0f);
+                            AZ_Warning(s_builderName, false, "Mesh '%s' is missing tangents and no defaults were generated. Skinned meshes require tangents. Dummy tangents will be inserted, which may result in rendering artifacts.", sourceMesh.m_name.GetCStr());
+                        }
+                        if (!sourceMesh.m_meshBitangents)
+                        {
+                            bitangents.resize(vertexCount * BitangentFloatsPerVert, 1.0f);
+                            AZ_Warning(s_builderName, false, "Mesh '%s' is missing bitangents and no defaults were generated. Skinned meshes require bitangents. Dummy bitangents will be inserted, which may result in rendering artifacts.", sourceMesh.m_name.GetCStr());
+                        }
+                    }
+
                     for (const auto& itr : oldToNewIndices)
                     {
                         // We use the 'old' index as that properly indexes 
@@ -950,7 +970,7 @@ namespace AZ
         }
 
         template<typename T>
-        void ModelAssetBuilderComponent::ValidateStreamSize(size_t expectedVertexCount, const AZStd::vector<T>& bufferData, AZ::RHI::Format format, const char* streamName) const
+        void ModelAssetBuilderComponent::ValidateStreamSize([[maybe_unused]] size_t expectedVertexCount, const AZStd::vector<T>& bufferData, AZ::RHI::Format format, [[maybe_unused]] const char* streamName) const
         {
             size_t actualVertexCount = (bufferData.size() * sizeof(T)) / RHI::GetFormatSize(format);
             AZ_Error(s_builderName, expectedVertexCount == actualVertexCount, "VertexStream '%s' does not match the expected vertex count. This typically means multiple sub-meshes have mis-matched vertex stream layouts (such as one having more uv sets than the other) but are assigned the same material in the dcc tool so they were merged.", streamName);
@@ -1056,36 +1076,10 @@ namespace AZ
                 meshView.m_skinWeightsView = RHI::BufferViewDescriptor::CreateTyped(0, numSkinInfluences, SkinWeightFormat);
             }
 
-            if (!mesh.m_morphTargetVertexData.m_vertexIndices.empty())
+            if (!mesh.m_morphTargetVertexData.empty())
             {
-                ProductMeshView::MorphTargetVertexDataView& mtDataView = meshView.m_morphTargetVertexDataView;
-
-                const size_t numTotalVertices = mesh.m_morphTargetVertexData.m_vertexIndices.size();
-                mtDataView.m_vertexIndexView = RHI::BufferViewDescriptor::CreateStructured(0, numTotalVertices, sizeof(uint32_t));
-
-                AZ_Assert(3 * numTotalVertices == mesh.m_morphTargetVertexData.m_positionDeltas.size(),
-                    "Number compressed position deltas (%d) incorrect, should be (%d).", mesh.m_morphTargetVertexData.m_positionDeltas.size(), 3 * numTotalVertices);
-                mtDataView.m_positionDeltaView = RHI::BufferViewDescriptor::CreateTyped(0, numTotalVertices * 3, MorphTargetPositionDeltaFormat);
-
-                AZ_Assert(3 * numTotalVertices == mesh.m_morphTargetVertexData.m_normalDeltas.size(),
-                    "Number compressed normal deltas (%d) incorrect, should be (%d).", mesh.m_morphTargetVertexData.m_normalDeltas.size(), 3 * numTotalVertices);
-                mtDataView.m_normalDeltaView = RHI::BufferViewDescriptor::CreateTyped(0, numTotalVertices * 3, MorphTargetNormalDeltaFormat);
-            }
-
-            if (!mesh.m_morphTargetVertexData.m_vertexIndices.empty())
-            {
-                ProductMeshView::MorphTargetVertexDataView& mtDataView = meshView.m_morphTargetVertexDataView;
-
-                const size_t numTotalVertices = mesh.m_morphTargetVertexData.m_vertexIndices.size();
-                mtDataView.m_vertexIndexView = RHI::BufferViewDescriptor::CreateTyped(0, numTotalVertices, MorphTargetVertexIndexFormat);
-
-                AZ_Assert(3 * numTotalVertices == mesh.m_morphTargetVertexData.m_positionDeltas.size(),
-                    "Number compressed position deltas (%d) incorrect, should be (%d).", mesh.m_morphTargetVertexData.m_positionDeltas.size(), 3 * numTotalVertices);
-                mtDataView.m_positionDeltaView = RHI::BufferViewDescriptor::CreateTyped(0, numTotalVertices * 3, MorphTargetPositionDeltaFormat);
-
-                AZ_Assert(3 * numTotalVertices == mesh.m_morphTargetVertexData.m_normalDeltas.size(),
-                    "Number compressed normal deltas (%d) incorrect, should be (%d).", mesh.m_morphTargetVertexData.m_normalDeltas.size(), 3 * numTotalVertices);
-                mtDataView.m_normalDeltaView = RHI::BufferViewDescriptor::CreateTyped(0, numTotalVertices * 3, MorphTargetNormalDeltaFormat);
+                const size_t numTotalVertices = mesh.m_morphTargetVertexData.size();
+                meshView.m_morphTargetVertexDataView = RHI::BufferViewDescriptor::CreateStructured(0, numTotalVertices, sizeof(PackedCompressedMorphTargetDelta));
             }
 
             meshView.m_materialUid = mesh.m_materialUid;
@@ -1229,15 +1223,12 @@ namespace AZ
                     lodBufferInfo.m_skinInfluencesCount += numNewSkinInfluences;
                 }
 
-                if (!mesh.m_morphTargetVertexData.m_vertexIndices.empty())
+                if (!mesh.m_morphTargetVertexData.empty())
                 {
                     const size_t numPrevVertexDeltas = lodBufferInfo.m_morphTargetVertexDeltaCount;
-                    const size_t numNewVertexDeltas = mesh.m_morphTargetVertexData.m_vertexIndices.size();
+                    const size_t numNewVertexDeltas = mesh.m_morphTargetVertexData.size();
 
-                    ProductMeshView::MorphTargetVertexDataView& mtDataView = meshView.m_morphTargetVertexDataView;
-                    mtDataView.m_vertexIndexView = RHI::BufferViewDescriptor::CreateTyped(/*elementOffset=*/numPrevVertexDeltas, numNewVertexDeltas, MorphTargetVertexIndexFormat);
-                    mtDataView.m_positionDeltaView = RHI::BufferViewDescriptor::CreateTyped(/*elementOffset=*/numPrevVertexDeltas * 3, numNewVertexDeltas * 3, MorphTargetPositionDeltaFormat);
-                    mtDataView.m_normalDeltaView = RHI::BufferViewDescriptor::CreateTyped(/*elementOffset=*/numPrevVertexDeltas * 3, numNewVertexDeltas * 3, MorphTargetNormalDeltaFormat);
+                    meshView.m_morphTargetVertexDataView = RHI::BufferViewDescriptor::CreateStructured(/*elementOffset=*/numPrevVertexDeltas, numNewVertexDeltas, sizeof(PackedCompressedMorphTargetDelta));
 
                     lodBufferInfo.m_morphTargetVertexDeltaCount += numNewVertexDeltas;
                 }
@@ -1427,24 +1418,38 @@ namespace AZ
                         mergedMesh.m_skinWeights.end(), mesh.m_skinWeights.begin(), mesh.m_skinWeights.end());
                 }
 
-                if (!mesh.m_morphTargetVertexData.m_vertexIndices.empty())
+                if (!mesh.m_morphTargetVertexData.empty())
                 {
-                    const auto& sourceIndices = mesh.m_morphTargetVertexData.m_vertexIndices;
-                    auto& mergedIndices = mergedMesh.m_morphTargetVertexData.m_vertexIndices;
-                    mergedIndices.insert(mergedIndices.end(), sourceIndices.begin(), sourceIndices.end());
-
-                    const auto& sourcePosDeltas = mesh.m_morphTargetVertexData.m_positionDeltas;
-                    auto& mergedPosDeltas = mergedMesh.m_morphTargetVertexData.m_positionDeltas;
-                    mergedPosDeltas.insert(mergedPosDeltas.end(), sourcePosDeltas.begin(), sourcePosDeltas.end());
-
-                    const auto& sourceNormalDeltas = mesh.m_morphTargetVertexData.m_normalDeltas;
-                    auto& mergedNormalDeltas = mergedMesh.m_morphTargetVertexData.m_normalDeltas;
-                    mergedNormalDeltas.insert(mergedNormalDeltas.end(), sourceNormalDeltas.begin(), sourceNormalDeltas.end());
+                    const auto& sourceMorphTargetData = mesh.m_morphTargetVertexData;
+                    auto& mergedMorphTargetData = mergedMesh.m_morphTargetVertexData;
+                    mergedMorphTargetData.insert(mergedMorphTargetData.end(), sourceMorphTargetData.begin(), sourceMorphTargetData.end());
                 }
             }
 
             return mergedMesh;
         }
+
+        template<typename T>
+        bool ModelAssetBuilderComponent::BuildStructuredStreamBuffer(
+            AZStd::vector<ModelLodAsset::Mesh::StreamBufferInfo>& outStreamBuffers,
+            const AZStd::vector<T>& bufferData,
+            const RHI::ShaderSemantic& semantic,
+            const AZ::Name& customStreamName)
+        {
+            AZStd::string bufferName = semantic.ToString();
+            size_t elementCount = bufferData.size();
+            size_t elementSize = sizeof(T);
+            Outcome<Data::Asset<BufferAsset>> bufferOutcome = CreateStructuredBufferAsset(bufferData.data(), elementCount, elementSize, bufferName);
+
+            if (!bufferOutcome.IsSuccess())
+            {
+                AZ_Error(s_builderName, false, "Failed to build %s stream", semantic.ToString().data());
+                return false;
+            }
+
+            outStreamBuffers.push_back({ semantic, customStreamName, {bufferOutcome.GetValue(), bufferOutcome.GetValue()->GetBufferViewDescriptor()} });
+            return true;
+        };
 
         template<typename T>
         bool ModelAssetBuilderComponent::BuildRawStreamBuffer(
@@ -1468,7 +1473,7 @@ namespace AZ
         };
 
         template<typename T>
-        bool ModelAssetBuilderComponent::BuildStreamBuffer(
+        bool ModelAssetBuilderComponent::BuildTypedStreamBuffer(
             AZStd::vector<ModelLodAsset::Mesh::StreamBufferInfo>& outStreamBuffers,
             const AZStd::vector<T>& bufferData,
             AZ::RHI::Format format,
@@ -1546,19 +1551,19 @@ namespace AZ
             }
 
             // Build various stream buffers ...
-            if (!BuildStreamBuffer<float>(outStreamBuffers, positions, PositionFormat, RHI::ShaderSemantic{"POSITION"}))
+            if (!BuildTypedStreamBuffer<float>(outStreamBuffers, positions, PositionFormat, RHI::ShaderSemantic{"POSITION"}))
             {
                 return false;
             }
 
-            if (!BuildStreamBuffer<float>(outStreamBuffers, normals, NormalFormat, RHI::ShaderSemantic{"NORMAL"}))
+            if (!BuildTypedStreamBuffer<float>(outStreamBuffers, normals, NormalFormat, RHI::ShaderSemantic{"NORMAL"}))
             {
                 return false;
             }
 
             if (!tangents.empty())
             {
-                if (!BuildStreamBuffer<float>(outStreamBuffers, tangents, TangentFormat, RHI::ShaderSemantic{"TANGENT"}))
+                if (!BuildTypedStreamBuffer<float>(outStreamBuffers, tangents, TangentFormat, RHI::ShaderSemantic{"TANGENT"}))
                 {
                     return false;
                 }
@@ -1566,7 +1571,7 @@ namespace AZ
 
             if (!bitangents.empty())
             {
-                if (!BuildStreamBuffer<float>(outStreamBuffers, bitangents, BitangentFormat, RHI::ShaderSemantic{"BITANGENT"}))
+                if (!BuildTypedStreamBuffer<float>(outStreamBuffers, bitangents, BitangentFormat, RHI::ShaderSemantic{"BITANGENT"}))
                 {
                     return false;
                 }
@@ -1574,7 +1579,7 @@ namespace AZ
             
             for (size_t i = 0; i < uvSets.size(); ++i)
             {
-                if (!BuildStreamBuffer<float>(outStreamBuffers, uvSets[i], UVFormat, RHI::ShaderSemantic{"UV", i}, uvCustomNames[i]))
+                if (!BuildTypedStreamBuffer<float>(outStreamBuffers, uvSets[i], UVFormat, RHI::ShaderSemantic{"UV", i}, uvCustomNames[i]))
                 {
                     return false;
                 }
@@ -1582,7 +1587,7 @@ namespace AZ
 
             for (size_t i = 0; i < colorSets.size(); ++i)
             {
-                if (!BuildStreamBuffer<float>(outStreamBuffers, colorSets[i], ColorFormat, RHI::ShaderSemantic{"COLOR", i}, colorCustomNames[i]))
+                if (!BuildTypedStreamBuffer<float>(outStreamBuffers, colorSets[i], ColorFormat, RHI::ShaderSemantic{"COLOR", i}, colorCustomNames[i]))
                 {
                     return false;
                 }
@@ -1610,29 +1615,11 @@ namespace AZ
             }
 
             // Morph target buffers
-            const AZStd::vector<uint32_t>& mtVertexIndices = lodBufferContent.m_morphTargetVertexData.m_vertexIndices;
-            if (!mtVertexIndices.empty())
+            const AZStd::vector<PackedCompressedMorphTargetDelta>& morphTargetVertexDeltas = lodBufferContent.m_morphTargetVertexData;
+            if (!morphTargetVertexDeltas.empty())
             {
-                // Vertex indices
-                const size_t numTotalVertices = mtVertexIndices.size();
-                if (!BuildStreamBuffer<uint32_t>(numTotalVertices, outStreamBuffers, mtVertexIndices,
-                    MorphTargetVertexIndexFormat, RHI::ShaderSemantic{ShaderSemanticName_MorphTargetVertexIndices}))
-                {
-                    return false;
-                }
-
-                // Position deltas
-                const AZStd::vector<uint16_t>& mtPositionDeltas = lodBufferContent.m_morphTargetVertexData.m_positionDeltas;
-                if (!BuildStreamBuffer<uint16_t>(numTotalVertices * 3, outStreamBuffers, mtPositionDeltas,
-                    MorphTargetPositionDeltaFormat, RHI::ShaderSemantic{ShaderSemanticName_MorphTargetPositionDeltas}))
-                {
-                    return false;
-                }
-
-                // Normal deltas
-                const AZStd::vector<uint8_t>& mtNormalDeltas = lodBufferContent.m_morphTargetVertexData.m_normalDeltas;
-                if (!BuildStreamBuffer<uint8_t>(numTotalVertices * 3, outStreamBuffers, mtNormalDeltas,
-                    MorphTargetNormalDeltaFormat, RHI::ShaderSemantic{ShaderSemanticName_MorphTargetNormalDeltas}))
+                if (!BuildStructuredStreamBuffer<PackedCompressedMorphTargetDelta>(outStreamBuffers, morphTargetVertexDeltas,
+                    RHI::ShaderSemantic{ ShaderSemanticName_MorphTargetDeltas }))
                 {
                     return false;
                 }
@@ -1762,22 +1749,10 @@ namespace AZ
             }
 
             // Set morph target buffers
-            if (meshView.m_morphTargetVertexDataView.m_vertexIndexView.m_elementCount > 0)
+            if (meshView.m_morphTargetVertexDataView.m_elementCount > 0)
             {
-                if (!SetMeshStreamBufferById(RHI::ShaderSemantic{ShaderSemanticName_MorphTargetVertexIndices}, AZ::Name(),
-                    meshView.m_morphTargetVertexDataView.m_vertexIndexView, lodStreamBuffers, lodAssetCreator))
-                {
-                    return false;
-                }
-
-                if (!SetMeshStreamBufferById(RHI::ShaderSemantic{ShaderSemanticName_MorphTargetPositionDeltas}, AZ::Name(),
-                    meshView.m_morphTargetVertexDataView.m_positionDeltaView, lodStreamBuffers, lodAssetCreator))
-                {
-                    return false;
-                }
-
-                if (!SetMeshStreamBufferById(RHI::ShaderSemantic{ShaderSemanticName_MorphTargetNormalDeltas}, AZ::Name(),
-                    meshView.m_morphTargetVertexDataView.m_normalDeltaView, lodStreamBuffers, lodAssetCreator))
+                if (!SetMeshStreamBufferById(RHI::ShaderSemantic{ShaderSemanticName_MorphTargetDeltas}, AZ::Name(),
+                    meshView.m_morphTargetVertexDataView, lodStreamBuffers, lodAssetCreator))
                 {
                     return false;
                 }
@@ -1793,6 +1768,15 @@ namespace AZ
         {
             RHI::BufferViewDescriptor bufferViewDescriptor =
                 RHI::BufferViewDescriptor::CreateTyped(0, static_cast<uint32_t>(elementCount), format);
+
+            return CreateBufferAsset(data, bufferViewDescriptor, bufferName);
+        }
+
+        Outcome<Data::Asset<BufferAsset>> ModelAssetBuilderComponent::CreateStructuredBufferAsset(
+            const void* data, const size_t elementCount, const size_t elementSize, const AZStd::string& bufferName)
+        {
+            RHI::BufferViewDescriptor bufferViewDescriptor =
+                RHI::BufferViewDescriptor::CreateStructured(0, static_cast<uint32_t>(elementCount), static_cast<uint32_t>(elementSize));
 
             return CreateBufferAsset(data, bufferViewDescriptor, bufferName);
         }

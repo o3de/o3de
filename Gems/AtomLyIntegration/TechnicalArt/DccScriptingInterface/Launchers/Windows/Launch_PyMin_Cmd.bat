@@ -16,41 +16,32 @@ REM
 :: Puts you in the CMD within the dev environment
 
 :: Set up window
-TITLE Lumberyard DCC Scripting Interface Cmd
+TITLE O3DE DCC Scripting Interface Py Min CMD
 :: Use obvious color to prevent confusion (Grey with Yellow Text)
 COLOR 8E
 
 %~d0
 cd %~dp0
+PUSHD %~dp0
 
-:: Keep changes local
-SETLOCAL enableDelayedExpansion
+SETLOCAL ENABLEDELAYEDEXPANSION
 
-:: This maps up to the \Dev folder
-IF "%DEV_REL_PATH%"=="" (set DEV_REL_PATH=..\..\..\..\..\..\)
+:: Initialize env
+CALL %~dp0\Env_Core.bat
+CALL %~dp0\Env_Python.bat
 
-:: Change to root Lumberyard dev dir
-:: Don't use the LY_DEV so we can test that ENVAR!!!
-CD /d %DEV_REL_PATH%
-set Rel_Dev=%CD%
-echo     Rel_Dev = %Rel_Dev%
-:: Restore original directory
-popd
-
-set DCCSI_PYTHON_INSTALL=%Rel_Dev%\Tools\Python\3.7.5\windows
-
-:: add to the PATH
-SET PATH=%DCCSI_PYTHON_INSTALL%;%PATH%
-
-set DCCSI_PY_BASE=%DCCSI_PYTHON_INSTALL%\python.exe
-echo     DCCSI_PY_BASE = %DCCSI_PY_BASE%
+:: if the user has set up a custom env call it
+IF EXIST "%~dp0Env_Dev.bat" CALL %~dp0Env_Dev.bat
 
 echo.
 echo _____________________________________________________________________
 echo.
-echo ~    LY DCC Scripting Interface, Py Min Env CMD ...
+echo ~    O3DE DCC Scripting Interface, Py Min Env CMD ...
 echo _____________________________________________________________________
 echo.
+
+:: Change to root dir
+CD /D %LY_PROJECT_PATH%
 
 :: Create command prompt with environment
 CALL %windir%\system32\cmd.exe

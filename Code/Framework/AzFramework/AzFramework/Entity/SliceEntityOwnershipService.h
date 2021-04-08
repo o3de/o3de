@@ -100,9 +100,9 @@ namespace AzFramework
         //! @param idRemapTable if remapIds is true, the provided table is filled with a map of original ids to new ids
         //! @param filterDesc any ObjectStream::LoadFlags
         //! @return whether or not the root slice was successfully loaded from the provided stream
-        virtual bool LoadFromStream(AZ::IO::GenericStream& stream, bool remapIds,
+        bool LoadFromStream(AZ::IO::GenericStream& stream, bool remapIds,
             EntityIdToEntityIdMap* idRemapTable = nullptr,
-            const AZ::ObjectStream::FilterDescriptor& filterDesc = AZ::ObjectStream::FilterDescriptor());
+            const AZ::ObjectStream::FilterDescriptor& filterDesc = AZ::ObjectStream::FilterDescriptor()) override;
 
         //! Executes the post-add actions for the provided list of entities, like connecting to required ebuses.
         //! @param entities The entities to perform the post-add actions for.

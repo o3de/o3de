@@ -17,9 +17,10 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzFramework/Spawnable/Spawnable.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
-#include <AzFramework/Spawnable/Spawnable.h>
 
 namespace AzToolsFramework::Prefab::SpawnableUtils
 {
@@ -27,22 +28,35 @@ namespace AzToolsFramework::Prefab::SpawnableUtils
     AzFramework::Spawnable CreateSpawnable(const PrefabDom& prefabDom)
     {
         AzFramework::Spawnable spawnable;
-        AZStd::unique_ptr<Instance> instance(aznew Instance());
-        if (!Prefab::PrefabDomUtils::LoadInstanceFromPrefabDom(*instance, prefabDom, false))
+        [[maybe_unused]] bool result = CreateSpawnable(spawnable, prefabDom);
+        AZ_Assert(result,
+            "Failed to Load Prefab Instance from given Prefab DOM while Spawnable creation.");
+        return spawnable;
+    }
+
+    bool CreateSpawnable(AzFramework::Spawnable& spawnable, const PrefabDom& prefabDom)
+    {
+        Instance instance;
+        if (Prefab::PrefabDomUtils::LoadInstanceFromPrefabDom(instance, prefabDom,
+            Prefab::PrefabDomUtils::LoadInstanceFlags::AssignRandomEntityId)) // Always assign random entity ids because the spawnable is
+                                                                              // going to be used to create clones of the entities.
         {
-            AZ_Assert(false,
-                "Failed to Load Prefab Instance from given Prefab DOM while Spawnable creation.");
+            AzFramework::Spawnable::EntityList& entities = spawnable.GetEntities();
+            if (instance.HasContainerEntity())
+            {
+                entities.emplace_back(AZStd::move(instance.DetachContainerEntity()));
+            }
+            instance.DetachNestedEntities(
+                [&entities](AZStd::unique_ptr<AZ::Entity> entity)
+                {
+                    entities.emplace_back(AZStd::move(entity));
+                });
+            return true;
         }
         else
         {
-            AzFramework::Spawnable::EntityList& entities = spawnable.GetEntities();
-            instance->DetachNestedEntities([&entities](AZStd::unique_ptr<AZ::Entity> entity)
-            {
-                entities.emplace_back(AZStd::move(entity));
-            });
+            return false;
         }
-
-        return spawnable;
     }
 
     void OrganizeEntitiesForSorting(

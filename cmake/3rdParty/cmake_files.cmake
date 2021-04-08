@@ -17,7 +17,6 @@ set(FILES
     FindDirectXShaderCompiler.cmake
     Finddyad.cmake
     Findetc2comp.cmake
-    Findexpat.cmake
     FindFbxSdk.cmake
     FindFreeType2.cmake
     Findlibav.cmake

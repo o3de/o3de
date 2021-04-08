@@ -1,4 +1,4 @@
-﻿/*
+/*
  * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
  * its licensors.
  *
@@ -14,14 +14,15 @@
 
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzCore/Math/Quaternion.h>
 
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
-#include <AzFramework/Physics/RigidBody.h>
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <AzFramework/Physics/WorldBodyBus.h>
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
+#include <AzFramework/Physics/Common/PhysicsTypes.h>
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
@@ -41,6 +42,12 @@
 
 #include <Editor/DebugDraw.h>
 
+namespace AzPhysics
+{
+    class SceneInterface;
+    struct SimulatedBody;
+}
+
 namespace PhysX
 {
     struct EditorProxyAssetShapeConfig
@@ -54,7 +61,7 @@ namespace PhysX
         Physics::PhysicsAssetShapeConfiguration m_configuration;
     };
 
-    /// Proxy container for only displaying a specific shape configuration depending on the shapeType selected.
+    //! Proxy container for only displaying a specific shape configuration depending on the shapeType selected.
     struct EditorProxyShapeConfig
     {
         AZ_CLASS_ALLOCATOR(EditorProxyShapeConfig, AZ::SystemAllocator, 0);
@@ -70,6 +77,8 @@ namespace PhysX
         Physics::BoxShapeConfiguration m_box;
         Physics::CapsuleShapeConfiguration m_capsule;
         EditorProxyAssetShapeConfig m_physicsAsset;
+        bool m_hasNonUniformScale = false; //!< Whether there is a non-uniform scale component on this entity.
+        AZ::u8 m_subdivisionLevel = 4; //!< The level of subdivision if a primitive shape is replaced with a convex mesh due to scaling.
         Physics::CookedMeshShapeConfiguration m_cookedMesh;
 
         bool IsSphereConfig() const;
@@ -79,12 +88,14 @@ namespace PhysX
         Physics::ShapeConfiguration& GetCurrent();
         const Physics::ShapeConfiguration& GetCurrent() const;
 
+        bool ShowingSubdivisionLevel() const;
+
         AZ::u32 OnConfigurationChanged();
     };
 
     class EditorColliderComponentDescriptor;
-    /// Editor PhysX Collider Component.
-    ///
+    //! Editor PhysX Collider Component.
+    //!
     class EditorColliderComponent
         : public AzToolsFramework::Components::EditorComponentBase
         , protected DebugDraw::DisplayCallback
@@ -107,23 +118,9 @@ namespace PhysX
         friend class EditorColliderComponentDescriptor;
 
         static void Reflect(AZ::ReflectContext* context);
-        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
-        {
-            provided.push_back(AZ_CRC("PhysicsWorldBodyService", 0x944da0cc));
-            provided.push_back(AZ_CRC("PhysXColliderService", 0x4ff43f7c));
-            provided.push_back(AZ_CRC("PhysXTriggerService", 0x3a117d7b));
-        }
-        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
-        {
-            required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
-        }
-        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
-        {
-            // Not compatible with Legacy Cry Physics services
-            incompatible.push_back(AZ_CRC("ColliderService", 0x902d4e93));
-            incompatible.push_back(AZ_CRC("LegacyCryPhysicsService", 0xbb370351));
-        }
-
+        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
+        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
+        static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
         static AZ::ComponentDescriptor* CreateDescriptor();
 
         EditorColliderComponent() = default;
@@ -144,14 +141,15 @@ namespace PhysX
         void Activate() override;
         void Deactivate() override;
 
-        /// AzToolsFramework::EntitySelectionEvents
+        //! AzToolsFramework::EntitySelectionEvents
         void OnSelected() override;
         void OnDeselected() override;
 
         // DisplayCallback
         void Display(AzFramework::DebugDisplayRequests& debugDisplay) const;
         void DisplayMeshCollider(AzFramework::DebugDisplayRequests& debugDisplay) const;
-        void DisplayPrimitiveCollider(AzFramework::DebugDisplayRequests& debugDisplay) const;
+        void DisplayUnscaledPrimitiveCollider(AzFramework::DebugDisplayRequests& debugDisplay) const;
+        void DisplayScaledPrimitiveCollider(AzFramework::DebugDisplayRequests& debugDisplay) const;
 
         // AZ::Data::AssetBus::Handler
         void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
@@ -159,7 +157,6 @@ namespace PhysX
 
         // PhysXMeshColliderComponentRequestBus
         AZ::Data::Asset<Pipeline::MeshAsset> GetMeshAsset() const override;
-        void GetStaticWorldSpaceMeshTriangles(AZStd::vector<AZ::Vector3>& verts, AZStd::vector<AZ::u32>& indices) const override;
         Physics::MaterialId GetMaterialId() const override;
         void SetMeshAsset(const AZ::Data::AssetId& id) override;
         void SetMaterialAsset(const AZ::Data::AssetId& id) override;
@@ -168,6 +165,9 @@ namespace PhysX
 
         // TransformBus
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
+
+        // non-uniform scale handling
+        void OnNonUniformScaleChanged(const AZ::Vector3& nonUniformScale);
 
         // AzToolsFramework::BoxManipulatorRequestBus
         AZ::Vector3 GetDimensions() override;
@@ -216,8 +216,8 @@ namespace PhysX
         void DisablePhysics() override;
         bool IsPhysicsEnabled() const override;
         AZ::Aabb GetAabb() const override;
-        Physics::WorldBody* GetWorldBody() override;
-        Physics::RayCastHit RayCast(const Physics::RayCastRequest& request) override;
+        AzPhysics::SimulatedBody* GetWorldBody() override;
+        AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& request) override;
 
         // Mesh collider
         void UpdateMeshAsset();
@@ -233,10 +233,12 @@ namespace PhysX
         AZ::ComponentDescriptor::StringWarningArray GetComponentWarnings() const { return m_componentWarnings; };
 
         using ComponentModeDelegate = AzToolsFramework::ComponentModeFramework::ComponentModeDelegate;
-        ComponentModeDelegate m_componentModeDelegate; ///< Responsible for detecting ComponentMode activation
-                                                       ///< and creating a concrete ComponentMode.
+        ComponentModeDelegate m_componentModeDelegate; //!< Responsible for detecting ComponentMode activation
+                                                       //!< and creating a concrete ComponentMode.
 
-        AZStd::unique_ptr<Physics::RigidBodyStatic> m_editorBody;
+        AzPhysics::SceneInterface* m_sceneInterface = nullptr;
+        AzPhysics::SceneHandle m_editorSceneHandle = AzPhysics::InvalidSceneHandle;
+        AzPhysics::SimulatedBodyHandle m_editorBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
 
         // Auto-assigning collision mesh utility functions
         bool ShouldUpdateCollisionMeshFromRender() const;
@@ -255,6 +257,10 @@ namespace PhysX
         AzPhysics::SystemEvents::OnDefaultMaterialLibraryChangedEvent::Handler m_onDefaultMaterialLibraryChangedEventHandler;
         AZ::Transform m_cachedWorldTransform;
 
+        AZ::NonUniformScaleChangedEvent::Handler m_nonUniformScaleChangedHandler; //!< Responds to changes in non-uniform scale.
+        bool m_hasNonUniformScale = false; //!< Whether there is a non-uniform scale component on this entity.
+        AZ::Vector3 m_cachedNonUniformScale = AZ::Vector3::CreateOne(); //!< Caches the current non-uniform scale.
+        mutable AZStd::optional<Physics::CookedMeshShapeConfiguration> m_scaledPrimitive; //!< Approximation for non-uniformly scaled primitive.
 
         AZ::ComponentDescriptor::StringWarningArray m_componentWarnings;
     };
@@ -273,7 +279,6 @@ namespace PhysX
         void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided, const AZ::Component* instance) const override;
         void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent, const AZ::Component* instance) const override;
         void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required, const AZ::Component* instance) const override;
-        void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible, const AZ::Component* instance) const override;
         void GetWarnings(AZ::ComponentDescriptor::StringWarningArray& warnings, const AZ::Component* instance) const override;
 
     };

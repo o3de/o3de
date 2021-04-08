@@ -60,8 +60,6 @@ namespace Physics
 
         /// Creates a new collision group preset with corresponding groupName.
         virtual void CreateCollisionGroup(const AZStd::string& groupName, const AzPhysics::CollisionGroup& group) = 0;
-
-        virtual AzPhysics::CollisionConfiguration GetCollisionConfiguration() = 0;
     };
 
     /// Collision requests bus traits. Singleton pattern.

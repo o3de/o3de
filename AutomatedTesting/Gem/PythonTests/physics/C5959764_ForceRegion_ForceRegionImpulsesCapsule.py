@@ -148,7 +148,7 @@ def C5959764_ForceRegion_ForceRegionImpulsesCapsule():
         Report.failure(Tests.tests_completed)
 
     else:
-        # Did Force Region succeed. True if vector z ≈ 1 and force region magnitude ≈ magnitude applied on Capsule
+        # Did Force Region succeed. True if vector z is close to 1 and force region magnitude is close to magnitude applied on Capsule
         force_region_result = (
             ifVectorClose(RegionObject.force_vector.z, UPWARD_Z_VECTOR) and RegionObject.force_region_in_range()
         )

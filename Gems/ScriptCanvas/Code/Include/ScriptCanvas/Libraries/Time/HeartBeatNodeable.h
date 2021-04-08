@@ -29,8 +29,6 @@ namespace ScriptCanvas
 
             protected:
                 void OnTimeElapsed() override;
-
-                ScriptCanvas::EnumComboBoxNodePropertyInterface m_timeUnitsInterface;
             };
         }
     }

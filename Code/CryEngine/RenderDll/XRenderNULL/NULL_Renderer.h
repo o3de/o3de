@@ -47,7 +47,7 @@ public:
     virtual SDepthTexture* FX_GetDepthSurface([[maybe_unused]] int nWidth, [[maybe_unused]] int nHeight, [[maybe_unused]] bool bAA, [[maybe_unused]] bool shaderResourceView = false) override { return nullptr; }
     virtual long FX_SetIStream([[maybe_unused]] const void* pB, [[maybe_unused]] uint32 nOffs, [[maybe_unused]] RenderIndexType idxType) override { return -1; }
     virtual long FX_SetVStream([[maybe_unused]] int nID, [[maybe_unused]] const void* pB, [[maybe_unused]] uint32 nOffs, [[maybe_unused]] uint32 nStride, [[maybe_unused]] uint32 nFreq = 1) override { return -1; }
-    virtual void FX_DrawPrimitive([[maybe_unused]] const eRenderPrimitiveType eType, [[maybe_unused]] const int nStartVertex, [[maybe_unused]] const int nVerticesCount, [[maybe_unused]] const int nInstanceVertices = 0) {}
+    virtual void FX_DrawPrimitive([[maybe_unused]] eRenderPrimitiveType eType, [[maybe_unused]] int nStartVertex, [[maybe_unused]] int nVerticesCount, [[maybe_unused]] int nInstanceVertices = 0) {}
     virtual void DrawQuad3D([[maybe_unused]] const Vec3& v0, [[maybe_unused]] const Vec3& v1, [[maybe_unused]] const Vec3& v2, [[maybe_unused]] const Vec3& v3, [[maybe_unused]] const ColorF& color, [[maybe_unused]] float ftx0, [[maybe_unused]] float fty0, [[maybe_unused]] float ftx1, [[maybe_unused]] float fty1) override {}
     virtual void FX_ClearTarget(ITexture* pTex) override;
     virtual void FX_ClearTarget(SDepthTexture* pTex) override;
@@ -97,7 +97,7 @@ public:
 
     virtual   void SetRenderTile([[maybe_unused]] f32 nTilesPosX, [[maybe_unused]] f32 nTilesPosY, [[maybe_unused]] f32 nTilesGridSizeX, [[maybe_unused]] f32 nTilesGridSizeY) {}
 
-    virtual void EF_InvokeShadowMapRenderJobs([[maybe_unused]] const int nFlags){}
+    virtual void EF_InvokeShadowMapRenderJobs([[maybe_unused]] int nFlags){}
     //! Fills array of all supported video formats (except low resolution formats)
     //! Returns number of formats, also when called with NULL
     virtual int   EnumDisplayFormats(SDispFormat* Formats);
@@ -128,7 +128,7 @@ public:
     virtual void  Reset (void) {};
     virtual void    RT_ReleaseCB(void*){}
 
-    virtual void DrawDynVB(SVF_P3F_C4B_T2F* pBuf, uint16* pInds, int nVerts, int nInds, const PublicRenderPrimitiveType nPrimType);
+    virtual void DrawDynVB(SVF_P3F_C4B_T2F* pBuf, uint16* pInds, int nVerts, int nInds, PublicRenderPrimitiveType nPrimType);
     virtual void DrawDynUiPrimitiveList(DynUiPrimitiveList& primitives, int totalNumVertices, int totalNumIndices);
 
     virtual void  DrawBuffer(CVertexBuffer* pVBuf, CIndexBuffer* pIBuf, int nNumIndices, int nOffsIndex, const PublicRenderPrimitiveType nPrmode, int nVertStart = 0, int nVertStop = 0);
@@ -177,7 +177,7 @@ public:
     virtual unsigned int DownLoadToVideoMemory3D([[maybe_unused]] const byte* data, [[maybe_unused]] int w, [[maybe_unused]] int h, [[maybe_unused]] int d, [[maybe_unused]] ETEX_Format eTFSrc, [[maybe_unused]] ETEX_Format eTFDst, [[maybe_unused]] int nummipmap, [[maybe_unused]] bool repeat = true, [[maybe_unused]] int filter = FILTER_BILINEAR, [[maybe_unused]] int Id = 0, [[maybe_unused]] const char* szCacheName = NULL, [[maybe_unused]] int flags = 0, [[maybe_unused]] EEndian eEndian = eLittleEndian, [[maybe_unused]] RectI* pRegion = NULL, [[maybe_unused]] bool bAsynDevTexCreation = false) { return 0; }
     virtual void UpdateTextureInVideoMemory([[maybe_unused]] uint32 tnum, [[maybe_unused]] const byte* newdata, [[maybe_unused]] int posx, [[maybe_unused]] int posy, [[maybe_unused]] int w, [[maybe_unused]] int h, [[maybe_unused]] ETEX_Format eTFSrc = eTF_R8G8B8A8, [[maybe_unused]] int posz = 0, [[maybe_unused]] int sizez = 1){}
 
-    virtual   bool SetGammaDelta(const float fGamma);
+    virtual   bool SetGammaDelta(float fGamma);
     virtual void RestoreGamma(void) {};
 
     virtual   void RemoveTexture([[maybe_unused]] unsigned int TextureId) {}
@@ -238,7 +238,7 @@ public:
     virtual void  GetProjectionMatrix(float* mat);
 
     //for texture
-    virtual ITexture* EF_LoadTexture(const char* nameTex, const uint32 flags = 0);
+    virtual ITexture* EF_LoadTexture(const char* nameTex, uint32 flags = 0);
     virtual ITexture* EF_LoadDefaultTexture(const char* nameTex);
 
     virtual void DrawQuad(const Vec3& right, const Vec3& up, const Vec3& origin, int nFlipMode = 0);
@@ -298,10 +298,10 @@ public:
     virtual bool EF_SetLightHole(Vec3 vPos, Vec3 vNormal, int idTex, float fScale = 1.0f, bool bAdditive = true);
 
     // Draw all shaded REs in the list
-    virtual void EF_EndEf3D (const int nFlags, const int nPrecacheUpdateId, const int nNearPrecacheUpdateId, const SRenderingPassInfo& passInfo);
+    virtual void EF_EndEf3D (int nFlags, int nPrecacheUpdateId, int nNearPrecacheUpdateId, const SRenderingPassInfo& passInfo);
 
     // 2d interface for shaders
-    virtual void EF_EndEf2D(const bool bSort);
+    virtual void EF_EndEf2D(bool bSort);
     virtual bool EF_PrecacheResource(SShaderItem* pSI, float fMipFactor, float fTimeToReady, int Flags, int nUpdateId, int nCounter);
     virtual bool EF_PrecacheResource(ITexture* pTP, float fDist, float fTimeToReady, int Flags, int nUpdateId, int nCounter);
     virtual void PrecacheResources();
@@ -380,7 +380,7 @@ public:
     virtual void RT_DrawDynVB([[maybe_unused]] int Pool, [[maybe_unused]] uint32 nVerts) {}
     virtual void RT_DrawDynVB([[maybe_unused]] SVF_P3F_C4B_T2F* pBuf, [[maybe_unused]] uint16* pInds, [[maybe_unused]] uint32 nVerts, [[maybe_unused]] uint32 nInds, [[maybe_unused]] const PublicRenderPrimitiveType nPrimType) {}
     virtual void RT_DrawDynVBUI([[maybe_unused]] SVF_P2F_C4B_T2F_F4B* pBuf, [[maybe_unused]] uint16* pInds, [[maybe_unused]] uint32 nVerts, [[maybe_unused]] uint32 nInds, [[maybe_unused]] const PublicRenderPrimitiveType nPrimType) {}
-    virtual void RT_DrawStringU([[maybe_unused]] IFFont_RenderProxy* pFont, [[maybe_unused]] float x, [[maybe_unused]] float y, [[maybe_unused]] float z, [[maybe_unused]] const char* pStr, [[maybe_unused]] const bool asciiMultiLine, [[maybe_unused]] const STextDrawContext& ctx) const {}
+    virtual void RT_DrawStringU([[maybe_unused]] IFFont_RenderProxy* pFont, [[maybe_unused]] float x, [[maybe_unused]] float y, [[maybe_unused]] float z, [[maybe_unused]] const char* pStr, [[maybe_unused]] bool asciiMultiLine, [[maybe_unused]] const STextDrawContext& ctx) const {}
     virtual void RT_DrawLines([[maybe_unused]] Vec3 v[], [[maybe_unused]] int nump, [[maybe_unused]] ColorF& col, [[maybe_unused]] int flags, [[maybe_unused]] float fGround) {}
     virtual void RT_Draw2dImage([[maybe_unused]] float xpos, [[maybe_unused]] float ypos, [[maybe_unused]] float w, [[maybe_unused]] float h, [[maybe_unused]] CTexture* pTexture, [[maybe_unused]] float s0, [[maybe_unused]] float t0, [[maybe_unused]] float s1, [[maybe_unused]] float t1, [[maybe_unused]] float angle, [[maybe_unused]] DWORD col, [[maybe_unused]] float z) {}
     virtual void RT_Push2dImage([[maybe_unused]] float xpos, [[maybe_unused]] float ypos, [[maybe_unused]] float w, [[maybe_unused]] float h, [[maybe_unused]] CTexture* pTexture, [[maybe_unused]] float s0, [[maybe_unused]] float t0, [[maybe_unused]] float s1, [[maybe_unused]] float t1, [[maybe_unused]] float angle, [[maybe_unused]] DWORD col, [[maybe_unused]] float z, [[maybe_unused]] float stereoDepth) {}
@@ -402,7 +402,7 @@ public:
     virtual void RT_SetViewport([[maybe_unused]] int x, [[maybe_unused]] int y, [[maybe_unused]] int width, [[maybe_unused]] int height, [[maybe_unused]] int id) {};
 
     virtual void RT_SetRendererCVar([[maybe_unused]] ICVar* pCVar, [[maybe_unused]] const char* pArgText, [[maybe_unused]] const bool bSilentMode = false) {};
-    virtual void SetRendererCVar([[maybe_unused]] ICVar* pCVar, [[maybe_unused]] const char* pArgText, [[maybe_unused]] const bool bSilentMode = false) {};
+    virtual void SetRendererCVar([[maybe_unused]] ICVar* pCVar, [[maybe_unused]] const char* pArgText, [[maybe_unused]] bool bSilentMode = false) {};
 
     virtual void SetMatrices([[maybe_unused]] float* pProjMat, [[maybe_unused]] float* pViewMat) {}
 

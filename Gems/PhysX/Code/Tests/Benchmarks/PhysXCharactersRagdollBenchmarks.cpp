@@ -83,7 +83,7 @@ namespace PhysX::Benchmarks
             //need to get the Physics::System to be able to spawn the rigid bodies
             m_system = AZ::Interface<Physics::System>::Get();
 
-            m_terrainEntity = PhysX::TestUtils::CreateFlatTestTerrain(RagdollConstants::TerrainSize, RagdollConstants::TerrainSize);
+            m_terrainEntity = PhysX::TestUtils::CreateFlatTestTerrain(m_testSceneHandle, RagdollConstants::TerrainSize, RagdollConstants::TerrainSize);
         }
 
         virtual void TearDown([[maybe_unused]] const ::benchmark::State& state) override
@@ -94,12 +94,11 @@ namespace PhysX::Benchmarks
 
     protected:
         // PhysXBaseBenchmarkFixture Overrides ...
-        Physics::WorldConfiguration GetDefaultWorldConfiguration() override
+        AzPhysics::SceneConfiguration GetDefaultSceneConfiguration() override
         {
-            Physics::WorldConfiguration worldConfig;
-            worldConfig.m_gravity = AZ::Vector3(0.0f, 0.0f, -9.81f);
-            worldConfig.m_enableCcd = RagdollConstants::CCDEnabled;
-            return worldConfig;
+            AzPhysics::SceneConfiguration sceneConfig = AzPhysics::SceneConfiguration::CreateDefault();
+            sceneConfig.m_enableCcd = RagdollConstants::CCDEnabled;
+            return sceneConfig;
         }
 
         Physics::System* m_system;
@@ -126,7 +125,7 @@ namespace PhysX::Benchmarks
         return GetTPose(AZ::Vector3::CreateZero(), simulationType);
     }
 
-    AZStd::unique_ptr<PhysX::Ragdoll> CreateRagdoll()
+    AZStd::unique_ptr<PhysX::Ragdoll> CreateRagdoll(AzPhysics::SceneHandle sceneHandle)
     {
         Physics::RagdollConfiguration* configuration =
             AZ::Utils::LoadObjectFromFile<Physics::RagdollConfiguration>(AZ::Test::GetEngineRootPath() + "/Gems/PhysX/Code/Tests/RagdollConfiguration.xml");
@@ -138,7 +137,7 @@ namespace PhysX::Benchmarks
             parentIndices.push_back(RagdollTestData::ParentIndices[i]);
         }
 
-        return PhysX::Utils::Characters::CreateRagdoll(*configuration, initialState, parentIndices);
+        return PhysX::Utils::Characters::CreateRagdoll(*configuration, initialState, parentIndices, sceneHandle);
     }
 
     //! BM_Ragdoll_AtRest - This test just spawns the requested number of ragdolls and places them near the terrain
@@ -153,7 +152,7 @@ namespace PhysX::Benchmarks
         ragdolls.reserve(numRagdolls);
         for (int i = 0; i < numRagdolls; i++)
         {
-            ragdolls.emplace_back(CreateRagdoll());
+            ragdolls.emplace_back(CreateRagdoll(m_testSceneHandle));
         }
 
         //enable and position the ragdolls
@@ -187,8 +186,7 @@ namespace PhysX::Benchmarks
             for (AZ::u32 i = 0; i < RagdollConstants::GameFramesToSimulate; i++)
             {
                 auto start = AZStd::chrono::system_clock::now();
-                m_defaultScene->StartSimulation(DefaultTimeStep);
-                m_defaultScene->FinishSimulation();
+                StepScene1Tick(DefaultTimeStep);
 
                 //time each physics tick and store it to analyze
                 auto tickElapsedMilliseconds = PhysX::Benchmarks::Types::double_milliseconds(AZStd::chrono::system_clock::now() - start);
@@ -216,7 +214,7 @@ namespace PhysX::Benchmarks
         const AZ::Vector3 washingMachineCentre(500.0f, 500.0f, 0.0f);
         PhysX::Benchmarks::WashingMachine washingMachine;
         washingMachine.SetupWashingMachine(
-            m_defaultScene, RagdollConstants::WashingMachine::CylinderRadius, RagdollConstants::WashingMachine::CylinderHeight,
+            m_testSceneHandle, RagdollConstants::WashingMachine::CylinderRadius, RagdollConstants::WashingMachine::CylinderHeight,
             washingMachineCentre, RagdollConstants::WashingMachine::BladeRPM);
 
         //create ragdolls
@@ -224,7 +222,7 @@ namespace PhysX::Benchmarks
         ragdolls.reserve(numRagdolls);
         for (int i = 0; i < numRagdolls; i++)
         {
-            ragdolls.emplace_back(CreateRagdoll());
+            ragdolls.emplace_back(CreateRagdoll(m_testSceneHandle));
         }
 
         //enable and position the ragdolls
@@ -255,8 +253,7 @@ namespace PhysX::Benchmarks
             for (AZ::u32 i = 0; i < RagdollConstants::GameFramesToSimulate; i++)
             {
                 auto start = AZStd::chrono::system_clock::now();
-                m_defaultScene->StartSimulation(DefaultTimeStep);
-                m_defaultScene->FinishSimulation();
+                StepScene1Tick(DefaultTimeStep);
 
                 //time each physics tick and store it to analyze
                 auto tickElapsedMilliseconds = PhysX::Benchmarks::Types::double_milliseconds(AZStd::chrono::system_clock::now() - start);

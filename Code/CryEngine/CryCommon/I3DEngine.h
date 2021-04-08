@@ -1309,9 +1309,9 @@ struct I3DEngine
     //     SetCamera
     // Arguments:
     //   szDebugName - name that can be visualized for debugging purpose, must not be 0
-    virtual void RenderWorld(const int nRenderFlags, const SRenderingPassInfo& passInfo, const char* szDebugName) = 0;
+    virtual void RenderWorld(int nRenderFlags, const SRenderingPassInfo& passInfo, const char* szDebugName) = 0;
 
-    virtual void RenderSceneReflection(const int nRenderFlags, const SRenderingPassInfo& passInfo) = 0;
+    virtual void RenderSceneReflection(int nRenderFlags, const SRenderingPassInfo& passInfo) = 0;
 
     // Summary:
     //  Prepares for the world stream update, should be called before rendering
@@ -1816,7 +1816,7 @@ struct I3DEngine
     //   fTextPosY - Y position for the text
     //   fTextStepY - Amount of pixels to distance each line
     //   bEnhanced - false=normal, true=more interesting information
-    virtual void DisplayInfo(float& fTextPosX, float& fTextPosY, float& fTextStepY, const bool bEnhanced) = 0;
+    virtual void DisplayInfo(float& fTextPosX, float& fTextPosY, float& fTextStepY, bool bEnhanced) = 0;
 
     // Summary:
     //   Displays CPU and GPU memory usage statistics on screen

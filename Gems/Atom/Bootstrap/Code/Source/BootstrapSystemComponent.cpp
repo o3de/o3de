@@ -288,15 +288,12 @@ namespace AZ
 
             bool BootstrapSystemComponent::EnsureDefaultRenderPipelineInstalledForScene(AZ::RPI::ScenePtr scene, AZ::RPI::ViewportContextPtr viewportContext)
             {
-                // Create a render pipeline from the specified asset for the window context and add the pipeline to the scene
+                // Create a render pipeline from the specified asset for the window context and add the pipeline to the scene.
+                // When running with no Asset Processor (for example in release), CompileAssetSync will return AssetStatus_Unknown.
                 AzFramework::AssetSystem::AssetStatus status = AzFramework::AssetSystem::AssetStatus_Unknown;
                 AzFramework::AssetSystemRequestBus::BroadcastResult(
                     status, &AzFramework::AssetSystemRequestBus::Events::CompileAssetSync, m_defaultPipelineAssetPath);
-                AZ_Error("RPISystem", status == AzFramework::AssetSystem::AssetStatus_Compiled, "Could not compile the default render pipeline at '%s'", m_defaultPipelineAssetPath.c_str());
-                if (status != AzFramework::AssetSystem::AssetStatus_Compiled)
-                {
-                    return false;
-                }
+                AZ_Assert(status == AzFramework::AssetSystem::AssetStatus_Compiled || status == AzFramework::AssetSystem::AssetStatus_Unknown, "Could not compile the default render pipeline at '%s'", m_defaultPipelineAssetPath.c_str());
 
                 Data::Asset<RPI::AnyAsset> pipelineAsset = RPI::AssetUtils::LoadAssetByProductPath<RPI::AnyAsset>(m_defaultPipelineAssetPath.c_str(), RPI::AssetUtils::TraceLevel::Error);
                 RPI::RenderPipelineDescriptor renderPipelineDescriptor = *RPI::GetDataFromAnyAsset<RPI::RenderPipelineDescriptor>(pipelineAsset);

@@ -5,6 +5,7 @@
         {
             "Streamer":
             {
+                "ReportHardware": false,
                 "Profiles":
                 {
                     "Generic":
@@ -21,7 +22,8 @@
                                 "MaxMetaDataCache": 1024,
                                 "Overcommit": 8,
                                 "EnableFileSharing": false,
-                                "EnableUnbufferedReads": true
+                                "EnableUnbufferedReads": true,
+                                "MinimalReporting": true
                             },
                             {
                                 "$type": "AZ::IO::ReadSplitterConfig",

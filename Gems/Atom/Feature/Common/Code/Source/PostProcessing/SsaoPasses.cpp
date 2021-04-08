@@ -106,12 +106,7 @@ namespace AZ
 
         SsaoComputePass::SsaoComputePass(const RPI::PassDescriptor& descriptor)
             : RPI::ComputePass(descriptor)
-        {
-            if (m_shaderResourceGroup)
-            {
-                m_constantsIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_constants"));
-            }
-        }
+        { }
 
         void SsaoComputePass::FrameBeginInternal(FramePrepareParams params)
         {
@@ -175,10 +170,7 @@ namespace AZ
             ssaoConstants.m_halfPixelSize[0] = 0.5f * ssaoConstants.m_pixelSize[0];
             ssaoConstants.m_halfPixelSize[1] = 0.5f * ssaoConstants.m_pixelSize[1];
 
-            if (m_constantsIndex.IsValid())
-            {
-                m_shaderResourceGroup->SetConstant(m_constantsIndex, ssaoConstants);
-            }
+            m_shaderResourceGroup->SetConstant(m_constantsIndex, ssaoConstants);
 
             RPI::ComputePass::FrameBeginInternal(params);
         }

@@ -66,14 +66,15 @@ namespace ScriptCanvas
                     // NodelingRequestBus
                     AZ::EntityId GetNodeId() const override { return GetEntityId(); }
                     GraphScopedNodeId GetGraphScopedNodeId() const override { return GetScopedNodeId(); }
-                    const AZStd::string& GetDisplayName() const override { return m_displayName; }
-
-                    bool IsSupportedByNewBackend() const override { return true; }
+                    const AZStd::string& GetDisplayName() const override;
+                    void Setup() override { OnSetup(); }
 
                     void SetDisplayName(const AZStd::string& displayName) override;
                     ////
 
                     void RemapId();
+
+                    virtual void OnSetup() {}
 
                 protected:
 

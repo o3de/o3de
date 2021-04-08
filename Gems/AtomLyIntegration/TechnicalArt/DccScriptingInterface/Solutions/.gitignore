@@ -1,0 +1,7 @@
+.dev/*
+!.dev/stub
+!.dev/readme.txt
+!.idea
+!.vscode
+!.wing
+.venv

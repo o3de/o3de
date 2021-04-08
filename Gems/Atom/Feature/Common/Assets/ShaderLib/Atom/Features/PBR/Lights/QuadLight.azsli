@@ -200,7 +200,7 @@ void ApplyQuadLight(ViewSrg::QuadLight light, float3 dirToCamera, Surface surfac
             float roughnessAdjustment = lerp(0.0, solidAngle, pow(rough, 1.5));
             // Decrease intensity when the light position doesn't line up well with the dominant reflection direction.
             float3 dominantDir = GetSpecularDominantDirection(surface.normal, reflectionDir, rough);
-            roughnessAdjustment *= dot(dirToLight, dominantDir) * INV_PI; // INV_PI is here to make brightness match ground truth result more accurately for nearby lights.
+            roughnessAdjustment *= max(0.0f, dot(dirToLight, dominantDir)) * INV_PI; // INV_PI is here to make brightness match ground truth result more accurately for nearby lights.
             // Smooth surfaces need to increase light intensity with distance to maintain constant perceptual
             // intensity depending on the solid angle of the light.
             float solidAngleCoverage = solidAngle / (2.0 * PI); // Adjust solid angle to 0-1 range of how much of the hemisphere is covered.

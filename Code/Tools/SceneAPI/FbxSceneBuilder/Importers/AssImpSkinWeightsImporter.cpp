@@ -16,8 +16,10 @@
 #include <AzToolsFramework/Debug/TraceContext.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/AssImpSkinWeightsImporter.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/FbxImporterUtilities.h>
+#include <SceneAPI/FbxSceneBuilder/Importers/Utilities/AssImpMeshImporterUtilities.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/Utilities/RenamedNodesMap.h>
 #include <SceneAPI/SceneCore/Events/ImportEventContext.h>
+#include <SceneAPI/SceneData/GraphData/MeshData.h>
 #include <SceneAPI/SceneData/GraphData/SkinWeightData.h>
 #include <SceneAPI/SDKWrapper/AssImpNodeWrapper.h>
 #include <SceneAPI/SDKWrapper/AssImpSceneWrapper.h>
@@ -41,7 +43,7 @@ namespace AZ
                 SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
                 if (serializeContext)
                 {
-                    serializeContext->Class<AssImpSkinWeightsImporter, SceneCore::LoadingComponent>()->Version(1);
+                    serializeContext->Class<AssImpSkinWeightsImporter, SceneCore::LoadingComponent>()->Version(3); // LYN-2576
                 }
             }
 
@@ -57,11 +59,29 @@ namespace AZ
                     return Events::ProcessingResult::Ignored;
                 }
 
+                GetMeshDataFromParentResult meshDataResult(GetMeshDataFromParent(context));
+                if (!meshDataResult.IsSuccess())
+                {
+                    return meshDataResult.GetError();
+                }
+                const SceneData::GraphData::MeshData* const parentMeshData(meshDataResult.GetValue());
+
+                int parentMeshIndex = parentMeshData->GetSdkMeshIndex();
+
                 Events::ProcessingResultCombiner combinedSkinWeightsResult;
 
-                for(unsigned m = 0; m < currentNode->mNumMeshes; ++m)
+                for(unsigned nodeMeshIndex = 0; nodeMeshIndex < currentNode->mNumMeshes; ++nodeMeshIndex)
                 {
-                    auto mesh = scene->mMeshes[currentNode->mMeshes[m]];
+                    if (nodeMeshIndex != parentMeshIndex)
+                    {
+                        // Only generate skinning data for the parent mesh.
+                        // Each AssImp mesh is assigned to a unique node,
+                        // so the skinning data should be generated as a child node
+                        // for the associated parent mesh.
+                        continue;
+                    }
+                    int sceneMeshIndex = currentNode->mMeshes[nodeMeshIndex];
+                    const aiMesh* mesh = scene->mMeshes[sceneMeshIndex];
 
                     // Don't create this until a bone with weights is encountered
                     Containers::SceneGraph::NodeIndex weightsIndexForMesh;
@@ -80,7 +100,7 @@ namespace AZ
                         if (!weightsIndexForMesh.IsValid())
                         {
                             skinWeightName = s_skinWeightName;
-                            skinWeightName += AZStd::to_string(m);
+                            skinWeightName += AZStd::to_string(nodeMeshIndex);
                             RenamedNodesMap::SanitizeNodeName(skinWeightName, context.m_scene.GetGraph(), context.m_currentGraphPosition);
 
                             weightsIndexForMesh =

@@ -14,14 +14,15 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzNetworking/Serialization/ISerializer.h>
+#include <AzNetworking/DataStructures/FixedSizeBitsetView.h>
 #include <Source/NetworkEntity/NetworkEntityHandle.h>
 #include <Source/MultiplayerTypes.h>
 
 //! Macro to declare bindings for a multiplayer component inheriting from MultiplayerComponent
-#define AZ_MULTIPLAYER_COMPONENT(ComponentClass, Guid)     \
-    AZ_RTTI(ComponentClass, Guid, AZ::Component)           \
-    AZ_COMPONENT_INTRUSIVE_DESCRIPTOR_TYPE(ComponentClass) \
-    AZ_COMPONENT_BASE(ComponentClass, Guid, Multiplayer::MultiplayerComponent)
+#define AZ_MULTIPLAYER_COMPONENT(ComponentClass, Guid, Base) \
+    AZ_RTTI(ComponentClass, Guid, AZ::Component)             \
+    AZ_COMPONENT_INTRUSIVE_DESCRIPTOR_TYPE(ComponentClass)   \
+    AZ_COMPONENT_BASE(ComponentClass, Guid, Base)
 
 namespace Multiplayer
 {
@@ -50,7 +51,7 @@ namespace Multiplayer
         NetBindComponent* GetNetBindComponent();
         //! @}
 
-        //! Linearly searches the components attached to the entity and returns the requested component. .
+        //! Linearly searches the components attached to the entity and returns the requested component.
         //! @return the requested component, or nullptr if the component does not exist on the entity
         //! @{
         template <typename ComponentType>
@@ -62,25 +63,22 @@ namespace Multiplayer
         NetEntityId GetNetEntityId() const;
         ConstNetworkEntityHandle GetEntityHandle() const;
         NetworkEntityHandle GetEntityHandle();
+        void MarkDirty();
 
         virtual NetComponentId GetNetComponentId() const = 0;
 
         virtual bool HandleRpcMessage(NetEntityRole netEntityRole, NetworkEntityRpcMessage& rpcMessage) = 0;
-        virtual bool SerializeStateDeltaMessage(ReplicationRecord& replicationRecord, AzNetworking::ISerializer& serializer, ComponentSerializationType componentSerializationType) = 0;
-        virtual void NotifyStateDeltaChanges(ReplicationRecord& replicationRecord, ComponentSerializationType componentSerializationType) = 0;
+        virtual bool SerializeStateDeltaMessage(ReplicationRecord& replicationRecord, AzNetworking::ISerializer& serializer) = 0;
+        virtual void NotifyStateDeltaChanges(ReplicationRecord& replicationRecord) = 0;
 
     protected:
-
         virtual bool HasController() const = 0;
         virtual MultiplayerController* GetController() = 0;
-
-        virtual bool Migrate(AzNetworking::ISerializer& serializer) = 0;
         virtual void ConstructController() = 0;
         virtual void DestructController() = 0;
         virtual void ActivateController(EntityIsMigrating entityIsMigrating) = 0;
         virtual void DeactivateController(EntityIsMigrating entityIsMigrating) = 0;
-        virtual void NetworkAttach(NetBindComponent& netBindComponent, ReplicationRecord& currentEntityRecord, ReplicationRecord& predictableEntityRecord) = 0;
-        virtual void NetworkDetach() = 0;
+        virtual void NetworkAttach(NetBindComponent* netBindComponent, ReplicationRecord& currentEntityRecord, ReplicationRecord& predictableEntityRecord) = 0;
 
         mutable NetBindComponent* m_netBindComponent = nullptr;
 
@@ -99,5 +97,43 @@ namespace Multiplayer
     inline ComponentType* MultiplayerComponent::FindComponent()
     {
         return GetEntity()->FindComponent<ComponentType>();
+    }
+
+    template <typename TYPE>
+    inline void SerializeNetworkPropertyHelper
+    (
+        AzNetworking::ISerializer& serializer,
+        bool modifyRecord,
+        AzNetworking::FixedSizeBitsetView& bitset,
+        int32_t bitIndex,
+        TYPE& value,
+        const char* name,
+        [[maybe_unused]] NetComponentId componentId
+    )
+    {
+        if (bitset.GetBit(bitIndex))
+        {
+            //uint32_t prevUpdateSize = serializer.GetSize();
+            serializer.ClearTrackedChangesFlag();
+            serializer.Serialize(value, name);
+            if (modifyRecord && !serializer.GetTrackedChangesFlag())
+            {
+                bitset.SetBit(bitIndex, false);
+            }
+            //uint32_t postUpdateSize = serializer.GetSize();
+            // Network Property metrics
+            // uint32_t updateSize = (postUpdateSize - prevUpdateSize);
+            // if (updateSize > 0)
+            // {
+            //     if (serializer.GetSerializerMode() == AzNetworking::SerializerMode::WriteToObject)
+            //     {
+            //         GetPacketHandlerMetricsInstance().LogRecvNetworkPropertyUpdates(componentType, name, updateSize);
+            //     }
+            //     else
+            //     {
+            //         GetPacketHandlerMetricsInstance().LogSentNetworkPropertyUpdates(componentType, name, updateSize);
+            //     }
+            // }
+        }
     }
 }

@@ -10,6 +10,7 @@
 *
 */
 
+#include <AzCore/PlatformIncl.h>
 #include <CrashReporting/GameCrashUploader.h>
 #include <CrashSupport.h>
 

@@ -17,6 +17,7 @@
 #include <SceneAPI/FbxSceneBuilder/ImportContexts/AssImpImportContexts.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/AssImpUvMapImporter.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/FbxImporterUtilities.h>
+#include <SceneAPI/FbxSceneBuilder/Importers/Utilities/AssImpMeshImporterUtilities.h>
 #include <SceneAPI/SDKWrapper/AssImpNodeWrapper.h>
 #include <SceneAPI/SDKWrapper/AssImpSceneWrapper.h>
 #include <SceneAPI/SceneData/GraphData/MeshData.h>
@@ -43,7 +44,7 @@ namespace AZ
                 SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
                 if (serializeContext)
                 {
-                    serializeContext->Class<AssImpUvMapImporter, SceneCore::LoadingComponent>()->Version(1);
+                    serializeContext->Class<AssImpUvMapImporter, SceneCore::LoadingComponent>()->Version(2); // LYN-2576
                 }
             }
 
@@ -57,16 +58,14 @@ namespace AZ
                 aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
                 const aiScene* scene = context.m_sourceScene.GetAssImpScene();
 
-                AZStd::shared_ptr<DataTypes::IGraphObject> parentData =
-                    context.m_scene.GetGraph().GetNodeContent(context.m_currentGraphPosition);
-                if (!parentData || !parentData->RTTI_IsTypeOf(SceneData::GraphData::MeshData::TYPEINFO_Uuid()))
+                GetMeshDataFromParentResult meshDataResult(GetMeshDataFromParent(context));
+                if (!meshDataResult.IsSuccess())
                 {
-                    AZ_Error(Utilities::ErrorWindow, false,
-                        "Tried to construct uv stream attribute for invalid or non-mesh parent data");
-                    return Events::ProcessingResult::Failure;
+                    return meshDataResult.GetError();
                 }
-                const SceneData::GraphData::MeshData* const parentMeshData =
-                    azrtti_cast<SceneData::GraphData::MeshData*>(parentData.get());
+                const SceneData::GraphData::MeshData* const parentMeshData(meshDataResult.GetValue());
+                int parentMeshIndex = parentMeshData->GetSdkMeshIndex();
+
                 size_t vertexCount = parentMeshData->GetVertexCount();
 
                 int sdkMeshIndex = parentMeshData->GetSdkMeshIndex();

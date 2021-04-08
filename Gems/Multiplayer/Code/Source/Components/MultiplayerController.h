@@ -13,6 +13,7 @@
 #pragma once
 
 #include <Source/NetworkEntity/NetworkEntityHandle.h>
+#include <AzCore/Math/Aabb.h>
 
 namespace Multiplayer
 {
@@ -36,6 +37,12 @@ namespace Multiplayer
         MultiplayerController(MultiplayerComponent& owner);
         virtual ~MultiplayerController() = default;
 
+        //! Activates the controller.
+        virtual void Activate(EntityIsMigrating entityIsMigrating) = 0;
+
+        //! Deactivates the controller.
+        virtual void Deactivate(EntityIsMigrating entityIsMigrating) = 0;
+
         //! Returns the networkId for the entity that owns this controller.
         //! @return the networkId for the entity that owns this controller
         NetEntityId GetNetEntityId() const;
@@ -54,8 +61,18 @@ namespace Multiplayer
 
     protected:
 
+        //! Returns the NetBindComponent responsible for net binding for this controller
+        //! @{
         const NetBindComponent* GetNetBindComponent() const;
         NetBindComponent* GetNetBindComponent();
+        //! @}
+
+        //! Returns the MultiplayerComponent that owns this controller instance.
+        //! @return the MultiplayerComponent that owns this controller instance
+        //! @{
+        const MultiplayerComponent& GetOwner() const;
+        MultiplayerComponent& GetOwner();
+        //! @}
 
         //! Returns true if the owning entity is currently inside ProcessInput scope.
         bool IsProcessingInput() const;
@@ -63,11 +80,11 @@ namespace Multiplayer
         //! Returns the input priority ordering for determining the order of ProcessInput or CreateInput functions.
         virtual InputPriorityOrder GetInputOrder() const = 0;
 
-        //! Hints the rewind system how close an entity should be in order to rewind, this can be very important for performance at scale.
+        //! Queries the rewind system to determine what volume is relevent for a given input, this is very important for performance at scale.
         //! @param networkInput input structure to process
         //! @param deltaTime    amount of time the provided input would be integrated over
-        //! @return the maximum distance an entity should be for this component to interact with it given the provided input
-        virtual float GetRewindDistanceForInput(const NetworkInput& networkInput, float deltaTime) const = 0;
+        //! @return a world-space aabb representing the volume relevent to the provided input
+        virtual AZ::Aabb GetRewindBoundsForInput(const NetworkInput& networkInput, float deltaTime) const = 0;
 
         //! Base execution for ProcessInput packet, do not call directly.
         //! @param networkInput input structure to process

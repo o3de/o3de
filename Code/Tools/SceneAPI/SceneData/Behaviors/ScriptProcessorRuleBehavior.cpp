@@ -53,19 +53,19 @@ namespace AZ
 
                 ////////////////////////////////////////////////////////////////////////////////////////////
                 // AzToolsFramework::EditorPythonConsoleNotifications
-                void OnTraceMessage(AZStd::string_view message) override
+                void OnTraceMessage([[maybe_unused]] AZStd::string_view message) override
                 {
                     using namespace AZ::SceneAPI::Utilities;
                     AZ_TracePrintf(LogWindow, "%.*s \n", AZ_STRING_ARG(message));
                 }
 
-                void OnErrorMessage(AZStd::string_view message) override
+                void OnErrorMessage([[maybe_unused]] AZStd::string_view message) override
                 {
                     using namespace AZ::SceneAPI::Utilities;
                     AZ_TracePrintf(ErrorWindow, "[ERROR] %.*s \n", AZ_STRING_ARG(message));
                 }
 
-                void OnExceptionMessage(AZStd::string_view message) override
+                void OnExceptionMessage([[maybe_unused]] AZStd::string_view message) override
                 {
                     using namespace AZ::SceneAPI::Utilities;
                     AZ_TracePrintf(ErrorWindow, "[EXCEPTION] %.*s \n", AZ_STRING_ARG(message));

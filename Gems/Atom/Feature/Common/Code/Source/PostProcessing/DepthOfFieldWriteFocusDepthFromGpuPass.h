@@ -38,15 +38,13 @@ namespace AZ
 
         private:
             DepthOfFieldWriteFocusDepthFromGpuPass(const RPI::PassDescriptor& descriptor);
-            void Init();
 
             // SRG binding indices...
-            RHI::ShaderInputBufferIndex   m_autoFocusDataBufferIndex;
-            RHI::ShaderInputConstantIndex m_autoFocusScreenPositionIndex;
+            RHI::ShaderInputNameIndex m_autoFocusDataBufferIndex = "m_outputFocusDepth";
+            RHI::ShaderInputNameIndex m_autoFocusScreenPositionIndex = "m_autoFocusScreenPosition";
 
             RPI::Ptr<RPI::Buffer> m_bufferRef = nullptr;
             AZ::Vector2 m_autoFocusScreenPosition{ 0.0f, 0.0f };
-            bool m_initialized = false;
 
             // Scope producer functions...
             void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
@@ -54,7 +52,6 @@ namespace AZ
 
             // Pass overrides
             void BuildAttachmentsInternal() override;
-            void FrameBeginInternal(FramePrepareParams params) override;
         };
     }   // namespace Render
 }   // namespace AZ

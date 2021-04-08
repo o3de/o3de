@@ -12,8 +12,6 @@
 
 // LY Editor Crashpad Hook
 
-#include <CrashReporting_precompiled.h>
-
 #include <CrashReporting/GameCrashHandler.h>
 #include <CrashSupport.h>
 

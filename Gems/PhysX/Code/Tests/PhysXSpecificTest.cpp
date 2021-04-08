@@ -15,25 +15,27 @@
 #include "PhysXTestUtil.h"
 
 #include <AzTest/AzTest.h>
-#include <PhysX/MathConversion.h>
-#include <AzFramework/Physics/World.h>
+#include <AzCore/Asset/AssetManager.h>
+#include <AzCore/UnitTest/UnitTest.h>
+
 #include <AzFramework/Physics/SystemBus.h>
-#include <AzFramework/Physics/TriggerBus.h>
-#include <AzFramework/Physics/CollisionNotificationBus.h>
-#include <AzFramework/Physics/World.h>
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
 #include <AzFramework/Physics/Collision/CollisionLayers.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
+#include <AzFramework/Physics/Collision/CollisionEvents.h>
+#include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
+#include <AzFramework/Physics/Common/PhysicsTypes.h>
+#include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
+#include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
+
 #include <RigidBodyStatic.h>
 #include <SphereColliderComponent.h>
 #include <Utils.h>
-#include <Physics/PhysicsTests.h>
-#include <Physics/PhysicsTests.inl>
+
+#include <PhysX/MathConversion.h>
+#include <PhysX/PhysXLocks.h>
 #include <PhysX/SystemComponentBus.h>
-#include <AzCore/Asset/AssetManager.h>
-#include <AzCore/UnitTest/UnitTest.h>
 #include <Tests/PhysXTestCommon.h>
-#include <Utils.h>
 
 namespace PhysX
 {
@@ -50,7 +52,7 @@ namespace PhysX
 
     namespace PhysXTests
     {
-        typedef EntityPtr(* EntityFactoryFunc)(const AZ::Vector3&, const char*);
+        typedef EntityPtr(* EntityFactoryFunc)(AzPhysics::SceneHandle, const AZ::Vector3&, const char*);
     }
 
     class PhysXEntityFactoryParamTest
@@ -243,30 +245,39 @@ namespace PhysX
 
     TEST_F(PhysXSpecificTest, RigidBody_GetNativeShape_ReturnsCorrectShape)
     {
-        Physics::RigidBodyConfiguration rigidBodyConfiguration;
         AZ::Vector3 halfExtents(1.0f, 2.0f, 3.0f);
-
-        AZStd::unique_ptr<Physics::RigidBody> rigidBody = AZ::Interface<Physics::System>::Get()->CreateRigidBody(rigidBodyConfiguration);
-        ASSERT_TRUE(rigidBody != nullptr);
-
         Physics::BoxShapeConfiguration shapeConfig(halfExtents * 2.0f);
         Physics::ColliderConfiguration colliderConfig;
         colliderConfig.m_rotation = AZ::Quaternion::CreateRotationX(AZ::Constants::HalfPi);
         AZStd::shared_ptr<Physics::Shape> shape = AZ::Interface<Physics::System>::Get()->CreateShape(colliderConfig, shapeConfig);
-        rigidBody->AddShape(shape);
+
+        AzPhysics::RigidBodyConfiguration rigidBodyConfiguration;
+        rigidBodyConfiguration.m_colliderAndShapeData = shape;
+        AzPhysics::RigidBody* rigidBody = nullptr;
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            AzPhysics::SimulatedBodyHandle simBodyHandle = sceneInterface->AddSimulatedBody(m_testSceneHandle, &rigidBodyConfiguration);
+            rigidBody = azdynamic_cast<AzPhysics::RigidBody*>(sceneInterface->GetSimulatedBodyFromHandle(m_testSceneHandle, simBodyHandle));
+        }
+        ASSERT_TRUE(rigidBody != nullptr);
 
         auto nativeShape = rigidBody->GetShape(0);
         ASSERT_TRUE(nativeShape != nullptr);
 
-        auto pxShape = AZStd::rtti_pointer_cast<PhysX::Shape>(shape);
-        ASSERT_TRUE(pxShape->GetPxShape()->getGeometryType() == physx::PxGeometryType::eBOX);
+        {
+            auto* actor = static_cast<physx::PxRigidDynamic*>(rigidBody->GetNativePointer());
+            PHYSX_SCENE_READ_LOCK(actor->getScene());
 
-        physx::PxBoxGeometry boxGeometry;
-        pxShape->GetPxShape()->getBoxGeometry(boxGeometry);
+            auto pxShape = AZStd::rtti_pointer_cast<PhysX::Shape>(shape);
+            ASSERT_TRUE(pxShape->GetPxShape()->getGeometryType() == physx::PxGeometryType::eBOX);
 
-        EXPECT_NEAR(boxGeometry.halfExtents.x, halfExtents.GetX(), PhysXSpecificTest::tolerance);
-        EXPECT_NEAR(boxGeometry.halfExtents.y, halfExtents.GetY(), PhysXSpecificTest::tolerance);
-        EXPECT_NEAR(boxGeometry.halfExtents.z, halfExtents.GetZ(), PhysXSpecificTest::tolerance);
+            physx::PxBoxGeometry boxGeometry;
+            pxShape->GetPxShape()->getBoxGeometry(boxGeometry);
+
+            EXPECT_NEAR(boxGeometry.halfExtents.x, halfExtents.GetX(), PhysXSpecificTest::tolerance);
+            EXPECT_NEAR(boxGeometry.halfExtents.y, halfExtents.GetY(), PhysXSpecificTest::tolerance);
+            EXPECT_NEAR(boxGeometry.halfExtents.z, halfExtents.GetZ(), PhysXSpecificTest::tolerance);
+        }
     }
 
     auto entityFactories = { TestUtils::AddUnitTestObject<BoxColliderComponent>, TestUtils::AddUnitTestBoxComponentsMix };
@@ -274,15 +285,25 @@ namespace PhysX
 
     TEST_F(PhysXSpecificTest, RigidBody_GetNativeType_ReturnsPhysXRigidBodyType)
     {
-        Physics::RigidBodyConfiguration rigidBodyConfiguration;
-        AZStd::unique_ptr<Physics::RigidBody> rigidBody = AZ::Interface<Physics::System>::Get()->CreateRigidBody(rigidBodyConfiguration);
+        AzPhysics::RigidBodyConfiguration rigidBodyConfiguration;
+        AzPhysics::RigidBody* rigidBody = nullptr;
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            AzPhysics::SimulatedBodyHandle simBodyHandle = sceneInterface->AddSimulatedBody(m_testSceneHandle, &rigidBodyConfiguration);
+            rigidBody = azdynamic_cast<AzPhysics::RigidBody*>(sceneInterface->GetSimulatedBodyFromHandle(m_testSceneHandle, simBodyHandle));
+        }
         EXPECT_EQ(rigidBody->GetNativeType(), AZ::Crc32("PhysXRigidBody"));
     }
 
     TEST_F(PhysXSpecificTest, RigidBody_GetNativePointer_ReturnsValidPointer)
     {
-        Physics::RigidBodyConfiguration rigidBodyConfiguration;
-        AZStd::unique_ptr<Physics::RigidBody> rigidBody = AZ::Interface<Physics::System>::Get()->CreateRigidBody(rigidBodyConfiguration);
+        AzPhysics::RigidBodyConfiguration rigidBodyConfiguration;
+        AzPhysics::RigidBody* rigidBody = nullptr;
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            AzPhysics::SimulatedBodyHandle simBodyHandle = sceneInterface->AddSimulatedBody(m_testSceneHandle, &rigidBodyConfiguration);
+            rigidBody = azdynamic_cast<AzPhysics::RigidBody*>(sceneInterface->GetSimulatedBodyFromHandle(m_testSceneHandle, simBodyHandle));
+        }
         physx::PxBase* nativePointer = static_cast<physx::PxBase*>(rigidBody->GetNativePointer());
         EXPECT_TRUE(strcmp(nativePointer->getConcreteTypeName(), "PxRigidDynamic") == 0);
     }
@@ -297,7 +318,7 @@ namespace PhysX
         TestTriggerAreaNotificationListener testTriggerAreaNotificationListener(triggerBox->GetId());
 
         // Create a test box above the trigger so when it falls down it'd enter and leave the trigger box
-        auto testBox = TestUtils::AddUnitTestObject(AZ::Vector3(0.0f, 0.0f, 16.0f), "TestBox");
+        auto testBox = TestUtils::AddUnitTestObject(m_testSceneHandle, AZ::Vector3(0.0f, 0.0f, 16.0f), "TestBox");
         auto testBoxBody = testBox->FindComponent<RigidBodyComponent>()->GetRigidBody();
         auto testBoxShape = testBoxBody->GetShape(0);
 
@@ -333,8 +354,8 @@ namespace PhysX
         // set up dynamic objs
         AZStd::vector<EntityPtr> testBoxes =
         {
-            TestUtils::AddUnitTestObject(AZ::Vector3(0.0f, 0.0f, 16.0f), "TestBox"),
-            TestUtils::AddUnitTestObject(AZ::Vector3(0.0f, 0.0f, 18.0f), "TestBox2")
+            TestUtils::AddUnitTestObject(m_testSceneHandle, AZ::Vector3(0.0f, 0.0f, 16.0f), "TestBox"),
+            TestUtils::AddUnitTestObject(m_testSceneHandle, AZ::Vector3(0.0f, 0.0f, 18.0f), "TestBox2")
         };
 
         // set up listeners on triggers
@@ -364,8 +385,8 @@ namespace PhysX
 
     TEST_F(PhysXSpecificTest, RigidBody_CollisionCallback_SimpleCallbackOfTwoSpheres)
     {
-        auto obj01 = TestUtils::AddUnitTestObject<SphereColliderComponent>(AZ::Vector3(0.0f, 0.0f, 10.0f), "TestSphere01");
-        auto obj02 = TestUtils::AddUnitTestObject<SphereColliderComponent>(AZ::Vector3(0.0f, 0.0f, 0.0f), "TestSphere01");
+        auto obj01 = TestUtils::AddUnitTestObject<SphereColliderComponent>(m_testSceneHandle, AZ::Vector3(0.0f, 0.0f, 10.0f), "TestSphere01");
+        auto obj02 = TestUtils::AddUnitTestObject<SphereColliderComponent>(m_testSceneHandle, AZ::Vector3(0.0f, 0.0f, 0.0f), "TestSphere01");
 
         auto body01 = obj01->FindComponent<RigidBodyComponent>()->GetRigidBody();
         auto body02 = obj02->FindComponent<RigidBodyComponent>()->GetRigidBody();
@@ -420,8 +441,8 @@ namespace PhysX
 
     TEST_F(PhysXSpecificTest, RigidBody_CollisionCallback_SimpleCallbackSphereFallingOnStaticBox)
     {
-        auto obj01 = TestUtils::AddUnitTestObject<SphereColliderComponent>(AZ::Vector3(0.0f, 0.0f, 10.0f), "TestSphere01");
-        auto obj02 = TestUtils::AddStaticUnitTestObject<BoxColliderComponent>(AZ::Vector3(0.0f, 0.0f, 0.0f), "TestBox01");
+        auto obj01 = TestUtils::AddUnitTestObject<SphereColliderComponent>(m_testSceneHandle, AZ::Vector3(0.0f, 0.0f, 10.0f), "TestSphere01");
+        auto obj02 = TestUtils::AddStaticUnitTestObject<BoxColliderComponent>(m_testSceneHandle, AZ::Vector3(0.0f, 0.0f, 0.0f), "TestBox01");
 
         auto body01 = obj01->FindComponent<RigidBodyComponent>()->GetRigidBody();
         auto body02 = obj02->FindComponent<StaticRigidBodyComponent>()->GetStaticRigidBody();
@@ -517,19 +538,22 @@ namespace PhysX
 
     TEST_F(PhysXSpecificTest, RigidBody_CenterOfMassOffsetComputed)
     {
-        Physics::RigidBodyConfiguration rigidBodyConfiguration;
         AZ::Vector3 halfExtents(1.0f, 2.0f, 3.0f);
-        rigidBodyConfiguration.m_computeCenterOfMass = true;
-        rigidBodyConfiguration.m_computeInertiaTensor = true;
-
-        AZStd::unique_ptr<Physics::RigidBody> rigidBody = AZ::Interface<Physics::System>::Get()->CreateRigidBody(rigidBodyConfiguration);
-        ASSERT_TRUE(rigidBody != nullptr);
-
         Physics::BoxShapeConfiguration shapeConfig(halfExtents * 2.0f);
         Physics::ColliderConfiguration colliderConfig;
         colliderConfig.m_rotation = AZ::Quaternion::CreateRotationX(AZ::Constants::HalfPi);
-        AZStd::shared_ptr<Physics::Shape> shape = AZ::Interface<Physics::System>::Get()->CreateShape(colliderConfig, shapeConfig);
-        rigidBody->AddShape(shape);
+
+        AzPhysics::RigidBodyConfiguration rigidBodyConfiguration;
+        rigidBodyConfiguration.m_computeCenterOfMass = true;
+        rigidBodyConfiguration.m_computeInertiaTensor = true;
+        rigidBodyConfiguration.m_colliderAndShapeData = AZStd::make_pair(&colliderConfig, &shapeConfig);
+        AzPhysics::RigidBody* rigidBody = nullptr;
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            AzPhysics::SimulatedBodyHandle simBodyHandle = sceneInterface->AddSimulatedBody(m_testSceneHandle, &rigidBodyConfiguration);
+            rigidBody = azdynamic_cast<AzPhysics::RigidBody*>(sceneInterface->GetSimulatedBodyFromHandle(m_testSceneHandle, simBodyHandle));
+        }
+        ASSERT_TRUE(rigidBody != nullptr);
 
         auto com = rigidBody->GetCenterOfMassLocal();
         EXPECT_TRUE(com.IsClose(AZ::Vector3::CreateZero(), PhysXSpecificTest::tolerance));
@@ -537,20 +561,24 @@ namespace PhysX
 
     TEST_F(PhysXSpecificTest, RigidBody_CenterOfMassOffsetSpecified)
     {
-        Physics::RigidBodyConfiguration rigidBodyConfiguration;
         AZ::Vector3 halfExtents(1.0f, 2.0f, 3.0f);
-        rigidBodyConfiguration.m_computeCenterOfMass = false;
-        rigidBodyConfiguration.m_centerOfMassOffset = AZ::Vector3::CreateOne();
-        rigidBodyConfiguration.m_computeInertiaTensor = true;
-
-        AZStd::unique_ptr<Physics::RigidBody> rigidBody = AZ::Interface<Physics::System>::Get()->CreateRigidBody(rigidBodyConfiguration);
-        ASSERT_TRUE(rigidBody != nullptr);
-
         Physics::BoxShapeConfiguration shapeConfig(halfExtents * 2.0f);
         Physics::ColliderConfiguration colliderConfig;
         colliderConfig.m_rotation = AZ::Quaternion::CreateRotationX(AZ::Constants::HalfPi);
-        AZStd::shared_ptr<Physics::Shape> shape = AZ::Interface<Physics::System>::Get()->CreateShape(colliderConfig, shapeConfig);
-        rigidBody->AddShape(shape);
+
+        AzPhysics::RigidBodyConfiguration rigidBodyConfiguration;
+        rigidBodyConfiguration.m_computeCenterOfMass = false;
+        rigidBodyConfiguration.m_centerOfMassOffset = AZ::Vector3::CreateOne();
+        rigidBodyConfiguration.m_computeInertiaTensor = true;
+        rigidBodyConfiguration.m_colliderAndShapeData = AZStd::make_pair(&colliderConfig, &shapeConfig);
+
+        AzPhysics::RigidBody* rigidBody = nullptr;
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            AzPhysics::SimulatedBodyHandle simBodyHandle = sceneInterface->AddSimulatedBody(m_testSceneHandle, &rigidBodyConfiguration);
+            rigidBody = azdynamic_cast<AzPhysics::RigidBody*>(sceneInterface->GetSimulatedBodyFromHandle(m_testSceneHandle, simBodyHandle));
+        }
+        ASSERT_TRUE(rigidBody != nullptr);
 
         auto com = rigidBody->GetCenterOfMassLocal();
         EXPECT_TRUE(com.IsClose(AZ::Vector3::CreateOne(), PhysXSpecificTest::tolerance));
@@ -563,7 +591,7 @@ namespace PhysX
         auto triggerBody = triggerBox->FindComponent<StaticRigidBodyComponent>()->GetStaticRigidBody();
 
         // Create a test box above the trigger so when it falls down it'd enter and leave the trigger box
-        auto testBox = TestUtils::AddUnitTestObject(AZ::Vector3(0.0f, 0.0f, 1.5f), "TestBox");
+        auto testBox = TestUtils::AddUnitTestObject(m_testSceneHandle, AZ::Vector3(0.0f, 0.0f, 1.5f), "TestBox");
         auto testBoxBody = testBox->FindComponent<RigidBodyComponent>()->GetRigidBody();
 
         // Listen for trigger events on the box
@@ -599,7 +627,7 @@ namespace PhysX
     TEST_F(PhysXSpecificTest, TriggerArea_StaticBodyDestroyedInsideDynamicTrigger_OnTriggerExitEventRaised)
     {
         // Set up a static non trigger box
-        auto staticBox = TestUtils::AddStaticUnitTestObject<BoxColliderComponent>(AZ::Vector3(0.0f, 0.0f, 0.0f));
+        auto staticBox = TestUtils::AddStaticUnitTestObject<BoxColliderComponent>(m_testSceneHandle, AZ::Vector3(0.0f, 0.0f, 0.0f));
         auto staticBody = staticBox->FindComponent<StaticRigidBodyComponent>()->GetStaticRigidBody();
 
         // Create a test trigger box above the static box so when it falls down it'd enter and leave the trigger box
@@ -640,11 +668,11 @@ namespace PhysX
     {
         // Given a rigid body falling into a trigger.
         auto triggerBox = TestUtils::CreateTriggerAtPosition<BoxColliderComponent>(AZ::Vector3(0.0f, 0.0f, 0.0f));
-        auto testBox = TestUtils::AddUnitTestObject(AZ::Vector3(0.0f, 0.0f, 1.2f), "TestBox");
+        auto testBox = TestUtils::AddUnitTestObject(m_testSceneHandle, AZ::Vector3(0.0f, 0.0f, 1.2f), "TestBox");
 
         // When the rigid body is deleted inside on trigger enter event.
         TestTriggerAreaNotificationListener testTriggerAreaNotificationListener(triggerBox->GetId());
-        testTriggerAreaNotificationListener.m_onTriggerEnter = [&]([[maybe_unused]] const Physics::TriggerEvent& triggerEvent)
+        testTriggerAreaNotificationListener.m_onTriggerEnter = [&]([[maybe_unused]] const AzPhysics::TriggerEvent& triggerEvent)
         {
             testBox.reset();
         };
@@ -660,11 +688,11 @@ namespace PhysX
     {
         // Given a rigid body falling into a trigger.
         auto triggerBox = TestUtils::CreateTriggerAtPosition<BoxColliderComponent>(AZ::Vector3(0.0f, 0.0f, 0.0f));
-        auto testBox = TestUtils::AddUnitTestObject(AZ::Vector3(0.0f, 0.0f, 1.2f), "TestBox");
+        auto testBox = TestUtils::AddUnitTestObject(m_testSceneHandle, AZ::Vector3(0.0f, 0.0f, 1.2f), "TestBox");
 
         // When the rigid body is deleted inside on trigger enter event.
         TestTriggerAreaNotificationListener testTriggerAreaNotificationListener(triggerBox->GetId());
-        testTriggerAreaNotificationListener.m_onTriggerExit = [&]([[maybe_unused]] const Physics::TriggerEvent& triggerEvent)
+        testTriggerAreaNotificationListener.m_onTriggerExit = [&]([[maybe_unused]] const AzPhysics::TriggerEvent& triggerEvent)
         {
             testBox.reset();
         };
@@ -679,12 +707,12 @@ namespace PhysX
     TEST_F(PhysXSpecificTest, CollisionEvents_BodyDestroyedOnCollisionBegin_DoesNotCrash)
     {
         // Given a rigid body falling onto a static box.
-        auto staticBox = TestUtils::AddStaticUnitTestObject<BoxColliderComponent>(AZ::Vector3(0.0f, 0.0f, 0.0f), "StaticTestBox");
-        auto testBox = TestUtils::AddUnitTestObject(AZ::Vector3(0.0f, 0.0f, 1.2f), "TestBox");
+        auto staticBox = TestUtils::AddStaticUnitTestObject<BoxColliderComponent>(m_testSceneHandle, AZ::Vector3(0.0f, 0.0f, 0.0f), "StaticTestBox");
+        auto testBox = TestUtils::AddUnitTestObject(m_testSceneHandle, AZ::Vector3(0.0f, 0.0f, 1.2f), "TestBox");
 
         // When the rigid body is deleted inside on collision begin event.
         CollisionCallbacksListener collisionListener(testBox->GetId());
-        collisionListener.m_onCollisionBegin = [&]([[maybe_unused]] const Physics::CollisionEvent& collisionEvent)
+        collisionListener.m_onCollisionBegin = [&]([[maybe_unused]] const AzPhysics::CollisionEvent& collisionEvent)
         {
             testBox.reset();
         };
@@ -699,12 +727,12 @@ namespace PhysX
     TEST_F(PhysXSpecificTest, CollisionEvents_BodyDestroyedOnCollisionPersist_DoesNotCrash)
     {
         // Given a rigid body falling onto a static box.
-        auto staticBox = TestUtils::AddStaticUnitTestObject<BoxColliderComponent>(AZ::Vector3(0.0f, 0.0f, 0.0f), "StaticTestBox");
-        auto testBox = TestUtils::AddUnitTestObject(AZ::Vector3(0.0f, 0.0f, 1.2f), "TestBox");
+        auto staticBox = TestUtils::AddStaticUnitTestObject<BoxColliderComponent>(m_testSceneHandle, AZ::Vector3(0.0f, 0.0f, 0.0f), "StaticTestBox");
+        auto testBox = TestUtils::AddUnitTestObject(m_testSceneHandle, AZ::Vector3(0.0f, 0.0f, 1.2f), "TestBox");
 
         // When the rigid body is deleted inside on collision begin event.
         CollisionCallbacksListener collisionListener(testBox->GetId());
-        collisionListener.m_onCollisionPersist = [&]([[maybe_unused]] const Physics::CollisionEvent& collisionEvent)
+        collisionListener.m_onCollisionPersist = [&]([[maybe_unused]] const AzPhysics::CollisionEvent& collisionEvent)
         {
             testBox.reset();
         };
@@ -719,12 +747,12 @@ namespace PhysX
     TEST_F(PhysXSpecificTest, CollisionEvents_BodyDestroyedOnCollisionEnd_DoesNotCrash)
     {
         // Given a rigid body falling onto a static box.
-        auto staticBox = TestUtils::AddStaticUnitTestObject<BoxColliderComponent>(AZ::Vector3(0.0f, 0.0f, 0.0f), "StaticTestBox");
-        auto testBox = TestUtils::AddUnitTestObject(AZ::Vector3(0.0f, 0.0f, 1.2f), "TestBox");
+        auto staticBox = TestUtils::AddStaticUnitTestObject<BoxColliderComponent>(m_testSceneHandle, AZ::Vector3(0.0f, 0.0f, 0.0f), "StaticTestBox");
+        auto testBox = TestUtils::AddUnitTestObject(m_testSceneHandle, AZ::Vector3(0.0f, 0.0f, 1.2f), "TestBox");
 
         // When the rigid body is deleted inside on collision begin event.
         CollisionCallbacksListener collisionListener(testBox->GetId());
-        collisionListener.m_onCollisionEnd = [&]([[maybe_unused]] const Physics::CollisionEvent& collisionEvent)
+        collisionListener.m_onCollisionEnd = [&]([[maybe_unused]] const AzPhysics::CollisionEvent& collisionEvent)
         {
             testBox.reset();
         };
@@ -739,8 +767,13 @@ namespace PhysX
     TEST_F(PhysXSpecificTest, RigidBody_ConvexRigidBodyCreatedFromCookedMesh_CachedMeshObjectCreated)
     {
         // Create rigid body
-        Physics::RigidBodyConfiguration rigidBodyConfiguration;
-        AZStd::unique_ptr<Physics::RigidBody> rigidBody = AZ::Interface<Physics::System>::Get()->CreateRigidBody(rigidBodyConfiguration);
+        AzPhysics::RigidBodyConfiguration rigidBodyConfiguration;
+        AzPhysics::RigidBody* rigidBody = nullptr;
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            AzPhysics::SimulatedBodyHandle simBodyHandle = sceneInterface->AddSimulatedBody(m_testSceneHandle, &rigidBodyConfiguration);
+            rigidBody = azdynamic_cast<AzPhysics::RigidBody*>(sceneInterface->GetSimulatedBodyFromHandle(m_testSceneHandle, simBodyHandle));
+        }
         ASSERT_TRUE(rigidBody != nullptr);
 
         // Generate input data
@@ -777,9 +810,6 @@ namespace PhysX
         
         rigidBody->AddShape(secondShape);
 
-        // Add the rigid body to the physics world
-        m_defaultScene->GetLegacyWorld()->AddBody(*rigidBody);
-
         AZ::Vector3 initialPosition = rigidBody->GetPosition();
 
         // Tick the world
@@ -787,18 +817,10 @@ namespace PhysX
 
         // Verify the actor has moved
         EXPECT_NE(rigidBody->GetPosition(), initialPosition);
-
-        // Clean up
-        m_defaultScene->GetLegacyWorld()->RemoveBody(*rigidBody);
-        rigidBody = nullptr;
     }
 
     TEST_F(PhysXSpecificTest, RigidBody_TriangleMeshRigidBodyCreatedFromCookedMesh_CachedMeshObjectCreated)
     {
-        // Create static rigid body
-        Physics::RigidBodyConfiguration rigidBodyConfiguration;
-        AZStd::unique_ptr<Physics::RigidBodyStatic> rigidBody = AZ::Interface<Physics::System>::Get()->CreateStaticRigidBody(rigidBodyConfiguration);
-
         // Generate input data
         VertexIndexData cubeMeshData = TestUtils::GenerateCubeMeshData(3.0f);
         AZStd::vector<AZ::u8> cookedData;
@@ -820,7 +842,17 @@ namespace PhysX
         AZStd::shared_ptr<Physics::Shape> firstShape = AZ::Interface<Physics::System>::Get()->CreateShape(colliderConfig, shapeConfig);
         AZ_Assert(firstShape != nullptr, "Failed to create a shape from cooked data");
 
-        rigidBody->AddShape(firstShape);
+        // Create static rigid body
+        AzPhysics::StaticRigidBodyConfiguration staticBodyConfiguration;
+        staticBodyConfiguration.m_colliderAndShapeData = firstShape;
+
+        AzPhysics::StaticRigidBody* rigidBody = nullptr;
+        AzPhysics::SimulatedBodyHandle rigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            rigidBodyHandle = sceneInterface->AddSimulatedBody(m_testSceneHandle, &staticBodyConfiguration);
+            rigidBody = azdynamic_cast<AzPhysics::StaticRigidBody*>(sceneInterface->GetSimulatedBodyFromHandle(m_testSceneHandle, rigidBodyHandle));
+        }
 
         // Validate the cached mesh is there
         EXPECT_NE(shapeConfig.GetCachedNativeMesh(), nullptr);
@@ -835,12 +867,9 @@ namespace PhysX
         
         rigidBody->AddShape(secondShape);
 
-        // Add the rigid body to the physics world
-        m_defaultScene->GetLegacyWorld()->AddBody(*rigidBody);
-
         // Drop a sphere
-        auto sphereActor = TestUtils::AddUnitTestObject<SphereColliderComponent>(AZ::Vector3(0.0f, 0.0f, 8.0f), "TestSphere01");
-        Physics::RigidBody* sphereRigidBody = sphereActor->FindComponent<RigidBodyComponent>()->GetRigidBody();
+        auto sphereActor = TestUtils::AddUnitTestObject<SphereColliderComponent>(m_testSceneHandle, AZ::Vector3(0.0f, 0.0f, 8.0f), "TestSphere01");
+        AzPhysics::RigidBody* sphereRigidBody = sphereActor->FindComponent<RigidBodyComponent>()->GetRigidBody();
 
         // Tick the world
         TestUtils::UpdateScene(m_defaultScene, AzPhysics::SystemConfiguration::DefaultFixedTimestep, 120);
@@ -850,7 +879,11 @@ namespace PhysX
         EXPECT_NEAR(spherePosition.GetZ(), 6.5f, 0.01f);
 
         // Clean up
-        m_defaultScene->GetLegacyWorld()->RemoveBody(*rigidBody);
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            sceneInterface->RemoveSimulatedBody(m_testSceneHandle, rigidBodyHandle);
+            rigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
+        }
         rigidBody = nullptr;
     }
 
@@ -1075,181 +1108,42 @@ namespace PhysX
         SanityCheckValidFrustumParams(points.value(), validHeight, validBottomRadius, validTopRadius, validSubdivisions);
     }
 
-    TEST_F(PhysXSpecificTest, RayCast_CastFromInsidTriangleMesh_ReturnsHitsBasedOnHitFlags)
-    {
-        // Add a cube to the scene
-        AZStd::unique_ptr<Physics::RigidBodyStatic> rigidBody = TestUtils::CreateStaticTriangleMeshCube(3.0f);
-        AZStd::shared_ptr<Physics::World> world = GetDefaultWorld();
-        world->AddBody(*rigidBody);
-
-        // Do a simple raycast from the inside of the cube
-        Physics::RayCastRequest request;
-        request.m_start = AZ::Vector3(0.0f);
-        request.m_direction = AZ::Vector3(1.0f, 0.0f, 0.0f);
-        request.m_distance = 20.0f;
-        request.m_hitFlags = Physics::HitFlags::Position;
-
-        // Verify no hit is detected
-        Physics::RayCastHit hit = world->RayCast(request);
-        EXPECT_FALSE(hit);
-
-        // Set the flags to count hits for both sides of the mesh
-        request.m_hitFlags = Physics::HitFlags::Position | Physics::HitFlags::MeshBothSides;
-
-        // Verify now the hit is detected and it's indeed the cube
-        AZStd::vector<Physics::RayCastHit> hits = world->RayCastMultiple(request);
-        EXPECT_EQ(hits.size(), 1);
-        EXPECT_TRUE(hits[0].m_body == rigidBody.get());
-
-        // Shift the ray start position outside of the mesh
-        request.m_start.SetX(-4.0f);
-
-        // Set the flags to include multiple hits per object
-        request.m_hitFlags = Physics::HitFlags::Position | Physics::HitFlags::MeshBothSides | Physics::HitFlags::MeshMultiple;
-
-        // Verify now we have 4 hits: outside + inside of 1st side and inside + outside of the 2nd side
-        hits = world->RayCastMultiple(request);
-        EXPECT_EQ(hits.size(), 4);
-
-        // Verify all hits are for the test cube
-        bool testBodyInAllHits = AZStd::all_of(hits.begin(), hits.end(), [&rigidBody](const Physics::RayCastHit& hit)
-            {
-                return hit.m_body == rigidBody.get();
-            });
-        EXPECT_TRUE(testBodyInAllHits);
-    }
-
-    // Fixture for testing combinations of shape flags for scene query
-    class SceneQueryFlagsTestFixture
-        : public ::testing::TestWithParam<::testing::tuple<bool, bool>>
-        , private Physics::DefaultWorldBus::Handler
-    {
-    public:
-        void SetUp() override
-        {
-            if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
-            {
-                AzPhysics::SceneConfiguration sceneConfiguration = physicsSystem->GetDefaultSceneConfiguration();
-                sceneConfiguration.m_legacyId = Physics::DefaultPhysicsWorldId;
-                m_testSceneHandle = physicsSystem->AddScene(sceneConfiguration);
-                m_defaultScene = physicsSystem->GetScene(m_testSceneHandle);
-            }
-            Physics::DefaultWorldBus::Handler::BusConnect();
-        }
-
-        void TearDown() override
-        {
-            Physics::DefaultWorldBus::Handler::BusDisconnect();
-            m_defaultScene = nullptr;
-            //Ensure any Scenes used have been removed
-            if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
-            {
-                physicsSystem->RemoveScene(m_testSceneHandle);
-            }
-            m_testSceneHandle = AzPhysics::InvalidSceneHandle;
-            TestUtils::ResetPhysXSystem();
-        }
-
-        // DefaultWorldBus
-        AZStd::shared_ptr<Physics::World> GetDefaultWorld() override
-        {
-            return m_defaultScene->GetLegacyWorld();
-        }
-
-        bool IsTrigger() const
-        {
-            return AZStd::get<0>(GetParam());
-        }
-
-        bool IsSimulated() const
-        {
-            return AZStd::get<1>(GetParam());
-        }
-
-    private:
-        AzPhysics::Scene* m_defaultScene = nullptr;
-        AzPhysics::SceneHandle m_testSceneHandle = AzPhysics::InvalidSceneHandle;
-    };
-
-    TEST_P(SceneQueryFlagsTestFixture, RayCast_CreateShapesWithMixedFlags_ReturnsHitsForSceneQueryShapes)
-    {
-        Physics::System* physics = AZ::Interface<Physics::System>::Get();
-        Physics::RigidBodyConfiguration rigidBodyConfig;
-        AZStd::unique_ptr<Physics::RigidBody> rigidBody = physics->CreateRigidBody(rigidBodyConfig);
-
-        // Create a box shape with InSceneQueries = false
-        Physics::ColliderConfiguration colliderConfig;
-        colliderConfig.m_isInSceneQueries = false;
-        colliderConfig.m_isTrigger = IsTrigger();
-        colliderConfig.m_isSimulated = IsSimulated();
-        colliderConfig.m_position = AZ::Vector3(1.0f, 0.0f, 0.0f);
-        AZStd::shared_ptr<Physics::Shape> boxShape =
-            physics->CreateShape(colliderConfig, Physics::BoxShapeConfiguration());
-        rigidBody->AddShape(boxShape);
-
-        // Create a sphere with InSceneQuesries = true
-        colliderConfig.m_isInSceneQueries = true;
-        colliderConfig.m_isTrigger = IsTrigger();
-        colliderConfig.m_isSimulated = IsSimulated();
-        colliderConfig.m_position = AZ::Vector3(-1.0f, 0.0f, 0.0f);
-        AZStd::shared_ptr<Physics::Shape> sphereShape =
-            physics->CreateShape(colliderConfig, Physics::SphereShapeConfiguration());
-        rigidBody->AddShape(sphereShape);
-
-        AZStd::shared_ptr<Physics::World> world = GetDefaultWorld();
-        world->AddBody(*rigidBody);
-
-        // Do a simple raycast from the box side
-        Physics::RayCastRequest request;
-        request.m_start = AZ::Vector3(3.0f, 0.0f, 0.0f);
-        request.m_direction = AZ::Vector3(-1.0f, 0.0f, 0.0f);
-        request.m_distance = 20.0f;
-        request.m_hitFlags = Physics::HitFlags::Position;
-
-        // Verify the sphere was hit
-        Physics::RayCastHit hit = world->RayCast(request);
-        EXPECT_EQ(hit.m_shape, sphereShape.get());
-    }
-
-    INSTANTIATE_TEST_CASE_P(PhysX, SceneQueryFlagsTestFixture, ::testing::Combine(
-        ::testing::Bool(),
-        ::testing::Bool()));
-
     TEST_F(PhysXSpecificTest, RigidBody_RigidBodyWithSimulatedFlagsHitsPlane_OnlySimulatedShapeCollidesWithPlane)
     {
         // Helper function wrapping creation logic
-        auto CreateBoxRigidBody = [this](const AZ::Vector3& position, bool simulatedFlag, bool triggerFlag)
+        auto CreateBoxRigidBody = [this](const AZ::Vector3& position, bool simulatedFlag, bool triggerFlag) -> AzPhysics::RigidBody*
         {
-            Physics::System* physics = AZ::Interface<Physics::System>::Get();
-            AZStd::shared_ptr<Physics::World> world = GetDefaultWorld();
 
-            Physics::RigidBodyConfiguration rigidBodyConfig;
-            rigidBodyConfig.m_entityId = AZ::EntityId(0); // Set entity ID to avoid warnings in OnTriggerEnter 
-
-            rigidBodyConfig.m_position = position;
-            AZStd::unique_ptr<Physics::RigidBody> rigidBody = physics->CreateRigidBody(rigidBodyConfig);
             Physics::ColliderConfiguration colliderConfig;
             colliderConfig.m_isSimulated = simulatedFlag;
             colliderConfig.m_isTrigger = triggerFlag;
-            AZStd::shared_ptr<Physics::Shape> shapeNonSim =
-                physics->CreateShape(colliderConfig, Physics::BoxShapeConfiguration());
-            rigidBody->AddShape(shapeNonSim);
-            world->AddBody(*rigidBody);
-            return rigidBody;
+            Physics::BoxShapeConfiguration shapeConfig;
+
+            AzPhysics::RigidBodyConfiguration rigidBodyConfig;
+            rigidBodyConfig.m_entityId = AZ::EntityId(0); // Set entity ID to avoid warnings in OnTriggerEnter 
+            rigidBodyConfig.m_position = position;
+            rigidBodyConfig.m_colliderAndShapeData = AZStd::make_pair(&colliderConfig, &shapeConfig);
+
+            if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+            {
+                AzPhysics::SimulatedBodyHandle simBodyHandle = sceneInterface->AddSimulatedBody(m_testSceneHandle, &rigidBodyConfig);
+                return azdynamic_cast<AzPhysics::RigidBody*>(sceneInterface->GetSimulatedBodyFromHandle(m_testSceneHandle, simBodyHandle));
+            }
+            return nullptr;
         };
 
         // Create a box with m_isSimulated = false
-        AZStd::unique_ptr<Physics::RigidBody> rigidBodyNonSim =
+        AzPhysics::RigidBody* rigidBodyNonSim =
             CreateBoxRigidBody(AZ::Vector3(-5.0f, 0.0f, 5.0f), false, false);
 
-        AZStd::unique_ptr<Physics::RigidBody> rigidBodySolid =
+        AzPhysics::RigidBody* rigidBodySolid =
             CreateBoxRigidBody(AZ::Vector3(5.0f, 0.0f, 5.0f), true, false);
 
-        AZStd::unique_ptr<Physics::RigidBody> rigidBodyTrigger =
+        AzPhysics::RigidBody* rigidBodyTrigger =
             CreateBoxRigidBody(AZ::Vector3(0.0f, 0.0f, 5.0f), true, true);
 
         // Create ground at origin
-        auto ground = TestUtils::CreateStaticBoxEntity(AZ::Vector3::CreateZero(), AZ::Vector3(20.0f, 20.0f, 0.5f));
+        auto ground = TestUtils::CreateStaticBoxEntity(m_testSceneHandle, AZ::Vector3::CreateZero(), AZ::Vector3(20.0f, 20.0f, 0.5f));
 
         TestUtils::UpdateScene(m_defaultScene, AzPhysics::SystemConfiguration::DefaultFixedTimestep, 60);
 
@@ -1267,13 +1161,41 @@ namespace PhysX
     class MultiShapesDensityTestFixture
         : public ::testing::TestWithParam<AZStd::pair<float, float>>
     {
+    public:
+        void SetUp() override
+        {
+            if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
+            {
+                AzPhysics::SceneConfiguration sceneConfiguration = physicsSystem->GetDefaultSceneConfiguration();
+                sceneConfiguration.m_sceneName = AzPhysics::DefaultPhysicsSceneName;
+                m_testSceneHandle = physicsSystem->AddScene(sceneConfiguration);
+            }
+        }
+
+        void TearDown() override
+        {
+            //Clean up the Test scene
+            if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
+            {
+                physicsSystem->RemoveScene(m_testSceneHandle);
+            }
+            m_testSceneHandle = AzPhysics::InvalidSceneHandle;
+        }
+
+        AzPhysics::SceneHandle m_testSceneHandle = AzPhysics::InvalidSceneHandle;
     };
 
     TEST_P(MultiShapesDensityTestFixture, RigidBody_CreateShapesWithDifferentDensity_ResultingMassMatchesExpected)
     {
         Physics::System* physics = AZ::Interface<Physics::System>::Get();
-        Physics::RigidBodyConfiguration rigidBodyConfig;
-        AZStd::unique_ptr<Physics::RigidBody> rigidBody = physics->CreateRigidBody(rigidBodyConfig);
+        AzPhysics::RigidBodyConfiguration rigidBodyConfig;
+
+        AzPhysics::RigidBody* rigidBody = nullptr;
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            AzPhysics::SimulatedBodyHandle simBodyHandle = sceneInterface->AddSimulatedBody(m_testSceneHandle, &rigidBodyConfig);
+            rigidBody = azdynamic_cast<AzPhysics::RigidBody*>(sceneInterface->GetSimulatedBodyFromHandle(m_testSceneHandle, simBodyHandle));
+        }
 
         // Create materials for each density
         Physics::MaterialConfiguration materialProperties;
@@ -1357,23 +1279,39 @@ namespace PhysX
     };
 
     class MassComputeFixture
-        : public ::testing::TestWithParam<::testing::tuple<SimulatedShapesMode, Physics::MassComputeFlags, bool>>
+        : public ::testing::TestWithParam<::testing::tuple<SimulatedShapesMode, AzPhysics::MassComputeFlags, bool>>
     {
     public:
         void SetUp() override final
         {
-            SimulatedShapesMode shapeMode = GetShapesMode();
-            Physics::MassComputeFlags massComputeFlags = GetMassComputeFlags();
+            if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
+            {
+                AzPhysics::SceneConfiguration sceneConfiguration = physicsSystem->GetDefaultSceneConfiguration();
+                sceneConfiguration.m_sceneName = AzPhysics::DefaultPhysicsSceneName;
+                m_testSceneHandle = physicsSystem->AddScene(sceneConfiguration);
+            }
 
+            SimulatedShapesMode shapeMode = GetShapesMode();
+            AzPhysics::MassComputeFlags massComputeFlags = GetMassComputeFlags();
             m_rigidBodyConfig.SetMassComputeFlags(massComputeFlags);
 
-            m_rigidBody = AZ::Interface<Physics::System>::Get()->CreateRigidBody(m_rigidBodyConfig);
+            if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+            {
+                AzPhysics::SimulatedBodyHandle simBodyHandle = sceneInterface->AddSimulatedBody(m_testSceneHandle, &m_rigidBodyConfig);
+                m_rigidBody = azdynamic_cast<AzPhysics::RigidBody*>(sceneInterface->GetSimulatedBodyFromHandle(m_testSceneHandle, simBodyHandle));
+            }
         }
 
         void TearDown() override final
         {
-            m_rigidBodyConfig = Physics::RigidBodyConfiguration();
-            m_rigidBody.reset();
+            //Clean up the Test scene
+            if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
+            {
+                physicsSystem->RemoveScene(m_testSceneHandle);
+            }
+            m_testSceneHandle = AzPhysics::InvalidSceneHandle;
+            m_rigidBodyConfig = AzPhysics::RigidBodyConfiguration();
+            m_rigidBody = nullptr;
         }
 
         SimulatedShapesMode GetShapesMode() const
@@ -1381,7 +1319,7 @@ namespace PhysX
             return ::testing::get<0>(GetParam());
         }
 
-        Physics::MassComputeFlags GetMassComputeFlags() const
+        AzPhysics::MassComputeFlags GetMassComputeFlags() const
         {
             return ::testing::get<1>(GetParam());
         }
@@ -1409,14 +1347,15 @@ namespace PhysX
                 (!(GetShapesMode() == SimulatedShapesMode::NONE) || m_rigidBodyConfig.m_includeAllShapesInMassCalculation);
         }
 
-        Physics::RigidBodyConfiguration m_rigidBodyConfig;
-        AZStd::unique_ptr<Physics::RigidBody> m_rigidBody;
+        AzPhysics::RigidBodyConfiguration m_rigidBodyConfig;
+        AzPhysics::RigidBody* m_rigidBody;
+        AzPhysics::SceneHandle m_testSceneHandle = AzPhysics::InvalidSceneHandle;
     };
 
     TEST_P(MassComputeFixture, RigidBody_ComputeMassFlagsCombinationsTwoShapes_MassPropertiesCalculatedAccordingly)
     {
         SimulatedShapesMode shapeMode = GetShapesMode();
-        Physics::MassComputeFlags massComputeFlags = GetMassComputeFlags();
+        AzPhysics::MassComputeFlags massComputeFlags = GetMassComputeFlags();
         bool multiShapeTest = IsMultiShapeTest();
         Physics::System* physics = AZ::Interface<Physics::System>::Get();
 
@@ -1482,17 +1421,17 @@ namespace PhysX
         }
     }
 
-    Physics::MassComputeFlags possibleMassComputeFlags[] = {
-        Physics::MassComputeFlags::NONE, Physics::MassComputeFlags::DEFAULT, Physics::MassComputeFlags::COMPUTE_MASS,
-        Physics::MassComputeFlags::COMPUTE_COM, Physics::MassComputeFlags::COMPUTE_INERTIA,
-        Physics::MassComputeFlags::DEFAULT | Physics::MassComputeFlags::INCLUDE_ALL_SHAPES,
-        Physics::MassComputeFlags::COMPUTE_COM, Physics::MassComputeFlags::COMPUTE_INERTIA, Physics::MassComputeFlags::INCLUDE_ALL_SHAPES,
-        Physics::MassComputeFlags::COMPUTE_MASS | Physics::MassComputeFlags::COMPUTE_COM,
-        Physics::MassComputeFlags::COMPUTE_MASS | Physics::MassComputeFlags::COMPUTE_COM | Physics::MassComputeFlags::INCLUDE_ALL_SHAPES,
-        Physics::MassComputeFlags::COMPUTE_MASS | Physics::MassComputeFlags::COMPUTE_INERTIA,
-        Physics::MassComputeFlags::COMPUTE_MASS | Physics::MassComputeFlags::COMPUTE_INERTIA | Physics::MassComputeFlags::INCLUDE_ALL_SHAPES,
-        Physics::MassComputeFlags::COMPUTE_COM | Physics::MassComputeFlags::COMPUTE_INERTIA,
-        Physics::MassComputeFlags::COMPUTE_COM | Physics::MassComputeFlags::COMPUTE_INERTIA | Physics::MassComputeFlags::INCLUDE_ALL_SHAPES
+    AzPhysics::MassComputeFlags possibleMassComputeFlags[] = {
+        AzPhysics::MassComputeFlags::NONE, AzPhysics::MassComputeFlags::DEFAULT, AzPhysics::MassComputeFlags::COMPUTE_MASS,
+        AzPhysics::MassComputeFlags::COMPUTE_COM, AzPhysics::MassComputeFlags::COMPUTE_INERTIA,
+        AzPhysics::MassComputeFlags::DEFAULT | AzPhysics::MassComputeFlags::INCLUDE_ALL_SHAPES,
+        AzPhysics::MassComputeFlags::COMPUTE_COM, AzPhysics::MassComputeFlags::COMPUTE_INERTIA, AzPhysics::MassComputeFlags::INCLUDE_ALL_SHAPES,
+        AzPhysics::MassComputeFlags::COMPUTE_MASS | AzPhysics::MassComputeFlags::COMPUTE_COM,
+        AzPhysics::MassComputeFlags::COMPUTE_MASS | AzPhysics::MassComputeFlags::COMPUTE_COM | AzPhysics::MassComputeFlags::INCLUDE_ALL_SHAPES,
+        AzPhysics::MassComputeFlags::COMPUTE_MASS | AzPhysics::MassComputeFlags::COMPUTE_INERTIA,
+        AzPhysics::MassComputeFlags::COMPUTE_MASS | AzPhysics::MassComputeFlags::COMPUTE_INERTIA | AzPhysics::MassComputeFlags::INCLUDE_ALL_SHAPES,
+        AzPhysics::MassComputeFlags::COMPUTE_COM | AzPhysics::MassComputeFlags::COMPUTE_INERTIA,
+        AzPhysics::MassComputeFlags::COMPUTE_COM | AzPhysics::MassComputeFlags::COMPUTE_INERTIA | AzPhysics::MassComputeFlags::INCLUDE_ALL_SHAPES
     };
 
     INSTANTIATE_TEST_CASE_P(PhysX, MassComputeFixture, ::testing::Combine(

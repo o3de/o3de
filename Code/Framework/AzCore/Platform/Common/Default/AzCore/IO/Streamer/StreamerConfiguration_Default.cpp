@@ -15,7 +15,8 @@
 
 namespace AZ::IO
 {
-    bool CollectIoHardwareInformation(HardwareInformation& info, [[maybe_unused]] bool includeAllHardware)
+    bool CollectIoHardwareInformation(
+        HardwareInformation& info, [[maybe_unused]] bool includeAllHardware, [[maybe_unused]] bool reportHardware)
     {
         // The numbers below are based on common defaults from a local hardware survey.
         info.m_maxPageSize = 4096;

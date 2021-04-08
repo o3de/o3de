@@ -31,7 +31,8 @@ namespace ScriptCanvas
             AZStd::string_view m_executionStateEntityIdName;
             AZStd::string_view m_executionStateEntityIdRef;
             AZStd::string_view m_executionStateName;
-            AZStd::string_view m_executionStateReference;
+            AZStd::string_view m_executionStateReferenceGraph;
+            AZStd::string_view m_executionStateReferenceLocal;
             AZStd::string_view m_executionStateScriptCanvasIdName;
             AZStd::string_view m_executionStateScriptCanvasIdRef;
             AZStd::string_view m_functionBlockClose;

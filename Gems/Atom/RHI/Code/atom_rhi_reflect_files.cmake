@@ -133,4 +133,6 @@ set(FILES
     Include/Atom/RHI.Reflect/ImageEnums.h
     Include/Atom/RHI.Reflect/PlatformLimitsDescriptor.h
     Source/RHI.Reflect/PlatformLimitsDescriptor.cpp
+    Include/Atom/RHI.Reflect/ShaderInputNameIndex.h
+    Source/RHI.Reflect/ShaderInputNameIndex.cpp
 )

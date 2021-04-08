@@ -26,7 +26,6 @@ if (PAL_TRAIT_BUILD_SERVER_SUPPORTED OR PAL_TRAIT_AUDIO_ENGINE_WWISE_USE_STUB)
     ly_add_target(
         NAME AudioEngineWwise.Stub ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
         NAMESPACE Gem
-        OUTPUT_NAME AudioEngineWwise.Stub
         FILES_CMAKE
             audioenginewwise_stub_files.cmake
         BUILD_DEPENDENCIES
@@ -43,7 +42,6 @@ endif()
 ly_add_target(
     NAME AudioEngineWwise.Static STATIC
     NAMESPACE Gem
-    OUTPUT_NAME Gem.AudioEngineWwise.Static
     FILES_CMAKE
         audioenginewwise_files.cmake
         ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake

@@ -176,6 +176,13 @@ namespace EditorUtils
         AZStd::string m_window;
     };
 
+    namespace LevelFile
+    {
+        //! Retrieve old cry level file extension (With prepending '.')
+        const char* GetOldCryFileExtension();
+        //! Retrieve default level file extension (With prepending '.')
+        const char* GetDefaultFileExtension();
+    }
 };
 
 //////////////////////////////////////////////////////////////////////////

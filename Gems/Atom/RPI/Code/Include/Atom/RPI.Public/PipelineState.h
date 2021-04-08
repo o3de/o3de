@@ -73,6 +73,9 @@ namespace AZ
 
             const RHI::PipelineStateDescriptorForDraw& ConstDescriptor() const;
 
+            //! Get the shader which is associated with this PipelineState
+            const Data::Instance<Shader>& GetShader() const;
+
             //! Setup the shader variant fallback key to a shader resource group if the shader variant is not ready
             //! Return true if the srg was modified. 
             bool UpdateSrgVariantFallback(Data::Instance<ShaderResourceGroup>& srg) const;

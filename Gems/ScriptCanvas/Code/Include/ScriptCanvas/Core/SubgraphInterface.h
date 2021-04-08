@@ -99,15 +99,16 @@ namespace ScriptCanvas
             AZ_TYPE_INFO(In, "{DFDA32F7-41D2-45BB-8ADF-876679053836}");
             AZ_CLASS_ALLOCATOR(In, AZ::SystemAllocator, 0); 
             
+            bool isPure = false;
             AZStd::string displayName;
             AZStd::string parsedName;
             Inputs inputs;
             Outs outs;
             FunctionSourceId sourceID;
-
+            
             bool operator==(const In& rhs) const;
-
-            AZ_INLINE bool IsBranch() const { return outs.size() > 1; }
+            // #functions2 In-sensitive parsing. convert pure branches to mini-nodeables and provide a creation function
+            inline bool IsBranch() const { return outs.size() > 1; }
         };
         using Ins = AZStd::vector<In>;
 
@@ -131,6 +132,10 @@ namespace ScriptCanvas
 
             void AddLatent(Out&& out);
 
+            const In* FindIn(const FunctionSourceId& sourceID) const;
+
+            const Out* FindLatent(const FunctionSourceId& sourceID) const;
+
             ExecutionCharacteristics GetExecutionCharacteristics() const;
 
             const In* GetIn(const AZStd::string& in) const;
@@ -140,6 +145,10 @@ namespace ScriptCanvas
             const Ins& GetIns() const;
 
             size_t GetInCount() const;
+
+            size_t GetInCountPure() const;
+
+            size_t GetInCountNotPure() const;
 
             const Inputs* GetInput(const AZStd::string& in) const;
             
@@ -151,8 +160,9 @@ namespace ScriptCanvas
 
             const Outs& GetLatentOuts() const;
 
-            // \todo for max optimization this would be In sensitive
             LexicalScope GetLexicalScope() const;
+
+            LexicalScope GetLexicalScope(const In& in) const;
 
             AZStd::string GetName() const;
 
@@ -169,8 +179,6 @@ namespace ScriptCanvas
 
             bool IsActiveDefaultObject() const;
 
-            bool IsAllInputOutputShared() const;
-
             AZ::Outcome<bool> IsBranch(const AZStd::string& in) const;
 
             // returns true iff there is at least one latent out
@@ -179,6 +187,12 @@ namespace ScriptCanvas
             bool IsMarkedPure() const;
 
             bool IsParsedPure() const;
+
+            bool IsUserNodeable() const;
+
+            bool IsUserVariable() const;
+
+            bool HasAnyFunctionality() const;
 
             bool HasBranches() const;
 
@@ -195,23 +209,34 @@ namespace ScriptCanvas
             bool HasOutput(const VariableId& sourceID) const;
 
             // returns true iff there is no public access to Ins or Latents
-            // \note The subgraph could still DO something, and be useful
+            // \note The subgraph could still DO something, and be useful, it could respond to tick bus or on graph start
             bool HasPublicFunctionality() const;
 
-            void MarkActiveDefaultObject();
-
-            void MarkAllInputOutputShared();
+            void MarkActiveDefaultObject();          
 
             void MarkExecutionCharacteristics(ExecutionCharacteristics characteristics);
 
             void MarkOnGraphStart();
 
-            void MergeExecutionCharacteristics(const SubgraphInterface& dependency);
+            void MarkRequiresConstructionParameters();
+
+            void MarkRequiresConstructionParametersForDependencies();
+
+            // #sc_user_data_type expose this to users directly, so they can say "I don't just want to make a component with this, I want to drop it right into another graph" 
+            void MarkUserVariable();
+
+            void MergeExecutionCharacteristics(const SubgraphInterface & dependency);
+
+            In* ModIn(const FunctionSourceId & sourceID);
 
             bool operator==(const SubgraphInterface& rhs) const;
 
             // Populates the list of out keys
             void Parse();
+
+            bool RequiresConstructionParameters() const;
+
+            bool RequiresConstructionParametersForDependencies() const;
 
             void SetNamespacePath(const NamespacePath& namespacePath);
 
@@ -220,16 +245,19 @@ namespace ScriptCanvas
             AZStd::string ToExecutionString() const;
 
         private:
+            bool m_isUserVariable = false;
+
             bool m_areAllChildrenPure = true;
 
-            // Does this graph have any (automatic) connection to buses or other latent activity, 
-            // regardless of public exposure to out?
+            // Does this graph have any (automatic) connection to buses or other latent activity, or even on graph start
+            // regardless of public exposure to in/out?
             bool m_isActiveDefaultObject = false;
 
-            // all input/output are used in every in/out/latent slot?
-            bool m_isAllInputOutputShared = false;
-
             bool m_hasOnGraphStart = false;
+
+            bool m_requiresConstructionParameters = false;
+
+            bool m_requiresConstructionParametersForDependencies = false;
 
             ExecutionCharacteristics m_executionCharacteristics = ExecutionCharacteristics::Pure;
 
@@ -242,8 +270,37 @@ namespace ScriptCanvas
             const Out* FindImmediateOut(const AZStd::string& in, const AZStd::string& out) const;
             const In* FindIn(const AZStd::string& inSlotId) const;
             const Out* FindLatentOut(const AZStd::string& latent) const;
+            LexicalScope GetLexicalScope(bool isSourcePure) const;
+
+#if defined(FUNCTION_LEGACY_SUPPORT_ENABLED)
+        public:
+            bool IsAllInputOutputShared() const;
+
+            // all input/output are used in every in/out/latent slot?
+            bool m_isAllInputOutputShared = false;
+
+            void MarkAllInputOutputShared();
+#endif
         };
 
+        AZStd::string ToString(const In& in, size_t tabs = 0);
+
+        AZStd::string ToString(const Ins& ins, size_t tabs = 0);
+
+        AZStd::string ToString(const Input& input, size_t tabs = 1);
+
+        AZStd::string ToString(const Inputs& inputs, size_t tabs = 1);
+
+        AZStd::string ToString(const Out& out, bool isLatent, size_t tabs = 0);
+
+        AZStd::string ToString(const Outs& out, bool isLatent, size_t tabs = 0);
+
+        AZStd::string ToString(const Output& output, size_t tabs = 1);
+
+        AZStd::string ToString(const Outputs& outputs, size_t tabs = 1);
+
+        AZStd::string ToString(const SubgraphInterface& subgraphInterface);
+        
         using SubgraphInterfacePtrConst = AZStd::shared_ptr<const SubgraphInterface>;
         using InterfacesByNodeType = AZStd::unordered_map<FunctionSourceId, SubgraphInterfacePtrConst>;
 
@@ -268,7 +325,5 @@ namespace ScriptCanvas
         private:
             InterfacesByNodeType m_mapsByNodeType;
         };
-
-    } 
-    
+    }
 } 

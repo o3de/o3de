@@ -70,8 +70,7 @@ struct VSInput
 struct VSOutput
 {
     // Base fields (required by the template azsli file)...
-    // "centroid" is needed for SV_DepthLessEqual to compile
-    linear centroid float4 m_position : SV_Position;
+    float4 m_position : SV_Position;
     float3 m_normal: NORMAL;
     float3 m_tangent : TANGENT; 
     float3 m_bitangent : BITANGENT; 

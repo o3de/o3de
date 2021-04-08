@@ -45,14 +45,10 @@ namespace ScriptCanvas
         {
             switch (scopeType)
             {
-            case Scope::Local:
-                return "Local";
-            case Scope::Input:
-                return "In";
-            case Scope::Output:
-                return "Out";
-            case Scope::InOut:
-                return "In/Out";
+            case Scope::Graph:
+                return "Graph";
+            case Scope::Function:
+                return "Function";
             default:
                 return "?";
             }
@@ -60,34 +56,22 @@ namespace ScriptCanvas
 
         Scope GetScopeFromLabel(const char* label)
         {
-            if (strcmp("In", label) == 0)
+            if (strcmp("Function", label) == 0)
             {
-                return Scope::Input;
-            }
-            else if (strcmp("Out", label) == 0)
-            {
-                return Scope::Output;
-            }
-            else if (strcmp("In/Out", label) == 0)
-            {
-                return Scope::InOut;
+                return Scope::Function;
             }
 
-            return Scope::Local;
+            return Scope::Graph;
         }
 
         const char* GetScopeToolTip(Scope scopeType)
         {
             switch (scopeType)
             {
-            case Scope::Local:
-                return "Variable is for use in the local scope only.";
-            case Scope::Input:
-                return "Variable will have an initial value set from an external source.";
-            case Scope::Output:
-                return "Variable will be used to return values to an external source.";
-            case Scope::InOut:
-                return "Variable will be used to receive and return values to an external source.";
+            case Scope::Graph:
+                return "Variable is accessible in the entire graph.";
+            case Scope::Function:
+                return "Variable is accessible only in the execution path of the function that defined it";
             default:
                 return "?";
             }
@@ -111,8 +95,27 @@ namespace ScriptCanvas
         }
     };
 
-    static bool GraphVariableVersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
+    static bool GraphVariableVersionConverter([[maybe_unused]] AZ::SerializeContext& context, [[maybe_unused]] AZ::SerializeContext::DataElementNode& classElement)
     {
+        if (classElement.GetVersion() < 4)
+        {
+            enum class DeprecatedScope : AZ::u8
+            {
+                Local = 0,
+                Input = 1,
+                Output = 2,
+                InOut = 3
+            };
+
+            DeprecatedScope scope = DeprecatedScope::Local;
+            classElement.GetChildData<DeprecatedScope>(AZ_CRC_CE("Scope"), scope);
+            if (scope == DeprecatedScope::Input)
+            {
+                classElement.RemoveElementByName(AZ_CRC_CE("Scope"));
+                classElement.AddElementWithData<VariableFlags::InitialValueSource>(context, "InitialValueSource", VariableFlags::InitialValueSource::Component);
+            }
+        }
+        else
         if (classElement.GetVersion() < 3)
         {
             bool exposeAsInputField = false;
@@ -121,26 +124,26 @@ namespace ScriptCanvas
             if (exposeAsInputField)
             {
                 classElement.RemoveElementByName(AZ_CRC("Exposure", 0x398f29cd));
-                classElement.AddElementWithData<VariableFlags::Scope>(context, "Scope", VariableFlags::Scope::Input);
+                classElement.AddElementWithData<VariableFlags::Scope>(context, "Scope", VariableFlags::Scope::Graph);
             }
             else
             {
                 AZ::u8 exposureType = VariableFlags::Deprecated::Exposure::Exp_Local;
                 classElement.GetChildData<AZ::u8>(AZ_CRC("Exposure", 0x398f29cd), exposureType);
 
-                VariableFlags::Scope scope = VariableFlags::Scope::Local;
+                VariableFlags::Scope scope = VariableFlags::Scope::Graph;
 
                 if ((exposureType & VariableFlags::Deprecated::Exposure::Exp_InOut) == VariableFlags::Deprecated::Exposure::Exp_InOut)
                 {
-                    scope = VariableFlags::Scope::InOut;
+                    scope = VariableFlags::Scope::Graph;
                 }
                 else if (exposureType & VariableFlags::Deprecated::Exposure::Exp_Input)
                 {
-                    scope = VariableFlags::Scope::Input;
+                    scope = VariableFlags::Scope::Graph;
                 }
                 else if (exposureType & VariableFlags::Deprecated::Exposure::Exp_Output)
                 {
-                    scope = VariableFlags::Scope::Output;
+                    scope = VariableFlags::Scope::Function;
                 }
 
                 classElement.AddElementWithData<VariableFlags::Scope>(context, "Scope", scope);
@@ -152,6 +155,12 @@ namespace ScriptCanvas
 
         return true;
     }
+
+    const char* GraphVariable::s_InitialValueSourceNames[VariableFlags::InitialValueSource::COUNT] =
+    {
+        "From Graph",
+        "From Component"
+    };
 
     void GraphVariable::Reflect(AZ::ReflectContext* context)
     {
@@ -166,7 +175,7 @@ namespace ScriptCanvas
 
 
             serializeContext->Class<GraphVariable>()
-                ->Version(3, &GraphVariableVersionConverter)
+                ->Version(4, &GraphVariableVersionConverter)
                 ->Field("Datum", &GraphVariable::m_datum)
                 ->Field("InputControlVisibility", &GraphVariable::m_inputControlVisibility)
                 ->Field("ExposureCategory", &GraphVariable::m_exposureCategory)
@@ -176,29 +185,48 @@ namespace ScriptCanvas
                 ->Attribute(AZ::Edit::Attributes::IdGeneratorFunction, &VariableId::MakeVariableId)
                 ->Field("VariableName", &GraphVariable::m_variableName)
                 ->Field("Scope", &GraphVariable::m_scope)
+                ->Field("InitialValueSource", &GraphVariable::m_InitialValueSource)
                 ;
 
             if (auto editContext = serializeContext->GetEditContext())
             {
+                auto propertyChoices = [] {
+                    AZStd::vector< AZStd::pair<VariableFlags::InitialValueSource, AZStd::string>> choices;
+                    choices.emplace_back(AZStd::make_pair(VariableFlags::InitialValueSource::Graph, s_InitialValueSourceNames[0]));
+                    choices.emplace_back(AZStd::make_pair(VariableFlags::InitialValueSource::Component, s_InitialValueSourceNames[1]));
+                    return choices;
+                };
+
                 editContext->Class<GraphVariable>("Variable", "Represents a Variable field within a Script Canvas Graph")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &GraphVariable::GetVisibility)
                     ->Attribute(AZ::Edit::Attributes::ChildNameLabelOverride, &GraphVariable::GetDisplayName)
                     ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &GraphVariable::GetDisplayName)
                     ->Attribute(AZ::Edit::Attributes::DescriptionTextOverride, &GraphVariable::GetDescriptionOverride)
+
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &GraphVariable::m_InitialValueSource, "Initial Value Source", "Variables can get their values from within the graph or through component properties.")
+                    ->Attribute(AZ::Edit::Attributes::GenericValueList, propertyChoices)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GraphVariable::OnInitialValueSourceChanged)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &GraphVariable::GetInputControlVisibility)
+
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &GraphVariable::m_datum, "Datum", "Datum within Script Canvas Graph")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GraphVariable::OnValueChanged)
+
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &GraphVariable::m_scope, "Scope", "Controls the scope of this variable. i.e. If this is exposed as input to this script, or output from this script, or if the variable is just locally scoped.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &GraphVariable::GetInputControlVisibility)
                     ->Attribute(AZ::Edit::Attributes::GenericValueList, &GraphVariable::GetScopes)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GraphVariable::OnScopeTypedChanged)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &GraphVariable::m_datum, "Datum", "Datum within Script Canvas Graph")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GraphVariable::OnValueChanged)
+
                     ->DataElement(AZ::Edit::UIHandlers::Default, &GraphVariable::m_networkProperties, "Network Properties", "Enables whether or not this value should be network synchronized")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &GraphVariable::GetNetworkSettingsVisibility)
+
                     ->DataElement(AZ::Edit::UIHandlers::Default, &GraphVariable::m_sortPriority, "Display Order", "Allows for customizable display order. -1 implies it will be at the end of the list.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &GraphVariable::GetInputControlVisibility)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GraphVariable::OnSortPriorityChanged)
                     ->Attribute(AZ::Edit::Attributes::Min, -1)
+
                     ;
             }
         }
@@ -222,34 +250,37 @@ namespace ScriptCanvas
 
     GraphVariable::GraphVariable()
         : m_sortPriority(-1)
-        , m_scope(VariableFlags::Scope::Local)
+        , m_scope(VariableFlags::Scope::Graph)
         , m_inputControlVisibility(AZ::Edit::PropertyVisibility::Show)
         , m_visibility(AZ::Edit::PropertyVisibility::ShowChildrenOnly)
         , m_signalValueChanges(false)
         , m_variableId(VariableId::MakeVariableId())
+        , m_InitialValueSource(VariableFlags::InitialValueSource::Graph)
     {
     }
 
     GraphVariable::GraphVariable(const Datum& datum)
         : m_sortPriority(-1)
-        , m_scope(VariableFlags::Scope::Local)
+        , m_scope(VariableFlags::Scope::Graph)
         , m_inputControlVisibility(AZ::Edit::PropertyVisibility::Show)
         , m_visibility(AZ::Edit::PropertyVisibility::ShowChildrenOnly)
         , m_signalValueChanges(false)
         , m_variableId(VariableId::MakeVariableId())
         , m_datum(datum)
+        , m_InitialValueSource(VariableFlags::InitialValueSource::Graph)
 
     {
     }
 
     GraphVariable::GraphVariable(Datum&& datum)
         : m_sortPriority(-1)
-        , m_scope(VariableFlags::Scope::Local)
+        , m_scope(VariableFlags::Scope::Graph)
         , m_inputControlVisibility(AZ::Edit::PropertyVisibility::Show)
         , m_visibility(AZ::Edit::PropertyVisibility::ShowChildrenOnly)
         , m_signalValueChanges(false)
         , m_variableId(VariableId::MakeVariableId())
         , m_datum(AZStd::move(datum))
+        , m_InitialValueSource(VariableFlags::InitialValueSource::Graph)
 
     {
     }
@@ -268,11 +299,7 @@ namespace ScriptCanvas
 
         if (valuePair.m_varDatum.ExposeAsComponentInput())
         {
-            SetScope(VariableFlags::Scope::Input);
-        }
-        else
-        {
-            SetScope(VariableFlags::Scope::Local);
+            SetScope(VariableFlags::Scope::Graph);
         }
 
         m_inputControlVisibility = valuePair.m_varDatum.GetInputControlVisibility();
@@ -324,9 +351,9 @@ namespace ScriptCanvas
         datumView.ConfigureView((*this));
     }
 
-    bool GraphVariable::IsExposedAsComponentInput() const
+    bool GraphVariable::IsComponentProperty() const
     {
-        return IsInScope(VariableFlags::Scope::Input);
+        return m_scope == VariableFlags::Scope::Graph && m_InitialValueSource == ScriptCanvas::VariableFlags::InitialValueSource::Component;
     }
 
     void GraphVariable::SetVariableName(AZStd::string_view variableName)
@@ -413,32 +440,6 @@ namespace ScriptCanvas
         m_visibility = visibility;
     }
 
-    void GraphVariable::RemoveScope(VariableFlags::Scope scopeType)
-    {
-        if (IsInScope(scopeType))
-        {
-            if (m_scope == VariableFlags::Scope::InOut)
-            {
-                if (scopeType == VariableFlags::Scope::Input)
-                {
-                    m_scope = VariableFlags::Scope::Output;
-                }
-                else if (scopeType == VariableFlags::Scope::Output)
-                {
-                    m_scope = VariableFlags::Scope::Input;
-                }
-                else
-                {
-                    m_scope = VariableFlags::Scope::Local;
-                }
-            }
-            else
-            {
-                m_scope = VariableFlags::Scope::Local;
-            }
-        }      
-    }
-
     void GraphVariable::SetScope(VariableFlags::Scope scopeType)
     {
         if (m_scope != scopeType)
@@ -457,23 +458,14 @@ namespace ScriptCanvas
     {
         switch (scopeType)
         {
-            // All variables are local scoped
-        case VariableFlags::Scope::Local:
+        case VariableFlags::Scope::Graph:
+            return m_scope == VariableFlags::Scope::Graph;
+            // All graph variables are in function local scope
+        case VariableFlags::Scope::Function:
             return true;
-        case VariableFlags::Scope::Input:
-            return m_scope == VariableFlags::Scope::Input || m_scope == VariableFlags::Scope::InOut;
-        case VariableFlags::Scope::Output:
-            return m_scope == VariableFlags::Scope::Output || m_scope == VariableFlags::Scope::InOut;
-        case VariableFlags::Scope::InOut:
-            return m_scope == VariableFlags::Scope::InOut;
-        default:
-            return false;
         }
-    }
 
-    bool GraphVariable::IsLocalVariableOnly() const
-    {
-        return m_scope == VariableFlags::Scope::Local;
+        return false;
     }
 
     void GraphVariable::GenerateNewId()
@@ -506,6 +498,25 @@ namespace ScriptCanvas
         return GraphScopedVariableId(m_scriptCanvasId, m_variableId);
     }
 
+    AZ::u32 GraphVariable::SetInitialValueSource(VariableFlags::InitialValueSource InitialValueSource)
+    {
+        m_InitialValueSource = InitialValueSource;
+        return OnInitialValueSourceChanged();
+    }
+
+    AZ::u32 GraphVariable::SetInitialValueSourceFromName(AZStd::string_view name)
+    {
+        for (int i = 0; i < VariableFlags::InitialValueSource::COUNT; ++i)
+        {
+            if (name.compare(s_InitialValueSourceNames[i]) == 0)
+            {
+                return SetInitialValueSource(static_cast<VariableFlags::InitialValueSource>(i));
+            }
+        }
+
+        return 0;
+    }
+
     void GraphVariable::OnDatumEdited([[maybe_unused]] const Datum* datum)
     {
         VariableNotificationBus::Event(GetGraphScopedId(), &VariableNotifications::OnVariableValueChanged);
@@ -514,16 +525,7 @@ namespace ScriptCanvas
     AZStd::vector<AZStd::pair<VariableFlags::Scope, AZStd::string>> GraphVariable::GetScopes() const
     {
         AZStd::vector< AZStd::pair<VariableFlags::Scope, AZStd::string>> scopes;
-
-        scopes.emplace_back(AZStd::make_pair(VariableFlags::Scope::Local, VariableFlags::GetScopeDisplayLabel(VariableFlags::Scope::Local)));
-        scopes.emplace_back(AZStd::make_pair(VariableFlags::Scope::Input, VariableFlags::GetScopeDisplayLabel(VariableFlags::Scope::Input)));
-
-        if (IsInFunction())
-        {
-            scopes.emplace_back(AZStd::make_pair(VariableFlags::Scope::Output, VariableFlags::GetScopeDisplayLabel(VariableFlags::Scope::Output)));
-            scopes.emplace_back(AZStd::make_pair(VariableFlags::Scope::InOut, VariableFlags::GetScopeDisplayLabel(VariableFlags::Scope::InOut)));
-        }
-
+        scopes.emplace_back(AZStd::make_pair(m_scope, VariableFlags::GetScopeDisplayLabel(m_scope)));
         return scopes;
     }
 
@@ -538,6 +540,12 @@ namespace ScriptCanvas
         ScriptCanvas::RuntimeRequestBus::EventResult(assetType, m_scriptCanvasId, &ScriptCanvas::RuntimeRequests::GetAssetType);
 
         return assetType == azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>();
+    }
+
+    AZ::u32 GraphVariable::OnInitialValueSourceChanged()
+    {
+        VariableNotificationBus::Event(GetGraphScopedId(), &VariableNotifications::OnVariableInitialValueSourceChanged);
+        return AZ::Edit::PropertyRefreshLevels::EntireTree;
     }
 
     void GraphVariable::OnScopeTypedChanged()

@@ -76,16 +76,6 @@ namespace ScriptCanvas
             writer.WriteLineIndented(m_configuration.m_scopeClose);
         }
 
-        const AZStd::pair<Grammar::VariableConstPtr, AZStd::string>* GraphToX::FindStaticVariable(Grammar::VariableConstPtr variable) const
-        {
-            auto iter = AZStd::find_if
-                ( m_staticVariableNames.begin()
-                , m_staticVariableNames.end()
-                , [&](const auto& candidate) { return candidate.first == variable; });
-
-            return (iter != m_staticVariableNames.end()) ? iter : nullptr;
-        }
-
         AZStd::string_view GraphToX::GetGraphName() const
         {
             return m_model.GetSource().m_name;
@@ -99,16 +89,6 @@ namespace ScriptCanvas
         AZStd::string GraphToX::GetMultiReturnName() const
         {
             return AZStd::string::format("multiReturn_%d", m_multiReturnCount);
-        }
-
-        const AZStd::vector<Grammar::VariableConstPtr>& GraphToX::GetStaticVariables() const
-        {
-            return m_staticVariables;
-        }
-
-        const AZStd::vector<AZStd::pair<Grammar::VariableConstPtr, AZStd::string>>& GraphToX::GetStaticVariablesNames() const
-        {
-            return m_staticVariableNames;
         }
 
         AZStd::sys_time_t GraphToX::GetTranslationDuration() const
@@ -129,16 +109,6 @@ namespace ScriptCanvas
         void GraphToX::MarkTranslationStop()
         {
             m_translationDuration = AZStd::chrono::microseconds(AZStd::chrono::system_clock::now() - m_translationStartTime).count();
-        }
-
-        AZStd::vector<Grammar::VariableConstPtr>& GraphToX::ModStaticVariables()
-        {
-            return m_staticVariables;
-        }
-
-        AZStd::vector<AZStd::pair<Grammar::VariableConstPtr, AZStd::string>>& GraphToX::ModStaticVariablesNames()
-        {
-            return m_staticVariableNames;
         }
 
         AZStd::string GraphToX::ResolveScope(const AZStd::vector<AZStd::string>& namespaces)

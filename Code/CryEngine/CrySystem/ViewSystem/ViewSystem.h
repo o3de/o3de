@@ -85,11 +85,11 @@ public:
 
     // ILevelSystemListener
     virtual void OnLevelNotFound([[maybe_unused]] const char* levelName) {};
-    virtual void OnLoadingStart(ILevelInfo* pLevel);
-    virtual void OnLoadingComplete([[maybe_unused]] ILevel* pLevel) {};
-    virtual void OnLoadingError([[maybe_unused]] ILevelInfo* pLevel, [[maybe_unused]] const char* error) {};
-    virtual void OnLoadingProgress([[maybe_unused]] ILevelInfo* pLevel, [[maybe_unused]] int progressAmount) {};
-    virtual void OnUnloadComplete(ILevel* pLevel);
+    virtual void OnLoadingStart([[maybe_unused]] const char* levelName);
+    virtual void OnLoadingComplete([[maybe_unused]] const char* levelName){};
+    virtual void OnLoadingError([[maybe_unused]] const char* levelName, [[maybe_unused]] const char* error){};
+    virtual void OnLoadingProgress([[maybe_unused]] const char* levelName, [[maybe_unused]] int progressAmount){};
+    virtual void OnUnloadComplete([[maybe_unused]] const char* levelName);
     //~ILevelSystemListener
 
     CViewSystem(ISystem* pSystem);

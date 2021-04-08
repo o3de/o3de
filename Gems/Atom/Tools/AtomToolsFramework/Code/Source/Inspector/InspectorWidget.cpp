@@ -36,8 +36,7 @@ namespace AtomToolsFramework
     {
         qDeleteAll(m_ui->m_propertyContent->children());
         m_layout = new QVBoxLayout(m_ui->m_propertyContent);
-        // 5 pixels added on the right to fix occlusion by the scrollbar. Remove after switching to UI 2.0.
-        m_layout->setContentsMargins(0, 0, 5, 0);
+        m_layout->setContentsMargins(0, 0, 0, 0);
         m_layout->setSpacing(0);
     }
 

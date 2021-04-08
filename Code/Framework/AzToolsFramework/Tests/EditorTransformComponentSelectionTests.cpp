@@ -289,6 +289,8 @@ namespace UnitTest
 
     TEST_F(EditorTransformComponentSelectionFixture, TestComponentPropertyNotificationIsSentAfterModifyingSlice)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Given
         AZ::Entity* grandParent = nullptr;

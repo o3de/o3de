@@ -43,7 +43,6 @@ namespace ScriptCanvasEditor
         virtual AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset> LoadAsset(AZStd::string_view graphPath) = 0;
         virtual AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasFunctionAsset> LoadFunctionAsset(AZStd::string_view graphPath) = 0;
         virtual AZ::Outcome<ScriptCanvas::Translation::LuaAssetResult, AZStd::string> CreateLuaAsset(const AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset>& editAsset, AZStd::string_view graphPathForRawLuaFile) = 0;
-        virtual AZ::Outcome<ScriptCanvas::Translation::LuaAssetResult, AZStd::string> CreateLuaFunctionAsset(const AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasFunctionAsset>& editAsset, AZStd::string_view graphPathForRawLuaFile) = 0;
         virtual AZ::Outcome<AZ::Data::Asset<ScriptCanvas::RuntimeAsset>, AZStd::string> CreateRuntimeAsset(const AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset>& editAsset) = 0;
         virtual AZ::Outcome<AZ::Data::Asset<ScriptCanvas::SubgraphInterfaceAsset>, AZStd::string> CreateFunctionRuntimeAsset(const AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasFunctionAsset>& editAsset) = 0;
     };

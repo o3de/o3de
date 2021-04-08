@@ -166,7 +166,7 @@ namespace Blast
         const uint32_t newActorsCount = splitEvent->numChildren;
 
         BlastActor* parentActor = nullptr;
-        Physics::WorldBody* parentBody = nullptr;
+        AzPhysics::SimulatedBody* parentBody = nullptr;
         AZ_Assert(splitEvent->parentData.userData, "Parent actor in split event must have user data.");
         if (!splitEvent->parentData.userData)
         {
@@ -217,18 +217,18 @@ namespace Blast
     }
 
     BlastActorDesc BlastFamilyImpl::CalculateActorDesc(
-        Physics::WorldBody* parentBody, bool parentStatic, AZ::Transform parentTransform, Nv::Blast::TkActor* tkActor)
+        AzPhysics::SimulatedBody* parentBody, bool parentStatic, AZ::Transform parentTransform, Nv::Blast::TkActor* tkActor)
     {
         auto actorDesc = CalculateActorDesc(parentTransform, tkActor);
 
         actorDesc.m_bodyConfiguration.m_initialAngularVelocity = !parentStatic
-            ? static_cast<Physics::RigidBody*>(parentBody)->GetAngularVelocity()
+            ? static_cast<AzPhysics::RigidBody*>(parentBody)->GetAngularVelocity()
             : AZ::Vector3::CreateZero();
         actorDesc.m_parentCenterOfMass = parentTransform.TransformPoint(
-            !parentStatic ? static_cast<Physics::RigidBody*>(parentBody)->GetCenterOfMassLocal()
+            !parentStatic ? static_cast<AzPhysics::RigidBody*>(parentBody)->GetCenterOfMassLocal()
                           : AZ::Vector3::CreateZero());
         actorDesc.m_parentLinearVelocity = !parentStatic
-            ? static_cast<Physics::RigidBody*>(parentBody)->GetLinearVelocity()
+            ? static_cast<AzPhysics::RigidBody*>(parentBody)->GetLinearVelocity()
             : AZ::Vector3::CreateZero();
 
         return actorDesc;
@@ -236,7 +236,7 @@ namespace Blast
 
     BlastActorDesc BlastFamilyImpl::CalculateActorDesc(const AZ::Transform& transform, Nv::Blast::TkActor* tkActor)
     {
-        Physics::RigidBodyConfiguration configuration;
+        AzPhysics::RigidBodyConfiguration configuration;
         configuration.m_position = transform.GetTranslation();
         configuration.m_orientation = transform.GetRotation();
         configuration.m_scale = transform.GetScale();

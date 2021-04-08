@@ -170,7 +170,7 @@ public:
     virtual void SetScrollMax(int value);
     virtual void AddOutputPrintSink(IOutputPrintSink* inpSink);
     virtual void RemoveOutputPrintSink(IOutputPrintSink* inpSink);
-    virtual void ShowConsole(bool show, const int iRequestScrollMax = -1);
+    virtual void ShowConsole(bool show, int iRequestScrollMax = -1);
     virtual void DumpCVars(ICVarDumpSink* pCallback, unsigned int nFlagsFilter = 0);
     virtual void DumpKeyBinds(IKeyBindDumpSink* pCallback);
     virtual void CreateKeyBind(const char* sCmd, const char* sRes);
@@ -178,7 +178,7 @@ public:
     virtual void    SetImage(ITexture* pImage, bool bDeleteCurrent);
     virtual inline ITexture* GetImage() { return m_pImage; }
     virtual void StaticBackground(bool bStatic) { m_bStaticBackground = bStatic; }
-    virtual bool GetLineNo(const int indwLineNo, char* outszBuffer, const int indwBufferSize) const;
+    virtual bool GetLineNo(int indwLineNo, char* outszBuffer, int indwBufferSize) const;
     virtual int GetLineCount() const;
     virtual ICVar* GetCVar(const char* name);
     virtual char* GetVariable(const char* szVarName, const char* szFileName, const char* def_val);
@@ -192,7 +192,7 @@ public:
     virtual bool AddCommand(const char* sCommand, ConsoleCommandFunc func, int nFlags = 0, const char* sHelp = NULL);
     virtual bool AddCommand(const char* sName, const char* sScriptFunc, int nFlags = 0, const char* sHelp = NULL);
     virtual void RemoveCommand(const char* sName);
-    virtual void ExecuteString(const char* command, const bool bSilentMode, const bool bDeferExecution = false);
+    virtual void ExecuteString(const char* command, bool bSilentMode, bool bDeferExecution = false);
     virtual void ExecuteConsoleCommand(const char* command) override;
     virtual void ResetCVarsToDefaults() override;
     virtual void Exit(const char* command, ...) PRINTF_PARAMS(2, 3);
@@ -218,7 +218,7 @@ public:
     virtual void SetLoadingImage(const char* szFilename);
     virtual void AddConsoleVarSink(IConsoleVarSink* pSink);
     virtual void RemoveConsoleVarSink(IConsoleVarSink* pSink);
-    virtual const char* GetHistoryElement(const bool bUpOrDown);
+    virtual const char* GetHistoryElement(bool bUpOrDown);
     virtual void AddCommandToHistory(const char* szCommand);
     virtual void SetInputLine(const char* szLine);
     virtual void LoadConfigVar(const char* sVariable, const char* sValue);

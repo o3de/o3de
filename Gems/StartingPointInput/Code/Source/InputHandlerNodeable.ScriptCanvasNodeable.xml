@@ -21,11 +21,8 @@
       <Output Name="Released" Description="Signaled when the input event ends." >
         <Parameter Name="value" Type="float" Shared="true"/>
       </Output>
-
-      <Property Name="Event Name"
-                  Description="The input event name as defined in an inputbinding asset.  Example 'Fireball'"
-                  Type="AZStd::string"
-                  IsInput="True"
-                  IsOutput="False" />
+      <Input Name="Connect Event" Description="Connect to input event name as defined in an input binding asset.">
+        <Parameter Name="Event Name" Type="AZStd::string" Description="Event name as defined in an input binding asset.  Example 'Fireball'."/>
+      </Input>/>
     </Class>
 </ScriptCanvas>

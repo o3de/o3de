@@ -10,5 +10,5 @@
 #
 
 set(FILES
-    ../../Source/GameCrashHandler_win.cpp
+    GameCrashHandler_windows.cpp
 )

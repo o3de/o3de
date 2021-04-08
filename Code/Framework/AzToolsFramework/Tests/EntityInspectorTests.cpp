@@ -30,6 +30,7 @@
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/UnitTest/ToolsTestApplication.h>
 
 // Inspector Test Includes
 #include <AzToolsFramework/UI/ComponentPalette/ComponentPaletteUtil.hxx>
@@ -273,7 +274,7 @@ namespace UnitTest
         {
             AZ::ComponentApplication::Descriptor componentApplicationDesc;
             componentApplicationDesc.m_useExistingAllocator = true;
-            m_application = aznew AzToolsFramework::ToolsApplication();
+            m_application = aznew ToolsTestApplication("ComponentPaletteTests");
             m_application->Start(componentApplicationDesc);
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
             // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
@@ -288,7 +289,7 @@ namespace UnitTest
         }
 
     public:
-        AzToolsFramework::ToolsApplication* m_application = nullptr;
+        ToolsTestApplication* m_application = nullptr;
     };
 
     // Test pushing slices to create news slices that could result in cyclic 

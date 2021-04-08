@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
@@ -27,7 +28,7 @@ namespace UnitTest
         InstanceData& operator=(const InstanceData& other);
 
         AZStd::string m_name;
-        AZStd::string m_source;
+        AZ::IO::Path m_source;
         AzToolsFramework::Prefab::PrefabDom m_patches;
     };
 
@@ -36,7 +37,7 @@ namespace UnitTest
         AzToolsFramework::Prefab::TemplateId m_id = AzToolsFramework::Prefab::InvalidTemplateId;
         bool m_isValid = true;
         bool m_isLoadedWithErrors = false;
-        AZStd::string m_filePath;
+        AZ::IO::Path m_filePath;
         AZStd::unordered_map<AZStd::string, InstanceData> m_instancesData;
     };
 

@@ -55,8 +55,7 @@ struct VSInput
 struct VSOutput
 {
     // Base fields (required by the template azsli file)...
-    // "centroid" is needed for SV_DepthLessEqual to compile
-    linear centroid float4 m_position : SV_Position;
+    float4 m_position : SV_Position;
     float3 m_normal: NORMAL;
     float3 m_tangent : TANGENT; 
     float3 m_bitangent : BITANGENT; 
@@ -80,8 +79,14 @@ VSOutput EnhancedPbr_ForwardPassVS(VSInput IN)
     // By design, only UV0 is allowed to apply transforms.
     OUT.m_uv[0] = mul(MaterialSrg::m_uvMatrix, float3(IN.m_uv0, 1.0)).xy;
     OUT.m_uv[1] = IN.m_uv1;
+
+    // As seen above our standard practice is to only transform the first UV as that's the one we expect to be used for
+    // tiling. But for detail maps you could actually use either UV stream for tiling. There is no concern about applying
+    // the same transform to both UV sets because the detail map feature forces the same UV set to be used for all detail maps.
+    // Note we might be able to combine these into a single UV similar to what Skin.materialtype does,
+    // but we would need to address how it works with the parallax code below that indexes into the m_detailUV array.
     OUT.m_detailUv[0] = mul(MaterialSrg::m_detailUvMatrix, float3(IN.m_uv0, 1.0)).xy;
-    OUT.m_detailUv[1] = IN.m_uv1;
+    OUT.m_detailUv[1] = mul(MaterialSrg::m_detailUvMatrix, float3(IN.m_uv1, 1.0)).xy;
 
     PbrVsHelper(IN, OUT, worldPosition, o_parallax_feature_enabled && o_parallax_enablePixelDepthOffset);
 
@@ -98,7 +103,8 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
 
     if ((o_parallax_feature_enabled && !o_enableSubsurfaceScattering && MaterialSrg::m_parallaxUvIndex != 0)
         || (o_normal_useTexture && MaterialSrg::m_normalMapUvIndex != 0)
-        || (o_clearCoat_enabled && o_clearCoat_normal_useTexture && MaterialSrg::m_clearCoatNormalMapUvIndex != 0))
+        || (o_clearCoat_enabled && o_clearCoat_normal_useTexture && MaterialSrg::m_clearCoatNormalMapUvIndex != 0)
+        || (o_detail_normal_useTexture && MaterialSrg::m_detail_allMapsUvIndex != 0))
     {
         // Generate the tangent/bitangent for UV[1+]
         const int startIndex = 1;
@@ -162,14 +168,13 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     // ------- Normal -------
     
     float2 normalUv = IN.m_uv[MaterialSrg::m_normalMapUvIndex];
-    float3x3 uvMatrix = MaterialSrg::m_normalMapUvIndex == 0 ? MaterialSrg::m_uvMatrix : CreateIdentity3x3();
-    float3x3 detailUvMatrix = MaterialSrg::m_normalMapUvIndex == 0 ? MaterialSrg::m_detailUvMatrix : CreateIdentity3x3();
+    float3x3 uvMatrix = MaterialSrg::m_normalMapUvIndex == 0 ? MaterialSrg::m_uvMatrix : CreateIdentity3x3(); // By design, only UV0 is allowed to apply transforms.
     float detailLayerNormalFactor = MaterialSrg::m_detail_normal_factor * detailLayerBlendFactor;
 
     float3 normal = GetDetailedNormalInputWS(
         isFrontFace, IN.m_normal,
-        tangents[MaterialSrg::m_normalMapUvIndex], bitangents[MaterialSrg::m_normalMapUvIndex], MaterialSrg::m_normalMap,             MaterialSrg::m_sampler, normalUv, MaterialSrg::m_normalFactor, MaterialSrg::m_flipNormalX,         MaterialSrg::m_flipNormalY,         uvMatrix,       o_normal_useTexture,
-        tangents[MaterialSrg::m_normalMapUvIndex], bitangents[MaterialSrg::m_normalMapUvIndex], MaterialSrg::m_detail_normal_texture, MaterialSrg::m_sampler, detailUv, detailLayerNormalFactor,     MaterialSrg::m_detail_normal_flipX, MaterialSrg::m_detail_normal_flipY, detailUvMatrix, o_detail_normal_useTexture);
+        tangents[MaterialSrg::m_normalMapUvIndex],      bitangents[MaterialSrg::m_normalMapUvIndex],      MaterialSrg::m_normalMap,             MaterialSrg::m_sampler, normalUv, MaterialSrg::m_normalFactor,  MaterialSrg::m_flipNormalX,         MaterialSrg::m_flipNormalY,         uvMatrix,                      o_normal_useTexture,
+        tangents[MaterialSrg::m_detail_allMapsUvIndex], bitangents[MaterialSrg::m_detail_allMapsUvIndex], MaterialSrg::m_detail_normal_texture, MaterialSrg::m_sampler, detailUv, detailLayerNormalFactor,      MaterialSrg::m_detail_normal_flipX, MaterialSrg::m_detail_normal_flipY, MaterialSrg::m_detailUvMatrix, o_detail_normal_useTexture);
 
     //--------------------- Base Color ----------------------
 

@@ -19,6 +19,7 @@
 #include <LyViewPaneNames.h>
 #include <AzFramework/Physics/CollisionBus.h>
 #include <AzFramework/Physics/Configuration/CollisionConfiguration.h>
+#include <AzFramework/Physics/PhysicsSystem.h>
 
 namespace PhysX
 {
@@ -98,19 +99,19 @@ namespace PhysX
 
         AzPhysics::CollisionGroups::Id CollisionGroupWidget::GetGroupFromName(const AZStd::string& groupName)
         {
-            const AzPhysics::CollisionConfiguration& configuration = AZ::Interface<Physics::CollisionRequests>::Get()->GetCollisionConfiguration();
+            const AzPhysics::CollisionConfiguration& configuration = AZ::Interface<AzPhysics::SystemInterface>::Get()->GetConfiguration()->m_collisionConfig;
             return configuration.m_collisionGroups.FindGroupIdByName(groupName);
         }
 
         AZStd::string CollisionGroupWidget::GetNameFromGroup(const AzPhysics::CollisionGroups::Id& collisionGroup)
         {
-            const AzPhysics::CollisionConfiguration& configuration = AZ::Interface<Physics::CollisionRequests>::Get()->GetCollisionConfiguration();
+            const AzPhysics::CollisionConfiguration& configuration = AZ::Interface<AzPhysics::SystemInterface>::Get()->GetConfiguration()->m_collisionConfig;
             return configuration.m_collisionGroups.FindGroupNameById(collisionGroup);
         }
 
         AZStd::vector<AZStd::string> CollisionGroupWidget::GetGroupNames()
         {
-            const AzPhysics::CollisionConfiguration& configuration = AZ::Interface<Physics::CollisionRequests>::Get()->GetCollisionConfiguration();
+            const AzPhysics::CollisionConfiguration& configuration = AZ::Interface<AzPhysics::SystemInterface>::Get()->GetConfiguration()->m_collisionConfig;
             const AZStd::vector<AzPhysics::CollisionGroups::Preset>& collisionGroupPresets = configuration.m_collisionGroups.GetPresets();
 
             AZStd::vector<AZStd::string> groupNames;

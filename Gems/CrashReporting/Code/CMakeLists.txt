@@ -9,6 +9,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
+ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
+
+include(${pal_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+
 if(NOT PAL_TRAIT_BUILD_CRASH_HANDLER_SUPPORTED)
     return()
 endif()
@@ -26,26 +30,26 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            3rdParty::Crashpad
-            3rdParty::Crashpad::Handler
+            AZ::AzCore
             AZ::CrashHandler
             AZ::CrashSupport
-            Legacy::CryCommon
 )
 
 ly_add_target(
     NAME CrashReporting.Uploader APPLICATION
     NAMESPACE AZ
     FILES_CMAKE
+        game_crash_uploader_files.cmake
         Platform/${PAL_PLATFORM_NAME}/game_crash_uploader_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            3rdParty::Crashpad
-            3rdParty::Crashpad::Handler
+            #3rdParty::Crashpad
+            #3rdParty::Crashpad::Handler
             AZ::AzCore
             AZ::CrashUploaderSupport
-            AZ::CrashHandler
+            #AZ::CrashHandler
+            AZ::CrashSupport
 )

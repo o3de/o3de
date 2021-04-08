@@ -52,6 +52,7 @@ namespace Camera
         float m_frustumHeight = DefaultFrustumDimension;
         bool m_specifyFrustumDimensions = false;
         AZ::u64 m_editorEntityId = AZ::EntityId::InvalidEntityId;
+        bool m_makeActiveViewOnActivation = true;
     };
 
     class CameraComponentController

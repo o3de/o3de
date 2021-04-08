@@ -20,6 +20,8 @@
 
 namespace AZ
 {
+    class ReflectContext;
+
     namespace SceneAPI
     {
         namespace Events
@@ -54,6 +56,8 @@ namespace AZ
 
                 CallProcessorBinder() = default;
                 SCENE_CORE_API virtual ~CallProcessorBinder();
+
+                static void Reflect(AZ::ReflectContext* context);
 
             protected:
                 CallProcessorBinder(const CallProcessorBinder&) = delete;

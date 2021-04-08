@@ -142,6 +142,8 @@
 #include <Editor/View/Windows/Tools/UpgradeTool/UpgradeHelper.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/VersionExplorer.h>
 
+#include <Editor/View/Widgets/VariablePanel/SlotTypeSelectorWidget.h>
+
 // Save Format Conversion
 #include <AzCore/Component/EntityUtils.h>
 #include <Editor/Include/ScriptCanvas/Components/EditorGraph.h>
@@ -159,6 +161,7 @@
 
 #include <Editor/QtMetaTypes.h>
 #include <GraphCanvas/Components/SceneBus.h>
+
 
 namespace ScriptCanvasEditor
 {
@@ -470,8 +473,6 @@ namespace ScriptCanvasEditor
             scriptEventAssetFilter->SetAssetGroup(ScriptEvents::ScriptEventsAsset::GetGroup());
             scriptEventAssetFilter->SetFilterPropagation(AzToolsFramework::AssetBrowser::AssetBrowserEntryFilter::PropagateDirection::Down);
 
-            // Filter doesn't actually work for whatever reason
-            //m_scriptEventsAssetModel->SetFilter(AzToolsFramework::AssetBrowser::FilterConstType(scriptEventAssetFilter));
             m_scriptEventsAssetModel->setSourceModel(assetBrowserModel);
         }
 
@@ -482,8 +483,6 @@ namespace ScriptCanvasEditor
             scriptCanvasAssetFilter->SetAssetGroup(ScriptCanvasAsset::Description::GetGroup(azrtti_typeid<ScriptCanvasAsset>()));
             scriptCanvasAssetFilter->SetFilterPropagation(AzToolsFramework::AssetBrowser::AssetBrowserEntryFilter::PropagateDirection::Down);
 
-            // Filter doesn't actually work for whatever reason
-            //m_scriptCanvasAssetModel->SetFilter(AzToolsFramework::AssetBrowser::FilterConstType(scriptCanvasAssetFilter));
             m_scriptCanvasAssetModel->setSourceModel(assetBrowserModel);
         }
 
@@ -537,14 +536,6 @@ namespace ScriptCanvasEditor
             m_editorToolbar->AddCreationAction(m_createScriptCanvas);
             RegisterObject(AutomationIds::CreateScriptCanvasButton, m_createScriptCanvas);
 
-            m_createFunction = new QToolButton();
-            m_createFunction->setIcon(QIcon(ScriptCanvas::AssetDescription::GetIconPath<ScriptCanvasFunctionAsset>()));
-            m_createFunction->setToolTip("Creates a new Script Canvas Function Graph");
-
-            QObject::connect(m_createFunction, &QToolButton::clicked, this, &MainWindow::OnFileNewFunction);
-
-            m_editorToolbar->AddCreationAction(m_createFunction);
-            RegisterObject(AutomationIds::CreateScriptCanvasFunctionButton, m_createFunction);
         }
 
         {
@@ -836,11 +827,6 @@ namespace ScriptCanvasEditor
         connect(ui->action_New_Script, &QAction::triggered, this, &MainWindow::OnFileNew);
         ui->action_New_Script->setShortcut(QKeySequence(QKeySequence::New));
 
-        connect(ui->actionFunction, &QAction::triggered, this, &MainWindow::OnFileNewFunction);
-        //ui->action_New_Function->setShortcut(QKeySequence(QKeySequence::New));
-
-        connect(ui->actionEditor_Graph, &QAction::triggered, this, &MainWindow::OnFileNewFunction);
-
         connect(ui->action_Open, &QAction::triggered, this, &MainWindow::OnFileOpen);
         ui->action_Open->setShortcut(QKeySequence(QKeySequence::Open));
 
@@ -969,7 +955,8 @@ namespace ScriptCanvasEditor
             }
         }
 
-        UpdateMenuState(enabled);        
+        UpdateMenuState(enabled);
+
     }
 
     void MainWindow::UpdateRecentMenu()
@@ -1158,6 +1145,44 @@ namespace ScriptCanvasEditor
     {
         return m_variableDockWidget->IsValidVariableType(dataType);
     }
+
+    bool MainWindow::ShowSlotTypeSelector(ScriptCanvas::Slot* slot, const QPoint& scenePosition, VariablePaletteRequests::SlotSetup& outSetup)
+    {
+        AZ_Assert(slot, "A valid slot must be provided");
+        if (slot)
+        {
+            m_slotTypeSelector = new SlotTypeSelectorWidget(GetActiveScriptCanvasId(), this); // Recreate the widget every time because of https://bugreports.qt.io/browse/QTBUG-76509
+            m_slotTypeSelector->PopulateVariablePalette(m_variablePaletteTypes);
+
+            // Only set the slot name if the user has already configured this slot, so if they are creating
+            // for the first time they will see the placeholder text instead
+            bool isValidVariableType = false;
+            VariablePaletteRequestBus::BroadcastResult(isValidVariableType, &VariablePaletteRequests::IsValidVariableType, slot->GetDataType());
+            if (isValidVariableType)
+            {
+                m_slotTypeSelector->SetSlotName(slot->GetName());
+            }
+
+            m_slotTypeSelector->move(scenePosition);
+            m_slotTypeSelector->setEnabled(true);
+            m_slotTypeSelector->update();
+
+            if (m_slotTypeSelector->exec() != QDialog::Rejected)
+            {
+                outSetup.m_name = m_slotTypeSelector->GetSlotName();
+                outSetup.m_type = m_slotTypeSelector->GetSelectedType();
+            }
+            else
+            {
+                return false;
+            }
+
+            delete m_slotTypeSelector;
+        }
+
+        return true;
+    }
+
 
     void MainWindow::OpenValidationPanel()
     {
@@ -1734,11 +1759,6 @@ namespace ScriptCanvasEditor
     void MainWindow::OnFileNew()
     {
         MakeNewFile<ScriptCanvasAsset, ScriptCanvasAssetHandler>();
-    }
-
-    void MainWindow::OnFileNewFunction()
-    {
-        MakeNewFile<ScriptCanvasFunctionAsset, ScriptCanvasFunctionAssetHandler>();
     }
 
     int MainWindow::InsertTabForAsset(AZStd::string_view assetPath, AZ::Data::AssetId assetId, int tabIndex)
@@ -3598,13 +3618,11 @@ namespace ScriptCanvasEditor
         ui->action_EnableSelection->setEnabled(enabled);
         ui->action_DisableSelection->setEnabled(enabled);
 
+        m_createFunctionOutput->setEnabled(enabled);
+        m_createFunctionInput->setEnabled(enabled);
+
         // File Menu
         ui->action_Close->setEnabled(enabled);
-
-        bool isFunctionGraph = false;
-        EditorGraphRequestBus::EventResult(isFunctionGraph, GetActiveScriptCanvasId(), &EditorGraphRequests::IsFunctionGraph);
-        m_createFunctionInput->setEnabled(isFunctionGraph && enabled);
-        m_createFunctionOutput->setEnabled(isFunctionGraph && enabled);
 
         RefreshGraphPreferencesAction();
 
@@ -3715,7 +3733,7 @@ namespace ScriptCanvasEditor
     void MainWindow::CreateFunctionInput()
     {
         PushPreventUndoStateUpdate();
-        CreateExecutionNodeling(-1);
+        CreateFunctionDefinitionNode(-1);
         PopPreventUndoStateUpdate();
 
         PostUndoPoint(GetActiveScriptCanvasId());
@@ -3724,13 +3742,13 @@ namespace ScriptCanvasEditor
     void MainWindow::CreateFunctionOutput()
     {
         PushPreventUndoStateUpdate();
-        CreateExecutionNodeling(1);
+        CreateFunctionDefinitionNode(1);
         PopPreventUndoStateUpdate();
 
         PostUndoPoint(GetActiveScriptCanvasId());
     }
 
-    void MainWindow::CreateExecutionNodeling(int positionOffset)
+    void MainWindow::CreateFunctionDefinitionNode(int positionOffset)
     {
         ScriptCanvas::ScriptCanvasId scriptCanvasId = GetActiveScriptCanvasId();
 
@@ -3742,14 +3760,9 @@ namespace ScriptCanvasEditor
         QRectF viewBounds;
         GraphCanvas::ViewRequestBus::EventResult(viewBounds, viewId, &GraphCanvas::ViewRequests::GetCompleteArea);
 
-        AZStd::string rootName = "New Output";
-
-        if (positionOffset < 0)
-        {
-            rootName = "New Input";
-        }
-
-        NodeIdPair nodeIdPair = Nodes::CreateExecutionNodeling(scriptCanvasId, rootName);
+        const bool isInput = positionOffset < 0;
+        const AZStd::string rootName = isInput ? "New Input" : "New Output";
+        NodeIdPair nodeIdPair = Nodes::CreateFunctionDefinitionNode(scriptCanvasId, isInput, rootName);
 
         GraphCanvas::SceneRequests* sceneRequests = GraphCanvas::SceneRequestBus::FindFirstHandler(graphCanvasGraphId);
 
@@ -4151,6 +4164,13 @@ namespace ScriptCanvasEditor
             contextMenu.AddMenuAction(aznew ConvertVariableNodeToReferenceAction(&contextMenu));
         }
 
+        if (descriptorType == NodeDescriptorType::FunctionDefinitionNode)
+        {
+            NodeDescriptorComponent* descriptor = nullptr;
+            NodeDescriptorRequestBus::EventResult(descriptor, nodeId, &NodeDescriptorRequests::GetDescriptorComponent);
+            contextMenu.AddMenuAction(aznew RenameFunctionDefinitionNodeAction(descriptor, &contextMenu));
+        }
+
         return HandleContextMenu(contextMenu, nodeId, screenPoint, scenePoint);
     }
 
@@ -4276,6 +4296,7 @@ namespace ScriptCanvasEditor
         contextMenu.AddMenuAction(aznew ConvertReferenceToVariableNodeAction(&contextMenu));
         contextMenu.AddMenuAction(aznew ExposeSlotMenuAction(&contextMenu));
         contextMenu.AddMenuAction(aznew CreateAzEventHandlerSlotMenuAction(&contextMenu));
+        contextMenu.AddMenuAction(aznew SetDataSlotTypeMenuAction(&contextMenu));
 
         return HandleContextMenu(contextMenu, slotId, screenPoint, scenePoint);
     }
@@ -4870,12 +4891,13 @@ namespace ScriptCanvasEditor
         m_variableDockWidget->setEnabled(false);
         m_propertyGrid->DisableGrid();
         m_editorToolbar->OnViewDisabled();
-        m_createFunction->setEnabled(false);
+
+        m_createFunctionInput->setEnabled(false);
+        m_createFunctionOutput->setEnabled(false);
         m_createScriptCanvas->setEnabled(false);
 
         UpdateMenuState(false);
 
-        ui->action_New_Function->setEnabled(false);
         ui->action_New_Script->setEnabled(false);
 
         m_autoSaveTimer.stop();
@@ -4894,10 +4916,8 @@ namespace ScriptCanvasEditor
         m_propertyGrid->EnableGrid();
         m_editorToolbar->OnViewEnabled();
 
-        m_createFunction->setEnabled(true);
         m_createScriptCanvas->setEnabled(true);
 
-        ui->action_New_Function->setEnabled(true);
         ui->action_New_Script->setEnabled(true);
 
         UpdateMenuState(true);

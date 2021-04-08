@@ -212,7 +212,7 @@ TEST_F(CGFBuilderTest, CGF_MaterialInSameFolder)
 }
 
 // In this case, we load a basic CGF where the material path is absolute from the dev/ folder,
-// for example "samplesproject/materials/test.mtl".
+// for example "automatedtesting/materials/test.mtl".
 TEST_F(CGFBuilderTest, CGF_MaterialInDifferentFolder)
 {
     AZStd::string cgfName = "gs_block.cgf";

@@ -422,7 +422,7 @@ namespace AZ
                     if (morphSetup)
                     {
                         uint32_t morphTargetCount = morphSetup->GetNumMorphTargets();
-                        AZStd::vector<float> weights;
+                        m_morphTargetWeights.clear();
                         for (uint32_t morphTargetIndex = 0; morphTargetIndex < morphTargetCount; ++morphTargetIndex)
                         {
                             EMotionFX::MorphTarget* morphTarget = morphSetup->GetMorphTarget(morphTargetIndex);
@@ -441,10 +441,15 @@ namespace AZ
                             // and thus correspond with unique dispatches in the morph target pass
                             for (uint32_t deformDataIndex = 0; deformDataIndex < morphTargetStandard->GetNumDeformDatas(); ++deformDataIndex)
                             {
-                                weights.push_back(morphTargetSetupInstance->GetWeight());
+                                // Morph targets that don't deform any vertices (e.g. joint-based morph targets) are not registered in the render proxy. Skip adding their weights.
+                                const EMotionFX::MorphTargetStandard::DeformData* deformData = morphTargetStandard->GetDeformData(deformDataIndex);
+                                if (deformData->mNumVerts > 0)
+                                {
+                                    m_morphTargetWeights.push_back(morphTargetSetupInstance->GetWeight());
+                                }
                             }
                         }
-                        m_skinnedMeshRenderProxy->SetMorphTargetWeights(lodIndex, weights);
+                        m_skinnedMeshRenderProxy->SetMorphTargetWeights(lodIndex, m_morphTargetWeights);
                     }
                 }
             }

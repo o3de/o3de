@@ -53,7 +53,9 @@ namespace ScriptCanvasEditor
         AzEventHandler,
         Invalid
     };
-    
+
+    class NodeDescriptorComponent;
+
     class NodeDescriptorRequests : public AZ::EBusTraits
     {
     public:
@@ -74,6 +76,8 @@ namespace ScriptCanvasEditor
             
             return GetType() == descriptorType;
         }
+
+        virtual NodeDescriptorComponent* GetDescriptorComponent() = 0;
     };
 
     using NodeDescriptorRequestBus = AZ::EBus<NodeDescriptorRequests>;

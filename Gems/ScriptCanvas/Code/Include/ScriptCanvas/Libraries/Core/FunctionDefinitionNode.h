@@ -40,47 +40,61 @@ namespace ScriptCanvas
                 SCRIPTCANVAS_NODE(FunctionDefinitionNode);
 
                 FunctionDefinitionNode() = default;
+
                 ~FunctionDefinitionNode() = default;
 
-                ConnectionType GetConnectionType() const { return m_externalConnectionType; }
+                bool IsExecutionEntry() const;
 
+                bool IsExecutionExit() const;
+                
                 // Node...
-                bool IsEntryPoint() const override;
-
+                
                 void OnConfigured() override;
-                void OnActivate() override;
-
-                void OnInputSignal(const SlotId&) override;
 
                 bool OnValidateNode(ValidationResults& validationResults) override;
                 ////
 
-                AZStd::vector<const ScriptCanvas::Slot*> GetEntrySlots() const;
+                const Slot* GetEntrySlot() const;
 
-                void OnEndpointConnected(const ScriptCanvas::Endpoint& endpoint) override;
-
-                void OnEndpointDisconnected(const ScriptCanvas::Endpoint& endpoint) override;
-
-                void SignalEntrySlots();
+                const Slot* GetExitSlot() const;
 
                 AZ::Outcome<DependencyReport, void> GetDependencies() const override;
+
+                void MarkExecutionExit();
 
             protected:
 
                 void OnDisplayNameChanged() override;
 
-                void ConfigureExternalConnectionType();
-                
-                ConnectionType m_externalConnectionType = ConnectionType::Unknown;
-
-            private:
+                bool CanDeleteSlot(const SlotId& slotId) const override;
 
                 void SetupSlots();
 
                 bool IsValidDisplayName() const;
+
                 AZStd::string GenerateErrorMessage() const;
+
+                SlotId CreateDataSlot(AZStd::string_view name, AZStd::string_view toolTip, ConnectionType connectionType);
+
+                static constexpr AZ::Crc32 GetAddNodelingInputDataSlot() { return AZ_CRC_CE("AddNodelingInputDataSlot"); }
+                static constexpr AZ::Crc32 GetAddNodelingOutputDataSlot() { return AZ_CRC_CE("AddNodelingOutputDataSlot"); }
+                static constexpr AZ::Crc32 GetDataDynamicTypeGroup() { return AZ_CRC_CE("DataGroup"); }
+
+                AZStd::string GetDataDisplayGroup() const { return "DataDisplayGroup"; }
                 
+                SlotId HandleExtension(AZ::Crc32 extensionId) override;
+
+                void ConfigureVisualExtensions() override;
+
+                void OnSetup() override;
+
+            private:
+                bool m_isExecutionEntry = true;
                 AZStd::vector<const ScriptCanvas::Slot*> m_entrySlots;
+                AZStd::vector<const ScriptCanvas::Slot*> m_dataSlots;
+
+                bool m_configureVisualExtensions = false;
+
             };
         }
     }

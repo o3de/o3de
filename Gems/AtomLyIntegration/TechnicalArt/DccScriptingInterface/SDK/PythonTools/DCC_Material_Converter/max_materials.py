@@ -12,10 +12,10 @@
 import MaxPlus
 import sys
 
-    
+
 def get_material_information():
     for mesh_object in MaxPlus.Core.GetRootNode().Children:
         print('Object---> {}'.format(mesh_object))
-        
-        
+
+
 get_material_information()

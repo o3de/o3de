@@ -57,8 +57,8 @@ namespace ScriptCanvasEditor
 
             if (requestInterface)
             {
-                AZStd::vector< const ScriptCanvas::Slot* > scriptSlots;
-                ScriptCanvas::NodeRequestBus::EventResult(scriptSlots, GetScriptCanvasNodeId(), &ScriptCanvas::NodeRequests::GetAllSlots);
+                AZStd::vector<ScriptCanvas::Slot*> scriptSlots;
+                ScriptCanvas::NodeRequestBus::EventResult(scriptSlots, GetScriptCanvasNodeId(), &ScriptCanvas::NodeRequests::ModAllSlots);
 
                 for (int i = 0; i < scriptSlots.size(); ++i)
                 {

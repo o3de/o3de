@@ -20,6 +20,8 @@
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/UI/Prefab/PrefabEditManager.h>
+#include <AzToolsFramework/UI/Prefab/PrefabIntegrationBus.h>
+#include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
 #include <AzToolsFramework/UI/Prefab/PrefabUiHandler.h>
 
 namespace AzToolsFramework
@@ -45,6 +47,8 @@ namespace AzToolsFramework
         class PrefabIntegrationManager final
             : public EditorContextMenuBus::Handler
             , public AssetBrowser::AssetBrowserSourceDropBus::Handler
+            , public PrefabInstanceContainerNotificationBus::Handler
+            , public PrefabIntegrationInterface
         {
         public:
             AZ_CLASS_ALLOCATOR(PrefabIntegrationManager, AZ::SystemAllocator, 0);
@@ -62,6 +66,13 @@ namespace AzToolsFramework
             // EntityOutlinerSourceDropHandlingBus...
             void HandleSourceFileType(AZStd::string_view sourceFilePath, AZ::EntityId parentId, AZ::Vector3 position) const override;
 
+            // PrefabInstanceContainerNotificationBus...
+            void OnPrefabComponentActivate(AZ::EntityId entityId) override;
+            void OnPrefabComponentDeactivate(AZ::EntityId entityId) override;
+
+            // PrefabIntegrationInterface...
+            AZ::EntityId CreateNewEntityAtPosition(const AZ::Vector3& position, AZ::EntityId parentId) override;
+
         private:
             // Manages the Edit Mode UI for prefabs
             PrefabEditManager m_prefabEditManager;
@@ -73,6 +84,7 @@ namespace AzToolsFramework
             static void ContextMenu_CreatePrefab(AzToolsFramework::EntityIdList selectedEntities);
             static void ContextMenu_InstantiatePrefab();
             static void ContextMenu_EditPrefab(AZ::EntityId containerEntity);
+            static void ContextMenu_SavePrefab(AZ::EntityId containerEntity);
 
             // Prompt and resolve dialogs
             static bool QueryUserForPrefabSaveLocation(
@@ -109,6 +121,7 @@ namespace AzToolsFramework
 
             static const AZStd::string s_prefabFileExtension;
 
+            static EditorEntityUiInterface* s_editorEntityUiInterface;
             static PrefabPublicInterface* s_prefabPublicInterface;
             static PrefabEditInterface* s_prefabEditInterface;
         };

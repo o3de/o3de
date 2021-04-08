@@ -124,7 +124,6 @@ namespace AZ
 
         void MeshComponentController::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
-            dependent.push_back(AZ_CRC("MaterialProviderService", 0x64849a6b));
             dependent.push_back(AZ_CRC("TransformService", 0x8ee22c50));
         }
 
@@ -181,12 +180,14 @@ namespace AZ
             m_meshFeatureProcessor = RPI::Scene::GetFeatureProcessorForEntity<MeshFeatureProcessorInterface>(m_entityId);
             AZ_Error("MeshComponentController", m_meshFeatureProcessor, "Unable to find a MeshFeatureProcessorInterface on the entityId.");
 
-            RegisterModel();
             MeshComponentRequestBus::Handler::BusConnect(m_entityId);
             TransformNotificationBus::Handler::BusConnect(m_entityId);
             MaterialReceiverRequestBus::Handler::BusConnect(m_entityId);
             MaterialComponentNotificationBus::Handler::BusConnect(m_entityId);
             AzFramework::BoundsRequestBus::Handler::BusConnect(m_entityId);
+
+            //Buses must be connected before RegisterModel in case requests are made as a result of HandleModelChange
+            RegisterModel();
         }
 
         void MeshComponentController::Deactivate()
@@ -196,6 +197,7 @@ namespace AZ
             TransformNotificationBus::Handler::BusDisconnect();
             MaterialReceiverRequestBus::Handler::BusDisconnect();
             MaterialComponentNotificationBus::Handler::BusDisconnect();
+
             UnregisterModel();
 
             m_meshFeatureProcessor = nullptr;
@@ -229,7 +231,8 @@ namespace AZ
 
         AZStd::unordered_set<AZ::Name> MeshComponentController::GetModelUvNames() const
         {
-            return GetModel()->GetUvNames();
+            const Data::Instance<RPI::Model> model = GetModel();
+            return model ? model->GetUvNames() : AZStd::unordered_set<AZ::Name>();
         }
 
         void MeshComponentController::OnMaterialsUpdated([[maybe_unused]] const MaterialAssignmentMap& materials)
@@ -263,16 +266,16 @@ namespace AZ
                 m_meshHandle = m_meshFeatureProcessor->AcquireMesh(m_configuration.m_modelAsset, materials);
                 m_meshFeatureProcessor->ConnectModelChangeEventHandler(m_meshHandle, m_changeEventHandler);
 
-                // [GFX TODO] This should happen automatically. m_changeEventHandler should be passed to AcquireMesh
-                // If the model instance or asset already exists, announce a model change to let others know it's loaded.
-                HandleModelChange(m_meshFeatureProcessor->GetModel(m_meshHandle));
-
                 const AZ::Transform& transform = m_transformInterface ? m_transformInterface->GetWorldTM() : Transform::Identity();
                 m_meshFeatureProcessor->SetTransform(m_meshHandle, transform);
                 m_meshFeatureProcessor->SetSortKey(m_meshHandle, m_configuration.m_sortKey);
                 m_meshFeatureProcessor->SetLodOverride(m_meshHandle, m_configuration.m_lodOverride);
                 m_meshFeatureProcessor->SetExcludeFromReflectionCubeMaps(m_meshHandle, m_configuration.m_excludeFromReflectionCubeMaps);
                 m_meshFeatureProcessor->SetUseForwardPassIblSpecular(m_meshHandle, m_configuration.m_useForwardPassIblSpecular);
+
+                // [GFX TODO] This should happen automatically. m_changeEventHandler should be passed to AcquireMesh
+                // If the model instance or asset already exists, announce a model change to let others know it's loaded.
+                HandleModelChange(m_meshFeatureProcessor->GetModel(m_meshHandle));
             }
         }
 

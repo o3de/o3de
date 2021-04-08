@@ -97,7 +97,7 @@ namespace AssetUtilities
 
     bool ShouldUseFileHashing();
 
-    //! Determine the name of the current project - for example, SamplesProject
+    //! Determine the name of the current project - for example, AutomatedTesting
     //! Can be overridden by passing in a non-empty projectNameOverride
     //! The override will persist if the project name wasn't set previously or
     //! force=true is supplied

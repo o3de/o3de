@@ -35,19 +35,24 @@ namespace AzToolsFramework
             virtual TemplateReference FindTemplate(const TemplateId& id) = 0;
             virtual LinkReference FindLink(const LinkId& id) = 0;
 
-            virtual TemplateId AddTemplate(const AZStd::string& filePath, PrefabDom prefabDom) = 0;
+            virtual TemplateId AddTemplate(const AZ::IO::Path& filePath, PrefabDom prefabDom) = 0;
             virtual void RemoveTemplate(const TemplateId& templateId) = 0;
+            virtual void RemoveAllTemplates() = 0;
 
             virtual LinkId AddLink(const TemplateId& sourceTemplateId, const TemplateId& targetTemplateId,
                 PrefabDomValue::MemberIterator& instanceIterator, InstanceOptionalReference instance) = 0;
 
             //creates a new Link
             virtual LinkId CreateLink(const TemplateId& linkTargetId, const TemplateId& linkSourceId,
-                const InstanceAlias& instanceAlias, const LinkId& linkId = InvalidLinkId) = 0;
+                const InstanceAlias& instanceAlias, const PrefabDomReference linkPatch,
+                const LinkId& linkId = InvalidLinkId) = 0;
 
             virtual void RemoveLink(const LinkId& linkId) = 0;
 
-            virtual TemplateId GetTemplateIdFromFilePath(AZStd::string_view filePath) const = 0;
+            virtual TemplateId GetTemplateIdFromFilePath(AZ::IO::PathView filePath) const = 0;
+
+            virtual bool IsTemplateDirty(const TemplateId& templateId) = 0;
+            virtual void SetTemplateDirtyFlag(const TemplateId& templateId, bool dirty) = 0;
 
             virtual PrefabDom& FindTemplateDom(TemplateId templateId) = 0;
             virtual void UpdatePrefabTemplate(TemplateId templateId, const PrefabDom& updatedDom) = 0;
@@ -55,7 +60,8 @@ namespace AzToolsFramework
 
             virtual AZStd::unique_ptr<Instance> InstantiatePrefab(const TemplateId& templateId) = 0;
             virtual AZStd::unique_ptr<Instance> CreatePrefab(const AZStd::vector<AZ::Entity*>& entities,
-                AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume, const AZStd::string& filePath) = 0;
+                AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume, AZ::IO::PathView filePath,
+                AZStd::unique_ptr<AZ::Entity> containerEntity = nullptr) = 0;
         };
 
 

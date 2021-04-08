@@ -220,6 +220,7 @@ namespace ScriptCanvas
 
         bool m_isVisible = true;
         bool m_isLatent = false;
+        bool m_isUserAdded = false;
 
         AZStd::vector<ContractDescriptor> m_contractDescs;
         bool m_addUniqueSlotByNameAndType = true; // Only adds a new slot if a slot with the supplied name and CombinedSlotType does not exist on the node

@@ -16,7 +16,6 @@ set(FILES
     Clang_linux.cmake
     dyad_linux.cmake
     etc2comp_linux.cmake
-    expat_linux.cmake
     FbxSdk_linux.cmake
     FreeType2_linux.cmake
     OpenSSL_linux.cmake

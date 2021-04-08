@@ -69,9 +69,9 @@ public:
     MOCK_METHOD0(Release,
         void());
     MOCK_METHOD3(RenderWorld,
-        void(const int nRenderFlags, const SRenderingPassInfo& passInfo, const char* szDebugName));
+        void(int nRenderFlags, const SRenderingPassInfo& passInfo, const char* szDebugName));
     MOCK_METHOD2(RenderSceneReflection,
-        void(const int nRenderFlags, const SRenderingPassInfo& passInfo));
+        void(int nRenderFlags, const SRenderingPassInfo& passInfo));
     MOCK_METHOD1(PreWorldStreamUpdate,
         void(const CCamera& cam));
     MOCK_METHOD0(WorldStreamUpdate,
@@ -262,7 +262,7 @@ public:
     MOCK_METHOD1(GetLevelFilePath,
         const char*(const char* szFileName));
     MOCK_METHOD4(DisplayInfo,
-        void(float& fTextPosX, float& fTextPosY, float& fTextStepY, const bool bEnhanced));
+        void(float& fTextPosX, float& fTextPosY, float& fTextStepY, bool bEnhanced));
     MOCK_METHOD0(DisplayMemoryStatistics,
         void());
 

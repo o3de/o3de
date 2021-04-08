@@ -52,7 +52,9 @@ namespace ScriptCanvas
         //! Name is funky to avoid a mismatch with typing with another function
         //! that returns a better version of this information that cannot be used with
         //! EBuses because of references.
-        virtual AZStd::vector<const Slot*> GetAllSlots() const = 0;
+        virtual AZStd::vector<const Slot*> GetAllSlots() const  { return {}; }
+
+        virtual AZStd::vector<Slot*> ModAllSlots() { return {}; }
 
         //! Retrieves a slot id that matches the supplied name
         //! There can be multiple slots with the same name on a node

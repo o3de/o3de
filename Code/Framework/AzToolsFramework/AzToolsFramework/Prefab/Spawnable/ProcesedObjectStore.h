@@ -13,10 +13,11 @@
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/IO/Path/Path.h>
-#include <AzCore/std/any.h>
-#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/functional.h>
+#include <AzCore/std/utils.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/std/typetraits/typetraits.h>
 
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {
@@ -31,26 +32,42 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
 
         //! Constructs a new instance.
         //! @param uniqueId A name for the object that's unique within the scope of the Prefab. This name will be used to generate a sub id for the product
-        //!     which requires that the name is stable between runs.
-        //! @param object The object that generated during processing of a Prefab.
-        //! @param objectSerializer The callback used to convert the provided object into a binary stream.
-        //! @param assetType The asset type of the asset.
-        //! @param storagePath The relative path where the asset will be stored if/when committed to disk.
-        ProcessedObjectStore(AZStd::string uniqueId, AZStd::any object, SerializerFunction objectSerializer, AZ::Data::AssetType assetType);
-
+        //!     which requires that the name to be stable between runs.
+        //! @param sourceId The uuid for the source file.
+        //! @param assetSerializer The callback used to convert the provided asset into a binary version.
+        template<typename T>
+        static AZStd::pair<ProcessedObjectStore, T*> Create(AZStd::string uniqueId, const AZ::Uuid& sourceId,
+            SerializerFunction assetSerializer);
+        
         bool Serialize(AZStd::vector<uint8_t>& output) const;
-        uint32_t BuildSubId() const;
+        static uint32_t BuildSubId(AZStd::string_view id);
 
-        const AZStd::any& GetObject() const;
-        AZStd::any ReleaseObject();
-
+        bool HasAsset() const;
         const AZ::Data::AssetType& GetAssetType() const;
+        const AZ::Data::AssetData& GetAsset() const;
+        AZ::Data::AssetData& GetAsset();
+        AZStd::unique_ptr<AZ::Data::AssetData> ReleaseAsset();
+
         const AZStd::string& GetId() const;
 
     private:
-        AZStd::any m_object;
-        SerializerFunction m_objectSerializer;
-        AZ::Data::AssetType m_assetType;
+        ProcessedObjectStore(AZStd::string uniqueId, AZStd::unique_ptr<AZ::Data::AssetData> asset, SerializerFunction assetSerializer);
+
+        SerializerFunction m_assetSerializer;
+        AZStd::unique_ptr<AZ::Data::AssetData> m_asset;
         AZStd::string m_uniqueId;
     };
+
+    template<typename T>
+    AZStd::pair<ProcessedObjectStore, T*> ProcessedObjectStore::Create(AZStd::string uniqueId, const AZ::Uuid& sourceId,
+        SerializerFunction assetSerializer)
+    {
+        static_assert(AZStd::is_base_of_v<AZ::Data::AssetData, T>,
+            "ProcessedObjectStore can only be created from a class that derives from AZ::Data::AssetData.");
+        AZ::Data::AssetId assetId(sourceId, BuildSubId(uniqueId));
+        auto instance = AZStd::make_unique<T>(assetId, AZ::Data::AssetData::AssetStatus::Ready);
+        ProcessedObjectStore resultLeft(AZStd::move(uniqueId), AZStd::move(instance), AZStd::move(assetSerializer));
+        T* resultRight = static_cast<T*>(&resultLeft.GetAsset());
+        return AZStd::make_pair<ProcessedObjectStore, T*>(AZStd::move(resultLeft), resultRight);
+    }
 } // namespace AzToolsFramework::Prefab::PrefabConversionUtils

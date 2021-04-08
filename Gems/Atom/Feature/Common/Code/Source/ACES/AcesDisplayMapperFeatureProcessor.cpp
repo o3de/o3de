@@ -11,7 +11,7 @@
 */
 
 #include <Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h>
-#include <Atom/Feature/ACES/Aces.h>
+#include <ACES/Aces.h>
 #include <Atom/Feature/LookupTable/LookupTableAsset.h>
 
 #include <Atom/RHI/Factory.h>

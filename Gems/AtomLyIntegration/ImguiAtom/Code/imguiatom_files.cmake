@@ -10,6 +10,8 @@
 #
 
 set(FILES
+    Source/DebugConsole.cpp
+    Source/DebugConsole.h
     Source/ImguiAtomSystemComponent.cpp
     Source/ImguiAtomSystemComponent.h
 )

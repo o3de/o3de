@@ -16,7 +16,12 @@
 #include <IRenderer.h>
 #include <ISerialize.h>
 #include <AzFramework/API/ApplicationAPI.h>
+#include <AzFramework/Asset/AssetSystemBus.h>
 #include <LyShine/Bus/Sprite/UiSpriteBus.h>
+
+#include <Atom/RPI.Public/Image/StreamingImage.h>
+#include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
+#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 
 namespace
 {
@@ -32,11 +37,11 @@ namespace
     };
     const int numAllowedSpriteTextureExtensions = AZ_ARRAY_SIZE(allowedSpriteTextureExtensions);
 
-    bool IsValidSpriteTextureExtension(const char* extension)
+    bool IsValidSpriteTextureExtension(const AZStd::string& extension)
     {
         for (int i = 0; i < numAllowedSpriteTextureExtensions; ++i)
         {
-            if (strcmp(extension, allowedSpriteTextureExtensions[i]) == 0)
+            if (extension.compare(allowedSpriteTextureExtensions[i]) == 0)
             {
                 return true;
             }
@@ -45,16 +50,56 @@ namespace
         return false;
     }
 
-    bool ReplaceSpriteExtensionWithTextureExtension(const string& spritePath, string& texturePath)
+    // Check if a file exists. This does not go through the AssetCatalog so that it can identify files that exist but aren't processed yet,
+    // and so that it will work before the AssetCatalog has loaded
+    bool CheckIfFileExists(const AZStd::string& sourceRelativePath, const AZStd::string& cacheRelativePath)
     {
-        string testPath;
+        // If the file exists, it has already been processed and does not need to be modified
+        bool fileExists = AZ::IO::FileIOBase::GetInstance()->Exists(cacheRelativePath.c_str());
+
+        if (!fileExists)
+        {
+            // If the texture doesn't exist check if it's queued or being compiled.
+            AzFramework::AssetSystem::AssetStatus status;
+            AzFramework::AssetSystemRequestBus::BroadcastResult(status, &AzFramework::AssetSystemRequestBus::Events::GetAssetStatus, sourceRelativePath);
+
+            switch (status)
+            {
+            case AzFramework::AssetSystem::AssetStatus_Queued:
+            case AzFramework::AssetSystem::AssetStatus_Compiling:
+            case AzFramework::AssetSystem::AssetStatus_Compiled:
+            case AzFramework::AssetSystem::AssetStatus_Failed:
+            {
+                // The file is queued, in progress, or finished processing after the initial FileIO check
+                fileExists = true;
+                break;
+            }
+            case AzFramework::AssetSystem::AssetStatus_Unknown:
+            case AzFramework::AssetSystem::AssetStatus_Missing:
+            default:
+            {
+                // The file does not exist
+                fileExists = false;
+                break;
+            }
+            }
+        }
+
+        return fileExists;
+    }
+
+    bool ReplaceSpriteExtensionWithTextureExtension(const AZStd::string& spritePath, AZStd::string& texturePath)
+    {
         for (int i = 0; i < numAllowedSpriteTextureExtensions; ++i)
         {
-            testPath = PathUtil::ReplaceExtension(spritePath, allowedSpriteTextureExtensions[i]);
-            AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
-            if (fileIO && fileIO->Exists(testPath.c_str()))
+            AZStd::string sourceRelativePath(spritePath);
+            AzFramework::StringFunc::Path::ReplaceExtension(sourceRelativePath, allowedSpriteTextureExtensions[i]);
+            AZStd::string cacheRelativePath = sourceRelativePath + ".streamingimage";
+
+            bool textureExists = CheckIfFileExists(sourceRelativePath, cacheRelativePath);
+            if (textureExists)
             {
-                texturePath = testPath;
+                texturePath = sourceRelativePath;
                 return true;
             }
         }
@@ -62,41 +107,42 @@ namespace
         return false;
     }
 
-    bool GetAssetPaths(const string& pathname, string& spritePath, string& texturePath)
+    bool GetAssetPaths(const AZStd::string& pathname, AZStd::string& spritePath, AZStd::string& texturePath)
     {
         // the input string could be in any form. So make it normalized
         // NOTE: it should not be a full path at this point. If called from the UI editor it will
         // have been transformed to a game path. If being called with a hard coded path it should be a
         // game path already - it is not good for code to be using full paths.
-        AZStd::string assetPath(pathname.c_str());
+        AZStd::string assetPath(pathname);
         EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePath, assetPath);
-        string gamePath = assetPath.c_str();
 
         // check the extension and work out the pathname of the sprite file and the texture file
         // currently it works if the input path is either a sprite file or a texture file
-        const char* extension = PathUtil::GetExt(gamePath.c_str());
+        AZStd::string extension;
+        AzFramework::StringFunc::Path::GetExtension(assetPath.c_str(), extension, false);
 
-        if (strcmp(extension, spriteExtension) == 0)
+        if (extension.compare(spriteExtension) == 0)
         {
-            spritePath = gamePath;
+            spritePath = assetPath;
 
             // look for a texture file with the same name
             if (!ReplaceSpriteExtensionWithTextureExtension(spritePath, texturePath))
             {
                 gEnv->pSystem->Warning(VALIDATOR_MODULE_SHINE, VALIDATOR_WARNING, VALIDATOR_FLAG_FILE | VALIDATOR_FLAG_TEXTURE,
-                    gamePath.c_str(), "No texture file found for sprite: %s, no sprite will be used", gamePath.c_str());
+                    assetPath.c_str(), "No texture file found for sprite: %s, no sprite will be used", assetPath.c_str());
                 return false;
             }
         }
         else if (IsValidSpriteTextureExtension(extension))
         {
-            texturePath = gamePath;
-            spritePath = PathUtil::ReplaceExtension(gamePath, spriteExtension);
+            texturePath = assetPath;
+            spritePath = assetPath;
+            AzFramework::StringFunc::Path::ReplaceExtension(spritePath, spriteExtension);
         }
         else
         {
             gEnv->pSystem->Warning(VALIDATOR_MODULE_SHINE, VALIDATOR_WARNING, VALIDATOR_FLAG_FILE | VALIDATOR_FLAG_TEXTURE,
-                gamePath.c_str(), "Invalid file extension for sprite: %s, no sprite will be used", gamePath.c_str());
+                assetPath.c_str(), "Invalid file extension for sprite: %s, no sprite will be used", assetPath.c_str());
             return false;
         }
 
@@ -335,6 +381,7 @@ bool CSprite::AreCellBordersZeroWidth(int cellIndex) const
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 AZ::Vector2 CSprite::GetSize()
 {
+#ifdef LYSHINE_ATOM_TODO // Convert texture atlases to use Atom
     ITexture* texture = GetTexture();
     if (texture)
     {
@@ -348,6 +395,17 @@ AZ::Vector2 CSprite::GetSize()
     {
         return AZ::Vector2(0.0f, 0.0f);
     }
+#else
+    if (m_image)
+    {
+        AZ::RHI::Size size = m_image->GetRHIImage()->GetDescriptor().m_size;
+        return AZ::Vector2(size.m_width, size.m_height);
+    }
+    else
+    {
+        return AZ::Vector2(0.0f, 0.0f);
+    }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -540,7 +598,7 @@ void CSprite::OnAtlasLoaded(const TextureAtlasNamespace::TextureAtlas* atlas)
         {
             m_atlas = atlas;
             // Release the non-atlas version of the texture
-            ReleaseTexture(m_texture);
+            ReleaseImage(m_image);
             NotifyChanged();
         }
     }
@@ -561,7 +619,7 @@ void CSprite::OnAtlasUnloaded(const TextureAtlasNamespace::TextureAtlas* atlas)
         {
             // No replacement atlas found
             // load the texture file
-            LoadTexture(m_texturePathname, m_pathname, m_texture);
+            LoadImage(m_texturePathname.c_str(), m_image);
         }
     }
     NotifyChanged();
@@ -605,9 +663,9 @@ void CSprite::Shutdown()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 CSprite* CSprite::LoadSprite(const string& pathname)
 {
-    string spritePath;
-    string texturePath;
-    bool validAssetPaths = GetAssetPaths(pathname, spritePath, texturePath);
+    AZStd::string spritePath;
+    AZStd::string texturePath;
+    bool validAssetPaths = GetAssetPaths(pathname.c_str(), spritePath, texturePath);
     
     if (!validAssetPaths)
     {
@@ -615,7 +673,7 @@ CSprite* CSprite::LoadSprite(const string& pathname)
     }
 
     // test if the sprite is already loaded, if so return loaded sprite
-    auto result = s_loadedSprites->find(spritePath);
+    auto result = s_loadedSprites->find(spritePath.c_str());
     CSprite* loadedSprite = (result == s_loadedSprites->end()) ? nullptr : result->second;
 
     if (loadedSprite)
@@ -629,6 +687,7 @@ CSprite* CSprite::LoadSprite(const string& pathname)
     TextureAtlasNamespace::TextureAtlas* atlas = nullptr;
     TextureAtlasNamespace::AtlasCoordinates atlasCoordinates;
     TextureAtlasNamespace::TextureAtlasRequestBus::BroadcastResult(atlas, &TextureAtlasNamespace::TextureAtlasRequests::FindAtlasContainingImage, texturePath.c_str());
+    AZ::Data::Instance<AZ::RPI::Image> image;
     if (atlas)
     {
         atlasCoordinates = atlas->GetAtlasCoordinates(texturePath.c_str());
@@ -636,7 +695,7 @@ CSprite* CSprite::LoadSprite(const string& pathname)
     else
     {
         // load the texture file
-        if (!LoadTexture(texturePath, spritePath, texture))
+        if (!LoadImage(texturePath, image))
         {
             return nullptr;
         }
@@ -645,9 +704,9 @@ CSprite* CSprite::LoadSprite(const string& pathname)
     // create Sprite object
     CSprite* sprite = new CSprite;
 
-    sprite->m_texture = texture;
-    sprite->m_pathname = spritePath;
-    sprite->m_texturePathname = texturePath;
+    sprite->m_image = image;
+    sprite->m_pathname = spritePath.c_str();
+    sprite->m_texturePathname = texturePath.c_str();
     sprite->m_atlas = atlas;
     sprite->m_atlasCoordinates = atlasCoordinates;
 
@@ -700,9 +759,9 @@ CSprite* CSprite::CreateSprite(const string& renderTargetName)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 bool CSprite::DoesSpriteTextureAssetExist(const AZStd::string& pathname)
 {
-    string spritePath;
-    string texturePath;
-    bool validAssetPaths = GetAssetPaths(pathname.c_str(), spritePath, texturePath);
+    AZStd::string spritePath;
+    AZStd::string texturePath;
+    bool validAssetPaths = GetAssetPaths(pathname, spritePath, texturePath);
 
     if (!validAssetPaths)
     {
@@ -710,7 +769,7 @@ bool CSprite::DoesSpriteTextureAssetExist(const AZStd::string& pathname)
     }
 
     // Check if the sprite is already loaded
-    auto result = s_loadedSprites->find(spritePath);
+    auto result = s_loadedSprites->find(spritePath.c_str());
     CSprite* loadedSprite = (result == s_loadedSprites->end()) ? nullptr : result->second;
     if (loadedSprite)
     {
@@ -727,14 +786,9 @@ bool CSprite::DoesSpriteTextureAssetExist(const AZStd::string& pathname)
     }
 
     // Check if the texture asset exists
-    string ddsTexturePath = PathUtil::ReplaceExtension(texturePath, ".dds");
-    AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
-    if (fileIO && fileIO->Exists(ddsTexturePath.c_str()))
-    {
-        return true;
-    }
-
-    return false;
+    AZStd::string cacheRelativePath = texturePath + ".streamingimage";
+    bool textureExists = CheckIfFileExists(texturePath, cacheRelativePath);
+    return textureExists;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -791,6 +845,74 @@ void CSprite::ReleaseTexture(ITexture*& texture)
         gEnv->pRenderer->ReleaseResourceAsync(AZStd::move(pInfo));
         texture = nullptr;
     }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+bool CSprite::LoadImage(const AZStd::string& nameTex, AZ::Data::Instance<AZ::RPI::Image>& image)
+{
+    AZStd::string sourceRelativePath(nameTex);
+    AZStd::string cacheRelativePath = sourceRelativePath + ".streamingimage";
+    bool textureExists = CheckIfFileExists(sourceRelativePath, cacheRelativePath);
+
+    if (!textureExists)
+    {
+        // LyShine allows passing in a .dds extension even when the actual source file
+        // is differnt like a .tif. For the product file, we need the correct source extension
+        // prepended to the .streamingimage extension. So if the file doesn't exist and the
+        // extension passed in is .dds then try replacing it with .tif
+        // LYSHINE_ATOM_TODO - to remove this conversion we will have to update tge existing
+        // .dds references in Lua scripts, prefabs etc.
+        AZStd::string extension;
+        AzFramework::StringFunc::Path::GetExtension(nameTex.c_str(), extension, false);
+        if (extension == "dds")
+        {
+            sourceRelativePath = nameTex;
+
+            static const char* textureExtensions[] = { "png", "tif", "tiff", "tga", "jpg", "jpeg", "bmp", "gif" };
+
+            for (const char* extensionReplacement : textureExtensions)
+            {
+                AzFramework::StringFunc::Path::ReplaceExtension(sourceRelativePath, extensionReplacement);
+                cacheRelativePath = sourceRelativePath + ".streamingimage";
+
+                textureExists = CheckIfFileExists(sourceRelativePath, cacheRelativePath);
+                if (textureExists)
+                {
+                    break;
+                }
+            }
+        }
+    }
+
+    if (!textureExists)
+    {
+        AZ_Error("CSprite", false, "Attempted to load '%s', but it does not exist.", nameTex.c_str());
+        return false;
+    }
+
+    // The file may not be in the AssetCatalog at this point if it is still processing or doesn't exist on disk.
+    // Use GenerateAssetIdTEMP instead of GetAssetIdByPath so that it will return a valid AssetId anyways
+    AZ::Data::AssetId streamingImageAssetId;
+    AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+        streamingImageAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GenerateAssetIdTEMP,
+        sourceRelativePath.c_str());
+    streamingImageAssetId.m_subId = AZ::RPI::StreamingImageAsset::GetImageAssetSubId();
+
+    auto streamingImageAsset = AZ::Data::AssetManager::Instance().FindOrCreateAsset<AZ::RPI::StreamingImageAsset>(streamingImageAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
+    image = AZ::RPI::StreamingImage::FindOrCreate(streamingImageAsset);
+    if (!image)
+    {
+        AZ_Error("CSprite", false, "Failed to find or create an image instance from image asset '%s'", streamingImageAsset.GetHint().c_str());
+        return false;
+    }
+
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void CSprite::ReleaseImage(AZ::Data::Instance<AZ::RPI::Image>& image)
+{
+    image.reset();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

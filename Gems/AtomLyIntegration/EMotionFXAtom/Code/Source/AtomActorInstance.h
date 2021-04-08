@@ -187,6 +187,7 @@ namespace AZ
             AZStd::shared_ptr<MeshFeatureProcessorInterface::MeshHandle> m_meshHandle;
             AZ::TransformInterface* m_transformInterface = nullptr;
             AZStd::set<Data::AssetId> m_waitForMaterialLoadIds;
+            AZStd::vector<float> m_morphTargetWeights;
         };
 
     } // namespace Render

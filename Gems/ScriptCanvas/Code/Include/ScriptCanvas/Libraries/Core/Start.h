@@ -31,7 +31,7 @@ namespace ScriptCanvas
 
                 SCRIPTCANVAS_NODE(Start);
 
-                bool IsSupportedByNewBackend() const override { return true; }
+                
 
                 void OnInputSignal(const SlotId&) override;
 

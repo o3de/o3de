@@ -29,8 +29,8 @@ if(NOT PAL_TRAIT_${NameUpper}_SUPPORTED)
 endif()
 
 # We are on a supported platform, so add the ${Name} target
-# Note: We include the common files and the platform specific files which are set in defaultprojectdource_files.cmake and
-# in ${pal_dir}/defaultprojectdource_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+# Note: We include the common files and the platform specific files which are set in ${NameLower}_files.cmake and
+# in ${pal_dir}/${NameLower}_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
 ly_add_target(
     NAME ${Name}.Static STATIC
     NAMESPACE Project
@@ -43,12 +43,12 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzGameFramework
+            Gem::Atom_AtomBridge.Static
 )
 
 ly_add_target(
     NAME ${Name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Project
-    OUTPUT_NAME Project.${Name}
     FILES_CMAKE
         ${NameLower}_shared_files.cmake
         ${pal_dir}/${NameLower}_shared_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
@@ -71,6 +71,7 @@ ly_add_project_dependencies(
         ${Name}.GameLauncher
     DEPENDENCIES_FILES
         runtime_dependencies.cmake
+        ${pal_dir}/${PAL_PLATFORM_NAME_LOWERCASE}_runtime_dependencies.cmake
 )
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
@@ -84,6 +85,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             Editor
         DEPENDENCIES_FILES
             tool_dependencies.cmake
+            ${pal_dir}/${PAL_PLATFORM_NAME_LOWERCASE}_tool_dependencies.cmake
     )
 endif()
 
@@ -94,7 +96,8 @@ if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
         TARGETS
             ${Name}.ServerLauncher
         DEPENDENCIES_FILES
-            runtime_dependencies.cmake
+            server_dependencies.cmake
+            ${pal_dir}/${PAL_PLATFORM_NAME_LOWERCASE}_server_dependencies.cmake
     )
     set_property(GLOBAL APPEND PROPERTY LY_LAUNCHER_SERVER_PROJECTS ${Name})
 

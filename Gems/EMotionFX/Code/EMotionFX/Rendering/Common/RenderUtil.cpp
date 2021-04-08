@@ -495,7 +495,6 @@ namespace MCommon
         }
     }
 
-
     // render wireframe mesh
     void RenderUtil::RenderWireframe(EMotionFX::Mesh* mesh, const AZ::Transform& worldTM, const MCore::RGBAColor& color, bool directlyRender, float offsetScale)
     {
@@ -505,10 +504,12 @@ namespace MCommon
             return;
         }
 
+        PrepareForMesh(mesh, worldTM);
+
         const float scale = 0.01f * offsetScale;
 
         AZ::Vector3* normals = (AZ::Vector3*)mesh->FindVertexData(EMotionFX::Mesh::ATTRIB_NORMALS);
-        AZ::Vector3* positions = (AZ::Vector3*)mesh->FindVertexData(EMotionFX::Mesh::ATTRIB_POSITIONS);
+        MCore::RGBAColor* vertexColors = (MCore::RGBAColor*)mesh->FindVertexData(EMotionFX::Mesh::ATTRIB_COLORS128);
 
         const uint32 numSubMeshes = mesh->GetNumSubMeshes();
         for (uint32 subMeshIndex = 0; subMeshIndex < numSubMeshes; ++subMeshIndex)
@@ -516,7 +517,6 @@ namespace MCommon
             EMotionFX::SubMesh* subMesh = mesh->GetSubMesh(subMeshIndex);
             const uint32 numTriangles = subMesh->GetNumPolygons();
             const uint32 startVertex = subMesh->GetStartVertex();
-            const uint32 startIndex = subMesh->GetStartIndex();
             const uint32* indices = subMesh->GetIndices();
 
             for (uint32 triangleIndex = 0; triangleIndex < numTriangles; ++triangleIndex)
@@ -526,13 +526,22 @@ namespace MCommon
                 const uint32 indexB = indices[triangleStartIndex + 1] + startVertex;
                 const uint32 indexC = indices[triangleStartIndex + 2] + startVertex;
 
-                const AZ::Vector3 posA = worldTM.TransformPoint(positions[indexA] + normals[indexA] * scale);
-                const AZ::Vector3 posB = worldTM.TransformPoint(positions[indexB] + normals[indexB] * scale);
-                const AZ::Vector3 posC = worldTM.TransformPoint(positions[indexC] + normals[indexC] * scale);
+                const AZ::Vector3 posA = mWorldSpacePositions[indexA] + normals[indexA] * scale;
+                const AZ::Vector3 posB = mWorldSpacePositions[indexB] + normals[indexB] * scale;
+                const AZ::Vector3 posC = mWorldSpacePositions[indexC] + normals[indexC] * scale;
 
-                RenderLine(posA, posB, color);
-                RenderLine(posB, posC, color);
-                RenderLine(posC, posA, color);
+                if (vertexColors)
+                {
+                    RenderLine(posA, posB, vertexColors[indexA]);
+                    RenderLine(posB, posC, vertexColors[indexB]);
+                    RenderLine(posC, posA, vertexColors[indexC]);
+                }
+                else
+                {
+                    RenderLine(posA, posB, color);
+                    RenderLine(posB, posC, color);
+                    RenderLine(posC, posA, color);
+                }
             }
         }
 
@@ -541,7 +550,6 @@ namespace MCommon
             RenderLines();
         }
     }
-
 
     // render vertex and face normals
     void RenderUtil::RenderNormals(EMotionFX::Mesh* mesh, const AZ::Transform& worldTM, bool vertexNormals, bool faceNormals, float vertexNormalsScale, float faceNormalsScale, const MCore::RGBAColor& colorVertexNormals, const MCore::RGBAColor& colorFaceNormals, bool directlyRender)
@@ -572,7 +580,6 @@ namespace MCommon
                 EMotionFX::SubMesh* subMesh = mesh->GetSubMesh(subMeshIndex);
                 const uint32 numTriangles = subMesh->GetNumPolygons();
                 const uint32 startVertex = subMesh->GetStartVertex();
-                const uint32 startIndex = subMesh->GetStartIndex();
                 const uint32* indices = subMesh->GetIndices();
 
                 for (uint32 triangleIndex = 0; triangleIndex < numTriangles; ++triangleIndex)

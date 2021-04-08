@@ -13,6 +13,7 @@
 #include "PhysX_precompiled.h"
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
+#include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponent.h>
 #include <Tests/EditorTestUtilities.h>
 #include <EditorColliderComponent.h>
 #include <EditorShapeColliderComponent.h>
@@ -219,6 +220,42 @@ namespace PhysXEditorTests
         EXPECT_TRUE(aabb.GetMin().IsClose(AZ::Vector3::CreateZero()));
     }
 
+    TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_ShapeColliderWithPolygonPrismAndNonUniformScale_CorrectRunAabb)
+    {
+        // create an editor entity with a shape collider component and a polygon prism shape component
+        EntityPtr editorEntity = CreateInactiveEditorEntity("ShapeColliderComponentEditorEntity");
+        editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
+        editorEntity->CreateComponent(LmbrCentral::EditorPolygonPrismShapeComponentTypeId);
+
+        // add a non-uniform scale component
+        editorEntity->CreateComponent<AzToolsFramework::Components::EditorNonUniformScaleComponent>();
+
+        // suppress the shape collider error that will be raised because the polygon prism vertices have not been set yet
+        UnitTest::ErrorHandler polygonPrismErrorHandler("Invalid polygon prism");
+        editorEntity->Activate();
+
+        // modify the geometry of the polygon prism
+        TestData testData;
+        AZ::EntityId entityId = editorEntity->GetId();
+        SetPolygonPrismVertices(entityId, testData.polygonHShape);
+        SetPolygonPrismHeight(entityId, 2.0f);
+
+        // update the transform scale and non-uniform scale
+        AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetScale, AZ::Vector3(2.0f));
+        AZ::NonUniformScaleRequestBus::Event(entityId, &AZ::NonUniformScaleRequests::SetScale, AZ::Vector3(0.5f, 1.5f, 2.0f));
+
+        EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
+
+        // since there was no editor rigid body component, the runtime entity should have a static rigid body
+        const auto* staticBody = gameEntity->FindComponent<PhysX::StaticRigidBodyComponent>()->GetStaticRigidBody();
+
+        // the vertices of the input polygon prism ranged from (0, 0) to (3, 3) and the height was set to 2
+        // the bounding box of the static rigid body should reflect those values combined with the scale values above
+        AZ::Aabb aabb = staticBody->GetAabb();
+        EXPECT_TRUE(aabb.GetMax().IsClose(AZ::Vector3(3.0f, 9.0f, 8.0f)));
+        EXPECT_TRUE(aabb.GetMin().IsClose(AZ::Vector3::CreateZero()));
+    }
+
     TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_ShapeColliderWithCylinder_CorrectRuntimeComponents)
     {
         // create an editor entity with a shape collider component and a cylinder shape component
@@ -318,8 +355,10 @@ namespace PhysXEditorTests
         editorEntity->CreateComponent(LmbrCentral::EditorCompoundShapeComponentTypeId);
         editorEntity->Activate();
 
-        // check that a warning was raised for the unsupported shape
-        EXPECT_EQ(unsupportedShapeWarningHandler.GetWarningCount(), 1);
+        // expect 2 warnings
+                //1 raised for the unsupported shape
+                //2 when re-creating the underlying simulated body
+        EXPECT_EQ(unsupportedShapeWarningHandler.GetWarningCount(), 2);
 
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
@@ -515,7 +554,7 @@ namespace PhysXEditorTests
         EntityPtr gameChildEntity = CreateActiveGameEntityFromEditorEntity(editorChildEntity.get());
 
         // since there was an editor rigid body component, the runtime entity should have a dynamic rigid body
-        const Physics::RigidBody* rigidBody =
+        const AzPhysics::RigidBody* rigidBody =
             gameChildEntity->FindComponent<PhysX::RigidBodyComponent>()->GetRigidBody();
         
         // the bounding box of the rigid body should reflect the dimensions of the box set above

@@ -14,7 +14,10 @@
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/RTTI/RTTI.h>
 
+#include <AzToolsFramework/Prefab/Instance/Instance.h>
+#include <AzToolsFramework/Prefab/Link/Link.h>
 #include <AzToolsFramework/Prefab/PrefabDomTypes.h>
+#include <AzToolsFramework/Prefab/Template/Template.h>
 
 namespace AzToolsFramework
 {
@@ -40,12 +43,14 @@ namespace AzToolsFramework
                 const PrefabDom& modifiedState, const LinkId linkId) = 0;
 
             //! Updates the affected template for a given entityId using the providedPatch
-            virtual void PatchEntityInTemplate(PrefabDomValue& providedPatch, const AZ::EntityId& entityId) = 0;
+            virtual bool PatchEntityInTemplate(PrefabDomValue& providedPatch, const AZ::EntityId& entityId) = 0;
 
-            virtual void PatchEntityInTemplate(PrefabDomValue& providedPatch, const EntityAlias& entityAlias, const TemplateId& templateId) = 0;
+            virtual bool PatchEntityInTemplate(PrefabDomValue& providedPatch, const EntityAlias& entityAlias, const TemplateId& templateId) = 0;
+
+            virtual void AppendEntityAliasToPatchPaths(PrefabDom& providedPatch, const AZ::EntityId& entityId) = 0;
 
             //! Updates the template links (updating instances) for the given templateId using the providedPatch
-            virtual void PatchTemplate(PrefabDomValue& providedPatch, const AzToolsFramework::Prefab::TemplateId& templateId) = 0;
+            virtual void PatchTemplate(PrefabDomValue& providedPatch, const TemplateId& templateId) = 0;
 
             virtual void ApplyPatchesToInstance(const AZ::EntityId& entityId, PrefabDom& patches, const Instance& instanceToAddPatches) = 0;
 

@@ -60,7 +60,7 @@ namespace Multiplayer
     AZ_CVAR(AZ::CVarFixedString, sv_map, "nolevel", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The map the server should load");
     AZ_CVAR(AZ::CVarFixedString, sv_gamerules, "norules", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "GameRules server works with");
     AZ_CVAR(ProtocolType, sv_protocol, ProtocolType::Udp, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "This flag controls whether we use TCP or UDP for game networking");
-    AZ_CVAR(bool, sv_isdedicated, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether the host command creates an independent or client hosted server");
+    AZ_CVAR(bool, sv_isDedicated, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether the host command creates an independent or client hosted server");
 
     void MultiplayerSystemComponent::Reflect(AZ::ReflectContext* context)
     {
@@ -375,7 +375,6 @@ namespace Multiplayer
             }
         }
         m_agentType = multiplayerType;
-
     }
 
     void MultiplayerSystemComponent::AddConnectionAcquiredHandler(ConnectionAcquiredEvent::Handler& handler)
@@ -430,7 +429,7 @@ namespace Multiplayer
 
     void host([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
-        Multiplayer::MultiplayerAgentType serverType = sv_isdedicated ? MultiplayerAgentType::DedicatedServer : MultiplayerAgentType::ClientServer;
+        Multiplayer::MultiplayerAgentType serverType = sv_isDedicated ? MultiplayerAgentType::DedicatedServer : MultiplayerAgentType::ClientServer;
         INetworkInterface* networkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(s_networkInterfaceName));
         networkInterface->Listen(sv_port);
         AZ::Interface<IMultiplayer>::Get()->InitializeMultiplayer(serverType);

@@ -13,12 +13,17 @@
 #pragma once
 
 #include <AzCore/Component/ComponentBus.h>
+#include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Vector3.h>
-#include <AzFramework/Physics/Casts.h>
+#include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
+
+namespace AzPhysics
+{
+    struct RigidBody;
+}
 
 namespace Physics
 {
-    class RigidBody;
 
     class RigidBodyRequests
         : public AZ::ComponentBus
@@ -69,9 +74,9 @@ namespace Physics
         virtual void SetSimulationEnabled(bool enabled) = 0;
 
         virtual AZ::Aabb GetAabb() const = 0;
-        virtual Physics::RigidBody* GetRigidBody() = 0;
+        virtual AzPhysics::RigidBody* GetRigidBody() = 0;
 
-        virtual Physics::RayCastHit RayCast(const Physics::RayCastRequest& request) = 0;
+        virtual AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& request) = 0;
     };
 
     using RigidBodyRequestBus = AZ::EBus<RigidBodyRequests>;

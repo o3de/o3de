@@ -55,6 +55,7 @@
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipService.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
+#include <AzToolsFramework/Undo/UndoCacheInterface.h>
 
 
 namespace AzToolsFramework
@@ -163,10 +164,10 @@ namespace AzToolsFramework
     //=========================================================================
     void EditorEntityContextComponent::Activate()
     {
-        m_isLegacySliceService = true;
-
-        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(m_isLegacySliceService,
-            &AzToolsFramework::ToolsApplicationRequests::IsLegacySliceSystemEnabled);
+        bool prefabSystemEnabled = false;
+        AzFramework::ApplicationRequests::Bus::BroadcastResult(prefabSystemEnabled,
+            &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+        m_isLegacySliceService = !prefabSystemEnabled;
 
         if (m_isLegacySliceService)
         {
@@ -190,6 +191,7 @@ namespace AzToolsFramework
         EditorLegacyGameModeNotificationBus::Handler::BusConnect();
 
         m_entityVisibilityBoundsUnionSystem.Connect();
+
     }
 
     //=========================================================================
@@ -449,7 +451,8 @@ namespace AzToolsFramework
         }
         else
         {
-            AZ_Assert(!m_entityOwnershipService->m_shouldAssertForLegacySlicesUsage, "Not implemented");
+            loadedSuccessfully = static_cast<PrefabEditorEntityOwnershipService*>(m_entityOwnershipService.get())->LoadFromStream(
+                stream, AZStd::string_view(levelPakFile.toUtf8(), levelPakFile.size()) );
         }
         
         LoadFromStreamComplete(loadedSuccessfully);
@@ -495,7 +498,10 @@ namespace AzToolsFramework
         }
         else
         {
-            AZ_Assert(!m_entityOwnershipService->m_shouldAssertForLegacySlicesUsage, "Not implemented");
+            auto* service = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
+            AZ_Assert(service, "Start play in editor could not start because there was no implementation for "
+                "PrefabEditorEntityOwnershipInterface");
+            service->StartPlayInEditor();
         }
 
         m_isRunningGame = true;
@@ -523,7 +529,10 @@ namespace AzToolsFramework
         }
         else
         {
-            AZ_Assert(!m_entityOwnershipService->m_shouldAssertForLegacySlicesUsage, "Not implemented");
+            auto* service = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
+            AZ_Assert(service, "Stop play in editor could not complete because there was no implementation for "
+                "PrefabEditorEntityOwnershipInterface");
+            service->StopPlayInEditor();
         }
 
         ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, m_selectedBeforeStartingGame);
@@ -663,10 +672,6 @@ namespace AzToolsFramework
             // need to be associated with the root metadata info component.
             editorEntityOwnershipService->AssociateToRootMetadataEntity(entities);
         }
-        else
-        {
-            AZ_Assert(!m_entityOwnershipService->m_shouldAssertForLegacySlicesUsage, "Not implemented");
-        }
 
         SetupEditorEntities(entities);
     }
@@ -742,6 +747,11 @@ namespace AzToolsFramework
                 }
             }
 
+            if (m_undoCacheInterface == nullptr)
+            {
+                m_undoCacheInterface = AZ::Interface<UndoSystem::UndoCacheInterface>::Get();
+            }
+
             // After activating all the entities, refresh their entries in the undo cache.  
             // We need to wait until after all the activations are complete.  Otherwise, it's possible that the data for an entity
             // will change based on other activations.  For example, if we activate a child entity before its parent, the Transform
@@ -749,7 +759,7 @@ namespace AzToolsFramework
             // out of sync with the child data.
             for (AZ::Entity* entity : entities)
             {
-                PreemptiveUndoCache::Get()->UpdateCache(entity->GetId());
+                m_undoCacheInterface->UpdateCache(entity->GetId());
             }
         }
 

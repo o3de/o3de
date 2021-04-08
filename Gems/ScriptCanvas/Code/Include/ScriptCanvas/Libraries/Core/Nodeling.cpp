@@ -88,6 +88,11 @@ namespace ScriptCanvas
                     return nullptr;
                 }
 
+                const AZStd::string& Nodeling::GetDisplayName() const
+                {
+                    return m_displayName;
+                }
+
                 void Nodeling::SetDisplayName(const AZStd::string& displayName)
                 {
                     m_displayName = displayName;

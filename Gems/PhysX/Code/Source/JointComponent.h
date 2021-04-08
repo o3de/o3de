@@ -20,6 +20,11 @@
 
 #include <Source/Joint.h>
 
+namespace AzPhysics
+{
+    struct SimulatedBody;
+}
+
 namespace PhysX
 {
     /// Base class for game-time generic joint components.
@@ -44,8 +49,8 @@ namespace PhysX
             physx::PxRigidActor* m_followerActor = nullptr;
             physx::PxTransform m_leadLocal = physx::PxTransform(physx::PxIdentity);
             physx::PxTransform m_followerLocal = physx::PxTransform(physx::PxIdentity);
-            Physics::WorldBody* m_leadBody = nullptr;
-            Physics::WorldBody* m_followerBody = nullptr;
+            AzPhysics::SimulatedBody* m_leadBody = nullptr;
+            AzPhysics::SimulatedBody* m_followerBody = nullptr;
         };
 
         // AZ::Component
@@ -55,7 +60,7 @@ namespace PhysX
         // AZ::EntityBus
         void OnEntityActivated(const AZ::EntityId&) override;
 
-        /// Invoked in OnPostPhysicsUpdate for specific joint types to instantiate native joint pointer.
+        /// Invoked in JointComponent::OnEntityActivated for specific joint types to instantiate native joint pointer.
         virtual void InitNativeJoint() {};
 
         physx::PxTransform GetJointLocalPose(const physx::PxRigidActor* actor,

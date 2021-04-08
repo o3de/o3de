@@ -15,6 +15,8 @@
 
 #include "LevelFileDialog.h"
 
+#include <AzFramework/API/ApplicationAPI.h>
+
 // Qt
 #include <QMessageBox>
 #include <QInputDialog>
@@ -22,6 +24,7 @@
 // Editor
 #include "LevelTreeModel.h"
 #include "CryEditDoc.h"
+#include "API/ToolsApplicationAPI.h"
 
 
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
@@ -29,10 +32,6 @@ AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 static const char lastLoadPathFilename[] = "lastLoadPath.preset";
-
-// File name extension for the main level file
-static const char kLevelExtension[] = "ly";
-static const char kOldLevelExtension[] = "cry";
 
 // Folder in which levels are stored
 static const char kLevelsFolder[] = "Levels";
@@ -49,10 +48,8 @@ static const char* kLevelFolderNames[] =
 static const char* kLevelFileNames[] =
 {
     "level.pak",
-    "terraintexture.pak",
     "filelist.xml",
     "levelshadercache.pak",
-    "terrain\\cover.ctc"
 };
 
 CLevelFileDialog::CLevelFileDialog(bool openDialog, QWidget* parent)
@@ -164,7 +161,7 @@ void CLevelFileDialog::OnOK()
             }
         }
 
-        m_fileName = levelPath + "/" + Path::GetFileName(levelPath) + "." + kLevelExtension;
+        m_fileName = levelPath + "/" + Path::GetFileName(levelPath) + EditorUtils::LevelFile::GetDefaultFileExtension();
     }
 
     SaveLastUsedLevelPath();
@@ -209,9 +206,12 @@ bool CLevelFileDialog::IsValidLevelSelected()
     QString levelPath = GetLevelPath();
     m_fileName = GetFileName(levelPath);
 
-    QString currentExtension = Path::GetExt(m_fileName);
+    QString currentExtension = "." + Path::GetExt(m_fileName);
 
-    bool isInvalidFileExtension = (currentExtension != kLevelExtension && currentExtension != kOldLevelExtension);
+    const char* oldExtension = EditorUtils::LevelFile::GetOldCryFileExtension();
+    const char* defaultExtension = EditorUtils::LevelFile::GetDefaultFileExtension();
+
+    bool isInvalidFileExtension = (currentExtension != defaultExtension && currentExtension != oldExtension);
 
     if (!isInvalidFileExtension && CFileUtil::FileExists(m_fileName))
     {
@@ -246,10 +246,13 @@ QString CLevelFileDialog::GetFileName(QString levelPath)
 
     if (CheckLevelFolder(levelPath, &levelFiles) && levelFiles.size() >= 1)
     {
+        const char* oldExtension = EditorUtils::LevelFile::GetOldCryFileExtension();
+        const char* defaultExtension = EditorUtils::LevelFile::GetDefaultFileExtension();
+
         // A level folder was entered. Prefer the .ly/.cry file with the
         // folder name, otherwise pick the first one in the list
         QString path = Path::GetFileName(levelPath);
-        QString needle = path + "." + kLevelExtension;
+        QString needle = path + defaultExtension;
         auto iter = std::find(levelFiles.begin(), levelFiles.end(), needle);
 
         if (iter != levelFiles.end())
@@ -258,7 +261,7 @@ QString CLevelFileDialog::GetFileName(QString levelPath)
         }
         else
         {
-            needle = path + "." + kOldLevelExtension;
+            needle = path + oldExtension;
             iter = std::find(levelFiles.begin(), levelFiles.end(), needle);
             if (iter != levelFiles.end())
             {
@@ -379,7 +382,7 @@ void CLevelFileDialog::ReloadTree()
 }
 
 //////////////////////////////////////////////////////////////////////////
-// Heuristic to detect a level folder, also returns all .cry files in it
+// Heuristic to detect a level folder, also returns all .cry/.ly files in it
 //////////////////////////////////////////////////////////////////////////
 bool CLevelFileDialog::CheckLevelFolder(const QString folder, QStringList* levelFiles)
 {
@@ -392,42 +395,19 @@ bool CLevelFileDialog::CheckLevelFolder(const QString folder, QStringList* level
     {
         const QString fileName = fileData.fileName();
 
-        // Have we found a folder?
-        if (fileData.isDir())
+        if (!fileData.isDir())
         {
-            // Skip the parent folder entries
-            if (fileName == "." || fileName == "..")
-            {
-                continue;
-            }
+            QString ext = "." + Path::GetExt(fileName);
 
-            for (unsigned int i = 0; i < sizeof(kLevelFolderNames) / sizeof(char*); ++i)
-            {
-                if (fileName == kLevelFolderNames[i])
-                {
-                    bIsLevelFolder = true;
-                }
-            }
-        }
-        else
-        {
-            QString ext = Path::GetExt(fileName);
+            const char* defaultExtension = EditorUtils::LevelFile::GetDefaultFileExtension();
 
-            if (ext == kLevelExtension || ext == kOldLevelExtension)
+            if (ext == defaultExtension)
             {
                 bIsLevelFolder = true;
 
                 if (levelFiles)
                 {
                     levelFiles->push_back(fileName);
-                }
-            }
-
-            for (unsigned int i = 0; i < sizeof(kLevelFileNames) / sizeof(char*); ++i)
-            {
-                if (fileName == kLevelFileNames[i])
-                {
-                    bIsLevelFolder = true;
                 }
             }
         }

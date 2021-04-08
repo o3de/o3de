@@ -57,7 +57,7 @@ $ python resource_mapping_tool.py
 Update `resource_mapping_tool.cmd` with your virtualenv full path.
 
  * **VIRTUALENV_PATH**: Fill this variable with your virtualenv full path.
- 
+
 Then you can launch the resource mapping tool by running the batch script directly.
 
 ```

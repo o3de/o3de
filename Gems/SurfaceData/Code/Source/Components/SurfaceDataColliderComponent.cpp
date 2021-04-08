@@ -19,9 +19,8 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Math/IntersectSegment.h>
 
-#include <AzFramework/Physics/Casts.h>
-#include <AzFramework/Physics/World.h>
 #include <AzFramework/Physics/WorldBodyBus.h>
+#include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
 #include <SurfaceData/Utility/SurfaceDataUtility.h>
@@ -207,7 +206,7 @@ namespace SurfaceData
             return false;
         }
 
-        Physics::RayCastRequest request;
+        AzPhysics::RayCastRequest request;
         request.m_direction = AZ::Vector3(0.0f, 0.0f, -1.0f);
         if (queryPointOnly)
         {
@@ -223,7 +222,7 @@ namespace SurfaceData
             request.m_distance = m_colliderBounds.GetExtents().GetZ();
         }
 
-        Physics::RayCastHit result;
+        AzPhysics::SceneQueryHit result;
         Physics::WorldBodyRequestBus::EventResult(result, GetEntityId(), &Physics::WorldBodyRequestBus::Events::RayCast, request);
 
         if (result)

@@ -47,12 +47,12 @@ namespace AZ
         {
         public:
             AZ_CLASS_ALLOCATOR(MorphTargetInputBuffers, AZ::SystemAllocator, 0);
-            MorphTargetInputBuffers(uint32_t vertexCount, const AZStd::vector<uint32_t>& vertexDeltas, const AZStd::string& bufferNamePrefix);
+            MorphTargetInputBuffers(const RPI::BufferAssetView& bufferAssetView, const AZStd::string& bufferNamePrefix);
 
             //! Set the buffer views and vertex count on the given SRG
             void SetBufferViewsOnShaderResourceGroup(const Data::Instance<RPI::ShaderResourceGroup>& perInstanceSRG);
         private:
-            Data::Instance<RPI::Buffer> m_vertexDeltas;
+            RHI::Ptr<RHI::BufferView> m_vertexDeltaBufferView;
         };
 
         struct MorphTargetMetaData

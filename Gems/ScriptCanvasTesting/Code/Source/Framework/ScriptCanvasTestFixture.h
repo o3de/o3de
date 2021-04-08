@@ -78,11 +78,10 @@ namespace ScriptCanvasTests
                     descriptor.m_modules.push_back(dynamicModuleDescriptor);
                     dynamicModuleDescriptor.m_dynamicLibraryPath = "ScriptCanvas.Editor";
                     descriptor.m_modules.push_back(dynamicModuleDescriptor);
-                    dynamicModuleDescriptor.m_dynamicLibraryPath = "Gem.ExpressionEvaluation.4c6f9df57ca2468f93c8d860ee6a1167.v0.1.0";
+                    dynamicModuleDescriptor.m_dynamicLibraryPath = "ExpressionEvaluation";
                     descriptor.m_modules.push_back(dynamicModuleDescriptor);
-                    dynamicModuleDescriptor.m_dynamicLibraryPath = "Gem.ScriptEvents.32d8ba21703e4bbbb08487366e48dd69.v0.1.0";
+                    dynamicModuleDescriptor.m_dynamicLibraryPath = "ScriptEvents";
                     descriptor.m_modules.push_back(dynamicModuleDescriptor);
-
                     s_application->Start(descriptor, appStartup);
                     // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
                     // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 

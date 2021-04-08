@@ -10,11 +10,16 @@
 *
 */
 
+#include <AzCore/JSON/prettywriter.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceEntityScrubber.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityIdMapper.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceSerializer.h>
+
+#include <QDebug>
 
 namespace AzToolsFramework
 {
@@ -71,15 +76,21 @@ namespace AzToolsFramework
                 return true;
             }
 
-            bool LoadInstanceFromPrefabDom(Instance& instance, const PrefabDom& prefabDom, bool shouldClearContainers)
+            bool LoadInstanceFromPrefabDom(Instance& instance, const PrefabDom& prefabDom, LoadInstanceFlags flags)
             {
                 InstanceEntityIdMapper entityIdMapper;
                 entityIdMapper.SetLoadingInstance(instance);
+                if ((flags & LoadInstanceFlags::AssignRandomEntityId) == LoadInstanceFlags::AssignRandomEntityId)
+                {
+                    entityIdMapper.SetEntityIdGenerationApproach(InstanceEntityIdMapper::EntityIdGenerationApproach::Random);
+                }
 
                 AZ::JsonDeserializerSettings settings;
+                // The InstanceEntityIdMapper is registered twice because it's used in several places during deserialization where one is
+                // specific for the InstanceEntityIdMapper and once for the generic JsonEntityIdMapper. Because the Json Serializer's meta
+                // data has strict typing and doesn't look for inheritance both have to be explicitly added so they're found both locations.
                 settings.m_metadata.Add(static_cast<AZ::JsonEntityIdSerializer::JsonEntityIdMapper*>(&entityIdMapper));
                 settings.m_metadata.Add(&entityIdMapper);
-                settings.m_clearContainers = shouldClearContainers;
 
                 AZ::JsonSerializationResult::ResultCode result =
                     AZ::JsonSerialization::Load(instance, prefabDom, settings);
@@ -93,12 +104,54 @@ namespace AzToolsFramework
                     return false;
                 }
 
-                entityIdMapper.FixUpUnresolvedEntityReferences();
+                return true;
+            }
+
+            bool LoadInstanceFromPrefabDom(
+                Instance& instance, Instance::EntityList& newlyAddedEntities, const PrefabDom& prefabDom, LoadInstanceFlags flags)
+            {
+                InstanceEntityIdMapper entityIdMapper;
+                entityIdMapper.SetLoadingInstance(instance);
+                if ((flags & LoadInstanceFlags::AssignRandomEntityId) == LoadInstanceFlags::AssignRandomEntityId)
+                {
+                    entityIdMapper.SetEntityIdGenerationApproach(InstanceEntityIdMapper::EntityIdGenerationApproach::Random);
+                }
+
+                AZ::JsonDeserializerSettings settings;
+                // The InstanceEntityIdMapper is registered twice because it's used in several places during deserialization where one is
+                // specific for the InstanceEntityIdMapper and once for the generic JsonEntityIdMapper. Because the Json Serializer's meta
+                // data has strict typing and doesn't look for inheritance both have to be explicitly added so they're found both locations.
+                settings.m_metadata.Add(static_cast<AZ::JsonEntityIdSerializer::JsonEntityIdMapper*>(&entityIdMapper));
+                settings.m_metadata.Add(&entityIdMapper);
+
+                InstanceEntityScrubber instanceEntityScrubber(newlyAddedEntities);
+                settings.m_metadata.Add(&instanceEntityScrubber);
+
+                AZ::JsonSerializationResult::ResultCode result =
+                    AZ::JsonSerialization::Load(instance, prefabDom, settings);
+
+                if (result.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
+                {
+                    AZ_Error("Prefab", false,
+                        "Failed to de-serialize Prefab Instance from Prefab DOM. "
+                        "Unable to proceed.");
+
+                    return false;
+                }
 
                 return true;
             }
 
+            void PrintPrefabDomValue(
+                [[maybe_unused]] const AZStd::string_view printMessage,
+                [[maybe_unused]] const PrefabDomValue& prefabDomValue)
+            {
+                rapidjson::StringBuffer prefabBuffer;
+                rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(prefabBuffer);
+                prefabDomValue.Accept(writer);
 
+                qDebug() << printMessage.data() << "\n" << prefabBuffer.GetString();
+            }
         } // namespace PrefabDomUtils
     } // namespace Prefab
 } // namespace AzToolsFramework

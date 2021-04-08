@@ -156,7 +156,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             PRIVATE
                 AZ::AzTestShared
                 AZ::AzTest
-                AZ::AzPhysicsTests
                 Gem::PhysX.Static
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral
@@ -188,7 +187,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     3rdParty::Qt::Test
                     AZ::AzTestShared
                     AZ::AzTest
-                    AZ::AzPhysicsTests
                     AZ::AzToolsFrameworkTestCommon
                     Gem::PhysX.Static
                     Gem::PhysX.Editor.Static

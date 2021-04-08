@@ -71,7 +71,7 @@ namespace Multiplayer
         {
             NetBindComponent* netBindComponent = m_controlledEntity.GetNetBindComponent();
             // potentially false if we just migrated the player, if that is the case, don't send any more updates
-            if (netBindComponent != nullptr && (netBindComponent->GetNetEntityRole() == NetEntityRole::ServerAuthority))
+            if (netBindComponent != nullptr && (netBindComponent->GetNetEntityRole() == NetEntityRole::Authority))
             {
                 m_entityReplicationManager.SendUpdates(serverGameTimeMs);
             }

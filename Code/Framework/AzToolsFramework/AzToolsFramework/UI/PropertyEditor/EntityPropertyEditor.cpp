@@ -31,6 +31,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/sort.h>
 
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzQtComponents/Components/Style.h>
@@ -47,6 +48,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/AssetBrowser/EBusFindAssetTypeByName.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
+#include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Slice/SliceDataFlagsCommand.h>
 #include <AzToolsFramework/Slice/SliceMetadataEntityContextBus.h>
 #include <AzToolsFramework/Slice/SliceUtilities.h>
@@ -331,8 +333,14 @@ namespace AzToolsFramework
         m_gui->m_entitySearchBox->setContextMenuPolicy(Qt::CustomContextMenu);
         AzQtComponents::LineEdit::applySearchStyle(m_gui->m_entitySearchBox);
 
-        QStandardItemModel*model = new QStandardItemModel(3, 1);
-        for (int row = 0; row < 3; ++row)
+        AzFramework::ApplicationRequests::Bus::BroadcastResult(
+            m_prefabsAreEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+
+        m_itemNames =
+            m_prefabsAreEnabled ? QStringList{"Universal", "Editor only"} : QStringList{"Start active", "Start inactive", "Editor only"};
+        int itemNameCount = m_itemNames.size();
+        QStandardItemModel* model = new QStandardItemModel(itemNameCount, 1);
+        for (int row = 0; row < itemNameCount; ++row)
         {
             m_comboItems[row] = new QStandardItem(m_itemNames[row]);
             m_comboItems[row]->setCheckable(true);
@@ -396,6 +404,8 @@ namespace AzToolsFramework
 
         CreateActions();
         UpdateContents();
+
+        m_prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
 
         EditorEntityContextNotificationBus::Handler::BusConnect();
 
@@ -741,16 +751,32 @@ namespace AzToolsFramework
                 isLayerEntity,
                 selectedEntityId,
                 &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
+
+            bool isPrefabEntity = (m_prefabPublicInterface) ? m_prefabPublicInterface->IsInstanceContainerEntity(selectedEntityId) : false;
+
             if (isLayerEntity)
             {
                 if (result == SelectionEntityTypeInfo::None)
                 {
                     result = SelectionEntityTypeInfo::OnlyLayerEntities;
                 }
-                else if(result == SelectionEntityTypeInfo::OnlyStandardEntities)
+                else if (result == SelectionEntityTypeInfo::OnlyStandardEntities)
                 {
                     result = SelectionEntityTypeInfo::Mixed;
                     // An entity of both layer and non-layer type have been found, so break out of the loop.
+                    break;
+                }
+            }
+            else if (isPrefabEntity)
+            {
+                if (result == SelectionEntityTypeInfo::None)
+                {
+                    result = SelectionEntityTypeInfo::OnlyPrefabEntities;
+                }
+                else if (result == SelectionEntityTypeInfo::OnlyStandardEntities)
+                {
+                    result = SelectionEntityTypeInfo::Mixed;
+                    // An entity of both prefab and non-prefab type have been found, so break out of the loop.
                     break;
                 }
             }
@@ -760,7 +786,7 @@ namespace AzToolsFramework
                 {
                     result = SelectionEntityTypeInfo::OnlyStandardEntities;
                 }
-                else if (result == SelectionEntityTypeInfo::OnlyLayerEntities)
+                else if (result == SelectionEntityTypeInfo::OnlyLayerEntities || result == SelectionEntityTypeInfo::OnlyPrefabEntities)
                 {
                     result = SelectionEntityTypeInfo::Mixed;
                     // An entity of both layer and non-layer type have been found, so break out of the loop.
@@ -857,7 +883,7 @@ namespace AzToolsFramework
             entityDetailsVisible = true;
             entityDetailsLabelText = GetEntityDetailsLabelText();
         }
-        else if (selectionEntityTypeInfo == SelectionEntityTypeInfo::OnlyLayerEntities)
+        else if (selectionEntityTypeInfo == SelectionEntityTypeInfo::OnlyLayerEntities || selectionEntityTypeInfo == SelectionEntityTypeInfo::OnlyPrefabEntities)
         {
             // If a customer filter is not already in use, only show layer components.
             if (!m_customFilterSet)
@@ -2477,9 +2503,10 @@ namespace AzToolsFramework
             return;
         }
 
-        for (auto& comboItem : m_comboItems)
+        size_t comboItemCount = StatusTypeToIndex(StatusItems);
+        for (size_t i=0; i<comboItemCount; ++i)
         {
-            comboItem->setCheckState(Qt::Unchecked);
+            m_comboItems[i]->setCheckState(Qt::Unchecked);
         }
 
         bool allActive = true;
@@ -2519,26 +2546,41 @@ namespace AzToolsFramework
             }
         }
 
+        if (m_prefabsAreEnabled)
+        {
+            if (allInactive)
+            {
+                AZ_Warning("Prefab", false, "All entities found to be inactive. This is an option that's not supported with Prefabs.");
+                allInactive = false;
+                allEditorOnly = true;
+            }
+            if (someInactive)
+            {
+                AZ_Warning("Prefab", false, "Some inactive entities found. This is an option that's not supported with Prefabs.");
+                someInactive = false;
+            }
+        }
+
         m_gui->m_statusComboBox->setItalic(false);
         if (allActive)
         {
-            m_gui->m_statusComboBox->setHeaderOverride(m_itemNames[StatusType::StatusStartActive]);
-            m_gui->m_statusComboBox->setCurrentIndex(StatusType::StatusStartActive);
-            m_comboItems[StatusType::StatusStartActive]->setCheckState(Qt::Checked);
+            m_gui->m_statusComboBox->setHeaderOverride(m_itemNames[StatusTypeToIndex(StatusType::StatusStartActive)]);
+            m_gui->m_statusComboBox->setCurrentIndex(StatusTypeToIndex(StatusType::StatusStartActive));
+            m_comboItems[StatusTypeToIndex(StatusType::StatusStartActive)]->setCheckState(Qt::Checked);
         }
         else
         if (allInactive)
         {
-            m_gui->m_statusComboBox->setHeaderOverride(m_itemNames[StatusType::StatusStartInactive]);
-            m_gui->m_statusComboBox->setCurrentIndex(StatusType::StatusStartInactive);
-            m_comboItems[StatusType::StatusStartInactive]->setCheckState(Qt::Checked);
+            m_gui->m_statusComboBox->setHeaderOverride(m_itemNames[StatusTypeToIndex(StatusType::StatusStartInactive)]);
+            m_gui->m_statusComboBox->setCurrentIndex(StatusTypeToIndex(StatusType::StatusStartInactive));
+            m_comboItems[StatusTypeToIndex(StatusType::StatusStartInactive)]->setCheckState(Qt::Checked);
         }
         else
         if (allEditorOnly)
         {
-            m_gui->m_statusComboBox->setHeaderOverride(m_itemNames[StatusType::StatusEditorOnly]);
-            m_gui->m_statusComboBox->setCurrentIndex(StatusType::StatusEditorOnly);
-            m_comboItems[StatusType::StatusEditorOnly]->setCheckState(Qt::Checked);
+            m_gui->m_statusComboBox->setHeaderOverride(m_itemNames[StatusTypeToIndex(StatusType::StatusEditorOnly)]);
+            m_gui->m_statusComboBox->setCurrentIndex(StatusTypeToIndex(StatusType::StatusEditorOnly));
+            m_comboItems[StatusTypeToIndex(StatusType::StatusEditorOnly)]->setCheckState(Qt::Checked);
         }
         else // Some marked active, some not
         {
@@ -2546,21 +2588,69 @@ namespace AzToolsFramework
             m_gui->m_statusComboBox->setHeaderOverride("- Multiple selected -");
             if (someActive)
             {
-                m_comboItems[StatusType::StatusStartActive]->setCheckState(Qt::PartiallyChecked);
+                m_comboItems[StatusTypeToIndex(StatusType::StatusStartActive)]->setCheckState(Qt::PartiallyChecked);
             }
             if (someInactive)
             {
-                m_comboItems[StatusType::StatusStartInactive]->setCheckState(Qt::PartiallyChecked);
+                m_comboItems[StatusTypeToIndex(StatusType::StatusStartInactive)]->setCheckState(Qt::PartiallyChecked);
             }
             if (someEditorOnly)
             {
-                m_comboItems[StatusType::StatusEditorOnly]->setCheckState(Qt::PartiallyChecked);
+                m_comboItems[StatusTypeToIndex(StatusType::StatusEditorOnly)]->setCheckState(Qt::PartiallyChecked);
             }
         }
 
         m_gui->m_statusComboBox->setVisible(!m_isSystemEntityEditor && !m_isLevelEntityEditor);
         m_gui->m_statusComboBox->style()->unpolish(m_gui->m_statusComboBox);
         m_gui->m_statusComboBox->style()->polish(m_gui->m_statusComboBox);
+    }
+
+    size_t EntityPropertyEditor::StatusTypeToIndex(StatusType statusType) const
+    {
+        if (m_prefabsAreEnabled)
+        {
+            switch (statusType)
+            {
+            case StatusStartActive:
+                return 0;
+            case StatusStartInactive:
+                AZ_Assert(false, "StatusStartInactive is not supported when Prefabs are enabled.");
+                return 0;
+            case StatusEditorOnly:
+                return 1;
+            case StatusItems:
+                return 2;
+            default:
+                AZ_Assert(false, "StatusType for EntityPropertyEditor is out of bounds.");
+                return 1;
+            }
+        }
+        else
+        {
+            return statusType;
+        }
+    }
+
+    EntityPropertyEditor::StatusType EntityPropertyEditor::IndexToStatusType(size_t index) const
+    {
+        if (m_prefabsAreEnabled)
+        {
+            switch (index)
+            {
+            case 0:
+                return StatusStartActive;
+            case 1:
+                return StatusEditorOnly;
+            default:
+                AZ_Assert(index < StatusType::StatusItems, "Index for EntityPropertyEditor::IndexToStatusType is out of bounds");
+                return StatusEditorOnly;
+            }
+        }
+        else
+        {
+            AZ_Assert(index < StatusType::StatusItems, "Index for EntityPropertyEditor::IndexToStatusType is out of bounds");
+            return aznumeric_cast<StatusType>(index);
+        }
     }
 
     void EntityPropertyEditor::OnDisplayComponentEditorMenu(const QPoint& position)
@@ -3649,12 +3739,12 @@ namespace AzToolsFramework
         {
             ScopedUndoBatch undo("Change Status");
 
-            switch (index)
+            switch (IndexToStatusType(index))
             {
                 case StatusType::StatusStartActive:
                 case StatusType::StatusStartInactive:
                 {
-                    bool entityIsStartingActive = index == StatusType::StatusStartActive;
+                    bool entityIsStartingActive = index == StatusTypeToIndex(StatusType::StatusStartActive);
 
                     for (AZ::EntityId entityId : m_selectedEntityIds)
                     {

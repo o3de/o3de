@@ -58,16 +58,12 @@ namespace AZ
             // Scope producer functions...
             void CompileResources(const RHI::FrameGraphCompileContext& context) override;
 
-            // one time initialization
-            void Init();
-
         private:
             CheckerboardColorResolvePass() = delete;
             explicit CheckerboardColorResolvePass(const RPI::PassDescriptor& descriptor);
 
-            AZ::RHI::ShaderInputConstantIndex m_constantsIndex;
+            RHI::ShaderInputNameIndex m_constantsIndex = "m_constants";
                         
-            bool m_initialized = false;
             Matrix4x4 m_prevClipToWorld;
             uint8_t m_frameOffset = 0;
             DebugRenderType m_debugRenderType = DebugRenderType::None;

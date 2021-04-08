@@ -14,11 +14,14 @@
 
 #include "WhiteBoxColliderComponent.h"
 
+#include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzFramework/Physics/RigidBody.h>
+#include <AzFramework/Physics/PhysicsScene.h>
+#include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 #include <AzFramework/Physics/SystemBus.h>
-#include <AzFramework/Physics/World.h>
+#include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
+#include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
 
 namespace WhiteBox
 {
@@ -53,31 +56,54 @@ namespace WhiteBox
 
     void WhiteBoxColliderComponent::Activate()
     {
+        auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
+        if (sceneInterface == nullptr)
+        {
+            AZ_Error("WhiteBox", false, "Missing Physics Scene Interface, unble to Activate WhiteBoxColliderComponent");
+            return;
+        }
+
+        AzPhysics::SceneHandle defaultScene = sceneInterface->GetSceneHandle(AzPhysics::DefaultPhysicsSceneName);
+        if (defaultScene == AzPhysics::InvalidSceneHandle)
+        {
+            AZ_Error("WhiteBox", false, "Missing Default Physics Scene, unble to Activate WhiteBoxColliderComponent");
+            return;
+        }
+
         const AZ::EntityId entityId = GetEntityId();
 
         AZ::Transform worldTransform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(worldTransform, entityId, &AZ::TransformInterface::GetWorldTM);
 
-        Physics::RigidBodyConfiguration bodyConfiguration;
-        bodyConfiguration.m_debugName = GetEntity()->GetName().c_str();
-        bodyConfiguration.m_entityId = entityId;
-        bodyConfiguration.m_orientation = worldTransform.GetRotation();
-        bodyConfiguration.m_position = worldTransform.GetTranslation();
-        bodyConfiguration.m_kinematic = true; // note: this field is ignored in the WhiteBoxBodyType::Static case
+        // create shape
+        AZStd::shared_ptr<Physics::Shape> shape;
+        Physics::SystemRequestBus::BroadcastResult(
+            shape, &Physics::SystemRequests::CreateShape, m_physicsColliderConfiguration, m_shapeConfiguration);
 
         // create rigid body
         switch (m_whiteBoxColliderConfiguration.m_bodyType)
         {
         case WhiteBoxBodyType::Kinematic:
             {
-                Physics::SystemRequestBus::BroadcastResult(
-                    m_rigidBody, &Physics::SystemRequests::CreateRigidBody, bodyConfiguration);
+                AzPhysics::RigidBodyConfiguration bodyConfiguration;
+                bodyConfiguration.m_debugName = GetEntity()->GetName().c_str();
+                bodyConfiguration.m_entityId = entityId;
+                bodyConfiguration.m_orientation = worldTransform.GetRotation();
+                bodyConfiguration.m_position = worldTransform.GetTranslation();
+                bodyConfiguration.m_kinematic = true; // note: this field is ignored in the WhiteBoxBodyType::Static case
+                bodyConfiguration.m_colliderAndShapeData = shape;
+                m_simulatedBodyHandle = sceneInterface->AddSimulatedBody(defaultScene, &bodyConfiguration);
             }
             break;
         case WhiteBoxBodyType::Static:
             {
-                Physics::SystemRequestBus::BroadcastResult(
-                    m_rigidBody, &Physics::SystemRequests::CreateStaticRigidBody, bodyConfiguration);
+                AzPhysics::StaticRigidBodyConfiguration staticBodyConfiguration;
+                staticBodyConfiguration.m_debugName = GetEntity()->GetName().c_str();
+                staticBodyConfiguration.m_entityId = entityId;
+                staticBodyConfiguration.m_orientation = worldTransform.GetRotation();
+                staticBodyConfiguration.m_position = worldTransform.GetTranslation();
+                staticBodyConfiguration.m_colliderAndShapeData = shape;
+                m_simulatedBodyHandle = sceneInterface->AddSimulatedBody(defaultScene, &staticBodyConfiguration);
             }
             break;
         default:
@@ -86,26 +112,6 @@ namespace WhiteBox
             break;
         }
 
-        // create shape
-        AZStd::shared_ptr<Physics::Shape> shape;
-        Physics::SystemRequestBus::BroadcastResult(
-            shape, &Physics::SystemRequests::CreateShape, m_physicsColliderConfiguration, m_shapeConfiguration);
-
-        AZStd::visit(
-            [&shape](auto& rigidBody)
-            {
-                if (rigidBody)
-                {
-                    // attach shape
-                    rigidBody->AddShape(shape);
-
-                    // add body to the world
-                    Physics::WorldRequestBus::Event(
-                        Physics::DefaultPhysicsWorldId, &Physics::World::AddBody, *rigidBody);
-                }
-            },
-            m_rigidBody);
-
         AZ::TransformNotificationBus::Handler::BusConnect(entityId);
     }
 
@@ -113,12 +119,15 @@ namespace WhiteBox
     {
         AZ::TransformNotificationBus::Handler::BusDisconnect();
 
-        AZStd::visit(
-            [](auto& rigidBody)
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            if (AzPhysics::SceneHandle defaultScene = sceneInterface->GetSceneHandle(AzPhysics::DefaultPhysicsSceneName);
+                defaultScene != AzPhysics::InvalidSceneHandle)
             {
-                rigidBody.reset();
-            },
-            m_rigidBody);
+                sceneInterface->RemoveSimulatedBody(defaultScene, m_simulatedBodyHandle);
+            }
+        }
+        m_simulatedBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
     }
 
     void WhiteBoxColliderComponent::OnTransformChanged(
@@ -130,16 +139,23 @@ namespace WhiteBox
             return worldTransform;
         }();
 
-        if (auto rigidBody = AZStd::get_if<AZStd::unique_ptr<Physics::RigidBody>>(&m_rigidBody))
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
-            // move the rigid body kinematically so dynamic rigid bodies will be affected by the movement
-            (*rigidBody)->SetKinematicTarget(worldTransformWithoutScale);
-        }
-        else if (AZStd::get_if<AZStd::unique_ptr<Physics::RigidBodyStatic>>(&m_rigidBody))
-        {
-            AZ_WarningOnce(
-                "WhiteBox", false,
-                "The White Box Collider must be made Kinematic to respond to OnTransformChanged events");
+            if (AzPhysics::SceneHandle defaultScene = sceneInterface->GetSceneHandle(AzPhysics::DefaultPhysicsSceneName);
+                defaultScene != AzPhysics::InvalidSceneHandle)
+            {
+                //if this is a rigid body update the transform, otherwise its static for just warn
+                if (auto* rigidBody = azdynamic_cast<AzPhysics::RigidBody*>(sceneInterface->GetSimulatedBodyFromHandle(defaultScene, m_simulatedBodyHandle))) 
+                {
+                    rigidBody->SetKinematicTarget(worldTransformWithoutScale);
+                }
+                else
+                {
+                    AZ_WarningOnce(
+                        "WhiteBox", false,
+                        "The White Box Collider must be made Kinematic to respond to OnTransformChanged events");
+                }
+            }
         }
     }
 } // namespace WhiteBox

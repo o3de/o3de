@@ -20,7 +20,10 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Physics/RigidBodyBus.h>
 #include <AzFramework/Physics/CharacterBus.h>
+#include <AzFramework/Physics/PhysicsScene.h>
+#include <AzFramework/Physics/Common/PhysicsTypes.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Interface/Interface.h>
 #ifdef LMBR_CENTRAL_EDITOR
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #endif
@@ -426,6 +429,13 @@ namespace LmbrCentral
         , m_movementMethod(NavigationComponentRequests::MovementMethod::Physics)
         , m_usesCharacterPhysics(false)
         , m_allowVerticalNavigation(false)
+        , m_sceneStartSimHandler([this](
+            [[maybe_unused]] AzPhysics::SceneHandle sceneHandle,
+            float fixedDeltatime
+            )
+            {
+                this->MoveEntity(fixedDeltatime);
+            }, aznumeric_cast<int32_t>(AzPhysics::SceneEvents::PhysicsStartFinishSimulationPriority::Components))
     {
     }
 
@@ -619,7 +629,11 @@ namespace LmbrCentral
                         // Connect to physics bus if appropriate, else tick bus
                         if ((m_movementMethod == NavigationComponentRequests::MovementMethod::Physics))
                         {
-                            Physics::WorldNotificationBus::Handler::BusConnect(Physics::DefaultPhysicsWorldId);
+                            if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+                            {
+                                AzPhysics::SceneHandle sceneHandle = sceneInterface->GetSceneHandle(AzPhysics::DefaultPhysicsSceneName);
+                                sceneInterface->RegisterSceneSimulationStartHandler(sceneHandle, m_sceneStartSimHandler);
+                            }
                         }
                         else
                         {
@@ -839,14 +853,6 @@ namespace LmbrCentral
     }
 
     //////////////////////////////////////////////////////////////////////////
-    // Physics::WorldNotificationBus::Handler implementation
-
-    void NavigationComponent::OnPrePhysicsSubtick(float fixedDeltaTime)
-    {
-        MoveEntity(fixedDeltaTime);
-    }
-
-    //////////////////////////////////////////////////////////////////////////
     // AZ::TransformNotificationBus::Handler implementation
     // If the transform on the entity has changed
     void NavigationComponent::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
@@ -863,7 +869,7 @@ namespace LmbrCentral
 
         // Disconnect from tick bus and physics bus
         AZ::TickBus::Handler::BusDisconnect();
-        Physics::WorldNotificationBus::Handler::BusDisconnect();
+        m_sceneStartSimHandler.Disconnect();
     }
 
     PathfindRequest::NavigationRequestId NavigationComponent::FindPathToEntity(AZ::EntityId targetEntityId)

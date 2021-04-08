@@ -25,7 +25,30 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
 
         auto registry = AZ::SettingsRegistry::Get();
         AZ_Assert(registry, "PrefabConversionPipeline is created before the Settings Registry is available.");
-        return registry->GetObject(m_processors, registryKey);
+        bool result = registry->GetObject(m_processors, registryKey);
+        if (!result)
+        {
+            m_processors.clear();
+        }
+
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+
+        if (serializeContext)
+        {
+            m_fingerprint = CalculateProcessorFingerprint(serializeContext);
+        }
+        else
+        {
+            AZ_Error("PrefabConversionPipeline", false, "Failed to get serialization context");
+        }
+
+        return result;
+    }
+
+    bool PrefabConversionPipeline::IsLoaded() const
+    {
+        return !m_processors.empty();
     }
 
     void PrefabConversionPipeline::ProcessPrefab(PrefabProcessorContext& context)
@@ -34,6 +57,26 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         {
             processor->Process(context);
         }
+    }
+    size_t PrefabConversionPipeline::CalculateProcessorFingerprint(AZ::SerializeContext* context)
+    {
+        size_t fingerprint = 0;
+
+        for (const auto& processor : m_processors)
+        {
+            const AZ::SerializeContext::ClassData* classData = context->FindClassData(processor->RTTI_GetType());
+
+            if (!classData)
+            {
+                AZ_Warning("PrefabConversionPipeline", false, "Class data for processor type %s not found.  Cannot get version for fingerprinting", processor->RTTI_GetType().ToString<AZStd::string>().c_str());
+                continue;
+            }
+
+            AZStd::hash_combine(fingerprint, processor->RTTI_GetType());
+            AZStd::hash_combine(fingerprint, classData->m_version);
+        }
+
+        return fingerprint;
     }
 
     void PrefabConversionPipeline::Reflect(AZ::ReflectContext* context)
@@ -44,5 +87,10 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
             serializeContext->RegisterGenericType<PrefabProcessorList>();
             serializeContext->RegisterGenericType<PrefabProcessorListEntry>();
         }  
+    }
+
+    size_t PrefabConversionPipeline::GetFingerprint() const
+    {
+        return m_fingerprint;
     }
 } // namespace AzToolsFramework::Prefab::PrefabConversionUtils

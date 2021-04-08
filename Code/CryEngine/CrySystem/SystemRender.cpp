@@ -353,15 +353,6 @@ void CSystem::RenderEnd([[maybe_unused]] bool bRenderStats, bool bMainWindow)
             if (!gEnv->pSystem->GetILevelSystem() || !gEnv->pSystem->GetILevelSystem()->IsLevelLoaded())
             {
                 IConsole* console = GetIConsole();
-                ILyShine* lyShine = gEnv->pLyShine;
-
-                //Normally the UI is drawn as part of the scene so it can properly render once per eye in VR
-                //We only want to draw here if there is no level loaded. This way the user can see loading
-                // UI and other information before the level is loaded.
-                if (lyShine != nullptr)
-                {
-                    lyShine->Render();
-                }
 
                 //Same goes for the console. When no level is loaded, it's okay to render it outside of the renderer
                 //so that users can load maps or change settings.
@@ -390,12 +381,6 @@ void CSystem::RenderEnd([[maybe_unused]] bool bRenderStats, bool bMainWindow)
 
 void CSystem::OnScene3DEnd()
 {
-    // Render UI Canvas
-    if (m_bDrawUI && gEnv->pLyShine)
-    {
-        gEnv->pLyShine->Render();
-    }
-
     //Render Console
     if (m_bDrawConsole && gEnv->pConsole)
     {

@@ -559,7 +559,7 @@ public:
     virtual bool Init();
     virtual void OnFrameStart();
     virtual void Update();
-    virtual void RenderWorld(const int nRenderFlags, const SRenderingPassInfo& passInfo, const char* szDebugName);
+    virtual void RenderWorld(int nRenderFlags, const SRenderingPassInfo& passInfo, const char* szDebugName);
     virtual void PreWorldStreamUpdate(const CCamera& cam);
     virtual void WorldStreamUpdate();
     virtual void ShutDown();
@@ -570,7 +570,7 @@ public:
     virtual void PostLoadLevel();
     virtual bool InitLevelForEditor(const char* szFolderName, const char* szMissionName);
     virtual bool LevelLoadingInProgress();
-    virtual void DisplayInfo(float& fTextPosX, float& fTextPosY, float& fTextStepY, const bool bEnhanced);
+    virtual void DisplayInfo(float& fTextPosX, float& fTextPosY, float& fTextStepY, bool bEnhanced);
     virtual void DisplayMemoryStatistics();
     virtual void SetupDistanceFog();
     virtual IStatObj* LoadStatObjUnsafeManualRef(const char* fileName, const char* geomName = nullptr, /*[Out]*/ IStatObj::SSubObject** subObject = nullptr, 
@@ -893,7 +893,7 @@ public:
     void UpdatePostRender(const SRenderingPassInfo& passInfo);
 
     virtual void RenderScene(const int nRenderFlags, const SRenderingPassInfo& passInfo);
-    virtual void RenderSceneReflection(const int nRenderFlags, const SRenderingPassInfo& passInfo);
+    virtual void RenderSceneReflection(int nRenderFlags, const SRenderingPassInfo& passInfo);
     virtual void DebugDraw_UpdateDebugNode();
 
     void DebugDraw_Draw();

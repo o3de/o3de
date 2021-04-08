@@ -24,6 +24,10 @@
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/string/string.h>
 
+#if defined (FUNCTION_LEGACY_SUPPORT_ENABLED)
+#include "FunctionsLegacySupport.h"
+#endif
+
 namespace AZ
 {
     class ReflectContext;
@@ -136,16 +140,33 @@ namespace ScriptCanvas
 
         constexpr const char* k_memberNamePrefix = "m_";
 
-        enum class VariableScopeMeaning : AZ::u32
-        {
-            ValueInitialization,
-            FunctionPrototype,
-        };
-
+        constexpr const char* k_DependentAssetsArgName = "dependentAssets";
+        constexpr const char* k_DependentAssetsIndexArgName = "dependentAssetsIndex";
+        constexpr const char* k_UnpackDependencyConstructionArgsFunctionName = "UnpackDependencyConstructionArgs";
+        constexpr const char* k_UnpackDependencyConstructionArgsLeafFunctionName = "UnpackDependencyConstructionArgsLeaf";
+        
         enum class ExecutionCharacteristics : AZ::u32
         {
-            PerEntity,
+            Object,
             Pure,
+        };
+
+        // default to a pure, interpreted function
+        enum ExecutionStateSelection : AZ::u32
+        {
+            InterpretedPure,
+            InterpretedPureOnGraphStart,
+            InterpretedObject,
+            InterpretedObjectOnGraphStart,
+        };
+
+        enum class VariableConstructionRequirement
+        {
+            InputEntityId,
+            InputNodeable,
+            InputVariable,
+            None,
+            Static,
         };
 
         // create Symbol enum
@@ -229,8 +250,16 @@ namespace ScriptCanvas
         using VariableWriteHandlingConstSet = AZStd::unordered_set<VariableWriteHandlingConstPtr>;
         using VariableWriteHandlingByVariable = AZStd::unordered_map<VariableConstPtr, VariableWriteHandlingSet>;
 
-        AZ_CVAR(bool, s_saveRawTranslationOuputToFile, true, {}, AZ::ConsoleFunctorFlags::Null, "Save out the raw result of translation for debug purposes.");
-        AZ_CVAR(bool, s_printAbstractCodeModel, true, {}, AZ::ConsoleFunctorFlags::Null, "Print out the Abstract Code Model at the end of parsing for debug purposes.");
+        AZ_CVAR_EXTERNED(bool, g_disableParseOnGraphValidation);
+        AZ_CVAR_EXTERNED(bool, g_printAbstractCodeModel);
+        AZ_CVAR_EXTERNED(bool, g_saveRawTranslationOuputToFile);
+
+        struct DependencyInfo
+        {
+            AZ::Data::AssetId assetId;
+            bool requiresCtorParams = false;
+            bool requiresCtorParamsForDependencies = false;
+        };
 
         struct Request
         {
@@ -281,9 +310,7 @@ namespace ScriptCanvas
         AZStd::string ToTypeSafeEBusResultName(const Data::Type& type);
         AZStd::string ToSafeName(const AZStd::string& name);
         NamespacePath ToNamespacePath(AZStd::string_view path, AZStd::string_view name);
-
     } 
-
 } 
 
 namespace AZStd
@@ -294,7 +321,7 @@ namespace AZStd
         using argument_type = ScriptCanvas::Grammar::ExecutionTreeConstPtr;
         using result_type = size_t;
 
-        AZ_INLINE result_type operator() (const argument_type& id) const
+        inline result_type operator() (const argument_type& id) const
         {
             size_t h = 0;
             hash_combine(h, id.get());
@@ -308,7 +335,7 @@ namespace AZStd
         using argument_type = ScriptCanvas::Grammar::OutputAssignmentConstPtr;
         using result_type = size_t;
 
-        AZ_INLINE result_type operator() (const argument_type& id) const
+        inline result_type operator() (const argument_type& id) const
         {
             size_t h = 0;
             hash_combine(h, id.get());
@@ -322,7 +349,7 @@ namespace AZStd
         using argument_type = ScriptCanvas::Grammar::VariableConstPtr;
         using result_type = size_t;
 
-        AZ_INLINE result_type operator() (const argument_type& id) const
+        inline result_type operator() (const argument_type& id) const
         {
             size_t h = 0;
             hash_combine(h, id.get());
@@ -336,7 +363,7 @@ namespace AZStd
         using argument_type = ScriptCanvas::Grammar::VariableWriteHandlingPtr;
         using result_type = size_t;
 
-        AZ_INLINE result_type operator() (const argument_type& id) const
+        inline result_type operator() (const argument_type& id) const
         {
             size_t h = 0;
             hash_combine(h, id.get());

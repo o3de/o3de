@@ -11,9 +11,10 @@
 */
 
 #include <Atom/RHI/ValidationLayer.h>
-#include <AzFramework/CommandLine/CommandLine.h>
+#include <Atom/RHI/RHIUtils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/API/ApplicationAPI.h>
+
 
 namespace AZ
 {
@@ -26,9 +27,10 @@ namespace AZ
             ValidationMode mode = ValidationMode::Disabled;
             const AzFramework::CommandLine* commandLine = nullptr;
             AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetApplicationCommandLine);
-            if (commandLine && commandLine->HasSwitch(ValidationCommandLineOption))
+            if (commandLine)
             {
-                auto validationValue = commandLine->GetSwitchValue(ValidationCommandLineOption, 0);
+                AZStd::string validationValue = RHI::GetCommandLineValue(ValidationCommandLineOption);
+                
                 if (AzFramework::StringFunc::Equal(validationValue.c_str(), "disable"))
                 {
                     mode = ValidationMode::Disabled;

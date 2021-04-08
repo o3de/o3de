@@ -42,8 +42,8 @@ namespace AZ::IO
         AZStd::string m_profile{"Default"};
         size_t m_maxPhysicalSectorSize{ AZCORE_GLOBAL_NEW_ALIGNMENT };
         size_t m_maxLogicalSectorSize{ AZCORE_GLOBAL_NEW_ALIGNMENT };
-        size_t m_maxPageSize{ 0 };
-        size_t m_maxTransfer{ 0 };
+        size_t m_maxPageSize{ AZCORE_GLOBAL_NEW_ALIGNMENT };
+        size_t m_maxTransfer{ AZCORE_GLOBAL_NEW_ALIGNMENT };
     };
 
     class IStreamerStackConfig
@@ -73,7 +73,8 @@ namespace AZ::IO
     //! @param includeAllHardware Includes all available hardware that can be used by AZ::IO::Streamer. If set to false
     //!         only hardware is listed that is known to be used. This may be more performant, but can result is file
     //!         requests failing if they use an previously unknown path.
-    extern bool CollectIoHardwareInformation(HardwareInformation& info, bool includeAllHardware);
+    //! @param reportHardware If true, hardware information will be printed to the log if available.
+    extern bool CollectIoHardwareInformation(HardwareInformation& info, bool includeAllHardware, bool reportHardware);
     extern void ReflectNative(ReflectContext* context);
 
     //! Constant used to denote "file not found" in StreamStackEntry processing.

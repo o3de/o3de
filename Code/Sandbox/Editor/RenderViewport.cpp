@@ -92,7 +92,7 @@
 #include <QtGui/private/qhighdpiscaling_p.h>
 
 AZ_CVAR(
-    bool, ed_visibility_use, false, nullptr, AZ::ConsoleFunctorFlags::Null,
+    bool, ed_visibility_use, true, nullptr, AZ::ConsoleFunctorFlags::Null,
     "Enable/disable using the new IVisibilitySystem for Entity visibility determination");
 AZ_CVAR(
     bool, ed_visibility_logTiming, false, nullptr, AZ::ConsoleFunctorFlags::Null,

@@ -14,7 +14,11 @@
 
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzFramework/Physics/WorldBody.h>
+
+namespace AzPhysics
+{
+    struct SimulatedBody;
+}
 
 namespace Physics
 {
@@ -43,10 +47,10 @@ namespace Physics
         AZ_CLASS_ALLOCATOR(Joint, AZ::SystemAllocator, 0);
         AZ_RTTI(Joint, "{405F517C-E986-4ACB-9606-D5D080DDE987}");
 
-        virtual Physics::WorldBody* GetParentBody() const = 0;
-        virtual Physics::WorldBody* GetChildBody() const = 0;
-        virtual void SetParentBody(Physics::WorldBody* parentBody) = 0;
-        virtual void SetChildBody(Physics::WorldBody* childBody) = 0;
+        virtual AzPhysics::SimulatedBody* GetParentBody() const = 0;
+        virtual AzPhysics::SimulatedBody* GetChildBody() const = 0;
+        virtual void SetParentBody(AzPhysics::SimulatedBody* parentBody) = 0;
+        virtual void SetChildBody(AzPhysics::SimulatedBody* childBody) = 0;
         virtual const AZStd::string& GetName() const = 0;
         virtual void SetName(const AZStd::string& name) = 0;
         virtual const AZ::Crc32 GetNativeType() const = 0;

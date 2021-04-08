@@ -36,6 +36,8 @@ namespace AzToolsFramework
 
             bool UpdateThumbnail() override;
 
+            bool Equals(const ThumbnailKey* other) const override;
+
         protected:
             //! absolute path
             AZStd::string m_fileName;
@@ -107,7 +109,7 @@ namespace AzToolsFramework
 
         //! Stores products' thumbnails
         class SourceControlThumbnailCache
-            : public ThumbnailCache<SourceControlThumbnail, SourceControlKeyHash, SourceControlKeyEqual>
+            : public ThumbnailCache<SourceControlThumbnail>
         {
         public:
             SourceControlThumbnailCache();

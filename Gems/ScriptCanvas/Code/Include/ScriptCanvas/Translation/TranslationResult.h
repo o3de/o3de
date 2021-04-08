@@ -55,8 +55,7 @@ namespace ScriptCanvas
 
             static void Reflect(AZ::ReflectContext* reflectContext);
 
-            ExecutionMode m_execution = ExecutionMode::Interpreted;
-            Grammar::ExecutionCharacteristics m_executionCharacteristics = Grammar::ExecutionCharacteristics::PerEntity;
+            Grammar::ExecutionStateSelection m_executionSelection = Grammar::ExecutionStateSelection::InterpretedPure;
             AZStd::vector<Nodeable*> m_nodeables;
             AZStd::vector<AZStd::pair<VariableId, Datum>> m_variables;
             // either the entityId was a (member) variable in the source graph, or it got promoted to one during parsing
@@ -70,7 +69,10 @@ namespace ScriptCanvas
             RuntimeInputs(RuntimeInputs&&);
             ~RuntimeInputs() = default;
 
-            size_t GetParameterSize() const;
+            void CopyFrom(const Grammar::ParsedRuntimeInputs& inputs);
+
+            size_t GetConstructorParameterCount() const;
+
             RuntimeInputs& operator=(const RuntimeInputs&) = default;
             RuntimeInputs& operator=(RuntimeInputs&&);
         };
@@ -116,7 +118,7 @@ namespace ScriptCanvas
             AZ::Data::Asset<AZ::ScriptAsset> m_scriptAsset;
             RuntimeInputs m_runtimeInputs;
             Grammar::DebugSymbolMap m_debugMap;
-            DependencyReport m_dependencies;
+            OrderedDependencies m_dependencies;
             AZStd::sys_time_t m_parseDuration;
             AZStd::sys_time_t m_translationDuration;
         };

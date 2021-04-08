@@ -14,9 +14,12 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzFramework/Physics/SystemBus.h>
-#include <AzFramework/Physics/WorldEventhandler.h>
-#include <AzFramework/Physics/Common/PhysicsTypes.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+
+namespace AzPhysics
+{
+    struct TriggerEvent;
+}
 
 namespace PhysX
 {
@@ -26,7 +29,6 @@ namespace PhysX
     class EditorSystemComponent
         : public AZ::Component
         , public Physics::EditorWorldBus::Handler
-        , private Physics::WorldEventHandler
         , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
     {
     public:
@@ -36,14 +38,9 @@ namespace PhysX
         EditorSystemComponent() = default;
 
         // Physics::EditorWorldBus
-        AZStd::shared_ptr<Physics::World> GetEditorWorld() override;
+        AzPhysics::SceneHandle GetEditorSceneHandle() const override;
 
     private:
-        void OnTriggerEnter(const Physics::TriggerEvent& triggerEvent) override;
-        void OnTriggerExit(const Physics::TriggerEvent& triggerEvent) override;
-        void OnCollisionBegin(const Physics::CollisionEvent& collisionEvent) override;
-        void OnCollisionPersist(const Physics::CollisionEvent& collisionEvent) override;
-        void OnCollisionEnd(const Physics::CollisionEvent& collisionEvent) override;
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {

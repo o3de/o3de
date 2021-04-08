@@ -784,7 +784,7 @@ namespace UnitTest
     {
         //source image
         AZStd::string inputFile;
-        inputFile = "../SamplesProject/Objects/ParticleAssets/ShowRoom/showroom_pipe_blue_001_ddna.tif";
+        inputFile = "../AutomatedTesting/Objects/ParticleAssets/ShowRoom/showroom_pipe_blue_001_ddna.tif";
 
         IImageObjectPtr srcImage(LoadImageFromFile(inputFile));
         ImageToProcess imageToProcess(srcImage);
@@ -1006,7 +1006,7 @@ namespace UnitTest
     TEST_F(ImageProcessingTest, DISABLED_TestLoadDdsImage)
     {
         IImageObjectPtr originImage, alphaImage;
-        AZStd::string inputFolder = "../SamplesProject/Cache/pc/engineassets/texturemsg/";
+        AZStd::string inputFolder = "../AutomatedTesting/Cache/pc/engineassets/texturemsg/";
         AZStd::string inputFile;
 
         inputFile = "E:/Javelin_NWLYDev/dev/Cache/Assets/pc/assets/textures/blend_maps/moss/jav_moss_ddn.dds";

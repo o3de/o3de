@@ -118,10 +118,19 @@ namespace ScriptCanvas
         void ExecutionTree::CopyReturnValuesToInputs(ExecutionTreeConstPtr source)
         {
             AZ_Assert(m_input.empty(), "mixing return values with input");
+
+            if (!m_in.m_node)
+            {
+                return;
+            }
+
             for (auto& returnValue : source->m_returnValues)
             {
-                // \todo convert to DebugDataSource::from variable
-                m_input.push_back({ nullptr, returnValue.second->m_source, DebugDataSource::FromInternal() });
+                // only copy the value if the out call has the slot in question
+                if (auto slot = m_in.m_node->GetSlot(returnValue.second->m_source->m_sourceSlotId))
+                {
+                    m_input.push_back({ nullptr, returnValue.second->m_source, DebugDataSource::FromSelfSlot(*slot) });
+                }
             }
         }
 
@@ -286,6 +295,11 @@ namespace ScriptCanvas
             return m_symbol;
         }
 
+        bool ExecutionTree::HasExplicitUserOutCalls() const
+        {
+            return m_hasExplicitUserOutCalls;
+        }
+
         bool ExecutionTree::HasReturnValues() const
         {
             return !m_returnValues.empty();
@@ -332,12 +346,22 @@ namespace ScriptCanvas
             return GetRoot()->m_isPure;
         }
 
+        bool ExecutionTree::IsStart() const
+        {
+            return m_isStart;
+        }
+
         void ExecutionTree::MarkDebugEmptyStatement()
         {
             if (GetSymbol() != Symbol::UserOut && (GetChildrenCount() == 0 || GetSymbol() == Symbol::PlaceHolderDuringParsing))
             {
                 SetSymbol(Symbol::DebugInfoEmptyStatement);
             }
+        }
+
+        void ExecutionTree::MarkHasExplicitUserOutCalls()
+        {
+            m_hasExplicitUserOutCalls = true;
         }
 
         void ExecutionTree::MarkInfiniteLoopDetectionPoint()
@@ -364,6 +388,11 @@ namespace ScriptCanvas
         {
             auto root = ModRoot();
             root->m_isLatent = true;
+        }
+
+        void ExecutionTree::MarkStart()
+        {
+            m_isStart = true;
         }
 
         ExecutionChild& ExecutionTree::ModChild(size_t index)
@@ -493,16 +522,6 @@ namespace ScriptCanvas
             {
                 return AZ::Failure();
             }
-        }
-
-        bool ExecutionTree::ReturnValuesRoutedToOuts() const
-        {
-            return m_returnValuesRoutedToOuts;
-        }
-
-        void ExecutionTree::RouteReturnValuesToOuts()
-        {
-            m_returnValuesRoutedToOuts = true;
         }
 
         void ExecutionTree::SetExecutedPropertyExtraction(PropertyExtractionConstPtr propertyExtraction)

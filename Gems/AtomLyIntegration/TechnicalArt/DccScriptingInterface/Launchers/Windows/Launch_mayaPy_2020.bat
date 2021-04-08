@@ -1,5 +1,4 @@
 @echo off
-
 REM 
 REM All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
 REM its licensors.
@@ -11,50 +10,67 @@ REM remove or modify any license notices. This file is distributed on an "AS IS"
 REM WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 REM
 
+:: Set up window
+TITLE O3DE DCCsi Launch MayaPy
+:: Use obvious color to prevent confusion (Grey with Yellow Text)
+COLOR 8E
+
 :: Store current directory and change to environment directory so script works in any path.
 %~d0
 cd %~dp0
 PUSHD %~dp0
 
-:: Keep changes local
-SETLOCAL enableDelayedExpansion
-
-:: PY version Major
-set DCCSI_PY_VERSION_MAJOR=2
-echo     DCCSI_PY_VERSION_MAJOR = %DCCSI_PY_VERSION_MAJOR%
-
-:: PY version Major
-set DCCSI_PY_VERSION_MINOR=7
-echo     DCCSI_PY_VERSION_MINOR = %DCCSI_PY_VERSION_MINOR%
-
-:: Default Maya Version
+:: Default Maya and Python version
 set MAYA_VERSION=2020
-echo     MAYA_VERSION = %MAYA_VERSION%
+set DCCSI_PY_VERSION_MAJOR=2
+set DCCSI_PY_VERSION_MINOR=7
+set DCCSI_PY_VERSION_RELEASE=11
 
-:: Initialize env
-CALL %~dp0\Env.bat
+CALL %~dp0\Env_Core.bat
+CALL %~dp0\Env_Python.bat
+CALL %~dp0\Env_Maya.bat
 
-echo ~    Launching LY Dc cScripting Interfacw MayaPy (%MAYA_VERSION%) ...
+:: if the user has set up a custom env call it
+IF EXIST "%~dp0Env_Dev.bat" CALL %~dp0Env_Dev.bat
+
+:: ide and debugger plug
+set DCCSI_PY_DEFAULT=%DCCSI_PY_MAYA%
+
+echo.
+echo _____________________________________________________________________
+echo.
+echo ~    Launching O3DE DCCsi MayaPy (%MAYA_VERSION%) ...
 echo ________________________________________________________________
 echo.
 
-:: Start Maya
-:: Default to the right version of Maya if we can detect it.
-Set MAYA_VP2_DEVICE_OVERRIDE = VirtualDeviceDx11
+echo     MAYA_VERSION = %MAYA_VERSION%
+echo     DCCSI_PY_VERSION_MAJOR = %DCCSI_PY_VERSION_MAJOR%
+echo     DCCSI_PY_VERSION_MINOR = %DCCSI_PY_VERSION_MINOR%
+echo     DCCSI_PY_VERSION_RELEASE = %DCCSI_PY_VERSION_RELEASE%
+echo     MAYA_LOCATION = %MAYA_LOCATION%
+echo     MAYA_BIN_PATH = %MAYA_BIN_PATH%
 
+:: Change to root dir
+CD /D %LY_PROJECT_PATH%
+
+SETLOCAL ENABLEDELAYEDEXPANSION
+
+:: Default to the right version of Maya if we can detect it... and launch
 IF EXIST "%DCCSI_PY_MAYA%" (
-   CALL "%DCCSI_PY_MAYA%" %*
+    start "" "%DCCSI_PY_MAYA%" %*
 ) ELSE (
-   Where mayapy.exe 2> NUL
-   IF ERRORLEVEL 1 (
-      echo mayapy.exe could not be found
-      pause
-   ) ELSE (
-      start "" mayapy.exe %*
-   )
+    Where maya.exe 2> NUL
+    IF ERRORLEVEL 1 (
+        echo Maya.exe could not be found
+            pause
+    ) ELSE (
+        start "" Maya.exe %*
+    )
 )
 
 ENDLOCAL
 
-:: Restore previous directory
+:: Return to starting directory
 POPD
+
+:END_OF_FILE

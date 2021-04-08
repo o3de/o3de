@@ -16,8 +16,9 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TransformBus.h>
-#include <AzFramework/Physics/RigidBody.h>
 #include <AzFramework/Physics/Shape.h>
+#include <AzFramework/Physics/Common/PhysicsTypes.h>
+#include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 
 namespace WhiteBox
 {
@@ -51,8 +52,7 @@ namespace WhiteBox
         Physics::CookedMeshShapeConfiguration m_shapeConfiguration; //!< The physics representation of the mesh.
         Physics::ColliderConfiguration
             m_physicsColliderConfiguration; //!< General physics collider configuration information.
-        AZStd::variant<AZStd::unique_ptr<Physics::RigidBodyStatic>, AZStd::unique_ptr<Physics::RigidBody>>
-            m_rigidBody; //!< Rigid body to represent the White Box Mesh at runtime.
+        AzPhysics::SimulatedBodyHandle m_simulatedBodyHandle = AzPhysics::InvalidSimulatedBodyHandle; //!< Simulated body to represent the White Box Mesh at runtime.
         WhiteBoxColliderConfiguration
             m_whiteBoxColliderConfiguration; //!< White Box specific collider configuration information.
     };

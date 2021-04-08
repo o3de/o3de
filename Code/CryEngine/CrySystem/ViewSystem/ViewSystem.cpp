@@ -595,7 +595,7 @@ void CViewSystem::UpdateSoundListeners()
 }
 
 //////////////////////////////////////////////////////////////////
-void CViewSystem::OnLoadingStart([[maybe_unused]] ILevelInfo* pLevel)
+void CViewSystem::OnLoadingStart([[maybe_unused]] const char* levelName)
 {
     //If the level is being restarted (IsSerializingFile() == 1)
     //views should not be cleared, because the main view (player one) won't be recreated in this case
@@ -609,7 +609,7 @@ void CViewSystem::OnLoadingStart([[maybe_unused]] ILevelInfo* pLevel)
 }
 
 /////////////////////////////////////////////////////////////////////
-void CViewSystem::OnUnloadComplete([[maybe_unused]] ILevel* pLevel)
+void CViewSystem::OnUnloadComplete([[maybe_unused]] const char* levelName)
 {
     bool shouldClearViews = gEnv->pSystem ? (gEnv->pSystem->IsSerializingFile() != 1) : false;
 

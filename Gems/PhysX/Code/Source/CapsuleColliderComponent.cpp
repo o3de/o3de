@@ -39,6 +39,6 @@ namespace PhysX
             return;
         }
 
-        m_shapeConfigList[0].second->m_scale = Utils::GetNonUniformScale(GetEntityId());
+        m_shapeConfigList[0].second->m_scale = Utils::GetTransformScale(GetEntityId());
     }
 }

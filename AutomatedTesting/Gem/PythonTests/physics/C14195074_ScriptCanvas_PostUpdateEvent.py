@@ -10,7 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
 
 # Test case ID : C14195074
-# Test Case Title : Verify Post Update Events
+# Test Case Title : Verify Postsimulate Events
 # URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/14195074
 
 # fmt: off
@@ -29,7 +29,7 @@ class Tests:
 
 def C14195074_ScriptCanvas_PostUpdateEvent():
     """
-    Summary: Verifies that Post Update Event node in Script Canvas works as expected.
+    Summary: Verifies that Postsimulate Event node in Script Canvas works as expected.
 
     Level Description:
     Lead_Sphere - Directly next to Follow_sphere on the +x axis; has rigid body(gravity disabled), sphere shape

@@ -41,7 +41,7 @@ namespace ScriptCanvas
         constexpr const char* FailedToParseIfBranch = "Failed parse a node that declared itself an if branch";
         constexpr const char* FailedToRemoveChild = "Failed to remove child expected in parent children list";
         constexpr const char* FunctionDefinitionCannotStart = "Function definition graph has on graph start that can't get called";
-        constexpr const char* FunctionDefinitionNodeDidNotReturn = "Function definition node didn't return 1 and only execution in slot";
+        constexpr const char* FunctionDefinitionNodeDidNotReturnSlot = "Function definition node didn't return 1 and only execution in slot";
         constexpr const char* InactiveGraph = "This graph defines no functions, it is never activated, and will never execute. Add a Start node or connect an event handler or define functions.";
         constexpr const char* InfiniteLoopWritingToVariable = "infinite loop when writing to variable";
         constexpr const char* InfiniteSelfActivationLoop = "infinite loop when activating the entity that owns this graph";
@@ -53,6 +53,7 @@ namespace ScriptCanvas
         constexpr const char* MissingParentOfRemovedNode = "There should always be a parent, even in a function graph, the function definition would be the first node";
         constexpr const char* MissingTrueExecutionSlotOnIf = "A 'True' Execution output slot is required in an If branch node";
         constexpr const char* MissingVariable = "Missing variable";
+        constexpr const char* MissingAddressSlotForEbusEvent = "missing slot for EBus handler address";
         constexpr const char* MissingVariableForEBusHandlerAddress = "missing variable for ebus handler address";
         constexpr const char* MissingVariableForEBusHandlerAddressConnected = "missing variable for ebus handler address";
         constexpr const char* MultipleExecutionOutConnections = "This node has multiple, unordered execution Out connections";
@@ -78,7 +79,6 @@ namespace ScriptCanvas
         constexpr const char* SequentialExecutionMappingFailure = "Sequential execution slot mapping failure";
         constexpr const char* SourceUpdateRequired = "Source Graph requires a dedicated upgrade. Please run the Script Canvas Editor, and follow the updgrade instructions.";
         constexpr const char* StartNodeFailedToParse = "Start node execution failed to parse";
-        constexpr const char* SubgraphComplexity = "Subgraphs support [1, N) Execution Ins leading to Execution Outs, or [1, N) Latent Outs, but not both.";
         constexpr const char* SubgraphOnGraphStartFailedToReturnLexicalScope = "Subgraph On Graph Start call failed to return LexicalScope.";
         constexpr const char* SubgraphReturnValues = "Subgraph with Latent Outs do not support variables with Scope In or Scope InOut";
         constexpr const char* TooManyBranchesForReturn = "Too many branches for standard return values.";

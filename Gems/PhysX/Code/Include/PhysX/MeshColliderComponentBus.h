@@ -30,11 +30,6 @@ namespace PhysX
         /// @return Asset pointer to mesh asset.
         virtual AZ::Data::Asset<Pipeline::MeshAsset> GetMeshAsset() const = 0;
 
-        /// Gets the mesh triangles as a list of verts and indices.
-        /// @param verts The list of verts in the mesh
-        /// @param indices The ordering of the verts into triangles
-        virtual void GetStaticWorldSpaceMeshTriangles(AZStd::vector<AZ::Vector3>& verts, AZStd::vector<AZ::u32>& indices) const = 0;
-
         /// Gets the material id from the material library for this entity.
         /// @return The asset ID to set it to.
         virtual Physics::MaterialId GetMaterialId() const = 0;

@@ -323,7 +323,7 @@ public:
         /*LATER*/
     }
 
-    virtual void SetKeepSystemCopy(const bool bKeepSystemCopy) = 0;
+    virtual void SetKeepSystemCopy(bool bKeepSystemCopy) = 0;
     virtual void UpdateTextureRegion(const uint8_t* data, int nX, int nY, int nZ, int USize, int VSize, int ZSize, ETEX_Format eTFSrc) = 0;
     virtual CDeviceTexture* GetDevTexture() const = 0;
 

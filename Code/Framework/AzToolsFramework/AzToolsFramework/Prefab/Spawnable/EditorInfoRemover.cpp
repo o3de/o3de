@@ -40,18 +40,18 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
             return;
         }
 
-        prefabProcessorContext.ListPrefabs([this, &serializeContext, &prefabProcessorContext](AZStd::string_view prefabName, PrefabDom& prefab)
-        {
-            auto result = RemoveEditorInfo(prefab, serializeContext, prefabProcessorContext);
-            if (!result)
+        prefabProcessorContext.ListPrefabs(
+            [this, &serializeContext, &prefabProcessorContext](AZStd::string_view prefabName, PrefabDom& prefab)
             {
-                AZ_Assert(false,
-                    "Converting to runtime Prefab '%.*s' failed, Error: %s .",
-                    AZ_STRING_ARG(prefabName),
-                    result.GetError().c_str());
-                return;
-            } 
-        });
+                auto result = RemoveEditorInfo(prefab, serializeContext, prefabProcessorContext);
+                if (!result)
+                {
+                    AZ_Error(
+                        "Prefab", false, "Converting to runtime Prefab '%.*s' failed, Error: %s .", AZ_STRING_ARG(prefabName),
+                        result.GetError().c_str());
+                    return;
+                } 
+            });
     }
 
     void EditorInfoRemover::Reflect(AZ::ReflectContext* context)
@@ -73,6 +73,12 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
                 return true;
             }
         );
+
+        if (instance->HasContainerEntity())
+        {
+            auto containerEntityReference = instance->GetContainerEntity();
+            result.emplace_back(&containerEntityReference->get());
+        }
 
         return result;
     }
@@ -519,7 +525,8 @@ exportComponent, prefabProcessorContext);
 
         // convert Prefab DOM into Prefab Instance.
         AZStd::unique_ptr<Instance> instance(aznew Instance());
-        if (!Prefab::PrefabDomUtils::LoadInstanceFromPrefabDom(*instance, prefab, false))
+        if (!Prefab::PrefabDomUtils::LoadInstanceFromPrefabDom(*instance, prefab,
+            Prefab::PrefabDomUtils::LoadInstanceFlags::AssignRandomEntityId))
         {
             PrefabDomValueReference sourceReference = PrefabDomUtils::FindPrefabDomValue(prefab, PrefabDomUtils::SourceName);
 
@@ -613,19 +620,28 @@ exportComponent, prefabProcessorContext);
             [&exportEntitiesMap](AZStd::unique_ptr<AZ::Entity>& entity)
             {
                 auto entityId = entity->GetId();
-                entity.release();
                 entity.reset(exportEntitiesMap[entityId]);
                 return true;
             }
         );
 
+        if (instance->HasContainerEntity())
+        {
+            if (auto found = exportEntitiesMap.find(instance->GetContainerEntityId()); found != exportEntitiesMap.end())
+            {
+                instance->SetContainerEntity(*found->second);
+            }
+        }
+
         // save the final result in the target Prefab DOM.
-        if (!PrefabDomUtils::StoreInstanceInPrefabDom(*instance, prefab))
+        PrefabDom filteredPrefab;
+        if (!PrefabDomUtils::StoreInstanceInPrefabDom(*instance, filteredPrefab))
         {
             return AZ::Failure(AZStd::string::format(
                 "Saving exported Prefab Instance within a Prefab Dom failed.")
             );
         }
+        prefab.Swap(filteredPrefab);
 
         return AZ::Success();
     }

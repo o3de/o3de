@@ -3,8 +3,21 @@
     "Version": 1,
     "ClassName": "AZ::Render::LightingPreset",
     "ClassData": {
-        "autoSelect": false,
         "displayName": "Goegap",
+        "iblDiffuseImageAsset": {
+            "assetId": {
+                "guid": "{3FD09945-D0F2-55C8-B9AF-B2FD421FE3BE}",
+                "subId": 3000
+            },
+            "assetHint": "lightingpresets/highcontrast/goegap_4k_iblglobalcm_ibldiffuse.exr.streamingimage"
+        },
+        "iblSpecularImageAsset": {
+            "assetId": {
+                "guid": "{3FD09945-D0F2-55C8-B9AF-B2FD421FE3BE}",
+                "subId": 2000
+            },
+            "assetHint": "lightingpresets/highcontrast/goegap_4k_iblglobalcm_iblspecular.exr.streamingimage"
+        },
         "skyboxImageAsset": {
             "assetId": {
                 "guid": "{215E47FD-D181-5832-B1AB-91673ABF6399}",
@@ -12,43 +25,26 @@
             },
             "assetHint": "lightingpresets/highcontrast/goegap_4k_skyboxcm.exr.streamingimage"
         },
-        "iblSpecularImageAsset": {
+        "alternateSkyboxImageAsset": {
             "assetId": {
-                "guid": "{3FD09945-D0F2-55C8-B9AF-B2Fd421FE3BE}",
-                "subId": 2000
-            },
-            "assetHint": "lightingpresets/highcontrast/goegap_4k_iblglobalcm_iblspecular.exr.streamingimage"
-        },
-        "iblDiffuseImageAsset": {
-            "assetId": {
-                "guid": "{3FD09945-D0F2-55C8-B9AF-B2Fd421FE3BE}",
+                "guid": "{3FD09945-D0F2-55C8-B9AF-B2FD421FE3BE}",
                 "subId": 3000
             },
             "assetHint": "lightingpresets/highcontrast/goegap_4k_iblglobalcm_ibldiffuse.exr.streamingimage"
         },
-        "iblExposure": 0.0,
-        "skyboxExposure": 0.0,
+        "shadowCatcherOpacity": 0.3499999940395355,
         "lights": [
             {
                 "direction": [
-                    0.372,
-                    0.572,
-                    -0.728
-                ],
-                "color": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
+                    0.3720000088214874,
+                    0.5720000267028809,
+                    -0.7279999852180481
                 ],
                 "intensity": 15.0,
                 "shadowCascadeCount": 4,
                 "shadowRatioLogarithmUniform": 1.0,
-                "shadowFarClipDistance": 20.0,
-                "shadowmapSize": "Size2048",
-                "enableShadowDebugColoring": false
+                "shadowmapSize": "Size2048"
             }
-        ],
-        "shadowCatcherOpacity": 0.3499999940395355
+        ]
     }
 }

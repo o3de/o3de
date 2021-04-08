@@ -15,8 +15,10 @@
 #include <AzFramework/Entity/PrefabEntityOwnershipService.h>
 #include <AzFramework/Entity/SliceEntityOwnershipServiceBus.h>
 #include <AzFramework/Slice/SliceEntityBus.h>
+#include <AzFramework/Spawnable/SpawnableEntitiesContainer.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
+#include <AzToolsFramework/Prefab/Spawnable/PrefabConversionPipeline.h>
 
 namespace AzToolsFramework
 {
@@ -104,7 +106,9 @@ namespace AzToolsFramework
         using OnEntitiesRemovedCallback = AzFramework::OnEntitiesRemovedCallback;
         using ValidateEntitiesCallback = AzFramework::ValidateEntitiesCallback;
 
-        explicit PrefabEditorEntityOwnershipService(
+        static inline constexpr const char* DefaultMainSpawnableName = "Root";
+
+        PrefabEditorEntityOwnershipService(
             const AzFramework::EntityContextId& entityContextId, AZ::SerializeContext* serializeContext);
 
         ~PrefabEditorEntityOwnershipService();
@@ -154,26 +158,43 @@ namespace AzToolsFramework
         // To be removed in the future
         bool LoadFromStream(AZ::IO::GenericStream& stream, bool remapIds,
             EntityIdToEntityIdMap* idRemapTable = nullptr,
-            const AZ::ObjectStream::FilterDescriptor& filterDesc = AZ::ObjectStream::FilterDescriptor());
+            const AZ::ObjectStream::FilterDescriptor& filterDesc = AZ::ObjectStream::FilterDescriptor()) override;
 
         void SetEntitiesAddedCallback(OnEntitiesAddedCallback onEntitiesAddedCallback) override;
         void SetEntitiesRemovedCallback(OnEntitiesRemovedCallback onEntitiesRemovedCallback) override;
         void SetValidateEntitiesCallback(ValidateEntitiesCallback validateEntitiesCallback) override;
+
+        bool LoadFromStream(AZ::IO::GenericStream& stream, AZStd::string_view filename) override;
+        bool SaveToStream(AZ::IO::GenericStream& stream, AZStd::string_view filename) override;
+        
+        void StartPlayInEditor() override;
+        void StopPlayInEditor() override;
 
     protected:
 
         AZ::SliceComponent::SliceInstanceAddress GetOwningSlice() override;
 
     private:
+        struct PlayInEditorData
+        {
+            AzToolsFramework::Prefab::PrefabConversionUtils::PrefabConversionPipeline m_converter;
+            AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>> m_assets;
+            AZStd::vector<AZ::Entity*> m_deactivatedEntities;
+            AzFramework::SpawnableEntitiesContainer m_entities;
+            bool m_isEnabled{ false };
+        };
+        PlayInEditorData m_playInEditorData;
 
         //////////////////////////////////////////////////////////////////////////
         // PrefabSystemComponentInterface interface implementation
         Prefab::InstanceOptionalReference CreatePrefab(
             const AZStd::vector<AZ::Entity*>& entities, AZStd::vector<AZStd::unique_ptr<Prefab::Instance>>&& nestedPrefabInstances,
-            const AZStd::string& filePath, Prefab::Instance& instanceToParentUnder) override;
+            AZ::IO::PathView filePath, Prefab::InstanceOptionalReference instanceToParentUnder) override;
 
         Prefab::InstanceOptionalReference GetRootPrefabInstance() override;
         //////////////////////////////////////////////////////////////////////////
+
+        void OnEntityRemoved(AZ::EntityId entityId);
 
         OnEntitiesAddedCallback m_entitiesAddedCallback;
         OnEntitiesRemovedCallback m_entitiesRemovedCallback;
@@ -185,7 +206,6 @@ namespace AzToolsFramework
         AZStd::string m_rootPath;
         AZStd::unique_ptr<Prefab::Instance> m_rootInstance;
         Prefab::PrefabSystemComponentInterface* m_prefabSystemComponent;
-
         Prefab::PrefabLoaderInterface* m_loaderInterface;
         AzFramework::EntityContextId m_entityContextId;
         AZ::SerializeContext m_serializeContext;

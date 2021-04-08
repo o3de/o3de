@@ -21,21 +21,21 @@ namespace AWSMetrics
         : public UnitTest::ScopedAllocatorSetupFixture
     {
     public:
-        const AZStd::string attrName = "name";
-        const AZStd::string strValue = "value";
-        const int intValue = 0;
-        const double doubleValue = 0.01;
+        const AZStd::string AttrName = "name";
+        const AZStd::string StrValue = "value";
+        const int IntValue = 0;
+        const double DoubleValue = 0.01;
     };
 
     TEST_F(MetricsAttributeTest, SetAttributeName_DefaultConstructor_Success)
     {
         MetricsAttribute attribute;
-        attribute.SetName(attrName.c_str());
+        attribute.SetName(AttrName.c_str());
 
-        ASSERT_EQ(attribute.GetName(), attrName);
+        ASSERT_EQ(attribute.GetName(), AttrName);
         ASSERT_FALSE(attribute.IsDefault());
 
-        attribute.SetName(METRICS_ATTRIBUTE_KEY_EVENT_NAME);
+        attribute.SetName(AwsMetricsAttributeKeyEventName);
         ASSERT_TRUE(attribute.IsDefault());
     }
 
@@ -43,26 +43,26 @@ namespace AWSMetrics
     {
         MetricsAttribute attribute;
 
-        attribute.SetVal(strValue);
-        ASSERT_EQ(AZStd::get<AZStd::string>(attribute.GetVal()), strValue);
+        attribute.SetVal(StrValue);
+        ASSERT_EQ(AZStd::get<AZStd::string>(attribute.GetVal()), StrValue);
 
-        attribute.SetVal(intValue);
-        ASSERT_EQ(AZStd::get<int>(attribute.GetVal()), intValue);
+        attribute.SetVal(IntValue);
+        ASSERT_EQ(AZStd::get<int>(attribute.GetVal()), IntValue);
 
-        attribute.SetVal(doubleValue);
-        ASSERT_EQ(AZStd::get<double>(attribute.GetVal()), doubleValue);
+        attribute.SetVal(DoubleValue);
+        ASSERT_EQ(AZStd::get<double>(attribute.GetVal()), DoubleValue);
     }
 
     TEST_F(MetricsAttributeTest, GetSizeInBytes_SupportedAttributeTypes_Success)
     {
-        MetricsAttribute strAttr(attrName, strValue);
-        ASSERT_EQ(strAttr.GetSizeInBytes(), sizeof(char) * (attrName.size() + strValue.size()));
+        MetricsAttribute strAttr(AttrName, StrValue);
+        ASSERT_EQ(strAttr.GetSizeInBytes(), sizeof(char) * (AttrName.size() + StrValue.size()));
 
-        MetricsAttribute intAttr(attrName, intValue);
-        ASSERT_EQ(intAttr.GetSizeInBytes(), sizeof(char) * attrName.size() + sizeof(int));
+        MetricsAttribute intAttr(AttrName, IntValue);
+        ASSERT_EQ(intAttr.GetSizeInBytes(), sizeof(char) * AttrName.size() + sizeof(int));
 
-        MetricsAttribute doubleAttr(attrName, doubleValue);
-        ASSERT_EQ(doubleAttr.GetSizeInBytes(), sizeof(char) * attrName.size() + sizeof(double));
+        MetricsAttribute doubleAttr(AttrName, DoubleValue);
+        ASSERT_EQ(doubleAttr.GetSizeInBytes(), sizeof(char) * AttrName.size() + sizeof(double));
     }
 
     TEST_F(MetricsAttributeTest, SerializeToJson_SupportedAttributeTypes_Success)
@@ -74,15 +74,15 @@ namespace AWSMetrics
         AWSCore::JsonWriter doubleWriter{ jsonStream };
 
         MetricsAttribute attribute;
-        attribute.SetName(attrName.c_str());
+        attribute.SetName(AttrName.c_str());
 
-        attribute.SetVal(strValue);
+        attribute.SetVal(StrValue);
         ASSERT_TRUE(attribute.SerializeToJson(strWriter));
 
-        attribute.SetVal(intValue);
+        attribute.SetVal(IntValue);
         ASSERT_TRUE(attribute.SerializeToJson(intWriter));
 
-        attribute.SetVal(doubleValue);
+        attribute.SetVal(DoubleValue);
         ASSERT_TRUE(attribute.SerializeToJson(doubleWriter));
     }
 
@@ -91,13 +91,13 @@ namespace AWSMetrics
         MetricsAttribute attribute;
 
         rapidjson::Value nameVal(rapidjson::kStringType);
-        nameVal.SetString(rapidjson::StringRef(attrName.c_str()));
+        nameVal.SetString(rapidjson::StringRef(AttrName.c_str()));
         rapidjson::Value strVal(rapidjson::kStringType);
-        nameVal.SetString(rapidjson::StringRef(strValue.c_str()));
+        nameVal.SetString(rapidjson::StringRef(StrValue.c_str()));
         rapidjson::Value intVal(rapidjson::kNumberType);
-        intVal.SetInt(intValue);
+        intVal.SetInt(IntValue);
         rapidjson::Value doubleVal(rapidjson::kNumberType);
-        doubleVal.SetDouble(doubleValue);
+        doubleVal.SetDouble(DoubleValue);
 
         ASSERT_TRUE(attribute.ReadFromJson(nameVal, strVal));
         ASSERT_EQ(attribute.GetName(), nameVal.GetString());
@@ -115,7 +115,7 @@ namespace AWSMetrics
         MetricsAttribute attribute;
 
         rapidjson::Value nameVal(rapidjson::kStringType);
-        nameVal.SetString(rapidjson::StringRef(attrName.c_str()));
+        nameVal.SetString(rapidjson::StringRef(AttrName.c_str()));
         rapidjson::Value arrayVal(rapidjson::kArrayType);
 
         ASSERT_FALSE(attribute.ReadFromJson(nameVal, arrayVal));

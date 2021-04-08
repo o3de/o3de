@@ -18,9 +18,8 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-#include <AzFramework/Physics/Casts.h>
+#include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 #include <AzFramework/Physics/SystemBus.h>
-#include <AzFramework/Physics/World.h>
 #include <AzTest/AzTest.h>
 #include <Blast/BlastSystemBus.h>
 #include <Family/ActorRenderManager.h>
@@ -99,7 +98,7 @@ namespace Blast
         // ActorRenderManager::OnActorCreated
         {
             EXPECT_CALL(
-                *m_mockMeshFeatureProcessor, AcquireMesh(_, testing::A<const AZ::Render::MaterialAssignmentMap&>(), _))
+                *m_mockMeshFeatureProcessor, AcquireMesh(_, testing::A<const AZ::Render::MaterialAssignmentMap&>(), _, _))
                 .Times(aznumeric_cast<int>(m_actorFactory->m_mockActors[0]->GetChunkIndices().size()))
                 .WillOnce(Return(testing::ByMove(AZ::Render::MeshFeatureProcessorInterface::MeshHandle())))
                 .WillOnce(Return(testing::ByMove(AZ::Render::MeshFeatureProcessorInterface::MeshHandle())));

@@ -47,6 +47,8 @@
 #include <MCore/Source/Compare.h>
 #include <MCore/Source/OBB.h>
 
+#include <Atom/RPI.Reflect/Model/MorphTargetDelta.h>
+
 namespace EMotionFX
 {
     AZ_CLASS_ALLOCATOR_IMPL(Actor, ActorAllocator, 0)
@@ -3013,12 +3015,8 @@ namespace EMotionFX
 
             // The lod has shared buffers that combine the data from each submesh. These buffers can be accessed through the first submesh in their entirety
             const AZ::RPI::ModelLodAsset::Mesh& sourceMesh = sourceMeshes[0];
-            const AZStd::array_view<uint8_t> vertexIndicesView = sourceMesh.GetSemanticBuffer(AZ::Name("MORPHTARGET_VERTEXINDICES"));
-            const AZStd::array_view<uint8_t> positionDeltaView = sourceMesh.GetSemanticBuffer(AZ::Name("MORPHTARGET_POSITIONDELTAS"));
-            const AZStd::array_view<uint8_t> normalDeltaView = sourceMesh.GetSemanticBuffer(AZ::Name("MORPHTARGET_NORMALDELTAS"));
-            const AZ::u32* vertexIndices = reinterpret_cast<const AZ::u32*>(vertexIndicesView.data());
-            const AZ::u16* positionDeltas = reinterpret_cast<const AZ::u16*>(positionDeltaView.data());
-            const AZ::u8* normalDeltas = normalDeltaView.data();
+            const AZStd::array_view<uint8_t> morphTargetDeltaView = sourceMesh.GetSemanticBuffer(AZ::Name("MORPHTARGET_VERTEXDELTAS"));
+            const AZ::RPI::PackedCompressedMorphTargetDelta* vertexDeltas = reinterpret_cast<const AZ::RPI::PackedCompressedMorphTargetDelta*>(morphTargetDeltaView.data());
 
             const AZ::u32 numMorphTargets = morphSetup->GetNumMorphTargets();
             for (AZ::u32 mtIndex = 0; mtIndex < numMorphTargets; ++mtIndex)
@@ -3039,22 +3037,35 @@ namespace EMotionFX
 
                         for (AZ::u32 deformVtx = 0; deformVtx < numDeformedVertices; ++deformVtx)
                         {
+                            // Get the index into the morph delta buffer
                             const AZ::u32 vertexIndex = metaData.m_startIndex + deformVtx;
-                            deformData->mDeltas[deformVtx].mVertexNr = vertexIndices[vertexIndex];
 
-                            const AZ::u32 componentIndex = vertexIndex * 3;
+                            // Unpack the delta
+                            const AZ::RPI::PackedCompressedMorphTargetDelta& packedCompressedDelta = vertexDeltas[vertexIndex];
+                            AZ::RPI::CompressedMorphTargetDelta unpackedCompressedDelta = AZ::RPI::UnpackMorphTargetDelta(packedCompressedDelta);
+
+                            // Set the EMotionFX deform data from the CmopressedMorphTargetDelta
+                            deformData->mDeltas[deformVtx].mVertexNr = unpackedCompressedDelta.m_morphedVertexIndex;
+
                             deformData->mDeltas[deformVtx].mPosition = MCore::Compressed16BitVector3(
-                                positionDeltas[componentIndex + 0],
-                                positionDeltas[componentIndex + 1],
-                                positionDeltas[componentIndex + 2]);
-                            deformData->mDeltas[deformVtx].mNormal = MCore::Compressed8BitVector3(
-                                normalDeltas[componentIndex + 0],
-                                normalDeltas[componentIndex + 1],
-                                normalDeltas[componentIndex + 2]);
+                                unpackedCompressedDelta.m_positionX,
+                                unpackedCompressedDelta.m_positionY,
+                                unpackedCompressedDelta.m_positionZ);
 
-                            // The exporting pipeline currently does not support delta bi-/tangents. Initialize with a zero delta.
-                            deformData->mDeltas[deformVtx].mTangent.FromVector3(AZ::Vector3::CreateZero(), -2.0f, 2.0f);
-                            deformData->mDeltas[deformVtx].mBitangent.FromVector3(AZ::Vector3::CreateZero(), -2.0f, 2.0f);
+                            deformData->mDeltas[deformVtx].mNormal = MCore::Compressed8BitVector3(
+                                unpackedCompressedDelta.m_normalX,
+                                unpackedCompressedDelta.m_normalY,
+                                unpackedCompressedDelta.m_normalZ);
+
+                            deformData->mDeltas[deformVtx].mTangent = MCore::Compressed8BitVector3(
+                                unpackedCompressedDelta.m_tangentX,
+                                unpackedCompressedDelta.m_tangentY,
+                                unpackedCompressedDelta.m_tangentZ);
+
+                            deformData->mDeltas[deformVtx].mBitangent = MCore::Compressed8BitVector3(
+                                unpackedCompressedDelta.m_bitangentX,
+                                unpackedCompressedDelta.m_bitangentY,
+                                unpackedCompressedDelta.m_bitangentZ);
                         }
 
                         morphTarget->AddDeformData(deformData);

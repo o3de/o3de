@@ -29,6 +29,9 @@ namespace AZ
         {
         public:
 
+            using TriangleIndices = AZStd::tuple<uint32_t, uint32_t, uint32_t>;
+            using ObjectIdTriangleIndices = AZStd::tuple<AZ::u8, TriangleIndices>;
+
             ModelKdTree() = default;
 
             bool Build(const ModelAsset* model);
@@ -43,11 +46,13 @@ namespace AZ
                 eSA_Invalid
             };
 
-            AZStd::array_view<float> GetPositionsBuffer(const ModelLodAsset::Mesh& mesh);
+            static AZStd::array_view<float> GetPositionsBuffer(const ModelLodAsset::Mesh& mesh);
+
+            static AZStd::array_view<TriangleIndices> GetIndexBuffer(const ModelLodAsset::Mesh& mesh);
 
         private:
 
-            void BuildRecursively(ModelKdTreeNode* pNode, const AZ::Aabb& boundbox, AZStd::vector<AZ::u32>& indices);
+            void BuildRecursively(ModelKdTreeNode* pNode, const AZ::Aabb& boundbox, AZStd::vector<ObjectIdTriangleIndices>& indices);
             bool RayIntersectionRecursively(ModelKdTreeNode* pNode, const AZ::Vector3& raySrc, const AZ::Vector3& rayDir, float& distance) const;
             void GetPenetratedBoxesRecursively(ModelKdTreeNode* pNode, const AZ::Vector3& raySrc, const AZ::Vector3& rayDir, AZStd::vector<AZ::Aabb>& outBoxes);
             void ConstructMeshList(const ModelAsset* model, const AZ::Transform& matParent);
@@ -67,30 +72,19 @@ namespace AZ
             struct SSplitInfo
             {
                 AZ::Aabb m_aboveBoundbox;
-                AZStd::vector<AZ::u32> m_aboveIndices;
+                AZStd::vector<ObjectIdTriangleIndices> m_aboveIndices;
                 AZ::Aabb m_belowBoundbox;
-                AZStd::vector<AZ::u32> m_belowIndices;
+                AZStd::vector<ObjectIdTriangleIndices> m_belowIndices;
             };
 
-            bool SplitNode(const AZ::Aabb& boundbox, const AZStd::vector<AZ::u32>& indices, ModelKdTree::ESplitAxis splitAxis, float splitPos, SSplitInfo& outInfo);
+            bool SplitNode(const AZ::Aabb& boundbox, const AZStd::vector<ObjectIdTriangleIndices>& indices, ModelKdTree::ESplitAxis splitAxis, float splitPos, SSplitInfo& outInfo);
 
-            AZ::Name m_positionName{ "POSITION" };
-
-            static ESplitAxis SearchForBestSplitAxis(const AZ::Aabb& aabb, float& splitPosition);
+            static AZStd::tuple<ESplitAxis, float> SearchForBestSplitAxis(const AZ::Aabb& aabb);
         };
 
         class ModelKdTreeNode
         {
         public:
-            ModelKdTreeNode() = default;
-
-            ~ModelKdTreeNode()
-            {
-                for (auto& child : m_children)
-                {
-                    child.reset();
-                }
-            }
             AZ::u32 GetVertexBufferSize() const
             {
                 return aznumeric_cast<AZ::u32>(m_vertexIndices.size());
@@ -105,19 +99,7 @@ namespace AZ
             }
             ModelKdTree::ESplitAxis GetSplitAxis() const
             {
-                if (m_splitAxis == 0)
-                {
-                    return ModelKdTree::eSA_X;
-                }
-                if (m_splitAxis == 1)
-                {
-                    return ModelKdTree::eSA_Y;
-                }
-                if (m_splitAxis == 2)
-                {
-                    return ModelKdTree::eSA_Z;
-                }
-                return ModelKdTree::eSA_Invalid;
+                return m_splitAxis;
             }
             void SetSplitAxis(const ModelKdTree::ESplitAxis& axis)
             {
@@ -151,43 +133,26 @@ namespace AZ
             {
                 m_boundBox = aabb;
             }
-            void SetVertexIndexBuffer(AZStd::vector<AZ::u32>&& vertexInfos)
+            void SetVertexIndexBuffer(AZStd::vector<AZStd::tuple<AZ::u8, ModelKdTree::TriangleIndices>>&& vertexInfos)
             {
                 m_vertexIndices.swap(vertexInfos);
             }
 
-            AZ::u32 GetVertexIndex(AZ::u32 nIndex) const
+            ModelKdTree::TriangleIndices GetVertexIndex(AZ::u32 nIndex) const
             {
-                if (GetVertexBufferSize() == 1)
-                {
-                    return m_oneIndex & 0x00FFFFFF;
-                }
-
-                return m_vertexIndices[nIndex] & 0x00FFFFFF;
+                return AZStd::get<1>(m_vertexIndices[nIndex]);
             }
-            AZ::u32 GetObjIndex(AZ::u32 nIndex) const
+            AZ::u8 GetObjIndex(AZ::u32 nIndex) const
             {
-                if (GetVertexBufferSize() == 1)
-                {
-                    return (m_oneIndex & 0xFF000000) >> 24;
-                }
-
-                return (m_vertexIndices[nIndex] & 0xFF000000) >> 24;
+                return AZStd::get<0>(m_vertexIndices[nIndex]);
             }
 
         private:
-            union
-            {
-                float m_splitPos;   // Interior
-                AZ::u32 m_oneIndex; // Leaf
-            };
-
-            AZStd::vector<AZ::u32> m_vertexIndices; // Leaf : high 8bits - object index, low 24bits - vertex index
-
-            AZ::u32 m_splitAxis;  // Interior;
-            AZ::Aabb m_boundBox;  // Both
-
-            AZStd::unique_ptr<ModelKdTreeNode> m_children[2] = {};   // Interior
+            AZ::Aabb m_boundBox{};  // Both
+            AZStd::vector<AZStd::tuple<AZ::u8, ModelKdTree::TriangleIndices>> m_vertexIndices;
+            AZStd::array<AZStd::unique_ptr<ModelKdTreeNode>, 2> m_children{};   // Interior
+            float m_splitPos{}; // Interior
+            ModelKdTree::ESplitAxis m_splitAxis = ModelKdTree::eSA_Invalid;  // Interior;
         };
     }
 }

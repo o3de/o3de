@@ -44,6 +44,7 @@ namespace ScriptCanvasEditor
 
         // NodeDescriptorBus::Handler
         NodeDescriptorType GetType() const override { return m_nodeDescriptorType; }
+        NodeDescriptorComponent* GetDescriptorComponent() override { return this; }
         ////
 
         // GraphCanvas::NodeNotificationBus

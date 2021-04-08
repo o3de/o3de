@@ -38,7 +38,6 @@ namespace PhysX
 
         // MeshColliderComponentRequestsBus
         AZ::Data::Asset<Pipeline::MeshAsset> GetMeshAsset() const override;
-        void GetStaticWorldSpaceMeshTriangles(AZStd::vector<AZ::Vector3>& verts, AZStd::vector<AZ::u32>& indices) const override;
         Physics::MaterialId GetMaterialId() const override;
         void SetMeshAsset(const AZ::Data::AssetId& id) override;
         void SetMaterialAsset(const AZ::Data::AssetId& id) override;

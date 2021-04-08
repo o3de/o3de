@@ -11,6 +11,7 @@
 */
 
 #include <Atom/RHI/Factory.h>
+#include <Atom/RHI/RHIUtils.h>
 #include <Atom/RHI/ValidationLayer.h>
 
 #include <RHI.Private/FactoryManagerSystemComponent.h>
@@ -125,11 +126,7 @@ namespace AZ
 
         Factory* FactoryManagerSystemComponent::GetFactoryFromCommandLine()
         {
-            // Command line usage: "Game.exe -rhi=name" (e.g. Game.exe -rhi=dx12)
-            const AzFramework::CommandLine* commandLine = nullptr;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetApplicationCommandLine);
-            const char* paramName = "rhi";
-            AZStd::string cmdLineFactory = commandLine->GetSwitchValue(paramName, 0);
+            AZStd::string cmdLineFactory = RHI::GetCommandLineValue("rhi");
             if (!cmdLineFactory.empty())
             {
                 RHI::APIType cmdLineFactoryType(cmdLineFactory.c_str());

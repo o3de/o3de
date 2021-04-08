@@ -19,6 +19,7 @@
 #include <Atom/RPI.Reflect/Image/Image.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 
+#include <Atom/RHI.Reflect/ShaderInputNameIndex.h>
 #include <Atom/RHI/ShaderResourceGroup.h>
 
 #include <AtomCore/std/containers/array_view.h>
@@ -93,115 +94,133 @@ namespace AZ
             bool HasShaderVariantKeyFallbackEntry() const;
 
             /// Sets one RPI image for the given shader input index.
-            bool SetImage(RHI::ShaderInputImageIndex inputIndex, const Data::Instance<Image>& image);
-            bool SetImage(RHI::ShaderInputImageIndex inputIndex, const Data::Instance<Image>& image, uint32_t arrayIndex);
+            bool SetImage(RHI::ShaderInputNameIndex& inputIndex, const Data::Instance<Image>& image, uint32_t arrayIndex = 0);
+            bool SetImage(RHI::ShaderInputImageIndex inputIndex, const Data::Instance<Image>& image, uint32_t arrayIndex = 0);
 
             /// Sets multiple RPI images for the given shader input index.
-            bool SetImageArray(RHI::ShaderInputImageIndex inputIndex, AZStd::array_view<Data::Instance<Image>> images);
-            bool SetImageArray(RHI::ShaderInputImageIndex inputIndex, AZStd::array_view<Data::Instance<Image>> images, uint32_t arrayIndex);
+            bool SetImageArray(RHI::ShaderInputNameIndex& inputIndex, AZStd::array_view<Data::Instance<Image>> images, uint32_t arrayIndex = 0);
+            bool SetImageArray(RHI::ShaderInputImageIndex inputIndex, AZStd::array_view<Data::Instance<Image>> images, uint32_t arrayIndex = 0);
 
             /// Returns a single RPI image associated with the image shader input index and array offset.
-            const Data::Instance<Image>& GetImage(RHI::ShaderInputImageIndex inputIndex) const;
-            const Data::Instance<Image>& GetImage(RHI::ShaderInputImageIndex inputIndex, uint32_t arrayIndex) const;
+            const Data::Instance<Image>& GetImage(RHI::ShaderInputNameIndex& inputIndex, uint32_t arrayIndex = 0) const;
+            const Data::Instance<Image>& GetImage(RHI::ShaderInputImageIndex inputIndex, uint32_t arrayIndex = 0) const;
 
             /// Returns an array of RPI images associated with the image shader input index.
+            AZStd::array_view<Data::Instance<Image>> GetImageArray(RHI::ShaderInputNameIndex& inputIndex) const;
             AZStd::array_view<Data::Instance<Image>> GetImageArray(RHI::ShaderInputImageIndex inputIndex) const;
 
             //////////////////////////////////////////////////////////////////////////
             // Methods for assignment / access of RPI Buffer types.
 
             /// Sets one RPI buffer for the given shader input index.
-            bool SetBuffer(RHI::ShaderInputBufferIndex inputIndex, const Data::Instance<Buffer>& buffer);
-            bool SetBuffer(RHI::ShaderInputBufferIndex inputIndex, const Data::Instance<Buffer>& buffer, uint32_t arrayIndex);
+            bool SetBuffer(RHI::ShaderInputNameIndex& inputIndex, const Data::Instance<Buffer>& buffer, uint32_t arrayIndex = 0);
+            bool SetBuffer(RHI::ShaderInputBufferIndex inputIndex, const Data::Instance<Buffer>& buffer, uint32_t arrayIndex = 0);
 
             /// Sets multiple RPI buffers for the given shader input index.
-            bool SetBufferArray(RHI::ShaderInputBufferIndex inputIndex, AZStd::array_view<Data::Instance<Buffer>> buffers);
-            bool SetBufferArray(RHI::ShaderInputBufferIndex inputIndex, AZStd::array_view<Data::Instance<Buffer>> buffers, uint32_t arrayIndex);
+            bool SetBufferArray(RHI::ShaderInputNameIndex& inputIndex, AZStd::array_view<Data::Instance<Buffer>> buffers, uint32_t arrayIndex = 0);
+            bool SetBufferArray(RHI::ShaderInputBufferIndex inputIndex, AZStd::array_view<Data::Instance<Buffer>> buffers, uint32_t arrayIndex = 0);
 
             /// Returns a single RPI buffer associated with the buffer shader input index and array offset.
-            const Data::Instance<Buffer>& GetBuffer(RHI::ShaderInputBufferIndex inputIndex) const;
-            const Data::Instance<Buffer>& GetBuffer(RHI::ShaderInputBufferIndex inputIndex, uint32_t arrayIndex) const;
+            const Data::Instance<Buffer>& GetBuffer(RHI::ShaderInputNameIndex& inputIndex, uint32_t arrayIndex = 0) const;
+            const Data::Instance<Buffer>& GetBuffer(RHI::ShaderInputBufferIndex inputIndex, uint32_t arrayIndex = 0) const;
 
             /// Returns an array of RPI buffers associated with the buffer shader input index.
+            AZStd::array_view<Data::Instance<Buffer>> GetBufferArray(RHI::ShaderInputNameIndex& inputIndex) const;
             AZStd::array_view<Data::Instance<Buffer>> GetBufferArray(RHI::ShaderInputBufferIndex inputIndex) const;
 
             //////////////////////////////////////////////////////////////////////////
             // Methods for assignment / access of RHI Image types.
 
             /// Sets one image view for the given shader input index.
-            bool SetImageView(RHI::ShaderInputImageIndex inputIndex, const RHI::ImageView* imageView);
-            bool SetImageView(RHI::ShaderInputImageIndex inputIndex, const RHI::ImageView* imageView, uint32_t arrayIndex);
+            bool SetImageView(RHI::ShaderInputNameIndex& inputIndex, const RHI::ImageView* imageView, uint32_t arrayIndex = 0);
+            bool SetImageView(RHI::ShaderInputImageIndex inputIndex, const RHI::ImageView* imageView, uint32_t arrayIndex = 0);
 
             /// Sets an array of image view for the given shader input index.
-            bool SetImageViewArray(RHI::ShaderInputImageIndex inputIndex, AZStd::array_view<const RHI::ImageView*> imageViews);
-            bool SetImageViewArray(RHI::ShaderInputImageIndex inputIndex, AZStd::array_view<const RHI::ImageView*> imageViews, uint32_t arrayIndex);
+            bool SetImageViewArray(RHI::ShaderInputNameIndex& inputIndex, AZStd::array_view<const RHI::ImageView*> imageViews, uint32_t arrayIndex = 0);
+            bool SetImageViewArray(RHI::ShaderInputImageIndex inputIndex, AZStd::array_view<const RHI::ImageView*> imageViews, uint32_t arrayIndex = 0);
 
             /// Returns a single image view associated with the image shader input index and array offset.
-            const RHI::ConstPtr<RHI::ImageView>& GetImageView(RHI::ShaderInputImageIndex inputIndex) const;
-            const RHI::ConstPtr<RHI::ImageView>& GetImageView(RHI::ShaderInputImageIndex inputIndex, uint32_t arrayIndex) const;
+            const RHI::ConstPtr<RHI::ImageView>& GetImageView(RHI::ShaderInputNameIndex& inputIndex, uint32_t arrayIndex = 0) const;
+            const RHI::ConstPtr<RHI::ImageView>& GetImageView(RHI::ShaderInputImageIndex inputIndex, uint32_t arrayIndex = 0) const;
 
             /// Returns an array of image views associated with the given image shader input index.
+            AZStd::array_view<RHI::ConstPtr<RHI::ImageView>> GetImageViewArray(RHI::ShaderInputNameIndex& inputIndex) const;
             AZStd::array_view<RHI::ConstPtr<RHI::ImageView>> GetImageViewArray(RHI::ShaderInputImageIndex inputIndex) const;
 
             //////////////////////////////////////////////////////////////////////////
             // Methods for assignment / access of RHI Buffer types.
 
             /// Sets one buffer view for the given shader input index.
-            bool SetBufferView(RHI::ShaderInputBufferIndex inputIndex, const RHI::BufferView* bufferView);
-            bool SetBufferView(RHI::ShaderInputBufferIndex inputIndex, const RHI::BufferView* bufferView, uint32_t arrayIndex);
+            bool SetBufferView(RHI::ShaderInputNameIndex& inputIndex, const RHI::BufferView* bufferView, uint32_t arrayIndex = 0);
+            bool SetBufferView(RHI::ShaderInputBufferIndex inputIndex, const RHI::BufferView* bufferView, uint32_t arrayIndex = 0);
 
             /// Sets an array of buffer view for the given shader input index.
-            bool SetBufferViewArray(RHI::ShaderInputBufferIndex inputIndex, AZStd::array_view<const RHI::BufferView*> bufferViews);
-            bool SetBufferViewArray(RHI::ShaderInputBufferIndex inputIndex, AZStd::array_view<const RHI::BufferView*> bufferViews, uint32_t arrayIndex);
+            bool SetBufferViewArray(RHI::ShaderInputNameIndex& inputIndex, AZStd::array_view<const RHI::BufferView*> bufferViews, uint32_t arrayIndex = 0);
+            bool SetBufferViewArray(RHI::ShaderInputBufferIndex inputIndex, AZStd::array_view<const RHI::BufferView*> bufferViews, uint32_t arrayIndex = 0);
 
             /// Returns a single buffer view associated with the buffer shader input index and array offset.
-            const RHI::ConstPtr<RHI::BufferView>& GetBufferView(RHI::ShaderInputBufferIndex inputIndex) const;
-            const RHI::ConstPtr<RHI::BufferView>& GetBufferView(RHI::ShaderInputBufferIndex inputIndex, uint32_t arrayIndex) const;
+            const RHI::ConstPtr<RHI::BufferView>& GetBufferView(RHI::ShaderInputNameIndex& inputIndex, uint32_t arrayIndex = 0) const;
+            const RHI::ConstPtr<RHI::BufferView>& GetBufferView(RHI::ShaderInputBufferIndex inputIndex, uint32_t arrayIndex = 0) const;
 
             /// Returns an array of buffer views associated with the given buffer shader input index.
+            AZStd::array_view<RHI::ConstPtr<RHI::BufferView>> GetBufferViewArray(RHI::ShaderInputNameIndex& inputIndex) const;
             AZStd::array_view<RHI::ConstPtr<RHI::BufferView>> GetBufferViewArray(RHI::ShaderInputBufferIndex inputIndex) const;
 
             //////////////////////////////////////////////////////////////////////////
             // Methods for assignment / access of RHI Sampler types.
 
             /// Sets one sampler for the given shader input index, using the bindingIndex as the key.
-            bool SetSampler(RHI::ShaderInputSamplerIndex inputIndex, const RHI::SamplerState& sampler);
-            bool SetSampler(RHI::ShaderInputSamplerIndex inputIndex, const RHI::SamplerState& sampler, uint32_t arrayIndex);
+            bool SetSampler(RHI::ShaderInputNameIndex& inputIndex, const RHI::SamplerState& sampler, uint32_t arrayIndex = 0);
+            bool SetSampler(RHI::ShaderInputSamplerIndex inputIndex, const RHI::SamplerState& sampler, uint32_t arrayIndex = 0);
 
             /// Sets an array of samplers for the given shader input index.
-            bool SetSamplerArray(RHI::ShaderInputSamplerIndex inputIndex, AZStd::array_view<RHI::SamplerState> samplers);
-            bool SetSamplerArray(RHI::ShaderInputSamplerIndex inputIndex, AZStd::array_view<RHI::SamplerState> samplers, uint32_t arrayIndex);
+            bool SetSamplerArray(RHI::ShaderInputNameIndex& inputIndex, AZStd::array_view<RHI::SamplerState> samplers, uint32_t arrayIndex = 0);
+            bool SetSamplerArray(RHI::ShaderInputSamplerIndex inputIndex, AZStd::array_view<RHI::SamplerState> samplers, uint32_t arrayIndex = 0);
 
             /// Returns a single sampler associated with the sampler shader input index and array offset.
+            const RHI::SamplerState& GetSampler(RHI::ShaderInputNameIndex& inputIndex, uint32_t arrayIndex) const;
             const RHI::SamplerState& GetSampler(RHI::ShaderInputSamplerIndex inputIndex, uint32_t arrayIndex) const;
 
             /// Returns an array of samplers associated with the sampler shader input index.
+            AZStd::array_view<RHI::SamplerState> GetSamplerArray(RHI::ShaderInputNameIndex& inputIndex) const;
             AZStd::array_view<RHI::SamplerState> GetSamplerArray(RHI::ShaderInputSamplerIndex inputIndex) const;
 
             //////////////////////////////////////////////////////////////////////////
             // Methods for assignment / access SRG constants.
 
             /// Assigns constant data for the given constant shader input index.
+            bool SetConstantRaw(RHI::ShaderInputNameIndex& inputIndex, const void* bytes, uint32_t byteCount);
             bool SetConstantRaw(RHI::ShaderInputConstantIndex inputIndex, const void* bytes, uint32_t byteCount);
+            bool SetConstantRaw(RHI::ShaderInputNameIndex& inputIndex, const void* bytes, uint32_t byteOffset, uint32_t byteCount);
             bool SetConstantRaw(RHI::ShaderInputConstantIndex inputIndex, const void* bytes, uint32_t byteOffset, uint32_t byteCount);
 
             /// Assigns a value of type T to the constant shader input.
+            template <typename T>
+            bool SetConstant(RHI::ShaderInputNameIndex& inputIndex, const T& value);
             template <typename T>
             bool SetConstant(RHI::ShaderInputConstantIndex inputIndex, const T& value);
 
             /// Assigns the specified number of rows from a Matrix
             template <typename T>
+            bool SetConstantMatrixRows(RHI::ShaderInputNameIndex& inputIndex, const T& value, uint32_t rowCount);
+            template <typename T>
             bool SetConstantMatrixRows(RHI::ShaderInputConstantIndex inputIndex, const T& value, uint32_t rowCount);
 
             /// Assigns a value of type T to the constant shader input, at an array offset.
+            template <typename T>
+            bool SetConstant(RHI::ShaderInputNameIndex& inputIndex, const T& value, uint32_t arrayIndex);
             template <typename T>
             bool SetConstant(RHI::ShaderInputConstantIndex inputIndex, const T& value, uint32_t arrayIndex);
 
             /// Assigns an array of type T to the constant shader input.
             template <typename T>
+            bool SetConstantArray(RHI::ShaderInputNameIndex& inputIndex, AZStd::array_view<T> values);
+            template <typename T>
             bool SetConstantArray(RHI::ShaderInputConstantIndex inputIndex, AZStd::array_view<T> values);
 
             /// Assigns an array of type T to the constant shader input.
+            template <typename T, size_t N>
+            bool SetConstantArray(RHI::ShaderInputNameIndex& inputIndex, const AZStd::array<T, N>& values);
             template <typename T, size_t N>
             bool SetConstantArray(RHI::ShaderInputConstantIndex inputIndex, const AZStd::array<T, N>& values);
 
@@ -219,12 +238,16 @@ namespace AZ
              * If the strides do not match, an empty array is returned.
              */
             template <typename T>
+            AZStd::array_view<T> GetConstantArray(RHI::ShaderInputNameIndex& inputIndex) const;
+            template <typename T>
             AZStd::array_view<T> GetConstantArray(RHI::ShaderInputConstantIndex inputIndex) const;
 
             /**
              * Returns the constant data as type 'T' returned by value. The size of the constant region
              * must match the size of T exactly. Otherwise, an empty instance is returned.
              */
+            template <typename T>
+            T GetConstant(RHI::ShaderInputNameIndex& inputIndex) const;
             template <typename T>
             T GetConstant(RHI::ShaderInputConstantIndex inputIndex) const;
 
@@ -234,9 +257,12 @@ namespace AZ
              * array of type T. Otherwise, an empty instance is returned.
              */
             template <typename T>
+            T GetConstant(RHI::ShaderInputNameIndex& inputIndex, uint32_t arrayIndex) const;
+            template <typename T>
             T GetConstant(RHI::ShaderInputConstantIndex inputIndex, uint32_t arrayIndex) const;
 
             /// Returns constant data for the given shader input index as an array of bytes.
+            AZStd::array_view<uint8_t> GetConstantRaw(RHI::ShaderInputNameIndex& inputIndex) const;
             AZStd::array_view<uint8_t> GetConstantRaw(RHI::ShaderInputConstantIndex inputIndex) const;
 
         private:
@@ -301,11 +327,31 @@ namespace AZ
         {
             return m_data.SetConstant(inputIndex, value);
         }
-      
+
+        template <typename T>
+        bool ShaderResourceGroup::SetConstant(RHI::ShaderInputNameIndex& inputIndex, const T& value)
+        {
+            if (inputIndex.ValidateOrFindConstantIndex(GetLayout()))
+            {
+                return SetConstant(inputIndex.GetConstantIndex(), value);
+            }
+            return false;
+        }
+
         template <typename T>
         bool ShaderResourceGroup::SetConstantMatrixRows(RHI::ShaderInputConstantIndex inputIndex, const T& value, uint32_t rowCount)
         {
             return m_data.SetConstantMatrixRows(inputIndex, value, rowCount);
+        }
+
+        template <typename T>
+        bool ShaderResourceGroup::SetConstantMatrixRows(RHI::ShaderInputNameIndex& inputIndex, const T& value, uint32_t rowCount)
+        {
+            if (inputIndex.ValidateOrFindConstantIndex(GetLayout()))
+            {
+                return SetConstantMatrixRows(inputIndex.GetConstantIndex(), value, rowCount);
+            }
+            return false;
         }
 
         template <typename T>
@@ -315,15 +361,45 @@ namespace AZ
         }
 
         template <typename T>
+        bool ShaderResourceGroup::SetConstant(RHI::ShaderInputNameIndex& inputIndex, const T& value, uint32_t arrayIndex)
+        {
+            if (inputIndex.ValidateOrFindConstantIndex(GetLayout()))
+            {
+                return SetConstant(inputIndex.GetConstantIndex(), value, arrayIndex);
+            }
+            return false;
+        }
+
+        template <typename T>
         bool ShaderResourceGroup::SetConstantArray(RHI::ShaderInputConstantIndex inputIndex, AZStd::array_view<T> values)
         {
             return m_data.SetConstantArray(inputIndex, values);
+        }
+
+        template <typename T>
+        bool ShaderResourceGroup::SetConstantArray(RHI::ShaderInputNameIndex& inputIndex, AZStd::array_view<T> values)
+        {
+            if (inputIndex.ValidateOrFindConstantIndex(GetLayout()))
+            {
+                return SetConstantArray(inputIndex.GetConstantIndex(), values);
+            }
+            return false;
         }
 
         template <typename T, size_t N>
         bool ShaderResourceGroup::SetConstantArray(RHI::ShaderInputConstantIndex inputIndex, const AZStd::array<T, N>& values)
         {
             return SetConstantArray(inputIndex, AZStd::array_view<T>(values));
+        }
+
+        template <typename T, size_t N>
+        bool ShaderResourceGroup::SetConstantArray(RHI::ShaderInputNameIndex& inputIndex, const AZStd::array<T, N>& values)
+        {
+            if (inputIndex.ValidateOrFindConstantIndex(GetLayout()))
+            {
+                return SetConstantArray(inputIndex.GetConstantIndex(), AZStd::array_view<T>(values));
+            }
+            return false;
         }
 
         template <typename T>
@@ -333,9 +409,30 @@ namespace AZ
         }
 
         template <typename T>
+        AZStd::array_view<T> ShaderResourceGroup::GetConstantArray(RHI::ShaderInputNameIndex& inputIndex) const
+        {
+            if (inputIndex.ValidateOrFindConstantIndex(GetLayout()))
+            {
+                return GetConstantArray<T>(inputIndex.GetConstantIndex());
+            }
+            return false;
+        }
+
+        template <typename T>
         T ShaderResourceGroup::GetConstant(RHI::ShaderInputConstantIndex inputIndex) const
         {
             return m_data.GetConstant<T>(inputIndex);
         }
+
+        template <typename T>
+        T ShaderResourceGroup::GetConstant(RHI::ShaderInputNameIndex& inputIndex) const
+        {
+            if (inputIndex.ValidateOrFindConstantIndex(GetLayout()))
+            {
+                return GetConstant<T>(inputIndex.GetConstantIndex());
+            }
+            return false;
+        }
+
     } // namespace RPI
 } // namespace AZ

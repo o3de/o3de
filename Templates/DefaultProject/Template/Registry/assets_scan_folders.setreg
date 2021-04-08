@@ -5,7 +5,10 @@
         {
             "SourcePaths":
             [
-                "Assets"
+                "Assets",
+                "ShaderLib",
+                "Shaders",
+                "Registry"
             ]
         }
     }

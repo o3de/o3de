@@ -26,6 +26,7 @@ namespace AzToolsFramework
         using PrefabDomPath = rapidjson::Pointer;
         using PrefabDomList = AZStd::vector<PrefabDom>;
 
+        using PrefabDomReference = AZStd::optional<AZStd::reference_wrapper<PrefabDom>>;
         using PrefabDomValueReference = AZStd::optional<AZStd::reference_wrapper<PrefabDomValue>>;
         using PrefabDomValueConstReference = AZStd::optional<AZStd::reference_wrapper<const PrefabDomValue>>;
 

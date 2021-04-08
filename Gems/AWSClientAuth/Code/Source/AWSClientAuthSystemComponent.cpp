@@ -155,8 +155,8 @@ namespace AWSClientAuth
         }
 
         m_cognitoIdentityProviderClient =
-            std::make_shared<Aws::CognitoIdentityProvider::CognitoIdentityProviderClient>(clientConfiguration);
-        m_cognitoIdentityClient = std::make_shared<Aws::CognitoIdentity::CognitoIdentityClient>(clientConfiguration);
+            std::make_shared<Aws::CognitoIdentityProvider::CognitoIdentityProviderClient>(Aws::Auth::AWSCredentials(), clientConfiguration);
+        m_cognitoIdentityClient = std::make_shared<Aws::CognitoIdentity::CognitoIdentityClient>(Aws::Auth::AWSCredentials(), clientConfiguration);
     }
 
     std::shared_ptr<Aws::CognitoIdentityProvider::CognitoIdentityProviderClient> AWSClientAuthSystemComponent::GetCognitoIDPClient()

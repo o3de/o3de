@@ -49,7 +49,7 @@ namespace EMotionFX
         const AZ::Outcome<size_t> GetRootRagdollNodeIndex() const;
 
         Physics::Ragdoll* GetRagdoll() const;
-        AZ::Crc32 GetRagdollWorldId() const;
+        AzPhysics::SceneHandle GetRagdollSceneHandle() const;
         void SetRagdollUsed()                                   { m_ragdollUsedThisFrame = true; }
 
         /*

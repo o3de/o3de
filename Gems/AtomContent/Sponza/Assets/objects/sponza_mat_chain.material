@@ -1,0 +1,32 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "parentMaterial": "",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "baseColor": {
+            "color": [
+                0.800000011920929,
+                0.800000011920929,
+                0.800000011920929,
+                1.0
+            ],
+            "textureMap": "Textures/chain_basecolor.png"
+        },
+        "metallic": {
+            "textureMap": "Textures/chain_alpha.png"
+        },
+        "normal": {
+            "textureMap": "Textures/chain_normal.jpg"
+        },
+        "opacity": {
+            "alphaSource": "Split",
+            "factor": 1.0,
+            "mode": "Cutout",
+            "textureMap": "Textures/chain_alpha.png"
+        },
+        "roughness": {
+            "factor": 0.4000000059604645
+        }
+    }
+}

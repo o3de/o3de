@@ -166,10 +166,8 @@ namespace LevelBuilder
             AzFramework::StringFunc::Path::Join(tempDirectory.c_str(), "level", levelsubfolder);
 
             PopulateLevelSliceDependencies(levelsubfolder, productDependencies, productPathDependencies);
-            PopulateLevelDataDependencies(levelPakFile, levelsubfolder, productPathDependencies);
             PopulateMissionDependencies(levelPakFile, levelsubfolder, productPathDependencies);
             PopulateLevelAudioControlDependencies(levelPakFile, productPathDependencies);
-            PopulateVegetationMapDataDependencies(levelPakFile, productPathDependencies);
 
             extractionCompleteSemaphore.release();
         };
@@ -220,15 +218,6 @@ namespace LevelBuilder
         //  The defines exist in CryEngine code that we can't link from here.
         //  We want to minimize engine changes to make it easier for game teams to incorporate these dependency improvements.
 
-        //  LevelSystem.cpp, CLevelSystem::PopulateLevels stores all pak files in the level folder
-        //  to load them during opening a level. AFAIK apart from level.pak, terraintexture.pak is the only pak file that might be present in the cached level folder.
-        //  string paks = levelPath + string("/*.pak");
-        AddLevelRelativeSourcePathProductDependency("terraintexture.pak", sourceLevelPakPath, productPathDependencies);
-
-        // TerrainCompile.cpp, CTerrain::Load attempts to load the cover.ctc file for the terrain.
-        //      OpenTerrainTextureFile(COMPILED_TERRAIN_TEXTURE_FILE_NAME)
-        AddLevelRelativeSourcePathProductDependency("terrain/cover.ctc", sourceLevelPakPath, productPathDependencies);
-
         // CCullThread::LoadLevel attempts to load the occluder mesh, if it exists.
         //      AZ::IO::HandleType fileHandle = gEnv->pCryPak->FOpen((string(pFolderName) + "/occluder.ocm").c_str(), "rbx");
         AddLevelRelativeSourcePathProductDependency("occluder.ocm", sourceLevelPakPath, productPathDependencies);
@@ -241,10 +230,6 @@ namespace LevelBuilder
         //      string filename = PathUtil::Make(sLevelFolder, AUTO_LEVEL_RESOURCE_LIST);
         //      if (!pResList->Load(filename.c_str()))
         AddLevelRelativeSourcePathProductDependency("auto_resourcelist.txt", sourceLevelPakPath, productPathDependencies);
-
-        // CMergedMeshesManager::PreloadMeshes attempts to load this file for the current level, if it exists.
-        //      AZ::IO::HandleType fileHandle = gEnv->pCryPak->FOpen(Get3DEngine()->GetLevelFilePath(COMPILED_MERGED_MESHES_BASE_NAME COMPILED_MERGED_MESHES_LIST), "r");
-        AddLevelRelativeSourcePathProductDependency("terrain/merged_meshes_sectors/mmrm_used_meshes.lst", sourceLevelPakPath, productPathDependencies);
 
         // CLevelInfo::ReadMetaData() constructs a string based on levelName/LevelName.xml, and attempts to read that file.
         AZStd::string levelXml(AZStd::string::format("%s.xml", levelFolderName.c_str()));
@@ -334,168 +319,6 @@ namespace LevelBuilder
 
         AssetBuilderSDK::GatherProductDependencies(*context, entity, productDependencies, productPathDependencies);
 
-    }
-
-    void LevelBuilderWorker::PopulateLevelDataDependencies(
-        [[maybe_unused]] const AZStd::string& levelPakFile,
-        const AZStd::string& levelPath,
-        AssetBuilderSDK::ProductPathDependencySet& productDependencies) const
-    {
-        const char levelDataFileName[] = "leveldata.xml";
-
-        AZStd::string levelDataFullPath;
-        AzFramework::StringFunc::Path::Join(levelPath.c_str(), levelDataFileName, levelDataFullPath);
-
-        AZ::IO::FileIOStream fileStream;
-        
-        if (fileStream.Open(levelDataFullPath.c_str(), AZ::IO::OpenMode::ModeRead | AZ::IO::OpenMode::ModeBinary))
-        {
-            PopulateLevelDataDependenciesHelper(&fileStream, productDependencies);
-        }
-    }
-
-    bool LevelBuilderWorker::PopulateLevelDataDependenciesHelper(AZ::IO::GenericStream* stream,
-        AssetBuilderSDK::ProductPathDependencySet& productDependencies) const
-    {
-        if (!stream)
-        {
-            return false;
-        }
-
-        AZ::IO::SizeType length = stream->GetLength();
-
-        if (length == 0)
-        {
-            return false;
-        }
-
-        AZStd::vector<char> charBuffer;
-        
-        charBuffer.resize_no_construct(length + 1);
-        stream->Read(length, charBuffer.data());
-        charBuffer.back() = 0;
-        
-        AZ::rapidxml::xml_document<char> xmlDoc;
-        xmlDoc.parse<AZ::rapidxml::parse_no_data_nodes>(charBuffer.data());
-        auto levelDataNode = xmlDoc.first_node("LevelData");
-
-        if(!levelDataNode)
-        {
-            return false;
-        }
-
-        auto surfaceTypesNode = levelDataNode->first_node("SurfaceTypes");
-
-        if (!surfaceTypesNode)
-        {
-            return false;
-        }
-
-        auto surfaceTypeNode = surfaceTypesNode->first_node();
-
-        while(surfaceTypeNode)
-        {
-            auto detailMatrialAttr = surfaceTypeNode->first_attribute("DetailMaterial");
-
-            if (detailMatrialAttr)
-            {
-                // Add on the material file extension since it isn't included in the xml
-                productDependencies.emplace(AZStd::string(detailMatrialAttr->value()) + s_materialExtension, AssetBuilderSDK::ProductPathDependencyType::ProductFile);
-            }
-
-            surfaceTypeNode = surfaceTypeNode->next_sibling();
-        }
-
-        return true;
-    }
-
-    void LevelBuilderWorker::PopulateVegetationMapDataDependencies(
-        const AZStd::string& levelPakFile,
-        AssetBuilderSDK::ProductPathDependencySet& productDependencies) const
-    {
-        const char vegetationMapDataFileName[] = "leveldata/VegetationMap.dat";
-        AZStd::string vegetationMapDataFullPath;
-        AZStd::string levelPakDir;
-        AzFramework::StringFunc::Path::GetFullPath(levelPakFile.c_str(), levelPakDir);
-
-        AzFramework::StringFunc::Path::Join(levelPakDir.c_str(), vegetationMapDataFileName, vegetationMapDataFullPath);
-
-        AZ::IO::FileIOStream fileStream;
-
-        if (fileStream.Open(vegetationMapDataFullPath.c_str(), AZ::IO::OpenMode::ModeRead | AZ::IO::OpenMode::ModeBinary))
-        {
-            if (!PopulateVegetationMapDataDependenciesHelper(&fileStream, productDependencies))
-            {
-                AZ_Error("LevelBuilder", false, "Unable to retreive product dependencies from file (%s).", vegetationMapDataFullPath.c_str());
-            }
-        }
-        else
-        {
-            AZ_Error("LevelBuilder", false, "Failed to open file (%s).", vegetationMapDataFullPath.c_str());
-        }
-    }
-
-    bool LevelBuilderWorker::PopulateVegetationMapDataDependenciesHelper(AZ::IO::GenericStream* stream,
-        AssetBuilderSDK::ProductPathDependencySet& productDependencies) const
-    {
-        if (!stream)
-        {
-            return false;
-        }
-
-        int charSize = 1;
-        AZ::IO::SizeType length = static_cast<AZ::IO::SizeType>(readXmlDataLength(stream, charSize));
-
-        if (length == 0)
-        {
-            return false;
-        }
-        AZStd::string xmlString;
-
-        if (charSize == 1)
-        {
-            xmlString.resize(length);
-            stream->Read(length, xmlString.data());
-        }
-        else
-        {
-            AZStd::vector<AZ::u16> dataBuffer;
-            dataBuffer.resize(length);
-            stream->Read(length, dataBuffer.data());
-            Utf8::Unchecked::utf16to8(dataBuffer.begin(), dataBuffer.end(), AZStd::back_inserter(xmlString));
-        }
-
-        AZ::rapidxml::xml_document<char> xmlDoc;
-        xmlDoc.parse<AZ::rapidxml::parse_no_data_nodes>(xmlString.data());
-        auto vegetationMapDataNode = xmlDoc.first_node("VegetationMap");
-
-        if (!vegetationMapDataNode)
-        {
-            return false;
-        }
-
-        auto objectsTypeNode = vegetationMapDataNode->first_node("Objects");
-
-        if (!objectsTypeNode)
-        {
-            return false;
-        }
-
-        auto objectTypeNode = objectsTypeNode->first_node();
-
-        while (objectTypeNode)
-        {
-            auto fileNameAttr = objectTypeNode->first_attribute("FileName");
-
-            if (fileNameAttr)
-            {
-                productDependencies.emplace(AZStd::string(fileNameAttr->value()), AssetBuilderSDK::ProductPathDependencyType::ProductFile);
-            }
-
-            objectTypeNode = objectTypeNode->next_sibling();
-        }
-
-        return true;
     }
 
     void LevelBuilderWorker::PopulateMissionDependencies(

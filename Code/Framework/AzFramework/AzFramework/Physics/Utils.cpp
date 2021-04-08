@@ -12,138 +12,33 @@
 
 
 #include "Utils.h"
-#include "RigidBody.h"
-#include "World.h"
 #include "Material.h"
 #include "Shape.h"
 #include <AzFramework/Physics/AnimationConfiguration.h>
+#include <AzFramework/Physics/CharacterBus.h>
 #include <AzFramework/Physics/Character.h>
 #include <AzFramework/Physics/Ragdoll.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <AzCore/Serialization/EditContext.h>
-#include <AzFramework/Physics/CollisionNotificationBus.h>
-#include <AzFramework/Physics/TriggerBus.h>
-#include <AzFramework/Physics/ScriptCanvasPhysicsUtils.h>
 #include <AzFramework/Physics/CollisionBus.h>
 #include <AzFramework/Physics/WorldBodyBus.h>
 #include <AzFramework/Physics/WindBus.h>
-
+#include <AzFramework/Physics/PhysicsSystem.h>
+#include <AzFramework/Physics/Collision/CollisionEvents.h>
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
 #include <AzFramework/Physics/Collision/CollisionLayers.h>
+#include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
+#include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/Configuration/CollisionConfiguration.h>
+#include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
 #include <AzFramework/Physics/Configuration/SceneConfiguration.h>
+#include <AzFramework/Physics/Configuration/SimulatedBodyConfiguration.h>
+#include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 
 namespace Physics
 {
     namespace ReflectionUtils
     {
-
-        /// Behavior handler which forwards TriggerNotificationBus events to script canvas.
-        /// Note this class is not using the usual AZ_EBUS_BEHAVIOR_BINDER macro as the signature
-        /// needs to be changed for script canvas
-        class TriggerNotificationBusBehaviorHandler
-            : public TriggerNotificationBus::Handler
-            , public AZ::BehaviorEBusHandler
-        {
-        public:
-
-            AZ_CLASS_ALLOCATOR(TriggerNotificationBusBehaviorHandler, AZ::SystemAllocator, 0);
-            AZ_RTTI(TriggerNotificationBusBehaviorHandler, "{0519A121-16F9-4A97-8D54-092BCD963B95}", AZ::BehaviorEBusHandler);
-
-            TriggerNotificationBusBehaviorHandler() {
-                m_events.resize(FN_MAX);
-                SetEvent(&TriggerNotificationBusBehaviorHandler::OnTriggerEnterDummy, "OnTriggerEnter");
-                SetEvent(&TriggerNotificationBusBehaviorHandler::OnTriggerExitDummy, "OnTriggerExit");
-            }
-
-            static void Reflect(AZ::ReflectContext* context)
-            {
-                if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-                {
-                    behaviorContext->EBus<Physics::TriggerNotificationBus>("TriggerNotificationBus")
-                        ->Attribute(AZ::Script::Attributes::Module, "physics")
-                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
-                        ->Handler<TriggerNotificationBusBehaviorHandler>()
-                        ;
-                }
-            }
-
-            void OnTriggerEnterDummy(AZ::EntityId /*entityId*/)
-            {
-                // This is never invoked, and only used for type deduction when calling SetEvent
-            }
-            void OnTriggerExitDummy(AZ::EntityId /*entityId*/)
-            {
-                // This is never invoked, and only used for type deduction when calling SetEvent
-            }
-
-            using EventFunctionsParameterPack = AZStd::Internal::pack_traits_arg_sequence 
-            < 
-                decltype(&TriggerNotificationBusBehaviorHandler::OnTriggerEnterDummy),
-                decltype(&TriggerNotificationBusBehaviorHandler::OnTriggerExitDummy)
-            >;
-
-        private:
-
-            enum 
-            {
-                FN_OnTriggerEnter,
-                FN_OnTriggerExit,
-                FN_MAX
-            };
-
-            void Disconnect() override 
-            {
-                BusDisconnect();
-            }
-
-            bool Connect(AZ::BehaviorValueParameter * id = nullptr) override 
-            {
-                return AZ::Internal::EBusConnector<TriggerNotificationBusBehaviorHandler>::Connect(this, id);
-            }
-
-            bool IsConnected() override 
-            {
-                return AZ::Internal::EBusConnector<TriggerNotificationBusBehaviorHandler>::IsConnected(this);
-            }
-
-            bool IsConnectedId(AZ::BehaviorValueParameter * id) override 
-            {
-                return AZ::Internal::EBusConnector<TriggerNotificationBusBehaviorHandler>::IsConnectedId(this, id);
-            }
-
-            int GetFunctionIndex(const char * functionName) const override 
-            {
-                if (strcmp(functionName, "OnTriggerEnter") == 0) return FN_OnTriggerEnter;
-                if (strcmp(functionName, "OnTriggerExit") == 0) return FN_OnTriggerExit;
-                return -1;
-            }
-
-            void OnTriggerEnter(const TriggerEvent& triggerEvent) override
-            {
-                Call(FN_OnTriggerEnter, triggerEvent.m_otherBody->GetEntityId());
-            }
-
-            void OnTriggerExit(const TriggerEvent& triggerEvent) override
-            {
-                Call(FN_OnTriggerExit, triggerEvent.m_otherBody->GetEntityId());
-            }
-        };
-        
-        void ReflectWorldBus(AZ::ReflectContext* context)
-        {
-            if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-            {
-                behaviorContext->EBus<Physics::WorldRequestBus>("WorldRequestBus")
-                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
-                    ->Attribute(AZ::Script::Attributes::Module, "physics")
-                    ->Attribute(AZ::Script::Attributes::Category, "PhysX")
-                    ->Event("GetGravity", &Physics::WorldRequestBus::Events::GetGravity)
-                    ->Event("SetGravity", &Physics::WorldRequestBus::Events::SetGravity)
-                    ;
-            }
-        }
-
         void ReflectWorldBodyBus(AZ::ReflectContext* context)
         {
             if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
@@ -179,6 +74,29 @@ namespace Physics
             }
         }
 
+        void ReflectCharacterBus(AZ::ReflectContext* context)
+        {
+            if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+            {
+                behaviorContext->EBus<Physics::CharacterRequestBus>("CharacterControllerRequestBus", "Character Controller")
+                    ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::RuntimeOwn)
+                    ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
+                    ->Event("GetBasePosition", &Physics::CharacterRequests::GetBasePosition, "Get Base Position")
+                    ->Event("SetBasePosition", &Physics::CharacterRequests::SetBasePosition, "Set Base Position")
+                    ->Event("GetCenterPosition", &Physics::CharacterRequests::GetCenterPosition, "Get Center Position")
+                    ->Event("GetStepHeight", &Physics::CharacterRequests::GetStepHeight, "Get Step Height")
+                    ->Event("SetStepHeight", &Physics::CharacterRequests::SetStepHeight, "Set Step Height")
+                    ->Event("GetUpDirection", &Physics::CharacterRequests::GetUpDirection, "Get Up Direction")
+                    ->Event("GetSlopeLimitDegrees", &Physics::CharacterRequests::GetSlopeLimitDegrees, "Get Slope Limit (Degrees)")
+                    ->Event("SetSlopeLimitDegrees", &Physics::CharacterRequests::SetSlopeLimitDegrees, "Set Slope Limit (Degrees)")
+                    ->Event("GetMaximumSpeed", &Physics::CharacterRequests::GetMaximumSpeed, "Get Maximum Speed")
+                    ->Event("SetMaximumSpeed", &Physics::CharacterRequests::SetMaximumSpeed, "Set Maximum Speed")
+                    ->Event("GetVelocity", &Physics::CharacterRequests::GetVelocity, "Get Velocity")
+                    ->Event("AddVelocity", &Physics::CharacterRequests::AddVelocity, "Add Velocity")
+                    ;
+            }
+        }
+
         void ReflectPhysicsApi(AZ::ReflectContext* context)
         {
             ShapeConfiguration::Reflect(context);
@@ -189,33 +107,35 @@ namespace Physics
             PhysicsAssetShapeConfiguration::Reflect(context);
             NativeShapeConfiguration::Reflect(context);
             CookedMeshShapeConfiguration::Reflect(context);
+            AzPhysics::SystemInterface::Reflect(context);
+            AzPhysics::Scene::Reflect(context);
             AzPhysics::CollisionLayer::Reflect(context);
             AzPhysics::CollisionGroup::Reflect(context);
             AzPhysics::CollisionLayers::Reflect(context);
             AzPhysics::CollisionGroups::Reflect(context);
             AzPhysics::CollisionConfiguration::Reflect(context);
+            AzPhysics::CollisionEvent::Reflect(context);
+            AzPhysics::TriggerEvent::Reflect(context);
             AzPhysics::SceneConfiguration::Reflect(context);
             MaterialConfiguration::Reflect(context);
             MaterialLibraryAsset::Reflect(context);
             MaterialLibraryAssetReflectionWrapper::Reflect(context);
             DefaultMaterialLibraryAssetReflectionWrapper::Reflect(context);
             JointLimitConfiguration::Reflect(context);
-            WorldBodyConfiguration::Reflect(context);
-            RigidBodyConfiguration::Reflect(context);
+            AzPhysics::SimulatedBodyConfiguration::Reflect(context);
+            AzPhysics::RigidBodyConfiguration::Reflect(context);
             RagdollNodeConfiguration::Reflect(context);
             RagdollConfiguration::Reflect(context);
             CharacterColliderNodeConfiguration::Reflect(context);
             CharacterColliderConfiguration::Reflect(context);
             AnimationConfiguration::Reflect(context);
             CharacterConfiguration::Reflect(context);
-            ReflectWorldBus(context);
+            AzPhysics::SimulatedBody::Reflect(context);
             ReflectWorldBodyBus(context);
             CollisionFilteringRequests::Reflect(context);
-            TriggerNotificationBusBehaviorHandler::Reflect(context);
-            CollisionNotificationBusBehaviorHandler::Reflect(context);
-            RayCastHit::Reflect(context);
-            WorldNotificationBusBehaviorHandler::Reflect(context);
+            AzPhysics::SceneQuery::ReflectSceneQueryObjects(context);
             ReflectWindBus(context);
+            ReflectCharacterBus(context);
         }
     }
 
@@ -246,22 +166,6 @@ namespace Physics
                 {
                     break;
                 }
-            }
-        }
-
-        void DeferDelete(AZStd::unique_ptr<Physics::WorldBody> worldBody)
-        {
-            if (!worldBody)
-            {
-                return;
-            }
-
-            // If the body is in a world, remove it from the world and defer 
-            // the deletion until after the next update to ensure trigger exit events get raised.
-            if (Physics::World* world = worldBody->GetWorld())
-            {
-                world->RemoveBody(*worldBody);
-                world->DeferDelete(AZStd::move(worldBody));
             }
         }
 

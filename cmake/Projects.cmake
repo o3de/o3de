@@ -13,7 +13,7 @@
 
 include_guard()
 
-set(LY_PROJECTS "" CACHE STRING "List of projects to enable, this can be a relative path to the engine root or an absolute path")
+set(LY_PROJECTS "${LY_PROJECTS}" CACHE STRING "List of projects to enable, this can be a relative path to the engine root or an absolute path")
 
 #! ly_add_target_dependencies: adds module load dependencies for this target.
 #
@@ -82,12 +82,13 @@ endfunction()
 # \arg:PROJECT_NAME name of the game project
 # \arg:TARGETS names of the targets to associate the dependencies to
 # \arg:DEPENDENCIES_FILES file(s) that contains the runtime dependencies the TARGETS will be associated to
+# \arg:DEPENDENT_TARGETS additional list of targets should be added as load-time dependencies for the TARGETS list
 #
 function(ly_add_project_dependencies)
 
     set(options)
     set(oneValueArgs PROJECT_NAME)
-    set(multiValueArgs TARGETS DEPENDENCIES_FILES)
+    set(multiValueArgs TARGETS DEPENDENCIES_FILES DEPENDENT_TARGETS)
 
     cmake_parse_arguments(ly_add_project_dependencies "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
@@ -100,6 +101,7 @@ function(ly_add_project_dependencies)
         PREFIX ${ly_add_project_dependencies_PROJECT_NAME}
         TARGETS ${ly_add_project_dependencies_TARGETS}
         DEPENDENCIES_FILES ${ly_add_project_dependencies_DEPENDENCIES_FILES}
+        DEPENDENT_TARGETS ${ly_add_project_dependencies_DEPENDENT_TARGETS}
     )
 endfunction()
 

@@ -35,8 +35,6 @@ namespace StartingPointInput
         InputHandlerNodeable(const InputHandlerNodeable&) = default;
         InputHandlerNodeable& operator=(const InputHandlerNodeable&) = default;
 
-        void ConnectEvent(AZStd::string eventName);
-
     protected:
         void OnDeactivate() override;
 

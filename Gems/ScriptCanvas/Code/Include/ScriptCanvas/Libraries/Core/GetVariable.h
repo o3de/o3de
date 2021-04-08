@@ -63,7 +63,7 @@ namespace ScriptCanvas
                 const Slot* GetVariableOutputSlot() const override;
                 // Translation
                 //////////////////////////////////////////////////////////////////////////
-                bool IsSupportedByNewBackend() const override { return true; }
+                
 
             protected:
 

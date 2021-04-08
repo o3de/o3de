@@ -13,7 +13,6 @@
 #include "precompiled.h"
 
 #include "platform.h"
-
 #include <Asset/AssetDescription.h>
 #include <Asset/Functions/ScriptCanvasFunctionAsset.h>
 #include <AssetBuilderSDK/SerializationDependencies.h>
@@ -22,9 +21,10 @@
 #include <AzCore/IO/IOUtils.h>
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/string/conversions.h>
 #include <AzFramework/Script/ScriptComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
-
+#include <Builder/ScriptCanvasBuilderWorker.h>
 #include <ScriptCanvas/Asset/Functions/RuntimeFunctionAssetHandler.h>
 #include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
 #include <ScriptCanvas/Assets/Functions/ScriptCanvasFunctionAssetHandler.h>
@@ -36,8 +36,6 @@
 #include <ScriptCanvas/Grammar/AbstractCodeModel.h>
 #include <ScriptCanvas/Results/ErrorText.h>
 #include <ScriptCanvas/Utils/BehaviorContextUtils.h>
-
-#include <Builder/ScriptCanvasBuilderWorker.h>
 
 namespace ScriptCanvasBuilder
 {
@@ -124,6 +122,8 @@ namespace ScriptCanvasBuilder
                 AZStd::hash_combine(fingerprint, nodeComponent->GenerateFingerprint());
             }
         }
+
+#if defined(FUNCTION_LEGACY_SUPPORT_ENABLED)
         for (const AssetBuilderSDK::PlatformInfo& info : request.m_enabledPlatforms)
         {
             if (info.HasTag("tools"))
@@ -135,15 +135,14 @@ namespace ScriptCanvasBuilder
                 copyDescriptor.SetPlatformIdentifier(info.m_identifier.c_str());
                 copyDescriptor.m_additionalFingerprintInfo = AZStd::string(GetFingerprintString()).append("|").append(AZStd::to_string(static_cast<AZ::u64>(fingerprint)));
                 response.m_createJobOutputs.push_back(copyDescriptor);
-            }
+        }
 
             AssetBuilderSDK::JobDescriptor jobDescriptor;
             jobDescriptor.m_priority = 2;
             jobDescriptor.m_critical = true;
             jobDescriptor.m_jobKey = s_scriptCanvasProcessJobKey;
             jobDescriptor.SetPlatformIdentifier(info.m_identifier.c_str());
-            jobDescriptor.m_additionalFingerprintInfo = AZStd::string(GetFingerprintString())
-                .append(AZStd::string::format("|%zu", fingerprint));
+            jobDescriptor.m_additionalFingerprintInfo = AZStd::string(GetFingerprintString()).append("|").append(AZStd::to_string(static_cast<AZ::u64>(fingerprint)));
             // Function process job needs to wait until its dependency asset job finished
             for (const auto& sourceDependency : response.m_sourceFileDependencyList)
             {
@@ -152,6 +151,7 @@ namespace ScriptCanvasBuilder
             }
             response.m_createJobOutputs.push_back(jobDescriptor);
         }
+#endif
 
         response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
         AZ_TracePrintf(s_scriptCanvasBuilder, "Finish Creating Job");
@@ -303,7 +303,6 @@ namespace ScriptCanvasBuilder
 
                     ScriptCanvas::SubgraphInterfaceData functionInterface;
                     functionInterface.m_name = fileNameOnly;
-                    functionInterface.m_version = sourceDataComponent->m_functionDataComponentVersion;
                     functionInterface.m_interface = AZStd::move(input.interfaceOut);
 
                     // save function interface

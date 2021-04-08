@@ -17,7 +17,6 @@ set(FILES
     DirectXShaderCompiler_windows.cmake
     dyad_windows.cmake
     etc2comp_windows.cmake
-    expat_windows.cmake
     FbxSdk_windows.cmake
     FreeType2_windows.cmake
     libav_windows.cmake

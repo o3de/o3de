@@ -12,6 +12,11 @@
     "IconPath": "preview.png",
     "Dependencies" : [
         {
+            "Uuid" : "bab8807a1bc646b3909f3cc200ffeedf",
+            "VersionConstraints" : [">=0.1.0"],
+            "_comment" : "ImGui"
+        },
+        {
             "Uuid" : "869a0d0ec11a45c299917d45c81555e6",
             "VersionConstraints" : [">=0.1.0"],
             "_comment" : "ScriptCanvas"

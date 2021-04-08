@@ -51,7 +51,7 @@ def remote_console(request):
 
 # Shared parameters & fixtures for all test methods inside the TestSystemExample class.
 @pytest.mark.usefixtures("automatic_process_killer")
-@pytest.mark.parametrize('project', ['SamplesProject'])
+@pytest.mark.parametrize('project', ['AutomatedTesting'])
 class TestSystemExample(object):
     """
     Example test case class to hold a set of test case methods.
@@ -68,11 +68,11 @@ class TestSystemExample(object):
     @pytest.mark.parametrize('level', ['simple_jacklocomotion'])
     @pytest.mark.parametrize('load_wait', [120])
     @pytest.mark.test_case_id('C16806863')
-    def test_SystemTestExample_AllSupportedPlatforms_LaunchSamplesProject(
+    def test_SystemTestExample_AllSupportedPlatforms_LaunchAutomatedTesting(
             # launcher_platform, asset_processor_platform,  # Re-add these here if you plan to use them.
             self, launcher, remote_console, level, load_wait):
         """
-        Tests launching the SamplesProject then launches the Lumberyard client &
+        Tests launching the AutomatedTesting then launches the Lumberyard client &
         loads the "simple_jacklocomotion" level using the remote console.
         Assumes the user already setup & built their machine for the test.
         """

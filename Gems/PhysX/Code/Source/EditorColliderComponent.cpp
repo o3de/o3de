@@ -16,8 +16,10 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzFramework/Physics/ColliderComponentBus.h>
-#include <AzFramework/Physics/RigidBody.h>
+#include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 #include <AzFramework/Physics/SystemBus.h>
+#include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
+#include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
 #include <AzFramework/Viewport/ViewportColors.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/ComponentModes/BoxComponentMode.h>
@@ -35,7 +37,6 @@
 #include <Source/MeshColliderComponent.h>
 #include <Source/SphereColliderComponent.h>
 #include <Source/Utils.h>
-#include <Source/World.h>
 
 #include <LyViewPaneNames.h>
 #include <Editor/ConfigurationWindowBus.h>
@@ -57,10 +58,10 @@ namespace PhysX
             {
                 editContext->Class<EditorProxyAssetShapeConfig>("EditorProxyShapeConfig", "PhysX Base shape collider")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyAssetShapeConfig::m_pxAsset, "PhysX Mesh", "PhysX mesh collider asset")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyAssetShapeConfig::m_configuration, "Configuration", "Configuration of asset shape")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
+                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
             }
         }
     }
@@ -78,35 +79,43 @@ namespace PhysX
                 ->Field("Box", &EditorProxyShapeConfig::m_box)
                 ->Field("Capsule", &EditorProxyShapeConfig::m_capsule)
                 ->Field("PhysicsAsset", &EditorProxyShapeConfig::m_physicsAsset)
-            ;
+                ->Field("HasNonUniformScale", &EditorProxyShapeConfig::m_hasNonUniformScale)
+                ->Field("SubdivisionLevel", &EditorProxyShapeConfig::m_subdivisionLevel)
+                ;
 
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<EditorProxyShapeConfig>(
                     "EditorProxyShapeConfig", "PhysX Base shape collider")
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorProxyShapeConfig::m_shapeType, "Shape", "The shape of the collider")
-                        ->EnumAttribute(Physics::ShapeType::Sphere, "Sphere")
-                        ->EnumAttribute(Physics::ShapeType::Box, "Box")
-                        ->EnumAttribute(Physics::ShapeType::Capsule, "Capsule")
-                        ->EnumAttribute(Physics::ShapeType::PhysicsAsset, "PhysicsAsset")
-                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                            // note: we do not want the user to be able to change shape types while in ComponentMode (there will
-                            // potentially be different ComponentModes for different shape types)
-                            ->Attribute(AZ::Edit::Attributes::ReadOnly, &AzToolsFramework::ComponentModeFramework::InComponentMode)
+                    ->EnumAttribute(Physics::ShapeType::Sphere, "Sphere")
+                    ->EnumAttribute(Physics::ShapeType::Box, "Box")
+                    ->EnumAttribute(Physics::ShapeType::Capsule, "Capsule")
+                    ->EnumAttribute(Physics::ShapeType::PhysicsAsset, "PhysicsAsset")
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                    // note: we do not want the user to be able to change shape types while in ComponentMode (there will
+                    // potentially be different ComponentModes for different shape types)
+                    ->Attribute(AZ::Edit::Attributes::ReadOnly, &AzToolsFramework::ComponentModeFramework::InComponentMode)
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyShapeConfig::m_sphere, "Sphere", "Configuration of sphere shape")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &EditorProxyShapeConfig::IsSphereConfig)
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorProxyShapeConfig::OnConfigurationChanged)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorProxyShapeConfig::IsSphereConfig)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorProxyShapeConfig::OnConfigurationChanged)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyShapeConfig::m_box, "Box", "Configuration of box shape")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &EditorProxyShapeConfig::IsBoxConfig)
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorProxyShapeConfig::OnConfigurationChanged)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorProxyShapeConfig::IsBoxConfig)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorProxyShapeConfig::OnConfigurationChanged)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyShapeConfig::m_capsule, "Capsule", "Configuration of capsule shape")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &EditorProxyShapeConfig::IsCapsuleConfig)
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorProxyShapeConfig::OnConfigurationChanged)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorProxyShapeConfig::IsCapsuleConfig)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorProxyShapeConfig::OnConfigurationChanged)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyShapeConfig::m_physicsAsset, "Asset", "Configuration of asset shape")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &EditorProxyShapeConfig::IsAssetConfig)
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorProxyShapeConfig::OnConfigurationChanged)
-                            ;
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorProxyShapeConfig::IsAssetConfig)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorProxyShapeConfig::OnConfigurationChanged)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyShapeConfig::m_subdivisionLevel, "Subdivision level",
+                        "The level of subdivision if a primitive shape is replaced with a convex mesh due to scaling")
+                    ->Attribute(AZ::Edit::Attributes::Min, Utils::MinCapsuleSubdivisionLevel)
+                    ->Attribute(AZ::Edit::Attributes::Max, Utils::MaxCapsuleSubdivisionLevel)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorProxyShapeConfig::ShowingSubdivisionLevel)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorProxyShapeConfig::OnConfigurationChanged)
+                    ;
             }
         }
     }
@@ -114,6 +123,23 @@ namespace PhysX
     AZ::u32 EditorProxyShapeConfig::OnConfigurationChanged()
     {
         return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
+    }
+
+    void EditorColliderComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+    {
+        provided.push_back(AZ_CRC_CE("PhysicsWorldBodyService"));
+        provided.push_back(AZ_CRC_CE("PhysXColliderService"));
+        provided.push_back(AZ_CRC_CE("PhysXTriggerService"));
+    }
+
+    void EditorColliderComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
+    {
+        required.push_back(AZ_CRC_CE("TransformService"));
+    }
+
+    void EditorColliderComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
+    {
+        dependent.push_back(AZ_CRC_CE("NonUniformScaleService"));
     }
 
     void EditorColliderComponent::Reflect(AZ::ReflectContext* context)
@@ -128,25 +154,25 @@ namespace PhysX
                 "EditorCapsuleColliderComponent",
                 "{0BD5AF3A-35C0-4386-9930-54A2A3E97432}",
                 &ClassConverters::DeprecateEditorCapsuleColliderComponent)
-            ;
+                ;
 
             serializeContext->ClassDeprecate(
                 "EditorBoxColliderComponent",
                 "{FAECF2BE-625B-469D-BBFF-E345BBB12D66}",
                 &ClassConverters::DeprecateEditorBoxColliderComponent)
-            ;
+                ;
 
             serializeContext->ClassDeprecate(
                 "EditorSphereColliderComponent",
                 "{D11C1624-4AE9-4B66-A6F6-40EDB9CDCE99}",
                 &ClassConverters::DeprecateEditorSphereColliderComponent)
-            ;
+                ;
 
             serializeContext->ClassDeprecate(
                 "EditorMeshColliderComponent",
                 "{214185DA-ABD9-4410-9819-7C177801CF7A}",
                 &ClassConverters::DeprecateEditorMeshColliderComponent)
-            ;
+                ;
 
             serializeContext->Class<EditorColliderComponent, EditorComponentBase>()
                 ->Version(9, &PhysX::ClassConverters::UpgradeEditorColliderComponent)
@@ -154,30 +180,31 @@ namespace PhysX
                 ->Field("ShapeConfiguration", &EditorColliderComponent::m_shapeConfiguration)
                 ->Field("DebugDrawSettings", &EditorColliderComponent::m_colliderDebugDraw)
                 ->Field("ComponentMode", &EditorColliderComponent::m_componentModeDelegate)
-            ;
+                ->Field("HasNonUniformScale", &EditorColliderComponent::m_hasNonUniformScale)
+                ;
 
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<EditorColliderComponent>(
                     "PhysX Collider", "PhysX shape collider")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
-                        ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/PhysXCollider.svg")
-                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/PhysXCollider.svg")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "http://docs.aws.amazon.com/console/lumberyard/component/physx/collider")
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
+                    ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/PhysXCollider.svg")
+                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/PhysXCollider.svg")
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                    ->Attribute(AZ::Edit::Attributes::HelpPageURL, "http://docs.aws.amazon.com/console/lumberyard/component/physx/collider")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorColliderComponent::m_configuration, "Collider Configuration", "Configuration of the collider")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorColliderComponent::OnConfigurationChanged)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorColliderComponent::OnConfigurationChanged)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorColliderComponent::m_shapeConfiguration, "Shape Configuration", "Configuration of the shape")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorColliderComponent::OnConfigurationChanged)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorColliderComponent::OnConfigurationChanged)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorColliderComponent::m_componentModeDelegate, "Component Mode", "Collider Component Mode")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorColliderComponent::m_colliderDebugDraw,
                         "Debug draw settings", "Debug draw settings")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ;
             }
         }
@@ -211,7 +238,7 @@ namespace PhysX
     {
         // Scale the collider offset
         Physics::ColliderConfiguration colliderConfiguration = m_configuration;
-        colliderConfiguration.m_position *= Utils::GetNonUniformScale(GetEntityId());
+        colliderConfiguration.m_position *= Utils::GetTransformScale(GetEntityId()) * m_cachedNonUniformScale;
         return colliderConfiguration;
     }
 
@@ -259,7 +286,7 @@ namespace PhysX
     {
         return m_shapeType == Physics::ShapeType::PhysicsAsset;
     }
-    
+
     Physics::ShapeConfiguration& EditorProxyShapeConfig::GetCurrent()
     {
         return const_cast<Physics::ShapeConfiguration&>(static_cast<const EditorProxyShapeConfig&>(*this).GetCurrent());
@@ -285,8 +312,18 @@ namespace PhysX
         }
     }
 
+    bool EditorProxyShapeConfig::ShowingSubdivisionLevel() const
+    {
+        return (m_hasNonUniformScale && (IsCapsuleConfig() || IsSphereConfig() || IsAssetConfig()));
+    }
+
     void EditorColliderComponent::Activate()
     {
+        if (m_sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            m_editorSceneHandle = m_sceneInterface->GetSceneHandle(AzPhysics::EditorPhysicsSceneName);
+        }
+
         m_physXConfigChangedHandler = AzPhysics::SystemEvents::OnConfigurationChangedEvent::Handler(
             []([[maybe_unused]] const AzPhysics::SystemConfiguration* config)
             {
@@ -310,8 +347,19 @@ namespace PhysX
         LmbrCentral::MeshComponentNotificationBus::Handler::BusConnect(GetEntityId());
         AZ::Render::MeshComponentNotificationBus::Handler::BusConnect(GetEntityId());
         EditorColliderComponentRequestBus::Handler::BusConnect(AZ::EntityComponentIdPair(GetEntityId(), GetId()));
+        m_nonUniformScaleChangedHandler = AZ::NonUniformScaleChangedEvent::Handler(
+            [this](const AZ::Vector3& scale) {OnNonUniformScaleChanged(scale); });
+        AZ::NonUniformScaleRequestBus::Event(GetEntityId(), &AZ::NonUniformScaleRequests::RegisterScaleChangedEvent,
+            m_nonUniformScaleChangedHandler);
+        m_hasNonUniformScale = (AZ::NonUniformScaleRequestBus::FindFirstHandler(GetEntityId()) != nullptr);
+        m_shapeConfiguration.m_hasNonUniformScale = m_hasNonUniformScale;
 
         AZ::TransformBus::EventResult(m_cachedWorldTransform, GetEntityId(), &AZ::TransformInterface::GetWorldTM);
+        m_cachedNonUniformScale = AZ::Vector3::CreateOne();
+        if (m_hasNonUniformScale)
+        {
+            AZ::NonUniformScaleRequestBus::EventResult(m_cachedNonUniformScale, GetEntityId(), &AZ::NonUniformScaleRequests::GetScale);
+        }
 
         // Debug drawing
         m_colliderDebugDraw.Connect(GetEntityId());
@@ -353,7 +401,11 @@ namespace PhysX
 
         m_componentModeDelegate.Disconnect();
 
-        m_editorBody = nullptr;
+        if (m_sceneInterface)
+        {
+            m_sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_editorBodyHandle);
+            m_editorBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
+        }
     }
 
     AZ::u32 EditorColliderComponent::OnConfigurationChanged()
@@ -406,22 +458,58 @@ namespace PhysX
         auto sharedColliderConfig = AZStd::make_shared<Physics::ColliderConfiguration>(m_configuration);
         BaseColliderComponent* colliderComponent = nullptr;
 
+        auto buildGameEntityScaledPrimitive = [gameEntity](AZStd::shared_ptr<Physics::ColliderConfiguration>& colliderConfig,
+            Physics::ShapeConfiguration& shapeConfig, AZ::u8 subdivisionLevel)
+        {
+            auto scaledPrimitiveConfig = Utils::CreateConvexFromPrimitive(*colliderConfig,
+                shapeConfig, subdivisionLevel, shapeConfig.m_scale);
+            if (scaledPrimitiveConfig.has_value())
+            {
+                colliderConfig->m_rotation = AZ::Quaternion::CreateIdentity();
+                colliderConfig->m_position = AZ::Vector3::CreateZero();
+                BaseColliderComponent* colliderComponent = gameEntity->CreateComponent<BaseColliderComponent>();
+                colliderComponent->SetShapeConfigurationList({ AZStd::make_pair(colliderConfig,
+                    AZStd::make_shared<Physics::CookedMeshShapeConfiguration>(scaledPrimitiveConfig.value())) });
+            }
+        };
+
         switch (m_shapeConfiguration.m_shapeType)
         {
         case Physics::ShapeType::Sphere:
-            colliderComponent = gameEntity->CreateComponent<SphereColliderComponent>();
-            colliderComponent->SetShapeConfigurationList({ AZStd::make_pair(sharedColliderConfig,
-                AZStd::make_shared<Physics::SphereShapeConfiguration>(m_shapeConfiguration.m_sphere)) });
+            if (!m_hasNonUniformScale)
+            {
+                colliderComponent = gameEntity->CreateComponent<SphereColliderComponent>();
+                colliderComponent->SetShapeConfigurationList({ AZStd::make_pair(sharedColliderConfig,
+                    AZStd::make_shared<Physics::SphereShapeConfiguration>(m_shapeConfiguration.m_sphere)) });
+            }
+            else
+            {
+                buildGameEntityScaledPrimitive(sharedColliderConfig, m_shapeConfiguration.m_sphere, m_shapeConfiguration.m_subdivisionLevel);
+            }
             break;
         case Physics::ShapeType::Box:
-            colliderComponent = gameEntity->CreateComponent<BoxColliderComponent>();
-            colliderComponent->SetShapeConfigurationList({ AZStd::make_pair(sharedColliderConfig,
-                AZStd::make_shared<Physics::BoxShapeConfiguration>(m_shapeConfiguration.m_box)) });
+            if (!m_hasNonUniformScale)
+            {
+                colliderComponent = gameEntity->CreateComponent<BoxColliderComponent>();
+                colliderComponent->SetShapeConfigurationList({ AZStd::make_pair(sharedColliderConfig,
+                    AZStd::make_shared<Physics::BoxShapeConfiguration>(m_shapeConfiguration.m_box)) });
+            }
+            else
+            {
+                buildGameEntityScaledPrimitive(sharedColliderConfig, m_shapeConfiguration.m_box, m_shapeConfiguration.m_subdivisionLevel);
+            }
             break;
         case Physics::ShapeType::Capsule:
-            colliderComponent = gameEntity->CreateComponent<CapsuleColliderComponent>();
-            colliderComponent->SetShapeConfigurationList({ AZStd::make_pair(sharedColliderConfig,
-                AZStd::make_shared<Physics::CapsuleShapeConfiguration>(m_shapeConfiguration.m_capsule)) });
+            if (!m_hasNonUniformScale)
+            {
+                colliderComponent = gameEntity->CreateComponent<CapsuleColliderComponent>();
+                colliderComponent->SetShapeConfigurationList({ AZStd::make_pair(sharedColliderConfig,
+                    AZStd::make_shared<Physics::CapsuleShapeConfiguration>(m_shapeConfiguration.m_capsule)) });
+            }
+            else
+            {
+                buildGameEntityScaledPrimitive(sharedColliderConfig, m_shapeConfiguration.m_capsule, m_shapeConfiguration.m_subdivisionLevel);
+            }
             break;
         case Physics::ShapeType::PhysicsAsset:
             colliderComponent = gameEntity->CreateComponent<MeshColliderComponent>();
@@ -447,7 +535,7 @@ namespace PhysX
 
     AZ::Transform EditorColliderComponent::GetColliderLocalTransform() const
     {
-        const AZ::Vector3 nonUniformScale = Utils::GetNonUniformScale(GetEntityId());
+        const AZ::Vector3 nonUniformScale = Utils::GetTransformScale(GetEntityId());
         return AZ::Transform::CreateFromQuaternionAndTranslation(
             m_configuration.m_rotation, m_configuration.m_position * nonUniformScale);
     }
@@ -465,6 +553,11 @@ namespace PhysX
         UpdateMaterialSlotsFromMeshAsset();
     }
 
+    bool IsNonUniformlyScaledPrimitive(const EditorProxyShapeConfig& shapeConfig)
+    {
+        return shapeConfig.m_hasNonUniformScale && Utils::IsPrimitiveShape(shapeConfig.GetCurrent());
+    }
+
     void EditorColliderComponent::CreateStaticEditorCollider()
     {
         // Don't create static rigid body in the editor if current entity components
@@ -478,47 +571,68 @@ namespace PhysX
         {
             // Mesh asset has not been loaded, wait for OnAssetReady to be invoked.
             // We specifically check Ready state here rather than ReadyPreNotify to ensure OnAssetReady has been invoked
-            m_editorBody.reset();
+            if (m_sceneInterface && m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
+            {
+                m_sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_editorBodyHandle);
+                m_editorBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
+            }
             return;
         }
 
-        AZStd::shared_ptr<Physics::World> editorWorld;
-        Physics::EditorWorldBus::BroadcastResult(editorWorld, &Physics::EditorWorldRequests::GetEditorWorld);
-        if (editorWorld != nullptr)
+        AZ::Transform colliderTransform = GetWorldTM();
+        colliderTransform.ExtractScale();
+        AzPhysics::StaticRigidBodyConfiguration configuration;
+        configuration.m_orientation = colliderTransform.GetRotation();
+        configuration.m_position = colliderTransform.GetTranslation();
+        configuration.m_entityId = GetEntityId();
+        configuration.m_debugName = GetEntity()->GetName();
+
+        // This configuration needs to be at the scope of the function to be added
+        // to m_colliderAndShapeData as a pointer.
+        Physics::ColliderConfiguration colliderConfig;
+
+        if (m_shapeConfiguration.IsAssetConfig())
         {
-            AZ::Transform colliderTransform = GetWorldTM();
-            AZ::Vector3 scale = colliderTransform.ExtractScale();
-
-            Physics::WorldBodyConfiguration configuration;
-            configuration.m_orientation = colliderTransform.GetRotation();
-            configuration.m_position = colliderTransform.GetTranslation();
-            configuration.m_entityId = GetEntityId();
-            configuration.m_debugName = GetEntity()->GetName();
-
-            m_editorBody = AZ::Interface<Physics::System>::Get()->CreateStaticRigidBody(configuration);
-
-            if (m_shapeConfiguration.IsAssetConfig())
+            AZStd::vector<AZStd::shared_ptr<Physics::Shape>> shapes;
+            Utils::GetShapesFromAsset(m_shapeConfiguration.m_physicsAsset.m_configuration,
+                m_configuration, m_hasNonUniformScale, m_shapeConfiguration.m_subdivisionLevel, shapes);
+            configuration.m_colliderAndShapeData = shapes;
+        }
+        else
+        {
+            colliderConfig = GetColliderConfigurationScaled();
+            Physics::ShapeConfiguration& shapeConfig = m_shapeConfiguration.GetCurrent();
+            if (IsNonUniformlyScaledPrimitive(m_shapeConfiguration))
             {
-                AZStd::vector<AZStd::shared_ptr<Physics::Shape>> shapes;
-                Utils::GetShapesFromAsset(m_shapeConfiguration.m_physicsAsset.m_configuration, m_configuration, shapes);
+                auto convexConfig = Utils::CreateConvexFromPrimitive(GetColliderConfiguration(), shapeConfig,
+                    m_shapeConfiguration.m_subdivisionLevel, shapeConfig.m_scale);
+                auto colliderConfigurationNoOffset = colliderConfig;
+                colliderConfigurationNoOffset.m_rotation = AZ::Quaternion::CreateIdentity();
+                colliderConfigurationNoOffset.m_position = AZ::Vector3::CreateZero();
 
-                for (const auto& shape : shapes)
+                if (convexConfig.has_value())
                 {
-                    m_editorBody->AddShape(shape);
+                    AZStd::shared_ptr<Physics::Shape> shape = AZ::Interface<Physics::System>::Get()->CreateShape(
+                        colliderConfigurationNoOffset, convexConfig.value());
+                    configuration.m_colliderAndShapeData = shape;
                 }
             }
             else
             {
-                const Physics::ColliderConfiguration colliderConfiguration = GetColliderConfigurationScaled();
-
-                const auto& shapeConfiguration = m_shapeConfiguration.GetCurrent();
-                AZStd::shared_ptr<Physics::Shape> shape = AZ::Interface<Physics::System>::Get()->CreateShape(
-                    colliderConfiguration, shapeConfiguration);
-
-                m_editorBody->AddShape(shape);
+                configuration.m_colliderAndShapeData = AzPhysics::ShapeColliderPair(&colliderConfig, &shapeConfig);
             }
+        }
 
-            editorWorld->AddBody(*m_editorBody);
+        if (m_sceneInterface)
+        {
+            //remove the previous body if any
+            if (m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
+            {
+                m_sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_editorBodyHandle);
+                m_editorBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
+            }
+            
+            m_editorBodyHandle = m_sceneInterface->AddSimulatedBody(m_editorSceneHandle, &configuration);
         }
 
         m_colliderDebugDraw.ClearCachedGeometry();
@@ -529,57 +643,6 @@ namespace PhysX
     AZ::Data::Asset<Pipeline::MeshAsset> EditorColliderComponent::GetMeshAsset() const
     {
         return m_shapeConfiguration.m_physicsAsset.m_pxAsset;
-    }
-
-    void EditorColliderComponent::GetStaticWorldSpaceMeshTriangles(AZStd::vector<AZ::Vector3>& verts, AZStd::vector<AZ::u32>& indices) const
-    {
-        bool isStatic = false;
-        AZ::TransformBus::EventResult(isStatic, m_entity->GetId(), &AZ::TransformBus::Events::IsStaticTransform);
-
-        if (isStatic)
-        {
-            AZ_Warning("PhysX", verts.empty() && indices.empty(), 
-                "Existing vertex and index data will be lost. Is this a duplicate model instance?");
-
-            BuildDebugDrawMesh();
-
-            AZ::u32 numShapes = m_colliderDebugDraw.GetNumShapes();
-            AZ_Warning("PhysX", numShapes > 0, 
-                "GetStaticWorldSpaceMeshTriangles: No debug draw geometry found. "
-                "Please make sure the collision geometry is loaded. Entity: %s",
-                GetEntity()->GetName().c_str());
-
-            indices.clear();
-            verts.clear();
-
-            AZ::Transform overallTM = GetWorldTM() * GetColliderLocalTransform();
-
-            // Vertices can be added directly but indices need to be incremented
-            // by the amount of vertices already added in the last iteration
-            for (AZ::u32 shapeIndex = 0; shapeIndex < numShapes; shapeIndex++)
-            {
-                const AZStd::vector<AZ::u32>& shapeIndices = m_colliderDebugDraw.GetIndices(shapeIndex);
-                const AZStd::vector<AZ::Vector3>& shapeVerts = m_colliderDebugDraw.GetVerts(shapeIndex);
-
-                AZ::u32 startingIndex = static_cast<AZ::u32>(verts.size());
-                
-                indices.reserve(indices.size() + shapeIndices.size());
-
-                AZStd::transform(shapeIndices.begin(), shapeIndices.end(), AZStd::back_inserter(indices), 
-                    [startingIndex](AZ::u32 index)
-                {
-                    return index + startingIndex;
-                });
-
-                verts.reserve(verts.size() + shapeVerts.size());
-
-                AZStd::transform(shapeVerts.begin(), shapeVerts.end(), AZStd::back_inserter(verts), 
-                    [&overallTM](const AZ::Vector3& vertex)
-                {
-                    return overallTM.TransformPoint(vertex);
-                });
-            }
-        }
     }
 
     Physics::MaterialId EditorColliderComponent::GetMaterialId() const
@@ -683,7 +746,8 @@ namespace PhysX
         if (m_shapeConfiguration.m_physicsAsset.m_configuration.GetShapeType() == Physics::ShapeType::PhysicsAsset && entityRigidbody)
         {
             AZStd::vector<AZStd::shared_ptr<Physics::Shape>> shapes;
-            Utils::GetShapesFromAsset(m_shapeConfiguration.m_physicsAsset.m_configuration, m_configuration, shapes);
+            Utils::GetShapesFromAsset(m_shapeConfiguration.m_physicsAsset.m_configuration, m_configuration, m_hasNonUniformScale,
+                m_shapeConfiguration.m_subdivisionLevel, shapes);
 
             if (shapes.empty())
             {
@@ -740,7 +804,8 @@ namespace PhysX
             }
 
             Physics::ShapeConfigurationList shapeConfigList;
-            Utils::GetColliderShapeConfigsFromAsset(physicsAssetConfiguration, m_configuration, shapeConfigList);
+            Utils::GetColliderShapeConfigsFromAsset(physicsAssetConfiguration, m_configuration, m_hasNonUniformScale,
+                m_shapeConfiguration.m_subdivisionLevel, shapeConfigList);
 
             for (size_t shapeIndex = 0; shapeIndex < shapeConfigList.size(); shapeIndex++)
             {
@@ -756,11 +821,38 @@ namespace PhysX
         else
         {
             const AZ::u32 shapeIndex = 0; // There's only one mesh gets built from the primitive collider, hence use geomIndex 0.
-            m_colliderDebugDraw.BuildMeshes(m_shapeConfiguration.GetCurrent(), shapeIndex);
+            if (!m_hasNonUniformScale)
+            {
+                m_colliderDebugDraw.BuildMeshes(m_shapeConfiguration.GetCurrent(), shapeIndex);
+            }
+            else
+            {
+                m_scaledPrimitive = Utils::CreateConvexFromPrimitive(GetColliderConfiguration(), m_shapeConfiguration.GetCurrent(),
+                    m_shapeConfiguration.m_subdivisionLevel, m_shapeConfiguration.GetCurrent().m_scale);
+                if (m_scaledPrimitive.has_value())
+                {
+                    physx::PxGeometryHolder pxGeometryHolder;
+                    Utils::CreatePxGeometryFromConfig(m_scaledPrimitive.value(), pxGeometryHolder); // this will cause the native mesh to be cached
+                    m_colliderDebugDraw.BuildMeshes(m_scaledPrimitive.value(), shapeIndex);
+                }
+            }
         }
     }
 
-    void EditorColliderComponent::DisplayPrimitiveCollider(AzFramework::DebugDisplayRequests& debugDisplay) const
+    void EditorColliderComponent::DisplayScaledPrimitiveCollider(AzFramework::DebugDisplayRequests& debugDisplay) const
+    {
+        if (m_scaledPrimitive.has_value())
+        {
+            const AZ::u32 shapeIndex = 0;
+            Physics::ColliderConfiguration colliderConfigNoOffset = m_configuration;
+            colliderConfigNoOffset.m_rotation = AZ::Quaternion::CreateIdentity();
+            colliderConfigNoOffset.m_position = AZ::Vector3::CreateZero();
+            m_colliderDebugDraw.DrawMesh(debugDisplay, colliderConfigNoOffset, m_scaledPrimitive.value(),
+                GetWorldTM().GetScale() * m_cachedNonUniformScale, shapeIndex);
+        }
+    }
+
+    void EditorColliderComponent::DisplayUnscaledPrimitiveCollider(AzFramework::DebugDisplayRequests& debugDisplay) const
     {
         switch (m_shapeConfiguration.m_shapeType)
         {
@@ -787,7 +879,8 @@ namespace PhysX
         const Physics::PhysicsAssetShapeConfiguration& physicsAssetConfiguration = m_shapeConfiguration.m_physicsAsset.m_configuration;
 
         Physics::ShapeConfigurationList shapeConfigList;
-        Utils::GetColliderShapeConfigsFromAsset(physicsAssetConfiguration, m_configuration, shapeConfigList);
+        Utils::GetColliderShapeConfigsFromAsset(physicsAssetConfiguration, m_configuration, m_hasNonUniformScale,
+            m_shapeConfiguration.m_subdivisionLevel, shapeConfigList);
 
         const AZ::Vector3& assetScale = physicsAssetConfiguration.m_assetScale;
 
@@ -805,10 +898,10 @@ namespace PhysX
                 const Physics::CookedMeshShapeConfiguration* cookedMeshShapeConfiguration =
                     static_cast<const Physics::CookedMeshShapeConfiguration*>(shapeConfiguration);
 
-                const AZ::Vector3 nonUniformScale = Utils::GetNonUniformScale(GetEntityId());
+                const AZ::Vector3 overallScale = Utils::GetTransformScale(GetEntityId()) * m_cachedNonUniformScale * assetScale;
 
                 m_colliderDebugDraw.DrawMesh(debugDisplay, *colliderConfiguration, *cookedMeshShapeConfiguration,
-                    assetScale * nonUniformScale, shapeIndex);
+                    overallScale, shapeIndex);
                 break;
             }
             case Physics::ShapeType::Sphere:
@@ -860,7 +953,14 @@ namespace PhysX
             }
             else
             {
-                DisplayPrimitiveCollider(debugDisplay);
+                if (m_hasNonUniformScale)
+                {
+                    DisplayScaledPrimitiveCollider(debugDisplay);
+                }
+                else
+                {
+                    DisplayUnscaledPrimitiveCollider(debugDisplay);
+                }
             }
         }
     }
@@ -903,10 +1003,20 @@ namespace PhysX
         CreateStaticEditorCollider();
     }
 
+    void EditorColliderComponent::OnNonUniformScaleChanged(const AZ::Vector3& nonUniformScale)
+    {
+        m_cachedNonUniformScale = nonUniformScale;
+
+        UpdateShapeConfigurationScale();
+        CreateStaticEditorCollider();
+    }
+
     // PhysX::ColliderShapeBus
     AZ::Aabb EditorColliderComponent::GetColliderShapeAabb()
     {
         return PhysX::Utils::GetColliderAabb(GetWorldTM()
+            , m_hasNonUniformScale
+            , m_shapeConfiguration.m_subdivisionLevel
             , m_shapeConfiguration.GetCurrent()
             , m_configuration);
     }
@@ -914,7 +1024,7 @@ namespace PhysX
     void EditorColliderComponent::UpdateShapeConfigurationScale()
     {
         auto& shapeConfiguration = m_shapeConfiguration.GetCurrent();
-        shapeConfiguration.m_scale = GetWorldTM().ExtractScale();
+        shapeConfiguration.m_scale = GetWorldTM().ExtractScale() * m_cachedNonUniformScale;
         m_colliderDebugDraw.ClearCachedGeometry();
     }
 
@@ -928,35 +1038,52 @@ namespace PhysX
 
     void EditorColliderComponent::DisablePhysics()
     {
-        m_editorBody.reset();
+        if (m_sceneInterface && m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
+        {
+            m_sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_editorBodyHandle);
+            m_editorBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
+        }
     }
 
     bool EditorColliderComponent::IsPhysicsEnabled() const
     {
-        return m_editorBody && m_editorBody->GetWorld();
+        return m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle;
     }
 
     AZ::Aabb EditorColliderComponent::GetAabb() const
     {
-        if (m_editorBody)
+        if (m_sceneInterface && m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
         {
-            return m_editorBody->GetAabb();
+            if (auto* body = m_sceneInterface->GetSimulatedBodyFromHandle(m_editorSceneHandle, m_editorBodyHandle))
+            {
+                return body->GetAabb();
+            }
         }
         return AZ::Aabb::CreateNull();
     }
 
-    Physics::WorldBody* EditorColliderComponent::GetWorldBody()
+    AzPhysics::SimulatedBody* EditorColliderComponent::GetWorldBody()
     {
-        return m_editorBody.get();
+        if (m_sceneInterface && m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
+        {
+            if (auto* body = m_sceneInterface->GetSimulatedBodyFromHandle(m_editorSceneHandle, m_editorBodyHandle))
+            {
+                return body;
+            }
+        }
+        return nullptr;
     }
 
-    Physics::RayCastHit EditorColliderComponent::RayCast(const Physics::RayCastRequest& request)
+    AzPhysics::SceneQueryHit EditorColliderComponent::RayCast(const AzPhysics::RayCastRequest& request)
     {
-        if (m_editorBody)
+        if (m_sceneInterface && m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
         {
-            return m_editorBody->RayCast(request);
+            if (auto* body = m_sceneInterface->GetSimulatedBodyFromHandle(m_editorSceneHandle, m_editorBodyHandle))
+            {
+                return body->RayCast(request);
+            }
         }
-        return Physics::RayCastHit();
+        return AzPhysics::SceneQueryHit();
     }
 
     bool EditorColliderComponent::IsTrigger()
@@ -1210,16 +1337,12 @@ namespace PhysX
 
     void EditorColliderComponentDescriptor::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent, [[maybe_unused]] const AZ::Component* instance) const
     {
+        EditorColliderComponent::GetDependentServices(dependent);
     }
 
     void EditorColliderComponentDescriptor::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required, [[maybe_unused]] const AZ::Component* instance) const
     {
         EditorColliderComponent::GetRequiredServices(required);
-    }
-
-    void EditorColliderComponentDescriptor::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible, [[maybe_unused]] const AZ::Component* instance) const
-    {
-        EditorColliderComponent::GetIncompatibleServices(incompatible);
     }
 
     void EditorColliderComponentDescriptor::GetWarnings(AZ::ComponentDescriptor::StringWarningArray& warnings, const AZ::Component* instance) const

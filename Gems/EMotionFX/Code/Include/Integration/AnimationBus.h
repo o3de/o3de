@@ -17,7 +17,7 @@
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/std/containers/array.h>
-#include <AzFramework/Physics/World.h>
+#include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 
 
 namespace EMotionFX
@@ -193,7 +193,7 @@ namespace EMotionFX
                 AZ::Vector3 m_start;        /**< The start position of the ray in world space. */
                 AZ::Vector3 m_direction;    /**< The direction vector (has to be normalized). */
                 float       m_distance;     /**< The maximum distance (has to be positive and larger than zero). */
-                Physics::QueryType  m_queryType     = Physics::QueryType::StaticAndDynamic;
+                AzPhysics::SceneQuery::QueryType m_queryType = AzPhysics::SceneQuery::QueryType::StaticAndDynamic;
                 UsecaseHint         m_hint          = UsecaseHint::Generic; /**< The use case hint. */
             };
 

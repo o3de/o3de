@@ -17,7 +17,6 @@ set(FILES
     BinToTextEncode.cpp
     ComponentAddRemove.cpp
     ComponentAdapterTests.cpp
-    EngineTests.cpp
     EntityContext.cpp
     EntityTestbed.h
     FileFunc.cpp
@@ -32,7 +31,8 @@ set(FILES
     OctreePerformanceTests.cpp
     OctreeTests.cpp
     Slices.cpp
-    Script.cpp
+    Script/ScriptComponentTests.cpp
+    Script/ScriptEntityTests.cpp
     AssetCatalog.cpp
     AssetProcessorConnection.cpp
     NetBindingSystemImplTest.cpp

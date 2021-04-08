@@ -33,6 +33,8 @@ set(FILES
     Source/ImageBasedLights/EditorImageBasedLightComponent.cpp
     Source/Material/EditorMaterialComponent.cpp
     Source/Material/EditorMaterialComponent.h
+    Source/Material/EditorMaterialComponentUtil.cpp
+    Source/Material/EditorMaterialComponentUtil.h
     Source/Material/EditorMaterialComponentSlot.cpp
     Source/Material/EditorMaterialComponentSlot.h
     Source/Material/EditorMaterialComponentExporter.cpp
@@ -43,8 +45,14 @@ set(FILES
     Source/Material/EditorMaterialModelUvNameMapInspector.h
     Source/Material/EditorMaterialSystemComponent.cpp
     Source/Material/EditorMaterialSystemComponent.h
+    Source/Material/MaterialThumbnail.cpp
+    Source/Material/MaterialThumbnail.h
     Source/Mesh/EditorMeshComponent.h
     Source/Mesh/EditorMeshComponent.cpp
+    Source/Mesh/EditorMeshSystemComponent.cpp
+    Source/Mesh/EditorMeshSystemComponent.h
+    Source/Mesh/MeshThumbnail.h
+    Source/Mesh/MeshThumbnail.cpp
     Source/PostProcess/EditorPostFxLayerComponent.cpp
     Source/PostProcess/EditorPostFxLayerComponent.h
     Source/PostProcess/Bloom/EditorBloomComponent.cpp
@@ -79,15 +87,28 @@ set(FILES
     Source/SkyBox/EditorHDRiSkyboxComponent.h
     Source/SkyBox/EditorPhysicalSkyComponent.cpp
     Source/SkyBox/EditorPhysicalSkyComponent.h
-    Source/Material/Preview/MaterialPreviewer.cpp
-    Source/Material/Preview/MaterialPreviewer.h
-    Source/Material/Preview/MaterialPreviewer.ui
-    Source/Material/Preview/MaterialPreviewerFactory.cpp
-    Source/Material/Preview/MaterialPreviewerFactory.h
-    Source/Material/Thumbnails/MaterialThumbnail.cpp
-    Source/Material/Thumbnails/MaterialThumbnail.h
-    Source/Material/Thumbnails/MaterialThumbnailRenderer.cpp
-    Source/Material/Thumbnails/MaterialThumbnailRenderer.h
+    Source/Thumbnails/ThumbnailUtils.h
+    Source/Thumbnails/ThumbnailUtils.cpp
+    Source/Thumbnails/Preview/CommonPreviewer.cpp
+    Source/Thumbnails/Preview/CommonPreviewer.h
+    Source/Thumbnails/Preview/CommonPreviewer.ui
+    Source/Thumbnails/Preview/CommonPreviewerFactory.cpp
+    Source/Thumbnails/Preview/CommonPreviewerFactory.h
+    Source/Thumbnails/Rendering/CommonThumbnailRenderer.cpp
+    Source/Thumbnails/Rendering/CommonThumbnailRenderer.h
+    Source/Thumbnails/Rendering/ThumbnailRendererData.h
+    Source/Thumbnails/Rendering/ThumbnailRendererContext.h
+    Source/Thumbnails/Rendering/ThumbnailRendererSteps/ThumbnailRendererStep.h
+    Source/Thumbnails/Rendering/ThumbnailRendererSteps/InitializeStep.cpp
+    Source/Thumbnails/Rendering/ThumbnailRendererSteps/InitializeStep.h
+    Source/Thumbnails/Rendering/ThumbnailRendererSteps/FindThumbnailToRenderStep.cpp
+    Source/Thumbnails/Rendering/ThumbnailRendererSteps/FindThumbnailToRenderStep.h
+    Source/Thumbnails/Rendering/ThumbnailRendererSteps/WaitForAssetsToLoadStep.cpp
+    Source/Thumbnails/Rendering/ThumbnailRendererSteps/WaitForAssetsToLoadStep.h
+    Source/Thumbnails/Rendering/ThumbnailRendererSteps/CaptureStep.cpp
+    Source/Thumbnails/Rendering/ThumbnailRendererSteps/CaptureStep.h
+    Source/Thumbnails/Rendering/ThumbnailRendererSteps/ReleaseResourcesStep.cpp
+    Source/Thumbnails/Rendering/ThumbnailRendererSteps/ReleaseResourcesStep.h
     Source/Scripting/EditorEntityReferenceComponent.cpp
     Source/Scripting/EditorEntityReferenceComponent.h
     Resources/AtomLyIntegrationResources.qrc

@@ -1,0 +1,17 @@
+{
+    "gem_name": "PrefabBuilder",
+    "GemFormatVersion": 4,
+    "Uuid": "88500802311C4793B03484BE2091B607",
+    "Name": "PrefabBuilder",
+    "DisplayName": "PrefabBuilder",
+    "Version": "0.1.0",
+    "Summary": "Asset Processor builder module for Prefabs",
+    "Tags": ["Prefabs"],
+    "IconPath": "preview.png",
+    "Modules": [ 
+        {
+            "Name": "Editor",
+            "Type": "EditorModule"
+        }
+    ]
+}

@@ -65,8 +65,6 @@ namespace AZ
             //! Pass behavior overrides
             void FrameBeginInternal(FramePrepareParams params) final;
 
-            RHI::ShaderInputConstantIndex   m_exposureControlEnabledFlagIndex;
-
         private:
             void InitializeShaderVariant();
             void UpdateCurrentShaderVariant();
@@ -89,11 +87,10 @@ namespace AZ
             const AZ::Name m_colorGradingShaderVariantOptionName;
             bool m_needToUpdateShaderVariant = true;
 
-            RHI::ShaderInputImageIndex m_shaderColorGradingLutImageIndex;
-
-            RHI::ShaderInputConstantIndex m_shaderColorGradingShaperTypeIndex;
-            RHI::ShaderInputConstantIndex m_shaderColorGradingShaperBiasIndex;
-            RHI::ShaderInputConstantIndex m_shaderColorGradingShaperScaleIndex;
+            RHI::ShaderInputNameIndex m_shaderColorGradingLutImageIndex = "m_gradingLut";
+            RHI::ShaderInputNameIndex m_shaderColorGradingShaperTypeIndex = "m_shaperType";
+            RHI::ShaderInputNameIndex m_shaderColorGradingShaperBiasIndex = "m_shaperBias";
+            RHI::ShaderInputNameIndex m_shaderColorGradingShaperScaleIndex = "m_shaperScale";
         };
     }   // namespace Render
 }   // namespace AZ

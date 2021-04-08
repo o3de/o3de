@@ -31,7 +31,6 @@
 #include <IRenderAuxGeom.h>
 
 #include <CryPhysicsDeprecation.h>
-#include <AzFramework/Physics/World.h>
 
 namespace Audio
 {
@@ -687,6 +686,7 @@ namespace Audio
         rayInfo.m_raycastRequest.m_direction = dest - origin;
         rayInfo.m_raycastRequest.m_distance = rayInfo.m_raycastRequest.m_direction.NormalizeSafeWithLength();
         rayInfo.m_raycastRequest.m_maxResults = s_maxHitResultsPerRaycast;
+        rayInfo.m_raycastRequest.m_reportMultipleHits = true;
 
         // Mark as pending
         rayInfo.m_pending = true;

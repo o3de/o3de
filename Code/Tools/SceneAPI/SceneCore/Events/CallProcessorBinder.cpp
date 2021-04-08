@@ -10,6 +10,7 @@
 *
 */
 
+#include <AzCore/Serialization/SerializeContext.h>
 #include <SceneAPI/SceneCore/Events/CallProcessorBinder.h>
 
 namespace AZ
@@ -48,6 +49,14 @@ namespace AZ
                 m_bindings.clear();
             }
 
+            void CallProcessorBinder::Reflect(AZ::ReflectContext* context)
+            {
+                SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
+                if (serializeContext)
+                {
+                    serializeContext->Class<CallProcessorBinder>()->Version(1);
+                }
+            }
         } // namespace Events
     } // namespace SceneAPI
 } // namespace AZ

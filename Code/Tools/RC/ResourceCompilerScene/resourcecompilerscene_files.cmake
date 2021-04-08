@@ -52,20 +52,4 @@ set(FILES
     Cgf/CgfExporter.cpp
     Cgf/CgfUtils.h
     Cgf/CgfUtils.cpp
-    Chr/ChrExportContexts.h
-    Chr/ChrExportContexts.cpp
-    Chr/ChrGroupExporter.h
-    Chr/ChrGroupExporter.cpp
-    Chr/ChrExporter.h
-    Chr/ChrExporter.cpp
-    Skin/SkinExportContexts.h
-    Skin/SkinExportContexts.cpp
-    Skin/SkinGroupExporter.h
-    Skin/SkinGroupExporter.cpp
-    Skin/SkinLodExporter.h
-    Skin/SkinLodExporter.cpp
-    Skin/SkinExporter.h
-    Skin/SkinExporter.cpp
-    Skin/SkinUtils.h
-    Skin/SkinUtils.cpp
 )

@@ -36,14 +36,14 @@ public:
     MOCK_METHOD1(SetScrollMax, void(int value));
     MOCK_METHOD1(AddOutputPrintSink, void(IOutputPrintSink * inpSink));
     MOCK_METHOD1(RemoveOutputPrintSink, void(IOutputPrintSink * inpSink));
-    MOCK_METHOD2(ShowConsole, void(bool show, const int iRequestScrollMax));
+    MOCK_METHOD2(ShowConsole, void(bool show, int iRequestScrollMax));
     MOCK_METHOD2(DumpCVars, void(ICVarDumpSink * pCallback, unsigned int nFlagsFilter));
     MOCK_METHOD2(CreateKeyBind, void(const char* sCmd, const char* sRes));
     MOCK_METHOD2(SetImage, void (ITexture * pImage, bool bDeleteCurrent));
     MOCK_METHOD0(GetImage, ITexture * ());
     MOCK_METHOD1(StaticBackground, void (bool bStatic));
     MOCK_METHOD1(SetLoadingImage, void(const char* szFilename));
-    MOCK_CONST_METHOD3(GetLineNo, bool(const int indwLineNo, char* outszBuffer, const int indwBufferSize));
+    MOCK_CONST_METHOD3(GetLineNo, bool(int indwLineNo, char* outszBuffer, int indwBufferSize));
     MOCK_CONST_METHOD0(GetLineCount, int ());
     MOCK_METHOD1(GetCVar, ICVar * (const char* name));
     MOCK_METHOD3(GetVariable, char*(const char* szVarName, const char* szFileName, const char* def_val));
@@ -57,7 +57,7 @@ public:
     MOCK_METHOD4(AddCommand, bool (const char* sCommand, ConsoleCommandFunc func, int nFlags, const char* sHelp));
     MOCK_METHOD4(AddCommand, bool (const char* sName, const char* sScriptFunc, int nFlags, const char* sHelp));
     MOCK_METHOD1(RemoveCommand, void (const char* sName));
-    MOCK_METHOD3(ExecuteString, void (const char* command, const bool bSilentMode, const bool bDeferExecution ));
+    MOCK_METHOD3(ExecuteString, void (const char* command, bool bSilentMode, bool bDeferExecution ));
     MOCK_METHOD0(IsOpened, bool ());
     MOCK_METHOD0(GetNumVars, int());
     MOCK_METHOD0(GetNumVisibleVars, int());
@@ -83,7 +83,7 @@ public:
     MOCK_METHOD1(GetCheatVarAt, char* (uint32 nOffset));
     MOCK_METHOD1(AddConsoleVarSink, void (IConsoleVarSink * pSink));
     MOCK_METHOD1(RemoveConsoleVarSink, void (IConsoleVarSink * pSink));
-    MOCK_METHOD1(GetHistoryElement, const char*(const bool bUpOrDown));
+    MOCK_METHOD1(GetHistoryElement, const char*(bool bUpOrDown));
     MOCK_METHOD1(AddCommandToHistory, void (const char* szCommand));
     MOCK_METHOD2(LoadConfigVar, void (const char* sVariable, const char* sValue));
     MOCK_METHOD1(EnableActivationKey, void (bool bEnable));

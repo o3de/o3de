@@ -13,25 +13,26 @@
 #include <Benchmarks/PhysXBenchmarksUtilities.h>
 
 #include <algorithm>
-#include <AzFramework/Physics/RigidBody.h>
+#include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/PhysicsScene.h>
+#include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
 
 namespace PhysX::Benchmarks
 {
     namespace Utils
     {
-        AZStd::vector<AZStd::unique_ptr<Physics::RigidBody>> CreateRigidBodies(int numRigidBodies, Physics::System* system,
+        AzPhysics::SimulatedBodyHandleList CreateRigidBodies(int numRigidBodies,
             AzPhysics::Scene* scene, bool enableCCD,
             GenerateColliderFuncPtr* genColliderFuncPtr /*= nullptr*/, GenerateSpawnPositionFuncPtr* genSpawnPosFuncPtr /*= nullptr*/,
             GenerateSpawnOrientationFuncPtr* genSpawnOriFuncPtr /*= nullptr*/, GenerateMassFuncPtr* genMassFuncPtr /*= nullptr*/,
             GenerateEntityIdFuncPtr* genEntityIdFuncPtr /*= nullptr*/
         )
         {
-            AZStd::vector<AZStd::unique_ptr<Physics::RigidBody>> rigidBodies;
+            AzPhysics::SimulatedBodyHandleList rigidBodies;
             rigidBodies.reserve(numRigidBodies);
 
-            Physics::RigidBodyConfiguration rigidBodyConfig;
+            AzPhysics::RigidBodyConfiguration rigidBodyConfig;
             rigidBodyConfig.m_ccdEnabled = enableCCD;
             Physics::ColliderConfiguration rigidBodyColliderConfig;
 
@@ -56,8 +57,6 @@ namespace PhysX::Benchmarks
                     rigidBodyConfig.m_orientation = (*genSpawnOriFuncPtr)(i);
                 }
 
-                AZStd::unique_ptr<Physics::RigidBody> newBody = system->CreateRigidBody(rigidBodyConfig);
-
                 Physics::ShapeConfiguration* shapeConfig = nullptr;
                 if (genColliderFuncPtr != nullptr)
                 {
@@ -67,32 +66,62 @@ namespace PhysX::Benchmarks
                 {
                     shapeConfig = &defaultShapeConfiguration;
                 }
-                AZStd::shared_ptr<Physics::Shape> shape = system->CreateShape(rigidBodyColliderConfig, *shapeConfig);
-                newBody->AddShape(shape);
-                scene->GetLegacyWorld()->AddBody(*newBody);
+                rigidBodyConfig.m_colliderAndShapeData = AZStd::make_pair(&rigidBodyColliderConfig, shapeConfig);
 
-                rigidBodies.push_back(AZStd::move(newBody));
+                AzPhysics::SimulatedBodyHandle simBodyHandle = scene->AddSimulatedBody(&rigidBodyConfig);
+                rigidBodies.push_back(simBodyHandle);
             }
 
-            return AZStd::move(rigidBodies);
+            return rigidBodies;
+        }
+
+        AZStd::vector<AzPhysics::RigidBody*> GetRigidBodiesFromHandles(AzPhysics::Scene* scene, const AzPhysics::SimulatedBodyHandleList& handlesList)
+        {
+            AZStd::vector<AzPhysics::RigidBody*> rigidBodies;
+            rigidBodies.reserve(handlesList.size());
+            for (auto handle : handlesList)
+            {
+                rigidBodies.push_back(azdynamic_cast<AzPhysics::RigidBody*>(scene->GetSimulatedBodyFromHandle(handle)));
+            }
+            return rigidBodies;
+        }
+
+        PrePostSimulationEventHandler::PrePostSimulationEventHandler()
+            : m_sceneStartSimHandler([this](
+                [[maybe_unused]] AzPhysics::SceneHandle sceneHandle,
+                [[maybe_unused]] float fixedDeltaTime)
+                {
+                    this->PreTick();
+                })
+            , m_sceneFinishSimHandler([this](
+                [[maybe_unused]] AzPhysics::SceneHandle sceneHandle,
+                [[maybe_unused]] float fixedDeltatime)
+                {
+                    this->PostTick();
+                })
+        {
+
         }
 
         void PrePostSimulationEventHandler::Start(AzPhysics::Scene* scene)
         {
             m_subTickTimes.clear();
-            Physics::WorldNotificationBus::Handler::BusConnect(scene->GetLegacyWorld()->GetWorldId());
-        }
-        void PrePostSimulationEventHandler::Stop()
-        {
-            Physics::WorldNotificationBus::Handler::BusDisconnect();
+            scene->RegisterSceneSimulationStartHandler(m_sceneStartSimHandler);
+            scene->RegisterSceneSimulationFinishHandler(m_sceneFinishSimHandler);
         }
 
-        void PrePostSimulationEventHandler::OnPrePhysicsSubtick([[maybe_unused]] float fixedDeltaTime)
+        void PrePostSimulationEventHandler::Stop()
+        {
+            m_sceneStartSimHandler.Disconnect();
+            m_sceneFinishSimHandler.Disconnect();
+        }
+
+        void PrePostSimulationEventHandler::PreTick()
         {
             m_tickStart = AZStd::chrono::system_clock::now();
         }
 
-        void PrePostSimulationEventHandler::OnPostPhysicsSubtick([[maybe_unused]] float fixedDeltaTime)
+        void PrePostSimulationEventHandler::PostTick()
         {
             auto tickElapsedMilliseconds = Types::double_milliseconds(AZStd::chrono::system_clock::now() - m_tickStart);
             m_subTickTimes.emplace_back(tickElapsedMilliseconds.count());

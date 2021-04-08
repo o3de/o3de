@@ -30,7 +30,7 @@ namespace UnitTest
         mockIOActionValidator.ReadPrefabDom(
             templateData.m_filePath, PrefabTestDomUtils::CreatePrefabDom());
 
-        templateData.m_id = m_prefabLoaderInterface->LoadTemplate(templateData.m_filePath);
+        templateData.m_id = m_prefabLoaderInterface->LoadTemplateFromFile(templateData.m_filePath);
 
         PrefabTestDataUtils::ValidateTemplateLoad(templateData);
     }
@@ -54,7 +54,7 @@ namespace UnitTest
         mockIOActionValidator.ReadPrefabDom(
             targetTemplateData.m_filePath, PrefabTestDomUtils::CreatePrefabDom({ targetTemplateInstanceData }));
 
-        targetTemplateData.m_id = m_prefabLoaderInterface->LoadTemplate(targetTemplateData.m_filePath);
+        targetTemplateData.m_id = m_prefabLoaderInterface->LoadTemplateFromFile(targetTemplateData.m_filePath);
         sourceTemplateData.m_id = m_prefabSystemComponent->GetTemplateIdFromFilePath(sourceTemplateData.m_filePath);
 
         LinkData linkData = PrefabTestDataUtils::CreateLinkData(
@@ -74,7 +74,7 @@ namespace UnitTest
         MockPrefabFileIOActionValidator mockIOActionValidator;
         mockIOActionValidator.ReadPrefabDom(templateData.m_filePath, templatePrefabDom);
 
-        templateData.m_id = m_prefabLoaderInterface->LoadTemplate(templateData.m_filePath);
+        templateData.m_id = m_prefabLoaderInterface->LoadTemplateFromFile(templateData.m_filePath);
         templateData.m_isLoadedWithErrors = true;
 
         PrefabTestDataUtils::ValidateTemplateLoad(templateData);
@@ -120,7 +120,7 @@ namespace UnitTest
             targetTemplateData.m_filePath, targetTemplatePrefabDom);
 
         // Load target and source Templates and get their Ids.
-        targetTemplateData.m_id = m_prefabLoaderInterface->LoadTemplate(targetTemplateData.m_filePath);
+        targetTemplateData.m_id = m_prefabLoaderInterface->LoadTemplateFromFile(targetTemplateData.m_filePath);
         sourceTemplateData.m_id = m_prefabSystemComponent->GetTemplateIdFromFilePath(sourceTemplateData.m_filePath);
 
         // Because of cyclical dependency, the two Templates should be loaded with errors.
@@ -149,7 +149,7 @@ namespace UnitTest
         MockPrefabFileIOActionValidator mockIOActionValidator;
         mockIOActionValidator.ReadPrefabDom(templateData.m_filePath, templatePrefabDom);
 
-        templateData.m_id = m_prefabLoaderInterface->LoadTemplate(templateData.m_filePath);
+        templateData.m_id = m_prefabLoaderInterface->LoadTemplateFromFile(templateData.m_filePath);
 
         PrefabTestDataUtils::ValidateTemplateLoad(templateData);
     }
@@ -166,7 +166,7 @@ namespace UnitTest
         MockPrefabFileIOActionValidator mockIOActionValidator;
         mockIOActionValidator.ReadPrefabDom(templateData.m_filePath, templatePrefabDom);
 
-        templateData.m_id = m_prefabLoaderInterface->LoadTemplate(templateData.m_filePath);
+        templateData.m_id = m_prefabLoaderInterface->LoadTemplateFromFile(templateData.m_filePath);
 
         PrefabTestDataUtils::ValidateTemplateLoad(templateData);
     }
@@ -188,7 +188,7 @@ namespace UnitTest
             templateInstanceData.m_source, PrefabTestDomUtils::CreatePrefabDom(),
             AZ::IO::ResultCode::Success, AZ::IO::ResultCode::Error);
 
-        templateData.m_id = m_prefabLoaderInterface->LoadTemplate(templateData.m_filePath);
+        templateData.m_id = m_prefabLoaderInterface->LoadTemplateFromFile(templateData.m_filePath);
 
         PrefabTestDataUtils::ValidateTemplateLoad(templateData);
     }
@@ -222,7 +222,7 @@ namespace UnitTest
             }
         }
 
-        templatesData.back().m_id = m_prefabLoaderInterface->LoadTemplate(templatesData.back().m_filePath);
+        templatesData.back().m_id = m_prefabLoaderInterface->LoadTemplateFromFile(templatesData.back().m_filePath);
         for (int i = nestedHierarchyLevel - 2; i >= 0; i--)
         {
             templatesData[i].m_id = m_prefabSystemComponent->GetTemplateIdFromFilePath(templatesData[i].m_filePath);
@@ -264,7 +264,7 @@ namespace UnitTest
         mockIOActionValidator.ReadPrefabDom(
             targetTemplateData.m_filePath, PrefabTestDomUtils::CreatePrefabDom(targetTemplateInstancesData));
 
-        targetTemplateData.m_id = m_prefabLoaderInterface->LoadTemplate(targetTemplateData.m_filePath);
+        targetTemplateData.m_id = m_prefabLoaderInterface->LoadTemplateFromFile(targetTemplateData.m_filePath);
         for (int i = 0; i < numInstances; i++)
         {
             sourceTemplatesData[i].m_id = m_prefabSystemComponent->GetTemplateIdFromFilePath(sourceTemplatesData[i].m_filePath);
@@ -279,13 +279,63 @@ namespace UnitTest
     TEST_F(PrefabLoadTemplateTest, LoadTemplate_LoadCorruptedPrefabFileData_InvalidTemplateIdReturned)
     {
         const AZStd::string corruptedPrefabContent = "{ Corrupted PrefabDom";
-        const AZStd::string pathToCorruptedPrefab = "path/to/corrupted/prefab/file";
+        AZ::IO::Path pathToCorruptedPrefab("path/to/corrupted/prefab/file");
+        pathToCorruptedPrefab.MakePreferred();
 
         MockPrefabFileIOActionValidator mockIOActionValidator;
         mockIOActionValidator.ReadPrefabDom(pathToCorruptedPrefab, corruptedPrefabContent);
         
-        auto tmeplateId = m_prefabLoaderInterface->LoadTemplate(pathToCorruptedPrefab);
+        TemplateId templateId = m_prefabLoaderInterface->LoadTemplateFromFile(pathToCorruptedPrefab);
 
-        EXPECT_EQ(tmeplateId, AzToolsFramework::Prefab::InvalidTemplateId);
+        EXPECT_EQ(templateId, AzToolsFramework::Prefab::InvalidTemplateId);
+    }
+
+    TEST_F(PrefabLoadTemplateTest, LoadTemplate_LoadFromString_InvalidPathReturnsInvalidTemplateId)
+    {
+        PrefabDom emptyPrefabDom = PrefabTestDomUtils::CreatePrefabDom();
+        AZStd::string emptyPrefabDomStr = PrefabTestDomUtils::DomToString(emptyPrefabDom);
+        EXPECT_EQ(m_prefabLoaderInterface->LoadTemplateFromString(emptyPrefabDomStr, "|?<>"), AzToolsFramework::Prefab::InvalidTemplateId);
+        EXPECT_EQ(m_prefabLoaderInterface->LoadTemplateFromString(emptyPrefabDomStr, "notAFile/"), AzToolsFramework::Prefab::InvalidTemplateId);
+    }
+
+    TEST_F(PrefabLoadTemplateTest, LoadTemplate_LoadFromString_LoadsEmptyPrefab)
+    {
+        TemplateData templateData;
+        templateData.m_filePath = "path/to/empty/prefab";
+
+        PrefabDom emptyPrefabDom = PrefabTestDomUtils::CreatePrefabDom();
+        AZStd::string emptyPrefabDomStr = PrefabTestDomUtils::DomToString(emptyPrefabDom);
+        templateData.m_id = m_prefabLoaderInterface->LoadTemplateFromString(
+            emptyPrefabDomStr,
+            templateData.m_filePath
+        );
+
+        PrefabTestDataUtils::ValidateTemplateLoad(templateData);
+    }
+
+    TEST_F(PrefabLoadTemplateTest, LoadTemplate_LoadFromString_TemplateDependingOnItself_LoadedWithErrors)
+    {
+        TemplateData templateData;
+        templateData.m_filePath = "path/to/self/dependency";
+
+        PrefabDom selfDependentPrefab = PrefabTestDomUtils::CreatePrefabDom(
+            { PrefabTestDataUtils::CreateInstanceDataWithNoPatches("instance", templateData.m_filePath) }
+        );
+
+        AZStd::string selfDependentPrefabStr = PrefabTestDomUtils::DomToString(selfDependentPrefab);
+        templateData.m_id = m_prefabLoaderInterface->LoadTemplateFromString(
+            selfDependentPrefabStr,
+            templateData.m_filePath);
+
+        templateData.m_isLoadedWithErrors = true;
+
+        PrefabTestDataUtils::ValidateTemplateLoad(templateData);
+    }
+
+    TEST_F(PrefabLoadTemplateTest, LoadTemplate_LoadFromString_CorruptedReturnsInvalidTemplateId)
+    {
+        AZStd::string corruptPrefab = "{ Corrupted PrefabDom";
+        TemplateId templateId = m_prefabLoaderInterface->LoadTemplateFromString(corruptPrefab);
+        EXPECT_EQ(templateId, AzToolsFramework::Prefab::InvalidTemplateId);
     }
 }

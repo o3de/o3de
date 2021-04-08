@@ -77,10 +77,11 @@ namespace AZ
             //! Lists of inputs, outputs and input/outputs
             PassSlotList m_slots;
 
-            //! Connections for the Pass's outputs. Input connections are specified by PassRequests.
-            //! Output connections will often point to attachments owned by the pass, whereas input
-            //! connections will be hooked up to other passes.
-            PassConnectionList m_outputConnections;
+            //! Connections for the Pass.
+            //! Most of the time these will be output connections (which often point to attachments owned by the pass),
+            //! since input connections should be specified by the PassRequest (inputs are generally hooked up to other passes).
+            //! Cases where you would want to specify input connections on the PassTemplate are images imported as assets.
+            PassConnectionList m_connections;
 
             //! Fallback connections for the Pass's outputs. These connections will hook up to inputs
             //! of the pass and provide a fallback attachment for when the pass is disabled.

@@ -27,10 +27,8 @@ public:
     CSmartVariableArray mv_table;
     CSmartVariable<float> mv_duration;
     CSmartVariable<float> mv_timeStep;
-    CSmartVariableEnum<QString> mv_format;
     CSmartVariable<QString> mv_prefix;
     CSmartVariable<QString> mv_folder;
-    CSmartVariableEnum<int> mv_captureBufferType;
     CSmartVariable<bool> mv_once;
 
     virtual void OnCreateVars()
@@ -38,23 +36,11 @@ public:
         mv_duration.GetVar()->SetLimits(0, 100000.0f);
         mv_timeStep.GetVar()->SetLimits(0.001f, 1.0f);
 
-        // mv_format enumerations must match ICaptureKey::CaptureFileFormat enum
-        mv_format.SetEnumList(NULL);
-        mv_format->AddEnumItem("jpg", "jpg");
-        mv_format->AddEnumItem("tga", "tga");
-        mv_format->AddEnumItem("tif", "tif");
-
-        mv_captureBufferType.SetEnumList(NULL);
-        mv_captureBufferType->AddEnumItem("Color", ICaptureKey::Color);
-        mv_captureBufferType->AddEnumItem("Color+Alpha", ICaptureKey::ColorWithAlpha);
-
         AddVariable(mv_table, "Key Properties");
         AddVariable(mv_table, mv_duration, "Duration");
         AddVariable(mv_table, mv_timeStep, "Time Step");
-        AddVariable(mv_table, mv_format, "Output Format");
         AddVariable(mv_table, mv_prefix, "Output Prefix");
         AddVariable(mv_table, mv_folder, "Output Folder");
-        AddVariable(mv_table, mv_captureBufferType, "Buffer(s) to capture");
         AddVariable(mv_table, mv_once, "Just one frame?");
     }
     bool SupportTrackType(const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, [[maybe_unused]] AnimValueType valueType) const
@@ -98,10 +84,8 @@ bool CCaptureKeyUIControls::OnKeySelectionChange(CTrackViewKeyBundle& selectedKe
 
             mv_duration = captureKey.duration;
             mv_timeStep = captureKey.timeStep;
-            mv_format = captureKey.GetFormat();
             mv_prefix = captureKey.prefix.c_str();
             mv_folder = captureKey.folder.c_str();
-            mv_captureBufferType = captureKey.captureBufferIndex;
             mv_once = captureKey.once;
 
             bAssigned = true;
@@ -132,25 +116,7 @@ void CCaptureKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& sel
 
             SyncValue(mv_duration, captureKey.duration, false, pVar);
             SyncValue(mv_timeStep, captureKey.timeStep, false, pVar);
-            if (pVar == mv_format.GetVar())
-            {
-                if (QString::compare(mv_format, "jpg") == 0)
-                {
-                    captureKey.FormatJPG();
-                }
-                else if (QString::compare(mv_format, "bmp") == 0)
-                {
-                    captureKey.FormatBMP();
-                }
-                else if (QString::compare(mv_format, "hdr") == 0)
-                {
-                    captureKey.FormatHDR();
-                }
-                else
-                {
-                    captureKey.FormatTGA();
-                }
-            }
+
             if (pVar == mv_folder.GetVar())
             {
                 QString sFolder = mv_folder;
@@ -161,14 +127,12 @@ void CCaptureKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& sel
                 QString sPrefix = mv_prefix;
                 captureKey.prefix = sPrefix.toUtf8().data();
             }
-            if (pVar == mv_captureBufferType.GetVar())
-            {
-                captureKey.captureBufferIndex = static_cast<ICaptureKey::CaptureBufferType>(static_cast<int>(mv_captureBufferType));
-            }
+
             SyncValue(mv_once, captureKey.once, false, pVar);
 
             bool isDuringUndo = false;
-            AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(isDuringUndo, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::IsDuringUndoRedo);
+            AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                isDuringUndo, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::IsDuringUndoRedo);
 
             if (isDuringUndo)
             {

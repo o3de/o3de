@@ -43,7 +43,7 @@ namespace AZ
             void UpdateSRG() override;
             void GetCurrentShaderOption(AZ::RPI::ShaderOptionGroup& shaderOption) const override;
 
-            RHI::ShaderInputConstantIndex m_renderTargetMetricsShaderInputIndex;
+            RHI::ShaderInputNameIndex m_renderTargetMetricsShaderInputIndex = "m_renderTargetMetrics";
 
             const AZ::Name m_blendingOutputModeOptionName;
 

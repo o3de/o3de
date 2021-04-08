@@ -82,8 +82,6 @@ set(FILES
     CommandLine/CommandLine.h
     CommandLine/CommandRegistrationBus.h
     Debug/DebugCameraBus.h
-    Engine/Engine.cpp
-    Engine/Engine.h
     Viewport/ViewportBus.h
     Viewport/ViewportBus.cpp
     Viewport/ViewportColors.h
@@ -212,19 +210,41 @@ set(FILES
     StreamingInstall/StreamingInstall.cpp
     StreamingInstall/StreamingInstallRequests.h
     StreamingInstall/StreamingInstallNotifications.h
-    Physics/Configuration/CollisionConfiguration.h
-    Physics/Configuration/CollisionConfiguration.cpp
+    Physics/Common/PhysicsSceneQueries.h
+    Physics/Common/PhysicsSceneQueries.cpp
     Physics/Common/PhysicsEvents.h
+    Physics/Common/PhysicsSimulatedBody.h
+    Physics/Common/PhysicsSimulatedBody.cpp
+    Physics/Common/PhysicsSimulatedBodyAutomation.h
+    Physics/Common/PhysicsSimulatedBodyAutomation.cpp
+    Physics/Common/PhysicsSimulatedBodyEvents.h
+    Physics/Common/PhysicsSimulatedBodyEvents.cpp
     Physics/Common/PhysicsTypes.h
+    Physics/Collision/CollisionEvents.h
+    Physics/Collision/CollisionEvents.cpp
     Physics/Collision/CollisionLayers.h
     Physics/Collision/CollisionLayers.cpp
     Physics/Collision/CollisionGroups.h
     Physics/Collision/CollisionGroups.cpp
+    Physics/Configuration/CollisionConfiguration.h
+    Physics/Configuration/CollisionConfiguration.cpp
+    Physics/Configuration/RigidBodyConfiguration.h
+    Physics/Configuration/RigidBodyConfiguration.cpp
+    Physics/Configuration/StaticRigidBodyConfiguration.h
+    Physics/Configuration/StaticRigidBodyConfiguration.cpp
+    Physics/Configuration/SceneConfiguration.h
+    Physics/Configuration/SceneConfiguration.cpp
+    Physics/Configuration/SimulatedBodyConfiguration.h
+    Physics/Configuration/SimulatedBodyConfiguration.cpp
     Physics/Configuration/SystemConfiguration.h
     Physics/Configuration/SystemConfiguration.cpp
-    Physics/Configuration/SceneConfiguration.cpp
-    Physics/Configuration/SceneConfiguration.h
+    Physics/SimulatedBodies/RigidBody.h
+    Physics/SimulatedBodies/RigidBody.cpp
+    Physics/SimulatedBodies/StaticRigidBody.h
+    Physics/SimulatedBodies/StaticRigidBody.cpp
     Physics/PhysicsSystem.h
+    Physics/PhysicsSystem.cpp
+    Physics/PhysicsScene.cpp
     Physics/PhysicsScene.h
     Physics/AnimationConfiguration.cpp
     Physics/AnimationConfiguration.h
@@ -236,20 +256,12 @@ set(FILES
     Physics/Material.h
     Physics/NameConstants.cpp
     Physics/NameConstants.h
-    Physics/RigidBody.cpp
-    Physics/RigidBody.h
     Physics/RigidBodyBus.h
     Physics/Shape.cpp
     Physics/Shape.h
     Physics/ShapeConfiguration.h
     Physics/ShapeConfiguration.cpp
     Physics/SystemBus.h
-    Physics/World.cpp
-    Physics/World.h
-    Physics/Casts.h
-    Physics/Casts.cpp
-    Physics/WorldBody.cpp
-    Physics/WorldBody.h
     Physics/WorldBodyBus.h
     Physics/ColliderComponentBus.h
     Physics/RagdollPhysicsBus.h
@@ -261,15 +273,14 @@ set(FILES
     Physics/Utils.cpp
     Physics/Joint.h
     Physics/Joint.cpp
-    Physics/TriggerBus.h
-    Physics/CollisionNotificationBus.h
     Physics/ClassConverters.cpp
     Physics/ClassConverters.h
     Physics/MaterialBus.h
-    Physics/WorldEventhandler.h
-    Physics/ScriptCanvasPhysicsUtils.h
-    Physics/ScriptCanvasPhysicsUtils.cpp
     Process/ProcessCommunicator.cpp
+    Process/ProcessCommunicator.h
+    Process/ProcessWatcher.cpp
+    Process/ProcessWatcher.h
+    Process/ProcessCommon_fwd.h
     Process/ProcessCommunicator.h
     Process/ProcessWatcher.cpp
     Process/ProcessWatcher.h
@@ -283,12 +294,21 @@ set(FILES
     Render/Intersector.cpp
     Render/Intersector.h
     Render/IntersectorInterface.h
+    Spawnable/RootSpawnableInterface.h
     Spawnable/Spawnable.cpp
     Spawnable/Spawnable.h
     Spawnable/SpawnableAssetHandler.h
     Spawnable/SpawnableAssetHandler.cpp
+    Spawnable/SpawnableEntitiesContainer.h
+    Spawnable/SpawnableEntitiesContainer.cpp
+    Spawnable/SpawnableEntitiesInterface.h
+    Spawnable/SpawnableEntitiesInterface.cpp
+    Spawnable/SpawnableEntitiesManager.h
+    Spawnable/SpawnableEntitiesManager.cpp
     Spawnable/SpawnableMetaData.cpp
     Spawnable/SpawnableMetaData.h
+    Spawnable/SpawnableMonitor.h
+    Spawnable/SpawnableMonitor.cpp
     Spawnable/SpawnableSystemComponent.h
     Spawnable/SpawnableSystemComponent.cpp
     Terrain/TerrainDataRequestBus.h
@@ -388,6 +408,8 @@ set(FILES
     FileTag/FileTagComponent.h
     FileTag/FileTagComponent.cpp
     UnitTest/FrameworkTestTypes.h
+    UnitTest/TestDebugDisplayRequests.h
+    UnitTest/TestDebugDisplayRequests.cpp
     Slice/SliceEntityBus.h
     Slice/SliceInstantiationBus.h
     Slice/SliceInstantiationTicket.h

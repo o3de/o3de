@@ -17,6 +17,7 @@
 #include <AzFramework/Physics/CollisionBus.h>
 #include <AzFramework/Physics/Configuration/CollisionConfiguration.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Physics/PropertyTypes.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <LyViewPaneNames.h>
@@ -96,20 +97,20 @@ namespace PhysX
 
         AzPhysics::CollisionLayer CollisionLayerWidget::GetLayerFromName(const AZStd::string& layerName)
         {
-            const AzPhysics::CollisionConfiguration& configuration = AZ::Interface<Physics::CollisionRequests>::Get()->GetCollisionConfiguration();
+            const AzPhysics::CollisionConfiguration& configuration = AZ::Interface<AzPhysics::SystemInterface>::Get()->GetConfiguration()->m_collisionConfig;
             return configuration.m_collisionLayers.GetLayer(layerName);
         }
 
         AZStd::string CollisionLayerWidget::GetNameFromLayer(const AzPhysics::CollisionLayer& layer)
         {
-            const AzPhysics::CollisionConfiguration& configuration = AZ::Interface<Physics::CollisionRequests>::Get()->GetCollisionConfiguration();
+            const AzPhysics::CollisionConfiguration& configuration = AZ::Interface<AzPhysics::SystemInterface>::Get()->GetConfiguration()->m_collisionConfig;
             return configuration.m_collisionLayers.GetName(layer);
         }
 
         AZStd::vector<AZStd::string> CollisionLayerWidget::GetLayerNames()
         {
             AZStd::vector<AZStd::string> layerNames;
-            const AzPhysics::CollisionConfiguration& configuration = AZ::Interface<Physics::CollisionRequests>::Get()->GetCollisionConfiguration();
+            const AzPhysics::CollisionConfiguration& configuration = AZ::Interface<AzPhysics::SystemInterface>::Get()->GetConfiguration()->m_collisionConfig;
 
             for (AZ::u8 layer = 0; layer < AzPhysics::CollisionLayers::MaxCollisionLayers; ++layer)
             {

@@ -40,6 +40,10 @@ namespace AZ
         bool SkinnedMeshRenderProxy::Init(const RPI::Scene& scene, SkinnedMeshFeatureProcessor* featureProcessor)
         {
             AZ_TRACE_METHOD();
+            if(!m_instance->m_model)
+            {
+                return false;
+            }
             const size_t modelLodCount = m_instance->m_model->GetLodCount();
             m_featureProcessor = featureProcessor;
 

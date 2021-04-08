@@ -13,6 +13,7 @@
 #include <PhysX_precompiled.h>
 
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzCore/EBus/Results.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -23,6 +24,11 @@
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
 #include <AzFramework/Physics/Collision/CollisionLayers.h>
+#include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
+#include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
+#include <AzFramework/Physics/PhysicsScene.h>
+#include <AzFramework/Physics/PhysicsSystem.h>
+#include <AzFramework/Physics/SimulatedBodies/StaticRigidBody.h>
 
 #include <PhysX/ColliderShapeBus.h>
 #include <PhysX/SystemComponentBus.h>
@@ -42,7 +48,7 @@ namespace PhysX
 {
     namespace Utils
     {
-        physx::PxBase* CreateNativeMeshObjectFromCookedData(const AZStd::vector<AZ::u8>& cookedData, 
+        physx::PxBase* CreateNativeMeshObjectFromCookedData(const AZStd::vector<AZ::u8>& cookedData,
             Physics::CookedMeshShapeConfiguration::MeshType meshType)
         {
             // PxDefaultMemoryInputData only accepts a non-const U8* pointer however keeps it as const U8* inside.
@@ -129,7 +135,7 @@ namespace PhysX
             }
             case Physics::ShapeType::CookedMesh:
             {
-                const Physics::CookedMeshShapeConfiguration& cookedMeshShapeConfig = 
+                const Physics::CookedMeshShapeConfiguration& cookedMeshShapeConfig =
                     static_cast<const Physics::CookedMeshShapeConfiguration&>(shapeConfiguration);
 
                 physx::PxBase* nativeMeshObject = nullptr;
@@ -240,17 +246,26 @@ namespace PhysX
             return nullptr;
         }
 
-        World* GetDefaultWorld()
+        AzPhysics::Scene* GetDefaultScene()
         {
-            AZStd::shared_ptr<Physics::World> world = nullptr;
-            Physics::DefaultWorldBus::BroadcastResult(world, &Physics::DefaultWorldRequests::GetDefaultWorld);
-            return static_cast<World*>(world.get());
+            AzPhysics::SceneHandle sceneHandle;
+            Physics::DefaultWorldBus::BroadcastResult(sceneHandle, &Physics::DefaultWorldRequests::GetDefaultSceneHandle);
+
+            if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
+            {
+                if (auto* scene = physicsSystem->GetScene(sceneHandle))
+                {
+                    return scene;
+                }
+            }
+
+            return nullptr;
         }
 
         AZStd::optional<Physics::CookedMeshShapeConfiguration> CreatePxCookedMeshConfiguration(const AZStd::vector<AZ::Vector3>& points, const AZ::Vector3& scale)
         {
             Physics::CookedMeshShapeConfiguration shapeConfig;
-            
+
             AZStd::vector<AZ::u8> cookedData;
             bool cookingResult = false;
             Physics::SystemRequestBus::BroadcastResult(cookingResult, &Physics::SystemRequests::CookConvexMeshToMemory,
@@ -268,9 +283,108 @@ namespace PhysX
             return shapeConfig;
         }
 
+        bool IsPrimitiveShape(const Physics::ShapeConfiguration& shapeConfig)
+        {
+            const Physics::ShapeType shapeType = shapeConfig.GetShapeType();
+            return
+                shapeType == Physics::ShapeType::Box ||
+                shapeType == Physics::ShapeType::Capsule ||
+                shapeType == Physics::ShapeType::Sphere;
+        }
+
+        AZStd::optional<Physics::CookedMeshShapeConfiguration> CreateConvexFromPrimitive(
+            const Physics::ColliderConfiguration& colliderConfig,
+            const Physics::ShapeConfiguration& primitiveShapeConfig, AZ::u8 subdivisionLevel,
+            const AZ::Vector3& scale)
+        {
+            AZ::u8 subdivisionLevelClamped = AZ::GetClamp(subdivisionLevel, MinCapsuleSubdivisionLevel, MaxCapsuleSubdivisionLevel);
+
+            auto applyColliderOffset = [&colliderConfig](const AZ::Vector3 point) {
+                return colliderConfig.m_rotation.TransformVector(point) + colliderConfig.m_position;
+            };
+
+            auto shapeType = primitiveShapeConfig.GetShapeType();
+            switch (shapeType)
+            {
+            case Physics::ShapeType::Box:
+            {
+                auto boxConfig = static_cast<const Physics::BoxShapeConfiguration&>(primitiveShapeConfig);
+                AZStd::vector<AZ::Vector3> points;
+                points.reserve(8);
+                const float x = 0.5f * boxConfig.m_dimensions.GetX();
+                const float y = 0.5f * boxConfig.m_dimensions.GetY();
+                const float z = 0.5f * boxConfig.m_dimensions.GetZ();
+                points.push_back(applyColliderOffset(AZ::Vector3(-x, -y, -z)));
+                points.push_back(applyColliderOffset(AZ::Vector3(-x, -y, +z)));
+                points.push_back(applyColliderOffset(AZ::Vector3(-x, +y, -z)));
+                points.push_back(applyColliderOffset(AZ::Vector3(-x, +y, +z)));
+                points.push_back(applyColliderOffset(AZ::Vector3(+x, -y, -z)));
+                points.push_back(applyColliderOffset(AZ::Vector3(+x, -y, +z)));
+                points.push_back(applyColliderOffset(AZ::Vector3(+x, +y, -z)));
+                points.push_back(applyColliderOffset(AZ::Vector3(+x, +y, +z)));
+                return CreatePxCookedMeshConfiguration(points, scale);
+            }
+            break;
+            case Physics::ShapeType::Capsule:
+            {
+                auto capsuleConfig = static_cast<const Physics::CapsuleShapeConfiguration&>(primitiveShapeConfig);
+                const AZ::u8 numLayers = subdivisionLevelClamped;
+                const AZ::u8 numPerLayer = 4 * subdivisionLevelClamped;
+                AZStd::vector<AZ::Vector3> points;
+                points.reserve(2 * numLayers * numPerLayer + 2);
+                points.push_back(applyColliderOffset(AZ::Vector3::CreateAxisZ(0.5f * capsuleConfig.m_height)));
+                points.push_back(applyColliderOffset(AZ::Vector3::CreateAxisZ(-0.5f * capsuleConfig.m_height)));
+                for (AZ::u8 layerIndex = 0; layerIndex < numLayers; layerIndex++)
+                {
+                    const float theta = (layerIndex + 1) * AZ::Constants::HalfPi / aznumeric_cast<float>(numLayers);
+                    const float layerRadius = capsuleConfig.m_radius * AZ::Sin(theta);
+                    const float layerHeight = 0.5f * capsuleConfig.m_height + capsuleConfig.m_radius * (AZ::Cos(theta) - 1.0f);
+                    for (AZ::u8 radialIndex = 0; radialIndex < numPerLayer; radialIndex++)
+                    {
+                        const float phi = radialIndex * AZ::Constants::TwoPi / aznumeric_cast<float>(numPerLayer);
+                        points.push_back(applyColliderOffset(AZ::Vector3(
+                            layerRadius * AZ::Cos(phi), layerRadius * AZ::Sin(phi), layerHeight)));
+                        points.push_back(applyColliderOffset(AZ::Vector3(
+                            layerRadius * AZ::Cos(phi), layerRadius * AZ::Sin(phi), -layerHeight)));
+                    }
+                }
+                return CreatePxCookedMeshConfiguration(points, scale);
+            }
+            break;
+            case Physics::ShapeType::Sphere:
+            {
+                auto sphereConfig = static_cast<const Physics::SphereShapeConfiguration&>(primitiveShapeConfig);
+                const AZ::u8 numLayers = 2 * subdivisionLevelClamped;
+                const AZ::u8 numPerLayer = 4 * subdivisionLevelClamped;
+                AZStd::vector<AZ::Vector3> points;
+                points.reserve((numLayers - 1) * numPerLayer + 2);
+                points.push_back(applyColliderOffset(AZ::Vector3::CreateAxisZ(sphereConfig.m_radius)));
+                points.push_back(applyColliderOffset(AZ::Vector3::CreateAxisZ(-sphereConfig.m_radius)));
+
+                for (AZ::u8 layerIndex = 1; layerIndex < numLayers; layerIndex++)
+                {
+                    const float theta = layerIndex * AZ::Constants::Pi / aznumeric_cast<float>(numLayers);
+                    const float layerRadius = sphereConfig.m_radius * AZ::Sin(theta);
+                    const float layerHeight = sphereConfig.m_radius * AZ::Cos(theta);
+                    for (AZ::u8 radialIndex = 0; radialIndex < numPerLayer; radialIndex++)
+                    {
+                        const float phi = radialIndex * AZ::Constants::TwoPi / aznumeric_cast<float>(numPerLayer);
+                        points.push_back(applyColliderOffset(AZ::Vector3(
+                            layerRadius * AZ::Cos(phi), layerRadius * AZ::Sin(phi), layerHeight)));
+                    }
+                }
+                return CreatePxCookedMeshConfiguration(points, scale);
+            }
+            break;
+            default:
+                AZ_Error("PhysX Utils", false, "CreateConvexFromPrimitive was called with a non-primitive shape configuration.");
+                return {};
+            }
+        }
+
         // Returns a point list of the frustum extents based on the supplied frustum parameters.
         AZStd::optional<AZStd::vector<AZ::Vector3>> CreatePointsAtFrustumExtents(float height, float bottomRadius, float topRadius, AZ::u8 subdivisions)
-        {            
+        {
             AZStd::vector<AZ::Vector3> points;
 
             if (height <= 0.0f)
@@ -300,7 +414,7 @@ namespace PhysX
                 AZ_Error("PhysX", false, "Frustum subdivision count %u is not in [%u, %u] range", subdivisions, MinFrustumSubdivisions, MaxFrustumSubdivisions);
                 return {};
             }
-                
+
             points.reserve(subdivisions * 2);
             const float halfHeight = height * 0.5f;
             const double step = AZ::Constants::TwoPi / aznumeric_cast<double>(subdivisions);
@@ -320,33 +434,33 @@ namespace PhysX
         AZStd::string ConvexCookingResultToString(physx::PxConvexMeshCookingResult::Enum convexCookingResultCode)
         {
             static const AZStd::string resultToString[] = { "eSUCCESS", "eZERO_AREA_TEST_FAILED", "ePOLYGONS_LIMIT_REACHED", "eFAILURE" };
-AZ_PUSH_DISABLE_WARNING(, "-Wtautological-constant-out-of-range-compare")
-            if (AZ_ARRAY_SIZE(resultToString) > convexCookingResultCode)
-AZ_POP_DISABLE_WARNING
-            {
-                return resultToString[convexCookingResultCode];
-            }
-            else
-            {
-                AZ_Error("PhysX", false, "Unknown convex cooking result code: %i", convexCookingResultCode);
-                return "";
-            }
+            AZ_PUSH_DISABLE_WARNING(, "-Wtautological-constant-out-of-range-compare")
+                if (AZ_ARRAY_SIZE(resultToString) > convexCookingResultCode)
+                    AZ_POP_DISABLE_WARNING
+                {
+                    return resultToString[convexCookingResultCode];
+                }
+                else
+                {
+                    AZ_Error("PhysX", false, "Unknown convex cooking result code: %i", convexCookingResultCode);
+                    return "";
+                }
         }
 
         AZStd::string TriMeshCookingResultToString(physx::PxTriangleMeshCookingResult::Enum triangleCookingResultCode)
         {
             static const AZStd::string resultToString[] = { "eSUCCESS", "eLARGE_TRIANGLE", "eFAILURE" };
-AZ_PUSH_DISABLE_WARNING(, "-Wtautological-constant-out-of-range-compare")
-            if (AZ_ARRAY_SIZE(resultToString) > triangleCookingResultCode)
-AZ_POP_DISABLE_WARNING
-            {
-                return resultToString[triangleCookingResultCode];
-            }
-            else
-            {
-                AZ_Error("PhysX", false, "Unknown trimesh cooking result code: %i", triangleCookingResultCode);
-                return "";
-            }
+            AZ_PUSH_DISABLE_WARNING(, "-Wtautological-constant-out-of-range-compare")
+                if (AZ_ARRAY_SIZE(resultToString) > triangleCookingResultCode)
+                    AZ_POP_DISABLE_WARNING
+                {
+                    return resultToString[triangleCookingResultCode];
+                }
+                else
+                {
+                    AZ_Error("PhysX", false, "Unknown trimesh cooking result code: %i", triangleCookingResultCode);
+                    return "";
+                }
         }
 
         bool WriteCookedMeshToFile(const AZStd::string& filePath, const AZStd::vector<AZ::u8>& physxData,
@@ -393,7 +507,7 @@ AZ_POP_DISABLE_WARNING
             return result;
         }
 
-        bool CookTriangleMeshToToPxOutputStream(const AZ::Vector3* vertices, AZ::u32 vertexCount, 
+        bool CookTriangleMeshToToPxOutputStream(const AZ::Vector3* vertices, AZ::u32 vertexCount,
             const AZ::u32* indices, AZ::u32 indexCount, physx::PxOutputStream& stream)
         {
             physx::PxCooking* cooking = nullptr;
@@ -537,7 +651,7 @@ AZ_POP_DISABLE_WARNING
 
         AZStd::string ReplaceAll(AZStd::string str, const AZStd::string& fromString, const AZStd::string& toString) {
             size_t positionBegin = 0;
-            while ((positionBegin = str.find(fromString, positionBegin)) != AZStd::string::npos) 
+            while ((positionBegin = str.find(fromString, positionBegin)) != AZStd::string::npos)
             {
                 str.replace(positionBegin, fromString.length(), toString);
                 positionBegin += toString.length();
@@ -582,7 +696,8 @@ AZ_POP_DISABLE_WARNING
         void ColliderPointsLocalToWorld(AZStd::vector<AZ::Vector3>& pointsInOut,
             const AZ::Transform& worldTransform,
             const AZ::Vector3& colliderRelativePosition,
-            const AZ::Quaternion& colliderRelativeRotation)
+            const AZ::Quaternion& colliderRelativeRotation,
+            const AZ::Vector3& nonUniformScale)
         {
             AZ::Transform transform = GetColliderWorldTransform(worldTransform,
                 colliderRelativePosition,
@@ -590,26 +705,29 @@ AZ_POP_DISABLE_WARNING
 
             for (AZ::Vector3& point : pointsInOut)
             {
-                point = transform.TransformPoint(point);
+                point = worldTransform.TransformPoint(nonUniformScale *
+                    GetColliderLocalTransform(colliderRelativePosition, colliderRelativeRotation).TransformPoint(point));
             }
         }
 
         AZ::Aabb GetPxGeometryAabb(const physx::PxGeometryHolder& geometryHolder,
             const AZ::Transform& worldTransform,
             const ::Physics::ColliderConfiguration& colliderConfiguration
-            )
+        )
         {
             const float boundsInflationFactor = 1.0f;
+            AZ::Transform overallTransformNoScale = GetColliderWorldTransform(worldTransform,
+                colliderConfiguration.m_position, colliderConfiguration.m_rotation);
+            overallTransformNoScale.ExtractScale();
             const physx::PxBounds3 bounds = physx::PxGeometryQuery::getWorldBounds(geometryHolder.any(),
-                    physx::PxTransform(
-                        PxMathConvert(PhysX::Utils::GetColliderWorldTransform(worldTransform,
-                        colliderConfiguration.m_position,
-                        colliderConfiguration.m_rotation))),
-                    boundsInflationFactor);
+                PxMathConvert(overallTransformNoScale),
+                boundsInflationFactor);
             return PxMathConvert(bounds);
         }
 
         AZ::Aabb GetColliderAabb(const AZ::Transform& worldTransform,
+            bool hasNonUniformScale,
+            AZ::u8 subdivisionLevel,
             const ::Physics::ShapeConfiguration& shapeConfiguration,
             const ::Physics::ColliderConfiguration& colliderConfiguration)
         {
@@ -619,9 +737,26 @@ AZ_POP_DISABLE_WARNING
 
             if (!isAssetShape)
             {
-                if (CreatePxGeometryFromConfig(shapeConfiguration, geometryHolder))
+                if (!hasNonUniformScale)
                 {
-                    return GetPxGeometryAabb(geometryHolder, worldTransform, colliderConfiguration);
+                    if (CreatePxGeometryFromConfig(shapeConfiguration, geometryHolder))
+                    {
+                        return GetPxGeometryAabb(geometryHolder, worldTransform, colliderConfiguration);
+                    }
+                }
+                else
+                {
+                    auto convexPrimitive = Utils::CreateConvexFromPrimitive(colliderConfiguration, shapeConfiguration, subdivisionLevel, shapeConfiguration.m_scale);
+                    if (convexPrimitive.has_value())
+                    {
+                        if (CreatePxGeometryFromConfig(convexPrimitive.value(), geometryHolder))
+                        {
+                            Physics::ColliderConfiguration colliderConfigurationNoOffset = colliderConfiguration;
+                            colliderConfigurationNoOffset.m_rotation = AZ::Quaternion::CreateIdentity();
+                            colliderConfigurationNoOffset.m_position = AZ::Vector3::CreateZero();
+                            return GetPxGeometryAabb(geometryHolder, worldTransform, colliderConfigurationNoOffset);
+                        }
+                    }
                 }
                 return worldPosAabb;
             }
@@ -638,6 +773,8 @@ AZ_POP_DISABLE_WARNING
                 Physics::ShapeConfigurationList colliderShapes;
                 GetColliderShapeConfigsFromAsset(physicsAssetConfig,
                     colliderConfiguration,
+                    hasNonUniformScale,
+                    subdivisionLevel,
                     colliderShapes);
 
                 if (colliderShapes.empty())
@@ -652,7 +789,7 @@ AZ_POP_DISABLE_WARNING
                         CreatePxGeometryFromConfig(*colliderShape.second, geometryHolder))
                     {
                         aabb.AddAabb(
-                            GetPxGeometryAabb(geometryHolder, worldTransform, colliderConfiguration)
+                            GetPxGeometryAabb(geometryHolder, worldTransform, *colliderShape.first)
                         );
                     }
                     else
@@ -674,8 +811,8 @@ AZ_POP_DISABLE_WARNING
         }
 
         void GetColliderShapeConfigsFromAsset(const Physics::PhysicsAssetShapeConfiguration& assetConfiguration,
-            const Physics::ColliderConfiguration& originalColliderConfiguration,
-            Physics::ShapeConfigurationList& resultingColliderShapes)
+            const Physics::ColliderConfiguration& originalColliderConfiguration, bool hasNonUniformScale,
+            AZ::u8 subdivisionLevel, Physics::ShapeConfigurationList& resultingColliderShapes)
         {
             if (!assetConfiguration.m_asset.IsReady())
             {
@@ -699,24 +836,24 @@ AZ_POP_DISABLE_WARNING
 
             const Pipeline::MeshAssetData& assetData = asset->m_assetData;
             const Pipeline::MeshAssetData::ShapeConfigurationList& shapeConfigList = assetData.m_colliderShapes;
-            
+
             resultingColliderShapes.reserve(resultingColliderShapes.size() + shapeConfigList.size());
 
             for (size_t shapeIndex = 0; shapeIndex < shapeConfigList.size(); shapeIndex++)
             {
                 const Pipeline::MeshAssetData::ShapeConfigurationPair& shapeConfigPair = shapeConfigList[shapeIndex];
 
-                AZStd::shared_ptr<Physics::ColliderConfiguration> thisColliderConfiguration = 
+                AZStd::shared_ptr<Physics::ColliderConfiguration> thisColliderConfiguration =
                     AZStd::make_shared<Physics::ColliderConfiguration>(originalColliderConfiguration);
 
                 AZ::u16 shapeMaterialIndex = assetData.m_materialIndexPerShape[shapeIndex];
 
                 // Triangle meshes have material indices cooked in the data.
-                if(shapeMaterialIndex != Pipeline::MeshAssetData::TriangleMeshMaterialIndex)
+                if (shapeMaterialIndex != Pipeline::MeshAssetData::TriangleMeshMaterialIndex)
                 {
                     // Clear the materials that came in from the component collider configuration
                     thisColliderConfiguration->m_materialSelection.SetMaterialSlots({});
-                
+
                     // Set the material that is relevant for this specific shape
                     Physics::MaterialId assignedMaterialForShape =
                         originalColliderConfiguration.m_materialSelection.GetMaterialId(shapeMaterialIndex);
@@ -733,16 +870,35 @@ AZ_POP_DISABLE_WARNING
                 AZStd::shared_ptr<Physics::ShapeConfiguration> thisShapeConfiguration = shapeConfigPair.second;
                 thisShapeConfiguration->m_scale = assetConfiguration.m_scale * assetConfiguration.m_assetScale;
 
-                resultingColliderShapes.emplace_back(thisColliderConfiguration, thisShapeConfiguration);
+                // If the shape is a primitive and there is non-uniform scale, replace it with a convex approximation
+                if (hasNonUniformScale && Utils::IsPrimitiveShape(*thisShapeConfiguration))
+                {
+                    auto scaledPrimitive = Utils::CreateConvexFromPrimitive(*thisColliderConfiguration,
+                        *thisShapeConfiguration, subdivisionLevel, thisShapeConfiguration->m_scale);
+                    if (scaledPrimitive.has_value())
+                    {
+                        thisShapeConfiguration = AZStd::make_shared<Physics::CookedMeshShapeConfiguration>(scaledPrimitive.value());
+                        physx::PxGeometryHolder pxGeometryHolder;
+                        CreatePxGeometryFromConfig(*thisShapeConfiguration, pxGeometryHolder);
+                        thisColliderConfiguration->m_rotation = AZ::Quaternion::CreateIdentity();
+                        thisColliderConfiguration->m_position = AZ::Vector3::CreateZero();
+                        resultingColliderShapes.emplace_back(thisColliderConfiguration, thisShapeConfiguration);
+                    }
+                }
+                else
+                {
+                    resultingColliderShapes.emplace_back(thisColliderConfiguration, thisShapeConfiguration);
+                }
             }
         }
 
         void GetShapesFromAsset(const Physics::PhysicsAssetShapeConfiguration& assetConfiguration,
-            const Physics::ColliderConfiguration& originalColliderConfiguration,
-            AZStd::vector<AZStd::shared_ptr<Physics::Shape>>& resultingShapes)
+            const Physics::ColliderConfiguration& originalColliderConfiguration, bool hasNonUniformScale,
+            AZ::u8 subdivisionLevel, AZStd::vector<AZStd::shared_ptr<Physics::Shape>>& resultingShapes)
         {
             Physics::ShapeConfigurationList resultingColliderShapeConfigs;
-            GetColliderShapeConfigsFromAsset(assetConfiguration, originalColliderConfiguration, resultingColliderShapeConfigs);
+            GetColliderShapeConfigsFromAsset(assetConfiguration, originalColliderConfiguration,
+                hasNonUniformScale, subdivisionLevel, resultingColliderShapeConfigs);
 
             resultingShapes.reserve(resultingShapes.size() + resultingColliderShapeConfigs.size());
 
@@ -752,7 +908,7 @@ AZ_POP_DISABLE_WARNING
                 shapeConfigPair.first->m_position *= shapeConfigPair.second->m_scale;
 
                 AZStd::shared_ptr<Physics::Shape> shape;
-                Physics::SystemRequestBus::BroadcastResult(shape, &Physics::SystemRequests::CreateShape, 
+                Physics::SystemRequestBus::BroadcastResult(shape, &Physics::SystemRequests::CreateShape,
                     *shapeConfigPair.first, *shapeConfigPair.second);
 
                 if (shape)
@@ -762,7 +918,7 @@ AZ_POP_DISABLE_WARNING
             }
         }
 
-        AZ::Vector3 GetNonUniformScale(AZ::EntityId entityId)
+        AZ::Vector3 GetTransformScale(AZ::EntityId entityId)
         {
             AZ::Vector3 worldScale = AZ::Vector3::CreateOne();
             AZ::TransformBus::EventResult(worldScale, entityId, &AZ::TransformBus::Events::GetWorldScale);
@@ -771,8 +927,20 @@ AZ_POP_DISABLE_WARNING
 
         AZ::Vector3 GetUniformScale(AZ::EntityId entityId)
         {
-            const float uniformScale = GetNonUniformScale(entityId).GetMaxElement();
+            const float uniformScale = GetTransformScale(entityId).GetMaxElement();
             return AZ::Vector3(uniformScale);
+        }
+
+        AZ::Vector3 GetNonUniformScale(AZ::EntityId entityId)
+        {
+            AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne();
+            AZ::NonUniformScaleRequestBus::EventResult(nonUniformScale, entityId, &AZ::NonUniformScaleRequests::GetScale);
+            return nonUniformScale;
+        }
+
+        AZ::Vector3 GetOverallScale(AZ::EntityId entityId)
+        {
+            return GetUniformScale(entityId) * GetNonUniformScale(entityId);
         }
 
         const AZ::Vector3& Sanitize(const AZ::Vector3& input, const AZ::Vector3& defaultValue)
@@ -931,8 +1099,8 @@ AZ_POP_DISABLE_WARNING
                 const float phiFactor = 1.f / aznumeric_cast<float>(slices - 1) * AZ::Constants::TwoPi;
 
                 // bottom cap
-                vertices.push_back(base + AZ::Vector3(0.f,0.f,-radius));
-                for (size_t stack = 1; stack <= midStack ; ++stack)
+                vertices.push_back(base + AZ::Vector3(0.f, 0.f, -radius));
+                for (size_t stack = 1; stack <= midStack; ++stack)
                 {
                     for (size_t i = 0; i < slices; ++i)
                     {
@@ -950,7 +1118,7 @@ AZ_POP_DISABLE_WARNING
                 }
 
                 // top cap
-                for (size_t stack = midStack; stack < topStack ; ++stack)
+                for (size_t stack = midStack; stack < topStack; ++stack)
                 {
                     for (size_t i = 0; i < slices; ++i)
                     {
@@ -966,7 +1134,7 @@ AZ_POP_DISABLE_WARNING
                         vertices.push_back(top + AZ::Vector3(sinTheta * cosPhi * radius, sinTheta * sinPhi * radius, -cosTheta * radius));
                     }
                 }
-                vertices.push_back(top + AZ::Vector3(0.f,0.f,radius));
+                vertices.push_back(top + AZ::Vector3(0.f, 0.f, radius));
 
                 const AZ::u32 lastVertex = aznumeric_cast<AZ::u32>(vertices.size()) - 1;
                 const AZ::u32 topRow = aznumeric_cast<AZ::u32>(vertices.size()) - slices - 1;
@@ -1070,7 +1238,7 @@ AZ_POP_DISABLE_WARNING
                     {
                         const physx::PxHeightFieldSample& pxSample = geometry.heightField->getSample(y, x);
 
-                        if (pxSample.materialIndex0 == physx::PxHeightFieldMaterial::eHOLE || 
+                        if (pxSample.materialIndex0 == physx::PxHeightFieldMaterial::eHOLE ||
                             pxSample.materialIndex1 == physx::PxHeightFieldMaterial::eHOLE)
                         {
                             // skip terrain geometry marked as eHOLE, this feature is often used for tunnels
@@ -1195,26 +1363,6 @@ AZ_POP_DISABLE_WARNING
             }
         } // namespace Geometry
 
-        namespace RayCast
-        {
-            Physics::RayCastHit ClosestRayHitAgainstShapes(const Physics::RayCastRequest& request,
-                const AZStd::vector<AZStd::shared_ptr<PhysX::Shape>>& shapes, const AZ::Transform& parentTransform)
-            {
-                Physics::RayCastHit closestHit;
-                float closestHitDist = FLT_MAX;
-                for (int i = 0; i < shapes.size(); ++i)
-                {
-                    Physics::RayCastHit hit = shapes[i]->RayCast(request, parentTransform);
-                    if (hit && hit.m_distance < closestHitDist)
-                    {
-                        closestHit = hit;
-                        closestHitDist = hit.m_distance;
-                    }
-                }
-                return closestHit;
-            }
-        } // namespace RayCast
-
         AZ::Transform GetEntityWorldTransformWithScale(AZ::EntityId entityId)
         {
             AZ::Transform worldTransformWithoutScale = AZ::Transform::CreateIdentity();
@@ -1319,12 +1467,29 @@ AZ_POP_DISABLE_WARNING
 
     namespace PxActorFactories
     {
-        physx::PxRigidDynamic* CreatePxRigidBody(const Physics::RigidBodyConfiguration& configuration)
+        constexpr auto PxActorDestructor = [](physx::PxActor* actor)
+        {
+            if (!actor)
+            {
+                return;
+            }
+
+            if (auto* userData = Utils::GetUserData(actor))
+            {
+                userData->Invalidate();
+            }
+
+            actor->release();
+        };
+
+        AZStd::shared_ptr<physx::PxRigidDynamic> CreatePxRigidBody(const AzPhysics::RigidBodyConfiguration& configuration)
         {
             physx::PxTransform pxTransform(PxMathConvert(configuration.m_position),
                 PxMathConvert(configuration.m_orientation).getNormalized());
 
-            physx::PxRigidDynamic* rigidDynamic = PxGetPhysics().createRigidDynamic(pxTransform);
+            auto rigidDynamic = AZStd::shared_ptr<physx::PxRigidDynamic>(
+                PxGetPhysics().createRigidDynamic(pxTransform),
+                PxActorDestructor);
 
             if (!rigidDynamic)
             {
@@ -1341,37 +1506,26 @@ AZ_POP_DISABLE_WARNING
             rigidDynamic->setCMassLocalPose(physx::PxTransform(PxMathConvert(configuration.m_centerOfMassOffset)));
             rigidDynamic->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, configuration.m_kinematic);
             rigidDynamic->setMaxAngularVelocity(configuration.m_maxAngularVelocity);
+
             return rigidDynamic;
         }
 
-        physx::PxRigidStatic* CreatePxStaticRigidBody(const Physics::WorldBodyConfiguration& configuration)
+        AZStd::shared_ptr<physx::PxRigidStatic> CreatePxStaticRigidBody(const AzPhysics::StaticRigidBodyConfiguration& configuration)
         {
             physx::PxTransform pxTransform(PxMathConvert(configuration.m_position),
                 PxMathConvert(configuration.m_orientation).getNormalized());
-            physx::PxRigidStatic* rigidStatic = PxGetPhysics().createRigidStatic(pxTransform);
+
+            auto rigidStatic = AZStd::shared_ptr<physx::PxRigidStatic>(
+                PxGetPhysics().createRigidStatic(pxTransform),
+                PxActorDestructor);
+
+            if (!rigidStatic)
+            {
+                AZ_Error("PhysX Static Rigid Body", false, "Failed to create PhysX static rigid actor. Name: %s", configuration.m_debugName.c_str());
+                return nullptr;
+            }
+
             return rigidStatic;
-        }
-
-        void ReleaseActor(physx::PxActor* actor)
-        {
-            if (!actor)
-            {
-                return;
-            }
-
-            physx::PxScene* scene = actor->getScene();
-            if (scene)
-            {
-                PHYSX_SCENE_WRITE_LOCK(scene);
-                scene->removeActor(*actor);
-            }
-
-            if (auto userData = Utils::GetUserData(actor))
-            {
-                userData->Invalidate();
-            }
-
-            actor->release();
         }
     } // namespace PxActorFactories
 
@@ -1383,16 +1537,16 @@ AZ_POP_DISABLE_WARNING
 
             return AZStd::any_of(components.begin(), components.end(),
                 [service](const AZ::Component* component) -> bool
-            {
-                AZ::ComponentDescriptor* componentDescriptor = nullptr;
-                AZ::ComponentDescriptorBus::EventResult(
-                    componentDescriptor, azrtti_typeid(component), &AZ::ComponentDescriptorBus::Events::GetDescriptor);
+                {
+                    AZ::ComponentDescriptor* componentDescriptor = nullptr;
+                    AZ::ComponentDescriptorBus::EventResult(
+                        componentDescriptor, azrtti_typeid(component), &AZ::ComponentDescriptorBus::Events::GetDescriptor);
 
-                AZ::ComponentDescriptor::DependencyArrayType services;
-                componentDescriptor->GetDependentServices(services, nullptr);
+                    AZ::ComponentDescriptor::DependencyArrayType services;
+                    componentDescriptor->GetDependentServices(services, nullptr);
 
-                return AZStd::find(services.begin(), services.end(), service) != services.end();
-            }
+                    return AZStd::find(services.begin(), services.end(), service) != services.end();
+                }
             );
         }
 

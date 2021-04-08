@@ -341,15 +341,6 @@ set(FILES
     AzAssetBrowser/Preview/LegacyPreviewer.ui
     AzAssetBrowser/Preview/LegacyPreviewerFactory.cpp
     AzAssetBrowser/Preview/LegacyPreviewerFactory.h
-    Thumbnails/MaterialThumbnailRenderer.cpp
-    Thumbnails/MaterialThumbnailRenderer.h
-    Thumbnails/StaticMeshThumbnailRenderer.cpp
-    Thumbnails/StaticMeshThumbnailRenderer.h
-    Thumbnails/TextureThumbnailRenderer.cpp
-    Thumbnails/TextureThumbnailRenderer.h
-    Thumbnails/Example/ThumbnailsSampleWidget.cpp
-    Thumbnails/Example/ThumbnailsSampleWidget.h
-    Thumbnails/Example/ThumbnailsSampleWidget.ui
     AssetDatabase/AssetDatabaseLocationListener.h
     AssetDatabase/AssetDatabaseLocationListener.cpp
     AssetImporter/AssetImporterManager/AssetImporterDragAndDropHandler.cpp

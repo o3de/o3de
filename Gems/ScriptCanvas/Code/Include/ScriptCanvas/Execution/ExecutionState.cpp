@@ -35,35 +35,26 @@ namespace ScriptCanvas
     
     ExecutionStatePtr ExecutionState::Create(const ExecutionStateConfig& config)
     {
-       switch (config.runtimeData.m_input.m_execution)
-       {
-       case ExecutionMode::Interpreted:
-       {
-           if (config.runtimeData.m_script.GetId().IsValid())
-           {
-               switch (config.runtimeData.m_input.m_executionCharacteristics)
-               {
-               case Grammar::ExecutionCharacteristics::PerEntity:
-                   return AZStd::make_shared<ExecutionStateInterpretedPerActivation>(config);
+        Grammar::ExecutionStateSelection selection = config.runtimeData.m_input.m_executionSelection;
 
-               case Grammar::ExecutionCharacteristics::Pure:
-                   return AZStd::make_shared<ExecutionStateInterpretedPure>(config);
+        switch (selection)
+        {
+        case Grammar::InterpretedPure:
+            return AZStd::make_shared<ExecutionStateInterpretedPure>(config);
+            
+        case Grammar::InterpretedPureOnGraphStart:
+            return AZStd::make_shared<ExecutionStateInterpretedPureOnGraphStart>(config);
 
-               default:
-                   break;
-               }
-           }
-       }
-       break;
+        case Grammar::InterpretedObject:
+            return AZStd::make_shared<ExecutionStateInterpretedPerActivation>(config);
 
-       case ExecutionMode::Native:
-       default:
-           AZ_Assert(false, "not done yet!");
-           return nullptr;
-           ;
-       } // switch (config.executionMode)
-
-       return nullptr;
+        case Grammar::InterpretedObjectOnGraphStart:
+            return AZStd::make_shared<ExecutionStateInterpretedPerActivationOnGraphStart>(config);
+            
+        default:
+            AZ_Assert(false, "Unsupported ScriptCanvas execution selection");
+            return nullptr;
+        }
     }
     
     AZ::Data::AssetId ExecutionState::GetAssetId() const
@@ -96,6 +87,11 @@ namespace ScriptCanvas
         return m_component->GetScriptCanvasId();
     }
 
+    const VariableData& ExecutionState::GetVariableOverrides() const
+    {
+        return m_component->GetVariableOverrides();
+    }
+
     void ExecutionState::Reflect(AZ::ReflectContext* reflectContext)
     {
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(reflectContext))
@@ -110,7 +106,9 @@ namespace ScriptCanvas
 
         ExecutionStateInterpreted::Reflect(reflectContext);
         ExecutionStateInterpretedPerActivation::Reflect(reflectContext);
+        ExecutionStateInterpretedPerActivationOnGraphStart::Reflect(reflectContext);
         ExecutionStateInterpretedPure::Reflect(reflectContext);
+        ExecutionStateInterpretedPureOnGraphStart::Reflect(reflectContext);
         ExecutionStateInterpretedSingleton::Reflect(reflectContext);
     }
 

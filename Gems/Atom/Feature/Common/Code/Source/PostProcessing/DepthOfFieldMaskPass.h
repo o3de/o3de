@@ -44,10 +44,10 @@ namespace AZ
             virtual void Init() override;
 
             // SRG binding indices...
-            AZ::RHI::ShaderInputConstantIndex m_blendFactorIndex;
-            AZ::RHI::ShaderInputConstantIndex m_inputResolutionInverseIndex;
-            AZ::RHI::ShaderInputConstantIndex m_radiusMinIndex;
-            AZ::RHI::ShaderInputConstantIndex m_radiusMaxIndex;
+            RHI::ShaderInputNameIndex m_blendFactorIndex = "m_blendFactor";
+            RHI::ShaderInputNameIndex m_inputResolutionInverseIndex = "m_inputResolutionInverse";
+            RHI::ShaderInputNameIndex m_radiusMinIndex = "m_radiusMin";
+            RHI::ShaderInputNameIndex m_radiusMaxIndex = "m_radiusMax";
 
             AZStd::array<float, 2> m_blendFactor = {{0.0f, 0.0f}};
             AZStd::array<float, 2> m_inputResolutionInverse = {{0.0f, 0.0f}};

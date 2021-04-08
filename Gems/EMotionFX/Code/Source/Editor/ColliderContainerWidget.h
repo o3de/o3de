@@ -15,7 +15,7 @@
 #if !defined(Q_MOC_RUN)
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/RTTI/TypeInfo.h>
-#include <AzFramework/Physics/RigidBody.h>
+#include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 #include <AzFramework/Physics/Ragdoll.h>
 #include <AzFramework/Physics/Character.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>

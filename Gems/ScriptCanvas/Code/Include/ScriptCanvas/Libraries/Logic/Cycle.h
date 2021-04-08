@@ -46,9 +46,9 @@ namespace ScriptCanvas
 
                 AZ::Outcome<DependencyReport, void> GetDependencies() const override;
 
-                SlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot& executionSlot, CombinedSlotType targetSlotType, const Slot* /*executionChildSlot*/) const override;
+                ConstSlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot& executionSlot, CombinedSlotType targetSlotType, const Slot* /*executionChildSlot*/) const override;
 
-                bool IsSupportedByNewBackend() const override { return true; }
+                
 
             protected:
 

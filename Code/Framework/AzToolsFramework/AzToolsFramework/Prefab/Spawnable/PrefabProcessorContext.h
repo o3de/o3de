@@ -33,6 +33,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         AZ_CLASS_ALLOCATOR(PrefabProcessorContext, AZ::SystemAllocator, 0);
         AZ_RTTI(PrefabProcessorContext, "{C7D77E3A-C544-486B-B774-7C82C38FE22F}");
 
+        explicit PrefabProcessorContext(const AZ::Uuid& sourceUuid);
         virtual ~PrefabProcessorContext() = default;
 
         virtual bool AddPrefab(AZStd::string prefabName, PrefabDom prefab);
@@ -44,7 +45,12 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         virtual ProcessedObjectStoreContainer& GetProcessedObjects();
         virtual const ProcessedObjectStoreContainer& GetProcessedObjects() const;
 
+        virtual void SetPlatformTags(AZ::PlatformTagSet tags);
         virtual const AZ::PlatformTagSet& GetPlatformTags() const;
+        virtual const AZ::Uuid& GetSourceUuid() const;
+
+        virtual bool HasCompletedSuccessfully() const;
+        virtual void ErrorEncountered();
 
     protected:
         using NamedPrefabContainer = AZStd::unordered_map<AZStd::string, PrefabDom>;
@@ -53,6 +59,8 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         ProcessedObjectStoreContainer m_products;
         AZStd::vector<AZStd::string> m_delayedDelete;
         AZ::PlatformTagSet m_platformTags;
+        AZ::Uuid m_sourceUuid;
         bool m_isIterating{ false };
+        bool m_completedSuccessfully{ true };
     };
 } // namespace AzToolsFramework::Prefab::PrefabConversionUtils

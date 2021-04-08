@@ -234,16 +234,4 @@ namespace AWSMetrics
 
         return true;
     }
-
-    bool MetricsQueue::ReadFromString(const AZStd::string& string)
-    {
-        auto result = AzFramework::FileFunc::ReadJsonFromString(string);
-        if (!result.IsSuccess() || !ReadFromJsonDocument(result.GetValue()))
-        {
-            AZ_Error("AWSMetrics", false, "The provided JSON string is invalid.");
-            return false;
-        }
-
-        return true;
-    }
 }

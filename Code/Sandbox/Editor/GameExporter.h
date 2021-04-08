@@ -17,6 +17,7 @@
 
 #include "Util/PakFile.h"
 #include "Util/Image.h"
+#include <AzFramework/API/ApplicationAPI.h>
 
 enum EGameExport
 {
@@ -26,7 +27,6 @@ enum EGameExport
 };
 
 
-class CTerrainLightGen;
 class CWaitProgress;
 class CUsedResources;
 
@@ -61,21 +61,33 @@ class SANDBOX_API CGameExporter
 public:
     CGameExporter();
     ~CGameExporter();
-    static const char* GetLevelPakFilename() { return "level.pak"; }
     SGameExporterSettings& GetSettings() { return m_settings; }
-
-    SLevelPakHelper& GetLevelPack() { return m_levelPak; }
 
     // In auto exporting mode, highest possible settings will be chosen and no UI dialogs will be shown.
     void SetAutoExportMode(bool bAuto) { m_bAutoExportMode = bAuto; }
 
     bool Export(unsigned int flags = 0, EEndian eExportEndian = GetPlatformEndian(), const char* subdirectory = 0);
 
-    bool OpenLevelPack(SLevelPakHelper& lphelper, bool bCryPak = false);
-    bool CloseLevelPack(SLevelPakHelper& lphelper, bool bCryPak = false);
     static CGameExporter* GetCurrentExporter() { return m_pCurrentExporter; }
 
 private:
+    bool OpenLevelPack(SLevelPakHelper& lphelper, bool bCryPak = false);
+    bool CloseLevelPack(SLevelPakHelper& lphelper, bool bCryPak = false);
+
+    static const char* GetLevelPakFilename()
+    {
+        bool usePrefabSystemForLevels = false;
+        AzFramework::ApplicationRequests::Bus::BroadcastResult(
+            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+        if (usePrefabSystemForLevels)
+        {
+            AZ_Assert(false, "Level.pak should no longer be used when prefabs are used for levels.");
+            return "";
+        }
+
+        return "level.pak";
+    }
+
     void ExportLevelData(const QString& path, bool bExportMission = true);
     void ExportLevelInfo(const QString& path);
 

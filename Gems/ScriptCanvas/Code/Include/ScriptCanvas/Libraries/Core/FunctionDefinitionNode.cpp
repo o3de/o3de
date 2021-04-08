@@ -31,24 +31,19 @@ namespace ScriptCanvas
 
             constexpr const char* s_FunctionDefinitionNodeNameRegex = "^[A-Z|a-z][A-Z|a-z| |0-9|:|_]*";
 
-            bool FunctionDefinitionNode::IsEntryPoint() const
+            bool FunctionDefinitionNode::IsExecutionEntry() const
             {
-                return m_externalConnectionType == ConnectionType::Input;
+                return m_isExecutionEntry;
+            }
+
+            bool FunctionDefinitionNode::IsExecutionExit() const
+            {
+                return !m_isExecutionEntry;
             }
 
             void FunctionDefinitionNode::OnConfigured()
             {
                 SetupSlots();
-            }
-
-            void FunctionDefinitionNode::OnActivate()
-            {
-                Nodeling::OnActivate();
-            }
-
-            void FunctionDefinitionNode::OnInputSignal(const SlotId&)
-            {
-
             }
 
             bool FunctionDefinitionNode::OnValidateNode(ValidationResults& validationResults)
@@ -71,38 +66,43 @@ namespace ScriptCanvas
                 return AZ::Success(DependencyReport{});
             }
 
-            AZStd::vector<const ScriptCanvas::Slot*> FunctionDefinitionNode::GetEntrySlots() const
+            const Slot* FunctionDefinitionNode::GetEntrySlot() const
             {
-                if (IsEntryPoint())
+                if (IsExecutionExit())
                 {
-                    return GetAllSlotsByDescriptor(ScriptCanvas::SlotDescriptors::ExecutionOut());
+                    return nullptr;
                 }
-                else
+
+                auto slots = GetAllSlotsByDescriptor(ScriptCanvas::SlotDescriptors::ExecutionOut());
+                if (slots.size() != 1 || slots.front() == nullptr)
                 {
-                    return GetAllSlotsByDescriptor(ScriptCanvas::SlotDescriptors::ExecutionIn());
+                    AZ_Warning("ScriptCanvas", false, "FunctionDefinitionNode did not have a required, single Out slot.");
+                    return nullptr;
                 }
+
+                return slots.front();
             }
 
-            void FunctionDefinitionNode::OnEndpointConnected(const ScriptCanvas::Endpoint& endpoint)
+            const Slot* FunctionDefinitionNode::GetExitSlot() const
             {
-                Nodeling::OnEndpointConnected(endpoint);
-
-                ConfigureExternalConnectionType();
-            }
-
-            void FunctionDefinitionNode::OnEndpointDisconnected(const ScriptCanvas::Endpoint& endpoint)
-            {
-                Nodeling::OnEndpointDisconnected(endpoint);
-
-                ConfigureExternalConnectionType();
-            }
-
-            void FunctionDefinitionNode::SignalEntrySlots()
-            {
-                for (const Slot* slot : m_entrySlots)
+                if (IsExecutionEntry())
                 {
-                    SignalOutput(slot->GetId());
+                    return nullptr;
                 }
+
+                auto slots = GetAllSlotsByDescriptor(ScriptCanvas::SlotDescriptors::ExecutionIn());
+                if (slots.size() != 1 || slots.front() == nullptr)
+                {
+                    AZ_Warning("ScriptCanvas", false, "FunctionDefinitionNode did not have a required, single In slot.");
+                    return nullptr;
+                }
+
+                return slots.front();
+            }
+
+            void FunctionDefinitionNode::MarkExecutionExit()
+            {
+                m_isExecutionEntry = false;
             }
 
             void FunctionDefinitionNode::OnDisplayNameChanged()
@@ -110,23 +110,6 @@ namespace ScriptCanvas
                 if (!IsValidDisplayName())
                 {
                     GetGraph()->ReportError((*this), "Parse Error", GenerateErrorMessage());
-                }
-            }
-
-            void FunctionDefinitionNode::ConfigureExternalConnectionType()
-            {
-                // Invert the logic. If we have a connection to an in, we are an output for the function
-                if (HasConnectionForDescriptor(ScriptCanvas::SlotDescriptors::ExecutionIn()))
-                {
-                    m_externalConnectionType = ConnectionType::Output;
-                }
-                else if (HasConnectionForDescriptor(ScriptCanvas::SlotDescriptors::ExecutionOut()))
-                {
-                    m_externalConnectionType = ConnectionType::Input;
-                }
-                else
-                {
-                    m_externalConnectionType = ConnectionType::Unknown;
                 }
             }
 
@@ -214,6 +197,86 @@ namespace ScriptCanvas
                 size_t offset = originalLength - displayName.size();
 
                 return AZStd::string::format("Found invalid character %c in display name", GetDisplayName()[offset]);
+            }
+
+            SlotId FunctionDefinitionNode::CreateDataSlot(AZStd::string_view name, AZStd::string_view toolTip, ConnectionType connectionType)
+            {
+                DynamicDataSlotConfiguration slotConfiguration;
+
+                slotConfiguration.m_name = name;
+                slotConfiguration.m_toolTip = toolTip;
+                slotConfiguration.SetConnectionType(connectionType);
+
+                slotConfiguration.m_displayGroup = GetDataDisplayGroup();
+                slotConfiguration.m_dynamicGroup = GetDataDynamicTypeGroup();
+                slotConfiguration.m_dynamicDataType = DynamicDataType::Any;
+                slotConfiguration.m_isUserAdded = true;
+
+                slotConfiguration.m_addUniqueSlotByNameAndType = false;
+
+                SlotId slotId = AddSlot(slotConfiguration);
+
+                return slotId;
+            }
+
+            SlotId FunctionDefinitionNode::HandleExtension(AZ::Crc32 extensionId)
+            {
+                if (extensionId == GetAddNodelingInputDataSlot())
+                {
+                    SlotId retVal = CreateDataSlot("Value", "", ConnectionType::Output);
+                    return retVal;
+                }
+
+                if (extensionId == GetAddNodelingOutputDataSlot())
+                {
+                    SlotId retVal = CreateDataSlot("Value", "", ConnectionType::Input);
+                    return retVal;
+                }
+
+                return SlotId();
+            }
+
+            void FunctionDefinitionNode::OnSetup()
+            {
+                m_configureVisualExtensions = true;
+                SetupSlots();
+            }
+
+            void FunctionDefinitionNode::ConfigureVisualExtensions()
+            {
+                {
+                    VisualExtensionSlotConfiguration visualExtensions(VisualExtensionSlotConfiguration::VisualExtensionType::ExtenderSlot);
+
+                    visualExtensions.m_name = "Add Data Input";
+                    visualExtensions.m_tooltip = "Adds a new operand for the operator";
+
+                    visualExtensions.m_displayGroup = GetDataDisplayGroup();
+                    visualExtensions.m_identifier = GetAddNodelingInputDataSlot();
+
+                    visualExtensions.m_connectionType = ConnectionType::Output;
+
+                    RegisterExtension(visualExtensions);
+                }
+
+                {
+                    VisualExtensionSlotConfiguration visualExtensions(VisualExtensionSlotConfiguration::VisualExtensionType::ExtenderSlot);
+
+                    visualExtensions.m_name = "Add Data Output";
+                    visualExtensions.m_tooltip = "";
+
+                    visualExtensions.m_displayGroup = GetDataDisplayGroup();
+                    visualExtensions.m_identifier = GetAddNodelingOutputDataSlot();
+
+                    visualExtensions.m_connectionType = ConnectionType::Input;
+
+                    RegisterExtension(visualExtensions);
+                }
+            }
+
+            bool FunctionDefinitionNode::CanDeleteSlot(const SlotId&) const
+            {
+                // Allow slots to be deleted by users
+                return true;
             }
         }
     }

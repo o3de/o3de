@@ -19,6 +19,7 @@
 #include <AzCore/std/any.h>
 #include <AzCore/std/utils.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/std/string/fixed_string.h>
 
 namespace AZ
 {
@@ -195,7 +196,9 @@ namespace AZ
             context.GetSerializeContext()->FindClassData(classElement.m_typeId);
         if (!elementClassData)
         {
-            return context.Report(Tasks::RetrieveInfo, Outcomes::Unknown, "Failed to retrieve serialization information.");
+            return context.Report(Tasks::RetrieveInfo, Outcomes::Unknown,
+                AZStd::string::format("Failed to retrieve serialization information for type %s.",
+                    classElement.m_typeId.ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str()));
         }
         if (!elementClassData->m_azRtti)
         {

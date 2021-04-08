@@ -12,14 +12,16 @@
 
 #include <PhysX_precompiled.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Physics/CollisionBus.h>
+#include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/SystemBus.h>
+#include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
+#include <Common/PhysXSceneQueryHelpers.h>
 #include <PhysX/Utils.h>
 #include <PhysX/NativeTypeIdentifiers.h>
-#include <PhysXCharacters/API/CharacterController.h>
-#include <AzFramework/Physics/CollisionBus.h>
-#include <AzFramework/Physics/World.h>
 #include <PhysX/PhysXLocks.h>
+#include <PhysXCharacters/API/CharacterController.h>
 #include <Source/Collision.h>
 #include <Source/Shape.h>
 
@@ -201,10 +203,14 @@ namespace PhysX
     }
 
     CharacterController::CharacterController(physx::PxController* pxController,
-        AZStd::unique_ptr<CharacterControllerCallbackManager> callbackManager)
+        AZStd::unique_ptr<CharacterControllerCallbackManager> callbackManager,
+        AzPhysics::SceneHandle sceneHandle)
         : m_pxController(pxController)
         , m_callbackManager(AZStd::move(callbackManager))
     {
+        m_sceneOwner = sceneHandle;
+        m_simulating = false; //character controller starts disabled, so set m_simulating to false
+
         AZ_Assert(m_pxController, "pxController should not be null.");
         m_pxControllerFilters.mFilterCallback = m_callbackManager.get();
         m_pxControllerFilters.mCCTFilterCallback = m_callbackManager.get();
@@ -270,14 +276,82 @@ namespace PhysX
         m_minimumMovementDistance = distance;
     }
 
-    void CharacterController::CreateShadowBody(const Physics::CharacterConfiguration& configuration, Physics::World& world)
+    void CharacterController::CreateShadowBody(const Physics::CharacterConfiguration& configuration)
     {
-        Physics::RigidBodyConfiguration rigidBodyConfig;
+        DestroyShadowBody();
+
+        AzPhysics::RigidBodyConfiguration rigidBodyConfig;
         rigidBodyConfig.m_kinematic = true;
         rigidBodyConfig.m_debugName = configuration.m_debugName + " (Shadow)";
         rigidBodyConfig.m_entityId = configuration.m_entityId;
-        m_shadowBody = AZ::Interface<Physics::System>::Get()->CreateRigidBody(rigidBodyConfig);
-        world.AddBody(*m_shadowBody);
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            m_shadowBodyHandle = sceneInterface->AddSimulatedBody(m_sceneOwner, &rigidBodyConfig);
+            if (m_shadowBodyHandle == AzPhysics::InvalidSimulatedBodyHandle)
+            {
+                AZ_Error("PhysXCharacter", false, "Failed to create the CharacterController rigid body.");
+                return;
+            }
+            m_shadowBody = azdynamic_cast<AzPhysics::RigidBody*>(sceneInterface->GetSimulatedBodyFromHandle(m_sceneOwner, m_shadowBodyHandle));
+        }
+    }
+
+    void CharacterController::EnablePhysics(const Physics::CharacterConfiguration& configuration)
+    {
+        if (m_simulating)
+        {
+            return;
+        }
+
+        SetFilterDataAndShape(configuration);
+        SetUserData(configuration);
+        SetActorName(configuration.m_debugName);
+        SetMinimumMovementDistance(configuration.m_minimumMovementDistance);
+        SetMaximumSpeed(configuration.m_maximumSpeed);
+        CreateShadowBody(configuration);
+        SetTag(configuration.m_colliderTag);
+
+        m_simulating = true;
+    }
+
+    void CharacterController::DisablePhysics()
+    {
+        if (!m_simulating)
+        {
+            return;
+        }
+
+        DestroyShadowBody();
+        RemoveControllerFromScene();
+        m_simulating = false;
+    }
+
+    void CharacterController::DestroyShadowBody()
+    {
+        if (m_shadowBodyHandle == AzPhysics::InvalidSimulatedBodyHandle)
+        {
+            return;
+        }
+
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            sceneInterface->RemoveSimulatedBody(m_sceneOwner, m_shadowBodyHandle);
+            m_shadowBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
+            m_shadowBody = nullptr;
+        }
+    }
+
+    void CharacterController::RemoveControllerFromScene()
+    {
+        if (m_pxController)
+        {
+            if (auto* pxScene = m_pxController->getScene())
+            {
+                PHYSX_SCENE_WRITE_LOCK(pxScene);
+                pxScene->removeActor(*m_pxController->getActor());
+                
+            }
+        }
     }
 
     void CharacterController::SetTag(const AZStd::string& tag)
@@ -292,12 +366,15 @@ namespace PhysX
 
     CharacterController::~CharacterController()
     {
+        DestroyShadowBody();
+        m_shape = nullptr; //shape has to go before m_pxController
+
         if (m_pxController)
         {
-            PHYSX_SCENE_WRITE_LOCK(m_pxController->getScene());
-            m_shape = nullptr; //shape has to go before m_pxController 
-            m_pxController->release();
+            PHYSX_SCENE_WRITE_LOCK(m_pxController->getScene());    
+            m_pxController->release(); // This internally removes the controller's actor from the scene
         }
+
         m_pxController = nullptr;
         m_material = nullptr;
     }
@@ -559,13 +636,12 @@ namespace PhysX
         }
     }
 
-    // Physics::WorldBody
     AZ::EntityId CharacterController::GetEntityId() const
     {
         return m_actorUserData.GetEntityId();
     }
 
-    Physics::World* CharacterController::GetWorld() const
+    AzPhysics::Scene* CharacterController::GetScene()
     {
         return m_pxController ? PhysX::Utils::GetUserData(m_pxController->getScene()) : nullptr;
     }
@@ -604,17 +680,17 @@ namespace PhysX
         return PxMathConvert(m_pxController->getActor()->getWorldBounds(inflationFactor));
     }
 
-    Physics::RayCastHit CharacterController::RayCast(const Physics::RayCastRequest& request)
+    AzPhysics::SceneQueryHit CharacterController::RayCast(const AzPhysics::RayCastRequest& request)
     {
         if (m_pxController)
         {
             if (physx::PxRigidDynamic* actor = m_pxController->getActor())
             {
-                return PhysX::Utils::RayCast::ClosestRayHitAgainstPxRigidActor(request, actor);
+                return PhysX::SceneQueryHelpers::ClosestRayHitAgainstPxRigidActor(request, actor);
             }
         }
 
-        return Physics::RayCastHit();
+        return AzPhysics::SceneQueryHit();
     }
 
     AZ::Crc32 CharacterController::GetNativeType() const
@@ -625,30 +701,6 @@ namespace PhysX
     void* CharacterController::GetNativePointer() const
     {
         return m_pxController;
-    }
-
-    void CharacterController::AddToWorld(Physics::World& world)
-    {
-        if (m_shadowBody)
-        {
-            m_shadowBody->AddToWorld(world);
-        }
-    }
-
-    void CharacterController::RemoveFromWorld(Physics::World& world)
-    {
-        physx::PxScene* scene = static_cast<physx::PxScene*>(world.GetNativePointer());
-
-        if (scene)
-        {
-            PHYSX_SCENE_WRITE_LOCK(scene);
-            scene->removeActor(*m_pxController->getActor());
-        }
-
-        if (m_shadowBody)
-        {
-            m_shadowBody->RemoveFromWorld(world);
-        }
     }
 
     // CharacterController specific

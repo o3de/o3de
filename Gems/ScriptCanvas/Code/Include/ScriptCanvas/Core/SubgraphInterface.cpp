@@ -30,9 +30,46 @@ namespace SubgraphInterfaceCpp
         AddActivityParsing,
         AddChildStarts,
         AddExecutionCharacteristics,
+        Functions_2_0,
+        AddConstructionParameterRequirement,
+        AddConstructionParameterRequirementForDependencies,
         // add your entry above
         Current
     };
+
+    const size_t k_maxTabs = 20;
+
+    AZ_INLINE const char* GetTabs(size_t tabs)
+    {
+        AZ_Assert(tabs >= 0 && tabs <= k_maxTabs, "invalid argument to GetTabs");
+
+        static const char* const k_tabs[] =
+        {
+            "", // 0
+            "\t",
+            "\t\t",
+            "\t\t\t",
+            "\t\t\t\t",
+            "\t\t\t\t\t", // 5
+            "\t\t\t\t\t\t",
+            "\t\t\t\t\t\t\t",
+            "\t\t\t\t\t\t\t\t",
+            "\t\t\t\t\t\t\t\t\t",
+            "\t\t\t\t\t\t\t\t\t\t", // 10
+            "\t\t\t\t\t\t\t\t\t\t\t",
+            "\t\t\t\t\t\t\t\t\t\t\t\t",
+            "\t\t\t\t\t\t\t\t\t\t\t\t\t",
+            "\t\t\t\t\t\t\t\t\t\t\t\t\t\t",
+            "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t", // 15
+            "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t",
+            "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t",
+            "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t",
+            "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t",
+            "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t", // 20
+        };
+
+        return k_tabs[tabs];
+    }
 }
 
 namespace ScriptCanvas
@@ -42,6 +79,11 @@ namespace ScriptCanvas
         bool In::operator==(const In& rhs) const
         {
             // written out explicitly to aid breakpoint placement
+
+            if (isPure != rhs.isPure)
+            {
+                return false;
+            }
 
             if (!AZ::StringFunc::Equal(displayName.c_str(), rhs.displayName.c_str()))
             {
@@ -177,6 +219,18 @@ namespace ScriptCanvas
             }
         }
 
+        const In* SubgraphInterface::FindIn(const FunctionSourceId& sourceID) const
+        {
+            auto iter = AZStd::find_if(m_ins.begin(), m_ins.end(), [&sourceID](const In& in) { return in.sourceID == sourceID; });
+            return iter != m_ins.end() ? iter : nullptr;
+        }
+
+        const Out* SubgraphInterface::FindLatent(const FunctionSourceId& sourceID) const
+        {
+            auto iter = AZStd::find_if(m_latents.begin(), m_latents.end(), [&sourceID](const Out& latent) { return latent.sourceID == sourceID; });
+            return iter != m_latents.end() ? iter : nullptr;
+        }
+
         ExecutionCharacteristics SubgraphInterface::GetExecutionCharacteristics() const
         {
             return m_executionCharacteristics;
@@ -200,6 +254,16 @@ namespace ScriptCanvas
         size_t SubgraphInterface::GetInCount() const
         {
             return m_ins.size();
+        }
+
+        size_t SubgraphInterface::GetInCountNotPure() const
+        {
+            return AZStd::count_if(m_ins.begin(), m_ins.end(), [](const auto& in) { return !in.isPure; });
+        }
+
+        size_t SubgraphInterface::GetInCountPure() const
+        {
+            return AZStd::count_if(m_ins.begin(), m_ins.end(), [](const auto& in) { return in.isPure; });
         }
 
         const Inputs* SubgraphInterface::GetInput(const AZStd::string& inName) const
@@ -230,7 +294,7 @@ namespace ScriptCanvas
             {
                 return &(latent->outputs);
             }
-            
+
             return nullptr;
         }
 
@@ -241,7 +305,12 @@ namespace ScriptCanvas
 
         LexicalScope SubgraphInterface::GetLexicalScope() const
         {
-            if (IsMarkedPure())
+            return GetLexicalScope(IsMarkedPure());
+        }
+
+        LexicalScope SubgraphInterface::GetLexicalScope(bool isSourcePure) const
+        {
+            if (isSourcePure)
             {
                 return LexicalScope{ LexicalScopeType::Namespace , m_namespacePath };
             }
@@ -249,6 +318,11 @@ namespace ScriptCanvas
             {
                 return LexicalScope{ LexicalScopeType::Variable, {} };
             }
+        }
+
+        LexicalScope SubgraphInterface::GetLexicalScope(const In& in) const
+        {
+            return GetLexicalScope(in.isPure);
         }
 
         AZStd::string SubgraphInterface::GetName() const
@@ -283,7 +357,7 @@ namespace ScriptCanvas
             {
                 return &out->outputs;
             }
-            
+
             return nullptr;
         }
 
@@ -293,7 +367,7 @@ namespace ScriptCanvas
             {
                 return &in->outs;
             }
-            
+
             return nullptr;
         }
 
@@ -315,7 +389,7 @@ namespace ScriptCanvas
         {
             Parse();
         }
-       
+
         const Out* SubgraphInterface::FindImmediateOut(const AZStd::string& inName, const AZStd::string& outName) const
         {
             if (auto in = FindIn(inName))
@@ -343,7 +417,7 @@ namespace ScriptCanvas
         const Out* SubgraphInterface::FindLatentOut(const AZStd::string& latentName) const
         {
             auto iter = AZStd::find_if(m_latents.begin(), m_latents.end(), [&latentName](const Out& latent) { return latent.displayName == latentName; });
-            
+
             if (iter != m_latents.end())
             {
                 return iter;
@@ -360,9 +434,29 @@ namespace ScriptCanvas
             return m_isActiveDefaultObject;
         }
 
-        bool SubgraphInterface::IsAllInputOutputShared() const
+        bool SubgraphInterface::IsUserNodeable() const
         {
-            return m_isAllInputOutputShared;
+            if (IsMarkedPure())
+            {
+                return false;
+            }
+
+            if (IsUserVariable())
+            {
+                return false;
+            }
+
+            if (GetInCountNotPure() == 0 && GetLatentOutCount() == 0)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        bool SubgraphInterface::IsUserVariable() const
+        {
+            return m_isUserVariable;
         }
 
         AZ::Outcome<bool> SubgraphInterface::IsBranch(const AZStd::string& inName) const
@@ -374,7 +468,7 @@ namespace ScriptCanvas
             else
             {
                 return AZ::Failure();
-            }          
+            }
         }
 
         bool SubgraphInterface::IsLatent() const
@@ -389,7 +483,32 @@ namespace ScriptCanvas
 
         bool SubgraphInterface::IsParsedPure() const
         {
-            return (!IsLatent()) && (!HasBranches()) && m_areAllChildrenPure;
+            if (IsLatent())
+            {
+                return false;
+            }
+
+            if (HasBranches())
+            {
+                return false;
+            }
+
+            if (!m_areAllChildrenPure)
+            {
+                return false;
+            }
+
+            if (m_requiresConstructionParameters && (!m_hasOnGraphStart && GetInCount() != 0))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        bool SubgraphInterface::HasAnyFunctionality() const
+        {
+            return IsActiveDefaultObject() || HasPublicFunctionality();
         }
 
         bool SubgraphInterface::HasBranches() const
@@ -407,7 +526,8 @@ namespace ScriptCanvas
 
         bool SubgraphInterface::HasIn(const FunctionSourceId& sourceID) const
         {
-            return AZStd::find_if(m_ins.begin(), m_ins.end(), [&sourceID](const In& in) { return in.sourceID == sourceID; }) != m_ins.end();
+            return ((!IsUserVariable()) && (IsFunctionSourceIdNodeable(sourceID) || IsFunctionSourceIdObject(sourceID)))
+                || FindIn(sourceID) != nullptr;
         }
 
         bool SubgraphInterface::HasInput(const VariableId& sourceID) const
@@ -488,9 +608,19 @@ namespace ScriptCanvas
             m_isActiveDefaultObject = true;
         }
 
-        void SubgraphInterface::MarkAllInputOutputShared()
+        void SubgraphInterface::MarkRequiresConstructionParameters()
         {
-            m_isAllInputOutputShared = true;
+            m_requiresConstructionParameters = true;
+        }
+
+        void SubgraphInterface::MarkRequiresConstructionParametersForDependencies()
+        {
+            m_requiresConstructionParametersForDependencies = true;
+        }
+
+        void SubgraphInterface::MarkUserVariable()
+        {
+            m_isUserVariable = true;
         }
 
         void SubgraphInterface::MarkExecutionCharacteristics(ExecutionCharacteristics characteristics)
@@ -509,11 +639,20 @@ namespace ScriptCanvas
             m_hasOnGraphStart = m_hasOnGraphStart || dependency.HasOnGraphStart();
             m_isActiveDefaultObject = m_isActiveDefaultObject || dependency.IsActiveDefaultObject();
             m_areAllChildrenPure = m_areAllChildrenPure && dependency.IsMarkedPure();
+            m_requiresConstructionParametersForDependencies = m_requiresConstructionParametersForDependencies || dependency.RequiresConstructionParameters();
+        }
+
+        In* SubgraphInterface::ModIn(const FunctionSourceId& sourceID)
+        {
+            return const_cast<In*>(FindIn(sourceID));
         }
 
         bool SubgraphInterface::operator==(const SubgraphInterface& rhs) const
         {
-            // written out explicitly to aid debugging placement
+            if (m_isUserVariable != rhs.m_isUserVariable)
+            {
+                return false;
+            }
 
             if (m_areAllChildrenPure != rhs.m_areAllChildrenPure)
             {
@@ -524,13 +663,23 @@ namespace ScriptCanvas
             {
                 return false;
             }
-                
-            if (m_isAllInputOutputShared != rhs.m_isAllInputOutputShared)
+
+            if (m_hasOnGraphStart != rhs.m_hasOnGraphStart)
             {
                 return false;
             }
 
-            if (m_hasOnGraphStart != rhs.m_hasOnGraphStart)
+            if (m_requiresConstructionParameters != rhs.m_requiresConstructionParameters)
+            {
+                return false;
+            }
+
+            if (m_requiresConstructionParametersForDependencies != rhs.m_requiresConstructionParametersForDependencies)
+            {
+                return false;
+            }
+
+            if (m_executionCharacteristics != rhs.m_executionCharacteristics)
             {
                 return false;
             }
@@ -551,11 +700,6 @@ namespace ScriptCanvas
             }
 
             if (!(IsNamespacePathEqual(m_namespacePath, rhs.m_namespacePath)))
-            {
-                return false;
-            }
-
-            if (m_executionCharacteristics != rhs.m_executionCharacteristics)
             {
                 return false;
             }
@@ -615,13 +759,13 @@ namespace ScriptCanvas
                     ->Field("parsedName", &In::parsedName)
                     ->Field("inputs", &In::inputs)
                     ->Field("outs", &In::outs)
+                    ->Field("isPure", &In::isPure)
                     ->Field("sourceID", &In::sourceID)
                     ;
 
                 serializeContext->Class<SubgraphInterface>()
                     ->Version(SubgraphInterfaceCpp::Version::Current)
                     ->Field("areAllChildrenPure", &SubgraphInterface::m_areAllChildrenPure)
-                    ->Field("isAllInputOutputShared", &SubgraphInterface::m_isAllInputOutputShared)
                     ->Field("hasOnGraphStart", &SubgraphInterface::m_hasOnGraphStart)
                     ->Field("isActiveDefaultObject", &SubgraphInterface::m_isActiveDefaultObject)
                     ->Field("ins", &SubgraphInterface::m_ins)
@@ -629,8 +773,20 @@ namespace ScriptCanvas
                     ->Field("outKeys", &SubgraphInterface::m_outKeys)
                     ->Field("namespacePath", &SubgraphInterface::m_namespacePath)
                     ->Field("executionCharacteristics", &SubgraphInterface::m_executionCharacteristics)
+                    ->Field("requiresConstructionParameters", &SubgraphInterface::m_requiresConstructionParameters)
+                    ->Field("requiresConstructionParametersForDependencies", &SubgraphInterface::m_requiresConstructionParametersForDependencies)
                     ;
             }
+        }
+
+        bool SubgraphInterface::RequiresConstructionParameters() const
+        {
+            return m_requiresConstructionParameters || m_requiresConstructionParametersForDependencies;
+        }
+
+        bool SubgraphInterface::RequiresConstructionParametersForDependencies() const
+        {
+            return m_requiresConstructionParametersForDependencies;
         }
 
         void SubgraphInterface::SetNamespacePath(const NamespacePath& namespacePath)
@@ -673,6 +829,132 @@ namespace ScriptCanvas
             return result;
         }
 
+        template<typename T>
+        AZStd::string EntryPerLine(const T& values, size_t tabs)
+        {
+            AZStd::string result;
+
+            for (const auto& value : values)
+            {
+                result += "\n";
+                result += ToString(value, tabs);
+            }
+
+            return result;
+        }
+
+        const char* YorN(bool value)
+        {
+            return value ? "Y" : "N";
+        }
+
+        AZStd::string ToString(const In& in, size_t tabs)
+        {
+            AZStd::string result = AZStd::string::format("In: %s, Pure: %s", in.displayName.c_str(), YorN(in.isPure));
+
+            if (!in.inputs.empty())
+            {
+                result += AZStd::string::format("%sInputs:", SubgraphInterfaceCpp::GetTabs(tabs + 1));
+                result += ToString(in.inputs, tabs + 2);
+            }
+
+            if (!in.outs.empty())
+            {
+                result += AZStd::string::format("%sOuts:", SubgraphInterfaceCpp::GetTabs(tabs + 1));
+                result += ToString(in.outs, false, tabs + 2);
+            }
+
+            return result;
+        }
+
+        AZStd::string ToString(const Ins& ins, size_t tabs)
+        {
+            return EntryPerLine(ins, tabs);
+        }
+
+        AZStd::string ToString(const Input& input, size_t tabs)
+        {
+            return AZStd::string::format("%sInput: %s, Type: %s", SubgraphInterfaceCpp::GetTabs(tabs), input.displayName.c_str(), Data::GetName(input.datum.GetType()).c_str());
+        }
+
+        AZStd::string ToString(const Inputs& inputs, size_t tabs)
+        {
+            return EntryPerLine(inputs, tabs);
+        }
+
+        AZStd::string ToString(const Out& out, bool isLatent, size_t tabs)
+        {
+            AZStd::string result = AZStd::string::format("%s%s: %s", SubgraphInterfaceCpp::GetTabs(tabs), isLatent ? "Latent" : "Out", out.displayName.c_str());
+
+            if (!out.outputs.empty())
+            {
+                result += AZStd::string::format("%sOutputs:", SubgraphInterfaceCpp::GetTabs(tabs + 1));
+                result += ToString(out.outputs, tabs + 2);
+            }
+
+            if (!out.returnValues.empty())
+            {
+                result += AZStd::string::format("%sReturn Values:", SubgraphInterfaceCpp::GetTabs(tabs + 1));
+                result += ToString(out.returnValues, tabs + 2);
+            }
+
+            return result;
+        }
+
+        AZStd::string ToString(const Outs& outs, bool isLatent, size_t tabs)
+        {
+            AZStd::string result;
+
+            for (const auto& value : outs)
+            {
+                result += "\n";
+                result += ToString(value, isLatent, tabs);
+            }
+
+            return result;
+        }
+
+        AZStd::string ToString(const Output& output, size_t tabs)
+        {
+            return AZStd::string::format("%sOutput: %s, Type: %s", SubgraphInterfaceCpp::GetTabs(tabs), output.displayName.c_str(), Data::GetName(output.type).c_str());
+        }
+
+        AZStd::string ToString(const Outputs& outputs, size_t tabs)
+        {
+            return EntryPerLine(outputs, tabs);
+        }
+
+        AZStd::string ToString(const SubgraphInterface& subgraphInterface)
+        {
+            AZStd::string result("\n");
+            result += subgraphInterface.GetName();
+            result += "\n";
+            result += AZStd::string::format("Is Active By Default: %s\n", YorN(subgraphInterface.IsActiveDefaultObject()));
+            result += AZStd::string::format("Is Latent: %s\n", YorN(subgraphInterface.IsLatent()));
+            result += AZStd::string::format("Is Pure: %s\n", YorN(subgraphInterface.GetExecutionCharacteristics() == ExecutionCharacteristics::Pure));
+            result += AZStd::string::format("Is User Nodeable: %s\n", YorN(subgraphInterface.IsUserNodeable()));
+            result += AZStd::string::format("Has Any Functionality: %s\n", YorN(subgraphInterface.HasAnyFunctionality()));
+            result += AZStd::string::format("Has On Graph Start: %s\n", YorN(subgraphInterface.HasOnGraphStart()));
+
+            const auto& ins = subgraphInterface.GetIns();
+            if (!ins.empty())
+            {
+                result += "Ins:";
+                result += ToString(ins, 1);
+            }
+
+            const auto& latents = subgraphInterface.GetLatentOuts();
+            if (!latents.empty())
+            {
+                result += "Latents:";
+                result += ToString(latents, 1);
+            }
+
+            result += "\n";
+
+            return result;
+        }
+        
         SubgraphInterfacePtrConst SubgraphInterfaceSystem::GetMap(const FunctionSourceId& nodeTypeId) const
         {
             auto iter = m_mapsByNodeType.find(nodeTypeId);
@@ -695,5 +977,5 @@ namespace ScriptCanvas
             m_mapsByNodeType.insert({ nodeTypeId, executionMap });
             return true;
         }
-    } 
+    }
 } 

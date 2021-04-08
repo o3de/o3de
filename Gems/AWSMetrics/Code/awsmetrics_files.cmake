@@ -11,7 +11,7 @@
 
 set(FILES
     Include/Public/AWSMetricsBus.h
-    Include/Public/AWSMetricsConstant.h
+    Include/Private/AWSMetricsConstant.h
     Include/Private/AWSMetricsServiceApi.h
     Include/Private/AWSMetricsSystemComponent.h
     Include/Private/ClientConfiguration.h

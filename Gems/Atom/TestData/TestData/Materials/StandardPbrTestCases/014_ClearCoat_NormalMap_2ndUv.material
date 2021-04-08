@@ -12,16 +12,16 @@
                 1.0
             ],
             "textureMap": "TestData/Textures/checker8x8_512.png",
-            "textureMapUv": "Packed"
+            "textureMapUv": "Unwrapped"
         },
         "clearCoat": {
             "enable": true,
             "influenceMap": "TestData/Textures/checker8x8_512.png",
-            "influenceMapUv": "Packed",
+            "influenceMapUv": "Unwrapped",
             "normalMap": "TestData/Textures/test_dome_normal.tiff",
-            "normalMapUv": "Packed",
+            "normalMapUv": "Unwrapped",
             "roughnessMap": "TestData/Textures/checker8x8_512.png",
-            "roughnessMapUv": "Packed",
+            "roughnessMapUv": "Unwrapped",
             "useInfluenceMap": false,
             "useRoughnessMap": false
         },

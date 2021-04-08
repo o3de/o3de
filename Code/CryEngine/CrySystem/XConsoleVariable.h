@@ -221,7 +221,7 @@ public:
         }
     }
 
-    virtual void Set(const float f)
+    virtual void Set(float f)
     {
         stack_string s;
         s.Format("%g", f);
@@ -235,7 +235,7 @@ public:
         Set(s.c_str());
     }
 
-    virtual void Set(const int i)
+    virtual void Set(int i)
     {
         stack_string s;
         s.Format("%d", i);
@@ -289,11 +289,11 @@ public:
 
         Set(nValue);
     }
-    virtual void Set(const float f)
+    virtual void Set(float f)
     {
         Set((int)f);
     }
-    virtual void Set(const int i)
+    virtual void Set(int i)
     {
         if (i == m_iValue && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
         {
@@ -353,15 +353,15 @@ public:
 
         Set(nValue);
     }
-    virtual void Set(const float f)
+    virtual void Set(float f)
     {
         Set((int)f);
     }
-    virtual void Set(const int i)
+    virtual void Set(int i)
     {
         Set((int64)i);
     }
-    virtual void Set(const int64 i)
+    virtual void Set(int64 i)
     {
         if (i == m_iValue && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
         {
@@ -439,7 +439,7 @@ public:
             m_pConsole->OnAfterVarChange(this);
         }
     }
-    virtual void Set(const float f)
+    virtual void Set(float f)
     {
         if (f == m_fValue && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
         {
@@ -459,7 +459,7 @@ public:
             m_pConsole->OnAfterVarChange(this);
         }
     }
-    virtual void Set(const int i)
+    virtual void Set(int i)
     {
         if ((float)i == m_fValue && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
         {
@@ -542,7 +542,7 @@ public:
             m_pConsole->OnAfterVarChange(this);
         }
     }
-    virtual void Set(const float f)
+    virtual void Set(float f)
     {
         if ((int)f == m_iValue && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
         {
@@ -560,7 +560,7 @@ public:
             m_pConsole->OnAfterVarChange(this);
         }
     }
-    virtual void Set(const int i)
+    virtual void Set(int i)
     {
         if (i == m_iValue && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
         {
@@ -639,7 +639,7 @@ public:
             m_pConsole->OnAfterVarChange(this);
         }
     }
-    virtual void Set(const float f)
+    virtual void Set(float f)
     {
         if (f == m_fValue && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
         {
@@ -657,7 +657,7 @@ public:
             m_pConsole->OnAfterVarChange(this);
         }
     }
-    virtual void Set(const int i)
+    virtual void Set(int i)
     {
         if ((float)i == m_fValue && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
         {
@@ -742,13 +742,13 @@ public:
             m_pConsole->OnAfterVarChange(this);
         }
     }
-    virtual void Set(const float f)
+    virtual void Set(float f)
     {
         stack_string s;
         s.Format("%g", f);
         Set(s.c_str());
     }
-    virtual void Set(const int i)
+    virtual void Set(int i)
     {
         stack_string s;
         s.Format("%d", i);
@@ -792,7 +792,7 @@ public:
 
     virtual void DebugLog(const int iExpectedValue, const ICVar::EConsoleLogMode mode) const;
 
-    virtual void Set(const int i);
+    virtual void Set(int i);
 
     // ConsoleVarFunc ------------------------------------------------------------------------------------
 

@@ -34,5 +34,6 @@ namespace AZ::IO
         AZ::u32 m_overcommit{ 8 };
         bool m_enableFileSharing{ false };
         bool m_enableUnbufferedReads{ true };
+        bool m_minimalReporting{ false };
     };
 } // namespace AZ::IO

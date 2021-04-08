@@ -25,6 +25,53 @@ logger = logging.getLogger()
 logging.basicConfig()
 
 
+def backup(file_name):
+    index = 0
+    renamed = False
+    while not renamed:
+        backup_file_name = pathlib.Path(str(file_name) + '.bak' + str(index))
+        if not backup_file_name.is_file():
+            file_name = pathlib.Path(file_name)
+            file_name.rename(backup_file_name)
+            renamed = True
+
+def register_shipped_engine_o3de_objects():
+    # register this engines shipped projects, gems and templates
+    engine_path = get_this_engine_path()
+    for root, dirs, files in os.walk(engine_path / 'AtomSampleViewer', topdown=False):
+        for name in files:
+            if name == 'project.json':
+                register(project_path=root)
+            elif name == 'gem.json':
+                register(gem_path=root)
+            elif name == 'template.json':
+                register(template_path=root)
+
+    for root, dirs, files in os.walk(engine_path / 'AtomTest', topdown=False):
+        for name in files:
+            if name == 'project.json':
+                register(project_path=root)
+            elif name == 'gem.json':
+                register(gem_path=root)
+            elif name == 'template.json':
+                register(template_path=root)
+
+    for root, dirs, files in os.walk(engine_path / 'Gems', topdown=False):
+        for name in files:
+            if name == 'gem.json':
+                register(gem_path=root)
+
+    engine_templates = os.listdir(engine_path / 'Templates')
+    for engine_template in engine_templates:
+        register(template_path=engine_path / 'Templates' / engine_template)
+
+    engine_projects = os.listdir(engine_path)
+    for engine_project in engine_projects:
+        engine_project_json = engine_path / engine_project / 'project.json'
+        if engine_project_json.is_file():
+            register(project_path=engine_path / engine_project)
+
+
 def get_this_engine_path():
     return pathlib.Path(os.path.realpath(__file__)).parent.parent.parent
 
@@ -40,8 +87,9 @@ def get_o3de_folder():
 
 
 def get_o3de_cache():
-    cache_path = get_o3de_folder() / 'cache'
-    return cache_path
+    cache_folder = get_o3de_folder() / 'cache'
+    cache_folder.mkdir(parents=True, exist_ok=True)
+    return cache_folder
 
 
 def get_o3de_registry():
@@ -53,7 +101,6 @@ def get_o3de_registry():
         json_data = {}
         json_data.update({'repo_name': f'{username}'})
         json_data.update({'origin': get_o3de_folder().as_posix()})
-        json_data.update({'root': ''})
         json_data.update({'engines': []})
         json_data.update({'projects': []})
         json_data.update({'gems': []})
@@ -70,41 +117,6 @@ def get_o3de_registry():
         json_data.update({'default_templates_folder': default_templates_folder.as_posix()})
         with registry_path.open('w') as s:
             s.write(json.dumps(json_data, indent=4))
-
-        # register this engines shipped gems and templates
-        engine_path = get_this_engine_path()
-        for root, dirs, files in os.walk(engine_path / 'AtomSampleViewer', topdown=False):
-            for name in files:
-                if name == 'project.json':
-                    register(project_path=root)
-                elif name == 'gem.json':
-                    register(gem_path=root)
-                elif name == 'template.json':
-                    register(template_path=root)
-
-        for root, dirs, files in os.walk(engine_path / 'AtomTest', topdown=False):
-            for name in files:
-                if name == 'project.json':
-                    register(project_path=root)
-                elif name == 'gem.json':
-                    register(gem_path=root)
-                elif name == 'template.json':
-                    register(template_path=root)
-
-        for root, dirs, files in os.walk(engine_path / 'Gems', topdown=False):
-            for name in files:
-                if name == 'gem.json':
-                    register(gem_path=root)
-
-        engine_templates = os.listdir(engine_path / 'Templates')
-        for engine_template in engine_templates:
-            register(template_path=engine_path / 'Templates' / engine_template)
-
-        engine_projects = os.listdir(engine_path)
-        for engine_project in engine_projects:
-            engine_project_json = engine_path / engine_project / 'project.json'
-            if engine_project_json.is_file():
-                register(project_path=engine_path / engine_project)
 
     return registry_path
 
@@ -125,22 +137,27 @@ def register_engine_path(json_data,
     if not engine_path:
         logger.error(f'Engine path cannot be empty.')
         return 1
+
+    while engine_path in json_data['engines']:
+        json_data['engines'].remove(engine_path)
     engine_path = pathlib.Path(engine_path)
+    while engine_path.as_posix() in json_data['engines']:
+        json_data['engines'].remove(engine_path.as_posix())
+
+    if remove:
+        logger.warn(f'Removing Engine path {engine_path}.')
+        return 0
+
     if not engine_path.is_dir():
         logger.error(f'Engine path {engine_path} does not exist.')
         return 1
+
     engine_json = engine_path / 'engine.json'
     if not valid_o3de_engine_json(engine_json):
         logger.error(f'Engine json {engine_json} is not valid.')
         return 1
 
-    engine_path = engine_path.as_posix()
-    engines = json_data['engines']
-
-    if engine_path in engines and remove:
-        engines.remove(engine_path)
-    elif not engine_path in engines:
-        engines.append(engine_path)
+    json_data['engines'].insert(0, engine_path.as_posix())
 
     return 0
 
@@ -151,22 +168,27 @@ def register_gem_path(json_data,
     if not gem_path:
         logger.error(f'Gem path cannot be empty.')
         return 1
+
+    while gem_path in json_data['gems']:
+        json_data['gems'].remove(gem_path)
     gem_path = pathlib.Path(gem_path)
+    while gem_path.as_posix() in json_data['gems']:
+        json_data['gems'].remove(gem_path.as_posix())
+
+    if remove:
+        logger.warn(f'Removing Gem path {gem_path}.')
+        return 0
+
     if not gem_path.is_dir():
         logger.error(f'Gem path {gem_path} does not exist.')
         return 1
+
     gem_json = gem_path / 'gem.json'
     if not valid_o3de_gem_json(gem_json):
         logger.error(f'Gem json {gem_json} is not valid.')
         return 1
 
-    gem_path = gem_path.as_posix()
-    gems = json_data['gems']
-
-    if gem_path in gems and remove:
-        gems.remove(gem_path)
-    elif not gem_path in gems:
-        gems.append(gem_path)
+    json_data['gems'].insert(0, gem_path.as_posix())
 
     return 0
 
@@ -177,22 +199,27 @@ def register_project_path(json_data,
     if not project_path:
         logger.error(f'Project path cannot be empty.')
         return 1
+
+    while project_path in json_data['projects']:
+        json_data['projects'].remove(project_path)
     project_path = pathlib.Path(project_path)
+    while project_path.as_posix() in json_data['projects']:
+        json_data['projects'].remove(project_path.as_posix())
+
+    if remove:
+        logger.warn(f'Removing Project path {project_path}.')
+        return 0
+
     if not project_path.is_dir():
         logger.error(f'Project path {project_path} does not exist.')
         return 1
+
     project_json = project_path / 'project.json'
     if not valid_o3de_project_json(project_json):
         logger.error(f'Project json {project_json} is not valid.')
         return 1
 
-    project_path = project_path.as_posix()
-    projects = json_data['projects']
-
-    if project_path in projects and remove:
-        projects.remove(project_path)
-    elif not project_path in projects:
-        projects.append(project_path)
+    json_data['projects'].insert(0, project_path.as_posix())
 
     # registering a project has the additional step of setting the project.json 'engine' field
     this_engine_json = get_this_engine_path() / 'engine.json'
@@ -216,41 +243,68 @@ def register_project_path(json_data,
     return 0
 
 
-def backup(file_name):
-    index = 0
-    renamed = False
-    while not renamed:
-        backup_file_name = pathlib.Path(str(file_name) + '.bak' + str(index))
-        if not backup_file_name.is_file():
-            file_name = pathlib.Path(file_name)
-            file_name.rename(backup_file_name)
-            renamed = True
-
-
 def register_template_path(json_data,
                            template_path: str,
                            remove: bool = False) -> int:
     if not template_path:
         logger.error(f'Template path cannot be empty.')
         return 1
+
+    while template_path in json_data['templates']:
+        json_data['templates'].remove(template_path)
     template_path = pathlib.Path(template_path)
+    while template_path.as_posix() in json_data['templates']:
+        json_data['templates'].remove(template_path.as_posix())
+
+    if remove:
+        logger.warn(f'Removing Template path {template_path}.')
+        return 0
+
     if not template_path.is_dir():
         logger.error(f'Template path {template_path} does not exist.')
         return 1
+
     template_json = template_path / 'template.json'
     if not valid_o3de_template_json(template_json):
         logger.error(f'Template json {template_json} is not valid.')
         return 1
 
-    template_path = template_path.as_posix()
-    templates = json_data['templates']
-
-    if template_path in templates and remove:
-        templates.remove(template_path)
-    elif not template_path in templates:
-        templates.append(template_path)
+    json_data['templates'].insert(0, template_path.as_posix())
 
     return 0
+
+
+def register_repo(json_data,
+                  repo_uri: str,
+                  remove: bool = False) -> int:
+    if not repo_uri:
+        logger.error(f'Repo URI cannot be empty.')
+        return 1
+
+    while repo_uri in json_data['repos']:
+        json_data['repos'].remove(repo_uri)
+
+    if remove:
+        logger.warn(f'Removing repo uri {repo_uri}.')
+
+    if remove:
+        result = refresh_repos()
+    else:
+        repo_hash = hashlib.md5(repo_uri.encode())
+        cache_folder = get_o3de_cache()
+        cache_file = cache_folder / str(repo_hash.hexdigest() + '.json')
+        parsed_uri = urllib.parse.urlparse(repo_uri)
+
+        if parsed_uri.scheme == 'http' or parsed_uri.scheme == 'https' or parsed_uri.scheme == 'ftp' or parsed_uri.scheme == 'ftps':
+            result = 0  # a function that processes the uri and returns result
+            if not result:
+                json_data['repos'].insert(0, repo_uri)
+        else:
+            repo_uri = pathlib.Path(repo_uri)
+            json_data['repos'].insert(0, repo_uri.as_posix())
+            result = 0
+
+    return result
 
 
 def valid_o3de_manifest_json(file_name: str) -> bool:
@@ -262,15 +316,11 @@ def valid_o3de_manifest_json(file_name: str) -> bool:
             json_data = json.load(f)
             test = json_data['repo_name']
             test = json_data['origin']
-            test = json_data['root']
             test = json_data['engines']
             test = json_data['projects']
             test = json_data['gems']
             test = json_data['templates']
             test = json_data['repos']
-            test = json_data['default_projects_folder']
-            test = json_data['default_gems_folder']
-            test = json_data['default_templates_folder']
     except Exception as e:
         return False
 
@@ -331,44 +381,6 @@ def valid_o3de_template_json(file_name: str) -> bool:
         return False
 
     return True
-
-
-def register_repo(json_data,
-                  repo_uri: str,
-                  remove: bool = False) -> int:
-    if not repo_uri:
-        logger.error(f'Repo URI cannot be empty.')
-        return 1
-
-    repos = json_data['repos']
-    repo_hash = hashlib.md5(repo_uri.encode())
-    cache_folder = get_o3de_cache()
-    cache_folder.mkdir(parents=True, exist_ok=True)
-    cache_file = cache_folder / str(repo_hash.hexdigest() + '.json')
-
-    result = 0
-
-    if remove:
-        if repo_uri in repos:
-            repos.remove(repo_uri)
-            result = refresh_repos()
-    else:
-        if not repo_uri in repos:
-            parsed_uri = urllib.parse.urlparse(repo_uri)
-
-            result = 0 # for now
-            #if parsed_uri.scheme == 'http':
-            #    result = download_o3de_manifest_http(parsed_uri, cache_file)
-            #elif parsed_uri.scheme == 'https':
-            #    result = download_o3de_manifest_https(parsed_uri, cache_file)
-            #elif parsed_uri.scheme == 'ftp':
-            #    result = download_o3de_manifest_ftp(parsed_uri, cache_file)
-            #elif parsed_uri.scheme == 'ftps':
-            #    result = download_o3de_manifest_ftps(parsed_uri, cache_file)
-            #else:
-            #    result = copy_o3de_manifest(repo_uri, cache_file)
-
-    return result
 
 
 def register_default_projects_folder(json_data,
@@ -481,19 +493,64 @@ def register(engine_path: str = None,
             return 1
         result = register_repo(json_data, repo_uri, remove)
 
-    elif isinstance(engine_path, str) or isinstance(engine_path, pathlib.PurePath):
+    elif isinstance(default_projects_folder, str) or isinstance(default_projects_folder, pathlib.PurePath):
         result = register_default_projects_folder(json_data, default_projects_folder, remove)
 
-    elif isinstance(engine_path, str) or isinstance(engine_path, pathlib.PurePath):
+    elif isinstance(default_gems_folder, str) or isinstance(default_gems_folder, pathlib.PurePath):
         result = register_default_gems_folder(json_data, default_gems_folder, remove)
 
-    elif isinstance(engine_path, str) or isinstance(engine_path, pathlib.PurePath):
+    elif isinstance(default_templates_folder, str) or isinstance(default_templates_folder, pathlib.PurePath):
         result = register_default_templates_folder(json_data, default_templates_folder, remove)
 
     if not result:
         save_o3de_registry(json_data)
 
     return 0
+
+
+def remove_invalid_o3de_objects():
+    json_data = load_o3de_registry()
+
+    for engine in json_data['engines']:
+        if not valid_o3de_engine_json(pathlib.Path(engine) / 'engine.json'):
+            logger.warn(f"Engine path {engine} is invalid.")
+            register(engine_path=engine, remove=True)
+
+    for project in json_data['projects']:
+        if not valid_o3de_project_json(pathlib.Path(project) / 'project.json'):
+            logger.warn(f"Project path {project} is invalid.")
+            register(project_path=project, remove=True)
+
+    for gem in json_data['gems']:
+        if not valid_o3de_gem_json(pathlib.Path(gem) / 'gem.json'):
+            logger.warn(f"Gem path {gem} is invalid.")
+            register(gem_path=gem, remove=True)
+
+    for template in json_data['templates']:
+        if not valid_o3de_template_json(pathlib.Path(template) / 'template.json'):
+            logger.warn(f"Template path {template} is invalid.")
+            register(template_path=template, remove=True)
+
+    default_projects_folder = pathlib.Path(json_data['default_projects_folder'])
+    if not default_projects_folder.is_dir():
+        new_default_projects_folder = get_home_folder() / 'my_o3de/projects'
+        new_default_projects_folder.mkdir(parents=True, exist_ok=True)
+        logger.warn(f"Default projects folder {default_projects_folder} is invalid. Set default {new_default_projects_folder}")
+        register(default_projects_folder=new_default_projects_folder.as_posix())
+
+    default_gems_folder = pathlib.Path(json_data['default_gems_folder'])
+    if not default_gems_folder.is_dir():
+        new_default_gems_folder = get_home_folder() / 'my_o3de/gems'
+        new_default_gems_folder.mkdir(parents=True, exist_ok=True)
+        logger.warn(f"Default gems folder {default_gems_folder} is invalid. Set default {new_default_gems_folder}")
+        register(default_gems_folder=new_default_gems_folder.as_posix())
+
+    default_templates_folder = pathlib.Path(json_data['default_templates_folder'])
+    if not default_templates_folder.is_dir():
+        new_default_templates_folder = get_home_folder() / 'my_o3de/templates'
+        new_default_templates_folder.mkdir(parents=True, exist_ok=True)
+        logger.warn(f"Default templates folder {default_templates_folder} is invalid. Set default {new_default_templates_folder}")
+        register(default_templates_folder=new_default_templates_folder.as_posix())
 
 
 def refresh_repos() -> int:
@@ -504,15 +561,18 @@ def refresh_repos() -> int:
     if len(json_data['repos']) == 0:
         return 0
 
+    result = 0
     last_failure = 0
     for repo_uri in json_data['repos']:
         repo_hash = hashlib.md5(repo_uri.encode())
         cache_file = cache_folder / str(repo_hash.hexdigest() + '.json')
         parsed_uri = urllib.parse.urlparse(repo_uri)
 
-        last_failure = 0
+        last_failure = 0  # download and validate the repo_uri
+        if not last_failure:
+            result = 1
 
-    return last_failure
+    return result
 
 
 def get_registered(engine_name: str = None,
@@ -663,6 +723,16 @@ def print_repos(json_data: str,
 def register_show_engines(verbose: int):
     json_data = load_o3de_registry()
 
+    del json_data['repo_name']
+    del json_data['origin']
+    del json_data['projects']
+    del json_data['gems']
+    del json_data['templates']
+    del json_data['repos']
+    del json_data['default_projects_folder']
+    del json_data['default_gems_folder']
+    del json_data['default_templates_folder']
+
     print(json.dumps(json_data, indent=4))
     print_engines(json_data,
                   verbose)
@@ -671,6 +741,8 @@ def register_show_engines(verbose: int):
 def register_show_projects(verbose: int):
     json_data = load_o3de_registry()
 
+    del json_data['repo_name']
+    del json_data['origin']
     del json_data['engines']
     del json_data['gems']
     del json_data['templates']
@@ -687,6 +759,8 @@ def register_show_projects(verbose: int):
 def register_show_gems(verbose: int):
     json_data = load_o3de_registry()
 
+    del json_data['repo_name']
+    del json_data['origin']
     del json_data['engines']
     del json_data['projects']
     del json_data['templates']
@@ -703,6 +777,8 @@ def register_show_gems(verbose: int):
 def register_show_templates(verbose: int):
     json_data = load_o3de_registry()
 
+    del json_data['repo_name']
+    del json_data['origin']
     del json_data['engines']
     del json_data['projects']
     del json_data['gems']
@@ -719,6 +795,8 @@ def register_show_templates(verbose: int):
 def register_show_repos(verbose: int):
     json_data = load_o3de_registry()
 
+    del json_data['repo_name']
+    del json_data['origin']
     del json_data['engines']
     del json_data['projects']
     del json_data['gems']
@@ -922,10 +1000,12 @@ def register_show_aggregate(verbose: int):
 
 def _run_register(args: argparse) -> int:
     if args.update:
+        remove_invalid_o3de_objects()
         return refresh_repos()
     else:
         if args.this_engine:
             register(engine_path=get_this_engine_path())
+            register_shipped_engine_o3de_objects()
         else:
             return register(args.engine_path,
                         args.project_path,
@@ -1023,8 +1103,7 @@ def add_args(parser, subparsers) -> None:
     group.add_argument('-u', '--update', action='store_true', required=False,
                        default=False,
                        help='Refresh the repo cache.')
-
-    register_subparser.add_argument('-r', '--remove', type=bool, required=False,
+    register_subparser.add_argument('-r', '--remove', action='store_true', required=False,
                                     default=False,
                                     help='Remove entry.')
 
@@ -1049,7 +1128,6 @@ def add_args(parser, subparsers) -> None:
     group.add_argument('-r', '--repos', action='store_true', required=False,
                        default=False,
                        help='Just the local repos. Ignores repos.')
-
     group.add_argument('-a', '--aggregate', action='store_true', required=False,
                        default=False,
                        help='Combine all repos into a single list of resources.')

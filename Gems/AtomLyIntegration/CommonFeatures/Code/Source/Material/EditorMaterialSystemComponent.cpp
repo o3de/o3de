@@ -25,7 +25,7 @@
 
 #include <AtomToolsFramework/Util/Util.h>
 
-#include <Material/Thumbnails/MaterialThumbnail.h>
+#include <Material/MaterialThumbnail.h>
 
 // Disables warning messages triggered by the Qt library
 // 4251: class needs to have dll-interface to be used by clients of class 
@@ -95,8 +95,6 @@ namespace AZ
         {
             AzFramework::TargetManagerClient::Bus::Handler::BusConnect();
             EditorMaterialSystemComponentRequestBus::Handler::BusConnect();
-            m_materialPreviewerFactory = AZStd::make_unique <LyIntegration::MaterialPreviewerFactory>();
-            AzToolsFramework::AssetBrowser::PreviewerRequestBus::Handler::BusConnect();
             AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusConnect();
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
             AzToolsFramework::EditorMenuNotificationBus::Handler::BusConnect();
@@ -108,11 +106,9 @@ namespace AZ
         {
             AzFramework::TargetManagerClient::Bus::Handler::BusDisconnect();
             EditorMaterialSystemComponentRequestBus::Handler::BusDisconnect();
-            AzToolsFramework::AssetBrowser::PreviewerRequestBus::Handler::BusDisconnect();
             AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusDisconnect();
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
             AzToolsFramework::EditorMenuNotificationBus::Handler::BusDisconnect();
-            m_materialPreviewerFactory.reset();
 
             TeardownThumbnails();
 
@@ -157,16 +153,11 @@ namespace AZ
             }
         }
 
-        const AzToolsFramework::AssetBrowser::PreviewerFactory* EditorMaterialSystemComponent::GetPreviewerFactory(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry) const
-        {
-            return m_materialPreviewerFactory->IsEntrySupported(entry) ? m_materialPreviewerFactory.get() : nullptr;
-        }
-
         void EditorMaterialSystemComponent::OnApplicationAboutToStop()
         {
             TeardownThumbnails();
         }
-
+        
         void EditorMaterialSystemComponent::OnPopulateToolMenuItems()
         {
             if (!m_openMaterialEditorAction)
@@ -198,7 +189,7 @@ namespace AZ
             using namespace LyIntegration;
 
             ThumbnailerRequestsBus::Broadcast(&ThumbnailerRequests::RegisterThumbnailProvider,
-                MAKE_TCACHE(MaterialThumbnailCache),
+                MAKE_TCACHE(Thumbnails::MaterialThumbnailCache),
                 ThumbnailContext::DefaultContext);
         }
 
@@ -208,7 +199,7 @@ namespace AZ
             using namespace LyIntegration;
 
             ThumbnailerRequestsBus::Broadcast(&ThumbnailerRequests::UnregisterThumbnailProvider,
-                MaterialThumbnailCache::ProviderName,
+                Thumbnails::MaterialThumbnailCache::ProviderName,
                 ThumbnailContext::DefaultContext);
         }
 

@@ -558,10 +558,14 @@ int rcmain(int argc, char** argv, [[maybe_unused]] char** envp)
         RCLog("Initializing System");
 
         {
-            // Create a local SettingsRegistry to read the bootstrap.cfg settings if the appRoot hasn't been overriden
+            // Create a local SettingsRegistry to read the bootstrap.cfg settings if the engine root hasn't been overridden
             // on the command line
+            AZ::CommandLine commandLine;
+            commandLine.Parse(argc, argv);
             AZ::SettingsRegistryImpl settingsRegistry;
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_Bootstrap(settingsRegistry);
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(settingsRegistry, AZ_TRAIT_OS_PLATFORM_CODENAME, {});
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(settingsRegistry, commandLine, false);
 
             string projectPath = config.GetAsString("gameroot", "", "");
             if (!projectPath.empty())

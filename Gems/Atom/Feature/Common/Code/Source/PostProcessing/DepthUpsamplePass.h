@@ -40,7 +40,7 @@ namespace AZ
             DepthUpsamplePass(const RPI::PassDescriptor& descriptor);
         
             // SRG binding indices...
-            AZ::RHI::ShaderInputConstantIndex m_constantsIndex;
+            AZ::RHI::ShaderInputNameIndex m_constantsIndex = "m_constants";
         };
 
     }   // namespace Render

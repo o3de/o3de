@@ -12,123 +12,133 @@
 
 #include <AzFramework/ProjectManager/ProjectManager.h>
 
+#include <AzCore/IO/SystemFile.h>
 #include <AzCore/Platform.h>
 #include <AzCore/Settings/CommandLine.h>
-#include <AzCore/IO/SystemFile.h>
-#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Utils/Utils.h>
 
 #include <AzFramework/AzFramework_Traits_Platform.h>
 #include <AzFramework/Process/ProcessWatcher.h>
-#include <AzFramework/Engine/Engine.h>
 
-
-namespace AzFramework
+namespace AzFramework::ProjectManager
 {
-    namespace ProjectManager
+    AZStd::tuple<AZ::IO::FixedMaxPath, AZ::IO::FixedMaxPath> FindProjectAndEngineRootPaths(const int argc, char* argv[])
     {
-        // Check for a project name, if not found, attempt to launch project manager and shut down
-        ProjectPathCheckResult CheckProjectPathProvided(const int argc, char* argv[])
+        bool ownsAllocator = false;
+        if (!AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
         {
-            // If we were able to locate a path to a project, we're done
-            if (HasProjectPath(argc, argv))
-            {
-                return ProjectPathCheckResult::ProjectPathFound;
-            }
-
-            if (LaunchProjectManager())
-            {
-                AZ_TracePrintf("ProjectManager", "Project Manager launched successfully, requesting exit.");
-                return ProjectPathCheckResult::ProjectManagerLaunched;
-            }
-            AZ_Error("ProjectManager", false, "Project Manager failed to launch and no project selected!");
-            return ProjectPathCheckResult::ProjectManagerLaunchFailed;
+            AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
+            ownsAllocator = true;
         }
 
-        bool HasProjectPath(const int argc, char* argv[])
+        AZ::IO::FixedMaxPath projectRootPath;
+        AZ::IO::FixedMaxPath engineRootPath;
         {
-            bool hasProjectPath = false;
-            bool ownsAllocator = false;
-            if (!AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
-            {
-                AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-                ownsAllocator = true;
-            }
-            {
-                AZ::CommandLine commandLine;
-                commandLine.Parse(argc, argv);
-                AZ::SettingsRegistryImpl settingsRegistry;
-                AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_Bootstrap(settingsRegistry);
-                AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(settingsRegistry, commandLine, false);
-                auto sysGameFolderKey = AZ::SettingsRegistryInterface::FixedValueString(
-                    AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
-                AZ::IO::FixedMaxPath registryPath;
-                hasProjectPath = settingsRegistry.Get(registryPath.Native(), sysGameFolderKey);
-            }
-            if (ownsAllocator)
-            {
-                AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-            }
-            return hasProjectPath;
+            // AZ::CommandLine and SettingsRegistryImpl is in block scope to make sure
+            // that the allocated memory is cleaned up before destroying the SystemAllocator
+            // at the end of the function
+            AZ::CommandLine commandLine;
+            commandLine.Parse(argc, argv);
+            AZ::SettingsRegistryImpl settingsRegistry;
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_Bootstrap(settingsRegistry);
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(settingsRegistry, AZ_TRAIT_OS_PLATFORM_CODENAME, {});
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(settingsRegistry, commandLine, false);
+            engineRootPath = AZ::SettingsRegistryMergeUtils::FindEngineRoot(settingsRegistry);
+            projectRootPath = AZ::SettingsRegistryMergeUtils::FindProjectRoot(settingsRegistry);
+        }
+        if (ownsAllocator)
+        {
+            AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
+        }
+        return AZStd::make_tuple(projectRootPath, engineRootPath);
+    }
+
+    // Check for a project name, if not found, attempt to launch project manager and shut down
+    ProjectPathCheckResult CheckProjectPathProvided(const int argc, char* argv[])
+    {
+        auto [projectRootPath, engineRootPath] = FindProjectAndEngineRootPaths(argc, argv);
+        // If we were able to locate a path to a project, we're done
+        if (!projectRootPath.empty())
+        {
+            return ProjectPathCheckResult::ProjectPathFound;
         }
 
-        bool LaunchProjectManager()
+        if (LaunchProjectManager(engineRootPath))
         {
-            bool launchSuccess = false;
+            AZ_TracePrintf("ProjectManager", "Project Manager launched successfully, requesting exit.");
+            return ProjectPathCheckResult::ProjectManagerLaunched;
+        }
+        AZ_Error("ProjectManager", false, "Project Manager failed to launch and no project selected!");
+        return ProjectPathCheckResult::ProjectManagerLaunchFailed;
+    }
+
+    bool LaunchProjectManager([[maybe_unused]] const AZ::IO::FixedMaxPath& engineRootPath)
+    {
+        bool launchSuccess = false;
 #if (AZ_TRAIT_AZFRAMEWORK_USE_PROJECT_MANAGER)
-            bool ownsSystemAllocator = false;
-            if (!AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
-            {
-                ownsSystemAllocator = true;
-                AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-            }
-            {
-                const char projectsScript[] = "projects.py";
-
-                AZ_Warning("ProjectManager", false, "No project provided - launching project selector.");
-
-                AZ::IO::FixedMaxPath enginePath = Engine::FindEngineRoot();
-                if (enginePath.empty())
-                {
-                    AZ_Error("ProjectManager", false, "Couldn't find engine root");
-                    return false;
-                }
-                auto projectManagerPath = enginePath / "scripts" / "project_manager";
-
-                if (!AZ::IO::SystemFile::Exists((projectManagerPath / projectsScript).c_str()))
-                {
-                    AZ_Error("ProjectManager", false, "%s not found at %s!", projectsScript, projectManagerPath.c_str());
-                    return false;
-                }
-                char executablePath[AZ_MAX_PATH_LEN];
-                AZ::Utils::GetExecutablePathReturnType result = AZ::Utils::GetExecutablePath(executablePath, AZ_MAX_PATH_LEN);
-                auto exeFolder = AZ::IO::PathView(executablePath).ParentPath().Filename().Native();
-                AZStd::fixed_string<8> debugOption;
-                if (exeFolder == "debug")
-                {
-                    // We need to use the debug version of the python interpreter to load up our debug version of our libraries which work with the debug version of QT living in this folder
-                    debugOption = "debug ";
-                }
-                AZ::IO::FixedMaxPath pythonPath = enginePath / "python";
-                pythonPath /= AZ_TRAIT_AZFRAMEWORK_PYTHON_SHELL;
-                auto cmdPath = AZ::IO::FixedMaxPathString::format("%s %s%s --executable_path=%s --parent_pid=%" PRId64, pythonPath.Native().c_str(),
-                    debugOption.c_str(), (projectManagerPath / projectsScript).c_str(), executablePath, AZ::Platform::GetCurrentProcessId());
-
-                AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
-
-                processLaunchInfo.m_commandlineParameters = cmdPath;
-                processLaunchInfo.m_showWindow = false;
-                launchSuccess = AzFramework::ProcessLauncher::LaunchUnwatchedProcess(processLaunchInfo);
-            }
-            if(ownsSystemAllocator)
-            {
-                AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-            }
-#endif // #if defined(AZ_FRAMEWORK_USE_PROJECT_MANAGER)
-            return launchSuccess;
+        bool ownsSystemAllocator = false;
+        if (!AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
+        {
+            ownsSystemAllocator = true;
+            AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
         }
-    } // ProjectManager
-} // AzFramework
+        {
+            const char projectsScript[] = "projects.py";
+
+            AZ_Warning("ProjectManager", false, "No project provided - launching project selector.");
+
+            if (engineRootPath.empty())
+            {
+                AZ_Error("ProjectManager", false, "Couldn't find engine root");
+                return false;
+            }
+            auto projectManagerPath = engineRootPath / "scripts" / "project_manager";
+
+            if (!AZ::IO::SystemFile::Exists((projectManagerPath / projectsScript).c_str()))
+            {
+                AZ_Error("ProjectManager", false, "%s not found at %s!", projectsScript, projectManagerPath.c_str());
+                return false;
+            }
+            AZ::IO::FixedMaxPathString executablePath;
+            AZ::Utils::GetExecutablePathReturnType result = AZ::Utils::GetExecutablePath(executablePath.data(), executablePath.capacity());
+            if (result.m_pathStored != AZ::Utils::ExecutablePathResult::Success)
+            {
+                AZ_Error("ProjectManager", false, "Could not determine executable path!");
+                return false;
+            }
+            AZ::IO::FixedMaxPath parentPath(executablePath.c_str());
+            auto exeFolder = parentPath.ParentPath();
+            AZStd::fixed_string<8> debugOption;
+            auto lastSep = exeFolder.Native().find_last_of(AZ_CORRECT_FILESYSTEM_SEPARATOR);
+            if (lastSep != AZStd::string_view::npos)
+            {
+                exeFolder = exeFolder.Native().substr(lastSep + 1);
+            }
+            if (exeFolder == "debug")
+            {
+                // We need to use the debug version of the python interpreter to load up our debug version of our libraries which work with the debug version of QT living in this folder
+                debugOption = "debug ";
+            }
+            AZ::IO::FixedMaxPath pythonPath = engineRootPath / "python";
+            pythonPath /= AZ_TRAIT_AZFRAMEWORK_PYTHON_SHELL;
+            auto cmdPath = AZ::IO::FixedMaxPathString::format("%s %s%s --executable_path=%s --parent_pid=%" PRId64, pythonPath.Native().c_str(),
+                debugOption.c_str(), (projectManagerPath / projectsScript).c_str(), executablePath.c_str(), AZ::Platform::GetCurrentProcessId());
+
+            AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
+
+            processLaunchInfo.m_commandlineParameters = cmdPath;
+            processLaunchInfo.m_showWindow = false;
+            launchSuccess = AzFramework::ProcessLauncher::LaunchUnwatchedProcess(processLaunchInfo);
+        }
+        if (ownsSystemAllocator)
+        {
+            AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
+        }
+#endif // #if defined(AZ_FRAMEWORK_USE_PROJECT_MANAGER)
+        return launchSuccess;
+    }
+
+} // AzFramework::ProjectManager
 

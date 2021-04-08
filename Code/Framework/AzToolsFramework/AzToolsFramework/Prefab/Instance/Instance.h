@@ -13,6 +13,7 @@
 #pragma once
 
 #include <AzCore/Component/EntityId.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/RTTI.h>
@@ -38,8 +39,10 @@ namespace AzToolsFramework
         class InstanceEntityMapperInterface;
         class TemplateInstanceMapperInterface;
 
-        using InstanceAlias = AZStd::string;
+        using AliasPath = AZ::IO::Path;
+        using AliasPathView = AZ::IO::PathView;
         using EntityAlias = AZStd::string;
+        using InstanceAlias = AZStd::string;
 
         class Instance;
         using EntityAliasOptionalReference = AZStd::optional<AZStd::reference_wrapper<EntityAlias>>;
@@ -47,6 +50,8 @@ namespace AzToolsFramework
         using InstanceOptionalConstReference = AZStd::optional<AZStd::reference_wrapper<const Instance>>;
         using InstanceSet = AZStd::unordered_set<Instance*>;
         using InstanceSetConstReference = AZStd::optional<AZStd::reference_wrapper<const InstanceSet>>;
+        using EntityOptionalReference = AZStd::optional<AZStd::reference_wrapper<AZ::Entity>>;
+        using EntityOptionalConstReference = AZStd::optional<AZStd::reference_wrapper<const AZ::Entity>>;
 
         // A prefab instance is the container for when a Prefab Template is Instantiated.
         class Instance
@@ -62,6 +67,7 @@ namespace AzToolsFramework
             using EntityList = AZStd::vector<AZ::Entity*>;
 
             Instance();
+            explicit Instance(AZStd::unique_ptr<AZ::Entity> containerEntity);
             virtual ~Instance();
 
             Instance(const Instance& rhs) = delete;
@@ -72,13 +78,16 @@ namespace AzToolsFramework
             const TemplateId& GetTemplateId() const;
             void SetTemplateId(const TemplateId& templateId);
 
-            const AZStd::string& GetTemplateSourcePath() const;
-            void SetTemplateSourcePath(AZStd::string sourcePath);
+            const AZ::IO::Path& GetTemplateSourcePath() const;
+            void SetTemplateSourcePath(AZ::IO::PathView sourcePath);
 
             bool AddEntity(AZ::Entity& entity);
+            bool AddEntity(AZ::Entity& entity, EntityAlias entityAlias);
             AZStd::unique_ptr<AZ::Entity> DetachEntity(const AZ::EntityId& entityId);
             void DetachNestedEntities(const AZStd::function<void(AZStd::unique_ptr<AZ::Entity>)>& callback);
             void RemoveNestedEntities(const AZStd::function<bool(const AZStd::unique_ptr<AZ::Entity>&)>& filter);
+
+            void Reset();
 
             Instance& AddInstance(AZStd::unique_ptr<Instance> instance);
             AZStd::unique_ptr<Instance> DetachNestedInstance(const InstanceAlias& instanceAlias);
@@ -128,17 +137,7 @@ namespace AzToolsFramework
             */
             AZStd::vector<InstanceAlias> GetNestedInstanceAliases(TemplateId templateId) const;
 
-            /**
-            * Initializes all entities, including those in nested entities
-            */
-            void InitializeNestedEntities();
-            void InitializeEntities();
-
-            /**
-            * Activates all entities, including those in nested entities
-            */
-            void ActivateNestedEntities();
-            void ActivateEntities();
+            void ActivateContainerEntity();
 
             InstanceOptionalReference FindNestedInstance(const InstanceAlias& nestedInstanceAlias);
 
@@ -158,6 +157,18 @@ namespace AzToolsFramework
 
             AZ::EntityId GetContainerEntityId() const;
 
+            bool HasContainerEntity() const;
+
+            EntityOptionalReference GetContainerEntity();
+            EntityOptionalConstReference GetContainerEntity() const;
+
+            void SetContainerEntity(AZ::Entity& entity);
+
+            AZStd::unique_ptr<AZ::Entity> DetachContainerEntity();
+
+            static EntityAlias GenerateEntityAlias();
+            AliasPath GetAbsoluteInstanceAliasPath() const;
+
         protected:
             /**
             * Gets the entities owned by this instance
@@ -165,6 +176,7 @@ namespace AzToolsFramework
             void GetEntities(EntityList& entities, bool includeNestedEntities = false);
 
         private:
+            static constexpr const char s_aliasPathSeparator = '/';
 
             void ClearEntities();
 
@@ -174,7 +186,6 @@ namespace AzToolsFramework
             bool RegisterEntity(const AZ::EntityId& entityId, const EntityAlias& entityAlias);
             AZStd::unique_ptr<AZ::Entity> DetachEntity(const EntityAlias& entityAlias);
 
-            static EntityAlias GenerateEntityAlias();
             static InstanceAlias GenerateInstanceAlias();
 
             // Provide access to private data members in the serializer
@@ -202,7 +213,7 @@ namespace AzToolsFramework
             InstanceAlias m_alias;
 
             // The source path of the template this instance represents
-            AZStd::string m_templateSourcePath;
+            AZ::IO::Path m_templateSourcePath;
 
             // The unique ID of the template this Instance belongs to.
             TemplateId m_templateId = InvalidTemplateId;

@@ -12,6 +12,7 @@
 
 #include <Generation/Components/TangentGenerator/TangentGenerateComponent.h>
 #include <Generation/Components/TangentGenerator/TangentGenerators/MikkTGenerator.h>
+#include <Generation/Components/TangentGenerator/TangentGenerators/BlendShapeMikkTGenerator.h>
 
 #include <SceneAPI/SceneCore/DataTypes/Groups/IGroup.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IMeshVertexUVData.h>
@@ -28,6 +29,7 @@
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 #include <SceneAPI/SceneCore/DataTypes/DataTypeUtilities.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IMeshData.h>
+#include <SceneAPI/SceneData/GraphData/BlendShapeData.h>
 #include <SceneAPI/SceneData/GraphData/MeshVertexBitangentData.h>
 #include <SceneAPI/SceneData/GraphData/MeshVertexTangentData.h>
 
@@ -169,6 +171,24 @@ namespace AZ::SceneGenerationComponents
         }
     }
 
+    void TangentGenerateComponent::FindBlendShapes(
+        AZ::SceneAPI::Containers::SceneGraph& graph, const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex,
+        AZStd::vector<AZ::SceneData::GraphData::BlendShapeData*>& outBlendShapes) const
+    {
+        const auto nameContentView = AZ::SceneAPI::Containers::Views::MakePairView(graph.GetNameStorage(), graph.GetContentStorage());
+
+        auto meshChildView = AZ::SceneAPI::Containers::Views::MakeSceneGraphChildView<AZ::SceneAPI::Containers::Views::AcceptEndPointsOnly>(
+            graph, nodeIndex, nameContentView.begin(), true);
+        for (auto child = meshChildView.begin(); child != meshChildView.end(); ++child)
+        {
+            AZ::SceneData::GraphData::BlendShapeData* blendShape =
+                azrtti_cast<AZ::SceneData::GraphData::BlendShapeData*>(child->second.get());
+            if (blendShape)
+            {
+                outBlendShapes.emplace_back(blendShape);
+            }
+        }
+    }
 
     bool TangentGenerateComponent::GenerateTangentsForMesh(AZ::SceneAPI::Containers::Scene& scene, const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex, AZ::SceneAPI::DataTypes::IMeshData* meshData)
     {
@@ -202,6 +222,10 @@ namespace AZ::SceneGenerationComponents
             return true;
         }
 
+        // Find all blend shape data under the mesh. We need to generate the tangent and bitangent for blend shape as well.
+        AZStd::vector<AZ::SceneData::GraphData::BlendShapeData*> blendShapes;
+        FindBlendShapes(graph, nodeIndex, blendShapes);
+
         // Generate all the tangent spaces we need.
         // Do this for every UV set.
         bool allSuccess = true;
@@ -222,7 +246,12 @@ namespace AZ::SceneGenerationComponents
                 // Generate using MikkT space.
                 case AZ::SceneAPI::DataTypes::TangentSpace::MikkT:
                 {
-                    allSuccess &= AZ::TangentGeneration::MikkT::GenerateTangents(scene.GetManifest(), graph, nodeIndex, const_cast<AZ::SceneAPI::DataTypes::IMeshData*>(meshData), uvSetIndex);
+                    allSuccess &= AZ::TangentGeneration::Mesh::MikkT::GenerateTangents(
+                        scene.GetManifest(), graph, nodeIndex, const_cast<AZ::SceneAPI::DataTypes::IMeshData*>(meshData), uvSetIndex);
+                    for (AZ::SceneData::GraphData::BlendShapeData* blendShape : blendShapes)
+                    {
+                        allSuccess &= AZ::TangentGeneration::BlendShape::MikkT::GenerateTangents(blendShape, uvSetIndex);
+                    }
                 }
                 break;
 

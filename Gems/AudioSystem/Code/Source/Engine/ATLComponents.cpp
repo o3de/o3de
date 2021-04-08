@@ -24,6 +24,9 @@
 
 #include <AzFramework/FileFunc/FileFunc.h>
 
+#include <AzFramework/Physics/PhysicsScene.h>
+#include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
+
 #include <AudioFileUtils.h>
 #include <ATLCommon.h>
 #include <SoundCVars.h>
@@ -630,10 +633,40 @@ namespace Audio
         m_raycastRequests.push_back(request);
     }
 
+    AudioRaycastManager::AudioRaycastManager()
+        : m_sceneFinishSimHandler([this](
+            [[maybe_unused]] AzPhysics::SceneHandle sceneHandle,
+            [[maybe_unused]] float fixedDeltatime)
+            {
+                this->OnPhysicsSubtickFinished();
+            }, aznumeric_cast<int32_t>(AzPhysics::SceneEvents::PhysicsStartFinishSimulationPriority::Audio))
+    {
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            AzPhysics::SceneHandle sceneHandle = sceneInterface->GetSceneHandle(AzPhysics::DefaultPhysicsSceneName);
+            sceneInterface->RegisterSceneSimulationFinishHandler(sceneHandle, m_sceneFinishSimHandler);
+        }
+        AudioRaycastRequestBus::Handler::BusConnect();
+    }
+
+    AudioRaycastManager::~AudioRaycastManager()
+    {
+        AudioRaycastRequestBus::Handler::BusDisconnect();
+        m_sceneFinishSimHandler.Disconnect();
+    }
+
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void AudioRaycastManager::OnPostPhysicsSubtick([[maybe_unused]] float fixedDeltaTimeSeconds)
+    void AudioRaycastManager::OnPhysicsSubtickFinished()
     {
         // [Main Thread]
+        AzPhysics::SceneHandle sceneHandle = AzPhysics::InvalidSceneHandle;
+        auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
+        if (sceneInterface != nullptr)
+        {
+            sceneHandle = sceneInterface->GetSceneHandle(AzPhysics::DefaultPhysicsSceneName);
+        }
+        AZ_Warning("AudioRaycastManager", sceneHandle != AzPhysics::InvalidSceneHandle, "Unable to retrive default physics scene.");
+
         AudioRaycastRequestQueueType processingQueue;
 
         // Lock and swap the main request container with a local one for processing...
@@ -651,13 +684,16 @@ namespace Audio
             AZ_Assert(request.m_request.m_maxResults <= s_maxHitResultsPerRaycast,
                 "Encountered audio raycast request that has maxResults set too high (%" PRIu64 ")!\n", request.m_request.m_maxResults);
 
-            AZStd::vector<Physics::RayCastHit> hitResults;
-            Physics::WorldRequestBus::BroadcastResult(hitResults, &Physics::WorldRequestBus::Events::RayCastMultiple, request.m_request);
+            AzPhysics::SceneQueryHits hitResults;
+            if (sceneInterface != nullptr)
+            {
+                hitResults = sceneInterface->QueryScene(sceneHandle, &request.m_request);
+            }
 
-            AZ_Error("Audio Raycast", hitResults.size() <= s_maxHitResultsPerRaycast,
-                "RayCastMultiple returned too many hits (%zu)!\n", hitResults.size());
+            AZ_Error("Audio Raycast", hitResults.m_hits.size() <= s_maxHitResultsPerRaycast,
+                "RayCastMultiple returned too many hits (%zu)!\n", hitResults.m_hits.size());
 
-            resultsQueue.emplace_back(AZStd::move(hitResults), request.m_audioObjectId, request.m_rayIndex);
+            resultsQueue.emplace_back(AZStd::move(hitResults.m_hits), request.m_audioObjectId, request.m_rayIndex);
         }
 
         // Lock and swap the local results into the target container (or move-append if necessary)...

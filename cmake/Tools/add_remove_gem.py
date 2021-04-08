@@ -13,6 +13,7 @@ import argparse
 import logging
 import os
 import sys
+import pathlib
 
 from cmake.Tools import utils
 from cmake.Tools import common
@@ -22,19 +23,15 @@ logging.basicConfig()
 
 
 def add_gem_dependency(cmake_file: str,
-                       gem_name: str) -> int:
+                       gem_target: str) -> int:
     """
     adds a gem dependency to a cmake file
     :param cmake_file: path to the cmake file
-    :param gem_name: name of the gem to add
+    :param gem_target: name of the cmake target
     :return: 0 for success or non 0 failure code
     """
     if not os.path.isfile(cmake_file):
         logger.error(f'Failed to locate cmake file {cmake_file}')
-        return 1
-
-    if not utils.validate_identifier(gem_name):
-        logger.error(f'{gem_name} is not a valid gem name')
         return 1
 
     # on a line by basis, see if there already is Gem::{gem_name}
@@ -45,11 +42,11 @@ def add_gem_dependency(cmake_file: str,
     added = False
     with open(cmake_file, 'r') as s:
         for line in s:
-            if f'Gem::{gem_name}' in line:
-                logger.warning(f'{gem_name} is already a gem dependency.')
+            if f'Gem::{gem_target}' in line:
+                logger.warning(f'{gem_target} is already a gem dependency.')
                 return 0
             if not added and r'Gem::' in line:
-                new_gem = ' ' * line.find(r'Gem::') + f'Gem::{gem_name}\n'
+                new_gem = ' ' * line.find(r'Gem::') + f'Gem::{gem_target}\n'
                 t_data.append(new_gem)
                 added = True
             t_data.append(line)
@@ -61,13 +58,16 @@ def add_gem_dependency(cmake_file: str,
         for line in t_data:
             index = index + 1
             if r'set(GEM_DEPENDENCIES' in line:
-                t_data.insert(index, f'    Gem::{gem_name}\n')
+                t_data.insert(index, f'    Gem::{gem_target}\n')
                 added = True
                 break
 
+    # if we didn't add it then it's not here, add a whole new one
     if not added:
-        logger.error(f'{cmake_file} is malformed.')
-        return 1
+        t_data.append('\n')
+        t_data.append('set(GEM_DEPENDENCIES\n')
+        t_data.append(f'    Gem::{gem_target}\n')
+        t_data.append(')\n')
 
     # write the cmake
     os.unlink(cmake_file)
@@ -77,10 +77,12 @@ def add_gem_dependency(cmake_file: str,
     return 0
 
 
-def get_project_gem_list(project_path: str) -> set:
-    runtime_gems = get_gem_list(get_runtime_cmake(project_path))
-    tool_gems = get_gem_list(get_tool_cmake(project_path))
-    return runtime_gems.union(tool_gems)
+def get_project_gem_list(project_path: str,
+                         platform: str = 'Common') -> set:
+    runtime_gems = get_gem_list(get_dependencies_cmake(project_path, 'runtime', platform))
+    tool_gems = get_gem_list(get_dependencies_cmake(project_path, 'tool', platform))
+    server_gems = get_gem_list(get_dependencies_cmake(project_path, 'server', platform))
+    return runtime_gems.union(tool_gems.union(server_gems))
 
 
 def get_gem_list(cmake_file: str) -> set:
@@ -106,11 +108,11 @@ def get_gem_list(cmake_file: str) -> set:
 
 
 def remove_gem_dependency(cmake_file: str,
-                          gem_name: str) -> int:
+                          gem_target: str) -> int:
     """
     removes a gem dependency from a cmake file
     :param cmake_file: path to the cmake file
-    :param gem_name: name of the gem to remove
+    :param gem_target: cmake target name
     :return: 0 for success or non 0 failure code
     """
     if not os.path.isfile(cmake_file):
@@ -123,13 +125,13 @@ def remove_gem_dependency(cmake_file: str,
     removed = False
     with open(cmake_file, 'r') as s:
         for line in s:
-            if f'Gem::{gem_name}' in line:
+            if f'Gem::{gem_target}' in line:
                 removed = True
             else:
                 t_data.append(line)
 
     if not removed:
-        logger.error(f'Failed to remove Gem::{gem_name} from cmake file {cmake_file}')
+        logger.error(f'Failed to remove Gem::{gem_target} from cmake file {cmake_file}')
         return 1
 
     # write the cmake
@@ -221,26 +223,25 @@ def remove_gem_subdir(cmake_file: str,
     return 0
 
 
-def get_runtime_cmake(project_path: str) -> str:
+def get_dependencies_cmake(project_path: str,
+                           dependency_type: str = 'runtime',
+                           platform: str = 'Common') -> str:
     if not project_path:
         return ''
-    dependencies_file = 'runtime_dependencies.cmake'
-    gem_path = os.path.join(project_path, 'Gem', 'Code', dependencies_file)
-    if os.path.isfile(gem_path):
-        return gem_path
-    return os.path.join(project_path, 'Code', dependencies_file)
+    if platform == 'Common':
+        dependencies_file = f'{dependency_type}_dependencies.cmake'
+        gem_path = os.path.join(project_path, 'Gem', 'Code', dependencies_file)
+        if os.path.isfile(gem_path):
+            return gem_path
+        return os.path.join(project_path, 'Code', dependencies_file)
+    else:
+        dependencies_file = f'{platform.lower()}_{dependency_type}_dependencies.cmake'
+        gem_path = os.path.join(project_path, 'Gem', 'Code', 'Platform', platform, dependencies_file)
+        if os.path.isfile(gem_path):
+            return gem_path
+        return os.path.join(project_path, 'Code', 'Platform', platform, dependencies_file)
 
-
-def get_tool_cmake(project_path: str) -> str:
-    if not project_path:
-        return ''
-    dependencies_file = 'tool_dependencies.cmake'
-    gem_path = os.path.join(project_path, 'Gem', 'Code', dependencies_file)
-    if os.path.isfile(gem_path):
-        return gem_path
-    return os.path.join(project_path, 'Code', dependencies_file)
-
-
+# this function is making some not so good assumptions about gem naming
 def find_all_gems(gem_folder_list: list) -> list:
     """
     Find all Modules which appear to be gems living within a list of folders
@@ -300,26 +301,58 @@ def find_all_gems(gem_folder_list: list) -> list:
     return sorted(list(module_gems.values()), key=lambda x: x.get('Name'))
 
 
+def find_gem_modules(gem_folder: str) -> list:
+    """
+    Find all gem modules which appear to be gems living in this folder
+    :param gem_folder: the folder to walk down
+    :return: list of gem targets
+    """
+    module_identifiers = [
+        'MODULE',
+        'GEM_MODULE',
+        '${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}'
+    ]
+    modules = []
+    for root, dirs, files in os.walk(gem_folder):
+        for file in files:
+            if file == 'CMakeLists.txt':
+                with open(os.path.join(root, file), 'r') as s:
+                    for line in s:
+                        trimmed = line.lstrip()
+                        if trimmed.startswith('NAME '):
+                            trimmed = trimmed.rstrip(' \n')
+                            split_trimmed = trimmed.split(' ')
+                            if len(split_trimmed) == 3 and split_trimmed[2] in module_identifiers:
+                                modules.append(split_trimmed[1])
+    return modules
+
+
 def add_remove_gem(add: bool,
                    dev_root: str,
                    gem_path: str,
+                   gem_target: str,
                    project_path: str,
+                   dependencies_file: str or None,
                    project_restricted_path: str = 'restricted',
-                   runtime_dependency: bool = True,
-                   tool_dependency: bool = True,
-                   remove_gem_from_cmake: bool = False,
-                   gem_name: str = None) -> int:
+                   runtime_dependency: bool = False,
+                   tool_dependency: bool = False,
+                   server_dependency: bool = False,
+                   platforms: str = 'Common',
+                   gem_cmake: str = None) -> int:
     """
     add a gem to a project
     :param add: should we add a gem, if false we remove a gem
     :param dev_root: the dev root of the engine
     :param gem_path: path to the gem to add
+    :param gem_target: the name of teh cmake gem module
     :param project_path: path to the project to add the gem to
+    :param dependencies_file: if this dependency goes/is in a specific file
     :param project_restricted_path: path to the projects restricted folder
-    :param runtime_dependency: optional bool to specify this is a runtime gem for the game, default is true
-    :param tool_dependency: optional bool to specify this is a tool gem for the editor, default is true
-    :param remove_gem_from_cmake: optional bool to specify that this gem should be removed from the Gems/ CMakeLists.txt
-    :param gem_name: optional str specifying a gem name.  Default is derived based on base_name of gem_path
+    :param runtime_dependency: bool to specify this is a runtime gem for the game
+    :param tool_dependency: bool to specify this is a tool gem for the editor
+    :param server_dependency: bool to specify this is a server gem for the server
+    :param platforms: str to specify common or which specific platforms
+    :param gem_cmake: str to specify that this gem should be removed from the Gems/CMakeLists.txt
     :return: 0 for success or non 0 failure code
     """
 
@@ -327,10 +360,10 @@ def add_remove_gem(add: bool,
     if not dev_root:
         logger.error('Dev root cannot be empty.')
         return 1
-    dev_root = dev_root.replace('\\', '/')
     if not os.path.isabs(dev_root):
         dev_root = os.path.abspath(dev_root)
-    if not os.path.isdir(dev_root):
+    dev_root = pathlib.Path(dev_root)
+    if not dev_root.is_dir():
         logger.error(f'Dev root {dev_root} is not a folder.')
         return 1
 
@@ -338,17 +371,18 @@ def add_remove_gem(add: bool,
     if not project_path:
         logger.error('Project path cannot be empty.')
         return 1
-    project_path = project_path.replace('\\', '/')
     if not os.path.isabs(project_path):
         project_path = f'{dev_root}/{project_path}'
-    if not os.path.isdir(project_path):
+    project_path = pathlib.Path(project_path)
+    if not project_path.is_dir():
         logger.error(f'Project path {project_path} is not a folder.')
         return 1
 
     project_restricted_path = project_restricted_path.replace('\\', '/')
     if not os.path.isabs(project_restricted_path):
         project_restricted_path = f'{dev_root}/{project_restricted_path}'
-    if not os.path.isdir(project_restricted_path):
+    project_restricted_path = pathlib.Path(project_restricted_path)
+    if not project_restricted_path.is_dir():
         logger.error(f'Project Restricted path {project_restricted_path} is not a folder.')
         return 1
 
@@ -356,85 +390,116 @@ def add_remove_gem(add: bool,
     if not gem_path:
         logger.error('Gem path cannot be empty.')
         return 1
-    gem_path = gem_path.replace('\\', '/')
-
-    # gem path can be absolute or relative to the Gems folder under the dev root
-    if os.path.isabs(gem_path):
-        gem_root = gem_path
-    else:
-        gem_root = f'{dev_root}/Gems/{gem_path}'
-
+    if not os.path.isabs(gem_path):
+        gem_path = f'{dev_root}/Gems/{gem_path}'
+    gem_path = pathlib.Path(gem_path)
     # make sure this gem already exists if we're adding.  We can always remove a gem.
-    if add and not os.path.isdir(gem_root):
-        logger.error(f'{gem_root} dir does not exist.')
+    if add and not gem_path.is_dir():
+        logger.error(f'{gem_path} dir does not exist.')
         return 1
 
-    # gem name is now the last component of the gem root
-    gem_name = gem_name or os.path.basename(gem_root)
-    if not utils.validate_identifier(gem_name):
-        logger.error(f'{gem_name} is not a valid Gem name.')
+    # find all available modules in this gem_path
+    modules = find_gem_modules(gem_path)
+    if len(modules) == 0:
+        logger.error(f'No gem modules found.')
         return 1
 
-    # if the project path is absolute use it, if not make it relative to the dev root
-    if os.path.isabs(project_path):
-        project_root = project_path
-    else:
-        project_root = f'{dev_root}/{project_path}'
-    if not os.path.isdir(project_root):
-        logger.error(f'Project {project_root} does not exist.')
+    # if gem target not specified, see if there is only 1 module
+    if not gem_target:
+        if len(modules) == 1:
+            gem_target = modules[0]
+        else:
+            logger.error(f'Gem target not specified: {modules}')
+            return 1
+    elif gem_target not in modules:
+        logger.error(f'Gem target not in gem modules: {modules}')
         return 1
 
-    # if the user has not specified either we will assume they meant both
-    if not runtime_dependency and not tool_dependency:
+    # gem cmake list text file is assumed to be in the parent folder is not specified
+    if add or isinstance(gem_cmake, str):
+        if not gem_cmake:
+            gem_cmake = gem_path.parent / 'CMakeLists.txt'
+        if not os.path.isabs(gem_cmake):
+            gem_cmake = f'{dev_root}/{gem_cmake}'
+        gem_cmake = pathlib.Path(gem_cmake)
+        if not gem_cmake.is_file():
+            logger.error(f'CMakeLists.txt file {gem_cmake} does not exist.')
+            return 1
+
+    # if the user has not specified either we will assume they meant the most common which is runtime
+    if not runtime_dependency and not tool_dependency and not server_dependency and not dependencies_file:
+        logger.warning("Dependency type not specified: Assuming '--runtime-dependency'")
         runtime_dependency = True
-        tool_dependency = True
 
     ret_val = 0
 
-    if runtime_dependency:
-        # make sure this is a project has a runtime_dependencies.cmake file
-
-        project_runtime_dependencies_file = get_runtime_cmake(project_root)
-
-        if not os.path.isfile(project_runtime_dependencies_file):
-            project_runtime_dependencies_file = f'{project_root}/Gem/Code/runtime_dependencies.cmake'
-            if not os.path.isfile(project_runtime_dependencies_file):
-                logger.error(f'Runtime dependencies file {project_runtime_dependencies_file} is not present.')
-                return 1
-
+    # if the user has specified the dependencies file then ignore the runtime_dependency and tool_dependency flags
+    if dependencies_file:
+        dependencies_file = pathlib.Path(dependencies_file)
+        # make sure this is a project has a dependencies_file
+        if not dependencies_file.is_file():
+            logger.error(f'Dependencies file {dependencies_file} is not present.')
+            return 1
         if add:
             # add the dependency
-            ret_val = add_gem_dependency(project_runtime_dependencies_file, gem_name)
-
+            ret_val = add_gem_dependency(dependencies_file, gem_target)
         else:
             # remove the dependency
-            ret_val = remove_gem_dependency(project_runtime_dependencies_file, gem_name)
-
-    # Tool dependencies should still attempt to remove even if removing the runtime failed (It may not be added as a
-    # runtime, no reason to force the user to re request)
-    if (ret_val == 0 or not add) and tool_dependency:
-        # make sure this is a project has a tool_dependencies.cmake file
-
-        project_tool_dependencies_file = get_tool_cmake(project_root)
-        if not os.path.isfile(project_tool_dependencies_file):
-            project_tool_dependencies_file = f'{project_root}/Gem/Code/tool_dependencies.cmake'
-            if not os.path.isfile(project_tool_dependencies_file):
-                logger.error(f'Tool dependencies file {project_tool_dependencies_file} is not present.')
-                return 1
-
-        if add:
-            # add the dependency
-            ret_val = add_gem_dependency(project_tool_dependencies_file, gem_name)
+            ret_val = remove_gem_dependency(dependencies_file, gem_target)
+    else:
+        if ',' in platforms:
+            platforms = platforms.split(',')
         else:
-            # remove the dependency
-            ret_val = remove_gem_dependency(project_tool_dependencies_file, gem_name)
+            platforms = [platforms]
+        for platform in platforms:
+            if runtime_dependency:
+                # make sure this is a project has a runtime_dependencies.cmake file
+                project_runtime_dependencies_file = pathlib.Path(get_dependencies_cmake(project_path, 'runtime', platform))
+                if not project_runtime_dependencies_file.is_file():
+                    logger.error(f'Runtime dependencies file {project_runtime_dependencies_file} is not present.')
+                    return 1
+
+                if add:
+                    # add the dependency
+                    ret_val = add_gem_dependency(project_runtime_dependencies_file, gem_target)
+                else:
+                    # remove the dependency
+                    ret_val = remove_gem_dependency(project_runtime_dependencies_file, gem_target)
+
+            if (ret_val == 0 or not add) and tool_dependency:
+                # make sure this is a project has a tool_dependencies.cmake file
+                project_tool_dependencies_file = pathlib.Path(get_dependencies_cmake(project_path, 'tool', platform))
+                if not project_tool_dependencies_file.is_file():
+                    logger.error(f'Tool dependencies file {project_tool_dependencies_file} is not present.')
+                    return 1
+
+                if add:
+                    # add the dependency
+                    ret_val = add_gem_dependency(project_tool_dependencies_file, gem_target)
+                else:
+                    # remove the dependency
+                    ret_val = remove_gem_dependency(project_tool_dependencies_file, gem_target)
+
+            if (ret_val == 0 or not add) and server_dependency:
+                # make sure this is a project has a tool_dependencies.cmake file
+                project_server_dependencies_file = pathlib.Path(get_dependencies_cmake(project_path, 'server', platform))
+                if not project_server_dependencies_file.is_file():
+                    logger.error(f'Server dependencies file {project_server_dependencies_file} is not present.')
+                    return 1
+
+                if add:
+                    # add the dependency
+                    ret_val = add_gem_dependency(project_server_dependencies_file, gem_target)
+                else:
+                    # remove the dependency
+                    ret_val = remove_gem_dependency(project_server_dependencies_file, gem_target)
 
     if add:
         # add the gem subdir to the CMakeList.txt
-        ret_val = add_gem_subdir(f'{gem_root}/../CMakeLists.txt', gem_name)
-    elif remove_gem_from_cmake:
+        ret_val = add_gem_subdir(gem_cmake, gem_path.name)
+    elif gem_cmake:
         # remove the gem subdir from the CMakeList.txt
-        ret_val = remove_gem_subdir(f'{gem_root}/../CMakeLists.txt', gem_name)
+        ret_val = remove_gem_subdir(gem_cmake, gem_path.name)
 
     return ret_val
 
@@ -443,21 +508,30 @@ def _run_add_gem(args: argparse) -> int:
     return add_remove_gem(True,
                           common.determine_engine_root(),
                           args.gem_path,
+                          args.gem_target,
                           args.project_path,
+                          args.dependencies_file,
                           args.project_restricted_path,
                           args.runtime_dependency,
-                          args.tool_dependency)
+                          args.tool_dependency,
+                          args.server_dependency,
+                          args.platforms,
+                          args.add_to_cmake)
 
 
 def _run_remove_gem(args: argparse) -> int:
     return add_remove_gem(False,
                           common.determine_engine_root(),
                           args.gem_path,
+                          args.gem_target,
                           args.project_path,
+                          args.dependencies_file,
                           args.project_restricted_path,
                           args.runtime_dependency,
                           args.tool_dependency,
-                          args.remove_gem_from_cmake)
+                          args.server_dependency,
+                          args.platforms,
+                          args.remove_from_cmake)
 
 
 def add_args(parser, subparsers) -> None:
@@ -471,7 +545,7 @@ def add_args(parser, subparsers) -> None:
     :param parser: the caller instantiates a parser and passes it in here
     :param subparsers: the caller instantiates subparsers and passes it in here
     """
-    add_gem_subparser = subparsers.add_parser('add_gem')
+    add_gem_subparser = subparsers.add_parser('add-gem')
     add_gem_subparser.add_argument('-pp', '--project-path', type=str, required=True,
                                    help='The path to the project, can be absolute or dev root relative')
     add_gem_subparser.add_argument('-prp', '--project-restricted-path', type=str, required=False,
@@ -480,17 +554,32 @@ def add_args(parser, subparsers) -> None:
                                         ' relative')
     add_gem_subparser.add_argument('-gp', '--gem-path', type=str, required=True,
                                    help='The path to the gem, can be absolute or dev root/Gems relative')
-    add_gem_subparser.add_argument('-rd', '--runtime-dependency', type=bool,
-                                   help='Optional toggle if this gem should only be added as a runtime dependency'
-                                        ' and not tool dependency. If neither is specified then the gem is added'
-                                        ' to both.')
-    add_gem_subparser.add_argument('-td', '--tool-dependency', type=bool,
-                                   help='Optional toggle if this gem should only be added as a tool dependency'
-                                        ' and not a runtime dependency. If neither is specified then the gem is'
-                                        ' added to both.')
+    add_gem_subparser.add_argument('-gt', '--gem-target', type=str, required=False,
+                                   help='The cmake target name to add. If not specified it will assume gem_name')
+    add_gem_subparser.add_argument('-df', '--dependencies-file', type=str, required=False,
+                                   help='The cmake dependencies file in which the gem dependencies are specified.'
+                                        'If not specified it will assume ')
+    add_gem_subparser.add_argument('-rd', '--runtime-dependency', action='store_true', required=False,
+                                   default=False,
+                                   help='Optional toggle if this gem should be added as a runtime dependency')
+    add_gem_subparser.add_argument('-td', '--tool-dependency', action='store_true', required=False,
+                                   default=False,
+                                   help='Optional toggle if this gem should be added as a tool dependency')
+    add_gem_subparser.add_argument('-sd', '--server-dependency', action='store_true', required=False,
+                                   default=False,
+                                   help='Optional toggle if this gem should be added as a server dependency')
+    add_gem_subparser.add_argument('-pl', '--platforms', type=str, required=False,
+                                   default='Common',
+                                   help='Optional list of platforms this gem should be added to.'
+                                   ' Ex. --platforms Mac,Windows,Linux')
+    add_gem_subparser.add_argument('-a', '--add-to-cmake', type=str, required=False,
+                                      default=None,
+                                      help='Add the gem folder to the CMakeLists.txt so that it builds. If not'
+                                           ' specified it will assume the CMakeLists.txt file in the parent folder of'
+                                           ' the gem_path.')
     add_gem_subparser.set_defaults(func=_run_add_gem)
 
-    remove_gem_subparser = subparsers.add_parser('remove_gem')
+    remove_gem_subparser = subparsers.add_parser('remove-gem')
     remove_gem_subparser.add_argument('-pp', '--project-path', type=str, required=True,
                                       help='The path to the project, can be absolute or dev root relative')
     remove_gem_subparser.add_argument('-prp', '--project-restricted-path', type=str, required=False,
@@ -499,18 +588,29 @@ def add_args(parser, subparsers) -> None:
                                            ' relative')
     remove_gem_subparser.add_argument('-gp', '--gem-path', type=str, required=True,
                                       help='The path to the gem, can be absolute or dev root/Gems relative')
-    remove_gem_subparser.add_argument('-rd', '--runtime-dependency', type=bool,
-                                      help='Optional toggle if this gem should only be removed as a runtime dependency'
-                                           ' and not tool dependency. If neither is specified then the gem is removed'
-                                           ' from both.')
-    remove_gem_subparser.add_argument('-td', '--tool-dependency', type=bool,
-                                      help='Optional toggle if this gem should only be removed as a tool dependency'
-                                           ' and not a runtime dependency. If neither is specified then the gem is'
-                                           ' removed from both.')
-    remove_gem_subparser.add_argument('-r', '--remove-gem-from-cmake', action='store_true', required=False,
+    remove_gem_subparser.add_argument('-gt', '--gem-target', type=str, required=False,
+                                      help='The cmake target name to add. If not specified it will assume gem_name')
+    remove_gem_subparser.add_argument('-df', '--dependencies-file', type=str, required=False,
+                                      help='The cmake dependencies file in which the gem dependencies are specified.'
+                                           'If not specified it will assume ')
+    remove_gem_subparser.add_argument('-rd', '--runtime-dependency', action='store_true', required=False,
                                       default=False,
-                                      help='Remove the gem from the Gem\'s CMakeLists.txt so it will no longer '
-                                           'build.')
+                                      help='Optional toggle if this gem should be removed as a runtime dependency')
+    remove_gem_subparser.add_argument('-td', '--tool-dependency', action='store_true', required=False,
+                                      default=False,
+                                      help='Optional toggle if this gem should be removed as a server dependency')
+    remove_gem_subparser.add_argument('-sd', '--server-dependency', action='store_true', required=False,
+                                      default=False,
+                                      help='Optional toggle if this gem should be removed as a server dependency')
+    remove_gem_subparser.add_argument('-pl', '--platforms', type=str, required=False,
+                                      default='Common',
+                                      help='Optional list of platforms this gem should be removed from'
+                                      ' Ex. --platforms Mac,Windows,Linux')
+    remove_gem_subparser.add_argument('-r', '--remove-from-cmake', type=str, required=False,
+                                      default=None,
+                                      help='Remove the gem folder from the CMakeLists.txt that includes it so that it '
+                                           'no longer builds build. If not specified it will assume you dont want to'
+                                           ' remove it.')
     remove_gem_subparser.set_defaults(func=_run_remove_gem)
 
 

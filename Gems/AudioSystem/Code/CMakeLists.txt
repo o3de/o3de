@@ -18,7 +18,6 @@ ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${P
 ly_add_target(
     NAME AudioSystem.Static STATIC
     NAMESPACE Gem
-    OUTPUT_NAME Gem.AudioSystem.Static
     FILES_CMAKE
         audiosystem_files.cmake
         ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake

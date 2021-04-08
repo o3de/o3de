@@ -26,7 +26,7 @@ namespace UnitTest
 
         InstanceData CreateInstanceDataWithNoPatches(
             const AZStd::string& name,
-            const AZStd::string& source);
+            AZ::IO::PathView source);
 
         void ValidateTemplateLoad(
             const TemplateData& expectedTemplateData);

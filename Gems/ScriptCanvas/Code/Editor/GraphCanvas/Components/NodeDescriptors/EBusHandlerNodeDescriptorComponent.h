@@ -110,7 +110,7 @@ namespace ScriptCanvasEditor
         ////
 
     protected:
-        void OnAddedToGraphCanvasGraph(const GraphCanvas::GraphId& graphId, const AZ::EntityId& scriptCanvasNodeId);
+        void OnAddedToGraphCanvasGraph(const GraphCanvas::GraphId& graphId, const AZ::EntityId& scriptCanvasNodeId) override;
 
     private:
 

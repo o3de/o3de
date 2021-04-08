@@ -21,6 +21,8 @@ namespace TranslationResultCpp
     {
         RemoveGraphType = 0,
         AddedStaticVariables,
+        SupportMemberVariableInputs,
+        ExecutionStateSelectionIncludesOnGraphStart,
         // add your entry above
         Current
     };
@@ -117,7 +119,15 @@ namespace ScriptCanvas
             *this = AZStd::move(rhs);
         }
 
-        size_t RuntimeInputs::GetParameterSize() const
+        void RuntimeInputs::CopyFrom(const Grammar::ParsedRuntimeInputs& rhs)
+        {
+            m_nodeables = rhs.m_nodeables;
+            m_variables = rhs.m_variables;
+            m_entityIds = rhs.m_entityIds;
+            m_staticVariables = rhs.m_staticVariables;
+        }
+
+        size_t RuntimeInputs::GetConstructorParameterCount() const
         {
             return m_nodeables.size() + m_variables.size() + m_entityIds.size();
         }
@@ -126,8 +136,7 @@ namespace ScriptCanvas
         {
             if (this != &rhs)
             {
-                m_execution = AZStd::move(rhs.m_execution);
-                m_executionCharacteristics = AZStd::move(rhs.m_executionCharacteristics);
+                m_executionSelection = AZStd::move(rhs.m_executionSelection);
                 m_nodeables = AZStd::move(rhs.m_nodeables);
                 m_variables = AZStd::move(rhs.m_variables);
                 m_entityIds = AZStd::move(rhs.m_entityIds);
@@ -143,8 +152,7 @@ namespace ScriptCanvas
             {
                 serializeContext->Class<RuntimeInputs>()
                     ->Version(TranslationResultCpp::RuntimeInputsVersion::Current)
-                    ->Field("execution", &RuntimeInputs::m_execution)
-                    ->Field("executionCharacteristics", &RuntimeInputs::m_executionCharacteristics)
+                    ->Field("executionSelection", &RuntimeInputs::m_executionSelection)
                     ->Field("nodeables", &RuntimeInputs::m_nodeables)
                     ->Field("variables", &RuntimeInputs::m_variables)
                     ->Field("entityIds", &RuntimeInputs::m_entityIds)

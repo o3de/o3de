@@ -9,25 +9,23 @@ remove or modify any license notices. This file is distributed on an "AS IS" BAS
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
 
-from typing import List
-from PySide2.QtCore import (QAbstractItemModel, QModelIndex, QObject, QRect, QSize, Qt)
-from PySide2.QtGui import (QFont, QFontMetrics)
-from PySide2.QtWidgets import (QAbstractItemDelegate, QAbstractItemView, QComboBox, QHeaderView, QLabel, QLineEdit,
-                               QPushButton, QStackedWidget, QStyledItemDelegate, QStyleOptionViewItem,
-                               QTableView, QVBoxLayout, QWidget)
+from typing import (Dict, List)
+from PySide2.QtCore import (QAbstractItemModel, QModelIndex, QObject, Qt)
+from PySide2.QtGui import (QIcon, QFont, QFontMetrics, QPainter, QPixmap)
+from PySide2.QtWidgets import (QAbstractItemDelegate, QAbstractItemView, QComboBox, QFrame, QHeaderView, QHBoxLayout,
+                               QLabel, QLayout, QLineEdit, QPushButton, QSizePolicy, QSpacerItem, QStackedWidget,
+                               QStyledItemDelegate, QStyleOptionViewItem, QTableView, QVBoxLayout, QWidget)
 
 from model import (constants, notification_label_text, view_size_constants)
+from model.resource_mapping_attributes import ResourceMappingAttributesStatus
 from model.resource_proxy_model import ResourceProxyModel
 from model.resource_table_model import (ResourceTableConstants, ResourceTableModel)
-from view.common_view_components import (NotificationFrame, NotificationPrompt, SearchFilterWidget)
+from view.common_view_components import (NotificationFrame, SearchFilterLineEdit)
 
 
 class ViewEditPageConstants(object):
     NOTIFICATION_PAGE_INDEX = 0
     TABLE_VIEW_PAGE_INDEX = 1
-
-    NOTIFICATION_LOADING_TEXT: str = "Loading..."
-    NOTIFICATION_SELECT_CONFIG_FILE_TEXT: str = "Please select the Config file you would like to view and modify..."
 
 
 class ComboboxItemDelegate(QStyledItemDelegate):
@@ -35,9 +33,9 @@ class ComboboxItemDelegate(QStyledItemDelegate):
     Custom item delegate to present individual item as a combobox while
     editing
     """
-    def __init__(self, parent: QObject, combobox_values: List[str]) -> None:
+    def __init__(self, parent: QObject) -> None:
         super(ComboboxItemDelegate, self).__init__(parent)
-        self._combobox_values: List[str] = combobox_values
+        self._combobox_values: List[str] = constants.AWS_RESOURCE_REGIONS
 
     def createEditor(self, parent: QWidget, option: QStyleOptionViewItem, index: QModelIndex) -> QWidget:
         """QStyledItemDelegate override"""
@@ -67,6 +65,29 @@ class ComboboxItemDelegate(QStyledItemDelegate):
         self.closeEditor.emit(editor, QAbstractItemDelegate.NoHint)
 
 
+class ImageDelegate(QStyledItemDelegate):
+    """
+    Image delegate to draw image in table cell
+    """
+    def __init__(self, parent: QObject) -> None:
+        super(ImageDelegate, self).__init__(parent)
+        self._icons: Dict[str, QIcon] = \
+            {ResourceMappingAttributesStatus.SUCCESS_STATUS_VALUE: QIcon(":/stylesheet/img/table_success.png"),
+             ResourceMappingAttributesStatus.MODIFIED_STATUS_VALUE: QIcon(":/stylesheet/img/table_warning.png"),
+             ResourceMappingAttributesStatus.FAILURE_STATUS_VALUE: QIcon(":/stylesheet/img/table_error.png")}
+
+    def get_icon(self, index: QModelIndex) -> QIcon:
+        current_text: str = index.data()
+        if current_text in self._icons.keys():
+            return self._icons[current_text]
+        return None
+
+    def paint(self, painter: QPainter, option: QStyleOptionViewItem, index: QModelIndex):
+        icon: QIcon = self.get_icon(index)
+        if icon:
+            icon.paint(painter, option.rect, Qt.AlignCenter)
+
+
 class ResourceTableView(QTableView):
     """
     Custom QTableView, which maintains custom resource table model to show
@@ -79,7 +100,9 @@ class ResourceTableView(QTableView):
         self.setModel(self._resource_proxy_model)
 
         self.setItemDelegateForColumn(ResourceTableConstants.TABLE_REGION_COLUMN_INDEX,
-                                      ComboboxItemDelegate(self, constants.AWS_RESOURCE_REGIONS))
+                                      ComboboxItemDelegate(self))
+        self.setItemDelegateForColumn(ResourceTableConstants.TABLE_STATE_COLUMN_INDEX,
+                                      ImageDelegate(self))
 
     @property
     def resource_proxy_model(self) -> ResourceProxyModel:
@@ -103,23 +126,24 @@ class ViewEditPage(QWidget):
     """
     def __init__(self) -> None:
         super().__init__()
-        self.setObjectName("ViewEditPage")
         self.setGeometry(0, 0,
                          view_size_constants.TOOL_APPLICATION_MAIN_WINDOW_WIDTH,
                          view_size_constants.TOOL_APPLICATION_MAIN_WINDOW_HEIGHT)
         
         page_vertical_layout: QVBoxLayout = QVBoxLayout(self)
-        page_vertical_layout.setObjectName("PageVerticalLayout")
-        page_vertical_layout.setSpacing(0)
-        page_vertical_layout.setContentsMargins(view_size_constants.MAIN_PAGE_LAYOUT_MARGIN_LEFTRIGHT,
-                                                view_size_constants.MAIN_PAGE_LAYOUT_MARGIN_TOPBOTTOM,
-                                                view_size_constants.MAIN_PAGE_LAYOUT_MARGIN_LEFTRIGHT,
-                                                view_size_constants.MAIN_PAGE_LAYOUT_MARGIN_TOPBOTTOM)
+        page_vertical_layout.setSizeConstraint(QLayout.SetMinimumSize)
+        page_vertical_layout.setMargin(0)
 
         self._setup_header_area()
         page_vertical_layout.addWidget(self._header_area)
+        header_area_separator: QFrame = QFrame(self)
+        header_area_separator.setObjectName("SeparatorLine")
+        header_area_separator.setFrameShape(QFrame.HLine)
+        header_area_separator.setLineWidth(view_size_constants.HEADER_AREA_SEPARATOR_WIDTH)
+        page_vertical_layout.addWidget(header_area_separator)
 
-        self._notification_frame: NotificationFrame = NotificationFrame(self)
+        self._notification_frame: NotificationFrame = \
+            NotificationFrame(self, QPixmap(":/stylesheet/img/logging/information.svg"), "", True)
         page_vertical_layout.addWidget(self._notification_frame)
 
         self._setup_center_area()
@@ -130,151 +154,152 @@ class ViewEditPage(QWidget):
 
     def _setup_header_area(self) -> None:
         self._header_area: QWidget = QWidget(self)
-        self._header_area.setObjectName("HeaderArea")
+        self._header_area.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
         self._header_area.setMinimumSize(view_size_constants.TOOL_APPLICATION_MAIN_WINDOW_WIDTH,
-                                         view_size_constants.VIEW_EDIT_PAGE_HEADER_FOOTER_AREA_HEIGHT)
-        
+                                         view_size_constants.VIEW_EDIT_PAGE_HEADER_AREA_HEIGHT)
+
+        header_area_layout: QHBoxLayout = QHBoxLayout(self._header_area)
+        header_area_layout.setSizeConstraint(QLayout.SetMinimumSize)
+        header_area_layout.setContentsMargins(
+            view_size_constants.MAIN_PAGE_LAYOUT_MARGIN_LEFTRIGHT,
+            view_size_constants.MAIN_PAGE_LAYOUT_MARGIN_TOPBOTTOM + view_size_constants.VIEW_EDIT_PAGE_MARGIN_TOPBOTTOM,
+            view_size_constants.MAIN_PAGE_LAYOUT_MARGIN_LEFTRIGHT,
+            view_size_constants.MAIN_PAGE_LAYOUT_MARGIN_TOPBOTTOM)
+
         config_file_label: QLabel = QLabel(self._header_area)
-        config_file_label.setObjectName("ConfigFileLabel")
-        config_file_label.setText("Config File:")
-        config_file_label.setGeometry(view_size_constants.CONFIG_FILE_LABEL_X,
-                                      view_size_constants.VIEW_EDIT_PAGE_WIDGET_SUBCOMPONENT_Y,
-                                      view_size_constants.CONFIG_FILE_LABEL_WIDTH,
-                                      view_size_constants.INTERACTION_COMPONENT_HEIGHT)
+        config_file_label.setText(notification_label_text.VIEW_EDIT_PAGE_CONFIG_FILE_TEXT)
+        config_file_label_font: QFont = QFont()
+        config_file_label_font.setBold(True)
+        config_file_label.setFont(config_file_label_font)
+        config_file_label.setMinimumSize(view_size_constants.CONFIG_FILE_LABEL_WIDTH,
+                                         view_size_constants.INTERACTION_COMPONENT_HEIGHT)
+        header_area_layout.addWidget(config_file_label)
         
         self._config_file_combobox: QComboBox = QComboBox(self._header_area)
-        self._config_file_combobox.setObjectName("ConfigFileCombobox")
         self._config_file_combobox.setLineEdit(QLineEdit())
-        self._config_file_combobox.lineEdit().setPlaceholderText(f"Found 0 config file")
+        self._config_file_combobox.lineEdit().setPlaceholderText(
+            notification_label_text.VIEW_EDIT_PAGE_CONFIG_FILES_PLACEHOLDER_TEXT.format(0))
         self._config_file_combobox.lineEdit().setReadOnly(True)
-        self._config_file_combobox.setGeometry(view_size_constants.CONFIG_FILE_COMBOBOX_X,
-                                               view_size_constants.VIEW_EDIT_PAGE_WIDGET_SUBCOMPONENT_Y,
-                                               view_size_constants.CONFIG_FILE_COMBOBOX_WIDTH,
-                                               view_size_constants.INTERACTION_COMPONENT_HEIGHT)
+        self._config_file_combobox.setMinimumSize(view_size_constants.CONFIG_FILE_COMBOBOX_WIDTH,
+                                                  view_size_constants.INTERACTION_COMPONENT_HEIGHT)
         self._config_file_combobox.setCurrentIndex(-1)
+        header_area_layout.addWidget(self._config_file_combobox)
+
+        header_area_spacer: QSpacerItem = QSpacerItem(view_size_constants.TOOL_APPLICATION_MAIN_WINDOW_WIDTH,
+                                                      view_size_constants.INTERACTION_COMPONENT_HEIGHT,
+                                                      QSizePolicy.Expanding, QSizePolicy.Minimum)
+        header_area_layout.addItem(header_area_spacer)
         
         config_location_label: QLabel = QLabel(self._header_area)
-        config_location_label.setObjectName("ConfigLocationLabel")
-        config_location_label.setText("Config Location:")
-        config_location_label.setGeometry(view_size_constants.CONFIG_LOCATION_LABEL_X,
-                                          view_size_constants.VIEW_EDIT_PAGE_WIDGET_SUBCOMPONENT_Y,
-                                          view_size_constants.CONFIG_LOCATION_LABEL_WIDTH,
-                                          view_size_constants.INTERACTION_COMPONENT_HEIGHT)
+        config_location_label.setText(notification_label_text.VIEW_EDIT_PAGE_CONFIG_LOCATION_TEXT)
+        config_location_label_font: QFont = QFont()
+        config_location_label_font.setBold(True)
+        config_location_label.setFont(config_location_label_font)
+        config_location_label.setMinimumSize(view_size_constants.CONFIG_LOCATION_LABEL_WIDTH,
+                                             view_size_constants.INTERACTION_COMPONENT_HEIGHT)
+        header_area_layout.addWidget(config_location_label)
         
         self._config_location_text: QLabel = QLabel(self._header_area)
-        self._config_location_text.setObjectName("ConfigLocationText")
-        self._config_location_text.setToolTip("None config directory given")
-        self._config_location_text.setGeometry(view_size_constants.CONFIG_LOCATION_TEXT_X,
-                                               view_size_constants.VIEW_EDIT_PAGE_WIDGET_SUBCOMPONENT_Y,
-                                               view_size_constants.CONFIG_LOCATION_TEXT_WIDTH,
-                                               view_size_constants.INTERACTION_COMPONENT_HEIGHT)
+        self._config_location_text.setMinimumSize(view_size_constants.CONFIG_LOCATION_TEXT_WIDTH,
+                                                  view_size_constants.INTERACTION_COMPONENT_HEIGHT)
+        header_area_layout.addWidget(self._config_location_text)
 
-        # TODO: unicode set up for now, will replace with icon
         self._config_location_button: QPushButton = QPushButton(self._header_area)
-        self._config_location_button.setObjectName("ConfigLocationButton")
-        self._config_location_button.setText("📂")
-        font: QFont = self._config_location_button.font()
-        font.setPointSize(view_size_constants.ICON_FRONT_SIZE)
-        self._config_location_button.setFont(font)
-        self._config_location_button.setGeometry(view_size_constants.CONFIG_LOCATION_BUTTON_X,
-                                                 view_size_constants.VIEW_EDIT_PAGE_WIDGET_SUBCOMPONENT_Y,
-                                                 view_size_constants.INTERACTION_COMPONENT_HEIGHT,
-                                                 view_size_constants.INTERACTION_COMPONENT_HEIGHT)
+        self._config_location_button.setIcon(QIcon(":/Gallery/Folder.svg"))
+        self._config_location_button.setFlat(True)
+        self._config_location_button.setMinimumSize(view_size_constants.INTERACTION_COMPONENT_HEIGHT,
+                                                    view_size_constants.INTERACTION_COMPONENT_HEIGHT)
+        header_area_layout.addWidget(self._config_location_button)
 
     def _setup_center_area(self) -> None:
         self._stacked_pages: QStackedWidget = QStackedWidget(self)
-        self._stacked_pages.setObjectName("StackedPages")
+        self._stacked_pages.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self._stacked_pages.setMaximumSize(view_size_constants.TOOL_APPLICATION_MAIN_WINDOW_WIDTH,
                                            view_size_constants.VIEW_EDIT_PAGE_CENTER_AREA_HEIGHT)
+        self._stacked_pages.setContentsMargins(view_size_constants.MAIN_PAGE_LAYOUT_MARGIN_LEFTRIGHT, 0,
+                                               view_size_constants.MAIN_PAGE_LAYOUT_MARGIN_LEFTRIGHT, 0)
 
         self._setup_notification_page()
-        self._stacked_pages.addWidget(self._notification_page)
+        self._stacked_pages.addWidget(self._notification_page_frame)
 
         self._setup_table_view_page()
         self._stacked_pages.addWidget(self._table_view_page)
 
     def _setup_notification_page(self) -> None:
-        self._notification_page: QWidget = QWidget()
-        self._notification_page.setObjectName("NotificationPage")
-
-        self._notification_page_label: QLabel = QLabel(self._notification_page)
-        self._notification_page_label.setObjectName("NotificationLabel")
-        self._notification_page_label.setText("Loading ...")
-        self._notification_page_label.setGeometry(0, 0,
-                                                  view_size_constants.TOOL_APPLICATION_MAIN_WINDOW_WIDTH,
-                                                  view_size_constants.INTERACTION_COMPONENT_HEIGHT)
-        self._notification_page_label.setAlignment(Qt.AlignCenter)
-
-        self._notification_page_prompt: QWidget = \
-            NotificationPrompt(self._notification_page,
-                               QRect(0, 0,
-                                     view_size_constants.TOOL_APPLICATION_MAIN_WINDOW_WIDTH,
-                                     view_size_constants.NOTIFICATION_PAGE_PROMPT_HEIGHT),
-                               QSize(view_size_constants.NOTIFICATION_PAGE_PROMPT_BUTTON_WIDTH,
-                                     view_size_constants.INTERACTION_COMPONENT_HEIGHT))
+        self._notification_page_frame: QFrame = \
+            NotificationFrame(self, QPixmap(":/stylesheet/img/32x32/info.png"),
+                              notification_label_text.NOTIFICATION_LOADING_MESSAGE, False)
+        self._notification_page_frame.setFixedSize(
+            (view_size_constants.TOOL_APPLICATION_MAIN_WINDOW_WIDTH
+                - 2 * view_size_constants.MAIN_PAGE_LAYOUT_MARGIN_LEFTRIGHT),
+            view_size_constants.INTERACTION_COMPONENT_HEIGHT)
+        self._notification_page_frame.setVisible(True)
 
     def _setup_table_view_page(self) -> None:
-        self._table_view_page: QWidget = QWidget()
-        self._table_view_page.setObjectName("TableViewPage")
-
+        self._table_view_page: QWidget = QWidget(self)
         table_view_vertical_layout: QVBoxLayout = QVBoxLayout(self._table_view_page)
-        table_view_vertical_layout.setObjectName("TableViewVerticalLayout")
-        table_view_vertical_layout.setSpacing(0)
+        table_view_vertical_layout.setSizeConstraint(QLayout.SetMinimumSize)
         table_view_vertical_layout.setContentsMargins(0, 0, 0, 0)
 
         interaction_area: QWidget = QWidget(self._table_view_page)
-        interaction_area.setObjectName("InteractionArea")
+        interaction_area.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
         interaction_area.setMinimumSize(view_size_constants.TOOL_APPLICATION_MAIN_WINDOW_WIDTH,
                                         view_size_constants.TABLE_VIEW_PAGE_INTERACTION_AREA_HEIGHT)
 
+        interaction_area_layout: QHBoxLayout = QHBoxLayout(interaction_area)
+        interaction_area_layout.setSizeConstraint(QLayout.SetMinimumSize)
+        interaction_area_layout.setContentsMargins(0, view_size_constants.VIEW_EDIT_PAGE_MARGIN_TOPBOTTOM,
+                                                   0, view_size_constants.VIEW_EDIT_PAGE_MARGIN_TOPBOTTOM)
+
         self._add_row_button: QPushButton = QPushButton(interaction_area)
-        self._add_row_button.setObjectName("AddRowButton")
-        self._add_row_button.setText("Add Row")
-        self._add_row_button.setGeometry(view_size_constants.ADD_ROW_BUTTON_X, 0,
-                                         view_size_constants.ADD_ROW_BUTTON_WIDTH,
-                                         view_size_constants.INTERACTION_COMPONENT_HEIGHT)
+        self._add_row_button.setObjectName("Primary")
+        self._add_row_button.setText(notification_label_text.VIEW_EDIT_PAGE_ADD_ROW_TEXT)
+        self._add_row_button.setMinimumSize(view_size_constants.ADD_ROW_BUTTON_WIDTH,
+                                            view_size_constants.INTERACTION_COMPONENT_HEIGHT)
+        interaction_area_layout.addWidget(self._add_row_button)
 
         self._delete_row_button: QPushButton = QPushButton(interaction_area)
-        self._delete_row_button.setObjectName("DeleteRowButton")
-        self._delete_row_button.setText("Delete Row")
-        self._delete_row_button.setGeometry(view_size_constants.DELETE_ROW_BUTTON_X, 0,
-                                            view_size_constants.DELETE_ROW_BUTTON_WIDTH,
-                                            view_size_constants.INTERACTION_COMPONENT_HEIGHT)
+        self._delete_row_button.setObjectName("Primary")
+        self._delete_row_button.setText(notification_label_text.VIEW_EDIT_PAGE_DELETE_ROW_TEXT)
+        self._delete_row_button.setMinimumSize(view_size_constants.DELETE_ROW_BUTTON_WIDTH,
+                                               view_size_constants.INTERACTION_COMPONENT_HEIGHT)
+        interaction_area_layout.addWidget(self._delete_row_button)
 
-        self._import_resources_label: QLabel = QLabel(interaction_area)
-        self._import_resources_label.setObjectName("ImportResourcesLabel")
-        self._import_resources_label.setText("Import")
-        self._import_resources_label.setGeometry(view_size_constants.IMPORT_RESOURCES_LABEL_X, 0,
-                                                 view_size_constants.IMPORT_RESOURCES_LABEL_WIDTH,
-                                                 view_size_constants.INTERACTION_COMPONENT_HEIGHT)
+        interaction_area_separator_label: QLabel = QLabel(interaction_area)
+        interaction_area_separator_label.setPixmap(QPixmap(":/stylesheet/img/separator.png"))
+        interaction_area_layout.addWidget(interaction_area_separator_label)
 
         self._import_resources_combobox: QComboBox = QComboBox(interaction_area)
-        self._import_resources_combobox.setObjectName("ImportResourcesCombobox")
         self._import_resources_combobox.setLineEdit(QLineEdit())
-        self._import_resources_combobox.lineEdit().setPlaceholderText("Please Select")
+        self._import_resources_combobox.lineEdit().setPlaceholderText(
+            notification_label_text.VIEW_EDIT_PAGE_IMPORT_RESOURCES_PLACEHOLDER_TEXT)
         self._import_resources_combobox.lineEdit().setReadOnly(True)
-        self._import_resources_combobox.setGeometry(view_size_constants.IMPORT_RESOURCES_COMBOBOX_X, 0,
-                                                    view_size_constants.IMPORT_RESOURCES_COMBOBOX_WIDTH,
-                                                    view_size_constants.INTERACTION_COMPONENT_HEIGHT)
+        self._import_resources_combobox.setMinimumSize(view_size_constants.IMPORT_RESOURCES_COMBOBOX_WIDTH,
+                                                       view_size_constants.INTERACTION_COMPONENT_HEIGHT)
         self._import_resources_combobox.addItem(constants.SEARCH_TYPED_RESOURCES_VERSION)
         self._import_resources_combobox.addItem(constants.SEARCH_CFN_STACKS_VERSION)
         self._import_resources_combobox.setCurrentIndex(-1)
+        interaction_area_layout.addWidget(self._import_resources_combobox)
 
-        self._search_filter_widget: SearchFilterWidget = \
-            SearchFilterWidget(interaction_area, notification_label_text.VIEW_EDIT_PAGE_SEARCH_PLACEHOLDER_TEXT,
-                               QRect(view_size_constants.TABLE_VIEW_PAGE_SEARCH_FILTER_WIDGET_X, 0,
-                                     view_size_constants.INTERACTION_COMPONENT_HEIGHT,
-                                     view_size_constants.INTERACTION_COMPONENT_HEIGHT),
-                               view_size_constants.TABLE_VIEW_PAGE_SEARCH_FILTER_WIDGET_WIDTH)
+        interaction_area_spacer: QSpacerItem = QSpacerItem(
+            view_size_constants.TOOL_APPLICATION_MAIN_WINDOW_WIDTH, view_size_constants.INTERACTION_COMPONENT_HEIGHT,
+            QSizePolicy.Expanding, QSizePolicy.Minimum)
+        interaction_area_layout.addItem(interaction_area_spacer)
 
+        self._search_filter_line_edit: SearchFilterLineEdit = \
+            SearchFilterLineEdit(interaction_area, notification_label_text.VIEW_EDIT_PAGE_SEARCH_PLACEHOLDER_TEXT)
+        self._search_filter_line_edit.setMinimumSize(view_size_constants.TABLE_VIEW_PAGE_SEARCH_FILTER_WIDGET_WIDTH,
+                                                     view_size_constants.INTERACTION_COMPONENT_HEIGHT)
+        interaction_area_layout.addWidget(self._search_filter_line_edit)
         table_view_vertical_layout.addWidget(interaction_area)
 
         self._table_view: ResourceTableView = ResourceTableView(self._table_view_page)
-        self._table_view.setObjectName("TableView")
+        self._table_view.setAlternatingRowColors(True)
         self._table_view.setMaximumSize(view_size_constants.TOOL_APPLICATION_MAIN_WINDOW_WIDTH,
                                         view_size_constants.TABLE_VIEW_PAGE_TABLE_VIEW_AREA_HEIGHT)
         self._table_view.setSelectionBehavior(QAbstractItemView.SelectRows)
         self._table_view.setSortingEnabled(True)
+        self._table_view.verticalHeader().hide()
 
         horizontal_header: QHeaderView = self._table_view.horizontalHeader()
         horizontal_header.setSectionResizeMode(ResourceTableConstants.TABLE_STATE_COLUMN_INDEX,
@@ -296,25 +321,50 @@ class ViewEditPage(QWidget):
 
     def _setup_footer_area(self) -> None:
         self._footer_area: QWidget = QWidget(self)
-        self._footer_area.setObjectName("FooterArea")
+        self._footer_area.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
         self._footer_area.setMinimumSize(view_size_constants.TOOL_APPLICATION_MAIN_WINDOW_WIDTH,
-                                         view_size_constants.VIEW_EDIT_PAGE_HEADER_FOOTER_AREA_HEIGHT)
-        
+                                         view_size_constants.VIEW_EDIT_PAGE_FOOTER_AREA_HEIGHT)
+
+        footer_area_layout: QHBoxLayout = QHBoxLayout(self._footer_area)
+        footer_area_layout.setSizeConstraint(QLayout.SetMinimumSize)
+        footer_area_layout.setContentsMargins(
+            view_size_constants.MAIN_PAGE_LAYOUT_MARGIN_LEFTRIGHT,
+            view_size_constants.MAIN_PAGE_LAYOUT_MARGIN_TOPBOTTOM,
+            view_size_constants.MAIN_PAGE_LAYOUT_MARGIN_LEFTRIGHT,
+            view_size_constants.MAIN_PAGE_LAYOUT_MARGIN_TOPBOTTOM)
+
+        footer_area_spacer: QSpacerItem = QSpacerItem(view_size_constants.TOOL_APPLICATION_MAIN_WINDOW_WIDTH,
+                                                      view_size_constants.INTERACTION_COMPONENT_HEIGHT,
+                                                      QSizePolicy.Expanding, QSizePolicy.Minimum)
+        footer_area_layout.addItem(footer_area_spacer)
+
         self._save_changes_button: QPushButton = QPushButton(self._footer_area)
-        self._save_changes_button.setObjectName("SaveChangesButton")
-        self._save_changes_button.setText("Save Changes")
-        self._save_changes_button.setGeometry(view_size_constants.SAVE_CHANGES_BUTTON_X,
-                                              view_size_constants.VIEW_EDIT_PAGE_WIDGET_SUBCOMPONENT_Y,
-                                              view_size_constants.SAVE_CHANGES_BUTTON_WIDTH,
-                                              view_size_constants.INTERACTION_COMPONENT_HEIGHT)
-        
+        self._save_changes_button.setObjectName("Primary")
+        self._save_changes_button.setText(notification_label_text.VIEW_EDIT_PAGE_SAVE_CHANGES_TEXT)
+        self._save_changes_button.setMinimumSize(view_size_constants.SAVE_CHANGES_BUTTON_WIDTH,
+                                                 view_size_constants.INTERACTION_COMPONENT_HEIGHT)
+        footer_area_layout.addWidget(self._save_changes_button)
+
+        self._create_new_button: QPushButton = QPushButton(self._footer_area)
+        self._create_new_button.setObjectName("Primary")
+        self._create_new_button.setText(notification_label_text.VIEW_EDIT_PAGE_CREATE_NEW_TEXT)
+        self._create_new_button.setMinimumSize(view_size_constants.CREATE_NEW_BUTTON_WIDTH,
+                                               view_size_constants.INTERACTION_COMPONENT_HEIGHT)
+        footer_area_layout.addWidget(self._create_new_button)
+
+        self._rescan_button: QPushButton = QPushButton(self._footer_area)
+        self._rescan_button.setObjectName("Secondary")
+        self._rescan_button.setText(notification_label_text.VIEW_EDIT_PAGE_RESCAN_TEXT)
+        self._rescan_button.setMinimumSize(view_size_constants.RESCAN_BUTTON_WIDTH,
+                                           view_size_constants.INTERACTION_COMPONENT_HEIGHT)
+        footer_area_layout.addWidget(self._rescan_button)
+
         self._cancel_button: QPushButton = QPushButton(self._footer_area)
-        self._cancel_button.setObjectName("CancelButton")
-        self._cancel_button.setText("Cancel")
-        self._cancel_button.setGeometry(view_size_constants.CANCEL_BUTTON_X,
-                                        view_size_constants.VIEW_EDIT_PAGE_WIDGET_SUBCOMPONENT_Y,
-                                        view_size_constants.CANCEL_BUTTON_WIDTH,
-                                        view_size_constants.INTERACTION_COMPONENT_HEIGHT)
+        self._cancel_button.setObjectName("Secondary")
+        self._cancel_button.setText(notification_label_text.VIEW_EDIT_PAGE_CANCEL_TEXT)
+        self._cancel_button.setMinimumSize(view_size_constants.CANCEL_BUTTON_WIDTH,
+                                           view_size_constants.INTERACTION_COMPONENT_HEIGHT)
+        footer_area_layout.addWidget(self._cancel_button)
 
     @property
     def add_row_button(self) -> QPushButton:
@@ -350,15 +400,15 @@ class ViewEditPage(QWidget):
 
     @property
     def search_filter_input(self) -> QLineEdit:
-        return self._search_filter_widget.search_filter_input
+        return self._search_filter_line_edit
 
     @property
-    def notification_prompt_create_new_button(self) -> QPushButton:
-        return self._notification_page_prompt.create_new_button
+    def create_new_button(self) -> QPushButton:
+        return self._create_new_button
 
     @property
-    def notification_prompt_rescan_button(self) -> QPushButton:
-        return self._notification_page_prompt.rescan_button
+    def rescan_button(self) -> QPushButton:
+        return self._rescan_button
 
     def set_current_main_view_index(self, index: int) -> None:
         """Switch main view page based on given index"""
@@ -381,15 +431,18 @@ class ViewEditPage(QWidget):
             self._config_file_combobox.setItemData(config_index, config_file, Qt.ToolTipRole)
             config_index += 1
 
-        self._config_file_combobox.lineEdit().setPlaceholderText(f"Found {len(config_files)} config files")
+        self._config_file_combobox.lineEdit().setPlaceholderText(
+            notification_label_text.VIEW_EDIT_PAGE_CONFIG_FILES_PLACEHOLDER_TEXT.format(len(config_files)))
         self._config_file_combobox.setCurrentIndex(-1)
 
         if config_files:
-            self._notification_page_label.setVisible(True)
-            self._notification_page_prompt.set_visible(False)
+            self._notification_page_frame.set_text(notification_label_text.VIEW_EDIT_PAGE_SELECT_CONFIG_FILE_MESSAGE)
+            self._create_new_button.setVisible(False)
+            self._rescan_button.setVisible(False)
         else:
-            self._notification_page_label.setVisible(False)
-            self._notification_page_prompt.set_visible(True)
+            self._notification_page_frame.set_text(notification_label_text.VIEW_EDIT_PAGE_NO_CONFIG_FILE_FOUND_MESSAGE)
+            self._create_new_button.setVisible(True)
+            self._rescan_button.setVisible(True)
 
         self._config_file_combobox.blockSignals(False)
 
@@ -403,13 +456,14 @@ class ViewEditPage(QWidget):
         self._config_location_text.setToolTip(config_location)
 
     def set_notification_page_text(self, text: str) -> None:
-        self._notification_page_label.setText(text)
+        self._notification_page_frame.set_text(text)
 
     def hide_notification_frame(self) -> None:
-        self._notification_frame.hide()
+        self._notification_frame.setVisible(False)
 
     def set_notification_frame_text(self, text: str) -> None:
         self._notification_frame.set_text(text)
+        self._notification_frame.setVisible(True)
 
     def set_table_view_page_interactions_enabled(self, enabled: bool) -> None:
         self._table_view_page.setEnabled(enabled)

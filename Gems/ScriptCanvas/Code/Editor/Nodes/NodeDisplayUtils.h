@@ -28,7 +28,7 @@ namespace ScriptCanvas::Nodes::Core
 {
     class AzEventHandler;
     class EBusEventHandler;
-    class FunctionNode;
+    class FunctionCallNode;
     class GetVariableNode;
     class Method;
     class ReceiveScriptEvent;
@@ -66,8 +66,8 @@ namespace ScriptCanvasEditor::Nodes
     AZ::EntityId DisplayScriptEventWrapperNode(AZ::EntityId graphCanvasGraphId, const ScriptCanvas::Nodes::Core::ReceiveScriptEvent* busNode);
 
     // Functions
-    AZ::EntityId DisplayFunctionNode(AZ::EntityId graphCanvasGraphId, const ScriptCanvas::Nodes::Core::FunctionNode* functionNode);
-    AZ::EntityId DisplayFunctionNode(AZ::EntityId graphCanvasGraphId, ScriptCanvas::Nodes::Core::FunctionNode* functionNode);
+    AZ::EntityId DisplayFunctionNode(AZ::EntityId graphCanvasGraphId, const ScriptCanvas::Nodes::Core::FunctionCallNode* functionNode);
+    AZ::EntityId DisplayFunctionNode(AZ::EntityId graphCanvasGraphId, ScriptCanvas::Nodes::Core::FunctionCallNode* functionNode);
 
 
     // SlotGroup will control how elements are grouped.

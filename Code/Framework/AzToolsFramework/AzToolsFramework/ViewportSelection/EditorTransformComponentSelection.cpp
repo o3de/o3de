@@ -14,6 +14,7 @@
 
 #include <AzCore/std/algorithm.h>
 #include <AzCore/Math/VectorConversions.h>
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzFramework/Viewport/ViewportColors.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
@@ -2378,30 +2379,40 @@ namespace AzToolsFramework
             RegenerateManipulators();
         });
 
-        // duplicate selection
-        AddAction(
-            m_actions, { QKeySequence(Qt::CTRL + Qt::Key_D) },
-            /*ID_EDIT_CLONE =*/ 33525,
-            s_duplicateTitle, s_duplicateDesc, []()
+        bool isPrefabSystemEnabled = false;
+        AzFramework::ApplicationRequests::Bus::BroadcastResult(
+            isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+
+        bool prefabWipFeaturesEnabled = false;
+        AzFramework::ApplicationRequests::Bus::BroadcastResult(
+            prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
+
+        if (!isPrefabSystemEnabled || (isPrefabSystemEnabled && prefabWipFeaturesEnabled))
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            // duplicate selection
+            AddAction(
+                m_actions, {QKeySequence(Qt::CTRL + Qt::Key_D)},
+                /*ID_EDIT_CLONE =*/33525, s_duplicateTitle, s_duplicateDesc, []() {
+                    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
-            // Clear Widget selection - Prevents issues caused by cloning entities while a property in the Reflected Property Editor is being edited.
-            if (QApplication::focusWidget())
-            {
-                QApplication::focusWidget()->clearFocus();
-            }
+                    // Clear Widget selection - Prevents issues caused by cloning entities while a property in the Reflected Property Editor
+                    // is being edited.
+                    if (QApplication::focusWidget())
+                    {
+                        QApplication::focusWidget()->clearFocus();
+                    }
 
-            ScopedUndoBatch undoBatch(s_duplicateUndoRedoDesc);
-            auto selectionCommand = AZStd::make_unique<SelectionCommand>(EntityIdList(), s_duplicateUndoRedoDesc);
-            selectionCommand->SetParent(undoBatch.GetUndoBatch());
-            selectionCommand.release();
+                    ScopedUndoBatch undoBatch(s_duplicateUndoRedoDesc);
+                    auto selectionCommand = AZStd::make_unique<SelectionCommand>(EntityIdList(), s_duplicateUndoRedoDesc);
+                    selectionCommand->SetParent(undoBatch.GetUndoBatch());
+                    selectionCommand.release();
 
-            bool handled = false;
-            EditorRequestBus::Broadcast(&EditorRequests::CloneSelection, handled);
+                    bool handled = false;
+                    EditorRequestBus::Broadcast(&EditorRequests::CloneSelection, handled);
 
-            // selection update handled in AfterEntitySelectionChanged
-        });
+                    // selection update handled in AfterEntitySelectionChanged
+                });
+        }
 
         // delete selection
         AddAction(

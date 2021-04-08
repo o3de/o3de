@@ -19,6 +19,7 @@
 #include "System.h"
 #include "IStreamEngine.h"
 #include <AzFramework/Archive/Archive.h>
+#include <AzFramework/API/ApplicationAPI.h>
 #include "ResourceManager.h"
 
 #define MEGA_BYTE 1024* 1024
@@ -360,20 +361,37 @@ void CAsyncPakManager::StreamAsyncOnComplete(
     }
     else
     {
-        //
-        // ugly hack - depending on the pak file pak may need special root info / open flags
-        //
-        if (pLayerPak->layername.find("level.pak") != string::npos)
+        bool usePrefabSystemForLevels = false;
+        AzFramework::ApplicationRequests::Bus::BroadcastResult(
+            usePrefabSystemForLevels,
+            &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+
+        if (usePrefabSystemForLevels)
         {
-            gEnv->pCryPak->OpenPack({ pLayerPak->filename.c_str(), pLayerPak->filename.size() }, AZ::IO::IArchive::FLAGS_FILENAMES_AS_CRC32, NULL);
-        }
-        else if (pLayerPak->layername.find("levelshadercache.pak") != string::npos)
-        {
-            gEnv->pCryPak->OpenPack("@assets@", { pLayerPak->filename.c_str(), pLayerPak->filename.size() }, AZ::IO::IArchive::FLAGS_PATH_REAL, NULL);
+            gEnv->pCryPak->OpenPack(
+                "@assets@", {pLayerPak->filename.c_str(), pLayerPak->filename.size()}, AZ::IO::IArchive::FLAGS_FILENAMES_AS_CRC32, NULL);
         }
         else
         {
-            gEnv->pCryPak->OpenPack("@assets@", { pLayerPak->filename.c_str(), pLayerPak->filename.size() }, AZ::IO::IArchive::FLAGS_FILENAMES_AS_CRC32, NULL);
+            //
+            // ugly hack - depending on the pak file pak may need special root info / open flags
+            //
+            if (pLayerPak->layername.find("level.pak") != string::npos)
+            {
+                gEnv->pCryPak->OpenPack(
+                    {pLayerPak->filename.c_str(), pLayerPak->filename.size()}, AZ::IO::IArchive::FLAGS_FILENAMES_AS_CRC32, NULL);
+            }
+            else if (pLayerPak->layername.find("levelshadercache.pak") != string::npos)
+            {
+                gEnv->pCryPak->OpenPack(
+                    "@assets@", {pLayerPak->filename.c_str(), pLayerPak->filename.size()}, AZ::IO::IArchive::FLAGS_PATH_REAL, NULL);
+            }
+            else
+            {
+                gEnv->pCryPak->OpenPack(
+                    "@assets@", {pLayerPak->filename.c_str(), pLayerPak->filename.size()}, AZ::IO::IArchive::FLAGS_FILENAMES_AS_CRC32,
+                    NULL);
+            }
         }
         gEnv->pCryPak->LoadPakToMemory(pLayerPak->filename.c_str(), AZ::IO::IArchive::eInMemoryPakLocale_GPU, pLayerPak->pData);
     }

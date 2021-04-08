@@ -47,6 +47,9 @@ namespace AZ::IO
             //! while in use by AZ::IO::Streamer. File sharing can negatively impact performance and is recommended for
             //! development only. 
             u8 m_enableSharing : 1;
+            //! If true, only information that's explicitly requested or issues are reported. If false, status information
+            //! such as when drives are created and destroyed is reported as well.
+            u8 m_minimalReporting : 1;
         };
 
         //! Creates an instance of a storage device that's optimized for use on Windows.

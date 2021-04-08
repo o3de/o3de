@@ -17,6 +17,7 @@
 #include <AzCore/Console/IConsoleTypes.h>
 #include <AzCore/EBus/Event.h>
 #include <AzCore/RTTI/RTTI.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/functional.h>
 
 namespace AZ
@@ -103,10 +104,13 @@ namespace AZ
         //! @return non-null pointer to the console command if found
         virtual ConsoleFunctorBase* FindCommand(const char* command) = 0;
 
-        //! Prints all commands of which the input is a prefix.
-        //! @param command the prefix string to dump all matching commands for
-        //! @return boolean true on success, false otherwise
-        virtual AZStd::string AutoCompleteCommand(const char* command) = 0;
+        //! Finds all commands where the input command is a prefix and returns
+        //! the longest matching substring prefix the results have in common.
+        //! @param command The prefix string to find all matching commands for.
+        //! @param matches The list of all commands that match the input prefix.
+        //! @return The longest matching substring prefix the results have in common.
+        virtual AZStd::string AutoCompleteCommand(const char* command,
+                                                  AZStd::vector<AZStd::string>* matches = nullptr) = 0;
 
         //! Retrieves the value of the requested cvar.
         //! @param command the name of the cvar to find and retrieve the current value of
@@ -233,7 +237,7 @@ static constexpr AZ::ThreadSafety ConsoleThreadSafety<_TYPE, std::enable_if_t<st
 //! @param _FLAGS a set of AzFramework::ConsoleFunctorFlags used to mutate behaviour
 //! @param _DESC a description of the cvar
 #define AZ_CONSOLEFREEFUNC_3(_FUNCTION, _FLAGS, _DESC) \
-    inline AZ::ConsoleFunctor<void, false> Functor##_FUNCTION(#_FUNCTION, _DESC, _FLAGS, AZ::TypeId::CreateNull(), &_FUNCTION)
+    inline AZ::ConsoleFunctor<void, false> Functor##_FUNCTION(#_FUNCTION, _DESC, _FLAGS | AZ::ConsoleFunctorFlags::DontDuplicate, AZ::TypeId::CreateNull(), &_FUNCTION)
 
 //! Implements a console functor for a non-member function.
 //!
@@ -243,6 +247,6 @@ static constexpr AZ::ThreadSafety ConsoleThreadSafety<_TYPE, std::enable_if_t<st
 //! @param _FLAGS a set of AzFramework::ConsoleFunctorFlags used to mutate behaviour
 //! @param _DESC a description of the cvar
 #define AZ_CONSOLEFREEFUNC_4(_NAME, _FUNCTION, _FLAGS, _DESC) \
-    inline AZ::ConsoleFunctor<void, false> Functor##_FUNCTION(#_FUNCTION, _DESC, _FLAGS, AZ::TypeId::CreateNull(), &_FUNCTION)
+    inline AZ::ConsoleFunctor<void, false> Functor##_FUNCTION(#_FUNCTION, _DESC, _FLAGS | AZ::ConsoleFunctorFlags::DontDuplicate, AZ::TypeId::CreateNull(), &_FUNCTION)
 
 #define AZ_CONSOLEFREEFUNC(...) AZ_MACRO_SPECIALIZE(AZ_CONSOLEFREEFUNC_, AZ_VA_NUM_ARGS(__VA_ARGS__), (__VA_ARGS__))

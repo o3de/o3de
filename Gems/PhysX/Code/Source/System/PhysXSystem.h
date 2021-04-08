@@ -16,11 +16,11 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
-#include <AzFramework/Physics/Common/PhysicsTypes.h>
 #include <AzFramework/Physics/Configuration/SystemConfiguration.h>
 
 #include <Configuration/PhysXSettingsRegistryManager.h>
 #include <Debug/PhysXDebug.h>
+#include <Scene/PhysXSceneInterface.h>
 #include <System/PhysXAllocator.h>
 #include <System/PhysXSdkCallbacks.h>
 
@@ -41,6 +41,7 @@ namespace PhysX
         , private AzFramework::AssetCatalogEventBus::Handler
     {
     public:
+        AZ_CLASS_ALLOCATOR_DECL;
         AZ_RTTI(PhysXSystem, "{B6F4D92A-061B-4CB3-AAB5-984B599A53AE}", AzPhysics::SystemInterface);
 
         PhysXSystem(PhysXSettingsRegistryManager* registryManager, const physx::PxCookingParams& cookingParams);
@@ -53,12 +54,14 @@ namespace PhysX
         void Simulate(float deltaTime) override;
         AzPhysics::SceneHandle AddScene(const AzPhysics::SceneConfiguration& config) override;
         AzPhysics::SceneHandleList AddScenes(const AzPhysics::SceneConfigurationList& configs) override;
+        AzPhysics::SceneHandle GetSceneHandle(const AZStd::string& sceneName) override;
         AzPhysics::Scene* GetScene(AzPhysics::SceneHandle handle) override;
         AzPhysics::SceneList GetScenes(const AzPhysics::SceneHandleList& handles) override;
         AzPhysics::SceneList& GetAllScenes() override;
         void RemoveScene(AzPhysics::SceneHandle handle) override;
         void RemoveScenes(const AzPhysics::SceneHandleList& handles) override;
         void RemoveAllScenes() override;
+        AZStd::pair<AzPhysics::SceneHandle, AzPhysics::SimulatedBodyHandle> FindAttachedBodyHandleFromEntityId(AZ::EntityId entityId) override;
         const AzPhysics::SystemConfiguration* GetConfiguration() const override;
         void UpdateConfiguration(const AzPhysics::SystemConfiguration* newConfig, bool forceReinitialization = false) override;
         void UpdateDefaultMaterialLibrary(const AZ::Data::Asset<Physics::MaterialLibraryAsset>& materialLibrary) override;
@@ -124,6 +127,7 @@ namespace PhysX
 
         Debug::PhysXDebug m_physXDebug; //! Handler for the PhysXDebug Interface.
         PhysXSettingsRegistryManager& m_registryManager; //! Handles all settings registry interactions.
+        PhysXSceneInterface m_sceneInterface; //! Implemented the Scene Az::Interface.
 
         class MaterialLibraryAssetHelper
             : private AZ::Data::AssetBus::Handler

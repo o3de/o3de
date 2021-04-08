@@ -230,7 +230,7 @@ namespace ScriptCanvas::Nodes::Core
         return GetNodeType();
     }
 
-    SlotsOutcome AzEventHandler::GetSlotsInExecutionThreadByTypeImpl(const Slot& executionSlot, CombinedSlotType targetSlotType, [[maybe_unused]] const Slot* executionChildSlot) const
+    ConstSlotsOutcome AzEventHandler::GetSlotsInExecutionThreadByTypeImpl(const Slot& executionSlot, CombinedSlotType targetSlotType, [[maybe_unused]] const Slot* executionChildSlot) const
     {
         AZStd::vector<const Slot*> slots;
 

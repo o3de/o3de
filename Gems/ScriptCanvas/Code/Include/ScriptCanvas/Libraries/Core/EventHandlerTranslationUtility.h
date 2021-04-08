@@ -28,33 +28,33 @@ namespace ScriptCanvas
             {
             public:
                 // EbusEvent handler
-                static SlotsOutcome GetSlotsInExecutionThreadByType(const EBusEventHandler& handler, const Slot& executionSlot, CombinedSlotType targetSlotType);
+                static ConstSlotsOutcome  GetSlotsInExecutionThreadByType(const EBusEventHandler& handler, const Slot& executionSlot, CombinedSlotType targetSlotType);
                 
                 // ScriptEvent handler
-                static SlotsOutcome GetSlotsInExecutionThreadByType(const ReceiveScriptEvent& handler, const Slot& executionSlot, CombinedSlotType targetSlotType);
+                static ConstSlotsOutcome  GetSlotsInExecutionThreadByType(const ReceiveScriptEvent& handler, const Slot& executionSlot, CombinedSlotType targetSlotType);
 
             private:
-                static SlotsOutcome GetReturnValueSlotsByEventEntry(const EBusEventHandler& handler, const EBusEventEntry& eventEntry);
-                static SlotsOutcome GetReturnValueSlotsByEventEntry(const ReceiveScriptEvent& handler, const Internal::ScriptEventEntry& eventEntry);
+                static ConstSlotsOutcome  GetReturnValueSlotsByEventEntry(const EBusEventHandler& handler, const EBusEventEntry& eventEntry);
+                static ConstSlotsOutcome  GetReturnValueSlotsByEventEntry(const ReceiveScriptEvent& handler, const Internal::ScriptEventEntry& eventEntry);
                 template<typename HandlerType, typename EntryType>
-                static SlotsOutcome GetReturnValueSlotsByEventEntry(const HandlerType& handler, const EntryType& eventEntry);
+                static ConstSlotsOutcome  GetReturnValueSlotsByEventEntry(const HandlerType& handler, const EntryType& eventEntry);
 
-                static SlotsOutcome GetEventSlotsInExecutionThreadByType(const EBusEventHandler& handler, const Slot& executionSlot, CombinedSlotType targetSlotType);
-                static SlotsOutcome GetEventSlotsInExecutionThreadByType(const ReceiveScriptEvent& handler, const Slot& executionSlot, CombinedSlotType targetSlotType);
+                static ConstSlotsOutcome  GetEventSlotsInExecutionThreadByType(const EBusEventHandler& handler, const Slot& executionSlot, CombinedSlotType targetSlotType);
+                static ConstSlotsOutcome  GetEventSlotsInExecutionThreadByType(const ReceiveScriptEvent& handler, const Slot& executionSlot, CombinedSlotType targetSlotType);
                 template<typename HandlerType, typename EntryType>
-                static SlotsOutcome GetEventSlotsInExecutionThreadByType(const HandlerType& handler, const Slot& executionSlot, CombinedSlotType targetSlotType);
+                static ConstSlotsOutcome  GetEventSlotsInExecutionThreadByType(const HandlerType& handler, const Slot& executionSlot, CombinedSlotType targetSlotType);
 
-                static SlotsOutcome GetNonEventSlotsInExecutionThreadByType(const EBusEventHandler& handler, const Slot& executionSlot, CombinedSlotType targetSlotType);
-                static SlotsOutcome GetNonEventSlotsInExecutionThreadByType(const ReceiveScriptEvent& handler, const Slot& executionSlot, CombinedSlotType targetSlotType);
+                static ConstSlotsOutcome  GetNonEventSlotsInExecutionThreadByType(const EBusEventHandler& handler, const Slot& executionSlot, CombinedSlotType targetSlotType);
+                static ConstSlotsOutcome  GetNonEventSlotsInExecutionThreadByType(const ReceiveScriptEvent& handler, const Slot& executionSlot, CombinedSlotType targetSlotType);
                 template<typename HandlerType, typename HandlerPropertyType>
-                static SlotsOutcome GetNonEventSlotsInExecutionThreadByType(const HandlerType& handler, const Slot& executionSlot, CombinedSlotType targetSlotType);
+                static ConstSlotsOutcome  GetNonEventSlotsInExecutionThreadByType(const HandlerType& handler, const Slot& executionSlot, CombinedSlotType targetSlotType);
 
                 template<typename HandlerType>
-                static SlotsOutcome GetSlotsInExecutionThreadByType(const HandlerType& handler, const Slot& executionSlot, CombinedSlotType targetSlotType);
+                static ConstSlotsOutcome  GetSlotsInExecutionThreadByType(const HandlerType& handler, const Slot& executionSlot, CombinedSlotType targetSlotType);
             };
 
             template<typename HandlerType, typename EntryType>
-            SlotsOutcome EventHandlerTranslationHelper::GetReturnValueSlotsByEventEntry(const HandlerType& handler, const EntryType& eventEntry)
+            ConstSlotsOutcome  EventHandlerTranslationHelper::GetReturnValueSlotsByEventEntry(const HandlerType& handler, const EntryType& eventEntry)
             {
                 if (!eventEntry.m_resultSlotId.IsValid())
                 {
@@ -71,7 +71,7 @@ namespace ScriptCanvas
             }
 
             template<typename HandlerType, typename EntryType>
-            SlotsOutcome EventHandlerTranslationHelper::GetEventSlotsInExecutionThreadByType(const HandlerType& handler, const Slot& executionSlot, CombinedSlotType targetSlotType)
+            ConstSlotsOutcome  EventHandlerTranslationHelper::GetEventSlotsInExecutionThreadByType(const HandlerType& handler, const Slot& executionSlot, CombinedSlotType targetSlotType)
             {
                 const EntryType* eventEntry = handler.FindEventWithSlot(executionSlot);
 
@@ -97,7 +97,7 @@ namespace ScriptCanvas
             }
 
             template<typename HandlerType, typename HandlerPropertyType>
-            SlotsOutcome EventHandlerTranslationHelper::GetNonEventSlotsInExecutionThreadByType(const HandlerType& handler, const Slot& executionSlot, CombinedSlotType targetSlotType)
+            ConstSlotsOutcome  EventHandlerTranslationHelper::GetNonEventSlotsInExecutionThreadByType(const HandlerType& handler, const Slot& executionSlot, CombinedSlotType targetSlotType)
             {
                 AZStd::vector<const Slot*> executionSlots;
                 AZStd::vector<SlotId> errorSlots;
@@ -179,7 +179,7 @@ namespace ScriptCanvas
             }
 
             template<typename HandlerType>
-            SlotsOutcome EventHandlerTranslationHelper::GetSlotsInExecutionThreadByType(const HandlerType& handler, const Slot& executionSlot, CombinedSlotType targetSlotType)
+            ConstSlotsOutcome  EventHandlerTranslationHelper::GetSlotsInExecutionThreadByType(const HandlerType& handler, const Slot& executionSlot, CombinedSlotType targetSlotType)
             {
                 if (handler.IsEventSlotId(executionSlot.GetId()))
                 {

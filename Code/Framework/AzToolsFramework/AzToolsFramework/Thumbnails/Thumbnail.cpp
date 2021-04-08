@@ -39,6 +39,16 @@ namespace AzToolsFramework
             return true;
         }
 
+        size_t ThumbnailKey::GetHash() const
+        {
+            return 0;
+        }
+
+        bool ThumbnailKey::Equals(const ThumbnailKey* other) const
+        {
+            return RTTI_GetType() == other->RTTI_GetType();
+        }
+
         //////////////////////////////////////////////////////////////////////////
         // Thumbnail
         //////////////////////////////////////////////////////////////////////////

@@ -138,9 +138,9 @@ class TestFixtures(object):
     @mock.patch("ly_test_tools.builtin.helpers.create_builtin_workspace")
     def test_Workspace_MockFixturesAndExecTeardown_ReturnWorkspaceRegisterTeardown(self, mock_create, mock_setup):
         test_module = 'example.tests.test_system_example'
-        test_class = ('TestSystemExample.test_SystemTestExample_AllSupportedPlatforms_LaunchSamplesProject'
-                      '[120-simple_jacklocomotion-SamplesProject-all-profile-win_x64_vs2017]')
-        test_method = 'test_SystemTestExample_AllSupportedPlatforms_LaunchSamplesProject'
+        test_class = ('TestSystemExample.test_SystemTestExample_AllSupportedPlatforms_LaunchAutomatedTesting'
+                      '[120-simple_jacklocomotion-AutomatedTesting-all-profile-win_x64_vs2017]')
+        test_method = 'test_SystemTestExample_AllSupportedPlatforms_LaunchAutomatedTesting'
         artifact_folder_name = 'TheArtifactFolder'
         artifact_path = "PathToArtifacts"
 
@@ -183,7 +183,7 @@ class TestFixtures(object):
         mock_workspace.artifact_manager.generate_folder_name.assert_called_with(
             test_module.split('.')[-1],  # 'example.tests.test_system_example' -> 'test_system_example'
             test_class.split('.')[0],  # 'TestSystemExample.test_SystemTestExample_...' -> 'TestSystemExample'
-            test_method  # 'test_SystemTestExample_AllSupportedPlatforms_LaunchSamplesProject'
+            test_method  # 'test_SystemTestExample_AllSupportedPlatforms_LaunchAutomatedTesting'
         )
 
     @mock.patch('os.path.exists', mock.MagicMock(return_value=True))

@@ -13,10 +13,10 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <AzCore/Component/TickBus.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AtomLyIntegration/CommonFeatures/Grid/GridComponentBus.h>
 #include <AtomLyIntegration/CommonFeatures/Grid/GridComponentConfig.h>
+#include <Atom/RPI.Public/SceneBus.h>
 
 namespace AZ
 {
@@ -25,8 +25,8 @@ namespace AZ
         //! Controls behavior and rendering of a wireframe grid
         class GridComponentController final
             : public GridComponentRequestBus::Handler
-            , public AZ::TickBus::Handler
             , public AZ::TransformNotificationBus::Handler
+            , public AZ::RPI::SceneNotificationBus::Handler
         {
         public:
             friend class EditorGridComponent;
@@ -64,11 +64,11 @@ namespace AZ
             void SetSecondaryColor(const AZ::Color& gridSecondaryColor) override;
             AZ::Color GetSecondaryColor() const override;
 
-            // AZ::TickBus::Handler overrides ...
-            void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
-
             //! AZ::TransformNotificationBus::Handler overrides ...
             void OnTransformChanged(const Transform& local, const Transform& world) override;
+
+            // AZ::RPI::SceneNotificationBus::Handler overrides ...
+            void OnBeginPrepareRender() override;
 
             void BuildGrid();
 

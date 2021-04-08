@@ -66,11 +66,6 @@ namespace AZ
             auto viewSrg = GetDefaultViewSrg();
             AZ_Assert(viewSrg, "DepthOfFieldSettings : Failed to get the default render pipeline's default viewSrg.");
 
-            m_cameraParametersIndex = viewSrg->FindShaderInputConstantIndex(Name("m_dof.m_cameraParameters"));
-            m_pencilMapTexcoordToCocRadiusIndex = viewSrg->FindShaderInputConstantIndex(Name("m_dof.m_pencilMapTexcoordToCocRadius"));
-            m_pencilMapFocusPointTexcoordUIndex = viewSrg->FindShaderInputConstantIndex(Name("m_dof.m_pencilMapFocusPointTexcoordU"));
-            m_cocToScreenRatioIndex = viewSrg->FindShaderInputConstantIndex(Name("m_dof.m_cocToScreenRatio"));
-
             m_passListWithHashOfDivisionNumber.Insert(Name("FrontblurDivision2"), AZ::RHI::Handle<uint32_t>(2));
             m_passListWithHashOfDivisionNumber.Insert(Name("BackblurDivision2"), AZ::RHI::Handle<uint32_t>(2));
             m_passListWithHashOfDivisionNumber.Insert(Name("MaskDivision2"), AZ::RHI::Handle<uint32_t>(2));

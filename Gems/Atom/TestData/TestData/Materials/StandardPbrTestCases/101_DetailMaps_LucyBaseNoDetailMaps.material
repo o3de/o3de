@@ -6,20 +6,20 @@
     "properties": {
         "baseColor": {
             "textureMap": "Objects/Lucy/Lucy_brass_baseColor.tif",
-            "textureMapUv": "Packed"
+            "textureMapUv": "Unwrapped"
         },
         "metallic": {
             "textureMap": "Objects/Lucy/Lucy_brass_metalness.tif",
-            "textureMapUv": "Packed"
+            "textureMapUv": "Unwrapped"
         },
         "normal": {
             "flipY": true,
             "textureMap": "Objects/Lucy/Lucy_normal.tif",
-            "textureMapUv": "Packed"
+            "textureMapUv": "Unwrapped"
         },
         "roughness": {
             "textureMap": "Objects/Lucy/Lucy_brass_roughness.tif",
-            "textureMapUv": "Packed"
+            "textureMapUv": "Unwrapped"
         }
     }
 }

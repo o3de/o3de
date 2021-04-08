@@ -20,7 +20,7 @@
 #include <RigidBodyStatic.h>
 #include <StaticRigidBodyComponent.h>
 #include <Tests/PhysXTestUtil.h>
-#include <AzFramework/Physics/World.h>
+#include <AzFramework/Physics/Collision/CollisionEvents.h>
 
 #include <System/PhysXCookingParams.h>
 #include <Tests/PhysXTestCommon.h>
@@ -53,12 +53,9 @@ namespace PhysXEditorTests
         {
             //in case a test modifies the default world config setup a config without getting the default(eg. SetWorldConfiguration_ForwardsConfigChangesToWorldRequestBus)
             AzPhysics::SceneConfiguration sceneConfiguration;
-            sceneConfiguration.m_legacyId = Physics::DefaultPhysicsWorldId;
+            sceneConfiguration.m_sceneName = AzPhysics::DefaultPhysicsSceneName;
             m_defaultSceneHandle = physicsSystem->AddScene(sceneConfiguration);
-            if (m_defaultScene = physicsSystem->GetScene(m_defaultSceneHandle))
-            {
-                m_defaultScene->GetLegacyWorld()->SetEventHandler(this);
-            }
+            m_defaultScene = physicsSystem->GetScene(m_defaultSceneHandle);
         }
         Physics::DefaultWorldBus::Handler::BusConnect();
         m_dummyTerrainComponentDescriptor = PhysX::DummyTestTerrainComponent::CreateDescriptor();
@@ -84,40 +81,9 @@ namespace PhysXEditorTests
     }
 
     // DefaultWorldBus
-    AZStd::shared_ptr<Physics::World> PhysXEditorFixture::GetDefaultWorld()
+    AzPhysics::SceneHandle PhysXEditorFixture::GetDefaultSceneHandle() const
     {
-        return m_defaultScene->GetLegacyWorld();
-    }
-
-    // WorldEventHandler
-    void PhysXEditorFixture::OnTriggerEnter(const Physics::TriggerEvent& triggerEvent)
-    {
-        Physics::TriggerNotificationBus::QueueEvent(triggerEvent.m_triggerBody->GetEntityId(),
-            &Physics::TriggerNotifications::OnTriggerEnter, triggerEvent);
-    }
-
-    void PhysXEditorFixture::OnTriggerExit(const Physics::TriggerEvent& triggerEvent)
-    {
-        Physics::TriggerNotificationBus::QueueEvent(triggerEvent.m_triggerBody->GetEntityId(),
-            &Physics::TriggerNotifications::OnTriggerExit, triggerEvent);
-    }
-
-    void PhysXEditorFixture::OnCollisionBegin(const Physics::CollisionEvent& event)
-    {
-        Physics::CollisionNotificationBus::QueueEvent(event.m_body1->GetEntityId(),
-            &Physics::CollisionNotifications::OnCollisionBegin, event);
-    }
-
-    void PhysXEditorFixture::OnCollisionPersist(const Physics::CollisionEvent& event)
-    {
-        Physics::CollisionNotificationBus::QueueEvent(event.m_body1->GetEntityId(),
-            &Physics::CollisionNotifications::OnCollisionPersist, event);
-    }
-
-    void PhysXEditorFixture::OnCollisionEnd(const Physics::CollisionEvent& event)
-    {
-        Physics::CollisionNotificationBus::QueueEvent(event.m_body1->GetEntityId(),
-            &Physics::CollisionNotifications::OnCollisionEnd, event);
+        return m_defaultSceneHandle;
     }
 
     void PhysXEditorFixture::ValidateInvalidEditorShapeColliderComponentParams([[maybe_unused]] const float radius, [[maybe_unused]] const float height)
@@ -133,8 +99,10 @@ namespace PhysXEditorTests
             LmbrCentral::CylinderShapeComponentRequestsBus::Event(editorEntity->GetId(),
                 &LmbrCentral::CylinderShapeComponentRequests::SetRadius, radius);
         
-            // expect a warning if the radius is invalid
-            int expectedWarningCount = radius <= 0.f ? 1 : 0;
+            // expect 2 warnings
+                //1 if the radius is invalid
+                //2 when re-creating the underlying simulated body
+            int expectedWarningCount = radius <= 0.f ? 2 : 0;
             EXPECT_EQ(warningHandler.GetWarningCount(), expectedWarningCount);
         }
         
@@ -143,8 +111,10 @@ namespace PhysXEditorTests
             LmbrCentral::CylinderShapeComponentRequestsBus::Event(editorEntity->GetId(),
                 &LmbrCentral::CylinderShapeComponentRequests::SetHeight, height);
         
-            // expect a warning if the radius or height is invalid
-            int expectedWarningCount = radius <= 0.f || height <= 0.f ? 1 : 0;
+            // expect 2 warnings
+                //1 if the radius or height is invalid
+                //2 when re-creating the underlying simulated body
+            int expectedWarningCount = radius <= 0.f || height <= 0.f ? 2 : 0;
             EXPECT_EQ(warningHandler.GetWarningCount(), expectedWarningCount);
         }
 

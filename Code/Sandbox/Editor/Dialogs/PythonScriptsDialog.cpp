@@ -186,10 +186,9 @@ void CPythonScriptsDialog::OnExecute()
 
     if (ui->treeView->IsFile(selectedItem))
     {
-        QString workingDirectory = QDir::currentPath();
-        const QString scriptPath = QStringLiteral("%1/%2").arg(workingDirectory).arg(ui->treeView->GetPath(selectedItem));
+        auto scriptPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / ui->treeView->GetPath(selectedItem).toUtf8().constData();
         using namespace AzToolsFramework;
-        EditorPythonRunnerRequestBus::Broadcast(&EditorPythonRunnerRequestBus::Events::ExecuteByFilename, scriptPath.toUtf8().constData());
+        EditorPythonRunnerRequestBus::Broadcast(&EditorPythonRunnerRequestBus::Events::ExecuteByFilename, scriptPath.Native());
     }
 }
 

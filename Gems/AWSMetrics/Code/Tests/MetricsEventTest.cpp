@@ -21,31 +21,31 @@ namespace AWSMetrics
         : public UnitTest::ScopedAllocatorSetupFixture
     {
     public:
-        static constexpr int NUM_TEST_METRICS = 10;
-        static const char* const ATTR_NAME;
-        static const char* const ATTR_VALUE;
+        static constexpr int NumTestMetrics = 10;
+        static const char* const AttrName;
+        static const char* const AttrValue;
 
         AZStd::vector<MetricsAttribute> GetRequiredMetricsAttributes()
         {
             AZStd::vector<MetricsAttribute> result;
-            result.emplace_back(MetricsAttribute(METRICS_ATTRIBUTE_KEY_CLIENT_ID, "0.0.0.0-{00000000-0000-1000-A000-000000000000}"));
-            result.emplace_back(MetricsAttribute(METRICS_ATTRIBUTE_KEY_EVENT_ID, "{00000000-0000-1000-A000-000000000000}"));
-            result.emplace_back(MetricsAttribute(METRICS_ATTRIBUTE_KEY_EVENT_NAME, "test_event"));
-            result.emplace_back(MetricsAttribute(METRICS_ATTRIBUTE_KEY_EVENT_TIMESTAMP, "0000-00-00T00:00:00Z"));
+            result.emplace_back(MetricsAttribute(AwsMetricsAttributeKeyClientId, "0.0.0.0-{00000000-0000-1000-A000-000000000000}"));
+            result.emplace_back(MetricsAttribute(AwsMetricsAttributeKeyEventId, "{00000000-0000-1000-A000-000000000000}"));
+            result.emplace_back(MetricsAttribute(AwsMetricsAttributeKeyEventName, "test_event"));
+            result.emplace_back(MetricsAttribute(AwsMetricsAttributeKeyEventTimestamp, "0000-00-00T00:00:00Z"));
 
             return AZStd::move(result);
         }
     };
 
-    const char* const MetricsEventTest::ATTR_NAME = "name";
-    const char* const MetricsEventTest::ATTR_VALUE = "value";
+    const char* const MetricsEventTest::AttrName = "name";
+    const char* const MetricsEventTest::AttrValue = "value";
 
     TEST_F(MetricsEventTest, AddAttribute_SingleAttribute_Success)
     {
         MetricsEvent metrics;
         int numAttributes = metrics.GetNumAttributes();
 
-        metrics.AddAttribute(MetricsAttribute(ATTR_NAME, ATTR_VALUE));
+        metrics.AddAttribute(MetricsAttribute(AttrName, AttrValue));
 
         ASSERT_EQ(metrics.GetNumAttributes(), numAttributes + 1);
     }
@@ -55,9 +55,9 @@ namespace AWSMetrics
         MetricsEvent metrics;
         int numAttributes = metrics.GetNumAttributes();
 
-        metrics.AddAttribute(MetricsAttribute(ATTR_NAME, ATTR_VALUE));
+        metrics.AddAttribute(MetricsAttribute(AttrName, AttrValue));
         AZ_TEST_START_TRACE_SUPPRESSION;
-        metrics.AddAttribute(MetricsAttribute(ATTR_NAME, ATTR_VALUE));
+        metrics.AddAttribute(MetricsAttribute(AttrName, AttrValue));
         AZ_TEST_STOP_TRACE_SUPPRESSION(1);
 
         ASSERT_EQ(metrics.GetNumAttributes(), numAttributes + 1);
@@ -79,20 +79,20 @@ namespace AWSMetrics
     {
         MetricsEvent metrics;
         AZStd::vector<MetricsAttribute> attributes;
-        for (int index = 0; index < NUM_TEST_METRICS; ++index)
+        for (int index = 0; index < NumTestMetrics; ++index)
         {
-            attributes.emplace_back(MetricsAttribute(AZStd::string::format("%s%i", ATTR_NAME, index), ATTR_VALUE));
+            attributes.emplace_back(MetricsAttribute(AZStd::string::format("%s%i", AttrName, index), AttrValue));
         }
 
         metrics.AddAttributes(attributes);
 
-        ASSERT_EQ(metrics.GetNumAttributes(), NUM_TEST_METRICS);
+        ASSERT_EQ(metrics.GetNumAttributes(), NumTestMetrics);
     }
 
     TEST_F(MetricsEventTest, GetSizeInBytes_SingleAttribute_Success)
     {
         MetricsEvent metrics;
-        MetricsAttribute attribute(ATTR_NAME, ATTR_VALUE);
+        MetricsAttribute attribute(AttrName, AttrValue);
         metrics.AddAttribute(attribute);
 
         ASSERT_EQ(metrics.GetSizeInBytes(), attribute.GetSizeInBytes());
@@ -101,8 +101,8 @@ namespace AWSMetrics
     TEST_F(MetricsEventTest, SerializeToJson_DefaultAndCustomAttributes_Success)
     {
         MetricsEvent metrics;
-        metrics.AddAttribute(MetricsAttribute(ATTR_NAME, ATTR_VALUE));
-        metrics.AddAttribute(MetricsAttribute(METRICS_ATTRIBUTE_KEY_EVENT_NAME, ATTR_VALUE));
+        metrics.AddAttribute(MetricsAttribute(AttrName, AttrValue));
+        metrics.AddAttribute(MetricsAttribute(AwsMetricsAttributeKeyEventName, AttrValue));
 
         std::ostream stream(nullptr);
         AWSCore::JsonOutputStream jsonStream{ stream };
@@ -117,11 +117,11 @@ namespace AWSMetrics
 
         rapidjson::Document doc;
         rapidjson::Value metricsObjVal(rapidjson::kObjectType);
-        metricsObjVal.AddMember(rapidjson::StringRef(METRICS_ATTRIBUTE_KEY_EVENT_NAME), rapidjson::StringRef(ATTR_VALUE), doc.GetAllocator());
+        metricsObjVal.AddMember(rapidjson::StringRef(AwsMetricsAttributeKeyEventName), rapidjson::StringRef(AttrValue), doc.GetAllocator());
 
         rapidjson::Value customEventDataObjVal(rapidjson::kObjectType);
-        customEventDataObjVal.AddMember(rapidjson::StringRef(ATTR_NAME), rapidjson::StringRef(ATTR_VALUE), doc.GetAllocator());
-        metricsObjVal.AddMember(rapidjson::Value(METRICS_ATTRIBUTE_KEY_EVENT_DATA, doc.GetAllocator()).Move(),
+        customEventDataObjVal.AddMember(rapidjson::StringRef(AttrName), rapidjson::StringRef(AttrValue), doc.GetAllocator());
+        metricsObjVal.AddMember(rapidjson::Value(AwsMetricsAttributeKeyEventData, doc.GetAllocator()).Move(),
             customEventDataObjVal.Move(), doc.GetAllocator());
 
         ASSERT_TRUE(metrics.ReadFromJson(metricsObjVal));
@@ -146,10 +146,10 @@ namespace AWSMetrics
 
         rapidjson::Document doc;
         rapidjson::Value metricsObjVal(rapidjson::kObjectType);
-        metricsObjVal.AddMember(rapidjson::StringRef(METRICS_ATTRIBUTE_KEY_EVENT_NAME), rapidjson::StringRef(ATTR_VALUE), doc.GetAllocator());
+        metricsObjVal.AddMember(rapidjson::StringRef(AwsMetricsAttributeKeyEventName), rapidjson::StringRef(AttrValue), doc.GetAllocator());
 
         rapidjson::Value customEventDataVal(rapidjson::kNumberType);
-        metricsObjVal.AddMember(rapidjson::Value(METRICS_ATTRIBUTE_KEY_EVENT_DATA, doc.GetAllocator()).Move(),
+        metricsObjVal.AddMember(rapidjson::Value(AwsMetricsAttributeKeyEventData, doc.GetAllocator()).Move(),
             customEventDataVal.Move(), doc.GetAllocator());
 
         AZ_TEST_START_TRACE_SUPPRESSION;

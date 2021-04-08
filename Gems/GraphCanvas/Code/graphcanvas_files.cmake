@@ -146,4 +146,14 @@ set(FILES
     Source/Widgets/GraphCanvasLabel.h
     Source/Widgets/NodePropertyDisplayWidget.cpp
     Source/Widgets/NodePropertyDisplayWidget.h
+    Source/Translation/TranslationAsset.h
+    Source/Translation/TranslationAsset.cpp
+    Source/Translation/TranslationBuilder.h
+    Source/Translation/TranslationBuilder.cpp
+    Source/Translation/TranslationBus.h
+    Source/Translation/TranslationDatabase.h
+    Source/Translation/TranslationDatabase.cpp
+    Source/Translation/TranslationSerializer.h
+    Source/Translation/TranslationSerializer.cpp
+
 )

@@ -33,9 +33,21 @@ namespace Camera
     {
         auto controllerConfig = m_controller.GetConfiguration();
         controllerConfig.m_editorEntityId = GetEntityId().operator AZ::u64();
+
+        // The Editor manages active camera state, so while we're in Editor we explicitly
+        // disable the request to make this the active view at edit component activation time.
+        bool prevShouldActivateViewOnActivation = controllerConfig.m_makeActiveViewOnActivation;
+        controllerConfig.m_makeActiveViewOnActivation = false; 
+
         m_controller.SetConfiguration(controllerConfig);
 
+        // Call base class activate, which in turn calls Activate on our controller.
         EditorCameraComponentBase::Activate();
+
+        // Reset the original `m_makeActiveViewOnActivation' setting, so that the intended value is serialized, used in BuildGameEntity, etc.
+        controllerConfig.m_makeActiveViewOnActivation = prevShouldActivateViewOnActivation;
+        m_controller.SetConfiguration(controllerConfig);
+
         AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(GetEntityId());
         EditorCameraNotificationBus::Handler::BusConnect();
         EditorCameraViewRequestBus::Handler::BusConnect(GetEntityId());

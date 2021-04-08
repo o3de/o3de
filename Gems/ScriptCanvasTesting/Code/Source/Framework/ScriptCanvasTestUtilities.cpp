@@ -46,16 +46,10 @@ namespace ScriptCanvasTests
 #undef SC_CORE_UNIT_TEST_DIR
 #undef SC_CORE_UNIT_TEST_NAME
 
-
     void ExpectParse(AZStd::string_view graphPath)
     {
-        ExpectParse(graphPath, ScriptCanvasTestUtilitiesCPP::k_defaultExtension);
-    }
-
-    void ExpectParse(AZStd::string_view graphPath, AZStd::string_view extension)
-    {
         AZ_TEST_START_TRACE_SUPPRESSION;
-        const AZStd::string filePath = AZStd::string::format("%s/%s.%s", ScriptCanvasTestUtilitiesCPP::k_unitTestDirPathRelative, graphPath.data(), extension.data());
+        const AZStd::string filePath = AZStd::string::format("%s/%s.%s", ScriptCanvasTestUtilitiesCPP::k_unitTestDirPathRelative, graphPath.data(), ScriptCanvasTestUtilitiesCPP::k_defaultExtension);
 
         ScriptCanvasEditor::RunGraphSpec runGraphSpec;
         runGraphSpec.graphPath = filePath;
@@ -69,13 +63,8 @@ namespace ScriptCanvasTests
 
     void ExpectParseError(AZStd::string_view graphPath)
     {
-        ExpectParseError(graphPath, ScriptCanvasTestUtilitiesCPP::k_defaultExtension);
-    }
-
-    void ExpectParseError(AZStd::string_view graphPath, AZStd::string_view extension)
-    {
         AZ_TEST_START_TRACE_SUPPRESSION;
-        const AZStd::string filePath = AZStd::string::format("%s/%s.%s", ScriptCanvasTestUtilitiesCPP::k_unitTestDirPathRelative, graphPath.data(), extension.data());
+        const AZStd::string filePath = AZStd::string::format("%s/%s.%s", ScriptCanvasTestUtilitiesCPP::k_unitTestDirPathRelative, graphPath.data(), ScriptCanvasTestUtilitiesCPP::k_defaultExtension);
         ScriptCanvasEditor::RunGraphSpec runGraphSpec;
         runGraphSpec.runSpec.processOnly = true;
         runGraphSpec.graphPath = filePath;

@@ -137,7 +137,12 @@ namespace GraphCanvas
 
         int GetLayoutPriority() const override;
         void SetLayoutPriority(int priority) override;
+
+        void Show() { m_visible = true; }
+        void Hide() { m_visible = false; }
         ////
+
+        bool IsVisible() const { return m_visible; }
 
     protected:
 
@@ -173,5 +178,7 @@ namespace GraphCanvas
 
         //! Stores custom user data for this slot
         AZStd::any m_userData;
+
+        bool m_visible;
     };
 }

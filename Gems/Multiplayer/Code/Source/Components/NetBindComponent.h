@@ -14,6 +14,7 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/Entity.h>
+#include <AzCore/Math/Aabb.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -23,6 +24,7 @@
 #include <Source/NetworkEntity/NetworkEntityHandle.h>
 #include <Source/NetworkInput/IMultiplayerComponentInput.h>
 #include <Source/MultiplayerTypes.h>
+#include <AzCore/EBus/Event.h>
 
 namespace Multiplayer
 {
@@ -68,15 +70,15 @@ namespace Multiplayer
         bool IsProcessingInput() const;
         void CreateInput(NetworkInput& networkInput, float deltaTime);
         void ProcessInput(NetworkInput& networkInput, float deltaTime);
-        float GetRewindDistanceForInput(const NetworkInput& networkInput, float deltaTime) const;
+        AZ::Aabb GetRewindBoundsForInput(const NetworkInput& networkInput, float deltaTime) const;
 
         bool HandleRpcMessage(NetEntityRole remoteRole, NetworkEntityRpcMessage& message);
         bool HandlePropertyChangeMessage(AzNetworking::ISerializer& serializer, bool notifyChanges = true);
 
-        RpcSendEvent& GetSendServerAuthorityToClientSimulationRpcEvent();
-        RpcSendEvent& GetSendServerAuthorityToClientAutonomousRpcEvent();
-        RpcSendEvent& GetSendServerSimulationToServerAuthorityRpcEvent();
-        RpcSendEvent& GetSendClientAutonomousToServerAuthorityRpcEvent();
+        RpcSendEvent& GetSendAuthorityToClientRpcEvent();
+        RpcSendEvent& GetSendAuthorityToAutonomousRpcEvent();
+        RpcSendEvent& GetSendServerToAuthorityRpcEvent();
+        RpcSendEvent& GetSendAutonomousToAuthorityRpcEvent();
 
         const ReplicationRecord& GetPredictableRecord() const;
 
@@ -88,20 +90,15 @@ namespace Multiplayer
         void AddEntityDirtiedEventHandler(EntityDirtiedEvent::Handler& eventHandler);
         void AddEntityMigrationEventHandler(EntityMigrationEvent::Handler& eventHandler);
 
-        bool SerializeEntityCorrection(AzNetworking::ISerializer& a_Serializer);
+        bool SerializeEntityCorrection(AzNetworking::ISerializer& serializer);
 
-        bool SerializeStateDeltaMessage(ReplicationRecord& replicationRecord, AzNetworking::ISerializer& serializer, ComponentSerializationType componentSerializationType);
-        void NotifyStateDeltaChanges(ReplicationRecord& replicationRecord, ComponentSerializationType componentSerializationType);
+        bool SerializeStateDeltaMessage(ReplicationRecord& replicationRecord, AzNetworking::ISerializer& serializer);
+        void NotifyStateDeltaChanges(ReplicationRecord& replicationRecord);
 
         void FillReplicationRecord(ReplicationRecord& replicationRecord) const;
         void FillTotalReplicationRecord(ReplicationRecord& replicationRecord) const;
 
-        bool IsMigrationDataValid() const;
-
     private:
-        void SetMigrationDataValid(bool migrationDataValid);
-        bool SerializeMigrationData(AzNetworking::ISerializer& serializer);
-
         void PreInit(AZ::Entity* entity, const PrefabEntityId& prefabEntityId, NetEntityId netEntityId, NetEntityRole netEntityRole);
 
         void ConstructControllers();
@@ -112,7 +109,6 @@ namespace Multiplayer
         void OnEntityStateEvent(AZ::Entity::State oldState, AZ::Entity::State newState);
 
         void NetworkAttach();
-        void NetworkDetach();
 
         void HandleMarkedDirty();
         void HandleLocalServerRpcMessage(NetworkEntityRpcMessage& message);
@@ -130,10 +126,10 @@ namespace Multiplayer
         AZStd::vector<MultiplayerComponent*> m_multiplayerSerializationComponentVector;
         AZStd::vector<MultiplayerComponent*> m_multiplayerInputComponentVector;
 
-        RpcSendEvent m_sendServerAuthorityToClientSimulationRpcEvent;
-        RpcSendEvent m_sendServerAuthorityToClientAutonomousRpcEvent;
-        RpcSendEvent m_sendServerSimulationtoServerAuthorityRpcEvent;
-        RpcSendEvent m_sendClientAutonomousToServerAuthorityRpcEvent;
+        RpcSendEvent m_sendAuthorityToClientRpcEvent;
+        RpcSendEvent m_sendAuthorityToAutonomousRpcEvent;
+        RpcSendEvent m_sendServertoAuthorityRpcEvent;
+        RpcSendEvent m_sendAutonomousToAuthorityRpcEvent;
 
         EntityStopEvent       m_entityStopEvent;
         EntityDirtiedEvent    m_dirtiedEvent;

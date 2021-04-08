@@ -1396,7 +1396,7 @@ namespace GraphModelIntegration
     }
 
 
-    GraphCanvas::SlotId GraphController::RequestExtension(const GraphCanvas::NodeId& nodeId, const GraphCanvas::ExtenderId& extenderId)
+    GraphCanvas::SlotId GraphController::RequestExtension(const GraphCanvas::NodeId& nodeId, const GraphCanvas::ExtenderId& extenderId, GraphModelRequests::ExtensionRequestReason )
     {
         GraphCanvas::SlotId graphCanvasSlotId;
 

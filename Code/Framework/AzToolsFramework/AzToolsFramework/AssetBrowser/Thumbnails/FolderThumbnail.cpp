@@ -39,6 +39,14 @@ namespace AzToolsFramework
             return m_isGem;
         }
 
+        bool FolderThumbnailKey::Equals(const ThumbnailKey* other) const
+        {
+            if (!ThumbnailKey::Equals(other))
+            {
+                return false;
+            }
+            return m_isGem == azrtti_cast<const FolderThumbnailKey*>(other)->IsGem();
+        }
         //////////////////////////////////////////////////////////////////////////
         // FolderThumbnail
         //////////////////////////////////////////////////////////////////////////
@@ -68,7 +76,7 @@ namespace AzToolsFramework
         // FolderThumbnailCache
         //////////////////////////////////////////////////////////////////////////
         FolderThumbnailCache::FolderThumbnailCache()
-            : ThumbnailCache<FolderThumbnail, FolderKeyHash, FolderKeyEqual>() {}
+            : ThumbnailCache<FolderThumbnail>() {}
 
         FolderThumbnailCache::~FolderThumbnailCache() = default;
 

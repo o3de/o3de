@@ -3,14 +3,13 @@
     "Version": 1,
     "ClassName": "AZ::Render::LightingPreset",
     "ClassData": {
-        "autoSelect": false,
         "displayName": "Blau River",
-        "skyboxImageAsset": {
+        "iblDiffuseImageAsset": {
             "assetId": {
                 "guid": "{442FFD57-9ED2-51A5-B627-764AE2A2161F}",
-                "subId": 1000
+                "subId": 3000
             },
-            "assetHint": "lightingpresets/lowcontrast/blau_river_4k_iblskyboxcm.exr.streamingimage"
+            "assetHint": "lightingpresets/lowcontrast/blau_river_4k_iblskyboxcm_ibldiffuse.exr.streamingimage"
         },
         "iblSpecularImageAsset": {
             "assetId": {
@@ -19,15 +18,21 @@
             },
             "assetHint": "lightingpresets/lowcontrast/blau_river_4k_iblskyboxcm_iblspecular.exr.streamingimage"
         },
-        "iblDiffuseImageAsset": {
+        "skyboxImageAsset": {
+            "assetId": {
+                "guid": "{442FFD57-9ED2-51A5-B627-764AE2A2161F}",
+                "subId": 1000
+            },
+            "assetHint": "lightingpresets/lowcontrast/blau_river_4k_iblskyboxcm.exr.streamingimage"
+        },
+        "alternateSkyboxImageAsset": {
             "assetId": {
                 "guid": "{442FFD57-9ED2-51A5-B627-764AE2A2161F}",
                 "subId": 3000
             },
             "assetHint": "lightingpresets/lowcontrast/blau_river_4k_iblskyboxcm_ibldiffuse.exr.streamingimage"
         },
-        "iblExposure": 0.0,
-        "skyboxExposure": 0.0,
+        "shadowCatcherOpacity": 0.3499999940395355,
         "lights": [
             {
                 "direction": [
@@ -35,20 +40,10 @@
                     0.4000000059604645,
                     -1.0
                 ],
-                "color": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "intensity": 1.0,
                 "shadowCascadeCount": 4,
                 "shadowRatioLogarithmUniform": 1.0,
-                "shadowFarClipDistance": 20.0,
-                "shadowmapSize": "Size2048",
-                "enableShadowDebugColoring": false
+                "shadowmapSize": "Size2048"
             }
-        ],
-        "shadowCatcherOpacity": 0.3499999940395355
+        ]
     }
 }

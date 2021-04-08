@@ -19,7 +19,7 @@
 
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <AzFramework/Physics/SystemBus.h>
-#include <AzFramework/Physics/World.h>
+#include <AzFramework/Physics/Common/PhysicsEvents.h>
 
 namespace AzPhysics
 {
@@ -52,7 +52,6 @@ namespace PhysX::Benchmarks
 
         //! Helper function to create the required number of rigid bodies and spawn them in the provided world.
         //! @param numRigidBodies The number of bodies to spawn.
-        //! @param system Current active physics system.
         //! @param world World where the rigid bodies will be spawned into.
         //! @param enableCCD Flag to enable|disable Continuous Collision Detection (CCD).
         //! @param genColliderFuncPtr [optional] Function pointer to allow caller to pick the collider object Default is a box sized at 1m.
@@ -60,18 +59,22 @@ namespace PhysX::Benchmarks
         //! @param genSpawnOriFuncPtr [optional] Function pointer to allow caller to pick the spawn orientation.
         //! @param genMassFuncPtr [optional] Function pointer to allow caller to pick the mass of the object.
         //! @param genEntityIdFuncPtr [optional] Function pointer to allow caller to define the entity id of the object.
-        AZStd::vector<AZStd::unique_ptr<Physics::RigidBody>> CreateRigidBodies(int numRigidBodies, Physics::System* system,
+        AzPhysics::SimulatedBodyHandleList CreateRigidBodies(int numRigidBodies,
             AzPhysics::Scene* scene, bool enableCCD,
             GenerateColliderFuncPtr* genColliderFuncPtr = nullptr, GenerateSpawnPositionFuncPtr* genSpawnPosFuncPtr = nullptr,
             GenerateSpawnOrientationFuncPtr* genSpawnOriFuncPtr = nullptr, GenerateMassFuncPtr* genMassFuncPtr = nullptr,
             GenerateEntityIdFuncPtr* genEntityIdFuncPtr = nullptr
         );
 
+        //! Helper that takes a list of SimulatedBodyHandles to Rigid Bodies and return RigidBody pointers
+        AZStd::vector<AzPhysics::RigidBody*> GetRigidBodiesFromHandles(AzPhysics::Scene* scene, const AzPhysics::SimulatedBodyHandleList& handlesList);
+
         //! Object that when given a World will listen to the Pre / Post physics updates.
         //! Will time the duration between Pre and Post events in milliseconds. Used for running Benchmarks
         struct PrePostSimulationEventHandler
-            : public Physics::WorldNotificationBus::Handler
         {
+            PrePostSimulationEventHandler();
+
             //! Begin tracking the physics tick times.
             //! This will clear any previous recorded times
             //! @param world The physics world to track tick times
@@ -82,14 +85,15 @@ namespace PhysX::Benchmarks
 
             Types::TimeList& GetSubTickTimes() { return m_subTickTimes; }
 
-            // Physics::WorldNotificationBus::Handler Interface ...
-            void OnPrePhysicsSubtick([[maybe_unused]] float fixedDeltaTime) override;
-            void OnPostPhysicsSubtick([[maybe_unused]] float fixedDeltaTime) override;
-
         private:
+            void PreTick();
+            void PostTick();
             //! list of each sub tick execution time in milliseconds
             Types::TimeList m_subTickTimes;
             AZStd::chrono::system_clock::time_point m_tickStart;
+            
+            AzPhysics::SceneEvents::OnSceneSimulationStartHandler m_sceneStartSimHandler;
+            AzPhysics::SceneEvents::OnSceneSimulationFinishHandler m_sceneFinishSimHandler;
         };
 
         //! This will calculate and return each requested percentiles of the data set provided.

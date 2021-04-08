@@ -13,8 +13,6 @@
 
 // RHIUtils is for dumping common functionality that is used in several places across the RHI
  
-#include <AtomCore/Instance/Instance.h>
-
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
 #include <Atom/RHI.Reflect/Base.h>
 #include <Atom/RHI.Reflect/Format.h>
@@ -38,6 +36,13 @@ namespace AZ
         //! Checks the format against the list of supported formats and returns
         //! the nearest match, with a warning if the exact format is not supported
         Format ValidateFormat(Format format, const char* location, const AZStd::vector<Format>& formatFallbacks, FormatCapabilities requestedCapabilities = FormatCapabilities::None);
+
+        //! Returns the command line value associated with the option if it exists.
+        //! If multiple values exist it will return the last one
+        AZStd::string GetCommandLineValue(const AZStd::string& commandLineOption);
+
+        //! Returns if the current bakcend is a null renderer
+        bool IsNullRenderer();
     }
 }
 

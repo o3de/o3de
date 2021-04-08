@@ -21,6 +21,8 @@ set(FILES
     Source/Generation/Components/TangentGenerator/TangentPreExportComponent.cpp
     Source/Generation/Components/TangentGenerator/TangentGenerators/MikkTGenerator.h
     Source/Generation/Components/TangentGenerator/TangentGenerators/MikkTGenerator.cpp
+    Source/Generation/Components/TangentGenerator/TangentGenerators/BlendShapeMikkTGenerator.h
+    Source/Generation/Components/TangentGenerator/TangentGenerators/BlendShapeMikkTGenerator.cpp
     Source/Generation/Components/MeshOptimizer/Array2D.h
     Source/Generation/Components/MeshOptimizer/Array2D.inl
     Source/Generation/Components/MeshOptimizer/MeshBuilder.cpp

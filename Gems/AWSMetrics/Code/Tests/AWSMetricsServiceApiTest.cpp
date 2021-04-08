@@ -51,8 +51,8 @@ namespace AWSMetrics
         EXPECT_CALL(JsonReader, Accept(responseRecord.errorCode)).Times(1);
         EXPECT_CALL(JsonReader, Ignore()).Times(1);
 
-        responseRecord.OnJsonKey(SUCCESS_RESPONSE_RECORD_KEY_RESULT, JsonReader);
-        responseRecord.OnJsonKey(SUCCESS_RESPONSE_RECORD_KEY_ERROR_CODE, JsonReader);
+        responseRecord.OnJsonKey(AwsMetricsSuccessResponseRecordKeyResult, JsonReader);
+        responseRecord.OnJsonKey(AwsMetricsSuccessResponseRecordKeyErrorCode, JsonReader);
         responseRecord.OnJsonKey("other", JsonReader);
     }
 
@@ -72,9 +72,9 @@ namespace AWSMetrics
         EXPECT_CALL(JsonReader, Accept(::testing::An<AWSCore::JsonArrayHandler>())).Times(1);
         EXPECT_CALL(JsonReader, Ignore()).Times(1);
 
-        response.OnJsonKey(SUCCESS_RESPONSE_KEY_FAILED_RECORD_COUNT, JsonReader);
-        response.OnJsonKey(SUCCESS_RESPONSE_KEY_TOTAL, JsonReader);
-        response.OnJsonKey(SUCCESS_RESPONSE_KEY_EVENTS, JsonReader);
+        response.OnJsonKey(AwsMetricsSuccessResponseKeyFailedRecordCount, JsonReader);
+        response.OnJsonKey(AwsMetricsSuccessResponseKeyTotal, JsonReader);
+        response.OnJsonKey(AwsMetricsSuccessResponseKeyEvents, JsonReader);
         response.OnJsonKey("other", JsonReader);
     }
 
@@ -88,8 +88,8 @@ namespace AWSMetrics
         EXPECT_CALL(JsonReader, Accept(error.type)).Times(1);
         EXPECT_CALL(JsonReader, Ignore()).Times(1);
 
-        error.OnJsonKey(ERROR_KEY_MESSAGE, JsonReader);
-        error.OnJsonKey(ERROR_KEY_TYPE, JsonReader);
+        error.OnJsonKey(AwsMetricsErrorKeyMessage, JsonReader);
+        error.OnJsonKey(AwsMetricsErrorKeyType, JsonReader);
         error.OnJsonKey("other", JsonReader);
     }
 
@@ -107,6 +107,6 @@ namespace AWSMetrics
         AZStd::string bodyString;
         std::istreambuf_iterator<AZStd::string::value_type> eos;
         bodyString = AZStd::string{ std::istreambuf_iterator<AZStd::string::value_type>(*bodyContent), eos };
-        EXPECT_TRUE(bodyString.find(AZStd::string::format("{\"%s\":[{\"event_timestamp\":", REQUEST_PARAMETER_KEY_EVENTS)) != AZStd::string::npos);
+        EXPECT_TRUE(bodyString.find(AZStd::string::format("{\"%s\":[{\"event_timestamp\":", AwsMetricsRequestParameterKeyEvents)) != AZStd::string::npos);
     }
 }

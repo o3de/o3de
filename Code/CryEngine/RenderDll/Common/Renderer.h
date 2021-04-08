@@ -781,8 +781,8 @@ public:
     #include AZ_RESTRICTED_FILE(Renderer_h)
 #endif
 
-    virtual void DrawStringU(IFFont_RenderProxy* pFont, float x, float y, float z, const char* pStr, const bool asciiMultiLine, const STextDrawContext& ctx) const;
-    virtual void RT_DrawStringU(IFFont_RenderProxy* pFont, float x, float y, float z, const char* pStr, const bool asciiMultiLine, const STextDrawContext& ctx) const = 0;
+    virtual void DrawStringU(IFFont_RenderProxy* pFont, float x, float y, float z, const char* pStr, bool asciiMultiLine, const STextDrawContext& ctx) const;
+    virtual void RT_DrawStringU(IFFont_RenderProxy* pFont, float x, float y, float z, const char* pStr, bool asciiMultiLine, const STextDrawContext& ctx) const = 0;
 
     virtual void RT_DrawLines(Vec3 v[], int nump, ColorF& col, int flags, float fGround) = 0;
 
@@ -847,7 +847,7 @@ public:
     virtual void RequestFlushAllPendingTextureStreamingJobs(int nFrames) { m_nFlushAllPendingTextureStreamingJobs = nFrames; }
     virtual void SetTexturesStreamingGlobalMipFactor(float fFactor) { m_fTexturesStreamingGlobalMipFactor = fFactor; }
 
-    virtual void SetRendererCVar(ICVar* pCVar, const char* pArgText, const bool bSilentMode = false) = 0;
+    virtual void SetRendererCVar(ICVar* pCVar, const char* pArgText, bool bSilentMode = false) = 0;
 
     virtual void EF_ClearTargetsImmediately(uint32 nFlags) = 0;
     virtual void EF_ClearTargetsImmediately(uint32 nFlags, const ColorF& Colors, float fDepth, uint8 nStencil) = 0;
@@ -935,7 +935,7 @@ public:
 #endif
     }
 
-    virtual int GetCurrentNumberOfDrawCalls([[maybe_unused]] const uint32 EFSListMask) const
+    virtual int GetCurrentNumberOfDrawCalls([[maybe_unused]] uint32 EFSListMask) const
     {
         int nDIPs = 0;
 #if defined(ENABLE_PROFILING_CODE)
@@ -951,7 +951,7 @@ public:
         return nDIPs;
     }
 
-    virtual float GetCurrentDrawCallRTTimes(const uint32 EFSListMask) const
+    virtual float GetCurrentDrawCallRTTimes(uint32 EFSListMask) const
     {
         float fDIPTimes = 0.0f;
         int nThr = m_pRT->GetThreadList();
@@ -1052,8 +1052,8 @@ public:
     virtual unsigned int DownLoadToVideoMemoryCube(const byte* data, int w, int h, ETEX_Format eTFSrc, ETEX_Format eTFDst, int nummipmap, bool repeat = true, int filter = FILTER_BILINEAR, int Id = 0, const char* szCacheName = NULL, int flags = 0, EEndian eEndian = eLittleEndian, RectI* pRegion = NULL, bool bAsynDevTexCreation = false) = 0;
 
     virtual bool DXTCompress(const byte* raw_data, int nWidth, int nHeight, ETEX_Format eTF, bool bUseHW, bool bGenMips, int nSrcBytesPerPix, MIPDXTcallback callback);
-    virtual bool DXTDecompress(const byte* srcData, const size_t srcFileSize, byte* dstData, int nWidth, int nHeight, int nMips, ETEX_Format eSrcTF, bool bUseHW, int nDstBytesPerPix);
-    virtual bool    SetGammaDelta(const float fGamma) = 0;
+    virtual bool DXTDecompress(const byte* srcData, size_t srcFileSize, byte* dstData, int nWidth, int nHeight, int nMips, ETEX_Format eSrcTF, bool bUseHW, int nDstBytesPerPix);
+    virtual bool    SetGammaDelta(float fGamma) = 0;
 
     virtual void    RemoveTexture(unsigned int TextureId) = 0;
 
@@ -1598,8 +1598,8 @@ public:
     virtual bool  EF_RenderEnvironmentCubeHDR (int size, Vec3& Pos, TArray<unsigned short>& vecData);
     virtual ITexture* EF_GetTextureByID(int Id);
     virtual ITexture* EF_GetTextureByName(const char* name, uint32 flags = 0);
-    virtual ITexture* EF_LoadTexture(const char* nameTex, const uint32 flags = 0);
-    virtual ITexture* EF_LoadCubemapTexture(const char* nameTex, const uint32 flags = 0);
+    virtual ITexture* EF_LoadTexture(const char* nameTex, uint32 flags = 0);
+    virtual ITexture* EF_LoadCubemapTexture(const char* nameTex, uint32 flags = 0);
     virtual ITexture* EF_LoadDefaultTexture(const char* nameTex);
 
     virtual const SShaderProfile& GetShaderProfile(EShaderType eST) const;
@@ -1627,19 +1627,19 @@ public:
     void EF_AddEf_NotVirtual (IRenderElement* pRE, SShaderItem& pSH, CRenderObject* pObj, const SRenderingPassInfo& passInfo, int nList, int nAW, const SRendItemSorter& rendItemSorter);
 
     // Draw all shaded REs in the list
-    virtual void EF_EndEf3D (const int nFlags, const int nPrecacheUpdateId, const int nNearPrecacheUpdateId, const SRenderingPassInfo& passInfo) = 0;
+    virtual void EF_EndEf3D (int nFlags, int nPrecacheUpdateId, int nNearPrecacheUpdateId, const SRenderingPassInfo& passInfo) = 0;
 
-    virtual void EF_InvokeShadowMapRenderJobs(const int nFlags) = 0;
+    virtual void EF_InvokeShadowMapRenderJobs(int nFlags) = 0;
     // 2d interface for shaders
-    virtual void EF_EndEf2D(const bool bSort) = 0;
+    virtual void EF_EndEf2D(bool bSort) = 0;
 
     // Dynamic lights
     virtual bool EF_IsFakeDLight (const CDLight* Source);
     virtual void EF_ADDDlight(CDLight* Source, const SRenderingPassInfo& passInfo);
     virtual bool EF_AddDeferredDecal(const SDeferredDecal& rDecal);
-    virtual uint32 EF_GetDeferredLightsNum(const eDeferredLightType eLightType = eDLT_DeferredLight);
+    virtual uint32 EF_GetDeferredLightsNum(eDeferredLightType eLightType = eDLT_DeferredLight);
     virtual int EF_AddDeferredLight(const CDLight& pLight, float fMult, const SRenderingPassInfo& passInfo, const SRendItemSorter& rendItemSorter);
-    virtual TArray<SRenderLight>* EF_GetDeferredLights(const SRenderingPassInfo& passInfo, const eDeferredLightType eLightType = eDLT_DeferredLight);
+    virtual TArray<SRenderLight>* EF_GetDeferredLights(const SRenderingPassInfo& passInfo, eDeferredLightType eLightType = eDLT_DeferredLight);
     SRenderLight* EF_GetDeferredLightByID(const uint16 nLightID, const eDeferredLightType eLightType = eDLT_DeferredLight);
     virtual void EF_ClearDeferredLightsList();
     virtual void EF_ReleaseDeferredData();
@@ -1649,7 +1649,7 @@ public:
     void EF_CheckLightMaterial(CDLight* pLight, uint16 nRenderLightID, const SRenderingPassInfo& passInfo, const SRendItemSorter& rendItemSorter);
 
     // Water sim hits
-    virtual void EF_AddWaterSimHit(const Vec3& vPos, const float scale, const float strength);
+    virtual void EF_AddWaterSimHit(const Vec3& vPos, float scale, float strength);
     virtual void EF_DrawWaterSimHits();
 
     virtual void EF_QueryImpl(ERenderQueryTypes eQuery, void* pInOut0, uint32 nInOutSize0, void* pInOut1, uint32 nInOutSize1);

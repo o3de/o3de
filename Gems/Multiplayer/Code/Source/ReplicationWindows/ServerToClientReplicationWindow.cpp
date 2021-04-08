@@ -165,8 +165,8 @@ namespace Multiplayer
         }
 
         // Add in Autonomous Entities
-        // Note: Do not add any ClientSimulation entities after this point, otherwise you stomp over the ClientAutonomous mode
-        m_replicationSet[m_controlledEntity] = { NetEntityRole::ClientAutonomous, 1.0f };  // Always replicate autonomous entities
+        // Note: Do not add any Client entities after this point, otherwise you stomp over the Autonomous mode
+        m_replicationSet[m_controlledEntity] = { NetEntityRole::Autonomous, 1.0f };  // Always replicate autonomous entities
 
         //auto hierarchyController = FindController<EntityHierarchyComponent::Authority>(m_ControlledEntity);
         //if (hierarchyController != nullptr)
@@ -277,7 +277,7 @@ namespace Multiplayer
         if (!sv_ReplicateServerProxies)
         {
             NetBindComponent* netBindComponent = entityHandle.GetNetBindComponent();
-            if ((netBindComponent != nullptr) && (netBindComponent->GetNetEntityRole() == NetEntityRole::ServerSimulation))
+            if ((netBindComponent != nullptr) && (netBindComponent->GetNetEntityRole() == NetEntityRole::Server))
             {
                 // Proxy replication disabled
                 return;
@@ -296,28 +296,28 @@ namespace Multiplayer
                 m_replicationSet.erase(removeEnt);
             }
             m_candidateQueue.push(PrioritizedReplicationCandidate(entityHandle, priority));
-            m_replicationSet[entityHandle] = { NetEntityRole::ClientSimulation, priority };
+            m_replicationSet[entityHandle] = { NetEntityRole::Client, priority };
         }
     }
 
-    //void ServerToClientReplicationWindow::CollectControlledEntitiesRecursive(ReplicationSet& a_ReplicationSet, EntityHierarchyComponent::Authority& a_HierarchyController)
+    //void ServerToClientReplicationWindow::CollectControlledEntitiesRecursive(ReplicationSet& replicationSet, EntityHierarchyComponent::Authority& hierarchyController)
     //{
-    //    auto controlledEnts = a_HierarchyController.GetChildrenRelatedEntities();
+    //    auto controlledEnts = hierarchyController.GetChildrenRelatedEntities();
     //    for (auto& controlledEnt : controlledEnts)
     //    {
     //        AZ_Assert(controlledEnt != nullptr, "We have lost a controlled entity unexpectedly");
-    //        a_ReplicationSet[controlledEnt.GetConstEntity()] = EntityReplicationData(EntityNetworkRoleT::e_ClientAutonomous, EntityPrioritySystem::k_MaxPriority); // Always replicate controlled entities
+    //        replicationSet[controlledEnt.GetConstEntity()] = EntityReplicationData(EntityNetworkRoleT::e_Autonomous, EntityPrioritySystem::k_MaxPriority); // Always replicate controlled entities
     //        auto hierarchyController = controlledEnt.FindController<EntityHierarchyComponent::Authority>();
     //        if (hierarchyController != nullptr)
     //        {
-    //            CollectControlledEntitiesRecursive(a_ReplicationSet, *hierarchyController);
+    //            CollectControlledEntitiesRecursive(replicationSet, *hierarchyController);
     //        }
     //    }
     //}
 
-    //void ServerToClientReplicationWindow::OnAddFilteredEntity(NetEntityId a_FitleredEntityId)
+    //void ServerToClientReplicationWindow::OnAddFilteredEntity(NetEntityId filteredEntityId)
     //{
-    //    ConstEntityPtr filteredEntity = gNovaGame->GetEntityManager().GetEntity(a_FitleredEntityId);
-    //    m_replicationSet.erase(filteredEntity);
+    //    ConstEntityPtr filteredEntity = gNovaGame->GetEntityManager().GetEntity(filteredEntityId);
+    //    m_replicationSet.erase(filteredEntityId);
     //}
 }

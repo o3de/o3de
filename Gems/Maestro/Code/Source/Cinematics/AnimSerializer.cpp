@@ -47,9 +47,7 @@ void AnimSerializer::ReflectAnimTypes(AZ::SerializeContext* context)
         ->Field("TimeStep", &ICaptureKey::timeStep)
         ->Field("Folder", &ICaptureKey::folder)
         ->Field("Once", &ICaptureKey::once)
-        ->Field("FilePrefix", &ICaptureKey::prefix)
-        ->Field("Format", &ICaptureKey::format)
-        ->Field("BufferType", &ICaptureKey::captureBufferIndex);
+        ->Field("FilePrefix", &ICaptureKey::prefix);
 
     context->Class<ICharacterKey, ITimeRangeKey>()
         ->Field("Animation", &ICharacterKey::m_animation)

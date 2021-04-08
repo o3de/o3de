@@ -12,7 +12,7 @@
 
 #include <PhysX_precompiled.h>
 #include <AzCore/Serialization/EditContext.h>
-#include <AzFramework/Physics/Casts.h>
+#include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 #include <PhysXCharacters/API/RagdollNode.h>
 #include <PhysX/NativeTypeIdentifiers.h>
 
@@ -30,8 +30,9 @@ namespace PhysX
         }
     }
 
-    RagdollNode::RagdollNode(AZStd::unique_ptr<Physics::RigidBody> rigidBody)
-        : m_rigidBody(AZStd::move(rigidBody))
+    RagdollNode::RagdollNode(AzPhysics::RigidBody* rigidBody, AzPhysics::SimulatedBodyHandle rigidBodyHandle)
+        : m_rigidBody(rigidBody)
+        , m_rigidBodyHandle(rigidBodyHandle)
     {
         physx::PxRigidDynamic* pxRigidDynamic = static_cast<physx::PxRigidDynamic*>(m_rigidBody->GetNativePointer());
         m_actorUserData = PhysX::ActorData(pxRigidDynamic);
@@ -45,7 +46,7 @@ namespace PhysX
     }
 
     // Physics::RagdollNode
-    Physics::RigidBody& RagdollNode::GetRigidBody()
+    AzPhysics::RigidBody& RagdollNode::GetRigidBody()
     {
         return *m_rigidBody;
     }
@@ -55,10 +56,18 @@ namespace PhysX
         return m_joint;
     }
 
-    // Physics::WorldBody
-    Physics::World* RagdollNode::GetWorld() const
+    bool RagdollNode::IsSimulating() const
     {
-        return m_rigidBody ? m_rigidBody->GetWorld() : nullptr;
+        if (m_rigidBody)
+        {
+            return m_rigidBody->m_simulating;
+        }
+        return false;
+    }
+
+    AzPhysics::Scene* RagdollNode::GetScene()
+    {
+        return m_rigidBody ? m_rigidBody->GetScene() : nullptr;
     }
 
     AZ::EntityId RagdollNode::GetEntityId() const
@@ -92,13 +101,13 @@ namespace PhysX
         return m_rigidBody ? m_rigidBody->GetAabb() : AZ::Aabb::CreateNull();
     }
 
-    Physics::RayCastHit RagdollNode::RayCast(const Physics::RayCastRequest& request)
+    AzPhysics::SceneQueryHit RagdollNode::RayCast(const AzPhysics::RayCastRequest& request)
     {
         if (m_rigidBody)
         {
             return m_rigidBody->RayCast(request);
         }
-        return Physics::RayCastHit();
+        return AzPhysics::SceneQueryHit();
     }
 
     AZ::Crc32 RagdollNode::GetNativeType() const
@@ -111,13 +120,8 @@ namespace PhysX
         return m_rigidBody ? m_rigidBody->GetNativePointer() : nullptr;
     }
 
-    void RagdollNode::AddToWorld(Physics::World&)
+    AzPhysics::SimulatedBodyHandle RagdollNode::GetRigidBodyHandle() const
     {
-        AZ_WarningOnce("RagdollNode", false, "Not allowed to add individual ragdoll nodes to a world");
-    }
-
-    void RagdollNode::RemoveFromWorld(Physics::World&)
-    {
-        AZ_WarningOnce("RagdollNode", false, "Not allowed to remove individual ragdoll nodes to a world");
+        return m_rigidBodyHandle;
     }
 } // namespace PhysX

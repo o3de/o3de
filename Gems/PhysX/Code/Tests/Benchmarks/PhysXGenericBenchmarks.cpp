@@ -13,23 +13,23 @@
 #ifdef HAVE_BENCHMARK
 
 #include <AzTest/AzTest.h>
-#include <Physics/PhysicsTests.h>
+#include <Tests/PhysXGenericTestFixture.h>
 
 namespace PhysX::Benchmarks
 {
     //! Used to measure how much overhead fixture adds to benchmark runs.
     class BenchmarkablePhysXBenchmarkFixture
-        : public Physics::GenericPhysicsFixture
+        : public PhysX::GenericPhysicsFixture
     {
     public:
         void SetUp()
         {
-            Physics::GenericPhysicsFixture::SetUpInternal();
+            PhysX::GenericPhysicsFixture::SetUpInternal();
         }
 
         void TearDown()
         {
-            Physics::GenericPhysicsFixture::TearDownInternal();
+            PhysX::GenericPhysicsFixture::TearDownInternal();
         }
     };
 

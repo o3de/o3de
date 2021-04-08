@@ -12,15 +12,20 @@
 #include <PhysX_precompiled.h>
 
 #include <AzTest/AzTest.h>
-#include <Physics/PhysicsTests.h>
 #include <Tests/PhysXTestCommon.h>
 
 #include <AzFramework/Physics/PhysicsSystem.h>
+#include <AzFramework/Physics/PhysicsScene.h>
+#include <AzFramework/Physics/Common/PhysicsEvents.h>
 
 #include <PhysX/Configuration/PhysXConfiguration.h>
 
 namespace PhysX
 {
+    namespace Internal
+    {
+        static constexpr const char* DefaultSceneNameFormat = "scene-%d";
+    }
     //setup a test fixture with no default created scene
     class PhysXSystemFixture
         : public testing::Test
@@ -32,8 +37,7 @@ namespace PhysX
             AzPhysics::SceneConfiguration config;
             for (int i = 0; i < NumScenes; i++)
             {
-                config.m_sceneName = AZStd::string::format("scene-%d", i);
-                config.m_legacyId = AZ::Crc32(config.m_sceneName);
+                config.m_sceneName = AZStd::string::format(Internal::DefaultSceneNameFormat, i);
 
                 m_sceneConfigs.push_back(config);
             }
@@ -161,18 +165,14 @@ namespace PhysX
 
         AzPhysics::SceneConfiguration newSceneConfig;
         newSceneConfig.m_sceneName = "NewScene";
-        newSceneConfig.m_legacyId = AZ::Crc32(newSceneConfig.m_sceneName);
         AzPhysics::SceneHandle newSceneHandle = physicsSystem->AddScene(newSceneConfig);
 
         //The old and new scene handle should share an index as the freed slot will be used
-        EXPECT_EQ(AZStd::get<AzPhysics::SceneHandleValues::Index>(removedSelection),
-                  AZStd::get<AzPhysics::SceneHandleValues::Index>(newSceneHandle));
+        EXPECT_EQ(AZStd::get<AzPhysics::HandleTypeIndex::Index>(removedSelection),
+                  AZStd::get<AzPhysics::HandleTypeIndex::Index>(newSceneHandle));
     }
-#if AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
-    TEST_F(PhysXSystemFixture, DISABLED_AddingScenes_PastLimitFails)
-#else
+
     TEST_F(PhysXSystemFixture, AddingScenes_PastLimitFails)
-#endif // AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
     {
         auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
         EXPECT_TRUE(physicsSystem->GetAllScenes().size() == 0); //there should be no scenes currently created
@@ -182,13 +182,10 @@ namespace PhysX
         AzPhysics::SceneConfiguration config;
         for (int i = 0; i < std::numeric_limits<AzPhysics::SceneIndex>::max(); i++)
         {
-            config.m_sceneName = AZStd::string::format("scene-%d", i);
-            config.m_legacyId = AZ::Crc32(config.m_sceneName);
-
+            config.m_sceneName = AZStd::string::format(Internal::DefaultSceneNameFormat, i);
             sceneConfigs.push_back(config);
         }
         config.m_sceneName = "boom!";
-        config.m_legacyId = AZ::Crc32(config.m_sceneName);
 
         //add all scene configs
         AzPhysics::SceneHandleList sceneHandles = physicsSystem->AddScenes(sceneConfigs);
@@ -269,5 +266,60 @@ namespace PhysX
             });
         physicsSystem->RegisterPreSimulateEvent(preSimEvent);
         physicsSystem->Simulate(frameDeltaTime);
+    }
+
+    TEST_F(PhysXSystemFixture, GetHandle_ReturnsExpected)
+    {
+        auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
+
+        //add all scene configs
+        AzPhysics::SceneHandleList sceneHandles = physicsSystem->AddScenes(m_sceneConfigs);
+
+        //setup the expected handle to get.
+        const int testSceneHandleIdx = PhysXSystemFixture::NumScenes / 2; //pick one in range
+        const AzPhysics::SceneHandle expectedSceneHandle = sceneHandles[testSceneHandleIdx];
+
+        //create name as the same way they're created in PhysXSystemFixture::Setup();
+        const AZStd::string sceneName = AZStd::string::format(Internal::DefaultSceneNameFormat, testSceneHandleIdx);
+
+        AzPhysics::SceneHandle sceneHandle = physicsSystem->GetSceneHandle(sceneName);
+        EXPECT_EQ(sceneHandle, expectedSceneHandle);
+
+        //ask for a scene not in the list, returns InvalidSceneHandle
+        sceneHandle = physicsSystem->GetSceneHandle("ThisSceneIsNotHere");
+        EXPECT_EQ(sceneHandle, AzPhysics::InvalidSceneHandle);
+    }
+
+    TEST_F(PhysXSystemFixture, AddRemoveScenes_InvokesEvents)
+    {
+        auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
+
+        //setup the add scene handler
+        int addedCount = 0;
+        AzPhysics::SystemEvents::OnSceneAddedEvent::Handler onAddedHandler([&addedCount]([[maybe_unused]]AzPhysics::SceneHandle sceneHandle)
+            {
+                addedCount++;
+            });
+        physicsSystem->RegisterSceneAddedEvent(onAddedHandler);
+
+        //add all scene configs
+        AzPhysics::SceneHandleList sceneHandles = physicsSystem->AddScenes(m_sceneConfigs);
+        //the handler should be invoked the same number of times of the requested scenes.
+        EXPECT_EQ(addedCount, m_sceneConfigs.size());
+
+        //Setup the removed scene handler
+        int removedCount = 0;
+        AzPhysics::SystemEvents::OnSceneRemovedEvent::Handler onRemovedHandler([&removedCount, &sceneHandles, physicsSystem](AzPhysics::SceneHandle sceneHandle)
+            {
+                removedCount++;
+                auto foundItr = AZStd::find(sceneHandles.begin(), sceneHandles.end(), sceneHandle);
+                EXPECT_NE(foundItr, sceneHandles.end()); //the handle should be in the list.
+
+                EXPECT_NE(physicsSystem->GetScene(sceneHandle), nullptr); //should return a valid scene.
+            });
+        physicsSystem->RegisterSceneRemovedEvent(onRemovedHandler);
+
+        physicsSystem->RemoveScenes(sceneHandles);
+        EXPECT_EQ(removedCount, m_sceneConfigs.size());
     }
 }

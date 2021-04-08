@@ -141,7 +141,7 @@ namespace AZ
 
                 if (!group.m_viewsDescriptorTable.IsValid())
                 {
-                    AZ_Error("ShaderResourceGroupPool", false, "Descriptor context failed to allocate view descriptor table, most likely out of memory.");
+                    AZ_Error("ShaderResourceGroupPool", false, "Descriptor context failed to allocate view descriptor table. Try increasing the limits specified in platformlimits.azasset file for dx12");
                     return RHI::ResultCode::OutOfMemory;
                 }
 
@@ -160,7 +160,7 @@ namespace AZ
 
                 if (!group.m_samplersDescriptorTable.IsValid())
                 {
-                    AZ_Error("ShaderResourceGroupPool", false, "Descriptor context failed to allocate sampler descriptor table, most likely out of memory.");
+                    AZ_Error("ShaderResourceGroupPool", false, "Descriptor context failed to allocate sampler descriptor table. Try increasing the limits specified in platformlimits.azasset file for dx12.");
                     return RHI::ResultCode::OutOfMemory;
                 }
 

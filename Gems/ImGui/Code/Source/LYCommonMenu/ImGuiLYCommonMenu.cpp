@@ -235,23 +235,42 @@ namespace ImGui
                 auto lvlSystem = (gEnv && gEnv->pSystem) ? gEnv->pSystem->GetILevelSystem() : nullptr;
                 if (lvlSystem && ImGui::BeginMenu("Levels"))
                 {
-                    if (lvlSystem->GetCurrentLevel())
+                    if (lvlSystem->IsLevelLoaded())
                     {
                         ImGui::TextColored(ImGui::Colors::s_PlainLabelColor, "Current Level: ");
                         ImGui::SameLine();
-                        ImGui::TextColored(ImGui::Colors::s_NiceLabelColor, "%s", lvlSystem->GetCurrentLevel()->GetLevelInfo()->GetName());
+                        ImGui::TextColored(ImGui::Colors::s_NiceLabelColor, "%s", lvlSystem->GetCurrentLevelName());
                     }
 
-                    ImGui::TextColored(ImGui::Colors::s_PlainLabelColor, "Load Level: ");
-                    for (int i = 0; i < lvlSystem->GetLevelCount(); i++)
+                    bool usePrefabSystemForLevels = false;
+                    AzFramework::ApplicationRequests::Bus::BroadcastResult(
+                        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+
+                    if (usePrefabSystemForLevels)
                     {
-                        if (ImGui::MenuItem(AZStd::string::format("%d- %s", i, lvlSystem->GetLevelInfo(i)->GetName()).c_str()))
+                        char levelName[256];
+                        ImGui::TextColored(ImGui::Colors::s_PlainLabelColor, "Load Level: ");
+                        bool result = ImGui::InputText("", levelName, sizeof(levelName), ImGuiInputTextFlags_EnterReturnsTrue);
+                        if (result)
                         {
-                            AZStd::string mapCommandString = AZStd::string::format("map %s", lvlSystem->GetLevelInfo(i)->GetName());
-                            AZ::TickBus::QueueFunction([mapCommandString]()
-                            {
-                                gEnv->pConsole->ExecuteString(mapCommandString.c_str());
+                            AZ_TracePrintf("Imgui", "Attempting to load level '%s'\n", levelName);
+                            AZ::TickBus::QueueFunction([lvlSystem, levelName]() {
+                                lvlSystem->LoadLevel(levelName);
                             });
+                        }
+                    }
+                    else
+                    {
+                        ImGui::TextColored(ImGui::Colors::s_PlainLabelColor, "Load Level: ");
+                        for (int i = 0; i < lvlSystem->GetLevelCount(); i++)
+                        {
+                            if (ImGui::MenuItem(AZStd::string::format("%d- %s", i, lvlSystem->GetLevelInfo(i)->GetName()).c_str()))
+                            {
+                                AZStd::string mapCommandString = AZStd::string::format("map %s", lvlSystem->GetLevelInfo(i)->GetName());
+                                AZ::TickBus::QueueFunction([mapCommandString]() {
+                                    gEnv->pConsole->ExecuteString(mapCommandString.c_str());
+                                });
+                            }
                         }
                     }
 

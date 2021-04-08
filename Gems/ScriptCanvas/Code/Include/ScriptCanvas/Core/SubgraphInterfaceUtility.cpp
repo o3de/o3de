@@ -17,9 +17,29 @@
 
 namespace SubgraphInterfaceUtilityCpp
 {
-    const constexpr size_t k_defaultOutIndex = 1;
     const constexpr size_t k_uniqueOutIndex = 0;
+    const constexpr size_t k_signatureIndex = 1;
     const constexpr AZ::u64 k_defaultOutIdSignature = 0x3ACF20E73ACF20E7ull;
+
+    const constexpr AZ::u64 k_functionSourceIdObjectSignature = 0xADC636A91EA5433Aull;
+    const constexpr AZ::u64 k_functionSourceIdNodeableSignature = 0xAD71FC30CA2E468Cull;
+
+    using namespace ScriptCanvas;
+    using namespace ScriptCanvas::Grammar;
+
+    bool IsSignatureId(size_t index, AZ::u64 signature, const FunctionSourceId& id)
+    {
+        const AZ::u64* idData = reinterpret_cast<const AZ::u64*>(id.data);
+        return idData[index] == signature;
+    }
+
+    FunctionSourceId MakeSignatureId(size_t index, AZ::u64 signature, const FunctionSourceId& id)
+    {
+        FunctionSourceId signatureId = id;
+        AZ::u64* idData = reinterpret_cast<AZ::u64*>(signatureId.data);
+        idData[index] = signature;
+        return signatureId;
+    }
 }
 
 namespace ScriptCanvas
@@ -30,17 +50,37 @@ namespace ScriptCanvas
 
         bool IsDefaultOutId(const FunctionSourceId& id)
         {
-            const AZ::u64* idData = reinterpret_cast<const AZ::u64*>(id.data);
-            return idData[k_defaultOutIndex] == k_defaultOutIdSignature;
+            return IsSignatureId(k_signatureIndex, k_defaultOutIdSignature, id);
+        }
+
+        bool IsFunctionSourceIdObject(const FunctionSourceId& id)
+        {
+            return IsSignatureId(k_signatureIndex, k_functionSourceIdObjectSignature, id);
+        }
+
+        bool IsFunctionSourceIdNodeable(const FunctionSourceId& id)
+        {
+            return IsSignatureId(k_signatureIndex, k_functionSourceIdNodeableSignature, id);
+        }
+
+        bool IsReservedId(const FunctionSourceId& id)
+        {
+            return IsDefaultOutId(id) || IsFunctionSourceIdNodeable(id) || IsFunctionSourceIdObject(id);
         }
 
         FunctionSourceId MakeDefaultOutId(const FunctionSourceId& id)
         {
-            FunctionSourceId defaultOut = id;
-            AZ::u64* idData = reinterpret_cast<AZ::u64*>(defaultOut.data);
-            idData[k_defaultOutIndex] = k_defaultOutIdSignature;
-            AZ_Assert(idData[k_uniqueOutIndex] != k_defaultOutIdSignature, "the default out must also be unique");
-            return defaultOut;
+            return MakeSignatureId(k_signatureIndex, k_defaultOutIdSignature, id);
+        }
+
+        FunctionSourceId MakeFunctionSourceIdObject()
+        {
+            return MakeSignatureId(k_signatureIndex, k_functionSourceIdObjectSignature, FunctionSourceId());
+        }
+
+        FunctionSourceId MakeFunctionSourceIdNodeable()
+        {
+            return MakeSignatureId(k_signatureIndex, k_functionSourceIdNodeableSignature, FunctionSourceId());
         }
 
         bool OutIdIsEqual(const FunctionSourceId& lhs, const FunctionSourceId& rhs)

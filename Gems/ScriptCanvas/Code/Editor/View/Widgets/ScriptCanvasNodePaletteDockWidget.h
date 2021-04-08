@@ -89,7 +89,9 @@ namespace ScriptCanvasEditor
             ////
 
             // AssetCatalogEventBus
-            void OnCatalogAssetChanged(const AZ::Data::AssetId& /*assetId*/) override;
+            void OnCatalogAssetChanged(const AZ::Data::AssetId&) override;
+            void OnCatalogAssetAdded(const AZ::Data::AssetId&) override;
+            void OnCatalogAssetRemoved(const AZ::Data::AssetId&, const AZ::Data::AssetInfo&) override;
             ////
 
             // UpgradeNotifications::Bus
@@ -104,30 +106,35 @@ namespace ScriptCanvasEditor
             // Requests an async load of a given asset of a type
             void RequestAssetLoad(AZ::Data::AssetId assetId, AZ::Data::AssetType assetType);
 
-            // When the asset loading is ready, this allows to use the asset in some meaningful way
             void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+
+            void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+
+            void OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
 
             bool HasAssetTreeItem(AZ::Data::AssetId assetId) const;
 
-            void CreateFunctionPaletteItem(const AZStd::string& displayName, const AZ::Data::AssetInfo& assetInfo, const AZ::Data::AssetId& sourceId, const AZ::Data::AssetId& runtimeId = {});
+            void CreateFunctionPaletteItem(AZ::Data::Asset<AZ::Data::AssetData> asset, const AZ::Data::AssetInfo& assetInfo);
+
+            void RequestBuildChildrenFromSubgraphInterface(NodePaletteTreeItem* item, AZ::Data::Asset<AZ::Data::AssetData> asset);
 
             const NodePaletteModel& m_nodePaletteModel;
             AzToolsFramework::AssetBrowser::AssetBrowserFilterModel* m_assetModel;
 
             GraphCanvas::GraphCanvasTreeCategorizer m_categorizer;
 
-            bool m_isFunctionGraphActive;
             AZ::Data::AssetId m_previousAssetId;
 
             AZStd::unordered_map< AZ::Data::AssetId, ScriptEventsPaletteTreeItem* > m_scriptEventElementTreeItems;
 
-            AZStd::unordered_set< AZ::Data::AssetId > m_runtimeAssets;
-            AZStd::unordered_map< AZ::Data::AssetId, FunctionPaletteTreeItem* > m_globalFunctionTreeItems;
+            AZStd::unordered_map< AZ::Data::AssetId, GraphCanvas::NodePaletteTreeItem*> m_globalFunctionTreeItems;
 
-            AZStd::vector< AZStd::pair<AZ::Data::AssetId, AZ::Data::AssetType>> m_queuedLoads;
+            AZStd::queue<AZStd::pair<AZ::Data::AssetId, AZ::Data::AssetType>> m_requestQueue;
 
             // RequestAssetLoad uses this set to track assets being asynchronously loaded
-            AZStd::unordered_set<AZStd::pair<AZ::Data::AssetId, AZ::Data::AssetType>> m_pendingAssets;
+            AZStd::unordered_map<AZ::Data::AssetId, AZ::Data::Asset<AZ::Data::AssetData>> m_pendingAssets;
+
+            AZStd::unordered_map< AZ::Data::AssetId, AZ::Data::Asset<AZ::Data::AssetData>> m_monitoredAssets;
 
             AZStd::vector< QMetaObject::Connection > m_lambdaConnections;
         };

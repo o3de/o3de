@@ -18,6 +18,8 @@
 
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
 #include <Atom/RHI/FrameGraphBuilder.h>
+#include <Atom/RHI/RHIUtils.h>
+#include <Atom/RHI.Reflect/Base.h>
 
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
@@ -372,7 +374,7 @@ namespace AZ
 
         // --- PassTemplate related functions ---
 
-        void Pass::CreateSlotsFromTemplate()
+        void Pass::CreateBindingsFromTemplate()
         {
             if (m_template)
             {
@@ -391,6 +393,11 @@ namespace AZ
 
         void Pass::AttachBufferToSlot(const Name& slot, Data::Instance<Buffer> buffer)
         {
+            if (!buffer)
+            {
+                return;
+            }
+
             PassAttachmentBinding* localBinding = FindAttachmentBinding(slot);
             if (!localBinding)
             {
@@ -453,7 +460,7 @@ namespace AZ
             localBinding->m_originalAttachment = attachment;
         }               
 
-        void Pass::ProcessConnection(const PassConnection& connection)
+        void Pass::ProcessConnection(const PassConnection& connection, uint32_t slotTypeMask)
         {
             // Get the input from this pass that forms one end of the connection
             PassAttachmentBinding* localBinding = FindAttachmentBinding(connection.m_localSlot);
@@ -462,6 +469,12 @@ namespace AZ
                 AZ_RPI_PASS_ERROR(false, "Pass::ProcessConnection - Pass %s failed to find slot %s.",
                     m_path.GetCStr(),
                     connection.m_localSlot.GetCStr());
+                return;
+            }
+
+            uint32_t bindingMask = (1 << uint32_t(localBinding->m_slotType));
+            if (!(bindingMask & slotTypeMask))
+            {
                 return;
             }
 
@@ -706,13 +719,52 @@ namespace AZ
             return attachment;
         }
 
+        template<typename AttachmentDescType>
+        void Pass::OverrideOrAddAttachment(const AttachmentDescType& desc)
+        {
+            bool overrideAttachment = false;
+
+            // Search existing attachments
+            for (size_t i = 0; i < m_ownedAttachments.size(); ++i)
+            {
+                // If we find one with the same name
+                if (m_ownedAttachments[i]->m_name == desc.m_name)
+                {
+                    // Override it
+                    m_ownedAttachments[i] = CreateAttachmentFromDesc(desc);
+                    overrideAttachment = true;
+                    break;
+                }
+            }
+
+            // If we didn't override any attachments
+            if (!overrideAttachment)
+            {
+                // Create a new one
+                m_ownedAttachments.emplace_back(CreateAttachmentFromDesc(desc));
+            }
+        }
+
         void Pass::SetupInputsFromRequest()
         {
             if (m_flags.m_createdByPassRequest)
             {
-                for (const PassConnection& connection : m_request.m_inputConnections)
+                const uint32_t slotTypeMask = (1 << uint32_t(PassSlotType::Input)) | (1 << uint32_t(PassSlotType::InputOutput));
+                for (const PassConnection& connection : m_request.m_connections)
                 {
-                    ProcessConnection(connection);
+                    ProcessConnection(connection, slotTypeMask);
+                }
+            }
+        }
+
+        void Pass::SetupOutputsFromRequest()
+        {
+            if (m_flags.m_createdByPassRequest)
+            {
+                const uint32_t slotTypeMask = (1 << uint32_t(PassSlotType::Output));
+                for (const PassConnection& connection : m_request.m_connections)
+                {
+                    ProcessConnection(connection, slotTypeMask);
                 }
             }
         }
@@ -753,13 +805,26 @@ namespace AZ
             }
         }
 
+        void Pass::SetupInputsFromTemplate()
+        {
+            if (m_template)
+            {
+                const uint32_t slotTypeMask = (1 << uint32_t(PassSlotType::Input)) | (1 << uint32_t(PassSlotType::InputOutput));
+                for (const PassConnection& outputConnection : m_template->m_connections)
+                {
+                    ProcessConnection(outputConnection, slotTypeMask);
+                }
+            }
+        }
+
         void Pass::SetupOutputsFromTemplate()
         {
             if (m_template)
             {
-                for (const PassConnection& outputConnection : m_template->m_outputConnections)
+                const uint32_t slotTypeMask = (1 << uint32_t(PassSlotType::Output));
+                for (const PassConnection& outputConnection : m_template->m_connections)
                 {
-                    ProcessConnection(outputConnection);
+                    ProcessConnection(outputConnection, slotTypeMask);
                 }
                 for (const PassFallbackConnection& fallbackConnection : m_template->m_fallbackConnections)
                 {
@@ -781,6 +846,23 @@ namespace AZ
                 for (const PassBufferAttachmentDesc& desc : m_template->m_bufferAttachments)
                 {
                     m_ownedAttachments.emplace_back(CreateAttachmentFromDesc(desc));
+                }
+            }
+        }
+
+        void Pass::CreateAttachmentsFromRequest()
+        {
+            if (m_flags.m_createdByPassRequest)
+            {
+                // Create image attachments
+                for (const PassImageAttachmentDesc& desc : m_request.m_imageAttachmentOverrides)
+                {
+                    OverrideOrAddAttachment(desc);
+                }
+                // Create buffer attachments
+                for (const PassBufferAttachmentDesc& desc : m_request.m_bufferAttachmentOverrides)
+                {
+                    OverrideOrAddAttachment(desc);
                 }
             }
         }
@@ -991,15 +1073,26 @@ namespace AZ
 
             AZ_RPI_BREAK_ON_TARGET_PASS;
 
-            CreateSlotsFromTemplate();
+            // Bindings, inputs and attachments
+            CreateBindingsFromTemplate();
             SetupInputsFromRequest();
             SetupPassDependencies();
             CreateAttachmentsFromTemplate();
+            CreateAttachmentsFromRequest();
+            SetupInputsFromTemplate();
+
+            // Custom pass behavior
             BuildAttachmentsInternal();
+
+            // Outputs
             SetupOutputsFromTemplate();
+            SetupOutputsFromRequest();
+
+            // Update
             UpdateConnectedBindings();
             UpdateOwnedAttachments();
             UpdateAttachmentUsageIndices();
+
             m_flags.m_isBuildingAttachments = false;
         }
 

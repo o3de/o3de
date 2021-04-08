@@ -40,7 +40,7 @@ def convert(src):
 def get_image_spec(target_image):
     spec = target_image.spec()
     info = {'resolution': (spec.width, spec.height, spec.x, spec.y), 'channels': spec.channelnames,
-        'format': str(spec.format)}
+                'format': str(spec.format)}
     if spec.channelformats :
         info['channelformats'] = str(spec.channelformats)
     info['alpha channel'] = str(spec.alpha_channel)

@@ -456,7 +456,7 @@ namespace PhysX
             const AZ::Vector3& colliderScale) const
         {
             const float scaledSphereRadius =
-                (Utils::GetNonUniformScale(m_entityId) * colliderScale).GetMaxElement() * sphereShapeConfig.m_radius;
+                (Utils::GetTransformScale(m_entityId) * colliderScale).GetMaxElement() * sphereShapeConfig.m_radius;
 
             debugDisplay.PushMatrix(GetColliderLocalTransform(colliderConfig, colliderScale));
             debugDisplay.SetColor(CalcDebugColor(colliderConfig));
@@ -473,7 +473,7 @@ namespace PhysX
             const bool forceUniformScaling) const
         {
             // The resulting scale is the product of the scale in the entity's transform and the collider scale.
-            const AZ::Vector3 resultantScale = Utils::GetNonUniformScale(m_entityId) * colliderScale;
+            const AZ::Vector3 resultantScale = Utils::GetTransformScale(m_entityId) * colliderScale;
 
             // Scale the box parameters using the desired method (uniform or non-uniform).
             AZ::Vector3 scaledBoxParameters = boxShapeConfig.m_dimensions * 0.5f;
@@ -508,7 +508,7 @@ namespace PhysX
             AZStd::vector<AZ::u32> indices;
 
             // The resulting scale is the product of the scale in the entity's transform and the collider scale.
-            const AZ::Vector3 resultantScale = Utils::GetNonUniformScale(m_entityId) * colliderScale;
+            const AZ::Vector3 resultantScale = Utils::GetTransformScale(m_entityId) * colliderScale;
 
             // Scale the capsule parameters using the desired method (uniform or non-uniform).
             AZ::Vector2 scaledCapsuleParameters = AZ::Vector2(capsuleShapeConfig.m_radius, capsuleShapeConfig.m_height);
@@ -640,7 +640,7 @@ namespace PhysX
         {
             // Apply entity world transform scale to collider offset
             const AZ::Vector3 translation =
-                colliderConfig.m_position * Utils::GetNonUniformScale(m_entityId) * colliderScale;
+                colliderConfig.m_position * Utils::GetTransformScale(m_entityId) * colliderScale;
 
             return AZ::Transform::CreateFromQuaternionAndTranslation(
                 colliderConfig.m_rotation, translation);

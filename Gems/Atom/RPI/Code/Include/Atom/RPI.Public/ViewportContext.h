@@ -93,6 +93,10 @@ namespace AZ
             //! Notifies consumers when the projection matrix has changed.
             void ConnectProjectionMatrixChangedHandler(MatrixChangedEvent::Handler& handler);
 
+            using SceneChangedEvent = AZ::Event<ScenePtr>;
+            //! Notifies consumers when the render scene has changed.
+            void ConnectSceneChangedHandler(SceneChangedEvent::Handler& handler);
+
             // ViewportRequestBus interface
             //! Gets the current camera's view matrix.
             const AZ::Matrix4x4& GetCameraViewMatrix() const override;
@@ -120,6 +124,7 @@ namespace AZ
             SizeChangedEvent m_sizeChangedEvent;
             MatrixChangedEvent m_viewMatrixChangedEvent;
             MatrixChangedEvent m_projectionMatrixChangedEvent;
+            SceneChangedEvent m_sceneChangedEvent;
             ViewportContextManager* m_manager;
             RenderPipelinePtr m_currentPipeline;
             Name m_name;

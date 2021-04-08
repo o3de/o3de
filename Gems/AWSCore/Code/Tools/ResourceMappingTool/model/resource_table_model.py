@@ -20,7 +20,7 @@ from model.resource_mapping_attributes import (ResourceMappingAttributes, Resour
 logger = logging.getLogger(__name__)
 
 _TABLE_HORIZONTAL_HEADER_NAMES: List[str] =\
-    ["Key Name*", "Type*", "Name/ID*", "Account ID", "Region", "Status"]
+    ["Key Name", "Type", "Name/ID", "Account ID", "Region", "Status"]
 
 
 class ResourceTableConstants(object):
@@ -70,16 +70,6 @@ class ResourceTableModel(ResourceAbstractModel, QAbstractTableModel, metaclass=R
                 return resource.status.value
         return ""
 
-    def _get_resource_attribute_tooltip(self, row: int, column: int) -> str:
-        if 0 <= row < len(self._resources):
-            resource: ResourceMappingAttributes = self._resources[row]
-            attribute: str = self._get_resource_str_type_attribute(resource, column)
-            if attribute:
-                return attribute
-            elif column == ResourceTableConstants.TABLE_STATE_COLUMN_INDEX:
-                return resource.status.descriptions_in_tooltip()
-        return ""
-
     def _set_resource_attribute(self, row: int, column: int, value: str) -> None:
         if 0 <= row < len(self._resources):
             resource: ResourceMappingAttributes = self._resources[row]
@@ -113,11 +103,17 @@ class ResourceTableModel(ResourceAbstractModel, QAbstractTableModel, metaclass=R
         """QAbstractTableModel override"""
         row: int = index.row()
         column: int = index.column()
-        if role == Qt.DisplayRole or role == Qt.EditRole:
-            return self._get_resource_attribute(row, column)
-
-        if role == Qt.ToolTipRole:
-            return self._get_resource_attribute_tooltip(row, column)
+        if 0 <= row < len(self._resources):
+            resource: ResourceMappingAttributes = self._resources[row]
+            attribute: str = self._get_resource_str_type_attribute(resource, column)
+            if attribute:
+                if role == Qt.DisplayRole or role == Qt.EditRole or role == Qt.ToolTipRole:
+                    return attribute
+            elif column == ResourceTableConstants.TABLE_STATE_COLUMN_INDEX:
+                if role == Qt.ToolTipRole:
+                    return resource.status.descriptions_in_tooltip()
+                if role == Qt.DisplayRole:
+                    return resource.status.value
 
     def headerData(self, section: int, orientation: int, role: int = Qt.DisplayRole) -> object:
         """QAbstractTableModel override"""

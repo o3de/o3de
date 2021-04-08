@@ -13,62 +13,71 @@
 #include <PhysX_precompiled.h>
 
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
 #include <PxPhysicsAPI.h>
 #include <Source/RigidBodyStatic.h>
 #include <Source/Utils.h>
 #include <PhysX/Utils.h>
 #include <Source/Shape.h>
 #include <Include/PhysX/NativeTypeIdentifiers.h>
-#include <AzFramework/Physics/World.h>
-#include <PhysX/PhysXLocks.h> 
+#include <PhysX/PhysXLocks.h>
+#include <Common/PhysXSceneQueryHelpers.h>
 
 namespace PhysX
 {
-    RigidBodyStatic::RigidBodyStatic(const Physics::WorldBodyConfiguration& configuration)
+    StaticRigidBody::StaticRigidBody(const AzPhysics::StaticRigidBodyConfiguration& configuration)
     {
-        CreatePxActor(configuration);
+        CreatePhysXActor(configuration);
     }
 
-    RigidBodyStatic::~RigidBodyStatic()
+    StaticRigidBody::~StaticRigidBody()
     {
         //clean up the attached shapes
         {
-            PHYSX_SCENE_WRITE_LOCK(m_staticRigidBody->getScene());
+            PHYSX_SCENE_WRITE_LOCK(m_pxStaticRigidBody->getScene());
             for (auto shape : m_shapes)
             {
-                m_staticRigidBody->detachShape(*shape->GetPxShape());
+                m_pxStaticRigidBody->detachShape(*shape->GetPxShape());
                 shape->DetachedFromActor();
             }
         }
         m_shapes.clear();
+
+        // Invalidate user data so it sets m_pxStaticRigidBody->userData to nullptr.
+        // It's appropriate to do this as m_pxStaticRigidBody is a shared pointer and
+        // techniqucally it could survive m_actorUserData life's spam.
+        m_actorUserData.Invalidate();
     }
 
-    void RigidBodyStatic::CreatePxActor(const Physics::WorldBodyConfiguration& configuration)
+    void StaticRigidBody::CreatePhysXActor(const AzPhysics::StaticRigidBodyConfiguration& configuration)
     {
-        if (auto staticBody = PxActorFactories::CreatePxStaticRigidBody(configuration))
+        if (m_pxStaticRigidBody != nullptr)
         {
-            m_staticRigidBody = AZStd::shared_ptr<physx::PxRigidStatic>(staticBody, [](auto& actor)
-            {
-                PxActorFactories::ReleaseActor(actor);
-            });
-            m_actorUserData = PhysX::ActorData(m_staticRigidBody.get());
+            AZ_Warning("PhysX Static Rigid Body", false, "Trying to create PhysX static rigid actor when it's already created");
+            return;
+        }
+
+        if (m_pxStaticRigidBody = PxActorFactories::CreatePxStaticRigidBody(configuration))
+        {
+            m_actorUserData = ActorData(m_pxStaticRigidBody.get());
             m_actorUserData.SetRigidBodyStatic(this);
             m_actorUserData.SetEntityId(configuration.m_entityId);
+
             m_debugName = configuration.m_debugName;
-            m_staticRigidBody->setName(m_debugName.c_str());
+            m_pxStaticRigidBody->setName(m_debugName.c_str());
         }
     }
 
-    void RigidBodyStatic::AddShape(const AZStd::shared_ptr<Physics::Shape>& shape)
+    void StaticRigidBody::AddShape(const AZStd::shared_ptr<Physics::Shape>& shape)
     {
         auto pxShape = AZStd::rtti_pointer_cast<PhysX::Shape>(shape);
         if (pxShape && pxShape->GetPxShape())
         {
             {
-                PHYSX_SCENE_WRITE_LOCK(m_staticRigidBody->getScene());
-                m_staticRigidBody->attachShape(*pxShape->GetPxShape());
+                PHYSX_SCENE_WRITE_LOCK(m_pxStaticRigidBody->getScene());
+                m_pxStaticRigidBody->attachShape(*pxShape->GetPxShape());
             }
-            pxShape->AttachedToActor(m_staticRigidBody.get());
+            pxShape->AttachedToActor(m_pxStaticRigidBody.get());
             m_shapes.push_back(pxShape);
         }
         else
@@ -77,7 +86,7 @@ namespace PhysX
         }
     }
 
-    AZStd::shared_ptr<Physics::Shape> RigidBodyStatic::GetShape(AZ::u32 index)
+    AZStd::shared_ptr<Physics::Shape> StaticRigidBody::GetShape(AZ::u32 index)
     {
         if (index >= m_shapes.size())
         {
@@ -86,122 +95,77 @@ namespace PhysX
         return m_shapes[index];
     }
 
-    AZ::u32 RigidBodyStatic::GetShapeCount()
+    AZ::u32 StaticRigidBody::GetShapeCount()
     {
         return static_cast<AZ::u32>(m_shapes.size());
     }
 
-    // Physics::WorldBody
-    Physics::World* RigidBodyStatic::GetWorld() const
+    AZ::Transform StaticRigidBody::GetTransform() const
     {
-        return m_staticRigidBody ? Utils::GetUserData(m_staticRigidBody->getScene()) : nullptr;
-    }
-
-    AZ::Transform RigidBodyStatic::GetTransform() const
-    {
-        if (m_staticRigidBody)
+        if (m_pxStaticRigidBody)
         {
-            PHYSX_SCENE_READ_LOCK(m_staticRigidBody->getScene());
-            return PxMathConvert(m_staticRigidBody->getGlobalPose());
+            PHYSX_SCENE_READ_LOCK(m_pxStaticRigidBody->getScene());
+            return PxMathConvert(m_pxStaticRigidBody->getGlobalPose());
         }
         return AZ::Transform::CreateIdentity();
     }
 
-    void RigidBodyStatic::SetTransform(const AZ::Transform & transform)
+    void StaticRigidBody::SetTransform(const AZ::Transform & transform)
     {
-        if (m_staticRigidBody)
+        if (m_pxStaticRigidBody)
         {
-            PHYSX_SCENE_WRITE_LOCK(m_staticRigidBody->getScene());
-            m_staticRigidBody->setGlobalPose(PxMathConvert(transform));
+            PHYSX_SCENE_WRITE_LOCK(m_pxStaticRigidBody->getScene());
+            m_pxStaticRigidBody->setGlobalPose(PxMathConvert(transform));
         }
     }
 
-    AZ::Vector3 RigidBodyStatic::GetPosition() const
+    AZ::Vector3 StaticRigidBody::GetPosition() const
     {
-        if (m_staticRigidBody)
+        if (m_pxStaticRigidBody)
         {
-            PHYSX_SCENE_READ_LOCK(m_staticRigidBody->getScene());
-            return PxMathConvert(m_staticRigidBody->getGlobalPose().p);
+            PHYSX_SCENE_READ_LOCK(m_pxStaticRigidBody->getScene());
+            return PxMathConvert(m_pxStaticRigidBody->getGlobalPose().p);
         }
         return AZ::Vector3::CreateZero();
     }
 
-    AZ::Quaternion RigidBodyStatic::GetOrientation() const
+    AZ::Quaternion StaticRigidBody::GetOrientation() const
     {
-        if (m_staticRigidBody)
+        if (m_pxStaticRigidBody)
         {
-            PHYSX_SCENE_READ_LOCK(m_staticRigidBody->getScene());
-            return PxMathConvert(m_staticRigidBody->getGlobalPose().q);
+            PHYSX_SCENE_READ_LOCK(m_pxStaticRigidBody->getScene());
+            return PxMathConvert(m_pxStaticRigidBody->getGlobalPose().q);
         }
         return  AZ::Quaternion::CreateZero();
     }
 
-    AZ::Aabb RigidBodyStatic::GetAabb() const
+    AZ::Aabb StaticRigidBody::GetAabb() const
     {
-        if (m_staticRigidBody)
+        if (m_pxStaticRigidBody)
         {
-            PHYSX_SCENE_READ_LOCK(m_staticRigidBody->getScene());
-            return PxMathConvert(m_staticRigidBody->getWorldBounds(1.0f));
+            PHYSX_SCENE_READ_LOCK(m_pxStaticRigidBody->getScene());
+            return PxMathConvert(m_pxStaticRigidBody->getWorldBounds(1.0f));
         }
         return AZ::Aabb::CreateNull();
     }
 
-    Physics::RayCastHit RigidBodyStatic::RayCast(const Physics::RayCastRequest& request)
+    AzPhysics::SceneQueryHit StaticRigidBody::RayCast(const AzPhysics::RayCastRequest& request)
     {
-        return PhysX::Utils::RayCast::ClosestRayHitAgainstShapes(request, m_shapes, GetTransform());
+        return PhysX::SceneQueryHelpers::ClosestRayHitAgainstShapes(request, m_shapes, GetTransform());
     }
 
-    AZ::EntityId RigidBodyStatic::GetEntityId() const
+    AZ::EntityId StaticRigidBody::GetEntityId() const
     {
         return m_actorUserData.GetEntityId();
     }
 
-    AZ::Crc32 RigidBodyStatic::GetNativeType() const
+    AZ::Crc32 StaticRigidBody::GetNativeType() const
     {
         return PhysX::NativeTypeIdentifiers::RigidBodyStatic;
     }
 
-    void* RigidBodyStatic::GetNativePointer() const
+    void* StaticRigidBody::GetNativePointer() const
     {
-        return m_staticRigidBody.get();
-    }
-
-    void RigidBodyStatic::AddToWorld(Physics::World& world)
-    {
-        physx::PxScene* scene = static_cast<physx::PxScene*>(world.GetNativePointer());
-
-        if (!scene)
-        {
-            AZ_Error("RigidBodyStatic", false, "Tried to add body to invalid world.");
-            return;
-        }
-
-        if (!m_staticRigidBody)
-        {
-            AZ_Error("RigidBodyStatic", false, "Tried to add invalid PhysX body to world.");
-            return;
-        }
-
-        PHYSX_SCENE_WRITE_LOCK(scene);
-        scene->addActor(*m_staticRigidBody);
-    }
-
-    void RigidBodyStatic::RemoveFromWorld(Physics::World& world)
-    {
-        physx::PxScene* scene = static_cast<physx::PxScene*>(world.GetNativePointer());
-        if (!scene)
-        {
-            AZ_Error("RigidBodyStatic", false, "Tried to remove body from invalid world.");
-            return;
-        }
-
-        if (!m_staticRigidBody)
-        {
-            AZ_Error("RigidBodyStatic", false, "Tried to remove invalid PhysX body from world.");
-            return;
-        }
-
-        PHYSX_SCENE_WRITE_LOCK(scene);
-        scene->removeActor(*m_staticRigidBody);
+        return m_pxStaticRigidBody.get();
     }
 }

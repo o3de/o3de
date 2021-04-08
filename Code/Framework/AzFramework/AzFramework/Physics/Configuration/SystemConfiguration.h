@@ -26,7 +26,7 @@ namespace AzPhysics
     struct SystemConfiguration
     {
         AZ_CLASS_ALLOCATOR_DECL;
-        AZ_RTTI(SystemConfiguration, "{24697CAF-AC00-443D-9C27-28D58734A84C}");
+        AZ_RTTI(AzPhysics::SystemConfiguration, "{24697CAF-AC00-443D-9C27-28D58734A84C}");
         static void Reflect(AZ::ReflectContext* context);
 
         SystemConfiguration() = default;
@@ -51,5 +51,10 @@ namespace AzPhysics
 
         bool operator==(const SystemConfiguration& other) const;
         bool operator!=(const SystemConfiguration& other) const;
+
+    private:
+        // helpers for edit context
+        AZ::u32 OnMaxTimeStepChanged();
+        float GetFixedTimeStepMax() const;
     };
 }

@@ -17,8 +17,6 @@
 #include <PhysXTestEnvironment.h>
 
 #include <AzFramework/Physics/SystemBus.h>
-#include <AzFramework/Physics/World.h>
-#include <AzFramework/Physics/WorldEventhandler.h>
 
 namespace PhysX::Benchmarks
 {
@@ -45,7 +43,7 @@ namespace PhysX::Benchmarks
     {
     public:
         // Physics::DefaultWorldBus::Handler Interface -------------
-        AZStd::shared_ptr<Physics::World> GetDefaultWorld();
+        AzPhysics::SceneHandle GetDefaultSceneHandle() const override;
         // Physics::DefaultWorldBus::Handler Interface -------------
 
         //! Run the simulation for a set number of frames. This will execute as each frame as quickly as possible
@@ -53,19 +51,15 @@ namespace PhysX::Benchmarks
         //! @param timeStep - The frame time of the 'game' frame. Default - 0.0166667f (60fps)
         void UpdateSimulation(unsigned int numFrames, float timeStep = DefaultTimeStep);
 
+        void StepScene1Tick(float timeStep = DefaultTimeStep);
     protected:
         void SetUpInternal();
         void TearDownInternal();
 
         //! allows each fixture to setup and define the default World Config
-        virtual Physics::WorldConfiguration GetDefaultWorldConfiguration() = 0;
-
-        //! allows each fixture to setup and define the World event handler
-        //!     - this may be overrided if a handler is required by the fixture
-        virtual Physics::WorldEventHandler* GetWorldEventHandler() { return nullptr; }
+        virtual AzPhysics::SceneConfiguration GetDefaultSceneConfiguration() = 0;
 
         //! Creates the default scene
-        //!     - Calls GetDefaultWorldConfiguration() to get the fixtures configuration
         //!     - Calls GetWorldEventHandler() to attached an event handle if provided by the fixture
         AzPhysics::SceneHandle CreateDefaultTestScene();
 

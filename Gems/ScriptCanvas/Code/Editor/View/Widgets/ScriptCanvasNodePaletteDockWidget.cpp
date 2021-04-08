@@ -27,59 +27,48 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/RTTI/BehaviorContext.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
-#include <AzCore/std/containers/map.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/UserSettings/UserSettings.h>
-
+#include <AzCore/std/containers/map.h>
 #include <AzFramework/StringFunc/StringFunc.h>
-#include <AzToolsFramework/AssetEditor/AssetEditorUtils.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
+#include <AzToolsFramework/AssetEditor/AssetEditorUtils.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
-
-#include <ScriptEvents/ScriptEventsAsset.h>
-
-#include <GraphCanvas/Widgets/NodePalette/TreeItems/NodePaletteTreeItem.h>
-#include <GraphCanvas/Widgets/NodePalette/NodePaletteWidget.h>
-#include <GraphCanvas/Widgets/NodePalette/NodePaletteTreeView.h>
-
-#include <Editor/View/Widgets/ScriptCanvasNodePaletteDockWidget.h>
-#include <Editor/View/Widgets/ui_ScriptCanvasNodePaletteToolbar.h>
-
-#include <Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h>
-#include <Editor/Nodes/NodeUtils.h>
-
-#include <Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h>
-#include <Editor/View/Widgets/NodePalette/EBusNodePaletteTreeItemTypes.h>
-#include <Editor/View/Widgets/NodePalette/FunctionNodePaletteTreeItemTypes.h>
-#include <Editor/View/Widgets/NodePalette/ScriptEventsNodePaletteTreeItemTypes.h>
-#include <Editor/View/Widgets/NodePalette/GeneralNodePaletteTreeItemTypes.h>
-#include <Editor/View/Widgets/NodePalette/SpecializedNodePaletteTreeItemTypes.h>
-#include <Editor/View/Widgets/NodePalette/VariableNodePaletteTreeItemTypes.h>
-#include <Editor/View/Widgets/NodePalette/NodePaletteModel.h>
-
 #include <Editor/Assets/ScriptCanvasAssetHelpers.h>
 #include <Editor/Components/IconComponent.h>
-#include <Editor/Include/ScriptCanvas/Bus/RequestBus.h>
+#include <Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h>
+#include <Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h>
 #include <Editor/Include/ScriptCanvas/Bus/EditorScriptCanvasBus.h>
+#include <Editor/Include/ScriptCanvas/Bus/RequestBus.h>
+#include <Editor/Nodes/NodeUtils.h>
 #include <Editor/Settings.h>
 #include <Editor/Translation/TranslationHelper.h>
-
+#include <Editor/View/Widgets/NodePalette/EBusNodePaletteTreeItemTypes.h>
+#include <Editor/View/Widgets/NodePalette/FunctionNodePaletteTreeItemTypes.h>
+#include <Editor/View/Widgets/NodePalette/GeneralNodePaletteTreeItemTypes.h>
+#include <Editor/View/Widgets/NodePalette/NodePaletteModel.h>
+#include <Editor/View/Widgets/NodePalette/ScriptEventsNodePaletteTreeItemTypes.h>
+#include <Editor/View/Widgets/NodePalette/SpecializedNodePaletteTreeItemTypes.h>
+#include <Editor/View/Widgets/NodePalette/VariableNodePaletteTreeItemTypes.h>
+#include <Editor/View/Widgets/ScriptCanvasNodePaletteDockWidget.h>
+#include <Editor/View/Widgets/ui_ScriptCanvasNodePaletteToolbar.h>
+#include <GraphCanvas/Widgets/NodePalette/NodePaletteTreeView.h>
+#include <GraphCanvas/Widgets/NodePalette/NodePaletteWidget.h>
+#include <GraphCanvas/Widgets/NodePalette/TreeItems/NodePaletteTreeItem.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
-
-#include <ScriptCanvas/Data/DataRegistry.h>
-#include <ScriptCanvas/Utils/NodeUtils.h>
-
 #include <ScriptCanvas/Core/Attributes.h>
-#include <ScriptCanvas/Libraries/Entity/EntityRef.h>
-#include <ScriptCanvas/Libraries/Libraries.h>
-
+#include <ScriptCanvas/Core/SubgraphInterfaceUtility.h>
+#include <ScriptCanvas/Data/DataRegistry.h>
 #include <ScriptCanvas/Libraries/Core/GetVariable.h>
 #include <ScriptCanvas/Libraries/Core/Method.h>
 #include <ScriptCanvas/Libraries/Core/SetVariable.h>
-
-#include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
-#include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
+#include <ScriptCanvas/Libraries/Entity/EntityRef.h>
+#include <ScriptCanvas/Libraries/Libraries.h>
+#include <ScriptCanvas/Utils/NodeUtils.h>
+#include <ScriptEvents/ScriptEventsAsset.h>
 
 namespace ScriptCanvasEditor
 {
@@ -103,7 +92,7 @@ namespace ScriptCanvasEditor
                 GraphCanvas::NodePaletteTreeItem* customEventRoot = root->GetCategoryNode("Script Events");
                 customEventRoot->SetAllowPruneOnEmpty(false);
 
-                GraphCanvas::NodePaletteTreeItem* globalFunctionRoot = root->GetCategoryNode("Global Functions");
+                GraphCanvas::NodePaletteTreeItem* globalFunctionRoot = root->GetCategoryNode("User Functions");
                 globalFunctionRoot->SetAllowPruneOnEmpty(false);
 
             }
@@ -167,7 +156,6 @@ namespace ScriptCanvasEditor
             , m_nodePaletteModel(nodePaletteModel)
             , m_assetModel(assetModel)
             , m_categorizer(nodePaletteModel)
-            , m_isFunctionGraphActive(false)
         {
             UpgradeNotifications::Bus::Handler::BusConnect();
 
@@ -245,12 +233,9 @@ namespace ScriptCanvasEditor
         {
             ScriptCanvas::RuntimeRequestBus::EventResult(m_previousAssetId, scriptCanvasId, &ScriptCanvas::RuntimeRequests::GetAssetId);
 
-            m_isFunctionGraphActive = false;
-            EditorGraphRequestBus::EventResult(m_isFunctionGraphActive, scriptCanvasId, &EditorGraphRequests::IsFunctionGraph);
-
             for (auto functionTreePair : m_globalFunctionTreeItems)
             {
-                functionTreePair.second->SetEnabled(!m_isFunctionGraphActive);
+                functionTreePair.second->SetEnabled(true);
             }
         }
 
@@ -278,7 +263,6 @@ namespace ScriptCanvasEditor
                 if (entry->GetEntryType() == AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntryType::Product)
                 {
                     const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry* productEntry = azrtti_cast<const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry*>(entry);
-
                     const AZ::Data::AssetId& assetId = productEntry->GetAssetId();
 
                     auto scriptEventElementIter = m_scriptEventElementTreeItems.find(assetId);
@@ -290,22 +274,10 @@ namespace ScriptCanvasEditor
                     }
                     else
                     {
-                        bool isRuntimeAsset = (m_runtimeAssets.erase(assetId) > 0);
-
-                        auto globalFunctionElementIter = m_globalFunctionTreeItems.find(assetId.m_guid);
-
+                        auto globalFunctionElementIter = m_globalFunctionTreeItems.find(assetId);
                         if (globalFunctionElementIter != m_globalFunctionTreeItems.end())
                         {
-                            if (isRuntimeAsset)
-                            {
-                                globalFunctionElementIter->second->SetError("Function has errors and cannot be created until these errors are resolved.");
-                            }
-                            else
-                            {
-                                globalFunctionElementIter->second->DetachItem();
-                                delete globalFunctionElementIter->second;
-                                m_globalFunctionTreeItems.erase(globalFunctionElementIter);
-                            }
+                            globalFunctionElementIter->second->SetError("Graph has errors or has been deleted");
                         }
                     }
                 }
@@ -337,35 +309,35 @@ namespace ScriptCanvasEditor
                 if (entry->GetEntryType() == AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntryType::Product)
                 {
                     const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry* productEntry = static_cast<const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry*>(entry);
-                    const AZ::Data::AssetId& assetId = productEntry->GetAssetId();
 
-                    if (productEntry->GetAssetType() == azrtti_typeid<ScriptCanvasFunctionAsset>())
+                    const auto entryType = productEntry->GetAssetType();
+
+                    if (entryType == azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>())
                     {
-                        auto elementIter = m_globalFunctionTreeItems.find(assetId.m_guid);
+                        const AZ::Data::AssetId& assetId = productEntry->GetAssetId();
+
+                        auto elementIter = m_globalFunctionTreeItems.find(assetId);
                         if (elementIter == m_globalFunctionTreeItems.end())
                         {
-                            RequestAssetLoad(assetId, azrtti_typeid<ScriptCanvasFunctionAsset>());
-                        }
-                    }
-                    else if (productEntry->GetAssetType() == azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>())
-                    {
-                        auto elementIter = m_globalFunctionTreeItems.find(assetId.m_guid);
-                        if (elementIter == m_globalFunctionTreeItems.end())
-                        {
-                            RequestAssetLoad(assetId, azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>());
+                            RequestAssetLoad(assetId, productEntry->GetAssetType());
                         }
                         else
                         {
-                            elementIter->second->SetRuntimeAssetId(assetId);
-                            elementIter->second->ClearError();
+                            if (elementIter->second->HasError())
+                            {
+                                m_pendingAssets.erase(assetId);
+                                RequestAssetLoad(assetId, productEntry->GetAssetType());
+                            }
                         }
                     }
-                    else if (productEntry->GetAssetType() == azrtti_typeid<ScriptEvents::ScriptEventsAsset>())
+                    else if (entryType == azrtti_typeid<ScriptEvents::ScriptEventsAsset>())
                     {
+                        const AZ::Data::AssetId& assetId = productEntry->GetAssetId();
+ 
                         auto elementIter = m_scriptEventElementTreeItems.find(assetId.m_guid);
                         if (elementIter == m_scriptEventElementTreeItems.end())
                         {
-                            RequestAssetLoad(assetId, azrtti_typeid<ScriptEvents::ScriptEventsAsset>());
+                            RequestAssetLoad(assetId, productEntry->GetAssetType());
                         }
                     }
                 }
@@ -376,17 +348,15 @@ namespace ScriptCanvasEditor
         {
             AZ::SystemTickBus::Handler::BusDisconnect();
 
-            while (!m_queuedLoads.empty())
+            while (!m_requestQueue.empty())
             {
-                auto entry = m_queuedLoads.front();
-                m_queuedLoads.erase(m_queuedLoads.begin());
+                const auto entry = m_requestQueue.front();
+                m_requestQueue.pop();
 
-                if (m_pendingAssets.find(entry) == m_pendingAssets.end())
+                if (m_pendingAssets.find(entry.first) == m_pendingAssets.end())
                 {
-                    m_pendingAssets.insert(entry);
-
                     AZ::Data::AssetBus::MultiHandler::BusConnect(entry.first);
-                    AZ::Data::AssetManager::Instance().GetAsset(entry.first, entry.second, AZ::Data::AssetLoadBehavior::Default);
+                    m_pendingAssets[entry.first] = AZ::Data::AssetManager::Instance().GetAsset(entry.first, entry.second, AZ::Data::AssetLoadBehavior::Default);
                 }
             }
         }
@@ -394,26 +364,26 @@ namespace ScriptCanvasEditor
         void ScriptCanvasRootPaletteTreeItem::OnCatalogAssetChanged(const AZ::Data::AssetId& assetId)
         {
             auto scriptEventIter = m_scriptEventElementTreeItems.find(assetId.m_guid);
-
             if (scriptEventIter != m_scriptEventElementTreeItems.end())
             {
                 RequestAssetLoad(assetId, azrtti_typeid<ScriptEvents::ScriptEventsAsset>());
             }
             else
             {
-                AZ::Data::AssetType assetType = azrtti_typeid<ScriptCanvasFunctionAsset>();
-                auto elementIter = m_globalFunctionTreeItems.find(assetId.m_guid);
-
-                if (m_runtimeAssets.count(assetId) > 0)
+                auto functionIter = m_globalFunctionTreeItems.find(assetId);
+                if (functionIter != m_globalFunctionTreeItems.end())
                 {
-                    assetType = azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>();
-                }
-
-                if (elementIter != m_globalFunctionTreeItems.end())
-                {
-                    RequestAssetLoad(assetId, assetType);
+                    RequestAssetLoad(assetId, azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>());
                 }
             }
+        }
+
+        void ScriptCanvasRootPaletteTreeItem::OnCatalogAssetAdded(const AZ::Data::AssetId&)
+        {
+        }
+
+        void ScriptCanvasRootPaletteTreeItem::OnCatalogAssetRemoved(const AZ::Data::AssetId&, const AZ::Data::AssetInfo&)
+        {
         }
 
         void ScriptCanvasRootPaletteTreeItem::OnUpgradeStart()
@@ -450,15 +420,20 @@ namespace ScriptCanvasEditor
         {
             // Delay handling loads until the top of the next tick in case we are handling this on an asset callback thread to avoid potential deadlocks.
             AZ::SystemTickBus::Handler::BusConnect();
-            m_queuedLoads.emplace_back(AZStd::make_pair(assetId, assetType));
+            m_requestQueue.emplace(AZStd::make_pair(assetId, assetType));
+        }
+
+        void ScriptCanvasRootPaletteTreeItem::OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> asset)
+        {
+            // mark the function on error... if possible
+            AZ::Data::AssetId assetId = asset.GetId();
+            m_pendingAssets.erase(assetId);
         }
 
         void ScriptCanvasRootPaletteTreeItem::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
         {
             AZ::Data::AssetId assetId = asset.GetId();
-
-            m_pendingAssets.erase(AZStd::make_pair(assetId, asset.GetType()));
-            AZ::Data::AssetBus::MultiHandler::BusDisconnect(assetId);
+            m_pendingAssets.erase(assetId);
 
             if (asset.GetType() == azrtti_typeid<ScriptEvents::ScriptEventsAsset>())
             {
@@ -480,87 +455,61 @@ namespace ScriptCanvasEditor
             }
             else if (asset.GetType() == azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>())
             {
-                ScriptCanvas::SubgraphInterfaceAsset* data = asset.GetAs<ScriptCanvas::SubgraphInterfaceAsset>();
-
-                AZStd::string rootPath, absolutePath;
-                AZ::Data::AssetInfo assetInfo = AssetHelpers::GetAssetInfo(assetId, rootPath);
-                AzFramework::StringFunc::Path::Join(rootPath.c_str(), assetInfo.m_relativePath.c_str(), absolutePath);
-
-                AZ::Data::AssetId sourceAssetId;
-
-                AZStd::string normPath = absolutePath;
-                AzFramework::StringFunc::Path::Normalize(normPath);
-
-                AZStd::string watchFolder;
-                bool sourceInfoFound{};
-                AzToolsFramework::AssetSystemRequestBus::BroadcastResult(sourceInfoFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, normPath.c_str(), assetInfo, watchFolder);
-
-                if (!sourceInfoFound)
-                {
-                    // TODO-LS: report the problem
-                    return;
-                }
-
-                sourceAssetId = assetInfo.m_assetId;
-
-                AZ::Data::AssetId runtimeAssetId = asset.GetId();
-
-                if (m_runtimeAssets.count(runtimeAssetId) == 0)
-                {
-                    m_runtimeAssets.insert(runtimeAssetId);
-
-                    auto treePaletteIter = m_globalFunctionTreeItems.find(sourceAssetId.m_guid);
-
-                    if (treePaletteIter == m_globalFunctionTreeItems.end())
-                    {
-                        CreateFunctionPaletteItem(data->m_runtimeData.m_name, assetInfo, sourceAssetId, runtimeAssetId);
-                    }
-                    else
-                    {
-                        treePaletteIter->second->SetRuntimeAssetId(runtimeAssetId);
-                        treePaletteIter->second->ClearError();
-                    }
-                }
-            }
-            else if (asset.GetType() == azrtti_typeid<ScriptCanvasFunctionAsset>())
-            {
-                ScriptCanvasFunctionAsset* data = asset.GetAs<ScriptCanvasFunctionAsset>();
-
-                AZStd::string rootPath, absolutePath;
-                AZ::Data::AssetInfo assetInfo = AssetHelpers::GetAssetInfo(assetId, rootPath);
-                AzFramework::StringFunc::Path::Join(rootPath.c_str(), assetInfo.m_relativePath.c_str(), absolutePath);
-
-                AZ::Data::AssetId sourceAssetId;
-
-                AZStd::string normPath = absolutePath;
-                AzFramework::StringFunc::Path::Normalize(normPath);
-
-                AZStd::string watchFolder;
-                bool sourceInfoFound{};
-                AzToolsFramework::AssetSystemRequestBus::BroadcastResult(sourceInfoFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, normPath.c_str(), assetInfo, watchFolder);
-
-                if (!sourceInfoFound)
-                {
-                    return;
-                }
-
-                sourceAssetId = assetInfo.m_assetId;
-
-                // We only  need to add
-                auto treePaletteIter = m_globalFunctionTreeItems.find(sourceAssetId.m_guid);
+                // We only need to add
+                auto treePaletteIter = m_globalFunctionTreeItems.find(asset->GetId());
 
                 if (treePaletteIter == m_globalFunctionTreeItems.end())
                 {
-                    CreateFunctionPaletteItem(data->GetFunctionData()->GetPrettyName(), assetInfo, sourceAssetId);
+                    ScriptCanvas::SubgraphInterfaceAsset* data = asset.GetAs<ScriptCanvas::SubgraphInterfaceAsset>();
+                    if (!data)
+                    {
+                        return;
+                    }
 
-                    treePaletteIter = m_globalFunctionTreeItems.find(sourceAssetId.m_guid);
+                    if (!data->m_runtimeData.m_interface.HasAnyFunctionality())
+                    {
+                        // check for deleting the old entry
+                        return;
+                    }
+
+                    AZStd::string rootPath, absolutePath;
+                    AZ::Data::AssetInfo assetInfo = AssetHelpers::GetAssetInfo(assetId, rootPath);
+                    AzFramework::StringFunc::Path::Join(rootPath.c_str(), assetInfo.m_relativePath.c_str(), absolutePath);
+
+                    AZStd::string normPath = absolutePath;
+                    AzFramework::StringFunc::Path::Normalize(normPath);
+
+                    AZStd::string watchFolder;
+                    bool sourceInfoFound{};
+                    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(sourceInfoFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, normPath.c_str(), assetInfo, watchFolder);
+
+                    if (!sourceInfoFound)
+                    {
+                        return;
+                    }
+
+                    CreateFunctionPaletteItem(asset, assetInfo);
+
+                    treePaletteIter = m_globalFunctionTreeItems.find(asset->GetId());
 
                     if (treePaletteIter != m_globalFunctionTreeItems.end())
                     {
-                        treePaletteIter->second->SetError("Function has errors and cannot be created until these errors are resolved.");
+                        treePaletteIter->second->ClearError();
                     }
+
+                    m_monitoredAssets.emplace(asset->GetId(), asset);
+                }
+                else 
+                {
+                    RequestBuildChildrenFromSubgraphInterface(treePaletteIter->second, asset);
+                    treePaletteIter->second->ClearError();
                 }
             }
+        }
+
+        void ScriptCanvasRootPaletteTreeItem::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
+        {
+            OnAssetReady(asset);
         }
 
         bool ScriptCanvasRootPaletteTreeItem::HasAssetTreeItem(AZ::Data::AssetId assetId) const
@@ -569,36 +518,130 @@ namespace ScriptCanvasEditor
                 || m_globalFunctionTreeItems.find(assetId) != m_globalFunctionTreeItems.end();
         }
 
-        void ScriptCanvasRootPaletteTreeItem::CreateFunctionPaletteItem(const AZStd::string& displayName, const AZ::Data::AssetInfo& assetInfo, const AZ::Data::AssetId& sourceId, const AZ::Data::AssetId& runtimeId)
+        void ScriptCanvasRootPaletteTreeItem::CreateFunctionPaletteItem(AZ::Data::Asset<AZ::Data::AssetData> asset, const AZ::Data::AssetInfo& assetInfo)
         {
+            ScriptCanvas::SubgraphInterfaceAsset* data = asset.GetAs<ScriptCanvas::SubgraphInterfaceAsset>();
+            if (!data)
+            {
+                return;
+            }
+
+            const ScriptCanvas::Grammar::SubgraphInterface& graphInterface = data->m_runtimeData.m_interface;
+            if (!graphInterface.HasAnyFunctionality())
+            {
+                return;
+            }
+
             AZStd::string name;
             AzFramework::StringFunc::Path::GetFileName(assetInfo.m_relativePath.c_str(), name);
 
-            AZStd::string prettyName = displayName;
+            AZStd::string category = "User Functions";
 
-            AZStd::string category = "Global Functions";
             AZStd::string relativePath;
             if (AzFramework::StringFunc::Path::GetFolderPath(assetInfo.m_relativePath.c_str(), relativePath))
             {
                 AZStd::to_lower(relativePath.begin(), relativePath.end());
 
-                const AZStd::string root = "scriptcanvas/functions/";
-                if (relativePath.starts_with(root))
+                auto stripPathStart = [&](const AZStd::string root)
                 {
-                    relativePath = relativePath.substr(root.size(), relativePath.size() - root.size());
-                }
+                    if (relativePath.starts_with(root))
+                    {
+                        relativePath = relativePath.substr(root.size(), relativePath.size() - root.size());
+                    }
+                };
+
+                stripPathStart("scriptcanvas/functions");
+                stripPathStart("scriptcanvas");
+                stripPathStart("/");
 
                 category.append("/");
                 category.append(relativePath);
             }
 
-            GraphCanvas::NodePaletteTreeItem* categoryRoot = GetCategoryNode(category.c_str());
-            FunctionPaletteTreeItem* treeItem = categoryRoot->CreateChildNode<FunctionPaletteTreeItem>(prettyName.empty() ? name.c_str() : prettyName.c_str(), sourceId, runtimeId);
+            NodePaletteTreeItem* categoryRoot = GetCategoryNode(category.c_str());
+            auto functionCategory = categoryRoot->CreateChildNode<NodePaletteTreeItem>(name.c_str(), ScriptCanvasEditor::AssetEditorId);
+            RequestBuildChildrenFromSubgraphInterface(functionCategory, asset);            
+            m_globalFunctionTreeItems[asset->GetId()] = functionCategory;
+            categoryRoot->SetEnabled(true);
+        }
 
-            if (treeItem)
+        void ScriptCanvasRootPaletteTreeItem::RequestBuildChildrenFromSubgraphInterface(NodePaletteTreeItem* functionCategory, AZ::Data::Asset<AZ::Data::AssetData> asset)
+        {
+            functionCategory->ClearChildren();
+
+            ScriptCanvas::SubgraphInterfaceAsset* data = asset.GetAs<ScriptCanvas::SubgraphInterfaceAsset>();
+            if (!data)
             {
-                m_globalFunctionTreeItems[sourceId.m_guid] = treeItem;
-                treeItem->SetEnabled(!m_isFunctionGraphActive);
+                return;
+            }
+
+            const ScriptCanvas::Grammar::SubgraphInterface& graphInterface = data->m_runtimeData.m_interface;
+            if (!graphInterface.HasAnyFunctionality())
+            {
+                return;
+            }
+
+            auto parent = functionCategory;
+            parent->SetEnabled(true);
+
+            if (graphInterface.IsUserNodeable())
+            {
+                auto name = functionCategory->GetName().toUtf8().constData();
+                parent = parent->CreateChildNode<FunctionPaletteTreeItem>(AZStd::string::format("%s Node", name).c_str(), ScriptCanvas::Grammar::MakeFunctionSourceIdNodeable(), asset);
+                parent->SetEnabled(true);
+            }
+
+            if (graphInterface.IsMarkedPure())
+            {
+                for (auto& in : graphInterface.GetIns())
+                {
+                    auto childNode = parent->CreateChildNode<FunctionPaletteTreeItem>(in.displayName.c_str(), in.sourceID, asset);
+                    childNode->SetEnabled(true);
+                }
+            }
+            else
+            {
+                auto& ins = graphInterface.GetIns();
+                AZStd::vector<const ScriptCanvas::Grammar::In*> onNodeIns;
+                AZStd::vector<const ScriptCanvas::Grammar::In*> pureIns;
+
+                auto onNodeParent = parent;
+                auto pureParent = functionCategory;
+
+                for (auto& in : ins)
+                {
+                    if (in.isPure)
+                    {
+                        pureIns.push_back(&in);
+                    }
+                    else
+                    {
+                        onNodeIns.push_back(&in);
+                    }
+                }
+
+                if (!onNodeIns.empty())
+                {
+                    parent->SetEnabled(true);
+
+                    for (auto in : onNodeIns)
+                    {
+                        auto childNode = parent->CreateChildNode<NodePaletteTreeItem>(in->displayName.c_str(), ScriptCanvasEditor::AssetEditorId);
+                        childNode->SetEnabled(true);
+                    }
+                }
+
+                if (!pureIns.empty())
+                {
+                    parent = pureParent->CreateChildNode<NodePaletteTreeItem>("Pure Functions", ScriptCanvasEditor::AssetEditorId);
+                    parent->SetEnabled(true);
+
+                    for (auto in : pureIns)
+                    {
+                        auto childNode = parent->CreateChildNode<FunctionPaletteTreeItem>(in->displayName.c_str(), in->sourceID, asset);
+                        childNode->SetEnabled(true);
+                    }
+                }
             }
         }
 
@@ -642,9 +685,6 @@ namespace ScriptCanvasEditor
 
                 auto scriptEventAction = creationMenu->addAction("New Script Event");
                 QObject::connect(scriptEventAction, &QAction::triggered, this, &NodePaletteDockWidget::OnNewCustomEvent);
-
-                auto functionAction = creationMenu->addAction("New Function");
-                QObject::connect(functionAction, &QAction::triggered, this, &NodePaletteDockWidget::OnNewFunctionEvent);
 
                 m_newCustomEvent = new QToolButton(this);
                 m_newCustomEvent->setIcon(QIcon(":/ScriptCanvasEditorResources/Resources/add.png"));
@@ -694,11 +734,6 @@ namespace ScriptCanvasEditor
         void NodePaletteDockWidget::OnNewCustomEvent()
         {
             AzToolsFramework::AssetEditor::AssetEditorRequestsBus::Broadcast(&AzToolsFramework::AssetEditor::AssetEditorRequests::CreateNewAsset, azrtti_typeid<ScriptEvents::ScriptEventsAsset>());
-        }
-
-        void NodePaletteDockWidget::OnNewFunctionEvent()
-        {
-            GeneralRequestBus::Broadcast(&GeneralRequests::CreateNewFunctionAsset);
         }
 
         void NodePaletteDockWidget::OnActiveGraphChanged(const GraphCanvas::GraphId& graphCanvasGraphId)

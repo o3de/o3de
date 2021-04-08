@@ -12,8 +12,8 @@
 
 #include <AzCore/Interface/Interface.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
-
 #include <Prefab/PrefabUndo.h>
+#include <Prefab/PrefabDomUtils.h>
 
 namespace AzToolsFramework
 {
@@ -27,7 +27,6 @@ namespace AzToolsFramework
             m_instanceToTemplateInterface = AZ::Interface<InstanceToTemplateInterface>::Get();
             AZ_Assert(m_instanceToTemplateInterface, "Failed to grab instance to template interface");
         }
-
 
         //PrefabInstanceUndo
         PrefabUndoInstance::PrefabUndoInstance(const AZStd::string& undoOperationName)
@@ -85,12 +84,22 @@ namespace AzToolsFramework
 
         void PrefabUndoEntityUpdate::Undo()
         {
-            m_instanceToTemplateInterface->PatchEntityInTemplate(m_undoPatch, m_entityAlias, m_templateId);
+            bool isPatchApplicationSuccessful =
+                m_instanceToTemplateInterface->PatchEntityInTemplate(m_undoPatch, m_entityAlias, m_templateId);
+            AZ_Error(
+                "Prefab", isPatchApplicationSuccessful,
+                "Applying the undo patch on the entity with alias '%s' in template with id '%llu' was unsuccessful", m_entityAlias.c_str(),
+                m_templateId);
         }
 
         void PrefabUndoEntityUpdate::Redo()
         {
-            m_instanceToTemplateInterface->PatchEntityInTemplate(m_redoPatch, m_entityAlias, m_templateId);
+            bool isPatchApplicationSuccessful =
+                m_instanceToTemplateInterface->PatchEntityInTemplate(m_redoPatch, m_entityAlias, m_templateId);
+            AZ_Error(
+                "Prefab", isPatchApplicationSuccessful,
+                "Applying the redo patch on the entity with alias '%s' in template with id '%llu' was unsuccessful", m_entityAlias.c_str(),
+                m_templateId);
         }
 
         //PrefabInstanceLinkUndo
@@ -100,7 +109,7 @@ namespace AzToolsFramework
             , m_sourceId(InvalidTemplateId)
             , m_instanceAlias("")
             , m_linkId(InvalidLinkId)
-            , m_link(Link())
+            , m_linkDom(PrefabDom())
             , m_linkStatus(LinkStatus::LINKSTATUS)
         {
             m_prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
@@ -111,14 +120,18 @@ namespace AzToolsFramework
             const TemplateId& targetId,
             const TemplateId& sourceId,
             const InstanceAlias& instanceAlias,
-            const LinkId& linkId,
-            const Link& link)
+            const PrefabDomReference linkDom,
+            const LinkId linkId)
         {
             m_targetId = targetId;
             m_sourceId = sourceId;
             m_instanceAlias = instanceAlias;
             m_linkId = linkId;
-            m_link = link;
+
+            if (linkDom.has_value())
+            {
+                m_linkDom = AZStd::move(linkDom->get());
+            }
 
             //if linkId is invalid, set as ADD
             if (m_linkId == InvalidLinkId)
@@ -169,21 +182,133 @@ namespace AzToolsFramework
             m_prefabSystemComponentInterface->PropagateTemplateChanges(m_targetId);
         }
 
+        LinkId PrefabUndoInstanceLink::GetLinkId()
+        {
+            return m_linkId;
+        }
+
         void PrefabUndoInstanceLink::AddLink()
         {
-            m_linkId = m_prefabSystemComponentInterface->CreateLink(m_targetId, m_sourceId, m_instanceAlias, m_linkId);
-
-            //if data already exists, repopulate
-            if (m_linkStatus == LinkStatus::REMOVE)
-            {
-                LinkReference link = m_prefabSystemComponentInterface->FindLink(m_linkId);
-                link = m_link;
-            }         
+            m_linkId = m_prefabSystemComponentInterface->CreateLink(m_targetId, m_sourceId, m_instanceAlias, m_linkDom, m_linkId);
         }
 
         void PrefabUndoInstanceLink::RemoveLink()
         {
             m_prefabSystemComponentInterface->RemoveLink(m_linkId);
+        }
+
+        //PrefabUndoLinkUpdate
+        PrefabUndoLinkUpdate::PrefabUndoLinkUpdate(const AZStd::string& undoOperationName)
+            : PrefabUndoBase(undoOperationName)
+            , m_linkId(InvalidLinkId)
+            , m_linkDomNext(PrefabDom())
+            , m_linkDomPrevious(PrefabDom())
+        {
+            m_prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
+            AZ_Assert(m_instanceToTemplateInterface, "Failed to grab interface");
+        }
+
+        void PrefabUndoLinkUpdate::Capture(
+            const PrefabDom& patch,
+            const LinkId linkId)
+        {
+            m_linkId = linkId;
+
+            //acquire link and existing values
+            LinkReference link = m_prefabSystemComponentInterface->FindLink(m_linkId);
+            if (link == AZStd::nullopt)
+            {
+                AZ_Error("Prefab", false, "PrefabUndoLinkUpdate: Link not found");
+                return;
+            }
+
+            if (link.has_value())
+            {
+                m_linkDomPrevious = AZStd::move(link->get().GetLinkDom());
+            }
+
+            //get source templateDom
+            TemplateReference sourceTemplate = m_prefabSystemComponentInterface->FindTemplate(link->get().GetSourceTemplateId());
+
+            if (sourceTemplate == AZStd::nullopt)
+            {
+                AZ_Error("Prefab", false, "PrefabUndoLinkUpdate: Source template not found");
+                return;
+            }
+
+            PrefabDomReference sourceDom = sourceTemplate->get().GetPrefabDom();
+
+            //use instance pointer to reach position
+            PrefabDomValueReference instanceDomRef = link->get().GetLinkedInstanceDom();
+
+            //copy the target instance the link is pointing to
+            PrefabDom instanceDom;
+            instanceDom.CopyFrom(instanceDomRef->get(), instanceDom.GetAllocator());
+
+            //apply the patch to the template within the target
+            AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::ApplyPatch(instanceDom,
+                instanceDom.GetAllocator(), patch, AZ::JsonMergeApproach::JsonPatch);
+
+            //remove the link id placed into the instance
+            auto linkIdIter = instanceDom.FindMember(PrefabDomUtils::LinkIdName);
+            if (linkIdIter != instanceDom.MemberEnd())
+            {
+                instanceDom.RemoveMember(PrefabDomUtils::LinkIdName);
+            }
+
+            //we use this to diff our copy against the vanilla template (source template)
+            PrefabDom patchLink;
+            m_instanceToTemplateInterface->GeneratePatch(patchLink, sourceDom->get(), instanceDom);
+
+            // Create a copy of patchLink by providing the allocator of m_linkDomNext so that the patch doesn't become invalid when
+            // the patch goes out of scope in this function.
+            PrefabDom patchLinkCopy;
+            patchLinkCopy.CopyFrom(patchLink, m_linkDomNext.GetAllocator());
+
+            m_linkDomNext.CopyFrom(m_linkDomPrevious, m_linkDomNext.GetAllocator());
+            auto patchesIter = m_linkDomNext.FindMember(PrefabDomUtils::PatchesName);
+
+            if (patchesIter == m_linkDomNext.MemberEnd())
+            {
+                m_linkDomNext.AddMember(
+                    rapidjson::GenericStringRef(PrefabDomUtils::PatchesName), patchLinkCopy, m_linkDomNext.GetAllocator());
+            }
+            else
+            {
+                patchesIter->value = AZStd::move(patchLinkCopy.GetArray());
+            }
+        }
+
+        void PrefabUndoLinkUpdate::Undo()
+        {
+            UpdateLink(m_linkDomPrevious);
+        }
+
+        void PrefabUndoLinkUpdate::Redo()
+        {
+            UpdateLink(m_linkDomNext);
+        }
+
+        void PrefabUndoLinkUpdate::UpdateLink(PrefabDom& linkDom)
+        {
+            LinkReference link = m_prefabSystemComponentInterface->FindLink(m_linkId);
+
+            if (link == AZStd::nullopt)
+            {
+                AZ_Error("Prefab", false, "PrefabUndoLinkUpdate: Link not found");
+                return;
+            }
+
+            PrefabDom moveLink;
+            moveLink.CopyFrom(linkDom, linkDom.GetAllocator());
+            link->get().GetLinkDom() = AZStd::move(moveLink);
+
+            //propagate the link changes
+            link->get().UpdateTarget();
+            m_prefabSystemComponentInterface->PropagateTemplateChanges(link->get().GetTargetTemplateId());
+
+            //mark as dirty
+            m_prefabSystemComponentInterface->SetTemplateDirtyFlag(link->get().GetTargetTemplateId(), true);
         }
     }
 }

@@ -38,7 +38,9 @@
 #include <I3DEngine.h>
 #include <LoadScreenBus.h>
 #include <StatObjBus.h>
-#include "AzCore/Component/TickBus.h"
+
+#include <AzCore/Component/TickBus.h>
+#include <AzFramework/API/ApplicationAPI.h>
 
 //------------------------------------------------------------------------------
 #define LEVEL_DATA_FILE "LevelData.xml"
@@ -154,6 +156,9 @@ bool C3DEngine::InitLevelForEditor([[maybe_unused]] const char* szFolderName, [[
 
     ClearDebugFPSInfo();
 
+    bool usePrefabSystemEnabled = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(
+        usePrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
     if (!szFolderName || !szFolderName[0])
     {
@@ -161,7 +166,7 @@ bool C3DEngine::InitLevelForEditor([[maybe_unused]] const char* szFolderName, [[
         return 0;
     }
 
-    if (!szMissionName || !szMissionName[0])
+    if (!usePrefabSystemEnabled && (!szMissionName || !szMissionName[0]))
     {
         Warning("C3DEngine::LoadLevel: Mission name is not specified");
     }
@@ -248,6 +253,17 @@ bool C3DEngine::LevelLoadingInProgress()
 
 bool C3DEngine::LoadCompiledOctreeForEditor()
 {
+    bool usePrefabSystemForLevels = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+
+    if (usePrefabSystemForLevels)
+    {
+        // Prefab levels don't use any of the legacy level data.
+        return true;
+    }
+
+
     // Load LevelData.xml File.
     XmlNodeRef xmlLevelData = GetSystem()->LoadXmlFromFile(GetLevelFilePath(LEVEL_DATA_FILE));
 
@@ -257,17 +273,7 @@ bool C3DEngine::LoadCompiledOctreeForEditor()
         return false;
     }
 
-    std::vector<struct IStatObj*>* pStatObjTable = NULL;
-    std::vector<_smart_ptr<IMaterial> >* pMatTable = NULL;
-
-    int nSID = 0;
-
-    XmlNodeRef nodeRef = xmlLevelData->findChild("SurfaceTypes");
-
     LoadCollisionClasses(xmlLevelData->findChild("CollisionClasses"));
-
-    SAFE_DELETE(pStatObjTable);
-    SAFE_DELETE(pMatTable);
 
     return true;
 }
@@ -617,6 +623,11 @@ bool C3DEngine::LoadLevel(const char* szFolderName, const char* szMissionName)
         GetISystem()->LoadConfiguration(GetLevelFilePath(LEVEL_CONFIG_FILE));
     }
 
+    bool usePrefabSystemForLevels = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+
+    if (!usePrefabSystemForLevels)
     { // check is LevelData.xml file exist
         char sMapFileName[_MAX_PATH];
         cry_strcpy(sMapFileName, m_szLevelFolder);
@@ -659,12 +670,16 @@ bool C3DEngine::LoadLevel(const char* szFolderName, const char* szMissionName)
     }
 
     // Load LevelData.xml File.
-    XmlNodeRef xmlLevelData = GetSystem()->LoadXmlFromFile(GetLevelFilePath(LEVEL_DATA_FILE));
-
-    if (xmlLevelData == 0)
+    XmlNodeRef xmlLevelData;
+    if (!usePrefabSystemForLevels)
     {
-        Error("C3DEngine::LoadLevel: xml file not found (files missing?)"); // files missing ?
-        return false;
+        xmlLevelData = GetSystem()->LoadXmlFromFile(GetLevelFilePath(LEVEL_DATA_FILE));
+
+        if (xmlLevelData == 0)
+        {
+            Error("C3DEngine::LoadLevel: xml file not found (files missing?)"); // files missing ?
+            return false;
+        }
     }
 
     // re-create decal manager
@@ -690,41 +705,48 @@ bool C3DEngine::LoadLevel(const char* szFolderName, const char* szMissionName)
         m_pObjManager->PreloadLevelObjects();
     }
 
-    std::vector<struct IStatObj*>* pStatObjTable = NULL;
-    std::vector<_smart_ptr<IMaterial> >* pMatTable = NULL;
-
-    int nSID = 0;
-
-    // load terrain
-    XmlNodeRef nodeRef = xmlLevelData->findChild("SurfaceTypes");
-
-    LoadCollisionClasses(xmlLevelData->findChild("CollisionClasses"));
+    if (!usePrefabSystemForLevels)
+    {
+        LoadCollisionClasses(xmlLevelData->findChild("CollisionClasses"));
+    }
 
     gEnv->pSystem->SetSystemGlobalState(ESYSTEM_GLOBAL_STATE_LEVEL_LOAD_START_STATIC_WORLD);
 
-#if defined(FEATURE_SVO_GI)
-    if (gEnv->pConsole->GetCVar("e_GI")->GetIVal())
+    if (usePrefabSystemForLevels)
     {
-        // Load SVOGI settings
-        char szFileName[256];
-        azsprintf(szFileName, "mission_%s.xml", szMissionName);
-        XmlNodeRef xmlMission = GetSystem()->LoadXmlFromFile(Get3DEngine()->GetLevelFilePath(szFileName));
-        if (xmlMission)
-        {
-            LoadTISettings(xmlMission->findChild("Environment"));
-        }
+        // When using the prefab system, just initialize a default manager instead of loading values from the indoor.dat file.
+        m_pVisAreaManager = new CVisAreaManager();
     }
+    else
+    {
+#if defined(FEATURE_SVO_GI)
+        if (gEnv->pConsole->GetCVar("e_GI")->GetIVal())
+        {
+            // Load SVOGI settings
+            char szFileName[256];
+            azsprintf(szFileName, "mission_%s.xml", szMissionName);
+            XmlNodeRef xmlMission = GetSystem()->LoadXmlFromFile(Get3DEngine()->GetLevelFilePath(szFileName));
+            if (xmlMission)
+            {
+                LoadTISettings(xmlMission->findChild("Environment"));
+            }
+        }
 #endif
 
-    // load indoors
-    if (!LoadVisAreas(&pStatObjTable, &pMatTable))
-    {
-        Error("VisAreas file (%s) not found or file version error, please try to re-export the level", COMPILED_VISAREA_MAP_FILE_NAME);
-        return false;
+        // load indoors
+        std::vector<struct IStatObj*>* pStatObjTable = NULL;
+        std::vector<_smart_ptr<IMaterial>>* pMatTable = NULL;
+
+        if (!LoadVisAreas(&pStatObjTable, &pMatTable))
+        {
+            Error("VisAreas file (%s) not found or file version error, please try to re-export the level", COMPILED_VISAREA_MAP_FILE_NAME);
+            return false;
+        }
+
+        SAFE_DELETE(pStatObjTable);
+        SAFE_DELETE(pMatTable);
     }
 
-    SAFE_DELETE(pStatObjTable);
-    SAFE_DELETE(pMatTable);
 
     //Update loading screen and important tick functions
     SYNCHRONOUS_LOADING_TICK();
@@ -737,29 +759,37 @@ bool C3DEngine::LoadLevel(const char* szFolderName, const char* szMissionName)
     // load leveldata.xml
     m_pTerrainWaterMat = 0;
     m_nWaterBottomTexId = 0;
+
+    // This call is needed whether or not the prefab system is used for levels.  If prefabs are used, it will initialize the
+    // environment and time of day managers with default values.  With legacy levels, they will intialize from the saved xml files.
     LoadMissionDataFromXMLNode(szMissionName);
 
     //Update loading screen and important tick functions
     SYNCHRONOUS_LOADING_TICK();
 
-
-    // init water if not initialized already (if no mission was found)
-    if (!GetOcean())
+    if (!usePrefabSystemForLevels)
     {
-        PrintMessage("===== Creating Ocean =====");
-        CreateOcean(m_pTerrainWaterMat, COcean::GetWaterLevelInfo());
-    }
+        // init water if not initialized already (if no mission was found)
+        if (!GetOcean())
+        {
+            PrintMessage("===== Creating Ocean =====");
+            CreateOcean(m_pTerrainWaterMat, COcean::GetWaterLevelInfo());
+        }
 
-    PrintMessage("===== Load level physics data =====");
-    LoadFlaresData();
+        PrintMessage("===== Load level physics data =====");
+        LoadFlaresData();
+    }
 
     // restore game state
     EnableOceanRendering(true);
     m_pObjManager->SetLockCGFResources(false);
 
-    PrintMessage("===== loading occlusion mesh =====");
+    if (!usePrefabSystemForLevels)
+    {
+        PrintMessage("===== loading occlusion mesh =====");
 
-    GetObjManager()->LoadOcclusionMesh(szFolderName);
+        GetObjManager()->LoadOcclusionMesh(szFolderName);
+    }
 
     PrintMessage("===== Finished loading static world =====");
 
@@ -817,7 +847,9 @@ void C3DEngine::LoadMissionDataFromXMLNode(const char* szMissionName)
         }
         else
         {
-            Error("C3DEngine::LoadMissionDataFromXMLNode: Mission file not found: %s", szFileName);
+            // XML file couldn't be found, just use the defaults for everything.
+            LoadEnvironmentSettingsFromXML(nullptr, GetDefSID());
+            LoadTimeOfDaySettingsFromXML(nullptr);
         }
     }
     else
@@ -832,10 +864,13 @@ char* C3DEngine::GetXMLAttribText(XmlNodeRef pInputNode, const char* szLevel1, c
 
     cry_strcpy(szResText, szDefaultValue);
 
-    XmlNodeRef nodeLevel = pInputNode->findChild(szLevel1);
-    if (nodeLevel && nodeLevel->haveAttr(szLevel2))
+    if (pInputNode)
     {
-        cry_strcpy(szResText, nodeLevel->getAttr(szLevel2));
+        XmlNodeRef nodeLevel = pInputNode->findChild(szLevel1);
+        if (nodeLevel && nodeLevel->haveAttr(szLevel2))
+        {
+            cry_strcpy(szResText, nodeLevel->getAttr(szLevel2));
+        }
     }
 
     return szResText;
@@ -847,13 +882,16 @@ char* C3DEngine::GetXMLAttribText(XmlNodeRef pInputNode, const char* szLevel1, c
 
     cry_strcpy(szResText, szDefaultValue);
 
-    XmlNodeRef nodeLevel = pInputNode->findChild(szLevel1);
-    if (nodeLevel)
+    if (pInputNode)
     {
-        nodeLevel = nodeLevel->findChild(szLevel2);
+        XmlNodeRef nodeLevel = pInputNode->findChild(szLevel1);
         if (nodeLevel)
         {
-            cry_strcpy(szResText, nodeLevel->getAttr(szLevel3));
+            nodeLevel = nodeLevel->findChild(szLevel2);
+            if (nodeLevel)
+            {
+                cry_strcpy(szResText, nodeLevel->getAttr(szLevel3));
+            }
         }
     }
 
@@ -904,7 +942,7 @@ void C3DEngine::LoadEnvironmentSettingsFromXML(XmlNodeRef pInputNode, [[maybe_un
 
     {
         char moonTexture[256];
-        cry_strcpy(moonTexture, GetXMLAttribText(pInputNode, "Moon", "Texture", ""));
+        cry_strcpy(moonTexture, GetXMLAttribText(pInputNode, "Moon", "Texture", "Textures/Skys/Night/half_moon.dds"));
 
         ITexture* pTex(0);
         if (moonTexture[0] != '\0')
@@ -923,14 +961,14 @@ void C3DEngine::LoadEnvironmentSettingsFromXML(XmlNodeRef pInputNode, [[maybe_un
     m_volFogGlobalDensityMultiplierLDR = (float)max(atof(GetXMLAttribText(pInputNode, "Fog", "LDRGlobalDensMult", "1.0")), 0.0);
 
     // SkyBox
-    const string skyMaterialName = GetXMLAttribText(pInputNode, "SkyBox", "Material", "Materials/Sky/Sky");
-    const string skyLowSpecMaterialName = GetXMLAttribText(pInputNode, "SkyBox", "MaterialLowSpec", "Materials/Sky/Sky");
+    const string skyMaterialName = GetXMLAttribText(pInputNode, "SkyBox", "Material", "EngineAssets/Materials/Sky/Sky");
+    const string skyLowSpecMaterialName = GetXMLAttribText(pInputNode, "SkyBox", "MaterialLowSpec", "EngineAssets/Materials/Sky/Sky");
     SetSkyMaterialPath(skyMaterialName);
     SetSkyLowSpecMaterialPath(skyLowSpecMaterialName);
     LoadSkyMaterial();
 
     m_fSkyBoxAngle = (float)atof(GetXMLAttribText(pInputNode, "SkyBox", "Angle", "0.0"));
-    m_fSkyBoxStretching = (float)atof(GetXMLAttribText(pInputNode, "SkyBox", "Stretching", "1.0"));
+    m_fSkyBoxStretching = (float)atof(GetXMLAttribText(pInputNode, "SkyBox", "Stretching", "0.5"));
 
     // set terrain water (aka the infinite ocean), sun road and bottom shaders
     if (OceanToggle::IsActive())

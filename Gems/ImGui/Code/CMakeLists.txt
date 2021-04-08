@@ -17,7 +17,6 @@ ly_get_list_relative_pal_filename(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Sourc
 ly_add_target(
     NAME ImGui.imguilib ${PAL_TRAIT_MONOLITHIC_DRIVEN_LIBRARY_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME imguilib
     FILES_CMAKE
         imgui_lib_files.cmake
         ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake

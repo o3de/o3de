@@ -266,7 +266,7 @@ namespace PolygonPrismMeshUtils
         return m_edgeQueue;
     }
 
-    const AZStd::vector<AZ::Vector3>& Mesh2D::GetDebugDrawPoints(float height, float scale) const
+    const AZStd::vector<AZ::Vector3>& Mesh2D::GetDebugDrawPoints(float height, const AZ::Vector3& nonUniformScale) const
     {
         if (m_debugDrawDirty)
         {
@@ -281,10 +281,10 @@ namespace PolygonPrismMeshUtils
                     for (int edgeIndex = 0; edgeIndex < numEdges; edgeIndex++)
                     {
                         PolygonPrismMeshUtils::HalfEdge* nextEdge = currentEdge->m_next;
-                        const AZ::Vector3 v1(scale * currentEdge->m_origin.GetX(), scale * currentEdge->m_origin.GetY(), 0.0f);
-                        const AZ::Vector3 v2(scale * currentEdge->m_origin.GetX(), scale * currentEdge->m_origin.GetY(), scale * height);
-                        const AZ::Vector3 v3(scale * nextEdge->m_origin.GetX(), scale * nextEdge->m_origin.GetY(), 0.0f);
-                        const AZ::Vector3 v4(scale * nextEdge->m_origin.GetX(), scale * nextEdge->m_origin.GetY(), scale * height);
+                        const auto v1 = nonUniformScale * AZ::Vector3(currentEdge->m_origin.GetX(), currentEdge->m_origin.GetY(), 0.0f);
+                        const auto v2 = nonUniformScale * AZ::Vector3(currentEdge->m_origin.GetX(), currentEdge->m_origin.GetY(), height);
+                        const auto v3 = nonUniformScale * AZ::Vector3(nextEdge->m_origin.GetX(), nextEdge->m_origin.GetY(), 0.0f);
+                        const auto v4 = nonUniformScale * AZ::Vector3(nextEdge->m_origin.GetX(), nextEdge->m_origin.GetY(), height);
 
                         m_debugDrawPoints.insert(m_debugDrawPoints.end(), { v1, v2, v1, v3, v2, v4 });
 

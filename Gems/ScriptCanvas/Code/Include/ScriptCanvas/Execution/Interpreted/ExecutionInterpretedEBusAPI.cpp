@@ -51,8 +51,9 @@ namespace ScriptCanvas
 
             AZ::StackVariableAllocator tempData;
             AZ::BehaviorValueParameter address = BehaviorValueParameterFromTypeIdString(aztypeidStr, behaviorContext);
+            // \todo check for nil if required...if the address is a BCO...and is NOT a pointer type...nil check is required
+            // that will have to be checked at compile time actually.
             AZ_Verify(StackRead(lua, &behaviorContext, -1, address, &tempData), "Error in compiled lua file, failed to read 2nd argument to EBusHandlerConnectTo");
-
             lua_pushboolean(lua, ebusHandler->ConnectTo(address));
             return 1;
         }

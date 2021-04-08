@@ -157,7 +157,7 @@ namespace AssetProcessor
     {
         AssetBuilderSDK::AssetBuilderDesc   builderDesc;
         builderDesc.m_name = "Settings Registry Builder";
-        builderDesc.m_patterns.emplace_back("*/bootstrap.cfg", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard);
+        builderDesc.m_patterns.emplace_back("*/engine.json", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard);
         builderDesc.m_builderType = AssetBuilderSDK::AssetBuilderDesc::AssetBuilderType::Internal;
         builderDesc.m_busId = m_builderId;
         builderDesc.m_createJobFunction = AZStd::bind(&SettingsRegistryBuilder::CreateJobs, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
@@ -195,7 +195,9 @@ namespace AssetProcessor
             response.m_createJobOutputs.push_back(AZStd::move(job));
         }
 
-        response.m_sourceFileDependencyList.emplace_back("*.setreg", AZ::Uuid::CreateNull(),
+        AZ::IO::Path settingsRegistryWildcard = AZ::SettingsRegistryInterface::RegistryFolder;
+        settingsRegistryWildcard /= "*.setreg";
+        response.m_sourceFileDependencyList.emplace_back(AZStd::move(settingsRegistryWildcard.Native()), AZ::Uuid::CreateNull(),
             AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards);
         response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
     }
@@ -294,10 +296,11 @@ namespace AssetProcessor
                 AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_GemRegistries(registry, platform, specialization, &scratchBuffer);
                 AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectRegistry(registry, platform, specialization, &scratchBuffer);
 
-                // Merge the Developer User settings registry only in non-release builds
+                // Merge the Project User and User home settings registry only in non-release builds
                 if (!specialization.Contains("release"))
                 {
-                    AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_UserRegistry(registry, platform, specialization, &scratchBuffer);
+                    AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(registry, platform, specialization, &scratchBuffer);
+                    AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectUserRegistry(registry, platform, specialization, &scratchBuffer);
                 }
 
                 AZ::ComponentApplicationBus::Broadcast([&registry](AZ::ComponentApplicationRequests* appRequests)
@@ -336,6 +339,7 @@ namespace AssetProcessor
                     file.Close();
 
                     response.m_outputProducts.emplace_back(outputPath, m_assetType, productSubID + aznumeric_cast<AZ::u32>(i));
+                    response.m_outputProducts.back().m_dependenciesHandled = true;
 
                     outputPath.erase(extensionOffset);
                 }

@@ -52,15 +52,13 @@ namespace AZ
         {
             SMAABasePass::Init();
 
-            AZ_Assert(m_shaderResourceGroup != nullptr, "SMAAEdgeDetectionPass %s has a null shader resource group when calling Init.", GetPathName().GetCStr());
-
-            m_renderTargetMetricsShaderInputIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_renderTargetMetrics" });
-            m_chromaThresholdShaderInputIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_chromaThreshold" });
-            m_depthThresholdShaderInputIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_depthThreshold" });
-            m_localContrastAdaptationFactorShaderInputIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_localContrastAdaptationFactor" });
-            m_predicationThresholdShaderInputIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_predicationThreshold" });
-            m_predicationScaleShaderInputIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_predicationScale" });
-            m_predicationStrengthShaderInputIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_predicationStrength" });
+            m_renderTargetMetricsShaderInputIndex.Reset();
+            m_chromaThresholdShaderInputIndex.Reset();
+            m_depthThresholdShaderInputIndex.Reset();
+            m_localContrastAdaptationFactorShaderInputIndex.Reset();
+            m_predicationThresholdShaderInputIndex.Reset();
+            m_predicationScaleShaderInputIndex.Reset();
+            m_predicationStrengthShaderInputIndex.Reset();
         }
 
 

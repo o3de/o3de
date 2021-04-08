@@ -96,6 +96,7 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
             // EBusTraits overrides
             static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+            using MutexType = AZStd::recursive_mutex;
             typedef Data::AssetId BusIdType; // The AssetId of the shader asset.
             //////////////////////////////////////////////////////////////////////////
 

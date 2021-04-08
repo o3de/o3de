@@ -61,8 +61,8 @@ namespace NumericalMethods::Eigenanalysis
         double a00, double a01, double a02, double a11, double a12, double a22, double val
     )
     {
-        // By definition, (A−e∗I)v = 0, where e is the eigenvalue and v is the corresponding eigenvector to be found.
-        // This condition implies that the rows (A−e∗I) must be perpendicular to v. This matrix must have rank 2, so two
+        // By definition, (A-e*I)v = 0, where e is the eigenvalue and v is the corresponding eigenvector to be found.
+        // This condition implies that the rows (A-e*I) must be perpendicular to v. This matrix must have rank 2, so two
         // rows will be linearly dependent. For those two rows, the cross product will be (nearly) zero. So to find v,
         // we can simply take the cross product of the two rows that maximize its magnitude.
         VectorVariable row0 = VectorVariable::CreateFromVector({ a00 - val, a01, a02 });

@@ -32,7 +32,10 @@
                                 // Unbuffered reads bypass the OS file cache for faster file reads. This helps speed up initial file loads
                                 // and is best for applications that only read a file once such as the game. For applications that frequently
                                 // re-read files such as the editor it's better to turn this feature off.
-                                "EnableUnbufferedReads": false
+                                "EnableUnbufferedReads": false,
+                                // If true, only information that's explicitly requested or issues are reported. If false, status information
+                                // such as when drives are created and destroyed is reported as well.
+                                "MinimalReporting": false
                             },
                             {
                                 "$type": "AzFramework::RemoteStorageDriveConfig",

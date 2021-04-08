@@ -22,7 +22,6 @@ import pytest
 
 import ly_test_tools._internal.managers.artifact_manager
 
-pytestmark = pytest.mark.SUITE_smoke
 
 TIMESTAMP_FORMAT = '%Y-%m-%dT%H-%M-%S-%f'
 DATE = datetime.datetime.now().strftime(TIMESTAMP_FORMAT)

@@ -79,7 +79,7 @@ namespace ScriptCanvasEditor
         }
         else if (auto functionTreeItem = azrtti_cast<const FunctionPaletteTreeItem*>(treeItem))
         {
-            resultHash = ScriptCanvas::NodeUtils::ConstructFunctionNodeIdentifier(functionTreeItem->GetRuntimeAssetId());
+            resultHash = ScriptCanvas::NodeUtils::ConstructFunctionNodeIdentifier(functionTreeItem->GetAssetId());
         }
 
         return resultHash;

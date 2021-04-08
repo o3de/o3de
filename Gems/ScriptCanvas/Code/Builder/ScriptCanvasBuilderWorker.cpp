@@ -86,40 +86,30 @@ namespace ScriptCanvasBuilder
             assetDataStream->Open(AZStd::move(fileBuffer));
         }
 
-        m_sourceDependencies.clear();
-        AZStd::unordered_multimap<AZStd::string, AssetBuilderSDK::SourceFileDependency> sourceFileDependencies;
+        m_processEditorAssetDependencies.clear();
 
-        auto assetFilter = [&response](const AZ::Data::AssetFilterInfo& filterInfo)
+        auto assetFilter = [this, &response](const AZ::Data::AssetFilterInfo& filterInfo)
         {
-            if (filterInfo.m_assetType == azrtti_typeid<ScriptCanvasEditor::ScriptCanvasAsset>() ||
-                filterInfo.m_assetType == azrtti_typeid<ScriptCanvasEditor::ScriptCanvasFunctionAsset>() ||
-                filterInfo.m_assetType == azrtti_typeid<ScriptEvents::ScriptEventsAsset>() ||
-                filterInfo.m_assetType == azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>()) // this required, since nodes reference this, rather than the editor asset
+            // force load these before processing
+            if (filterInfo.m_assetType == azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>()
+            || filterInfo.m_assetType == azrtti_typeid<ScriptEvents::ScriptEventsAsset>())
+            {
+                this->m_processEditorAssetDependencies.push_back(filterInfo);
+            }
+
+            // these trigger re-processing
+            if (filterInfo.m_assetType == azrtti_typeid<ScriptCanvasEditor::ScriptCanvasAsset>()
+            || filterInfo.m_assetType == azrtti_typeid<ScriptEvents::ScriptEventsAsset>()
+            || filterInfo.m_assetType == azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>())
             {
                 AssetBuilderSDK::SourceFileDependency dependency;
                 dependency.m_sourceFileDependencyUUID = filterInfo.m_assetId.m_guid;
-
                 response.m_sourceFileDependencyList.push_back(dependency);
-
-                /*AssetBuilderSDK::SourceFileDependency dependency;
-                dependency.m_sourceFileDependencyUUID = asset.GetId().m_guid;
-
-                if (asset.GetType() == azrtti_typeid<ScriptEvents::ScriptEventsAsset>())
-                {
-                    sourceFileDependencies.emplace("Script Events", dependency);
-                }
-                else
-                {
-                    sourceFileDependencies.emplace(s_scriptCanvasProcessJobKey, dependency);
-                }
-
-                this->m_sourceDependencies.push_back(asset);*/
             }
 
             // Asset filter always returns false to prevent parsing dependencies, but makes note of the script canvas dependencies
             return false;
         };
-
 
         AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset> asset;
         asset.Create(AZ::Data::AssetId(AZ::Uuid::CreateRandom()));
@@ -135,15 +125,28 @@ namespace ScriptCanvasBuilder
         auto* scriptCanvasEntity = asset.Get()->GetScriptCanvasEntity();
         auto* sourceGraph = AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvasEditor::Graph>(scriptCanvasEntity);
         AZ_Assert(sourceGraph, "Graph component is missing from entity.");
+
+        struct EntityIdComparer
+        {
+            bool operator()(AZ::Entity* lhs, AZ::Entity* rhs)
+            {
+                AZ::EntityId lhsEntityId = lhs != nullptr ? lhs->GetId() : AZ::EntityId();
+                AZ::EntityId rhsEntityId = rhs != nullptr ? rhs->GetId() : AZ::EntityId();
+                return lhsEntityId < rhsEntityId;
+            }
+        };
+        const AZStd::set<AZ::Entity*, EntityIdComparer> sortedEntities(sourceGraph->GetGraphData()->m_nodes.begin(), sourceGraph->GetGraphData()->m_nodes.end());
+
         size_t fingerprint = 0;
-        const AZStd::set<AZ::Entity*> sortedEntities(sourceGraph->GetGraphData()->m_nodes.begin(), sourceGraph->GetGraphData()->m_nodes.end());
-        for (auto& nodeEntity : sortedEntities)
+        for (const auto& nodeEntity : sortedEntities)
         {
             if (auto nodeComponent = AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::Node>(nodeEntity))
             {
                 AZStd::hash_combine(fingerprint, nodeComponent->GenerateFingerprint());
             }
         }
+
+        m_processEditorAssetDependencies.clear();
 
         for (const AssetBuilderSDK::PlatformInfo& info : request.m_enabledPlatforms)
         {
@@ -164,11 +167,13 @@ namespace ScriptCanvasBuilder
             jobDescriptor.m_jobKey = s_scriptCanvasProcessJobKey;
             jobDescriptor.SetPlatformIdentifier(info.m_identifier.c_str());
             jobDescriptor.m_additionalFingerprintInfo = AZStd::string(GetFingerprintString()).append("|").append(AZStd::to_string(static_cast<AZ::u64>(fingerprint)));
+
             // Graph process job needs to wait until its dependency asset job finished
-            for (const auto& sourceDependency : sourceFileDependencies)
+            for (const auto& processingDependency : response.m_sourceFileDependencyList)
             {
-                jobDescriptor.m_jobDependencyList.emplace_back(sourceDependency.first, info.m_identifier.c_str(), AssetBuilderSDK::JobDependencyType::Order, sourceDependency.second);
+                jobDescriptor.m_jobDependencyList.emplace_back(s_scriptCanvasProcessJobKey, info.m_identifier.c_str(), AssetBuilderSDK::JobDependencyType::Order, processingDependency);
             }
+
             response.m_createJobOutputs.push_back(jobDescriptor);
         }
 
@@ -260,7 +265,6 @@ namespace ScriptCanvasBuilder
             assetDataStream->Open(AZStd::move(fileBuffer));
         }
 
-
         AZ::SerializeContext* context{};
         AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
@@ -288,15 +292,16 @@ namespace ScriptCanvasBuilder
             jobProduct.m_productAssetType = azrtti_typeid<ScriptCanvasEditor::ScriptCanvasAsset>();
             jobProduct.m_productSubID = 0;
             jobProduct.m_dependenciesHandled = true;
+            jobProduct.m_dependencies.clear();
             response.m_outputProducts.push_back(AZStd::move(jobProduct));
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
         }
         else
         {
             // force load all dependencies into memory
-            for (auto& dependency : m_sourceDependencies)
+            for (auto& dependency : m_processEditorAssetDependencies)
             {
-                auto depAsset = AZ::Data::AssetManager::Instance().GetAsset(dependency.GetId(), dependency.GetType(), AZ::Data::AssetLoadBehavior::PreLoad);
+                auto depAsset = AZ::Data::AssetManager::Instance().GetAsset(dependency.m_assetId, dependency.m_assetType, AZ::Data::AssetLoadBehavior::PreLoad);
                 depAsset.BlockUntilLoadComplete();
             }
 
@@ -320,7 +325,23 @@ namespace ScriptCanvasBuilder
                 auto saveOutcome = SaveRuntimeAsset(input, input.runtimeDataOut);
                 if (saveOutcome.IsSuccess())
                 {
-                    response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
+                    // save function interface
+                    AzFramework::StringFunc::Path::StripExtension(fileNameOnly);
+                    ScriptCanvas::SubgraphInterfaceData functionInterface;
+                    functionInterface.m_name = fileNameOnly;
+                    functionInterface.m_interface = AZStd::move(input.interfaceOut);
+                    input.assetHandler = m_subgraphInterfaceHandler;
+
+                    AzFramework::StringFunc::Path::ReplaceExtension(input.runtimeScriptCanvasOutputPath, ScriptCanvas::SubgraphInterfaceAsset::GetFileExtension());
+                    auto saveInterfaceOutcome = SaveSubgraphInterface(input, functionInterface);
+                    if (saveInterfaceOutcome.IsSuccess())
+                    {
+                        response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
+                    }
+                    else
+                    {
+                        AZ_Error(s_scriptCanvasBuilder, false, saveInterfaceOutcome.GetError().data());
+                    }
                 }
                 else
                 {

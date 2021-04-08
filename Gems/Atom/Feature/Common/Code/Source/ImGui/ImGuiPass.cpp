@@ -46,12 +46,6 @@ namespace AZ
             static const char* ImguiShaderFilePath = "Shaders/imgui/imgui.azshader";
         }
 
-        namespace ShaderInputs
-        {
-            static const char* const FontImage("FontImage");
-            static const char* const ProjectionMatrix("m_projectionMatrix");
-        }
-
         class ImguiContextScope
         {
         public:
@@ -489,12 +483,6 @@ namespace AZ
                     AZ_Error(PassName, false, "Failed to create shader resource group");
                     return;
                 }
-
-                m_fontImageIndex = m_resourceGroup->FindShaderInputImageIndex(Name(ShaderInputs::FontImage));
-                AZ_Error(PassName, m_fontImageIndex.IsValid(), "Failed to find shader input image %s.", ShaderInputs::FontImage);
-
-                m_projectionMatrixIndex = m_resourceGroup->FindShaderInputConstantIndex(Name(ShaderInputs::ProjectionMatrix));
-                AZ_Error(PassName, m_projectionMatrixIndex.IsValid(), "Failed to find shader input constant %s.", ShaderInputs::ProjectionMatrix);
             }
 
             // Find or create font atlas
@@ -660,6 +648,11 @@ namespace AZ
 
             auto vertexBuffer = RPI::DynamicDrawInterface::Get()->GetDynamicBuffer(totalVtxBufferSize);
             auto indexBuffer = RPI::DynamicDrawInterface::Get()->GetDynamicBuffer(totalIdxBufferSize);
+
+            if (!vertexBuffer || !indexBuffer)
+            {
+                return 0;
+            }
 
             ImDrawIdx* indexBufferData = static_cast<ImDrawIdx*>(indexBuffer->GetBufferAddress());
             ImDrawVert* vertexBufferData = static_cast<ImDrawVert*>(vertexBuffer->GetBufferAddress());

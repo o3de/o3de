@@ -18,6 +18,7 @@
 #include <AzCore/UnitTest/TestTypes.h>
 
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
+#include <AzToolsFramework/UnitTest/ToolsTestApplication.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
 namespace UnitTest
@@ -46,7 +47,7 @@ namespace UnitTest
             m_serializeContext.reset();
         }
 
-        ToolsApplication m_app;
+        ToolsTestApplication m_app{ "ManipulatorViewTest" };
     };
 
     TEST_F(ManipulatorViewTest, ViewDirectionForCameraAlignedManipulatorFacesCameraInManipulatorSpace)

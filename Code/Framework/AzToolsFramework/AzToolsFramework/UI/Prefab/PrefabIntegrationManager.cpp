@@ -16,6 +16,7 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
@@ -24,6 +25,8 @@
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/ToolsComponents/EditorLayerComponentBus.h>
+#include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiInterface.h>
+#include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
 
 #include <QApplication>
 #include <QFileDialog>
@@ -36,6 +39,7 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
+        EditorEntityUiInterface* PrefabIntegrationManager::s_editorEntityUiInterface = nullptr;
         PrefabPublicInterface* PrefabIntegrationManager::s_prefabPublicInterface = nullptr;
         PrefabEditInterface* PrefabIntegrationManager::s_prefabEditInterface = nullptr;
         const AZStd::string PrefabIntegrationManager::s_prefabFileExtension = ".prefab";
@@ -54,8 +58,14 @@ namespace AzToolsFramework
 
         PrefabIntegrationManager::PrefabIntegrationManager()
         {
-            s_prefabPublicInterface = AZ::Interface<PrefabPublicInterface>::Get();
+            s_editorEntityUiInterface = AZ::Interface<EditorEntityUiInterface>::Get();
+            if (s_editorEntityUiInterface == nullptr)
+            {
+                AZ_Assert(false, "Prefab - could not get EditorEntityUiInterface on PrefabIntegrationManager construction.");
+                return;
+            }
 
+            s_prefabPublicInterface = AZ::Interface<PrefabPublicInterface>::Get();
             if (s_prefabPublicInterface == nullptr)
             {
                 AZ_Assert(false, "Prefab - could not get PrefabPublicInterface on PrefabIntegrationManager construction.");
@@ -63,7 +73,6 @@ namespace AzToolsFramework
             }
 
             s_prefabEditInterface = AZ::Interface<PrefabEditInterface>::Get();
-
             if (s_prefabEditInterface == nullptr)
             {
                 AZ_Assert(false, "Prefab - could not get PrefabEditInterface on PrefabIntegrationManager construction.");
@@ -71,12 +80,32 @@ namespace AzToolsFramework
             }
 
             EditorContextMenuBus::Handler::BusConnect();
-            AssetBrowser::AssetBrowserSourceDropBus::Handler::BusConnect(s_prefabFileExtension);
+            PrefabInstanceContainerNotificationBus::Handler::BusConnect();
+            AZ::Interface<PrefabIntegrationInterface>::Register(this);
+
+            bool prefabWipFeaturesEnabled = false;
+            AzFramework::ApplicationRequests::Bus::BroadcastResult(
+                prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
+
+            if (prefabWipFeaturesEnabled)
+            {
+                AssetBrowser::AssetBrowserSourceDropBus::Handler::BusConnect(s_prefabFileExtension);
+            }
         }
 
         PrefabIntegrationManager::~PrefabIntegrationManager()
         {
-            AssetBrowser::AssetBrowserSourceDropBus::Handler::BusDisconnect();
+            bool prefabWipFeaturesEnabled = false;
+            AzFramework::ApplicationRequests::Bus::BroadcastResult(
+                prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
+
+            if (prefabWipFeaturesEnabled)
+            {
+                AssetBrowser::AssetBrowserSourceDropBus::Handler::BusDisconnect();
+            }
+
+            AZ::Interface<PrefabIntegrationInterface>::Unregister(this);
+            PrefabInstanceContainerNotificationBus::Handler::BusDisconnect();
             EditorContextMenuBus::Handler::BusDisconnect();
         }
 
@@ -97,57 +126,65 @@ namespace AzToolsFramework
 
         void PrefabIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu) const
         {
-            // Create Prefab
+            bool prefabWipFeaturesEnabled = false;
+            AzFramework::ApplicationRequests::Bus::BroadcastResult(
+                prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
+
+            if (prefabWipFeaturesEnabled)
             {
-                AzToolsFramework::EntityIdList selectedEntities;
-                AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(selectedEntities, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
-                
-                if (!selectedEntities.empty())
+                // Create Prefab
                 {
-                    bool layerInSelection = false;
+                    AzToolsFramework::EntityIdList selectedEntities;
+                    AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+                        selectedEntities, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
 
-                    for (AZ::EntityId entityId : selectedEntities)
+                    if (!selectedEntities.empty())
                     {
-                        if (!layerInSelection)
-                        {
-                            AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
-                                layerInSelection,
-                                entityId,
-                                &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
+                        bool layerInSelection = false;
 
-                            if (layerInSelection)
+                        for (AZ::EntityId entityId : selectedEntities)
+                        {
+                            if (!layerInSelection)
                             {
-                                break;
+                                AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
+                                    layerInSelection, entityId,
+                                    &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
+
+                                if (layerInSelection)
+                                {
+                                    break;
+                                }
                             }
                         }
-                    }
 
-                    // Layers can't be in prefabs.
-                    if (!layerInSelection)
-                    {
-                        QAction* createAction = menu->addAction(QObject::tr("Create Prefab..."));
-                        createAction->setToolTip(QObject::tr("Creates a prefab out of the currently selected entities."));
+                        // Layers can't be in prefabs.
+                        if (!layerInSelection)
+                        {
+                            QAction* createAction = menu->addAction(QObject::tr("Create Prefab..."));
+                            createAction->setToolTip(QObject::tr("Creates a prefab out of the currently selected entities."));
 
-                        QObject::connect(createAction, &QAction::triggered, createAction, [this, selectedEntities] {
-                            ContextMenu_CreatePrefab(selectedEntities);
-                        });
+                            QObject::connect(createAction, &QAction::triggered, createAction, [this, selectedEntities] {
+                                ContextMenu_CreatePrefab(selectedEntities);
+                            });
+                        }
                     }
                 }
+
+                // Instantiate Prefab
+                {
+                    QAction* instantiateAction = menu->addAction(QObject::tr("Instantiate Prefab..."));
+                    instantiateAction->setToolTip(QObject::tr("Instantiates a prefab file in the scene."));
+
+                    QObject::connect(
+                        instantiateAction, &QAction::triggered, instantiateAction, [this] { ContextMenu_InstantiatePrefab(); });
+                }
+
+                menu->addSeparator();
             }
 
-            // Instantiate Prefab
-            {
-                QAction* instantiateAction = menu->addAction(QObject::tr("Instantiate Prefab..."));
-                instantiateAction->setToolTip(QObject::tr("Instantiates a prefab file in the scene."));
+            bool itemWasShown = false;
 
-                QObject::connect(instantiateAction, &QAction::triggered, instantiateAction, [this] {
-                    ContextMenu_InstantiatePrefab();
-                });
-            }
-
-            menu->addSeparator();
-
-            // Edit Prefab
+            // Edit/Save Prefab
             {
                 AzToolsFramework::EntityIdList selectedEntities;
                 AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
@@ -159,17 +196,47 @@ namespace AzToolsFramework
 
                     if (s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntity))
                     {
-                        QAction* editAction = menu->addAction(QObject::tr("Edit Prefab"));
-                        editAction->setToolTip(QObject::tr("Edit the prefab in focus mode."));
+                        // Edit Prefab
+                        if (prefabWipFeaturesEnabled)
+                        {
+                            bool beingEdited = s_prefabEditInterface->IsOwningPrefabBeingEdited(selectedEntity);
 
-                        QObject::connect(editAction, &QAction::triggered, editAction, [this, selectedEntity] {
-                            ContextMenu_EditPrefab(selectedEntity);
-                        });
+                            if (!beingEdited)
+                            {
+                                QAction* editAction = menu->addAction(QObject::tr("Edit Prefab"));
+                                editAction->setToolTip(QObject::tr("Edit the prefab in focus mode."));
+
+                                QObject::connect(editAction, &QAction::triggered, editAction, [this, selectedEntity] {
+                                    ContextMenu_EditPrefab(selectedEntity);
+                                });
+
+                                itemWasShown = true;
+                            }
+                        }
+
+                        // Save Prefab
+                        AZ::IO::Path prefabFilePath = s_prefabPublicInterface->GetOwningInstancePrefabPath(selectedEntity);
+                        auto dirtyOutcome = s_prefabPublicInterface->HasUnsavedChanges(prefabFilePath);
+
+                        if (dirtyOutcome.IsSuccess() && dirtyOutcome.GetValue() == true)
+                        {
+                            QAction* saveAction = menu->addAction(QObject::tr("Save Prefab to file"));
+                            saveAction->setToolTip(QObject::tr("Save the changes to the prefab to disk."));
+
+                            QObject::connect(saveAction, &QAction::triggered, saveAction, [this, selectedEntity] {
+                                ContextMenu_SavePrefab(selectedEntity);
+                            });
+
+                            itemWasShown = true;
+                        }
                     }
                 }
             }
 
-            menu->addSeparator();
+            if (itemWasShown)
+            {
+                menu->addSeparator();
+            }
         }
 
         void PrefabIntegrationManager::HandleSourceFileType(AZStd::string_view sourceFilePath, AZ::EntityId parentId, AZ::Vector3 position) const
@@ -289,7 +356,18 @@ namespace AzToolsFramework
         {
             s_prefabEditInterface->EditOwningPrefab(containerEntity);
         }
-        
+
+        void PrefabIntegrationManager::ContextMenu_SavePrefab(AZ::EntityId containerEntity)
+        {
+            auto prefabPath = s_prefabPublicInterface->GetOwningInstancePrefabPath(containerEntity);
+
+            auto savePrefabOutcome = s_prefabPublicInterface->SavePrefab(prefabPath);
+
+            if (!savePrefabOutcome.IsSuccess())
+            {
+                WarnUserOfError("Prefab Save Error", savePrefabOutcome.GetError());
+            }
+        }
 
         void PrefabIntegrationManager::GenerateSuggestedFilenameFromEntities(const EntityIdList& entityIds, AZStd::string& outName)
         {
@@ -890,6 +968,31 @@ namespace AzToolsFramework
                 selectedAndReferencedEntities.erase(missingEntityId);
             }
             return true;
+        }
+
+        void PrefabIntegrationManager::OnPrefabComponentActivate(AZ::EntityId entityId)
+        {
+            s_editorEntityUiInterface->RegisterEntity(entityId, m_prefabUiHandler.GetHandlerId());
+        }
+
+        void PrefabIntegrationManager::OnPrefabComponentDeactivate(AZ::EntityId entityId)
+        {
+            s_editorEntityUiInterface->UnregisterEntity(entityId);
+        }
+
+        AZ::EntityId PrefabIntegrationManager::CreateNewEntityAtPosition(const AZ::Vector3& position, AZ::EntityId parentId)
+        {
+            Prefab::PrefabPublicInterface* prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
+            auto createResult = prefabPublicInterface->CreateEntity(parentId, position);
+            if (createResult.IsSuccess())
+            {
+                return createResult.GetValue();
+            }
+            else
+            {
+                WarnUserOfError("Entity Creation Error", createResult.GetError());
+                return AZ::EntityId();
+            }
         }
     }
 }

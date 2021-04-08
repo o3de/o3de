@@ -84,12 +84,13 @@ namespace GraphCanvas
         void SignalClicked(int row);
         bool SignalDoubleClicked(int row);
 
-        void SetError(const AZStd::string& errorString);
         void ClearError();
 
-    protected:
-
         bool HasError() const;
+
+        void SetError(const AZStd::string& errorString);
+
+    protected:
 
         void PreOnChildAdded(GraphCanvasTreeItem* item) override;
         

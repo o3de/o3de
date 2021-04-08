@@ -171,7 +171,7 @@ namespace AzToolsFramework
             , public PropertyEditorEntityChangeNotificationBus::Handler
         {
         public:
-            EditorEntityModelEntry();
+            explicit EditorEntityModelEntry(bool isPrefabEnabled);
             ~EditorEntityModelEntry();
 
             // Separately connect to EditorEntityInfoRequestBus and refresh Entity
@@ -336,6 +336,7 @@ namespace AzToolsFramework
             bool m_visible = true;
             bool m_locked = false;
             bool m_connected = false;
+            bool m_isPrefabEnabled = false;
             AZStd::string m_name;
             AZStd::string m_sliceAssetName;
             AZStd::unordered_map<AZ::EntityId, AZ::u64> m_childIndexCache;
@@ -374,5 +375,6 @@ namespace AzToolsFramework
         AZ::EntityId m_postInstantiateBeforeEntity;
         AZ::EntityId m_postInstantiateSliceParent;
         bool m_gotInstantiateSliceDetails = false;
+        bool m_isPrefabEnabled = false;
     };
 }

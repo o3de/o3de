@@ -25,41 +25,37 @@ namespace AzToolsFramework
             : public AZ::JsonEntityIdSerializer::JsonEntityIdMapper
         {
         public:
+            enum class EntityIdGenerationApproach
+            {
+                Hashed, //! Creates an entity id that's stable between runs. (Default)
+                Random //! Entities get a new randomly generate id.
+            };
+
             AZ_RTTI(InstanceEntityIdMapper, "{EA76C3A7-1210-4DFB-A1C0-2F8E8B0B888E}", AZ::JsonEntityIdSerializer::JsonEntityIdMapper);
+
+            static inline constexpr uint64_t SeedKey = 5915587277; // Random prime number
 
             AZ::JsonSerializationResult::Result MapJsonToId(AZ::EntityId& outputValue, const rapidjson::Value& inputValue, AZ::JsonDeserializerContext& context) override;
             AZ::JsonSerializationResult::Result MapIdToJson(rapidjson::Value& outputValue, const AZ::EntityId& inputValue, AZ::JsonSerializerContext& context) override;
 
+            void SetEntityIdGenerationApproach(EntityIdGenerationApproach approach);
+
             void SetStoringInstance(const Instance& storingInstance);
             void SetLoadingInstance(Instance& loadingInstance);
 
-            /**
-            * Fixes up any unresolved entity references by assigning them to the id value of the entity it references.
-            * This is done by computing the absolute alias paths of all EntityIds and EntityId references
-            * then matching the references to the id values they reference.
-            * During a load instance and alias information is stored to build out these paths,
-            * but will be incomplete until the whole Load call is finished.
-            * Calling this after Load and the mapper have finished will give complete information
-            * on all entities and references discovered in the load
-            */
-            void FixUpUnresolvedEntityReferences();
+            static AZ::EntityId GenerateEntityIdForAliasPath(const AliasPathView& aliasPath, uint64_t seedKey = SeedKey);
 
         private:
-            using AliasPath = AZ::IO::Path;
-
             EntityAlias ResolveReferenceId(const AZ::EntityId& entityId);
-
-            void GetAbsoluteInstanceAliasPath(const Instance* instance, AliasPath& aliasPathResult);
 
             AliasPath m_instanceAbsolutePath;
 
             const Instance* m_storingInstance = nullptr;
             Instance* m_loadingInstance = nullptr;
 
-            static constexpr const char m_aliasPathSeperator = '/';
+            uint64_t m_randomSeed = SeedKey;
 
-            AZStd::unordered_map<Instance*, AZStd::vector<AZStd::pair<EntityAlias, AZ::EntityId>>> m_resolvedEntityAliases;
-            AZStd::unordered_map<Instance*, AZStd::vector<AZStd::pair<EntityAlias, AZ::EntityId*>>> m_unresolvedEntityAliases;
+            EntityIdGenerationApproach m_entityIdGenerationApproach { EntityIdGenerationApproach::Hashed };
         };
     }
 }

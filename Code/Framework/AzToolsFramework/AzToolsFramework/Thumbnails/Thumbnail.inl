@@ -16,21 +16,21 @@ namespace AzToolsFramework
 {
     namespace Thumbnailer
     {
-        template <typename ThumbnailType, typename HasherType, typename EqualKey>
-        ThumbnailCache<ThumbnailType, HasherType, EqualKey>::ThumbnailCache()
+        template <class ThumbnailType, class Hasher, class EqualKey>
+        ThumbnailCache<ThumbnailType, Hasher, EqualKey>::ThumbnailCache()
             : m_thumbnailSize(0)
         {
             BusConnect();
         }
 
-        template <typename ThumbnailType, typename HasherType, typename EqualKey>
-        ThumbnailCache<ThumbnailType, HasherType, EqualKey>::~ThumbnailCache()
+        template <class ThumbnailType, class Hasher, class EqualKey>
+        ThumbnailCache<ThumbnailType, Hasher, EqualKey>::~ThumbnailCache()
         {
             BusDisconnect();
         }
 
-        template <typename ThumbnailType, typename HasherType, typename EqualKey>
-        void ThumbnailCache<ThumbnailType, HasherType, EqualKey>::OnTick(float deltaTime, AZ::ScriptTimePoint /*time*/)
+        template <class ThumbnailType, class Hasher, class EqualKey>
+        void ThumbnailCache<ThumbnailType, Hasher, EqualKey>::OnTick(float deltaTime, AZ::ScriptTimePoint /*time*/)
         {
             for (auto& kvp : m_cache)
             {
@@ -38,9 +38,8 @@ namespace AzToolsFramework
             }
         }
 
-        template <typename ThumbnailType, typename HasherType, typename EqualKey>
-        bool ThumbnailCache<ThumbnailType, HasherType, EqualKey>::GetThumbnail(
-            SharedThumbnailKey key, SharedThumbnail& thumbnail)
+        template <class ThumbnailType, class Hasher, class EqualKey>
+        bool ThumbnailCache<ThumbnailType, Hasher, EqualKey>::GetThumbnail(SharedThumbnailKey key, SharedThumbnail& thumbnail)
         {
             auto it = m_cache.find(key);
             if (it != m_cache.end())
@@ -57,8 +56,8 @@ namespace AzToolsFramework
             return false;
         }
 
-        template <typename ThumbnailType, typename HasherType, typename EqualKey>
-        void ThumbnailCache<ThumbnailType, HasherType, EqualKey>::SetThumbnailSize(int thumbnailSize)
+        template <class ThumbnailType, class Hasher, class EqualKey>
+        void ThumbnailCache<ThumbnailType, Hasher, EqualKey>::SetThumbnailSize(int thumbnailSize)
         {
             m_thumbnailSize = thumbnailSize;
         }

@@ -58,7 +58,7 @@ namespace AZ
             childInputConnection.m_localSlot = "Output";
             childInputConnection.m_attachmentRef.m_pass = "Parent";
             childInputConnection.m_attachmentRef.m_attachment = "CubeMapOutput";
-            childRequest.m_inputConnections.emplace_back(childInputConnection);
+            childRequest.m_connections.emplace_back(childInputConnection);
 
             PassSystemInterface* passSystem = PassSystemInterface::Get();
             m_childPass = passSystem->CreatePassFromRequest(&childRequest);

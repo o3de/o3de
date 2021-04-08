@@ -461,7 +461,7 @@ namespace ScriptCanvas
                 return Data::Type::Invalid();
             }
 
-            SlotsOutcome Method::GetSlotsInExecutionThreadByTypeImpl(const Slot&, CombinedSlotType targetSlotType, const Slot*) const
+            ConstSlotsOutcome Method::GetSlotsInExecutionThreadByTypeImpl(const Slot&, CombinedSlotType targetSlotType, const Slot*) const
             {
                 return AZ::Success(GetSlotsByType(targetSlotType));
             }

@@ -52,11 +52,24 @@ namespace AZ
             //! Names of Passes that this Pass should execute after
             AZStd::vector<Name> m_executeAfterPasses;
 
-            //! Names of Passes that this Pass shoudl execute before
+            //! Names of Passes that this Pass should execute before
             AZStd::vector<Name> m_executeBeforePasses;
 
-            //! The attachments to be used as inputs to the instantiated Pass
-            PassConnectionList m_inputConnections;
+            //! Connections for the instantiated Pass
+            //! Most of the time these will be input connections that point to outputs of other passes
+            //! Cases where you would want to specify output connections are to connect to image or
+            //! buffer attachment overrides in the lists below
+            PassConnectionList m_connections;
+
+            //! List of descriptors for the image attachments the PassRequest will create
+            //! If the pass template already specifies an attachment with the same name,
+            //! the PassRequest will override that attachment
+            PassImageAttachmentDescList m_imageAttachmentOverrides;
+
+            //! List of descriptors for the buffer attachments the PassRequest will create
+            //! If the pass template already specifies an attachment with the same name,
+            //! the PassRequest will override that attachment
+            PassBufferAttachmentDescList m_bufferAttachmentOverrides;
 
             //! Optional data to be used during pass initialization
             AZStd::shared_ptr<PassData> m_passData = nullptr;

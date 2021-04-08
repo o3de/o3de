@@ -3,14 +3,13 @@
     "Version": 1,
     "ClassName": "AZ::Render::LightingPreset",
     "ClassData": {
-        "autoSelect": false,
         "displayName": "Blouberg Sunrise 1",
-        "skyboxImageAsset": {
+        "iblDiffuseImageAsset": {
             "assetId": {
                 "guid": "{10853039-DC8A-558A-B27E-4433A6386731}",
-                "subId": 1000
+                "subId": 3000
             },
-            "assetHint": "lightingpresets/lowcontrast/blouberg_sunrise_1_4k_iblskyboxcm.exr.streamingimage"
+            "assetHint": "lightingpresets/lowcontrast/blouberg_sunrise_1_4k_iblskyboxcm_ibldiffuse.exr.streamingimage"
         },
         "iblSpecularImageAsset": {
             "assetId": {
@@ -19,15 +18,21 @@
             },
             "assetHint": "lightingpresets/lowcontrast/blouberg_sunrise_1_4k_iblskyboxcm_iblspecular.exr.streamingimage"
         },
-        "iblDiffuseImageAsset": {
+        "skyboxImageAsset": {
+            "assetId": {
+                "guid": "{10853039-DC8A-558A-B27E-4433A6386731}",
+                "subId": 1000
+            },
+            "assetHint": "lightingpresets/lowcontrast/blouberg_sunrise_1_4k_iblskyboxcm.exr.streamingimage"
+        },
+        "alternateSkyboxImageAsset": {
             "assetId": {
                 "guid": "{10853039-DC8A-558A-B27E-4433A6386731}",
                 "subId": 3000
             },
             "assetHint": "lightingpresets/lowcontrast/blouberg_sunrise_1_4k_iblskyboxcm_ibldiffuse.exr.streamingimage"
         },
-        "iblExposure": 0.0,
-        "skyboxExposure": 0.0,
+        "shadowCatcherOpacity": 0.15000000596046449,
         "lights": [
             {
                 "direction": [
@@ -35,20 +40,10 @@
                     -0.699999988079071,
                     -0.25
                 ],
-                "color": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "intensity": 1.0,
                 "shadowCascadeCount": 4,
                 "shadowRatioLogarithmUniform": 1.0,
-                "shadowFarClipDistance": 20.0,
-                "shadowmapSize": "Size2048",
-                "enableShadowDebugColoring": false
+                "shadowmapSize": "Size2048"
             }
-        ],
-        "shadowCatcherOpacity": 0.15000000596046449
+        ]
     }
 }

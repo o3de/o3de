@@ -139,6 +139,7 @@ namespace AZ
             MeshHandle CloneMesh(const MeshHandle& meshHandle) override;
 
             Data::Instance<RPI::Model> GetModel(const MeshHandle& meshHandle) const override;
+            void SetMaterialAssignmentMap(const MeshHandle& meshHandle, const Data::Instance<RPI::Material>& material) override;
             void SetMaterialAssignmentMap(const MeshHandle& meshHandle, const MaterialAssignmentMap& materials) override;
             const MaterialAssignmentMap& GetMaterialAssignmentMap(const MeshHandle& meshHandle) const override;
             void ConnectModelChangeEventHandler(const MeshHandle& meshHandle, ModelChangedEvent::Handler& handler) override;

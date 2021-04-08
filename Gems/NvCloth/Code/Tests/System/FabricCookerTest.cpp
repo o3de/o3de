@@ -30,8 +30,6 @@ namespace NvCloth
             const AZStd::vector<SimIndexType>& indices,
             const AZ::Vector3& fabricGravity,
             bool useGeodesicTether);
-        template <typename T>
-        void CopyNvRange(const nv::cloth::Range<const T>& nvRange, AZStd::vector<T>& azVector);
         void CopyCookedData(FabricCookedData::InternalCookedData& azCookedData, const nv::cloth::CookedData& nvCookedData);
         AZStd::optional<FabricCookedData> Cook(
             const AZStd::vector<SimParticleFormat>& particles,
@@ -121,41 +119,6 @@ namespace UnitTest
         EXPECT_TRUE(fabricId1.IsValid());
         EXPECT_TRUE(fabricId2.IsValid());
         EXPECT_NE(fabricId1, fabricId2);
-    }
-
-    TEST(NvClothSystem, FactoryCooker_CopyNvRangeEmpty_CopiedDataIsEmpty)
-    {
-        const nv::cloth::Range<const int> nvRange;
-
-        AZStd::vector<int> azVector;
-        NvCloth::Internal::CopyNvRange(nvRange, azVector);
-
-        EXPECT_TRUE(azVector.empty());
-        ExpectEq(azVector, nvRange);
-    }
-
-    TEST(NvClothSystem, FactoryCooker_CopyNvRangeU32Data_CopiedDataMatchesSource)
-    {
-        const AZ::u32 data[] = { 0, 2, 45, 64, 125 };
-        const size_t numDataElements = sizeof(data) / sizeof(data[0]);
-        const nv::cloth::Range<const AZ::u32> nvRange(data, data + numDataElements);
-
-        AZStd::vector<AZ::u32> azVector;
-        NvCloth::Internal::CopyNvRange(nvRange, azVector);
-
-        ExpectEq(azVector, nvRange);
-    }
-
-    TEST(NvClothSystem, FactoryCooker_CopyNvRangeFloatData_CopiedDataMatchesSource)
-    {
-        const float data[] = { 0.0f, 1.5f, -3.4f, 3.1f, 400.0f };
-        const size_t numDataElements = sizeof(data) / sizeof(data[0]);
-        const nv::cloth::Range<const float> nvRange(data, data + numDataElements);
-
-        AZStd::vector<float> azVector;
-        NvCloth::Internal::CopyNvRange(nvRange, azVector);
-
-        ExpectEq(azVector, nvRange);
     }
 
     TEST(NvClothSystem, FactoryCooker_CopyInternalCookedDataEmpty_CopiedDataIsEmpty)

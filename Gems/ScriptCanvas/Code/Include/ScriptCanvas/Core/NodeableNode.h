@@ -60,11 +60,7 @@ namespace ScriptCanvas
 
             const SlotExecution::Map* GetSlotExecutionMap() const override;
 
-            bool HandlerStartsConnected() const override;
-
-            bool IsNodeableNode() const override;
-
-            bool IsSupportedByNewBackend() const override { return true; }
+            bool IsNodeableNode() const override;            
 
             Nodeable* ReleaseNodeable();
 
@@ -81,7 +77,7 @@ namespace ScriptCanvas
 
             AZ::Outcome<const AZ::BehaviorClass*, AZStd::string> GetBehaviorContextClass() const;
 
-            SlotsOutcome GetBehaviorContextOutName(const Slot& inSlot) const;
+            ConstSlotsOutcome GetBehaviorContextOutName(const Slot& inSlot) const;
 
             virtual void RegisterExecutionMap(const AZ::BehaviorContext&) {}          
 

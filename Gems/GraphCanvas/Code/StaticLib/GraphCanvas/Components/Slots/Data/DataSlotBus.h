@@ -59,6 +59,7 @@ namespace GraphCanvas
         bool                    m_canConvertTypes = true;
         DataSlotType            m_dataSlotType = DataSlotType::Value;
         DataValueType           m_dataValueType = DataValueType::Primitive;
+        bool                    m_isUserAdded = false;
 
         AZ::Uuid                m_typeId;
         AZStd::vector<AZ::Uuid> m_containerTypeIds;
@@ -82,6 +83,8 @@ namespace GraphCanvas
 
         virtual AZ::Uuid GetDataTypeId() const = 0;
         virtual void SetDataTypeId(AZ::Uuid typeId) = 0;
+
+        virtual bool IsUserSlot() const = 0;
 
         virtual const Styling::StyleHelper* GetDataColorPalette() const = 0;
 

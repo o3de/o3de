@@ -1792,7 +1792,7 @@ public:
     void SetWasUnload(bool bSet) { m_bWasUnloaded = bSet; }
     const bool IsPartiallyLoaded() const { return m_nMinMipVidUploaded != 0; }
     const bool IsUnloaded(void) const { return m_bWasUnloaded; }
-    void SetKeepSystemCopy(const bool bKeepSystemCopy)
+    void SetKeepSystemCopy(bool bKeepSystemCopy)
     {
         if (bKeepSystemCopy)
         {

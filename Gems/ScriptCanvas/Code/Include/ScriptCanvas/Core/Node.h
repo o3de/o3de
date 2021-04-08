@@ -260,7 +260,8 @@ namespace ScriptCanvas
         DataType* m_dataType;
     };
 
-    using SlotsOutcome = AZ::Outcome<AZStd::vector<const Slot*>, AZStd::string>;
+    using ConstSlotsOutcome = AZ::Outcome<AZStd::vector<const Slot*>, AZStd::string>;
+    using SlotsOutcome = AZ::Outcome<AZStd::vector<Slot*>, AZStd::string>;
 
     using EndpointResolved = AZStd::pair<const Node*, const Slot*>;
     using EndpointsResolved = AZStd::vector<EndpointResolved>;
@@ -531,8 +532,10 @@ namespace ScriptCanvas
         AZStd::string GetSlotName(const SlotId& slotId) const;
 
         //! returns a list of all slots, regardless of type
+        SlotList& GetSlots() { return m_slots; }
         const SlotList& GetSlots() const { return m_slots; }
-        SlotsOutcome GetSlots(const AZStd::vector<SlotId>& slotIds) const;
+        ConstSlotsOutcome GetSlots(const AZStd::vector<SlotId>& slotIds) const;
+        SlotsOutcome GetSlots(const AZStd::vector<SlotId>& slotIds);
 
         AZStd::vector< Slot* > GetSlotsWithDisplayGroup(AZStd::string_view displayGroup) const;
         AZStd::vector< Slot* > GetSlotsWithDynamicGroup(const AZ::Crc32& dynamicGroup) const;
@@ -557,6 +560,7 @@ namespace ScriptCanvas
         Slot* GetSlot(const SlotId& slotId) const override;
         size_t GetSlotIndex(const SlotId& slotId) const override;
         AZStd::vector<const Slot*> GetAllSlots() const override;
+        AZStd::vector<Slot*> ModAllSlots() override;
         SlotId GetSlotId(AZStd::string_view slotName) const override;
         SlotId FindSlotIdForDescriptor(AZStd::string_view slotName, const SlotDescriptor& descriptor) const override;
 
@@ -675,8 +679,6 @@ namespace ScriptCanvas
         //////////////////////////////////////////////////////////////////////////
         // Translation
 
-        virtual bool IsSupportedByNewBackend() const { return false; }
-
         // \todo a hack that will disappear after conversions are properly done
         virtual bool ConvertsInputToStrings() const;
 
@@ -696,7 +698,7 @@ namespace ScriptCanvas
         virtual AZ::Outcome<Grammar::LexicalScope, void> GetFunctionCallLexicalScope(const Slot* /*slot*/) const;
 
         // override if necessary, usually only when the node's execution topology dramatically alters at edit-time in a way that is not generally parseable 
-        SlotsOutcome GetSlotsInExecutionThreadByType(const Slot& executionSlot, CombinedSlotType targetSlotType, const Slot* executionChildSlot = nullptr) const;
+        ConstSlotsOutcome GetSlotsInExecutionThreadByType(const Slot& executionSlot, CombinedSlotType targetSlotType, const Slot* executionChildSlot = nullptr) const;
 
         // override if necessary, only used by NodeableNodes which can hide branched outs and rename them later
         virtual AZ::Outcome<AZStd::string> GetInternalOutKey(const Slot& slot) const;
@@ -757,7 +759,7 @@ namespace ScriptCanvas
 
         virtual AZStd::vector<const Slot*> GetOnVariableHandlingExecutionSlots() const;
 
-        virtual bool HandlerStartsConnected() const;
+        virtual bool IsAutoConnected() const;
 
         virtual bool IsEBusAddressed() const;
 
@@ -784,19 +786,19 @@ namespace ScriptCanvas
         virtual ExecutionNameMap GetExecutionNameMap() const { return ExecutionNameMap(); }
 
         // override if necessary, usually only when the node's execution topology dramatically alters at edit-time in a way that is not generally parseable 
-        virtual SlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot& executionSlot, CombinedSlotType targetSlotType, const Slot* executionChildSlot) const;
+        virtual ConstSlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot& executionSlot, CombinedSlotType targetSlotType, const Slot* executionChildSlot) const;
 
-        SlotsOutcome GetSlotsFromMap(const SlotExecution::Map& map, const Slot& executionSlot, CombinedSlotType targetSlotType, const Slot* executionChildSlot) const;
+        ConstSlotsOutcome GetSlotsFromMap(const SlotExecution::Map& map, const Slot& executionSlot, CombinedSlotType targetSlotType, const Slot* executionChildSlot) const;
 
-        SlotsOutcome GetDataInSlotsByExecutionIn(const SlotExecution::Map& map, const Slot& executionInSlot) const;
+        ConstSlotsOutcome GetDataInSlotsByExecutionIn(const SlotExecution::Map& map, const Slot& executionInSlot) const;
 
-        SlotsOutcome GetDataInSlotsByExecutionOut(const SlotExecution::Map& map, const Slot& executionOutSlot) const;
+        ConstSlotsOutcome GetDataInSlotsByExecutionOut(const SlotExecution::Map& map, const Slot& executionOutSlot) const;
 
-        SlotsOutcome GetDataOutSlotsByExecutionIn(const SlotExecution::Map& map, const Slot& executionInSlot) const;
+        ConstSlotsOutcome GetDataOutSlotsByExecutionIn(const SlotExecution::Map& map, const Slot& executionInSlot) const;
 
-        SlotsOutcome GetDataOutSlotsByExecutionOut(const SlotExecution::Map& map, const Slot& executionOutSlot) const;
+        ConstSlotsOutcome GetDataOutSlotsByExecutionOut(const SlotExecution::Map& map, const Slot& executionOutSlot) const;
 
-        SlotsOutcome GetExecutionOutSlotsByExecutionIn(const SlotExecution::Map& map, const Slot& executionInSlot) const;
+        ConstSlotsOutcome GetExecutionOutSlotsByExecutionIn(const SlotExecution::Map& map, const Slot& executionInSlot) const;
 
         AZ::Outcome<AZStd::string> GetInternalOutKey(const SlotExecution::Map& map, const Slot& slot) const;
 

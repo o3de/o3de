@@ -35,7 +35,7 @@ namespace Benchmark
 
             for (int templateCounter = 0; templateCounter < numTemplates; ++templateCounter)
             {
-                m_prefabLoaderInterface->LoadTemplate(m_paths[templateCounter]);
+                m_prefabLoaderInterface->LoadTemplateFromFile(m_paths[templateCounter]);
             }
 
             state.PauseTiming();

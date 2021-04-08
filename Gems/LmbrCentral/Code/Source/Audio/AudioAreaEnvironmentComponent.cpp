@@ -18,8 +18,9 @@
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzFramework/Physics/WorldBody.h>
-#include <AzFramework/Physics/WorldEventhandler.h>
+#include <AzFramework/Physics/PhysicsSystem.h>
+#include <AzFramework/Physics/Collision/CollisionEvents.h>
+#include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 
 #include <LmbrCentral/Audio/AudioProxyComponentBus.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
@@ -28,6 +29,21 @@
 
 namespace LmbrCentral
 {
+    AudioAreaEnvironmentComponent::AudioAreaEnvironmentComponent()
+        : m_onTriggerEnterHandler([this]([[maybe_unused]] AzPhysics::SimulatedBodyHandle bodyHandle,
+            const  AzPhysics::TriggerEvent& triggerEvent)
+            {
+                OnTriggerEnter(triggerEvent);
+            })
+        , m_onTriggerExitHandler([this]([[maybe_unused]] AzPhysics::SimulatedBodyHandle bodyHandle,
+            const  AzPhysics::TriggerEvent& triggerEvent)
+            {
+                OnTriggerExit(triggerEvent);
+            })
+    {
+
+    }
+
     //=========================================================================
     void AudioAreaEnvironmentComponent::Reflect(AZ::ReflectContext* context)
     {
@@ -53,14 +69,25 @@ namespace LmbrCentral
 
         if (m_broadPhaseTriggerArea.IsValid())
         {
-            Physics::TriggerNotificationBus::Handler::BusConnect(m_broadPhaseTriggerArea);
+            if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
+            {
+                AZStd::pair<AzPhysics::SceneHandle, AzPhysics::SimulatedBodyHandle> foundBody = physicsSystem->FindAttachedBodyHandleFromEntityId(m_broadPhaseTriggerArea);
+                if (foundBody.first != AzPhysics::InvalidSceneHandle)
+                {
+                    AzPhysics::SimulatedBodyEvents::RegisterOnTriggerEnterHandler(
+                        foundBody.first, foundBody.second, m_onTriggerEnterHandler);
+                    AzPhysics::SimulatedBodyEvents::RegisterOnTriggerExitHandler(
+                        foundBody.first, foundBody.second, m_onTriggerExitHandler);
+                }
+            }
         }
     }
 
     //=========================================================================
     void AudioAreaEnvironmentComponent::Deactivate()
     {
-        Physics::TriggerNotificationBus::Handler::BusDisconnect();
+        m_onTriggerEnterHandler.Disconnect();
+        m_onTriggerExitHandler.Disconnect();
     }
 
     //=========================================================================
@@ -95,14 +122,14 @@ namespace LmbrCentral
 
 
     //=========================================================================
-    void AudioAreaEnvironmentComponent::OnTriggerEnter(const Physics::TriggerEvent& triggerEvent)
+    void AudioAreaEnvironmentComponent::OnTriggerEnter(const AzPhysics::TriggerEvent& triggerEvent)
     {
         AZ::EntityId enteringEntityId = triggerEvent.m_otherBody->GetEntityId();
         AZ::TransformNotificationBus::MultiHandler::BusConnect(enteringEntityId);
     }
 
     //=========================================================================
-    void AudioAreaEnvironmentComponent::OnTriggerExit(const Physics::TriggerEvent& triggerEvent)
+    void AudioAreaEnvironmentComponent::OnTriggerExit(const AzPhysics::TriggerEvent& triggerEvent)
     {
         AZ::EntityId exitingEntityId = triggerEvent.m_otherBody->GetEntityId();
         AZ::TransformNotificationBus::MultiHandler::BusDisconnect(exitingEntityId);

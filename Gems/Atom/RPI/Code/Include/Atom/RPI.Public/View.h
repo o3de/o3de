@@ -139,17 +139,16 @@ namespace AZ
             PassesByDrawList* m_passesByDrawList = nullptr;
 
             // Indies of constants in default view srg
-            RHI::ShaderInputConstantIndex m_viewProjectionMatrixConstantIndex;
-            RHI::ShaderInputConstantIndex m_worldPositionConstantIndex;
-            RHI::ShaderInputConstantIndex m_viewMatrixConstantIndex;
-            RHI::ShaderInputConstantIndex m_projectionMatrixConstantIndex;
-            RHI::ShaderInputConstantIndex m_viewMatrixInverseConstantIndex;
-            RHI::ShaderInputConstantIndex m_projectionMatrixInverseConstantIndex;
-            RHI::ShaderInputConstantIndex m_zConstantsConstantIndex;
-            RHI::ShaderInputConstantIndex m_clipToWorldMatrixConstantIndex;
-            RHI::ShaderInputConstantIndex m_worldToClipPrevMatrixConstantIndex;
-            RHI::ShaderInputConstantIndex m_unprojectionConstantsIndex;
-
+            RHI::ShaderInputNameIndex m_viewProjectionMatrixConstantIndex = "m_viewProjectionMatrix";
+            RHI::ShaderInputNameIndex m_worldPositionConstantIndex = "m_worldPosition";
+            RHI::ShaderInputNameIndex m_viewMatrixConstantIndex = "m_viewMatrix";
+            RHI::ShaderInputNameIndex m_viewMatrixInverseConstantIndex = "m_viewMatrixInverse";
+            RHI::ShaderInputNameIndex m_projectionMatrixConstantIndex = "m_projectionMatrix";
+            RHI::ShaderInputNameIndex m_projectionMatrixInverseConstantIndex = "m_projectionMatrixInverse";
+            RHI::ShaderInputNameIndex m_clipToWorldMatrixConstantIndex = "m_viewProjectionInverseMatrix";
+            RHI::ShaderInputNameIndex m_worldToClipPrevMatrixConstantIndex = "m_viewProjectionPrevMatrix";
+            RHI::ShaderInputNameIndex m_zConstantsConstantIndex = "m_nearZ_farZ_farZTimesNearZ_farZMinusNearZ";
+            RHI::ShaderInputNameIndex m_unprojectionConstantsIndex = "m_unprojectionConstants";
 
             // The context containing draw lists associated with the view.
             RHI::DrawListContext m_drawListContext;

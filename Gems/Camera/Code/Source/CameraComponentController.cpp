@@ -28,7 +28,7 @@ namespace Camera
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<CameraComponentConfig, AZ::ComponentConfig>()
-                ->Version(1)
+                ->Version(2)
                 ->Field("Field of View", &CameraComponentConfig::m_fov)
                 ->Field("Near Clip Plane Distance", &CameraComponentConfig::m_nearClipDistance)
                 ->Field("Far Clip Plane Distance", &CameraComponentConfig::m_farClipDistance)
@@ -36,6 +36,7 @@ namespace Camera
                 ->Field("FrustumWidth", &CameraComponentConfig::m_frustumWidth)
                 ->Field("FrustumHeight", &CameraComponentConfig::m_frustumHeight)
                 ->Field("EditorEntityId", &CameraComponentConfig::m_editorEntityId)
+                ->Field("MakeActiveViewOnActivation", &CameraComponentConfig::m_makeActiveViewOnActivation)
             ;
 
             if (auto editContext = serializeContext->GetEditContext())
@@ -43,6 +44,8 @@ namespace Camera
                 editContext->Class<CameraComponentConfig>("CameraComponentConfig", "Configuration for a CameraComponent or EditorCameraComponent")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &CameraComponentConfig::m_makeActiveViewOnActivation,
+                            "Make active camera on activation?", "If true, this camera will become the active render camera when it activates")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CameraComponentConfig::m_fov, "Field of view", "Vertical field of view in degrees")
                         ->Attribute(AZ::Edit::Attributes::Min, MIN_FOV)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " degrees")
@@ -183,7 +186,6 @@ namespace Camera
                 AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, m_entityId);
                 m_view->LinkTo(entity);
             }
-            MakeActiveView();
         }
 
         auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
@@ -221,6 +223,11 @@ namespace Camera
         AZ::TransformNotificationBus::Handler::BusConnect(m_entityId);
         CameraBus::Handler::BusConnect();
         CameraNotificationBus::Broadcast(&CameraNotificationBus::Events::OnCameraAdded, m_entityId);
+
+        if (m_config.m_makeActiveViewOnActivation)
+        {
+            MakeActiveView();
+        }
     }
 
     void CameraComponentController::Deactivate()
@@ -249,6 +256,8 @@ namespace Camera
         {
             AZ::RPI::ViewProviderBus::Handler::BusDisconnect(m_entityId);
         }
+
+        DeactivateAtomView();
     }
 
     void CameraComponentController::SetConfiguration(const CameraComponentConfig& config)
@@ -334,9 +343,24 @@ namespace Camera
 
     void CameraComponentController::MakeActiveView()
     {
-        m_prevViewId = AZ::u32(m_viewSystem->GetActiveViewId());
-        m_viewSystem->SetActiveView(m_view);
+        // Set Legacy Cry view, if it exists
+        if (m_viewSystem)
+        {
+            m_prevViewId = AZ::u32(m_viewSystem->GetActiveViewId());
+            m_viewSystem->SetActiveView(m_view);
+        }
+
+        // Set Atom camera, if it exists
+        if (m_atomCamera)
+        {
+            ActivateAtomView();
+        }
+
+        // Update camera parameters
         UpdateCamera();
+
+        // Notify of active view changed
+        CameraNotificationBus::Broadcast(&CameraNotificationBus::Events::OnActiveViewChanged, m_entityId);
     }
 
     void CameraComponentController::OnTransformChanged([[maybe_unused]] const AZ::Transform& local, const AZ::Transform& world)

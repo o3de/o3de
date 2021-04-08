@@ -1501,7 +1501,7 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
             if (maxFPS == 0 && vSync == 0)
             {
                 ILevelSystem* pLvlSys = GetILevelSystem();
-                const bool inLevel = pLvlSys && pLvlSys->GetCurrentLevel() != 0;
+                const bool inLevel = pLvlSys && pLvlSys->IsLevelLoaded();
                 maxFPS = !inLevel || IsPaused() ? 60 : 0;
             }
 
@@ -1789,23 +1789,6 @@ bool CSystem::UpdatePostTickBus(int updateFlags, int nPauseMode)
         if (GetIViewSystem())
         {
             GetIViewSystem()->Update(min(gEnv->pTimer->GetFrameTime(), 0.1f));
-        }
-
-        if (gEnv->pLyShine)
-        {
-            // Tell the UI system the size of the viewport we are rendering to - this drives the
-            // canvas size for full screen UI canvases. It needs to be set before either pLyShine->Update or
-            // pLyShine->Render are called. It must match the viewport size that the input system is using.
-            AZ::Vector2 viewportSize;
-            viewportSize.SetX(static_cast<float>(gEnv->pRenderer->GetOverlayWidth()));
-            viewportSize.SetY(static_cast<float>(gEnv->pRenderer->GetOverlayHeight()));
-            gEnv->pLyShine->SetViewportSize(viewportSize);
-
-            bool isUiPaused = gEnv->pTimer->IsTimerPaused(ITimer::ETIMER_UI);
-            if (!isUiPaused)
-            {
-                gEnv->pLyShine->Update(gEnv->pTimer->GetFrameTime(ITimer::ETIMER_UI));
-            }
         }
 
         // Begin occlusion job after setting the correct camera.

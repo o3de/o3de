@@ -13,9 +13,11 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceEntityScrubber.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceSerializer.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityIdMapper.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
+#include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 
 namespace AzToolsFramework
@@ -46,8 +48,8 @@ namespace AzToolsFramework
             JSR::ResultCode result(JSR::Tasks::WriteValue);
             {
                 AZ::ScopedContextPath subPathSource(context, "m_templateSourcePath");
-                const AZStd::string* sourcePath = &instance->GetTemplateSourcePath();
-                const AZStd::string* defaultSourcePath = defaultInstance ? &defaultInstance->GetTemplateSourcePath() : nullptr;
+                const AZStd::string* sourcePath = &(instance->GetTemplateSourcePath().Native());
+                const AZStd::string* defaultSourcePath = defaultInstance ? &defaultInstance->GetTemplateSourcePath().Native() : nullptr;
 
                 result = ContinueStoringToJsonObjectField(outputValue, "Source", sourcePath, defaultSourcePath, azrtti_typeid<AZStd::string>(), context);
             }
@@ -64,7 +66,6 @@ namespace AzToolsFramework
                 AZ::ScopedContextPath subPathEntities(context, "m_entities");
                 const Instance::AliasToEntityMap* entities = &instance->m_entities;
                 const Instance::AliasToEntityMap* defaultEntities = defaultInstance ? &defaultInstance->m_entities : nullptr;
-
                 JSR::ResultCode resultEntities =
                     ContinueStoringToJsonObjectField(outputValue, "Entities",
                         entities, defaultEntities, azrtti_typeid<Instance::AliasToEntityMap>(), context);
@@ -116,6 +117,15 @@ namespace AzToolsFramework
                     AZ_Assert(prefabSystemComponentInterface,
                         "PrefabSystemComponentInterface could not be found. It is required to load Prefab Instances");
 
+                    PrefabLoaderInterface* loaderInterface = AZ::Interface<PrefabLoaderInterface>::Get();
+
+                    AZ_Assert(
+                        loaderInterface,
+                        "PrefabLoaderInterface could not be found. It is required to load Prefab Instances");
+
+                    // Make sure we have a relative path
+                    instance->m_templateSourcePath = loaderInterface->GetRelativePathToProject(instance->m_templateSourcePath);
+
                     TemplateId templateId = prefabSystemComponentInterface->GetTemplateIdFromFilePath(instance->GetTemplateSourcePath());
 
                     instance->SetTemplateId(templateId);
@@ -125,25 +135,35 @@ namespace AzToolsFramework
             }
 
             {
-                // An already filled instance should be cleared if inputValue's Instances member is empty
-                // The Json serializer will not do this by default as it will not attempt to load a missing member
-                if (!instance->m_nestedInstances.empty() && !inputValue.HasMember("Instances"))
-                {
-                    instance->m_nestedInstances.clear();
-                }
+                instance->m_nestedInstances.clear();
 
-                JSR::ResultCode instanceResult =
-                    ContinueLoadingFromJsonObjectField(&instance->m_nestedInstances, azrtti_typeid<Instance::AliasToInstanceMap>(), inputValue, "Instances", context);
-
-                if (instanceResult.GetProcessing() != JSR::Processing::Halted)
+                // Load nested instances iteratively
+                // We want to first create the nested instance object and assign its alias and parent pointer
+                // These values are needed for the idmapper to properly resolve alias paths
+                auto instancesMemberIter = inputValue.FindMember("Instances");
+                if (instancesMemberIter != inputValue.MemberEnd() && instancesMemberIter->value.IsObject())
                 {
-                    for (auto& nestedInstance : instance->m_nestedInstances)
+                    for (auto& instanceIter : instancesMemberIter->value.GetObject())
                     {
-                        nestedInstance.second->m_parent = instance;
-                        nestedInstance.second->m_alias = nestedInstance.first;
+                        const rapidjson::Value& instanceAliasValue = instanceIter.name;
+
+                        InstanceAlias instanceAlias(instanceAliasValue.GetString(),
+                            instanceAliasValue.GetStringLength());
+
+                        AZStd::unique_ptr<Instance> nestedInstance = AZStd::make_unique<Instance>();
+
+                        nestedInstance->m_alias = instanceAlias;
+                        nestedInstance->m_parent = instance;
+
+                        result.Combine(
+                            ContinueLoading(&nestedInstance, azrtti_typeid<decltype(nestedInstance)>(),
+                            instanceIter.value, context));
+
+                        instance->m_nestedInstances.emplace(
+                            instanceAlias,
+                            AZStd::move(nestedInstance));
                     }
                 }
-                result.Combine(instanceResult);
             }
 
             // An already filled instance should be cleared if inputValue's Entities member is empty
@@ -153,6 +173,7 @@ namespace AzToolsFramework
             if (instance->m_containerEntity)
             {
                 instance->m_instanceEntityMapper->UnregisterEntity(instance->m_containerEntity->GetId());
+                instance->m_containerEntity.reset();
             }
 
             if (idMapper && *idMapper)
@@ -168,7 +189,10 @@ namespace AzToolsFramework
             }
 
             {
-                result.Combine(ContinueLoadingFromJsonObjectField(&instance->m_entities, azrtti_typeid<Instance::AliasToEntityMap>(), inputValue, "Entities", context));
+                JSR::ResultCode entitiesResult = ContinueLoadingFromJsonObjectField(
+                    &instance->m_entities, azrtti_typeid<Instance::AliasToEntityMap>(), inputValue, "Entities", context);
+                AddEntitiesToScrub(instance, context);
+                result.Combine(entitiesResult);
             }
 
             {
@@ -179,5 +203,29 @@ namespace AzToolsFramework
                 result.GetProcessing() == JSR::Processing::Completed ? "Succesfully loaded instance information for prefab." :
                 "Failed to load instance information for prefab");
         }
-    }
+
+        void JsonInstanceSerializer::AddEntitiesToScrub(const Instance* instance, AZ::JsonDeserializerContext& jsonDeserializerContext)
+        {
+            EntityList entitiesInInstance;
+            entitiesInInstance.reserve(instance->m_entities.size() + 1);
+
+            if (instance->m_containerEntity->GetId().IsValid())
+            {
+                entitiesInInstance.emplace_back(instance->m_containerEntity.get());
+            }
+
+            for (const auto& [entityAlias, entity] : instance->m_entities)
+            {
+                entitiesInInstance.emplace_back(entity.get());
+            }
+
+            InstanceEntityScrubber** instanceEntityScrubber = jsonDeserializerContext.GetMetadata().Find<InstanceEntityScrubber*>();
+            if (instanceEntityScrubber && (*instanceEntityScrubber))
+
+            {
+                (*instanceEntityScrubber)->AddEntitiesToScrub(entitiesInInstance);
+            }
+        }
+
+    } // namespace Prefab
 }

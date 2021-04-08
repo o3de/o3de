@@ -181,15 +181,15 @@ namespace EditorInternal
             AzFramework::StringFunc::Path::Join(GetGameFolder().c_str(), levelPath.c_str(), levelPath);
 
             // make sure the level path includes the cry extension, if needed
-            if (!levelFileName.ends_with(OldFileExtension) && !levelFileName.ends_with(DefaultFileExtension))
+            if (!levelFileName.ends_with(GetOldCryLevelExtension()) && !levelFileName.ends_with(GetLevelExtension()))
             {
                 AZStd::size_t levelPathLength = levelPath.length();
-                levelPath += OldFileExtension;
+                levelPath += GetOldCryLevelExtension();
 
                 // Check if there is a .cry file, otherwise assume it is a new .ly file
                 if (!AZ::IO::SystemFile::Exists(levelPath.c_str()))
                 {
-                    levelPath.replace(levelPathLength, sizeof(OldFileExtension) - 1, DefaultFileExtension);
+                    levelPath.replace(levelPathLength, sizeof(GetOldCryLevelExtension()) - 1, GetLevelExtension());
                 }
             }
 
@@ -241,6 +241,27 @@ namespace EditorInternal
     AZStd::string EditorToolsApplication::GetCurrentLevelPath() const
     {
         return AZStd::string(GetIEditor()->GetGameEngine()->GetLevelPath().toUtf8().data());
+    }
+
+    const char* EditorToolsApplication::GetLevelExtension() const
+    {
+        bool prefabSystemEnabled = false;
+        AzFramework::ApplicationRequests::Bus::BroadcastResult(
+            prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+
+        if (!prefabSystemEnabled)
+        {
+            return ".ly";
+        }
+        else
+        {
+            return ".prefab";
+        }
+    }
+
+    const char* EditorToolsApplication::GetOldCryLevelExtension() const
+    {
+        return ".cry";
     }
 
     void EditorToolsApplication::Exit()

@@ -17,13 +17,11 @@
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <AzFramework/Physics/Shape.h>
 
-#include <AzFramework/Physics/RigidBody.h>
-#include <AzFramework/Physics/WorldBody.h>
+#include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 
 namespace PhysX
 {
     class Shape;
-    class RigidBodyStatic;
 
     //! Messages serviced by a PhysX collider component.
     //! A PhysX collider component allows collision geometry to be attached to bodies in PhysX.
@@ -46,8 +44,8 @@ namespace PhysX
         : public AZ::ComponentBus
     {
     public:
-        virtual Physics::RigidBodyConfiguration GetRigidBodyConfiguration() = 0;
-        virtual Physics::WorldBodyConfiguration GetWorldBodyConfiguration() = 0;
+        virtual AzPhysics::RigidBodyConfiguration GetRigidBodyConfiguration() = 0;
+        virtual AzPhysics::SimulatedBodyConfiguration GetSimulatedBodyConfiguration() = 0;
     };
 
     using BodyConfigurationComponentBus = AZ::EBus<BodyConfigurationComponentRequests>;

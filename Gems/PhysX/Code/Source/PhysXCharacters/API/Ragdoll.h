@@ -14,7 +14,7 @@
 
 #include <AzFramework/Physics/RagdollPhysicsBus.h>
 #include <AzFramework/Physics/Ragdoll.h>
-#include <AzFramework/Physics/World.h>
+#include <AzFramework/Physics/Common/PhysicsEvents.h>
 #include <PhysXCharacters/API/RagdollNode.h>
 
 namespace PhysX
@@ -24,16 +24,16 @@ namespace PhysX
     /// PhysX specific implementation of generic physics API Ragdoll class.
     class Ragdoll
         : public Physics::Ragdoll
-        , private Physics::WorldNotificationBus::Handler
     {
     public:
         friend class RagdollComponent;
 
         AZ_CLASS_ALLOCATOR(Ragdoll, AZ::SystemAllocator, 0);
-        AZ_TYPE_INFO_LEGACY(Ragdoll, "{55D477B5-B922-4D3E-89FE-7FB7B9FDD635}", Physics::Ragdoll);
+        AZ_TYPE_INFO_LEGACY(PhysX::Ragdoll, "{55D477B5-B922-4D3E-89FE-7FB7B9FDD635}", Physics::Ragdoll);
         static void Reflect(AZ::ReflectContext* context);
 
-        Ragdoll();
+        Ragdoll() = default;
+        explicit Ragdoll(AzPhysics::SceneHandle sceneHandle);
         Ragdoll(const Ragdoll&) = delete;
         ~Ragdoll();
 
@@ -56,39 +56,35 @@ namespace PhysX
         void SetNodeState(size_t nodeIndex, const Physics::RagdollNodeState& nodeState) override;
         Physics::RagdollNode* GetNode(size_t nodeIndex) const override;
         size_t GetNumNodes() const override;
-        AZ::Crc32 GetWorldId() const override;
 
-        // Physics::WorldBody
+        // AzPhysics::SimulatedBody
         AZ::EntityId GetEntityId() const override;
-        Physics::World* GetWorld() const override;
+        AzPhysics::Scene* GetScene() override;
         AZ::Transform GetTransform() const override;
         void SetTransform(const AZ::Transform& transform) override;
         AZ::Vector3 GetPosition() const override;
         AZ::Quaternion GetOrientation() const override;
         AZ::Aabb GetAabb() const override;
-        Physics::RayCastHit RayCast(const Physics::RayCastRequest& request) override;
+        AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& request) override;
         AZ::Crc32 GetNativeType() const override;
         void* GetNativePointer() const override;
-        void AddToWorld(Physics::World&) override;
-        void RemoveFromWorld(Physics::World&) override;
 
     private:
         void ApplyQueuedEnableSimulation();
         void ApplyQueuedSetState();
         void ApplyQueuedDisableSimulation();
 
-        // Physics::WorldNotificationBus
-        void OnPrePhysicsSubtick(float fixedDeltaTime) override;
-
         AZStd::vector<AZStd::unique_ptr<RagdollNode>> m_nodes;
         ParentIndices m_parentIndices;
         AZ::Outcome<size_t> m_rootIndex = AZ::Failure();
-        bool m_isSimulated;
+        
         /// Queued initial state for the ragdoll, for EnableSimulationQueued, to be applied prior to the world update.
         Physics::RagdollState m_queuedInitialState;
         /// Holds a queued state for SetState, to be applied prior to the physics world update.
         Physics::RagdollState m_queuedState;
         /// Used to track whether a call to DisableSimulation has been queued.
         bool m_queuedDisableSimulation = false;
+
+        AzPhysics::SceneEvents::OnSceneSimulationStartHandler m_sceneStartSimHandler;
     };
 } // namespace PhysX

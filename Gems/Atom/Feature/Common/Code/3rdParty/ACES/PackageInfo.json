@@ -1,0 +1,6 @@
+{
+    "PackageName" : "ACES",
+    "URL"         : "https://developer.nvidia.com/high-dynamic-range-display-development",
+    "License"     : "custom",
+    "LicenseFile" : "LICENSE.txt"
+}

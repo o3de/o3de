@@ -196,7 +196,7 @@ namespace AZ
         return nullptr;
     }
 
-    AZStd::string Console::AutoCompleteCommand(const char* command)
+    AZStd::string Console::AutoCompleteCommand(const char* command, AZStd::vector<AZStd::string>* matches)
     {
         const size_t commandLength = strlen(command);
 
@@ -219,6 +219,10 @@ namespace AZ
             {
                 AZLOG_INFO("- %s : %s\n", curr->m_name, curr->m_desc);
                 commandSubset.push_back(curr->m_name);
+                if (matches)
+                {
+                    matches->push_back(curr->m_name);
+                }
             }
         }
 
@@ -281,6 +285,12 @@ namespace AZ
                 if (front->GetFlags() != functor->GetFlags() || front->GetTypeId() != functor->GetTypeId())
                 {
                     AZ_Assert(false, "Mismatched console functor types registered under the same name");
+                    return;
+                }
+
+                // Discard duplicate functors if the 'DontDuplicate' flag has been set
+                if ((front->GetFlags() & ConsoleFunctorFlags::DontDuplicate) != ConsoleFunctorFlags::Null)
+                {
                     return;
                 }
             }

@@ -17,7 +17,11 @@
 
 #include <AzTest/AzTest.h>
 #include <AzCore/Math/Random.h>
-
+#include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
+#include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
+#include <AzFramework/Physics/Configuration/SimulatedBodyConfiguration.h>
+#include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
+#include <AzFramework/Physics/SimulatedBodies/StaticRigidBody.h>
 #include <Benchmarks/PhysXBenchmarksUtilities.h>
 #include <Benchmarks/PhysXBenchmarksCommon.h>
 
@@ -96,8 +100,8 @@ namespace PhysX::Benchmarks
         //! used with Utils::CreateJoints
         struct JointGroup
         {
-            AZStd::unique_ptr<Physics::RigidBody> m_parent;
-            AZStd::unique_ptr<Physics::RigidBodyStatic> m_child;
+            AzPhysics::RigidBody* m_parent;
+            AzPhysics::SimulatedBody* m_child;
             AZStd::shared_ptr<Physics::Joint> m_joint;
         };
         //! Structure to hold the upper and lower twist limits
@@ -123,23 +127,23 @@ namespace PhysX::Benchmarks
         //! @param parentPositionGenerator, [optional] function pointer to allow caller to pick the spawn position of the parent body
         //! @param childPositionGenerator, [optional] function pointer to allow caller to pick the spawn position of the child body
         //! @param GenerateTwistLimitsFuncPtr, [optional] function pointer to allow caller to pick the twist limits of the joint
-        AZStd::vector<JointGroup> CreateJoints(int numJoints, Physics::System* system, AzPhysics::Scene* scene,
+        AZStd::vector<JointGroup> CreateJoints(int numJoints,
+            Physics::System* system,
+            AzPhysics::Scene* scene,
             GenerateSpawnPositionFuncPtr* parentPositionGenerator = nullptr,
             GenerateSpawnPositionFuncPtr* childPositionGenerator = nullptr,
             GenerateTwistLimitsFuncPtr* twistLimitsGenerator = nullptr)
         {
-            AZStd::shared_ptr<Physics::World> legacyWorld = scene->GetLegacyWorld();
-
             AZStd::vector<JointGroup> joints;
 
             Physics::ColliderConfiguration colliderConfig;
             Physics::SphereShapeConfiguration shapeConfiguration = Physics::SphereShapeConfiguration(JointConstants::CreateJointDefaults::ColliderRadius);
-            AZStd::shared_ptr<Physics::Shape> shape = system->CreateShape(colliderConfig, shapeConfiguration);
+            AzPhysics::ShapeColliderPair shapeColliderConfig(&colliderConfig, &shapeConfiguration);
             for (int i = 0; i < numJoints; i++)
             {
                 JointGroup newJoint;
 
-                Physics::RigidBodyConfiguration rigidBodyConfig;
+                AzPhysics::RigidBodyConfiguration rigidBodyConfig;
                 if (parentPositionGenerator)
                 {
                     rigidBodyConfig.m_position = (*parentPositionGenerator)(i);
@@ -148,12 +152,12 @@ namespace PhysX::Benchmarks
                 {
                     rigidBodyConfig.m_position = AZ::Vector3(JointConstants::CreateJointDefaults::DefaultXPosition * i, 0.0f, 0.0f);
                 }
-                newJoint.m_parent = system->CreateRigidBody(rigidBodyConfig);
-                newJoint.m_parent->AddShape(shape);
-                legacyWorld->AddBody(*newJoint.m_parent);
+                rigidBodyConfig.m_colliderAndShapeData = shapeColliderConfig;
+                AzPhysics::SimulatedBodyHandle rigidBodyHandle = scene->AddSimulatedBody(&rigidBodyConfig);
+                newJoint.m_parent = azdynamic_cast<AzPhysics::RigidBody*>(scene->GetSimulatedBodyFromHandle(rigidBodyHandle));
 
                 //fix the child
-                Physics::WorldBodyConfiguration staticRigidBodyConfig;
+                AzPhysics::StaticRigidBodyConfiguration staticRigidBodyConfig;
                 if (childPositionGenerator)
                 {
                     staticRigidBodyConfig.m_position = (*childPositionGenerator)(i);
@@ -165,9 +169,10 @@ namespace PhysX::Benchmarks
                         JointConstants::CreateJointDefaults::DefaultYPosition,
                         0.0f);
                 }
-                newJoint.m_child = system->CreateStaticRigidBody(staticRigidBodyConfig);
-                newJoint.m_child->AddShape(shape);
-                legacyWorld->AddBody(*newJoint.m_child);
+                staticRigidBodyConfig.m_colliderAndShapeData = shapeColliderConfig;
+
+                AzPhysics::SimulatedBodyHandle staticRigidBodyHandle = scene->AddSimulatedBody(&staticRigidBodyConfig);
+                newJoint.m_child = scene->GetSimulatedBodyFromHandle(staticRigidBodyHandle);
 
                 AZStd::shared_ptr <PhysX::D6JointLimitConfiguration> config = AZStd::make_shared<D6JointLimitConfiguration>();
 
@@ -180,7 +185,7 @@ namespace PhysX::Benchmarks
                 config->m_twistLimitLower = limits.m_lowerLimit;
                 config->m_swingLimitY = 1.0f;
                 config->m_swingLimitZ = 1.0f;
-                newJoint.m_joint = system->CreateJoint(config, newJoint.m_parent.get(), newJoint.m_child.get());
+                newJoint.m_joint = system->CreateJoint(config, newJoint.m_parent, newJoint.m_child);
                 joints.emplace_back(AZStd::move(newJoint));
             }
 
@@ -208,11 +213,10 @@ namespace PhysX::Benchmarks
 
     protected:
         // PhysXBaseBenchmarkFixture Interface ---------
-        Physics::WorldConfiguration GetDefaultWorldConfiguration() override
+        AzPhysics::SceneConfiguration GetDefaultSceneConfiguration() override
         {
-            Physics::WorldConfiguration worldConfig;
-            worldConfig.m_gravity = AZ::Vector3(0.0f, 0.0f, -9.81f);
-            return worldConfig;
+            AzPhysics::SceneConfiguration sceneConfig = AzPhysics::SceneConfiguration::CreateDefault();
+            return sceneConfig;
         }
         // PhysXBaseBenchmarkFixture Interface ---------
 
@@ -248,8 +252,7 @@ namespace PhysX::Benchmarks
             for (AZ::u32 i = 0; i < JointConstants::GameFramesToSimulate; i++)
             {
                 auto start = AZStd::chrono::system_clock::now();
-                m_defaultScene->StartSimulation(DefaultTimeStep);
-                m_defaultScene->FinishSimulation();
+                StepScene1Tick(DefaultTimeStep);
 
                 //time each physics tick and store it to analyze
                 auto tickElapsedMilliseconds = Types::double_milliseconds(AZStd::chrono::system_clock::now() - start);
@@ -315,8 +318,7 @@ namespace PhysX::Benchmarks
                 }
 
                 auto start = AZStd::chrono::system_clock::now();
-                m_defaultScene->StartSimulation(DefaultTimeStep);
-                m_defaultScene->FinishSimulation();
+                StepScene1Tick(DefaultTimeStep);
 
                 //time each physics tick and store it to analyze
                 auto tickElapsedMilliseconds = Types::double_milliseconds(AZStd::chrono::system_clock::now() - start);
@@ -339,16 +341,19 @@ namespace PhysX::Benchmarks
 
         //create the collider shape config to use on the whole snake
         Physics::SphereShapeConfiguration snakePartShapeConfiguration = Physics::SphereShapeConfiguration(JointConstants::CreateJointDefaults::ColliderRadius);
+        Physics::ColliderConfiguration snakeHeadcolliderConfig;
 
         //create the had of the snake this is the only static part.
-        Physics::WorldBodyConfiguration snakeHeadBodyConfig;
+        AzPhysics::StaticRigidBodyConfiguration snakeHeadBodyConfig;
         snakeHeadBodyConfig.m_position = AZ::Vector3::CreateZero();
-        AZStd::unique_ptr<Physics::RigidBodyStatic> snakeHead;
-        snakeHead = m_system->CreateStaticRigidBody(snakeHeadBodyConfig);
-        Physics::ColliderConfiguration snakeHeadcolliderConfig;
-        AZStd::shared_ptr<Physics::Shape> snakeHeadShape = m_system->CreateShape(snakeHeadcolliderConfig, snakePartShapeConfiguration);
-        snakeHead->AddShape(snakeHeadShape);
-        m_defaultScene->GetLegacyWorld()->AddBody(*snakeHead);
+        snakeHeadBodyConfig.m_colliderAndShapeData = AzPhysics::ShapeColliderPair(&snakeHeadcolliderConfig, &snakePartShapeConfiguration);
+
+        AzPhysics::SimulatedBody* snakeHead = nullptr;
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            AzPhysics::SimulatedBodyHandle snakeHeadHandle = sceneInterface->AddSimulatedBody(m_testSceneHandle, &snakeHeadBodyConfig);
+            snakeHead = sceneInterface->GetSimulatedBodyFromHandle(m_testSceneHandle, snakeHeadHandle);
+        }
 
         //create the body
         Utils::GenerateColliderFuncPtr colliderGenerator = [&snakePartShapeConfiguration]([[maybe_unused]] int idx) -> auto
@@ -359,9 +364,11 @@ namespace PhysX::Benchmarks
         {
             return AZ::Vector3(0.0f, JointConstants::SnakeSegmentLength + JointConstants::SnakeSegmentLength * idx, 0.0f);
         };
-        AZStd::vector<AZStd::unique_ptr<Physics::RigidBody>> snakeRigidBodies;
+
+        AzPhysics::SimulatedBodyHandleList snakeRigidBodyHandles = Utils::CreateRigidBodies(numSegments, m_defaultScene, JointConstants::CCDEnabled, &colliderGenerator, &posGenerator);
+        AZStd::vector<AzPhysics::RigidBody*> snakeRigidBodies;
         snakeRigidBodies.reserve(numSegments);
-        snakeRigidBodies = Utils::CreateRigidBodies(numSegments, m_system, m_defaultScene, JointConstants::CCDEnabled, &colliderGenerator, &posGenerator);
+        snakeRigidBodies = Utils::GetRigidBodiesFromHandles(m_defaultScene, snakeRigidBodyHandles);
 
         //build the snake
         AZStd::vector<AZStd::shared_ptr<Physics::Joint>> joints;
@@ -371,10 +378,10 @@ namespace PhysX::Benchmarks
         config->m_swingLimitY = 1.0f;
         config->m_swingLimitZ = 1.0f;
         //build the head
-        joints.emplace_back(m_system->CreateJoint(config, snakeRigidBodies[0].get(), snakeHead.get()));
+        joints.emplace_back(m_system->CreateJoint(config, snakeRigidBodies[0], snakeHead));
         for (size_t i = 0; (i+1) < snakeRigidBodies.size(); i++)
         {
-            joints.emplace_back(m_system->CreateJoint(config, snakeRigidBodies[i + 1].get(), snakeRigidBodies[i].get()));
+            joints.emplace_back(m_system->CreateJoint(config, snakeRigidBodies[i + 1], snakeRigidBodies[i]));
         }
 
         //setup the sub tick tracker
@@ -388,8 +395,7 @@ namespace PhysX::Benchmarks
             for (AZ::u32 i = 0; i < JointConstants::GameFramesToSimulate; i++)
             {
                 auto start = AZStd::chrono::system_clock::now();
-                m_defaultScene->StartSimulation(DefaultTimeStep);
-                m_defaultScene->FinishSimulation();
+                StepScene1Tick(DefaultTimeStep);
 
                 //time each physics tick and store it to analyze
                 auto tickElapsedMilliseconds = Types::double_milliseconds(AZStd::chrono::system_clock::now() - start);
@@ -397,6 +403,12 @@ namespace PhysX::Benchmarks
             }
         }
         subTickTracker.Stop();
+
+        for (auto handle : snakeRigidBodyHandles)
+        {
+            m_defaultScene->RemoveSimulatedBody(handle);
+        }
+        snakeRigidBodyHandles.clear();
 
         //sort the frame times and get the P50, P90, P99 percentiles
         Utils::ReportFramePercentileCounters(state, tickTimes, subTickTracker.GetSubTickTimes());

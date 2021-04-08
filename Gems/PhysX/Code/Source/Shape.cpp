@@ -11,14 +11,16 @@
 */
 
 #include <PhysX_precompiled.h>
-#include <PhysX/Utils.h>
-#include <Source/Utils.h>
 #include <Source/Shape.h>
-#include <Source/Material.h>
-#include <Source/Collision.h>
-#include <AzFramework/Physics/Casts.h>
+
+#include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 #include <AzFramework/Physics/Material.h>
+#include <Common/PhysXSceneQueryHelpers.h>
 #include <PhysX/PhysXLocks.h>
+#include <PhysX/Utils.h>
+#include <Source/Collision.h>
+#include <Source/Material.h>
+#include <Source/Utils.h>
 
 namespace PhysX
 {
@@ -327,12 +329,12 @@ namespace PhysX
         m_attachedActor = nullptr;
     }
 
-    Physics::RayCastHit Shape::RayCastInternal(const Physics::RayCastRequest& worldSpaceRequest, const physx::PxTransform& pose)
+    AzPhysics::SceneQueryHit Shape::RayCastInternal(const AzPhysics::RayCastRequest& worldSpaceRequest, const physx::PxTransform& pose)
     {
         const physx::PxVec3 start = PxMathConvert(worldSpaceRequest.m_start);
         const physx::PxVec3 unitDir = PxMathConvert(worldSpaceRequest.m_direction);
         const physx::PxU32 maxHits = 1;
-        const physx::PxHitFlags hitFlags = Utils::RayCast::GetPxHitFlags(worldSpaceRequest.m_hitFlags);
+        const physx::PxHitFlags hitFlags = SceneQueryHelpers::GetPxHitFlags(worldSpaceRequest.m_hitFlags);
 
         physx::PxRaycastHit hitInfo;
         const bool hit = physx::PxGeometryQuery::raycast(start, unitDir, m_pxShape->getGeometry().any(), pose,
@@ -343,12 +345,12 @@ namespace PhysX
             // Fill actor and shape, as they won't be filled from PxGeometryQuery
             hitInfo.actor = static_cast<physx::PxRigidActor*>(m_attachedActor); // This cast is safe since GetHitFromPxHit() only uses PxActor:: functions
             hitInfo.shape = GetPxShape();
-            return Utils::RayCast::GetHitFromPxHit(hitInfo);
+            return SceneQueryHelpers::GetHitFromPxHit(hitInfo);
         }
-        return Physics::RayCastHit();
+        return AzPhysics::SceneQueryHit();
     }
 
-    Physics::RayCastHit Shape::RayCast(const Physics::RayCastRequest& worldSpaceRequest, const AZ::Transform& worldTransform)
+    AzPhysics::SceneQueryHit Shape::RayCast(const AzPhysics::RayCastRequest& worldSpaceRequest, const AZ::Transform& worldTransform)
     {
         physx::PxTransform localPose;
         {
@@ -358,7 +360,7 @@ namespace PhysX
         return RayCastInternal(worldSpaceRequest, PxMathConvert(worldTransform) * localPose);
     }
 
-    Physics::RayCastHit Shape::RayCastLocal(const Physics::RayCastRequest& localSpaceRequest)
+    AzPhysics::SceneQueryHit Shape::RayCastLocal(const AzPhysics::RayCastRequest& localSpaceRequest)
     {
         physx::PxTransform localPose;
         {

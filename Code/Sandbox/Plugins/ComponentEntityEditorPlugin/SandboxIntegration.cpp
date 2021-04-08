@@ -52,6 +52,7 @@
 #include <AzToolsFramework/Undo/UndoSystem.h>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiInterface.h>
 #include <AzToolsFramework/UI/Layer/AddToLayerMenu.h>
+#include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
 #include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/EntityPropertyEditor.hxx>
@@ -199,6 +200,12 @@ void SandboxIntegrationManager::Setup()
     AZ_Assert((m_editorEntityUiInterface != nullptr),
         "SandboxIntegrationManager requires a EditorEntityUiInterface instance to be present on Setup().");
 
+    m_prefabIntegrationInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabIntegrationInterface>::Get();
+
+    AZ_Assert(
+        (m_prefabIntegrationInterface != nullptr),
+        "SandboxIntegrationManager requires a PrefabIntegrationInterface instance to be present on Setup().");
+
     AzToolsFramework::Layers::EditorLayerComponentNotificationBus::Handler::BusConnect();
 }
 
@@ -259,10 +266,11 @@ void SandboxIntegrationManager::SaveSlice(const bool& QuickPushToFirstLevel)
 // This event handler is queued on main thread.
 void SandboxIntegrationManager::OnCatalogAssetAdded(const AZ::Data::AssetId& assetId)
 {
-    bool isLegacySliceSystemEnabled = true;
-    AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
-        isLegacySliceSystemEnabled, &AzToolsFramework::ToolsApplicationRequests::IsLegacySliceSystemEnabled);
-    if (isLegacySliceSystemEnabled)
+    bool prefabSystemEnabled = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(
+        prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+
+    if (!prefabSystemEnabled)
     {
         AZ::SliceComponent* editorRootSlice = nullptr;
         AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::BroadcastResult(
@@ -652,18 +660,21 @@ void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, con
         });
     }
 
-    menu->addSeparator();
+    bool prefabSystemEnabled = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
-    action = menu->addAction(QObject::tr("Create layer"));
-    QObject::connect(action, &QAction::triggered, [this] { ContextMenu_NewLayer(); });
-
-    SetupLayerContextMenu(menu);
-    AzToolsFramework::EntityIdSet flattenedSelection;
-    GetSelectedEntitiesSetWithFlattenedHierarchy(flattenedSelection);
-    AzToolsFramework::SetupAddToLayerMenu(menu, flattenedSelection, [this] { return ContextMenu_NewLayer(); });
-
-    if (!GetIEditor()->IsPrefabSystemEnabled())
+    if (!prefabSystemEnabled)
     {
+        menu->addSeparator();
+
+        action = menu->addAction(QObject::tr("Create layer"));
+        QObject::connect(action, &QAction::triggered, [this] { ContextMenu_NewLayer(); });
+
+        SetupLayerContextMenu(menu);
+        AzToolsFramework::EntityIdSet flattenedSelection;
+        GetSelectedEntitiesSetWithFlattenedHierarchy(flattenedSelection);
+        AzToolsFramework::SetupAddToLayerMenu(menu, flattenedSelection, [this] { return ContextMenu_NewLayer(); });
+
         SetupSliceContextMenu(menu);
     }
     else
@@ -674,11 +685,18 @@ void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, con
         AzToolsFramework::EditorContextMenuBus::Broadcast(&AzToolsFramework::EditorContextMenuEvents::PopulateEditorGlobalContextMenu, menu);
     }
 
-    action = menu->addAction(QObject::tr("Duplicate"));
-    QObject::connect(action, &QAction::triggered, action, [this] { ContextMenu_Duplicate(); });
-    if (selected.size() == 0)
+    bool prefabWipFeaturesEnabled = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(
+        prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
+
+    if (!prefabSystemEnabled || (prefabSystemEnabled && prefabWipFeaturesEnabled))
     {
-        action->setDisabled(true);
+        action = menu->addAction(QObject::tr("Duplicate"));
+        QObject::connect(action, &QAction::triggered, action, [this] { ContextMenu_Duplicate(); });
+        if (selected.size() == 0)
+        {
+            action->setDisabled(true);
+        }
     }
 
     action = menu->addAction(QObject::tr("Delete"));
@@ -1268,41 +1286,47 @@ AZ::EntityId SandboxIntegrationManager::CreateNewEntityAtPosition(const AZ::Vect
 {
     using namespace AzToolsFramework;
 
-    ScopedUndoBatch undo("New Entity");
+    bool prefabSystemEnabled = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
     AZ::EntityId newEntityId;
 
-    const AZStd::string name = AZStd::string::format("Entity%d", GetIEditor()->GetObjectManager()->GetObjectCount() + 1);
-
-    EditorEntityContextRequestBus::BroadcastResult(newEntityId, &EditorEntityContextRequests::CreateNewEditorEntity, name.c_str());
-
-    if (newEntityId.IsValid())
+    if (!prefabSystemEnabled)
     {
-        m_unsavedEntities.insert(newEntityId);
+        const AZStd::string name = AZStd::string::format("Entity%d", GetIEditor()->GetObjectManager()->GetObjectCount() + 1);
+        EditorEntityContextRequestBus::BroadcastResult(newEntityId, &EditorEntityContextRequests::CreateNewEditorEntity, name.c_str());
 
-        AZ::Transform transform = AZ::Transform::CreateIdentity();
-        transform.SetTranslation(pos);
-        if (parentId.IsValid())
+        if (newEntityId.IsValid())
         {
-            AZ::TransformBus::Event(newEntityId, &AZ::TransformInterface::SetParent, parentId);
-            AZ::TransformBus::Event(newEntityId, &AZ::TransformInterface::SetLocalTM, transform);
+            m_unsavedEntities.insert(newEntityId);
+
+            AZ::Transform transform = AZ::Transform::CreateIdentity();
+            transform.SetTranslation(pos);
+            if (parentId.IsValid())
+            {
+                AZ::TransformBus::Event(newEntityId, &AZ::TransformInterface::SetParent, parentId);
+                AZ::TransformBus::Event(newEntityId, &AZ::TransformInterface::SetLocalTM, transform);
+            }
+            else
+            {
+                AZ::TransformBus::Event(newEntityId, &AZ::TransformInterface::SetWorldTM, transform);
+            }
+
+            // Select the new entity (and deselect others).
+            AzToolsFramework::EntityIdList selection = {newEntityId};
+
+            ScopedUndoBatch undo("New Entity");
+            auto selectionCommand = AZStd::make_unique<AzToolsFramework::SelectionCommand>(selection, "");
+            selectionCommand->SetParent(undo.GetUndoBatch());
+            selectionCommand.release();
+
+            EBUS_EVENT(AzToolsFramework::ToolsApplicationRequests::Bus, SetSelectedEntities, selection);
         }
-        else
-        {
-            AZ::TransformBus::Event(newEntityId, &AZ::TransformInterface::SetWorldTM, transform);
-        }
-
-        // Select the new entity (and deselect others).
-        AzToolsFramework::EntityIdList selection = { newEntityId };
-
-        auto selectionCommand =
-            AZStd::make_unique<AzToolsFramework::SelectionCommand>(selection, "");
-        selectionCommand->SetParent(undo.GetUndoBatch());
-        selectionCommand.release();
-
-        EBUS_EVENT(AzToolsFramework::ToolsApplicationRequests::Bus, SetSelectedEntities, selection);
     }
-
+    else
+    {
+        newEntityId =  m_prefabIntegrationInterface->CreateNewEntityAtPosition(pos, parentId);
+    }
     return newEntityId;
 }
 

@@ -224,10 +224,12 @@ namespace ScriptCanvasEditor
     class GraphValidationDockWidget;
     class MainWindowStatusWidget;
     class StatisticsDialog;
+    class SlotTypeSelectorWidget;
 
     // Custom Context Menus
     class SceneContextMenu;
     class ConnectionContextMenu;
+    class RenameFunctionDefinitionNodeAction;
 
     class MainWindow
         : public QMainWindow
@@ -289,8 +291,8 @@ namespace ScriptCanvasEditor
 
         // VariablePaletteRequestBus
         void RegisterVariableType(const ScriptCanvas::Data::Type& variableType) override;
-
         bool IsValidVariableType(const ScriptCanvas::Data::Type& dataType) const override;
+        bool ShowSlotTypeSelector(ScriptCanvas::Slot* slot, const QPoint& scenePosition, VariablePaletteRequests::SlotSetup&) override;
         ////
 
         // GraphCanvas::AssetEditorRequestBus
@@ -334,7 +336,6 @@ namespace ScriptCanvasEditor
 
         // File menu
         void OnFileNew();
-        void OnFileNewFunction();
 
         bool OnFileSave(const Callbacks::OnSave& saveCB);
         bool OnFileSaveAs(const Callbacks::OnSave& saveCB);
@@ -451,7 +452,6 @@ namespace ScriptCanvasEditor
         void RemoveScriptCanvasAsset(const AZ::Data::AssetId& assetId);
         void OnChangeActiveGraphTab(AZ::Data::AssetId) override;
 
-        void CreateNewFunctionAsset() override { OnFileNewFunction(); }
         void CreateNewRuntimeAsset() override { OnFileNew(); }
 
         GraphCanvas::GraphId GetActiveGraphCanvasGraphId() const override;
@@ -614,7 +614,7 @@ namespace ScriptCanvasEditor
         void CreateFunctionInput();
         void CreateFunctionOutput();
 
-        void CreateExecutionNodeling(int positionOffset);
+        void CreateFunctionDefinitionNode(int positionOffset);
 
         int CreateAssetTab(const AZ::Data::AssetId& assetId, int tabIndex = -1);
 
@@ -713,7 +713,6 @@ namespace ScriptCanvasEditor
         QToolButton*                        m_createFunctionOutput = nullptr;
 
         QToolButton*                        m_createScriptCanvas = nullptr;
-        QToolButton*                        m_createFunction = nullptr;
 
         QMenu*                              m_selectedEntityMenu = nullptr;
 
@@ -728,6 +727,8 @@ namespace ScriptCanvasEditor
         GraphCanvas::BookmarkDockWidget*    m_bookmarkDockWidget = nullptr;
         GraphCanvas::MiniMapDockWidget*     m_minimap = nullptr;
         LoggingWindow*                      m_loggingWindow = nullptr;
+        SlotTypeSelectorWidget*             m_slotTypeSelector = nullptr;
+
 
         AzQtComponents::WindowDecorationWrapper*    m_presetWrapper = nullptr;
         GraphCanvas::ConstructPresetDialog*         m_presetEditor = nullptr;

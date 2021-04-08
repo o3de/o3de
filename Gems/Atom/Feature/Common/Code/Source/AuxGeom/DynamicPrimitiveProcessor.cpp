@@ -173,10 +173,12 @@ namespace AZ
                         if (useManualViewProjectionOverride)
                         {
                             srg->SetConstant(m_shaderData.m_viewProjectionOverrideIndex, bufferData->m_viewProjOverrides[primitive.m_viewProjOverrideIndex]);
+                            m_shaderData.m_viewProjectionOverrideIndex.AssertValid();
                         }
                         if (primitive.m_primitiveType == PrimitiveType_PointList)
                         {
                             srg->SetConstant(m_shaderData.m_pointSizeIndex, aznumeric_cast<float>(primitive.m_width));
+                            m_shaderData.m_pointSizeIndex.AssertValid();
                         }
                         pipelineState->UpdateSrgVariantFallback(srg);
                         srg->Compile();
@@ -284,9 +286,12 @@ namespace AZ
 
                 auto* mappedData = reinterpret_cast<uint8_t*>(mapResponse.m_data);
 
-                memcpy(mappedData, source, sourceSize);
+                if (mappedData)
+                {
+                    memcpy(mappedData, source, sourceSize);
 
-                m_hostPool->UnmapBuffer(*buffer);
+                    m_hostPool->UnmapBuffer(*buffer);
+                }
             }
         }
 
@@ -413,6 +418,11 @@ namespace AZ
             const char* auxGeomWorldShaderFilePath = "Shaders/auxgeom/auxgeomworld.azshader";
 
             m_shader = RPI::LoadShader(auxGeomWorldShaderFilePath);
+            if (!m_shader)
+            {
+                AZ_Error("DynamicPrimitiveProcessor", false, "Failed to get shader");
+                return;
+            }
 
             // Get the per-object SRG and store the indices of the data we need to set per object
             m_shaderData.m_perDrawSrgAsset = m_shader->FindShaderResourceGroupAsset(Name{ "PerDrawSrg" });
@@ -424,13 +434,8 @@ namespace AZ
 
             const RHI::ShaderResourceGroupLayout* shaderResourceGroupLayout = m_shaderData.m_perDrawSrgAsset->GetLayout();
 
-            static const char* const viewProjectionOverride("m_viewProjectionOverride");
-            static const char* const PointSize("m_pointSize");
-            m_shaderData.m_viewProjectionOverrideIndex = shaderResourceGroupLayout->FindShaderInputConstantIndex(Name(viewProjectionOverride));
-            AZ_Error("DynamicPrimitiveProcessor", m_shaderData.m_viewProjectionOverrideIndex.IsValid(), "Failed to find shader input constant %s.", viewProjectionOverride);
-
-            m_shaderData.m_pointSizeIndex = shaderResourceGroupLayout->FindShaderInputConstantIndex(Name(PointSize));
-            AZ_Error("DynamicPrimitiveProcessor", m_shaderData.m_pointSizeIndex.IsValid(), "Failed to find shader input constant %s.", PointSize);
+            m_shaderData.m_viewProjectionOverrideIndex.Reset();
+            m_shaderData.m_pointSizeIndex.Reset();
 
             // Remember the draw list tag
             m_shaderData.m_drawListTag = m_shader->GetDrawListTag();

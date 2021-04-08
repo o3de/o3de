@@ -41,6 +41,7 @@
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 #include <AzToolsFramework/ToolsComponents/EditorSelectionAccentSystemComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorEntityIconComponentBus.h>
+#include <AzToolsFramework/Undo/UndoCacheInterface.h>
 #include <LmbrCentral/Rendering/RenderNodeBus.h>
 #include <LmbrCentral/Rendering/MeshComponentBus.h>
 #include <LmbrCentral/Rendering/MaterialOwnerBus.h>
@@ -96,12 +97,10 @@ void CComponentEntityObject::UpdatePreemptiveUndoCache()
 {
     using namespace AzToolsFramework;
 
-    PreemptiveUndoCache* preemptiveUndoCache = nullptr;
-    ToolsApplicationRequests::Bus::BroadcastResult(preemptiveUndoCache, &ToolsApplicationRequests::GetUndoCache);
-
-    if (preemptiveUndoCache)
+    auto undoCacheInterface = AZ::Interface<UndoSystem::UndoCacheInterface>::Get();
+    if (undoCacheInterface)
     {
-        preemptiveUndoCache->UpdateCache(m_entityId);
+        undoCacheInterface->UpdateCache(m_entityId);
     }
 }
 

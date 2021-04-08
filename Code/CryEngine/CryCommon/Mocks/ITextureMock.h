@@ -107,7 +107,7 @@ public:
     MOCK_METHOD3(GetLowResSystemCopy,
         const ColorB * (uint16 & nWidth, uint16 & nHeight, int** ppLowResSystemCopyAtlasId));
     MOCK_METHOD1(SetKeepSystemCopy,
-        void(const bool bKeepSystemCopy));
+        void(bool bKeepSystemCopy));
     MOCK_METHOD8(UpdateTextureRegion,
         void(const uint8_t * data, int nX, int nY, int nZ, int USize, int VSize, int ZSize, ETEX_Format eTFSrc));
     MOCK_CONST_METHOD0(GetDevTexture,

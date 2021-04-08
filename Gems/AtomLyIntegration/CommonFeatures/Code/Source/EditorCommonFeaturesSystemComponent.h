@@ -13,8 +13,12 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
+#include <AzFramework/Application/Application.h>
 #include <AzToolsFramework/API/EditorLevelNotificationBus.h>
 #include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
+#include <AzToolsFramework/AssetBrowser/Previewer/PreviewerBus.h>
+#include <Thumbnails/Rendering/CommonThumbnailRenderer.h>
+#include <Source/Thumbnails/Preview/CommonPreviewerFactory.h>
 
 namespace AZ
 {
@@ -27,6 +31,8 @@ namespace AZ
             : public AZ::Component
             , public AzToolsFramework::EditorLevelNotificationBus::Handler
             , public AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler
+            , public AzToolsFramework::AssetBrowser::PreviewerRequestBus::Handler
+            , public AzFramework::ApplicationLifecycleEvents::Bus::Handler
         {
         public:
             AZ_COMPONENT(EditorCommonFeaturesSystemComponent, "{D73D77CF-D5AF-428B-909B-324E96D3DEF5}");
@@ -54,12 +60,21 @@ namespace AZ
             void OnSliceInstantiated(const AZ::Data::AssetId&, AZ::SliceComponent::SliceInstanceAddress&, const AzFramework::SliceInstantiationTicket&) override;
             void OnSliceInstantiationFailed(const AZ::Data::AssetId&, const AzFramework::SliceInstantiationTicket&) override;
 
+            // AzToolsFramework::AssetBrowser::PreviewerRequestBus::Handler overrides...
+            const AzToolsFramework::AssetBrowser::PreviewerFactory* GetPreviewerFactory(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry) const override;
+
+            // AzFramework::ApplicationLifecycleEvents overrides...
+            void OnApplicationAboutToStop() override;
+
         private:
             AZStd::unique_ptr<SkinnedMeshDebugDisplay> m_skinnedMeshDebugDisplay;
 
             AZ::Data::AssetId m_levelDefaultSliceAssetId;
             AZStd::string m_atomLevelDefaultAssetPath{ "LevelAssets/default.slice" };
             float m_envProbeHeight{ 200.0f };
+
+            AZStd::unique_ptr<AZ::LyIntegration::Thumbnails::CommonThumbnailRenderer> m_renderer;
+            AZStd::unique_ptr<LyIntegration::CommonPreviewerFactory> m_previewerFactory;
         };
     } // namespace Render
 } // namespace AZ

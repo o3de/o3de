@@ -24,6 +24,7 @@
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
 #include <AzToolsFramework/AssetCatalog/PlatformAddressedAssetCatalog.h>
+#include <AzToolsFramework/UnitTest/ToolsTestApplication.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 
 namespace // anonymous
@@ -51,7 +52,7 @@ namespace UnitTest
         void SetUp() override
         {
             using namespace AZ::Data;
-            m_application = new AzToolsFramework::ToolsApplication();
+            m_application = new ToolsTestApplication("AssetFileInfoListComparisonTest");
             AzToolsFramework::AssetSeedManager assetSeedManager;
             AzFramework::AssetRegistry assetRegistry;
 
@@ -729,7 +730,7 @@ namespace UnitTest
 
         }
 
-        AzToolsFramework::ToolsApplication* m_application;
+        ToolsTestApplication* m_application;
         AzToolsFramework::PlatformAddressedAssetCatalog* m_pcCatalog;
         AZ::IO::FileIOBase* m_priorFileIO = nullptr;
         AZ::IO::FileIOBase* m_localFileIO = nullptr;

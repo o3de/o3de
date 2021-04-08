@@ -13,8 +13,8 @@
 
 #include <Family/DamageManager.h>
 
-#include <AzFramework/Physics/SystemBus.h>
-#include <AzFramework/Physics/World.h>
+#include <AzFramework/Physics/PhysicsScene.h>
+
 #include <Blast/BlastActor.h>
 #include <Blast/BlastSystemBus.h>
 #include <Family/ActorTracker.h>
@@ -130,57 +130,76 @@ namespace Blast
     }
 
     AZStd::vector<BlastActor*> DamageManager::OverlapSphere(
-        ActorTracker& actorTracker, const float radius, const AZ::Transform& pose)
+        [[maybe_unused]] ActorTracker& actorTracker, [[maybe_unused]] const float radius, [[maybe_unused]] const AZ::Transform& pose)
     {
-        AZStd::shared_ptr<Physics::World> defaultWorld;
-        Physics::DefaultWorldBus::BroadcastResult(defaultWorld, &Physics::DefaultWorldRequests::GetDefaultWorld);
-
-        auto overlapHits = defaultWorld->OverlapSphere(
-            radius, pose,
-            [&actorTracker](const Physics::WorldBody* worldBody, [[maybe_unused]] const Physics::Shape* shape) -> bool
-            {
-                return actorTracker.GetActorByBody(worldBody) != nullptr;
-            });
-
         AZStd::vector<BlastActor*> overlappedActors;
 
-        AZStd::transform(
-            overlapHits.begin(), overlapHits.end(), AZStd::back_inserter(overlappedActors),
-            [&actorTracker](const Physics::OverlapHit& overlapHit) -> BlastActor*
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            if (AzPhysics::SceneHandle sceneHandle = sceneInterface->GetSceneHandle(AzPhysics::DefaultPhysicsSceneName);
+                sceneHandle != AzPhysics::InvalidSceneHandle)
             {
-                return actorTracker.GetActorByBody(overlapHit.m_body);
-            });
+                AzPhysics::OverlapRequest request = AzPhysics::OverlapRequestHelpers::CreateSphereOverlapRequest(
+                    radius,
+                    pose,
+                    [&actorTracker](const AzPhysics::SimulatedBody* worldBody, [[maybe_unused]] const Physics::Shape* shape) -> bool
+                    {
+                        return actorTracker.GetActorByBody(worldBody) != nullptr;
+                    });
 
+                AzPhysics::SceneQueryHits result = sceneInterface->QueryScene(sceneHandle, &request);
+                if (result)
+                {
+                    AZStd::transform(
+                        result.m_hits.begin(), result.m_hits.end(), AZStd::back_inserter(overlappedActors),
+                        [&actorTracker, sceneInterface, sceneHandle](const AzPhysics::SceneQueryHit& overlapHit) -> BlastActor*
+                        {
+                            const AzPhysics::SimulatedBody* body = sceneInterface->GetSimulatedBodyFromHandle(sceneHandle, overlapHit.m_bodyHandle);
+                            return actorTracker.GetActorByBody(body);
+                        });
+                }
+            }
+        }
         return overlappedActors;
     }
 
     AZStd::vector<BlastActor*> DamageManager::OverlapCapsule(
-        ActorTracker& actorTracker, const AZ::Vector3& position0, const AZ::Vector3& position1, float radius)
+        [[maybe_unused]] ActorTracker& actorTracker, const AZ::Vector3& position0, const AZ::Vector3& position1, [[maybe_unused]] float radius)
     {
-        AZStd::shared_ptr<Physics::World> defaultWorld;
-        Physics::DefaultWorldBus::BroadcastResult(defaultWorld, &Physics::DefaultWorldRequests::GetDefaultWorld);
-
-        const float height = position0.GetDistance(position1);
-
-        const auto pose = AZ::Transform::CreateFromQuaternionAndTranslation(
-            AZ::Quaternion::CreateFromVector3(position1 - position0), (position0 + position1) / 2.);
-
-        auto overlapHits = defaultWorld->OverlapCapsule(
-            height, radius, pose,
-            [&actorTracker](const Physics::WorldBody* worldBody, [[maybe_unused]] const Physics::Shape* shape) -> bool
-            {
-                return actorTracker.GetActorByBody(worldBody) != nullptr;
-            });
-
         AZStd::vector<BlastActor*> overlappedActors;
 
-        AZStd::transform(
-            overlapHits.begin(), overlapHits.end(), AZStd::back_inserter(overlappedActors),
-            [&actorTracker](const Physics::OverlapHit& overlapHit) -> BlastActor*
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            if (AzPhysics::SceneHandle sceneHandle = sceneInterface->GetSceneHandle(AzPhysics::DefaultPhysicsSceneName);
+                sceneHandle != AzPhysics::InvalidSceneHandle)
             {
-                return actorTracker.GetActorByBody(overlapHit.m_body);
-            });
+                const float height = position0.GetDistance(position1);
 
+                const auto pose = AZ::Transform::CreateFromQuaternionAndTranslation(
+                    AZ::Quaternion::CreateFromVector3(position1 - position0), (position0 + position1) / 2.);
+
+                AzPhysics::OverlapRequest request = AzPhysics::OverlapRequestHelpers::CreateCapsuleOverlapRequest(
+                    height,
+                    radius,
+                    pose,
+                    [&actorTracker](const AzPhysics::SimulatedBody* worldBody, [[maybe_unused]] const Physics::Shape* shape) -> bool
+                    {
+                        return actorTracker.GetActorByBody(worldBody) != nullptr;
+                    });
+
+                AzPhysics::SceneQueryHits result = sceneInterface->QueryScene(sceneHandle, &request);
+                if (result)
+                {
+                    AZStd::transform(
+                        result.m_hits.begin(), result.m_hits.end(), AZStd::back_inserter(overlappedActors),
+                        [&actorTracker, sceneInterface, sceneHandle](const AzPhysics::SceneQueryHit& overlapHit) -> BlastActor*
+                        {
+                            const AzPhysics::SimulatedBody* body = sceneInterface->GetSimulatedBodyFromHandle(sceneHandle, overlapHit.m_bodyHandle);
+                            return actorTracker.GetActorByBody(body);
+                        });
+                }
+            }
+        }
         return overlappedActors;
     }
 } // namespace Blast

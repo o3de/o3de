@@ -19,11 +19,10 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzFramework/Physics/Character.h>
-#include <AzFramework/Physics/RigidBody.h>
+#include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <AzFramework/Physics/SystemBus.h>
-#include <AzFramework/Physics/World.h>
 #include <AzFramework/Physics/Material.h>
 #include <AzFramework/Physics/CollisionBus.h>
 #include <AzFramework/Physics/Configuration/CollisionConfiguration.h>
@@ -35,12 +34,17 @@
 #include <PhysX/Configuration/PhysXConfiguration.h>
 #include <Configuration/PhysXSettingsRegistryManager.h>
 #include <DefaultWorldComponent.h>
-#include <World.h>
 #include <Material.h>
 
 #ifdef PHYSX_EDITOR
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #endif
+namespace AzPhysics
+{
+    struct StaticRigidBodyConfiguration;
+    struct RigidBodyConfiguration;
+    struct SimulatedBody;
+}
 
 namespace PhysX
 {
@@ -81,7 +85,6 @@ namespace PhysX
         SystemComponent(const SystemComponent&) = delete;
 
         // SystemRequestsBus
-        physx::PxScene* CreateScene(physx::PxSceneDesc& sceneDesc) override;
         physx::PxConvexMesh* CreateConvexMesh(const void* vertices, AZ::u32 vertexNum, AZ::u32 vertexStride) override; // should we use AZ::Vector3* or physx::PxVec3 here?
         physx::PxConvexMesh* CreateConvexMeshFromCooked(const void* cookedMeshData, AZ::u32 bufferSize) override;
         physx::PxTriangleMesh* CreateTriangleMeshFromCooked(const void* cookedMeshData, AZ::u32 bufferSize) override;
@@ -104,8 +107,7 @@ namespace PhysX
 
         // Physics::CharacterSystemRequestBus
         virtual AZStd::unique_ptr<Physics::Character> CreateCharacter(const Physics::CharacterConfiguration& characterConfig,
-            const Physics::ShapeConfiguration& shapeConfig, Physics::World& world) override;
-        virtual void UpdateCharacters(Physics::World& world, float deltaTime) override;
+            const Physics::ShapeConfiguration& shapeConfig, AzPhysics::SceneHandle& sceneHandle) override;
 
         // CollisionRequestBus
         AzPhysics::CollisionLayer GetCollisionLayerByName(const AZStd::string& layerName) override;
@@ -117,7 +119,6 @@ namespace PhysX
         AzPhysics::CollisionGroup GetCollisionGroupById(const AzPhysics::CollisionGroups::Id& groupId) override;
         void SetCollisionLayerName(int index, const AZStd::string& layerName) override;
         void CreateCollisionGroup(const AZStd::string& groupName, const AzPhysics::CollisionGroup& group) override;
-        AzPhysics::CollisionConfiguration GetCollisionConfiguration() override;
 
         // AZ::Component interface implementation
         void Init() override;
@@ -132,8 +133,6 @@ namespace PhysX
 #endif
 
         // Physics::SystemRequestBus::Handler
-        AZStd::unique_ptr<Physics::RigidBodyStatic> CreateStaticRigidBody(const Physics::WorldBodyConfiguration& configuration) override;
-        AZStd::unique_ptr<Physics::RigidBody> CreateRigidBody(const Physics::RigidBodyConfiguration& configuration) override;
         AZStd::shared_ptr<Physics::Shape> CreateShape(const Physics::ColliderConfiguration& colliderConfiguration, const Physics::ShapeConfiguration& configuration) override;
         AZStd::shared_ptr<Physics::Material> CreateMaterial(const Physics::MaterialConfiguration& materialConfiguration) override;
         AZStd::shared_ptr<Physics::Material> GetDefaultMaterial() override;
@@ -142,7 +141,7 @@ namespace PhysX
         AZStd::vector<AZ::TypeId> GetSupportedJointTypes() override;
         AZStd::shared_ptr<Physics::JointLimitConfiguration> CreateJointLimitConfiguration(AZ::TypeId jointType) override;
         AZStd::shared_ptr<Physics::Joint> CreateJoint(const AZStd::shared_ptr<Physics::JointLimitConfiguration>& configuration,
-            Physics::WorldBody* parentBody, Physics::WorldBody* childBody) override;
+            AzPhysics::SimulatedBody* parentBody, AzPhysics::SimulatedBody* childBody) override;
         void GenerateJointLimitVisualizationData(
             const Physics::JointLimitConfiguration& configuration,
             const AZ::Quaternion& parentRotation,

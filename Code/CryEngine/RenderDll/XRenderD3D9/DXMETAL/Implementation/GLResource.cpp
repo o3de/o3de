@@ -259,7 +259,7 @@ namespace NCryMetal
                 }
                 else if(CTexture::IsDeviceFormatTypeless(pFormat->m_eDXGIFormat))
                 {
-                    //Apple recommendation -> For sRGB variant views, you don’t need the PFV flag when: - running on
+                    //Apple recommendation -> For sRGB variant views, you don't need the PFV flag when: - running on
                     //iOS/tvOS 12.0 or newer - running on macOS 10.15 or newer
                     //However, on older OSs (and in macOS case, older GPUs) you are still required to set the flag.
 #if defined(AZ_COMPILER_CLANG) && AZ_COMPILER_CLANG >= 9    //@available was added in Xcode 9

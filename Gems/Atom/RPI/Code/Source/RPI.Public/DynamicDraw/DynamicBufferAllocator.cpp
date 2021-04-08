@@ -65,6 +65,12 @@ namespace AZ
         {
             uint32_t allocatePosition = 0;
 
+            //m_ringBufferStartAddress can be null for Null back end
+            if (!m_ringBufferStartAddress)
+            {
+                return nullptr;
+            }
+
             if (size > m_ringBufferSize)
             {
                 AZ_WarningOnce("RPI", !m_enableAllocationWarning, "DynamicBufferAllocator::Allocate: try to allocate buffer which size is larger than the ring buffer size");

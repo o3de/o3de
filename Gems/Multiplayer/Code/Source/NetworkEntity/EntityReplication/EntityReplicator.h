@@ -119,8 +119,8 @@ namespace Multiplayer
         // Events
         RpcSendEvent::Handler m_onSendRpcHandler;
         RpcSendEvent::Handler m_onForwardRpcHandler;
-        RpcSendEvent::Handler m_onSendClientAutonomousRpcHandler;
-        RpcSendEvent::Handler m_onForwardClientAutonomousRpcHandler;
+        RpcSendEvent::Handler m_onSendAutonomousRpcHandler;
+        RpcSendEvent::Handler m_onForwardAutonomousRpcHandler;
         EntityDirtiedEvent::Handler m_onEntityDirtiedHandler;
         EntityStopEvent::Handler m_onEntityStopHandler;
         AZ::ScheduledEvent m_proxyRemovalEvent;

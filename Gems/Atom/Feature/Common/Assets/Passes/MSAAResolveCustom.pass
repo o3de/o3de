@@ -53,7 +53,21 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/PostProcessing/MSAAResolveCustom.shader"
                 },
-                "PipelineViewTag": "MainCamera"
+                "PipelineViewTag": "MainCamera",
+                "ShaderDataMappings": {
+                    "UintMappings": [
+                        {
+                            "Name": "enableNeighborClamping",
+                            "Value": 0
+                        }
+                    ],
+                    "FloatMappings": [
+                        {
+                            "Name": "maxNeighborContrast",
+                            "Value": 2.0
+                        }
+                    ]
+                }
             }
         }
     }

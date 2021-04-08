@@ -67,11 +67,10 @@ namespace UnitTest
         m_instanceToTemplateInterface->GeneratePatch(patch, entityDomBeforeUpdate, entityDomAfterUpdate);
 
         //update template
-        m_instanceToTemplateInterface->PatchEntityInTemplate(patch, entityId);
+        ASSERT_TRUE(m_instanceToTemplateInterface->PatchEntityInTemplate(patch, entityId));
+        m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
 
-        //activate the entity so we can access via transform bus
-        secondInstance->InitializeNestedEntities();
-        secondInstance->ActivateNestedEntities();
+        ValidateInstanceEntitiesActive(*secondInstance);
 
         //get the entity id
         AZ::EntityId secondEntityId = secondInstance->GetEntityId(newEntityAlias);
@@ -121,6 +120,7 @@ namespace UnitTest
 
         //update template
         m_instanceToTemplateInterface->PatchTemplate(patch, templateId);
+        m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
 
         //get the entity id
         AZStd::vector<AZ::EntityId> entityIdVector;
@@ -171,6 +171,7 @@ namespace UnitTest
 
         //update template
         m_instanceToTemplateInterface->PatchTemplate(patch, templateId);
+        m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
 
         //get the entity id
         AZStd::vector<AZ::EntityId> entityIdVector;
@@ -219,6 +220,7 @@ namespace UnitTest
 
         //update template
         m_instanceToTemplateInterface->PatchTemplate(patch, templateId);
+        m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
 
         EXPECT_NE(secondInstance->FindNestedInstance(addedAlias), AZStd::nullopt);
     }
@@ -238,7 +240,7 @@ namespace UnitTest
         //get template id
         TemplateId templateId = firstInstance->GetTemplateId();
 
-        //instantiate second instance for checking if propogation works
+        //instantiate second instance for checking if propagation works
         AZStd::unique_ptr<Instance> secondInstance = m_prefabSystemComponent->InstantiatePrefab(templateId);
         ASSERT_TRUE(secondInstance);
 
@@ -259,6 +261,7 @@ namespace UnitTest
 
         //update template
         m_instanceToTemplateInterface->PatchTemplate(patch, templateId);
+        m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
 
         EXPECT_EQ(secondInstance->FindNestedInstance(addedAlias), AZStd::nullopt);
     }

@@ -20,7 +20,7 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
-        Template::Template(const AZStd::string& filePath, PrefabDom prefabDom)
+        Template::Template(const AZ::IO::Path& filePath, PrefabDom prefabDom)
             : m_filePath(filePath)
             , m_prefabDom(AZStd::move(prefabDom))
         {
@@ -81,6 +81,16 @@ namespace AzToolsFramework
         void Template::MarkAsLoadedWithErrors(bool loadedWithErrors)
         {
             m_isLoadedWithErrors = loadedWithErrors;
+        }
+
+        bool Template::IsDirty() const
+        {
+            return m_isDirty;
+        }
+
+        void Template::MarkAsDirty(bool dirty)
+        {
+            m_isDirty = dirty;
         }
 
         bool Template::AddLink(LinkId newLinkId)
@@ -236,7 +246,7 @@ namespace AzToolsFramework
             return findInstancesResult->get();
         }
 
-        const AZStd::string& Template::GetFilePath() const
+        const AZ::IO::Path& Template::GetFilePath() const
         {
             return m_filePath;
         }

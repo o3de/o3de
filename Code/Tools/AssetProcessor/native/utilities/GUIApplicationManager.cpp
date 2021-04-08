@@ -669,6 +669,7 @@ void GUIApplicationManager::FileChanged(QString path)
         AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get();
         AZ_Assert(settingsRegistry, "Unable to retrieve global SettingsRegistry, it should be available now");
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_Bootstrap(*settingsRegistry);
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(*settingsRegistry, AZ_TRAIT_OS_PLATFORM_CODENAME, {});
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*settingsRegistry, *m_frameworkApp.GetAzCommandLine(), false);
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*settingsRegistry);
     }

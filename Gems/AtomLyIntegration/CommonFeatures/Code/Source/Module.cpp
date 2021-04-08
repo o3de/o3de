@@ -55,6 +55,7 @@
 #include <Material/EditorMaterialComponent.h>
 #include <Material/EditorMaterialSystemComponent.h>
 #include <Mesh/EditorMeshComponent.h>
+#include <Mesh/EditorMeshSystemComponent.h>
 #include <ReflectionProbe/EditorReflectionProbeComponent.h>
 #include <PostProcess/EditorPostFxLayerComponent.h>
 #include <PostProcess/Bloom/EditorBloomComponent.h>
@@ -131,6 +132,7 @@ namespace AZ
                         EditorImageBasedLightComponent::CreateDescriptor(),
                         EditorMaterialComponent::CreateDescriptor(),
                         EditorMaterialSystemComponent::CreateDescriptor(),
+                        EditorMeshSystemComponent::CreateDescriptor(),
                         EditorMeshComponent::CreateDescriptor(),
                         EditorPhysicalSkyComponent::CreateDescriptor(),
                         EditorPointLightComponent::CreateDescriptor(),
@@ -153,6 +155,7 @@ namespace AZ
                     azrtti_typeid<AtomLyIntegrationCommonFeaturesSystemComponent>(),
 #ifdef ATOMLYINTEGRATION_FEATURE_COMMON_EDITOR
                     azrtti_typeid<EditorMaterialSystemComponent>(),
+                    azrtti_typeid<EditorMeshSystemComponent>(),
                     azrtti_typeid<EditorCommonFeaturesSystemComponent>(),
                     azrtti_typeid<EditorPostFxSystemComponent>(),
 #endif

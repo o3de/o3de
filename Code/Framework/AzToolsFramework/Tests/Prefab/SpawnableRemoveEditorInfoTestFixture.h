@@ -117,7 +117,7 @@ namespace UnitTest
         AZ::SerializeContext* m_serializeContext{ nullptr };
         PrefabSystemComponent* m_prefabSystemComponent{ nullptr };
         PrefabConversionUtils::EditorInfoRemover m_editorInfoRemover;
-        PrefabConversionUtils::PrefabProcessorContext m_prefabProcessorContext;
+        PrefabConversionUtils::PrefabProcessorContext m_prefabProcessorContext{ AZ::Uuid::CreateRandom() };
         PrefabDom m_prefabDom;
     };
 }

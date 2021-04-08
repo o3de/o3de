@@ -158,7 +158,7 @@ namespace AZ
 
             m_lightBufferHandler = GpuBufferHandler(desc);
 
-            m_shadowIndexDirectionalLightIndex = viewSrgLayout->FindShaderInputConstantIndex(Name("m_shadowIndexDirectionalLight"));
+            m_shadowIndexDirectionalLightIndex.Reset();
 
             m_auxGeomFeatureProcessor = GetParentScene()->GetFeatureProcessor<RPI::AuxGeomFeatureProcessorInterface>();
 

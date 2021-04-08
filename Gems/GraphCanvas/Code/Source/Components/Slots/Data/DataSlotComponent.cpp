@@ -36,12 +36,13 @@ namespace GraphCanvas
         if (serializeContext)
         {
             serializeContext->Class<DataSlotComponent, SlotComponent>()
-                ->Version(5)
+                ->Version(6)
                 ->Field("TypeId", &DataSlotComponent::m_dataTypeId)
                 ->Field("DataSlotType", &DataSlotComponent::m_dataSlotType)
                 ->Field("CanConvertSlotTypes", &DataSlotComponent::m_canConvertSlotTypes)
                 ->Field("ContainedTypeIds", &DataSlotComponent::m_containedTypeIds)
                 ->Field("DataValueType", &DataSlotComponent::m_valueType)
+                ->Field("IsUserSlot", &DataSlotComponent::m_isUserSlot)
             ;
         }
     }
@@ -97,6 +98,7 @@ namespace GraphCanvas
         , m_valueType(DataValueType::Primitive)
         , m_dataTypeId(AZ::Uuid::CreateNull())
         , m_previousDataSlotType(DataSlotType::Unknown)
+        , m_isUserSlot(false)
     {
         if (m_slotConfiguration.m_slotGroup == SlotGroups::Invalid)
         {
@@ -112,6 +114,7 @@ namespace GraphCanvas
         , m_dataTypeId(dataSlotConfiguration.m_typeId)
         , m_containedTypeIds(dataSlotConfiguration.m_containerTypeIds)
         , m_previousDataSlotType(DataSlotType::Unknown)
+        , m_isUserSlot(dataSlotConfiguration.m_isUserAdded)
     {
         if (m_slotConfiguration.m_slotGroup == SlotGroups::Invalid)
         {
@@ -229,6 +232,8 @@ namespace GraphCanvas
         slotConfiguration->m_typeId = GetDataTypeId();
 
         slotConfiguration->m_containerTypeIds = m_containedTypeIds;
+
+        slotConfiguration->m_isUserAdded = m_isUserSlot;
 
         PopulateSlotConfiguration((*slotConfiguration));
 
@@ -414,6 +419,11 @@ namespace GraphCanvas
             m_dataTypeId = typeId;
             UpdateDisplay();
         }
+    }
+
+    bool DataSlotComponent::IsUserSlot() const
+    {
+        return m_isUserSlot;
     }
 
     const Styling::StyleHelper* DataSlotComponent::GetDataColorPalette() const

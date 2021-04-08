@@ -12,6 +12,17 @@
 #include "LyShine_precompiled.h"
 #include "UiRenderer.h"
 
+#include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
+#include <Atom/RPI.Public/RPISystemInterface.h>
+#include <Atom/RPI.Public/RPIUtils.h>
+#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
+#include <Atom/Bootstrap/DefaultWindowBus.h>
+#include <Atom/RPI.Public/ViewportContextBus.h>
+#include <IRenderer.h> // LYSHINE_ATOM_TODO - remove when GS_DEPTHFUNC_LEQUAL reference is removed with LyShine render target Atom conversion
+
+#include <AzCore/Math/MatrixUtils.h>
+#include <AzCore/Debug/Trace.h>
+
 #include <LyShine/IDraw2d.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -23,16 +34,81 @@ UiRenderer::UiRenderer()
     : m_baseState(GS_DEPTHFUNC_LEQUAL)
     , m_stencilRef(0)
 {
+    AZ::Render::Bootstrap::NotificationBus::Handler::BusConnect();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 UiRenderer::~UiRenderer()
 {
+    AZ::Render::Bootstrap::NotificationBus::Handler::BusDisconnect();
+
+    m_dynamicDraw = nullptr;
+}
+
+bool UiRenderer::IsReady()
+{
+    return m_isReady;
+}
+
+void UiRenderer::OnBootstrapSceneReady([[maybe_unused]] AZ::RPI::Scene* bootstrapScene)
+{
+    // Create a dynamic draw context for UI Canvas drawing
+    AZ::RPI::Scene* scene = AZ::RPI::RPISystemInterface::Get()->GetDefaultScene().get();
+    m_dynamicDraw = AZ::RPI::DynamicDrawInterface::Get()->CreateDynamicDrawContext(scene);
+
+    // Load the UI shader
+    const char* uiShaderFilepath = "Shaders/LyShineUI.azshader";
+    AZ::Data::Instance<AZ::RPI::Shader> uiShader = AZ::RPI::LoadShader(uiShaderFilepath);
+
+    // Initialize the dynamic draw context
+    m_dynamicDraw->InitShader(uiShader);
+    m_dynamicDraw->InitVertexFormat(
+        { { "POSITION", AZ::RHI::Format::R32G32_FLOAT },
+        { "COLOR", AZ::RHI::Format::B8G8R8A8_UNORM },
+        { "TEXCOORD", AZ::RHI::Format::R32G32_FLOAT },
+        { "BLENDINDICES", AZ::RHI::Format::R16G16_UINT } }
+    );
+
+    m_dynamicDraw->EndInit();
+
+    // Cache shader data such as input indices for later use
+    CacheShaderData(uiShader);
+
+    m_isReady = true;
+}
+
+void UiRenderer::CacheShaderData(const AZ::Data::Instance<AZ::RPI::Shader> shader)
+{
+    // Cache draw srg input indices
+    static const char textureIndexName[] = "m_texture";
+    static const char worldToProjIndexName[] = "m_worldToProj";
+    static const char isClampIndexName[] = "m_isClamp";
+    AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = m_dynamicDraw->NewDrawSrg();
+    const AZ::RHI::ShaderResourceGroupLayout* layout = drawSrg->GetAsset()->GetLayout();
+    m_uiShaderData.m_imageInputIndex = layout->FindShaderInputImageIndex(AZ::Name(textureIndexName));
+    AZ_Error(LogName, m_uiShaderData.m_imageInputIndex.IsValid(), "Failed to find shader input constant %s.",
+        textureIndexName);
+    m_uiShaderData.m_viewProjInputIndex = layout->FindShaderInputConstantIndex(AZ::Name(worldToProjIndexName));
+    AZ_Error(LogName, m_uiShaderData.m_viewProjInputIndex.IsValid(), "Failed to find shader input constant %s.",
+        worldToProjIndexName);
+    m_uiShaderData.m_isClampInputIndex = layout->FindShaderInputConstantIndex(AZ::Name(isClampIndexName));
+    AZ_Error(LogName, m_uiShaderData.m_isClampInputIndex.IsValid(), "Failed to find shader input constant %s.",
+        isClampIndexName);
+
+    // Cache shader variants that will be used
+    // LYSHINE_ATOM_TODO - more variants will be used in future phase (masks/render target support)
+    AZ::RPI::ShaderOptionList shaderOptionsDefault;
+    shaderOptionsDefault.push_back(AZ::RPI::ShaderOption(AZ::Name("o_preMultiplyAlpha"), AZ::Name("false")));
+    shaderOptionsDefault.push_back(AZ::RPI::ShaderOption(AZ::Name("o_alphaTest"), AZ::Name("false")));
+    shaderOptionsDefault.push_back(AZ::RPI::ShaderOption(AZ::Name("o_srgbWrite"), AZ::Name("true")));
+    shaderOptionsDefault.push_back(AZ::RPI::ShaderOption(AZ::Name("o_modulate"), AZ::Name("Modulate::None")));
+    m_uiShaderData.m_shaderVariantDefault = m_dynamicDraw->UseShaderVariant(shaderOptionsDefault);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiRenderer::BeginUiFrameRender()
 {
+#ifdef LYSHINE_ATOM_TODO
     m_renderer = gEnv->pRenderer;
 
     // we are rendering at the end of the frame, after tone mapping, so we should be writing sRGB values
@@ -43,6 +119,7 @@ void UiRenderer::BeginUiFrameRender()
     {
         m_texturesUsedInFrame.clear();
     }
+#endif
 #endif
     
     // Various platform drivers expect all texture slots used in the shader to be bound
@@ -60,6 +137,7 @@ void UiRenderer::EndUiFrameRender()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiRenderer::BeginCanvasRender()
 {
+#ifdef LYSHINE_ATOM_TODO
     m_baseState = GS_NODEPTHTEST;
     
     m_stencilRef = 0;
@@ -70,11 +148,57 @@ void UiRenderer::BeginCanvasRender()
     renderer->SetCullMode(R_CULL_DISABLE);
     renderer->SetColorOp(eCO_MODULATE, eCO_MODULATE, DEF_TEXARG0, DEF_TEXARG0);
     renderer->SetState(GS_BLSRC_SRCALPHA | GS_BLDST_ONEMINUSSRCALPHA | GS_NODEPTHTEST);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiRenderer::EndCanvasRender()
 {
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> UiRenderer::GetDynamicDrawContext()
+{
+    return m_dynamicDraw;
+}
+
+const UiRenderer::UiShaderData& UiRenderer::GetUiShaderData()
+{
+    return m_uiShaderData;
+}
+
+AZ::Matrix4x4 UiRenderer::GetModelViewProjectionMatrix()
+{
+    auto viewContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+    auto viewportContext = viewContextManager->GetViewportContextByName(viewContextManager->GetDefaultViewportContextName());
+    auto windowContext = viewportContext->GetWindowContext();
+
+    const AZ::RHI::Viewport& viewport = windowContext->GetViewport();
+    const float viewX = viewport.m_minX;
+    const float viewY = viewport.m_minY;
+    const float viewWidth = viewport.m_maxX - viewport.m_minX;
+    const float viewHeight = viewport.m_maxY - viewport.m_minY;
+    const float zf = viewport.m_minZ;
+    const float zn = viewport.m_maxZ;
+
+    AZ::Matrix4x4 modelViewProjMat;
+    AZ::MakeOrthographicMatrixRH(modelViewProjMat, viewX, viewX + viewWidth, viewY + viewHeight, viewY, zn, zf);
+
+    return modelViewProjMat;
+}
+
+AZ::Vector2 UiRenderer::GetViewportSize()
+{
+    auto viewContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+    auto viewportContext = viewContextManager->GetViewportContextByName(viewContextManager->GetDefaultViewportContextName());
+    auto windowContext = viewportContext->GetWindowContext();
+
+    const AZ::RHI::Viewport& viewport = windowContext->GetViewport();
+    const float viewX = viewport.m_minX;
+    const float viewY = viewport.m_minY;
+    const float viewWidth = viewport.m_maxX - viewport.m_minX;
+    const float viewHeight = viewport.m_maxY - viewport.m_minY;
+    return AZ::Vector2(viewWidth, viewHeight);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -113,6 +237,7 @@ void UiRenderer::DecrementStencilRef()
     --m_stencilRef;
 }
 
+#ifdef LYSHINE_ATOM_TODO
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiRenderer::SetTexture(ITexture* texture, int texUnit, bool clamp)
 {
@@ -134,10 +259,13 @@ void UiRenderer::SetTexture(ITexture* texture, int texUnit, bool clamp)
     }
 #endif
 }
+#endif
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiRenderer::BindNullTexture()
 {
+#ifdef LYSHINE_ATOM_TODO
     // Bind the global white texture for all the texture units we use
     const int MaxTextures = 16;
     int whiteTexId = m_renderer->GetWhiteTextureId();
@@ -145,6 +273,7 @@ void UiRenderer::BindNullTexture()
     {
         m_renderer->SetTexture(whiteTexId, texUnit);
     }
+#endif
 }
 
 #ifndef _RELEASE
@@ -160,6 +289,7 @@ void UiRenderer::DebugDisplayTextureData(int recordingOption)
 {
     if (recordingOption > 0)
     {
+#ifdef LYSHINE_ATOM_TODO
         // compute the total area of all the textures, also create a vector that we can sort by area
         AZStd::vector<ITexture*> textures;
         int totalArea = 0;
@@ -241,6 +371,7 @@ void UiRenderer::DebugDisplayTextureData(int recordingOption)
         }
 
         draw2d->EndDraw2d();
+#endif
     }
 }
 

@@ -15,6 +15,7 @@
 #include <AzCore/std/string/conversions.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/AssImpBlendShapeImporter.h>
+#include <SceneAPI/FbxSceneBuilder/Importers/Utilities/AssImpMeshImporterUtilities.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/Utilities/RenamedNodesMap.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/FbxImporterUtilities.h>
 #include <SceneAPI/FbxSceneBuilder/FbxSceneSystem.h>
@@ -43,7 +44,7 @@ namespace AZ
                 SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
                 if (serializeContext)
                 {
-                    serializeContext->Class<AssImpBlendShapeImporter, SceneCore::LoadingComponent>()->Version(1);
+                    serializeContext->Class<AssImpBlendShapeImporter, SceneCore::LoadingComponent>()->Version(3); // LYN-2576
                 }
             }
 
@@ -68,13 +69,24 @@ namespace AZ
                     return Events::ProcessingResult::Ignored;
                 }
 
+                GetMeshDataFromParentResult meshDataResult(GetMeshDataFromParent(context));
+                if (!meshDataResult.IsSuccess())
+                {
+                    return meshDataResult.GetError();
+                }
+                const SceneData::GraphData::MeshData* const parentMeshData(meshDataResult.GetValue());
+                int parentMeshIndex = parentMeshData->GetSdkMeshIndex();
+
                 Events::ProcessingResultCombiner combinedBlendShapeResult;
 
-                for (int meshIdx = 0; meshIdx < numMesh; meshIdx++)
+                for (int nodeMeshIdx = 0; nodeMeshIdx < numMesh; nodeMeshIdx++)
                 {
-                    int meshId = context.m_sourceNode.GetAssImpNode()->mMeshes[meshIdx];
-                    aiMesh* aiMesh = context.m_sourceScene.GetAssImpScene()->mMeshes[meshId];
-                    if (!aiMesh->mNumAnimMeshes)
+                    int sceneMeshIdx = context.m_sourceNode.GetAssImpNode()->mMeshes[nodeMeshIdx];
+                    const aiMesh* aiMesh = context.m_sourceScene.GetAssImpScene()->mMeshes[sceneMeshIdx];
+
+                    // Each mesh gets its own node in the scene graph, so only generate
+                    // morph targets for the current mesh.
+                    if (parentMeshIndex != nodeMeshIdx || !aiMesh->mNumAnimMeshes)
                     {
                         continue;
                     }
@@ -96,8 +108,21 @@ namespace AZ
 
                         int firstMeshVertexIndex = -1;
                         int previousMeshVertexIndex = -1;
-
                         int verticesInMeshFace = 0;
+
+                        AZStd::bitset<SceneData::GraphData::BlendShapeData::MaxNumUVSets> uvSetUsedFlags;
+                        for (AZ::u8 uvSetIndex = 0; uvSetIndex < SceneData::GraphData::BlendShapeData::MaxNumUVSets; ++uvSetIndex)
+                        {
+                            uvSetUsedFlags.set(uvSetIndex, aiAnimMesh->HasTextureCoords(uvSetIndex));
+                        }
+                        AZStd::bitset<SceneData::GraphData::BlendShapeData::MaxNumColorSets> colorSetUsedFlags;
+                        for (AZ::u8 colorSetIndex = 0; colorSetIndex < SceneData::GraphData::BlendShapeData::MaxNumColorSets;
+                             ++colorSetIndex)
+                        {
+                            colorSetUsedFlags.set(colorSetIndex, aiAnimMesh->HasVertexColors(colorSetIndex));
+                        }
+                        blendShapeData->ReserveData(
+                            aiAnimMesh->mNumVertices, aiAnimMesh->HasTangentsAndBitangents(), uvSetUsedFlags, colorSetUsedFlags);
 
                         for (int vertIdx = 0; vertIdx < aiAnimMesh->mNumVertices; ++vertIdx)
                         {
@@ -106,7 +131,7 @@ namespace AZ
                             context.m_sourceSceneSystem.SwapVec3ForUpAxis(vertex);
                             context.m_sourceSceneSystem.ConvertUnit(vertex);
 
-
+                            // Add normals
                             AZ::Vector3 normal;
                             if (aiAnimMesh->HasNormals())
                             {
@@ -116,6 +141,39 @@ namespace AZ
                             }
                             blendShapeData->AddVertex(vertex, normal);
                             blendShapeData->SetVertexIndexToControlPointIndexMap(vertIdx, vertIdx);
+
+                            // Add tangents and bitangents
+                            if (aiAnimMesh->HasTangentsAndBitangents())
+                            {
+                                // Vector4's constructor that takes in a vector3 sets w to 1.0f automatically.
+                                const AZ::Vector4 tangent(AssImpSDKWrapper::AssImpTypeConverter::ToVector3(aiAnimMesh->mTangents[vertIdx]));
+                                const AZ::Vector3 bitangent = AssImpSDKWrapper::AssImpTypeConverter::ToVector3(aiAnimMesh->mBitangents[vertIdx]);
+                                blendShapeData->AddTangentAndBitangent(tangent, bitangent);
+                            }
+
+                            // Add UVs
+                            for (AZ::u8 uvSetIdx = 0; uvSetIdx < SceneData::GraphData::BlendShapeData::MaxNumUVSets; ++uvSetIdx)
+                            {
+                                if (aiAnimMesh->HasTextureCoords(uvSetIdx))
+                                {
+                                    const AZ::Vector2 vertexUV(
+                                        aiAnimMesh->mTextureCoords[uvSetIdx][vertIdx].x,
+                                        // The engine's V coordinate is reverse of how it's stored in assImp.
+                                        1.0f - aiAnimMesh->mTextureCoords[uvSetIdx][vertIdx].y);
+                                    blendShapeData->AddUV(vertexUV, uvSetIdx);
+                                }
+                            }
+
+                            // Add colors
+                            for (AZ::u8 colorSetIdx = 0; colorSetIdx < SceneData::GraphData::BlendShapeData::MaxNumColorSets; ++colorSetIdx)
+                            {
+                                if (aiAnimMesh->HasVertexColors(colorSetIdx))
+                                {
+                                    SceneAPI::DataTypes::Color color =
+                                        AssImpSDKWrapper::AssImpTypeConverter::ToColor(aiAnimMesh->mColors[colorSetIdx][vertIdx]);
+                                    blendShapeData->AddColor(color, colorSetIdx);
+                                }
+                            }
                         }
 
                         // aiAnimMesh just has a list of positions for vertices. The face indices are on the original mesh.

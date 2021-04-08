@@ -196,7 +196,6 @@ namespace AssetProcessor
         AZ_UNUSED(autoRegisterIfNotFound);
         AZ_Assert(autoRegisterIfNotFound == false, "Auto registration is invalid during asset processing.");
         AZ_UNUSED(typeToRegister);
-        AZ_Assert(typeToRegister == AZ::Data::s_invalidAssetType, "Can not register types during asset processing.");
 
         AzFramework::SocketConnection* engineConnection = AzFramework::SocketConnection::GetInstance();
         if (!engineConnection || !engineConnection->IsConnected())

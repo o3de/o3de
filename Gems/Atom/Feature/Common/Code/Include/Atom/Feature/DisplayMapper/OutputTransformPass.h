@@ -13,7 +13,7 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <Atom/RPI.Public/Pass/FullscreenTrianglePass.h>
-#include <Atom/Feature/ACES/Aces.h>
+#include <ACES/Aces.h>
 #include <Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h>
 #include <Atom/Feature/DisplayMapper/DisplayMapperFullScreenPass.h>
 #include <PostProcessing/PostProcessingShaderOptionBase.h>

@@ -17,6 +17,9 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Physics/Utils.h>
 #include <AzFramework/Physics/Material.h>
+#include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
+#include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
+#include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <PhysX/MeshAsset.h>
@@ -49,8 +52,6 @@
 
 namespace PhysX
 {
-    static const char* const DefaultWorldName = "PhysX Default";
-
     bool SystemComponent::VersionConverter(AZ::SerializeContext& context,
         AZ::SerializeContext::DataElementNode& classElement)
     {
@@ -284,17 +285,6 @@ namespace PhysX
     }
 #endif
 
-    // PhysXSystemComponentRequestBus interface implementation
-    physx::PxScene* SystemComponent::CreateScene(physx::PxSceneDesc& sceneDesc)
-    {
-#ifdef PHYSX_ENABLE_MULTI_THREADING
-        sceneDesc.flags |= physx::PxSceneFlag::eREQUIRE_RW_LOCK;
-#endif
-        //TEMP until this in moved over
-        sceneDesc.cpuDispatcher = m_physXSystem->GetPxCpuDispathcher();
-        return m_physXSystem->GetPxPhysics()->createScene(sceneDesc);
-    }
-
     physx::PxConvexMesh* SystemComponent::CreateConvexMesh(const void* vertices, AZ::u32 vertexNum, AZ::u32 vertexStride)
     {
         physx::PxConvexMeshDesc desc;
@@ -383,16 +373,6 @@ namespace PhysX
         return m_physXSystem->GetPxPhysics()->createTriangleMesh(inpStream);
     }
 
-    AZStd::unique_ptr<Physics::RigidBodyStatic> SystemComponent::CreateStaticRigidBody(const Physics::WorldBodyConfiguration& configuration)
-    {
-        return AZStd::make_unique<PhysX::RigidBodyStatic>(configuration);
-    }
-
-    AZStd::unique_ptr<Physics::RigidBody> SystemComponent::CreateRigidBody(const Physics::RigidBodyConfiguration& configuration)
-    {
-        return AZStd::make_unique<RigidBody>(configuration);
-    }
-
     AZStd::shared_ptr<Physics::Shape> SystemComponent::CreateShape(const Physics::ColliderConfiguration& colliderConfiguration, const Physics::ShapeConfiguration& configuration)
     {
         auto shapePtr = AZStd::make_shared<PhysX::Shape>(colliderConfiguration, configuration);
@@ -444,7 +424,7 @@ namespace PhysX
     }
 
     AZStd::shared_ptr<Physics::Joint> SystemComponent::CreateJoint(const AZStd::shared_ptr<Physics::JointLimitConfiguration>& configuration,
-        Physics::WorldBody* parentBody, Physics::WorldBody* childBody)
+        AzPhysics::SimulatedBody* parentBody, AzPhysics::SimulatedBody* childBody)
     {
         return JointUtils::CreateJoint(configuration, parentBody, childBody);
     }
@@ -534,21 +514,9 @@ namespace PhysX
 
     // Physics::CharacterSystemRequestBus
     AZStd::unique_ptr<Physics::Character> SystemComponent::CreateCharacter(const Physics::CharacterConfiguration&
-        characterConfig, const Physics::ShapeConfiguration& shapeConfig, Physics::World& world)
+        characterConfig, const Physics::ShapeConfiguration& shapeConfig, AzPhysics::SceneHandle& sceneHandle)
     {
-        return Utils::Characters::CreateCharacterController(characterConfig, shapeConfig, world);
-    }
-
-    void SystemComponent::UpdateCharacters(Physics::World& world, float deltaTime)
-    {
-        if (auto physxWorld = azrtti_cast<PhysX::World*>(&world))
-        {
-            auto manager = physxWorld->GetOrCreateControllerManager();
-            if (manager)
-            {
-                manager->computeInteractions(deltaTime);
-            }
-        }
+        return Utils::Characters::CreateCharacterController(characterConfig, shapeConfig, sceneHandle);
     }
 
     AzPhysics::CollisionLayer SystemComponent::GetCollisionLayerByName(const AZStd::string& layerName)
@@ -603,11 +571,6 @@ namespace PhysX
     void SystemComponent::CreateCollisionGroup(const AZStd::string& groupName, const AzPhysics::CollisionGroup& group)
     {
         m_physXSystem->CreateCollisionGroup(groupName, group);
-    }
-
-    AzPhysics::CollisionConfiguration SystemComponent::GetCollisionConfiguration()
-    {
-        return m_physXSystem->GetPhysXConfiguration().m_collisionConfig;
     }
 
     physx::PxFilterData SystemComponent::CreateFilterData(const AzPhysics::CollisionLayer& layer, const AzPhysics::CollisionGroup& group)
@@ -701,10 +664,6 @@ namespace PhysX
 
     void SystemComponent::ActivatePhysXSystem()
     {
-        // Set Physics API constants to PhysX-friendly values
-        Physics::DefaultRigidBodyConfiguration::m_computeInertiaTensor = true;
-        Physics::DefaultRigidBodyConfiguration::m_sleepMinEnergy = 0.005f;
-
         if (m_physXSystem = GetPhysXSystem())
         {
             m_physXSystem->RegisterSystemInitializedEvent(m_onSystemInitializedHandler);

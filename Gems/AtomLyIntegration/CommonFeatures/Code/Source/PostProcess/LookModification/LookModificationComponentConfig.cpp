@@ -13,7 +13,7 @@
 #include <AtomLyIntegration/CommonFeatures/PostProcess/LookModification/LookModificationComponentConfig.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
-#include <Atom/Feature/ACES/Aces.h>
+#include <ACES/Aces.h>
 
 namespace AZ
 {

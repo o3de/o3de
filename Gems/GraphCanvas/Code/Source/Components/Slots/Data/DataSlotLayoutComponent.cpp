@@ -878,13 +878,16 @@ namespace GraphCanvas
 
             if (dataRequests)
             {
-                if (dataRequests->GetDataSlotType() == DataSlotType::Value && dataRequests->CanConvertToReference())
+                if (!dataRequests->IsUserSlot())
                 {
-                    dataRequests->ConvertToReference();
-                }
-                else if (dataRequests->GetDataSlotType() == DataSlotType::Reference && dataRequests->CanConvertToValue())
-                {
-                    dataRequests->ConvertToValue();
+                    if (dataRequests->GetDataSlotType() == DataSlotType::Value && dataRequests->CanConvertToReference())
+                    {
+                        dataRequests->ConvertToReference();
+                    }
+                    else if (dataRequests->GetDataSlotType() == DataSlotType::Reference && dataRequests->CanConvertToValue())
+                    {
+                        dataRequests->ConvertToValue();
+                    }
                 }
             }
         }

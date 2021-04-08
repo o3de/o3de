@@ -77,8 +77,15 @@ namespace AZ
             ResetRenderState();
             m_viewportId = viewportContextPtr->GetId();
             m_defaultInstance = false;
-            RPI::Scene* scene = viewportContextPtr->GetRenderScene().get();
-            InitInternal(scene, viewportContextPtr);
+            auto setupScene = [this](RPI::ScenePtr scene)
+            {
+                auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+                AZ::RPI::ViewportContextPtr viewportContextPtr = viewportContextManager->GetViewportContextById(m_viewportId);
+                InitInternal(scene.get(), viewportContextPtr);
+            };
+            setupScene(viewportContextPtr->GetRenderScene());
+            m_sceneChangeHandler = AZ::RPI::ViewportContext::SceneChangedEvent::Handler(setupScene);
+            viewportContextPtr->ConnectSceneChangedHandler(m_sceneChangeHandler);
         }
 
         AtomDebugDisplayViewportInterface::AtomDebugDisplayViewportInterface(uint32_t defaultInstanceAddress)
@@ -92,6 +99,7 @@ namespace AZ
 
         void AtomDebugDisplayViewportInterface::InitInternal(RPI::Scene* scene, AZ::RPI::ViewportContextPtr viewportContextPtr)
         {
+            AzFramework::DebugDisplayRequestBus::Handler::BusDisconnect(m_viewportId);
             if (!scene)
             {
                 m_auxGeomPtr = nullptr;

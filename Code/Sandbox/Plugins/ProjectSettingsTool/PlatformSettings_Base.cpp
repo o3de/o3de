@@ -55,8 +55,6 @@ namespace ProjectSettingsTool
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::FileNameOrEmpty))
                         ->Attribute(Attributes::PropertyIdentfier, Identfiers::ProductName)
                         ->Attribute(Attributes::LinkedProperty, Identfiers::ExecutableName)
-                    ->DataElement(Handlers::QValidatedLineEdit, &BaseSettings::m_sysDllGame, "Game Dll Name", "The name of the project's dll.")
-                        ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::FileNameOrEmpty))
                     ->DataElement(Handlers::QValidatedLineEdit, &BaseSettings::m_projectOutputFolder, "Output Folder", "The folder the packed project will be exported to.")
                     ->DataElement(Handlers::QValidatedLineEdit, &BaseSettings::m_codeFolder, "Code Folder (legacy)", "A legacy setting specifing the folder for this project's code.")
                 ;

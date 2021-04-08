@@ -18,6 +18,7 @@ set(FILES
     Include/PhysX/MeshColliderComponentBus.h
     Include/PhysX/MeshAsset.h
     Include/PhysX/HeightFieldAsset.h
+    Include/PhysX/HeightFieldAsset.cpp
     Include/PhysX/UserDataTypes.h
     Include/PhysX/UserDataTypes.inl
     Include/PhysX/Utils.h
@@ -26,7 +27,6 @@ set(FILES
     Include/PhysX/ComponentTypeIds.h
     Include/PhysX/ForceRegionComponentBus.h
     Include/PhysX/ColliderShapeBus.h
-    Include/PhysX/TriggerEventCallback.h
     Include/PhysX/PhysXLocks.h
     Include/PhysX/CharacterControllerBus.h
     Include/PhysX/CharacterGameplayBus.h
@@ -64,8 +64,6 @@ set(FILES
     Source/Pipeline/StreamWrapper.h
     Source/Utils.h
     Source/Utils.cpp
-    Source/World.cpp
-    Source/World.h
     Source/RigidBody.cpp
     Source/RigidBody.h
     Source/RigidBodyStatic.cpp
@@ -106,6 +104,8 @@ set(FILES
     Include/PhysX/Debug/PhysXDebugConfiguration.h
     Include/PhysX/Debug/PhysXDebugInterface.h
     Include/PhysX/Configuration/PhysXConfiguration.h
+    Source/Common/PhysXSceneQueryHelpers.h
+    Source/Common/PhysXSceneQueryHelpers.cpp
     Source/Configuration/PhysXConfiguration.cpp
     Source/Configuration/PhysXSettingsRegistryManager.h
     Source/Configuration/PhysXSettingsRegistryManager.cpp
@@ -114,6 +114,12 @@ set(FILES
     Source/Debug/Configuration/PhysXDebugConfiguration.cpp
     Source/Scene/PhysXScene.h
     Source/Scene/PhysXScene.cpp
+    Source/Scene/PhysXSceneInterface.h
+    Source/Scene/PhysXSceneInterface.cpp
+    Source/Scene/PhysXSceneSimulationEventCallback.h
+    Source/Scene/PhysXSceneSimulationEventCallback.cpp
+    Source/Scene/PhysXSceneSimulationFilterCallback.h
+    Source/Scene/PhysXSceneSimulationFilterCallback.cpp
     Source/System/PhysXAllocator.h
     Source/System/PhysXAllocator.cpp
     Source/System/PhysXCookingParams.h

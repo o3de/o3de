@@ -246,11 +246,11 @@ namespace AZ
             {
                 AZ::Data::Asset<AZ::RPI::ShaderResourceGroupAsset> m_perObjectSrgAsset;
                 AZ::RHI::DrawListTag m_drawListTag;
-                AZ::RHI::ShaderInputConstantIndex m_colorIndex;
-                AZ::RHI::ShaderInputConstantIndex m_modelToWorldIndex;
-                AZ::RHI::ShaderInputConstantIndex m_normalMatrixIndex;
-                AZ::RHI::ShaderInputConstantIndex m_viewProjectionOverrideIndex;
-                AZ::RHI::ShaderInputConstantIndex m_pointSizeIndex;
+                AZ::RHI::ShaderInputNameIndex m_colorIndex = "m_color";
+                AZ::RHI::ShaderInputNameIndex m_modelToWorldIndex = "m_modelToWorld";
+                AZ::RHI::ShaderInputNameIndex m_normalMatrixIndex = "m_normalMatrix";
+                AZ::RHI::ShaderInputNameIndex m_viewProjectionOverrideIndex = "m_viewProjectionOverride";
+                AZ::RHI::ShaderInputNameIndex m_pointSizeIndex = "m_pointSize";
             };
             ShaderData m_perObjectShaderData[ShapeLightingStyle_Count];
             ShaderData& GetShaderDataForDrawStyle(int drawStyle) {return m_perObjectShaderData[drawStyle == DrawStyle_Shaded];}

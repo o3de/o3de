@@ -30,7 +30,10 @@ bool        prefix##m_flipNormalY;
 #define COMMON_OPTIONS_NORMAL(prefix) \
 option bool prefix##o_normal_useTexture; 
 
-float4 SampleNormal(Texture2D map, sampler mapSampler, float2 uv)
+//! Samples the normal map and returns the XY values of the normal. 
+//! (Z must be reconstructed assuming length=1; this is handled by the various utility functions that take float2 in TangentSpace.azsli).
+//! The returned XY values will be in the range [-1,1].
+float2 SampleNormalXY(Texture2D map, sampler mapSampler, float2 uv)
 {
     float4 sampledValue = map.Sample(mapSampler, uv);
     
@@ -40,13 +43,16 @@ float4 SampleNormal(Texture2D map, sampler mapSampler, float2 uv)
     sampledValue =  (sampledValue * 2) - 1;
 #endif
 
-    return sampledValue;
+    return sampledValue.xy;
 }
 
-// Samples the normal map values and flips X/Y if requested
-float2 SampleNormal(Texture2D map, sampler mapSampler, float2 uv, bool flipX, bool flipY)
+//! Samples the normal map and returns the XY values of the normal. 
+//! (Z must be reconstructed assuming length=1; this is handled by the various utility functions that take float2 in TangentSpace.azsli).
+//! The returned XY values will be in the range [-1,1].
+//! Also flips X and/or Y if requested.
+float2 SampleNormalXY(Texture2D map, sampler mapSampler, float2 uv, bool flipX, bool flipY)
 {
-    float2 sampledValue = SampleNormal(map, mapSampler, uv).rg;
+    float2 sampledValue = SampleNormalXY(map, mapSampler, uv);
 
     // [GFX TODO][ATOM-2404] For some reason, the image build pipeline swaps the R and G channels
     if(flipX)
@@ -73,7 +79,7 @@ float3 GetNormalInputWS(Texture2D map, sampler mapSampler, float2 uv, bool flipX
 {
     if (useTexture)
     {
-        float2 sampledValue = SampleNormal(map, mapSampler, uv, flipX, flipY);
+        float2 sampledValue = SampleNormalXY(map, mapSampler, uv, flipX, flipY);
         normal = GetWorldSpaceNormal(sampledValue, normal, tangent, bitangent, uvMatrix, normalStrength);
     }
     else
@@ -90,7 +96,7 @@ float3 GetNormalInputTS(Texture2D map, sampler mapSampler, float2 uv, bool flipX
 {
     if (useTexture)
     {
-        float2 sampledValue = SampleNormal(map, mapSampler, uv, flipX, flipY);
+        float2 sampledValue = SampleNormalXY(map, mapSampler, uv, flipX, flipY);
         return GetTangentSpaceNormal(sampledValue, uvMatrix, normalStrength);
     }
     else

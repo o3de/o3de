@@ -19,6 +19,6 @@ namespace AZ
     namespace DX12
     {
         //! For details go to AZ::RHI::Factory::GetAPIUniqueIndex 
-        static constexpr uint32_t APIUniqueIndex = 0;
+        static constexpr uint32_t APIUniqueIndex = static_cast<uint32_t>(RHI::APIIndex::DX12);
     }
 }

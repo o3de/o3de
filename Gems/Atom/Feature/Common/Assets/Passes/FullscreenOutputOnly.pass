@@ -23,30 +23,6 @@
                         "LoadAction": "Clear"
                     }
                 }
-            ],
-            "ImageAttachments": [
-                {
-                    "Name": "OutputAttachment",
-                    "SizeSource": {
-                        "Source": {
-                            "Pass": "Parent",
-                            "Attachment": "SwapChainOutput"
-                        }
-                    },
-                    "FormatSource": {
-                        "Pass": "Parent",
-                        "Attachment": "SwapChainOutput"
-                    }
-                }
-            ],
-            "Connections": [
-                {
-                    "LocalSlot": "Output",
-                    "AttachmentRef": {
-                        "Pass": "This",
-                        "Attachment": "OutputAttachment"
-                    }
-                }
             ]
         }
     }

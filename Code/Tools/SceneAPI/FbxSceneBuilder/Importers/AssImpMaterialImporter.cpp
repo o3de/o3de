@@ -18,6 +18,7 @@
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/FbxImporterUtilities.h>
+#include <SceneAPI/FbxSceneBuilder/Importers/Utilities/AssImpMeshImporterUtilities.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/Utilities/RenamedNodesMap.h>
 #include <SceneAPI/SDKWrapper/AssImpNodeWrapper.h>
 #include <SceneAPI/SDKWrapper/AssImpSceneWrapper.h>

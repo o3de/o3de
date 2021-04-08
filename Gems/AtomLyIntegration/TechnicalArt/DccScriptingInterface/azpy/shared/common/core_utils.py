@@ -53,8 +53,8 @@ import site
 import fnmatch
 
 # 3rd Party
-from unipath import Path
-from progress.spinner import Spinner
+from pathlib import Path
+# from progress.spinner import Spinner # deprecate use (or refactor)
 
 # Lumberyard extensions
 from azpy.constants import *
@@ -64,7 +64,7 @@ from azpy import initialize_logger
 
 # -------------------------------------------------------------------------
 #  global space debug flag
-from azpy import env_bool
+from azpy.env_bool import env_bool
 from azpy.constants import ENVAR_DCCSI_GDEBUG
 from azpy.constants import ENVAR_DCCSI_DEV_MODE
 
@@ -85,12 +85,9 @@ _LOGGER.debug('Invoking __init__.py for {0}.'.format({_PACKAGENAME}))
 # --------------------------------------------------------------------------
 def gather_paths_of_type_from_dir(in_path=str('c:\\'),
                                   extension=str('*.py'),
-                                  return_path_list=list(),
-                                  use_spinner=False):
+                                  return_path_list=list()):
     '''Walks from in_path and returns list of directories that contain the
     file type matching the extension'''
-    if use_spinner:
-        spinner = Spinner('Finding: {0}\r'.format(extension))
 
     # recursive function for finding paths
     dir_contents = os.listdir(in_path)
@@ -110,9 +107,6 @@ def gather_paths_of_type_from_dir(in_path=str('c:\\'),
 
         if found:
             return_path_list.append(dir_trim_following_slash(to_unix_path(os.path.abspath(in_path))))
-
-        if use_spinner:
-            spinner.next()
 
         complete = True
 
@@ -136,7 +130,7 @@ def dir_trim_following_slash(current_path_str):
 def to_unix_path(current_path_str):
     '''converts path string to use unix slashes'''
     _LOGGER.debug('to_unix_path({0})'.format(current_path_str))
-    safe_path = current_path_str.replace('\\', '/')
+    safe_path = str(current_path_str).replace('\\', '/')
     return safe_path
 # --------------------------------------------------------------------------
 
@@ -158,7 +152,7 @@ def module_path():
 
 
 # --------------------------------------------------------------------------
-def get_stub_check_path(in_path, checkStub='engineroot.txt'):
+def get_stub_check_path(in_path, check_stub='engineroot.txt'):
     '''
     Returns the branch root directory of the dev\'engineroot.txt'
     (... or you can pass it another known stub)
@@ -167,15 +161,13 @@ def get_stub_check_path(in_path, checkStub='engineroot.txt'):
 
     If the stub is not found, it returns None
     '''
-    from unipath import Path
-
     path = Path(in_path).absolute()
 
     while 1:
-        testPath = Path(path, checkStub)
+        test_path = Path(path, check_stub)
 
-        if testPath.isfile():
-            return Path(testPath)
+        if test_path.is_file():
+            return Path(test_path)
 
         else:
             path, tail = (path.parent, path.name)
@@ -188,15 +180,16 @@ def get_stub_check_path(in_path, checkStub='engineroot.txt'):
 # -------------------------------------------------------------------------
 def reorder_sys_paths(known_sys_paths):
     """Reorders new directories to the front"""
-    new_sys_path = []
+    sys_paths = list(sys.path)
+    new_sys_paths = []
 
-    for item in list(sys.path):
+    for item in sys_paths:
         item = Path(item)
-        if item.lower() not in known_sys_paths:
-            new_sys_path.append(item)
-            sys.path.remove(item)
+        if str(item).lower() not in known_sys_paths:
+            new_sys_paths.append(item)
+        sys_paths.remove(str(item))
 
-    sys.path[:0] = new_sys_path
+    sys.path[:0] = new_sys_paths
 
     known_sys_paths = site._init_pathinfo()
     return known_sys_paths
@@ -386,13 +379,11 @@ def walk_up_dir(in_path, dir_tag='foo'):
 
     returns None if the directory named dir_tag is not found
     '''
-    from unipath import Path
-
-    path = Path(Path(__file__).absolute())
+    path = Path(__file__).absolute()
     while 1:
         # hmmm, will this break on unix paths?
         # what about case sensitivity?
-        dir_base_name = Path(path.norm_case()).name()
+        dir_base_name = path.norm_case().name()
         if (dir_base_name == dir_tag):
             break
         path, tail = (path.parent(), path.name())
@@ -406,6 +397,7 @@ def walk_up_dir(in_path, dir_tag='foo'):
 # --------------------------------------------------------------------------
 def return_stub(stub):
     '''Take a file name (stub) and returns the directory of the file (stub)'''
+    # to do: refactor to pathlib.Path
     from unipath import Path
 
     dir_last_file = None

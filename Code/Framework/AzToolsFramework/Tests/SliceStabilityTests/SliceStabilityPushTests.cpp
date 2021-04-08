@@ -16,6 +16,8 @@ namespace UnitTest
 {
     TEST_F(SliceStabilityTest, PushToSlice_PushSingleEntityToSlice_EntityStateRemainsTheSame_FT)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         // Create an entity to be used in a slice
         AzToolsFramework::EntityIdList liveEntityIds;
         AZ::EntityId sliceEntity = CreateEditorEntity("SliceEntity", liveEntityIds);
@@ -48,6 +50,8 @@ namespace UnitTest
 
     TEST_F(SliceStabilityTest, PushToSlice_PushSingleParentEntityWithChildEntity_EntityStateRemainsTheSame_FT)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         // Create an entity to be used as a slice root
         AzToolsFramework::EntityIdList liveEntityIds;
         AZ::EntityId sliceEntity = CreateEditorEntity("SliceEntity", liveEntityIds);
@@ -86,6 +90,8 @@ namespace UnitTest
     // Disabled in SPEC-3077
     TEST_F(SliceStabilityTest, DISABLED_PushToSlice_PushGrandparentParentChildHierarchy_EntityStateRemainsTheSame_FT)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         // Create an entity to be used as a slice root
         AzToolsFramework::EntityIdList liveEntityIds;
         AZ::EntityId sliceEntity = CreateEditorEntity("SliceEntity", liveEntityIds);
@@ -124,6 +130,8 @@ namespace UnitTest
 
     TEST_F(SliceStabilityTest, PushToSlice_Push10DeepParentChildHierarchy_EntityStateRemainsTheSame_FT)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         // Create an entity to be used as a slice root
         AzToolsFramework::EntityIdList liveEntityIds;
         AZ::EntityId sliceEntity = CreateEditorEntity("SliceEntity", liveEntityIds);
@@ -161,6 +169,8 @@ namespace UnitTest
 
     TEST_F(SliceStabilityTest, PushToSlice_Push10Children_EntityStateRemainsTheSame_FT)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         // Create an entity to be used as a slice root
         AzToolsFramework::EntityIdList liveEntityIds;
         AZ::EntityId sliceEntity = CreateEditorEntity("SliceEntity", liveEntityIds);
@@ -200,6 +210,8 @@ namespace UnitTest
 
     TEST_F(SliceStabilityTest, PushToSlice_PushNestedSliceOfDifferentType_EntityStateRemainsTheSame_FT)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         // Create an entity to be used for Slice1's root
         AzToolsFramework::EntityIdList slice1Entities;
         AZ::EntityId slice1Root = CreateEditorEntity("slice1Root", slice1Entities);
@@ -254,6 +266,8 @@ namespace UnitTest
 
     TEST_F(SliceStabilityTest, PushToSliceAndCreateSlice_ValidateCombinationOfPushCreateOperations_EntityStateRemainsTheSame_FT)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         // Create Slice1 root
         AzToolsFramework::EntityIdList slice1Entities;
         AZ::EntityId slice1Root = CreateEditorEntity("Slice1Root", slice1Entities);

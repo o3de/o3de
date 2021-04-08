@@ -15,6 +15,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <OtherActiveImGuiBus.h>
+#include <DebugConsole.h>
 
 namespace AZ
 {
@@ -45,6 +46,8 @@ namespace AZ
             // OtherActiveImGuiRequestBus overrides ...
             void RenderImGuiBuffers(const ImDrawData& drawData) override;
 
+        private:
+            DebugConsole m_debugConsole;
         };
     } // namespace LYIntegration
 } // namespace AZ

@@ -13,6 +13,7 @@
 
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
+#include <AzCore/Component/NonUniformScaleBus.h>
 
 #include <PhysX/ComponentTypeIds.h>
 
@@ -30,7 +31,7 @@ namespace PhysX
         AZ_EDITOR_COMPONENT(EditorForceRegionComponent, EditorForceRegionComponentTypeId, AzToolsFramework::Components::EditorComponentBase);
         static void Reflect(AZ::ReflectContext* context);
 
-        EditorForceRegionComponent() = default;
+        EditorForceRegionComponent();
 
         // EditorComponentBase
         void BuildGameEntity(AZ::Entity* gameEntity) override;
@@ -39,6 +40,7 @@ namespace PhysX
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
+        static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
         // AZ::Component
         void Activate() override;
@@ -99,8 +101,13 @@ namespace PhysX
         /// Callback invoked when there are changes to the forces in this force region.
         void OnForcesChanged() const;
 
+        /// Called when non-uniform scale is updated.
+        void OnNonUniformScaleChanged(const AZ::Vector3& scale);
+
         bool m_visibleInEditor = true; ///< Visible in the editor viewport even if force region entity is unselected.
         bool m_debugForces = false; ///< Draw debug lines (arrows) for forces in game.
         AZStd::vector<EditorForceProxy> m_forces; ///< Forces (editor version) in force region.
+        AZ::NonUniformScaleChangedEvent::Handler m_nonUniformScaleChangedHandler; ///< Responds to changes in non-uniform scale.
+        AZ::Vector3 m_cachedNonUniformScale = AZ::Vector3::CreateOne(); ///< Caches non-uniform scale for this entity.
     };
 }

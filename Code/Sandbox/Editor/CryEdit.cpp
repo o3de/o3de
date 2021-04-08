@@ -187,23 +187,10 @@ AZ_POP_DISABLE_WARNING
 
 #include <AzCore/std/smart_ptr/make_shared.h>
 
-static const char defaultFileExtension[] = ".ly";
-static const char oldFileExtension[] = ".cry";
-
 static const char lumberyardEditorClassName[] = "LumberyardEditorClass";
 static const char lumberyardApplicationName[] = "LumberyardApplication";
 
 static AZ::EnvironmentVariable<bool> inEditorBatchMode = nullptr;
-
-const char* GetCryEditDefaultFileExtension()
-{
-    return defaultFileExtension;
-}
-
-const char* GetCryEditOldFileExtension()
-{
-    return oldFileExtension;
-}
 
 RecentFileList::RecentFileList()
 {
@@ -985,8 +972,9 @@ CCrySingleDocTemplate::Confidence CCrySingleDocTemplate::MatchDocType(LPCTSTR lp
     }
 
     // see if it matches our default suffix
-    const QString strFilterExt = GetCryEditDefaultFileExtension();
-    const QString strOldFilterExt = GetCryEditOldFileExtension();
+
+    const QString strFilterExt = EditorUtils::LevelFile::GetDefaultFileExtension();
+    const QString strOldFilterExt = EditorUtils::LevelFile::GetOldCryFileExtension();
     const QString strSliceFilterExt = AzToolsFramework::SliceUtilities::GetSliceFileExtension().c_str();
 
     // see if extension matches
@@ -1267,6 +1255,9 @@ void CCryEditApp::InitPlugins()
 // aren't set up yet. If in doubt, wrap it in a QTimer::singleShot(0ms);
 void CCryEditApp::InitLevel(const CEditCommandLineInfo& cmdInfo)
 {
+    const char* defaultExtension = EditorUtils::LevelFile::GetDefaultFileExtension();
+    const char* oldExtension = EditorUtils::LevelFile::GetOldCryFileExtension();
+
     if (m_bPreviewMode)
     {
         GetIEditor()->EnableAcceleratos(false);
@@ -1295,7 +1286,8 @@ void CCryEditApp::InitLevel(const CEditCommandLineInfo& cmdInfo)
         QTimer::singleShot(0, QCoreApplication::instance(), &QCoreApplication::quit);
         return;
     }
-    else if ((cmdInfo.m_strFileName.endsWith(GetCryEditDefaultFileExtension(), Qt::CaseInsensitive)) || (cmdInfo.m_strFileName.endsWith(GetCryEditOldFileExtension(), Qt::CaseInsensitive)))
+    else if ((cmdInfo.m_strFileName.endsWith(defaultExtension, Qt::CaseInsensitive))
+            || (cmdInfo.m_strFileName.endsWith(oldExtension, Qt::CaseInsensitive)))
     {
         auto pDocument = OpenDocumentFile(cmdInfo.m_strFileName.toUtf8().constData());
         if (pDocument)
@@ -2328,7 +2320,7 @@ int CCryEditApp::ExitInstance(int exitCode)
     // if we're aborting due to an unexpected shutdown then don't call into objects that don't exist yet.
     if ((gEnv) && (gEnv->pSystem) && (gEnv->pSystem->GetILevelSystem()))
     {
-        gEnv->pSystem->GetILevelSystem()->UnLoadLevel();
+        gEnv->pSystem->GetILevelSystem()->UnloadLevel();
     }
 
     if (GetIEditor())
@@ -2574,6 +2566,15 @@ void CCryEditApp::DisplayLevelLoadErrors()
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::ExportLevel(bool bExportToGame, bool bExportTexture, bool bAutoExport)
 {
+    bool usePrefabSystemForLevels = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+    if (usePrefabSystemForLevels)
+    {
+        AZ_Assert(false, "Prefab system doesn't require level exports.");
+        return;
+    }
+
     if (bExportTexture)
     {
         CGameExporter gameExporter;
@@ -2606,6 +2607,15 @@ void CCryEditApp::OnEditFetch()
 //////////////////////////////////////////////////////////////////////////
 bool CCryEditApp::UserExportToGame(bool bNoMsgBox)
 {
+    bool usePrefabSystemForLevels = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+    if (usePrefabSystemForLevels)
+    {
+        AZ_Assert(false, "Export Level should no longer exist.");
+        return false;
+    }
+
     if (!GetIEditor()->GetGameEngine()->IsLevelLoaded())
     {
         if (bNoMsgBox == false)
@@ -2645,6 +2655,15 @@ bool CCryEditApp::UserExportToGame(bool bNoMsgBox)
 
 void CCryEditApp::ExportToGame(bool bNoMsgBox)
 {
+    bool usePrefabSystemForLevels = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+    if (usePrefabSystemForLevels)
+    {
+        AZ_Assert(false, "Prefab system no longer exports levels.");
+        return;
+    }
+
     CGameEngine* pGameEngine = GetIEditor()->GetGameEngine();
     if (!pGameEngine->IsLevelLoaded())
     {
@@ -3982,6 +4001,10 @@ void CCryEditApp::OnUpdatePlayGame(QAction* action)
 //////////////////////////////////////////////////////////////////////////
 CCryEditApp::ECreateLevelResult CCryEditApp::CreateLevel(const QString& levelName, QString& fullyQualifiedLevelName /* ={} */)
 {
+    bool usePrefabSystemForLevels = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+
     // If we are creating a new level and we're in simulate mode, then switch it off before we do anything else
     if (GetIEditor()->GetGameEngine() && GetIEditor()->GetGameEngine()->GetSimulationMode())
     {
@@ -4004,7 +4027,7 @@ CCryEditApp::ECreateLevelResult CCryEditApp::CreateLevel(const QString& levelNam
 
     QString cryFileName = levelName.mid(levelName.lastIndexOf('/') + 1, levelName.length() - levelName.lastIndexOf('/') + 1);
     QString levelPath = QStringLiteral("%1/Levels/%2/").arg(Path::GetEditingGameDataFolder().c_str(), levelName);
-    fullyQualifiedLevelName = levelPath + cryFileName + GetCryEditDefaultFileExtension();
+    fullyQualifiedLevelName = levelPath + cryFileName + EditorUtils::LevelFile::GetDefaultFileExtension();
 
     //_MAX_PATH includes null terminator, so we actually want to cap at _MAX_PATH-1
     if (fullyQualifiedLevelName.length() >= _MAX_PATH-1)
@@ -4050,10 +4073,13 @@ CCryEditApp::ECreateLevelResult CCryEditApp::CreateLevel(const QString& levelNam
 
     if (GetIEditor()->GetDocument()->Save())
     {
-        m_bIsExportingLegacyData = true;
-        CGameExporter gameExporter;
-        gameExporter.Export();
-        m_bIsExportingLegacyData = false;
+        if (!usePrefabSystemForLevels)
+        {
+            m_bIsExportingLegacyData = true;
+            CGameExporter gameExporter;
+            gameExporter.Export();
+            m_bIsExportingLegacyData = false;
+        }
 
         GetIEditor()->GetGameEngine()->LoadLevel(GetIEditor()->GetGameEngine()->GetMissionName(), true, true);
         GetIEditor()->GetSystem()->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_PRECACHE_START, 0, 0);
@@ -4062,6 +4088,7 @@ CCryEditApp::ECreateLevelResult CCryEditApp::CreateLevel(const QString& levelNam
         GetIEditor()->GetSystem()->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_PRECACHE_END, 0, 0);
     }
 
+    if (!usePrefabSystemForLevels)
     {
         // No terrain, but still need to export default octree and visarea data.
         CGameExporter gameExporter;
@@ -5412,8 +5439,8 @@ void CCryEditApp::StartProcessDetached(const char* process, const char* args)
 
     // separate the string based on spaces for paths like "-launch", "lua", "-files";
     // also separate the string and keep spaces inside the folder path;
-    // Ex: C:\dev\Foundation\dev\Cache\SamplesProject\pc\samplesproject\scripts\components\a a\empty.lua;
-    // Ex: C:\dev\Foundation\dev\Cache\SamplesProject\pc\samplesproject\scripts\components\a a\'empty'.lua;
+    // Ex: C:\dev\Foundation\dev\Cache\AutomatedTesting\pc\automatedtesting\scripts\components\a a\empty.lua;
+    // Ex: C:\dev\Foundation\dev\Cache\AutomatedTesting\pc\automatedtesting\scripts\components\a a\'empty'.lua;
     AZStd::string currentStr(args);
     AZStd::size_t firstQuotePos = AZStd::string::npos;
     AZStd::size_t secondQuotePos = 0;

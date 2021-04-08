@@ -60,8 +60,9 @@ def validate_android_test_build_dir(build_dir, configuration):
     platform_settings = common.PlatformSettings(build_path)
     if not platform_settings.projects:
         raise common.LmbrCmdError("Missing required platform settings object from build directory.")
-    game_name = platform_settings.projects[0]
-    if game_name != TEST_PROJECT:
+    is_unit_test_str = getattr(platform_settings, 'is_unit_test', 'False')
+    is_unit_test = is_unit_test_str.lower() in ('t', 'true', '1')
+    if not is_unit_test:
         raise common.LmbrCmdError("Invalid android build folder for tests.")
 
     # Construct and validate the path to the native binaries that are built for the APK based on the input confiugration

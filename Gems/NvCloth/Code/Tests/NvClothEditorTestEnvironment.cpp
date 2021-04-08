@@ -15,7 +15,7 @@
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 
 #include <AzFramework/IO/LocalFileIO.h>
-#include <AzToolsFramework/Application/ToolsApplication.h>
+#include <AzToolsFramework/UnitTest/ToolsTestApplication.h>
 
 #include <System/FabricCooker.h>
 #include <System/TangentSpaceHelper.h>
@@ -29,6 +29,24 @@
 
 namespace UnitTest
 {
+    class NvClothToolsTestApplication
+        : public ToolsTestApplication
+    {
+    public:
+        explicit NvClothToolsTestApplication(AZStd::string applicationName)
+            : ToolsTestApplication(applicationName)
+        {
+        }
+
+    protected:
+        bool IsPrefabSystemEnabled() const override
+        {
+            // The NvCloth unit tests currently have a crash on teardown when the prefab system is enabled,
+            // so they can only be run with prefabs disabled at this time.
+            return false;
+        }
+    };
+
     //! Sets up gem test environment, required components, and shared objects used by cloth (e.g. FabricCooker) for all test cases.
     class NvClothEditorTestEnvironment
         : public AZ::Test::GemTestEnvironment
@@ -102,7 +120,7 @@ namespace UnitTest
 
     AZ::ComponentApplication* NvClothEditorTestEnvironment::CreateApplicationInstance()
     {
-        return aznew AzToolsFramework::ToolsApplication;
+        return aznew NvClothToolsTestApplication("NvClothEditorTests");
     }
 } // namespace UnitTest
 

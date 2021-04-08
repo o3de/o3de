@@ -65,10 +65,10 @@ namespace AZ
             static bool ValidateIsCubemap(Data::Instance<RPI::Image> image);
 
             Data::Instance<RPI::ShaderResourceGroup> m_sceneSrg;
-            RHI::ShaderInputImageIndex m_specularEnvMapIndex;
-            RHI::ShaderInputImageIndex m_diffuseEnvMapIndex;
-            RHI::ShaderInputConstantIndex m_iblExposureConstantIndex;
-            RHI::ShaderInputConstantIndex m_iblOrientationConstantIndex;
+            RHI::ShaderInputNameIndex m_specularEnvMapIndex = "m_specularEnvMap";
+            RHI::ShaderInputNameIndex m_diffuseEnvMapIndex = "m_diffuseEnvMap";
+            RHI::ShaderInputNameIndex m_iblExposureConstantIndex = "m_iblExposure";
+            RHI::ShaderInputNameIndex m_iblOrientationConstantIndex = "m_iblOrientation";
 
             Data::Instance<RPI::Image> m_specular;
             Data::Instance<RPI::Image> m_diffuse;

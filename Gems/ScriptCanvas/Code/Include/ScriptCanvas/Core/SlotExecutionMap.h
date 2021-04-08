@@ -64,7 +64,7 @@ namespace ScriptCanvas
             Input() = default;
             // not explicit on purpose
             Input(const SlotId& slotId);
-            Input(const SlotId & slotId, const VariableId & interfaceSourceId);
+            Input(const SlotId& slotId, const VariableId & interfaceSourceId);
         };
         using Inputs = AZStd::vector<Input>;
         using InputSlotIds = AZStd::vector<SlotId>;

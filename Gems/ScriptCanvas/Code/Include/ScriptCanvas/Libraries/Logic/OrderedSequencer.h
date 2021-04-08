@@ -38,7 +38,7 @@ namespace ScriptCanvas
 
                 AZ::Outcome<DependencyReport, void> GetDependencies() const override;
 
-                SlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot& executionSlot, CombinedSlotType targetSlotType, const Slot* /*executionChildSlot*/) const override;
+                ConstSlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot& executionSlot, CombinedSlotType targetSlotType, const Slot* /*executionChildSlot*/) const override;
 
                 SlotId HandleExtension(AZ::Crc32 extensionId);
 
@@ -48,7 +48,7 @@ namespace ScriptCanvas
 
                 void ConfigureVisualExtensions() override;
 
-                bool IsSupportedByNewBackend() const override { return true; }
+                
 
             protected:
             

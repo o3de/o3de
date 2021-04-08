@@ -55,55 +55,6 @@ namespace CryPakUnitTests
         }
     };
 
-    TEST_F(Integ_CryPakUnitTests, TestCryPakArchiveContainingLevels)
-    {
-        AZ::IO::FileIOBase* fileIo = AZ::IO::FileIOBase::GetInstance();
-        ASSERT_NE(nullptr, fileIo);
-
-        constexpr const char* testPakPath = "@usercache@/archivecontainerlevel.pak";
-
-        char resolvedArchivePath[AZ_MAX_PATH_LEN] = { 0 };
-        EXPECT_TRUE(fileIo->ResolvePath(testPakPath, resolvedArchivePath, AZ_MAX_PATH_LEN));
-
-        AZ::IO::IArchive* pak = gEnv->pCryPak;
-
-        ASSERT_NE(nullptr, pak);
-
-        // delete test files in case they already exist
-        pak->ClosePack(testPakPath);
-        fileIo->Remove(testPakPath);
-
-        ILevelSystem* levelSystem = gEnv->pSystem->GetILevelSystem();
-        EXPECT_NE(nullptr, levelSystem);
-
-        // ------------ Create an archive with a dummy level in it ------------
-        AZStd::intrusive_ptr<AZ::IO::INestedArchive> pArchive = pak->OpenArchive(testPakPath, nullptr, AZ::IO::INestedArchive::FLAGS_CREATE_NEW);
-        EXPECT_NE(nullptr, pArchive);
-
-        const char levelInfoFile[] = "levelInfo.xml";
-        AZStd::string relativeLevelPakPath = AZStd::string::format("levels/dummy/%s", ILevelSystem::LevelPakName);
-        AZStd::string relativeLevelInfoPath = AZStd::string::format("levels/dummy/%s", levelInfoFile);
-
-        EXPECT_EQ(0, pArchive->UpdateFile(relativeLevelPakPath.c_str(), const_cast<char*>("test"), 4, AZ::IO::INestedArchive::METHOD_COMPRESS, AZ::IO::INestedArchive::LEVEL_BEST));
-        EXPECT_EQ(0, pArchive->UpdateFile(relativeLevelInfoPath.c_str(), const_cast<char*>("test"), 4, AZ::IO::INestedArchive::METHOD_COMPRESS, AZ::IO::INestedArchive::LEVEL_BEST));
-
-        pArchive.reset();
-        EXPECT_TRUE(IsPackValid(testPakPath));
-        AZStd::fixed_string<AZ::IO::IArchive::MaxPath> fullLevelPakPath;
-        bool addLevel = true;
-        EXPECT_TRUE(pak->OpenPack("@assets@", resolvedArchivePath, AZ::IO::IArchive::FLAGS_LEVEL_PAK_INSIDE_PAK, nullptr, &fullLevelPakPath, addLevel));
-
-        ILevelInfo* levelInfo = nullptr;
-        // Since the archive was open, we should be able to find the level "dummy"
-        levelInfo = levelSystem->GetLevelInfo("dummy");
-        EXPECT_NE(nullptr, levelInfo);
-        EXPECT_TRUE(pak->ClosePack(resolvedArchivePath));
-
-        // After closing the archive we should not be able to find the level "dummy"
-        levelInfo = levelSystem->GetLevelInfo("dummy");
-        EXPECT_EQ(nullptr, levelInfo);
-    }
-
     TEST_F(Integ_CryPakUnitTests, TestCryPakModTime)
     {
         AZ::IO::FileIOBase* fileIo = AZ::IO::FileIOBase::GetInstance();

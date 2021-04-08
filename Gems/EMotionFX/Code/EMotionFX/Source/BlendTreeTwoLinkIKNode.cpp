@@ -195,11 +195,11 @@ namespace EMotionFX
         // the inverse matrix defines a coordinate system whose x axis contains P, so X = unit(P).
         const AZ::Vector3 x = MCore::SafeNormalize(goal);
 
-        // the y axis of the inverse is perpendicular to P, so Y = unit( D - X(D�X) ).
+        // the y axis of the inverse is perpendicular to P, so Y = unit( D - X(D . X) ).
         const float dot = bendDir.Dot(x);
         const AZ::Vector3 y = MCore::SafeNormalize(bendDir - (dot * x));
 
-        // the z axis of the inverse is perpendicular to both X and Y, so Z = X�Y.
+        // the z axis of the inverse is perpendicular to both X and Y, so Z = X x Y.
         const AZ::Vector3 z = x.Cross(y);
 
         // set the rotation vectors of the output matrix

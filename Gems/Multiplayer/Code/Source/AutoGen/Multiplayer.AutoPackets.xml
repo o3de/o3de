@@ -52,6 +52,5 @@
         <Member Type="Multiplayer::NetEntityId"           Name="entityId"           Init="Multiplayer::InvalidNetEntityId" />
         <Member Type="Multiplayer::PrefabEntityId"        Name="prefabEntityId"     Init="" />
         <Member Type="AzNetworking::PacketEncodingBuffer" Name="propertyUpdateData" Init="" SuppressFromInitializerList="true" />
-        <Member Type="AzNetworking::PacketEncodingBuffer" Name="migrationData"      Init="" SuppressFromInitializerList="true" />
     </Packet>
 </PacketGroup>

@@ -63,7 +63,12 @@ namespace AzToolsFramework
     void EditorEntityUiHandlerBase::PaintDescendantBackground(QPainter* /*painter*/, const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/,
         const QModelIndex& /*descendantIndex*/) const
     {
-    }  
+    }
+
+    void EditorEntityUiHandlerBase::PaintDescendantBranchBackground(QPainter* /*painter*/, const QTreeView* /*view*/, const QRect& /*rect*/,
+        const QModelIndex& /*index*/, const QModelIndex& /*descendantIndex*/) const
+    {
+    }
 
     void EditorEntityUiHandlerBase::PaintItemForeground(QPainter* /*painter*/, const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/) const
     {

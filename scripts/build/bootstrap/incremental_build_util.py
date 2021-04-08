@@ -21,7 +21,6 @@ import sys
 import tempfile
 import traceback
 
-IAM_ROLE_NAME = 'ec2-jenkins-node'
 DEFAULT_REGION = 'us-west-2'
 DEFAULT_DISK_SIZE = 300
 DEFAULT_DISK_TYPE = 'gp2'
@@ -129,41 +128,8 @@ def get_pipeline_and_branch(pipeline, branch):
     pipeline_and_branch = pipeline_and_branch.replace('/','_').replace('\\','_')
     return pipeline_and_branch
 
-def get_iam_role_credentials(role_name):
-    security_metadata = None
-    try:
-        response = urllib2.urlopen(
-            'http://169.254.169.254/latest/meta-data/iam/security-credentials/{0}'.format(role_name)).read()
-        security_metadata = ast.literal_eval(response)
-    except:
-        print 'Unable to get iam role credentials'
-        print traceback.print_exc()
-
-    return security_metadata
-
-
 def get_ec2_client(region):
-    credentials = None
-    try:
-        response = urllib2.urlopen(
-            'http://169.254.169.254/latest/meta-data/iam/security-credentials/{0}'.format(IAM_ROLE_NAME)).read()
-        credentials = ast.literal_eval(response)
-    except Exception as e:
-        print e.message
-        error('Error: Unable to get IAM rols credentials, please contact ly-build@ for help.')
-
-    keys = ['AccessKeyId', 'SecretAccessKey', 'Token']
-    for key in keys:
-        if key not in credentials:
-            error('Error: Unable to find {0} in get_iam_role_credentials response {1}'.format(key, credentials))
-
-    aws_access_key_id = credentials['AccessKeyId']
-    aws_secret_access_key = credentials['SecretAccessKey']
-    aws_session_token = credentials['Token']
-
-    client = boto3.client('ec2', region_name=region, aws_access_key_id=aws_access_key_id,
-                          aws_secret_access_key=aws_secret_access_key,
-                          aws_session_token=aws_session_token)
+    client = boto3.client('ec2', region_name=region)
     return client
 
 

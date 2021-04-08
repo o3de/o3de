@@ -16,7 +16,7 @@
 #include <AzCore/Component/TickBus.h>
 
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
-#include <AzFramework/Physics/World.h>
+#include <AzFramework/Physics/Common/PhysicsEvents.h>
 #include <PhysXDebug/PhysXDebugBus.h>
 
 #include <Cry_Camera.h>
@@ -110,9 +110,6 @@ namespace PhysXDebug
 #ifdef IMGUI_ENABLED
         , public ImGui::ImGuiUpdateListenerBus::Handler
 #endif // IMGUI_ENABLED
-#ifdef PHYSXDEBUG_GEM_EDITOR
-        , public Physics::WorldNotificationBus::Handler
-#endif // PHYSXDEBUG_GEM_EDITOR
     {
     public:
 
@@ -124,6 +121,8 @@ namespace PhysXDebug
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
+
+        SystemComponent();
 
         // PhysxDebugDraw::PhysxDebugDrawRequestBus
         void SetVisualization(bool enabled) override;
@@ -148,11 +147,6 @@ namespace PhysXDebug
 
         // CrySystemEvents
         void OnCrySystemInitialized(ISystem&, const SSystemInitParams&) override;
-
-#ifdef PHYSXDEBUG_GEM_EDITOR
-        // Physics::WorldNotificationBus
-        void OnPostPhysicsSubtick(float) override;
-#endif
 
     private:
 
@@ -203,7 +197,7 @@ namespace PhysXDebug
         void BuildColorPickingMenuItem(const AZStd::string& label, ColorB& color);
 #endif // IMGUI_ENABLED
 
-        Physics::World* GetCurrentPhysicsWorld();
+        physx::PxScene* GetCurrentPxScene();
 
         // Main configuration
         PhysXVisualizationSettings m_settings;
@@ -212,7 +206,7 @@ namespace PhysXDebug
         AZ::ScriptTimePoint m_currentTime;
         bool m_registered = false;
         physx::PxBounds3 m_cullingBox;
-        bool m_editorPhysicsWorldDirty = true;
+        bool m_editorPhysicsSceneDirty = true;
         static const float m_maxCullingBoxSize;
 
         AZStd::vector<Vec3> m_linePoints;
@@ -225,6 +219,8 @@ namespace PhysXDebug
         AZStd::vector<AZ::u32> m_jointIndexBuffer;
         AZStd::vector<AZ::Vector3> m_jointLineBuffer;
         AZStd::vector<bool> m_jointLineValidityBuffer;
+
+        AzPhysics::SceneEvents::OnSceneSimulationFinishHandler m_sceneFinishSimHandler;
     };
 
     /// Possible console parameters for physx_Debug cvar.

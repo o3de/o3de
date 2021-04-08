@@ -27,7 +27,7 @@
 
 #include <mikkelsen/mikktspace.h>
 
-namespace AZ::TangentGeneration::MikkT
+namespace AZ::TangentGeneration::Mesh::MikkT
 {
     // Returns the number of triangles in the mesh.
     int GetNumFaces(const SMikkTSpaceContext* context)

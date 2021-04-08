@@ -31,6 +31,11 @@ namespace AZStd
     struct hash;
 }
 
+namespace AZ
+{
+    class ReflectContext;
+}
+
 namespace AZ::IO
 {
     //! Path Constants
@@ -56,6 +61,11 @@ namespace AZ::IO
     // It depends on the path type
     template <typename PathType>
     class PathIterator;
+
+    struct PathReflection
+    {
+        static void Reflect(AZ::ReflectContext* context);
+    };
 }
 
 namespace AZStd

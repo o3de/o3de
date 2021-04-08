@@ -63,9 +63,10 @@ namespace EditorInternal
         AZStd::string GetCurrentLevelName() const override;
         AZStd::string GetCurrentLevelPath() const override;
 
+        const char* GetOldCryLevelExtension() const override;
+        const char* GetLevelExtension() const override;
+
     private:
-        static constexpr char DefaultFileExtension[] = ".ly";
-        static constexpr char OldFileExtension[] = ".cry";
         static constexpr char DefaultLevelFolder[] = "Levels";
 
         bool m_StartupAborted = false;

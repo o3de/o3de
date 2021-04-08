@@ -155,7 +155,7 @@ namespace ScriptCanvas
                 return IsIDRequired();
             }
             
-            bool EBusEventHandler::HandlerStartsConnected() const
+            bool EBusEventHandler::IsAutoConnected() const
             {
                 return m_autoConnectToGraphOwner;
             }
@@ -264,7 +264,7 @@ namespace ScriptCanvas
                 }
             }
 
-            SlotsOutcome EBusEventHandler::GetSlotsInExecutionThreadByTypeImpl(const Slot& executionSlot, CombinedSlotType targetSlotType, const Slot* /*executionChildSlot*/) const
+            ConstSlotsOutcome EBusEventHandler::GetSlotsInExecutionThreadByTypeImpl(const Slot& executionSlot, CombinedSlotType targetSlotType, const Slot* /*executionChildSlot*/) const
             {
                 return EventHandlerTranslationHelper::GetSlotsInExecutionThreadByType(*this, executionSlot, targetSlotType);
             }

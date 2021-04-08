@@ -586,7 +586,7 @@ TEST_F(PlatformConfigurationUnitTests, Test_GemHandling)
     QTemporaryDir tempEngineRoot;
     QDir tempPath(tempEngineRoot.path());
     AssetUtilities::ResetAssetRoot();
-    AssetUtilities::ComputeProjectName("SamplesProject", true);
+    AssetUtilities::ComputeProjectName("AutomatedTesting", true);
 
     QDir computedEngineRoot;
     ASSERT_TRUE(AssetUtilities::ComputeAssetRoot(computedEngineRoot, &tempPath));
@@ -666,7 +666,7 @@ TEST_F(PlatformConfigurationUnitTests, PlatformConfigFile_IsPresent_Found)
     QTemporaryDir tempEngineRoot;
     QDir tempPath(tempEngineRoot.path());
     AssetUtilities::ResetAssetRoot();
-    AssetUtilities::ComputeProjectName("SamplesProject", true);
+    AssetUtilities::ComputeProjectName("AutomatedTesting", true);
 
     auto settingsRegistry = AZ::SettingsRegistry::Get();
     ASSERT_NE(nullptr, settingsRegistry);

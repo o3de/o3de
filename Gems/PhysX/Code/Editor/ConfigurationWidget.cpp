@@ -47,15 +47,13 @@ namespace PhysX
             verticalLayout->addWidget(m_tabs);
 
             connect(m_settings, &SettingsWidget::onValueChanged,
-                this, [this](const AZ::Data::Asset<Physics::MaterialLibraryAsset>& materialLibrary,
+                this, [this](const PhysX::PhysXSystemConfiguration& physxSystemConfiguration,
                             const AzPhysics::SceneConfiguration& defaultSceneConfiguration,
-                             const Debug::DebugDisplayData& debugDisplayData,
-                             const PhysX::WindConfiguration& windConfiguration)
+                             const Debug::DebugDisplayData& debugDisplayData)
             {
-                m_physXSystemConfiguration.m_defaultMaterialLibrary = materialLibrary;
+                m_physXSystemConfiguration = physxSystemConfiguration;
                 m_defaultSceneConfiguration = defaultSceneConfiguration;
                 m_physXDebugConfiguration.m_debugDisplayData = debugDisplayData;
-                m_physXSystemConfiguration.m_windConfiguration = windConfiguration;
                 emit onConfigurationChanged(m_physXSystemConfiguration, m_physXDebugConfiguration, m_defaultSceneConfiguration);
             });
 
@@ -90,7 +88,7 @@ namespace PhysX
             m_physXSystemConfiguration = physXSystemConfiguration;
             m_defaultSceneConfiguration = defaultSceneConfiguration;
             m_physXDebugConfiguration = physXDebugConfiguration;
-            m_settings->SetValue(m_physXSystemConfiguration.m_defaultMaterialLibrary, m_defaultSceneConfiguration, m_physXDebugConfiguration.m_debugDisplayData, m_physXSystemConfiguration.m_windConfiguration);
+            m_settings->SetValue(m_physXSystemConfiguration, m_defaultSceneConfiguration, m_physXDebugConfiguration.m_debugDisplayData);
             m_collisionFiltering->SetConfiguration(m_physXSystemConfiguration.m_collisionConfig.m_collisionLayers, m_physXSystemConfiguration.m_collisionConfig.m_collisionGroups);
             m_pvd->SetValue(m_physXDebugConfiguration.m_pvdConfigurationData);
         }

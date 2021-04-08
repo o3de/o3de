@@ -76,6 +76,8 @@ namespace ScriptCanvas
 
         AZ::EntityId GetScriptCanvasId() const;
 
+        const VariableData& GetVariableOverrides() const;
+
         virtual void Initialize() = 0;
 
         ExecutionStatePtr SharedFromThis();

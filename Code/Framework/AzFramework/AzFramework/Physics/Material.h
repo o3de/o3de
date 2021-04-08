@@ -49,7 +49,7 @@ namespace Physics
     {
     public:
         AZ_CLASS_ALLOCATOR(Material, AZ::SystemAllocator, 0);
-        AZ_RTTI(Material, "{44636CEA-46DD-4D4A-B1EF-5ED6DEA7F714}");
+        AZ_RTTI(Physics::Material, "{44636CEA-46DD-4D4A-B1EF-5ED6DEA7F714}");
 
         /// Enumeration that determines how two materials properties are combined when
         /// processing collisions.
@@ -102,7 +102,7 @@ namespace Physics
     class MaterialConfiguration
     {
     public:
-        AZ_TYPE_INFO(MaterialConfiguration, "{8807CAA1-AD08-4238-8FDB-2154ADD084A1}");
+        AZ_TYPE_INFO(Physics::MaterialConfiguration, "{8807CAA1-AD08-4238-8FDB-2154ADD084A1}");
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -140,7 +140,7 @@ namespace Physics
     {
     public:
         AZ_CLASS_ALLOCATOR(MaterialId, AZ::SystemAllocator, 0);
-        AZ_TYPE_INFO(MaterialId, "{744CCE6C-9F69-4E2F-B950-DAB8514F870B}");
+        AZ_TYPE_INFO(Physics::MaterialId, "{744CCE6C-9F69-4E2F-B950-DAB8514F870B}");
         static void Reflect(AZ::ReflectContext* context);
 
         static MaterialId Create();
@@ -160,7 +160,7 @@ namespace Physics
     class MaterialFromAssetConfiguration
     {
     public:
-        AZ_TYPE_INFO(MaterialFromAssetConfiguration, "{FBD76628-DE57-435E-BE00-6FFAE64DDF1D}");
+        AZ_TYPE_INFO(Physics::MaterialFromAssetConfiguration, "{FBD76628-DE57-435E-BE00-6FFAE64DDF1D}");
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -182,7 +182,7 @@ namespace Physics
     {
     public:
         AZ_CLASS_ALLOCATOR(MaterialLibraryAsset, AZ::SystemAllocator, 0);
-        AZ_RTTI(MaterialLibraryAsset, "{9E366D8C-33BB-4825-9A1F-FA3ADBE11D0F}", AZ::Data::AssetData);
+        AZ_RTTI(Physics::MaterialLibraryAsset, "{9E366D8C-33BB-4825-9A1F-FA3ADBE11D0F}", AZ::Data::AssetData);
 
         MaterialLibraryAsset() = default;
         virtual ~MaterialLibraryAsset() = default;
@@ -231,7 +231,7 @@ namespace Physics
     {
     public:
         AZ_CLASS_ALLOCATOR(MaterialLibraryAssetReflectionWrapper, AZ::SystemAllocator, 0);
-        AZ_TYPE_INFO(MaterialLibraryAssetReflectionWrapper, "{3D2EF5DF-EFD0-47EB-B88F-3E6FE1FEE5B0}");
+        AZ_TYPE_INFO(Physics::MaterialLibraryAssetReflectionWrapper, "{3D2EF5DF-EFD0-47EB-B88F-3E6FE1FEE5B0}");
         static void Reflect(AZ::ReflectContext* context);
 
         AZ::Data::Asset<Physics::MaterialLibraryAsset> m_asset =
@@ -243,7 +243,7 @@ namespace Physics
     {
     public:
         AZ_CLASS_ALLOCATOR(MaterialLibraryAssetReflectionWrapper, AZ::SystemAllocator, 0);
-        AZ_TYPE_INFO(DefaultMaterialLibraryAssetReflectionWrapper, "{02AB8CBC-D35B-4E0F-89BA-A96D94DAD4F9}");
+        AZ_TYPE_INFO(Physics::DefaultMaterialLibraryAssetReflectionWrapper, "{02AB8CBC-D35B-4E0F-89BA-A96D94DAD4F9}");
         static void Reflect(AZ::ReflectContext* context);
 
         AZ::Data::Asset<Physics::MaterialLibraryAsset> m_asset =
@@ -263,7 +263,7 @@ namespace Physics
         friend class MaterialSelectionEventHandler;
     public:
         AZ_CLASS_ALLOCATOR(MaterialSelection, AZ::SystemAllocator, 0);
-        AZ_TYPE_INFO(MaterialSelection, "{F571AFF4-C4BB-4590-A204-D11D9EEABBC4}");
+        AZ_TYPE_INFO(Physics::MaterialSelection, "{F571AFF4-C4BB-4590-A204-D11D9EEABBC4}");
 
         using SlotsArray = AZStd::vector<AZStd::string>;
 

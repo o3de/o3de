@@ -188,8 +188,6 @@ protected:
     //! Remove existing mission from map.
     void RemoveMission(CMission* mission);
     void LogLoadTime(int time);
-    //! For saving binary data (voxel object)
-    CXmlArchive* GetTmpXmlArch(){ return m_pTmpXmlArchHack; }
 
     struct TSaveDocContext
     {
@@ -228,7 +226,6 @@ protected:
     std::vector<CMission*> m_missions;
     std::list<IDocListener*> m_listeners;
     bool m_bDocumentReady;
-    CXmlArchive* m_pTmpXmlArchHack;
     CLevelShaderCache* m_pLevelShaderCache;
     ICVar* doc_validate_surface_types;
     int m_modifiedModuleFlags;
