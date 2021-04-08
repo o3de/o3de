@@ -29,6 +29,7 @@ def add_pyside_environment(bin_path):
     old_env = os.environ.copy()
     binaries_path = Path(os.path.normpath(bin_path))
     platforms_path = binaries_path.joinpath("platforms")
+    logger.info(f'Adding binaries path {binaries_path}')
     os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = str(platforms_path)
 
     path = os.environ['PATH']

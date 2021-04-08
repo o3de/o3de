@@ -667,6 +667,8 @@ namespace UnitTest
     // Sanity check test to confirm validator will catch differences
     TEST_F(SliceStabilityTest, ValidatorCompare_DifferenceInObjects_DifferenceDetected_FT)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         // Generate a root entity
         AzToolsFramework::EntityIdList liveEntityIds;
         AZ::EntityId rootEntityId = CreateEditorEntity("Root", liveEntityIds);

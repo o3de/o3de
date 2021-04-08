@@ -16,6 +16,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzFramework/Spawnable/Spawnable.h>
+#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabCatchmentProcessor.h>
 #include <AzToolsFramework/Prefab/Spawnable/SpawnableUtils.h>
 
@@ -23,9 +24,11 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {
     void PrefabCatchmentProcessor::Process(PrefabProcessorContext& context)
     {
-        context.ListPrefabs([&context](AZStd::string_view prefabName, PrefabDom& prefab)
+        AZ::DataStream::StreamType serializationFormat = m_serializationFormat == SerializationFormats::Binary ?
+            AZ::DataStream::StreamType::ST_BINARY : AZ::DataStream::StreamType::ST_XML;
+        context.ListPrefabs([&context, serializationFormat](AZStd::string_view prefabName, PrefabDom& prefab)
             {
-                ProcessPrefab(context, prefabName, prefab);
+                ProcessPrefab(context, prefabName, prefab, serializationFormat);
             });
     }
 
@@ -33,31 +36,61 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
     {
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context); serializeContext != nullptr)
         {
-            serializeContext->Class<PrefabCatchmentProcessor, PrefabProcessor>()->Version(1);
+            serializeContext->Enum<SerializationFormats>()
+                ->Value("Binary", SerializationFormats::Binary)
+                ->Value("Text", SerializationFormats::Text);
+
+            serializeContext->Class<PrefabCatchmentProcessor, PrefabProcessor>()
+                ->Version(2)
+                ->Field("SerializationFormat", &PrefabCatchmentProcessor::m_serializationFormat);
         }
     }
 
-    void PrefabCatchmentProcessor::ProcessPrefab(PrefabProcessorContext& context, AZStd::string_view prefabName, PrefabDom& prefab)
+    void PrefabCatchmentProcessor::ProcessPrefab(PrefabProcessorContext& context, AZStd::string_view prefabName, PrefabDom& prefab,
+        AZ::DataStream::StreamType serializationFormat)
     {
-
         AZStd::string uniqueName = prefabName;
-        uniqueName += '.';
-        uniqueName += AzFramework::Spawnable::FileExtension;
+        uniqueName += AzFramework::Spawnable::DotFileExtension;
 
-        auto serializer = [](AZStd::vector<uint8_t>& output, const ProcessedObjectStore& object) -> bool
+        auto serializer = [serializationFormat](AZStd::vector<uint8_t>& output, const ProcessedObjectStore& object) -> bool
         {
             AZ::IO::ByteContainerStream stream(&output);
-            return AZ::Utils::SaveObjectToStream(stream, AZ::DataStream::StreamType::ST_BINARY,
-                AZStd::any_cast<void>(&object.GetObject()), object.GetObject().type());
+            auto& asset = object.GetAsset();
+            return AZ::Utils::SaveObjectToStream(stream, serializationFormat, &asset, asset.GetType());
         };
 
-        auto spawnable = SpawnableUtils::CreateSpawnable(prefab);
-        SpawnableUtils::SortEntitiesByTransformHierarchy(spawnable);
-        AZStd::any spawnableAny(AZStd::move(spawnable));
+        auto&& [object, spawnable] = ProcessedObjectStore::Create<AzFramework::Spawnable>(
+            AZStd::move(uniqueName), context.GetSourceUuid(), AZStd::move(serializer));
+        AZ_Assert(spawnable, "Failed to create a new spawnable.");
 
-        context.GetProcessedObjects().emplace_back(AZStd::move(uniqueName), AZStd::move(spawnableAny),
-            AZStd::move(serializer), AZ::AzTypeInfo<AzFramework::Spawnable>::Uuid());
+        bool result = SpawnableUtils::CreateSpawnable(*spawnable, prefab);
+        if (result)
+        {
+            AzFramework::Spawnable::EntityList& entities = spawnable->GetEntities();
+            for (auto it = entities.begin(); it != entities.end(); )
+            {
+                (*it)->InvalidateDependencies();
+                AZ::Entity::DependencySortOutcome evaluation = (*it)->EvaluateDependenciesGetDetails();
+                if (evaluation.IsSuccess())
+                {
+                    ++it;
+                }
+                else
+                {
+                    AZ_Error("Prefabs", false, "Entity '%s' %s cannot be activated for the following reason: %s",
+                        (*it)->GetName().c_str(), (*it)->GetId().ToString().c_str(), evaluation.GetError().m_message.c_str());
+                    it = entities.erase(it);
+                }
+            }
+            SpawnableUtils::SortEntitiesByTransformHierarchy(*spawnable);
+            context.GetProcessedObjects().push_back(AZStd::move(object));
 
-        context.RemovePrefab(prefabName);
+            context.RemovePrefab(prefabName);
+        }
+        else
+        {
+            AZ_Error("Prefabs", false, "Failed to convert prefab '%.*s' to a spawnable.", AZ_STRING_ARG(prefabName));
+            context.ErrorEncountered();
+        }
     }
 } // namespace AzToolsFramework::Prefab::PrefabConversionUtils

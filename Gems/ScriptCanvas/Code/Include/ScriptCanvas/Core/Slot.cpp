@@ -212,6 +212,7 @@ namespace ScriptCanvas
                 ->Field("DataType", &Slot::m_dataType)
                 ->Field("IsReference", &Slot::m_isVariableReference)
                 ->Field("VariableReference", &Slot::m_variableReference)
+                ->Field("IsUserAdded", &Slot::m_isUserAdded)
                 ;
         }
 
@@ -221,6 +222,7 @@ namespace ScriptCanvas
         : m_name(slotConfiguration.m_name)
         , m_toolTip(slotConfiguration.m_toolTip)
         , m_isLatentSlot(slotConfiguration.m_isLatent)
+        , m_isUserAdded(slotConfiguration.m_isUserAdded)
         , m_descriptor(slotConfiguration.GetSlotDescriptor())
         , m_dynamicDataType(DynamicDataType::None)
         , m_id(slotConfiguration.m_slotId)
@@ -264,6 +266,7 @@ namespace ScriptCanvas
         , m_displayGroup(other.m_displayGroup)
         , m_dynamicGroup(other.m_dynamicGroup)
         , m_isLatentSlot(other.m_isLatentSlot)
+        , m_isUserAdded(other.m_isUserAdded)
         , m_descriptor(other.m_descriptor)
         , m_isVariableReference(other.m_isVariableReference)
         , m_dataType(other.m_dataType)
@@ -286,6 +289,7 @@ namespace ScriptCanvas
         , m_displayGroup(AZStd::move(slot.m_displayGroup))
         , m_dynamicGroup(AZStd::move(slot.m_dynamicGroup))
         , m_isLatentSlot(AZStd::move(slot.m_isLatentSlot))
+        , m_isUserAdded(AZStd::move(slot.m_isUserAdded))
         , m_descriptor(AZStd::move(slot.m_descriptor))
         , m_isVariableReference(AZStd::move(slot.m_isVariableReference))
         , m_dataType(AZStd::move(slot.m_dataType))
@@ -311,6 +315,7 @@ namespace ScriptCanvas
         m_displayGroup = slot.m_displayGroup;
         m_dynamicGroup = slot.m_dynamicGroup;
         m_isLatentSlot = slot.m_isLatentSlot;
+        m_isUserAdded = slot.m_isUserAdded;
         m_descriptor = slot.m_descriptor;
         m_isVariableReference = slot.m_isVariableReference;
         m_dataType = slot.m_dataType;
@@ -438,7 +443,7 @@ namespace ScriptCanvas
 
     bool Slot::CanConvertToValue() const
     {
-        return CanConvertTypes() && m_isVariableReference;
+        return !m_isUserAdded && CanConvertTypes() && m_isVariableReference;
     }
 
     bool Slot::ConvertToValue()
@@ -467,7 +472,7 @@ namespace ScriptCanvas
 
     bool Slot::CanConvertToReference() const
     {        
-        return CanConvertTypes() && !m_isVariableReference && !m_node->HasConnectedNodes((*this));
+        return !m_isUserAdded && CanConvertTypes() && !m_isVariableReference && !m_node->HasConnectedNodes((*this));
     }
 
     bool Slot::ConvertToReference()
@@ -559,6 +564,11 @@ namespace ScriptCanvas
     {
         return m_isVisible;
     }
+
+    bool Slot::IsUserAdded() const
+    {
+        return m_isUserAdded;
+    }
     
     bool Slot::IsInput() const
     {
@@ -603,7 +613,8 @@ namespace ScriptCanvas
     void Slot::SetDisplayType(ScriptCanvas::Data::Type displayType)
     {
         if ((m_displayDataType.IsValid() && !displayType.IsValid())
-        || (!m_displayDataType.IsValid() && displayType.IsValid()))
+            || (!m_displayDataType.IsValid() && displayType.IsValid())
+            || IsDynamicSlot())
         {
             // Confirm that the type we are display as conforms to what our underlying type says we
             // should be.
@@ -925,4 +936,10 @@ namespace ScriptCanvas
     {
         m_dynamicGroup = dynamicGroup;
     }
+
+    void Slot::SetVisible(bool isVisible)
+    {
+        m_isVisible = isVisible;
+    }
+
 }

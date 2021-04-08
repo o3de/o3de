@@ -12,6 +12,8 @@
 
 #include <AzToolsFramework/UI/Prefab/PrefabUiHandler.h>
 
+#include <AzToolsFramework/UI/Prefab/PrefabEditInterface.h>
+#include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerListModel.hxx>
 
 #include <QAbstractItemModel>
@@ -23,6 +25,8 @@ namespace AzToolsFramework
 {
     const QColor PrefabUiHandler::m_prefabCapsuleColor = QColor("#1E252F");
     const QColor PrefabUiHandler::m_prefabCapsuleEditColor = QColor("#4A90E2");
+    const QString PrefabUiHandler::m_prefabIconPath = QString(":/Entity/prefab.svg");
+    const QString PrefabUiHandler::m_prefabEditIconPath = QString(":/Entity/prefab_edit.svg");
 
     PrefabUiHandler::PrefabUiHandler()
     {
@@ -33,6 +37,62 @@ namespace AzToolsFramework
             AZ_Assert(false, "PrefabUiHandler - could not get PrefabEditInterface on PrefabUiHandler construction.");
             return;
         }
+
+        m_prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
+
+        if (m_prefabPublicInterface == nullptr)
+        {
+            AZ_Assert(false, "PrefabUiHandler - could not get PrefabPublicInterface on PrefabUiHandler construction.");
+            return;
+        }
+    }
+
+    QString PrefabUiHandler::GenerateItemInfoString(AZ::EntityId entityId) const
+    {
+        QString infoString;
+
+        AZ::IO::Path path = m_prefabPublicInterface->GetOwningInstancePrefabPath(entityId);
+
+        if (!path.empty())
+        {
+            QString saveFlag = "";
+            auto dirtyOutcome = m_prefabPublicInterface->HasUnsavedChanges(path);
+
+            if (dirtyOutcome.IsSuccess() && dirtyOutcome.GetValue() == true)
+            {
+                saveFlag = "*";
+            }
+
+            infoString = QObject::tr("<span style=\"font-style: italic; font-weight: 400;\">(%1%2)</span>")
+                .arg(path.Filename().Native().data())
+                .arg(saveFlag);
+        }
+
+        return infoString;
+    }
+
+    QString PrefabUiHandler::GenerateItemTooltip(AZ::EntityId entityId) const
+    {
+        QString tooltip;
+
+        AZ::IO::Path path = m_prefabPublicInterface->GetOwningInstancePrefabPath(entityId);
+
+        if (!path.empty())
+        {
+            tooltip = QObject::tr("%1").arg(path.Native().data());
+        }
+
+        return tooltip;
+    }
+
+    QPixmap PrefabUiHandler::GenerateItemIcon(AZ::EntityId entityId) const
+    {
+        if (m_prefabEditInterface->IsOwningPrefabBeingEdited(entityId))
+        {
+            return QPixmap(m_prefabEditIconPath);
+        }
+
+        return QPixmap(m_prefabIconPath);
     }
 
     void PrefabUiHandler::PaintItemBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
@@ -57,40 +117,61 @@ namespace AzToolsFramework
         QPainterPath backgroundPath;
         backgroundPath.setFillRule(Qt::WindingFill);
 
+        QRect tempRect = option.rect;
+        tempRect.setTop(tempRect.top() + 1);
+
+        if (!hasVisibleChildren)
+        {
+            tempRect.setBottom(tempRect.bottom() - 1);
+        }
+
+        if (isFirstColumn)
+        {
+            tempRect.setLeft(tempRect.left() - 1);
+        }
+
+        if (isLastColumn)
+        {
+            tempRect.setWidth(tempRect.width() - 1);
+        }
+
         if (isFirstColumn || isLastColumn)
         {
             // Rounded rect to have rounded borders on top
-            backgroundPath.addRoundedRect(option.rect, m_prefabCapsuleRadius, m_prefabCapsuleRadius);
+            backgroundPath.addRoundedRect(tempRect, m_prefabCapsuleRadius, m_prefabCapsuleRadius);
 
             if (hasVisibleChildren)
             {
                 // Regular rect, half height, to square the bottom borders
-                QRect bottomRect = option.rect;
+                QRect bottomRect = tempRect;
                 bottomRect.setTop(bottomRect.top() + (bottomRect.height() / 2));
                 backgroundPath.addRect(bottomRect);
             }
             
             // Regular rect, half height, to square the opposite border
-            QRect squareRect = option.rect;
+            QRect squareRect = tempRect;
             if (isFirstColumn)
             {
-                squareRect.setLeft(option.rect.left() + (option.rect.width() / 2));
+                squareRect.setLeft(tempRect.left() + (tempRect.width() / 2));
             }
             else if (isLastColumn)
             {
-                squareRect.setWidth(option.rect.width() / 2);
+                squareRect.setWidth(tempRect.width() / 2);
             }
             backgroundPath.addRect(squareRect);
         }
         else
         {
-            backgroundPath.addRect(option.rect);
+            backgroundPath.addRect(tempRect);
         }
 
+        painter->save();
+        painter->setRenderHint(QPainter::Antialiasing, true);
         painter->fillPath(backgroundPath.simplified(), backgroundColor);
+        painter->restore();
     }
 
-    void PrefabUiHandler::PaintDescendantForeground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index,
+    void PrefabUiHandler::PaintDescendantBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index,
         const QModelIndex& descendantIndex) const
     {
         if (!painter)
@@ -100,8 +181,15 @@ namespace AzToolsFramework
         }
 
         AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
+
+        // We hide the root instance container entity from the Outliner, so avoid drawing its full container on children
+        if (m_prefabPublicInterface->IsLevelInstanceContainerEntity(entityId))
+        {
+            return;
+        }
+
         const QTreeView* outlinerTreeView(qobject_cast<const QTreeView*>(option.widget));
-        const int ancestorLeft = outlinerTreeView->visualRect(index).left() + (m_prefabBorderThickness / 2);
+        const int ancestorLeft = outlinerTreeView->visualRect(index).left() + (m_prefabBorderThickness / 2) - 1;
         const int curveRectSize = m_prefabCapsuleRadius * 2;
         const bool isFirstColumn = descendantIndex.column() == EntityOutlinerListModel::ColumnName;
         const bool isLastColumn = descendantIndex.column() == EntityOutlinerListModel::ColumnLockToggle;
@@ -117,12 +205,17 @@ namespace AzToolsFramework
         // Find the rect that extends fully to the left
         QRect fullRect = option.rect;
         fullRect.setLeft(ancestorLeft);
+        if (isLastColumn)
+        {
+            fullRect.setWidth(fullRect.width() - 1);
+        }
+
         // Adjust option.rect to account for the border thickness
         QRect rect = option.rect;
         rect.setLeft(rect.left() + (m_prefabBorderThickness / 2));
 
         painter->save();
-        painter->setRenderHint(QPainter::Antialiasing, false);
+        painter->setRenderHint(QPainter::Antialiasing, true);
         painter->setPen(borderLinePen);
 
         if (IsLastVisibleChild(index, descendantIndex))

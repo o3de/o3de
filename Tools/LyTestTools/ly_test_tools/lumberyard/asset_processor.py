@@ -78,6 +78,8 @@ class AssetProcessor(object):
         self._control_connection = None
         self._function_name = None
         self._failed_log_root = None
+        self._temp_log_directory = None
+        self._temp_log_root = None
         self._disable_all_platforms = False
         self._enabled_platform_overrides = dict()
 
@@ -96,7 +98,7 @@ class AssetProcessor(object):
         """
         self.send_message("waitforidle")
         result = self.read_message(read_timeout=timeout)
-        assert result == "idle", "Couldn't get idle state from AP"
+        assert result == "idle" or not self.process_exists(), f"Couldn't get idle state from AP, message {result}"
         return True
 
     def next_idle(self):
@@ -109,7 +111,7 @@ class AssetProcessor(object):
         """
         self.send_message("signalidle")
         result = self.read_message()
-        assert result == "idle", "Couldn't get idle state from AP"
+        assert result == "idle" or not self.process_exists(), f"Couldn't get idle state from AP, message {result}"
 
     def send_quit(self):
         """
@@ -143,17 +145,17 @@ class AssetProcessor(object):
 
     def read_message(self, read_timeout=DEFAULT_TIMEOUT_SECONDS):
         """
-        Read the next message from the AP Contorl socket. Must be running through gui_process/start method
+        Read the next message from the AP Control socket. Must be running through gui_process/start method
         """
         if not self._ap_proc:
             logger.warning("Attempted to read message to AP but not currently running")
-            return
+            return "no_process"
 
         if not self._control_connection:
             self.connect_control()
 
         if not self._control_connection:
-            return
+            return "no_connection"
 
         self._control_connection.settimeout(read_timeout)
         try:
@@ -163,6 +165,8 @@ class AssetProcessor(object):
             return result_message
         except IOError as e:
             logger.warning(f"Failed to read message from with error {e}")
+            return f"error_{e}"
+
 
 
     def read_control_port(self):
@@ -178,15 +182,18 @@ class AssetProcessor(object):
         start_time = time.time()
         read_port_timeout = 10
         while (time.time() - start_time) < read_port_timeout:
-            log = APLogParser(self._workspace.paths.ap_gui_log())
-            if len(log.runs):
-                try:
-                    port = log.runs[-1][port_type]
-                    if port:
-                        logger.info(f"Read port type {port_type} : {port}")
-                        return port
-                except:
-                    pass
+            if not os.path.exists(self._workspace.paths.ap_gui_log()):
+                logger.debug(f"Log at {self._workspace.paths.ap_gui_log()} doesn't exist, sleeping")
+            else:
+                log = APLogParser(self._workspace.paths.ap_gui_log())
+                if len(log.runs):
+                    try:
+                        port = log.runs[-1][port_type]
+                        if port:
+                            logger.info(f"Read port type {port_type} : {port}")
+                            return port
+                    except:
+                        pass
             time.sleep(1)
         logger.warning(f"Failed to read port type {port_type}")
         return 0
@@ -201,8 +208,13 @@ class AssetProcessor(object):
         """
         if not self._control_connection:
             control_timeout = 60
-            return self.connect_socket("Control Connection", self.read_control_port,
+            try:
+                return self.connect_socket("Control Connection", self.read_control_port,
                                        set_port_method=self.set_control_connection, timeout=control_timeout)
+            except AssetProcessorError as e:
+                # We dont want a failure of our test socket connection to fail the entire test automatically.
+                logger.error(f"Failed to connect control socket with error {e}")
+                pass
         return True, None
 
     def using_temp_workspace(self):
@@ -273,13 +285,13 @@ class AssetProcessor(object):
         wait_timeout = timeout
 
         try:
-            waiter.wait_for(lambda: not psutil.pid_exists(self.get_pid()), exc=AssetProcessorError, timeout=wait_timeout)
+            waiter.wait_for(lambda: not self.process_exists(), exc=AssetProcessorError, timeout=wait_timeout)
         except AssetProcessorError:
             logger.warning(f"Timeout attempting to quit asset processor after {wait_timeout} seconds, using terminate")
             self.terminate()
-            raise
+            pass
 
-        if psutil.pid_exists(self.get_pid()):
+        if self.process_exists():
             logger.warning(f"Failed to stop process {self.get_pid()} after {wait_timeout} seconds, using terminate")
             self.terminate()
         self._ap_proc = None
@@ -323,9 +335,9 @@ class AssetProcessor(object):
         """
         Returns pid of asset processor proc currently executing the start command (Ap Gui)
 
-        :return: pid if exists, else 0
+        :return: pid if exists, else -1
         """
-        return self._ap_proc.pid if self._ap_proc else 0
+        return self._ap_proc.pid if self._ap_proc else -1
 
     def get_process_list(self, name_filter: str = None):
         """
@@ -334,12 +346,13 @@ class AssetProcessor(object):
         :param name_filter: Name to match against, such as AssetBuilder
         :return: List of processes
         """
-        if not self._ap_proc or not self.get_pid():
+        my_pid = self.get_pid()
+        if my_pid is -1:
             return []
         return_list = []
         try:
-            return_list = [psutil.Process(self.get_pid())]
-            return_list.extend(utils.child_process_list(self.get_pid()))
+            return_list = [psutil.Process(my_pid)]
+            return_list.extend(utils.child_process_list(my_pid))
         except psutil.NoSuchProcess:
             logger.warning("Process already finished calling get_process_list")
         return return_list
@@ -400,9 +413,9 @@ class AssetProcessor(object):
     def process_exists(self):
         try:
             my_pid = self.get_pid()
-            if my_pid == 0:
+            if my_pid == -1:
                 return False
-            return psutil.pid_exists(self.get_pid())
+            return psutil.pid_exists(my_pid)
         except psutil.NoSuchProcess:
             pass
         return False
@@ -410,6 +423,7 @@ class AssetProcessor(object):
     def batch_process(self, timeout=DEFAULT_TIMEOUT_SECONDS, fastscan=True, capture_output=False, platforms=None,
                       extra_params=None, add_gem_scan_folders=None, add_config_scan_folders=None, decode=True,
                       expect_failure=False, scan_folder_pattern=None):
+        self.create_temp_log_root()
         ap_path = self._workspace.paths.asset_processor_batch()
         command = self.build_ap_command(ap_path=ap_path, fastscan=fastscan, platforms=platforms,
                                         extra_params=extra_params, add_gem_scan_folders=add_gem_scan_folders,
@@ -454,6 +468,7 @@ class AssetProcessor(object):
             else:
                 extra_gui_params.append(extra_params)
 
+        self.create_temp_log_root()
         command = self.build_ap_command(ap_path=ap_path, fastscan=fastscan, platforms=platforms,
                                         extra_params=extra_gui_params, add_gem_scan_folders=add_gem_scan_folders,
                                         add_config_scan_folders=add_config_scan_folders,
@@ -480,7 +495,7 @@ class AssetProcessor(object):
             self.connect_listen()
 
         if quitonidle:
-            waiter.wait_for(lambda: not psutil.pid_exists(self.get_pid()), timeout=timeout)
+            waiter.wait_for(lambda: not self.process_exists(), timeout=timeout)
         elif run_until_idle and accept_input:
             if not self.wait_for_idle():
                 return False, None
@@ -519,15 +534,17 @@ class AssetProcessor(object):
             command.append(f'--regset="/Amazon/AzCore/Bootstrap/project_path={self._project_path}"')
 
         # When using a scratch workspace we will set several options.  The asset root controls where our
-        # cache lives, gives us a unique directory to place our logs in, and indicates we wish to randomize our
+        # cache lives.
+        # The logDir gives us a unique directory to place our logs in, and indicates we wish to randomize our
         # listening port to avoid collisions.  The port will be written to the logs which we'll retrieve it from
         if self._temp_asset_root:
             command.append("--assetroot")
             command.append(f"{self._temp_asset_root}")
-            command.append("--logDir")
-            command.append(f"{self._temp_asset_root}")
             command.append(f'--regset="/Amazon/AzCore/Bootstrap/project_cache_path={self.temp_project_cache_path()}"')
             command.append("--randomListeningPort")
+        if self._temp_log_root:
+            command.append("--logDir")
+            command.append(f"{self._temp_log_root}")
         if self._override_scan_folders:
             command.append("--scanfolders")
             command.append(f"{','.join(self._override_scan_folders)}")
@@ -699,10 +716,28 @@ class AssetProcessor(object):
         self._temp_asset_directory = tempfile.TemporaryDirectory()
         self._temp_asset_root = self._temp_asset_directory.name
         self._copy_asset_root_files()
-        self._workspace.paths.set_ap_log_root(self._temp_asset_root)
         self._project_path = os.path.join(self._temp_asset_root, self._workspace.project)
         if project_scan_folder:
             self.add_scan_folder(self._project_path)
+
+    def log_root(self):
+        """
+        Return the temp log root
+        """
+        return self._temp_log_root
+
+    def create_temp_log_root(self):
+        """
+        Create a temp folder for logs.  We want a unique temp folder for logs for each test using the AssetProcessor
+        test class rather than using the default logs folder which could contain any old data or be used by other
+        runs of asset processor.
+        """
+        if self._temp_log_root:
+            logger.info(f'Cleaning up old log root at {self._temp_log_root}')
+            shutil.rmtree(self._temp_log_root, True)
+        self._temp_log_directory = tempfile.TemporaryDirectory()
+        self._temp_log_root = self._temp_log_directory.name
+        self._workspace.paths.set_ap_log_root(self._temp_log_root)
 
     def add_scan_folder(self, folder_name) -> str:
         """

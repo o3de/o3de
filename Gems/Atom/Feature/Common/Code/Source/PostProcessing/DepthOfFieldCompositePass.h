@@ -54,12 +54,12 @@ namespace AZ
             bool m_enabledDebugColoring = false;
 
             // SRG binding indices...
-            AZ::RHI::ShaderInputConstantIndex m_backBlendFactorDivision2Index;
-            AZ::RHI::ShaderInputConstantIndex m_backBlendFactorDivision4Index;
-            AZ::RHI::ShaderInputConstantIndex m_backBlendFactorDivision8Index;
-            AZ::RHI::ShaderInputConstantIndex m_frontBlendFactorDivision2Index;
-            AZ::RHI::ShaderInputConstantIndex m_frontBlendFactorDivision4Index;
-            AZ::RHI::ShaderInputConstantIndex m_frontBlendFactorDivision8Index;
+            RHI::ShaderInputNameIndex m_backBlendFactorDivision2Index = "m_backBlendFactorDivision2";
+            RHI::ShaderInputNameIndex m_backBlendFactorDivision4Index = "m_backBlendFactorDivision4";
+            RHI::ShaderInputNameIndex m_backBlendFactorDivision8Index = "m_backBlendFactorDivision8";
+            RHI::ShaderInputNameIndex m_frontBlendFactorDivision2Index = "m_frontBlendFactorDivision2";
+            RHI::ShaderInputNameIndex m_frontBlendFactorDivision4Index = "m_frontBlendFactorDivision4";
+            RHI::ShaderInputNameIndex m_frontBlendFactorDivision8Index = "m_frontBlendFactorDivision8";
 
             // scale / offset to convert DofFactor to blend ratio for back buffer.
             AZStd::array<float, 2> m_backBlendFactorDivision2 = { { 0.0f, 0.0f } };

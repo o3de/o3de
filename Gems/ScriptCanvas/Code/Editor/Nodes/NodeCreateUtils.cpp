@@ -15,6 +15,7 @@
 #include <Editor/Nodes/NodeCreateUtils.h>
 #include <Editor/Nodes/NodeDisplayUtils.h>
 
+#include <GraphCanvas/Components/Nodes/NodeBus.h>
 #include <GraphCanvas/Components/Nodes/NodeTitleBus.h>
 
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
@@ -23,7 +24,7 @@
 #include <ScriptCanvas/Libraries/Core/AzEventHandler.h>
 #include <ScriptCanvas/Libraries/Core/EBusEventHandler.h>
 #include <ScriptCanvas/Libraries/Core/FunctionDefinitionNode.h>
-#include <ScriptCanvas/Libraries/Core/FunctionNode.h>
+#include <ScriptCanvas/Libraries/Core/FunctionCallNode.h>
 #include <ScriptCanvas/Libraries/Core/GetVariable.h>
 #include <ScriptCanvas/Libraries/Core/Method.h>
 #include <ScriptCanvas/Libraries/Core/MethodOverloaded.h>
@@ -34,12 +35,15 @@
 
 namespace ScriptCanvasEditor::Nodes
 {
-    NodeIdPair CreateExecutionNodeling(const ScriptCanvas::ScriptCanvasId& scriptCanvasId, AZStd::string_view rootName)
+    NodeIdPair CreateFunctionDefinitionNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasId, bool isInput, AZStd::string rootName)
     {
         ScriptCanvasEditor::Nodes::StyleConfiguration styleConfiguration;
-        NodeIdPair createdPair = CreateNode(azrtti_typeid<ScriptCanvas::Nodes::Core::FunctionDefinitionNode>(), scriptCanvasId, styleConfiguration);
+        auto nodeAndPair = CreateAndGetNode(azrtti_typeid<ScriptCanvas::Nodes::Core::FunctionDefinitionNode>(), scriptCanvasId, styleConfiguration);
+        NodeIdPair createdPair = nodeAndPair.second;
 
-        if (createdPair.m_scriptCanvasId.IsValid())
+        auto functionDefinitionNode = azrtti_cast<ScriptCanvas::Nodes::Core::FunctionDefinitionNode*>(nodeAndPair.first);
+
+        if (functionDefinitionNode && createdPair.m_scriptCanvasId.IsValid())
         {
             AZStd::unordered_set<AZStd::string> nodelingNames;
 
@@ -71,12 +75,43 @@ namespace ScriptCanvasEditor::Nodes
             nodelingId.m_scriptCanvasId = scriptCanvasId;
 
             ScriptCanvas::NodelingRequestBus::Event(nodelingId, &ScriptCanvas::NodelingRequests::SetDisplayName, nodelingName);
+
+            if (!isInput)
+            {
+                functionDefinitionNode->MarkExecutionExit();
+            }
+            
+            GraphCanvas::NodeTitleRequestBus::Event(createdPair.m_graphCanvasId, &GraphCanvas::NodeTitleRequests::SetSubTitle, "Function");
+
+            
+
+            // Because of how the extender slots are registered, there isn't an easy way to only create one or the other based on
+            // the type of nodeling, so instead they both get created and we need to remove the inapplicable one
+            GraphCanvas::ConnectionType typeToRemove = (isInput) ? GraphCanvas::CT_Input : GraphCanvas::CT_Output;
+
+            AZStd::vector<GraphCanvas::SlotId> extenderSlotIds, executionSlotIds;
+            GraphCanvas::NodeRequestBus::EventResult(extenderSlotIds, createdPair.m_graphCanvasId, &GraphCanvas::NodeRequests::FindVisibleSlotIdsByType, typeToRemove, GraphCanvas::SlotTypes::ExtenderSlot);
+            if (!extenderSlotIds.empty())
+            {
+                GraphCanvas::NodeRequestBus::Event(createdPair.m_graphCanvasId, &GraphCanvas::NodeRequests::RemoveSlot, *extenderSlotIds.begin());
+            }
+
+            GraphCanvas::NodeRequestBus::EventResult(executionSlotIds, createdPair.m_graphCanvasId, &GraphCanvas::NodeRequests::FindVisibleSlotIdsByType, typeToRemove, GraphCanvas::SlotTypes::ExecutionSlot);
+            if (!executionSlotIds.empty())
+            {
+                GraphCanvas::NodeRequestBus::Event(createdPair.m_graphCanvasId, &GraphCanvas::NodeRequests::RemoveSlot, *executionSlotIds.begin());
+            }
         }
 
         return createdPair;
     }
 
     NodeIdPair CreateNode(const AZ::Uuid& classId, const ScriptCanvas::ScriptCanvasId& scriptCanvasId, const StyleConfiguration& styleConfiguration)
+    {
+        return CreateAndGetNode(classId, scriptCanvasId, styleConfiguration).second;
+    }
+
+    AZStd::pair<ScriptCanvas::Node*, NodeIdPair> CreateAndGetNode(const AZ::Uuid& classId, const ScriptCanvas::ScriptCanvasId& scriptCanvasId, const StyleConfiguration& styleConfiguration)
     {
         AZ_PROFILE_TIMER("ScriptCanvas", __FUNCTION__);
         NodeIdPair nodeIdPair;
@@ -104,7 +139,7 @@ namespace ScriptCanvasEditor::Nodes
             //nodeConfiguration.m_nodeSubStyle = styleConfiguration.m_nodeSubStyle;
         }
 
-        return nodeIdPair;
+        return AZStd::make_pair(node, nodeIdPair);
     }
 
     NodeIdPair CreateEntityNode(const AZ::EntityId& sourceId, const ScriptCanvas::ScriptCanvasId& scriptCanvasId)
@@ -367,7 +402,7 @@ namespace ScriptCanvasEditor::Nodes
         return nodeIds;
     }
 
-    NodeIdPair CreateFunctionNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasGraphId, const AZ::Data::AssetId& assetId)
+    NodeIdPair CreateFunctionNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasGraphId, const AZ::Data::AssetId& assetId, const ScriptCanvas::Grammar::FunctionSourceId& sourceId)
     {
         AZ_Assert(assetId.IsValid(), "CreateFunctionNode source asset Id must be valid");
 
@@ -381,11 +416,9 @@ namespace ScriptCanvasEditor::Nodes
         scriptCanvasEntity->Init();
 
         ScriptCanvas::Node* node = nullptr;
-        ScriptCanvas::SystemRequestBus::BroadcastResult(node, &ScriptCanvas::SystemRequests::CreateNodeOnEntity, scriptCanvasEntity->GetId(), scriptCanvasGraphId, ScriptCanvas::Nodes::Core::FunctionNode::RTTI_Type());
-        auto* functionNode = azrtti_cast<ScriptCanvas::Nodes::Core::FunctionNode*>(node);
-        functionNode->Initialize(assetId);
-        functionNode->ConfigureNode(assetId);
-
+        ScriptCanvas::SystemRequestBus::BroadcastResult(node, &ScriptCanvas::SystemRequests::CreateNodeOnEntity, scriptCanvasEntity->GetId(), scriptCanvasGraphId, ScriptCanvas::Nodes::Core::FunctionCallNode::RTTI_Type());
+        auto functionNode = azrtti_cast<ScriptCanvas::Nodes::Core::FunctionCallNode*>(node);
+        functionNode->Initialize(assetId, sourceId);
         functionNode->BuildNode();
 
         nodeIdPair.m_scriptCanvasId = scriptCanvasEntity->GetId();

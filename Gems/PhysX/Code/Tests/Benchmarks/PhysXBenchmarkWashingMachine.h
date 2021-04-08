@@ -15,8 +15,8 @@
 
 #include <AzCore/Math/Random.h>
 #include <AzCore/Math/Vector3.h>
-#include <AzFramework/Physics/RigidBody.h>
-#include <AzFramework/Physics/World.h>
+#include <AzFramework/Physics/Common/PhysicsEvents.h>
+#include <AzFramework/Physics/Common/PhysicsTypes.h>
 
 namespace AzPhysics
 {
@@ -27,27 +27,26 @@ namespace PhysX::Benchmarks
 {
     //! Helper to create a cylinder and place a spinning 'blade' inside
     class WashingMachine
-        : public Physics::WorldNotificationBus::Handler
     {
     public:
+        WashingMachine();
         ~WashingMachine();
 
         //! Create the washing machine.
-        //! @param scene - the physics scene to create the washing machine in.
-        //! @param cylinderRadius - inside radius of the cylinder.
-        //! @param cylinderHeight - how tall to make the cylinder.
-        //! @param position - where to position the cylinder.
-        //! @param RPM - how fast to spin the 'blade' in rotations per minute.
-        void SetupWashingMachine(AzPhysics::Scene* scene, float cylinderRadius, float cylinderHeight,
+        //! @param sceneHandle A handle to the physics scene to create the washing machine in.
+        //! @param cylinderRadius Inside radius of the cylinder.
+        //! @param cylinderHeight How tall to make the cylinder.
+        //! @param position Where to position the cylinder.
+        //! @param RPM How fast to spin the 'blade' in rotations per minute.
+        void SetupWashingMachine(AzPhysics::SceneHandle sceneHandle, float cylinderRadius, float cylinderHeight,
             const AZ::Vector3& position, float RPM);
 
         //! Clean up the machine.
         void TearDownWashingMachine();
 
-        // Physics::WorldNotificationBus::Handler Interface ----------
-        void OnPrePhysicsSubtick(float fixedDeltaTime) override;
-        // Physics::WorldNotificationBus::Handler Interface ----------
     private:
+        void UpdateBlade(float fixedDeltaTime);
+
         //! Helper to animate the 'blade'.
         struct BladeAnimation
         {
@@ -65,10 +64,13 @@ namespace PhysX::Benchmarks
         };
 
         static const int NumCylinderSide = 12;
-        AZStd::array<AZStd::unique_ptr<Physics::RigidBodyStatic>, NumCylinderSide> m_cylinder;
-        AZStd::unique_ptr<Physics::RigidBody> m_blade;
+        AZStd::array<AzPhysics::SimulatedBodyHandle, NumCylinderSide> m_cylinder;
+        AzPhysics::SimulatedBodyHandle m_blade;
+        AzPhysics::SceneHandle m_sceneHandle = AzPhysics::InvalidSceneHandle;
 
         BladeAnimation m_bladeAnimation;
+
+        AzPhysics::SceneEvents::OnSceneSimulationStartHandler m_sceneStartSimHandler;
     };
 } // namespace PhysX::Benchmarks
 

@@ -148,6 +148,11 @@ namespace PhysX
         return m_type == ForceType::LinearDamping;
     }
 
+    EditorForceRegionComponent::EditorForceRegionComponent()
+        : m_nonUniformScaleChangedHandler([this](const AZ::Vector3& scale) {OnNonUniformScaleChanged(scale); })
+    {
+    }
+
     void EditorForceRegionComponent::Reflect(AZ::ReflectContext* context)
     {
         EditorForceRegionComponent::EditorForceProxy::Reflect(context);
@@ -237,11 +242,21 @@ namespace PhysX
         required.push_back(AZ_CRC("PhysXTriggerService", 0x3a117d7b));
     }
 
+    void EditorForceRegionComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
+    {
+        dependent.push_back(AZ_CRC_CE("NonUniformScaleService"));
+    }
+
     void EditorForceRegionComponent::Activate()
     {
         AZ::EntityId entityId = GetEntityId();
         EditorComponentBase::Activate();
         AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(entityId);
+
+        m_cachedNonUniformScale = AZ::Vector3::CreateOne();
+        AZ::NonUniformScaleRequestBus::EventResult(m_cachedNonUniformScale, entityId, &AZ::NonUniformScaleRequests::GetScale);
+        AZ::NonUniformScaleRequestBus::Event(entityId, &AZ::NonUniformScaleRequests::RegisterScaleChangedEvent,
+            m_nonUniformScaleChangedHandler);
 
         for (auto& force : m_forces)
         {
@@ -323,10 +338,20 @@ namespace PhysX
                     randomPoints = Utils::Geometry::GenerateBoxPoints(-halfExtents, halfExtents);
                 }
 
-                PhysX::Utils::ColliderPointsLocalToWorld(randomPoints
-                    , GetWorldTM()
-                    , editorColliderComponent->GetColliderConfiguration().m_position
-                    , editorColliderComponent->GetColliderConfiguration().m_rotation);
+                if (!shapeConfig.IsAssetConfig())
+                {
+                    PhysX::Utils::ColliderPointsLocalToWorld(randomPoints
+                        , GetWorldTM()
+                        , editorColliderComponent->GetColliderConfiguration().m_position
+                        , editorColliderComponent->GetColliderConfiguration().m_rotation
+                        , m_cachedNonUniformScale);
+                }
+                else
+                {
+                    const AZ::Vector3 aabbCenter = aabb.GetCenter();
+                    AZStd::transform(randomPoints.begin(), randomPoints.end(), randomPoints.begin(),
+                        [&aabbCenter](AZ::Vector3& point) {return point + aabbCenter; });
+                }
 
                 DrawForceArrows(randomPoints, debugDisplayRequests);
             }
@@ -407,5 +432,10 @@ namespace PhysX
 
         ForceRegionNotificationBus::Broadcast(
             &ForceRegionNotificationBus::Events::OnForceRegionForceChanged, GetEntityId());
+    }
+
+    void EditorForceRegionComponent::OnNonUniformScaleChanged(const AZ::Vector3& scale)
+    {
+        m_cachedNonUniformScale = scale;
     }
 }

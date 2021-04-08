@@ -15,6 +15,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzFramework/Physics/Utils.h>
+#include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
 #include <PhysX/NativeTypeIdentifiers.h>
 #include <PhysX/MathConversion.h>
 #include <Source/RigidBody.h>
@@ -23,8 +24,8 @@
 #include <Source/Shape.h>
 #include <extensions/PxRigidBodyExt.h>
 #include <PxPhysicsAPI.h>
-#include <AzFramework/Physics/World.h>
 #include <PhysX/PhysXLocks.h>
+#include <Common/PhysXSceneQueryHelpers.h>
 
 namespace PhysX
 {
@@ -39,9 +40,8 @@ namespace PhysX
         }
     }
 
-    RigidBody::RigidBody(const Physics::RigidBodyConfiguration& configuration)
-        : Physics::RigidBody(configuration)
-        , m_startAsleep(configuration.m_startAsleep)
+    RigidBody::RigidBody(const AzPhysics::RigidBodyConfiguration& configuration)
+        : m_startAsleep(configuration.m_startAsleep)
     {
         CreatePhysXActor(configuration);
     }
@@ -59,9 +59,14 @@ namespace PhysX
             }
         }
         m_shapes.clear();
+
+        // Invalidate user data so it sets m_pxRigidActor->userData to nullptr.
+        // It's appropriate to do this as m_pxRigidActor is a shared pointer and
+        // techniqucally it could survive m_actorUserData life's spam.
+        m_actorUserData.Invalidate();
     }
 
-    void RigidBody::CreatePhysXActor(const Physics::RigidBodyConfiguration& configuration)
+    void RigidBody::CreatePhysXActor(const AzPhysics::RigidBodyConfiguration& configuration)
     {
         if (m_pxRigidActor != nullptr)
         {
@@ -69,13 +74,8 @@ namespace PhysX
             return;
         }
 
-        if (auto rigidBody = PxActorFactories::CreatePxRigidBody(configuration))
+        if (m_pxRigidActor = PxActorFactories::CreatePxRigidBody(configuration))
         {
-            m_pxRigidActor = AZStd::shared_ptr<physx::PxRigidDynamic>(rigidBody, [](auto& actor)
-            {
-                PxActorFactories::ReleaseActor(actor);
-            });
-
             m_actorUserData = ActorData(m_pxRigidActor.get());
             m_actorUserData.SetRigidBody(this);
             m_actorUserData.SetEntityId(configuration.m_entityId);
@@ -85,7 +85,7 @@ namespace PhysX
             SetSimulationEnabled(configuration.m_simulated);
             SetCCDEnabled(configuration.m_ccdEnabled);
 
-            Physics::MassComputeFlags flags = configuration.GetMassComputeFlags();
+            AzPhysics::MassComputeFlags flags = configuration.GetMassComputeFlags();
             UpdateMassProperties(flags, &configuration.m_centerOfMassOffset, &configuration.m_inertiaTensor,
                 &configuration.m_mass);
 
@@ -162,22 +162,20 @@ namespace PhysX
         m_shapes.erase(found);
     }
 
-    void RigidBody::UpdateMassProperties(Physics::MassComputeFlags flags, const AZ::Vector3* centerOfMassOffsetOverride, const AZ::Matrix3x3* inertiaTensorOverride, const float* massOverride)
+    void RigidBody::UpdateMassProperties(AzPhysics::MassComputeFlags flags, const AZ::Vector3* centerOfMassOffsetOverride, const AZ::Matrix3x3* inertiaTensorOverride, const float* massOverride)
     {
-        using Physics::MassComputeFlags;
-
         // Input validation
-        bool computeCenterOfMass = MassComputeFlags::COMPUTE_COM == (flags & MassComputeFlags::COMPUTE_COM);
+        bool computeCenterOfMass = AzPhysics::MassComputeFlags::COMPUTE_COM == (flags & AzPhysics::MassComputeFlags::COMPUTE_COM);
         AZ_Assert(computeCenterOfMass || centerOfMassOffsetOverride,
             "UpdateMassProperties: MassComputeFlags::COMPUTE_COM is not set but COM offset is not specified");
         computeCenterOfMass = computeCenterOfMass || !centerOfMassOffsetOverride;
 
-        bool computeInertiaTensor = MassComputeFlags::COMPUTE_INERTIA == (flags & MassComputeFlags::COMPUTE_INERTIA);
+        bool computeInertiaTensor = AzPhysics::MassComputeFlags::COMPUTE_INERTIA == (flags & AzPhysics::MassComputeFlags::COMPUTE_INERTIA);
         AZ_Assert(computeInertiaTensor || inertiaTensorOverride,
             "UpdateMassProperties: MassComputeFlags::COMPUTE_INERTIA is not set but inertia tensor is not specified");
         computeInertiaTensor = computeInertiaTensor || !inertiaTensorOverride;
 
-        bool computeMass = MassComputeFlags::COMPUTE_MASS == (flags & MassComputeFlags::COMPUTE_MASS);
+        bool computeMass = AzPhysics::MassComputeFlags::COMPUTE_MASS == (flags & AzPhysics::MassComputeFlags::COMPUTE_MASS);
         AZ_Assert(computeMass || massOverride,
             "UpdateMassProperties: MassComputeFlags::COMPUTE_MASS is not set but mass is not specified");
         computeMass = computeMass || !massOverride;
@@ -185,7 +183,7 @@ namespace PhysX
         AZ::u32 shapesCount = GetShapeCount();
 
         // Basic cases when we don't need to compute anything
-        if (shapesCount == 0 || flags == Physics::MassComputeFlags::NONE)
+        if (shapesCount == 0 || flags == AzPhysics::MassComputeFlags::NONE)
         {
             if (massOverride)
             {
@@ -214,7 +212,7 @@ namespace PhysX
         const physx::PxVec3* massLocalPose = optionalComOverride.has_value() ? &optionalComOverride.value() : nullptr;
 
         bool includeAllShapesInMassCalculation =
-            MassComputeFlags::INCLUDE_ALL_SHAPES == (flags & MassComputeFlags::INCLUDE_ALL_SHAPES);
+            AzPhysics::MassComputeFlags::INCLUDE_ALL_SHAPES == (flags & AzPhysics::MassComputeFlags::INCLUDE_ALL_SHAPES);
 
         // Handle the case when we don't compute mass
         if (!computeMass)
@@ -263,12 +261,6 @@ namespace PhysX
         {
             SetInertia(*inertiaTensorOverride);
         }
-    }
-
-    void RigidBody::ReleasePhysXActor()
-    {
-        m_shapes.clear();
-        m_pxRigidActor = nullptr;
     }
 
     AZ::u32 RigidBody::GetShapeCount()
@@ -592,20 +584,17 @@ namespace PhysX
 
     void RigidBody::SetSimulationEnabled(bool enabled)
     {
-        PHYSX_SCENE_WRITE_LOCK(m_pxRigidActor->getScene());
-        m_pxRigidActor->setActorFlag(physx::PxActorFlag::eDISABLE_SIMULATION, enabled == false);
+        if (m_pxRigidActor)
+        {
+            PHYSX_SCENE_WRITE_LOCK(m_pxRigidActor->getScene());
+            m_pxRigidActor->setActorFlag(physx::PxActorFlag::eDISABLE_SIMULATION, enabled == false);
+        }
     }
 
     void RigidBody::SetCCDEnabled(bool enabled)
     {
         PHYSX_SCENE_WRITE_LOCK(m_pxRigidActor->getScene());
         m_pxRigidActor->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_CCD, enabled);
-    }
-
-    // Physics::WorldBody
-    Physics::World* RigidBody::GetWorld() const
-    {
-        return m_pxRigidActor ? Utils::GetUserData(m_pxRigidActor->getScene()) : nullptr;
     }
 
     AZ::Transform RigidBody::GetTransform() const
@@ -662,9 +651,9 @@ namespace PhysX
         return m_actorUserData.GetEntityId();
     }
 
-    Physics::RayCastHit RigidBody::RayCast(const Physics::RayCastRequest& request)
+    AzPhysics::SceneQueryHit RigidBody::RayCast(const AzPhysics::RayCastRequest& request)
     {
-        return PhysX::Utils::RayCast::ClosestRayHitAgainstShapes(request, m_shapes, GetTransform());
+        return PhysX::SceneQueryHelpers::ClosestRayHitAgainstShapes(request, m_shapes, GetTransform());
     }
 
     // Physics::ReferenceBase
@@ -787,51 +776,6 @@ namespace PhysX
             PHYSX_SCENE_WRITE_LOCK(m_pxRigidActor->getScene());
             m_pxRigidActor->setSleepThreshold(threshold);
         }
-    }
-
-    void RigidBody::AddToWorld(Physics::World& world)
-    {
-        physx::PxScene* scene = static_cast<physx::PxScene*>(world.GetNativePointer());
-
-        if (!scene)
-        {
-            AZ_Error("RigidBody", false, "Tried to add body to invalid world.");
-            return;
-        }
-
-        if (!m_pxRigidActor)
-        {
-            AZ_Error("RigidBody", false, "Tried to add invalid PhysX body to world.");
-            return;
-        }
-
-        {
-            PHYSX_SCENE_WRITE_LOCK(scene);
-            scene->addActor(*m_pxRigidActor);
-            if (m_startAsleep)
-            {
-                m_pxRigidActor->putToSleep();
-            }
-        }
-    }
-
-    void RigidBody::RemoveFromWorld(Physics::World& world)
-    {
-        physx::PxScene* scene = static_cast<physx::PxScene*>(world.GetNativePointer());
-        if (!scene)
-        {
-            AZ_Error("PhysX World", false, "Tried to remove body from invalid world.");
-            return;
-        }
-
-        if (!m_pxRigidActor)
-        {
-            AZ_Error("PhysX World", false, "Tried to remove invalid PhysX body from world.");
-            return;
-        }
-
-        PHYSX_SCENE_WRITE_LOCK(scene);
-        scene->removeActor(*m_pxRigidActor);
     }
 
     void RigidBody::SetName(const AZStd::string& entityName)

@@ -117,7 +117,7 @@ namespace ScriptCanvasEditor
     {
         if (variable)
         {
-            ScriptCanvas::VariableNotificationBus::Handler::BusDisconnect();            
+            ScriptCanvas::VariableNotificationBus::Handler::BusDisconnect();
 
             m_variable = variable;
             m_componentTitle.clear();
@@ -180,6 +180,7 @@ namespace ScriptCanvasEditor
     {
         GeneralRequestBus::Broadcast(&GeneralRequests::PostUndoPoint, m_scriptCanvasGraphId);
         PropertyGridRequestBus::Broadcast(&PropertyGridRequests::RefreshPropertyGrid);
+        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
     }
 
     void VariablePropertiesComponent::OnVariableRenamed(AZStd::string_view variableName)
@@ -292,6 +293,8 @@ namespace ScriptCanvasEditor
             dockWidget->OnDeleteVariables(variableIds);
         });
 
+
+
         addAction(getAction);
         addAction(setAction);
         addSeparator();
@@ -299,56 +302,6 @@ namespace ScriptCanvasEditor
         addAction(pasteAction);
         addAction(duplicateAction);
         addAction(deleteAction);
-        addSeparator();
-
-        // Setup exposure options
-        ScriptCanvas::GraphScopedVariableId variableId;
-        variableId.m_scriptCanvasId = scriptCanvasId;
-        variableId.m_identifier = varId;
-        ScriptCanvas::GraphVariable* variable = nullptr;
-        ScriptCanvas::VariableRequestBus::EventResult(variable, variableId, &ScriptCanvas::VariableRequests::GetVariable);
-        AZ_Assert(variable, "The variable must exist at this point");
-
-        AZ::Data::AssetType assetType;
-        AssetTrackerRequestBus::BroadcastResult(assetType, &AssetTrackerRequests::GetAssetType, scriptCanvasId);
-        
-        // Exposing variables is only available for Function assets
-        QMenu* scopeSubMenu = new QMenu(QObject::tr("Scope"), this);
-
-        QActionGroup* actionGroup = new QActionGroup(scopeSubMenu);
-        actionGroup->setExclusive(true);
-
-        AZStd::vector<ScriptCanvas::VariableFlags::Scope> scopes = { ScriptCanvas::VariableFlags::Scope::Local, ScriptCanvas::VariableFlags::Scope::Input };
-
-        if (assetType == azrtti_typeid<ScriptCanvasEditor::ScriptCanvasFunctionAsset >())
-        {
-            scopes.emplace_back(ScriptCanvas::VariableFlags::Scope::Output);
-            scopes.emplace_back(ScriptCanvas::VariableFlags::Scope::InOut);
-        }
-
-        for (auto scopeType : scopes)
-        {
-            QAction* exposureAction = new QAction(QObject::tr(ScriptCanvas::VariableFlags::GetScopeDisplayLabel(scopeType)), this);
-            exposureAction->setCheckable(true);
-            exposureAction->setChecked(variable->GetScope() == scopeType);
-            exposureAction->setActionGroup(actionGroup);
-            exposureAction->setToolTip(QObject::tr(ScriptCanvas::VariableFlags::GetScopeToolTip(scopeType)));
-
-            QObject::connect(exposureAction, &QAction::triggered, this, [variableId, scopeType](bool)
-            {
-                ScriptCanvas::GraphVariable* variable = nullptr;
-                ScriptCanvas::VariableRequestBus::EventResult(variable, variableId, &ScriptCanvas::VariableRequests::GetVariable);
-
-                if (variable)
-                {
-                    variable->SetScope(scopeType);
-                }
-            });
-
-            scopeSubMenu->addAction(exposureAction);
-        }
-
-        addMenu(scopeSubMenu);
     }
 
     ///////////////////////

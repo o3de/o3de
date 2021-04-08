@@ -11,25 +11,21 @@
  */
 
 #include <AzCore/Casting/lossy_cast.h>
-#include <AzCore/Math/Uuid.h>
 #include <AzToolsFramework/Prefab/Spawnable/ProcesedObjectStore.h>
 
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {
-    ProcessedObjectStore::ProcessedObjectStore(AZStd::string uniqueId, AZStd::any object, SerializerFunction objectSerializer,
-        AZ::Data::AssetType assetType)
+    ProcessedObjectStore::ProcessedObjectStore(AZStd::string uniqueId, AZStd::unique_ptr<AZ::Data::AssetData> asset, SerializerFunction assetSerializer)
         : m_uniqueId(AZStd::move(uniqueId))
-        , m_object(AZStd::move(object))
-        , m_objectSerializer(AZStd::move(objectSerializer))
-        , m_assetType(AZStd::move(assetType))
-    {
-    }
+        , m_assetSerializer(AZStd::move(assetSerializer))
+        , m_asset(AZStd::move(asset))
+    {}
 
     bool ProcessedObjectStore::Serialize(AZStd::vector<uint8_t>& output) const
     {
-        if (m_objectSerializer)
+        if (m_assetSerializer)
         {
-            return m_objectSerializer(output, *this);
+            return m_assetSerializer(output, *this);
         }
         else
         {
@@ -37,25 +33,38 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         }
     }
 
-    const AZStd::any& ProcessedObjectStore::GetObject() const
+    bool ProcessedObjectStore::HasAsset() const
     {
-        return m_object;
-    }
-
-    AZStd::any ProcessedObjectStore::ReleaseObject()
-    {
-        return AZStd::move(m_object);
-    }
-
-    uint32_t ProcessedObjectStore::BuildSubId() const
-    {
-        AZ::Uuid subIdHash = AZ::Uuid::CreateData(m_uniqueId.data(), m_uniqueId.size());
-        return azlossy_caster(subIdHash.GetHash());
+        return m_asset != nullptr;
     }
 
     const AZ::Data::AssetType& ProcessedObjectStore::GetAssetType() const
     {
-        return m_assetType;
+        AZ_Assert(m_asset, "Called GetAssetType on ProcessedObjectStore when there was no valid asset.");
+        return m_asset->GetType();
+    }
+
+    AZ::Data::AssetData& ProcessedObjectStore::GetAsset()
+    {
+        AZ_Assert(m_asset, "Called GetAsset on ProcessedObjectStore when there was no valid asset.");
+        return *m_asset;
+    }
+
+    const AZ::Data::AssetData& ProcessedObjectStore::GetAsset() const
+    {
+        AZ_Assert(m_asset, "Called GetAsset on ProcessedObjectStore when there was no valid asset.");
+        return *m_asset;
+    }
+
+    AZStd::unique_ptr<AZ::Data::AssetData> ProcessedObjectStore::ReleaseAsset()
+    {
+        return AZStd::move(m_asset);
+    }
+
+    uint32_t ProcessedObjectStore::BuildSubId(AZStd::string_view id)
+    {
+        AZ::Uuid subIdHash = AZ::Uuid::CreateData(id.data(), id.size());
+        return azlossy_caster(subIdHash.GetHash());
     }
 
     const AZStd::string& ProcessedObjectStore::GetId() const

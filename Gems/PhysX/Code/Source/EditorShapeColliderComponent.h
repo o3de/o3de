@@ -13,11 +13,12 @@
 #pragma once
 
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Physics/Shape.h>
-#include <AzFramework/Physics/RigidBody.h>
 #include <AzFramework/Physics/WorldBodyBus.h>
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
+#include <AzFramework/Physics/Common/PhysicsTypes.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <PhysX/ColliderShapeBus.h>
@@ -26,8 +27,16 @@
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <LmbrCentral/Shape/PolygonPrismShapeComponentBus.h>
 
+namespace AzPhysics
+{
+    class SceneInterface;
+    struct SimulatedBody;
+}
+
 namespace PhysX
 {
+    class StaticRigidBody;
+
     enum class ShapeType
     {
         None,
@@ -108,13 +117,16 @@ namespace PhysX
         // TransformBus
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 
+        // handling for non-uniform scale
+        void OnNonUniformScaleChanged(const AZ::Vector3& scale);
+
         // WorldBodyRequestBus
         void EnablePhysics() override;
         void DisablePhysics() override;
         bool IsPhysicsEnabled() const override;
         AZ::Aabb GetAabb() const override;
-        Physics::WorldBody* GetWorldBody() override;
-        Physics::RayCastHit RayCast(const Physics::RayCastRequest& request) override;
+        AzPhysics::SimulatedBody* GetWorldBody() override;
+        AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& request) override;
 
         // LmbrCentral::ShapeComponentNotificationBus
         void OnShapeChanged(LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons changeReason) override;
@@ -128,7 +140,10 @@ namespace PhysX
 
         Physics::ColliderConfiguration m_colliderConfig; //!< Stores collision layers, whether the collider is a trigger, etc.
         DebugDraw::Collider m_colliderDebugDraw; //!< Handles drawing the collider based on global and local
-        AZStd::unique_ptr<Physics::RigidBodyStatic> m_editorBody; //!< Body in the editor physics world if there is no rigid body component.
+        AzPhysics::SceneInterface* m_sceneInterface = nullptr;
+        AzPhysics::SceneHandle m_editorSceneHandle = AzPhysics::InvalidSceneHandle;
+        StaticRigidBody* m_editorBody = nullptr; //!< Body in the editor physics scene if there is no rigid body component.
+        AzPhysics::SimulatedBodyHandle m_editorBodyHandle = AzPhysics::InvalidSimulatedBodyHandle; //!< Handle to the body in the editor physics scene if there is no rigid body component.
         bool m_shapeTypeWarningIssued = false; //!< Records whether a warning about unsupported shapes has been previously issued.
         PolygonPrismMeshUtils::Mesh2D m_mesh; //!< Used for storing decompositions of the polygon prism.
         AZStd::vector<AZStd::shared_ptr<Physics::ShapeConfiguration>> m_shapeConfigs; //!< Stores the physics shape configuration(s).
@@ -142,5 +157,7 @@ namespace PhysX
         AzPhysics::SystemEvents::OnConfigurationChangedEvent::Handler m_physXConfigChangedHandler;
         AzPhysics::SystemEvents::OnDefaultMaterialLibraryChangedEvent::Handler m_onDefaultMaterialLibraryChangedEventHandler;
         AZ::Transform m_cachedWorldTransform;
+        AZ::NonUniformScaleChangedEvent::Handler m_nonUniformScaleChangedHandler; //!< Responds to changes in non-uniform scale.
+        AZ::Vector3 m_currentNonUniformScale = AZ::Vector3::CreateOne(); //!< Caches the current non-uniform scale.
     };
 } // namespace PhysX

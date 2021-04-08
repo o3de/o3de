@@ -16,7 +16,7 @@
 #include "EntityTransformCommand.h"
 #include <HexEdFramework/FrameworkCore/SelectionMessages.h>
 #include <HexEd/WorldEditor/ToolsComponents/TransformComponentBus.h>
-#include "PreemptiveUndoCache.h"
+#include <AzToolsFramework/Undo/UndoCacheInterface.h>
 
 namespace AzToolsFramework
 {
@@ -31,6 +31,9 @@ namespace AzToolsFramework
             m_priorTransforms[*it] = current;
             m_nextTransforms[*it] = current;
         }
+
+        m_undoCacheInterface = AZ::Interface<UndoSystem::UndoCacheInterface>::Get();
+        AZ_Assert(m_undoCacheInterface, "Could not get UndoCacheInterface on TransformCommand construction.");
     }
 
     void TransformCommand::Post()
@@ -46,7 +49,7 @@ namespace AzToolsFramework
 
         for (auto it = m_priorTransforms.begin(); it != m_priorTransforms.end(); ++it)
         {
-            PreemptiveUndoCache::Get()->UpdateCache(it->first);
+            m_undoCacheInterface->UpdateCache(it->first);
         }
     }
 
@@ -55,7 +58,7 @@ namespace AzToolsFramework
         for (auto it = m_priorTransforms.begin(); it != m_priorTransforms.end(); ++it)
         {
             EBUS_EVENT_ID(it->first, TransformComponentMessages::Bus, SetLocalSRT, it->second);
-            PreemptiveUndoCache::Get()->UpdateCache(it->first);
+            m_undoCacheInterface->UpdateCache(it->first);
         }
     }
 
@@ -64,7 +67,7 @@ namespace AzToolsFramework
         for (auto it = m_nextTransforms.begin(); it != m_nextTransforms.end(); ++it)
         {
             EBUS_EVENT_ID(it->first, TransformComponentMessages::Bus, SetLocalSRT, it->second);
-            PreemptiveUndoCache::Get()->UpdateCache(it->first);
+            m_undoCacheInterface->UpdateCache(it->first);
         }
     }
 

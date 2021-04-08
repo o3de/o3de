@@ -20,6 +20,9 @@
 #include <AzCore/std/containers/set.h>
 #include <AzCore/Math/Color.h>
 
+#include <Atom/RPI.Reflect/Image/Image.h>
+#include <AtomCore/Instance/Instance.h>
+
 #ifndef _RELEASE
 #include "LyShineDebug.h"
 #endif
@@ -69,8 +72,8 @@ namespace LyShine
         // We use a pool allocator to keep these allocations fast.
         AZ_CLASS_ALLOCATOR(PrimitiveListRenderNode, AZ::PoolAllocator, 0);
 
-        PrimitiveListRenderNode(ITexture* texture, bool isClampTextureMode, bool isTextureSRGB, bool preMultiplyAlpha, int blendModeState);
-        PrimitiveListRenderNode(ITexture* texture, ITexture* maskTexture,
+        PrimitiveListRenderNode(const AZ::Data::Instance<AZ::RPI::Image>& texture, bool isClampTextureMode, bool isTextureSRGB, bool preMultiplyAlpha, int blendModeState);
+        PrimitiveListRenderNode(const AZ::Data::Instance<AZ::RPI::Image>& texture, const AZ::Data::Instance<AZ::RPI::Image>& maskTexture,
             bool isClampTextureMode, bool isTextureSRGB, bool preMultiplyAlpha, AlphaMaskType alphaMaskType, int blendModeState);
         ~PrimitiveListRenderNode() override;
         void Render(UiRenderer* uiRenderer) override;
@@ -78,9 +81,9 @@ namespace LyShine
         void AddPrimitive(IRenderer::DynUiPrimitive* primitive);
         IRenderer::DynUiPrimitiveList& GetPrimitives() const;
 
-        int GetOrAddTexture(ITexture* texture, bool isClampTextureMode);
+        int GetOrAddTexture(const AZ::Data::Instance<AZ::RPI::Image>& texture, bool isClampTextureMode);
         int GetNumTextures() const { return m_numTextures; }
-        ITexture* GetTexture(int texIndex) const { return m_textures[texIndex].m_texture; }
+        const AZ::Data::Instance<AZ::RPI::Image> GetTexture(int texIndex) const { return m_textures[texIndex].m_texture; }
         bool GetTextureIsClampMode(int texIndex) const { return m_textures[texIndex].m_isClampTextureMode; }
 
         bool GetIsTextureSRGB() const { return m_isTextureSRGB; }
@@ -91,7 +94,7 @@ namespace LyShine
         bool HasSpaceToAddPrimitive(IRenderer::DynUiPrimitive* primitive) const;
 
         // Search to see if this texture is already used by this texture unit, returns -1 if not used
-        int FindTexture(ITexture* texture, bool isClampTextureMode) const;
+        int FindTexture(const AZ::Data::Instance<AZ::RPI::Image>& texture, bool isClampTextureMode) const;
 
 #ifndef _RELEASE
         // A debug-only function useful for debugging
@@ -104,8 +107,8 @@ namespace LyShine
     private: // types
         struct TextureUsage
         {
-            ITexture*   m_texture;
-            bool        m_isClampTextureMode;
+            AZ::Data::Instance<AZ::RPI::Image>  m_texture;
+            bool                                m_isClampTextureMode;
         };
 
     private: // data
@@ -266,7 +269,11 @@ namespace LyShine
         void PopAlphaFade() override;
         float GetAlphaFade() const override;
         // ~IRenderGraph
-    
+
+        // LYSHINE_ATOM_TODO - this can be renamed back to AddPrimitive after removal of IRenderer from all UI components
+        void AddPrimitiveAtom(IRenderer::DynUiPrimitive* primitive, const AZ::Data::Instance<AZ::RPI::Image>& texture,
+            bool isClampTextureMode, bool isTextureSRGB, bool isTexturePremultipliedAlpha, BlendMode blendMode);
+
         //! Render the display graph
         void Render(UiRenderer* uiRenderer, const AZ::Vector2& viewportSize);
 

@@ -12,8 +12,8 @@
 
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/std/string/string.h>
-#include <AzFramework/Spawnable/SpawnableAssetHandler.h>
 #include <AzFramework/Spawnable/Spawnable.h>
+#include <AzFramework/Spawnable/SpawnableAssetHandler.h>
 
 namespace AzFramework
 {

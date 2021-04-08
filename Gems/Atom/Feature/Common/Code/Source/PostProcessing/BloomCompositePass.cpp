@@ -237,23 +237,7 @@ namespace AZ
 
         BloomCompositeChildPass::BloomCompositeChildPass(const RPI::PassDescriptor& descriptor)
             : ComputePass(descriptor)
-        {
-            FindShaderConstantInputIndex(m_intensityInputIndex, "m_intensity");
-            FindShaderConstantInputIndex(m_sourceImageSizeInputIndex, "m_sourceImageSize");
-            FindShaderConstantInputIndex(m_sourceImageTexelSizeInputIndex, "m_sourceImageTexelSize");
-            FindShaderConstantInputIndex(m_targetImageSizeInputIndex, "m_targetImageSize");
-            FindShaderConstantInputIndex(m_sourceMipLevelInputIndex, "m_sourceMipLevel");
-            FindShaderConstantInputIndex(m_enableBicubicInputIndex, "m_enableBicubic");
-            FindShaderConstantInputIndex(m_tintInputIndex, "m_tint");
-        }
-
-        void BloomCompositeChildPass::FindShaderConstantInputIndex(AZ::RHI::ShaderInputConstantIndex& index, const char* nameStr)
-        {
-            Name name(nameStr);
-            index = m_shaderResourceGroup->FindShaderInputConstantIndex(name);
-            AZ_Error("PassSystem", index.IsValid(), "[BloomCompositeChildPass '%s']: Failed to find shader input constant %s.",
-                name.GetCStr());
-        }
+        { }
 
         void BloomCompositeChildPass::UpdateParameters(uint32_t sourceMip, uint32_t sourceImageWidth, uint32_t sourceImageHeight, uint32_t targetImageWidth, uint32_t targetImageHeight, bool enableBicubic, Vector3 tint, float intensity)
         {

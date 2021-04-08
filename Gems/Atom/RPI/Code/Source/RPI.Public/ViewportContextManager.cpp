@@ -197,13 +197,19 @@ namespace AZ
                 AZ_Assert((view->GetUsageFlags() & View::UsageFlags::UsageCamera) != 0, "Attempted to register a non-camera view to context \"%s\", ensure the view is flagged with UsageCamera", context.GetCStr());
 
                 ViewPtrStack& associatedViews = GetOrCreateViewStackForContext(context);
+                if (auto it = AZStd::find(associatedViews.begin(), associatedViews.end(), view); it != associatedViews.end())
+                {
+                    // Remove from its existing position, if any, before re-adding below
+                    associatedViews.erase(it);
+                }
+
                 associatedViews.push_back(view);
             }
 
             UpdateViewForContext(context);
         }
 
-        void ViewportContextManager::PopView(const Name& context, ViewPtr view)
+        bool ViewportContextManager::PopView(const Name& context, ViewPtr view)
         {
             {
                 AZStd::lock_guard lock(m_containerMutex);
@@ -211,25 +217,24 @@ namespace AZ
                 auto viewStackIt = m_viewportViews.find(context);
                 if (viewStackIt == m_viewportViews.end())
                 {
-                    AZ_Assert(false, "Attempted to pop a view for context \"%s\" with no stack!", context.GetCStr());
-                    return;
+                    return false;
                 }
                 ViewPtrStack& associatedViews = viewStackIt->second;
                 if (view == associatedViews[0])
                 {
                     AZ_Assert(false, "Attempted to pop the root view for context \"%s\"", context.GetCStr());
-                    return;
+                    return false;
                 }
                 auto viewIt = AZStd::find(associatedViews.begin(), associatedViews.end(), view);
                 if (viewIt == associatedViews.end())
                 {
-                    AZ_Assert(false, "View to pop not found in context \"%s\"", context.GetCStr());
-                    return;
+                    return false;
                 }
                 associatedViews.erase(viewIt);
             }
 
             UpdateViewForContext(context);
+            return true;
         }
 
         ViewPtr ViewportContextManager::GetCurrentView(const Name& context) const

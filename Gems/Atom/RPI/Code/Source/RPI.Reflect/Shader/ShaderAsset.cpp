@@ -338,7 +338,7 @@ namespace AZ
                 }
                 else
                 {
-                    AZ_Assert(false, "Could not find shader for API %s in shader %s", RHI::Factory::Get().GetName().GetCStr(), GetName().GetCStr());
+                    AZ_Error("ShaderAsset", false, "Could not find shader for API %s in shader %s", RHI::Factory::Get().GetName().GetCStr(), GetName().GetCStr());
                     return false;
                 }
             }

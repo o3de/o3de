@@ -36,7 +36,33 @@ namespace AzFramework
     public:
         virtual ~CharacterPhysicsDataNotifications() = default;
 
-        virtual void OnRagdollConfigurationReady() = 0;
+        virtual void OnRagdollConfigurationReady(const Physics::RagdollConfiguration& ragdollConfiguration) = 0;
+
+        //! When connecting to this bus, if the ragdoll configuration is ready
+        //! it will immediately send an OnRagdollConfigurationReady event.
+        template<class Bus>
+        struct ConnectionPolicy
+            : public AZ::EBusConnectionPolicy<Bus>
+        {
+            static void Connect(
+                typename Bus::BusPtr& busPtr,
+                typename Bus::Context& context,
+                typename Bus::HandlerNode& handler,
+                typename Bus::Context::ConnectLockGuard& connectLock,
+                const typename Bus::BusIdType& id = 0)
+            {
+                AZ::EBusConnectionPolicy<Bus>::Connect(busPtr, context, handler, connectLock, id);
+
+                bool ragdollConfigValid = false;
+                Physics::RagdollConfiguration ragdollConfiguration;
+                CharacterPhysicsDataRequestBus::EventResult(ragdollConfigValid, id,
+                    &CharacterPhysicsDataRequests::GetRagdollConfiguration, ragdollConfiguration);
+                if (ragdollConfigValid)
+                {
+                    handler->OnRagdollConfigurationReady(ragdollConfiguration);
+                }
+            }
+        };
     };
 
     using CharacterPhysicsDataNotificationBus = AZ::EBus<CharacterPhysicsDataNotifications>;

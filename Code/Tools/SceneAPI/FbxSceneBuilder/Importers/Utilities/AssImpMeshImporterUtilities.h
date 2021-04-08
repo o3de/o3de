@@ -12,6 +12,8 @@
 
 #pragma once
 
+#include <SceneAPI/SceneCore/Events/ProcessingResult.h>
+
 struct aiNode;
 struct aiScene;
 
@@ -37,12 +39,16 @@ namespace AZ
         {
             class IGraphObject;
         }
-
+        struct AssImpSceneNodeAppendedContext;
         class FbxSceneSystem;
+
         namespace FbxSceneBuilder
         {
             bool BuildSceneMeshFromAssImpMesh(aiNode* currentNode, const aiScene* scene, const FbxSceneSystem& sceneSystem, AZStd::vector<AZStd::shared_ptr<DataTypes::IGraphObject>>& meshes,
                 const AZStd::function<AZStd::shared_ptr<SceneData::GraphData::MeshData>()>& makeMeshFunc);
+
+            typedef AZ::Outcome<const SceneData::GraphData::MeshData* const, Events::ProcessingResult> GetMeshDataFromParentResult;
+            GetMeshDataFromParentResult GetMeshDataFromParent(AssImpSceneNodeAppendedContext& context);
         }
     }
 }

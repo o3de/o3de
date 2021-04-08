@@ -32,22 +32,22 @@ namespace PhysX
             CreatePropertyEditor(this);
         }
 
-        void SettingsWidget::SetValue(const AZ::Data::Asset<Physics::MaterialLibraryAsset>& materialLibrary,
+        void SettingsWidget::SetValue(const PhysX::PhysXSystemConfiguration& physxSystemConfiguration,
             const AzPhysics::SceneConfiguration& defaultSceneConfiguration,
-            const Debug::DebugDisplayData& debugDisplayData,
-            const PhysX::WindConfiguration& windConfiguration)
+            const Debug::DebugDisplayData& debugDisplayData)
         {
-            m_defaultPhysicsMaterialLibrary.m_asset = materialLibrary;
+            m_physxSystemConfiguration = physxSystemConfiguration;
+            m_defaultPhysicsMaterialLibrary.m_asset = m_physxSystemConfiguration.m_defaultMaterialLibrary;
             m_defaultSceneConfiguration = defaultSceneConfiguration;
             m_debugDisplayData = debugDisplayData;
-            m_windConfiguration = windConfiguration;
 
             blockSignals(true);
             m_propertyEditor->ClearInstances();
+            m_propertyEditor->AddInstance(&m_physxSystemConfiguration);
             m_propertyEditor->AddInstance(&m_defaultPhysicsMaterialLibrary);
-            m_propertyEditor->AddInstance(&m_defaultSceneConfiguration.m_legacyConfiguration);
+            m_propertyEditor->AddInstance(&m_defaultSceneConfiguration);
             m_propertyEditor->AddInstance(&m_debugDisplayData);
-            m_propertyEditor->AddInstance(&m_windConfiguration);
+            m_propertyEditor->AddInstance(&m_physxSystemConfiguration.m_windConfiguration);
             m_propertyEditor->InvalidateAll();
             blockSignals(false);
         }
@@ -88,10 +88,10 @@ namespace PhysX
 
         void SettingsWidget::SetPropertyEditingComplete(AzToolsFramework::InstanceDataNode* /*node*/)
         {
-            emit onValueChanged(m_defaultPhysicsMaterialLibrary.m_asset,
+            m_physxSystemConfiguration.m_defaultMaterialLibrary = m_defaultPhysicsMaterialLibrary.m_asset;
+            emit onValueChanged(m_physxSystemConfiguration,
                 m_defaultSceneConfiguration,
-                m_debugDisplayData,
-                m_windConfiguration
+                m_debugDisplayData
             );
         }
 

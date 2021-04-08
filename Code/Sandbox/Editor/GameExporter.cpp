@@ -108,151 +108,162 @@ bool CGameExporter::Export(unsigned int flags, [[maybe_unused]] EEndian eExportE
     bool exportSuccessful = true;
 
     CrySystemEventBus::Broadcast(&CrySystemEventBus::Events::OnCryEditorBeginLevelExport);
-    pEditor->Notify(eNotify_OnBeginExportToGame);
 
-    CObjectManager* pObjectManager = static_cast<CObjectManager*>(pEditor->GetObjectManager());
+    bool usePrefabSystemForLevels = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
 
-    QDir::setCurrent(pEditor->GetPrimaryCDFolder());
-
-    // Close all Editor tools
-    pEditor->SetEditTool(0);
-
-    QString sLevelPath = Path::AddSlash(pGameEngine->GetLevelPath());
-    if (subdirectory && subdirectory[0] && strcmp(subdirectory, ".") != 0)
+    if (usePrefabSystemForLevels)
     {
-        sLevelPath = Path::AddSlash(sLevelPath + subdirectory);
-        QDir().mkpath(sLevelPath);
-    }
+        // Level.pak and all the data contained within it is unused when using the prefab system for levels, so there's nothing
+        // to do here.
 
-    m_levelPak.m_sPath = QString(sLevelPath) + GetLevelPakFilename();
-
-    m_levelPath = Path::RemoveBackslash(sLevelPath);
-    QString rootLevelPath = Path::AddSlash(pGameEngine->GetLevelPath());
-
-    // Make sure we unload any unused CGFs before exporting so that they don't end up in
-    // the level data.
-    pEditor->Get3DEngine()->FreeUnusedCGFResources();
-
-    CCryEditDoc* pDocument = pEditor->GetDocument();
-
-    if (flags & eExp_Fast)
-    {
-        m_settings.SetLowQuality();
-    }
-    else if (m_bAutoExportMode)
-    {
-        m_settings.SetHiQuality();
-    }
-
-    CryAutoLock<CryMutex> autoLock(CGameEngine::GetPakModifyMutex());
-
-    // Close this pak file.
-    if (!CloseLevelPack(m_levelPak, true))
-    {
-        Error("Cannot close Pak file " + m_levelPak.m_sPath);
-        exportSuccessful = false;
-    }
-
-    if (exportSuccessful)
-    {
-        if (m_bAutoExportMode)
-        {
-            // Remove read-only flags.
-            CrySetFileAttributes(m_levelPak.m_sPath.toUtf8().data(), FILE_ATTRIBUTE_NORMAL);
-        }
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    if (exportSuccessful)
-    {
-        if (!CFileUtil::OverwriteFile(m_levelPak.m_sPath))
-        {
-            Error("Cannot overwrite Pak file " + m_levelPak.m_sPath);
-            exportSuccessful = false;
-        }
-    }
-
-    if (exportSuccessful)
-    {
-        if (!OpenLevelPack(m_levelPak, false))
-        {
-            Error("Cannot open Pak file " + m_levelPak.m_sPath + " for writing.");
-            exportSuccessful = false;
-        }
-
-    }
-
-    ////////////////////////////////////////////////////////////////////////
-    // Inform all objects that an export is about to begin
-    ////////////////////////////////////////////////////////////////////////
-    if (exportSuccessful)
-    {
-        GetIEditor()->GetObjectManager()->GetPhysicsManager()->PrepareForExport();
-        GetIEditor()->GetObjectManager()->SendEvent(EVENT_PRE_EXPORT);
-    }
-
-    ////////////////////////////////////////////////////////////////////////
-    // Export all data to the game
-    ////////////////////////////////////////////////////////////////////////
-    if (exportSuccessful)
-    {
-        ExportVisAreas(sLevelPath.toUtf8().data(), eExportEndian);
-
-        ////////////////////////////////////////////////////////////////////////
-        // Exporting map setttings
-        ////////////////////////////////////////////////////////////////////////
-        ExportOcclusionMesh(sLevelPath.toUtf8().data());
-
-        //! Export Level data.
-        CLogFile::WriteLine("Exporting LevelData.xml");
-        ExportLevelData(sLevelPath);
-        CLogFile::WriteLine("Exporting LevelData.xml done.");
-
-        ExportLevelInfo(sLevelPath);
-
-        ExportLevelLensFlares(sLevelPath);
-        ExportLevelResourceList(sLevelPath);
-        ExportLevelUsedResourceList(sLevelPath);
-        ExportLevelShaderCache(sLevelPath);
-
-        //////////////////////////////////////////////////////////////////////////
-        // End Exporting Game data.
-        //////////////////////////////////////////////////////////////////////////
-
-        // Close all packs.
-        CloseLevelPack(m_levelPak, false);
-        //  m_texturePakFile.Close();
-
-        pEditor->SetStatusText(QObject::tr("Ready"));
-
-        // Reopen this pak file.
-        if (!OpenLevelPack(m_levelPak, true))
-        {
-            Error("Cannot open Pak file " + m_levelPak.m_sPath);
-            exportSuccessful = false;
-        }
-    }
-
-    if (exportSuccessful)
-    {
-        // Commit changes to the disk.
-        _flushall();
-
-        // finally create filelist.xml
-        QString levelName = Path::GetFileName(pGameEngine->GetLevelPath());
-        ExportFileList(sLevelPath, levelName);
-
+        CCryEditDoc* pDocument = pEditor->GetDocument();
         pDocument->SetLevelExported(true);
+    }
+    else
+    {
+        CObjectManager* pObjectManager = static_cast<CObjectManager*>(pEditor->GetObjectManager());
+
+        QDir::setCurrent(pEditor->GetPrimaryCDFolder());
+
+        // Close all Editor tools
+        pEditor->SetEditTool(0);
+
+        QString sLevelPath = Path::AddSlash(pGameEngine->GetLevelPath());
+        if (subdirectory && subdirectory[0] && strcmp(subdirectory, ".") != 0)
+        {
+            sLevelPath = Path::AddSlash(sLevelPath + subdirectory);
+            QDir().mkpath(sLevelPath);
+        }
+
+        m_levelPak.m_sPath = QString(sLevelPath) + GetLevelPakFilename();
+
+        m_levelPath = Path::RemoveBackslash(sLevelPath);
+        QString rootLevelPath = Path::AddSlash(pGameEngine->GetLevelPath());
+
+        // Make sure we unload any unused CGFs before exporting so that they don't end up in
+        // the level data.
+        pEditor->Get3DEngine()->FreeUnusedCGFResources();
+
+        CCryEditDoc* pDocument = pEditor->GetDocument();
+
+        if (flags & eExp_Fast)
+        {
+            m_settings.SetLowQuality();
+        }
+        else if (m_bAutoExportMode)
+        {
+            m_settings.SetHiQuality();
+        }
+
+        CryAutoLock<CryMutex> autoLock(CGameEngine::GetPakModifyMutex());
+
+        // Close this pak file.
+        if (!CloseLevelPack(m_levelPak, true))
+        {
+            Error("Cannot close Pak file " + m_levelPak.m_sPath);
+            exportSuccessful = false;
+        }
+
+        if (exportSuccessful)
+        {
+            if (m_bAutoExportMode)
+            {
+                // Remove read-only flags.
+                CrySetFileAttributes(m_levelPak.m_sPath.toUtf8().data(), FILE_ATTRIBUTE_NORMAL);
+            }
+        }
+
+        //////////////////////////////////////////////////////////////////////////
+        if (exportSuccessful)
+        {
+            if (!CFileUtil::OverwriteFile(m_levelPak.m_sPath))
+            {
+                Error("Cannot overwrite Pak file " + m_levelPak.m_sPath);
+                exportSuccessful = false;
+            }
+        }
+
+        if (exportSuccessful)
+        {
+            if (!OpenLevelPack(m_levelPak, false))
+            {
+                Error("Cannot open Pak file " + m_levelPak.m_sPath + " for writing.");
+                exportSuccessful = false;
+            }
+        }
+
+        ////////////////////////////////////////////////////////////////////////
+        // Inform all objects that an export is about to begin
+        ////////////////////////////////////////////////////////////////////////
+        if (exportSuccessful)
+        {
+            GetIEditor()->GetObjectManager()->GetPhysicsManager()->PrepareForExport();
+        }
+
+        ////////////////////////////////////////////////////////////////////////
+        // Export all data to the game
+        ////////////////////////////////////////////////////////////////////////
+        if (exportSuccessful)
+        {
+            ExportVisAreas(sLevelPath.toUtf8().data(), eExportEndian);
+
+            ////////////////////////////////////////////////////////////////////////
+            // Exporting map setttings
+            ////////////////////////////////////////////////////////////////////////
+            ExportOcclusionMesh(sLevelPath.toUtf8().data());
+
+            //! Export Level data.
+            CLogFile::WriteLine("Exporting LevelData.xml");
+            ExportLevelData(sLevelPath);
+            CLogFile::WriteLine("Exporting LevelData.xml done.");
+
+            ExportLevelInfo(sLevelPath);
+
+            ExportLevelLensFlares(sLevelPath);
+            ExportLevelResourceList(sLevelPath);
+            ExportLevelUsedResourceList(sLevelPath);
+            ExportLevelShaderCache(sLevelPath);
+
+            //////////////////////////////////////////////////////////////////////////
+            // End Exporting Game data.
+            //////////////////////////////////////////////////////////////////////////
+
+            // Close all packs.
+            CloseLevelPack(m_levelPak, false);
+            //  m_texturePakFile.Close();
+
+            pEditor->SetStatusText(QObject::tr("Ready"));
+
+            // Reopen this pak file.
+            if (!OpenLevelPack(m_levelPak, true))
+            {
+                Error("Cannot open Pak file " + m_levelPak.m_sPath);
+                exportSuccessful = false;
+            }
+        }
+
+        if (exportSuccessful)
+        {
+            // Commit changes to the disk.
+            _flushall();
+
+            // finally create filelist.xml
+            QString levelName = Path::GetFileName(pGameEngine->GetLevelPath());
+            ExportFileList(sLevelPath, levelName);
+
+            pDocument->SetLevelExported(true);
+        }
     }
 
     // Always notify that we've finished exporting, whether it was successful or not.
-    pEditor->Notify(eNotify_OnExportToGame);
     CrySystemEventBus::Broadcast(&CrySystemEventBus::Events::OnCryEditorEndLevelExport, exportSuccessful);
 
     if (exportSuccessful)
     {
         // Notify the level system that there's a new level, so that the level info is populated.
-        gEnv->pSystem->GetILevelSystem()->Rescan("levels", ILevelSystem::TAG_MAIN);
+        gEnv->pSystem->GetILevelSystem()->Rescan(ILevelSystem::GetLevelsDirectoryName());
 
         CLogFile::WriteLine("Exporting was successful.");
     }

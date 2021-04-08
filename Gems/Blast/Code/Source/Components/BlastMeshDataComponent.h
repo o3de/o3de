@@ -11,7 +11,7 @@
  */
 #pragma once
 
-#include <AZCore/std/containers/vector.h>
+#include <AzCore/std/containers/vector.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>

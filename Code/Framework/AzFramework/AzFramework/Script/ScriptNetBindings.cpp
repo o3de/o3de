@@ -1239,7 +1239,13 @@ namespace AzFramework
         }
         
         return canProxyExecute;
-    }    
+    }
+
+    const AZ::ScriptProperty* ScriptNetBindingTable::FindScriptProperty(const AZStd::string& name) const
+    {
+        const NetworkedTableValue* networkedTableValue = FindTableValue(name);
+        return networkedTableValue ? networkedTableValue->GetShimmedScriptProperty() : nullptr;
+    }
 
     void ScriptNetBindingTable::AssignDataSets()
     {

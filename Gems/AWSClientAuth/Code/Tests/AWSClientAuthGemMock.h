@@ -313,7 +313,7 @@ namespace AWSClientAuthUnitTest
         : public Aws::CognitoIdentity::CognitoIdentityClient
     {
     public:
-        CognitoIdentityClientMock()
+        CognitoIdentityClientMock() : Aws::CognitoIdentity::CognitoIdentityClient(Aws::Auth::AWSCredentials())
         {
             ON_CALL(*this, GetId(testing::_)).WillByDefault(testing::Invoke(this, &CognitoIdentityClientMock::GetIdMock));
             ON_CALL(*this, GetCredentialsForIdentity(testing::_)).WillByDefault(testing::Invoke(this, &CognitoIdentityClientMock::GetCredentialsForIdentityMock));
@@ -392,7 +392,7 @@ namespace AWSClientAuthUnitTest
         MOCK_METHOD1(OnPasswordGrantMultiFactorSignInFail, void(const AZStd::string& error));
         MOCK_METHOD1(OnPasswordGrantMultiFactorConfirmSignInSuccess, void(const AWSClientAuth::AuthenticationTokens& authenticationToken));
         MOCK_METHOD1(OnPasswordGrantMultiFactorConfirmSignInFail, void(const AZStd::string& error));
-        MOCK_METHOD3(OnDeviceCodeGrantSignInSuccess, void(const AZStd::string& userCode, const AZStd::string& verificationUrl, const int codeExpiresInSeconds));
+        MOCK_METHOD3(OnDeviceCodeGrantSignInSuccess, void(const AZStd::string& userCode, const AZStd::string& verificationUrl, int codeExpiresInSeconds));
         MOCK_METHOD1(OnDeviceCodeGrantSignInFail, void(const AZStd::string& error));
         MOCK_METHOD1(OnDeviceCodeGrantConfirmSignInSuccess, void(const AWSClientAuth::AuthenticationTokens& authenticationToken));
         MOCK_METHOD1(OnDeviceCodeGrantConfirmSignInFail, void(const AZStd::string& error));

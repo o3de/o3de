@@ -13,71 +13,126 @@
 #include <PhysX_precompiled.h>
 
 #include "PhysXTestUtil.h"
+#include <AzFramework/Physics/PhysicsSystem.h>
+#include <AzFramework/Physics/Collision/CollisionEvents.h>
 
 namespace PhysX
 {
     CollisionCallbacksListener::CollisionCallbacksListener(AZ::EntityId entityId)
     {
-        Physics::CollisionNotificationBus::Handler::BusConnect(entityId);
+        InitCollisionHandlers();
+
+        if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
+        {
+            auto [sceneHandle, bodyHandle] = physicsSystem->FindAttachedBodyHandleFromEntityId(entityId);
+            if (sceneHandle != AzPhysics::InvalidSceneHandle)
+            {
+                AzPhysics::SimulatedBodyEvents::RegisterOnCollisionBeginHandler(sceneHandle, bodyHandle, m_onCollisionBeginHandler);
+                AzPhysics::SimulatedBodyEvents::RegisterOnCollisionBeginHandler(sceneHandle, bodyHandle, m_onCollisionPersistHandler);
+                AzPhysics::SimulatedBodyEvents::RegisterOnCollisionBeginHandler(sceneHandle, bodyHandle, m_onCollisionEndHandler);
+            }
+        }
+    }
+
+    CollisionCallbacksListener::CollisionCallbacksListener(AzPhysics::SceneHandle sceneHandle, AzPhysics::SimulatedBodyHandle bodyHandle)
+    {
+        InitCollisionHandlers();
+
+        AzPhysics::SimulatedBodyEvents::RegisterOnCollisionBeginHandler(sceneHandle, bodyHandle, m_onCollisionBeginHandler);
+        AzPhysics::SimulatedBodyEvents::RegisterOnCollisionBeginHandler(sceneHandle, bodyHandle, m_onCollisionPersistHandler);
+        AzPhysics::SimulatedBodyEvents::RegisterOnCollisionBeginHandler(sceneHandle, bodyHandle, m_onCollisionEndHandler);
     }
 
     CollisionCallbacksListener::~CollisionCallbacksListener()
     {
-        Physics::CollisionNotificationBus::Handler::BusDisconnect();
+        m_onCollisionBeginHandler.Disconnect();
+        m_onCollisionPersistHandler.Disconnect();
+        m_onCollisionEndHandler.Disconnect();
     }
 
-    void CollisionCallbacksListener::OnCollisionBegin(const Physics::CollisionEvent& collision)
+    void CollisionCallbacksListener::InitCollisionHandlers()
     {
-        if (m_onCollisionBegin)
+        m_onCollisionBeginHandler = AzPhysics::SimulatedBodyEvents::OnCollisionBegin::Handler(
+            [this]([[maybe_unused]] AzPhysics::SimulatedBodyHandle bodyHandle,
+                const AzPhysics::CollisionEvent& event)
+                {
+                    if (m_onCollisionBegin)
+                    {
+                        m_onCollisionBegin(event);
+                    }
+                    m_beginCollisions.push_back(event);
+                });
+        m_onCollisionPersistHandler = AzPhysics::SimulatedBodyEvents::OnCollisionPersist::Handler(
+            [this]([[maybe_unused]] AzPhysics::SimulatedBodyHandle bodyHandle,
+                const AzPhysics::CollisionEvent& event)
+                {
+                    if (m_onCollisionPersist)
+                    {
+                        m_onCollisionPersist(event);
+                    }
+                    m_persistCollisions.push_back(event);
+                });
+        m_onCollisionEndHandler = AzPhysics::SimulatedBodyEvents::OnCollisionEnd::Handler(
+            [this]([[maybe_unused]] AzPhysics::SimulatedBodyHandle bodyHandle,
+            const AzPhysics::CollisionEvent& event)
+            {
+                if (m_onCollisionEnd)
+                {
+                    m_onCollisionEnd(event);
+                }
+                m_endCollisions.push_back(event);
+            });
+    }
+
+    TestTriggerAreaNotificationListener::TestTriggerAreaNotificationListener(AZ::EntityId entityId)
+    {
+        InitTriggerHandlers();
+        if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
         {
-            m_onCollisionBegin(collision);
+            auto [sceneHandle, bodyHandle] = physicsSystem->FindAttachedBodyHandleFromEntityId(entityId);
+            if (sceneHandle != AzPhysics::InvalidSceneHandle)
+            {
+                AzPhysics::SimulatedBodyEvents::RegisterOnTriggerEnterHandler(sceneHandle, bodyHandle, m_onTriggerEnterHandler);
+                AzPhysics::SimulatedBodyEvents::RegisterOnTriggerExitHandler(sceneHandle, bodyHandle, m_onTriggerExitHandler);
+            }
         }
-        m_beginCollisions.push_back(collision);
     }
 
-    void CollisionCallbacksListener::OnCollisionPersist(const Physics::CollisionEvent& collision)
+    TestTriggerAreaNotificationListener::TestTriggerAreaNotificationListener(AzPhysics::SceneHandle sceneHandle, AzPhysics::SimulatedBodyHandle bodyHandle)
     {
-        if (m_onCollisionPersist)
-        {
-            m_onCollisionPersist(collision);
-        }
-        m_persistCollisions.push_back(collision);
-    }
-
-    void CollisionCallbacksListener::OnCollisionEnd(const Physics::CollisionEvent& collision)
-    {
-        if (m_onCollisionEnd)
-        {
-            m_onCollisionEnd(collision);
-        }
-        m_endCollisions.push_back(collision);
-    }
-
-    TestTriggerAreaNotificationListener::TestTriggerAreaNotificationListener(AZ::EntityId triggerAreaEntityId)
-    {
-        Physics::TriggerNotificationBus::Handler::BusConnect(triggerAreaEntityId);
+        InitTriggerHandlers();
+        AzPhysics::SimulatedBodyEvents::RegisterOnTriggerEnterHandler(sceneHandle, bodyHandle, m_onTriggerEnterHandler);
+        AzPhysics::SimulatedBodyEvents::RegisterOnTriggerEnterHandler(sceneHandle, bodyHandle, m_onTriggerExitHandler);
     }
 
     TestTriggerAreaNotificationListener::~TestTriggerAreaNotificationListener()
     {
-        Physics::TriggerNotificationBus::Handler::BusDisconnect();
+        m_onTriggerEnterHandler.Disconnect();
+        m_onTriggerExitHandler.Disconnect();
     }
 
-    void TestTriggerAreaNotificationListener::OnTriggerEnter(const Physics::TriggerEvent& event)
+    void TestTriggerAreaNotificationListener::InitTriggerHandlers()
     {
-        if (m_onTriggerEnter)
-        {
-            m_onTriggerEnter(event);
-        }
-        m_enteredEvents.push_back(event);
-    }
+        m_onTriggerEnterHandler = AzPhysics::SimulatedBodyEvents::OnTriggerEnter::Handler(
+            [this]([[maybe_unused]] AzPhysics::SimulatedBodyHandle bodyHandle,
+                const  AzPhysics::TriggerEvent& event)
+                {
+                    if (m_onTriggerEnter)
+                    {
+                        m_onTriggerEnter(event);
+                    }
+                    m_enteredEvents.push_back(event);
+                });
 
-    void TestTriggerAreaNotificationListener::OnTriggerExit(const Physics::TriggerEvent& event)
-    {
-        if (m_onTriggerExit)
-        {
-            m_onTriggerExit(event);
-        }
-        m_exitedEvents.push_back(event);
+        m_onTriggerExitHandler = AzPhysics::SimulatedBodyEvents::OnTriggerExit::Handler(
+            [this]([[maybe_unused]] AzPhysics::SimulatedBodyHandle bodyHandle,
+                const  AzPhysics::TriggerEvent& event)
+                {
+                    if (m_onTriggerExit)
+                    {
+                        m_onTriggerExit(event);
+                    }
+                    m_exitedEvents.push_back(event);
+                });
     }
 }

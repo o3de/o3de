@@ -49,11 +49,15 @@ namespace AzToolsFramework
 
             virtual bool UpdateThumbnail();
 
-Q_SIGNALS:
+            virtual size_t GetHash() const;
+
+            virtual bool Equals(const ThumbnailKey* other) const;
+        Q_SIGNALS:
             //! Updated signal is dispatched whenever thumbnail data was changed. Anyone using this thumbnail should listen to this.
             void ThumbnailUpdatedSignal() const;
             //! Force update mapped thumbnails
             void UpdateThumbnailSignal() const;
+
 
         private:
             bool m_ready = false;
@@ -61,7 +65,7 @@ Q_SIGNALS:
 
         typedef QSharedPointer<ThumbnailKey> SharedThumbnailKey;
 
-        #define MAKE_TKEY(type, ...) QSharedPointer<type>(new type(__VA_ARGS__))
+#define MAKE_TKEY(type, ...) QSharedPointer<type>(new type(__VA_ARGS__))
 
         //! Thumbnail is the base class in thumbnailer system.
         /*
@@ -92,7 +96,7 @@ Q_SIGNALS:
             SharedThumbnailKey GetKey() const;
             State GetState() const;
 
-Q_SIGNALS:
+        Q_SIGNALS:
             void Updated() const;
 
         public Q_SLOTS:
@@ -128,16 +132,44 @@ Q_SIGNALS:
         };
 
         typedef QSharedPointer<ThumbnailProvider> SharedThumbnailProvider;
+    }
+}
 
+namespace AZStd
+{
+    // hash specialization
+    template <>
+    struct hash<AzToolsFramework::Thumbnailer::SharedThumbnailKey>
+    {
+        AZ_FORCE_INLINE size_t operator()(AzToolsFramework::Thumbnailer::SharedThumbnailKey key) const
+        {
+            return key->GetHash();
+        }
+    };
+
+    template <>
+    struct AZStd::equal_to<AzToolsFramework::Thumbnailer::SharedThumbnailKey>
+    {
+        AZ_FORCE_INLINE bool operator()(const AzToolsFramework::Thumbnailer::SharedThumbnailKey& left, const AzToolsFramework::Thumbnailer::SharedThumbnailKey& right) const
+        {
+            return left->Equals(right.data());
+        }
+    };
+}
+
+namespace AzToolsFramework
+{
+    namespace Thumbnailer
+    {
         //! ThumbnailCache manages thumbnails of specific type, derive your custom provider from this
         /*
             ThumbnailType - type of thumbnails managed
-            HasherType - hashing function for storing thumbnail keys in the hashtable
+            Hasher - hashing function for storing thumbnail keys in the hashtable
             EqualKey - equality function for storing thumbnail keys in the hashtable
-            HasherType and EqualKey need to be provided on individual basis depending on
+            Hasher and EqualKey need to be provided on individual basis depending on
             what constitutes a unique key and how should the key collection be optimized
         */
-        template<typename ThumbnailType, typename HasherType, typename EqualKey>
+        template<class ThumbnailType, class Hasher = AZStd::hash<SharedThumbnailKey>, class EqualKey = AZStd::equal_to<SharedThumbnailKey>>
         class ThumbnailCache
             : public ThumbnailProvider
             , public AZ::TickBus::Handler
@@ -157,7 +189,7 @@ Q_SIGNALS:
 
         protected:
             int m_thumbnailSize;
-            AZStd::unordered_map<SharedThumbnailKey, SharedThumbnail, HasherType, EqualKey> m_cache;
+            AZStd::unordered_map<SharedThumbnailKey, SharedThumbnail, Hasher, EqualKey> m_cache;
 
             //! Check if thumbnail key is handled by this provider, overload in derived class
             virtual bool IsSupportedThumbnail(SharedThumbnailKey key) const = 0;
@@ -168,5 +200,6 @@ Q_SIGNALS:
 } // namespace AzToolsFramework
 
 Q_DECLARE_METATYPE(AzToolsFramework::Thumbnailer::SharedThumbnailKey)
+
 
 #include <AzToolsFramework/Thumbnails/Thumbnail.inl>

@@ -9,8 +9,6 @@
 # or, if provided, by the license below or the license accompanying this file. Do not
 # remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#
-# -- This line is 75 characters -------------------------------------------
 
 # -------------------------------------------------------------------------
 # -------------------------------------------------------------------------
@@ -26,7 +24,7 @@ Module Documentation:
 .. module:: event_callback_handler
     :synopsis: Simple event based callback_event handler
     using maya.api.OpenMaya (api2)
- 
+
 .. :note: nothing mundane to declare
 .. :attention: callbacks should be uninstalled on exit
 .. :warning: maya may crash on exit if callbacks are not uninstalled
@@ -55,7 +53,7 @@ Module Documentation:
         SceneOpened
         PostSceneRead
         workspaceChanged
-        
+
 .. moduleauthor:: Amazon Lumberyard
 """
 
@@ -96,10 +94,10 @@ _LOGGER.debug('Invoking:: {0}.'.format({_PACKAGENAME}))
 class EventCallbackHandler(object):
     """
     A simple Maya event based callback_event handler class
- 
+
     :ivar callback_event: stores event type trigger for a maya callback_event
     :vartype event: for example, 'NameChanged'
-    
+
     :ivar this_function: stores this_function to call when callback_event is triggered
     :vartype this_function: for example,
             cb = EventCallbackHandler(callback_event='NameChanged',
@@ -116,12 +114,12 @@ class EventCallbackHandler(object):
         self._callback_id = None
         # state tracker
         self._message_id_set = None
-        
+
         # the callback_event event trigger
         self._callback_event = callback_event
         # the thing to do on callback_event
         self._function  = this_function
-        
+
         if install:
             self.install()
 
@@ -129,7 +127,7 @@ class EventCallbackHandler(object):
     @property
     def callback_id(self):
         return self._callback_id
-    
+
     @property
     def callback_event(self):
         return self._callback_event    
@@ -137,15 +135,15 @@ class EventCallbackHandler(object):
     @property
     def this_function(self):
         return self._this_function
-    
+
     # --method------------------------------------------------------------- 
     def install(self):
         """
         installs this callback_event for event, which makes it active
         """
-        
+
         add_event_method = openmaya.MEventMessage.addEventCallback
-        
+
         # when called, check if it's already installed
         if self._callback_id:
             _LOGGER.warning("EventCallback::{0}:{1}, is already installed"
@@ -177,7 +175,7 @@ class EventCallbackHandler(object):
         """
 
         remove_event_callback = openmaya.MEventMessage.removeCallback
-        
+
         if self._callback_id:
             try:
                 remove_event_callback(self._callback_id)
@@ -197,7 +195,7 @@ class EventCallbackHandler(object):
                             "".format(self._callback_event,
                                       self._function.__name__))
             return False   
-    
+
     # --method------------------------------------------------------------- 
     def __del__(self):
         """

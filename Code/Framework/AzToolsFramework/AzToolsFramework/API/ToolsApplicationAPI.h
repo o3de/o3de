@@ -589,13 +589,6 @@ namespace AzToolsFramework
         virtual const char* GetEngineVersion() const = 0;
 
         /**
-        * Retrieves if Legacy Slice System is enabled
-        */
-        virtual bool IsLegacySliceSystemEnabled() const = 0;
-
-        virtual bool ShouldAssertForLegacySlicesUsage() const = 0;
-
-        /**
         * Creates and adds a new entity to the tools application from components which match at least one of the requiredTags
         * The tag matching occurs on AZ::Edit::SystemComponentTags attribute from the reflected class data in the serialization context
         */

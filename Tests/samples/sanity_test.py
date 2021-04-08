@@ -40,7 +40,7 @@ class TestSanity:
     # TODO LY-109331 @pytest.mark.parametrize("platform", ["win_x64_vs2017", "win_x64_vs2019", "darwin_x64"])
     @pytest.mark.parametrize("platform", ["win_x64_vs2017", "win_x64_vs2019"])
     @pytest.mark.parametrize("configuration", ["profile"])
-    @pytest.mark.parametrize("project", ["SamplesProject"])
+    @pytest.mark.parametrize("project", ["AutomatedTesting"])
     @pytest.mark.parametrize("spec", ["all"])
     def test_Paths_DevPathExists_PathItsADirectory(self, legacy_workspace, platform, configuration, project, spec):
         # type: (WorkspaceManager, str, str, str, str) -> None

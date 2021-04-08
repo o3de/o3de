@@ -15,7 +15,7 @@
 
 namespace Blast
 {
-    ShapesProvider::ShapesProvider(AZ::EntityId entityId, Physics::RigidBodyConfiguration configuration)
+    ShapesProvider::ShapesProvider(AZ::EntityId entityId, AzPhysics::RigidBodyConfiguration configuration)
         : m_entityId(entityId)
         , m_configuration(configuration)
     {
@@ -42,13 +42,13 @@ namespace Blast
         m_shapes.push_back(shape);
     }
 
-    Physics::RigidBodyConfiguration ShapesProvider::GetRigidBodyConfiguration()
+    AzPhysics::RigidBodyConfiguration ShapesProvider::GetRigidBodyConfiguration()
     {
         return m_configuration;
     }
 
-    Physics::WorldBodyConfiguration ShapesProvider::GetWorldBodyConfiguration()
+    AzPhysics::SimulatedBodyConfiguration ShapesProvider::GetSimulatedBodyConfiguration()
     {
-        return static_cast<Physics::WorldBodyConfiguration>(m_configuration);
+        return static_cast<AzPhysics::SimulatedBodyConfiguration>(m_configuration);
     }
 } // namespace Blast

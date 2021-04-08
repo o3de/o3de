@@ -27,7 +27,7 @@
 // Other buses used
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Component/EntityBus.h>
-#include <AzFramework/Physics/World.h>
+#include <AzFramework/Physics/Common/PhysicsEvents.h>
 
 // Data and containers
 #include <AzCore/Math/Crc.h>
@@ -193,7 +193,6 @@ namespace LmbrCentral
         , public NavigationComponentRequestBus::Handler
         , public IAIPathAgent
         , public AZ::TickBus::Handler
-        , public Physics::WorldNotificationBus::Handler
         , public AZ::TransformNotificationBus::Handler
     {
     public:
@@ -224,11 +223,6 @@ namespace LmbrCentral
         //////////////////////////////////////////////////////////////////////////
         // TickBus
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
-        //////////////////////////////////////////////////////////////////////////
-
-        //////////////////////////////////////////////////////////////////////////
-        // Physics::WorldNotificationBus
-        void OnPrePhysicsSubtick(float fixedDeltaTime) override;
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////////////
@@ -336,6 +330,7 @@ namespace LmbrCentral
 
         static void Reflect(AZ::ReflectContext* context);
 
+        AzPhysics::SceneEvents::OnSceneSimulationStartHandler m_sceneStartSimHandler;
     protected:
 
         void OnPathResult(const MNM::QueuedPathID& requestId, MNMPathRequestResult& result);

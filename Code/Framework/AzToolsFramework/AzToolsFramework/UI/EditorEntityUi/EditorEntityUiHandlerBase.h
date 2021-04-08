@@ -20,6 +20,7 @@
 #include <QStyleOptionViewItem>
 
 class QPainter;
+class QTreeView;
 
 namespace AzToolsFramework
 {
@@ -50,6 +51,9 @@ namespace AzToolsFramework
         //! Paints the background of the descendants of the item in the Outliner.
         virtual void PaintDescendantBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index,
             const QModelIndex& descendantIndex) const;
+        //! Paints the background of the descendant branches of the item in the Outliner.
+        virtual void PaintDescendantBranchBackground(QPainter* painter, const QTreeView* view, const QRect& rect,
+            const QModelIndex& index, const QModelIndex& descendantIndex) const;
 
         //! Paints visual elements on the foreground of the item in the Outliner.
         virtual void PaintItemForeground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;

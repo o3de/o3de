@@ -13,7 +13,7 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <Atom/Feature/ACES/Aces.h>
+#include <ACES/Aces.h>
 #include <Atom/Feature/PostProcess/LookModification/LookModificationSettingsInterface.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 

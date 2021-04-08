@@ -12,6 +12,7 @@
 #include <PhysX_precompiled.h>
 
 #include <AzCore/Math/MathUtils.h>
+#include <AzCore/Memory/SystemAllocator.h>
 
 #include <Scene/PhysXScene.h>
 #include <System/PhysXSystem.h>
@@ -19,8 +20,11 @@
 #include <System/PhysXCpuDispatcher.h>
 
 #include <PxPhysicsAPI.h>
+
 namespace PhysX
 {
+    AZ_CLASS_ALLOCATOR_IMPL(PhysXSystem, AZ::SystemAllocator, 0);
+
     PhysXSystem::MaterialLibraryAssetHelper::MaterialLibraryAssetHelper(PhysXSystem* physXSystem)
         : m_physXSystem(physXSystem)
     {
@@ -53,6 +57,7 @@ namespace PhysX
     PhysXSystem::PhysXSystem(PhysXSettingsRegistryManager* registryManager, const physx::PxCookingParams& cookingParams)
         : m_registryManager(*registryManager)
         , m_materialLibraryAssetHelper(this)
+        , m_sceneInterface(this)
     {
         // Start PhysX allocator
         PhysXAllocator::Descriptor allocatorDescriptor;
@@ -125,12 +130,12 @@ namespace PhysX
 
         auto simulateScenes = [this](float timeStep)
         {
-            for (auto* scene : m_sceneList)
+            for (auto& scenePtr : m_sceneList)
             {
-                if (scene != nullptr && scene->IsEnabled())
+                if (scenePtr != nullptr && scenePtr->IsEnabled())
                 {
-                    scene->StartSimulation(timeStep);
-                    scene->FinishSimulation();
+                    scenePtr->StartSimulation(timeStep);
+                    scenePtr->FinishSimulation();
                 }
             }
         };
@@ -138,12 +143,14 @@ namespace PhysX
         deltaTime = AZ::GetClamp(deltaTime, 0.0f, m_systemConfig.m_maxTimestep);
 
         AZ_Assert(m_systemConfig.m_fixedTimestep >= 0.0f, "PhysXSystem - fixed timestep is negitive.");
+        float tickTime = deltaTime;
         if (m_systemConfig.m_fixedTimestep > 0.0f) //use the fixed timestep
         {
-            m_accumulatedTime += deltaTime;
+            m_accumulatedTime += tickTime;
             //divide accumulated time by the fixed step and floor it to get the number of steps that would occur. Then multiply by fixedTimeStep to get the total executed time.
-            const float tickTime = AZStd::floorf(m_accumulatedTime / m_systemConfig.m_fixedTimestep) * m_systemConfig.m_fixedTimestep;
+            tickTime = AZStd::floorf(m_accumulatedTime / m_systemConfig.m_fixedTimestep) * m_systemConfig.m_fixedTimestep;
             m_preSimulateEvent.Signal(tickTime);
+
             while (m_accumulatedTime >= m_systemConfig.m_fixedTimestep)
             {
                 simulateScenes(m_systemConfig.m_fixedTimestep);
@@ -152,29 +159,40 @@ namespace PhysX
         }
         else
         {
-            m_preSimulateEvent.Signal(deltaTime);
-            simulateScenes(deltaTime);
+            m_preSimulateEvent.Signal(tickTime);
+
+            simulateScenes(tickTime);
         }
         m_postSimulateEvent.Signal();
     }
 
     AzPhysics::SceneHandle PhysXSystem::AddScene(const AzPhysics::SceneConfiguration& config)
     {
+        if (config.m_sceneName.empty())
+        {
+            AZ_Error("PhysXSystem", false, "AddScene: Trying to Add a scene without a name. SceneConfiguration::m_sceneName must have a value");
+            return AzPhysics::InvalidSceneHandle;
+        }
+
         if (!m_freeSceneSlots.empty()) //fill any free slots first before increasing the size of the scene list vector.
         {
-            AZ::u64 freeIndex = m_freeSceneSlots.front();
+            AzPhysics::SceneIndex freeIndex = m_freeSceneSlots.front();
             m_freeSceneSlots.pop();
             AZ_Assert(freeIndex < m_sceneList.size(), "PhysXSystem::AddScene: Free scene index is out of bounds!");
             AZ_Assert(m_sceneList[freeIndex] == nullptr, "PhysXSystem::AddScene: Free scene index is not free");
 
-            m_sceneList[freeIndex] = new PhysXScene(config);
-            return AzPhysics::SceneHandle(config.m_legacyId, freeIndex);
+            const AzPhysics::SceneHandle sceneHandle(AZ::Crc32(config.m_sceneName), freeIndex);
+            m_sceneList[freeIndex] = AZStd::make_unique<PhysXScene>(config, sceneHandle);
+            m_sceneAddedEvent.Signal(sceneHandle);
+            return sceneHandle;
         }
 
         if (m_sceneList.size() < std::numeric_limits<AzPhysics::SceneIndex>::max()) //add a new scene if it is under the limit
         {
-            m_sceneList.emplace_back(new PhysXScene(config));
-            return AzPhysics::SceneHandle(config.m_legacyId, (m_sceneList.size() - 1));
+            const AzPhysics::SceneHandle sceneHandle(AZ::Crc32(config.m_sceneName), (m_sceneList.size()));
+            m_sceneList.emplace_back(AZStd::make_unique<PhysXScene>(config, sceneHandle));
+            m_sceneAddedEvent.Signal(sceneHandle);
+            return sceneHandle;
         }
         AZ_Warning("Physx", false, "Scene Limit reached[%d], unable to add new scene [%s]",
             std::numeric_limits<AzPhysics::SceneIndex>::max(),
@@ -194,6 +212,20 @@ namespace PhysX
         return sceneHandles;
     }
 
+    AzPhysics::SceneHandle PhysXSystem::GetSceneHandle(const AZStd::string& sceneName)
+    {
+        const AZ::Crc32 sceneCrc(sceneName);
+        auto sceneItr = AZStd::find_if(m_sceneList.begin(), m_sceneList.end(), [sceneCrc](auto& scene) {
+            return scene != nullptr && sceneCrc == scene->GetId();
+            });
+
+        if (sceneItr != m_sceneList.end())
+        {
+            return AzPhysics::SceneHandle((*sceneItr)->GetId(), AZStd::distance(m_sceneList.begin(), sceneItr));
+        }
+        return AzPhysics::InvalidSceneHandle;
+    }
+
     AzPhysics::Scene* PhysXSystem::GetScene(AzPhysics::SceneHandle handle)
     {
         if (handle == AzPhysics::InvalidSceneHandle)
@@ -201,14 +233,15 @@ namespace PhysX
             return nullptr;
         }
 
-        AzPhysics::SceneIndex index = AZStd::get<AzPhysics::SceneHandleValues::Index>(handle);
+        AzPhysics::SceneIndex index = AZStd::get<AzPhysics::HandleTypeIndex::Index>(handle);
         if (index < m_sceneList.size())
         {
-            if (AzPhysics::Scene* scene = m_sceneList[index])
+            if (auto& scenePtr = m_sceneList[index];
+                scenePtr != nullptr)
             {
-                if (scene->GetConfiguration().m_legacyId == AZStd::get<AzPhysics::SceneHandleValues::Crc>(handle))
+                if (scenePtr->GetId() == AZStd::get<AzPhysics::HandleTypeIndex::Crc>(handle))
                 {
-                    return scene;
+                    return scenePtr.get();
                 }
             }
         }
@@ -239,12 +272,19 @@ namespace PhysX
             return;
         }
 
-        AZ::u64 index = AZStd::get<AzPhysics::SceneHandleValues::Index>(handle);
-        if (index < m_sceneList.size())
+        AZ::u64 index = AZStd::get<AzPhysics::HandleTypeIndex::Index>(handle);
+        if (index < m_sceneList.size() )
         {
-            delete m_sceneList[index];
-            m_sceneList[index] = nullptr;
-            m_freeSceneSlots.push(index);
+            if (auto& scenePtr = m_sceneList[index];
+                scenePtr != nullptr)
+            {
+                if (scenePtr->GetId() == AZStd::get<AzPhysics::HandleTypeIndex::Crc>(handle))
+                {
+                    m_sceneRemovedEvent.Signal(handle);
+                    m_sceneList[index].reset();
+                    m_freeSceneSlots.push(index);
+                }
+            }
         }
     }
 
@@ -258,16 +298,33 @@ namespace PhysX
 
     void PhysXSystem::RemoveAllScenes()
     {
-        for (auto* scene : m_sceneList)
-        {
-            delete scene;
-            scene = nullptr;
-        }
         m_sceneList.clear();
 
         //clear the free slots queue
         AZStd::queue<AzPhysics::SceneIndex> empty;
         m_freeSceneSlots.swap(empty);
+    }
+
+    AZStd::pair<AzPhysics::SceneHandle, AzPhysics::SimulatedBodyHandle> PhysXSystem::FindAttachedBodyHandleFromEntityId(AZ::EntityId entityId)
+    {
+        for (auto& scenePtr : m_sceneList)
+        {
+            if (scenePtr == nullptr)
+            {
+                continue;
+            }
+            if (auto* physXScene = azdynamic_cast<PhysXScene*>(scenePtr.get()))
+            {
+                for (const auto& [_, body] : physXScene->GetSimulatedBodyList())
+                {
+                    if (body != nullptr && body->GetEntityId() == entityId)
+                    {
+                        return AZStd::make_pair(physXScene->GetSceneHandle(), body->m_bodyHandle);
+                    }
+                }
+            }
+        }
+        return AZStd::make_pair(AzPhysics::InvalidSceneHandle, AzPhysics::InvalidSimulatedBodyHandle);
     }
 
     const AzPhysics::SystemConfiguration* PhysXSystem::GetConfiguration() const

@@ -31,6 +31,7 @@
 #include <AzCore/std/sort.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/AssetBundleManifest.h>
 #include <AzFramework/Asset/AssetRegistry.h>
 #include <AzFramework/IO/FileOperations.h>
@@ -1506,35 +1507,48 @@ namespace AZ::IO
 
         auto bundleManifest = GetBundleManifest(desc.pZip);
         AZStd::shared_ptr<AzFramework::AssetRegistry> bundleCatalog;
-        AZStd::vector<AZStd::string> levelDirs;
         if (bundleManifest)
         {
             bundleCatalog = GetBundleCatalog(desc.pZip, bundleManifest->GetCatalogName());
         }
 
-        if (addLevels)
-        {
-            // Note that manifest version two and above will contain level directory information inside them
-            // otherwise we will fallback to scanning the archive for levels.
-            if (bundleManifest && bundleManifest->GetBundleVersion() >= 2)
-            {
+        bool usePrefabSystemForLevels = false;
+        AzFramework::ApplicationRequests::Bus::BroadcastResult(
+            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
 
-                levelDirs = bundleManifest->GetLevelDirectories();
-            }
-            else
+        if (usePrefabSystemForLevels)
+        {
+            m_arrZips.insert(revItZip.base(), desc);
+        }
+        else
+        {
+            // [LYN-2376] Remove once legacy slice support is removed
+            AZStd::vector<AZStd::string> levelDirs;
+
+            if (addLevels)
             {
-                levelDirs = ScanForLevels(desc.pZip);
+                // Note that manifest version two and above will contain level directory information inside them
+                // otherwise we will fallback to scanning the archive for levels.
+                if (bundleManifest && bundleManifest->GetBundleVersion() >= 2)
+                {
+                    levelDirs = bundleManifest->GetLevelDirectories();
+                }
+                else
+                {
+                    levelDirs = ScanForLevels(desc.pZip);
+                }
             }
+
+            if (!levelDirs.empty())
+            {
+                desc.m_containsLevelPak = true;
+            }
+
+            m_arrZips.insert(revItZip.base(), desc);
+
+            m_levelOpenEvent.Signal(levelDirs);
         }
 
-        if (!levelDirs.empty())
-        {
-            desc.m_containsLevelPak = true;
-        }
-
-        m_arrZips.insert(revItZip.base(), desc);
-
-        m_levelOpenEvent.Signal(levelDirs);
         AZ::IO::ArchiveNotificationBus::Broadcast([](AZ::IO::ArchiveNotifications* archiveNotifications, const char* bundleName,
             AZStd::shared_ptr<AzFramework::AssetBundleManifest> bundleManifest, const char* nextBundle, AZStd::shared_ptr<AzFramework::AssetRegistry> bundleCatalog)
         {
@@ -1555,10 +1569,13 @@ namespace AZ::IO
             return false;
         }
 
+        bool usePrefabSystemForLevels = false;
+        AzFramework::ApplicationRequests::Bus::BroadcastResult(
+            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+
         AZStd::unique_lock lock(m_csZips);
         for (auto it = m_arrZips.begin(); it != m_arrZips.end();)
         {
-            bool needRescan = false;
             if (azstricmp(szZipPath->c_str(), it->GetFullPath()) == 0)
             {
                 // this is the pack with the given name - remove it, and if possible it will be deleted
@@ -1571,16 +1588,25 @@ namespace AZ::IO
                     archiveNotifications->BundleClosed(bundleName);
                 }, it->GetFullPath());
 
-                if (it->m_containsLevelPak)
+                if (usePrefabSystemForLevels)
                 {
-                    needRescan = true;
+                    it = m_arrZips.erase(it);
                 }
-
-                it = m_arrZips.erase(it);
-
-                if (needRescan)
+                else
                 {
-                    m_levelCloseEvent.Signal(szZipPath->Native());
+                    // [LYN-2376] Remove once legacy slice support is removed
+                    bool needRescan = false;
+                    if (it->m_containsLevelPak)
+                    {
+                        needRescan = true;
+                    }
+
+                    it = m_arrZips.erase(it);
+
+                    if (needRescan)
+                    {
+                        m_levelCloseEvent.Signal(szZipPath->Native());
+                    }
                 }
             }
             else

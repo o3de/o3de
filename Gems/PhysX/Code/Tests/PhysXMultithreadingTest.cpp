@@ -13,11 +13,11 @@
 #include <PhysX_precompiled.h>
 
 #include <AzTest/AzTest.h>
-#include <Physics/PhysicsTests.h>
-#include <Tests/PhysXTestCommon.h>
-
 #include <AzCore/Math/Random.h>
 #include <AzCore/std/parallel/thread.h>
+
+#include <Tests/PhysXGenericTestFixture.h>
+#include <Tests/PhysXTestCommon.h>
 
 #include <AzFramework/Physics/RigidBodyBus.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
@@ -82,18 +82,18 @@ namespace PhysX
     }
 
     class PhysXMultithreadingTest
-        : public Physics::GenericPhysicsInterfaceTest
+        : public PhysX::GenericPhysicsInterfaceTest
         , public ::testing::WithParamInterface<int>
     {
     public:
         virtual void SetUp() override
         {
-            Physics::GenericPhysicsInterfaceTest::SetUpInternal();
+            PhysX::GenericPhysicsInterfaceTest::SetUpInternal();
 
             //create some boxes
             for (int i = 0; i < Constants::NumBoxes; i++)
             {
-                EntityPtr newEntity = TestUtils::CreateBoxEntity(Constants::BoxPositions[i], Constants::BoxDimensions, false);
+                EntityPtr newEntity = TestUtils::CreateBoxEntity(m_testSceneHandle, Constants::BoxPositions[i], Constants::BoxDimensions);
                 m_boxes.emplace_back(newEntity);
 
                 //disable gravity so they don't move
@@ -103,7 +103,7 @@ namespace PhysX
 
         virtual void TearDown() override
         {
-            Physics::GenericPhysicsInterfaceTest::TearDownInternal();
+            PhysX::GenericPhysicsInterfaceTest::TearDownInternal();
         }
 
         AZStd::vector<EntityPtr> m_boxes;
@@ -112,11 +112,12 @@ namespace PhysX
     template<typename RequestType, typename ResultType>
     struct SceneQueryBase
     {
-        SceneQueryBase(const AZStd::thread_desc& threadDesc, const RequestType& request)
+        SceneQueryBase(const AZStd::thread_desc& threadDesc, const RequestType& request, AzPhysics::SceneHandle sceneHandle)
             : m_threadDesc(threadDesc)
             , m_request(request)
+            , m_sceneHandle(sceneHandle)
         {
-
+            m_sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
         }
 
         virtual ~SceneQueryBase() = default;
@@ -160,21 +161,23 @@ namespace PhysX
         AZStd::thread_desc m_threadDesc;
         int m_waitTimeMilliseconds;
         RequestType m_request;
+        AzPhysics::SceneInterface* m_sceneInterface;
+        AzPhysics::SceneHandle m_sceneHandle;
     };
 
     struct RayCaster
-        : public SceneQueryBase<Physics::RayCastRequest, Physics::RayCastHit>
+        : public SceneQueryBase<AzPhysics::RayCastRequest, AzPhysics::SceneQueryHits>
     {
-        RayCaster(const AZStd::thread_desc& threadDesc, const Physics::RayCastRequest& request)
-            : SceneQueryBase(threadDesc, request)
+        RayCaster(const AZStd::thread_desc& threadDesc, const AzPhysics::RayCastRequest& request, AzPhysics::SceneHandle sceneHandle)
+            : SceneQueryBase(threadDesc, request, sceneHandle)
         {
-
+            
         }
 
     private:
         void RunRequest() override
         {
-            Physics::WorldRequestBus::EventResult(m_result, Physics::DefaultPhysicsWorldId, &Physics::WorldRequests::RayCast, m_request);
+            m_result = m_sceneInterface->QueryScene(m_sceneHandle, &m_request);
         }
     };
 
@@ -186,7 +189,7 @@ namespace PhysX
         AZStd::vector<AZStd::unique_ptr<RayCaster>> rayCasters;
 
         //common request data
-        Physics::RayCastRequest request;
+        AzPhysics::RayCastRequest request;
         request.m_start = AZ::Vector3::CreateZero();
         request.m_distance = 2000.0f;
 
@@ -200,7 +203,7 @@ namespace PhysX
             const int boxTargetIdx = i % m_boxes.size();
             request.m_direction = Constants::BoxPositions[boxTargetIdx].GetNormalized();
 
-            rayCasters.emplace_back(AZStd::make_unique<RayCaster>(threadDesc, request));
+            rayCasters.emplace_back(AZStd::make_unique<RayCaster>(threadDesc, request, m_testSceneHandle));
         }
 
         //start all threads
@@ -223,8 +226,8 @@ namespace PhysX
             caster->Join();
 
             const int boxTargetIdx = i % m_boxes.size();
-            EXPECT_TRUE(caster->m_result.m_body != nullptr);
-            EXPECT_TRUE(caster->m_result.m_body->GetEntityId() == m_boxes[boxTargetIdx]->GetId());
+            EXPECT_TRUE(caster->m_result);
+            EXPECT_TRUE(caster->m_result.m_hits[0].m_entityId == m_boxes[boxTargetIdx]->GetId());
 
             caster.release();
             i++;
@@ -233,10 +236,10 @@ namespace PhysX
     }
 
     struct RayCasterMultiple
-        : public SceneQueryBase<Physics::RayCastRequest, AZStd::vector<Physics::RayCastHit>>
+        : public SceneQueryBase<AzPhysics::RayCastRequest, AzPhysics::SceneQueryHits>
     {
-        RayCasterMultiple(const AZStd::thread_desc& threadDesc, const Physics::RayCastRequest& request)
-            : SceneQueryBase(threadDesc, request)
+        RayCasterMultiple(const AZStd::thread_desc& threadDesc, const AzPhysics::RayCastRequest& request, AzPhysics::SceneHandle sceneHandle)
+            : SceneQueryBase(threadDesc, request, sceneHandle)
         {
 
         }
@@ -244,7 +247,8 @@ namespace PhysX
     private:
         void RunRequest() override
         {
-            Physics::WorldRequestBus::EventResult(m_result, Physics::DefaultPhysicsWorldId, &Physics::WorldRequests::RayCastMultiple, m_request);
+            m_request.m_reportMultipleHits = true;
+            m_result = m_sceneInterface->QueryScene(m_sceneHandle, &m_request);
         }
     };
 
@@ -256,7 +260,7 @@ namespace PhysX
         AZStd::vector<AZStd::unique_ptr<RayCasterMultiple>> rayCasters;
 
         //common request data
-        Physics::RayCastRequest request;
+        AzPhysics::RayCastRequest request;
         request.m_start = AZ::Vector3::CreateZero();
         request.m_distance = 2000.0f;
         
@@ -270,7 +274,7 @@ namespace PhysX
             const int boxTargetIdx = i % m_boxes.size();
             request.m_direction = Constants::BoxPositions[boxTargetIdx].GetNormalized();
 
-            rayCasters.emplace_back(AZStd::make_unique<RayCasterMultiple>(threadDesc, request));
+            rayCasters.emplace_back(AZStd::make_unique<RayCasterMultiple>(threadDesc, request, m_testSceneHandle));
         }
 
         //start all threads
@@ -292,20 +296,17 @@ namespace PhysX
         {
             caster->Join();
             //we should have some results
-            EXPECT_TRUE(caster->m_result.size() > 0);
+            EXPECT_TRUE(caster->m_result);
 
             //check the list of result for the target
             bool targetInList = false;
             const int boxTargetIdx = i % m_boxes.size();
-            for (auto& hit : caster->m_result)
+            for (auto& hit : caster->m_result.m_hits)
             {
-                if (hit.m_body)
+                if (hit && hit.m_entityId == m_boxes[boxTargetIdx]->GetId())
                 {
-                    if (hit.m_body->GetEntityId() == m_boxes[boxTargetIdx]->GetId())
-                    {
-                        targetInList = true;
-                        break;
-                    }
+                    targetInList = true;
+                    break;
                 }
             }
             EXPECT_TRUE(targetInList);
@@ -317,10 +318,10 @@ namespace PhysX
     }
 
      struct ShapeCaster
-         : public SceneQueryBase<Physics::ShapeCastRequest, Physics::RayCastHit>
+         : public SceneQueryBase<AzPhysics::ShapeCastRequest, AzPhysics::SceneQueryHits>
      {
-         ShapeCaster(const AZStd::thread_desc& threadDesc, const Physics::ShapeCastRequest& request)
-             : SceneQueryBase(threadDesc, request)
+         ShapeCaster(const AZStd::thread_desc& threadDesc, const AzPhysics::ShapeCastRequest& request, AzPhysics::SceneHandle sceneHandle)
+             : SceneQueryBase(threadDesc, request, sceneHandle)
          {
  
          }
@@ -328,7 +329,7 @@ namespace PhysX
      private:
          void RunRequest() override
          {
-             Physics::WorldRequestBus::EventResult(m_result, Physics::DefaultPhysicsWorldId, &Physics::WorldRequests::ShapeCast, m_request);
+             m_result = m_sceneInterface->QueryScene(m_sceneHandle, &m_request);
          }
      };
  
@@ -340,13 +341,10 @@ namespace PhysX
          AZStd::vector<AZStd::unique_ptr<ShapeCaster>> shapeCasters;
 
          //common request data
-         Physics::SphereShapeConfiguration shapeConfiguration;
-         shapeConfiguration.m_radius = Constants::ShpereShapeRadius;
-
-         Physics::ShapeCastRequest request;
+         AzPhysics::ShapeCastRequest request;
          request.m_start = AZ::Transform::CreateIdentity();
          request.m_distance = 2000.0f;
-         request.m_shapeConfiguration = &shapeConfiguration;
+         request.m_shapeConfiguration = AZStd::make_shared<Physics::SphereShapeConfiguration>(Constants::ShpereShapeRadius);
 
          AZStd::thread_desc threadDesc;
          threadDesc.m_name = "SCQFPThreads";  // ShapeCastsQueryFromParallelThreads
@@ -358,7 +356,7 @@ namespace PhysX
              const int boxTargetIdx = i % m_boxes.size();
              request.m_direction = Constants::BoxPositions[boxTargetIdx].GetNormalized();
 
-             shapeCasters.emplace_back(AZStd::make_unique<ShapeCaster>(threadDesc, request));
+             shapeCasters.emplace_back(AZStd::make_unique<ShapeCaster>(threadDesc, request, m_testSceneHandle));
          }
 
          //start all threads
@@ -381,8 +379,9 @@ namespace PhysX
              caster->Join();
 
              const int boxTargetIdx = i % m_boxes.size();
-             EXPECT_TRUE(caster->m_result.m_body != nullptr);
-             EXPECT_TRUE(caster->m_result.m_body->GetEntityId() == m_boxes[boxTargetIdx]->GetId());
+             EXPECT_TRUE(caster->m_result);
+             EXPECT_EQ(caster->m_result.m_hits.size(), 1);
+             EXPECT_TRUE(caster->m_result.m_hits[0].m_entityId == m_boxes[boxTargetIdx]->GetId());
 
              caster.release();
              i++;
@@ -391,10 +390,10 @@ namespace PhysX
      }
 
      struct ShapeCasterMultiple
-         : public SceneQueryBase<Physics::ShapeCastRequest, AZStd::vector<Physics::RayCastHit>>
+         : public SceneQueryBase<AzPhysics::ShapeCastRequest, AzPhysics::SceneQueryHits>
      {
-         ShapeCasterMultiple(const AZStd::thread_desc& threadDesc, const Physics::ShapeCastRequest& request)
-             : SceneQueryBase(threadDesc, request)
+         ShapeCasterMultiple(const AZStd::thread_desc& threadDesc, const AzPhysics::ShapeCastRequest& request, AzPhysics::SceneHandle sceneHandle)
+             : SceneQueryBase(threadDesc, request, sceneHandle)
          {
 
          }
@@ -402,7 +401,8 @@ namespace PhysX
      private:
          void RunRequest() override
          {
-             Physics::WorldRequestBus::EventResult(m_result, Physics::DefaultPhysicsWorldId, &Physics::WorldRequests::ShapeCastMultiple, m_request);
+             m_request.m_reportMultipleHits = true;
+             m_result = m_sceneInterface->QueryScene(m_sceneHandle, &m_request);
          }
      };
 
@@ -414,12 +414,9 @@ namespace PhysX
          AZStd::vector<AZStd::unique_ptr<ShapeCasterMultiple>> shapeCasters;
 
          //common request data
-         Physics::SphereShapeConfiguration shapeConfiguration;
-         shapeConfiguration.m_radius = Constants::ShpereShapeRadius;
-
-         Physics::ShapeCastRequest request;
+         AzPhysics::ShapeCastRequest request;
          request.m_distance = 2000.0f;
-         request.m_shapeConfiguration = &shapeConfiguration;
+         request.m_shapeConfiguration = AZStd::make_shared<Physics::SphereShapeConfiguration>(Constants::ShpereShapeRadius);
 
          AZStd::thread_desc threadDesc;
          threadDesc.m_name = "SCMQFPThreads";  // ShapeCastMultiplesQueryFromParallelThreads
@@ -431,7 +428,7 @@ namespace PhysX
              const int boxTargetIdx = i % m_boxes.size();
              request.m_direction = Constants::BoxPositions[boxTargetIdx].GetNormalized();
 
-             shapeCasters.emplace_back(AZStd::make_unique<ShapeCasterMultiple>(threadDesc, request));
+             shapeCasters.emplace_back(AZStd::make_unique<ShapeCasterMultiple>(threadDesc, request, m_testSceneHandle));
          }
 
          //start all threads
@@ -453,20 +450,17 @@ namespace PhysX
          {
              caster->Join();
              //we should have some results
-             EXPECT_TRUE(caster->m_result.size() > 0);
+             EXPECT_TRUE(caster->m_result);
 
              //check the list of result for the target
              bool targetInList = false;
              const int boxTargetIdx = i % m_boxes.size();
-             for (auto& hit : caster->m_result)
+             for (auto& hit : caster->m_result.m_hits)
              {
-                 if (hit.m_body)
+                 if (hit && hit.m_entityId == m_boxes[boxTargetIdx]->GetId())
                  {
-                     if (hit.m_body->GetEntityId() == m_boxes[boxTargetIdx]->GetId())
-                     {
-                         targetInList = true;
-                         break;
-                     }
+                     targetInList = true;
+                     break;
                  }
              }
              EXPECT_TRUE(targetInList);
@@ -478,10 +472,10 @@ namespace PhysX
      }
 
      struct OverlapQuery
-         : public SceneQueryBase<Physics::OverlapRequest, AZStd::vector<Physics::OverlapHit>>
+         : public SceneQueryBase<AzPhysics::OverlapRequest, AzPhysics::SceneQueryHits>
      {
-         OverlapQuery(const AZStd::thread_desc& threadDesc, const Physics::OverlapRequest& request)
-             : SceneQueryBase(threadDesc, request)
+         OverlapQuery(const AZStd::thread_desc& threadDesc, const AzPhysics::OverlapRequest& request, AzPhysics::SceneHandle sceneHandle)
+             : SceneQueryBase(threadDesc, request, sceneHandle)
          {
 
          }
@@ -489,7 +483,7 @@ namespace PhysX
      private:
          void RunRequest() override
          {
-             Physics::WorldRequestBus::EventResult(m_result, Physics::DefaultPhysicsWorldId, &Physics::WorldRequests::Overlap, m_request);
+             m_result = m_sceneInterface->QueryScene(m_sceneHandle, &m_request);
          }
      };
 
@@ -501,11 +495,8 @@ namespace PhysX
          AZStd::vector<AZStd::unique_ptr<OverlapQuery>> overlapQuery;
 
          //common request data
-         Physics::SphereShapeConfiguration shapeConfiguration;
-         shapeConfiguration.m_radius = Constants::ShpereShapeRadius;
-
-         Physics::OverlapRequest request;
-         request.m_shapeConfiguration = &shapeConfiguration;
+         AzPhysics::OverlapRequest request;
+         request.m_shapeConfiguration = AZStd::make_shared<Physics::SphereShapeConfiguration>(Constants::ShpereShapeRadius);
 
          AZStd::thread_desc threadDesc;
          threadDesc.m_name = "OQFPThreads";  // OverlapQueryFromParallelThreads
@@ -517,7 +508,7 @@ namespace PhysX
              const int boxTargetIdx = i % m_boxes.size();
              request.m_pose = AZ::Transform::CreateTranslation(Constants::BoxPositions[boxTargetIdx]);
 
-             overlapQuery.emplace_back(AZStd::make_unique<OverlapQuery>(threadDesc, request));
+             overlapQuery.emplace_back(AZStd::make_unique<OverlapQuery>(threadDesc, request, m_testSceneHandle));
          }
 
          //start all threads
@@ -539,20 +530,18 @@ namespace PhysX
          {
              caster->Join();
              //we should have some results
-             EXPECT_TRUE(caster->m_result.size() > 0);
+             EXPECT_TRUE(caster->m_result);
+             EXPECT_TRUE(caster->m_result.m_hits.size() > 0);
 
              //check the list of result for the target
              bool targetInList = false;
              const int boxTargetIdx = i % m_boxes.size();
-             for (auto& hit : caster->m_result)
+             for (auto& hit : caster->m_result.m_hits)
              {
-                 if (hit.m_body)
+                 if (hit && hit.m_entityId == m_boxes[boxTargetIdx]->GetId())
                  {
-                     if (hit.m_body->GetEntityId() == m_boxes[boxTargetIdx]->GetId())
-                     {
-                         targetInList = true;
-                         break;
-                     }
+                     targetInList = true;
+                     break;
                  }
              }
              EXPECT_TRUE(targetInList);
@@ -566,8 +555,10 @@ namespace PhysX
     struct ShapeLocalPoseSetterGetter
         : public SceneQueryBase<AZStd::pair<AZ::Vector3, AZ::Quaternion>, AZStd::pair<AZ::Vector3, AZ::Quaternion>>
     {
-        ShapeLocalPoseSetterGetter(const AZStd::thread_desc& threadDesc, const AZStd::pair<AZ::Vector3, AZ::Quaternion>& request, AZStd::shared_ptr<Physics::Shape> shape)
-            : SceneQueryBase(threadDesc, request)
+        ShapeLocalPoseSetterGetter(const AZStd::thread_desc& threadDesc,
+            const AZStd::pair<AZ::Vector3, AZ::Quaternion>& request,
+            AZStd::shared_ptr<Physics::Shape> shape)
+            : SceneQueryBase(threadDesc, request, AzPhysics::InvalidSceneHandle)
             , m_shape(shape)
         {
 
@@ -633,10 +624,12 @@ namespace PhysX
     }
 
     struct RigidBodyRayCaster
-        : public SceneQueryBase<Physics::RayCastRequest, Physics::RayCastHit>
+        : public SceneQueryBase<AzPhysics::RayCastRequest, AzPhysics::SceneQueryHit>
     {
-        RigidBodyRayCaster(const AZStd::thread_desc& threadDesc, const Physics::RayCastRequest& request, Physics::RigidBody* rigidBody)
-            : SceneQueryBase(threadDesc, request)
+        RigidBodyRayCaster(const AZStd::thread_desc& threadDesc,
+            const AzPhysics::RayCastRequest& request,
+            AzPhysics::RigidBody* rigidBody)
+            : SceneQueryBase(threadDesc, request, AzPhysics::InvalidSceneHandle)
             , m_rigidBody(rigidBody)
         {
 
@@ -644,7 +637,7 @@ namespace PhysX
 
     private:
 
-        Physics::RigidBody* m_rigidBody;
+        AzPhysics::RigidBody* m_rigidBody;
 
         void RunRequest() override
         {
@@ -660,7 +653,7 @@ namespace PhysX
         AZStd::vector<AZStd::unique_ptr<RigidBodyRayCaster>> rayCasters;
 
         //common request data
-        Physics::RayCastRequest request;
+        AzPhysics::RayCastRequest request;
         request.m_start = AZ::Vector3::CreateZero();
         request.m_distance = 2000.0f;
 
@@ -673,7 +666,7 @@ namespace PhysX
             //pick a box to raycast against
             const int boxTargetIdx = i % m_boxes.size();
             request.m_direction = Constants::BoxPositions[boxTargetIdx].GetNormalized();
-            Physics::RigidBody* rigidBody = nullptr;
+            AzPhysics::RigidBody* rigidBody = nullptr;
             Physics::RigidBodyRequestBus::EventResult(rigidBody, m_boxes[boxTargetIdx]->GetId(), &Physics::RigidBodyRequests::GetRigidBody);
 
             rayCasters.emplace_back(AZStd::make_unique<RigidBodyRayCaster>(threadDesc, request, rigidBody));
@@ -699,8 +692,8 @@ namespace PhysX
             caster->Join();
 
             const int boxTargetIdx = i % m_boxes.size();
-            EXPECT_TRUE(caster->m_result.m_body != nullptr);
-            EXPECT_TRUE(caster->m_result.m_body->GetEntityId() == m_boxes[boxTargetIdx]->GetId());
+            EXPECT_TRUE(caster->m_result);
+            EXPECT_TRUE(caster->m_result.m_entityId == m_boxes[boxTargetIdx]->GetId());
 
             caster.release();
             i++;

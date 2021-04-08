@@ -28,6 +28,10 @@ def get_current_directory_path() -> str:
     return str(pathlib.Path.cwd())
 
 
+def get_parent_directory_path(file_path: str) -> str:
+    return pathlib.Path(file_path).parent
+
+
 def find_files_with_suffix_under_directory(dir_path: str, suffix: str) -> List[str]:
     results: List[str] = []
     paths: List[pathlib.Path] = \

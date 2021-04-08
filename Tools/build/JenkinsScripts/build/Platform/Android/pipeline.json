@@ -1,7 +1,7 @@
 {
     "ENV": {
         "GRADLE_HOME": "C:/Gradle/gradle-5.6.4",
-        "NODE_LABEL": "windows",
+        "NODE_LABEL": "windows-047e5cdf",
         "LY_3RDPARTY_PATH": "C:/ly/3rdParty",
         "TIMEOUT": 30,
         "WORKSPACE": "D:/workspace",
@@ -9,6 +9,9 @@
     },
     "PIPELINE_ENV_OVERRIDE": {
         "daily-pipeline-metrics": {
+            "CLEAN_WORKSPACE": true
+        },
+        "packaging": {
             "CLEAN_WORKSPACE": true
         }
     }

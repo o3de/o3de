@@ -107,15 +107,9 @@ namespace AZ
                 result = ContinueLoading(&id, azrtti_typeid<AssetId>(), it->value, context);
                 if (!id.m_guid.IsNull())
                 {
-                    if (instance->Create(id))
-                    {
-                        result.Combine(context.Report(result, "Successfully created Asset<T>."));
-                    }
-                    else
-                    {
-                        result.Combine(context.Report(JSR::Tasks::Convert, JSR::Outcomes::Unknown,
-                            "The asset id was successfully read, but creating an Asset<T> instance from it failed."));
-                    }
+                    *instance = Asset<AssetData>(id, instance->GetType());
+
+                    result.Combine(context.Report(result, "Successfully created Asset<T> with id."));
                 }
                 else if (result.GetProcessing() == JSR::Processing::Completed)
                 {

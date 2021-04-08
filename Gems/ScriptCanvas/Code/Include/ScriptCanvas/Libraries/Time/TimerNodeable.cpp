@@ -11,8 +11,6 @@
 */
 
 #include "TimerNodeable.h"
-#include <ScriptCanvas/Utils/SerializationUtils.h>
-#include <ScriptCanvas/Utils/VersionConverters.h>
 
 namespace ScriptCanvas
 {
@@ -20,16 +18,6 @@ namespace ScriptCanvas
     {
         namespace Time
         {
-            void TimerNodeable::OnDeactivate()
-            {
-                AZ::TickBus::Handler::BusDisconnect();
-            }
-
-            TimerNodeable::~TimerNodeable()
-            {
-                AZ::TickBus::Handler::BusDisconnect();
-            }
-
             void TimerNodeable::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint time)
             {
                 AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::ScriptCanvas);

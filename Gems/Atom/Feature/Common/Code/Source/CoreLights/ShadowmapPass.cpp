@@ -42,7 +42,7 @@ namespace AZ
             passConnection.m_localSlot = Name{ "SkinnedMeshes" };
             passConnection.m_attachmentRef.m_pass = Name{ "Parent" };
             passConnection.m_attachmentRef.m_attachment = Name{ "SkinnedMeshes" };
-            childRequest.m_inputConnections.emplace_back(passConnection);
+            childRequest.m_connections.emplace_back(passConnection);
 
             // Get the template
             AZStd::shared_ptr<RPI::PassTemplate> childTemplate = RPI::PassSystemInterface::Get()->GetPassTemplate(childRequest.m_templateName);
@@ -77,8 +77,8 @@ namespace AZ
             skinnedMeshSlot.m_slotType = RPI::PassSlotType::Input;
             skinnedMeshSlot.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::InputAssembly;
 
-            m_childTemplate->m_outputConnections.resize(1);
-            RPI::PassConnection& connection = m_childTemplate->m_outputConnections[0];
+            m_childTemplate->m_connections.resize(1);
+            RPI::PassConnection& connection = m_childTemplate->m_connections[0];
             connection.m_localSlot = Name{ "Shadowmap" };
             connection.m_attachmentRef.m_pass = Name{ "Parent" };
             connection.m_attachmentRef.m_attachment = Name{ "Shadowmap" };

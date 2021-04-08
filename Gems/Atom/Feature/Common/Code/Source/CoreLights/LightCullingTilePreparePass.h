@@ -73,7 +73,8 @@ namespace AZ
             const AZ::RPI::ShaderVariant& CreateShaderVariant();
             void CreatePipelineStateFromShaderVariant(const RPI::ShaderVariant& shaderVariant);
             void SetConstantData();
-            AZ::RHI::ShaderInputConstantIndex m_constantDataIndex;
+
+            AZ::RHI::ShaderInputNameIndex m_constantDataIndex = "m_constantData";
 
             // The shader variant (for choosing the different MSAA version) is sent to the RHI via the PipelineState
             AZ::RHI::ConstPtr<AZ::RHI::PipelineState> m_msaaPipelineState;

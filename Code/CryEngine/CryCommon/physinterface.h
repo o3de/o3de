@@ -2112,7 +2112,7 @@ struct pe_status_area
     {
         type_id = ePE_status_area
     };
-    pe_status_area() { type = type_id; bUniformOnly = false; ctr.zero(); size.zero(); vel.zero(); MARK_UNUSED gravity, pb; pLockUpdate = 0; pSurface = 0; }
+    pe_status_area() { type = type_id; bUniformOnly = false; ctr.zero(); size.zero(); vel.zero(); MARK_UNUSED gravity; pLockUpdate = 0; pSurface = 0; }
 
     // inputs.
     Vec3 ctr, size;                         // query bounds

@@ -16,13 +16,14 @@
 #include <PxMaterial.h>
 #include <PxShape.h>
 #include <PhysX/UserDataTypes.h>
-#include <AzFramework/Physics/Casts.h>
 #include <AzFramework/Physics/Shape.h>
+#include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 
 namespace AzPhysics
 {
     class CollisionLayer;
     class CollisionGroup;
+    class Scene;
 }
 
 namespace Physics
@@ -40,7 +41,7 @@ namespace PhysX
         ActorData* GetUserData(const physx::PxActor* actor);
         Physics::Material* GetUserData(const physx::PxMaterial* material);
         Physics::Shape* GetUserData(const physx::PxShape* shape);
-        Physics::World* GetUserData(physx::PxScene* scene);
+        AzPhysics::Scene* GetUserData(physx::PxScene* scene);
 
         namespace Collision
         {
@@ -49,13 +50,6 @@ namespace PhysX
             void SetGroup(const AzPhysics::CollisionGroup& group, physx::PxFilterData& filterData);
             void SetCollisionLayerAndGroup(physx::PxShape* shape, const AzPhysics::CollisionLayer& layer, const AzPhysics::CollisionGroup& group);
             bool ShouldCollide(const physx::PxFilterData& filterData0, const physx::PxFilterData& filterData1);
-        }
-
-        namespace RayCast
-        {
-            Physics::RayCastHit GetHitFromPxHit(const physx::PxLocationHit& pxHit);
-            physx::PxHitFlags GetPxHitFlags(Physics::HitFlags hitFlags);
-            Physics::RayCastHit ClosestRayHitAgainstPxRigidActor(const Physics::RayCastRequest& request, physx::PxRigidActor* actor);
         }
     }
 }

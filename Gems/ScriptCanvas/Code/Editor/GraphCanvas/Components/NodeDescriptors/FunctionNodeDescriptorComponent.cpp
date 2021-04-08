@@ -26,7 +26,7 @@
 
 #include <ScriptCanvas/Bus/RequestBus.h>
 #include <ScriptCanvas/Libraries/Core/ScriptEventBase.h>
-#include <ScriptCanvas/Libraries/Core/FunctionNode.h>
+#include <ScriptCanvas/Libraries/Core/FunctionCallNode.h>
 
 namespace ScriptCanvasEditor
 {

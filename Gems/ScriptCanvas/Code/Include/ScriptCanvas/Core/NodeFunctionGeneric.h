@@ -253,7 +253,7 @@ namespace ScriptCanvas
             return AZ::Success(scope);
         }
 
-        bool IsSupportedByNewBackend() const override { return true; }
+        
 
     protected:
 

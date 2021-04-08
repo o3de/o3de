@@ -15,6 +15,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Physics/NameConstants.h>
+#include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <Source/EditorRigidBodyComponent.h>
 #include <Source/EditorColliderComponent.h>
 #include <Source/EditorShapeColliderComponent.h>
@@ -27,12 +28,93 @@
 
 namespace PhysX
 {
+    namespace Internal
+    {
+        AZStd::vector<AZStd::shared_ptr<Physics::Shape>> GetCollisionShapes(AZ::Entity* entity)
+        {
+            AZStd::vector<AZStd::shared_ptr<Physics::Shape>> allShapes;
+
+            const bool hasNonUniformScaleComponent = (AZ::NonUniformScaleRequestBus::FindFirstHandler(entity->GetId()) != nullptr);
+
+            const AZStd::vector<EditorColliderComponent*> colliders = entity->FindComponents<EditorColliderComponent>();           
+            for (const EditorColliderComponent* collider : colliders)
+            {
+                const EditorProxyShapeConfig& shapeConfigurationProxy = collider->GetShapeConfiguration();
+                if (shapeConfigurationProxy.IsAssetConfig() && !shapeConfigurationProxy.m_physicsAsset.m_configuration.m_asset.IsReady())
+                {
+                    continue;
+                }
+
+                const Physics::ColliderConfiguration colliderConfiguration = collider->GetColliderConfigurationScaled();
+                if (shapeConfigurationProxy.IsAssetConfig())
+                {
+                    AZStd::vector<AZStd::shared_ptr<Physics::Shape>> shapes;
+                    Utils::GetShapesFromAsset(shapeConfigurationProxy.m_physicsAsset.m_configuration,
+                        colliderConfiguration, hasNonUniformScaleComponent, shapeConfigurationProxy.m_subdivisionLevel, shapes);
+
+                    for (const auto& shape : shapes)
+                    {
+                        AZ_Assert(shape, "CreateEditorWorldRigidBody: Shape must not be null!");
+                        allShapes.emplace_back(shape);
+                    }
+                }
+                else
+                {
+                    const Physics::ShapeConfiguration& shapeConfiguration = shapeConfigurationProxy.GetCurrent();
+                    if (!hasNonUniformScaleComponent)
+                    {
+                        AZStd::shared_ptr<Physics::Shape> shape = AZ::Interface<Physics::System>::Get()->CreateShape(
+                            colliderConfiguration, shapeConfiguration);
+                        AZ_Assert(shape, "CreateEditorWorldRigidBody: Shape must not be null!");
+                        if (shape)
+                        {
+                            allShapes.emplace_back(shape);
+                        }
+                    }
+                    else
+                    {
+                        const Physics::ColliderConfiguration colliderConfigurationUnscaled = collider->GetColliderConfiguration();
+                        auto convexConfig = Utils::CreateConvexFromPrimitive(colliderConfigurationUnscaled, shapeConfiguration,
+                            shapeConfigurationProxy.m_subdivisionLevel, shapeConfiguration.m_scale);
+                        auto colliderConfigurationNoOffset = colliderConfigurationUnscaled;
+                        colliderConfigurationNoOffset.m_rotation = AZ::Quaternion::CreateIdentity();
+                        colliderConfigurationNoOffset.m_position = AZ::Vector3::CreateZero();
+
+                        if (convexConfig.has_value())
+                        {
+                            AZStd::shared_ptr<Physics::Shape> shape = AZ::Interface<Physics::System>::Get()->CreateShape(
+                                colliderConfigurationNoOffset, convexConfig.value());
+                            allShapes.emplace_back(shape);
+                        }
+                    }
+                }
+            }
+
+            const AZStd::vector<EditorShapeColliderComponent*> shapeColliders = entity->FindComponents<EditorShapeColliderComponent>();
+            for (const EditorShapeColliderComponent* shapeCollider : shapeColliders)
+            {
+                const Physics::ColliderConfiguration& colliderConfig = shapeCollider->GetColliderConfiguration();
+                const AZStd::vector<AZStd::shared_ptr<Physics::ShapeConfiguration>>& shapeConfigs =
+                    shapeCollider->GetShapeConfigurations();
+                for (const auto& shapeConfig : shapeConfigs)
+                {
+                    AZStd::shared_ptr<Physics::Shape> shape = AZ::Interface<Physics::System>::Get()->CreateShape(colliderConfig, *shapeConfig);
+                    AZ_Assert(shape, "CreateEditorWorldRigidBody: Shape must not be null!");
+                    allShapes.emplace_back(shape);
+                }
+            }
+
+            return allShapes;
+        }
+    } // namespace Internal
+
+
     void EditorRigidBodyConfiguration::Reflect(AZ::ReflectContext* context)
     {
         auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)
         {
-            serializeContext->Class<EditorRigidBodyConfiguration, Physics::RigidBodyConfiguration>()
+            serializeContext->Class<EditorRigidBodyConfiguration, AzPhysics::RigidBodyConfiguration>()
                 ->Version(2, &ClassConverters::EditorRigidBodyConfigVersionConverter)
                 ->Field("Debug Draw Center of Mass", &EditorRigidBodyConfiguration::m_centerOfMassDebugDraw)
             ;
@@ -40,104 +122,104 @@ namespace PhysX
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
             {
-                editContext->Class<Physics::RigidBodyConfiguration>(
+                editContext->Class<AzPhysics::RigidBodyConfiguration>(
                     "PhysX Rigid Body Configuration", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &Physics::RigidBodyConfiguration::m_initialLinearVelocity,
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_initialLinearVelocity,
                         "Initial linear velocity", "Initial linear velocity")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &Physics::RigidBodyConfiguration::GetInitialVelocitiesVisibility)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetInitialVelocitiesVisibility)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetSpeedUnit())
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &Physics::RigidBodyConfiguration::m_initialAngularVelocity,
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_initialAngularVelocity,
                         "Initial angular velocity", "Initial angular velocity (limited by maximum angular velocity)")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &Physics::RigidBodyConfiguration::GetInitialVelocitiesVisibility)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetInitialVelocitiesVisibility)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetAngularVelocityUnit())
 
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &Physics::RigidBodyConfiguration::m_linearDamping,
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_linearDamping,
                         "Linear damping", "Linear damping (must be non-negative)")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &Physics::RigidBodyConfiguration::GetDampingVisibility)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetDampingVisibility)
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &Physics::RigidBodyConfiguration::m_angularDamping,
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_angularDamping,
                         "Angular damping", "Angular damping (must be non-negative)")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &Physics::RigidBodyConfiguration::GetDampingVisibility)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetDampingVisibility)
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &Physics::RigidBodyConfiguration::m_sleepMinEnergy,
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_sleepMinEnergy,
                         "Sleep threshold", "Kinetic energy per unit mass below which body can go to sleep (must be non-negative)")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &Physics::RigidBodyConfiguration::GetSleepOptionsVisibility)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetSleepOptionsVisibility)
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetSleepThresholdUnit())
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &Physics::RigidBodyConfiguration::m_startAsleep,
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_startAsleep,
                         "Start asleep", "The rigid body will be asleep when spawned")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &Physics::RigidBodyConfiguration::GetSleepOptionsVisibility)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &Physics::RigidBodyConfiguration::m_interpolateMotion,
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetSleepOptionsVisibility)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_interpolateMotion,
                         "Interpolate motion", "Makes object motion look smoother")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &Physics::RigidBodyConfiguration::GetInterpolationVisibility)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &Physics::RigidBodyConfiguration::m_gravityEnabled,
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetInterpolationVisibility)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_gravityEnabled,
                         "Gravity enabled", "Rigid body will be affected by gravity")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &Physics::RigidBodyConfiguration::GetGravityVisibility)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &Physics::RigidBodyConfiguration::m_kinematic,
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetGravityVisibility)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_kinematic,
                         "Kinematic", "Rigid body is kinematic")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &Physics::RigidBodyConfiguration::GetKinematicVisibility)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetKinematicVisibility)
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Continuous Collision Detection")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &Physics::RigidBodyConfiguration::GetCCDVisibility)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &Physics::RigidBodyConfiguration::m_ccdEnabled,
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetCCDVisibility)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_ccdEnabled,
                         "CCD enabled", "Whether continuous collision detection is enabled for this body")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &Physics::RigidBodyConfiguration::GetCCDVisibility)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetCCDVisibility)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &Physics::RigidBodyConfiguration::m_ccdMinAdvanceCoefficient,
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_ccdMinAdvanceCoefficient,
                         "Min advance coefficient", "Lower values reduce clipping but can affect simulation smoothness")
                         ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
                         ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
                         ->Attribute(AZ::Edit::Attributes::Max, 0.99f)
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &Physics::RigidBodyConfiguration::IsCCDEnabled)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &Physics::RigidBodyConfiguration::m_ccdFrictionEnabled,
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::IsCCDEnabled)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_ccdFrictionEnabled,
                         "CCD friction", "Whether friction is applied when CCD collisions are resolved")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &Physics::RigidBodyConfiguration::IsCCDEnabled)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::IsCCDEnabled)
                     ->ClassElement(AZ::Edit::ClassElements::Group, "") // end previous group by starting new unnamed expanded group
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &Physics::RigidBodyConfiguration::m_maxAngularVelocity,
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_maxAngularVelocity,
                         "Maximum angular velocity", "The PhysX solver will clamp angular velocities with magnitude exceeding this value")
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &Physics::RigidBodyConfiguration::GetMaxVelocitiesVisibility)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetMaxVelocitiesVisibility)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetAngularVelocityUnit())
 
                     // Mass properties
                     ->DataElement(AZ::Edit::UIHandlers::Default, &RigidBodyConfiguration::m_computeCenterOfMass,
                         "Compute COM", "Whether to automatically compute the center of mass")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &Physics::RigidBodyConfiguration::GetInertiaSettingsVisibility)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetInertiaSettingsVisibility)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &RigidBodyConfiguration::m_centerOfMassOffset,
                         "COM offset", "Center of mass offset in local frame")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &RigidBodyConfiguration::GetCoMVisibility)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetCoMVisibility)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetLengthUnit())
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &RigidBodyConfiguration::m_computeMass,
                         "Compute Mass", "Whether to automatically compute the mass")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &Physics::RigidBodyConfiguration::GetInertiaSettingsVisibility)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetInertiaSettingsVisibility)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
 
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &Physics::RigidBodyConfiguration::m_mass,
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_mass,
                         "Mass", "The mass of the object (must be non-negative, with a value of zero treated as infinite)")
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetMassUnit())
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &Physics::RigidBodyConfiguration::GetMassVisibility)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetMassVisibility)
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &RigidBodyConfiguration::m_computeInertiaTensor,
                         "Compute inertia", "Whether to automatically compute the inertia values based on the mass and shape of the rigid body")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &Physics::RigidBodyConfiguration::GetInertiaSettingsVisibility)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetInertiaSettingsVisibility)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
 
-                    ->DataElement(Editor::InertiaHandler, &Physics::RigidBodyConfiguration::m_inertiaTensor,
+                    ->DataElement(Editor::InertiaHandler, &AzPhysics::RigidBodyConfiguration::m_inertiaTensor,
                         "Inertia diagonal", "Diagonal elements of the inertia tensor")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &Physics::RigidBodyConfiguration::GetInertiaVisibility)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetInertiaVisibility)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetInertiaUnit())
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &RigidBodyConfiguration::m_includeAllShapesInMassCalculation,
                         "Include non-simulated shapes in Mass", "If set, non-simulated shapes will also be included in the center of mass, inertia and mass calculations.")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &Physics::RigidBodyConfiguration::GetInertiaSettingsVisibility)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetInertiaSettingsVisibility)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                     ;
 
@@ -159,7 +241,16 @@ namespace PhysX
         AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(GetEntityId());
         AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
         Physics::ColliderComponentEventBus::Handler::BusConnect(GetEntityId());
-        Physics::WorldNotificationBus::Handler::BusConnect(Physics::EditorPhysicsWorldId);
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            AzPhysics::SceneHandle editorSceneHandle = sceneInterface->GetSceneHandle(AzPhysics::EditorPhysicsSceneName);
+            sceneInterface->RegisterSceneSimulationStartHandler(editorSceneHandle, m_sceneStartSimHandler);
+        }
+
+        m_nonUniformScaleChangedHandler = AZ::NonUniformScaleChangedEvent::Handler(
+            [this](const AZ::Vector3& scale) {OnNonUniformScaleChanged(scale); });
+        AZ::NonUniformScaleRequestBus::Event(GetEntityId(), &AZ::NonUniformScaleRequests::RegisterScaleChangedEvent,
+            m_nonUniformScaleChangedHandler);
 
         if (auto* physXDebug = AZ::Interface<Debug::PhysXDebugInterface>::Get())
         {
@@ -171,7 +262,7 @@ namespace PhysX
             physXDebug->RegisterDebugDisplayDataChangedEvent(m_debugDisplayDataChangeHandler);
             UpdateDebugDrawSettings(physXDebug->GetDebugDisplayData());
         }
-        UpdateEditorWorldRigidBody();
+        CreateEditorWorldRigidBody();
 
         Physics::WorldBodyRequestBus::Handler::BusConnect(GetEntityId());
     }
@@ -181,13 +272,18 @@ namespace PhysX
         m_debugDisplayDataChangeHandler.Disconnect();
 
         Physics::WorldBodyRequestBus::Handler::BusDisconnect();
-        Physics::WorldNotificationBus::Handler::BusDisconnect();
+        m_sceneStartSimHandler.Disconnect();
         Physics::ColliderComponentEventBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
         AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
         AzToolsFramework::Components::EditorComponentBase::Deactivate();
 
-        m_editorBody.reset();
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_rigidBodyHandle);
+            m_rigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
+            m_editorBody = nullptr;
+        }
     }
 
     void EditorRigidBodyComponent::Reflect(AZ::ReflectContext* context)
@@ -216,21 +312,28 @@ namespace PhysX
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://docs.aws.amazon.com/console/lumberyard/components/physx/rigid-body")
                     ->DataElement(0, &EditorRigidBodyComponent::m_config, "Configuration", "Configuration for rigid body physics.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorRigidBodyComponent::UpdateEditorWorldRigidBody)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorRigidBodyComponent::CreateEditorWorldRigidBody)
                 ;
             }
         }
     }
 
+    EditorRigidBodyComponent::EditorRigidBodyComponent()
+    {
+        InitPhysicsTickHandler();
+    }
+
     EditorRigidBodyComponent::EditorRigidBodyComponent(const EditorRigidBodyConfiguration& config)
         : m_config(config)
     {
-
+        InitPhysicsTickHandler();
     }
 
     void EditorRigidBodyComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
-        gameEntity->CreateComponent<RigidBodyComponent>(m_config);
+        // for now use Invalid scene which will fall back on default scene when entity is activated.
+        // update to correct scene once multi-scene is fully supported.
+        gameEntity->CreateComponent<RigidBodyComponent>(m_config, AzPhysics::InvalidSceneHandle);
     }
 
     void EditorRigidBodyComponent::DisplayEntityViewport(
@@ -246,110 +349,86 @@ namespace PhysX
         }
     }
 
-    void EditorRigidBodyComponent::UpdateEditorWorldRigidBody()
+    void EditorRigidBodyComponent::CreateEditorWorldRigidBody()
     {
-        AZStd::shared_ptr<Physics::World> editorWorld;
-        Physics::EditorWorldBus::BroadcastResult(editorWorld, &Physics::EditorWorldRequests::GetEditorWorld);
-
-        AZ_Assert(editorWorld, "Attempting to create an edit time rigid body without an editor world.");
-
-        if (editorWorld)
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
-            AZ::Transform colliderTransform = GetWorldTM();
-            colliderTransform.ExtractScale();
-
-            Physics::RigidBodyConfiguration configuration;
-            configuration.m_orientation = colliderTransform.GetRotation();
-            configuration.m_position = colliderTransform.GetTranslation();
-            configuration.m_entityId = GetEntityId();
-            configuration.m_debugName = GetEntity()->GetName();
-            configuration.m_centerOfMassOffset = m_config.m_centerOfMassOffset;
-            configuration.m_computeCenterOfMass = m_config.m_computeCenterOfMass;
-            configuration.m_computeInertiaTensor = m_config.m_computeInertiaTensor;
-            configuration.m_inertiaTensor = m_config.m_inertiaTensor;
-            configuration.m_simulated = false;
-            configuration.m_kinematic = m_config.m_kinematic;
-
-            m_editorBody = AZ::Interface<Physics::System>::Get()->CreateRigidBody(configuration);
-            const AZStd::vector<EditorColliderComponent*> colliders = GetEntity()->FindComponents<EditorColliderComponent>();
-            for (const EditorColliderComponent* collider : colliders)
+            m_editorSceneHandle = sceneInterface->GetSceneHandle(AzPhysics::EditorPhysicsSceneName);
+            if (m_editorSceneHandle == AzPhysics::InvalidSceneHandle)
             {
-                const EditorProxyShapeConfig& shapeConfigurationProxy = collider->GetShapeConfiguration();
-
-                if (shapeConfigurationProxy.IsAssetConfig() && !shapeConfigurationProxy.m_physicsAsset.m_configuration.m_asset.IsReady())
-                {
-                    continue;
-                }
-
-                const Physics::ColliderConfiguration colliderConfiguration = collider->GetColliderConfigurationScaled();
-
-                if (shapeConfigurationProxy.IsAssetConfig())
-                {
-                    AZStd::vector<AZStd::shared_ptr<Physics::Shape>> shapes;
-                    Utils::GetShapesFromAsset(shapeConfigurationProxy.m_physicsAsset.m_configuration,
-                        colliderConfiguration,
-                        shapes);
-
-                    for (const auto& shape : shapes)
-                    {
-                        AZ_Assert(shape, "CreateEditorWorldRigidBody: Shape must not be null!");
-                        m_editorBody->AddShape(shape);
-                    }
-                }
-                else
-                {
-                    const Physics::ShapeConfiguration& shapeConfiguration = shapeConfigurationProxy.GetCurrent();
-
-                    AZStd::shared_ptr<Physics::Shape> shape = AZ::Interface<Physics::System>::Get()->CreateShape(
-                        colliderConfiguration,
-                        shapeConfiguration);
-
-                    if (shape)
-                    {
-                        m_editorBody->AddShape(shape);
-                    }
-                }
+                AZ_Assert(false, "Attempting to create an edit time rigid body without an editor scene.");
+                return;
             }
-
-            const AZStd::vector<EditorShapeColliderComponent*> shapeColliders = GetEntity()->FindComponents<EditorShapeColliderComponent>();
-            for (const EditorShapeColliderComponent* shapeCollider : shapeColliders)
-            {
-                const Physics::ColliderConfiguration& colliderConfig = shapeCollider->GetColliderConfiguration();
-                const AZStd::vector<AZStd::shared_ptr<Physics::ShapeConfiguration>>& shapeConfigs =
-                    shapeCollider->GetShapeConfigurations();
-                for (const auto& shapeConfig : shapeConfigs)
-                {
-                    AZStd::shared_ptr<Physics::Shape> shape;
-                    shape = AZ::Interface<Physics::System>::Get()->CreateShape(colliderConfig, *shapeConfig);
-                    m_editorBody->AddShape(shape);
-                }
-            }
-
-            m_editorBody->UpdateMassProperties(m_config.GetMassComputeFlags(), &m_config.m_centerOfMassOffset, &m_config.m_inertiaTensor, &m_config.m_mass);
-            m_config.m_mass = m_editorBody->GetMass();
-            m_config.m_centerOfMassOffset = m_editorBody->GetCenterOfMassLocal();
-            m_config.m_inertiaTensor = m_editorBody->GetInverseInertiaLocal();
-
-            editorWorld->AddBody(*m_editorBody);
         }
+        
+        AZ::Transform colliderTransform = GetWorldTM();
+        colliderTransform.ExtractScale();
+
+        AzPhysics::RigidBodyConfiguration configuration;
+        configuration.m_orientation = colliderTransform.GetRotation();
+        configuration.m_position = colliderTransform.GetTranslation();
+        configuration.m_entityId = GetEntityId();
+        configuration.m_debugName = GetEntity()->GetName();
+        configuration.m_centerOfMassOffset = m_config.m_centerOfMassOffset;
+        configuration.m_computeCenterOfMass = m_config.m_computeCenterOfMass;
+        configuration.m_computeInertiaTensor = m_config.m_computeInertiaTensor;
+        configuration.m_inertiaTensor = m_config.m_inertiaTensor;
+        configuration.m_simulated = false;
+        configuration.m_kinematic = m_config.m_kinematic;
+        configuration.m_colliderAndShapeData = Internal::GetCollisionShapes(GetEntity());
+
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())        
+        {
+            m_rigidBodyHandle = sceneInterface->AddSimulatedBody(m_editorSceneHandle, &configuration);
+            m_editorBody = azdynamic_cast<AzPhysics::RigidBody*>(sceneInterface->GetSimulatedBodyFromHandle(m_editorSceneHandle, m_rigidBodyHandle));
+        }
+
+        m_editorBody->UpdateMassProperties(m_config.GetMassComputeFlags(), &m_config.m_centerOfMassOffset, &m_config.m_inertiaTensor, &m_config.m_mass);
+        m_config.m_mass = m_editorBody->GetMass();
+        m_config.m_centerOfMassOffset = m_editorBody->GetCenterOfMassLocal();
+        m_config.m_inertiaTensor = m_editorBody->GetInverseInertiaLocal();
     }
 
     void EditorRigidBodyComponent::OnColliderChanged()
     {
-        SetShouldBeUpdated();
+        //recreate the rigid body when collider changes
+        SetShouldBeRecreated();
     }
 
-    void EditorRigidBodyComponent::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& /*world*/)
+    void EditorRigidBodyComponent::OnTransformChanged([[maybe_unused]]const AZ::Transform& local, [[maybe_unused]]const AZ::Transform& world)
     {
-        SetShouldBeUpdated();
+        SetShouldBeRecreated();
     }
 
-    void EditorRigidBodyComponent::OnPrePhysicsSubtick(float /*fixedDeltaTime*/)
+    void EditorRigidBodyComponent::OnNonUniformScaleChanged([[maybe_unused]] const AZ::Vector3& scale)
     {
-        if (m_shouldBeUpdated)
+        SetShouldBeRecreated();
+    }
+
+    void EditorRigidBodyComponent::InitPhysicsTickHandler()
+    {
+        m_sceneStartSimHandler = AzPhysics::SceneEvents::OnSceneSimulationStartHandler([this](
+            [[maybe_unused]] AzPhysics::SceneHandle sceneHandle,
+            [[maybe_unused]] float fixedDeltatime
+            )
+            {
+                this->PrePhysicsTick();
+            }, aznumeric_cast<int32_t>(AzPhysics::SceneEvents::PhysicsStartFinishSimulationPriority::Components));
+    }
+
+    void EditorRigidBodyComponent::PrePhysicsTick()
+    {
+        if (m_shouldBeRecreated)
         {
-            UpdateEditorWorldRigidBody();
-            m_shouldBeUpdated = false;
+            if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+            {
+                sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_rigidBodyHandle);
+                m_rigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
+                m_editorBody = nullptr;
+
+                CreateEditorWorldRigidBody();
+            }
+            m_shouldBeRecreated = false;
         }
     }
 
@@ -357,18 +436,18 @@ namespace PhysX
     {
         if (!IsPhysicsEnabled())
         {
-            UpdateEditorWorldRigidBody();
+            m_editorBody->SetSimulationEnabled(true);
         }
     }
 
     void EditorRigidBodyComponent::DisablePhysics()
     {
-        m_editorBody.reset();
+        m_editorBody->SetSimulationEnabled(false);
     }
 
     bool EditorRigidBodyComponent::IsPhysicsEnabled() const
     {
-        return m_editorBody && m_editorBody->GetWorld();
+        return m_editorBody && m_editorBody->m_simulating;
     }
 
     AZ::Aabb EditorRigidBodyComponent::GetAabb() const
@@ -380,18 +459,18 @@ namespace PhysX
         return AZ::Aabb::CreateNull();
     }
 
-    Physics::WorldBody* EditorRigidBodyComponent::GetWorldBody()
+    AzPhysics::SimulatedBody* EditorRigidBodyComponent::GetWorldBody()
     {
-        return m_editorBody.get();
+        return m_editorBody;
     }
 
-    Physics::RayCastHit EditorRigidBodyComponent::RayCast(const Physics::RayCastRequest& request)
+    AzPhysics::SceneQueryHit EditorRigidBodyComponent::RayCast(const AzPhysics::RayCastRequest& request)
     {
         if (m_editorBody)
         {
             return m_editorBody->RayCast(request);
         }
-        return Physics::RayCastHit();
+        return AzPhysics::SceneQueryHit();
     }
 
     void EditorRigidBodyComponent::UpdateDebugDrawSettings(const Debug::DebugDisplayData& data)
@@ -400,16 +479,16 @@ namespace PhysX
         m_centerOfMassDebugSize = data.m_centerOfMassDebugSize;
     }
 
-    const Physics::RigidBody* EditorRigidBodyComponent::GetRigidBody() const
+    const AzPhysics::RigidBody* EditorRigidBodyComponent::GetRigidBody() const
     {
-        return m_editorBody.get();
+        return m_editorBody;
     }
 
-    void EditorRigidBodyComponent::SetShouldBeUpdated()
+    void EditorRigidBodyComponent::SetShouldBeRecreated()
     {
-        if (!m_shouldBeUpdated)
+        if (!m_shouldBeRecreated)
         {
-            m_shouldBeUpdated = true;
+            m_shouldBeRecreated = true;
         }
     }
 } // namespace PhysX

@@ -89,6 +89,10 @@ namespace AzFramework
 {
     namespace ApplicationInternal
     {
+        static constexpr const char s_prefabSystemKey[] = "/Amazon/Preferences/EnablePrefabSystem";
+        static constexpr const char s_prefabWipSystemKey[] = "/Amazon/Preferences/EnablePrefabSystemWipFeatures";
+        static constexpr const char s_legacySlicesAssertKey[] = "/Amazon/Preferences/ShouldAssertForLegacySlicesUsage";
+
         // A Helper function that can load an app descriptor from file.
         AZ::Outcome<AZStd::unique_ptr<AZ::ComponentApplication::Descriptor>, AZStd::string> LoadDescriptorFromFilePath(const char* appDescriptorFilePath, AZ::SerializeContext& serializeContext)
         {
@@ -411,9 +415,10 @@ namespace AzFramework
     // UserSettingsFileLocatorBus
     AZStd::string Application::ResolveFilePath([[maybe_unused]] AZ::u32 providerId)
     {
-        AZStd::string result;
-        AzFramework::StringFunc::Path::Join(GetEngineRoot(), "UserSettings.xml", result, /*bCaseInsenitive*/false);
-        return result;
+        AZ::IO::Path userSettingsPath;
+        m_settingsRegistry->Get(userSettingsPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath);
+        userSettingsPath /= "UserSettings.xml";
+        return userSettingsPath.Native();
     }
 
     AZ::Component* Application::EnsureComponentAdded(AZ::Entity* systemEntity, const AZ::Uuid& typeId)
@@ -777,6 +782,49 @@ namespace AzFramework
                 CreateUserCache(projectUserPath, *fileIoBase);
             }
         }
+    }
+
+    bool Application::IsPrefabSystemEnabled() const
+    {
+        bool value = true;
+        if (auto* registry = AZ::SettingsRegistry::Get())
+        {
+            registry->Get(value, ApplicationInternal::s_prefabSystemKey);
+        }
+        return value;
+    }
+
+    bool Application::ArePrefabWipFeaturesEnabled() const
+    {
+        bool value = false;
+        if (auto* registry = AZ::SettingsRegistry::Get())
+        {
+            registry->Get(value, ApplicationInternal::s_prefabWipSystemKey);
+        }
+        return value;
+    }
+
+    void Application::SetPrefabSystemEnabled(bool enable)
+    {
+        if (auto* registry = AZ::SettingsRegistry::Get())
+        {
+            registry->Set(ApplicationInternal::s_prefabSystemKey, enable);
+        }
+    }
+
+    bool Application::IsPrefabSystemForLevelsEnabled() const
+    {
+        return IsPrefabSystemEnabled();
+    }
+
+    bool Application::ShouldAssertForLegacySlicesUsage() const
+    {
+        bool value = false;
+        if (auto* registry = AZ::SettingsRegistry::Get())
+        {
+            registry->Get(value, ApplicationInternal::s_legacySlicesAssertKey);
+        }
+        return value;
     }
 
 } // namespace AzFramework

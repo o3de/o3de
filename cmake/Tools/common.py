@@ -628,7 +628,7 @@ def get_test_module_registry(build_dir_path):
 
         test_module_items = unit_test_json['Amazon']
         for _, test_module_item in test_module_items.items():
-            module_file = test_module_item['Module']
+            module_file = test_module_item['Modules']
             dep_modules.append(module_file)
 
     except FileNotFoundError:

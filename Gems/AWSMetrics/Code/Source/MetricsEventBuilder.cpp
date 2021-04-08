@@ -41,19 +41,19 @@ namespace AWSMetrics
 
     void MetricsEventBuilder::AddClientIdAttribute(const AZStd::string& clientId)
     {
-        m_currentMetricsEvent.AddAttribute(MetricsAttribute(METRICS_ATTRIBUTE_KEY_CLIENT_ID, clientId));
+        m_currentMetricsEvent.AddAttribute(MetricsAttribute(AwsMetricsAttributeKeyClientId, clientId));
     }
 
     void MetricsEventBuilder::AddEventIdAttribute()
     {
         AZ::Uuid eventId = AZ::Uuid::Create();
-        m_currentMetricsEvent.AddAttribute(MetricsAttribute(METRICS_ATTRIBUTE_KEY_EVENT_ID, eventId.ToString<AZStd::string>()));
+        m_currentMetricsEvent.AddAttribute(MetricsAttribute(AwsMetricsAttributeKeyEventId, eventId.ToString<AZStd::string>()));
     }
 
     void MetricsEventBuilder::AddSourceAttribute(const AZStd::string& eventSourceOverride)
     {
         AZStd::string eventSource = eventSourceOverride.empty() ? DefaultMetricsSource : eventSourceOverride;
-        m_currentMetricsEvent.AddAttribute(MetricsAttribute(METRICS_ATTRIBUTE_KEY_EVENT_SOURCE, eventSource));
+        m_currentMetricsEvent.AddAttribute(MetricsAttribute(AwsMetricsAttributeKeyEventSource, eventSource));
     }
 
     void MetricsEventBuilder::AddTimestampAttribute()
@@ -64,7 +64,7 @@ namespace AWSMetrics
         char buffer[50];
         strftime(buffer, sizeof(buffer), "%FT%TZ", gmtime(&now));
 
-        m_currentMetricsEvent.AddAttribute(MetricsAttribute(METRICS_ATTRIBUTE_KEY_EVENT_TIMESTAMP, AZStd::string(buffer)));
+        m_currentMetricsEvent.AddAttribute(MetricsAttribute(AwsMetricsAttributeKeyEventTimestamp, AZStd::string(buffer)));
     }
 
     MetricsEventBuilder& MetricsEventBuilder::AddMetricsAttributes(const AZStd::vector<MetricsAttribute>& attributes)

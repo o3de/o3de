@@ -16,6 +16,8 @@
 #include "EditorTestUtilities.h"
 #include "PhysXTestCommon.h"
 
+#include <AzFramework/Physics/SimulatedBodies/StaticRigidBody.h>
+
 #include <Shape.h>
 #include <Utils.h>
 

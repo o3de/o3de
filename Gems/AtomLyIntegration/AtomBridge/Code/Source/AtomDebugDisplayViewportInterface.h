@@ -231,6 +231,8 @@ namespace AZ::AtomBridge
         AZ::RPI::AuxGeomDrawPtr m_auxGeomPtr;
         bool                    m_defaultInstance = false; // only true for drawing to a particular viewport. What would 2D drawing mean in a scene with several windows?
         AzFramework::ViewportId m_viewportId = AzFramework::InvalidViewportId; // Address this instance answers on.
+        AZ::RPI::ViewportContext::SceneChangedEvent::Handler
+                                m_sceneChangeHandler;
     };
 
     // this is duplicated from Cry_Math.h, GetBasisVectors.

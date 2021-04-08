@@ -34,7 +34,6 @@ ly_add_target(
 ly_add_target( 
     NAME AWSClientAuth ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.AWSClientAuth.c74f2756f5874c0d8d29646dfc9cb0ad.v0.1.0
     FILES_CMAKE
         awsclientauth_shared_files.cmake
     INCLUDE_DIRECTORIES

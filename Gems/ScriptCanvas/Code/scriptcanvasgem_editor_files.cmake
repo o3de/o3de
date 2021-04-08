@@ -93,6 +93,8 @@ set(FILES
     Editor/GraphCanvas/Components/NodeDescriptors/EntityRefNodeDescriptorComponent.h
     Editor/GraphCanvas/Components/NodeDescriptors/FunctionNodeDescriptorComponent.cpp
     Editor/GraphCanvas/Components/NodeDescriptors/FunctionNodeDescriptorComponent.h
+    Editor/GraphCanvas/Components/NodeDescriptors/FunctionDefinitionNodeDescriptorComponent.h
+    Editor/GraphCanvas/Components/NodeDescriptors/FunctionDefinitionNodeDescriptorComponent.cpp
     Editor/GraphCanvas/Components/NodeDescriptors/GetVariableNodeDescriptorComponent.cpp
     Editor/GraphCanvas/Components/NodeDescriptors/GetVariableNodeDescriptorComponent.h
     Editor/GraphCanvas/Components/NodeDescriptors/NodeDescriptorComponent.cpp
@@ -255,6 +257,9 @@ set(FILES
     Editor/View/Widgets/VariablePanel/VariableDockWidget.ui
     Editor/View/Widgets/VariablePanel/VariablePaletteTableView.cpp
     Editor/View/Widgets/VariablePanel/VariablePaletteTableView.h
+    Editor/View/Widgets/VariablePanel/SlotTypeSelectorWidget.cpp
+    Editor/View/Widgets/VariablePanel/SlotTypeSelectorWidget.h
+    Editor/View/Widgets/VariablePanel/SlotTypeSelectorWidget.ui    
     Editor/View/Widgets/UnitTestPanel/UnitTestDockWidget.cpp
     Editor/View/Widgets/UnitTestPanel/UnitTestDockWidget.h
     Editor/View/Widgets/UnitTestPanel/UnitTestDockWidget.ui

@@ -294,7 +294,7 @@ namespace AZ
             // --- Template related setup ---
 
             // Process a PassConnection to connect two PassAttachmentBindings
-            void ProcessConnection(const PassConnection& connection);
+            void ProcessConnection(const PassConnection& connection, uint32_t slotTypeMask = 0xFFFFFFFF);
 
             // --- Validation and Error Functions ---
 
@@ -435,11 +435,14 @@ namespace AZ
 
             // --- Template related setup ---
 
-            // Generates slots from source PassTemplate
-            void CreateSlotsFromTemplate();
+            // Generates bindings from source PassTemplate
+            void CreateBindingsFromTemplate();
 
             // Generates attachments from source PassTemplate
             void CreateAttachmentsFromTemplate();
+
+            // Generates attachments from source PassRequest
+            void CreateAttachmentsFromRequest();
 
             // Uses FrameGraphAttachmentInterface to create transient attachments for the pass
             void CreateTransientAttachments(RHI::FrameGraphAttachmentInterface attachmentDatabase);
@@ -447,6 +450,10 @@ namespace AZ
             // Creates an attachment from a given description and returns a pointer to it
             template<typename AttachmentDescType>
             Ptr<PassAttachment> CreateAttachmentFromDesc(const AttachmentDescType& desc);
+
+            // Overrides an existing attachment if matching name is found, otherwise creates and adds new attachment
+            template<typename AttachmentDescType>
+            void OverrideOrAddAttachment(const AttachmentDescType& desc);
 
             // Updates a binding on this pass using the binding it is connected to.
             // This sets the binding's attachment pointer to the connected binding's attachment
@@ -461,8 +468,14 @@ namespace AZ
             // Sets up inputs from the list of PassConnections in PassRequest
             void SetupInputsFromRequest();
 
+            // Sets up outputs from the list of PassConnections in PassRequest
+            void SetupOutputsFromRequest();
+
             // Sets up explicitly declared dependencies on other passes declared in the PassRequest
             void SetupPassDependencies();
+
+            // Sets up inputs from the list of PassConnections in PassTemplate
+            void SetupInputsFromTemplate();
 
             // Sets up outputs from the list of PassConnections in PassTemplate
             void SetupOutputsFromTemplate();

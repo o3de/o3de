@@ -211,9 +211,7 @@ namespace ScriptCanvas
             AZStd::list<EditableVariableConfiguration> editableVariableConfigurationList;
             for (auto varNameValuePair : varNameValueVariableList)
             {
-                Datum defaultValue = varNameValuePair.m_varDatum.GetData();
-
-                editableVariableConfigurationList.push_back({ GraphVariable(AZStd::move(varNameValuePair)), defaultValue });
+                editableVariableConfigurationList.push_back({ GraphVariable(AZStd::move(varNameValuePair)),  });
             }
 
             rootElementNode.RemoveElementByName(AZ_CRC("m_properties", 0x4227dbda));
@@ -263,12 +261,8 @@ namespace ScriptCanvas
         m_variables.emplace_back();
 
         EditableVariableConfiguration& newVarConfig = m_variables.back();
-
         newVarConfig.m_graphVariable.DeepCopy(graphVariable);
-        newVarConfig.m_defaultValue.DeepCopyDatum((*graphVariable.GetDatum()));
-
         newVarConfig.m_graphVariable.SetVariableName(varName);
-
         return AZ::Success();
     }
 
@@ -340,16 +334,21 @@ namespace ScriptCanvas
         if (rootElementNode.GetVersion() < Version::VariableDatumSimplification)
         {
             Deprecated::VariableNameValuePair varNameValuePair;
-            if (!rootElementNode.GetChildData(AZ_CRC("m_variableNameValuePair", 0x89adc9d0), varNameValuePair))
+            if (!rootElementNode.GetChildData(AZ_CRC_CE("m_variableNameValuePair"), varNameValuePair))
             {
                 return false;
             }
 
-            rootElementNode.RemoveElementByName(AZ_CRC("m_variableNameValuePair", 0x89adc9d0));
+            rootElementNode.RemoveElementByName(AZ_CRC_CE("m_variableNameValuePair"));
 
             GraphVariable variable(AZStd::move(varNameValuePair));
 
             rootElementNode.AddElementWithData(serializeContext, "GraphVariable", variable);
+        }
+
+        if (rootElementNode.GetVersion() < Version::RemoveUnusedDefaultValue)
+        {
+            rootElementNode.RemoveElementByName(AZ_CRC_CE("m_defaultValue"));
         }
 
         return true;
@@ -362,7 +361,6 @@ namespace ScriptCanvas
             serializeContext->Class<EditableVariableConfiguration>()
                 ->Version(Version::Current, &EditableVariableConfiguration::VersionConverter)
                 ->Field("GraphVariable", &EditableVariableConfiguration::m_graphVariable)
-                ->Field("m_defaultValue", &EditableVariableConfiguration::m_defaultValue)
                 ;
 
             if (auto editContext = serializeContext->GetEditContext())

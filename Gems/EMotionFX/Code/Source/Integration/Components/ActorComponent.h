@@ -21,7 +21,7 @@
 
 #include <AzFramework/Physics/RagdollPhysicsBus.h>
 #include <AzFramework/Physics/CharacterPhysicsDataBus.h>
-#include <AzFramework/Physics/World.h>
+#include <AzFramework/Physics/Common/PhysicsEvents.h>
 #include <AzFramework/API/AtomActiveInterface.h>
 
 #include <Integration/Assets/ActorAsset.h>
@@ -45,7 +45,6 @@ namespace EMotionFX
             , private LmbrCentral::AttachmentComponentNotificationBus::Handler
             , private AzFramework::CharacterPhysicsDataRequestBus::Handler
             , private AzFramework::RagdollPhysicsNotificationBus::Handler
-            , protected Physics::WorldNotificationBus::Handler
             , private EMotionFX::ActorNotificationBus::Handler
         {
         public:
@@ -160,11 +159,10 @@ namespace EMotionFX
             void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
             void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
 
+            bool IsPhysicsSceneSimulationFinishEventConnected() const;
+            
             void SetActorAsset(AZ::Data::Asset<ActorAsset> actorAsset);
             AZ::Data::Asset<ActorAsset> GetActorAsset() const { return m_configuration.m_actorAsset; }
-
-            // Physics::WorldNotificationBus::Handler
-            bool IsWorldNotificationBusConnected(AZ::Crc32 worldId) const;
 
         private:
             // AZ::TransformNotificationBus::MultiHandler
@@ -173,10 +171,6 @@ namespace EMotionFX
             // AZ::TickBus::Handler
             void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
             int GetTickOrder() override;
-
-            // Physics::WorldNotifications::Handler
-            void OnPostPhysicsSubtick(float fixedDeltaTime) override;
-            int GetPhysicsTickOrder() override;
 
             // ActorNotificationBus::Handler
             void OnActorReady(Actor* actor) override;
@@ -194,6 +188,8 @@ namespace EMotionFX
 
             AZStd::unique_ptr<RenderActorInstance>          m_renderActorInstance;
             bool                                            m_debugDrawRoot;            ///< Enables drawing of actor root and facing.
+
+            AzPhysics::SceneEvents::OnSceneSimulationFinishHandler m_sceneFinishSimHandler;
         };
     } //namespace Integration
 } // namespace EMotionFX

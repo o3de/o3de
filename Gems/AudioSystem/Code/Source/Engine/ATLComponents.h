@@ -16,8 +16,8 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/XML/rapidxml.h>
 
-    #include <AzFramework/Physics/Casts.h>
-    #include <AzFramework/Physics/World.h>
+#include <AzFramework/Physics/Common/PhysicsEvents.h>
+#include <AzFramework/Physics/Common/PhysicsTypes.h>
 
 #include <IAudioSystem.h>
 #include <ATLAudioObject.h>
@@ -87,30 +87,15 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     class AudioRaycastManager
         : public AudioRaycastRequestBus::Handler
-        , public Physics::WorldNotificationBus::Handler
     {
     public:
-        AudioRaycastManager()
-        {
-            Physics::WorldNotificationBus::Handler::BusConnect(Physics::DefaultPhysicsWorldId);
-            AudioRaycastRequestBus::Handler::BusConnect();
-        }
-
-        ~AudioRaycastManager() override
-        {
-            AudioRaycastRequestBus::Handler::BusDisconnect();
-            Physics::WorldNotificationBus::Handler::BusDisconnect();
-        }
+        AudioRaycastManager();
+        ~AudioRaycastManager() override;
 
         // AudioRaycastRequestBus::Handler interface
         void PushAudioRaycastRequest(const AudioRaycastRequest& request) override;
 
-        // Physics::WorldNotificationBus::Handler interface
-        void OnPostPhysicsSubtick(float fixedDeltaTimeSeconds) override;
-        int GetPhysicsTickOrder() override
-        {
-            return Physics::WorldNotifications::Audio;
-        }
+        void OnPhysicsSubtickFinished();
 
         // Additional functionality related to processing raycasts...
         void ProcessRaycastResults(float updateIntervalMs);
@@ -123,6 +108,8 @@ namespace Audio
         AZStd::mutex m_raycastResultsMutex;
         AudioRaycastRequestQueueType m_raycastRequests;
         AudioRaycastResultQueueType m_raycastResults;
+
+        AzPhysics::SceneEvents::OnSceneSimulationFinishHandler m_sceneFinishSimHandler;
     };
 
 

@@ -18,6 +18,7 @@
 #include <Atom/RHI/FrameGraph.h>
 #include <Atom/RHI/ImageFrameAttachment.h>
 #include <Atom/RHI/ImageScopeAttachment.h>
+#include <Atom/RHI/RHIUtils.h>
 #include <Atom/RHI/Scope.h>
 #include <Atom/RHI/SwapChainFrameAttachment.h>
 #include <Atom/RHI/TransientAttachmentPool.h>
@@ -631,7 +632,7 @@ namespace AZ
 
                     case Action::DeactivateBuffer:
                     {
-                        AZ_Assert(!allocateResources || transientBuffers[attachmentIndex], "Buffer is not active: %s", transientBufferGraphAttachments[attachmentIndex]->GetId().GetCStr());
+                        AZ_Assert(!allocateResources || transientBuffers[attachmentIndex] || IsNullRenderer(), "Buffer is not active: %s", transientBufferGraphAttachments[attachmentIndex]->GetId().GetCStr());
                         BufferFrameAttachment* bufferFrameAttachment = transientBufferGraphAttachments[attachmentIndex];
                         transientAttachmentPool.DeactivateBuffer(bufferFrameAttachment->GetId());
                         transientBuffers[attachmentIndex] = nullptr;
@@ -640,7 +641,7 @@ namespace AZ
 
                     case Action::DeactivateImage:
                     {
-                        AZ_Assert(!allocateResources || transientImages[attachmentIndex], "Image is not active: %s", transientImageGraphAttachments[attachmentIndex]->GetId().GetCStr());
+                        AZ_Assert(!allocateResources || transientImages[attachmentIndex] || IsNullRenderer(), "Image is not active: %s", transientImageGraphAttachments[attachmentIndex]->GetId().GetCStr());
                         ImageFrameAttachment* imageFrameAttachment = transientImageGraphAttachments[attachmentIndex];
                         transientAttachmentPool.DeactivateImage(imageFrameAttachment->GetId());
                         transientImages[attachmentIndex] = nullptr;
@@ -657,7 +658,7 @@ namespace AZ
                         descriptor.m_bufferDescriptor = bufferFrameAttachment->GetBufferDescriptor();
 
                         Buffer* buffer = transientAttachmentPool.ActivateBuffer(descriptor);
-                        if (allocateResources)
+                        if (allocateResources && buffer)
                         {
                             bufferFrameAttachment->SetResource(buffer);
                             transientBuffers[attachmentIndex] = buffer;
@@ -685,7 +686,7 @@ namespace AZ
                         }
 
                         Image* image = transientAttachmentPool.ActivateImage(descriptor);
-                        if (allocateResources)
+                        if (allocateResources && image)
                         {
                             imageFrameAttachment->SetResource(image);
                             transientImages[attachmentIndex] = image;
@@ -778,6 +779,10 @@ namespace AZ
             {
                 Image* image = imageAttachment->GetImage();
 
+                if (!image)
+                {
+                    continue;
+                }
                 // Iterates through every usage of the image, pulls image views
                 // from image's cache or local cache, and assigns them to the scope attachments.
                 for (ImageScopeAttachment* node = imageAttachment->GetFirstScopeAttachment(); node != nullptr; node = node->GetNext())
@@ -805,7 +810,12 @@ namespace AZ
             for (BufferFrameAttachment* bufferAttachment : attachmentDatabase.GetBufferAttachments())
             {
                 Buffer* buffer = bufferAttachment->GetBuffer();
-                
+
+                if (!buffer)
+                {
+                    continue;
+                }
+
                 // Iterates through every usage of the buffer attachment, pulls buffer views
                 // from the cache within the buffer, and assigns them to the scope attachments.
                 for (BufferScopeAttachment* node = bufferAttachment->GetFirstScopeAttachment(); node != nullptr; node = node->GetNext())

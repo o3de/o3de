@@ -94,7 +94,10 @@ bool AZ::FFont::InitFont()
     m_dynamicDraw = RPI::DynamicDrawInterface::Get()->CreateDynamicDrawContext(m_viewportContext->GetRenderScene().get());
 
     Data::Instance<RPI::Shader> shader = AZ::RPI::LoadShader(shaderFilepath);
-    m_dynamicDraw->InitShader(shader);
+    AZ::RPI::ShaderOptionList shaderOptions;
+    shaderOptions.push_back(AZ::RPI::ShaderOption(AZ::Name("o_useColorChannels"), AZ::Name("false")));
+    shaderOptions.push_back(AZ::RPI::ShaderOption(AZ::Name("o_clamp"), AZ::Name("true")));
+    m_dynamicDraw->InitShaderWithVariant(shader, &shaderOptions);
     m_dynamicDraw->InitVertexFormat({{"POSITION", RHI::Format::R32G32B32_FLOAT}, {"COLOR", RHI::Format::R8G8B8A8_UNORM}, {"TEXCOORD0", RHI::Format::R32G32_FLOAT}});
     m_dynamicDraw->EndInit();
 
@@ -109,10 +112,6 @@ bool AZ::FFont::InitFont()
     m_fontShaderData.m_viewProjInputIndex = layout->FindShaderInputConstantIndex(AZ::Name(ShaderInputs::WorldToProjIndexName));
     AZ_Error("AtomFont::FFont", m_fontShaderData.m_viewProjInputIndex.IsValid(), "Failed to find shader input constant %s.",
         ShaderInputs::WorldToProjIndexName);
-    m_fontShaderData.m_samplerInputIndex = layout->FindShaderInputSamplerIndex(AZ::Name(ShaderInputs::SamplerIndexName));
-    AZ_Error(
-        "AtomFont::FFont", m_fontShaderData.m_samplerInputIndex.IsValid(), "Failed to find shader input constant %s.",
-        ShaderInputs::SamplerIndexName);
 
     // Create cpu memory to cache the font draw data before submit
     m_vertexBuffer = new SVF_P3F_C4B_T2F[MaxVerts];
@@ -380,13 +379,6 @@ void AZ::FFont::DrawStringUInternal(float x, float y, float z, const char* str, 
         auto drawSrg = m_dynamicDraw->NewDrawSrg();
         drawSrg->SetConstant(m_fontShaderData.m_viewProjInputIndex, modelViewProjMat);
         drawSrg->SetImageView(m_fontShaderData.m_imageInputIndex, m_fontStreamingImage->GetImageView());
-        AZ::RHI::SamplerState samplerState;
-        samplerState.m_anisotropyEnable = true;
-        samplerState.m_anisotropyMax = 16;
-        samplerState.m_addressU = RHI::AddressMode::Clamp;
-        samplerState.m_addressV = RHI::AddressMode::Clamp;
-        samplerState.m_addressW = RHI::AddressMode::Clamp;
-        drawSrg->SetSampler(m_fontShaderData.m_samplerInputIndex, samplerState);
         drawSrg->Compile();
 
         m_dynamicDraw->DrawIndexed(m_vertexBuffer, m_vertexCount, m_indexBuffer, m_indexCount, RHI::IndexFormat::Uint16, drawSrg);

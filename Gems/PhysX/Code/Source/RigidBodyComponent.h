@@ -15,11 +15,17 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Component/TransformBus.h>
-#include <AzFramework/Physics/RigidBody.h>
 #include <AzFramework/Physics/RigidBodyBus.h>
 #include <AzFramework/Physics/WorldBodyBus.h>
-#include <AzFramework/Physics/World.h>
+#include <AzFramework/Physics/Common/PhysicsEvents.h>
+#include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
+#include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 #include <AzFramework/Entity/SliceGameEntityOwnershipServiceBus.h>
+
+namespace AzPhysics
+{
+    struct SimulatedBody;
+}
 
 namespace PhysX
 {
@@ -33,15 +39,14 @@ namespace PhysX
         , public AZ::TickBus::Handler
         , public AzFramework::SliceGameEntityOwnershipServiceNotificationBus::Handler
         , protected AZ::TransformNotificationBus::MultiHandler
-        , protected Physics::WorldNotificationBus::Handler
     {
     public:
         AZ_COMPONENT(RigidBodyComponent, "{D4E52A70-BDE1-4819-BD3C-93AB3F4F3BE3}");
 
         static void Reflect(AZ::ReflectContext* context);
 
-        RigidBodyComponent() = default;
-        explicit RigidBodyComponent(const Physics::RigidBodyConfiguration& config);
+        RigidBodyComponent();
+        explicit RigidBodyComponent(const AzPhysics::RigidBodyConfiguration& config, AzPhysics::SceneHandle sceneHandle);
         ~RigidBodyComponent() override = default;
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -70,7 +75,7 @@ namespace PhysX
         void DisablePhysics() override;
         bool IsPhysicsEnabled() const override;
 
-        Physics::RayCastHit RayCast(const Physics::RayCastRequest& request) override;
+        AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& request) override;
         AZ::Aabb GetAabb() const override;
 
         // RigidBodyRequests
@@ -113,17 +118,17 @@ namespace PhysX
 
         float GetSleepThreshold() const override;
         void SetSleepThreshold(float threshold) override;
-        Physics::RigidBody* GetRigidBody() override;
+        AzPhysics::RigidBody* GetRigidBody() override;
 
         // WorldBodyRequestBus
-        Physics::WorldBody* GetWorldBody() override;
+        AzPhysics::SimulatedBody* GetWorldBody() override;
 
         // SliceGameEntityOwnershipServiceNotificationBus
         void OnSliceInstantiated(const AZ::Data::AssetId&, const AZ::SliceComponent::SliceInstanceAddress&,
             const AzFramework::SliceInstantiationTicket&) override;
         void OnSliceInstantiationFailed(const AZ::Data::AssetId&, const AzFramework::SliceInstantiationTicket&) override;
 
-        Physics::RigidBodyConfiguration& GetConfiguration()
+        AzPhysics::RigidBodyConfiguration& GetConfiguration()
         {
             return m_configuration;
         }
@@ -137,8 +142,6 @@ namespace PhysX
 
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
         int GetTickOrder() override;
-        void OnPostPhysicsSubtick(float deltaTime) override;
-        int GetPhysicsTickOrder() override;
 
         // TransformNotificationBus
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
@@ -146,17 +149,22 @@ namespace PhysX
     private:
         void SetupConfiguration();
         void CreatePhysics();
+        void InitPhysicsTickHandler();
+        void PostPhysicsTick(float fixedDeltaTime);
 
         std::unique_ptr<TransformForwardTimeInterpolator> m_interpolator;
 
-        Physics::RigidBodyConfiguration m_configuration;
-        AZStd::unique_ptr<Physics::RigidBody> m_rigidBody;
-        Physics::World* m_world = nullptr;
+        AzPhysics::RigidBodyConfiguration m_configuration;
+        AzPhysics::SimulatedBodyHandle m_rigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
+        AzPhysics::RigidBody* m_rigidBody = nullptr;
+        AzPhysics::SceneHandle m_attachedSceneHandle = AzPhysics::InvalidSceneHandle;
 
         AZ::Vector3 m_initialScale = AZ::Vector3::CreateOne();
         bool m_staticTransformAtActivation = false; ///< Whether the transform was static when the component last activated.
         bool m_isLastMovementFromKinematicSource = false; ///< True when the source of the movement comes from SetKinematicTarget as opposed to coming from a Transform change
         bool m_rigidBodyTransformNeedsUpdateOnPhysReEnable = false; ///< True if rigid body transform needs to be synced to the entity's when physics is re-enabled
+
+        AzPhysics::SceneEvents::OnSceneSimulationFinishHandler m_sceneFinishSimHandler;
     };
 
     class TransformForwardTimeInterpolator

@@ -50,20 +50,6 @@ namespace AZ
             if (viewSrgAsset.IsReady())
             {
                 m_shaderResourceGroup = ShaderResourceGroup::Create(viewSrgAsset);
-
-                if (m_shaderResourceGroup)
-                {
-                    m_viewProjectionMatrixConstantIndex    = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_viewProjectionMatrix" });
-                    m_worldPositionConstantIndex           = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_worldPosition" });
-                    m_viewMatrixConstantIndex              = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_viewMatrix" });
-                    m_viewMatrixInverseConstantIndex       = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_viewMatrixInverse" });
-                    m_projectionMatrixConstantIndex        = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_projectionMatrix" });
-                    m_projectionMatrixInverseConstantIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_projectionMatrixInverse" });
-                    m_clipToWorldMatrixConstantIndex       = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_viewProjectionInverseMatrix" });
-                    m_worldToClipPrevMatrixConstantIndex   = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_viewProjectionPrevMatrix" });
-                    m_zConstantsConstantIndex              = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_nearZ_farZ_farZTimesNearZ_farZMinusNearZ" });
-                    m_unprojectionConstantsIndex           = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_unprojectionConstants" });
-                }
             }
         }
 
@@ -348,42 +334,15 @@ namespace AZ
                 return;
             }
 
-            if (m_worldPositionConstantIndex.IsValid())
-            {
-                m_shaderResourceGroup->SetConstant(m_worldPositionConstantIndex, m_position);
-            }
-            if (m_viewProjectionMatrixConstantIndex.IsValid())
-            {
-                m_shaderResourceGroup->SetConstant(m_viewProjectionMatrixConstantIndex, m_worldToClipMatrix);
-            }
-            if (m_viewMatrixConstantIndex.IsValid())
-            {
-                m_shaderResourceGroup->SetConstant(m_viewMatrixConstantIndex, m_worldToViewMatrix);
-            }
-            if (m_viewMatrixInverseConstantIndex.IsValid())
-            {
-                m_shaderResourceGroup->SetConstant(m_viewMatrixInverseConstantIndex, m_worldToViewMatrix.GetInverseFull());
-            }
-            if (m_projectionMatrixConstantIndex.IsValid())
-            {
-                m_shaderResourceGroup->SetConstant(m_projectionMatrixConstantIndex, m_viewToClipMatrix);
-            }
-            if (m_projectionMatrixInverseConstantIndex.IsValid())
-            {
-                m_shaderResourceGroup->SetConstant(m_projectionMatrixInverseConstantIndex, m_viewToClipMatrix.GetInverseFull());
-            }
-            if (m_zConstantsConstantIndex.IsValid())
-            {
-                m_shaderResourceGroup->SetConstant(m_zConstantsConstantIndex, m_nearZ_farZ_farZTimesNearZ_farZMinusNearZ);
-            }
-            if (m_clipToWorldMatrixConstantIndex.IsValid())
-            {
-                m_shaderResourceGroup->SetConstant(m_clipToWorldMatrixConstantIndex, m_clipToWorldMatrix);
-            }
-            if (m_unprojectionConstantsIndex.IsValid())
-            {
-                m_shaderResourceGroup->SetConstant(m_unprojectionConstantsIndex, m_unprojectionConstants);
-            }
+            m_shaderResourceGroup->SetConstant(m_worldPositionConstantIndex, m_position);
+            m_shaderResourceGroup->SetConstant(m_viewProjectionMatrixConstantIndex, m_worldToClipMatrix);
+            m_shaderResourceGroup->SetConstant(m_viewMatrixConstantIndex, m_worldToViewMatrix);
+            m_shaderResourceGroup->SetConstant(m_viewMatrixInverseConstantIndex, m_worldToViewMatrix.GetInverseFull());
+            m_shaderResourceGroup->SetConstant(m_projectionMatrixConstantIndex, m_viewToClipMatrix);
+            m_shaderResourceGroup->SetConstant(m_projectionMatrixInverseConstantIndex, m_viewToClipMatrix.GetInverseFull());
+            m_shaderResourceGroup->SetConstant(m_zConstantsConstantIndex, m_nearZ_farZ_farZTimesNearZ_farZMinusNearZ);
+            m_shaderResourceGroup->SetConstant(m_clipToWorldMatrixConstantIndex, m_clipToWorldMatrix);
+            m_shaderResourceGroup->SetConstant(m_unprojectionConstantsIndex, m_unprojectionConstants);
 
             m_shaderResourceGroup->Compile();
             m_needBuildSrg = false;

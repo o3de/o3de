@@ -10,14 +10,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
 
 from typing import List
-from PySide2.QtCore import (QItemSelectionModel, QModelIndex, QRect, Qt)
-from PySide2.QtWidgets import (QAbstractItemView, QComboBox, QHeaderView, QLabel, QLineEdit,
-                               QPushButton, QStackedWidget, QTreeView, QVBoxLayout, QWidget)
+from PySide2.QtCore import (QItemSelectionModel, QModelIndex)
+from PySide2.QtGui import (QFont, QIcon, QPixmap)
+from PySide2.QtWidgets import (QAbstractItemView, QComboBox, QFrame, QHBoxLayout,  QHeaderView, QLabel, QLayout,
+                               QLineEdit, QPushButton, QSizePolicy, QSpacerItem, QStackedWidget, QTreeView,
+                               QVBoxLayout, QWidget)
 
 from model import (constants, notification_label_text, view_size_constants)
 from model.resource_proxy_model import ResourceProxyModel
 from model.resource_tree_model import (ResourceTreeConstants, ResourceTreeModel, ResourceTreeNode)
-from view.common_view_components import (NotificationFrame, SearchFilterWidget)
+from view.common_view_components import (NotificationFrame, SearchFilterLineEdit)
 
 
 class ImportResourcesPageConstants(object):
@@ -88,7 +90,6 @@ class ImportResourcesPage(QWidget):
     """
     def __init__(self) -> None:
         super().__init__()
-        self.setObjectName("ImportResourcePage")
         self.setGeometry(0, 0,
                          view_size_constants.TOOL_APPLICATION_MAIN_WINDOW_WIDTH,
                          view_size_constants.TOOL_APPLICATION_MAIN_WINDOW_HEIGHT)
@@ -96,17 +97,19 @@ class ImportResourcesPage(QWidget):
         self._search_version: str = ""
 
         page_vertical_layout: QVBoxLayout = QVBoxLayout(self)
-        page_vertical_layout.setObjectName("PageVerticalLayout")
-        page_vertical_layout.setSpacing(0)
-        page_vertical_layout.setContentsMargins(view_size_constants.MAIN_PAGE_LAYOUT_MARGIN_LEFTRIGHT,
-                                                view_size_constants.MAIN_PAGE_LAYOUT_MARGIN_TOPBOTTOM,
-                                                view_size_constants.MAIN_PAGE_LAYOUT_MARGIN_LEFTRIGHT,
-                                                view_size_constants.MAIN_PAGE_LAYOUT_MARGIN_TOPBOTTOM)
+        page_vertical_layout.setSizeConstraint(QLayout.SetMinimumSize)
+        page_vertical_layout.setMargin(0)
 
         self._setup_header_area()
         page_vertical_layout.addWidget(self._header_area)
+        header_area_separator: QFrame = QFrame(self)
+        header_area_separator.setObjectName("SeparatorLine")
+        header_area_separator.setFrameShape(QFrame.HLine)
+        header_area_separator.setLineWidth(view_size_constants.HEADER_AREA_SEPARATOR_WIDTH)
+        page_vertical_layout.addWidget(header_area_separator)
 
-        self._notification_frame: NotificationFrame = NotificationFrame(self)
+        self._notification_frame: NotificationFrame = \
+            NotificationFrame(self, QPixmap(":/stylesheet/img/logging/information.svg"), "", True)
         page_vertical_layout.addWidget(self._notification_frame)
 
         self._setup_search_area()
@@ -117,116 +120,158 @@ class ImportResourcesPage(QWidget):
 
     def _setup_header_area(self) -> None:
         self._header_area: QWidget = QWidget(self)
-        self._header_area.setObjectName("HeaderArea")
+        self._header_area.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
         self._header_area.setMinimumSize(view_size_constants.TOOL_APPLICATION_MAIN_WINDOW_WIDTH,
                                          view_size_constants.IMPORT_RESOURCES_PAGE_HEADER_AREA_HEIGHT)
 
+        header_area_layout: QHBoxLayout = QHBoxLayout(self._header_area)
+        header_area_layout.setSizeConstraint(QLayout.SetMinimumSize)
+        header_area_layout.setContentsMargins(
+            view_size_constants.MAIN_PAGE_LAYOUT_MARGIN_LEFTRIGHT,
+            view_size_constants.MAIN_PAGE_LAYOUT_MARGIN_TOPBOTTOM + view_size_constants.IMPORT_RESOURCES_PAGE_MARGIN_TOPBOTTOM,
+            view_size_constants.MAIN_PAGE_LAYOUT_MARGIN_LEFTRIGHT,
+            view_size_constants.MAIN_PAGE_LAYOUT_MARGIN_TOPBOTTOM)
+
         self._back_button: QPushButton = QPushButton(self._header_area)
-        self._back_button.setObjectName("BackButton")
-        self._back_button.setText("Back")
-        self._back_button.setGeometry(0, 0,
-                                      view_size_constants.BACK_BUTTON_WIDTH,
-                                      view_size_constants.INTERACTION_COMPONENT_HEIGHT)
+        self._back_button.setObjectName("Secondary")
+        self._back_button.setText(f"   {notification_label_text.IMPORT_RESOURCES_PAGE_BACK_TEXT}")
+        self._back_button.setIcon(QIcon(":/Breadcrumb/img/UI20/Breadcrumb/arrow_left-default.svg"))
+        self._back_button.setFlat(True)
+        self._back_button.setMinimumSize(view_size_constants.BACK_BUTTON_WIDTH,
+                                         view_size_constants.INTERACTION_COMPONENT_HEIGHT)
+        header_area_layout.addWidget(self._back_button)
+
+        header_area_spacer: QSpacerItem = QSpacerItem(view_size_constants.TOOL_APPLICATION_MAIN_WINDOW_WIDTH,
+                                                      view_size_constants.INTERACTION_COMPONENT_HEIGHT,
+                                                      QSizePolicy.Expanding, QSizePolicy.Minimum)
+        header_area_layout.addItem(header_area_spacer)
 
     def _setup_search_area(self) -> None:
         self._search_area: QWidget = QWidget(self)
-        self._search_area.setObjectName("SearchArea")
+        self._search_area.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
         self._search_area.setMinimumSize(view_size_constants.TOOL_APPLICATION_MAIN_WINDOW_WIDTH,
                                          view_size_constants.IMPORT_RESOURCES_PAGE_SEARCH_AREA_HEIGHT)
 
+        search_area_layout: QHBoxLayout = QHBoxLayout(self._search_area)
+        search_area_layout.setSizeConstraint(QLayout.SetMinimumSize)
+        search_area_layout.setContentsMargins(view_size_constants.MAIN_PAGE_LAYOUT_MARGIN_LEFTRIGHT,
+                                              view_size_constants.IMPORT_RESOURCES_PAGE_MARGIN_TOPBOTTOM,
+                                              view_size_constants.MAIN_PAGE_LAYOUT_MARGIN_LEFTRIGHT,
+                                              view_size_constants.IMPORT_RESOURCES_PAGE_MARGIN_TOPBOTTOM)
+
+        self._setup_typed_resources_search_group()
+        search_area_layout.addWidget(self._typed_resources_search_group)
+
+        self._setup_cfn_stacks_search_group()
+        search_area_layout.addWidget(self._cfn_stacks_search_group)
+
+        search_area_spacer: QSpacerItem = QSpacerItem(view_size_constants.TOOL_APPLICATION_MAIN_WINDOW_WIDTH,
+                                                      view_size_constants.INTERACTION_COMPONENT_HEIGHT,
+                                                      QSizePolicy.Expanding, QSizePolicy.Minimum)
+        search_area_layout.addItem(search_area_spacer)
+
+        self._search_filter_line_edit: SearchFilterLineEdit = SearchFilterLineEdit(
+            self._search_area, notification_label_text.IMPORT_RESOURCES_PAGE_SEARCH_PLACEHOLDER_TEXT)
+        self._search_filter_line_edit.setMinimumSize(
+            view_size_constants.IMPORT_RESOURCES_PAGE_SEARCH_FILTER_WIDGET_WIDTH,
+            view_size_constants.INTERACTION_COMPONENT_HEIGHT)
+        search_area_layout.addWidget(self._search_filter_line_edit)
+
+    def _setup_typed_resources_search_group(self) -> None:
         self._typed_resources_search_group: QWidget = QWidget(self._search_area)
-        self._typed_resources_search_group.setObjectName("ResourceTypeSearchGroup")
+        typed_resources_search_group_layout: QHBoxLayout = QHBoxLayout(self._typed_resources_search_group)
+        typed_resources_search_group_layout.setSizeConstraint(QLayout.SetMinimumSize)
+        typed_resources_search_group_layout.setContentsMargins(0, 0, 0, 0)
 
         typed_resources_label: QLabel = QLabel(self._typed_resources_search_group)
-        typed_resources_label.setObjectName("ResourceTypeLabel")
-        typed_resources_label.setText("AWS Resource Type")
-        typed_resources_label.setGeometry(view_size_constants.TYPED_RESOURCES_LABEL_X,
-                                          view_size_constants.IMPORT_RESOURCES_PAGE_WIDGET_SUBCOMPONENT_Y,
-                                          view_size_constants.TYPED_RESOURCES_LABEL_WIDTH,
-                                          view_size_constants.INTERACTION_COMPONENT_HEIGHT)
-        
+        typed_resources_label.setText(notification_label_text.IMPORT_RESOURCES_PAGE_AWS_SEARCH_TYPE_TEXT)
+        typed_resources_label_font: QFont = QFont()
+        typed_resources_label_font.setBold(True)
+        typed_resources_label.setFont(typed_resources_label_font)
+        typed_resources_label.setMinimumSize(view_size_constants.TYPED_RESOURCES_LABEL_WIDTH,
+                                             view_size_constants.INTERACTION_COMPONENT_HEIGHT)
+        typed_resources_search_group_layout.addWidget(typed_resources_label)
+
         self._typed_resources_combobox: QComboBox = QComboBox(self._typed_resources_search_group)
-        self._typed_resources_combobox.setObjectName("ResourceTypeCombobox")
         self._typed_resources_combobox.setLineEdit(QLineEdit())
-        self._typed_resources_combobox.lineEdit().setPlaceholderText("Please select")
+        self._typed_resources_combobox.lineEdit().setPlaceholderText(
+            notification_label_text.IMPORT_RESOURCES_PAGE_AWS_SEARCH_TYPE_PLACEHOLDER_TEXT)
         self._typed_resources_combobox.lineEdit().setReadOnly(True)
-        self._typed_resources_combobox.setGeometry(view_size_constants.TYPED_RESOURCES_COMBOBOX_X,
-                                                   view_size_constants.IMPORT_RESOURCES_PAGE_WIDGET_SUBCOMPONENT_Y,
-                                                   view_size_constants.TYPED_RESOURCES_COMBOBOX_WIDTH,
-                                                   view_size_constants.INTERACTION_COMPONENT_HEIGHT)
+        self._typed_resources_combobox.setMinimumSize(view_size_constants.TYPED_RESOURCES_COMBOBOX_WIDTH,
+                                                      view_size_constants.INTERACTION_COMPONENT_HEIGHT)
         self._typed_resources_combobox.addItems(constants.AWS_RESOURCE_TYPES)
         self._typed_resources_combobox.setCurrentIndex(-1)
-        
+        typed_resources_search_group_layout.addWidget(self._typed_resources_combobox)
+
+        typed_resources_search_group_separator_label: QLabel = QLabel(self._typed_resources_search_group)
+        typed_resources_search_group_separator_label.setPixmap(QPixmap(":/stylesheet/img/separator.png"))
+        typed_resources_search_group_layout.addWidget(typed_resources_search_group_separator_label)
+
         self._typed_resources_search_button: QPushButton = QPushButton(self._typed_resources_search_group)
-        self._typed_resources_search_button.setObjectName("ResourceTypeSearchButton")
-        self._typed_resources_search_button.setText("Search")
-        self._typed_resources_search_button.setGeometry(view_size_constants.TYPED_RESOURCES_SEARCH_BUTTON_X,
-                                                        view_size_constants.IMPORT_RESOURCES_PAGE_WIDGET_SUBCOMPONENT_Y,
-                                                        view_size_constants.SEARCH_BUTTON_WIDTH,
-                                                        view_size_constants.INTERACTION_COMPONENT_HEIGHT)
-        
+        self._typed_resources_search_button.setObjectName("Secondary")
+        self._typed_resources_search_button.setText(notification_label_text.IMPORT_RESOURCES_PAGE_SEARCH_TEXT)
+        self._typed_resources_search_button.setMinimumSize(view_size_constants.SEARCH_BUTTON_WIDTH,
+                                                           view_size_constants.INTERACTION_COMPONENT_HEIGHT)
+        typed_resources_search_group_layout.addWidget(self._typed_resources_search_button)
+
         self._typed_resources_import_button = QPushButton(self._typed_resources_search_group)
-        self._typed_resources_import_button.setObjectName("ResourceTypeImportButton")
-        self._typed_resources_import_button.setText("Import")
-        self._typed_resources_import_button.setGeometry(view_size_constants.TYPED_RESOURCES_IMPORT_BUTTON_X,
-                                                        view_size_constants.IMPORT_RESOURCES_PAGE_WIDGET_SUBCOMPONENT_Y,
-                                                        view_size_constants.IMPORT_BUTTON_WIDTH,
-                                                        view_size_constants.INTERACTION_COMPONENT_HEIGHT)
+        self._typed_resources_import_button.setObjectName("Primary")
+        self._typed_resources_import_button.setText(notification_label_text.IMPORT_RESOURCES_PAGE_IMPORT_TEXT)
+        self._typed_resources_import_button.setMinimumSize(view_size_constants.IMPORT_BUTTON_WIDTH,
+                                                           view_size_constants.INTERACTION_COMPONENT_HEIGHT)
+        typed_resources_search_group_layout.addWidget(self._typed_resources_import_button)
+
         self._typed_resources_search_group.setVisible(False)
 
+    def _setup_cfn_stacks_search_group(self) -> None:
         self._cfn_stacks_search_group: QWidget = QWidget(self._search_area)
-        self._cfn_stacks_search_group.setObjectName("CfnSearchGroup")
+        cfn_stacks_search_group_layout: QHBoxLayout = QHBoxLayout(self._cfn_stacks_search_group)
+        cfn_stacks_search_group_layout.setSizeConstraint(QLayout.SetMinimumSize)
+        cfn_stacks_search_group_layout.setContentsMargins(0, 0, 0, 0)
 
         self._cfn_stacks_search_button: QPushButton = QPushButton(self._cfn_stacks_search_group)
-        self._cfn_stacks_search_button.setObjectName("CfnSearchButton")
-        self._cfn_stacks_search_button.setText("Search")
-        self._cfn_stacks_search_button.setGeometry(view_size_constants.CFN_STACKS_SEARCH_BUTTON_X,
-                                                   view_size_constants.IMPORT_RESOURCES_PAGE_WIDGET_SUBCOMPONENT_Y,
-                                                   view_size_constants.SEARCH_BUTTON_WIDTH,
-                                                   view_size_constants.INTERACTION_COMPONENT_HEIGHT)
+        self._cfn_stacks_search_button.setObjectName("Secondary")
+        self._cfn_stacks_search_button.setText(notification_label_text.IMPORT_RESOURCES_PAGE_SEARCH_TEXT)
+        self._cfn_stacks_search_button.setMinimumSize(view_size_constants.SEARCH_BUTTON_WIDTH,
+                                                      view_size_constants.INTERACTION_COMPONENT_HEIGHT)
+        cfn_stacks_search_group_layout.addWidget(self._cfn_stacks_search_button)
 
         self._cfn_stacks_import_button: QPushButton = QPushButton(self._cfn_stacks_search_group)
-        self._cfn_stacks_import_button.setObjectName("CfnImportButton")
-        self._cfn_stacks_import_button.setText("Import")
-        self._cfn_stacks_import_button.setGeometry(view_size_constants.CFN_STACKS_IMPORT_BUTTON_X,
-                                                   view_size_constants.IMPORT_RESOURCES_PAGE_WIDGET_SUBCOMPONENT_Y,
-                                                   view_size_constants.IMPORT_BUTTON_WIDTH,
-                                                   view_size_constants.INTERACTION_COMPONENT_HEIGHT)
+        self._cfn_stacks_import_button.setObjectName("Primary")
+        self._cfn_stacks_import_button.setText(notification_label_text.IMPORT_RESOURCES_PAGE_IMPORT_TEXT)
+        self._cfn_stacks_import_button.setMinimumSize(view_size_constants.IMPORT_BUTTON_WIDTH,
+                                                      view_size_constants.INTERACTION_COMPONENT_HEIGHT)
+        cfn_stacks_search_group_layout.addWidget(self._cfn_stacks_import_button)
         self._cfn_stacks_search_group.setVisible(False)
-
-        self._search_filter_widget: SearchFilterWidget = \
-            SearchFilterWidget(self._search_area, notification_label_text.IMPORT_RESOURCES_PAGE_SEARCH_PLACEHOLDER_TEXT,
-                               QRect(view_size_constants.IMPORT_RESOURCES_PAGE_SEARCH_FILTER_WIDGET_X,
-                                     view_size_constants.IMPORT_RESOURCES_PAGE_WIDGET_SUBCOMPONENT_Y,
-                                     view_size_constants.INTERACTION_COMPONENT_HEIGHT,
-                                     view_size_constants.INTERACTION_COMPONENT_HEIGHT),
-                               view_size_constants.IMPORT_RESOURCES_PAGE_SEARCH_FILTER_WIDGET_WIDTH)
 
     def _setup_view_area(self) -> None:
         self._stacked_pages: QStackedWidget = QStackedWidget(self)
-        self._stacked_pages.setObjectName("StackedPages")
+        self._stacked_pages.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self._stacked_pages.setMaximumSize(view_size_constants.TOOL_APPLICATION_MAIN_WINDOW_WIDTH,
                                            view_size_constants.IMPORT_RESOURCES_PAGE_VIEW_AREA_HEIGHT)
-        
-        notification_page: QWidget = QWidget()
-        notification_page.setObjectName("NotificationPage")
-        notification_page_label = QLabel(notification_page)
-        notification_page_label.setObjectName("NotificationLabel")
-        notification_page_label.setText("Loading ...")
-        notification_page_label.setGeometry(0, 0,
-                                            view_size_constants.TOOL_APPLICATION_MAIN_WINDOW_WIDTH,
-                                            view_size_constants.INTERACTION_COMPONENT_HEIGHT)
-        notification_page_label.setAlignment(Qt.AlignCenter)
-        
-        self._stacked_pages.addWidget(notification_page)
+        self._stacked_pages.setContentsMargins(view_size_constants.MAIN_PAGE_LAYOUT_MARGIN_LEFTRIGHT, 0,
+                                               view_size_constants.MAIN_PAGE_LAYOUT_MARGIN_LEFTRIGHT, 0)
 
-        tree_view_page: QWidget = QWidget()
-        tree_view_page.setObjectName("TreeViewPage")
+        notification_page_frame: QFrame = \
+            NotificationFrame(self, QPixmap(":/stylesheet/img/32x32/info.png"),
+                              notification_label_text.NOTIFICATION_LOADING_MESSAGE, False)
+        notification_page_frame.setFixedSize(
+            (view_size_constants.TOOL_APPLICATION_MAIN_WINDOW_WIDTH
+                - 2 * view_size_constants.MAIN_PAGE_LAYOUT_MARGIN_LEFTRIGHT),
+            view_size_constants.INTERACTION_COMPONENT_HEIGHT)
+        notification_page_frame.setVisible(True)
+        
+        self._stacked_pages.addWidget(notification_page_frame)
+
+        tree_view_page: QWidget = QWidget(self)
+        tree_view_vertical_layout: QVBoxLayout = QVBoxLayout(tree_view_page)
+        tree_view_vertical_layout.setSizeConstraint(QLayout.SetMinimumSize)
+        tree_view_vertical_layout.setContentsMargins(0, 0, 0, 0)
+
         self._tree_view: ResourceTreeView = ResourceTreeView(True, tree_view_page)
-        self._tree_view.setObjectName("TreeView")
-        self._tree_view.setGeometry(view_size_constants.IMPORT_RESOURCES_PAGE_TREE_VIEW_X, 0,
-                                    view_size_constants.IMPORT_RESOURCES_PAGE_TREE_VIEW_WIDTH,
-                                    view_size_constants.IMPORT_RESOURCES_PAGE_TREE_VIEW_HEIGHT)
+        self._tree_view.setAlternatingRowColors(True)
+        self._tree_view.setMaximumSize(view_size_constants.TOOL_APPLICATION_MAIN_WINDOW_WIDTH,
+                                       view_size_constants.IMPORT_RESOURCES_PAGE_TREE_VIEW_HEIGHT)
         self._tree_view.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self._tree_view.setSortingEnabled(True)
 
@@ -234,6 +279,12 @@ class ImportResourcesPage(QWidget):
         header.setSectionResizeMode(ResourceTreeConstants.TREE_NAME_OR_ID_COLUMN_INDEX, QHeaderView.Stretch)
         header.setMaximumSectionSize(view_size_constants.RESOURCE_STACK_HEADER_CELL_MAXIMUM)
         header.setMinimumSectionSize(view_size_constants.RESOURCE_STACK_HEADER_CELL_MINIMUM)
+        tree_view_vertical_layout.addWidget(self._tree_view)
+
+        tree_view_spacer: QSpacerItem = QSpacerItem(view_size_constants.TOOL_APPLICATION_MAIN_WINDOW_WIDTH,
+                                                    view_size_constants.IMPORT_RESOURCES_PAGE_FOOTER_AREA_HEIGHT,
+                                                    QSizePolicy.Expanding, QSizePolicy.Fixed)
+        tree_view_vertical_layout.addItem(tree_view_spacer)
 
         self._stacked_pages.addWidget(tree_view_page)
         self._stacked_pages.setCurrentIndex(1)
@@ -268,7 +319,7 @@ class ImportResourcesPage(QWidget):
 
     @property
     def search_filter_input(self) -> QLineEdit:
-        return self._search_filter_widget.search_filter_input
+        return self._search_filter_line_edit
 
     @property
     def search_version(self) -> str:
@@ -294,7 +345,8 @@ class ImportResourcesPage(QWidget):
         self._stacked_pages.setCurrentIndex(index)
 
     def hide_notification_frame(self) -> None:
-        self._notification_frame.hide()
+        self._notification_frame.setVisible(False)
 
     def set_notification_frame_text(self, text: str) -> None:
         self._notification_frame.set_text(text)
+        self._notification_frame.setVisible(True)

@@ -104,8 +104,8 @@ namespace AZ
                 Data::Instance<RPI::ShaderResourceGroup> m_defaultSRG; // default SRG for draws not overriding the view projection matrix
                 AZ::RHI::DrawListTag m_drawListTag; // The draw list tag from our shader variant (determines which views primitives are in and which pass)
 
-                AZ::RHI::ShaderInputConstantIndex m_viewProjectionOverrideIndex;
-                AZ::RHI::ShaderInputConstantIndex m_pointSizeIndex;
+                AZ::RHI::ShaderInputNameIndex m_viewProjectionOverrideIndex = "m_viewProjectionOverride";
+                AZ::RHI::ShaderInputNameIndex m_pointSizeIndex = "m_pointSize";
             };
 
             struct PipelineStateOptions

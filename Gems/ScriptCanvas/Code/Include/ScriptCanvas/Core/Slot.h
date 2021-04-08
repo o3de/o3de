@@ -160,6 +160,9 @@ namespace ScriptCanvas
         bool IsExecution() const;
         
         bool IsVisible() const;
+        bool IsUserAdded() const;
+
+        void SetVisible(bool isVisible);
 
         bool IsInput() const;
         bool IsOutput() const;
@@ -216,6 +219,8 @@ namespace ScriptCanvas
     protected:
         bool m_isOverload = false;
         bool m_isVisible = true;
+        bool m_isUserAdded = false;
+
         void SetDynamicGroup(const AZ::Crc32& dynamicGroup);
 
         AZStd::string m_name;

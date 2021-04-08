@@ -11,22 +11,45 @@
 */
 #pragma once
 
-#include <IRenderer.h>
+#include <Atom/RPI.Public/DynamicDraw/DynamicDrawContext.h>
+#include <Atom/RPI.Public/WindowContext.h>
+#include <Atom/RPI.Public/ViewportContext.h>
+#include <Atom/Bootstrap/BootstrapNotificationBus.h>
 
 #ifndef _RELEASE
 #include <AzCore/std/containers/unordered_set.h>
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-//! Implementation of IUiRenderInterface
+//! UI render interface
 //
 class UiRenderer
+    : public AZ::Render::Bootstrap::NotificationBus::Handler
 {
+public: // types
+
+    // Cached shader data
+    struct UiShaderData
+    {
+        AZ::RHI::ShaderInputImageIndex m_imageInputIndex;
+        AZ::RHI::ShaderInputSamplerIndex m_samplerInputIndex;
+        AZ::RHI::ShaderInputConstantIndex m_viewProjInputIndex;
+        AZ::RHI::ShaderInputConstantIndex m_isClampInputIndex;
+
+        AZ::RPI::ShaderVariantId m_shaderVariantDefault;
+
+        AZ::RPI::ShaderVariantKey m_shaderVariantKeyFallback;
+        AZ::RPI::ShaderVariantStableId m_defaultVariantStableId;
+    };
+
 public: // member functions
 
     //! Constructor, constructed by the LyShine class
     UiRenderer();
     ~UiRenderer();
+
+    //! Returns whether RPI has loaded all its assets and is ready to render
+    bool IsReady();
 
     //! Start the rendering of the frame for LyShine
     void BeginUiFrameRender();
@@ -39,6 +62,18 @@ public: // member functions
 
     //! End the rendering of a UI canvas
     void EndCanvasRender();
+
+    //! Return the dynamic draw context used for LyShine
+    AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> GetDynamicDrawContext();
+
+    //! Return the shader data for the ui shader
+    const UiShaderData& GetUiShaderData();
+
+    //! Return the current orthographic view matrix
+    AZ::Matrix4x4 GetModelViewProjectionMatrix();
+
+    //! Return the curent viewport size
+    AZ::Vector2 GetViewportSize();
 
     //! Get the current base state
     int GetBaseState();
@@ -58,9 +93,6 @@ public: // member functions
     //! Decrement the current stencil reference value
     void DecrementStencilRef();
 
-    //! Set the current texture
-    void SetTexture(ITexture* texture, int texUnit, bool clamp);
-
 #ifndef _RELEASE
     //! Setup to record debug texture data before rendering
     void DebugSetRecordingOptionForTextureData(int recordingOption);
@@ -69,21 +101,36 @@ public: // member functions
     void DebugDisplayTextureData(int recordingOption);
 #endif
 
-private:
+private: // member functions
 
     AZ_DISABLE_COPY_MOVE(UiRenderer);
 
+    // AZ::Render::Bootstrap::Notification
+    void OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene) override;
+    // ~AZ::Render::Bootstrap::Notification
+
     //! Bind the global white texture for all the texture units we use
     void BindNullTexture();
+
+    //! Store shader data for later use
+    void CacheShaderData(const AZ::Data::Instance<AZ::RPI::Shader> shader);
     
 protected: // attributes
 
-    int                 m_baseState;
-    uint32              m_stencilRef;
-    IRenderer*          m_renderer = nullptr;
+    static constexpr char LogName[] = "UiRenderer";
+
+    int m_baseState;
+    uint32 m_stencilRef;
+
+    UiShaderData m_uiShaderData;
+    AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> m_dynamicDraw;
+
+    bool m_isReady = false;
 
 #ifndef _RELEASE
-    int                 m_debugTextureDataRecordLevel = 0;
+    int m_debugTextureDataRecordLevel = 0;
+#ifdef LYSHINE_ATOM_TODO // Convert debug code to Atom
     AZStd::unordered_set<ITexture*> m_texturesUsedInFrame;
+#endif
 #endif
 };

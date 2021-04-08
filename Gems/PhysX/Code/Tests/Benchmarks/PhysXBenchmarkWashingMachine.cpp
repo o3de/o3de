@@ -14,8 +14,13 @@
 #include <Benchmarks/PhysXBenchmarkWashingMachine.h>
 
 #include <AzFramework/Physics/PhysicsScene.h>
+#include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Shape.h>
+#include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
+#include <AzFramework/Physics/Configuration/SimulatedBodyConfiguration.h>
+#include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
+#include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 
 namespace PhysX::Benchmarks
 {
@@ -45,12 +50,24 @@ namespace PhysX::Benchmarks
         return AZ::Quaternion::CreateRotationZ(m_angularPosition);
     }
 
-    WashingMachine::~WashingMachine()
+    WashingMachine::WashingMachine()
+        : m_sceneStartSimHandler([this]([[maybe_unused]]AzPhysics::SceneHandle sceneHandle, float fixedDeltaTime)
+            {
+                this->UpdateBlade(fixedDeltaTime);
+            }, aznumeric_cast<int32_t>(AzPhysics::SceneEvents::PhysicsStartFinishSimulationPriority::Animation))
     {
-        TearDownWashingMachine();
+
     }
 
-    void WashingMachine::SetupWashingMachine(AzPhysics::Scene* scene, float cylinderRadius, float cylinderHeight,
+    WashingMachine::~WashingMachine()
+    {
+        if (m_sceneHandle != AzPhysics::InvalidSceneHandle)
+        {
+            TearDownWashingMachine();
+        }
+    }
+
+    void WashingMachine::SetupWashingMachine(AzPhysics::SceneHandle sceneHandle, float cylinderRadius, float cylinderHeight,
         const AZ::Vector3& position, float RPM)
     {
         Physics::System* system = AZ::Interface<Physics::System>::Get();
@@ -58,7 +75,14 @@ namespace PhysX::Benchmarks
         {
             return;
         }
-        AZStd::shared_ptr<Physics::World> legacyWorld = scene->GetLegacyWorld();
+        AzPhysics::Scene* scene = nullptr;
+        if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
+        {
+            scene = physicsSystem->GetScene(sceneHandle);
+            m_sceneHandle = sceneHandle; //cache the handle
+        }
+
+        scene->RegisterSceneSimulationStartHandler(m_sceneStartSimHandler);
 
         //create the cylinder
         const float cylinderWallThickness = AZ::GetMin(25.0f, cylinderRadius);
@@ -67,23 +91,15 @@ namespace PhysX::Benchmarks
         const float cylinderTheta = (AZ::Constants::TwoPi / NumCylinderSide);
         for (int i = 0; i < NumCylinderSide; i++)
         {
-            Physics::WorldBodyConfiguration config;
+            AzPhysics::StaticRigidBodyConfiguration config;
             config.m_position.SetX((cylinderRadius + halfCylinderWallThickness) * std::cos(AZ::Constants::TwoPi * i / NumCylinderSide) + position.GetX());
             config.m_position.SetY((cylinderRadius + halfCylinderWallThickness) * std::sin(AZ::Constants::TwoPi * i / NumCylinderSide) + position.GetY());
             config.m_position.SetZ(z);
             config.m_orientation = AZ::Quaternion::CreateRotationZ(AZ::Constants::HalfPi + (cylinderTheta * i));
-
-            AZStd::unique_ptr<Physics::RigidBodyStatic> cylinderWall = system->CreateStaticRigidBody(config);
-
             Physics::ColliderConfiguration colliderConfig;
             Physics::BoxShapeConfiguration shapeConfiguration(AZ::Vector3(cylinderRadius, cylinderWallThickness, cylinderHeight));
-            AZStd::shared_ptr<Physics::Shape> shape = system->CreateShape(colliderConfig, shapeConfiguration);
-
-            cylinderWall->AddShape(shape);
-
-            legacyWorld->AddBody(*cylinderWall);
-
-            m_cylinder[i] = AZStd::move(cylinderWall);
+            config.m_colliderAndShapeData = AzPhysics::ShapeColliderPair(&colliderConfig, &shapeConfiguration);
+            m_cylinder[i] = scene->AddSimulatedBody(&config);
         }
 
         //create the prop
@@ -92,45 +108,48 @@ namespace PhysX::Benchmarks
 
         m_bladeAnimation.Init(RPM);
 
-        Physics::RigidBodyConfiguration bladeRigidBodyConfig;
+        AzPhysics::RigidBodyConfiguration bladeRigidBodyConfig;
         bladeRigidBodyConfig.m_kinematic = true;
         bladeRigidBodyConfig.m_mass = 1000.0f;
         bladeRigidBodyConfig.m_position = position;
         bladeRigidBodyConfig.m_position.SetZ(position.GetZ() + (bladeHeight / 2.0f));
         bladeRigidBodyConfig.m_orientation = AZ::Quaternion::CreateRotationZ(0.0f);
-
-        m_blade = system->CreateRigidBody(bladeRigidBodyConfig);
-
         Physics::ColliderConfiguration bladeColliderConfig;
         Physics::BoxShapeConfiguration bladeShapeConfiguration(AZ::Vector3(bladeLength, 1.0f, bladeHeight));
-        AZStd::shared_ptr<Physics::Shape> shape = system->CreateShape(bladeColliderConfig, bladeShapeConfiguration);
-
-        m_blade->AddShape(shape);
-
-        legacyWorld->AddBody(*m_blade);
-
-        Physics::WorldNotificationBus::Handler::BusConnect(legacyWorld->GetWorldId());
+        bladeRigidBodyConfig.m_colliderAndShapeData = AZStd::make_pair(&bladeColliderConfig, &bladeShapeConfiguration);
+        m_blade = scene->AddSimulatedBody(&bladeRigidBodyConfig);
     }
 
     void WashingMachine::TearDownWashingMachine()
     {
-        Physics::WorldNotificationBus::Handler::BusDisconnect();
+        m_sceneStartSimHandler.Disconnect();
 
-        for (int i = 0; i < NumCylinderSide; i++)
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
-            m_cylinder[i].reset();
+            for (int i = 0; i < NumCylinderSide; i++)
+            {
+                sceneInterface->RemoveSimulatedBody(m_sceneHandle, m_cylinder[i]);
+                m_cylinder[i] = AzPhysics::InvalidSimulatedBodyHandle;
+            }
+            sceneInterface->RemoveSimulatedBody(m_sceneHandle, m_blade);
+            m_blade = AzPhysics::InvalidSimulatedBodyHandle;
         }
-
-        m_blade.reset();
+        m_sceneHandle = AzPhysics::InvalidSceneHandle;
     }
 
-    void WashingMachine::OnPrePhysicsSubtick(float fixedDeltaTime)
+    void WashingMachine::UpdateBlade(float fixedDeltaTime)
     {
-        AZ::Quaternion newRot = m_bladeAnimation.StepAnimation(fixedDeltaTime);
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            AZ::Quaternion newRot = m_bladeAnimation.StepAnimation(fixedDeltaTime);
 
-        AZ::Transform transform = m_blade->GetTransform();
-        transform.SetRotation(newRot);
-        m_blade->SetKinematicTarget(transform);
+            if(auto* bladeBody = azdynamic_cast<AzPhysics::RigidBody*>(sceneInterface->GetSimulatedBodyFromHandle(m_sceneHandle, m_blade)))
+            {
+                AZ::Transform transform = bladeBody->GetTransform();
+                transform.SetRotation(newRot);
+                bladeBody->SetKinematicTarget(transform);
+            }
+        }
     }
 }
 #endif //HAVE_BENCHMARK

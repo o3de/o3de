@@ -1302,7 +1302,8 @@ namespace AssetBuilderSDK
                 ->Field("Patterns", &AssetBuilderDesc::m_patterns)
                 ->Field("BusId", &AssetBuilderDesc::m_busId)
                 ->Field("Version", &AssetBuilderDesc::m_version)
-                ->Field("AnalysisFingerprint", &AssetBuilderDesc::m_analysisFingerprint);
+                ->Field("AnalysisFingerprint", &AssetBuilderDesc::m_analysisFingerprint)
+                ->Field("ProductsToKeepOnFailure", &AssetBuilderDesc::m_productsToKeepOnFailure);
 
             serializeContext->RegisterGenericType<AZStd::vector<AssetBuilderDesc>>();
         }

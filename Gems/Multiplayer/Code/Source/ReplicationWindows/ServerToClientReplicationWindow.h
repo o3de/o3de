@@ -62,25 +62,25 @@ namespace Multiplayer
         void OnEntityDeactivated(const AZ::EntityId&) override;
         //! @}
 
-        //void CollectControlledEntitiesRecursive(ReplicationSet& a_ReplicationSet, EntityHierarchyComponent::Authority& a_HierarchyController);
-        //void OnAddFilteredEntity(EntityIdT a_FitleredEntityId);
+        //void CollectControlledEntitiesRecursive(ReplicationSet& replicationSet, EntityHierarchyComponent::Authority& hierarchyController);
+        //void OnAddFilteredEntity(NetEntityId filteredEntityId);
 
         void EvaluateConnection();
         void AddEntityToReplicationSet(ConstNetworkEntityHandle& entityHandle, float priority, float distanceSquared);
 
         ServerToClientReplicationWindow& operator=(const ServerToClientReplicationWindow&) = delete;
 
-        NetworkEntityHandle m_controlledEntity;
-        AZ::TransformInterface* m_controlledEntityTransform = nullptr;
-
-        //FilteredEntityComponent::Authority* mp_ControlledFilteredEntityComponent = nullptr;
-        //NetSystemComponent* mp_ControlledNetSystemComponent = nullptr;
-
         // sorted in reverse, lowest priority is the top()
         ReplicationCandidateQueue m_candidateQueue;
         ReplicationSet m_replicationSet;
 
         AZ::ScheduledEvent m_updateWindowEvent;
+
+        NetworkEntityHandle m_controlledEntity;
+        AZ::TransformInterface* m_controlledEntityTransform = nullptr;
+
+        //FilteredEntityComponent::Authority* m_controlledFilteredEntityComponent = nullptr;
+        //NetBindComponent* m_controlledNetBindComponent = nullptr;
 
         const AzNetworking::IConnection* m_connection = nullptr;
         float m_minPriorityReplicated = 0.0f; ///< Lowest replicated entity priority in last update

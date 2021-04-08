@@ -18,6 +18,8 @@
 #include <Atom/RPI.Reflect/Buffer/BufferAssetCreator.h>
 #include <Atom/RPI.Reflect/Model/ModelAssetCreator.h>
 #include <Atom/RPI.Reflect/Model/ModelLodAssetCreator.h>
+#include <Atom/RPI.Reflect/Model/MorphTargetMetaAsset.h>
+#include <Atom/RPI.Reflect/Model/MorphTargetDelta.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Model/Model.h>
 #include <Atom/RHI/Factory.h>
@@ -189,10 +191,12 @@ namespace AZ
             }
         }
 
-        void SkinnedMeshInputLod::AddMorphTarget(float minWeight, float maxWeight, float minDelta, float maxDelta, uint32_t vertexCount, const AZStd::vector<uint32_t>& deltas, const AZStd::string& bufferNamePrefix)
+        void SkinnedMeshInputLod::AddMorphTarget(const RPI::MorphTargetMetaAsset::MorphTarget& morphTarget, const Data::Asset<RPI::BufferAsset>& morphBufferAsset, const AZStd::string& bufferNamePrefix, float minWeight = 0.0f, float maxWeight = 1.0f)
         {
-            m_morphTargetMetaDatas.push_back(MorphTargetMetaData{ minWeight, maxWeight, minDelta, maxDelta, vertexCount });
-            m_morphTargetInputBuffers.push_back(aznew MorphTargetInputBuffers{ vertexCount, deltas, bufferNamePrefix });
+            m_morphTargetMetaDatas.push_back(MorphTargetMetaData{ minWeight, maxWeight, morphTarget.m_minPositionDelta, morphTarget.m_maxPositionDelta, morphTarget.m_numVertices, morphTarget.m_startIndex });
+            RHI::BufferViewDescriptor morphView = RHI::BufferViewDescriptor::CreateStructured(morphTarget.m_startIndex, morphTarget.m_numVertices, sizeof(RPI::PackedCompressedMorphTargetDelta));
+            RPI::BufferAssetView morphTargetDeltaView{ morphBufferAsset, morphView };
+            m_morphTargetInputBuffers.push_back(aznew MorphTargetInputBuffers{ morphTargetDeltaView, bufferNamePrefix });
         }
 
         

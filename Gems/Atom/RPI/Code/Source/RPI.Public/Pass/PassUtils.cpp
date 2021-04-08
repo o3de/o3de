@@ -45,22 +45,22 @@ namespace AZ
             {
                 bool success = true;
 
-                // Apply mappings from PassRequest
+                // Apply mappings from PassTemplate
                 const RenderPassData* passData = nullptr;
-                if (descriptor.m_passRequest != nullptr)
+                if (descriptor.m_passTemplate != nullptr)
                 {
-                    passData = azrtti_cast<const RenderPassData*>(descriptor.m_passRequest->m_passData.get());
+                    passData = azrtti_cast<const RenderPassData*>(descriptor.m_passTemplate->m_passData.get());
                     if (passData)
                     {
                         success = shaderResourceGroup->ApplyDataMappings(passData->m_mappings);
                     }
                 }
 
-                // Apply mappings from PassTemplate
+                // Apply mappings from PassRequest
                 passData = nullptr;
-                if (descriptor.m_passTemplate != nullptr)
+                if (descriptor.m_passRequest != nullptr)
                 {
-                    passData = azrtti_cast<const RenderPassData*>(descriptor.m_passTemplate->m_passData.get());
+                    passData = azrtti_cast<const RenderPassData*>(descriptor.m_passRequest->m_passData.get());
                     if (passData)
                     {
                         success = success && shaderResourceGroup->ApplyDataMappings(passData->m_mappings);

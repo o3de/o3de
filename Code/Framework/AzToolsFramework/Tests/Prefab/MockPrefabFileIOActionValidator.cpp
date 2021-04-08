@@ -12,7 +12,9 @@
 
 #include <Prefab/MockPrefabFileIOActionValidator.h>
 
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/JSON/prettywriter.h>
+#include <Prefab/PrefabLoaderInterface.h>
 
 namespace UnitTest
 {
@@ -38,7 +40,7 @@ namespace UnitTest
     }
 
     void MockPrefabFileIOActionValidator::ReadPrefabDom(
-        const AZStd::string& prefabFilePath,
+        AZ::IO::PathView prefabFilePath,
         const AzToolsFramework::Prefab::PrefabDom& prefabFileContentDom,
         AZ::IO::ResultCode expectedReadResultCode,
         AZ::IO::ResultCode expectedOpenResultCode,
@@ -56,7 +58,7 @@ namespace UnitTest
     }
 
     void MockPrefabFileIOActionValidator::ReadPrefabDom(
-        const AZStd::string& prefabFilePath,
+        AZ::IO::PathView prefabFilePath,
         const AZStd::string& prefabFileContent,
         AZ::IO::ResultCode expectedReadResultCode,
         AZ::IO::ResultCode expectedOpenResultCode,
@@ -65,8 +67,10 @@ namespace UnitTest
     {
         AZ::IO::HandleType fileHandle = m_fileHandleCounter++;
 
+        AZ::IO::Path prefabFullPath = AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get()->GetFullPath(AZStd::string_view(prefabFilePath));
+
         EXPECT_CALL(*m_fileIOMock.get(), Open(
-            testing::StrEq(prefabFilePath.c_str()), testing::_, testing::_))
+            testing::StrEq(prefabFullPath.c_str()), testing::_, testing::_))
             .WillRepeatedly(
                 testing::DoAll(
                     testing::SetArgReferee<2>(fileHandle),

@@ -22,7 +22,7 @@
         "AssetProcessor": {
             "Settings": {
                 "Platform pc": {
-                    "tags": "tools,renderer,dx12,vulkan"
+                    "tags": "tools,renderer,dx12,vulkan,null"
                 },
                 "Platform es3": {
                     "tags": "android,mobile,renderer,vulkan"
@@ -31,7 +31,7 @@
                     "tags": "mobile,renderer,metal"
                 },
                 "Platform osx_gl": {
-                    "tags": "tools,renderer,metal"
+                    "tags": "tools,renderer,metal,null"
                 },
                 // this is an example of a headless platform that has no renderer.   
                 // To use this you would still need to make sure 'assetplatform' in your startup params in your main() chooses this 'server' platform as your server 'assets' flavor
@@ -104,7 +104,7 @@
 
                 "ScanFolder Game": {
                     "watch": "@PROJECTROOT@",
-                    "display": "@PROJECTROOT@",
+                    "display": "@PROJECTNAME@",
                     "recursive": 1,
                     "order": 0
                 },
@@ -171,6 +171,9 @@
                 },
                 "Exclude Build": {
                     "pattern": ".*/[Bb]uild/.*"
+                },
+                "Exclude UserSettings": {
+                    "pattern": ".*/UserSettings.xml"
                 },
 
                 // ------------------------------------------------------------------------------

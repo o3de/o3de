@@ -15,6 +15,7 @@
 #include <LyShine/ILyShine.h>
 #include <LyShine/Bus/UiCursorBus.h>
 #include <AzCore/Math/Vector2.h>
+#include <AzCore/Component/TickBus.h>
 #include <AzFramework/Input/Events/InputChannelEventListener.h>
 #include <AzFramework/Input/Events/InputTextEventListener.h>
 
@@ -39,6 +40,7 @@ class CLyShine
     , public UiCursorBus::Handler
     , public AzFramework::InputChannelEventListener
     , public AzFramework::InputTextEventListener
+    , public AZ::TickBus::Handler
 {
 public:
 
@@ -103,6 +105,11 @@ public:
     // InputTextEventListener
     bool OnInputTextEventFiltered(const AZStd::string& textUTF8) override;
     // ~InputTextEventListener
+
+    // TickEvents
+    void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+    int GetTickOrder() override;
+    // ~TickEvents
 
     // Get the UIRenderer (which is owned by CLyShine). This is not exposed outside the gem.
     UiRenderer* GetUiRenderer();

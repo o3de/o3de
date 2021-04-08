@@ -19,7 +19,5 @@
         <Parameter Name="Seconds" Type="Data::NumberType" Description="The amount of time that has elapsed since the timer started in seconds."/>
       </Output>
 
-      <PropertyInterface Property="m_timeUnitsInterface" Name="Units" Type="Input" Description="Units to represent the time in."/>
-
     </Class>
 </ScriptCanvas>

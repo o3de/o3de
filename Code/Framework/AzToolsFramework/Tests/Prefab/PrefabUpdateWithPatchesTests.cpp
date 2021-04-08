@@ -16,6 +16,7 @@
 #include <Prefab/PrefabTestFixture.h>
 
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
 namespace UnitTest
 {
@@ -34,8 +35,10 @@ namespace UnitTest
         AZ::Entity* wheelEntity = CreateEntity("WheelEntity1", false);
         PrefabTestComponent* prefabTestComponent = aznew PrefabTestComponent(true);
         wheelEntity->AddComponent(prefabTestComponent);
-        wheelEntity->Init();
-        wheelEntity->Activate();
+        AZ::ComponentId prefabTestComponentId = prefabTestComponent->GetId();
+
+        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+            &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, AzToolsFramework::EntityList{wheelEntity});
         AZStd::unique_ptr<Instance> wheelIsolatedInstance = m_prefabSystemComponent->CreatePrefab({ wheelEntity },
             {}, WheelPrefabMockFilePath);
         const TemplateId wheelTemplateId = wheelIsolatedInstance->GetTemplateId();
@@ -45,18 +48,15 @@ namespace UnitTest
         // Validate that the wheel template has the same entities(1) as the instance it was created from.
         ASSERT_EQ(wheelTemplateEntityAliases.size(), 1);
 
-        // Validate that the wheel entity has 1 component under it.
+        // Validate that the wheel entity has 2 components. One of them is added through HandleEntitiesAdded() in EditorEntityContext.
         EntityAlias wheelEntityAlias = wheelTemplateEntityAliases.front();
         PrefabDomValue* wheelEntityComponents =
             PrefabTestDomUtils::GetPrefabDomComponentsPath(wheelEntityAlias).Get(wheelTemplateDom);
-        ASSERT_TRUE(wheelEntityComponents != nullptr && wheelEntityComponents->IsArray());
-        EXPECT_EQ(wheelEntityComponents->GetArray().Size(), 1);
+        ASSERT_TRUE(wheelEntityComponents != nullptr && wheelEntityComponents->IsObject());
+        EXPECT_EQ(wheelEntityComponents->MemberCount(), 2);
 
         // Extract the component id of the entity in wheel template and verify that it matches with the component id of the wheel instance.
-        PrefabDomValueReference wheelEntityComponentIdValue =
-            PrefabDomUtils::FindPrefabDomValue(*wheelEntityComponents->Begin(), PrefabTestDomUtils::ComponentIdName);
-        ASSERT_TRUE(wheelEntityComponentIdValue.has_value());
-        EXPECT_EQ(prefabTestComponent->GetId(), wheelEntityComponentIdValue->get().GetUint64());
+        PrefabTestDomUtils::ValidateComponentsDomHasId(*wheelEntityComponents, prefabTestComponentId);
 
         // Create an axle with 0 entities and 1 wheel instance.
         AZStd::unique_ptr<Instance> wheel1UnderAxle = m_prefabSystemComponent->InstantiatePrefab(wheelTemplateId);
@@ -77,10 +77,6 @@ namespace UnitTest
         const AZStd::vector<InstanceAlias> axleInstanceAliasesUnderCar = carInstance->GetNestedInstanceAliases(axleTemplateId);
         PrefabDom& carTemplateDom = m_prefabSystemComponent->FindTemplateDom(carTemplateId);
 
-        //activate the entity so we can access via transform bus
-        axleInstance->InitializeNestedEntities();
-        axleInstance->ActivateNestedEntities();
-
         InstanceOptionalReference nestedWheelInstanceRef = axleInstance->FindNestedInstance(wheelInstanceAliasesUnderAxle[0]);
         ASSERT_TRUE(nestedWheelInstanceRef);
 
@@ -97,7 +93,19 @@ namespace UnitTest
 
         // Retrieve the entity pointer from the component application bus.
         AZ::Entity* wheelEntityUnderAxle = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(wheelEntityUnderAxle, &AZ::ComponentApplicationBus::Events::FindEntity, wheelEntityIdUnderAxle);
+        axleInstance->GetNestedEntities([&wheelEntityUnderAxle, wheelEntityIdUnderAxle](AZStd::unique_ptr<AZ::Entity>& entity)
+            {
+                if (entity->GetId() == wheelEntityIdUnderAxle)
+                {
+                    wheelEntityUnderAxle = entity.get();
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
+            });
+        ASSERT_NE(nullptr, wheelEntityUnderAxle);
 
         //create document with before change snapshot
         PrefabDom entityDomBefore;
@@ -117,6 +125,7 @@ namespace UnitTest
         InstanceOptionalReference wheelInstanceUnderAxle = axleInstance->FindNestedInstance(wheelInstanceAliasesUnderAxle.front());
         m_instanceToTemplateInterface->GeneratePatchForLink(patches, entityDomBefore, entityDomAfter, wheelInstanceUnderAxle->get().GetLinkId());
         m_instanceToTemplateInterface->ApplyPatchesToInstance(wheelEntityIdUnderAxle, patches, topMostInstanceInHierarchy->get());
+        m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
 
         // Validate that the prefabTestComponent in the wheel instance under axle doesn't have a BoolProperty.
         // Even though we changed the property to false, it won't be serialized out because it's a default value.
@@ -124,8 +133,13 @@ namespace UnitTest
             PrefabTestDomUtils::GetPrefabDomInstancePath(wheelInstanceAliasesUnderAxle.front()).Get(axleTemplateDom);
         wheelEntityComponents = PrefabTestDomUtils::GetPrefabDomComponentsPath(wheelEntityAlias).Get(*wheelInstanceDomUnderAxle);
         ASSERT_TRUE(wheelEntityComponents != nullptr);
+
+        AZStd::string componentValueName = AZStd::string::format("Component_[%llu]", prefabTestComponentId);
+        PrefabDomValueReference wheelEntityComponentValue = PrefabDomUtils::FindPrefabDomValue(*wheelEntityComponents, componentValueName.c_str());
+        ASSERT_TRUE(wheelEntityComponentValue);
+
         PrefabDomValueReference wheelEntityComponentBoolPropertyValue =
-            PrefabDomUtils::FindPrefabDomValue(*wheelEntityComponents->Begin(), PrefabTestDomUtils::BoolPropertyName);
+            PrefabDomUtils::FindPrefabDomValue(wheelEntityComponentValue->get(), PrefabTestDomUtils::BoolPropertyName);
         ASSERT_FALSE(wheelEntityComponentBoolPropertyValue.has_value());
 
         // Validate that the axles under the car have the same DOM as the axle template.

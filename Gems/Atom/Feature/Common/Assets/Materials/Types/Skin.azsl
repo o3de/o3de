@@ -62,8 +62,8 @@ struct VSInput
     float3 m_bitangent : BITANGENT; 
  
     // Extended fields (only referenced in this azsl file)...
-    float2 m_uv0_unwrapped : UV0;
-    float2 m_uv1_tiled : UV1;
+    float2 m_uv0_tiled : UV0;
+    float2 m_uv1_unwrapped : UV1;
     
     // This gets set automatically by the system at runtime only if it's available.
     // There is a soft naming convention that associates this with o_blendMask_isBound, which will be set to true whenever m_optional_blendMask is available.
@@ -75,8 +75,7 @@ struct VSInput
 struct VSOutput
 {
     // Base fields (required by the template azsli file)...
-    // "centroid" is needed for SV_DepthLessEqual to compile
-    linear centroid float4 m_position : SV_Position;
+    float4 m_position : SV_Position;
     float3 m_normal: NORMAL;
     float3 m_tangent : TANGENT; 
     float3 m_bitangent : BITANGENT; 
@@ -99,18 +98,22 @@ VSOutput SkinVS(VSInput IN)
  
     float3 worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_position, 1.0)).xyz;
  
-    // UV0 is for unwrapped UVs. The main textures in a skin material will almost always use this UV set.
-    OUT.m_uv[0] = IN.m_uv0_unwrapped;
-
-    // UV1 is for tiled UVs. This will almost always be used exclusively with the detail layer, but it is still available
+    // UV0 is for tiled UVs. This will almost always be used exclusively with the detail layer, but it is still available
     // for the main layer to use if needed. Unlike StandardPBR etc, we don't provide a transform for this stream on the main layer, 
     // because it will usually be used for the detail layer which has its own dedicated transform. If a use does case come up, we 
     // could consider adding the main layer UV transform back in.
-    OUT.m_uv[1] = IN.m_uv1_tiled;
+    // Note, even though the "unwrapped" stream is considered the main stream from a material perspective (it is the default), we
+    // still use UV0 for "tiled" because UV0 has pre-generated tangent vectors which is important for detail maps, which usually
+    // use the "tiled" stream, and need better quality tangents because of the high frequency.
+    OUT.m_uv[0] = IN.m_uv0_tiled;
+
+    // UV1 is for unwrapped UVs. The main textures in a skin material will almost always use this UV set.
+    OUT.m_uv[1] = IN.m_uv1_unwrapped;
+
     
     // The detail layer has a dedicated UV transform which we apply here. The detail layer does have the option of using
     // either UV0 or UV1, in either case we apply the transform.
-    OUT.m_detailUv = MaterialSrg::m_detail_allMapsUvIndex == 0 ? IN.m_uv0_unwrapped : IN.m_uv1_tiled;
+    OUT.m_detailUv = MaterialSrg::m_detail_allMapsUvIndex == 0 ? IN.m_uv0_tiled : IN.m_uv1_unwrapped;
     OUT.m_detailUv = mul(MaterialSrg::m_detailUvMatrix, float3(OUT.m_detailUv, 1.0)).xy;
     
     if(o_blendMask_isBound)
@@ -145,7 +148,7 @@ float2 ApplyNormalWrinkleMap(bool shouldApply, float2 baseNormalSample, Texture2
 {
     if (shouldApply)
     {
-        float2 sampledValue = SampleNormal(map, mapSampler, uv, flipX, flipY);
+        float2 sampledValue = SampleNormalXY(map, mapSampler, uv, flipX, flipY);
         return lerp(baseNormalSample, sampledValue, factor);
     }
     else
@@ -195,10 +198,10 @@ PbrLightingOutput SkinPS_Common(VSOutput IN)
     // Since the wrinkle normal maps should all be in the same tangent space as the main normal map, we should be able to blend the raw normal map
     // texture values before doing all the tangent space transforms, so we only have to do the transforms once, for better performance.
     
-    float2 normalMapSample = float2(0.5,0.5);
+    float2 normalMapSample = float2(0.0,0.0);
     if(o_normal_useTexture)
     {
-        normalMapSample = SampleNormal(MaterialSrg::m_normalMap, MaterialSrg::m_sampler, normalUv, MaterialSrg::m_flipNormalX, MaterialSrg::m_flipNormalY);
+        normalMapSample = SampleNormalXY(MaterialSrg::m_normalMap, MaterialSrg::m_sampler, normalUv, MaterialSrg::m_flipNormalX, MaterialSrg::m_flipNormalY);
     }
     if(o_wrinkleLayers_enabled && o_blendMask_isBound && o_wrinkleLayers_normal_enabled)
     {
@@ -214,9 +217,9 @@ PbrLightingOutput SkinPS_Common(VSOutput IN)
         float3 normalTS = GetTangentSpaceNormal(normalMapSample, uvMatrix, MaterialSrg::m_normalFactor);
     
         bool applyOverlay = true;
-        normalWS = ApplyNormalMapOverlayWS(applyOverlay, IN.m_normal, tangents[MaterialSrg::m_normalMapUvIndex], bitangents[MaterialSrg::m_normalMapUvIndex], 
-            normalTS, MaterialSrg::m_detail_normal_texture, MaterialSrg::m_sampler, IN.m_detailUv, detailLayerNormalFactor, 
-            MaterialSrg::m_detail_normal_flipX, MaterialSrg::m_detail_normal_flipY, MaterialSrg::m_detailUvMatrix);
+        normalWS = ApplyNormalMapOverlayWS(applyOverlay, IN.m_normal, normalTS, tangents[MaterialSrg::m_normalMapUvIndex], bitangents[MaterialSrg::m_normalMapUvIndex], 
+            MaterialSrg::m_detail_normal_texture, MaterialSrg::m_sampler, IN.m_detailUv, MaterialSrg::m_detail_normal_flipX, MaterialSrg::m_detail_normal_flipY, 
+            detailLayerNormalFactor, tangents[MaterialSrg::m_detail_allMapsUvIndex], bitangents[MaterialSrg::m_detail_allMapsUvIndex], MaterialSrg::m_detailUvMatrix);
     }
     else
     {

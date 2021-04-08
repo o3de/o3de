@@ -1,8 +1,8 @@
 {
-    "gem_name": "ScriptCanvasGem",
+    "gem_name": "ScriptCanvas",
     "GemFormatVersion": 3,
     "Uuid": "869a0d0ec11a45c299917d45c81555e6",
-    "Name": "ScriptCanvasGem",
+    "Name": "ScriptCanvas",
     "DisplayName": "Script Canvas",
     "Version": "0.1.0",
     "LinkType": "DynamicStatic",

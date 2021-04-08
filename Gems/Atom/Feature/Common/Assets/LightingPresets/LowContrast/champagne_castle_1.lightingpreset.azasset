@@ -3,14 +3,13 @@
     "Version": 1,
     "ClassName": "AZ::Render::LightingPreset",
     "ClassData": {
-        "autoSelect": false,
         "displayName": "Champagne Castle 1",
-        "skyboxImageAsset": {
+        "iblDiffuseImageAsset": {
             "assetId": {
                 "guid": "{40D2CCBC-1372-59E5-BF36-D2EA46C10195}",
-                "subId": 1000
+                "subId": 3000
             },
-            "assetHint": "lightingpresets/lowcontrast/champagne_castle_1_4k_iblskyboxcm.exr.streamingimage"
+            "assetHint": "lightingpresets/lowcontrast/champagne_castle_1_4k_iblskyboxcm_ibldiffuse.exr.streamingimage"
         },
         "iblSpecularImageAsset": {
             "assetId": {
@@ -19,15 +18,21 @@
             },
             "assetHint": "lightingpresets/lowcontrast/champagne_castle_1_4k_iblskyboxcm_iblspecular.exr.streamingimage"
         },
-        "iblDiffuseImageAsset": {
+        "skyboxImageAsset": {
+            "assetId": {
+                "guid": "{40D2CCBC-1372-59E5-BF36-D2EA46C10195}",
+                "subId": 1000
+            },
+            "assetHint": "lightingpresets/lowcontrast/champagne_castle_1_4k_iblskyboxcm.exr.streamingimage"
+        },
+        "alternateSkyboxImageAsset": {
             "assetId": {
                 "guid": "{40D2CCBC-1372-59E5-BF36-D2EA46C10195}",
                 "subId": 3000
             },
             "assetHint": "lightingpresets/lowcontrast/champagne_castle_1_4k_iblskyboxcm_ibldiffuse.exr.streamingimage"
         },
-        "iblExposure": 0.0,
-        "skyboxExposure": 0.0,
+        "shadowCatcherOpacity": 0.3499999940395355,
         "lights": [
             {
                 "direction": [
@@ -35,20 +40,10 @@
                     0.25,
                     -1.0
                 ],
-                "color": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "intensity": 1.0,
                 "shadowCascadeCount": 4,
                 "shadowRatioLogarithmUniform": 1.0,
-                "shadowFarClipDistance": 20.0,
-                "shadowmapSize": "Size2048",
-                "enableShadowDebugColoring": false
+                "shadowmapSize": "Size2048"
             }
-        ],
-        "shadowCatcherOpacity": 0.3499999940395355
+        ]
     }
 }

@@ -14,6 +14,7 @@
 #include <PhysXCharacters/Components/CharacterGameplayComponent.h>
 #include <AzFramework/Physics/CharacterBus.h>
 #include <AzFramework/Physics/WorldBodyBus.h>
+#include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <PhysX/PhysXLocks.h>
 #include <PhysX/Utils.h>
@@ -139,19 +140,12 @@ namespace PhysX
     // AZ::Component
     void CharacterGameplayComponent::Init()
     {
-
-    }
-
-    void CharacterGameplayComponent::Activate()
-    {
-        Physics::WorldBody* worldBody = nullptr;
-        Physics::WorldBodyRequestBus::EventResult(worldBody, GetEntityId(), &Physics::WorldBodyRequests::GetWorldBody);
-        if (worldBody)
-        {
-            m_gravity = worldBody->GetWorld()->GetGravity();
-            AZ::Crc32 worldId = worldBody->GetWorld()->GetWorldId();
-            Physics::WorldNotificationBus::Handler::BusConnect(worldId);
-        }
+        //setup AZ::events
+        m_onGravityChangedHandler = AzPhysics::SceneEvents::OnSceneGravityChangedEvent::Handler(
+            [this]([[maybe_unused]] AzPhysics::SceneHandle sceneHandle, const AZ::Vector3& newGravity)
+            {
+                OnGravityChanged(newGravity);
+            });
 
         m_preSimulateHandler = AzPhysics::SystemEvents::OnPresimulateEvent::Handler(
             [this](float deltaTime)
@@ -159,6 +153,20 @@ namespace PhysX
                 OnPreSimulate(deltaTime);
             }
         );
+    }
+
+    void CharacterGameplayComponent::Activate()
+    {
+        AzPhysics::SimulatedBody* worldBody = nullptr;
+        Physics::WorldBodyRequestBus::EventResult(worldBody, GetEntityId(), &Physics::WorldBodyRequests::GetWorldBody);
+        if (worldBody)
+        {
+            if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+            {
+                m_gravity = sceneInterface->GetGravity(worldBody->m_sceneOwner);
+                sceneInterface->RegisterSceneGravityChangedEvent(worldBody->m_sceneOwner, m_onGravityChangedHandler);
+            }
+        }
 
         if (auto* physXSystem = GetPhysXSystem())
         {
@@ -184,7 +192,7 @@ namespace PhysX
     void CharacterGameplayComponent::Deactivate()
     {
         CharacterGameplayRequestBus::Handler::BusDisconnect();
-        Physics::WorldNotificationBus::Handler::BusDisconnect();
+        m_onGravityChangedHandler.Disconnect();
         m_preSimulateHandler.Disconnect();
     }
 
@@ -194,7 +202,6 @@ namespace PhysX
         ApplyGravity(deltaTime);
     }
 
-    // Physics::WorldNotificationBus
     void CharacterGameplayComponent::OnGravityChanged(const AZ::Vector3& gravity)
     {
         // project the falling velocity onto the new gravity direction

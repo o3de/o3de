@@ -61,13 +61,12 @@ namespace ScriptCanvas
                 /// Translation
                 bool IsNoOp() const override;
 
-                bool IsSupportedByNewBackend() const override { return true; }
+                
 
                 AZ::Outcome<DependencyReport, void> GetDependencies() const override;
                     
             protected:
-
-                SlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot&, CombinedSlotType targetSlotType, const Slot*) const override
+                ConstSlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot&, CombinedSlotType targetSlotType, const Slot*) const override
                 {
                     return AZ::Success(GetSlotsByType(targetSlotType));
                 }

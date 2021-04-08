@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include <Atom/Feature/ACES/Aces.h>
+#include <ACES/Aces.h>
 #include <Atom/RPI.Reflect/Pass/PassAsset.h>
 #include <Atom/RPI.Reflect/Pass/PassData.h>
 #include <Atom/RPI.Reflect/System/AnyAsset.h>

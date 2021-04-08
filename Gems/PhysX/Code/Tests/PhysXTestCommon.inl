@@ -11,6 +11,7 @@
 */
 
 #include <AzFramework/Components/TransformComponent.h>
+#include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
 
 #include <RigidBodyComponent.h>
 #include <StaticRigidBodyComponent.h>
@@ -20,7 +21,7 @@ namespace PhysX
     namespace TestUtils
     {
         template<typename ColliderType>
-        EntityPtr AddUnitTestObject(const AZ::Vector3& position, const char* name)
+        EntityPtr AddUnitTestObject(AzPhysics::SceneHandle sceneHandle, const AZ::Vector3& position, const char* name)
         {
             EntityPtr entity = AZStd::make_shared<AZ::Entity>(name);
 
@@ -31,16 +32,16 @@ namespace PhysX
             auto colliderConfig = AZStd::make_shared<Physics::ColliderConfiguration>();
             auto shapeConfig = AZStd::make_shared<typename ColliderType::Configuration>();
             colliderComponent->SetShapeConfigurationList({ AZStd::make_pair(colliderConfig, shapeConfig) });
-            Physics::RigidBodyConfiguration rigidBodyConfig;
+            AzPhysics::RigidBodyConfiguration rigidBodyConfig;
             rigidBodyConfig.m_computeMass = false;
-            entity->CreateComponent<RigidBodyComponent>(rigidBodyConfig);
+            entity->CreateComponent<RigidBodyComponent>(rigidBodyConfig, sceneHandle);
             entity->Init();
             entity->Activate();
             return entity;
         }
 
         template<typename ColliderType>
-        EntityPtr AddStaticUnitTestObject(const AZ::Vector3& position, const char* name)
+        EntityPtr AddStaticUnitTestObject(AzPhysics::SceneHandle sceneHandle, const AZ::Vector3& position, const char* name)
         {
             EntityPtr entity = AZStd::make_shared<AZ::Entity>(name);
 
@@ -52,7 +53,7 @@ namespace PhysX
             auto shapeConfig = AZStd::make_shared<typename ColliderType::Configuration>();
             colliderComponent->SetShapeConfigurationList({ AZStd::make_pair(colliderConfig, shapeConfig) });
 
-            entity->CreateComponent<StaticRigidBodyComponent>();
+            entity->CreateComponent<StaticRigidBodyComponent>(sceneHandle);
             
             entity->Init();
             entity->Activate();

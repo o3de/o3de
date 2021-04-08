@@ -125,7 +125,7 @@ bool CSummedAreaFilterKernel::CreateFromSincCalc(const unsigned long indwSize)
                 float r2 = r1 * 8.0f;
 
                 // http://home.no.net/dmaurer/~dersch/interpolator/interpolator.html
-                // weight = [ sin(x*�) / (x*�) ] * [ sin(x*� / 8) / (x*�/8) ]
+                // weight = [ sin(x*pi) / (x*pi) ] * [ sin(x*pi / 8) / (x*pi/8) ]
 
                 // http://www.binbooks.com/books/photo/i/l/57186AF8DE
                 // sinc(x) = sin(pi * x) / (pi * x)

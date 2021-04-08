@@ -22,6 +22,7 @@
 #include <AzToolsFramework/PropertyTreeEditor/PropertyTreeEditor.h>
 
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
+#include <AzToolsFramework/UnitTest/ToolsTestApplication.h>
 
 #include <QtTest/QtTest>
 #include <QApplication>
@@ -209,7 +210,7 @@ namespace UnitTest
             m_app.Stop();
         }
 
-        ToolsApplication m_app;
+        ToolsTestApplication m_app{ "PropertyTreeEditorTests" };
         AZ::SerializeContext* m_serializeContext = nullptr;
     };
 

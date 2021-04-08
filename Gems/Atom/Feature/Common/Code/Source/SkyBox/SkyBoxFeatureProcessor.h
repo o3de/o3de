@@ -139,14 +139,12 @@ namespace AZ
             Data::Instance<RPI::Buffer> m_buffer;
             PhysicalSkyData m_physicalSkyData;
 
-            RHI::ShaderInputConstantIndex m_skyboxEnableIndex;
-
-            RHI::ShaderInputBufferIndex m_physicalSkyBufferIndex;
-            RHI::ShaderInputConstantIndex m_physicalSkyIndex;
-
-            RHI::ShaderInputImageIndex m_cubemapIndex;
-            RHI::ShaderInputConstantIndex m_cubemapRotationMatrixIndex;
-            RHI::ShaderInputConstantIndex m_cubemapExposureIndex;
+            RHI::ShaderInputNameIndex m_skyboxEnableIndex = "m_enable";
+            RHI::ShaderInputNameIndex m_physicalSkyBufferIndex = "m_physicalSkyData";
+            RHI::ShaderInputNameIndex m_physicalSkyIndex = "m_physicalSky";
+            RHI::ShaderInputNameIndex m_cubemapIndex = "m_skyboxCubemap";
+            RHI::ShaderInputNameIndex m_cubemapRotationMatrixIndex = "m_cubemapRotationMatrix";
+            RHI::ShaderInputNameIndex m_cubemapExposureIndex = "m_cubemapExposure";
 
             bool m_skyNeedUpdate = true;
             bool m_sunNeedUpdate = true;

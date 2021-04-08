@@ -125,7 +125,8 @@ namespace UnitTest
             const TemplateId& templateId,
             const PrefabDomValue& expectedContent,
             const PrefabDomPath& contentPath,
-            bool isContentAnInstance = false);
+            bool isContentAnInstance = false,
+            bool shouldCompareContainerEntities = true);
 
         PrefabDom CreatePrefabDom();
         PrefabDom CreatePrefabDom(const AZStd::vector<InstanceData>& instancesData);
@@ -142,15 +143,12 @@ namespace UnitTest
          */
         void ValidatePrefabDomInstances(const AZStd::vector<InstanceAlias>& instanceAliases,
             const PrefabDom& prefabDom,
-            const PrefabDom& expectedNestedInstanceDom);
+            const PrefabDom& expectedNestedInstanceDom,
+            bool shouldCompareContainerEntities = true);
 
-        void ComparePrefabDoms(PrefabDomValueConstReference valueA, PrefabDomValueConstReference valueB, bool shouldCompareLinkIds = true);
+        void ComparePrefabDoms(PrefabDomValueConstReference valueA, PrefabDomValueConstReference valueB, bool shouldCompareLinkIds = true,
+            bool shouldCompareContainerEntities = true);
         void ComparePrefabDomValues(PrefabDomValueConstReference valueA, PrefabDomValueConstReference valueB);
-
-        /**
-         * Prints the contents of the given prefab DOM to the console in a readable format.
-         */
-        void PrintPrefabDom(const PrefabDomValue& prefabDom);
 
         void ValidateEntitiesOfInstances(
             const AzToolsFramework::Prefab::TemplateId& templateId,
@@ -161,7 +159,11 @@ namespace UnitTest
             const AzToolsFramework::Prefab::TemplateId& templateId,
             const AzToolsFramework::Prefab::PrefabDom& expectedPrefabDom,
             const AZStd::vector<InstanceAlias>& nestedInstanceAliases);
-        
+
+        void ValidateComponentsDomHasId(const PrefabDomValue& componentsDom, AZ::u64 componentId);
+
+        //! Serializes Dom into a string
+        AZStd::string DomToString(const AzToolsFramework::Prefab::PrefabDom& dom);
     } 
 }
 

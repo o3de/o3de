@@ -61,6 +61,7 @@ class TestAssetProcessor(object):
 
         assert under_test._ap_proc is not None
         mock_popen.assert_called_once_with([mock_ap_path, '--zeroAnalysisMode', '--regset="/Amazon/AzCore/Bootstrap/project_path=AutomatedTesting"',
+                                            '--logDir', under_test.log_root(),
                                             '--acceptInput', '--platforms', 'bar'], cwd=os.path.dirname(mock_ap_path))
         mock_connect.assert_called()
 
@@ -68,7 +69,8 @@ class TestAssetProcessor(object):
     @mock.patch('subprocess.Popen')
     @mock.patch('os.path.basename', mock.MagicMock(return_value=""))
     @mock.patch('os.path.dirname', mock.MagicMock(return_value=""))
-    @mock.patch('ly_test_tools.environment.process_utils.kill_processes_with_name_not_started_from', mock.MagicMock(return_value=None))
+    @mock.patch('ly_test_tools.environment.process_utils.kill_processes_with_name_not_started_from',
+                mock.MagicMock(return_value=None))
     @mock.patch('ly_test_tools.environment.process_utils.process_exists', mock.MagicMock(return_value=True))
     @mock.patch('socket.socket.connect')
     def test_Start_ProcAlreadyRunning_ProcNotChanged(self, mock_connect, mock_popen, mock_workspace):
@@ -101,7 +103,6 @@ class TestAssetProcessor(object):
         mock_waiter.assert_called_once()
         assert under_test._ap_proc is None
 
-
     @mock.patch('ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager')
     @mock.patch('subprocess.run')
     def test_BatchProcess_NoFastscanBatchCompletes_Success(self, mock_run, mock_workspace):
@@ -112,7 +113,8 @@ class TestAssetProcessor(object):
         result, _ = under_test.batch_process(1, False)
 
         assert result
-        mock_run.assert_called_once_with([apb_path], close_fds=True, capture_output=False,
+        mock_run.assert_called_once_with([apb_path, '--logDir', under_test.log_root()],
+                                         close_fds=True, capture_output=False,
                                          timeout=1)
 
     @mock.patch('ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager')
@@ -126,9 +128,13 @@ class TestAssetProcessor(object):
         result = under_test.batch_process(1, True)
 
         assert result
-        mock_run.assert_called_once_with([apb_path, '--zeroAnalysisMode', '--regset="/Amazon/AzCore/Bootstrap/project_path=AutomatedTesting"'],
-                                         close_fds=True, capture_output=False,
-                                         timeout=1)
+        mock_run.assert_called_once_with(
+            [apb_path, '--zeroAnalysisMode', '--regset="/Amazon/AzCore/Bootstrap/project_path=AutomatedTesting"',
+             '--logDir',
+             under_test.log_root()],
+
+            close_fds=True, capture_output=False,
+            timeout=1)
 
     @mock.patch('ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager')
     @mock.patch('subprocess.run')
@@ -141,8 +147,8 @@ class TestAssetProcessor(object):
         result, _ = under_test.batch_process(None, False)
 
         assert not result
-        mock_run.assert_called_once_with([apb_path], close_fds=True, capture_output=False, timeout=28800.0)
-
+        mock_run.assert_called_once_with([apb_path, '--logDir', under_test.log_root()],
+                                         close_fds=True, capture_output=False, timeout=28800.0)
 
     @mock.patch('ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager')
     def test_EnableAssetProcessorPlatform_AssetProcessorObject_Updated(self, mock_workspace):
@@ -181,5 +187,3 @@ class TestAssetProcessor(object):
 
         mock_stop.assert_called()
         mock_restore_ap.assert_called()
-
-

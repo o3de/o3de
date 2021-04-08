@@ -15,11 +15,13 @@
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
-#include <AzFramework/Physics/RigidBody.h>
-#include <AzFramework/Physics/World.h>
+#include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 #include <AzFramework/Physics/WorldBodyBus.h>
+#include <AzFramework/Physics/Common/PhysicsEvents.h>
+#include <AzFramework/Physics/Common/PhysicsTypes.h>
 
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Component/NonUniformScaleBus.h>
 #include <PhysX/ColliderComponentBus.h>
 #include <PhysX/Debug/PhysXDebugConfiguration.h>
 #include <PhysX/Debug/PhysXDebugInterface.h>
@@ -29,10 +31,10 @@ namespace PhysX
     /// Configuration data for EditorPhysXRigidBodyComponent.
     ///
     struct EditorRigidBodyConfiguration
-        : public Physics::RigidBodyConfiguration
+        : public AzPhysics::RigidBodyConfiguration
     {
         AZ_CLASS_ALLOCATOR(EditorRigidBodyConfiguration, AZ::SystemAllocator, 0);
-        AZ_RTTI(EditorRigidBodyConfiguration, "{27297024-5A99-4C58-8614-4EF18137CE69}", Physics::RigidBodyConfiguration);
+        AZ_RTTI(EditorRigidBodyConfiguration, "{27297024-5A99-4C58-8614-4EF18137CE69}", AzPhysics::RigidBodyConfiguration);
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -47,14 +49,13 @@ namespace PhysX
         , protected AzFramework::EntityDebugDisplayEventBus::Handler
         , private AZ::TransformNotificationBus::Handler
         , private Physics::ColliderComponentEventBus::Handler
-        , private Physics::WorldNotificationBus::Handler
         , private Physics::WorldBodyRequestBus::Handler
     {
     public:
         AZ_EDITOR_COMPONENT(EditorRigidBodyComponent, "{F2478E6B-001A-4006-9D7E-DCB5A6B041DD}", AzToolsFramework::Components::EditorComponentBase);
         static void Reflect(AZ::ReflectContext* context);
 
-        EditorRigidBodyComponent() = default;
+        EditorRigidBodyComponent();
         explicit EditorRigidBodyComponent(const EditorRigidBodyConfiguration& configuration);
         ~EditorRigidBodyComponent() = default;
 
@@ -79,6 +80,7 @@ namespace PhysX
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
             dependent.push_back(AZ_CRC("PhysXColliderService", 0x4ff43f7c));
+            dependent.push_back(AZ_CRC_CE("NonUniformScaleService"));
         }
 
         // AZ::Component
@@ -88,7 +90,7 @@ namespace PhysX
         // EditorComponentBase
         void BuildGameEntity(AZ::Entity* gameEntity) override;
 
-        const Physics::RigidBody* GetRigidBody() const;
+        const AzPhysics::RigidBody* GetRigidBody() const;
 
     private:
         // AzFramework::EntityDebugDisplayEventBus
@@ -99,31 +101,40 @@ namespace PhysX
         // TransformBus
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 
+        // non-uniform scale handling
+        void OnNonUniformScaleChanged(const AZ::Vector3& scale);
+
         // Physics::ColliderComponentEventBus
         void OnColliderChanged() override;
-
-        // Physics::WorldNotificationBus
-        void OnPrePhysicsSubtick(float fixedDeltaTime) override;
 
         // WorldBodyRequestBus
         void EnablePhysics() override;
         void DisablePhysics() override;
         bool IsPhysicsEnabled() const override;
         AZ::Aabb GetAabb() const override;
-        Physics::WorldBody* GetWorldBody() override;
-        Physics::RayCastHit RayCast(const Physics::RayCastRequest& request) override;
+        AzPhysics::SimulatedBody* GetWorldBody() override;
+        AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& request) override;
 
-        void UpdateEditorWorldRigidBody();
+        void CreateEditorWorldRigidBody();
         void UpdateDebugDrawSettings(const Debug::DebugDisplayData& data);
 
-        void SetShouldBeUpdated();
+        void SetShouldBeRecreated();
+
+        void InitPhysicsTickHandler();
+        void PrePhysicsTick();
 
         Debug::DebugDisplayDataChangedEvent::Handler m_debugDisplayDataChangeHandler;
 
         EditorRigidBodyConfiguration m_config;
-        AZStd::unique_ptr<Physics::RigidBody> m_editorBody;
+        AzPhysics::SimulatedBodyHandle m_rigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
+        AzPhysics::RigidBody* m_editorBody = nullptr;
+        AzPhysics::SceneHandle m_editorSceneHandle = AzPhysics::InvalidSceneHandle;
+
         AZ::Color m_centerOfMassDebugColor = AZ::Colors::White;
         float m_centerOfMassDebugSize = 0.1f;
-        bool m_shouldBeUpdated = false;
+        bool m_shouldBeRecreated = false;
+
+        AzPhysics::SceneEvents::OnSceneSimulationStartHandler m_sceneStartSimHandler;
+        AZ::NonUniformScaleChangedEvent::Handler m_nonUniformScaleChangedHandler; //!< Responds to changes in non-uniform scale.
     };
 } // namespace PhysX

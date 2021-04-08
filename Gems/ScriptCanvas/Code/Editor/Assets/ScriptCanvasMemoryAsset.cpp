@@ -711,7 +711,7 @@ namespace ScriptCanvasEditor
 
         AZStd::string tempFilename;
         AzFramework::StringFunc::Path::GetFullFileName(targetFilename.data(), tempFilename);
-        AZStd::string tempPath = AZStd::string::format("@cache@/scriptcanvas/%s.temp", tempFilename.data());
+        AZStd::string tempPath = AZStd::string::format("@usercache@/scriptcanvas/%s.temp", tempFilename.data());
 
         AZStd::array<char, AZ::IO::MaxPathLength> resolvedPath{};
         AZ::IO::FileIOBase::GetInstance()->ResolvePath(tempPath.data(), resolvedPath.data(), resolvedPath.size());

@@ -42,9 +42,8 @@ namespace PhysXEditorTests
         AZ::TransformBus::Event(editorEntity->GetId(), &AZ::TransformInterface::SetLocalScale, scale);
 
         // Trigger editor physics world update so EditorRigidBodyComponent can process scale change
-        AZStd::shared_ptr<Physics::World> editorWorld;
-        Physics::EditorWorldBus::BroadcastResult(editorWorld, &Physics::EditorWorldRequests::GetEditorWorld);
-        editorWorld->Update(0.1f);
+        auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
+        physicsSystem->Simulate(0.1f);
 
         const AZ::Aabb finalAabb = rigidBodyComponent->GetRigidBody()->GetAabb();
 
@@ -53,7 +52,7 @@ namespace PhysXEditorTests
     }
 
     // LYN-1241 - Test disabled due to AZ_Error reports about MaterialLibrary being not found in the AssetCatalog
-    TEST_F(PhysXEditorFixture, DISABLED_EditorRigidBodyComponent_EntityScaledAndColliderHasNonZeroOffset_RigidBodyAabbMatchesScaledOffset)
+    TEST_F(PhysXEditorFixture, EditorRigidBodyComponent_EntityScaledAndColliderHasNonZeroOffset_RigidBodyAabbMatchesScaledOffset)
     {
         // Create editor entity
         EntityPtr editorEntity = CreateInactiveEditorEntity("Entity");
@@ -78,11 +77,10 @@ namespace PhysXEditorTests
         // Notify listeners that collider has changed
         Physics::ColliderComponentEventBus::Event(editorEntity->GetId(), &Physics::ColliderComponentEvents::OnColliderChanged);
 
-        AZStd::shared_ptr<Physics::World> editorWorld;
-        Physics::EditorWorldBus::BroadcastResult(editorWorld, &Physics::EditorWorldRequests::GetEditorWorld);
-
+        auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
+        
         // Update editor world to let updates to be applied
-        editorWorld->Update(0.1f);
+        physicsSystem->Simulate(0.1f);
 
         const AZ::Aabb originalAabb = rigidBodyComponent->GetRigidBody()->GetAabb();
         
@@ -95,7 +93,7 @@ namespace PhysXEditorTests
         AZ::TransformBus::Event(editorEntity->GetId(), &AZ::TransformInterface::SetLocalScale, scale);
 
         // Update editor world to let updates to be applied
-        editorWorld->Update(0.1f);
+        physicsSystem->Simulate(0.1f);
 
         const AZ::Aabb finalAabb = rigidBodyComponent->GetRigidBody()->GetAabb();
 

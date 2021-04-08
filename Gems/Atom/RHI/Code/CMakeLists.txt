@@ -62,6 +62,7 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             AZ::AzFramework
+            AZ::AtomCore
             Gem::Atom_RHI.Public
 )
 

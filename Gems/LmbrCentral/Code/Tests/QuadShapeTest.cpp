@@ -20,7 +20,7 @@
 #include <LmbrCentral/Shape/QuadShapeComponentBus.h>
 #include <Shape/QuadShapeComponent.h>
 #include <AZTestShared/Math/MathTestHelpers.h>
-#include <ShapeTestUtils.h>
+#include <AzFramework/UnitTest/TestDebugDisplayRequests.h>
 
 namespace
 {

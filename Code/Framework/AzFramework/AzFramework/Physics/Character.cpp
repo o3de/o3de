@@ -88,7 +88,7 @@ namespace Physics
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)
         {
-            serializeContext->Class<CharacterConfiguration>()
+            serializeContext->Class<CharacterConfiguration, AzPhysics::SimulatedBodyConfiguration>()
                 ->Version(2)
                 ->Field("CollisionLayer", &CharacterConfiguration::m_collisionLayer)
                 ->Field("CollisionGroupId", &CharacterConfiguration::m_collisionGroupId)

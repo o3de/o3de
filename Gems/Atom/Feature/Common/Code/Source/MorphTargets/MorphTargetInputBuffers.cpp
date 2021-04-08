@@ -28,20 +28,18 @@ namespace AZ
 {
     namespace Render
     {
-        MorphTargetInputBuffers::MorphTargetInputBuffers(uint32_t vertexCount, const AZStd::vector<uint32_t>& vertexDeltas, const AZStd::string& bufferNamePrefix)
+        MorphTargetInputBuffers::MorphTargetInputBuffers(const RPI::BufferAssetView& bufferAssetView, const AZStd::string& bufferNamePrefix)
         {            
-            // There are four bytes per element in vertexDeltas
-            size_t deltaBufferSizeInBytes = vertexDeltas.size() * sizeof(uint32_t);
-            size_t deltaElementSizeInBytes = deltaBufferSizeInBytes / vertexCount;
-            AZ_Assert(deltaElementSizeInBytes % 16 == 0, "MorphTargetInputBuffers - Morph target deltas must be 16 byte aligned for structured buffers.");
-            RHI::BufferViewDescriptor deltaBufferViewDescriptor = RHI::BufferViewDescriptor::CreateStructured(0, vertexCount, deltaElementSizeInBytes);
+            auto buffer = RPI::Buffer::FindOrCreate(bufferAssetView.GetBufferAsset());
 
-            // Use the user-specified buffer name if it exits, or a default one otherwise.
-            const char* bufferName = !bufferNamePrefix.empty() ? bufferNamePrefix.c_str() : "MorphTargetDeltaBuffer";
+            AZ::RHI::Ptr<AZ::RHI::BufferView> bufferView = RHI::Factory::Get().CreateBufferView();
+            {
+                bufferView->SetName(Name(bufferNamePrefix + "MorphTargetVertexDeltaView"));
+                RHI::ResultCode resultCode = bufferView->Init(*buffer->GetRHIBuffer(), bufferAssetView.GetBufferViewDescriptor());
+                AZ_Error("MorphTargetInputBuffers", resultCode == RHI::ResultCode::Success, "Failed to initialize buffer view for morph target.");
+            }
 
-            // Create the actual buffer
-            Data::Asset<RPI::BufferAsset> bufferAsset = CreateBufferAsset(vertexDeltas.data(), deltaBufferViewDescriptor, RHI::BufferBindFlags::ShaderRead, SkinnedMeshVertexStreamPropertyInterface::Get()->GetInputStreamResourcePool(), bufferName);
-            m_vertexDeltas = RPI::Buffer::FindOrCreate(bufferAsset);
+            m_vertexDeltaBufferView = bufferView;
         }
 
         void MorphTargetInputBuffers::SetBufferViewsOnShaderResourceGroup(const Data::Instance<RPI::ShaderResourceGroup>& perInstanceSRG)
@@ -50,7 +48,7 @@ namespace AZ
             RHI::ShaderInputBufferIndex srgIndex = perInstanceSRG->FindShaderInputBufferIndex(Name{ "m_vertexDeltas" });
             AZ_Error("MorphTargetInputBuffers", srgIndex.IsValid(), "Failed to find shader input index for 'm_positionDeltas' in the skinning compute shader per-instance SRG.");
 
-            bool success = perInstanceSRG->SetBufferView(srgIndex, m_vertexDeltas->GetBufferView());
+            bool success = perInstanceSRG->SetBufferView(srgIndex, m_vertexDeltaBufferView.get());
             AZ_Error("MorphTargetInputBuffers", success, "Failed to bind buffer view for vertex deltas");
         }
     } // namespace Render

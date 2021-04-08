@@ -38,7 +38,6 @@ namespace PhysX
     //! dynamic.
     class CharacterGameplayComponent
         : public AZ::Component
-        , public Physics::WorldNotificationBus::Handler
         , public CharacterGameplayRequestBus::Handler
     {
     public:
@@ -68,18 +67,17 @@ namespace PhysX
         void Activate() override;
         void Deactivate() override;
 
-        // Physics::WorldNotificationBus
-        void OnGravityChanged(const AZ::Vector3& gravity) override;
-
     private:
-        AzPhysics::SystemEvents::OnPresimulateEvent::Handler m_preSimulateHandler;
         void OnPreSimulate(float deltaTime);
-
+        void OnGravityChanged(const AZ::Vector3& gravity);
         void ApplyGravity(float deltaTime);
 
         float m_gravityMultiplier = 1.0f;
         AZ::Vector3 m_gravity = AZ::Vector3::CreateZero();
         AZ::Vector3 m_fallingVelocity = AZ::Vector3::CreateZero();
+
+        AzPhysics::SystemEvents::OnPresimulateEvent::Handler m_preSimulateHandler;
+        AzPhysics::SceneEvents::OnSceneGravityChangedEvent::Handler m_onGravityChangedHandler;
     };
 
     //! Example implementation of controller-controller filtering callback.

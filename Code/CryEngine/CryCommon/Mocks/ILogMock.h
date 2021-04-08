@@ -17,9 +17,9 @@ class LogMock
 {
 public:
     MOCK_METHOD3(LogV,
-        void(const ELogType nType, const char* szFormat, va_list args));
+        void(ELogType nType, const char* szFormat, va_list args));
     MOCK_METHOD4(LogV,
-        void(const ELogType nType, int flags, const char* szFormat, va_list args));
+        void(ELogType nType, int flags, const char* szFormat, va_list args));
     MOCK_METHOD0(Release,
         void());
     MOCK_METHOD2(SetFileName,

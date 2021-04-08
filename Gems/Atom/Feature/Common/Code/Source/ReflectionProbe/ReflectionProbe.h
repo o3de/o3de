@@ -65,7 +65,8 @@ namespace AZ
         };
 
         // ReflectionProbe manages all aspects of a single probe, including rendering, visualization, and cubemap generation
-        class ReflectionProbe final
+        class ReflectionProbe final :
+            public AZ::Data::AssetBus::MultiHandler
         {
         public:
             ReflectionProbe() = default;
@@ -113,6 +114,10 @@ namespace AZ
                 uint32_t stencilRef);
 
             void UpdateCulling();
+
+            // AZ::Data::AssetBus::Handler overrides...
+            void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
+            void OnAssetError(Data::Asset<Data::AssetData> asset) override;
 
             // scene
             RPI::Scene* m_scene = nullptr;

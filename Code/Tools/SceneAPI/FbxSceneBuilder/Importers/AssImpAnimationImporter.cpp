@@ -13,6 +13,7 @@
 #include <assimp/mesh.h>
 #include <assimp/scene.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/algorithm.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
@@ -38,8 +39,10 @@ namespace AZ
         namespace FbxSceneBuilder
         {
             const char* AssImpAnimationImporter::s_animationNodeName = "animation";
-            const FbxSDKWrapper::FbxTimeWrapper::TimeMode AssImpAnimationImporter::s_defaultTimeMode = 
-                FbxSDKWrapper::FbxTimeWrapper::frames30;
+
+            // Downstream only supports 30 frames per second sample rate. Adjusting to 60 doubles the
+            // length of the animations, they still play back at 30 frames per second.
+            const double AssImpAnimationImporter::s_defaultTimeStepSampleRate = 1.0 / 30.0;
 
             AssImpAnimationImporter::AssImpAnimationImporter()
             {
@@ -51,7 +54,7 @@ namespace AZ
                 SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
                 if (serializeContext)
                 {
-                    serializeContext->Class<AssImpAnimationImporter, SceneCore::LoadingComponent>()->Version(1);
+                    serializeContext->Class<AssImpAnimationImporter, SceneCore::LoadingComponent>()->Version(2); // [LYN-2281] Skinned mesh loading fixes
                 }
             }
 
@@ -115,13 +118,13 @@ namespace AZ
                 }
 
                 // These variables are named using AssImp naming convention for consistency
-                unsigned int mNumPositionKeys{};
+                AZ::u32 mNumPositionKeys{};
                 aiVectorKey* mPositionKeys{};
                 
-                unsigned int mNumRotationKeys{};
+                AZ::u32 mNumRotationKeys{};
                 aiQuatKey* mRotationKeys{};
 
-                unsigned int mNumScalingKeys{};
+                AZ::u32 mNumScalingKeys{};
                 aiVectorKey* mScalingKeys{};
                 
                 AZStd::vector<aiVectorKey> m_ownedPositionKeys{};
@@ -156,7 +159,6 @@ namespace AZ
                 return AZStd::make_pair(animation, anim);
             }
 
-
             Events::ProcessingResult AssImpAnimationImporter::ImportAnimation(AssImpSceneNodeAppendedContext& context)
             {
                 AZ_TraceContext("Importer", "Animation");
@@ -181,11 +183,11 @@ namespace AZ
                 // all the animations for a given node
                 // In the case of bone animations, the data is copied into a ConsolidatedNodeAnim so we can
                 // do fix-ups later without affecting the original data
-                auto mapAnimationsFunc = [](unsigned numChannels, auto** channels, const aiAnimation* animation, auto& map)
+                auto mapAnimationsFunc = [](AZ::u32 numChannels, auto** channels, const aiAnimation* animation, auto& map)
                 {
                     map.reserve(numChannels);
 
-                    for (unsigned channelIndex = 0; channelIndex < numChannels; ++channelIndex)
+                    for (AZ::u32 channelIndex = 0; channelIndex < numChannels; ++channelIndex)
                     {
                         auto* nodeAnim = channels[channelIndex];
                         AZStd::string name = GetName(nodeAnim);
@@ -194,13 +196,13 @@ namespace AZ
                     }
                 };
 
-                for (unsigned animIndex = 0; animIndex < scene->mNumAnimations; ++animIndex)
+                for (AZ::u32 animIndex = 0; animIndex < scene->mNumAnimations; ++animIndex)
                 {
                     const aiAnimation* animation = scene->mAnimations[animIndex];
                     
                     mapAnimationsFunc(animation->mNumChannels, animation->mChannels, animation, boneAnimations);
 
-                    for (unsigned channelIndex = 0; channelIndex < animation->mNumMorphMeshChannels; ++channelIndex)
+                    for (AZ::u32 channelIndex = 0; channelIndex < animation->mNumMorphMeshChannels; ++channelIndex)
                     {
                         auto* nodeAnim = animation->mMorphMeshChannels[channelIndex];
                         AZStd::string name = GetName(nodeAnim);
@@ -280,7 +282,7 @@ namespace AZ
                 }
 
                 Events::ProcessingResultCombiner combinedAnimationResult;
-                for (unsigned meshIndex = 0; meshIndex < currentNode->mNumMeshes; ++meshIndex)
+                for (AZ::u32 meshIndex = 0; meshIndex < currentNode->mNumMeshes; ++meshIndex)
                 {
                     aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[meshIndex]];
 
@@ -321,7 +323,7 @@ namespace AZ
                     DataTypes::MatrixType localTransform = AssImpSDKWrapper::AssImpTypeConverter::ToTransform(combinedTransform);
                     context.m_sourceSceneSystem.SwapTransformForUpAxis(localTransform);
                     context.m_sourceSceneSystem.ConvertUnit(localTransform);
-                    for (unsigned time = 0; time <= animation->mDuration; ++time)
+                    for (AZ::u32 time = 0; time <= animation->mDuration; ++time)
                     {
                         createdAnimationData->AddKeyFrame(localTransform);
                     }
@@ -408,15 +410,8 @@ namespace AZ
                             anim->mNumPositionKeys, anim->mNumRotationKeys, anim->mNumScalingKeys);
                         return Events::ProcessingResult::Failure;
                     }
-
-                    unsigned numAnimationKeys = anim->mNumPositionKeys;
-
-                    if (numAnimationKeys <= 1)
-                    {
-                        numAnimationKeys = AZStd::GetMax(anim->mNumRotationKeys, anim->mNumScalingKeys);
-                    }
-
-                    auto sampleKeyFrame = [](const auto& keys, unsigned numKeys, double time)
+                    
+                    auto sampleKeyFrame = [](const auto& keys, AZ::u32 numKeys, double time, AZ::u32& lastIndex)
                     {
                         AZ_Error("AnimationImporter", numKeys > 0, "Animation key set must have at least 1 key");
 
@@ -427,9 +422,10 @@ namespace AZ
 
                         auto returnValue = keys[0].mValue;
 
-                        for (unsigned keyIndex = 0; keyIndex < numKeys; ++keyIndex)
+                        for (AZ::u32 keyIndex = lastIndex; keyIndex < numKeys; ++keyIndex)
                         {
                             const auto& key = keys[keyIndex];
+                            lastIndex = keyIndex;
 
                             // We want to return the key that exactly matches the time if possible, otherwise we'll keep track of the previous time
                             // If we don't find an exact match and end up going past the desired time (or run out of keyframes) then we return the previous key
@@ -437,7 +433,7 @@ namespace AZ
                             {
                                 returnValue = key.mValue;
                             }
-                            else if (key.mTime == time)
+                            else if (AZ::IsClose(key.mTime, time))
                             {
                                 return key.mValue;
                             }
@@ -450,16 +446,34 @@ namespace AZ
                         return returnValue;
                     };
 
+                    // Resample the animations at a fixed time step. This matches the behaviour of
+                    // the previous SDK used. Longer term, this could be data driven, or based on the
+                    // smallest time step between key frames.
+                    // AssImp has an animation->mTicksPerSecond and animation->mDuration, but those
+                    // are less predictable than just using a fixed time step.
+                    const double duration = animation->mDuration / animation->mTicksPerSecond;
+
+                    AZ::u32 numKeyFrames = AZStd::max(AZStd::max(anim->mNumScalingKeys, anim->mNumPositionKeys), anim->mNumRotationKeys);
+                    if (!AZ::IsClose(duration / s_defaultTimeStepSampleRate, numKeyFrames, 1))
+                    {
+                        double dT = duration / s_defaultTimeStepSampleRate;
+                        numKeyFrames = AZStd::ceilf(dT) + 1; // +1 because the animation is from [0, duration] - we have a keyframe at the end of the duration which needs to be included
+                    }
+                    
                     AZStd::shared_ptr<SceneData::GraphData::AnimationData> createdAnimationData =
                        AZStd::make_shared<SceneData::GraphData::AnimationData>();
-                    createdAnimationData->ReserveKeyFrames(animation->mDuration + 1); // +1 because we start at 0 and the last keyframe is at mDuration instead of mDuration-1
-                    createdAnimationData->SetTimeStepBetweenFrames(1.0 / animation->mTicksPerSecond);
-                    
-                    for (unsigned time = 0; time <= animation->mDuration; ++time)
+                    createdAnimationData->ReserveKeyFrames(numKeyFrames);
+                    createdAnimationData->SetTimeStepBetweenFrames(s_defaultTimeStepSampleRate);
+
+                    AZ::u32 lastScaleIndex = 0;
+                    AZ::u32 lastPositionIndex = 0;
+                    AZ::u32 lastRotationIndex = 0;
+                    for (AZ::u32 frame = 0; frame < numKeyFrames; ++frame)
                     {
-                        auto scale = sampleKeyFrame(anim->mScalingKeys, anim->mNumScalingKeys, time);
-                        auto position = sampleKeyFrame(anim->mPositionKeys, anim->mNumPositionKeys, time);
-                        auto rotation = sampleKeyFrame(anim->mRotationKeys, anim->mNumRotationKeys, time);
+                        double time = frame * s_defaultTimeStepSampleRate * animation->mTicksPerSecond;
+                        aiVector3D scale = sampleKeyFrame(anim->mScalingKeys, anim->mNumScalingKeys, time, lastScaleIndex);
+                        aiVector3D position = sampleKeyFrame(anim->mPositionKeys, anim->mNumPositionKeys, time, lastPositionIndex);
+                        aiQuaternion rotation = sampleKeyFrame(anim->mRotationKeys, anim->mNumRotationKeys, time, lastRotationIndex);
                         
                         aiMatrix4x4 transform(scale, rotation, position);
                         
@@ -555,9 +569,9 @@ namespace AZ
                     aiAnimMesh* aiAnimMesh = mesh->mAnimMeshes[meshIdx];
                     AZStd::string_view nodeName(aiAnimMesh->mName.C_Str());
 
-                    const unsigned maxKeys = keys.size();
-                    unsigned keyIdx = 0;
-                    for (unsigned time = 0; time <= animation->mDuration; ++time)
+                    const AZ::u32 maxKeys = keys.size();
+                    AZ::u32 keyIdx = 0;
+                    for (AZ::u32 time = 0; time <= animation->mDuration; ++time)
                     {
                         if (keyIdx < maxKeys - 1 && time >= keys[keyIdx+1].m_time)
                         {

@@ -35,7 +35,6 @@ if(NOT PAL_TRAIT_ATOM_RHI_METAL_SUPPORTED)
     if(PAL_TRAIT_BUILD_HOST_TOOLS)
         ly_add_target(
             NAME Atom_RHI_Metal.Builders GEM_MODULE
-
             NAMESPACE Gem
             FILES_CMAKE
                 Source/Platform/${PAL_PLATFORM_NAME}/platform_builders_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake

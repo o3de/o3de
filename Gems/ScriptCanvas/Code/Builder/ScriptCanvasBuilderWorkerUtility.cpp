@@ -80,8 +80,8 @@ namespace ScriptCanvasBuilder
         request.assetId = scriptAssetId;
         request.graph = sourceGraph;
         request.name = fileNameOnly;
-        request.rawSaveDebugOutput = ScriptCanvas::Grammar::s_saveRawTranslationOuputToFile;
-        request.printModelToConsole = ScriptCanvas::Grammar::s_printAbstractCodeModel;
+        request.rawSaveDebugOutput = ScriptCanvas::Grammar::g_saveRawTranslationOuputToFile;
+        request.printModelToConsole = ScriptCanvas::Grammar::g_printAbstractCodeModel;
         request.path = fullPath;
 
         bool pathFound = false;
@@ -129,7 +129,7 @@ namespace ScriptCanvasBuilder
         result.m_scriptAsset = asset;
         result.m_runtimeInputs = AZStd::move(translation.m_runtimeInputs);
         result.m_debugMap = AZStd::move(translation.m_debugMap);
-        result.m_dependencies = translationResult.m_model->GetDependencies();
+        result.m_dependencies = translationResult.m_model->GetOrderedDependencies();
         result.m_parseDuration = translationResult.m_parseDuration;
         result.m_translationDuration = translation.m_duration;
         return AZ::Success(result);
@@ -547,8 +547,8 @@ namespace ScriptCanvasBuilder
         request.namespacePath = input.namespacePath;
         request.assetId = input.assetID;
         request.graph = sourceGraph;
-        request.rawSaveDebugOutput = ScriptCanvas::Grammar::s_saveRawTranslationOuputToFile;
-        request.printModelToConsole = ScriptCanvas::Grammar::s_printAbstractCodeModel;
+        request.rawSaveDebugOutput = ScriptCanvas::Grammar::g_saveRawTranslationOuputToFile;
+        request.printModelToConsole = ScriptCanvas::Grammar::g_printAbstractCodeModel;
 
         ScriptCanvas::Translation::Result translationResult = TranslateToLua(request);
         auto outcome = translationResult.IsSuccess(ScriptCanvas::Translation::TargetFlags::Lua);
@@ -592,9 +592,10 @@ namespace ScriptCanvasBuilder
         const AZ::Data::Asset<AZ::ScriptAsset> scriptAsset(scriptAssetId, jobProduct.m_productAssetType, {});
         input.runtimeDataOut.m_script = scriptAsset;
 
-        const ScriptCanvas::DependencyReport& dependencyReport = translationResult.m_model->GetDependencies();
+        const ScriptCanvas::OrderedDependencies& orderedDependencies = translationResult.m_model->GetOrderedDependencies();
+        const ScriptCanvas::DependencyReport& dependencyReport = orderedDependencies.source;
 
-        for (const auto& subgraphAssetID : dependencyReport.userSubgraphAssetIds)
+        for (const auto& subgraphAssetID : orderedDependencies.orderedAssetIds)
         {
             const AZ::Data::AssetId dependentSubgraphAssetID(subgraphAssetID.m_guid, AZ_CRC("RuntimeData", 0x163310ae));
             const AZ::Data::Asset<ScriptCanvas::RuntimeAsset> subgraphAsset(dependentSubgraphAssetID, azrtti_typeid<ScriptCanvas::RuntimeAsset>(), {});

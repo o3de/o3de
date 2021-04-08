@@ -16,7 +16,7 @@
 
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-#include <AzFramework/Physics/Casts.h>
+#include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 #include <AzFramework/Physics/SystemBus.h>
 
 #include <Blast/BlastSystemBus.h>

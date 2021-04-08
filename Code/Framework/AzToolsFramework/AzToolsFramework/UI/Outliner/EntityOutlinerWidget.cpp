@@ -171,7 +171,7 @@ namespace AzToolsFramework
 
         const int autoExpandDelayMilliseconds = 2500;
         m_gui->m_objectTree->setSelectionMode(QAbstractItemView::ExtendedSelection);
-        m_gui->m_objectTree->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::EditKeyPressed);
+        m_gui->m_objectTree->setEditTriggers(QAbstractItemView::EditKeyPressed);
         m_gui->m_objectTree->setAutoExpandDelay(autoExpandDelayMilliseconds);
         m_gui->m_objectTree->setDragEnabled(true);
         m_gui->m_objectTree->setDropIndicatorShown(true);
@@ -179,9 +179,11 @@ namespace AzToolsFramework
         m_gui->m_objectTree->setDragDropOverwriteMode(false);
         m_gui->m_objectTree->setDragDropMode(QAbstractItemView::DragDrop);
         m_gui->m_objectTree->setDefaultDropAction(Qt::CopyAction);
+        m_gui->m_objectTree->setExpandsOnDoubleClick(false);
         m_gui->m_objectTree->setContextMenuPolicy(Qt::CustomContextMenu);
         m_gui->m_objectTree->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         m_gui->m_objectTree->setAutoScrollMargin(20);
+        m_gui->m_objectTree->setIndentation(24);
         connect(m_gui->m_objectTree, &QTreeView::customContextMenuRequested, this, &EntityOutlinerWidget::OnOpenTreeContextMenu);
 
         // custom item delegate
@@ -193,6 +195,7 @@ namespace AzToolsFramework
 
         // Link up signals for informing the model of tree changes using the proxy as an intermediary
         connect(m_gui->m_objectTree, &QTreeView::clicked, this, &EntityOutlinerWidget::OnTreeItemClicked);
+        connect(m_gui->m_objectTree, &QTreeView::doubleClicked, this, &EntityOutlinerWidget::OnTreeItemDoubleClicked);
         connect(m_gui->m_objectTree, &QTreeView::expanded, this, &EntityOutlinerWidget::OnTreeItemExpanded);
         connect(m_gui->m_objectTree, &QTreeView::collapsed, this, &EntityOutlinerWidget::OnTreeItemCollapsed);
         connect(m_gui->m_objectTree, &EntityOutlinerTreeView::ItemDropped, this, &EntityOutlinerWidget::OnDropEvent);
@@ -223,8 +226,12 @@ namespace AzToolsFramework
         m_gui->m_objectTree->header()->setStretchLastSection(false);
 
         // resize the icon columns so that the Visibility and Lock toggle icon columns stay right-justified
+        m_gui->m_objectTree->header()->setStretchLastSection(false);
+        m_gui->m_objectTree->header()->setMinimumSectionSize(0);
         m_gui->m_objectTree->header()->setSectionResizeMode(EntityOutlinerListModel::ColumnName, QHeaderView::Stretch);
-        m_gui->m_objectTree->header()->setSectionResizeMode(EntityOutlinerListModel::ColumnVisibilityToggle, QHeaderView::ResizeToContents);
+        m_gui->m_objectTree->header()->setSectionResizeMode(EntityOutlinerListModel::ColumnVisibilityToggle, QHeaderView::Fixed);
+        m_gui->m_objectTree->header()->resizeSection(EntityOutlinerListModel::ColumnVisibilityToggle, 20);
+        m_gui->m_objectTree->header()->setSectionResizeMode(EntityOutlinerListModel::ColumnLockToggle, QHeaderView::Fixed);
         m_gui->m_objectTree->header()->resizeSection(EntityOutlinerListModel::ColumnLockToggle, 24);
 
         connect(m_gui->m_objectTree->selectionModel(),
@@ -271,10 +278,12 @@ namespace AzToolsFramework
         ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusConnect(
             GetEntityContextId());
         EditorEntityInfoNotificationBus::Handler::BusConnect();
+        AZ::Interface<EntityOutlinerWidgetInterface>::Register(this);
     }
 
     EntityOutlinerWidget::~EntityOutlinerWidget()
     {
+        AZ::Interface<EntityOutlinerWidgetInterface>::Unregister(this);
         ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusDisconnect();
         EditorEntityInfoNotificationBus::Handler::BusDisconnect();
         EditorPickModeNotificationBus::Handler::BusDisconnect();
@@ -798,6 +807,8 @@ namespace AzToolsFramework
     #ifdef Q_OS_MAC
         // "Alt+Return" translates to Option+Return on macOS
         m_actionToRenameSelection->setShortcut(tr("Alt+Return"));
+#elseif Q_OS_WIN
+        m_actionToRenameSelection->setShortcut(tr("F2"));
     #endif
         m_actionToRenameSelection->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         connect(m_actionToRenameSelection, &QAction::triggered, this, &EntityOutlinerWidget::DoRenameSelection);
@@ -858,6 +869,10 @@ namespace AzToolsFramework
                 m_gui->m_objectTree->model()->setData(index, Qt::CheckState(), Qt::CheckStateRole);
                 break;
         }
+    }
+
+    void EntityOutlinerWidget::OnTreeItemDoubleClicked(const QModelIndex& /*index*/)
+    {
     }
 
     void EntityOutlinerWidget::OnTreeItemExpanded(const QModelIndex& index)
@@ -1073,6 +1088,30 @@ namespace AzToolsFramework
     {
         setEnabled(true);
         SetEntityOutlinerState(m_gui, true);
+    }
+
+    void EntityOutlinerWidget::SetRootEntity(AZ::EntityId rootEntityId)
+    {
+        // The proxy model needs a tick to initialize, else it will return an invalid index in mapFromSource.
+        QTimer::singleShot(0, this, [rootEntityId, this]() {
+            QModelIndex rootIndex = m_listModel->GetIndexFromEntity(rootEntityId);
+            QModelIndex proxyIndex = m_proxyModel->mapFromSource(rootIndex);
+            m_gui->m_objectTree->setRootIndex(proxyIndex);
+        });
+    }
+    
+    void EntityOutlinerWidget::SetUpdatesEnabled(bool enable)
+    {
+        if (enable)
+        {
+            QTimer::singleShot(1, this, [this]() {
+                m_gui->m_objectTree->setUpdatesEnabled(true);
+            });
+        }
+        else
+        {
+            m_gui->m_objectTree->setUpdatesEnabled(false);
+        }
     }
 
     void EntityOutlinerWidget::OnEntityInfoUpdatedAddChildEnd(AZ::EntityId /*parentId*/, AZ::EntityId childId)

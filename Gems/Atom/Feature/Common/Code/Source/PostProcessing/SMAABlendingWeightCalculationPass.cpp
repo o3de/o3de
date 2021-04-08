@@ -103,12 +103,12 @@ namespace AZ
             m_areaTexture = AZ::RPI::LoadStreamingTexture(PathToSMAAAreaTexture);
             m_searchTexture = AZ::RPI::LoadStreamingTexture(PathToSMAASearchTexture);
 
-            m_areaTextureShaderInputIndex = m_shaderResourceGroup->FindShaderInputImageIndex(Name{ "m_areaTexture" });
-            m_searchTextureShaderInputIndex = m_shaderResourceGroup->FindShaderInputImageIndex(Name{ "m_searchTexture" });
-            m_renderTargetMetricsShaderInputIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_renderTargetMetrics" });
-            m_maxSearchStepsShaderInputIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_maxSearchSteps" });
-            m_maxSearchStepsDiagonalShaderInputIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_maxSearchStepsDiagonal" });
-            m_cornerRoundingShaderInputIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_cornerRounding" });
+            m_areaTextureShaderInputIndex.Reset();
+            m_searchTextureShaderInputIndex.Reset();
+            m_renderTargetMetricsShaderInputIndex.Reset();
+            m_maxSearchStepsShaderInputIndex.Reset();
+            m_maxSearchStepsDiagonalShaderInputIndex.Reset();
+            m_cornerRoundingShaderInputIndex.Reset();
         }
 
         void SMAABlendingWeightCalculationPass::UpdateSRG()

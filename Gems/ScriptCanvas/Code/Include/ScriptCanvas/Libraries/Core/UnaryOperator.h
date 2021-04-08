@@ -37,10 +37,10 @@ namespace ScriptCanvas
             static const char* k_onTrue;
             static const char* k_onFalse;
 
-            bool IsSupportedByNewBackend() const override { return true; }
+            
 
         protected:
-            SlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot&, CombinedSlotType targetSlotType, const Slot*) const override
+            ConstSlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot&, CombinedSlotType targetSlotType, const Slot*) const override
             {
                 return AZ::Success(GetSlotsByType(targetSlotType));
             }

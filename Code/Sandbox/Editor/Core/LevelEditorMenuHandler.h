@@ -42,7 +42,7 @@ public:
 
     void Initialize();
 
-    static bool MRUEntryIsValid(const QString& entry, const QString& gameFolderPath);
+    bool MRUEntryIsValid(const QString& entry, const QString& gameFolderPath);
 
     void IncrementViewPaneVersion();
     int GetViewPaneVersion() const;
@@ -119,6 +119,7 @@ private:
     ActionManager::MenuWrapper m_layoutsMenu;
     ActionManager::MenuWrapper m_macrosMenu;
 
+    const char* m_levelExtension = nullptr;
     int m_viewPaneVersion = 0;
 
     QList<QMenu*> m_topLevelMenus;

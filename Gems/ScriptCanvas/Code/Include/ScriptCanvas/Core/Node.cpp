@@ -560,7 +560,27 @@ namespace ScriptCanvas
         return "";
     }
 
-    SlotsOutcome Node::GetSlots(const AZStd::vector<SlotId>& slotIds) const
+    SlotsOutcome Node::GetSlots(const AZStd::vector<SlotId>& slotIds)
+    {
+        AZStd::vector<Slot*> slots;
+        slots.reserve(slotIds.size());
+
+        for (const auto& slotId : slotIds)
+        {
+            if (const auto slot = GetSlot(slotId))
+            {
+                slots.push_back(slot);
+            }
+            else
+            {
+                return AZ::Failure(AZStd::string::format("No slot found for slotId %s", slotId.ToString().data()));
+            }
+        }
+
+        return AZ::Success(slots);
+    }
+
+    ConstSlotsOutcome Node::GetSlots(const AZStd::vector<SlotId>& slotIds) const
     {
         AZStd::vector<const Slot*> slots;
         slots.reserve(slotIds.size());
@@ -2043,6 +2063,23 @@ namespace ScriptCanvas
         return retVal;
     }
 
+    AZStd::vector<Slot*> Node::ModAllSlots()
+    {
+        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "ScriptCanvas::Node::ModAllSlots");
+
+        SlotList& slots = GetSlots();
+
+        AZStd::vector<Slot*> retVal;
+        retVal.reserve(slots.size());
+
+        for (auto& slot : slots)
+        {
+            retVal.push_back(&slot);
+        }
+
+        return retVal;
+    }
+
     bool Node::SlotExists(AZStd::string_view name, const SlotDescriptor& slotDescriptor) const
     {
         return FindSlotIdForDescriptor(name, slotDescriptor).IsValid();
@@ -2673,7 +2710,7 @@ namespace ScriptCanvas
 
         Slot* slot = GetSlot(currentSlotId);
 
-        if (slot && slot->IsDynamicSlot())
+        if (slot && slot->IsDynamicSlot() && !slot->IsUserAdded())
         {
             AZ::Crc32 dynamicGroup = slot->GetDynamicGroup();
 
@@ -2890,9 +2927,9 @@ namespace ScriptCanvas
             {                
                 AZStd::string assetName = m_runtimeBus->GetAssetName();
                 AZ::EntityId assetNodeId = m_runtimeBus->FindAssetNodeIdByRuntimeNodeId(endpoint.GetNodeId());
-
-                AZ_Error("Script Canvas", false, "Unable to find node with id (id: %s) in the graph '%s'. Most likely the node was serialized with a type that is no longer reflected",
+                AZ_Warning("Script Canvas", false, "Unable to find node with id (id: %s) in the graph '%s'. Most likely the node was serialized with a type that is no longer reflected",
                     assetNodeId.ToString().data(), assetName.data());
+
                 continue;
             }
             else if (!node->IsNodeEnabled())
@@ -2900,7 +2937,18 @@ namespace ScriptCanvas
                 continue;
             }
 
-            connectedNodes.emplace_back(node, node->GetSlot(endpoint.GetSlotId()));
+            auto endpointSlot = node->GetSlot(endpoint.GetSlotId());
+            if (!endpointSlot)
+            {
+                AZStd::string assetName = m_runtimeBus->GetAssetName();
+                AZ::EntityId assetNodeId = m_runtimeBus->FindAssetNodeIdByRuntimeNodeId(endpoint.GetNodeId());
+                AZ_Warning("Script Canvas", false, "Endpoint was missing slot. id (id: %s) in the graph '%s'.",
+                    assetNodeId.ToString().data(), assetName.data());
+
+                continue;
+            }
+
+            connectedNodes.emplace_back(node, endpointSlot);
         }
 
         return connectedNodes;
@@ -3127,7 +3175,7 @@ namespace ScriptCanvas
         return {};
     }
 
-    bool Node::HandlerStartsConnected() const
+    bool Node::IsAutoConnected() const
     {
         return {};
     }
@@ -3167,7 +3215,7 @@ namespace ScriptCanvas
         return AZ::Failure();
     }
 
-    SlotsOutcome Node::GetSlotsInExecutionThreadByTypeImpl(const Slot& executionSlot, CombinedSlotType targetSlotType, const Slot* executionChildSlot) const
+    ConstSlotsOutcome Node::GetSlotsInExecutionThreadByTypeImpl(const Slot& executionSlot, CombinedSlotType targetSlotType, const Slot* executionChildSlot) const
     {
         if (auto map = GetSlotExecutionMap())
         {
@@ -3201,7 +3249,7 @@ namespace ScriptCanvas
         return AZ::Failure(AZStd::string("override Node::GetSlotsInExecutionThreadByTypeImpl to do things subvert the normal slot map assumptions"));
     }
 
-    SlotsOutcome Node::GetSlotsFromMap(const SlotExecution::Map& map, const Slot& executionSlot, CombinedSlotType targetSlotType, const Slot* /*executionChildSlot*/) const
+    ConstSlotsOutcome Node::GetSlotsFromMap(const SlotExecution::Map& map, const Slot& executionSlot, CombinedSlotType targetSlotType, const Slot* /*executionChildSlot*/) const
     {
         // so far ACM, needs to map:
         //      In -> Out, Data In, Data Out
@@ -3244,7 +3292,7 @@ namespace ScriptCanvas
         return AZ::Failure(AZStd::string("no such mapping supported, yet"));
     }
 
-    SlotsOutcome Node::GetDataInSlotsByExecutionIn(const SlotExecution::Map& map, const Slot& executionInSlot) const
+    ConstSlotsOutcome Node::GetDataInSlotsByExecutionIn(const SlotExecution::Map& map, const Slot& executionInSlot) const
     {
         const auto in = map.GetIn(executionInSlot.GetId());
 
@@ -3256,7 +3304,7 @@ namespace ScriptCanvas
         return GetSlots(SlotExecution::ToInputSlotIds(in->inputs));
     }
 
-    SlotsOutcome Node::GetDataOutSlotsByExecutionIn(const SlotExecution::Map& map, const Slot& executionInSlot) const
+    ConstSlotsOutcome Node::GetDataOutSlotsByExecutionIn(const SlotExecution::Map& map, const Slot& executionInSlot) const
     {
         const auto outs = map.GetOuts(executionInSlot.GetId());
 
@@ -3285,7 +3333,7 @@ namespace ScriptCanvas
         return AZ::Success(outputSlots);
     }
 
-    SlotsOutcome Node::GetDataOutSlotsByExecutionOut(const SlotExecution::Map& map, const Slot& executionOutSlot) const
+    ConstSlotsOutcome Node::GetDataOutSlotsByExecutionOut(const SlotExecution::Map& map, const Slot& executionOutSlot) const
     {
         if (executionOutSlot.IsLatent())
         {
@@ -3311,7 +3359,7 @@ namespace ScriptCanvas
         }
     }
 
-    SlotsOutcome Node::GetExecutionOutSlotsByExecutionIn(const SlotExecution::Map& map, const Slot& executionInSlot) const
+    ConstSlotsOutcome Node::GetExecutionOutSlotsByExecutionIn(const SlotExecution::Map& map, const Slot& executionInSlot) const
     {
         const auto outs = map.GetOuts(executionInSlot.GetId());
         if (!outs)
@@ -3336,7 +3384,7 @@ namespace ScriptCanvas
         return AZ::Success(outSlots);
     }
 
-    SlotsOutcome Node::GetDataInSlotsByExecutionOut(const SlotExecution::Map& map, const Slot& executionOutSlot) const
+    ConstSlotsOutcome Node::GetDataInSlotsByExecutionOut(const SlotExecution::Map& map, const Slot& executionOutSlot) const
     {
         if (auto returns = map.GetReturnValuesByOut(executionOutSlot.GetId()))
         {
@@ -3464,7 +3512,7 @@ namespace ScriptCanvas
         return AZ::Success(signature);
     }
 
-    SlotsOutcome Node::GetSlotsInExecutionThreadByType(const Slot& executionSlot, CombinedSlotType targetSlotType, const Slot* executionChildSlot) const
+    ConstSlotsOutcome Node::GetSlotsInExecutionThreadByType(const Slot& executionSlot, CombinedSlotType targetSlotType, const Slot* executionChildSlot) const
     {
         auto targetSlotsOutcome = GetSlotsInExecutionThreadByTypeImpl(executionSlot, targetSlotType, executionChildSlot);
         if (targetSlotsOutcome.IsSuccess())

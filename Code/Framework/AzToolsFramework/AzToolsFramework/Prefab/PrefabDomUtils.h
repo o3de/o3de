@@ -13,6 +13,7 @@
 #pragma once
 
 #include <AzCore/std/optional.h>
+#include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/PrefabDomTypes.h>
 
 namespace AzToolsFramework
@@ -27,6 +28,7 @@ namespace AzToolsFramework
             inline static const char* SourceName = "Source";
             inline static const char* LinkIdName = "LinkId";
             inline static const char* EntitiesName = "Entities";
+            inline static const char* ContainerEntityName = "ContainerEntity";
 
             /**
             * Find Prefab value from given parent value and target value's name.
@@ -45,6 +47,16 @@ namespace AzToolsFramework
             */
             bool StoreInstanceInPrefabDom(const Instance& instance, PrefabDom& prefabDom);
 
+            enum class LoadInstanceFlags : uint8_t
+            {
+                //! No flags used during the call to LoadInstanceFromPrefabDom.
+                None = 0,
+                //! By default entities will get a stable id when they're deserialized. In cases where the new entities need to be kept
+                //! unique, e.g. when they are duplicates of live entities, this flag will assign them a random new id.
+                AssignRandomEntityId = 1 << 0
+            };
+            AZ_DEFINE_ENUM_BITWISE_OPERATORS(LoadInstanceFlags)
+
             /**
             * Loads a valid Prefab Instance from a Prefab Dom. Useful for generating Instances.
             * @param instance The Instance to load.
@@ -52,7 +64,21 @@ namespace AzToolsFramework
             * @param shouldClearContainers whether to clear containers in Instance while loading.
             * @return bool on whether the operation succeeded.
             */
-            bool LoadInstanceFromPrefabDom(Instance& instance, const PrefabDom& prefabDom, bool shouldClearContainers);
+            bool LoadInstanceFromPrefabDom(
+                Instance& instance, const PrefabDom& prefabDom, LoadInstanceFlags flags = LoadInstanceFlags::None);
+
+            /**
+            * Loads a valid Prefab Instance from a Prefab Dom. Useful for generating Instances.
+            * @param instance The Instance to load.
+            * @param newlyAddedEntities The new instances added during deserializing the instance. These are the entities found
+            *       in the prefabDom.
+            * @param prefabDom the prefabDom that will be used to load the Instance data.
+            * @param shouldClearContainers whether to clear containers in Instance while loading.
+            * @return bool on whether the operation succeeded.
+            */
+            bool LoadInstanceFromPrefabDom(
+                Instance& instance, Instance::EntityList& newlyAddedEntities, const PrefabDom& prefabDom,
+                LoadInstanceFlags flags = LoadInstanceFlags::None);
 
             inline PrefabDomPath GetPrefabDomInstancePath(const char* instanceName)
             {
@@ -60,6 +86,15 @@ namespace AzToolsFramework
                     .Append(InstancesName)
                     .Append(instanceName);
             };
+
+            /**
+             * Prints the contents of the given prefab DOM value to the debug output console in a readable format.
+             * @param printMessage The message that will be printed before printing the PrefabDomValue
+             * @param prefabDomValue The DOM value to be printed. A 'PrefabDom' type can also be passed into this variable.
+             */
+            void PrintPrefabDomValue(
+                [[maybe_unused]] const AZStd::string_view printMessage,
+                [[maybe_unused]] const AzToolsFramework::Prefab::PrefabDomValue& prefabDomValue);
 
         } // namespace PrefabDomUtils
     } // namespace Prefab

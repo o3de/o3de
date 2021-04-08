@@ -30,8 +30,8 @@ namespace SettingsCpp
     {
         if (auto userSettings = AZ::UserSettings::CreateFind<ScriptCanvasEditor::EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC("ScriptCanvasPreviewSettings", 0x1c5a2965), AZ::UserSettings::CT_LOCAL))
         {
-            ScriptCanvas::Grammar::s_saveRawTranslationOuputToFile = userSettings->m_saveRawTranslationOuputToFile;
-            ScriptCanvas::Grammar::s_printAbstractCodeModel = userSettings->m_printAbstractCodeModel;
+            ScriptCanvas::Grammar::g_saveRawTranslationOuputToFile = userSettings->m_saveRawTranslationOuputToFile;
+            ScriptCanvas::Grammar::g_printAbstractCodeModel = userSettings->m_printAbstractCodeModel;
         }
     }
 }

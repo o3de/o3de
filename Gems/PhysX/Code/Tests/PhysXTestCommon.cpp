@@ -13,15 +13,19 @@
 
 #include <Tests/PhysXTestCommon.h>
 
-#include <AzFramework/Physics/RigidBody.h>
+#include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 #include <AzFramework/Physics/SystemBus.h>
-#include <AzFramework/Physics/World.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Components/TransformComponent.h>
+#include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
+#include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
+#include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
+#include <AzFramework/Physics/SimulatedBodies/StaticRigidBody.h>
 #include <PhysX/SystemComponentBus.h>
 
 #include <BoxColliderComponent.h>
+#include <CapsuleColliderComponent.h>
 #include <RigidBodyComponent.h>
 #include <SphereColliderComponent.h>
 #include <Tests/PhysXTestUtil.h>
@@ -66,16 +70,30 @@ namespace PhysX
             }
         }
 
-        EntityPtr CreateFlatTestTerrain(float width /*= 1.0f*/, float depth /*= 1.0f*/)
+        void UpdateScene(AzPhysics::SceneHandle sceneHandle, float timeStep, AZ::u32 numSteps)
+        {
+            auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
+            UpdateScene(physicsSystem->GetScene(sceneHandle), timeStep, numSteps);
+        }
+
+        EntityPtr CreateFlatTestTerrain(AzPhysics::SceneHandle sceneHandle, float width /*= 1.0f*/, float depth /*= 1.0f*/)
         {
             // Creates a single static box with the top at height 0, starting at (0, 0) and going to (width, depth)
             AZ::Vector3 position(width * 0.5f, depth * 0.5f, -1.0f);
             AZ::Vector3 dimensions(width, depth, 1.0f);
 
-            return CreateStaticBoxEntity(position, dimensions);
+            return CreateStaticBoxEntity(sceneHandle, position, dimensions);
         }
 
-        EntityPtr CreateSphereEntity(const AZ::Vector3& position, const float radius, const AZStd::shared_ptr<Physics::ColliderConfiguration>& colliderConfig)
+        EntityPtr CreateSphereEntity(AzPhysics::SceneHandle sceneHandle, const AZ::Vector3& position,
+            const float radius, const AzPhysics::CollisionLayer& layer /*= AzPhysics::CollisionLayer::Default*/)
+        {
+            auto colliderConfiguration = AZStd::make_shared<Physics::ColliderConfiguration>();
+            colliderConfiguration->m_collisionLayer = layer;
+            return CreateSphereEntity(sceneHandle, position, radius, colliderConfiguration);
+        }
+
+        EntityPtr CreateSphereEntity(AzPhysics::SceneHandle sceneHandle, const AZ::Vector3& position, const float radius, const AZStd::shared_ptr<Physics::ColliderConfiguration>& colliderConfig)
         {
             EntityPtr entity = AZStd::make_shared<AZ::Entity>("TestSphereEntity");
             entity->CreateComponent(AZ::Uuid::CreateString("{22B10178-39B6-4C12-BB37-77DB45FDD3B6}")); // TransformComponent
@@ -91,21 +109,53 @@ namespace PhysX
             auto shpereColliderComponent = entity->CreateComponent<PhysX::SphereColliderComponent>();
             shpereColliderComponent->SetShapeConfigurationList({ AZStd::make_pair(colliderConfig, shapeConfig) });
 
-            Physics::RigidBodyConfiguration rigidBodyConfig;
-            entity->CreateComponent<PhysX::RigidBodyComponent>(rigidBodyConfig);
+            AzPhysics::RigidBodyConfiguration rigidBodyConfig;
+            rigidBodyConfig.m_computeMass = false;
+            entity->CreateComponent<PhysX::RigidBodyComponent>(rigidBodyConfig, sceneHandle);
 
             entity->Activate();
             return entity;
         }
 
-        EntityPtr CreateBoxEntity(const AZ::Vector3& position, const AZ::Vector3& dimensions, bool isTrigger)
+        EntityPtr CreateStaticSphereEntity(AzPhysics::SceneHandle sceneHandle,
+            const AZ::Vector3& position,
+            const float radius,
+            const AzPhysics::CollisionLayer& layer /*= AzPhysics::CollisionLayer::Default*/)
         {
-            auto colliderConfiguration = AZStd::make_shared<Physics::ColliderConfiguration>();
-            colliderConfiguration->m_isTrigger = isTrigger;
-            return CreateBoxEntity(position, dimensions, colliderConfiguration);
+            auto entity = AZStd::make_shared<AZ::Entity>("TestSphereEntity");
+            entity->CreateComponent(AZ::Uuid::CreateString("{22B10178-39B6-4C12-BB37-77DB45FDD3B6}")); // TransformComponent
+            entity->Init();
+
+            entity->Activate();
+
+            AZ::TransformBus::Event(entity->GetId(), &AZ::TransformBus::Events::SetWorldTranslation, position);
+
+            entity->Deactivate();
+
+            auto colliderConfig = AZStd::make_shared<Physics::ColliderConfiguration>();
+            colliderConfig->m_collisionLayer = layer;
+            auto shapeConfig = AZStd::make_shared<Physics::SphereShapeConfiguration>(radius);
+            auto sphereColliderComponent = entity->CreateComponent<SphereColliderComponent>();
+            sphereColliderComponent->SetShapeConfigurationList({ AZStd::make_pair(colliderConfig, shapeConfig) });
+
+            entity->CreateComponent<StaticRigidBodyComponent>(sceneHandle);
+
+            entity->Activate();
+            return entity;
         }
 
-        EntityPtr CreateStaticBoxEntity(const AZ::Vector3& position, const AZ::Vector3& dimensions)
+        EntityPtr CreateBoxEntity(AzPhysics::SceneHandle sceneHandle, const AZ::Vector3& position, const AZ::Vector3& dimensions,
+            const AzPhysics::CollisionLayer& layer /*= AzPhysics::CollisionLayer::Default*/, bool isTrigger /*= false*/)
+        {
+            auto colliderConfiguration = AZStd::make_shared<Physics::ColliderConfiguration>();
+            colliderConfiguration->m_collisionLayer = layer;
+            colliderConfiguration->m_isTrigger = isTrigger;
+            return CreateBoxEntity(sceneHandle, position, dimensions, colliderConfiguration);
+        }
+
+        EntityPtr CreateStaticBoxEntity(AzPhysics::SceneHandle sceneHandle, const AZ::Vector3& position,
+            const AZ::Vector3& dimensions /*= AZ::Vector3(1.0f)*/,
+            const AzPhysics::CollisionLayer& layer /*= AzPhysics::CollisionLayer::Default*/)
         {
             EntityPtr entity = AZStd::make_shared<AZ::Entity>("TestBoxEntity");
             entity->CreateComponent<AzFramework::TransformComponent>();
@@ -120,19 +170,69 @@ namespace PhysX
             auto shapeConfig = AZStd::make_shared<Physics::BoxShapeConfiguration>(dimensions);
             auto boxColliderComponent = entity->CreateComponent<PhysX::BoxColliderComponent>();
             auto colliderConfig = AZStd::make_shared<Physics::ColliderConfiguration>();
+            colliderConfig->m_collisionLayer = layer;
             boxColliderComponent->SetShapeConfigurationList({ AZStd::make_pair(colliderConfig, shapeConfig) });
-            entity->CreateComponent<PhysX::StaticRigidBodyComponent>();
+            entity->CreateComponent<PhysX::StaticRigidBodyComponent>(sceneHandle);
             entity->Activate();
             return entity;
         }
 
-        AZStd::unique_ptr<Physics::RigidBodyStatic> CreateStaticTriangleMeshCube(float halfExtent)
+        EntityPtr CreateCapsuleEntity(AzPhysics::SceneHandle sceneHandle, const AZ::Vector3& position,
+            const float height, const float radius,
+            const AzPhysics::CollisionLayer& layer /*= AzPhysics::CollisionLayer::Default*/)
         {
-            // Create static rigid body
-            Physics::RigidBodyConfiguration rigidBodyConfiguration;
-            AZStd::unique_ptr<Physics::RigidBodyStatic> rigidBody = AZ::Interface<Physics::System>::Get()->CreateStaticRigidBody(rigidBodyConfiguration);
-            AZ_Assert(rigidBody != nullptr, "Failed to create a rigid body");
+            auto entity = AZStd::make_shared<AZ::Entity>("TestCapsuleEntity");
+            entity->CreateComponent(AZ::Uuid::CreateString("{22B10178-39B6-4C12-BB37-77DB45FDD3B6}")); // TransformComponent
+            entity->Init();
 
+            entity->Activate();
+
+            AZ::TransformBus::Event(entity->GetId(), &AZ::TransformBus::Events::SetWorldTranslation, position);
+
+            entity->Deactivate();
+
+            auto colliderConfig = AZStd::make_shared<Physics::ColliderConfiguration>();
+            colliderConfig->m_collisionLayer = layer;
+            auto shapeConfig = AZStd::make_shared<Physics::CapsuleShapeConfiguration>(height, radius);
+            auto capsuleColliderComponent = entity->CreateComponent<CapsuleColliderComponent>();
+            capsuleColliderComponent->SetShapeConfigurationList({ AZStd::make_pair(colliderConfig, shapeConfig) });
+
+            AzPhysics::RigidBodyConfiguration rigidBodyConfig;
+            rigidBodyConfig.m_computeMass = false;
+            entity->CreateComponent<RigidBodyComponent>(rigidBodyConfig, sceneHandle);
+
+            entity->Activate();
+            return entity;
+        }
+
+        EntityPtr CreateStaticCapsuleEntity(AzPhysics::SceneHandle sceneHandle, const AZ::Vector3& position,
+            const float height, const float radius,
+            const AzPhysics::CollisionLayer& layer /*= AzPhysics::CollisionLayer::Default*/)
+        {
+            auto entity = AZStd::make_shared<AZ::Entity>("TestCapsuleEntity");
+            entity->CreateComponent(AZ::Uuid::CreateString("{22B10178-39B6-4C12-BB37-77DB45FDD3B6}")); // TransformComponent
+            entity->Init();
+
+            entity->Activate();
+
+            AZ::TransformBus::Event(entity->GetId(), &AZ::TransformBus::Events::SetWorldTranslation, position);
+
+            entity->Deactivate();
+
+            auto colliderConfig = AZStd::make_shared<Physics::ColliderConfiguration>();
+            colliderConfig->m_collisionLayer = layer;
+            auto shapeConfig = AZStd::make_shared<Physics::CapsuleShapeConfiguration>(height, radius);
+            auto capsuleColliderComponent = entity->CreateComponent<CapsuleColliderComponent>();
+            capsuleColliderComponent->SetShapeConfigurationList({ AZStd::make_pair(colliderConfig, shapeConfig) });
+
+            entity->CreateComponent<StaticRigidBodyComponent>(sceneHandle);
+
+            entity->Activate();
+            return entity;
+        }
+
+        AzPhysics::SimulatedBodyHandle AddStaticTriangleMeshCubeToScene(AzPhysics::SceneHandle scene, float halfExtent)
+        {
             // Generate input data
             VertexIndexData cubeMeshData = GenerateCubeMeshData(halfExtent);
             AZStd::vector<AZ::u8> cookedData;
@@ -150,12 +250,14 @@ namespace PhysX
 
             Physics::ColliderConfiguration colliderConfig;
 
-            // Create the first shape
-            AZStd::shared_ptr<Physics::Shape> firstShape = AZ::Interface<Physics::System>::Get()->CreateShape(colliderConfig, shapeConfig);
-            AZ_Assert(firstShape != nullptr, "Failed to create a shape from cooked data");
+            AzPhysics::StaticRigidBodyConfiguration staticRigidBodyConfiguration;
+            staticRigidBodyConfiguration.m_colliderAndShapeData = AzPhysics::ShapeColliderPair(&colliderConfig, &shapeConfig);
 
-            rigidBody->AddShape(firstShape);
-            return rigidBody;
+            if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+            {
+                return sceneInterface->AddSimulatedBody(scene, &staticRigidBodyConfiguration);
+            }
+            return AzPhysics::InvalidSimulatedBodyHandle;
         }
 
         void SetCollisionLayer(EntityPtr& entity, const AZStd::string& layerName, const AZStd::string& colliderTag)
@@ -173,7 +275,7 @@ namespace PhysX
             Physics::CollisionFilteringRequestBus::Event(entity->GetId(), &Physics::CollisionFilteringRequests::ToggleCollisionLayer, layerName, AZ::Crc32(colliderTag.c_str()), enabled);
         }
 
-        EntityPtr CreateBoxEntity(const AZ::Vector3& position, const AZ::Vector3& dimensions,
+        EntityPtr CreateBoxEntity(AzPhysics::SceneHandle sceneHandle, const AZ::Vector3& position, const AZ::Vector3& dimensions,
             const AZStd::shared_ptr<Physics::ColliderConfiguration>& colliderConfig)
         {
             EntityPtr entity = AZStd::make_shared<AZ::Entity>("TestBoxEntity");
@@ -190,14 +292,15 @@ namespace PhysX
             auto boxColliderComponent = entity->CreateComponent<PhysX::BoxColliderComponent>();
             boxColliderComponent->SetShapeConfigurationList({ AZStd::make_pair(colliderConfig, shapeConfig) });
 
-            Physics::RigidBodyConfiguration rigidBodyConfig;
-            entity->CreateComponent<PhysX::RigidBodyComponent>(rigidBodyConfig);
+            AzPhysics::RigidBodyConfiguration rigidBodyConfig;
+            rigidBodyConfig.m_computeMass = false;
+            entity->CreateComponent<PhysX::RigidBodyComponent>(rigidBodyConfig, sceneHandle);
 
             entity->Activate();
             return entity;
         }
 
-        EntityPtr AddUnitTestBoxComponentsMix(const AZ::Vector3& position, const char* name)
+        EntityPtr AddUnitTestBoxComponentsMix(AzPhysics::SceneHandle sceneHandle, const AZ::Vector3& position, const char* name)
         {
             EntityPtr entity = AZStd::make_shared<AZ::Entity>(name);
 
@@ -210,8 +313,8 @@ namespace PhysX
             auto boxCollider = entity->CreateComponent<BoxColliderComponent>();
             boxCollider->SetShapeConfigurationList(shapeConfigList);
 
-            Physics::RigidBodyConfiguration rigidBodyConfig;
-            entity->CreateComponent<RigidBodyComponent>(rigidBodyConfig);
+            AzPhysics::RigidBodyConfiguration rigidBodyConfig;
+            entity->CreateComponent<RigidBodyComponent>(rigidBodyConfig, sceneHandle);
 
             // Removing and adding component can cause race condition in component activation code if dependencies are not correct
             // Simulation of user removing one collider and adding another
@@ -266,5 +369,126 @@ namespace PhysX
             return AZStd::make_pair(points, indices);
         }
 
+        AzPhysics::StaticRigidBody* AddStaticFloorToScene(AzPhysics::SceneHandle sceneHandle, const AZ::Transform& transform)
+        {
+            Physics::ColliderConfiguration colliderConfig;
+            Physics::BoxShapeConfiguration shapeConfiguration(AZ::Vector3(20.0f, 20.0f, 1.0f));
+            AzPhysics::StaticRigidBodyConfiguration staticBodyConfiguration;
+            staticBodyConfiguration.m_colliderAndShapeData = AZStd::make_pair(&colliderConfig, &shapeConfiguration);
+            if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+            {
+                AzPhysics::SimulatedBodyHandle simBodyHandle = sceneInterface->AddSimulatedBody(sceneHandle, &staticBodyConfiguration);
+                if (auto* floor = azdynamic_cast<AzPhysics::StaticRigidBody*>(sceneInterface->GetSimulatedBodyFromHandle(sceneHandle, simBodyHandle)))
+                {
+                    floor->SetTransform(transform);
+                    return floor;
+                }
+            }
+            return nullptr;
+        }
+
+        AzPhysics::StaticRigidBody* AddStaticUnitBoxToScene(AzPhysics::SceneHandle sceneHandle, const AZ::Vector3& position)
+        {
+            AzPhysics::SimulatedBodyHandle simBodyHandle = AddStaticBoxToScene(sceneHandle, position);
+            if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+            {
+                return azdynamic_cast<AzPhysics::StaticRigidBody*>(sceneInterface->GetSimulatedBodyFromHandle(sceneHandle, simBodyHandle));
+            }
+            return nullptr;
+        }
+
+        AzPhysics::RigidBody* AddUnitBoxToScene(AzPhysics::SceneHandle sceneHandle, const AZ::Vector3& position)
+        {
+            AzPhysics::SimulatedBodyHandle simBodyHandle = AddBoxToScene(sceneHandle, position);
+            if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+            {
+                return azdynamic_cast<AzPhysics::RigidBody*>(sceneInterface->GetSimulatedBodyFromHandle(sceneHandle, simBodyHandle));
+            }
+            return nullptr;
+        }
+
+        AzPhysics::SimulatedBodyHandle AddSphereToScene(AzPhysics::SceneHandle sceneHandle, const AZ::Vector3& position,
+            const float radius /*= 0.5f*/, const AzPhysics::CollisionLayer& layer /*= AzPhysics::CollisionLayer::Default*/)
+        {
+            Physics::ColliderConfiguration colliderConfig;
+            colliderConfig.m_collisionLayer = layer;
+            Physics::SphereShapeConfiguration shapeConfiguration;
+            shapeConfiguration.m_radius = radius;
+            AzPhysics::RigidBodyConfiguration rigidBodySettings;
+            rigidBodySettings.m_position = position;
+            rigidBodySettings.m_linearDamping = 0.0f;
+            rigidBodySettings.m_colliderAndShapeData = AZStd::make_pair(&colliderConfig, &shapeConfiguration);
+
+            if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+            {
+                return sceneInterface->AddSimulatedBody(sceneHandle, &rigidBodySettings);
+            }
+            return AzPhysics::InvalidSimulatedBodyHandle;
+        }
+
+        AzPhysics::SimulatedBodyHandle AddCapsuleToScene(AzPhysics::SceneHandle sceneHandle, const AZ::Vector3& position,
+            const float height /*= 2.0f*/, const float radius /*= 0.5f*/,
+            const AzPhysics::CollisionLayer& layer /*= AzPhysics::CollisionLayer::Default*/)
+        {
+            AzPhysics::RigidBodyConfiguration rigidBodySettings;
+            Physics::ColliderConfiguration colliderConfig;
+            colliderConfig.m_collisionLayer = layer;
+            colliderConfig.m_rotation = AZ::Quaternion::CreateRotationX(AZ::Constants::HalfPi);
+            Physics::CapsuleShapeConfiguration shapeConfig(height, radius);
+            rigidBodySettings.m_colliderAndShapeData = AZStd::make_pair(&colliderConfig, &shapeConfig);
+            rigidBodySettings.m_position = position;
+
+            if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+            {
+                return sceneInterface->AddSimulatedBody(sceneHandle, &rigidBodySettings);
+            }
+            return AzPhysics::InvalidSimulatedBodyHandle;
+        }
+
+        AzPhysics::SimulatedBodyHandle AddBoxToScene(AzPhysics::SceneHandle sceneHandle,
+            const AZ::Vector3& position, const AZ::Vector3& dimensions /*= AZ::Vector3(1.0f)*/,
+            const AzPhysics::CollisionLayer& layer /*= AzPhysics::CollisionLayer::Default*/)
+        {
+            Physics::ColliderConfiguration colliderConfig;
+            colliderConfig.m_collisionLayer = layer;
+            Physics::BoxShapeConfiguration shapeConfiguration;
+            shapeConfiguration.m_dimensions = dimensions;
+
+            AzPhysics::RigidBodyConfiguration rigidBodySettings;
+            rigidBodySettings.m_position = position;
+            rigidBodySettings.m_linearDamping = 0.0f;
+            rigidBodySettings.m_colliderAndShapeData = AZStd::make_pair(&colliderConfig, &shapeConfiguration);
+            if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+            {
+                return sceneInterface->AddSimulatedBody(sceneHandle, &rigidBodySettings);
+            }
+            return AzPhysics::InvalidSimulatedBodyHandle;
+        }
+
+        AzPhysics::SimulatedBodyHandle AddStaticBoxToScene(AzPhysics::SceneHandle sceneHandle,
+            const AZ::Vector3& position, const AZ::Vector3& dimensions /*= AZ::Vector3(1.0f)*/,
+            const AzPhysics::CollisionLayer& layer /*= AzPhysics::CollisionLayer::Default*/)
+        {
+            Physics::ColliderConfiguration colliderConfig;
+            colliderConfig.m_collisionLayer = layer;
+            Physics::BoxShapeConfiguration shapeConfiguration;
+            shapeConfiguration.m_dimensions = dimensions;
+            AzPhysics::StaticRigidBodyConfiguration rigidBodySettings;
+            rigidBodySettings.m_position = position;
+            rigidBodySettings.m_colliderAndShapeData = AZStd::make_pair(&colliderConfig, &shapeConfiguration);
+
+            if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+            {
+                return sceneInterface->AddSimulatedBody(sceneHandle, &rigidBodySettings);
+            }
+            return AzPhysics::InvalidSimulatedBodyHandle;
+        }
+
+        float GetPositionElement(EntityPtr entity, int element)
+        {
+            AZ::Transform transform = AZ::Transform::CreateIdentity();
+            AZ::TransformBus::EventResult(transform, entity->GetId(), &AZ::TransformInterface::GetWorldTM);
+            return transform.GetTranslation().GetElement(element);
+        }
     }
 }

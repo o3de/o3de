@@ -171,7 +171,14 @@ namespace AZ::SettingsRegistryMergeUtils
 
     //! Adds the development settings added by individual users of the project to the Settings Registry.
     //! Note that this function is only called in development builds and is compiled out in release builds.
-    void MergeSettingsToRegistry_UserRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
+    void MergeSettingsToRegistry_ProjectUserRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
+        const SettingsRegistryInterface::Specializations& specializations, AZStd::vector<char>* scratchBuffer = nullptr);
+
+    //! Adds the user settings from the users home directory of "~/.o3de/Registry"
+    //! '~' corresponds to %USERPROFILE% on Windows and $HOME on Unix-like platforms(Linux, Mac)
+    //! Note that this function is only called in development builds and is compiled out in release builds.
+    //! It is merged before the command line settings are merged so that the command line always takes precedence
+    void MergeSettingsToRegistry_O3deUserRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
         const SettingsRegistryInterface::Specializations& specializations, AZStd::vector<char>* scratchBuffer = nullptr);
 
     //! Adds the settings set through the command line to the Settings Registry. This will also execute any Settings

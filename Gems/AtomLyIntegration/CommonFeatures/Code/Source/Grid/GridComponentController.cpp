@@ -83,16 +83,21 @@ namespace AZ
             m_entityId = entityId;
             m_dirty = true;
 
+            RPI::ScenePtr scene = RPI::RPISystemInterface::Get()->GetDefaultScene();
+            if (scene)
+            {
+                AZ::RPI::SceneNotificationBus::Handler::BusConnect(scene->GetId());
+            }
+
             GridComponentRequestBus::Handler::BusConnect(m_entityId);
             AZ::TransformNotificationBus::Handler::BusConnect(m_entityId);
-            AZ::TickBus::Handler::BusConnect();
         }
 
         void GridComponentController::Deactivate()
         {
-            AZ::TickBus::Handler::BusDisconnect();
             AZ::TransformNotificationBus::Handler::BusDisconnect();
             GridComponentRequestBus::Handler::BusDisconnect();
+            AZ::RPI::SceneNotificationBus::Handler::BusDisconnect();
 
             m_entityId = EntityId(EntityId::InvalidEntityId);
         }
@@ -171,11 +176,8 @@ namespace AZ
             return m_configuration.m_secondaryColor;
         }
 
-        void GridComponentController::OnTick(float deltaTime, AZ::ScriptTimePoint time)
+        void GridComponentController::OnBeginPrepareRender()
         {
-            AZ_UNUSED(time);
-            AZ_UNUSED(deltaTime);
-
             auto* auxGeomFP = AZ::RPI::Scene::GetFeatureProcessorForEntity<AZ::RPI::AuxGeomFeatureProcessorInterface>(m_entityId);
             if (auto auxGeom = auxGeomFP->GetDrawQueue())
             {

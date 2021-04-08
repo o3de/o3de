@@ -41,15 +41,7 @@ Reading FBX file information (might come in handy later)
 -- I couldn't get pyfbx_i42 to work, but purportedly it can extract information from binary files. You may just have
 to use the specified python versions
 """
-
-from PySide2 import QtWidgets, QtCore, QtGui
-from PySide2.QtCore import Slot
-from PySide2.QtWidgets import QApplication
-import shiboken2
-from shiboken2 import wrapInstance
-from model import MaterialsModel
-from drag_and_drop import DragAndDrop
-import dcc_material_mapping as dcc_map
+#  built-ins
 import collections
 import logging
 import subprocess
@@ -58,7 +50,19 @@ import sys
 import os
 import re
 
+# should give access to Lumberyard Qt dlls and PySide2
+from PySide2 import QtWidgets, QtCore, QtGui
+from PySide2.QtCore import Slot
+from PySide2.QtWidgets import QApplication
+import shiboken2
+from shiboken2 import wrapInstance
 
+# local imports
+from model import MaterialsModel
+from drag_and_drop import DragAndDrop
+import dcc_material_mapping as dcc_map
+
+# global space
 main_window_pointer = None
 main_app_window = None
 

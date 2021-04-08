@@ -332,6 +332,8 @@ set(FILES
     Math/Transform.cpp
     Math/Transform.h
     Math/Transform.inl
+    Math/TransformSerializer.cpp
+    Math/TransformSerializer.h
     Math/Uuid.cpp
     Math/Uuid.h
     Math/UuidSerializer.h

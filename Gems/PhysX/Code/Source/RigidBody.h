@@ -14,8 +14,14 @@
 
 #include <PxPhysicsAPI.h>
 #include <Utils.h>
-#include <AzFramework/Physics/RigidBody.h>
+#include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
+#include <AzFramework/Physics/Common/PhysicsTypes.h>
 #include <PhysX/UserDataTypes.h>
+
+namespace AzPhysics
+{
+    struct RigidBodyConfiguration;
+}
 
 namespace PhysX
 {
@@ -26,16 +32,16 @@ namespace PhysX
 
     /// PhysX specific implementation of generic physics API RigidBody class.
     class RigidBody
-        : public Physics::RigidBody
+        : public AzPhysics::RigidBody
     {
     public:
         friend class RigidBodyComponent;
 
         AZ_CLASS_ALLOCATOR(RigidBody, AZ::SystemAllocator, 0);
-        AZ_RTTI(RigidBody, "{30CD41DD-9783-47A1-B935-9E5634238F45}", Physics::RigidBody);
+        AZ_RTTI(PhysX::RigidBody, "{30CD41DD-9783-47A1-B935-9E5634238F45}", AzPhysics::RigidBody);
 
         RigidBody() = default;
-        RigidBody(const Physics::RigidBodyConfiguration& configuration);
+        RigidBody(const AzPhysics::RigidBodyConfiguration& configuration);
         ~RigidBody();
 
         static void Reflect(AZ::ReflectContext* context);
@@ -71,8 +77,7 @@ namespace PhysX
         void SetSimulationEnabled(bool enabled) override;
         void SetCCDEnabled(bool enabled) override;
 
-        // Physics::WorldBody
-        Physics::World* GetWorld() const override;
+        // AzPhysics::SimulatedBody
         AZ::Transform GetTransform() const override;
         void SetTransform(const AZ::Transform& transform) override;
         AZ::Vector3 GetPosition() const override;
@@ -80,7 +85,7 @@ namespace PhysX
         AZ::Aabb GetAabb() const override;
         AZ::EntityId GetEntityId() const override;
 
-        Physics::RayCastHit RayCast(const Physics::RayCastRequest& request) override;
+        AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& request) override;
 
         // Physics::ReferenceBase
         AZ::Crc32 GetNativeType() const override;
@@ -99,8 +104,7 @@ namespace PhysX
         float GetSleepThreshold() const override;
         void SetSleepThreshold(float threshold) override;
 
-        void AddToWorld(Physics::World&) override;
-        void RemoveFromWorld(Physics::World&) override;
+        bool ShouldStartAsleep() const { return m_startAsleep; }
 
         void SetName(const AZStd::string& entityName);
         const AZStd::string& GetName() const;
@@ -108,25 +112,24 @@ namespace PhysX
         void AddShape(AZStd::shared_ptr<Physics::Shape> shape) override;
         void RemoveShape(AZStd::shared_ptr<Physics::Shape> shape) override;
 
-        void UpdateMassProperties(Physics::MassComputeFlags flags = Physics::MassComputeFlags::DEFAULT,
+        void UpdateMassProperties(AzPhysics::MassComputeFlags flags = AzPhysics::MassComputeFlags::DEFAULT,
             const AZ::Vector3* centerOfMassOffsetOverride = nullptr,
             const AZ::Matrix3x3* inertiaTensorOverride = nullptr,
             const float* massOverride = nullptr) override;
 
     private:
-        AZStd::shared_ptr<physx::PxRigidDynamic> m_pxRigidActor;
-        AZStd::vector<AZStd::shared_ptr<PhysX::Shape>> m_shapes;
-        AZStd::string m_name;
-        PhysX::ActorData m_actorUserData;
-        bool m_startAsleep;
+        void CreatePhysXActor(const AzPhysics::RigidBodyConfiguration& configuration);
 
         void UpdateComputedCenterOfMass();
         void ComputeInertia();
         void SetInertia(const AZ::Matrix3x3& inertia);
         void SetZeroCenterOfMass();
 
-        void CreatePhysXActor(const Physics::RigidBodyConfiguration& configuration);
-        void ReleasePhysXActor();
+        AZStd::shared_ptr<physx::PxRigidDynamic> m_pxRigidActor;
+        AZStd::vector<AZStd::shared_ptr<PhysX::Shape>> m_shapes;
+        AZStd::string m_name;
+        PhysX::ActorData m_actorUserData;
+        bool m_startAsleep = false;
     };
 
     AZ_POP_DISABLE_WARNING

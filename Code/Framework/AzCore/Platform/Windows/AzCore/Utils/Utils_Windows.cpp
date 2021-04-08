@@ -22,20 +22,18 @@ namespace AZ::Utils
         ::MessageBox(0, message, title, MB_OK | MB_ICONERROR);
     }
 
-    AZ::IO::FixedMaxPathString GetEngineManifestPath()
+    AZ::IO::FixedMaxPathString GetO3deManifestDirectory()
     {
-        char userProfileBuffer[AZ::IO::MaxPathLength] = {0};
+        char userProfileBuffer[AZ::IO::MaxPathLength]{};
         size_t variableSize = 0;
         auto err = getenv_s(&variableSize, userProfileBuffer, AZ::IO::MaxPathLength, "USERPROFILE");
         if (!err)
         {
-            AZ::IO::FixedMaxPath path{userProfileBuffer};
+            AZ::IO::FixedMaxPath path{ userProfileBuffer };
             path /= ".o3de";
-            path /= "o3de_manifest.json";
             return path.Native();
         }
 
         return {};
     }
-
 } // namespace AZ::Utils

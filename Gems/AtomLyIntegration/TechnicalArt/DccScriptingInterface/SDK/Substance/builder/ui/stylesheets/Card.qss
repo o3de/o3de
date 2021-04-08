@@ -1,0 +1,154 @@
+
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+AzQtComponents--Card
+{
+    margin: 0px;
+    padding: 0px;
+    border: 1px solid rgb(33, 34, 35);
+    border-radius: 2px;
+}
+
+AzQtComponents--CardNotification
+{
+    background-color: #1AFDC32D;
+    margin: 2px;
+    border: 1px solid #FDC32D;
+    border-radius: 2px;
+}
+
+AzQtComponents--CardNotification #HeaderFrame,
+AzQtComponents--CardNotification #Icon,
+AzQtComponents--CardNotification #Title
+{
+    background-color: transparent;
+    border: none;
+}
+
+/**
+ * CardHeader is a QFrame with a QHBoxLayout that contains the following children:
+ * #Expander: a QCheckBox used as a "tree expander".
+ * #Icon: a QLabel displaying an icon. The icon is set from c++.
+ * #Title: a QLabel displaying text.
+ * #ContextMenu: a QPushButton used to launch a context menu.
+ */
+
+AzQtComponents--CardHeader
+{
+    margin: 0px;
+    padding: 0px;
+    border: none;
+}
+
+AzQtComponents--CardHeader #Background
+{
+    margin: 2px;
+    padding: 0px;
+    border: none;
+    background-image: none;
+    background-color: transparent;
+}
+
+.primaryCardHeader
+{
+    background-color: #222222;
+}
+
+.secondaryCardHeader
+{
+    background-color: transparent;
+}
+
+AzQtComponents--CardHeader #Background[readOnly=true]
+{
+
+    background-repeat: repeat-xy;
+}
+
+AzQtComponents--CardHeader #Background[readOnly=false]
+{
+    background-image: none;
+}
+
+AzQtComponents--CardHeader #Title
+{
+    font-weight: bold;
+    background-color: transparent;
+}
+
+AzQtComponents--CardHeader #Expander
+{
+    width: 16px;
+    height: 16px;
+    qproperty-flat: true;
+    border: none;
+    color: transparent;
+    background-color: transparent;
+    selection-color: transparent;
+    selection-background-color: transparent;
+    image: none;
+}
+
+AzQtComponents--CardHeader #Expander:enabled:checked
+{
+    image: url(:/Cards/img/UI20/Cards/group_open.png);
+}
+
+AzQtComponents--CardHeader #Expander:enabled:!checked
+{
+    image: url(:/Cards/img/UI20/Cards/group_closed.png);
+}
+
+AzQtComponents--CardHeader #Icon,
+AzQtComponents--CardHeader #WarningIcon
+{
+    width: 16px;
+    height: 16px;
+    border: none;
+    background-color: transparent;
+}
+
+AzQtComponents--CardHeader #ContextMenu
+{
+    qproperty-flat: true;
+    border: none;
+    color: transparent;
+    background-color: transparent;
+    selection-color: transparent;
+    selection-background-color: transparent;
+    image: url(:/Cards/img/UI20/Cards/menu_ico.png);
+}
+
+AzQtComponents--CardHeader #Help
+{
+    qproperty-flat: true;
+    border: none;
+    color: transparent;
+    background-color: transparent;
+    selection-color: transparent;
+    selection-background-color: transparent;
+    image: url(:/Cards/img/UI20/Cards/help.png);
+}
+
+.separator
+{
+    color: #999999;
+}
+
+AzQtComponents--Card #SeparatorContainer
+{
+    margin-left: 2px;
+    margin-right: 2px;
+    border: none;
+}
+

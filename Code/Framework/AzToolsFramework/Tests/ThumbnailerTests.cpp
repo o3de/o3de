@@ -17,6 +17,7 @@
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/Entity/EditorEntityContextComponent.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
+#include <AzToolsFramework/UnitTest/ToolsTestApplication.h>
 
 namespace UnitTest
 {
@@ -74,7 +75,7 @@ namespace UnitTest
             m_app.Stop();
         }
 
-        AzToolsFramework::ToolsApplication m_app;
+        ToolsTestApplication m_app{ "ThumbnailerTests" };
         AZ::ComponentApplication::Descriptor m_descriptor;
 
         AZ::Entity* m_testEntity = nullptr;

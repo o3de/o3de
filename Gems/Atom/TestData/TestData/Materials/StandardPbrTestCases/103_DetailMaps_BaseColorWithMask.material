@@ -7,7 +7,7 @@
         "detailLayerGroup": {
             "baseColorDetailBlend": 1.0,
             "blendDetailMask": "TestData/Textures/checker8x8_flip_512.png",
-            "blendDetailMaskUv": "Packed"
+            "blendDetailMaskUv": "Unwrapped"
         }
     }
 }

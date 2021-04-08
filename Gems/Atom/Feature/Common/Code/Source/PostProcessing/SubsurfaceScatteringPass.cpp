@@ -38,32 +38,7 @@ namespace AZ
 
         SubsurfaceScatteringPass::SubsurfaceScatteringPass(const PassDescriptor& descriptor)
             : ComputePass(descriptor)
-        {
-            bool succeed = false;
-
-            succeed = FindShaderInputConstantIndexByName(m_screenSizeInputIndex, Name{ "m_screenSize" });
-
-            if (!succeed)
-            {
-                AZ_Error("PassSystem", false, "[SubsurfaceScatteringPass '%s']: Initialization failed");
-            }
-        }
-
-        bool SubsurfaceScatteringPass::FindShaderInputConstantIndexByName(AZ::RHI::ShaderInputConstantIndex& index, AZ::Name name)
-        {
-            index = m_shaderResourceGroup->FindShaderInputConstantIndex(name);
-
-            if (index.IsValid())
-            {
-                return true;
-            }
-            else
-            {
-                AZ_Error("PassSystem", false, "[SubsurfaceScatteringPass '%s']: Failed to find shader input constant %s in per pass srg of compute shader.",
-                    name.GetCStr());
-                return false;
-            }
-        }
+        { }
 
         void SubsurfaceScatteringPass::FrameBeginInternal(FramePrepareParams params)
         {

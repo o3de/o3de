@@ -18,42 +18,42 @@ namespace ScriptCanvas
     {
         namespace Core
         {
-            SlotsOutcome EventHandlerTranslationHelper::GetReturnValueSlotsByEventEntry(const EBusEventHandler& handler, const EBusEventEntry& eventEntry)
+            ConstSlotsOutcome  EventHandlerTranslationHelper::GetReturnValueSlotsByEventEntry(const EBusEventHandler& handler, const EBusEventEntry& eventEntry)
             {
                 return GetReturnValueSlotsByEventEntry<EBusEventHandler, EBusEventEntry>(handler, eventEntry);
             }
 
-            SlotsOutcome EventHandlerTranslationHelper::GetReturnValueSlotsByEventEntry(const ReceiveScriptEvent& handler, const Internal::ScriptEventEntry& eventEntry)
+            ConstSlotsOutcome  EventHandlerTranslationHelper::GetReturnValueSlotsByEventEntry(const ReceiveScriptEvent& handler, const Internal::ScriptEventEntry& eventEntry)
             {
                 return GetReturnValueSlotsByEventEntry<ReceiveScriptEvent, Internal::ScriptEventEntry>(handler, eventEntry);
             }
 
-            SlotsOutcome EventHandlerTranslationHelper::GetEventSlotsInExecutionThreadByType(const EBusEventHandler& handler, const Slot& slot, CombinedSlotType targetSlotType)
+            ConstSlotsOutcome  EventHandlerTranslationHelper::GetEventSlotsInExecutionThreadByType(const EBusEventHandler& handler, const Slot& slot, CombinedSlotType targetSlotType)
             {
                 return GetEventSlotsInExecutionThreadByType<EBusEventHandler, EBusEventEntry>(handler, slot, targetSlotType);
             }
 
-            SlotsOutcome EventHandlerTranslationHelper::GetEventSlotsInExecutionThreadByType(const ReceiveScriptEvent& handler, const Slot& slot, CombinedSlotType targetSlotType)
+            ConstSlotsOutcome  EventHandlerTranslationHelper::GetEventSlotsInExecutionThreadByType(const ReceiveScriptEvent& handler, const Slot& slot, CombinedSlotType targetSlotType)
             {
                 return GetEventSlotsInExecutionThreadByType<ReceiveScriptEvent, Internal::ScriptEventEntry>(handler, slot, targetSlotType);
             }
 
-            SlotsOutcome EventHandlerTranslationHelper::GetNonEventSlotsInExecutionThreadByType(const EBusEventHandler& handler, const Slot& slot, CombinedSlotType targetSlotType)
+            ConstSlotsOutcome  EventHandlerTranslationHelper::GetNonEventSlotsInExecutionThreadByType(const EBusEventHandler& handler, const Slot& slot, CombinedSlotType targetSlotType)
             {
                 return GetNonEventSlotsInExecutionThreadByType<EBusEventHandler, EBusEventHandlerProperty>(handler, slot, targetSlotType);
             }
 
-            SlotsOutcome EventHandlerTranslationHelper::GetNonEventSlotsInExecutionThreadByType(const ReceiveScriptEvent& handler, const Slot& slot, CombinedSlotType targetSlotType)
+            ConstSlotsOutcome  EventHandlerTranslationHelper::GetNonEventSlotsInExecutionThreadByType(const ReceiveScriptEvent& handler, const Slot& slot, CombinedSlotType targetSlotType)
             {
                 return GetNonEventSlotsInExecutionThreadByType<ReceiveScriptEvent, ReceiveScriptEventProperty>(handler, slot, targetSlotType);
             }
 
-            SlotsOutcome EventHandlerTranslationHelper::GetSlotsInExecutionThreadByType(const EBusEventHandler& handler, const Slot& slot, CombinedSlotType targetSlotType)
+            ConstSlotsOutcome  EventHandlerTranslationHelper::GetSlotsInExecutionThreadByType(const EBusEventHandler& handler, const Slot& slot, CombinedSlotType targetSlotType)
             {
                 return GetSlotsInExecutionThreadByType<EBusEventHandler>(handler, slot, targetSlotType);
             }
 
-            SlotsOutcome EventHandlerTranslationHelper::GetSlotsInExecutionThreadByType(const ReceiveScriptEvent& handler, const Slot& slot, CombinedSlotType targetSlotType)
+            ConstSlotsOutcome EventHandlerTranslationHelper::GetSlotsInExecutionThreadByType(const ReceiveScriptEvent& handler, const Slot& slot, CombinedSlotType targetSlotType)
             {
                 return GetSlotsInExecutionThreadByType<ReceiveScriptEvent>(handler, slot, targetSlotType);
             }

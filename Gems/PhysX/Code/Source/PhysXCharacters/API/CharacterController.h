@@ -17,6 +17,7 @@
 
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
 #include <AzFramework/Physics/Collision/CollisionLayers.h>
+#include <AzFramework/Physics/Common/PhysicsTypes.h>
 
 namespace PhysX
 {
@@ -156,20 +157,23 @@ namespace PhysX
     {
     public:
         AZ_CLASS_ALLOCATOR(CharacterController, AZ::SystemAllocator, 0);
-        AZ_TYPE_INFO_LEGACY(CharacterController, "{A75A7D19-BC21-4F7E-A3D9-05031D2DFC94}", Physics::Character);
+        AZ_RTTI(PhysX::CharacterController, "{A75A7D19-BC21-4F7E-A3D9-05031D2DFC94}", Physics::Character);
         static void Reflect(AZ::ReflectContext* context);
 
         CharacterController() = default;
         CharacterController(physx::PxController* pxController,
-            AZStd::unique_ptr<CharacterControllerCallbackManager> callbackManager);
+            AZStd::unique_ptr<CharacterControllerCallbackManager> callbackManager,
+            AzPhysics::SceneHandle sceneHandle);
         ~CharacterController();
 
-        void SetFilterDataAndShape(const Physics::CharacterConfiguration& characterConfig);
-        void SetUserData(const Physics::CharacterConfiguration& characterConfig);
-        void SetActorName(const AZStd::string& name = "Character Controller");
-        void SetMinimumMovementDistance(float distance);
-        void CreateShadowBody(const Physics::CharacterConfiguration& configuration, Physics::World&);
-        void SetTag(const AZStd::string& tag);
+        //! Character Controller can be only enabled and disabled once after creation.
+        //! And after being disabled it cannot be enabled again, it has to be destroyed and re-created.
+        //! This is because the way PhysX controller works, it doesn't allow the state of having physics disabled, so being enabled/disabled is linked to be created/destroyed.
+        //! @{
+        void EnablePhysics(const Physics::CharacterConfiguration& configuration);
+        void DisablePhysics();
+        //! @}
+
         CharacterControllerCallbackManager* GetCallbackManager();
         void SetFilterFlags(physx::PxQueryFlags filterFlags);
 
@@ -196,19 +200,17 @@ namespace PhysX
         void SetRotation(const AZ::Quaternion& rotation) override;
         void AttachShape(AZStd::shared_ptr<Physics::Shape> shape) override;
 
-        // Physics::WorldBody
+        // AzPhysics::SimulatedBody
         AZ::EntityId GetEntityId() const override;
-        Physics::World* GetWorld() const override;
+        AzPhysics::Scene* GetScene() override;
         AZ::Transform GetTransform() const override;
         void SetTransform(const AZ::Transform& transform) override;
         AZ::Vector3 GetPosition() const override;
         AZ::Quaternion GetOrientation() const override;
         AZ::Aabb GetAabb() const override;
-        Physics::RayCastHit RayCast(const Physics::RayCastRequest& request) override;
+        AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& request) override;
         AZ::Crc32 GetNativeType() const override;
         void* GetNativePointer() const override;
-        void AddToWorld(Physics::World&) override;
-        void RemoveFromWorld(Physics::World&) override;
 
         // CharacterController specific
         void Resize(float height);
@@ -222,6 +224,14 @@ namespace PhysX
         void SetHalfForwardExtent(float halfForwardExtent);
 
     private:
+        void SetFilterDataAndShape(const Physics::CharacterConfiguration& characterConfig);
+        void SetUserData(const Physics::CharacterConfiguration& characterConfig);
+        void SetActorName(const AZStd::string& name = "Character Controller");
+        void SetMinimumMovementDistance(float distance);
+        void SetTag(const AZStd::string& tag);
+        void CreateShadowBody(const Physics::CharacterConfiguration& configuration);
+        void DestroyShadowBody();
+        void RemoveControllerFromScene();
         void UpdateFilterLayerAndGroup(AzPhysics::CollisionLayer collisionLayer, AzPhysics::CollisionGroup collisionGroup);
 
         physx::PxController* m_pxController = nullptr; ///< The underlying PhysX controller.
@@ -233,7 +243,8 @@ namespace PhysX
         physx::PxControllerFilters m_pxControllerFilters; ///< Controls which objects the controller interacts with when moving.
         AZStd::shared_ptr<Physics::Material> m_material; ///< The generic physics API material for the controller.
         AZStd::shared_ptr<Physics::Shape> m_shape; ///< The generic physics API shape associated with the controller.
-        AZStd::unique_ptr<Physics::RigidBody> m_shadowBody; ///< A kinematic-synchronised rigid body used to store additional colliders.
+        AzPhysics::RigidBody* m_shadowBody = nullptr; ///< A kinematic-synchronised rigid body used to store additional colliders.
+        AzPhysics::SimulatedBodyHandle m_shadowBodyHandle = AzPhysics::InvalidSimulatedBodyHandle; //!<A handle to the shadow body.
         AZStd::string m_name = "Character Controller"; ///< Name to set on the PhysX actor associated with the controller.
         AZ::Crc32 m_colliderTag; ///< Tag used to identify the collider associated with the controller.
         float m_maximumSpeed = 100.0f; ///< If the accumulated requested velocity for a tick exceeds this magnitude, it will be clamped.

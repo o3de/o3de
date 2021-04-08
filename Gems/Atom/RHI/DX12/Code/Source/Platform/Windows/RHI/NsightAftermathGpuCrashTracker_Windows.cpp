@@ -89,10 +89,12 @@ void GpuCrashTracker::OnDescription(PFN_GFSDK_Aftermath_AddGpuCrashDumpDescripti
         return;
     }
 
+    char executableFolder[AZ::IO::MaxPathLength];
     // Add some basic description about the crash. This is called after the GPU crash happens, but before
     // the actual GPU crash dump callback. The provided data is included in the crash dump and can be
     // retrieved using GFSDK_Aftermath_GpuCrashDump_GetDescription().
-    AZ::ComponentApplicationBus::BroadcastResult(executableFolder, &AZ::ComponentApplicationBus::Events::GetExecutableFolder);
+    AZ::Utils::GetExecutableDirectory(executableFolder, AZ::IO::MaxPathLength);
+    AZ::IO::FixedMaxPath fileAbsolutePath{executableFolder};
     fileAbsolutePath /= AZ::Utils::GetProjectName();
     addDescription(GFSDK_Aftermath_GpuCrashDumpDescriptionKey_ApplicationName, fileAbsolutePath.c_str());
 

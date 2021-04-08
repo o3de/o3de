@@ -20,6 +20,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/UI/PropertyEditor/EntityIdQLabel.hxx>
+#include <AzToolsFramework/UnitTest/ToolsTestApplication.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
 
 #include <QtTest/QtTest>
@@ -99,7 +100,7 @@ namespace UnitTest
 
     private:
 
-        ToolsApplication m_app;
+        ToolsTestApplication m_app{ "EntityIdQLabelTest" };
 
     };
 

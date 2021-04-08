@@ -35,8 +35,6 @@ namespace LevelBuilder
         //!AssetBuilderSDK::AssetBuilderCommandBus interface
         void ShutDown() override;
 
-        bool PopulateLevelDataDependenciesHelper(AZ::IO::GenericStream* stream, AssetBuilderSDK::ProductPathDependencySet& productDependencies) const;
-        bool PopulateVegetationMapDataDependenciesHelper(AZ::IO::GenericStream* stream, AssetBuilderSDK::ProductPathDependencySet& productDependencies) const;
         bool PopulateMissionDependenciesHelper(AZ::IO::GenericStream* stream, AssetBuilderSDK::ProductPathDependencySet& productDependencies) const;
         void PopulateLevelSliceDependenciesHelper(
             const AZStd::string& levelSliceName,
@@ -69,15 +67,6 @@ namespace LevelBuilder
             const AZStd::string& levelPath,
             AZStd::vector<AssetBuilderSDK::ProductDependency>& productDependencies,
             AssetBuilderSDK::ProductPathDependencySet& productPathDependencies) const;
-
-        void PopulateLevelDataDependencies(
-            const AZStd::string& levelPakFile,
-            const AZStd::string& levelPath,
-            AssetBuilderSDK::ProductPathDependencySet& productDependencies) const;
-
-        void PopulateVegetationMapDataDependencies(
-            const AZStd::string& levelPakFile,
-            AssetBuilderSDK::ProductPathDependencySet& productDependencies) const;
 
         void PopulateMissionDependencies(
             const AZStd::string& levelPakFile,

@@ -108,36 +108,8 @@ namespace AZ
 
         void BlendColorGradingLutsPass::Init()
         {
-            AZ_Assert(m_shaderResourceGroup != nullptr, "BlendColorGradingLutsPass %s has a null shader resource group when calling Init.", GetPathName().GetCStr());
-
-            if (m_shaderResourceGroup != nullptr)
-            {
-                m_shaderInputBlendedLutImageIndex = m_shaderResourceGroup->FindShaderInputImageIndex(Name{ "m_blendedLut" });
-                m_shaderInputBlendedLutDimensionsIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_blendedLutDimensions" });
-                m_shaderInputBlendedLutShaperTypeIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_blendedLutShaperType" });
-                m_shaderInputBlendededLutShaperBiasIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_blendedLutShaperBias" });
-                m_shaderInputBlendededLutShaperScaleIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_blendedLutShaperScale" });
-
-                m_shaderInputSourceLut1ImageIndex = m_shaderResourceGroup->FindShaderInputImageIndex(Name{ "m_sourceLut1" });
-                m_shaderInputSourceLut1ShaperTypeIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_sourceLut1ShaperType" });
-                m_shaderInputSourceLut1ShaperBiasIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_sourceLut1ShaperBias" });
-                m_shaderInputSourceLut1ShaperScaleIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_sourceLut1ShaperScale" });
-
-                m_shaderInputSourceLut2ImageIndex = m_shaderResourceGroup->FindShaderInputImageIndex(Name{ "m_sourceLut2" });
-                m_shaderInputSourceLut2ShaperTypeIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_sourceLut2ShaperType" });
-                m_shaderInputSourceLut2ShaperBiasIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_sourceLut2ShaperBias" });
-                m_shaderInputSourceLut2ShaperScaleIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_sourceLut2ShaperScale" });
-
-                m_shaderInputWeight0Index = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_weight0" });
-                m_shaderInputWeight1Index = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_weight1" });
-                m_shaderInputWeight2Index = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_weight2" });
-                m_shaderInputWeight3Index = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_weight3" });
-                m_shaderInputWeight4Index = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_weight4" });
-            }
-
-            m_flags.m_initialized = true;
-
             InitializeShaderVariant();
+            m_flags.m_initialized = true;
         }
 
         void BlendColorGradingLutsPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)

@@ -182,11 +182,10 @@ class ViewEditController(QObject):
             notification_label_text.VIEW_EDIT_PAGE_SAVING_SUCCEED_MESSAGE.format(config_file))
 
     def _search_complete_callback(self) -> None:
-        self._view_edit_page.set_notification_page_text(ViewEditPageConstants.NOTIFICATION_SELECT_CONFIG_FILE_TEXT)
         self._reset_page()
 
     def _start_search_config_files_async(self, config_directory: str) -> None:
-        self._view_edit_page.set_notification_page_text(ViewEditPageConstants.NOTIFICATION_LOADING_TEXT)
+        self._view_edit_page.set_notification_page_text(notification_label_text.NOTIFICATION_LOADING_MESSAGE)
         self._view_edit_page.set_current_main_view_index(ViewEditPageConstants.NOTIFICATION_PAGE_INDEX)
         self._config_file_json_source.clear()
         self._table_view.reset_view()
@@ -233,12 +232,11 @@ class ViewEditController(QObject):
         self._view_edit_page.save_changes_button.clicked.connect(self._save_changes)
         self._view_edit_page.search_filter_input.returnPressed.connect(self._filter_based_on_search_text)
         self._view_edit_page.cancel_button.clicked.connect(self._cancel)
-        self._view_edit_page.notification_prompt_create_new_button.clicked.connect(self._create_new_config_file)
-        self._view_edit_page.notification_prompt_rescan_button.clicked.connect(self._rescan_config_directory)
+        self._view_edit_page.create_new_button.clicked.connect(self._create_new_config_file)
+        self._view_edit_page.rescan_button.clicked.connect(self._rescan_config_directory)
 
     def _setup_page_start_state(self) -> None:
         configuration: Configuration = self._configuration_manager.configuration
-        self._view_edit_page.set_notification_page_text(ViewEditPageConstants.NOTIFICATION_SELECT_CONFIG_FILE_TEXT)
         self._view_edit_page.set_current_main_view_index(ViewEditPageConstants.NOTIFICATION_PAGE_INDEX)
         self._view_edit_page.set_config_files(configuration.config_files)
         self._view_edit_page.set_config_location(configuration.config_directory)

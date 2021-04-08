@@ -22,7 +22,7 @@
             "normalDetailFlipY": true,
             "normalDetailMap": "TestData/Textures/cc0/Concrete019_1K_Normal.jpg",
             "normalDetailStrength": 1.5,
-            "textureMapUv": "Base"
+            "textureMapUv": "Tiled"
         },
         "detailUV": {
             "scale": 5.0

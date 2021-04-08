@@ -12,8 +12,8 @@
 
 #include <AzTest/AzTest.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
-#include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/Entity/EditorEntityContextComponent.h>
+#include <AzToolsFramework/UnitTest/ToolsTestApplication.h>
 
 namespace AzToolsFramework
 {
@@ -33,7 +33,8 @@ namespace AzToolsFramework
         {
             m_app.Stop();
         }
-        AzToolsFramework::ToolsApplication m_app;
+        UnitTest::ToolsTestApplication m_app{ "EditorEntityContextComponent" }; // Shorted because Settings Registry specializations
+                                                                                // are 32 characters max.
         AZ::ComponentApplication::Descriptor m_descriptor;
     };
 

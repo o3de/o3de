@@ -97,7 +97,7 @@ namespace PolygonPrismMeshUtils
 
         const InternalEdgePriorityQueue& GetInternalEdges() const;
 
-        const AZStd::vector<AZ::Vector3>& GetDebugDrawPoints(float height, float scale) const;
+        const AZStd::vector<AZ::Vector3>& GetDebugDrawPoints(float height, const AZ::Vector3& nonUniformScale) const;
 
         void SetDebugDrawDirty();
 

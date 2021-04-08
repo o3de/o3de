@@ -50,10 +50,7 @@ namespace AZ
         void SMAANeighborhoodBlendingPass::Init()
         {
             SMAABasePass::Init();
-
-            AZ_Assert(m_shaderResourceGroup != nullptr, "SMAANeighborhoodBlendingPass %s has a null shader resource group when calling Init.", GetPathName().GetCStr());
-
-            m_renderTargetMetricsShaderInputIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_renderTargetMetrics" });
+            m_renderTargetMetricsShaderInputIndex.Reset();
         }
 
         void SMAANeighborhoodBlendingPass::UpdateSRG()

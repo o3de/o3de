@@ -272,7 +272,7 @@ namespace AssetBuilderSDK
          * If your analysis fingerprint DOES change, then all source files will be sent to your CreateJobs function regardless of modtime changes.
          * This does not necessarily mean that the jobs will need doing, just that CreateJobs will be called.
          * For best results, make sure your analysis fingerprint only changes when its likely that you need to re-analyze source files for changes, which
-         * may result in job fingerprints to be diffent (for example, if you have changed your logic inside your builder).
+         * may result in job fingerprints to be different (for example, if you have changed your logic inside your builder).
         **/
         AZStd::string m_analysisFingerprint;
 
@@ -281,6 +281,10 @@ namespace AssetBuilderSDK
         AZ::u8 m_flags = 0;
 
         AZStd::unordered_map<AZStd::string, AZ::u8> m_flagsByJobKey;
+
+        // If BF_DeleteLastKnownGoodProductOnFailure is raised, ALL specified product keys will be deleted on failure
+        // use this set to keep specific products in the job, if necessary
+        AZStd::unordered_map<AZStd::string, AZStd::unordered_set<AZ::u32>> m_productsToKeepOnFailure;
 
         void AddFlags(AZ::u8 flag, const AZStd::string& jobKey);
 

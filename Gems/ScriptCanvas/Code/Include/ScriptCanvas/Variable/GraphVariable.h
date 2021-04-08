@@ -52,16 +52,19 @@ namespace ScriptCanvas
 
         enum class Scope : AZ::u8
         {
-            Local = 0,
-            Input = 1,
-            Output = 2,
-            InOut = 3
+            Graph = 0,
+            Function = 1,
+        };
+
+        enum InitialValueSource : AZ::u8
+        {
+            Graph,
+            Component,
+            COUNT
         };
 
         const char* GetScopeDisplayLabel(Scope scopeType);
-
         Scope GetScopeFromLabel(const char* label);
-
         const char* GetScopeToolTip(Scope scopeType);
     }
 
@@ -126,9 +129,9 @@ namespace ScriptCanvas
 
         const Datum*    GetDatum() const;
 
-        bool IsExposedAsComponentInput() const;
+        bool IsComponentProperty() const;
 
-        void            ConfigureDatumView(ModifiableDatumView& accessController);
+        void ConfigureDatumView(ModifiableDatumView& accessController);
         
         void SetVariableName(AZStd::string_view displayName);
         AZStd::string_view GetVariableName() const;
@@ -146,12 +149,10 @@ namespace ScriptCanvas
         AZ::Crc32 GetVisibility() const;
         void SetVisibility(AZ::Crc32 visibility);
 
-        void RemoveScope(VariableFlags::Scope scopeType);
         void SetScope(VariableFlags::Scope scopeType);
         VariableFlags::Scope GetScope() const;
 
         bool IsInScope(VariableFlags::Scope scopeType) const;
-        bool IsLocalVariableOnly() const;
 
         void SetExposureCategory(AZStd::string_view exposureCategory) { m_exposureCategory = exposureCategory; }
         AZStd::string_view GetExposureCategory() const { return m_exposureCategory; }
@@ -165,6 +166,13 @@ namespace ScriptCanvas
         void SetOwningScriptCanvasId(const ScriptCanvasId& scriptCanvasId);
         GraphScopedVariableId GetGraphScopedId() const;
 
+        AZStd::string_view GetInitialValueSourceName() const { return s_InitialValueSourceNames[m_InitialValueSource]; }
+        VariableFlags::InitialValueSource GetInitialValueSource() const { return m_InitialValueSource; }
+        AZ::u32 SetInitialValueSource(VariableFlags::InitialValueSource InitialValueSource);
+
+        AZ::u32 SetInitialValueSourceFromName(AZStd::string_view name);
+
+
         // Editor Callbacks
         void OnDatumEdited(const Datum* datum) override;
         AZStd::vector<AZStd::pair<VariableFlags::Scope, AZStd::string>> GetScopes() const;
@@ -172,11 +180,14 @@ namespace ScriptCanvas
 
         int GetSortPriority() const;
 
+        static const char* s_InitialValueSourceNames[VariableFlags::InitialValueSource::COUNT];
+
     private:
 
         bool IsInFunction() const;
         
         void OnScopeTypedChanged();
+        AZ::u32 OnInitialValueSourceChanged();
         void OnSortPriorityChanged();
 
         void OnValueChanged();
@@ -186,6 +197,7 @@ namespace ScriptCanvas
         int m_sortPriority;
 
         VariableFlags::Scope m_scope;
+        VariableFlags::InitialValueSource m_InitialValueSource;
 
         // Still need to make this a proper bitmask, once we have support for multiple
         // input/output attributes. For now, just going to assume it's only the single flag(which is is).
@@ -205,6 +217,7 @@ namespace ScriptCanvas
         Datum m_datum;
         
         ReplicaNetworkProperties m_networkProperties;
+
     };
 
     using GraphVariableMapping = AZStd::unordered_map< VariableId, GraphVariable >;

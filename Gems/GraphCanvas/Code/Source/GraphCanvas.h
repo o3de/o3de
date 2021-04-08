@@ -19,24 +19,32 @@
 #include <GraphCanvas/GraphCanvasBus.h>
 #include <GraphCanvas/Styling/PseudoElement.h>
 
+#include <Translation/TranslationDatabase.h>
+#include <Translation/TranslationBuilder.h>
+
 namespace GraphCanvas
 {
     class GraphCanvasSystemComponent
         : public AZ::Component
         , private GraphCanvasRequestBus::Handler
         , protected Styling::PseudoElementFactoryRequestBus::Handler
+        , protected AzFramework::AssetCatalogEventBus::Handler
+        , protected AZ::Data::AssetBus::MultiHandler
+
     {
     public:
         AZ_COMPONENT(GraphCanvasSystemComponent, "{F9F7BE55-4C28-4B8A-A722-D47C9EF24E60}")
 
         static void Reflect(AZ::ReflectContext* context);
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
+        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
 
         GraphCanvasSystemComponent() = default;
         ~GraphCanvasSystemComponent() override = default;
 
     private:
         // AZ::Component
+        void Init() override;
         void Activate() override;
         void Deactivate() override;
         ////
@@ -72,5 +80,19 @@ namespace GraphCanvas
         AZ::EntityId CreateStyleEntity(const AZStd::string& style) const override;
         AZ::EntityId CreateVirtualChild(const AZ::EntityId& real, const AZStd::string& virtualChildElement) const override;
         ////
+
+        void OnCatalogLoaded(const char* /*catalogFile*/) override;
+
+        AZStd::unique_ptr<TranslationAssetHandler> m_assetHandler;
+
+        void RegisterTranslationBuilder();
+
+        void RegisterAssetHandler();
+        void UnregisterAssetHandler();
+        TranslationAssetWorker m_translationAssetWorker;
+        AZStd::vector<AZ::Data::AssetId> m_translationAssets;
+        void PopulateTranslationDatabase();
+
+        TranslationDatabase m_translationDatabase;
     };
 }

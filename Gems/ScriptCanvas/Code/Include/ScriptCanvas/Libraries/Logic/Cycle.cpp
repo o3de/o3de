@@ -32,7 +32,7 @@ namespace ScriptCanvas
                 return AZ::Success(DependencyReport());
             }
 
-            SlotsOutcome Cycle::GetSlotsInExecutionThreadByTypeImpl(const Slot&, CombinedSlotType targetSlotType, const Slot*) const
+            ConstSlotsOutcome Cycle::GetSlotsInExecutionThreadByTypeImpl(const Slot&, CombinedSlotType targetSlotType, const Slot*) const
             {
                 return AZ::Success(GetSlotsByType(targetSlotType));
             }

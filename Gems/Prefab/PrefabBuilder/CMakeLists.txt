@@ -14,15 +14,45 @@ if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
 endif()
 
 ly_add_target(
-    NAME Prefab.PrefabBuilder MODULE
+    NAME PrefabBuilder.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         prefabbuilder_files.cmake
     BUILD_DEPENDENCIES
-        PRIVATE
+        PUBLIC
             AZ::AzCore
             AZ::AzToolsFramework
             AZ::AssetBuilderSDK
+)
+
+ly_add_target(
+    NAME PrefabBuilder MODULE
+    NAMESPACE Gem
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            .
+    FILES_CMAKE
+        prefabbuilder_module_files.cmake
+    BUILD_DEPENDENCIES
+        PRIVATE
+            Gem::PrefabBuilder.Static
+)
+
+ly_add_target(
+    NAME PrefabBuilder.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+    NAMESPACE Gem
+    FILES_CMAKE
+        prefabbuilder_tests_files.cmake
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            .
+    BUILD_DEPENDENCIES
+        PRIVATE
+            AZ::AzTest
+            Gem::PrefabBuilder.Static
+)
+ly_add_googletest(
+    NAME Gem::PrefabBuilder.Tests
 )
 
 ly_add_target_dependencies(
@@ -31,5 +61,5 @@ ly_add_target_dependencies(
         AssetProcessor
         AssetProcessorBatch
     DEPENDENT_TARGETS
-        Gem::Prefab.PrefabBuilder
+        Gem::PrefabBuilder
 )

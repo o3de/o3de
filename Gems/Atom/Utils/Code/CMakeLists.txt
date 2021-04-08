@@ -9,6 +9,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
+ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
+
 ly_add_target(
     NAME Atom_Utils.Static STATIC
     NAMESPACE Gem
@@ -36,6 +38,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         NAMESPACE Gem
         FILES_CMAKE
             atom_utils_tests_files.cmake
+        PLATFORM_INCLUDE_FILES
+            ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
                 Tests

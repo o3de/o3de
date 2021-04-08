@@ -90,9 +90,6 @@ AZ_POP_DISABLE_WARNING
 
 #include "Editor/AssetDatabase/AssetDatabaseLocationListener.h"
 #include "Editor/AzAssetBrowser/AzAssetBrowserRequestHandler.h"
-#include "Editor/Thumbnails/TextureThumbnailRenderer.h"
-#include "Editor/Thumbnails/StaticMeshThumbnailRenderer.h"
-#include "Editor/Thumbnails/MaterialThumbnailRenderer.h"
 #include "Editor/AssetEditor/AssetEditorRequestsHandler.h"
 
 // EditorCommon
@@ -212,9 +209,6 @@ CEditorImpl::CEditorImpl()
     m_pLevelIndependentFileMan = new CLevelIndependentFileMan;
     SetPrimaryCDFolder();
     gSettings.Load();
-
-    // retrieve this after the settings have been loaded
-    m_isPrefabSystemEnabled = gSettings.prefabSystem;
 
     m_pErrorReport = new CErrorReport;
     m_pClassFactory = CClassFactory::Instance();
@@ -451,10 +445,6 @@ void CEditorImpl::SetGameEngine(CGameEngine* ge)
 
     m_pMaterialManager->Set3DEngine();
     m_pAnimationContext->Init();
-
-    m_thumbnailRenderers.push_back(AZStd::make_unique<TextureThumbnailRenderer>());
-    m_thumbnailRenderers.push_back(AZStd::make_unique<StaticMeshThumbnailRenderer>());
-    m_thumbnailRenderers.push_back(AZStd::make_unique<MaterialThumbnailRenderer>());
 }
 
 void CEditorImpl::RegisterTools()
@@ -2085,11 +2075,6 @@ void CEditorImpl::DestroyQMimeData(QMimeData* data) const
 bool CEditorImpl::IsNewViewportInteractionModelEnabled() const
 {
     return m_isNewViewportInteractionModelEnabled;
-}
-
-bool CEditorImpl::IsPrefabSystemEnabled() const
-{
-    return m_isPrefabSystemEnabled;
 }
 
 void CEditorImpl::OnStartPlayInEditor()

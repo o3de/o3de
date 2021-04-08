@@ -309,7 +309,7 @@ namespace AZ
             args.m_destinationFolder = tempFolder.c_str();
 
             const auto dxcInputFile = RHI::PrependFile(args);
-            if (BuildHasDebugInfo())
+            if (BuildHasDebugInfo(shaderCompilerArguments))
             {
                 // dump intermediate "true final HLSL" file (shadername.metal.shadersource.prepend)
                 byProducts.m_intermediatePaths.insert(dxcInputFile);
@@ -330,7 +330,7 @@ namespace AZ
                 AZ_Error(MetalShaderPlatformName, false, "DXC failed to create the spirv file");
                 return false;
             }
-            if (BuildHasDebugInfo())
+            if (BuildHasDebugInfo(shaderCompilerArguments))
             {
                 byProducts.m_intermediatePaths.insert(shaderSpirvOutputFile);   // the spirv spit by DXC
             }
@@ -367,7 +367,7 @@ namespace AZ
             bool finalizeShaderResult = UpdateCompiledShader(outFileStream, MetalShaderPlatformName, shaderMSLOutputFile.data(), sourceMetalShader);
             AZ_Assert(finalizeShaderResult, "Final compiled shader was not created. Check if %s was created", shaderMSLOutputFile.c_str());
 
-            if (BuildHasDebugInfo())
+            if (BuildHasDebugInfo(shaderCompilerArguments))
             {
                 byProducts.m_intermediatePaths.emplace(AZStd::move(shaderMSLOutputFile));   // .msl metal out of sv-cross
             }

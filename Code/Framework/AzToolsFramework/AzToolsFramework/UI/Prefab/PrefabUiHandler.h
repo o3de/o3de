@@ -13,10 +13,15 @@
 #pragma once
 
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiHandlerBase.h>
-#include <AzToolsFramework/UI/Prefab/PrefabEditInterface.h>
 
 namespace AzToolsFramework
 {
+    namespace Prefab
+    {
+        class PrefabEditInterface;
+        class PrefabPublicInterface;
+    };
+
     class PrefabUiHandler
         : public EditorEntityUiHandlerBase
     {
@@ -28,11 +33,17 @@ namespace AzToolsFramework
         ~PrefabUiHandler() override = default;
 
         // EditorEntityUiHandler...
+        QString GenerateItemInfoString(AZ::EntityId entityId) const override;
+        QString GenerateItemTooltip(AZ::EntityId entityId) const override;
+        QPixmap GenerateItemIcon(AZ::EntityId entityId) const override;
         void PaintItemBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
-        void PaintDescendantForeground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index,
+        void PaintDescendantBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index,
             const QModelIndex& descendantIndex) const override;
 
     private:
+        Prefab::PrefabEditInterface* m_prefabEditInterface = nullptr;
+        Prefab::PrefabPublicInterface* m_prefabPublicInterface = nullptr;
+
         static bool IsLastVisibleChild(const QModelIndex& parent, const QModelIndex& child);
         static QModelIndex GetLastVisibleChild(const QModelIndex& parent);
         static QModelIndex Internal_GetLastVisibleChild(const QAbstractItemModel* model, const QModelIndex& index);
@@ -41,7 +52,7 @@ namespace AzToolsFramework
         static constexpr int m_prefabBorderThickness = 2;
         static const QColor m_prefabCapsuleColor;
         static const QColor m_prefabCapsuleEditColor;
-
-        Prefab::PrefabEditInterface* m_prefabEditInterface = nullptr;
+        static const QString m_prefabIconPath;
+        static const QString m_prefabEditIconPath;
     };
 } // namespace AzToolsFramework

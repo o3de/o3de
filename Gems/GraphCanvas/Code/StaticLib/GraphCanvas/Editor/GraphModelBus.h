@@ -206,10 +206,17 @@ namespace GraphCanvas
         //////////////////////////////////////
         // Extender Slot Optional Overrides
 
+        enum class ExtensionRequestReason
+        {
+            Internal,
+            UserRequest,
+            ConnectionProposal
+        };
+
         // Request an extension to the node for the specified group from the specific Node and ExtenderId.
         //
         // Should return the appropriate slotId for the newly added slots.
-        virtual SlotId RequestExtension([[maybe_unused]] const NodeId& nodeId, [[maybe_unused]] const ExtenderId& extenderId)
+        virtual SlotId RequestExtension([[maybe_unused]] const NodeId& nodeId, [[maybe_unused]] const ExtenderId& extenderId, ExtensionRequestReason)
         {
             return SlotId();
         }

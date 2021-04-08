@@ -12,11 +12,8 @@
 #include <PhysX_precompiled.h>
 
 #include <DefaultWorldComponent.h>
-#include <AzFramework/Physics/CollisionNotificationBus.h>
-#include <AzFramework/Physics/TriggerBus.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
-
-#include <World.h>
+#include <AzFramework/Physics/Collision/CollisionEvents.h>
 
 namespace PhysX
 {
@@ -49,41 +46,9 @@ namespace PhysX
         m_onDefaultSceneConfigChangedHandler.Disconnect();
     }
 
-    void DefaultWorldComponent::OnTriggerEnter(const Physics::TriggerEvent& triggerEvent)
+    AzPhysics::SceneHandle DefaultWorldComponent::GetDefaultSceneHandle() const
     {
-        Physics::TriggerNotificationBus::QueueEvent(triggerEvent.m_triggerBody->GetEntityId(), &Physics::TriggerNotifications::OnTriggerEnter, triggerEvent);
-    }
-
-    void DefaultWorldComponent::OnTriggerExit(const Physics::TriggerEvent& triggerEvent)
-    {
-        Physics::TriggerNotificationBus::QueueEvent(triggerEvent.m_triggerBody->GetEntityId(), &Physics::TriggerNotifications::OnTriggerExit, triggerEvent);
-    }
-
-    void DefaultWorldComponent::OnCollisionBegin(const Physics::CollisionEvent& event)
-    {
-        Physics::CollisionNotificationBus::QueueEvent(event.m_body1->GetEntityId(), &Physics::CollisionNotifications::OnCollisionBegin, event);
-    }
-
-    void DefaultWorldComponent::OnCollisionPersist(const Physics::CollisionEvent& event)
-    {
-        Physics::CollisionNotificationBus::QueueEvent(event.m_body1->GetEntityId(), &Physics::CollisionNotifications::OnCollisionPersist, event);
-    }
-
-    void DefaultWorldComponent::OnCollisionEnd(const Physics::CollisionEvent& event)
-    {
-        Physics::CollisionNotificationBus::QueueEvent(event.m_body1->GetEntityId(), &Physics::CollisionNotifications::OnCollisionEnd, event);
-    }
-
-    AZStd::shared_ptr<Physics::World> DefaultWorldComponent::GetDefaultWorld()
-    {
-        if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
-        {
-            if (auto scene = physicsSystem->GetScene(m_sceneHandle))
-            {
-                return scene->GetLegacyWorld();
-            }
-        }
-        return nullptr;
+        return m_sceneHandle;
     }
 
     void DefaultWorldComponent::OnPreGameEntitiesStarted()
@@ -91,18 +56,10 @@ namespace PhysX
         if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
         {
             AzPhysics::SceneConfiguration sceneConfig = physicsSystem->GetDefaultSceneConfiguration();
-            sceneConfig.m_legacyId = Physics::DefaultPhysicsWorldId;
+            sceneConfig.m_sceneName = AzPhysics::DefaultPhysicsSceneName;
             m_sceneHandle = physicsSystem->AddScene(sceneConfig);
             if (m_sceneHandle != AzPhysics::InvalidSceneHandle)
             {
-                // Temporary until LYN-438 work is complete
-                if (auto* scene = physicsSystem->GetScene(m_sceneHandle))
-                {
-                    if (AZStd::shared_ptr<Physics::World> legacyWorld = scene->GetLegacyWorld())
-                    {
-                        legacyWorld->SetEventHandler(this);
-                    }
-                }
                 Physics::DefaultWorldBus::Handler::BusConnect();
             }
         }
@@ -134,28 +91,6 @@ namespace PhysX
         }
 
         const AzPhysics::SceneConfiguration& currentConfig = scene->GetConfiguration();
-
-        //this will be removed/improved with LYN-438
-        constexpr const float tolerance = 0.0001f;
-        const bool gravityChanged = !currentConfig.m_legacyConfiguration.m_gravity.IsClose(config.m_legacyConfiguration.m_gravity);
-        const bool maxTimeStepChanged = !AZ::IsClose(currentConfig.m_legacyConfiguration.m_maxTimeStep, config.m_legacyConfiguration.m_maxTimeStep, tolerance);
-        const bool fixedTimeStepChanged = !AZ::IsClose(currentConfig.m_legacyConfiguration.m_fixedTimeStep, config.m_legacyConfiguration.m_fixedTimeStep, tolerance);
-        if (gravityChanged)
-        {
-            Physics::WorldRequestBus::Broadcast(
-                &Physics::WorldRequests::SetGravity, config.m_legacyConfiguration.m_gravity);
-        }
-        if (maxTimeStepChanged)
-        {
-            Physics::WorldRequestBus::Broadcast(
-                &Physics::WorldRequests::SetMaxDeltaTime, config.m_legacyConfiguration.m_maxTimeStep);
-        }
-        if (fixedTimeStepChanged)
-        {
-            Physics::WorldRequestBus::Broadcast(
-                &Physics::WorldRequests::SetFixedDeltaTime, config.m_legacyConfiguration.m_fixedTimeStep);
-        }
-
         if (currentConfig != config)
         {
             scene->UpdateConfiguration(config);

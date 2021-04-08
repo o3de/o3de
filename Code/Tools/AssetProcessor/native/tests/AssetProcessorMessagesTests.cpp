@@ -105,8 +105,8 @@ namespace AssetProcessorMessagesTests
             m_batchApplicationManager = AZStd::make_unique<UnitTestBatchApplicationManager>(&argC, nullptr, nullptr);
             m_batchApplicationManager->BeforeRun();
 
-            // Override Game Name to be "SamplesProject"
-            AssetUtilities::ComputeProjectName("SamplesProject", true);
+            // Override Game Name to be "AutomatedTesting"
+            AssetUtilities::ComputeProjectName("AutomatedTesting", true);
 
             m_batchApplicationManager->m_platformConfiguration = new PlatformConfiguration();
             m_batchApplicationManager->InitAssetProcessorManager();
@@ -150,7 +150,7 @@ namespace AssetProcessorMessagesTests
                     connectionSettings.m_assetProcessorIp = "127.0.0.1";
                     connectionSettings.m_assetProcessorPort = AssetProcessorPort;
                     connectionSettings.m_branchToken = appBranchToken;
-                    connectionSettings.m_projectName = "SamplesProject";
+                    connectionSettings.m_projectName = "AutomatedTesting";
                     connectionSettings.m_assetPlatform = "pc";
                     connectionSettings.m_connectionIdentifier = "UNITTEST";
                     connectionSettings.m_connectTimeout = AZStd::chrono::seconds(15);

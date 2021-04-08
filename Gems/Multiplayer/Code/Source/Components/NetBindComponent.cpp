@@ -75,9 +75,9 @@ namespace Multiplayer
     void NetBindComponent::Activate()
     {
         m_needsToBeStopped = true;
-        if (m_netEntityRole == NetEntityRole::ServerAuthority)
+        if (m_netEntityRole == NetEntityRole::Authority)
         {
-            m_handleLocalServerRpcMessageEventHandle.Connect(m_sendServerSimulationtoServerAuthorityRpcEvent);
+            m_handleLocalServerRpcMessageEventHandle.Connect(m_sendServertoAuthorityRpcEvent);
         }
         if (NetworkRoleHasController(m_netEntityRole))
         {
@@ -98,7 +98,6 @@ namespace Multiplayer
         {
             GetNetworkEntityManager()->NotifyControllersDeactivated(m_netEntityHandle, EntityIsMigrating::False);
         }
-        NetworkDetach();
     }
 
     NetEntityRole NetBindComponent::GetNetEntityRole() const
@@ -108,13 +107,13 @@ namespace Multiplayer
 
     bool NetBindComponent::IsAuthority() const
     {
-        return (m_netEntityRole == NetEntityRole::ServerAuthority);
+        return (m_netEntityRole == NetEntityRole::Authority);
     }
 
     bool NetBindComponent::HasController() const
     {
-        return (m_netEntityRole == NetEntityRole::ServerAuthority)
-            || (m_netEntityRole == NetEntityRole::ClientAutonomous);
+        return (m_netEntityRole == NetEntityRole::Authority)
+            || (m_netEntityRole == NetEntityRole::Autonomous);
     }
 
     NetEntityId NetBindComponent::GetNetEntityId() const
@@ -160,7 +159,7 @@ namespace Multiplayer
     void NetBindComponent::CreateInput(NetworkInput& networkInput, float deltaTime)
     {
         // Only autonomous or authority runs this logic
-        AZ_Assert(m_netEntityRole == NetEntityRole::ClientAutonomous || m_netEntityRole == NetEntityRole::ServerAuthority, "Incorrect network role for input creation");
+        AZ_Assert(m_netEntityRole == NetEntityRole::Autonomous || m_netEntityRole == NetEntityRole::Authority, "Incorrect network role for input creation");
         for (MultiplayerComponent* multiplayerComponent : m_multiplayerInputComponentVector)
         {
             multiplayerComponent->GetController()->CreateInput(networkInput, deltaTime);
@@ -177,15 +176,19 @@ namespace Multiplayer
         }
     }
 
-    float NetBindComponent::GetRewindDistanceForInput(const NetworkInput& networkInput, float deltaTime) const
+    AZ::Aabb NetBindComponent::GetRewindBoundsForInput(const NetworkInput& networkInput, float deltaTime) const
     {
-        AZ_Assert(m_netEntityRole == NetEntityRole::ServerAuthority, "Incorrect network role for computing rewind distance");
-        float rewindDistance = 0.0f;
+        AZ_Assert(m_netEntityRole == NetEntityRole::Authority, "Incorrect network role for computing rewind bounds");
+        AZ::Aabb bounds = AZ::Aabb::CreateNull();
         for (MultiplayerComponent* multiplayerComponent : m_multiplayerInputComponentVector)
         {
-            rewindDistance = AZStd::max(rewindDistance, multiplayerComponent->GetController()->GetRewindDistanceForInput(networkInput, deltaTime));
+            const AZ::Aabb componentBounds = multiplayerComponent->GetController()->GetRewindBoundsForInput(networkInput, deltaTime);
+            if (componentBounds.IsValid())
+            {
+                bounds.AddAabb(componentBounds);
+            }
         }
-        return rewindDistance;
+        return bounds;
     }
 
     bool NetBindComponent::HandleRpcMessage(NetEntityRole remoteRole, NetworkEntityRpcMessage& message)
@@ -203,25 +206,25 @@ namespace Multiplayer
         const NetEntityRole netEntityRole = m_netEntityRole;
         ReplicationRecord replicationRecord(netEntityRole);
         replicationRecord.Serialize(serializer);
-        if ((serializer.GetSerializerMode() == AzNetworking::SerializerMode::WriteToObject) && (netEntityRole == NetEntityRole::ServerSimulation))
+        if ((serializer.GetSerializerMode() == AzNetworking::SerializerMode::WriteToObject) && (netEntityRole == NetEntityRole::Server))
         {
             // Make sure to capture the entirety of the TotalRecord, before we clear out bits that haven't changed from our local state
             // If this entity migrates, we need to send all bits that might have changed from original baseline
             m_totalRecord.Append(replicationRecord);
         }
         // This will modify the replicationRecord and clear out bits that have not changed from the local state, this prevents us from notifying that something has changed multiple times
-        SerializeStateDeltaMessage(replicationRecord, serializer, ComponentSerializationType::Properties);
+        SerializeStateDeltaMessage(replicationRecord, serializer);
 
         if (serializer.IsValid())
         {
             replicationRecord.ResetConsumedBits();
             if (notifyChanges)
             {
-                NotifyStateDeltaChanges(replicationRecord, ComponentSerializationType::Properties);
+                NotifyStateDeltaChanges(replicationRecord);
             }
 
             // If we are deserializing on an entity, and this is a server simulation, then we need to remark our bits as dirty to replicate to the client
-            if ((serializer.GetSerializerMode() == AzNetworking::SerializerMode::WriteToObject) && (netEntityRole == NetEntityRole::ServerSimulation))
+            if ((serializer.GetSerializerMode() == AzNetworking::SerializerMode::WriteToObject) && (netEntityRole == NetEntityRole::Server))
             {
                 m_currentRecord.Append(replicationRecord);
                 MarkDirty();
@@ -230,24 +233,24 @@ namespace Multiplayer
         return serializer.IsValid();
     }
 
-    RpcSendEvent& NetBindComponent::GetSendServerAuthorityToClientSimulationRpcEvent()
+    RpcSendEvent& NetBindComponent::GetSendAuthorityToClientRpcEvent()
     {
-        return m_sendServerAuthorityToClientSimulationRpcEvent;
+        return m_sendAuthorityToClientRpcEvent;
     }
 
-    RpcSendEvent& NetBindComponent::GetSendServerAuthorityToClientAutonomousRpcEvent()
+    RpcSendEvent& NetBindComponent::GetSendAuthorityToAutonomousRpcEvent()
     {
-        return m_sendServerAuthorityToClientAutonomousRpcEvent;
+        return m_sendAuthorityToAutonomousRpcEvent;
     }
 
-    RpcSendEvent& NetBindComponent::GetSendServerSimulationToServerAuthorityRpcEvent()
+    RpcSendEvent& NetBindComponent::GetSendServerToAuthorityRpcEvent()
     {
-        return m_sendServerSimulationtoServerAuthorityRpcEvent;
+        return m_sendServertoAuthorityRpcEvent;
     }
 
-    RpcSendEvent& NetBindComponent::GetSendClientAutonomousToServerAuthorityRpcEvent()
+    RpcSendEvent& NetBindComponent::GetSendAutonomousToAuthorityRpcEvent()
     {
-        return m_sendClientAutonomousToServerAuthorityRpcEvent;
+        return m_sendAutonomousToAuthorityRpcEvent;
     }
 
     const ReplicationRecord& NetBindComponent::GetPredictableRecord() const
@@ -266,7 +269,7 @@ namespace Multiplayer
     void NetBindComponent::NotifyLocalChanges()
     {
         m_localNotificationRecord.ResetConsumedBits(); // Make sure our consumed bits are reset so that we can run through the notifications
-        NotifyStateDeltaChanges(m_localNotificationRecord, ComponentSerializationType::Properties);
+        NotifyStateDeltaChanges(m_localNotificationRecord);
         m_localNotificationRecord.Clear();
     }
 
@@ -297,40 +300,31 @@ namespace Multiplayer
         // The m_predictableRecord is a record that that marks every NetworkProperty that has been set as Predictable
         // We copy this record and use a temporary so that SerializeStateDeltaMessage will not modify the m_predictableRecord
         // since SerializeStateDeltaMessage will clear the dirty bit for the NetworkProperty if it did not actually change
-        const bool success = SerializeStateDeltaMessage(tmpRecord, serializer, ComponentSerializationType::Correction);
+        const bool success = SerializeStateDeltaMessage(tmpRecord, serializer);
         if (serializer.GetSerializerMode() == AzNetworking::SerializerMode::WriteToObject)
         {
             tmpRecord.ResetConsumedBits();
-            NotifyStateDeltaChanges(tmpRecord, ComponentSerializationType::Correction);
+            NotifyStateDeltaChanges(tmpRecord);
         }
         return success;
     }
 
-    bool NetBindComponent::SerializeStateDeltaMessage
-    (
-        ReplicationRecord& replicationRecord,
-        AzNetworking::ISerializer& serializer,
-        ComponentSerializationType componentSerializationType
-    )
+    bool NetBindComponent::SerializeStateDeltaMessage(ReplicationRecord& replicationRecord, AzNetworking::ISerializer& serializer)
     {
         bool success = true;
         for (auto iter = m_multiplayerSerializationComponentVector.begin(); iter != m_multiplayerSerializationComponentVector.end(); ++iter)
         {
-            success &= (*iter)->SerializeStateDeltaMessage(replicationRecord, serializer, componentSerializationType);
+            success &= (*iter)->SerializeStateDeltaMessage(replicationRecord, serializer);
         }
 
         return success;
     }
 
-    void NetBindComponent::NotifyStateDeltaChanges
-    (
-        ReplicationRecord& replicationRecord,
-        ComponentSerializationType componentSerializationType
-    )
+    void NetBindComponent::NotifyStateDeltaChanges(ReplicationRecord& replicationRecord)
     {
         for (auto iter = m_multiplayerSerializationComponentVector.begin(); iter != m_multiplayerSerializationComponentVector.end(); ++iter)
         {
-            (*iter)->NotifyStateDeltaChanges(replicationRecord, componentSerializationType);
+            (*iter)->NotifyStateDeltaChanges(replicationRecord);
         }
     }
 
@@ -350,27 +344,6 @@ namespace Multiplayer
         {
             replicationRecord.Append(m_currentRecord);
         }
-    }
-
-    bool NetBindComponent::IsMigrationDataValid() const
-    {
-        return m_isMigrationDataValid;
-    }
-
-    void NetBindComponent::SetMigrationDataValid(bool migrationDataValid)
-    {
-        m_isMigrationDataValid = migrationDataValid;
-    }
-
-    bool NetBindComponent::SerializeMigrationData(AzNetworking::ISerializer& serializer)
-    {
-        bool ret = true;
-        // Purposefully not listed in reverse order, must match the order during construction
-        for (auto iter = m_multiplayerSerializationComponentVector.begin(); iter != m_multiplayerSerializationComponentVector.end(); ++iter)
-        {
-            ret &= (*iter)->Migrate(serializer);
-        }
-        return ret && serializer.IsValid();
     }
 
     void NetBindComponent::PreInit(AZ::Entity* entity, const PrefabEntityId& prefabEntityId, NetEntityId netEntityId, NetEntityRole netEntityRole)
@@ -404,11 +377,11 @@ namespace Multiplayer
     {
         switch (m_netEntityRole)
         {
-        case NetEntityRole::ClientSimulation:
-            m_netEntityRole = NetEntityRole::ClientAutonomous;
+        case NetEntityRole::Client:
+            m_netEntityRole = NetEntityRole::Autonomous;
             break;
-        case NetEntityRole::ServerSimulation:
-            m_netEntityRole = NetEntityRole::ServerAuthority;
+        case NetEntityRole::Server:
+            m_netEntityRole = NetEntityRole::Authority;
             break;
         default:
             AZ_Assert(false, "Controller already constructed");
@@ -441,11 +414,11 @@ namespace Multiplayer
 
         switch (m_netEntityRole)
         {
-        case NetEntityRole::ClientAutonomous:
-            m_netEntityRole = NetEntityRole::ClientSimulation;
+        case NetEntityRole::Autonomous:
+            m_netEntityRole = NetEntityRole::Client;
             break;
-        case NetEntityRole::ServerAuthority:
-            m_netEntityRole = NetEntityRole::ServerSimulation;
+        case NetEntityRole::Authority:
+            m_netEntityRole = NetEntityRole::Server;
             break;
         default:
             AZ_Assert(false, "Controllers already destructed");
@@ -465,9 +438,9 @@ namespace Multiplayer
             }
         }
         DetermineInputOrdering();
-        if (GetNetEntityRole() == NetEntityRole::ServerAuthority)
+        if (GetNetEntityRole() == NetEntityRole::Authority)
         {
-            m_handleLocalServerRpcMessageEventHandle.Connect(m_sendServerSimulationtoServerAuthorityRpcEvent);
+            m_handleLocalServerRpcMessageEventHandle.Connect(m_sendServertoAuthorityRpcEvent);
         }
         GetNetworkEntityManager()->NotifyControllersActivated(m_netEntityHandle, entityIsMigrating);
     }
@@ -502,17 +475,9 @@ namespace Multiplayer
     {
         for (auto* component : m_multiplayerSerializationComponentVector)
         {
-            component->NetworkAttach(*this, m_currentRecord, m_predictableRecord);
+            component->NetworkAttach(this, m_currentRecord, m_predictableRecord);
         }
         m_totalRecord = m_currentRecord;
-    }
-
-    void NetBindComponent::NetworkDetach()
-    {
-        for (auto* component : m_multiplayerSerializationComponentVector)
-        {
-            component->NetworkDetach();
-        }
     }
 
     void NetBindComponent::HandleMarkedDirty()
@@ -532,7 +497,7 @@ namespace Multiplayer
 
     void NetBindComponent::HandleLocalServerRpcMessage(NetworkEntityRpcMessage& message)
     {
-        message.SetRpcDeliveryType(RpcDeliveryType::ServerSimulationToServerAuthority);
+        message.SetRpcDeliveryType(RpcDeliveryType::ServerToAuthority);
         GetNetworkEntityManager()->HandleLocalRpcMessage(message);
     }
 
@@ -574,8 +539,8 @@ namespace Multiplayer
     {
         switch (networkRole)
         {
-        case NetEntityRole::ClientAutonomous: // Fall through
-        case NetEntityRole::ServerAuthority:
+        case NetEntityRole::Autonomous: // Fall through
+        case NetEntityRole::Authority:
             return true;
         default:
             return false;

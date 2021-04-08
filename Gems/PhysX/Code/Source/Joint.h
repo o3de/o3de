@@ -14,6 +14,11 @@
 
 #include <AzFramework/Physics/Joint.h>
 
+namespace AzPhysics
+{
+    struct SimulatedBody;
+}
+
 namespace PhysX
 {
     class D6JointLimitConfiguration
@@ -39,15 +44,15 @@ namespace PhysX
         AZ_CLASS_ALLOCATOR(Joint, AZ::SystemAllocator, 0);
         AZ_RTTI(Joint, "{3C739E22-8EF0-419F-966B-C575A1F5A08B}", Physics::Joint);
 
-        Joint(physx::PxJoint* pxJoint, Physics::WorldBody* parentBody,
-            Physics::WorldBody* childBody);
+        Joint(physx::PxJoint* pxJoint, AzPhysics::SimulatedBody* parentBody,
+            AzPhysics::SimulatedBody* childBody);
 
         virtual ~Joint() = default;
 
-        Physics::WorldBody* GetParentBody() const override;
-        Physics::WorldBody* GetChildBody() const override;
-        void SetParentBody(Physics::WorldBody* parentBody) override;
-        void SetChildBody(Physics::WorldBody* childBody) override;
+        AzPhysics::SimulatedBody* GetParentBody() const override;
+        AzPhysics::SimulatedBody* GetChildBody() const override;
+        void SetParentBody(AzPhysics::SimulatedBody* parentBody) override;
+        void SetChildBody(AzPhysics::SimulatedBody* childBody) override;
         const AZStd::string& GetName() const override;
         void SetName(const AZStd::string& name) override;
         void* GetNativePointer() override;
@@ -57,8 +62,8 @@ namespace PhysX
 
         using PxJointUniquePtr = AZStd::unique_ptr<physx::PxJoint, AZStd::function<void(physx::PxJoint*)>>;
         PxJointUniquePtr m_pxJoint;
-        Physics::WorldBody* m_parentBody;
-        Physics::WorldBody* m_childBody;
+        AzPhysics::SimulatedBody* m_parentBody;
+        AzPhysics::SimulatedBody* m_childBody;
         AZStd::string m_name;
     };
 
@@ -69,8 +74,8 @@ namespace PhysX
         AZ_CLASS_ALLOCATOR(D6Joint, AZ::SystemAllocator, 0);
         AZ_RTTI(D6Joint, "{962C4044-2BD2-4E4C-913C-FB8E85A2A12A}", Joint);
 
-        D6Joint(physx::PxJoint* pxJoint, Physics::WorldBody* parentBody,
-            Physics::WorldBody* childBody)
+        D6Joint(physx::PxJoint* pxJoint, AzPhysics::SimulatedBody* parentBody,
+            AzPhysics::SimulatedBody* childBody)
             : Joint(pxJoint, parentBody, childBody)
         {
         }
@@ -101,8 +106,8 @@ namespace PhysX
         AZ_CLASS_ALLOCATOR(FixedJoint, AZ::SystemAllocator, 0);
         AZ_TYPE_INFO(FixedJoint, "{203FB99C-7DC5-478A-A52C-A1F2AAF61FB8}");
 
-        FixedJoint(physx::PxJoint* pxJoint, Physics::WorldBody* parentBody,
-            Physics::WorldBody* childBody)
+        FixedJoint(physx::PxJoint* pxJoint, AzPhysics::SimulatedBody* parentBody,
+            AzPhysics::SimulatedBody* childBody)
             : Joint(pxJoint, parentBody, childBody)
         {
         }
@@ -125,8 +130,8 @@ namespace PhysX
         AZ_CLASS_ALLOCATOR(HingeJoint, AZ::SystemAllocator, 0);
         AZ_TYPE_INFO(HingeJoint, "{8EFF1002-B08C-47CE-883C-82F0CF3736E0}");
 
-        HingeJoint(physx::PxJoint* pxJoint, Physics::WorldBody* parentBody,
-            Physics::WorldBody* childBody)
+        HingeJoint(physx::PxJoint* pxJoint, AzPhysics::SimulatedBody* parentBody,
+            AzPhysics::SimulatedBody* childBody)
             : Joint(pxJoint, parentBody, childBody)
         {
         }
@@ -149,8 +154,8 @@ namespace PhysX
         AZ_CLASS_ALLOCATOR(BallJoint, AZ::SystemAllocator, 0);
         AZ_TYPE_INFO(BallJoint, "{9FADA1C2-0E2F-4E1B-9E83-6292A1606372}");
 
-        BallJoint(physx::PxJoint* pxJoint, Physics::WorldBody* parentBody,
-            Physics::WorldBody* childBody)
+        BallJoint(physx::PxJoint* pxJoint, AzPhysics::SimulatedBody* parentBody,
+            AzPhysics::SimulatedBody* childBody)
             : Joint(pxJoint, parentBody, childBody)
         {
         }
@@ -238,7 +243,7 @@ namespace PhysX
         static AZStd::shared_ptr<Physics::JointLimitConfiguration> CreateJointLimitConfiguration(AZ::TypeId jointType);
 
         static AZStd::shared_ptr<Physics::Joint> CreateJoint(const AZStd::shared_ptr<Physics::JointLimitConfiguration>& configuration,
-            Physics::WorldBody* parentBody, Physics::WorldBody* childBody);
+            AzPhysics::SimulatedBody* parentBody, AzPhysics::SimulatedBody* childBody);
 
         static D6JointState CalculateD6JointState(
             const AZ::Quaternion& parentWorldRotation,

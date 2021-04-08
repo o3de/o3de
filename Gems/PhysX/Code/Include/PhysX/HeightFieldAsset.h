@@ -12,8 +12,7 @@
 
 #pragma once
 
-#include <AzCore/Asset/AssetManager.h>
-#include <AzCore/Asset/AssetTypeInfoBus.h>
+#include <AzCore/Asset/AssetCommon.h>
 
 namespace physx
 {
@@ -35,43 +34,21 @@ namespace PhysX
             AZ_CLASS_ALLOCATOR(HeightFieldAsset, AZ::SystemAllocator, 0);
             AZ_RTTI(HeightFieldAsset, "{B61189FE-B2D7-4AF1-8951-CB5C0F7834FC}", AZ::Data::AssetData);
 
-            ~HeightFieldAsset()
-            {
-                ReleaseMemory();
-            }
+            ~HeightFieldAsset();
 
-            physx::PxHeightField* GetHeightField()
-            {
-                return m_heightField;
-            }
+            physx::PxHeightField* GetHeightField();
 
-            const physx::PxHeightField* GetHeightField() const
-            {
-                return m_heightField;
-            }
+            const physx::PxHeightField* GetHeightField() const;
 
-            void SetHeightField(physx::PxHeightField* heightField)
-            {
-                ReleaseMemory();
-                
-                m_heightField = heightField;
-                m_status = AssetStatus::Ready;
-            }
+            void SetHeightField(physx::PxHeightField* heightField);
 
-            float GetMinHeight() const { return m_minHeight; }
-            void SetMinHeight(float height) { m_minHeight = height; }
-            float GetMaxHeight() const { return m_maxHeight; }
-            void SetMaxHeight(float height) { m_maxHeight = height; }
+            float GetMinHeight() const;
+            void SetMinHeight(float height);
+            float GetMaxHeight() const;
+            void SetMaxHeight(float height);
 
         private:
-            void ReleaseMemory()
-            {
-                if (m_heightField)
-                {
-                    m_heightField->release();
-                    m_heightField = nullptr;
-                }
-            }
+            void ReleaseMemory();
 
             physx::PxHeightField* m_heightField = nullptr;
             float m_minHeight = 0.0f;

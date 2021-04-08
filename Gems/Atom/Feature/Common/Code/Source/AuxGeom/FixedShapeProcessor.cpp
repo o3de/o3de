@@ -34,15 +34,6 @@ namespace AZ
 {
     namespace Render
     {
-        namespace ShaderInputs
-        {
-            static const char* const Color("m_color");
-            static const char* const ModelToWorld("m_modelToWorld");
-            static const char* const NormalMatrix("m_normalMatrix");
-            static const char* const ViewProjectionOverride("m_viewProjectionOverride");
-            static const char* const PointSize("m_pointSize");
-        }
-
         namespace
         {
             static const char* const ShapePerspectiveTypeViewProjection = "ViewProjectionMode::ViewProjection";
@@ -1199,7 +1190,7 @@ namespace AZ
 
             if (result != AZ::RHI::ResultCode::Success)
             {
-                AZ_Error("FixedShapeProcessor", false, "Failed to initialize shape index buffer with error code: %d", result);
+                AZ_Error( "FixedShapeProcessor", false, "Failed to initialize shape index buffer with error code: %d", result);
                 return false;
             }
 
@@ -1389,23 +1380,6 @@ namespace AZ
                 AZ_Error("FixedShapeProcessor", false, "Shader resource group asset is not loaded");
                 return;
             }
- 
-            const RHI::ShaderResourceGroupLayout* shaderResourceGroupLayout = shaderData.m_perObjectSrgAsset->GetLayout();
-
-            shaderData.m_colorIndex = shaderResourceGroupLayout->FindShaderInputConstantIndex(Name(ShaderInputs::Color));
-            AZ_Error("FixedShapeProcessor", shaderData.m_colorIndex.IsValid(), "Failed to find shader input constant %s.", ShaderInputs::Color);
-
-            shaderData.m_modelToWorldIndex = shaderResourceGroupLayout->FindShaderInputConstantIndex(Name(ShaderInputs::ModelToWorld));
-            AZ_Error("FixedShapeProcessor", shaderData.m_modelToWorldIndex.IsValid(), "Failed to find shader input constant %s.", ShaderInputs::ModelToWorld);
-
-            shaderData.m_normalMatrixIndex = shaderResourceGroupLayout->FindShaderInputConstantIndex(Name(ShaderInputs::NormalMatrix));
-            // Not all srg's have this index, don't error out
-
-            shaderData.m_viewProjectionOverrideIndex = shaderResourceGroupLayout->FindShaderInputConstantIndex(Name(ShaderInputs::ViewProjectionOverride));
-            AZ_Error("FixedShapeProcessor", shaderData.m_viewProjectionOverrideIndex.IsValid(), "Failed to find shader input constant %s.", ShaderInputs::ViewProjectionOverride);
-
-            shaderData.m_pointSizeIndex = shaderResourceGroupLayout->FindShaderInputConstantIndex(Name(ShaderInputs::PointSize));
-            AZ_Error("FixedShapeProcessor", shaderData.m_pointSizeIndex.IsValid(), "Failed to find shader input constant %s.", ShaderInputs::PointSize);
 
             shaderData.m_drawListTag = shader->GetDrawListTag();
         }
@@ -1628,13 +1602,18 @@ namespace AZ
             
             srg->Compile();
             m_processSrgs.push_back(srg);
+            if (m_shapes[shape.m_shapeType].m_lodBuffers.size() > 0)
+            {
+                uint32_t indexCount = GetShapeIndexCount(shape.m_shapeType, drawStyle, lodIndex);
+                auto& indexBufferView = GetShapeIndexBufferView(shape.m_shapeType, drawStyle, lodIndex);
+                auto& streamBufferViews = GetShapeStreamBufferViews(shape.m_shapeType, lodIndex, drawStyle);
+                auto& drawListTag = shaderData.m_drawListTag;
 
-            uint32_t indexCount = GetShapeIndexCount(shape.m_shapeType, drawStyle, lodIndex);
-            auto& indexBufferView = GetShapeIndexBufferView(shape.m_shapeType, drawStyle, lodIndex);
-            auto& streamBufferViews = GetShapeStreamBufferViews(shape.m_shapeType, lodIndex, drawStyle);
-            auto& drawListTag = shaderData.m_drawListTag;
-
-            return BuildDrawPacket(drawPacketBuilder, srg, indexCount, indexBufferView, streamBufferViews, drawListTag, pipelineState->GetRHIPipelineState(), sortKey);
+                return BuildDrawPacket(
+                    drawPacketBuilder, srg, indexCount, indexBufferView, streamBufferViews, drawListTag,
+                    pipelineState->GetRHIPipelineState(), sortKey);
+            }
+            return nullptr;
         }
 
         const AZ::RHI::IndexBufferView& FixedShapeProcessor::GetBoxIndexBufferView(int drawStyle) const

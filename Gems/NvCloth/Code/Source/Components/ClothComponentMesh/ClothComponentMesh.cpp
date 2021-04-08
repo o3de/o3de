@@ -27,8 +27,9 @@
 #include <Components/ClothComponentMesh/ClothDebugDisplay.h>
 #include <Components/ClothComponentMesh/ClothComponentMesh.h>
 
-#include <AzFramework/Physics/World.h>
+#include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/WindBus.h>
+#include <AzFramework/Physics/Common/PhysicsTypes.h>
 
 namespace NvCloth
 {
@@ -637,8 +638,15 @@ namespace NvCloth
         // Gravity and scale
         if (m_config.IsUsingWorldBusGravity())
         {
-            AZ::Vector3 gravity(0.0f, 0.0f, -9.81f);
-            Physics::WorldRequestBus::EventResult(gravity, Physics::DefaultPhysicsWorldId, &Physics::WorldRequests::GetGravity);
+            AZ::Vector3 gravity = AzPhysics::DefaultGravity;
+            if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+            {
+                AzPhysics::SceneHandle defaultScene = sceneInterface->GetSceneHandle(AzPhysics::DefaultPhysicsSceneName);
+                if (defaultScene != AzPhysics::InvalidSceneHandle)
+                {
+                    gravity = sceneInterface->GetGravity(defaultScene);
+                }
+            }
             clothConfig->SetGravity(gravity * m_config.m_gravityScale);
         }
         else

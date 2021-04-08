@@ -225,6 +225,12 @@ namespace ScriptCanvas
         void MergeWith(const DependencyReport& other);
     };
 
+    struct OrderedDependencies
+    {
+        DependencyReport source;
+        AZStd::vector<AZ::Data::AssetId> orderedAssetIds;
+    };
+
     //! Globally accessible Script Canvas settings, we use these to pass user provided settings
     //! into the Script Canvas code
     class ScriptCanvasSettingsRequests : public AZ::EBusTraits

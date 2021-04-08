@@ -48,6 +48,7 @@
 #include <AzCore/Module/ModuleManager.h>
 
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/IO/SystemFile.h>
 
 #include <AzCore/Driller/Driller.h>
@@ -434,6 +435,7 @@ namespace AZ
 
         // Merge the bootstrap.cfg file into the Settings Registry as soon as the OSAllocator has been created.
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_Bootstrap(*m_settingsRegistry);
+        SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(*m_settingsRegistry, AZ_TRAIT_OS_PLATFORM_CODENAME, {});
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*m_settingsRegistry, m_commandLine, executeRegDumpCommands);
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*m_settingsRegistry);
 
@@ -888,17 +890,19 @@ namespace AZ
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_TargetBuildDependencyRegistry(registry,
             AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
 #if defined(AZ_DEBUG_BUILD) || defined(AZ_PROFILE_BUILD)
-        // In development builds apply the developer registry and the command line to allow early overrides. This will
+        // In development builds apply the o3de registry and the command line to allow early overrides. This will
         // allow developers to override things like default paths or Asset Processor connection settings. Any additional
         // values will be replaced by later loads, so this step will happen again at the end of loading.
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_UserRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+        SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+        SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectUserRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
 #endif
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_EngineRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_GemRegistries(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
 #if defined(AZ_DEBUG_BUILD) || defined(AZ_PROFILE_BUILD)
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_UserRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+        SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+        SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectUserRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, true);
 #endif
     }
@@ -1455,6 +1459,8 @@ namespace AZ
         PolygonPrismReflect(context);
         // reflect name dictionary.
         Name::Reflect(context);
+        // reflect path
+        IO::PathReflection::Reflect(context);
 
         // reflect the SettingsRegistryInterface, SettignsRegistryImpl and the global Settings Registry
         // instance (AZ::SettingsRegistry::Get()) into the Behavior Context

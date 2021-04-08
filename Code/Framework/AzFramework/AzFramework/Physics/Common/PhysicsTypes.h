@@ -11,33 +11,121 @@
 */
 #pragma once
 
+#include <AzCore/Math/Crc.h>
+#include <AzCore/Math/Vector3.h>
 #include <AzCore/std/tuple.h>
+#include <AzCore/std/containers/variant.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+
+namespace Physics
+{
+    class ColliderConfiguration;
+    class Shape;
+    class ShapeConfiguration;
+}
 
 namespace AzPhysics
 {
-    using SceneIndex = AZ::s8;
+    //! Default Scene Names and Crc32
+    static constexpr const char* DefaultPhysicsSceneName = "DefaultScene";
+    static constexpr const AZ::Crc32 DefaultPhysicsSceneId = AZ_CRC_CE(DefaultPhysicsSceneName);
+    static constexpr const char* EditorPhysicsSceneName = "EditorScene";
+    static constexpr const AZ::Crc32 EditorPhysicsSceneId = AZ_CRC_CE(EditorPhysicsSceneName);
 
-    //! A handle to a Scene within the physics simulation.
-    //! A SceneHandle is a tuple of a Crc of the scenes name and the index in the Scene list.
-    using SceneHandle = AZStd::tuple<AZ::Crc32, SceneIndex>;
-    
+    //! Default gravity.
+    static const AZ::Vector3 DefaultGravity = AZ::Vector3(0.0f, 0.0f, -9.81f);
 
     //! Helper for retrieving the values from the SceneHandle tuple.
     //! Example usage
     //! @code{ .cpp }
     //! SceneHandle someHandle;
-    //! AZ::Crc32 handleCrc = AZStd::get<SceneHandleValues::Crc>(someHandle);
-    //! SceneIndex index = AZStd::get<SceneHandleValues::Index>(someHandle);
+    //! const AZ::Crc32 handleCrc = AZStd::get<HandleTypeIndex::Crc>(someHandle);
+    //! const SceneIndex index = AZStd::get<HandleTypeIndex::Index>(someHandle);
     //! @endcode
-    enum SceneHandleValues
+    enum HandleTypeIndex
     {
         Crc = 0,
         Index
     };
 
+    using SceneIndex = AZ::s8;
+    using SimulatedBodyIndex = AZ::s32;
+    static_assert(std::is_signed<SceneIndex>::value
+        && std::is_signed<SimulatedBodyIndex>::value, "SceneIndex and SimulatedBodyIndex must be signed integers.");
+    
+
+    //! A handle to a Scene within the physics simulation.
+    //! A SceneHandle is a tuple of a Crc of the scenes name and the index in the Scene list.
+    using SceneHandle = AZStd::tuple<AZ::Crc32, SceneIndex>;
     static constexpr SceneHandle InvalidSceneHandle = { AZ::Crc32(), -1 };
 
     //! Ease of use type for referencing a List of SceneHandle objects.
     using SceneHandleList = AZStd::vector<SceneHandle>;
+
+    //! A handle to a Simulated body within a physics scene.
+    //! A SimulatedBodyHandle is a tuple of a Crc of the scene's name and the index in the SimulatedBody list.
+    using SimulatedBodyHandle = AZStd::tuple<AZ::Crc32, SimulatedBodyIndex>;
+    static constexpr SimulatedBodyHandle InvalidSimulatedBodyHandle = { AZ::Crc32(), -1 };
+    using SimulatedBodyHandleList = AZStd::vector<SimulatedBodyHandle>;
+
+    //! Helper used for pairing the ShapeConfiguration and ColliderConfiguration together which is used when creating a Simulated Body.
+    using ShapeColliderPair = AZStd::pair<Physics::ColliderConfiguration*, Physics::ShapeConfiguration*>;
+
+    //! Flags used to specifying which properties of a body to compute.
+    enum class MassComputeFlags : AZ::u8
+    {
+        NONE = 0,
+
+        //! Flags indicating whether a certain mass property should be auto-computed or not.
+        COMPUTE_MASS = 1,
+        COMPUTE_INERTIA = 1 << 1,
+        COMPUTE_COM = 1 << 2,
+
+        //! If set, non-simulated shapes will also be included in the mass properties calculation.
+        INCLUDE_ALL_SHAPES = 1 << 3,
+
+        DEFAULT = COMPUTE_COM | COMPUTE_INERTIA | COMPUTE_MASS
+    };
+    //! Bitwise operators for MassComputeFlags
+    inline MassComputeFlags operator|(MassComputeFlags lhs, MassComputeFlags rhs)
+    {
+        return aznumeric_cast<MassComputeFlags>(aznumeric_cast<AZ::u8>(lhs) | aznumeric_cast<AZ::u8>(rhs));
+    }
+
+    inline MassComputeFlags operator&(MassComputeFlags lhs, MassComputeFlags rhs)
+    {
+        return aznumeric_cast<MassComputeFlags>(aznumeric_cast<AZ::u8>(lhs) & aznumeric_cast<AZ::u8>(rhs));
+    }
+    
+    //! Variant to allow support for the system to either create the Shape(s) or use the provide Shape(s) that have been created externally.
+    //! Can be one of the following.
+    //! @code{ .cpp }
+    //! // A ShapeColliderPair, which contains a ColliderConfiguration and ShapeConfiguration.
+    //! AzPhysics::StaticRigidBodyConfiguration staticRigidBodyConfig;
+    //! staticRigidBodyConfig.m_colliderAndShapeData = AzPhysics::ShapeColliderPair(&colliderConfig, &shapeConfig);
+    //! 
+    //! // A pointer to a Physics::Shape. The Simulated Body will take ownership of the pointer.
+    //! AZStd::shared_ptr<Physics::Shape> shapePtr /*Created through other means*/;
+    //! AzPhysics::StaticRigidBodyConfiguration staticRigidBodyConfig;
+    //! staticRigidBodyConfig.m_colliderAndShapeData = shapePtr;
+    //! 
+    //! // A list of ShapeColliderPairs.
+    //! AZStd::vector<AzPhysics::ShapeColliderPair> shapeColliderPairList;
+    //! shapeColliderPairList.emplace_back(&colliderConfig, &shapeConfig); //add as many configs as required.
+    //! AzPhysics::StaticRigidBodyConfiguration staticRigidBodyConfig;
+    //! staticRigidBodyConfig.m_colliderAndShapeData = shapeColliderPairList;
+    //! 
+    //! // A list of Physics::Shape pointers. The Simulated Body will take ownership of these pointers.
+    //! AZStd::vector<AZStd::shared_ptr<Physics::Shape>> shapePtrList;
+    //! shapePtrList.emplace_back(/*Shape created through other means*/);
+    //! AzPhysics::StaticRigidBodyConfiguration staticRigidBodyConfig;
+    //! staticRigidBodyConfig.m_colliderAndShapeData = shapePtrList;
+    //! @endcode
+    using ShapeVariantData = AZStd::variant<
+                                AZStd::monostate,
+                                ShapeColliderPair,
+                                AZStd::shared_ptr<Physics::Shape>,
+                                AZStd::vector<ShapeColliderPair>,
+                                AZStd::vector<AZStd::shared_ptr<Physics::Shape>>>;
 }

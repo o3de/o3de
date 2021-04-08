@@ -11,7 +11,7 @@
 */
 
 #include <Atom/Feature/DisplayMapper/DisplayMapperPass.h>
-#include <Atom/Feature/ACES/Aces.h>
+#include <ACES/Aces.h>
 #include <Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h>
 #include <Atom/RPI.Public/Pass/FullscreenTrianglePass.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
@@ -239,8 +239,8 @@ namespace AZ
             outSlot.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::RenderTarget;
             outSlot.m_loadStoreAction.m_loadAction = RHI::AttachmentLoadAction::DontCare;
 
-            passTemplate->m_outputConnections.resize(1);
-            RPI::PassConnection& outConnection = passTemplate->m_outputConnections[0];
+            passTemplate->m_connections.resize(1);
+            RPI::PassConnection& outConnection = passTemplate->m_connections[0];
             if (renderToOwnedImage)
             {
                 // If rendering to it's own image attachment

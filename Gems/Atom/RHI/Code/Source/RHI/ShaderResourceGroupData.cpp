@@ -293,21 +293,10 @@ namespace AZ
             return m_shaderResourceGroupLayout->FindShaderInputConstantIndex(name);
         }
 
-        bool ShaderResourceGroupData::SetImageView(ShaderInputImageIndex inputIndex, const ImageView* imageView)
-        {
-            AZStd::array<const ImageView*, 1> imageViews = {{imageView}};
-            return SetImageViewArray(inputIndex, imageViews);
-        }
-
-        bool ShaderResourceGroupData::SetImageView(ShaderInputImageIndex inputIndex, const ImageView* imageView, uint32_t arrayIndex)
+        bool ShaderResourceGroupData::SetImageView(ShaderInputImageIndex inputIndex, const ImageView* imageView, uint32_t arrayIndex = 0)
         {
             AZStd::array<const ImageView*, 1> imageViews = {{imageView}};
             return SetImageViewArray(inputIndex, imageViews, arrayIndex);
-        }
-
-        bool ShaderResourceGroupData::SetImageViewArray(ShaderInputImageIndex inputIndex, AZStd::array_view<const ImageView*> imageViews)
-        {
-            return SetImageViewArray(inputIndex, imageViews, 0);
         }
 
         bool ShaderResourceGroupData::SetImageViewArray(ShaderInputImageIndex inputIndex, AZStd::array_view<const ImageView*> imageViews, uint32_t arrayIndex)
@@ -330,21 +319,10 @@ namespace AZ
             return false;
         }
 
-        bool ShaderResourceGroupData::SetBufferView(ShaderInputBufferIndex inputIndex, const BufferView* bufferView)
-        {
-            AZStd::array<const BufferView*, 1> bufferViews = {{bufferView}};
-            return SetBufferViewArray(inputIndex, bufferViews, 0);
-        }
-
         bool ShaderResourceGroupData::SetBufferView(ShaderInputBufferIndex inputIndex, const BufferView* bufferView, uint32_t arrayIndex)
         {
             AZStd::array<const BufferView*, 1> bufferViews = {{bufferView}};
             return SetBufferViewArray(inputIndex, bufferViews, arrayIndex);
-        }
-
-        bool ShaderResourceGroupData::SetBufferViewArray(ShaderInputBufferIndex inputIndex, AZStd::array_view<const BufferView*> bufferViews)
-        {
-            return SetBufferViewArray(inputIndex, bufferViews, 0);
         }
 
         bool ShaderResourceGroupData::SetBufferViewArray(ShaderInputBufferIndex inputIndex, AZStd::array_view<const BufferView*> bufferViews, uint32_t arrayIndex)
@@ -367,19 +345,9 @@ namespace AZ
             return false;
         }
 
-        bool ShaderResourceGroupData::SetSampler(ShaderInputSamplerIndex inputIndex, const SamplerState& sampler)
-        {
-            return SetSamplerArray(inputIndex, AZStd::array_view<SamplerState>(&sampler, 1), 0);
-        }
-
         bool ShaderResourceGroupData::SetSampler(ShaderInputSamplerIndex inputIndex, const SamplerState& sampler, uint32_t arrayIndex)
         {
             return SetSamplerArray(inputIndex, AZStd::array_view<SamplerState>(&sampler, 1), arrayIndex);
-        }
-
-        bool ShaderResourceGroupData::SetSamplerArray(ShaderInputSamplerIndex inputIndex, AZStd::array_view<SamplerState> samplers)
-        {
-            return SetSamplerArray(inputIndex, samplers, 0);
         }
 
         bool ShaderResourceGroupData::SetSamplerArray(ShaderInputSamplerIndex inputIndex, AZStd::array_view<SamplerState> samplers, uint32_t arrayIndex)
@@ -414,7 +382,7 @@ namespace AZ
         bool ShaderResourceGroupData::SetConstantData(const void* bytes, uint32_t byteOffset, uint32_t byteCount)
         {
             return m_constantsData.SetConstantData(bytes, byteOffset, byteCount);
-            }
+        }
         
         const RHI::ConstPtr<RHI::ImageView>& ShaderResourceGroupData::GetImageView(RHI::ShaderInputImageIndex inputIndex, uint32_t arrayIndex) const
         {

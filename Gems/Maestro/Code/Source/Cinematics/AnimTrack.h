@@ -259,7 +259,7 @@ protected:
             SortKeys();
         }
     };
-    void Invalidate() { m_bModified = 1; };
+    void Invalidate() { m_bModified = -1; };
 
     int m_refCount;
 

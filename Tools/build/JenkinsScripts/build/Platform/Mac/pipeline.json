@@ -9,6 +9,9 @@
     "PIPELINE_ENV_OVERRIDE": {
         "daily-pipeline-metrics": {
             "CLEAN_WORKSPACE": true
+        },
+        "packaging": {
+            "CLEAN_WORKSPACE": true
         }
     }
 }

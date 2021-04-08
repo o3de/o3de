@@ -57,6 +57,8 @@ namespace GraphCanvas
         bool ConvertToValue() override;
         bool CanConvertToValue() const override;
 
+        bool IsUserSlot() const override;
+
         DataSlotType GetDataSlotType() const override;
         DataValueType GetDataValueType() const override;
 
@@ -90,6 +92,8 @@ namespace GraphCanvas
         bool            m_canConvertSlotTypes;
         DataSlotType    m_dataSlotType;
         DataValueType   m_valueType;
+
+        bool            m_isUserSlot;
 
         AZ::Uuid                m_dataTypeId;
         AZStd::vector<AZ::Uuid> m_containedTypeIds;

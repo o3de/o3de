@@ -17,7 +17,7 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <Tests/AZTestShared/Utils/Utils.h>
-#include <AzToolsFramework/Application/ToolsApplication.h>
+#include <AzToolsFramework/UnitTest/ToolsTestApplication.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzTest/AzTest.h>
@@ -47,7 +47,8 @@ namespace UnitTest
         void SetUp() override
         {
             using namespace AZ::Data;
-            m_application = new AzToolsFramework::ToolsApplication();
+            m_application = new ToolsTestApplication("AddressedAssetCatalogManager"); // Shorter name because Setting Registry
+                                                                                      // specialization are 32 characters max.
             m_application->Start(AzFramework::Application::Descriptor());
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
             // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
@@ -140,7 +141,7 @@ namespace UnitTest
 
 
         AzToolsFramework::PlatformAddressedAssetCatalogManager* m_PlatformAddressedAssetCatalogManager;
-        AzToolsFramework::ToolsApplication* m_application;
+        ToolsTestApplication* m_application;
         AZ::IO::FileIOBase* m_priorFileIO = nullptr;
         AZ::IO::FileIOBase* m_localFileIO = nullptr;
         AZ::IO::FileIOStream m_fileStreams[AzFramework::PlatformId::NumPlatformIds][s_totalAssets];

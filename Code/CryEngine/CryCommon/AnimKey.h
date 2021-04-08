@@ -344,61 +344,18 @@ struct ICaptureKey
 {
     friend class AnimSerializer;
 
-    enum CaptureBufferType
-    {
-        Color = 0,
-        ColorWithAlpha,
-        NumCaptureBufferTypes        // keep this last
-    };
-    enum CaptureFileFormat
-    {
-        Jpg = 0,
-        Tga,
-        Tif,
-        NumCaptureFileFormats        // keep this last
-    };
+    AZStd::string folder;
+    AZStd::string prefix;
     float duration;
     float timeStep;
-    AZStd::string folder;
     bool once;
-    AZStd::string prefix;
-    CaptureBufferType captureBufferIndex;
 
-    const char* GetFormat() const
-    { return format.c_str();    }
-
-    void FormatJPG()
-    { format = "jpg"; }
-    void FormatTIF()
-    { format = "tif"; }
-    void FormatTGA()
-    { format = "tga"; }
-    void FormatHDR()
-    {
-        // deprecated
-        if (gEnv->pLog)
-        {
-            gEnv->pLog->LogWarning("'hdr' capture format is deprecated.");
-        }
-        format = "hdr";
-    }
-    void FormatBMP()
-    {
-        // deprecated
-        if (gEnv->pLog)
-        {
-            gEnv->pLog->LogWarning("'bmp' capture format is deprecated.");
-        }
-        format = "bmp";
-    }
     ICaptureKey()
         : IKey()
-        , duration(0)
+        , duration(0.0f)
         , timeStep(0.033f)
         , once(false)
-        , captureBufferIndex(Color)
     {
-        FormatTGA();
         ICVar* pCaptureFolderCVar = gEnv->pConsole->GetCVar("capture_folder");
         if (pCaptureFolderCVar != NULL  && pCaptureFolderCVar->GetString())
         {
@@ -409,11 +366,6 @@ struct ICaptureKey
         {
             prefix = pCaptureFilePrefixCVar->GetString();
         }
-        ICVar* pCaptureFileFormatCVar = gEnv->pConsole->GetCVar("capture_file_format");
-        if (pCaptureFileFormatCVar != NULL)
-        {
-            format = pCaptureFileFormatCVar->GetString();
-        }
     }
 
     ICaptureKey(const ICaptureKey& other)
@@ -423,13 +375,8 @@ struct ICaptureKey
         , duration(other.duration)
         , timeStep(other.timeStep)
         , once(other.once)
-        , format(other.format)
-        , captureBufferIndex(other.captureBufferIndex)
     {
     }
-
-private:
-    AZStd::string format;
 };
 
 //! Boolean key.

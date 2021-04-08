@@ -29,12 +29,7 @@ namespace AZ
         
         DepthUpsamplePass::DepthUpsamplePass(const RPI::PassDescriptor& descriptor)
             : RPI::ComputePass(descriptor)
-        {
-            if (m_shaderResourceGroup)
-            {
-                m_constantsIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_constants"));
-            }
-        }
+        { }
         
         void DepthUpsamplePass::FrameBeginInternal(FramePrepareParams params)
         {
@@ -83,10 +78,7 @@ namespace AZ
 
             SetTargetThreadCounts(targetThreadCountX, targetThreadCountY, 1);
 
-            if (m_constantsIndex.IsValid())
-            {
-                m_shaderResourceGroup->SetConstant(m_constantsIndex, upsampleConstants);
-            }
+            m_shaderResourceGroup->SetConstant(m_constantsIndex, upsampleConstants);
         
             RPI::ComputePass::FrameBeginInternal(params);
         }

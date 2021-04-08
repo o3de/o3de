@@ -152,7 +152,10 @@ ComponentEntityEditorPlugin::ComponentEntityEditorPlugin([[maybe_unused]] IEdito
         LyViewPane::CategoryTools,
         levelInspectorOptions);
 
-    if (GetIEditor()->IsPrefabSystemEnabled())
+    bool prefabSystemEnabled = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+
+    if (prefabSystemEnabled)
     {
         // Add the new Outliner to the Tools Menu
 

@@ -185,9 +185,7 @@ void CAtomShimRenderer::BeginFrame()
         m_dynamicDraw = AZ::RPI::DynamicDrawInterface::Get()->CreateDynamicDrawContext(
             AZ::RPI::RPISystemInterface::Get()->GetDefaultScene().get());
         AZ::Data::Instance<AZ::RPI::Shader> shader = AZ::RPI::LoadShader(shaderFilepath);
-        AZ::RPI::ShaderOptionList shaderOptions;
-        shaderOptions.push_back(AZ::RPI::ShaderOption(AZ::Name("o_useColorChannels"), AZ::Name("true")));
-        m_dynamicDraw->InitShader(shader, &shaderOptions);
+        m_dynamicDraw->InitShader(shader);
         m_dynamicDraw->InitVertexFormat(
             {{"POSITION", AZ::RHI::Format::R32G32B32_FLOAT},
              {"COLOR", AZ::RHI::Format::R8G8B8A8_UNORM},
@@ -199,11 +197,18 @@ void CAtomShimRenderer::BeginFrame()
             | AZ::RPI::DynamicDrawContext::DrawStateOptions::FaceCullMode);
         m_dynamicDraw->EndInit();
 
+        // declare the two shader variants it will use
+        AZ::RPI::ShaderOptionList shaderOptionsClamp;
+        shaderOptionsClamp.push_back(AZ::RPI::ShaderOption(AZ::Name("o_useColorChannels"), AZ::Name("true")));
+        shaderOptionsClamp.push_back(AZ::RPI::ShaderOption(AZ::Name("o_clamp"), AZ::Name("true")));
+        m_shaderVariantClamp = m_dynamicDraw->UseShaderVariant(shaderOptionsClamp);
+        AZ::RPI::ShaderOptionList shaderOptionsWrap;
+        shaderOptionsWrap.push_back(AZ::RPI::ShaderOption(AZ::Name("o_useColorChannels"), AZ::Name("true")));
+        shaderOptionsWrap.push_back(AZ::RPI::ShaderOption(AZ::Name("o_clamp"), AZ::Name("false")));
+        m_shaderVariantWrap = m_dynamicDraw->UseShaderVariant(shaderOptionsWrap);
+
         AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = m_dynamicDraw->NewDrawSrg();
         const AZ::RHI::ShaderResourceGroupLayout* layout = drawSrg->GetAsset()->GetLayout();
-        m_imageInputIndex = layout->FindShaderInputImageIndex(AZ::Name("m_texture"));
-        m_samplerInputIndex = layout->FindShaderInputSamplerIndex(AZ::Name("m_sampler"));
-        m_viewProjInputIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_worldToProj"));
 
         m_isFinalInitializationDone = true;
     }
@@ -1547,21 +1552,15 @@ void CAtomShimRenderer::DrawDynVB(SVF_P3F_C4B_T2F* pBuf, uint16* pInds, int nVer
     Matrix44A matViewProj = matView * matProj;
     Matrix4x4 azMatViewProj = Matrix4x4::CreateFromColumnMajorFloat16(matViewProj.GetData());
 
+    bool isClamp = m_clampFlagPerTextureUnit[0];
+    m_dynamicDraw->SetShaderVariant(isClamp? m_shaderVariantClamp : m_shaderVariantWrap);
+
     Data::Instance<RPI::ShaderResourceGroup> drawSrg = m_dynamicDraw->NewDrawSrg();
     drawSrg->SetConstant(m_viewProjInputIndex, azMatViewProj);
 
     AtomShimTexture* atomTexture = m_currentTextureForUnit[0];
     drawSrg->SetImageView(m_imageInputIndex, atomTexture->m_imageView.get());
 
-    AZ::RHI::SamplerState samplerState;
-    samplerState.m_anisotropyEnable = true;
-    samplerState.m_anisotropyMax = 16;
-    bool isClamp = m_clampFlagPerTextureUnit[0];
-    RHI::AddressMode addressMode = isClamp ? RHI::AddressMode::Clamp : RHI::AddressMode::Wrap;
-    samplerState.m_addressU = addressMode;
-    samplerState.m_addressV = addressMode;
-    samplerState.m_addressW = addressMode;
-    drawSrg->SetSampler(m_samplerInputIndex, samplerState);
     drawSrg->Compile();
 
     RHI::PrimitiveTopology primitiveType = RHI::PrimitiveTopology::TriangleList;

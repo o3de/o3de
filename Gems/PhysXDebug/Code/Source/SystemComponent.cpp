@@ -22,9 +22,11 @@
 #include <PhysX/Utils.h>
 #include <PhysX/PhysXLocks.h>
 
+#include <AzFramework/Physics/PhysicsScene.h>
+#include <AzFramework/Physics/PhysicsSystem.h>
+#include <AzFramework/Physics/Ragdoll.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Utils.h>
-#include <AzFramework/Physics/Ragdoll.h>
 
 #include <IRenderAuxGeom.h>
 #include <MathConversion.h>
@@ -47,10 +49,10 @@ namespace PhysXDebug
         return ColorB(r, g, b, a);
     }
 
-    bool UseEditorPhysicsWorld()
+    bool UseEditorPhysicsScene()
     {
         // Runtime components are created when 'simulation' mode is enabled in the Editor,
-        // so we shouldn't use Editor physics world in this case
+        // so we shouldn't use Editor physics scene in this case
         return gEnv->IsEditing() && !gEnv->IsEditorSimulationMode();
     }
 
@@ -148,6 +150,17 @@ namespace PhysXDebug
         }
     }
 
+    SystemComponent::SystemComponent()
+        : m_sceneFinishSimHandler([this](
+            [[maybe_unused]] AzPhysics::SceneHandle sceneHanle,
+            [[maybe_unused]] float fixedDeltatime)
+            {
+                this->m_editorPhysicsSceneDirty = true;
+            })
+    {
+
+    }
+
     void SystemComponent::ReflectPhysXDebugSettings(AZ::ReflectContext* context)
     {
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
@@ -216,14 +229,18 @@ namespace PhysXDebug
         ImGui::ImGuiUpdateListenerBus::Handler::BusConnect();
 #endif // IMGUI_ENABLED
 #ifdef PHYSXDEBUG_GEM_EDITOR
-        Physics::WorldNotificationBus::Handler::BusConnect(Physics::EditorPhysicsWorldId);
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            AzPhysics::SceneHandle sceneHandle = sceneInterface->GetSceneHandle(AzPhysics::EditorPhysicsSceneName);
+            sceneInterface->RegisterSceneSimulationFinishHandler(sceneHandle, m_sceneFinishSimHandler);
+        }
 #endif // PHYSXDEBUG_GEM_EDITOR
     }
 
     void SystemComponent::Deactivate()
     {
 #ifdef PHYSXDEBUG_GEM_EDITOR
-        Physics::WorldNotificationBus::Handler::BusDisconnect();
+        m_sceneFinishSimHandler.Disconnect();
 #endif // PHYSXDEBUG_GEM_EDITOR
 #ifdef IMGUI_ENABLED
         ImGui::ImGuiUpdateListenerBus::Handler::BusDisconnect();
@@ -232,13 +249,6 @@ namespace PhysXDebug
         AZ::TickBus::Handler::BusDisconnect();
         PhysXDebugRequestBus::Handler::BusDisconnect();
     }
-
-#ifdef PHYSXDEBUG_GEM_EDITOR
-    void SystemComponent::OnPostPhysicsSubtick(float)
-    {
-        m_editorPhysicsWorldDirty = true;
-    }
-#endif
 
 #ifdef IMGUI_ENABLED
     void SystemComponent::OnImGuiMainMenuUpdate()
@@ -402,21 +412,29 @@ namespace PhysXDebug
         }
     }
 
-    Physics::World* SystemComponent::GetCurrentPhysicsWorld()
+    physx::PxScene* SystemComponent::GetCurrentPxScene()
     {
-        AZStd::shared_ptr<Physics::World> world = nullptr;
+        AzPhysics::SceneHandle sceneHandle;
 
-        if (UseEditorPhysicsWorld())
+        if (UseEditorPhysicsScene())
         {
-            // Editor world needs to be ticked for debug rendering to work (taking place in EditorSystemComponent)
-            Physics::EditorWorldBus::BroadcastResult(world, &Physics::EditorWorldRequests::GetEditorWorld);
+            // Editor scene needs to be ticked for debug rendering to work (taking place in EditorSystemComponent)
+            Physics::EditorWorldBus::BroadcastResult(sceneHandle, &Physics::EditorWorldRequests::GetEditorSceneHandle);
         }
         else
         {
-            Physics::DefaultWorldBus::BroadcastResult(world, &Physics::DefaultWorldRequests::GetDefaultWorld);
+            Physics::DefaultWorldBus::BroadcastResult(sceneHandle, &Physics::DefaultWorldRequests::GetDefaultSceneHandle);
         }
 
-        return world.get();
+        if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
+        {
+            if (auto* scene = physicsSystem->GetScene(sceneHandle))
+            {
+                return static_cast<physx::PxScene*>(scene->GetNativePointer());
+            }
+        }
+
+        return nullptr;
     }
 
     // TickBus::Handler
@@ -431,17 +449,17 @@ namespace PhysXDebug
         m_currentTime = time;
         bool dirty = true;
 
-        if (UseEditorPhysicsWorld())
+        if (UseEditorPhysicsScene())
         {
-            dirty = m_editorPhysicsWorldDirty;
+            dirty = m_editorPhysicsSceneDirty;
         }
 
         UpdateColliderVisualizationByProximity();
 
         if (dirty)
         {
-            // The physics world is dirty and contains changes to be gathered.
-            if (Physics::World* world = GetCurrentPhysicsWorld())
+            // The physics scene is dirty and contains changes to be gathered.
+            if (auto* scene = GetCurrentPxScene())
             {
                 ConfigurePhysXVisualizationParameters();
                 ConfigureCullingBox();
@@ -449,7 +467,7 @@ namespace PhysXDebug
                 ClearBuffers();
                 GatherBuffers();
 
-                m_editorPhysicsWorldDirty = false;
+                m_editorPhysicsSceneDirty = false;
             }
         }
 
@@ -459,7 +477,7 @@ namespace PhysXDebug
     void SystemComponent::UpdateColliderVisualizationByProximity()
     {
         if (auto* debug = AZ::Interface<PhysX::Debug::PhysXDebugInterface>::Get();
-            UseEditorPhysicsWorld() && m_settings.m_visualizeCollidersByProximity
+            UseEditorPhysicsScene() && m_settings.m_visualizeCollidersByProximity
            && debug != nullptr)
         {
             const CCamera& camera = gEnv->pSystem->GetViewCamera();
@@ -481,9 +499,7 @@ namespace PhysXDebug
 
     void SystemComponent::GatherBuffers()
     {
-        Physics::World* world = GetCurrentPhysicsWorld();
-
-        physx::PxScene* physxScene = static_cast<physx::PxScene*>(world->GetNativePointer());
+        physx::PxScene* physxScene = GetCurrentPxScene();
         const physx::PxRenderBuffer& rb = GetRenderBuffer(physxScene);
         GatherLines(rb);
         GatherTriangles(rb);
@@ -605,9 +621,8 @@ namespace PhysXDebug
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
 
-        if (Physics::World* world = GetCurrentPhysicsWorld())
+        if (physx::PxScene* physxScene = GetCurrentPxScene())
         {
-            physx::PxScene* physxScene = static_cast<physx::PxScene*>(world->GetNativePointer());
             PHYSX_SCENE_WRITE_LOCK(physxScene);
 
             // Warning: if "mScale" is enabled, then debug visualization data will be available and requested from PhysX
@@ -669,9 +684,8 @@ namespace PhysXDebug
                 DrawDebugCullingBox(cullingBoxAabb);
             }
 
-            if (Physics::World* world = GetCurrentPhysicsWorld())
+            if (physx::PxScene* physxScene = GetCurrentPxScene())
             {
-                physx::PxScene* physxScene = static_cast<physx::PxScene*>(world->GetNativePointer());
                 PHYSX_SCENE_WRITE_LOCK(physxScene);
                 physxScene->setVisualizationCullingBox(m_cullingBox);
             }
@@ -686,7 +700,7 @@ namespace PhysXDebug
             return;
         }
 
-        if (Physics::World* world = GetCurrentPhysicsWorld())
+        if (GetCurrentPxScene())
         {
             // Reserve vector capacity
             const int numTriangles = rb.getNbTriangles();
@@ -721,7 +735,7 @@ namespace PhysXDebug
             return;
         }
 
-        if (Physics::World* world = GetCurrentPhysicsWorld())
+        if (GetCurrentPxScene())
         {
             const int numLines = rb.getNbLines();
 
@@ -751,18 +765,17 @@ namespace PhysXDebug
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
 
-        Physics::World* world = GetCurrentPhysicsWorld();
+        physx::PxScene* scene = GetCurrentPxScene();
 
         // The PhysX debug render buffer does not seem to include joint limits, even when
         // PxVisualizationParameter::eJOINT_LIMITS is set, so they are separately added to the line buffer here.
-        if (m_settings.m_jointLimits && world)
+        if (m_settings.m_jointLimits && scene)
         {
-            physx::PxScene* physxScene = static_cast<physx::PxScene*>(world->GetNativePointer());
-            const physx::PxU32 numConstraints = physxScene->getNbConstraints();
+            const physx::PxU32 numConstraints = scene->getNbConstraints();
             for (physx::PxU32 constraintIndex = 0; constraintIndex < numConstraints; constraintIndex++)
             {
                 physx::PxConstraint* constraint;
-                physxScene->getConstraints(&constraint, 1, constraintIndex);
+                scene->getConstraints(&constraint, 1, constraintIndex);
                 physx::PxRigidActor* actor0;
                 physx::PxRigidActor* actor1;
                 constraint->getActors(actor0, actor1);

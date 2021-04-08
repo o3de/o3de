@@ -2,14 +2,14 @@
 .vscode/
 __pycache__
 AssetProcessorTemp/**
-build/**
-Cache/**
+[Bb]uild/**
+[Cc]ache/
 Editor/EditorEventLog.xml
 Editor/EditorLayout.xml
 Tools/**/*egg-info/**
 Tools/**/*egg-link
 UserSettings.xml
-user/Registry/**
+[Uu]ser/
 FrameCapture/**
 .DS_Store
 user*.cfg

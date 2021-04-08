@@ -13,13 +13,17 @@
 #pragma once
 
 #include <AzCore/Component/ComponentBus.h>
+#include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Vector3.h>
-#include <AzFramework/Physics/Casts.h>
+#include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
+
+namespace AzPhysics
+{
+    struct SimulatedBody;
+}
 
 namespace Physics
 {
-    class WorldBody;
-
     //! Requests for generic physical world bodies
     class WorldBodyRequests
         : public AZ::ComponentBus
@@ -36,11 +40,11 @@ namespace Physics
 
         //! Retrieves the AABB(aligned-axis bounding box) for this body
         virtual AZ::Aabb GetAabb() const = 0;
-        //! Retrieves current WorldBody* for this body. Note: Do not hold a reference to Physics::WorldBody* as could be deleted 
-        virtual Physics::WorldBody* GetWorldBody() = 0;
+        //! Retrieves current WorldBody* for this body. Note: Do not hold a reference to AzPhysics::SimulatedBody* as could be deleted 
+        virtual AzPhysics::SimulatedBody* GetWorldBody() = 0;
 
         //! Perform a single-object raycast against this body
-        virtual Physics::RayCastHit RayCast(const Physics::RayCastRequest& request) = 0;
+        virtual AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& request) = 0;
     };
     using WorldBodyRequestBus = AZ::EBus<WorldBodyRequests>;
 

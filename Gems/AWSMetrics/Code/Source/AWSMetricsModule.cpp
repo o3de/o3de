@@ -9,36 +9,24 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
+#include <AWSMetricsModule.h>
+
 #include <AWSMetricsSystemComponent.h>
 #include <AzCore/Module/Module.h>
 
 namespace AWSMetrics
 {
-    class AWSMetricsModule
-        : public AZ::Module
+    AWSMetricsModule::AWSMetricsModule()
+        : AZ::Module()
     {
-    public:
-        AZ_RTTI(AWSMetricsModule, "{A36566F3-E144-4188-A7E0-BAB45BCEA55F}", AZ::Module);
+        // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
+        m_descriptors.insert(m_descriptors.end(), {AWSMetricsSystemComponent::CreateDescriptor()});
+    }
 
-        AWSMetricsModule()
-            : AZ::Module()
-        {
-            // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
-            m_descriptors.insert(m_descriptors.end(), {
-                AWSMetricsSystemComponent::CreateDescriptor()
-                });
-        }
-
-        /**
-        * Add required SystemComponents to the SystemEntity.
-        */
-        AZ::ComponentTypeList GetRequiredSystemComponents() const
-        {
-            return AZ::ComponentTypeList{
-               azrtti_typeid<AWSMetricsSystemComponent>()
-            };
-        }
-    };
+    AZ::ComponentTypeList AWSMetricsModule::GetRequiredSystemComponents() const
+    {
+        return AZ::ComponentTypeList{azrtti_typeid<AWSMetricsSystemComponent>()};
+    }
 }
 
 // DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM

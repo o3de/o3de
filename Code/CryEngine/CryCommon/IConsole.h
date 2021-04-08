@@ -282,7 +282,7 @@ struct IConsole
     // show/hide the console
     // @param specifies if the window must be (true=show,false=hide)
     // @param specifies iRequestScrollMax <=0 if not used, otherwise it sets SetScrollMax temporary to the given value
-    virtual void ShowConsole(bool show, const int iRequestScrollMax = -1) = 0;
+    virtual void ShowConsole(bool show, int iRequestScrollMax = -1) = 0;
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Dump all console-variables to a callback-interface
     // @param Callback callback-interface which needs to be called for each element
@@ -318,7 +318,7 @@ struct IConsole
     // @param indwBufferSize 1.. size of the buffer
     // @return true=line was returned, false=there are no more lines
 
-    virtual bool GetLineNo(const int indwLineNo, char* outszBuffer, const int indwBufferSize) const = 0;
+    virtual bool GetLineNo(int indwLineNo, char* outszBuffer, int indwBufferSize) const = 0;
 
     // @return current number of lines in the console
     virtual int GetLineCount() const = 0;
@@ -408,7 +408,7 @@ struct IConsole
     //   bDeferExecution - true=the command is stored in special fifo that allows delayed execution
     //               by using wait_seconds and wait_frames commands
     //
-    virtual void ExecuteString(const char* command, const bool bSilentMode = false, const bool bDeferExecution = false) = 0;
+    virtual void ExecuteString(const char* command, bool bSilentMode = false, bool bDeferExecution = false) = 0;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Print a message into the log and abort the execution of the application
@@ -489,7 +489,7 @@ struct IConsole
 
     // \param bUpOrDown true=after pressed "up", false=after pressed "down"
     // \return 0 if there is no history line or pointer to the null terminated history line
-    virtual const char* GetHistoryElement(const bool bUpOrDown) = 0;
+    virtual const char* GetHistoryElement(bool bUpOrDown) = 0;
     //! \param szCommand must not be 0
     virtual void AddCommandToHistory(const char* szCommand) = 0;
 
@@ -602,11 +602,11 @@ struct ICVar
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // set the float value of the variable
     // @param s float representation the value
-    virtual void Set(const float f) = 0;
+    virtual void Set(float f) = 0;
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // set the float value of the variable
     // @param s integer representation the value
-    virtual void Set(const int i) = 0;
+    virtual void Set(int i) = 0;
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // clear the specified bits in the flag field
     virtual void ClearFlags (int flags) = 0;
@@ -659,7 +659,7 @@ struct ICVar
     //////////////////////////////////////////////////////////////////////////
     // Removes an on change functor
     // returns true if removal was successful.
-    virtual bool RemoveOnChangeFunctor(const uint64 nFunctorId) = 0;
+    virtual bool RemoveOnChangeFunctor(uint64 nFunctorId) = 0;
 
     //////////////////////////////////////////////////////////////////////////
     // Get the current callback function.

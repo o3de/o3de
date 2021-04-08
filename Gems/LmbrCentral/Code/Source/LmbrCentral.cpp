@@ -39,7 +39,6 @@
 #include "Rendering/LightComponent.h"
 #include "Rendering/HighQualityShadowComponent.h"
 #include "Rendering/MeshComponent.h"
-#include "Rendering/SkinnedMeshComponent.h"
 #include "Rendering/FogVolumeComponent.h"
 #include "Rendering/GeomCacheComponent.h"
 #include "Ai/NavigationComponent.h"
@@ -53,22 +52,15 @@
 #include <Asset/AssetSystemDebugComponent.h>
 
 // Unhandled asset types
-// Animation
-#include "Unhandled/Animation/AnimationEventsAssetTypeInfo.h"
-#include "Unhandled/Animation/DbaAssetTypeInfo.h"
 // Material
 #include "Unhandled/Material/MaterialAssetTypeInfo.h"
 // Other
 #include "Unhandled/Other/AudioAssetTypeInfo.h"
 #include "Unhandled/Other/CharacterPhysicsAssetTypeInfo.h"
-#include "Unhandled/Other/CharacterRigAssetTypeInfo.h"
 #include "Unhandled/Other/GroupAssetTypeInfo.h"
 #include "Unhandled/Other/PrefabsLibraryAssetTypeInfo.h"
-#include "Unhandled/Other/SkeletonAssetTypeInfo.h"
-#include "Unhandled/Other/SkeletonParamsAssetTypeInfo.h"
 #include "Unhandled/Other/GameTokenAssetTypeInfo.h"
 #include "Unhandled/Other/EntityPrototypeLibraryAssetTypeInfo.h"
-#include "Unhandled/Other/SkinnedMeshAssetTypeInfo.h"
 
 // Texture
 #include "Unhandled/Texture/SubstanceAssetTypeInfo.h"
@@ -231,7 +223,6 @@ namespace LmbrCentral
             LmbrCentralSystemComponent::CreateDescriptor(),
             HighQualityShadowComponent::CreateDescriptor(),
             MeshComponent::CreateDescriptor(),
-            SkinnedMeshComponent::CreateDescriptor(),
             NavigationComponent::CreateDescriptor(),
             SimpleStateComponent::CreateDescriptor(),
             SpawnerComponent::CreateDescriptor(),
@@ -447,19 +438,6 @@ namespace LmbrCentral
 
 
         // Register unhandled asset type info
-        // Animation
-        auto animEventsAssetTypeInfo = aznew AnimationEventsAssetTypeInfo();
-        animEventsAssetTypeInfo->Register();
-        m_unhandledAssetInfo.emplace_back(animEventsAssetTypeInfo);
-
-        auto dbaAssetTypeInfo = aznew DbaAssetTypeInfo();
-        dbaAssetTypeInfo->Register();
-        m_unhandledAssetInfo.emplace_back(dbaAssetTypeInfo);
-
-        // Geometry
-        auto skinnedMeshAssetTypeInfo = aznew SkinnedMeshAssetTypeInfo();
-        skinnedMeshAssetTypeInfo->Register();
-        m_unhandledAssetInfo.emplace_back(skinnedMeshAssetTypeInfo);
         // Material
         auto materialAssetTypeInfo = aznew MaterialAssetTypeInfo();
         materialAssetTypeInfo->Register();
@@ -477,10 +455,6 @@ namespace LmbrCentral
         characterPhysicsAssetTypeInfo->Register();
         m_unhandledAssetInfo.emplace_back(characterPhysicsAssetTypeInfo);
 
-        auto characterRigAssetTypeInfo = aznew CharacterRigAssetTypeInfo();
-        characterRigAssetTypeInfo->Register();
-        m_unhandledAssetInfo.emplace_back(characterRigAssetTypeInfo);
-
         auto groupAssetTypeInfo = aznew GroupAssetTypeInfo();
         groupAssetTypeInfo->Register();
         m_unhandledAssetInfo.emplace_back(groupAssetTypeInfo);
@@ -488,14 +462,6 @@ namespace LmbrCentral
         auto prefabsLibraryAssetTypeInfo = aznew PrefabsLibraryAssetTypeInfo();
         prefabsLibraryAssetTypeInfo->Register();
         m_unhandledAssetInfo.emplace_back(prefabsLibraryAssetTypeInfo);
-
-        auto skeletonAssetTypeInfo = aznew SkeletonAssetTypeInfo();
-        skeletonAssetTypeInfo->Register();
-        m_unhandledAssetInfo.emplace_back(skeletonAssetTypeInfo);
-
-        auto skeletonParamsAssetTypeInfo = aznew SkeletonParamsAssetTypeInfo();
-        skeletonParamsAssetTypeInfo->Register();
-        m_unhandledAssetInfo.emplace_back(skeletonParamsAssetTypeInfo);
 
         auto entityPrototypeAssetTypeInfo = aznew EntityPrototypeLibraryAssetTypeInfo();
         entityPrototypeAssetTypeInfo->Register();

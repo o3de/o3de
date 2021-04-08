@@ -78,7 +78,6 @@
 #include "World/UiCanvasProxyRefComponent.h"
 #include "World/UiCanvasOnMeshComponent.h"
 
-
 //! \brief Simple utility class for LyShine functionality in Lua.
 //!
 //! Functionality unrelated to UI, such as showing the mouse cursor, should
@@ -174,6 +173,7 @@ CLyShine::CLyShine(ISystem* system)
     AzFramework::InputChannelEventListener::Connect();
     AzFramework::InputTextEventListener::Connect();
     UiCursorBus::Handler::BusConnect();
+    AZ::TickBus::Handler::BusConnect();
 
     // These are internal Amazon components, so register them so that we can send back their names to our metrics collection
     // IF YOU ARE A THIRDPARTY WRITING A GEM, DO NOT REGISTER YOUR COMPONENTS WITH EditorMetricsComponentRegistrationBus
@@ -249,6 +249,7 @@ CLyShine::CLyShine(ISystem* system)
 CLyShine::~CLyShine()
 {
     UiCursorBus::Handler::BusDisconnect();
+    AZ::TickBus::Handler::BusDisconnect();
     AzFramework::InputTextEventListener::Disconnect();
     AzFramework::InputChannelEventListener::Disconnect();
 
@@ -382,6 +383,16 @@ void CLyShine::Update(float deltaTimeInSeconds)
 {
     FRAME_PROFILER(__FUNCTION__, gEnv->pSystem, PROFILE_UI);
 
+    if (!m_uiRenderer->IsReady())
+    {
+        return;
+    }
+
+    // Tell the UI system the size of the viewport we are rendering to - this drives the
+    // canvas size for full screen UI canvases. It needs to be set before either pLyShine->Update or
+    // pLyShine->Render are called. It must match the viewport size that the input system is using.
+    SetViewportSize(m_uiRenderer->GetViewportSize());
+
     // Guard against nested updates. This can occur if a canvas update below triggers the load screen component's
     // UpdateAndRender (ex. when a texture is loaded)
     if (!m_updatingLoadedCanvases)
@@ -403,6 +414,7 @@ void CLyShine::Render()
 {
     FRAME_PROFILER(__FUNCTION__, gEnv->pSystem, PROFILE_UI);
 
+    // LYSHINE_ATOM_TODO - verify that this is no longer needed and remove
     if (!gEnv || !gEnv->pRenderer || gEnv->pRenderer->GetRenderType() == ERenderType::eRT_Null)
     {
         // if the renderer is not initialized or it is the null renderer (e.g. running as a server)
@@ -417,13 +429,8 @@ void CLyShine::Render()
         return;
     }
 
-    // Fix for bug where this function could get called before CRenderer::InitSystemResources has been called.
-    // To check if it has been called we see if the default textures have been setup
-    int whiteTextureId = gEnv->pRenderer->GetWhiteTextureId();
-    if (whiteTextureId == -1 || gEnv->pRenderer->EF_GetTextureByID(whiteTextureId) == nullptr)
+    if (!m_uiRenderer->IsReady())
     {
-        // system resources are not yet initialized, this makes it impossible to render the UI and could
-        // cause a crash if we attempt to.
         return;
     }
 
@@ -436,6 +443,7 @@ void CLyShine::Render()
     // Render all the canvases loaded in game
     m_uiCanvasManager->RenderLoadedCanvases();
 
+#ifdef LYSHINE_ATOM_TODO // convert cursor support to use Atom
     m_draw2d->RenderDeferredPrimitives();
 
     // Don't render the UI cursor when in edit mode. For example during UI Preview mode a script could turn on the
@@ -446,9 +454,11 @@ void CLyShine::Render()
     {
         RenderUiCursor();
     }
+#endif
 
     GetUiRenderer()->EndUiFrameRender();
 
+#ifdef LYSHINE_ATOM_TODO // convert debug info to Atom
 #ifndef _RELEASE
     if (CV_ui_DisplayElemBounds)
     {
@@ -467,6 +477,7 @@ void CLyShine::Render()
     {
         m_uiCanvasManager->DebugDisplayDrawCallData();
     }
+#endif
 #endif
 }
 
@@ -631,6 +642,20 @@ bool CLyShine::OnInputTextEventFiltered(const AZStd::string& textUTF8)
     }
 
     return result;
+}
+
+void CLyShine::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+{
+    // Update the loaded UI canvases
+    Update(deltaTime);
+
+    // Recreate dirty render graphs and send primitive data to the dynamic draw context
+    Render();
+}
+
+int CLyShine::GetTickOrder()
+{
+    return AZ::TICK_UI;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

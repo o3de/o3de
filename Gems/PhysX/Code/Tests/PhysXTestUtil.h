@@ -13,53 +13,58 @@
 #pragma once
 
 #include "AzCore/Component/Component.h"
-#include <AzFramework/Physics/CollisionNotificationBus.h>
-#include <AzFramework/Physics/TriggerBus.h>
+#include <AzFramework/Physics/Collision/CollisionEvents.h>
+#include <AzFramework/Physics/Common/PhysicsSimulatedBodyEvents.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 
 namespace PhysX
 {
-    //! CollisionCallbacksListener listens to collision events for a particular entity id.
+    //! CollisionCallbacksListener listens to collision events for a particular sceneHandle and simulatedBodyHandle
     class CollisionCallbacksListener
-        : public Physics::CollisionNotificationBus::Handler
     {
     public:
-        CollisionCallbacksListener(AZ::EntityId entityId);
+        explicit CollisionCallbacksListener(AZ::EntityId entityId);
+        CollisionCallbacksListener(AzPhysics::SceneHandle sceneHandle, AzPhysics::SimulatedBodyHandle bodyHandle);
         ~CollisionCallbacksListener();
 
-        void OnCollisionBegin(const Physics::CollisionEvent& collision) override;
-        void OnCollisionPersist(const Physics::CollisionEvent& collision) override;
-        void OnCollisionEnd(const Physics::CollisionEvent& collision) override;
+        AZStd::vector<AzPhysics::CollisionEvent> m_beginCollisions;
+        AZStd::vector<AzPhysics::CollisionEvent> m_persistCollisions;
+        AZStd::vector<AzPhysics::CollisionEvent> m_endCollisions;
 
-        AZStd::vector<Physics::CollisionEvent> m_beginCollisions;
-        AZStd::vector<Physics::CollisionEvent> m_persistCollisions;
-        AZStd::vector<Physics::CollisionEvent> m_endCollisions;
-
-        AZStd::function<void(const Physics::CollisionEvent& collisionEvent)> m_onCollisionBegin;
-        AZStd::function<void(const Physics::CollisionEvent& collisionEvent)> m_onCollisionPersist;
-        AZStd::function<void(const Physics::CollisionEvent& collisionEvent)> m_onCollisionEnd;
-    };
-
-    //! TestTriggerAreaNotificationListener listens to trigger events for a particular entity id.
-    class TestTriggerAreaNotificationListener
-        : protected Physics::TriggerNotificationBus::Handler
-    {
-    public:
-        TestTriggerAreaNotificationListener(AZ::EntityId triggerAreaEntityId);
-        ~TestTriggerAreaNotificationListener();
-
-        void OnTriggerEnter(const Physics::TriggerEvent& event) override;
-        void OnTriggerExit(const Physics::TriggerEvent& event) override;
-
-        const AZStd::vector<Physics::TriggerEvent>& GetEnteredEvents() const { return m_enteredEvents; }
-        const AZStd::vector<Physics::TriggerEvent>& GetExitedEvents() const { return m_exitedEvents; }
-
-        AZStd::function<void(const Physics::TriggerEvent& event)> m_onTriggerEnter;
-        AZStd::function<void(const Physics::TriggerEvent& event)> m_onTriggerExit;
+        AZStd::function<void(const AzPhysics::CollisionEvent& collisionEvent)> m_onCollisionBegin;
+        AZStd::function<void(const AzPhysics::CollisionEvent& collisionEvent)> m_onCollisionPersist;
+        AZStd::function<void(const AzPhysics::CollisionEvent& collisionEvent)> m_onCollisionEnd;
 
     private:
-        AZStd::vector<Physics::TriggerEvent> m_enteredEvents;
-        AZStd::vector<Physics::TriggerEvent> m_exitedEvents;
+        void InitCollisionHandlers();
+
+        AzPhysics::SimulatedBodyEvents::OnCollisionBegin::Handler m_onCollisionBeginHandler;
+        AzPhysics::SimulatedBodyEvents::OnCollisionPersist::Handler m_onCollisionPersistHandler;
+        AzPhysics::SimulatedBodyEvents::OnCollisionEnd::Handler m_onCollisionEndHandler;
+    };
+
+    //! TestTriggerAreaNotificationListener listens to trigger events for a particular sceneHandle and simulatedBodyHandle
+    class TestTriggerAreaNotificationListener
+    {
+    public:
+        explicit TestTriggerAreaNotificationListener(AZ::EntityId entityId);
+        TestTriggerAreaNotificationListener(AzPhysics::SceneHandle sceneHandle, AzPhysics::SimulatedBodyHandle bodyHandle);
+        ~TestTriggerAreaNotificationListener();
+
+        const AZStd::vector<AzPhysics::TriggerEvent>& GetEnteredEvents() const { return m_enteredEvents; }
+        const AZStd::vector<AzPhysics::TriggerEvent>& GetExitedEvents() const { return m_exitedEvents; }
+
+        AZStd::function<void(const AzPhysics::TriggerEvent& event)> m_onTriggerEnter;
+        AZStd::function<void(const AzPhysics::TriggerEvent& event)> m_onTriggerExit;
+
+    private:
+        void InitTriggerHandlers();
+
+        AZStd::vector<AzPhysics::TriggerEvent> m_enteredEvents;
+        AZStd::vector<AzPhysics::TriggerEvent> m_exitedEvents;
+
+        AzPhysics::SimulatedBodyEvents::OnTriggerEnter::Handler m_onTriggerEnterHandler;
+        AzPhysics::SimulatedBodyEvents::OnTriggerExit::Handler m_onTriggerExitHandler;
     };
 
 

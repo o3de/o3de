@@ -13,32 +13,548 @@
 
 #include <Scene/PhysXScene.h>
 
+#include <AzCore/Debug/ProfilerBus.h>
+#include <AzCore/std/containers/variant.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzFramework/Physics/Collision/CollisionEvents.h>
+#include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
+#include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
+
+#include <Collision.h>
+#include <RigidBody.h>
+#include <RigidBodyStatic.h>
+#include <Shape.h>
+#include <Common/PhysXSceneQueryHelpers.h>
+#include <PhysX/PhysXLocks.h>
+#include <PhysX/Utils.h>
+#include <System/PhysXSystem.h>
+
 namespace PhysX
 {
-    PhysXScene::PhysXScene(const AzPhysics::SceneConfiguration& config)
-        : m_legacyWorld(AZStd::make_shared<World>(config.m_legacyId, config.m_legacyConfiguration))
-        , m_config(config)
-    {
+    AZ_CLASS_ALLOCATOR_IMPL(PhysXScene, AZ::SystemAllocator, 0);
 
+    /*static*/ thread_local AZStd::vector<physx::PxRaycastHit> PhysXScene::s_rayCastBuffer;
+    /*static*/ thread_local AZStd::vector<physx::PxSweepHit> PhysXScene::s_sweepBuffer;
+    /*static*/ thread_local AZStd::vector<physx::PxOverlapHit> PhysXScene::s_overlapBuffer;
+
+    namespace Internal
+    {
+        physx::PxScene* CreatePxScene(const AzPhysics::SceneConfiguration& config,
+            SceneSimulationFilterCallback* filterCallback,
+            SceneSimulationEventCallback* simEventCallback)
+        {
+            const physx::PxTolerancesScale tolerancesScale = physx::PxTolerancesScale();
+            physx::PxSceneDesc sceneDesc(tolerancesScale);
+            sceneDesc.gravity = PxMathConvert(config.m_gravity);
+            if (config.m_enableCcd)
+            {
+                sceneDesc.flags |= physx::PxSceneFlag::eENABLE_CCD;
+                sceneDesc.filterShader = Collision::DefaultFilterShaderCCD;
+                sceneDesc.ccdMaxPasses = config.m_maxCcdPasses;
+                if (config.m_enableCcdResweep)
+                {
+                    sceneDesc.flags.clear(physx::PxSceneFlag::eDISABLE_CCD_RESWEEP);
+                }
+                else
+                {
+                    sceneDesc.flags.set(physx::PxSceneFlag::eDISABLE_CCD_RESWEEP);
+                }
+            }
+            else
+            {
+                sceneDesc.filterShader = Collision::DefaultFilterShader;
+            }
+            
+            if (config.m_enableActiveActors)
+            {
+                sceneDesc.flags |= physx::PxSceneFlag::eENABLE_ACTIVE_ACTORS;
+            }
+    
+            if (config.m_enablePcm)
+            {
+                sceneDesc.flags |= physx::PxSceneFlag::eENABLE_PCM;
+            }
+            else
+            {
+                sceneDesc.flags &= ~physx::PxSceneFlag::eENABLE_PCM;
+            }
+            
+            if (config.m_kinematicFiltering)
+            {
+                sceneDesc.kineKineFilteringMode = physx::PxPairFilteringMode::eKEEP;
+            }
+    
+            if (config.m_kinematicStaticFiltering)
+            {
+                sceneDesc.staticKineFilteringMode = physx::PxPairFilteringMode::eKEEP;
+            }
+    
+            sceneDesc.bounceThresholdVelocity = config.m_bounceThresholdVelocity;
+    
+            sceneDesc.filterCallback = filterCallback;
+            sceneDesc.simulationEventCallback = simEventCallback;
+            #ifdef ENABLE_TGS_SOLVER
+                // Use Temporal Gauss-Seidel solver by default
+                sceneDesc.solverType = physx::PxSolverType::eTGS;
+            #endif
+            #ifdef PHYSX_ENABLE_MULTI_THREADING
+                sceneDesc.flags |= physx::PxSceneFlag::eREQUIRE_RW_LOCK;
+            #endif
+
+            if (auto* physXSystem = GetPhysXSystem())
+            {
+                sceneDesc.cpuDispatcher = physXSystem->GetPxCpuDispathcher();
+                if (physx::PxScene * pxScene = physXSystem->GetPxPhysics()->createScene(sceneDesc))
+                {
+                    if (physx::PxPvdSceneClient* pvdClient = pxScene->getScenePvdClient())
+                    {
+                        pvdClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_CONSTRAINTS, true);
+                        pvdClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_CONTACTS, true);
+                        pvdClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES, true);
+                    }
+                    return pxScene;
+                }
+            }
+            return nullptr;
+        }
+
+        bool AddShape(AZStd::variant<AzPhysics::RigidBody*, AzPhysics::StaticRigidBody*> simulatedBody, const AzPhysics::ShapeVariantData& shapeData)
+        {
+            if (auto* shapeColliderPair = AZStd::get_if<AzPhysics::ShapeColliderPair>(&shapeData))
+            {
+                bool shapeAdded = false;
+                auto shapePtr = AZStd::make_shared<Shape>(*(shapeColliderPair->first), *(shapeColliderPair->second));
+                AZStd::visit([shapePtr, &shapeAdded](auto&& body)
+                    {
+                        if (shapePtr->GetPxShape())
+                        {
+                            body->AddShape(shapePtr);
+                            shapeAdded = true;
+                        }
+                    }, simulatedBody);
+                return shapeAdded;
+            }
+            else if (auto* shapeColliderPairList = AZStd::get_if<AZStd::vector<AzPhysics::ShapeColliderPair>>(&shapeData))
+            {
+                bool shapeAdded = false;
+                for (const auto& shapeColliderConfigs : *shapeColliderPairList)
+                {
+                    auto shapePtr = AZStd::make_shared<Shape>(*(shapeColliderConfigs.first), *(shapeColliderConfigs.second));
+                    AZStd::visit([shapePtr, &shapeAdded](auto&& body)
+                        {
+                            if (shapePtr->GetPxShape())
+                            {
+                                body->AddShape(shapePtr);
+                                shapeAdded = true;
+                            }
+                        }, simulatedBody);
+                    return shapeAdded;
+                }
+            }
+            else if (auto* shape = AZStd::get_if<AZStd::shared_ptr<Physics::Shape>>(&shapeData))
+            {
+                AZStd::visit([shape](auto&& body)
+                    {
+                        body->AddShape(*shape);
+                    }, simulatedBody);
+                return true;
+            }
+            else if (auto* shapeList = AZStd::get_if<AZStd::vector<AZStd::shared_ptr<Physics::Shape>>>(&shapeData))
+            {
+                for (auto shapePtr : *shapeList)
+                {
+                    AZStd::visit([shapePtr](auto&& body)
+                        {
+                            body->AddShape(shapePtr);
+                        }, simulatedBody);
+                }
+                return true;
+            }
+            return false;
+        }
+
+        template<class SimulatedBodyType, class ConfigurationType>
+        AzPhysics::SimulatedBody* CreateSimulatedBody(const ConfigurationType* configuration, AZ::Crc32& crc)
+        {
+            SimulatedBodyType* newBody = aznew SimulatedBodyType(*configuration);
+            if (!AZStd::holds_alternative<AZStd::monostate>(configuration->m_colliderAndShapeData))
+            {
+                const bool shapeAdded = AddShape(newBody, configuration->m_colliderAndShapeData);
+                AZ_Warning("PhysXScene", shapeAdded, "No Collider or Shape information found when creating Rigid body [%s]", configuration->m_debugName.c_str());
+            }
+            crc = AZ::Crc32(newBody, sizeof(*newBody));
+            return newBody;
+        }
+
+        //helper to perform a ray cast
+        AzPhysics::SceneQueryHits RayCast(const AzPhysics::RayCastRequest* raycastRequest,
+            AZStd::vector<physx::PxRaycastHit>& raycastBuffer,
+            physx::PxScene* physxScene,
+            const physx::PxQueryFilterData queryData,
+            const AZ::u64 sceneMaxResults)
+        {
+            // if this query need to report multiple hits, we need to prepare a buffer to hold up to the max allowed.
+            // The filter should also use the eTOUCH flag to find all contacts with the ray.
+            // Otherwise the default buffer (1 result) and eBLOCK flag is enough to find the first hit.
+            physx::PxRaycastBuffer castResult;
+            SceneQueryHelpers::PhysXQueryFilterCallback queryFilterCallback; 
+            if (raycastRequest->m_reportMultipleHits)
+            {
+                const AZ::u64 maxSize = AZStd::min(raycastRequest->m_maxResults, sceneMaxResults);
+                if (raycastBuffer.size() < maxSize) //todo this needs to be limited by the config setting
+                {
+                    raycastBuffer.resize(maxSize);
+                }
+                castResult = physx::PxRaycastBuffer(raycastBuffer.begin(), aznumeric_cast<physx::PxU32>(maxSize));
+                queryFilterCallback = SceneQueryHelpers::PhysXQueryFilterCallback(
+                    raycastRequest->m_collisionGroup,
+                    raycastRequest->m_filterCallback,
+                    physx::PxQueryHitType::eTOUCH);
+            }
+            else
+            {
+                queryFilterCallback = SceneQueryHelpers::PhysXQueryFilterCallback(
+                    raycastRequest->m_collisionGroup,
+                    SceneQueryHelpers::GetSceneQueryBlockFilterCallback(raycastRequest->m_filterCallback),
+                    physx::PxQueryHitType::eBLOCK);
+            }
+
+            const physx::PxVec3 orig = PxMathConvert(raycastRequest->m_start);
+            const physx::PxVec3 dir = PxMathConvert(raycastRequest->m_direction.GetNormalized());
+            const physx::PxHitFlags hitFlags = SceneQueryHelpers::GetPxHitFlags(raycastRequest->m_hitFlags);
+            //Raycast
+            bool status = false;
+            {
+                PHYSX_SCENE_READ_LOCK(physxScene);
+                status = physxScene->raycast(orig, dir, raycastRequest->m_distance, castResult, hitFlags, queryData, &queryFilterCallback);
+            }
+
+            AzPhysics::SceneQueryHits hits;
+            if (status)
+            {
+                if (castResult.hasBlock)
+                {
+                    hits.m_hits.emplace_back(SceneQueryHelpers::GetHitFromPxHit(castResult.block));
+                }
+
+                if (raycastRequest->m_reportMultipleHits)
+                {
+                    for (auto i = 0u; i < castResult.getNbTouches(); ++i)
+                    {
+                        const auto& pxHit = castResult.getTouch(i);
+                        hits.m_hits.emplace_back(SceneQueryHelpers::GetHitFromPxHit(pxHit));
+                    }
+                }
+            }
+            return hits;
+        }
+
+        //helper to preform a shape cast
+        AzPhysics::SceneQueryHits ShapeCast(const AzPhysics::ShapeCastRequest* shapecastRequest,
+            AZStd::vector<physx::PxSweepHit>& shapecastBuffer,
+            physx::PxScene* physxScene,
+            const physx::PxQueryFilterData queryData,
+            const AZ::u64 sceneMaxResults)
+        {
+            // if this query need to report multiple hits, we need to prepare a buffer to hold up to the max allowed.
+            // The filter should also use the eTOUCH flag to find all contacts with the shape.
+            // Otherwise the default buffer (1 result) and eBLOCK flag is enough to find the first hit.
+            physx::PxSweepBuffer castResult;
+            SceneQueryHelpers::PhysXQueryFilterCallback queryFilterCallback;
+            if (shapecastRequest->m_reportMultipleHits)
+            {
+                const AZ::u64 maxSize = AZStd::min(shapecastRequest->m_maxResults, sceneMaxResults);
+                if (shapecastBuffer.size() < maxSize) //todo this needs to be limited by the config setting
+                {
+                    shapecastBuffer.resize(maxSize);
+                }
+                castResult = physx::PxSweepBuffer(shapecastBuffer.begin(), aznumeric_cast<physx::PxU32>(maxSize));
+                queryFilterCallback = SceneQueryHelpers::PhysXQueryFilterCallback(
+                    shapecastRequest->m_collisionGroup,
+                    shapecastRequest->m_filterCallback,
+                    physx::PxQueryHitType::eTOUCH);
+            }
+            else
+            {
+                queryFilterCallback = SceneQueryHelpers::PhysXQueryFilterCallback(
+                    shapecastRequest->m_collisionGroup,
+                    SceneQueryHelpers::GetSceneQueryBlockFilterCallback(shapecastRequest->m_filterCallback),
+                    physx::PxQueryHitType::eBLOCK);
+            }
+
+            physx::PxGeometryHolder pxGeometry;
+            Utils::CreatePxGeometryFromConfig(*(shapecastRequest->m_shapeConfiguration), pxGeometry);
+
+            AzPhysics::SceneQueryHits results;
+            if (pxGeometry.any().getType() == physx::PxGeometryType::eSPHERE ||
+                pxGeometry.any().getType() == physx::PxGeometryType::eBOX ||
+                pxGeometry.any().getType() == physx::PxGeometryType::eCAPSULE ||
+                pxGeometry.any().getType() == physx::PxGeometryType::eCONVEXMESH)
+            {
+                const physx::PxTransform pose = PxMathConvert(shapecastRequest->m_start);
+                const physx::PxVec3 dir = PxMathConvert(shapecastRequest->m_direction.GetNormalized());
+                const physx::PxHitFlags hitFlags = SceneQueryHelpers::GetPxHitFlags(shapecastRequest->m_hitFlags);
+
+                bool status = false;
+                {
+                    PHYSX_SCENE_READ_LOCK(*physxScene);
+                    status = physxScene->sweep(pxGeometry.any(), pose, dir, shapecastRequest->m_distance,
+                        castResult, hitFlags, queryData, &queryFilterCallback);
+                }
+
+                if (status)
+                {
+                    if (castResult.hasBlock)
+                    {
+                        results.m_hits.emplace_back(SceneQueryHelpers::GetHitFromPxHit(castResult.block));
+                    }
+
+                    if (shapecastRequest->m_reportMultipleHits)
+                    {
+                        for (auto i = 0u; i < castResult.getNbTouches(); ++i)
+                        {
+                            const auto& pxHit = castResult.getTouch(i);
+                            results.m_hits.emplace_back(SceneQueryHelpers::GetHitFromPxHit(pxHit));
+                        }
+                    }
+                }
+            }
+            else
+            {
+                AZ_Warning("World", false, "Invalid geometry type passed to shape cast. Only sphere, box, capsule or convex mesh is supported");
+            }
+
+            return results;
+        }
+
+        bool OverlapGeneric(physx::PxScene* physxScene, const AzPhysics::OverlapRequest* overlapRequest,
+            physx::PxOverlapCallback& overlapCallback, const physx::PxQueryFilterData& filterData)
+        {
+            // Prepare overlap data
+            const physx::PxTransform pose = PxMathConvert(overlapRequest->m_pose);
+            physx::PxGeometryHolder pxGeometry;
+            Utils::CreatePxGeometryFromConfig(*(overlapRequest->m_shapeConfiguration), pxGeometry);
+
+            SceneQueryHelpers::PhysXQueryFilterCallback filterCallback(
+                overlapRequest->m_collisionGroup,
+                SceneQueryHelpers::GetFilterCallbackFromOverlap(overlapRequest->m_filterCallback),
+                physx::PxQueryHitType::eTOUCH);
+
+            bool status = false;
+            {
+                PHYSX_SCENE_READ_LOCK(*physxScene);
+                status = physxScene->overlap(pxGeometry.any(), pose, overlapCallback, filterData, &filterCallback);
+            }
+            return status;
+        }
+
+        AzPhysics::SceneQueryHits OverlapQuery(const AzPhysics::OverlapRequest* overlapRequest,
+            AZStd::vector<physx::PxOverlapHit>& overlapBuffer,
+            physx::PxScene* physxScene,
+            const physx::PxQueryFilterData queryData,
+            const AZ::u64 sceneMaxResults)
+        {
+            const AZ::u64 maxSize = AZStd::min(overlapRequest->m_maxResults, sceneMaxResults);
+            if (overlapBuffer.size() < maxSize)
+            {
+                overlapBuffer.resize(maxSize);
+            }
+
+            if (overlapRequest->m_unboundedOverlapHitCallback)
+            {
+                SceneQueryHelpers::UnboundedOverlapCallback callback(overlapRequest->m_unboundedOverlapHitCallback, overlapBuffer);
+                const bool status = OverlapGeneric(physxScene, overlapRequest, callback, queryData);
+                if (status)
+                {
+                    return callback.m_results;
+                }
+                return {};
+            }
+
+            physx::PxOverlapBuffer queryHits(overlapBuffer.begin(), aznumeric_cast<physx::PxU32>(maxSize));
+            bool status = OverlapGeneric(physxScene, overlapRequest, queryHits, queryData);
+
+            AzPhysics::SceneQueryHits results;
+            if (status)
+            {
+                // Process results
+                AZ::u32 hitNum = queryHits.getNbAnyHits();
+                results.m_hits.reserve(hitNum);
+                for (AZ::u32 i = 0; i < hitNum; ++i)
+                {
+                    const AzPhysics::SceneQueryHit hit = SceneQueryHelpers::GetHitFromPxOverlapHit(queryHits.getAnyHit(i));
+                    if (hit.IsValid())
+                    {
+                        results.m_hits.emplace_back(hit);
+                    }
+                }
+                results.m_hits.shrink_to_fit();
+            }
+            return results;
+        }
+    }
+
+    PhysXScene::PhysXScene(const AzPhysics::SceneConfiguration& config, const AzPhysics::SceneHandle& sceneHandle)
+        : Scene(config)
+        , m_config(config)
+        , m_sceneHandle(sceneHandle)
+        , m_physicsSystemConfigChanged([this](const AzPhysics::SystemConfiguration* config)
+            {
+                m_raycastBufferSize = config->m_raycastBufferSize;
+                m_shapecastBufferSize = config->m_shapecastBufferSize;
+                m_overlapBufferSize = config->m_overlapBufferSize;
+            })
+    {
+        //setup the scene query buffer sizes
+        if (auto* physXSystem = GetPhysXSystem())
+        {
+            if (const AzPhysics::SystemConfiguration* sysConfig = physXSystem->GetConfiguration())
+            {
+                m_raycastBufferSize = sysConfig->m_raycastBufferSize;
+                m_shapecastBufferSize = sysConfig->m_shapecastBufferSize;
+                m_overlapBufferSize = sysConfig->m_overlapBufferSize;
+            }
+            //register for future changes to the buffer sizes.
+            physXSystem->RegisterSystemConfigurationChangedEvent(m_physicsSystemConfigChanged);
+        }
+        
+        PhysXScene::s_rayCastBuffer = {};
+        PhysXScene::s_sweepBuffer = {};
+        PhysXScene::s_overlapBuffer = {};
+
+        m_pxScene = Internal::CreatePxScene(m_config, &m_collisionFilterCallback, &m_simulationEventCallback);
+        AZ_Assert(m_pxScene != nullptr, "PhysX::Scene creation failed.");
+
+        m_pxScene->userData = this;
+
+        m_gravity = m_config.m_gravity;
+    }
+
+    PhysXScene::~PhysXScene()
+    {
+        m_physicsSystemConfigChanged.Disconnect();
+
+        for (auto& simulatedBody : m_simulatedBodies)
+        {
+            if (simulatedBody.second != nullptr)
+            {
+                if (simulatedBody.second->m_simulating)
+                {
+                    // Disable simulation on body (not signaling OnSimulationBodySimulationDisabled event) 
+                    DisableSimulationOfBodyInternal(*simulatedBody.second);
+                }
+                delete simulatedBody.second;
+            }
+        }
+        m_simulatedBodies.clear();
+
+        ClearDeferedDeletions();
+
+        if (m_controllerManager)
+        {
+            m_controllerManager->release();
+            m_controllerManager = nullptr;
+        }
+
+        if (m_pxScene)
+        {
+            m_pxScene->release();
+            m_pxScene = nullptr;
+        }
     }
 
     void PhysXScene::StartSimulation(float deltatime)
     {
-        if (IsEnabled() && m_legacyWorld)
+        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Physics, "PhysXScene::StartSimulation");
+
+        if (!IsEnabled())
         {
-            m_legacyWorld->StartSimulation(deltatime);
+            return;
         }
+
+        {
+            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Physics, "OnSceneSimulationStartEvent::Signaled");
+            m_sceneSimuationStartEvent.Signal(m_sceneHandle, deltatime);
+        }
+
+        m_currentDeltaTime = deltatime;
+
+        PHYSX_SCENE_WRITE_LOCK(m_pxScene);
+        m_pxScene->simulate(deltatime);
     }
 
     void PhysXScene::FinishSimulation()
     {
-        if (IsEnabled() && m_legacyWorld)
+        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Physics, "PhysXScene::FinishSimulation");
+
+        if (!IsEnabled())
         {
-            m_legacyWorld->FinishSimulation();
+            return;
         }
+
+        {
+            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Physics, "PhysXScene::CheckResults");
+
+            // Wait for the simulation to complete.
+            // In the multithreaded environment we need to make sure we don't lock the scene for write here.
+            // This is because contact modification callbacks can be issued from the job threads and cause deadlock
+            // due to the callback code locking the scene.
+            // https://devtalk.nvidia.com/default/topic/1024408/pxcontactmodifycallback-and-pxscene-locking/
+            m_pxScene->checkResults(true);
+        }
+
+        bool activeActorsEnabled = false;
+        {
+            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Physics, "PhysXScene::FetchResults");
+            PHYSX_SCENE_WRITE_LOCK(m_pxScene);
+
+            activeActorsEnabled = m_pxScene->getFlags() & physx::PxSceneFlag::eENABLE_ACTIVE_ACTORS;
+
+            // Swap the buffers, invoke callbacks, build the list of active actors.
+            m_pxScene->fetchResults(true);
+        }
+        
+        if (activeActorsEnabled)
+        {
+            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Physics, "PhysXScene::ActiveActors");
+
+            PHYSX_SCENE_READ_LOCK(m_pxScene);
+
+            physx::PxU32 numActiveActors = 0;
+            physx::PxActor** activeActors = m_pxScene->getActiveActors(numActiveActors);
+            AzPhysics::SimulatedBodyHandleList activeBodyHandles;
+            activeBodyHandles.reserve(numActiveActors);
+            for (physx::PxU32 i = 0; i < numActiveActors; ++i)
+            {
+                if (ActorData* actorData = Utils::GetUserData(activeActors[i]))
+                {
+                    activeBodyHandles.emplace_back(actorData->GetBodyHandle());
+                }
+            }
+            m_sceneActiveSimulatedBodies.Signal(m_sceneHandle, activeBodyHandles);
+        }
+
+        FlushQueuedEvents();
+        ClearDeferedDeletions();
+
+        {
+            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Physics, "OnSceneSimulationFinishedEvent::Signaled");
+            m_sceneSimuationFinishEvent.Signal(m_sceneHandle, m_currentDeltaTime);
+        }
+
+        UpdateAzProfilerDataPoints();
     }
 
-    void PhysXScene::Enable(bool enable)
+    void PhysXScene::FlushQueuedEvents()
+    {
+        //send queued trigger events
+        ProcessTriggerEvents();
+
+        //send queued collision events
+        ProcessCollisionEvents();
+    }
+
+    void PhysXScene::SetEnabled(bool enable)
     {
         m_isEnabled = enable;
     }
@@ -55,6 +571,506 @@ namespace PhysX
 
     void PhysXScene::UpdateConfiguration(const AzPhysics::SceneConfiguration& config)
     {
-        m_config = config;
+        if (m_config != config)
+        {
+            m_config = config;
+            m_configChangeEvent.Signal(m_sceneHandle, m_config);
+
+            // set gravity verifies this is a new value.
+            SetGravity(m_config.m_gravity);
+        }
+    }
+
+    AzPhysics::SimulatedBodyHandle PhysXScene::AddSimulatedBody(const AzPhysics::SimulatedBodyConfiguration* simulatedBodyConfig)
+    {
+        AzPhysics::SimulatedBody* newBody = nullptr;
+        AZ::Crc32 newBodyCrc;
+        if (azrtti_istypeof<AzPhysics::RigidBodyConfiguration>(simulatedBodyConfig))
+        {
+            newBody = Internal::CreateSimulatedBody<RigidBody, AzPhysics::RigidBodyConfiguration>(
+                azdynamic_cast<const AzPhysics::RigidBodyConfiguration*>(simulatedBodyConfig), newBodyCrc);
+        }
+        else if (azrtti_istypeof<AzPhysics::StaticRigidBodyConfiguration>(simulatedBodyConfig))
+        {
+            newBody = Internal::CreateSimulatedBody<StaticRigidBody, AzPhysics::StaticRigidBodyConfiguration>(
+                azdynamic_cast<const AzPhysics::StaticRigidBodyConfiguration*>(simulatedBodyConfig), newBodyCrc);
+        }
+
+        if (newBody != nullptr)
+        {
+            AzPhysics::SimulatedBodyIndex index;
+
+            if (m_freeSceneSlots.empty())
+            {
+                m_simulatedBodies.emplace_back(newBodyCrc, newBody);
+                index = m_simulatedBodies.size() - 1;
+            }
+            else
+            {
+                //fill any free slots first before increasing the size of the simulatedBodies vector.
+                index = m_freeSceneSlots.front();
+                m_freeSceneSlots.pop();
+                AZ_Assert(index < m_simulatedBodies.size(), "PhysXScene::AddSimulatedBody: Free simulated body index is out of bounds");
+                AZ_Assert(m_simulatedBodies[index].second == nullptr, "PhysXScene::AddSimulatedBody: Free simulated body index is not free");
+
+                m_simulatedBodies[index] = AZStd::make_pair(newBodyCrc, newBody);
+            }
+
+            const AzPhysics::SimulatedBodyHandle newBodyHandle(newBodyCrc, index);
+            newBody->m_sceneOwner = m_sceneHandle;
+            newBody->m_bodyHandle = newBodyHandle;
+            m_simulatedBodyAddedEvent.Signal(m_sceneHandle, newBodyHandle);
+
+            // Enable simulation by default (not signaling OnSimulationBodySimulationEnabled event) 
+            EnableSimulationOfBodyInternal(*newBody);
+
+            return newBodyHandle;
+        }
+
+        return AzPhysics::InvalidSimulatedBodyHandle;
+    }
+
+    AzPhysics::SimulatedBodyHandleList PhysXScene::AddSimulatedBodies(const AzPhysics::SimulatedBodyConfigurationList& simulatedBodyConfigs)
+    {
+        AzPhysics::SimulatedBodyHandleList newBodyHandles;
+        newBodyHandles.reserve(simulatedBodyConfigs.size());
+        for (auto* config : simulatedBodyConfigs)
+        {
+            newBodyHandles.emplace_back(AddSimulatedBody(config));
+        }
+        return newBodyHandles;
+    }
+
+    AzPhysics::SimulatedBody* PhysXScene::GetSimulatedBodyFromHandle(AzPhysics::SimulatedBodyHandle bodyHandle)
+    {
+        if (bodyHandle == AzPhysics::InvalidSimulatedBodyHandle)
+        {
+            return nullptr;
+        }
+
+        AzPhysics::SimulatedBodyIndex index = AZStd::get<AzPhysics::HandleTypeIndex::Index>(bodyHandle);
+        if (index < m_simulatedBodies.size()
+            && m_simulatedBodies[index].first == AZStd::get<AzPhysics::HandleTypeIndex::Crc>(bodyHandle))
+        {
+            return m_simulatedBodies[index].second;
+        }
+        return nullptr;
+    }
+
+    AzPhysics::SimulatedBodyList PhysXScene::GetSimulatedBodiesFromHandle(const AzPhysics::SimulatedBodyHandleList& bodyHandles)
+    {
+        AzPhysics::SimulatedBodyList results;
+        for (auto& handle : bodyHandles)
+        {
+            results.emplace_back(GetSimulatedBodyFromHandle(handle));
+        }
+        return results;
+    }
+
+    void PhysXScene::RemoveSimulatedBody(AzPhysics::SimulatedBodyHandle bodyHandle)
+    {
+        if (bodyHandle == AzPhysics::InvalidSimulatedBodyHandle)
+        {
+            return;
+        }
+        
+        AzPhysics::SimulatedBodyIndex index = AZStd::get<AzPhysics::HandleTypeIndex::Index>(bodyHandle);
+        if (index < m_simulatedBodies.size()
+            && m_simulatedBodies[index].first == AZStd::get<AzPhysics::HandleTypeIndex::Crc>(bodyHandle))
+        {
+            if (m_simulatedBodies[index].second->m_simulating)
+            {
+                // Disable simulation on body (not signaling OnSimulationBodySimulationDisabled event) 
+                DisableSimulationOfBodyInternal(*m_simulatedBodies[index].second);
+            }
+
+            m_simulatedBodyRemovedEvent.Signal(m_sceneHandle, bodyHandle);
+
+            m_deferredDeletions.push_back(m_simulatedBodies[index].second);
+            m_simulatedBodies[index] = AZStd::make_pair(AZ::Crc32(), nullptr);
+            m_freeSceneSlots.push(index);
+        }
+    }
+
+    void PhysXScene::RemoveSimulatedBodies(const AzPhysics::SimulatedBodyHandleList& bodyHandles)
+    {
+        for (auto& handle: bodyHandles)
+        {
+            RemoveSimulatedBody(handle);
+        }
+    }
+
+    void PhysXScene::EnableSimulationOfBody(AzPhysics::SimulatedBodyHandle bodyHandle)
+    {
+        if (bodyHandle == AzPhysics::InvalidSimulatedBodyHandle)
+        {
+            return;
+        }
+
+        if (AzPhysics::SimulatedBody* body = GetSimulatedBodyFromHandle(bodyHandle))
+        {
+            if (body->m_simulating)
+            {
+                return;
+            }
+
+            m_simulatedBodySimulationEnabledEvent.Signal(m_sceneHandle, bodyHandle);
+
+            EnableSimulationOfBodyInternal(*body);
+        }
+        else 
+        {
+            AZ_Warning("PhysXScene", false, "Unable to enable Simulated body, failed to find body.")
+        }
+    }
+
+    void PhysXScene::DisableSimulationOfBody(AzPhysics::SimulatedBodyHandle bodyHandle)
+    {
+        if (bodyHandle == AzPhysics::InvalidSimulatedBodyHandle)
+        {
+            return;
+        }
+
+        if (AzPhysics::SimulatedBody* body = GetSimulatedBodyFromHandle(bodyHandle))
+        {
+            if (!body->m_simulating)
+            {
+                return;
+            }
+
+            m_simulatedBodySimulationDisabledEvent.Signal(m_sceneHandle, bodyHandle);
+
+            DisableSimulationOfBodyInternal(*body);
+        }
+        else
+        {
+            AZ_Warning("PhysXScene", false, "Unable to disable Simulated body, failed to find body.")
+        }
+    }
+
+    AzPhysics::SceneQueryHits PhysXScene::QueryScene(const AzPhysics::SceneQueryRequest* request)
+    {
+        if (request == nullptr)
+        {
+            return {}; //return 0 hits
+        }
+
+        // Query flags. 
+        const physx::PxQueryFlags queryFlags = SceneQueryHelpers::GetPxQueryFlags(request->m_queryType);
+        const physx::PxQueryFilterData queryData(queryFlags);
+
+        if (azrtti_istypeof<AzPhysics::RayCastRequest>(request))
+        {
+            return Internal::RayCast(azdynamic_cast<const AzPhysics::RayCastRequest*>(request),
+                s_rayCastBuffer, m_pxScene, queryData, m_raycastBufferSize);
+        }
+        else if (azrtti_istypeof<AzPhysics::ShapeCastRequest>(request))
+        {
+            return Internal::ShapeCast(azdynamic_cast<const AzPhysics::ShapeCastRequest*>(request),
+                s_sweepBuffer, m_pxScene, queryData, m_shapecastBufferSize);
+        }
+        else if (azrtti_istypeof<AzPhysics::OverlapRequest>(request))
+        {
+            return Internal::OverlapQuery(azdynamic_cast<const AzPhysics::OverlapRequest*>(request),
+                s_overlapBuffer, m_pxScene, queryData, m_overlapBufferSize);
+        }
+        else
+        {
+            AZ_Warning("Physx", false, "Unknown Scene Query request type.");
+        }
+        return AzPhysics::SceneQueryHits();
+    }
+
+    AzPhysics::SceneQueryHitsList PhysXScene::QuerySceneBatch(const AzPhysics::SceneQueryRequests& requests)
+    {
+        AzPhysics::SceneQueryHitsList results;
+        results.reserve(requests.size());
+        for (auto& request : requests)
+        {
+            results.emplace_back(QueryScene(request.get()));
+        }
+        return results;
+    }
+
+    [[nodiscard]] bool PhysXScene::QuerySceneAsync([[maybe_unused]] AzPhysics::SceneQuery::AsyncRequestId requestId,
+        [[maybe_unused]] const AzPhysics::SceneQueryRequest* request, [[maybe_unused]] AzPhysics::SceneQuery::AsyncCallback callback)
+    {
+        AZ_Warning("Physx", false, "Currently unimplemented."); // LYN-2306
+        return false;
+    }
+
+    [[nodiscard]] bool PhysXScene::QuerySceneAsyncBatch([[maybe_unused]] AzPhysics::SceneQuery::AsyncRequestId requestId,
+        [[maybe_unused]] const AzPhysics::SceneQueryRequests& requests, [[maybe_unused]] AzPhysics::SceneQuery::AsyncBatchCallback callback)
+    {
+        AZ_Warning("Physx", false, "Currently unimplemented."); // LYN-2306
+        return false;
+    }
+
+    void PhysXScene::SuppressCollisionEvents(
+        const AzPhysics::SimulatedBodyHandle& bodyHandleA,
+        const AzPhysics::SimulatedBodyHandle& bodyHandleB)
+    {
+        AzPhysics::SimulatedBody* bodyA = GetSimulatedBodyFromHandle(bodyHandleA);
+        AzPhysics::SimulatedBody* bodyB = GetSimulatedBodyFromHandle(bodyHandleB);
+        if (bodyA != nullptr && bodyB != nullptr)
+        {
+            m_collisionFilterCallback.RegisterSuppressedCollision(bodyA, bodyB);
+        }
+    }
+
+    void PhysXScene::UnsuppressCollisionEvents(
+        const AzPhysics::SimulatedBodyHandle& bodyHandleA,
+        const AzPhysics::SimulatedBodyHandle& bodyHandleB)
+    {
+        AzPhysics::SimulatedBody* bodyA = GetSimulatedBodyFromHandle(bodyHandleA);
+        AzPhysics::SimulatedBody* bodyB = GetSimulatedBodyFromHandle(bodyHandleB);
+        if (bodyA != nullptr && bodyB != nullptr)
+        {
+            m_collisionFilterCallback.UnregisterSuppressedCollision(bodyA, bodyB);
+        }
+    }
+
+    void PhysXScene::SetGravity(const AZ::Vector3& gravity)
+    {
+        if (m_pxScene && !m_gravity.IsClose(gravity))
+        {
+            m_gravity = gravity;
+            {
+                PHYSX_SCENE_WRITE_LOCK(m_pxScene);
+                m_pxScene->setGravity(PxMathConvert(m_gravity));
+            }
+            m_sceneGravityChangedEvent.Signal(m_sceneHandle, m_gravity);
+        }
+    }
+
+    AZ::Vector3 PhysXScene::GetGravity() const
+    {
+        return m_gravity;
+    }
+
+    void PhysXScene::EnableSimulationOfBodyInternal(AzPhysics::SimulatedBody& body)
+    {
+        auto pxActor = static_cast<physx::PxActor*>(body.GetNativePointer());
+        AZ_Assert(pxActor, "Simulated Body doesn't have a valid physx actor");
+
+        {
+            PHYSX_SCENE_WRITE_LOCK(m_pxScene);
+            m_pxScene->addActor(*pxActor);
+        }
+
+        if (azrtti_istypeof<PhysX::RigidBody>(body))
+        {
+            auto rigidBody = azdynamic_cast<PhysX::RigidBody*>(&body);
+            if (rigidBody->ShouldStartAsleep())
+            {
+                rigidBody->ForceAsleep();
+            }
+        }
+
+        body.m_simulating = true;
+    }
+
+    void PhysXScene::DisableSimulationOfBodyInternal(AzPhysics::SimulatedBody& body)
+    {
+        auto pxActor = static_cast<physx::PxActor*>(body.GetNativePointer());
+        AZ_Assert(pxActor, "Simulated Body doesn't have a valid physx actor");
+
+        {
+            PHYSX_SCENE_WRITE_LOCK(m_pxScene);
+            m_pxScene->removeActor(*pxActor);
+        }
+
+        body.m_simulating = false;
+    }
+
+    physx::PxControllerManager* PhysXScene::GetOrCreateControllerManager()
+    {
+        if (m_controllerManager)
+        {
+            return m_controllerManager;
+        }
+
+        if (m_pxScene)
+        {
+            m_controllerManager = PxCreateControllerManager(*m_pxScene);
+        }
+
+        if (m_controllerManager)
+        {
+            m_controllerManager->setOverlapRecoveryModule(true);
+        }
+        else
+        {
+            AZ_Error("PhysX Character Controller System", false, "Unable to create a Controller Manager.");
+        }
+
+        return m_controllerManager;
+    }
+
+    void PhysXScene::DeferDelete(AZStd::unique_ptr<AzPhysics::SimulatedBody> worldBody)
+    {
+        m_deferredDeletions_uniquePtrs.push_back(AZStd::move(worldBody));
+    }
+
+    void* PhysXScene::GetNativePointer() const
+    {
+        return m_pxScene;
+    }
+
+    void PhysXScene::ClearDeferedDeletions()
+    {
+        for (auto& simulatedBody : m_deferredDeletions)
+        {
+            delete simulatedBody;
+        }
+        m_deferredDeletions.clear();
+        m_deferredDeletions_uniquePtrs.clear();
+    }
+
+    void PhysXScene::ProcessTriggerEvents()
+    {
+        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Physics, "PhysXScene::ProcessTriggerEvents");
+
+        AzPhysics::TriggerEventList& triggers = m_simulationEventCallback.GetQueuedTriggerEvents();
+        if (triggers.empty())
+        {
+            return; // nothing to signal
+        }
+        m_sceneTriggerEvent.Signal(m_sceneHandle, triggers);
+
+        for (auto& triggerEvent : triggers)
+        {
+            if (triggerEvent.m_triggerBody != nullptr)
+            {
+                triggerEvent.m_triggerBody->ProcessTriggerEvent(triggerEvent);
+            }
+            if (triggerEvent.m_otherBody != nullptr)
+            {
+                triggerEvent.m_otherBody->ProcessTriggerEvent(triggerEvent);
+            }
+        }
+
+        //cleanup events for next simulate
+        m_simulationEventCallback.FlushQueuedTriggerEvents();
+    }
+
+    void PhysXScene::ProcessCollisionEvents()
+    {
+        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Physics, "PhysXScene::ProcessCollisionEvents");
+
+        AzPhysics::CollisionEventList& collisions = m_simulationEventCallback.GetQueuedCollisionEvents();
+        if (collisions.empty())
+        {
+            return; //nothing to signal
+        }
+        //send all event to any scene listeners
+        m_sceneCollisionEvent.Signal(m_sceneHandle, collisions);
+
+        //send events to each body listener
+        for (auto& collision : collisions)
+        {
+            //trigger on body 1
+            if (collision.m_body1 != nullptr)
+            {
+                collision.m_body1->ProcessCollisionEvent(collision);
+            }
+            //trigger for body 2
+            if (collision.m_body2 != nullptr)
+            {
+                //swap the data as the event expects the trigger body to be body1.
+                //this is ok to do as this event is no longer used after calling TriggerCollisionEvent
+                AZStd::swap(collision.m_bodyHandle1, collision.m_bodyHandle2);
+                AZStd::swap(collision.m_body1, collision.m_body2);
+                AZStd::swap(collision.m_shape1, collision.m_shape2);
+                collision.m_body1->ProcessCollisionEvent(collision);
+            }
+        }
+
+        //cleanup events for next simulate
+        m_simulationEventCallback.FlushQueuedCollisionEvents();
+    }
+
+    void PhysXScene::UpdateAzProfilerDataPoints()
+    {
+        using physx::PxGeometryType;
+
+        bool isProfilingActive = false;
+        AZ::Debug::ProfilerRequestBus::BroadcastResult(isProfilingActive, &AZ::Debug::ProfilerRequests::IsActive);
+
+        if (!isProfilingActive)
+        {
+            return;
+        }
+
+        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Physics, "PhysX::Statistics");
+
+        physx::PxSimulationStatistics stats;
+
+        {
+            PHYSX_SCENE_READ_LOCK(m_pxScene);
+            m_pxScene->getSimulationStatistics(stats);
+        }
+
+        const char* RootCategory = "PhysX/%s/%s";
+
+        const char* ShapesSubCategory = "Shapes";
+        AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbShapes[PxGeometryType::eSPHERE], RootCategory, ShapesSubCategory, "Sphere");
+        AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbShapes[PxGeometryType::ePLANE], RootCategory, ShapesSubCategory, "Plane");
+        AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbShapes[PxGeometryType::eCAPSULE], RootCategory, ShapesSubCategory, "Capsule");
+        AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbShapes[PxGeometryType::eBOX], RootCategory, ShapesSubCategory, "Box");
+        AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbShapes[PxGeometryType::eCONVEXMESH], RootCategory, ShapesSubCategory, "ConvexMesh");
+        AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbShapes[PxGeometryType::eTRIANGLEMESH], RootCategory, ShapesSubCategory, "TriangleMesh");
+        AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbShapes[PxGeometryType::eHEIGHTFIELD], RootCategory, ShapesSubCategory, "Heightfield");
+
+        const char* ObjectsSubCategory = "Objects";
+        AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbActiveConstraints, RootCategory, ObjectsSubCategory, "ActiveConstraints");
+        AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbActiveDynamicBodies, RootCategory, ObjectsSubCategory, "ActiveDynamicBodies");
+        AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbActiveKinematicBodies, RootCategory, ObjectsSubCategory, "ActiveKinematicBodies");
+        AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbStaticBodies, RootCategory, ObjectsSubCategory, "StaticBodies");
+        AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbDynamicBodies, RootCategory, ObjectsSubCategory, "DynamicBodies");
+        AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbKinematicBodies, RootCategory, ObjectsSubCategory, "KinematicBodies");
+        AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbAggregates, RootCategory, ObjectsSubCategory, "Aggregates");
+        AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbArticulations, RootCategory, ObjectsSubCategory, "Articulations");
+
+        const char* SolverSubCategory = "Solver";
+        AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbAxisSolverConstraints, RootCategory, SolverSubCategory, "AxisSolverConstraints");
+        AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.compressedContactSize, RootCategory, SolverSubCategory, "CompressedContactSize");
+        AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.requiredContactConstraintMemory, RootCategory, SolverSubCategory, "RequiredContactConstraintMemory");
+        AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.peakConstraintMemory, RootCategory, SolverSubCategory, "PeakConstraintMemory");
+
+        const char* BroadphaseSubCategory = "Broadphase";
+        AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.getNbBroadPhaseAdds(), RootCategory, BroadphaseSubCategory, "BroadPhaseAdds");
+        AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.getNbBroadPhaseRemoves(), RootCategory, BroadphaseSubCategory, "BroadPhaseRemoves");
+
+        // Compute pair stats for all geometry types
+        AZ::u32 ccdPairs = 0;
+        AZ::u32 modifiedPairs = 0;
+        AZ::u32 triggerPairs = 0;
+
+        for (AZ::u32 i = 0; i < PxGeometryType::eGEOMETRY_COUNT; i++)
+        {
+            // stat[i][j] = stat[j][i], hence, discarding the symmetric entries
+            for (AZ::u32 j = i; j < PxGeometryType::eGEOMETRY_COUNT; j++)
+            {
+                const PxGeometryType::Enum firstGeom = static_cast<PxGeometryType::Enum>(i);
+                const PxGeometryType::Enum secondGeom = static_cast<PxGeometryType::Enum>(j);
+                ccdPairs += stats.getRbPairStats(physx::PxSimulationStatistics::eCCD_PAIRS, firstGeom, secondGeom);
+                modifiedPairs += stats.getRbPairStats(physx::PxSimulationStatistics::eMODIFIED_CONTACT_PAIRS, firstGeom, secondGeom);
+                triggerPairs += stats.getRbPairStats(physx::PxSimulationStatistics::eTRIGGER_PAIRS, firstGeom, secondGeom);
+            }
+        }
+
+        const char* CollisionsSubCategory = "Collisions";
+        AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, ccdPairs, RootCategory, CollisionsSubCategory, "CCDPairs");
+        AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, modifiedPairs, RootCategory, CollisionsSubCategory, "ModifiedPairs");
+        AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, triggerPairs, RootCategory, CollisionsSubCategory, "TriggerPairs");
+        AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbDiscreteContactPairsTotal, RootCategory, CollisionsSubCategory, "DiscreteContactPairsTotal");
+        AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbDiscreteContactPairsWithCacheHits, RootCategory, CollisionsSubCategory, "DiscreteContactPairsWithCacheHits");
+        AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbDiscreteContactPairsWithContacts, RootCategory, CollisionsSubCategory, "DiscreteContactPairsWithContacts");
+        AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbNewPairs, RootCategory, CollisionsSubCategory, "NewPairs");
+        AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbLostPairs, RootCategory, CollisionsSubCategory, "LostPairs");
+        AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbNewTouches, RootCategory, CollisionsSubCategory, "NewTouches");
+        AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbLostTouches, RootCategory, CollisionsSubCategory, "LostTouches");
+        AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbPartitions, RootCategory, CollisionsSubCategory, "Partitions");
     }
 }

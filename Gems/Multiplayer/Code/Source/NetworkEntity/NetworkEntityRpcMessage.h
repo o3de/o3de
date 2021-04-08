@@ -56,8 +56,8 @@ namespace Multiplayer
         RpcDeliveryType GetRpcDeliveryType() const;
 
         //! Sets the current value for RpcDeliveryType.
-        //! @param a_Value the value to set RpcDeliveryType to
-        void SetRpcDeliveryType(RpcDeliveryType a_Value);
+        //! @param value the value to set RpcDeliveryType to
+        void SetRpcDeliveryType(RpcDeliveryType value);
 
         //! Gets the current value of EntityId.
         //! @return the current value of EntityId
@@ -72,7 +72,7 @@ namespace Multiplayer
         uint8_t GetRpcMessageType() const;
 
         //! Writes the data contained inside a_Params to this NetworkEntityRpcMessage's blob buffer.
-        //! @param a_Params the parameters to save inside this NetworkEntityRpcMessage instance
+        //! @param params the parameters to save inside this NetworkEntityRpcMessage instance
         bool SetRpcParams(IRpcParamStruct& params);
 
         //! Reads the data contained inside this NetworkEntityRpcMessage's blob buffer and stores them in outParams.

@@ -59,13 +59,11 @@ namespace ScriptCanvas
         ActivationInputRange Context::CreateActivateInputRange(ActivationData& activationData)
         {
             const RuntimeData& runtimeData = activationData.runtimeData;
-
-            ActivationInputRange rangeOut;
+            ActivationInputRange rangeOut = runtimeData.m_activationInputRange;
             rangeOut.inputs = activationData.storage.begin();
-            rangeOut.nodeableCount = runtimeData.m_activationInputRange.nodeableCount;
-            rangeOut.variableCount = runtimeData.m_activationInputRange.variableCount;
-            rangeOut.entityIdCount = runtimeData.m_activationInputRange.entityIdCount;
-            rangeOut.totalCount = rangeOut.nodeableCount + rangeOut.variableCount + rangeOut.entityIdCount;
+            
+            AZ_Assert(rangeOut.totalCount <= activationData.storage.size(), "Too many initial arguments for activation. "
+                "Consider increasing size, source of ActivationInputArray, or breaking up the source graph");
 
             // nodeables
             {
@@ -97,6 +95,7 @@ namespace ScriptCanvas
             }
 
             // (must always be re-mapped) EntityId
+            if (!runtimeData.m_input.m_entityIds.empty())
             {
                 AZ::SliceComponent::EntityIdToEntityIdMap loadedEntityIdMap;
                 AzFramework::EntityContextId owningContextId = AzFramework::EntityContextId::CreateNull();
@@ -110,7 +109,7 @@ namespace ScriptCanvas
                     + runtimeData.m_activationInputRange.nodeableCount
                     + runtimeData.m_activationInputRange.variableCount;
 
-                const auto entityIdTypeId = azrtti_typeid< Data::EntityIDType>();
+                const auto entityIdTypeId = azrtti_typeid<Data::EntityIDType>();
                 for (auto& idEntityPair : runtimeData.m_input.m_entityIds)
                 {
                     destVariableIter->m_typeId = entityIdTypeId;
@@ -141,22 +140,20 @@ namespace ScriptCanvas
             return rangeOut;
         }
 
-        void Context::IntializeActivationInputs(RuntimeData& runtimeData)
+        void Context::IntializeActivationInputs(RuntimeData& runtimeData, AZ::BehaviorContext& behaviorContext)
         {
-            AZ::BehaviorContext* behaviorContext(nullptr);
-            AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationRequests::GetBehaviorContext);
-            AZ_Assert(behaviorContext, "missing behavior context");
-
             AZStd::vector<AZ::BehaviorValueParameter>& parameters = runtimeData.m_activationInputStorage;
-            parameters.reserve(runtimeData.m_input.GetParameterSize());
+            auto& range = runtimeData.m_activationInputRange;
+            range.requiresDependencyConstructionParameters = runtimeData.RequiresDependencyConstructionParameters();
+            parameters.reserve(runtimeData.m_input.GetConstructorParameterCount());
 
             for (const Nodeable* nodeable : runtimeData.m_input.m_nodeables)
             {
                 AZ::BehaviorValueParameter bvp;
                 bvp.m_typeId = azrtti_typeid(nodeable);
 
-                const auto classIter(behaviorContext->m_typeToClassMap.find(bvp.m_typeId));
-                AZ_Assert(classIter != behaviorContext->m_typeToClassMap.end(), "No class by typeID of %s in the behavior context!", bvp.m_typeId.ToString<AZStd::string>().c_str());
+                const auto classIter(behaviorContext.m_typeToClassMap.find(bvp.m_typeId));
+                AZ_Assert(classIter != behaviorContext.m_typeToClassMap.end(), "No class by typeID of %s in the behavior context!", bvp.m_typeId.ToString<AZStd::string>().c_str());
                 bvp.m_azRtti = classIter->second->m_azRtti;
                 bvp.m_value = const_cast<Nodeable*>(nodeable);
                 parameters.push_back(bvp);
@@ -167,8 +164,8 @@ namespace ScriptCanvas
                 const Datum* datum = &idDatumPair.second; 
                 AZ::BehaviorValueParameter bvp;
                 bvp.m_typeId = datum->GetType().GetAZType();
-                const auto classIter(behaviorContext->m_typeToClassMap.find(bvp.m_typeId));
-                bvp.m_azRtti = classIter != behaviorContext->m_typeToClassMap.end() ? classIter->second->m_azRtti : nullptr;
+                const auto classIter(behaviorContext.m_typeToClassMap.find(bvp.m_typeId));
+                bvp.m_azRtti = classIter != behaviorContext.m_typeToClassMap.end() ? classIter->second->m_azRtti : nullptr;
                 bvp.m_value = const_cast<void*>(datum->GetAsDanger());
                 parameters.push_back(bvp);
             }
@@ -180,20 +177,14 @@ namespace ScriptCanvas
                 parameters.push_back(bvp);
             }
 
-            runtimeData.m_activationInputRange.inputs = parameters.begin();
-            runtimeData.m_activationInputRange.nodeableCount = runtimeData.m_input.m_nodeables.size();
-            runtimeData.m_activationInputRange.variableCount = runtimeData.m_input.m_variables.size();
-            runtimeData.m_activationInputRange.entityIdCount = runtimeData.m_input.m_entityIds.size();
+            range.inputs = parameters.begin();
+            range.nodeableCount = runtimeData.m_input.m_nodeables.size();
+            range.variableCount = runtimeData.m_input.m_variables.size();
+            range.entityIdCount = runtimeData.m_input.m_entityIds.size();
+            range.totalCount = range.nodeableCount + range.variableCount + range.entityIdCount;
         }
 
-        void Context::IntializeAssetData(RuntimeData& runtimeData)
-        {
-            // \todo, the stack push functions could be retrieved here
-            IntializeActivationInputs(runtimeData);
-            IntializeStaticCloners(runtimeData);
-        }
-
-        void Context::IntializeStaticCloners(RuntimeData& runtimeData)
+        void Context::InitializeActivationData(RuntimeData& runtimeData)
         {
             AZ::BehaviorContext* behaviorContext(nullptr);
             AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationRequests::GetBehaviorContext);
@@ -203,12 +194,20 @@ namespace ScriptCanvas
                 return;
             }
 
+            // \todo, the stack push functions could be retrieved here
+            IntializeActivationInputs(runtimeData, *behaviorContext);
+            IntializeStaticCloners(runtimeData, *behaviorContext);
+        }
+
+        // This does not have to recursively initialize dependent assets, as this is called by asset handler
+        void Context::IntializeStaticCloners(RuntimeData& runtimeData, AZ::BehaviorContext& behaviorContext)
+        {
             runtimeData.m_cloneSources.reserve(runtimeData.m_input.m_staticVariables.size());
 
             for (AZStd::pair<VariableId, AZStd::any>& staticSource : runtimeData.m_input.m_staticVariables)
             {
                 AZStd::any& anySource = staticSource.second;
-                auto bcClass = AZ::BehaviorContextHelper::GetClass(behaviorContext, anySource.type());
+                auto bcClass = AZ::BehaviorContextHelper::GetClass(&behaviorContext, anySource.type());
                 AZ_Assert(bcClass, "BehaviorContext class for type %s was deleted", anySource.type().ToString<AZStd::string>().c_str());
                 runtimeData.m_cloneSources.emplace_back(*bcClass, AZStd::any_cast<void>(&anySource));
             }

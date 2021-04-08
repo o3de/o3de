@@ -14,11 +14,14 @@
 
 #include <ScriptCanvas/Core/NodeFunctionGeneric.h>
 #include <ScriptCanvas/Data/Data.h>
-#include <AzFramework/Physics/World.h>
 #include <AzFramework/Physics/Material.h>
+#include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
+#include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
+#include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 
 namespace ScriptCanvasPhysics
 {
@@ -69,13 +72,13 @@ namespace ScriptCanvasPhysics
             const AZStd::string& collisionGroup,
             AZ::EntityId ignore)
         {
-            Physics::RayCastRequest request;
+            AzPhysics::RayCastRequest request;
             request.m_start = start;
             request.m_direction = direction.GetNormalized();
             request.m_distance = distance;
-            request.m_filterCallback = [ignore](const Physics::WorldBody* body, [[maybe_unused]] const Physics::Shape* shape)
+            request.m_filterCallback = [ignore](const AzPhysics::SimulatedBody* body, [[maybe_unused]] const Physics::Shape* shape)
             {
-                return body->GetEntityId() != ignore ? Physics::QueryHitType::Block : Physics::QueryHitType::None;
+                return body->GetEntityId() != ignore ? AzPhysics::SceneQuery::QueryHitType::Block : AzPhysics::SceneQuery::QueryHitType::None;
             };
 
             if (!collisionGroup.empty())
@@ -83,20 +86,27 @@ namespace ScriptCanvasPhysics
                 request.m_collisionGroup = AzPhysics::CollisionGroup(collisionGroup);
             }
 
-            Physics::RayCastHit hit;
-            Physics::WorldRequestBus::BroadcastResult(hit, &Physics::World::RayCast, request);
-
-            AZ::EntityId id;
-            AZ::Crc32 surfaceType;
-            if (hit.m_body)
+            AzPhysics::SceneQueryHits result;
+            if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
             {
-                id = hit.m_body->GetEntityId();
+                if (AzPhysics::SceneHandle sceneHandle = sceneInterface->GetSceneHandle(AzPhysics::DefaultPhysicsSceneName);
+                    sceneHandle != AzPhysics::InvalidSceneHandle)
+                {
+                    result = sceneInterface->QueryScene(sceneHandle, &request);
+                }
             }
-            if (hit.m_material)
+            if (result)
             {
-                surfaceType = hit.m_material->GetSurfaceType();
+                AZ::Crc32 surfaceType;
+                if (result.m_hits[0].m_material)
+                {
+                    surfaceType = result.m_hits[0].m_material->GetSurfaceType();
+                }
+                return AZStd::make_tuple(result.m_hits[0].IsValid(), result.m_hits[0].m_position,
+                    result.m_hits[0].m_normal, result.m_hits[0].m_distance,
+                    result.m_hits[0].m_entityId, surfaceType);
             }
-            return AZStd::make_tuple(hit.m_body != nullptr, hit.m_position, hit.m_normal, hit.m_distance, id, surfaceType);
+            return AZStd::make_tuple(false, AZ::Vector3::CreateZero(), AZ::Vector3::CreateZero(), 0.0f, AZ::EntityId(), AZ::Crc32());
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(RayCastWorldSpaceWithGroup,
             k_categoryName,
@@ -123,33 +133,8 @@ namespace ScriptCanvasPhysics
             AZ::Transform worldSpaceTransform = AZ::Transform::CreateIdentity();
             AZ::TransformBus::EventResult(worldSpaceTransform, fromEntityId, &AZ::TransformInterface::GetWorldTM);
 
-            Physics::RayCastRequest request;
-            request.m_start = worldSpaceTransform.GetTranslation();
-            request.m_direction = worldSpaceTransform.TransformVector(direction.GetNormalized());
-            request.m_distance = distance;
-            request.m_filterCallback = [ignore](const Physics::WorldBody* body, [[maybe_unused]] const Physics::Shape* shape)
-            {
-                return body->GetEntityId() != ignore ? Physics::QueryHitType::Block : Physics::QueryHitType::None;
-            };
-            if (!collisionGroup.empty())
-            {
-                request.m_collisionGroup = AzPhysics::CollisionGroup(collisionGroup);
-            }
-
-            Physics::RayCastHit hit;
-            Physics::WorldRequestBus::BroadcastResult(hit, &Physics::World::RayCast, request);
-
-            AZ::EntityId id;
-            AZ::Crc32 surfaceType;
-            if (hit.m_body)
-            {
-                id = hit.m_body->GetEntityId();
-            }
-            if (hit.m_material)
-            {
-                surfaceType = hit.m_material->GetSurfaceType();
-            }
-            return AZStd::make_tuple(hit.m_body != nullptr, hit.m_position, hit.m_normal, hit.m_distance, id, surfaceType);
+            return RayCastWorldSpaceWithGroup(worldSpaceTransform.GetTranslation(), worldSpaceTransform.TransformVector(direction.GetNormalized()),
+                distance, collisionGroup, ignore);
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(RayCastLocalSpaceWithGroup,
             k_categoryName,
@@ -167,7 +152,7 @@ namespace ScriptCanvasPhysics
             "EntityId",
             "Surface");
 
-        AZ_INLINE AZStd::vector<Physics::RayCastHit> RayCastMultipleLocalSpaceWithGroup(const AZ::EntityId& fromEntityId,
+        AZ_INLINE AZStd::vector<AzPhysics::SceneQueryHit> RayCastMultipleLocalSpaceWithGroup(const AZ::EntityId& fromEntityId,
             const AZ::Vector3& direction,
             float distance,
             const AZStd::string& collisionGroup,
@@ -176,22 +161,29 @@ namespace ScriptCanvasPhysics
             AZ::Transform worldSpaceTransform = AZ::Transform::CreateIdentity();
             AZ::TransformBus::EventResult(worldSpaceTransform, fromEntityId, &AZ::TransformInterface::GetWorldTM);
 
-            Physics::RayCastRequest request;
+            AzPhysics::RayCastRequest request;
             request.m_start = worldSpaceTransform.GetTranslation();
             request.m_direction = worldSpaceTransform.TransformVector(direction.GetNormalized());
             request.m_distance = distance;
-            request.m_filterCallback = [ignore](const Physics::WorldBody* body, [[maybe_unused]] const Physics::Shape* shape)
+            request.m_filterCallback = [ignore](const AzPhysics::SimulatedBody* body, [[maybe_unused]] const Physics::Shape* shape)
             {
-                return body->GetEntityId() != ignore ? Physics::QueryHitType::Touch : Physics::QueryHitType::None;
+                return body->GetEntityId() != ignore ? AzPhysics::SceneQuery::QueryHitType::Touch : AzPhysics::SceneQuery::QueryHitType::None;
             };
             if (!collisionGroup.empty())
             {
                 request.m_collisionGroup = AzPhysics::CollisionGroup(collisionGroup);
             }
 
-            AZStd::vector<Physics::RayCastHit> hits;
-            Physics::WorldRequestBus::BroadcastResult(hits, &Physics::World::RayCastMultiple, request);
-            return hits;
+            AzPhysics::SceneQueryHits result;
+            if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+            {
+                if (AzPhysics::SceneHandle sceneHandle = sceneInterface->GetSceneHandle(AzPhysics::DefaultPhysicsSceneName);
+                    sceneHandle != AzPhysics::InvalidSceneHandle)
+                {
+                    result = sceneInterface->QueryScene(sceneHandle, &request);
+                }
+            }
+            return result.m_hits;
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(RayCastMultipleLocalSpaceWithGroup,
             k_categoryName,
@@ -205,14 +197,14 @@ namespace ScriptCanvasPhysics
             "Objects hit");
 
         OverlapResult OverlapQuery(const AZ::Transform& pose,
-            Physics::ShapeConfiguration& shape,
+            AZStd::shared_ptr<Physics::ShapeConfiguration> shape,
             const AZStd::string& collisionGroup,
             AZ::EntityId ignore)
         {
-            Physics::OverlapRequest request;
+            AzPhysics::OverlapRequest request;
             request.m_pose = pose;
-            request.m_shapeConfiguration = &shape;
-            request.m_filterCallback = [ignore](const Physics::WorldBody* body, [[maybe_unused]] const Physics::Shape* shape)
+            request.m_shapeConfiguration = shape;
+            request.m_filterCallback = [ignore](const AzPhysics::SimulatedBody* body, [[maybe_unused]] const Physics::Shape* shape)
             {
                 return body->GetEntityId() != ignore;
             };
@@ -222,15 +214,23 @@ namespace ScriptCanvasPhysics
                 request.m_collisionGroup = AzPhysics::CollisionGroup(collisionGroup);
             }
 
-            AZStd::vector<Physics::OverlapHit> overlaps;
-            Physics::WorldRequestBus::BroadcastResult(overlaps, &Physics::World::Overlap, request);
+            AzPhysics::SceneQueryHits results;
+            if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+            {
+                if (AzPhysics::SceneHandle sceneHandle = sceneInterface->GetSceneHandle(AzPhysics::DefaultPhysicsSceneName);
+                    sceneHandle != AzPhysics::InvalidSceneHandle)
+                {
+                    results = sceneInterface->QueryScene(sceneHandle, &request);
+                }
+            }
 
             AZStd::vector<AZ::EntityId> overlapIds;
-            overlapIds.reserve(overlaps.size());
-            AZStd::transform(overlaps.begin(), overlaps.end(), AZStd::back_inserter(overlapIds), [](const Physics::OverlapHit& overlap)
-            {
-                return overlap.m_body->GetEntityId();
-            });
+            overlapIds.reserve(results.m_hits.size());
+            AZStd::transform(results.m_hits.begin(), results.m_hits.end(), AZStd::back_inserter(overlapIds),
+                [](const AzPhysics::SceneQueryHit& overlap)
+                {
+                    return overlap.m_entityId;
+                });
             return AZStd::make_tuple(!overlapIds.empty(), overlapIds);
         }
 
@@ -239,8 +239,8 @@ namespace ScriptCanvasPhysics
             const AZStd::string& collisionGroup,
             AZ::EntityId ignore)
         {
-            Physics::SphereShapeConfiguration sphere(radius);
-            return OverlapQuery(AZ::Transform::CreateTranslation(position), sphere, collisionGroup, ignore);
+            return OverlapQuery(AZ::Transform::CreateTranslation(position),
+                AZStd::make_shared<Physics::SphereShapeConfiguration>(radius), collisionGroup, ignore);
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(OverlapSphereWithGroup,
             k_categoryName,
@@ -257,8 +257,8 @@ namespace ScriptCanvasPhysics
             const AZStd::string& collisionGroup,
             AZ::EntityId ignore)
         {
-            Physics::BoxShapeConfiguration box(dimensions);
-            return OverlapQuery(pose, box, collisionGroup, ignore);
+            return OverlapQuery(pose,
+                AZStd::make_shared<Physics::BoxShapeConfiguration>(dimensions), collisionGroup, ignore);
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(OverlapBoxWithGroup,
             k_categoryName,
@@ -276,8 +276,8 @@ namespace ScriptCanvasPhysics
             const AZStd::string& collisionGroup,
             AZ::EntityId ignore)
         {
-            Physics::CapsuleShapeConfiguration capsule(height, radius);
-            return OverlapQuery(pose, capsule, collisionGroup, ignore);
+            return OverlapQuery(pose,
+                AZStd::make_shared<Physics::CapsuleShapeConfiguration>(height, radius), collisionGroup, ignore);
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(OverlapCapsuleWithGroup,
             k_categoryName,
@@ -293,18 +293,18 @@ namespace ScriptCanvasPhysics
         Result ShapecastQuery(float distance,
             const AZ::Transform& pose,
             const AZ::Vector3& direction,
-            Physics::ShapeConfiguration& shape,
+            AZStd::shared_ptr<Physics::ShapeConfiguration> shape,
             const AZStd::string& collisionGroup,
             AZ::EntityId ignore)
         {
-            Physics::ShapeCastRequest request;
+            AzPhysics::ShapeCastRequest request;
             request.m_distance = distance;
             request.m_start = pose;
             request.m_direction = direction;
-            request.m_shapeConfiguration = &shape;
-            request.m_filterCallback = [ignore](const Physics::WorldBody* body, [[maybe_unused]] const Physics::Shape* shape)
+            request.m_shapeConfiguration = shape;
+            request.m_filterCallback = [ignore](const AzPhysics::SimulatedBody* body, [[maybe_unused]] const Physics::Shape* shape)
             {
-                return body->GetEntityId() != ignore ? Physics::QueryHitType::Block : Physics::QueryHitType::None;
+                return body->GetEntityId() != ignore ? AzPhysics::SceneQuery::QueryHitType::Block : AzPhysics::SceneQuery::QueryHitType::None;
             };
 
             if (!collisionGroup.empty())
@@ -312,20 +312,27 @@ namespace ScriptCanvasPhysics
                 request.m_collisionGroup = AzPhysics::CollisionGroup(collisionGroup);
             }
 
-            Physics::RayCastHit hit;
-            Physics::WorldRequestBus::BroadcastResult(hit, &Physics::World::ShapeCast, request);
-
-            AZ::EntityId id;
-            AZ::Crc32 surfaceType;
-            if (hit.m_body)
+            AzPhysics::SceneQueryHits result;
+            if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
             {
-                id = hit.m_body->GetEntityId();
+                if (AzPhysics::SceneHandle sceneHandle = sceneInterface->GetSceneHandle(AzPhysics::DefaultPhysicsSceneName);
+                    sceneHandle != AzPhysics::InvalidSceneHandle)
+                {
+                    result = sceneInterface->QueryScene(sceneHandle, &request);
+                }
             }
-            if (hit.m_material)
+            if (result)
             {
-                surfaceType = hit.m_material->GetSurfaceType();
+                AZ::Crc32 surfaceType;
+                if (result.m_hits[0].m_material)
+                {
+                    surfaceType = result.m_hits[0].m_material->GetSurfaceType();
+                }
+                return AZStd::make_tuple(result.m_hits[0].IsValid(), result.m_hits[0].m_position,
+                    result.m_hits[0].m_normal, result.m_hits[0].m_distance,
+                    result.m_hits[0].m_entityId, surfaceType);
             }
-            return AZStd::make_tuple(hit.m_body != nullptr, hit.m_position, hit.m_normal, hit.m_distance, id, surfaceType);
+            return AZStd::make_tuple(false, AZ::Vector3::CreateZero(), AZ::Vector3::CreateZero(), 0.0f, AZ::EntityId(), AZ::Crc32());
         }
 
         AZ_INLINE Result SphereCastWithGroup(float distance,
@@ -335,15 +342,14 @@ namespace ScriptCanvasPhysics
             const AZStd::string& collisionGroup,
             AZ::EntityId ignore)
         {
-            Physics::SphereShapeConfiguration sphere(radius);
-            return ShapecastQuery(distance, pose, direction, sphere, collisionGroup, ignore);
+            return ShapecastQuery(distance, pose, direction,
+                AZStd::make_shared<Physics::SphereShapeConfiguration>(radius), collisionGroup, ignore);
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(SphereCastWithGroup,
             k_categoryName,
             "{7A4D8893-51F5-444F-9C77-64D179F9C9BB}", "SphereCast",
             "Distance", "Pose", "Direction", "Radius", "Collision group", "Ignore", // In Params
             "Object Hit", "Position", "Normal", "Distance", "EntityId", "Surface" // Out Params
-
         );
 
         AZ_INLINE Result BoxCastWithGroup(float distance,
@@ -353,8 +359,8 @@ namespace ScriptCanvasPhysics
             const AZStd::string& collisionGroup,
             AZ::EntityId ignore)
         {
-            Physics::BoxShapeConfiguration box(dimensions);
-            return ShapecastQuery(distance, pose, direction, box, collisionGroup, ignore);
+            return ShapecastQuery(distance, pose, direction,
+                AZStd::make_shared<Physics::BoxShapeConfiguration>(dimensions), collisionGroup, ignore);
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(BoxCastWithGroup,
             k_categoryName,
@@ -371,8 +377,8 @@ namespace ScriptCanvasPhysics
             const AZStd::string& collisionGroup,
             AZ::EntityId ignore)
         {
-            Physics::CapsuleShapeConfiguration capsule(height, radius);
-            return ShapecastQuery(distance, pose, direction, capsule, collisionGroup, ignore);
+            return ShapecastQuery(distance, pose, direction,
+                AZStd::make_shared<Physics::CapsuleShapeConfiguration>(height, radius), collisionGroup, ignore);
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(CapsuleCastWithGroup,
             k_categoryName,
@@ -382,165 +388,15 @@ namespace ScriptCanvasPhysics
         );
 
         ///////////////////////////////////////////////////////////////
-        // Deprecated nodes
-
-        using DeprecatedResult = AZStd::tuple<
-            bool /*true if an object was hit*/,
-            AZ::Vector3 /*world space position*/,
-            AZ::Vector3 /*surface normal*/,
-            float /*distance to the hit*/,
-            AZ::EntityId /*entity hit, if any*/
-        >;
-
-        DeprecatedResult DeprecatedResultFunc(bool arg1, const AZ::Vector3& arg2, const AZ::Vector3& arg3, float arg4, AZ::EntityId arg5, AZ::Crc32)
-        {
-            return DeprecatedResult(arg1, arg2, arg3, arg4, arg5);
-        };
-
-        AZ_INLINE DeprecatedResult RayCastWorldSpace(const AZ::Vector3& start, const AZ::Vector3& direction, float distance, AZ::EntityId ignore)
-        {
-            return AZStd::apply(DeprecatedResultFunc, RayCastWorldSpaceWithGroup(start, direction, distance, "", ignore));
-        }
-
-        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_DEPRECATED(RayCastWorldSpace,
-            k_categoryName,
-            "{F75EF071-6755-40A3-8D5D-0603964774AE}",
-            "This node is deprecated, use RayCastWorldSpaceWithGroup",
-            "Start",
-            "Direction",
-            "Distance",
-            "Ignore",
-            "Object hit",
-            "Position",
-            "Normal",
-            "Distance",
-            "Result");
-
-        AZ_INLINE DeprecatedResult RayCastLocalSpace(const AZ::EntityId& fromEntityId, const AZ::Vector3& direction, float distance, AZ::EntityId ignore)
-        {
-            return AZStd::apply(DeprecatedResultFunc, RayCastLocalSpaceWithGroup(fromEntityId, direction, distance, "", ignore));
-        }
-        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_DEPRECATED(RayCastLocalSpace,
-            k_categoryName,
-            "{1D6935AF-8EE9-4636-9F0C-E0485D935800}",
-            "This node is deprecated, use RayCastLocalSpaceWithGroup",
-            "Source",
-            "Direction",
-            "Distance",
-            "Ignore",
-            "Object hit",
-            "Position",
-            "Normal",
-            "Distance",
-            "Result");
-
-        AZ_INLINE AZStd::vector<Physics::RayCastHit> RayCastMultipleLocalSpace(const AZ::EntityId& fromEntityId, const AZ::Vector3& direction, float distance, AZ::EntityId ignore)
-        {
-            return RayCastMultipleLocalSpaceWithGroup(fromEntityId, direction, distance, "", ignore);
-        }
-        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_DEPRECATED(RayCastMultipleLocalSpace,
-            k_categoryName,
-            "{AB48C54A-0E0D-41F1-B73E-F689B9570446}",
-            "This node is deprecated, use RayCastMultipleLocalSpaceWithGroup",
-            "Source",
-            "Direction",
-            "Distance",
-            "Ignore",
-            "Objects hit");
-
-        AZ_INLINE OverlapResult OverlapSphere(const AZ::Vector3& position, float radius, AZ::EntityId ignore)
-        {
-            return OverlapSphereWithGroup(position, radius, "", ignore);
-        }
-        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_DEPRECATED(OverlapSphere,
-            k_categoryName,
-            "{ED1CE1E1-5BF1-46BA-8DFF-78966FFDBF75}",
-            "This node is deprecated, use OverlapSphereWithGroup",
-            "Position",
-            "Radius",
-            "Ignore"
-        );
-
-        AZ_INLINE OverlapResult OverlapBox(const AZ::Transform& pose, const AZ::Vector3& dimensions, AZ::EntityId ignore)
-        {
-            return OverlapBoxWithGroup(pose, dimensions, "", ignore);
-        }
-        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_DEPRECATED(OverlapBox,
-            k_categoryName,
-            "{8D60E5FA-6101-4D3B-BC60-28449CC93AC2}",
-            "This node is deprecated, use OverlapBoxWithGroup",
-            "Pose",
-            "Dimensions",
-            "Ignore"
-        );
-
-        AZ_INLINE OverlapResult OverlapCapsule(const AZ::Transform& pose, float height, float radius, AZ::EntityId ignore)
-        {
-            return OverlapCapsuleWithGroup(pose, height, radius, "", ignore);
-        }
-        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_DEPRECATED(OverlapCapsule,
-            k_categoryName,
-            "{600D8F16-2F18-4FA3-858B-D7B59484BEF1}",
-            "This node is deprecated, use OverlapCapsuleWithGroup",
-            "Pose",
-            "Height",
-            "Radius",
-            "Ignore"
-        );
-
-        AZ_INLINE DeprecatedResult SphereCast(float distance, const AZ::Transform& pose, const AZ::Vector3& direction, float radius, AZ::EntityId ignore)
-        {
-            return AZStd::apply(DeprecatedResultFunc, SphereCastWithGroup(distance, pose, direction, radius, "", ignore));
-        }
-        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_DEPRECATED(SphereCast,
-            k_categoryName,
-            "{0236AC59-190C-4A41-99ED-5AFA3AD6C500}", "This node is deprecated, use SphereCastWithGroup",
-            "Distance", "Pose", "Direction", "Radius", "Ignore", // In Params
-            "Object Hit", "Position", "Normal", "Distance", "EntityId" // Out Params
-        );
-
-        AZ_INLINE DeprecatedResult BoxCast(float distance, const AZ::Transform& pose, const AZ::Vector3& direction, const AZ::Vector3& dimensions, AZ::EntityId ignore)
-        {
-            return AZStd::apply(DeprecatedResultFunc, BoxCastWithGroup(distance, pose, direction, dimensions, "", ignore));
-        }
-        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_DEPRECATED(BoxCast,
-            k_categoryName,
-            "{E9DB2310-21FE-4D58-BA13-512CA9BAA305}", "This node is deprecated, use BoxCastWithGroup",
-            "Distance", "Pose", "Direction", "Dimensions", "Ignore", // In Params
-            "Object Hit", "Position", "Normal", "Distance", "EntityId" // Out Params
-        );
-
-        AZ_INLINE DeprecatedResult CapsuleCast(float distance, const AZ::Transform& pose, const AZ::Vector3& direction, float height, float radius, AZ::EntityId ignore)
-        {
-            return AZStd::apply(DeprecatedResultFunc, CapsuleCastWithGroup(distance, pose, direction, height, radius, "", ignore));
-        }
-        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_DEPRECATED(CapsuleCast,
-            k_categoryName,
-            "{FC9F0631-4D63-453C-A876-EC87BC4F2A23}", "This node is deprecated, use CapsuleCastWithGroup",
-            "Distance", "Pose", "Direction", "Height", "Radius", "Ignore", // In Params
-            "Object Hit", "Position", "Normal", "Distance", "EntityId" // Out Params
-        );
-
-        ///////////////////////////////////////////////////////////////
-        using Registrar = ScriptCanvas::RegistrarGeneric< 
-            RayCastWorldSpaceNode,
-            RayCastWorldSpaceWithGroupNode,
-            RayCastLocalSpaceNode,
+        using Registrar = ScriptCanvas::RegistrarGeneric
+            <RayCastWorldSpaceWithGroupNode,
             RayCastLocalSpaceWithGroupNode,
-            RayCastMultipleLocalSpaceNode,
             RayCastMultipleLocalSpaceWithGroupNode,
-            OverlapSphereNode,
             OverlapSphereWithGroupNode,
-            OverlapBoxNode,
             OverlapBoxWithGroupNode,
-            OverlapCapsuleNode,
             OverlapCapsuleWithGroupNode,
-            SphereCastNode,
-            SphereCastWithGroupNode,
-            BoxCastNode,
             BoxCastWithGroupNode,
-            CapsuleCastNode,
-            CapsuleCastWithGroupNode
-        >;
+            SphereCastWithGroupNode,
+            CapsuleCastWithGroupNode>;
     }
 }

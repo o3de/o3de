@@ -384,11 +384,18 @@ class ProjectDialog(QObject):
         :return: None
         """
         remove_gems = self.get_selected_project_gems()
+
         for this_gem in remove_gems:
             gem_path = self.path_for_gem(this_gem)
-            add_remove_gem.add_remove_gem(False, engine_path, gem_path or os.path.join(engine_path, 'Gems', this_gem),
-                                          self.path_for_selection(), gem_name=this_gem)
-
+            add_remove_gem.add_remove_gem(add=False,
+                                          dev_root=engine_path,
+                                          gem_path=gem_path or os.path.join(engine_path, 'Gems', this_gem),
+                                          gem_target=this_gem,
+                                          project_path=self.path_for_selection(),
+                                          dependencies_file=None,
+                                          runtime_dependency=True,
+                                          tool_dependency=True,
+                                          server_dependency=True)
         self.update_gems()
 
     def manage_gems_handler(self):
@@ -455,10 +462,15 @@ class ProjectDialog(QObject):
             if not gem_info:
                 logger.error(f'Unknown gem {this_gem}!')
                 continue
-            add_remove_gem.add_remove_gem(True, engine_path, this_gem[1], self.path_for_selection(),
-                                          gem_name=gem_info.get('Name'),
+            add_remove_gem.add_remove_gem(add=True,
+                                          dev_root=engine_path,
+                                          gem_path=this_gem[1],
+                                          gem_target=gem_info.get('Name'),
+                                          project_path=self.path_for_selection(),
+                                          dependencies_file=None,
                                           runtime_dependency=gem_info.get('Runtime', False),
-                                          tool_dependency=gem_info.get('Tools', False))
+                                          tool_dependency=gem_info.get('Tools', False),
+                                          server_dependency=gem_info.get('Tools', False))
         self.update_gems()
 
     def create_project_handler(self):

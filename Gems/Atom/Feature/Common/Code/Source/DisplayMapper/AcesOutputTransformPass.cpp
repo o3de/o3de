@@ -11,7 +11,7 @@
 */
 
 #include <Atom/Feature/DisplayMapper/AcesOutputTransformPass.h>
-#include <Atom/Feature/ACES/Aces.h>
+#include <ACES/Aces.h>
 #include <Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 #include <Atom/RPI.Public/Pass/PassFactory.h>

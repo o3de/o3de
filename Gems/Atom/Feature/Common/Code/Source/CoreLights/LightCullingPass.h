@@ -53,16 +53,8 @@ namespace AZ
             void BuildAttachmentsInternal() override;
 
             // Scope producer functions...
-            void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
             void CompileResources(const RHI::FrameGraphCompileContext& context) override;
             void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
-
-            void Init();
-
-            void CacheSrgIndices();
-            void CacheLightCounts();
-            void CacheConstantData();
-            void CacheLightBuffer();
 
             void SetLightBuffersToSRG();
             void SetLightsCountToSRG();
@@ -83,12 +75,9 @@ namespace AZ
             AZ::RHI::Size GetTileDataBufferResolution();
             struct LightTypeData
             {
-                AZ::Name m_lightCountNameInShader;
-                AZ::Name lightBufferNameInShader;
-
-                Data::Instance<RPI::Buffer>         m_lightBuffer;
-                AZ::RHI::ShaderInputBufferIndex     m_lightBufferIndex;
-                AZ::RHI::ShaderInputConstantIndex   m_lightCountIndex;
+                Data::Instance<RPI::Buffer>     m_lightBuffer;
+                AZ::RHI::ShaderInputNameIndex   m_lightBufferIndex;
+                AZ::RHI::ShaderInputNameIndex   m_lightCountIndex;
                 int m_lightCount = 0;
             };
 
@@ -105,7 +94,7 @@ namespace AZ
 
             AZStd::array<LightTypeData, eLightTypes_Count> m_lightdata;
 
-            AZ::RHI::ShaderInputConstantIndex   m_constantDataIndex;
+            AZ::RHI::ShaderInputNameIndex m_constantDataIndex = "m_constantData";
 
             bool m_initialized = false;
             Data::Instance<RPI::Buffer> m_lightList;

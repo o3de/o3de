@@ -20,7 +20,7 @@
 
 #include <AzFramework/Physics/Ragdoll.h>
 #include <AzFramework/Physics/RagdollPhysicsBus.h>
-#include <AzFramework/Physics/World.h>
+#include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Visibility/BoundsBus.h>
 
 #include <LmbrCentral/Animation/AttachmentComponentBus.h>
@@ -163,6 +163,16 @@ namespace EMotionFX
         //////////////////////////////////////////////////////////////////////////
         ActorComponent::ActorComponent(const Configuration* configuration)
             : m_debugDrawRoot(false)
+            , m_sceneFinishSimHandler([this](
+                [[maybe_unused]] AzPhysics::SceneHandle sceneHandle,
+                float fixedDeltatime
+                )
+                {
+                    if (m_actorInstance)
+                    {
+                        m_actorInstance->PostPhysicsUpdate(fixedDeltatime);
+                    }
+                }, aznumeric_cast<int32_t>(AzPhysics::SceneEvents::PhysicsStartFinishSimulationPriority::Animation))
         {
             if (configuration)
             {
@@ -216,7 +226,7 @@ namespace EMotionFX
         {
             AzFramework::RagdollPhysicsNotificationBus::Handler::BusDisconnect();
             AzFramework::CharacterPhysicsDataRequestBus::Handler::BusDisconnect();
-            Physics::WorldNotificationBus::Handler::BusDisconnect();
+            m_sceneFinishSimHandler.Disconnect();
             ActorComponentRequestBus::Handler::BusDisconnect();
             AZ::TickBus::Handler::BusDisconnect();
             ActorComponentNotificationBus::Handler::BusDisconnect();
@@ -330,9 +340,9 @@ namespace EMotionFX
             newActor->CheckFinalizeActor();
         }
 
-        bool ActorComponent::IsWorldNotificationBusConnected(AZ::Crc32 worldId) const
+        bool ActorComponent::IsPhysicsSceneSimulationFinishEventConnected() const
         {
-            return Physics::WorldNotificationBus::Handler::BusIsConnectedId(worldId);
+            return m_sceneFinishSimHandler.IsConnected();
         }
 
         void ActorComponent::CheckActorCreation()
@@ -408,7 +418,10 @@ namespace EMotionFX
             // Send general mesh creation notification to interested parties.
             LmbrCentral::MeshComponentNotificationBus::Event(entityId, &LmbrCentral::MeshComponentNotifications::OnMeshCreated, m_configuration.m_actorAsset);
 
-            AzFramework::CharacterPhysicsDataNotificationBus::Event(entityId, &AzFramework::CharacterPhysicsDataNotifications::OnRagdollConfigurationReady);
+            Physics::RagdollConfiguration ragdollConfiguration;
+            [[maybe_unused]] bool ragdollConfigValid = GetRagdollConfiguration(ragdollConfiguration);
+            AZ_Assert(ragdollConfigValid, "Ragdoll Configuration is not valid");
+            AzFramework::CharacterPhysicsDataNotificationBus::Event(entityId, &AzFramework::CharacterPhysicsDataNotifications::OnRagdollConfigurationReady, ragdollConfiguration);
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -527,19 +540,6 @@ namespace EMotionFX
             return AZ::TICK_PRE_RENDER;
         }
 
-        void ActorComponent::OnPostPhysicsSubtick(float fixedDeltaTime)
-        {
-            if (m_actorInstance)
-            {
-                m_actorInstance->PostPhysicsUpdate(fixedDeltaTime);
-            }
-        }
-
-        int ActorComponent::GetPhysicsTickOrder()
-        {
-            return WorldNotifications::Animation;
-        }
-
         //////////////////////////////////////////////////////////////////////////
         void ActorComponent::OnActorInstanceCreated(ActorInstance* actorInstance)
         {
@@ -643,7 +643,10 @@ namespace EMotionFX
 
                 RagdollInstance* ragdollInstance = m_actorInstance->GetRagdollInstance();
                 AZ_Assert(ragdollInstance, "As the ragdoll passed in ActorInstance::SetRagdoll() is valid, a valid ragdoll instance is expected to exist.");
-                Physics::WorldNotificationBus::Handler::BusConnect(ragdollInstance->GetRagdollWorldId());
+                if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+                {
+                    sceneInterface->RegisterSceneSimulationFinishHandler(ragdollInstance->GetRagdollSceneHandle(), m_sceneFinishSimHandler);
+                }
             }
         }
 
@@ -651,7 +654,7 @@ namespace EMotionFX
         {
             if (m_actorInstance)
             {
-                Physics::WorldNotificationBus::Handler::BusDisconnect();
+                m_sceneFinishSimHandler.Disconnect();
                 m_actorInstance->SetRagdoll(nullptr);
             }
         }

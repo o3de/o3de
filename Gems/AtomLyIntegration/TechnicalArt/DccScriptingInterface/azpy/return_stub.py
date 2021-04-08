@@ -21,19 +21,8 @@ import logging as _logging
 
 
 # -------------------------------------------------------------------------
-#  global space debug flag
-# not using azpy.constants here to help avoid cyclical imports lower
-from azpy.env_bool import env_bool
-
-# have to avoid importing these from constants
-# because we can end up with cyclical import issues
-# need to figure out a better solution later so we don't duplicate everywhere
-ENVAR_DCCSI_GDEBUG = str('DCCSI_GDEBUG')
-ENVAR_DCCSI_DEV_MODE = str('DCCSI_DEV_MODE')
-
-#  global space
-_G_DEBUG = os.getenv(ENVAR_DCCSI_GDEBUG, False)
-_DCCSI_DEV_MODE = os.getenv(ENVAR_DCCSI_DEV_MODE, False)
+#  global space debug flag, no fancy stuff here we use in bootstrap
+_G_DEBUG = False  # manually enable to debug this file
 
 _PACKAGENAME = __name__
 if _PACKAGENAME is '__main__':
@@ -59,8 +48,9 @@ def return_stub(stub):
             if (len(tail) == 0):
                 path = ""
                 if _G_DEBUG:
-                    print('~ Debug Message:  I was not able to find the '
-                          'path to that file (stub) in a walk-up from currnet path')
+                    _LOGGER.debug('~ Debug Message:  I was not able to find the '
+                                  'path to that file (stub) in a walk-up '
+                                  'from currnet path')
                 break
         _dir_to_last_file = path
 
@@ -76,13 +66,13 @@ if __name__ == '__main__':
     # constants for shared use.
 
     # happy print
-    print("# {0} #".format('-' * 72))
-    print('~ find_stub.py ... Running script as __main__')
-    print("# {0} #\r".format('-' * 72))
+    _LOGGER.info("# {0} #".format('-' * 72))
+    _LOGGER.info('~ find_stub.py ... Running script as __main__')
+    _LOGGER.info("# {0} #\r".format('-' * 72))
 
-    print('~   Current Work dir: {0}'.format(os.getcwd()))
+    _LOGGER.info('~   Current Work dir: {0}'.format(os.getcwd()))
 
-    print('~   Dev\: {0}'.format(return_stub('engineroot.txt')))
+    _LOGGER.info('~   Dev\: {0}'.format(return_stub('engineroot.txt')))
 
     # custom prompt
     sys.ps1 = "[azpy]>>"

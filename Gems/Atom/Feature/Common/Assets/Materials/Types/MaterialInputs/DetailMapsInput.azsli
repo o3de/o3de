@@ -57,20 +57,27 @@ float GetDetailLayerBlendFactor(Texture2D detailLayerBlendMask, sampler detailLa
     return detailLayerBlendFactor;
 }
 
-float3 ApplyNormalMapOverlayTS(bool applyOverlay, float3 mainNormalTS, Texture2D overlayNormalMap, sampler mapSampler, float2 uv, bool flipNormalX, bool flipNormalY, float3x3 normalUvMatrix, float factor)
+//! Sample a normal map and apply it as an overlay on top of another normal map.
+//! @return a new normal vector in the same tangent space as mainNormalTS.
+float3 ApplyNormalMapOverlayTS(bool applyOverlay, float3 vertexNormalWS, float3 mainNormalTS, float3 mainTangent, float3 mainBitangent, 
+    Texture2D overlayNormalMap, sampler overlayMapSampler, float2 overlayUv, bool flipOverlayNormalX, bool flipOverlayNormalY, float overlayFactor, 
+    float3 overlayTangent, float3 overlayBitangen, float3x3 overlayNormalUvMatrix)
 {
     if(applyOverlay)
     {
-        // Get overlay normal in tangent space
-        float3 overlayNormalTS = GetNormalInputTS(overlayNormalMap, mapSampler, uv, flipNormalX, flipNormalY, normalUvMatrix, true, factor);
+        // Get overlay normal in its local tangent space
+        float3 overlayNormalTS = GetNormalInputTS(overlayNormalMap, overlayMapSampler, overlayUv, flipOverlayNormalX, flipOverlayNormalY, overlayNormalUvMatrix, true, overlayFactor);
         
-        // [GFX TODO][ATOM-14591]: This will only work if the normal maps all use the same UV stream. We would need to add support for having them in different UV streams.
-        // Often the main map will be in an unwrapped UV space and the detail map will be in a tiled UV space.
+        // [GFX TODO][ATOM-15111]: Find a more efficient way to do this.
+
+        // Convert the overlay normal from its local tangent space into the main normal's tangent space.
+        float3 overlayNormalWS = TangentSpaceToWorld(overlayNormalTS, vertexNormalWS, overlayTangent, overlayBitangen);
+        float3 overlayNormalInMainTS = WorldSpaceToTangent(overlayNormalWS, vertexNormalWS, mainTangent, mainBitangent);
 
         // Combine normals in tangent space
-        float3 normal = ReorientTangentSpaceNormal(mainNormalTS, overlayNormalTS);
+        float3 normalInMainTS = ReorientTangentSpaceNormal(mainNormalTS, overlayNormalInMainTS);
 
-        return normal;
+        return normalInMainTS;
     }
     else
     {
@@ -78,21 +85,25 @@ float3 ApplyNormalMapOverlayTS(bool applyOverlay, float3 mainNormalTS, Texture2D
     }
 }
 
-float3 ApplyNormalMapOverlayWS(bool applyOverlay, float3 vertexNormal, float3 tangent, float3 bitangent, float3 mainNormalTS, Texture2D overlayNormalMap, sampler mapSampler, float2 uv, float factor, bool flipNormalX, bool flipNormalY, float3x3 normalUvMatrix)
+//! Sample a normal map and apply it as an overlay on top of another normal map.
+//! @return a new normal vector in world space.
+float3 ApplyNormalMapOverlayWS(bool applyOverlay, float3 vertexNormalWS, float3 mainNormalTS, float3 mainTangent, float3 mainBitangent, 
+    Texture2D overlayNormalMap, sampler overlayMapSampler, float2 overlayUv, bool flipOverlayNormalX, bool flipOverlayNormalY, float overlayFactor, 
+    float3 overlayTangent, float3 overlayBitangen, float3x3 overlayNormalUvMatrix)
 {
     if(applyOverlay)
     {
-        float3 normalTS = ApplyNormalMapOverlayTS(applyOverlay, mainNormalTS, overlayNormalMap, mapSampler, uv, flipNormalX, flipNormalY, normalUvMatrix, factor);
-        float3 normalWS = normalize( TangentSpaceToWorld(normalTS, vertexNormal, tangent, bitangent) );
+        float3 normalTS = ApplyNormalMapOverlayTS(applyOverlay, vertexNormalWS, mainNormalTS, mainTangent, mainBitangent, overlayNormalMap, overlayMapSampler, overlayUv, flipOverlayNormalX, flipOverlayNormalY, overlayFactor, overlayTangent, overlayBitangen, overlayNormalUvMatrix);
+        float3 normalWS = normalize( TangentSpaceToWorld(normalTS, vertexNormalWS, mainTangent, mainBitangent) );
         return normalWS;
     }
     else
     {
-        return normalize( TangentSpaceToWorld(mainNormalTS, vertexNormal, tangent, bitangent) );
+        return normalize( TangentSpaceToWorld(mainNormalTS, vertexNormalWS, mainTangent, mainBitangent) );
     }
 }
 
-float3 GetDetailedNormalInputWS(bool isFrontFace, float3 vertexNormal,
+float3 GetDetailedNormalInputWS(bool isFrontFace, float3 vertexNormalWS,
                                 float3 mainTangent,   float3 mainBitangent,   Texture2D mainNormalMap,   sampler mainSampler,   float2 mainUv,   float mainNormalFactor,   bool flipMainNormalX,   bool flipMainNormalY,   float3x3 mainNormalUvMatrix,   bool useMainNormalMap,
                                 float3 detailTangent, float3 detailBitangent, Texture2D detailNormalMap, sampler detailSampler, float2 detailUv, float detailNormalFactor, bool flipDetailNormalX, bool flipDetailNormalY, float3x3 detailNormalUvMatrix, bool useDetailNormalMap)
 {
@@ -101,19 +112,19 @@ float3 GetDetailedNormalInputWS(bool isFrontFace, float3 vertexNormal,
     if(useDetailNormalMap)
     {
         // Get normal in tangent space
-        float3 normalTS = GetNormalInputTS(mainNormalMap, mainSampler, mainUv, flipMainNormalX, flipMainNormalY, 
+        float3 mainNormalTS = GetNormalInputTS(mainNormalMap, mainSampler, mainUv, flipMainNormalX, flipMainNormalY, 
                                             mainNormalUvMatrix, useMainNormalMap, mainNormalFactor);
         
         bool applyOverlay = true;
-        normal = ApplyNormalMapOverlayWS(applyOverlay, vertexNormal, detailTangent, detailBitangent, 
-            normalTS, detailNormalMap, detailSampler, detailUv, detailNormalFactor, flipDetailNormalX, flipDetailNormalY, detailNormalUvMatrix);
+        normal = ApplyNormalMapOverlayWS(applyOverlay, vertexNormalWS, mainNormalTS, mainTangent, mainBitangent,
+            detailNormalMap, detailSampler, detailUv, flipDetailNormalX, flipDetailNormalY, detailNormalFactor, detailTangent, detailBitangent, detailNormalUvMatrix);
 
         AdjustBackFaceNormal(normal, isFrontFace);
     }
     else
     {
-        // TODO: Re-order these parameters to match GetDetailedNormalInputWS
-        normal = GetNormalInputWS(mainNormalMap, mainSampler, mainUv, flipMainNormalX, flipMainNormalY, isFrontFace, vertexNormal,
+        // TODO: Re-order these parameters to match GetDetailedNormalInputWS 
+        normal = GetNormalInputWS(mainNormalMap, mainSampler, mainUv, flipMainNormalX, flipMainNormalY, isFrontFace, vertexNormalWS,
                                   mainTangent, mainBitangent, mainNormalUvMatrix, useMainNormalMap, mainNormalFactor);
     }
 

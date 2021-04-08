@@ -88,10 +88,10 @@ def add_args(parser, subparsers) -> None:
     :param parser: the caller instantiates a parser and passes it in here
     :param subparsers: the caller instantiates subparsers and passes it in here
     """
-    get_current_project_subparser = subparsers.add_parser('get_current_project')
+    get_current_project_subparser = subparsers.add_parser('get-current-project')
     get_current_project_subparser.set_defaults(func=_run_get_current_project)
 
-    set_current_project_subparser = subparsers.add_parser('set_current_project')
+    set_current_project_subparser = subparsers.add_parser('set-current-project')
     set_current_project_subparser.add_argument('-pp', '--project-path', required=True,
                                                help='The path to the project, can be absolute or dev root relative')
     set_current_project_subparser.set_defaults(func=_run_set_current_project)

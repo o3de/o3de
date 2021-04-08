@@ -22,6 +22,7 @@
 
 #include <AzCore/std/sort.h>
 
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzToolsFramework/API/ComponentEntityObjectBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
@@ -116,6 +117,8 @@ namespace AzToolsFramework
 {
     EditorEntityModel::EditorEntityModel()
     {
+        AzFramework::ApplicationRequests::Bus::BroadcastResult(m_isPrefabEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+
         EntityCompositionNotificationBus::Handler::BusConnect();
         EditorOnlyEntityComponentNotificationBus::Handler::BusConnect();
         EditorEntityRuntimeActivationChangeNotificationBus::Handler::BusConnect();
@@ -562,7 +565,8 @@ namespace AzToolsFramework
     {
         //retrieve or add an entity entry to the table
         //the entry must exist, even if not connected, so children and other data can be assigned
-        auto& entityInfo = m_entityInfoTable[entityId];
+        [[maybe_unused]] auto [it, inserted] = m_entityInfoTable.try_emplace(entityId, m_isPrefabEnabled);
+        auto& entityInfo = it->second;
 
         //the entity id defaults to invalid and must be set to match the requested id
         //disconnect and reassign if there's a mismatch
@@ -878,7 +882,8 @@ namespace AzToolsFramework
         }
     }
 
-    EditorEntityModel::EditorEntityModelEntry::EditorEntityModelEntry()
+    EditorEntityModel::EditorEntityModelEntry::EditorEntityModelEntry(bool isPrefabEnabled)
+        : m_isPrefabEnabled(isPrefabEnabled)
     {
     }
 
@@ -1208,13 +1213,28 @@ namespace AzToolsFramework
         auto childItr = m_childIndexCache.find(childId);
         if (childItr != m_childIndexCache.end())
         {
-            m_children.erase(m_children.begin() + childItr->second);
-
-            //rebuild index cache for faster lookup
-            m_childIndexCache.clear();
-            for (auto childIdToCache : m_children)
+            if (m_isPrefabEnabled)
             {
-                m_childIndexCache[childIdToCache] = static_cast<AZ::u64>(m_childIndexCache.size());
+                // Take the last entry and move it into the removed spot instead of deleting the entry and having to move all
+                // following entries one step down.
+                AZ::EntityId backEntity = m_children.back();
+                m_children[childItr->second] = backEntity;
+                // Update cached index for the moved id to the new index.
+                m_childIndexCache[backEntity] = childItr->second;
+                // Now remove the deleted id from the children and cache.
+                m_childIndexCache.erase(childId);
+                m_children.erase(m_children.end() - 1);
+            }
+            else
+            {
+                m_children.erase(m_children.begin() + childItr->second);
+
+                // rebuild index cache for faster lookup
+                m_childIndexCache.clear();
+                for (auto childIdToCache : m_children)
+                {
+                    m_childIndexCache[childIdToCache] = static_cast<AZ::u64>(m_childIndexCache.size());
+                }
             }
         }
     }

@@ -27,8 +27,10 @@ namespace AtomToolsFramework
     {
         AzQtComponents::Text::addPrimaryStyle(this);
         AzQtComponents::Text::addLabelStyle(this);
-        setStyleSheet("background-color: rgb(35, 35, 35)");
-        setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);
+        setStyleSheet("background-color: #333333; border-style: solid; border-color: #1B1B1B; border-width: 1px; border-left: none; border-right: none;");
+        setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+        setFixedHeight(24);
+        setMargin(0);
     }
 
     void InspectorGroupHeaderWidget::SetExpanded(bool expanded)

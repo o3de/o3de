@@ -217,7 +217,6 @@ CMovieSystem::CMovieSystem(ISystem* pSystem)
     m_fixedTimeStepBackUp = 0;
     m_maxStepBackUp = 0;
     m_smoothingBackUp = 0;
-    m_cvar_capture_file_format = nullptr;
     m_cvar_capture_frame_once = nullptr;
     m_cvar_capture_folder = nullptr;
     m_cvar_t_FixedStep = nullptr;
@@ -1589,12 +1588,10 @@ void CMovieSystem::ControlCapture()
     assert(!bBothStartAndEnd);
 
     bool bAllCVarsReady
-        = m_cvar_capture_file_format && m_cvar_capture_frame_once
-            && m_cvar_capture_folder && m_cvar_capture_frames;
+        = m_cvar_capture_frame_once && m_cvar_capture_folder && m_cvar_capture_frames;
 
     if (!bAllCVarsReady)
     {
-        m_cvar_capture_file_format = gEnv->pConsole->GetCVar("capture_file_format");
         m_cvar_capture_frame_once = gEnv->pConsole->GetCVar("capture_frame_once");
         m_cvar_capture_folder = gEnv->pConsole->GetCVar("capture_folder");
         m_cvar_capture_frames = gEnv->pConsole->GetCVar("capture_frames");
@@ -1602,7 +1599,7 @@ void CMovieSystem::ControlCapture()
     }
 
     bAllCVarsReady
-        = m_cvar_capture_file_format && m_cvar_capture_frame_once
+        = m_cvar_capture_frame_once
             && m_cvar_capture_folder && m_cvar_capture_frames
             && m_cvar_capture_file_prefix;
     assert(bAllCVarsReady);
@@ -1615,7 +1612,6 @@ void CMovieSystem::ControlCapture()
 
     if (m_bStartCapture)
     {
-        m_cvar_capture_file_format->Set(m_captureKey.GetFormat());
         m_cvar_capture_frame_once->Set(m_captureKey.once ? 1 : 0);
         m_cvar_capture_folder->Set(m_captureKey.folder.c_str());
         m_cvar_capture_file_prefix->Set(m_captureKey.prefix.c_str());

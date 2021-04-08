@@ -39,10 +39,8 @@ namespace AZ
 
             void FrameBeginInternal(FramePrepareParams params) override;
 
-            bool FindShaderInputConstantIndexByName(AZ::RHI::ShaderInputConstantIndex& index, AZ::Name name);
-
             // output texture vertical dimension required by compute shader
-            AZ::RHI::ShaderInputConstantIndex m_screenSizeInputIndex;
+            AZ::RHI::ShaderInputNameIndex m_screenSizeInputIndex = "m_screenSize";
 
         };
     }   // namespace RPI

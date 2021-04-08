@@ -296,6 +296,95 @@ namespace AzFramework
 
     namespace Internal
     {
+        
+        static AZStd::string PrintLuaValue(lua_State* lua, int stackIdx, int depth = 0)
+        {
+            constexpr int MaxDepth = 4;
+            if (depth > MaxDepth)
+            {
+                return "";
+            }
+
+            const int elementType = lua_type(lua, stackIdx);
+            
+            switch (elementType)
+            {
+            case LUA_TSTRING:
+                return lua_tostring(lua, stackIdx);
+            case LUA_TBOOLEAN:
+                return lua_toboolean(lua, stackIdx) ? "true" : "false";
+            case LUA_TNUMBER:
+                return AZStd::to_string(lua_tonumber(lua, stackIdx));
+            case LUA_TTABLE:
+            {
+                AZStd::string tableStr = "{";
+                AZStd::string keyValuePairs;
+                int keyCount = 0;
+
+                // check if this lua table contains a meta-table
+                if(lua_getmetatable(lua, stackIdx))
+                {
+                    keyValuePairs += "Meta";
+                    keyValuePairs += PrintLuaValue(lua, lua_gettop(lua), depth+1);
+                    lua_pop(lua, 1);
+                    keyValuePairs += " ";
+                    ++keyCount;
+                }
+
+                if (depth < MaxDepth)
+                {
+                    lua_pushnil(lua);
+                    bool tableKeyExists = lua_next(lua, stackIdx);
+                    while(tableKeyExists)
+                    {
+                        const int valueIndex = lua_gettop(lua);
+                        const int keyIndex = valueIndex-1;
+
+                        const AZStd::string key = PrintLuaValue(lua, keyIndex, depth+1);
+                        const AZStd::string value = PrintLuaValue(lua, valueIndex, depth+1);
+                        keyValuePairs += key + AZStd::string("=")+value;
+                        ++keyCount;
+
+                        lua_pop(lua, 1);  // removes 'value'; keeps 'key' for next iteration
+                        tableKeyExists = lua_next(lua, stackIdx);
+                        if(tableKeyExists)
+                        {
+                            keyValuePairs += " ";
+                        }
+                    }   
+                }
+
+                tableStr += keyValuePairs.length() < 1024 ? keyValuePairs : AZStd::string::format("too many keys (%i)!", keyCount);
+                tableStr += "}";
+
+                return tableStr;
+            }
+            default:
+                return lua_typename(lua, elementType);
+            }
+        }
+
+        #pragma warning( push )
+        #pragma warning( disable : 4505 )  // StackDump is useful to debug the lua stack. Disable warning about this method being unused. 
+        //=========================================================================
+        // DebugPrintStack
+        // Prints the Lua stack starting from the bottom.
+        //=========================================================================
+        static void DebugPrintStack(lua_State* lua, const AZStd::string& prefix = "")
+        {
+            AZStd::string dump = prefix;
+            const int stackSize = lua_gettop(lua);
+            for (int stackIdx = 1; stackIdx <= stackSize; ++stackIdx)
+            {
+                dump += PrintLuaValue(lua, stackIdx);
+                dump += " "; // add separator
+            }
+
+            AZ_Warning("ScriptComponent", false, "Stack Dump: '%s'", dump.c_str());
+        }
+        #pragma warning( pop )
+
+
         //=========================================================================
         // Properties__IndexFindSubtable
         //=========================================================================
@@ -373,7 +462,7 @@ namespace AzFramework
                 // and script are not in sync and we added new properties.
                 lua_getmetatable(lua, -2); // get the metatable which will be the top property table
                 int entityProperties = lua_gettop(lua);
-                if (lua_getmetatable(lua, -1) == 0) // get the matateble of the property which will be the original table
+                if (lua_getmetatable(lua, -1) == 0) // get the metatable of the property which will be the original table
                 {
                     // we are looking at top level properties
                     lua_pushvalue(lua, -2); // copy the key
@@ -508,6 +597,16 @@ namespace AzFramework
         AZ_Assert(m_entity == nullptr || m_entity->GetState() != AZ::Entity::State::Active, "You can't change the script while the entity is active");
 
         m_script = script;
+    }
+
+    AZ::ScriptProperty* ScriptComponent::GetScriptProperty(const char* propertyName)
+    {
+        return m_properties.GetProperty(propertyName);
+    }
+
+    const AZ::ScriptProperty* ScriptComponent::GetNetworkedScriptProperty(const char* propertyName) const
+    {
+        return m_netBindingTable->FindScriptProperty(propertyName);
     }
 
     void ScriptComponent::Init()
@@ -681,17 +780,23 @@ namespace AzFramework
 
         // Point the __index of the Script table to itself
         // because it will be used as a metatable
-        lua_pushliteral(lua, "__index");
-        lua_pushvalue(lua, -2);
-        lua_rawset(lua, -3);
+        // Stack = ScriptRootTable
+        lua_pushliteral(lua, "__index");  // Stack = ScriptRootTable __index
+        lua_pushvalue(lua, -2);  // Stack = ScriptRootTable __index CopyOfScriptRootTable
 
-        lua_pushlstring(lua, m_properties.m_name.c_str(), m_properties.m_name.length()); // load Property table name
-        lua_rawget(lua, -2);
+        // raw set: t[k] = v, where t is the value at the given index, v is the value at the top of the stack, and k is the value just below the top.  Both key and value are popped off the stack.
+        // ie: ScriptRootTable[__index] = CopyOfScriptRootTable
+        // Since __index value is a table and not a function, the final result is the result of indexing this table with key. However, this indexing is regular, not raw, and therefore can trigger another metamethod.
+        lua_rawset(lua, -3);  // Stack = ScriptRootTable
+
+        // load Property table name
+        lua_pushlstring(lua, m_properties.m_name.c_str(), m_properties.m_name.length());  // Stack = ScriptRootTable "Properties"
+        lua_rawget(lua, -2);  // Stack = ScriptRootTable ThisScriptPropertiesTable
         if (lua_istable(lua, -1))
         {
             // This property table will be used a metatable from all instances
             // set the __index so we can read values in case we change the script
-            // after we export the component (so the properties will not the default value)
+            // after we export the component
             lua_pushliteral(lua, "__index");
             lua_pushlightuserdata(lua, m_netBindingTable);
             lua_pushcclosure(lua, &Internal::Properties__Index, 1);
@@ -730,7 +835,7 @@ namespace AzFramework
                     {
                         const char* tableName = lua_tolstring(lua, -2, nullptr);
                         if (strncmp(tableName, "__", 2) == 0 || // skip metatables
-                            strcmp(tableName, propertyTableName) == 0 || // check if this is NOT the property table
+                            strcmp(tableName, propertyTableName) == 0 || // Skip the Properties table
                             strcmp(tableName, ScriptComponent::NetRPCFieldName) == 0) // Want to skip the RPC table as well
                         {
                             break;
@@ -786,12 +891,11 @@ namespace AzFramework
         LSV_BEGIN(lua, -1);
 
         AZ_Error("Script", lua_istable(lua, -1), "%s", "Script did not return a table!");
-        int baseTableIndex = lua_gettop(lua);
+        int baseStackIndex = lua_gettop(lua);
 
-        // Stack: base
-
-        lua_pushlstring(lua, m_properties.m_name.c_str(), m_properties.m_name.length());
-        lua_rawget(lua, baseTableIndex);
+        // Stack: ScriptRootTable
+        lua_pushlstring(lua, m_properties.m_name.c_str(), m_properties.m_name.length());  // Stack: ScriptRootTable "Properties"
+        lua_rawget(lua, baseStackIndex);  // Stack: ScriptRootTable PropertiesTable
         AZ_Error("Script", lua_istable(lua, -1) || lua_isnil(lua, -1), "We should have the %s table for properties!", m_properties.m_name.c_str());
         int basePropertyTable = -1;
         if (lua_istable(lua, -1))
@@ -799,31 +903,30 @@ namespace AzFramework
             basePropertyTable = lua_gettop(lua);
         }
 
-        // Stack: base, properties
-
         lua_createtable(lua, 0, 1); // Create entity table;
-        int entityTableIndex = lua_gettop(lua);
+        int entityStackIndex = lua_gettop(lua);
 
-        // Stack: base, properties, entity
+        // Stack: ScriptRootTable PropertiesTable EntityTable
 
         // Create our network binding.
-        CreateNetworkBindingTable(baseTableIndex, entityTableIndex);
+        CreateNetworkBindingTable(baseStackIndex, entityStackIndex);
 
         if (basePropertyTable > -1) // if property table exists
         {
             CreatePropertyGroup(m_properties, basePropertyTable, lua_gettop(lua), basePropertyTable, true);
+            // Stack: ScriptRootTable PropertiesTable EntityTable{ PropertiesTable{__index __newIndex Meta{CopyOfPropertiesTable}} }
         }
 
         // replicate other tables to make sure we have table per instance.
-        CopyAndHookEntityTables(lua, baseTableIndex, lua_gettop(lua), m_properties.m_name.c_str());
+        CopyAndHookEntityTables(lua, baseStackIndex, lua_gettop(lua), m_properties.m_name.c_str());
 
         // set my entity id
-        lua_pushliteral(lua, "entityId");
-        AZ::ScriptValue<AZ::EntityId>::StackPush(lua, GetEntityId());
-        lua_rawset(lua, -3);
+        lua_pushliteral(lua, "entityId"); // Stack: ScriptRootTable PropertiesTable EntityTable{ PropertiesTable{__index __newIndex Meta{CopyOfPropertiesTable}} } "entityId"
+        AZ::ScriptValue<AZ::EntityId>::StackPush(lua, GetEntityId());  // Stack: ScriptRootTable PropertiesTable EntityTable{ PropertiesTable{__index __newIndex Meta{CopyOfPropertiesTable}} } "entityId" userdata
+        lua_rawset(lua, -3);  // Stack: ScriptRootTable PropertiesTable EntityTable{ PropertiesTable{__index __newIndex Meta{CopyOfPropertiesTable}} entityId }
 
         // set the base metatable
-        lua_pushvalue(lua, baseTableIndex); // copy the "Base table"
+        lua_pushvalue(lua, baseStackIndex); // copy the "Base table"
         lua_setmetatable(lua, -2); // set the scriptTable as a metatable for the entity table
 
         // Keep the entity table in the registry
@@ -836,7 +939,7 @@ namespace AzFramework
 
         // call OnActivate
         lua_pushliteral(lua, "OnActivate");
-        lua_rawget(lua, baseTableIndex); // ScriptTable[OnActivate]
+        lua_rawget(lua, baseStackIndex); // ScriptTable[OnActivate]
         if (lua_isfunction(lua, -1))
         {
             AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Script, "OnActivate");
@@ -894,11 +997,11 @@ namespace AzFramework
     // CreateNetworkBindingTable
     // [6/27/2016]
     //=========================================================================
-    void ScriptComponent::CreateNetworkBindingTable(int baseTableStack, int entityTableStack)
+    void ScriptComponent::CreateNetworkBindingTable(int baseStackIndex, int entityStackIndex)
     {
         if (m_netBindingTable)
         {
-            m_netBindingTable->CreateNetworkBindingTable(m_context, baseTableStack, entityTableStack);
+            m_netBindingTable->CreateNetworkBindingTable(m_context, baseStackIndex, entityStackIndex);
         }
     }
 
@@ -916,21 +1019,26 @@ namespace AzFramework
 
         if (isRoot)
         {
-            // this is the root table (properties) it will be used as properties for all sub tables
-            lua_pushliteral(lua, "__index");
-            lua_pushlightuserdata(lua, m_netBindingTable);
-            lua_pushcclosure(lua, &Internal::Properties__Index, 1);
-            lua_rawset(lua, -3);
+            // Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {}
+            // This is the root table (properties) it will be used as properties for all sub tables
+            // ScriptComponents can share the same lua script asset, but each instance's Properties table needs to be unique.
+            // This way the script can change a property at runtime and not affect the other ScriptComponents which are using the same script.
+            // For normal properties we will create new variable instances, but NetSynched variables aren't stored in Lua, and instead 
+            // are retrieved using the __index and __newIndex metamethods.
+            // Ensure that this instance of Properties table has the proper __index and __newIndex metamethods.
+            lua_newtable(lua);  // This new table will become the Properties instance metatable.  Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {} {} 
+            lua_pushliteral(lua, "__index");  // Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {} {} __index
+            lua_pushlightuserdata(lua, m_netBindingTable);  // Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {} {} __index m_netBinding
+            lua_pushcclosure(lua, &Internal::Properties__Index, 1);  // Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {} {} __index function
+            lua_rawset(lua, -3);  // Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {} {__index=Internal::Properties__Index} 
 
             lua_pushliteral(lua, "__newindex");
             lua_pushlightuserdata(lua, m_netBindingTable);
             lua_pushcclosure(lua, &Internal::Properties__NewIndex, 1);
-            lua_rawset(lua, -3);
+            lua_rawset(lua, -3);  // Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {} {__index=Internal::Properties__Index __newindex=Internal::Properties__NewIndex} 
+            lua_setmetatable(lua, -2);  // Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {Meta{__index=Internal::Properties__Index __newindex=Internal::Properties__NewIndex} } 
 
-            lua_pushvalue(lua, metatableIndex);
-            lua_setmetatable(lua, -2);
-
-            metatableIndex = lua_gettop(lua); // this should the metatable for all subtables
+            metatableIndex = lua_gettop(lua);  // This will be the metatable for all subtables
         }
         else
         {
@@ -947,35 +1055,39 @@ namespace AzFramework
                 lua_pushlstring(lua, prop->m_name.c_str(), prop->m_name.length());
                 lua_rawget(lua, propertyGroupTableIndex);
 
+                // Stack: ... SomePropertyInThePropertiesTable. This may be any basic lua type (number, string, table etc)
                 if (lua_istable(lua, -1))
                 {
-                    bool isPropertyHandled = false;
+                    bool isNetworkedProperty = false;
 
                     AZ::ScriptDataContext stackContext;
 
                     // If we find a table value. We want to inspect it for information.
                     if (m_context->ReadStack(stackContext))
                     {
-                        lua_pushliteral(lua, "netSynched");
-                        lua_rawget(lua, -2);
+                        // check if the current property, which is a table, has a sub-table called "netSynched"
+                        lua_pushliteral(lua, "netSynched");  // Stack: ... SomePropertyInThePropertiesTable netSynched
+                        lua_rawget(lua, -2);  // Stack: ... SomePropertyInThePropertiesTable NetSynchedSubTable/nil
                         if (stackContext.IsTable(-1))
                         {
                             AZ::ScriptDataContext networkTableContext;
-                            if (stackContext.InspectTable(-1, networkTableContext))
+                            if (stackContext.InspectTable(-1, networkTableContext))  // Stack: ... SomePropertyInThePropertiesTable NetSynchedSubTable NetSynchedSubTable nil nil
                             {
-                                isPropertyHandled = m_netBindingTable->RegisterDataSet(networkTableContext, prop);
+                                // RegisterDataSet will make sure our __NewIndex function callback will be triggered whenever modifying netSynched Properties.
+                                //isNetworkedProperty = true;
+                                isNetworkedProperty = m_netBindingTable->RegisterDataSet(networkTableContext, prop);
                             }
                         }
 
                         // Network binding table
-                        lua_pop(lua, 1);
+                        lua_pop(lua, 1);  // Stack: ... SomePropertyInThePropertiesTable
                     }
 
-                    // Property name table
+                    // Pop this PropertiesTable's property
                     lua_pop(lua, 1);
 
                     // If the property is networked, we don't want to copy it over into the table.
-                    if (isPropertyHandled)
+                    if (isNetworkedProperty)
                     {
                         continue;
                     }
@@ -1016,7 +1128,7 @@ namespace AzFramework
             lua_remove(lua, childPropertyGroupIndex);
         }
 
-        lua_rawset(lua, parentIndex); // set the table into the parent table
+        lua_rawset(lua, parentIndex); // Stack: ScriptRootTable PropertiesTable EntityTable{ PropertiesTable{Meta{__index __newIndex}} }
     }
 
     //=========================================================================

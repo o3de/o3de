@@ -40,14 +40,10 @@ namespace Camera
     void CameraComponent::Activate()
     {
         CameraComponentBase::Activate();
-
-        m_controller.ActivateAtomView();
     }
 
     void CameraComponent::Deactivate()
     {
-        m_controller.DeactivateAtomView();
-
         CameraComponentBase::Deactivate();
     }
 
@@ -61,6 +57,28 @@ namespace Camera
         classElement.Convert<CameraComponent>(context);
         return true;
     }
+
+    class CameraNotificationBus_BehaviorHandler : public CameraNotificationBus::Handler, public AZ::BehaviorEBusHandler
+    {
+    public:
+        AZ_EBUS_BEHAVIOR_BINDER(CameraNotificationBus_BehaviorHandler, "{91E442A0-37E7-4E03-AB59-FEC11A06741D}", AZ::SystemAllocator,
+            OnCameraAdded, OnCameraRemoved, OnActiveViewChanged);
+
+        void OnCameraAdded(const AZ::EntityId& cameraId) override
+        {
+            Call(FN_OnCameraAdded, cameraId);
+        }
+
+        void OnCameraRemoved(const AZ::EntityId& cameraId) override
+        {
+            Call(FN_OnCameraRemoved, cameraId);
+        }
+
+        void OnActiveViewChanged(const AZ::EntityId& cameraId) override
+        {
+            Call(FN_OnCameraRemoved, cameraId);
+        };
+    };
 
     void CameraComponent::Reflect(AZ::ReflectContext* reflection)
     {
@@ -100,6 +118,11 @@ namespace Camera
             behaviorContext->EBus<CameraSystemRequestBus>("CameraSystemRequestBus")
                 ->Attribute(AZ::Script::Attributes::Category, "Camera")
                 ->Event("GetActiveCamera", &CameraSystemRequestBus::Events::GetActiveCamera)
+                ;
+
+            behaviorContext->EBus<CameraNotificationBus>("CameraNotificationBus")
+                ->Attribute(AZ::Script::Attributes::Category, "Camera")
+                ->Handler<CameraNotificationBus_BehaviorHandler>()
                 ;
         }
     }

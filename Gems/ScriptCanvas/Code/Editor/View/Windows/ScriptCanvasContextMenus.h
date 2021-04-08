@@ -23,8 +23,10 @@
 #include <GraphCanvas/Widgets/EditorContextMenu/ContextMenus/SceneContextMenu.h>
 #include <GraphCanvas/Widgets/EditorContextMenu/ContextMenus/ConnectionContextMenu.h>
 #include <GraphCanvas/Widgets/EditorContextMenu/ContextMenus/SlotContextMenu.h>
+#include <GraphCanvas/Widgets/EditorContextMenu/ContextMenus/NodeContextMenu.h>
 #include <GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SceneMenuActions/SceneContextMenuAction.h>
 #include <GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SlotMenuActions/SlotContextMenuAction.h>
+#include <GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/NodeMenuActions/NodeContextMenuAction.h>
 #endif
 
 namespace ScriptCanvasEditor
@@ -112,8 +114,8 @@ namespace ScriptCanvasEditor
 
         SlotManipulationMenuAction(AZStd::string_view actionName, QObject* parent);
 
-    protected:
-        ScriptCanvas::Slot* GetScriptCanvasSlot(const GraphCanvas::Endpoint& endpoint) const;
+        static ScriptCanvas::Slot* GetScriptCanvasSlot(const GraphCanvas::Endpoint& endpoint) ;
+    
     };
 
     class ConvertReferenceToVariableNodeAction
@@ -153,6 +155,25 @@ namespace ScriptCanvasEditor
         void CreateNodeling(const GraphCanvas::GraphId& graphId, AZ::EntityId scriptCanvasGraphId, GraphCanvas::GraphId slotId, const AZ::Vector2& scenePos, GraphCanvas::ConnectionType connectionType);
     };
 
+    class SetDataSlotTypeMenuAction
+        : public GraphCanvas::SlotContextMenuAction
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(SetDataSlotTypeMenuAction, AZ::SystemAllocator, 0);
+
+        explicit SetDataSlotTypeMenuAction(QObject* parent);
+        virtual ~SetDataSlotTypeMenuAction() = default;
+        static bool IsSupportedSlotType(const AZ::EntityId& slotId);
+
+        void RefreshAction(const GraphCanvas::GraphId& graphId, const AZ::EntityId& targetId) override;
+        GraphCanvas::ContextMenuAction::SceneReaction TriggerAction(const GraphCanvas::GraphId& graphId, const AZ::Vector2& scenePos) override;
+
+    private:
+
+        ScriptCanvas::Slot* GetSlot(const GraphCanvas::GraphId& graphId, const AZ::EntityId& targetId);
+
+    };
+
     //! Context Menu Action for Creating an AzEventHandler node from a data slot of a Behavior Method node
     //! which returns an AZ::Event<Params...> type
     class CreateAzEventHandlerSlotMenuAction
@@ -172,6 +193,7 @@ namespace ScriptCanvasEditor
 
         const AZ::BehaviorMethod* m_methodWithAzEventReturn{};
         GraphCanvas::Endpoint m_methodNodeAzEventEndpoint;
+
     };
 
     /////////////////
@@ -222,4 +244,27 @@ namespace ScriptCanvasEditor
 
         AZ::EntityId                      m_connectionId;
     };
+
+    //////////////////////////
+    // RenameFunctionDefinitionNode
+    //////////////////////////
+
+    class NodeDescriptorComponent;
+
+    //! Context menu to rename a node
+    class RenameFunctionDefinitionNodeAction
+        : public GraphCanvas::NodeContextMenuAction
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(RenameFunctionDefinitionNodeAction, AZ::SystemAllocator, 0);
+
+        RenameFunctionDefinitionNodeAction(NodeDescriptorComponent* descriptor, QObject* parent);
+        virtual ~RenameFunctionDefinitionNodeAction() = default;
+
+        void RefreshAction(const GraphCanvas::GraphId& graphId, const AZ::EntityId& targetId) override;
+        GraphCanvas::ContextMenuAction::SceneReaction TriggerAction(const GraphCanvas::GraphId& graphId, const AZ::Vector2& scenePos) override;
+
+        NodeDescriptorComponent* m_descriptor;
+    };
+
 }

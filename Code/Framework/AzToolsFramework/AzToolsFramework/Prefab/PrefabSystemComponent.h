@@ -13,6 +13,7 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
+#include <AzCore/Component/TickBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/unordered_set.h>
@@ -30,10 +31,13 @@
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Template/Template.h>
 
-namespace AzToolsFramework
+namespace AZ
 {
     class Entity;
+} // namespace AZ
 
+namespace AzToolsFramework
+{
     using EntityList = AZStd::vector<AZ::Entity*>;
 
     namespace Prefab
@@ -49,6 +53,7 @@ namespace AzToolsFramework
         class PrefabSystemComponent
             : public AZ::Component
             , private PrefabSystemComponentInterface
+            , private AZ::SystemTickBus::Handler
         {
         public:
 
@@ -72,6 +77,9 @@ namespace AzToolsFramework
             static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
             static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
+            // SystemTickBus...
+            void OnSystemTick() override;
+
             //////////////////////////////////////////////////////////////////////////
             // PrefabSystemComponentInterface interface implementation
             /**
@@ -94,13 +102,18 @@ namespace AzToolsFramework
             * @param prefabDom A Prefab DOM presenting this Template.
             * @return A unique id for the new Template.
             */
-            TemplateId AddTemplate(const AZStd::string& filePath, PrefabDom prefabDom) override;
+            TemplateId AddTemplate(const AZ::IO::Path& filePath, PrefabDom prefabDom) override;
 
             /**
             * Remove the Template associated with the given id from Prefab System Component.
             * @param templateId A unique id of a Template.
             */
             void RemoveTemplate(const TemplateId& templateId) override;
+
+            /**
+             * Remove all Templates from the Prefab System Component.
+             */
+            void RemoveAllTemplates() override;
 
             /**
             * Generates a new Prefab Instance based on the Template referenced by templateId
@@ -136,6 +149,7 @@ namespace AzToolsFramework
                 const TemplateId& linkTargetId,
                 const TemplateId& linkSourceId,
                 const InstanceAlias& instanceAlias,
+                const PrefabDomReference linkPatch,
                 const LinkId& linkId = InvalidLinkId) override;
 
             /**
@@ -149,7 +163,22 @@ namespace AzToolsFramework
              * @param filePath A path to a Prefab Template file.
              * @return A unique id of Template on filePath. Return InvalidTemplateId if Template on filePath doesn't exist.
              */
-            TemplateId GetTemplateIdFromFilePath(AZStd::string_view filePath) const override;
+            TemplateId GetTemplateIdFromFilePath(AZ::IO::PathView filePath) const override;
+
+            /**
+             * Gets the value of the dirty flag of the template with the id provided.
+             * @param templateId The id of the template to query.
+             * @return The value of the dirty flag on the template.
+             */
+            bool IsTemplateDirty(const TemplateId& templateId) override;
+
+            /**
+             * Sets the dirty flag of the template to the value provided.
+             * @param templateId The id of the template to flag.
+             * @param dirty The new value of the dirty flag.
+             */
+            void SetTemplateDirtyFlag(const TemplateId& templateId, bool dirty) override;
+
             //////////////////////////////////////////////////////////////////////////
 
             /**
@@ -161,8 +190,8 @@ namespace AzToolsFramework
             * @param filePath the path to associate the template of the new instance to
             * @return A pointer to the newly created instance. nullptr on failure
             */
-            AZStd::unique_ptr<Instance> CreatePrefab(const AZStd::vector<AZ::Entity*> & entities,
-                AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume, const AZStd::string& filePath) override;
+            AZStd::unique_ptr<Instance> CreatePrefab(const AZStd::vector<AZ::Entity*>& entities, AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume,
+                AZ::IO::PathView filePath, AZStd::unique_ptr<AZ::Entity> containerEntity = nullptr) override;
 
             PrefabDom& FindTemplateDom(TemplateId templateId) override;
 
@@ -302,7 +331,7 @@ namespace AzToolsFramework
             AZStd::unordered_map<TemplateId, Template> m_templateIdMap;
 
             // A container for mapping Templates' file paths to their Template ids.
-            AZStd::unordered_map<AZStd::string, TemplateId> m_templateFilePathToIdMap;
+            AZStd::unordered_map<AZ::IO::Path, TemplateId> m_templateFilePathToIdMap;
 
             // A container of Prefab Links mapped by their Link ids.
             AZStd::unordered_map<LinkId, Link> m_linkIdMap;

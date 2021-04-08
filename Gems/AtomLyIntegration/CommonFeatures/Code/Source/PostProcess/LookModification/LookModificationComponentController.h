@@ -18,7 +18,7 @@
 #include <AtomLyIntegration/CommonFeatures/PostProcess/LookModification/LookModificationBus.h>
 #include <AtomLyIntegration/CommonFeatures/PostProcess/LookModification/LookModificationComponentConfig.h>
 
-#include <Atom/Feature/ACES/Aces.h>
+#include <ACES/Aces.h>
 #include <Atom/Feature/PostProcess/LookModification/LookModificationSettingsInterface.h>
 #include <Atom/Feature/PostProcess/PostProcessSettingsInterface.h>
 #include <Atom/Feature/PostProcess/PostProcessFeatureProcessorInterface.h>

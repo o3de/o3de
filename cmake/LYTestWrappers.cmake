@@ -246,7 +246,6 @@ endfunction()
 # \arg:NAME name of the test-module to register with CTest
 # \arg:PATH path to the file (or dir) containing pytest-based tests
 # \arg:PYTEST_MARKS (optional) extra pytest marker filtering string (see pytest arg "-m")
-#      Used to sub-filter test modules beyond suite tags (marks for pytest.mark.SUITE_XXX are automatically filtered based on arg TEST_SUITE)
 # \arg:EXTRA_ARGS (optional) additional arguments to pass to PyTest, should not include pytest marks (value for "-m" should be passed to PYTEST_MARKS)
 # \arg:TEST_SERIAL (bool) disable parallel execution alongside other test modules, important when this test depends on shared resources or environment state
 # \arg:TEST_REQUIRES (optional) list of system resources needed by the tests in this module.  Used to filter out execution when those system resources are not available.  For example, 'gpu'
@@ -269,25 +268,15 @@ function(ly_add_pytest)
 
     cmake_parse_arguments(ly_add_pytest "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-
     if(NOT ly_add_pytest_PATH)
         message(FATAL_ERROR "Must supply a value for PATH to tests")
     endif()
 
-    if (ly_add_pytest_TEST_SUITE AND NOT ly_add_pytest_TEST_SUITE STREQUAL "main")
-        # When a suite is specified, the test will only run things with that suite's pytest mark
-        set(suite_marker "SUITE_${ly_add_pytest_TEST_SUITE}")
-    else()
-        # when main or no suite is specified, everything not in other suites will run: main is default
-        set(suite_marker "(not SUITE_smoke and not SUITE_periodic and not SUITE_benchmark and not SUITE_sandbox)")
-    endif()
     if(ly_add_pytest_PYTEST_MARKS)
         # Suite marker args added by non_ide_params will duplicate those set by custom_marks_args
         # however resetting flags is safe and overrides with the final value set
         set(custom_marks_args "-m" "${ly_add_pytest_PYTEST_MARKS}")
-        set(suite_marker "${suite_marker} and (${ly_add_pytest_PYTEST_MARKS})")
     endif()
-    set(non_ide_params "-m" "${suite_marker}")
 
     string(REPLACE "::" "_" pytest_report_directory "${PYTEST_XML_OUTPUT_DIR}/${ly_add_pytest_NAME}.xml")
 
@@ -297,7 +286,6 @@ function(ly_add_pytest)
         LABELS FRAMEWORK_pytest
         TEST_COMMAND ${LY_PYTEST_EXECUTABLE} ${ly_add_pytest_PATH} ${ly_add_pytest_EXTRA_ARGS} --junitxml=${pytest_report_directory} ${custom_marks_args}
         TEST_LIBRARY pytest
-        NON_IDE_PARAMS ${non_ide_params}
         COMPONENT ${ly_add_pytest_COMPONENT}
         ${ly_add_pytest_UNPARSED_ARGUMENTS}
     )

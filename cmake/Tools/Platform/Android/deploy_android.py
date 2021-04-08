@@ -59,7 +59,10 @@ def validate_android_deployment_arguments(build_dir_name):
 
     embedded_assets = embedded_assets_str.lower() in ('t', 'true', '1')
 
-    return build_dir, game_name, platform_settings.asset_deploy_mode, platform_settings.asset_deploy_type, android_sdk_path, embedded_assets
+    is_unit_test_str = getattr(platform_settings, 'is_unit_test', 'False')
+    is_unit_test = is_unit_test_str.lower() in ('t', 'true', '1')
+
+    return build_dir, game_name, platform_settings.asset_deploy_mode, platform_settings.asset_deploy_type, android_sdk_path, embedded_assets, is_unit_test
 
 
 def main(args):
@@ -96,7 +99,7 @@ def main(args):
     logging.basicConfig(format='%(levelname)s: %(message)s',
                         level=logging.DEBUG if parsed_args.debug else logging.INFO)
 
-    build_dir, game_project, asset_mode, asset_type,  android_sdk_path, embedded_assets = validate_android_deployment_arguments(build_dir_name=parsed_args.build_dir)
+    build_dir, game_project, asset_mode, asset_type,  android_sdk_path, embedded_assets, is_unit_test = validate_android_deployment_arguments(build_dir_name=parsed_args.build_dir)
 
     deployment = android_deployment.AndroidDeployment(dev_root=ROOT_DEV_PATH,
                                                       build_dir=build_dir,
@@ -108,7 +111,8 @@ def main(args):
                                                       android_device_filter=parsed_args.device_id_filter,
                                                       clean_deploy=parsed_args.clean,
                                                       android_sdk_path=android_sdk_path,
-                                                      deployment_type=parsed_args.deployment_type)
+                                                      deployment_type=parsed_args.deployment_type,
+                                                      is_unit_test=is_unit_test)
 
     deployment.execute()
 

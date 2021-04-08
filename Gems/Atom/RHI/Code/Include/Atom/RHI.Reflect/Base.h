@@ -18,6 +18,7 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
 
+
 namespace UnitTest
 {
     class RHITestFixture;
@@ -91,6 +92,14 @@ namespace AZ
         };
 
         using MessageOutcome = AZ::Outcome<void, AZStd::string>;
+
+        enum class APIIndex : uint32_t
+        {
+            Null = 0,
+            DX12,
+            Vulkan,
+            Metal,
+        };
 
         using APIType = Crc32;
 

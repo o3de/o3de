@@ -52,6 +52,9 @@ namespace AZ
 
             //! Gets the underlying RPI::Model instance for a meshHandle. May be null if the model has not loaded.
             virtual Data::Instance<RPI::Model> GetModel(const MeshHandle& meshHandle) const = 0;
+            //! Sets the MaterialAssignmentMap for a meshHandle, using just a single material for the DefaultMaterialAssignmentId.
+            //! Note if there is already a material assignment map, this will replace the entire map with just a single material.
+            virtual void SetMaterialAssignmentMap(const MeshHandle& meshHandle, const Data::Instance<RPI::Material>& material) = 0;
             //! Sets the MaterialAssignmentMap for a meshHandle.
             virtual void SetMaterialAssignmentMap(const MeshHandle& meshHandle, const MaterialAssignmentMap& materials) = 0;
             //! Gets the MaterialAssignmentMap for a meshHandle.

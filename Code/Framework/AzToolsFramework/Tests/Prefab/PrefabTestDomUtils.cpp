@@ -24,7 +24,6 @@ namespace UnitTest
 {
     namespace PrefabTestDomUtils
     {
-
         void SetPrefabDomInstance(
             PrefabDom& prefabDom,
             const char* instanceName,
@@ -64,7 +63,8 @@ namespace UnitTest
             const TemplateId& templateId,
             const PrefabDomValue& expectedContent,
             const PrefabDomPath& contentPath,
-            bool isContentAnInstance)
+            bool isContentAnInstance,
+            bool shouldCompareContainerEntities)
         {
             TemplateInstanceMapperInterface* templateInstanceMapper =
                 AZ::Interface<TemplateInstanceMapperInterface>::Get();
@@ -86,7 +86,7 @@ namespace UnitTest
 
                 if (isContentAnInstance)
                 {
-                    ComparePrefabDoms(*actualContent, expectedContent, false);
+                    ComparePrefabDoms(*actualContent, expectedContent, false, shouldCompareContainerEntities);
                 }
                 else
                 {
@@ -108,7 +108,8 @@ namespace UnitTest
         void ValidatePrefabDomInstances(
             const AZStd::vector<InstanceAlias>& instanceAliases,
             const AzToolsFramework::Prefab::PrefabDom& prefabDom,
-            const AzToolsFramework::Prefab::PrefabDom& expectedNestedInstanceDom)
+            const AzToolsFramework::Prefab::PrefabDom& expectedNestedInstanceDom,
+            bool shouldCompareContainerEntities)
         {
             PrefabDomValueConstReference templateInstances = PrefabDomUtils::FindPrefabDomValue(prefabDom, "Instances");
             ASSERT_TRUE(templateInstances.has_value());
@@ -116,11 +117,13 @@ namespace UnitTest
             {
                 PrefabDomValueConstReference actualNestedInstanceDom = PrefabDomUtils::FindPrefabDomValue(templateInstances->get(), instanceAlias.c_str());
                 ASSERT_TRUE(actualNestedInstanceDom.has_value());
-                ComparePrefabDoms(actualNestedInstanceDom, expectedNestedInstanceDom, false);
+                ComparePrefabDoms(actualNestedInstanceDom, expectedNestedInstanceDom, false, shouldCompareContainerEntities);
             }
         }
 
-        void ComparePrefabDoms(PrefabDomValueConstReference valueA, PrefabDomValueConstReference valueB, bool shouldCompareLinkIds)
+        void ComparePrefabDoms(
+            PrefabDomValueConstReference valueA, PrefabDomValueConstReference valueB, bool shouldCompareLinkIds,
+            bool shouldCompareContainerEntities)
         {
             ASSERT_TRUE(valueA.has_value());
             ASSERT_TRUE(valueB.has_value());
@@ -129,40 +132,52 @@ namespace UnitTest
 
             if (shouldCompareLinkIds)
             {
-                EXPECT_EQ(AZ::JsonSerialization::Compare(valueADom, valueBDom), AZ::JsonSerializerCompareResult::Equal);
+                PrefabDomValueConstReference actualNestedInstanceDomLinkId =
+                    PrefabDomUtils::FindPrefabDomValue(valueADom, PrefabDomUtils::LinkIdName);
+                PrefabDomValueConstReference expectedNestedInstanceDomLinkId =
+                    PrefabDomUtils::FindPrefabDomValue(valueBDom, PrefabDomUtils::LinkIdName);
+                ComparePrefabDomValues(actualNestedInstanceDomLinkId, actualNestedInstanceDomLinkId);
             }
-            else
+
+            if (shouldCompareContainerEntities)
             {
-                // Compare the source values of the two DOMs.
-                PrefabDomValueConstReference actualNestedInstanceDomSource =
-                    PrefabDomUtils::FindPrefabDomValue(valueADom, PrefabDomUtils::SourceName);
-                PrefabDomValueConstReference expectedNestedInstanceDomSource =
-                    PrefabDomUtils::FindPrefabDomValue(valueBDom, PrefabDomUtils::SourceName);
-                ComparePrefabDomValues(actualNestedInstanceDomSource, expectedNestedInstanceDomSource);
+                PrefabDomValueConstReference actualNestedInstanceDomContainerEntity =
+                    PrefabDomUtils::FindPrefabDomValue(valueADom, PrefabDomUtils::ContainerEntityName);
+                PrefabDomValueConstReference expectedNestedInstanceDomContainerEntity =
+                    PrefabDomUtils::FindPrefabDomValue(valueBDom, PrefabDomUtils::ContainerEntityName);
+                ComparePrefabDomValues(actualNestedInstanceDomContainerEntity, expectedNestedInstanceDomContainerEntity);
+            }
 
-                // Compare the entities values of the two DOMs.
-                PrefabDomValueConstReference actualNestedInstanceDomEntities =
-                    PrefabDomUtils::FindPrefabDomValue(valueADom, PrefabTestDomUtils::EntitiesValueName);
-                PrefabDomValueConstReference expectedNestedInstanceDomEntities =
-                    PrefabDomUtils::FindPrefabDomValue(valueBDom, PrefabTestDomUtils::EntitiesValueName);
-                ComparePrefabDomValues(actualNestedInstanceDomEntities, expectedNestedInstanceDomEntities);
+            // Compare the source values of the two DOMs.
+            PrefabDomValueConstReference actualNestedInstanceDomSource =
+                PrefabDomUtils::FindPrefabDomValue(valueADom, PrefabDomUtils::SourceName);
+            PrefabDomValueConstReference expectedNestedInstanceDomSource =
+                PrefabDomUtils::FindPrefabDomValue(valueBDom, PrefabDomUtils::SourceName);
+            ComparePrefabDomValues(actualNestedInstanceDomSource, expectedNestedInstanceDomSource);
 
-                // Compare the instances values of the two DOMs, which involves iterating over each expected instance and comparing it
-                // with its counterpart in the actual instance.
-                PrefabDomValueConstReference actualNestedInstanceDomInstances =
-                    PrefabDomUtils::FindPrefabDomValue(valueADom, PrefabDomUtils::InstancesName);
-                PrefabDomValueConstReference expectedNestedInstanceDomInstances =
-                    PrefabDomUtils::FindPrefabDomValue(valueBDom, PrefabDomUtils::InstancesName);
-                if (expectedNestedInstanceDomInstances.has_value())
+            // Compare the entities values of the two DOMs.
+            PrefabDomValueConstReference actualNestedInstanceDomEntities =
+                PrefabDomUtils::FindPrefabDomValue(valueADom, PrefabTestDomUtils::EntitiesValueName);
+            PrefabDomValueConstReference expectedNestedInstanceDomEntities =
+                PrefabDomUtils::FindPrefabDomValue(valueBDom, PrefabTestDomUtils::EntitiesValueName);
+            ComparePrefabDomValues(actualNestedInstanceDomEntities, expectedNestedInstanceDomEntities);
+
+            // Compare the instances values of the two DOMs, which involves iterating over each expected instance and comparing it
+            // with its counterpart in the actual instance.
+            PrefabDomValueConstReference actualNestedInstanceDomInstances =
+                PrefabDomUtils::FindPrefabDomValue(valueADom, PrefabDomUtils::InstancesName);
+            PrefabDomValueConstReference expectedNestedInstanceDomInstances =
+                PrefabDomUtils::FindPrefabDomValue(valueBDom, PrefabDomUtils::InstancesName);
+            if (expectedNestedInstanceDomInstances.has_value())
+            {
+                ASSERT_TRUE(actualNestedInstanceDomInstances.has_value());
+                for (auto instanceIterator = expectedNestedInstanceDomInstances->get().MemberBegin();
+                     instanceIterator != expectedNestedInstanceDomInstances->get().MemberEnd(); ++instanceIterator)
                 {
-                    ASSERT_TRUE(actualNestedInstanceDomInstances.has_value());
-                    for (auto instanceIterator = expectedNestedInstanceDomInstances->get().MemberBegin();
-                        instanceIterator != expectedNestedInstanceDomInstances->get().MemberEnd(); ++instanceIterator)
-                    {
-                        ComparePrefabDoms(instanceIterator->value,
-                            PrefabDomUtils::FindPrefabDomValue(actualNestedInstanceDomInstances->get(), instanceIterator->name.GetString()),
-                            shouldCompareLinkIds);
-                    }
+                    ComparePrefabDoms(
+                        instanceIterator->value,
+                        PrefabDomUtils::FindPrefabDomValue(actualNestedInstanceDomInstances->get(), instanceIterator->name.GetString()),
+                        shouldCompareLinkIds, shouldCompareContainerEntities);
                 }
             }
         }
@@ -178,14 +193,6 @@ namespace UnitTest
                 EXPECT_TRUE(valueB.has_value());
                 EXPECT_EQ(AZ::JsonSerialization::Compare(valueA->get(), valueB->get()), AZ::JsonSerializerCompareResult::Equal);
             }
-        }
-
-        void PrintPrefabDom(const AzToolsFramework::Prefab::PrefabDomValue& prefabDom)
-        {
-            rapidjson::StringBuffer prefabBuffer;
-            rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(prefabBuffer);
-            prefabDom.Accept(writer);
-            std::cout << prefabBuffer.GetString() << std::endl;
         }
 
         void ValidateEntitiesOfInstances(
@@ -215,8 +222,29 @@ namespace UnitTest
                     PrefabTestDomUtils::GetPrefabDomInstance(expectedPrefabDom, nestedInstanceAlias);
                 ASSERT_TRUE(nestedInstanceValue != nullptr);
 
-                PrefabTestDomUtils::ValidateInstances(templateId, *nestedInstanceValue, nestedInstancePath, true);
+                PrefabTestDomUtils::ValidateInstances(templateId, *nestedInstanceValue, nestedInstancePath, true, false);
             }
+        }
+
+        void ValidateComponentsDomHasId(const PrefabDomValue& componentsDom, AZ::u64 componentId)
+        {
+            AZStd::string componentValueName = AZStd::string::format("Component_[%llu]", componentId);
+            PrefabDomValueConstReference entityComponentValue = PrefabDomUtils::FindPrefabDomValue(componentsDom, componentValueName.c_str());
+            ASSERT_TRUE(entityComponentValue);
+
+            PrefabDomValueConstReference entityComponentIdValue =
+                PrefabDomUtils::FindPrefabDomValue(entityComponentValue->get(), PrefabTestDomUtils::ComponentIdName);
+
+            EXPECT_EQ(componentId, entityComponentIdValue->get().GetUint64());
+        }
+
+        AZStd::string DomToString(const AzToolsFramework::Prefab::PrefabDom& dom)
+        {
+            rapidjson::StringBuffer prefabFileContentBuffer;
+            rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(prefabFileContentBuffer);
+            dom.Accept(writer);
+
+            return AZStd::string(prefabFileContentBuffer.GetString());
         }
     }
 }

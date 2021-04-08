@@ -14,7 +14,7 @@
 /**
  * \mainpage
  * 
- * Introduced with Amazon Lumberyard version 1.25 and the release of UI 2.0, Lumberyard’s
+ * Introduced with Amazon Lumberyard version 1.25 and the release of UI 2.0, Lumberyard's
  * custom Qt widget library provides developers with access to the same UI components used
  * throughout Lumberyard. Using this library, UI developers can build their own tools and
  * extensions for Lumberyard, while maintaining a coherent and standardized UI experience.

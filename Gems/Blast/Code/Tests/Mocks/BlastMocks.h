@@ -14,12 +14,11 @@
 #include <Atom/Feature/Mesh/MeshFeatureProcessorInterface.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
-#include <AzFramework/Physics/Casts.h>
+#include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 #include <AzFramework/Physics/Joint.h>
 #include <AzFramework/Physics/RigidBodyBus.h>
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/SystemBus.h>
-#include <AzFramework/Physics/World.h>
 
 #include <Actor/EntityProvider.h>
 #include <Blast/BlastActor.h>
@@ -210,14 +209,6 @@ namespace Blast
             Physics::SystemRequestBus::Handler::BusDisconnect();
         }
 
-        MOCK_CONST_METHOD0(GetDefaultWorldConfiguration, const Physics::WorldConfiguration&());
-        MOCK_METHOD1(SetDefaultWorldConfiguration, void(const Physics::WorldConfiguration&));
-        MOCK_METHOD1(CreateWorld, AZStd::shared_ptr<Physics::World>(AZ::Crc32));
-        MOCK_METHOD2(
-            CreateWorldCustom, AZStd::shared_ptr<Physics::World>(AZ::Crc32, const Physics::WorldConfiguration&));
-        MOCK_METHOD1(
-            CreateStaticRigidBody, AZStd::unique_ptr<Physics::RigidBodyStatic>(const Physics::WorldBodyConfiguration&));
-        MOCK_METHOD1(CreateRigidBody, AZStd::unique_ptr<Physics::RigidBody>(const Physics::RigidBodyConfiguration&));
         MOCK_METHOD2(
             CreateShape,
             AZStd::shared_ptr<Physics::Shape>(
@@ -231,9 +222,6 @@ namespace Blast
         MOCK_METHOD1(
             CreateMaterialsFromLibrary,
             AZStd::vector<AZStd::shared_ptr<Physics::Material>>(const Physics::MaterialSelection&));
-        MOCK_METHOD0(LoadDefaultMaterialLibrary, bool());
-        MOCK_METHOD0(GetDefaultMaterialLibraryAssetPtr, const AZ::Data::Asset<Physics::MaterialLibraryAsset>*());
-        MOCK_METHOD1(SetDefaultMaterialLibrary, void(const AZ::Data::Asset<Physics::MaterialLibraryAsset>&));
         MOCK_METHOD2(
             UpdateMaterialSelection, bool(const Physics::ShapeConfiguration&, Physics::ColliderConfiguration&));
         MOCK_METHOD0(GetSupportedJointTypes, AZStd::vector<AZ::TypeId>());
@@ -241,7 +229,7 @@ namespace Blast
         MOCK_METHOD3(
             CreateJoint,
             AZStd::shared_ptr<Physics::Joint>(
-                const AZStd::shared_ptr<Physics::JointLimitConfiguration>&, Physics::WorldBody*, Physics::WorldBody*));
+                const AZStd::shared_ptr<Physics::JointLimitConfiguration>&, AzPhysics::SimulatedBody*, AzPhysics::SimulatedBody*));
         MOCK_METHOD10(
             GenerateJointLimitVisualizationData,
             void(
@@ -273,7 +261,7 @@ namespace Blast
         {
             Physics::DefaultWorldBus::Handler::BusDisconnect();
         }
-        MOCK_METHOD0(GetDefaultWorld, AZStd::shared_ptr<Physics::World>());
+        MOCK_CONST_METHOD0(GetDefaultSceneHandle, AzPhysics::SceneHandle());
     };
 
     class MockBlastListener : public BlastListener
@@ -286,7 +274,7 @@ namespace Blast
     class FakeBlastActor : public BlastActor
     {
     public:
-        FakeBlastActor(bool isStatic, Physics::WorldBody* worldBody, MockTkActor* tkActor)
+        FakeBlastActor(bool isStatic, AzPhysics::SimulatedBody* worldBody, MockTkActor* tkActor)
             : m_isStatic(isStatic)
             , m_transform(worldBody->GetTransform())
             , m_worldBody(worldBody)
@@ -299,12 +287,12 @@ namespace Blast
             return m_transform;
         }
 
-        Physics::WorldBody* GetWorldBody() override
+        AzPhysics::SimulatedBody* GetWorldBody() override
         {
             return m_worldBody.get();
         }
 
-        const Physics::WorldBody* GetWorldBody() const override
+        const AzPhysics::SimulatedBody* GetWorldBody() const override
         {
             return m_worldBody.get();
         }
@@ -336,7 +324,7 @@ namespace Blast
         AZ::Transform m_transform;
         AZStd::vector<uint32_t> m_chunkIndices;
         AZ::Entity m_entity;
-        AZStd::unique_ptr<Physics::WorldBody> m_worldBody;
+        AZStd::unique_ptr<AzPhysics::SimulatedBody> m_worldBody;
         AZStd::unique_ptr<MockTkActor> m_tkActor;
     };
 
@@ -360,8 +348,8 @@ namespace Blast
         MOCK_CONST_METHOD0(GetTag, AZ::Crc32());
         MOCK_METHOD1(AttachedToActor, void(void*));
         MOCK_METHOD0(DetachedFromActor, void());
-        MOCK_METHOD2(RayCast, Physics::RayCastHit(const Physics::RayCastRequest&, const AZ::Transform&));
-        MOCK_METHOD1(RayCastLocal, Physics::RayCastHit(const Physics::RayCastRequest&));
+        MOCK_METHOD2(RayCast, AzPhysics::SceneQueryHit(const AzPhysics::RayCastRequest&, const AZ::Transform&));
+        MOCK_METHOD1(RayCastLocal, AzPhysics::SceneQueryHit(const AzPhysics::RayCastRequest&));
         MOCK_CONST_METHOD1(GetAabb, AZ::Aabb(const AZ::Transform&));
         MOCK_CONST_METHOD0(GetAabbLocal, AZ::Aabb());
         MOCK_METHOD3(GetGeometry, void(AZStd::vector<AZ::Vector3>&, AZStd::vector<AZ::u32>&, AZ::Aabb*));
@@ -369,7 +357,7 @@ namespace Blast
 
     AZ_PUSH_DISABLE_WARNING(4996, "-Wdeprecated-declarations")
 
-    class FakeRigidBody : public Physics::RigidBody
+    class FakeRigidBody : public AzPhysics::RigidBody
     {
     public:
         FakeRigidBody(
@@ -380,7 +368,7 @@ namespace Blast
         }
 
         void UpdateMassProperties(
-            [[maybe_unused]] Physics::MassComputeFlags flags,
+            [[maybe_unused]] AzPhysics::MassComputeFlags flags,
             [[maybe_unused]] const AZ::Vector3* centerOfMassOffsetOverride,
             [[maybe_unused]] const AZ::Matrix3x3* inertiaTensorOverride,
             [[maybe_unused]] const float* massOverride) override
@@ -508,11 +496,6 @@ namespace Blast
             return m_entityId;
         }
 
-        Physics::World* GetWorld() const override
-        {
-            return nullptr;
-        }
-
         AZ::Transform GetTransform() const override
         {
             return m_transform;
@@ -538,7 +521,7 @@ namespace Blast
             return {};
         }
 
-        Physics::RayCastHit RayCast([[maybe_unused]] const Physics::RayCastRequest& request) override
+        AzPhysics::SceneQueryHit RayCast([[maybe_unused]] const AzPhysics::RayCastRequest& request) override
         {
             return {};
         }
@@ -552,10 +535,6 @@ namespace Blast
         {
             return nullptr;
         }
-
-        void AddToWorld([[maybe_unused]] Physics::World&) override {}
-
-        void RemoveFromWorld([[maybe_unused]] Physics::World&) override {}
 
         AZ::EntityId m_entityId;
         AZ::Transform m_transform;
@@ -763,8 +742,8 @@ namespace Blast
         MOCK_METHOD1(SetGravityEnabled, void(bool));
         MOCK_METHOD1(SetSimulationEnabled, void(bool));
         MOCK_CONST_METHOD0(GetAabb, AZ::Aabb());
-        MOCK_METHOD0(GetRigidBody, Physics::RigidBody*());
-        MOCK_METHOD1(RayCast, Physics::RayCastHit(const Physics::RayCastRequest&));
+        MOCK_METHOD0(GetRigidBody, AzPhysics::RigidBody*());
+        MOCK_METHOD1(RayCast, AzPhysics::SceneQueryHit(const AzPhysics::RayCastRequest&));
     };
 
     class FakeBlastFamily : public BlastFamily

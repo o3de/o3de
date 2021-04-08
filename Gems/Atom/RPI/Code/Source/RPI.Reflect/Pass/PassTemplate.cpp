@@ -30,7 +30,7 @@ namespace AZ
                     ->Field("Slots", &PassTemplate::m_slots)
                     ->Field("ImageAttachments", &PassTemplate::m_imageAttachments)
                     ->Field("BufferAttachments", &PassTemplate::m_bufferAttachments)
-                    ->Field("Connections", &PassTemplate::m_outputConnections)
+                    ->Field("Connections", &PassTemplate::m_connections)
                     ->Field("FallbackConnections", &PassTemplate::m_fallbackConnections)
                     ->Field("PassRequests", &PassTemplate::m_passRequests)
                     ->Field("PassData", &PassTemplate::m_passData)
@@ -71,7 +71,7 @@ namespace AZ
 
         void PassTemplate::AddOutputConnection(PassConnection connection)
         {
-            m_outputConnections.push_back(connection);
+            m_connections.push_back(connection);
         }
 
         void PassTemplate::AddImageAttachment(PassImageAttachmentDesc imageAttachment)

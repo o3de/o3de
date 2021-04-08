@@ -36,6 +36,7 @@
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <MathConversion.h>
 #include <Atom/RPI.Public/ViewportContext.h>
+#include <Atom/RPI.Public/SceneBus.h>
 #endif
 
 #include <AzFramework/Windowing/WindowBus.h>
@@ -76,6 +77,7 @@ class SANDBOX_API EditorViewportWidget
     , public AzToolsFramework::ViewportInteraction::ViewportFreezeRequestBus::Handler
     , public AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequestBus::Handler
     , public AzFramework::AssetCatalogEventBus::Handler
+    , public AZ::RPI::SceneNotificationBus::Handler
 {
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
@@ -186,10 +188,6 @@ public:
     // AzToolsFramework::EditorEntityContextNotificationBus (handler moved to cpp to resolve link issues in unity builds)
     virtual void OnStartPlayInEditor();
     virtual void OnStopPlayInEditor();
-
-    // AzToolsFramework::EditorEvents::Bus (handler moved to cpp to resolve link issues in unity builds)
-    // We use this to determine when the viewport context menu is being displayed so we can exit move mode
-    void PopulateEditorGlobalContextMenu(QMenu* /*menu*/, const AZ::Vector2& /*point*/, int /*flags*/);
 
     // AzToolsFramework::ViewportInteractionRequestBus
     AzFramework::CameraState GetCameraState();
@@ -353,13 +351,8 @@ protected:
 
     void RenderConstructionPlane();
     void RenderSnapMarker();
-    void RenderCursorString();
-    void RenderSnappingGrid();
 
     void RenderAll();
-    void DrawAxis();
-    void DrawBackground();
-    void InitDisplayContext();
 
     struct SPreviousContext
     {
@@ -381,6 +374,7 @@ protected:
 
     void PreWidgetRendering() override;
     void PostWidgetRendering() override;
+    void OnBeginPrepareRender() override;
 
     // Update the safe frame, safe action, safe title, and borders rectangles based on
     // viewport size and target aspect ratio.
@@ -391,9 +385,6 @@ protected:
 
     // Draw one of the safe frame rectangles with the desired color.
     void RenderSafeFrame(const QRect& frame, float r, float g, float b, float a);
-
-    // Draw the selection rectangle.
-    void RenderSelectionRectangle();
 
     // Draw a selected region if it has been selected
     void RenderSelectedRegion();
@@ -634,6 +625,7 @@ private:
     bool m_updatingCameraPosition = false;
     AZ::RPI::ViewportContext::MatrixChangedEvent::Handler m_cameraViewMatrixChangeHandler;
     AZ::RPI::ViewportContext::MatrixChangedEvent::Handler m_cameraProjectionMatrixChangeHandler;
+    AzFramework::DebugDisplayRequests* m_debugDisplay = nullptr;
 
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 };

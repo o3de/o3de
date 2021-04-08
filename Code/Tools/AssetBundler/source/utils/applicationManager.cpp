@@ -15,6 +15,7 @@
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Asset/AssetManagerComponent.h>
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/Jobs/Algorithms.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/Module/DynamicModuleHandle.h>
@@ -38,7 +39,7 @@
 #include <AzToolsFramework/Asset/AssetUtils.h>
 #include <AzToolsFramework/AssetBundle/AssetBundleComponent.h>
 #include <AzToolsFramework/AssetCatalog/PlatformAddressedAssetCatalogBus.h>
-#include <AzCore/Jobs/Algorithms.h>
+#include <AzToolsFramework/Prefab/PrefabSystemComponent.h>
 
 namespace AssetBundler
 {
@@ -163,6 +164,7 @@ namespace AssetBundler
 
         components.emplace_back(azrtti_typeid<AzToolsFramework::AssetBundleComponent>());
         components.emplace_back(azrtti_typeid<AzToolsFramework::ArchiveComponent>());
+        components.emplace_back(azrtti_typeid<AzToolsFramework::Prefab::PrefabSystemComponent>());
 
         for (auto iter = components.begin(); iter != components.end();)
         {
@@ -2665,9 +2667,9 @@ namespace AssetBundler
             AZ_Printf(AppWindowName, "\n");
             AZ_Printf(AppWindowName, "Some args in this tool take paths as arguments, and there are two main types:\n");
             AZ_Printf(AppWindowName, "          \"path\" - This refers to an Engine-Root-Relative path.\n");
-            AZ_Printf(AppWindowName, "                 - Example: \"C:\\Lumberyard\\dev\\SamplesProject\\test.txt\" can be represented as \"SamplesProject\\test.txt\".\n");
+            AZ_Printf(AppWindowName, "                 - Example: \"C:\\Lumberyard\\dev\\AutomatedTesting\\test.txt\" can be represented as \"AutomatedTesting\\test.txt\".\n");
             AZ_Printf(AppWindowName, "    \"cache path\" - This refers to a Cache-Relative path.\n");
-            AZ_Printf(AppWindowName, "                 - Example: \"C:\\Lumberyard\\dev\\SamplesProject\\Cache\\pc\\animations\\skeletonlist.xml\" is represented as \"animations\\skeletonlist.xml\".\n");
+            AZ_Printf(AppWindowName, "                 - Example: \"C:\\Lumberyard\\dev\\AutomatedTesting\\Cache\\pc\\animations\\skeletonlist.xml\" is represented as \"animations\\skeletonlist.xml\".\n");
             AZ_Printf(AppWindowName, "\n");
 
             OutputHelpSeeds();

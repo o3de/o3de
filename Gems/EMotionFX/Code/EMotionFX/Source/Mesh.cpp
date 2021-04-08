@@ -287,16 +287,6 @@ namespace EMotionFX
                 AZ_Assert(maxSkinInfluences > 0 && maxSkinInfluences < 100, "Expect max skin influences in a reasonable value range.");
                 skinWeights = static_cast<const float*>(bufferData) + bufferAssetViewDescriptor.m_elementOffset;
             }
-            else if (name == AZ::Name("MORPHTARGET_VERTEXINDICES") ||
-                name == AZ::Name("MORPHTARGET_POSITIONDELTAS") ||
-                name == AZ::Name("MORPHTARGET_NORMALDELTAS"))
-            {
-                // Nothing to do here.
-            }
-            else
-            {
-                AZ_Assert(false, "Unknown stream buffer %s found when converting from atom mesh to emotionfx mesh", name.GetCStr());
-            }
         }
 
         // Add the original vertex layer

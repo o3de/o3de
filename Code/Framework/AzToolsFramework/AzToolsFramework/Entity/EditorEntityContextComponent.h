@@ -41,6 +41,11 @@ namespace AzFramework
 
 namespace AzToolsFramework
 {
+    namespace UndoSystem
+    {
+        class UndoCacheInterface;
+    }
+
     /**
      * System component responsible for owning the edit-time entity context.
      *
@@ -186,6 +191,8 @@ namespace AzToolsFramework
         //! Edit time visibility management integrating entities with the IVisibilitySystem.
         AzFramework::EntityVisibilityBoundsUnionSystem m_entityVisibilityBoundsUnionSystem;
         bool m_isLegacySliceService;
+
+        UndoSystem::UndoCacheInterface* m_undoCacheInterface = nullptr;
     };
 } // namespace AzToolsFramework
 

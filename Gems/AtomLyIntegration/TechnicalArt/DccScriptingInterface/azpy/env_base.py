@@ -12,8 +12,6 @@
 #
 # -- This line is 75 characters -------------------------------------------
 from __future__ import unicode_literals
-
-# -------------------------------------------------------------------------
 '''
 Module: <DCCsi>\azpy\shared\common\base_env.py
 
@@ -28,20 +26,14 @@ Allowing those str('tag') to easily be changed in a single location.
 If they are paths for code acess we assume they were put on the sys path.
 '''
 # -------------------------------------------------------------------------
-# -------------------------------------------------------------------------
-
-__author__ = 'HogJonny'
-__project__ = 'DccScriptingInterface'
-
-# -------------------------------------------------------------------------
 # built in's
 import os
 import sys
 import json
 import logging as _logging
+from collections import OrderedDict
 
 # 3rd Party
-from box import Box
 from pathlib import Path
 
 # Lumberyard extensions
@@ -51,27 +43,29 @@ from azpy.shared.common.core_utils import get_stub_check_path
 from azpy.shared.common.envar_utils import get_envar_default
 from azpy.shared.common.envar_utils import set_envar_defaults
 from azpy.shared.common.envar_utils import Validate_Envar
-# -------------------------------------------------------------------------
 
-from azpy import env_bool
+from azpy.env_bool import env_bool
 from azpy.constants import ENVAR_DCCSI_GDEBUG
 from azpy.constants import ENVAR_DCCSI_DEV_MODE
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+_PACKAGENAME = 'azpy.env_base'
+
+_logging.basicConfig(level=_logging.INFO,
+                     format=FRMT_LOG_LONG,
+                     datefmt='%m-%d %H:%M')
+_LOGGER = _logging.getLogger(_PACKAGENAME)
+_LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
 
 #  global space
 _G_DEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 
-_PACKAGENAME = __name__
-if _PACKAGENAME is '__main__':
-    _PACKAGENAME = 'azpy.env_base'
-
-_LOGGER = _logging.getLogger(_PACKAGENAME)
-_LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
-
-# -------------------------------------------------------------------------
 # set up base totally non-functional defauls (denoted with $<ENVAR>)
 # if something hasn't been set, it will stay '$<envar>'
-_BASE_ENVVAR_DICT = Box(ordered_box=True)
+_BASE_ENVVAR_DICT = OrderedDict()
 
 #  project tag
 _BASE_ENVVAR_DICT[ENVAR_LY_PROJECT] = '${0}'.format(ENVAR_LY_PROJECT)

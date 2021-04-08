@@ -211,7 +211,7 @@
                     "description": "Base color texture map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_baseColorMapUvIndex"
@@ -267,7 +267,7 @@
                     "description": "Metallic texture map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_metallicMapUvIndex"
@@ -311,7 +311,7 @@
                     "description": "Roughness texture map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_roughnessMapUvIndex"
@@ -422,7 +422,7 @@
                     "description": "Specular reflection texture map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_specularF0MapUvIndex"
@@ -487,7 +487,7 @@
                     "description": "Strength factor texture map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_clearCoatInfluenceMapUvIndex"
@@ -529,7 +529,7 @@
                     "description": "Roughness texture map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_clearCoatRoughnessMapUvIndex"
@@ -571,7 +571,7 @@
                     "description": "Normal texture map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_clearCoatNormalMapUvIndex"
@@ -615,7 +615,7 @@
                     "description": "Normal texture map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_normalMapUvIndex"
@@ -692,7 +692,7 @@
                     "description": "Opacity texture map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_opacityMapUvIndex"
@@ -1214,7 +1214,7 @@
                     "description": "Which UV set to use for sampling the detail blend mask",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_detail_blendMask_uvIndex"
@@ -1226,7 +1226,7 @@
                     "description": "Which UV set to use for detail map texture sampling",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_detail_allMapsUvIndex"
@@ -2093,7 +2093,7 @@
         }
     ],
     "uvNameMap": {
-        "UV0": "Base",
-        "UV1": "Packed"
+        "UV0": "Tiled",
+        "UV1": "Unwrapped"
     }
 }

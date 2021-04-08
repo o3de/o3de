@@ -619,7 +619,7 @@ namespace ScriptCanvas
                 return AZ::Failure();
             }
 
-            SlotsOutcome ReceiveScriptEvent::GetSlotsInExecutionThreadByTypeImpl(const Slot& executionSlot, CombinedSlotType targetSlotType, const Slot* /*executionChildSlot*/) const
+            ConstSlotsOutcome ReceiveScriptEvent::GetSlotsInExecutionThreadByTypeImpl(const Slot& executionSlot, CombinedSlotType targetSlotType, const Slot* /*executionChildSlot*/) const
             {
                 return EventHandlerTranslationHelper::GetSlotsInExecutionThreadByType(*this, executionSlot, targetSlotType);
             }
@@ -641,7 +641,7 @@ namespace ScriptCanvas
                 return nonEventSlotIds;
             }
 
-            bool ReceiveScriptEvent::HandlerStartsConnected() const
+            bool ReceiveScriptEvent::IsAutoConnected() const
             {
                 return m_autoConnectToGraphOwner;
             }

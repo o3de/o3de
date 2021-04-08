@@ -178,6 +178,8 @@ set(FILES
     LZ4Decompressor.cpp
     LevelSystem/LevelSystem.cpp
     LevelSystem/LevelSystem.h
+    LevelSystem/SpawnableLevelSystem.cpp
+    LevelSystem/SpawnableLevelSystem.h
     ViewSystem/DebugCamera.cpp
     ViewSystem/DebugCamera.h
     ViewSystem/View.cpp

@@ -13,14 +13,32 @@
 #include <PhysX_precompiled.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzFramework/Physics/PhysicsScene.h>
+#include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <PhysXCharacters/API/Ragdoll.h>
 #include <PhysXCharacters/API/CharacterUtils.h>
 #include <PhysX/NativeTypeIdentifiers.h>
 #include <PhysX/PhysXLocks.h>
+#include <Scene/PhysXScene.h>
 
 namespace PhysX
 {
+    namespace Internal
+    {
+        physx::PxScene* GetPxScene(AzPhysics::SceneHandle sceneHandle)
+        {
+            if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
+            {
+                if (AzPhysics::Scene* scene = physicsSystem->GetScene(sceneHandle))
+                {
+                    return static_cast<physx::PxScene*>(scene->GetNativePointer());
+                }
+            }
+            return nullptr;
+        }
+    } // namespace Internal
+
     // PhysX::Ragdoll
     void Ragdoll::Reflect(AZ::ReflectContext* context)
     {
@@ -52,7 +70,7 @@ namespace PhysX
     {
         if (nodeIndex < m_nodes.size())
         {
-            Physics::RigidBody& rigidBody = m_nodes[nodeIndex]->GetRigidBody();
+            AzPhysics::RigidBody& rigidBody = m_nodes[nodeIndex]->GetRigidBody();
             return static_cast<physx::PxRigidDynamic*>(rigidBody.GetNativePointer());
         }
 
@@ -81,14 +99,32 @@ namespace PhysX
         return physx::PxTransform(physx::PxIdentity);
     }
 
-    Ragdoll::Ragdoll()
-        : m_isSimulated(false)
+    Ragdoll::Ragdoll(AzPhysics::SceneHandle sceneHandle)
+        : m_sceneStartSimHandler([this](
+            [[maybe_unused]] AzPhysics::SceneHandle sceneHandle,
+            [[maybe_unused]] float fixedDeltaTime)
+            {
+                this->ApplyQueuedEnableSimulation();
+                this->ApplyQueuedSetState();
+                this->ApplyQueuedDisableSimulation();
+            })
     {
+        m_simulating = false;
+        m_sceneOwner = sceneHandle;
     }
 
     Ragdoll::~Ragdoll()
     {
-        Physics::WorldNotificationBus::Handler::BusDisconnect();
+        m_sceneStartSimHandler.Disconnect();
+
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            const size_t numNodes = m_nodes.size();
+            for (size_t nodeIndex = 0; nodeIndex < numNodes; nodeIndex++)
+            {
+                sceneInterface->RemoveSimulatedBody(m_sceneOwner, m_nodes[nodeIndex]->GetRigidBodyHandle());
+            }
+        }
     }
 
     void Ragdoll::ApplyQueuedEnableSimulation()
@@ -125,14 +161,25 @@ namespace PhysX
     // Physics::Ragdoll
     void Ragdoll::EnableSimulation(const Physics::RagdollState& initialState)
     {
-        if (m_isSimulated)
+        if (m_simulating)
         {
             return;
         }
 
-        AZStd::shared_ptr<Physics::World> world;
-        Physics::DefaultWorldBus::BroadcastResult(world, &Physics::DefaultWorldRequests::GetDefaultWorld);
-        physx::PxScene* pxScene = static_cast<physx::PxScene*>(world->GetNativePointer());
+        auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
+        if (sceneInterface == nullptr)
+        {
+            AZ_Error("PhysX Ragdoll", false, "Unable to Enable Ragdoll, Physics Scene Interface is missing.");
+            return;
+        }
+
+        physx::PxScene* pxScene = Internal::GetPxScene(m_sceneOwner);
+
+        if (pxScene == nullptr)
+        {
+            AZ_Error("PhysX Ragdoll", false, "Unable to Enable Ragdoll, Unable to retrieve Physics Scene Interface is missing.");
+            return;
+        }       
 
         const size_t numNodes = m_nodes.size();
         if (initialState.size() != numNodes)
@@ -154,7 +201,8 @@ namespace PhysX
                 pxActor->setGlobalPose(pxTm);
                 pxActor->setLinearVelocity(PxMathConvert(nodeState.m_linearVelocity));
                 pxActor->setAngularVelocity(PxMathConvert(nodeState.m_angularVelocity));
-                pxScene->addActor(*pxActor);
+
+                sceneInterface->EnableSimulationOfBody(m_sceneOwner, m_nodes[nodeIndex]->GetRigidBodyHandle());
             }
 
             else
@@ -167,62 +215,68 @@ namespace PhysX
                 size_t parentIndex = m_parentIndices[nodeIndex];
                 if (parentIndex < numNodes)
                 {
-                    world->RegisterSuppressedCollision(m_nodes[nodeIndex]->GetRigidBody(), m_nodes[parentIndex]->GetRigidBody());
+                    sceneInterface->SuppressCollisionEvents(m_sceneOwner,
+                        m_nodes[nodeIndex]->GetRigidBodyHandle(), m_nodes[parentIndex]->GetRigidBodyHandle());
                 }
             }
         }
 
-        Physics::WorldNotificationBus::Handler::BusConnect(world->GetWorldId());
+        sceneInterface->RegisterSceneSimulationStartHandler(m_sceneOwner, m_sceneStartSimHandler);
 
-        m_isSimulated = true;
+        m_simulating = true;
     }
 
     void Ragdoll::EnableSimulationQueued(const Physics::RagdollState& initialState)
     {
-        if (m_isSimulated)
+        if (m_simulating)
         {
             return;
         }
 
-        AZStd::shared_ptr<Physics::World> world;
-        Physics::DefaultWorldBus::BroadcastResult(world, &Physics::DefaultWorldRequests::GetDefaultWorld);
-
-        Physics::WorldNotificationBus::Handler::BusConnect(world->GetWorldId());
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            sceneInterface->RegisterSceneSimulationStartHandler(m_sceneOwner, m_sceneStartSimHandler);
+        }
 
         m_queuedInitialState = initialState;
     }
 
     void Ragdoll::DisableSimulation()
     {
-        if (!m_isSimulated)
+        if (!m_simulating)
         {
             return;
         }
+        auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
+        if (sceneInterface == nullptr)
+        {
+            AZ_Error("PhysX Ragdoll", false, "Unable to Disable Ragdoll, Physics Scene Interface is missing.");
+            return;
+        }
 
-        Physics::WorldNotificationBus::Handler::BusDisconnect();
+        m_sceneStartSimHandler.Disconnect();
 
-        AZStd::shared_ptr<Physics::World> world;
-        Physics::DefaultWorldBus::BroadcastResult(world, &Physics::DefaultWorldRequests::GetDefaultWorld);
-        physx::PxScene* pxScene = static_cast<physx::PxScene*>(world->GetNativePointer());
+        physx::PxScene* pxScene = Internal::GetPxScene(m_sceneOwner);
         const size_t numNodes = m_nodes.size();
 
         PHYSX_SCENE_WRITE_LOCK(pxScene);
 
         for (size_t nodeIndex = 0; nodeIndex < numNodes; nodeIndex++)
         {
-            pxScene->removeActor(*GetPxRigidDynamic(nodeIndex));
+            sceneInterface->DisableSimulationOfBody(m_sceneOwner, m_nodes[nodeIndex]->GetRigidBodyHandle());
 
             if (nodeIndex < m_parentIndices.size())
             {
                 size_t parentIndex = m_parentIndices[nodeIndex];
                 if (parentIndex < numNodes)
                 {
-                    world->UnregisterSuppressedCollision(m_nodes[nodeIndex]->GetRigidBody(), m_nodes[parentIndex]->GetRigidBody());
+                    sceneInterface->UnsuppressCollisionEvents(m_sceneOwner,
+                        m_nodes[nodeIndex]->GetRigidBodyHandle(), m_nodes[parentIndex]->GetRigidBodyHandle());
                 }
             }
         }
 
-        m_isSimulated = false;
+        m_simulating = false;
     }
 
     void Ragdoll::DisableSimulationQueued()
@@ -232,7 +286,7 @@ namespace PhysX
 
     bool Ragdoll::IsSimulated()
     {
-        return m_isSimulated;
+        return m_simulating;
     }
 
     void Ragdoll::GetState(Physics::RagdollState& ragdollState) const
@@ -352,21 +406,15 @@ namespace PhysX
         return m_nodes.size();
     }
 
-    AZ::Crc32 Ragdoll::GetWorldId() const
-    {
-        return Physics::DefaultPhysicsWorldId;
-    }
-
-    // Physics::WorldBody
     AZ::EntityId Ragdoll::GetEntityId() const
     {
         AZ_Warning("PhysX Ragdoll", false, "Not yet supported.");
         return AZ::EntityId(AZ::EntityId::InvalidEntityId);
     }
 
-    Physics::World* Ragdoll::GetWorld() const
+    AzPhysics::Scene* Ragdoll::GetScene()
     {
-        return m_nodes.empty() ? nullptr : m_nodes[0]->GetWorld();
+        return m_nodes.empty() ? nullptr : m_nodes[0]->GetScene();
     }
 
     AZ::Transform Ragdoll::GetTransform() const
@@ -403,13 +451,13 @@ namespace PhysX
         return aabb;
     }
 
-    Physics::RayCastHit Ragdoll::RayCast(const Physics::RayCastRequest& request)
+    AzPhysics::SceneQueryHit Ragdoll::RayCast(const AzPhysics::RayCastRequest& request)
     {
-        Physics::RayCastHit closestHit;
+        AzPhysics::SceneQueryHit closestHit;
         float closestHitDist = FLT_MAX;
         for (int i = 0; i < m_nodes.size(); ++i)
         {
-            Physics::RayCastHit hit = m_nodes[i]->RayCast(request);
+            AzPhysics::SceneQueryHit hit = m_nodes[i]->RayCast(request);
             if (hit && hit.m_distance < closestHitDist)
             {
                 closestHit = hit;
@@ -428,29 +476,5 @@ namespace PhysX
     {
         AZ_WarningOnce("PhysX Ragdoll", false, "Not yet supported.");
         return nullptr;
-    }
-
-    void Ragdoll::AddToWorld(Physics::World& world)
-    {
-        for (auto& node : m_nodes)
-        {
-            node->GetRigidBody().AddToWorld(world);
-        }
-    }
-
-    void Ragdoll::RemoveFromWorld(Physics::World& world)
-    {
-        for (auto& node : m_nodes)
-        {
-            node->GetRigidBody().RemoveFromWorld(world);
-        }
-    }
-
-    // Physics::WorldNotificationBus
-    void Ragdoll::OnPrePhysicsSubtick([[maybe_unused]] float fixedDeltaTime)
-    {
-        ApplyQueuedEnableSimulation();
-        ApplyQueuedSetState();
-        ApplyQueuedDisableSimulation();
     }
 } // namespace PhysX

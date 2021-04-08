@@ -11,12 +11,15 @@
 */
 
 #include <PhysX_precompiled.h>
+
+#include <AzCore/std/containers/vector.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Math/Transform.h>
-#include <AzFramework/Physics/World.h>
 #include <AzFramework/Physics/Utils.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
+#include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/SystemBus.h>
+#include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <PhysX/ColliderComponentBus.h>
 #include <PhysX/MathConversion.h>
 #include <Source/RigidBodyComponent.h>
@@ -37,7 +40,6 @@ namespace PhysX
             serializeContext->Class<RigidBodyComponent, AZ::Component>()
                 ->Version(1)
                 ->Field("RigidBodyConfiguration", &RigidBodyComponent::m_configuration)
-                ->Field("RigidBody", &RigidBodyComponent::m_rigidBody)
             ;
         }
 
@@ -93,9 +95,16 @@ namespace PhysX
         }
     }
 
-    RigidBodyComponent::RigidBodyComponent(const Physics::RigidBodyConfiguration& config)
-        : m_configuration(config)
+    RigidBodyComponent::RigidBodyComponent()
     {
+        InitPhysicsTickHandler();
+    }
+
+    RigidBodyComponent::RigidBodyComponent(const AzPhysics::RigidBodyConfiguration& config, AzPhysics::SceneHandle sceneHandle)
+        : m_configuration(config)
+        , m_attachedSceneHandle(sceneHandle)
+    {
+        InitPhysicsTickHandler();
     }
 
     void RigidBodyComponent::Init()
@@ -117,6 +126,11 @@ namespace PhysX
 
     void RigidBodyComponent::Activate()
     {
+        if (m_attachedSceneHandle == AzPhysics::InvalidSceneHandle)
+        {
+            Physics::DefaultWorldBus::BroadcastResult(m_attachedSceneHandle, &Physics::DefaultWorldRequests::GetDefaultSceneHandle);
+        }
+        
         AZ::TransformBus::EventResult(m_staticTransformAtActivation, GetEntityId(), &AZ::TransformInterface::IsStaticTransform);
 
         if (m_staticTransformAtActivation)
@@ -167,12 +181,17 @@ namespace PhysX
             return;
         }
 
-        Physics::Utils::DeferDelete(AZStd::move(m_rigidBody));
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            sceneInterface->RemoveSimulatedBody(m_attachedSceneHandle, m_rigidBodyHandle);
+            m_rigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
+            m_rigidBody = nullptr;
+        }
 
         Physics::RigidBodyRequestBus::Handler::BusDisconnect();
         Physics::WorldBodyRequestBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::MultiHandler::BusDisconnect();
-        Physics::WorldNotificationBus::Handler::BusDisconnect();
+        m_sceneFinishSimHandler.Disconnect();
         AZ::TickBus::Handler::BusDisconnect();
     }
 
@@ -195,7 +214,18 @@ namespace PhysX
         return AZ::ComponentTickBus::TICK_PHYSICS;
     }
 
-    void RigidBodyComponent::OnPostPhysicsSubtick(float fixedDeltaTime)
+    void RigidBodyComponent::InitPhysicsTickHandler()
+    {
+        m_sceneFinishSimHandler = AzPhysics::SceneEvents::OnSceneSimulationFinishHandler([this](
+            [[maybe_unused]] AzPhysics::SceneHandle sceneHandle,
+            float fixedDeltatime
+            )
+            {
+                this->PostPhysicsTick(fixedDeltatime);
+            }, aznumeric_cast<int32_t>(AzPhysics::SceneEvents::PhysicsStartFinishSimulationPriority::Physics));
+    }
+
+    void RigidBodyComponent::PostPhysicsTick(float fixedDeltaTime)
     {
         // When transform changes, Kinematic Target is updated with the new transform, so don't set the transform again.
         // But in the case of setting the Kinematic Target directly, the transform needs to reflect the new kinematic target
@@ -226,11 +256,6 @@ namespace PhysX
         m_isLastMovementFromKinematicSource = false;
     }
 
-    int RigidBodyComponent::GetPhysicsTickOrder()
-    {
-        return WorldNotifications::Physics;
-    }
-
     void RigidBodyComponent::OnTransformChanged([[maybe_unused]] const AZ::Transform& local, const AZ::Transform& world)
     {
         // Note: OnTransformChanged is not safe at the moment due to TransformComponent design flaw.
@@ -252,25 +277,35 @@ namespace PhysX
 
         // Create rigid body
         SetupConfiguration();
-        m_rigidBody = AZ::Interface<Physics::System>::Get()->CreateRigidBody(m_configuration);
+        // Add shapes
+        AZStd::vector<AZStd::shared_ptr<Physics::Shape>> shapes;
+        ColliderComponentRequestBus::EnumerateHandlersId(GetEntityId(), [&shapes](ColliderComponentRequests* handler)
+            {
+                AZStd::vector<AZStd::shared_ptr<Physics::Shape>> newShapes = handler->GetShapes();
+                shapes.insert(shapes.end(), newShapes.begin(), newShapes.end());
+                return true;
+            });
+        m_configuration.m_colliderAndShapeData = shapes;
+
+        auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
+        if (sceneInterface != nullptr)
+        {
+            m_rigidBodyHandle = sceneInterface->AddSimulatedBody(m_attachedSceneHandle, &m_configuration);
+            m_rigidBody = azdynamic_cast<AzPhysics::RigidBody*>(sceneInterface->GetSimulatedBodyFromHandle(m_attachedSceneHandle, m_rigidBodyHandle));
+            //disable simulating the body until EnablePhysics is called.
+            sceneInterface->DisableSimulationOfBody(m_attachedSceneHandle, m_rigidBodyHandle);
+        }
         m_rigidBody->SetKinematic(m_configuration.m_kinematic);
 
-        // Add shapes
-        ColliderComponentRequestBus::EnumerateHandlersId(GetEntityId(), [this](ColliderComponentRequests* handler)
-        {
-            for (auto& shape : handler->GetShapes())
-            {
-                m_rigidBody->AddShape(shape);
-            }
-            return true;
-        });
-
-        Physics::MassComputeFlags flags = m_configuration.GetMassComputeFlags();
+        AzPhysics::MassComputeFlags flags = m_configuration.GetMassComputeFlags();
         m_rigidBody->UpdateMassProperties(flags, &m_configuration.m_centerOfMassOffset, &m_configuration.m_inertiaTensor,
             &m_configuration.m_mass);
 
         // Listen to the PhysX system for events concerning this entity.
-        Physics::WorldNotificationBus::Handler::BusConnect(Physics::DefaultPhysicsWorldId);
+        if (sceneInterface != nullptr)
+        {
+            sceneInterface->RegisterSceneSimulationFinishHandler(m_attachedSceneHandle, m_sceneFinishSimHandler);
+        }
         AZ::TickBus::Handler::BusConnect();
         AZ::TransformNotificationBus::MultiHandler::BusConnect(GetEntityId());
         Physics::RigidBodyRequestBus::Handler::BusConnect(GetEntityId());
@@ -284,11 +319,10 @@ namespace PhysX
             return;
         }
 
-        // Add actor to scene
-        AZStd::shared_ptr<Physics::World> world = nullptr;
-        Physics::DefaultWorldBus::BroadcastResult(world, &Physics::DefaultWorldRequests::GetDefaultWorld);
-        m_world = world.get();
-        world->AddBody(*m_rigidBody);
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            sceneInterface->EnableSimulationOfBody(m_attachedSceneHandle, m_rigidBodyHandle);
+        }
 
         AZ::Transform transform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(transform, GetEntityId(), &AZ::TransformInterface::GetWorldTM);
@@ -312,9 +346,9 @@ namespace PhysX
 
     void RigidBodyComponent::DisablePhysics()
     {
-        if (Physics::World* world = m_rigidBody->GetWorld())
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
-            world->RemoveBody(*m_rigidBody);
+            sceneInterface->DisableSimulationOfBody(m_attachedSceneHandle, m_rigidBodyHandle);
         }
 
         Physics::RigidBodyNotificationBus::Event(GetEntityId(), &Physics::RigidBodyNotificationBus::Events::OnPhysicsDisabled);
@@ -323,7 +357,7 @@ namespace PhysX
 
     bool RigidBodyComponent::IsPhysicsEnabled() const
     {
-        return m_rigidBody != nullptr && m_rigidBody->GetWorld() != nullptr;
+        return m_rigidBody != nullptr && m_rigidBody->m_simulating;
     }
 
     void RigidBodyComponent::ApplyLinearImpulse(const AZ::Vector3& impulse)
@@ -487,23 +521,23 @@ namespace PhysX
         return m_rigidBody->GetAabb();
     }
 
-    Physics::RigidBody* RigidBodyComponent::GetRigidBody()
+    AzPhysics::RigidBody* RigidBodyComponent::GetRigidBody()
     {
-        return m_rigidBody.get();
+        return m_rigidBody;
     }
 
-    Physics::WorldBody* RigidBodyComponent::GetWorldBody()
+    AzPhysics::SimulatedBody* RigidBodyComponent::GetWorldBody()
     {
-        return m_rigidBody.get();
+        return m_rigidBody;
     }
 
-    Physics::RayCastHit RigidBodyComponent::RayCast(const Physics::RayCastRequest& request)
+    AzPhysics::SceneQueryHit RigidBodyComponent::RayCast(const AzPhysics::RayCastRequest& request)
     {
         if (m_rigidBody)
         {
             return m_rigidBody->RayCast(request);
         }
-        return Physics::RayCastHit();
+        return AzPhysics::SceneQueryHit();
     }
 
     void RigidBodyComponent::OnSliceInstantiated(const AZ::Data::AssetId&, const AZ::SliceComponent::SliceInstanceAddress&,

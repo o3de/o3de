@@ -242,7 +242,7 @@ namespace AZ
 
             if (m_materialAsset.GetId().IsValid())
             {
-                if (EditorMaterialComponentInspector::OpenInspectorDialog(m_materialAsset.GetId(), m_propertyOverrides, applyPropertyChangedCallback))
+                if (EditorMaterialComponentInspector::OpenInspectorDialog(GetLabel(), m_materialAsset.GetId(), m_propertyOverrides, applyPropertyChangedCallback))
                 {
                     OnMaterialChanged();
                 }

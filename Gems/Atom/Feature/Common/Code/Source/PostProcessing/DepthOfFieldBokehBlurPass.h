@@ -48,10 +48,10 @@ namespace AZ
             void UpdateCurrentShaderVariant();
 
             // SRG binding indices...
-            AZ::RHI::ShaderInputConstantIndex m_sampleNumberIndex;
-            AZ::RHI::ShaderInputConstantIndex m_radiusMinIndex;
-            AZ::RHI::ShaderInputConstantIndex m_radiusMaxIndex;
-            AZ::RHI::ShaderInputConstantIndex m_sampleTexcoordsRadiusIndex;
+            RHI::ShaderInputNameIndex m_sampleNumberIndex = "m_sampleNumber";
+            RHI::ShaderInputNameIndex m_radiusMinIndex = "m_radiusMin";
+            RHI::ShaderInputNameIndex m_radiusMaxIndex = "m_radiusMax";
+            RHI::ShaderInputNameIndex m_sampleTexcoordsRadiusIndex = "m_sampleTexcoordsRadius";
 
             // maximum number of samples.
             // Sampled in the order of 6, 12, 18, 24 from the center to the periphery.

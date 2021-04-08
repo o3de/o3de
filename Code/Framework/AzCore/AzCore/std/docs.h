@@ -96,7 +96,7 @@ namespace AZStd
      * \page Setup AZSTD Setup
      *
      * After you have the AZStd code, you need to make sure you project has add the include path to the folder where AZStd was installed. All AZStd include files are using based on
-     * AZStd parent folder. For instance all includes are like this \e AZStd/base.h,"AZCore/std/containers/vector,h",etc. We use use the AZStd to avoid name collisions with other
+     * AZStd parent folder. For instance all includes are like this \e AZStd/base.h,"AzCore/std/containers/vector,h",etc. We use use the AZStd to avoid name collisions with other
      * stl implementations and make it obvious where the included file comes from.
      * If you decide to use the default allocator (AZStd::allocator) you will need to implement AZStd::Default_Alloc and AZStd::Default_Free functions otherwise you should
      * use your own allocator.

@@ -79,10 +79,11 @@ namespace AZ
             //! The View must be declared a camera by having the View::UsageFlags::UsageCamera usage flag set.
             //! This View will be registered as the context's pipeline's default view until the top of the camera stack changes.
             virtual void PushView(const Name& contextName, ViewPtr view) = 0;
-            //! Pops a camera off of the stack for a given context name.
+            //! Pops a camera off of the stack for a given context name. Returns true if the camera was successfully removed
+            //! or false if the camera wasn't removed, either because it wasn't found or its removal was not allowed.
             //! @note The default camera for a given viewport may not be removed from the view stack.
             //! You must push an additional camera to override the default view instead.
-            virtual void PopView(const Name& contextName, ViewPtr view) = 0;
+            virtual bool PopView(const Name& contextName, ViewPtr view) = 0;
             //! Gets the view currently registered to a given context, assuming the context exists.
             //! This will be null if there is no registered ViewportContext and no views have been pushed for this context name.
             virtual ViewPtr GetCurrentView(const Name& contextName) const = 0;

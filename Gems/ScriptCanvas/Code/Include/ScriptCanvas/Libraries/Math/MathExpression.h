@@ -37,7 +37,7 @@ namespace ScriptCanvas
 
             protected:
 
-                SlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot&, CombinedSlotType targetSlotType, const Slot*) const override
+                ConstSlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot&, CombinedSlotType targetSlotType, const Slot*) const override
                 {
                     return AZ::Success(GetSlotsByType(targetSlotType));
                 }

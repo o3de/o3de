@@ -13,11 +13,15 @@
 #pragma once
 
 #include <AzCore/Component/EntityId.h>
-
 #include <Editor/Nodes/NodeUtils.h>
-
 #include <ScriptCanvas/Bus/NodeIdPair.h>
+#include <ScriptCanvas/Core/SubgraphInterfaceUtility.h>
 #include <ScriptCanvas/Variable/VariableCore.h>
+
+namespace ScriptCanvas
+{
+    class Node;
+}
 
 namespace ScriptEvents
 {
@@ -27,6 +31,7 @@ namespace ScriptEvents
 namespace ScriptCanvasEditor::Nodes
 {
     // Specific create methods which will also handle displaying the node.
+    AZStd::pair<ScriptCanvas::Node*, NodeIdPair> CreateAndGetNode(const AZ::Uuid& classData, const ScriptCanvas::ScriptCanvasId& scriptCanvasId, const StyleConfiguration& styleConfiguration);
     NodeIdPair CreateNode(const AZ::Uuid& classData, const ScriptCanvas::ScriptCanvasId& scriptCanvasId, const StyleConfiguration& styleConfiguration);
     NodeIdPair CreateEntityNode(const AZ::EntityId& sourceId, const ScriptCanvas::ScriptCanvasId& scriptCanvasId);
     NodeIdPair CreateObjectMethodNode(AZStd::string_view className, AZStd::string_view methodName, const ScriptCanvas::ScriptCanvasId& scriptCanvasId);
@@ -42,10 +47,8 @@ namespace ScriptCanvasEditor::Nodes
     NodeIdPair CreateSetVariableNode(const ScriptCanvas::VariableId& variableId, ScriptCanvas::ScriptCanvasId scriptCanvasGraphId);
 
     // Functions
-    NodeIdPair CreateFunctionNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasGraphId, const AZ::Data::AssetId& assetId);
-
-    // Nodelings
-    NodeIdPair CreateExecutionNodeling(const ScriptCanvas::ScriptCanvasId& scriptCanvasId, AZStd::string_view rootName = "New Nodeling");
+    NodeIdPair CreateFunctionNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasGraphId, const AZ::Data::AssetId& assetId, const ScriptCanvas::Grammar::FunctionSourceId& sourceId);
+    NodeIdPair CreateFunctionDefinitionNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasId, bool isInput, AZStd::string rootName = "New Nodeling");
 
     // AZ Event
     NodeIdPair CreateAzEventHandlerNode(const AZ::BehaviorMethod& methodWithAzEventReturn, ScriptCanvas::ScriptCanvasId scriptCanvasId,

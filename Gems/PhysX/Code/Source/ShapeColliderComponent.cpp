@@ -42,14 +42,13 @@ namespace PhysX
     // BaseColliderComponent
     void ShapeColliderComponent::UpdateScaleForShapeConfigs()
     {
-        // all currently supported shape types scale uniformly based on the largest element of the non-uniform scale
-        const AZ::Vector3 uniformScale = Utils::GetUniformScale(GetEntityId());
+        const AZ::Vector3 overallScale = Utils::GetOverallScale(GetEntityId());
 
         for (auto& shapeConfigPair : m_shapeConfigList)
         {
             if (shapeConfigPair.second)
             {
-                shapeConfigPair.second->m_scale = uniformScale;
+                shapeConfigPair.second->m_scale = overallScale;
             }
         }
     }

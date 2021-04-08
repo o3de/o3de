@@ -368,7 +368,7 @@ namespace ScriptCanvas
                 AZ::Data::Asset<SubgraphInterfaceAsset> correctSubId(interfaceAssetId, asset.GetType(), asset.GetHint());
                 if (rootElement.AddElementWithData(context, "m_asset", correctSubId) == -1)
                 {
-                    AZ_Assert(false, "Unable to add m_asset data in FunctionNode version %u.", rootElement.GetVersion());
+                    AZ_Assert(false, "Unable to add m_asset data in FunctionCallNode version %u.", rootElement.GetVersion());
                     return false;
                 }
             }

@@ -14,7 +14,6 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
-#include <AzFramework/Physics/World.h>
 #include <AzFramework/Physics/Configuration/SceneConfiguration.h>
 #include <QWidget>
 #include <PhysX/Configuration/PhysXConfiguration.h>
@@ -37,16 +36,14 @@ namespace PhysX
 
             explicit SettingsWidget(QWidget* parent = nullptr);
 
-            void SetValue(const AZ::Data::Asset<Physics::MaterialLibraryAsset>& materialLibrary,
+            void SetValue(const PhysX::PhysXSystemConfiguration& physxSystemConfiguration,
                 const AzPhysics::SceneConfiguration& defaultSceneConfiguration,
-                const Debug::DebugDisplayData& debugDisplayData,
-                const PhysX::WindConfiguration& windConfiguration);
+                const Debug::DebugDisplayData& debugDisplayData);
 
         signals:
-            void onValueChanged(const AZ::Data::Asset<Physics::MaterialLibraryAsset>& materialLibrary,
+            void onValueChanged(const PhysX::PhysXSystemConfiguration& physxSystemConfiguration,
                 const AzPhysics::SceneConfiguration& defaultSceneConfiguration,
-                const Debug::DebugDisplayData& debugDisplayData,
-                const PhysX::WindConfiguration& windConfiguration);
+                const Debug::DebugDisplayData& debugDisplayData);
 
         private:
             void CreatePropertyEditor(QWidget* parent);
@@ -60,9 +57,9 @@ namespace PhysX
             AzToolsFramework::ReflectedPropertyEditor* m_propertyEditor;
             DocumentationLinkWidget* m_documentationLinkWidget;
             Physics::DefaultMaterialLibraryAssetReflectionWrapper m_defaultPhysicsMaterialLibrary;
+            PhysX::PhysXSystemConfiguration m_physxSystemConfiguration;
             AzPhysics::SceneConfiguration m_defaultSceneConfiguration;
             Debug::DebugDisplayData m_debugDisplayData;
-            PhysX::WindConfiguration m_windConfiguration;
         };
     }
 }

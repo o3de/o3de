@@ -37,6 +37,9 @@
 #include "UiTextComponentOffsetsSelector.h"
 #include "StringUtfUtils.h"
 #include "UiLayoutHelpers.h"
+#include "RenderGraph.h"
+
+#include <AtomLyIntegration/AtomFont/FFont.h>
 
 namespace
 {
@@ -1911,11 +1914,10 @@ void UiTextComponent::Render(LyShine::IRenderGraph* renderGraph)
         const char* profileMarker = "UI_TEXT";
         gEnv->pRenderer->PushProfileMarker(profileMarker);
 
-        int textureId = batch->m_font->GetFontTextureId();
-        if (textureId != -1)
+        AZ::FFont* font = static_cast<AZ::FFont*>(batch->m_font); // LYSHINE_ATOM_TODO - find a different solution from downcasting FFont to IFont
+        AZ::Data::Instance<AZ::RPI::Image> fontImage = font->GetFontImage();
+        if (fontImage)
         {
-            ITexture* texture = gEnv->pRenderer->EF_GetTextureByID(textureId);
-
             // update alpha values in the verts if alpha has changed (due to fader or SetAlpha).
             // We never do this if any font effect used has transparency since in that case
             // not all of the verts will have the same alpha. We handle that case above
@@ -1935,8 +1937,12 @@ void UiTextComponent::Render(LyShine::IRenderGraph* renderGraph)
             // because there is no padding on the left of the glyphs.
             bool isClampTextureMode = false;
 
-            renderGraph->AddPrimitive(&batch->m_cachedPrimitive, texture,
-                isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
+            LyShine::RenderGraph* lyRenderGraph = static_cast<LyShine::RenderGraph*>(renderGraph); // LYSHINE_ATOM_TODO - find a different solution from downcasting
+            if (lyRenderGraph)
+            {
+                lyRenderGraph->AddPrimitiveAtom(&batch->m_cachedPrimitive, fontImage,
+                    isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
+            }
         }
 
         gEnv->pRenderer->PopProfileMarker(profileMarker);

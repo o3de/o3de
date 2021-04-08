@@ -220,8 +220,8 @@ protected:
     Range m_timeRange;
 
     CUiAnimParamType m_nParamType;
-    int m_currKey : 31;
-    int m_bModified : 1;
+    unsigned int m_currKey : 31;
+    unsigned int m_bModified : 1;
     float m_lastTime;
     int m_flags;
 

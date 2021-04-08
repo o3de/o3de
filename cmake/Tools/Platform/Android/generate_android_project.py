@@ -238,6 +238,10 @@ def main(args):
                         action='store_true',
                         help='Generate a unit test APK instead of a game APK.')
 
+    parser.add_argument('--overwrite-existing',
+                        action='store_true',
+                        help='Option to overwrite existing scripts in the target build folder if they exist already.')
+
     parsed_args = parser.parse_args(args)
     wrap_parsed_args(parsed_args)
 
@@ -266,16 +270,11 @@ def main(args):
     verified_android_ndk_platform, verified_android_ndk_path = android_support.verify_android_ndk(android_ndk_platform=parsed_args.get_argument(ANDROID_NDK_PLATFORM_ARGUMENT_NAME),
                                                                                                   argument_name=ANDROID_NDK_ARGUMENT_NAME,
                                                                                                   override_android_ndk_path=parsed_args.get_argument(ANDROID_NDK_ARGUMENT_NAME))
-    if parsed_args.unit_test or parsed_args.project_path == android_support.TEST_RUNNER_PROJECT:
-        verified_project_path = android_support.TEST_RUNNER_PROJECT
-        _, verified_engine_root = common.verify_project_and_engine_root(project_root=None,
-                                                                       engine_root=parsed_args.dev_root)
-        is_test_project = True
-    else:
-        # Verify the engine root path and project path
-        verified_project_path, verified_engine_root = common.verify_project_and_engine_root(project_root=parsed_args.project_path,
+
+    # Verify the engine root path and project path
+    verified_project_path, verified_engine_root = common.verify_project_and_engine_root(project_root=parsed_args.project_path,
                                                                                         engine_root=parsed_args.engine_root)
-        is_test_project = False
+    is_test_project = parsed_args.unit_test
 
     # Verify the 3rd Party Root Path
     third_party_path = pathlib.Path(parsed_args.third_party_path) / '3rdParty.txt'
@@ -315,7 +314,8 @@ def main(args):
                                                         asset_mode=parsed_args.get_argument(ASSET_MODE_ARGUMENT_NAME),
                                                         asset_type=parsed_args.get_argument(ASSET_TYPE_ARGUMENT_NAME),
                                                         signing_config=signing_config,
-                                                        is_test_project=is_test_project)
+                                                        is_test_project=is_test_project,
+                                                        overwrite_existing=parsed_args.overwrite_existing)
     generator.execute()
 
 

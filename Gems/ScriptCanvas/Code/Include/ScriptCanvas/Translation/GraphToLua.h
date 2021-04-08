@@ -59,18 +59,6 @@ namespace ScriptCanvas
         protected:
             enum class IsNamed { No, Yes };
 
-            // \todo part of the output of the compilation step will have to be the list of variables that must be stored on disk, cloned and loaded,
-            // rather than having the regular build step generate this
-            enum class VariableConstructionRequirement
-            {
-                InputEntityId,
-                InputNodeable,
-                InputVariable,
-                None,
-                Static,
-            };
-
-            static bool IsCodeConstructable(Grammar::VariableConstPtr value);
             static IsNamed IsInputNamed(Grammar::VariableConstPtr input, Grammar::ExecutionTreeConstPtr execution);
             
             RuntimeInputs m_runtimeInputs;
@@ -98,8 +86,6 @@ namespace ScriptCanvas
 
             TargetResult MoveResult();
             void OpenFunctionBlock(Writer& writer);
-            void ParseConstructionInputVariables();
-            VariableConstructionRequirement ParseConstructionRequirement(Grammar::VariableConstPtr value);
             void TranslateBody();
             void TranslateBody(BuildConfiguration configuration);
             void TranslateClassClose();
@@ -107,7 +93,6 @@ namespace ScriptCanvas
             void TranslateConstruction();
             void TranslateDependencies();
             void TranslateDestruction();
-            // keep the leftValue thing, fix it, and put it in the configuration
             void TranslateEBusEvents(Grammar::EBusHandlingConstPtr ebusHandling, AZStd::string_view leftValue);
             void TranslateEBusHandlerCreation(Grammar::EBusHandlingConstPtr ebusHandling, AZStd::string_view leftValue);
             void TranslateEBusHandling(AZStd::string_view leftValue);
@@ -127,13 +112,14 @@ namespace ScriptCanvas
             void TranslateInheritance();
             void TranslateNodeableOut(Grammar::ExecutionTreeConstPtr execution);
             void TranslateNodeableOuts(Grammar::ExecutionTreeConstPtr execution);
-            void TranslateNodeableParse(AZStd::string_view leftValue);
-            void TranslateNodeableParse(Grammar::ExecutionTreeConstPtr execution, AZStd::string_view leftValue);
+            void TranslateNodeableParse();
             void TranslateStaticInitialization();
             void TranslateVariableInitialization(AZStd::string_view leftValue);
             void WriteConditionalCaseSwitch(Grammar::ExecutionTreeConstPtr execution, Grammar::Symbol symbol, const Grammar::ExecutionChild& child, size_t index);
             enum class IsLeadingCommaRequired { No, Yes };
-            void WriteConstructionInput(IsLeadingCommaRequired commaRequired);
+            void WriteConstructionArgs();
+            void WriteConstructionDependencyArgs();
+            void WriteConstructionInput();
             void WriteCycleBegin(Grammar::ExecutionTreeConstPtr execution);
             void WriteDebugInfoIn(Grammar::ExecutionTreeConstPtr execution, AZStd::string_view);
             void WriteDebugInfoIn(Grammar::ExecutionTreeConstPtr execution, AZStd::string_view, size_t inputCountOverride);

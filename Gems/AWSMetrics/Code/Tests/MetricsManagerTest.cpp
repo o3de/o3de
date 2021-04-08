@@ -122,16 +122,16 @@ namespace AWSMetrics
     {
     public:
         // Size for each test metrics event will be 180 bytes.
-        static constexpr int TEST_METRICS_EVENT_SIZE_IN_BYTES = 180;
-        static constexpr int MB_TO_BYTES = 1000000;
-        static constexpr int DEFAULT_FLUSH_PERIOD_IN_SECONDS = 1;
-        static constexpr int MAX_NUM_METRICS_EVENTS = 10;
+        static constexpr int TestMetricsEventSizeInBytes = 180;
+        static constexpr int MbToBytes = 1000000;
+        static constexpr int DefaultFlushPeriodInSeconds = 1;
+        static constexpr int MaxNumMetricsEvents = 10;
 
-        static constexpr int SLEEP_TIME_FOR_PROCESSING_IN_MS = 100;
+        static constexpr int SleepTimeForProcessingInMs = 100;
         // Timeout for metrics events processing in milliseconds.
-        static constexpr int TIMEOUT_FOR_PROCESSING_IN_MS = DEFAULT_FLUSH_PERIOD_IN_SECONDS * MAX_NUM_METRICS_EVENTS * 1000;
+        static constexpr int TimeoutForProcessingInMs = DefaultFlushPeriodInSeconds * MaxNumMetricsEvents * 1000;
 
-        static const char* const ATTR_VALUE;
+        static const char* const AttrValue;
 
         void SetUp() override
         {
@@ -139,7 +139,7 @@ namespace AWSMetrics
             AWSMetricsRequestBus::Handler::BusConnect();
 
             m_metricsManager = AZStd::make_unique<MetricsManager>();
-            AZStd::string configFilePath = CreateClientConfigFile(true, (double) TEST_METRICS_EVENT_SIZE_IN_BYTES / MB_TO_BYTES * 2, DEFAULT_FLUSH_PERIOD_IN_SECONDS, 0);
+            AZStd::string configFilePath = CreateClientConfigFile(true, (double) TestMetricsEventSizeInBytes / MbToBytes * 2, DefaultFlushPeriodInSeconds, 0);
             m_metricsManager->Init(configFilePath);
 
             RemoveFile(m_metricsManager->GetMetricsFilePath());
@@ -213,10 +213,10 @@ namespace AWSMetrics
 
             int processingTime = 0;
             int numTotalRequests = 0;
-            while (processingTime < TIMEOUT_FOR_PROCESSING_IN_MS)
+            while (processingTime < TimeoutForProcessingInMs)
             {
-                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(SLEEP_TIME_FOR_PROCESSING_IN_MS));
-                processingTime += SLEEP_TIME_FOR_PROCESSING_IN_MS;
+                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(SleepTimeForProcessingInMs));
+                processingTime += SleepTimeForProcessingInMs;
 
                 const GlobalStatistics& currentStats = m_metricsManager->GetGlobalStatistics();
                 currentNumProcessedEvents = currentStats.m_numEvents;
@@ -241,14 +241,14 @@ namespace AWSMetrics
         AZ::IO::FileIOBase* m_fileIOMock;
     };
 
-    const char* const MetricsManagerTest::ATTR_VALUE = "value";
+    const char* const MetricsManagerTest::AttrValue = "value";
 
     TEST_F(MetricsManagerTest, SubmitMetrics_MaxFlushPeriod_SendToLocalFile)
     {
         m_metricsManager->StartMetrics();
         
         AZStd::vector<MetricsAttribute> metricsAttributes;
-        metricsAttributes.emplace_back(AZStd::move(MetricsAttribute(METRICS_ATTRIBUTE_KEY_EVENT_NAME, ATTR_VALUE)));
+        metricsAttributes.emplace_back(AZStd::move(MetricsAttribute(AwsMetricsAttributeKeyEventName, AttrValue)));
 
         bool result = false;
         AWSMetricsRequestBus::BroadcastResult(result, &AWSMetricsRequests::SubmitMetrics, metricsAttributes, 0, "", true);
@@ -265,12 +265,12 @@ namespace AWSMetrics
     TEST_F(MetricsManagerTest, SubmitMetrics_MaxQueueSize_SendToLocalFile)
     {
         // Reset the config file to change the max queue size and set a flush period larger than the timeout.
-        ResetClientConfig(true, 0.0, (TIMEOUT_FOR_PROCESSING_IN_MS + 1), 0);
+        ResetClientConfig(true, 0.0, (TimeoutForProcessingInMs + 1), 0);
 
         m_metricsManager->StartMetrics();
 
         AZStd::vector<MetricsAttribute> metricsAttributes;
-        metricsAttributes.emplace_back(AZStd::move(MetricsAttribute(METRICS_ATTRIBUTE_KEY_EVENT_NAME, ATTR_VALUE)));
+        metricsAttributes.emplace_back(AZStd::move(MetricsAttribute(AwsMetricsAttributeKeyEventName, AttrValue)));
 
         bool result = false;
         AWSMetricsRequestBus::BroadcastResult(result, &AWSMetricsRequests::SubmitMetrics, metricsAttributes, 0, "", true);
@@ -290,12 +290,12 @@ namespace AWSMetrics
 
         AZStd::vector<AZStd::thread> producers;
 
-        for (int index = 0; index < MAX_NUM_METRICS_EVENTS; ++index)
+        for (int index = 0; index < MaxNumMetricsEvents; ++index)
         {
             producers.emplace_back(AZStd::thread([this, index]()
             {
                 AZStd::vector<MetricsAttribute> metricsAttributes;
-                metricsAttributes.emplace_back(AZStd::move(MetricsAttribute(METRICS_ATTRIBUTE_KEY_EVENT_NAME, ATTR_VALUE)));
+                metricsAttributes.emplace_back(AZStd::move(MetricsAttribute(AwsMetricsAttributeKeyEventName, AttrValue)));
 
                 bool result = false;
                 // Submit metrics with or without buffer
@@ -311,12 +311,12 @@ namespace AWSMetrics
         // Flush the metrics queue to send all the remaining buffered metrics
         AWSMetricsRequestBus::Broadcast(&AWSMetricsRequests::FlushMetrics);
 
-        WaitForProcessing(MAX_NUM_METRICS_EVENTS);
+        WaitForProcessing(MaxNumMetricsEvents);
         const GlobalStatistics& stats = m_metricsManager->GetGlobalStatistics();
-        EXPECT_EQ(stats.m_numEvents, MAX_NUM_METRICS_EVENTS);
-        EXPECT_EQ(stats.m_numSuccesses, MAX_NUM_METRICS_EVENTS);
+        EXPECT_EQ(stats.m_numEvents, MaxNumMetricsEvents);
+        EXPECT_EQ(stats.m_numSuccesses, MaxNumMetricsEvents);
         EXPECT_EQ(stats.m_numErrors, 0);
-        EXPECT_EQ(stats.m_sendSizeInBytes, TEST_METRICS_EVENT_SIZE_IN_BYTES * MAX_NUM_METRICS_EVENTS);
+        EXPECT_EQ(stats.m_sendSizeInBytes, TestMetricsEventSizeInBytes * MaxNumMetricsEvents);
 
         m_metricsManager->ShutdownMetrics();
     }
@@ -342,7 +342,7 @@ namespace AWSMetrics
         AZ::IO::FileIOBase::SetInstance(nullptr);
 
         AZStd::vector<MetricsAttribute> metricsAttributes;
-        metricsAttributes.emplace_back(AZStd::move(MetricsAttribute(METRICS_ATTRIBUTE_KEY_EVENT_NAME, ATTR_VALUE)));
+        metricsAttributes.emplace_back(AZStd::move(MetricsAttribute(AwsMetricsAttributeKeyEventName, AttrValue)));
 
         bool result = false;
         AWSMetricsRequestBus::BroadcastResult(result, &AWSMetricsRequests::SubmitMetrics, metricsAttributes, 0, "", false);
@@ -355,20 +355,20 @@ namespace AWSMetrics
 
     TEST_F(MetricsManagerTest, FlushMetrics_NonEmptyQueue_Success)
     {
-        for (int index = 0; index < MAX_NUM_METRICS_EVENTS; ++index)
+        for (int index = 0; index < MaxNumMetricsEvents; ++index)
         {
             AZStd::vector<MetricsAttribute> metricsAttributes;
-            metricsAttributes.emplace_back(AZStd::move(MetricsAttribute(METRICS_ATTRIBUTE_KEY_EVENT_NAME, ATTR_VALUE)));
+            metricsAttributes.emplace_back(AZStd::move(MetricsAttribute(AwsMetricsAttributeKeyEventName, AttrValue)));
 
             bool result = false;
             AWSMetricsRequestBus::BroadcastResult(result, &AWSMetricsRequests::SubmitMetrics, metricsAttributes, 0, "", true);
             ASSERT_TRUE(result);
         }
-        ASSERT_EQ(m_metricsManager->GetNumBufferedMetrics(), MAX_NUM_METRICS_EVENTS);
+        ASSERT_EQ(m_metricsManager->GetNumBufferedMetrics(), MaxNumMetricsEvents);
 
         AWSMetricsRequestBus::Broadcast(&AWSMetricsRequests::FlushMetrics);
 
-        WaitForProcessing(MAX_NUM_METRICS_EVENTS);
+        WaitForProcessing(MaxNumMetricsEvents);
         ASSERT_EQ(m_notifications.m_numSuccessNotification, 1);
         ASSERT_EQ(m_notifications.m_numFailureNotification, 0);
         ASSERT_EQ(m_metricsManager->GetNumBufferedMetrics(), 0);
@@ -383,7 +383,7 @@ namespace AWSMetrics
         m_metricsManager->UpdateOfflineRecordingStatus(true);
 
         AZStd::vector<MetricsAttribute> metricsAttributes;
-        metricsAttributes.emplace_back(AZStd::move(MetricsAttribute(METRICS_ATTRIBUTE_KEY_EVENT_NAME, ATTR_VALUE)));
+        metricsAttributes.emplace_back(AZStd::move(MetricsAttribute(AwsMetricsAttributeKeyEventName, AttrValue)));
 
         bool result = false;
         AWSMetricsRequestBus::BroadcastResult(result, &AWSMetricsRequests::SubmitMetrics, metricsAttributes, 0, "", false);
@@ -404,12 +404,12 @@ namespace AWSMetrics
 
         //! Wait for either timeout or the local metrics events are re-added to the buffer.
         int processingTime = 0;
-        while (processingTime < TIMEOUT_FOR_PROCESSING_IN_MS && m_localFileIO->Exists(m_metricsManager->GetMetricsFilePath()))
+        while (processingTime < TimeoutForProcessingInMs && m_localFileIO->Exists(m_metricsManager->GetMetricsFilePath()))
         {
-            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(SLEEP_TIME_FOR_PROCESSING_IN_MS));
-            processingTime += SLEEP_TIME_FOR_PROCESSING_IN_MS;
+            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(SleepTimeForProcessingInMs));
+            processingTime += SleepTimeForProcessingInMs;
         }
-
+       
         ASSERT_EQ(m_metricsManager->GetNumBufferedMetrics(), 1);
         ASSERT_FALSE(m_localFileIO->Exists(m_metricsManager->GetMetricsFilePath()));
 
@@ -419,15 +419,15 @@ namespace AWSMetrics
     TEST_F(MetricsManagerTest, OnResponseReceived_WithResponseRecords_RetryFailedMetrics)
     {
         // Reset the config file to change the max queue size setting.
-        ResetClientConfig(false, (double)TEST_METRICS_EVENT_SIZE_IN_BYTES * (MAX_NUM_METRICS_EVENTS + 1) / MB_TO_BYTES,
-            DEFAULT_FLUSH_PERIOD_IN_SECONDS, 1);
+        ResetClientConfig(false, (double)TestMetricsEventSizeInBytes * (MaxNumMetricsEvents + 1) / MbToBytes,
+            DefaultFlushPeriodInSeconds, 1);
 
         MetricsQueue metricsEvents;
         ServiceAPI::MetricsEventSuccessResponsePropertyEvents responseRecords;
-        for (int index = 0; index < MAX_NUM_METRICS_EVENTS; ++index)
+        for (int index = 0; index < MaxNumMetricsEvents; ++index)
         {
             MetricsEvent newEvent;
-            newEvent.AddAttribute(MetricsAttribute(METRICS_ATTRIBUTE_KEY_EVENT_NAME, ATTR_VALUE));
+            newEvent.AddAttribute(MetricsAttribute(AwsMetricsAttributeKeyEventName, AttrValue));
 
             metricsEvents.AddMetrics(newEvent);
 
@@ -446,28 +446,28 @@ namespace AWSMetrics
         m_metricsManager->OnResponseReceived(metricsEvents, responseRecords);
 
         const GlobalStatistics& stats = m_metricsManager->GetGlobalStatistics();
-        EXPECT_EQ(stats.m_numEvents, MAX_NUM_METRICS_EVENTS);
-        EXPECT_EQ(stats.m_numSuccesses, MAX_NUM_METRICS_EVENTS / 2);
-        EXPECT_EQ(stats.m_numErrors, MAX_NUM_METRICS_EVENTS / 2);
+        EXPECT_EQ(stats.m_numEvents, MaxNumMetricsEvents);
+        EXPECT_EQ(stats.m_numSuccesses, MaxNumMetricsEvents / 2);
+        EXPECT_EQ(stats.m_numErrors, MaxNumMetricsEvents / 2);
         EXPECT_EQ(stats.m_numDropped, 0);
 
-        int metricsEventSize = sizeof(METRICS_ATTRIBUTE_KEY_EVENT_NAME) - 1 + strlen(ATTR_VALUE);
-        EXPECT_EQ(stats.m_sendSizeInBytes, metricsEventSize * MAX_NUM_METRICS_EVENTS / 2);
+        int metricsEventSize = sizeof(AwsMetricsAttributeKeyEventName) - 1 + strlen(AttrValue);
+        EXPECT_EQ(stats.m_sendSizeInBytes, metricsEventSize * MaxNumMetricsEvents / 2);
 
-        ASSERT_EQ(m_metricsManager->GetNumBufferedMetrics(), MAX_NUM_METRICS_EVENTS / 2);
+        ASSERT_EQ(m_metricsManager->GetNumBufferedMetrics(), MaxNumMetricsEvents / 2);
     }
 
     TEST_F(MetricsManagerTest, OnResponseReceived_NoResponseRecords_RetryAllMetrics)
     {
         // Reset the config file to change the max queue size setting.
-        ResetClientConfig(false, (double)TEST_METRICS_EVENT_SIZE_IN_BYTES * (MAX_NUM_METRICS_EVENTS + 1) / MB_TO_BYTES,
-            DEFAULT_FLUSH_PERIOD_IN_SECONDS, 1);
+        ResetClientConfig(false, (double)TestMetricsEventSizeInBytes * (MaxNumMetricsEvents + 1) / MbToBytes,
+            DefaultFlushPeriodInSeconds, 1);
 
         MetricsQueue metricsEvents;
-        for (int index = 0; index < MAX_NUM_METRICS_EVENTS; ++index)
+        for (int index = 0; index < MaxNumMetricsEvents; ++index)
         {
             MetricsEvent newEvent;
-            newEvent.AddAttribute(MetricsAttribute(METRICS_ATTRIBUTE_KEY_EVENT_NAME, ATTR_VALUE));
+            newEvent.AddAttribute(MetricsAttribute(AwsMetricsAttributeKeyEventName, AttrValue));
 
             metricsEvents.AddMetrics(newEvent);
         }
@@ -475,22 +475,22 @@ namespace AWSMetrics
         m_metricsManager->OnResponseReceived(metricsEvents);
 
         const GlobalStatistics& stats = m_metricsManager->GetGlobalStatistics();
-        EXPECT_EQ(stats.m_numEvents, MAX_NUM_METRICS_EVENTS);
+        EXPECT_EQ(stats.m_numEvents, MaxNumMetricsEvents);
         EXPECT_EQ(stats.m_numSuccesses, 0);
         EXPECT_EQ(stats.m_sendSizeInBytes, 0);
         EXPECT_EQ(stats.m_numDropped, 0);
 
-        ASSERT_EQ(m_metricsManager->GetNumBufferedMetrics(), MAX_NUM_METRICS_EVENTS);
+        ASSERT_EQ(m_metricsManager->GetNumBufferedMetrics(), MaxNumMetricsEvents);
     }
 
     TEST_F(MetricsManagerTest, OnResponseReceived_MaxNumRetires_DropMetrics)
     {
         // Reset the config file to change the max queue size setting.
-        ResetClientConfig(false, (double)TEST_METRICS_EVENT_SIZE_IN_BYTES * (MAX_NUM_METRICS_EVENTS + 1) / MB_TO_BYTES,
-            DEFAULT_FLUSH_PERIOD_IN_SECONDS, 1);
+        ResetClientConfig(false, (double)TestMetricsEventSizeInBytes * (MaxNumMetricsEvents + 1) / MbToBytes,
+            DefaultFlushPeriodInSeconds, 1);
 
         MetricsQueue metricsEvents;
-        for (int index = 0; index < MAX_NUM_METRICS_EVENTS; ++index)
+        for (int index = 0; index < MaxNumMetricsEvents; ++index)
         {
             MetricsEvent newMetricsEvent;
 
@@ -510,7 +510,7 @@ namespace AWSMetrics
         // have been retried for multiple times and we do not increase the total number of errors in this case.
         EXPECT_EQ(stats.m_numErrors, 0);
         EXPECT_EQ(stats.m_sendSizeInBytes, 0);
-        EXPECT_EQ(stats.m_numDropped, MAX_NUM_METRICS_EVENTS);
+        EXPECT_EQ(stats.m_numDropped, MaxNumMetricsEvents);
 
         ASSERT_EQ(m_metricsManager->GetNumBufferedMetrics(), 0);
     }
@@ -518,11 +518,11 @@ namespace AWSMetrics
     TEST_F(MetricsManagerTest, PushMetricsForRetries_NoRetry_DropMetrics)
     {
         // Reset the config file to change the max queue size setting.
-        ResetClientConfig(false, (double)TEST_METRICS_EVENT_SIZE_IN_BYTES * (MAX_NUM_METRICS_EVENTS + 1) / MB_TO_BYTES,
-            DEFAULT_FLUSH_PERIOD_IN_SECONDS, 0);
+        ResetClientConfig(false, (double)TestMetricsEventSizeInBytes * (MaxNumMetricsEvents + 1) / MbToBytes,
+            DefaultFlushPeriodInSeconds, 0);
 
         MetricsQueue metricsEvents;
-        for (int index = 0; index < MAX_NUM_METRICS_EVENTS; ++index)
+        for (int index = 0; index < MaxNumMetricsEvents; ++index)
         {
             metricsEvents.AddMetrics(MetricsEvent());
         }
@@ -530,11 +530,11 @@ namespace AWSMetrics
         m_metricsManager->OnResponseReceived(metricsEvents);
 
         const GlobalStatistics& stats = m_metricsManager->GetGlobalStatistics();
-        EXPECT_EQ(stats.m_numEvents, MAX_NUM_METRICS_EVENTS);
+        EXPECT_EQ(stats.m_numEvents, MaxNumMetricsEvents);
         EXPECT_EQ(stats.m_numSuccesses, 0);
-        EXPECT_EQ(stats.m_numErrors, MAX_NUM_METRICS_EVENTS);
+        EXPECT_EQ(stats.m_numErrors, MaxNumMetricsEvents);
         EXPECT_EQ(stats.m_sendSizeInBytes, 0);
-        EXPECT_EQ(stats.m_numDropped, MAX_NUM_METRICS_EVENTS);
+        EXPECT_EQ(stats.m_numDropped, MaxNumMetricsEvents);
 
         ASSERT_EQ(m_metricsManager->GetNumBufferedMetrics(), 0);
     }
@@ -544,7 +544,7 @@ namespace AWSMetrics
     {
     public:
         const double DEFAULT_MAX_QUEUE_SIZE_IN_MB = 0.0004;
-        const int DEFAULT_FLUSH_PERIOD_IN_SECONDS = 1;
+        const int DefaultFlushPeriodInSeconds = 1;
         const int DEFAULT_MAX_NUM_RETRIES = 1;
 
         void SetUp() override
@@ -559,18 +559,18 @@ namespace AWSMetrics
 
     TEST_F(ClientConfigurationTest, ResetClientConfiguration_ValidConfigurationFile_Success)
     {
-        AZStd::string configFilePath = CreateClientConfigFile(true, DEFAULT_MAX_QUEUE_SIZE_IN_MB, DEFAULT_FLUSH_PERIOD_IN_SECONDS, DEFAULT_MAX_NUM_RETRIES);
+        AZStd::string configFilePath = CreateClientConfigFile(true, DEFAULT_MAX_QUEUE_SIZE_IN_MB, DefaultFlushPeriodInSeconds, DEFAULT_MAX_NUM_RETRIES);
         ASSERT_TRUE(m_clientConfiguration->ResetClientConfiguration(configFilePath));
 
         ASSERT_TRUE(m_clientConfiguration->OfflineRecordingEnabled());
         ASSERT_EQ(m_clientConfiguration->GetMaxQueueSizeInBytes(), DEFAULT_MAX_QUEUE_SIZE_IN_MB * 1000000);
-        ASSERT_EQ(m_clientConfiguration->GetQueueFlushPeriodInSeconds(), DEFAULT_FLUSH_PERIOD_IN_SECONDS);
+        ASSERT_EQ(m_clientConfiguration->GetQueueFlushPeriodInSeconds(), DefaultFlushPeriodInSeconds);
         ASSERT_EQ(m_clientConfiguration->GetMaxNumRetries(), DEFAULT_MAX_NUM_RETRIES);
 
         char resolvedPath[AZ_MAX_PATH_LEN] = { 0 };
-        ASSERT_TRUE(m_localFileIO->ResolvePath(metricsDir, resolvedPath, AZ_MAX_PATH_LEN));
+        ASSERT_TRUE(m_localFileIO->ResolvePath(AwsMetricsLocalFileDir, resolvedPath, AZ_MAX_PATH_LEN));
         AZStd::string expectedMetricsFilePath;
-        ASSERT_TRUE(AzFramework::StringFunc::Path::Join(resolvedPath, metricsFileName, expectedMetricsFilePath));
+        ASSERT_TRUE(AzFramework::StringFunc::Path::Join(resolvedPath, AwsMetricsLocalFileName, expectedMetricsFilePath));
 
         ASSERT_EQ(strcmp(m_clientConfiguration->GetMetricsFileDir(), resolvedPath), 0);
         ASSERT_EQ(m_clientConfiguration->GetMetricsFileFullPath(), expectedMetricsFilePath);

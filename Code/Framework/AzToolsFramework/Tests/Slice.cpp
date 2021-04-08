@@ -25,6 +25,8 @@
 #include <AzToolsFramework/Entity/EditorEntitySortComponent.h>
 #include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
 #include <AzToolsFramework/UI/Slice/SlicePushWidget.hxx>
+#include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
+#include <AzToolsFramework/UnitTest/ToolsTestApplication.h>
 
 namespace UnitTest
 {
@@ -40,7 +42,7 @@ namespace UnitTest
         {
             AZ::ComponentApplication::Descriptor componentApplicationDesc;
             componentApplicationDesc.m_useExistingAllocator = true;
-            m_application = aznew AzToolsFramework::ToolsApplication();
+            m_application = aznew ToolsTestApplication("SlicePushCyclicDependencyTest");
             m_application->Start(componentApplicationDesc);
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
             // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
@@ -118,7 +120,7 @@ namespace UnitTest
 
     public:
         AZ::IO::LocalFileIO m_localFileIO;
-        AzToolsFramework::ToolsApplication* m_application = nullptr;
+        ToolsTestApplication* m_application = nullptr;
 
         AZStd::unordered_map<AZ::Data::AssetId, AZ::Data::Asset<AZ::SliceAsset>> m_sliceAssets;
     };
@@ -128,6 +130,8 @@ namespace UnitTest
     // time.
     TEST_F(SlicePushCyclicDependencyTest, PushTwoSlicesToDependOnEachOther)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         AZ::Entity* entity = aznew AZ::Entity("TestEntity0");
         entity->CreateComponent<AzToolsFramework::Components::TransformComponent>();
         AZ::Data::AssetId sliceAssetId0 = SaveAsSlice(entity);
@@ -170,6 +174,8 @@ namespace UnitTest
 
     TEST_F(SlicePushCyclicDependencyTest, PushMultipleEntitiesOneOfChildrenCauseCyclicDependency)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         AZ::Entity* tempAssetEntity = aznew AZ::Entity("TestEntity0");
         tempAssetEntity->CreateComponent<AzToolsFramework::Components::TransformComponent>();
         AZ::Data::AssetId sliceAssetId0 = SaveAsSlice(tempAssetEntity);
@@ -275,6 +281,8 @@ namespace UnitTest
 
     TEST_F(SlicePushCyclicDependencyTest, PushSliceWithNewDuplicatedChild)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         AZ::Entity* entity = aznew AZ::Entity("TestEntity0");
         entity->CreateComponent<AzToolsFramework::Components::TransformComponent>();
         AZ::Data::AssetId sliceAssetId0 = SaveAsSlice(entity);
@@ -319,6 +327,8 @@ namespace UnitTest
     // (e.g. they would create a circular dependency).
     TEST_F(SlicePushCyclicDependencyTest, SlicePush_DontPushSomeChildren_ChildrenRemovedFromChildOrderArray)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         AZ::Data::AssetManager& assetManager = AZ::Data::AssetManager::Instance();
         
         // Create a slice
@@ -471,6 +481,8 @@ namespace UnitTest
     // If the bug is present, a warning will be thrown which fails this unit test.
     TEST_F(SliceActivationOrderTest, ActivationOrderShouldNotAffectUndoCache)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         // Create a parent entity with a transform component
         AZ::Entity* parentEntity = aznew AZ::Entity("TestParentEntity");
         parentEntity->CreateComponent<AzToolsFramework::Components::TransformComponent>();
@@ -552,6 +564,8 @@ namespace UnitTest
 
     TEST_F(SlicePushWidgetTest, SlicePushWidget_CalculateLevelReferences_ReferenceCountCorrect)
     {
+        AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
+
         // Create an entities and make it a slice.
         AZ::Entity* entity0 = aznew AZ::Entity("TestEntity0");
         entity0->CreateComponent<AzToolsFramework::Components::TransformComponent>();

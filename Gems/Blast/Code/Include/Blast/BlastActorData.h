@@ -12,6 +12,7 @@
 #pragma once
 
 #include <AzCore/Asset/AssetTypeInfoBus.h>
+#include <AzCore/Component/Entity.h>
 #include <AzCore/Math/Transform.h>
 #include <Blast/BlastActor.h>
 

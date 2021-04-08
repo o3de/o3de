@@ -584,6 +584,74 @@ namespace ScriptCanvasEditor
         return true;
     }
 
+    void Graph::HandleFunctionDefinitionExtension(ScriptCanvas::Node* node, GraphCanvas::SlotId graphCanvasSlotId, const GraphCanvas::NodeId& nodeId)
+    {
+        // Special-case for the execution nodeling extensions, which are adding input/output data slots.
+        // We want to automatically promote them to variables so that the user can refer to them more easily
+        auto functionDefintionNode = azrtti_cast<ScriptCanvas::Nodes::Core::FunctionDefinitionNode*>(node);
+        if (functionDefintionNode && graphCanvasSlotId.IsValid())
+        {
+            GraphCanvas::Endpoint endpoint;
+            GraphCanvas::SlotRequestBus::EventResult(endpoint, graphCanvasSlotId, &GraphCanvas::SlotRequests::GetEndpoint);
+
+            const ScriptCanvas::Endpoint scEndpoint = ConvertToScriptCanvasEndpoint(endpoint);
+            if (scEndpoint.IsValid())
+            {
+                ScriptCanvas::Slot* slot = FindSlot(scEndpoint);
+
+                if (slot)
+                {
+                    AZ::Vector2 position;
+                    GraphCanvas::GeometryRequestBus::EventResult(position, nodeId, &GraphCanvas::GeometryRequests::GetPosition);
+
+                    // First we need to automatically display the ShowSlotTypeSelector dialog so the user
+                    // can assign a type and name to the slot they are adding
+                    VariablePaletteRequests::SlotSetup selectedSlotSetup;
+                    bool createSlot = false;
+                    QPoint scenePoint(aznumeric_cast<int>(position.GetX()), aznumeric_cast<int>(position.GetY()));
+                    VariablePaletteRequestBus::BroadcastResult(createSlot, &VariablePaletteRequests::ShowSlotTypeSelector, slot, scenePoint, selectedSlotSetup);
+
+                    if (createSlot && !selectedSlotSetup.m_type.IsNull())
+                    {
+                        if (slot)
+                        {
+                            auto displayType = ScriptCanvas::Data::FromAZType(selectedSlotSetup.m_type);
+                            if (displayType.IsValid())
+                            {
+                                slot->SetDisplayType(displayType);
+                            }
+
+                            if (!selectedSlotSetup.m_name.empty())
+                            {
+                                slot->Rename(selectedSlotSetup.m_name);
+                            }
+                        }
+
+                        // Now that the slot has a valid type/name, we can actually promote it to a variable
+                        if (PromoteToVariableAction(endpoint) /*&& slot->IsVariableReference()*/)
+                        {
+                            ScriptCanvas::GraphVariable* variable = slot->GetVariable();
+
+                            if (variable)
+                            {
+                                // functions 2.0 set variable scope to function 
+                                auto connectionType = slot->GetConnectionType();
+                                if (variable->GetScope() != ScriptCanvas::VariableFlags::Scope::Function)
+                                {
+                                    variable->SetScope(ScriptCanvas::VariableFlags::Scope::Function);
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        RemoveSlot(endpoint);
+                    }
+                }
+            }
+        }
+    }
+
     AZ::Outcome<ScriptCanvas::Node*> Graph::ReplaceNodeByConfig(ScriptCanvas::Node* oldNode, const ScriptCanvas::NodeConfiguration& nodeConfig,
         ScriptCanvas::ReplacementConnectionMap& remapConnections)
     {
@@ -917,17 +985,6 @@ namespace ScriptCanvasEditor
                                             if (remapVariableOutcome)
                                             {
                                                 node->SetSlotVariableId(slot.GetId(), remapVariableOutcome.GetValue());
-
-                                                ScriptCanvas::GraphVariable* variable2 = nullptr;
-                                                ScriptCanvas::GraphVariableManagerRequestBus::EventResult(variable2, GetScriptCanvasId(), &ScriptCanvas::GraphVariableManagerRequests::FindVariableById, remapVariableOutcome.GetValue());
-
-                                                if (variable2)
-                                                {
-                                                    if (IsRuntimeGraph())
-                                                    {
-                                                        variable2->RemoveScope(ScriptCanvas::VariableFlags::Scope::Output);
-                                                    }
-                                                }
                                             }
                                             else
                                             {
@@ -979,7 +1036,10 @@ namespace ScriptCanvasEditor
             ScriptCanvas::Endpoint scTargetEndpoint = connection->GetTargetEndpoint();
             GraphCanvas::Endpoint targetEndpoint = ConvertToGraphCanvasEndpoint(scTargetEndpoint);
 
+            ScriptCanvas::GraphNotificationBus::Event(GetScriptCanvasId(), &ScriptCanvas::GraphNotifications::OnDisonnectionComplete, connectionId);
+
             DisconnectById(scConnectionId);
+
         }
     }
 
@@ -1002,6 +1062,12 @@ namespace ScriptCanvasEditor
         {
             scConnected = ConfigureConnectionUserData(scSourceEndpoint, scTargetEndpoint, connectionId);
         }
+
+        if (scConnected)
+        {
+            ScriptCanvas::GraphNotificationBus::Event(GetScriptCanvasId(), &ScriptCanvas::GraphNotifications::OnConnectionComplete, connectionId);
+        }
+
 
         return scConnected;
     }
@@ -1777,37 +1843,20 @@ namespace ScriptCanvasEditor
 
                 if (isExecutionNodeling)
                 {
-                    if (!IsFunctionGraph())
-                    {
-                        invalidNodes.insert(nodeId);
-                    }
-                    else
-                    {
-                        AZStd::any* userData = nullptr;
-                        GraphCanvas::NodeRequestBus::EventResult(userData, nodeId, &GraphCanvas::NodeRequests::GetUserData);
-                        AZ::EntityId scSourceNodeId = (userData && userData->is<AZ::EntityId>()) ? *AZStd::any_cast<AZ::EntityId>(userData) : AZ::EntityId();
-                        
+                    AZStd::any* userData = nullptr;
+                    GraphCanvas::NodeRequestBus::EventResult(userData, nodeId, &GraphCanvas::NodeRequests::GetUserData);
+                    AZ::EntityId scSourceNodeId = (userData && userData->is<AZ::EntityId>()) ? *AZStd::any_cast<AZ::EntityId>(userData) : AZ::EntityId();
+
                         ScriptCanvas::Nodes::Core::FunctionDefinitionNode* nodeling = azrtti_cast<ScriptCanvas::Nodes::Core::FunctionDefinitionNode*>(FindNode(scSourceNodeId));
 
-                        if (nodeling)
-                        {
-                            nodeling->RemapId();
-                        }
+                    if (nodeling)
+                    {
+                        nodeling->RemapId();
                     }
                 }
 
-                // Going to disallow all functions nodes inside of functions nodes until we sort out a dependency checking situation to avoid recursion.
                 bool isFunctionNode = false;
                 NodeDescriptorRequestBus::EventResult(isFunctionNode, nodeId, &NodeDescriptorRequests::IsType, NodeDescriptorType::FunctionNode);
-
-                if (isFunctionNode)
-                {
-                    if (IsFunctionGraph())
-                    {
-                        invalidNodes.insert(nodeId);
-                    }
-                }
-
 
                 // Show all hidden slots on a paste, as a temporary fix until I can sort out what I want this to work like.
                 GraphCanvas::NodeRequestBus::Event(nodeId, &GraphCanvas::NodeRequests::ShowAllSlots);
@@ -2021,6 +2070,21 @@ namespace ScriptCanvasEditor
     {
         ScriptCanvas::Endpoint scEndpoint = ConvertToScriptCanvasEndpoint(endpoint);
 
+        ScriptCanvas::Slot* slot = FindSlot(scEndpoint);
+        if (slot)
+        {
+            ScriptCanvas::GraphVariable* variable = slot->GetVariable();
+            if (variable && variable->GetScope() == ScriptCanvas::VariableFlags::Scope::Function)
+            {
+                bool success = false;
+                ScriptCanvas::GraphVariableManagerRequestBus::EventResult(success, GetScriptCanvasId(), &ScriptCanvas::GraphVariableManagerRequests::RemoveVariable, variable->GetVariableId());
+                if (!success)
+                {
+                    AZ_Assert(success, "Failed to remove variable that corresponds to this slot");
+                }
+           }
+        }
+
         ScriptCanvas::Node* canvasNode = FindNode(scEndpoint.GetNodeId());
 
         if (canvasNode)
@@ -2198,36 +2262,18 @@ namespace ScriptCanvasEditor
 
         AZStd::string inBoxText = "";
 
-        while (!nameAvailable)
+        // Special case to try re-using the slot name if this is on an execution nodeling, since the user had just
+        // given it a name already with the ShowSlotTypeSelector dialog
+        if (azrtti_istypeof<ScriptCanvas::Nodes::Core::FunctionDefinitionNode>(activeNode))
         {
-            bool accepted = false;
-            QString name = QInputDialog::getText(mainWindow, "Variable Name", inBoxText.c_str(), QLineEdit::Normal, defaultName.c_str(), &accepted);
-
-            if (!accepted)
-            {
-                break;
-            }
-
-            if (!name.isEmpty())
-            {
-                variableName = name.toUtf8().data();
-                ScriptCanvas::GraphVariableManagerRequestBus::EventResult(nameAvailable, GetScriptCanvasId(), &ScriptCanvas::GraphVariableManagerRequests::IsNameAvailable, variableName);
-
-                if (!nameAvailable)
-                {
-                    inBoxText = AZStd::string::format("\"%s\" is already in use.", variableName.c_str());
-                }
-            }
-            else
-            {
-                inBoxText = "Variable names cannot be empty.";
-            }
+            variableName = activeSlot->GetName();
+            ScriptCanvas::GraphVariableManagerRequestBus::EventResult(nameAvailable, GetScriptCanvasId(), &ScriptCanvas::GraphVariableManagerRequests::IsNameAvailable, variableName);
         }
 
-        if (!nameAvailable)
+        while (!nameAvailable)
         {
-            ReleaseVariableCounter(variableCounter);
-            return false;
+            variableName.append(" (duplicate)");
+            ScriptCanvas::GraphVariableManagerRequestBus::EventResult(nameAvailable, GetScriptCanvasId(), &ScriptCanvas::GraphVariableManagerRequests::IsNameAvailable, variableName);
         }
 
         ScriptCanvas::Datum variableDatum;
@@ -2250,16 +2296,15 @@ namespace ScriptCanvasEditor
 
         AZ::Outcome<ScriptCanvas::VariableId, AZStd::string> addOutcome;
 
+        // #functions2 slot<->variable re-use the activeDatum, send the pointer (actually, all of the source slot information, and make a special conversion)
         ScriptCanvas::GraphVariableManagerRequestBus::EventResult(addOutcome, GetScriptCanvasId(), &ScriptCanvas::GraphVariableManagerRequests::AddVariable, variableName, variableDatum);
 
         if (addOutcome.IsSuccess())
         {
             GraphCanvas::DataSlotRequestBus::Event(endpoint.GetSlotId(), &GraphCanvas::DataSlotRequests::ConvertToReference);
 
-            if (activeSlot->IsVariableReference())
-            {
-                activeSlot->SetVariableReference(addOutcome.GetValue());
-            }
+            activeSlot->SetVariableReference(addOutcome.GetValue());
+
         }
 
         return addOutcome.IsSuccess();
@@ -2348,7 +2393,7 @@ namespace ScriptCanvasEditor
         return false;
     }
 
-    GraphCanvas::SlotId Graph::RequestExtension(const GraphCanvas::NodeId& nodeId, const GraphCanvas::ExtenderId& extenderId)
+    GraphCanvas::SlotId Graph::RequestExtension(const GraphCanvas::NodeId& nodeId, const GraphCanvas::ExtenderId& extenderId, GraphModelRequests::ExtensionRequestReason reason)
     {
         GraphCanvas::SlotId graphCanvasSlotId;
 
@@ -2363,8 +2408,20 @@ namespace ScriptCanvasEditor
             ScriptCanvas::Node* canvasNode = AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::Node>(graphNodeEntity);
             if (canvasNode)
             {
-                ScriptCanvas::SlotId slotId = canvasNode->HandleExtension(extenderId);
-                SlotMappingRequestBus::EventResult(graphCanvasSlotId, nodeId, &SlotMappingRequests::MapToGraphCanvasId, slotId);
+                auto functionDefintionNode = azrtti_cast<ScriptCanvas::Nodes::Core::FunctionDefinitionNode*>(canvasNode);
+                if (functionDefintionNode && reason == GraphModelRequests::ExtensionRequestReason::ConnectionProposal)
+                {
+
+                }
+                else
+                {
+                    ScriptCanvas::SlotId slotId = canvasNode->HandleExtension(extenderId);
+                    if (slotId.IsValid())
+                    {
+                        SlotMappingRequestBus::EventResult(graphCanvasSlotId, nodeId, &SlotMappingRequests::MapToGraphCanvasId, slotId);
+                        HandleFunctionDefinitionExtension(canvasNode, graphCanvasSlotId, nodeId);
+                    }
+                }
             }
         }
 
@@ -3126,7 +3183,7 @@ namespace ScriptCanvasEditor
 
     bool Graph::CanExposeEndpoint(const GraphCanvas::Endpoint& endpoint)
     {
-        bool isEnabled = IsFunctionGraph();
+        bool isEnabled = false;
 
         GraphCanvas::SlotType slotType;
         GraphCanvas::SlotRequestBus::EventResult(slotType, endpoint.GetSlotId(), &GraphCanvas::SlotRequests::GetSlotType);
@@ -3170,6 +3227,10 @@ namespace ScriptCanvasEditor
             {
                 isEnabled = false;
             }
+        }
+        else
+        {
+            isEnabled = true;
         }
 
         bool isNodeling = false;

@@ -334,7 +334,7 @@
                     "description": "Blend Mask UV set.",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_blendMaskUvIndex"
@@ -355,7 +355,7 @@
                     "description": "UV set that supports parallax mapping.",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_parallaxUvIndex"
@@ -451,7 +451,7 @@
                     "description": "Opacity texture map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_opacityMapUvIndex"
@@ -589,7 +589,7 @@
                     "description": "Influence map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_subsurfaceScatteringInfluenceMapUvIndex"
@@ -668,7 +668,7 @@
                     "description": "Thickness map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_transmissionThicknessMapUvIndex"
@@ -788,7 +788,7 @@
                     "description": "Base color texture map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_layer1_m_baseColorMapUvIndex"
@@ -844,7 +844,7 @@
                     "description": "Metallic texture map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_layer1_m_metallicMapUvIndex"
@@ -875,7 +875,7 @@
                     "description": "Roughness texture map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_layer1_m_roughnessMapUvIndex"
@@ -961,7 +961,7 @@
                     "description": "Specular reflection texture map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_layer1_m_specularF0MapUvIndex"
@@ -992,7 +992,7 @@
                     "description": "Normal texture map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_layer1_m_normalMapUvIndex"
@@ -1078,7 +1078,7 @@
                     "description": "Strength factor texture map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_layer1_m_clearCoatInfluenceMapUvIndex"
@@ -1120,7 +1120,7 @@
                     "description": "Roughness texture map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_layer1_m_clearCoatRoughnessMapUvIndex"
@@ -1162,7 +1162,7 @@
                     "description": "Normal texture map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_layer1_m_clearCoatNormalMapUvIndex"
@@ -1193,7 +1193,7 @@
                     "description": "Ambient occlusion texture map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_layer1_m_ambientOcclusionMapUvIndex"
@@ -1274,7 +1274,7 @@
                     "description": "Emissive texture map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_layer1_m_emissiveMapUvIndex"
@@ -1439,7 +1439,7 @@
                     "description": "Base color texture map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_layer2_m_baseColorMapUvIndex"
@@ -1495,7 +1495,7 @@
                     "description": "Metallic texture map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_layer2_m_metallicMapUvIndex"
@@ -1526,7 +1526,7 @@
                     "description": "Roughness texture map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_layer2_m_roughnessMapUvIndex"
@@ -1612,7 +1612,7 @@
                     "description": "Specular reflection texture map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_layer2_m_specularF0MapUvIndex"
@@ -1643,7 +1643,7 @@
                     "description": "Normal texture map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_layer2_m_normalMapUvIndex"
@@ -1729,7 +1729,7 @@
                     "description": "Strength factor texture map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_layer2_m_clearCoatInfluenceMapUvIndex"
@@ -1771,7 +1771,7 @@
                     "description": "Roughness texture map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_layer2_m_clearCoatRoughnessMapUvIndex"
@@ -1813,7 +1813,7 @@
                     "description": "Normal texture map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_layer2_m_clearCoatNormalMapUvIndex"
@@ -1844,7 +1844,7 @@
                     "description": "Ambient occlusion texture map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_layer2_m_ambientOcclusionMapUvIndex"
@@ -1925,7 +1925,7 @@
                     "description": "Emissive texture map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_layer2_m_emissiveMapUvIndex"
@@ -2090,7 +2090,7 @@
                     "description": "Base color texture map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_layer3_m_baseColorMapUvIndex"
@@ -2146,7 +2146,7 @@
                     "description": "Metallic texture map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_layer3_m_metallicMapUvIndex"
@@ -2177,7 +2177,7 @@
                     "description": "Roughness texture map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_layer3_m_roughnessMapUvIndex"
@@ -2263,7 +2263,7 @@
                     "description": "Specular reflection texture map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_layer3_m_specularF0MapUvIndex"
@@ -2294,7 +2294,7 @@
                     "description": "Normal texture map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_layer3_m_normalMapUvIndex"
@@ -2380,7 +2380,7 @@
                     "description": "Strength factor texture map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_layer3_m_clearCoatInfluenceMapUvIndex"
@@ -2422,7 +2422,7 @@
                     "description": "Roughness texture map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_layer3_m_clearCoatRoughnessMapUvIndex"
@@ -2464,7 +2464,7 @@
                     "description": "Normal texture map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_layer3_m_clearCoatNormalMapUvIndex"
@@ -2495,7 +2495,7 @@
                     "description": "Ambient occlusion texture map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_layer3_m_ambientOcclusionMapUvIndex"
@@ -2576,7 +2576,7 @@
                     "description": "Emissive texture map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Base",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_layer3_m_emissiveMapUvIndex"
@@ -3206,8 +3206,8 @@
         }
     ],
     "uvNameMap": {
-        "UV0": "Base",
-        "UV1": "Packed"
+        "UV0": "Tiled",
+        "UV1": "Unwrapped"
     }
 }
 

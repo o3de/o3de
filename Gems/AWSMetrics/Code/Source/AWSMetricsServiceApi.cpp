@@ -21,29 +21,29 @@ namespace AWSMetrics
     {
         bool MetricsEventSuccessResponseRecord::OnJsonKey(const char* key, AWSCore::JsonReader& reader)
         {
-            if (strcmp(key, SUCCESS_RESPONSE_RECORD_KEY_ERROR_CODE) == 0) return reader.Accept(errorCode);
+            if (strcmp(key, AwsMetricsSuccessResponseRecordKeyErrorCode) == 0) return reader.Accept(errorCode);
 
-            if (strcmp(key, SUCCESS_RESPONSE_RECORD_KEY_RESULT) == 0) return reader.Accept(result);
+            if (strcmp(key, AwsMetricsSuccessResponseRecordKeyResult) == 0) return reader.Accept(result);
 
             return reader.Ignore();
         }
 
         bool MetricsEventSuccessResponse::OnJsonKey(const char* key, AWSCore::JsonReader& reader)
         {
-            if (strcmp(key, SUCCESS_RESPONSE_KEY_FAILED_RECORD_COUNT) == 0) return reader.Accept(failedRecordCount);
+            if (strcmp(key, AwsMetricsSuccessResponseKeyFailedRecordCount) == 0) return reader.Accept(failedRecordCount);
 
-            if (strcmp(key, SUCCESS_RESPONSE_KEY_EVENTS) == 0) return reader.Accept(events);
+            if (strcmp(key, AwsMetricsSuccessResponseKeyEvents) == 0) return reader.Accept(events);
 
-            if (strcmp(key, SUCCESS_RESPONSE_KEY_TOTAL) == 0) return reader.Accept(total);
+            if (strcmp(key, AwsMetricsSuccessResponseKeyTotal) == 0) return reader.Accept(total);
 
             return reader.Ignore();
         }
 
         bool Error::OnJsonKey(const char* key, AWSCore::JsonReader& reader)
         {
-            if (strcmp(key, ERROR_KEY_MESSAGE) == 0) return reader.Accept(message);
+            if (strcmp(key, AwsMetricsErrorKeyMessage) == 0) return reader.Accept(message);
 
-            if (strcmp(key, ERROR_KEY_TYPE) == 0) return reader.Accept(type);
+            if (strcmp(key, AwsMetricsErrorKeyType) == 0) return reader.Accept(type);
 
             return reader.Ignore();
         }
@@ -63,7 +63,7 @@ namespace AWSMetrics
 
             ok = ok && writer.StartObject();
 
-            ok = ok && writer.Key(REQUEST_PARAMETER_KEY_EVENTS);
+            ok = ok && writer.Key(AwsMetricsRequestParameterKeyEvents);
             ok = ok && data.SerializeToJson(writer);
 
             ok = ok && writer.EndObject();

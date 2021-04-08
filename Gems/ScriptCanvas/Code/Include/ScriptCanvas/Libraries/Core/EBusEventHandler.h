@@ -103,7 +103,7 @@ namespace ScriptCanvas
 
                 bool IsOutOfDate(const VersionData& graphVersion) const override;
 
-                bool IsSupportedByNewBackend() const override { return true; }
+                
                 
                 bool CreateHandler(AZStd::string_view ebusName);
 
@@ -117,7 +117,7 @@ namespace ScriptCanvas
                 bool IsEBusAddressed() const override;
                 const EBusEventEntry* FindEvent(const AZStd::string& name) const;
                 AZStd::string GetEBusName() const override;
-                bool HandlerStartsConnected() const override;
+                bool IsAutoConnected() const override;
                 const Datum* GetHandlerStartAddress() const override;
                 const Slot* GetEBusConnectAddressSlot() const override;
                 AZStd::vector<const Slot*> GetOnVariableHandlingDataSlots() const override;
@@ -166,7 +166,7 @@ namespace ScriptCanvas
 
             protected:
 
-                SlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot& executionSlot, CombinedSlotType targetSlotType, const Slot* executionChildSlot) const override;
+                ConstSlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot& executionSlot, CombinedSlotType targetSlotType, const Slot* executionChildSlot) const override;
 
                 inline bool IsConfigured() const { return !m_eventMap.empty(); }
                 

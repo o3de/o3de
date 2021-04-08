@@ -368,7 +368,7 @@ namespace UnitTest
             AZ_TEST_START_TRACE_SUPPRESSION;
 
             // Set the connection's local slot name to a garbage value
-            m_data->m_parentPass.m_passRequests[3].m_inputConnections[1].m_localSlot = "NonExistantName";
+            m_data->m_parentPass.m_passRequests[3].m_connections[1].m_localSlot = "NonExistantName";
             m_data->AddPassTemplatesToLibrary();
 
             Ptr<Pass> parentPass = m_passSystem->CreatePassFromTemplate(Name("ParentPass"), Name("ParentPass"));
@@ -381,7 +381,7 @@ namespace UnitTest
             EXPECT_FALSE(validationResults.IsValid());
             EXPECT_EQ(1, validationResults.m_passesWithErrors.size());
 
-            AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+            AZ_TEST_STOP_TRACE_SUPPRESSION(2);
         }
 
         // Tests that validation correctly fails when connection's target slot name is set to a garbage value
@@ -390,7 +390,7 @@ namespace UnitTest
             AZ_TEST_START_TRACE_SUPPRESSION;
 
             // Set the connection's target slot name to a garbage value
-            m_data->m_parentPass.m_passRequests[3].m_inputConnections[1].m_attachmentRef.m_attachment = "NonExistantName";
+            m_data->m_parentPass.m_passRequests[3].m_connections[1].m_attachmentRef.m_attachment = "NonExistantName";
             m_data->AddPassTemplatesToLibrary();
 
             Ptr<Pass> parentPass = m_passSystem->CreatePassFromTemplate(Name("ParentPass"), Name("ParentPass"));
@@ -414,7 +414,7 @@ namespace UnitTest
             AZ_TEST_START_TRACE_SUPPRESSION;
 
             // Set the connection's target pass name to a garbage value
-            m_data->m_parentPass.m_passRequests[3].m_inputConnections[1].m_attachmentRef.m_pass = "NonExistantName";
+            m_data->m_parentPass.m_passRequests[3].m_connections[1].m_attachmentRef.m_pass = "NonExistantName";
             m_data->AddPassTemplatesToLibrary();
 
             Ptr<Pass> parentPass = m_passSystem->CreatePassFromTemplate(Name("ParentPass"), Name("ParentPass"));
@@ -438,7 +438,7 @@ namespace UnitTest
             AZ_TEST_START_TRACE_SUPPRESSION;
 
             // Set one of the inputs to be connected to another input, which is invalid
-            m_data->m_parentPass.m_passRequests[3].m_inputConnections[1].m_attachmentRef.m_attachment = "LightListInput";
+            m_data->m_parentPass.m_passRequests[3].m_connections[1].m_attachmentRef.m_attachment = "LightListInput";
             m_data->AddPassTemplatesToLibrary();
 
             Ptr<Pass> parentPass = m_passSystem->CreatePassFromTemplate(Name("ParentPass"), Name("ParentPass"));
@@ -462,7 +462,7 @@ namespace UnitTest
             AZ_TEST_START_TRACE_SUPPRESSION;
 
             // Set parent output to be connect to child input, which is invalid
-            m_data->m_parentPass.m_outputConnections[0].m_attachmentRef.m_attachment = "LightingInput";
+            m_data->m_parentPass.m_connections[0].m_attachmentRef.m_attachment = "LightingInput";
             m_data->AddPassTemplatesToLibrary();
 
             Ptr<Pass> parentPass = m_passSystem->CreatePassFromTemplate(Name("ParentPass"), Name("ParentPass"));

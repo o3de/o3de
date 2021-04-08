@@ -56,7 +56,7 @@ namespace NvCloth
         }
 
         template <typename T>
-        void CopyNvRange(const nv::cloth::Range<const T>& nvRange, AZStd::vector<T>& azVector)
+        static void CopyNvRange(const nv::cloth::Range<const T>& nvRange, AZStd::vector<T>& azVector)
         {
             azVector.resize(nvRange.size());
             AZStd::copy(nvRange.begin(), nvRange.end(), azVector.begin());

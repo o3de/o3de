@@ -52,10 +52,6 @@ namespace AZ
         FastDepthAwareBlurHorPass::FastDepthAwareBlurHorPass(const RPI::PassDescriptor& descriptor)
             : RPI::ComputePass(descriptor)
         {
-            if (m_shaderResourceGroup)
-            {
-                m_constantsIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_constants"));
-            }
             // Though this is a fullscreen pass, the algorithm used makes each thread output 3 blurred pixels, so
             // it's not a 1-to-1 ratio and requires custom calculation of target thread counts
             m_isFullscreenPass = false;
@@ -78,10 +74,7 @@ namespace AZ
 
             m_passConstants.InitializeFromSize(size);
 
-            if (m_constantsIndex.IsValid())
-            {
-                m_shaderResourceGroup->SetConstant(m_constantsIndex, m_passConstants);
-            }
+            m_shaderResourceGroup->SetConstant(m_constantsIndex, m_passConstants);
 
             // The algorithm has each thread output three pixels in the blur direction
             u32 targetThreadCountX = (size.m_width + 2) / 3;
@@ -101,10 +94,6 @@ namespace AZ
         FastDepthAwareBlurVerPass::FastDepthAwareBlurVerPass(const RPI::PassDescriptor& descriptor)
             : RPI::ComputePass(descriptor)
         {
-            if (m_shaderResourceGroup)
-            {
-                m_constantsIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_constants"));
-            }
             // Though this is a fullscreen pass, the algorithm used makes each thread output 3 blurred pixels, so
             // it's not a 1-to-1 ratio and requires custom calculation of target thread counts
             m_isFullscreenPass = false;
@@ -127,10 +116,7 @@ namespace AZ
 
             m_passConstants.InitializeFromSize(size);
 
-            if (m_constantsIndex.IsValid())
-            {
-                m_shaderResourceGroup->SetConstant(m_constantsIndex, m_passConstants);
-            }
+            m_shaderResourceGroup->SetConstant(m_constantsIndex, m_passConstants);
 
             // The algorithm has each thread output three pixels in the blur direction
             u32 targetThreadCountY = (size.m_height + 2) / 3;

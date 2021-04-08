@@ -131,6 +131,15 @@ namespace ScriptCanvas
         //! Notification when a connections is removed
         virtual void OnConnectionRemoved(const AZ::EntityId&) {}
 
+        //! Notification when a connections is about to be removed
+        virtual void OnPreConnectionRemoved(const AZ::EntityId&) {}
+
+        //! Notification when a connection is completed
+        virtual void OnConnectionComplete(const AZ::EntityId&) {}
+
+        //! Notification when a connection is completed
+        virtual void OnDisonnectionComplete(const AZ::EntityId&) {}
+
         //! Notification when a batch add for a graph begins
         virtual void OnBatchAddBegin() {}
 

@@ -255,6 +255,7 @@ namespace AZ
 
             AZStd::concurrency_checker m_cullDataConcurrencyCheck;
 
+            AZStd::mutex m_mutex;
         };
         
 

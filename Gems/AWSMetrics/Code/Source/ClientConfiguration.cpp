@@ -78,14 +78,14 @@ namespace AWSMetrics
         }
 
         char resolvedPath[AZ_MAX_PATH_LEN] = { 0 };
-        if (!fileIO->ResolvePath(metricsDir, resolvedPath, AZ_MAX_PATH_LEN))
+        if (!fileIO->ResolvePath(AwsMetricsLocalFileDir, resolvedPath, AZ_MAX_PATH_LEN))
         {
             AZ_Error("AWSMetrics", false, "Failed to resolve the metrics file directory");
             return false;
         }
         m_metricsDir = resolvedPath;
 
-        if (!AzFramework::StringFunc::Path::Join(resolvedPath, metricsFileName, m_metricsFilePath))
+        if (!AzFramework::StringFunc::Path::Join(resolvedPath, AwsMetricsLocalFileName, m_metricsFilePath))
         {
             AZ_Error("AWSMetrics", false, "Failed to construct the metrics file path");
             return false;

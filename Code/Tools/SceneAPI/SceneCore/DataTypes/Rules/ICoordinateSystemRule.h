@@ -43,5 +43,12 @@ namespace AZ::SceneAPI::DataTypes
         virtual CoordinateSystem GetTargetCoordinateSystem() const = 0;
 
         virtual const CoordinateSystemConverter& GetCoordinateSystemConverter() const = 0;
+
+        // advanced coordinate settings
+        virtual bool GetUseAdvancedData() const = 0;
+        virtual const AZStd::string& GetOriginNodeName() const = 0;
+        virtual const Quaternion& GetRotation() const = 0;
+        virtual const Vector3& GetTranslation() const = 0;
+        virtual float GetScale() const = 0;
     };
 } // namespace AZ::SceneAPI::DataTypes

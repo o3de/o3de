@@ -304,10 +304,10 @@ private:
     int m_propagationFlags;
 
     //! Material Used in level.
-    int m_bDummyMaterial       : 1; // Dummy material, name specified but material file not found.
-    int m_bIgnoreNotifyChange  : 1; // Do not send notifications about changes.
-    int m_bRegetPublicParams   : 1;
-    int m_bKeepPublicParamsValues : 1;
+    unsigned int m_bDummyMaterial       : 1; // Dummy material, name specified but material file not found.
+    unsigned int m_bIgnoreNotifyChange  : 1; // Do not send notifications about changes.
+    unsigned int m_bRegetPublicParams   : 1;
+    unsigned int m_bKeepPublicParamsValues : 1;
 
     bool m_allowLayerActivation;
 };

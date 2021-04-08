@@ -30,6 +30,7 @@ namespace AZ
             CameraModule()
             {
                 m_descriptors.insert(m_descriptors.end(), {
+                    CameraControllerComponent::CreateDescriptor(),
                     ArcBallControllerComponent::CreateDescriptor(),
                     CameraComponent::CreateDescriptor(),
                     NoClipControllerComponent::CreateDescriptor(),

@@ -84,7 +84,7 @@ namespace AWSMetrics
     void MetricsManager::SetupJobContext()
     {
         // Avoid using the default job context since we will do blocking IO instead of CPU/memory intensive work
-        unsigned int numWorkerThreads = AZ::GetMin(desiredMaxWorkers, AZStd::thread::hardware_concurrency());
+        unsigned int numWorkerThreads = AZ::GetMin(DesiredMaxWorkers, AZStd::thread::hardware_concurrency());
 
         AZ::JobManagerDesc jobDesc;
         AZ::JobManagerThreadDesc threadDesc;
@@ -147,13 +147,13 @@ namespace AWSMetrics
         else
         {
             // Constant used to convert size limit from MB to Bytes.
-            static constexpr int MB_TO_BYTES = 1000000;
+            static constexpr int MbToBytes = 1000000;
 
             while (metricsQueue->GetNumMetrics() > 0)
             {
                 // Break the metrics queue by the payload and records count limits. Make one or more service API requests to send all the buffered metrics.
                 MetricsQueue metricsEventsToProcess;
-                metricsQueue->PopBufferedEventsByServiceLimits(metricsEventsToProcess, MAX_REST_API_PAYLOAD_SIZE_IN_MB * MB_TO_BYTES, MAX_FIREHOSE_BATCHED_RECORDS_COUNT);
+                metricsQueue->PopBufferedEventsByServiceLimits(metricsEventsToProcess, AwsMetricsMaxRestApiPayloadSizeInMb * MbToBytes, AwsMetricsMaxKinesisBatchedRecordCount);
 
                 SendMetricsToServiceApiAsync(metricsEventsToProcess);
             }
@@ -179,7 +179,7 @@ namespace AWSMetrics
                     for (int index = 0; index < numMetricsEventsInRequest; ++index)
                     {
                         ServiceAPI::MetricsEventSuccessResponseRecord responseRecord;
-                        responseRecord.result = SUCCESS_RESPONSE_RECORD_RESULT;
+                        responseRecord.result = AwsMetricsSuccessResponseRecordResult;
 
                         responseRecords.emplace_back(responseRecord);
                     }
@@ -244,7 +244,7 @@ namespace AWSMetrics
         {
             MetricsEvent metricsEvent = metricsEventsInRequest[index];
 
-            if (responseRecords.size() > 0 && responseRecords[index].result == SUCCESS_RESPONSE_RECORD_RESULT)
+            if (responseRecords.size() > 0 && responseRecords[index].result == AwsMetricsSuccessResponseRecordResult)
             {
                 // The metrics event is sent to the backend successfully.
                 if (metricsEvent.GetNumFailures() == 0)
@@ -304,8 +304,6 @@ namespace AWSMetrics
 
     AZ::Outcome<void, AZStd::string> MetricsManager::SendMetricsToFile(AZStd::shared_ptr<MetricsQueue> metricsQueue)
     {
-        AZStd::string serializedPayload = metricsQueue->SerializeToJson();
-
         AZStd::lock_guard<AZStd::mutex> lock(m_metricsFileMutex);
 
         AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetDirectInstance();
@@ -330,7 +328,10 @@ namespace AWSMetrics
             return AZ::Failure(AZStd::string{ "Failed to create metrics directory" });
         }
 
-        existingMetricsEvents.ReadFromString(serializedPayload);
+        // Append a copy of the metrics queue in the request to the existing metrics events and keep the original submission order.
+        // Do not modify the metrics queue in the request directly for identifying the metrics events for retry on failure.
+        MetricsQueue metricsEventsInRequest = *metricsQueue;
+        existingMetricsEvents.AppendMetrics(metricsEventsInRequest);
         AZStd::string serializedMetrics = existingMetricsEvents.SerializeToJson();
 
         AZ::IO::HandleType fileHandle;

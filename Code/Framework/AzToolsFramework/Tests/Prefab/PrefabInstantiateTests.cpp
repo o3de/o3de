@@ -24,20 +24,22 @@ namespace UnitTest
     TEST_F(PrefabInstantiateTest, PrefabInstantiate_NoNestingTemplate_InstantiateSucceeds)
     {
         AZ::Entity* newEntity = CreateEntity("New Entity");
-
+        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+            &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, AzToolsFramework::EntityList{newEntity});
         AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> firstInstance = m_prefabSystemComponent->CreatePrefab({ newEntity }, {}, "test/path");
         ASSERT_TRUE(firstInstance);
 
         AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> secondInstance = m_prefabSystemComponent->InstantiatePrefab(firstInstance->GetTemplateId());
         ASSERT_TRUE(secondInstance);
 
-        CompareInstances(*firstInstance, *secondInstance);
+        CompareInstances(*firstInstance, *secondInstance, true, false);
     }
 
     TEST_F(PrefabInstantiateTest, PrefabInstantiate_TripleNestingTemplate_InstantiateSucceeds)
     {
         AZ::Entity* newEntity = CreateEntity("New Entity");
-
+        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+            &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, AzToolsFramework::EntityList{newEntity});
         // Build a 3 level deep nested Template
         AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> firstInstance = m_prefabSystemComponent->CreatePrefab({ newEntity }, {}, "test/path1");
         ASSERT_TRUE(firstInstance);
@@ -56,13 +58,14 @@ namespace UnitTest
 
         ASSERT_TRUE(fourthInstance);
 
-        CompareInstances(*thirdInstance, *fourthInstance, false);
+        CompareInstances(*thirdInstance, *fourthInstance, true, false);
     }
 
     TEST_F(PrefabInstantiateTest, PrefabInstantiate_Instantiate10Times_InstantiatesSucceed)
     {
         AZ::Entity* newEntity = CreateEntity("New Entity");
-
+        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+            &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, AzToolsFramework::EntityList{newEntity});
         AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> firstInstance = m_prefabSystemComponent->CreatePrefab({ newEntity }, {}, "test/path");
 
         // Store the generated instances so that the unique_ptrs are destroyed at the end of the test
@@ -76,7 +79,7 @@ namespace UnitTest
 
             ASSERT_TRUE(newInstance);
 
-            CompareInstances(*firstInstance, *newInstance);
+            CompareInstances(*firstInstance, *newInstance, true, false);
 
             newInstances.push_back(AZStd::move(newInstance));
         }

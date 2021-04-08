@@ -38,11 +38,8 @@ namespace EMotionFX
         MOCK_CONST_METHOD1(GetNode, Physics::RagdollNode*(size_t));
         MOCK_CONST_METHOD0(GetNumNodes, size_t());
 
-        MOCK_CONST_METHOD0(GetWorldId, AZ::Crc32());
-
         // WorldBody
         MOCK_CONST_METHOD0(GetEntityId, AZ::EntityId());
-        MOCK_CONST_METHOD0(GetWorld, Physics::World*());
 
         MOCK_CONST_METHOD0(GetTransform, AZ::Transform());
         MOCK_METHOD1(SetTransform, void(const AZ::Transform&));
@@ -52,12 +49,9 @@ namespace EMotionFX
 
         MOCK_CONST_METHOD0(GetAabb, AZ::Aabb());
 
-        MOCK_METHOD1(RayCast, Physics::RayCastHit(const Physics::RayCastRequest&));
+        MOCK_METHOD1(RayCast, AzPhysics::SceneQueryHit(const AzPhysics::RayCastRequest&));
 
         MOCK_CONST_METHOD0(GetNativeType, AZ::Crc32());
         MOCK_CONST_METHOD0(GetNativePointer, void*());
-
-        MOCK_METHOD1(AddToWorld, void(Physics::World&));
-        MOCK_METHOD1(RemoveFromWorld, void(Physics::World&));
     };
 } // namespace EMotionFX

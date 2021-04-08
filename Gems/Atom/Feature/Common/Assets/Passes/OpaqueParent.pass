@@ -281,7 +281,7 @@
                 },
                 {
                     "Name": "MSAAResolveSpecularPass",
-                    "TemplateName": "MSAAResolveColorTemplate",
+                    "TemplateName": "MSAAResolveCustomTemplate",
                     "Connections": [
                         {
                             "LocalSlot": "Input",
@@ -290,7 +290,28 @@
                                 "Attachment": "SpecularInputOutput"
                             }
                         }
-                    ]
+                    ],
+                    "PassData": {
+                        "$type": "FullscreenTrianglePassData",
+                        "ShaderAsset": {
+                            "FilePath": "Shaders/PostProcessing/MSAAResolveCustom.shader"
+                        },
+                        "PipelineViewTag": "MainCamera",
+                        "ShaderDataMappings": {
+                            "UintMappings": [
+                                {
+                                    "Name": "enableNeighborClamping",
+                                    "Value": 1
+                                }
+                            ],
+                            "FloatMappings": [
+                                {
+                                    "Name": "maxNeighborContrast",
+                                    "Value": 1.5
+                                }
+                            ]
+                        }
+                    }
                 },
                 {
                     "Name": "MSAAResolveScatterDistancePass",

@@ -300,6 +300,7 @@ namespace AZ::IO
         using const_iterator = const PathIterator<BasicPath>;
         using iterator = const_iterator;
         friend PathIterator<BasicPath>;
+        friend struct PathReflection;
 
         // constructors and destructor
         constexpr BasicPath() = default;
@@ -629,6 +630,11 @@ namespace AZ::IO
     constexpr BasicPath<StringType> operator/(const BasicPath<StringType>& lhs, AZStd::string_view rhs);
     template <typename StringType>
     constexpr BasicPath<StringType> operator/(const BasicPath<StringType>& lhs, const typename BasicPath<StringType>::value_type* rhs);
+}
+
+namespace AZ
+{
+    AZ_TYPE_INFO_SPECIALIZE(AZ::IO::Path, "{88E0A40F-3085-4CAB-8B11-EF5A2659C71A}");
 }
 
 namespace AZ::IO

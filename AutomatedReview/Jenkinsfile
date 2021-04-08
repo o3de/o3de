@@ -16,6 +16,8 @@ INCREMENTAL_BUILD_SCRIPT_PATH = 'scripts/build/bootstrap/incremental_build_util.
 
 EMPTY_JSON = readJSON text: '{}'
 
+ENGINE_REPOSITORY_NAME = env.DEFAULT_REPOSITORY_NAME
+
 def pipelineProperties = []
 
 def pipelineParameters = [
@@ -117,7 +119,7 @@ def RegexMatcher(str, regex) {
 def LoadPipelineConfig(String pipelineName, String branchName, String scmType) {
     echo 'Loading pipeline config'
     if (scmType == 'codecommit') {
-        PullFilesFromGit(PIPELINE_CONFIG_FILE, branchName)
+        PullFilesFromGit(PIPELINE_CONFIG_FILE, branchName, true, ENGINE_REPOSITORY_NAME)
     }
     def pipelineConfig = {}
     pipelineConfig = readJSON file: PIPELINE_CONFIG_FILE
@@ -132,7 +134,7 @@ def LoadPipelineConfig(String pipelineName, String branchName, String scmType) {
         }
         echo "Downloading platform pipeline configs ${pipeline_config}"
         if (scmType == 'codecommit') {
-            PullFilesFromGit(pipeline_config, branchName)
+            PullFilesFromGit(pipeline_config, branchName, false, ENGINE_REPOSITORY_NAME)
         }
         echo "Searching platform pipeline configs in ${pipeline_config} using ${platform_regex}"
         for (pipeline_config_path in findFiles(glob: pipeline_config)) {
@@ -154,7 +156,7 @@ def LoadPipelineConfig(String pipelineName, String branchName, String scmType) {
         }
         echo "Downloading configs ${build_config}"
         if (scmType == 'codecommit') {
-            PullFilesFromGit(build_config, branchName)
+            PullFilesFromGit(build_config, branchName, false, ENGINE_REPOSITORY_NAME)
         }
         echo "Searching configs in ${build_config} using ${platform_regex}"
         for (build_config_path in findFiles(glob: build_config)) {
@@ -193,29 +195,14 @@ def GetBuildEnvVars(Map platformEnv, Map buildTypeEnv, String pipelineName) {
         // This may override the above one if there is an entry defined by the job
         envVarMap[var.key] = var.value 
     }
-    return envVarMap
-}
+    
+    // Environment that only applies to to Jenkins tweaks.
+    // For 3rdParty downloads, we store them in the EBS volume so we can reuse them across node
+    // instances. This allow us to scale up and down without having to re-download 3rdParty
+    envVarMap['LY_PACKAGE_DOWNLOAD_CACHE_LOCATION'] = "${envVarMap['WORKSPACE']}/3rdParty/downloaded_packages"
+    envVarMap['LY_PACKAGE_UNPACK_LOCATION'] = "${envVarMap['WORKSPACE']}/3rdParty/packages"
 
-def CheckoutBootstrapScripts(String branchName) {
-    checkout([$class: "GitSCM",
-            branches: [[name: "*/${branchName}"]],
-            doGenerateSubmoduleConfigurations: false,
-            extensions: [
-            [
-                $class: "SparseCheckoutPaths",
-                sparseCheckoutPaths: [
-                [ $class: "SparseCheckoutPath", path: "AutomatedReview/" ],
-                [ $class: "SparseCheckoutPath", path: "scripts/build/bootstrap/" ],
-                [ $class: "SparseCheckoutPath", path: "Tools/build/JenkinsScripts/build/Platform" ]
-                ]
-            ],
-            [
-                $class: "CloneOption", depth: 1, noTags: false, reference: "", shallow: true
-            ]
-            ],
-            submoduleCfg: [],
-            userRemoteConfigs: scm.userRemoteConfigs
-        ])
+    return envVarMap
 }
 
 def GetEnvStringList(Map envVarMap) {
@@ -229,7 +216,7 @@ def GetEnvStringList(Map envVarMap) {
 // Pulls/downloads files from the repo through codecommit. Despite Glob matching is NOT supported, '*' is supported
 // as a folder or filename (not a portion, it has to be the whole folder or filename)
 def PullFilesFromGit(String filenamePath, String branchName, boolean failIfNotFound = true, String repositoryName = env.DEFAULT_REPOSITORY_NAME) {
-    echo "PullFilesFromGit filenamePath=${filenamePath} branchName=${branchName}"
+    echo "PullFilesFromGit filenamePath=${filenamePath} branchName=${branchName} repositoryName=${repositoryName}"
     def folderPathParts = filenamePath.tokenize('/')
     def filename = folderPathParts[folderPathParts.size()-1]
     folderPathParts.remove(folderPathParts.size()-1) // remove the filename
@@ -320,18 +307,42 @@ def SetLfsCredentials(cmd, lbl = '') {
     }
 }
 
-def CheckoutRepo(boolean disableSubmodules = false) {
-    palSh('git lfs uninstall', 'Git LFS Uninstall')  // Prevent git from pulling lfs objects during checkout
+def CheckoutBootstrapScripts(String branchName) {
+    checkout([$class: "GitSCM",
+            branches: [[name: "*/${branchName}"]],
+            doGenerateSubmoduleConfigurations: false,
+            extensions: [
+              [
+                $class: "SparseCheckoutPaths",
+                sparseCheckoutPaths: [
+                  [ $class: "SparseCheckoutPath", path: "AutomatedReview/" ],
+                  [ $class: "SparseCheckoutPath", path: "scripts/build/bootstrap/" ],
+                  [ $class: "SparseCheckoutPath", path: "Tools/build/JenkinsScripts/build/Platform" ]
+                ]
+              ],
+              [
+                $class: "CloneOption", depth: 1, noTags: false, reference: "", shallow: true
+              ]
+            ],
+            submoduleCfg: [],
+            userRemoteConfigs: scm.userRemoteConfigs
+          ])
+}
 
-    if(fileExists('.git')) {
-        // If the repository after checkout is locked, likely we took a snapshot while git was running,
-        // to leave the repo in a usable state, garbagecollect. This also helps in situations where 
-        def indexLockFile = '.git/index.lock'
-        if(fileExists(indexLockFile)) {
-            palSh('git gc', 'Git GarbageCollect')
-        }
-        if(fileExists(indexLockFile)) { // if it is still there, remove it
-            palRm(indexLockFile)
+def CheckoutRepo(boolean disableSubmodules = false) {
+    dir(ENGINE_REPOSITORY_NAME) {
+        palSh('git lfs uninstall', 'Git LFS Uninstall') // Prevent git from pulling lfs objects during checkout
+
+        if(fileExists('.git')) {
+            // If the repository after checkout is locked, likely we took a snapshot while git was running,
+            // to leave the repo in a usable state, garbagecollect. This also helps in situations where 
+            def indexLockFile = '.git/index.lock'
+            if(fileExists(indexLockFile)) {
+                palSh('git gc', 'Git GarbageCollect')
+            }
+            if(fileExists(indexLockFile)) { // if it is still there, remove it
+                palRm(indexLockFile)
+            }
         }
     }
 
@@ -344,41 +355,52 @@ def CheckoutRepo(boolean disableSubmodules = false) {
         retryAttempt = retryAttempt + 1
         if(params.PULL_REQUEST_ID) {
             // This is a pull request build. Perform merge with destination branch before building.
-            checkout scm: [
-                $class: 'GitSCM',
-                branches: scm.branches,
-                extensions: [
-                    [$class: 'PreBuildMerge', options: [mergeRemote: 'origin', mergeTarget: params.DESTINATION_BRANCH]],
-                    [$class: 'SubmoduleOption', disableSubmodules: disableSubmodules, recursiveSubmodules: true],
-                    [$class: 'CheckoutOption', timeout: 60]
-                ],
-                userRemoteConfigs: scm.userRemoteConfigs
-            ]
+            dir(ENGINE_REPOSITORY_NAME) {
+                checkout scm: [
+                    $class: 'GitSCM',
+                    branches: scm.branches,
+                    extensions: [
+                        [$class: 'PreBuildMerge', options: [mergeRemote: 'origin', mergeTarget: params.DESTINATION_BRANCH]],
+                        [$class: 'SubmoduleOption', disableSubmodules: disableSubmodules, recursiveSubmodules: true],
+                        [$class: 'CheckoutOption', timeout: 60]
+                    ],
+                    userRemoteConfigs: scm.userRemoteConfigs
+                ]
+            }
         } else {
-            checkout scm: [
-                $class: 'GitSCM',
-                branches: scm.branches,
-                extensions: [
-                    [$class: 'SubmoduleOption', disableSubmodules: disableSubmodules, recursiveSubmodules: true],
-                    [$class: 'CheckoutOption', timeout: 60]
-                ],
-                userRemoteConfigs: scm.userRemoteConfigs
-            ]
+            dir(ENGINE_REPOSITORY_NAME) {
+                checkout scm: [
+                    $class: 'GitSCM',
+                    branches: scm.branches,
+                    extensions: [
+                        [$class: 'SubmoduleOption', disableSubmodules: disableSubmodules, recursiveSubmodules: true],
+                        [$class: 'CheckoutOption', timeout: 60]
+                    ],
+                    userRemoteConfigs: scm.userRemoteConfigs
+               ]
+            }
         }
     }
 
-    // Run lfs in a separate step. Jenkins is unable to load the credentials for the custom LFS endpoint
-    withCredentials([usernamePassword(credentialsId: "${env.GITHUB_USER}", passwordVariable: 'accesstoken', usernameVariable: 'username')]) {
-        SetLfsCredentials("git config -f .lfsconfig lfs.url https://${username}:${accesstoken}@${env.LFS_URL}", 'Set credentials')
-    }
-    palSh('git lfs install', 'Git LFS Install')
-    palSh('git lfs pull', 'Git LFS Pull')
+    // Add folder where we will store the 3rdParty downloads and packages
+    if(!fileExists('3rdParty')) {
+        palMkdir('3rdParty')
+    }    
 
-    // CHANGE_ID is used by some scripts to identify uniquely the current change (usually metric jobs)
-    palSh('git rev-parse HEAD > commitid', 'Getting commit id')
-    env.CHANGE_ID = readFile file: 'commitid'
-    env.CHANGE_ID = env.CHANGE_ID.trim()
-    palRm('commitid')
+    dir(ENGINE_REPOSITORY_NAME) {
+        // Run lfs in a separate step. Jenkins is unable to load the credentials for the custom LFS endpoint
+        withCredentials([usernamePassword(credentialsId: "${env.GITHUB_USER}", passwordVariable: 'accesstoken', usernameVariable: 'username')]) {
+            SetLfsCredentials("git config -f .lfsconfig lfs.url https://${username}:${accesstoken}@${env.LFS_URL}", 'Set credentials')
+        }
+        palSh('git lfs install', 'Git LFS Install')
+        palSh('git lfs pull', 'Git LFS Pull')
+
+        // CHANGE_ID is used by some scripts to identify uniquely the current change (usually metric jobs)
+        palSh('git rev-parse HEAD > commitid', 'Getting commit id')
+        env.CHANGE_ID = readFile file: 'commitid'
+        env.CHANGE_ID = env.CHANGE_ID.trim()
+        palRm('commitid')
+    }
 }
 
 def PreBuildCommonSteps(String pipeline, String branchName, String platform, String buildType, String workspace, boolean mount = true, boolean disableSubmodules = false) {
@@ -409,7 +431,10 @@ def PreBuildCommonSteps(String pipeline, String branchName, String platform, Str
                """
         }
     }
-    if(params.CLEAN_WORKSPACE) {
+
+    // Cleanup previous repo location, we are currently at the root of the workspace, if we have a .git folder
+    // we need to cleanup. Once all branches take this relocation, we can remove this
+    if(params.CLEAN_WORKSPACE || fileExists("${workspace}/.git")) {
         if(fileExists(workspace)) {
             palRmDir(workspace)
         }
@@ -420,19 +445,21 @@ def PreBuildCommonSteps(String pipeline, String branchName, String platform, Str
         CheckoutRepo(disableSubmodules)
 
         // Get python
-        if(env.IS_UNIX) {
+        dir(ENGINE_REPOSITORY_NAME) {
+            if(env.IS_UNIX) {
             sh label: 'Getting python',
                script: 'python/get_python.sh'
-        } else {
-            bat label: 'Getting python',
-                script: 'python/get_python.bat'
+            } else {
+                bat label: 'Getting python',
+                    script: 'python/get_python.bat'
+            }
         }
     }
 }
 
 def Build(Map options, String platform, String type, String workspace) {
     def command = "${options.BUILD_ENTRY_POINT} --platform ${platform} --type ${type}"
-    dir(workspace) {
+    dir("${workspace}/${ENGINE_REPOSITORY_NAME}") {
         if (env.IS_UNIX) {
             sh label: "Running ${platform} ${type}",
                script: "${options.PYTHON_DIR}/python.sh -u ${command}"
@@ -445,8 +472,8 @@ def Build(Map options, String platform, String type, String workspace) {
 
 def TestMetrics(Map options, String workspace, String branchName, String repoName, String buildJobName, String outputDirectory, String configuration) {
     catchError(buildResult: null, stageResult: null) {
-        def cmakeBuildDir = [workspace, outputDirectory].join('/')
-        dir(workspace) {
+        def cmakeBuildDir = [workspace, ENGINE_REPOSITORY_NAME, outputDirectory].join('/')
+        dir("${workspace}/${ENGINE_REPOSITORY_NAME}") {
             checkout scm: [
                 $class: 'GitSCM',
                 branches: [[name: '*/main']],
@@ -468,7 +495,7 @@ def PostBuildCommonSteps(String workspace, boolean mount = true) {
     echo 'Starting post-build common steps...'
 
     if(params.PULL_REQUEST_ID) {
-        dir(workspace) {
+        dir("${workspace}/${ENGINE_REPOSITORY_NAME}") {
             if(fileExists('.git')) {
                 palSh('git reset --hard HEAD', 'Discard PR merge, git reset')
             }
@@ -565,7 +592,7 @@ try {
 
                     // Stash the INCREMENTAL_BUILD_SCRIPT_PATH since all nodes will use it
                     if (scmType == 'codecommit') {
-                        PullFilesFromGit(INCREMENTAL_BUILD_SCRIPT_PATH, branchName)
+                        PullFilesFromGit(INCREMENTAL_BUILD_SCRIPT_PATH, branchName, true, ENGINE_REPOSITORY_NAME)
                     }
                     stash name: 'incremental_build_script',
                           includes: INCREMENTAL_BUILD_SCRIPT_PATH
@@ -612,12 +639,13 @@ try {
                                     } else {
                                         CreateBuildStage(pipelineConfig,  platform.key, build_job.key, envVars).call()
                                     }
+                                    
                                     if (env.MARS_REPO && platform.key == 'Windows' && build_job_name.startsWith('test')) {
                                         def output_directory = platform.value.build_types[build_job_name].PARAMETERS.OUTPUT_DIRECTORY
                                         def configuration = platform.value.build_types[build_job_name].PARAMETERS.CONFIGURATION
                                         CreateTestMetricsStage(pipelineConfig, branchName, envVars, build_job_name, output_directory, configuration).call()
                                     }
-                                }   
+                                }
                                 catch(Exception e) {
                                     //  https://github.com/jenkinsci/jenkins/blob/master/core/src/main/java/hudson/model/Result.java
                                     //  {SUCCESS,UNSTABLE,FAILURE,NOT_BUILT,ABORTED}

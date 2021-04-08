@@ -21,47 +21,47 @@
 """
 .. module:: node_message_callback_handler
     :synopsis: this module contains code related to mNodeName message based callbacks in Maya
- 
+
 .. moduleauthor:: Amazon Lumberyard
- 
+
 .. :note: nothing mundane to declare
 .. :attention: callbacks should be uninstalled on exit
 .. :warning: maya may crash on exit if callbacks are not uninstalled
 
 .. Usage:
-        < To Do >
+    < To Do >
 
 .. Version:
     0.1.0 | prototype
 
 .. History:
     < To Do >
-    
+
 .. Reference:
     MNodeMessage
     This class is used to register callbacks for dependency mNodeName messages of specific dependency nodes.
     http://download.autodesk.com/us/maya/2011help/API/class_m_node_message.html
-    
+
     There are 4 add thisCallback methods which will add callbacks for the following types of messages:
-        Attribute Changed
-        Attribute Added or Removed
-        Node Dirty
-        Name Changed
-        
+    - Attribute Changed
+    - Attribute Added or Removed
+    - Node Dirty
+    - Name Changed
+
     If we import OpenMaya,
     import maya.api.OpenMaya as om
     from maya.api.OpenMaya import MNodeMessage as mNM
-    
+
     The valid callbacks for usage are:
-        mNM.addAttributeChangedCallback
-        mNM.addAttributeAddedOrRemovedCallback
-        mNM.addNodeDirtyCallback
-        mNM.addNodeDirtyPlugCallback
-        mNM.addNameChangedCallback
-        mNM.addNodeAboutToDeleteCallback
-        mNM.addNodePreRemovalCallback
-        mNM.addNodeDestroyedCallback
-        mNM.addKeyableChangeOverride
+    mNM.addAttributeChangedCallback
+    mNM.addAttributeAddedOrRemovedCallback
+    mNM.addNodeDirtyCallback
+    mNM.addNodeDirtyPlugCallback
+    mNM.addNameChangedCallback
+    mNM.addNodeAboutToDeleteCallback
+    mNM.addNodePreRemovalCallback
+    mNM.addNodeDestroyedCallback
+    mNM.addKeyableChangeOverride
 """
 
 # --------------------------------------------------------------------------
@@ -117,12 +117,12 @@ class NodeMessageCallbackHandler(object):
         self._callback_type_id = None
         # state tracker
         self._message_id_set = None
-        
+
         # the this_callback event trigger
         self._this_callback = this_callback
         # the thing to do on this_callback
         self._function  = this_function
-        
+
         # this handlers object mNodeName
         # passing in a null MObject (ie, without a name as an argument)
         # registers the this_callback to get all name changes in the scene
@@ -132,18 +132,18 @@ class NodeMessageCallbackHandler(object):
             self._m_object = om.MObject()
         else:
             self._m_object = om.MObject(mNodeName)
-        
+
         # install / activate this callback
         if install:
             self.install()
     #----------------------------------------------------------------------
-    
-    
+
+
     #--properties----------------------------------------------------------
     @property
     def callback_id(self):
         return self._callback_type_id
-    
+
     @property
     def this_callback(self):
         return self._this_callback    
@@ -152,8 +152,8 @@ class NodeMessageCallbackHandler(object):
     def this_function(self):
         return self._this_function
     #--properties----------------------------------------------------------
-    
-    
+
+
     # --method------------------------------------------------------------- 
     def install(self):
         """
@@ -210,8 +210,8 @@ class NodeMessageCallbackHandler(object):
                                       self._function.__name__))
             return False
     #----------------------------------------------------------------------
-    
-    
+
+
     # --method------------------------------------------------------------- 
     def __del__(self):
         """
@@ -234,7 +234,7 @@ def testNameChanged(*args):
         mNode = None
         _LOGGER.debug('\t~ no node')
         _LOGGER.debug('\t~ warning: {0}'.format(e))
-        
+
     # get old name
     try:
         oldName = args[1]
@@ -242,7 +242,7 @@ def testNameChanged(*args):
         oldName = None
         _LOGGER.debug('\t~ no oldName')
         _LOGGER.debug('\t~ warning: {0}'.format(e))
-        
+
     # convert the MObject to a dep mNode
     try:
         depNode = om.MFnDependencyNode(mNode)
@@ -250,9 +250,9 @@ def testNameChanged(*args):
         depNode = None
         _LOGGER.debug('\t~ no depNode')
         _LOGGER.debug('\t~ warning: {0}'.format(e))
-        
+
     if oldName == (u""): oldName = 'null'
-    
+
     # get node type
     try:
         nodeType = depNode.typeName()
@@ -260,7 +260,7 @@ def testNameChanged(*args):
         nodeType = None
         _LOGGER.debug('\t~ no nodeType')
         _LOGGER.debug('\t~ warning: {0}'.format(e))
-    
+
     # get node name
     try:
         nodeName = depNode.name()
@@ -273,7 +273,7 @@ def testNameChanged(*args):
     _LOGGER.debug('newName: {0}'.format(nodeName))
     _LOGGER.debug('oldName: {0}'.format(oldName))
     _LOGGER.debug('nodeType: {0}'.format(nodeType))
-        
+
     return depNode
 # -------------------------------------------------------------------------
 
@@ -282,8 +282,8 @@ def testNameChanged(*args):
 # Run as LICENSE
 #==========================================================================
 if __name__ == '__main__':
-    
+
     name_changed_callback = om.MNodeMessage.addNameChangedCallback
     ncbh = NodeMessageCallbackHandler(name_changed_callback,
                                       testNameChanged)
-    
+

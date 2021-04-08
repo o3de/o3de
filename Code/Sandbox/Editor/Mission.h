@@ -16,16 +16,6 @@
 #pragma once
 
 
-struct SMinimapInfo
-{
-    Vec2 vCenter;
-    Vec2 vExtends;
-    //  float RenderBoxSize;
-    int textureWidth;
-    int textureHeight;
-    int orientation;
-};
-
 /*!
         CMission represent single Game Mission on same map.
         Multiple Missions share same map, and stored in one .cry or .ly file.
@@ -82,11 +72,6 @@ public:
     void OnEnvironmentChange();
     int GetNumCGFObjects() const { return m_numCGFObjects; };
 
-    //////////////////////////////////////////////////////////////////////////
-    // Minimap.
-    void SetMinimap(const SMinimapInfo& info);
-    const SMinimapInfo& GetMinimap() const;
-
 private:
     //! Document owner of this mission.
     CCryEditDoc* m_doc;
@@ -114,8 +99,6 @@ private:
     XmlNodeRef m_timeOfDay;
 
     int m_numCGFObjects;
-
-    SMinimapInfo m_minimap;
 
     bool m_reentrancyProtector;
 };

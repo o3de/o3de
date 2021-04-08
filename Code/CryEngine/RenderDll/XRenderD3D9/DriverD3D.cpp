@@ -443,7 +443,6 @@ void CD3D9Renderer::InitRenderer()
 
     CV_capture_frames = 0;
     CV_capture_folder = 0;
-    CV_capture_file_format = 0;
     CV_capture_buffer = 0;
 
     m_NewViewport.fMinZ = 0;
@@ -1830,8 +1829,10 @@ bool CD3D9Renderer::PrepFrameCapture(FrameBufferDescription& frameBufDesc, CText
 
     HRESULT hrZ = GetDevice().CreateTexture2D(&tmpZdesc, NULL, &frameBufDesc.tempZtex);
     D3D11_MAPPED_SUBRESOURCE zMappedResource;
-    
-    frameBufDesc.includeAlpha = ((CV_capture_buffer->GetIVal() == ICaptureKey::ColorWithAlpha) && frameBufDesc.tempZtex && (tmpZdesc.Width == frameBufDesc.backBufferDesc.Width) && (tmpZdesc.Height == frameBufDesc.backBufferDesc.Height));
+
+    // default to includeAlpha 'on'
+    frameBufDesc.includeAlpha = frameBufDesc.tempZtex && tmpZdesc.Width == frameBufDesc.backBufferDesc.Width &&
+        tmpZdesc.Height == frameBufDesc.backBufferDesc.Height;
 
     if (frameBufDesc.includeAlpha)
     {
@@ -2095,7 +2096,7 @@ bool CD3D9Renderer::InternalSaveToTIFF(ID3D11Texture2D* backBuffer, const char* 
 void CD3D9Renderer::CacheCaptureCVars()
 {
     // cache console vars
-    if (!CV_capture_frames || !CV_capture_folder || !CV_capture_file_format || !CV_capture_frame_once ||
+    if (!CV_capture_frames || !CV_capture_folder || !CV_capture_frame_once ||
         !CV_capture_file_name || !CV_capture_file_prefix || !CV_capture_buffer)
     {
         ISystem* pSystem(GetISystem());
@@ -2112,7 +2113,6 @@ void CD3D9Renderer::CacheCaptureCVars()
 
         CV_capture_frames = !CV_capture_frames ? pConsole->GetCVar("capture_frames") : CV_capture_frames;
         CV_capture_folder = !CV_capture_folder ? pConsole->GetCVar("capture_folder") : CV_capture_folder;
-        CV_capture_file_format = !CV_capture_file_format ? pConsole->GetCVar("capture_file_format") : CV_capture_file_format;
         CV_capture_frame_once = !CV_capture_frame_once ? pConsole->GetCVar("capture_frame_once") : CV_capture_frame_once;
         CV_capture_file_name = !CV_capture_file_name ? pConsole->GetCVar("capture_file_name") : CV_capture_file_name;
         CV_capture_file_prefix = !CV_capture_file_prefix ? pConsole->GetCVar("capture_file_prefix") : CV_capture_file_prefix;
@@ -2125,7 +2125,7 @@ void CD3D9Renderer::CaptureFrameBuffer()
     CDebugAllowFileAccess ignoreInvalidFileAccess;
 
     CacheCaptureCVars();
-    if (!CV_capture_frames || !CV_capture_folder || !CV_capture_file_format || !CV_capture_frame_once ||
+    if (!CV_capture_frames || !CV_capture_folder || !CV_capture_frame_once ||
         !CV_capture_file_name || !CV_capture_file_prefix || !CV_capture_buffer)
     {
         return;
@@ -2156,7 +2156,7 @@ void CD3D9Renderer::CaptureFrameBuffer()
             }
 
             size_t pathLen = strlen(path);
-            snprintf(&path[pathLen], sizeof(path) - 1 - pathLen, "\\%s%06d.%s", prefix, frameNum - 1, CV_capture_file_format->GetString());
+            snprintf(&path[pathLen], sizeof(path) - 1 - pathLen, "\\%s%06d.%s", prefix, frameNum - 1, "jpg");
         }
 
         if (CV_capture_frame_once->GetIVal())

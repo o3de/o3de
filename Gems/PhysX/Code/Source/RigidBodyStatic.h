@@ -13,34 +13,37 @@
 #pragma once
 
 #include <PxPhysicsAPI.h>
-#include <AzFramework/Physics/RigidBody.h>
+#include <AzFramework/Physics/SimulatedBodies/StaticRigidBody.h>
 #include <AzFramework/Physics/Shape.h>
 #include <PhysX/UserDataTypes.h>
+
+namespace AzPhysics
+{
+    struct StaticRigidBodyConfiguration;
+}
 
 namespace PhysX
 {
     class Shape;
 
-    class RigidBodyStatic
-        : public Physics::RigidBodyStatic
+    class StaticRigidBody
+        : public AzPhysics::StaticRigidBody
     {
     public:
-        AZ_CLASS_ALLOCATOR(RigidBodyStatic, AZ::SystemAllocator, 0);
-        AZ_RTTI(RigidBodyStatic, "{06E960EF-E1F3-466F-B34F-800E32775092}", Physics::RigidBodyStatic);
+        AZ_CLASS_ALLOCATOR(StaticRigidBody, AZ::SystemAllocator, 0);
+        AZ_RTTI(StaticRigidBody, "{06E960EF-E1F3-466F-B34F-800E32775092}", AzPhysics::StaticRigidBody);
 
-        RigidBodyStatic() = default;
-        RigidBodyStatic(const Physics::WorldBodyConfiguration& configuration);
-        ~RigidBodyStatic();
+        StaticRigidBody() = default;
+        StaticRigidBody(const AzPhysics::StaticRigidBodyConfiguration& configuration);
+        ~StaticRigidBody();
 
-        // Physics::RigidBodyStatic
+        // AzPhysics::StaticRigidBody
         void AddShape(const AZStd::shared_ptr<Physics::Shape>& shape) override;
         AZStd::shared_ptr<Physics::Shape> GetShape(AZ::u32 index) override;
         AZ::u32 GetShapeCount() override;
 
-        // Physics::WorldBody
+        // AzPhysics::SimulatedBody
         AZ::EntityId GetEntityId() const override;
-
-        Physics::World* GetWorld() const override;
 
         AZ::Transform GetTransform() const override;
         void SetTransform(const AZ::Transform& transform) override;
@@ -49,17 +52,15 @@ namespace PhysX
         AZ::Quaternion GetOrientation() const override;
 
         AZ::Aabb GetAabb() const override;
-        Physics::RayCastHit RayCast(const Physics::RayCastRequest& request) override;
+        AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& request) override;
 
         virtual AZ::Crc32 GetNativeType() const override;
         virtual void* GetNativePointer() const override;
 
-        void AddToWorld(Physics::World&) override;
-        void RemoveFromWorld(Physics::World&) override;
-
     private:
-        void CreatePxActor(const Physics::WorldBodyConfiguration& configuration);
-        AZStd::shared_ptr<physx::PxRigidStatic> m_staticRigidBody;
+        void CreatePhysXActor(const AzPhysics::StaticRigidBodyConfiguration& configuration);
+
+        AZStd::shared_ptr<physx::PxRigidStatic> m_pxStaticRigidBody;
         AZStd::vector<AZStd::shared_ptr<PhysX::Shape>> m_shapes;
         PhysX::ActorData m_actorUserData;
         AZStd::string m_debugName;

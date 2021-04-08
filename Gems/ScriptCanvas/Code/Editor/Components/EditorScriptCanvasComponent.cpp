@@ -217,11 +217,6 @@ namespace ScriptCanvasEditor
             ScriptCanvasMemoryAsset::pointer memoryAsset;
             AssetTrackerRequestBus::BroadcastResult(memoryAsset, &AssetTrackerRequests::GetAsset, fileAssetId);
 
-            if (!memoryAsset)
-            {
-                AZ_Error("Script Canvas", false, AZStd::string::format("Could not find Script Canvas asset: %s", m_scriptCanvasAssetHolder.GetAssetHint().data()).c_str());
-            }
-
             if (memoryAsset && memoryAsset->GetAsset().GetStatus() == AZ::Data::AssetData::AssetStatus::Ready)
             {
                 OnScriptCanvasAssetReady(memoryAsset);
@@ -292,6 +287,7 @@ namespace ScriptCanvasEditor
         }
         */
 
+        // #functions2 dependency-ctor-args make recursive
         auto executionComponent = gameEntity->CreateComponent<ScriptCanvas::RuntimeComponent>(runtimeAsset);
         ScriptCanvas::VariableData varData;
 
@@ -484,8 +480,8 @@ namespace ScriptCanvasEditor
     /*! Start Variable Block Implementation */
     void EditorScriptCanvasComponent::AddVariable(AZStd::string_view varName, const ScriptCanvas::GraphVariable& graphVariable)
     {
-        bool exposeVariableToComponent = graphVariable.IsInScope(ScriptCanvas::VariableFlags::Scope::Input);
-        if (!exposeVariableToComponent)
+        // We only add component properties to the component
+        if (!graphVariable.IsComponentProperty())
         {
             return;
         }
@@ -533,7 +529,7 @@ namespace ScriptCanvasEditor
             const auto& variableId = varConfig.m_graphVariable.GetVariableId();
 
             auto graphVariable = graphVarData.FindVariable(variableId);
-            if (!graphVariable || !graphVariable->IsInScope(ScriptCanvas::VariableFlags::Scope::Input))
+            if (!graphVariable->IsComponentProperty())
             {
                 oldVariableIds.push_back(variableId);
             }

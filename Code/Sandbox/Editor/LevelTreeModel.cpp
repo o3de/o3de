@@ -131,7 +131,8 @@ void LevelTreeModel::ReloadTree(QStandardItem* root, bool recurseIfNoLevels)
         QDir currentDir(parentFullPath);
         currentDir.setFilter(QDir::NoDot | QDir::NoDotDot | QDir::Dirs);
         const QStringList subFolders = currentDir.entryList();
-        foreach (const QString &subFolder, subFolders) {
+        foreach (const QString &subFolder, subFolders)
+        {
             auto child = new QStandardItem(subFolder);
             child->setData(parentFullPath + "/" + subFolder, FullPathRole);
             child->setEditable(false);

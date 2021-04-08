@@ -13,7 +13,6 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
-#include <AzFramework/Physics/World.h>
 #include <QWidget>
 #include <PhysX/Configuration/PhysXConfiguration.h>
 #endif
@@ -54,7 +53,6 @@ namespace PhysX
             AzToolsFramework::ReflectedPropertyEditor* m_propertyEditor;
             DocumentationLinkWidget* m_documentationLinkWidget;
             Debug::PvdConfiguration m_config;
-            Physics::WorldConfiguration m_worldConfiguration;
         };
     }
 }

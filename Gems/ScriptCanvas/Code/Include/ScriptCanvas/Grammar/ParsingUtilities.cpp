@@ -22,7 +22,7 @@
 #include <ScriptCanvas/Libraries/Core/FunctionDefinitionNode.h>
 #include <ScriptCanvas/Libraries/Core/ExtractProperty.h>
 #include <ScriptCanvas/Libraries/Core/ForEach.h>
-#include <ScriptCanvas/Libraries/Core/FunctionNode.h>
+#include <ScriptCanvas/Libraries/Core/FunctionCallNode.h>
 #include <ScriptCanvas/Libraries/Core/GetVariable.h>
 #include <ScriptCanvas/Libraries/Core/Method.h>
 #include <ScriptCanvas/Libraries/Core/ReceiveScriptEvent.h>
@@ -53,7 +53,7 @@ namespace ParsingUtilitiesCpp
     using namespace ScriptCanvas::Grammar;
 
     class PrettyPrinter
-        : public ExecutionTreeIterationListener
+        : public ExecutionTreeTraversalListener
     {
     public:
         PrettyPrinter() = default;
@@ -136,6 +136,33 @@ namespace ScriptCanvas
             , name(name)
             , lexicalScope(scopeType)
         {}
+
+        void VariableUseage::Clear()
+        {
+            localVariables.clear();
+            memberVariables.clear();
+        }
+
+        void VariableUseage::Parse(VariableConstPtr variable)
+        {
+            usesExternallyInitializedVariables = usesExternallyInitializedVariables || IsExternallyInitialized(variable);
+
+            if (IsManuallyDeclaredUserVariable(variable))
+            {
+                if (variable->m_isMember)
+                {
+                    memberVariables.insert(variable);
+                }
+                else
+                {
+                    localVariables.insert(variable);
+                }
+            }
+            else if (variable->m_isMember)
+            {
+                implicitMemberVariables.insert(variable);
+            }
+        }
 
         bool ActivatesSelf(const ExecutionTreeConstPtr& execution)
         {
@@ -271,6 +298,23 @@ namespace ScriptCanvas
             return execution->GetSymbol();
         }
 
+        NodelingType CheckNodelingType(const Node& node)
+        {
+            if (auto nodeling = azrtti_cast<const ScriptCanvas::Nodes::Core::FunctionDefinitionNode*>(&node))
+            {
+                if (nodeling->IsExecutionEntry())
+                {
+                    return NodelingType::In;
+                }
+                else if (nodeling->IsExecutionExit())
+                {
+                    return NodelingType::Out;
+                }               
+            }
+
+            return NodelingType::None;
+        }
+
         CheckOperatorResult CheckOperatorArithmeticSymbol(const ExecutionTreeConstPtr& execution)
         {
             if (azrtti_istypeof<const ScriptCanvas::Nodes::Operators::OperatorArithmetic*>(execution->GetId().m_node))
@@ -343,6 +387,12 @@ namespace ScriptCanvas
             {
                 identifier.insert(0, "_");
             }
+        }
+
+        bool ExecutionContainsCycles(const Node& node, const Slot& outSlot)
+        {
+            GraphExecutionPathTraversalListener listener;
+            return TraverseExecutionConnections(node, outSlot, listener) != ExecutionTraversalResult::Success;
         }
 
         bool ExecutionWritesVariable(ExecutionTreeConstPtr execution, VariableConstPtr variable)
@@ -435,6 +485,14 @@ namespace ScriptCanvas
             return azrtti_istypeof<const ScriptCanvas::Nodes::Logic::Break*>(execution->GetId().m_node);
         }
 
+        bool IsCodeConstructable(Grammar::VariableConstPtr value)
+        {
+            return Data::IsValueType(value->m_datum.GetType())
+                // || value->m_datum.GetType().GetAZType() == azrtti_typeid<Nodeable>() // <--- cut this.. can't be needed or correct
+                || value->m_datum.GetAsDanger() == nullptr;
+            ;
+        }
+
         bool IsCycle(const Node& node)
         {
             return azrtti_istypeof<const ScriptCanvas::Nodes::Logic::Cycle>(node);
@@ -504,6 +562,13 @@ namespace ScriptCanvas
             return execution->GetExecutedPropertyExtraction() != nullptr;
         }
 
+
+        bool IsExternallyInitialized(VariableConstPtr value)
+        {
+            const auto requirement = ParseConstructionRequirement(value);
+            return !(requirement == VariableConstructionRequirement::None || requirement == VariableConstructionRequirement::Static);
+        }
+
         bool IsFloatingPointNumberEqualityComparison(ExecutionTreeConstPtr execution)
         {
             const auto symbol = execution->GetSymbol();
@@ -524,7 +589,7 @@ namespace ScriptCanvas
                 || IsRandomSwitchStatement(execution)
                 || IsSequenceNode(execution)
                 || IsSwitchStatement(execution)
-                || IsUserOut(execution)
+                || IsUserOutNode(execution)
                 || IsWhileLoop(execution);
         }
 
@@ -676,6 +741,15 @@ namespace ScriptCanvas
         {
             return symbol == Symbol::ForEach
                 || symbol == Symbol::While;
+        }
+
+        bool IsManuallyDeclaredUserVariable(VariableConstPtr variable)
+        {
+            return variable
+                && variable->m_source == nullptr
+                && !variable->m_sourceSlotId.IsValid()
+                && variable->m_sourceVariableId.IsValid()
+                && !variable->m_nodeableNodeId.IsValid();
         }
 
         bool IsMidSequence(const ExecutionTreeConstPtr& execution)
@@ -866,6 +940,28 @@ namespace ScriptCanvas
             return azrtti_istypeof<const ScriptCanvas::Nodes::Core::ExtractProperty*>(execution->GetId().m_node);
         }
 
+        bool IsPure(Symbol symbol)
+        {
+            return symbol != Symbol::Cycle;
+        }
+
+        bool IsPure(const Node* node, const Slot* slot)
+        {
+            if (auto userFunctionCall = azrtti_cast<const ScriptCanvas::Nodes::Core::FunctionCallNode*>(node))
+            {
+                if (!userFunctionCall->IsSlotPure(slot))
+                {
+                    return false;
+                }
+            }
+            else if (node && IsOnce(*node))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         bool IsRandomSwitchStatement(const ExecutionTreeConstPtr& execution)
         {
             return azrtti_istypeof<const ScriptCanvas::Nodes::Logic::WeightedRandomSequencer>(execution->GetId().m_node)
@@ -892,28 +988,25 @@ namespace ScriptCanvas
         bool IsUserFunctionCall(const ExecutionTreeConstPtr& execution)
         {
             return (execution->GetSymbol() == Symbol::FunctionCall)
-                && azrtti_istypeof<const ScriptCanvas::Nodes::Core::FunctionNode*>(execution->GetId().m_node);
-        }
-
-        bool IsUserFunctionCallPure(const ExecutionTreeConstPtr& execution)
-        {
-            const auto& id = execution->GetId();
-            return execution->GetSymbol() == Symbol::FunctionCall
-                && azrtti_istypeof<const ScriptCanvas::Nodes::Core::FunctionNode*>(id.m_node)
-                && azrtti_cast<const ScriptCanvas::Nodes::Core::FunctionNode*>(id.m_node)->IsSlotPure(execution->GetId().m_slot);
+                && azrtti_istypeof<const ScriptCanvas::Nodes::Core::FunctionCallNode*>(execution->GetId().m_node);
         }
 
         bool IsUserFunctionDefinition(const ExecutionTreeConstPtr& execution)
         {
-            return (execution->GetSymbol() == Symbol::FunctionDefinition)
-                && azrtti_istypeof<const ScriptCanvas::Nodes::Core::FunctionNode*>(execution->GetId().m_node);
+            auto nodeling = azrtti_cast<const ScriptCanvas::Nodes::Core::FunctionDefinitionNode*>(execution->GetId().m_node);
+            return nodeling && nodeling->IsExecutionEntry() && execution->GetSymbol() == Symbol::FunctionDefinition;
         }
 
-        bool IsUserOut(const ExecutionTreeConstPtr& execution)
+        const ScriptCanvas::Nodes::Core::FunctionDefinitionNode* IsUserOutNode(const Node* node)
         {
-            auto nodeling = azrtti_cast<const ScriptCanvas::Nodes::Core::FunctionDefinitionNode*>(execution->GetId().m_node);
-            // \todo change this evaluation, it is too brittle
-            return nodeling && !nodeling->IsEntryPoint();
+            auto nodeling = azrtti_cast<const ScriptCanvas::Nodes::Core::FunctionDefinitionNode*>(node);
+            return nodeling && nodeling->IsExecutionExit() ? nodeling : nullptr;
+        }
+
+        const ScriptCanvas::Nodes::Core::FunctionDefinitionNode* IsUserOutNode(const ExecutionTreeConstPtr& execution)
+        {
+            auto nodeling = IsUserOutNode(execution->GetId().m_node);
+            return nodeling ? nodeling : nullptr;
         }
 
         bool IsVariableGet(const ExecutionTreeConstPtr& execution)
@@ -942,6 +1035,86 @@ namespace ScriptCanvas
         AZStd::string MakeMemberVariableName(AZStd::string_view name)
         {
             return AZStd::string::format("%s%s", k_memberNamePrefix, name.data());
+        }
+
+        VariableConstructionRequirement ParseConstructionRequirement(VariableConstPtr variable)
+        {
+            if (IsEntityIdThatRequiresRuntimeRemap(variable))
+            {
+                return VariableConstructionRequirement::InputEntityId;
+            }
+            else if (variable->m_isExposedToConstruction)
+            {
+                if (variable->m_sourceVariableId.IsValid())
+                {
+                    return VariableConstructionRequirement::InputVariable;
+                }
+                else if (variable->m_nodeableNodeId.IsValid())
+                {
+                    return VariableConstructionRequirement::InputNodeable;
+                }
+                else
+                {
+                    AZ_Assert(false, "A member variable in the model has no valid id");
+                }
+            }
+            else if (variable->m_sourceVariableId.IsValid() && !IsCodeConstructable(variable))
+            {
+                return VariableConstructionRequirement::Static;
+            }
+
+            return VariableConstructionRequirement::None;
+        }
+
+        void ParseVariableUse(const OutputAssignment& outputAssignment, VariableUseage& variableUse)
+        {
+            variableUse.Parse(outputAssignment.m_source);
+
+            for (const auto& assignment : outputAssignment.m_assignments)
+            {
+                variableUse.Parse(assignment);
+            }
+        }
+
+        void ParseVariableUse(ExecutionTreeConstPtr execution, VariableUseage& variableUse)
+        {
+            for (size_t inputIdx = 0; inputIdx != execution->GetInputCount(); ++inputIdx)
+            {
+                variableUse.Parse(execution->GetInput(inputIdx).m_value);
+            }
+
+            for (size_t returnIdx = 0; returnIdx != execution->GetReturnValueCount(); ++returnIdx)
+            {
+                if (auto returnValue = execution->GetReturnValue(returnIdx).second)
+                {
+                    ParseVariableUse(*returnValue, variableUse);
+                }
+            }
+
+            if (auto localOutputPtr = execution->GetLocalOutput())
+            {
+                for (const auto& localOuput : *localOutputPtr)
+                {
+                    if (localOuput.second)
+                    {
+                        return ParseVariableUse(*localOuput.second, variableUse);
+                    }
+                }
+            }
+            else
+            {
+                for (size_t childIdx = 0; childIdx != execution->GetChildrenCount(); ++childIdx)
+                {
+                    const auto& child = execution->GetChild(childIdx);
+                    for (const auto& localOuput : child.m_output)
+                    {
+                        if (localOuput.second)
+                        {
+                            ParseVariableUse(*localOuput.second, variableUse);
+                        }
+                    }
+                }
+            }
         }
 
         void PrettyPrint(AZStd::string& result, const AbstractCodeModel& model)
@@ -979,64 +1152,11 @@ namespace ScriptCanvas
             result = printer.TakeResult();
         }
 
-        void TraverseTreeRecurse(const ExecutionTreeConstPtr& execution, ExecutionTreeIterationListener& listener, const Slot* slot, int depth = 0);
-        
-        void TraverseTree(const AbstractCodeModel& model, ExecutionTreeIterationListener& listener)
-        {
-            for (auto root : model.GetAllExecutionRoots())
-            {
-                TraverseTree(root, listener);
-            }
-        }
-
-        void TraverseTree(const ExecutionTreeConstPtr& execution, ExecutionTreeIterationListener& listener)
-        {
-            listener.Reset();
-            TraverseTreeRecurse(execution, listener, nullptr, 0);
-        }
-
-        void TraverseTreeRecurse(const ExecutionTreeConstPtr& execution, ExecutionTreeIterationListener& listener, const Slot* slot, int level)
-        {
-            if (!execution->GetParent())
-            {
-                listener.EvaluateRoot(execution, slot);
-            }
-
-            listener.Evaluate(execution, slot, level);
-
-            if (execution->GetChildrenCount() == 0 && !IsInLoop(execution) && !IsMidSequence(execution))
-            {
-                listener.EvaluateLeaf(execution, slot, level);
-            }
-            else
-            {
-                for (size_t i(0); i < execution->GetChildrenCount(); ++i)
-                {
-                    auto& childIter = execution->GetChild(i);
-
-                    if (childIter.m_execution)
-                    {
-                        listener.EvaluateChildPre(execution, childIter.m_slot, i, level + 1);
-                        TraverseTreeRecurse(childIter.m_execution, listener, childIter.m_slot, level + 1);
-                        listener.EvaluateChildPost(execution, childIter.m_slot, i, level + 1);
-                    }
-                    else if (!IsInLoop(execution) && !IsMidSequence(execution))
-                    {
-                        listener.EvaluateNullChildLeaf(execution, childIter.m_slot, i, level + 1);
-                    }
-                }
-            }
-        }
-        
         void ProtectReservedWords(AZStd::string& name)
         {
             if (!name.ends_with(k_reservedWordProtection))
             {
                 name.append(k_reservedWordProtection);
-            }
-            else
-            {
-                AZ_TracePrintf("ScriptCanvas", "%s name was already safe", name.data());
             }
         }
 
@@ -1087,6 +1207,161 @@ namespace ScriptCanvas
             return identifier;
         }
 
-    } 
 
+        ExecutionTraversalResult TraverseExecutionConnectionsRecurse(const EndpointsResolved& nextEndpoints, AZStd::unordered_set<const Slot*>& previousIns, GraphExecutionPathTraversalListener& listener);
+
+        ExecutionTraversalResult TraverseExecutionConnectionsRecurse(const EndpointResolved& in, AZStd::unordered_set<const Slot*>& previousIns, GraphExecutionPathTraversalListener& listener);
+
+        ExecutionTraversalResult TraverseExecutionConnections(const Node& node, const Slot& outSlot, GraphExecutionPathTraversalListener& listener)
+        {
+            AZStd::unordered_set<const Slot*> path;
+            return TraverseExecutionConnectionsRecurse({ &node, &outSlot }, path, listener);
+        }
+
+        ExecutionTraversalResult TraverseExecutionConnectionsRecurse(const EndpointsResolved& nextEndpoints, AZStd::unordered_set<const Slot*>& previousPath, GraphExecutionPathTraversalListener& listener)
+        {
+            if (listener.CancelledTraversal())
+            {
+                return ExecutionTraversalResult::Success;
+            }
+
+            if (!nextEndpoints.empty())
+            {
+                if (nextEndpoints.size() == 1)
+                {
+                    auto status = TraverseExecutionConnectionsRecurse(nextEndpoints[0], previousPath, listener);
+                    if (status != ExecutionTraversalResult::Success)
+                    {
+                        return status;
+                    }
+                }
+                else
+                {
+                    // Subsequent connections after an the multiple Execution Out connections syntax sugar
+                    // only have to check for loops up to the sequence point.
+                    // Duplicate endpoints after the sequence are not necessarily loops, but are likely just the normal
+                    // ScriptCanvas way allowing users to use the same visual path (thus preventing "duplicate code").
+                    for (auto nextEndpoint : nextEndpoints)
+                    {
+                        AZStd::unordered_set<const Slot*> pathUpToSequenceSyntaxSugar(previousPath);
+
+                        auto status = TraverseExecutionConnectionsRecurse(nextEndpoint, pathUpToSequenceSyntaxSugar, listener);
+                        if (status != ExecutionTraversalResult::Success)
+                        {
+                            return status;
+                        }
+                    }
+                }
+            }
+
+            return ExecutionTraversalResult::Success;
+        }
+
+        ExecutionTraversalResult TraverseExecutionConnectionsRecurse(const EndpointResolved& in, AZStd::unordered_set<const Slot*>& previousPath, GraphExecutionPathTraversalListener& listener)
+        {
+            if (previousPath.contains(in.second))
+            {
+                return ExecutionTraversalResult::ContainsCycle;
+            }
+
+            if (!in.second)
+            {
+                return ExecutionTraversalResult::NullSlot;
+            }
+
+            listener.Evaluate(in);
+
+            if (listener.CancelledTraversal())
+            {
+                return ExecutionTraversalResult::Success;
+            }
+
+            AZStd::vector<const Slot*> outSlots;
+
+            if (in.second->IsLatent())
+            {
+                outSlots.push_back(in.second);
+            }
+            else
+            {
+                previousPath.insert(in.second);
+
+                auto outSlotsOutcome = in.first->GetSlotsInExecutionThreadByType(*in.second, CombinedSlotType::ExecutionOut);
+                if (!outSlotsOutcome.IsSuccess())
+                {
+                    return ExecutionTraversalResult::GetSlotError;
+                }
+
+                outSlots = outSlotsOutcome.GetValue();
+            }
+
+            for (auto branch : outSlots)
+            {
+                auto nextEndpoints = in.first->GetConnectedNodes(*branch);
+                AZStd::unordered_set<const Slot*> pathUpToBranchOrSyntaxSugar(previousPath);
+
+                const auto status = TraverseExecutionConnectionsRecurse(nextEndpoints, pathUpToBranchOrSyntaxSugar, listener);
+                if (status != ExecutionTraversalResult::Success)
+                {
+                    return status;
+                }
+            }
+
+            return ExecutionTraversalResult::Success;
+        }
+
+        void TraverseTreeRecurse(const ExecutionTreeConstPtr& execution, ExecutionTreeTraversalListener& listener, const Slot* slot, int depth = 0);
+
+        void TraverseTree(const AbstractCodeModel& model, ExecutionTreeTraversalListener& listener)
+        {
+            for (auto root : model.GetAllExecutionRoots())
+            {
+                TraverseTree(root, listener);
+            }
+        }
+
+        void TraverseTree(const ExecutionTreeConstPtr& execution, ExecutionTreeTraversalListener& listener)
+        {
+            listener.Reset();
+            TraverseTreeRecurse(execution, listener, nullptr, 0);
+        }
+
+        void TraverseTreeRecurse(const ExecutionTreeConstPtr& execution, ExecutionTreeTraversalListener& listener, const Slot* slot, int level)
+        {
+            if (listener.CancelledTraversal())
+            {
+                return;
+            }
+
+            if (!execution->GetParent())
+            {
+                listener.EvaluateRoot(execution, slot);
+            }
+
+            listener.Evaluate(execution, slot, level);
+
+            if (execution->GetChildrenCount() == 0 && !IsInLoop(execution) && !IsMidSequence(execution))
+            {
+                listener.EvaluateLeaf(execution, slot, level);
+            }
+            else
+            {
+                for (size_t i(0); i < execution->GetChildrenCount(); ++i)
+                {
+                    auto& childIter = execution->GetChild(i);
+
+                    if (childIter.m_execution)
+                    {
+                        listener.EvaluateChildPre(execution, childIter.m_slot, i, level + 1);
+                        TraverseTreeRecurse(childIter.m_execution, listener, childIter.m_slot, level + 1);
+                        listener.EvaluateChildPost(execution, childIter.m_slot, i, level + 1);
+                    }
+                    else if (!IsInLoop(execution) && !IsMidSequence(execution))
+                    {
+                        listener.EvaluateNullChildLeaf(execution, childIter.m_slot, i, level + 1);
+                    }
+                }
+            }
+        }
+    } 
 } 

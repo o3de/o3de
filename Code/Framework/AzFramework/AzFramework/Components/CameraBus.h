@@ -16,6 +16,7 @@
 
 namespace Camera
 {
+    //! Stores camera configuration values that describe the camera's view frustum.
     struct Configuration
     {
         float m_fovRadians = 0.f;
@@ -25,114 +26,83 @@ namespace Camera
         float m_frustumHeight = 0.f;
     };
 
-    /** 
-     * Use this bus to send messages to a camera component on an entity
-     * If you create your own camera you should implement this bus
-     * Call like this:
-     * Camera::CameraRequestBus::Event(cameraEntityId, &Camera::CameraRequestBus::Events::SetFov, newFov);
-    */
+    //! Use this bus to send messages to a camera component on an entity
+    //! If you create your own camera you should implement this bus
+    //! Call like this:
+    //! Camera::CameraRequestBus::Event(cameraEntityId, &Camera::CameraRequestBus::Events::SetFov, newFov);
     class CameraComponentRequests
         : public AZ::ComponentBus
     {
     public:
         virtual ~CameraComponentRequests() = default;
-        /**
-        * Gets the camera's field of view in degrees
-        * @return The camera's field of view in degrees
-        */
+        //! Gets the camera's field of view in degrees
+        //! @return The camera's field of view in degrees
         virtual float GetFov()
         {
             AZ_WarningOnce("CameraBus", false, "GetFov is deprecated.  Please use GetFovDegrees or GetFovRadians.");
             return GetFovDegrees();
         }
 
-        /**
-        * Gets the camera's field of view in degrees
-        * @return The camera's field of view in degrees
-        */
+        //! Gets the camera's field of view in degrees
+        //! @return The camera's field of view in degrees
         virtual float GetFovDegrees() = 0;
 
-        /**
-        * Gets the camera's field of view in radians
-        * @return The camera's field of view in radians
-        */
+        //! Gets the camera's field of view in radians
+        //! @return The camera's field of view in radians
         virtual float GetFovRadians() = 0;
         
-        /**
-        * Gets the camera's distance from the near clip plane in meters
-        * @return The camera's distance from the near clip plane in meters
-        */
+        //! Gets the camera's distance from the near clip plane in meters
+        //! @return The camera's distance from the near clip plane in meters
         virtual float GetNearClipDistance() = 0;
 
-        /**
-        * Gets the camera's distance from the far clip plane in meters
-        * @return The camera's distance from the far clip plane in meters
-        */
+        //! Gets the camera's distance from the far clip plane in meters
+        //! @return The camera's distance from the far clip plane in meters
         virtual float GetFarClipDistance() = 0;
 
-        /**
-        * Gets the camera frustum's width
-        * @return The camera frustum's width
-        */
+        //! Gets the camera frustum's width
+        //! @return The camera frustum's width
         virtual float GetFrustumWidth() = 0;
 
-        /**
-        * Gets the camera frustum's height
-        * @return The camera frustum's height
-        */
+        //! Gets the camera frustum's height
+        //! @return The camera frustum's height
         virtual float GetFrustumHeight() = 0;
 
-        /**
-        * Sets the camera's field of view in degrees between 0 < fov < 180 degrees
-        * @param fov The camera frustum's new field of view in degrees
-        */
+        //! Sets the camera's field of view in degrees between 0 < fov < 180 degrees
+        //! @param fov The camera frustum's new field of view in degrees
         virtual void SetFov(float fov)
         {
             AZ_WarningOnce("CameraBus", false, "SetFov is deprecated.  Please use SetFovDegrees or SetFovRadians.");
             SetFovDegrees(fov);
         }
 
-        /**
-        * Sets the camera's field of view in degrees between 0 < fov < 180 degrees
-        * @param fov The camera frustum's new field of view in degrees
-        */
+        //! Sets the camera's field of view in degrees between 0 < fov < 180 degrees
+        //! @param fov The camera frustum's new field of view in degrees
         virtual void SetFovDegrees(float fovInDegrees) = 0;
 
-        /**
-        * Sets the camera's field of view in radians between 0 < fov < pi radians
-        * @param fov The camera frustum's new field of view in radians
-        */
+        //! Sets the camera's field of view in radians between 0 < fov < pi radians
+        //! @param fov The camera frustum's new field of view in radians
         virtual void SetFovRadians(float fovInRadians) = 0;
 
-        /**
-        * Sets the near clip plane to a given distance from the camera in meters.  Should be small, but greater than 0
-        * @param nearClipDistance The camera frustum's new near clip plane distance from camera
-        */
+        //! Sets the near clip plane to a given distance from the camera in meters.  Should be small, but greater than 0
+        //! @param nearClipDistance The camera frustum's new near clip plane distance from camera
         virtual void SetNearClipDistance(float nearClipDistance) = 0;
 
-        /**
-        * Sets the far clip plane to a given distance from the camera in meters.
-        * @param farClipDistance The camera frustum's new far clip plane distance from camera
-        */
+        //! Sets the far clip plane to a given distance from the camera in meters.
+        //! @param farClipDistance The camera frustum's new far clip plane distance from camera
         virtual void SetFarClipDistance(float farClipDistance) = 0;
 
-        /**
-        * Sets the camera frustum's width
-        * @param width The camera frustum's new width
-        */
+        //! Sets the camera frustum's width
+        //! @param width The camera frustum's new width
         virtual void SetFrustumWidth(float width) = 0;
 
-        /**
-        * Sets the camera frustum's height
-        * @param height The camera frustum's new height
-        */
+        //! Sets the camera frustum's height
+        //! @param height The camera frustum's new height
         virtual void SetFrustumHeight(float height) = 0;
 
-        /**
-        * Makes the camera the active view
-        */
+        //! Makes the camera the active view
         virtual void MakeActiveView() = 0;
 
+        //! Get the camera frustum's aggregate configuration
         virtual Configuration GetCameraConfiguration() 
         {
             return Configuration
@@ -147,14 +117,11 @@ namespace Camera
     };
     using CameraRequestBus = AZ::EBus<CameraComponentRequests>;
 
-    /**
-    * Use this broadcast bus to gather a list of all active cameras
-    * If you create your own camera you should handle this bus
-    * Call like this:
-    * 
-    * AZ::EBusAggregateResults<AZ::EntityId> results;
-    * Camera::CameraBus::BroadcastResult(results, &Camera::CameraRequests::GetCameras);
-    */
+    //! Use this broadcast bus to gather a list of all active cameras
+    //! If you create your own camera you should handle this bus
+    //! Call like this:
+    //! AZ::EBusAggregateResults<AZ::EntityId> results;
+    //! Camera::CameraBus::BroadcastResult(results, &Camera::CameraRequests::GetCameras);
     class CameraRequests
         : public AZ::EBusTraits
     {
@@ -166,18 +133,14 @@ namespace Camera
     };
     using CameraBus = AZ::EBus<CameraRequests>;
 
-    /**
-    * Use this system broadcast for things like getting the active camera
-    */
+    //! Use this system broadcast for things like getting the active camera
     class CameraSystemRequests
         : public AZ::EBusTraits
     {
     public:
         virtual ~CameraSystemRequests() = default;
 
-        /**
-        * returns the camera being used by the active view
-        */
+        //! returns the camera being used by the active view
         virtual AZ::EntityId GetActiveCamera() = 0;
     };
     using CameraSystemRequestBus = AZ::EBus<CameraSystemRequests>;
@@ -198,13 +161,11 @@ namespace Camera
     };
     using ActiveCameraRequestBus = AZ::EBus<ActiveCameraRequests>;
 
-    /**
-    * Handle this bus if you want to know when cameras are added or removed during edit or run time
-    * You will get an OnCameraAdded event for each camera that is already active
-    * If you create your own camera you should call this bus on activation/deactivation
-    * Connect to the bus like this
-    * Camera::CameraNotificationBus::Handler::Connect()
-    */
+    //! Handle this bus if you want to know when cameras are added or removed during edit or run time
+    //! You will get an OnCameraAdded event for each camera that is already active
+    //! If you create your own camera you should call this bus on activation/deactivation
+    //! Connect to the bus like this
+    //! Camera::CameraNotificationBus::Handler::Connect()
     class CameraNotifications
         : public AZ::EBusTraits
     {
@@ -223,28 +184,33 @@ namespace Camera
                 {
                     handler->OnCameraAdded(cameraId);
                 }
+
+                AZ::EntityId activeView;
+                CameraSystemRequestBus::BroadcastResult(activeView, &CameraSystemRequestBus::Events::GetActiveCamera);
+                if (activeView.IsValid())
+                { 
+                    handler->OnActiveViewChanged(activeView);
+                }
             }
         };
-        /**
-        * If the camera is active when a handler connects to the bus,
-        * then OnCameraAdded() is immediately dispatched.
-        */
+        //! If the camera is active when a handler connects to the bus,
+        //! then OnCameraAdded() is immediately dispatched.
         template<class Bus>
         using ConnectionPolicy = CameraNotificationConnectionPolicy<Bus>;
 
         virtual ~CameraNotifications() = default;
 
-        /**
-        * Called whenever a camera entity is added
-        * @param cameraId The id of the camera added
-        */
-        virtual void OnCameraAdded(const AZ::EntityId& cameraId) = 0;
+        //! Called whenever a camera entity is added
+        //! @param cameraId The id of the camera added
+        virtual void OnCameraAdded(const AZ::EntityId& /*cameraId*/) {}
 
-        /**
-        * Called whenever a camera entity is removed
-        * @param cameraId The id of the camera removed
-        */
-        virtual void OnCameraRemoved(const AZ::EntityId& cameraId) = 0;
+        //! Called whenever a camera entity is removed
+        //! @param cameraId The id of the camera removed
+        virtual void OnCameraRemoved(const AZ::EntityId& /*cameraId*/) {}
+
+        //! Called whenever the active camera entity changes
+        //! @param cameraId The id of the newly activated camera
+        virtual void OnActiveViewChanged(const AZ::EntityId&) {}
     };
     using CameraNotificationBus = AZ::EBus<CameraNotifications>;
 

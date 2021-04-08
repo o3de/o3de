@@ -20,7 +20,6 @@
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Utils.h>
-#include <AzFramework/Physics/World.h>
 #include <AzFramework/Physics/WorldBodyBus.h>
 #include <Blast/BlastActor.h>
 #include <Family/BlastFamily.h>
@@ -75,7 +74,7 @@ namespace Blast
         // Set initial velocities if we're not static
         if (!m_isStatic)
         {
-            Physics::RigidBody* rigidBody = nullptr;
+            AzPhysics::RigidBody* rigidBody = nullptr;
             Physics::RigidBodyRequestBus::EventResult(
                 rigidBody, m_entity->GetId(), &Physics::RigidBodyRequests::GetRigidBody);
             rigidBody->SetTransform(transform);
@@ -178,17 +177,17 @@ namespace Blast
         return m_tkActor;
     }
 
-    Physics::WorldBody* BlastActorImpl::GetWorldBody()
+    AzPhysics::SimulatedBody* BlastActorImpl::GetWorldBody()
     {
-        Physics::WorldBody* worldBody = nullptr;
+        AzPhysics::SimulatedBody* worldBody = nullptr;
         Physics::WorldBodyRequestBus::EventResult(
             worldBody, m_entity->GetId(), &Physics::WorldBodyRequests::GetWorldBody);
         return worldBody;
     }
 
-    const Physics::WorldBody* BlastActorImpl::GetWorldBody() const
+    const AzPhysics::SimulatedBody* BlastActorImpl::GetWorldBody() const
     {
-        Physics::WorldBody* worldBody = nullptr;
+        AzPhysics::SimulatedBody* worldBody = nullptr;
         Physics::WorldBodyRequestBus::EventResult(
             worldBody, m_entity->GetId(), &Physics::WorldBodyRequests::GetWorldBody);
         return worldBody;

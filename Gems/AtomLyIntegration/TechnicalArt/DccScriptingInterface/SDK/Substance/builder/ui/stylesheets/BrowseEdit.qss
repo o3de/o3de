@@ -1,0 +1,61 @@
+
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+AzQtComponents--BrowseEdit
+{
+    border-color: transparent;
+    border-width: 2px;
+    border-style: solid;
+    border-radius: 3px;
+}
+
+AzQtComponents--BrowseEdit QLineEdit
+{
+    height: 16px;
+    border-width: 0px;
+    border-style: solid;
+    border-color: #444444;
+    border-top-left-radius: 3px;
+    border-bottom-left-radius: 3px;
+    border-top-right-radius: 0px;
+    border-bottom-right-radius: 0px;
+}
+
+AzQtComponents--BrowseEdit QLineEdit:focus
+{
+    background-color: #FFFFFF;
+    border-color: #FFFFFF;
+}
+
+AzQtComponents--BrowseEdit QLineEdit:disabled
+{
+    background-color: #777777;
+    border-color: #777777;
+    color: #999999;
+}
+
+AzQtComponents--BrowseEdit QToolButton
+{
+    max-width: 15px;
+    min-width: 15px;
+    max-height: 14px;
+    min-height: 14px;
+    background-color: #444444;
+    border-color: #000000;
+    border-width: 1px;
+    border-style: solid;
+    border-top-left-radius: 0px;
+    border-bottom-left-radius: 0px;
+    border-top-right-radius: 2px;
+    border-bottom-right-radius: 2px;
+}

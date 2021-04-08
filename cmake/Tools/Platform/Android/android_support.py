@@ -118,8 +118,10 @@ class AndroidProjectManifestEnvironment(object):
         # Extract the key attributes we need to process and build up our environment table
         project_json = json.loads(project_properties_content)
 
-        project_name = project_json['project_name']
-        product_name = project_json['product_name']
+        project_name = project_json.get('project_name')
+        if not project_name:
+            raise common.LmbrCmdError(f"Missing required 'project_name' from project.json for project at '{str(project_path)}'")
+        product_name = project_json.get('product_name', project_name)
 
         game_project_android_settings = project_json['android_settings']
 
@@ -303,7 +305,7 @@ asset_deploy_type={asset_type}
 [android]
 android_sdk_path={android_sdk_path}
 embed_assets_in_apk={embed_assets_in_apk}
-
+is_unit_test={is_unit_test}
 """
 
 NATIVE_CMAKE_SECTION_ANDROID_FORMAT = """
@@ -311,7 +313,7 @@ NATIVE_CMAKE_SECTION_ANDROID_FORMAT = """
         cmake {{
             buildStagingDirectory "."
             version "{cmake_version}"
-            path "{relative_cmakelist_path}"
+            path "{absolute_cmakelist_path}"
         }}
     }}
 """
@@ -377,7 +379,7 @@ dependencies {{
 
 OVERRIDE_JAVA_SOURCESET_STR = """
             java {{
-                srcDirs = ['{relative_azandroid_path}', 'src/main/java']
+                srcDirs = ['{absolute_azandroid_path}', 'src/main/java']
             }}
 """
 
@@ -425,7 +427,8 @@ class AndroidProjectGenerator(object):
 
     def __init__(self, engine_root, build_dir, android_ndk_path, android_sdk_path, android_sdk_version, android_ndk_platform,
                  project_path, third_party_path, cmake_version, override_cmake_path, override_gradle_path, override_ninja_path,
-                 android_sdk_build_tool_version, include_assets_in_apk, asset_mode, asset_type, signing_config, is_test_project=False):
+                 android_sdk_build_tool_version, include_assets_in_apk, asset_mode, asset_type, signing_config, is_test_project=False, 
+                 overwrite_existing=True):
         """
         Initialize the object with all the required parameters needed to create an Android Project. The parameters should be verified before initializing this object
         
@@ -447,6 +450,7 @@ class AndroidProjectGenerator(object):
         :param asset_type:
         :param signing_config:          Optional signing configuration arguments
         :param is_test_project:         Flag to indicate if this is a unit test runner project. (If true, project_path, asset_mode, asset_type, and include_assets_in_apk are ignored)
+        :param overwrite_existing:      Flag to overwrite existing project files when being generated, or skip if they already exist.
         """
         self.env = {}
 
@@ -488,6 +492,8 @@ class AndroidProjectGenerator(object):
 
         self.is_test_project = is_test_project
 
+        self.overwrite_existing = overwrite_existing
+
     def execute(self):
         """
         Execute the android project creation workflow
@@ -513,25 +519,23 @@ class AndroidProjectGenerator(object):
         # Generate the gradle build script
         self.create_file_from_project_template(src_template_file='root.build.gradle.in',
                                                template_env=root_gradle_env,
-                                               dst_file=self.build_dir / 'build.gradle',
-                                               overwrite_existing=True)
+                                               dst_file=self.build_dir / 'build.gradle')
 
         self.write_settings_gradle(project_names)
 
         self.prepare_gradle_wrapper()
 
-    def create_file_from_project_template(self, src_template_file, template_env, dst_file, overwrite_existing):
+    def create_file_from_project_template(self, src_template_file, template_env, dst_file):
         """
         Create a file from an android template file
 
         :param src_template_file:       The name of the template file that is located under Code/Tools/Android/ProjectBuilder
         :param template_env:            The dictionary that contains the template substitution values
         :param dst_file:                The target concrete file to write to
-        :param overwrite_existing:      Flag to indicate overwriting an existing file or not
         """
 
         src_template_file_path = self.android_project_builder_path / src_template_file
-        if not dst_file.exists() or overwrite_existing:
+        if not dst_file.exists() or self.overwrite_existing:
 
             default_local_properties_content = common.load_template_file(template_file_path=src_template_file_path,
                                                                          template_env=template_env)
@@ -571,11 +575,12 @@ class AndroidProjectGenerator(object):
         if self.is_test_project:
             platform_settings_content = PLATFORM_SETTINGS_FORMAT.format(generation_timestamp=str(datetime.datetime.now().strftime("%c")),
                                                                         platform='android',
-                                                                        project_path=TEST_RUNNER_PROJECT,
+                                                                        project_path=self.project_path,
                                                                         asset_mode='',
                                                                         asset_type='',
                                                                         android_sdk_path=str(self.android_sdk_path),
-                                                                        embed_assets_in_apk=True)
+                                                                        embed_assets_in_apk=True,
+                                                                        is_unit_test=True)
         else:
             platform_settings_content = PLATFORM_SETTINGS_FORMAT.format(generation_timestamp=str(datetime.datetime.now().strftime("%c")),
                                                                         platform='android',
@@ -583,7 +588,8 @@ class AndroidProjectGenerator(object):
                                                                         asset_mode=self.asset_mode,
                                                                         asset_type=self.asset_type,
                                                                         android_sdk_path=str(self.android_sdk_path),
-                                                                        embed_assets_in_apk=str(self.include_assets_in_apk))
+                                                                        embed_assets_in_apk=str(self.include_assets_in_apk),
+                                                                        is_unit_test=False)
 
         platform_settings_file = self.build_dir / 'platform.settings'
         platform_settings_file.open('w').write(platform_settings_content)
@@ -604,13 +610,12 @@ class AndroidProjectGenerator(object):
             "GENERATION_TIMESTAMP": str(datetime.datetime.now().strftime("%c")),
             "ANDROID_NDK_PATH": template_android_ndk_path,
             "ANDROID_SDK_PATH": template_android_sdk_path,
-            "CMAKE_DIR_LINE": f'cmake.dir="{template_cmake_path}"' if template_cmake_path else ''
+            "CMAKE_DIR_LINE": f'cmake.dir={template_cmake_path}' if template_cmake_path else ''
         }
 
         self.create_file_from_project_template(src_template_file='local.properties.in',
                                                template_env=local_properties_env,
-                                               dst_file=self.build_dir / 'local.properties',
-                                               overwrite_existing=False)
+                                               dst_file=self.build_dir / 'local.properties')
 
     def patch_and_transfer_android_libs(self):
         """
@@ -653,7 +658,7 @@ class AndroidProjectGenerator(object):
                                           .format(libName, ", ".join(string.Template(path).substitute(self.env) for path in value['srcDir'])))
 
             if 'patches' in value:
-                lib_to_patch = self._Library(libName, src_dir, self.signing_config)
+                lib_to_patch = self._Library(libName, src_dir, self.overwrite_existing, self.signing_config)
                 for patch in value['patches']:
                     file_to_patch = self._File(patch['path'])
                     for change in patch['changes']:
@@ -716,17 +721,17 @@ class AndroidProjectGenerator(object):
 
         gradle_build_env = dict()
 
-        engine_root_as_path= pathlib.PurePath(self.engine_root)
+        engine_root_as_path= pathlib.Path(self.engine_root)
 
-        relative_cmakelist_path = (engine_root_as_path / 'CMakeLists.txt').as_posix()
-        relative_azandroid_path = (engine_root_as_path / 'Code/Framework/AzAndroid/java').as_posix()
+        absolute_cmakelist_path = (engine_root_as_path / 'CMakeLists.txt').resolve().as_posix()
+        absolute_azandroid_path = (engine_root_as_path / 'Code/Framework/AzAndroid/java').resolve().as_posix()
 
         gradle_build_env['TARGET_TYPE'] = 'application'
         gradle_build_env['PROJECT_DEPENDENCIES'] = PROJECT_DEPENDENCIES_VALUE_FORMAT.format(dependencies='\n'.join(gradle_project_dependencies))
-        gradle_build_env['NATIVE_CMAKE_SECTION_ANDROID'] = NATIVE_CMAKE_SECTION_ANDROID_FORMAT.format(cmake_version=str(self.cmake_version), relative_cmakelist_path=relative_cmakelist_path)
+        gradle_build_env['NATIVE_CMAKE_SECTION_ANDROID'] = NATIVE_CMAKE_SECTION_ANDROID_FORMAT.format(cmake_version=str(self.cmake_version), absolute_cmakelist_path=absolute_cmakelist_path)
         gradle_build_env['NATIVE_CMAKE_SECTION_DEFAULT_CONFIG'] = NATIVE_CMAKE_SECTION_DEFAULT_CONFIG_NDK_FORMAT_STR.format(abi=ANDROID_ARCH)
 
-        gradle_build_env['OVERRIDE_JAVA_SOURCESET'] = OVERRIDE_JAVA_SOURCESET_STR.format(relative_azandroid_path=relative_azandroid_path)
+        gradle_build_env['OVERRIDE_JAVA_SOURCESET'] = OVERRIDE_JAVA_SOURCESET_STR.format(absolute_azandroid_path=absolute_azandroid_path)
 
 
         gradle_build_env['OPTIONAL_JNI_SRC_LIB_SET'] = ', "outputs/native-lib"'
@@ -782,14 +787,14 @@ class AndroidProjectGenerator(object):
                 gradle_build_env[f'CUSTOM_APPLY_ASSET_LAYOUT_{native_config_upper}_TASK'] = \
                     CUSTOM_GRADLE_COPY_NATIVE_CONFIG_BUILD_ARTIFACTS_FORMAT_STR.format(config=native_config,
                                                                                        config_lower=native_config_lower,
-                                                                                       asset_layout_folder=(self.project_path / self.build_dir / 'app/src/main/assets').as_posix(),
+                                                                                       asset_layout_folder=(self.build_dir / 'app/src/main/assets').as_posix(),
                                                                                        file_includes='Test.Assets/**/*.*')
             else:
                 # Copy over settings registry files from the Registry folder with build output directory
                 gradle_build_env[f'CUSTOM_APPLY_ASSET_LAYOUT_{native_config_upper}_TASK'] = \
                     CUSTOM_GRADLE_COPY_NATIVE_CONFIG_BUILD_ARTIFACTS_FORMAT_STR.format(config=native_config,
                                                                                        config_lower=native_config_lower,
-                                                                                       asset_layout_folder=(self.project_path / self.build_dir / 'app/src/main/assets').as_posix(),
+                                                                                       asset_layout_folder=(self.build_dir / 'app/src/main/assets').as_posix(),
                                                                                        file_includes='**/Registry/*.setreg')
 
             if self.include_assets_in_apk:
@@ -800,7 +805,7 @@ class AndroidProjectGenerator(object):
                                                                          asset_type=self.asset_type,
                                                                          project_path=self.project_path.as_posix(),
                                                                          asset_mode=self.asset_mode if native_config != 'Release' else 'PAK',
-                                                                         asset_layout_folder=common.normalize_path_for_settings(self.project_path / self.build_dir / 'app/src/main/assets'),
+                                                                         asset_layout_folder=common.normalize_path_for_settings(self.build_dir / 'app/src/main/assets'),
                                                                          config=native_config)
             else:
                 gradle_build_env[f'CUSTOM_APPLY_ASSET_LAYOUT_{native_config_upper}_TASK'] = ''
@@ -821,11 +826,9 @@ class AndroidProjectGenerator(object):
             gradle_build_env['SIGNING_CONFIGS'] = ""
 
         az_android_gradle_file = az_android_dst_path / 'build.gradle'
-        if not az_android_gradle_file.exists():
-            self.create_file_from_project_template(src_template_file='build.gradle.in',
-                                                   template_env=gradle_build_env,
-                                                   dst_file=az_android_dst_path / 'build.gradle',
-                                                   overwrite_existing=False)
+        self.create_file_from_project_template(src_template_file='build.gradle.in',
+                                               template_env=gradle_build_env,
+                                               dst_file=az_android_dst_path / 'build.gradle')
 
         # Generate a AndroidManifest.xml and write to ${az_android_dst_path}/src/main/AndroidManifest.xml
         dest_src_main_path = az_android_dst_path / 'src/main'
@@ -837,8 +840,7 @@ class AndroidProjectGenerator(object):
                                                                    is_test=self.is_test_project)
         self.create_file_from_project_template(src_template_file=ANDROID_MANIFEST_FILE,
                                                template_env=az_android_package_env,
-                                               dst_file=dest_src_main_path / ANDROID_MANIFEST_FILE,
-                                               overwrite_existing=False)
+                                               dst_file=dest_src_main_path / ANDROID_MANIFEST_FILE)
 
         # Apply the 'android_builder.json' rules to copy over additional files to the target
         self.apply_android_builder_rules(az_android_dst_path=az_android_dst_path,
@@ -878,8 +880,7 @@ class AndroidProjectGenerator(object):
         gradle_properties_file = self.build_dir / 'gradle.properties'
         self.create_file_from_project_template(src_template_file='gradle.properties.in',
                                                template_env=grade_properties_env,
-                                               dst_file=gradle_properties_file,
-                                               overwrite_existing=False)
+                                               dst_file=gradle_properties_file)
         logging.info("Generated gradle.properties -> %s", str(gradle_properties_file.resolve()))
 
     def apply_android_builder_rules(self, az_android_dst_path, az_android_package_env):
@@ -1161,10 +1162,11 @@ class AndroidProjectGenerator(object):
         """
         Library class to manage the library node in android_libraries.json
         """
-        def __init__(self, name, path, signing_config=None):
+        def __init__(self, name, path, overwrite_existing, signing_config=None):
             self.name = name
             self.path = path
             self.signing_config = signing_config
+            self.overwrite_existing = overwrite_existing
             self.patch_files = []
             self.dependencies = []
             self.build_dependencies = []
@@ -1230,7 +1232,7 @@ class AndroidProjectGenerator(object):
             build_gradle_content = common.load_template_file(template_file_path=android_project_builder_path / 'build.gradle.in',
                                                              template_env=build_gradle_env)
             dest_gradle_script_file = dst_path / 'build.gradle'
-            if not dest_gradle_script_file.exists():
+            if not dest_gradle_script_file.exists() or self.overwrite_existing:
                 dest_gradle_script_file.write_text(build_gradle_content,
                                                    encoding=common.DEFAULT_TEXT_WRITE_ENCODING,
                                                    errors=common.ENCODING_ERROR_HANDLINGS)

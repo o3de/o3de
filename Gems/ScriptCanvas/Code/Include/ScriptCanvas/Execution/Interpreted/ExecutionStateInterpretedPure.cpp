@@ -22,17 +22,39 @@ namespace ScriptCanvas
 {
     ExecutionStateInterpretedPure::ExecutionStateInterpretedPure(const ExecutionStateConfig& config)
         : ExecutionStateInterpreted(config)
-    {
-    }
+    {}
 
     void ExecutionStateInterpretedPure::Execute()
+    {}
+    
+    void ExecutionStateInterpretedPure::Initialize()
+    {}
+
+    void ExecutionStateInterpretedPure::StopExecution()
+    {}
+
+    void ExecutionStateInterpretedPure::Reflect(AZ::ReflectContext* reflectContext)
+    {
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(reflectContext))
+        {
+            behaviorContext->Class<ExecutionStateInterpretedPure>()
+                ;
+        }
+    }
+
+    ExecutionStateInterpretedPureOnGraphStart::ExecutionStateInterpretedPureOnGraphStart(const ExecutionStateConfig& config)
+        : ExecutionStateInterpretedPure(config)
+    {}
+
+    // #functions2 dependency - ctor - args adjust for (pure only) on graph start args
+    void ExecutionStateInterpretedPureOnGraphStart::Execute()
     {
         // execute the script in a single call
         auto lua = LoadLuaScript();
         // Lua: graph_VM
         AZ::Internal::azlua_getfield(lua, -1, Grammar::k_OnGraphStartFunctionName);
         // Lua: graph_VM, graph_VM['k_OnGraphStartFunctionName']
-        AZ::Internal::LuaClassToStack(lua, this, azrtti_typeid<ExecutionStateInterpretedPure>(), AZ::ObjectToLua::ByReference, AZ::AcquisitionOnPush::None);
+        AZ::Internal::LuaClassToStack(lua, this, azrtti_typeid<ExecutionStateInterpretedPureOnGraphStart>(), AZ::ObjectToLua::ByReference, AZ::AcquisitionOnPush::None);
         // Lua: graph_VM, graph_VM['k_OnGraphStartFunctionName'], userdata<ExecutionState>
         Execution::ActivationInputArray storage;
         Execution::ActivationData data(*m_component, storage);
@@ -52,18 +74,12 @@ namespace ScriptCanvas
             lua_pop(lua, 2);
         }
     }
-    
-    void ExecutionStateInterpretedPure::Initialize()
-    {}
 
-    void ExecutionStateInterpretedPure::StopExecution()
-    {}
-
-    void ExecutionStateInterpretedPure::Reflect(AZ::ReflectContext* reflectContext)
+    void ExecutionStateInterpretedPureOnGraphStart::Reflect(AZ::ReflectContext* reflectContext)
     {
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(reflectContext))
         {
-            behaviorContext->Class<ExecutionStateInterpretedPure>()
+            behaviorContext->Class<ExecutionStateInterpretedPureOnGraphStart>()
                 ;
         }
     }

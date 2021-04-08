@@ -12,6 +12,7 @@
 
 #include <StdAfx.h>
 
+#include <AzCore/Math/Transform.h>
 #include <Family/ActorTracker.h>
 #include <algorithm>
 
@@ -40,7 +41,7 @@ namespace Blast
         return nullptr;
     }
 
-    BlastActor* ActorTracker::GetActorByBody(const Physics::WorldBody* body)
+    BlastActor* ActorTracker::GetActorByBody(const AzPhysics::SimulatedBody* body)
     {
         if (const auto it = m_bodyToActor.find(body); it != m_bodyToActor.end())
         {

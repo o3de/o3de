@@ -70,7 +70,7 @@ namespace ScriptCanvas
                 AZ::Crc32 GetArithmeticExtensionId() const { return AZ_CRC("AddnewValueExtension", 0xea20301c); }
                 AZ::Crc32 GetArithmeticDynamicTypeGroup() const { return AZ_CRC("ArithmeticGroup", 0x4271e41f); }
                 AZStd::string GetArithmeticDisplayGroup() const { return "ArithmeticGroup"; }
-                bool IsSupportedByNewBackend() const override { return true; }
+                
                 virtual AZStd::string_view OperatorFunction() const { return ""; }
                 virtual AZStd::unordered_set< Data::Type > GetSupportedNativeDataTypes() const
                 {

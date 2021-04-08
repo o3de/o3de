@@ -59,7 +59,7 @@ namespace ScriptCanvas
     void RuntimeAssetSystemComponent::Activate()
     {
         m_runtimeAssetRegistry.Register<ScriptCanvas::RuntimeAsset, ScriptCanvas::RuntimeAssetHandler, ScriptCanvas::RuntimeAssetDescription>();
-        m_runtimeAssetRegistry.Register<ScriptCanvas::SubgraphInterfaceAsset, ScriptCanvas::SubgraphInterfaceAssetHandler, ScriptCanvas::RuntimeFunctionAssetDescription>();
+        m_runtimeAssetRegistry.Register<ScriptCanvas::SubgraphInterfaceAsset, ScriptCanvas::SubgraphInterfaceAssetHandler, ScriptCanvas::SubgraphInterfaceAssetDescription>();
     }
 
     void RuntimeAssetSystemComponent::Deactivate()

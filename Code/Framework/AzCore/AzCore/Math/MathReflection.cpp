@@ -29,6 +29,7 @@
 #include <AzCore/Math/ColorSerializer.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/Transform.h>
+#include <AzCore/Math/TransformSerializer.h>
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Math/Matrix4x4.h>
@@ -370,6 +371,7 @@ namespace AZ
         context.Serializer<JsonVector3Serializer>()->HandlesType<Vector3>();
         context.Serializer<JsonVector4Serializer>()->HandlesType<Vector4>();
         context.Serializer<JsonQuaternionSerializer>()->HandlesType<Quaternion>();
+        context.Serializer<JsonTransformSerializer>()->HandlesType<Transform>();
     }
 
     void MathReflect(ReflectContext* context)

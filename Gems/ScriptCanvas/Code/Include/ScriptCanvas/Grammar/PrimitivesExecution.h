@@ -17,6 +17,9 @@
 
 namespace ScriptCanvas
 {
+    using EndpointResolved = AZStd::pair<const Node*, const Slot*>;
+    using EndpointsResolved = AZStd::vector<EndpointResolved>;
+
     namespace Grammar
     {
         // The node and the activation slot. The execution in, or the event or latent out slot.
@@ -67,7 +70,7 @@ namespace ScriptCanvas
     {
         // The node and the activation slot. The execution in, or the event or latent out slot.
 
-        class ExecutionTreeIterationListener;
+        class ExecutionTreeTraversalListener;
 
         struct ExecutionInput
         {
@@ -181,6 +184,8 @@ namespace ScriptCanvas
 
             Symbol GetSymbol() const;
 
+            bool HasExplicitUserOutCalls() const;
+
             bool HasReturnValues() const;
 
             bool IsInfiniteLoopDetectionPoint() const;
@@ -195,6 +200,8 @@ namespace ScriptCanvas
 
             bool IsPure() const;
 
+            bool IsStart() const;
+
             void MarkDebugEmptyStatement();
 
             void MarkInfiniteLoopDetectionPoint();
@@ -206,6 +213,8 @@ namespace ScriptCanvas
             void MarkPure();
 
             void MarkRootLatent();
+
+            void MarkStart();
 
             ExecutionChild& ModChild(size_t index);
 
@@ -227,9 +236,7 @@ namespace ScriptCanvas
 
             AZ::Outcome<AZStd::pair<size_t, ExecutionChild>> RemoveChild(const ExecutionTreeConstPtr& child);
 
-            bool ReturnValuesRoutedToOuts() const;
-
-            void RouteReturnValuesToOuts();
+            void MarkHasExplicitUserOutCalls();
 
             void SetExecutedPropertyExtraction(PropertyExtractionConstPtr propertyExtraction);
 
@@ -252,7 +259,6 @@ namespace ScriptCanvas
             void SetSymbol(Symbol val);
 
         protected:
-
             VariableConstPtr m_nodeable;
 
         private:
@@ -276,7 +282,9 @@ namespace ScriptCanvas
 
             bool m_isPure = false;
 
-            bool m_returnValuesRoutedToOuts = false;
+            bool m_isStart = false;
+
+            bool m_hasExplicitUserOutCalls = false;
 
             // The node and the activation slot. The execution in, or the event or latent out slot.
             ExecutionId m_in;
@@ -305,11 +313,12 @@ namespace ScriptCanvas
             size_t FindIndexOfChild(ExecutionTreeConstPtr child) const;
         };
 
-        class ExecutionTreeIterationListener
+        class ExecutionTreeTraversalListener
         {
         public:
-            virtual ~ExecutionTreeIterationListener() {}
+            virtual ~ExecutionTreeTraversalListener() {}
 
+            virtual bool CancelledTraversal() { return false; }
             virtual void Evaluate(ExecutionTreeConstPtr /*node*/, const Slot* /*slot*/, int /*level*/) {}
             virtual void EvaluateNullChildLeaf(ExecutionTreeConstPtr /*parent*/, const Slot* /*slot*/, size_t /*index*/, int /*level*/) {}
             virtual void EvaluateChildPost(ExecutionTreeConstPtr /*node*/, const Slot* /*slot*/, size_t /*index*/, int /*level*/) {}
@@ -319,5 +328,22 @@ namespace ScriptCanvas
             virtual void Reset() {}
         };
 
+        enum class ExecutionTraversalResult
+        {
+            Success,
+            ContainsCycle,
+            NullSlot,
+            NullNode,
+            GetSlotError,
+        };
+
+        class GraphExecutionPathTraversalListener
+        {
+        public:
+            virtual ~GraphExecutionPathTraversalListener() {}
+
+            virtual bool CancelledTraversal() { return false; }
+            virtual void Evaluate([[maybe_unused]] const EndpointResolved& endpoint) {}
+        };
     }
 } 

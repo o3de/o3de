@@ -71,12 +71,37 @@ namespace ScriptCanvas
                 ->Field("requiredScriptEvents", &RuntimeData::m_requiredScriptEvents)
                 ;
         }
+
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(reflectContext))
+        {
+            behaviorContext->Class<RuntimeData>()
+                ->Method("GetRequiredAssets", [](const RuntimeData& data) { return data.m_requiredAssets; })
+                ;
+        }
+    }
+
+    bool RuntimeData::RequiresDependencyConstructionParameters() const
+    {
+        return AZStd::any_of(m_requiredAssets.begin(), m_requiredAssets.end(), [](const AZ::Data::Asset<RuntimeAsset>& asset)
+        {
+            return RequiresDependencyConstructionParametersRecurse(asset.Get()->m_runtimeData);
+        });
+    }
+
+    bool RuntimeData::RequiresDependencyConstructionParametersRecurse(const RuntimeData& data)
+    {
+        return data.m_input.GetConstructorParameterCount() != 0
+            || AZStd::any_of(data.m_requiredAssets.begin(), data.m_requiredAssets.end(), [](const AZ::Data::Asset<RuntimeAsset>& asset)
+                {
+                    return RequiresDependencyConstructionParametersRecurse(asset.Get()->m_runtimeData);
+                });
     }
 
     bool RuntimeData::RequiresStaticInitialization() const
     {
         return !m_cloneSources.empty();
     }
+
 
     ////////////////////////
     // SubgraphInterfaceData
@@ -88,8 +113,7 @@ namespace ScriptCanvas
         {
             serializeContext->Class<SubgraphInterfaceData>()
                 ->Version(static_cast<int>(ScriptCanvasRuntimeAssetCpp::FunctionRuntimeDataVersion::Current))
-                ->Field("m_name", &SubgraphInterfaceData::m_name)
-                ->Field("m_version", &SubgraphInterfaceData::m_version)
+                ->Field("name", &SubgraphInterfaceData::m_name)
                 ->Field("interface", &SubgraphInterfaceData::m_interface)
                 ;
         }
@@ -105,7 +129,6 @@ namespace ScriptCanvas
         if (this != &other)
         {
             m_name = AZStd::move(other.m_name);
-            m_version = AZStd::move(other.m_version);
             m_interface = AZStd::move(other.m_interface);
         }
 

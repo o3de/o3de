@@ -107,7 +107,7 @@ namespace AzToolsFramework
         };
 
         // Spacing is appropriate and matches the outliner concept work from the UI team.
-        static const int s_OutlinerSpacing = 5;
+        static const int s_OutlinerSpacing = 7;
 
         static bool s_paintingName;
 
@@ -357,8 +357,6 @@ namespace AzToolsFramework
         // the hierarchy cache.
         mutable CheckboxGroup m_visibilityCheckBoxes;
         mutable CheckboxGroup m_lockCheckBoxes;
-
-        const int m_toggleColumnWidth = 16;
 
         // this is a cache, and is hence mutable
         mutable QRect m_cachedBoundingRectOfTallCharacter;

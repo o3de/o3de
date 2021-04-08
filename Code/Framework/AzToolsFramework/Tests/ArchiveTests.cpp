@@ -18,10 +18,10 @@
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <Tests/AZTestShared/Utils/Utils.h>
 #include <AzToolsFramework/Archive/ArchiveAPI.h>
-#include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/Archive/ArchiveAPI.h>
 #include <AzToolsFramework/AssetBundle/AssetBundleAPI.h>
+#include <AzToolsFramework/UnitTest/ToolsTestApplication.h>
 #include <QString>
 #include <QDir>
 #include <QFileInfo>
@@ -110,7 +110,7 @@ namespace UnitTest
 
             void SetUp() override
             {
-                m_app.reset(aznew AzToolsFramework::ToolsApplication);
+                m_app.reset(aznew ToolsTestApplication("ArchiveTest"));
                 m_app->Start(AzFramework::Application::Descriptor());
                 // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
                 // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
@@ -124,7 +124,7 @@ namespace UnitTest
                 m_app.reset();
             }
 
-            AZStd::unique_ptr<AzToolsFramework::ToolsApplication> m_app;
+            AZStd::unique_ptr<ToolsTestApplication> m_app;
             QTemporaryDir m_tempDir {QDir(QStandardPaths::writableLocation(QStandardPaths::TempLocation)).filePath("ArchiveTests-")};
         };
 

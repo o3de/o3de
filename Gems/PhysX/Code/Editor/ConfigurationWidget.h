@@ -16,7 +16,6 @@
 #include <Editor/ConfigurationWindowBus.h>
 #include <AzFramework/Physics/Configuration/CollisionConfiguration.h>
 #include <AzFramework/Physics/Configuration/SceneConfiguration.h>
-#include <AzFramework/Physics/World.h>
 #endif
 
 namespace AzQtComponents

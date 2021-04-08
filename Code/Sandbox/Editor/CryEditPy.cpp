@@ -33,9 +33,6 @@
 #include "UndoConfigSpec.h"
 #include "ViewManager.h"
 
-const char* GetCryEditDefaultFileExtension();
-const char* GetCryEditOldFileExtension();
-
 //////////////////////////////////////////////////////////////////////////
 namespace
 {
@@ -111,6 +108,9 @@ namespace
 
     bool PyOpenLevel(const char* pLevelName)
     {
+        const char* oldExtension = EditorUtils::LevelFile::GetOldCryFileExtension();
+        const char* defaultExtension = EditorUtils::LevelFile::GetDefaultFileExtension();
+
         QString levelPath = pLevelName;
 
         if (!QFile::exists(levelPath))
@@ -130,10 +130,10 @@ namespace
             levelPath = levelsDir / levelPath / levelFileName;
 
             // make sure the level path includes the cry extension, if needed
-            if (!levelFileName.endsWith(GetCryEditOldFileExtension()) && !levelFileName.endsWith(GetCryEditDefaultFileExtension()))
+            if (!levelFileName.endsWith(oldExtension) && !levelFileName.endsWith(defaultExtension))
             {
-                QString newLevelPath = levelPath + GetCryEditDefaultFileExtension();
-                QString oldLevelPath = levelPath + GetCryEditOldFileExtension();
+                QString newLevelPath = levelPath + defaultExtension;
+                QString oldLevelPath = levelPath + oldExtension;
 
                 // Check if there is a .cry file, otherwise assume it is a new .ly file
                 if (QFileInfo(oldLevelPath).exists())

@@ -67,6 +67,11 @@ namespace AZ
             incompatible.push_back(AZ_CRC("MaterialProviderService", 0x64849a6b));
         }
 
+        void MaterialComponentController::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
+        {
+            required.push_back(AZ_CRC("MaterialReceiverService", 0x0d1a6a74));
+        }
+
         MaterialComponentController::MaterialComponentController(const MaterialComponentConfig& config)
             : m_configuration(config)
         {

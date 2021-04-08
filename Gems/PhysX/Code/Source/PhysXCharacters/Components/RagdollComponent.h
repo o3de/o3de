@@ -13,9 +13,14 @@
 #pragma once
 
 #include <PhysXCharacters/API/Ragdoll.h>
+#include <AzCore/Component/Component.h>
 #include <AzFramework/Physics/CharacterPhysicsDataBus.h>
 #include <AzFramework/Physics/WorldBodyBus.h>
 
+namespace AzPhysics
+{
+    struct SimulatedBody;
+}
 
 namespace PhysX
 {
@@ -81,11 +86,11 @@ namespace PhysX
         void DisablePhysics() override;
         bool IsPhysicsEnabled() const override;
         AZ::Aabb GetAabb() const override;
-        Physics::WorldBody* GetWorldBody() override;
-        Physics::RayCastHit RayCast(const Physics::RayCastRequest& request) override;
+        AzPhysics::SimulatedBody* GetWorldBody() override;
+        AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& request) override;
 
         // CharacterPhysicsDataNotificationBus
-        void OnRagdollConfigurationReady() override;
+        void OnRagdollConfigurationReady(const Physics::RagdollConfiguration& ragdollConfiguration) override;
 
         // deprecated Cry functions
         void EnterRagdoll() override;
@@ -96,7 +101,6 @@ namespace PhysX
 
     private:
         bool IsJointProjectionVisible();
-        void Reinit();
 
         AZStd::unique_ptr<Ragdoll> m_ragdoll;
         /// Minimum number of position iterations to perform in the PhysX solver.

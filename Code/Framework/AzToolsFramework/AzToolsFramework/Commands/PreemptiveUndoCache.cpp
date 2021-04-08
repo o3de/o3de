@@ -53,12 +53,22 @@ namespace AzToolsFramework
         s_cache->m_instance = this;
     }
 
+    void PreemptiveUndoCache::RegisterToUndoCacheInterface()
+    {
+        AZ::Interface<UndoSystem::UndoCacheInterface>::Register(this);
+    }
+
     PreemptiveUndoCache::~PreemptiveUndoCache()
     {
         if (s_cache)
         {
             s_cache->m_instance = nullptr;
             s_cache.Reset();
+        }
+
+        if (AZ::Interface<UndoSystem::UndoCacheInterface>::Get() == this)
+        {
+            AZ::Interface<UndoSystem::UndoCacheInterface>::Unregister(this);
         }
     }
 

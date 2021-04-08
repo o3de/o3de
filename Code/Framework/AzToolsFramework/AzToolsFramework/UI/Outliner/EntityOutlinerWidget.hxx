@@ -21,8 +21,9 @@
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/ToolsMessaging/EntityHighlightBus.h>
-#include <AzToolsFramework/UI/Outliner/EntityOutlinerSearchWidget.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerCacheBus.h>
+#include <AzToolsFramework/UI/Outliner/EntityOutlinerSearchWidget.h>
+#include <AzToolsFramework/UI/Outliner/EntityOutlinerWidgetInterface.h>
 #include <AzToolsFramework/UI/SearchWidget/SearchWidgetTypes.hxx>
 
 #include <QIcon>
@@ -60,12 +61,13 @@ namespace AzToolsFramework
         , private EditorEntityContextNotificationBus::Handler
         , private EditorEntityInfoNotificationBus::Handler
         , private ComponentModeFramework::EditorComponentModeNotificationBus::Handler
+        , private EntityOutlinerWidgetInterface
     {
         Q_OBJECT;
     public:
         AZ_CLASS_ALLOCATOR(EntityOutlinerWidget, AZ::SystemAllocator, 0)
 
-            EntityOutlinerWidget(QWidget* pParent = NULL, Qt::WindowFlags flags = Qt::WindowFlags());
+        explicit EntityOutlinerWidget(QWidget* pParent = NULL, Qt::WindowFlags flags = Qt::WindowFlags());
         virtual ~EntityOutlinerWidget();
 
     private Q_SLOTS:
@@ -103,6 +105,10 @@ namespace AzToolsFramework
         void EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
         void LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
 
+        // EntityOutlinerWidgetInterface
+        void SetRootEntity(AZ::EntityId rootEntityId) override;
+        void SetUpdatesEnabled(bool enable) override;
+
         // Build a selection object from the given entities. Entities already in the Widget's selection buffers are ignored.
         template <class EntityIdCollection>
         QItemSelection BuildSelectionFromEntities(const EntityIdCollection& entityIds);
@@ -138,6 +144,7 @@ namespace AzToolsFramework
         QAction* m_actionGoToEntitiesInViewport;
 
         void OnTreeItemClicked(const QModelIndex& index);
+        void OnTreeItemDoubleClicked(const QModelIndex& index);
         void OnTreeItemExpanded(const QModelIndex& index);
         void OnTreeItemCollapsed(const QModelIndex& index);
         void OnExpandEntity(const AZ::EntityId& entityId, bool expand);

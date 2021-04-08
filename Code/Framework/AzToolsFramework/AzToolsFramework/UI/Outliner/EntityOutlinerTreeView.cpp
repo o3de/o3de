@@ -183,8 +183,6 @@ namespace AzToolsFramework
         // Paint the branch background as defined by the entity's handler, or its closes ancestor's.
         PaintBranchBackground(painter, rect, index);
 
-        // Make sure the base class is called after the layer rect is drawn,
-        // so that the foldout arrow draws on top of the layer color.
         QTreeView::drawBranches(painter, rect, index);
     }
 
@@ -209,12 +207,7 @@ namespace AzToolsFramework
 
             if (ancestorUiHandler != nullptr)
             {
-                int ancestorLeft = visualRect(ancestorIndex).left();
-                QStyleOptionViewItem option;
-                option.rect = rect;
-                option.rect.setLeft(ancestorLeft);
-
-                ancestorUiHandler->PaintDescendantBackground(painter, option, ancestorIndex, index);
+                ancestorUiHandler->PaintDescendantBranchBackground(painter, this, rect, ancestorIndex, index);
             }
         }
     }

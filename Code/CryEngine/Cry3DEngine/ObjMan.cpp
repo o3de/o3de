@@ -281,45 +281,48 @@ void CObjManager::PreloadLevelObjects()
     //////////////////////////////////////////////////////////////////////////
 
     // Request objects loading from Streaming System.
-    if (const char* pCgfName = pResList->GetFirst())
+    if (pResList)
     {
-        while (pCgfName)
+        if (const char* pCgfName = pResList->GetFirst())
         {
-            if (strstr(pCgfName, ".cgf"))
+            while (pCgfName)
             {
-                const char* sLodName = strstr(pCgfName, "_lod");
-                if (sLodName && (sLodName[4] >= '0' && sLodName[4] <= '9'))
+                if (strstr(pCgfName, ".cgf"))
                 {
-                    // Ignore Lod files.
-                    pCgfName = pResList->GetNext();
-                    continue;
-                }
-
-                cgfFilename = pCgfName;
-
-                if (bVerboseLogging)
-                {
-                    CryLog("%s", cgfFilename.c_str());
-                }
-                IStatObj* pStatObj = GetObjManager()->LoadStatObjUnsafeManualRef(cgfFilename.c_str(), NULL, 0, true, 0);
-                if (pStatObj)
-                {
-                    if (pStatObj->IsMeshStrippedCGF())
+                    const char* sLodName = strstr(pCgfName, "_lod");
+                    if (sLodName && (sLodName[4] >= '0' && sLodName[4] <= '9'))
                     {
-                        nInLevelCacheCount++;
+                        // Ignore Lod files.
+                        pCgfName = pResList->GetNext();
+                        continue;
                     }
+
+                    cgfFilename = pCgfName;
+
+                    if (bVerboseLogging)
+                    {
+                        CryLog("%s", cgfFilename.c_str());
+                    }
+                    IStatObj* pStatObj = GetObjManager()->LoadStatObjUnsafeManualRef(cgfFilename.c_str(), NULL, 0, true, 0);
+                    if (pStatObj)
+                    {
+                        if (pStatObj->IsMeshStrippedCGF())
+                        {
+                            nInLevelCacheCount++;
+                        }
+                    }
+                    // cgfStreamer.StartStreaming(cgfFilename.c_str());
+                    nCgfCounter++;
+
+                    // This loop can take a few seconds, so we should refresh the loading screen and call the loading tick functions to
+                    // ensure that no big gaps in coverage occur.
+                    SYNCHRONOUS_LOADING_TICK();
                 }
-                //cgfStreamer.StartStreaming(cgfFilename.c_str());
-                nCgfCounter++;
 
-                //This loop can take a few seconds, so we should refresh the loading screen and call the loading tick functions to ensure that no big gaps in coverage occur.
-                SYNCHRONOUS_LOADING_TICK();
+                pCgfName = pResList->GetNext();
             }
-
-            pCgfName = pResList->GetNext();
         }
     }
-
 
     //  PrintMessage("Finished requesting level CGF's: %d objects in %.1f sec", nCgfCounter, GetCurAsyncTimeSec()-fStartTime);
 

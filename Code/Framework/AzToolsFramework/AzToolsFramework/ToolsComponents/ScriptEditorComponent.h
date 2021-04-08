@@ -35,6 +35,7 @@ namespace AzToolsFramework
         public:
             AZ_EDITOR_COMPONENT(ScriptEditorComponent, "{b5fc8679-fa2a-4c7c-ac42-dcc279ea613a}")
 
+            static void Reflect(AZ::ReflectContext* context);
             static bool DoComponentsMatch(const ScriptEditorComponent* thisComponent, const ScriptEditorComponent* otherComponent);
 
             ScriptEditorComponent() = default;
@@ -78,8 +79,6 @@ namespace AzToolsFramework
                                                     // ElementInfo for more than one class field, but only one owns the Attributes.
                 float m_sortOrder; // Sort order of the property as defined by using the "order" attribute, by default the order is FLT_MAX which means alphabetical sort will be used
             };
-
-            static void Reflect(AZ::ReflectContext* context);
 
             void LoadProperties();
             // make sure internal script (m_scriptComponent.m_script) is set before loading

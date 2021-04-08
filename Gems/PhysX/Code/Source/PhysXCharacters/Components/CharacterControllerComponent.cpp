@@ -11,6 +11,8 @@
 */
 
 #include <PhysX_precompiled.h>
+
+#include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -18,10 +20,12 @@
 #include <PhysXCharacters/API/CharacterController.h>
 #include <PhysXCharacters/Components/CharacterControllerComponent.h>
 #include <PhysX/ColliderComponentBus.h>
+#include <Scene/PhysXScene.h>
 #include <System/PhysXSystem.h>
 #include <AzFramework/Physics/Utils.h>
 #include <PhysXCharacters/API/CharacterUtils.h>
 
+#include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
 #include <AzFramework/Physics/Collision/CollisionLayers.h>
 
@@ -43,23 +47,6 @@ namespace PhysX
 
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->EBus<Physics::CharacterRequestBus>("CharacterControllerRequestBus", "Character Controller")
-                ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::RuntimeOwn)
-                ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
-                ->Event("GetBasePosition", &Physics::CharacterRequests::GetBasePosition, "Get Base Position")
-                ->Event("SetBasePosition", &Physics::CharacterRequests::SetBasePosition, "Set Base Position")
-                ->Event("GetCenterPosition", &Physics::CharacterRequests::GetCenterPosition, "Get Center Position")
-                ->Event("GetStepHeight", &Physics::CharacterRequests::GetStepHeight, "Get Step Height")
-                ->Event("SetStepHeight", &Physics::CharacterRequests::SetStepHeight, "Set Step Height")
-                ->Event("GetUpDirection", &Physics::CharacterRequests::GetUpDirection, "Get Up Direction")
-                ->Event("GetSlopeLimitDegrees", &Physics::CharacterRequests::GetSlopeLimitDegrees, "Get Slope Limit (Degrees)")
-                ->Event("SetSlopeLimitDegrees", &Physics::CharacterRequests::SetSlopeLimitDegrees, "Set Slope Limit (Degrees)")
-                ->Event("GetMaximumSpeed", &Physics::CharacterRequests::GetMaximumSpeed, "Get Maximum Speed")
-                ->Event("SetMaximumSpeed", &Physics::CharacterRequests::SetMaximumSpeed, "Set Maximum Speed")
-                ->Event("GetVelocity", &Physics::CharacterRequests::GetVelocity, "Get Velocity")
-                ->Event("AddVelocity", &Physics::CharacterRequests::AddVelocity, "Add Velocity")
-                ;
-
             behaviorContext->EBus<CharacterControllerRequestBus>("PhysXCharacterControllerRequestBus",
                 "Character Controller (PhysX specific)")
                 ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::RuntimeOwn)
@@ -105,13 +92,12 @@ namespace PhysX
 
     void CharacterControllerComponent::Deactivate()
     {
+        DisablePhysics();
+
         Physics::CollisionFilteringRequestBus::Handler::BusDisconnect();
         Physics::WorldBodyRequestBus::Handler::BusDisconnect();
-        m_preSimulateHandler.Disconnect();
-        CharacterControllerRequestBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
         Physics::CharacterRequestBus::Handler::BusDisconnect();
-        Physics::Utils::DeferDelete(AZStd::move(m_controller));
     }
 
     AZ::Vector3 CharacterControllerComponent::GetBasePosition() const
@@ -223,10 +209,18 @@ namespace PhysX
     {
         if(IsPhysicsEnabled())
         {
-            m_controller.reset();
+            m_controller->DisablePhysics();
 
-            // do not disconnect from the CharacterRequestBus or the IsPresent function used to determine
-            // if the CharacterControllerComponent is on this entity will not work
+            // The character is first removed from the scene, and then its deletion is deferred.
+            // This ensures trigger exit events are raised correctly on deleted objects.
+            {
+                auto* scene = azdynamic_cast<PhysX::PhysXScene*>(m_controller->GetScene());
+                AZ_Assert(scene, "Invalid PhysX scene");
+                scene->DeferDelete(AZStd::move(m_controller));
+                m_controller.reset();
+            }
+
+            m_preSimulateHandler.Disconnect();
 
             if (CharacterControllerRequestBus::Handler::BusIsConnected())
             {
@@ -239,7 +233,7 @@ namespace PhysX
 
     bool CharacterControllerComponent::IsPhysicsEnabled() const
     {
-        return m_controller && m_controller->GetWorld();
+        return m_controller && m_controller->m_simulating;
     }
 
     AZ::Aabb CharacterControllerComponent::GetAabb() const
@@ -251,96 +245,64 @@ namespace PhysX
         return AZ::Aabb::CreateNull();
     }
 
-    Physics::WorldBody* CharacterControllerComponent::GetWorldBody()
+    AzPhysics::SimulatedBody* CharacterControllerComponent::GetWorldBody()
     {
         return m_controller.get();
     }
 
-    Physics::RayCastHit CharacterControllerComponent::RayCast(const Physics::RayCastRequest& request)
+    AzPhysics::SceneQueryHit CharacterControllerComponent::RayCast(const AzPhysics::RayCastRequest& request)
     {
         if (m_controller)
         {
             return m_controller->RayCast(request);
         }
-        return Physics::RayCastHit();
+        return AzPhysics::SceneQueryHit();
     }
 
     // CharacterControllerRequestBus
     void CharacterControllerComponent::Resize(float height)
     {
-        if (auto characterController = static_cast<CharacterController*>(m_controller.get()))
-        {
-            return characterController->Resize(height);
-        }
+        return m_controller->Resize(height);
     }
 
     float CharacterControllerComponent::GetHeight()
     {
-        if (auto characterController = static_cast<CharacterController*>(m_controller.get()))
-        {
-            return characterController->GetHeight();
-        }
-        return 0.0f;
+        return m_controller->GetHeight();
     }
 
     void CharacterControllerComponent::SetHeight(float height)
     {
-        if (auto characterController = static_cast<CharacterController*>(m_controller.get()))
-        {
-            return characterController->SetHeight(height);
-        }
+        return m_controller->SetHeight(height);
     }
 
     float CharacterControllerComponent::GetRadius()
     {
-        if (auto characterController = static_cast<CharacterController*>(m_controller.get()))
-        {
-            return characterController->GetRadius();
-        }
-        return 0.0f;
+        return m_controller->GetRadius();
     }
 
     void CharacterControllerComponent::SetRadius(float radius)
     {
-        if (auto characterController = static_cast<CharacterController*>(m_controller.get()))
-        {
-            return characterController->SetRadius(radius);
-        }
+        return m_controller->SetRadius(radius);
     }
 
     float CharacterControllerComponent::GetHalfSideExtent()
     {
-        if (auto characterController = static_cast<CharacterController*>(m_controller.get()))
-        {
-            return characterController->GetHalfSideExtent();
-        }
-        return 0.0f;
+        return m_controller->GetHalfSideExtent();
     }
 
     void CharacterControllerComponent::SetHalfSideExtent(float halfSideExtent)
     {
-        if (auto characterController = static_cast<CharacterController*>(m_controller.get()))
-        {
-            return characterController->SetHalfSideExtent(halfSideExtent);
-        }
+        return m_controller->SetHalfSideExtent(halfSideExtent);
     }
 
     float CharacterControllerComponent::GetHalfForwardExtent()
     {
-        if (auto characterController = static_cast<CharacterController*>(m_controller.get()))
-        {
-            return characterController->GetHalfForwardExtent();
-        }
-
-        return 0.0f;
+        return m_controller->GetHalfForwardExtent();
     }
 
     void CharacterControllerComponent::SetHalfForwardExtent(float halfForwardExtent)
     {
-        if (auto characterController = static_cast<CharacterController*>(m_controller.get()))
-        {
-            return characterController->SetHalfForwardExtent(halfForwardExtent);
-        }
+        return m_controller->SetHalfForwardExtent(halfForwardExtent);
     }
 
     // TransformNotificationBus
@@ -450,23 +412,24 @@ namespace PhysX
 
     bool CharacterControllerComponent::CreateController()
     {
-        AZStd::shared_ptr<Physics::World> defaultWorld;
-        Physics::DefaultWorldBus::BroadcastResult(defaultWorld, &Physics::DefaultWorldRequests::GetDefaultWorld);
-        if (!defaultWorld)
+        AzPhysics::SceneHandle defaultSceneHandle = AzPhysics::InvalidSceneHandle;
+        Physics::DefaultWorldBus::BroadcastResult(defaultSceneHandle, &Physics::DefaultWorldRequests::GetDefaultSceneHandle);
+        if (defaultSceneHandle == AzPhysics::InvalidSceneHandle)
         {
-            AZ_Error("PhysX Character Controller Component", false, "Failed to retrieve default world.");
+            AZ_Error("PhysX Character Controller Component", false, "Failed to retrieve default scene.");
             return false;
         }
 
         m_characterConfig->m_debugName = GetEntity()->GetName();
         m_characterConfig->m_entityId = GetEntityId();
 
-        m_controller = Utils::Characters::CreateCharacterController(*m_characterConfig, *m_shapeConfig, *defaultWorld);
+        m_controller = Utils::Characters::CreateCharacterController(*m_characterConfig, *m_shapeConfig, defaultSceneHandle);
         if (!m_controller)
         {
             AZ_Error("PhysX Character Controller Component", false, "Failed to create character controller.");
             return false;
         }
+        m_controller->EnablePhysics(*m_characterConfig);
 
         AZ::Vector3 entityTranslation = AZ::Vector3::CreateZero();
         AZ::TransformBus::EventResult(entityTranslation, GetEntityId(), &AZ::TransformBus::Events::GetWorldTranslation);

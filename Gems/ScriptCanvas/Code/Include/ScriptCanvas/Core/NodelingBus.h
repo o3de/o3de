@@ -29,6 +29,7 @@ namespace ScriptCanvas
         virtual GraphScopedNodeId GetGraphScopedNodeId() const = 0;
         virtual const AZStd::string& GetDisplayName() const = 0;
 
+        virtual void Setup() = 0;
         virtual void SetDisplayName(const AZStd::string& displayName) = 0;
     };
     

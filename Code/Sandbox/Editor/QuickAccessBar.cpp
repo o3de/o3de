@@ -64,6 +64,8 @@ void CQuickAccessBar::OnInitDialog()
     // Make this window 50% alpha.
     setWindowOpacity(0.5);
 
+    m_levelExtension = EditorUtils::LevelFile::GetDefaultFileExtension();
+
     CollectMenuItems(MainWindow::instance()->menuBar());
 
     AddMRUFileItems();
@@ -143,7 +145,7 @@ void CQuickAccessBar::AddMRUFileItems()
     {
         QString mruText;
         pMRUList->GetDisplayName(mruText, i, "");
-        if (mruText.isEmpty())
+        if (mruText.isEmpty() || !(*pMRUList)[i].endsWith(m_levelExtension))
         {
             continue;
         }

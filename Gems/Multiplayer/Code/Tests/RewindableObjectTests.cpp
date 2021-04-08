@@ -31,7 +31,7 @@ namespace UnitTest
 
     TEST_F(RewindableObjectTests, BasicTests)
     {
-        Multiplayer::RewindableObject<uint32_t, RewindableBufferFrames> test(AzNetworking::InvalidConnectionId);
+        Multiplayer::RewindableObject<uint32_t, RewindableBufferFrames> test(0);
 
         for (uint32_t i = 0; i < 16; ++i)
         {
@@ -62,7 +62,7 @@ namespace UnitTest
 
     TEST_F(RewindableObjectTests, OverflowTests)
     {
-        Multiplayer::RewindableObject<uint32_t, RewindableBufferFrames> test(AzNetworking::InvalidConnectionId);
+        Multiplayer::RewindableObject<uint32_t, RewindableBufferFrames> test(0);
 
         for (uint32_t i = 0; i < RewindableBufferFrames; ++i)
         {
@@ -85,7 +85,7 @@ namespace UnitTest
 
     TEST_F(RewindableObjectTests, ComplexObject)
     {
-        Multiplayer::RewindableObject<Object, RewindableBufferFrames> test(AzNetworking::InvalidConnectionId);
+        Multiplayer::RewindableObject<Object, RewindableBufferFrames> test({ 0 });
 
         for (uint32_t i = 0; i < RewindableBufferFrames; ++i)
         {
@@ -104,7 +104,7 @@ namespace UnitTest
 
     TEST_F(RewindableObjectTests, TestBackfillOnLargeTimestep)
     {
-        Multiplayer::RewindableObject<uint32_t, RewindableBufferFrames> test(AzNetworking::InvalidConnectionId);
+        Multiplayer::RewindableObject<uint32_t, RewindableBufferFrames> test(0);
         Multiplayer::ScopedAlterTime time1(static_cast<Multiplayer::ApplicationFrameId>(0), AzNetworking::InvalidConnectionId);
         test = 1;
 
@@ -123,7 +123,7 @@ namespace UnitTest
 
     TEST_F(RewindableObjectTests, TestMassiveValueOverflow)
     {
-        Multiplayer::RewindableObject<uint32_t, RewindableBufferFrames> test(AzNetworking::InvalidConnectionId);
+        Multiplayer::RewindableObject<uint32_t, RewindableBufferFrames> test(0);
 
         for (uint32_t i = 0; i < 1000; ++i)
         {

@@ -3,14 +3,13 @@
     "Version": 1,
     "ClassName": "AZ::Render::LightingPreset",
     "ClassData": {
-        "autoSelect": false,
         "displayName": "Daytime Hotel Interior",
-        "skyboxImageAsset": {
+        "iblDiffuseImageAsset": {
             "assetId": {
                 "guid": "{720DF96E-6A6E-552F-AC82-835BB4888FE3}",
-                "subId": 1000
+                "subId": 3000
             },
-            "assetHint": "materialeditor/lightingpresets/lythwood_room_4k_latlong_iblskyboxcm.exr.streamingimage"
+            "assetHint": "materialeditor/lightingpresets/lythwood_room_4k_latlong_iblskyboxcm_ibldiffuse.exr.streamingimage"
         },
         "iblSpecularImageAsset": {
             "assetId": {
@@ -19,15 +18,21 @@
             },
             "assetHint": "materialeditor/lightingpresets/lythwood_room_4k_latlong_iblskyboxcm_iblspecular.exr.streamingimage"
         },
-        "iblDiffuseImageAsset": {
+        "skyboxImageAsset": {
+            "assetId": {
+                "guid": "{720DF96E-6A6E-552F-AC82-835BB4888FE3}",
+                "subId": 1000
+            },
+            "assetHint": "materialeditor/lightingpresets/lythwood_room_4k_latlong_iblskyboxcm.exr.streamingimage"
+        },
+        "alternateSkyboxImageAsset": {
             "assetId": {
                 "guid": "{720DF96E-6A6E-552F-AC82-835BB4888FE3}",
                 "subId": 3000
             },
             "assetHint": "materialeditor/lightingpresets/lythwood_room_4k_latlong_iblskyboxcm_ibldiffuse.exr.streamingimage"
         },
-        "iblExposure": 0.0,
-        "skyboxExposure": 0.0,
+        "shadowCatcherOpacity": 0.30000001192092898,
         "lights": [
             {
                 "direction": [
@@ -35,20 +40,10 @@
                     1.0,
                     -0.25
                 ],
-                "color": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "intensity": 1.0,
                 "shadowCascadeCount": 4,
                 "shadowRatioLogarithmUniform": 1.0,
-                "shadowFarClipDistance": 20.0,
-                "shadowmapSize": "Size2048",
-                "enableShadowDebugColoring": false
+                "shadowmapSize": "Size2048"
             }
-        ],
-        "shadowCatcherOpacity": 0.30000001192092898
+        ]
     }
 }

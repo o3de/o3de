@@ -69,7 +69,6 @@ ly_add_target(
             3rdParty::PVRTexTool
             3rdParty::squish-ccr
             3rdParty::tiff
-            3rdParty::ispctexcomp
             3rdParty::ilmbase
             Legacy::CryCommon
             AZ::AzFramework

@@ -45,8 +45,11 @@ namespace ScriptCanvasEditor
             Type,
             DefaultValue,
             Scope,
+            InitialValueSource,
             Count
         };
+
+        static const char* m_columnNames[static_cast<int>(ColumnIndex::Count)];
 
         enum CustomRole
         {
@@ -84,8 +87,12 @@ namespace ScriptCanvasEditor
         // ScriptCanvas::VariableRuntimeNotificationBus
         void OnVariableValueChanged() override;
         void OnVariableScopeChanged() override;
+        void OnVariableInitialValueSourceChanged() override;
         void OnVariablePriorityChanged() override;
         ////
+
+        QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+
 
         ScriptCanvas::VariableId FindVariableIdForIndex(const QModelIndex& index) const;
         ScriptCanvas::GraphScopedVariableId FindScopedVariableIdForIndex(const QModelIndex& index) const;

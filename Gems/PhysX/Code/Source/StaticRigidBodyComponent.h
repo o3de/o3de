@@ -16,9 +16,14 @@
 #include <AzFramework/Physics/WorldBodyBus.h>
 #include <PhysX/ComponentTypeIds.h>
 
+namespace AzPhysics
+{
+    struct SimulatedBody;
+}
+
 namespace PhysX
 {
-    class RigidBodyStatic;
+    class StaticRigidBody;
 
     class StaticRigidBodyComponent final
         : public AZ::Component
@@ -29,6 +34,7 @@ namespace PhysX
         AZ_COMPONENT(StaticRigidBodyComponent, StaticRigidBodyComponentTypeId);
 
         StaticRigidBodyComponent();
+        explicit StaticRigidBodyComponent(AzPhysics::SceneHandle sceneHandle);
         ~StaticRigidBodyComponent();
 
         static void Reflect(AZ::ReflectContext* context);
@@ -38,15 +44,15 @@ namespace PhysX
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
-        PhysX::RigidBodyStatic* GetStaticRigidBody();
+        PhysX::StaticRigidBody* GetStaticRigidBody();
 
         // WorldBodyRequestBus
         void EnablePhysics() override;
         void DisablePhysics() override;
         bool IsPhysicsEnabled() const override;
         AZ::Aabb GetAabb() const override;
-        Physics::WorldBody* GetWorldBody() override;
-        Physics::RayCastHit RayCast(const Physics::RayCastRequest& request) override;
+        AzPhysics::SimulatedBody* GetWorldBody() override;
+        AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& request) override;
 
     private:
         void InitStaticRigidBody();
@@ -58,6 +64,8 @@ namespace PhysX
         // AZ::TransformNotificationsBus
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 
-        AZStd::unique_ptr<PhysX::RigidBodyStatic> m_staticRigidBody;
+        AzPhysics::SimulatedBodyHandle m_staticRigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
+        PhysX::StaticRigidBody* m_staticRigidBody = nullptr;
+        AzPhysics::SceneHandle m_attachedSceneHandle = AzPhysics::InvalidSceneHandle;
     };
 } // namespace PhysX

@@ -19,6 +19,8 @@ ShaderResourceGroup MorphTargetPassSrg : SRG_PerPass
     RWBuffer<int> m_accumulatedDeltas;    
 }
 
+// This class represents the data that is passed to the morph target compute shader of an individual delta
+// See MorphTargetDelta.h for the corresponding cpu struct
 struct MorphTargetDelta
 {
     // The index of the vertex being modified by this delta

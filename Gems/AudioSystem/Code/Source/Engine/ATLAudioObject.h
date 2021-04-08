@@ -21,7 +21,7 @@
 
 #include <climits>
 
-    #include <AzFramework/Physics/Casts.h>
+#include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 
 struct IRenderAuxGeom;
 
@@ -229,11 +229,11 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     struct AudioRaycastRequest
     {
-        Physics::RayCastRequest m_request{};
+        AzPhysics::RayCastRequest m_request{};
         TAudioObjectID m_audioObjectId = INVALID_AUDIO_OBJECT_ID;
         size_t m_rayIndex = 0;
 
-        AudioRaycastRequest(const Physics::RayCastRequest& request, TAudioObjectID audioObjectId, size_t rayId)
+        AudioRaycastRequest(const AzPhysics::RayCastRequest& request, TAudioObjectID audioObjectId, size_t rayId)
             : m_request(request)
             , m_audioObjectId(audioObjectId)
             , m_rayIndex(rayId)
@@ -243,11 +243,11 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     struct AudioRaycastResult
     {
-        AZStd::vector<Physics::RayCastHit> m_result{};
+        AZStd::vector<AzPhysics::SceneQueryHit> m_result{};
         TAudioObjectID m_audioObjectId = INVALID_AUDIO_OBJECT_ID;
         size_t m_rayIndex = 0;
 
-        AudioRaycastResult(AZStd::vector<Physics::RayCastHit>&& result, TAudioObjectID audioObjectId, size_t rayId)
+        AudioRaycastResult(AZStd::vector<AzPhysics::SceneQueryHit>&& result, TAudioObjectID audioObjectId, size_t rayId)
             : m_result(AZStd::move(result))
             , m_audioObjectId(audioObjectId)
             , m_rayIndex(rayId)
@@ -290,8 +290,8 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     struct RaycastInfo
     {
-        AZStd::fixed_vector<Physics::RayCastHit, s_maxHitResultsPerRaycast> m_hits;
-        Physics::RayCastRequest m_raycastRequest;
+        AZStd::fixed_vector<AzPhysics::SceneQueryHit, s_maxHitResultsPerRaycast> m_hits;
+        AzPhysics::RayCastRequest m_raycastRequest;
         float m_contribution = 0.f;
         float m_cacheTimerMs = 0.f;
         AZ::u16 m_numHits = 0;

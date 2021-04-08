@@ -151,7 +151,7 @@ namespace AssetBuilderSDK
 
     bool GatherProductDependencies(
         AZ::SerializeContext& serializeContext,
-        void* obj,
+        const void* obj,
         AZ::TypeId typeId,
         AZStd::vector<ProductDependency>& productDependencies,
         ProductPathDependencySet& productPathDependencySet,
@@ -176,7 +176,7 @@ namespace AssetBuilderSDK
         return enumerateResult;
     }
 
-    bool OutputObject(void* obj, AZ::TypeId typeId, AZStd::string_view outputPath, AZ::Data::AssetType assetType, AZ::u32 subId, JobProduct& jobProduct, AZ::SerializeContext* serializeContext, const DependencyHandler& handler)
+    bool OutputObject(const void* obj, AZ::TypeId typeId, AZStd::string_view outputPath, AZ::Data::AssetType assetType, AZ::u32 subId, JobProduct& jobProduct, AZ::SerializeContext* serializeContext, const DependencyHandler& handler)
     {
         if (!serializeContext)
         {

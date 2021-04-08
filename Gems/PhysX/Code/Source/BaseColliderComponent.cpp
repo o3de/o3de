@@ -16,6 +16,7 @@
 #include <AzFramework/Physics/RigidBodyBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Physics/Utils.h>
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
@@ -27,6 +28,7 @@
 #include <Source/SystemComponent.h>
 #include <Source/Utils.h>
 #include <PhysX/PhysXLocks.h>
+#include <Scene/PhysXScene.h>
 
 namespace PhysX
 {
@@ -61,8 +63,9 @@ namespace PhysX
 
         if (numShapes > 0)
         {
-            auto world = Utils::GetDefaultWorld();
-            PHYSX_SCENE_READ_LOCK(world->GetNativeWorld());
+            auto* scene = Utils::GetDefaultScene();
+            auto* pxScene = static_cast<physx::PxScene*>(scene->GetNativePointer());
+            PHYSX_SCENE_READ_LOCK(pxScene);
 
             auto pxShape = static_cast<physx::PxShape*>(shapes[0]->GetNativePointer());
             physx::PxTransform pxWorldTransform = PxMathConvert(m_worldTransform);
@@ -273,7 +276,7 @@ namespace PhysX
         }
         else
         {
-            const AZ::Vector3 nonUniformScale = Utils::GetNonUniformScale(GetEntityId());
+            const AZ::Vector3 nonUniformScale = Utils::GetTransformScale(GetEntityId());
 
             m_shapes.reserve(m_shapeConfigList.size());
 
@@ -326,7 +329,11 @@ namespace PhysX
             return false;
         }
 
-        Utils::GetShapesFromAsset(physicsAssetConfiguration, componentColliderConfiguration, m_shapes);
+        const bool hasNonUniformScale = (AZ::NonUniformScaleRequestBus::FindFirstHandler(GetEntityId()) != nullptr);
+        // the value for the subdivision level doesn't matter in the runtime, because any approximation of primitives will already have
+        // happened in the editor, so can pass an arbitrary value here
+        AZ::u8 subdivisionLevel = 0;
+        Utils::GetShapesFromAsset(physicsAssetConfiguration, componentColliderConfiguration, hasNonUniformScale, subdivisionLevel, m_shapes);
 
         return true;
     }

@@ -29,11 +29,7 @@ namespace ScriptCanvasTests
 
     void ExpectParse(AZStd::string_view graphPath);
 
-    void ExpectParse(AZStd::string_view graphPath, AZStd::string_view extension);
-
     void ExpectParseError(AZStd::string_view graphPath);
-
-    void ExpectParseError(AZStd::string_view graphPath, AZStd::string_view extension);
 
     AZStd::string_view GetGraphNameFromPath(AZStd::string_view graphPath);
 

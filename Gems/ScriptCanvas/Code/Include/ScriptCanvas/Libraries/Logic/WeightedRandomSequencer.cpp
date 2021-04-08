@@ -35,7 +35,7 @@ namespace ScriptCanvas
                 return AZ::Success(DependencyReport());
             }
 
-            SlotsOutcome WeightedRandomSequencer::GetSlotsInExecutionThreadByTypeImpl(const Slot& , CombinedSlotType targetSlotType, const Slot* /*executionChildSlot*/) const
+            ConstSlotsOutcome WeightedRandomSequencer::GetSlotsInExecutionThreadByTypeImpl(const Slot& , CombinedSlotType targetSlotType, const Slot* /*executionChildSlot*/) const
             {
                 return AZ::Success(GetSlotsByType(targetSlotType));
             }

@@ -10,8 +10,6 @@
 #
 
 set(FILES
-    Source/CrashReporting_precompiled.cpp
-    Source/CrashReporting_precompiled.h
     Include/CrashReporting/GameCrashHandler.h
     Source/GameCrashHandler.cpp
 )

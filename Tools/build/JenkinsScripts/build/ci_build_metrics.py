@@ -146,16 +146,23 @@ def gather_build_metrics(current_dir, build_config_filename, platform):
             print(f'[ci_build_metrics] {reason}', flush=True)
             continue
 
-        # Clean the output
-        output_directory = build_parameters['OUTPUT_DIRECTORY']
+        # Clean the build output
+        output_directory = build_parameters['OUTPUT_DIRECTORY'] if 'OUTPUT_DIRECTORY' in build_parameters else None
         if not output_directory:
             metrics['result'] = -1 
             reason = f'OUTPUT_DIRECTORY entry in {build_config_abspath} is missing.'
             metrics['reason'] = reason
             print(f'[ci_build_metrics] {reason}', flush=True)
             continue
+        folders_of_interest = [output_directory]
 
-        folders_of_interest = ['Cache', 'AssetProcessorTemp', output_directory]
+        # Clean the AP output
+        cmake_ly_projects = build_parameters['CMAKE_LY_PROJECTS'] if 'CMAKE_LY_PROJECTS' in build_parameters else None
+        if cmake_ly_projects:
+            projects = cmake_ly_projects.split(';')
+            for project in projects:
+                folders_of_interest.append(os.path.join(project, 'user', 'AssetProcessorTemp'))
+                folders_of_interest.append(os.path.join(project, 'Cache'))
         
         metrics['build_metrics'] = []
         build_metrics = metrics['build_metrics']

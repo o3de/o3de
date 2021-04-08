@@ -25,7 +25,7 @@ namespace AZ
 
         void NativeErrorMessageBox(const char*, const char*) {}
 
-        AZ::IO::FixedMaxPathString GetEngineManifestPath()
+        AZ::IO::FixedMaxPathString GetO3deManifestDirectory()
         {
             if (const char* homePath = std::getenv("HOME"); homePath != nullptr)
             {
@@ -33,7 +33,6 @@ namespace AZ
                 if (!path.empty())
                 {
                     path /= ".o3de";
-                    path /= "o3de_manifest.json";
                 }
                 return path.Native();
             }

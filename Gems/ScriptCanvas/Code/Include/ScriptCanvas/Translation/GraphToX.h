@@ -52,14 +52,9 @@ namespace ScriptCanvas
             void CloseFunctionBlock(Writer& writer);
             void CloseScope(Writer& writer);
             void CloseNamespace(Writer& writer, AZStd::string_view ns);
-            const AZStd::pair<Grammar::VariableConstPtr, AZStd::string>* FindStaticVariable(Grammar::VariableConstPtr) const;
             AZStd::string_view GetGraphName() const;
             AZStd::string_view GetFullPath() const;
-            const AZStd::vector<Grammar::VariableConstPtr>& GetStaticVariables() const;
-            const AZStd::vector<AZStd::pair<Grammar::VariableConstPtr, AZStd::string>>& GetStaticVariablesNames() const;
             AZStd::sys_time_t GetTranslationDuration() const;
-            AZStd::vector<Grammar::VariableConstPtr>& ModStaticVariables();
-            AZStd::vector<AZStd::pair<Grammar::VariableConstPtr, AZStd::string>>& ModStaticVariablesNames();
             AZStd::string ResolveScope(const AZStd::vector<AZStd::string>& namespaces);
             void SingleLineComment(Writer& writer);
             void OpenBlockComment(Writer& writer);
@@ -78,8 +73,6 @@ namespace ScriptCanvas
             AZStd::vector<ValidationConstPtr> m_errors;
             AZStd::sys_time_t m_translationDuration;
             AZStd::chrono::system_clock::time_point m_translationStartTime;
-            AZStd::vector<Grammar::VariableConstPtr> m_staticVariables;
-            AZStd::vector<AZStd::pair<Grammar::VariableConstPtr, AZStd::string>> m_staticVariableNames;
         };
     } 
 

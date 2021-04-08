@@ -227,7 +227,7 @@ void AssetProcessorManagerTest::SetUp()
                 SetArgReferee<0>(m_data->m_databaseLocation),
                 Return(true)));
 
-    m_gameName = AssetUtilities::ComputeProjectName("SamplesProject", true);
+    m_gameName = AssetUtilities::ComputeProjectName("AutomatedTesting", true);
 
     AssetUtilities::ResetAssetRoot();
     QDir newRoot;
@@ -1665,7 +1665,7 @@ TEST_F(PathDependencyTest, NoLongerProcessedFile_IsRemoved)
     m_sharedConnection->GetProductsBySourceName("test1.txt", products);
     ASSERT_EQ(products.size(), 0);
 
-    ASSERT_FALSE(QFile::exists(m_normalizedCacheRootDir.absoluteFilePath("pc/samplesproject/test1.asset1").toUtf8().constData()));
+    ASSERT_FALSE(QFile::exists(m_normalizedCacheRootDir.absoluteFilePath("pc/automatedtesting/test1.asset1").toUtf8().constData()));
 }
 
 TEST_F(PathDependencyTest, AssetProcessed_Impl_SelfReferrentialProductDependency_DependencyIsRemoved)

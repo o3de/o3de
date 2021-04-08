@@ -13,15 +13,24 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
+#include <AzCore/Component/TickBus.h>
+#include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/std/parallel/atomic.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
+#include <AzFramework/Spawnable/RootSpawnableInterface.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzFramework/Spawnable/SpawnableAssetHandler.h>
+#include <AzFramework/Spawnable/SpawnableEntitiesContainer.h>
+#include <AzFramework/Spawnable/SpawnableEntitiesManager.h>
 
 namespace AzFramework
 {
     class SpawnableSystemComponent
         : public AZ::Component
+        , public AZ::TickBus::Handler
         , public AssetCatalogEventBus::Handler
+        , public RootSpawnableInterface::Registrar
+        , public RootSpawnableNotificationBus::Handler
     {
     public:
         AZ_COMPONENT(SpawnableSystemComponent, "{12D0DA52-BB86-4AC3-8862-9493E0D0E207}");
@@ -35,10 +44,20 @@ namespace AzFramework
         SpawnableSystemComponent& operator=(const SpawnableSystemComponent&) = delete;
         SpawnableSystemComponent& operator=(SpawnableSystemComponent&&) = delete;
 
+        //
+        // Component
+        //
+
         static void Reflect(AZ::ReflectContext* context);
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& services);
+
+        //
+        // TickBus
+        //
+
+        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
         //
         // AssetCatalogEventBus
@@ -46,12 +65,32 @@ namespace AzFramework
 
         void OnCatalogLoaded(const char* catalogFile) override;
 
+        //
+        // RootSpawnableInterface
+        //
+
+        uint64_t AssignRootSpawnable(AZ::Data::Asset<Spawnable> rootSpawnable) override;
+        void ReleaseRootSpawnable() override;
+
+        //
+        // RootSpawnbleNotificationBus
+        //
+
+        void OnRootSpawnableAssigned(AZ::Data::Asset<Spawnable> rootSpawnable, uint32_t generation) override;
+        void OnRootSpawnableReleased(uint32_t generation) override;
+        
     protected:
         void Activate() override;
         void Deactivate() override;
 
+        void LoadRootSpawnableFromSettingsRegistry();
+
         SpawnableAssetHandler m_assetHandler;
-        AZ::Data::Asset<Spawnable> m_rootSpawnable;
-        bool m_rootSpawnableInitialized{ false };
+        SpawnableEntitiesManager m_entitiesManager;
+        SpawnableEntitiesContainer m_rootSpawnableContainer;
+        AZ::SettingsRegistryInterface::NotifyEventHandler m_registryChangeHandler;
+
+        AZ::Data::AssetId m_rootSpawnableId;
+        bool m_catalogAvailable{ false };
     };
 } // namespace AzFramework

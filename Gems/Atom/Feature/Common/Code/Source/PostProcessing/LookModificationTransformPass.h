@@ -52,8 +52,6 @@ namespace AZ
             //! Pass overrides ...
             void FrameBeginInternal(FramePrepareParams params) override;
 
-            RHI::ShaderInputConstantIndex   m_exposureControlEnabledFlagIndex;
-
             void BuildAttachmentsInternal() override;
 
         private:

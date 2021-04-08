@@ -16,13 +16,20 @@ set(FILES
     Source/MultiplayerSystemComponent.cpp
     Source/MultiplayerSystemComponent.h
     Source/MultiplayerTypes.h
+    Source/AutoGen/AutoComponent_Header.jinja
+    Source/AutoGen/AutoComponent_Source.jinja
+    Source/AutoGen/AutoComponent_Common.jinja
+    Source/AutoGen/AutoComponentTypes_Header.jinja
     Source/AutoGen/Multiplayer.AutoPackets.xml
+    Source/AutoGen/NetworkTransformComponent.AutoComponent.xml
     Source/Components/MultiplayerComponent.cpp
     Source/Components/MultiplayerComponent.h
     Source/Components/MultiplayerController.cpp
     Source/Components/MultiplayerController.h
     Source/Components/NetBindComponent.cpp
     Source/Components/NetBindComponent.h
+    Source/Components/NetworkTransformComponent.cpp
+    Source/Components/NetworkTransformComponent.h
     Source/ConnectionData/IConnectionData.h
     Source/ConnectionData/ServerToClientConnectionData.cpp
     Source/ConnectionData/ServerToClientConnectionData.h

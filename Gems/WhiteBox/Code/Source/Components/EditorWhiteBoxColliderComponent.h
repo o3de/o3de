@@ -15,11 +15,16 @@
 #include "WhiteBoxColliderConfiguration.h"
 
 #include <AzCore/Component/TransformBus.h>
-#include <AzFramework/Physics/RigidBody.h>
 #include <AzFramework/Physics/Shape.h>
+#include <AzFramework/Physics/Common/PhysicsTypes.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <WhiteBox/EditorWhiteBoxColliderBus.h>
 #include <WhiteBox/WhiteBoxToolApi.h>
+
+namespace AzPhysics
+{
+    class SceneInterface;
+}
 
 namespace WhiteBox
 {
@@ -58,11 +63,13 @@ namespace WhiteBox
 
         void ConvertToPhysicsMesh(const WhiteBoxMesh& whiteBox);
 
+        AzPhysics::SceneInterface* m_sceneInterface = nullptr;
+        AzPhysics::SceneHandle m_editorSceneHandle = AzPhysics::InvalidSceneHandle;
+
         Physics::ColliderConfiguration
             m_physicsColliderConfiguration; //!< General physics collider configuration information.
         Physics::CookedMeshShapeConfiguration m_meshShapeConfiguration; //!< The physics representation of the mesh.
-        AZStd::unique_ptr<Physics::RigidBodyStatic>
-            m_rigidBody; //!< Static rigid body to represent the White Box Mesh at edit time.
+        AzPhysics::SimulatedBodyHandle m_rigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle; //!< Handle to a static rigid body to represent the White Box Mesh at edit time.
         WhiteBoxColliderConfiguration
             m_whiteBoxColliderConfiguration; //!< White Box specific collider configuration information.
     };

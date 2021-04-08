@@ -27,18 +27,14 @@
     ]
   },
   "scrubbing": {
-    "TAGS": [
-        "weekly-build-metrics"
-    ],
+    "TAGS": [],
     "COMMAND": "python_windows.cmd",
     "PARAMETERS": {
       "SCRIPT_PATH": "Tools/build/JenkinsScripts/build/scrubbing_job.py"
     }
   },
   "validation": {
-    "TAGS": [
-      "weekly-build-metrics"
-    ],
+    "TAGS": [],
     "COMMAND": "python_windows.cmd",
     "PARAMETERS": {
       "SCRIPT_PATH": "scripts/commit_validation/validate_file_or_folder.py"
@@ -100,7 +96,7 @@
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_smoke TEST_SUITE_main",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
-      "CTEST_OPTIONS": "-L \"(SUITE_smoke|SUITE_main)\" -T Test"
+      "CTEST_OPTIONS": "-L \"(SUITE_smoke|SUITE_main)\" -LE \"(REQUIRES_gpu)\" -T Test"
     }
   },
   "profile_vs2019": {
@@ -151,9 +147,11 @@
     }
   },
   "test_gpu_profile_vs2019": {
-    "TAGS": [],
-    "PIPELINE_ENV": {
-      "NODE_LABEL": "windows-gpu"
+    "TAGS":[
+        "nightly"
+    ],
+    "PIPELINE_ENV":{
+        "NODE_LABEL":"windows-gpu"
     },
     "COMMAND": "build_test_windows.cmd",
     "PARAMETERS": {

@@ -18,9 +18,9 @@ endif()
 #          where CMAKE_SOURCE_DIR != CMAKE_CURRENT_LIST_DIR (e.g. when the engine's cmake 
 #          files are included from a project)
 #
-macro(ly_set)
-    set(${ARGN})
+macro(ly_set name)
+    set(${name} "${ARGN}")
     if(LY_PARENT_SCOPE)
-        set(${ARGN} PARENT_SCOPE)
+        set(${name} "${ARGN}" PARENT_SCOPE)
     endif()
 endmacro()

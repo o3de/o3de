@@ -70,7 +70,7 @@ namespace Blast
 
         // Calculates actor description for an actor that has a parent.
         BlastActorDesc CalculateActorDesc(
-            Physics::WorldBody* parentBody, bool parentStatic, AZ::Transform parentTransform,
+            AzPhysics::SimulatedBody* parentBody, bool parentStatic, AZ::Transform parentTransform,
             Nv::Blast::TkActor* tkActor);
 
         // Calculates actor description for an actor that does not have a parent.

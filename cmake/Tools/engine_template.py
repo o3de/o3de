@@ -416,11 +416,16 @@ def create_template(dev_root: str,
     source_restricted_path = source_restricted_path.replace('\\', '/')
     if not os.path.isabs(source_restricted_path):
         source_restricted_path = f'{dev_root}/{source_restricted_path}'
+    if not os.path.isdir(source_restricted_path):
+        logger.error(f'Src restricted path {source_restricted_path} is not a folder.')
+        return 1
 
     # template_restricted_path
     template_restricted_path = template_restricted_path.replace('\\', '/')
     if not os.path.isabs(template_restricted_path):
         template_restricted_path = f'{dev_root}/{template_restricted_path}'
+    if not os.path.isdir(template_restricted_path):
+        os.makedirs(template_restricted_path)
 
     # source restricted relative
     source_restricted_platform_relative_path = source_restricted_platform_relative_path.replace('\\', '/')
@@ -1009,11 +1014,16 @@ def create_from_template(dev_root: str,
     destination_restricted_path = destination_restricted_path.replace('\\', '/')
     if not os.path.isabs(destination_restricted_path):
         destination_restricted_path = f'{dev_root}/{destination_restricted_path}'
+    if not os.path.isdir(destination_restricted_path):
+        os.makedirs(destination_restricted_path)
 
     # template_restricted_path
     template_restricted_path = template_restricted_path.replace('\\', '/')
     if not os.path.isabs(template_restricted_path):
         template_restricted_path = f'{dev_root}/{template_restricted_path}'
+    if not os.path.isdir(template_restricted_path):
+        logger.error(f'Template restricted path {template_restricted_path} is not a folder.')
+        return 1
 
     # destination restricted relative
     destination_restricted_platform_relative_path = destination_restricted_platform_relative_path.replace('\\', '/')
@@ -1125,11 +1135,16 @@ def create_project(dev_root: str,
     project_restricted_path = project_restricted_path.replace('\\', '/')
     if not os.path.isabs(project_restricted_path):
         project_restricted_path = f'{dev_root}/{project_restricted_path}'
+    if not os.path.isdir(project_restricted_path):
+        os.makedirs(project_restricted_path)
 
     # template_restricted_path
     template_restricted_path = template_restricted_path.replace('\\', '/')
     if not os.path.isabs(template_restricted_path):
         template_restricted_path = f'{dev_root}/{template_restricted_path}'
+    if not os.path.isdir(template_restricted_path):
+        logger.error(f'Template restricted path {template_restricted_path} is not a folder.')
+        return 1
 
     # project restricted relative
     project_restricted_platform_relative_path = project_restricted_platform_relative_path.replace('\\', '/')
@@ -1295,11 +1310,16 @@ def create_gem(dev_root: str,
     gem_restricted_path = gem_restricted_path.replace('\\', '/')
     if not os.path.isabs(gem_restricted_path):
         gem_restricted_path = f'{dev_root}/{gem_restricted_path}'
+    if not os.path.isdir(gem_restricted_path):
+        os.makedirs(gem_restricted_path)
 
     # template_restricted_path
     template_restricted_path = template_restricted_path.replace('\\', '/')
     if not os.path.isabs(template_restricted_path):
         template_restricted_path = f'{dev_root}/{template_restricted_path}'
+    if not os.path.isdir(template_restricted_path):
+        logger.error(f'Template restricted path {template_restricted_path} is not a folder.')
+        return 1
 
     # gem restricted relative
     gem_restricted_platform_relative_path = gem_restricted_platform_relative_path.replace('\\', '/')
@@ -1424,13 +1444,13 @@ def add_args(parser, subparsers) -> None:
     invoked locally or aggregated by a central python file.
     Ex. Directly run from this file alone with: python engine_template.py create_gem --gem-path TestGem
     OR
-    lmbr.py can aggregate commands by importing engine_template,
-    call add_args and execute: python lmbr.py create_gem --gem-path TestGem
+    o3de.py can aggregate commands by importing engine_template,
+    call add_args and execute: python o3de.py create_gem --gem-path TestGem
     :param parser: the caller instantiates a parser and passes it in here
     :param subparsers: the caller instantiates subparsers and passes it in here
     """
     # turn a directory into a template
-    create_template_subparser = subparsers.add_parser('create_template')
+    create_template_subparser = subparsers.add_parser('create-template')
     create_template_subparser.add_argument('-sp', '--source-path', type=str, required=True,
                                            help='The path to the source that you want to make into a template,'
                                                 ' can be absolute or dev root relative.'
@@ -1471,7 +1491,7 @@ def add_args(parser, subparsers) -> None:
                                            help='Should the template keep the restricted platforms in the template, or'
                                                 ' create the restricted files in the restricted folder, default is'
                                                 ' False')
-    create_template_subparser.add_argument('-kl', '--keep-license_text', action='store_true',
+    create_template_subparser.add_argument('-kl', '--keep-license-text', action='store_true',
                                            default=False,
                                            help='Should license text be kept in the instantiation,'
                                                 ' default is False')
@@ -1486,7 +1506,7 @@ def add_args(parser, subparsers) -> None:
     create_template_subparser.set_defaults(func=_run_create_template)
 
     # creation from a template
-    create_from_template_subparser = subparsers.add_parser('create_from_template')
+    create_from_template_subparser = subparsers.add_parser('create-from-template')
     create_from_template_subparser.add_argument('-dp', '--destination-path', type=str, required=True,
                                                 help='The path to where you want the template instantiated,'
                                                      ' can be absolute or dev root relative.'
@@ -1526,7 +1546,7 @@ def add_args(parser, subparsers) -> None:
                                                 help='Should the instance keep the restricted platforms in the instance,'
                                                      ' or create the restricted files in the restricted folder, default'
                                                      ' is False')
-    create_from_template_subparser.add_argument('-kl', '--keep-license_text', action='store_true',
+    create_from_template_subparser.add_argument('-kl', '--keep-license-text', action='store_true',
                                                 default=False,
                                                 help='Should license text be kept in the instantiation,'
                                                      ' default is False')
@@ -1541,7 +1561,7 @@ def add_args(parser, subparsers) -> None:
     create_from_template_subparser.set_defaults(func=_run_create_from_template)
 
     # creation of a project from a template (like create from template but makes project assumptions)
-    create_project_subparser = subparsers.add_parser('create_project')
+    create_project_subparser = subparsers.add_parser('create-project')
     create_project_subparser.add_argument('-pp', '--project-path', type=str, required=True,
                                           help='The name of the project you wish to create from the template,'
                                                ' can be an absolute path or dev root relative.'
@@ -1581,7 +1601,7 @@ def add_args(parser, subparsers) -> None:
                                           default=False,
                                           help='Should the new project keep the restricted platforms in the project, or'
                                                'create the restricted files in the restricted folder, default is False')
-    create_project_subparser.add_argument('-kl', '--keep-license_text', action='store_true',
+    create_project_subparser.add_argument('-kl', '--keep-license-text', action='store_true',
                                           default=False,
                                           help='Should license text be kept in the instantiation, default is False')
     create_project_subparser.add_argument('-r', '--replace', required=False,
@@ -1607,7 +1627,7 @@ def add_args(parser, subparsers) -> None:
     create_project_subparser.set_defaults(func=_run_create_project)
 
     # creation of a gem from a template (like create from template but makes gem assumptions)
-    create_gem_subparser = subparsers.add_parser('create_gem')
+    create_gem_subparser = subparsers.add_parser('create-gem')
     create_gem_subparser.add_argument('-gp', '--gem-path', type=str, required=True,
                                       help='The path to the gem you want to create, can be absolute or dev root/Gems'
                                            ' relative.'
@@ -1656,7 +1676,7 @@ def add_args(parser, subparsers) -> None:
                                       default=False,
                                       help='Should the new gem keep the restricted platforms in the project, or'
                                            'create the restricted files in the restricted folder, default is False')
-    create_gem_subparser.add_argument('-kl', '--keep-license_text', action='store_true',
+    create_gem_subparser.add_argument('-kl', '--keep-license-text', action='store_true',
                                       default=False,
                                       help='Should license text be kept in the instantiation, default is False')
     create_gem_subparser.add_argument('--system-component-class-id', type=utils.validate_uuid4, required=False,

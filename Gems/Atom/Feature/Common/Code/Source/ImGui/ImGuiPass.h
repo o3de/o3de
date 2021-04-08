@@ -121,8 +121,8 @@ namespace AZ
             Data::Instance<RPI::Shader> m_shader;
 
             Data::Instance<RPI::ShaderResourceGroup> m_resourceGroup;
-            RHI::ShaderInputImageIndex m_fontImageIndex;
-            RHI::ShaderInputConstantIndex m_projectionMatrixIndex;
+            RHI::ShaderInputNameIndex m_fontImageIndex = "FontImage";
+            RHI::ShaderInputNameIndex m_projectionMatrixIndex = "m_projectionMatrix";
             RHI::Viewport m_viewportState;
 
             RHI::IndexBufferView m_indexBufferView;

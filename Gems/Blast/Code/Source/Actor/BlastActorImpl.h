@@ -45,8 +45,8 @@ namespace Blast
         const AZStd::vector<uint32_t>& GetChunkIndices() const override;
         bool IsStatic() const override;
 
-        Physics::WorldBody* GetWorldBody() override;
-        const Physics::WorldBody* GetWorldBody() const override;
+        AzPhysics::SimulatedBody* GetWorldBody() override;
+        const AzPhysics::SimulatedBody* GetWorldBody() const override;
 
     protected:
         //! We want to be able to override this function for testing purposes, because
@@ -77,6 +77,6 @@ namespace Blast
         Physics::MaterialId m_physicsMaterialId;
         AZ::Vector3 m_parentLinearVelocity = AZ::Vector3::CreateZero();
         AZ::Vector3 m_parentCenterOfMass = AZ::Vector3::CreateZero();
-        Physics::RigidBodyConfiguration m_bodyConfiguration;
+        AzPhysics::RigidBodyConfiguration m_bodyConfiguration;
     };
 } // namespace Blast

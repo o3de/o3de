@@ -23,9 +23,11 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/TransformScalePropertyHandler.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
@@ -1054,11 +1056,32 @@ namespace AzToolsFramework
 
         AZ::u32 TransformComponent::ParentChanged()
         {
+            AZ::u32 refreshLevel = AZ::Edit::PropertyRefreshLevels::None;
+
+            if (!m_parentEntityId.IsValid())
+            {
+                // If Prefabs are enabled, reroute the invalid id to the level root
+                bool isPrefabSystemEnabled = false;
+                AzFramework::ApplicationRequests::Bus::BroadcastResult(
+                    isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+
+                if (isPrefabSystemEnabled)
+                {
+                    auto prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
+
+                    if (prefabPublicInterface)
+                    {
+                        m_parentEntityId = prefabPublicInterface->GetLevelInstanceContainerEntityId();
+                        refreshLevel = AZ::Edit::PropertyRefreshLevels::ValuesOnly;
+                    }
+                }
+            }
+
             auto parentId = m_parentEntityId;
             m_parentEntityId = m_previousParentEntityId;
             SetParent(parentId);
 
-            return AZ::Edit::PropertyRefreshLevels::None;
+            return refreshLevel;
         }
 
         AZ::u32 TransformComponent::TransformChanged()

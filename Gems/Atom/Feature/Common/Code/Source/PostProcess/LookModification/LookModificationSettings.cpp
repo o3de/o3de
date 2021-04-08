@@ -15,7 +15,7 @@
 #include <AzCore/Utils/TypeHash.h>
 
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
-#include <Atom/Feature/ACES/Aces.h>
+#include <ACES/Aces.h>
 
 #include <PostProcess/LookModification/LookModificationSettings.h>
 #include <PostProcess/PostProcessFeatureProcessor.h>

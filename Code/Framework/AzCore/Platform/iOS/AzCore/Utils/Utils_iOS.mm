@@ -41,7 +41,7 @@ namespace AZ::Utils
 
         const char* src = [appSupportDir UTF8String];
         const size_t srcLen = strlen(src);
-        if (srcLen > MaxPathLength - 1)
+        if (srcLen > AZ::IO::MaxPathLength - 1)
         {
             return AZStd::nullopt;
         }

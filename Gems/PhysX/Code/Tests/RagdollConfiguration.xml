@@ -25,7 +25,6 @@
 					<Class name="Vector3" field="Centre of mass offset" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 					<Class name="bool" field="Compute inertia" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
-					<Class name="unsigned short" field="Property Visibility Flags" value="446" type="{ECA0B403-C4F8-4B86-95FC-81688D046E40}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
 				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">
@@ -64,7 +63,6 @@
 					<Class name="Vector3" field="Centre of mass offset" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 					<Class name="bool" field="Compute inertia" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
-					<Class name="unsigned short" field="Property Visibility Flags" value="446" type="{ECA0B403-C4F8-4B86-95FC-81688D046E40}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
 				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">
@@ -103,7 +101,6 @@
 					<Class name="Vector3" field="Centre of mass offset" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 					<Class name="bool" field="Compute inertia" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
-					<Class name="unsigned short" field="Property Visibility Flags" value="446" type="{ECA0B403-C4F8-4B86-95FC-81688D046E40}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
 				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">
@@ -142,7 +139,6 @@
 					<Class name="Vector3" field="Centre of mass offset" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 					<Class name="bool" field="Compute inertia" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
-					<Class name="unsigned short" field="Property Visibility Flags" value="446" type="{ECA0B403-C4F8-4B86-95FC-81688D046E40}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
 				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">
@@ -181,7 +177,6 @@
 					<Class name="Vector3" field="Centre of mass offset" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 					<Class name="bool" field="Compute inertia" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
-					<Class name="unsigned short" field="Property Visibility Flags" value="446" type="{ECA0B403-C4F8-4B86-95FC-81688D046E40}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
 				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">
@@ -220,7 +215,6 @@
 					<Class name="Vector3" field="Centre of mass offset" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 					<Class name="bool" field="Compute inertia" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
-					<Class name="unsigned short" field="Property Visibility Flags" value="446" type="{ECA0B403-C4F8-4B86-95FC-81688D046E40}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
 				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">
@@ -259,7 +253,6 @@
 					<Class name="Vector3" field="Centre of mass offset" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 					<Class name="bool" field="Compute inertia" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
-					<Class name="unsigned short" field="Property Visibility Flags" value="446" type="{ECA0B403-C4F8-4B86-95FC-81688D046E40}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
 				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">
@@ -298,7 +291,6 @@
 					<Class name="Vector3" field="Centre of mass offset" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 					<Class name="bool" field="Compute inertia" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
-					<Class name="unsigned short" field="Property Visibility Flags" value="446" type="{ECA0B403-C4F8-4B86-95FC-81688D046E40}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
 				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">
@@ -337,7 +329,6 @@
 					<Class name="Vector3" field="Centre of mass offset" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 					<Class name="bool" field="Compute inertia" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
-					<Class name="unsigned short" field="Property Visibility Flags" value="446" type="{ECA0B403-C4F8-4B86-95FC-81688D046E40}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
 				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">
@@ -376,7 +367,6 @@
 					<Class name="Vector3" field="Centre of mass offset" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 					<Class name="bool" field="Compute inertia" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
-					<Class name="unsigned short" field="Property Visibility Flags" value="446" type="{ECA0B403-C4F8-4B86-95FC-81688D046E40}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
 				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">
@@ -415,7 +405,6 @@
 					<Class name="Vector3" field="Centre of mass offset" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 					<Class name="bool" field="Compute inertia" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
-					<Class name="unsigned short" field="Property Visibility Flags" value="446" type="{ECA0B403-C4F8-4B86-95FC-81688D046E40}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
 				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">
@@ -454,7 +443,6 @@
 					<Class name="Vector3" field="Centre of mass offset" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 					<Class name="bool" field="Compute inertia" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
-					<Class name="unsigned short" field="Property Visibility Flags" value="446" type="{ECA0B403-C4F8-4B86-95FC-81688D046E40}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
 				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">
@@ -493,7 +481,6 @@
 					<Class name="Vector3" field="Centre of mass offset" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 					<Class name="bool" field="Compute inertia" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
-					<Class name="unsigned short" field="Property Visibility Flags" value="446" type="{ECA0B403-C4F8-4B86-95FC-81688D046E40}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
 				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">
@@ -532,7 +519,6 @@
 					<Class name="Vector3" field="Centre of mass offset" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 					<Class name="bool" field="Compute inertia" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
-					<Class name="unsigned short" field="Property Visibility Flags" value="446" type="{ECA0B403-C4F8-4B86-95FC-81688D046E40}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
 				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">
@@ -571,7 +557,6 @@
 					<Class name="Vector3" field="Centre of mass offset" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 					<Class name="bool" field="Compute inertia" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
-					<Class name="unsigned short" field="Property Visibility Flags" value="446" type="{ECA0B403-C4F8-4B86-95FC-81688D046E40}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
 				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">
@@ -610,7 +595,6 @@
 					<Class name="Vector3" field="Centre of mass offset" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 					<Class name="bool" field="Compute inertia" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
-					<Class name="unsigned short" field="Property Visibility Flags" value="446" type="{ECA0B403-C4F8-4B86-95FC-81688D046E40}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
 				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">
@@ -649,7 +633,6 @@
 					<Class name="Vector3" field="Centre of mass offset" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 					<Class name="bool" field="Compute inertia" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
-					<Class name="unsigned short" field="Property Visibility Flags" value="446" type="{ECA0B403-C4F8-4B86-95FC-81688D046E40}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
 				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">
@@ -688,7 +671,6 @@
 					<Class name="Vector3" field="Centre of mass offset" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 					<Class name="bool" field="Compute inertia" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
-					<Class name="unsigned short" field="Property Visibility Flags" value="446" type="{ECA0B403-C4F8-4B86-95FC-81688D046E40}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
 				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">
@@ -727,7 +709,6 @@
 					<Class name="Vector3" field="Centre of mass offset" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 					<Class name="bool" field="Compute inertia" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
-					<Class name="unsigned short" field="Property Visibility Flags" value="446" type="{ECA0B403-C4F8-4B86-95FC-81688D046E40}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
 				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">
@@ -766,7 +747,6 @@
 					<Class name="Vector3" field="Centre of mass offset" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 					<Class name="bool" field="Compute inertia" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
-					<Class name="unsigned short" field="Property Visibility Flags" value="446" type="{ECA0B403-C4F8-4B86-95FC-81688D046E40}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
 				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">
@@ -805,7 +785,6 @@
 					<Class name="Vector3" field="Centre of mass offset" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 					<Class name="bool" field="Compute inertia" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
-					<Class name="unsigned short" field="Property Visibility Flags" value="446" type="{ECA0B403-C4F8-4B86-95FC-81688D046E40}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
 				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">
@@ -844,7 +823,6 @@
 					<Class name="Vector3" field="Centre of mass offset" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 					<Class name="bool" field="Compute inertia" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
-					<Class name="unsigned short" field="Property Visibility Flags" value="446" type="{ECA0B403-C4F8-4B86-95FC-81688D046E40}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
 				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">

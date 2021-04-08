@@ -33,4 +33,18 @@ namespace ScriptCanvas
 
         void StopExecution() override;
     };
+
+    class ExecutionStateInterpretedPureOnGraphStart
+        : public ExecutionStateInterpretedPure
+    {
+    public:
+        AZ_RTTI(ExecutionStateInterpretedPureOnGraphStart, "{D4CA9731-31CE-4B27-A91F-6E71E1DE8B7D}", ExecutionStateInterpretedPure);
+        AZ_CLASS_ALLOCATOR(ExecutionStateInterpretedPureOnGraphStart, AZ::SystemAllocator, 0);
+
+        static void Reflect(AZ::ReflectContext* reflectContext);
+
+        ExecutionStateInterpretedPureOnGraphStart(const ExecutionStateConfig& config);
+
+        void Execute() override;
+    };
 } 

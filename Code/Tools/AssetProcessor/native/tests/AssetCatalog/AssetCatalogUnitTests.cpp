@@ -120,7 +120,7 @@ namespace AssetProcessor
             QString canonicalTempDirPath = AssetUtilities::NormalizeDirectoryPath(m_data->m_temporarySourceDir.canonicalPath());
             m_data->m_temporarySourceDir = QDir(canonicalTempDirPath);
             m_data->m_scopedDir.Setup(m_data->m_temporarySourceDir.path());
-            m_data->m_gameName = AssetUtilities::ComputeProjectName("SamplesProject"); // uses the above file.
+            m_data->m_gameName = AssetUtilities::ComputeProjectName("AutomatedTesting"); // uses the above file.
 
             AssetUtilities::ResetAssetRoot();
             QDir newRoot; // throwaway dummy var - we just want to invoke the below function

@@ -1,4 +1,11 @@
-
+.mayaSwatches
+.temp
+__downloads__
+__pycache__
+*.pyc
+*.pyo
+workspace.xml
 # Ignore dynaconf secret files
 .secrets.*
 settings.local.json
+azpy/_sample_package_/*

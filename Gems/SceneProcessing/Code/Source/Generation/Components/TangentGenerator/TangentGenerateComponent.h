@@ -21,6 +21,10 @@ namespace AZ::SceneAPI::DataTypes { class IMeshVertexUVData; }
 namespace AZ::SceneAPI::DataTypes { class IMeshVertexTangentData; }
 namespace AZ::SceneAPI::DataTypes { class IMeshVertexBitangentData; }
 namespace AZ::SceneAPI::DataTypes { enum class TangentSpace; }
+namespace AZ::SceneData::GraphData
+{
+    class BlendShapeData;
+}
 
 namespace AZ::SceneGenerationComponents
 {
@@ -56,6 +60,9 @@ namespace AZ::SceneGenerationComponents
         AZ::SceneAPI::Events::ProcessingResult GenerateTangentData(TangentGenerateContext& context);
 
     private:
+        void FindBlendShapes(
+            AZ::SceneAPI::Containers::SceneGraph& graph, const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex,
+            AZStd::vector<AZ::SceneData::GraphData::BlendShapeData*>& outBlendShapes) const;
         bool GenerateTangentsForMesh(AZ::SceneAPI::Containers::Scene& scene, const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex, AZ::SceneAPI::DataTypes::IMeshData* meshData);
         void UpdateFbxTangentWValues(AZ::SceneAPI::Containers::SceneGraph& graph, const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex, const AZ::SceneAPI::DataTypes::IMeshData* meshData);
         AZStd::vector<AZ::SceneAPI::DataTypes::TangentSpace> CollectRequiredTangentSpaces(const AZ::SceneAPI::Containers::Scene& scene) const;

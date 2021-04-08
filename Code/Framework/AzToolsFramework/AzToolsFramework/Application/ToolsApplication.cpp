@@ -68,6 +68,8 @@
 #include <AzToolsFramework/AssetEditor/AssetEditorBus.h>
 #include <AzToolsFramework/Render/EditorIntersectorComponent.h>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiSystemComponent.h>
+#include <AzToolsFramework/Undo/UndoCacheInterface.h>
+#include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 
 #include <QtWidgets/QMessageBox>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'QFileInfo::d_ptr': class 'QSharedDataPointer<QFileInfoPrivate>' needs to have dll-interface to be used by clients of class 'QFileInfo'
@@ -77,7 +79,6 @@ AZ_POP_DISABLE_OVERRIDE_WARNING
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QMap>
-
 
 // Not possible to use AZCore's operator new overrides until we address the overall problems
 // with allocators, or more likely convert AzToolsFramework to a DLL and restrict overloading to
@@ -94,9 +95,6 @@ namespace AzToolsFramework
         static const char* s_engineConfigEngineVersionKey = "LumberyardVersion";
 
         static const char* s_startupLogWindow = "Startup";
-
-        static const char* s_prefabSystemKey = "/Amazon/Editor/Preferences/EnablePrefabSystem";
-        static const char* s_legacySlicesAssertKey = "/Amazon/Editor/Preferences/ShouldAssertForLegacySlicesUsage";
 
         template<typename IdContainerType>
         void DeleteEntities(const IdContainerType& entityIds)
@@ -341,8 +339,9 @@ namespace AzToolsFramework
         , m_isInIsolationMode(false)
     {
         ToolsApplicationRequests::Bus::Handler::BusConnect();
-        m_engineConfigImpl.reset(new ToolsApplication::EngineConfigImpl(AzToolsFramework::Internal::s_startupLogWindow,
-                                                                        AzToolsFramework::Internal::s_engineConfigFileName));
+        m_engineConfigImpl.reset(new ToolsApplication::EngineConfigImpl(AzToolsFramework::Internal::s_startupLogWindow, AzToolsFramework::Internal::s_engineConfigFileName));
+
+        m_undoCache.RegisterToUndoCacheInterface();
     }
 
     ToolsApplication::~ToolsApplication()
@@ -393,6 +392,11 @@ namespace AzToolsFramework
     {
         Application::Start(descriptor, startupParameters);
         InitializeEngineConfig();
+
+        m_editorEntityManager.Start();
+
+        m_editorEntityAPI = AZ::Interface<EditorEntityAPI>::Get();
+        AZ_Assert(m_editorEntityAPI, "ToolsApplication - Could not retrieve instance of EditorEntityAPI");
     }
 
     void ToolsApplication::InitializeEngineConfig()
@@ -416,7 +420,11 @@ namespace AzToolsFramework
         {
             FlushUndo();
 
-            m_undoCache.Clear();
+            auto undoCacheInterface = AZ::Interface<UndoSystem::UndoCacheInterface>::Get();
+            if (undoCacheInterface)
+            {
+                undoCacheInterface->Clear();
+            }
 
             delete m_undoStack;
             m_undoStack = nullptr;
@@ -425,6 +433,19 @@ namespace AzToolsFramework
             m_selectedEntities.set_capacity(0);
             m_highlightedEntities.set_capacity(0);
             m_dirtyEntities = {};
+
+            bool isPrefabSystemEnabled = false;
+            AzFramework::ApplicationRequests::Bus::BroadcastResult(
+                isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+
+            if (isPrefabSystemEnabled)
+            {
+                // This resets the editor context thereby asking the systems that own the entities to destroy them. By doing this, we are
+                // duly giving the authority to delete the entities to the systems that owns them, rather than leaving it to the
+                // ComponentApplication to do the cleanup.
+                AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+                    &AzToolsFramework::EditorEntityContextRequestBus::Events::ResetEditorContext);
+            }
 
             GetSerializeContext()->DestroyEditContext();
 
@@ -554,7 +575,11 @@ namespace AzToolsFramework
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
-        m_undoCache.PurgeCache(entity->GetId());
+        auto undoCacheInterface = AZ::Interface<UndoSystem::UndoCacheInterface>::Get();
+        if (undoCacheInterface)
+        {
+            undoCacheInterface->PurgeCache(entity->GetId());
+        }
 
         MarkEntityDeselected(entity->GetId());
         SetEntityHighlighted(entity->GetId(), false);
@@ -724,7 +749,6 @@ namespace AzToolsFramework
     void ToolsApplication::SetEntityHighlighted(AZ::EntityId entityId, bool highlighted)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
-        AZ_Assert(entityId.IsValid(), "Attempting to mark an invalid entity as highlighted.");
 
         auto foundIter = AZStd::find(m_highlightedEntities.begin(), m_highlightedEntities.end(), entityId);
         if (foundIter != m_highlightedEntities.end())
@@ -893,16 +917,34 @@ namespace AzToolsFramework
 
     void ToolsApplication::DeleteSelected()
     {
+        if (IsPrefabSystemEnabled())
+        {
+            m_editorEntityAPI->DeleteSelected();
+            return;
+        }
+
         Internal::DeleteEntities(m_selectedEntities);
     }
 
     void ToolsApplication::DeleteEntityAndAllDescendants(AZ::EntityId entityId)
     {
+        if (IsPrefabSystemEnabled())
+        {
+            m_editorEntityAPI->DeleteEntityAndAllDescendants(entityId);
+            return;
+        }
+
         DeleteEntitiesAndAllDescendants({ entityId });
     }
 
     void ToolsApplication::DeleteEntitiesAndAllDescendants(const EntityIdList& entities)
     {
+        if (IsPrefabSystemEnabled())
+        {
+            m_editorEntityAPI->DeleteEntitiesAndAllDescendants(entities);
+            return;
+        }
+
         const EntityIdSet entitiesAndDescendants = GatherEntitiesAndAllDescendents(entities);
         Internal::DeleteEntities(entitiesAndDescendants);
     }
@@ -1367,11 +1409,23 @@ namespace AzToolsFramework
 
     void ToolsApplication::DeleteEntityById(AZ::EntityId entityId)
     {
+        if (IsPrefabSystemEnabled())
+        {
+            m_editorEntityAPI->DeleteEntityById(entityId);
+            return;
+        }
+
         DeleteEntities({ entityId });
     }
 
     void ToolsApplication::DeleteEntities(const EntityIdList& entities)
     {
+        if (IsPrefabSystemEnabled())
+        {
+            m_editorEntityAPI->DeleteEntities(entities);
+            return;
+        }
+
         Internal::DeleteEntities(entities);
     }
 
@@ -1572,7 +1626,6 @@ namespace AzToolsFramework
         else
         {
             // we're at the root
-
             // only undo at bottom of scope (first invoked ScopedUndoBatch in
             // chain/hierarchy must go out of scope)
             CreateUndosForDirtyEntities();
@@ -1612,48 +1665,68 @@ namespace AzToolsFramework
             return;
         }
 
-        // If the current undo batch has commands in it, then we have to check that we do not add duplicates
-        // However if it starts out empty, we can just add things straight from the Set to the undo batch
-        bool mustCheckDuplicates = !m_currentBatchUndo->GetChildren().empty();
-
-        for (AZ::EntityId entityId : m_dirtyEntities)
+        if (!IsPrefabSystemEnabled())
         {
-            AZ::Entity* entity = nullptr;
-            EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, entityId);
+            // If the current undo batch has commands in it, then we have to check that we do not add duplicates
+            // However if it starts out empty, we can just add things straight from the Set to the undo batch
+            bool mustCheckDuplicates = !m_currentBatchUndo->GetChildren().empty();
 
-            if (entity)
+            for (AZ::EntityId entityId : m_dirtyEntities)
             {
-                EntityStateCommand* state = nullptr;
+                AZ::Entity* entity = nullptr;
+                EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, entityId);
 
-                if (mustCheckDuplicates)
+                if (entity)
                 {
-                    // Check if this entity is already in the current undo batch
-                    state = azdynamic_cast<EntityStateCommand*>(m_currentBatchUndo->Find(
-                        static_cast<AZ::u64>(entityId), AZ::AzTypeInfo<EntityStateCommand>::Uuid()));
+                    EntityStateCommand* state = nullptr;
+
+                    if (mustCheckDuplicates)
+                    {
+                        // Check if this entity is already in the current undo batch
+                        state = azdynamic_cast<EntityStateCommand*>(
+                            m_currentBatchUndo->Find(static_cast<AZ::u64>(entityId), AZ::AzTypeInfo<EntityStateCommand>::Uuid()));
+                    }
+
+                    if (!state)
+                    {
+                        state = aznew EntityStateCommand(static_cast<AZ::u64>(entityId));
+                        state->SetParent(m_currentBatchUndo);
+
+                        // capture initial state of entity (before undo)
+                        state->Capture(entity, true);
+                    }
+
+                    // capture last state of entity (after undo) - for redo
+                    state->Capture(entity, false);
                 }
 
-                if (!state)
-                {
-                    state = aznew EntityStateCommand(static_cast<AZ::u64>(entityId));
-                    state->SetParent(m_currentBatchUndo);
-
-                    // capture initial state of entity (before undo)
-                    state->Capture(entity, true);
-                }
-
-                // capture last state of entity (after undo) - for redo
-                state->Capture(entity, false);
+                m_undoCache.UpdateCache(entityId);
             }
-
-            m_undoCache.UpdateCache(entityId);
+        }
+        else
+        {
+            auto prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
+            if (prefabPublicInterface)
+            {
+                // Compared to the preemptive undo cache, we can avoid the duplicate check.
+                // Multiple changes to the same entity are just split between different undo nodes.
+                for (AZ::EntityId entityId : m_dirtyEntities)
+                {
+                    prefabPublicInterface->GenerateUndoNodesForEntityChangeAndUpdateCache(entityId, m_currentBatchUndo);
+                }
+            }
         }
     }
 
     void ToolsApplication::ConsistencyCheckUndoCache()
     {
-        for (auto && entityEntry : m_entities)
+        auto undoCacheInterface = AZ::Interface<UndoSystem::UndoCacheInterface>::Get();
+        if (undoCacheInterface)
         {
-            m_undoCache.Validate((entityEntry.second)->GetId());
+            for (auto&& entityEntry : m_entities)
+            {
+                undoCacheInterface->Validate((entityEntry.second)->GetId());
+            }
         }
     }
 
@@ -1767,26 +1840,6 @@ namespace AzToolsFramework
     const char* ToolsApplication::GetEngineVersion() const
     {
         return m_engineConfigImpl->GetEngineVersion();
-    }
-
-    bool ToolsApplication::IsLegacySliceSystemEnabled() const
-    {
-        bool value = false;
-        if (auto* registry = AZ::SettingsRegistry::Get())
-        {
-            registry->Get(value, Internal::s_prefabSystemKey);
-        }
-        return !value;
-    }
-
-    bool ToolsApplication::ShouldAssertForLegacySlicesUsage() const
-    {
-        bool value = false;
-        if (auto* registry = AZ::SettingsRegistry::Get())
-        {
-            registry->Get(value, Internal::s_legacySlicesAssertKey);
-        }
-        return value;
     }
 
     void ToolsApplication::CreateAndAddEntityFromComponentTags(const AZStd::vector<AZ::Crc32>& requiredTags, const char* entityName)

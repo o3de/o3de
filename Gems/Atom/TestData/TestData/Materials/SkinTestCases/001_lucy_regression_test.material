@@ -23,12 +23,13 @@
             "normalDetailFlipY": true,
             "normalDetailMap": "TestData/Textures/cc0/Concrete019_1K_Normal.jpg",
             "normalDetailStrength": 0.25999999046325686,
-            "textureMapUv": "Base"
+            "textureMapUv": "Tiled"
         },
         "detailUV": {
             "scale": 5.0
         },
         "normal": {
+            "flipY": true,
             "textureMap": "Objects/Lucy/Lucy_normal.tif"
         },
         "subsurfaceScattering": {

@@ -682,6 +682,11 @@ namespace GraphCanvas
         {
             AZ_Error("GraphCanvas", !m_trackingTarget.IsValid(), "Trying to track a second target for gestures while still tracking the first.");
 
+            if (GeometryNotificationBus::Handler::BusIsConnected())
+            {
+                GeometryNotificationBus::Handler::BusDisconnect();
+            }
+
             GeometryNotificationBus::Handler::BusConnect(elementId);
 
             m_trackingTarget = elementId;

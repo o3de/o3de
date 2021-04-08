@@ -61,10 +61,6 @@
 // Including this too early will result in a linker error
 #include <CryCommon/CryLibrary.h>
 
-
-static const char defaultFileExtension[] = ".ly";
-static const char oldFileExtension[] = ".cry";
-
 // Implementation of System Callback structure.
 struct SSystemUserCallback
     : public ISystemUserCallback
@@ -274,7 +270,7 @@ AZ_POP_DISABLE_WARNING
     m_hSystemHandle = 0;
     m_bJustCreated = false;
     m_levelName = "Untitled";
-    m_levelExtension = defaultFileExtension;
+    m_levelExtension = EditorUtils::LevelFile::GetDefaultFileExtension();
     m_playerViewTM.SetIdentity();
     GetIEditor()->RegisterNotifyListener(this);
     AZ::Interface<IEditorCameraController>::Register(this);
@@ -541,14 +537,17 @@ void CGameEngine::SetLevelPath(const QString& path)
 
     m_levelName = m_levelPath.mid(m_levelPath.lastIndexOf('/') + 1);
 
+    const char* oldExtension = EditorUtils::LevelFile::GetOldCryFileExtension();
+    const char* defaultExtension = EditorUtils::LevelFile::GetDefaultFileExtension();
+
     // Store off if 
-    if (QFileInfo(path + oldFileExtension).exists())
+    if (QFileInfo(path + oldExtension).exists())
     {
-        m_levelExtension = oldFileExtension;
+        m_levelExtension = oldExtension;
     }
     else
     {
-        m_levelExtension = defaultFileExtension;
+        m_levelExtension = defaultExtension;
     }
 
     if (gEnv->p3DEngine)
@@ -576,12 +575,20 @@ bool CGameEngine::LoadLevel(
     // directory is wrong
     QDir::setCurrent(GetIEditor()->GetPrimaryCDFolder());
 
-    QString pakFile = m_levelPath + "/level.pak";
 
-    // Open Pak file for this level.
-    if (!m_pISystem->GetIPak()->OpenPack(m_levelPath.toUtf8().data(), pakFile.toUtf8().data()))
+    bool usePrefabSystemForLevels = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+
+    if (!usePrefabSystemForLevels)
     {
-        CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_WARNING, "Level Pack File %s Not Found", pakFile.toUtf8().data());
+        QString pakFile = m_levelPath + "/level.pak";
+
+        // Open Pak file for this level.
+        if (!m_pISystem->GetIPak()->OpenPack(m_levelPath.toUtf8().data(), pakFile.toUtf8().data()))
+        {
+            CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_WARNING, "Level Pack File %s Not Found", pakFile.toUtf8().data());
+        }
     }
 
     // Initialize physics grid.

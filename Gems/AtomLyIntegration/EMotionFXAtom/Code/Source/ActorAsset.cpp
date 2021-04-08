@@ -281,99 +281,35 @@ namespace AZ
             }
         }
         
-        void ProcessMorphsForLod(const EMotionFX::Actor* actor, uint32_t lodIndex, const AZStd::string& fullFileName, SkinnedMeshInputLod& skinnedMeshLod)
+        static void ProcessMorphsForLod(const EMotionFX::Actor* actor, const Data::Asset<RPI::BufferAsset>& morphBufferAsset, uint32_t lodIndex, const AZStd::string& fullFileName, SkinnedMeshInputLod& skinnedMeshLod)
         {
             EMotionFX::MorphSetup* morphSetup = actor->GetMorphSetup(lodIndex);
             if (morphSetup)
             {
-                uint32_t morphTargetCount = morphSetup->GetNumMorphTargets();
+                AZ_Assert(actor->GetMorphTargetMetaAsset().IsReady(), "Trying to create morph targets from actor '%s', but the MorphTargetMetaAsset isn't loaded.", actor->GetName());
+                const AZStd::vector<AZ::RPI::MorphTargetMetaAsset::MorphTarget>& metaDatas = actor->GetMorphTargetMetaAsset()->GetMorphTargets();
 
-                // We're going to split the data into separate streams with 4byte elements,
-                // which allows for a coalesced read in the morph target compute shader when each thread is loading 4 adjacent bytes at the same time
-
-                // Packed, interleaved vertex deltas
-                AZStd::vector<uint32_t> deltaData;
-
-                uint32_t totalDeformDataCount = 0;
-
-                for (uint32_t morphTargetIndex = 0; morphTargetIndex < morphTargetCount; ++morphTargetIndex)
+                // Loop over all the EMotionFX morph targets
+                const AZ::u32 numMorphTargets = morphSetup->GetNumMorphTargets();
+                for (AZ::u32 morphTargetIndex = 0; morphTargetIndex < numMorphTargets; ++morphTargetIndex)
                 {
-                    EMotionFX::MorphTarget* morphTarget = morphSetup->GetMorphTarget(morphTargetIndex);
-                    // check if we are dealing with a standard morph target
-                    if (morphTarget->GetType() != EMotionFX::MorphTargetStandard::TYPE_ID)
+                    EMotionFX::MorphTargetStandard* morphTarget = static_cast<EMotionFX::MorphTargetStandard*>(morphSetup->GetMorphTarget(morphTargetIndex));
+                    for (const auto& metaData : metaDatas)
                     {
-                        continue;
-                    }
-
-                    // down cast the morph target
-                    EMotionFX::MorphTargetStandard* morphTargetStandard = static_cast<EMotionFX::MorphTargetStandard*>(morphTarget);
-                    uint32_t deformDataCount = morphTargetStandard->GetNumDeformDatas();
-
-                    // Get the min/max weight across the entire morph
-                    float minWeight = morphTargetStandard->GetRangeMin();
-                    float maxWeight = morphTargetStandard->GetRangeMax();
-
-                    // There are multiple deforms for a single morph. Combine them all into a single morph to be processed at once
-                    for (uint32_t deformDataIndex = 0; deformDataIndex < deformDataCount; ++deformDataIndex)
-                    {
-                        EMotionFX::MorphTargetStandard::DeformData* deformData = morphTargetStandard->GetDeformData(deformDataIndex);
-
-                        // Vertex data
-                        for (uint32_t vertexIndex = 0; vertexIndex < deformData->mNumVerts; ++vertexIndex)
+                        // Loop through the metadatas to find the one that corresponds with the current morph target
+                        // This ensures the order stays in sync with the order in the MorphSetup,
+                        // so that the correct weights are applied to the correct morphs later
+                        // Skip any that don't modify any vertices
+                        if (metaData.m_morphTargetName == morphTarget->GetNameString() && metaData.m_numVertices > 0)
                         {
-                            const EMotionFX::MorphTargetStandard::DeformData::VertexDelta& delta = deformData->mDeltas[vertexIndex];
+                            // The skinned mesh lod gets a unique morph for each meta, since each one has unique min/max delta values to use for decompression
+                            AZStd::string morphString = AZStd::string::format("%s_Lod%u_Morph_%s", fullFileName.c_str(), lodIndex, metaData.m_meshNodeName.c_str());
 
-                            // TODO: Modify the builder to pack data the way it's expected to be read on the GPU instead of packing it here [ATOM-14698]
+                            float minWeight = morphTarget->GetRangeMin();
+                            float maxWeight = morphTarget->GetRangeMax();
 
-                            // Add the target vertex index
-                            deltaData.push_back(delta.mVertexNr);
-
-                            // Combine the position x in the most-significant 16 bits and position y in the least significant 16 bits
-                            uint32_t xy = 0;
-                            xy |= (static_cast<uint32_t>(delta.mPosition.mX) << 16);
-                            xy |= static_cast<uint32_t>(delta.mPosition.mY);
-                            deltaData.push_back(xy);
-
-                            // Combine the position z in the most significant 16 bits with the normal x and y in the least significant 16 bits
-                            uint32_t positionZnormalXY = 0;
-                            positionZnormalXY |= static_cast<uint32_t>(delta.mPosition.mZ) << 16;
-                            positionZnormalXY |= static_cast<uint32_t>(delta.mNormal.mX) << 8;
-                            positionZnormalXY |= static_cast<uint32_t>(delta.mNormal.mY);
-                            deltaData.push_back(positionZnormalXY);
-
-                            // Combine the normal z in the most significant 8 bits with the tangent in the least significant 24 bits
-                            uint32_t normalZTangent = 0;
-                            normalZTangent |= (static_cast<uint32_t>(delta.mNormal.mZ) << 24);
-                            normalZTangent |= (static_cast<uint32_t>(delta.mTangent.mX) << 16);
-                            normalZTangent |= (static_cast<uint32_t>(delta.mTangent.mY) << 8);
-                            normalZTangent |= static_cast<uint32_t>(delta.mTangent.mZ);
-                            deltaData.push_back(normalZTangent);
-
-                            // Combine padding in most significant 8 bits with the bitangent in the least significant 24 bits
-                            uint32_t padBitangent = 0;
-                            padBitangent |= static_cast<uint32_t>(delta.mBitangent.mX) << 16;
-                            padBitangent |= (static_cast<uint32_t>(delta.mBitangent.mY) << 8);
-                            padBitangent |= static_cast<uint32_t>(delta.mBitangent.mZ);
-                            deltaData.push_back(padBitangent);
-
-                            // Extra padding so each structured element of the buffer is 16 byte aligned
-                            deltaData.push_back(0);
-                            deltaData.push_back(0);
-                            deltaData.push_back(0);
+                            skinnedMeshLod.AddMorphTarget(metaData, morphBufferAsset, morphString, minWeight, maxWeight);
                         }
-
-                        if (deformData->mNumVerts > 0)
-                        {
-                            // The skinned mesh lod gets a unique morph for each deform data, since each one has unique min/max delta values to use for decompression
-                            AZStd::string morphString = AZStd::string::format("_Lod%u_Morph%u", lodIndex, totalDeformDataCount);
-                            skinnedMeshLod.AddMorphTarget(minWeight, maxWeight, deformData->mMinValue, deformData->mMaxValue, deformData->mNumVerts, deltaData, fullFileName + morphString);
-                            totalDeformDataCount++;
-                        }
-                        else
-                        {
-                            AZ_Warning("ProcessMorphsForLod", false, "EMotionFX deform data '%u' in morph target '%u' for lod '%u' in '%s' modifies zero vertices and will be skipped.", deformDataIndex, morphTargetIndex, lodIndex, fullFileName.c_str());
-                        }
-                        deltaData.clear();
                     }
                 }
             }
@@ -574,7 +510,11 @@ namespace AZ
                 // and create the common, shared sub-mesh buffer views
                 skinnedMeshLod.SetSubMeshProperties(subMeshes);
 
-                ProcessMorphsForLod(actor, lodIndex, fullFileName, skinnedMeshLod);
+                const RPI::BufferAssetView* morphBufferAssetView = mesh0.GetSemanticBufferAssetView(Name{ "MORPHTARGET_VERTEXDELTAS" });
+                if (morphBufferAssetView)
+                {
+                    ProcessMorphsForLod(actor, morphBufferAssetView->GetBufferAsset(), lodIndex, fullFileName, skinnedMeshLod);
+                }
 
                 skinnedMeshInputBuffers->SetLod(lodIndex, skinnedMeshLod);
 

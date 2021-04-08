@@ -12,4 +12,6 @@
 set(FILES
     UnitTest/AzToolsFrameworkTestHelpers.cpp
     UnitTest/AzToolsFrameworkTestHelpers.h
+    UnitTest/ToolsTestApplication.cpp
+    UnitTest/ToolsTestApplication.h
 )

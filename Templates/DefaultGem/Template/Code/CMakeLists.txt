@@ -46,7 +46,6 @@ ly_add_target(
 ly_add_target(
     NAME ${Name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.${Name}
     FILES_CMAKE
         ${NameLower}_shared_files.cmake
         ${pal_dir}/${NameLower}_shared_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake

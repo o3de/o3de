@@ -78,37 +78,37 @@ namespace AZ
             const AZ::Name m_numSourceLutsShaderVariantOptionName;
             bool m_needToUpdateShaderVariant = false;
 
-            RHI::ShaderInputImageIndex m_shaderInputBlendedLutImageIndex;
-            RHI::ShaderInputConstantIndex m_shaderInputBlendedLutDimensionsIndex;
-            RHI::ShaderInputConstantIndex m_shaderInputBlendedLutShaperTypeIndex;
-            RHI::ShaderInputConstantIndex m_shaderInputBlendededLutShaperBiasIndex;
-            RHI::ShaderInputConstantIndex m_shaderInputBlendededLutShaperScaleIndex;
+            RHI::ShaderInputNameIndex m_shaderInputBlendedLutImageIndex = "m_blendedLut";
+            RHI::ShaderInputNameIndex m_shaderInputBlendedLutDimensionsIndex = "m_blendedLutDimensions";
+            RHI::ShaderInputNameIndex m_shaderInputBlendedLutShaperTypeIndex = "m_blendedLutShaperType";
+            RHI::ShaderInputNameIndex m_shaderInputBlendededLutShaperBiasIndex = "m_blendedLutShaperBias";
+            RHI::ShaderInputNameIndex m_shaderInputBlendededLutShaperScaleIndex = "m_blendedLutShaperScale";
 
-            RHI::ShaderInputImageIndex m_shaderInputSourceLut1ImageIndex;
-            RHI::ShaderInputConstantIndex m_shaderInputSourceLut1ShaperTypeIndex;
-            RHI::ShaderInputConstantIndex m_shaderInputSourceLut1ShaperBiasIndex;
-            RHI::ShaderInputConstantIndex m_shaderInputSourceLut1ShaperScaleIndex;
+            RHI::ShaderInputNameIndex m_shaderInputSourceLut1ImageIndex = "m_sourceLut1";
+            RHI::ShaderInputNameIndex m_shaderInputSourceLut1ShaperTypeIndex = "m_sourceLut1ShaperType";
+            RHI::ShaderInputNameIndex m_shaderInputSourceLut1ShaperBiasIndex = "m_sourceLut1ShaperBias";
+            RHI::ShaderInputNameIndex m_shaderInputSourceLut1ShaperScaleIndex = "m_sourceLut1ShaperScale";
 
-            RHI::ShaderInputImageIndex m_shaderInputSourceLut2ImageIndex;
-            RHI::ShaderInputConstantIndex m_shaderInputSourceLut2ShaperTypeIndex;
-            RHI::ShaderInputConstantIndex m_shaderInputSourceLut2ShaperBiasIndex;
-            RHI::ShaderInputConstantIndex m_shaderInputSourceLut2ShaperScaleIndex;
+            RHI::ShaderInputNameIndex m_shaderInputSourceLut2ImageIndex = "m_sourceLut2";
+            RHI::ShaderInputNameIndex m_shaderInputSourceLut2ShaperTypeIndex = "m_sourceLut2ShaperType";
+            RHI::ShaderInputNameIndex m_shaderInputSourceLut2ShaperBiasIndex = "m_sourceLut2ShaperBias";
+            RHI::ShaderInputNameIndex m_shaderInputSourceLut2ShaperScaleIndex = "m_sourceLut2ShaperScale";
 
-            RHI::ShaderInputImageIndex m_shaderInputSourceLut3ImageIndex;
-            RHI::ShaderInputConstantIndex m_shaderInputSourceLut3ShaperTypeIndex;
-            RHI::ShaderInputConstantIndex m_shaderInputSourceLut3ShaperBiasIndex;
-            RHI::ShaderInputConstantIndex m_shaderInputSourceLut3ShaperScaleIndex;
+            RHI::ShaderInputNameIndex m_shaderInputSourceLut3ImageIndex = "m_sourceLut3";
+            RHI::ShaderInputNameIndex m_shaderInputSourceLut3ShaperTypeIndex = "m_sourceLut3ShaperType";
+            RHI::ShaderInputNameIndex m_shaderInputSourceLut3ShaperBiasIndex = "m_sourceLut3ShaperBias";
+            RHI::ShaderInputNameIndex m_shaderInputSourceLut3ShaperScaleIndex = "m_sourceLut3ShaperScale";
 
-            RHI::ShaderInputImageIndex m_shaderInputSourceLut4ImageIndex;
-            RHI::ShaderInputConstantIndex m_shaderInputSourceLut4ShaperTypeIndex;
-            RHI::ShaderInputConstantIndex m_shaderInputSourceLut4ShaperBiasIndex;
-            RHI::ShaderInputConstantIndex m_shaderInputSourceLut4ShaperScaleIndex;
+            RHI::ShaderInputNameIndex m_shaderInputSourceLut4ImageIndex = "m_sourceLut4";
+            RHI::ShaderInputNameIndex m_shaderInputSourceLut4ShaperTypeIndex = "m_sourceLut4ShaperType";
+            RHI::ShaderInputNameIndex m_shaderInputSourceLut4ShaperBiasIndex = "m_sourceLut4ShaperBias";
+            RHI::ShaderInputNameIndex m_shaderInputSourceLut4ShaperScaleIndex = "m_sourceLut4ShaperScale";
 
-            RHI::ShaderInputConstantIndex m_shaderInputWeight0Index;
-            RHI::ShaderInputConstantIndex m_shaderInputWeight1Index;
-            RHI::ShaderInputConstantIndex m_shaderInputWeight2Index;
-            RHI::ShaderInputConstantIndex m_shaderInputWeight3Index;
-            RHI::ShaderInputConstantIndex m_shaderInputWeight4Index;
+            RHI::ShaderInputNameIndex m_shaderInputWeight0Index = "m_weight0";
+            RHI::ShaderInputNameIndex m_shaderInputWeight1Index = "m_weight1";
+            RHI::ShaderInputNameIndex m_shaderInputWeight2Index = "m_weight2";
+            RHI::ShaderInputNameIndex m_shaderInputWeight3Index = "m_weight3";
+            RHI::ShaderInputNameIndex m_shaderInputWeight4Index = "m_weight4";
 
             AZ::Render::DisplayMapperParameters m_displayMapperParameters = {};
 

@@ -32,6 +32,8 @@ namespace AZ
             struct ExportItem
             {
                 bool m_enabled = true;
+                bool m_exists = false;
+                bool m_overwrite = false;
                 AZ::Data::AssetId m_assetId;
                 AZStd::string m_exportPath;
             };

@@ -22,28 +22,10 @@ void CCaptureTrack::SerializeKey(ICaptureKey& key, XmlNodeRef& keyNode, bool bLo
     if (bLoading)
     {
         const char* desc;
-
         keyNode->getAttr("time", key.time);
         keyNode->getAttr("flags", key.flags);
         keyNode->getAttr("duration", key.duration);
         keyNode->getAttr("timeStep", key.timeStep);
-        desc = keyNode->getAttr("format");
-        if (strcmp(desc, "jpg") == 0)
-        {
-            key.FormatJPG();
-        }
-        else if (strcmp(desc, "bmp") == 0)
-        {
-            key.FormatBMP();
-        }
-        else if (strcmp(desc, "hdr") == 0)
-        {
-            key.FormatHDR();
-        }
-        else
-        {
-            key.FormatTGA();
-        }
         desc = keyNode->getAttr("folder");
         key.folder = desc;
         keyNode->getAttr("once", key.once);
@@ -52,9 +34,6 @@ void CCaptureTrack::SerializeKey(ICaptureKey& key, XmlNodeRef& keyNode, bool bLo
         {
             key.prefix = desc;
         }
-        int intAttr;
-        keyNode->getAttr("bufferToCapture", intAttr);
-        key.captureBufferIndex = (intAttr < ICaptureKey::NumCaptureBufferTypes) ? static_cast<ICaptureKey::CaptureBufferType>(intAttr) : ICaptureKey::Color;
     }
     else
     {
@@ -62,11 +41,9 @@ void CCaptureTrack::SerializeKey(ICaptureKey& key, XmlNodeRef& keyNode, bool bLo
         keyNode->setAttr("flags", key.flags);
         keyNode->setAttr("duration", key.duration);
         keyNode->setAttr("timeStep", key.timeStep);
-        keyNode->setAttr("format", key.GetFormat());
         keyNode->setAttr("folder", key.folder.c_str());
         keyNode->setAttr("once", key.once);
         keyNode->setAttr("prefix", key.prefix.c_str());
-        keyNode->setAttr("bufferToCapture", key.captureBufferIndex);
     }
 }
 
@@ -85,11 +62,11 @@ void CCaptureTrack::GetKeyInfo(int key, const char*& description, float& duratio
     description = buffer;
     if (!m_keys[key].folder.empty())
     {
-        sprintf_s(buffer, "[%s] %s, %.3f, %s", prefix, m_keys[key].GetFormat(), m_keys[key].timeStep, m_keys[key].folder.c_str());
+        sprintf_s(buffer, "[%s], %.3f, %s", prefix, m_keys[key].timeStep, m_keys[key].folder.c_str());
     }
     else
     {
-        sprintf_s(buffer, "[%s] %s, %.3f", prefix, m_keys[key].GetFormat(), m_keys[key].timeStep);
+        sprintf_s(buffer, "[%s], %.3f", prefix, m_keys[key].timeStep);
     }
 }
 

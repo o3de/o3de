@@ -709,7 +709,7 @@ namespace AZ::SettingsRegistryMergeUtils
         }
     }
 
-    void MergeSettingsToRegistry_UserRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
+    void MergeSettingsToRegistry_ProjectUserRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
         const SettingsRegistryInterface::Specializations& specializations, AZStd::vector<char>* scratchBuffer)
     {
         // Unlike other paths, the path can't be overwritten by the dev settings because that would create a circular dependency.
@@ -718,6 +718,16 @@ namespace AZ::SettingsRegistryMergeUtils
         {
             projectUserPath /= SettingsRegistryInterface::DevUserRegistryFolder;
             registry.MergeSettingsFolder(projectUserPath.Native(), specializations, platform, "", scratchBuffer);
+        }
+    }
+
+    void MergeSettingsToRegistry_O3deUserRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
+        const SettingsRegistryInterface::Specializations& specializations, AZStd::vector<char>* scratchBuffer)
+    {
+        if (AZ::IO::FixedMaxPath o3deUserPath = AZ::Utils::GetO3deManifestDirectory(); !o3deUserPath.empty())
+        {
+            o3deUserPath /= SettingsRegistryInterface::RegistryFolder;
+            registry.MergeSettingsFolder(o3deUserPath.Native(), specializations, platform, "", scratchBuffer);
         }
     }
 

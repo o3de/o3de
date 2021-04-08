@@ -31,7 +31,7 @@ namespace Audio
         MOCK_METHOD0(Release, void());
         MOCK_METHOD0(Update, void());
 
-        MOCK_METHOD3(TryAddFileCacheEntry, TAudioFileEntryID(const AZ::rapidxml::xml_node<char>*, const EATLDataScope, const bool));
+        MOCK_METHOD3(TryAddFileCacheEntry, TAudioFileEntryID(const AZ::rapidxml::xml_node<char>*, EATLDataScope, bool));
         MOCK_METHOD2(TryRemoveFileCacheEntry, bool(const TAudioFileEntryID, const EATLDataScope));
 
         MOCK_METHOD0(UpdateLocalizedFileCacheEntries, void());

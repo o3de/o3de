@@ -275,7 +275,6 @@ private:
     float m_maxStepBackUp;
     float m_smoothingBackUp;
     float m_maxTimeStepForMovieSystemBackUp;
-    ICVar* m_cvar_capture_file_format;
     ICVar* m_cvar_capture_frame_once;
     ICVar* m_cvar_capture_folder;
     ICVar* m_cvar_t_FixedStep;

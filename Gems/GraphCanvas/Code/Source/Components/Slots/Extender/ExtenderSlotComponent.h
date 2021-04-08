@@ -86,7 +86,7 @@ namespace GraphCanvas
         ExtenderSlotComponent(const ExtenderSlotComponent&) = delete;
         ExtenderSlotComponent& operator=(const ExtenderSlotComponent&) = delete;
 
-        void ConstructSlot();
+        void ConstructSlot(GraphModelRequests::ExtensionRequestReason reason);
         void EraseSlot();
         void CleanupProposedSlot();
 

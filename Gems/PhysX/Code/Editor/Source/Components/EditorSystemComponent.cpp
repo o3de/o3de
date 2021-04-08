@@ -15,9 +15,9 @@
 #include "EditorSystemComponent.h"
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzFramework/Physics/CollisionNotificationBus.h>
-#include <AzFramework/Physics/TriggerBus.h>
 #include <AzFramework/Physics/SystemBus.h>
+#include <AzFramework/Physics/Collision/CollisionEvents.h>
+#include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <Editor/ConfigStringLineEditCtrl.h>
 #include <Editor/EditorJointConfiguration.h>
 
@@ -115,14 +115,9 @@ namespace PhysX
         if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
         {
             AzPhysics::SceneConfiguration editorWorldConfiguration = physicsSystem->GetDefaultSceneConfiguration();
-            editorWorldConfiguration.m_legacyId = Physics::EditorPhysicsWorldId;
-            editorWorldConfiguration.m_legacyConfiguration.m_fixedTimeStep = 0.0f;
+            editorWorldConfiguration.m_sceneName = AzPhysics::EditorPhysicsSceneName;
             editorWorldConfiguration.m_sceneName = "EditorScene";
             m_editorWorldSceneHandle = physicsSystem->AddScene(editorWorldConfiguration);
-            if (AzPhysics::Scene* scene = physicsSystem->GetScene(m_editorWorldSceneHandle))
-            {
-                scene->GetLegacyWorld()->SetEventHandler(this);
-            }
         }
 
         PhysX::RegisterConfigStringLineEditHandler(); // Register custom unique string line edit control
@@ -142,41 +137,9 @@ namespace PhysX
         m_editorWorldSceneHandle = AzPhysics::InvalidSceneHandle;
     }
 
-    AZStd::shared_ptr<Physics::World> EditorSystemComponent::GetEditorWorld()
+    AzPhysics::SceneHandle EditorSystemComponent::GetEditorSceneHandle() const
     {
-        if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
-        {
-            if (AzPhysics::Scene* scene = physicsSystem->GetScene(m_editorWorldSceneHandle))
-            {
-                return scene->GetLegacyWorld();
-            }
-        }
-        return nullptr;
-    }
-
-    void EditorSystemComponent::OnTriggerEnter(const Physics::TriggerEvent& triggerEvent)
-    {
-        Physics::TriggerNotificationBus::QueueEvent(triggerEvent.m_triggerBody->GetEntityId(), &Physics::TriggerNotifications::OnTriggerEnter, triggerEvent);
-    }
-
-    void EditorSystemComponent::OnTriggerExit(const Physics::TriggerEvent& triggerEvent)
-    {
-        Physics::TriggerNotificationBus::QueueEvent(triggerEvent.m_triggerBody->GetEntityId(), &Physics::TriggerNotifications::OnTriggerExit, triggerEvent);
-    }
-
-    void EditorSystemComponent::OnCollisionBegin(const Physics::CollisionEvent& event)
-    {
-        Physics::CollisionNotificationBus::QueueEvent(event.m_body1->GetEntityId(), &Physics::CollisionNotifications::OnCollisionBegin, event);
-    }
-
-    void EditorSystemComponent::OnCollisionPersist(const Physics::CollisionEvent& event)
-    {
-        Physics::CollisionNotificationBus::QueueEvent(event.m_body1->GetEntityId(), &Physics::CollisionNotifications::OnCollisionPersist, event);
-    }
-
-    void EditorSystemComponent::OnCollisionEnd(const Physics::CollisionEvent& event)
-    {
-        Physics::CollisionNotificationBus::QueueEvent(event.m_body1->GetEntityId(), &Physics::CollisionNotifications::OnCollisionEnd, event);
+        return m_editorWorldSceneHandle;
     }
 
     void EditorSystemComponent::OnStartPlayInEditorBegin()
@@ -185,7 +148,7 @@ namespace PhysX
         {
             if (AzPhysics::Scene* scene = physicsSystem->GetScene(m_editorWorldSceneHandle))
             {
-                scene->Enable(false);
+                scene->SetEnabled(false);
             }
         }
     }
@@ -196,7 +159,7 @@ namespace PhysX
         {
             if (AzPhysics::Scene* scene = physicsSystem->GetScene(m_editorWorldSceneHandle))
             {
-                scene->Enable(true);
+                scene->SetEnabled(true);
             }
         }
     }

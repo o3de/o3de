@@ -180,7 +180,7 @@ TEST_F(ScriptCanvasTestFixture, InsertSlot_Basic)
     graph->Deactivate();
 
     {
-        AZStd::vector< const Slot* > slotList = basicNode->GetAllSlots();
+        const AZStd::vector< const Slot* > slotList = basicNode->GetAllSlots();
 
         EXPECT_EQ(slotList.size(), 3);
 

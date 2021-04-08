@@ -30,6 +30,13 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         AZ_RTTI(AzToolsFramework::Prefab::PrefabConversionUtils::PrefabCatchmentProcessor,
             "{F71E2FBA-22ED-44C7-B4C8-D2CF4B2C7B97}", PrefabProcessor);
 
+        //! The format the remaining spawnables are going to be stored in.
+        enum class SerializationFormats
+        {
+            Binary, //!< Binary is generally preferable for performance.
+            Text //!< Store in text format which is usually slower but helps with debugging.
+        };
+
         ~PrefabCatchmentProcessor() override = default;
 
         void Process(PrefabProcessorContext& context) override;
@@ -37,6 +44,15 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         static void Reflect(AZ::ReflectContext* context);
 
     protected:
-        static void ProcessPrefab(PrefabProcessorContext& context, AZStd::string_view prefabName, PrefabDom& prefab);
+        static void ProcessPrefab(PrefabProcessorContext& context, AZStd::string_view prefabName, PrefabDom& prefab,
+            AZ::DataStream::StreamType serializationFormat);
+
+        SerializationFormats m_serializationFormat{ SerializationFormats::Binary };
     };
 } // namespace AzToolsFramework::Prefab::PrefabConversionUtils
+
+namespace AZ
+{
+    AZ_TYPE_INFO_SPECIALIZE(AzToolsFramework::Prefab::PrefabConversionUtils::PrefabCatchmentProcessor::SerializationFormats,
+        "{0FBE2482-B514-4256-8716-EA3ECDF8CD49}");
+}

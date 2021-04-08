@@ -523,13 +523,13 @@ namespace ScriptCanvasEditor
 
         ScriptCanvas::ValidationResults validationResults;
 
-        // Disable the s_saveRawTranslationOuputToFile CVar during Parse (not needed for upgrade) and restore to its set value after
-        bool saveRawTranslationOuputToFile = ScriptCanvas::Grammar::s_saveRawTranslationOuputToFile;
-        ScriptCanvas::Grammar::s_saveRawTranslationOuputToFile = false;
+        // Disable the g_saveRawTranslationOuputToFile CVar during Parse (not needed for upgrade) and restore to its set value after
+        bool saveRawTranslationOuputToFile = ScriptCanvas::Grammar::g_saveRawTranslationOuputToFile;
+        ScriptCanvas::Grammar::g_saveRawTranslationOuputToFile = false;
 
         graph->Parse(validationResults);
 
-        ScriptCanvas::Grammar::s_saveRawTranslationOuputToFile = saveRawTranslationOuputToFile;
+        ScriptCanvas::Grammar::g_saveRawTranslationOuputToFile = saveRawTranslationOuputToFile;
 
         if (validationResults.HasResults())
         {

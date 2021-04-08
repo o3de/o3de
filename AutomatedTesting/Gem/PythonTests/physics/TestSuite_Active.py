@@ -27,7 +27,7 @@ from base import TestAutomationBase
 revert_physics_config = fm.file_revert_list(['physxdebugconfiguration.setreg', 'physxdefaultsceneconfiguration.setreg', 'physxsystemconfiguration.setreg'], 'AutomatedTesting/Registry')
 
 
-@pytest.mark.SUITE_main
+@pytest.mark.SUITE_sandbox
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomation(TestAutomationBase):
@@ -264,11 +264,6 @@ class TestAutomation(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
-    def test_C6224408_ScriptCanvas_EntitySpawn(self, request, workspace, editor, launcher_platform):
-        from . import C6224408_ScriptCanvas_EntitySpawn as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @revert_physics_config
     def test_C12712455_ScriptCanvas_ShapeCastVerification(self, request, workspace, editor, launcher_platform):
         from . import C12712455_ScriptCanvas_ShapeCastVerification as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -324,6 +319,10 @@ class TestAutomation(TestAutomationBase):
         from . import C5968759_ForceRegion_ExertsSeveralForcesOnRigidBody as test_module
         self._run_test(request, workspace, editor, test_module)
 
+    # Marking the test as an expected failure due to sporadic failure on Automated Review: LYN-2580
+    # The test still runs, but a failure of the test doesn't result in the test run failing
+    @pytest.mark.xfail(
+        reason="This test needs new physics asset with multiple materials to be more stable.")
     @revert_physics_config
     def test_C4044697_Material_PerfaceMaterialValidation(self, request, workspace, editor, launcher_platform):
         from . import C4044697_Material_PerfaceMaterialValidation as test_module
@@ -402,9 +401,6 @@ class TestAutomation(TestAutomationBase):
         from . import C4976244_Collider_SameGroupSameLayerCollision as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    @pytest.mark.xfail(
-        reason="This test seems to fail sometimes due to reliance on non-deterministic movement calculations."
-               "Need to figure out the reason why this is the case")
     @revert_physics_config
     @fm.file_override('physxdefaultsceneconfiguration.setreg','C14195074_ScriptCanvas_PostUpdateEvent.setreg', 'AutomatedTesting/Registry')
     def test_C14195074_ScriptCanvas_PostUpdateEvent(self, request, workspace, editor, launcher_platform):
@@ -428,9 +424,6 @@ class TestAutomation(TestAutomationBase):
         from . import C3510644_Collider_CollisionGroups as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    @pytest.mark.xfail(
-        reason="This test seems to fail sometimes due to reliance on non-deterministic movement calculations."
-               "Need to figure out the reason why this is the case")
     @revert_physics_config
     @fm.file_override('physxdefaultsceneconfiguration.setreg','C14902097_ScriptCanvas_PreUpdateEvent.setreg', 'AutomatedTesting/Registry')
     def test_C14902097_ScriptCanvas_PreUpdateEvent(self, request, workspace, editor, launcher_platform):

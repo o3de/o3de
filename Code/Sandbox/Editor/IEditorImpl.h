@@ -360,7 +360,6 @@ public:
     void DestroyQMimeData(QMimeData* data) const override;
 
     bool IsNewViewportInteractionModelEnabled() const override;
-    bool IsPrefabSystemEnabled() const override;
 
 protected:
 
@@ -469,7 +468,6 @@ protected:
     ::AssetDatabase::AssetDatabaseLocationListener* m_pAssetDatabaseLocationListener;
     AzAssetBrowserRequestHandler* m_pAssetBrowserRequestHandler;
     AssetEditorRequestsHandler* m_assetEditorRequestsHandler;
-    AZStd::vector<AZStd::unique_ptr<AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::Handler>> m_thumbnailRenderers;
 
     IImageUtil* m_pImageUtil;  // Vladimir@conffx
     ILogFile* m_pLogFile;  // Vladimir@conffx
@@ -478,6 +476,5 @@ protected:
     static const char* m_crashLogFileName;
 
     bool m_isNewViewportInteractionModelEnabled = true;
-    bool m_isPrefabSystemEnabled = false;
 };
 

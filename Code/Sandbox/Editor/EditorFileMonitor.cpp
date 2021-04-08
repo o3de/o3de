@@ -148,7 +148,7 @@ void CEditorFileMonitor::MonitorDirectories()
 QString RemoveGameName(const QString &filename)
 {
     // Remove first part of path.  File coming in has the game name included
-    // eg (SamplesProject/Animations/Chicken/anim_chicken_flapping.i_caf)->(Animations/Chicken/anim_chicken_flapping.i_caf)
+    // eg (AutomatedTesting/Animations/Chicken/anim_chicken_flapping.i_caf)->(Animations/Chicken/anim_chicken_flapping.i_caf)
 
     int indexOfFirstSlash = filename.indexOf('/');
     int indexOfFirstBackSlash = filename.indexOf('\\');

@@ -15,8 +15,8 @@
 
 namespace AWSMetrics
 {
-    constexpr char metricsDir[] = "@user@/AWSMetrics/";
-    constexpr char metricsFileName[] = "metrics.json";
+    constexpr char AwsMetricsLocalFileDir[] = "@user@/AWSMetrics/";
+    constexpr char AwsMetricsLocalFileName[] = "metrics.json";
 
     //! ClientConfiguration is used to retrieve and store client settings from a local configuration JSON file.
     class ClientConfiguration

@@ -11,11 +11,12 @@
  */
 #pragma once
 
-#include <AZCore/std/smart_ptr/unique_ptr.h>
+#include <AZCore/std/containers/unordered_map.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <Asset/BlastAsset.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
-#include <AzFramework/Physics/CollisionNotificationBus.h>
+#include <AzFramework/Physics/Common/PhysicsSimulatedBodyEvents.h>
 #include <Blast/BlastDebug.h>
 #include <Blast/BlastFamilyComponentBus.h>
 #include <Blast/BlastMaterial.h>
@@ -27,6 +28,11 @@
 #include <LmbrCentral/Scripting/SpawnerComponentBus.h>
 #include <NvBlastExtStressSolver.h>
 
+namespace AzPhysics
+{
+    struct CollisionEvent;
+}
+
 namespace Blast
 {
     //! Component that handles simulation of the Blast family.
@@ -35,7 +41,6 @@ namespace Blast
         , public BlastFamilyDamageRequestBus::MultiHandler
         , public BlastFamilyComponentRequestBus::Handler
         , protected BlastListener
-        , protected Physics::CollisionNotificationBus::MultiHandler
     {
     public:
         AZ_COMPONENT(BlastFamilyComponent, "{88ECE087-C88A-4A83-A83C-477BA9C13221}", AZ::Component);
@@ -94,7 +99,7 @@ namespace Blast
         void OnActorDestroyed(const BlastFamily& family, const BlastActor& actor) override;
 
         // Dispatched when two shapes start colliding.
-        void OnCollisionBegin(const Physics::CollisionEvent& collisionEvent) override;
+        void OnCollisionBegin(const AzPhysics::CollisionEvent& collisionEvent);
 
         // Logic processors
         AZStd::unique_ptr<DamageManager> m_damageManager;
@@ -114,5 +119,9 @@ namespace Blast
         bool m_isSpawned = false;
         bool m_shouldSpawnOnAssetLoad = false;
         DebugRenderMode m_debugRenderMode;
+
+        using CollisionHandlersMap = AZStd::unordered_map<AZ::EntityId, AzPhysics::SimulatedBodyEvents::OnCollisionBegin::Handler>;
+        using CollisionHandlersMapItr = CollisionHandlersMap::iterator;
+        CollisionHandlersMap m_collisionHandlers;
     };
 } // namespace Blast

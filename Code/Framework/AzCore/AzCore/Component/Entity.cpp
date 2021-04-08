@@ -97,6 +97,11 @@ namespace AZ
 
     Entity::~Entity()
     {
+        Reset();
+    }
+
+    void Entity::Reset()
+    {
         AZ_Assert(m_state != State::Activating && m_state != State::Deactivating && m_state != State::Initializing, "Unsafe to delete an entity during its state transition.");
         if (m_state == State::Active)
         {
@@ -115,6 +120,8 @@ namespace AZ
         {
             delete *it;
         }
+
+        m_components.clear();
 
         if (m_state == State::Init)
         {
@@ -750,6 +757,8 @@ namespace AZ
                 ->Field("IsDependencyReady", &Entity::m_isDependencyReady)
                 ->Field("IsRuntimeActive", &Entity::m_isRuntimeActiveByDefault)
                 ;
+
+            serializeContext->RegisterGenericType<AZStd::unordered_map<AZStd::string, AZ::Component*>>();
 
             serializeContext->Class<EntityId>()
                 ->Version(1, &EntityIdConverter)

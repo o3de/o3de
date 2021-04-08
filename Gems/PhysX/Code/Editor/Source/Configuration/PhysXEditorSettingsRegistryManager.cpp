@@ -19,6 +19,7 @@
 #include <AzCore/JSON/prettywriter.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 
 namespace PhysX
@@ -78,30 +79,18 @@ namespace PhysX
         : PhysXSettingsRegistryManager()
     {
         // Resolve path to the .setreg files
-        auto* fileIo = AZ::IO::FileIOBase::GetInstance();
-        if (fileIo == nullptr)
-        {
-            AZ_TracePrintf("PhysXSystemEditor", R"(Unable to resolve paths for PhysX configuration settings registry files, FileIOBase is null.\n)");
-            return;
-        }
-        if (!fileIo->ResolvePath(m_physXConfigurationFilePath, "@devassets@/Registry/physxsystemconfiguration.setreg"))
-        {
-            AZ_TracePrintf("PhysXSystemEditor", R"(Unable to resolve path "%s" to the PhysX configuration settings registry file\n)",
-                m_physXConfigurationFilePath.c_str());
-            return;
-        }
-        if (!fileIo->ResolvePath(m_defaultSceneConfigFilePath, "@devassets@/Registry/physxdefaultsceneconfiguration.setreg"))
-        {
-            AZ_TracePrintf("PhysXSystemEditor", R"(Unable to resolve path "%s" to the Default Scene Configuration settings registry file\n)",
-                m_defaultSceneConfigFilePath.c_str());
-            return;
-        }
-        if(!fileIo->ResolvePath(m_debugConfigurationFilePath, "@devassets@/Registry/physxdebugconfiguration.setreg"))
-        {
-            AZ_TracePrintf("PhysXSystemEditor", R"(Unable to resolve path "%s" to the PhysX Debug Configuration settings registry file\n)",
-                m_debugConfigurationFilePath.c_str());
-            return;
-        }
+        AZ::IO::FixedMaxPath projectPath = AZ::Utils::GetProjectPath();
+        projectPath /= "Registry";
+
+        m_physXConfigurationFilePath = projectPath;
+        m_physXConfigurationFilePath /= "physxsystemconfiguration.setreg";
+
+        m_defaultSceneConfigFilePath = projectPath;
+        m_defaultSceneConfigFilePath /= "physxdefaultsceneconfiguration.setreg";
+
+        m_debugConfigurationFilePath = projectPath;
+        m_debugConfigurationFilePath /= "physxdebugconfiguration.setreg";
+       
         m_initialized = true;
     }
 

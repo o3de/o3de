@@ -11,6 +11,7 @@
 */
 
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 // Explicit instantations of our support Path classes
 namespace AZ::IO
@@ -53,4 +54,13 @@ namespace AZ::IO
         const PathIterator<Path>& rhs);
     template bool operator!=<FixedMaxPath>(const PathIterator<FixedMaxPath>& lhs,
         const PathIterator<FixedMaxPath>& rhs);
+
+    void PathReflection::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<AZ::IO::Path>()
+                ->Field("m_path", &AZ::IO::Path::m_path);
+        }
+    }
 }

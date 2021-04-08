@@ -1,0 +1,79 @@
+{
+  "Material": {
+    "name": "myPBR",
+    "template": "atom_standard_pbr",
+    "schemaVersion": 0,
+    "properties": {
+      "General": {
+        "defaultTexcoord": 0
+      },
+      "baseColor": {
+        "parameters": {
+          "colorLinear": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "factor": 1.0,
+          "useTexture": true,
+          "textureMap": "materials/substance/amazing_bc.tif",
+          "setTexcoord": false,
+          "texcoordIndex": 0
+        }
+      },
+      "metallic": {
+        "parameters": {
+          "factor": 0.0,
+          "useTexture": true,
+          "textureMap": "materials/substance/amazing_m.tif",
+          "setTexcoord": false,
+          "texcoordIndex": 0
+        }
+      },
+      "roughness": {
+        "parameters": {
+          "factor": 0.5,
+          "useTexture": true,
+          "textureMap": "materials/substance/amazing_r.tif",
+          "setTexcoord": false,
+          "texcoordIndex": 0
+        }
+      },
+      "normalMap": {
+        "parameters": {
+          "factor": 1.0,
+          "useTexture": true,
+          "textureMap": "materials/substance/amazing_ddn.tif",
+          "setTexcoord": false,
+          "texcoordIndex": 0
+        }
+      },
+      "opacity": {
+        "parameters": {
+          "doubleSided": false,
+          "mode": "OPAQUE",
+          "factor": 1.0,
+          "cutoutAlpha": false,
+          "cutoutThreshold": 0.5,
+          "useBaseColorTextureAlpha": false,
+          "useTexture": true,
+          "textureMap": "materials/substance/amazing_a.tif",
+          "setTexcoord": false,
+          "texcoordIndex": 0
+        }
+      },
+      "Extras": {
+        "Substance": {
+          "parameters": {
+            "sbsarFile": {
+              "$ref": "materials/substance/amazing.sbsar"
+            },
+            "sbsarParams": {
+              "$ref": "materials/substance/amazing.myPBR.params"
+            }
+          }
+        }
+      }
+    }
+  }
+}

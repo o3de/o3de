@@ -21,7 +21,7 @@
 #include <Shape/BoxShapeComponent.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AZTestShared/Math/MathTestHelpers.h>
-#include <ShapeTestUtils.h>
+#include <AzFramework/UnitTest/TestDebugDisplayRequests.h>
 
 namespace UnitTest
 {

@@ -48,6 +48,7 @@ namespace AZ
         class Stream;
         class ModelLodAssetCreator;
         class BufferAssetCreator;
+        struct PackedCompressedMorphTargetDelta;
 
         
         //! Component responsible for building Atom's AzModel from SceneAPI input.
@@ -117,14 +118,7 @@ namespace AZ
                 AZStd::vector<float> m_skinWeights;
 
                 // Morph targets
-                struct MorphTargetVertexData
-                {
-                    AZStd::vector<uint32_t> m_vertexIndices;
-                    AZStd::vector<float> m_uncompressedPositionDeltas;
-                    AZStd::vector<uint16_t> m_positionDeltas;
-                    AZStd::vector<uint8_t> m_normalDeltas;
-                };
-                MorphTargetVertexData m_morphTargetVertexData;
+                AZStd::vector<RPI::PackedCompressedMorphTargetDelta> m_morphTargetVertexData;
 
                 MaterialUid m_materialUid;
                 bool CanBeMerged() const { return true; }
@@ -173,16 +167,11 @@ namespace AZ
                 AZStd::vector<AZ::Name> m_colorCustomNames;
                 RHI::BufferViewDescriptor m_tangentView;
                 RHI::BufferViewDescriptor m_bitangentView;
+
                 RHI::BufferViewDescriptor m_skinJointIndicesView;
                 RHI::BufferViewDescriptor m_skinWeightsView;
 
-                struct MorphTargetVertexDataView
-                {
-                    RHI::BufferViewDescriptor m_vertexIndexView;
-                    RHI::BufferViewDescriptor m_positionDeltaView;
-                    RHI::BufferViewDescriptor m_normalDeltaView;
-                };
-                MorphTargetVertexDataView m_morphTargetVertexDataView;
+                RHI::BufferViewDescriptor m_morphTargetVertexDataView;
 
                 MaterialUid m_materialUid;
             };
@@ -236,6 +225,14 @@ namespace AZ
                 const ProductMeshContentList& productMeshList,
                 IndicesOperation indicesOp);
 
+            //! Create stream buffer asset with a structured view descriptor from the given data and add it to the out stream buffers
+            template<typename T>
+            bool BuildStructuredStreamBuffer(
+                AZStd::vector<ModelLodAsset::Mesh::StreamBufferInfo>& outStreamBuffers,
+                const AZStd::vector<T>& bufferData,
+                const RHI::ShaderSemantic& semantic,
+                const AZ::Name& uvCustomName = AZ::Name());
+
             //! Create stream buffer asset with a raw view descriptor from the given data and add it to the out stream buffers.
             template<typename T>
             bool BuildRawStreamBuffer(
@@ -244,15 +241,16 @@ namespace AZ
                 const RHI::ShaderSemantic& semantic,
                 const AZ::Name& uvCustomName = AZ::Name());
 
-            //! Create stream buffer asset from the given data and add it to the out stream buffers.
+            //! Create stream buffer asset with a typed view descriptor from the given data and add it to the out stream buffers.
             template<typename T>
-            bool BuildStreamBuffer(
+            bool BuildTypedStreamBuffer(
                 AZStd::vector<ModelLodAsset::Mesh::StreamBufferInfo>& outStreamBuffers,
                 const AZStd::vector<T>& bufferData,
                 AZ::RHI::Format format,
                 const RHI::ShaderSemantic& semantic,
                 const AZ::Name& uvCustomName = AZ::Name());
 
+            //! Create stream buffer asset with a typed view descriptor from the given data and add it to the out stream buffers.
             template<typename T>
             bool BuildStreamBuffer(
                 size_t vertexCount,
@@ -296,6 +294,10 @@ namespace AZ
             //! Takes in a pointer to data with a given element count and format and creates a BufferAsset.
             Outcome<Data::Asset<BufferAsset>> CreateTypedBufferAsset(
                 const void* data, const size_t elementCount, RHI::Format format, const AZStd::string& bufferName);
+
+            //! Takes in a pointer to data and a size in bytes and creates a BufferAsset.
+            Outcome<Data::Asset<BufferAsset>> CreateStructuredBufferAsset(
+                const void* data, const size_t elementCount, const size_t elementSize, const AZStd::string& bufferName);
 
             //! Takes in a pointer to data and a size in bytes and creates a BufferAsset.
             Outcome<Data::Asset<BufferAsset>> CreateRawBufferAsset(

@@ -14,6 +14,10 @@
 
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {
+    PrefabProcessorContext::PrefabProcessorContext(const AZ::Uuid& sourceUuid)
+        : m_sourceUuid(sourceUuid)
+    {}
+
     bool PrefabProcessorContext::AddPrefab(AZStd::string prefabName, PrefabDom prefab)
     {
         auto result = m_prefabs.emplace(AZStd::move(prefabName), AZStd::move(prefab));
@@ -76,9 +80,28 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         return m_products;
     }
 
+    void PrefabProcessorContext::SetPlatformTags(AZ::PlatformTagSet tags)
+    {
+        m_platformTags = AZStd::move(tags);
+    }
+
     const AZ::PlatformTagSet& PrefabProcessorContext::GetPlatformTags() const
     {
         return m_platformTags;
     }
 
+    const AZ::Uuid& PrefabProcessorContext::GetSourceUuid() const
+    {
+        return m_sourceUuid;
+    }
+
+    bool PrefabProcessorContext::HasCompletedSuccessfully() const
+    {
+        return m_completedSuccessfully;
+    }
+
+    void PrefabProcessorContext::ErrorEncountered()
+    {
+        m_completedSuccessfully = false;
+    }
 } // namespace AzToolsFramework::Prefab::PrefabConversionUtils

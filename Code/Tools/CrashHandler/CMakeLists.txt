@@ -9,10 +9,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
-    return()
-endif()
-
 ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
 
 include(${pal_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
@@ -72,9 +68,10 @@ ly_add_target(
             Uploader/include/Uploader
     BUILD_DEPENDENCIES
         PRIVATE
-            3rdParty::Crashpad::Handler
             AZ::AzCore
             AZ::CrashSupport
+        PUBLIC
+            3rdParty::Crashpad::Handler
 )
 
 add_subdirectory(Tools)

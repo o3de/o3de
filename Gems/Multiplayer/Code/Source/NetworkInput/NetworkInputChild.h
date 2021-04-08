@@ -36,7 +36,7 @@ namespace Multiplayer
         const NetworkInput& GetNetworkInput() const;
         NetworkInput& GetNetworkInput();
 
-        bool Serialize(AzNetworking::ISerializer& a_Serializer);
+        bool Serialize(AzNetworking::ISerializer& serializer);
     private:
         ConstNetworkEntityHandle m_owner;
         NetworkInput m_networkInput;

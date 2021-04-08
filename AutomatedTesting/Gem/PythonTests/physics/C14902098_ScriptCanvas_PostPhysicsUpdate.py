@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 
 # Test case ID : C14902098
-# Test Case Title : Check that force region simulation with PostPhysicsUpdate works independently from rendering tick
+# Test Case Title : Check that force region simulation with Postsimulate works independently from rendering tick
 # URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/14902098
 
 
@@ -41,7 +41,7 @@ def C14902098_ScriptCanvas_PostPhysicsUpdate():
 
     """
     Summary:
-    Check that force region simulation with PostPhysicsUpdate works independently from rendering tick.
+    Check that force region simulation with Postsimulate works independently from rendering tick.
 
     Level Description:
     A Sphere is placed inside a Force Region. The "Fixed Time Step" in PhysX Configuration is set to 0.05.
@@ -49,7 +49,7 @@ def C14902098_ScriptCanvas_PostPhysicsUpdate():
                            Box Shape components
     Sphere (entity) - Entity with PhysX Rigid Body, PhysX Collider, Mesh and 2 Script Canvas components
     Script Canvas:
-    onpostphysicsupdate - The script checks the position of the sphere on every On Post Physics Update event and prints
+    onpostphysicsupdate - The script checks the position of the sphere on every On Postsimulate event and prints
                           debug statements as per the position of the sphere relative to its previous position.
     ontick - The script checks the position of the sphere on every On Tick event and prints
              debug statements as per the position of the sphere relative to its previous position.

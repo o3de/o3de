@@ -66,7 +66,6 @@ namespace ScriptCanvasEditor
         AZ::Outcome<AZ::Data::Asset<ScriptCanvas::RuntimeAsset>, AZStd::string> CreateRuntimeAsset(const AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset>& editAsset) override;
         AZ::Outcome<AZ::Data::Asset<ScriptCanvas::SubgraphInterfaceAsset>, AZStd::string> CreateFunctionRuntimeAsset(const AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasFunctionAsset>& editAsset) override;
         AZ::Outcome<ScriptCanvas::Translation::LuaAssetResult, AZStd::string> CreateLuaAsset(const AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset>& editAsset, AZStd::string_view graphPathForRawLuaFile) override;
-        AZ::Outcome<ScriptCanvas::Translation::LuaAssetResult, AZStd::string> CreateLuaFunctionAsset(const AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasFunctionAsset>& editAsset, AZStd::string_view graphPathForRawLuaFile) override;
         //////////////////////////////////////////////////////////////////////////
         
         // ScriptCanvas::Grammar::RequestBus::Handler...

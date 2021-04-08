@@ -26,7 +26,7 @@ namespace UnitTest
         ~MockPrefabFileIOActionValidator();
 
         void ReadPrefabDom(
-            const AZStd::string& prefabFilePath,
+            AZ::IO::PathView prefabFilePath,
             const AzToolsFramework::Prefab::PrefabDom& prefabFileContentDom,
             AZ::IO::ResultCode expectedReadResultCode = AZ::IO::ResultCode::Success,
             AZ::IO::ResultCode expectedOpenResultCode = AZ::IO::ResultCode::Success,
@@ -34,7 +34,7 @@ namespace UnitTest
             AZ::IO::ResultCode expectedCloseResultCode = AZ::IO::ResultCode::Success);
 
         void ReadPrefabDom(
-            const AZStd::string& prefabFilePath,
+            AZ::IO::PathView prefabFilePath,
             const AZStd::string& prefabFileContent,
             AZ::IO::ResultCode expectedReadResultCode = AZ::IO::ResultCode::Success,
             AZ::IO::ResultCode expectedOpenResultCode = AZ::IO::ResultCode::Success,

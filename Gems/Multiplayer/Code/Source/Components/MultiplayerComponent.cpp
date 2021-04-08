@@ -58,4 +58,13 @@ namespace Multiplayer
         NetBindComponent* netBindComponent = GetNetBindComponent();
         return netBindComponent ? netBindComponent->GetEntityHandle() : NetworkEntityHandle();
     }
+
+    void MultiplayerComponent::MarkDirty()
+    {
+        NetBindComponent* netBindComponent = GetNetBindComponent();
+        if (netBindComponent != nullptr)
+        {
+            netBindComponent->MarkDirty();
+        }
+    }
 }

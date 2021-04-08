@@ -29,7 +29,7 @@ struct IProcess
     virtual ~IProcess(){}
     virtual bool    Init() = 0;
     virtual void    Update() = 0;
-    virtual void    RenderWorld(const int nRenderFlags, const SRenderingPassInfo& passInfo, const char* szDebugName) = 0;
+    virtual void    RenderWorld(int nRenderFlags, const SRenderingPassInfo& passInfo, const char* szDebugName) = 0;
     virtual void    ShutDown() = 0;
     virtual void    SetFlags(int flags) = 0;
     virtual int     GetFlags(void) = 0;

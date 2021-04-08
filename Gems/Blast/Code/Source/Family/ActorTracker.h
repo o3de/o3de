@@ -12,7 +12,9 @@
 #pragma once
 
 #include <AzCore/Component/EntityId.h>
+#include <AzCore/Math/Vector3.h>
 #include <AzCore/std/containers/unordered_set.h>
+#include <AzCore/std/containers/unordered_map.h>
 #include <Blast/BlastActor.h>
 
 namespace Blast
@@ -30,13 +32,13 @@ namespace Blast
         void RemoveActor(BlastActor* actor);
 
         [[nodiscard]] BlastActor* GetActorById(AZ::EntityId entityId);
-        [[nodiscard]] BlastActor* GetActorByBody(const Physics::WorldBody* body);
+        [[nodiscard]] BlastActor* GetActorByBody(const AzPhysics::SimulatedBody* body);
         [[nodiscard]] BlastActor* FindClosestActor(const AZ::Vector3& position);
         [[nodiscard]] const AZStd::unordered_set<BlastActor*>& GetActors() const;
 
     private:
         AZStd::unordered_set<BlastActor*> m_actors;
         AZStd::unordered_map<AZ::EntityId, BlastActor*> m_entityIdToActor;
-        AZStd::unordered_map<const Physics::WorldBody*, BlastActor*> m_bodyToActor;
+        AZStd::unordered_map<const AzPhysics::SimulatedBody*, BlastActor*> m_bodyToActor;
     };
 } // namespace Blast

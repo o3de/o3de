@@ -13,7 +13,6 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <AzFramework/Physics/World.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
 #include <QWidget>
 #include <Blast/BlastSystemBus.h>

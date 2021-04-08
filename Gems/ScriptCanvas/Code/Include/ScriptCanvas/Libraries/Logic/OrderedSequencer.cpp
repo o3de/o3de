@@ -31,7 +31,7 @@ namespace ScriptCanvas
                 return AZ::Success(DependencyReport());
             }
 
-            SlotsOutcome OrderedSequencer::GetSlotsInExecutionThreadByTypeImpl(const Slot&, CombinedSlotType targetSlotType, const Slot* /*executionChildSlot*/) const
+            ConstSlotsOutcome OrderedSequencer::GetSlotsInExecutionThreadByTypeImpl(const Slot&, CombinedSlotType targetSlotType, const Slot* /*executionChildSlot*/) const
             {
                 if (targetSlotType == CombinedSlotType::ExecutionOut)
                 {

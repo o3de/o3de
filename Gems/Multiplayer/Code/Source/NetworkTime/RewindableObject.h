@@ -33,7 +33,7 @@ namespace Multiplayer
 
         //! Constructor.
         //! @param connectionId the connectionId of the connection that owns the object.
-        RewindableObject(AzNetworking::ConnectionId owningConnectionId);
+        RewindableObject(const BASE_TYPE& value);
 
         //! Copy construct from underlying base type.
         //! @param value base type value to construct from
@@ -51,6 +51,10 @@ namespace Multiplayer
         //! Assignment from rewindable history buffer.
         //! @param rhs rewindable history buffer to assign from
         RewindableObject& operator = (const RewindableObject& rhs);
+
+        //! Sets the owning connectionId for the given rewindable object instance.
+        //! @param owningConnectionId the new connectionId to use as the owning connectionId.
+        void SetOwningConnectionId(AzNetworking::ConnectionId owningConnectionId);
 
         //! Const base type operator.
         //! @return value in const base type form
@@ -104,6 +108,11 @@ namespace Multiplayer
         uint32_t m_headIndex = 0;
         AZStd::array<BASE_TYPE, REWIND_SIZE> m_history;
     };
+}
+
+namespace AZ
+{
+    AZ_TYPE_INFO_TEMPLATE(Multiplayer::RewindableObject, "{B2937B44-FEE1-4277-B1E0-863DE76D363F}", AZ_TYPE_INFO_TYPENAME, AZ_TYPE_INFO_AUTO);
 }
 
 #include <Source/NetworkTime/RewindableObject.inl>

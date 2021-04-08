@@ -19,6 +19,7 @@
 #include "System.h"
 #include "MaterialUtils.h"
 #include <CryPath.h>
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/IO/FileOperations.h>
 #include <AzFramework/Archive/Archive.h>
 #include <AzFramework/Archive/INestedArchive.h>
@@ -216,12 +217,20 @@ void CResourceManager::PrepareLevel(const char* sLevelFolder, const char* sLevel
 
     if (g_cvars.archiveVars.nLoadCache)
     {
-        CryPathString levelpak = PathUtil::Make(sLevelFolder, LEVEL_PAK_FILENAME);
-        size_t nPakFileSize = gEnv->pCryPak->FGetSize(levelpak.c_str());
-        if (nPakFileSize < LEVEL_PAK_INMEMORY_MAXSIZE) // 10 megs.
+        bool usePrefabSystemForLevels = false;
+        AzFramework::ApplicationRequests::Bus::BroadcastResult(
+            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+
+        // The prefab system doesn't use level.pak
+        if (!usePrefabSystemForLevels)
         {
-            // Force level.pak from this level in memory.
-            gEnv->pCryPak->LoadPakToMemory(LEVEL_PAK_FILENAME, AZ::IO::IArchive::eInMemoryPakLocale_GPU);
+            CryPathString levelpak = PathUtil::Make(sLevelFolder, LEVEL_PAK_FILENAME);
+            size_t nPakFileSize = gEnv->pCryPak->FGetSize(levelpak.c_str());
+            if (nPakFileSize < LEVEL_PAK_INMEMORY_MAXSIZE) // 10 megs.
+            {
+                // Force level.pak from this level in memory.
+                gEnv->pCryPak->LoadPakToMemory(LEVEL_PAK_FILENAME, AZ::IO::IArchive::eInMemoryPakLocale_GPU);
+            }
         }
 
         gEnv->pCryPak->LoadPakToMemory(ENGINE_PAK_FILENAME, AZ::IO::IArchive::eInMemoryPakLocale_GPU);
@@ -584,8 +593,15 @@ void CResourceManager::UnloadAllLevelCachePaks(bool bLevelLoadEnd)
     {
         gEnv->pCryPak->LoadPakToMemory(ENGINE_PAK_FILENAME, AZ::IO::IArchive::eInMemoryPakLocale_Unload);
 
-        // Force level.pak out of memory.
-        gEnv->pCryPak->LoadPakToMemory(LEVEL_PAK_FILENAME, AZ::IO::IArchive::eInMemoryPakLocale_Unload);
+        bool usePrefabSystemForLevels = false;
+        AzFramework::ApplicationRequests::Bus::BroadcastResult(
+            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+
+        if (!usePrefabSystemForLevels)
+        {
+            // Force level.pak out of memory.
+            gEnv->pCryPak->LoadPakToMemory(LEVEL_PAK_FILENAME, AZ::IO::IArchive::eInMemoryPakLocale_Unload);
+        }
     }
     if (!bLevelLoadEnd)
     {

@@ -30,10 +30,9 @@
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <AzFramework/Physics/SystemBus.h>
-#include <AzFramework/Physics/TriggerBus.h>
-#include <AzFramework/Physics/World.h>
-#include <AzFramework/Physics/WorldEventhandler.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
+#include <AzFramework/Physics/Collision/CollisionEvents.h>
+#include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 
 #include <Tests/PhysXTestCommon.h>
 
@@ -52,19 +51,15 @@ namespace PhysX
     class PhysXForceRegionTest
         : public::testing::Test
         , protected Physics::DefaultWorldBus::Handler
-        , protected Physics::WorldEventHandler
     {
         void SetUp() override
         {
             if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
             {
                 AzPhysics::SceneConfiguration sceneConfiguration = physicsSystem->GetDefaultSceneConfiguration();
-                sceneConfiguration.m_legacyId = Physics::DefaultPhysicsWorldId;
+                sceneConfiguration.m_sceneName = AzPhysics::DefaultPhysicsSceneName;
                 m_testSceneHandle = physicsSystem->AddScene(sceneConfiguration);
-                if (m_defaultScene = physicsSystem->GetScene(m_testSceneHandle))
-                {
-                    m_defaultScene->GetLegacyWorld()->SetEventHandler(this);
-                }
+                m_defaultScene = physicsSystem->GetScene(m_testSceneHandle);
             }
 
             Physics::DefaultWorldBus::Handler::BusConnect();
@@ -84,37 +79,10 @@ namespace PhysX
             TestUtils::ResetPhysXSystem();
         }
 
-        // DefaultWorldBus
-        AZStd::shared_ptr<Physics::World> GetDefaultWorld() override
+        // DefaultWorldBus        
+        AzPhysics::SceneHandle GetDefaultSceneHandle() const override
         {
-            return m_defaultScene->GetLegacyWorld();
-        }
-
-        // WorldEventHandler
-        void OnCollisionBegin(const Physics::CollisionEvent&) override //Not used in force region tests
-        {
-        }
-
-        void OnCollisionPersist(const Physics::CollisionEvent&) override //Not used in force region tests
-        {
-        }
-
-        void OnCollisionEnd(const Physics::CollisionEvent&) override //Not used in force region tests
-        {
-        }
-
-        void OnTriggerEnter(const Physics::TriggerEvent& triggerEvent) override
-        {
-            Physics::TriggerNotificationBus::QueueEvent(triggerEvent.m_triggerBody->GetEntityId()
-                , &Physics::TriggerNotifications::OnTriggerEnter
-                , triggerEvent);
-        }
-
-        void OnTriggerExit(const Physics::TriggerEvent& triggerEvent) override
-        {
-            Physics::TriggerNotificationBus::QueueEvent(triggerEvent.m_triggerBody->GetEntityId()
-                , &Physics::TriggerNotifications::OnTriggerExit
-                , triggerEvent);
+            return m_testSceneHandle;
         }
 
         AzPhysics::Scene* m_defaultScene = nullptr;
@@ -125,10 +93,15 @@ namespace PhysX
         {
             return m_defaultScene;
         }
+        AzPhysics::SceneHandle GetTestSceneHandle() const
+        {
+            return m_testSceneHandle;
+        }
     };
 
     AZStd::unique_ptr<AZ::Entity> AddTestRigidBodyCollider(AZ::Vector3& position
         , ForceType forceType
+        , AzPhysics::SceneHandle sceneHandle
         , const char* name = "TestObjectEntity")
     {
         AZStd::unique_ptr<AZ::Entity> entity(aznew AZ::Entity(name));
@@ -146,9 +119,9 @@ namespace PhysX
         auto boxColliderComponent = entity->CreateComponent<BoxColliderComponent>();
         boxColliderComponent->SetShapeConfigurationList({ AZStd::make_pair(colliderConfiguration, boxShapeConfiguration) });
 
-        Physics::RigidBodyConfiguration rigidBodyConfig;
+        AzPhysics::RigidBodyConfiguration rigidBodyConfig;
         rigidBodyConfig.m_computeMass = false;
-        entity->CreateComponent<PhysX::RigidBodyComponent>(rigidBodyConfig);
+        entity->CreateComponent<PhysX::RigidBodyComponent>(rigidBodyConfig, sceneHandle);
 
         entity->Init();
         entity->Activate();
@@ -260,17 +233,17 @@ namespace PhysX
     }
 
     template<typename ColliderType>
-    AZ::Vector3 TestForceVolume(AzPhysics::Scene* scene, ForceType forceType)
+    AZ::Vector3 TestForceVolume(AzPhysics::SceneHandle sceneHandle, ForceType forceType)
     {
         AZ::Vector3 velocity = AZ::Vector3::CreateZero();
 
         AZ::Vector3 position(0.0f, 0.0f, 16.0f);
-        auto rigidBodyCollider = AddTestRigidBodyCollider(position, forceType, "TestBox");
+        auto rigidBodyCollider = AddTestRigidBodyCollider(position, forceType, sceneHandle, "TestBox" );
         auto forceRegion = AddForceRegion<ColliderType>(AZ::Vector3(0.0f, 0.0f, 12.0f), forceType);
 
         //Run simulation for a while - bounces box once on force volume
         constexpr const float deltaTime = 1.0f / 180.0f;
-        TestUtils::UpdateScene(scene, deltaTime, 240);
+        TestUtils::UpdateScene(sceneHandle, deltaTime, 240);
 
         Physics::RigidBodyRequestBus::EventResult(velocity
             , rigidBodyCollider->GetId()
@@ -280,7 +253,7 @@ namespace PhysX
     }
 
     template<typename ColliderType>
-    void TestAppliesSameMagnitude(AzPhysics::Scene* scene, ForceType forceType)
+    void TestAppliesSameMagnitude(AzPhysics::SceneHandle sceneHandle, ForceType forceType)
     {
         struct ForceRegionMagnitudeChecker
             : public ForceRegionNotificationBus::Handler
@@ -306,12 +279,12 @@ namespace PhysX
             bool m_failed = false;
         };
         ForceRegionMagnitudeChecker magnitudeChecker;
-        TestForceVolume<ColliderType>(scene, forceType);
+        TestForceVolume<ColliderType>(sceneHandle, forceType);
     }
 
     TEST_F(PhysXForceRegionTest, ForceRegion_WorldSpaceForce_EntityVelocityZPositive)
     {
-        AZ::Vector3 entityVelocity = TestForceVolume<BoxColliderComponent>(GetTestScene(), WorldSpaceForce);
+        AZ::Vector3 entityVelocity = TestForceVolume<BoxColliderComponent>(GetTestSceneHandle(), WorldSpaceForce);
         // World space force direction: AZ::Vector3(0.0f, 0.0f, 1.0f)
         EXPECT_TRUE(entityVelocity.GetZ() > 0.0f); // World space force causes box to bounce upwards
         EXPECT_NEAR(entityVelocity.GetX(), 0.0f, AZ::Constants::FloatEpsilon);
@@ -320,7 +293,7 @@ namespace PhysX
 
     TEST_F(PhysXForceRegionTest, ForceRegion_LocalSpaceForce_EntityVelocityZPositive)
     {
-        AZ::Vector3 entityVelocity = TestForceVolume<BoxColliderComponent>(GetTestScene(), LocalSpaceForce);
+        AZ::Vector3 entityVelocity = TestForceVolume<BoxColliderComponent>(GetTestSceneHandle(), LocalSpaceForce);
         // Local space force direction: AZ::Vector3(0.0f, 0.0f, 1.0f)
         // Force region was rotated about Y-axis by 90 deg
         EXPECT_TRUE(entityVelocity.GetX() > 0.0f); // Falling body should be moving in positive X direction since force region is rotated.
@@ -333,7 +306,7 @@ namespace PhysX
         // Falling body was positioned at AZ::Vector3(0.05f, 0.0f, 16.0f)
         // Force region was positioned at AZ::Vector3(0.0f, 0.0f, 12.0f)
         // PointForce causes box to bounce upwards and to the right.
-        AZ::Vector3 entityVelocity = TestForceVolume<BoxColliderComponent>(GetTestScene(), PointForce);
+        AZ::Vector3 entityVelocity = TestForceVolume<BoxColliderComponent>(GetTestSceneHandle(), PointForce);
         EXPECT_TRUE(entityVelocity.GetX() > 0.0f);
         EXPECT_NEAR(entityVelocity.GetY(), 0.0f, AZ::Constants::FloatEpsilon);
         EXPECT_TRUE(entityVelocity.GetZ() > 0.0f); 
@@ -341,7 +314,7 @@ namespace PhysX
 
     TEST_F(PhysXForceRegionTest, ForceRegion_SplineFollowForce_EntityVelocitySpecificValue)
     {
-        AZ::Vector3 entityVelocity = TestForceVolume<BoxColliderComponent>(GetTestScene(), SplineFollowForce);
+        AZ::Vector3 entityVelocity = TestForceVolume<BoxColliderComponent>(GetTestSceneHandle(), SplineFollowForce);
         // Follow spline direction towards positive X and Y.
         EXPECT_TRUE(entityVelocity.GetX() > 0.0f); 
         EXPECT_TRUE(entityVelocity.GetY() > 0.0f);
@@ -349,7 +322,7 @@ namespace PhysX
 
     TEST_F(PhysXForceRegionTest, ForceRegion_SimpleDragForce_EntityVelocitySpecificValue)
     {
-        AZ::Vector3 entityVelocity = TestForceVolume<BoxColliderComponent>(GetTestScene(), SimpleDragForce);
+        AZ::Vector3 entityVelocity = TestForceVolume<BoxColliderComponent>(GetTestSceneHandle(), SimpleDragForce);
         EXPECT_TRUE(entityVelocity.GetZ() > -12.65f); // Falling velocity should be slower than free fall velocity, which is -12.65.
         EXPECT_NEAR(entityVelocity.GetX(), 0.0f, AZ::Constants::FloatEpsilon); // Dragging should not change original direction.
         EXPECT_NEAR(entityVelocity.GetY(), 0.0f, AZ::Constants::FloatEpsilon); // Dragging should not change original direction.
@@ -357,7 +330,7 @@ namespace PhysX
 
     TEST_F(PhysXForceRegionTest, ForceRegion_LinearDampingForce_EntityVelocitySpecificValue)
     {
-        AZ::Vector3 entityVelocity = TestForceVolume<BoxColliderComponent>(GetTestScene(), LinearDampingForce);
+        AZ::Vector3 entityVelocity = TestForceVolume<BoxColliderComponent>(GetTestSceneHandle(), LinearDampingForce);
         EXPECT_TRUE(entityVelocity.GetZ() > -12.65f); // Falling velocity should be slower than free fall velocity, which is -12.65.
         EXPECT_NEAR(entityVelocity.GetX(), 0.0f, AZ::Constants::FloatEpsilon); // Damping should not change original direction.
         EXPECT_NEAR(entityVelocity.GetY(), 0.0f, AZ::Constants::FloatEpsilon); // Damping should not change original direction.
@@ -365,17 +338,17 @@ namespace PhysX
 
     TEST_F(PhysXForceRegionTest, ForceRegion_PointForce_AppliesSameMagnitude)
     {
-        TestAppliesSameMagnitude<BoxColliderComponent>(GetTestScene(), PointForce);
+        TestAppliesSameMagnitude<BoxColliderComponent>(GetTestSceneHandle(), PointForce);
     }
 
     TEST_F(PhysXForceRegionTest, ForceRegion_WorldSpaceForce_AppliesSameMagnitude)
     {
-        TestAppliesSameMagnitude<BoxColliderComponent>(GetTestScene(), WorldSpaceForce);
+        TestAppliesSameMagnitude<BoxColliderComponent>(GetTestSceneHandle(), WorldSpaceForce);
     }
 
     TEST_F(PhysXForceRegionTest, ForceRegion_LocalSpaceForce_AppliesSameMagnitude)
     {
-        TestAppliesSameMagnitude<BoxColliderComponent>(GetTestScene(), LocalSpaceForce);
+        TestAppliesSameMagnitude<BoxColliderComponent>(GetTestSceneHandle(), LocalSpaceForce);
     }
 }
 

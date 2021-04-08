@@ -86,7 +86,7 @@ namespace ScriptCanvas
 
                 bool IsObjectClass(AZStd::string_view objectClass) const { return objectClass.compare(m_className) == 0; }
 
-                bool IsSupportedByNewBackend() const override { return true; }
+                
 
                 //! Attempts to initialize node with a BehaviorContext BehaviorMethod
                 //! If the className is empty, then the methodName is searched on the BehaviorContext
@@ -133,7 +133,7 @@ namespace ScriptCanvas
 
                 AZ_INLINE AZStd::recursive_mutex& GetMutex() { return m_mutex; }
 
-                SlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot& executionSlot, CombinedSlotType targetSlotType, const Slot* executionChildSlot) const override;
+                ConstSlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot& executionSlot, CombinedSlotType targetSlotType, const Slot* executionChildSlot) const override;
 
                 AZ::Outcome<Grammar::FunctionPrototype> GetSimpleSignature() const override;
 

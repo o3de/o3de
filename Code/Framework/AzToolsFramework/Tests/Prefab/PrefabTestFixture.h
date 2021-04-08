@@ -47,10 +47,13 @@ namespace UnitTest
 
         AZ::Entity* CreateEntity(const char* entityName, const bool shouldActivate = true);
 
-        void CompareInstances(const Instance& instanceA,
-            const Instance& instanceB, bool shouldCompareLinkIds = true);
+        void CompareInstances(const Instance& instanceA, const Instance& instanceB, bool shouldCompareLinkIds = true,
+            bool shouldCompareContainerEntities = true);
 
         void DeleteInstances(const InstanceList& instancesToDelete);
+
+        //! Validates that all entities within a prefab instance are in 'Active' state.
+        void ValidateInstanceEntitiesActive(Instance& instance);
 
         PrefabSystemComponent* m_prefabSystemComponent = nullptr;
         PrefabLoaderInterface* m_prefabLoaderInterface = nullptr;

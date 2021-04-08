@@ -21,11 +21,11 @@ namespace AWSMetrics
     {
     public:
         //! Default attributes include client id, timestamp, event id and event source.
-        const int numDefaultMetrics = 4;
-        const int numProvidedMetrics = 10;
-        const AZStd::string attrName = "name";
-        const AZStd::string attrValue = "value";
-        const AZStd::string fakeClientId = "FakeClientId";
+        const int NumDefaultMetrics = 4;
+        const int NumProvidedMetrics = 10;
+        const AZStd::string AttrName = "name";
+        const AZStd::string AttrValue = "value";
+        const AZStd::string FakeClientId = "fakeClientId";
 
         void SetUp() override
         {
@@ -45,23 +45,23 @@ namespace AWSMetrics
 
     TEST_F(MetricsEventBuilderTest, BuildMetricsEvent_DefaultAttributes_Success)
     {
-        MetricsEvent metricsEvent = m_metricsEventBuilder->AddDefaultMetricsAttributes(fakeClientId).Build();
+        MetricsEvent metricsEvent = m_metricsEventBuilder->AddDefaultMetricsAttributes(FakeClientId).Build();
 
-        ASSERT_EQ(metricsEvent.GetNumAttributes(), numDefaultMetrics);
+        ASSERT_EQ(metricsEvent.GetNumAttributes(), NumDefaultMetrics);
     }
 
     TEST_F(MetricsEventBuilderTest, BuildMetricsEvent_ProvidedAttributes_Success)
     {
         AZStd::vector<MetricsAttribute> metricsAttributes;
-        for (int index = 0; index < numProvidedMetrics; ++index)
+        for (int index = 0; index < NumProvidedMetrics; ++index)
         {
-            metricsAttributes.emplace_back(MetricsAttribute(AZStd::string::format("%s%i", attrName.c_str(), index), attrValue));
+            metricsAttributes.emplace_back(MetricsAttribute(AZStd::string::format("%s%i", AttrName.c_str(), index), AttrValue));
         }
 
         MetricsEvent metricsEvent = m_metricsEventBuilder->AddMetricsAttributes(metricsAttributes).Build();
 
         // Timestamp attribute will be added during creation automatically.
-        ASSERT_EQ(metricsEvent.GetNumAttributes(), numProvidedMetrics + 1);
+        ASSERT_EQ(metricsEvent.GetNumAttributes(), NumProvidedMetrics + 1);
     }
 
     TEST_F(MetricsEventBuilderTest, BuildMetricsEvent_SetMetricsPriority_Success)

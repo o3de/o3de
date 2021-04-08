@@ -37,15 +37,10 @@ namespace AZ
         {
             FullscreenTrianglePass::Init();
 
-            AZ_Assert(m_shaderResourceGroup, "DepthOfFieldMaskPass %s has a null shader resource group when calling Init.", GetPathName().GetCStr());
-
-            if (m_shaderResourceGroup)
-            {
-                m_blendFactorIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_blendFactor"));
-                m_inputResolutionInverseIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_inputResolutionInverse"));
-                m_radiusMinIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_radiusMin"));
-                m_radiusMaxIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_radiusMax"));
-            }
+            m_blendFactorIndex.Reset();
+            m_inputResolutionInverseIndex.Reset();
+            m_radiusMinIndex.Reset();
+            m_radiusMaxIndex.Reset();
         }
 
         void DepthOfFieldMaskPass::FrameBeginInternal(FramePrepareParams params)

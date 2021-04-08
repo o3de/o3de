@@ -52,16 +52,10 @@ namespace AZ
         {
             FullscreenTrianglePass::Init();
 
-            AZ_Assert(m_shaderResourceGroup != nullptr, "LookModificationCompositePass %s has a null shader resource group when calling Init.", GetPathName().GetCStr());
-
-            if (m_shaderResourceGroup != nullptr)
-            {
-                m_shaderColorGradingLutImageIndex = m_shaderResourceGroup->FindShaderInputImageIndex(Name{ "m_gradingLut" });
-
-                m_shaderColorGradingShaperTypeIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_shaperType" });
-                m_shaderColorGradingShaperBiasIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_shaperBias" });
-                m_shaderColorGradingShaperScaleIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_shaperScale" });
-            }
+            m_shaderColorGradingLutImageIndex.Reset();
+            m_shaderColorGradingShaperTypeIndex.Reset();
+            m_shaderColorGradingShaperBiasIndex.Reset();
+            m_shaderColorGradingShaperScaleIndex.Reset();
 
             InitializeShaderVariant();
         }

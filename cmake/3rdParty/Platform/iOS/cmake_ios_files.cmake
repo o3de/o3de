@@ -11,7 +11,6 @@
 
 set(FILES
     BuiltInPackages_ios.cmake
-    expat_ios.cmake
     FreeType2_ios.cmake
     OpenSSL_ios.cmake
     RadTelemetry_ios.cmake

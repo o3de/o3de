@@ -170,7 +170,7 @@ namespace AzToolsFramework
 
         SharedThumbnailKey SourceAssetBrowserEntry::CreateThumbnailKey()
         {
-            return MAKE_TKEY(SourceThumbnailKey, m_fullPath.c_str());
+            return MAKE_TKEY(SourceThumbnailKey, m_sourceUuid);
         }
 
         SharedThumbnailKey SourceAssetBrowserEntry::GetSourceControlThumbnailKey() const

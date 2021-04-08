@@ -11,6 +11,7 @@
 */
 
 #include <AzCore/EBus/Results.h>
+#include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
@@ -26,21 +27,29 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
         // SourceThumbnailKey
         //////////////////////////////////////////////////////////////////////////
-        SourceThumbnailKey::SourceThumbnailKey(const char* fileName)
+        SourceThumbnailKey::SourceThumbnailKey(const AZ::Uuid& sourceUuid)
             : ThumbnailKey()
-            , m_fileName(fileName)
+            , m_sourceUuid(sourceUuid)
         {
-            AzFramework::StringFunc::Path::Split(fileName, nullptr, nullptr, nullptr, &m_extension);
         }
 
-        const AZStd::string& SourceThumbnailKey::GetFileName() const
+        const AZ::Uuid& SourceThumbnailKey::GetSourceUuid() const
         {
-            return m_fileName;
+            return m_sourceUuid;
         }
 
-        const AZStd::string& SourceThumbnailKey::GetExtension() const
+        size_t SourceThumbnailKey::GetHash() const
         {
-            return m_extension;
+            return m_sourceUuid.GetHash();
+        }
+
+        bool SourceThumbnailKey::Equals(const ThumbnailKey* other) const
+        {
+            if (!ThumbnailKey::Equals(other))
+            {
+                return false;
+            }
+            return m_sourceUuid == azrtti_cast<const SourceThumbnailKey*>(other)->GetSourceUuid();
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -59,48 +68,54 @@ namespace AzToolsFramework
             auto sourceKey = azrtti_cast<const SourceThumbnailKey*>(m_key.data());
             AZ_Assert(sourceKey, "Incorrect key type, excpected SourceThumbnailKey");
 
-            // note that there might not actually be a UUID for this yet.  So we don't look it up.
-            AZ::EBusAggregateResults<SourceFileDetails> results;
-            AssetBrowserInteractionNotificationBus::BroadcastResult(results, &AssetBrowserInteractionNotificationBus::Events::GetSourceFileDetails, sourceKey->GetFileName().c_str());
-            // there could be multiple listeners to this, return the first one with actual image path
-            auto it = AZStd::find_if(results.values.begin(), results.values.end(), [](const SourceFileDetails& details) { return !details.m_sourceThumbnailPath.empty(); });
+            bool foundIt = false;
+            AZStd::string watchFolder;
+            AZ::Data::AssetInfo assetInfo;
+            AssetSystemRequestBus::BroadcastResult(foundIt, &AssetSystemRequestBus::Events::GetSourceInfoBySourceUUID, sourceKey->GetSourceUuid(), assetInfo, watchFolder);
 
             QString iconPathToUse;
-
-            if (it != results.values.end())
+            if (foundIt)
             {
-                const char* resultPath = it->m_sourceThumbnailPath.c_str();
-                // its an ordered bus, though, so first one wins.
-                // we have to massage this though.  there are three valid possibilities
-                // 1. its a relative path to source, in which case we have to find the full path
-                // 2. its an absolute path, in which case we use it as-is
-                // 3. its an embedded resource, in which case we use it as is.
+                // note that there might not actually be a UUID for this yet.  So we don't look it up.
+                AZ::EBusAggregateResults<SourceFileDetails> results;
+                AssetBrowserInteractionNotificationBus::BroadcastResult(results, &AssetBrowserInteractionNotificationBus::Events::GetSourceFileDetails, assetInfo.m_relativePath.c_str());
+                // there could be multiple listeners to this, return the first one with actual image path
+                auto it = AZStd::find_if(results.values.begin(), results.values.end(), [](const SourceFileDetails& details) { return !details.m_sourceThumbnailPath.empty(); });
 
-                // is it an embedded resource or absolute path?
-                if ((resultPath[0] == ':')||(!AzFramework::StringFunc::Path::IsRelative(resultPath)))
+                if (it != results.values.end())
                 {
-                    iconPathToUse = QString::fromUtf8(resultPath);
-                }
-                else
-                {
-                    // getting here means its a relative path.  Can we find the real path of the file?  This also searches in gems for sources.
-                    bool foundIt = false;
-                    AZStd::string watchFolder;
-                    AZ::Data::AssetInfo assetInfo;
-                    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(foundIt, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, resultPath, assetInfo, watchFolder);
+                    const char* resultPath = it->m_sourceThumbnailPath.c_str();
+                    // its an ordered bus, though, so first one wins.
+                    // we have to massage this though.  there are three valid possibilities
+                    // 1. its a relative path to source, in which case we have to find the full path
+                    // 2. its an absolute path, in which case we use it as-is
+                    // 3. its an embedded resource, in which case we use it as is.
 
-                    AZ_WarningOnce("Asset Browser", foundIt, "Unable to find source icon file in any source folders or gems: %s\n", resultPath);
-
-                    if (foundIt)
+                    // is it an embedded resource or absolute path?
+                    if ((resultPath[0] == ':') || (!AzFramework::StringFunc::Path::IsRelative(resultPath)))
                     {
-                        // the absolute path is join(watchfolder, relativepath); // since its relative to the watch folder.
-                        AZStd::string finalPath;
-                        AzFramework::StringFunc::Path::Join(watchFolder.c_str(), assetInfo.m_relativePath.c_str(), finalPath);
-                        iconPathToUse = QString::fromUtf8(finalPath.c_str());
+                        iconPathToUse = QString::fromUtf8(resultPath);
+                    }
+                    else
+                    {
+                        // getting here means its a relative path.  Can we find the real path of the file?  This also searches in gems for sources.
+                        foundIt = false;
+                        AssetSystemRequestBus::BroadcastResult(foundIt, &AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, resultPath, assetInfo, watchFolder);
+
+                        AZ_WarningOnce("Asset Browser", foundIt, "Unable to find source icon file in any source folders or gems: %s\n", resultPath);
+
+                        if (foundIt)
+                        {
+                            // the absolute path is join(watchfolder, relativepath); // since its relative to the watch folder.
+                            AZStd::string finalPath;
+                            AzFramework::StringFunc::Path::Join(watchFolder.c_str(), assetInfo.m_relativePath.c_str(), finalPath);
+                            iconPathToUse = QString::fromUtf8(finalPath.c_str());
+                        }
                     }
                 }
             }
-            else
+
+            if (iconPathToUse.isEmpty())
             {
                 const char* engineRoot = nullptr;
                 AzFramework::ApplicationRequests::Bus::BroadcastResult(engineRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
@@ -116,7 +131,7 @@ namespace AzToolsFramework
         // SourceThumbnailCache
         //////////////////////////////////////////////////////////////////////////
         SourceThumbnailCache::SourceThumbnailCache()
-            : ThumbnailCache<SourceThumbnail, SourceKeyHash, SourceKeyEqual>() {}
+            : ThumbnailCache<SourceThumbnail>() {}
 
         SourceThumbnailCache::~SourceThumbnailCache() = default;
 

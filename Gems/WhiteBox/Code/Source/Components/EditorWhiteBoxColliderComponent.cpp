@@ -18,8 +18,9 @@
 
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/SystemBus.h>
-#include <AzFramework/Physics/World.h>
+#include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
 #include <WhiteBox/EditorWhiteBoxComponentBus.h>
 #include <numeric>
 
@@ -84,6 +85,11 @@ namespace WhiteBox
         m_physicsColliderConfiguration.SetPropertyVisibility(Physics::ColliderConfiguration::Offset, false);
         m_physicsColliderConfiguration.SetPropertyVisibility(Physics::ColliderConfiguration::IsTrigger, false);
 
+        if (m_sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            m_editorSceneHandle = m_sceneInterface->GetSceneHandle(AzPhysics::EditorPhysicsSceneName);
+        }
+
         // can't use buses here as EditorWhiteBoxComponentBus is addressed using component id. How do get component id?
         if (auto whiteBoxComponent = GetEntity()->FindComponent<WhiteBox::EditorWhiteBoxComponent>())
         {
@@ -101,6 +107,9 @@ namespace WhiteBox
         AzToolsFramework::Components::EditorComponentBase::Deactivate();
 
         DestroyPhysics();
+
+        m_sceneInterface = nullptr;
+        m_editorSceneHandle = AzPhysics::InvalidSceneHandle;
     }
 
     void EditorWhiteBoxColliderComponent::BuildGameEntity(AZ::Entity* gameEntity)
@@ -112,9 +121,12 @@ namespace WhiteBox
     void EditorWhiteBoxColliderComponent::OnTransformChanged(
         [[maybe_unused]] const AZ::Transform& local, const AZ::Transform& world)
     {
-        if (m_rigidBody)
+        if (m_sceneInterface)
         {
-            m_rigidBody->SetTransform(world);
+            if (auto* rigidBody = m_sceneInterface->GetSimulatedBodyFromHandle(m_editorSceneHandle, m_rigidBodyHandle))
+            {
+                rigidBody->SetTransform(world);
+            }
         }
     }
 
@@ -127,32 +139,25 @@ namespace WhiteBox
 
         ConvertToPhysicsMesh(whiteBox);
 
-        Physics::WorldBodyConfiguration bodyConfiguration;
+        AzPhysics::StaticRigidBodyConfiguration bodyConfiguration;
         bodyConfiguration.m_debugName = GetEntity()->GetName().c_str();
         bodyConfiguration.m_entityId = GetEntityId();
         bodyConfiguration.m_orientation = GetTransform()->GetWorldRotationQuaternion();
         bodyConfiguration.m_position = GetTransform()->GetWorldTranslation();
+        bodyConfiguration.m_colliderAndShapeData = AzPhysics::ShapeColliderPair(&m_physicsColliderConfiguration, &m_meshShapeConfiguration);
 
-        Physics::SystemRequestBus::BroadcastResult(
-            m_rigidBody, &Physics::SystemRequests::CreateStaticRigidBody, bodyConfiguration);
-
-        if (m_rigidBody)
+        if (m_sceneInterface)
         {
-            AZStd::shared_ptr<Physics::Shape> shape;
-            Physics::SystemRequestBus::BroadcastResult(
-                shape, &Physics::SystemRequests::CreateShape, m_physicsColliderConfiguration, m_meshShapeConfiguration);
-
-            m_rigidBody->AddShape(shape);
-
-            Physics::WorldRequestBus::Event(Physics::EditorPhysicsWorldId, &Physics::World::AddBody, *m_rigidBody);
+            m_rigidBodyHandle = m_sceneInterface->AddSimulatedBody(m_editorSceneHandle, &bodyConfiguration);
         }
     }
 
     void EditorWhiteBoxColliderComponent::DestroyPhysics()
     {
-        if (m_rigidBody)
+        if (m_sceneInterface)
         {
-            m_rigidBody.reset();
+            m_sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_rigidBodyHandle);
+            m_rigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
         }
     }
 

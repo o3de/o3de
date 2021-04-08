@@ -17,6 +17,11 @@
 
 namespace ScriptCanvas
 {
+    namespace Nodes::Core
+    {
+        class FunctionDefinitionNode;
+    }
+
     namespace Grammar
     {
         struct CheckOperatorResult
@@ -30,6 +35,18 @@ namespace ScriptCanvas
             CheckOperatorResult(Symbol symbol, AZStd::string_view name, LexicalScopeType scopeType);
         };
 
+        struct VariableUseage
+        {
+            bool usesExternallyInitializedVariables = false;
+            AZStd::unordered_set<VariableConstPtr> localVariables;
+            AZStd::unordered_set<VariableConstPtr> memberVariables;
+            AZStd::unordered_set<VariableConstPtr> implicitMemberVariables;
+
+            void Clear();
+
+            void Parse(VariableConstPtr variable);
+        };
+
         bool ActivatesSelf(const ExecutionTreeConstPtr& execution);
 
         EventHandingType CheckEventHandlingType(const ExecutionTreeConstPtr& execution);
@@ -38,9 +55,15 @@ namespace ScriptCanvas
 
         Symbol CheckLogicalExpressionSymbol(const ExecutionTreeConstPtr& execution);
 
+        NodelingType CheckNodelingType(const Node& node);
+
         CheckOperatorResult CheckOperatorArithmeticSymbol(const ExecutionTreeConstPtr& execution);
 
         void DenumberFirstCharacter(AZStd::string& identifier);
+
+        bool ExecutionContainsCycles(const Node& node, const Slot& outSlot);
+
+        ExecutionTraversalResult TraverseExecutionConnections(const Node& node, const Slot& outSlot, GraphExecutionPathTraversalListener& listener);
 
         bool ExecutionWritesVariable(ExecutionTreeConstPtr execution, VariableConstPtr variable);
 
@@ -56,6 +79,8 @@ namespace ScriptCanvas
 
         bool IsBreak(const ExecutionTreeConstPtr& execution);
 
+        bool IsCodeConstructable(VariableConstPtr value);
+
         bool IsCycle(const Node& node);
 
         bool IsCycle(const ExecutionTreeConstPtr& execution);
@@ -69,6 +94,8 @@ namespace ScriptCanvas
         bool IsEventDisconnectCall(const ExecutionTreeConstPtr& execution);
 
         bool IsExecutedPropertyExtraction(const ExecutionTreeConstPtr& execution);
+
+        bool IsExternallyInitialized(VariableConstPtr value);
 
         bool IsFloatingPointNumberEqualityComparison(ExecutionTreeConstPtr execution);
 
@@ -96,6 +123,8 @@ namespace ScriptCanvas
 
         bool IsLooping(Symbol symbol);
 
+        bool IsManuallyDeclaredUserVariable(VariableConstPtr variable);
+
         bool IsMidSequence(const ExecutionTreeConstPtr& execution);
 
         bool IsNoOp(const AbstractCodeModel& model, const ExecutionTreeConstPtr& parent, const Grammar::ExecutionChild& child);
@@ -116,6 +145,10 @@ namespace ScriptCanvas
 
         bool IsPropertyExtractionNode(const ExecutionTreeConstPtr& execution);
 
+        bool IsPure(Symbol symbol);
+
+        bool IsPure(const Node* node, const Slot* slot);
+
         bool IsRandomSwitchStatement(const ExecutionTreeConstPtr& execution);
 
         bool IsSequenceNode(const Node* node);
@@ -126,11 +159,11 @@ namespace ScriptCanvas
 
         bool IsUserFunctionCall(const ExecutionTreeConstPtr& execution);
 
-        bool IsUserFunctionCallPure(const ExecutionTreeConstPtr& execution);
-
         bool IsUserFunctionDefinition(const ExecutionTreeConstPtr& execution);
 
-        bool IsUserOut(const ExecutionTreeConstPtr& execution);
+        const ScriptCanvas::Nodes::Core::FunctionDefinitionNode* IsUserOutNode(const Node* node);
+
+        const ScriptCanvas::Nodes::Core::FunctionDefinitionNode* IsUserOutNode(const ExecutionTreeConstPtr& execution);
 
         bool IsVariableGet(const ExecutionTreeConstPtr& execution);
 
@@ -140,11 +173,11 @@ namespace ScriptCanvas
 
         bool IsWrittenMathExpression(const ExecutionTreeConstPtr& execution);
 
-        void TraverseTree(const AbstractCodeModel& execution, ExecutionTreeIterationListener& listener);
-
-        void TraverseTree(const ExecutionTreeConstPtr& execution, ExecutionTreeIterationListener& listener);
-
         AZStd::string MakeMemberVariableName(AZStd::string_view name);
+
+        VariableConstructionRequirement ParseConstructionRequirement(Grammar::VariableConstPtr value);
+
+        void ParseVariableUse(ExecutionTreeConstPtr execution, VariableUseage& variableUse);
 
         void PrettyPrint(AZStd::string& result, const AbstractCodeModel& model);
 
@@ -162,6 +195,9 @@ namespace ScriptCanvas
 
         AZStd::string ToIdentifierSafe(AZStd::string_view name);
 
+        void TraverseTree(const AbstractCodeModel& execution, ExecutionTreeTraversalListener& listener);
+
+        void TraverseTree(const ExecutionTreeConstPtr& execution, ExecutionTreeTraversalListener& listener);
     } 
 
 } 

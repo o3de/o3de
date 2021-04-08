@@ -122,10 +122,10 @@ namespace AZ
             void UpdateBlendFactor();
             void UpdateAutoFocusDepth(bool enabled);
 
-            AZ::RHI::ShaderInputConstantIndex m_cameraParametersIndex;
-            AZ::RHI::ShaderInputConstantIndex m_pencilMapTexcoordToCocRadiusIndex;
-            AZ::RHI::ShaderInputConstantIndex m_pencilMapFocusPointTexcoordUIndex;
-            AZ::RHI::ShaderInputConstantIndex m_cocToScreenRatioIndex;
+            AZ::RHI::ShaderInputNameIndex m_cameraParametersIndex = "m_dof.m_cameraParameters";
+            AZ::RHI::ShaderInputNameIndex m_pencilMapTexcoordToCocRadiusIndex = "m_dof.m_pencilMapTexcoordToCocRadius";
+            AZ::RHI::ShaderInputNameIndex m_pencilMapFocusPointTexcoordUIndex = "m_dof.m_pencilMapFocusPointTexcoordU";
+            AZ::RHI::ShaderInputNameIndex m_cocToScreenRatioIndex = "m_dof.m_cocToScreenRatio";
 
             AZ::RHI::NameIdReflectionMap<AZ::RHI::Handle<uint32_t>> m_passListWithHashOfDivisionNumber;
 

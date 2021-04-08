@@ -43,7 +43,7 @@ namespace ScriptCanvas
 
                 const AZStd::unordered_map<AZStd::string, SlotId>& GetSlotsByName() const;
 
-                bool IsSupportedByNewBackend() const override { return true; }
+                
                                 
             protected:
 
