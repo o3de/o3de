@@ -19,6 +19,12 @@ namespace AzFramework
     {
     }
 
+    Scene::Scene(AZStd::string name, Scene* parent)
+        : m_name(AZStd::move(name))
+        , m_parent(parent)
+    {
+    }
+
     const AZStd::string& Scene::GetName() const
     {
         return m_name;

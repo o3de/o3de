@@ -44,6 +44,7 @@ namespace AzFramework
         // SceneSystemRequestsBus::Handler
         //////////////////////////////////////////////////////////////////////////
         AZ::Outcome<Scene*, AZStd::string> CreateScene(AZStd::string_view name) override;
+        AZ::Outcome<Scene*, AZStd::string> CreateSceneWithParent(AZStd::string_view name, Scene* parent) override;
         Scene* GetScene(AZStd::string_view name) override;
         AZStd::vector<Scene*> GetAllScenes() override;
         bool RemoveScene(AZStd::string_view name) override;

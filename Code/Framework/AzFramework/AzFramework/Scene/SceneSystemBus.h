@@ -35,6 +35,11 @@ namespace AzFramework
         //!  - If isDefault is set to true and there is already a default scene, the default scene will be switched to this one. 
         virtual AZ::Outcome<Scene*, AZStd::string> CreateScene(AZStd::string_view name) = 0;
 
+        //! Creates a scene with a given name and a parent.
+        //!  - If there is already a scene with the provided name this will return AZ::Failure().
+        //!  - If isDefault is set to true and there is already a default scene, the default scene will be switched to this one.
+        virtual AZ::Outcome<Scene*, AZStd::string> CreateSceneWithParent(AZStd::string_view name, Scene* parent) = 0;
+
         //! Gets a scene with a given name
         //!  - If a scene does not exist with the given name, nullptr is returned.
         virtual Scene* GetScene(AZStd::string_view name) = 0;

@@ -52,7 +52,7 @@ namespace AzFramework
     {
         // Create the defaults scene and associate the GameEntityContext with it.
         AZ::Outcome<Scene*, AZStd::string> createSceneOutcome = AZ::Failure<AZStd::string>("SceneSystemRequests bus not responding.");
-        SceneSystemRequestBus::BroadcastResult(createSceneOutcome, &AzFramework::SceneSystemRequests::CreateScene, "default");
+        SceneSystemRequestBus::BroadcastResult(createSceneOutcome, &AzFramework::SceneSystemRequests::CreateScene, AzFramework::Scene::MainSceneName);
         if (createSceneOutcome)
         {
             Scene* scene = createSceneOutcome.GetValue();
@@ -62,7 +62,14 @@ namespace AzFramework
 
             if (!gameEntityContextId.IsNull())
             {
-                SceneSystemRequestBus::BroadcastResult(success, &AzFramework::SceneSystemRequests::SetSceneForEntityContextId, gameEntityContextId, scene);
+                EntityContext* gameEntityContext = nullptr;
+                GameEntityContextRequestBus::BroadcastResult(gameEntityContext, &GameEntityContextRequests::GetGameEntityContextInstance);
+                if (gameEntityContext != nullptr)
+                {
+                    scene->SetSubsystem<EntityContext::SceneStorageType&>(gameEntityContext);
+                }
+                SceneSystemRequestBus::BroadcastResult(
+                    success, &AzFramework::SceneSystemRequests::SetSceneForEntityContextId, gameEntityContextId, scene);     
             }
             AZ_Assert(success, "The application was unable to setup a scene for the game entity context, this should always work");
         }

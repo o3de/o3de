@@ -42,6 +42,7 @@ namespace UnitTest
 
         MOCK_METHOD3(InstantiateDynamicSlice, AzFramework::SliceInstantiationTicket(const AZ::Data::Asset<AZ::Data::AssetData>&, const AZ::Transform&, const AZ::IdUtils::Remapper<AZ::EntityId>::IdMapper&));
         MOCK_METHOD0(GetGameEntityContextId, AzFramework::EntityContextId());
+        MOCK_METHOD0(GetGameEntityContextInstance, AZ::EntityContext*());
         MOCK_METHOD1(CreateGameEntity, AZ::Entity*(const char*));
         MOCK_METHOD1(AddGameEntity, void (AZ::Entity*));
         MOCK_METHOD1(DestroyGameEntity, void (const AZ::EntityId&));

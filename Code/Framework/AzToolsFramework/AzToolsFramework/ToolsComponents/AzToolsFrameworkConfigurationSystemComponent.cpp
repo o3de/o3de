@@ -60,13 +60,45 @@ namespace AzToolsFramework
         AzFramework::EntityContextId editorEntityContextId;
         EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
 
-        AzFramework::Scene* defaultScene = nullptr;
-        AzFramework::SceneSystemRequestBus::BroadcastResult(defaultScene, &AzFramework::SceneSystemRequests::GetScene, "default");
-
-        if (!editorEntityContextId.IsNull() && defaultScene)
+        if (!editorEntityContextId.IsNull())
         {
-            bool success = false;
-            AzFramework::SceneSystemRequestBus::BroadcastResult(success, &AzFramework::SceneSystemRequests::SetSceneForEntityContextId, editorEntityContextId, defaultScene);
+            AzFramework::Scene* mainScene { nullptr };
+            AzFramework::SceneSystemRequestBus::BroadcastResult(
+                mainScene, &AzFramework::SceneSystemRequests::GetScene, AzFramework::Scene::MainSceneName);
+
+            if (mainScene)
+            {
+                AZ::Outcome<AzFramework::Scene*, AZStd::string> editorScene =
+                    AZ::Failure<AZStd::string>("SceneSystemRequests bus not responding.");
+                AzFramework::SceneSystemRequestBus::BroadcastResult(
+                    editorScene, &AzFramework::SceneSystemRequests::CreateSceneWithParent, AzFramework::Scene::EditorMainSceneName, mainScene);
+                if (editorScene.IsSuccess())
+                {
+                    AzFramework::EntityContext* editorEntityContext = nullptr;
+                    EditorEntityContextRequestBus::BroadcastResult(
+                        editorEntityContext, &EditorEntityContextRequests::GetEditorEntityContextInstance);
+                    if (editorEntityContext != nullptr)
+                    {
+                        [[maybe_unused]] bool contextAdded =
+                            editorScene.GetValue()->SetSubsystem<AzFramework::EntityContext::SceneStorageType&>(editorEntityContext);
+                        AZ_Assert(contextAdded, "Unable to add editor entity context to scene.");
+                    }
+
+                    [[maybe_unused]] bool success = false;
+                    AzFramework::SceneSystemRequestBus::BroadcastResult(
+                        success, &AzFramework::SceneSystemRequests::SetSceneForEntityContextId, editorEntityContextId,
+                        editorScene.GetValue());
+                    AZ_Assert(success, "Failed to associate the editor entity context with the editor scene")
+                }
+                else
+                {
+                    AZ_Assert(false, "Failed to create editor scene because: %s", editorScene.GetError().c_str());
+                }
+            }
+            else
+            {
+                AZ_Assert(false, "No main scene to parent the editor scene under.");
+            }
         }
     }
 

@@ -63,6 +63,11 @@ namespace AzFramework
 
     AZ::Outcome<Scene*, AZStd::string> SceneSystemComponent::CreateScene(AZStd::string_view name)
     {
+        return CreateSceneWithParent(name, nullptr);
+    }
+
+    AZ::Outcome<Scene*, AZStd::string> SceneSystemComponent::CreateSceneWithParent(AZStd::string_view name, Scene* parent)
+    {
         Scene* existingScene = GetScene(name);
 
         if (existingScene)
@@ -70,7 +75,7 @@ namespace AzFramework
             return AZ::Failure<AZStd::string>("A scene already exists with this name.");
         }
 
-        auto newScene = AZStd::make_unique<Scene>(name);
+        auto newScene = AZStd::make_unique<Scene>(name, parent);
         Scene* scenePointer = newScene.get();
         m_scenes.push_back(AZStd::move(newScene));
         SceneSystemNotificationBus::Broadcast(&SceneSystemNotificationBus::Events::SceneCreated, *scenePointer);
@@ -103,53 +108,35 @@ namespace AzFramework
 
     bool SceneSystemComponent::RemoveScene(AZStd::string_view name)
     {
-        for (size_t i = 0; i < m_scenes.size(); ++i)
+        for (AZStd::unique_ptr<Scene>& scene : m_scenes)
         {
-            auto& scenePtr = m_scenes.at(i);
-            if (scenePtr->GetName() == name)
+            if (scene->GetName() == name)
             {
-                // Remove any entityContext mappings.
-                Scene* scene = scenePtr.get();
-                for (auto entityContextScenePairIt = m_entityContextToScenes.begin(); entityContextScenePairIt != m_entityContextToScenes.end();)
-                {
-                    AZStd::pair<EntityContextId, Scene*>& pair = *entityContextScenePairIt;
-                    if (pair.second == scene)
-                    {
-                        // swap and pop back.
-                        *entityContextScenePairIt = m_entityContextToScenes.back();
-                        m_entityContextToScenes.pop_back();
-                    }
-                    else
-                    {
-                        ++entityContextScenePairIt;
-                    }
-                }
-
                 SceneSystemNotificationBus::Broadcast(&SceneSystemNotificationBus::Events::SceneAboutToBeRemoved, *scene);
-                SceneNotificationBus::Event(scene, &SceneNotificationBus::Events::SceneAboutToBeRemoved);
+                SceneNotificationBus::Event(scene.get(), &SceneNotificationBus::Events::SceneAboutToBeRemoved);
 
-                m_scenes.erase(&scenePtr);
+                scene = AZStd::move(m_scenes.back());
+                m_scenes.pop_back();
                 return true;
             }
         }
 
-        AZ_Warning("SceneSystemComponent", false, "Attempting to remove scene name \"%.*s\", but that scene was not found.", static_cast<int>(name.size()), name.data());
+        AZ_Warning("SceneSystemComponent", false, R"(Attempting to remove scene name "%.*s", but that scene was not found.)", AZ_STRING_ARG(name));
         return false;
     }
 
     bool SceneSystemComponent::SetSceneForEntityContextId(EntityContextId entityContextId, Scene* scene)
     {
-        Scene* existingSceneForEntityContext = GetSceneFromEntityContextId(entityContextId);
-        if (existingSceneForEntityContext)
+        if (!scene || entityContextId.IsNull())
         {
-            // This entity context is already mapped and must be unmapped explictely before it can be changed.
-            char entityContextIdString[EntityContextId::MaxStringBuffer];
-            entityContextId.ToString(entityContextIdString, sizeof(entityContextIdString));
-            AZ_Warning("SceneSystemComponent", false, "Failed to set a scene for entity context %s, scene is already set for that entity context.", entityContextIdString);
-
             return false;
         }
-        m_entityContextToScenes.emplace_back(entityContextId, scene);
+
+        [[maybe_unused]] EntityContext** entityContext = scene->FindSubsystem<EntityContext::SceneStorageType>();
+        AZ_Assert(
+            entityContext && (*entityContext)->GetContextId() == entityContextId,
+            "Scene didn't contain an Entity Context or the id of the context didn't match the provided entity context id.");
+        
         SceneNotificationBus::Event(scene, &SceneNotificationBus::Events::EntityContextMapped, entityContextId);
         return true;
     }
@@ -161,40 +148,25 @@ namespace AzFramework
             return false;
         }
 
-        for (auto entityContextScenePairIt = m_entityContextToScenes.begin(); entityContextScenePairIt != m_entityContextToScenes.end();)
-        {
-            AZStd::pair<EntityContextId, Scene*>& pair = *entityContextScenePairIt;
-            if (!(pair.first == entityContextId && pair.second == scene))
-            {
-                ++entityContextScenePairIt;
-            }
-            else
-            {
-                // swap and pop back.
-                *entityContextScenePairIt = m_entityContextToScenes.back();
-                m_entityContextToScenes.pop_back();
+        [[maybe_unused]] EntityContext** entityContext = scene->FindSubsystem<EntityContext::SceneStorageType>();
+        AZ_Assert(
+            entityContext && (*entityContext)->GetContextId() == entityContextId,
+            "Scene didn't contain an Entity Context or the id of the context didn't match the provided entity context id.");
 
-                SceneNotificationBus::Event(scene, &SceneNotificationBus::Events::EntityContextUnmapped, entityContextId);
-                return true;
-            }
-        }
-
-        char entityContextIdString[EntityContextId::MaxStringBuffer];
-        entityContextId.ToString(entityContextIdString, sizeof(entityContextIdString));
-        AZ_Warning("SceneSystemComponent", false, "Failed to remove scene \"%.*s\" for entity context %s, entity context is not currently mapped to that scene.", static_cast<int>(scene->GetName().size()), scene->GetName().data(), entityContextIdString);
-        return false;
+        SceneNotificationBus::Event(scene, &SceneNotificationBus::Events::EntityContextUnmapped, entityContextId);
+        return true;
     }
 
     Scene* SceneSystemComponent::GetSceneFromEntityContextId(EntityContextId entityContextId)
     {
-        for (AZStd::pair<EntityContextId, Scene*>& pair : m_entityContextToScenes)
+        for (AZStd::unique_ptr<Scene>& scene : m_scenes)
         {
-            if (pair.first == entityContextId)
+            EntityContext** entityContext = scene->FindSubsystem<EntityContext::SceneStorageType>();
+            if (entityContext && (*entityContext)->GetContextId() == entityContextId)
             {
-                return pair.second;
+                return scene.get();
             }
         }
         return nullptr;
     }
-
 } // AzFramework

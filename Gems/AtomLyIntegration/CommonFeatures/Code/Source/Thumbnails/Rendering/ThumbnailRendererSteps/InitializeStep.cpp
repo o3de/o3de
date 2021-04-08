@@ -110,6 +110,7 @@ namespace AZ
                 data->m_frameworkScene = createSceneOutcome.GetValue();
                 data->m_frameworkScene->SetSubsystem(data->m_scene);
 
+                data->m_frameworkScene->SetSubsystem(data->m_entityContext.get());
                 bool success = false;
                 AzFramework::SceneSystemRequestBus::BroadcastResult(
                     success,

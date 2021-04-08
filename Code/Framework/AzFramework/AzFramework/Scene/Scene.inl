@@ -100,7 +100,7 @@ namespace AzFramework
                 return AZStd::any_cast<T>(&m_systemObjects[i]);
             }
         }
-        return nullptr;
+        return m_parent ? m_parent->FindSubsystem<T>() : nullptr;
     }
 
     template<typename T>
@@ -119,6 +119,6 @@ namespace AzFramework
                 return AZStd::any_cast<const T>(&m_systemObjects[i]);
             }
         }
-        return nullptr;
+        return m_parent ? m_parent->FindSubsystem<T>() : nullptr;
     }
 } // namespace AzFramework
