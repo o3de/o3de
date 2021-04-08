@@ -98,6 +98,11 @@ namespace AzToolsFramework
 
     void AzToolsFrameworkConfigurationSystemComponent::Deactivate()
     {
+        bool success = false;
+        AzFramework::SceneSystemRequestBus::BroadcastResult(
+            success, &AzFramework::SceneSystemRequestBus::Events::RemoveScene, AzFramework::Scene::EditorMainSceneName);
+
+        AZ_Assert(success, "Unable to remove the main editor scene.");
     }
 
     void AzToolsFrameworkConfigurationSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)

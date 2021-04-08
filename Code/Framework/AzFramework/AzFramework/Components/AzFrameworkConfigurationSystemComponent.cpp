@@ -52,28 +52,25 @@ namespace AzFramework
     {
         // Create the defaults scene and associate the GameEntityContext with it.
         AZ::Outcome<Scene*, AZStd::string> createSceneOutcome = AZ::Failure<AZStd::string>("SceneSystemRequests bus not responding.");
-        SceneSystemRequestBus::BroadcastResult(createSceneOutcome, &AzFramework::SceneSystemRequests::CreateScene, AzFramework::Scene::MainSceneName);
+        SceneSystemRequestBus::BroadcastResult(createSceneOutcome, &SceneSystemRequests::CreateScene, Scene::MainSceneName);
         if (createSceneOutcome)
         {
             Scene* scene = createSceneOutcome.GetValue();
-            bool success = false;
-            EntityContextId gameEntityContextId = EntityContextId::CreateNull();
-            GameEntityContextRequestBus::BroadcastResult(gameEntityContextId, &GameEntityContextRequests::GetGameEntityContextId);
-
-            if (!gameEntityContextId.IsNull())
+            EntityContext* gameEntityContext = nullptr;
+            GameEntityContextRequestBus::BroadcastResult(gameEntityContext, &GameEntityContextRequests::GetGameEntityContextInstance);
+            if (gameEntityContext != nullptr)
             {
-                EntityContext* gameEntityContext = nullptr;
-                GameEntityContextRequestBus::BroadcastResult(gameEntityContext, &GameEntityContextRequests::GetGameEntityContextInstance);
-                if (gameEntityContext != nullptr)
-                {
-                    scene->SetSubsystem<EntityContext::SceneStorageType&>(gameEntityContext);
-                }
+                [[maybe_unused]] bool result = scene->SetSubsystem<EntityContext::SceneStorageType&>(gameEntityContext);
+                AZ_Assert(result, "Unable to register main entity context with the main scene.");
             }
-            AZ_Assert(success, "The application was unable to setup a scene for the game entity context, this should always work");
+            else
+            {
+                AZ_Assert(false, "Unable to retrieve the game entity context instance.");
+            }
         }
         else
         {
-            AZ_Assert(false, "%s", createSceneOutcome.GetError().data());
+            AZ_Assert(false, "Unable to create main scene due to: %s", createSceneOutcome.GetError().data());
         }
 
     }
@@ -81,10 +78,9 @@ namespace AzFramework
     void AzFrameworkConfigurationSystemComponent::Deactivate()
     {
         bool success = false;
-        SceneSystemRequestBus::BroadcastResult(
-            success, &AzFramework::SceneSystemRequestBus::Events::RemoveScene, "default");
+        SceneSystemRequestBus::BroadcastResult(success, &SceneSystemRequestBus::Events::RemoveScene, AzFramework::Scene::MainSceneName);
 
-        AZ_Assert(success, "\"default\" scene was not removed");
+        AZ_Assert(success, "Unable to remove the main scene.");
     }
 
     void AzFrameworkConfigurationSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
