@@ -1090,7 +1090,7 @@ namespace AssetProcessor
                 // New assets can be saved in any scan folder defined except for the engine root.
                 const bool canSaveNewAssets = !isEngineRoot;
                 AddScanFolder(ScanFolderInfo(
-                    QString::fromUtf8(scanFolderEntry.m_watchPath.c_str(), aznumeric_cast<int>(scanFolderEntry.m_watchPath.Native().size())),
+                    AssetUtilities::NormalizeDirectoryPath(QString::fromUtf8(scanFolderEntry.m_watchPath.c_str(), aznumeric_cast<int>(scanFolderEntry.m_watchPath.Native().size()))),
                     QString::fromUtf8(scanFolderEntry.m_scanFolderDisplayName.c_str(), aznumeric_cast<int>(scanFolderEntry.m_scanFolderDisplayName.size())),
                     QString::fromUtf8(scanFolderEntry.m_scanFolderIdentifier.c_str(), aznumeric_cast<int>(scanFolderEntry.m_scanFolderIdentifier.size())),
                     QString::fromUtf8(scanFolderEntry.m_outputPrefix.c_str(), aznumeric_cast<int>(scanFolderEntry.m_outputPrefix.size())),
