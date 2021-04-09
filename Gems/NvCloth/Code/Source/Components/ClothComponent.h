@@ -48,7 +48,7 @@ namespace NvCloth
 
         // AZ::Render::MeshComponentNotificationBus::Handler overrides ...
         void OnModelReady(const AZ::Data::Asset<AZ::RPI::ModelAsset>& modelAsset, const AZ::Data::Instance<AZ::RPI::Model>& model) override;
-        void OnModelDestroyed(); // [TODO LYN-1886] Add override once it's part of MeshComponentNotificationBus
+        void OnModelPreDestroy() override;
 
     private:
         ClothConfiguration m_config;

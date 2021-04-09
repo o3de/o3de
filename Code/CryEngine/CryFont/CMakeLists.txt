@@ -19,6 +19,6 @@ ly_add_target(
             .
     BUILD_DEPENDENCIES
         PRIVATE
-            3rdParty::FreeType2
+            3rdParty::freetype
             Legacy::CryCommon
 )

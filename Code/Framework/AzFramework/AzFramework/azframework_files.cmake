@@ -102,6 +102,8 @@ set(FILES
     Viewport/ScreenGeometry.cpp
     Viewport/CameraState.h
     Viewport/CameraState.cpp
+    Viewport/CameraInput.h
+    Viewport/CameraInput.cpp
     Viewport/DisplayContextRequestBus.h
     Entity/BehaviorEntity.cpp
     Entity/BehaviorEntity.h

@@ -70,9 +70,6 @@ namespace NvCloth
         const AZ::Data::Asset<AZ::RPI::ModelAsset>& asset,
         [[maybe_unused]] const AZ::Data::Instance<AZ::RPI::Model>& model)
     {
-        // [TODO LYN-1886] Remove this call once OnModelDestroyed is part of MeshComponentNotificationBus
-        OnModelDestroyed();
-
         if (!asset.IsReady())
         {
             return;
@@ -81,7 +78,7 @@ namespace NvCloth
         m_clothComponentMesh = AZStd::make_unique<ClothComponentMesh>(GetEntityId(), m_config);
     }
 
-    void ClothComponent::OnModelDestroyed()
+    void ClothComponent::OnModelPreDestroy()
     {
         m_clothComponentMesh.reset();
     }

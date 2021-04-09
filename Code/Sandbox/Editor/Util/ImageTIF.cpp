@@ -16,7 +16,7 @@
 #include "ImageTIF.h"
 
 /// libTiff
-#include <libtiff/tiffio.h>  // TIFF library
+#include <tiffio.h>  // TIFF library
 
 // Function prototypes
 static tsize_t libtiffDummyReadProc (thandle_t fd, tdata_t buf, tsize_t size);

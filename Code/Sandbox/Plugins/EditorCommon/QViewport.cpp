@@ -41,6 +41,65 @@
 
 #include <AzQtComponents/Utilities/QtWindowUtilities.h>
 
+// Class to implement the WindowRequestBus::Handler instead of the QViewport class.
+// This is to bypass a link warning that occurs in unity builds if EditorCommon dll
+// is linked along with a gem that also implements WindowRequestBus::Handler. The
+// issue is that QViewport has a dllexport so it causes duplicate code to be linked
+// in and a warning that there will be two of the same symbol in memory
+class QViewportRequests
+    : public AzFramework::WindowRequestBus::Handler
+{
+public:
+    QViewportRequests(QViewport& viewport)
+        : m_viewport(viewport)
+    {
+    }
+
+    ~QViewportRequests() override
+    {
+        AzFramework::WindowRequestBus::Handler::BusDisconnect();
+    }
+
+    // WindowRequestBus::Handler...
+    void SetWindowTitle(const AZStd::string& title) override
+    {
+        m_viewport.SetWindowTitle(title);
+    }
+
+    AzFramework::WindowSize GetClientAreaSize() const override
+    {
+        return m_viewport.GetClientAreaSize();
+    }
+
+    void ResizeClientArea(AzFramework::WindowSize clientAreaSize) override
+    {
+        m_viewport.ResizeClientArea(clientAreaSize);
+    }
+
+    bool GetFullScreenState() const override
+    {
+        return m_viewport.GetFullScreenState();
+    }
+
+    void SetFullScreenState(bool fullScreenState) override
+    {
+        m_viewport.SetFullScreenState(fullScreenState);
+    }
+
+    bool CanToggleFullScreenState() const override
+    {
+        return m_viewport.CanToggleFullScreenState();
+    }
+
+    void ToggleFullScreenState() override
+    {
+        m_viewport.ToggleFullScreenState();
+    }
+
+private:
+    QViewport& m_viewport;
+};
+
 struct QViewport::SPreviousContext
 {
     CCamera renderCamera;
@@ -188,6 +247,8 @@ QViewport::QViewport(QWidget* parent, StartupMode startupMode)
     , m_private(new SPrivate())
     , m_cameraControlMode(CameraControlMode::NONE)
 {
+    m_viewportRequests = AZStd::make_unique<QViewportRequests>(*this);
+
     if (startupMode & StartupMode_Immediate)
         Startup();
 }
@@ -213,6 +274,8 @@ void QViewport::Startup()
 QViewport::~QViewport()
 {
     DestroyRenderContext();
+
+    m_viewportRequests.reset();
 }
 
 void QViewport::UpdateBackgroundColor()
@@ -316,7 +379,7 @@ bool QViewport::CreateRenderContext()
 
         if (AZ::Interface<AzFramework::AtomActiveInterface>::Get())
         {
-            AzFramework::WindowRequestBus::Handler::BusConnect(windowHandle);
+            m_viewportRequests.get()->BusConnect(windowHandle);
             AzFramework::WindowSystemNotificationBus::Broadcast(&AzFramework::WindowSystemNotificationBus::Handler::OnWindowCreated, windowHandle);
 
             m_lastHwnd = windowHandle;
@@ -346,7 +409,7 @@ void QViewport::DestroyRenderContext()
         m_renderContextCreated = false;
 
         AzFramework::WindowNotificationBus::Event(windowHandle, &AzFramework::WindowNotificationBus::Handler::OnWindowClosed);
-        AzFramework::WindowRequestBus::Handler::BusDisconnect();
+        m_viewportRequests.get()->BusDisconnect();
         m_lastHwnd = 0;
     }
 }

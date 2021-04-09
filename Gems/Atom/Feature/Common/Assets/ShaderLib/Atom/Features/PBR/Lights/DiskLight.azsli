@@ -14,7 +14,7 @@
 
 #include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
 
-void ApplyDiskLight(ViewSrg::DiskLight light, float3 dirToCamera, Surface surface, inout float3 diffuseLighting, inout float3 specularLighting, inout float3 translucentBackLighting)
+void ApplyDiskLight(ViewSrg::DiskLight light, Surface surface, inout LightingData lightingData)
 {
     float3 posToLight = light.m_position - surface.position;
     float distanceToLight2 = dot(posToLight, posToLight); // light distance squared
@@ -64,15 +64,15 @@ void ApplyDiskLight(ViewSrg::DiskLight light, float3 dirToCamera, Surface surfac
         lightIntensity /= ((light.m_diskRadius / distanceToPlane) + 1.0);
 
         // Diffuse contribution
-        diffuseLighting += GetDiffuseLighting(surface, lightIntensity, dirToCamera, posToLightDir);
+        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, posToLightDir);
 
         // Tranmission contribution
-        translucentBackLighting += GetBackLighting(surface, lightIntensity, dirToCamera, posToLightDir, 0.0);
+        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, lightIntensity, posToLightDir, 0.0);
         
         // Adjust the light direction for specular based on disk size
 
         // Calculate the reflection off the normal from the view lightDirection
-        float3 reflectionDir = reflect(-dirToCamera, surface.normal);
+        float3 reflectionDir = reflect(-lightingData.dirToCamera, surface.normal);
         float reflectionDotLight = dot(reflectionDir, -lightDirection);
         
         // Let 'Intersection' denote the point where the reflection ray intersects the diskLight plane
@@ -104,7 +104,7 @@ void ApplyDiskLight(ViewSrg::DiskLight light, float3 dirToCamera, Surface surfac
         float diskIntensityNormalization = GetIntensityAdjustedByRadiusAndRoughness(surface.roughnessA, light.m_diskRadius, distanceToLight2);
 
         // Specular contribution
-        specularLighting += diskIntensityNormalization * GetSpecularLighting(surface, lightIntensity, dirToCamera, normalize(posToLight));
+        lightingData.specularLighting += diskIntensityNormalization * GetSpecularLighting(surface, lightingData, lightIntensity, normalize(posToLight));
     }
 }
 
@@ -135,7 +135,7 @@ float3 SampleDisk(float2 randomPoint, ViewSrg::DiskLight light)
     return outPoint;
 }
 
-void ValidateDiskLight(ViewSrg::DiskLight light, float3 dirToCamera, Surface surface, inout float3 diffuseLighting, inout float3 specularLighting, inout float3 translucentBackLighting)
+void ValidateDiskLight(ViewSrg::DiskLight light, Surface surface, inout LightingData lightingData)
 {
     const uint sampleCount = 512;
 
@@ -147,31 +147,31 @@ void ValidateDiskLight(ViewSrg::DiskLight light, float3 dirToCamera, Surface sur
     {
         float2 randomPoint = GetHammersleyPoint(i, sampleCount);
         float3 samplePoint = SampleDisk(randomPoint, light);
-        AddSampleContribution(surface, samplePoint, light.m_direction, dirToCamera, light.m_bothDirectionsFactor, diffuseAcc, specularAcc, translucentAcc);
+        AddSampleContribution(surface, lightingData, samplePoint, light.m_direction, light.m_bothDirectionsFactor, diffuseAcc, specularAcc, translucentAcc);
     }
     
-    diffuseLighting += (diffuseAcc / float(sampleCount)) * light.m_rgbIntensityCandelas;
-    specularLighting += (specularAcc / float(sampleCount)) * light.m_rgbIntensityCandelas;
+    lightingData.diffuseLighting += (diffuseAcc / float(sampleCount)) * light.m_rgbIntensityCandelas;
+    lightingData.specularLighting += (specularAcc / float(sampleCount)) * light.m_rgbIntensityCandelas;
 }
 
-void ApplyDiskLights(inout LightCullingTileIterator tileIterator, float3 dirToCamera, Surface surface, inout float3 diffuseLighting, inout float3 specularLighting, inout float3 translucentBackLighting)
+void ApplyDiskLights(Surface surface, inout LightingData lightingData)
 {    
-    tileIterator.LoadAdvance();
+    lightingData.tileIterator.LoadAdvance();
             
-    while( !tileIterator.IsDone() ) 
-    { 
-        uint currLightIndex = tileIterator.GetValue(); 
-        tileIterator.LoadAdvance();
+    while( !lightingData.tileIterator.IsDone() )
+    {
+        uint currLightIndex = lightingData.tileIterator.GetValue();
+        lightingData.tileIterator.LoadAdvance();
         
         ViewSrg::DiskLight light = ViewSrg::m_diskLights[currLightIndex];
         
         if (o_area_light_validation)
         {
-            ValidateDiskLight(light, dirToCamera, surface, diffuseLighting, specularLighting, translucentBackLighting);
+            ValidateDiskLight(light, surface, lightingData);
         }
         else
         {
-            ApplyDiskLight(light, dirToCamera, surface, diffuseLighting, specularLighting, translucentBackLighting);
+            ApplyDiskLight(light, surface, lightingData);
         }
     }
 }

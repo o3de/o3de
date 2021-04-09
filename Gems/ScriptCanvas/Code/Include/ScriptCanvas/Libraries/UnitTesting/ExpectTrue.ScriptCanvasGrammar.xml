@@ -11,7 +11,7 @@
            VersionConverter="ScriptCanvas::UnitTesting::ExpectBooleanVersioner"
            GeneratePropertyFriend="True"
            DeprecationUUID="{E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF}"
-           ReplacementClassname="Unit Testing"
+           ReplacementClassName="Unit Testing"
            ReplacementMethodName="Expect True"
            Description="Expects a value to be true">
         <In Name="In" Description="Input signal"/>

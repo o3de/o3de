@@ -11,7 +11,7 @@
            VersionConverter="ScriptCanvas::UnitTesting::ExpectComparisonVersioner"
            GeneratePropertyFriend="True"
            DeprecationUUID="{C1E3C9D0-42E3-4D00-AE73-2A881E7E76A8}"
-           ReplacementClassname="Unit Testing"
+           ReplacementClassName="Unit Testing"
            ReplacementMethodName="Expect Less Than Equal"
            Description="Expects lhs to be greater than rhs">
         <In Name="In" Description="Input signal"/>

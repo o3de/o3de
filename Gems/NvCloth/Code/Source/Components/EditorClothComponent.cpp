@@ -443,16 +443,13 @@ namespace NvCloth
 
         AzToolsFramework::Components::EditorComponentBase::Deactivate();
 
-        m_clothComponentMesh.reset();
+        OnModelPreDestroy();
     }
 
     void EditorClothComponent::OnModelReady(
         const AZ::Data::Asset<AZ::RPI::ModelAsset>& asset,
         [[maybe_unused]] const AZ::Data::Instance<AZ::RPI::Model>& model)
     {
-        // [TODO LYN-1886] Remove this call once OnModelDestroyed is part of MeshComponentNotificationBus
-        OnModelDestroyed();
-
         if (!asset.IsReady())
         {
             return;
@@ -518,7 +515,7 @@ namespace NvCloth
             AzToolsFramework::Refresh_EntireTree);
     }
 
-    void EditorClothComponent::OnModelDestroyed()
+    void EditorClothComponent::OnModelPreDestroy()
     {
         m_previousMeshNode = m_config.m_meshNode;
 

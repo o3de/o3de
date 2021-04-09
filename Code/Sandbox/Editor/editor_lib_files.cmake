@@ -996,6 +996,8 @@ set(FILES
     ViewportManipulatorController.h
     LegacyViewportCameraController.cpp
     LegacyViewportCameraController.h
+    ModernViewportCameraController.cpp
+    ModernViewportCameraController.h
     RenderViewport.cpp
     RenderViewport.h
     TopRendererWnd.cpp

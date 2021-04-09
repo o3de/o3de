@@ -18,6 +18,7 @@
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/Bootstrap/DefaultWindowBus.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
 #include <IRenderer.h> // LYSHINE_ATOM_TODO - remove when GS_DEPTHFUNC_LEQUAL reference is removed with LyShine render target Atom conversion
 
 #include <AzCore/Math/MatrixUtils.h>
@@ -30,10 +31,13 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-UiRenderer::UiRenderer()
+UiRenderer::UiRenderer(AZ::RPI::ViewportContextPtr viewportContext)
     : m_baseState(GS_DEPTHFUNC_LEQUAL)
     , m_stencilRef(0)
+    , m_viewportContext(viewportContext)
 {
+    // Use bootstrap scene event to indicate when the RPI has fully
+    // initialized with all assets loaded and is ready to be used
     AZ::Render::Bootstrap::NotificationBus::Handler::BusConnect();
 }
 
@@ -42,23 +46,77 @@ UiRenderer::~UiRenderer()
 {
     AZ::Render::Bootstrap::NotificationBus::Handler::BusDisconnect();
 
+    if (m_viewportContext)
+    {
+        AZ::RPI::RPISystemInterface::Get()->UnregisterScene(m_viewportContext->GetRenderScene());
+    }
     m_dynamicDraw = nullptr;
 }
 
 bool UiRenderer::IsReady()
 {
-    return m_isReady;
+    return m_isRPIReady;
 }
 
 void UiRenderer::OnBootstrapSceneReady([[maybe_unused]] AZ::RPI::Scene* bootstrapScene)
 {
-    // Create a dynamic draw context for UI Canvas drawing
-    AZ::RPI::Scene* scene = AZ::RPI::RPISystemInterface::Get()->GetDefaultScene().get();
-    m_dynamicDraw = AZ::RPI::DynamicDrawInterface::Get()->CreateDynamicDrawContext(scene);
+    // At this point the RPI is ready for use
 
     // Load the UI shader
     const char* uiShaderFilepath = "Shaders/LyShineUI.azshader";
     AZ::Data::Instance<AZ::RPI::Shader> uiShader = AZ::RPI::LoadShader(uiShaderFilepath);
+
+    // Create scene to be used by the dynamic draw context
+    AZ::RPI::ScenePtr scene;
+    if (m_viewportContext)
+    {
+        // Create a new scene based on the user specified viewport context
+        scene = CreateScene(m_viewportContext);
+    }
+    else
+    {
+        // No viewport context specified, use default scene
+        scene = AZ::RPI::RPISystemInterface::Get()->GetDefaultScene();
+    }
+
+    // Create a dynamic draw context for UI Canvas drawing for the scene
+    CreateDynamicDrawContext(scene, uiShader);
+
+    // Cache shader data such as input indices for later use
+    CacheShaderData(m_dynamicDraw);
+
+    m_isRPIReady = true;
+}
+
+AZ::RPI::ScenePtr UiRenderer::CreateScene(AZStd::shared_ptr<AZ::RPI::ViewportContext> viewportContext)
+{
+    // Create a scene with the necessary feature processors
+    AZ::RPI::SceneDescriptor sceneDesc;
+    AZ::RPI::ScenePtr atomScene = AZ::RPI::Scene::CreateScene(sceneDesc);
+    atomScene->EnableAllFeatureProcessors(); // LYSHINE_ATOM_TODO - have a UI pipeline and enable only needed fps
+
+    // Assign the new scene to the specified viewport context
+    viewportContext->SetRenderScene(atomScene);
+
+    // Create a render pipeline and add it to the scene
+    AZStd::string pipelineAssetPath = "passes/MainRenderPipeline.azasset"; // LYSHINE_ATOM_TODO - make and use a UI pipeline
+    AZ::Data::Asset<AZ::RPI::AnyAsset> pipelineAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(pipelineAssetPath.c_str(), AZ::RPI::AssetUtils::TraceLevel::Error);
+    AZStd::shared_ptr<AZ::RPI::WindowContext> windowContext = viewportContext->GetWindowContext();
+    auto renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForWindow(pipelineAsset, *windowContext.get());
+    pipelineAsset.Release();
+    atomScene->AddRenderPipeline(renderPipeline);
+
+    atomScene->Activate();
+
+    // Register the scene
+    AZ::RPI::RPISystemInterface::Get()->RegisterScene(atomScene);
+
+    return atomScene;
+}
+
+void UiRenderer::CreateDynamicDrawContext(AZ::RPI::ScenePtr scene, AZ::Data::Instance<AZ::RPI::Shader> uiShader)
+{
+    m_dynamicDraw = AZ::RPI::DynamicDrawInterface::Get()->CreateDynamicDrawContext(scene.get());
 
     // Initialize the dynamic draw context
     m_dynamicDraw->InitShader(uiShader);
@@ -68,22 +126,30 @@ void UiRenderer::OnBootstrapSceneReady([[maybe_unused]] AZ::RPI::Scene* bootstra
         { "TEXCOORD", AZ::RHI::Format::R32G32_FLOAT },
         { "BLENDINDICES", AZ::RHI::Format::R16G16_UINT } }
     );
-
     m_dynamicDraw->EndInit();
-
-    // Cache shader data such as input indices for later use
-    CacheShaderData(uiShader);
-
-    m_isReady = true;
 }
 
-void UiRenderer::CacheShaderData(const AZ::Data::Instance<AZ::RPI::Shader> shader)
+AZStd::shared_ptr<AZ::RPI::ViewportContext> UiRenderer::GetViewportContext()
+{
+    if (!m_viewportContext)
+    {
+        // Return the default viewport context
+        auto viewContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+        auto defaultViewportContext = viewContextManager->GetViewportContextByName(viewContextManager->GetDefaultViewportContextName());
+        return defaultViewportContext;
+    }
+
+    // Return the user specified viewport context
+    return m_viewportContext;
+}
+
+void UiRenderer::CacheShaderData(const AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext>& dynamicDraw)
 {
     // Cache draw srg input indices
     static const char textureIndexName[] = "m_texture";
     static const char worldToProjIndexName[] = "m_worldToProj";
     static const char isClampIndexName[] = "m_isClamp";
-    AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = m_dynamicDraw->NewDrawSrg();
+    AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = dynamicDraw->NewDrawSrg();
     const AZ::RHI::ShaderResourceGroupLayout* layout = drawSrg->GetAsset()->GetLayout();
     m_uiShaderData.m_imageInputIndex = layout->FindShaderInputImageIndex(AZ::Name(textureIndexName));
     AZ_Error(LogName, m_uiShaderData.m_imageInputIndex.IsValid(), "Failed to find shader input constant %s.",
@@ -102,7 +168,7 @@ void UiRenderer::CacheShaderData(const AZ::Data::Instance<AZ::RPI::Shader> shade
     shaderOptionsDefault.push_back(AZ::RPI::ShaderOption(AZ::Name("o_alphaTest"), AZ::Name("false")));
     shaderOptionsDefault.push_back(AZ::RPI::ShaderOption(AZ::Name("o_srgbWrite"), AZ::Name("true")));
     shaderOptionsDefault.push_back(AZ::RPI::ShaderOption(AZ::Name("o_modulate"), AZ::Name("Modulate::None")));
-    m_uiShaderData.m_shaderVariantDefault = m_dynamicDraw->UseShaderVariant(shaderOptionsDefault);
+    m_uiShaderData.m_shaderVariantDefault = dynamicDraw->UseShaderVariant(shaderOptionsDefault);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -169,8 +235,7 @@ const UiRenderer::UiShaderData& UiRenderer::GetUiShaderData()
 
 AZ::Matrix4x4 UiRenderer::GetModelViewProjectionMatrix()
 {
-    auto viewContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
-    auto viewportContext = viewContextManager->GetViewportContextByName(viewContextManager->GetDefaultViewportContextName());
+    auto viewportContext = GetViewportContext();
     auto windowContext = viewportContext->GetWindowContext();
 
     const AZ::RHI::Viewport& viewport = windowContext->GetViewport();
@@ -189,8 +254,7 @@ AZ::Matrix4x4 UiRenderer::GetModelViewProjectionMatrix()
 
 AZ::Vector2 UiRenderer::GetViewportSize()
 {
-    auto viewContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
-    auto viewportContext = viewContextManager->GetViewportContextByName(viewContextManager->GetDefaultViewportContextName());
+    auto viewportContext = GetViewportContext();
     auto windowContext = viewportContext->GetWindowContext();
 
     const AZ::RHI::Viewport& viewport = windowContext->GetViewport();

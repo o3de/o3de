@@ -11,7 +11,7 @@
            GeneratePropertyFriend="True"
            Description="adds a failure directly to the unit testing framework"
            DeprecationUUID="{E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF}"
-           ReplacementClassname="Unit Testing"
+           ReplacementClassName="Unit Testing"
            ReplacementMethodName="Add Failure"
            >
 

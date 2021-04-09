@@ -348,8 +348,7 @@ namespace AzToolsFramework
                     "Prefab", false,
                     "PrefabLoader::SaveTemplate - Unable to save Prefab Template with id: %llu. "
                     "Template with that id is invalid",
-                    templateId
-                );
+                    templateId);
 
                 return AZStd::nullopt;
             }

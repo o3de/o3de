@@ -76,6 +76,7 @@
 #include "EditorPreferencesPageGeneral.h"
 #include "ViewportManipulatorController.h"
 #include "LegacyViewportCameraController.h"
+#include "ModernViewportCameraController.h"
 
 #include "ViewPane.h"
 #include "CustomResolutionDlg.h"
@@ -92,6 +93,7 @@
 // Atom
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/ViewportContextManager.h>
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Math/MatrixUtils.h>
 
 #include <QtGui/private/qhighdpiscaling_p.h>
@@ -105,6 +107,10 @@ void StartFixedCursorMode(QObject *viewport);
 
 #define RENDER_MESH_TEST_DISTANCE (0.2f)
 #define CURSOR_FONT_HEIGHT  8.0f
+
+AZ_CVAR(
+    bool, ed_useNewCameraSystem, false, nullptr, AZ::ConsoleFunctorFlags::Null,
+    "Use the new Editor camera system (the Atom-native Editor viewport (experimental) must also be enabled)");
 
 namespace AZ::ViewportHelpers
 {
@@ -1236,7 +1242,16 @@ void EditorViewportWidget::SetViewportId(int id)
     viewportContext->ConnectProjectionMatrixChangedHandler(m_cameraProjectionMatrixChangeHandler);
 
     m_renderViewport->GetControllerList()->Add(AZStd::make_shared<SandboxEditor::ViewportManipulatorController>());
-    m_renderViewport->GetControllerList()->Add(AZStd::make_shared<SandboxEditor::LegacyViewportCameraController>());
+
+    if (ed_useNewCameraSystem)
+    {
+        m_renderViewport->GetControllerList()->Add(AZStd::make_shared<SandboxEditor::ModernViewportCameraController>());
+    }
+    else
+    {
+        m_renderViewport->GetControllerList()->Add(AZStd::make_shared<SandboxEditor::LegacyViewportCameraController>());
+    }
+
     UpdateScene();
 }
 

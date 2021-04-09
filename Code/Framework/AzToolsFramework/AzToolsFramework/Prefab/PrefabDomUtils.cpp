@@ -127,12 +127,12 @@ namespace AzToolsFramework
                 InstanceEntityScrubber instanceEntityScrubber(newlyAddedEntities);
                 settings.m_metadata.Add(&instanceEntityScrubber);
 
-                AZ::JsonSerializationResult::ResultCode result =
-                    AZ::JsonSerialization::Load(instance, prefabDom, settings);
+                AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::Load(instance, prefabDom, settings);
 
                 if (result.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
                 {
-                    AZ_Error("Prefab", false,
+                    AZ_Error(
+                        "Prefab", false,
                         "Failed to de-serialize Prefab Instance from Prefab DOM. "
                         "Unable to proceed.");
 

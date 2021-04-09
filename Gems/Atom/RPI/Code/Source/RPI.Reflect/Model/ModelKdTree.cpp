@@ -138,31 +138,14 @@ namespace AZ
 
         AZStd::array_view<float> ModelKdTree::GetPositionsBuffer(const ModelLodAsset::Mesh& mesh)
         {
-            const BufferAssetView* positionBufferAssetView = mesh.GetSemanticBufferAssetView(AZ::Name{"POSITION"});
-            if (positionBufferAssetView)
-            {
-                const AZStd::array_view<uint8_t> positionRawBuffer = positionBufferAssetView->GetBufferAsset()->GetBuffer();
-                const auto size = positionBufferAssetView->GetBufferViewDescriptor().m_elementSize;
-                return {
-                    reinterpret_cast<const float*>(positionRawBuffer.data() + positionBufferAssetView->GetBufferViewDescriptor().m_elementOffset * size),
-                    positionBufferAssetView->GetBufferViewDescriptor().m_elementCount * size / sizeof(float)
-                };
-            }
-
-            AZ_Warning("ModelKdTree", false, "Could not find position buffers in a mesh");
-            return {};
+            AZStd::array_view<float> positionBuffer = mesh.GetSemanticBufferTyped<float>(AZ::Name{"POSITION"});
+            AZ_Warning("ModelKdTree", !positionBuffer.empty(), "Could not find position buffers in a mesh");
+            return positionBuffer;
         }
 
         AZStd::array_view<ModelKdTree::TriangleIndices> ModelKdTree::GetIndexBuffer(const ModelLodAsset::Mesh& mesh)
         {
-            const BufferAssetView& indexBufferAssetView = mesh.GetIndexBufferAssetView();
-            const AZStd::array_view<uint8_t> indexRawBuffer = indexBufferAssetView.GetBufferAsset()->GetBuffer();
-            const auto size = indexBufferAssetView.GetBufferViewDescriptor().m_elementSize;
-            static_assert(sizeof(TriangleIndices) == 3 * sizeof(uint32_t));
-            return {
-                reinterpret_cast<const TriangleIndices*>(indexRawBuffer.data() + indexBufferAssetView.GetBufferViewDescriptor().m_elementOffset * size),
-                indexBufferAssetView.GetBufferViewDescriptor().m_elementCount * size / sizeof(TriangleIndices)
-            };
+            return mesh.GetIndexBufferTyped<ModelKdTree::TriangleIndices>();
         }
 
         void ModelKdTree::BuildRecursively(ModelKdTreeNode* pNode, const AZ::Aabb& boundbox, AZStd::vector<ObjectIdTriangleIndices>& indices)

@@ -100,7 +100,7 @@ namespace ScriptCanvasBuilder
             // or the fingerprint of the individual job is different.
             size_t fingerprint = ScriptCanvas::BehaviorContextUtils::GenerateFingerprintForBehaviorContext();
             builderDescriptor.m_analysisFingerprint = AZStd::string(m_scriptCanvasBuilder.GetFingerprintString())
-                .append(AZStd::string::format("|%zu", fingerprint));
+                .append("|").append(AZStd::to_string(static_cast<AZ::u64>(fingerprint)));
             builderDescriptor.AddFlags(AssetBuilderSDK::AssetBuilderDesc::BF_DeleteLastKnownGoodProductOnFailure, s_scriptCanvasProcessJobKey);
             builderDescriptor.m_productsToKeepOnFailure[s_scriptCanvasProcessJobKey] = { AZ_CRC("SubgraphInterface", 0xdfe6dc72) };
             m_scriptCanvasBuilder.BusConnect(builderDescriptor.m_busId);

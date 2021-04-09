@@ -290,7 +290,7 @@ namespace AZ
 
         void MeshComponentController::UnregisterModel()
         {
-            if (m_meshFeatureProcessor)
+            if (m_meshFeatureProcessor && m_meshHandle.IsValid())
             {
                 MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnModelPreDestroy);
                 m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);

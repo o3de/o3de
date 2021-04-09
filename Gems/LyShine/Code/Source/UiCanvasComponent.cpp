@@ -253,10 +253,16 @@ namespace
             }, context);
     }
 
-    UiRenderer* GetUiRenderer()
+    UiRenderer* GetUiRendererForGame()
     {
         CLyShine* lyShine = static_cast<CLyShine*>(gEnv->pLyShine);
         return lyShine->GetUiRenderer();
+    }
+
+    UiRenderer* GetUiRendererForEditor()
+    {
+        CLyShine* lyShine = static_cast<CLyShine*>(gEnv->pLyShine);
+        return lyShine->GetUiRendererForEditor();
     }
 
     bool IsValidInteractable(const AZ::EntityId& entityId)
@@ -1974,9 +1980,12 @@ void UiCanvasComponent::UpdateCanvasInEditorViewport(float deltaTime, bool isInG
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasComponent::RenderCanvasInEditorViewport(bool isInGame, AZ::Vector2 viewportSize)
 {
-    GetUiRenderer()->BeginUiFrameRender();
-    RenderCanvas(isInGame, viewportSize);
-    GetUiRenderer()->EndUiFrameRender();
+    // When isInGame is true we're rendering the canvas in UI Editor's Preview Mode
+    UiRenderer* uiRenderer = GetUiRendererForEditor();
+    AZ_Assert(uiRenderer, "Trying to render a canvas in the UI Editor before its UIRenderer has been initialized");
+    uiRenderer->BeginUiFrameRender();
+    RenderCanvas(isInGame, viewportSize, uiRenderer);
+    uiRenderer->EndUiFrameRender();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2019,12 +2028,17 @@ void UiCanvasComponent::UpdateCanvas(float deltaTime, bool isInGame)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiCanvasComponent::RenderCanvas(bool isInGame, AZ::Vector2 viewportSize)
+void UiCanvasComponent::RenderCanvas(bool isInGame, AZ::Vector2 viewportSize, UiRenderer* uiRenderer)
 {
     // Ignore render ops if we're not enabled
     if (!m_enabled)
     {
         return;
+    }
+
+    if (!uiRenderer)
+    {
+        uiRenderer = GetUiRendererForGame();
     }
 
     // It is possible, due to the LoadScreenComponent, for this canvas to have Render called while it is rendering.
@@ -2051,9 +2065,9 @@ void UiCanvasComponent::RenderCanvas(bool isInGame, AZ::Vector2 viewportSize)
 
     if (!m_renderGraph.IsEmpty())
     {
-        GetUiRenderer()->BeginCanvasRender();
-        m_renderGraph.Render(GetUiRenderer(), viewportSize);
-        GetUiRenderer()->EndCanvasRender();
+        uiRenderer->BeginCanvasRender();
+        m_renderGraph.Render(uiRenderer, viewportSize);
+        uiRenderer->EndCanvasRender();
     }
 
     m_isRendering = false;
@@ -3724,6 +3738,7 @@ void UiCanvasComponent::DestroyRenderTarget()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasComponent::RenderCanvasToTexture()
 {
+#ifdef LYSHINE_ATOM_TODO
     if (m_renderTargetHandle <= 0)
     {
         return;
@@ -3752,6 +3767,7 @@ void UiCanvasComponent::RenderCanvasToTexture()
 
         GetUiRenderer()->EndUiFrameRender();
     }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

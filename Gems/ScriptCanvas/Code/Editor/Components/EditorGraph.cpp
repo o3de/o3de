@@ -514,8 +514,23 @@ namespace ScriptCanvasEditor
 
     bool Graph::SanityCheckNodeReplacement(ScriptCanvas::Node* oldNode, ScriptCanvas::Node* newNode, AZStd::unordered_map<ScriptCanvas::SlotId, AZStd::vector<ScriptCanvas::SlotId>>& outSlotIdMap)
     {
+        auto findReplacementMatch = [](const ScriptCanvas::Slot* oldSlot, const AZStd::vector<const ScriptCanvas::Slot*>& newSlots)->ScriptCanvas::SlotId
+        {
+            for (auto& newSlot : newSlots)
+            {
+                if (newSlot->GetName() == oldSlot->GetName()
+                && newSlot->GetType() == oldSlot->GetType()
+                && (newSlot->IsExecution() || newSlot->GetDataType() == oldSlot->GetDataType()))
+                {
+                    return newSlot->GetId();
+                }
+            }
+
+            return {};
+        };
+
         oldNode->CustomizeReplacementNode(newNode, outSlotIdMap);
-        // Double check to make sure no stupid thing has been done
+
         if (!newNode)
         {
             AZ_Warning("ScriptCanvas", false, "Replacement node can not be null.");
@@ -523,7 +538,13 @@ namespace ScriptCanvasEditor
         }
 
         AZStd::unordered_map<AZStd::string, AZStd::vector<AZStd::string>> slotNameMap = oldNode->GetReplacementSlotsMap();
-        for (auto oldSlot : oldNode->GetAllSlots())
+
+        const auto newSlots = newNode->GetAllSlots();
+        const auto oldSlots = oldNode->GetAllSlots();
+        bool usingDefaults = true;
+        size_t defaultMatchesFound = 0;
+
+        for (auto oldSlot : oldSlots)
         {
             const ScriptCanvas::SlotId oldSlotId = oldSlot->GetId();
             const AZStd::string oldSlotName = oldSlot->GetName();
@@ -575,12 +596,30 @@ namespace ScriptCanvasEditor
                 }
                 outSlotIdMap.emplace(oldSlot->GetId(), newSlotIds);
             }
+            else if (slotNameMap.empty())
+            {
+                usingDefaults = true;
+                auto newSlotId = findReplacementMatch(oldSlot, newSlots);
+
+                if (newSlotId.IsValid())
+                {
+                    ++defaultMatchesFound;
+                    AZStd::vector<ScriptCanvas::SlotId> slotIds{ newSlotId };
+                    outSlotIdMap.emplace(oldSlot->GetId(), slotIds);
+                }
+            }
             else
             {
                 AZ_Warning("ScriptCanvas", false, "Failed to remap deprecated Node(%s) Slot(%s).", oldNode->GetNodeName().c_str(), oldSlot->GetName().c_str());
                 return false;
             }
         }
+
+        if (usingDefaults && defaultMatchesFound != oldSlots.size())
+        {
+            AZ_Warning("ScriptCanvas", false, "Failed to remap deprecated Node(%s) not all old slots were present in the new node.", oldNode->GetNodeName().c_str());
+        }
+
         return true;
     }
 

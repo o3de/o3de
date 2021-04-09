@@ -10,6 +10,8 @@
 *
 */
 
+#include <AzCore/RTTI/BehaviorContextUtilities.h>
+
 #include <Editor/Components/IconComponent.h>
 #include <Editor/GraphCanvas/PropertySlotIds.h>
 #include <Editor/Nodes/NodeDisplayUtils.h>
@@ -414,16 +416,7 @@ namespace ScriptCanvasEditor::Nodes
         GraphCanvas::NodeTitleRequestBus::EventResult(title, graphCanvasNodeId, &GraphCanvas::NodeTitleRequests::GetTitle);
         if (!title.empty())
         {
-            if (title.ends_with("::Getter"))
-            {
-                AZ::StringFunc::Replace(title, "::Getter", "");
-            }
-
-            if (displayName.ends_with("::Setter"))
-            {
-                AZ::StringFunc::Replace(title, "::Setter", "");
-            }
-
+            AZ::RemovePropertyNameArtifacts(title);
             GraphCanvas::NodeTitleRequestBus::Event(graphCanvasNodeId, &GraphCanvas::NodeTitleRequests::SetTitle, title);
 
         }
