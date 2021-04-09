@@ -2821,6 +2821,7 @@ void EditorViewportWidget::SetAsActiveViewport()
         auto viewportContext = m_pPrimaryViewport->m_renderViewport->GetViewportContext();
         if (viewportContext)
         {
+            // Remove the old viewport's camera from the stack, as it's no longer the owning viewport
             viewportContextManager->PopView(defaultContextName, viewportContext->GetDefaultView());
             viewportContextManager->RenameViewportContext(viewportContext, m_pPrimaryViewport->m_defaultViewportContextName);
         }
@@ -2832,6 +2833,8 @@ void EditorViewportWidget::SetAsActiveViewport()
         auto viewportContext = m_renderViewport->GetViewportContext();
         if (viewportContext)
         {
+            // Push our camera onto the default viewport's view stack to preserve camera state continuity
+            // Other views can still be pushed on top of our view for e.g. game mode
             viewportContextManager->PushView(defaultContextName, viewportContext->GetDefaultView());
             viewportContextManager->RenameViewportContext(viewportContext, defaultContextName);
         }
