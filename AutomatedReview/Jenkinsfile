@@ -16,7 +16,7 @@ INCREMENTAL_BUILD_SCRIPT_PATH = 'scripts/build/bootstrap/incremental_build_util.
 
 EMPTY_JSON = readJSON text: '{}'
 
-ENGINE_REPOSITORY_NAME = env.DEFAULT_REPOSITORY_NAME
+ENGINE_REPOSITORY_NAME = 'o3de'
 
 def pipelineProperties = []
 
