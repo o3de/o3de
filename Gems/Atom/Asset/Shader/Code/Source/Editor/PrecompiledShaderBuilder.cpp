@@ -61,32 +61,58 @@ namespace AZ
             return;
         }
 
-        // setup dependencies on the azsrg asset file names
-        for (const auto& srgFileName : precompiledShaderAsset.m_srgAssetFileNames)
-        {
-            AZStd::string srgAssetPath = RPI::AssetUtils::ResolvePathReference(request.m_sourceFile.c_str(), srgFileName);
-            AssetBuilderSDK::SourceFileDependency dependency;
-            dependency.m_sourceFileDependencyPath = srgAssetPath;
-            response.m_sourceFileDependencyList.push_back(dependency);
-        }
-
-        // setup dependencies on the root azshadervariant asset file names
-        for (const auto& rootShaderVariantAsset : precompiledShaderAsset.m_rootShaderVariantAssets)
-        {
-            AZStd::string rootShaderVariantAssetPath = RPI::AssetUtils::ResolvePathReference(request.m_sourceFile.c_str(), rootShaderVariantAsset->m_rootShaderVariantAssetFileName);
-            AssetBuilderSDK::SourceFileDependency dependency;
-            dependency.m_sourceFileDependencyPath = rootShaderVariantAssetPath;
-            response.m_sourceFileDependencyList.push_back(dependency);
-        }
-
         for (const AssetBuilderSDK::PlatformInfo& platformInfo : request.m_enabledPlatforms)
         {
-            AssetBuilderSDK::JobDescriptor job;
-            job.m_jobKey = PrecompiledShaderBuilderJobKey;
-            job.SetPlatformIdentifier(platformInfo.m_identifier.c_str());
-            job.m_critical = true;
+            AZStd::vector<AZStd::string>::iterator itPlatformIdentifier = AZStd::find(
+                precompiledShaderAsset.m_platformIdentifiers.begin(),
+                precompiledShaderAsset.m_platformIdentifiers.end(),
+                platformInfo.m_identifier);
 
-            response.m_createJobOutputs.push_back(job);
+            if (itPlatformIdentifier != precompiledShaderAsset.m_platformIdentifiers.end())
+            {
+                AZStd::vector<AssetBuilderSDK::JobDependency> jobDependencyList;
+
+                // setup dependencies on the azsrg asset file names
+                for (const auto& srgFileName : precompiledShaderAsset.m_srgAssetFileNames)
+                {
+                    AZStd::string srgAssetPath = RPI::AssetUtils::ResolvePathReference(request.m_sourceFile.c_str(), srgFileName);
+
+                    AssetBuilderSDK::SourceFileDependency sourceDependency;
+                    sourceDependency.m_sourceFileDependencyPath = srgAssetPath;
+                    response.m_sourceFileDependencyList.push_back(sourceDependency);
+
+                    AssetBuilderSDK::JobDependency jobDependency;
+                    jobDependency.m_jobKey = "azsrg";
+                    jobDependency.m_platformIdentifier = platformInfo.m_identifier;
+                    jobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
+                    jobDependency.m_sourceFile = sourceDependency;
+                    jobDependencyList.push_back(jobDependency);
+                }
+
+                // setup dependencies on the root azshadervariant asset file names
+                for (const auto& rootShaderVariantAsset : precompiledShaderAsset.m_rootShaderVariantAssets)
+                {
+                    AZStd::string rootShaderVariantAssetPath = RPI::AssetUtils::ResolvePathReference(request.m_sourceFile.c_str(), rootShaderVariantAsset->m_rootShaderVariantAssetFileName);
+                    AssetBuilderSDK::SourceFileDependency sourceDependency;
+                    sourceDependency.m_sourceFileDependencyPath = rootShaderVariantAssetPath;
+                    response.m_sourceFileDependencyList.push_back(sourceDependency);
+
+                    AssetBuilderSDK::JobDependency jobDependency;
+                    jobDependency.m_jobKey = "azshadervariant";
+                    jobDependency.m_platformIdentifier = platformInfo.m_identifier;
+                    jobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
+                    jobDependency.m_sourceFile = sourceDependency;
+                    jobDependencyList.push_back(jobDependency);
+                }
+
+                AssetBuilderSDK::JobDescriptor job;
+                job.m_jobKey = PrecompiledShaderBuilderJobKey;
+                job.SetPlatformIdentifier(platformInfo.m_identifier.c_str());
+                job.m_jobDependencyList = jobDependencyList;
+                job.m_critical = true;
+
+                response.m_createJobOutputs.push_back(job);
+            }
         }
 
         response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
@@ -151,35 +177,11 @@ namespace AZ
             jobProduct.m_dependencies.push_back(productDependency);
         }
 
-        // retrieve the list of shader platform interfaces for the target platform
-        AZStd::vector<RHI::ShaderPlatformInterface*> platformInterfaces;
-        ShaderBuilder::ShaderPlatformInterfaceRequestBus::BroadcastResult(platformInterfaces, &ShaderBuilder::ShaderPlatformInterfaceRequest::GetShaderPlatformInterface, request.m_platformInfo);
-
         // load the variant product assets
         // these are the dependency root variant asset products that were processed prior to running this job
         RPI::ShaderAssetCreator::ShaderRootVariantAssets rootVariantProductAssets;
         for (AZStd::unique_ptr<RPI::RootShaderVariantAssetSourceData>& rootShaderVariantAsset : precompiledShaderAsset.m_rootShaderVariantAssets)
         {
-            // find the ShaderPlatformInterface for this root shader variant
-            // we need this to map the variant asset to the APIType
-            RHI::ShaderPlatformInterface* foundShaderPlatformInterface = nullptr;
-            for (auto shaderPlatformInterface : platformInterfaces)
-            {
-                if (shaderPlatformInterface->GetAPIName() == rootShaderVariantAsset->m_apiName)
-                {
-                    foundShaderPlatformInterface = shaderPlatformInterface;
-                    break;
-                }
-            }
-
-            if (!foundShaderPlatformInterface)
-            {
-                // skip this shader API since it's not available on the current platform
-                continue;
-            }
-
-            RHI::APIType apiType = foundShaderPlatformInterface->GetAPIType();
-
             // retrieve the variant asset
             auto assetOutcome = RPI::AssetUtils::LoadAsset<RPI::ShaderVariantAsset>(request.m_fullPath, rootShaderVariantAsset->m_rootShaderVariantAssetFileName, 0);
             if (!assetOutcome)
@@ -188,20 +190,12 @@ namespace AZ
                 return;
             }
 
-            rootVariantProductAssets.push_back(AZStd::make_pair(apiType, assetOutcome.GetValue()));
+            rootVariantProductAssets.push_back(AZStd::make_pair(RHI::APIType{ rootShaderVariantAsset->m_apiName.GetCStr() }, assetOutcome.GetValue()));
 
             AssetBuilderSDK::ProductDependency productDependency;
             productDependency.m_dependencyId = assetOutcome.GetValue().GetId();
             productDependency.m_flags = AZ::Data::ProductDependencyInfo::CreateFlags(AZ::Data::AssetLoadBehavior::PreLoad);
             jobProduct.m_dependencies.push_back(productDependency);
-        }
-
-        if (rootVariantProductAssets.empty())
-        {
-            // no shader variants for this platform
-            AZ_Warning(PrecompiledShaderBuilderName, false, "No shader platforms detected for root variants");
-            response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-            return;
         }
 
         // use the ShaderAssetCreator to clone the shader asset, which  will update the embedded Srg and Variant asset UUIDs
@@ -262,7 +256,7 @@ namespace AZ
         fileStream.Read(length, buffer.data());
         buffer.back() = 0;
 
-        AZ::ObjectStream::FilterDescriptor loadFilter(nullptr, AZ::ObjectStream::FILTERFLAG_IGNORE_UNKNOWN_CLASSES);
+        AZ::ObjectStream::FilterDescriptor loadFilter(&AZ::Data::AssetFilterNoAssetLoading, AZ::ObjectStream::FILTERFLAG_IGNORE_UNKNOWN_CLASSES);
         return AZ::Utils::LoadObjectFromBuffer<T>(buffer.data(), length, context, loadFilter);
     }
 } // namespace AZ

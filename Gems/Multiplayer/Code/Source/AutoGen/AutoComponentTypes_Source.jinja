@@ -1,0 +1,23 @@
+#include <AzCore/Component/Component.h>
+{% for Component in dataFiles %}
+{% set ComponentDerived = Component.attrib['OverrideComponent']|booleanTrue %}
+{% set ControllerDerived = Component.attrib['OverrideController']|booleanTrue %}
+{% if ComponentDerived or ControllerDerived %}
+#include <{{ Component.attrib['OverrideInclude'] }}>
+{% else %}
+#include <Source/AutoGen/{{ Component.attrib['Name'] }}.AutoComponent.h>
+{% endif %}
+{% endfor %}
+
+{% set Namespace = dataFiles[0].attrib['Namespace'] %}
+namespace {{ Namespace }}
+{
+    void CreateComponentDescriptors(AZStd::list<AZ::ComponentDescriptor*>& descriptors)
+    {
+        descriptors.insert(descriptors.end(), {
+{% for Component in dataFiles %}
+            {{ Component.attrib['Name'] }}::CreateDescriptor(),
+{% endfor %}
+        });
+    }
+}

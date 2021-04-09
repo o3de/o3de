@@ -331,11 +331,6 @@ void LevelEditorMenuHandler::ResetToolsMenus()
 
     CreateMenuOptions(&menuMap, otherSubMenu, LyViewPane::CategoryOther);
 
-    // Plug-Ins
-    auto plugInsMenu = m_toolsMenu.AddMenu(QObject::tr("Plug-Ins"));
-
-    CreateMenuOptions(&menuMap, plugInsMenu, LyViewPane::CategoryPlugIns);
-
     m_toolsMenu.AddSeparator();
 
     // Optional Sub Menus

@@ -35,8 +35,8 @@ namespace AzToolsFramework
         }
 
         void PrefabUndoInstance::Capture(
-            PrefabDom& initialState,
-            PrefabDom& endState,
+            const PrefabDom& initialState,
+            const PrefabDom& endState,
             const TemplateId& templateId)
         {
             m_templateId = templateId;
@@ -84,7 +84,7 @@ namespace AzToolsFramework
 
         void PrefabUndoEntityUpdate::Undo()
         {
-            bool isPatchApplicationSuccessful =
+            [[maybe_unused]] bool isPatchApplicationSuccessful =
                 m_instanceToTemplateInterface->PatchEntityInTemplate(m_undoPatch, m_entityAlias, m_templateId);
             AZ_Error(
                 "Prefab", isPatchApplicationSuccessful,
@@ -94,7 +94,7 @@ namespace AzToolsFramework
 
         void PrefabUndoEntityUpdate::Redo()
         {
-            bool isPatchApplicationSuccessful =
+            [[maybe_unused]] bool isPatchApplicationSuccessful =
                 m_instanceToTemplateInterface->PatchEntityInTemplate(m_redoPatch, m_entityAlias, m_templateId);
             AZ_Error(
                 "Prefab", isPatchApplicationSuccessful,

@@ -103,10 +103,10 @@ namespace Multiplayer
         //! Helper method to compute clamped array index values accounting for the offset head index.
         AZStd::size_t GetOffsetIndex(AZStd::size_t absoluteIndex) const;
 
-        mutable AzNetworking::ConnectionId m_owningConnectionId = AzNetworking::InvalidConnectionId;
+        AZStd::array<BASE_TYPE, REWIND_SIZE> m_history;
+        AzNetworking::ConnectionId m_owningConnectionId = AzNetworking::InvalidConnectionId;
         ApplicationFrameId m_headTime = ApplicationFrameId{0};
         uint32_t m_headIndex = 0;
-        AZStd::array<BASE_TYPE, REWIND_SIZE> m_history;
     };
 }
 

@@ -327,7 +327,7 @@ namespace AZ
                         using Iterator = typename AllContext<TypeParam>::Iterator;
 
                         Iterator iterator = this->Construct();
-                        Iterator returned = iterator++;
+                        iterator++;
                     }
 
                     // Pre Increment Operator
@@ -344,7 +344,7 @@ namespace AZ
                         using Iterator = typename AllContext<TypeParam>::Iterator;
 
                         Iterator iterator = this->Construct();
-                        Iterator returned = ++iterator;
+                        ++iterator;
                     }
 
                     REGISTER_TYPED_TEST_CASE_P(AllContext,
@@ -691,7 +691,7 @@ namespace AZ
 
                         Iterator iterator = this->Construct();
                         iterator++;
-                        Iterator returned = iterator--;
+                        iterator--;
                     }
 
                     TYPED_TEST_P(BidirectionalContext, PostDecrementOperator_IteratorReturnsOriginalIterator_OriginalIteratorMatchesCopiedValueAndNotMoveIterator)
@@ -734,7 +734,7 @@ namespace AZ
                         using Iterator = typename BidirectionalContext<TypeParam>::Iterator;
 
                         Iterator iterator = this->Construct();
-                        Iterator returned = ++iterator;
+                        ++iterator;
                     }
 
                     TYPED_TEST_P(BidirectionalContext, PreDecrementOperator_IteratorReturnsMovedIterator_OriginalIteratorDoesNotMatchCopiedValueButMovedIteratorDoes)

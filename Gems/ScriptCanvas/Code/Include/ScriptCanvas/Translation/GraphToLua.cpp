@@ -846,7 +846,6 @@ namespace ScriptCanvas
         {
             for (const auto& nameAndEventThread : ebusHandling->m_events)
             {
-                const AZStd::string& eventName = nameAndEventThread.first;
                 const Grammar::ExecutionTreeConstPtr& eventThread = nameAndEventThread.second;
 
                 const bool hasResults = eventThread->HasReturnValues();

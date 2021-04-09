@@ -132,7 +132,6 @@ namespace AzToolsFramework
                 return false;
             }
 
-            PrefabDom& templateDomReference = m_prefabSystemComponentInterface->FindTemplateDom(templateId);
 
             return PatchEntityInTemplate(providedPatch, entityAlias.value(), templateId);
         }
@@ -314,7 +313,6 @@ namespace AzToolsFramework
             PrefabDom& linkDom = link.GetLinkDom();
             PrefabDomValueReference linkPatchesReference =
                 PrefabDomUtils::FindPrefabDomValue(linkDom, PrefabDomUtils::PatchesName);
-            PrefabDom& templateDomReference = m_prefabSystemComponentInterface->FindTemplateDom(link.GetTargetTemplateId());
 
             // This logic only covers addition of patches. If patches already exists, the given list of patches must be appended to them.
             if (!linkPatchesReference.has_value())

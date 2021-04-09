@@ -411,9 +411,6 @@ void    CObjectManager::DeleteObject(CBaseObject* obj)
     obj->GetBoundBox(objAAB);
     GetIEditor()->GetGameEngine()->OnAreaModified(objAAB);
 
-    // Release game resources.
-    CBaseObject* pParent = obj->GetParent();
-
     obj->Done();
 
     NotifyObjectListeners(obj, CBaseObject::ON_DELETE);

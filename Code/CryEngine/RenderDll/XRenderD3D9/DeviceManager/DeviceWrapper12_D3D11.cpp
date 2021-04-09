@@ -855,8 +855,6 @@ void CDeviceGraphicsCommandList::SetInlineConstants([[maybe_unused]] uint32 bind
 
 void CDeviceGraphicsCommandList::SetStencilRefImpl(uint8_t stencilRefValue)
 {
-    auto pCmdList = GET_DX11_COMMANDLIST(this);
-
     ID3D11DepthStencilState* pDS = NULL;
 
     if (m_pCurrentPipelineState)

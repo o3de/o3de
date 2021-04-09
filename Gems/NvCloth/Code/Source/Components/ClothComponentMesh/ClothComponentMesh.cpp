@@ -387,9 +387,14 @@ namespace NvCloth
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
 
+        if (!m_cloth)
+        {
+            return;
+        }
+
         // Calculate normals of the cloth particles (simplified mesh).
         AZStd::vector<AZ::Vector3> normals;
-        bool normalsCalculated =
+        [[maybe_unused]] bool normalsCalculated =
             AZ::Interface<ITangentSpaceHelper>::Get()->CalculateNormals(particles, m_cloth->GetInitialIndices(), normals);
         AZ_Assert(normalsCalculated, "Cloth component mesh failed to calculate normals.");
 
@@ -416,7 +421,7 @@ namespace NvCloth
         }
 
         // Calculate tangents and bitangents for the full mesh.
-        bool tangentsAndBitangentsCalculated =
+        [[maybe_unused]] bool tangentsAndBitangentsCalculated =
             AZ::Interface<ITangentSpaceHelper>::Get()->CalculateTangentsAndBitagents(
                 renderData.m_particles, m_meshClothInfo.m_indices,
                 m_meshClothInfo.m_uvs, renderData.m_normals,
@@ -444,9 +449,9 @@ namespace NvCloth
         const auto& renderBitangents = renderData.m_bitangents;
 
         AZ::Data::Asset<AZ::RPI::ModelAsset> modelAsset;
-        AZ::Render::MeshComponentRequestBus::EventResult(modelAsset, m_entityId,
-            &AZ::Render::MeshComponentRequestBus::Events::GetModelAsset);
-        if (!modelAsset.GetId().IsValid())
+        AZ::Render::MeshComponentRequestBus::EventResult(
+            modelAsset, m_entityId, &AZ::Render::MeshComponentRequestBus::Events::GetModelAsset);
+        if (!modelAsset.IsReady())
         {
             return;
         }

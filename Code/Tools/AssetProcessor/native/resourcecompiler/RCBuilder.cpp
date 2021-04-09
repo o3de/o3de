@@ -150,7 +150,7 @@ namespace AssetProcessor
         return true;
     }
 
-    bool NativeLegacyRCCompiler::Execute(const QString& inputFile, const QString& watchFolder, const QString& platformIdentifier, 
+    bool NativeLegacyRCCompiler::Execute(const QString& inputFile, const QString& watchFolder, const QString& platformIdentifier,
         const QString& params, const QString& dest, const AssetBuilderSDK::JobCancelListener* jobCancelListener, Result& result) const
     {
         if (!this->m_resourceCompilerInitialized)
@@ -177,7 +177,7 @@ namespace AssetProcessor
 
         AZ_TracePrintf("RC Builder", "Executing RC.EXE: '%s' ...\n", processLaunchInfo.m_commandlineParameters.c_str());
         AZ_TracePrintf("Rc Builder", "Executing RC.EXE with working directory: '%s' ...\n", processLaunchInfo.m_workingDirectory.c_str());
-        
+
         AzFramework::ProcessWatcher* watcher = AzFramework::ProcessWatcher::LaunchProcess(processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT);
 
         if (!watcher)
@@ -256,7 +256,6 @@ namespace AssetProcessor
         QString cmdLine;
         if (!dest.isEmpty())
         {
-            QString projectName = AssetUtilities::ComputeProjectName();
             QString projectPath = AssetUtilities::ComputeProjectPath();
 
             int portNumber = 0;
@@ -264,12 +263,12 @@ namespace AssetProcessor
 
             AZStd::string appBranchToken;
             AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::CalculateBranchTokenForEngineRoot, appBranchToken);
-            cmdLine = QString("\"%1\" /p=%2 %3 /unattended=true /gameroot=\"%4\" /watchfolder=\"%6\" /targetroot=\"%5\" /logprefix=\"%5/\" /port=%7 /gamesubdirectory=\"%8\" /branchtoken=\"%9\"");
-            cmdLine = cmdLine.arg(inputFile, platformIdentifier, params, projectPath, dest, watchFolder).arg(portNumber).arg(projectName).arg(appBranchToken.c_str());
+            cmdLine = QString("\"%1\" --platform=%2 %3 --unattended=true --project-path=\"%4\" --watchfolder=\"%6\" --targetroot=\"%5\" --logprefix=\"%5/\" --port=%7 --branchtoken=\"%8\"");
+            cmdLine = cmdLine.arg(inputFile, platformIdentifier, params, projectPath, dest, watchFolder).arg(portNumber).arg(appBranchToken.c_str());
         }
         else
         {
-            cmdLine = QString("\"%1\" /p=%2 %3").arg(inputFile, platformIdentifier, params);
+            cmdLine = QString("\"%1\" --platform=%2 %3").arg(inputFile, platformIdentifier, params);
         }
         return cmdLine;
     }
@@ -365,7 +364,7 @@ namespace AssetProcessor
         return static_cast<AZ::u32>(crc);
     }
 
-    //! Constructor to initialize the internal builders and a general internal builder uuid that is used for bus 
+    //! Constructor to initialize the internal builders and a general internal builder uuid that is used for bus
     //! registration.  This constructor is helpful for deriving other classes from this builder for purposes like
     //! unit testing.
     InternalRecognizerBasedBuilder::InternalRecognizerBasedBuilder(QHash<QString, BuilderIdAndName> inputBuilderByIdMap, AZ::Uuid internalBuilderUuid)
@@ -471,32 +470,32 @@ namespace AssetProcessor
         // inside of each such recognizer is a map of [platform] --> options for that platform.
         // so visualizing this whole struct in summary might look something like
 
-        // "Internal RC Builder" : 
+        // "Internal RC Builder" :
         // {
         //      {                  <----- list of recognizers for that RC builder starts here
         //        regex: "*.tif",
-        //        builderUUID : "12345-12354-123145", 
-        //        platformSpecsByPlatform : 
-        //        { 
+        //        builderUUID : "12345-12354-123145",
+        //        platformSpecsByPlatform :
+        //        {
         //          "pc"  : "streaming = 1",
         //          "ios" : "streaming = 0"
         //        }
         //      },
-        //      { 
+        //      {
         //        regex: "*.png",
-        //        builderUUID : "12345-12354-123145", 
-        //        platformSpecsByPlatform : 
-        //        { 
+        //        builderUUID : "12345-12354-123145",
+        //        platformSpecsByPlatform :
+        //        {
         //          "pc"  : "split=1"
         //        }
         //      },
         // },
         // "Internal Copy Builder",
-        //      { 
+        //      {
         //        regex: "*.cfg",
-        //        builderUUID : "12345-12354-123145", 
-        //        platformSpecsByPlatform : 
-        //        { 
+        //        builderUUID : "12345-12354-123145",
+        //        platformSpecsByPlatform :
+        //        {
         //          "pc"  : "copy",
         //          "ios" : "copy"
         //        }
@@ -517,7 +516,7 @@ namespace AssetProcessor
 
             for (auto internalAssetRecognizer : *internalRecognizerList)
             {
-                // so referring to the structure explanation above, internalAssetRecognizer is 
+                // so referring to the structure explanation above, internalAssetRecognizer is
                 // one of those objects that has the regex in it, (along with list of commands to apply per platform)
                 if (internalAssetRecognizer->m_platformSpecsByPlatform.size() == 0)
                 {
@@ -560,7 +559,7 @@ namespace AssetProcessor
             if (builderInfo.GetType() == BuilderIdAndName::Type::REGISTERED_BUILDER)
             {
                 AssetBuilderSDK::AssetBuilderDesc builderDesc = CreateBuilderDesc(builderId, builderPatterns);
-                
+
                 // RC Builder also needs to include its platforms and its RC command lines so that if you change this, the jobs
                 // are re-evaluated.
                 size_t currentHash = 0;
@@ -626,7 +625,7 @@ namespace AssetProcessor
                     }
                 }
 
-                
+
             }
         }
         return foundAny;
@@ -646,11 +645,11 @@ namespace AssetProcessor
         QString requestedBuilderID = QString(azBuilderId.c_str());
 
         response.m_result = AssetBuilderSDK::CreateJobsResultCode::Failed;
-        
+
         QDir watchFolder(request.m_watchFolder.c_str());
         QString normalizedPath = watchFolder.absoluteFilePath(request.m_sourceFile.c_str());
         normalizedPath = AssetUtilities::NormalizeFilePath(normalizedPath);
-        
+
         // Locate recognizers that match the file
         InternalRecognizerPointerContainer  recognizers;
         if (!GetMatchingRecognizers(request.m_enabledPlatforms, normalizedPath, recognizers))
@@ -803,15 +802,15 @@ namespace AssetProcessor
                 // If the job fails due to a networking issue, we will attempt to retry RetriesForJobNetworkError times
                 int retryCount = 0;
 
-                do 
+                do
                 {
                     ++retryCount;
                     ProcessLegacyRCJob(request, rcParam, assetRecognizer->m_productAssetType, jobCancelListener, response);
 
-                    AZ_Warning("RC Builder", response.m_resultCode != AssetBuilderSDK::ProcessJobResult_NetworkIssue, "RC.exe reported a network connection issue.  %s", 
+                    AZ_Warning("RC Builder", response.m_resultCode != AssetBuilderSDK::ProcessJobResult_NetworkIssue, "RC.exe reported a network connection issue.  %s",
                         retryCount <= AssetProcessor::RetriesForJobNetworkError ? "Attempting to retry job." : "Maximum retry attempts exceeded, giving up.");
                 } while (response.m_resultCode == AssetBuilderSDK::ProcessJobResult_NetworkIssue && retryCount <= AssetProcessor::RetriesForJobNetworkError);
-                
+
             }
 
             if (jobCancelListener.IsCancelled())
@@ -873,7 +872,7 @@ namespace AssetProcessor
             workDir.removeRecursively();
         }
     }
-    
+
     bool InternalRecognizerBasedBuilder::SaveProcessJobRequestFile(const char* requestFileDir, const char* requestFileName, const AssetBuilderSDK::ProcessJobRequest& request)
     {
         AZStd::string finalFullPath;
@@ -886,7 +885,7 @@ namespace AssetProcessor
 
         return true;
     }
-    
+
     bool InternalRecognizerBasedBuilder::LoadProcessJobResponseFile(const char* responseFileDir, const char* responseFileName, AssetBuilderSDK::ProcessJobResponse& response, bool& responseLoaded)
     {
         responseLoaded = false;
@@ -914,7 +913,7 @@ namespace AssetProcessor
         return true;
     }
 
-    void InternalRecognizerBasedBuilder::ProcessLegacyRCJob(const AssetBuilderSDK::ProcessJobRequest& request, QString rcParam, 
+    void InternalRecognizerBasedBuilder::ProcessLegacyRCJob(const AssetBuilderSDK::ProcessJobRequest& request, QString rcParam,
         AZ::Uuid productAssetType, const AssetBuilderSDK::JobCancelListener& jobCancelListener, AssetBuilderSDK::ProcessJobResponse& response)
     {
         // Process this job
@@ -954,7 +953,7 @@ namespace AssetProcessor
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
             return;
         }
-        
+
         if (!responseFromRCCompiler)
         {
             if(rcResult.m_exitCode != 0)
@@ -1094,7 +1093,7 @@ namespace AssetProcessor
                     AzFramework::StringFunc::Path::Join(dest.toUtf8().constData(), productName.c_str(), joinedPath);
                     productName.swap(joinedPath);
                 }
-          
+
                 // update it in the structure to be absolute normalized path.
                 product.m_productFileName = productName;
 
@@ -1139,10 +1138,10 @@ namespace AssetProcessor
     }
 
     void InternalRecognizerBasedBuilder::ProcessCopyJob(
-        const AssetBuilderSDK::ProcessJobRequest& request, 
-        AZ::Uuid productAssetType, 
-        bool outputProductDependencies, 
-        const AssetBuilderSDK::JobCancelListener& jobCancelListener, 
+        const AssetBuilderSDK::ProcessJobRequest& request,
+        AZ::Uuid productAssetType,
+        bool outputProductDependencies,
+        const AssetBuilderSDK::JobCancelListener& jobCancelListener,
         AssetBuilderSDK::ProcessJobResponse& response)
     {
         AssetBuilderSDK::JobProduct jobProduct(request.m_fullPath, productAssetType);
@@ -1151,7 +1150,7 @@ namespace AssetProcessor
         {
             jobProduct.m_dependenciesHandled = true; // Copy jobs are meant to be used for assets that have no dependencies and just need to be copied.
         }
-        
+
         response.m_outputProducts.push_back(jobProduct);
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
 

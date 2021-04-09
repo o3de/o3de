@@ -187,7 +187,7 @@ namespace AZ
         void LightCullingPass::SetLightListToSRG()
         {
             auto inputIndex = m_shaderResourceGroup->FindShaderInputBufferIndex(AZ::Name("m_lightList"));
-            bool succeeded = m_shaderResourceGroup->SetBuffer(inputIndex, m_lightList);
+            [[maybe_unused]] bool succeeded = m_shaderResourceGroup->SetBuffer(inputIndex, m_lightList);
             AZ_Assert(succeeded, "SetImage failed for light list");
         }
 

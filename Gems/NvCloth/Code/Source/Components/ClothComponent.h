@@ -14,7 +14,7 @@
 
 #include <AzCore/Component/Component.h>
 
-#include <LmbrCentral/Rendering/MeshComponentBus.h>
+#include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
 
 #include <Components/ClothConfiguration.h>
 #include <Components/ClothComponentMesh/ClothComponentMesh.h>
@@ -24,7 +24,7 @@ namespace NvCloth
     //! Class for runtime Cloth Component.
     class ClothComponent
         : public AZ::Component
-        , public LmbrCentral::MeshComponentNotificationBus::Handler
+        , public AZ::Render::MeshComponentNotificationBus::Handler
     {
     public:
         AZ_COMPONENT(ClothComponent, "{AC9B8FA0-A6DA-4377-8219-25BA7E4A22E9}");
@@ -46,9 +46,9 @@ namespace NvCloth
         void Activate() override;
         void Deactivate() override;
 
-        // LmbrCentral::MeshComponentNotificationBus::Handler overrides ...
-        void OnMeshCreated(const AZ::Data::Asset<AZ::Data::AssetData>& asset) override;
-        void OnMeshDestroyed() override;
+        // AZ::Render::MeshComponentNotificationBus::Handler overrides ...
+        void OnModelReady(const AZ::Data::Asset<AZ::RPI::ModelAsset>& modelAsset, const AZ::Data::Instance<AZ::RPI::Model>& model) override;
+        void OnModelDestroyed(); // [TODO LYN-1886] Add override once it's part of MeshComponentNotificationBus
 
     private:
         ClothConfiguration m_config;

@@ -329,7 +329,7 @@ namespace ScriptCanvasBuilder
                     }
 
                     nodeLookUpMap.erase(nodePair.second->GetId());
-                    size_t eraseCount = compiledGraphData.m_nodes.erase(nodePair.second);
+                    [[maybe_unused]] size_t eraseCount = compiledGraphData.m_nodes.erase(nodePair.second);
                     AZ_Assert(eraseCount == 1, "Failed to erase node from compiled graph data");
 
                     delete node;

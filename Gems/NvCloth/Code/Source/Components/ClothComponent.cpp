@@ -56,18 +56,23 @@ namespace NvCloth
             return;
         }
 
-        LmbrCentral::MeshComponentNotificationBus::Handler::BusConnect(GetEntityId());
+        AZ::Render::MeshComponentNotificationBus::Handler::BusConnect(GetEntityId());
     }
 
     void ClothComponent::Deactivate()
     {
-        LmbrCentral::MeshComponentNotificationBus::Handler::BusDisconnect();
+        AZ::Render::MeshComponentNotificationBus::Handler::BusDisconnect();
 
         m_clothComponentMesh.reset();
     }
 
-    void ClothComponent::OnMeshCreated(const AZ::Data::Asset<AZ::Data::AssetData>& asset)
+    void ClothComponent::OnModelReady(
+        const AZ::Data::Asset<AZ::RPI::ModelAsset>& asset,
+        [[maybe_unused]] const AZ::Data::Instance<AZ::RPI::Model>& model)
     {
+        // [TODO LYN-1886] Remove this call once OnModelDestroyed is part of MeshComponentNotificationBus
+        OnModelDestroyed();
+
         if (!asset.IsReady())
         {
             return;
@@ -76,7 +81,7 @@ namespace NvCloth
         m_clothComponentMesh = AZStd::make_unique<ClothComponentMesh>(GetEntityId(), m_config);
     }
 
-    void ClothComponent::OnMeshDestroyed()
+    void ClothComponent::OnModelDestroyed()
     {
         m_clothComponentMesh.reset();
     }

@@ -317,7 +317,6 @@ void UiRenderer::DebugDisplayTextureData(int recordingOption)
 
         float xOffset = 20.0f;
         float yOffset = 20.0f;
-        float xSpacing = 20.0f;
 
         int blackTexture = gEnv->pRenderer->GetBlackTextureId();
         float textOpacity = 1.0f;

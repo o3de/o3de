@@ -1188,8 +1188,8 @@ namespace AZ::IO
                 if (az_archive_verbosity)
                 {
                     char fileNameBuffer[AZ_MAX_PATH_LEN];
-                    const char* fileName = AZ::IO::FileIOBase::GetDirectInstance()->GetFilename(fileHandle, fileNameBuffer, AZ_ARRAY_SIZE(fileNameBuffer))
-                        ? fileNameBuffer : "unknown";
+                    [[maybe_unused]] const char* fileName = AZ::IO::FileIOBase::GetDirectInstance()->GetFilename(fileHandle, fileNameBuffer,
+                            AZ_ARRAY_SIZE(fileNameBuffer)) ? fileNameBuffer : "unknown";
                     AZ_TracePrintf("Archive", R"(Perf Warning: First call to read file "%s" made from multiple threads concurrently)" "\n",
                         fileName);
                 }
@@ -1914,7 +1914,6 @@ namespace AZ::IO
         AZ::IO::StackString pathStr{ szPathIn };
         // Determine if there is a period ('.') after the last slash to determine if the path contains a file.
         // This used to be a strchr on the whole path which could contain a period in a path, such as network domain paths (domain.user).
-        bool bPathContainsFile = false;
         size_t findDotFromPos = pathStr.rfind(AZ_CORRECT_FILESYSTEM_SEPARATOR);
         if (findDotFromPos == AZ::IO::StackString::npos)
         {
@@ -2046,7 +2045,6 @@ namespace AZ::IO
 
             uint8_t pMem[dwChunkSize];
 
-            uint32_t dwSize = 0;
 
             AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
             if (!fileIO)
@@ -2453,11 +2451,13 @@ namespace AZ::IO
     ArchiveLocationPriority Archive::GetPakPriority() const
     {
         int pakPriority = aznumeric_cast<int>(ArchiveVars{}.nPriority);
+#if defined(AZ_ENABLE_TRACING)
         if (auto console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
         {
             AZ::GetValueResult getCvarResult = console->GetCvarValue("sys_PakPriority", pakPriority);
             AZ_Error("Archive", getCvarResult == AZ::GetValueResult::Success, "Lookup of 'sys_PakPriority console variable failed with error %s", AZ::GetEnumString(getCvarResult));
         }
+#endif
         return static_cast<ArchiveLocationPriority>(pakPriority);
     }
 
@@ -2579,10 +2579,6 @@ namespace AZ::IO
             AZ_Assert(false, "Unable to resolve path for filepath %.*s", aznumeric_cast<int>(szName.size()), szName.data());
             return static_cast<EStreamSourceMediaType>(0);
         }
-
-        ZipDir::CachePtr pZip;
-        uint32_t archFlags;
-        ZipDir::FileEntry* pFileEntry = FindPakFileEntry(szFullPath->Native(), archFlags, &pZip, false);
 
         enum StreamMediaType : int32_t
         {

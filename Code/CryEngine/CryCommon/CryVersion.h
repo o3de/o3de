@@ -48,23 +48,27 @@ struct SFileVersion
 
         char* p;
         char* next = nullptr;
-        size_t strmax = sizeof(t);
-        if (!(p = azstrtok(t, &strmax, ".", &next)))
+        [[maybe_unused]] size_t strmax = sizeof(t);
+        p = azstrtok(t, &strmax, ".", &next);
+        if (!p)
         {
             return;
         }
         v[3] = atoi(p);
-        if (!(p = azstrtok(nullptr, &strmax, ".", &next)))
+        p = azstrtok(nullptr, &strmax, ".", &next);
+        if (!p)
         {
             return;
         }
         v[2] = atoi(p);
-        if (!(p = azstrtok(nullptr, &strmax, ".", &next)))
+        p = azstrtok(nullptr, &strmax, ".", &next);
+        if (!p)
         {
             return;
         }
         v[1] = atoi(p);
-        if (!(p = azstrtok(nullptr, &strmax, ".", &next)))
+        p = azstrtok(nullptr, &strmax, ".", &next);
+        if (!p)
         {
             return;
         }

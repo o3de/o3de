@@ -248,16 +248,20 @@ namespace ScriptCanvas
             // The method is not in the behaviorContext Global Methods, so check the Global Properties
             for (auto [propertyName, behaviorProperty] : behaviorContext->m_properties)
             {
-                if (behaviorProperty->m_getter && behaviorProperty->m_getter->m_name == methodName)
+                AZStd::string getterName = AZStd::string::format("%s::Getter", methodName.data());
+                AZStd::string setterName = AZStd::string::format("%s::Setter", methodName.data());
+
+                if (behaviorProperty->m_getter && (behaviorProperty->m_getter->m_name == methodName || behaviorProperty->m_getter->m_name == getterName))
                 {
                     method = behaviorProperty->m_getter;
                     break;
                 }
-                if (behaviorProperty->m_setter && behaviorProperty->m_setter->m_name == methodName)
+                if (behaviorProperty->m_setter && (behaviorProperty->m_setter->m_name == methodName || behaviorProperty->m_setter->m_name == setterName))
                 {
                     method = behaviorProperty->m_setter;
                     break;
                 }
+
             }
 
             if (!method)

@@ -538,7 +538,6 @@ IGeomCache::SStatistics CGeomCache::GetStatistics() const
 
     std::set<uint16> materialIds;
 
-    CGeomCacheMeshManager& meshManager = GetGeomCacheManager()->GetMeshManager();
 
     const uint numMeshes = m_staticMeshData.size();
     for (uint i = 0; i < numMeshes; ++i)

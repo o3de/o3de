@@ -1,0 +1,4 @@
+{
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "parentMaterial": "Materials/Presets/PBR/default_grid.material"
+}

@@ -71,8 +71,6 @@ class TestsMissingDependencies_WindowsAndMac(object):
         self._asset_processor.add_source_folder_assets(f"{self._workspace.project}\\textures")
         self._asset_processor.add_source_folder_assets(f"{self._workspace.project}\\UI")
         self._asset_processor.add_source_folder_assets(f"{self._workspace.project}\\libs\\particles")
-        asset_processor.copy_assets_to_project(['Game.xml'], os.path.join(self._workspace.paths.dev(), self._workspace.project, 'Config'),
-                                               os.path.join(self._asset_processor.temp_asset_root(), self._workspace.project, 'Config'))
 
     def do_missing_dependency_test(self, source_product, expected_dependencies,
                                    dsp_param,

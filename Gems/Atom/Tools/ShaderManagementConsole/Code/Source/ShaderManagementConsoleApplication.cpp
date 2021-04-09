@@ -412,8 +412,9 @@ namespace ShaderManagementConsole
         appType.m_maskValue = AZ::ApplicationTypeQuery::Masks::Game;
     }
 
-    void ShaderManagementConsoleApplication::OnTraceMessage(AZStd::string_view message)
+    void ShaderManagementConsoleApplication::OnTraceMessage([[maybe_unused]] AZStd::string_view message)
     {
+#if defined(AZ_ENABLE_TRACING)
         AZStd::vector<AZStd::string> lines;
         AzFramework::StringFunc::Tokenize(
             message,
@@ -427,6 +428,7 @@ namespace ShaderManagementConsole
         {
             AZ_TracePrintf("Shader Management Console", "Python: %s\n", line.c_str());
         }
+#endif
     }
 
     void ShaderManagementConsoleApplication::OnErrorMessage(AZStd::string_view message)

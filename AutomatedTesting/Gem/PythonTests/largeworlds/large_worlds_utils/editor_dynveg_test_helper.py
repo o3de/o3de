@@ -40,7 +40,7 @@ def create_surface_entity(name, center_point, box_size_x, box_size_y, box_size_z
 
 def create_mesh_surface_entity_with_slopes(name, center_point, scale_x, scale_y, scale_z):
     # Creates an entity with the assigned mesh_asset as the specified scale and sets up as a planting surface
-    mesh_asset_path = os.path.join("Objects", "default", "primitive_sphere.cgf")
+    mesh_asset_path = os.path.join("models", "sphere.azmodel")
     mesh_asset = asset.AssetCatalogRequestBus(bus.Broadcast, "GetAssetIdByPath", mesh_asset_path, math.Uuid(),
                                               False)
     surface_entity = hydra.Entity(name)
@@ -50,7 +50,7 @@ def create_mesh_surface_entity_with_slopes(name, center_point, scale_x, scale_y,
     )
     if surface_entity.id.IsValid():
         print(f"'{surface_entity.name}' created")
-    hydra.get_set_test(surface_entity, 0, "MeshComponentRenderNode|Mesh asset", mesh_asset)
+    hydra.get_set_test(surface_entity, 0, "Controller|Configuration|Mesh Asset", mesh_asset)
     components.TransformBus(bus.Event, "SetLocalScale", surface_entity.id, math.Vector3(scale_x, scale_y, scale_z))
     return surface_entity
 

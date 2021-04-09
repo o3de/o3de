@@ -77,7 +77,6 @@ CEngineSettingsBackendWin32::CEngineSettingsBackendWin32(CEngineSettingsManager*
 
 std::wstring CEngineSettingsBackendWin32::GetModuleFilePath() const
 {
-    HMODULE hInstance = GetModuleHandleW(moduleName().c_str());
     wchar_t szFilename[_MAX_PATH];
     GetModuleFileNameW((HINSTANCE)&__ImageBase, szFilename, _MAX_PATH);
     wchar_t drive[_MAX_DRIVE];

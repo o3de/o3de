@@ -1489,7 +1489,6 @@ public:
 
 inline SShaderTechnique* SShaderItem::GetTechnique() const
 {
-    SShaderTechnique* pTech = NULL;
     int nTech = m_nTechnique;
     if (nTech < 0)
     {

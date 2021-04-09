@@ -202,7 +202,7 @@ namespace
 
         // read in the length of the expected start string
         char* buffer = new char[expectedStartLen];
-        size_t bytesRead = file.ReadRaw(buffer, expectedStartLen);
+        file.ReadRaw(buffer, expectedStartLen);
 
         // match is true if the string read from the file matches the expected start string
         bool match = strncmp(expectedStart, buffer, expectedStartLen) == 0;
@@ -838,7 +838,7 @@ AZStd::string UiCanvasComponent::SaveToXmlString()
 
     AZStd::string charBuffer;
     AZ::IO::ByteContainerStream<AZStd::string > charStream(&charBuffer);
-    bool success = SaveCanvasToStream(charStream, AZ::ObjectStream::ST_XML);
+    [[maybe_unused]] bool success = SaveCanvasToStream(charStream, AZ::ObjectStream::ST_XML);
 
     AZ_Assert(success, "Failed to serialize canvas entity to XML");
     return charBuffer;
@@ -3947,7 +3947,7 @@ void UiCanvasComponent::GetOrphanedElements(AZ::SliceComponent::EntityList& orph
     AzFramework::SliceEntityOwnershipServiceRequestBus::EventResult(rootSlice, m_entityContext->GetContextId(),
         &AzFramework::SliceEntityOwnershipServiceRequests::GetRootSlice);
 
-    bool result = rootSlice->GetEntities(entities);
+    rootSlice->GetEntities(entities);
 
     // We want to quickly check that every UiElement entity is referenced from the canvas.
     // We know that at this point all referenced elements have had FixupPostLoad called but
@@ -4023,7 +4023,7 @@ UiCanvasComponent* UiCanvasComponent::CreateCanvasInternal(UiEntityContext* enti
     UiElementComponent* elementComponent = rootEntity->CreateComponent<UiElementComponent>();
     AZ_Assert(elementComponent, "Failed to add UiElementComponent to entity");
     elementComponent->SetCanvas(canvasComponent, canvasComponent->GenerateId());
-    AZ::Component* transformComponent = rootEntity->CreateComponent<UiTransform2dComponent>();
+    [[maybe_unused]] AZ::Component* transformComponent = rootEntity->CreateComponent<UiTransform2dComponent>();
     AZ_Assert(transformComponent, "Failed to add transform2d component to entity");
 
     rootEntity->Activate();  // re-activate

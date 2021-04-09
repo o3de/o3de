@@ -438,7 +438,7 @@ namespace ScriptCanvasEditor
                         AZ::EntityId newConnectionId;
                         GraphCanvas::SlotRequestBus::EventResult(newConnectionId, newEndpoint.m_slotId, &GraphCanvas::SlotRequests::CreateConnectionWithEndpoint, targetEndpoint);
 
-                        bool created = graph->CreateConnection(newConnectionId, newEndpoint, targetEndpoint);
+                        [[maybe_unused]] bool created = graph->CreateConnection(newConnectionId, newEndpoint, targetEndpoint);
                         AZ_Warning("ScriptCanvas", created, "Failed to created connection between migrated endpoints, despite valid connection check.");
                     }
                 }
@@ -635,7 +635,6 @@ namespace ScriptCanvasEditor
                             if (variable)
                             {
                                 // functions 2.0 set variable scope to function 
-                                auto connectionType = slot->GetConnectionType();
                                 if (variable->GetScope() != ScriptCanvas::VariableFlags::Scope::Function)
                                 {
                                     variable->SetScope(ScriptCanvas::VariableFlags::Scope::Function);
@@ -2270,11 +2269,23 @@ namespace ScriptCanvasEditor
             ScriptCanvas::GraphVariableManagerRequestBus::EventResult(nameAvailable, GetScriptCanvasId(), &ScriptCanvas::GraphVariableManagerRequests::IsNameAvailable, variableName);
         }
 
+        int nameCount = 0;
         while (!nameAvailable)
         {
-            variableName.append(" (duplicate)");
+            if (nameCount == 0)
+            {
+                variableName.append(AZStd::string::format(" (%d)", ++nameCount));
+            }
+            else
+            {
+                AZ::StringFunc::Replace(variableName, AZStd::string::format("(%d)", nameCount-1).c_str(), AZStd::string::format("(%d)", nameCount).c_str());
+                ++nameCount;
+            }
+
             ScriptCanvas::GraphVariableManagerRequestBus::EventResult(nameAvailable, GetScriptCanvasId(), &ScriptCanvas::GraphVariableManagerRequests::IsNameAvailable, variableName);
         }
+
+        activeSlot->Rename(variableName);
 
         ScriptCanvas::Datum variableDatum;
 

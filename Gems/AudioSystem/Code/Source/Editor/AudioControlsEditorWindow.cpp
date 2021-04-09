@@ -128,7 +128,6 @@ namespace AudioControls
     //-------------------------------------------------------------------------------------------//
     void CAudioControlsEditorWindow::keyPressEvent(QKeyEvent* pEvent)
     {
-        uint16 mod = pEvent->modifiers();
         if (pEvent->key() == Qt::Key_S && pEvent->modifiers() == Qt::ControlModifier)
         {
             Save();

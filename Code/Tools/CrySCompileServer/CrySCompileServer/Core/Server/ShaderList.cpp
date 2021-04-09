@@ -74,7 +74,7 @@ void CShaderList::Add(const std::string& rShaderListName, const char* pLine)
             CCrySimpleMutexAutoLock Lock2(m_Mutex2); //load/save mutex
             m_ShaderLists[rShaderListName] = new CShaderListFile(rShaderListName);
             it  =   m_ShaderLists.find(rShaderListName);
-            it->second->Load((SEnviropment::Instance().m_CachePath + rShaderListName).c_str());
+            it->second->Load((SEnviropment::Instance().m_CachePath / AZStd::string_view{ rShaderListName.c_str(), rShaderListName.size() }).c_str());
         }
     }
     it->second->InsertLine(pLine);

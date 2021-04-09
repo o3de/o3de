@@ -864,9 +864,6 @@ void CLocalMemoryUsage::OnRender(IRenderer* pRenderer, const CCamera* camera)
                 }
             }
 
-            float localMemoryTextureStreamingSpeedLimit = sys_LocalMemoryTextureStreamingSpeedLimit  * 1024.f * 1024.f;
-            float localMemoryStatObjStreamingSpeedLimit = sys_LocalMemoryGeometryStreamingSpeedLimit * 1024.f * 1024.f;
-
             sector++;
         }
     }
@@ -1335,7 +1332,6 @@ void CLocalMemoryUsage::CollectMaterialInfo_Recursive(SMaterialInfo* materialInf
         for (auto iter = rItem.m_pShaderResources->GetTexturesResourceMap()->begin(); 
             iter != rItem.m_pShaderResources->GetTexturesResourceMap()->end(); ++iter)
         {
-            uint16                  texId = iter->first;
             const SEfResTexture*    pTextureRes = &iter->second;
 
             if (pTextureRes->m_Sampler.m_pITex)

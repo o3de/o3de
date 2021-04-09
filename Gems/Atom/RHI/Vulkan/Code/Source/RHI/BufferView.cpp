@@ -112,7 +112,6 @@ namespace AZ
 
         VkAccelerationStructureKHR BufferView::GetNativeAccelerationStructure() const
         {
-            const RHI::BufferViewDescriptor& viewDescriptor = GetDescriptor();
             bool hasOverrideFlags = GetDescriptor().m_overrideBindFlags != RHI::BufferBindFlags::None;
             const RHI::BufferBindFlags bindFlags = hasOverrideFlags ? GetDescriptor().m_overrideBindFlags : GetBuffer().GetDescriptor().m_bindFlags;
 

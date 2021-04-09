@@ -94,7 +94,6 @@ def error(message):
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-a', '--action', dest="action", help="Action (mount|unmount|delete)")
-    parser.add_argument('-proj', '--project', dest="project", help="Project")
     parser.add_argument('-pipe', '--pipeline', dest="pipeline", help="Pipeline")
     parser.add_argument('-b', '--branch', dest="branch", help="Branch")
     parser.add_argument('-plat', '--platform', dest="platform", help="Platform")
@@ -108,8 +107,6 @@ def parse_args():
         error('No action specified')
     args.action = args.action.lower()
     if args.action != 'unmount':
-        if args.project is None:
-            error('No project specified')
         if args.pipeline is None:
             error('No pipeline specified')
         if args.branch is None:
@@ -121,8 +118,8 @@ def parse_args():
     
     return args
 
-def get_mount_name(project, pipeline, branch, platform, build_type):
-    mount_name = "{}_{}_{}_{}_{}".format(project, pipeline, branch, platform, build_type)
+def get_mount_name(pipeline, branch, platform, build_type):
+    mount_name = "{}_{}_{}_{}".format(pipeline, branch, platform, build_type)
     mount_name = mount_name.replace('/','_').replace('\\','_')
     return mount_name
 
@@ -174,8 +171,8 @@ def delete_volume(ec2_client, volume_id):
     response = ec2_client.delete_volume(VolumeId=volume_id)
     print 'Volume {} deleted'.format(volume_id)
 
-def find_snapshot_id(ec2_client, project, pipeline, platform, build_type, disk_size):
-    mount_name = get_mount_name(project, pipeline, 'main', platform, build_type) # we take snapshots out of main
+def find_snapshot_id(ec2_client, pipeline, platform, build_type, disk_size):
+    mount_name = get_mount_name(pipeline, 'main', platform, build_type) # we take snapshots out of main
     response = ec2_client.describe_snapshots(Filters= [{
         'Name': 'tag:Name', 'Values': [mount_name]
     }])
@@ -191,9 +188,9 @@ def find_snapshot_id(ec2_client, project, pipeline, platform, build_type, disk_s
                     snapshot_id = snapshot['SnapshotId']
     return snapshot_id
 
-def create_volume(ec2_client, availability_zone, project, pipeline, branch, platform, build_type, disk_size, disk_type):   
+def create_volume(ec2_client, availability_zone, pipeline, branch, platform, build_type, disk_size, disk_type):   
     # The actual EBS default calculation for IOps is a floating point number, the closest approxmiation is 4x of the disk size for simplicity
-    mount_name = get_mount_name(project, pipeline, branch, platform, build_type)
+    mount_name = get_mount_name(pipeline, branch, platform, build_type)
     pipeline_and_branch = get_pipeline_and_branch(pipeline, branch) 
     parameters = dict(
         AvailabilityZone = availability_zone,
@@ -202,7 +199,6 @@ def create_volume(ec2_client, availability_zone, project, pipeline, branch, plat
             'ResourceType': 'volume',
             'Tags': [
                 { 'Key': 'Name', 'Value': mount_name },
-                { 'Key': 'Project', 'Value': project },
                 { 'Key': 'Pipeline', 'Value': pipeline },
                 { 'Key': 'BranchName', 'Value': branch },
                 { 'Key': 'Platform', 'Value': platform },
@@ -214,7 +210,7 @@ def create_volume(ec2_client, availability_zone, project, pipeline, branch, plat
     if 'io1' in disk_type.lower(): 
         parameters['Iops'] = (4 * disk_size)
 
-    snapshot_id = find_snapshot_id(ec2_client, project, pipeline, platform, build_type, disk_size)
+    snapshot_id = find_snapshot_id(ec2_client, pipeline, platform, build_type, disk_size)
     if snapshot_id:
         parameters['SnapshotId'] = snapshot_id
         created = False
@@ -234,8 +230,8 @@ def create_volume(ec2_client, availability_zone, project, pipeline, branch, plat
         time.sleep(1)
         response = ec2_client.describe_volumes(VolumeIds=[volume_id, ])
 
-    print("Volume {} created\n\tSnapshot: {}\n\tProject {}\n\tPipeline {}\n\tBranch {}\n\tPlatform: {}\n\tBuild type: {}"
-        .format(volume_id, snapshot_id, project, pipeline, branch, platform, build_type))
+    print("Volume {} created\n\tSnapshot: {}\n\tPipeline {}\n\tBranch {}\n\tPlatform: {}\n\tBuild type: {}"
+        .format(volume_id, snapshot_id, pipeline, branch, platform, build_type))
     return volume_id, created
 
 
@@ -359,7 +355,7 @@ def attach_ebs_and_create_partition_with_retry(volume, volume_id, ec2_instance_i
                 mount_volume(created)
         attempt += 1
 
-def mount_ebs(project, pipeline, branch, platform, build_type, disk_size, disk_type):
+def mount_ebs(pipeline, branch, platform, build_type, disk_size, disk_type):
     session = boto3.session.Session()
     region = session.region_name
     if region is None:
@@ -379,7 +375,7 @@ def mount_ebs(project, pipeline, branch, platform, build_type, disk_size, disk_t
                 unmount_volume()
                 detach_volume(volume, ec2_instance_id, False) # Force unmounts should not be used, as that will cause the EBS block device driver to fail the remount
 
-    mount_name = get_mount_name(project, pipeline, branch, platform, build_type)
+    mount_name = get_mount_name(pipeline, branch, platform, build_type)
     response = ec2_client.describe_volumes(Filters=[{
         'Name': 'tag:Name', 'Values': [mount_name]
         }])
@@ -388,7 +384,7 @@ def mount_ebs(project, pipeline, branch, platform, build_type, disk_size, disk_t
     if 'Volumes' in response and not len(response['Volumes']):
         print 'Volume for {} doesn\'t exist creating it...'.format(mount_name)
         # volume doesn't exist, create it
-        volume_id, created = create_volume(ec2_client, ec2_availability_zone, project, pipeline, branch, platform, build_type, disk_size, disk_type)
+        volume_id, created = create_volume(ec2_client, ec2_availability_zone, pipeline, branch, platform, build_type, disk_size, disk_type)
     else:
         volume = response['Volumes'][0]
         volume_id = volume['VolumeId']
@@ -396,7 +392,7 @@ def mount_ebs(project, pipeline, branch, platform, build_type, disk_size, disk_t
         if (volume['Size'] != disk_size or volume['VolumeType'] != disk_type):
             print 'Override disk attributes does not match the existing volume, deleting {} and replacing the volume'.format(volume_id)
             delete_volume(ec2_client, volume_id)
-            volume_id, created = create_volume(ec2_client, ec2_availability_zone, project, pipeline, branch, platform, build_type, disk_size, disk_type)
+            volume_id, created = create_volume(ec2_client, ec2_availability_zone, pipeline, branch, platform, build_type, disk_size, disk_type)
         if len(volume['Attachments']):
             # this is bad we shouldn't be attached, we should have detached at the end of a build
             attachment = volume['Attachments'][0]
@@ -426,7 +422,7 @@ def mount_ebs(project, pipeline, branch, platform, build_type, disk_size, disk_t
             print 'Error: EBS disk size reached to the allowed maximum disk size {}MB, please contact ly-infra@ and ly-build@ to investigate.'.format(MAX_EBS_DISK_SIZE)
             exit(1)
         print 'Recreating the EBS with disk size {}'.format(new_disk_size)
-        volume_id, created = create_volume(ec2_client, ec2_availability_zone, project, pipeline, branch, platform, build_type, new_disk_size, disk_type)
+        volume_id, created = create_volume(ec2_client, ec2_availability_zone, pipeline, branch, platform, build_type, new_disk_size, disk_type)
         volume = ec2_resource.Volume(volume_id)
         attach_ebs_and_create_partition_with_retry(volume, volume_id, ec2_instance_id, created)
 
@@ -458,7 +454,7 @@ def unmount_ebs():
         unmount_volume()
         detach_volume(volume, ec2_instance_id, False)
 
-def delete_ebs(project, pipeline, branch, platform, build_type):
+def delete_ebs(pipeline, branch, platform, build_type):
     unmount_ebs()
 
     session = boto3.session.Session()
@@ -470,7 +466,7 @@ def delete_ebs(project, pipeline, branch, platform, build_type):
     ec2_resource = boto3.resource('ec2', region_name=region)
     ec2_instance = ec2_resource.Instance(ec2_instance_id)
 
-    mount_name = get_mount_name(project, pipeline, branch, platform, build_type)
+    mount_name = get_mount_name(pipeline, branch, platform, build_type)
     response = ec2_client.describe_volumes(Filters=[
         { 'Name': 'tag:Name', 'Values': [mount_name] }
     ])
@@ -481,15 +477,15 @@ def delete_ebs(project, pipeline, branch, platform, build_type):
         delete_volume(ec2_client, volume_id)
 
 
-def main(action, project, pipeline, branch, platform, build_type, disk_size, disk_type):
+def main(action, pipeline, branch, platform, build_type, disk_size, disk_type):
     if action == 'mount':
-        mount_ebs(project, pipeline, branch, platform, build_type, disk_size, disk_type)
+        mount_ebs(pipeline, branch, platform, build_type, disk_size, disk_type)
     elif action == 'unmount':
         unmount_ebs()
     elif action == 'delete':
-        delete_ebs(project, pipeline, branch, platform, build_type)
+        delete_ebs(pipeline, branch, platform, build_type)
 
 if __name__ == "__main__":
     args = parse_args()
-    ret = main(args.action, args.project, args.pipeline, args.branch, args.platform, args.build_type, args.disk_size, args.disk_type)
+    ret = main(args.action, args.pipeline, args.branch, args.platform, args.build_type, args.disk_size, args.disk_type)
     sys.exit(ret)

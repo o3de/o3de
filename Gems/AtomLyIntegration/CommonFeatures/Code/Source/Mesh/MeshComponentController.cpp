@@ -87,6 +87,12 @@ namespace AZ
             return values;
         }
 
+        MeshComponentController::~MeshComponentController()
+        {
+            // Release memory, disconnect from buses in the right order and broadcast events so that other components are aware.
+            Deactivate();
+        }
+
         void MeshComponentController::Reflect(ReflectContext* context)
         {
             MeshComponentConfig::Reflect(context);
@@ -130,11 +136,13 @@ namespace AZ
         void MeshComponentController::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
             provided.push_back(AZ_CRC("MaterialReceiverService", 0x0d1a6a74));
+            provided.push_back(AZ_CRC("MeshService", 0x71d8a455));
         }
 
         void MeshComponentController::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
             incompatible.push_back(AZ_CRC("MaterialReceiverService", 0x0d1a6a74));
+            incompatible.push_back(AZ_CRC("MeshService", 0x71d8a455));
         }
 
         // [GFX TODO] [ATOM-13339] Remove the ModelAsset id fix up function in MeshComponentController
@@ -157,7 +165,7 @@ namespace AZ
                 }
                 else
                 {
-                    AZ_Assert(false, "Failed to find asset id for [%s] ", modelAsset.GetHint().c_str());
+                    AZ_Error("MeshComponentController", false, "Failed to find asset id for [%s] ", modelAsset.GetHint().c_str());
                 }
             }
         }
@@ -192,13 +200,14 @@ namespace AZ
 
         void MeshComponentController::Deactivate()
         {
+            // Buses must be disconnected after unregistering the model, otherwise they can't deliver the events during the process.
+            UnregisterModel();
+
             AzFramework::BoundsRequestBus::Handler::BusDisconnect();
             MeshComponentRequestBus::Handler::BusDisconnect();
             TransformNotificationBus::Handler::BusDisconnect();
             MaterialReceiverRequestBus::Handler::BusDisconnect();
             MaterialComponentNotificationBus::Handler::BusDisconnect();
-
-            UnregisterModel();
 
             m_meshFeatureProcessor = nullptr;
             m_transformInterface = nullptr;
@@ -283,6 +292,7 @@ namespace AZ
         {
             if (m_meshFeatureProcessor)
             {
+                MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnModelPreDestroy);
                 m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
             }
         }
@@ -320,7 +330,7 @@ namespace AZ
 
         const Data::Asset<RPI::ModelAsset>& MeshComponentController::GetModelAsset() const
         {
-            return m_configuration.m_modelAsset;
+            return GetModel() ? GetModel()->GetModelAsset() : m_configuration.m_modelAsset;
         }
 
         Data::AssetId MeshComponentController::GetModelAssetId() const

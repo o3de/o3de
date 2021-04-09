@@ -1230,8 +1230,6 @@ namespace EMStudio
         const bool renderWireframe      = widget->GetRenderFlag(RenderViewWidget::RENDER_WIREFRAME);
         const bool renderCollisionMeshes= widget->GetRenderFlag(RenderViewWidget::RENDER_COLLISIONMESHES);
 
-        const EMotionFX::Actor* actor = actorInstance->GetActor();
-
         if (renderVertexNormals || renderFaceNormals || renderTangents || renderWireframe || renderCollisionMeshes)
         {
             // iterate through all enabled nodes

@@ -193,8 +193,7 @@ namespace AZ
          * You will need to setup all system components manually.
          * \returns pointer to the system entity.
          */
-        virtual Entity* Create(const Descriptor& descriptor,
-            const StartupParameters& startupParameters = StartupParameters());
+        virtual Entity* Create(const Descriptor& descriptor, const StartupParameters& startupParameters = StartupParameters());
         virtual void Destroy();
         virtual void DestroyAllocator(); // Called at the end of Destroy(). Applications can override to do tear down work right before allocator is destroyed.
 
@@ -202,6 +201,8 @@ namespace AZ
         // ComponentApplicationRequests
         void RegisterComponentDescriptor(const ComponentDescriptor* descriptor) override final;
         void UnregisterComponentDescriptor(const ComponentDescriptor* descriptor) override final;
+        void RegisterEntityAddedEventHandler(EntityAddedEvent::Handler& handler) override final;
+        void RegisterEntityRemovedEventHandler(EntityRemovedEvent::Handler& handler) override final;
         bool AddEntity(Entity* entity) override;
         bool RemoveEntity(Entity* entity) override;
         bool DeleteEntity(const EntityId& id) override;
@@ -380,6 +381,8 @@ namespace AZ
         float                                       m_deltaTime{ 0.0f };
         AZStd::unique_ptr<ModuleManager>            m_moduleManager;
         AZStd::unique_ptr<SettingsRegistryInterface> m_settingsRegistry;
+        EntityAddedEvent                            m_entityAddedEvent;
+        EntityRemovedEvent                          m_entityRemovedEvent;
         AZ::IConsole*                               m_console{};
         Descriptor                                  m_descriptor;
         bool                                        m_isStarted{ false };

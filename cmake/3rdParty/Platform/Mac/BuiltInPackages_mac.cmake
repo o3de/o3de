@@ -38,7 +38,7 @@ ly_associate_package(PACKAGE_NAME xxhash-0.7.4-rev1-multiplatform               
 ly_associate_package(PACKAGE_NAME PVRTexTool-4.24.0-rev4-multiplatform                   TARGETS PVRTexTool                 PACKAGE_HASH d0d6da61c7557de0d2c71fc35ba56c3be49555b703f0e853d4c58225537acf1e)
 
 # platform-specific:
-ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev1-mac      TARGETS AWSNativeSDK    PACKAGE_HASH 9d0562de258edfd8f14c4cc85ac665cf64b6bf13928d53725e7f90e4ad4672a3)
+ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev2-mac      TARGETS AWSNativeSDK    PACKAGE_HASH 63768a6eb762c1941988dab0cb6fa4b5442989dff8f0b9391efeb83c1ba3786c)
 ly_associate_package(PACKAGE_NAME PhysX-4.1.0.25992954-rev1-mac      TARGETS PhysX           PACKAGE_HASH 149f5e9b44bd27291b1c4772f5e89a1e0efa88eef73c7e0b188935ed4d0c4a70)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-mac              TARGETS mikkelsen       PACKAGE_HASH 83af99ca8bee123684ad254263add556f0cf49486c0b3e32e6d303535714e505)
 ly_associate_package(PACKAGE_NAME googletest-1.8.1-rev4-mac          TARGETS googletest      PACKAGE_HASH cbf020d5ef976c5db8b6e894c6c63151ade85ed98e7c502729dd20172acae5a8)

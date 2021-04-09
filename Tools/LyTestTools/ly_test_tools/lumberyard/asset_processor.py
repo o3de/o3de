@@ -17,20 +17,14 @@ import logging
 import subprocess
 import socket
 import time
-import itertools
-from timeit import default_timer
-import pytest
-import platform
-import random
 import tempfile
 import shutil
 import stat
-from typing import Dict, List, Tuple, Optional, Callable
+from typing import List
 import psutil
 
 import ly_test_tools
 import ly_test_tools.environment.waiter as waiter
-import ly_test_tools.environment.process_utils as process_utils
 import ly_test_tools.environment.file_system as file_system
 import ly_test_tools.lumberyard.pipeline_utils as utils
 from ly_test_tools.lumberyard.ap_log_parser import APLogParser
@@ -49,7 +43,7 @@ ASSET_PROCESSOR_PLATFORM_MAP = {
     'windows': 'pc',
 }
 
-ASSET_PROCESSOR_SETTINGS_ROOT_KEY='/Amazon/AssetProcessor/Settings'
+ASSET_PROCESSOR_SETTINGS_ROOT_KEY = '/Amazon/AssetProcessor/Settings'
 
 class AssetProcessorError(Exception):
     """ Indicates that the AssetProcessor raised an error """
@@ -70,7 +64,7 @@ class AssetProcessor(object):
         self._ap_proc = None
         self._temp_asset_directory = None
         self._temp_asset_root = None
-        self._project_path = self._workspace.project
+        self._project_path = self._workspace.paths.project()
         self._override_scan_folders = []
         self._test_assets_source_folder = None
         self._cache_folder = None
@@ -136,7 +130,6 @@ class AssetProcessor(object):
 
         try:
             self._control_connection.sendall(message.encode())
-
             logger.info(f"Sent input {message}")
             return True
         except IOError as e:
@@ -485,8 +478,7 @@ class AssetProcessor(object):
             logger.warning(f"Cannot capture output when leaving AP connection open.")
 
         logger.info(f"Launching AP with command: {command}")
-        self._ap_proc = subprocess.Popen(command,
-                                         cwd=ap_exe_path)
+        self._ap_proc = subprocess.Popen(command, cwd=ap_exe_path)
 
         if accept_input and not quitonidle:
             self.connect_control()
@@ -668,10 +660,11 @@ class AssetProcessor(object):
             make_dir = os.path.join(self._temp_asset_root, copy_dir)
             if not os.path.isdir(make_dir):
                 os.makedirs(make_dir)
-        for copyfile_name in ['bootstrap.cfg', 'AssetProcessorPlatformConfig.setreg',
+        for copyfile_name in ['bootstrap.cfg',
+                              'AssetProcessorPlatformConfig.setreg',
                               os.path.join(self._workspace.project, "project.json"),
                               os.path.join('Engine', 'exclude.filetag')]:
-            shutil.copyfile(os.path.join(self._workspace.paths.dev(), copyfile_name),
+            shutil.copyfile(os.path.join(self._workspace.paths.engine_root(), copyfile_name),
                             os.path.join(self._temp_asset_root, copyfile_name))
 
     def delete_temp_asset_root(self):
@@ -756,7 +749,7 @@ class AssetProcessor(object):
             if not self._temp_asset_root:
                 logger.warning(f"Can't create scan folder, no temporary asset workspace has been created")
                 return
-            scan_folder = os.path.join(self._temp_asset_root if self._temp_asset_root else self._workspace.paths.dev(),
+            scan_folder = os.path.join(self._temp_asset_root if self._temp_asset_root else self._workspace.paths.engine_root(),
                                        folder_name)
             if not os.path.isdir(scan_folder):
                 os.makedirs(scan_folder)
@@ -901,7 +894,7 @@ class AssetProcessor(object):
             asset root if not supplied
         :return: None
         """
-        source_root = source_root or self._workspace.paths.dev()
+        source_root = source_root or self._workspace.paths.engine_root()
         if not self._temp_asset_root:
             logger.warning(f"Can't add relative source asset, no temporary asset root created")
             return
@@ -966,7 +959,7 @@ class AssetProcessor(object):
             supplied
         :return: path to project cache
         """
-        source_folder = os.path.join(self._workspace.paths.dev(), relative_source)
+        source_folder = os.path.join(self._workspace.paths.engine_root(), relative_source)
         dest_relative = relative_dest or relative_source
         dest_folder = os.path.join(self._temp_asset_root, dest_relative)
         shutil.copytree(source_folder, dest_folder)

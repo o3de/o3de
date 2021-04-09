@@ -668,8 +668,6 @@ namespace ScriptCanvasEditor
         AZ_Assert(graphComponent, "The Script Canvas entity must have a Graph component");
 
 
-        bool isLatest = graphComponent->GetVersion().IsLatest();
-
         bool onlyShowOutdatedGraphs = m_ui->onlyShowOutdated->isChecked();
 
         if (onlyShowOutdatedGraphs && graphComponent->GetVersion().IsLatest())
@@ -837,7 +835,6 @@ namespace ScriptCanvasEditor
         const QTextCursor oldCursor = m_ui->textEdit->textCursor();
         QScrollBar* scrollBar = m_ui->textEdit->verticalScrollBar();
         const int oldScrollValue = scrollBar->value();
-        bool scrolledOffBottom = oldScrollValue != scrollBar->maximum();
 
         m_ui->textEdit->moveCursor(QTextCursor::End);
         QTextCursor textCursor = m_ui->textEdit->textCursor();

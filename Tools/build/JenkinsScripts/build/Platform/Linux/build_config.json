@@ -1,4 +1,12 @@
 {
+  "clean": {
+    "TAGS": [],
+    "COMMAND": "clean_linux.sh",
+    "PARAMETERS": {
+      "OUTPUT_DIRECTORY": "build",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting;AtomTest;AtomSampleViewer"
+    }
+  },
   "profile_pipe": {
     "TAGS": [
       "default"
@@ -97,19 +105,12 @@
       "nightly"
     ],
     "PIPELINE_ENV": {
-      "CLEAN_OUTPUT_DIRECTORY": "1"
+      "CLEAN_ASSETS": "1"
     },
-    "COMMAND": "build_asset_linux.sh",
-    "PARAMETERS": {
-      "CONFIGURATION": "profile",
-      "OUTPUT_DIRECTORY": "build/linux",
-      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
-      "CMAKE_LY_PROJECTS": "AutomatedTesting",
-      "CMAKE_TARGET": "AssetProcessorBatch",
-      "ASSET_PROCESSOR_BINARY": "bin/profile/AssetProcessorBatch",
-      "ASSET_PROCESSOR_OPTIONS": "/zeroAnalysisMode",
-      "ASSET_PROCESSOR_PLATFORMS": "pc,server"
-    }
+    "steps": [
+      "clean",
+      "asset_profile"
+    ]
   },
   "periodic_test_profile": {
     "TAGS": [

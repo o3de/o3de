@@ -39,7 +39,7 @@ ly_associate_package(PACKAGE_NAME Blast-1.1.7-rev1-multiplatform                
 ly_associate_package(PACKAGE_NAME PVRTexTool-4.24.0-rev4-multiplatform                   TARGETS PVRTexTool                 PACKAGE_HASH d0d6da61c7557de0d2c71fc35ba56c3be49555b703f0e853d4c58225537acf1e)
 
 # platform-specific:
-ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev1-windows  TARGETS AWSNativeSDK    PACKAGE_HASH 58e199f253a28964b96056ed4a6db06216fcde14a96d6d94b0d6ad3437516bdc)
+ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev2-windows  TARGETS AWSNativeSDK    PACKAGE_HASH d762163d7db093bc9c25ab60bdafcc6f7a109a0010183a928e89b88ab7b20806)
 ly_associate_package(PACKAGE_NAME PhysX-4.1.0.25992954-rev1-windows  TARGETS PhysX           PACKAGE_HASH 198bed89d1aae7caaf5dadba24cee56235fe41725d004b64040d4e50d0f3aa1a)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-windows          TARGETS mikkelsen       PACKAGE_HASH 872c4d245a1c86139aa929f2b465b63ea4ea55b04ced50309135dd4597457a4e)
 ly_associate_package(PACKAGE_NAME googletest-1.8.1-rev4-windows      TARGETS googletest      PACKAGE_HASH 7e8f03ae8a01563124e3daa06386f25a2b311c10bb95bff05cae6c41eff83837)

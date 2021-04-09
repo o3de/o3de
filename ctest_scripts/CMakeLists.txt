@@ -25,9 +25,17 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     get_property(LY_PROJECTS_TARGET_NAME GLOBAL PROPERTY LY_PROJECTS_TARGET_NAME)
     foreach(project_target_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJECTS)
         file(REAL_PATH ${project_path} project_real_path BASE_DIRECTORY ${LY_ROOT_FOLDER})
+        # With the lock file, asset processing jobs are serialized to avoid race conditions
+        # on files that are created temporarily in source folders during shader processing.
         add_custom_target(${project_target_name}.Assets
             COMMENT "Processing ${project_target_name} assets..."
-            COMMAND $<TARGET_FILE:AZ::AssetProcessorBatch> --zeroAnalysisMode --project-path=${project_real_path} --platforms=${LY_ASSET_DEPLOY_ASSET_TYPE}
+            COMMAND "${CMAKE_COMMAND}" 
+                -DLY_LOCK_FILE=$<TARGET_FILE_DIR:AZ::AssetProcessorBatch>/project_assets.lock
+                -P ${LY_ROOT_FOLDER}/cmake/CommandExecution.cmake
+                    EXEC_COMMAND $<TARGET_FILE:AZ::AssetProcessorBatch> 
+                        --zeroAnalysisMode 
+                        --project-path=${project_real_path} 
+                        --platforms=${LY_ASSET_DEPLOY_ASSET_TYPE}
         )
         set_target_properties(${project_target_name}.Assets
             PROPERTIES 

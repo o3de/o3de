@@ -64,7 +64,6 @@ namespace Vegetation
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<BlockerConfig>()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Constructor()
                 ->Property("inheritBehavior", BehaviorValueProperty(&BlockerConfig::m_inheritBehavior))
@@ -108,7 +107,6 @@ namespace Vegetation
             behaviorContext->Class<BlockerComponent>()->RequestBus("BlockerRequestBus");
 
             behaviorContext->EBus<BlockerRequestBus>("BlockerRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Event("GetAreaPriority", &BlockerRequestBus::Events::GetAreaPriority)
                 ->Event("SetAreaPriority", &BlockerRequestBus::Events::SetAreaPriority)

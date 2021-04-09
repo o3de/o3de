@@ -22,7 +22,7 @@ ly_associate_package(PACKAGE_NAME zstd-1.35-multiplatform            TARGETS zst
 ly_associate_package(PACKAGE_NAME glad-2.0.0-beta-rev2-multiplatform TARGETS glad      PACKAGE_HASH ff97ee9664e97d0854b52a3734c2289329d9f2b4cd69478df6d0ca1f1c9392ee)
 ly_associate_package(PACKAGE_NAME lux_core-2.2-rev5-multiplatform    TARGETS lux_core  PACKAGE_HASH c8c13cf7bc351643e1abd294d0841b24dee60e51647dff13db7aec396ad1e0b5)
 # platform-specific:
-ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev1-android  TARGETS AWSNativeSDK    PACKAGE_HASH 3612d8397700cb3a585405440aec2a393843baa506ef8821d0a9b29162fb1854)
+ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev2-android  TARGETS AWSNativeSDK    PACKAGE_HASH 7a99556055c021cb94a2c4956c040ca36fa6cdb044a5faff0e05cc728e216e8e)
 ly_associate_package(PACKAGE_NAME PhysX-4.1.0.25992954-rev1-android  TARGETS PhysX           PACKAGE_HASH 9c494576c2d4ff04dee5a9e092fcd9d5af4b2845f15ffdfcaabb0dbc5b88a7a9)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-android          TARGETS mikkelsen       PACKAGE_HASH 075e8e4940884971063b5a9963014e2e517246fa269c07c7dc55b8cf2cd99705)
 ly_associate_package(PACKAGE_NAME googletest-1.8.1-rev4-android      TARGETS googletest      PACKAGE_HASH 95671be75287a61c9533452835c3647e9c1b30f81b34b43bcb0ec1997cc23894)

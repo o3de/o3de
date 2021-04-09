@@ -16,7 +16,7 @@
 
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 
-#include <LmbrCentral/Rendering/MeshComponentBus.h>
+#include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
 
 #include <Components/ClothConfiguration.h>
 
@@ -27,7 +27,7 @@ namespace NvCloth
     //! Class for in-editor Cloth Component.
     class EditorClothComponent
         : public AzToolsFramework::Components::EditorComponentBase
-        , public LmbrCentral::MeshComponentNotificationBus::Handler
+        , public AZ::Render::MeshComponentNotificationBus::Handler
     {
     public:
         AZ_EDITOR_COMPONENT(EditorClothComponent, "{2C99B4EF-8A5F-4585-89F9-86D50754DF7E}", AzToolsFramework::Components::EditorComponentBase);
@@ -50,9 +50,9 @@ namespace NvCloth
         void Activate() override;
         void Deactivate() override;
 
-        // LmbrCentral::MeshComponentNotificationBus::Handler overrides ...
-        void OnMeshCreated(const AZ::Data::Asset<AZ::Data::AssetData>& asset) override;
-        void OnMeshDestroyed() override;
+        // AZ::Render::MeshComponentNotificationBus::Handler overrides ...
+        void OnModelReady(const AZ::Data::Asset<AZ::RPI::ModelAsset>& modelAsset, const AZ::Data::Instance<AZ::RPI::Model>& model) override;
+        void OnModelDestroyed(); // [TODO LYN-1886] Add override once it's part of MeshComponentNotificationBus
 
     private:
         bool IsSimulatedInEditor() const;

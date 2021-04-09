@@ -33,7 +33,7 @@ ly_associate_package(PACKAGE_NAME xxhash-0.7.4-rev1-multiplatform           TARG
 ly_associate_package(PACKAGE_NAME PVRTexTool-4.24.0-rev4-multiplatform      TARGETS PVRTexTool  PACKAGE_HASH d0d6da61c7557de0d2c71fc35ba56c3be49555b703f0e853d4c58225537acf1e)
 
 # platform-specific:
-ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev1-linux   TARGETS AWSNativeSDK    PACKAGE_HASH 3876457b5e3233b951ccd9bcf53df4b946041a7de2955eba647020d7ae46163d)
+ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev2-linux   TARGETS AWSNativeSDK    PACKAGE_HASH 6203e1b00907b3977a6999bbdaa0aa7d5ce24f09effaffee2725b200d200eeb7)
 ly_associate_package(PACKAGE_NAME PhysX-4.1.0.25992954-rev1-linux   TARGETS PhysX           PACKAGE_HASH e3ca36106a8dbf1524709f8bb82d520920ebd3ff3a92672d382efff406c75ee3)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-linux           TARGETS mikkelsen       PACKAGE_HASH 5973b1e71a64633588eecdb5b5c06ca0081f7be97230f6ef64365cbda315b9c8)
 ly_associate_package(PACKAGE_NAME googletest-1.8.1-rev4-linux       TARGETS googletest      PACKAGE_HASH 7b7ad330f369450c316a4c4592d17fbb4c14c731c95bd8f37757203e8c2bbc1b)

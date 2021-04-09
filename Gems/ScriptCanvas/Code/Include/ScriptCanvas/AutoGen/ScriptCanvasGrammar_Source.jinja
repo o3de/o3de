@@ -176,10 +176,10 @@ bool {{ Class.attrib['QualifiedName'] }}::IsDeprecated() const
 
 {% set deprecationUuid = Class.attrib['DeprecationUUID'] %}
 {% if deprecationUuid is defined %}
-NodeConfiguration {{ Class.attrib['QualifiedName'] }}::GetReplacementNodeConfiguration() const
+ScriptCanvas::NodeConfiguration {{ Class.attrib['QualifiedName'] }}::GetReplacementNodeConfiguration() const
 {
     ScriptCanvas::NodeConfiguration nodeConfig{};
-    nodeConfig.m_type = AZ::Uuid({{ deprecationUuid }});
+    nodeConfig.m_type = AZ::Uuid("{{ deprecationUuid }}");
     {% if Class.attrib['ReplacementMethodName'] is defined %}
     nodeConfig.m_methodName = "{{Class.attrib['ReplacementMethodName']}}";
     {% endif %}

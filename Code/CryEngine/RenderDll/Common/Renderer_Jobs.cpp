@@ -251,7 +251,6 @@ void CRenderer::EF_AddEf_NotVirtual([[maybe_unused]] IRenderElement* re, [[maybe
     // Need to differentiate between something rendered with cloak layer material, and sorted with cloak.
     // e.g. ironsight glows on gun should be sorted with cloak to not write depth - can be inconsistent with no depth from gun.
 
-    SThreadInfo& RESTRICT_REFERENCE rTI = m_RP.m_TI[nThreadID];
 
     // store AABBs for all FOB_NEAREST objects for r_DrawNearest
     // TODO (bethelz) TRENDRIL: Remove draw nearest shadow hackery.
@@ -498,9 +497,8 @@ void CRenderer::GetFogVolumeContribution(uint16 idx, SFogVolumeData& fogVolData 
 }
 
 //////////////////////////////////////////////////////////////////////////
-uint32 CRenderer::EF_BatchFlags(SShaderItem& SH, CRenderObject* pObj, IRenderElement* renderElement, const SRenderingPassInfo& passInfo)
+uint32 CRenderer::EF_BatchFlags(SShaderItem& SH, CRenderObject* pObj, [[maybe_unused]] IRenderElement* renderElement, const SRenderingPassInfo& passInfo)
 {
-    CRendElementBase* re = static_cast<CRendElementBase*>(renderElement);
 
     uint32 nFlags = SH.m_nPreprocessFlags & FB_MASK;
     SShaderTechnique* const __restrict pTech = SH.GetTechnique();
@@ -982,14 +980,6 @@ void CMotionBlur::SetupObject(CRenderObject* renderObject, const SRenderingPassI
 
     uint32 fillThreadId = passInfo.ThreadID();
 
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    // Motion blur is not yet supported in RTT passes
-    if (passInfo.IsRenderSceneToTexturePass())
-    {
-        return;
-    }
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-
     if (passInfo.IsRecursivePass())
     {
         return;
@@ -1004,13 +994,8 @@ void CMotionBlur::SetupObject(CRenderObject* renderObject, const SRenderingPassI
     renderObject->m_ObjFlags &= ~FOB_HAS_PREVMATRIX;
     if (renderObjectData->m_uniqueObjectId != 0 && renderObject->m_fDistance < CRenderer::CV_r_MotionBlurMaxViewDist)
     {
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-        const AZ::u32 currentFrameId = gRenDev->GetCameraFrameID();
-        const AZ::u32 bufferIndex = GetCurrentBufferIndex();
-#else
         const AZ::u32 currentFrameId = passInfo.GetMainFrameID();
         const AZ::u32 bufferIndex = (currentFrameId) % CMotionBlur::s_maxObjectBuffers;
-#endif
         const uintptr_t objectId = renderObjectData ? renderObjectData->m_uniqueObjectId : 0;
         if (!m_Objects[bufferIndex])
         {
@@ -1020,11 +1005,7 @@ void CMotionBlur::SetupObject(CRenderObject* renderObject, const SRenderingPassI
         auto currentIt = m_Objects[bufferIndex]->find(objectId);
         if (currentIt != m_Objects[bufferIndex]->end())
         {
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-            const AZ::u32 lastBufferIndex = GetPrevBufferIndex();
-#else
             const AZ::u32 lastBufferIndex = (currentFrameId - 1) % CMotionBlur::s_maxObjectBuffers;
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
 
             auto historyIt = m_Objects[lastBufferIndex]->find(objectId);
             if (historyIt != m_Objects[lastBufferIndex]->end())
@@ -1090,7 +1071,6 @@ void SRendItem::mfSortByLight(SRendItem* First, int Num, bool bSort, const bool 
 void SRendItem::mfSortByDist(SRendItem* First, int Num, bool bDecals, bool InvertedOrder)
 {
     //Note: Temporary use stable sort for flickering hair (meshes within the same skin attachment don't have a deterministic sort order)
-    CRenderer* r = gRenDev;
     int i;
     if (!bDecals)
     {

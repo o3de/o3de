@@ -72,7 +72,6 @@ namespace GradientSignal
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<SurfaceSlopeGradientConfig>()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Constructor()
                 ->Property("slopeMin", BehaviorValueProperty(&SurfaceSlopeGradientConfig::m_slopeMin))
@@ -152,7 +151,6 @@ namespace GradientSignal
             behaviorContext->Class<SurfaceSlopeGradientComponent>()->RequestBus("SurfaceSlopeGradientRequestBus");
 
             behaviorContext->EBus<SurfaceSlopeGradientRequestBus>("SurfaceSlopeGradientRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Event("GetSlopeMin", &SurfaceSlopeGradientRequestBus::Events::GetSlopeMin)
                 ->Event("SetSlopeMin", &SurfaceSlopeGradientRequestBus::Events::SetSlopeMin)

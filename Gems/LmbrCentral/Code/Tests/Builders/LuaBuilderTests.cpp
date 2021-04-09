@@ -44,8 +44,6 @@ namespace UnitTest
             AZ::IO::Path assetRoot(AZ::Utils::GetProjectPath());
             assetRoot /= "Cache";
             AZ::IO::FileIOBase::GetInstance()->SetAlias("@root@", assetRoot.c_str());
-
-            auto* serializeContext = m_app.GetSerializeContext();
         }
 
         void TearDown() override

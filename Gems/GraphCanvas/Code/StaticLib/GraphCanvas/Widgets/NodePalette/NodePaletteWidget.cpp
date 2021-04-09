@@ -436,8 +436,6 @@ namespace GraphCanvas
 
                 while (exploreNextIndex)
                 {
-                    int rowCount = m_model->rowCount(searchIndex);
-
                     if (nextRow < 0)
                     {
                         // If our parent isn't valid this means we reached the top of our list. So we'll want to reset our next row count.

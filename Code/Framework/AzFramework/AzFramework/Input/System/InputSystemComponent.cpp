@@ -130,13 +130,11 @@ namespace AzFramework
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->EBus<InputSystemNotificationBus>("InputSystemNotificationBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Input")
                 ->Handler<InputSystemNotificationBusBehaviorHandler>()
                 ;
 
             behaviorContext->EBus<InputSystemRequestBus>("InputSystemRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Input")
                 ->Event("RecreateEnabledInputDevices", &InputSystemRequestBus::Events::RecreateEnabledInputDevices)
                 ;

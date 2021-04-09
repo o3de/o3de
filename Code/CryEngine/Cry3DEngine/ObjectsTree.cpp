@@ -250,7 +250,6 @@ void COctreeNode::CompileObjects()
 
     m_lstCasters.reserve(numCasters);
 
-    IObjManager* pObjManager = GetObjManager();
 
     // update node
     for (int l = 0; l < eRNListType_ListsNum; l++)
@@ -786,7 +785,6 @@ void COctreeNode::GetMemoryUsage(ICrySizer* pSizer) const
     {
         for (IRenderNode* pObj = m_arrObjects[l].m_pFirstNode; pObj; pObj = pObj->m_pNext)
         {
-            EERType eType = pObj->GetRenderNodeType();
             pObj->GetMemoryUsage(pSizer);
         }
     }
@@ -1503,16 +1501,6 @@ bool COctreeNode::UpdateStreamingPriority(PodArray<COctreeNode*>& arrRecursion, 
             {
                 continue;
             }
-
-#ifdef _DEBUG
-            const char* szName = pObj->GetName();
-            const char* szClassName = pObj->GetEntityClassName();
-
-            if (pObj->GetRndFlags() & ERF_SELECTED)
-            {
-                int selected = 1;
-            }
-#endif // _DEBUG
 
             pObj->FillBBox(objBox);
 

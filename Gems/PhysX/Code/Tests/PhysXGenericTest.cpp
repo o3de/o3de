@@ -42,7 +42,7 @@ namespace PhysX
         AzPhysics::SceneHandle sceneHandle = CreateTestScene();
 
         // make a tower of boxes which is staggered but should still balance if all the blocks are the same mass
-        AzPhysics::StaticRigidBody* boxA = TestUtils::AddStaticUnitBoxToScene(sceneHandle, AZ::Vector3(0.0f, 0.0f, 0.5f));
+        TestUtils::AddStaticUnitBoxToScene(sceneHandle, AZ::Vector3(0.0f, 0.0f, 0.5f));
         AzPhysics::RigidBody* boxB = TestUtils::AddUnitBoxToScene(sceneHandle, AZ::Vector3(0.3f, 0.0f, 1.5f));
         AzPhysics::RigidBody* boxC = TestUtils::AddUnitBoxToScene(sceneHandle, AZ::Vector3(0.6f, 0.0f, 2.5f));
 
@@ -66,7 +66,7 @@ namespace PhysX
     {
         AzPhysics::SceneHandle sceneHandle = CreateTestScene();
 
-        AzPhysics::StaticRigidBody* boxStatic = TestUtils::AddStaticUnitBoxToScene(sceneHandle, AZ::Vector3(0.0f, 0.0f, 0.0f));
+        TestUtils::AddStaticUnitBoxToScene(sceneHandle, AZ::Vector3(0.0f, 0.0f, 0.0f));
         AzPhysics::RigidBody* boxDynamic = TestUtils::AddUnitBoxToScene(sceneHandle, AZ::Vector3(0.0f, 0.0f, 2.0f));
         auto tolerance = 1e-3f;
 
@@ -145,7 +145,7 @@ namespace PhysX
     {
         AzPhysics::SceneHandle sceneHandle = CreateTestScene();
 
-        auto floor = TestUtils::AddStaticFloorToScene(sceneHandle);
+        TestUtils::AddStaticFloorToScene(sceneHandle);
         AzPhysics::SimulatedBodyHandle capsuleHandle = TestUtils::AddCapsuleToScene(sceneHandle, AZ::Vector3::CreateAxisZ());
         auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
         auto* capsule = azdynamic_cast<AzPhysics::RigidBody*>(sceneInterface->GetSimulatedBodyFromHandle(sceneHandle, capsuleHandle));
@@ -210,7 +210,7 @@ namespace PhysX
     {
         AzPhysics::SceneHandle sceneHandle = CreateTestScene();
 
-        auto floor = TestUtils::AddStaticFloorToScene(sceneHandle);
+        TestUtils::AddStaticFloorToScene(sceneHandle);
 
         // create dynamic capsule and start it rolling
         AzPhysics::SimulatedBodyHandle capsuleHandle = TestUtils::AddCapsuleToScene(sceneHandle, AZ::Vector3::CreateAxisZ());
@@ -237,7 +237,7 @@ namespace PhysX
         auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
         AzPhysics::SceneHandle sceneHandle = CreateTestScene();
 
-        auto floor = TestUtils::AddStaticFloorToScene(sceneHandle);
+        TestUtils::AddStaticFloorToScene(sceneHandle);
         AZ::Vector3 posA(0.0f, -5.0f, 1.0f);
         AZ::Vector3 posB(0.0f, 0.0f, 1.0f);
         AZ::Vector3 posC(0.0f, 5.0f, 1.0f);
@@ -281,9 +281,9 @@ namespace PhysX
         AzPhysics::SceneHandle sceneHandle = CreateTestScene();
         if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
         {
-            auto* testScene = physicsSystem->GetScene(sceneHandle);
+            physicsSystem->GetScene(sceneHandle);
         }
-        auto floor = TestUtils::AddStaticFloorToScene(sceneHandle);
+        TestUtils::AddStaticFloorToScene(sceneHandle);
 
         auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
         AzPhysics::RigidBody* spheres[3];
@@ -341,7 +341,7 @@ namespace PhysX
     {
         AzPhysics::SceneHandle sceneHandle = CreateTestScene();
 
-        AzPhysics::StaticRigidBody* floor = TestUtils::AddStaticFloorToScene(sceneHandle);
+        TestUtils::AddStaticFloorToScene(sceneHandle);
         AzPhysics::RigidBody* box = TestUtils::AddUnitBoxToScene(sceneHandle, AZ::Vector3(0.0f, 0.0f, 10.0f));
         TestUtils::UpdateScene(sceneHandle, 1.0f / 60.0f, 60);
 
@@ -360,7 +360,7 @@ namespace PhysX
     {
         AzPhysics::SceneHandle sceneHandle = CreateTestScene();
 
-        auto floor = TestUtils::AddStaticFloorToScene(sceneHandle);
+        TestUtils::AddStaticFloorToScene(sceneHandle);
         AzPhysics::RigidBody* box = TestUtils::AddUnitBoxToScene(sceneHandle, AZ::Vector3(0.0f, 0.0f, 1.0f));
 
         TestUtils::UpdateScene(sceneHandle, 1.0f / 60.0f, 60);
@@ -441,7 +441,7 @@ namespace PhysX
     {
         AzPhysics::SceneHandle sceneHandle = CreateTestScene();
 
-        auto floor = TestUtils::AddStaticFloorToScene(sceneHandle);
+        TestUtils::AddStaticFloorToScene(sceneHandle);
         AzPhysics::RigidBody* boxB = TestUtils::AddUnitBoxToScene(sceneHandle, AZ::Vector3(1.0f, 0.0f, 10.0f));
         AzPhysics::RigidBody* boxC = TestUtils::AddUnitBoxToScene(sceneHandle, AZ::Vector3(-1.0f, 0.0f, 10.0f));
 

@@ -856,9 +856,6 @@ void C3DEngine::RenderWorld(const int nRenderFlags, const SRenderingPassInfo& pa
         return;
     }
 
-#ifdef ENABLE_LW_PROFILERS
-    int64 renderStart = CryGetTicks();
-#endif
     FUNCTION_PROFILER_3DENGINE;
 
     if (GetCVars()->e_ScreenShot)
@@ -3608,15 +3605,6 @@ void C3DEngine::DisplayMemoryStatistics()
 void C3DEngine::SetupDistanceFog()
 {
     FUNCTION_PROFILER_3DENGINE;
-
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    // render to texture does not support volumetric fog 
-    if (GetRenderer()->IsRenderToTextureActive() && (GetCVars()->e_VolumetricFog != 0))
-    {
-        GetRenderer()->EnableFog(false);
-        return;
-    }
-#endif // AZ_RENDER_TO_TEXTURE_GEM_ENABLED
 
     GetRenderer()->SetFogColor(ColorF(m_vFogColor.x, m_vFogColor.y, m_vFogColor.z, 1.0f));
     GetRenderer()->EnableFog(GetCVars()->e_Fog > 0);

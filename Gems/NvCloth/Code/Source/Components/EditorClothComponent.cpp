@@ -434,20 +434,25 @@ namespace NvCloth
     {
         AzToolsFramework::Components::EditorComponentBase::Activate();
 
-        LmbrCentral::MeshComponentNotificationBus::Handler::BusConnect(GetEntityId());
+        AZ::Render::MeshComponentNotificationBus::Handler::BusConnect(GetEntityId());
     }
 
     void EditorClothComponent::Deactivate()
     {
-        LmbrCentral::MeshComponentNotificationBus::Handler::BusDisconnect();
+        AZ::Render::MeshComponentNotificationBus::Handler::BusDisconnect();
 
         AzToolsFramework::Components::EditorComponentBase::Deactivate();
 
         m_clothComponentMesh.reset();
     }
 
-    void EditorClothComponent::OnMeshCreated(const AZ::Data::Asset<AZ::Data::AssetData>& asset)
+    void EditorClothComponent::OnModelReady(
+        const AZ::Data::Asset<AZ::RPI::ModelAsset>& asset,
+        [[maybe_unused]] const AZ::Data::Instance<AZ::RPI::Model>& model)
     {
+        // [TODO LYN-1886] Remove this call once OnModelDestroyed is part of MeshComponentNotificationBus
+        OnModelDestroyed();
+
         if (!asset.IsReady())
         {
             return;
@@ -513,7 +518,7 @@ namespace NvCloth
             AzToolsFramework::Refresh_EntireTree);
     }
 
-    void EditorClothComponent::OnMeshDestroyed()
+    void EditorClothComponent::OnModelDestroyed()
     {
         m_previousMeshNode = m_config.m_meshNode;
 
@@ -537,21 +542,17 @@ namespace NvCloth
 
     AZ::u32 EditorClothComponent::OnSimulatedInEditorToggled()
     {
-        m_clothComponentMesh.reset();
-
         m_simulateInEditor = !m_simulateInEditor;
 
-        if (m_simulateInEditor)
-        {
-            m_clothComponentMesh = AZStd::make_unique<ClothComponentMesh>(GetEntityId(), m_config);
-        }
-        else
-        {
-            // Force MeshComponent to reload current mesh asset in order to restore original mesh
-            AZ::Data::Asset<AZ::Data::AssetData> meshAsset;
-            LmbrCentral::MeshComponentRequestBus::EventResult(meshAsset, GetEntityId(), &LmbrCentral::MeshComponentRequests::GetMeshAsset);
+        m_clothComponentMesh = AZStd::make_unique<ClothComponentMesh>(GetEntityId(), m_config);
 
-            LmbrCentral::MeshComponentRequestBus::Event(GetEntityId(), &LmbrCentral::MeshComponentRequests::SetMeshAsset, meshAsset.GetId());
+        if (!m_simulateInEditor)
+        {
+            // Since the instance was just created this will restore the model
+            // to its original position before cloth simulation.
+            m_clothComponentMesh->CopyRenderDataToModel();
+
+            m_clothComponentMesh.reset();
         }
 
         return AZ::Edit::PropertyRefreshLevels::None;

@@ -397,8 +397,6 @@ set(FILES
     Controls/SplineCtrl.h
     Controls/SplineCtrlEx.cpp
     Controls/SplineCtrlEx.h
-    Controls/SyntaxColorizer.cpp
-    Controls/SyntaxColorizer.h
     Controls/TextEditorCtrl.cpp
     Controls/TextEditorCtrl.h
     Controls/TimelineCtrl.cpp

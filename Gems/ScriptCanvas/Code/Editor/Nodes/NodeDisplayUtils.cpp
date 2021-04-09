@@ -330,8 +330,7 @@ namespace ScriptCanvasEditor::Nodes
             contextGroup = TranslationContextGroup::ClassMethod;
             break;
         default:
-            // Unsupported?
-            AZ_Warning("NodeUtils", false, "Invalid node type?");
+            AZ_Assert(false, "Invalid node type");
         }
 
         graphCanvasEntity->Init();
@@ -360,7 +359,6 @@ namespace ScriptCanvasEditor::Nodes
         GraphCanvas::TranslationKeyedString tooltipKeyedString(AZStd::string(), translationContext);
         tooltipKeyedString.m_key = TranslationHelper::GetKey(contextGroup, className, methodName, TranslationItemType::Node, TranslationKeyId::Tooltip);
 
-        int offset = methodNode->HasBusID() ? 1 : 0;
         int paramIndex = 0;
         int outputIndex = 0;
 
@@ -410,6 +408,25 @@ namespace ScriptCanvasEditor::Nodes
         GraphCanvas::NodeTitleRequestBus::Event(graphCanvasNodeId, &GraphCanvas::NodeTitleRequests::SetTranslationKeyedTitle, nodeKeyedString);
         GraphCanvas::NodeTitleRequestBus::Event(graphCanvasNodeId, &GraphCanvas::NodeTitleRequests::SetTranslationKeyedSubTitle, classKeyedString);
         GraphCanvas::NodeTitleRequestBus::Event(graphCanvasNodeId, &GraphCanvas::NodeTitleRequests::SetPaletteOverride, "MethodNodeTitlePalette");
+
+        // Override the title if it has the Setter or Getter suffixes
+        AZStd::string title;
+        GraphCanvas::NodeTitleRequestBus::EventResult(title, graphCanvasNodeId, &GraphCanvas::NodeTitleRequests::GetTitle);
+        if (!title.empty())
+        {
+            if (title.ends_with("::Getter"))
+            {
+                AZ::StringFunc::Replace(title, "::Getter", "");
+            }
+
+            if (displayName.ends_with("::Setter"))
+            {
+                AZ::StringFunc::Replace(title, "::Setter", "");
+            }
+
+            GraphCanvas::NodeTitleRequestBus::Event(graphCanvasNodeId, &GraphCanvas::NodeTitleRequests::SetTitle, title);
+
+        }
 
         return graphCanvasNodeId;
     }
@@ -789,15 +806,6 @@ namespace ScriptCanvasEditor::Nodes
             return graphCanvasNodeId;
         }
 
-        const ScriptEvents::ScriptEvent& definition = senderNode->GetScriptEvent();
-
-        const AZStd::string& className = definition.GetName();
-        const AZStd::string& methodName = senderNode->GetEventName();
-
-        int offset = senderNode->HasBusID() ? 1 : 0;
-        int paramIndex = 0;
-        int outputIndex = 0;
-
         auto busId = senderNode->GetBusSlotId();
         for (const auto& slot : senderNode->GetSlots())
         {
@@ -895,13 +903,13 @@ namespace ScriptCanvasEditor::Nodes
         return graphCanvasNodeId;
     }
 
-    AZ::EntityId DisplayFunctionDefinitionNode(AZ::EntityId graphCanvasGraphId, const ScriptCanvas::Nodes::Core::FunctionDefinitionNode* nodeling)
+    AZ::EntityId DisplayFunctionDefinitionNode(AZ::EntityId graphCanvasGraphId, const ScriptCanvas::Nodes::Core::FunctionDefinitionNode* functionDefinitionNode)
     {
         NodeConfiguration nodeConfiguration;
 
         nodeConfiguration.PopulateComponentDescriptors<IconComponent, FunctionDefinitionNodeDescriptorComponent>();
 
-        if (nodeling->RequiresDynamicSlotOrdering())
+        if (functionDefinitionNode->RequiresDynamicSlotOrdering())
         {
             nodeConfiguration.PopulateComponentDescriptors<DynamicOrderingDynamicSlotComponent>();
         }
@@ -912,15 +920,14 @@ namespace ScriptCanvasEditor::Nodes
 
         nodeConfiguration.m_nodeSubStyle = ".nodeling";
         nodeConfiguration.m_titlePalette = "NodelingTitlePalette";
-        nodeConfiguration.m_scriptCanvasId = nodeling->GetEntityId();
+        nodeConfiguration.m_scriptCanvasId = functionDefinitionNode->GetEntityId();
 
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
 
         AZ_Assert(serializeContext, "Failed to acquire application serialize context.");
-        const AZ::SerializeContext::ClassData* classData = serializeContext->FindClassData(azrtti_typeid(nodeling));
 
-        if (classData)
+        if (const AZ::SerializeContext::ClassData* classData = serializeContext->FindClassData(azrtti_typeid(functionDefinitionNode)))
         {
             AZStd::string nodeContext = GetContextName(*classData);
             nodeConfiguration.m_translationContext = TranslationHelper::GetUserDefinedContext(nodeContext);
@@ -942,7 +949,7 @@ namespace ScriptCanvasEditor::Nodes
             ScriptCanvas::GraphScopedNodeId nodelingId;
 
             nodelingId.m_identifier = nodeConfiguration.m_scriptCanvasId;
-            nodelingId.m_scriptCanvasId = nodeling->GetOwningScriptCanvasId();
+            nodelingId.m_scriptCanvasId = functionDefinitionNode->GetOwningScriptCanvasId();
 
             AZStd::string nodelingName;
             ScriptCanvas::NodelingRequestBus::EventResult(nodelingName, nodelingId, &ScriptCanvas::NodelingRequests::GetDisplayName);
@@ -966,7 +973,27 @@ namespace ScriptCanvasEditor::Nodes
 
         nodeConfiguration.m_subtitleFallback = "";
 
-        return DisplayGeneralScriptCanvasNode(graphCanvasGraphId, nodeling, nodeConfiguration);
+        // Because of how the extender slots are registered, there isn't an easy way to only create one or the other based on
+        // the type of nodeling, so instead they both get created and we need to remove the inapplicable one
+        GraphCanvas::ConnectionType typeToRemove = (functionDefinitionNode->IsExecutionEntry()) ? GraphCanvas::CT_Input : GraphCanvas::CT_Output;
+
+        AZ::EntityId graphCanvasNodeId = DisplayGeneralScriptCanvasNode(graphCanvasGraphId, functionDefinitionNode, nodeConfiguration);
+
+
+        AZStd::vector<GraphCanvas::SlotId> extenderSlotIds, executionSlotIds;
+        GraphCanvas::NodeRequestBus::EventResult(extenderSlotIds, graphCanvasNodeId, &GraphCanvas::NodeRequests::FindVisibleSlotIdsByType, typeToRemove, GraphCanvas::SlotTypes::ExtenderSlot);
+        if (!extenderSlotIds.empty())
+        {
+            GraphCanvas::NodeRequestBus::Event(graphCanvasNodeId, &GraphCanvas::NodeRequests::RemoveSlot, *extenderSlotIds.begin());
+        }
+
+        GraphCanvas::NodeRequestBus::EventResult(executionSlotIds, graphCanvasNodeId, &GraphCanvas::NodeRequests::FindVisibleSlotIdsByType, typeToRemove, GraphCanvas::SlotTypes::ExecutionSlot);
+        if (!executionSlotIds.empty())
+        {
+            GraphCanvas::NodeRequestBus::Event(graphCanvasNodeId, &GraphCanvas::NodeRequests::RemoveSlot, *executionSlotIds.begin());
+        }
+
+        return graphCanvasNodeId;
     }
 
     AZ::EntityId DisplayNodeling(AZ::EntityId graphCanvasGraphId, const ScriptCanvas::Nodes::Core::Internal::Nodeling* nodeling)

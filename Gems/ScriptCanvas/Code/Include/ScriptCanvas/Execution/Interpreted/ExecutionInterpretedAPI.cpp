@@ -412,7 +412,7 @@ namespace ScriptCanvas
             AZ_Assert(lua_isuserdata(lua, -2) && !lua_islightuserdata(lua, -2), "Error in compiled lua file, 1st argument to OverrideNodeableMetatable is not userdata (Nodeable)");
             AZ_Assert(lua_istable(lua, -1), "Error in compiled lua file, 2nd argument to OverrideNodeableMetatable is not a Lua table");
 
-            auto userData = reinterpret_cast<AZ::LuaUserData*>(lua_touserdata(lua, -2));
+            [[maybe_unused]] auto userData = reinterpret_cast<AZ::LuaUserData*>(lua_touserdata(lua, -2));
             AZ_Assert(userData && userData->magicData == AZ_CRC_CE("AZLuaUserData"), "this isn't user data");
             // Lua: LuaUserData::nodeable, class_mt
             lua_newtable(lua);

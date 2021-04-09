@@ -102,7 +102,6 @@ static void DrawGridLines(IRenderAuxGeom& aux, const uint count, const uint inte
     const float alphaMulMain = (float)gridSettings.mainColor.a;
     const float alphaMulInter = (float)gridSettings.middleColor.a;
     const float alphaFalloff = 1.0f - (gridSettings.alphaFalloff / 100.0f);
-    float orthoWeight = 1.0f;
 
     for (int i = 0; i < count + 2; i++)
     {
@@ -303,7 +302,6 @@ bool QViewport::CreateRenderContext()
 
     HWND windowHandle = reinterpret_cast<HWND>(QWidget::winId());
 
-    ERenderType renderType = GetIEditor()->GetEnv()->pRenderer->GetRenderType();
     if( AZ::Interface<AzFramework::AtomActiveInterface>::Get() && m_renderContextCreated && windowHandle == m_lastHwnd)
     {
         // the hwnd has not changed, no need to destroy and recreate context (and swap chain etc)
@@ -577,8 +575,6 @@ void QViewport::ProcessMouse()
     {
         if (!(m_settings->camera.transformRestraint & eCameraTransformRestraint_Rotation))
         {
-            float speedScale = CalculateMoveSpeed(m_fastMode, m_slowMode);
-
             Ang3 angles(aznumeric_cast<float>(-point.y() + m_mousePressPos.y()), 0, aznumeric_cast<float>(-point.x() + m_mousePressPos.x()));
             angles = angles * 0.001f * m_settings->camera.rotationSpeed;
 
@@ -626,8 +622,6 @@ void QViewport::ProcessMouse()
     }
     else if (m_cameraControlMode == CameraControlMode::ORBIT)
     {
-        float speedScale = CalculateMoveSpeed(m_fastMode, m_slowMode);
-
         // Rotate around orbit target.
         QuatT   cameraTarget = m_state->cameraTarget;
         Vec3    at = cameraTarget.t - m_state->orbitTarget;
@@ -979,7 +973,6 @@ void QViewport::RenderInternal()
     SetCurrentContext();
     GetIEditor()->GetEnv()->pSystem->RenderBegin();
 
-    IRenderAuxGeom* pAuxGeom = GetIEditor()->GetEnv()->pRenderer->GetIRenderAuxGeom();
     ColorF viewportBackgroundColor(m_settings->background.topColor.r / 255.0f, m_settings->background.topColor.g / 255.0f, m_settings->background.topColor.b / 255.0f);
     GetIEditor()->GetEnv()->pRenderer->ClearTargetsImmediately(FRT_CLEAR, viewportBackgroundColor);
     GetIEditor()->GetEnv()->pRenderer->ResetToDefault();

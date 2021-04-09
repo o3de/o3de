@@ -39,7 +39,7 @@ namespace AzToolsFramework
             auto settingsRegistry = AZ::SettingsRegistry::Get();
             AZ_Assert(settingsRegistry, "Settings registry is not set");
             
-            bool result =
+            [[maybe_unused]] bool result =
                 settingsRegistry->Get(m_projectPathWithOsSeparator.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath);
             AZ_Assert(result, "Couldn't retrieve project root path");
             m_projectPathWithSlashSeparator = AZ::IO::Path(m_projectPathWithOsSeparator.Native(), '/').MakePreferred();
@@ -182,7 +182,6 @@ namespace AzToolsFramework
                 for (PrefabDomValue::MemberIterator instanceIterator = instances.MemberBegin(); instanceIterator != instances.MemberEnd();
                      ++instanceIterator)
                 {
-                    const PrefabDomValue& instance = instanceIterator->value;
                     if (!LoadNestedInstance(instanceIterator, newTemplateId, progressedFilePathsSet))
                     {
                         isLoadedWithErrors = true;
