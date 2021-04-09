@@ -295,7 +295,7 @@ void CAtomShimRenderer::EndFrame()
     if (!m_viewportContext)
     {
         auto viewContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
-        auto viewportContext = viewContextManager->GetDefaultViewportContext();
+        auto viewportContext = viewContextManager->GetViewportContextByName(viewContextManager->GetDefaultViewportContextName());
         // If the viewportContext exists and is created with the default ID, we can safely assume control
         if (viewportContext && viewportContext->GetId() == -10)
         {
