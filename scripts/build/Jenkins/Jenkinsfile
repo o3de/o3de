@@ -11,7 +11,7 @@
 *
 */
 
-PIPELINE_CONFIG_FILE = 'AutomatedReview/lumberyard.json'
+PIPELINE_CONFIG_FILE = 'scripts/build/Jenkins/lumberyard.json'
 INCREMENTAL_BUILD_SCRIPT_PATH = 'scripts/build/bootstrap/incremental_build_util.py'
 
 EMPTY_JSON = readJSON text: '{}'
@@ -310,7 +310,7 @@ def CheckoutBootstrapScripts(String branchName) {
               [
                 $class: "SparseCheckoutPaths",
                 sparseCheckoutPaths: [
-                  [ $class: "SparseCheckoutPath", path: "AutomatedReview/" ],
+                  [ $class: "SparseCheckoutPath", path: "scripts/build/Jenkins/" ],
                   [ $class: "SparseCheckoutPath", path: "scripts/build/bootstrap/" ],
                   [ $class: "SparseCheckoutPath", path: "Tools/build/JenkinsScripts/build/Platform" ]
                 ]
@@ -488,6 +488,8 @@ def TestMetrics(Map options, String workspace, String branchName, String repoNam
             ]
             withCredentials([usernamePassword(credentialsId: "${env.SERVICE_USER}", passwordVariable: 'apitoken', usernameVariable: 'username')]) {
                 def command = "${options.PYTHON_DIR}/python.cmd -u mars/scripts/python/ctest_test_metric_scraper.py -e jenkins.creds.user ${username} -e jenkins.creds.pass ${apitoken} ${cmakeBuildDir} ${branchName} %BUILD_NUMBER% AR ${configuration} ${repoName} "
+                if (params.DESTINATION_BRANCH)
+                    command += "--destination-branch ${params.DESTINATION_BRANCH} "
                 bat label: "Publishing ${buildJobName} Test Metrics",
                 script: command
             }
