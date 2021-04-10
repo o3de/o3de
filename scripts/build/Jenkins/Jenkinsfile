@@ -308,8 +308,8 @@ def PreBuildCommonSteps(Map pipelineConfig, String projectName, String pipeline,
 
         // Get python
         if(env.IS_UNIX) {
-        sh label: 'Getting python',
-           script: 'python/get_python.sh'
+            sh label: 'Getting python',
+               script: 'python/get_python.sh'
         } else {
             bat label: 'Getting python',
                 script: 'python/get_python.bat'
@@ -335,7 +335,7 @@ def Build(Map options, String platform, String type, String workspace) {
             sh label: "Running ${platform} ${type}",
                script: "${options.PYTHON_DIR}/python.sh -u ${command}"
         } else {
-                bat label: "Running ${platform} ${type}",
+            bat label: "Running ${platform} ${type}",
                 script: "${options.PYTHON_DIR}/python.cmd -u ${command}".replace('/','\\')
         }
     }
@@ -354,7 +354,7 @@ def TestMetrics(Map options, String workspace, String branchName, String repoNam
             withCredentials([usernamePassword(credentialsId: "${env.SERVICE_USER}", passwordVariable: 'apitoken', usernameVariable: 'username')]) {
                 def command = "${options.PYTHON_DIR}/python.cmd -u mars/scripts/python/ctest_test_metric_scraper.py -e jenkins.creds.user ${username} -e jenkins.creds.pass ${apitoken} ${cmakeBuildDir} ${branchName} %BUILD_NUMBER% AR ${configuration} ${repoName} "
                 bat label: "Publishing ${buildJobName} Test Metrics",
-                script: command
+                    script: command
             }
         }
     }
