@@ -4,7 +4,7 @@
     "COMMAND": "clean_mac.sh",
     "PARAMETERS": {
       "OUTPUT_DIRECTORY": "build",
-      "CMAKE_LY_PROJECTS": "AutomatedTesting;AtomTest;AtomSampleViewer"
+      "CMAKE_LY_PROJECTS": "AutomatedTesting"
     }
   },
   "profile_pipe": {
