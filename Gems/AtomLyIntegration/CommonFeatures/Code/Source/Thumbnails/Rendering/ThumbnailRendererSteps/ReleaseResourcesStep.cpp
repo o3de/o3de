@@ -49,11 +49,13 @@ namespace AZ
                 m_context->GetData()->m_scene->Deactivate();
                 m_context->GetData()->m_scene->RemoveRenderPipeline(m_context->GetData()->m_renderPipeline->GetId());
                 RPI::RPISystemInterface::Get()->UnregisterScene(m_context->GetData()->m_scene);
-                bool sceneRemovedSuccessfully = false;
-                AzFramework::SceneSystemRequestBus::BroadcastResult(
-                    sceneRemovedSuccessfully,
-                    &AzFramework::SceneSystemRequests::RemoveScene,
-                    m_context->GetData()->m_sceneName);
+
+                auto sceneSystem = AzFramework::SceneSystemInterface::Get();
+                AZ_Assert(sceneSystem, "Thumbnail system failed to get scene system implementation.");
+                [[maybe_unused]] bool sceneRemovedSuccessfully = sceneSystem->RemoveScene(m_context->GetData()->m_sceneName);
+                AZ_Assert(
+                    sceneRemovedSuccessfully, "Thumbnail system was unable to remove scene '%' from the scene system.",
+                    m_context->GetData()->m_sceneName.c_str());
                 m_context->GetData()->m_scene = nullptr;
                 m_context->GetData()->m_renderPipeline = nullptr;
             }

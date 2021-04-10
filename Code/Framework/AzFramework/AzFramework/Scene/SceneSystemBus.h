@@ -12,6 +12,7 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzFramework/Entity/EntityContext.h>
 
 namespace AzFramework
@@ -20,15 +21,14 @@ namespace AzFramework
     class Scene;
 
     //! Interface used to create, get, or destroy scenes.
-    class SceneSystemRequests
-        : public AZ::EBusTraits
+    class ISceneSystem
     {
     public:
+        AZ_RTTI(AzFramework::ISceneSystem, "{DAE482A8-88AE-4BD3-8A5B-52D19A96E15F}");
+        AZ_DISABLE_COPY_MOVE(ISceneSystem);
 
-        virtual ~SceneSystemRequests() = default;
-
-        //! Single handler policy since there should only be one instance of this system component.
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+        ISceneSystem() = default;
+        virtual ~ISceneSystem() = default;
 
         //! Creates a scene with a given name.
         //!  - If there is already a scene with the provided name this will return AZ::Failure(). 
@@ -56,7 +56,7 @@ namespace AzFramework
         virtual Scene* GetSceneFromEntityContextId(EntityContextId entityContextId) = 0;
     };
 
-    using SceneSystemRequestBus = AZ::EBus<SceneSystemRequests>;
+    using SceneSystemInterface = AZ::Interface<ISceneSystem>;
 
     //! Interface used for notifications from the scene system
     class SceneSystemNotifications

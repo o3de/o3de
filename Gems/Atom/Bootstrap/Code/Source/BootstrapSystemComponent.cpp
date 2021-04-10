@@ -279,10 +279,9 @@ namespace AZ
             void BootstrapSystemComponent::CreateDefaultScene()
             {
                 // Bind atomScene to the GameEntityContext's AzFramework::Scene
-                AZStd::vector<AzFramework::Scene*> scenes;
-                AzFramework::SceneSystemRequestBus::BroadcastResult(scenes, &AzFramework::SceneSystemRequests::GetAllScenes);
-                AZ_Assert(scenes.size() > 0, "Error: Scenes missing during system component initialization"); // This should never happen unless scene creation has changed.
-                m_defaultFrameworkScene = scenes[0];
+                m_defaultFrameworkScene = AzFramework::SceneSystemInterface::Get()->GetScene(AzFramework::Scene::MainSceneName);
+                // This should never happen unless scene creation has changed.
+                AZ_Assert(m_defaultFrameworkScene, "Error: Scenes missing during system component initialization");
                 m_defaultScene = GetOrCreateAtomSceneFromAzScene(m_defaultFrameworkScene);
             }
 

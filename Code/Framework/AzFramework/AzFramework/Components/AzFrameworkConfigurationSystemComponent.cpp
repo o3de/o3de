@@ -50,9 +50,7 @@ namespace AzFramework
 
     void AzFrameworkConfigurationSystemComponent::Activate()
     {
-        // Create the defaults scene and associate the GameEntityContext with it.
-        AZ::Outcome<Scene*, AZStd::string> createSceneOutcome = AZ::Failure<AZStd::string>("SceneSystemRequests bus not responding.");
-        SceneSystemRequestBus::BroadcastResult(createSceneOutcome, &SceneSystemRequests::CreateScene, Scene::MainSceneName);
+        AZ::Outcome<Scene*, AZStd::string> createSceneOutcome = SceneSystemInterface::Get()->CreateScene(Scene::MainSceneName);
         if (createSceneOutcome)
         {
             Scene* scene = createSceneOutcome.GetValue();
@@ -77,9 +75,7 @@ namespace AzFramework
 
     void AzFrameworkConfigurationSystemComponent::Deactivate()
     {
-        bool success = false;
-        SceneSystemRequestBus::BroadcastResult(success, &SceneSystemRequestBus::Events::RemoveScene, AzFramework::Scene::MainSceneName);
-
+        [[maybe_unused]] bool success = SceneSystemInterface::Get()->RemoveScene(Scene::MainSceneName);
         AZ_Assert(success, "Unable to remove the main scene.");
     }
 

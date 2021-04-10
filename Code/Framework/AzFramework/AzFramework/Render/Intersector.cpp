@@ -30,8 +30,10 @@ namespace AzFramework
         {
             IntersectorBus::Handler::BusConnect(m_contextId);
             IntersectionNotificationBus::Handler::BusConnect(m_contextId);
-            Scene* scene = nullptr;
-            SceneSystemRequestBus::BroadcastResult(scene, &AzFramework::SceneSystemRequestBus::Events::GetSceneFromEntityContextId, m_contextId);
+
+            auto sceneSystem = SceneSystemInterface::Get();
+            AZ_Assert(sceneSystem, "Intersect requires during construction the scene system but there's no implementation available.");
+            Scene* scene = sceneSystem->GetSceneFromEntityContextId(m_contextId);
             if (scene)
             {
                 scene->SetSubsystem(this);
@@ -42,8 +44,10 @@ namespace AzFramework
         {
             IntersectorBus::Handler::BusDisconnect();
             IntersectionNotificationBus::Handler::BusDisconnect();
-            Scene* scene = nullptr;
-            SceneSystemRequestBus::BroadcastResult(scene, &AzFramework::SceneSystemRequestBus::Events::GetSceneFromEntityContextId, m_contextId);
+
+            auto sceneSystem = SceneSystemInterface::Get();
+            AZ_Assert(sceneSystem, "Intersect requires during destruction the scene system but there's no implementation available.");
+            Scene* scene = sceneSystem->GetSceneFromEntityContextId(m_contextId);
             if (scene)
             {
                 [[maybe_unused]] bool result = scene->UnsetSubsystem(this);

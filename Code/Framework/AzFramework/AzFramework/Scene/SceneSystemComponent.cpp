@@ -41,14 +41,10 @@ namespace AzFramework
 
     void SceneSystemComponent::Activate()
     {
-        // Connect busses
-        SceneSystemRequestBus::Handler::BusConnect();
     }
 
     void SceneSystemComponent::Deactivate()
     {
-        // Disconnect Busses
-        SceneSystemRequestBus::Handler::BusDisconnect();
     }
 
     void SceneSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)

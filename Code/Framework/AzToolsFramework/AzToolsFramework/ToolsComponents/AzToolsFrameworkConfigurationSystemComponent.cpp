@@ -62,16 +62,13 @@ namespace AzToolsFramework
 
         if (!editorEntityContextId.IsNull())
         {
-            AzFramework::Scene* mainScene { nullptr };
-            AzFramework::SceneSystemRequestBus::BroadcastResult(
-                mainScene, &AzFramework::SceneSystemRequests::GetScene, AzFramework::Scene::MainSceneName);
-
+            auto sceneSystem = AzFramework::SceneSystemInterface::Get();
+            AZ_Assert(sceneSystem, "Scene system not available to create the editor scene.");
+            AzFramework::Scene* mainScene = sceneSystem->GetScene(AzFramework::Scene::MainSceneName);
             if (mainScene)
             {
                 AZ::Outcome<AzFramework::Scene*, AZStd::string> editorScene =
-                    AZ::Failure<AZStd::string>("SceneSystemRequests bus not responding.");
-                AzFramework::SceneSystemRequestBus::BroadcastResult(
-                    editorScene, &AzFramework::SceneSystemRequests::CreateSceneWithParent, AzFramework::Scene::EditorMainSceneName, mainScene);
+                    sceneSystem->CreateSceneWithParent(AzFramework::Scene::EditorMainSceneName, mainScene);
                 if (editorScene.IsSuccess())
                 {
                     AzFramework::EntityContext* editorEntityContext = nullptr;
@@ -98,10 +95,7 @@ namespace AzToolsFramework
 
     void AzToolsFrameworkConfigurationSystemComponent::Deactivate()
     {
-        bool success = false;
-        AzFramework::SceneSystemRequestBus::BroadcastResult(
-            success, &AzFramework::SceneSystemRequestBus::Events::RemoveScene, AzFramework::Scene::EditorMainSceneName);
-
+        [[maybe_unused]] bool success = AzFramework::SceneSystemInterface::Get()->RemoveScene(AzFramework::Scene::EditorMainSceneName);
         AZ_Assert(success, "Unable to remove the main editor scene.");
     }
 

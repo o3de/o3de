@@ -130,6 +130,8 @@ namespace SceneUnitTest
             m_systemEntity->CreateComponent<AZ::JobManagerComponent>();
             m_systemEntity->CreateComponent<AZ::StreamerComponent>();
             m_systemEntity->Activate();
+
+            m_sceneSystem = AzFramework::SceneSystemInterface::Get();
         }
 
         void TearDown() override
@@ -146,65 +148,52 @@ namespace SceneUnitTest
         AZ::IO::FileIOBase* m_prevFileIO;
         AZ::ComponentApplication m_app;
         AZ::Entity* m_systemEntity = nullptr;
+        AzFramework::ISceneSystem* m_sceneSystem = nullptr;
 
     };
 
     TEST_F(SceneTest, CreateScene)
-    {
-        Scene* scene = nullptr;
-        AZ::Outcome<Scene*, AZStd::string> createSceneOutcome = AZ::Failure<AZStd::string>("");
-
+    {   
         // A scene should be able to be created with a given name.
-        AzFramework::SceneSystemRequestBus::BroadcastResult(createSceneOutcome, &AzFramework::SceneSystemRequestBus::Events::CreateScene, "TestScene");
+        AZ::Outcome<Scene*, AZStd::string> createSceneOutcome = m_sceneSystem->CreateScene("TestScene");
         EXPECT_TRUE(createSceneOutcome.IsSuccess()) << "Unable to create a scene.";
     
         // The scene pointer returned should be valid
-        scene = createSceneOutcome.GetValue();
-        EXPECT_TRUE(scene != nullptr) << "Scene creation reported success, but no scene actually was actually returned.";
+        Scene* scene = createSceneOutcome.GetValue();
+        EXPECT_NE(scene, nullptr) << "Scene creation reported success, but no scene actually was actually returned.";
 
         // Attempting to create another scene with the same name should fail.
-        createSceneOutcome = AZ::Failure<AZStd::string>("");
-        AzFramework::SceneSystemRequestBus::BroadcastResult(createSceneOutcome, &AzFramework::SceneSystemRequestBus::Events::CreateScene, "TestScene");
+        createSceneOutcome = m_sceneSystem->CreateScene("TestScene");
         EXPECT_TRUE(!createSceneOutcome.IsSuccess()) << "Should not be able to create two scenes with the same name.";
 
     }
 
     TEST_F(SceneTest, GetScene)
     {
-        Scene* createdScene = nullptr;
-        Scene* retrievedScene = nullptr;
-        Scene* nullScene = nullptr;
-        const static AZStd::string_view s_sceneName = "TestScene";
+        constexpr AZStd::string_view sceneName = "TestScene";
 
-        AZ::Outcome<Scene*, AZStd::string> createSceneOutcome = AZ::Failure<AZStd::string>("");
-        AzFramework::SceneSystemRequestBus::BroadcastResult(createSceneOutcome, &AzFramework::SceneSystemRequestBus::Events::CreateScene, s_sceneName);
-        createdScene = createSceneOutcome.GetValue();
+        AZ::Outcome<Scene*, AZStd::string> createSceneOutcome = m_sceneSystem->CreateScene(sceneName);
+        Scene* createdScene = createSceneOutcome.GetValue();
 
         // Should be able to get a scene by name, and it should match the scene that was created.
-        AzFramework::SceneSystemRequestBus::BroadcastResult(retrievedScene, &AzFramework::SceneSystemRequestBus::Events::GetScene, s_sceneName);
-        EXPECT_TRUE(retrievedScene != nullptr) << "Attempting to get scene by name resulted in nullptr.";
-        EXPECT_TRUE(retrievedScene == createdScene) << "Retrieved scene does not match created scene.";
+        Scene* retrievedScene = m_sceneSystem->GetScene(sceneName);
+        EXPECT_NE(retrievedScene, nullptr) << "Attempting to get scene by name resulted in nullptr.";
+        EXPECT_EQ(retrievedScene, createdScene) << "Retrieved scene does not match created scene.";
 
         // An invalid name should return a null scene.
-        AzFramework::SceneSystemRequestBus::BroadcastResult(nullScene, &AzFramework::SceneSystemRequestBus::Events::GetScene, "non-existant scene");
-        EXPECT_TRUE(nullScene == nullptr) << "Should not be able to retrieve a scene that wasn't created.";
+        Scene* nullScene = m_sceneSystem->GetScene("non-existant scene");
+        EXPECT_EQ(nullScene, nullptr) << "Should not be able to retrieve a scene that wasn't created.";
     }
 
     TEST_F(SceneTest, RemoveScene)
     {
-        Scene* createdScene = nullptr;
-        const static AZStd::string_view s_sceneName = "TestScene";
+        constexpr AZStd::string_view sceneName = "TestScene";
 
-        AZ::Outcome<Scene*, AZStd::string> createSceneOutcome = AZ::Failure<AZStd::string>("");
-        AzFramework::SceneSystemRequestBus::BroadcastResult(createSceneOutcome, &AzFramework::SceneSystemRequestBus::Events::CreateScene, s_sceneName);
-        createdScene = createSceneOutcome.GetValue();
-
-        bool success = false;
-        AzFramework::SceneSystemRequestBus::BroadcastResult(success, &AzFramework::SceneSystemRequestBus::Events::RemoveScene, s_sceneName);
+        AZ::Outcome<Scene*, AZStd::string> createSceneOutcome = m_sceneSystem->CreateScene(sceneName);
+        bool success = m_sceneSystem->RemoveScene(sceneName);
         EXPECT_TRUE(success) << "Failed to remove the scene that was just created.";
 
-        success = true;
-        AzFramework::SceneSystemRequestBus::BroadcastResult(success, &AzFramework::SceneSystemRequestBus::Events::RemoveScene, "non-existant scene");
+        success = m_sceneSystem->RemoveScene("non-existant scene");
         EXPECT_FALSE(success) << "Remove scene returned success for a non-existant scene.";
     }
 
@@ -216,21 +205,17 @@ namespace SceneUnitTest
 
         for (size_t i = 0; i < NumScenes; ++i)
         {
-            AZ::Outcome<Scene*, AZStd::string> createSceneOutcome = AZ::Failure<AZStd::string>("");
-
             AZStd::string sceneName = AZStd::string::format("scene %zu", i);
-            AzFramework::SceneSystemRequestBus::BroadcastResult(createSceneOutcome, &AzFramework::SceneSystemRequestBus::Events::CreateScene, sceneName);
+            AZ::Outcome<Scene*, AZStd::string> createSceneOutcome = m_sceneSystem->CreateScene(sceneName); 
             scenes[i] = createSceneOutcome.GetValue();
         }
 
-        AZStd::vector<Scene*> retrievedScenes;
-        AzFramework::SceneSystemRequestBus::BroadcastResult(retrievedScenes, &AzFramework::SceneSystemRequestBus::Events::GetAllScenes);
-
+        AZStd::vector<Scene*> retrievedScenes = m_sceneSystem->GetAllScenes();
         EXPECT_EQ(NumScenes, retrievedScenes.size()) << "GetAllScenes() returned a different number of scenes than those created.";
 
         for (size_t i = 0; i < NumScenes; ++i)
         {
-            EXPECT_EQ(scenes[i], retrievedScenes.at(i)) << "GetAllScenes() returned scenes in a different order than they were created.";
+            EXPECT_EQ(scenes[i], retrievedScenes[i]) << "GetAllScenes() returned scenes in a different order than they were created.";
         }
     }
 
@@ -249,8 +234,7 @@ namespace SceneUnitTest
     TEST_F(SceneTest, SceneSystem)
     {
         // Create the scene
-        AZ::Outcome<Scene*, AZStd::string> createSceneOutcome = AZ::Failure<AZStd::string>("");
-        AzFramework::SceneSystemRequestBus::BroadcastResult(createSceneOutcome, &AzFramework::SceneSystemRequestBus::Events::CreateScene, "TestScene");
+        AZ::Outcome<Scene*, AZStd::string> createSceneOutcome = m_sceneSystem->CreateScene("TestScene");
         AzFramework::Scene* scene = createSceneOutcome.GetValue();
 
         // Set a class on the Scene

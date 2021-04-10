@@ -20,11 +20,10 @@ namespace AzFramework
 {
     class SceneSystemComponent
         : public AZ::Component
-        , public SceneSystemRequestBus::Handler
+        , public SceneSystemInterface::Registrar
     {
     public:
-
-        AZ_COMPONENT(SceneSystemComponent, "{7AC53AF0-BE1A-437C-BE3E-4D6A998DA945}", AZ::Component);
+        AZ_COMPONENT(SceneSystemComponent, "{7AC53AF0-BE1A-437C-BE3E-4D6A998DA945}", AZ::Component, ISceneSystem);
 
         SceneSystemComponent();
         ~SceneSystemComponent() override;
@@ -41,7 +40,7 @@ namespace AzFramework
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
         //////////////////////////////////////////////////////////////////////////
-        // SceneSystemRequestsBus::Handler
+        // SceneSystemInterface overrides
         //////////////////////////////////////////////////////////////////////////
         AZ::Outcome<Scene*, AZStd::string> CreateScene(AZStd::string_view name) override;
         AZ::Outcome<Scene*, AZStd::string> CreateSceneWithParent(AZStd::string_view name, Scene* parent) override;
