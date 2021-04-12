@@ -49,7 +49,7 @@ def normalize_file_path(file_path: str) -> str:
         try:
             return str(pathlib.Path(file_path).resolve(True))
         except (FileNotFoundError, RuntimeError):
-            logger.warning("Failed to normalize file path, return empty string instead")
+            logger.warning(f"Failed to normalize file path {file_path}, return empty string instead")
     return ""
 
 

@@ -25,8 +25,12 @@ old_os_env: Dict[str, str] = os.environ.copy()
 
 
 def setup_qt_environment(bin_path: str) -> None:
+    """
+    Setup Qt binaries for o3de python runtime environment
+    :param bin_path: The path of Qt binaries
+    """
     if is_qt_linked():
-        logger.info("Qt binaries has already been linked, skip Qt setup")
+        logger.info("Qt binaries have already been linked, skip Qt setup")
         return
     global old_os_env
     old_os_env = os.environ.copy()
@@ -43,12 +47,19 @@ def setup_qt_environment(bin_path: str) -> None:
 
 
 def is_qt_linked() -> bool:
+    """
+    Check whether Qt binaries have been linked in o3de python runtime environment
+    :return: True if Qt binaries have been linked; False if not
+    """
     return qt_binaries_linked
 
 
 def cleanup_qt_environment() -> None:
+    """
+    Clean up the linked Qt binaries in o3de python runtime environment
+    """
     if not is_qt_linked():
-        logger.info("Qt binaries has not been linked, skip Qt uninstall")
+        logger.info("Qt binaries have not been linked, skip Qt uninstall")
         return
     global old_os_env
     if old_os_env.get("QT_PLUGIN_PATH"):
