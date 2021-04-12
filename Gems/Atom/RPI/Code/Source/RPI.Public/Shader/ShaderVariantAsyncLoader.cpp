@@ -174,6 +174,7 @@ namespace AZ
             m_serviceThread.join();
             Data::AssetBus::MultiHandler::BusDisconnect();
 
+            m_newShaderVariantPendingRequests.clear();
             m_shaderVariantTreePendingRequests.clear();
             m_shaderVariantPendingRequests.clear();
             m_shaderVariantData.clear();
