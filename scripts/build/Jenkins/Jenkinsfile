@@ -270,7 +270,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String projectName, String pipeline,
         if(env.IS_UNIX) pythonCmd = 'sudo -E python -u '
         else pythonCmd = 'python -u '
 
-        if(env.RECREATE_VOLUME.toBoolean()) {
+        if(env.RECREATE_VOLUME?.toBoolean()) {
             palSh("${pythonCmd} ${INCREMENTAL_BUILD_SCRIPT_PATH} --action delete --project ${projectName} --pipeline ${pipeline} --branch ${branchName} --platform ${platform} --build_type ${buildType}", 'Deleting volume')
         }
         timeout(5) {
@@ -291,7 +291,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String projectName, String pipeline,
 
     // Cleanup previous repo location, we are currently at the root of the workspace, if we have a .git folder
     // we need to cleanup. Once all branches take this relocation, we can remove this
-    if(env.CLEAN_WORKSPACE.toBoolean() || fileExists("${workspace}/.git")) {
+    if(env.CLEAN_WORKSPACE?.toBoolean() || fileExists("${workspace}/.git")) {
         if(fileExists(workspace)) {
             palRmDir(workspace)
         }
@@ -315,7 +315,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String projectName, String pipeline,
                 script: 'python/get_python.bat'
         }
 
-        if(env.CLEAN_OUTPUT_DIRECTORY.toBoolean() || env.CLEAN_ASSETS.toBoolean()) {
+        if(env.CLEAN_OUTPUT_DIRECTORY?.toBoolean() || env.CLEAN_ASSETS?.toBoolean()) {
             def command = "${pipelineConfig.BUILD_ENTRY_POINT} --platform ${platform} --type clean"
             if (env.IS_UNIX) {
                 sh label: "Running ${platform} clean",
