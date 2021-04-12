@@ -102,6 +102,9 @@ namespace WhiteBox
         //! Alias for a collection of faces.
         using Faces = AZStd::vector<Face>;
 
+        //! Underlying representation of the White Box mesh (serialized halfedge data).
+        using WhiteBoxMeshStream = AZStd::vector<AZ::u8>;
+
         //! Represents the vertex handles to be used to form a new face.
         struct FaceVertHandles
         {
@@ -729,7 +732,7 @@ namespace WhiteBox
         //! Take an input stream of bytes and create a white box mesh from the deserialized data.
         //! @return Will return false if any error was encountered during deserialization, true otherwise.
         //! @note A white box mesh must have been created first.
-        bool ReadMesh(WhiteBoxMesh& whiteBox, const AZStd::vector<AZ::u8>& input);
+        bool ReadMesh(WhiteBoxMesh& whiteBox, const WhiteBoxMeshStream& input);
 
         //! Take an input stream and create a white box mesh from the deserialized data.
         //! @return Will return false if any error was encountered during deserialization, true otherwise.
@@ -738,7 +741,7 @@ namespace WhiteBox
 
         //! Take a white box mesh and write it out to a stream of bytes.
         //! @return Will return false if any error was encountered during serialization, true otherwise.
-        bool WriteMesh(const WhiteBoxMesh& whiteBox, AZStd::vector<AZ::u8>& output);
+        bool WriteMesh(const WhiteBoxMesh& whiteBox, WhiteBoxMeshStream& output);
 
         //! Clones the white box mesh object into a new mesh.
         //! @return Will return null if any error was encountered during serialization, otherwise the cloned mesh.
