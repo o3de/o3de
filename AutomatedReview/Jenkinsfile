@@ -96,7 +96,7 @@ def IsJobEnabled(buildTypeMap, pipelineName, platformName) {
         if (params[platformName]) {
             if(buildTypeMap.value.TAGS) {
                 return buildTypeMap.value.TAGS.contains(pipelineName)
-            }    
+            }
         }
     }
     return false
@@ -194,9 +194,9 @@ def GetBuildEnvVars(Map platformEnv, Map buildTypeEnv, String pipelineName) {
     }
     buildTypeEnv.each { var ->
         // This may override the above one if there is an entry defined by the job
-        envVarMap[var.key] = var.value 
+        envVarMap[var.key] = var.value
     }
-    
+
     // Environment that only applies to to Jenkins tweaks.
     // For 3rdParty downloads, we store them in the EBS volume so we can reuse them across node
     // instances. This allow us to scale up and down without having to re-download 3rdParty
@@ -223,7 +223,7 @@ def PullFilesFromGit(String filenamePath, String branchName, boolean failIfNotFo
     folderPathParts.remove(folderPathParts.size()-1) // remove the filename
     def folderPath = folderPathParts.join('/')
     if (folderPath.contains('*')) {
-        
+
         def currentPath = ''
         for (int i = 0; i < folderPathParts.size(); i++) {
             if (folderPathParts[i] == '*') {
@@ -259,7 +259,7 @@ def PullFilesFromGit(String filenamePath, String branchName, boolean failIfNotFo
 
     } else {
 
-        def errorFile = "${folderPath}/error.txt" 
+        def errorFile = "${folderPath}/error.txt"
         palMkdir(folderPath)
         retry(3) {
             try {
@@ -273,7 +273,7 @@ def PullFilesFromGit(String filenamePath, String branchName, boolean failIfNotFo
                     win_filenamePath = filenamePath.replace('/', '\\')
                     bat label: "Downloading ${win_filenamePath}",
                         script: "aws codecommit get-file --repository-name ${repositoryName} --commit-specifier ${branchName} --file-path ${filenamePath} --query fileContent --output text 2>${errorFile} > ${win_filenamePath}_encoded"
-                    bat label: 'Decoding',                            
+                    bat label: 'Decoding',
                         script: "certutil -decode ${win_filenamePath}_encoded ${win_filenamePath}"
                 }
                 palRm("${filenamePath}_encoded")
@@ -296,7 +296,7 @@ def SetLfsCredentials(cmd, lbl = '') {
     if (env.IS_UNIX) {
         sh label: lbl,
            script: cmd
-    } else { 
+    } else {
         bat label: lbl,
             script: cmd
     }
@@ -330,7 +330,7 @@ def CheckoutRepo(boolean disableSubmodules = false) {
 
         if(fileExists('.git')) {
             // If the repository after checkout is locked, likely we took a snapshot while git was running,
-            // to leave the repo in a usable state, garbagecollect. This also helps in situations where 
+            // to leave the repo in a usable state, garbagecollect. This also helps in situations where
             def indexLockFile = '.git/index.lock'
             if(fileExists(indexLockFile)) {
                 palSh('git gc', 'Git GarbageCollect')
@@ -380,7 +380,7 @@ def CheckoutRepo(boolean disableSubmodules = false) {
     // Add folder where we will store the 3rdParty downloads and packages
     if(!fileExists('3rdParty')) {
         palMkdir('3rdParty')
-    }    
+    }
 
     dir(ENGINE_REPOSITORY_NAME) {
         // Run lfs in a separate step. Jenkins is unable to load the credentials for the custom LFS endpoint
@@ -419,7 +419,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String projectName, String pipeline,
             sh label: 'Setting volume\'s ownership',
                script: """
                 if sudo test ! -d "${workspace}"; then
-                    sudo mkdir -p ${workspace} 
+                    sudo mkdir -p ${workspace}
                     cd ${workspace}/..
                     sudo chown -R lybuilder:root .
                 fi
