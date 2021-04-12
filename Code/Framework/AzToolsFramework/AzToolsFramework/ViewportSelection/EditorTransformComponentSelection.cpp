@@ -1549,97 +1549,15 @@ namespace AzToolsFramework
             AZ::Vector3::CreateAxisZ());
         scaleManipulators->ConfigureView(
             2.0f,
-            AzFramework::ViewportColors::XAxisColor,
-            AzFramework::ViewportColors::YAxisColor,
-            AzFramework::ViewportColors::ZAxisColor);
+            AZ::Color::CreateOne(),
+            AZ::Color::CreateOne(),
+            AZ::Color::CreateOne());
 
         // lambdas capture shared_ptr by value to increment ref count
         auto manipulatorEntityIds = AZStd::make_shared<ManipulatorEntityIds>();
 
-        scaleManipulators->InstallAxisLeftMouseDownCallback(
-            [this, manipulatorEntityIds](const LinearManipulator::Action& action)
-        {
-            // important to sort entityIds based on hierarchy order when updating transforms
-            BuildSortedEntityIdVectorFromEntityIdMap(m_entityIdManipulators.m_lookups, manipulatorEntityIds->m_entityIds);
-
-            // here we are calling SetLocalScale, so order we visit entities in hierarchy is important
-            for (AZ::EntityId entityId : manipulatorEntityIds->m_entityIds)
-            {
-                auto entityIdLookupIt = m_entityIdManipulators.m_lookups.find(entityId);
-                if (entityIdLookupIt == m_entityIdManipulators.m_lookups.end())
-                {
-                    continue;
-                }
-
-                AZ::Vector3 localScale = AZ::Vector3::CreateZero();
-                AZ::TransformBus::EventResult(
-                    localScale, entityId, &AZ::TransformBus::Events::GetLocalScale);
-
-                SetEntityLocalScale(entityId, localScale + action.m_start.m_scaleSnapOffset);
-
-                AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
-                AZ::TransformBus::EventResult(
-                    worldFromLocal, entityId, &AZ::TransformBus::Events::GetWorldTM);
-
-                entityIdLookupIt->second.m_initial = worldFromLocal;
-            }
-
-            m_axisPreview.m_translation = m_entityIdManipulators.m_manipulators->GetLocalTransform().GetTranslation();
-            m_axisPreview.m_orientation =
-                QuaternionFromTransformNoScaling(m_entityIdManipulators.m_manipulators->GetLocalTransform());
-        });
-
-        scaleManipulators->InstallAxisLeftMouseUpCallback(
-            [this, manipulatorEntityIds](const LinearManipulator::Action& /*action*/)
-        {
-            m_entityIdManipulators.m_manipulators->SetLocalTransform(
-                RecalculateAverageManipulatorTransform(
-                    m_entityIdManipulators.m_lookups, m_pivotOverrideFrame, m_pivotMode, m_referenceFrame));
-        });
-
-        scaleManipulators->InstallAxisMouseMoveCallback(
-            [this, manipulatorEntityIds](const LinearManipulator::Action& action)
-        {
-            // note: must use sorted entityIds based on hierarchy order when updating transforms
-            for (AZ::EntityId entityId : manipulatorEntityIds->m_entityIds)
-            {
-                auto entityIdLookupIt = m_entityIdManipulators.m_lookups.find(entityId);
-                if (entityIdLookupIt == m_entityIdManipulators.m_lookups.end())
-                {
-                    continue;
-                }
-
-                const AZ::Transform initial = entityIdLookupIt->second.m_initial;
-
-                const AZ::Vector3 scale = (AZ::Vector3::CreateOne() +
-                    ((action.LocalScaleOffset() *
-                        action.m_start.m_sign) / initial.GetScale())).GetMax(AZ::Vector3(0.01f));
-                const AZ::Transform scaleTransform = AZ::Transform::CreateScale(scale);
-
-                if (action.m_modifiers.Alt())
-                {
-                    const AZ::Quaternion pivotRotation = entityIdLookupIt->second.m_initial.GetRotation().GetNormalized();
-                    const AZ::Vector3 pivotPosition = entityIdLookupIt->second.m_initial.TransformPoint(CalculateCenterOffset(entityId, m_pivotMode));
-
-                    const AZ::Transform pivotTransform = AZ::Transform::CreateFromQuaternionAndTranslation(pivotRotation, pivotPosition);
-                    const AZ::Transform transformInPivotSpace = pivotTransform.GetInverse() * initial;
-
-                    SetEntityWorldTransform(entityId, pivotTransform * scaleTransform * transformInPivotSpace);
-                }
-                else
-                {
-                    const AZ::Transform pivotTransform =
-                        TransformNormalizedScale(m_entityIdManipulators.m_manipulators->GetLocalTransform());
-                    const AZ::Transform transformInPivotSpace = pivotTransform.GetInverse() * initial;
-
-                    // pivot
-                    SetEntityWorldTransform(entityId, pivotTransform * scaleTransform * transformInPivotSpace);
-                }
-            }
-        });
-
-        scaleManipulators->InstallUniformLeftMouseDownCallback(
-            [this, manipulatorEntityIds](const LinearManipulator::Action& /*action*/)
+        auto uniformLeftMouseDownCallback =
+            [this, manipulatorEntityIds]([[maybe_unused]] const LinearManipulator::Action& action)
         {
             // important to sort entityIds based on hierarchy order when updating transforms
             BuildSortedEntityIdVectorFromEntityIdMap(m_entityIdManipulators.m_lookups, manipulatorEntityIds->m_entityIds);
@@ -1656,18 +1574,16 @@ namespace AzToolsFramework
             m_axisPreview.m_translation = m_entityIdManipulators.m_manipulators->GetLocalTransform().GetTranslation();
             m_axisPreview.m_orientation = QuaternionFromTransformNoScaling(
                 m_entityIdManipulators.m_manipulators->GetLocalTransform());
-        });
+        };
 
-        scaleManipulators->InstallUniformLeftMouseUpCallback(
-            [this, manipulatorEntityIds](const LinearManipulator::Action& /*action*/)
+        auto uniformLeftMouseUpCallback = [this, manipulatorEntityIds]([[maybe_unused]] const LinearManipulator::Action& action)
         {
             m_entityIdManipulators.m_manipulators->SetLocalTransform(
                 RecalculateAverageManipulatorTransform(
                     m_entityIdManipulators.m_lookups, m_pivotOverrideFrame, m_pivotMode, m_referenceFrame));
-        });
+        };
 
-        scaleManipulators->InstallUniformMouseMoveCallback(
-            [this, manipulatorEntityIds](const LinearManipulator::Action& action)
+        auto uniformLeftMouseMoveCallback = [this, manipulatorEntityIds](const LinearManipulator::Action& action)
         {
             // note: must use sorted entityIds based on hierarchy order when updating transforms
             for (AZ::EntityId entityId : manipulatorEntityIds->m_entityIds)
@@ -1685,7 +1601,7 @@ namespace AzToolsFramework
                     return vec.GetX() + vec.GetY() + vec.GetZ();
                 };
 
-                const AZ::Vector3 uniformScale = AZ::Vector3(sumVectorElements(action.LocalScaleOffset()));
+                const AZ::Vector3 uniformScale = AZ::Vector3(action.m_start.m_sign * sumVectorElements(action.LocalScaleOffset()));
                 const AZ::Vector3 scale = (AZ::Vector3::CreateOne() +
                     (uniformScale / initialScale)).GetMax(AZ::Vector3(0.01f));
                 const AZ::Transform scaleTransform = AZ::Transform::CreateScale(scale);
@@ -1709,7 +1625,14 @@ namespace AzToolsFramework
                     SetEntityWorldTransform(entityId, pivotTransform * scaleTransform * transformInPivotSpace);
                 }
             }
-        });
+        };
+
+        scaleManipulators->InstallAxisLeftMouseDownCallback(uniformLeftMouseDownCallback);
+        scaleManipulators->InstallAxisLeftMouseUpCallback(uniformLeftMouseUpCallback);
+        scaleManipulators->InstallAxisMouseMoveCallback(uniformLeftMouseMoveCallback);
+        scaleManipulators->InstallUniformLeftMouseDownCallback(uniformLeftMouseDownCallback);
+        scaleManipulators->InstallUniformLeftMouseUpCallback(uniformLeftMouseUpCallback);
+        scaleManipulators->InstallUniformMouseMoveCallback(uniformLeftMouseMoveCallback);
 
         // transfer ownership
         m_entityIdManipulators.m_manipulators = AZStd::move(scaleManipulators);
