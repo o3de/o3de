@@ -457,7 +457,7 @@ try {
         }
     }
 
-    if(env.BUILD_NUMBER == '1') {
+    if(env.BUILD_NUMBER == '1' && !branchName.startsWith('PR-')) {
         // Exit pipeline early on the intial build. This allows Jenkins to load the pipeline for the branch and enables users
         // to select build parameters on their first actual build. See https://issues.jenkins.io/browse/JENKINS-41929
         currentBuild.result = 'SUCCESS'
