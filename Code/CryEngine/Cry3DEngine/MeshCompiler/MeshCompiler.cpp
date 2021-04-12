@@ -75,7 +75,7 @@ namespace mesh_compiler
                 if (mesh.m_pNorms)
                 {
                     res = memcmp(&mesh.m_pNorms[a], &mesh.m_pNorms[b], sizeof(mesh.m_pNorms[a]));
-                    if (!res)
+                    if (res)
                     {
                         return res < 0;
                     }
@@ -83,7 +83,7 @@ namespace mesh_compiler
                 if (mesh.m_pColor0)
                 {
                     res = memcmp(&mesh.m_pColor0[a], &mesh.m_pColor0[b], sizeof(mesh.m_pColor0[a]));
-                    if (!res)
+                    if (res)
                     {
                         return res < 0;
                     }
@@ -91,7 +91,7 @@ namespace mesh_compiler
                 if (mesh.m_pColor1)
                 {
                     res = memcmp(&mesh.m_pColor1[a], &mesh.m_pColor1[b], sizeof(mesh.m_pColor1[a]));
-                    if (!res)
+                    if (res)
                     {
                         return res < 0;
                     }
@@ -99,7 +99,7 @@ namespace mesh_compiler
                 if (mesh.m_pVertMats)
                 {
                     res = memcmp(&mesh.m_pVertMats[a], &mesh.m_pVertMats[b], sizeof(mesh.m_pVertMats[a]));
-                    if (!res)
+                    if (res)
                     {
                         return res < 0;
                     }
@@ -107,7 +107,7 @@ namespace mesh_compiler
                 if (mesh.m_pTangents)
                 {
                     res = memcmp(&mesh.m_pTangents[a], &mesh.m_pTangents[b], sizeof(mesh.m_pTangents[a]));
-                    if (!res)
+                    if (res)
                     {
                         return res < 0;
                     }
