@@ -3379,7 +3379,7 @@ namespace WhiteBox
             CalculatePlanarUVs(whiteBox);
         }
 
-        bool WriteMesh(const WhiteBoxMesh& whiteBox, AZStd::vector<AZ::u8>& output)
+        bool WriteMesh(const WhiteBoxMesh& whiteBox, WhiteBoxMeshStream& output)
         {
             AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
@@ -3403,7 +3403,7 @@ namespace WhiteBox
             return false;
         }
 
-        bool ReadMesh(WhiteBoxMesh& whiteBox, const AZStd::vector<AZ::u8>& input)
+        bool ReadMesh(WhiteBoxMesh& whiteBox, const WhiteBoxMeshStream& input)
         {
             AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
@@ -3437,7 +3437,7 @@ namespace WhiteBox
         {
             AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
-            AZStd::vector<AZ::u8> clonedData;
+            WhiteBoxMeshStream clonedData;
             if (!WriteMesh(whiteBox, clonedData))
             {
                 return nullptr;
@@ -3461,7 +3461,7 @@ namespace WhiteBox
 
         bool SaveToWbm(const WhiteBoxMesh& whiteBox, AZ::IO::GenericStream& stream)
         {
-            AZStd::vector<AZ::u8> buffer;
+            WhiteBoxMeshStream buffer;
             const bool success = WhiteBox::Api::WriteMesh(whiteBox, buffer);
 
             const auto bytesWritten = stream.Write(buffer.size(), buffer.data());

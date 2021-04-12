@@ -112,7 +112,9 @@ namespace WhiteBox
 
             const auto size = stream->GetLength();
 
-            AZStd::vector<AZ::u8> whiteBoxData(size);
+            Api::WhiteBoxMeshStream whiteBoxData;
+            whiteBoxData.reserve(size);
+
             stream->Read(size, whiteBoxData.data());
 
             auto whiteBoxMesh = WhiteBox::Api::CreateWhiteBoxMesh();
