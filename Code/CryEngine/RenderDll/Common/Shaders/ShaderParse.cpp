@@ -608,7 +608,6 @@ string CShaderMan::mfGetShaderBitNamesFromMaskGen(const char* szFileName, uint64
     string pszShaderName = PathUtil::GetFileName(szFileName);
     pszShaderName.MakeUpper();
 
-    uint64 nMaskGenRemaped = 0;
     ShaderMapNameFlagsItor pShaderRmp = m_pShadersGlobalFlags.find(pszShaderName.c_str());
     if (pShaderRmp == m_pShadersGlobalFlags.end() || !pShaderRmp->second)
     {
@@ -678,7 +677,6 @@ void CShaderMan::mfRemapShaderGenInfoBits(const char* szName, SShaderGen* pShGen
             pGenBit->m_Mask = pRemaped->second;
         }
 
-        int test = 2;
     }
 }
 
@@ -794,7 +792,6 @@ uint64 CShaderMan::mfGetRemapedShaderMaskGen(const char* szName, uint64 nMaskGen
                 // found match - enable bit for remapped mask
                 if ((pIter->second) & nMask)
                 {
-                    const char* pFlagName = pIter->first.c_str();
                     MapNameFlagsItor pMatchIter = m_pShaderCommonGlobalFlag.find(pIter->first);
                     if (pMatchIter != m_pShaderCommonGlobalFlag.end())
                     {

@@ -33,21 +33,21 @@ namespace AzNetworking
         //! Sets the specified bit to the provided value.
         //! @param index index of the bit to set
         //! @param value value to set the bit to
-        virtual void SetBit(uint32_t index, bool value) override;
+        void SetBit(uint32_t index, bool value) override;
 
         //! Gets the current value of the specified bit.
         //! @param index index of the bit to retrieve the value of
         //! @return boolean true if the bit is set, false otherwise
-        virtual bool GetBit(uint32_t index) const override;
+        bool GetBit(uint32_t index) const override;
 
         //! Gets the current value of the specified bit.
         //! @param index index of the bit to retrieve the value of
         //! @return boolean true if the bit is set, false otherwise
-        virtual bool AnySet() const override;
+        bool AnySet() const override;
 
         //! Returns the number of bits that are represented in this fixed size bitset.
         //! @return the number of bits that are represented in this fixed size bitset
-        virtual uint32_t GetValidBitCount() const override;
+        uint32_t GetValidBitCount() const override;
 
     private:
 

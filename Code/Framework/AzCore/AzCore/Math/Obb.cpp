@@ -74,7 +74,6 @@ namespace AZ
         {
             behaviorContext->Class<Obb>()->
                 Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::All)->
-                Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::Preview)->
                 Attribute(Script::Attributes::Storage, Script::Attributes::StorageType::Value)->
                 Attribute(Script::Attributes::GenericConstructorOverride, &Internal::ObbDefaultConstructor)->
                 Property("position", &Obb::GetPosition, &Obb::SetPosition)->

@@ -255,11 +255,11 @@ namespace GraphCanvas
 
             if (m_displayedConnection.IsValid())
             {
-                for (int i = static_cast<int>(m_connections.size()) - 1; i >= 0; ++i)
+                for (auto connectionIter = m_connections.begin(); connectionIter != m_connections.end(); ++connectionIter)
                 {
-                    if (m_connections[i] == m_displayedConnection)
+                    if (*connectionIter == m_displayedConnection)
                     {
-                        m_connections.erase(m_connections.begin() + i);
+                        m_connections.erase(connectionIter);
                         break;
                     }
                 }

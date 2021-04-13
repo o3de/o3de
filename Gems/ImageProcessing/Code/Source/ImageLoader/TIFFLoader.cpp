@@ -22,7 +22,7 @@
 
 #include <QString>
 
-#include <libtiff/tiffio.h>  // TIFF library
+#include <tiffio.h>  // TIFF library
 
 namespace ImageProcessing
 {

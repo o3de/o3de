@@ -91,7 +91,7 @@ namespace AZ
                     }
 
                     AZStd::string cacheFileName;
-                    bool succeeded = AzFramework::StringFunc::Path::GetFileName(sourceMaterialPath.c_str(), cacheFileName);
+                    [[maybe_unused]] bool succeeded = AzFramework::StringFunc::Path::GetFileName(sourceMaterialPath.c_str(), cacheFileName);
                     AZ_Assert(succeeded, "Failed to retrieve a valid material file name from %s", sourceMaterialPath.c_str());
 
                     AZStd::string materialCachePath;

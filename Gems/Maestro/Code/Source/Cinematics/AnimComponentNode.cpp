@@ -719,7 +719,6 @@ void CAnimComponentNode::InitializeTrackDefaultValue(IAnimTrack* pTrack, const C
         {
             BehaviorPropertyInfo& propertyInfo = findIter->second;
 
-            bool boolValue = false;
             Maestro::SequenceComponentRequests::AnimatablePropertyAddress address(m_componentId, propertyInfo.m_animNodeParamInfo.name);
 
             switch (pTrack->GetValueType())

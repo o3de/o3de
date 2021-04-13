@@ -53,35 +53,27 @@ namespace UnitTest
     {
         // Trvially validate that we can create and destroy an asset manager instance, and that it's only ready while it's created.
 
-        // Before creation, IsReady() should be false and trying to get an Instance() should cause an assert.
+        // Before creation, IsReady() should be false.
         EXPECT_FALSE(AssetManager::IsReady());
-        AZ_TEST_START_TRACE_SUPPRESSION;
-        auto& badInstance = AssetManager::Instance();
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
 
         AssetManager::Descriptor desc;
         AssetManager::Create(desc);
 
         // After creation, the system should be ready and queryable via Instance().
         EXPECT_TRUE(AssetManager::IsReady());
-        auto& goodInstance = AssetManager::Instance();
+        AssetManager::Instance();
 
         AssetManager::Destroy();
 
         // After destruction, these should fail again
         EXPECT_FALSE(AssetManager::IsReady());
-        AZ_TEST_START_TRACE_SUPPRESSION;
-        auto& badInstance2 = AssetManager::Instance();
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
     }
 #endif // !AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_CREATE_DESTROY_TEST
 
     TEST_F(AssetManagerSystemTest, AssetManager_SetInstance_TriviallyWorks)
     {
         // There shouldn't be an instance yet.
-        AZ_TEST_START_TRACE_SUPPRESSION;
-        auto& badInstance = AssetManager::Instance();
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+        EXPECT_FALSE(AssetManager::IsReady());
 
         // Create an instance and set it.
         AssetManager::Descriptor desc;
@@ -669,7 +661,6 @@ namespace UnitTest
             EmptyAssetWithInstanceCount* origData = assetWithData.Get();
             AssetId origId = assetWithData.GetId();
             AssetType origType = assetWithData.GetType();
-            AssetLoadBehavior origBehavior = assetWithData.GetAutoLoadBehavior();
 
             Asset<EmptyAssetWithInstanceCount> assetWithData2(AZStd::move(assetWithData));
 

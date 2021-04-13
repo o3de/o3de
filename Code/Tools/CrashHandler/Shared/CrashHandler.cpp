@@ -192,7 +192,6 @@ namespace CrashHandler
             return;
         }
 
-        AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
 
 #if AZ_TRAIT_CRASHHANDLER_CONVERT_MULTIBYTE_CHARS
         wchar_t pathStr[AZ_MAX_PATH_LEN];

@@ -461,7 +461,7 @@ int main(int argc, char* argv[])
     AZ::AllocatorInstance<AZ::LegacyAllocator>::Create();
     AZ::AllocatorInstance<CryStringAllocator>::Create();
 
-    AzFramework::Application app;
+    AzFramework::Application app(&argc, &argv);
     AzFramework::Application::StartupParameters startupParams;
     AzFramework::Application::Descriptor descriptor;
     app.Start(descriptor, startupParams);

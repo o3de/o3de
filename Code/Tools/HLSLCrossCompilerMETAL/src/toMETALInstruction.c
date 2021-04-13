@@ -327,7 +327,6 @@ static void METALAddComparision(HLSLCrossCompilerContext* psContext, Instruction
 static void METALAddMOVBinaryOp(HLSLCrossCompilerContext* psContext, const Operand* pDest, Operand* pSrc)
 {
     int numParenthesis = 0;
-    int destComponents = GetMaxComponentFromComponentMaskMETAL(pDest);
     int srcSwizzleCount = GetNumSwizzleElementsMETAL(pSrc);
     uint32_t writeMask = GetOperandWriteMaskMETAL(pDest);
 
@@ -356,7 +355,6 @@ static void METALAddMOVCBinaryOp(HLSLCrossCompilerContext* psContext, const Oper
     uint32_t destElem;
 
     const SHADER_VARIABLE_TYPE eDestType = GetOperandDataTypeMETAL(psContext, pDest);
-    const SHADER_VARIABLE_TYPE eSrc0Type = GetOperandDataTypeMETAL(psContext, src0);
     /*
     for each component in dest[.mask]
     if the corresponding component in src0 (POS-swizzle)
@@ -566,9 +564,6 @@ static void METALCallTernaryOp(HLSLCrossCompilerContext* psContext, const char* 
     int dest, int src0, int src1, int src2, uint32_t dataType)
 {
     bstring glsl = *psContext->currentShaderString;
-    uint32_t src2SwizCount = GetNumSwizzleElementsMETAL(&psInst->asOperands[src2]);
-    uint32_t src1SwizCount = GetNumSwizzleElementsMETAL(&psInst->asOperands[src1]);
-    uint32_t src0SwizCount = GetNumSwizzleElementsMETAL(&psInst->asOperands[src0]);
     uint32_t dstSwizCount = GetNumSwizzleElementsMETAL(&psInst->asOperands[dest]);
     uint32_t destMask = GetOperandWriteMaskMETAL(&psInst->asOperands[dest]);
 
@@ -596,9 +591,6 @@ static void METALCallHelper3(HLSLCrossCompilerContext* psContext, const char* na
     
     bstring glsl = *psContext->currentShaderString;
     uint32_t destMask = paramsShouldFollowWriteMask ? GetOperandWriteMaskMETAL(&psInst->asOperands[dest]) : OPERAND_4_COMPONENT_MASK_ALL;
-    uint32_t src2SwizCount = GetNumSwizzleElementsMETAL(&psInst->asOperands[src2]);
-    uint32_t src1SwizCount = GetNumSwizzleElementsMETAL(&psInst->asOperands[src1]);
-    uint32_t src0SwizCount = GetNumSwizzleElementsMETAL(&psInst->asOperands[src0]);
     uint32_t dstSwizCount = GetNumSwizzleElementsMETAL(&psInst->asOperands[dest]);
     int numParenthesis = 0;
 
@@ -625,8 +617,6 @@ static void METALCallHelper2(HLSLCrossCompilerContext* psContext, const char* na
     
     bstring glsl = *psContext->currentShaderString;
     uint32_t destMask = paramsShouldFollowWriteMask ? GetOperandWriteMaskMETAL(&psInst->asOperands[dest]) : OPERAND_4_COMPONENT_MASK_ALL;
-    uint32_t src1SwizCount = GetNumSwizzleElementsMETAL(&psInst->asOperands[src1]);
-    uint32_t src0SwizCount = GetNumSwizzleElementsMETAL(&psInst->asOperands[src0]);
     uint32_t dstSwizCount = GetNumSwizzleElementsMETAL(&psInst->asOperands[dest]);
 
     int isDotProduct = (strncmp(name, "dot", 3) == 0) ? 1 : 0;
@@ -650,8 +640,6 @@ static void METALCallHelper2Int(HLSLCrossCompilerContext* psContext, const char*
 {
     uint32_t ui32Flags = TO_AUTO_BITCAST_TO_INT;
     bstring glsl = *psContext->currentShaderString;
-    uint32_t src1SwizCount = GetNumSwizzleElementsMETAL(&psInst->asOperands[src1]);
-    uint32_t src0SwizCount = GetNumSwizzleElementsMETAL(&psInst->asOperands[src0]);
     uint32_t dstSwizCount = GetNumSwizzleElementsMETAL(&psInst->asOperands[dest]);
     uint32_t destMask = paramsShouldFollowWriteMask ? GetOperandWriteMaskMETAL(&psInst->asOperands[dest]) : OPERAND_4_COMPONENT_MASK_ALL;
     int numParenthesis = 0;
@@ -673,8 +661,6 @@ static void METALCallHelper2UInt(HLSLCrossCompilerContext* psContext, const char
 {
     uint32_t ui32Flags = TO_AUTO_BITCAST_TO_UINT;
     bstring glsl = *psContext->currentShaderString;
-    uint32_t src1SwizCount = GetNumSwizzleElementsMETAL(&psInst->asOperands[src1]);
-    uint32_t src0SwizCount = GetNumSwizzleElementsMETAL(&psInst->asOperands[src0]);
     uint32_t dstSwizCount = GetNumSwizzleElementsMETAL(&psInst->asOperands[dest]);
     uint32_t destMask = paramsShouldFollowWriteMask ? GetOperandWriteMaskMETAL(&psInst->asOperands[dest]) : OPERAND_4_COMPONENT_MASK_ALL;
     int numParenthesis = 0;
@@ -696,7 +682,6 @@ static void METALCallHelper1(HLSLCrossCompilerContext* psContext, const char* na
 {
     uint32_t ui32Flags = TO_AUTO_BITCAST_TO_FLOAT;
     bstring glsl = *psContext->currentShaderString;
-    uint32_t src0SwizCount = GetNumSwizzleElementsMETAL(&psInst->asOperands[src0]);
     uint32_t dstSwizCount = GetNumSwizzleElementsMETAL(&psInst->asOperands[dest]);
     uint32_t destMask = paramsShouldFollowWriteMask ? GetOperandWriteMaskMETAL(&psInst->asOperands[dest]) : OPERAND_4_COMPONENT_MASK_ALL;
     int numParenthesis = 0;
@@ -742,7 +727,6 @@ static void METALTranslateTexelFetch(HLSLCrossCompilerContext* psContext,
     bstring metal)
 {
     int numParenthesis = 0;
-    uint32_t destCount = GetNumSwizzleElementsMETAL(&psInst->asOperands[0]);
     AddIndentation(psContext);
     METALAddAssignToDest(psContext, &psInst->asOperands[0], TypeFlagsToSVTTypeMETAL(METALResourceReturnTypeToFlag(psBinding->ui32ReturnType)), 4, &numParenthesis);
 
@@ -998,7 +982,6 @@ static void METALTranslateTexCoord(HLSLCrossCompilerContext* psContext,
     const RESOURCE_DIMENSION eResDim,
     Operand* psTexCoordOperand)
 {
-    int numParenthesis = 0;
     uint32_t flags = TO_AUTO_BITCAST_TO_FLOAT;
     bstring glsl = *psContext->currentShaderString;
     uint32_t opMask = OPERAND_4_COMPONENT_MASK_ALL;
@@ -1059,9 +1042,7 @@ static void METALTranslateTexCoord(HLSLCrossCompilerContext* psContext,
 static int METALGetNumTextureDimensions(HLSLCrossCompilerContext* psContext,
     const RESOURCE_DIMENSION eResDim)
 {
-    int constructor = 0;
-    bstring glsl = *psContext->currentShaderString;
-
+    (void)psContext;
     switch (eResDim)
     {
     case RESOURCE_DIMENSION_TEXTURE1D:
@@ -1176,7 +1157,6 @@ static void METALTranslateTextureSample(HLSLCrossCompilerContext* psContext, Ins
     int numParenthesis = 0;
 
     const char* funcName = "sample";
-    const char* offset = "";
     const char* depthCmpCoordType = "";
     const char* gradSwizzle = "";
 
@@ -1515,7 +1495,6 @@ static void METALTranslateShaderStorageStore(HLSLCrossCompilerContext* psContext
 {
     bstring metal = *psContext->currentShaderString;
     ShaderVarType* psVarType = NULL;
-    uint32_t ui32DataTypeFlag = TO_FLAG_INTEGER;
     int component;
     int srcComponent = 0;
 
@@ -1524,7 +1503,6 @@ static void METALTranslateShaderStorageStore(HLSLCrossCompilerContext* psContext
     Operand* psDestByteOff = 0;
     Operand* psSrc = 0;
     int structured = 0;
-    int groupshared = 0;
 
     switch (psInst->eOpcode)
     {
@@ -1549,7 +1527,6 @@ static void METALTranslateShaderStorageStore(HLSLCrossCompilerContext* psContext
         ASSERT(psInst->asOperands[0].eSelMode == OPERAND_4_COMPONENT_MASK_MODE);
         if (psInst->asOperands[0].ui32CompMask & (1 << component))
         {
-            SHADER_VARIABLE_TYPE eSrcDataType = GetOperandDataTypeMETAL(psContext, psSrc);
 
             if (structured && psDest->eType != OPERAND_TYPE_THREAD_GROUP_SHARED_MEMORY)
             {
@@ -1764,11 +1741,7 @@ static void METALTranslateShaderStorageStore(HLSLCrossCompilerContext* psContext
 static void METALTranslateShaderStorageLoad(HLSLCrossCompilerContext* psContext, Instruction* psInst)
 {
     bstring metal = *psContext->currentShaderString;
-    ShaderVarType* psVarType = NULL;
-    uint32_t aui32Swizzle[4] = { OPERAND_4_COMPONENT_X };
-    uint32_t ui32DataTypeFlag = TO_FLAG_INTEGER;
     int component;
-    int destComponent = 0;
     Operand* psDest = 0;
     Operand* psSrcAddr = 0;
     Operand* psSrcByteOff = 0;
@@ -1939,11 +1912,6 @@ static void METALTranslateShaderStorageLoad(HLSLCrossCompilerContext* psContext,
                     if (psVar->Class != SVC_SCALAR)
                     {
                         static const char* const m_swizzlers[] = { "x", "y", "z", "w" };
-                        if (bytes > 16)
-                        {
-                            int i = 0;
-                        }
-
                         int offset = (bytes % 16) / 4;
                         if (offset == 0)
                         {
@@ -2338,7 +2306,10 @@ void TranslateAtomicMemOpMETAL(HLSLCrossCompilerContext* psContext, Instruction*
     else
     {
         ResourceBinding* psRes;
-        int foundResource = GetResourceFromBindingPoint(RGROUP_UAV,
+#if defined(_DEBUG)
+        int foundResource =
+#endif
+            GetResourceFromBindingPoint(RGROUP_UAV,
                 dest->ui32RegisterNumber,
                 &psContext->psShader->sInfo,
                 &psRes);
@@ -2655,7 +2626,6 @@ void SetDataTypesMETAL(HLSLCrossCompilerContext* psContext, Instruction* psInst,
         // Only ever to int->float promotion (or int->uint), never the other way around
         for (i = 0; i < i32InstCount; ++i, psInst++)
         {
-            int k = 0;
             if (psInst->ui32NumOperands == 0)
             {
                 continue;
@@ -3065,14 +3035,16 @@ void DetectAtomicInstructionMETAL(HLSLCrossCompilerContext* psContext, Instructi
         return;
     }
 
-    ShaderVarType* psVarType = NULL;
     if (dest->eType == OPERAND_TYPE_THREAD_GROUP_SHARED_MEMORY)
     {
     }
     else
     {
         ResourceBinding* psRes;
-        int foundResource = GetResourceFromBindingPoint(RGROUP_UAV,
+#if defined(_DEBUG)
+        int foundResource =
+#endif
+            GetResourceFromBindingPoint(RGROUP_UAV,
                 dest->ui32RegisterNumber,
                 &psContext->psShader->sInfo,
                 &psRes);
@@ -3120,9 +3092,6 @@ void TranslateInstructionMETAL(HLSLCrossCompilerContext* psContext, Instruction*
     {
         uint32_t dstCount = GetNumSwizzleElementsMETAL(&psInst->asOperands[0]);
         uint32_t srcCount = GetNumSwizzleElementsMETAL(&psInst->asOperands[1]);
-        uint32_t ui32DstFlags = TO_FLAG_DESTINATION;
-        const SHADER_VARIABLE_TYPE eSrcType = GetOperandDataTypeMETAL(psContext, &psInst->asOperands[1]);
-        const SHADER_VARIABLE_TYPE eDestType = GetOperandDataTypeMETAL(psContext, &psInst->asOperands[0]);
 
 #ifdef _DEBUG
         AddIndentation(psContext);
@@ -3165,8 +3134,6 @@ void TranslateInstructionMETAL(HLSLCrossCompilerContext* psContext, Instruction*
     case OPCODE_ITOF://signed to float
     case OPCODE_UTOF://unsigned to float
     {
-        const SHADER_VARIABLE_TYPE eDestType = GetOperandDataTypeMETAL(psContext, &psInst->asOperands[0]);
-        const SHADER_VARIABLE_TYPE eSrcType = GetOperandDataTypeMETAL(psContext, &psInst->asOperands[1]);
         uint32_t dstCount = GetNumSwizzleElementsMETAL(&psInst->asOperands[0]);
         uint32_t srcCount = GetNumSwizzleElementsMETAL(&psInst->asOperands[1]);
         uint32_t destMask = GetOperandWriteMaskMETAL(&psInst->asOperands[0]);
@@ -3676,7 +3643,6 @@ void TranslateInstructionMETAL(HLSLCrossCompilerContext* psContext, Instruction*
     case OPCODE_GATHER4_PO_C:
     {
         //dest, coords, offset, tex, sampler, srcReferenceValue
-        const RESOURCE_DIMENSION eResDim = psContext->psShader->aeResourceDims[psInst->asOperands[3].ui32RegisterNumber];
 
 #ifdef _DEBUG
         AddIndentation(psContext);
@@ -4303,7 +4269,6 @@ void TranslateInstructionMETAL(HLSLCrossCompilerContext* psContext, Instruction*
     case OPCODE_LD_MS:
     {
         ResourceBinding* psBinding = 0;
-        uint32_t dstSwizCount = GetNumSwizzleElementsMETAL(&psInst->asOperands[0]);
 #ifdef _DEBUG
         AddIndentation(psContext);
         if (psInst->eOpcode == OPCODE_LD)
@@ -4830,8 +4795,6 @@ void TranslateInstructionMETAL(HLSLCrossCompilerContext* psContext, Instruction*
     }
     case OPCODE_RESINFO:
     {
-        const RESOURCE_DIMENSION eResDim = psContext->psShader->aeResourceDims[psInst->asOperands[2].ui32RegisterNumber];
-        const RESINFO_RETURN_TYPE eResInfoReturnType = psInst->eResInfoReturnType;
         uint32_t destElemCount = GetNumSwizzleElementsMETAL(&psInst->asOperands[0]);
         uint32_t destElem;
 #ifdef _DEBUG
@@ -4841,7 +4804,6 @@ void TranslateInstructionMETAL(HLSLCrossCompilerContext* psContext, Instruction*
 
         for (destElem = 0; destElem < destElemCount; ++destElem)
         {
-            const char* swizzle[] = { ".x", ".y", ".z", ".w" };
 
             GetResInfoDataMETAL(psContext, psInst, psInst->asOperands[2].aui32Swizzle[destElem], destElem);
         }

@@ -618,14 +618,16 @@ namespace ScriptCanvasTests
         return name;
     }
 
-    void DumpSlots(const ScriptCanvas::Node& node)
+    void DumpSlots([[maybe_unused]] const ScriptCanvas::Node& node)
     {
+#if defined(AZ_ENABLE_TRACING)
         const auto& nodeslots = node.GetSlots();
 
         for (const auto& nodeslot : nodeslots)
         {
             AZ_TracePrintf("ScriptCanvasTest", "'%s':%s\n", nodeslot.GetName().data(), SlotDescriptorToString(nodeslot.GetDescriptor()).c_str());
         }
+#endif
     }
 
     bool Connect(ScriptCanvas::Graph& graph, const AZ::EntityId& fromNodeID, const char* fromSlotName, const AZ::EntityId& toNodeID, const char* toSlotName, bool dumpSlotsOnFailure /*= true*/)

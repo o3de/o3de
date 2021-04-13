@@ -52,13 +52,12 @@ AZ_POP_DISABLE_WARNING
 
 static char* cJSON_strdup(const char* str)
 {
-      size_t len;
-      char* copy;
+    size_t len = strlen(str) + 1;
+    char* copy = (char*)cJSON_malloc(len);
 
-      len = strlen(str) + 1;
-      if (!(copy = (char*)cJSON_malloc(len))) return 0;
-      memcpy(copy,str,len);
-      return copy;
+    if (!copy) return 0;
+    memcpy(copy,str,len);
+    return copy;
 }
 
 void cJSON_InitHooks(cJSON_Hooks* hooks)
@@ -209,7 +208,15 @@ static char *print_string_ptr(const char *str)
     const char *ptr;char *ptr2,*out;int len=0;unsigned char token;
     
     if (!str) return cJSON_strdup("");
-    ptr=str;while ((token=*ptr) && ++len) {if (strchr("\"\\\b\f\n\r\t",token)) len++; else if (token<32) len+=5;ptr++;}
+    ptr=str;
+    token = *ptr;
+    while (token && ++len)
+    {
+        if (strchr("\"\\\b\f\n\r\t",token)) len++;
+        else if (token<32) len+=5;
+        ptr++;
+        token = *ptr;
+    }
     
     out=(char*)cJSON_malloc(len+3);
     if (!out) return 0;
@@ -325,8 +332,8 @@ static const char *parse_array(cJSON *item,const char *value)
 
     while (*value==',')
     {
-        cJSON *new_item;
-        if (!(new_item=cJSON_New_Item())) return 0;     /* memory fail */
+        cJSON *new_item = cJSON_New_Item();
+        if (!new_item) return 0;     /* memory fail */
         child->next=new_item;new_item->prev=child;child=new_item;
         value=skip(parse_value(child,skip(value+1)));
         if (!value) return 0;    /* memory fail */
@@ -415,8 +422,8 @@ static const char *parse_object(cJSON *item,const char *value)
     
     while (*value==',')
     {
-        cJSON *new_item;
-        if (!(new_item=cJSON_New_Item()))    return 0; /* memory fail */
+        cJSON* new_item = cJSON_New_Item();
+        if (!new_item)    return 0; /* memory fail */
         child->next=new_item;new_item->prev=child;child=new_item;
         value=skip(parse_string(child,skip(value+1)));
         if (!value) return 0;

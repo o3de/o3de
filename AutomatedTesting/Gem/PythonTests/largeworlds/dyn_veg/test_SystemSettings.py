@@ -30,14 +30,14 @@ class TestSystemSettings(object):
     @pytest.fixture(autouse=True)
     def setup_teardown(self, request, workspace, project, level):
         def teardown():
-            file_system.delete([os.path.join(workspace.paths.dev(), project, "Levels", level)], True, True)
+            file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
 
         request.addfinalizer(teardown)
 
-        file_system.delete([os.path.join(workspace.paths.dev(), project, "Levels", level)], True, True)
+        file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
 
     @pytest.mark.test_case_id("C2646869")
-    @pytest.mark.SUITE_main
+    @pytest.mark.SUITE_periodic
     def test_SystemSettings_SectorPointDensity(self, request, editor, level, launcher_platform):
 
         expected_lines = [
@@ -63,7 +63,7 @@ class TestSystemSettings(object):
         )
 
     @pytest.mark.test_case_id("C2646870")
-    @pytest.mark.SUITE_main
+    @pytest.mark.SUITE_periodic
     def test_SystemSettings_SectorSize(self, request, editor, level, launcher_platform):
 
         expected_lines = [

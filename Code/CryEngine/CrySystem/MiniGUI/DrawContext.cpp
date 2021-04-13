@@ -98,8 +98,6 @@ void CDrawContext::StopDrawing()
     // Restore old flags that where set before our draw context.
     m_pAuxRender->SetRenderFlags(m_prevRenderFlags);
 
-    int width = gEnv->pRenderer->GetWidth();
-    int height = gEnv->pRenderer->GetHeight();
     gEnv->pRenderer->Unset2DMode(m_backupSceneMatrices);
 }
 

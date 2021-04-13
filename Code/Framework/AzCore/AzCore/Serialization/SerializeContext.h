@@ -1471,8 +1471,7 @@ namespace AZ
         {
             return [serializeContext](AZStd::any::Action action, AZStd::any* dest, const AZStd::any* source)
             {
-                auto classData = serializeContext->FindClassData(dest->type());
-                AZ_Assert(classData, "Type %s stored in any must be registered with the serialize context", AZ::AzTypeInfo<ValueType>::Name());
+                AZ_Assert(serializeContext->FindClassData(dest->type()), "Type %s stored in any must be registered with the serialize context", AZ::AzTypeInfo<ValueType>::Name());
 
                 switch (action)
                 {

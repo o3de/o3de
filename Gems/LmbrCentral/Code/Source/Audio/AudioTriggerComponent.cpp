@@ -64,7 +64,6 @@ namespace LmbrCentral
                 ;
 
             behaviorContext->EBus<AudioTriggerComponentRequestBus>("AudioTriggerComponentRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Event("Play", &AudioTriggerComponentRequestBus::Events::Play)
                 ->Event("Stop", &AudioTriggerComponentRequestBus::Events::Stop)
                 ->Event("ExecuteTrigger", &AudioTriggerComponentRequestBus::Events::ExecuteTrigger)
@@ -75,7 +74,6 @@ namespace LmbrCentral
                 ;
 
             behaviorContext->EBus<AudioTriggerComponentNotificationBus>("AudioTriggerComponentNotificationBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Handler<BehaviorAudioTriggerComponentNotificationBusHandler>()
                 ;
         }

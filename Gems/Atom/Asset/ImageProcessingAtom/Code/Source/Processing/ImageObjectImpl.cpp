@@ -504,8 +504,6 @@ namespace ImageProcessingAtom
 
         const PixelFormatInfo* const pPixelFormatInfo = CPixelFormats::GetInstance().GetPixelFormatInfo(format);
 
-        DXGI_FORMAT d3dformat = pPixelFormatInfo->d3d10Format;
-
         memset(&header, 0, sizeof(DDS_HEADER_LEGACY));
 
         header.dwSize = sizeof(DDS_HEADER_LEGACY);
@@ -702,7 +700,6 @@ namespace ImageProcessingAtom
             {
                 const MipLevel& level = *m_mips[mip];
                 AZ::u32 faceBufSize = level.m_pitch * level.m_rowCount / faces;
-                AZ::u32 start = faceBufSize * face;
                 saveFileStream.Write(faceBufSize, level.m_pData + faceBufSize * face);
             }
         }

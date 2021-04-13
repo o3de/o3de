@@ -146,7 +146,7 @@ namespace AZ
 
             AZ::CommandLine* commandLine = application.GetAzCommandLine();
 
-            AZStd::string overrideProjectPath = m_context.m_config->GetAsString("gameroot", "", "").c_str();
+            AZStd::string overrideProjectPath = m_context.m_config->GetAsString("project-path", "", "").c_str();
             if (!overrideProjectPath.empty())
             {
                 auto overrideArgs = AZStd::string::format(
@@ -155,18 +155,6 @@ namespace AZ
                 AZ::CommandLine::ParamContainer commandLineArgs;
                 commandLine->Dump(commandLineArgs);
                 commandLineArgs.emplace_back(overrideArgs.c_str(), overrideArgs.size());
-                commandLine->Parse(commandLineArgs);
-            }
-
-            AZStd::string overrideProjectName = m_context.m_config->GetAsString("gamesubdirectory", "", "").c_str();
-            if (!overrideProjectName.empty())
-            {
-                auto gameNameOverride = AZStd::string::format("--regset=%s/project_name=%s", AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey,
-                    overrideProjectName.c_str());
-
-                AZ::CommandLine::ParamContainer commandLineArgs;
-                commandLine->Dump(commandLineArgs);
-                commandLineArgs.emplace_back(gameNameOverride.c_str(), gameNameOverride.size());
                 commandLine->Parse(commandLineArgs);
             }
 
@@ -298,7 +286,7 @@ namespace AZ
 
             //the project name can be overridden, check it
             AZStd::string overrideProjectName;
-            overrideProjectName = m_context.m_config->GetAsString("gamesubdirectory", "", "");
+            overrideProjectName = m_context.m_config->GetAsString("project-name", "", "");
             if (!overrideProjectName.empty())
             {
                 connectionSettings.m_projectName = overrideProjectName;
@@ -319,12 +307,12 @@ namespace AZ
 
         bool SceneCompiler::LoadAndExportScene(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response)
         {
-            const string platformName = m_context.m_config->GetAsString("p", "<unknown>", "<invalid>");
+            const string platformName = m_context.m_config->GetAsString("platform", "<unknown>", "<invalid>");
             AZ_TraceContext("Platform", platformName.c_str());
 
             if (platformName == "<unknown>")
             {
-                AZ_TracePrintf(SceneAPI::Utilities::ErrorWindow, "No target platform provided - this compiler requires the /p=platformIdentifier option\n");
+                AZ_TracePrintf(SceneAPI::Utilities::ErrorWindow, "No target platform provided - this compiler requires the --platform=platformIdentifier option\n");
                 return false;
             }
 

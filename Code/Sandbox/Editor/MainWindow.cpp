@@ -637,8 +637,6 @@ MainWindow* MainWindow::instance()
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
-    auto cryEdit = CCryEditApp::instance();
-
     gSettings.Save();
 
     AzFramework::SystemCursorState currentCursorState;
@@ -1819,7 +1817,6 @@ void MainWindow::OnUpdateSnapToGrid(QAction* action)
     bool bEnabled = gSettings.pGrid->IsEnabled();
     action->setChecked(bEnabled);
 
-    float gridSize = gSettings.pGrid->size;
     action->setText(QObject::tr("Snap To Grid"));
 }
 
@@ -1846,7 +1843,14 @@ void MainWindow::OpenViewPane(QtViewPane* pane)
     }
     else
     {
-        qWarning() << Q_FUNC_INFO << "Invalid pane" << pane->m_id << pane->m_category << pane->m_name;
+        if (pane)
+        {
+            qWarning() << Q_FUNC_INFO << "Invalid pane" << pane->m_id << pane->m_category << pane->m_name;
+        }
+        else
+        {
+            qWarning() << Q_FUNC_INFO << "Invalid pane";
+        }
     }
 }
 

@@ -275,8 +275,6 @@ namespace ScriptCanvasDeveloperEditor
                     // Attempt to assign the current set of variable types.
                     for (; i < slotOrdering.size(); ++i)
                     {
-                        const ScriptCanvas::SlotId& prototypeId = slotOrdering[i];
-
                         auto groupDataIter = groupDataTypes.find(slotOrdering[i]);
 
                         auto transientSlotIter = prototypeIdentifiers.find(slotOrdering[i]);
@@ -339,7 +337,6 @@ namespace ScriptCanvasDeveloperEditor
                         // Reset all of the previous variable ids if we failed.
                         for (int r = 0; r < i; ++r)
                         {
-                            const ScriptCanvas::SlotId& prototypeId = slotOrdering[r];
                             auto transientSlotIter = prototypeIdentifiers.find(slotOrdering[r]);
 
                             if (transientSlotIter != prototypeIdentifiers.end())

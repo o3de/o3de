@@ -106,8 +106,8 @@ namespace AzToolsFramework
         void LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
 
         // EntityOutlinerWidgetInterface
-        void SetRootEntity(AZ::EntityId rootEntityId) override;
         void SetUpdatesEnabled(bool enable) override;
+        void ExpandEntityChildren(AZ::EntityId entityId) override;
 
         // Build a selection object from the given entities. Entities already in the Widget's selection buffers are ignored.
         template <class EntityIdCollection>

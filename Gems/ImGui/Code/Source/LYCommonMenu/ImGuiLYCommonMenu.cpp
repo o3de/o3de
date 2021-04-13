@@ -155,6 +155,9 @@ namespace ImGui
                 ImGui::SetCursorPosX(prevCursorPos);
             }
 
+            // Add some space before the first menu so it won't overlap with view control buttons
+            ImGui::SetCursorPosX(40.f);
+
             // Main LumberYard menu
             if (ImGui::BeginMenu("LumberYard"))
             {

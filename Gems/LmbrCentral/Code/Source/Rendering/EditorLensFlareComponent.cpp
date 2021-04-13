@@ -400,20 +400,22 @@ namespace LmbrCentral
                 {
                     if (strcmp(varGroups[i].GetName(), "Common") == 0)
                     {
-                        IFuncVariable* var;
-                        if (var = varGroups[i].FindVariable("Size"))
+                        IFuncVariable* var = varGroups[i].FindVariable("Size");
+                        if (var)
                         {
                             m_configuration.m_size = var->GetFloat();
                         }
 
-                        if (var = varGroups[i].FindVariable("Tint"))
+                        var = varGroups[i].FindVariable("Tint");
+                        if (var)
                         {
                             ColorF color = var->GetColorF();
                             m_configuration.m_tint = AZ::Vector3(color.r, color.g, color.b);
                             m_configuration.m_tintAlpha = static_cast<AZ::u32>(color.a * 255.0f);
                         }
 
-                        if (var = varGroups[i].FindVariable("Brightness"))
+                        var = varGroups[i].FindVariable("Brightness");
+                        if (var)
                         {
                             m_configuration.m_brightness = var->GetFloat();
                         }

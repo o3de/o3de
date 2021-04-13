@@ -76,7 +76,7 @@ namespace Benchmark
     {
         for (auto _ : state)
         {
-            for (auto& testData : m_testDataArray)
+            for ([[maybe_unused]] auto& testData : m_testDataArray)
             {
                 AZ::Transform result = AZ::Transform::CreateIdentity();
                 benchmark::DoNotOptimize(result);

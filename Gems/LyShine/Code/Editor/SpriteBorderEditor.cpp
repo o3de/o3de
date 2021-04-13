@@ -1002,8 +1002,6 @@ CellSelectRectItem::~CellSelectRectItem()
 
 void CellSelectRectItem::SelectCell()
 {
-    CellSelectRectItem* currentSelection = s_currentSelection;
-
     if (s_currentSelection)
     {
         s_currentSelection->setPen(Qt::NoPen);

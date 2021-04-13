@@ -53,8 +53,6 @@ int CShaderEnum::EnumShaders()
 
     m_bEnumerated = true;
 
-    int numShaders = 0;
-
     m_shaders.clear();
     m_shaders.reserve(100);
     //! Enumerate Shaders.

@@ -142,8 +142,7 @@ namespace EMotionFX
             return;
         }
 
-        const SimulatedObjectSetup* simulatedObjectSetup = m_simulatedObject->GetSimulatedObjectSetup();
-        AZ_Assert(simulatedObjectSetup, "Simulated object does not belong to a valid simulated object setup.");
+        AZ_Assert(m_simulatedObject->GetSimulatedObjectSetup(), "Simulated object does not belong to a valid simulated object setup.");
         const AZStd::vector<AZStd::string>& colliderTags = m_simulatedObject->GetColliderTags();
 
         QString tag;

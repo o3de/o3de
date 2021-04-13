@@ -58,14 +58,12 @@ ly_append_configurations_options(
         /W4             # Warning level 4
         /WX             # Warnings as errors
         
+        # Disabling some warnings
+        /wd4201 # nonstandard extension used: nameless struct/union. This actually became part of the C++11 std, MS has an open issue: https://developercommunity.visualstudio.com/t/warning-level-4-generates-a-bogus-warning-c4201-no/103064
+
         # Disabling these warnings while they get fixed
         /wd4018 # signed/unsigned mismatch
         /wd4121 # alignment of a member was sensitive to packing
-        /wd4189 # local variable is initialized but not referenced
-        /wd4201 # nonstandard extension used: nameless struct/union
-        /wd4211 # nonstandard extension used: redefined extern to static
-        /wd4232 # nonstandard extension used: address of dllimport is not static, identity not guaranteed
-        /wd4238 # nonstandard extension used: class rvalue used as lvalue
         /wd4244 # conversion, possible loss of data
         /wd4245 # conversion, signed/unsigned mismatch
         /wd4267 # conversion, possible loss of data
@@ -79,7 +77,6 @@ ly_append_configurations_options(
         /wd4459 # declaration hides global declaration
         /wd4701 # potentially unintialized local variable
         /wd4702 # unreachable code
-        /wd4706 # assignment with conditional expression
 
         # Enabling warnings that are disabled by default from /W4
         # https://docs.microsoft.com/en-us/cpp/preprocessor/compiler-warnings-that-are-off-by-default?view=vs-2019

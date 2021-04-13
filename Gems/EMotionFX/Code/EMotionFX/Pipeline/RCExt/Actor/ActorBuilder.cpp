@@ -337,7 +337,6 @@ namespace EMotionFX
             AZStd::vector<SceneContainers::SceneGraph::NodeIndex>& outNodeIndices, AZStd::vector<SceneContainers::SceneGraph::NodeIndex>& outMeshIndices, BoneNameEmfxIndexMap& outBoneNameEmfxIndexMap)
         {
             const SceneContainers::SceneGraph& graph = context.m_scene.GetGraph();
-            const Group::IActorGroup& group = context.m_group;
 
             auto nameStorage = graph.GetNameStorage();
             auto contentStorage = graph.GetContentStorage();

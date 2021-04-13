@@ -42,8 +42,8 @@ def ap_setup_fixture(request, workspace) -> Dict:
         "ap_batch_log_file": workspace.paths.ap_batch_log(),
         # Path to AP_GUI.log
         "ap_logFile": workspace.paths.ap_gui_log(),
-        # Path to the dev directory
-        "dev_dir": workspace.paths.dev(),
+        # Path to the engine root directory
+        "engine_dir": workspace.paths.engine_root(),
         # Path to the current project directory
         "project_dir": workspace.paths.project(),
         # Path to AP Batch file
@@ -56,7 +56,7 @@ def ap_setup_fixture(request, workspace) -> Dict:
 
     # Changing modtime of UserSettings.xml so it is always processed by AssetProcessorBatch
     # to prevent unexpected processing
-    user_settings_file = os.path.join(workspace.paths.dev(), "UserSettings.xml")
+    user_settings_file = os.path.join(workspace.paths.project(), "user", "UserSettings.xml")
     if os.path.exists(user_settings_file):
         timestamp = time.time()
         os.utime(user_settings_file, (timestamp, timestamp))

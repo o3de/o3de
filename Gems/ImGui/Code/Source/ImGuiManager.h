@@ -30,11 +30,11 @@
 
 namespace ImGui
 {
-    class ImGuiManager : public ISystem::CrySystemNotificationBus::Handler
-                       , public AzFramework::InputChannelEventListener
-                       , public AzFramework::InputTextEventListener
-                       , public ImGuiManagerListenerBus::Handler
-                       , public AzFramework::WindowNotificationBus::Handler
+    class ImGuiManager
+        : public AzFramework::InputChannelEventListener
+        , public AzFramework::InputTextEventListener
+        , public ImGuiManagerListenerBus::Handler
+        , public AzFramework::WindowNotificationBus::Handler
     {
     public:
         void Initialize();
@@ -60,12 +60,8 @@ namespace ImGui
         void SetResolutionMode(ImGuiResolutionMode mode) override { m_resolutionMode = mode; }
         const ImVec2& GetImGuiRenderResolution() const override { return m_renderResolution; }
         void SetImGuiRenderResolution(const ImVec2& res) override { m_renderResolution = res; }
+        void Render() override;
         // -- ImGuiManagerListenerBus Interface -------------------------------------------------------------------
-
-        // -- ISystem::CrySystemNotificationBus Interface --------------------------------------------------------------------
-        void OnPreRender() override;
-        void OnPostRender() override;
-        // -- ISystem::CrySystemNotificationBusInterface --------------------------------------------------------------------
 
         // -- AzFramework::InputChannelEventListener and AzFramework::InputTextEventListener Interface ------------
         bool OnInputChannelEventFiltered(const AzFramework::InputChannel& inputChannel) override;
@@ -83,6 +79,7 @@ namespace ImGui
         void ToggleThroughImGuiVisibleState(int controllerIndex);
 
     private:
+        ImGuiContext* m_imguiContext = nullptr;
         int m_fontTextureId = -1;
         DisplayState m_clientMenuBarState = DisplayState::Hidden;
         DisplayState m_editorWindowState = DisplayState::Hidden;

@@ -309,7 +309,6 @@ void CD3D9Renderer::EF_Init()
         return;
     }
 
-    bool nv = 0;
 
     if IsCVarConstAccess(constexpr) (CV_r_logTexStreaming && m_logFileStrHandle == AZ::IO::InvalidHandle)
     {
@@ -401,9 +400,8 @@ void CD3D9Renderer::EF_Init()
         m_RP.m_ObjectsPool = (CRenderObject*)CryModuleMemalign(sizeof(CRenderObject) * (m_RP.m_nNumObjectsInPool * RT_COMMAND_BUF_COUNT), 16);
         for (int j = 0; j < (int)(m_RP.m_nNumObjectsInPool * RT_COMMAND_BUF_COUNT); j++)
         {
-            CRenderObject* pRendObj = new(&m_RP.m_ObjectsPool[j])CRenderObject();
+            new(&m_RP.m_ObjectsPool[j])CRenderObject();
         }
-
 
         CRenderObject** arrPrefill = (CRenderObject**)(alloca(m_RP.m_nNumObjectsInPool * sizeof(CRenderObject*)));
         for (int j = 0; j < RT_COMMAND_BUF_COUNT; j++)
@@ -1266,7 +1264,7 @@ void CD3D9Renderer::FX_ProcessHalfResParticlesRenderList(int nList, void(* Rende
         const int nums = m_RP.m_pRLD->m_nStartRI[1][nList];
         if (m_RP.m_pRLD->m_nEndRI[1][nList] - nums > 0)
         {
-            const auto& ri = CRenderView::CurrentRenderView()->GetRenderItems(1, nList)[nums];
+            CRenderView::CurrentRenderView()->GetRenderItems(1, nList);
             const bool bAlphaBased = CV_r_ParticlesHalfResBlendMode == 0;
 
 #ifdef DO_RENDERLOG
@@ -1321,7 +1319,6 @@ void CD3D9Renderer::FX_ProcessHalfResParticlesRenderList(int nList, void(* Rende
 
                 {
                     PROFILE_LABEL_SCOPE("UPSAMPLE_PASS");
-                    CShader* pSH = CShaderMan::s_shPostEffects;
                     CTexture* pHalfResSrc = pHalfResTarget;
                     CTexture* pZTarget = CTexture::s_ptexZTarget;
                     CTexture* pZTargetScaled = CV_r_ParticlesHalfResAmount > 0 ? CTexture::s_ptexZTargetScaled2 : CTexture::s_ptexZTargetScaled;
@@ -1349,11 +1346,7 @@ void CD3D9Renderer::FX_ProcessHalfResParticlesRenderList(int nList, void(* Rende
                     PostProcessUtils().SetTexture(pZTargetScaled, 3, FILTER_POINT);
 
                     FX_SetState(nStates);
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-                    PostProcessUtils().DrawFullScreenTri(GetWidth(), GetHeight());
-#else
                     PostProcessUtils().DrawFullScreenTri(m_width, m_height);
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
 
                     PostProcessUtils().ShEndPass();
                 }
@@ -2861,8 +2854,6 @@ void CD3D9Renderer::FX_WaterVolumesCaustics()
         // Caustics info.
         N3DEngineCommon::SCausticInfo& causticInfo = gcpRendD3D->m_p3DEngineCommon.m_CausticInfo;
 
-        float fWidth = CTexture::s_ptexWaterCaustics[0]->GetWidth();
-        float fHeight = CTexture::s_ptexWaterCaustics[0]->GetHeight();
 
         // Preprocess (render all visible volumes to caustic gbuffer)
         FX_WaterVolumesCausticsPreprocess(causticInfo);
@@ -2980,11 +2971,7 @@ void CD3D9Renderer::FX_WaterVolumesPreprocess()
     if ((nBatchMask & FB_WATER_REFL) && CTexture::IsTextureExist(CTexture::s_ptexWaterVolumeRefl[0]))
     {
         PROFILE_LABEL_SCOPE("WATER_PREPROCESS");
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-        const uint32 nCurrWaterVolID = gRenDev->GetCameraFrameID() % 2;
-#else
         const uint32 nCurrWaterVolID = gRenDev->GetFrameID(false) % 2;
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
 
         CTexture* pCurrWaterVolRefl = CTexture::s_ptexWaterVolumeRefl[nCurrWaterVolID];
 
@@ -3036,7 +3023,9 @@ void CD3D9Renderer::FX_RenderWater(void(* RenderFunc)())
 {
     PROFILE_LABEL_SCOPE("WATER");
 
+#if defined(ENABLE_FRAME_PROFILER)
     SThreadInfo* const pShaderThreadInfo = &(m_RP.m_TI[m_RP.m_nProcessThreadID]);
+#endif
 
     PROFILE_PS_TIME_SCOPE_COND(fTimeDIPs[EFSLIST_WATER_VOLUMES], !(pShaderThreadInfo->m_PersFlags & (RBPF_SHADOWGEN)));
     const int recursiveLevel = SRendItem::m_RecurseLevel[m_RP.m_nProcessThreadID];
@@ -3122,7 +3111,6 @@ void CD3D9Renderer::FX_LinearizeDepth(CTexture* ptexZ)
     {
         PROFILE_LABEL_SCOPE("LINEARIZE_DEPTH");
 
-        bool isRenderingFur = FurPasses::GetInstance().IsRenderingFur();
 
 #ifdef SUPPORTS_MSAA
         if (FX_GetMSAAMode())
@@ -3348,7 +3336,6 @@ void CD3D9Renderer::FX_DrawWire()
 // Draw geometry normal vectors
 void CD3D9Renderer::FX_DrawNormals()
 {
-    HRESULT h = S_OK;
 
     float len = CRenderer::CV_r_normalslength;
     int StrVrt, StrTan, StrNorm;
@@ -3463,7 +3450,6 @@ void CD3D9Renderer::FX_DrawNormals()
 // Draw geometry tangent vectors
 void CD3D9Renderer::FX_DrawTangents()
 {
-    HRESULT h = S_OK;
 
     float len = CRenderer::CV_r_normalslength;
 
@@ -4014,7 +4000,6 @@ int CD3D9Renderer::EF_Preprocess(SRendItem* ri, uint32 nums, uint32 nume, Render
         Logv(SRendItem::m_RecurseLevel[m_RP.m_nFillThreadID], "*** Start preprocess frame ***\n");
     }
 
-    int DLDFlags = 0;
     int nReturn = 0;
 
     for (i = nums; i < nume; i++)
@@ -4036,7 +4021,6 @@ int CD3D9Renderer::EF_Preprocess(SRendItem* ri, uint32 nums, uint32 nume, Render
         }
         if (nTech < (int)Shader->m_HWTechniques.Num())
         {
-            SShaderTechnique* pTech = Shader->m_HWTechniques[nTech];
             for (j = SPRID_FIRST; j < 32; j++)
             {
                 uint32 nMask = 1 << j;
@@ -4693,7 +4677,6 @@ void CD3D9Renderer::FX_ProcessBatchesList(int nums, int nume, uint32 nBatchFilte
     assert(nums < RI.size());
     assert(nume <= RI.size());
 
-    SRendItem* pPrefetchPlainPtr = &RI[0];
 
     rRP.m_nBatchFilter = nBatchFilter;
 
@@ -5194,7 +5177,6 @@ void CD3D9Renderer::FX_ProcessPostRenderLists(uint32 nBatchFilter)
 
     if ((m_RP.m_nRendFlags & SHDF_ALLOWPOSTPROCESS) && recursiveLevel <= 0)
     {
-        int nList = EFSLIST_GENERAL;
         uint32 nBatchMask = SRendItem::BatchFlags(EFSLIST_GENERAL, m_RP.m_pRLD) | SRendItem::BatchFlags(EFSLIST_TRANSP, m_RP.m_pRLD);
         nBatchMask |= SRendItem::BatchFlags(EFSLIST_DECAL, m_RP.m_pRLD);
         nBatchMask |= SRendItem::BatchFlags(EFSLIST_SKIN, m_RP.m_pRLD);
@@ -5331,7 +5313,6 @@ int CD3D9Renderer::GetOcclusionBuffer(uint16* pOutOcclBuffer, Matrix44* pmCamBuf
     const OcclusionReadbackData& readbackData = occlusionData.m_occlusionReadbackData;
 
     // Copy the data that was prepared by the render thread for use with the Coverage Buffer system
-    float* outputBuffer = reinterpret_cast<float*>(pOutOcclBuffer);
     memcpy(pOutOcclBuffer, readbackData.m_occlusionReadbackBuffer, s_occlusionBufferNumElements * sizeof(float));
     
     *pmCamBuffer = readbackData.m_occlusionReadbackViewProj;
@@ -5382,15 +5363,6 @@ void CD3D9Renderer::FX_ZTargetReadBackOnCPU()
 {
     PROFILE_LABEL_SCOPE("DEPTH READBACK CPU");
     PROFILE_FRAME(FX_ZTargetReadBackOnCPU);
-
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    // ZTarget read back is used for occlusion culling and we don't want to pollute the main pass 
-    // occlusion buffer with the render to texture pass
-    if (IsRenderToTextureActive())
-    {
-        return;
-    }
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
 
     if (!IsDepthReadbackOcclusionEnabled() || (SRendItem::m_RecurseLevel[m_RP.m_nProcessThreadID] > 0))
     {
@@ -5526,14 +5498,6 @@ void CD3D9Renderer::FX_ZTargetReadBack()
 {
     PROFILE_LABEL_SCOPE("DEPTH READBACK GPU");
     PROFILE_FRAME(FX_ZTargetReadBack);
-
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    // do not pollute the main occlusion buffer with contents from the render to texture camera
-    if (IsRenderToTextureActive())
-    {
-        return;
-    }
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
 
     //Check for gmem as this code runs after gbuffer breaking gmem path. Besides we can just use
     //downsampled linearized depth for occlusion.
@@ -5841,11 +5805,7 @@ void CD3D9Renderer::RT_RenderScene(int nFlags, SThreadInfo& TI, void(* RenderFun
 
     CTimeValue Time = iTimer->GetAsyncTime();
 
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    if (!recursiveLevel && !IsRenderToTextureActive())
-#else
     if (!recursiveLevel)
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
     {
         m_MainViewport.nX = 0;
         m_MainViewport.nY = 0;
@@ -5991,9 +5951,6 @@ void CD3D9Renderer::RT_RenderScene(int nFlags, SThreadInfo& TI, void(* RenderFun
         && (gcpRendD3D->FX_GetAntialiasingType() & eAT_JITTER_MASK)
         && (!gEnv->IsEditing() || CRenderer::CV_r_AntialiasingModeEditor)
         && (GetWireframeMode() == R_SOLID_MODE)
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-        && !IsRenderToTextureActive()
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
         && (CRenderer::CV_r_DeferredShadingDebugGBuffer == 0);
 
     m_TemporalJitterClipSpace = Vec4(0.0f, 0.0f, 0.0f, 0.0f);
@@ -6443,10 +6400,10 @@ void CD3D9Renderer::EF_RenderScene(int nFlags, SViewport& VP, const SRenderingPa
 {
     AZ_TRACE_METHOD();
     int nThreadID = passInfo.ThreadID();
-    int nRecurseLevel = passInfo.GetRecursiveLevel();
 
     CTimeValue time0 = iTimer->GetAsyncTime();
 #ifndef _RELEASE
+    int nRecurseLevel = passInfo.GetRecursiveLevel();
     if (nRecurseLevel < 0)
     {
         __debugbreak();
@@ -6545,7 +6502,6 @@ void CD3D9Renderer::EF_EndEf3D(const int nFlags, const int nPrecacheUpdateIdSlow
         EF_Scene3D(m_MainRTViewport, nFlags, passInfo);
     }
 
-    DynArray<SDeferredDecal>& deferredDecals = m_RP.m_DeferredDecals[nThreadID][nRecurseLevel];
     //deferredDecals.SetUse(0);
     bool bIsMultiThreadedRenderer = false;
     EF_Query(EFQ_RenderMultithreaded, bIsMultiThreadedRenderer);
@@ -6580,8 +6536,6 @@ void CD3D9Renderer::EF_Scene3D(SViewport& VP, int nFlags, const SRenderingPassIn
     int nThreadID = m_RP.m_nFillThreadID;
     assert(nThreadID >= 0 && nThreadID < RT_COMMAND_BUF_COUNT);
 
-    bool bFullScreen = true;
-    SDynTexture* pDT = NULL;
     int recursiveLevel = SRendItem::m_RecurseLevel[nThreadID];
     assert(recursiveLevel >= 0 && recursiveLevel < MAX_REND_RECURSION_LEVELS);
 

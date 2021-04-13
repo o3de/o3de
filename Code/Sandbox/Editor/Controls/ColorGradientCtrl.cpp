@@ -194,9 +194,6 @@ void CColorGradientCtrl::paintEvent(QPaintEvent* e)
 //////////////////////////////////////////////////////////////////////////
 void CColorGradientCtrl::DrawGradient(QPaintEvent* e, QPainter* painter)
 {
-    int cx = m_rcGradient.width();
-    int cy = m_rcGradient.height();
-
     //Draw Curve
     // create and select a thick, white pen
     painter->setPen(QPen(QColor(128, 255, 128), 1, Qt::SolidLine));

@@ -368,6 +368,7 @@ namespace ScriptCanvas
 
         void NodeableNodeOverloaded::CheckHasSingleOuts()
         {
+#if defined(AZ_ENABLE_TRACING)
             auto& slotExecutionMap = *GetSlotExecutionMap();
 
             auto& ins = slotExecutionMap.GetIns();
@@ -378,6 +379,7 @@ namespace ScriptCanvas
                 // TODO: Append debugging information
                 AZ_Error("ScriptCanvas", in.outs.size() <= 1, "Unable to resolve Overloaded Nodeable with multiple outs for a single method.");
             }
+#endif
         }
 
         void NodeableNodeOverloaded::UpdateSlotDisplay()
@@ -449,7 +451,6 @@ namespace ScriptCanvas
                 NodeableMethodOverloadContractInterface* contractInterface = aznew NodeableMethodOverloadContractInterface((*this), methodIndex);
                 m_methodOverloadContractInterface.emplace_back(contractInterface);
 
-                const OverloadConfiguration& baseConfiguration = (*m_methodConfigurations.begin());
 
                 const auto& currentIn = executionIns[methodIndex];
 
@@ -867,9 +868,6 @@ namespace ScriptCanvas
             {
                 if (outputDataIter->second.contains(dataType))
                 {
-                    const OverloadConfiguration& overloadConfiguration = m_methodConfigurations[methodIndex];
-                    size_t startIndex = NodeableNodeOverloadedCpp::AdjustForHiddenNodeableThisPointer(overloadConfiguration, 0);
-
                     DataIndexMapping inputMapping;
                     DataIndexMapping outputMapping;
 

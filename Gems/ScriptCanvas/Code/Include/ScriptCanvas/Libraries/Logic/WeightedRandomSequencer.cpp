@@ -224,7 +224,6 @@ namespace ScriptCanvas
             {
                 for (auto pairIter = m_weightedPairings.begin(); pairIter != m_weightedPairings.end(); ++pairIter)
                 {
-                    const WeightedPairing& weightedPairing = (*pairIter);
                     
                     if (pairIter->m_executionSlotId == slotId
                         || pairIter->m_weightSlotId == slotId)                        
