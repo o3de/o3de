@@ -163,7 +163,7 @@ void CAtomShimRenderer::EF_EndEf3D([[maybe_unused]] const int nFlags, [[maybe_un
 
     // Only render the UI Canvas and the Console on the main window
     // If we're not in the editor, don't bother to check viewport.
-    if (!gEnv->IsEditor() || m_currContext->m_isMainViewport)
+    if (!gEnv->IsEditor() || m_currContext == nullptr || m_currContext->m_isMainViewport)
     {
         EBUS_EVENT(AZ::RenderNotificationsBus, OnScene3DEnd);
     }

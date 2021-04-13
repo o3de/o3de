@@ -21,8 +21,8 @@
 
 #include <QApplication>
 
-static const auto ManipulatorPriority = AzFramework::ViewportControllerPriority::High;
-static const auto InteractionPriority = AzFramework::ViewportControllerPriority::Low;
+static const auto ManipulatorPriority = AzFramework::ViewportControllerPriority::Highest;
+static const auto InteractionPriority = AzFramework::ViewportControllerPriority::High;
 
 namespace SandboxEditor
 {
@@ -126,12 +126,20 @@ bool ViewportManipulatorControllerInstance::HandleInputChannelEvent(const AzFram
             m_state.m_mouseButtons.m_mouseButtons |= static_cast<AZ::u32>(mouseButton);
             if (IsDoubleClick(mouseButton))
             {
-                m_pendingDoubleClicks.erase(mouseButton);
+                // Only remove the double click flag once we're done processing both Manipulator and Interaction events
+                if (event.m_priority == InteractionPriority)
+                {
+                    m_pendingDoubleClicks.erase(mouseButton);
+                }
                 eventType = MouseEvent::DoubleClick;
             }
             else
             {
-                m_pendingDoubleClicks[mouseButton] = m_curTime;
+                // Only insert the double click timing once we're done processing both Manipulator and Interaction events, to avoid a false IsDoubleClick positive
+                if (event.m_priority == InteractionPriority)
+                {
+                    m_pendingDoubleClicks[mouseButton] = m_curTime;
+                }
                 eventType = MouseEvent::Down;
             }
         }
@@ -160,7 +168,7 @@ bool ViewportManipulatorControllerInstance::HandleInputChannelEvent(const AzFram
         {
             mouseInteraction.m_mouseButtons.m_mouseButtons = static_cast<AZ::u32>(overrideButton.value());
         }
-        MouseInteractionEvent mouseEvent = MouseInteractionEvent(mouseInteraction, eventType.value());
+        mouseInteraction.m_interactionId.m_viewportId = GetViewportId();
 
         // Depending on priority, we dispatch to either the manipulator or viewport interaction event
         const auto& targetInteractionEvent =

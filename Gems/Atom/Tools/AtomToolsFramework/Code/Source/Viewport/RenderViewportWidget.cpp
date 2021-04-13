@@ -43,6 +43,7 @@ namespace AtomToolsFramework
         params.device = AZ::RHI::RHISystemInterface::Get()->GetDevice();
         params.windowHandle = reinterpret_cast<AzFramework::NativeWindowHandle>(winId());
         params.id = id;
+        AzFramework::WindowRequestBus::Handler::BusConnect(params.windowHandle);
         m_viewportContext = viewportContextManager->CreateViewportContext(AZ::Name(), params);
 
         SetControllerList(AZStd::make_shared<AzFramework::ViewportControllerList>());

@@ -218,10 +218,11 @@ QtViewport::QtViewport(QWidget* parent)
     // Create drop target to handle Qt drop events.
     setAcceptDrops(true);
 
-    m_renderOverlay.setVisible(false);
+    m_renderOverlay.setVisible(true);
     m_renderOverlay.setUpdatesEnabled(false);
     m_renderOverlay.setMouseTracking(true);
     m_renderOverlay.setObjectName("renderOverlay");
+    m_renderOverlay.winId(); // Force the render overlay to create a backing native window
 
     m_viewportUi.InitializeViewportUi(this, &m_renderOverlay);
 
