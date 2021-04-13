@@ -804,10 +804,10 @@ namespace AzToolsFramework
         addAction(m_actionToDeleteSelectionAndDescendants);
 
         m_actionToRenameSelection = new QAction(tr("Rename"), this);
-    #ifdef Q_OS_MAC
+    #if defined(Q_OS_MAC)
         // "Alt+Return" translates to Option+Return on macOS
         m_actionToRenameSelection->setShortcut(tr("Alt+Return"));
-    #elif Q_OS_WIN
+    #elif defined(Q_OS_WIN)
         m_actionToRenameSelection->setShortcut(tr("F2"));
     #endif
         m_actionToRenameSelection->setShortcutContext(Qt::WidgetWithChildrenShortcut);
