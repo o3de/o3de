@@ -67,6 +67,7 @@ namespace AZ
             // load the RayTracingSceneSrg asset
             Data::Asset<RPI::ShaderResourceGroupAsset> rayTracingSceneSrgAsset =
                 RPI::AssetUtils::LoadAssetByProductPath<RPI::ShaderResourceGroupAsset>("shaderlib/raytracingscenesrg_raytracingscenesrg.azsrg", RPI::AssetUtils::TraceLevel::Error);
+            AZ_Assert(rayTracingSceneSrgAsset.IsReady(), "Failed to load RayTracingSceneSrg asset");
 
             m_rayTracingSceneSrg = RPI::ShaderResourceGroup::Create(rayTracingSceneSrgAsset);
         }
