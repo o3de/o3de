@@ -94,9 +94,6 @@
 AZ_CVAR(
     bool, ed_visibility_use, true, nullptr, AZ::ConsoleFunctorFlags::Null,
     "Enable/disable using the new IVisibilitySystem for Entity visibility determination");
-AZ_CVAR(
-    bool, ed_visibility_logTiming, false, nullptr, AZ::ConsoleFunctorFlags::Null,
-    "Output the timing of the new IVisibilitySystem query");
 
 CRenderViewport* CRenderViewport::m_pPrimaryViewport = nullptr;
 
@@ -1394,13 +1391,6 @@ void CRenderViewport::Update()
         auto start = std::chrono::steady_clock::now();
 
         m_entityVisibilityQuery.UpdateVisibility(GetCameraState());
-
-        if (ed_visibility_logTiming)
-        {
-            auto stop = std::chrono::steady_clock::now();
-            std::chrono::duration<double> diff = stop - start;
-            AZ_Printf("Visibility", "FindVisibleEntities (new) - Duration: %f", diff);
-        }
     }
 
     {
