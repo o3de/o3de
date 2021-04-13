@@ -172,6 +172,10 @@ namespace AZ
             {
                 EditorMaterialSystemComponentRequestBus::Broadcast(&EditorMaterialSystemComponentRequestBus::Events::OpenInMaterialEditor, sourcePath);
             }
+            else
+            {
+                EditorMaterialSystemComponentRequestBus::Broadcast(&EditorMaterialSystemComponentRequestBus::Events::OpenInMaterialEditor, "");
+            }
         }
 
         void EditorMaterialComponentSlot::Clear()
@@ -272,6 +276,8 @@ namespace AZ
             QMenu menu;
 
             QAction* action = nullptr;
+
+            menu.addAction("Open Material Editor", [this]() { OpenMaterialEditor(); });
 
             action = menu.addAction("Clear", [this]() { Clear(); });
             action->setEnabled(m_materialAsset.GetId().IsValid() || !m_propertyOverrides.empty() || !m_matModUvOverrides.empty());
