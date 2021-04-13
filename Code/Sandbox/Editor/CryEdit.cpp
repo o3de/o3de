@@ -5704,7 +5704,7 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
         int exitCode = 0;
 
         BOOL didCryEditStart = CCryEditApp::instance()->InitInstance();
-        AZ_Error("Editor", didCryEditStart, "CryEditor did not initialize correctly, and will close."
+        AZ_Error("Editor", didCryEditStart, "O3DE Editor did not initialize correctly, and will close."
             "\nThis could be because of incorrectly configured components, or missing required gems."
             "\nSee other errors for more details.");
 
