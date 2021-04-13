@@ -214,6 +214,11 @@ def CheckoutBootstrapScripts(String branchName) {
 }
 
 def CheckoutRepo(boolean disableSubmodules = false) {
+
+    if (!fileExists(ENGINE_REPOSITORY_NAME)) {
+        palMkdir(ENGINE_REPOSITORY_NAME)
+    }
+    
     dir(ENGINE_REPOSITORY_NAME) {
         palSh('git lfs uninstall', 'Git LFS Uninstall') // Prevent git from pulling lfs objects during checkout
 
