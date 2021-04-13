@@ -19,7 +19,7 @@ from datetime import datetime, timezone
 from requests.auth import HTTPBasicAuth
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(os.path.dirname(cur_dir), 'package'))
+sys.path.append(os.path.join(os.path.dirname(os.path.dirname(cur_dir)), 'package'))
 from util import *
 
 
@@ -120,7 +120,7 @@ def upload_files_to_s3(env, formatted_date):
     csv_s3_prefix = f"{env['CSV_PREFIX'].rstrip('/')}/{formatted_date}"
     manifest_s3_prefix = f"{env['MANIFEST_PREFIX'].rstrip('/')}/{formatted_date}"
     upload_to_s3_script_path = os.path.join(cur_dir, 'upload_to_s3.py')
-    engine_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+    engine_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
     if sys.platform == 'win32':
         python = os.path.join(engine_root, 'python', 'python.cmd')
     else:
