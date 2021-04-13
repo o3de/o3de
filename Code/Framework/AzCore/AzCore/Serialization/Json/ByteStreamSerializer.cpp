@@ -30,7 +30,7 @@ namespace AZ
             switch (inputValue.GetType())
             {
             case rapidjson::kStringType: {
-                JsonByteStream* valAsByteStream = reinterpret_cast<JsonByteStream*>(outputValue);
+                JsonByteStream* valAsByteStream = static_cast<JsonByteStream*>(outputValue);
                 JsonByteStream buffer;
                 buffer.resize(inputValue.GetStringLength());
                 AZStd::copy(inputValue.GetString(), inputValue.GetString() + inputValue.GetStringLength(), buffer.begin());
@@ -57,9 +57,9 @@ namespace AZ
             using JsonSerializationResult::Outcomes;
             using JsonSerializationResult::Tasks;
 
-            const JsonByteStream& valAsByteStream = *reinterpret_cast<const JsonByteStream*>(inputValue);
+            const JsonByteStream& valAsByteStream = *static_cast<const JsonByteStream*>(inputValue);
             if (context.ShouldKeepDefaults() || !defaultValue ||
-                (valAsByteStream != *reinterpret_cast<const JsonByteStream*>(defaultValue)))
+                (valAsByteStream != *static_cast<const JsonByteStream*>(defaultValue)))
             {
                 outputValue.SetString(
                     reinterpret_cast<const char*>(valAsByteStream.data()), aznumeric_caster(valAsByteStream.size()),
