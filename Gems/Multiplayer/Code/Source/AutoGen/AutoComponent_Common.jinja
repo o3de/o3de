@@ -67,20 +67,26 @@
 {#
 
 #}
-{%- macro GetNetPropertiesDirtyEnumName(Component, ClassType, ReplicateFrom, ReplicateTo) -%}
-{{ ReplicateFrom }}To{{ ReplicateTo }}DirtyEnum
+{%- macro GetNetPropertiesDirtyEnumName(ComponentName, ReplicateFrom, ReplicateTo) -%}
+{{ UpperFirst(ComponentName) }}Internal::{{ ReplicateFrom }}To{{ ReplicateTo }}DirtyEnum
 {%- endmacro -%}
 {#
 
 #}
-{%- macro GetNetPropertiesPropertyDirtyEnum(Property) -%}
-{{ Property.attrib['Name'] }}_DirtyFlag
+{%- macro GetNetPropertiesPropertyDirtyEnum(Property, Extension = "none") -%}
+{%      if Extension == "none" %}
+{{ Property.attrib['Name'] }}_DirtyFlag{%      elif Extension.lower() == "size" %}
+{{ Property.attrib['Name'] }}_Size_DirtyFlag{%      elif Extension.lower() == "start" %}
+{{ Property.attrib['Name'] }}_Start_DirtyFlag{%      elif Extension.lower() == "end" %}
+{{ Property.attrib['Name'] }}_End_DirtyFlag{%      else %}
+#error "Unknown extension ({{ Extension }}) passed to GetNetPropertiesPropertyDirtyEnum"
+{%      endif %}
 {%- endmacro -%}
 {#
 
 #}
-{%- macro GetNetPropertiesQualifiedPropertyDirtyEnum(Component, ClassType, ReplicateFrom, ReplicateTo, Property) -%}
-{{ GetNetPropertiesDirtyEnumName(Component, ClassType, ReplicateFrom, ReplicateTo) }}::{{ GetNetPropertiesPropertyDirtyEnum(Property) }}
+{%- macro GetNetPropertiesQualifiedPropertyDirtyEnum(ComponentName, ReplicateFrom, ReplicateTo, Property, Extension = "none") -%}
+{{ GetNetPropertiesDirtyEnumName(ComponentName, ReplicateFrom, ReplicateTo) }}::{{ GetNetPropertiesPropertyDirtyEnum(Property, Extension) }}
 {%- endmacro -%}
 {#
 
@@ -136,54 +142,6 @@ AZ::Event<{{ Property.attrib['Type'] }}>
 {%- macro GetEntityReplicationRecordName(Entity) -%}
 {{ Entity.attrib['Name'] }}ReplicationRecord
 {%- endmacro -%}
-{#
-
-#}
-{% macro DefineNetworkPropertyReflection(Component, ReplicateFrom, ReplicateTo, ClassName) %}
-{% call(Property) ParseNetworkProperties(Component, ReplicateFrom, ReplicateTo) %}
-{%      if Property.attrib['ExposeToEditor'] | booleanTrue %}
-->Field("{{ Property.attrib['Name'] }}", &{{ ClassName }}::m_{{ LowerFirst(Property.attrib['Name']) }})
-{%      endif %}
-{% endcall -%}
-{% endmacro %}
-{#
-
-#}
-{% macro DefineArchetypePropertyReflection(Component, ClassName) %}
-{% call(Property) ParseArchetypeProperties(Component) %}
-{%      if Property.attrib['ExposeToEditor'] | booleanTrue %}
-->Field("{{ Property.attrib['Name'] }}", &{{ ClassName }}::m_{{ LowerFirst(Property.attrib['Name']) }})
-{%      endif %}
-{% endcall %}
-{% endmacro %}
-{#
-
-#}
-{% macro DefineNetworkPropertyConstructors(Component, ReplicateFrom, ReplicateTo, ClassType) %}
-{% call(Property) ParseNetworkProperties(Component, ReplicateFrom, ReplicateTo) %}
-{%     if Property.attrib['Container'] == 'Array' %}
-    , m_{{ LowerFirst(Property.attrib['Name']) }}({% if Property.attrib['IsRewindable']|booleanTrue %}Multiplayer::RewindableObject<{{ Property.attrib['Type'] }}, Multiplayer::RewindHistorySize>({% endif %}{{ Property.attrib['Init'] }}{% if Property.attrib['IsRewindable']|booleanTrue %}, this){% endif %})
-{%     elif Property.attrib['Container'] == 'Vector' %}
-    , m_{{ LowerFirst(Property.attrib['Name']) }}({{ Property.attrib['Init'] }})
-{%     elif Property.attrib['IsRewindable']|booleanTrue %}
-    , m_{{ LowerFirst(Property.attrib['Name']) }}({{ Property.attrib['Init'] }}, this)
-{%     else %}
-    , m_{{ LowerFirst(Property.attrib['Name']) }}({{ Property.attrib['Init'] }})
-{%     endif %}
-{% endcall %}
-{% endmacro %}
-{#
-
-#}
-{% macro DefineArchetypePropertyConstructors(Component) %}
-{% call(Property) ParseArchetypeProperties(Component) %}
-{% if Property.attrib['Container'] == 'Vector' %}
-    , m_{{ LowerFirst(Property.attrib['Name']) }}({{ Property.attrib['Init'] }}, {{ Property.attrib['Count'] }})
-{% else %}
-    , m_{{ LowerFirst(Property.attrib['Name']) }}({{ Property.attrib['Init'] }})
-{% endif %}
-{% endcall %}
-{% endmacro %}
 {#
 
 #}

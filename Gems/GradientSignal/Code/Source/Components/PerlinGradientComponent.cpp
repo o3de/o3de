@@ -75,7 +75,6 @@ namespace GradientSignal
         {
             behaviorContext->Class<PerlinGradientConfig>()
                 ->Constructor()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Property("randomSeed", BehaviorValueProperty(&PerlinGradientConfig::m_randomSeed))
                 ->Property("octave", BehaviorValueProperty(&PerlinGradientConfig::m_octave))
@@ -120,7 +119,6 @@ namespace GradientSignal
             behaviorContext->Class<PerlinGradientComponent>()->RequestBus("PerlinGradientRequestBus");
 
             behaviorContext->EBus<PerlinGradientRequestBus>("PerlinGradientRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Event("GetRandomSeed", &PerlinGradientRequestBus::Events::GetRandomSeed)
                 ->Event("SetRandomSeed", &PerlinGradientRequestBus::Events::SetRandomSeed)

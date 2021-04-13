@@ -362,7 +362,7 @@ static void CmdCrashTest(IConsoleCmdArgs* pArgs)
         case 3:
             while (true)
             {
-                char* element = new char[10240];
+                new char[10240];
             }
             break;
         case 4:
@@ -371,7 +371,7 @@ static void CmdCrashTest(IConsoleCmdArgs* pArgs)
         case 5:
             while (true)
             {
-                char* element = new char[128];     //testing the crash handler an exception in the cry memory allocation occurred
+                new char[128];     //testing the crash handler an exception in the cry memory allocation occurred
             }
         case 6:
         {
@@ -1000,7 +1000,9 @@ bool CSystem::InitializeEngineModule(const char* dllName, const char* moduleClas
     {
         GetIMemoryManager()->GetProcessMemInfo(memEnd);
 
+#if defined(AZ_ENABLE_TRACING)
         uint64 memUsed = memEnd.WorkingSetSize - memStart.WorkingSetSize;
+#endif
         AZ_TracePrintf(AZ_TRACE_SYSTEM_WINDOW, "Initializing %s %s, MemUsage=%uKb", dllName, pModule ? "done" : "failed", uint32(memUsed / 1024));
     }
 
@@ -2383,8 +2385,6 @@ AZ_POP_DISABLE_WARNING
 #if !defined(CONSOLE)
 #if !defined(_RELEASE)
     bool isDaemonMode = (m_pCmdLine->FindArg(eCLAT_Pre, "daemon") != 0);
-#else
-    bool isDaemonMode = false;
 #endif // !defined(_RELEASE)
 
 #if defined(USE_DEDICATED_SERVER_CONSOLE)
@@ -3732,17 +3732,6 @@ void CSystem::CreateSystemVars()
             "Usage: MemStats [0..]");
     m_cvMemStatsThreshold = REGISTER_INT ("MemStatsThreshold", 32000, VF_NULL, "");
     m_cvMemStatsMaxDepth = REGISTER_INT("MemStatsMaxDepth", 4, VF_NULL, "");
-
-
-    // allows for loading gems and map files for release mode dedicated servers
-    int dwPakPriorityFlags = VF_READONLY | VF_CHEAT;
-#if defined(_RELEASE)
-    if (gEnv->IsDedicated())
-    {
-        dwPakPriorityFlags = VF_DEDI_ONLY;
-    }
- #endif
-
 
     attachVariable("sys_PakReadSlice", &g_cvars.archiveVars.nReadSlice, "If non-0, means number of kilobytes to use to read files in portions. Should only be used on Win9x kernels");
 

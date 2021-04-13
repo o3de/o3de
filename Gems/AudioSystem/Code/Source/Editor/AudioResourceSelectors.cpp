@@ -26,8 +26,7 @@ namespace AudioControls
     //-------------------------------------------------------------------------------------------//
     QString ShowSelectDialog(const SResourceSelectorContext& context, const QString& pPreviousValue, const EACEControlType controlType)
     {
-        CATLControlsModel* pModel = CAudioControlsEditorPlugin::GetATLModel();
-        AZ_Assert(pModel != nullptr, "AudioResourceSelectors - ATL Model is null!");
+        AZ_Assert(CAudioControlsEditorPlugin::GetATLModel() != nullptr, "AudioResourceSelectors - ATL Model is null!");
 
         AZStd::string levelName;
         AzToolsFramework::EditorRequestBus::BroadcastResult(levelName, &AzToolsFramework::EditorRequests::GetLevelName);

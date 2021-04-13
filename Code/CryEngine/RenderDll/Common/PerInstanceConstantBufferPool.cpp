@@ -254,10 +254,6 @@ void PerInstanceConstantBufferPool::SetConstantBuffer(SRendItem* renderItem)
     m_CurrentRenderItem = renderItem;
 
     AZ::u32 bufferIndex = directId / SPI_NUM_INSTS_PER_CB;
-    AZ::u32 itemIndex   = directId % SPI_NUM_INSTS_PER_CB;
-
-    AZ::u32 first[1] = { itemIndex * static_cast<AZ::u32>(sizeof(HLSL_PerInstanceConstantBuffer)) };
-    AZ::u32 count[1] = { static_cast<AZ::u32>(sizeof(HLSL_PerInstanceConstantBuffer)) };
 
     auto& deviceManager = gRenDev->m_DevMan;
 

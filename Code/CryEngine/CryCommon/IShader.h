@@ -1521,11 +1521,6 @@ struct STexSamplerRT
 
     bool        m_bGlobal;
 
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    // CRC of texture name if this is an engine texture
-    uint32_t m_nCrc;
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-
     STexSamplerRT()
     {
         m_nTexState = -1;
@@ -1537,9 +1532,6 @@ struct STexSamplerRT
         m_nSamplerSlot = -1;
         m_nTextureSlot = -1;
         m_bGlobal = false;
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED       
-        m_nCrc = 0;
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
     }
     ~STexSamplerRT()
     {
@@ -1590,9 +1582,6 @@ struct STexSamplerRT
         m_nSamplerSlot = src.m_nSamplerSlot;
         m_nTextureSlot = src.m_nTextureSlot;
         m_bGlobal = src.m_bGlobal;
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-        m_nCrc = src.m_nCrc;
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
     }
     NO_INLINE STexSamplerRT& operator = (const STexSamplerRT& src)
     {
@@ -1615,9 +1604,6 @@ struct STexSamplerRT
         m_nSamplerSlot = -1;
         m_nTextureSlot = -1;
         m_bGlobal = (src.m_nTexFlags & FT_FROMIMAGE) != 0;
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-        m_nCrc = 0;
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
     }
     inline bool operator != (const STexSamplerRT& m) const
     {

@@ -271,7 +271,6 @@ void CErrorReportDialog::OnReportColumnRClick()
     actionAlignRight->setCheckable(true);
     actionAlignCenter->setCheckable(true);
 
-    int nAlignOption = 0;
     const int alignment = m_errorReportModel->headerData(column, Qt::Horizontal, Qt::TextAlignmentRole).toInt();
     actionAlignLeft->setChecked(alignment & Qt::AlignLeft);
     actionAlignRight->setChecked(alignment & Qt::AlignRight);

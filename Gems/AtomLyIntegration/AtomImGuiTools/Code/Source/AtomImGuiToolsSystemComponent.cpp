@@ -88,19 +88,46 @@ namespace AtomImGuiTools
         {
             m_imguiGpuProfiler.Draw(m_showGpuProfiler, AZ::RPI::PassSystemInterface::Get()->GetRootPass().get());
         }
+        if (m_showCpuProfiler)
+        {
+            const AZ::RHI::CpuTimingStatistics* stats = AZ::RHI::RHISystemInterface::Get()->GetCpuTimingStatistics();
+            if (stats)
+            {
+                m_imguiCpuProfiler.Draw(m_showCpuProfiler, *stats);
+            }
+        }
+        if (m_showTransientAttachmentProfiler)
+        {
+            auto* transientStats = AZ::RHI::RHISystemInterface::Get()->GetTransientAttachmentStatistics();
+            if (transientStats)
+            {
+                m_showTransientAttachmentProfiler = m_imguiTransientAttachmentProfiler.Draw(*transientStats);
+            }
+        }
+        if (m_showShaderMetrics)
+        {
+            m_imguiShaderMetrics.Draw(m_showShaderMetrics, AZ::RPI::ShaderMetricsSystemInterface::Get()->GetMetrics());
+        }
     }
 
     void AtomImGuiToolsSystemComponent::OnImGuiMainMenuUpdate()
     {
         if (ImGui::BeginMenu("Atom Tools"))
         {
-            if (ImGui::MenuItem("Pass Viewer", "", &m_showPassTree))
+            ImGui::MenuItem("Pass Viewer", "", &m_showPassTree);
+            ImGui::MenuItem("Gpu Profiler", "", &m_showGpuProfiler);
+            if (ImGui::MenuItem("Cpu Profiler", "", &m_showCpuProfiler))
             {
+                AZ::RHI::RHISystemInterface::Get()->ModifyFrameSchedulerStatisticsFlags(
+                    AZ::RHI::FrameSchedulerStatisticsFlags::GatherCpuTimingStatistics, m_showCpuProfiler);
+                AZ::RHI::CpuProfiler::Get()->SetProfilerEnabled(m_showCpuProfiler);
             }
-
-            if (ImGui::MenuItem("Gpu Profiler", "", &m_showGpuProfiler))
+            if (ImGui::MenuItem("Transient Attachment Profiler", "", &m_showTransientAttachmentProfiler))
             {
+                AZ::RHI::RHISystemInterface::Get()->ModifyFrameSchedulerStatisticsFlags(
+                    AZ::RHI::FrameSchedulerStatisticsFlags::GatherTransientAttachmentStatistics, m_showTransientAttachmentProfiler);
             }
+            ImGui::MenuItem("Shader Metrics", "", &m_showShaderMetrics);
             ImGui::EndMenu();
         }
     }

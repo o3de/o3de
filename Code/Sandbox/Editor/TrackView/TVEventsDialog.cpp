@@ -239,8 +239,6 @@ CTVEventsDialog::~CTVEventsDialog()
 
 void CTVEventsDialog::OnBnClickedButtonAddEvent()
 {
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
-
     const QString add = QInputDialog::getText(this, tr("Track Event Name"), QString());
     if (!add.isEmpty() && static_cast<TVEventsModel*>(m_ui->m_List->model())->addRow(add))
     {
@@ -252,8 +250,6 @@ void CTVEventsDialog::OnBnClickedButtonAddEvent()
 
 void CTVEventsDialog::OnBnClickedButtonRemoveEvent()
 {
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
-
     QList<QPersistentModelIndex> indexes;
     for (auto index : m_ui->m_List->selectionModel()->selectedRows())
     {
@@ -304,8 +300,7 @@ void CTVEventsDialog::OnInitDialog()
     m_ui->m_List->setModel(new TVEventsModel(this));
     m_ui->m_List->header()->resizeSections(QHeaderView::ResizeToContents);
 
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
-    assert(sequence);
+    assert(GetIEditor()->GetAnimation()->GetSequence());
 
     UpdateButtons();
 }

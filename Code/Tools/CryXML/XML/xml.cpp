@@ -1387,13 +1387,14 @@ XmlNodeRef XmlParser::parseSource(const IXmlBufferSource* source)
         bufferSize = sizeof(buffer) / sizeof(buffer[0])
     };
     m_pImpl->beginParse();
-    int bytesRead;
-    while (bytesRead = source->Read(buffer, bufferSize))
+    int bytesRead = source->Read(buffer, bufferSize);
+    while (bytesRead)
     {
         if (!m_pImpl->parse(buffer, bytesRead))
         {
             break;
         }
+        bytesRead = source->Read(buffer, bufferSize);
     }
     return m_pImpl->endParse(m_errorString);
 }

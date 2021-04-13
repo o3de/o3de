@@ -13,6 +13,7 @@
 #pragma once
 
 #include <AzFramework/Viewport/ViewportId.h>
+#include <AzFramework/Windowing/WindowBus.h>
 
 #include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
@@ -60,17 +61,18 @@ namespace AzFramework
     {
         //! The viewport ID this event was dispatched to.
         ViewportId m_viewportId;
+        //! The native window handle for the application.
+        NativeWindowHandle m_windowHandle;
         //! The input channel data for this event.
         const AzFramework::InputChannel& m_inputChannel;
         //! The priority this event was dispatched at.
         ViewportControllerPriority m_priority;
 
         ViewportControllerInputEvent(
-            ViewportId viewportId,
-            const AzFramework::InputChannel& inputChannel,
-            ViewportControllerPriority priority = ViewportControllerPriority::DispatchToAllPriorities
-        )
+            ViewportId viewportId, NativeWindowHandle windowHandle, const AzFramework::InputChannel& inputChannel,
+            ViewportControllerPriority priority = ViewportControllerPriority::DispatchToAllPriorities)
             : m_viewportId(viewportId)
+            , m_windowHandle(windowHandle)
             , m_inputChannel(inputChannel)
             , m_priority(priority)
         {

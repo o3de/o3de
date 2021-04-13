@@ -14,6 +14,7 @@
 
 #include <AzFramework/Input/Devices/Gamepad/InputDeviceGamepad.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
+#include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Input/Devices/Touch/InputDeviceTouch.h>
 #include <AzFramework/Input/Mappings/InputMappingAnd.h>
 #include <AzFramework/Input/Mappings/InputMappingOr.h>
@@ -21,6 +22,9 @@
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Interface/Interface.h>
 
+#include <Atom/Feature/ImGui/SystemBus.h>
+#include <ImGuiContextScope.h>
+#include <ImGui/ImGuiPass.h>
 #include <imgui/imgui.h>
 
 using namespace AzFramework;
@@ -31,7 +35,7 @@ namespace AZ
     ////////////////////////////////////////////////////////////////////////////////////////////////
     constexpr const char* DebugConsoleInputContext = "DebugConsoleInputContext";
     const InputChannelId ToggleDebugConsoleInputChannelId("ToggleDebugConsole");
-    const InputChannelId ThumbstickL3AndR3InputChannelId("BothGamepadTriggers");
+    const InputChannelId ThumbstickL3AndR3InputChannelId("ThumbstickL3AndR3");
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     AZ::Color GetColorForLogLevel(const AZ::LogLevel& logLevel)
@@ -79,6 +83,16 @@ namespace AZ
         , m_maxEntriesToDisplay(maxEntriesToDisplay)
         , m_maxInputHistorySize(maxInputHistorySize)
     {
+        // The debug console is currently only supported when running the standalone launcher.
+        // It does function correctly when running the editor if you remove this check, but it
+        // conflicts with the legacy debug console that also shows at the bottom of the editor.
+        AZ::ApplicationTypeQuery applicationType;
+        AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationRequests::QueryApplicationType, applicationType);
+        if (!applicationType.IsGame())
+        {
+            return;
+        }
+
         // Create an input mapping so that the debug console can be toggled by 'L3+R3' on a gamepad.
         AZStd::shared_ptr<InputMappingAnd> inputMappingL3AndR3 = AZStd::make_shared<InputMappingAnd>(ThumbstickL3AndR3InputChannelId, m_inputContext);
         inputMappingL3AndR3->AddSourceInput(InputDeviceGamepad::Button::L3);
@@ -112,33 +126,34 @@ namespace AZ
         // Bind our custom log handler.
         AZ::Interface<AZ::ILogger>::Get()->BindLogHandler(m_logHandler);
 
-        // Connect to receive tick events.
-        AZ::TickBus::Handler::BusConnect();
+        // Connect to receive render tick events.
+        auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+        const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
+        AZ::RPI::ViewportContextNotificationBus::Handler::BusConnect(contextName);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     DebugConsole::~DebugConsole()
     {
-        // Disconnect to stop receiving tick events.
-        AZ::TickBus::Handler::BusDisconnect();
+        // Disconnect to stop receiving render tick events.
+        AZ::RPI::ViewportContextNotificationBus::Handler::BusDisconnect();
 
         // Disconnect our custom log handler.
         m_logHandler.Disconnect();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    int DebugConsole::GetTickOrder()
+    void DebugConsole::OnRenderTick()
     {
-        return AZ::ComponentTickBus::TICK_UI;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    void DebugConsole::OnTick([[maybe_unused]]float deltaTime,
-                              [[maybe_unused]]AZ::ScriptTimePoint scriptTimePoint)
-    {
-        if (m_isShowing)
+        if (!m_isShowing)
         {
-            DrawDebugConsole();
+            return;
+        }
+
+        const bool continueShowing = DrawDebugConsole();
+        if (!continueShowing)
+        {
+            ToggleIsShowing();
         }
     }
 
@@ -148,7 +163,7 @@ namespace AZ
         if (inputChannel.GetInputChannelId() == ToggleDebugConsoleInputChannelId &&
             inputChannel.IsStateBegan())
         {
-            m_isShowing = !m_isShowing;
+            ToggleIsShowing();
             return true;
         }
         return false;
@@ -292,14 +307,26 @@ namespace AZ
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void DebugConsole::DrawDebugConsole()
+    bool DebugConsole::DrawDebugConsole()
     {
+        // Get the default ImGui pass.
+        AZ::Render::ImGuiPass* defaultImGuiPass = nullptr;
+        AZ::Render::ImGuiSystemRequestBus::BroadcastResult(defaultImGuiPass, &AZ::Render::ImGuiSystemRequestBus::Events::GetDefaultImGuiPass);
+        if (!defaultImGuiPass)
+        {
+            return false;
+        }
+
+        // Create an ImGui context scope using the default ImGui pass context.
+        ImGui::ImGuiContextScope contextScope(defaultImGuiPass->GetContext());
+
         // Draw the debug console in a closeable, moveable, and resizeable IMGUI window.
+        bool continueShowing = true;
         ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_FirstUseEver);
-        if (!ImGui::Begin("Debug Console", &m_isShowing))
+        if (!ImGui::Begin("Debug Console", &continueShowing))
         {
             ImGui::End();
-            return;
+            return false;
         }
 
         // Show a scrolling child region in which to display all debug log entires.
@@ -375,5 +402,38 @@ namespace AZ
         }
 
         ImGui::End();
+
+        return continueShowing;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    AzFramework::SystemCursorState GetDesiredSystemCursorState()
+    {
+        AZ::ApplicationTypeQuery applicationType;
+        AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationRequests::QueryApplicationType, applicationType);
+        return applicationType.IsEditor() ?
+               AzFramework::SystemCursorState::ConstrainedAndVisible :
+               AzFramework::SystemCursorState::UnconstrainedAndVisible;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    void DebugConsole::ToggleIsShowing()
+    {
+        m_isShowing = !m_isShowing;
+        if (m_isShowing)
+        {
+            AzFramework::InputSystemCursorRequestBus::EventResult(m_previousSystemCursorState,
+                                                                  AzFramework::InputDeviceMouse::Id,
+                                                                  &AzFramework::InputSystemCursorRequests::GetSystemCursorState);
+            AzFramework::InputSystemCursorRequestBus::Event(AzFramework::InputDeviceMouse::Id,
+                                                            &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
+                                                            GetDesiredSystemCursorState());
+        }
+        else
+        {
+            AzFramework::InputSystemCursorRequestBus::Event(AzFramework::InputDeviceMouse::Id,
+                                                            &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
+                                                            m_previousSystemCursorState);
+        }
     }
 }

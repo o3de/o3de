@@ -144,7 +144,6 @@ namespace AZ
                     }
                     blendShapeIndex++;
                     int blendShapeChannelCount = pDeformer->GetBlendShapeChannelCount();
-                    int stackCount = context.m_sourceScene.GetAnimationStackCount();
                     auto animStackWrapper = context.m_sourceScene.GetAnimationStackAt(0);
 
                     const FbxSDKWrapper::FbxTimeWrapper startTime = animStackWrapper->GetLocalTimeSpan().GetStartTime();

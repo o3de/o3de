@@ -58,7 +58,6 @@ namespace GradientSignal
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<GradientSurfaceDataConfig>()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Constructor()
                 ->Method("GetNumTags", &GradientSurfaceDataConfig::GetNumTags)
@@ -139,7 +138,6 @@ namespace GradientSignal
                 ;
 
             behaviorContext->EBus<GradientSurfaceDataRequestBus>("GradientSurfaceDataRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                 ->Attribute(AZ::Script::Attributes::Module, "vegetation")

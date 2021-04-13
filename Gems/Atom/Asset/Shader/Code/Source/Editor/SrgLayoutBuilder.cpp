@@ -387,12 +387,24 @@ namespace AZ
 
                         if (imageType != RHI::ShaderInputImageType::Unknown)
                         {
-                            srgAssetCreator.AddShaderInput({
-                                textureData.m_nameId,
-                                imageAccess,
-                                imageType,
-                                textureData.m_count,
-                                useRegisterId ? textureData.m_registerId : RHI::UndefinedRegisterSlot });
+                            if (textureData.m_count != aznumeric_cast<uint32_t>(-1))
+                            {
+                                srgAssetCreator.AddShaderInput({
+                                    textureData.m_nameId,
+                                    imageAccess,
+                                    imageType,
+                                    textureData.m_count,
+                                    useRegisterId ? textureData.m_registerId : RHI::UndefinedRegisterSlot });
+                            }
+                            else
+                            {
+                                // unbounded array
+                                srgAssetCreator.AddShaderInput({
+                                    textureData.m_nameId,
+                                    imageAccess,
+                                    imageType,
+                                    useRegisterId ? textureData.m_registerId : RHI::UndefinedRegisterSlot });
+                            }
                         }
                         else
                         {
@@ -425,13 +437,26 @@ namespace AZ
 
                             if (bufferType != RHI::ShaderInputBufferType::Unknown)
                             {
-                                srgAssetCreator.AddShaderInput({
-                                    bufferData.m_nameId,
-                                    bufferAccess,
-                                    bufferType,
-                                    bufferData.m_count,
-                                    bufferData.m_strideSize,
-                                    useRegisterId ? bufferData.m_registerId : RHI::UndefinedRegisterSlot });
+                                if (bufferData.m_count != aznumeric_cast<uint32_t>(-1))
+                                {
+                                    srgAssetCreator.AddShaderInput({
+                                        bufferData.m_nameId,
+                                        bufferAccess,
+                                        bufferType,
+                                        bufferData.m_count,
+                                        bufferData.m_strideSize,
+                                        useRegisterId ? bufferData.m_registerId : RHI::UndefinedRegisterSlot });
+                                }
+                                else
+                                {
+                                    // unbounded array
+                                    srgAssetCreator.AddShaderInput({
+                                        bufferData.m_nameId,
+                                        bufferAccess,
+                                        bufferType,
+                                        bufferData.m_strideSize,
+                                        useRegisterId ? bufferData.m_registerId : RHI::UndefinedRegisterSlot });
+                                }
                             }
                             else
                             {

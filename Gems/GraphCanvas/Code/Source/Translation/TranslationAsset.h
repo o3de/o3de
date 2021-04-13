@@ -46,7 +46,6 @@ namespace GraphCanvas
 
         TranslationAsset(const AZ::Data::AssetId& assetId = AZ::Data::AssetId(), AZ::Data::AssetData::AssetStatus status = AZ::Data::AssetData::AssetStatus::NotLoaded);
 
-        TranslationAsset(const TranslationAsset& rhs) = default;
         ~TranslationAsset() = default;
 
         static const char* GetDisplayName() { return "Graph Canvas Translation"; }

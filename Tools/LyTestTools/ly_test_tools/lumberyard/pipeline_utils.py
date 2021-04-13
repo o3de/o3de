@@ -215,43 +215,6 @@ def backup_asset_processor_logs(bin_directory: str, backup_directory: str) -> No
         shutil.copytree(ap_logs, destination)
 
 
-def platform_enabled(workspace: pytest.fixture, platform: str) -> bool:
-    """
-    Checks to see if the platform specified is enabled for the current build of LY.
-
-    :param workspace: The current testing workspace
-    :param platform: The name of the platform to lookup.
-    :return: True if the platform is enabled, False if not.
-    """
-    user_settings_file = os.path.join(workspace.paths.dev(), "_WAF_", "user_settings.options")
-    assert os.path.exists(user_settings_file), f"User settings file not found at {user_settings_file}"
-
-    parser = ConfigParser()
-    parser.read(user_settings_file)
-    section = platform.title() + " Options"  # The Platform Options section
-    option = "enable_" + platform.lower()
-
-    # Make sure the platform has an options section
-    assert parser.has_section(section), f"Section {section} was not found in {user_settings_file}"
-    if parser.has_option(section, option):
-        entry = parser.get(section, option)
-        if entry.lower() == "true":
-            # Found 'true'
-            return True
-        elif entry.lower() == "false":
-            # Found 'false'
-            return False
-        else:
-            # Found something unexpected
-            # fmt:off
-            logger.warning(f"Found unexpected value '{entry}' in {user_settings_file} - {section}:{option}. "
-                           f"Using default value of 'False'")
-            # fmt:on
-    else:
-        logger.info(f"No option '{option}' was found in the section '{section}', defaulting to 'False'")
-    return False
-
-
 def safe_subprocess(command: str or List[str], **kwargs: Dict) -> ProcessOutput:
     """
     Forwards arguments to subprocess.Popen to have a processes output

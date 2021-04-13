@@ -1174,6 +1174,8 @@ namespace ScriptCanvasEditor
             }
             else
             {
+                delete m_slotTypeSelector;
+
                 return false;
             }
 
@@ -3973,7 +3975,6 @@ namespace ScriptCanvasEditor
 
                 if (mimeEvent)
                 {
-                    bool isValid = false;
                     NodeIdPair finalNode = ProcessCreateNodeMimeEvent(mimeEvent, graphCanvasGraphId, AZ::Vector2(aznumeric_cast<float>(scenePoint.x()), aznumeric_cast<float>(scenePoint.y())));
 
                     if (finalNode.m_graphCanvasId.IsValid())
@@ -4225,7 +4226,6 @@ namespace ScriptCanvasEditor
 
             if (mimeEvent)
             {
-                bool isValid = false;
                 NodeIdPair finalNode = ProcessCreateNodeMimeEvent(mimeEvent, graphCanvasGraphId, AZ::Vector2(aznumeric_cast<float>(scenePoint.x()), aznumeric_cast<float>(scenePoint.y())));
 
                 GraphCanvas::Endpoint sourceEndpoint;

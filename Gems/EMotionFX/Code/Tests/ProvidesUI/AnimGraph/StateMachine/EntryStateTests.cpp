@@ -68,7 +68,6 @@ namespace EMotionFX
         const AnimGraphMotionNode* motionNodeA = static_cast<AnimGraphMotionNode*>(animGraph->RecursiveFindNodeByName("motionNodeA"));
         const AnimGraphMotionNode* motionNodeB = static_cast<AnimGraphMotionNode*>(animGraph->RecursiveFindNodeByName("motionNodeB"));
         EMStudio::BlendGraphWidget* graphWidget = animGraphPlugin->GetGraphWidget();
-        const EMStudio::GraphNode* graphNodeForMotionNodeA = graphWidget->GetActiveGraph()->FindGraphNode(motionNodeA);
         const EMStudio::GraphNode* graphNodeForMotionNodeB = graphWidget->GetActiveGraph()->FindGraphNode(motionNodeB);
 
         EMotionFX::AnimGraphStateMachine* stateMachine = static_cast<EMotionFX::AnimGraphStateMachine*>(motionNodeA->GetParentNode());

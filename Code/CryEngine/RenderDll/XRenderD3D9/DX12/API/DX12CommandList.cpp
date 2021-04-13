@@ -231,7 +231,10 @@ namespace DX12
             m_Timers.End(*this);
 #endif
 
-            HRESULT res = m_CommandList->Close();
+#ifndef NDEBUG
+            HRESULT res =
+#endif
+                m_CommandList->Close();
             DX12_ASSERT(res == S_OK, "Could not close command list!");
         }
 
@@ -791,8 +794,6 @@ namespace DX12
         MaxResourceFenceValue(dstResource, CMDTYPE_ANY);
         MaxResourceFenceValue(srcResource, CMDTYPE_WRITE);
 
-        D3D12_RESOURCE_STATES prevDstState = dstResource.GetCurrentState();
-        D3D12_RESOURCE_STATES prevSrcState = srcResource.GetCurrentState();
         QueueTransitionBarrier(dstResource, D3D12_RESOURCE_STATE_COPY_DEST);
         QueueTransitionBarrier(srcResource, D3D12_RESOURCE_STATE_COPY_SOURCE);
         FlushBarriers();
@@ -817,8 +818,6 @@ namespace DX12
         MaxResourceFenceValue(srcResource, CMDTYPE_WRITE);
 
         // TODO: if we know early that the resource(s) will be DEST and SOURCE we can begin the barrier early and end it here
-        D3D12_RESOURCE_STATES prevDstState = dstResource.GetCurrentState();
-        D3D12_RESOURCE_STATES prevSrcState = srcResource.GetCurrentState();
         QueueTransitionBarrier(dstResource, D3D12_RESOURCE_STATE_COPY_DEST);
         QueueTransitionBarrier(srcResource, D3D12_RESOURCE_STATE_COPY_SOURCE);
         FlushBarriers();

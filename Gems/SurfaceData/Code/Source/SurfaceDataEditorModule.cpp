@@ -15,7 +15,6 @@
 #include <SurfaceDataSystemComponent.h>
 #include <Editor/EditorSurfaceDataSystemComponent.h>
 #include <Editor/EditorSurfaceDataColliderComponent.h>
-#include <Editor/EditorSurfaceDataMeshComponent.h>
 #include <Editor/EditorSurfaceDataShapeComponent.h>
 
 namespace SurfaceData
@@ -25,7 +24,6 @@ namespace SurfaceData
         m_descriptors.insert(m_descriptors.end(), {
             EditorSurfaceDataSystemComponent::CreateDescriptor(),
             EditorSurfaceDataColliderComponent::CreateDescriptor(),
-            EditorSurfaceDataMeshComponent::CreateDescriptor(),
             EditorSurfaceDataShapeComponent::CreateDescriptor()
         });
     }

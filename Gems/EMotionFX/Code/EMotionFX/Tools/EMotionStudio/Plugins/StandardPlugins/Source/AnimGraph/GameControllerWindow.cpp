@@ -1029,7 +1029,6 @@ namespace EMStudio
 
         // check if the button info is pointing to a correct parameter
         const AZStd::string parameterName = settingsInfo->m_string;
-        const EMotionFX::Parameter* parameter = mAnimGraph->FindParameterByName(parameterName);
         if (parameterName.empty())
         {
             // The parameter name is empty in case the button info has not been assigned with one yet.

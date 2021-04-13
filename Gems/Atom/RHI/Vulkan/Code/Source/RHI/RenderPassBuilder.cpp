@@ -54,8 +54,6 @@ namespace AZ
             };
 
             // Add a new subpass
-            const AZStd::vector<Scope::Barrier>& prologueBarriers = scope.m_subpassBarriers[static_cast<uint32_t>(Scope::BarrierSlot::Prologue)];
-            const AZStd::vector<Scope::Barrier>& epilogueBarriers = scope.m_subpassBarriers[static_cast<uint32_t>(Scope::BarrierSlot::Epilogue)];
 
             const uint32_t subpassIndex = m_renderpassDesc.m_subpassCount++;
             auto& subpassDescriptor = m_renderpassDesc.m_subpassDescriptors[subpassIndex];

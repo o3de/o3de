@@ -35,7 +35,7 @@ protected:
         {
             sceneCoreModule = AZ::DynamicModuleHandle::Create("SceneCore");
             AZ_Assert(sceneCoreModule, "ResourceCompilerScene unit tests failed to create SceneCore module.");
-            bool loaded = sceneCoreModule->Load(false);
+            [[maybe_unused]] bool loaded = sceneCoreModule->Load(false);
             AZ_Assert(loaded, "ResourceCompilerScene unit tests failed to load SceneCore module.");
             auto init = sceneCoreModule->GetFunction<AZ::InitializeDynamicModuleFunction>(AZ::InitializeDynamicModuleFunctionName);
             AZ_Assert(init, "ResourceCompilerScene unit tests failed to find the initialization function the SceneCore module.");
@@ -44,7 +44,7 @@ protected:
         {
             sceneDataModule = AZ::DynamicModuleHandle::Create("SceneData");
             AZ_Assert(sceneDataModule, "ResourceCompilerScene unit tests failed to create SceneData module.");
-            bool loaded = sceneDataModule->Load(false);
+            [[maybe_unused]] bool loaded = sceneDataModule->Load(false);
             AZ_Assert(loaded, "ResourceCompilerScene unit tests failed to load SceneData module.");
             auto init = sceneDataModule->GetFunction<AZ::InitializeDynamicModuleFunction>(AZ::InitializeDynamicModuleFunctionName);
             AZ_Assert(init, "ResourceCompilerScene unit tests failed to find the initialization function the SceneData module.");
@@ -54,7 +54,7 @@ protected:
         {
             fbxSceneBuilderModule = AZ::DynamicModuleHandle::Create("FbxSceneBuilder");
             AZ_Assert(fbxSceneBuilderModule, "ResourceCompilerScene unit tests failed to create FbxSceneBuilder module.");
-            bool loaded = fbxSceneBuilderModule->Load(false);
+            [[maybe_unused]] bool loaded = fbxSceneBuilderModule->Load(false);
             AZ_Assert(loaded, "ResourceCompilerScene unit tests failed to load FbxSceneBuilder module.");
         }
     }

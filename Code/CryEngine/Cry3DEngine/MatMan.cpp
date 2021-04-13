@@ -874,7 +874,10 @@ static void shGetVector4(const char* buf, float v[4])
     {
         return;
     }
-    int res = azsscanf(buf, "%f,%f,%f,%f", &v[0], &v[1], &v[2], &v[3]);
+#if !defined(NDEBUG)
+    int res =
+#endif
+        azsscanf(buf, "%f,%f,%f,%f", &v[0], &v[1], &v[2], &v[3]);
     assert(res);
 }
 

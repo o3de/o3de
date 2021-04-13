@@ -502,10 +502,9 @@ namespace AZ
                     altClassElement.m_offset = 0;
                     VariantSerializationInternal::SetupClassElementFromType<AltType>(altClassElement);
                     const AZ::Uuid& altTypeId = altClassElement.m_typeId;
-                    const char* altName = AzTypeInfo<AltType>::Name();
                     
                     const SerializeContext::ClassData* altClassData = context.FindClassData(altTypeId);
-                    AZ_Error("Serialize", altClassData, "Unable to find ClassData for variant alternative with name %s and typeid of %s", altName, altTypeId.ToString<AZStd::string>().data());
+                    AZ_Error("Serialize", altClassData, "Unable to find ClassData for variant alternative with name %s and typeid of %s", AzTypeInfo<AltType>::Name(), altTypeId.ToString<AZStd::string>().data());
                     return altClassData ? callContext.m_context->EnumerateInstanceConst(&callContext, &elementAlt, altTypeId, altClassData, &altClassElement) : false;
                 };
 

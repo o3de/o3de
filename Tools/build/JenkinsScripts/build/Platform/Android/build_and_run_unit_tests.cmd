@@ -27,7 +27,8 @@ IF NOT EXIST "%LY_ANDROID_SDK%" (
     ECHO [ci_build] FAIL: LY_ANDROID_SDK=!LY_ANDROID_SDK!
     GOTO :error
 )
-
+SET ANDROID_SDK_ROOT=%LY_ANDROID_SDK%
+ECHO "ANDROID_SDK_ROOT=!ANDROID_SDK_ROOT!"
 SET PYTHON=python\python.cmd
 ECHO [ci_build] %PYTHON% Tools\build\JenkinsScripts\build\Platform\Android\run_test_on_android_simulator.py --android-sdk-path %LY_ANDROID_SDK% --build-path %OUTPUT_DIRECTORY% --build-config %CONFIGURATION%
 CALL %PYTHON% Tools\build\JenkinsScripts\build\Platform\Android\run_test_on_android_simulator.py --android-sdk-path %LY_ANDROID_SDK% --build-path %OUTPUT_DIRECTORY% --build-config %CONFIGURATION%

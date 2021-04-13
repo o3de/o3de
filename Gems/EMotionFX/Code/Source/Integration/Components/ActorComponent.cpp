@@ -129,7 +129,6 @@ namespace EMotionFX
             if (behaviorContext)
             {
                 behaviorContext->EBus<ActorComponentRequestBus>("ActorComponentRequestBus")
-                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::Preview)
                     ->Event("GetJointIndexByName", &ActorComponentRequestBus::Events::GetJointIndexByName)
                     ->Event("GetJointTransform", &ActorComponentRequestBus::Events::GetJointTransform)
                     ->Event("AttachToEntity", &ActorComponentRequestBus::Events::AttachToEntity)

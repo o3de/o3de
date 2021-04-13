@@ -290,6 +290,7 @@ namespace AzFramework
         UpdateSystemCursorVisibility();
         const bool shouldBeDisabled = (m_systemCursorState == SystemCursorState::ConstrainedAndHidden) ||
                                       (m_systemCursorState == SystemCursorState::ConstrainedAndVisible);
+
         if (!shouldBeDisabled)
         {
             DestroyDisabledSystemCursorEventTap();

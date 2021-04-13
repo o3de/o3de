@@ -299,8 +299,9 @@ void PreDeclareStructType(HLSLCrossCompilerContext* psContext, const char* Name,
 
     if (psType->Class == SVC_STRUCT)
     {
+#if !defined(NDEBUG)
         uint32_t unnamed_struct = strcmp(Name, "$Element") == 0 ? 1 : 0;
-
+#endif
         //Not supported at the moment
         ASSERT(!unnamed_struct);
 
@@ -483,6 +484,7 @@ char* GetDeclaredOutputName(const HLSLCrossCompilerContext* psContext,
             &psContext->psShader->sInfo,
             &psOut);
 
+    (void)(foundOutput);
     ASSERT(foundOutput);
 
     if (eShaderType == GEOMETRY_SHADER)
@@ -590,7 +592,6 @@ static void DeclareInput(
         {
             if (iNumComponents == 1)
             {
-                const uint32_t regNum =  psDecl->asOperands[0].ui32RegisterNumber;
                 const uint32_t arraySize = psDecl->asOperands[0].aui32ArraySizes[0];
 
                 psContext->psShader->abScalarInput[psDecl->asOperands[0].ui32RegisterNumber] = -1;
@@ -1134,7 +1135,6 @@ void AddUserOutput(HLSLCrossCompilerContext* psContext, const Declaration* psDec
         case VERTEX_SHADER:
         {
             int iNumComponents = 4;    //GetMaxComponentFromComponentMask(&psDecl->asOperands[0]);
-            const char* Interpolation = "";
             int stream = 0;
             char* OutputName = GetDeclaredOutputName(psContext, VERTEX_SHADER, psOperand, &stream);
 
@@ -1413,7 +1413,9 @@ void DeclareBufferVariable(HLSLCrossCompilerContext* psContext, const uint32_t u
 {
     const char* Name = psCBuf->Name;
     bstring StructName;
+#if !defined(NDEBUG)
     uint32_t unnamed_struct = strcmp(psCBuf->asVars[0].Name, "$Element") == 0 ? 1 : 0;
+#endif
     bstring glsl = *psContext->currentGLSLString;
 
     ASSERT(psCBuf->ui32NumVars == 1);
@@ -1489,7 +1491,9 @@ void DeclarePLSVariable(HLSLCrossCompilerContext* psContext, const uint32_t ui32
     (void)eResourceType;
 
     const char* Name = plsVar->Name;
+#if !defined(NDEBUG)
     uint32_t unnamed_struct = strcmp(plsVar->asVars[0].Name, "$Element") == 0 ? 1 : 0;
+#endif
     bstring glsl = *psContext->currentGLSLString;
 
     ASSERT(plsVar->ui32NumVars == 1);
@@ -1970,7 +1974,6 @@ void TranslateDeclaration(HLSLCrossCompilerContext* psContext, const Declaration
     }
     case OPCODE_DCL_TEMPS:
     {
-        uint32_t i = 0;
         const uint32_t ui32NumTemps = psDecl->value.ui32NumTemps;
 
         if (psContext->flags & HLSLCC_FLAG_AVOID_TEMP_REGISTER_ALIASING && psContext->psShader->eShaderType != HULL_SHADER)
@@ -2106,7 +2109,6 @@ void TranslateDeclaration(HLSLCrossCompilerContext* psContext, const Declaration
 
             const char* Precision = "highp";
             const char* outputName = "PixOutput";
-            const char* qualifier = psContext->rendertargetUse[regNum] & OUTPUT_RENDERTARGET ? "inout" : "in";
 
             bformata(glsl, "layout(location = %d) ", regNum);
             bformata(glsl, "inout %s vec%d %s%d;\n", Precision, numElements, outputName, regNum);

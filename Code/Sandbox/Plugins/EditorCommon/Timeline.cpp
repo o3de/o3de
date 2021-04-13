@@ -984,7 +984,7 @@ namespace
                         float rx = radius * 200.0f / ratio;
                         float ry = radius * 200.0f;
 
-                        if (pass == PASS_SHADOW)
+                        if (pass == PASS_SELECTION)
                         {
                             if (bSelected)
                             {
@@ -1250,7 +1250,7 @@ struct CTimeline::SMoveHandler
 
         SAnimTime minDeltaTime = SAnimTime::Min();
         SAnimTime maxDeltaTime = SAnimTime::Max();
-        SAnimTime minKeyTime = SAnimTime::Max();
+        SAnimTime minKeyTime = SAnimTime::Min();
 
         for (size_t i = 0; i < selectedElements.size(); ++i)
         {
@@ -1301,7 +1301,7 @@ struct CTimeline::SMoveHandler
             const QPoint currentPos(ev->pos().x(), ev->pos().y() + scroll);
 
             QPoint posInLayoutSpace = m_timeline->m_viewState.LocalToLayout(currentPos);
-            bool bHit = HitTestElements(m_timeline->m_layout->tracks, QRect(posInLayoutSpace - QPoint(2, 2), posInLayoutSpace + QPoint(2, 2)), hitElements);
+            HitTestElements(m_timeline->m_layout->tracks, QRect(posInLayoutSpace - QPoint(2, 2), posInLayoutSpace + QPoint(2, 2)), hitElements);
 
             if (!hitElements.empty())
             {
@@ -1375,8 +1375,6 @@ struct CTimeline::SScrubHandler
 
     void SetThumbPositionX(int positionX)
     {
-        int nThumbEndPadding = (THUMB_WIDTH / 2) + 2;
-        float fVisualRange = float(m_timeline->m_viewState.widthPixels - nThumbEndPadding * 2);
         SAnimTime time = SAnimTime(m_timeline->m_viewState.LayoutToTime(positionX));
 
         m_timeline->ClampAndSetTime(time, false);
@@ -2466,11 +2464,6 @@ void CTimeline::OnMenuPlay()
 typedef std::vector<std::pair<SAnimTime, STimelineContentElementRef> > TimeToId;
 static void GetAllTimes(TimeToId* times, const STimelineTrack& track)
 {
-    for (size_t i = 0; i < track.elements.size(); ++i)
-    {
-        const STimelineElement& element = track.elements[i];
-    }
-
     for (size_t i = 0; i < track.tracks.size(); ++i)
     {
         GetAllTimes(times, *track.tracks[i]);

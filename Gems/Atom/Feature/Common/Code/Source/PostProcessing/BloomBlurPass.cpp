@@ -331,9 +331,6 @@ namespace AZ
             AZStd::vector<float> weights;
             AZStd::vector<float> offsets;
             
-            // Offset in array
-            uint32_t offset = static_cast<uint32_t>(m_weightData.size());
-
             // Center pixel
             weight = Gaussian1D(0, sigma);
             weights.push_back(weight);

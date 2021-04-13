@@ -191,9 +191,6 @@ void CSplineCtrl::DrawGrid(QPainter* painter)
 //////////////////////////////////////////////////////////////////////////
 void CSplineCtrl::DrawSpline(QPainter* painter)
 {
-    int cx = m_rcSpline.width();
-    int cy = m_rcSpline.height();
-
     //Draw Curve
     // create and select a thick, white pen
     const QPen pOldPen = painter->pen();

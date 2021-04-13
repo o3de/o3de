@@ -1934,7 +1934,6 @@ void CMaterialDialog::OnUpdateProperties(IVariable* var)
     }
 
     bool bMtlLayersChanged = false;
-    SMaterialLayerResources* pMtlLayerResources = mtl->GetMtlLayerResources();
     int nCurrLayer = -1;
 
     // Check for shader changes

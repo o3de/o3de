@@ -823,7 +823,6 @@ public:
 
     void mfBind()
     {
-        HRESULT hr = S_OK;
         if (mfIsValid(m_pCurInst, true) == ED3DShError_Ok)
         {
             if (gRenDev->m_nFrameSwapID != m_pCurInst->m_nUsedFrame)
@@ -833,7 +832,6 @@ public:
             }
             gcpRendD3D->m_DevMan.BindShader(m_eSHClass, (ID3D11Resource*)m_pCurInst->m_Handle.m_pShader->m_pHandle);
         }
-        assert (SUCCEEDED(hr));
     }
 
     static inline void mfBindGS(SD3DShader* pShader, void* pHandle)
@@ -1124,11 +1122,6 @@ public:
     static bool mfAddGlobalSampler(STexSamplerRT& Sampler);
 
     static void* GetVSDataForDecl(const D3D11_INPUT_ELEMENT_DESC* pDecl, int nCount, int& nDataSize);
-
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    //! Used by render to texture to fix-up all engine texture samplers
-    static void UpdateSamplerEngineTextures();
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
 
     static void ShutDown();
 

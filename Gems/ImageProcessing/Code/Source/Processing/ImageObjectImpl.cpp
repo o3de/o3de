@@ -254,7 +254,7 @@ namespace ImageProcessing
         AZ::u32 dwMips = pRet->GetMipCount();
         for (AZ::u32 dwMip = 0; dwMip < dwMips; ++dwMip)
         {
-            AZ::u32 dwLocalWidth = GetWidth(dwMip);          // we get error on NVidia with this (assumes input is 4x4 as well)
+            //AZ::u32 dwLocalWidth = GetWidth(dwMip);          // we get error on NVidia with this (assumes input is 4x4 as well)
             AZ::u32 dwLocalHeight = GetHeight(dwMip);
 
             AZ::u32 dwLines = dwLocalHeight;
@@ -716,8 +716,6 @@ namespace ImageProcessing
 
         const PixelFormatInfo* const pPixelFormatInfo = CPixelFormats::GetInstance().GetPixelFormatInfo(format);
 
-        DXGI_FORMAT d3dformat = pPixelFormatInfo->d3d10Format;
-                
         memset(&header, 0, sizeof(DDS_HEADER));
 
         header.dwSize = sizeof(DDS_HEADER);
@@ -914,7 +912,6 @@ namespace ImageProcessing
             {
                 const MipLevel& level = *m_mips[mip];
                 AZ::u32 faceBufSize = level.m_pitch*level.m_rowCount / faces;
-                AZ::u32 start = faceBufSize*face;
                 saveFileStream.Write(faceBufSize, level.m_pData + faceBufSize*face);
             }
         }

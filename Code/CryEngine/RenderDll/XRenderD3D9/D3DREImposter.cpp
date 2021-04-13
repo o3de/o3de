@@ -267,7 +267,7 @@ bool CREImposter::PrepareForUpdate()
     float fRadiusY = vUp.len() / 2 + fabsf(fDerivY);
 
     Vec3 vNearest;
-    int nCollide = IntersectRayAABB(cam.vOrigin, vEye, m_WorldSpaceBV, vNearest);
+    IntersectRayAABB(cam.vOrigin, vEye, m_WorldSpaceBV, vNearest);
     Vec4 v4Nearest = Vec4(vNearest, 1);
     Vec4 v4Far = Vec4(vNearest + vEye * fRadius * 2, 1);
     Vec4 v4ZRange = Vec4(0, 0, 0, 0);
@@ -386,7 +386,6 @@ bool CREImposter::PrepareForUpdate()
 
     Matrix44A M;
 
-    CRenderObject* pInstObj = rd->m_RP.m_pCurObject;
 
     m_LastViewParameters = cam;
     m_vLastSunDir = gEnv->p3DEngine->GetSunDir().GetNormalized();
@@ -652,10 +651,6 @@ bool CREImposter::Display(bool bDisplayFrontOfSplit)
         }
         if IsCVarConstAccess(constexpr) (CRenderer::CV_r_impostersdraw & 2)
         {
-            CRenderObject* pObj = rd->m_RP.m_pCurObject;
-            int colR = ((DWORD)((UINT_PTR)pObj) >> 4) & 0xf;
-            int colG = ((DWORD)((UINT_PTR)pObj) >> 8) & 0xf;
-            int colB = ((DWORD)((UINT_PTR)pObj) >> 12) & 0xf;
             ColorB col = Col_Yellow; //ColorB(colR<<4, colG<<4, colB<<4, 255);
             Vec3 v[4];
             v[0] = vPos - y - x;

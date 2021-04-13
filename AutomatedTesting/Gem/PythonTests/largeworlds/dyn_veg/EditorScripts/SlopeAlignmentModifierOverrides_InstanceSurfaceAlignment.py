@@ -63,11 +63,11 @@ class TestSlopeAlignmentModifierOverrides(EditorTestHelper):
         spawner_entity = dynveg.create_vegetation_area("Instance Spawner", center_point, 16.0, 16.0, 32.0, asset_path)
 
         # Create a sloped mesh surface for the instances to plant on
-        mesh_asset_path = os.path.join("Objects", "default", "primitive_plane.cgf")
+        mesh_asset_path = os.path.join("objects", "_primitives", "_box_1x1.azmodel")
         mesh_asset = asset.AssetCatalogRequestBus(bus.Broadcast, "GetAssetIdByPath", mesh_asset_path, math.Uuid(),
                                                   False)
         rotation = math.Vector3(0.0, radians(45.0), 0.0)
-        scale = math.Vector3(30.0, 30.0, 30.0)
+        scale = math.Vector3(10.0, 10.0, 10.0)
         surface_entity = hydra.Entity("Surface Entity")
         surface_entity.create_entity(
             center_point,
@@ -75,7 +75,7 @@ class TestSlopeAlignmentModifierOverrides(EditorTestHelper):
         )
         if surface_entity.id.IsValid():
             print(f"'{surface_entity.name}' created")
-        hydra.get_set_test(surface_entity, 0, "MeshComponentRenderNode|Mesh asset", mesh_asset)
+        hydra.get_set_test(surface_entity, 0, "Controller|Configuration|Mesh Asset", mesh_asset)
         components.TransformBus(bus.Event, "SetLocalRotation", surface_entity.id, rotation)
         components.TransformBus(bus.Event, "SetLocalScale", surface_entity.id, scale)
 

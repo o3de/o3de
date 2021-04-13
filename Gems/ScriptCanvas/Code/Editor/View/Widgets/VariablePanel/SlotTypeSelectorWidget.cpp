@@ -197,6 +197,7 @@ namespace ScriptCanvasEditor
         const AZStd::unordered_map<ScriptCanvas::VariableId, ScriptCanvas::GraphVariable>* properties = nullptr;
         ScriptCanvas::GraphVariableManagerRequestBus::EventResult(properties, m_scriptCanvasId, &ScriptCanvas::GraphVariableManagerRequests::GetVariables);
 
+        int numInUse = 0;
         if (properties)
         {
             for (const auto& variablePair : (*properties))
@@ -205,7 +206,7 @@ namespace ScriptCanvasEditor
                 if (testName.compare(variablePair.second.GetVariableName()) == 0)
                 {
                     nameInUse = true;
-                    break;
+                    ++numInUse;
                 }
             }
         }
@@ -214,7 +215,7 @@ namespace ScriptCanvasEditor
 
         if (nameInUse)
         {
-            m_slotName.append(" (duplicate)");
+            m_slotName.append(AZStd::string::format(" (%d)", numInUse));
             ui->slotName->setText(m_slotName.c_str());
         }
     }

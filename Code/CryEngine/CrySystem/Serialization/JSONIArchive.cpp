@@ -477,7 +477,9 @@ namespace Serialization {
         {
             while (isComment(*cur.end))
             {
+#if 0
                 const char* commentStart = ptr;
+#endif
                 while (*cur.end && *cur.end != '\n')
                 {
                     ++cur.end;
@@ -968,7 +970,10 @@ namespace Serialization {
             ser(*this);
             CRY_ASSERT(!stack_.empty());
             stack_.pop_back();
-            bool closed = closeBracket();
+#if !defined(NDEBUG)
+            bool closed =
+#endif
+                closeBracket();
             CRY_ASSERT(closed);
             return true;
         }

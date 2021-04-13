@@ -106,7 +106,6 @@ namespace AZ
         RHI::ResultCode TransientAttachmentPool::InitInternal(RHI::Device& deviceBase, const RHI::TransientAttachmentPoolDescriptor& descriptor)
         {
             auto& device = static_cast<Device&>(deviceBase);
-            RHI::ResultCode result = RHI::ResultCode::Success;
 
             bool allowNoBudget = false;
             switch (descriptor.m_heapParameters.m_type)

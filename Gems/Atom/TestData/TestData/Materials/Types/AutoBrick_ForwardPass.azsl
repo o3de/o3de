@@ -39,6 +39,7 @@ struct VSOutput
 };
 
 #include <Atom/Features/PBR/LightingModel.azsli>
+#include <Atom/Features/Vertex/VertexHelper.azsli>
 
 VSOutput AutoBrick_ForwardPassVS(VSInput IN)
 {
@@ -48,7 +49,7 @@ VSOutput AutoBrick_ForwardPassVS(VSInput IN)
  
     OUT.m_uv = IN.m_uv;
 
-    PbrVsHelper(IN, OUT, worldPosition);
+    VertexHelper(IN, OUT, worldPosition);
 
     return OUT;
 }
