@@ -142,7 +142,7 @@ namespace AZ
                 params.renderScene
             );
             viewportContext->GetWindowContext()->RegisterAssociatedViewportContext(viewportContext);
-            RegisterViewportContext(contextName, viewportContext);
+            RegisterViewportContext(nameToUse, viewportContext);
             return viewportContext;
         }
 
@@ -170,7 +170,9 @@ namespace AZ
                 AZ_Assert(false, "Attempted to rename ViewportContext \"%s\" to \"%s\", but \"%s\" is already assigned to another ViewportContext", viewportContext->m_name.GetCStr(), newContextName.GetCStr(), newContextName.GetCStr());
                 return;
             }
-            RegisterViewportContext(newContextName, viewportContext);
+            GetOrCreateViewStackForContext(newContextName);
+            viewportContext->m_name = newContextName;
+            UpdateViewForContext(newContextName);
         }
 
         void ViewportContextManager::EnumerateViewportContexts(AZStd::function<void(ViewportContextPtr)> visitorFunction)
