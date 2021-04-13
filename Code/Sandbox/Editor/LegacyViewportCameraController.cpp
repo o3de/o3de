@@ -342,7 +342,6 @@ bool LegacyViewportCameraControllerInstance::HandleInputChannelEvent(const AzFra
                 m_inRotateMode = true;
             }
 
-            shouldConsumeEvent = true;
             shouldCaptureCursor = true;
         }
         else if (state == InputChannel::State::Ended)
