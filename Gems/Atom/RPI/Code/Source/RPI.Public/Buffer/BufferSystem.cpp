@@ -105,7 +105,7 @@ namespace AZ
                 bufferPoolDesc.m_hostMemoryAccess = RHI::HostMemoryAccess::Write;
                 break;
             case CommonBufferPoolType::DynamicInputAssembly:
-                bufferPoolDesc.m_bindFlags = RHI::BufferBindFlags::InputAssembly;
+                bufferPoolDesc.m_bindFlags = RHI::BufferBindFlags::DynamicInputAssembly;
                 bufferPoolDesc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Host;
                 bufferPoolDesc.m_hostMemoryAccess = RHI::HostMemoryAccess::Write;
                 break;

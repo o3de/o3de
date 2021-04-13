@@ -295,7 +295,7 @@ namespace AZ
 
                                     const RHI::Size sourceSize = RHI::Size(subresourceLayout.m_size.m_width, heightToCopy, 1);
                                     const RHI::Origin sourceOrigin = RHI::Origin(0, destHeight, depth);
-                                    CopyBufferToImage(framePacket, image, stagingRowPitch, stagingSlicePitch,
+                                    CopyBufferToImage(framePacket, image, stagingRowPitch, bytesCopied,
                                         curMip, arraySlice, sourceSize, sourceOrigin);
 
                                     framePacket->m_dataOffset += stagingSize;

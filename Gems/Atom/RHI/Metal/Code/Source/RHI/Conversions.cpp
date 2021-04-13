@@ -210,6 +210,11 @@ namespace AZ
             {
                 return GetCPUGPUMemoryMode();
             }
+            
+            if (RHI::CheckBitsAll(descriptor.m_bindFlags, RHI::BufferBindFlags::DynamicInputAssembly))
+            {
+                return MTLStorageModeShared;
+            }
                  
             return GetCPUGPUMemoryMode();
         }

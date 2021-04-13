@@ -30,38 +30,42 @@ namespace AZ
         {
             None            = 0,
 
-            /// Supports input assembly access through a IndexBufferView or StreamBufferView.
+            /// Supports input assembly access through a IndexBufferView or StreamBufferView. This flag is for buffers that are not updated often
             InputAssembly   = AZ_BIT(0),
-
+            
+            /// Supports input assembly access through a IndexBufferView or StreamBufferView. This flag is for buffers that are updated perf frame
+            DynamicInputAssembly = AZ_BIT(1),
+            
             /// Supports constant access through a ShaderResourceGroup.
-            Constant        = AZ_BIT(1),
+            Constant        = AZ_BIT(2),
 
             /// Supports read access through a ShaderResourceGroup.
-            ShaderRead      = AZ_BIT(2),
+            ShaderRead      = AZ_BIT(3),
 
             /// Supports write access through ShaderResourceGroup.
-            ShaderWrite     = AZ_BIT(3),
+            ShaderWrite     = AZ_BIT(4),
 
             /// Supports read-write access through a ShaderResourceGroup.
             ShaderReadWrite = ShaderRead | ShaderWrite,
 
             /// Supports read access for GPU copy operations.
-            CopyRead        = AZ_BIT(4),
+            CopyRead        = AZ_BIT(5),
 
             /// Supports write access for GPU copy operations.
-            CopyWrite       = AZ_BIT(5),
+            CopyWrite       = AZ_BIT(6),
 
             /// Supports predication access for conditional rendering.
-            Predication     = AZ_BIT(6),
+            Predication     = AZ_BIT(7),
 
             /// Supports indirect buffer access for indirect draw/dispatch.
-            Indirect        = AZ_BIT(7),
+            Indirect        = AZ_BIT(8),
 
             /// Supports ray tracing acceleration structure usage.
-            RayTracingAccelerationStructure = AZ_BIT(8),
+            RayTracingAccelerationStructure = AZ_BIT(9),
 
             /// Supports ray tracing shader table usage.
-            RayTracingShaderTable = AZ_BIT(9)
+            RayTracingShaderTable = AZ_BIT(10)
+
         };
 
         AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::BufferBindFlags);

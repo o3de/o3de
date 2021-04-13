@@ -39,7 +39,7 @@ namespace AZ
             // needs to be a multiple of elementsize as well as divisible by DX12::Alignment types.
             m_usePageAllocator = false;
 
-            if (!RHI::CheckBitsAny(descriptor.m_bindFlags, RHI::BufferBindFlags::ShaderWrite | RHI::BufferBindFlags::CopyWrite | RHI::BufferBindFlags::InputAssembly))
+            if (!RHI::CheckBitsAny(descriptor.m_bindFlags, RHI::BufferBindFlags::ShaderWrite | RHI::BufferBindFlags::CopyWrite | RHI::BufferBindFlags::InputAssembly | RHI::BufferBindFlags::DynamicInputAssembly))
             {
                 m_usePageAllocator = true;
 

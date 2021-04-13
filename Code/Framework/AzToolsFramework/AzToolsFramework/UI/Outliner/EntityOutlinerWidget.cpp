@@ -807,7 +807,7 @@ namespace AzToolsFramework
     #ifdef Q_OS_MAC
         // "Alt+Return" translates to Option+Return on macOS
         m_actionToRenameSelection->setShortcut(tr("Alt+Return"));
-#elseif Q_OS_WIN
+    #elif Q_OS_WIN
         m_actionToRenameSelection->setShortcut(tr("F2"));
     #endif
         m_actionToRenameSelection->setShortcutContext(Qt::WidgetWithChildrenShortcut);
