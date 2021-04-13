@@ -149,7 +149,6 @@ namespace UnitTest
             });
 
         auto clusterEntry = m_viewportManagerWrapper.GetViewportManager()->GetClusterMap().find(clusterId);
-        auto button = clusterEntry->second->GetButton(buttonId);
 
         // trigger the cluster
         m_viewportManagerWrapper.GetViewportManager()->RegisterClusterEventHandler(clusterId, handler);

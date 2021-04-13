@@ -56,7 +56,6 @@ namespace AZ
             auto attenuation = context.GetMaterialPropertyValue<float>(m_attenuation);
             auto tintColor = context.GetMaterialPropertyValue<Color>(m_tintColor);
             auto thickness = context.GetMaterialPropertyValue<float>(m_thickness);
-            auto enabled = context.GetMaterialPropertyValue<bool>(m_enabled);
             auto scatterDistanceColor = context.GetMaterialPropertyValue<Color>(m_scatterDistanceColor);
             auto scatterDistanceIntensity = context.GetMaterialPropertyValue<float>(m_scatterDistanceIntensity);
 

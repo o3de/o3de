@@ -30,6 +30,8 @@ namespace AZ
 
                 virtual ~IAnimationData() override = default;
 
+                void CloneAttributesFrom([[maybe_unused]] const IGraphObject* sourceObject) override {}
+
                 virtual size_t GetKeyFrameCount() const = 0;
                 virtual const MatrixType& GetKeyFrame(size_t index) const = 0;
                 virtual double GetTimeStepBetweenFrames() const = 0;
@@ -42,6 +44,8 @@ namespace AZ
                 AZ_RTTI(IBlendShapeAnimationData, "{CD2004EB-8B88-42B2-A539-079A557C98C9}", IGraphObject);
 
                 virtual ~IBlendShapeAnimationData() override = default;
+
+                void CloneAttributesFrom([[maybe_unused]] const IGraphObject* sourceObject) override {}
 
                 virtual const char* GetBlendShapeName() const = 0;
                 virtual size_t GetKeyFrameCount() const = 0;

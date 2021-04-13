@@ -97,8 +97,6 @@ namespace UnitTest
             SAFE_EXPECT_EQ(AZ::ClampedIntegralLimits<ValueType, ClampType>::Max(), (std::numeric_limits<ValueType>::max)());
 
             // Expect the natural numerical limits of ValueType to be equal to the natural numerical limits of ClampType
-            ValueType vMin = AZ::ClampedIntegralLimits<ValueType, ClampType>::Min();
-            ClampType cMin = std::numeric_limits<ClampType>::lowest();
             SAFE_EXPECT_EQ(AZ::ClampedIntegralLimits<ValueType, ClampType>::Min(), std::numeric_limits<ClampType>::lowest());
             SAFE_EXPECT_EQ(AZ::ClampedIntegralLimits<ValueType, ClampType>::Max(), (std::numeric_limits<ClampType>::max)());
 

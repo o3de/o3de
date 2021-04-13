@@ -13,37 +13,13 @@ AssetProcessorPlatformConfig.setreg
 
 """
 
-import json
 import logging
 import os.path as path
+from ly_test_tools.lumberyard.settings import RegistrySettings
+from ly_test_tools.lumberyard.asset_processor import ASSET_PROCESSOR_SETTINGS_ROOT_KEY
 
 logger = logging.getLogger(__name__)
 AssetProcessorConfig = "AssetProcessorPlatformConfig.setreg"
-
-def load_asset_processor_platform_config(file_location):
-    """
-    Loads the AssetProcessorPlatformConfig.setreg file removing any comments
-    
-    :param file_location: The file path of AssetProcessorPlatformConfig.setreg
-    """
-    json_dict = {}
-    with open(file_location, 'r') as json_file:
-        cleaned_lines = []
-        for line in json_file.readlines():
-            lineIndex = line.lstrip().startswith('//')
-            cleaned_lines.append(line if lineIndex == -1 else line[:lineIndex])
-        json_dict = json.loads(''.join(cleaned_lines))
-    return json_dict
-
-def save_asset_processor_platform_config(file_location, json_dict):
-    """
-    Saves the json_dict to the AssetProcessorPlatformConfig.setreg file
-
-    :param file_location: The file path of AssetProcessorPlatformConfig.setreg
-    """
-    with open(file_location, 'w') as json_file:
-        json.dump(json_dict, json_file, indent=4)
-    return json_dict
 
 def platform_exists(config_setreg_path, platform):
     """
@@ -53,19 +29,15 @@ def platform_exists(config_setreg_path, platform):
     :param platform: Name of the Platform Key that you're checking exists
     :return: The boolean value of the existance of the platform
     """
-
     logger.debug("Checking for Platform '{0}' in Platforms Section of '{1}"
                 .format(platform, AssetProcessorConfig))
 
     file_location = path.join(config_setreg_path, AssetProcessorConfig)
-    json_dict = load_asset_processor_platform_config(file_location)
-    try:
-        platformExist = platform in json_dict['Amazon']['AssetProcessor']['Settings']['Platforms']
-        return platformExist
-    except KeyError as err:
-        logger.error(f'KeyError when attempting to query platform existance of {platform} in file {file_location}: {err}')
 
-    return False
+    with RegistrySettings(file_location) as settings:
+        platformExist = settings.get_key(f'{ASSET_PROCESSOR_SETTINGS_ROOT_KEY}/Platforms/{platform}', False)
+
+    return platformExist
 
 
 def is_platform_enabled(config_setreg_path, platform):
@@ -77,20 +49,15 @@ def is_platform_enabled(config_setreg_path, platform):
         See asset_processor.SUPPORTED_PLATFORMS for listed of supported platforms
     :return: The boolean value of the enabled state of the platform
     """
-
     logger.debug("Checking if Platform '{0}' is enabled in Platform Section of '{1}"
                 .format(platform, AssetProcessorConfig))
 
     file_location = path.join(config_setreg_path, AssetProcessorConfig)
-    # load AssetProcessorPlatformConfig.setreg removing any comments
-    json_dict = load_asset_processor_platform_config(file_location)
-    try:
-        enabled = json_dict['Amazon']['AssetProcessor']['Settings']['Platforms'][platform] == 'enabled'
-        return enabled
-    except KeyError as err:
-        logger.error(f'KeyError when attempting to check if platform {platform} is enabled in file {file_location}: {err}')
 
-    return False
+    with RegistrySettings(file_location) as settings:
+        enabled = settings.get_key(f'{ASSET_PROCESSOR_SETTINGS_ROOT_KEY}/Platforms/{platform}', None) == 'enabled'
+
+    return enabled
 
 
 def enable_platform(config_setreg_path, platform):
@@ -103,15 +70,11 @@ def enable_platform(config_setreg_path, platform):
     :assert: Assert if the platform is not enabled
     :return: None
     """
-
     logger.debug("Enabling platform '{0}' in '{1}'".format(platform, AssetProcessorConfig))
 
     file_location = path.join(config_setreg_path, AssetProcessorConfig)
-    json_dict = load_asset_processor_platform_config(file_location)
-    # Enable platform in settings registry
-    json_dict.setdefault('Amazon', {}).setdefault('AssetProcessor', {}).setdefault('Settings',{}) \
-        .setdefault('Platforms',{})[platform] = 'enabled'
-    save_asset_processor_platform_config(file_location)
+    with RegistrySettings(file_location) as settings:
+        settings.set_key(f'{ASSET_PROCESSOR_SETTINGS_ROOT_KEY}/Platforms/{platform}', 'enabled')
 
 
 def enable_all_platforms(config_setreg_path):
@@ -121,7 +84,6 @@ def enable_all_platforms(config_setreg_path):
     :param config_setreg_path: The file path to the location of AssetProcessorPlatformConfig.setreg
     :return: None
     """
-
     logger.debug("Enabling all supported platforms in '{0}'.".format(AssetProcessorConfig))
 
     for platform in SUPPORTED_PLATFORMS:
@@ -140,15 +102,13 @@ def disable_platform(config_setreg_path, platform):
     :assert: Assert if the platform is not disabled
     :return: None
     """
-
     logger.debug("Disabling platform '{0}' in '{1}'".format(platform, AssetProcessorConfig))
 
     file_location = path.join(config_setreg_path, AssetProcessorConfig)
     # Disable platform in settings registry
-    json_dict = load_asset_processor_platform_config(file_location)
-    json_dict.setdefault('Amazon', {}).setdefault('AssetProcessor', {}).setdefault('Settings',{}) \
-            .setdefault('Platforms',{})[platform] = 'disabled'
-    save_asset_processor_platform_config(file_location)
+    file_location = path.join(config_setreg_path, AssetProcessorConfig)
+    with RegistrySettings(file_location) as settings:
+        settings.set_key(f'{ASSET_PROCESSOR_SETTINGS_ROOT_KEY}/Platforms/{platform}', 'disabled')
 
 
 def disable_all_platforms(config_setreg_path):
@@ -158,7 +118,6 @@ def disable_all_platforms(config_setreg_path):
     :param config_setreg_path: The file path to the location of AssetProcessorPlatformConfig.setreg
     :return: None
     """
-
     logger.debug("Disabling all platforms in '{0}'".format(AssetProcessorConfig))
 
     for platform in SUPPORTED_PLATFORMS:
@@ -174,18 +133,15 @@ def enable_scanfolder_engine(config_setreg_path):
     :param config_setreg_path: The file path to the location of AssetProcessorPlatformConfig.setreg
     :return: None
     """
-
     file_location = path.join(config_setreg_path, AssetProcessorConfig)
     section = 'ScanFolder Engine'
 
     logger.debug("Enabling Asset Processor scanning of the Engine folder")
 
-    json_dict = load_asset_processor_platform_config(file_location)
-    json_dict.setdefault('Amazon', {}).setdefault('AssetProcessor', {}).setdefault('Settings',{}) \
-        .setdefault(section,{})['watch'] = '@ENGINEROOT@/Engine'
-    json_dict['Amazon']['AssetProcessor']['Settings'][section]['recursive'] = '1'
-    json_dict['Amazon']['AssetProcessor']['Settings'][section]['order'] = '20000'
-    save_asset_processor_platform_config(file_location)
+    with RegistrySettings(file_location) as settings:
+        settings.set_key(f'{ASSET_PROCESSOR_SETTINGS_ROOT_KEY}/{section}/watch', '@ENGINEROOT@/Engine')
+        settings.set_key(f'{ASSET_PROCESSOR_SETTINGS_ROOT_KEY}/{section}/recursive', '1')
+        settings.set_key(f'{ASSET_PROCESSOR_SETTINGS_ROOT_KEY}/{section}/order', '20000')
 
 
 def disable_scanfolder_engine(config_setreg_path):
@@ -195,18 +151,12 @@ def disable_scanfolder_engine(config_setreg_path):
     :param config_setreg_path: The file path to the location of AssetProcessorPlatformConfig.setreg
     :return: None
     """
-
     file_location = path.join(config_setreg_path, AssetProcessorConfig)
     section = 'ScanFolder Engine'
 
     logger.debug("Disabling Asset Processor scanning of the Engine folder")
-
-    json_dict = load_asset_processor_platform_config(file_location)
-    try:
-        del json_dict['Amazon']['AssetProcessor']['Settings'][section]
-        save_asset_processor_platform_config(file_location)
-    except KeyError as err:
-        logger.debug(f'No-op: f{section} key does not exist in file {file_location}')
+    with RegistrySettings(file_location) as settings:
+        settings.remove_key(f'{ASSET_PROCESSOR_SETTINGS_ROOT_KEY}/{section}')
 
 
 def enable_scanfolder_editor(config_setreg_path):
@@ -216,21 +166,17 @@ def enable_scanfolder_editor(config_setreg_path):
     :param config_setreg_path: The file path to the location of AssetProcessorPlatformConfig.setreg
     :return: None
     """
-
     file_location = path.join(config_setreg_path, AssetProcessorConfig)
     section = 'ScanFolder Editor'
 
-
     logger.debug("Enabling Asset Processor scanning of the Editor folder")
 
-    json_dict = load_asset_processor_platform_config(file_location)
-    json_dict.setdefault('Amazon', {}).setdefault('AssetProcessor', {}).setdefault('Settings',{}) \
-        .setdefault(section,{})['watch'] = '@ENGINEROOT@/Editor'
-    json_dict['Amazon']['AssetProcessor']['Settings'][section]['output'] = 'editor'
-    json_dict['Amazon']['AssetProcessor']['Settings'][section]['recursive'] = '1'
-    json_dict['Amazon']['AssetProcessor']['Settings'][section]['order'] = '30000'
-    json_dict['Amazon']['AssetProcessor']['Settings'][section]['include'] = 'tools,renderer'
-    save_asset_processor_platform_config(file_location)
+    with RegistrySettings(file_location) as settings:
+        settings.set_key(f'{ASSET_PROCESSOR_SETTINGS_ROOT_KEY}/{section}/watch', '@ENGINEROOT@/Editor')
+        settings.set_key(f'{ASSET_PROCESSOR_SETTINGS_ROOT_KEY}/{section}/output', 'editor')
+        settings.set_key(f'{ASSET_PROCESSOR_SETTINGS_ROOT_KEY}/{section}/recursive', '1')
+        settings.set_key(f'{ASSET_PROCESSOR_SETTINGS_ROOT_KEY}/{section}/order', '30000')
+        settings.set_key(f'{ASSET_PROCESSOR_SETTINGS_ROOT_KEY}/{section}/include', 'tools,renderer')
 
 
 def disable_scanfolder_editor(config_setreg_path):
@@ -240,17 +186,13 @@ def disable_scanfolder_editor(config_setreg_path):
     :param config_setreg_path: The file path to the location of AssetProcessorPlatformConfig.setreg
     :return: None
     """
-
     file_location = path.join(config_setreg_path, AssetProcessorConfig)
     section = 'ScanFolder Editor'
 
     logger.debug("Disabling Asset Processor scanning of the Editor folder")
 
-    try:
-        del json_dict['Amazon']['AssetProcessor']['Settings'][section]
-        save_asset_processor_platform_config(file_location)
-    except KeyError as err:
-        logger.debug(f'No-op: f{section} key does not exist in file {file_location}')
+    with RegistrySettings(file_location) as settings:
+        settings.remove_key(f'{ASSET_PROCESSOR_SETTINGS_ROOT_KEY}/{section}')
 
 
 def enable_scanfolder_root(config_setreg_path):
@@ -260,18 +202,15 @@ def enable_scanfolder_root(config_setreg_path):
     :param config_setreg_path: The file path to the location of AssetProcessorPlatformConfig.setreg
     :return: None
     """
-
     file_location = path.join(config_setreg_path, AssetProcessorConfig)
     section = 'ScanFolder Root'
 
     logger.debug("Enabling Asset Processor scanning of the Root folder")
 
-    json_dict = load_asset_processor_platform_config(file_location)
-    json_dict.setdefault('Amazon', {}).setdefault('AssetProcessor', {}).setdefault('Settings',{}) \
-        .setdefault(section,{})['watch'] = '@ROOT@'
-    json_dict['Amazon']['AssetProcessor']['Settings'][section]['recursive'] = '0'
-    json_dict['Amazon']['AssetProcessor']['Settings'][section]['order'] = '10000'
-    save_asset_processor_platform_config(file_location)
+    with RegistrySettings(file_location) as settings:
+        settings.set_key(f'{ASSET_PROCESSOR_SETTINGS_ROOT_KEY}/{section}/watch', '@ROOT@')
+        settings.set_key(f'{ASSET_PROCESSOR_SETTINGS_ROOT_KEY}/{section}/recursive', '0')
+        settings.set_key(f'{ASSET_PROCESSOR_SETTINGS_ROOT_KEY}/{section}/order', '10000')
 
 
 def disable_scanfolder_root(config_setreg_path):
@@ -281,17 +220,13 @@ def disable_scanfolder_root(config_setreg_path):
     :param config_setreg_path: The file path to the location of AssetProcessorPlatformConfig.setreg
     :return: None
     """
-
     file_location = path.join(config_setreg_path, AssetProcessorConfig)
     section = 'ScanFolder Root'
 
     logger.debug("Disabling Asset Processor scanning of the Root folder")
 
-    try:
-        del json_dict['Amazon']['AssetProcessor']['Settings'][section]
-        save_asset_processor_platform_config(file_location)
-    except KeyError as err:
-        logger.debug(f'No-op: f{section} key does not exist in file {file_location}')
+    with RegistrySettings(file_location) as settings:
+        settings.remove_key(f'{ASSET_PROCESSOR_SETTINGS_ROOT_KEY}/{section}')
 
 
 def update_pattern(config_setreg_path, pattern, key, value):
@@ -304,15 +239,12 @@ def update_pattern(config_setreg_path, pattern, key, value):
     :param value: The value to set the key to
     :return: None
     """
-
     file_location = path.join(config_setreg_path, AssetProcessorConfig)
     rc_pattern = 'RC ' + pattern
 
     logger.debug("Modifying pattern for '{0}'.".format(rc_pattern))
-    json_dict = load_asset_processor_platform_config(file_location)
-    json_dict.setdefault('Amazon', {}).setdefault('AssetProcessor', {}).setdefault('Settings',{}) \
-        .setdefault(rc_pattern,{})[key] = value
-    save_asset_processor_platform_config(file_location)
+    with RegistrySettings(file_location) as settings:
+        settings.set_key(f'{ASSET_PROCESSOR_SETTINGS_ROOT_KEY}/{rc_pattern}/{key}', value)
 
 
 def get_pattern_key(config_setreg_path, pattern, key):
@@ -328,11 +260,7 @@ def get_pattern_key(config_setreg_path, pattern, key):
     file_location = path.join(config_setreg_path, AssetProcessorConfig)
     rc_pattern = 'RC ' + pattern
     logger.debug("Retrieving the key '{0}' from pattern '{1}'.".format(key, rc_pattern))
-    json_dict = load_asset_processor_platform_config(file_location)
-    try:
-        value = json_dict['Amazon']['AssetProcessor']['Settings'][rc_pattern][key]
-        return value
-    except KeyError as err:
-        logger.error(f'KeyError attempting to query value for key "/Amazon/AssetProcessor/Settings/{rc_pattern}/{key}" in file {file_location}: {err}')
+    with RegistrySettings(file_location) as settings:
+        value = settings.get_key(f'{ASSET_PROCESSOR_SETTINGS_ROOT_KEY}/{rc_pattern}/{key}', None)
 
-    return None
+    return value

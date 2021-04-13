@@ -99,7 +99,7 @@ namespace AZStd
             // detect a sitaution where the mutex or the cond var are invalid, or the duration
             AZ_Assert(lastError == AZ_ERROR_TIMEOUT, "Error from SleepConditionVariableCS: 0x%08x\n", lastError);
             // asserts are continuable so we still check.
-            if (GetLastError() == AZ_ERROR_TIMEOUT)
+            if (lastError == AZ_ERROR_TIMEOUT)
             {
                 return cv_status::timeout;
             }

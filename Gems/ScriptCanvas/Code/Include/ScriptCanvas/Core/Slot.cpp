@@ -840,7 +840,6 @@ namespace ScriptCanvas
         }
 
         AZ::Outcome<void, AZStd::string> failureReason;
-        bool contractsAllowType = true;
 
         for (const auto& contract : m_contracts)
         {

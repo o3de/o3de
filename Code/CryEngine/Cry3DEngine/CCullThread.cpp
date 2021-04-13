@@ -552,7 +552,6 @@ namespace NAsyncCull
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Renderer);
 
         int bHWZBuffer  =   GetCVars()->e_CoverageBufferReproj;
-        int PolyLimit       =   GetCVars()->e_CoverageBufferRastPolyLimit;
 
         if (bHWZBuffer > 3 && m_OCMBuffer.empty())
         {
@@ -701,7 +700,6 @@ namespace NAsyncCull
         const AABB PosAABB  =   AABB(m_Position, 0.5f);
         const float Bias    =   GetCVars()->e_CoverageBufferAABBExpand;
         rMatFinalT  =   m_MatScreenViewProj.GetTransposed();
-        bool bEnabled = m_Enabled;
 
         // Debugging stats in green to screen here with how many octree nodes pass/fail and how many terrain nodes pass/fail
         unsigned int octreeNodesCulled = 0;

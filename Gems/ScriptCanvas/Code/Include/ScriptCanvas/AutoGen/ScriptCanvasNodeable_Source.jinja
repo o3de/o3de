@@ -224,6 +224,7 @@ void {{attribute_QualifiedName}}::Reflect(AZ::ReflectContext* context)
     {
         behaviorContext->Class<{{ attribute_Name }}>("{{ attribute_Name }}")
             ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::List)
+            ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
 {% for inputMethod in Class.iter('Input') %}
 {% set methodName = inputMethod.attrib['Name'] %}
             // {{ inputMethod.attrib['Name'] }}

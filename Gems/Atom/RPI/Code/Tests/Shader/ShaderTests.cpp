@@ -224,8 +224,6 @@ namespace UnitTest
                                                           Name("Off") };
             bitOffset = m_bindings[3].GetBitOffset() + m_bindings[3].GetBitCount();
 
-            RHI::DrawListTagRegistry* drawListTagRegistry = RHI::RHISystemInterface::Get()->GetDrawListTagRegistry();
-
             m_name = Name("TestName");
             m_drawListName = Name("DrawListTagName");
             m_pipelineLayoutDescriptor = TestPipelineLayoutDescriptor::Create();

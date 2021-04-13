@@ -30,16 +30,16 @@ class TestLayerSpawner(object):
     @pytest.fixture(autouse=True)
     def setup_teardown(self, request, workspace, project, level):
         # Cleanup our temp level
-        file_system.delete([os.path.join(workspace.paths.dev(), project, "Levels", level)], True, True)
+        file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
 
         def teardown():
             # Cleanup our temp level
-            file_system.delete([os.path.join(workspace.paths.dev(), project, "Levels", level)], True, True)
+            file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
 
         request.addfinalizer(teardown)
 
     @pytest.mark.test_case_id("C4762381")
-    @pytest.mark.SUITE_main
+    @pytest.mark.SUITE_periodic
     def test_LayerSpawner_InheritBehaviorFlag(self, request, editor, level, workspace, launcher_platform):
 
         expected_lines = [
@@ -59,7 +59,7 @@ class TestLayerSpawner(object):
         )
 
     @pytest.mark.test_case_id("C2802020")
-    @pytest.mark.SUITE_main
+    @pytest.mark.SUITE_periodic
     def test_LayerSpawner_InstancesPlantInAllSupportedShapes(self, request, editor, level, launcher_platform):
 
         expected_lines = [
@@ -100,7 +100,7 @@ class TestLayerSpawner(object):
         )
 
     @pytest.mark.test_case_id("C4765973")
-    @pytest.mark.SUITE_main
+    @pytest.mark.SUITE_periodic
     def test_LayerSpawner_FilterStageToggle(self, request, editor, level, workspace, launcher_platform):
 
         expected_lines = [
@@ -120,7 +120,8 @@ class TestLayerSpawner(object):
         )
 
     @pytest.mark.test_case_id("C30000751")
-    @pytest.mark.SUITE_periodic
+    @pytest.mark.SUITE_sandbox
+    @pytest.mark.skip   # ATOM-14828
     def test_LayerSpawner_InstancesRefreshUsingCorrectViewportCamera(self, request, editor, level, launcher_platform):
 
         expected_lines = [

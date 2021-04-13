@@ -359,7 +359,7 @@ float LtcPolygonEvaluate(in float3 pos, in float3 normal, in float3 dirToView, i
 
         // Find the previous clip point so it can be used when the polygon goes above the horizon by
         // searching backwards, updating the endIdx along the way to avoid reprocessing those points later
-        for (endIdx; endIdx > startIdx + 1; --endIdx)
+        for ( ; endIdx > startIdx + 1; --endIdx)
         {
             float3 prevPoint = mul(ltcMat, positions[endIdx - 1].xyz - pos);
             if (prevPoint.z > 0)

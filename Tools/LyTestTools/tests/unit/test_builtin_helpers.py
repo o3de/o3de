@@ -102,7 +102,7 @@ class TestBuiltinHelpers(object):
         under_test = ly_test_tools._internal.managers.abstract_resource_locator._find_engine_root(
             initial_path='mock_dev_dir')
 
-        assert under_test == ('mock_base_dir', 'mock_dev_dir')
+        assert under_test == ('mock_dev_dir')
 
     @mock.patch('os.path.abspath', mock.MagicMock(return_value='mock_base_dir'))
     @mock.patch('os.path.exists', mock.MagicMock(return_value=False))
@@ -113,7 +113,6 @@ class TestBuiltinHelpers(object):
 
     @mock.patch('ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager.setup')
     @mock.patch('ly_test_tools._internal.managers.artifact_manager.NullArtifactManager', mock.MagicMock())
-    @mock.patch('ly_test_tools.builtin.helpers.setup_bootstrap_project', mock.MagicMock(return_value=None))
     @mock.patch('os.path.exists', mock.MagicMock(return_value=True))
     def test_SetupBuiltinWorkspace_ValidWorkspaceSetup_ReturnsWorkspaceObject(self, mock_setup):
         mock_test_name = 'mock_test_name'

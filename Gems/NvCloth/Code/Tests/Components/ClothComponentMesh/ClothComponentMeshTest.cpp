@@ -420,7 +420,10 @@ namespace UnitTest
         }
     }
 
-    // [TODO LYN-1887] Revisit when Cloth Component Mesh works with Atom models
+    // [TODO LYN-1891]
+    // Revisit when Cloth Component Mesh works with Actors adapted to Atom models.
+    // At the moment, CreateAssetFromActor fills only Actor to the ActorAsset, but not the RenderActor,
+    // because of that the AtomModel is not created and OnModelReady is not called.
     TEST_F(NvClothComponentMesh, DISABLED_ClothComponentMesh_ModifyMesh_RenderMeshIsUpdated)
     {
         {

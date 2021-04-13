@@ -129,7 +129,8 @@ namespace PhysX
         void ToggleCollisionLayer(const AZStd::string& layerName, AZ::Crc32 colliderTag, bool enabled) override;
 
     private:
-        bool CreateController();
+        void CreateController();
+        void DestroyController();
         void AttachColliders(Physics::Character& character);
         void OnPreSimulate(float deltaTime);
 

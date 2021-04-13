@@ -278,7 +278,6 @@ namespace ScriptCanvasEditor
 
         if (GraphCanvas::GraphUtils::IsSlot(m_targetId))
         {
-            bool isDataSlot = false;
             GraphCanvas::SlotType slotType = GraphCanvas::SlotTypes::Invalid;
             GraphCanvas::SlotRequestBus::EventResult(slotType, m_targetId, &GraphCanvas::SlotRequests::GetSlotType);
 
@@ -786,7 +785,6 @@ namespace ScriptCanvasEditor
         if (GraphCanvas::GraphUtils::IsSlot(targetId))
         {
             // Extract the GraphCanvas Slot Type and complete endpoint from using the targetId
-            bool isDataSlot{};
             GraphCanvas::SlotType slotType = GraphCanvas::SlotTypes::Invalid;
             GraphCanvas::Endpoint endpoint;
             auto GetGraphCanvasEndpoint = [&slotType, &endpoint](GraphCanvas::SlotRequests* slotRequests)

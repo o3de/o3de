@@ -643,7 +643,6 @@ namespace ScriptCanvas
                         ScriptCanvas::Data::Type dataType = (*inputDataTypeIter->second.begin());
                         SlotId slotId = m_orderedInputSlotIds[inputIndex];
 
-                        Slot* slot = GetSlot(slotId);
 
                         auto isValidType = SlotAcceptsType(slotId, dataType);
 
@@ -670,7 +669,6 @@ namespace ScriptCanvas
                         ScriptCanvas::Data::Type dataType = (*outputDataTypeIter->second.begin());
                         SlotId slotId = m_outputSlotIds[outputIndex];
 
-                        Slot* slot = GetSlot(slotId);
 
                         auto isValidType = SlotAcceptsType(slotId, dataType);
 

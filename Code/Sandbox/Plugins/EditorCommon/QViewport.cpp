@@ -41,6 +41,65 @@
 
 #include <AzQtComponents/Utilities/QtWindowUtilities.h>
 
+// Class to implement the WindowRequestBus::Handler instead of the QViewport class.
+// This is to bypass a link warning that occurs in unity builds if EditorCommon dll
+// is linked along with a gem that also implements WindowRequestBus::Handler. The
+// issue is that QViewport has a dllexport so it causes duplicate code to be linked
+// in and a warning that there will be two of the same symbol in memory
+class QViewportRequests
+    : public AzFramework::WindowRequestBus::Handler
+{
+public:
+    QViewportRequests(QViewport& viewport)
+        : m_viewport(viewport)
+    {
+    }
+
+    ~QViewportRequests() override
+    {
+        AzFramework::WindowRequestBus::Handler::BusDisconnect();
+    }
+
+    // WindowRequestBus::Handler...
+    void SetWindowTitle(const AZStd::string& title) override
+    {
+        m_viewport.SetWindowTitle(title);
+    }
+
+    AzFramework::WindowSize GetClientAreaSize() const override
+    {
+        return m_viewport.GetClientAreaSize();
+    }
+
+    void ResizeClientArea(AzFramework::WindowSize clientAreaSize) override
+    {
+        m_viewport.ResizeClientArea(clientAreaSize);
+    }
+
+    bool GetFullScreenState() const override
+    {
+        return m_viewport.GetFullScreenState();
+    }
+
+    void SetFullScreenState(bool fullScreenState) override
+    {
+        m_viewport.SetFullScreenState(fullScreenState);
+    }
+
+    bool CanToggleFullScreenState() const override
+    {
+        return m_viewport.CanToggleFullScreenState();
+    }
+
+    void ToggleFullScreenState() override
+    {
+        m_viewport.ToggleFullScreenState();
+    }
+
+private:
+    QViewport& m_viewport;
+};
+
 struct QViewport::SPreviousContext
 {
     CCamera renderCamera;
@@ -102,7 +161,6 @@ static void DrawGridLines(IRenderAuxGeom& aux, const uint count, const uint inte
     const float alphaMulMain = (float)gridSettings.mainColor.a;
     const float alphaMulInter = (float)gridSettings.middleColor.a;
     const float alphaFalloff = 1.0f - (gridSettings.alphaFalloff / 100.0f);
-    float orthoWeight = 1.0f;
 
     for (int i = 0; i < count + 2; i++)
     {
@@ -189,6 +247,8 @@ QViewport::QViewport(QWidget* parent, StartupMode startupMode)
     , m_private(new SPrivate())
     , m_cameraControlMode(CameraControlMode::NONE)
 {
+    m_viewportRequests = AZStd::make_unique<QViewportRequests>(*this);
+
     if (startupMode & StartupMode_Immediate)
         Startup();
 }
@@ -214,6 +274,8 @@ void QViewport::Startup()
 QViewport::~QViewport()
 {
     DestroyRenderContext();
+
+    m_viewportRequests.reset();
 }
 
 void QViewport::UpdateBackgroundColor()
@@ -303,7 +365,6 @@ bool QViewport::CreateRenderContext()
 
     HWND windowHandle = reinterpret_cast<HWND>(QWidget::winId());
 
-    ERenderType renderType = GetIEditor()->GetEnv()->pRenderer->GetRenderType();
     if( AZ::Interface<AzFramework::AtomActiveInterface>::Get() && m_renderContextCreated && windowHandle == m_lastHwnd)
     {
         // the hwnd has not changed, no need to destroy and recreate context (and swap chain etc)
@@ -318,7 +379,7 @@ bool QViewport::CreateRenderContext()
 
         if (AZ::Interface<AzFramework::AtomActiveInterface>::Get())
         {
-            AzFramework::WindowRequestBus::Handler::BusConnect(windowHandle);
+            m_viewportRequests.get()->BusConnect(windowHandle);
             AzFramework::WindowSystemNotificationBus::Broadcast(&AzFramework::WindowSystemNotificationBus::Handler::OnWindowCreated, windowHandle);
 
             m_lastHwnd = windowHandle;
@@ -348,7 +409,7 @@ void QViewport::DestroyRenderContext()
         m_renderContextCreated = false;
 
         AzFramework::WindowNotificationBus::Event(windowHandle, &AzFramework::WindowNotificationBus::Handler::OnWindowClosed);
-        AzFramework::WindowRequestBus::Handler::BusDisconnect();
+        m_viewportRequests.get()->BusDisconnect();
         m_lastHwnd = 0;
     }
 }
@@ -577,8 +638,6 @@ void QViewport::ProcessMouse()
     {
         if (!(m_settings->camera.transformRestraint & eCameraTransformRestraint_Rotation))
         {
-            float speedScale = CalculateMoveSpeed(m_fastMode, m_slowMode);
-
             Ang3 angles(aznumeric_cast<float>(-point.y() + m_mousePressPos.y()), 0, aznumeric_cast<float>(-point.x() + m_mousePressPos.x()));
             angles = angles * 0.001f * m_settings->camera.rotationSpeed;
 
@@ -626,8 +685,6 @@ void QViewport::ProcessMouse()
     }
     else if (m_cameraControlMode == CameraControlMode::ORBIT)
     {
-        float speedScale = CalculateMoveSpeed(m_fastMode, m_slowMode);
-
         // Rotate around orbit target.
         QuatT   cameraTarget = m_state->cameraTarget;
         Vec3    at = cameraTarget.t - m_state->orbitTarget;
@@ -979,7 +1036,6 @@ void QViewport::RenderInternal()
     SetCurrentContext();
     GetIEditor()->GetEnv()->pSystem->RenderBegin();
 
-    IRenderAuxGeom* pAuxGeom = GetIEditor()->GetEnv()->pRenderer->GetIRenderAuxGeom();
     ColorF viewportBackgroundColor(m_settings->background.topColor.r / 255.0f, m_settings->background.topColor.g / 255.0f, m_settings->background.topColor.b / 255.0f);
     GetIEditor()->GetEnv()->pRenderer->ClearTargetsImmediately(FRT_CLEAR, viewportBackgroundColor);
     GetIEditor()->GetEnv()->pRenderer->ResetToDefault();

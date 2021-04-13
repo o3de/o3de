@@ -64,7 +64,6 @@ namespace AZ
                     return meshDataResult.GetError();
                 }
                 const SceneData::GraphData::MeshData* const parentMeshData(meshDataResult.GetValue());
-                int parentMeshIndex = parentMeshData->GetSdkMeshIndex();
 
                 size_t vertexCount = parentMeshData->GetVertexCount();
 

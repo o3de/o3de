@@ -67,7 +67,7 @@ def success_case_test(test_folder, expected_dependencies_dict, bank_info, expect
 
 def get_bank_info(workspace):
     sys.path.append(
-        os.path.join(workspace.paths.dev(), 'Gems', 'AudioEngineWwise', 'Tools'))
+        os.path.join(workspace.paths.engine_root(), 'Gems', 'AudioEngineWwise', 'Tools'))
 
     from WwiseAuthoringScripts import bank_info_parser as bank_info_module
     return bank_info_module

@@ -1497,7 +1497,6 @@ namespace ScriptCanvas
 
             while (outputSource)
             {
-                AZ::s32 firstFoundIndex = 0;
                 // check every connected SC Node
                 for (const auto& scNodeAndOutputSlot : scriptCanvasNodesConnectedToInput)
                 {
@@ -2612,7 +2611,6 @@ namespace ScriptCanvas
 
         void AbstractCodeModel::ParseConstructionInputVariables()
         {
-            AZ::SerializeContext* serializeContext = AZ::EntityUtils::GetApplicationSerializeContext();
             AZStd::vector<AZStd::pair<AZ::EntityId, Nodeable*>> nodeablesById;
             AZStd::vector<VariableId> inputVariableIds;
             AZStd::unordered_map<VariableId, Grammar::VariableConstPtr> inputVariablesById;
@@ -4636,7 +4634,6 @@ namespace ScriptCanvas
             NodelingInParserIterationListener listener;
             TraverseTree(root, listener);
             auto& leavesWithoutNodelings = listener.GetLeavesWithoutNodelings();
-            auto& outCalls = listener.GetOutCalls();
             AZStd::unordered_set<const ScriptCanvas::Nodes::Core::FunctionDefinitionNode*> uniqueNodelingsOut = listener.GetNodelingsOut();
             // determine the the execution topology can be reduced to single function call with a single return point to graph execution
             const UserInParseTopologyResult result = ParseUserInTolopology(uniqueNodelingsOut.size(), leavesWithoutNodelings.size());

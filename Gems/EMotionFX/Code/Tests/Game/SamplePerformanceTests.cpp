@@ -181,7 +181,6 @@ namespace EMotionFX
                     ASSERT_EQ(parameter->GetName(), boolParamPair.first.c_str());
 
                     MCore::Attribute* attribute = animGraphInstance->GetParameterValue(static_cast<AZ::u32>(parameterIndex.GetValue()));
-                    const BoolParameter* boolParameter = static_cast<const BoolParameter*>(parameter);
                     MCore::AttributeBool* boolAttribute = static_cast<MCore::AttributeBool*>(attribute);
                     boolAttribute->SetValue(boolParamPair.second);
                 }
@@ -196,7 +195,6 @@ namespace EMotionFX
                     ASSERT_EQ(parameter->GetName(), std::get<0>(vec2ParamTuple).c_str());
 
                     MCore::Attribute* attribute = animGraphInstance->GetParameterValue(static_cast<AZ::u32>(parameterIndex.GetValue()));
-                    const Vector2Parameter* vec2Parameter = static_cast<const Vector2Parameter*>(parameter);
                     MCore::AttributeVector2* vec2Attribute = static_cast<MCore::AttributeVector2*>(attribute);
                     vec2Attribute->SetValue(std::get<1>(vec2ParamTuple));
                 }
@@ -211,7 +209,6 @@ namespace EMotionFX
                     ASSERT_EQ(parameter->GetName(), floatParamPair.first.c_str());
 
                     MCore::Attribute* attribute = animGraphInstance->GetParameterValue(static_cast<AZ::u32>(parameterIndex.GetValue()));
-                    const FloatParameter* floatParameter = static_cast<const FloatParameter*>(parameter);
                     MCore::AttributeFloat* floatAttribute = static_cast<MCore::AttributeFloat*>(attribute);
                     floatAttribute->SetValue(floatParamPair.second);
                 }

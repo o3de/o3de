@@ -422,22 +422,22 @@ bool CStatCGFCompiler::DebugDumpCGF(const char* sourceFileName, const char* outp
     }
 
     {
-        const CPhysicalizeInfoCGF* pPhys = pCGF->GetPhysicalizeInfo();
+        //const CPhysicalizeInfoCGF* pPhys = pCGF->GetPhysicalizeInfo();
         fprintf(f, "\t" "PhysicalizeInfo: (not printed yet)\n");
     }
 
     {
-        CExportInfoCGF* pExport = pCGF->GetExportInfo();
+        //CExportInfoCGF* pExport = pCGF->GetExportInfo();
         fprintf(f, "\t" "ExportInfo: (not printed yet)\n");
     }
 
     {
-        CSkinningInfo* pSkin = pCGF->GetSkinningInfo();
+        //CSkinningInfo* pSkin = pCGF->GetSkinningInfo();
         fprintf(f, "\t" "SkinningInfo: (not printed yet)\n");
     }
 
     {
-        SFoliageInfoCGF* pSkin = pCGF->GetFoliageInfo();
+        //SFoliageInfoCGF* pSkin = pCGF->GetFoliageInfo();
         fprintf(f, "\t" "FoliageInfo: (not printed yet)\n");
     }
 
@@ -797,7 +797,7 @@ bool CStatCGFCompiler::Process()
         sourceWatchFolder = m_CC.m_config->GetAsString("sourceroot", "", "").c_str();
         if (sourceWatchFolder.empty())
         {
-            sourceWatchFolder = m_CC.m_config->GetAsString("gameroot", "", "").c_str();
+            sourceWatchFolder = m_CC.m_config->GetAsString("project-path", "", "").c_str();
         }
     }
 

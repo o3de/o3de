@@ -998,7 +998,6 @@ CBaseObject* CEditorImpl::CloneObject(CBaseObject* obj)
 
 CBaseObject* CEditorImpl::GetSelectedObject()
 {
-    CBaseObject* obj = nullptr;
     if (m_pObjectManager->GetSelection()->GetCount() != 1)
     {
         return nullptr;

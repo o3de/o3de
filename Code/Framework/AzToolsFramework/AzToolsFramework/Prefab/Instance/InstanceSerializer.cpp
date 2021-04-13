@@ -209,7 +209,7 @@ namespace AzToolsFramework
             EntityList entitiesInInstance;
             entitiesInInstance.reserve(instance->m_entities.size() + 1);
 
-            if (instance->m_containerEntity->GetId().IsValid())
+            if (instance->m_containerEntity && instance->m_containerEntity->GetId().IsValid())
             {
                 entitiesInInstance.emplace_back(instance->m_containerEntity.get());
             }

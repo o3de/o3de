@@ -165,7 +165,6 @@ private:
     {
         CObjectManager* pObjectManager = static_cast<CObjectManager*>(GetIEditor()->GetObjectManager());
         CBaseObject* pObject = pObjectManager->FindObject(m_attachedObjectGUID);
-        CBaseObject* pParentObject = pObjectManager->FindObject(m_parentObjectGUID);
 
         if (pObject)
         {
@@ -2818,7 +2817,6 @@ void CBaseObject::SetWorldTM(const Matrix34& tm, int flags)
 //////////////////////////////////////////////////////////////////////////
 void CBaseObject::UpdateVisibility(bool bVisible)
 {
-    bool bVisibleWithSpec = bVisible && !IsHiddenBySpec();
     if (bVisible == CheckFlags(OBJFLAG_INVISIBLE))
     {
         if (IObjectManager* objectManager = GetObjectManager())
@@ -3179,8 +3177,6 @@ bool CBaseObject::IntersectRayMesh(const Vec3& raySrc, const Vec3& rayDir, SRayH
     {
         return false;
     }
-
-    int cntSlots = pRenderNode->GetSlotCount();
 
     Matrix34A worldTM;
     IStatObj* pStatObj = pRenderNode->GetEntityStatObj(0, 0, &worldTM);

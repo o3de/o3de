@@ -568,8 +568,6 @@ namespace ScriptCanvasEditor
 
     void Skip::Run()
     {
-        EditorGraphUpgradeMachine* sm = GetStateMachine<EditorGraphUpgradeMachine>();
-
         Log("Up to date (skipped)\n");
     }
 

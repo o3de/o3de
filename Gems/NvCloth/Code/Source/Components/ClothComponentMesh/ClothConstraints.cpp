@@ -106,7 +106,7 @@ namespace NvCloth
 
         if (!m_separationConstraints.empty())
         {
-            bool normalsCalculated = AZ::Interface<ITangentSpaceHelper>::Get()->CalculateNormals(simParticles, simIndices, m_normals);
+            [[maybe_unused]] bool normalsCalculated = AZ::Interface<ITangentSpaceHelper>::Get()->CalculateNormals(simParticles, simIndices, m_normals);
             AZ_Assert(normalsCalculated, "Cloth constraints failed to calculate normals.");
 
             CalculateSeparationConstraints();

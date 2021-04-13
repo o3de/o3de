@@ -196,7 +196,6 @@ void IResourceCompilerHelper::GetOutputFilename(const char* szFilePath, char* bu
 
 IResourceCompilerHelper::ERcCallResult IResourceCompilerHelper::InvokeResourceCompiler(const char* szSrcFilePath, const char* szDstFilePath, const bool bUserDialog)
 {
-    ERcExitCode eRet = eRcExitCode_Pending;
 
     const char* szDstFileName = RCPathUtil::GetFile(szDstFilePath);
     std::string pathOnly = RCPathUtil::GetPath(szDstFilePath);

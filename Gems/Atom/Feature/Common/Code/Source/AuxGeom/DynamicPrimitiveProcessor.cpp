@@ -432,8 +432,6 @@ namespace AZ
                 return;
             }
 
-            const RHI::ShaderResourceGroupLayout* shaderResourceGroupLayout = m_shaderData.m_perDrawSrgAsset->GetLayout();
-
             m_shaderData.m_viewProjectionOverrideIndex.Reset();
             m_shaderData.m_pointSizeIndex.Reset();
 

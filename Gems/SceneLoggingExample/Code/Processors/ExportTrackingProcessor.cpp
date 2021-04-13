@@ -173,9 +173,6 @@ namespace SceneLoggingExample
         auto graphDownwardsView = SceneViews::MakeSceneGraphDownwardsView<SceneViews::BreadthFirst>(graph, nodeIndex, nameContentView.begin(), true);
         for (auto it = graphDownwardsView.begin(); it != graphDownwardsView.end(); ++it)
         {
-            const char* path = it->first.GetPath();
-            const char* type = it->second ? it->second->RTTI_GetTypeName() : "No data";
-            
             // While it's generally preferable to stick with either index- or iterator-based traversal, there may be times where switching between one
             // or the other becomes necessary. The SceneGraph provides utility functions to convert between the two approaches.
             AZ::SceneAPI::Containers::SceneGraph::NodeIndex itNodeIndex = graph.ConvertToNodeIndex(it.GetHierarchyIterator());
@@ -184,9 +181,9 @@ namespace SceneLoggingExample
             // While not a true one-to-one mapping, endpoints often act as attributes to a node. For example, a transform can be marked as an endpoint. 
             // This means that it applies its transform to the parent object like an attribute. If the transform is not marked as an endpoint, then it 
             // is the root transform for the group(s) that are its children.
-            bool isEndPoint = graph.IsNodeEndPoint(itNodeIndex);
-            
-            AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "'%s' '%s' contains data of type '%s'.", (isEndPoint ? "End point node" : "Node"), path, type);
+            AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "'%s' '%s' contains data of type '%s'.", (graph.IsNodeEndPoint(itNodeIndex) ? "End point node" : "Node"),
+                it->first.GetPath(),
+                it->second ? it->second->RTTI_GetTypeName() : "No data");
         }
     }
 } // namespace SceneLoggingExample

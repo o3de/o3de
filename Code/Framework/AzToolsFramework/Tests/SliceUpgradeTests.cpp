@@ -570,7 +570,7 @@ namespace UnitTest
 
         TestComponentD_V1::Reflect(m_serializeContext.get());
         AZ::Entity* entity = aznew AZ::Entity();
-        TestComponentD_V1* component = entity->CreateComponent<TestComponentD_V1>();
+        entity->CreateComponent<TestComponentD_V1>();
         // Supply a specific Asset Guid to help with debugging
         AZ::Data::AssetId sliceAssetId = SaveAsSlice(entity, "{10000000-0000-0000-0000-000000000000}", "datapatch_base.slice");
         entity = nullptr;

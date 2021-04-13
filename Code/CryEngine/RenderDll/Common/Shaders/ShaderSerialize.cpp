@@ -320,7 +320,6 @@ void CShaderSerialize::ClearSResourceCache()
 
 bool CShaderSerialize::DoesSResourceExist(CShader* pSH)
 {
-    SSShaderRes* pSR = NULL;
     stack_string shaderName = pSH->GetName();
     shaderName += "_GLOBAL";
     CCryNameTSCRC SName = CCryNameTSCRC(shaderName.c_str());
@@ -569,7 +568,6 @@ bool CShaderSerialize::ExportShader(CShader* pSH, CShaderManBin& binShaderMgr)
     pOpenDir->nSize = de.size;
 
     //Preserve modification time
-    uint64 modTime = pSR->m_pRes[CACHE_USER]->mfGetModifTime();
 
     pSR->m_pRes[CACHE_USER]->mfFlush();
 
@@ -670,7 +668,7 @@ CShaderSerialize::ShaderImportResults CShaderSerialize::ImportShader(CShader* pS
     gRenDev->m_RP.m_pShader = pSH;
     assert(gRenDev->m_RP.m_pShader != 0);
 
-    int nSize = pRes->mfFileRead(pDE);
+    pRes->mfFileRead(pDE);
     byte* pData = (byte*)pRes->mfFileGetBuf(pDE);
     if (!pData)
     {

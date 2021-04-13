@@ -45,7 +45,6 @@ namespace Vegetation
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<ReferenceShapeConfig>()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Constructor()
                 ->Property("shapeEntityId", BehaviorValueProperty(&ReferenceShapeConfig::m_shapeEntityId))
@@ -87,7 +86,6 @@ namespace Vegetation
             behaviorContext->Class<ReferenceShapeComponent>()->RequestBus("ReferenceShapeRequestBus");
 
             behaviorContext->EBus<ReferenceShapeRequestBus>("ReferenceShapeRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Event("GetShapeEntityId", &ReferenceShapeRequestBus::Events::GetShapeEntityId)
                 ->Event("SetShapeEntityId", &ReferenceShapeRequestBus::Events::SetShapeEntityId)

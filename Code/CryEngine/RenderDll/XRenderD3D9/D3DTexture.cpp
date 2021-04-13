@@ -29,10 +29,6 @@
 #include <AzCore/Debug/AssetTracking.h>
 #include <Common/Memory/VRAMDrillerBus.h>
 
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-#include <RTTBus.h>
-#endif // AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-
 #undef min
 #undef max
 //===============================================================================
@@ -436,9 +432,6 @@ D3DSurface* CTexture::GetSurface(int nCMSide, int nLevel)
     SCOPED_RENDERER_ALLOCATION_NAME_HINT(GetSourceName());
 
     HRESULT hr = S_OK;
-    D3DTexture* pID3DTexture = NULL;
-    D3DTexture* pID3DTexture3D = NULL;
-    D3DTexture* pID3DTextureCube = NULL;
     D3DSurface* pTargSurf = m_pDeviceRTV;
     const bool bUseMultisampledRTV = ((m_nFlags & FT_USAGE_MSAA) && m_bUseMultisampledRTV) != 0;
     if (bUseMultisampledRTV)
@@ -2188,8 +2181,10 @@ bool CTexture::CreateDeviceTexture(const byte* pData[6])
 {
     if (!m_pPixelFormat)
     {
-        ETEX_Format eTF = ClosestFormatSupported(m_eTFDst);
-
+#if !defined(NDEBUG)
+        ETEX_Format eTF =
+#endif
+            ClosestFormatSupported(m_eTFDst);
         assert(eTF != eTF_Unknown);
         assert(eTF == m_eTFDst);
     }
@@ -2902,7 +2897,6 @@ bool CTexture::RT_CreateDeviceTexture(const byte* pData[6])
         return true;
     }
 
-    int nOffset = 0;
 
     if (resetSRGB)
     {
@@ -3460,7 +3454,6 @@ void CTexture::SetSamplerState(int nTS, int nSUnit, EHWShaderClass eHWSC)
 {
     FUNCTION_PROFILER_RENDER_FLAT
     assert(gcpRendD3D->m_pRT->IsRenderThread());
-    STexStageInfo* const __restrict TexStages = s_TexStages;
 
     STexState* pTS = &s_TexStates[nTS];
     D3DSamplerState* pSamp = (D3DSamplerState*)pTS->m_pDeviceState;
@@ -3507,7 +3500,6 @@ void CTexture::ApplySamplerState(int nSUnit, EHWShaderClass eHWSC, int nState)
         uint32 nTSSel = Isel32(nState, (int32)m_nDefState);
     assert(nTSSel >= 0 && nTSSel < s_TexStates.size());
 
-    STexStageInfo *TexStages = s_TexStages;
     CDeviceTexture* pDevTex = m_pDevTexture;
 
     // avoiding L2 cache misses from usage from up ahead
@@ -3990,7 +3982,6 @@ void CTexture::RT_UpdateTextureRegion(const byte* data, int nX, int nY, int nZ, 
         return;
     }
 
-    DXGI_FORMAT frmtSrc = (DXGI_FORMAT)CTexture::DeviceFormatFromTexFormat(eTFSrc);
     bool bDone = false;
     D3D11_BOX rc = {aznumeric_caster(nX), aznumeric_caster(nY), 0, aznumeric_caster(nX + USize), aznumeric_caster(nY + VSize), 1};
     if (m_eTT == eTT_2D)
@@ -4015,7 +4006,6 @@ void CTexture::RT_UpdateTextureRegion(const byte* data, int nX, int nY, int nZ, 
     }
     else if (m_eTT == eTT_3D)
     {
-        int nFrame = gRenDev->m_nFrameSwapID;
         rc.front = nZ;
         rc.back = nZ + ZSize;
 
@@ -4160,174 +4150,6 @@ void SEnvTexture::ReleaseDeviceObjects()
     //  m_pTex->ReleaseDynamicRT(true);
 }
 
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-bool CTexture::RenderToTexture(int handle, const CCamera& camera, AzRTT::RenderContextId contextId)
-{
-    if (!CRenderer::CV_r_RTT)
-    {
-        return false;
-    }
-
-    CTexture* pTex = CTexture::GetByID(handle);
-    if (!pTex || !pTex->GetDevTexture())
-    {
-        iLog->Log("Failed to render texture.  Invalid texture handle ID.");
-        return false;
-    }
-
-    // a context may be invalid because it requires hardware resources that are not available
-    bool contextIsValid = false;
-    AzRTT::RTTRequestBus::BroadcastResult(contextIsValid, &AzRTT::RTTRequestBus::Events::ContextIsValid, contextId);
-    if (!contextIsValid)
-    {
-        return false;
-    }
-
-    const int width = pTex->GetWidth();
-    const int height = pTex->GetHeight();
-
-    // NOTE: the renderer's camera comes from the thread info double buffer, so it is possible
-    // GetCamera() will just return the camera using in the last render to texture pass.  
-    // System::GetViewCamera() will have the camera used for the main rendering view
-    CCamera prevSysCamera = gEnv->pSystem->GetViewCamera();
-
-    // get the current viewport and renderer settings to restore after rendering to texture
-    int vX, vY, vWidth, vHeight;
-    gRenDev->GetViewport(&vX, &vY, &vWidth, &vHeight);
-
-    // this flag is used by the engine to denote we are rendering the whole scene to texture
-    gcpRendD3D->m_RP.m_TI[gcpRendD3D->m_RP.m_nFillThreadID].m_PersFlags |= RBPF_RENDER_SCENE_TO_TEXTURE;
-
-    // this resets the view and frame view/proj matrices in the thread info
-    gcpRendD3D->BeginFrame();
-
-    // this frees up previous frame render cameras and waits for jobs.  It will trigger MainThreadRenderRequestBus::ExecuteQueuedEvents();
-    // The main pass also calls this after BeginFrame and before RenderWorld
-    gEnv->p3DEngine->Tick();
-
-    // set the active camera 
-    gRenDev->SetCamera(camera);
-
-    // set the system view camera 
-    CCamera newSystemCamera = camera;
-    gEnv->pSystem->SetViewCamera(newSystemCamera);
-
-    // we do not call PreWorldStreamUpdate here because it will compare the distance of the rtt 
-    // camera to the main camera and negatively affect stream settings
-
-    gRenDev->m_pRT->EnqueueRenderCommand([=]()
-    {
-        // disable back buffer swap so the renderer doesn't call present
-        gRenDev->EnableSwapBuffers(false);
-
-        CTexture* pTex = CTexture::GetByID(handle);
-
-        // when you set the render target SetViewport is also called with the size of the target
-        gRenDev->RT_PushRenderTarget(0, pTex, nullptr, -1);
-
-        // TODO manually set the viewport with our own viewport ID if we enabled TAA.  Currently
-        // doesn't work in multi-threaded mode. Causes flickering vegetation/transparent shadows
-
-        // disabling temporal effects turns off auto exposure and reduces flicker.
-        gRenDev->m_nDisableTemporalEffects = 1;
-    });
-
-    bool contextIsActive = false;
-    AzRTT::RTTRequestBus::BroadcastResult(contextIsActive, &AzRTT::RTTRequestBus::Events::SetActiveContext, contextId);
-    AZ_Warning("RenderToTexture", contextIsActive, "Failed to activate render to texture context, the render target will not be updated");
-
-    if (contextIsActive)
-    {
-        // don't draw UI or console to this RTT 
-        gEnv->pSystem->SetConsoleDrawEnabled(false);
-        gEnv->pSystem->SetUIDrawEnabled(false);
-
-        AzRTT::RenderContextConfig config;
-        AzRTT::RTTRequestBus::BroadcastResult(config, &AzRTT::RTTRequestBus::Events::GetContextConfig, contextId);
-
-        uint32_t renderPassFlags = SRenderingPassInfo::DEFAULT_FLAGS | SRenderingPassInfo::RENDER_SCENE_TO_TEXTURE;
-
-        // render to texture does not support merged meshes yet
-        renderPassFlags &= ~SRenderingPassInfo::MERGED_MESHES;
-
-        // do not allow SVO (SHDF_ALLOW_AO) for now   
-        int renderFlags = SHDF_ZPASS | SHDF_ALLOWHDR | SHDF_ALLOWPOSTPROCESS | SHDF_ALLOW_WATER;
-
-        if (!config.m_shadowsEnabled)
-        {
-            renderFlags |= SHDF_NO_SHADOWGEN;
-            renderPassFlags &= ~SRenderingPassInfo::SHADOWS;
-        }
-
-        if (!config.m_oceanEnabled)
-        {
-            renderPassFlags &= ~SRenderingPassInfo::WATEROCEAN;
-        }
-
-        SRenderingPassInfo renderPassInfo = SRenderingPassInfo::CreateGeneralPassRenderingInfo(camera, renderPassFlags);
-        gEnv->p3DEngine->RenderWorld(renderFlags, renderPassInfo, __FUNCTION__);
-
-        gEnv->pSystem->SetConsoleDrawEnabled(true);
-        gEnv->pSystem->SetUIDrawEnabled(true);
-
-        gEnv->p3DEngine->EndOcclusion();
-
-        gEnv->p3DEngine->WorldStreamUpdate();
-
-        // NOTE: This is how you could copy from the hdr target to the render target if you wanted no post processing (should probably remove SHDF_ALLOWPOSTPROCESS above)
-        //gRenDev->m_pRT->EnqueueRenderCommand([=]()
-        //{
-            //PostProcessUtils().StretchRect(CTexture::s_ptexHDRTarget, pTex, false, false, false, false, SPostEffectsUtils::eDepthDownsample_None, false, &gcpRendD3D->m_FullResRect);
-        //});
-
-        // this ends up calling FX_FinalComposite which will use our render target for post effects  
-        gcpRendD3D->SwitchToNativeResolutionBackbuffer();
-    }
-
-    // Pop our render target
-    gcpRendD3D->SetRenderTarget(0);
-
-    gRenDev->m_pRT->EnqueueRenderCommand([=]()
-    {
-        gcpRendD3D->m_RP.m_TI[gcpRendD3D->m_RP.m_nProcessThreadID].m_PersFlags &= ~RBPF_RENDER_SCENE_TO_TEXTURE;
-
-        gcpRendD3D->SetViewport(vX, vY, vWidth, vHeight);
-
-        // Reset the camera on the render thread or the main thread can get our
-        // camera info after syncing with main.
-        gcpRendD3D->SetCamera(prevSysCamera);
-    });
-
-    AzRTT::RTTRequestBus::Broadcast(&AzRTT::RTTRequestBus::Events::SetActiveContext, AzRTT::RenderContextId::CreateNull());
-
-    // Free all unused render meshes.  Without this you can get lots of fun memory leaks.
-    gRenDev->ForceGC();  
-
-    // call endframe on the renderer instead of via d3d to bypass drawing messages
-    // set wait to true otherwise EndFrame won't be sent if there is no pending flush condition
-    bool wait = true;
-    gRenDev->m_pRT->RC_EndFrame(wait);
-
-    // re-enable swap buffers after calling end frame so the main pass will call present()
-    gRenDev->m_pRT->EnqueueRenderCommand([=]()
-    {
-        gRenDev->EnableSwapBuffers(true);
-    });
-
-    // normally we would need to remove the cull job producer using RemoveCullJobProducer
-    // we don't need to because we use e_statobjbufferrendertask = 0
-
-    // restore previous settings
-    gEnv->pSystem->SetViewCamera(prevSysCamera);
-    gRenDev->SetCamera(prevSysCamera);
-
-    // this fixes streaming update sync errors when rendering pre frame
-    gEnv->p3DEngine->SyncProcessStreamingUpdate();
-
-    return true;
-}
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-
 bool CTexture::RenderEnvironmentCMHDR([[maybe_unused]] int size, [[maybe_unused]] Vec3& Pos, [[maybe_unused]] TArray<unsigned short>& vecData)
 {
 #if !defined(CONSOLE)
@@ -4341,7 +4163,6 @@ bool CTexture::RenderEnvironmentCMHDR([[maybe_unused]] int size, [[maybe_unused]
 
     const int nOldWidth = gRenDev->GetCurrentContextViewportWidth();
     const int nOldHeight = gRenDev->GetCurrentContextViewportHeight();
-    bool    bFullScreen = (iConsole->GetCVar("r_Fullscreen")->GetIVal() != 0) && (!gEnv->IsEditor());
     gRenDev->ChangeViewport(0, 0, size, size);
 
     int nPFlags = gcpRendD3D->m_RP.m_TI[gcpRendD3D->m_RP.m_nProcessThreadID].m_PersFlags;

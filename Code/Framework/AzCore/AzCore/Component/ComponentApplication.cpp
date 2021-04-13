@@ -362,11 +362,20 @@ namespace AZ
     ComponentApplication::ComponentApplication()
         : ComponentApplication(0, nullptr)
     {
+        if (Interface<ComponentApplicationRequests>::Get() == nullptr)
+        {
+            Interface<ComponentApplicationRequests>::Register(this);
+        }
     }
 
     ComponentApplication::ComponentApplication(int argC, char** argV)
         : m_eventLogger{}
     {
+        if (Interface<ComponentApplicationRequests>::Get() == nullptr)
+        {
+            Interface<ComponentApplicationRequests>::Register(this);
+        }
+
         if (argV)
         {
             m_argC = argC;
@@ -462,6 +471,11 @@ namespace AZ
     //=========================================================================
     ComponentApplication::~ComponentApplication()
     {
+        if (Interface<ComponentApplicationRequests>::Get() == this)
+        {
+            Interface<ComponentApplicationRequests>::Unregister(this);
+        }
+
         if (m_isStarted)
         {
             Destroy();
@@ -495,8 +509,7 @@ namespace AZ
         DestroyAllocator();
     }
 
-    Entity* ComponentApplication::Create(const Descriptor& descriptor,
-        const StartupParameters& startupParameters)
+    Entity* ComponentApplication::Create(const Descriptor& descriptor, const StartupParameters& startupParameters)
     {
         AZ_Assert(!m_isStarted, "Component application already started!");
 
@@ -943,6 +956,16 @@ namespace AZ
         }
     }
 
+    void ComponentApplication::RegisterEntityAddedEventHandler(EntityAddedEvent::Handler& handler)
+    {
+        handler.Connect(m_entityAddedEvent);
+    }
+
+    void ComponentApplication::RegisterEntityRemovedEventHandler(EntityRemovedEvent::Handler& handler)
+    {
+        handler.Connect(m_entityRemovedEvent);
+    }
+
     //=========================================================================
     // AddEntity
     // [5/30/2012]
@@ -954,7 +977,7 @@ namespace AZ
         {
             return false;
         }
-
+        m_entityAddedEvent.Signal(entity);
         return m_entities.insert(AZStd::make_pair(entity->GetId(), entity)).second;
     }
 
@@ -969,7 +992,7 @@ namespace AZ
         {
             return false;
         }
-
+        m_entityRemovedEvent.Signal(entity);
         return (m_entities.erase(entity->GetId()) == 1);
     }
 
@@ -982,6 +1005,7 @@ namespace AZ
         Entity* entity = FindEntity(id);
         if (entity)
         {
+            m_entityRemovedEvent.Signal(entity);
             delete entity;
             return true;
         }

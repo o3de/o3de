@@ -43,6 +43,7 @@ ly_add_target(
             Gem::AtomLyIntegration_CommonFeatures.Public
             Gem::LmbrCentral.Static
             Gem::GradientSignal.Static
+            Gem::SurfaceData.Static
             Gem::Atom_Feature_Common.Static
             Gem::Atom_Bootstrap.Headers
 )

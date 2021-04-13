@@ -219,7 +219,7 @@ namespace ImageProcessing
             srcImage->GetImagePointer(mip, srcMem, srcPitch);
 
             const pvrtexture::CPVRTextureHeader srcHeader(
-                srcPixelType.PixelTypeID,           // uint64            u64PixelFormat,
+                srcPixelType.PixelTypeID,           // AZ::u64            u64PixelFormat,
                 width,                              // uint32            u32Height=1,
                 height,                             // uint32            u32Width=1,
                 1,                                  // uint32            u32Depth=1,
@@ -310,7 +310,7 @@ namespace ImageProcessing
 
             // Preparing source compressed data
             const pvrtexture::CPVRTextureHeader compressedHeader(
-                FindPvrPixelFormat(fmtSrc),         // uint64         u64PixelFormat,
+                FindPvrPixelFormat(fmtSrc),         // AZ::u64         u64PixelFormat,
                 width,                              // uint32            u32Height=1,
                 height,                             // uint32            u32Width=1,
                 1,                                  // uint32            u32Depth=1,

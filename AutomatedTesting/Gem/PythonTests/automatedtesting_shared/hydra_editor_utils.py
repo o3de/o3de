@@ -88,6 +88,13 @@ def add_component(componentName, entityId):
     return componentOutcome.GetValue()[0]
 
 
+def add_component_of_type(componentTypeId, entityId):
+    typeIdsList = [componentTypeId]
+    componentOutcome = editor.EditorComponentAPIBus(
+        azlmbr.bus.Broadcast, 'AddComponentsOfType', entityId, typeIdsList)
+    return componentOutcome.GetValue()[0]
+
+
 def remove_component(component_name, entity_id):
     """
     Removes the specified component from the specified entity.
@@ -211,6 +218,10 @@ class Entity:
 
     def add_component(self, component):
         new_component = add_component(component, self.id)
+        self.components.append(new_component)
+
+    def add_component_of_type(self, componentTypeId):
+        new_component = add_component_of_type(componentTypeId, self.id)
         self.components.append(new_component)
 
     def remove_component(self, component):

@@ -23,8 +23,6 @@
 
 void CNULLRenderer::EF_Init()
 {
-    bool nv = 0;
-
     m_RP.m_MaxVerts = 600;
     m_RP.m_MaxTris = 300;
 
@@ -47,9 +45,8 @@ void CNULLRenderer::EF_Init()
         m_RP.m_ObjectsPool = (CRenderObject*)CryModuleMemalign(sizeof(CRenderObject) * (m_RP.m_nNumObjectsInPool * RT_COMMAND_BUF_COUNT), 16);
         for (int j = 0; j < (int)(m_RP.m_nNumObjectsInPool * RT_COMMAND_BUF_COUNT); j++)
         {
-            CRenderObject* pRendObj = new(&m_RP.m_ObjectsPool[j])CRenderObject();
+            new(&m_RP.m_ObjectsPool[j])CRenderObject();
         }
-
 
         CRenderObject** arrPrefill = (CRenderObject**)(alloca(m_RP.m_nNumObjectsInPool * sizeof(CRenderObject*)));
         for (int j = 0; j < RT_COMMAND_BUF_COUNT; j++)

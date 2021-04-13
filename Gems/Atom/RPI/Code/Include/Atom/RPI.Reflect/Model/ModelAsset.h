@@ -30,7 +30,7 @@ namespace AZ
         //! Contains a set of RPI::ModelLodAsset objects.
         //! Serialized to a .azmodel file.
         //! Actual model data is stored in the BufferAssets referenced by ModelLodAssets.
-        class ModelAsset final
+        class ModelAsset
             : public AZ::Data::AssetData
         {
             friend class ModelAssetCreator;
@@ -46,7 +46,7 @@ namespace AZ
             static void Reflect(AZ::ReflectContext* context);
 
             ModelAsset();
-            ~ModelAsset();
+            virtual ~ModelAsset();
 
             //! Returns the human readable name of the model
             const Name& GetName() const;
@@ -66,8 +66,9 @@ namespace AZ
             //! @param rayStart  position where the ray starts
             //! @param dir  direction where the ray ends (does not have to be unit length)
             //! @param distance  if an intersection is detected, this will be set such that distanceFactor * dir.length == distance to intersection
+            //! @param normal if an intersection is detected, this will be set to the normal at the point of collision
             //! @return  true if the ray intersects the mesh
-            bool LocalRayIntersectionAgainstModel(const AZ::Vector3& rayStart, const AZ::Vector3& dir, float& distance) const;
+            virtual bool LocalRayIntersectionAgainstModel(const AZ::Vector3& rayStart, const AZ::Vector3& dir, float& distance, AZ::Vector3& normal) const;
 
         private:
             void SetReady();
@@ -78,9 +79,9 @@ namespace AZ
 
             // mutable method
             void BuildKdTree() const;
-            bool BruteForceRayIntersect(const AZ::Vector3& rayStart, const AZ::Vector3& dir, float& distance) const;
+            bool BruteForceRayIntersect(const AZ::Vector3& rayStart, const AZ::Vector3& dir, float& distance, AZ::Vector3& normal) const;
 
-            bool LocalRayIntersectionAgainstMesh(const ModelLodAsset::Mesh& mesh, const AZ::Vector3& rayStart, const AZ::Vector3& dir, float& distance) const;
+            bool LocalRayIntersectionAgainstMesh(const ModelLodAsset::Mesh& mesh, const AZ::Vector3& rayStart, const AZ::Vector3& dir, float& distance, AZ::Vector3& normal) const;
 
             // Various model information used in raycasting
             AZ::Name m_positionName{ "POSITION" };
