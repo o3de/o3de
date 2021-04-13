@@ -627,6 +627,7 @@
     <file alias="Settings.svg">img/UI20/Settings.svg</file>
     <file alias="Asset_Folder.svg">img/UI20/Asset_Folder.svg</file>
     <file alias="Asset_File.svg">img/UI20/Asset_File.svg</file>
+    <file alias="line.svg">img/UI20/line.svg</file>
 </qresource>
 <qresource prefix="/AssetEditor">
   <file alias="default_document.svg">img/UI20/AssetEditor/default_document.svg</file>

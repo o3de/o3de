@@ -25,6 +25,7 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // class '...' needs t
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QFrame>
 #include <QtCore/QPointer>
+#include <QSvgWidget>
 #include <QtCore/QElapsedTimer>
 AZ_POP_DISABLE_WARNING
 
@@ -44,6 +45,7 @@ namespace AzToolsFramework
         Q_PROPERTY(bool hasChildRows READ HasChildRows);
         Q_PROPERTY(bool isTopLevel READ IsTopLevel);
         Q_PROPERTY(int getLevel READ GetLevel);
+        Q_PROPERTY(bool isSectionSeparator READ IsSectionSeparator);
         Q_PROPERTY(bool appendDefaultLabelToName READ GetAppendDefaultLabelToName WRITE AppendDefaultLabelToName)
     public:
         AZ_CLASS_ALLOCATOR(PropertyRowWidget, AZ::SystemAllocator, 0)
@@ -82,6 +84,7 @@ namespace AzToolsFramework
         PropertyRowWidget* GetParentRow() const { return m_parentRow; }
         int GetLevel() const;
         bool IsTopLevel() const;
+        bool IsSectionSeparator() const;
 
         // Remove the default label and append the text to the name label.
         bool GetAppendDefaultLabelToName();
@@ -161,6 +164,9 @@ namespace AzToolsFramework
         QHBoxLayout* m_leftHandSideLayout;
         QHBoxLayout* m_middleLayout;
         QHBoxLayout* m_rightHandSideLayout;
+        QVBoxLayout* m_outerLayout;
+        QSvgWidget m_separatorLine;
+        QSpacerItem* m_separatorIndent;
         
         QPointer <QCheckBox> m_dropDownArrow;
         QPointer <QToolButton> m_containerClearButton;
@@ -228,6 +234,8 @@ namespace AzToolsFramework
         int m_treeDepth = 0;
         int m_treeIndentation = 14;
         int m_leafIndentation = 16;
+
+        bool m_isSectionSeparator = false;
 
         QIcon m_iconOpen;
         QIcon m_iconClosed;

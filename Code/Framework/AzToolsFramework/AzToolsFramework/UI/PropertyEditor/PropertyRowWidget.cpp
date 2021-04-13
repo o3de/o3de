@@ -44,6 +44,24 @@ namespace AzToolsFramework
         m_iconOpen = s_iconOpen;
         m_iconClosed = s_iconClosed;
 
+        m_outerLayout = new QVBoxLayout(nullptr);
+        m_outerLayout->setSpacing(0);
+        m_outerLayout->setContentsMargins(0, 0, 0, 0);
+
+        // separatorLayout will contain a spacer and a separator line. The width of the spacer is adjusted later to ensure the line is the
+        // correct length.
+        QHBoxLayout* separatorLayout = new QHBoxLayout(nullptr);
+        m_outerLayout->addLayout(separatorLayout);
+
+        m_separatorIndent = new QSpacerItem(1, 1);
+        separatorLayout->addItem(m_separatorIndent);
+
+        m_separatorLine.load(QStringLiteral(":/Gallery/line.svg"));
+        m_separatorLine.setFixedHeight(3);
+
+        separatorLayout->addWidget(&m_separatorLine);
+        m_separatorLine.setVisible(false);
+
         m_mainLayout = new QHBoxLayout();
         m_mainLayout->setSpacing(0);
         m_mainLayout->setContentsMargins(0, 1, 0, 1);
@@ -118,7 +136,8 @@ namespace AzToolsFramework
         m_handler = nullptr;
         m_containerSize = 0;
 
-        setLayout(m_mainLayout);
+        m_outerLayout->addLayout(m_mainLayout);
+        setLayout(m_outerLayout);
     }
 
     bool PropertyRowWidget::HasChildWidgetAlready() const
@@ -300,6 +319,9 @@ namespace AzToolsFramework
                     }
                 }
             }
+
+            m_isSectionSeparator = false;
+            m_separatorLine.setVisible(false);
 
             RefreshAttributesFromNode(true);
 
@@ -946,6 +968,11 @@ namespace AzToolsFramework
         {
             HandleChangeNotifyAttribute(reader, m_sourceNode ? m_sourceNode->GetParent() : nullptr, m_editingCompleteNotifiers);
         }
+        else if (attributeName == AZ::Edit::Attributes::RPESectionSeparator)
+        {
+            m_separatorLine.setVisible(true);
+            m_isSectionSeparator = true;
+        }
     }
 
     void PropertyRowWidget::SetReadOnlyQueryFunction(const ReadOnlyQueryFunction& readOnlyQueryFunction)
@@ -1070,6 +1097,7 @@ namespace AzToolsFramework
             {
                 m_dropDownArrow->hide();
             }
+            m_separatorIndent->changeSize((m_treeDepth * m_treeIndentation) + m_leafIndentation, 1, QSizePolicy::Fixed, QSizePolicy::Fixed);
             m_indent->changeSize((m_treeDepth * m_treeIndentation) + m_leafIndentation, 1, QSizePolicy::Fixed, QSizePolicy::Fixed);
             m_leftHandSideLayout->invalidate();
             m_leftHandSideLayout->update();
@@ -1085,6 +1113,7 @@ namespace AzToolsFramework
                 connect(m_dropDownArrow, &QCheckBox::clicked, this, &PropertyRowWidget::OnClickedExpansionButton);
             }
             m_dropDownArrow->show();
+            m_separatorIndent->changeSize((m_treeDepth * m_treeIndentation), 1, QSizePolicy::Fixed, QSizePolicy::Fixed);
             m_indent->changeSize((m_treeDepth * m_treeIndentation), 1, QSizePolicy::Fixed, QSizePolicy::Fixed);
             m_leftHandSideLayout->invalidate();
             m_leftHandSideLayout->update();
@@ -1095,6 +1124,7 @@ namespace AzToolsFramework
 
     void PropertyRowWidget::SetIndentSize(int w)
     {
+        m_separatorIndent->changeSize(w, 1, QSizePolicy::Fixed, QSizePolicy::Fixed);
         m_indent->changeSize(w, 1, QSizePolicy::Fixed, QSizePolicy::Fixed);
         m_leftHandSideLayout->invalidate();
         m_leftHandSideLayout->update();
@@ -1316,6 +1346,11 @@ namespace AzToolsFramework
             }
         }
         return canBeTopLevel(this);
+    }
+
+    bool PropertyRowWidget::IsSectionSeparator() const
+    {
+        return m_isSectionSeparator;
     }
 
     bool PropertyRowWidget::GetAppendDefaultLabelToName()
