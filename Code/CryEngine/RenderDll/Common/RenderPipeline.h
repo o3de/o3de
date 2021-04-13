@@ -522,10 +522,6 @@ enum EBatchFlags
 #define RBPF_ENCODE_HDR        (1 << 29)
 #define RBPF_OBLIQUE_FRUSTUM_CLIPPING  (1 << 30)
 
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-#define RBPF_RENDER_SCENE_TO_TEXTURE (1 << 31)
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-
 
 // m_RP.m_PersFlags1
 #define RBPF1_USESTREAM       (1 << 0)

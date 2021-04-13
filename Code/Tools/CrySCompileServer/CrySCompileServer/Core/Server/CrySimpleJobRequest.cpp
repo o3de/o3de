@@ -23,6 +23,7 @@
 #include <Core/WindowsAPIImplementation.h>
 
 #include <AzCore/Debug/Trace.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
 
 CCrySimpleJobRequest::CCrySimpleJobRequest(EProtocolVersion Version, uint32_t requestIP)
@@ -41,7 +42,7 @@ bool CCrySimpleJobRequest::Execute(const TiXmlElement* pElement)
         return false;
     }
 
-    AZStd::string shaderListFilename;
+    AZ::IO::Path shaderListFilename;
     if (m_Version >= EPV_V0023)
     {
         const char* project    = pElement->Attribute("Project");
@@ -64,19 +65,15 @@ bool CCrySimpleJobRequest::Execute(const TiXmlElement* pElement)
         AZStd::string compiler = pElement->Attribute("Compiler");
         AZStd::string language = pElement->Attribute("Language");
 
-        shaderListFilename = AZStd::string::format("%s%s-%s-%s/%s", project, platform.c_str(), compiler.c_str(), language.c_str(), shaderList);
+        shaderListFilename = project;
+        shaderListFilename /= "Cache";
+        shaderListFilename /= AZStd::string::format("%s-%s-%s", platform.c_str(), compiler.c_str(), language.c_str());
+        shaderListFilename /= shaderList;
     }
     else
     {
         // In previous versions Platform attribute is the shader list filename directly
         shaderListFilename = pElement->Attribute("Platform");
-    }
-    
-    if (shaderListFilename.length() >= AZ_MAX_PATH_LEN)
-    {
-        State(ECSJS_ERROR);
-        CrySimple_ERROR("Shader list filename is too long");
-        return false;
     }
 
     std::string shaderRequestLine(shaderRequest);

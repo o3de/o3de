@@ -270,7 +270,7 @@ void ToolbarCustomizationDialog::NewToolbar(const QString &initialName)
     QString name = QInputDialog::getText(this, tr("New Toolbar"), tr("Toolbar name:"), QLineEdit::Normal, initialName);
     for (const AmazonToolbar &t : m_toolbarManager->GetToolbars()) {
         if (name == t.GetTranslatedName()) {
-            QMessageBox::StandardButton button = QMessageBox::warning(this, tr("Warning"),
+            QMessageBox::warning(this, tr("Warning"),
                 tr("A toolbar with this name already exists. Please choose a different name."),
                 QMessageBox::Ok);
             NewToolbar(name);

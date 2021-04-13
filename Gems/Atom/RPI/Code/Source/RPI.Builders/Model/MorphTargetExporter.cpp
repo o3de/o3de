@@ -104,8 +104,10 @@ namespace AZ::RPI
                 AZ_Assert(blendShapeData, "Node is expected to be a blend shape.");
                 if (blendShapeData)
                 {
+#if defined(AZ_ENABLE_TRACING)
                     const Containers::SceneGraph::NodeIndex morphMeshParentIndex = sceneGraph.GetNodeParent(sceneNodeIndex);
                     const char* meshNodeName = sceneGraph.GetNodeName(morphMeshParentIndex).GetName();
+#endif
 
                     AZ_Assert(AZ::StringFunc::Equal(sourceMesh.m_name.GetCStr(), meshNodeName, /*bCaseSensitive=*/true),
                         "Scene graph mesh node (%s) has a different name than the product mesh (%s).",

@@ -106,8 +106,6 @@ namespace ScriptCanvasDeveloperEditor
                     categoryName = categoryAttribute->Get(nullptr);
                 }
 
-                bool canCreate = serializeContext->FindClassData(behaviorClass->m_typeId) != nullptr;
-
                 for (auto methodPair : behaviorClass->m_methods)
                 {
                     // Check for "ignore" attribute for ScriptCanvas

@@ -18,7 +18,7 @@
 
 #if defined(_WIN32) && !defined(PORTABLE)
 #include <AzCore/PlatformDef.h>
-AZ_PUSH_DISABLE_WARNING(4115, "-Wunknown-warning-option")
+AZ_PUSH_DISABLE_WARNING(4115, "-Wunknown-warning-option") // 4115: named type definition in parentheses
 #include <d3dcompiler.h>
 AZ_POP_DISABLE_WARNING
 #pragma comment(lib,"d3dcompiler.lib")
@@ -181,7 +181,6 @@ void AddVersionDependentCode(HLSLCrossCompilerContext* psContext)
     // #extension directive must occur before any non-preprocessor token
     if (EmulateDepthClamp(psContext->psShader->eTargetLanguage) && (psContext->psShader->eShaderType == VERTEX_SHADER || psContext->psShader->eShaderType == PIXEL_SHADER))
     {
-        char* szInOut = psContext->psShader->eShaderType == VERTEX_SHADER ? "out" : "in";
         ui32DepthClampImp = AddImport(psContext, SYMBOL_EMULATE_DEPTH_CLAMP, 0, 0);
 
         bformata(glsl, "#if IMPORT_%d > 0\n", ui32DepthClampImp);
@@ -920,7 +919,6 @@ void WritePostStepTrace(HLSLCrossCompilerContext* psContext, uint32_t uStep)
             uint16_t uOpcodeWriteMask = GetOpcodeWriteMask(psInstruction->eOpcode);
             uint8_t uOperand = 0;
             OPERAND_TYPE eOperandType = OPERAND_TYPE_NULL;
-            SHADER_VARIABLE_TYPE eVarToFlags = TO_FLAG_NONE;
             Operand* psOperand = NULL;
             uint32_t uiIgnoreSwizzle = 0;
 
@@ -1725,10 +1723,12 @@ void RemoveDoubleUnderscores(char* szName)
     size_t length;
     length = strlen(szName);
     position = szName;
-    while (position = strstr(position, "__"))
+    position = strstr(position, "__");
+    while (position)
     {
         position[1] = '0';
         position += 2;
+        position = strstr(position, "__");
     }
 }
 

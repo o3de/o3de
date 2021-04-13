@@ -27,7 +27,7 @@ MenuPage::MenuPage(QWidget* parent)
 
     const auto actionText = QStringLiteral("Option");
     menu->addAction(actionText);
-    auto searchAction = menu->addAction(QIcon(QStringLiteral(":/stylesheet/img/search.svg")), QStringLiteral("Search"));
+    menu->addAction(QIcon(QStringLiteral(":/stylesheet/img/search.svg")), QStringLiteral("Search"));
     menu->addSeparator();
 
     auto shortcutAction = menu->addAction(actionText);

@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
 #include <AzFramework/Input/Contexts/InputContext.h>
 #include <AzFramework/Input/Events/InputChannelEventFilter.h>
 #include <AzFramework/Input/Events/InputChannelEventListener.h>
@@ -22,6 +23,8 @@
 
 #include <AzCore/std/containers/deque.h>
 #include <AzCore/std/string/string.h>
+
+#include <Atom/RPI.Public/ViewportContextBus.h>
 
 struct ImGuiInputTextCallbackData;
 
@@ -43,8 +46,8 @@ namespace AZ
     //! - The '~' key on a keyboard.
     //! - Both the 'L3+R3' buttons on a gamepad.
     //! - The fourth finger press on a touch screen.
-    class DebugConsole : public AZ::TickBus::Handler
-                       , public AzFramework::InputChannelEventListener
+    class DebugConsole : public AzFramework::InputChannelEventListener
+                       , public AZ::RPI::ViewportContextNotificationBus::Handler
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -67,12 +70,8 @@ namespace AZ
         ~DebugConsole() override;
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        // AZ::TickBus::Handler
-        int GetTickOrder() override;
-
-        ////////////////////////////////////////////////////////////////////////////////////////////
-        //! \ref AZ::TickEvents::OnTick
-        void OnTick(float deltaTime, AZ::ScriptTimePoint scriptTimePoint) override;
+        //! \ref AZ::RPI::ViewportContextRequestsInterface
+        void OnRenderTick() override;
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! \ref AzFramework::InputChannelEventListener::OnInputChannelEventFiltered
@@ -105,7 +104,12 @@ namespace AZ
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Draw the debug console.
-        void DrawDebugConsole();
+        //! \return True if we should continue showing the debug console, false otherwise.
+        bool DrawDebugConsole();
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! Toggle whether the debug console is showing or not.
+        void ToggleIsShowing();
 
     private:
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -115,6 +119,7 @@ namespace AZ
         AZ::ILogger::LogEvent::Handler m_logHandler; //!< Handler that receives log events to display.
         AzFramework::InputContext m_inputContext; //!< Input context used to open/close the console.
         char m_inputBuffer[1028] = {}; //!< The character buffer used to accept text input.
+        AzFramework::SystemCursorState m_previousSystemCursorState; //! The last system cursor state.
         int m_currentHistoryIndex = -1; //!< The current index into the input history when browsing.
         int m_maxEntriesToDisplay = DefaultMaxEntriesToDisplay; //!< The maximum entries to display.
         int m_maxInputHistorySize = DefaultMaxInputHistorySize; //!< The maximum input history size.

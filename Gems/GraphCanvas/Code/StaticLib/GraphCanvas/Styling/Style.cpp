@@ -199,13 +199,14 @@ namespace
             size_t processed = 0;
             size_t read = 0;
             char* data = buffer.data();
-            while (processed < length && (read = in.Read(length - processed, data + processed)))
+            while (processed < length)
             {
-                processed += read;
-                if (read == 0)
+                read = in.Read(length - processed, data + processed);
+                if (!read)
                 {
                     break;
                 }
+                processed += read;
             }
 
             AZ_Assert(processed == length, "Incorrect amount of data read from stream");

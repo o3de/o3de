@@ -1548,8 +1548,6 @@ void C3DEngine::OnExplosion(Vec3 vPos, float fRadius, [[maybe_unused]] bool bDef
     }
 
     // reduce ground decals size depending on distance to the ground
-    float terrainHeight = terrain->GetHeightFromFloats(vPos.x, vPos.y);
-    float fExploHeight = vPos.z - terrainHeight;
 
     // delete decals what can not be correctly updated
     Vec3 vRadius(fRadius, fRadius, fRadius);
@@ -2051,7 +2049,6 @@ bool C3DEngine::SetStatInstGroup(int nGroupId, const IStatInstGroup& siGroup, in
     rGroup.bAllowIndoor = siGroup.bAllowIndoor;
     rGroup.fAlignToTerrainCoefficient = siGroup.fAlignToTerrainCoefficient;
 
-    bool previousAutoMerged = rGroup.bAutoMerged;
     rGroup.bAutoMerged = siGroup.bAutoMerged;
     rGroup.minConfigSpec = siGroup.minConfigSpec;
 

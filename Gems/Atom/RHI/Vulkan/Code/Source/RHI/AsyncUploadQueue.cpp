@@ -65,12 +65,10 @@ namespace AZ
         RHI::AsyncWorkHandle AsyncUploadQueue::QueueUpload(const RHI::BufferStreamRequest& request)
         {
             auto& device = static_cast<Device&>(GetDevice());
-            auto& queueContext = device.GetCommandQueueContext();
 
             const uint8_t* sourceData = reinterpret_cast<const uint8_t*>(request.m_sourceData);
             const size_t byteCount = request.m_byteCount;
             const size_t byteOffset = request.m_byteOffset;
-            auto* fenceToSignal = static_cast<Fence*>(request.m_fenceToSignal);
             auto* buffer = static_cast<Buffer*>(request.m_buffer);
             RHI::BufferPool* bufferPool = static_cast<RHI::BufferPool*>(buffer->GetPool());
 
@@ -179,7 +177,6 @@ namespace AZ
         {
             auto* image = static_cast<Image*>(request.m_image);
             auto& device = static_cast<Device&>(GetDevice());
-            auto& queueContext = device.GetCommandQueueContext();
 
             const uint16_t startMip = residentMip - 1;
             const uint16_t endMip = static_cast<uint16_t>(residentMip - request.m_mipSlices.size());
@@ -596,7 +593,6 @@ namespace AZ
             uint32_t residentMip)
         {
             const auto& image = static_cast<const Image&>(*request.m_image);
-            const auto& device = static_cast<Device&>(image.GetDevice());
             const RHI::ImageBindFlags bindFlags = image.GetDescriptor().m_bindFlags;
             const VkImageLayout layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             const uint32_t beforeMip = residentMip;

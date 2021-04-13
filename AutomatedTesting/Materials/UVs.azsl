@@ -1,0 +1,54 @@
+
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <viewsrg.srgi>
+#include <Atom/RPI/ShaderResourceGroups/DefaultObjectSrg.azsli>
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+#include <Atom/Features/PBR/ForwardPassSrg.azsli>
+
+struct VertexInput
+{
+    float3 m_position : POSITION;
+    float2 m_uv : UV0;
+};
+
+struct VertexOutput
+{
+    float4 m_position : SV_Position;
+    float2 m_uv : UV0;
+};
+
+VertexOutput MainVS(VertexInput input)
+{
+    VertexOutput output;
+    float3 worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(input.m_position, 1)).xyz;
+    output.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(worldPosition, 1.0));
+
+    output.m_uv = input.m_uv;
+        
+    return output;
+}
+
+struct PixelOutput
+{
+    float4 m_color : SV_Target0;
+};
+
+PixelOutput MainPS(VertexOutput input)
+{
+    PixelOutput output;
+
+    output.m_color = float4(input.m_uv, 0, 1);
+
+    return output;
+}

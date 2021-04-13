@@ -90,7 +90,7 @@ namespace Benchmark
     {
         for (auto _ : state)
         {
-            for (auto& quatData : m_quatDataArray)
+            for ([[maybe_unused]] auto& quatData : m_quatDataArray)
             {
                 AZ::Quaternion result = AZ::Quaternion::CreateIdentity();
                 benchmark::DoNotOptimize(result);
@@ -102,7 +102,7 @@ namespace Benchmark
     {
         for (auto _ : state)
         {
-            for (auto& quatData : m_quatDataArray)
+            for ([[maybe_unused]] auto& quatData : m_quatDataArray)
             {
                 AZ::Quaternion result = AZ::Quaternion::CreateZero();
                 benchmark::DoNotOptimize(result);
@@ -153,7 +153,7 @@ namespace Benchmark
 
         for (auto _ : state)
         {
-            for (auto& quatData : m_quatDataArray)
+            for ([[maybe_unused]] auto& quatData : m_quatDataArray)
             {
                 AZ::Quaternion result = AZ::Quaternion::CreateShortestArc(vec1, vec2); //result should transform vec1 into vec2
                 benchmark::DoNotOptimize(result);
@@ -168,7 +168,7 @@ namespace Benchmark
 
         for (auto _ : state)
         {
-            for (auto& quatData : m_quatDataArray)
+            for ([[maybe_unused]] auto& quatData : m_quatDataArray)
             {
                 AZ::Quaternion result = AZ::Quaternion::CreateShortestArc(vec1, vec2); //result should transform vec1 into vec2
                 benchmark::DoNotOptimize(result);
@@ -308,7 +308,7 @@ namespace Benchmark
 
         for (auto _ : state)
         {
-            for (auto& quatData : m_quatDataArray)
+            for ([[maybe_unused]] auto& quatData : m_quatDataArray)
             {
                 AZ::Quaternion quat;
                 quat.Set(vec, 8.0f);
@@ -322,7 +322,7 @@ namespace Benchmark
         const float quatArray[4] = { 5.0f, 6.0f, 7.0f, 8.0f };
         for (auto _ : state)
         {
-            for (auto& quatData : m_quatDataArray)
+            for ([[maybe_unused]] auto& quatData : m_quatDataArray)
             {
                 AZ::Quaternion quat;
                 quat.Set(quatArray);

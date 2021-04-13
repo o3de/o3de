@@ -359,7 +359,7 @@ namespace AZ
 
         //insert the new handler
         handler.m_index = aznumeric_cast<int32_t>(AZStd::distance(m_handlers.begin(), insertLocation));
-        auto insertedItr = m_handlers.insert(insertLocation, &handler);
+        m_handlers.insert(insertLocation, &handler);
         return handler.m_index;
     }
 

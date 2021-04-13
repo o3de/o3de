@@ -948,8 +948,6 @@ bool AlembicCompiler::CompileStaticMeshData(GeomCache::Node& node, Alembic::AbcG
     // Check basic mesh parameters
     Alembic::AbcGeom::IPolyMeshSchema& meshSchema = mesh.getSchema();
     Alembic::AbcGeom::MeshTopologyVariance topologyVariance = meshSchema.getTopologyVariance();
-    Alembic::Abc::TimeSampling& meshTimeSampling = *meshSchema.getTimeSampling();
-    size_t numMeshSamples = meshSchema.getNumSamples();
 
     std::shared_ptr<GeomCache::Mesh> pMesh(new GeomCache::Mesh);
     pMesh->m_constantStreams = GeomCacheFile::EStreams(0);
@@ -1999,8 +1997,8 @@ bool AlembicCompiler::CompileFullMesh(GeomCache::Mesh& mesh, const size_t curren
 
     // Compute mesh hash
     uint64 meshHash = 0;
-    size_t numVertexHashes = abcVertexHashes.size();
-    for (size_t i = 0; i < abcVertexHashes.size(); ++i)
+    const size_t numVertexHashes = abcVertexHashes.size();
+    for (size_t i = 0; i < numVertexHashes; ++i)
     {
         uint64 vertexHash = abcVertexHashes[i];
         AlembicCompilerHashCombine<uint64>(meshHash, vertexHash);
@@ -2346,7 +2344,7 @@ bool AlembicCompiler::CompileVertices(std::vector<AlembicCompilerVertex>& vertic
     else
     {
         assert(meshData.m_positions.size() == vertices.size());
-        if (!meshData.m_positions.size() == vertices.size())
+        if (meshData.m_positions.size() != vertices.size())
         {
             return false;
         }

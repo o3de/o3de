@@ -2671,7 +2671,6 @@ void AbstractSplineWidget::SelectAll()
     for (int splineIndex = 0, splineCount = m_splines.size(); splineIndex < splineCount; ++splineIndex)
     {
         ISplineInterpolator* pSpline = m_splines[splineIndex].pSpline;
-        ISplineInterpolator* pDetailSpline = m_splines[splineIndex].pDetailSpline;
 
         for (int i = 0; i < (int)pSpline->GetKeyCount(); i++)
         {
@@ -2721,7 +2720,6 @@ void SplineWidget::SetTimelineCtrl(TimelineWidget* pTimelineCtrl)
     m_pTimelineCtrl = pTimelineCtrl;
     if (m_pTimelineCtrl)
     {
-        QWidget* pOwner = pTimelineCtrl->parentWidget();
         pTimelineCtrl->setParent(this);
         pTimelineCtrl->SetZoom(m_grid.zoom.x);
         pTimelineCtrl->SetOrigin(m_grid.origin.x);

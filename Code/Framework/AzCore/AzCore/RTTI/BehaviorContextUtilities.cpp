@@ -243,6 +243,28 @@ namespace AZ
         return variance;
     }
 
+    void RemovePropertyGetterNameArtifacts(AZStd::string& name)
+    {
+        if (name.ends_with(k_PropertyNameGetterSuffix))
+        {
+            AZ::StringFunc::Replace(name, k_PropertyNameGetterSuffix, "");
+        }
+    }
+
+    void RemovePropertySetterNameArtifacts(AZStd::string& name)
+    {
+        if (name.ends_with(k_PropertyNameSetterSuffix))
+        {
+            AZ::StringFunc::Replace(name, k_PropertyNameSetterSuffix, "");
+        }
+    }
+
+    void RemovePropertyNameArtifacts(AZStd::string& name)
+    {
+        RemovePropertyGetterNameArtifacts(name);
+        RemovePropertySetterNameArtifacts(name);
+    }
+
     AZStd::string ReplaceCppArtifacts(AZStd::string_view sourceName)
     {
         using namespace AZ::StringFunc;

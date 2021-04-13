@@ -944,7 +944,6 @@ public:
         LARGE_INTEGER stepStart, stepEnd;
 #endif
         LARGE_INTEGER waitStart, waitEnd;
-        uint64 yieldBegin = 0U;
         MarkThisThreadForDebugging("Physics");
 
 #if defined(AZ_RESTRICTED_PLATFORM)
@@ -1635,7 +1634,7 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
         // AI gets to steer entities before they travel over cliffs etc.
         const float maxTimeStep = 0.25f;
         int maxSteps = 1;
-        float fCurTime = m_Time.GetCurrTime();
+        //float fCurTime = m_Time.GetCurrTime();
         float timeToDo = m_Time.GetFrameTime();//fCurTime - fPrevTime;
         if (m_env.bMultiplayer)
         {
@@ -2697,7 +2696,10 @@ void CSystem::RegisterWindowMessageHandler(IWindowMessageHandler* pHandler)
 void CSystem::UnregisterWindowMessageHandler(IWindowMessageHandler* pHandler)
 {
 #if AZ_LEGACY_CRYSYSTEM_TRAIT_USE_MESSAGE_HANDLER
-    bool bRemoved = stl::find_and_erase(m_windowMessageHandlers, pHandler);
+#if !defined(NDEBUG)
+    bool bRemoved =
+#endif
+        stl::find_and_erase(m_windowMessageHandlers, pHandler);
     assert(pHandler && bRemoved && "This IWindowMessageHandler was not registered");
 #else
     CRY_ASSERT(false && "This platform does not support window message handlers");

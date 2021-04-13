@@ -189,7 +189,7 @@ namespace ScriptCanvas
         void OutInterpretedUserSubgraph::operator()(AZ::BehaviorValueParameter* /*resultBVP*/, AZ::BehaviorValueParameter* /*argsBVPs*/, int argsCount)
         {
             // Lua: executionState, outKey, args...
-            auto behaviorContext = AZ::ScriptContext::FromNativeContext(m_lua)->GetBoundContext();
+            /*auto behaviorContext =*/ AZ::ScriptContext::FromNativeContext(m_lua)->GetBoundContext();
             lua_rawgeti(m_lua, LUA_REGISTRYINDEX, m_lambdaRegistryIndex);
             // Lua: executionState, outKey, args..., lambda
             lua_remove(m_lua, 1);

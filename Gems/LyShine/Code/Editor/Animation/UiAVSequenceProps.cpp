@@ -52,7 +52,6 @@ BOOL CUiAVSequenceProps::OnInitDialog()
 {
     QString name = m_pSequence->GetName();
     ui->NAME->setText(name);
-    int seqFlags = m_pSequence->GetFlags();
 
     ui->MOVE_SCALE_KEYS->setChecked(false);
 

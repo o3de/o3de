@@ -344,7 +344,6 @@ void AtomShimTexture::CreateFromImage(const AZ::Data::Instance<AZ::RPI::Image>& 
 {
     AZ::RHI::Format rhiViewFormat = AZ::RHI::Format::Unknown;
     AZ::RHI::ImageViewDescriptor viewDesc = AZ::RHI::ImageViewDescriptor(rhiViewFormat);
-    AZ::RHI::Factory& factory = AZ::RHI::Factory::Get();
     AZ::RHI::Image* rhiImage = image->GetRHIImage();
     
     AZ::RHI::Ptr<AZ::RHI::ImageView> imageView = rhiImage->GetImageView(viewDesc);

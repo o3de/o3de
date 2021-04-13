@@ -28,8 +28,7 @@ namespace AZ::Platform
             }
             else
             {
-                DWORD error = ::GetLastError();
-                AZ_Assert(event, "Failed to create a required event for IO Scheduler (Error: %u).", error);
+                AZ_Assert(event, "Failed to create a required event for IO Scheduler (Error: %u).", ::GetLastError());
             }
         }
     }
@@ -43,8 +42,7 @@ namespace AZ::Platform
             {
                 if (!::CloseHandle(event))
                 {
-                    DWORD error = ::GetLastError();
-                    AZ_Assert(false, "Failed to close an event handle for IO Scheduler (Error: %u)", error);
+                    AZ_Assert(false, "Failed to close an event handle for IO Scheduler (Error: %u)", ::GetLastError());
                 }
             }
         }

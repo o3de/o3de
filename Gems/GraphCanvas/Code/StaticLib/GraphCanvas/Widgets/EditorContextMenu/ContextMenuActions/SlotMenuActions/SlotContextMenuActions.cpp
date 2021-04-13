@@ -65,7 +65,6 @@ namespace GraphCanvas
     ContextMenuAction::SceneReaction RemoveSlotMenuAction::TriggerAction(const AZ::Vector2& /*scenePos*/)
     {
         const AZ::EntityId& targetId = GetTargetId();
-        const GraphId& graphId = GetGraphId();
         
         if (GraphUtils::IsSlot(targetId))
         {
@@ -119,7 +118,6 @@ namespace GraphCanvas
         bool enableAction = false;
 
         const AZ::EntityId& targetId = GetTargetId();
-        const GraphId& graphId = GetGraphId();
         
         if (GraphUtils::IsSlot(targetId))
         {
@@ -132,7 +130,6 @@ namespace GraphCanvas
     ContextMenuAction::SceneReaction ClearConnectionsMenuAction::TriggerAction(const AZ::Vector2& /*scenePos*/)
     {
         const AZ::EntityId& targetId = GetTargetId();
-        const GraphId& graphId = GetGraphId();
         
         if (GraphUtils::IsSlot(targetId))
         {
@@ -249,7 +246,6 @@ namespace GraphCanvas
     void ToggleReferenceStateAction::RefreshAction()
     {
         const AZ::EntityId& targetId = GetTargetId();
-        const GraphId& graphId = GetGraphId();
 
         if (GraphUtils::IsSlot(targetId))
         {
@@ -293,7 +289,6 @@ namespace GraphCanvas
         bool toggledState = false;
 
         const AZ::EntityId& targetId = GetTargetId();
-        const GraphId& graphId = GetGraphId();
 
         DataSlotType dataSlotType = DataSlotType::Unknown;
         DataSlotRequestBus::EventResult(dataSlotType, targetId, &DataSlotRequests::GetDataSlotType);

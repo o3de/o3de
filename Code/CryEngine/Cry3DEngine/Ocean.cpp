@@ -129,7 +129,6 @@ void COcean::Update(const SRenderingPassInfo& passInfo)
     }
 
     const CCamera& rCamera = passInfo.GetCamera();
-    int32 nFillThreadID = passInfo.ThreadID();
     uint32 nBufID = passInfo.GetFrameID() % CYCLE_BUFFERS_NUM;
 
     Vec3 vCamPos = rCamera.GetPosition();
@@ -291,7 +290,6 @@ void COcean::Create()
                 //sqrt_tpl(fx*fx + fy * fy);
                 vv.z = fEdgeDisplace; //!((y==0 ||y == nScrGridSize-1) || (x==0 || x == nScrGridSize-1));
 
-                int32 n = m_pMeshVerts.Count();
                 tmp.xyz = vv;
                 m_pMeshVerts.Add(tmp);
             }
@@ -463,7 +461,6 @@ void COcean::Render(const SRenderingPassInfo& passInfo)
     C3DEngine* p3DEngine = (C3DEngine*)Get3DEngine();
     IRenderer* pRenderer(GetRenderer());
 
-    int32 nBufID = (passInfo.GetFrameID() & 1);
     Vec3 vCamPos = passInfo.GetCamera().GetPosition();
     float fWaterLevel = OceanToggle::IsActive() ? OceanRequest::GetOceanLevel() : p3DEngine->GetWaterLevel();
 
@@ -481,8 +478,6 @@ void COcean::Render(const SRenderingPassInfo& passInfo)
     m_pRenderMesh->SetBBox(vCamPos, vCamPos);
 
     // test for multiple lights and shadows support
-
-    SRenderObjData* pOD = pRenderer->EF_GetObjData(pObject, true, passInfo.ThreadID());
 
     m_Camera = passInfo.GetCamera();
     pObject->m_fAlpha = 1.f;
@@ -588,7 +583,6 @@ void COcean::SetMaterial(_smart_ptr<IMaterial> pMat)
 
 void COcean::RenderBottomCap(const SRenderingPassInfo& passInfo)
 {
-    C3DEngine* p3DEngine = (C3DEngine*)Get3DEngine();
 
     Vec3 vCamPos = passInfo.GetCamera().GetPosition();
 
@@ -828,7 +822,6 @@ bool COcean::IsVisible(const SRenderingPassInfo& passInfo)
         m_fLastVisibleFrameTime = 0.0f;
     }
 
-    ITimer* pTimer(gEnv->pTimer);
     m_fLastVisibleFrameTime += gEnv->pTimer->GetFrameTime();
 
     if (m_fLastVisibleFrameTime > 2.0f) // at least 2 seconds

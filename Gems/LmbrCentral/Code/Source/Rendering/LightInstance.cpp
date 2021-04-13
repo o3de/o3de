@@ -191,20 +191,18 @@ namespace
                 {
                     if (!lightParams.GetSpecularCubemap())
                     {
-                        const char* entityName = GetEntityName(entityId);
                         AZ_Warning("Light", false,
                             "Failed to load specular cubemap \"%s\" for light \"%s\".",
                             specularMap.c_str(),
-                            entityName);
+                            GetEntityName(entityId));
                     }
 
                     if (!lightParams.GetDiffuseCubemap())
                     {
-                        const char* entityName = GetEntityName(entityId);
                         AZ_Warning("Light", false,
                             "Failed to load diffuse cubemap \"%s\" for light \"%s\".",
                             diffuseMap.c_str(),
-                            entityName);
+                            GetEntityName(entityId));
                     }
 
                     lightParams.m_Flags &= ~DLF_DEFERRED_CUBEMAPS;

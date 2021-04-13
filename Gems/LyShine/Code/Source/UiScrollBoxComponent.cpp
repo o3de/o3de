@@ -145,7 +145,7 @@ void UiScrollBoxComponent::SetScrollOffset(AZ::Vector2 scrollOffset)
 AZ::Vector2 UiScrollBoxComponent::GetNormalizedScrollValue()
 {
     AZ::Vector2 normalizedScrollValueOut(0.0f, 0.0f);
-    bool result = ScrollOffsetToNormalizedScrollValue(m_scrollOffset, normalizedScrollValueOut);
+    ScrollOffsetToNormalizedScrollValue(m_scrollOffset, normalizedScrollValueOut);
 
     return normalizedScrollValueOut;
 }

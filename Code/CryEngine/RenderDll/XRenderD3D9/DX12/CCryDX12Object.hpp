@@ -103,8 +103,8 @@ public:
 
     virtual ULONG STDMETHODCALLTYPE Release()
     {
-        ULONG RefCount;
-        if (!(RefCount = CryInterlockedDecrement(&m_RefCount)))
+        ULONG RefCount = CryInterlockedDecrement(&m_RefCount);
+        if (!RefCount)
         {
             delete this;
             return 0;
@@ -146,8 +146,8 @@ public:
 
     virtual ULONG STDMETHODCALLTYPE Release()
     {
-        ULONG RefCount;
-        if (!(RefCount = CryInterlockedDecrement(&m_RefCount)))
+        ULONG RefCount = CryInterlockedDecrement(&m_RefCount);
+        if (!RefCount)
         {
             delete this;
             return 0;

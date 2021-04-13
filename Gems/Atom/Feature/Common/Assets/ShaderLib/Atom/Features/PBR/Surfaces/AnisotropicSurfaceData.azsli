@@ -1,0 +1,53 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+option bool o_enableAnisotropy = false;
+
+// ------- Surface Data -------
+
+class AnisotropicSurfaceData
+{
+    float3 tangent;                 //!< surface space tangent for anisotropic use
+    float3 bitangent;               //!< surface space bitangent for anisotropic use
+    float2 anisotropyFactors;       //!< anisotory factors along the tangent and the bitangent directions
+
+    void Init(float3 normal, float3 vtxTangent, float3 vtxBitangent, float anisotropyAngle, float anisotropyFactor, float roughnessA);
+};
+
+// ------- Functions -------
+
+//! Notice that since the newly created surface tangent and bitangent will be rotated according
+//! to the anisotropy direction and should not be used for other purposes unless rotated back.
+void AnisotropicSurfaceData::Init(float3 normal, float3 vtxTangent, float3 vtxBitangent, float anisotropyAngle, float anisotropyFactor, float roughnessA)
+{
+    anisotropyFactors = max( 0.01,
+        float2( roughnessA * (1.0 + anisotropyFactor), 
+                roughnessA * (1.0 - anisotropyFactor) )
+    );
+
+    if (anisotropyAngle > 0.01)
+    {
+        // Base rotation according to anisotropic main direction
+        float aniSin, aniCos;
+        sincos(anisotropyAngle, aniSin, aniCos);
+
+        // Rotate the vertex tangent to get new aligned to surface normal tangent
+        vtxTangent = aniCos * vtxTangent - aniSin * vtxBitangent;
+    }
+
+    // Now create the new surface base according to the surface normal 
+    // If rotation was required it was already applied to the tangent, hence to the bitangent
+    bitangent = normalize(cross(normal, vtxTangent));
+    tangent = cross(bitangent, normal);
+}

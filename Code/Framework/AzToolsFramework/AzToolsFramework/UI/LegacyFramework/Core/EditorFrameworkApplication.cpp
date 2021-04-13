@@ -490,15 +490,7 @@ namespace LegacyFramework
 
         AZ_Assert(!m_desc.m_enableProjectManager || m_desc.m_enableGUI, "Enabling the project manager in the application settings requires enabling the GUI as well.");
 
-        // if we're a GUI APP we need the UI Framework component:
-        if (m_desc.m_enableGUI)
-        {
-            EnsureComponentCreated(AzToolsFramework::Framework::RTTI_Type());
-        }
-        else
-        {
-            EnsureComponentCreated(AzToolsFramework::Framework::RTTI_Type());
-        }
+        EnsureComponentCreated(AzToolsFramework::Framework::RTTI_Type());
     }
 
     //=========================================================================

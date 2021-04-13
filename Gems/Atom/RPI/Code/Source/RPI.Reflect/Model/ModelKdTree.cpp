@@ -138,31 +138,14 @@ namespace AZ
 
         AZStd::array_view<float> ModelKdTree::GetPositionsBuffer(const ModelLodAsset::Mesh& mesh)
         {
-            const BufferAssetView* positionBufferAssetView = mesh.GetSemanticBufferAssetView(AZ::Name{"POSITION"});
-            if (positionBufferAssetView)
-            {
-                const AZStd::array_view<uint8_t> positionRawBuffer = positionBufferAssetView->GetBufferAsset()->GetBuffer();
-                const auto size = positionBufferAssetView->GetBufferViewDescriptor().m_elementSize;
-                return {
-                    reinterpret_cast<const float*>(positionRawBuffer.data() + positionBufferAssetView->GetBufferViewDescriptor().m_elementOffset * size),
-                    positionBufferAssetView->GetBufferViewDescriptor().m_elementCount * size / sizeof(float)
-                };
-            }
-
-            AZ_Warning("ModelKdTree", false, "Could not find position buffers in a mesh");
-            return {};
+            AZStd::array_view<float> positionBuffer = mesh.GetSemanticBufferTyped<float>(AZ::Name{"POSITION"});
+            AZ_Warning("ModelKdTree", !positionBuffer.empty(), "Could not find position buffers in a mesh");
+            return positionBuffer;
         }
 
         AZStd::array_view<ModelKdTree::TriangleIndices> ModelKdTree::GetIndexBuffer(const ModelLodAsset::Mesh& mesh)
         {
-            const BufferAssetView& indexBufferAssetView = mesh.GetIndexBufferAssetView();
-            const AZStd::array_view<uint8_t> indexRawBuffer = indexBufferAssetView.GetBufferAsset()->GetBuffer();
-            const auto size = indexBufferAssetView.GetBufferViewDescriptor().m_elementSize;
-            static_assert(sizeof(TriangleIndices) == 3 * sizeof(uint32_t));
-            return {
-                reinterpret_cast<const TriangleIndices*>(indexRawBuffer.data() + indexBufferAssetView.GetBufferViewDescriptor().m_elementOffset * size),
-                indexBufferAssetView.GetBufferViewDescriptor().m_elementCount * size / sizeof(TriangleIndices)
-            };
+            return mesh.GetIndexBufferTyped<ModelKdTree::TriangleIndices>();
         }
 
         void ModelKdTree::BuildRecursively(ModelKdTreeNode* pNode, const AZ::Aabb& boundbox, AZStd::vector<ObjectIdTriangleIndices>& indices)
@@ -221,12 +204,12 @@ namespace AZ
             }
         }
 
-        bool ModelKdTree::RayIntersection(const AZ::Vector3& raySrc, const AZ::Vector3& rayDir, float& distance) const
+        bool ModelKdTree::RayIntersection(const AZ::Vector3& raySrc, const AZ::Vector3& rayDir, float& distance, AZ::Vector3& normal) const
         {
-            return RayIntersectionRecursively(m_pRootNode.get(), raySrc, rayDir, distance);
+            return RayIntersectionRecursively(m_pRootNode.get(), raySrc, rayDir, distance, normal);
         }
 
-        bool ModelKdTree::RayIntersectionRecursively(ModelKdTreeNode* pNode, const AZ::Vector3& raySrc, const AZ::Vector3& rayDir, float& distance) const
+        bool ModelKdTree::RayIntersectionRecursively(ModelKdTreeNode* pNode, const AZ::Vector3& raySrc, const AZ::Vector3& rayDir, float& distance, AZ::Vector3& normal) const
         {
             if (!pNode)
             {
@@ -252,7 +235,7 @@ namespace AZ
                     return false;
                 }
 
-                AZ::Vector3 ignoreNormal;
+                AZ::Vector3 intersectionNormal;
                 float hitDistanceNormalized;
                 const float maxDist(FLT_MAX);
                 float nearestDist = maxDist;
@@ -278,9 +261,15 @@ namespace AZ
                     const AZ::Vector3 rayEnd = raySrc + rayDir * distance;
 
                     if (AZ::Intersect::IntersectSegmentTriangleCCW(raySrc, rayEnd, trianglePoints[0], trianglePoints[1], trianglePoints[2],
-                        ignoreNormal, hitDistanceNormalized) != Intersect::ISECT_RAY_AABB_NONE)
+                        intersectionNormal, hitDistanceNormalized) != Intersect::ISECT_RAY_AABB_NONE)
                     {
                         float hitDistance = hitDistanceNormalized * distance;
+
+                        if (nearestDist > hitDistance)
+                        {
+                            normal = intersectionNormal;
+                        }
+
                         nearestDist = AZStd::GetMin(nearestDist, hitDistance);
                     }
                 }
@@ -295,8 +284,8 @@ namespace AZ
             }
 
             // running both sides to find the closest intersection
-            const bool bFoundChild0 = RayIntersectionRecursively(pNode->GetChild(0), raySrc, rayDir, distance);
-            const bool bFoundChild1 = RayIntersectionRecursively(pNode->GetChild(1), raySrc, rayDir, distance);
+            const bool bFoundChild0 = RayIntersectionRecursively(pNode->GetChild(0), raySrc, rayDir, distance, normal);
+            const bool bFoundChild1 = RayIntersectionRecursively(pNode->GetChild(1), raySrc, rayDir, distance, normal);
 
             return bFoundChild0 || bFoundChild1;
         }

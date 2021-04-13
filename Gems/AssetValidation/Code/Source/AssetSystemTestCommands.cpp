@@ -225,6 +225,7 @@ void TestCreateContainers([[maybe_unused]] const AZ::ConsoleCommandContainer& so
             AZ_TracePrintf("TestCreateContainers", "%d / %d ready after %ld ms\n", readyContainers.size(), totalContainers, runMS);
             AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(100));
         }
+#if defined(AZ_ENABLE_TRACING)
         if (loadingContainers.size())
         {
             AZ_TracePrintf("TestCreateContainers", "Failed to load %d / %d containers\n", loadingContainers.size(), totalContainers);
@@ -233,6 +234,7 @@ void TestCreateContainers([[maybe_unused]] const AZ::ConsoleCommandContainer& so
                 AZ_TracePrintf("TestCreateContainers", "Couldn't load container for %s\n", thisContainer.ToString<AZStd::string>().c_str());
             }
         }
+#endif
     }, true);
     runJob->Start();
 }

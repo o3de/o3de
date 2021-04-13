@@ -699,11 +699,14 @@ void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, con
         }
     }
 
-    action = menu->addAction(QObject::tr("Delete"));
-    QObject::connect(action, &QAction::triggered, action, [this] { ContextMenu_DeleteSelected(); });
-    if (selected.size() == 0)
+    if (!prefabSystemEnabled)
     {
-        action->setDisabled(true);
+        action = menu->addAction(QObject::tr("Delete"));
+        QObject::connect(action, &QAction::triggered, action, [this] { ContextMenu_DeleteSelected(); });
+        if (selected.size() == 0)
+        {
+            action->setDisabled(true);
+        }
     }
 
     menu->addSeparator();

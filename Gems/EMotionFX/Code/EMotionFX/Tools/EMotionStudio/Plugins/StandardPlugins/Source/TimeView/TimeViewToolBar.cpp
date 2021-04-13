@@ -141,7 +141,6 @@ namespace EMStudio
 
             case TimeViewMode::AnimGraph:
             {
-                EMotionFX::Recorder& recorder = EMotionFX::GetRecorder();
                 switch(GetCurrentRecordingMode())
                 {
                     case RecorderGroup::Default:
@@ -457,7 +456,6 @@ namespace EMStudio
     {
         mPlugin->SetRedrawFlag();
 
-        RecorderGroup* recorderGroup = mPlugin->GetTimeViewToolBar()->GetRecorderGroup();
         if (!m_recorderGroup->GetDetailedNodes())
         {
             mPlugin->mTrackDataWidget->mNodeHistoryItemHeight = 20;

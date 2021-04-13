@@ -894,7 +894,8 @@ error:
 
         bool Initialize(IDefragAllocatorPolicy* policy, bool bestFit)
         {
-            if (m_defrag_allocator = CryGetIMemoryManager()->CreateDefragAllocator())
+            m_defrag_allocator = CryGetIMemoryManager()->CreateDefragAllocator();
+            if (m_defrag_allocator)
             {
                 IDefragAllocator::Policy pol;
                 pol.pDefragPolicy = m_defrag_policy = policy;
@@ -1583,7 +1584,6 @@ namespace
             AZRHI_ASSERT(move.m_relocating == false);
             BufferPoolItem& item = m_item_table[move.m_item_handle];
             BufferPoolBank* bank = &m_bank_table[m_banks[item.m_bank]];
-            uint8* old_offset = bank->m_base_ptr + item.m_offset;
             item.m_bank   = move.m_dst_offset / s_PoolConfig.m_pool_bank_size;
             item.m_offset = move.m_dst_offset & s_PoolConfig.m_pool_bank_mask;
             bank = &m_bank_table[m_banks[item.m_bank]];
@@ -1635,7 +1635,7 @@ namespace
             D3DBuffer* buffer = NULL;
             BufferPoolItem* item = NULL;
             BufferPoolBank* bank = NULL;
-            size_t offset = 0u, bank_index = 0u;
+            size_t bank_index = 0u;
             item_handle_t handle;
             bool failed = false;
 
@@ -1889,7 +1889,6 @@ retry:
             // synced already we allocate a new item and swap it with the existing one
             // to make sure that we do not contend with the gpu on an already
             // used item's buffer update.
-            size_t item_handle = item->m_handle;
             IF (item->m_bank != ~0u, 1)
             {
                 m_allocator.PinItem(item);
@@ -2197,7 +2196,6 @@ retry:
         void* BeginWrite(BufferPoolItem* item)
         {
             D3DBuffer* buffer = m_backing_buffer.m_buffer;
-            size_t size = item->m_size;
             D3D11_MAPPED_SUBRESOURCE mapped_resource;
             D3D11_MAP map = m_map_type;
 #if defined(OPENGL) && !DXGL_FULL_EMULATION
@@ -3216,9 +3214,9 @@ namespace AzRHI
 
     void* ConstantBuffer::BeginWrite()
     {
-        PoolManager& poolManager = PoolManager::GetInstance();
 
 # if CONSTANT_BUFFER_ENABLE_DIRECT_ACCESS
+        PoolManager& poolManager = PoolManager::GetInstance();
         if (m_used)
         {
             poolManager.m_constant_allocator.Free(this);
@@ -3253,7 +3251,7 @@ namespace AzRHI
             {
                 AZ_Assert(m_base_ptr == nullptr, "Already mapped when mapping");
                 D3D11_MAPPED_SUBRESOURCE mappedResource;
-                HRESULT hr = gcpRendD3D->GetDeviceContext().Map(m_buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+                [[maybe_unused]] HRESULT hr = gcpRendD3D->GetDeviceContext().Map(m_buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
                 AZ_Assert(hr == S_OK, "Map buffer failed");
                 m_base_ptr = mappedResource.pData;
                 return mappedResource.pData;

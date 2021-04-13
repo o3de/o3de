@@ -61,7 +61,7 @@ void AssetEditorRequestsHandler::OpenAssetEditor(const AZ::Data::Asset<AZ::Data:
     using namespace AzToolsFramework::AssetEditor;
 
     // Open the AssetEditor if it isn't open already.
-    auto&& pane = QtViewPaneManager::instance()->OpenPane(LyViewPane::AssetEditor, QtViewPane::OpenMode::RestoreLayout);
+    QtViewPaneManager::instance()->OpenPane(LyViewPane::AssetEditor, QtViewPane::OpenMode::RestoreLayout);
 
     AssetEditorWidgetRequestsBus::Broadcast(&AssetEditorWidgetRequests::OpenAsset, asset);
 }

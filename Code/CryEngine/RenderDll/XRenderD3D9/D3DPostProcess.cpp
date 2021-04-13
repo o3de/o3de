@@ -97,7 +97,6 @@ void SD3DPostEffectsUtils::ResolveRT(CTexture*& pDst, const RECT* pSrcRect)
         pOrigRT->GetResource(&pSrcResource);
     #endif
 
-        HRESULT hr = 0;
         gcpRendD3D->m_RP.m_PS[gcpRendD3D->m_RP.m_nProcessThreadID].m_RTCopied++;
         gcpRendD3D->m_RP.m_PS[gcpRendD3D->m_RP.m_nProcessThreadID].m_RTCopiedSize += pDst->GetDeviceDataSize();
 
@@ -319,7 +318,6 @@ void SD3DPostEffectsUtils::StretchRect(CTexture* pSrc, CTexture*& pDst, bool bCl
     gRenDev->FX_SetState(GS_NODEPTHTEST);
 
     // Get sample size ratio (based on empirical "best look" approach)
-    float fSampleSize = ((float)pSrc->GetWidth() / (float)pDst->GetWidth()) * 0.5f;
 
     // Set samples position
     //float s1 = fSampleSize / (float) pSrc->GetWidth();  // 2.0 better results on lower res images resizing
@@ -1473,15 +1471,10 @@ void CPostEffectsMgr::End()
     PostProcessUtils().SetFillModeSolid(false);
 
     const uint32 nThreadID = gRenDev->m_RP.m_nProcessThreadID;
+#if !defined(NDEBUG)
     int recursiveLevel = SRendItem::m_RecurseLevel[nThreadID];
     assert(recursiveLevel >= 0);
-
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    if (gRenDev->m_RP.m_TI[nThreadID].m_PersFlags & RBPF_RENDER_SCENE_TO_TEXTURE)
-    {
-        return;
-    }
-#endif // if AZ_RTT_ENABLE
+#endif
 
     gcpRendD3D->UpdatePreviousFrameMatrices();
 
@@ -1581,7 +1574,8 @@ bool CREPostProcess:: mfDraw([[maybe_unused]] CShader* ef, [[maybe_unused]] SSha
         SPostEffectsDebugInfo* pDebugInfo = NULL;
         for (uint32 i = 0, nNumEffects = activeEffects.size(); i < nNumEffects; ++i)
         {
-            if ((pDebugInfo = &activeEffects[i]) && pDebugInfo->pEffect == currentEffect)
+            pDebugInfo = &activeEffects[i];
+            if (pDebugInfo && pDebugInfo->pEffect == currentEffect)
             {
                 pDebugInfo->fTimeOut = POSTSEFFECTS_DEBUGINFO_TIMEOUT;
                 break;
@@ -1662,7 +1656,8 @@ bool CREPostProcess:: mfDraw([[maybe_unused]] CShader* ef, [[maybe_unused]] SSha
                         SPostEffectsDebugInfo* pDebugInfo = NULL;
                         for (uint32 p = 0, nNumParams = activeParams.size(); p < nNumParams; ++p)
                         {
-                            if ((pDebugInfo = &activeParams[p]) && pDebugInfo->szParamName == (pItor->first))
+                            pDebugInfo = &activeParams[p];
+                            if (pDebugInfo && pDebugInfo->szParamName == (pItor->first))
                             {
                                 pDebugInfo->fTimeOut = POSTSEFFECTS_DEBUGINFO_TIMEOUT;
                                 break;

@@ -539,7 +539,6 @@ void DisplayContext::DrawHalfDottedCircle(const Vec3& pos, float radius, const V
 void DisplayContext::DrawDottedCircle(const Vec3& pos, float radius, const Vec3& nUnchangedAxis, int numberOfArrows /*=0*/, float stepDegree /*= 1*/)
 {
     float startAngleRadians = 0;
-    float sweepAngleRadians = 2 * gf_PI;
 
     Vec3 a;
     Vec3 b;
@@ -892,8 +891,8 @@ void DisplayContext::DrawDottedLine(const Vec3& p1, const Vec3& p2, [[maybe_unus
 //////////////////////////////////////////////////////////////////////////
 void DisplayContext::PushMatrix(const Matrix34& tm)
 {
-    assert(m_currentMatrix < 32);
-    if (m_currentMatrix < 32)
+    assert(m_currentMatrix < 31);
+    if (m_currentMatrix < 31)
     {
         m_currentMatrix++;
         m_matrixStack[m_currentMatrix] = m_matrixStack[m_currentMatrix - 1] * tm;

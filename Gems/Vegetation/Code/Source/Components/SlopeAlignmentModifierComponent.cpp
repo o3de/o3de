@@ -60,7 +60,6 @@ namespace Vegetation
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<SlopeAlignmentModifierConfig>()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Constructor()
                 ->Property("allowOverrides", BehaviorValueProperty(&SlopeAlignmentModifierConfig::m_allowOverrides))
@@ -107,7 +106,6 @@ namespace Vegetation
             behaviorContext->Class<SlopeAlignmentModifierComponent>()->RequestBus("SlopeAlignmentModifierRequestBus");
 
             behaviorContext->EBus<SlopeAlignmentModifierRequestBus>("SlopeAlignmentModifierRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Event("GetAllowOverrides", &SlopeAlignmentModifierRequestBus::Events::GetAllowOverrides)
                 ->Event("SetAllowOverrides", &SlopeAlignmentModifierRequestBus::Events::SetAllowOverrides)

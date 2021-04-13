@@ -28,6 +28,11 @@ namespace AZ
 
                 virtual ~IGraphObject() = 0;
 
+                // Copy object-level attributes
+                // These are attributes that would be the same at different optimization levels of a node. For
+                // instance, a decimated version of a mesh node is still going to have the same unit size.
+                virtual void CloneAttributesFrom(const IGraphObject* sourceObject) = 0;
+
                 // When requested, the scene graph can be dumped to a file to help with debugging.
                 virtual void GetDebugOutput([[maybe_unused]] AZ::SceneAPI::Utilities::DebugOutput& output) const {}
             };

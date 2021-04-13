@@ -81,7 +81,6 @@ namespace ScriptCanvas
                     return;
                 }
                 
-                const auto report = FindDatum(GetSlotId("Report"))->GetAs<Data::StringType>();
 
                 switch (lhs->GetType().GetType())
                 {

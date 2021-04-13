@@ -50,7 +50,7 @@ namespace EMotionFX
         EXPECT_CALL(testBus, OnActorInstanceDestroyed(testing::_)).Times(1);
 
         AZStd::unique_ptr<AZ::Entity> entity = AZStd::make_unique<AZ::Entity>(id);
-        auto transformComponent = entity->CreateComponent<AzFramework::TransformComponent>();
+        entity->CreateComponent<AzFramework::TransformComponent>();
         Integration::ActorComponent::Configuration actorConf;
         Integration::ActorComponent* actorComponent = entity->CreateComponent<Integration::ActorComponent>(&actorConf);
 

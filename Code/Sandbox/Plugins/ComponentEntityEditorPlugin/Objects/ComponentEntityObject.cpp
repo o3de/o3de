@@ -173,7 +173,6 @@ void CComponentEntityObject::AssignEntity(AZ::Entity* entity, bool destroyOld)
             entity->FindComponent<AzToolsFramework::Components::TransformComponent>();
         if (transformComponent)
         {
-            const AZ::Transform& worldTransform = transformComponent->GetWorldTM();
             OnTransformChanged(transformComponent->GetLocalTM(), transformComponent->GetWorldTM());
         }
     }

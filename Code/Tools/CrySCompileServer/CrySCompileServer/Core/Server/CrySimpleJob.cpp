@@ -170,7 +170,9 @@ bool CCrySimpleJob::ExecuteCommand(const std::string& rCmd, std::string& outErro
     threadIdStream << threadId;
     
     // Multiple threads could execute a command, therefore the temporary file has to be unique per thread.
-    std::string stdErrorTempFilename = SEnviropment::Instance().m_TempPath + "stderr_" + threadIdStream.str() + ".log";
+    AZ::IO::Path errorTempFilePath = SEnviropment::Instance().m_TempPath / AZStd::string::format("stderr_%s.log", threadIdStream.str().c_str());
+    std::string stdErrorTempFilename{ errorTempFilePath.c_str(), errorTempFilePath.Native().size() };
+
     CCrySimpleFileGuard FGTmpOutput(stdErrorTempFilename); // Delete file at the end of this function
     
     std::string systemCmd = rCmd;

@@ -483,7 +483,6 @@ bool CLightEntity::ProcessFrustum(int nLod, float fGSMBoxSize, float fDistanceFr
     assert(pFr);
 
     bool bDoGSM = fGSMBoxSize != 0;
-    bool bDoNextLod = false;
 
     if (bDoGSM)// && (m_light.m_Flags & DLF_SUN || m_light.m_Flags & DLF_PROJECT))
     {
@@ -555,8 +554,6 @@ void CLightEntity::InitShadowFrustum_SUN_Conserv(ShadowMapFrustum* pFr, [[maybe_
 
     //Sampling parameters
     //Calculate proper projection of frustum to the terrain receiving area but not based on fBoxRadius
-    float fGsmInitRange = Get3DEngine()->m_fGsmRange;
-    float fGsmStep = Get3DEngine()->m_fGsmRangeStep;
 
     float arrWidthS[] = {1.94f, 1.0f, 0.8f, 0.5f, 0.3f, 0.3f, 0.3f, 0.3f};
 

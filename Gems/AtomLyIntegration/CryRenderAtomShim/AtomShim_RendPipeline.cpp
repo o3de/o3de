@@ -24,8 +24,6 @@
 
 void CAtomShimRenderer::EF_Init()
 {
-    bool nv = 0;
-
     m_RP.m_MaxVerts = 600;
     m_RP.m_MaxTris = 300;
 
@@ -48,7 +46,7 @@ void CAtomShimRenderer::EF_Init()
         m_RP.m_ObjectsPool = (CRenderObject*)CryModuleMemalign(sizeof(CRenderObject) * (m_RP.m_nNumObjectsInPool * RT_COMMAND_BUF_COUNT), 16);
         for (int j = 0; j < (int)(m_RP.m_nNumObjectsInPool * RT_COMMAND_BUF_COUNT); j++)
         {
-            CRenderObject* pRendObj = new(&m_RP.m_ObjectsPool[j])CRenderObject();
+            new(&m_RP.m_ObjectsPool[j])CRenderObject();
         }
 
 
@@ -165,7 +163,7 @@ void CAtomShimRenderer::EF_EndEf3D([[maybe_unused]] const int nFlags, [[maybe_un
 
     // Only render the UI Canvas and the Console on the main window
     // If we're not in the editor, don't bother to check viewport.
-    if (!gEnv->IsEditor() || m_currContext->m_isMainViewport)
+    if (!gEnv->IsEditor() || m_currContext == nullptr || m_currContext->m_isMainViewport)
     {
         EBUS_EVENT(AZ::RenderNotificationsBus, OnScene3DEnd);
     }
