@@ -10,6 +10,8 @@
 #include "StringUtils.h"
 #include "../Include/SandboxAPI.h"
 
+#include <QStringList>
+
 class QWidget;
 
 #ifdef CreateDirectory

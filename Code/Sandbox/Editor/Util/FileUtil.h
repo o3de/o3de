@@ -9,6 +9,7 @@
 #pragma once
 
 #include "CryThread.h"
+#include "FileUtil_Common.h"
 #include "StringUtils.h"
 #include "../Include/SandboxAPI.h"
 #include <QString>
@@ -93,10 +94,10 @@ public:
     // Checks if a file or directory exist.
     // We are using 3 functions here in order to make the names more instructive for the programmers.
     // Those functions only work for OS files and directories.
-    static bool   Exists(const QString& strPath, bool boDirectory, IFileUtil::FileDesc* pDesc = nullptr);
-    static bool   FileExists(const QString& strFilePath, IFileUtil::FileDesc* pDesc = nullptr);
-    static bool   PathExists(const QString& strPath);
-    static bool   GetDiskFileSize(const char* pFilePath, uint64& rOutSize);
+    static bool Exists(const QString& strPath, bool boDirectory, IFileUtil::FileDesc* pDesc = nullptr);
+    static bool PathExists(const QString& strPath);
+    static bool FileExists(const QString& strFilePath, IFileUtil::FileDesc* pDesc = nullptr);
+    static bool GetDiskFileSize(const char* pFilePath, uint64& rOutSize);
 
     // This function should be used only with physical files.
     static bool   IsFileExclusivelyAccessable(const QString& strFilePath);
@@ -175,6 +176,13 @@ private:
 
     static bool ExtractDccFilenameFromAssetDatabase(const QString& assetFilename, QString& dccFilename);
     static bool ExtractDccFilenameUsingNamingConventions(const QString& assetFilename, QString& dccFilename);
+
+    static void HandlePrefsDialogForFileType(const Common::EditFileType fileType);
+    static QString GetEditorForFileTypeFromPreferences(const Common::EditFileType fileType);
+    static QString HandleNoEditorAssigned(const Common::EditFileType fileType);
+    static QString HandleEditorOpenFailure(const Common::EditFileType fileType, const QString& currentEditor);
+    static AZStd::string GetSettingsKeyForFileType(const Common::EditFileType fileType);
+    static void EditFile(const QString&, const Common::EditFileType fileType);
 };
 
 class CAutoRestorePrimaryCDRoot

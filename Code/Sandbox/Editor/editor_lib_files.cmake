@@ -725,6 +725,8 @@ set(FILES
     Util/FileEnum.h
     Util/FileUtil.cpp
     Util/FileUtil.h
+    Util/FileUtil_Common.h
+    Util/FileUtil_Common.cpp
     Util/GdiUtil.cpp
     Util/GdiUtil.h
     Util/GeometryUtil.cpp
@@ -830,6 +832,8 @@ set(FILES
     IEditorPanelUtils.h
     EditorPanelUtils.h
     EditorPanelUtils.cpp
+    ExeSelectPropertyHandler.cpp
+    ExeSelectPropertyHandler.h
 )
 
 
