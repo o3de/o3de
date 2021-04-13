@@ -313,7 +313,10 @@ void CXmlHistoryManager::RecordUndo(IXmlUndoEventHandler* pEventHandler, const c
     assert(pChangedXml);
 
     XmlNodeRef newData = gEnv->pSystem->CreateXmlNode();
-    bool bRes = pEventHandler->SaveToXml(newData);
+#if !defined(NDEBUG)
+    bool bRes =
+#endif
+        pEventHandler->SaveToXml(newData);
     assert(bRes);
 
     TXmlHistotyGroupPtrList activeGroups = m_HistoryInfoMap[ m_CurrentVersion ].ActiveGroups;

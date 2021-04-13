@@ -21,7 +21,6 @@ namespace AzFramework
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->EBus<BoundsRequestBus>("BoundsRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Event("GetWorldBounds", &BoundsRequestBus::Events::GetWorldBounds)
                 ->Event("GetLocalBounds", &BoundsRequestBus::Events::GetLocalBounds);
         }

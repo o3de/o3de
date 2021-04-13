@@ -11,6 +11,8 @@
 */
 
 #include <Source/Components/NetworkTransformComponent.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Serialization/EditContext.h>
 
 namespace Multiplayer
 {
@@ -22,5 +24,7 @@ namespace Multiplayer
             serializeContext->Class<NetworkTransformComponent, NetworkTransformComponentBase>()
                 ->Version(1);
         }
+
+        NetworkTransformComponentBase::Reflect(context);
     }
 }

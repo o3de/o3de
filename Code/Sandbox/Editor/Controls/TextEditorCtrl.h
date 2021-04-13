@@ -17,8 +17,6 @@
 
 // CTextEditorCtrl
 #if !defined(Q_MOC_RUN)
-#include "SyntaxColorizer.h"
-
 #include <QTextEdit>
 #endif
 
@@ -42,7 +40,6 @@ public:
 
 protected:
     QString m_filename;
-    CSyntaxColorizer m_sc;
     bool m_bModified;
 };
 

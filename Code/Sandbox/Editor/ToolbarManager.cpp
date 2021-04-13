@@ -705,25 +705,33 @@ void ToolbarManager::RestoreToolbarDefaults(const QString& toolbarName)
         const AmazonToolbar* defaultToolbar = FindDefaultToolbar(toolbarName);
         AmazonToolbar* existingToolbar = FindToolbar(toolbarName);
         Q_ASSERT(existingToolbar != nullptr);
-        const bool isInstantiated = existingToolbar->IsInstantiated();
 
-        if (isInstantiated)
+        if (existingToolbar != nullptr)
         {
-            // We have a QToolBar instance, updated it too
-            for (QAction* action : existingToolbar->Toolbar()->actions())
+            const bool isInstantiated = existingToolbar->IsInstantiated();
+
+            if (isInstantiated)
             {
-                existingToolbar->Toolbar()->removeAction(action);
+                // We have a QToolBar instance, updated it too
+                for (QAction* action : existingToolbar->Toolbar()->actions())
+                {
+                    existingToolbar->Toolbar()->removeAction(action);
+                }
             }
-        }
 
-        existingToolbar->CopyActions(*defaultToolbar);
+            Q_ASSERT(defaultToolbar != nullptr);
+            if (defaultToolbar != nullptr)
+            {
+                existingToolbar->CopyActions(*defaultToolbar);
+            }
 
-        if (isInstantiated)
-        {
-            existingToolbar->SetActionsOnInternalToolbar(m_actionManager);
-            existingToolbar->UpdateAllowedAreas();
+            if (isInstantiated)
+            {
+                existingToolbar->SetActionsOnInternalToolbar(m_actionManager);
+                existingToolbar->UpdateAllowedAreas();
+            }
+            SaveToolbars();
         }
-        SaveToolbars();
     }
     else
     {
@@ -1166,7 +1174,7 @@ bool EditableQToolBar::eventFilter(QObject* obj, QEvent* ev)
         mimeData->setText(action->text());
         drag->setMimeData(mimeData);
 
-        Qt::DropAction dropAction = drag->exec();
+        drag->exec();
         m_dndIndicator->setLastDragPos(QPoint());
         return true;
     }

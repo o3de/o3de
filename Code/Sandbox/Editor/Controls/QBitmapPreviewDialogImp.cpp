@@ -243,8 +243,6 @@ void QBitmapPreviewDialogImp::refreshData()
 
     int w = m_image->GetWidth();
     int h = m_image->GetHeight();
-    bool hasAlpha = m_image->HasAlphaChannel();
-    bool isLimitedHDR = m_image->IsLimitedHDR();
 
     int multiplier = (m_showMode == ESHOW_RGB_ALPHA ? 2 : 1);
     int originalW = w * multiplier;

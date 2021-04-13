@@ -138,7 +138,7 @@ namespace Multiplayer
                 gatheredEntries.reserve(gatheredEntries.size() + nodeData.m_entries.size());
                 for (AzFramework::VisibilityEntry* visEntry : nodeData.m_entries)
                 {
-                    if (visEntry->m_typeFlags & AzFramework::VisibilityEntry::TypeFlags::TYPE_NetEntity)
+                    if (visEntry->m_typeFlags & AzFramework::VisibilityEntry::TypeFlags::TYPE_Entity)
                     {
                         gatheredEntries.push_back(visEntry);
                     }
@@ -149,6 +149,8 @@ namespace Multiplayer
         // Add all the neighbors
         for (AzFramework::VisibilityEntry* visEntry : gatheredEntries)
         {
+            // TODO: Discard entities that don't have a NetBindComponent
+
             //if (mp_ControlledFilteredEntityComponent && mp_ControlledFilteredEntityComponent->IsEntityFiltered(iterator.Get()))
             //{
             //    continue;

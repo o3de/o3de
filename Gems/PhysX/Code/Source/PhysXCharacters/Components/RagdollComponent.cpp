@@ -154,11 +154,7 @@ namespace PhysX
 
     void RagdollComponent::Deactivate()
     {
-        Physics::WorldBodyRequestBus::Handler::BusDisconnect();
-        AzFramework::RagdollPhysicsRequestBus::Handler::BusDisconnect();
-        AzFramework::RagdollPhysicsNotificationBus::Event(GetEntityId(),
-            &AzFramework::RagdollPhysicsNotifications::OnRagdollDeactivated);
-        m_ragdoll.reset();
+        DestroyRagdoll();
         AzFramework::CharacterPhysicsDataNotificationBus::Handler::BusDisconnect();
     }
 
@@ -266,9 +262,16 @@ namespace PhysX
         return AzPhysics::SceneQueryHit();
     }
 
-    void RagdollComponent::OnRagdollConfigurationReady(const Physics::RagdollConfiguration& ragdollConfigurationRef)
+    void RagdollComponent::OnRagdollConfigurationReady(const Physics::RagdollConfiguration& ragdollConfiguration)
     {
-        Physics::RagdollConfiguration ragdollConfiguration( ragdollConfigurationRef );
+        CreateRagdoll(ragdollConfiguration);
+    }
+
+    void RagdollComponent::CreateRagdoll(const Physics::RagdollConfiguration& ragdollConfigurationRef)
+    {
+        DestroyRagdoll();
+
+        Physics::RagdollConfiguration ragdollConfiguration(ragdollConfigurationRef);
 
         const size_t numNodes = ragdollConfiguration.m_nodes.size();
 
@@ -344,6 +347,19 @@ namespace PhysX
 
         AzFramework::RagdollPhysicsNotificationBus::Event(GetEntityId(),
             &AzFramework::RagdollPhysicsNotifications::OnRagdollActivated);
+    }
+
+    void RagdollComponent::DestroyRagdoll()
+    {
+        if (m_ragdoll)
+        {
+            Physics::WorldBodyRequestBus::Handler::BusDisconnect();
+            AzFramework::RagdollPhysicsRequestBus::Handler::BusDisconnect();
+            AzFramework::RagdollPhysicsNotificationBus::Event(GetEntityId(),
+                &AzFramework::RagdollPhysicsNotifications::OnRagdollDeactivated);
+
+            m_ragdoll.reset();
+        }
     }
 
     // deprecated Cry functions

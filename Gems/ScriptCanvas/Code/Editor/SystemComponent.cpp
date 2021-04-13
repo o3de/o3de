@@ -382,9 +382,9 @@ namespace ScriptCanvasEditor
             {
                 if (const AZ::BehaviorClass* behaviorClass = AZ::BehaviorContextHelper::GetClass(behaviorContext, ScriptCanvas::Data::ToAZType(scType.first)))
                 {
-                    // BehaviorContext classes with the ExcludeFrom attribute with a value of the ExcludeFlags::Preview are not added to the list of 
+                    // BehaviorContext classes with the ExcludeFrom attribute with a value of the ExcludeFlags::All are not added to the list of 
                     // types that can be created in the editor
-                    const AZ::u64 exclusionFlags = AZ::Script::Attributes::ExcludeFlags::Preview;
+                    const AZ::u64 exclusionFlags = AZ::Script::Attributes::ExcludeFlags::All;
                     auto excludeClassAttributeData = azrtti_cast<const AZ::Edit::AttributeData<AZ::Script::Attributes::ExcludeFlags>*>(AZ::FindAttribute(AZ::Script::Attributes::ExcludeFrom, behaviorClass->m_attributes));
                     if (excludeClassAttributeData && (excludeClassAttributeData->Get(nullptr) & exclusionFlags))
                     {

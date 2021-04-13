@@ -119,7 +119,6 @@ class EditorTestHelper:
         general.set_viewport_expansion_policy("AutoExpand")
         general.set_view_pane_layout(self.viewport_layout)
         general.update_viewport()
-        general.idle_wait(1.0)
 
         self.log("test finished")
 
@@ -162,10 +161,10 @@ class EditorTestHelper:
     def create_level(
         self,
         level_name: str,
-        heightmap_resolution: int,
-        heightmap_meters_per_pixel: int,
-        terrain_texture_resolution: int,
-        use_terrain: bool,
+        heightmap_resolution: int = 1024,
+        heightmap_meters_per_pixel: int = 1,
+        terrain_texture_resolution: int = 4096,
+        use_terrain: bool = False,
         bypass_viewport_resize: bool = False,
     ) -> bool:
         self.log(f"Creating level {level_name}")

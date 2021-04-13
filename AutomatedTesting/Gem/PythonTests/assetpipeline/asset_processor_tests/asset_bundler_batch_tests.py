@@ -302,7 +302,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         that generating debug information does not affect asset list creation
         """
         helper = bundler_batch_helper
-        seed_list = os.path.join(workspace.paths.dev(), "Engine", "SeedAssetList.seed")  # Engine seed list
+        seed_list = os.path.join(workspace.paths.engine_root(), "Engine", "SeedAssetList.seed")  # Engine seed list
         asset = r"levels\testdependencieslevel\level.pak"
 
         # Create Asset list
@@ -377,7 +377,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         subcommands.
         """
         helper = bundler_batch_helper
-        seed_list = os.path.join(workspace.paths.dev(), "Engine", "SeedAssetList.seed")  # Engine seed list
+        seed_list = os.path.join(workspace.paths.engine_root(), "Engine", "SeedAssetList.seed")  # Engine seed list
         asset = r"levels\testdependencieslevel\level.pak"
 
         # Useful bundle locations / names (2 for comparing contents)
@@ -465,7 +465,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
             "Please rerun with commandline option: '--bundle_platforms=pc,osx_gl'"
         # fmt:on
 
-        seed_list = os.path.join(workspace.paths.dev(), "Engine", "SeedAssetList.seed")  # Engine seed list
+        seed_list = os.path.join(workspace.paths.engine_root(), "Engine", "SeedAssetList.seed")  # Engine seed list
 
         # Useful bundle / asset list locations
         bundle_dir = os.path.dirname(helper["bundle_file"])
@@ -1109,7 +1109,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         # Make sure file gets deleted on teardown
         request.addfinalizer(lambda: fs.delete([bundle_result_path], True, False))
 
-        bundles_folder = os.path.join(workspace.paths.dev(), workspace.project, "Bundles")
+        bundles_folder = os.path.join(workspace.paths.engine_root(), workspace.project, "Bundles")
         level_pak = r"levels\testdependencieslevel\level.pak"
         bundle_request_path = os.path.join(bundles_folder, "bundle.pak")
         bundle_result_path = os.path.join(bundles_folder,

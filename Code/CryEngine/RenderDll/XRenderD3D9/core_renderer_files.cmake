@@ -52,9 +52,6 @@ set(FILES
     PostProcessSunShafts.cpp
     PostProcessWater.cpp
     PostProcessSnow.cpp
-    RTT/RTTContext.cpp
-    RTT/RTTContextManager.cpp
-    RTT/RTTSwappableRenderTarget.cpp
     D3D_SVO.h
     D3DTiledShading.h
     ../Common/Textures/ITextureStreamer.h
@@ -81,10 +78,6 @@ set(FILES
     ../RenderDll_precompiled.h
     DeviceInfo.inl
     MultiLayerAlphaBlendPass.h
-    RTT/RTTContext.h
-    RTT/RTTContextManager.h
-    RTT/RTTSwappableRenderTarget.h
-    RTT/RTTSwappableCVar.h
     ../Common/Renderer_Jobs.cpp
     ../Common/CommonRender.cpp
     ../Common/DeferredRenderUtils.cpp

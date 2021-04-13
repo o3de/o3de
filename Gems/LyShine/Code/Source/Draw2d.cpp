@@ -254,8 +254,6 @@ void CDraw2d::DrawLineTextured(int texId, VertexPosColUV* verts, int blendMode, 
 {
     int actualBaseState = (baseState == -1) ? g_defaultBaseState : baseState;
 
-    IRenderer* renderer = gEnv->pRenderer;
-
     int actualBlendMode = (blendMode == -1) ? g_defaultBlendState : blendMode;
 
     // define line

@@ -8,6 +8,7 @@
            Base="ScriptCanvas::Node"
            Category="Entity/Transform"
            Version="4"
+           Deprecated="true"
            EditAttributes="AZ::Edit::Attributes::CategoryStyle@.method;ScriptCanvas::Attributes::Node::TitlePaletteOverride@MethodNodeTitlePalette"
            GeneratePropertyFriend="True"
            Description="Rotates the given entity by the specified amount.">

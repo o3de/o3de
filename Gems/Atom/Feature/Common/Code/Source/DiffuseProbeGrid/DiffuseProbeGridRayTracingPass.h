@@ -71,25 +71,6 @@ namespace AZ
             Data::Asset<RPI::ShaderResourceGroupAsset> m_globalSrgAsset;
             RHI::ConstPtr<RHI::PipelineState> m_globalPipelineState;
 
-            struct ClosestHitData
-            {
-                uint32_t m_indexOffset = 0;
-                uint32_t m_positionOffset = 0;
-                uint32_t m_normalOffset = 0;
-                uint32_t m_padding = 0;
-
-                AZ::Vector4 m_materialColor = AZ::Vector4(0.0f);
-                AZ::Matrix3x3 m_worldInvTranspose = AZ::Matrix3x3::CreateIdentity();
-            };
-
-            // [GFX TODO][ATOM-14780] SRG support for unbounded arrays
-            // we are limited to 512 meshes until unbounded array support is implemented
-            AZStd::array<ClosestHitData, 512> m_closestHitData;
-            AZStd::vector<const RHI::BufferView*> m_meshVertexPositionBuffer;
-            AZStd::vector<const RHI::BufferView*> m_meshVertexNormalBuffer;
-            AZStd::vector<const RHI::BufferView*> m_meshIndexBuffer;
-            uint32_t m_meshCount = 0;
-
             bool m_initialized = false;
         };
     }   // namespace RPI

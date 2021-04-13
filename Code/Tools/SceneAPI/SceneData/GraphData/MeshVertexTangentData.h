@@ -35,6 +35,8 @@ namespace AZ
 
                 SCENE_DATA_API ~MeshVertexTangentData() override = default;
 
+                SCENE_DATA_API void CloneAttributesFrom(const IGraphObject* sourceObject) override;
+
                 SCENE_DATA_API size_t GetCount() const override;
                 SCENE_DATA_API const AZ::Vector4& GetTangent(size_t index) const override;
                 SCENE_DATA_API void SetTangent(size_t vertexIndex, const AZ::Vector4& tangent) override;

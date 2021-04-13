@@ -57,7 +57,7 @@ void SampleCapsule(float2 randomPoint, ViewSrg::CapsuleLight light, float capToC
     }
 }
 
-void ApplyCapsuleLight(ViewSrg::CapsuleLight light, float3 dirToCamera, Surface surface, inout float3 diffuseLighting, inout float3 specularLighting, inout float3 translucentBackLighting)
+void ApplyCapsuleLight(ViewSrg::CapsuleLight light, Surface surface, inout LightingData lightingData)
 {
     float lightLength = light.m_length;
     float3 startPoint = light.m_startPoint;
@@ -125,10 +125,10 @@ void ApplyCapsuleLight(ViewSrg::CapsuleLight light, float3 dirToCamera, Surface 
         intensity *= INV_PI; // normalize for lambert reflectance.
 
         float3 lightIntensity = (intensity * radiusAttenuation * ratioVisible) * light.m_rgbIntensityCandelas;
-        diffuseLighting += max(0.0, surface.albedo * lightIntensity);
+        lightingData.diffuseLighting += max(0.0, surface.albedo * lightIntensity);
 
         // Calculate the reflection of the normal from the view direction
-        float3 reflectionDir = reflect(-dirToCamera, surface.normal);
+        float3 reflectionDir = reflect(-lightingData.dirToCamera, surface.normal);
 
         // Find closest point on light to reflection vector.
         // See https://cdn2.unrealengine.com/Resources/files/2013SiggraphPresentationsNotes-26915738.pdf
@@ -140,7 +140,7 @@ void ApplyCapsuleLight(ViewSrg::CapsuleLight light, float3 dirToCamera, Surface 
         float3 posToLight = closestIntersectionPoint - surface.position;
 
         // Tranmission contribution
-        translucentBackLighting += GetBackLighting(surface, lightIntensity, dirToCamera, normalize(posToLight), 0.0);
+        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, lightIntensity, normalize(posToLight), 0.0);
 
         // Calculate the offset from the nearest point on the reflection vector to the nearest point on the capsule light
         float3 posToClosestPointAlongReflection = dot(posToLight, reflectionDir) * reflectionDir;
@@ -169,11 +169,11 @@ void ApplyCapsuleLight(ViewSrg::CapsuleLight light, float3 dirToCamera, Surface 
         // Specular contribution
         lightIntensity = sphereToCapsuleAreaRatio * radiusAttenuation / d2;
         lightIntensity *= light.m_rgbIntensityCandelas;
-        specularLighting += sphereIntensityNormalization * GetSpecularLighting(surface, lightIntensity, dirToCamera, normalize(posToLight));
+        lightingData.specularLighting += sphereIntensityNormalization * GetSpecularLighting(surface, lightingData, lightIntensity, normalize(posToLight));
     }
 }
 
-void ValidateCapsuleLight(ViewSrg::CapsuleLight light, float3 dirToCamera, Surface surface, inout float3 diffuseLighting, inout float3 specularLighting, inout float3 translucentBackLighting)
+void ValidateCapsuleLight(ViewSrg::CapsuleLight light, Surface surface, inout LightingData lightingData)
 {
     const uint sampleCount = 1024;
 
@@ -205,7 +205,7 @@ void ValidateCapsuleLight(ViewSrg::CapsuleLight light, float3 dirToCamera, Surfa
         float3 direction;
         float2 randomPoint = GetHammersleyPoint(i, sampleCount);
         SampleCapsule(randomPoint, light, capToCylinderAreaRatio, localToWorld, position, direction);
-        AddSampleContribution(surface, position, direction, dirToCamera, 0.0, diffuseAcc, specularAcc, translucentAcc);
+        AddSampleContribution(surface, lightingData, position, direction, 0.0, diffuseAcc, specularAcc, translucentAcc);
     }
 
     // Lighting value is in Candela, convert to Lumen for total light output of the light
@@ -214,28 +214,28 @@ void ValidateCapsuleLight(ViewSrg::CapsuleLight light, float3 dirToCamera, Surfa
     // equal directions across the hemisphere, so we need to account for that
     float3 intensity = intensityLumens * INV_PI;
     
-    diffuseLighting += (diffuseAcc / float(sampleCount)) * intensity;
-    translucentBackLighting += (translucentAcc / float(sampleCount)) * intensity;
-    specularLighting += (specularAcc / float(sampleCount)) * intensity;
+    lightingData.diffuseLighting += (diffuseAcc / float(sampleCount)) * intensity;
+    lightingData.translucentBackLighting += (translucentAcc / float(sampleCount)) * intensity;
+    lightingData.specularLighting += (specularAcc / float(sampleCount)) * intensity;
 }
 
-void ApplyCapsuleLights(inout LightCullingTileIterator tileIterator, float3 dirToCamera, Surface surface, inout float3 diffuseLighting, inout float3 specularLighting, inout float3 translucentBackLighting)
+void ApplyCapsuleLights(Surface surface, inout LightingData lightingData)
 {    
-    tileIterator.LoadAdvance();
+    lightingData.tileIterator.LoadAdvance();
                 
-    while(!tileIterator.IsDone())
-    { 
-        uint currLightIndex = tileIterator.GetValue(); 
-        tileIterator.LoadAdvance();
+    while(!lightingData.tileIterator.IsDone())
+    {
+        uint currLightIndex = lightingData.tileIterator.GetValue(); 
+        lightingData.tileIterator.LoadAdvance();
         
         ViewSrg::CapsuleLight light = ViewSrg::m_capsuleLights[currLightIndex];
         if (o_area_light_validation)
         {
-            ValidateCapsuleLight(light, dirToCamera, surface, diffuseLighting, specularLighting, translucentBackLighting);
+            ValidateCapsuleLight(light, surface, lightingData);
         }
         else
         {
-            ApplyCapsuleLight(light, dirToCamera, surface, diffuseLighting, specularLighting, translucentBackLighting);
+            ApplyCapsuleLight(light, surface, lightingData);
         }
     }
 }

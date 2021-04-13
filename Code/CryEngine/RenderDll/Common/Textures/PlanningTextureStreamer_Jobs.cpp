@@ -546,7 +546,6 @@ void CPlanningTextureStreamer::Job_Sort()
     CTexture** pTextures = &(*sortState.pTextures)[0];
     size_t nTextures = sortState.nTextures;
 
-    int nOnScreenFrameId = sortState.nFrameId - 8;
     int nMinMip = sortState.fpMinMip >> 8;
 
     size_t const nStreamLimit = sortState.nStreamLimit;
@@ -617,7 +616,6 @@ void CPlanningTextureStreamer::Job_CommitKeys(CTexture** pTextures, SPlanningTex
 
 void CPlanningTextureStreamer::Job_CheckEnqueueForStreaming(CTexture* pTexture, const float fMipFactor, bool bHighPriority)
 {
-    STexStreamingInfo* pStrmInfo = pTexture->m_pFileTexMips;
 
     // calculate the new lod value
     int fpMipIdSigned = pTexture->StreamCalculateMipsSignedFP(fMipFactor);

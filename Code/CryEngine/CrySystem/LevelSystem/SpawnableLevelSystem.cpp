@@ -84,7 +84,6 @@ namespace LegacyLevelSystem
         {
             return;
         }
-        auto pPak = gEnv->pCryPak;
 
         AzFramework::RootSpawnableNotificationBus::Handler::BusConnect();
     }
@@ -240,6 +239,9 @@ namespace LegacyLevelSystem
                 }
             }
 
+            // This is a workaround until the replacement for GameEntityContext is done
+            AzFramework::GameEntityContextEventBus::Broadcast(&AzFramework::GameEntityContextEventBus::Events::OnPreGameEntitiesStarted);
+
             // Reset the camera to (1,1,1) (not (0,0,0) which is the invalid/uninitialised state,
             // to avoid the hack in the renderer to not show anything if the camera is at the origin).
             CCamera defaultCam;
@@ -322,6 +324,9 @@ namespace LegacyLevelSystem
 
             m_rootSpawnableId = rootSpawnableAssetId;
             m_rootSpawnableGeneration = AzFramework::RootSpawnableInterface::Get()->AssignRootSpawnable(rootSpawnable);
+
+            // This is a workaround until the replacement for GameEntityContext is done
+            AzFramework::GameEntityContextEventBus::Broadcast(&AzFramework::GameEntityContextEventBus::Events::OnGameEntitiesStarted);
 
             //////////////////////////////////////////////////////////////////////////
             // Movie system must be reset after entities.
@@ -695,6 +700,8 @@ namespace LegacyLevelSystem
         // Cleanup all containers
         GetISystem()->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_POST_UNLOAD, 0, 0);
         AzFramework::InputChannelRequestBus::Broadcast(&AzFramework::InputChannelRequests::ResetState);
+
+        AzFramework::GameEntityContextEventBus::Broadcast(&AzFramework::GameEntityContextEventBus::Events::OnGameEntitiesReset);
     }
 
     void SpawnableLevelSystem::OnRootSpawnableAssigned(

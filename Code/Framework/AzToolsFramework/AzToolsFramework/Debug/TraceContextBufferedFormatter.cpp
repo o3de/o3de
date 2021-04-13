@@ -130,7 +130,7 @@ namespace AzToolsFramework
             int written = uuid.ToString(buffer, aznumeric_caster(bufferSize), false);
             if (written > 0)
             {
-                if (bufferSize - written > 0)
+                if (bufferSize > written)
                 {
                     buffer[written - 1] = '\n';
                     buffer[written] = 0;

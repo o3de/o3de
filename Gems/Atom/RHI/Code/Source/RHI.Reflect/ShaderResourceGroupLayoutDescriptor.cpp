@@ -100,6 +100,80 @@ namespace AZ
             return seed;
         }
 
+        void ShaderInputBufferUnboundedArrayDescriptor::Reflect(ReflectContext* context)
+        {
+            if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
+            {
+                serializeContext->Class<ShaderInputBufferUnboundedArrayDescriptor>()
+                    ->Version(1)
+                    ->Field("m_name", &ShaderInputBufferUnboundedArrayDescriptor::m_name)
+                    ->Field("m_type", &ShaderInputBufferUnboundedArrayDescriptor::m_type)
+                    ->Field("m_access", &ShaderInputBufferUnboundedArrayDescriptor::m_access)
+                    ->Field("m_strideSize", &ShaderInputBufferUnboundedArrayDescriptor::m_strideSize)
+                    ->Field("m_registerId", &ShaderInputBufferUnboundedArrayDescriptor::m_registerId);
+            }
+
+            ShaderInputBufferUnboundedArrayIndex::Reflect(context);
+        }
+
+        ShaderInputBufferUnboundedArrayDescriptor::ShaderInputBufferUnboundedArrayDescriptor(
+            const Name& name,
+            ShaderInputBufferAccess access,
+            ShaderInputBufferType type,
+            uint32_t strideSize,
+            uint32_t registerId)
+            : m_name{ name }
+            , m_access{ access }
+            , m_type{ type }
+            , m_strideSize { strideSize }
+            , m_registerId{ registerId }
+        {}
+
+        HashValue64 ShaderInputBufferUnboundedArrayDescriptor::GetHash(HashValue64 seed) const
+        {
+            seed = TypeHash64(m_name.GetHash(), seed);
+            seed = TypeHash64(m_access, seed);
+            seed = TypeHash64(m_type, seed);
+            seed = TypeHash64(m_strideSize, seed);
+            seed = TypeHash64(m_registerId, seed);
+            return seed;
+        }
+
+        void ShaderInputImageUnboundedArrayDescriptor::Reflect(ReflectContext* context)
+        {
+            if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
+            {
+                serializeContext->Class<ShaderInputImageUnboundedArrayDescriptor>()
+                    ->Version(1)
+                    ->Field("m_name", &ShaderInputImageUnboundedArrayDescriptor::m_name)
+                    ->Field("m_type", &ShaderInputImageUnboundedArrayDescriptor::m_type)
+                    ->Field("m_access", &ShaderInputImageUnboundedArrayDescriptor::m_access)
+                    ->Field("m_registerId", &ShaderInputImageUnboundedArrayDescriptor::m_registerId);
+            }
+
+            ShaderInputImageUnboundedArrayIndex::Reflect(context);
+        }
+
+        ShaderInputImageUnboundedArrayDescriptor::ShaderInputImageUnboundedArrayDescriptor(
+            const Name& name,
+            ShaderInputImageAccess access,
+            ShaderInputImageType type,
+            uint32_t registerId)
+            : m_name{ name }
+            , m_access{ access }
+            , m_type { type }
+            , m_registerId{ registerId }
+        {}
+
+        HashValue64 ShaderInputImageUnboundedArrayDescriptor::GetHash(HashValue64 seed) const
+        {
+            seed = TypeHash64(m_name.GetHash(), seed);
+            seed = TypeHash64(m_access, seed);
+            seed = TypeHash64(m_type, seed);
+            seed = TypeHash64(m_registerId, seed);
+            return seed;
+        }
+
         void ShaderInputSamplerDescriptor::Reflect(ReflectContext* context)
         {
             if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))

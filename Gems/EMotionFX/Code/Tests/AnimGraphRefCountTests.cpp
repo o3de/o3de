@@ -43,7 +43,6 @@ namespace EMotionFX
                     const uint32 threadIndex = this->m_actorInstance->GetThreadIndex();
 
                     // Check if data and pose ref counts are back to 0 for all nodes.
-                    AnimGraphRefCountedDataPool& refDataPool = GetEMotionFX().GetThreadData(threadIndex)->GetRefCountedDataPool();
                     const uint32 numNodes = this->m_animGraph->GetNumNodes();
                     for (uint32 i = 0; i < numNodes; ++i)
                     {

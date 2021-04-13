@@ -1000,9 +1000,6 @@ namespace DDSSplitted
         uint32 numSlices = (imageFlags& CImageExtensionHelper::EIF_Cubemap) ? 6 : 1;
         uint32 ddsSize = CTexture::TextureDataSize(ddsFileDesc.header.dwWidth, ddsFileDesc.header.dwHeight, ddsFileDesc.header.dwDepth, max(static_cast<DWORD>(1), ddsFileDesc.header.dwMipMapCount), numSlices, eTF, eTM);
 
-        size_t fileLength = file.GetLength();
-        size_t trailLength = fileLength - ddsSize;
-
         size_t headerEnd = file.Tell();
 
         file.Seek(headerEnd + ddsSize);

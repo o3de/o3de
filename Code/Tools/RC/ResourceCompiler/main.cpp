@@ -31,7 +31,6 @@
 
 #include <ResourceCompiler.h>
 #include <IResourceCompilerHelper.h>
-#include <CmdLine.h>
 #include <CryLibrary.h>
 #include <ZipEncryptor.h>
 
@@ -295,7 +294,7 @@ static bool RegisterConvertors(ResourceCompiler* pRc)
     strDir.append(AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING);
 
     AZ::IO::LocalFileIO localFile;
-    bool foundOK = localFile.FindFiles(strDir.c_str(), CryLibraryDefName("ResourceCompiler*"), [&](const char* pluginFilename) -> bool
+    localFile.FindFiles(strDir.c_str(), CryLibraryDefName("ResourceCompiler*"), [&](const char* pluginFilename) -> bool
     {
 #if defined(AZ_PLATFORM_WINDOWS)
         HMODULE hPlugin = CryLoadLibrary(pluginFilename);
@@ -413,7 +412,21 @@ int rcmain(int argc, char** argv, [[maybe_unused]] char** envp)
         bool enableSourceControl = settings.value("RC_EnableSourceControl", true).toBool();
         mainConfig.SetKeyValue(eCP_PriorityCmdline, "nosourcecontrol", enableSourceControl ? "0" : "1");
 
-        CmdLine::Parse(args, &mainConfig, fileSpec);
+        AZ::CommandLine commandLine;
+        commandLine.Parse(argc, argv);
+
+        for (auto&& [option, value] : commandLine)
+        {
+            if (!option.empty())
+            {
+                mainConfig.SetKeyValue(EConfigPriority::eCP_PriorityCmdline, option.c_str(), value.c_str());
+            }
+            else
+            {
+                fileSpec = commandLine.GetMiscValue(0).c_str();
+            }
+        }
+
 
         // initialize rc (also initializes logs)
         rc.Init(mainConfig);
@@ -518,16 +531,20 @@ int rcmain(int argc, char** argv, [[maybe_unused]] char** envp)
         // Obtain target platform
         int platform;
         {
-            string platformStr = mainConfig.GetAsString("p", "", "");
+            string platformStr = mainConfig.GetAsString("platform", "", "");
+            if (platformStr.empty())
+            {
+                platformStr = mainConfig.GetAsString("p", "", "");
+            }
             if (platformStr.empty())
             {
                 if (!mainConfig.GetAsBool("version", false, true))
                 {
-                    RCLog("Platform (/p) not specified, defaulting to 'pc'.");
+                    RCLog("Platform (-p) not specified, defaulting to 'pc'.");
                     RCLog("");
                 }
                 platformStr = "pc";
-                mainConfig.SetKeyValue(eCP_PriorityCmdline, "p", platformStr.c_str());
+                mainConfig.SetKeyValue(eCP_PriorityCmdline, "platform", platformStr.c_str());
             }
 
             platform = rc.FindPlatform(platformStr.c_str());
@@ -548,7 +565,7 @@ int rcmain(int argc, char** argv, [[maybe_unused]] char** envp)
         }
     }
 
-    const IConfig& config = rc.GetMultiplatformConfig().getConfig();
+     IConfig& config = rc.GetMultiplatformConfig().getConfig();
 
     {
         RCLog("Initializing pak management");
@@ -567,23 +584,28 @@ int rcmain(int argc, char** argv, [[maybe_unused]] char** envp)
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(settingsRegistry, AZ_TRAIT_OS_PLATFORM_CODENAME, {});
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(settingsRegistry, commandLine, false);
 
-            string projectPath = config.GetAsString("gameroot", "", "");
+            const auto projectPathKey = AZ::SettingsRegistryInterface::FixedValueString::format(
+                "%s/project_path", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey);
+            string projectPath = config.GetAsString("project-path", "", "");
             if (!projectPath.empty())
             {
-                const auto projectPathKey = AZ::SettingsRegistryInterface::FixedValueString::format(
-                    "%s/project_path", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey);
                 settingsRegistry.Set(projectPathKey, projectPath.c_str());
             }
 
-            string gameName = config.GetAsString("gamesubdirectory", "", "");
-            if (!gameName.empty())
+            // Update the Runtime FilePaths and project settings
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(settingsRegistry);
+            // Set the project-path and project-name entries from the Settings registry into the RC config structure
+            if (AZ::IO::FixedMaxPathString projPath; settingsRegistry.Get(projPath, AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath))
             {
-                const auto projectNameKey = AZ::SettingsRegistryInterface::FixedValueString::format(
-                    "%s/project_name", AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey);
-                settingsRegistry.Set(projectNameKey, gameName.c_str());
+                config.SetKeyValue(eCP_PriorityCmdline, "project-path", projPath.c_str());
             }
 
-            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(settingsRegistry);
+            const auto projectNameKey = AZ::SettingsRegistryInterface::FixedValueString::format(
+                "%s/project_name", AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey);
+            if (AZ::IO::FixedMaxPathString projName; settingsRegistry.Get(projName, projectNameKey))
+            {
+                config.SetKeyValue(eCP_PriorityCmdline, "project-name", projName.c_str());
+            }
             // and because we're a tool, add the tool folders:
             if (AZ::SettingsRegistryInterface::FixedValueString appRoot; settingsRegistry.Get(appRoot, AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder))
             {

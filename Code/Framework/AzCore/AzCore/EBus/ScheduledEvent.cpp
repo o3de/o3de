@@ -55,7 +55,6 @@ namespace AZ
     void ScheduledEvent::Requeue(TimeMs durationMs)
     {
         m_durationMs = durationMs;
-        ClearHandle();
         IEventScheduler* eventScheduler = Interface<IEventScheduler>::Get();
         if (eventScheduler)
         {
@@ -120,10 +119,6 @@ namespace AZ
 
     void ScheduledEvent::ClearHandle()
     {
-        if (m_handle)
-        {
-            m_handle->Clear();
-            m_handle = nullptr;
-        }
+        m_handle = nullptr;
     }
 }

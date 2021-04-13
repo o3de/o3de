@@ -148,7 +148,6 @@ namespace ImageProcessingAtom
 
             size_t nSlicePitch = (pitch / ePS_Blue);
             AZ::u32 src = 0;
-            AZ::u32 dst = 0;
             for (int b = 0; b < ePS_Blue; ++b)
             {
                 for (int g = 0; g < ePS_Green; ++g)

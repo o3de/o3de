@@ -390,9 +390,8 @@ void CXMLPatcher::DumpFiles(
     {
         CryLog("Dumping before and after data files for '%s'", pInXMLFileName);
 
-        const char* pOrigFileName;
-
-        if (pOrigFileName = strrchr(pInXMLFileName, '/'))
+        const char* pOrigFileName = strrchr(pInXMLFileName, '/');
+        if (pOrigFileName)
         {
             pOrigFileName++;
 

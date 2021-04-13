@@ -1677,7 +1677,6 @@ void TranslateOperandWithMask(HLSLCrossCompilerContext* psContext, const Operand
 {
     bstring glsl = *psContext->currentShaderString;
     uint32_t ui32IgnoreSwizzle = 0;
-    SHADER_VARIABLE_TYPE eType = GetOperandDataTypeEx(psContext, psOperand, TypeFlagsToSVTType(ui32TOFlag));
 
     if (psContext->psShader->ui32MajorVersion <= 3)
     {

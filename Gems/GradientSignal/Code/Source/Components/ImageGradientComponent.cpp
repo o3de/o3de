@@ -63,7 +63,6 @@ namespace GradientSignal
         {
             behaviorContext->Class<ImageGradientConfig>()
                 ->Constructor()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Property("tilingX", BehaviorValueProperty(&ImageGradientConfig::m_tilingX))
                 ->Property("tilingY", BehaviorValueProperty(&ImageGradientConfig::m_tilingY))
@@ -106,7 +105,6 @@ namespace GradientSignal
             behaviorContext->Class<ImageGradientComponent>()->RequestBus("ImageGradientRequestBus");
 
             behaviorContext->EBus<ImageGradientRequestBus>("ImageGradientRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Event("GetImageAssetPath", &ImageGradientRequestBus::Events::GetImageAssetPath)
                 ->Event("SetImageAssetPath", &ImageGradientRequestBus::Events::SetImageAssetPath)

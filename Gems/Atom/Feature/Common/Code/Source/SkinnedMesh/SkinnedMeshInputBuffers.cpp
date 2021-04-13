@@ -269,7 +269,7 @@ namespace AZ
                 RHI::ShaderInputBufferIndex srgIndex = perInstanceSRG->FindShaderInputBufferIndex(streamInfo.m_shaderResourceGroupName);
                 AZ_Error("SkinnedMeshInputBuffers", srgIndex.IsValid(), "Failed to find shader input index for '%s' in the skinning compute shader per-instance SRG.", streamInfo.m_shaderResourceGroupName.GetCStr());
 
-                bool success = perInstanceSRG->SetBufferView(srgIndex, m_lods[lodIndex].m_inputBuffers[inputStream]->GetBufferView());
+                [[maybe_unused]] bool success = perInstanceSRG->SetBufferView(srgIndex, m_lods[lodIndex].m_inputBuffers[inputStream]->GetBufferView());
                 AZ_Error("SkinnedMeshInputBuffers", success, "Failed to bind buffer view for %s", streamInfo.m_bufferName.GetCStr());
             }
 

@@ -25,6 +25,7 @@
 #include <AzCore/Asset/AssetTypeInfoBus.h>
 
 // AzFramework
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/GenericAssetHandler.h>
 
 // AzToolsFramework
@@ -174,10 +175,18 @@ namespace AzAssetBrowserRequestHandlerPrivate
                     }
                 }
 
-                // Prepare undo command last so it captures the final state of the entity.
-                EntityCreateCommand* command = aznew EntityCreateCommand(static_cast<AZ::u64>(newEntity->GetId()));
-                command->Capture(newEntity);
-                command->SetParent(undo.GetUndoBatch());
+                bool isPrefabSystemEnabled = false;
+                AzFramework::ApplicationRequests::Bus::BroadcastResult(
+                    isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+
+                if (!isPrefabSystemEnabled)
+                {
+                    // Prepare undo command last so it captures the final state of the entity.
+                    EntityCreateCommand* command = aznew EntityCreateCommand(static_cast<AZ::u64>(newEntity->GetId()));
+                    command->Capture(newEntity);
+                    command->SetParent(undo.GetUndoBatch());
+                }
+
                 ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::AddDirtyEntity, newEntity->GetId());
                 spawnList.push_back(newEntity->GetId());
             }

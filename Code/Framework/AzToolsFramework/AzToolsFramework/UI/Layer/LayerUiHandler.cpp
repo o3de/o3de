@@ -97,8 +97,6 @@ namespace AzToolsFramework
         AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
             layerColor, entityId, &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::GetLayerColor);
 
-        const QTreeView* outlinerTreeView(qobject_cast<const QTreeView*>(option.widget));
-        int indentation = outlinerTreeView->indentation();
 
         bool isFirstColumn = index.column() == EntityOutlinerListModel::ColumnName;
         bool hasVisibleChildren = index.data(EntityOutlinerListModel::ExpandedRole).value<bool>() && index.model()->hasChildren(index);

@@ -46,7 +46,6 @@ namespace LmbrCentral
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->EBus<AudioListenerComponentRequestBus>("AudioListenerComponentRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                     ->Event("SetRotationEntity", &AudioListenerComponentRequestBus::Events::SetRotationEntity)
                     ->Event("SetPositionEntity", &AudioListenerComponentRequestBus::Events::SetPositionEntity)
                     ->Event("SetFullTransformEntity", &AudioListenerComponentRequestBus::Events::SetFullTransformEntity)

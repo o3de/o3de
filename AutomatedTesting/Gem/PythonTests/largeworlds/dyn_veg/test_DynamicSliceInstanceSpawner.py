@@ -46,7 +46,7 @@ class TestDynamicSliceInstanceSpawner(object):
     def test_DynamicSliceInstanceSpawner_DynamicSliceSpawnerWorks(self, request, editor, level, workspace, project,
                                                                   launcher_platform):
         # Ensure temp level does not already exist
-        file_system.delete([os.path.join(workspace.paths.dev(), project, "Levels", level)], True, True)
+        file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
 
         cfg_args = [level]
 
@@ -61,7 +61,7 @@ class TestDynamicSliceInstanceSpawner(object):
                                           expected_lines=expected_lines, cfg_args=cfg_args)
 
         # Cleanup our temp level
-        file_system.delete([os.path.join(workspace.paths.dev(), project, "Levels", level)], True, True)
+        file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
 
     @pytest.mark.test_case_id('C2574330')
     @pytest.mark.BAT
@@ -70,7 +70,7 @@ class TestDynamicSliceInstanceSpawner(object):
     def test_DynamicSliceInstanceSpawner_Embedded_E2E_Editor(self, workspace, request, editor, level, project,
                                                              launcher_platform):
         # Ensure temp level does not already exist
-        file_system.delete([os.path.join(workspace.paths.dev(), project, "Levels", level)], True, True)
+        file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
 
         expected_lines = [
             "'Instance Spawner' created",
@@ -86,6 +86,7 @@ class TestDynamicSliceInstanceSpawner(object):
     @pytest.mark.BAT
     @pytest.mark.SUITE_periodic
     @pytest.mark.parametrize("launcher_platform", ['windows'])
+    @pytest.mark.skip      # ATOM-14703
     def test_DynamicSliceInstanceSpawner_Embedded_E2E_Launcher(self, workspace, launcher, level,
                                                                remote_console_instance, project, launcher_platform):
 
@@ -96,7 +97,7 @@ class TestDynamicSliceInstanceSpawner(object):
         hydra.launch_and_validate_results_launcher(launcher, level, remote_console_instance, expected_lines)
 
         # Cleanup our temp level
-        file_system.delete([os.path.join(workspace.paths.dev(), project, "Levels", level)], True, True)
+        file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
 
     @pytest.mark.test_case_id('C4762367')
     @pytest.mark.SUITE_periodic
@@ -104,7 +105,7 @@ class TestDynamicSliceInstanceSpawner(object):
     def test_DynamicSliceInstanceSpawner_External_E2E_Editor(self, workspace, request, editor, level, project,
                                                              launcher_platform):
         # Ensure temp level does not already exist
-        file_system.delete([os.path.join(workspace.paths.dev(), project, "Levels", level)], True, True)
+        file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
 
         expected_lines = [
             "Spawner entity created",
@@ -119,6 +120,7 @@ class TestDynamicSliceInstanceSpawner(object):
     @pytest.mark.test_case_id('C4762367')
     @pytest.mark.SUITE_periodic
     @pytest.mark.parametrize("launcher_platform", ['windows'])
+    @pytest.mark.skip      # ATOM-14703
     def test_DynamicSliceInstanceSpawner_External_E2E_Launcher(self, workspace, launcher, level,
                                                                remote_console_instance, project, launcher_platform):
 
@@ -129,5 +131,5 @@ class TestDynamicSliceInstanceSpawner(object):
         hydra.launch_and_validate_results_launcher(launcher, level, remote_console_instance, expected_lines)
 
         # Cleanup our temp level
-        file_system.delete([os.path.join(workspace.paths.dev(), project, "Levels", level)], True, True)
+        file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
 

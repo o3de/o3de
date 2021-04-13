@@ -41,8 +41,9 @@ namespace AZ
             /// Ray tracing shader table
             const RayTracingShaderTable* m_rayTracingShaderTable = nullptr;
 
-            /// Global SRG
-            const ShaderResourceGroup* m_globalSrg = nullptr;
+            /// Shader Resource Groups
+            uint32_t m_shaderResourceGroupCount = 0;
+            const ShaderResourceGroup* const* m_shaderResourceGroups = nullptr;
 
             /// Global shader pipeline state
             const PipelineState* m_globalPipelineState = nullptr;
