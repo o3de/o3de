@@ -205,7 +205,7 @@ void CVars::Init()
 
 #ifndef _RELEASE
     DefineConstIntCVar(e_DebugDrawListSize, 24, VF_DEV_ONLY,    "num objects in the list for e_DebugDraw list infodebug");
-    ICVar* e_DebugDrawListFilter = REGISTER_STRING_CB_DEV_ONLY("e_DebugDrawListFilter", "",  VF_NULL,
+    REGISTER_STRING_CB_DEV_ONLY("e_DebugDrawListFilter", "",  VF_NULL,
             "filter for e_DebugDraw list. Combine object type letters to create the filter\n"
             "(example: e_DebugDrawListFilter BVC = shows Characters+StatObject). 'all' = no filter.\n"
             " C: Character\n"

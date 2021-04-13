@@ -15,15 +15,6 @@ set -o errexit # exit on the first failure encountered
 BASEDIR=$(dirname "$0")
 source $BASEDIR/env_linux.sh
 
-# Delete output directory if CLEAN_OUTPUT_DIRECTORY env variable is set
-if [[ $CLEAN_OUTPUT_DIRECTORY == "true" ]]; then
-    if [[ -d $OUTPUT_DIRECTORY ]]; then
-        echo "[ci_build] CLEAN_OUTPUT_DIRECTORY option set with value \"${CLEAN_OUTPUT_DIRECTORY}\""
-        echo "[ci_build] Deleting \"${OUTPUT_DIRECTORY}\""
-        rm -rf ${OUTPUT_DIRECTORY}
-    fi
-fi
-
 mkdir -p ${OUTPUT_DIRECTORY}
 SOURCE_DIRECTORY=${PWD}
 pushd $OUTPUT_DIRECTORY

@@ -643,8 +643,6 @@ namespace AZ
                 return ResultCode::Error;
             }
 
-            bool bSourceExcluded = false;
-            bool bDestinationExcluded = false;
 
             //else both are remote so just issue the remote copy command
             AzFramework::AssetSystem::FileCopyRequest request(sourceFilePath, destinationFilePath);
@@ -697,8 +695,6 @@ namespace AZ
             }
 
             //we are going to access shared memory so lock and copy the results into our memory
-            bool bSourceExcluded = false;
-            bool bDestinationExcluded = false;
 
             //if the source and destination are the same, shortcut
             if (!strcmp(sourceFilePath, destinationFilePath))

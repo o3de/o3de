@@ -35,7 +35,6 @@ namespace AzFramework
         {
             TYPE_None = 0,
             TYPE_Entity = 1 << 0,      // All entities
-            TYPE_NetEntity = 1 << 1,   // NetBound entities
             TYPE_RPI_Cullable = 1 << 2 // Cullable by the render system
         };
 
@@ -113,6 +112,4 @@ namespace AzFramework
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
     };
     using IVisibilitySystemRequestBus = AZ::EBus<IVisibilitySystem, IVisibilitySystemRequests>;
-
-    
 }

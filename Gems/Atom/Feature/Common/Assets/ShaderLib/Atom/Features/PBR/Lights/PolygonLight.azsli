@@ -17,7 +17,7 @@
 #include <Atom/RPI/Math.azsli>
 
 // Polygon lights using Linearly Transformed Cosines
-void ApplyPoylgonLight(ViewSrg::PolygonLight light, float3 dirToCamera, Surface surface, inout float3 diffuseLighting, inout float3 specularLighting, inout float3 translucentBackLighting)
+void ApplyPoylgonLight(ViewSrg::PolygonLight light, Surface surface, inout LightingData lightingData)
 {
     float3 posToLight = light.m_position - surface.position;
     float distanceToLight2 = dot(posToLight, posToLight); // light distance squared
@@ -57,13 +57,13 @@ void ApplyPoylgonLight(ViewSrg::PolygonLight light, float3 dirToCamera, Surface 
 
     // Diffuse
     static const float3x3 identityMatrix = float3x3(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0);
-    float diffuse = LtcPolygonEvaluate(surface.position, surface.normal, dirToCamera, identityMatrix, ViewSrg::m_polygonLightPoints, startIndex, endIndex);
+    float diffuse = LtcPolygonEvaluate(surface.position, surface.normal, lightingData.dirToCamera, identityMatrix, ViewSrg::m_polygonLightPoints, startIndex, endIndex);
     diffuse = doubleSided ? abs(diffuse) : max(0.0, diffuse);
 
     // Specular
-    float2 ltcCoords = LtcCoords(dot(surface.normal, dirToCamera), surface.roughnessLinear);
+    float2 ltcCoords = LtcCoords(dot(surface.normal, lightingData.dirToCamera), surface.roughnessLinear);
     float3x3 ltcMat = LtcMatrix(SceneSrg::m_ltcMatrix, ltcCoords);
-    float3 specular = LtcPolygonEvaluate(surface.position, surface.normal, dirToCamera, ltcMat, ViewSrg::m_polygonLightPoints, startIndex, endIndex);
+    float3 specular = LtcPolygonEvaluate(surface.position, surface.normal, lightingData.dirToCamera, ltcMat, ViewSrg::m_polygonLightPoints, startIndex, endIndex);
     specular = doubleSided ? abs(specular) : max(0.0, specular);
 
     // Apply BRDF scale terms (BRDF magnitude and Schlick Fresnel)
@@ -73,16 +73,16 @@ void ApplyPoylgonLight(ViewSrg::PolygonLight light, float3 dirToCamera, Surface 
     // Scale by inverse surface area of hemisphere (1/2pi), attenuation, and light intensity
     float3 intensity = 0.5 * INV_PI * radiusAttenuation * abs(light.m_rgbIntensityNits);
 
-    diffuseLighting += surface.albedo * diffuse * intensity;
-    specularLighting += surface.specularF0 * specular * intensity;
+    lightingData.diffuseLighting += surface.albedo * diffuse * intensity;
+    lightingData.specularLighting += surface.specularF0 * specular * intensity;
 }
 
-void ApplyPolygonLights(float3 dirToCamera, Surface surface, inout float3 diffuseLighting, inout float3 specularLighting, inout float3 translucentBackLighting)
+void ApplyPolygonLights(Surface surface, inout LightingData lightingData)
 {
     for (uint currLightIndex = 0; currLightIndex <  ViewSrg::m_polygonLightCount; ++currLightIndex)
     {
         ViewSrg::PolygonLight light = ViewSrg::m_polygonLights[currLightIndex];
         
-        ApplyPoylgonLight(light, dirToCamera, surface, diffuseLighting, specularLighting, translucentBackLighting);
+        ApplyPoylgonLight(light, surface, lightingData);
     }
 }

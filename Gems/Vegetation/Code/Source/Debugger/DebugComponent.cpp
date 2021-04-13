@@ -819,7 +819,8 @@ namespace DebugUtility
                         0.0f,
                         "Unfiltered");
                     AZ::IO::LocalFileIO::GetInstance()->Write(logHandle, buffer, written);
-                    for (const auto& filterReason : usedfilterReasonSet)
+                    const size_t usedfilterReasonSetSize = usedfilterReasonSet.size();
+                    for (size_t i = 0; i < usedfilterReasonSetSize; ++i)
                     {
                         written = azsnprintf(buffer, AZ_ARRAY_SIZE(buffer), " 0,");
                         AZ::IO::LocalFileIO::GetInstance()->Write(logHandle, buffer, written);

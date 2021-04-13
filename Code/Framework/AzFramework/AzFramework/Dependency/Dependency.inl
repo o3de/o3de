@@ -167,8 +167,6 @@ namespace AzFramework
 
         for (auto && bound : m_bounds)
         {
-            bool satisfies = false;
-
             if (bound.m_comparison == Comp::TwiddleWakka)
             {
                 // Lower bound

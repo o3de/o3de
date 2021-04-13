@@ -18,7 +18,7 @@
 #include <Vegetation/Ebuses/AreaRequestBus.h>
 #include <Vegetation/Ebuses/MeshBlockerRequestBus.h>
 #include <LmbrCentral/Dependency/DependencyNotificationBus.h>
-#include <LmbrCentral/Rendering/MeshComponentBus.h>
+#include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
 #include <SurfaceData/SurfaceDataSystemNotificationBus.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/std/containers/unordered_map.h>
@@ -27,8 +27,6 @@
 
 namespace LmbrCentral
 {
-    class MeshAsset; 
-    
     template<typename, typename>
     class EditorWrappedComponentBase;
 }
@@ -54,7 +52,7 @@ namespace Vegetation
 
     class MeshBlockerComponent
         : public AreaComponentBase
-        , private LmbrCentral::MeshComponentNotificationBus::Handler
+        , private AZ::Render::MeshComponentNotificationBus::Handler
         , private AZ::TickBus::Handler
         , private MeshBlockerRequestBus::Handler
         , private SurfaceData::SurfaceDataSystemNotificationBus::Handler
@@ -96,9 +94,7 @@ namespace Vegetation
 
         //////////////////////////////////////////////////////////////////////////
         // MeshComponentNotificationBus
-        void OnMeshCreated(const AZ::Data::Asset<AZ::Data::AssetData>& asset) override;
-        void OnMeshDestroyed() override;
-        void OnBoundsReset() override;
+        void OnModelReady(const AZ::Data::Asset<AZ::RPI::ModelAsset>& modelAsset, const AZ::Data::Instance<AZ::RPI::Model>& model) override;
 
         //////////////////////////////////////////////////////////////////////////
         // SurfaceData::SurfaceDataSystemNotificationBus

@@ -59,7 +59,6 @@ namespace GradientSignal
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<ShapeAreaFalloffGradientConfig>()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Constructor()
                 ->Property("shapeEntityId", BehaviorValueProperty(&ShapeAreaFalloffGradientConfig::m_shapeEntityId))
@@ -106,7 +105,6 @@ namespace GradientSignal
             behaviorContext->Class<ShapeAreaFalloffGradientComponent>()->RequestBus("ShapeAreaFalloffGradientRequestBus");
 
             behaviorContext->EBus<ShapeAreaFalloffGradientRequestBus>("ShapeAreaFalloffGradientRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Event("GetShapeEntityId", &ShapeAreaFalloffGradientRequestBus::Events::GetShapeEntityId)
                 ->Event("SetShapeEntityId", &ShapeAreaFalloffGradientRequestBus::Events::SetShapeEntityId)

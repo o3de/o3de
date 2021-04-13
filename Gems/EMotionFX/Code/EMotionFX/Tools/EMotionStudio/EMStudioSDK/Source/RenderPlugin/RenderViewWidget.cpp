@@ -52,7 +52,7 @@ namespace EMStudio
         mPlugin->CreateRenderWidget(this, &mRenderWidget, &renderWidget);
         verticalLayout->addWidget(renderWidget);
 
-        auto sliderGroup = new QActionGroup(this);
+        new QActionGroup(this);
 
         QActionGroup* group = new QActionGroup(this);
         group->setExclusive(true);

@@ -76,7 +76,6 @@ namespace ScriptCanvas::Nodes::Core
         }
 
         // Store the name of the event in the AzEventEntry structure
-        Slot* onEventSlot = AzEventHandlerProperty::GetOnEventSlot(this);
         m_azEventEntry.m_eventName = AZStd::move(behaviorAzEventDesc.m_eventName);
 
         // Add a DataSlot which accepts the aliased AZ::Event<Params...> type by reference;

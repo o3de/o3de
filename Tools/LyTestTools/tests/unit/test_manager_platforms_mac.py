@@ -45,7 +45,7 @@ class TestMacResourceLocator(object):
 
     def test_PlatformConfigFile_HasPath_ReturnsPath(self):
         expected = os.path.join(
-            mac_resource_locator.dev(),
+            mac_resource_locator.engine_root(),
             CONFIG_FILE)
 
         assert mac_resource_locator.platform_config_file() == expected

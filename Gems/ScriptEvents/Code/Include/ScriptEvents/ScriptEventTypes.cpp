@@ -295,7 +295,6 @@ namespace ScriptEvents
 
         bool ValidateAddressType(const AZ::Uuid& addressTypeId)
         {
-            bool isValid = true;
             if (IsAddressableType(addressTypeId))
             {
                 AZ::BehaviorContext* behaviorContext = nullptr;

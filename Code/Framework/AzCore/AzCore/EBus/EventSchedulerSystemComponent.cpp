@@ -11,7 +11,6 @@
 */
 
 #include <AzCore/EBus/EventSchedulerSystemComponent.h>
-#include <AzCore/EBus/ScheduledEvent.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Console/ILogger.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -111,8 +110,10 @@ namespace AZ
         TimeMs currentMilliseconds = GetElapsedTimeMs();
         if (timedEvent->m_handle == nullptr)
         {
-            timedEvent->m_handle = AllocateHandle(TimeMs(currentMilliseconds + durationMs), durationMs, timedEvent);
+            timedEvent->m_handle = AllocateHandle();
         }
+        const bool ownsScheduledEvent = false;
+        *(timedEvent->m_handle) = ScheduledEventHandle(TimeMs(currentMilliseconds + durationMs), durationMs, timedEvent, ownsScheduledEvent);
         timedEvent->m_timeInserted = currentMilliseconds;
         m_queue.push(timedEvent->m_handle);
         return timedEvent->m_handle;
@@ -126,7 +127,9 @@ namespace AZ
         }
 
         TimeMs currentMilliseconds = GetElapsedTimeMs();
-        ScheduledEvent* timedEvent = AllocateManagedEvent(TimeMs(currentMilliseconds + durationMs), durationMs, callback, eventName);
+        ScheduledEvent* timedEvent = AllocateManagedEvent(callback, eventName);
+        const bool ownsScheduledEvent = true;
+        *(timedEvent->m_handle) = ScheduledEventHandle(TimeMs(currentMilliseconds + durationMs), durationMs, timedEvent, ownsScheduledEvent);
         timedEvent->m_timeInserted = currentMilliseconds;
         m_queue.push(timedEvent->m_handle);
     }
@@ -150,10 +153,12 @@ namespace AZ
     {
         AZLOG_INFO("EventSchedulerSystemComponent::HandleCount = %u", aznumeric_cast<uint32_t>(GetHandleCount()));
         AZLOG_INFO("EventSchedulerSystemComponent::FreeHandleCount = %u", aznumeric_cast<uint32_t>(GetFreeHandleCount()));
+        AZLOG_INFO("EventSchedulerSystemComponent::OwnedEventCount = %u", aznumeric_cast<uint32_t>(m_ownedEvents.size()));
+        AZLOG_INFO("EventSchedulerSystemComponent::FreeEventCount = %u", aznumeric_cast<uint32_t>(m_freeEvents.size()));
         AZLOG_INFO("EventSchedulerSystemComponent::QueueSize = %u", aznumeric_cast<uint32_t>(GetQueueSize()));
     }
 
-    ScheduledEventHandle* EventSchedulerSystemComponent::AllocateHandle(TimeMs executeTimeMs, TimeMs durationTimeMs, ScheduledEvent* scheduledEvent)
+    ScheduledEventHandle* EventSchedulerSystemComponent::AllocateHandle()
     {
         ScheduledEventHandle* result = nullptr;
         if (!m_freeHandles.empty())
@@ -166,31 +171,34 @@ namespace AZ
             m_handles.resize(m_handles.size() + 1);
             result = &(m_handles.back());
         }
-        *result = ScheduledEventHandle(executeTimeMs, durationTimeMs, scheduledEvent, false);
         return result;
     }
 
-    ScheduledEvent* EventSchedulerSystemComponent::AllocateManagedEvent(TimeMs executeTimeMs, TimeMs durationTimeMs, const AZStd::function<void()>& callback, const Name& eventName)
+    ScheduledEvent* EventSchedulerSystemComponent::AllocateManagedEvent(const AZStd::function<void()>& callback, const Name& eventName)
     {
-        ScheduledEvent* result = new ScheduledEvent(callback, eventName);
-        ScheduledEventHandle* handle = nullptr;
-        if (!m_freeHandles.empty())
+        ScheduledEvent* scheduledEvent = nullptr;
+        if (!m_freeEvents.empty())
         {
-            handle = m_freeHandles.back();
-            m_freeHandles.pop_back();
+            scheduledEvent = m_freeEvents.back();
+            m_freeEvents.pop_back();
         }
         else
         {
-            m_handles.resize(m_handles.size() + 1);
-            handle = &(m_handles.back());
+            m_ownedEvents.resize(m_ownedEvents.size() + 1);
+            scheduledEvent = &(m_ownedEvents.back());
         }
-        *handle = ScheduledEventHandle(executeTimeMs, durationTimeMs, result, true);
-        result->m_handle = handle;
-        return result;
+        scheduledEvent->m_eventName = eventName;
+        scheduledEvent->m_callback = callback;
+        scheduledEvent->m_handle = AllocateHandle();
+        return scheduledEvent;
     }
 
     void EventSchedulerSystemComponent::FreeHandle(ScheduledEventHandle* handle)
     {
+        if (handle->GetOwnsScheduledEvent())
+        {
+            m_freeEvents.push_back(handle->GetScheduledEvent());
+        }
         m_freeHandles.push_back(handle);
     }
 }

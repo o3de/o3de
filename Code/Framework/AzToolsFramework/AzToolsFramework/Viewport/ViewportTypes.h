@@ -202,10 +202,16 @@ namespace AzToolsFramework
             return mouseInteractionEvent.m_wheelDelta;
         }
 
-        /// Return Qt QPoint from an Viewport ScreenPoint.
+        /// Return QPoint from AzFramework::ScreenPoint.
         inline QPoint QPointFromScreenPoint(const AzFramework::ScreenPoint& screenPoint)
         {
             return {screenPoint.m_x, screenPoint.m_y};
+        }
+
+        /// Return AzFramework::ScreenPoint from QPoint.
+        inline AzFramework::ScreenPoint ScreenPointFromQPoint(const QPoint& qpoint)
+        {
+            return AzFramework::ScreenPoint{qpoint.x(), qpoint.y()};
         }
 
         /// Map from Qt -> Lumberyard buttons.

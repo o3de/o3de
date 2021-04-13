@@ -465,10 +465,15 @@ namespace AZ
             MaterialComponentNotificationBus::Handler::BusConnect(m_entityId);
             MeshComponentRequestBus::Handler::BusConnect(m_entityId);
             LmbrCentral::MeshComponentRequestBus::Handler::BusConnect(m_entityId);
+
+            const Data::Instance<RPI::Model> model = m_meshFeatureProcessor->GetModel(*m_meshHandle);
+            MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnModelReady, model->GetModelAsset(), model);
         }
 
         void AtomActorInstance::UnregisterActor()
         {
+            MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnModelPreDestroy);
+
             LmbrCentral::MeshComponentRequestBus::Handler::BusDisconnect();
             MeshComponentRequestBus::Handler::BusDisconnect();
             MaterialComponentNotificationBus::Handler::BusDisconnect();

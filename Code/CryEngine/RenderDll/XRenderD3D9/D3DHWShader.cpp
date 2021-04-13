@@ -538,13 +538,7 @@ namespace
         {
             float* pData;
 
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-            // render to texture uses custom data as a double buffer to prevent flicker
-            // in the terrain texture base
-            if (r->m_pRT->GetThreadList() == 0)
-#else
             if (SRendItem::m_RecurseLevel[r->m_RP.m_nProcessThreadID] <= 0)
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
             {
                 pData = (float*)pRE->GetCustomData();
             }
@@ -834,10 +828,8 @@ namespace
         return params;
     }
 
-    NO_INLINE Vec4 sGetVolumetricFogScatteringParams(CD3D9Renderer* r)
+    NO_INLINE Vec4 sGetVolumetricFogScatteringParams([[maybe_unused]] CD3D9Renderer* r)
     {
-        const CameraViewParameters& rc = r->GetViewParameters();
-
         Vec3 volFogScatterParams(0.0f, 0.0f, 0.0f);
         gEnv->p3DEngine->GetGlobalParameter(E3DPARAM_VOLFOG2_SCATTERING_PARAMS, volFogScatterParams);
 
@@ -1130,7 +1122,6 @@ namespace
         }
         const float fRecipThermalViewDist = 1.0f;
 
-        CShaderResources* pRes = gRenDev->m_RP.m_pShaderResources;
         float heatAmount = 0.0f;
 
         sData[0].f[0] = heatAmount;
@@ -1274,7 +1265,6 @@ namespace
                 {
                     float scale = 1.0f;
 
-                    IRenderNode *pRenderNode = (IRenderNode *)pCurObject->m_pRenderNode;
 
                     float distance = pCurObject->m_fDistance * TANGENT30_2 / scale;
                     int screenHeight = gRenDev->GetHeight();
@@ -1336,7 +1326,6 @@ namespace
                     {
                         float scale = 1.0f;
 
-                        IRenderNode *pRenderNode = (IRenderNode *)pCurObject->m_pRenderNode;
 
                         float distance = pCurObject->m_fDistance * TANGENT30_2 / scale;
                         int screenHeight = gRenDev->GetHeight();
@@ -1397,7 +1386,6 @@ namespace
     }
     NO_INLINE void sAmbientOpacity(CRenderObject* const renderObject, CD3D9Renderer* renderer, CShaderResources* shaderResources, UFloat4* sData, const CRenderObject::SInstanceInfo& instInfo)
     {
-        PerFrameParameters& RESTRICT_REFERENCE PF = renderer->m_cEF.m_PF;
         SRenderPipeline& RESTRICT_REFERENCE rRP = renderer->m_RP;
 
         float opacity = shaderResources ? shaderResources->GetStrengthValue(EFTT_OPACITY) : 1.0f;
@@ -1440,7 +1428,6 @@ namespace
         CD3D9Renderer* const __restrict r = gcpRendD3D;
         SRenderPipeline& RESTRICT_REFERENCE rRP = r->m_RP;
         CRenderObject* pObj = rRP.m_pCurObject;
-        CShaderResources* shaderResources = rRP.m_pShaderResources;
         sData[0].f[0] = instInfo.m_AmbColor[3];
         sData[0].f[1] = /*instInfo.m_AmbColor[3] * */ rRP.m_fCurOpacity * pObj->m_fAlpha;
 
@@ -1689,8 +1676,6 @@ namespace
 
         CD3D9Renderer* r = gcpRendD3D;
         SRenderPipeline& rRP = r->m_RP;
-        CRenderObject* renderObject = rRP.m_pCurObject;
-        CShaderResources* shaderResources = rRP.m_pShaderResources;
 
         for (AZ::u32 parameterIdx = 0; parameterIdx < parameterCount; parameterIdx++)
         {
@@ -2290,7 +2275,6 @@ void CHWShader_D3D::UpdatePerFrameResourceGroup()
 
     const PerFrameParameters& PF = gcpRendD3D->m_RP.m_TI[gcpRendD3D->m_RP.m_nProcessThreadID].m_perFrameParameters;
     CD3D9Renderer* const __restrict rd = gcpRendD3D;
-    CDeviceManager& deviceManager = rd->m_DevMan;
     rd->GetGraphicsPipeline().UpdatePerFrameConstantBuffer(PF);
     rd->GetGraphicsPipeline().BindPerFrameConstantBuffer();
 }
@@ -2487,7 +2471,6 @@ bool CHWShader_D3D::mfSetSamplers(const std::vector<SCGSampler>& Samplers, EHWSh
         return true;
     }
     CD3D9Renderer* __restrict rd = gcpRendD3D;
-    CShaderResources* __restrict pSR = rd->m_RP.m_pShaderResources;
 
     uint32 i;
     const SCGSampler* pSamp = &Samplers[0];
@@ -2495,7 +2478,6 @@ bool CHWShader_D3D::mfSetSamplers(const std::vector<SCGSampler>& Samplers, EHWSh
     {
         const SCGSampler* pSM = pSamp++;
         int nSUnit = pSM->m_BindingSlot;
-        int nTState = pSM->m_nStateHandle;
 
         switch (pSM->m_eCGSamplerType)
         {
@@ -2658,7 +2640,6 @@ bool CHWShader_D3D::mfSetTextures(const std::vector<SCGTexture>& Textures, EHWSh
             continue;
         }
 
-        CTexture* pT = nullptr;
         switch (pTexBind->m_eCGTextureType)
         {
         case ECGT_MatSlot_Diffuse:
@@ -3216,8 +3197,9 @@ bool CHWShader_D3D::mfSetSamplers_Old(const std::vector<STexSamplerRT>& Samplers
                         {
                             pTex = CTexture::GetByID(nCustomID);
                         }
-                        else if ((nTUnit < EFTT_MAX) && pSR && (overloadTexture = pSR->GetTextureResource(EFTT_ENV)))
+                        else if ((nTUnit < EFTT_MAX) && pSR && pSR->GetTextureResource(EFTT_ENV))
                         {
+                            overloadTexture = pSR->GetTextureResource(EFTT_ENV);
                             // Perhaps user wanted a specific cubemap instead?
                             // This should still be allowed even if the sampler is "TO_FROMOBJ_CM" as the
                             // end user can still select specific cubemaps from the material editor.
@@ -3262,11 +3244,7 @@ bool CHWShader_D3D::mfSetSamplers_Old(const std::vector<STexSamplerRT>& Samplers
 
                 case TO_WATERVOLUMEREFLMAP:
                 {
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-                    const uint32 nCurrWaterVolID = gRenDev->GetCameraFrameID() % 2;
-#else
                     const uint32 nCurrWaterVolID = gRenDev->GetFrameID(false) % 2;
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
                     CTexture* pTex = CTexture::s_ptexWaterVolumeRefl[nCurrWaterVolID] ? CTexture::s_ptexWaterVolumeRefl[nCurrWaterVolID] : CTextureManager::Instance()->GetBlackTexture();
                     pTex->Apply(nTUnit, CTexture::GetTexState(STexState(FILTER_ANISO16X, true)), nTexMaterialSlot, nSUnit, SResourceView::DefaultView, eSHClass);
                 }
@@ -3274,11 +3252,7 @@ bool CHWShader_D3D::mfSetSamplers_Old(const std::vector<STexSamplerRT>& Samplers
 
                 case TO_WATERVOLUMEREFLMAPPREV:
                 {
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-                    const uint32 nPrevWaterVolID = (gRenDev->GetCameraFrameID() + 1) % 2;
-#else
                     const uint32 nPrevWaterVolID = (gRenDev->GetFrameID(false) + 1) % 2;
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
 
                     CTexture* pTex = CTexture::s_ptexWaterVolumeRefl[nPrevWaterVolID] ? CTexture::s_ptexWaterVolumeRefl[nPrevWaterVolID] : CTextureManager::Instance()->GetBlackTexture();
                     pTex->Apply(nTUnit, nTState, nTexMaterialSlot, nSUnit, SResourceView::DefaultView, eSHClass);
@@ -3287,11 +3261,7 @@ bool CHWShader_D3D::mfSetSamplers_Old(const std::vector<STexSamplerRT>& Samplers
 
                 case TO_WATERVOLUMECAUSTICSMAP:
                 {
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-                    const uint32 nCurrWaterVolID = gRenDev->GetCameraFrameID() % 2;
-#else
                     const uint32 nCurrWaterVolID = gRenDev->GetFrameID(false) % 2;
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
                     CTexture* pTex = CTexture::s_ptexWaterCaustics[nCurrWaterVolID];
                     pTex->Apply(nTUnit, nTState, nTexMaterialSlot, nSUnit, SResourceView::DefaultView, eSHClass);
                 }
@@ -3299,11 +3269,7 @@ bool CHWShader_D3D::mfSetSamplers_Old(const std::vector<STexSamplerRT>& Samplers
 
                 case TO_WATERVOLUMECAUSTICSMAPTEMP:
                 {
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-                    const uint32 nPrevWaterVolID = (gRenDev->GetCameraFrameID() + 1) % 2;
-#else
                     const uint32 nPrevWaterVolID = (gRenDev->GetFrameID(false) + 1) % 2;
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
                     CTexture* pTex = CTexture::s_ptexWaterCaustics[nPrevWaterVolID];
                     pTex->Apply(nTUnit, nTState, nTexMaterialSlot, nSUnit, SResourceView::DefaultView, eSHClass);
                 }
@@ -3366,7 +3332,7 @@ bool CHWShader_D3D::mfSetSamplers_Old(const std::vector<STexSamplerRT>& Samplers
                         STexState pTexStateLinearClamp;
                         pTexStateLinearClamp.SetFilterMode(FILTER_LINEAR);
                         pTexStateLinearClamp.SetClampMode(false, false, false);
-                        int nTexStateLinearClampID = CTexture::GetTexState(pTexStateLinearClamp);
+                        CTexture::GetTexState(pTexStateLinearClamp);
 
                         pCloudShadowTex->Apply(nTUnit, nTState, nTexMaterialSlot, nSUnit, SResourceView::DefaultView, eSHClass);
                     }
@@ -3587,7 +3553,6 @@ bool CHWShader_D3D::mfUpdateSamplers(CShader* shader)
 
     if (pSRes)
     {
-        AZ::u32                             updateCount = 0;
         AZStd::map<uint16, SEfResTexture*>  UpdatedTMap;
 
         for (AZ::u32 i = 0; i < samplerCount; i++, pSamp++)
@@ -3993,64 +3958,6 @@ void CHWShader_D3D::SHWSInstance::GetInstancingAttribInfo(uint8 Attributes[32], 
 }
 
 
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-void CHWShader_D3D::UpdateSamplerEngineTextures()
-{
-    // get all pixel shaders and update all the sampler textures that point to engine render targets
-    CCryNameTSCRC className = CHWShader::mfGetClassName(eHWSC_Pixel);
-    SResourceContainer* pRL = CBaseResource::GetResourcesForClass(className);
-    if (!pRL)
-    {
-        return;
-    }
-
-    for (auto iter : pRL->m_RMap)
-    {
-        CHWShader_D3D* shader = static_cast<CHWShader_D3D*>(iter.second);
-        if (!shader)
-        {
-            continue;
-        }
-
-        for (CHWShader_D3D::SHWSInstance* shaderInstance : shader->m_Insts)
-        {
-            if (!shaderInstance || shaderInstance->m_bDeleted || shaderInstance->m_pSamplers.empty())
-            {
-                continue;
-            }
-
-            for (STexSamplerRT& sampler : shaderInstance->m_pSamplers)
-            {
-                CTexture* texture = sampler.m_pTex;
-                if (!texture || !(texture->GetFlags() & FT_USAGE_RENDERTARGET))
-                {
-                    continue;
-                }
-
-                const char* name = texture->GetName();
-                if (name == nullptr || name[0] != '$')
-                {
-                    continue;
-                }
-
-                CTexture* engineTexture = CTextureManager::Instance()->GetEngineTexture(CCryNameTSCRC(sampler.m_nCrc));
-                if (engineTexture && sampler.m_pTex != engineTexture)
-                {
-                    sampler.m_pTex->Release();
-                    sampler.m_pTex = engineTexture;
-
-                    // don't add a reference to texture we can't Release()
-                    if (!(engineTexture->GetFlags() & FT_DONT_RELEASE))
-                    {
-                        engineTexture->AddRef();
-                    }
-                }
-            }
-        }
-    }
-}
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-
 void CHWShader_D3D::ShutDown()
 {
     CCryNameTSCRC Name;
@@ -4288,7 +4195,6 @@ uint64 CHWShader_D3D::CheckIfExpr_r(uint32* pTokens, uint32& nCur, uint32 nSize)
 
     while (nCur < nSize)
     {
-        int nRecurs = 0;
         uint32 nToken = pTokens[nCur++];
         if (nToken == eT_br_rnd_1) // check for '('
         {
@@ -4851,7 +4757,6 @@ CHWShader_D3D::SHWSInstance* CHWShader_D3D::mfGetInstance(CShader* pSH, SShaderC
             s_nInstFrame++;
             cgi->m_Ident = Ident;
             cgi->m_eClass = m_eSHClass;
-            size_t i = std::distance(pInstCont->begin(), it);
             pInstCont->insert(it, cgi);
             if (nFlags & HWSF_FAKE)
             {

@@ -530,7 +530,6 @@ namespace LandscapeCanvasEditor
         // If an area filter or modifier is removed, then only delete the underlying component.
         // Otherwise, delete the whole underlying Entity when the node is removed.
         auto baseNodePtr = static_cast<LandscapeCanvas::BaseNode*>(node.get());
-        LandscapeCanvas::BaseNode::BaseNodeType nodeType = baseNodePtr->GetBaseNodeType();
         if (baseNodePtr->IsAreaExtender())
         {
             AZ::Component* component = baseNodePtr->GetComponent();

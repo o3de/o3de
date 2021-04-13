@@ -319,7 +319,7 @@ namespace SerializeHelpers
         // save the entitiesToSerialize structure to the buffer
         AZStd::string charBuffer;
         AZ::IO::ByteContainerStream<AZStd::string> charStream(&charBuffer);
-        bool success = AZ::Utils::SaveObjectToStream(charStream, AZ::ObjectStream::ST_XML, &entitiesToSerialize);
+        [[maybe_unused]] bool success = AZ::Utils::SaveObjectToStream(charStream, AZ::ObjectStream::ST_XML, &entitiesToSerialize);
         AZ_Assert(success, "Failed to serialize elements to XML");
 
         return charBuffer;

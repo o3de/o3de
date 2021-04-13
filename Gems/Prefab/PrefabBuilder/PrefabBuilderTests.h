@@ -55,7 +55,7 @@ namespace UnitTest
         {
             if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
-                serializeContext->Class<TestComponent>()
+                serializeContext->Class<TestComponent, AZ::Component>()
                     ->Field("Asset", &TestComponent::m_asset)
                     ->Field("Version", &TestComponent::m_version);
             }

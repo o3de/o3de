@@ -142,7 +142,7 @@ namespace GraphCanvas
     }
 
     AZ::Data::AssetHandler::LoadResult TranslationAssetHandler::LoadAssetData(
-        const AZ::Data::Asset<AZ::Data::AssetData>& asset, AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
+        [[maybe_unused]] const AZ::Data::Asset<AZ::Data::AssetData>& asset, AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
         const AZ::Data::AssetFilterCB&)
     {
         AZ::Data::AssetHandler::LoadResult result = AZ::Data::AssetHandler::LoadResult::LoadComplete;

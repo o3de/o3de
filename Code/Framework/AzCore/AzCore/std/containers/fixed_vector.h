@@ -636,7 +636,6 @@ namespace AZStd
         {
             AZSTD_CONTAINER_ASSERT(!full(), "Cannot emplace on a full fixed_vector");
             AZSTD_CONTAINER_ASSERT(insertPos >= cbegin() && insertPos <= cend(), "insert position must be in range of container");
-            pointer dataStart = data();
             pointer dataEnd = data() + size();
             pointer insertPosPtr = data() + AZStd::distance(cbegin(), insertPos);
 
@@ -896,7 +895,7 @@ namespace AZStd
             if (numInitializedToFill < numElements)
             {
                 // Copy the elements after insert position.
-                iterator newLast = AZStd::uninitialized_move(insertPosPtr, dataEnd, insertPosPtr + numElements);
+                AZStd::uninitialized_move(insertPosPtr, dataEnd, insertPosPtr + numElements);
                 // get last iterator to use move assignment operator
                 Iterator lastToAssign = AZStd::next(first, numInitializedToFill);
 

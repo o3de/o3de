@@ -19,7 +19,7 @@ float3 GetCubemapCoords(float3 original)
 }
 
 //! Compute multiscatter compensation multiplier
-float3 GetMultiScatterCompensation(float NdotV, float3 specularF0, float2 brdf, bool enabled)
+float3 GetMultiScatterCompensation(float3 specularF0, float2 brdf, bool enabled)
 {
     if (!enabled)
     {

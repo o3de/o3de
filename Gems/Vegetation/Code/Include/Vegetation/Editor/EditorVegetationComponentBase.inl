@@ -136,7 +136,7 @@ namespace Vegetation
             }
 
             EditorVegetationComponentBase<TComponent, TConfiguration> vegetationComponentBaseData;
-            int baseIndex = classElement.AddElementWithData(context, "BaseClass1", vegetationComponentBaseData);
+            classElement.AddElementWithData(context, "BaseClass1", vegetationComponentBaseData);
 
             // Find the EditorWrappedComponentBase and copy in the Configuration and EditorComponentBase data
             auto* editorWrappedComponentBase = GetParentByIndex(classElement, 2);

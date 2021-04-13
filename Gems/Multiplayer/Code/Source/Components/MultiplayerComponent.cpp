@@ -16,9 +16,9 @@
 
 namespace Multiplayer
 {
-    void MultiplayerComponent::Reflect(AZ::ReflectContext* reflection)
+    void MultiplayerComponent::Reflect(AZ::ReflectContext* context)
     {
-        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflection);
+        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)
         {
             serializeContext->Class<MultiplayerComponent, AZ::Component>()

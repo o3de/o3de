@@ -602,7 +602,6 @@ void GetSampleOffsets_DownScale2x2(uint32 nWidth, uint32 nHeight, Vec4 avSampleO
 
 void CHDRPostProcess::SetShaderParams()
 {
-    CD3D9Renderer* r = gcpRendD3D;
 
     Vec4 vHDRSetupParams[5];
     gEnv->p3DEngine->GetHDRSetupParams(vHDRSetupParams);
@@ -883,15 +882,7 @@ void CHDRPostProcess::EyeAdaptation()
     const int32 lumMask = static_cast<int32>((sizeof(CTexture::s_ptexHDRAdaptedLuminanceCur) / sizeof(CTexture::s_ptexHDRAdaptedLuminanceCur[0]))) - 1;
     const int32 numTextures = static_cast<int32>(max(min(gRenDev->GetActiveGPUCount(), static_cast<uint32>(sizeof(CTexture::s_ptexHDRAdaptedLuminanceCur) / sizeof(CTexture::s_ptexHDRAdaptedLuminanceCur[0]))), 1u));
 
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    // only increment the current luminance texture when drawing the main scene 
-    if (!(rd->m_RP.m_TI[rd->m_RP.m_nProcessThreadID].m_PersFlags & RBPF_RENDER_SCENE_TO_TEXTURE))
-    {
-        CTexture::s_nCurLumTextureIndex++;
-    }
-#else
     CTexture::s_nCurLumTextureIndex++;
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
 
     CTexture* pTexPrev = CTexture::s_ptexHDRAdaptedLuminanceCur[(CTexture::s_nCurLumTextureIndex - numTextures) & lumMask];
     CTexture* pTexCur = CTexture::s_ptexHDRAdaptedLuminanceCur[CTexture::s_nCurLumTextureIndex & lumMask];
@@ -1297,20 +1288,6 @@ void CHDRPostProcess::ToneMapping()
         rRP.m_FlagsShader_RT |= g_HWSR_MaskBit[HWSR_SAMPLE0];
     }
     
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    // Disable gamma application if requested 
-    if (!CRenderer::CV_r_FinalOutputsRGB)
-    {
-        rRP.m_FlagsShader_RT |= g_HWSR_MaskBit[HWSR_SAMPLE2];
-    }
-
-    // Output fully opaque alpha if rendering to texture without AA or depth
-    if ((nAAMode & eAT_NOAA_MASK) && rd->IsRenderToTextureActive())
-    {
-        rRP.m_FlagsShader_RT |= g_HWSR_MaskBit[HWSR_SAMPLE3];
-    }
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-
     PostProcessUtils().SetSRGBShaderFlags();
     
     rd->FX_SetColorDontCareActions(0, true, false);
@@ -1492,7 +1469,6 @@ void CHDRPostProcess::ToneMapping()
 void CHDRPostProcess::EncodeDolbyVision(CTexture* source)
 {
     CD3D9Renderer* rd = gcpRendD3D;
-    SRenderPipeline& RESTRICT_REFERENCE rRP = rd->m_RP;
     int NumPasses = 2;
 
     for (int pass = 0; pass < NumPasses; pass++)
@@ -1520,8 +1496,6 @@ void CHDRPostProcess::EncodeDolbyVision(CTexture* source)
 
         // If any dolby output mode has been enabled, set required uniforms.
         {
-            float width = (float)rd->GetOverlayWidth();
-            float height = (float)rd->GetOverlayHeight();
 
             static CCryNameR pszHDRDolbyParam0("HDRDolbyScurveParams0");
             static CCryNameR pszHDRDolbyParam1("HDRDolbyScurveParams1");
@@ -1625,7 +1599,6 @@ void CHDRPostProcess::SetExposureTypeShaderFlags()
 
 void CHDRPostProcess::ToneMappingDebug()
 {
-    CD3D9Renderer* rd = gcpRendD3D;
     Vec4 avSampleOffsets[4];
     PROFILE_LABEL_SCOPE("TONEMAPPINGDEBUG");
 
@@ -2198,28 +2171,14 @@ void CD3D9Renderer::FX_FinalComposite()
     {
         FX_PopRenderTarget(0);
 
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-        const bool isRenderSceneToTexture = (m_RP.m_TI[m_RP.m_nProcessThreadID].m_PersFlags & RBPF_RENDER_SCENE_TO_TEXTURE) != 0;
-        if (!isRenderSceneToTexture)
-        {
-            RT_SetViewport(0, 0, m_nativeWidth, m_nativeHeight);
-            FX_SetRenderTarget(0, m_pBackBuffer, nullptr);
-            FX_SetActiveRenderTargets();
-        }
-#else
         RT_SetViewport(0, 0, m_nativeWidth, m_nativeHeight);
         FX_SetRenderTarget(0, m_pBackBuffer, nullptr);
         FX_SetActiveRenderTargets();
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
 
         static ICVar* DolbyCvar = gEnv->pConsole->GetCVar("r_HDRDolby");
         int DolbyCvarValue = DolbyCvar ? DolbyCvar->GetIVal() : eDVM_Disabled;
 
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-        if (DolbyCvarValue == eDVM_Vision && !isRenderSceneToTexture)
-#else
         if (DolbyCvarValue == eDVM_Vision)
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
         {
             CHDRPostProcess::GetInstance()->EncodeDolbyVision(upscaleSource);
         }

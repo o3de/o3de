@@ -50,6 +50,11 @@ namespace AZ
             return m_descriptorSetLayoutBindings;
         }
 
+        const AZStd::vector<VkDescriptorBindingFlags>& DescriptorSetLayout::GetNativeBindingFlags() const
+        {
+            return m_descriptorBindingFlags;
+        }
+
         size_t DescriptorSetLayout::GetDescriptorSetLayoutBindingsCount() const
         {
             return m_descriptorSetLayoutBindings.size();
@@ -83,6 +88,8 @@ namespace AZ
                 return m_layoutIndexOffset[static_cast<uint32_t>(type)];
             case ResourceType::BufferView:
             case ResourceType::ImageView:
+            case ResourceType::BufferViewUnboundedArray:
+            case ResourceType::ImageViewUnboundedArray:
             case ResourceType::Sampler:
                 return m_layoutIndexOffset[static_cast<uint32_t>(type)] + groupIndex;
             default:
@@ -130,9 +137,14 @@ namespace AZ
             const RHI::ResultCode buildResult = BuildDescriptorSetLayoutBindings();
             RETURN_RESULT_IF_UNSUCCESSFUL(buildResult);
 
+            VkDescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsCreateInfo{};
+            bindingFlagsCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
+            bindingFlagsCreateInfo.bindingCount = aznumeric_cast<uint32_t>(m_descriptorBindingFlags.size());
+            bindingFlagsCreateInfo.pBindingFlags = m_descriptorBindingFlags.data();
+
             VkDescriptorSetLayoutCreateInfo createInfo{};
             createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-            createInfo.pNext = nullptr;
+            createInfo.pNext = &bindingFlagsCreateInfo;
             createInfo.flags = 0;
             createInfo.bindingCount = static_cast<uint32_t>(m_descriptorSetLayoutBindings.size());
             createInfo.pBindings = m_descriptorSetLayoutBindings.size() ? m_descriptorSetLayoutBindings.data() : nullptr;
@@ -147,11 +159,22 @@ namespace AZ
         {
             const AZStd::array_view<RHI::ShaderInputBufferDescriptor> bufferDescs = m_shaderResourceGroupLayout->GetShaderInputListForBuffers();
             const AZStd::array_view<RHI::ShaderInputImageDescriptor> imageDescs = m_shaderResourceGroupLayout->GetShaderInputListForImages();
+            const AZStd::array_view<RHI::ShaderInputBufferUnboundedArrayDescriptor> bufferUnboundedArrayDescs = m_shaderResourceGroupLayout->GetShaderInputListForBufferUnboundedArrays();
+            const AZStd::array_view<RHI::ShaderInputImageUnboundedArrayDescriptor> imageUnboundedArrayDescs = m_shaderResourceGroupLayout->GetShaderInputListForImageUnboundedArrays();
             const AZStd::array_view<RHI::ShaderInputSamplerDescriptor> samplerDescs = m_shaderResourceGroupLayout->GetShaderInputListForSamplers();
             const AZStd::array_view<RHI::ShaderInputStaticSamplerDescriptor>& staticSamplerDescs = m_shaderResourceGroupLayout->GetStaticSamplers();
 
             // The + 1 is for Constant Data.
-            m_descriptorSetLayoutBindings.reserve(1 + bufferDescs.size() + imageDescs.size() + samplerDescs.size() + staticSamplerDescs.size());
+            m_descriptorSetLayoutBindings.reserve(
+                1 +
+                bufferDescs.size() +
+                imageDescs.size() +
+                bufferUnboundedArrayDescs.size() +
+                imageUnboundedArrayDescs.size() +
+                samplerDescs.size() +
+                staticSamplerDescs.size());
+
+            m_descriptorBindingFlags.reserve(m_descriptorSetLayoutBindings.capacity());
             m_constantDataSize = m_shaderResourceGroupLayout->GetConstantDataSize();
             if (m_constantDataSize)
             {
@@ -159,6 +182,8 @@ namespace AZ
                 AZ_Assert(!inputListForConstants.empty(), "Empty constant input list");
                 m_descriptorSetLayoutBindings.emplace_back(VkDescriptorSetLayoutBinding{});
                 VkDescriptorSetLayoutBinding& vbinding = m_descriptorSetLayoutBindings.back();
+                m_descriptorBindingFlags.emplace_back(VkDescriptorBindingFlags{});
+
                 // All constant data of the SRG have the same binding.
                 vbinding.binding = inputListForConstants[0].m_registerId;
                 vbinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -168,13 +193,17 @@ namespace AZ
                 m_layoutIndexOffset[static_cast<uint32_t>(ResourceType::ConstantData)] = 0;
             }
 
-            m_layoutIndexOffset[static_cast<uint32_t>(ResourceType::BufferView)] = bufferDescs.empty() ? 
-                InvalidLayoutIndex : static_cast<uint32_t>(m_descriptorSetLayoutBindings.size());
+            // buffers
+            m_layoutIndexOffset[static_cast<uint32_t>(ResourceType::BufferView)] =
+                bufferDescs.empty() ? InvalidLayoutIndex : static_cast<uint32_t>(m_descriptorSetLayoutBindings.size());
+
             for (uint32_t index = 0; index < bufferDescs.size(); ++index)
             {
                 const RHI::ShaderInputBufferDescriptor& desc = bufferDescs[index];
                 m_descriptorSetLayoutBindings.emplace_back(VkDescriptorSetLayoutBinding{});
                 VkDescriptorSetLayoutBinding& vbinding = m_descriptorSetLayoutBindings.back();
+                m_descriptorBindingFlags.emplace_back(VkDescriptorBindingFlags{});
+
                 vbinding.binding = desc.m_registerId;
                 switch (desc.m_access)
                 {
@@ -213,13 +242,17 @@ namespace AZ
                 vbinding.pImmutableSamplers = nullptr;
             }
 
-            m_layoutIndexOffset[static_cast<uint32_t>(ResourceType::ImageView)] = imageDescs.empty() ? 
-                InvalidLayoutIndex : static_cast<uint32_t>(m_descriptorSetLayoutBindings.size());
+            // images
+            m_layoutIndexOffset[static_cast<uint32_t>(ResourceType::ImageView)] =
+                imageDescs.empty() ? InvalidLayoutIndex : static_cast<uint32_t>(m_descriptorSetLayoutBindings.size());
+
             for (uint32_t index = 0; index < imageDescs.size(); ++index)
             {
                 const RHI::ShaderInputImageDescriptor& desc = imageDescs[index];
                 m_descriptorSetLayoutBindings.emplace_back(VkDescriptorSetLayoutBinding{});
                 VkDescriptorSetLayoutBinding& vbinding = m_descriptorSetLayoutBindings.back();
+                m_descriptorBindingFlags.emplace_back(VkDescriptorBindingFlags{});
+
                 vbinding.binding = desc.m_registerId;
                 if (desc.m_type == RHI::ShaderInputImageType::SubpassInput)
                 {
@@ -247,13 +280,17 @@ namespace AZ
                 vbinding.pImmutableSamplers = nullptr;
             }
 
-            m_layoutIndexOffset[static_cast<uint32_t>(ResourceType::Sampler)] = samplerDescs.empty() ? 
-                InvalidLayoutIndex : static_cast<uint32_t>(m_descriptorSetLayoutBindings.size());
+            // samplers
+            m_layoutIndexOffset[static_cast<uint32_t>(ResourceType::Sampler)] =
+                samplerDescs.empty() ? InvalidLayoutIndex : static_cast<uint32_t>(m_descriptorSetLayoutBindings.size());
+
             for (uint32_t index = 0; index < samplerDescs.size(); ++index)
             {
                 const RHI::ShaderInputSamplerDescriptor& desc = samplerDescs[index];
                 m_descriptorSetLayoutBindings.emplace_back(VkDescriptorSetLayoutBinding{});
                 VkDescriptorSetLayoutBinding& vbinding = m_descriptorSetLayoutBindings.back();
+                m_descriptorBindingFlags.emplace_back(VkDescriptorBindingFlags{});
+
                 vbinding.binding = desc.m_registerId;
                 vbinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
                 vbinding.descriptorCount = desc.m_count;
@@ -267,7 +304,7 @@ namespace AZ
                 m_nativeSamplers.resize(staticSamplerDescs.size(), VK_NULL_HANDLE);
                 for (int index = 0; index < staticSamplerDescs.size(); ++index)
                 {
-                    const RHI::ShaderInputStaticSamplerDescriptor& staticSamplerInput  = staticSamplerDescs[index];
+                    const RHI::ShaderInputStaticSamplerDescriptor& staticSamplerInput = staticSamplerDescs[index];
                     Sampler::Descriptor samplerDesc;
                     samplerDesc.m_device = &device;
                     samplerDesc.m_samplerState = staticSamplerInput.m_samplerState;
@@ -275,12 +312,91 @@ namespace AZ
 
                     m_descriptorSetLayoutBindings.emplace_back(VkDescriptorSetLayoutBinding{});
                     VkDescriptorSetLayoutBinding& vbinding = m_descriptorSetLayoutBindings.back();
+                    m_descriptorBindingFlags.emplace_back(VkDescriptorBindingFlags{});
+
                     vbinding.binding = staticSamplerInput.m_registerId;
                     vbinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
                     vbinding.descriptorCount = 1;
                     vbinding.stageFlags = VK_SHADER_STAGE_ALL; // [GFX TODO][ATOM-347] find a way to get an appropriate shader visibility. 
                     vbinding.pImmutableSamplers = &m_nativeSamplers[index];
                 }
+            }
+
+            // buffer unbounded arrays
+            m_layoutIndexOffset[static_cast<uint32_t>(ResourceType::BufferViewUnboundedArray)] =
+                bufferUnboundedArrayDescs.empty() ? InvalidLayoutIndex : static_cast<uint32_t>(m_descriptorSetLayoutBindings.size());
+
+            if (bufferUnboundedArrayDescs.size())
+            {
+                AZ_Assert(bufferUnboundedArrayDescs.size() == 1, "Vulkan descriptor layout can have at most one unbounded array");
+
+                const RHI::ShaderInputBufferUnboundedArrayDescriptor& desc = bufferUnboundedArrayDescs[0];
+                m_descriptorSetLayoutBindings.emplace_back(VkDescriptorSetLayoutBinding{});
+                VkDescriptorSetLayoutBinding& vbinding = m_descriptorSetLayoutBindings.back();
+                m_descriptorBindingFlags.emplace_back(VkDescriptorBindingFlags{});
+                m_descriptorBindingFlags.back() = VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT | VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
+
+                vbinding.binding = desc.m_registerId;
+                switch (desc.m_access)
+                {
+                case RHI::ShaderInputBufferAccess::Read:
+                    switch (desc.m_type)
+                    {
+                    case RHI::ShaderInputBufferType::Typed:
+                        vbinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
+                        break;
+                    default:
+                        vbinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                        break;
+                    }
+                    break;
+                case RHI::ShaderInputBufferAccess::ReadWrite:
+                    vbinding.descriptorType = desc.m_type == RHI::ShaderInputBufferType::Typed ?
+                        VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER : VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                    break;
+                default:
+                    AZ_Assert(false, "ShaderInputBufferAccess is illegal.");
+                    return RHI::ResultCode::InvalidArgument;
+                }
+                vbinding.descriptorCount = MaxUnboundedArrayDescriptors;
+                vbinding.stageFlags = VK_SHADER_STAGE_ALL; // [GFX TODO][ATOM-347] find a way to get an appropriate shader visibility. 
+                vbinding.pImmutableSamplers = nullptr;
+
+                m_hasUnboundedArray = true;
+            }
+
+            // image unbounded arrays
+            m_layoutIndexOffset[static_cast<uint32_t>(ResourceType::ImageViewUnboundedArray)] =
+                imageUnboundedArrayDescs.empty() ? InvalidLayoutIndex : static_cast<uint32_t>(m_descriptorSetLayoutBindings.size());
+
+            if (imageUnboundedArrayDescs.size())
+            {
+                AZ_Assert(m_hasUnboundedArray == false && imageUnboundedArrayDescs.size() == 1, "Vulkan descriptor layout can have at most one unbounded array");
+                const RHI::ShaderInputImageUnboundedArrayDescriptor& desc = imageUnboundedArrayDescs[0];
+
+                m_descriptorSetLayoutBindings.emplace_back(VkDescriptorSetLayoutBinding{});
+                VkDescriptorSetLayoutBinding& vbinding = m_descriptorSetLayoutBindings.back();
+                m_descriptorBindingFlags.emplace_back(VkDescriptorBindingFlags{});
+                m_descriptorBindingFlags.back() = VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT | VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
+
+                vbinding.binding = desc.m_registerId;
+                switch (desc.m_access)
+                {
+                case RHI::ShaderInputImageAccess::Read:
+                    vbinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+                    break;
+                case RHI::ShaderInputImageAccess::ReadWrite:
+                    vbinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+                    break;
+                default:
+                    AZ_Assert(false, "ShaderInputImageAccess is illegal.");
+                    return RHI::ResultCode::InvalidArgument;
+                }
+                vbinding.stageFlags = VK_SHADER_STAGE_ALL; // [GFX TODO][ATOM-347]  find a way to get an appropriate shader visibility. 
+                vbinding.descriptorCount = MaxUnboundedArrayDescriptors;
+                vbinding.pImmutableSamplers = nullptr;
+
+                m_hasUnboundedArray = true;
             }
 
             return RHI::ResultCode::Success;

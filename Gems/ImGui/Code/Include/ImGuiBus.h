@@ -90,6 +90,7 @@ namespace ImGui
         virtual void SetResolutionMode(ImGuiResolutionMode state) = 0;
         virtual const ImVec2& GetImGuiRenderResolution() const = 0;
         virtual void SetImGuiRenderResolution(const ImVec2& res) = 0;
+        virtual void Render() = 0;
     };
     typedef AZ::EBus<IImGuiManagerListener> ImGuiManagerListenerBus;
 

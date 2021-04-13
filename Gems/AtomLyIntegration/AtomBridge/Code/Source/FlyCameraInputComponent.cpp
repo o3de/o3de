@@ -128,7 +128,6 @@ void FlyCameraInputComponent::Reflect(AZ::ReflectContext* reflection)
     if (behaviorContext)
     {
         behaviorContext->EBus<FlyCameraInputBus>("FlyCameraInputBus")
-            ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
             ->Event("SetIsEnabled", &FlyCameraInputBus::Events::SetIsEnabled)
             ->Event("GetIsEnabled", &FlyCameraInputBus::Events::GetIsEnabled);
     }

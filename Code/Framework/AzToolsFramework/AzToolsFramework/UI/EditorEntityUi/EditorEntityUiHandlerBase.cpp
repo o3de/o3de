@@ -56,6 +56,11 @@ namespace AzToolsFramework
         return QPixmap();
     }
 
+    bool EditorEntityUiHandlerBase::CanToggleLockVisibility(AZ::EntityId /*entityId*/) const
+    {
+        return true;
+    }
+
     void EditorEntityUiHandlerBase::PaintItemBackground(QPainter* /*painter*/, const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/) const
     {
     }

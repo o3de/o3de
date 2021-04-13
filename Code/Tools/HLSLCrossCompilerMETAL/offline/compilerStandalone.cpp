@@ -352,7 +352,6 @@ int GetOptions(int argc, char** argv, Options* psOptions)
 {
     int i;
     int fullShaderChain = -1;
-    int hashOut = 0;
 
     InitOptions(psOptions);
 
@@ -414,9 +413,6 @@ int GetOptions(int argc, char** argv, Options* psOptions)
             int64_t length;
 
             uint64_t hash = hash64((const uint8_t*)psOptions->outputShaderFile, (uint32_t)strlen(psOptions->outputShaderFile), 0);
-
-            uint32_t high = (uint32_t)(hash >> 32);
-            uint32_t low = (uint32_t)(hash & 0x00000000FFFFFFFF);
 
             dir = strrchr(psOptions->outputShaderFile, '\\');
 

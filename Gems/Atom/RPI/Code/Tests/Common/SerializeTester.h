@@ -62,7 +62,7 @@ namespace UnitTest
     {
         AZ::Data::Asset<T> asset = AZ::Data::AssetManager::Instance().CreateAsset<T>(assetId);
 
-        bool success = AZ::Utils::LoadObjectFromStreamInPlace<T>(m_outStream, *asset.Get(), m_serializeContext, filterDesc);
+        [[maybe_unused]] bool success = AZ::Utils::LoadObjectFromStreamInPlace<T>(m_outStream, *asset.Get(), m_serializeContext, filterDesc);
         AZ_Assert(success, "Failed to load object from stream");
 
         return AZStd::move(asset);

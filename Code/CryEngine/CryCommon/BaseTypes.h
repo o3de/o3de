@@ -71,10 +71,14 @@ COMPILE_TIME_ASSERT(sizeof(uint32) == 4);
 COMPILE_TIME_ASSERT(sizeof(sint32) == 4);
 
 typedef slonglong int64;
+
+#ifndef O3DE_INT64_DEFINED
+#define O3DE_INT64_DEFINED
 typedef slonglong sint64;
 typedef ulonglong uint64;
 COMPILE_TIME_ASSERT(sizeof(uint64) == 8);
 COMPILE_TIME_ASSERT(sizeof(sint64) == 8);
+#endif
 
 
 typedef float  f32;

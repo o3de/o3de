@@ -113,7 +113,6 @@ void TranslateToMETAL(HLSLCrossCompilerContext* psContext, ShaderLang* planguage
     {
         int hasStageInput = 0;
         int hasOutput = 0;
-        int inputDeclLength = blength(psContext->parameterDeclarations);
         if (blength(psContext->stagedInputDeclarations) > 0)
         {
             hasStageInput = 1;
@@ -189,7 +188,6 @@ void TranslateToMETAL(HLSLCrossCompilerContext* psContext, ShaderLang* planguage
     {
         int hasStageInput = 0;
         int hasOutput = 0;
-        int inputDeclLength = blength(psContext->parameterDeclarations);
         if (blength(psContext->stagedInputDeclarations) > 0)
         {
             hasStageInput = 1;

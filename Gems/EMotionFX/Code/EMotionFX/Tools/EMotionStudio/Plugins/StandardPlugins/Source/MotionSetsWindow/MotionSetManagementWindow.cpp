@@ -582,7 +582,6 @@ namespace EMStudio
             AZStd::unordered_map<AZStd::string, EMotionFX::MotionSet*> parentMotionSetByName;
             AZStd::string uniqueMotionSetName;
             uint32 selectedMotionSetId = MCORE_INVALIDINDEX32;
-            uint32 firstMotionSetId = MCORE_INVALIDINDEX32;
 
             for (int i = 0; i < numSelectedItems; ++i)
             {

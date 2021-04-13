@@ -27,7 +27,6 @@ bool CVisAreaManager::GetCompiledData([[maybe_unused]] byte* pData, [[maybe_unus
 # else
     float fStartTime = GetCurAsyncTimeSec();
 
-    bool bObjs(!pExportInfo || pExportInfo->nObjTypeMask);
 
     //  PrintMessage("Exporting indoor data (%s, %.2f MB) ...",
 
@@ -206,8 +205,6 @@ bool CVisAreaManager::Load_T(T& f, int& nDataSize, SVisAreaManChunkHeader* pVisA
         return 0;
     }
 
-    bool bObjs(!pExportInfo || pExportInfo->nObjTypeMask);
-    AABB* pBox = (pExportInfo && !pExportInfo->areaBox.IsReset()) ? &pExportInfo->areaBox : NULL;
 
     EEndian eEndian = (pVisAreaManagerChunkHeader->nFlags & SERIALIZATION_FLAG_BIG_ENDIAN) ? eBigEndian : eLittleEndian;
 

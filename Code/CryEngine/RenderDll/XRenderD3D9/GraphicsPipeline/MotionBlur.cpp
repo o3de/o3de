@@ -25,26 +25,13 @@ CThreadSafeRendererContainer<CMotionBlur::ObjectMap::value_type> CMotionBlur::m_
 void CMotionBlur::GetPrevObjToWorldMat(CRenderObject* renderObject, Matrix44A& worldMatrix)
 {
     assert(renderObject);
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    const int threadId = gRenDev->m_RP.m_nProcessThreadID;
-    // RTT does not support motion blur yet 
-    if (gRenDev->m_RP.m_TI[threadId].m_PersFlags & RBPF_RENDER_SCENE_TO_TEXTURE)
-    {
-        worldMatrix = renderObject->m_II.m_Matrix;
-        return;
-    }
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
 
     if (renderObject->m_ObjFlags & FOB_HAS_PREVMATRIX)
     {
         const SRenderObjData* renderObjectData = renderObject->GetObjData();
         const uintptr_t objectId = renderObjectData ? renderObjectData->m_uniqueObjectId : 0;
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-        const AZ::u32 objectIndex = GetPrevBufferIndex();
-#else
         const AZ::u32 frameId = gRenDev->GetFrameID(false);
         const AZ::u32 objectIndex = (frameId - 1) % CMotionBlur::s_maxObjectBuffers;
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
 
         auto it = m_Objects[objectIndex]->find(objectId);
         if (it != m_Objects[objectIndex]->end())
@@ -60,20 +47,8 @@ void CMotionBlur::GetPrevObjToWorldMat(CRenderObject* renderObject, Matrix44A& w
 void CMotionBlur::OnBeginFrame()
 {
     assert(!gRenDev->m_pRT || gRenDev->m_pRT->IsMainThread());
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    const AZ::u32 threadId = gRenDev->m_RP.m_nFillThreadID;
-    if (gRenDev->m_RP.m_TI[threadId].m_PersFlags & RBPF_RENDER_SCENE_TO_TEXTURE)
-    {
-        // RTT does not support motion blur yet in render targets yet
-        return;
-    }
-
-    const AZ::u32 frameId = gRenDev->GetCameraFrameID();
-    const AZ::u32 objectIndex = GetCurrentBufferIndex();
-#else
     const AZ::u32 frameId = gRenDev->GetFrameID(false);
     const AZ::u32 objectIndex = frameId % CMotionBlur::s_maxObjectBuffers;
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
 
     m_Objects[objectIndex]->erase_if([frameId](const VectorMap<uintptr_t, MotionBlurObjectParameters >::value_type& object)
     {
@@ -89,12 +64,8 @@ void CMotionBlur::InsertNewElements()
         return;
     }
 
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    const AZ::u32 nObjFrameWriteID = GetCurrentBufferIndex();
-#else
     const AZ::u32 nFrameID = gRenDev->GetFrameID(false);
     const AZ::u32 nObjFrameWriteID = (nFrameID - 1) % CMotionBlur::s_maxObjectBuffers;
-#endif //if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
 
     m_FillData[nThreadID].CoalesceMemory();
     m_Objects[nObjFrameWriteID]->insert(&m_FillData[nThreadID][0], &m_FillData[nThreadID][0] + m_FillData[nThreadID].size());

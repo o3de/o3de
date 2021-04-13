@@ -160,6 +160,7 @@ namespace EMotionFX
         void SetBindPoseAtOutput(AnimGraphInstance* animGraphInstance);
 
         static bool NodeVersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement);
+        static bool AnimGraphInstanceExists(AnimGraphInstance* animGraphInstance);
 
     private:
         AZ::Crc32 GetEvaluatorVisibility() const;

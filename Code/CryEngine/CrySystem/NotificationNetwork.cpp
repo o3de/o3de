@@ -45,8 +45,6 @@ public:
             return;
         }
 
-        const char* path = nullptr; // Don't call GetGameFolder here, it returns a full absolute path and we just really want the game name
-
         AZ::IO::FixedMaxPathString projectPath = AZ::Utils::GetProjectPath();
         if (projectPath.empty())
         {

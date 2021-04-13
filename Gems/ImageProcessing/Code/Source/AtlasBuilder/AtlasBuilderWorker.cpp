@@ -70,8 +70,6 @@ namespace TextureAtlasBuilder
 
     bool ResolveRelativePath(const AZStd::string& relativePath, const AZStd::string& watchDirectory, AZStd::string& resolvedFullPathOut)
     {
-        bool resolved = false;
-
         // Get full path by appending the relative path to the watch directory
         AZ::IO::FixedMaxPath resolvedPath;
         AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(resolvedPath, AZ::IO::PathView{relativePath});

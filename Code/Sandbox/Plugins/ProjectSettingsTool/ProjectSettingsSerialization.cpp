@@ -732,8 +732,6 @@ namespace ProjectSettingsTool
             return;
         }
 
-        const AZ::SerializeContext::ClassData* classMeta = node.GetClassMetadata();
-
         if (AZStd::string(node.GetClassMetadata()->m_name) == "IosOrientations")
         {
             LoadOrientations(nullptr, &node);

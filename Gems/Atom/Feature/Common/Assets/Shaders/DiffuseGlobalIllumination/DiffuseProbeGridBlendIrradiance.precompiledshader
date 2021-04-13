@@ -5,6 +5,10 @@
     "ClassData":
     {
         "ShaderAssetFileName": "diffuseprobegridblendirradiance.azshader",
+        "PlatformIdentifiers": 
+        [
+            "pc"
+        ],
         "ShaderResourceGroupAssets":
         [
             "diffuseprobegridblendirradiance_passsrg.azsrg"
@@ -18,6 +22,10 @@
             {
                 "APIName": "vulkan",
                 "RootShaderVariantAssetFileName": "diffuseprobegridblendirradiance_vulkan_0.azshadervariant"
+            },
+            {
+                "APIName": "null",
+                "RootShaderVariantAssetFileName": "diffuseprobegridblendirradiance_null_0.azshadervariant"
             }
         ]
     }

@@ -68,7 +68,6 @@ namespace GradientSignal
         {
             behaviorContext->Class<LevelsGradientConfig>()
                 ->Constructor()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Property("inputMid", BehaviorValueProperty(&LevelsGradientConfig::m_inputMid))
                 ->Property("inputMin", BehaviorValueProperty(&LevelsGradientConfig::m_inputMin))
@@ -114,7 +113,6 @@ namespace GradientSignal
             behaviorContext->Class<LevelsGradientComponent>()->RequestBus("LevelsGradientRequestBus");
 
             behaviorContext->EBus<LevelsGradientRequestBus>("LevelsGradientRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Event("GetInputMin", &LevelsGradientRequestBus::Events::GetInputMin)
                 ->Event("SetInputMin", &LevelsGradientRequestBus::Events::SetInputMin)

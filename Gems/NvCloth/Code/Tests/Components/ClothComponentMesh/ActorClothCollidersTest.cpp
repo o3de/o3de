@@ -367,7 +367,6 @@ namespace UnitTest
         const AZStd::vector<NvCloth::SphereCollider>& sphereColliders = actorClothColliders->GetSphereColliders();
         const AZStd::vector<AZ::Vector4>& nativeSpheres = actorClothColliders->GetSpheres();
         const AZStd::vector<NvCloth::CapsuleCollider>& capsuleColliders = actorClothColliders->GetCapsuleColliders();
-        const AZStd::vector<uint32_t>& nativeCapsuleIndices = actorClothColliders->GetCapsuleIndices();
 
         EXPECT_THAT(sphereColliders[0].m_offsetTransform, IsCloseTolerance(sphereColliderOffet, Tolerance));
         EXPECT_THAT(sphereColliders[0].m_currentModelSpaceTransform, IsCloseTolerance(newJointRootTransform * sphereColliderOffet, Tolerance));

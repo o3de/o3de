@@ -400,7 +400,6 @@ namespace EMotionFX
                 // In order for a property to be displayed in ScriptCanvas. Both a setter and a getter are necessary(both must be non-null).
                 // This is being worked on in dragon branch, once this is complete the dummy lambda functions can be removed.
                 behaviorContext->Class<MotionEvent>("MotionEvent")
-                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::Preview)
                     ->Property("entityId", BehaviorValueGetter(&MotionEvent::m_entityId), [](MotionEvent*, const AZ::EntityId&) {})
                     ->Property("parameter", BehaviorValueGetter(&MotionEvent::m_parameter), [](MotionEvent*, const char*) {})
                     ->Property("eventType", BehaviorValueGetter(&MotionEvent::m_eventType), [](MotionEvent*, const AZ::u32&) {})
@@ -412,7 +411,6 @@ namespace EMotionFX
                 ;
 
                 behaviorContext->EBus<ActorNotificationBus>("ActorNotificationBus")
-                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::Preview)
                     ->Handler<ActorNotificationBusHandler>()
                     ->Event("OnMotionEvent", &ActorNotificationBus::Events::OnMotionEvent)
                     ->Event("OnMotionLoop", &ActorNotificationBus::Events::OnMotionLoop)

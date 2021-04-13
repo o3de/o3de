@@ -30,6 +30,8 @@ namespace AZ
 
                 virtual ~ITransform() override = default;
 
+                void CloneAttributesFrom([[maybe_unused]] const IGraphObject* sourceObject) override {}
+
                 virtual MatrixType& GetMatrix() = 0;
                 virtual const MatrixType& GetMatrix() const = 0;
                 void GetDebugOutput(AZ::SceneAPI::Utilities::DebugOutput& output) const override

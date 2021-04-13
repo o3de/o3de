@@ -708,8 +708,6 @@ namespace EMotionFX
             // Node 3(test bind pose node) is now placed in index 0.
             EXPECT_TRUE(strcmp(m_blendTree->GetChildNode(0)->GetName(), "TestBindPoseNode") == 0) << "Test bind pose node should now place in index 0.";
 
-            AnimGraphNode* cutBindPoseNodeA = m_blendTree->GetChildNode(2);
-            AnimGraphNode* cutBindPoseNodeB = m_blendTree->GetChildNode(3);
             BlendTreeBlendNNode* cutBlendNNode = azrtti_cast<BlendTreeBlendNNode*>(m_blendTree->GetChildNode(4));
 
             // Check the ports are properly connected among the pasted nodes.
@@ -729,8 +727,6 @@ namespace EMotionFX
         {
             EXPECT_EQ(8, m_blendTree->GetNumChildNodes()) << "After copy and paste, the total node number of nodes in the blend tree should increase by 3.";
 
-            AnimGraphNode* copiedBindPoseNodeA = m_blendTree->GetChildNode(5);
-            AnimGraphNode* copiedBindPoseNodeB = m_blendTree->GetChildNode(6);
             BlendTreeBlendNNode* copiedBlendNNode = azrtti_cast<BlendTreeBlendNNode*> (m_blendTree->GetChildNode(7));
 
             EXPECT_TRUE(copiedBlendNNode->CheckIfIsInputPortConnected(BlendTreeBlendNNode::INPUTPORT_POSE_0));

@@ -53,14 +53,13 @@ namespace AZ
             return largestRecordSize;
         }
 
-        RHI::Ptr<Buffer> RayTracingShaderTable::BuildTable(RHI::Device& deviceBase,
+        RHI::Ptr<Buffer> RayTracingShaderTable::BuildTable([[maybe_unused]] RHI::Device& deviceBase,
                                                            const RHI::RayTracingBufferPools& bufferPools,
                                                            const RHI::RayTracingShaderTableRecordList& recordList,
                                                            uint32_t shaderRecordSize,
                                                            AZStd::wstring shaderTableName,
                                                            Microsoft::WRL::ComPtr<ID3D12StateObjectProperties>& stateObjectProperties)
         {
-            Device& device = static_cast<Device&>(deviceBase);
 
             uint32_t shaderTableSize = shaderRecordSize * static_cast<uint32_t>(recordList.size());
 
@@ -148,7 +147,7 @@ namespace AZ
             const RayTracingPipelineState* rayTracingPipelineState = static_cast<const RayTracingPipelineState*>(descriptor->GetPipelineState().get());
 
             Microsoft::WRL::ComPtr<ID3D12StateObjectProperties> stateObjectProperties;
-            HRESULT hr = rayTracingPipelineState->Get()->QueryInterface(IID_GRAPHICS_PPV_ARGS(stateObjectProperties.GetAddressOf()));
+            [[maybe_unused]] HRESULT hr = rayTracingPipelineState->Get()->QueryInterface(IID_GRAPHICS_PPV_ARGS(stateObjectProperties.GetAddressOf()));
             AZ_Assert(SUCCEEDED(hr), "Failed to query ID3D12StateObjectProperties");
 
             // ray generation shader table
