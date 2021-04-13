@@ -41,7 +41,7 @@ ly_associate_package(PACKAGE_NAME PVRTexTool-4.24.0-rev4-multiplatform          
 # platform-specific:
 ly_associate_package(PACKAGE_NAME freetype-2.10.4.14-windows         TARGETS freetype        PACKAGE_HASH 88dedc86ccb8c92f14c2c033e51ee7d828fa08eafd6475c6aa963938a99f4bf3)
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.14-windows              TARGETS tiff            PACKAGE_HASH ab60d1398e4e1e375ec0f1a00cdb1d812a07c0096d827db575ce52dd6d714207)
-ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev2-windows  TARGETS AWSNativeSDK    PACKAGE_HASH d762163d7db093bc9c25ab60bdafcc6f7a109a0010183a928e89b88ab7b20806)
+ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev3-windows  TARGETS AWSNativeSDK    PACKAGE_HASH 929873d4252c464620a9d288e41bd5d47c0bd22750aeb3a1caa68a3da8247c48)
 ly_associate_package(PACKAGE_NAME PhysX-4.1.0.25992954-rev1-windows  TARGETS PhysX           PACKAGE_HASH 198bed89d1aae7caaf5dadba24cee56235fe41725d004b64040d4e50d0f3aa1a)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-windows          TARGETS mikkelsen       PACKAGE_HASH 872c4d245a1c86139aa929f2b465b63ea4ea55b04ced50309135dd4597457a4e)
 ly_associate_package(PACKAGE_NAME googletest-1.8.1-rev4-windows      TARGETS googletest      PACKAGE_HASH 7e8f03ae8a01563124e3daa06386f25a2b311c10bb95bff05cae6c41eff83837)

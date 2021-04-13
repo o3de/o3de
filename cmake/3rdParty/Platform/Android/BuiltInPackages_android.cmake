@@ -24,7 +24,7 @@ ly_associate_package(PACKAGE_NAME lux_core-2.2-rev5-multiplatform    TARGETS lux
 # platform-specific:
 ly_associate_package(PACKAGE_NAME freetype-2.10.4.14-android         TARGETS freetype        PACKAGE_HASH 74dd75382688323c3a2a5090f473840b5d7e9d2aed1a4fcdff05ed2a09a664f2)
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.14-android              TARGETS tiff            PACKAGE_HASH a9b30a1980946390c2fad0ed94562476a1d7ba8c1f36934ae140a89c54a8efd0)
-ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev2-android  TARGETS AWSNativeSDK    PACKAGE_HASH 7a99556055c021cb94a2c4956c040ca36fa6cdb044a5faff0e05cc728e216e8e)
+ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev3-android  TARGETS AWSNativeSDK    PACKAGE_HASH e2192157534cc8c4e22769545d88dff03ec6c1031599716ef63de3ebbb8c9a44)
 ly_associate_package(PACKAGE_NAME PhysX-4.1.0.25992954-rev1-android  TARGETS PhysX           PACKAGE_HASH 9c494576c2d4ff04dee5a9e092fcd9d5af4b2845f15ffdfcaabb0dbc5b88a7a9)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-android          TARGETS mikkelsen       PACKAGE_HASH 075e8e4940884971063b5a9963014e2e517246fa269c07c7dc55b8cf2cd99705)
 ly_associate_package(PACKAGE_NAME googletest-1.8.1-rev4-android      TARGETS googletest      PACKAGE_HASH 95671be75287a61c9533452835c3647e9c1b30f81b34b43bcb0ec1997cc23894)

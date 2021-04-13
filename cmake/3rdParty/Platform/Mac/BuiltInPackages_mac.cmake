@@ -40,7 +40,7 @@ ly_associate_package(PACKAGE_NAME PVRTexTool-4.24.0-rev4-multiplatform          
 # platform-specific:
 ly_associate_package(PACKAGE_NAME freetype-2.10.4.14-mac-ios         TARGETS freetype        PACKAGE_HASH 67b4f57aed92082d3fd7c16aa244a7d908d90122c296b0a63f73e0a0b8761977)
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-mac-ios              TARGETS tiff            PACKAGE_HASH a23ae1f8991a29f8e5df09d6d5b00d7768a740f90752cef465558c1768343709)
-ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev2-mac      TARGETS AWSNativeSDK    PACKAGE_HASH 63768a6eb762c1941988dab0cb6fa4b5442989dff8f0b9391efeb83c1ba3786c)
+ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev3-mac      TARGETS AWSNativeSDK    PACKAGE_HASH 21920372e90355407578b45ac19580df1463a39a25a867bcd0ffd8b385c8254a)
 ly_associate_package(PACKAGE_NAME PhysX-4.1.0.25992954-rev1-mac      TARGETS PhysX           PACKAGE_HASH 149f5e9b44bd27291b1c4772f5e89a1e0efa88eef73c7e0b188935ed4d0c4a70)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-mac              TARGETS mikkelsen       PACKAGE_HASH 83af99ca8bee123684ad254263add556f0cf49486c0b3e32e6d303535714e505)
 ly_associate_package(PACKAGE_NAME googletest-1.8.1-rev4-mac          TARGETS googletest      PACKAGE_HASH cbf020d5ef976c5db8b6e894c6c63151ade85ed98e7c502729dd20172acae5a8)

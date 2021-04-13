@@ -25,7 +25,7 @@ ly_associate_package(PACKAGE_NAME lux_core-2.2-rev5-multiplatform    TARGETS lux
 # platform-specific:
 ly_associate_package(PACKAGE_NAME freetype-2.10.4.14-mac-ios     TARGETS freetype        PACKAGE_HASH 67b4f57aed92082d3fd7c16aa244a7d908d90122c296b0a63f73e0a0b8761977)
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-mac-ios          TARGETS tiff            PACKAGE_HASH a23ae1f8991a29f8e5df09d6d5b00d7768a740f90752cef465558c1768343709)
-ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev2-ios  TARGETS AWSNativeSDK    PACKAGE_HASH ffd8a1a967bd67c996c64b64986706868bba5393e6d5c234cab578d66b2f8334)
+ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev3-ios  TARGETS AWSNativeSDK    PACKAGE_HASH 1246219a213ccfff76b526011febf521586d44dbc1753e474f8fb5fd861654a4)
 ly_associate_package(PACKAGE_NAME PhysX-4.1.0.25992954-rev1-ios  TARGETS PhysX           PACKAGE_HASH a2a48a09128337c72b9c2c1b8f43187c6c914e8509c9c6cd91810108748d7e09)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-ios          TARGETS mikkelsen       PACKAGE_HASH 976aaa3ccd8582346132a10af253822ccc5d5bcc9ea5ba44d27848f65ee88a8a)
 ly_associate_package(PACKAGE_NAME googletest-1.8.1-rev4-ios      TARGETS googletest      PACKAGE_HASH 2f121ad9784c0ab73dfaa58e1fee05440a82a07cc556bec162eeb407688111a7)
