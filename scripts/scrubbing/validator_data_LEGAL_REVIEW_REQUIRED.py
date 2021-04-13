@@ -44,15 +44,17 @@ restricted_platforms = {}
 
 def find_restricted_platforms():
     this_path = Path(__file__).resolve()
-    root_folder = this_path.parents[5]
+    root_folder = this_path.parents[2]
     relative_path = os.path.relpath(this_path.parent, root_folder)
-    for dir in [f.path for f in os.scandir(os.path.join(root_folder, 'restricted')) if f.is_dir()]:
-        sys.path.append(os.path.join(dir, relative_path))
-        try:
-            module = __import__('{}_data_LEGAL_REVIEW_REQUIRED'.format(os.path.basename(dir).lower()), locals(), globals())
-            module.add_restricted_platform(restricted_platforms)
-        except ModuleNotFoundError:
-            pass
+    restricted_path = os.path.join(root_folder, 'restricted')
+    if os.path.exists(restricted_path):
+        for dir in [f.path for f in os.scandir(restricted_path) if f.is_dir()]:
+            sys.path.append(os.path.join(dir, relative_path))
+            try:
+                module = __import__('{}_data_LEGAL_REVIEW_REQUIRED'.format(os.path.basename(dir).lower()), locals(), globals())
+                module.add_restricted_platform(restricted_platforms)
+            except ModuleNotFoundError:
+                pass
 
 
 find_restricted_platforms()
