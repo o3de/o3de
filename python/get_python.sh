@@ -27,7 +27,7 @@ cd $DIR
 
 # the version number below is only used if cmake isn't already on your path.
 # if you update this version number, remember to update the one(s) in the other platform
-# files, as well as in Tools/build/Jenkins/...
+# files, as well as in scripts/build/...
 
 ./python.sh --version > /dev/null
 python_exitcode=$?
@@ -55,9 +55,9 @@ if ! [ -x "$(command -v cmake)" ]; then
         fi
         LY_CMAKE_PATH=$LY_3RDPARTY_PATH/CMake/3.19.1/$PAL/$CMAKE_FOLDER_RELATIVE_TO_ROOT
         # if you change the version number, change it also in:
-        # Tools/build/JenkinsScripts/build/Platform/Mac/env_mac.sh
+        # scripts/build/Platform/Mac/env_mac.sh
         # and
-        # Tools/build/JenkinsScripts/build/Platform/Linux/env_linux.sh
+        # scripts/build/Platform/Linux/env_linux.sh
     fi
         
     export PATH=$LY_CMAKE_PATH:$PATH

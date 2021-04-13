@@ -30,8 +30,8 @@ IF NOT EXIST "%LY_ANDROID_SDK%" (
 SET ANDROID_SDK_ROOT=%LY_ANDROID_SDK%
 ECHO "ANDROID_SDK_ROOT=!ANDROID_SDK_ROOT!"
 SET PYTHON=python\python.cmd
-ECHO [ci_build] %PYTHON% Tools\build\JenkinsScripts\build\Platform\Android\run_test_on_android_simulator.py --android-sdk-path %LY_ANDROID_SDK% --build-path %OUTPUT_DIRECTORY% --build-config %CONFIGURATION%
-CALL %PYTHON% Tools\build\JenkinsScripts\build\Platform\Android\run_test_on_android_simulator.py --android-sdk-path %LY_ANDROID_SDK% --build-path %OUTPUT_DIRECTORY% --build-config %CONFIGURATION%
+ECHO [ci_build] %PYTHON% scripts\build\Platform\Android\run_test_on_android_simulator.py --android-sdk-path %LY_ANDROID_SDK% --build-path %OUTPUT_DIRECTORY% --build-config %CONFIGURATION%
+CALL %PYTHON% scripts\build\Platform\Android\run_test_on_android_simulator.py --android-sdk-path %LY_ANDROID_SDK% --build-path %OUTPUT_DIRECTORY% --build-config %CONFIGURATION%
 IF NOT %ERRORLEVEL%==0 GOTO :popd_error
 
 EXIT /b 0

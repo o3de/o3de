@@ -38,7 +38,7 @@
     "TAGS": [],
     "COMMAND": "python_windows.cmd",
     "PARAMETERS": {
-      "SCRIPT_PATH": "Tools/build/JenkinsScripts/build/scrubbing_job.py"
+      "SCRIPT_PATH": "scripts/build/scrubbing_job.py"
     }
   },
   "validation": {
@@ -54,7 +54,7 @@
     ],
     "COMMAND": "python_windows.cmd",
     "PARAMETERS": {
-      "SCRIPT_PATH": "Tools/build/JenkinsScripts/build/ci_build_metrics.py",
+      "SCRIPT_PATH": "scripts/build/ci_build_metrics.py",
       "SCRIPT_PARAMETERS": "--platform Windows --jobname \"!JOB_NAME!\" --jobnumber \"!BUILD_NUMBER!\" --jobnode \"!NODE_NAME!\" --changelist \"!CHANGE_ID!\""
     }
   },

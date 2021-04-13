@@ -23,7 +23,7 @@
     ],
     "COMMAND": "python_linux.sh",
     "PARAMETERS": {
-      "SCRIPT_PATH": "Tools/build/JenkinsScripts/build/ci_build_metrics.py",
+      "SCRIPT_PATH": "scripts/build/ci_build_metrics.py",
       "SCRIPT_PARAMETERS": "--platform Linux --jobname '${JOB_NAME}' --jobnumber '${BUILD_NUMBER}' --jobnode '${NODE_NAME}' --changelist '${CHANGE_ID}'"
     }
   },
