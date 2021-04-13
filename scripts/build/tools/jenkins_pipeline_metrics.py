@@ -30,22 +30,24 @@ class JenkinsAPIClient:
         self.jenkins_api_token = jenkins_api_token
         self.blueocean_api_path = '/blue/rest/organizations/jenkins/pipelines'
 
-    def get_request(self, url):
-        try:
-            response = requests.get(url, auth=HTTPBasicAuth(self.jenkins_username, self.jenkins_api_token))
-            if response.ok:
-                return response.json()
-        except Exception:
-            traceback.print_exc()
-            error(f'Get request {url} failed, see exception for more details.')
+    def get_request(self, url, retry=1):
+        for i in range(retry):
+            try:
+                response = requests.get(url, auth=HTTPBasicAuth(self.jenkins_username, self.jenkins_api_token))
+                if response.ok:
+                    return response.json()
+            except Exception:
+                traceback.print_exc()
+                print(f'WARN: Get request {url} failed, retying....')
+        error(f'Get request {url} failed, see exception for more details.')
 
     def get_builds(self, pipeline_name, branch_name=''):
         url = self.jenkins_base_url + self.blueocean_api_path + f'/{pipeline_name}/{branch_name}/runs'
-        return self.get_request(url)
+        return self.get_request(url, retry=3)
 
     def get_stages(self, build_number, pipeline_name, branch_name=''):
         url = self.jenkins_base_url + self.blueocean_api_path + f'/{pipeline_name}/{branch_name}/runs/{build_number}/nodes'
-        return self.get_request(url)
+        return self.get_request(url, retry=3)
 
 
 def generate_build_metrics_csv(env, target_date):
