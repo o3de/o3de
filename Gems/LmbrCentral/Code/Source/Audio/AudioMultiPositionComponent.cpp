@@ -40,7 +40,6 @@ namespace LmbrCentral
                 ;
 
             behaviorContext->EBus<AudioMultiPositionComponentRequestBus>("Multi-Position Audio Requests", "AudioMultiPositionComponentRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Audio")
                 ->Event("Add Entity", &AudioMultiPositionComponentRequestBus::Events::AddEntity, "AddEntity")
                 ->Event("RemoveEntity", &AudioMultiPositionComponentRequestBus::Events::RemoveEntity)

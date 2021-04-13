@@ -121,6 +121,58 @@ namespace ParsingUtilitiesCpp
         AZStd::string m_result;
         ExecutionTreeConstPtr m_marker;
     };
+
+    bool IsBehaviorContextProperty(const Node* node, const Slot* slot, bool checkRead, bool checkWrite)
+    {
+        auto methodNode = azrtti_cast<const Nodes::Core::Method*>(node);
+        if (!methodNode)
+        {
+            return false;
+        }
+
+        auto behaviorContext = AZ::GetDefaultBehaviorContext();
+        if (!behaviorContext)
+        {
+            return false;
+        }
+
+        auto nameOutcome = methodNode->GetFunctionCallName(slot);
+        if (!nameOutcome.IsSuccess())
+        {
+            return false;
+        }
+
+        AZStd::string sanitized(nameOutcome.GetValue());
+        AZ::RemovePropertyNameArtifacts(sanitized);
+
+        auto iter = behaviorContext->m_properties.find(sanitized);
+        if (iter == behaviorContext->m_properties.end())
+        {
+            return false;
+        }
+
+        if (checkRead && !iter->second->m_getter)
+        {
+            return false;
+        }
+
+        if (checkWrite && !iter->second->m_setter)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    bool IsBehaviorContextPropertyRead(const Node* node, const Slot* slot)
+    {
+        return IsBehaviorContextProperty(node, slot, true, false);
+    }
+
+    bool IsBehaviorContextPropertyWrite(const Node* node, const Slot* slot)
+    {
+        return IsBehaviorContextProperty(node, slot, false, true);
+    }
 }
 
 namespace ScriptCanvas
@@ -606,6 +658,20 @@ namespace ScriptCanvas
             return execution->GetSymbol() == Symbol::FunctionCall
                 && execution->GetInputCount() > 0
                 && execution->GetInput(0).m_value->m_requiresNullCheck;
+        }
+
+        bool IsGlobalPropertyRead(ExecutionTreeConstPtr execution)
+        {
+            return execution->GetSymbol() == Symbol::FunctionCall
+                && execution->GetInputCount() == 0
+                && ParsingUtilitiesCpp::IsBehaviorContextPropertyRead(execution->GetId().m_node, execution->GetId().m_slot);
+        }
+
+        bool IsGlobalPropertyWrite(ExecutionTreeConstPtr execution)
+        {
+            return execution->GetSymbol() == Symbol::FunctionCall
+                && execution->GetInputCount() == 0
+                && ParsingUtilitiesCpp::IsBehaviorContextPropertyWrite(execution->GetId().m_node, execution->GetId().m_slot);
         }
 
         bool IsIfCondition(const ExecutionTreeConstPtr& execution)

@@ -405,36 +405,38 @@ namespace EMotionFX
 
         // create the actor
         AZStd::unique_ptr<Actor> actor = AZStd::make_unique<Actor>("Unnamed actor");
-        actor->SetThreadIndex(actorSettings.mThreadIndex);
-
-        // set the scale mode
-        //actor->SetScaleMode( scaleMode );
-
-        // init the import parameters
-        ImportParameters params;
-        params.mSharedData      = &sharedData;
-        params.mEndianType      = endianType;
-        params.mActorSettings   = &actorSettings;
-        params.mActor           = actor.get();
-
-        // process all chunks
-        while (ProcessChunk(f, params))
-        {
-        }
+        MCORE_ASSERT(actor);
 
         if (actor)
         {
-            actor->SetFileName(filename);
-        }
+            actor->SetThreadIndex(actorSettings.mThreadIndex);
 
-        // Generate an optimized version of skeleton for server.
-        if (actorSettings.mOptimizeForServer && actor->GetOptimizeSkeleton())
-        {
-            actor->GenerateOptimizedSkeleton();
+            // set the scale mode
+            // actor->SetScaleMode( scaleMode );
+
+            // init the import parameters
+            ImportParameters params;
+            params.mSharedData = &sharedData;
+            params.mEndianType = endianType;
+            params.mActorSettings = &actorSettings;
+            params.mActor = actor.get();
+
+            // process all chunks
+            while (ProcessChunk(f, params))
+            {
+            }
+
+            actor->SetFileName(filename);
+
+            // Generate an optimized version of skeleton for server.
+            if (actorSettings.mOptimizeForServer && actor->GetOptimizeSkeleton())
+            {
+                actor->GenerateOptimizedSkeleton();
+            }
+
+            // post create init
+            actor->PostCreateInit(actorSettings.mMakeGeomLODsCompatibleWithSkeletalLODs, false, actorSettings.mUnitTypeConvert);
         }
-        
-        // post create init
-        actor->PostCreateInit(actorSettings.mMakeGeomLODsCompatibleWithSkeletalLODs, false, actorSettings.mUnitTypeConvert);
 
         // close the file and return a pointer to the actor we loaded
         f->Close();
@@ -630,7 +632,7 @@ namespace EMotionFX
         //////////////////////////////////////////
 
         // check if we want to load the motion set even if a motion set with the given filename is already inside the motion manager
-        if (settings == nullptr || (settings && settings->mForceLoading == false))
+        if (settings == nullptr || settings->mForceLoading == false)
         {
             // search the motion set inside the motion manager and return it if it already got loaded
             MotionSet* motionSet = GetMotionManager().FindMotionSetByFileName(filename.c_str());
@@ -1337,7 +1339,7 @@ namespace EMotionFX
         //////////////////////////////////////////
 
         // check if we want to load the anim graph even if a anim graph with the given filename is already inside the anim graph manager
-        if (settings == nullptr || (settings && settings->mForceLoading == false))
+        if (settings == nullptr || settings->mForceLoading == false)
         {
             // search the anim graph inside the anim graph manager and return it if it already got loaded
             AnimGraph* animGraph = GetAnimGraphManager().FindAnimGraphByFileName(filename.c_str());

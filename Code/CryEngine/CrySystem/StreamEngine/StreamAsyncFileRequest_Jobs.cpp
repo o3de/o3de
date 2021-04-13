@@ -121,14 +121,14 @@ int SStreamJobQueue::Pop()
 
 void CAsyncIOFileRequest::AddRef()
 {
-    int nRef = CryInterlockedIncrement(&m_nRefCount);
+    //int nRef =
+        CryInterlockedIncrement(&m_nRefCount);
     STREAM_DECOMPRESS_TRACE("[StreamDecompress],AddRef,0x%x,%s,0x%p,%i\n", CryGetCurrentThreadId(), m_strFileName.c_str(), this, nRef);
 }
 
 int CAsyncIOFileRequest::Release()
 {
     int nRef = CryInterlockedDecrement(&m_nRefCount);
-
     STREAM_DECOMPRESS_TRACE("[StreamDecompress],Release,0x%x,%s,0x%p,%i\n", CryGetCurrentThreadId(), m_strFileName.c_str(), this, nRef);
 
 #ifndef _RELEASE

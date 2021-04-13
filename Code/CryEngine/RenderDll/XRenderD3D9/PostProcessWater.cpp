@@ -347,7 +347,6 @@ void CWaterRipples::Render()
     }
 
     const uint32 nThreadID = gRenDev->m_RP.m_nProcessThreadID;
-    int32 nGpuID = 0;//gRenDev->RT_GetCurrGpuID();
 
     gRenDev->m_cEF.mfRefreshSystemShader("PostEffectsGame", CShaderMan::s_shPostEffectsGame);
 
@@ -584,7 +583,6 @@ void CWaterVolume::Render()
 
                 Vec4* pDispGrid = WaterSimMgr()->GetDisplaceGrid();
 
-                uint32 pitch = 4 * sizeof(float) * nGridSize;
                 uint32 width = nGridSize;
                 uint32 height = nGridSize;
 

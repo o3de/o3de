@@ -100,6 +100,9 @@ namespace PhysX
         static bool VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement);
 
     private:
+        void CreateRagdoll(const Physics::RagdollConfiguration& ragdollConfiguration);
+        void DestroyRagdoll();
+
         bool IsJointProjectionVisible();
 
         AZStd::unique_ptr<Ragdoll> m_ragdoll;

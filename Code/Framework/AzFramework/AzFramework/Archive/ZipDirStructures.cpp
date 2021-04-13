@@ -343,7 +343,6 @@ namespace AZ::IO::ZipDir
             {
                 AZ::IO::HandleType realFileHandle = m_fileHandle;
                 size_t nFileSize = ~0;
-                int64_t offset = 0;
 
                 AZ::u64 fileSize = 0;
                 if (!m_fileIOBase->Size(realFileHandle, fileSize))

@@ -102,7 +102,6 @@ namespace EMotionFX
         ASSERT_EQ(1, transition->GetNumConditions()) << " Anim Graph transition condition should have been made removed";
 
         // Find the created Condition
-        auto  transitionCondition = transition->GetCondition(0);
         auto objectEditor = animGraphPlugin->GetAttributesWindow()->findChild<QWidget*>("EMFX.AttributesWindowWidget.NodeTransition.ConditionsWidget");
         ASSERT_TRUE(objectEditor);
        

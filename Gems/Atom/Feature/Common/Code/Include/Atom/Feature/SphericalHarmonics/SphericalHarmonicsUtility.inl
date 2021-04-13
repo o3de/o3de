@@ -720,7 +720,6 @@ namespace AZ
             {
                 using namespace std;
 
-                uint32_t dimRot = (maxBand + 1) * (maxBand + 1);
                 vector<vector<vector<double>>> Rot;
                 for (uint32_t l = 0; l < maxBand + 1; ++l)
                 {

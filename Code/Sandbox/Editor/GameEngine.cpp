@@ -321,7 +321,7 @@ void KillMemory(IConsoleCmdArgs* /* pArgs */)
             size = size > kLimit ? kLimit : size;
         }
 
-        uint8* alloc = new uint8[size];
+        new uint8[size];
     }
 }
 
@@ -711,8 +711,6 @@ void CGameEngine::SwitchToInGame()
     {
         gEnv->p3DEngine->ResetParticlesAndDecals();
     }
-
-    CViewport* pGameViewport = GetIEditor()->GetViewManager()->GetGameViewport();
 
     m_pISystem->GetIMovieSystem()->EnablePhysicsEvents(true);
     m_bInGameMode = true;

@@ -196,8 +196,7 @@ namespace UnitTest
                 fileIO->Remove(s_catalogFile);
             }
 
-            int platformCount = 0;
-            for (auto thisPlatform : m_testPlatforms)
+            for (size_t platformCount = 0; platformCount < s_totalTestPlatforms; ++platformCount)
             {
                 // Deleting all the temporary files
                 for (int idx = 0; idx < s_totalAssets; idx++)
@@ -208,7 +207,6 @@ namespace UnitTest
                         fileIO->Remove(m_assetsPathFull[platformCount][idx].c_str());
                     }
                 }
-                ++platformCount;
             }
 
             if (fileIO->Exists(TestSliceAssetPath))

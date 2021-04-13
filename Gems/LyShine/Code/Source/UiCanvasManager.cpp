@@ -633,7 +633,6 @@ void UiCanvasManager::DestroyLoadedCanvases(bool keepCrossLevelCanvases)
     for (auto iter = m_loadedCanvases.begin(); iter != m_loadedCanvases.end(); ++iter)
     {
         auto canvas = *iter;
-        bool removed = false;
 
         if (!(keepCrossLevelCanvases && canvas->GetKeepLoadedOnLevelUnload()))
         {
@@ -779,7 +778,6 @@ void UiCanvasManager::SortCanvasesByDrawOrder()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 UiCanvasComponent* UiCanvasManager::FindCanvasComponentByPathname(const AZStd::string& name)
 {
-    UiCanvasComponent* match = nullptr;
     AZStd::string adjustedSearchName = GetAssePathFromUserDefinedPath(name);
     for (auto canvas : (m_loadedCanvases))
     {
@@ -795,7 +793,6 @@ UiCanvasComponent* UiCanvasManager::FindCanvasComponentByPathname(const AZStd::s
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 UiCanvasComponent* UiCanvasManager::FindEditorCanvasComponentByPathname(const AZStd::string& name)
 {
-    UiCanvasComponent* match = nullptr;
     for (auto canvas : (m_loadedCanvasesInEditor))
     {
         if (name == canvas->GetPathname())
@@ -1007,13 +1004,10 @@ void UiCanvasManager::DebugDisplayCanvasData(int setting) const
 
     float xOffset = 20.0f;
     float yOffset = 20.0f;
-    float xSpacing = 20.0f;
 
     const int elementNameFieldLength = 20;
 
-    float opacity = 1.0f;
-
-    int blackTexture = gEnv->pRenderer->GetBlackTextureId();
+   int blackTexture = gEnv->pRenderer->GetBlackTextureId();
     float textOpacity = 1.0f;
     float backgroundRectOpacity = 0.75f;
 
@@ -1171,9 +1165,6 @@ void UiCanvasManager::DebugDisplayDrawCallData() const
 
     float xOffset = 20.0f;
     float yOffset = 20.0f;
-    float xSpacing = 20.0f;
-
-    float opacity = 1.0f;
 
     int blackTexture = gEnv->pRenderer->GetBlackTextureId();
     float textOpacity = 1.0f;

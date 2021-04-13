@@ -2261,8 +2261,6 @@ namespace AssetProcessor
 
         {
             // note, intentional scope created for the statement finalizer
-            const char* statementToUse = wasAlreadyInDatabase ? UPDATE_PRODUCT : INSERT_PRODUCT;
-
             StatementAutoFinalizer autoFinalizer;
             if (wasAlreadyInDatabase)
             {
@@ -2285,7 +2283,7 @@ namespace AssetProcessor
 
             if(statement->Step() == Statement::SqlError)
             {
-                AZ_Error(LOG_NAME, false, "Failed to execute the %s statement", statementToUse);
+                AZ_Error(LOG_NAME, false, "Failed to execute the %s statement", wasAlreadyInDatabase ? UPDATE_PRODUCT : INSERT_PRODUCT);
                 return false;
             }
 

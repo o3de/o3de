@@ -60,6 +60,8 @@ namespace NvCloth
 
         void UpdateConfiguration(AZ::EntityId entityId, const ClothConfiguration& config);
 
+        void CopyRenderDataToModel();
+
     protected:
         // Functions used to setup and tear down cloth component mesh
         void Setup(AZ::EntityId entityId, const ClothConfiguration& config);
@@ -85,7 +87,6 @@ namespace NvCloth
         void UpdateSimulationSkinning();
         void UpdateSimulationConstraints();
         void UpdateRenderData(const AZStd::vector<SimParticleFormat>& particles);
-        void CopyRenderDataToModel();
 
         bool CreateCloth();
         void ApplyConfigurationToCloth();

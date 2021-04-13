@@ -2595,8 +2595,6 @@ float UiDynamicScrollBoxComponent::CalculateContentBeginningDeltaAfterSizeChange
     AZ::Vector2 curContentSize(0.0f, 0.0f);
     EBUS_EVENT_ID_RESULT(curContentSize, contentEntityId, UiTransformBus, GetCanvasSpaceSizeNoScaleRotate);
 
-    float curSize = m_isVertical ? curContentSize.GetY() : curContentSize.GetX();
-
     UiTransform2dInterface::Offsets offsets;
     EBUS_EVENT_ID_RESULT(offsets, contentEntityId, UiTransform2dBus, GetOffsets);
 
@@ -2631,8 +2629,6 @@ float UiDynamicScrollBoxComponent::CalculateContentEndDeltaAfterSizeChange(float
     // Get current content size
     AZ::Vector2 curContentSize(0.0f, 0.0f);
     EBUS_EVENT_ID_RESULT(curContentSize, contentEntityId, UiTransformBus, GetCanvasSpaceSizeNoScaleRotate);
-
-    float curSize = m_isVertical ? curContentSize.GetY() : curContentSize.GetX();
 
     UiTransform2dInterface::Offsets offsets;
     EBUS_EVENT_ID_RESULT(offsets, contentEntityId, UiTransform2dBus, GetOffsets);

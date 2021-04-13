@@ -39,7 +39,7 @@ class MockedWorkspace(object):
         self.shader_compiler = mock.MagicMock()
         self.settings = mock.MagicMock()
 
-        self.paths.dev.return_value = 'dev_path'
+        self.paths.engine_root.return_value = 'engine_path'
         self.paths.build_directory.return_value = 'build_directory'
         self.paths.autoexec_file.return_value = 'autoexec.cfg'
 

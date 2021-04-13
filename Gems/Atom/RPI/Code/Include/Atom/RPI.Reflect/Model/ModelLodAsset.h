@@ -100,6 +100,11 @@ namespace AZ
                 //! Returns a reference to the index buffer used by this mesh
                 const BufferAssetView& GetIndexBufferAssetView() const;
 
+                //! A helper method for returning this mesh's index buffer using a specific type for the elements.
+                //! @note It's the caller's responsibility to choose the right type for the buffer.
+                template<class T>
+                AZStd::array_view<T> GetIndexBufferTyped() const;
+
                 //! Return an array view of the list of all stream buffer info (not including the index buffer)
                 AZStd::array_view<StreamBufferInfo> GetStreamBufferInfoList() const;
 
@@ -109,12 +114,17 @@ namespace AZ
                 //! In perf loop, re-use AZ::Name instance.
                 const BufferAssetView* GetSemanticBufferAssetView(const AZ::Name& semantic) const;
 
-                //! A helper method for returning a specific mesh buffer.
-                //! For example, to get a position buffer for a mesh with AZ::Name("POSITION").
+                //! A helper method for returning this mesh's buffer using a specific type for the elements.
+                //! For example, to get a position buffer for a mesh with AZ::Name("POSITION") and T=float.
                 //! In perf loop, re-use AZ::Name instance.
-                AZStd::array_view<uint8_t> GetSemanticBuffer(const AZ::Name& semantic) const;
+                //! @note It's the caller's responsibility to choose the right type for the buffer.
+                template<class T>
+                AZStd::array_view<T> GetSemanticBufferTyped(const AZ::Name& semantic) const;
 
             private:
+                template<class T>
+                AZStd::array_view<T> GetBufferTyped(const BufferAssetView& bufferAssetView) const;
+
                 AZ::Name m_name;
                 AZ::Aabb m_aabb = AZ::Aabb::CreateNull();
 
@@ -155,5 +165,41 @@ namespace AZ
         };
 
         using ModelLodAssetHandler = AssetHandler<ModelLodAsset>;
+
+        template<class T>
+        AZStd::array_view<T> ModelLodAsset::Mesh::GetIndexBufferTyped() const
+        {
+            return GetBufferTyped<T>(GetIndexBufferAssetView());
+        }
+
+        template<class T>
+        AZStd::array_view<T> ModelLodAsset::Mesh::GetSemanticBufferTyped(const AZ::Name& semantic) const
+        {
+            const BufferAssetView* bufferAssetView = GetSemanticBufferAssetView(semantic);
+            return bufferAssetView ? GetBufferTyped<T>(*bufferAssetView) : AZStd::array_view<T>{};
+        }
+
+        template<class T>
+        AZStd::array_view<T> ModelLodAsset::Mesh::GetBufferTyped(const BufferAssetView& bufferAssetView) const
+        {
+            if (const BufferAsset* bufferAsset = bufferAssetView.GetBufferAsset().Get())
+            {
+                const AZStd::array_view<uint8_t> rawBuffer = bufferAsset->GetBuffer();
+                if (!rawBuffer.empty())
+                {
+                    const auto& bufferViewDescriptor = bufferAssetView.GetBufferViewDescriptor();
+
+                    const uint8_t* beginMeshRawBuffer = rawBuffer.data() + (bufferViewDescriptor.m_elementOffset * bufferViewDescriptor.m_elementSize);
+                    const uint8_t* endMeshRawBuffer = beginMeshRawBuffer + (bufferViewDescriptor.m_elementCount * bufferViewDescriptor.m_elementSize);
+
+                    AZ_Assert((endMeshRawBuffer - beginMeshRawBuffer) % sizeof(T) == 0,
+                        "Size of buffer (%d) is not a multiple of the type's size specified (%d)",
+                        endMeshRawBuffer - beginMeshRawBuffer, sizeof(T));
+
+                    return AZStd::array_view<T>(reinterpret_cast<const T*>(beginMeshRawBuffer), reinterpret_cast<const T*>(endMeshRawBuffer));
+                }
+            }
+            return {};
+        }
     } // namespace RPI
 } // namespace AZ

@@ -122,7 +122,7 @@ class AndroidLauncher(Launcher):
         self._device_id = None
         self.launch_proc = None
         self.android_vfs_setreg_path = None
-        self.package_name = get_package_name(os.path.join(self.workspace.paths.dev(),
+        self.package_name = get_package_name(os.path.join(self.workspace.paths.engine_root(),
                                                           self.workspace.project))
         self._device_id = self.get_device_config(config_file=self.workspace.paths.devices_file(),
                                                  device_section='android',

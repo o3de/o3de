@@ -264,7 +264,6 @@ namespace RenderGL
         glDepthMask(GL_TRUE);
 
         const EMotionFX::TransformData* transformData = actorInstance->GetTransformData();
-        const EMotionFX::Pose* pose = transformData->GetCurrentPose();
 
         if (mAttributes[SKINNING])
         {

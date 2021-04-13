@@ -273,14 +273,11 @@ void CModelViewport::RestoreDebugOptions()
     for (auto g : m_settingsPath.split('\\'))
         settings.beginGroup(g);
 
-    f32 floatValue = .0f;
-    UINT byteNum = sizeof(f32);
     QString strRead = "";
     int32 iRead = 0;
     BOOL bRead = FALSE;
     f32 fRead = .0f;
     QByteArray pbtData;
-    UINT bytes = 0;
 
     CVarBlock* vb = m_vars.GetVarBlock();
     int32 vbCount = vb->GetNumVariables();
@@ -289,7 +286,6 @@ void CModelViewport::RestoreDebugOptions()
     for (int32 i = 0; i < vbCount; ++i)
     {
         IVariable* var = vb->GetVariable(i);
-        IVariable::EType vType = var->GetType();
         sprintf_s(keyType, "DebugOption_%s_type", var->GetName().toUtf8().data());
 
         int32 iType = settings.value(keyType, 0).toInt();

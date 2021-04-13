@@ -39,10 +39,5 @@ private:
     CGaussianBlurPass  m_passBlur1;
     CGaussianBlurPass  m_passBlur2;
 
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    // render to texture supports multiple cameras
-    AZStd::unordered_map<AZ::EntityId, Matrix44> m_prevViewProj[MAX_GPU_NUM];
-#else
     Matrix44           m_prevViewProj[MAX_GPU_NUM];
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
 };

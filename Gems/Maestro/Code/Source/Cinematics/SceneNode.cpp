@@ -363,8 +363,6 @@ void CAnimSceneNode::Animate(SAnimContext& ec)
         bTimeJump = true;
     */
 
-    int nCurrentSoundTrackIndex = 0;
-
     if (gEnv->IsEditor() && m_time > ec.time)
     {
         m_lastPrecachePoint = -1.f;
@@ -1095,7 +1093,7 @@ void CAnimSceneNode::PrecacheDynamic(float time)
                 CSelectTrack* pCameraTrack = static_cast<CSelectTrack*>(pAnimTrack);
 
                 ISelectKey key;
-                int keyID = pCameraTrack->GetActiveKey(time + fPrecacheCameraTime, &key);
+                pCameraTrack->GetActiveKey(time + fPrecacheCameraTime, &key);
 
                 if (time < key.time && (time + fPrecacheCameraTime) > key.time && key.time > m_lastPrecachePoint)
                 {

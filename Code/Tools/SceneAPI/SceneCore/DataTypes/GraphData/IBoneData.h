@@ -31,6 +31,8 @@ namespace AZ
 
                 virtual ~IBoneData() override = default;
 
+                void CloneAttributesFrom([[maybe_unused]] const IGraphObject* sourceObject) override {}
+
                 virtual const MatrixType& GetWorldTransform() const = 0;
 
                 void GetDebugOutput(AZ::SceneAPI::Utilities::DebugOutput& output) const override

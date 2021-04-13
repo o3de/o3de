@@ -69,7 +69,7 @@ class TestsAssetProcessorBatch_DependenycyTests(object):
         asset_processor.add_scan_folder("Gems/LyShineExamples/Assets")
         gem_asset_path = "Gems/CertificateManager/Assets"
         asset_processor.add_scan_folder(gem_asset_path)
-        engine_schema_path = os.path.join(workspace.paths.dev(), "Engine", "Schema")
+        engine_schema_path = os.path.join(workspace.paths.engine_root(), "Engine", "Schema")
         gem_schema_path = os.path.join(asset_processor.temp_asset_root(), gem_asset_path, "Schema")
 
         # EXPECT Assets process successfully

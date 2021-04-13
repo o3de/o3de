@@ -301,7 +301,6 @@ namespace ImGui
         //!Draw the current node on the active window.
         void Paint(ImGuiFrameVisualizerNode* node, const ImVec2& offset,unsigned int& nodeID)
         {
-            ImGuiWindow* window = GetCurrentWindow();
             ImGuiIO& io = ImGui::GetIO();
 
             const float nodeSlotRadius = 4.0f;

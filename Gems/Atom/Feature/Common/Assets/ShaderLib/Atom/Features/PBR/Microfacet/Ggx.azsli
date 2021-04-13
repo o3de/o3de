@@ -28,7 +28,44 @@
 #include <Atom/RPI/Math.azsli>
 
 
-//! Distribution function (D) for the anisotropic GGX
+// ------- GGX -------
+
+//! (D) Normal Distribution function for GGX
+//! Provides statistical distribution of microfacet normals M around the macrosurface normal N.
+//!
+//! @param H            potential microfacet normal, usually the half-vector between the light and the camera
+//! @param N            macrosurface normal
+//! @param roughnessA2  alpha roughness ^ 2 (alpha roughness is the unpacked form of artist authored linear roughness and is what is used for lighting calculations)
+//! @return             factor for how much of the macrosurface has normals in the direction M. The value non-negative, but it's not normalized, so values are not restricted to [0, 1].
+float NormalDistributionGGX(const float NdotH, const float roughnessA2)
+{
+    // Walter equation 33, simplified given that the positive characteristic function is handled elsewhere
+    float b = (NdotH * roughnessA2 - NdotH) * NdotH + 1.0;
+    return roughnessA2 / (PI * b * b);
+}
+
+//! (G) Geometric Shadowing and Masking Distribution function for GGX
+//! Variant with height correlated Smith
+//!
+//! @param N            macrosurface normal
+//! @param V            direction to the camera
+//! @param L            direction to the light
+//! @param roughnessA2  alpha roughness ^ 2 (alpha roughness is the unpacked form of artist authored linear roughness and is what is used for lighting calculations)
+//! @return             probability that V and L are not masked.
+float GeometricShadowingMaskingGGXCorrelated(const float NdotV, const float NdotL, const float roughnessA2)
+{
+    // See Frostbite PBR guide (page 12)
+    // https://media.contentapi.ea.com/content/dam/eacom/frostbite/files/course-notes-moving-frostbite-to-pbr-v32.pdf
+    float ggxV = NdotL * sqrt((-NdotV * roughnessA2 + NdotV) * NdotV + roughnessA2);
+    float ggxL = NdotV * sqrt((-NdotL * roughnessA2 + NdotL) * NdotL + roughnessA2);
+    return 0.5f / max(ggxV + ggxL, GGX_EPSILON);
+}
+
+
+// ------- Anisotropic GGX -------
+
+//! (D) Normal Distribution function for anisotropic GGX
+//!
 //! @param h    - half vector viewer to the light, used to approximate the reflection probability for a microfacet normal at this angle
 //! @param t    - rotated surface tangent for calculating anisotropic response
 //! @param b    - rotated surface bitangent for calculating anisotropic response
@@ -46,7 +83,7 @@ float NormalDistibution_AnisotropicGGX( float NdotH, const float3 h, const float
     return a2 * w2 * w2 * (1.0 / PI);
 }
 
-//! Geometric shadowing and masking distribution function (G) for the anisotropic GGX
+//! (G) Geometric shadowing and masking distribution function for anisotropic GGX
 //! @param t    - rotated surface tangent for calculating anisotropic response
 //! @param b    - rotated surface bitangent for calculating anisotropic response
 //! @param anisotropyFactors - anisotropic tangent and bitangent factor 
@@ -66,35 +103,8 @@ float ShadowingMasking_AnisotropicSmithGGXCorrelated(
     return min(v, FLOAT_16_MAX);
 }
 
-//! GGX normal distribution function.
-//! Provides statistical distribution of microfacet normals M around the macrosurface normal N.
-//!
-//! @param H            potential microfacet normal, usually the half-vector between the light and the camera
-//! @param N            macrosurface normal
-//! @param roughnessA2  alpha roughness ^ 2 (alpha roughness is the unpacked form of artist authored linear roughness and is what is used for lighting calculations)
-//! @return             factor for how much of the macrosurface has normals in the direction M. The value non-negative, but it's not normalized, so values are not restricted to [0, 1].
-float NormalDistributionGGX(const float NdotH, const float roughnessA2)
-{
-    // Walter equation 33, simplified given that the positive characteristic function is handled elsewhere
-    float b = (NdotH * roughnessA2 - NdotH) * NdotH + 1.0;
-    return roughnessA2 / (PI * b * b);
-}
 
-//! GGX geometry shadowing/masking function, using the height correlated Smith
-//!
-//! @param N            macrosurface normal
-//! @param V            direction to the camera
-//! @param L            direction to the light
-//! @param roughnessA2  alpha roughness ^ 2 (alpha roughness is the unpacked form of artist authored linear roughness and is what is used for lighting calculations)
-//! @return             probability that V and L are not masked.
-float GeometricShadowingMaskingGGXCorrelated(const float NdotV, const float NdotL, const float roughnessA2)
-{
-    // See Frostbite PBR guide (page 12)
-    // https://media.contentapi.ea.com/content/dam/eacom/frostbite/files/course-notes-moving-frostbite-to-pbr-v32.pdf
-    float ggxV = NdotL * sqrt((-NdotV * roughnessA2 + NdotV) * NdotV + roughnessA2);
-    float ggxL = NdotV * sqrt((-NdotL * roughnessA2 + NdotL) * NdotL + roughnessA2);
-    return 0.5f / max(ggxV + ggxL, GGX_EPSILON);
-}
+// ------- Importance Sampling -------
 
 //! Importance-sample a microgeometry normal using GGX distribution.
 //!

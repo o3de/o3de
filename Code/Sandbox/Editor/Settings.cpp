@@ -703,6 +703,10 @@ void SEditorSettings::Save()
 //////////////////////////////////////////////////////////////////////////
 void SEditorSettings::Load()
 {
+    // Load from Settings Registry
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(
+        prefabSystem, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+
     const int settingsVersion = s_editorSettings()->value(QStringLiteral("Settings/EditorSettingsVersion"), 0).toInt();
 
     if (settingsVersion != EditorSettingsVersion)
@@ -942,11 +946,6 @@ void SEditorSettings::Load()
             searchPaths[id].push_back(path);
         }
     }
-
-    // Load from Settings Registry
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        prefabSystem, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
 }
 
 //////////////////////////////////////////////////////////////////////////

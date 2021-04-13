@@ -1274,7 +1274,6 @@ namespace ScriptCanvas
                 if (classIter != behaviorContext->m_typeToClassMap.end())
                 {
                     BehaviorContextObjectPtr sourceObjectPtr = (*AZStd::any_cast<BehaviorContextObjectPtr>(&source.m_storage));
-                    auto anyCastResult = AZStd::any_cast<BehaviorContextObjectPtr>(&m_storage);
                     BehaviorContextObjectPtr newObjectPtr = sourceObjectPtr->CloneObject((*classIter->second));
                     m_storage = AZStd::move(newObjectPtr);
                     BehaviorContextObjectPtr newSourceObjectPtr = (*AZStd::any_cast<BehaviorContextObjectPtr>(&m_storage));

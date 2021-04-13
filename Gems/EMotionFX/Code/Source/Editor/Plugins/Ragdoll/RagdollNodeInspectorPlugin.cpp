@@ -103,9 +103,6 @@ namespace EMotionFX
             return;
         }
 
-        const Actor* actor = selectedRowIndices[0].data(SkeletonModel::ROLE_ACTOR_POINTER).value<Actor*>();
-        const AZStd::shared_ptr<PhysicsSetup>& physicsSetup = actor->GetPhysicsSetup();
-
         const int numSelectedNodes = selectedRowIndices.count();
         int ragdollNodeCount = 0;
         for (const QModelIndex& modelIndex : selectedRowIndices)
@@ -465,7 +462,6 @@ namespace EMotionFX
         const Physics::CharacterColliderConfiguration& colliderConfig = ragdollConfig.m_colliders;
         const RagdollInstance* ragdollInstance = actorInstance->GetRagdollInstance();
 
-        MCommon::RenderUtil* renderUtil = renderInfo->mRenderUtil;
         EMStudio::RenderOptions* renderOptions = renderPlugin->GetRenderOptions();
         const MCore::RGBAColor defaultColor = renderOptions->GetRagdollColliderColor();
         const MCore::RGBAColor selectedColor = renderOptions->GetSelectedRagdollColliderColor();

@@ -36,13 +36,13 @@ class TestInstanceSpawnerPriority(object):
     @pytest.fixture(autouse=True)
     def setup_teardown(self, request, workspace, project, level):
         def teardown():
-            file_system.delete([os.path.join(workspace.paths.dev(), project, "Levels", level)], True, True)
+            file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
         request.addfinalizer(teardown)
 
-        file_system.delete([os.path.join(workspace.paths.dev(), project, "Levels", level)], True, True)
+        file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
 
     @pytest.mark.test_case_id("C5747383", "C4762382")
-    @pytest.mark.SUITE_main
+    @pytest.mark.SUITE_periodic
     def test_InstanceSpawnerPriority_LayerAndSubPriority_HigherValuesPlantOverLower(self, request, editor, level,
                                                                                     launcher_platform):
 

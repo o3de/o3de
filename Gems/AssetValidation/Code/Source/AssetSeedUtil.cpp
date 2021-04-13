@@ -123,7 +123,6 @@ namespace AssetValidation::AssetSeed
 
         // Add the current project default seed list file
         AZStd::string projectName;
-        bool checkPlatform = false;
 
         AZ::IO::FixedMaxPathString projectPath = AZ::Utils::GetProjectPath();
         if (!projectPath.empty())

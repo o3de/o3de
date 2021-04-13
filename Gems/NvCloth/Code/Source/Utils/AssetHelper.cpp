@@ -15,9 +15,7 @@
 #include <Utils/MeshAssetHelper.h>
 #include <Utils/ActorAssetHelper.h>
 
-#include <platform.h> // Needed for MeshAsset.h
-#include <LmbrCentral/Rendering/MeshComponentBus.h>
-#include <LmbrCentral/Rendering/MeshAsset.h>
+#include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
 
 #include <Integration/ActorComponentBus.h>
 
@@ -41,16 +39,10 @@ namespace NvCloth
             return AZStd::make_unique<ActorAssetHelper>(entityId);
         }
 
-        AZ::Data::Asset<AZ::Data::AssetData> meshAsset;
-        LmbrCentral::MeshComponentRequestBus::EventResult(
-            meshAsset, entityId, &LmbrCentral::MeshComponentRequestBus::Events::GetMeshAsset);
-        if (!meshAsset)
-        {
-            return nullptr;
-        }
-
-        // Does the entity have a Mesh Asset?
-        if (meshAsset.GetType() == AZ::AzTypeInfo<LmbrCentral::MeshAsset>::Uuid())
+        AZ::Data::Asset<AZ::RPI::ModelAsset> modelAsset;
+        AZ::Render::MeshComponentRequestBus::EventResult(
+            modelAsset, entityId, &AZ::Render::MeshComponentRequestBus::Events::GetModelAsset);
+        if (modelAsset.GetId().IsValid())
         {
             return AZStd::make_unique<MeshAssetHelper>(entityId);
         }

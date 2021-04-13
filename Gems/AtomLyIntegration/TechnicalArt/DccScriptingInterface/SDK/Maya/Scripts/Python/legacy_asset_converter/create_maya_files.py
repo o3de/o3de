@@ -363,4 +363,3 @@ base_directory = sys.argv[-3]
 destination_directory = sys.argv[-2]
 modify_naming = sys.argv[-1]
 CreateMayaFiles(file_list, base_directory, destination_directory, modify_naming)
-

@@ -192,7 +192,6 @@ void CLogFile::AboutSystem()
     char szProfileBuffer[128];
     char szLanguageBuffer[64];
     //char szCPUModel[64];
-    char* pChar = 0;
     MEMORYSTATUS MemoryStatus;
 #endif // defined(AZ_PLATFORM_WINDOWS) || defined(AZ_PLATFORM_LINUX)
 
