@@ -213,6 +213,9 @@ namespace PhysXDebug
     void SystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         required.push_back(AZ_CRC("PhysXService"));
+#ifdef PHYSXDEBUG_GEM_EDITOR
+        required.push_back(AZ_CRC("PhysXEditorService"));
+#endif // PHYSXDEBUG_GEM_EDITOR
     }
 
     void SystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
