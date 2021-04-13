@@ -39,7 +39,7 @@ def parse_args():
 def build(build_config_filename, build_platform, build_type):
     # Read build_config and locate build_type
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    cwd_dir = os.path.abspath(os.path.join(current_dir, '../../../..')) # engine's root
+    cwd_dir = os.path.abspath(os.path.join(current_dir, '../..')) # engine's root
     config_dir = os.path.abspath(os.path.join(current_dir, 'Platform', build_platform))
     build_config_abspath = os.path.join(config_dir, build_config_filename)
     if not os.path.exists(build_config_abspath):

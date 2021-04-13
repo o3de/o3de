@@ -114,7 +114,7 @@ def gather_build_metrics(current_dir, build_config_filename, platform):
     config_dir = os.path.abspath(os.path.join(current_dir, 'Platform', platform))
     build_config_abspath = os.path.join(config_dir, build_config_filename)
     if not os.path.exists(build_config_abspath):
-        cwd_dir = os.path.abspath(os.path.join(current_dir, '../../../..')) # engine's root
+        cwd_dir = os.path.abspath(os.path.join(current_dir, '../..')) # engine's root
         config_dir = os.path.abspath(os.path.join(cwd_dir, 'restricted', platform, os.path.relpath(current_dir, cwd_dir)))
         build_config_abspath = os.path.join(config_dir, build_config_filename)
 
@@ -268,7 +268,7 @@ if __name__ == "__main__":
 
     # Read build_config
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    engine_dir = os.path.abspath(os.path.join(current_dir, '../../../..')) # engine's root
+    engine_dir = os.path.abspath(os.path.join(current_dir, '../..')) # engine's root
     timestamp =  datetime.datetime.now()
 
     build_metrics = gather_build_metrics(current_dir, args.build_config_filename, args.platform)
@@ -290,7 +290,7 @@ if __name__ == "__main__":
         json.dump(metrics, metric_file, sort_keys=True, indent=4)
 
     # transfer
-    upload_script = os.path.join(current_dir, 'utils', 'upload_to_s3.py')
+    upload_script = os.path.join(current_dir, 'tools', 'upload_to_s3.py')
     upload_to_s3(upload_script, os.path.join(engine_dir, 'build_metrics'), 'ly-jenkins-cmake-metrics', args.jobname)
 
     # submit
