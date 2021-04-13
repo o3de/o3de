@@ -793,12 +793,16 @@ void CShaderMan:: mfCreateCommonGlobalFlags([[maybe_unused]] const char* szName)
                 pszShaderName.MakeUpper();
                 m_pShadersRemapList += string("%") + pszShaderName;
 
-                while (pCurrOffset = strstr(pCurrOffset, "Name"))
+                pCurrOffset = strstr(pCurrOffset, "Name");
+                while (pCurrOffset)
                 {
                     pCurrOffset += 4;
                     char dummy[256] = "\n";
                     char name[256] = "\n";
-                    int res = azsscanf(pCurrOffset, "%s %s", dummy
+#ifndef NDEBUG
+                    int res =
+#endif
+                        azsscanf(pCurrOffset, "%s %s", dummy
 #if AZ_TRAIT_USE_SECURE_CRT_FUNCTIONS
                     , (unsigned int)AZ_ARRAY_SIZE(dummy)
 #endif
@@ -810,7 +814,6 @@ void CShaderMan:: mfCreateCommonGlobalFlags([[maybe_unused]] const char* szName)
                     assert(res);
 
                     string pszNameFlag = name;
-                    int nSzSize = pszNameFlag.size();
                     pszNameFlag.MakeUpper();
 
                     MapNameFlagsItor pCheck = m_pShaderCommonGlobalFlag.find(pszNameFlag);
@@ -823,6 +826,7 @@ void CShaderMan:: mfCreateCommonGlobalFlags([[maybe_unused]] const char* szName)
                             break;
                         }
                     }
+                    pCurrOffset = strstr(pCurrOffset, "Name");
                 }
             }
 
@@ -969,12 +973,10 @@ bool CShaderMan::mfRemapCommonGlobalFlagsWithLegacy(void)
 
             // Search for duplicates and swap with old mask
             MapNameFlagsItor pCommonGlobalsIter = m_pShaderCommonGlobalFlag.begin();
-            uint64 test = (uint64)0x10;
             for (; pCommonGlobalsIter != pCommonGlobalsEnd; ++pCommonGlobalsIter)
             {
                 if (pFoundMatch != pCommonGlobalsIter && pCommonGlobalsIter->second == nRemapedMask)
                 {
-                    uint64 nPrev = pCommonGlobalsIter->second;
                     pCommonGlobalsIter->second = nOldMask;
                     bRemaped = true;
                     break;
@@ -1012,7 +1014,10 @@ void CShaderMan::mfInitCommonGlobalFlags(void)
         if (strstr(str, "FX_CACHE_VER"))
         {
             float fCacheVer = 0.0f;
-            int res = azsscanf(str, "%s %f",
+#ifndef NDEBUG
+            int res =
+#endif
+                azsscanf(str, "%s %f",
             name,
 #if AZ_TRAIT_USE_SECURE_CRT_FUNCTIONS
             (unsigned int)AZ_ARRAY_SIZE(name),
@@ -1944,7 +1949,6 @@ void CShaderMan::RT_SetShaderQuality(EShaderType eST, EShaderQuality eSQ)
     }
     if (eST == eST_All || eST == eST_General)
     {
-        bool bPS20 = ((gRenDev->m_Features & (RFT_HW_SM2X | RFT_HW_SM30)) == 0) || (eSQ == eSQ_Low);
         m_Bin.InvalidateCache();
         mfReloadAllShaders(FRO_FORCERELOAD, 0);
     }
@@ -2281,7 +2285,10 @@ void CShaderMan::mfGatherFilesList(const char* szPath, std::vector<CCryNameR>& N
 int CShaderMan::mfInitShadersList(std::vector<string>* Names)
 {
     // Detect include changes
-    bool bChanged = mfGatherShadersList(m_ShadersPath.c_str(), true, false, Names);
+#ifndef NULL_RENDERER
+    bool bChanged =
+#endif
+        mfGatherShadersList(m_ShadersPath.c_str(), true, false, Names);
 
     if (gRenDev->m_bShaderCacheGen)
     {
@@ -2332,7 +2339,10 @@ void CShaderMan::mfPreloadShaderExts(void)
         }
         char s[256];
         fpStripExtension(handle.m_filename.data(), s);
-        SShaderGen* pShGen = mfCreateShaderGenInfo(s, false);
+#ifndef NDEBUG
+        SShaderGen* pShGen =
+#endif
+            mfCreateShaderGenInfo(s, false);
         assert(pShGen);
     } while (handle = gEnv->pCryPak->FindNext(handle));
 
@@ -2691,7 +2701,6 @@ void SEfResTexture::UpdateWithModifier(int nTSlot)
     }
 
     bool bTr = false;
-    bool bTranspose = false;
     Plane Pl;
     Plane PlTr;
 

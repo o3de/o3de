@@ -344,8 +344,6 @@ string CXConsoleVariableCVarGroup::GetDetailedInfo() const
 
         for (it2 = m_CVarGroupStates.begin(); it2 != end2; ++it2)
         {
-            SCVarGroup* pGrp = it2->second;
-
             sRet += GetValueSpec(rKey, &(it2->first));
             sRet += "/";
         }

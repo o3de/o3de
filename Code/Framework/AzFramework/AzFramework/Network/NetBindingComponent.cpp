@@ -56,7 +56,6 @@ namespace AzFramework
         if (behaviorContext)
         {
             behaviorContext->EBus<NetBindingHandlerBus>("NetBindingHandlerBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::Preview)
                 ->Event("IsEntityBoundToNetwork", &NetBindingHandlerBus::Events::IsEntityBoundToNetwork)
                 ->Event("IsEntityAuthoritative", &NetBindingHandlerBus::Events::IsEntityAuthoritative)
 

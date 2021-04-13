@@ -211,7 +211,6 @@ namespace EMotionFX
             AZStd::vector<size_t> rootJoints; // The list of root nodes.
 
             size_t maxNumFrames = 0;
-            size_t lastNumFrames = InvalidIndex;
             double lowestTimeStep = 999999999.0;
 
             auto nameStorage = graph.GetNameStorage();

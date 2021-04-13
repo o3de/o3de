@@ -222,7 +222,6 @@ UiCanvasFileObject* UiCanvasFileObject::LoadCanvasEntitiesFromOldFormatFile(cons
     // Do a sanity check that the buffer does start with the prefix that we will remove
     // Also, determine how newlines are represented in the file.
     bool useCarriageReturnNewline = false;
-    const char* prefixToRemove = nullptr;
     const char* suffixToRemove = nullptr;
 
     size_t prefixToRemoveLen = 0;

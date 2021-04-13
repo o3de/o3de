@@ -1478,7 +1478,14 @@ to ensure that the address is correct. Asset Processor won't be running in serve
             return false;
         }
 #endif
-        return AzToolsFramework::AssetUtils::UpdateFilePathToCorrectCase(rootPath, relativePathFromRoot);
+
+        AZStd::string relPathFromRoot = relativePathFromRoot.toUtf8().constData();
+        if(AzToolsFramework::AssetUtils::UpdateFilePathToCorrectCase(rootPath.toUtf8().constData(), relPathFromRoot))
+        {
+            relativePathFromRoot = QString::fromUtf8(relPathFromRoot.c_str(), aznumeric_cast<int>(relPathFromRoot.size()));
+            return true;
+        }
+        return false;
     }
 
     BuilderFilePatternMatcher::BuilderFilePatternMatcher(const AssetBuilderSDK::AssetBuilderPattern& pattern, const AZ::Uuid& builderDescID)

@@ -15,13 +15,7 @@
 #include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
 #include <Atom/Features/Shadow/DirectionalLightShadow.azsli>
 
-void ApplyDirectionalLights(
-    float3 dirToCamera,
-    Surface surface,
-    float3 shadowCoords[ViewSrg::MaxCascadeCount],
-    inout float3 diffuseLighting,
-    inout float3 specularLighting,
-    inout float3 translucentBackLighting)
+void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
 {
     DirectionalLightShadow::DebugInfo debugInfo = {0, false};
 
@@ -33,13 +27,13 @@ void ApplyDirectionalLights(
     {
         litRatio = DirectionalLightShadow::GetVisibility(
             shadowIndex,
-            shadowCoords,
+            lightingData.shadowCoords,
             surface.normal,
             debugInfo);
             
         if (o_transmission_mode == TransmissionMode::ThickObject)
         {
-            backShadowRatio = DirectionalLightShadow::GetThickness(shadowIndex, shadowCoords);
+            backShadowRatio = DirectionalLightShadow::GetThickness(shadowIndex, lightingData.shadowCoords);
         }
     }
 
@@ -50,7 +44,7 @@ void ApplyDirectionalLights(
         float3 dirToLight = normalize(-light.m_direction);
 
         // Adjust the direction of the light based on its angular diameter.
-        float3 reflectionDir = reflect(-dirToCamera, surface.normal);
+        float3 reflectionDir = reflect(-lightingData.dirToCamera, surface.normal);
         float3 lightDirToReflectionDir = reflectionDir - dirToLight;
         float lightDirToReflectionDirLen = length(lightDirToReflectionDir);
         lightDirToReflectionDir = lightDirToReflectionDir / lightDirToReflectionDirLen; // normalize the length
@@ -72,16 +66,16 @@ void ApplyDirectionalLights(
             }
         }
         
-        diffuseLighting += GetDiffuseLighting(surface, light.m_rgbIntensityLux, dirToCamera, dirToLight) * currentLitRatio;
-        specularLighting += GetSpecularLighting(surface, light.m_rgbIntensityLux, dirToCamera, dirToLight) * currentLitRatio;
-        translucentBackLighting += GetBackLighting(surface, light.m_rgbIntensityLux, dirToCamera, dirToLight, currentBackShadowRatio);
+        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight) * currentLitRatio;
+        lightingData.specularLighting += GetSpecularLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight) * currentLitRatio;
+        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight, currentBackShadowRatio);
     }
     
     // Add debug coloring for directional light shadow
     if (o_enableShadows && shadowIndex <  SceneSrg::m_directionalLightCount)
     {
-        specularLighting = DirectionalLightShadow::AddDebugColoring(
-            specularLighting,
+        lightingData.specularLighting = DirectionalLightShadow::AddDebugColoring(
+            lightingData.specularLighting,
             ViewSrg::m_shadowIndexDirectionalLight,
             debugInfo);
     }

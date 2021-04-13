@@ -311,7 +311,6 @@ void CLevelFileDialog::OnNewFolder()
     if (!isLevelFolder && index.isValid())
     {
         const QString parentFullPath = index.data(LevelTreeModel::FullPathRole).toString();
-        bool ok = false;
         QInputDialog inputDlg(this);
         inputDlg.setLabelText(tr("Please select a folder name"));
 

@@ -284,7 +284,7 @@ namespace AssetProcessor
                     for (const auto& settingsKey : settingsToCopy)
                     {
                         AZ::SettingsRegistryInterface::FixedValueString settingsValue;
-                        bool settingsCopied = settingsRegistry->Get(settingsValue, settingsKey)
+                        [[maybe_unused]] bool settingsCopied = settingsRegistry->Get(settingsValue, settingsKey)
                             && registry.Set(settingsKey, settingsValue);
                         AZ_Warning("Settings Registry Builder", settingsCopied, "Unable to copy setting %s from AssetProcessor settings registry"
                             " to local settings registry", settingsKey.c_str());

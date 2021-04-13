@@ -51,8 +51,6 @@ namespace AZ::Render
     {
         using namespace AZ;
 
-        AZ::RPI::Pass* selectedPass = m_selectedPass;
-
         ImGui::SetNextWindowSize(ImVec2(200.f, 200.f), ImGuiCond_FirstUseEver);
         if (ImGui::Begin("PassTree View", &draw, ImGuiWindowFlags_None))
         {

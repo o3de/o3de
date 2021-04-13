@@ -466,9 +466,6 @@ void CInfoBar::IdleUpdate()
     }
 
     {
-        int settings = GetIEditor()->GetDisplaySettings()->GetSettings();
-        bool noCollision = settings & SETTINGS_NOCOLLISION;
-
         bool bPhysics = GetIEditor()->GetGameEngine()->GetSimulationMode();
         if ((ui->m_physicsBtn->isChecked() && !bPhysics) ||
             (!ui->m_physicsBtn->isChecked() && bPhysics))

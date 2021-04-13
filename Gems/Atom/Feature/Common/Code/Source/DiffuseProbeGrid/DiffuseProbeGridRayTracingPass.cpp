@@ -157,56 +157,7 @@ namespace AZ
             struct ScopeData { };
             const auto prepareFunction = [this]([[maybe_unused]] RHI::FrameGraphInterface& scopeBuilder, [[maybe_unused]] ScopeData& scopeData) {};
 
-            const auto compileFunction = [this]([[maybe_unused]] const RHI::FrameGraphCompileContext& context, [[maybe_unused]] const ScopeData& scopeData)
-            {
-                // create a SRG array entry for every ray tracing mesh in the scene
-                RPI::Scene* scene = m_pipeline->GetScene();
-                TransformServiceFeatureProcessor* transformFeatureProcessor = scene->GetFeatureProcessor<TransformServiceFeatureProcessor>();
-                RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
-
-                m_meshVertexPositionBuffer.clear();
-                m_meshVertexNormalBuffer.clear();
-                m_meshIndexBuffer.clear();
-
-                const RayTracingFeatureProcessor::MeshMap& rayTracingMeshes = rayTracingFeatureProcessor->GetMeshes();
-                m_meshCount = 0;
-                for (const auto& mesh : rayTracingMeshes)
-                {
-                    const RayTracingFeatureProcessor::SubMeshVector& subMeshes = mesh.second.m_subMeshes;
-                    for (const auto& subMesh : subMeshes)
-                    {
-                        // [GFX TODO][ATOM-14780] SRG support for unbounded arrays
-                        // we are limited to 512 meshes until unbounded array support is implemented
-                        if (m_meshCount == 512)
-                        {
-                            AZ_Warning("DiffuseProbeGridRayTracingPass", false, "Maximum number of meshes reached");
-                            break;
-                        }
-
-                        // set irradiance color and worldInverseTranspose constants
-                        Vector4 color(subMesh.m_irradianceColor.GetR(), subMesh.m_irradianceColor.GetG(), subMesh.m_irradianceColor.GetB(), 1.0f);
-
-                        AZ::Transform meshTransform = transformFeatureProcessor->GetTransformForId(TransformServiceFeatureProcessorInterface::ObjectId(mesh.first));
-                        AZ::Transform noScaleTransform = meshTransform;
-                        noScaleTransform.ExtractScale();
-                        AZ::Matrix3x3 rotationMatrix = Matrix3x3::CreateFromTransform(noScaleTransform);
-                        rotationMatrix = rotationMatrix.GetInverseFull().GetTranspose();
-
-                        m_closestHitData[m_meshCount].m_materialColor = color;
-                        m_closestHitData[m_meshCount].m_worldInvTranspose = rotationMatrix;
-                        m_closestHitData[m_meshCount].m_positionOffset = subMesh.m_positionVertexBufferView.GetByteOffset();
-                        m_closestHitData[m_meshCount].m_normalOffset = subMesh.m_normalVertexBufferView.GetByteOffset();
-                        m_closestHitData[m_meshCount].m_indexOffset = subMesh.m_indexBufferView.GetByteOffset();
-
-                        // set vertex and index streams
-                        m_meshVertexPositionBuffer.push_back(subMesh.m_positionShaderBufferView.get());
-                        m_meshVertexNormalBuffer.push_back(subMesh.m_normalShaderBufferView.get());
-                        m_meshIndexBuffer.push_back(subMesh.m_indexShaderBufferView.get());
-
-                        m_meshCount++;
-                    }
-                }
-            };
+            const auto compileFunction = [this]([[maybe_unused]] const RHI::FrameGraphCompileContext& context, [[maybe_unused]] const ScopeData& scopeData) {};
 
             const auto executeFunction = [this]([[maybe_unused]] const RHI::FrameGraphExecuteContext& context, [[maybe_unused]] const ScopeData& scopeData)
             {
@@ -214,7 +165,7 @@ namespace AZ
                 RayTracingFeatureProcessor* rayTracingFeatureProcessor = m_pipeline->GetScene()->GetFeatureProcessor<RayTracingFeatureProcessor>();
                 RHI::RayTracingBufferPools& rayTracingBufferPools = rayTracingFeatureProcessor->GetBufferPools();
 
-                if (m_meshCount == 0)
+                if (!rayTracingFeatureProcessor->GetSubMeshCount())
                 {
                     m_rayTracingShaderTable = nullptr;
                     return;
@@ -227,7 +178,7 @@ namespace AZ
                     ->MissRecord(AZ::Name("Miss"));
 
                 // add a hit group for each mesh to the shader table
-                for (uint32_t i = 0; i < m_meshCount; ++i)
+                for (uint32_t i = 0; i < rayTracingFeatureProcessor->GetSubMeshCount(); ++i)
                 {
                     descriptorBuild->HitGroupRecord(AZ::Name("HitGroup"));
                 }
@@ -283,7 +234,7 @@ namespace AZ
 
                 // probe raytrace
                 {
-                    RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(diffuseProbeGrid->GetRayTraceImageAttachmentId(), diffuseProbeGrid->GetRayTraceImage());
+                    [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(diffuseProbeGrid->GetRayTraceImageAttachmentId(), diffuseProbeGrid->GetRayTraceImage());
                     AZ_Assert(result == RHI::ResultCode::Success, "Failed to import probeRayTraceImage");
 
                     RHI::ImageScopeAttachmentDescriptor desc;
@@ -296,7 +247,7 @@ namespace AZ
 
                 // probe irradiance
                 {
-                    RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(diffuseProbeGrid->GetIrradianceImageAttachmentId(), diffuseProbeGrid->GetIrradianceImage());
+                    [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(diffuseProbeGrid->GetIrradianceImageAttachmentId(), diffuseProbeGrid->GetIrradianceImage());
                     AZ_Assert(result == RHI::ResultCode::Success, "Failed to import probeIrradianceImage");
 
                     RHI::ImageScopeAttachmentDescriptor desc;
@@ -317,7 +268,7 @@ namespace AZ
 
                 // probe distance
                 {
-                    RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(diffuseProbeGrid->GetDistanceImageAttachmentId(), diffuseProbeGrid->GetDistanceImage());
+                    [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(diffuseProbeGrid->GetDistanceImageAttachmentId(), diffuseProbeGrid->GetDistanceImage());
                     AZ_Assert(result == RHI::ResultCode::Success, "Failed to import probeDistanceImage");
 
                     RHI::ImageScopeAttachmentDescriptor desc;
@@ -330,7 +281,7 @@ namespace AZ
 
                 // probe relocation
                 {
-                    RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(diffuseProbeGrid->GetRelocationImageAttachmentId(), diffuseProbeGrid->GetRelocationImage());
+                    [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(diffuseProbeGrid->GetRelocationImageAttachmentId(), diffuseProbeGrid->GetRelocationImage());
                     AZ_Assert(result == RHI::ResultCode::Success, "Failed to import probeRelocationImage");
 
                     RHI::ImageScopeAttachmentDescriptor desc;
@@ -348,30 +299,18 @@ namespace AZ
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
             RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
+            const Data::Instance<RPI::Buffer> meshInfoBuffer = rayTracingFeatureProcessor->GetMeshInfoBuffer();
 
-            if (rayTracingFeatureProcessor->GetTlas()->GetTlasBuffer() && m_meshCount > 0)
+            if (rayTracingFeatureProcessor->GetTlas()->GetTlasBuffer() &&
+                rayTracingFeatureProcessor->GetMeshInfoBuffer() &&
+                rayTracingFeatureProcessor->GetSubMeshCount())
             {
                 for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetProbeGrids())
                 {
                     // the diffuse probe grid Srg must be updated in the Compile phase in order to successfully bind the ReadWrite shader
                     // inputs (see line ValidateSetImageView() in ShaderResourceGroupData.cpp)
                     diffuseProbeGrid->UpdateRayTraceSrg(m_globalSrgAsset);
-
-                    const Data::Instance<RPI::ShaderResourceGroup>& globalSrg = diffuseProbeGrid->GetRayTraceSrg();
-
-                    RHI::ShaderInputConstantIndex constantIndex = globalSrg->GetLayout()->FindShaderInputConstantIndex(AZ::Name("m_closestHitData"));
-                    globalSrg->SetConstantArray(constantIndex, m_closestHitData);
-
-                    RHI::ShaderInputBufferIndex bufferIndex = globalSrg->GetLayout()->FindShaderInputBufferIndex(AZ::Name("m_meshVertexPositions"));
-                    globalSrg->SetBufferViewArray(bufferIndex, m_meshVertexPositionBuffer);
-
-                    bufferIndex = globalSrg->GetLayout()->FindShaderInputBufferIndex(AZ::Name("m_meshVertexNormals"));
-                    globalSrg->SetBufferViewArray(bufferIndex, m_meshVertexNormalBuffer);
-
-                    bufferIndex = globalSrg->GetLayout()->FindShaderInputBufferIndex(AZ::Name("m_meshIndices"));
-                    globalSrg->SetBufferViewArray(bufferIndex, m_meshIndexBuffer);
-
-                    globalSrg->Compile();
+                    diffuseProbeGrid->GetRayTraceSrg()->Compile();
                 }
             }
         }
@@ -383,35 +322,32 @@ namespace AZ
             RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
             AZ_Assert(rayTracingFeatureProcessor, "DiffuseProbeGridRayTracingPass requires the RayTracingFeatureProcessor");
 
-            if (!rayTracingFeatureProcessor->GetSubMeshCount())
+            if (rayTracingFeatureProcessor &&
+                rayTracingFeatureProcessor->GetTlas()->GetTlasBuffer() &&
+                rayTracingFeatureProcessor->GetSubMeshCount() &&
+                m_rayTracingShaderTable)
             {
-                return;
-            }
+                // submit the DispatchRaysItem for each DiffuseProbeGrid
+                for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetProbeGrids())
+                {
+                    const RHI::ShaderResourceGroup* shaderResourceGroups[] = {
+                        diffuseProbeGrid->GetRayTraceSrg()->GetRHIShaderResourceGroup(),
+                        rayTracingFeatureProcessor->GetRayTracingSceneSrg()->GetRHIShaderResourceGroup()
+                    };
 
-            if (!m_rayTracingShaderTable)
-            {
-                return;
-            }
+                    RHI::DispatchRaysItem dispatchRaysItem;
+                    dispatchRaysItem.m_width = diffuseProbeGrid->GetNumRaysPerProbe();
+                    dispatchRaysItem.m_height = diffuseProbeGrid->GetTotalProbeCount();
+                    dispatchRaysItem.m_depth = 1;
+                    dispatchRaysItem.m_rayTracingPipelineState = m_rayTracingPipelineState.get();
+                    dispatchRaysItem.m_rayTracingShaderTable = m_rayTracingShaderTable.get();
+                    dispatchRaysItem.m_shaderResourceGroupCount = RHI::ArraySize(shaderResourceGroups);
+                    dispatchRaysItem.m_shaderResourceGroups = shaderResourceGroups;
+                    dispatchRaysItem.m_globalPipelineState = m_globalPipelineState.get();
 
-            if (m_meshCount == 0)
-            {
-                return;
-            }
-
-            // submit the DispatchRaysItem for each DiffuseProbeGrid
-            for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetProbeGrids())
-            {
-                RHI::DispatchRaysItem dispatchRaysItem;
-                dispatchRaysItem.m_width = diffuseProbeGrid->GetNumRaysPerProbe();
-                dispatchRaysItem.m_height = diffuseProbeGrid->GetTotalProbeCount();
-                dispatchRaysItem.m_depth = 1;
-                dispatchRaysItem.m_rayTracingPipelineState = m_rayTracingPipelineState.get();
-                dispatchRaysItem.m_rayTracingShaderTable = m_rayTracingShaderTable.get();
-                dispatchRaysItem.m_globalSrg = diffuseProbeGrid->GetRayTraceSrg()->GetRHIShaderResourceGroup();
-                dispatchRaysItem.m_globalPipelineState = m_globalPipelineState.get();
-
-                // submit the DispatchRays item
-                context.GetCommandList()->Submit(dispatchRaysItem);
+                    // submit the DispatchRays item
+                    context.GetCommandList()->Submit(dispatchRaysItem);
+                }
             }
         }
     }   // namespace RPI

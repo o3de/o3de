@@ -63,7 +63,7 @@ namespace EMotionFX
 
         // Create Actor, AnimGraph, Motionset and Motion
         AutoRegisteredActor actor = ActorFactory::CreateAndInit<SimpleJointChainActor>(2, "SampleActor");
-        ActorInstance* actorInstance = ActorInstance::Create(actor.get());
+        ActorInstance::Create(actor.get());
         {
             AZStd::string result;
             ASSERT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand(createAnimGraphCmd, result)) << result.c_str();

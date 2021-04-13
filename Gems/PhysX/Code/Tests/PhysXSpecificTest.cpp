@@ -1291,7 +1291,6 @@ namespace PhysX
                 m_testSceneHandle = physicsSystem->AddScene(sceneConfiguration);
             }
 
-            SimulatedShapesMode shapeMode = GetShapesMode();
             AzPhysics::MassComputeFlags massComputeFlags = GetMassComputeFlags();
             m_rigidBodyConfig.SetMassComputeFlags(massComputeFlags);
 

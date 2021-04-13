@@ -633,7 +633,6 @@ bool CLayoutWnd::LoadConfig()
     {
         const QString str = settings.value("Viewports").toString();
         int nIndex = 1;
-        int curPos = 0;
         for (auto resToken : str.split(","))
         {
             if (nIndex >= MAX_VIEWPORTS)

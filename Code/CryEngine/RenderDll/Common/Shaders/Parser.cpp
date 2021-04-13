@@ -82,7 +82,7 @@ bool fxIsFirstPass(char* buf)
     char* s = com;
     while (*s != 0)
     {
-        char* pStart = fxFillPr(&s, tok);
+        fxFillPr(&s, tok);
         if (tok[0] == '%' && tok[1] == '_')
         {
             return false;
@@ -328,7 +328,10 @@ float shGetFloat(const char* buf)
     }
     float f = 0;
 
-    int res = azsscanf(buf, "%f", &f);
+#ifndef NDEBUG
+    int res =
+#endif
+        azsscanf(buf, "%f", &f);
     assert(res);
 
     return f;
@@ -365,12 +368,18 @@ int shGetInt(const char* buf)
 
     if (buf[0] == '0' && buf[1] == 'x')
     {
-        int res = azsscanf(&buf[2], "%x", &i);
+#ifndef NDEBUG
+        int res =
+#endif
+            azsscanf(&buf[2], "%x", &i);
         assert(res);
     }
     else
     {
-        int res = azsscanf(buf, "%i", &i);
+#ifndef NDEBUG
+        int res =
+#endif
+            azsscanf(buf, "%i", &i);
         assert(res);
     }
 
@@ -384,8 +393,10 @@ int shGetHex(const char* buf)
         return 0;
     }
     int i = 0;
-
-    int res = azsscanf(buf, "%x", &i);
+#ifndef NDEBUG
+    int res =
+#endif
+        azsscanf(buf, "%x", &i);
     assert(res);
 
     return i;
@@ -399,12 +410,18 @@ uint64 shGetHex64(const char* buf)
     }
 #if defined(__GNUC__)
     unsigned long long i = 0;
-    int res = azsscanf(buf, "%llx", &i);
+#ifndef NDEBUG
+    int res =
+#endif
+        azsscanf(buf, "%llx", &i);
     assert(res);
     return (uint64)i;
 #else
     uint64 i = 0;
-    int res = azsscanf(buf, "%I64x", &i);
+#ifndef NDEBUG
+    int res =
+#endif
+        azsscanf(buf, "%I64x", &i);
     assert(res);
     return i;
 #endif
@@ -416,7 +433,10 @@ void shGetVector(char* buf, Vec3& v)
     {
         return;
     }
-    int res = azsscanf(buf, "%f %f %f", &v[0], &v[1], &v[2]);
+#ifndef NDEBUG
+    int res =
+#endif
+        azsscanf(buf, "%f %f %f", &v[0], &v[1], &v[2]);
     assert(res);
 }
 
@@ -426,7 +446,10 @@ void shGetVector(char* buf, float v[3])
     {
         return;
     }
-    int res = azsscanf(buf, "%f %f %f", &v[0], &v[1], &v[2]);
+#ifndef NDEBUG
+    int res =
+#endif
+        azsscanf(buf, "%f %f %f", &v[0], &v[1], &v[2]);
     assert(res);
 }
 
@@ -436,7 +459,10 @@ void shGetVector4(char* buf, Vec4& v)
     {
         return;
     }
-    int res = azsscanf(buf, "%f %f %f %f", &v.x, &v.y, &v.z, &v.w);
+#ifndef NDEBUG
+    int res =
+#endif
+        azsscanf(buf, "%f %f %f %f", &v.x, &v.y, &v.z, &v.w);
     assert(res);
 }
 
@@ -806,7 +832,8 @@ void SkipComments(char** buf, bool bSkipWhiteSpace)
     int n;
     static int m;
 
-    while (n = IsComment(buf))
+    n = IsComment(buf);
+    while (n)
     {
         switch (n)
         {
@@ -856,6 +883,7 @@ void SkipComments(char** buf, bool bSkipWhiteSpace)
             }
             break;
         }
+        n = IsComment(buf);
     }
 }
 
@@ -1026,17 +1054,15 @@ bool fxCheckMacroses(char** str, int nPass)
 bool fxIgnorePreprBlock(char** buf)
 {
     int nLevel = 0;
-    char* start = *buf;
     bool bEnded = false;
     SkipCharacters (buf, kWhiteSpace);
     SkipComments(buf, true);
     PREFAST_SUPPRESS_WARNING(6011)
     while (**buf != 0)
     {
-        char ch;
-        while ((ch = **buf) && SkipChar((unsigned)ch))
+        char ch = **buf;
+        while (ch && SkipChar((unsigned)ch))
         {
-            char* b = *buf;
             while ((ch = **buf) != 0)
             {
                 if (ch == '/' && IsComment(buf))
@@ -1050,8 +1076,8 @@ bool fxIgnorePreprBlock(char** buf)
                 ++*buf;
             }
             SkipComments(buf, true);
+            ch = **buf;
         }
-        int n = 0;
         char* posS = *buf;
         char* st = posS;
         PREFAST_ASSUME(posS);
@@ -1097,7 +1123,8 @@ bool fxIgnorePreprBlock(char** buf)
                 *buf = posS + 4;
             }
         }
-        while ((ch = **buf))
+        ch = **buf;
+        while (ch)
         {
             if (ch == '/' && IsComment(buf))
             {
@@ -1108,6 +1135,7 @@ bool fxIgnorePreprBlock(char** buf)
                 break;
             }
             ++*buf;
+            ch = **buf;
         }
     }
     PREFAST_ASSUME(*buf);

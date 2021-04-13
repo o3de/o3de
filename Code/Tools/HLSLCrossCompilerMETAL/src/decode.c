@@ -186,7 +186,6 @@ void MarkTextureAsShadow(ShaderInfo* psShaderInfo, Declaration* psDeclList, cons
 {
     (void)psShaderInfo;
 
-    ResourceBinding* psBinding = 0;
     Declaration* psDecl = psDeclList;
     uint32_t i;
 
@@ -733,11 +732,6 @@ const uint32_t* DecodeDeclaration(ShaderData* psShader, const uint32_t* pui32Tok
     {
         ui32TokenLength = pui32Token[1];
         {
-            int iTupleSrc = 0, iTupleDest = 0;
-            //const uint32_t ui32ConstCount = pui32Token[1] - 2;
-            //const uint32_t ui32TupleCount = (ui32ConstCount / 4);
-            CUSTOMDATA_CLASS eClass = DecodeCustomDataClass(pui32Token[0]);
-
             const uint32_t ui32NumVec4 = (ui32TokenLength - 2) / 4;
             uint32_t uIdx = 0;
 
@@ -776,9 +770,6 @@ const uint32_t* DecodeDeclaration(ShaderData* psShader, const uint32_t* pui32Tok
     }
     case OPCODE_DCL_UNORDERED_ACCESS_VIEW_RAW:
     {
-        ResourceBinding* psBinding = NULL;
-        ConstantBuffer* psBuffer = NULL;
-
         psDecl->ui32NumOperands = 1;
         psDecl->sUAV.ui32GloballyCoherentAccess = DecodeAccessCoherencyFlags(*pui32Token);
         psDecl->sUAV.bCounter = 0;
@@ -830,9 +821,6 @@ const uint32_t* DecodeDeclaration(ShaderData* psShader, const uint32_t* pui32Tok
     }
     case OPCODE_DCL_THREAD_GROUP_SHARED_MEMORY_STRUCTURED:
     {
-        ResourceBinding* psBinding = NULL;
-        ConstantBuffer* psBuffer = NULL;
-
         psDecl->ui32NumOperands = 1;
         psDecl->sUAV.ui32GloballyCoherentAccess = 0;
 
@@ -844,9 +832,6 @@ const uint32_t* DecodeDeclaration(ShaderData* psShader, const uint32_t* pui32Tok
     }
     case OPCODE_DCL_THREAD_GROUP_SHARED_MEMORY_RAW:
     {
-        ResourceBinding* psBinding = NULL;
-        ConstantBuffer* psBuffer = NULL;
-
         psDecl->ui32NumOperands = 1;
         psDecl->sUAV.ui32GloballyCoherentAccess = 0;
 
@@ -1512,7 +1497,6 @@ void AllocateHullPhaseArrays(const uint32_t* pui32Tokens,
     while (1) //Keep going until we reach the first non-declaration token, or the end of the shader.
     {
         uint32_t ui32TokenLength = DecodeInstructionLength(*pui32CurrentToken);
-        const uint32_t bExtended = DecodeIsOpcodeExtended(*pui32CurrentToken);
         const OPCODE_TYPE eOpcode = DecodeOpcodeType(*pui32CurrentToken);
 
         if (eOpcode == OPCODE_CUSTOMDATA)

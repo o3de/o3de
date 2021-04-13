@@ -394,7 +394,6 @@ namespace SceneBuilder
             WriteAndLog(dbgFile, scene->GetName().c_str());
 
             const AZ::SceneAPI::Containers::SceneGraph& sceneGraph = scene->GetGraph();
-            const AZ::SceneAPI::Containers::SceneGraph::NodeHeader* nodeIterator = sceneGraph.ConvertToHierarchyIterator(sceneGraph.GetRoot());
             auto names = sceneGraph.GetNameStorage();
             auto content = sceneGraph.GetContentStorage();
             auto pairView = AZ::SceneAPI::Containers::Views::MakePairView(names, content);

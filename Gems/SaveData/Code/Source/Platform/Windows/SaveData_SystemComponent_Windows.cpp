@@ -84,7 +84,7 @@ namespace SaveData
 
         // Get the 'known folder path'
         wchar_t* knownFolderPathUTF16 = nullptr;
-        long result = SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, &knownFolderPathUTF16);
+        [[maybe_unused]] long result = SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, &knownFolderPathUTF16);
         AZ_Assert(SUCCEEDED(result), "SHGetKnownFolderPath could not retrieve LocalAppData folder");
 
         // Convert it from UTF-16 to UTF-8
@@ -103,7 +103,7 @@ namespace SaveData
     AZStd::string GetExecutableName()
     {
         char moduleFileName[AZ_MAX_PATH_LEN];
-        DWORD pathLen = GetModuleFileNameA(nullptr, moduleFileName, AZ_MAX_PATH_LEN);
+        GetModuleFileNameA(nullptr, moduleFileName, AZ_MAX_PATH_LEN);
 
         const AZStd::string moduleFileNameString(moduleFileName);
         const size_t executableNameStart = moduleFileNameString.find_last_of('\\') + 1;

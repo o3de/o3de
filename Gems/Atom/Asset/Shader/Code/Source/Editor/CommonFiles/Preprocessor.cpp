@@ -255,7 +255,7 @@ namespace AZ
                 auto secondQuote = sourceCode.find('"', firstQuote + 1);
                 auto originalFile = sourceCode.substr(firstQuote + 1, secondQuote - firstQuote - 1);  // start +1, count -1 because we don't want the quotes included.
                 VerifySameFolder(originalFile, newFileOrigin);
-                bool didReplace = AzFramework::StringFunc::Replace(sourceCode, originalFile.c_str(), newFileOrigin.c_str(), true /*case sensitive*/);
+                [[maybe_unused]] bool didReplace = AzFramework::StringFunc::Replace(sourceCode, originalFile.c_str(), newFileOrigin.c_str(), true /*case sensitive*/);
                 AZ_Assert(didReplace, "Failed to replace %s for %s in preprocessed source.", originalFile.c_str(), newFileOrigin.c_str());
             }
             else

@@ -633,7 +633,6 @@ namespace EMotionFX
 
         for (AZ::u32 nodeIndex = 0; nodeIndex < numNodes; ++nodeIndex)
         {
-            const Node* node = skeleton->GetNode(nodeIndex);
             NodeInfo& nodeInfo = m_nodeInfos[nodeIndex];
 
             // Is bone?

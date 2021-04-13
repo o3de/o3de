@@ -176,7 +176,7 @@ namespace AZ
                 // Clear out the existing filters since we're taking full control of them
                 infoQueue->PushEmptyStorageFilter();
 
-                HRESULT addedOk = infoQueue->AddStorageFilterEntries(&filter);
+                [[maybe_unused]] HRESULT addedOk = infoQueue->AddStorageFilterEntries(&filter);
                 AZ_Assert(addedOk == S_OK, "D3DInfoQueue AddStorageFilterEntries failed");
 
                 infoQueue->AddApplicationMessage(D3D12_MESSAGE_SEVERITY_MESSAGE, "D3D12 Debug Filters setup");
@@ -304,7 +304,7 @@ namespace AZ
             if (bestOutput)
             {
                 Microsoft::WRL::ComPtr<IDXGIOutput6> output6;
-                HRESULT hr = bestOutput.As(&output6);
+                [[maybe_unused]] HRESULT hr = bestOutput.As(&output6);
                 AZ_Assert(S_OK == hr, "Failed to get IDXGIOutput6 structure.");
                 DXGI_OUTPUT_DESC1 outputDesc;
                 output6->GetDesc1(&outputDesc);

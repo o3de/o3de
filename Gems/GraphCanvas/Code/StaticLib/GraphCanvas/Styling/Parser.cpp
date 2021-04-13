@@ -1036,7 +1036,6 @@ namespace GraphCanvas
                 }
 
                 QString candidate = QString::fromUtf8(rawSelector->GetString());
-                bool br = candidate == "slot";
 
                 if (candidate.contains(invalidStart))
                 {

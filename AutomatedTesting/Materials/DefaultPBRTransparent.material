@@ -1,0 +1,11 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "parentMaterial": "Materials/Presets/PBR/default_grid.material",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "opacity": {
+            "mode": "Blended"
+        }
+    }
+}

@@ -114,7 +114,6 @@ namespace AZ
         {
             AZ_TRACE_METHOD();
 
-            auto& device = static_cast<Device&>(GetDevice());
 
             View memoryView;
 

@@ -1673,15 +1673,6 @@ struct IRenderer
     //Pass false to get a frameID that increments by one each frame. For this case the increment happens in the game thread at the beginning of the frame.
     virtual int GetFrameID(bool bIncludeRecursiveCalls = true) = 0;
 
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    // Returns a frame ID that is sequential for the active camera.  This is 
-    // useful for camera-specific temporal data like motion vectors.
-    virtual int GetCameraFrameID() const = 0;
-
-    // Returns true when rendering the scene to a texture
-    virtual bool IsRenderToTextureActive() const { return false; };
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-
     virtual void MakeMatrix(const Vec3& pos, const Vec3& angles, const Vec3& scale, Matrix34* mat) = 0;
 
     // Description:

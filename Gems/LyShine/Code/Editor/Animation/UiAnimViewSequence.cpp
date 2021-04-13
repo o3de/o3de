@@ -608,10 +608,10 @@ void CUiAnimViewSequence::SyncSelectedTracksFromBase()
     {
         UiAnimUndo undo("Sync selected tracks to base");
 
+#if UI_ANIMATION_REMOVED    // don't support CEntityObject
         for (unsigned int i = 0; i < numSelectedNodes; ++i)
         {
             CUiAnimViewAnimNode* pAnimNode = selectedNodes.GetNode(i);
-#if UI_ANIMATION_REMOVED    // don't support CEntityObject
             CEntityObject* pEntityObject = pAnimNode->GetNodeEntity();
 
             if (pEntityObject)
@@ -637,8 +637,8 @@ void CUiAnimViewSequence::SyncSelectedTracksFromBase()
                     bNothingWasSynced = false;
                 }
             }
-#endif
         }
+#endif
 
         if (bNothingWasSynced)
         {
@@ -1112,7 +1112,6 @@ void CUiAnimViewSequence::OffsetSelectedKeys(const float timeOffset)
 
     CUiAnimViewKeyBundle selectedKeys = GetSelectedKeys();
 
-    const CUiAnimViewTrack* pTrack = nullptr;
     for (int k = 0; k < (int)selectedKeys.GetKeyCount(); ++k)
     {
         CUiAnimViewKeyHandle skey = selectedKeys.GetKey(k);

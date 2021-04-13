@@ -211,7 +211,6 @@ namespace AZ
 
         void RenderPass::BuildSubpassDependencies(AZStd::vector<VkSubpassDependency>& subpassDependencies) const
         {
-            auto& device = static_cast<Device&>(GetDevice());
             VkPipelineStageFlags supportedStages = GetSupportedPipelineStages(RHI::PipelineStateType::Draw);
 
             subpassDependencies = m_descriptor.m_subpassDependencies;

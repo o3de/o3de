@@ -151,7 +151,6 @@ void CMiniTable::AutoResize()
     if (nColumns)
     {
         int numEntries = m_columns[0].cells.size();
-        int numPages = numEntries / m_pageSize;
 
         //page index is now invalid, cap at max
         if ((m_pageNum * m_pageSize) > numEntries)

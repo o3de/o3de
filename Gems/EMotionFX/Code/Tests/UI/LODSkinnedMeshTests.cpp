@@ -190,14 +190,14 @@ namespace EMotionFX
         AZStd::unique_ptr<Actor> actor = CreateLODActor(numLODs);
         AZ::Data::Asset<Integration::ActorAsset> actorAsset = TestActorAssets::GetAssetFromActor(actorAssetId, AZStd::move(actor));
 
-        AzFramework::TransformComponent* transformComponent = gameEntity->CreateComponent<AzFramework::TransformComponent>();
+        gameEntity->CreateComponent<AzFramework::TransformComponent>();
         Integration::ActorComponent::Configuration actorConf;
         actorConf.m_actorAsset = actorAsset;
         Integration::ActorComponent* actorComponent = gameEntity->CreateComponent<Integration::ActorComponent>(&actorConf);
 
         Integration::SimpleLODComponent::Configuration lodConf;
         lodConf.GenerateDefaultValue(numLODs);
-        Integration::SimpleLODComponent* simpleLODComponent = gameEntity->CreateComponent<Integration::SimpleLODComponent>(&lodConf);
+        gameEntity->CreateComponent<Integration::SimpleLODComponent>(&lodConf);
 
         gameEntity->Init();
         gameEntity->Activate();

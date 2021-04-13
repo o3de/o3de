@@ -187,7 +187,7 @@ void HierarchyWidget::CreateItems(const LyShine::EntityArray& elements)
         int childIndex = -1;
         EBUS_EVENT_ID_RESULT(childIndex, parentElement->GetId(), UiElementBus, GetIndexOfChild, e);
 
-        HierarchyItem* child = new HierarchyItem(m_editorWindow,
+        new HierarchyItem(m_editorWindow,
             *parent,
             childIndex,
             e->GetName().c_str(),

@@ -261,8 +261,9 @@ int AZ::FontTexture::PreCacheString(const char* string, int* updated, float size
     int updateCount = 0;
 
     uint32_t character;
-    for (Unicode::CIterator<const char*, false> it(string); character = *it; ++it)
+    for (Unicode::CIterator<const char*, false> it(string); *it; ++it)
     {
+        character = *it;
         TextureSlot* slot = GetCharSlot(character, clampedGlyphSize);
 
         if (!slot)

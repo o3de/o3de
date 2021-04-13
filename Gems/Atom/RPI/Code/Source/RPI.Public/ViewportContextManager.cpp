@@ -23,6 +23,7 @@ namespace AZ
         ViewportContextManager::ViewportContextManager()
         {
             AZ::Interface<ViewportContextRequestsInterface>::Register(this);
+            m_defaultViewportContextName = AZ::Name(s_defaultViewportContextName);
         }
 
         ViewportContextManager::~ViewportContextManager()
@@ -187,7 +188,12 @@ namespace AZ
 
         AZ::Name ViewportContextManager::GetDefaultViewportContextName() const
         {
-            return AZ::Name(s_defaultViewportContextName);
+            return m_defaultViewportContextName;
+        }
+
+        ViewportContextPtr ViewportContextManager::GetDefaultViewportContext() const
+        {
+            return GetViewportContextByName(m_defaultViewportContextName);
         }
 
         void ViewportContextManager::PushView(const Name& context, ViewPtr view)

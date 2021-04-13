@@ -67,7 +67,7 @@ namespace UnitTest
     TEST_F(PhysXColliderComponentModeTest, MouseWheelUpShouldSetNextMode)
     {
         // Given there is a collider component in component mode.
-        auto colliderEntity = CreateColliderComponent();
+        CreateColliderComponent();
         EnterComponentMode<TestColliderComponentMode>();
 
         PhysX::ColliderComponentModeRequests::SubMode subMode = PhysX::ColliderComponentModeRequests::SubMode::NumModes;
@@ -96,7 +96,7 @@ namespace UnitTest
     TEST_F(PhysXColliderComponentModeTest, MouseWheelDownShouldSetPreviousMode)
     {
         // Given there is a collider component in component mode.
-        auto colliderEntity = CreateColliderComponent();
+        CreateColliderComponent();
         EnterComponentMode<TestColliderComponentMode>();
 
         PhysX::ColliderComponentModeRequests::SubMode subMode = PhysX::ColliderComponentModeRequests::SubMode::NumModes;
@@ -125,7 +125,7 @@ namespace UnitTest
     TEST_F(PhysXColliderComponentModeTest, PressingKey1ShouldSetSizeMode)
     {
         // Given there is a collider component in component mode.
-        auto colliderEntity = CreateColliderComponent();
+        CreateColliderComponent();
         EnterComponentMode<TestColliderComponentMode>();
 
         PhysX::ColliderComponentModeRequests::SubMode subMode = PhysX::ColliderComponentModeRequests::SubMode::NumModes;

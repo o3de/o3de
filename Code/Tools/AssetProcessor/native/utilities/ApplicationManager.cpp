@@ -33,6 +33,7 @@
 #include <AzToolsFramework/ToolsComponents/ToolsAssetCatalogComponent.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserComponent.h>
 #include <AzToolsFramework/SourceControl/PerforceComponent.h>
+#include <AzToolsFramework/Prefab/PrefabSystemComponent.h>
 
 namespace AssetProcessor
 {
@@ -153,6 +154,7 @@ AZ::ComponentTypeList AssetProcessorAZApplication::GetRequiredSystemComponents()
     }
 
     components.push_back(azrtti_typeid<AzToolsFramework::PerforceComponent>());
+    components.push_back(azrtti_typeid<AzToolsFramework::Prefab::PrefabSystemComponent>());
 
     return components;
 }
@@ -508,7 +510,6 @@ bool ApplicationManager::StartAZFramework()
     AZ::ComponentApplication::StartupParameters params;
 
     QString projectName = AssetUtilities::ComputeProjectName();
-    AZ::SettingsRegistryInterface& registry = *AZ::SettingsRegistry::Get();
 
     // Prevent loading of gems in the Create method of the ComponentApplication
     params.m_loadDynamicModules = false;

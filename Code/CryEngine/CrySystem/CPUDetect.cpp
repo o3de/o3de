@@ -1357,9 +1357,7 @@ void CCpuFeatures::Detect(void)
 #if AZ_LEGACY_CRYSYSTEM_TRAIT_HASAFFINITYMASK
     CryLogAlways("");
 
-    DWORD_PTR process_affinity_mask;
-    uint32  thread_processor_mask = 1;
-    process_affinity_mask = 1;
+    DWORD_PTR process_affinity_mask = 1;
 
     /* get the system info to derive the number of processors within the system. */
 
