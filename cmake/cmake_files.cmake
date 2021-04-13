@@ -20,6 +20,7 @@ set(FILES
     Findo3de.cmake
     Gems.cmake
     GeneralSettings.cmake
+    Initialize.cmake
     Install.cmake
     LyAutoGen.cmake
     LYPackage_S3Downloader.cmake
