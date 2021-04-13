@@ -192,6 +192,9 @@ namespace AZ
             {
                 m_defaultView = view;
                 UpdatePipelineView();
+
+                m_viewMatrixChangedEvent.Signal(view->GetWorldToViewMatrix());
+                m_projectionMatrixChangedEvent.Signal(view->GetViewToClipMatrix());
             }
         }
 
