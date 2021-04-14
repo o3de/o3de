@@ -52,3 +52,6 @@ class TestAutomation(TestAutomationBase):
     def test_ActorSplitsAfterStressDamage(self, request, workspace, editor, launcher_platform):
         from . import ActorSplitsAfterStressDamage as test_module
         self._run_test(request, workspace, editor, test_module)
+
+
+Bla bla bla
