@@ -39,15 +39,15 @@ namespace
 }
 
 
-@interface LumberyardApplicationDelegate_iOS : NSObject<UIApplicationDelegate>
+@interface O3DEApplicationDelegate_iOS : NSObject<UIApplicationDelegate>
 {
 }
-@end    // LumberyardApplicationDelegate_iOS Interface
+@end    // O3DEApplicationDelegate_iOS Interface
 
-@implementation LumberyardApplicationDelegate_iOS
+@implementation O3DEApplicationDelegate_iOS
 
 
-- (int)runLumberyardApplication
+- (int)runO3DEApplication
 {
 #if AZ_TESTS_ENABLED
 
@@ -55,7 +55,7 @@ namespace
     return static_cast<int>(ReturnCode::ErrUnitTestNotSupported);
 
 #else
-    using namespace LumberyardLauncher;
+    using namespace O3DELauncher;
 
     PlatformMainInfo mainInfo;
     mainInfo.m_updateResourceLimits = IncreaseResourceLimits;
@@ -79,19 +79,19 @@ namespace
 #endif // AZ_TESTS_ENABLED
 }
 
-- (void)launchLumberyardApplication
+- (void)launchO3DEApplication
 {
-    const int exitCode = [self runLumberyardApplication];
+    const int exitCode = [self runO3DEApplication];
     exit(exitCode);
 }
 
 - (BOOL)application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions
 {
-    // prevent the lumberyard runtime from running when launched in a xctest environment, otherwise the
+    // prevent the o3de runtime from running when launched in a xctest environment, otherwise the
     // testing framework will kill the "app" due to the lengthy bootstrap process
     if ([[NSProcessInfo processInfo] environment][@"XCTestConfigurationFilePath"] == nil)
     {
-        [self performSelector:@selector(launchLumberyardApplication) withObject:nil afterDelay:0.0];
+        [self performSelector:@selector(launchO3DEApplication) withObject:nil afterDelay:0.0];
     }
     return YES;
 }
@@ -132,4 +132,4 @@ namespace
         &AzFramework::IosLifecycleEvents::Bus::Events::OnDidReceiveMemoryWarning);
 }
 
-@end // LumberyardApplicationDelegate_iOS Implementation
+@end // O3DEApplicationDelegate_iOS Implementation
