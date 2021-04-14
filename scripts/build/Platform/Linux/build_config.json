@@ -12,7 +12,7 @@
       "default"
     ],
     "steps": [
-      "profile",
+      "profile_nounity",
       "asset_profile",
       "test_profile"
     ]
@@ -43,6 +43,7 @@
   },
   "profile": {
     "TAGS": [
+        "nightly",
         "daily-pipeline-metrics",
         "weekly-build-metrics"
     ],
@@ -57,7 +58,6 @@
   },
   "profile_nounity": {
     "TAGS": [
-      "nightly",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_linux.sh",
