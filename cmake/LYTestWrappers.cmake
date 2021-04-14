@@ -294,6 +294,70 @@ function(ly_add_pytest)
     set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${LY_ADDED_TEST_NAME}_SCRIPT_PATH ${ly_add_pytest_PATH})
 endfunction()
 
+#! ly_add_editor_python_test: registers target Editor Python Bindings test with CTest
+#
+# \arg:NAME name of the test-module to register with CTest
+# \arg:PATH path to the file (or dir) containing Editor Python Bindings-based tests
+# \arg:TEST_PROJECT Name of the project to be set before running the test
+# \arg:TEST_SUITE name of the test suite to register with CTest
+# \arg:TEST_SERIAL (bool) disable parallel execution alongside other test modules, important when this test depends on shared resources or environment state
+# \arg:TEST_REQUIRES (optional) list of system resources needed by the tests in this module.  Used to filter out execution when those system resources are not available.  For example, 'gpu'
+# \arg:RUNTIME_DEPENDENCIES (optional) - List of additional runtime dependencies required by this test.
+#      "Editor" and "EditorPythonBindings" gem are automatically included as dependencies.
+# \arg:COMPONENT (optional) - Scope of the feature area that the test belongs to (eg. physics, graphics, etc.).
+# \arg:TIMEOUT (optional) The timeout in seconds for the module. If not set, will have its timeout set by ly_add_test to the default timeout.
+function(ly_add_editor_python_test)
+    if(NOT PAL_TRAIT_TEST_PYTEST_SUPPORTED)
+        return()
+    endif()
+
+    set(options TEST_SERIAL)
+    set(oneValueArgs NAME PATH TEST_SUITE TEST_PROJECT TIMEOUT)
+    set(multiValueArgs TEST_REQUIRES RUNTIME_DEPENDENCIES COMPONENT)
+    
+    cmake_parse_arguments(ly_add_editor_python_test "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    set(executable_target $<TARGET_FILE:Legacy::Editor>)
+
+    if(NOT TARGET Legacy::Editor)
+        message(FATAL_ERROR "Legacy::Editor was not recognized as a valid target")
+    endif()
+
+    if(NOT ly_add_editor_python_test_PATH)
+        message(FATAL_ERROR "Must supply a value for PATH to tests")
+    endif()
+        
+    if(NOT ly_add_editor_python_test_TEST_SUITE)
+        message(FATAL_ERROR "Must supply a value for TEST_SUITE")
+    endif()
+
+    # Run test via the run_epbtest.cmake script.
+    # Parameters used are explained in run_epbtest.cmake.
+    ly_add_test(
+        NAME ${ly_add_editor_python_test_NAME}
+        TEST_REQUIRES ${ly_add_editor_python_test_TEST_REQUIRES}
+        TEST_COMMAND ${CMAKE_COMMAND}
+            -DCMD_ARG_TEST_PROJECT=${ly_add_editor_python_test_TEST_PROJECT} 
+            -DCMD_ARG_EDITOR=$<TARGET_FILE:Legacy::Editor> 
+            -DCMD_ARG_PYTHON_SCRIPT=${ly_add_editor_python_test_PATH}
+            -DPLATFORM=${PAL_PLATFORM_NAME}
+            -P ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/run_epbtest.cmake
+        RUNTIME_DEPENDENCIES
+            ${ly_add_editor_python_test_RUNTIME_DEPENDENCIES}
+            Gem::EditorPythonBindings.Editor
+            Legacy::CryRenderNULL
+            Legacy::Editor
+        TEST_SUITE ${ly_add_editor_python_test_TEST_SUITE}
+        LABELS FRAMEWORK_pytest
+        TEST_LIBRARY pytest_editor
+        TIMEOUT ${ly_add_editor_python_test_TIMEOUT}
+        COMPONENT ${ly_add_editor_python_test_COMPONENT}
+    )
+
+    set_tests_properties(${LY_ADDED_TEST_NAME} PROPERTIES RUN_SERIAL "${ly_add_pytest_TEST_SERIAL}")
+    set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${LY_ADDED_TEST_NAME}_SCRIPT_PATH ${ly_add_editor_python_test_PATH})
+endfunction()
+
 #! ly_add_googletest: Adds a new RUN_TEST using for the specified target using the supplied command or fallback to running
 #                     googletest tests through AzTestRunner
 # \arg:NAME Name to for the test run target
