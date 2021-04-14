@@ -47,6 +47,9 @@ namespace AzToolsFramework
 
     AZStd::string GetEntityName(const AZ::EntityId& entityId, const AZStd::string_view& nameOverride = {});
 
+    EntityList EntityIdListToEntityList(const EntityIdList& inputEntityIds);
+    EntityList EntityIdSetToEntityList(const EntityIdSet & inputEntityIds);
+
     template <typename... ComponentTypes>
     struct AddComponents
     {
@@ -201,5 +204,8 @@ namespace AzToolsFramework
 
     /// Wrap EBus SetSelectedEntities call.
     void SelectEntities(const AzToolsFramework::EntityIdList& entities);
+
+    /// Return a set of entities, culling any that have an ancestor in the list.
+    EntityIdSet GetCulledEntityHierarchy(const EntityIdList & entities);
 
 }; // namespace AzToolsFramework
