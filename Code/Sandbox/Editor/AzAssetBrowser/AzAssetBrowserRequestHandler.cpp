@@ -25,6 +25,7 @@
 #include <AzCore/Asset/AssetTypeInfoBus.h>
 
 // AzFramework
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/GenericAssetHandler.h>
 
 // AzToolsFramework
@@ -174,10 +175,18 @@ namespace AzAssetBrowserRequestHandlerPrivate
                     }
                 }
 
-                // Prepare undo command last so it captures the final state of the entity.
-                EntityCreateCommand* command = aznew EntityCreateCommand(static_cast<AZ::u64>(newEntity->GetId()));
-                command->Capture(newEntity);
-                command->SetParent(undo.GetUndoBatch());
+                bool isPrefabSystemEnabled = false;
+                AzFramework::ApplicationRequests::Bus::BroadcastResult(
+                    isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+
+                if (!isPrefabSystemEnabled)
+                {
+                    // Prepare undo command last so it captures the final state of the entity.
+                    EntityCreateCommand* command = aznew EntityCreateCommand(static_cast<AZ::u64>(newEntity->GetId()));
+                    command->Capture(newEntity);
+                    command->SetParent(undo.GetUndoBatch());
+                }
+
                 ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::AddDirtyEntity, newEntity->GetId());
                 spawnList.push_back(newEntity->GetId());
             }
@@ -274,7 +283,7 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
 
         // Add the "Open" menu item.
         // Note that source file openers are allowed to "veto" the showing of the "Open" menu if it is 100% known that they aren't openable!
-        // for example, custom data formats that are made by Lumberyard that can not have a program associated in the operating system to view them.
+        // for example, custom data formats that are made by Open 3D Engine that can not have a program associated in the operating system to view them.
         // If the only opener that can open that file has no m_opener, then it is not openable.
         SourceFileOpenerList openers;
         AssetBrowserInteractionNotificationBus::Broadcast(&AssetBrowserInteractionNotificationBus::Events::AddSourceFileOpeners, fullFilePath.c_str(), sourceID, openers);
@@ -544,11 +553,11 @@ void AzAssetBrowserRequestHandler::AddSourceFileOpeners(const char* fullSourceFi
     if (AZStd::wildcard_match("*.lua", fullSourceFileName))
     {
         AZStd::string fullName(fullSourceFileName);
-        // LUA files can be opened with the lumberyard LUA editor.
+        // LUA files can be opened with the O3DE LUA editor.
         openers.push_back(
             {
-                "Lumberyard_LUA_Editor",
-                "Open in Lumberyard LUA Editor...",
+                "O3DE_LUA_Editor",
+                "Open in Open 3D Engine LUA Editor...",
                 QIcon(),
                 [](const char* fullSourceFileNameInCallback, const AZ::Uuid& /*sourceUUID*/)
                 {

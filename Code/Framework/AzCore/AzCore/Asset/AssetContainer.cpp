@@ -418,16 +418,19 @@ namespace AZ
 
         void AssetContainer::ListWaitingAssets() const
         {
+#if defined(AZ_ENABLE_TRACING)
             AZStd::lock_guard<AZStd::recursive_mutex> lock(m_readyMutex);
             AZ_TracePrintf("AssetContainer", "Waiting on assets:\n");
             for (auto& thisAsset : m_waitingAssets)
             {
                 AZ_TracePrintf("AssetContainer", "  %s\n",thisAsset.ToString<AZStd::string>().c_str());
             }
+#endif
         }
 
-        void AssetContainer::ListWaitingPreloads(const AssetId& assetId) const
+        void AssetContainer::ListWaitingPreloads([[maybe_unused]] const AssetId& assetId) const
         {
+#if defined(AZ_ENABLE_TRACING)
             AZStd::lock_guard<AZStd::recursive_mutex> preloadGuard(m_preloadMutex);
             auto preloadEntry = m_preloadList.find(assetId);
             if (preloadEntry != m_preloadList.end())
@@ -442,6 +445,7 @@ namespace AZ
             {
                 AZ_TracePrintf("AssetContainer", "%s isn't waiting on any preloads:\n", assetId.ToString<AZStd::string>().c_str());
             }
+#endif
         }
 
         void AssetContainer::AddWaitingAssets(const AZStd::vector<AssetId>& assetList)

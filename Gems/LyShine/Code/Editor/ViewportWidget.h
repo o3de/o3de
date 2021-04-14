@@ -15,18 +15,19 @@
 #include "EditorCommon.h"
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AtomToolsFramework/Viewport/RenderViewportWidget.h>
 
 #include <IFont.h>
-#include <QViewport.h>
 
 #include <QTimer>
 #endif
 
 class RulerWidget;
 class QMimeData;
+class UiRenderer;
 
 class ViewportWidget
-    : public QViewport
+    : public AtomToolsFramework::RenderViewportWidget
     , private AzToolsFramework::EditorPickModeNotificationBus::Handler
     , private FontNotificationBus::Handler
 {
@@ -84,13 +85,14 @@ public: // member functions
     void ShowGuides(bool show);
     bool AreGuidesShown() { return m_guidesVisible; }
 
+    void InitUiRenderer();
+
 protected:
 
     void contextMenuEvent(QContextMenuEvent* e) override;
 
 private slots:
 
-    void HandleSignalRender(const SRenderContext& context);
     void UserSelectionChanged(HierarchyItemRawPtrList* items);
 
     void EnableCanvasRender();
@@ -141,11 +143,15 @@ private: // member functions
     void OnFontTextureUpdated(IFFont* font) override;
     // ~FontNotifications
 
+    // AZ::TickBus::Handler
+    void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+    // ~AZ::TickBus::Handler
+
     //! Render the viewport when in edit mode
-    void RenderEditMode();
+    void RenderEditMode(float deltaTime);
 
     //! Render the viewport when in preview mode
-    void RenderPreviewMode();
+    void RenderPreviewMode(float deltaTime);
 
     //! Create shortcuts for manipulating the viewport
     void SetupShortcuts();
@@ -193,4 +199,6 @@ private: // data
     bool     m_rulersVisible;
     bool     m_guidesVisible;
     bool     m_fontTextureHasChanged = false;
+
+    AZStd::shared_ptr<UiRenderer> m_uiRenderer;
 };

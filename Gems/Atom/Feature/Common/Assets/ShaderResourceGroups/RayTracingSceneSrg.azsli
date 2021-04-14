@@ -1,0 +1,129 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#ifndef AZ_COLLECTING_PARTIAL_SRGS
+#error Do not include this file directly. Include the main .srgi file instead.
+#endif
+
+partial ShaderResourceGroup RayTracingSceneSrg
+{
+    RaytracingAccelerationStructure m_scene;
+
+    // directional Lights
+    struct DirectionalLight
+    {
+        float3 m_direction;
+        float  m_angularRadius;
+        float3 m_rgbIntensity;
+        float  m_padding2;
+    };
+    
+    StructuredBuffer<DirectionalLight> m_directionalLights;
+    uint m_directionalLightCount;
+    
+    // point Lights
+    struct PointLight
+    {
+        float3 m_position;
+        float  m_invAttenuationRadiusSquared;
+        float3 m_rgbIntensity;
+        float  m_bulbRadius;
+    };
+    
+    StructuredBuffer<PointLight> m_pointLights;
+    uint m_pointLightCount;
+    
+    // disk Lights  
+    struct DiskLight
+    {
+        float3 m_position;
+        float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
+        float3 m_rgbIntensityCandelas;
+        float m_diskRadius;
+        float3 m_direction;
+        uint m_flags;
+        float m_cosInnerConeAngle;
+        float m_cosOuterConeAngle;
+        float m_bulbPositionOffset;
+        uint m_shadowIndex;
+    };
+    
+    StructuredBuffer<DiskLight> m_diskLights;
+    uint m_diskLightCount;
+    
+    // capsule Lights    
+    struct CapsuleLight
+    {
+        float3 m_startPoint;                    // one of the end points of the capsule
+        float m_radius;                         // radius of the capsule, ie distance from line segment to surface.
+        float3 m_direction;                     // normalized vector from m_startPoint towards the other end point.
+        float m_length;                         // length of the line segment making up the inside of the capsule. Doesn't include caps (0 length capsule == sphere)
+        float3 m_rgbIntensityCandelas;          // total rgb luminous intensity of the capsule in candelas
+        float m_invAttenuationRadiusSquared;    // inverse of the distance at which this light no longer has an effect, squared. Also used for falloff calculations.
+    };
+    
+    StructuredBuffer<CapsuleLight> m_capsuleLights;
+    uint m_capsuleLightCount;
+    
+    // quad Lights    
+    struct QuadLight
+    {
+        float3 m_position;
+        float  m_invAttenuationRadiusSquared;   // radius at which this light no longer has an effect, 1 / radius^2.
+        float3 m_leftDir;                       // direction from center of quad to the left edge
+        float  m_halfWidth;                     // half-width of the quad. m_leftDir * m_halfWidth is a vector from the center to the left edge.
+        float3 m_upDir;                         // cirection from center of quad to the top edge
+        float  m_halfHeight;                    // half-height of the quad. m_upDir * m_halfHeight is a vector from the center to the top edge.
+        float3 m_rgbIntensityNits;
+        uint   m_flags;                         // see QuadLightFlag enum
+    };
+    
+    StructuredBuffer<QuadLight> m_quadLights;
+    uint m_quadLightCount;
+    
+    // diffuse IBL
+    Sampler m_diffuseEnvMapSampler
+    {
+        AddressU = Wrap;
+        AddressV = Wrap;
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+    };
+    
+    TextureCube m_diffuseEnvMap;
+    float4 m_iblOrientation;
+    float m_iblExposure;
+       
+    // mesh info structured buffer containing offsets into the mesh buffers, irradiance color, and transform for each mesh
+    struct MeshInfo
+    {
+        uint     m_indexOffset;
+        uint     m_positionOffset;
+        uint     m_normalOffset;
+        float4   m_irradianceColor;
+        float3x3 m_worldInvTranspose;
+    };
+    
+    StructuredBuffer<MeshInfo> m_meshInfo;
+    
+    // unbounded array of Index, VertexPosition, and VertexNormal buffers
+    // each mesh has three entries in this array starting at its InstanceIndex() * BUFFER_COUNT_PER_MESH
+    #define BUFFER_COUNT_PER_MESH       3
+    #define MESH_INDEX_BUFFER_OFFSET    0
+    #define MESH_POSITION_BUFFER_OFFSET 1
+    #define MESH_NORMAL_BUFFER_OFFSET   2
+    
+    ByteAddressBuffer m_meshBuffers[];
+}
+
+

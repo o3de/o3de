@@ -1750,7 +1750,6 @@ namespace AZ
         {
             AssetData* data = asset.Get();
             {
-                const AZ::Data::AssetId& assetId = asset.GetId();
 
                 AZStd::scoped_lock<AZStd::recursive_mutex> assetLock(m_assetMutex);
                 if (data)

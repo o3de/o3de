@@ -929,7 +929,6 @@ void ScriptSystemComponent::Reflect(ReflectContext* reflection)
         Debug::TraceReflect(behaviorContext);
 
         behaviorContext->Class<PlatformID>("Platform")
-            ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
             ->Enum<static_cast<int>(PlatformID::PLATFORM_WINDOWS_64)>("Windows64")
             ->Enum<static_cast<int>(PlatformID::PLATFORM_LINUX_64)>("Linux")
             ->Enum<static_cast<int>(PlatformID::PLATFORM_ANDROID_64)>("Android64")

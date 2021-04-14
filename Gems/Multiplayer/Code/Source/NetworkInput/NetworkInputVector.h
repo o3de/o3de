@@ -18,7 +18,7 @@
 
 namespace Multiplayer
 {
-    //! @class InputCommandArray
+    //! @class NetworkInputVector
     //! @brief An array of network inputs. Used to mitigate loss of input packets on the server. Compresses subsequent elements.
     class NetworkInputVector final
     {

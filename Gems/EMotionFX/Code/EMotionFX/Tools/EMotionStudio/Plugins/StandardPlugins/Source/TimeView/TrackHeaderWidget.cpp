@@ -62,7 +62,7 @@ namespace EMStudio
         mainAddWidgetLayout->addWidget(label);
 
         QToolButton* addButton = new QToolButton();
-        addButton->setIcon(MysticQt::GetMysticQt()->FindIcon("/Images/Icons/Plus.svg"));
+        addButton->setIcon(MysticQt::GetMysticQt()->FindIcon("Images/Icons/Plus.svg"));
         addButton->setToolTip("Add a new event track");
         connect(addButton, &QToolButton::clicked, this, &TrackHeaderWidget::OnAddTrackButtonClicked);
         mainAddWidgetLayout->addWidget(addButton);

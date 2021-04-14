@@ -484,7 +484,7 @@ int CRCfix::Fix(Filename srce)
         if (backup.Exists())
         {
             backup.SetWritable();
-            bool deleted = backup.Delete();
+            [[maybe_unused]] bool deleted = backup.Delete();
             AZ_Assert(deleted, "failed to delete");
         }
 

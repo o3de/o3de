@@ -21,7 +21,6 @@ set(GEM_DEPENDENCIES
     Gem::Gestures
     Gem::CertificateManager
     Gem::DebugDraw.Editor
-    Gem::GameLift
     Gem::SceneProcessing.Editor
     Gem::GraphCanvas.Editor
     Gem::InAppPurchases
@@ -30,7 +29,6 @@ set(GEM_DEPENDENCIES
     Gem::PythonAssetBuilder.Editor
     Gem::Metastream
     Gem::AudioSystem.Editor
-    Gem::ImageProcessing.Editor
     Gem::Camera.Editor
     Gem::EMotionFX.Editor
     Gem::PhysX.Editor
@@ -52,4 +50,22 @@ set(GEM_DEPENDENCIES
     Gem::Vegetation.Editor
     Gem::GraphModel.Editor
     Gem::LandscapeCanvas.Editor
+    Gem::Atom_RHI.Private
+    Gem::EMotionFX.Editor
+    Gem::Atom_RPI.Builders
+    Gem::Atom_RPI.Editor
+    Gem::Atom_Feature_Common.Builders
+    Gem::Atom_Feature_Common.Editor
+    Gem::ImGui.Editor
+    Gem::Atom_Bootstrap
+    Gem::Atom_Asset_Shader.Builders
+    Gem::Atom_Component_DebugCamera
+    Gem::AtomImGuiTools
+    Gem::AtomLyIntegration_CommonFeatures.Editor
+    Gem::EMotionFX_Atom.Editor
+    Gem::ImageProcessingAtom.Editor
+    Gem::Atom_AtomBridge.Editor
+    Gem::ImguiAtom
+    Gem::AtomFont
+    Gem::AtomToolsFramework.Editor
 )

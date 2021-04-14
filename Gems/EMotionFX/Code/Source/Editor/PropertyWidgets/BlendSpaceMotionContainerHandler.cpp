@@ -260,9 +260,6 @@ namespace EMotionFX
             return;
         }
 
-        // Get the anim graph instance in case only exactly one actor instance is selected.
-        EMotionFX::AnimGraphInstance* animGraphInstance = GetSingleSelectedAnimGraphInstance();
-
         for (const AZStd::string& selectedMotionId : selectedMotionIds)
         {
             bool alreadyExists = false;
@@ -497,7 +494,7 @@ namespace EMotionFX
 
         // Add motions button.
         QPushButton* addMotionsButton = new QPushButton();
-        EMStudio::EMStudioManager::MakeTransparentButton(addMotionsButton, "/Images/Icons/Plus.svg", "Add motions to blend space");
+        EMStudio::EMStudioManager::MakeTransparentButton(addMotionsButton, "Images/Icons/Plus.svg", "Add motions to blend space");
         connect(addMotionsButton, &QPushButton::clicked, this, &BlendSpaceMotionContainerWidget::OnAddMotion);
         topRowLayout->addWidget(addMotionsButton, 0, Qt::AlignRight);
 

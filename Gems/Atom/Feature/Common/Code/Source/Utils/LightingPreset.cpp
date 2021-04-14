@@ -43,7 +43,6 @@ namespace AZ
             if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
                 behaviorContext->Class<ExposureControlConfig>("ExposureControlConfig")
-                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                     ->Attribute(AZ::Script::Attributes::Category, "Editor")
                     ->Attribute(AZ::Script::Attributes::Module, "render")
@@ -79,7 +78,6 @@ namespace AZ
             if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
                 behaviorContext->Class<LightConfig>("LightConfig")
-                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                     ->Attribute(AZ::Script::Attributes::Category, "Editor")
                     ->Attribute(AZ::Script::Attributes::Module, "render")
@@ -125,7 +123,6 @@ namespace AZ
             if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
                 behaviorContext->Class<LightingPreset>("LightingPreset")
-                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                     ->Attribute(AZ::Script::Attributes::Category, "Editor")
                     ->Attribute(AZ::Script::Attributes::Module, "render")

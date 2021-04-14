@@ -214,7 +214,7 @@ CTimeOfDay::CTimeOfDay()
     // fill local var list so, sandbox can access var list without level being loaded
 
     // Cryengine supports the notion of environment presets which are set in code that is currently not
-    // in lumberyard. Therefore, create a default preset here that is used as the only one.
+    // in Open 3D Engine. Therefore, create a default preset here that is used as the only one.
     m_defaultPreset = new CEnvironmentPreset;
     for (int i = 0; i < PARAM_TOTAL; ++i)
     {
@@ -612,7 +612,6 @@ void CTimeOfDay::UpdateEnvLighting(bool forceUpdate)
 
         // Calculating the energy multiplier where mid-day sun is 1.0 and night is 0
         const float noonTime = 12.0f;
-        float   dayTime = p3DEngine->m_duskEnd - p3DEngine->m_dawnStart;
 
         if (m_fTime <= noonTime)
         {
@@ -911,7 +910,6 @@ void CTimeOfDay::MigrateLegacyData(bool bSunIntensity, const XmlNodeRef& node)
             varHDRPower.pInterpolator->InterpolateFloat(time, hdrPower);
 
             const float HDRDynamicMultiplier = 2.0f;
-            float hdrMult = powf(HDRDynamicMultiplier, hdrPower);
             float sunColorLum = sunColor[0] * 0.2126f + sunColor[1] * 0.7152f + sunColor[2] * 0.0722f;
             float sunIntensity = sunMult * sunColorLum * 10000.0f * gf_PI;
 

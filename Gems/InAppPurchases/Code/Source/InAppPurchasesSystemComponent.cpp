@@ -66,7 +66,6 @@ namespace InAppPurchases
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->EBus<InAppPurchasesRequestBus>("InAppPurchasesRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Event("Initialize", &InAppPurchasesRequestBus::Events::Initialize)
                 ->Event("QueryProductInfo", &InAppPurchasesRequestBus::Events::QueryProductInfo)
                 ->Event("QueryProductInfoFromJson", &InAppPurchasesRequestBus::Events::QueryProductInfoFromJson)
@@ -78,7 +77,6 @@ namespace InAppPurchases
                 ;
 
             behaviorContext->EBus<InAppPurchasesResponseAccessorBus>("InAppPurchasesResponseAccessorBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Event("NextProduct", &InAppPurchasesResponseAccessorBus::Events::GetNextProduct)
                 ->Event("PreviousProduct", &InAppPurchasesResponseAccessorBus::Events::GetPreviousProduct)
                 ->Event("NextPurchasedProduct", &InAppPurchasesResponseAccessorBus::Events::GetNextPurchasedProduct)
@@ -195,8 +193,7 @@ namespace InAppPurchases
 
             if (doc.HasParseError())
             {
-                const char* errorStr = rapidjson::GetParseError_En(doc.GetParseError());
-                AZ_Warning("LumberyardInAppBilling", false, "Failed to parse product_ids: %s\n", errorStr);
+                AZ_Warning("LumberyardInAppBilling", false, "Failed to parse product_ids: %s\n", rapidjson::GetParseError_En(doc.GetParseError()));
                 return;
             }
 
@@ -215,7 +212,7 @@ namespace InAppPurchases
             }
             else
             {
-                AZ_Warning("LumberyardInAppPurchases", false, "The JSON string provided does not contain an array named ProductIds!(Property *has* to be an array)");
+                AZ_Warning("O3DEInAppPurchases", false, "The JSON string provided does not contain an array named ProductIds!(Property *has* to be an array)");
             }
         }
     }

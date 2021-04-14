@@ -58,9 +58,7 @@ namespace AZ
                 return SceneEvents::ProcessingResult::Ignored;
             }
 
-            const SceneContainers::SceneGraph& graph = context.m_scene.GetGraph();
-            const SceneDataTypes::IGroup& group = context.m_group;
-            
+            const SceneContainers::SceneGraph& graph = context.m_scene.GetGraph();          
             
             SceneEvents::ProcessingResultCombiner result;
 

@@ -171,7 +171,7 @@ namespace AZ
                             "Soft naming conventions", "Update the naming conventions to suit your project.")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &SceneProcessingConfigSystemComponent::m_UseCustomNormals,
-                            "Use Custom Normals", "When enabled, Lumberyard will use the DCC assets custom or tangent space normals. When disabled, the normals will be averaged. This setting can be overridden on individual FBX asset settings.")
+                            "Use Custom Normals", "When enabled, Open 3D Engine will use the DCC assets custom or tangent space normals. When disabled, the normals will be averaged. This setting can be overridden on individual FBX asset settings.")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, false);
                 }
             }

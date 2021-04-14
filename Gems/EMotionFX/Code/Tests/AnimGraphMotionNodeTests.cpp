@@ -184,7 +184,7 @@ namespace EMotionFX
 
     TEST_F(AnimGraphMotionNodeFixture, NoInputAndZeroEffectOutputsCorrectMotionAndPose)
     {
-        AnimGraphMotionNode::UniqueData* uniqueData = static_cast<AnimGraphMotionNode::UniqueData*>(m_animGraphInstance->FindOrCreateUniqueNodeData(m_motionNode));
+        m_animGraphInstance->FindOrCreateUniqueNodeData(m_motionNode);
         
         // Check position of root and pelvis to ensure actor's motion movement is correct.
         // Follow-through during the duration(~1.06666672 seconds) of the motion.
@@ -309,7 +309,7 @@ namespace EMotionFX
     {
         m_motionNode->AddConnection(m_paramNode, m_paramNode->FindOutputPortByName("InPlace")->mPortID, AnimGraphMotionNode::INPUTPORT_INPLACE);
         ParamSetValue<MCore::AttributeBool, bool>("InPlace", true);
-        AnimGraphMotionNode::UniqueData* uniqueData = static_cast<AnimGraphMotionNode::UniqueData*>(m_animGraphInstance->FindOrCreateUniqueNodeData(m_motionNode));
+        m_animGraphInstance->FindOrCreateUniqueNodeData(m_motionNode);
         
         GetEMotionFX().Update(1.0f / 60.0f);
 

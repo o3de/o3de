@@ -28,7 +28,8 @@ ly_add_target(
             Legacy::CryCommon
             Gem::LmbrCentral
             Gem::GradientSignal
-            Gem::SurfaceData
+            Gem::SurfaceData.Static
+            Gem::AtomLyIntegration_CommonFeatures.Static
 )
 
 ly_add_target(

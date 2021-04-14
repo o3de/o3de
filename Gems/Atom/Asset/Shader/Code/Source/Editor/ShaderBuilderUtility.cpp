@@ -550,11 +550,13 @@ namespace AZ
                     }
                 }
 
+#if defined(AZ_ENABLE_TRACING)
                 for (const auto& profiling : profilingPerCompiler)
                 {
                     AZ_TracePrintf(builderName, "Compiler: %s\n>\tCalls: %d\n>\tTime: %.2f seconds\n",
                         profiling.first.c_str(), profiling.second.m_calls, profiling.second.m_totalElapsedTime);
                 }
+#endif
             }
 
             uint32_t MakeAzslBuildProductSubId(RPI::ShaderAssetSubId subId, RHI::APIType apiType)

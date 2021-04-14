@@ -177,7 +177,6 @@ namespace UnitTest
 
     TEST(SkinnedMeshDispatchItemTest, CalculateSkinnedMeshTotalThreadsPerDimension_VertexCountIsZero_Error)
     {
-        uint32_t maxThreadsPerDimension = static_cast<uint32_t>(std::numeric_limits<uint16_t>::max());
         uint32_t xThreads = 0;
         uint32_t yThreads = 0;
 

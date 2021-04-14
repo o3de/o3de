@@ -53,6 +53,7 @@ namespace AZ
 
             void UpdateViewsDescriptorTable(DescriptorTable descriptorTable, const RHI::ShaderResourceGroupData& groupData);
             void UpdateSamplersDescriptorTable(DescriptorTable descriptorTable, const RHI::ShaderResourceGroupData& groupData);
+            void UpdateUnboundedArrayDescriptorTables(ShaderResourceGroup& group, const RHI::ShaderResourceGroupData& groupData);
 
             void UpdateDescriptorTableRange(
                 DescriptorTable descriptorTable,
@@ -70,6 +71,7 @@ namespace AZ
                 AZStd::array_view<RHI::SamplerState> samplerStates);
 
             DescriptorTable GetBufferTable(DescriptorTable descriptorTable, RHI::ShaderInputBufferIndex bufferIndex) const;
+            DescriptorTable GetBufferTableUnbounded(DescriptorTable descriptorTable, RHI::ShaderInputBufferIndex bufferIndex) const;
             DescriptorTable GetImageTable(DescriptorTable descriptorTable, RHI::ShaderInputImageIndex imageIndex) const;
             DescriptorTable GetSamplerTable(DescriptorTable descriptorTable, RHI::ShaderInputSamplerIndex samplerInputIndex) const;
 
@@ -92,6 +94,7 @@ namespace AZ
             uint32_t m_samplersDescriptorTableRingSize = 0;
             uint32_t m_descriptorTableBufferOffset = 0;
             uint32_t m_descriptorTableImageOffset = 0;
+            uint32_t m_unboundedArrayCount = 0;
         };
     }
 }

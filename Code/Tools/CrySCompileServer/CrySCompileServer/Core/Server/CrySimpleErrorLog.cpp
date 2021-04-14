@@ -180,7 +180,7 @@ void CCrySimpleErrorLog::SendMail()
                 char DispFilename[1024];
                 azsprintf(DispFilename, "%d-%s", a + 1, err->GetFilename().c_str());
 
-                std::string sErrorFile =    SEnviropment::Instance().m_ErrorPath + Filename;
+                std::string sErrorFile = (SEnviropment::Instance().m_ErrorPath / Filename).c_str();
 
                 std::vector<uint8_t> bytes;
                 std::string text = err->GetFileContents();
@@ -211,7 +211,7 @@ void CCrySimpleErrorLog::SendMail()
                 CSMTPMailer::tstrcol bcc;
 
                 CSMTPMailer mail("", "", SEnviropment::Instance().m_MailServer);
-                bool res = mail.Send(SEnviropment::Instance().m_FailEMail, Rcpt, cc, bcc, err->GetErrorName(), body, Attachment);
+                mail.Send(SEnviropment::Instance().m_FailEMail, Rcpt, cc, bcc, err->GetErrorName(), body, Attachment);
 
                 a = 0;
                 body = mailBody;

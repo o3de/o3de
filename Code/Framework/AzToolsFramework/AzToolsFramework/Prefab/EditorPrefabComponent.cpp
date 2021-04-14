@@ -56,16 +56,6 @@ namespace AzToolsFramework
 
         void EditorPrefabComponent::Activate()
         {
-            PrefabPublicInterface* prefabPublicInterface = AZ::Interface<PrefabPublicInterface>::Get();
-            if (prefabPublicInterface && prefabPublicInterface->IsLevelInstanceContainerEntity(GetEntityId()))
-            {
-                EntityOutlinerWidgetInterface* entityOutlinerWidgetInterface = AZ::Interface<EntityOutlinerWidgetInterface>::Get();
-                if (entityOutlinerWidgetInterface)
-                {
-                    entityOutlinerWidgetInterface->SetRootEntity(GetEntityId());
-                }
-            }
-
             PrefabInstanceContainerNotificationBus::Broadcast(
                 &PrefabInstanceContainerNotifications::OnPrefabComponentActivate, GetEntityId());
         }

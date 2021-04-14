@@ -50,7 +50,6 @@ namespace AZ
                 return false;
             }
 
-            MaterialPropertyDataType dataType = propertyDescriptor->GetDataType();
             AZ::TypeId typeId = propertyDescriptor->GetStorageDataTypeId();
             auto iter = m_possibleValues.find(typeId);
             if (iter != m_possibleValues.end())
@@ -60,7 +59,7 @@ namespace AZ
 
             if (!m_resolvedValue.IsValid())
             {
-                AZ_Error("MaterialPropertyValueSourceData", false, "Value for material property '%s' is invalid. %s is required.", materialPropertyName.GetCStr(), ToString(dataType));
+                AZ_Error("MaterialPropertyValueSourceData", false, "Value for material property '%s' is invalid. %s is required.", materialPropertyName.GetCStr(), ToString(propertyDescriptor->GetDataType()));
                 return false;
             }
 

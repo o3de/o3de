@@ -1487,7 +1487,7 @@ bool UiElementComponent::MoveEntityAndDescendantsToListAndReplaceWithEntityId(AZ
         elementNode.Convert<AZ::EntityId>(context, elementFieldName.c_str());
 
         // copy in the subNode that stores the actual u64 (that we saved a copy of above)
-        int newEntityIdIndex = elementNode.AddElement(u64Node);
+        elementNode.AddElement(u64Node);
     }
     else
     {
@@ -1500,10 +1500,10 @@ bool UiElementComponent::MoveEntityAndDescendantsToListAndReplaceWithEntityId(AZ
         AZ::SerializeContext::DataElementNode& childOrderEntryEntityIdElementNode = elementNode.GetSubElement(childOrderEntryEntityIdIndex);
 
         // copy in the subNode that stores the actual u64 (that we saved a copy of above)
-        int newEntityIdIndex = childOrderEntryEntityIdElementNode.AddElement(u64Node);
+        childOrderEntryEntityIdElementNode.AddElement(u64Node);
 
         AZ::u64 sortIndex = static_cast<AZ::u64>(index);
-        int sortIndexElementIndex = elementNode.AddElementWithData<AZ::u64>(context, "SortIndex", sortIndex);
+        elementNode.AddElementWithData<AZ::u64>(context, "SortIndex", sortIndex);
     }
 
     return true;

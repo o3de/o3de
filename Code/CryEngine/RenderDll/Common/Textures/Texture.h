@@ -32,10 +32,6 @@
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-#include <RenderContextConfig.h>
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-
 #if defined(AZ_RESTRICTED_PLATFORM)
 #undef AZ_RESTRICTED_SECTION
 #define TEXTURE_H_SECTION_1 1
@@ -2272,10 +2268,6 @@ public:
 
     static SEnvTexture* FindSuitableEnvTex(Vec3& Pos, Ang3& Angs, bool bMustExist, int RendFlags, bool bUseExistingREs, CShader* pSH, CShaderResources* pRes, CRenderObject* pObj, bool bReflect, IRenderElement* pRE, bool* bMustUpdate);
     static bool RenderEnvironmentCMHDR(int size, Vec3& Pos, TArray<unsigned short>& vecData);
-
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    static bool RenderToTexture(int handle, const CCamera& camera, AzRTT::RenderContextId contextId);
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
 
     static void DrawCubeSide(Vec3& Pos, int tex_size, int side, float fMaxDist);
     static void DrawSceneToCubeSide(Vec3& Pos, int tex_size, int side);

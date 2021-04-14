@@ -482,7 +482,6 @@ namespace Audio
                 }
                 case eAMRT_INIT_AUDIO_IMPL:
                 {
-                    auto const pRequestData = static_cast<const SAudioManagerRequestDataInternal<eAMRT_INIT_AUDIO_IMPL>*>(rRequest.pData.get());
                     eResult = InitializeImplComponent();
 
                     // Initializing the implementation failed, immediately release it...

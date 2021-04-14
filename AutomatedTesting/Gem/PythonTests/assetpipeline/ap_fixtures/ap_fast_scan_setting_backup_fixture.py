@@ -19,8 +19,8 @@ import logging
 
 # ly-shared import
 from automatedtesting_shared.platform_setting import PlatformSetting
-from ly_test_tools.lumberyard.pipeline_utils import AP_FASTSCAN_KEY as fast_scan_key
-from ly_test_tools.lumberyard.pipeline_utils import AP_FASTSCAN_SUBKEY as fast_scan_subkey
+from ly_test_tools.o3de.pipeline_utils import AP_FASTSCAN_KEY as fast_scan_key
+from ly_test_tools.o3de.pipeline_utils import AP_FASTSCAN_SUBKEY as fast_scan_subkey
 
 logger = logging.getLogger(__name__)
 

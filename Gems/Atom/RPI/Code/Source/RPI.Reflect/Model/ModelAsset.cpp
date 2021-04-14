@@ -75,7 +75,7 @@ namespace AZ
             m_status = Data::AssetData::AssetStatus::Ready;
         }
 
-        bool ModelAsset::LocalRayIntersectionAgainstModel(const AZ::Vector3& rayStart, const AZ::Vector3& dir, float& distance) const
+        bool ModelAsset::LocalRayIntersectionAgainstModel(const AZ::Vector3& rayStart, const AZ::Vector3& dir, float& distance, AZ::Vector3& normal) const
         {
             AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
 
@@ -97,11 +97,11 @@ namespace AZ
                 }
                 else
                 {
-                    return m_kdTree->RayIntersection(rayStart, dir, distance);
+                    return m_kdTree->RayIntersection(rayStart, dir, distance, normal);
                 }
             }
 
-            return BruteForceRayIntersect(rayStart, dir, distance);
+            return BruteForceRayIntersect(rayStart, dir, distance, normal);
         }
 
         void ModelAsset::BuildKdTree() const
@@ -136,7 +136,7 @@ namespace AZ
             }
         }
 
-        bool ModelAsset::BruteForceRayIntersect(const AZ::Vector3& rayStart, const AZ::Vector3& dir, float& distance) const
+        bool ModelAsset::BruteForceRayIntersect(const AZ::Vector3& rayStart, const AZ::Vector3& dir, float& distance, AZ::Vector3& normal) const
         {
             // brute force - check every triangle
             if (GetLodAssets().empty() == false)
@@ -147,12 +147,18 @@ namespace AZ
                     float shortestDistance = std::numeric_limits<float>::max();
                     bool anyHit = false;
 
+                    AZ::Vector3 intersectionNormal;
+
                     for (const ModelLodAsset::Mesh& mesh : loadAssetPtr->GetMeshes())
                     {
-                        if (LocalRayIntersectionAgainstMesh(mesh, rayStart, dir, distance))
+                        if (LocalRayIntersectionAgainstMesh(mesh, rayStart, dir, distance, intersectionNormal))
                         {
                             anyHit = true;
-                            shortestDistance = AZ::GetMin(distance, shortestDistance);
+                            if (distance < shortestDistance)
+                            {
+                                normal = intersectionNormal;
+                                shortestDistance = distance;
+                            }
                         }
                     }
 
@@ -168,7 +174,7 @@ namespace AZ
             return false;
         }
 
-        bool ModelAsset::LocalRayIntersectionAgainstMesh(const ModelLodAsset::Mesh& mesh, const AZ::Vector3& rayStart, const AZ::Vector3& dir, float& distance) const
+        bool ModelAsset::LocalRayIntersectionAgainstMesh(const ModelLodAsset::Mesh& mesh, const AZ::Vector3& rayStart, const AZ::Vector3& dir, float& distance, AZ::Vector3& normal) const
         {
             const BufferAssetView& indexBufferView = mesh.GetIndexBufferAssetView();
             const AZStd::array_view<ModelLodAsset::Mesh::StreamBufferInfo>& streamBufferList = mesh.GetStreamBufferInfoList();
@@ -216,7 +222,7 @@ namespace AZ
 
                 const AZ::Vector3 rayEnd = rayStart + dir * distance;
                 AZ::Vector3 a, b, c;
-                AZ::Vector3 normal;
+                AZ::Vector3 intersectionNormal;
                 float normalizedDistance = 1.f;
 
                 const AZ::u32* indexPtr = reinterpret_cast<const AZ::u32*>(indexRawBuffer.data());
@@ -241,9 +247,13 @@ namespace AZ
                     p = reinterpret_cast<const float*>(&positionRawBuffer[index2 * positionElementSize]);
                     c.Set(const_cast<float*>(p));
 
-                    if (AZ::Intersect::IntersectSegmentTriangleCCW(rayStart, rayEnd, a, b, c, normal, normalizedDistance))
+                    if (AZ::Intersect::IntersectSegmentTriangleCCW(rayStart, rayEnd, a, b, c, intersectionNormal, normalizedDistance))
                     {
-                        closestNormalizedDistance = AZ::GetMin(closestNormalizedDistance, normalizedDistance);
+                        if (normalizedDistance < closestNormalizedDistance)
+                        {
+                            normal = intersectionNormal;
+                            closestNormalizedDistance = normalizedDistance;
+                        }
                         anyHit = true;
                     }
                 }

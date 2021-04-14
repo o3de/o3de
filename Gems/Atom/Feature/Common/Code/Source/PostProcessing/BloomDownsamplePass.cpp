@@ -49,7 +49,6 @@ namespace AZ
 
         void BloomDownsamplePass::BuildOutAttachmentBinding()
         {
-            RPI::PassAttachmentBinding& finalOutBinding = GetOutputBinding(0);
             RPI::Ptr<RPI::PassAttachment> outAttachment = m_ownedAttachments[0];
 
             for (uint32_t i = 0; i < Render::Bloom::MaxStageCount; ++i)

@@ -117,12 +117,10 @@ namespace AZ
                 }
                 else
                 {
-                    const AZStd::string& cachePath = asset.GetHint();
-
                     AZ_Error("AssetUtils", false, "Could not load %s [Source='%s' Cache='%s' AssetID=%s] ",
                         AzTypeInfo<AssetDataT>::Name(),
                         sourcePathForDebug ? sourcePathForDebug : "<unknown>",
-                        cachePath.empty() ? "<unknown>" : cachePath.c_str(),
+                        asset.GetHint().empty() ? "<unknown>" : asset.GetHint().c_str(),
                         assetId.ToString<AZStd::string>().c_str());
 
                     return AZ::Failure();

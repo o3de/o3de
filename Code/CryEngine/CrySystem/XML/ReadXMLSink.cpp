@@ -193,34 +193,12 @@ bool IsOptionalReadXML(const SParseParams& parseParams, XmlNodeRef& definition)
     return optional;
 }
 
-bool CheckEnum([[maybe_unused]] const SParseParams& parseParams, const char* name, XmlNodeRef& definition, XmlNodeRef& data)
+bool CheckEnum([[maybe_unused]] const SParseParams& parseParams, [[maybe_unused]] const char* name, XmlNodeRef& definition, [[maybe_unused]] XmlNodeRef& data)
 {
     if (XmlNodeRef enumNode = definition->findChild("Enum"))
     {
         // If strict mode is off, then no need to check the enum value
         return true;
-
-        // if restrictive attribute set to false, check always succeeds
-        if (enumNode->haveAttr("restrictive"))
-        {
-            bool res = true;
-            enumNode->getAttr("restrictive", res);
-            if (!res)
-            {
-                return true;
-            }
-        }
-
-        // else check enum values
-        const char* val = data->getAttr(name);
-        for (int i = 0; i < enumNode->getChildCount(); ++i)
-        {
-            if (0 == strcmp(enumNode->getChild(i)->getContent(), val))
-            {
-                return true;
-            }
-        }
-        return false;
     }
     return true;
 }
@@ -559,7 +537,6 @@ bool LoadTableInner(const SParseParams& parseParams, XmlNodeRef& definition, Xml
         }
     }
 
-    const char* tag = definition->getTag();
     if (parseParams.useAlways != (IXmlNode*)NULL)
     {
         assert(!definition->haveAttr("type"));

@@ -18,9 +18,9 @@
 #include <Source/NetworkEntity/NetworkEntityTracker.h>
 #include <Source/NetworkEntity/NetworkEntityRpcMessage.h>
 #include <Source/Components/NetBindComponent.h>
-
+#include <Source/Components/NetworkTransformComponent.h>
 #include <Source/AutoGen/Multiplayer.AutoPackets.h>
-//#include "Generated/NovaGameCommon/Component/Multiplayer/LocationComponentCommon.AutoComponent.h"
+#include <Include/IMultiplayer.h>
 
 #include <AzNetworking/PacketLayer/IPacket.h>
 #include <AzNetworking/Serialization/ISerializer.h>
@@ -447,7 +447,11 @@ namespace Multiplayer
 
     void EntityReplicator::DeferRpcMessage(NetworkEntityRpcMessage& entityRpcMessage)
     {
-        //Multiplayer::GetPacketHandlerMetricsInstance().LogSentRpc(entityRpcMessage.GetEntityComponentType(), entityRpcMessage.GetRpcMessageType(), entityRpcMessage.GetEstimatedSerializeSize());
+        // Received rpc metrics, log rpc sent, number of bytes, and the componentId/rpcId for bandwidth metrics
+        MultiplayerStats& stats = AZ::Interface<IMultiplayer>::Get()->GetStats();
+        stats.m_rpcsSent++;
+        stats.m_rpcsSentBytes += entityRpcMessage.GetEstimatedSerializeSize();
+
         m_replicationManager.AddDeferredRpcMessage(entityRpcMessage);
     }
 
@@ -627,8 +631,10 @@ namespace Multiplayer
 
     bool EntityReplicator::HandleRpcMessage(NetworkEntityRpcMessage& entityRpcMessage)
     {
-        // Received rpc metrics
-        //ScopedTimer processTimer(Multiplayer::GetPacketHandlerMetricsInstance().LogReceivedRpc(entityRpcMessage.GetEntityComponentType(), entityRpcMessage.GetRpcMessageType(), entityRpcMessage.GetEstimatedSerializeSize()));
+        // Received rpc metrics, log rpc received, time spent, number of bytes, and the componentId/rpcId for bandwidth metrics
+        MultiplayerStats& stats = AZ::Interface<IMultiplayer>::Get()->GetStats();
+        stats.m_rpcsRecv++;
+        stats.m_rpcsRecvBytes += entityRpcMessage.GetEstimatedSerializeSize();
 
         if (!m_netBindComponent)
         {

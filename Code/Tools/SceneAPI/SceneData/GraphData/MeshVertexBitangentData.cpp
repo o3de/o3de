@@ -44,6 +44,16 @@ namespace AZ
                 }
             }
 
+            void MeshVertexBitangentData::CloneAttributesFrom(const IGraphObject* sourceObject)
+            {
+                IMeshVertexBitangentData::CloneAttributesFrom(sourceObject);
+                if (const auto* typedSource = azrtti_cast<const MeshVertexBitangentData*>(sourceObject))
+                {
+                    SetTangentSpace(typedSource->GetTangentSpace());
+                    SetBitangentSetIndex(typedSource->GetBitangentSetIndex());
+                }
+            }
+
             size_t MeshVertexBitangentData::GetCount() const
             {
                 return m_bitangents.size();

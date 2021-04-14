@@ -100,17 +100,17 @@ namespace TimeOfDayDetails
     }
 }
 
-#ifndef VERIFY
-#define VERIFY(EXPRESSION) { auto e = EXPRESSION; assert(e); }
-#endif
-
 CHDRPane::CHDRPane(CTimeOfDayDialog* pTODDlg)
     : QWidget(pTODDlg)
     , m_pTODDlg(pTODDlg)
     , m_pVars(new CVarBlock)
 {
     assert(m_pTODDlg);
-    VERIFY(Init());
+#if !defined(NDEBUG)
+    bool ok =
+#endif
+        Init();
+    assert(ok);
 }
 
 bool CHDRPane::Init()
@@ -207,7 +207,10 @@ static float EvalFilmCurve(float x, float ss, float ms, float ts)
 void CHDRPane::UpdateFilmCurve()
 {
     float shoulderScale = 0, midScale = 0, toeScale = 0, whitePoint = 0;
-    bool ok = GetFilmCurveParams(shoulderScale, midScale, toeScale, whitePoint);
+#if !defined(NDEBUG)
+    bool ok =
+#endif
+        GetFilmCurveParams(shoulderScale, midScale, toeScale, whitePoint);
     assert(ok);
     const float minX = -4.0f, minY = 0.0f, maxX = 4.0f;
     float maxY = 1.0f, stepY = 0.1f;

@@ -302,6 +302,8 @@ public:
     ComponentApplication* GetApplication() override { return nullptr; }
     void RegisterComponentDescriptor(const ComponentDescriptor*) override { }
     void UnregisterComponentDescriptor(const ComponentDescriptor*) override { }
+    void RegisterEntityAddedEventHandler(EntityAddedEvent::Handler&) override { }
+    void RegisterEntityRemovedEventHandler(EntityRemovedEvent::Handler&) override { }
     bool AddEntity(Entity*) override { return true; }
     bool RemoveEntity(Entity*) override { return true; }
     bool DeleteEntity(const AZ::EntityId&) override { return true; }

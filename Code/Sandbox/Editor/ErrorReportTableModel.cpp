@@ -149,7 +149,7 @@ QVariant CErrorReportTableModel::data(const CErrorRecord& record, int column, in
         case ColumnCount:
             return record.count;
         case ColumnText:
-            return record.error;
+            return QString(record.error).simplified();
         case ColumnFile:
             return record.file;
         case ColumnObject:

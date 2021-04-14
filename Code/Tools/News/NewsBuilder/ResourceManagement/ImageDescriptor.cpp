@@ -37,7 +37,6 @@ namespace News
             return false;
         }
         QImage image = reader.read();
-        int nBytes = image.sizeInBytes();
 
         QPixmap pixmap(filename);
         QByteArray data;

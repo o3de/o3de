@@ -90,7 +90,7 @@ namespace UnitTest
 
     TEST_F(OptionalFixture, ConstructorInPlaceWithInitializerList)
     {
-        const optional<ConstructibleWithInitializerListClass> opt(in_place, {"Lumberyard"}, 4);
+        const optional<ConstructibleWithInitializerListClass> opt(in_place, {"O3DE"}, 4);
         EXPECT_TRUE(bool(opt)) << "optional constructed with args should be true";
     }
 

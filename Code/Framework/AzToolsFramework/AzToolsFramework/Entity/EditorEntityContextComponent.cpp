@@ -453,6 +453,7 @@ namespace AzToolsFramework
         {
             loadedSuccessfully = static_cast<PrefabEditorEntityOwnershipService*>(m_entityOwnershipService.get())->LoadFromStream(
                 stream, AZStd::string_view(levelPakFile.toUtf8(), levelPakFile.size()) );
+
         }
         
         LoadFromStreamComplete(loadedSuccessfully);

@@ -251,7 +251,6 @@ size_t CStreamEngine::StartBatchRead(IReadStreamPtr* pStreamsOut, const StreamRe
 
         if (numReqs > 0)
         {
-            size_t nStreamsInBatch = 0;
             numReqs = AZStd::min(numReqs, aznumeric_cast<size_t>(MaxStreamsPerBatch));
             AZStd::vector<FileRequestPtr> batch;
 

@@ -60,7 +60,9 @@ void PropertyTreeModel::selectRow(PropertyRow* row, bool select, bool exclusive)
         setFocusedRow(row);
     }
     else if(it != selection_.end()){
+#if !defined(NDEBUG)
         PropertyRow* it_row = rowFromPath(*it);
+#endif
         YASLI_ASSERT(it_row->refCount() > 0 && it_row->refCount() < 0xFFFF);
         selection_.erase(it);
     }

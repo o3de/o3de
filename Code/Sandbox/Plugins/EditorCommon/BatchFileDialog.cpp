@@ -257,7 +257,6 @@ bool EDITOR_COMMON_API ShowBatchFileDialog(Serialization::StringList* result, co
         else
         {
             string gameFolder = Path::GetEditingGameDataFolder().c_str();
-            int modIndex = 0;
             string gamePrefix = GetIEditor()->GetPrimaryCDFolder().toUtf8().data();
             if (!gamePrefix.empty() && gamePrefix[gamePrefix.size() - 1] != '\\')
             {
@@ -338,8 +337,6 @@ bool EDITOR_COMMON_API ShowBatchFileDialog(Serialization::StringList* result, co
             max(0, center.y() - dialog.height() / 2));
     }
 
-    int numFailed = 0;
-    int numSaved = 0;
     std::vector<string> failedFiles;
     if (dialog.exec() == QDialog::Accepted)
     {

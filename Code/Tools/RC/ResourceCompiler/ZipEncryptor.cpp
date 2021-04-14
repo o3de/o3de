@@ -204,9 +204,6 @@ bool ZipEncryptor::ParseKey(uint32 outputKey[4], const char* inputString)
         return false;
     }
 
-    const char* p = inputString;
-    const char* end = p + len;
-
     size_t i = 0;
     while (i != numBytes)
     {

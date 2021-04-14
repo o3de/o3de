@@ -142,8 +142,6 @@ static const SRenderLight* FindSunLight(SRenderPipeline& renderPipeline)
 void CStandardGraphicsPipeline::UpdatePerFrameConstantBuffer(const PerFrameParameters& perFrameParams)
 {
     CD3D9Renderer* renderer = gcpRendD3D;
-    const PerFrameParameters& perFrameConstants = renderer->m_cEF.m_PF;
-    SRenderPipeline& RESTRICT_REFERENCE rp = gRenDev->m_RP;
 
     CTypedConstantBuffer<HLSL_PerFrameConstantBuffer> cb(m_PerFrameConstantBuffer);
 
@@ -409,8 +407,6 @@ void CStandardGraphicsPipeline::BindPerViewConstantBuffer()
 
 void CStandardGraphicsPipeline::UpdatePerShadowConstantBuffer(const ShadowParameters& params)
 {
-    CD3D9Renderer* renderer = gcpRendD3D;
-    const SRenderPipeline& renderPipeline = renderer->m_RP;
     const auto& shadowFrustum = *params.m_ShadowFrustum;
 
     CTypedConstantBuffer<HLSL_PerSubPassConstantBuffer_ShadowGen> cb(m_PerShadowConstantBuffer);

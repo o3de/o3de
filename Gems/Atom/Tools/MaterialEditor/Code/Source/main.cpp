@@ -16,7 +16,7 @@
 #include <AzQtComponents/Utilities/QtPluginPaths.h>
 #include <AzQtComponents/Components/GlobalEventFilter.h>
 #include <AzQtComponents/Components/StyledDockWidget.h>
-#include <AzQtComponents/Components/LumberyardStylesheet.h>
+#include <AzQtComponents/Components/O3DEStylesheet.h>
 #include <AzQtComponents/Utilities/QtPluginPaths.h>
 #include <AzQtComponents/Utilities/HandleDpiAwareness.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>

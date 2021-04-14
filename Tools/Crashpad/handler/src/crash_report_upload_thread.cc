@@ -44,7 +44,7 @@
 #endif  // OS_MACOSX
 
 // Amazon - Handle giving the user the option of whether or not to send the report.
-namespace Lumberyard
+namespace O3de
 {
 	bool CheckConfirmation(const crashpad::CrashReportDatabase::Report& report);
 	bool AddAttachments(crashpad::HTTPMultipartBuilder& multipartBuilder);
@@ -198,7 +198,7 @@ void CrashReportUploadThread::ProcessPendingReport(
   }
 
   // Amazon - Handle giving the user the option of whether or not to send the report.
-  if (!Lumberyard::CheckConfirmation(report))
+  if (!O3DE::CheckConfirmation(report))
   {
 	database_->SkipReportUpload(report.uuid,
 		Metrics::CrashSkippedReason::kUploadsDisabled);
@@ -350,7 +350,7 @@ CrashReportUploadThread::UploadResult CrashReportUploadThread::UploadReport(
       "application/octet-stream");
 
   // Amazon
-  Lumberyard::AddAttachments(http_multipart_builder);
+  O3de::AddAttachments(http_multipart_builder);
 
   std::unique_ptr<HTTPTransport> http_transport(HTTPTransport::Create());
   HTTPHeaders content_headers;
@@ -390,7 +390,7 @@ CrashReportUploadThread::UploadResult CrashReportUploadThread::UploadReport(
   http_transport->SetURL(url);
 
   // Amazon
-  Lumberyard::UpdateHttpTransport(http_transport, url);
+  O3de::UpdateHttpTransport(http_transport, url);
 
   if (!http_transport->ExecuteSynchronously(response_body)) {
     return UploadResult::kRetry;

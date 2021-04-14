@@ -71,7 +71,7 @@ namespace AzToolsFramework
         AZ_Assert(!s_perforceConn, "You may only have one Perforce component.\n");
         m_shutdownThreadSignal = false;
         m_waitingOnTrust = false;
-        m_autoChangelistDescription = "*Lumberyard Auto";
+        m_autoChangelistDescription = "*Open 3D Engine Auto";
         m_connectionState = SourceControlState::Disabled;
         m_validConnection = false;
         m_testConnection = false;

@@ -18,11 +18,9 @@ set(FILES
     Finddyad.cmake
     Findetc2comp.cmake
     FindFbxSdk.cmake
-    FindFreeType2.cmake
     Findlibav.cmake
     FindOpenSSL.cmake
     FindRadTelemetry.cmake
-    Findtiff.cmake
     FindVkValidation.cmake
     FindWwise.cmake
 )

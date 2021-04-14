@@ -30,8 +30,6 @@ if(NOT PAL_TRAIT_BUILD_ATOM_ASSET_SHADER_SUPPORTED)
         INCLUDE_DIRECTORIES
             PRIVATE
                 Source
-            PUBLIC
-                Include
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzCore
@@ -56,8 +54,6 @@ ly_add_target(
             Source
             Source/Editor
             ${pal_source_dir}
-        PUBLIC
-            Include
     COMPILE_DEFINITIONS
         PRIVATE
             NOT_USE_CRY_MEMORY_MANAGER
@@ -95,8 +91,6 @@ ly_add_target(
         PRIVATE
             Source
             Source/Editor
-        PUBLIC
-            Include
     BUILD_DEPENDENCIES
         PRIVATE
             3rdParty::mcpp

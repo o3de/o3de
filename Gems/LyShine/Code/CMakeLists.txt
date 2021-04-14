@@ -87,6 +87,8 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Legacy::CryCommon
                 Gem::LmbrCentral
                 Gem::TextureAtlas
+                Gem::AtomToolsFramework.Static
+                Gem::AtomToolsFramework.Editor
                 ${additional_dependencies}
             PUBLIC
                 Gem::Atom_RPI.Public

@@ -229,7 +229,7 @@ namespace detail
 #if defined(OPENGL) && (defined(DEBUG) || defined(_DEBUG))
 #define LY_ENABLE_OPENGL_ERROR_CHECKING
 #endif
-namespace Lumberyard
+namespace O3de
 {
     namespace OpenGL
     {

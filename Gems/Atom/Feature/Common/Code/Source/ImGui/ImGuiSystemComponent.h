@@ -64,7 +64,7 @@ namespace AZ
             bool PopActiveContext() override;
             ImGuiContext* GetActiveContext() override;
 
-            bool RenderImGuiBuffersToDefaultPass(const ImDrawData& drawData) override;
+            bool RenderImGuiBuffersToCurrentViewport(const ImDrawData& drawData) override;                        
 
             using PassFunction = AZStd::function<void(ImGuiPass* pass)>;
             void ForAllImGuiPasses(PassFunction func);

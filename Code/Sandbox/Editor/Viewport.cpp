@@ -163,7 +163,7 @@ QtViewport::QtViewport(QWidget* parent)
     : QWidget(parent)
     , m_renderOverlay(this)
 {
-    QAction* action = m_cViewMenu.addMenu(tr("&View Options"))->addAction(tr("&Fullscreen"));
+    m_cViewMenu.addMenu(tr("&View Options"))->addAction(tr("&Fullscreen"));
     //connect(action, &QAction::triggered, );
     m_selectionTolerance = 0;
     m_fGridZoom = 1.0f;
@@ -1298,7 +1298,6 @@ float QtViewport::GetDistanceToLine(const Vec3& lineP1, const Vec3& lineP2, cons
 void QtViewport::GetPerpendicularAxis(EAxis* pAxis, bool* pIs2D) const
 {
     EViewportType vpType = GetType();
-    bool b2D = false;
     switch (vpType)
     {
     case ET_ViewportXY:

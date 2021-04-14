@@ -75,7 +75,7 @@
     
     if (userNameLength > UINT32_MAX)
     {
-        AZ_TracePrintf("LumberyardInAppPurchases", "Username too long to hash:%s", [userName cStringUsingEncoding:NSASCIIStringEncoding]);
+        AZ_TracePrintf("O3DEInAppPurchases", "Username too long to hash:%s", [userName cStringUsingEncoding:NSASCIIStringEncoding]);
         return nil;
     }
     
@@ -137,7 +137,7 @@
 {
     for (NSString* invalidId in response.invalidProductIdentifiers)
     {
-        AZ_TracePrintf("LumberyardInAppPurchases:", "Invalid product ID:", [invalidId cStringUsingEncoding:NSASCIIStringEncoding]);
+        AZ_TracePrintf("O3DEInAppPurchases:", "Invalid product ID:", [invalidId cStringUsingEncoding:NSASCIIStringEncoding]);
     }
     
     InAppPurchases::InAppPurchasesInterface::GetInstance()->GetCache()->ClearCachedProductDetails();
@@ -192,7 +192,7 @@
     }
     else
     {
-        AZ_TracePrintf("LumberyardInAppPurchases", "Invalid product ID:%s", [productId cStringUsingEncoding:NSASCIIStringEncoding]);
+        AZ_TracePrintf("O3DEInAppPurchases", "Invalid product ID:%s", [productId cStringUsingEncoding:NSASCIIStringEncoding]);
     }
 }
 
@@ -206,13 +206,13 @@
         {
             case SKPaymentTransactionStatePurchasing:
             {
-                AZ_TracePrintf("LumberyardInAppPurchases", "Transaction in progress");
+                AZ_TracePrintf("O3DEInAppPurchases", "Transaction in progress");
                 break;
             }
                 
             case SKPaymentTransactionStateDeferred:
             {
-                AZ_TracePrintf("LumberyardInAppPurchases", "Transaction deferred");
+                AZ_TracePrintf("O3DEInAppPurchases", "Transaction deferred");
                 break;
             }
                 
@@ -220,7 +220,7 @@
             {
                 if ([self.m_unfinishedTransactions containsObject:transaction] == false)
                 {
-                    AZ_TracePrintf("LumberyardInAppPurchases", "Transaction failed! Error: %s", [[transaction.error localizedDescription] cStringUsingEncoding:NSASCIIStringEncoding]);
+                    AZ_TracePrintf("O3DEInAppPurchases", "Transaction failed! Error: %s", [[transaction.error localizedDescription] cStringUsingEncoding:NSASCIIStringEncoding]);
                     InAppPurchases::PurchasedProductDetailsApple* productDetails = [self parseTransactionDetails:transaction isRestored:false];
                     productDetails->SetPurchaseState(InAppPurchases::PurchaseState::FAILED);
                     [self.m_unfinishedTransactions addObject:transaction];
@@ -234,7 +234,7 @@
             {
                 if ([self.m_unfinishedTransactions containsObject:transaction] == false)
                 {
-                    AZ_TracePrintf("LumberyardInAppPurchases", "Transaction succeeded");
+                    AZ_TracePrintf("O3DEInAppPurchases", "Transaction succeeded");
                     InAppPurchases::PurchasedProductDetailsApple* productDetails = [self parseTransactionDetails:transaction isRestored:false];
                     productDetails->SetPurchaseState(InAppPurchases::PurchaseState::PURCHASED);
                     InAppPurchases::InAppPurchasesInterface::GetInstance()->GetCache()->AddPurchasedProductDetailsToCache(productDetails);
@@ -255,7 +255,7 @@
             {
                 if ([self.m_unfinishedTransactions containsObject:transaction] == false)
                 {
-                    AZ_TracePrintf("LumberyardInAppPurchases", "Transaction restored");
+                    AZ_TracePrintf("O3DEInAppPurchases", "Transaction restored");
                     InAppPurchases::PurchasedProductDetailsApple* productDetails = [self parseTransactionDetails:transaction isRestored:true];
                     productDetails->SetPurchaseState(InAppPurchases::PurchaseState::RESTORED);
                     InAppPurchases::InAppPurchasesInterface::GetInstance()->GetCache()->AddPurchasedProductDetailsToCache(productDetails);
@@ -292,7 +292,7 @@
         }
     }
     
-    AZ_TracePrintf("LumberyardInAppPurchases", "No unfinished transaction found with ID: %s", [transactionId cStringUsingEncoding:NSASCIIStringEncoding]);
+    AZ_TracePrintf("O3DEInAppPurchases", "No unfinished transaction found with ID: %s", [transactionId cStringUsingEncoding:NSASCIIStringEncoding]);
 }
 
 -(void) downloadAppleHostedContentAndFinishTransaction:(NSString*) transactionId
@@ -320,7 +320,7 @@
     }
     else
     {
-        AZ_TracePrintf("LumberyardInAppPurchases", "No unfinished transaction found with ID: %s", [transactionId cStringUsingEncoding:NSASCIIStringEncoding]);
+        AZ_TracePrintf("O3DEInAppPurchases", "No unfinished transaction found with ID: %s", [transactionId cStringUsingEncoding:NSASCIIStringEncoding]);
     }
 }
 
@@ -360,7 +360,7 @@
                 
             case SKDownloadStateFailed:
             {
-                AZ_TracePrintf("LumberyardInAppPurchases", "Download failed with error: %s", [[download.error localizedDescription] cStringUsingEncoding:NSASCIIStringEncoding]);
+                AZ_TracePrintf("O3DEInAppPurchases", "Download failed with error: %s", [[download.error localizedDescription] cStringUsingEncoding:NSASCIIStringEncoding]);
                 AZStd::string transactionId = [download.transaction.transactionIdentifier cStringUsingEncoding:NSASCIIStringEncoding];
                 AZStd::string contentId = [download.contentIdentifier UTF8String];
                 EBUS_EVENT(InAppPurchases::InAppPurchasesResponseBus, HostedContentDownloadFailed, transactionId, contentId);
@@ -370,7 +370,7 @@
                 
             case SKDownloadStateCancelled:
             {
-                AZ_TracePrintf("LumberyardInAppPurchases", "Download cancelled: %s", [download.contentIdentifier cStringUsingEncoding:NSASCIIStringEncoding]);
+                AZ_TracePrintf("O3DEInAppPurchases", "Download cancelled: %s", [download.contentIdentifier cStringUsingEncoding:NSASCIIStringEncoding]);
                 [self.m_unfinishedDownloads removeObject:download.contentIdentifier];
             }
                 break;
@@ -402,7 +402,7 @@
 
 -(void) request:(SKRequest*) request didFailWithError:(NSError*) error
 {
-    AZ_TracePrintf("LumberyardInAppPurchases", "Request failed with error: %s", [[error localizedDescription] cStringUsingEncoding:NSASCIIStringEncoding]);
+    AZ_TracePrintf("O3DEInAppPurchases", "Request failed with error: %s", [[error localizedDescription] cStringUsingEncoding:NSASCIIStringEncoding]);
 }
 
 -(void) requestDidFinish:(SKRequest *)request

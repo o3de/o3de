@@ -17,8 +17,6 @@
 #include <CommonFeaturesSystemComponent.h>
 #include <CoreLights/AreaLightComponent.h>
 #include <CoreLights/DirectionalLightComponent.h>
-#include <CoreLights/PointLightComponent.h>
-#include <CoreLights/SpotLightComponent.h>
 #include <Decals/DecalComponent.h>
 #include <DiffuseProbeGrid/DiffuseProbeGridComponent.h>
 #include <Grid/GridComponent.h>
@@ -40,14 +38,13 @@
 #include <SkyBox/HDRiSkyboxComponent.h>
 #include <SkyBox/PhysicalSkyComponent.h>
 #include <Scripting/EntityReferenceComponent.h>
+#include <SurfaceData/SurfaceDataMeshComponent.h>
 
 #ifdef ATOMLYINTEGRATION_FEATURE_COMMON_EDITOR
 #include <EditorCommonFeaturesSystemComponent.h>
 #include <PostProcess/EditorPostFxSystemComponent.h>
 #include <CoreLights/EditorAreaLightComponent.h>
 #include <CoreLights/EditorDirectionalLightComponent.h>
-#include <CoreLights/EditorPointLightComponent.h>
-#include <CoreLights/EditorSpotLightComponent.h>
 #include <Decals/EditorDecalComponent.h>
 #include <DiffuseProbeGrid/EditorDiffuseProbeGridComponent.h>
 #include <Grid/EditorGridComponent.h>
@@ -71,6 +68,7 @@
 #include <SkyBox/EditorHDRiSkyboxComponent.h>
 #include <SkyBox/EditorPhysicalSkyComponent.h>
 #include <Scripting/EditorEntityReferenceComponent.h>
+#include <SurfaceData/EditorSurfaceDataMeshComponent.h>
 #endif
 
 namespace AZ
@@ -104,16 +102,15 @@ namespace AZ
                         MaterialComponent::CreateDescriptor(),
                         MeshComponent::CreateDescriptor(),
                         PhysicalSkyComponent::CreateDescriptor(),
-                        PointLightComponent::CreateDescriptor(),
                         PostFxLayerComponent::CreateDescriptor(),
                         ReflectionProbeComponent::CreateDescriptor(),
-                        SpotLightComponent::CreateDescriptor(),
                         RadiusWeightModifierComponent::CreateDescriptor(),
                         ShapeWeightModifierComponent::CreateDescriptor(),
                         EntityReferenceComponent::CreateDescriptor(),
                         GradientWeightModifierComponent::CreateDescriptor(),
                         DiffuseProbeGridComponent::CreateDescriptor(),
                         DeferredFogComponent::CreateDescriptor(),
+                        SurfaceData::SurfaceDataMeshComponent::CreateDescriptor(),
 
 #ifdef ATOMLYINTEGRATION_FEATURE_COMMON_EDITOR
                         EditorAreaLightComponent::CreateDescriptor(),
@@ -135,16 +132,15 @@ namespace AZ
                         EditorMeshSystemComponent::CreateDescriptor(),
                         EditorMeshComponent::CreateDescriptor(),
                         EditorPhysicalSkyComponent::CreateDescriptor(),
-                        EditorPointLightComponent::CreateDescriptor(),
                         EditorPostFxLayerComponent::CreateDescriptor(),
                         EditorReflectionProbeComponent::CreateDescriptor(),
-                        EditorSpotLightComponent::CreateDescriptor(),
                         EditorRadiusWeightModifierComponent::CreateDescriptor(),
                         EditorShapeWeightModifierComponent::CreateDescriptor(),
                         EditorEntityReferenceComponent::CreateDescriptor(),
                         EditorGradientWeightModifierComponent::CreateDescriptor(),
                         EditorDiffuseProbeGridComponent::CreateDescriptor(),
                         EditorDeferredFogComponent::CreateDescriptor(),
+                        SurfaceData::EditorSurfaceDataMeshComponent::CreateDescriptor(),
 #endif
                     });
             }

@@ -124,7 +124,6 @@ void CSvoRenderer::UpdateCompute()
         return;
     }
 
-    CD3D9Renderer* rd = gcpRendD3D;
 
     if (!m_pShader)
     {
@@ -670,7 +669,7 @@ void CSvoRenderer::ConeTracePass(SSvoTargetsSet* pTS)
                 STexState pTexStateLinearClamp;
                 pTexStateLinearClamp.SetFilterMode(FILTER_LINEAR);
                 pTexStateLinearClamp.SetClampMode(false, false, false);
-                int nTexStateLinearClampID = CTexture::GetTexState(pTexStateLinearClamp);
+                CTexture::GetTexState(pTexStateLinearClamp);
 
                 pCloudShadowTex->Apply(15, m_nTexStateLinearWrap);
             }
@@ -948,11 +947,6 @@ void CSvoRenderer::SetupNodesForUpdate(int& nNodesForUpdateStartIndex, PodArray<
             {
                 int nId = nNodesForUpdateStartIndex + g * 16 + x * 4 + y;
                 matVal[x][y] = 0.1f + ((nId < arrNodesForUpdate.Count()) ? arrNodesForUpdate[nId].nAtlasOffset : -2);
-
-                if (nId < arrNodesForUpdate.Count())
-                {
-                    float fNodeSize = arrNodesForUpdate[nId].wsBox.GetSize().x;
-                }
             }
         }
 
@@ -1073,7 +1067,6 @@ void CSvoRenderer::CheckAllocateRT(bool bSpecPass)
 bool CSvoRenderer::IsShaderItemUsedForVoxelization(SShaderItem& rShaderItem, [[maybe_unused]] IRenderNode* pRN)
 {
     CShader* pS = (CShader*)rShaderItem.m_pShader;
-    CShaderResources* pR = (CShaderResources*)rShaderItem.m_pShaderResources;
 
     // skip some objects marked by level designer
     //  if(pRN && pRN->IsRenderNode() && pRN->GetIntegrationType())
@@ -1505,7 +1498,6 @@ void CSvoRenderer::SetupRsmSun(const EHWShaderClass eShClass)
     threadID m_nThreadID = gcpRendD3D->m_RP.m_nProcessThreadID;
     int m_nRecurseLevel = SRendItem::m_RecurseLevel[m_nThreadID];
 
-    int nDLights = rd->m_RP.m_DLights[m_nThreadID][m_nRecurseLevel].Num();
     int nFrustumIdx = nLightID;// + nDLights;
 
     int nStartIdx = SRendItem::m_StartFrust[m_nThreadID][nFrustumIdx];

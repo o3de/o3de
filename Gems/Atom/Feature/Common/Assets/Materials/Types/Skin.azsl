@@ -91,6 +91,7 @@ struct VSOutput
 
 #include <Atom/Features/PBR/AlphaUtils.azsli> // TODO: Remove this after OpacityMode is removed from LightingModel
 #include <Atom/Features/PBR/LightingModel.azsli>
+#include <Atom/Features/Vertex/VertexHelper.azsli>
 
 VSOutput SkinVS(VSInput IN)
 {
@@ -125,7 +126,7 @@ VSOutput SkinVS(VSInput IN)
         OUT.m_blendMask = float4(0,1,0,0);
     }
 
-    PbrVsHelper(IN, OUT, worldPosition, false);
+    VertexHelper(IN, OUT, worldPosition, false);
 
     return OUT;
 }
