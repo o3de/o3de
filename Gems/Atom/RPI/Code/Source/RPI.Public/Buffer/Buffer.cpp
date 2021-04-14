@@ -74,9 +74,9 @@ namespace AZ
 
         const RHI::BufferView* Buffer::GetBufferView() const
         {
-            if (m_rhiBuffer->GetDescriptor().m_bindFlags == RHI::BufferBindFlags::InputAssembly ||
-                 m_rhiBuffer->GetDescriptor().m_bindFlags == RHI::BufferBindFlags::DynamicInputAssembly)
+            if(RHI::CheckBitsAny(m_rhiBuffer->GetDescriptor().m_bindFlags, RHI::BufferBindFlags::InputAssembly | RHI::BufferBindFlags::DynamicInputAssembly))
             {
+                
                 AZ_Assert(false, "Input assembly buffer doesn't need a regular buffer view, it requires a stream or index buffer view.");
                 return nullptr;
             }
@@ -204,12 +204,11 @@ namespace AZ
         void Buffer::InitBufferView()
         {
             // Skip buffer view creation for input assembly buffers
-            if (m_rhiBuffer->GetDescriptor().m_bindFlags == RHI::BufferBindFlags::InputAssembly ||
-                m_rhiBuffer->GetDescriptor().m_bindFlags == RHI::BufferBindFlags::DynamicInputAssembly)
+            if(RHI::CheckBitsAny(m_rhiBuffer->GetDescriptor().m_bindFlags, RHI::BufferBindFlags::InputAssembly | RHI::BufferBindFlags::DynamicInputAssembly))
             {
                 return;
             }
-            
+               
             m_bufferView = m_rhiBuffer->GetBufferView(m_bufferViewDescriptor);
 
             if(!m_bufferView.get())
