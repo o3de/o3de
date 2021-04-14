@@ -16,7 +16,6 @@ set(FILES
     FindClang.cmake
     FindDirectXShaderCompiler.cmake
     Finddyad.cmake
-    Findetc2comp.cmake
     FindFbxSdk.cmake
     Findlibav.cmake
     FindOpenSSL.cmake

@@ -12,7 +12,6 @@
 set(LY_UNITY_BUILD OFF CACHE BOOL "UNITY builds")
 
 include(CMakeFindDependencyMacro)
-include(CMakeParseArguments)
 include(cmake/LyAutoGen.cmake)
 
 ly_get_absolute_pal_filename(pal_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Platform/${PAL_PLATFORM_NAME})
