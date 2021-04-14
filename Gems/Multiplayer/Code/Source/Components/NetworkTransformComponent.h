@@ -13,6 +13,7 @@
 #pragma once
 
 #include <Source/AutoGen/NetworkTransformComponent.AutoComponent.h>
+#include <AzCore/Component/TransformBus.h>
 
 namespace Multiplayer
 {
@@ -22,20 +23,37 @@ namespace Multiplayer
     public:
         AZ_MULTIPLAYER_COMPONENT(Multiplayer::NetworkTransformComponent, s_networkTransformComponentConcreteUuid, Multiplayer::NetworkTransformComponentBase);
 
-        static void Reflect([[maybe_unused]] AZ::ReflectContext* context);
+        static void Reflect(AZ::ReflectContext* context);
 
-        void OnInit() override {}
-        void OnActivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating) override {}
-        void OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating) override {}
+        NetworkTransformComponent();
+
+        void OnInit() override;
+        void OnActivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
+        void OnDeactivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
+
+    private:
+        void OnRotationChangedEvent(const AZ::Quaternion& rotation);
+        void OnTranslationChangedEvent(const AZ::Vector3& translation);
+        void OnScaleChangedEvent(const AZ::Vector3& scale);
+
+        AZ::Event<AZ::Quaternion>::Handler m_rotationEventHandler;
+        AZ::Event<AZ::Vector3>::Handler m_translationEventHandler;
+        AZ::Event<AZ::Vector3>::Handler m_scaleEventHandler;
     };
 
     class NetworkTransformComponentController
         : public NetworkTransformComponentControllerBase
     {
     public:
-        NetworkTransformComponentController(NetworkTransformComponent& parent) : NetworkTransformComponentControllerBase(parent) {}
+        NetworkTransformComponentController(NetworkTransformComponent& parent);
 
-        void OnActivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating) override {}
-        void OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating) override {}
+        void OnActivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
+        void OnDeactivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
+
+    private:
+        void OnTransformChangedEvent(const AZ::Transform& worldTm);
+
+        AZ::TransformChangedEvent::Handler m_transformChangedHandler;
+        AZ::ScheduledEvent m_transformChangeEvent;
     };
 }

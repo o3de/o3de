@@ -24,7 +24,6 @@ namespace Multiplayer
             serializeContext->Class<LocalPredictionPlayerInputComponent, LocalPredictionPlayerInputComponentBase>()
                 ->Version(1);
         }
-
         LocalPredictionPlayerInputComponentBase::Reflect(context);
     }
 

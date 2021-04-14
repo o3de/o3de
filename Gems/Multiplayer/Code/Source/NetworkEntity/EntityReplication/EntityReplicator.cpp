@@ -283,7 +283,7 @@ namespace Multiplayer
             AZ_Assert(netBindComponent, "No Multiplayer::NetBindComponent");
 
             bool isAuthority = (GetBoundLocalNetworkRole() == NetEntityRole::Authority)
-                                  && (GetBoundLocalNetworkRole() == netBindComponent->GetNetEntityRole());
+                            && (GetBoundLocalNetworkRole() == netBindComponent->GetNetEntityRole());
             bool isClient = GetRemoteNetworkRole() == NetEntityRole::Client;
             bool isAutonomous = GetBoundLocalNetworkRole() == NetEntityRole::Autonomous;
             if (isAuthority || isClient || isAutonomous)
@@ -311,9 +311,9 @@ namespace Multiplayer
     {
         bool ret(false);
         bool isServer = (GetBoundLocalNetworkRole() == NetEntityRole::Server)
-                               && (GetRemoteNetworkRole() == NetEntityRole::Authority);
+                     && (GetRemoteNetworkRole() == NetEntityRole::Authority);
         bool isClient = (GetBoundLocalNetworkRole() == NetEntityRole::Client)
-                               || (GetBoundLocalNetworkRole() == NetEntityRole::Autonomous);
+                     || (GetBoundLocalNetworkRole() == NetEntityRole::Autonomous);
         if (isServer || isClient)
         {
             ret = true;
