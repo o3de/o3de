@@ -18,7 +18,8 @@
 #include <Atom/Features/PBR/Lights/PointLight.azsli>
 #include <Atom/Features/PBR/Lights/PolygonLight.azsli>
 #include <Atom/Features/PBR/Lights/QuadLight.azsli>
-#include <Atom/Features/PBR/Lights/SpotLight.azsli>
+#include <Atom/Features/PBR/Lights/SimplePointLight.azsli>
+#include <Atom/Features/PBR/Lights/SimpleSpotLight.azsli>
 
 void ApplyDirectLighting(Surface surface, inout LightingData lightingData)
 {
@@ -28,11 +29,12 @@ void ApplyDirectLighting(Surface surface, inout LightingData lightingData)
     }
     if (o_enablePunctualLights)
     {
-        ApplyPointLights(surface, lightingData);
-        ApplySpotLights(surface, lightingData);
+        ApplySimplePointLights(surface, lightingData);
+        ApplySimpleSpotLights(surface, lightingData);
     }
     if (o_enableAreaLights)
     {
+        ApplyPointLights(surface, lightingData);
         ApplyDiskLights(surface, lightingData);
         ApplyCapsuleLights(surface, lightingData);
         ApplyQuadLights(surface, lightingData);

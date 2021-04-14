@@ -87,7 +87,7 @@ int main(int argc, char** argv)
 
     InitStackTracer();
 
-    using namespace LumberyardLauncher;
+    using namespace O3DELauncher;
 
 #if !defined(AZ_MONOLITHIC_BUILD)
     char exePath[AZ_MAX_PATH_LEN] = { 0 };

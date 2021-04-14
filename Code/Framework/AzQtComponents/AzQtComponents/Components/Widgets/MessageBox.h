@@ -20,7 +20,7 @@ namespace AzQtComponents
     class Style;
 
     /**
-     * Lumberyard specific wrapper to do MessageBox type stuff, specifically to automatically handle
+     * Open 3D Engine specific wrapper to do MessageBox type stuff, specifically to automatically handle
      * checking/writing "do not ask this question again" checkbox/settings.
      *
      * Called AzMessageBox instead of MessageBox because for windows.h does #define MessageBox MessageBoxA / MessageBoxW

@@ -138,7 +138,7 @@ namespace
         return fontFamily;
     }
 
-    //! \brief Verify fonts that ship with Lumberyard load correctly.
+    //! \brief Verify fonts that ship with Open 3D Engine load correctly.
     //! 
     //! This test depends on the LyShineExamples and UiBasics gems being
     //! included in the project.

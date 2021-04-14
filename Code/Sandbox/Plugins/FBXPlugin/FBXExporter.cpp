@@ -29,7 +29,7 @@ static const float      s_CONVERSION_BAKING_SAMPLE_RATE = 30.0f;
 // IMPORT_PRE/POST_ROTATIONS determined by experimentation with fbx2015 in Maya and Max.
 // We are transforming a Z-axis forward (Max/Maya) to a negative Y-axis forward camera (Editor).
 // Analytically this shold involve a preRotation of -90 degrees around the x-axis.
-// For Y-Up scenes, our Lumberyard Tools inserts an additional 180 rotation around the Y-axis when orienting .cgf files. We need to
+// For Y-Up scenes, our Open 3D Engine Tools inserts an additional 180 rotation around the Y-axis when orienting .cgf files. We need to
 // 'undo' for FBX anim curves. This does not apply to cameras which do not use .cgf files
 static const FbxVector4 s_PRE_ROTATION_FOR_YUP_SCENES (-90.0f, .0f, .0f);
 static const FbxVector4 s_POST_ROTATION_FOR_YUP_OBJECTS(-90.0f, 180.0f, .0f);
@@ -759,7 +759,7 @@ void CFBXExporter::FillAnimationData(Export::Object* pObject, FbxNode* pNode, [[
                 // special handling for Focal Length - we convert it to FoV for use in-engine (including switching the paramType)
                 // We handle this because Maya 2015 doesn't save Angle of View or Field of View animation in FBX - it only uses FocalLength.
                 entityData.dataType = Export::AnimParamType::FOV;
-                // Lumberyard field of view is the vertical angle
+                // Open 3D Engine field of view is the vertical angle
                 pNode->GetCamera()->SetApertureMode(FbxCamera::eVertical);
                 entityData.keyValue = aznumeric_cast<float>(pNode->GetCamera()->ComputeFieldOfView(entityData.keyValue));
             }
@@ -821,7 +821,7 @@ bool CFBXExporter::ImportFromFile(const char* filename, Export::IData* pData)
         return false;
     }
 
-    // record the original axis system used in the import file and then convert the file to Lumberyard's coord system,
+    // record the original axis system used in the import file and then convert the file to Open 3D Engine's coord system,
     // which matches Max's (Z-Up, negative Y-forward cameras)
     int upSign = 1;
     FbxAxisSystem importFileAxisSystem = pFBXScene->GetGlobalSettings().GetAxisSystem();
@@ -877,13 +877,13 @@ bool CFBXExporter::ImportFromFile(const char* filename, Export::IData* pData)
 
                                 if (pCamera)
                                 {
-                                    // Converts Y-Up, -Z-forward cameras to Lumberyards Z-Up, Y-forward cameras
+                                    // Converts Y-Up, -Z-forward cameras to Open 3D Engine Z-Up, Y-forward cameras
                                     // It is needed regardless of the scene up vector
                                     pNode->SetPostRotation(FbxNode::eSourcePivot, s_POST_ROTATION_FOR_ZFORWARD_CAMERAS);
                                 }
                                 else
                                 {
-                                    // Objects from a Y-Up scene (i.e. not cameras). 'undo' the extra transform that the Lumberyard Tool
+                                    // Objects from a Y-Up scene (i.e. not cameras). 'undo' the extra transform that the Open 3D Engine Tool
                                     // bakes in to .cgf files from YUp scenes.
                                     pNode->SetPostRotation(FbxNode::eSourcePivot, s_POST_ROTATION_FOR_YUP_OBJECTS);
                                 }

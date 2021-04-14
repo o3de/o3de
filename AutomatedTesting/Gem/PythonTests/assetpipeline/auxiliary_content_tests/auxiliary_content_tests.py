@@ -19,7 +19,7 @@ import subprocess
 import glob
 from ly_test_tools.builtin.helpers import *
 from ly_test_tools.environment.process_utils import *
-from ly_test_tools.lumberyard.asset_processor import ASSET_PROCESSOR_PLATFORM_MAP
+from ly_test_tools.o3de.asset_processor import ASSET_PROCESSOR_PLATFORM_MAP
 
 logger = logging.getLogger(__name__)
 

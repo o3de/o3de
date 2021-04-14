@@ -256,4 +256,22 @@ namespace AZ::SettingsRegistryMergeUtils
             aznumeric_cast<int>(keyName.size()), keyName.data());
         return registry.Get(result, key);
     }
+
+    //! Check if the supplied input path is an ancestor, a descendant or exactly equal to the candidate path
+    //! The can be used to check if a JSON pointer to a settings registry entry has potentially
+    //! "modified" the object at candidate path or its children in notifications
+    //! @param candidatePath Path which is being checked for the ancestor/descendant relationship
+    //! @param inputPath Path which is checked to determine if it is an ancestor or descendant of the candidate path
+    //! @return true if the input path is an ancestor, descendant or equal to the candidate path
+    //! Example: input path is ancestor path of candidate path
+    //! IsPathAncestorDescendantOrEqual("/Amazon/AzCore/Bootstrap", "/Amazon/AzCore") = true
+    //! Example: input path is equal to candidate path
+    //! IsPathAncestorDescendantOrEqual("/Amazon/AzCore/Bootstrap", "/Amazon/AzCore/Bootstrap") = true
+    //! Example: input path is descendant of candidate path
+    //! IsPathAncestorDescendantOrEqual("/Amazon/AzCore/Bootstrap", "/Amazon/AzCore/Bootstrap/project_path") = true
+    //! //! Example: input path is unrelated to candidate path
+    //! IsPathAncestorDescendantOrEqual("/Amazon/AzCore/Bootstrap", "/Amazon/Project/Settings/project_name") = false
+    //! //! Example: The path "" is the root JSON pointer therefore that is the ancestor of all paths
+    //! IsPathAncestorDescendantOrEqual("/Amazon/AzCore/Bootstrap", "") = true
+    bool IsPathAncestorDescendantOrEqual(AZStd::string_view candidatePath, AZStd::string_view inputPath);
 }

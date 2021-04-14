@@ -11,7 +11,7 @@
 */
 
 #include "SegmentControlPage.h"
-#include "Gallery/ui_SegmentControlPage.h"
+#include <AzQtComponents/Gallery/ui_SegmentControlPage.h>
 
 #include <AzQtComponents/Components/Widgets/SegmentBar.h>
 #include <AzQtComponents/Components/Widgets/SegmentControl.h>

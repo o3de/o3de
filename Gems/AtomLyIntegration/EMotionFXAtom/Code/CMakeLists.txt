@@ -17,8 +17,6 @@ ly_add_target(
     INCLUDE_DIRECTORIES
         PRIVATE
             Source
-        PUBLIC
-            Include
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
@@ -40,8 +38,6 @@ ly_add_target(
     INCLUDE_DIRECTORIES
         PRIVATE
             Source
-        PUBLIC
-            Include
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
@@ -58,8 +54,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         INCLUDE_DIRECTORIES
             PRIVATE
                 Source
-            PUBLIC
-                Include
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzCore

@@ -11,7 +11,7 @@
 */
 
 #include "SvgLabelPage.h"
-#include "Gallery/ui_SvgLabelPage.h"
+#include <AzQtComponents/Gallery/ui_SvgLabelPage.h>
 
 #include <QDragEnterEvent>
 #include <QMimeData>

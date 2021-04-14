@@ -1336,7 +1336,7 @@ bool LibraryItemTreeModel::DoesGroupExist([[maybe_unused]] const QString& groupN
 QStringList LibraryItemTreeModel::mimeTypes() const
 {
     QStringList mimeTypes;
-    mimeTypes << QStringLiteral("application/x-lumberyard-libraryitems");
+    mimeTypes << QStringLiteral("application/x-o3de-libraryitems");
     return mimeTypes;
 }
 
@@ -1412,9 +1412,9 @@ bool LibraryItemTreeModel::MoveItem(CBaseLibraryItem* item, const QModelIndex& t
 
 bool LibraryItemTreeModel::dropMimeData(const QMimeData* data, [[maybe_unused]] Qt::DropAction action, [[maybe_unused]] int row, [[maybe_unused]] int column, const QModelIndex& index)
 {
-    if (data->hasFormat("application/x-lumberyard-libraryitems"))
+    if (data->hasFormat("application/x-o3de-libraryitems"))
     {
-        QByteArray array = data->data("application/x-lumberyard-libraryitems");
+        QByteArray array = data->data("application/x-o3de-libraryitems");
 
         QModelIndex targetParent = index;
 
@@ -1474,7 +1474,7 @@ QMimeData* LibraryItemTreeModel::mimeData(const QModelIndexList& indexes) const
     }
 
     QMimeData* data = new QMimeData;
-    data->setData(QStringLiteral("application/x-lumberyard-libraryitems"), array);
+    data->setData(QStringLiteral("application/x-o3de-libraryitems"), array);
     return data;
 }
 

@@ -18,8 +18,8 @@
 #define TILE_DIM_X 16
 #define TILE_DIM_Y 16
 
-// Point, spot, disk, capsule, quad lights, decals
-#define NUM_LIGHT_TYPES 6
+// Simple point, simple spot, point(sphere), spot (disk), capsule, quad lights, decals
+#define NUM_LIGHT_TYPES 7
 
 
 uint GetLightListIndex(uint3 groupID, uint gridWidth, int offset)

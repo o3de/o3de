@@ -1451,20 +1451,12 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
     //bool bPause = false;
     bool bNoUpdate = false;
 #ifndef EXCLUDE_UPDATE_ON_CONSOLE
-    //check what is the current process
-    IProcess* pProcess = GetIProcess();
-    if (!pProcess)
-    {
-        return (true); //should never happen
-    }
     if (m_sysNoUpdate && m_sysNoUpdate->GetIVal())
     {
         bNoUpdate = true;
         updateFlags = ESYSUPDATE_IGNORE_PHYSICS;
     }
 
-    //if ((pProcess->GetFlags() & PROC_MENU) || (m_sysNoUpdate && m_sysNoUpdate->GetIVal()))
-    //  bPause = true;
     m_bNoUpdate = bNoUpdate;
 #endif //EXCLUDE_UPDATE_ON_CONSOLE
 
@@ -1537,7 +1529,7 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
     }
 
     //////////////////////////////////////////////////////////////////////////
-    if (m_env.pRenderer->GetIStereoRenderer()->IsRenderingToHMD())
+    if (m_env.pRenderer && m_env.pRenderer->GetIStereoRenderer()->IsRenderingToHMD())
     {
         EBUS_EVENT(AZ::VR::HMDDeviceRequestBus, UpdateInternalState);
     }
@@ -2860,8 +2852,6 @@ bool CSystem::HandleMessage([[maybe_unused]] HWND hWnd, UINT uMsg, WPARAM wParam
     default:
         return false;
     }
-
-    return true;
 }
 
 #endif

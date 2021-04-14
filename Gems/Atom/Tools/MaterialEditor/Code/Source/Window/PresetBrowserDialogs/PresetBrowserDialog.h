@@ -18,7 +18,7 @@
 #include <QDialog>
 #endif
 
-#include <Window/PresetBrowserDialogs/ui_PresetBrowserDialog.h>
+#include <Source/Window/PresetBrowserDialogs/ui_PresetBrowserDialog.h>
 
 class QImage;
 class QListWidgetItem;
