@@ -354,7 +354,7 @@ function(ly_add_editor_python_test)
         COMPONENT ${ly_add_editor_python_test_COMPONENT}
     )
 
-    set_tests_properties(${LY_ADDED_TEST_NAME} PROPERTIES RUN_SERIAL "${ly_add_pytest_TEST_SERIAL}")
+    set_tests_properties(${LY_ADDED_TEST_NAME} PROPERTIES RUN_SERIAL "${ly_add_editor_python_test_TEST_SERIAL}")
     set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${LY_ADDED_TEST_NAME}_SCRIPT_PATH ${ly_add_editor_python_test_PATH})
 endfunction()
 
