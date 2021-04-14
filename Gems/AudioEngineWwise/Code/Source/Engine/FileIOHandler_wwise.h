@@ -20,9 +20,9 @@
 
 namespace Audio
 {
-    //! Wwise file IO device that access the Lumberyard file system through standard blocking file IO calls. Wwise will still
+    //! Wwise file IO device that access the Open 3D Engine file system through standard blocking file IO calls. Wwise will still
     //! run these in separate threads so it won't be blocking the audio playback, but it will interfere with the internal
-    //! file IO scheduling of Lumberyard. This class can also write, so it's intended use is for one-off file reads and
+    //! file IO scheduling of Open 3D Engine. This class can also write, so it's intended use is for one-off file reads and
     //! for tools to be able to write files.
     class CBlockingDevice_wwise
         : public AK::StreamMgr::IAkIOHookBlocking

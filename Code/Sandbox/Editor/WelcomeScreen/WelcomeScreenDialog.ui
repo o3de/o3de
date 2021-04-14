@@ -32,7 +32,7 @@
    <enum>Qt::TabFocus</enum>
   </property>
   <property name="windowTitle">
-   <string>Welcome to Lumberyard</string>
+   <string>Welcome to Open 3D Engine</string>
   </property>
   <property name="styleSheet">
    <string notr="true"/>

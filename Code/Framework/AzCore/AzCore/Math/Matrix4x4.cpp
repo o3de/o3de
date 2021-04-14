@@ -426,7 +426,7 @@ namespace AZ
     Matrix4x4 Matrix4x4::CreateProjection(float fovY, float aspectRatio, float nearDist, float farDist)
     {
         // This section contains some notes about camera matrices and field of view, because there are some subtle differences
-        // between the convention Lumberyard uses and what you might be used to from other software packages.
+        // between the convention Open 3D Engine uses and what you might be used to from other software packages.
         // Our camera space has the camera looking down the *positive* z-axis, the x-axis points towards the left of the screen,
         // and the y-axis points towards the top of the screen.
         //

@@ -193,7 +193,7 @@ namespace Platform::Internal
     void FindFilesInApk(const char* filter, const SystemFile::FindFileCB& cb)
     {
         // Separate the directory from the filename portion of the filter
-        AZ::IO::PathView filterPath(AZ::Android::Utils::StripApkPrefix(filter));
+        AZ::IO::FixedMaxPath filterPath(AZ::Android::Utils::StripApkPrefix(filter));
         AZ::IO::FixedMaxPathString filterDir{ filterPath.ParentPath().Native() };
         AZStd::string_view fileFilter{ filterPath.Filename().Native() };
 

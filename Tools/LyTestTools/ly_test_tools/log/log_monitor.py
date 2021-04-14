@@ -32,7 +32,7 @@ def check_exact_match(line, expected_line):
     """
     Uses regular expressions to find an exact (not partial) match for 'expected_line' in 'line', i.e.
     in the example below it matches 'foo' and succeeds:
-        line value: '66118.999958 - INFO - [MainThread] - ly_test_tools.lumberyard.asset_processor - foo'
+        line value: '66118.999958 - INFO - [MainThread] - ly_test_tools.o3de.asset_processor - foo'
         expected_line: 'foo'
 
     :param line: The log line string to search,

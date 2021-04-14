@@ -1,0 +1,40 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "ProjectedShadowmapsTemplate",
+            "PassClass": "ProjectedShadowmapsPass",
+            "Slots": [
+                {
+                    "Name": "Shadowmap",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "DepthStencil"
+                },
+                {
+                    "Name": "SkinnedMeshes",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "InputAssembly"
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "ShadowmapImage",
+                    "ImageDescriptor": {
+                        "Format": "D32_FLOAT"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Shadowmap",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "ShadowmapImage"
+                    }
+                }
+            ]
+        }
+    }
+}

@@ -22,14 +22,20 @@ namespace AZ
     class JsonSerializationMetadata final
     {
     public:
+        //! Creates a new settings object in the metadata collection.
+        //! Only one object of the same type can be added  or created.
+        //! Returns false if an object of this type was already added.
+        template<typename MetadataT, typename... Args>
+        bool Create(Args&&... args);
+
         //! Adds a new settings object to the metadata collection.
-        //! Only one object of the same type can be added.
+        //! Only one object of the same type can be added or created.
         //! Returns false if an object of this type was already added.
         template<typename MetadataT>
         bool Add(MetadataT&& data);
 
         //! Adds a new settings object to the metadata collection.
-        //! Only one object of the same type can be added.
+        //! Only one object of the same type can be added  or created.
         //! Returns false if an object of this type was already added.
         template<typename MetadataT>
         bool Add(const MetadataT& data);

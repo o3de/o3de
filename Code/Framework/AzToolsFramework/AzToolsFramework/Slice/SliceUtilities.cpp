@@ -2662,7 +2662,7 @@ namespace AzToolsFramework
                         QString cleanAssetSafeFolder(QDir::cleanPath(assetSafeFolder.c_str()));
                         // Compare using clean paths so slash direction does not matter.
                         // Note that this comparison is case sensitive because some file systems
-                        // Lumberyard supports are case sensitive.
+                        // Open 3D Engine supports are case sensitive.
                         if (cleanSaveAs.startsWith(cleanAssetSafeFolder))
                         {
                             isPathSafeForAssets = true;
@@ -4017,8 +4017,8 @@ namespace AzToolsFramework
                 // Detach entities action currently acts on entities and all descendants, so include those as part of the selection
                 AzToolsFramework::EntityIdList selectedDetachEntities(selectedTransformHierarchyEntities.begin(), selectedTransformHierarchyEntities.end());
 
-                // A selection in Lumberyard is usually singular, but a selection can have more than one entity.
-                // No Lumberyard systems support multiple selections, or multiple different groups of selected entities.
+                // A selection in Open 3D Engine is usually singular, but a selection can have more than one entity.
+                // No Open 3D Engine systems support multiple selections, or multiple different groups of selected entities.
                 QString detachEntitiesActionText(QObject::tr("Selection"));
                 QString detachEntitiesTooltipText;
                 if (selectedDetachEntities.size() == 1)

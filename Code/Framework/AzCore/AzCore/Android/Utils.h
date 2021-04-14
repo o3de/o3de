@@ -11,6 +11,7 @@
 */
 #pragma once
 
+#include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/std/string/string.h>
 
 #include <jni.h>
@@ -55,7 +56,7 @@ namespace AZ
             const char* GetObbStoragePath();
 
             //! Get the dot separated package name for the current application.
-            //! e.g. com.lumberyard.samples for SamplesProject
+            //! e.g. com.o3de.samples for SamplesProject
             const char* GetPackageName();
 
             //! Get the app version code (android:versionCode in the manifest).
@@ -70,7 +71,7 @@ namespace AZ
             //! Will first check to verify the argument is an apk asset path and if so
             //! will strip the prefix from the path.
             //! \return The pointer position of the relative asset path
-            const char* StripApkPrefix(const char* filePath);
+            AZ::IO::FixedMaxPath StripApkPrefix(const char* filePath);
 
             //! Searches application storage and the APK for bootstrap.cfg.  Will return nullptr
             //! if bootstrap.cfg is not found.

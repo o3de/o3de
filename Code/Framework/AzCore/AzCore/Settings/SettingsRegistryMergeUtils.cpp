@@ -576,14 +576,32 @@ namespace AZ::SettingsRegistryMergeUtils
                 aznumeric_cast<int>(projectPathKey.size()), projectPathKey.data());
         }
 
-#if !AZ_TRAIT_USE_ASSET_CACHE_FOLDER
-        // Setup the cache and user paths for Platforms where the Asset Cache Folder isn't used
+#if !AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
+        // Setup the cache and user paths when to platform specific locations when running on non-host platforms
         path = engineRoot;
-        registry.Set(FilePathKey_CacheProjectRootFolder, path.LexicallyNormal().Native());
-        registry.Set(FilePathKey_CacheRootFolder, path.LexicallyNormal().Native());
-        registry.Set(FilePathKey_DevWriteStorage, path.LexicallyNormal().Native());
-        registry.Set(FilePathKey_ProjectUserPath, (path / "user").LexicallyNormal().Native());
-#endif // AZ_TRAIT_USE_ASSET_CACHE_FOLDER
+        if (AZStd::optional<AZ::IO::FixedMaxPathString> nonHostCacheRoot = Utils::GetDefaultAppRootPath();
+            nonHostCacheRoot)
+        {
+            registry.Set(FilePathKey_CacheProjectRootFolder, *nonHostCacheRoot);
+            registry.Set(FilePathKey_CacheRootFolder, *nonHostCacheRoot);
+        }
+        else
+        {
+            registry.Set(FilePathKey_CacheProjectRootFolder, path.LexicallyNormal().Native());
+            registry.Set(FilePathKey_CacheRootFolder, path.LexicallyNormal().Native());
+        }
+        if (AZStd::optional<AZ::IO::FixedMaxPathString> devWriteStorage = Utils::GetDevWriteStoragePath();
+            devWriteStorage)
+        {
+            registry.Set(FilePathKey_DevWriteStorage, *devWriteStorage);
+            registry.Set(FilePathKey_ProjectUserPath, *devWriteStorage);
+        }
+        else
+        {
+            registry.Set(FilePathKey_DevWriteStorage, path.LexicallyNormal().Native());
+            registry.Set(FilePathKey_ProjectUserPath, (path / "user").LexicallyNormal().Native());
+        }
+#endif // AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
     }
 
     void MergeSettingsToRegistry_TargetBuildDependencyRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
@@ -986,4 +1004,12 @@ namespace AZ::SettingsRegistryMergeUtils
 
         return visitor.Finalize();
     }
+
+    bool IsPathAncestorDescendantOrEqual(AZStd::string_view candidatePath, AZStd::string_view inputPath)
+    {
+        AZ::IO::PathView candidateView{ candidatePath, AZ::IO::PosixPathSeparator };
+        AZ::IO::PathView inputView{ inputPath, AZ::IO::PosixPathSeparator };
+        return inputView.empty() || candidateView.IsRelativeTo(inputView) || inputView.IsRelativeTo(candidateView);
+    }
+
 }

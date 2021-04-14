@@ -11,7 +11,7 @@
 */
 
 #include "RadioButtonPage.h"
-#include "Gallery/ui_RadioButtonPage.h"
+#include <AzQtComponents/Gallery/ui_RadioButtonPage.h>
 
 #include <AzQtComponents/Components/Widgets/RadioButton.h>
 

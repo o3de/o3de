@@ -214,7 +214,7 @@ CTimeOfDay::CTimeOfDay()
     // fill local var list so, sandbox can access var list without level being loaded
 
     // Cryengine supports the notion of environment presets which are set in code that is currently not
-    // in lumberyard. Therefore, create a default preset here that is used as the only one.
+    // in Open 3D Engine. Therefore, create a default preset here that is used as the only one.
     m_defaultPreset = new CEnvironmentPreset;
     for (int i = 0; i < PARAM_TOTAL; ++i)
     {

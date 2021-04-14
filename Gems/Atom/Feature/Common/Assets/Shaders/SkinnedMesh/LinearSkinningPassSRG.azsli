@@ -31,21 +31,39 @@ ShaderResourceGroup InstanceSrg : SRG_PerDraw
     Buffer<float3> m_sourceBiTangents; // BITANGENT 0
     ByteAddressBuffer m_sourceBlendIndices; // BLENDINDICES 0
     Buffer<float> m_sourceBlendWeights; // BLENDWEIGHTS 0
+
+    // Optional color input, if colors are being morphed by morph targets
+    Buffer<float4> m_sourceColors; // COLOR 0
     
     // Per-instance input
     StructuredBuffer<float3x4> m_boneTransformsLinear;
     StructuredBuffer<float2x4> m_boneTransformsDualQuaternion;
 
     // Per-instance morph target input
+    // Offsets to the locations in the accumulation buffer that hold
+    // the sum of all deltas for vertex 0. Each thread can further offset into the buffer
+    // using the thread id to find the delta for the vertex the thread is working on.
     uint m_morphTargetPositionDeltaOffset;
     uint m_morphTargetNormalDeltaOffset;
     uint m_morphTargetTangentDeltaOffset;
     uint m_morphTargetBitangentDeltaOffset;
+    uint m_morphTargetColorDeltaOffset;
+
+    // Morph target deltas are stored as signed integers in order to make use of
+    // InterlockedAdd to accumulate them. They are multiplied by the integer
+    // encoding when encoding from float->int, and must be multiplied
+    // by the inverse when decoding from int->float
     float m_morphTargetDeltaInverseIntegerEncoding;
     
     // Per-instance output
+    // Offsets to the locations in the output stream with the skinning result
+    // for vertex 0. Each thread can further offset into the buffer using
+    // the thread id to find the output location for the vertex the thread is working on.
     uint m_targetPositions;
     uint m_targetNormals;
     uint m_targetTangents;
     uint m_targetBiTangents;
+
+    // Optional color output, if colors are being morphed by morph targets
+    uint m_targetColors;
 }

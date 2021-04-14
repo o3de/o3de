@@ -11,7 +11,7 @@
 */
 
 #include "ColorLabelPage.h"
-#include "Gallery/ui_ColorLabelPage.h"
+#include <AzQtComponents/Gallery/ui_ColorLabelPage.h>
 
 #include <AzQtComponents/Utilities/Conversions.h>
 

@@ -542,4 +542,14 @@ tags=tools,renderer,metal)"
         EXPECT_STREQ("Foo", commandLine.GetMiscValue(1).c_str());
         EXPECT_STREQ("Bat", commandLine.GetMiscValue(2).c_str());
     }
+
+    using SettingsRegistryAncestorDescendantOrEqualPathFixture = SettingsRegistryMergeUtilsCommandLineFixture;
+
+    TEST_F(SettingsRegistryAncestorDescendantOrEqualPathFixture, ValidateThatAncestorOrDescendantOrPathWithTheSameValue_Succeeds)
+    {
+        EXPECT_TRUE(AZ::SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual("/Amazon/AzCore/Bootstrap", "/Amazon/AzCore"));
+        EXPECT_TRUE(AZ::SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual("/Amazon/AzCore/Bootstrap", "/Amazon/AzCore/Bootstrap"));
+        EXPECT_TRUE(AZ::SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual("/Amazon/AzCore/Bootstrap", "/Amazon/AzCore/Bootstrap/project_path"));
+        EXPECT_FALSE(AZ::SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual("/Amazon/AzCore/Bootstrap", "/Amazon/Project/Settings/project_name"));
+    }
 }
