@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-# Anyone seeking to modify this file must follow the process on this wiki: https://wiki.agscollab.com/display/lmbr/Modifying+validator_data.py+File
+# Anyone seeking to modify this file must follow the process, contact sig-build
 
 # Notice that this is not a JSON file, even though it is almost a valid JSON
 # data file.
