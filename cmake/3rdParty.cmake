@@ -21,8 +21,6 @@ if(NOT EXISTS ${LY_3RDPARTY_PATH}/3rdParty.txt)
     message(FATAL_ERROR "3rdParty.txt not found in ${LY_3RDPARTY_PATH}, call cmake defining a valid LY_3RDPARTY_PATH or use cmake-gui to configure it")
 endif()
 
-include(CMakeParseArguments)
-
 #! ly_add_external_target_path: adds a path to module path so 3rdparty Find files can be added from paths different than cmake/3rdParty
 #
 # \arg:PATH path to add
