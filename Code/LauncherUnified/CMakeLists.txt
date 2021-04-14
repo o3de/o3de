@@ -75,7 +75,7 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
     file(REAL_PATH ${project_path} project_real_path BASE_DIRECTORY ${LY_ROOT_FOLDER})
     if(NOT project_name)
         if(NOT EXISTS ${project_real_path}/project.json)
-            message(FATAL_ERROR "The specified project path of ${project_real_path} does not contain a project.json file with a \"project name\" entry in it")
+            message(FATAL_ERROR "The specified project path of ${project_real_path} does not contain a project.json file")
         else()
             # Add the project_name to global LY_PROJECTS_TARGET_NAME property
             file(READ "${project_real_path}/project.json" project_json)
