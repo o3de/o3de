@@ -13,8 +13,6 @@
 
 #include "LyShine.h"
 
-#include "Draw2d.h"
-
 #include "UiCanvasComponent.h"
 #include "UiCanvasManager.h"
 #include "LyShineDebug.h"
@@ -55,6 +53,7 @@
 #include <LyShine/Bus/UiCursorBus.h>
 #include <LyShine/Bus/UiDraggableBus.h>
 #include <LyShine/Bus/UiDropTargetBus.h>
+#include <LyShine/Draw2d.h>
 
 #if defined(LYSHINE_INTERNAL_UNIT_TEST)
 #include "TextMarkup.h"

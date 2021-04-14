@@ -10,9 +10,10 @@
 *
 */
 #include "LyShine_precompiled.h"
-#include "Draw2d.h"
 #include "IFont.h"
 #include "IRenderer.h"
+
+#include <LyShine/Draw2d.h>
 
 #include <AzCore/Math/Matrix3x3.h>
 
