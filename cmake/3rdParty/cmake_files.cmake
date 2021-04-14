@@ -15,7 +15,6 @@ set(FILES
     Findcivetweb.cmake
     FindClang.cmake
     Finddyad.cmake
-    Findetc2comp.cmake
     FindFbxSdk.cmake
     Findlibav.cmake
     FindRadTelemetry.cmake

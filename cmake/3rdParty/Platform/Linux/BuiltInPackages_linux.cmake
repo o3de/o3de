@@ -39,6 +39,7 @@ ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-linux               TARGETS tiff
 ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev4-linux   TARGETS AWSNativeSDK    PACKAGE_HASH b4db38de49d35a5f7500aed7f4aee5ec511dd3b584ee06fe9097885690191a5d)
 ly_associate_package(PACKAGE_NAME Lua-5.3.5-rev5-linux              TARGETS Lua             PACKAGE_HASH 1adc812abe3dd0dbb2ca9756f81d8f0e0ba45779ac85bf1d8455b25c531a38b0)
 ly_associate_package(PACKAGE_NAME PhysX-4.1.0.25992954-rev1-linux   TARGETS PhysX           PACKAGE_HASH e3ca36106a8dbf1524709f8bb82d520920ebd3ff3a92672d382efff406c75ee3)
+ly_associate_package(PACKAGE_NAME etc2comp-9cd0f9cae0-rev1-linux    TARGETS etc2comp        PACKAGE_HASH 9283aa5db5bb7fb90a0ddb7a9f3895317c8ebe8044943124bbb3673a41407430)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-linux           TARGETS mikkelsen       PACKAGE_HASH 5973b1e71a64633588eecdb5b5c06ca0081f7be97230f6ef64365cbda315b9c8)
 ly_associate_package(PACKAGE_NAME googletest-1.8.1-rev4-linux       TARGETS googletest      PACKAGE_HASH 7b7ad330f369450c316a4c4592d17fbb4c14c731c95bd8f37757203e8c2bbc1b)
 ly_associate_package(PACKAGE_NAME googlebenchmark-1.5.0-rev2-linux  TARGETS GoogleBenchmark PACKAGE_HASH 4038878f337fc7e0274f0230f71851b385b2e0327c495fc3dd3d1c18a807928d)
