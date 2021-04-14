@@ -1117,7 +1117,7 @@ namespace AZ
             return asset;
         }
 
-        void AssetManager::UpdateDebugStatus(AZ::Data::Asset<AZ::Data::AssetData> asset)
+        void AssetManager::UpdateDebugStatus(const AZ::Data::Asset<AZ::Data::AssetData>& asset)
         {
             if(!m_debugAssetEvents)
             {

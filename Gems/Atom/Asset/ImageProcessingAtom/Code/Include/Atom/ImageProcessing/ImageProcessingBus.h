@@ -25,6 +25,7 @@ namespace ImageProcessingAtom
         // EBusTraits overrides
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+        typedef AZStd::recursive_mutex MutexType;
         //////////////////////////////////////////////////////////////////////////
 
         // Loads an image from a source file path
