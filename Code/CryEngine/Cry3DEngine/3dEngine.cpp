@@ -1675,9 +1675,11 @@ bool C3DEngine::IsTessellationAllowedForShadowMap(const SRenderingPassInfo& pass
     default:
         return false;
     }
-#endif //#ifdef MESH_TESSELLATION_ENGINE
+#else
 
     return false;
+
+#endif //#ifdef MESH_TESSELLATION_ENGINE
 }
 
 void C3DEngine::SetPhysMaterialEnumerator(IPhysMaterialEnumerator* pPhysMaterialEnumerator)

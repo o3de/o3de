@@ -360,7 +360,7 @@ namespace ScriptCanvasEditor
                 }
             };
 
-            openers.push_back({ "Lumberyard_ScriptCanvasEditor", "Open In Script Canvas Editor...", QIcon(), scriptCanvasEditorCallback });
+            openers.push_back({ "O3DE_ScriptCanvasEditor", "Open In Script Canvas Editor...", QIcon(), scriptCanvasEditorCallback });
         }
     }
 

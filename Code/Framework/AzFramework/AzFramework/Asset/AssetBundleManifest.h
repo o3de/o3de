@@ -21,7 +21,7 @@ namespace AZ
 
 namespace AzFramework
 {
-    // Class to describe metadata about an AssetBundle in Lumberyard
+    // Class to describe metadata about an AssetBundle in Open 3D Engine
     class AssetBundleManifest
     {
     public:

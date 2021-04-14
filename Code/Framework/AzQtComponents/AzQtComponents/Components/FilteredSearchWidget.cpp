@@ -17,7 +17,7 @@
 #include <AzQtComponents/Components/Widgets/LineEdit.h>
 #include <AzQtComponents/Utilities/ScreenUtilities.h>
 
-#include "Components/ui_FilteredSearchWidget.h"
+#include <AzQtComponents/Components/ui_FilteredSearchWidget.h>
 
 #include <AzQtComponents/Components/FlowLayout.h>
 

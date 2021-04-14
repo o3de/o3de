@@ -27,7 +27,7 @@
 
 #include <AzQtComponents/Components/GlobalEventFilter.h>
 #include <AzQtComponents/Components/StyledDockWidget.h>
-#include <AzQtComponents/Components/LumberyardStylesheet.h>
+#include <AzQtComponents/Components/O3DEStylesheet.h>
 #include <AzQtComponents/Utilities/HandleDpiAwareness.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
 #include "ComponentDemoWidget.h"
@@ -136,7 +136,7 @@ int main(int argc, char **argv)
 
     QApplication::setOrganizationName("Amazon");
     QApplication::setOrganizationDomain("amazon.com");
-    QApplication::setApplicationName("LumberyardWidgetGallery");
+    QApplication::setApplicationName("O3DEWidgetGallery");
 
     QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));
 
