@@ -358,7 +358,7 @@ namespace AZ
 
             Asset<AssetData> GetAssetInternal(const AssetId& assetId, const AssetType& assetType, AssetLoadBehavior assetReferenceLoadBehavior, const AssetLoadParameters& loadParams = AssetLoadParameters{}, AssetInfo assetInfo = AssetInfo(), bool signalLoaded = false);
 
-            void UpdateDebugStatus(AZ::Data::Asset<AZ::Data::AssetData> asset);
+            void UpdateDebugStatus(const AZ::Data::Asset<AZ::Data::AssetData>& asset);
 
             /**
             * Gets a root asset and dependencies as individual async loads if necessary.
