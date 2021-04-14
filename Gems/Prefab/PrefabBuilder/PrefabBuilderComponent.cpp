@@ -79,23 +79,12 @@ namespace AZ::Prefab
         AzToolsFramework::Fingerprinting::TypeFingerprint fingerprint = m_pipeline.GetFingerprint();
 
         // Deserialize all of the entities and their components (for this prefab only)
-        AzToolsFramework::Prefab::Instance::AliasToEntityMap entities;
-        auto entitiesIterator = genericDocument.FindMember(AzToolsFramework::Prefab::PrefabDomUtils::EntitiesName);
-
-        if (entitiesIterator != genericDocument.MemberEnd())
+        auto newInstance = AZStd::make_unique<AzToolsFramework::Prefab::Instance>();
+        AzToolsFramework::Prefab::Instance::EntityList entities;
+        if (AzToolsFramework::Prefab::PrefabDomUtils::LoadInstanceFromPrefabDom(*newInstance, entities, genericDocument))
         {
-            auto&& entitiesJson = entitiesIterator->value;
-
-            if (entitiesJson.IsObject())
-            {
-                JsonSerializationResult::ResultCode result = AZ::JsonSerialization::Load(entities, entitiesJson);
-
-                if (result.GetProcessing() != JsonSerializationResult::Processing::Halted)
-                {
-                    // Add the fingerprint of all the components and their types
-                    AZStd::hash_combine(fingerprint, m_typeFingerprinter->GenerateFingerprintForAllTypesInObject(&entities));
-                }
-            }
+            // Add the fingerprint of all the components and their types
+            AZStd::hash_combine(fingerprint, m_typeFingerprinter->GenerateFingerprintForAllTypesInObject(&entities));
         }
 
         return fingerprint;

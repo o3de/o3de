@@ -255,10 +255,8 @@ namespace AzToolsFramework::AssetUtils
         return configFiles;
     }
 
-    bool UpdateFilePathToCorrectCase(const QString& root, QString& relativePathFromRoot)
+    bool UpdateFilePathToCorrectCase(AZStd::string_view rootPath, AZStd::string& relPathFromRoot)
     {
-        AZStd::string rootPath(root.toUtf8().data());
-        AZStd::string relPathFromRoot(relativePathFromRoot.toUtf8().data());
         AZ::StringFunc::Path::Normalize(relPathFromRoot);
         AZStd::vector<AZStd::string> tokens;
         AZ::StringFunc::Tokenize(relPathFromRoot.c_str(), tokens, AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING);
@@ -321,7 +319,6 @@ namespace AzToolsFramework::AssetUtils
         {
             relPathFromRoot.clear();
             AZ::StringFunc::Join(relPathFromRoot, tokens.begin(), tokens.end(), AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING);
-            relativePathFromRoot = relPathFromRoot.c_str();
         }
 
         return success;

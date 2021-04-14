@@ -1893,7 +1893,6 @@ namespace ScriptCanvas
 
         if (slotIter != m_slotIdIteratorCache.end())
         {
-            Slot* slot = &(*slotIter->second.m_slotIterator);
             
             if (slotIter->second.HasDatum())
             {
@@ -2562,13 +2561,14 @@ namespace ScriptCanvas
 
         for (Slot& slot : m_slots)
         {
-            if (slot.IsDynamicSlot())
+            if (!slot.IsUserAdded() && slot.IsDynamicSlot())
             {
                 AZ::Crc32 group = slot.GetDynamicGroup();
 
                 if (group == AZ::Crc32())
                 {
                     auto connectedDisplayType = FindConnectedConcreteDisplayType(slot, exploredGroupCache);
+
                     if (!connectedDisplayType.IsValid())
                     {
                         slot.ClearDisplayType();

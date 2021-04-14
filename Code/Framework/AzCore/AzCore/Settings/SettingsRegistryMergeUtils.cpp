@@ -30,18 +30,6 @@
 
 namespace AZ::Internal
 {
-    AZ::IO::FixedMaxPath GetExecutableDirectory()
-    {
-        AZStd::fixed_string<AZ::IO::MaxPathLength> value;
-
-        // Binary folder
-        AZ::Utils::ExecutablePathResult pathResult = Utils::GetExecutableDirectory(value.data(), value.capacity());
-        // Update the size value of the executable directory fixed string to correctly be the length of the null-terminated string stored within it
-        value.resize_no_construct(AZStd::char_traits<char>::length(value.data()));
-
-        return value;
-    }
-
     AZ::SettingsRegistryInterface::FixedValueString GetEngineMonikerForProject(
         SettingsRegistryInterface& settingsRegistry, const AZ::IO::FixedMaxPath& projectPath)
     {
@@ -146,7 +134,7 @@ namespace AZ::Internal
     {
 
         AZStd::fixed_string<AZ::IO::MaxPathLength> executableDir;
-        if (Utils::GetExecutableDirectory(executableDir.data(), executableDir.capacity()) == Utils::ExecutablePathResult::Success)
+        if (AZ::Utils::GetExecutableDirectory(executableDir.data(), executableDir.capacity()) == Utils::ExecutablePathResult::Success)
         {
             // Update the size value of the executable directory fixed string to correctly be the length of the null-terminated string
             // stored within it
@@ -494,7 +482,7 @@ namespace AZ::SettingsRegistryMergeUtils
     void MergeSettingsToRegistry_AddRuntimeFilePaths(SettingsRegistryInterface& registry)
     {
         // Binary folder
-        AZ::IO::FixedMaxPath path = Internal::GetExecutableDirectory();
+        AZ::IO::FixedMaxPath path = AZ::Utils::GetExecutableDirectory();
         registry.Set(FilePathKey_BinaryFolder, path.LexicallyNormal().Native());
 
         // Engine root folder - corresponds to the @engroot@ and @devroot@ aliases
@@ -601,7 +589,7 @@ namespace AZ::SettingsRegistryMergeUtils
     void MergeSettingsToRegistry_TargetBuildDependencyRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
         const SettingsRegistryInterface::Specializations& specializations, AZStd::vector<char>* scratchBuffer)
     {
-        AZ::IO::FixedMaxPath mergePath = Internal::GetExecutableDirectory();
+        AZ::IO::FixedMaxPath mergePath = AZ::Utils::GetExecutableDirectory();
         if (!mergePath.empty())
         {
             registry.MergeSettingsFolder((mergePath / SettingsRegistryInterface::RegistryFolder).Native(),

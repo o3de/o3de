@@ -154,8 +154,6 @@ namespace ScriptCanvasEditor
             loadResult.m_graphPath = asset.GetHint().c_str();
             loadResult.m_editorAsset = asset;
             AZ::EntityId scriptCanvasId;
-            auto* sourceAsset = asset.GetAs<ScriptCanvasAsset>();
-            AZ::Entity* scriptCanvasEntity = sourceAsset->GetScriptCanvasEntity();
             loadResult.m_entity = AZStd::make_unique<AZ::Entity>("Loaded test graph");
             loadResult.m_runtimeAsset = runtimeAsset;
 

@@ -93,6 +93,8 @@ namespace AZ
             SamplerState::Reflect(context);
             ShaderInputBufferDescriptor::Reflect(context);
             ShaderInputImageDescriptor::Reflect(context);
+            ShaderInputBufferUnboundedArrayDescriptor::Reflect(context);
+            ShaderInputImageUnboundedArrayDescriptor::Reflect(context);
             ShaderInputSamplerDescriptor::Reflect(context);
             ShaderInputConstantDescriptor::Reflect(context);
             ShaderInputStaticSamplerDescriptor::Reflect(context);

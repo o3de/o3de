@@ -494,8 +494,6 @@ void QToolTipWidget::KeepTipOnScreen(QRect targetRect, ArrowDirection preferredA
 
 QPolygonF QToolTipWidget::QArrow::CreateArrow()
 {
-    int height = 10;
-
     QVector<QPointF> vertex;
     //3 points in triangle
     vertex.reserve(3);

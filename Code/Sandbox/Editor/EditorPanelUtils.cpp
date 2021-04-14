@@ -283,7 +283,6 @@ public:
         settings.remove("Hotkeys/");
         settings.sync();
         settings.beginWriteArray(group);
-        int hotkeyCount = hotkeys.count();
         int saveIndex = 0;
         for (HotKey key : hotkeys)
         {

@@ -62,7 +62,7 @@ namespace Benchmark
     {
         for (auto _ : state)
         {
-            for (auto& testData : m_testDataArray)
+            for ([[maybe_unused]] auto& testData : m_testDataArray)
             {
                 AZ::Matrix4x4 result = AZ::Matrix4x4::CreateIdentity();
                 benchmark::DoNotOptimize(result);
@@ -74,7 +74,7 @@ namespace Benchmark
     {
         for (auto _ : state)
         {
-            for (auto& testData : m_testDataArray)
+            for ([[maybe_unused]] auto& testData : m_testDataArray)
             {
                 AZ::Matrix4x4 result = AZ::Matrix4x4::CreateZero();
                 benchmark::DoNotOptimize(result);
@@ -122,7 +122,7 @@ namespace Benchmark
     {
         for (auto _ : state)
         {
-            for (auto& testData : m_testDataArray)
+            for ([[maybe_unused]] auto& testData : m_testDataArray)
             {
                 AZ::Matrix4x4 result = AZ::Matrix4x4::CreateFromValue(1.0f);
                 benchmark::DoNotOptimize(result);
@@ -134,7 +134,7 @@ namespace Benchmark
     {
         for (auto _ : state)
         {
-            for (auto& testData : m_testDataArray)
+            for ([[maybe_unused]] auto& testData : m_testDataArray)
             {
                 AZ::Matrix4x4 result = AZ::Matrix4x4::CreateFromRowMajorFloat16(s_mat4x4testArray);
                 benchmark::DoNotOptimize(result);
@@ -146,7 +146,7 @@ namespace Benchmark
     {
         for (auto _ : state)
         {
-            for (auto& testData : m_testDataArray)
+            for ([[maybe_unused]] auto& testData : m_testDataArray)
             {
                 AZ::Matrix4x4 result = AZ::Matrix4x4::CreateFromColumnMajorFloat16(s_mat4x4testArray);
                 benchmark::DoNotOptimize(result);
@@ -158,7 +158,7 @@ namespace Benchmark
     {
         for (auto _ : state)
         {
-            for (auto& testData : m_testDataArray)
+            for ([[maybe_unused]] auto& testData : m_testDataArray)
             {
                 AZ::Matrix4x4 result = AZ::Matrix4x4::CreateProjection(s_mat4x4testArray[0], s_mat4x4testArray[1], s_mat4x4testArray[2], s_mat4x4testArray[3]);
                 benchmark::DoNotOptimize(result);
@@ -170,7 +170,7 @@ namespace Benchmark
     {
         for (auto _ : state)
         {
-            for (auto& testData : m_testDataArray)
+            for ([[maybe_unused]] auto& testData : m_testDataArray)
             {
                 AZ::Matrix4x4 result = AZ::Matrix4x4::CreateProjectionFov(s_mat4x4testArray[0], s_mat4x4testArray[1], s_mat4x4testArray[2], s_mat4x4testArray[3]);
                 benchmark::DoNotOptimize(result);
@@ -550,7 +550,7 @@ namespace Benchmark
 
         for (auto _ : state)
         {
-            for (auto& testData : m_testDataArray)
+            for ([[maybe_unused]] auto& testData : m_testDataArray)
             {
                 AZ::Matrix4x4 result = mat.GetInverseTransform();
                 benchmark::DoNotOptimize(result);

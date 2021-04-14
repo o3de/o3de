@@ -184,6 +184,7 @@ namespace AzToolsFramework
         m_gui->m_objectTree->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         m_gui->m_objectTree->setAutoScrollMargin(20);
         m_gui->m_objectTree->setIndentation(24);
+        m_gui->m_objectTree->setRootIsDecorated(false);
         connect(m_gui->m_objectTree, &QTreeView::customContextMenuRequested, this, &EntityOutlinerWidget::OnOpenTreeContextMenu);
 
         // custom item delegate
@@ -1089,16 +1090,6 @@ namespace AzToolsFramework
         setEnabled(true);
         SetEntityOutlinerState(m_gui, true);
     }
-
-    void EntityOutlinerWidget::SetRootEntity(AZ::EntityId rootEntityId)
-    {
-        // The proxy model needs a tick to initialize, else it will return an invalid index in mapFromSource.
-        QTimer::singleShot(0, this, [rootEntityId, this]() {
-            QModelIndex rootIndex = m_listModel->GetIndexFromEntity(rootEntityId);
-            QModelIndex proxyIndex = m_proxyModel->mapFromSource(rootIndex);
-            m_gui->m_objectTree->setRootIndex(proxyIndex);
-        });
-    }
     
     void EntityOutlinerWidget::SetUpdatesEnabled(bool enable)
     {
@@ -1112,6 +1103,12 @@ namespace AzToolsFramework
         {
             m_gui->m_objectTree->setUpdatesEnabled(false);
         }
+    }
+
+    void EntityOutlinerWidget::ExpandEntityChildren(AZ::EntityId entityId)
+    {
+        QModelIndex index = GetIndexFromEntityId(entityId);
+        m_gui->m_objectTree->expand(index);
     }
 
     void EntityOutlinerWidget::OnEntityInfoUpdatedAddChildEnd(AZ::EntityId /*parentId*/, AZ::EntityId childId)

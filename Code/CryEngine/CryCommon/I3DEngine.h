@@ -2417,9 +2417,6 @@ struct SRenderingPassInfo
         CUBEMAP_GEN = BIT(16),
         GEOM_CACHES = BIT(17),
         DISABLE_RENDER_CHUNK_MERGE = BIT(18),
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-        RENDER_SCENE_TO_TEXTURE = BIT(20),
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
 
         // below are precombined flags
         STATIC_OBJECTS = ENTITIES,
@@ -2445,9 +2442,6 @@ struct SRenderingPassInfo
     bool IsCachedShadowPass() const;
     EShadowMapType GetShadowMapType() const;
     bool IsDisableRenderChunkMerge() const;
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    bool IsRenderSceneToTexturePass() const;
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
 
     bool IsAuxWindow() const;
 
@@ -2561,14 +2555,6 @@ inline bool SRenderingPassInfo::IsShadowPass() const
 { 
     return static_cast<EShadowMapType>(m_eShadowMapRendering) != SHADOW_MAP_NONE; 
 }
-
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-///////////////////////////////////////////////////////////////////////////////
-inline bool SRenderingPassInfo::IsRenderSceneToTexturePass() const
-{
-    return (m_nRenderingFlags & RENDER_SCENE_TO_TEXTURE) != 0;
-}
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
 
 ///////////////////////////////////////////////////////////////////////////////
 inline bool SRenderingPassInfo::IsCachedShadowPass() const

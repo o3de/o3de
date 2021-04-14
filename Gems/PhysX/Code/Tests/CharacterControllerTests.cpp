@@ -123,7 +123,7 @@ namespace PhysX
         ControllerTestBasis basis(m_testSceneHandle);
         AZ::Vector3 velocity = AZ::Vector3::CreateAxisX();
 
-        auto box = PhysX::TestUtils::AddStaticUnitBoxToScene(basis.m_sceneHandle, AZ::Vector3(1.5f, 0.0f, 0.5f));
+        PhysX::TestUtils::AddStaticUnitBoxToScene(basis.m_sceneHandle, AZ::Vector3(1.5f, 0.0f, 0.5f));
 
         // run the simulation for a while so the controller should get to the box and stop
         basis.Update(velocity, 50);
@@ -149,7 +149,7 @@ namespace PhysX
         ControllerTestBasis basis(m_testSceneHandle);
         AZ::Vector3 velocity = AZ::Vector3(1.0f, 1.0f, 0.0f);
 
-        auto box = PhysX::TestUtils::AddStaticUnitBoxToScene(basis.m_sceneHandle, AZ::Vector3(1.0f, 0.5f, 0.5f));
+        PhysX::TestUtils::AddStaticUnitBoxToScene(basis.m_sceneHandle, AZ::Vector3(1.0f, 0.5f, 0.5f));
 
         // run the simulation for a while so the controller should get to the box and start sliding
         basis.Update(velocity, 20);
@@ -228,8 +228,8 @@ namespace PhysX
     {
         ControllerTestBasis basis(m_testSceneHandle);
 
-        auto shortStep = PhysX::TestUtils::AddStaticUnitBoxToScene(basis.m_sceneHandle, AZ::Vector3(1.0f, 0.0f, -0.3f));
-        auto tallStep = PhysX::TestUtils::AddStaticUnitBoxToScene(basis.m_sceneHandle, AZ::Vector3(2.0f, 0.0f, 0.5f));
+        PhysX::TestUtils::AddStaticUnitBoxToScene(basis.m_sceneHandle, AZ::Vector3(1.0f, 0.0f, -0.3f));
+        PhysX::TestUtils::AddStaticUnitBoxToScene(basis.m_sceneHandle, AZ::Vector3(2.0f, 0.0f, 0.5f));
 
         AZ::Vector3 desiredVelocity = AZ::Vector3::CreateAxisX();
 
@@ -263,7 +263,7 @@ namespace PhysX
         ControllerTestBasis basis(m_testSceneHandle, shapeType);
 
         // the bottom of the box will be at height 1.0
-        auto box = PhysX::TestUtils::AddStaticUnitBoxToScene(basis.m_sceneHandle, AZ::Vector3(1.0f, 0.0f, 1.5f));
+        PhysX::TestUtils::AddStaticUnitBoxToScene(basis.m_sceneHandle, AZ::Vector3(1.0f, 0.0f, 1.5f));
 
         // resize the controller so that it is too tall to fit under the box
         auto controller = static_cast<CharacterController*>(basis.m_controller);
@@ -488,7 +488,7 @@ namespace PhysX
         }
 
         // Create unit box located near character, collides with character by default
-        auto box = PhysX::TestUtils::AddStaticUnitBoxToScene(m_testSceneHandle, AZ::Vector3(1.0f, 0.0f, 0.0f));
+        PhysX::TestUtils::AddStaticUnitBoxToScene(m_testSceneHandle, AZ::Vector3(1.0f, 0.0f, 0.0f));
 
         // Assign 'None' collision group to character controller - it should not collide with the box
         AZStd::string collisionGroupName;

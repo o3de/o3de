@@ -37,10 +37,6 @@
 #include <LoadScreenBus.h>
 #include <IVideoRenderer.h>
 
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED && !defined(NULL_RENDERER)
-#include <RTT/RTTContextManager.h>
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED && !defined(NULL_RENDERER)
-
 #include "RendElements/OpticsFactory.h"
 
 #include "GraphicsPipeline/FurBendData.h"
@@ -624,12 +620,6 @@ AllocateConstIntCVar(CRenderer, CV_r_PostProcessGameFx);
 
 int CRenderer::CV_r_colorRangeCompression;
 
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-int CRenderer::CV_r_FinalOutputsRGB;
-int CRenderer::CV_r_FinalOutputAlpha;
-int CRenderer::CV_r_RTT;
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-
 int CRenderer::CV_r_colorgrading;
 int CRenderer::CV_r_colorgrading_selectivecolor;
 AllocateConstIntCVar(CRenderer, CV_r_colorgrading_levels);
@@ -654,7 +644,6 @@ AllocateConstIntCVar(CRenderer, CV_r_graphstyle);
 AllocateConstIntCVar(CRenderer, CV_r_showbufferusage);
 
 ICVar* CRenderer::CV_r_ShaderCompilerServer;
-ICVar* CRenderer::CV_r_ShaderCompilerFolderSuffix;
 ICVar* CRenderer::CV_r_ShaderEmailTags;
 ICVar* CRenderer::CV_r_ShaderEmailCCs;
 int CRenderer::CV_r_ShaderCompilerPort;
@@ -1254,11 +1243,9 @@ static void OnChange_CV_r_CubeDepthMapResolution(ICVar* /*pCVar*/)
 {
 }
 
-static void OnChange_CV_r_SkipRenderComposites(ICVar* pCVar)
+static void OnChange_CV_r_SkipRenderComposites([[maybe_unused]] ICVar* pCVar)
 {
-    int value = pCVar->GetIVal();
-
-    AZ_Warning("Rendering", value == 0 || (value == 1 && CRenderer::CV_r_flares == 0), "r_SkipRenderComposites was set to 1 while r_Flares was enabled, setting r_Flares to 0.");
+    AZ_Warning("Rendering", pCVar->GetIVal() == 0 || (pCVar->GetIVal() == 1 && CRenderer::CV_r_flares == 0), "r_SkipRenderComposites was set to 1 while r_Flares was enabled, setting r_Flares to 0.");
     CRenderer::CV_r_flares = 0;
 }
 
@@ -1530,9 +1517,6 @@ void RendererAssetListener::OnFileChanged(AZStd::string assetName)
 
 CRenderer::CRenderer()
     : m_assetListener(this)
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED && !defined(NULL_RENDERER)
-    , m_contextManager(new AzRTT::RenderContextManager())
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED && !defined(NULL_RENDERER)
 {
     static_assert(LegacyInternal::JobExecutorPool::NumPools == AZ_ARRAY_SIZE(CRenderer::m_SkinningDataPool), "JobExecutorPool and Skinning data pool size mismatch");
     CCryNameR::CreateNameTable();
@@ -2394,10 +2378,6 @@ void CRenderer::InitRenderer()
             "Usage: r_ShaderCompilerServer 127.0.0.1 \n"
             "Default is 127.0.0.1 ");
 
-    CV_r_ShaderCompilerFolderSuffix = REGISTER_STRING("r_ShaderCompilerFolderSuffix", "", VF_NULL,
-            "Usage: r_ShaderCompilerFolderSuffix suffix \n"
-            "Default is empty. Set to some other value to append this suffix to the project name when compiling shaders");
-
     {
         const SFileVersion& ver = gEnv->pSystem->GetFileVersion();
 
@@ -2480,23 +2460,6 @@ void CRenderer::InitRenderer()
     DefineConstIntCVar3("r_MergeShadowDrawcalls", CV_r_MergeShadowDrawcalls, 1, VF_NULL,
         "Enabled Merging of RenderChunks for ShadowRendering\n"
         "Default is 1 (enabled). 0 disabled");
-
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    REGISTER_CVAR3("r_FinalOutputsRGB", CV_r_FinalOutputsRGB, 1, VF_NULL,
-        "Enables sRGB final output.\n"
-        "Usage: r_FinalOutputsRGB [0/1]");
-
-    REGISTER_CVAR3("r_FinalOutputAlpha", CV_r_FinalOutputAlpha, 0, VF_NULL,
-        "Enables alpha in final output. 0\n"
-        "Usage: r_FinalOutputAlpha [0/1/2]\n"
-        "Usage: r_FinalOutputAlpha = 0: no alpha (default)\n"
-        "Usage: r_FinalOutputAlpha = 1: full opaque\n"
-        "Usage: r_FinalOutputAlpha = 2: depth-based\n");
-
-    REGISTER_CVAR3("r_RTT", CV_r_RTT, 1, VF_NULL,
-        "Enables render scene to texture. \n"
-        "Usage: r_RTT [0/1]\n");
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
 
     REGISTER_CVAR3("r_ColorRangeCompression", CV_r_colorRangeCompression, 0, VF_NULL,
         "Enables color range compression to account for the limited RGB range of TVs.\n"
@@ -3974,12 +3937,6 @@ void CRenderer::PostInit()
 
     // Initialize asset messaging listener
     m_assetListener.Connect();
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED && !defined(NULL_RENDERER)
-    if (m_contextManager)
-    {
-        m_contextManager->Init();
-    }
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED && !defined(NULL_RENDERER)
 
 #if !defined(NULL_RENDERER)
     //////////////////////////////////////////////////////////////////////////
@@ -4007,10 +3964,6 @@ void CRenderer::PostInit()
 void CRenderer::Release()
 {
     m_assetListener.Disconnect();
-
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED && !defined(NULL_RENDERER)
-    m_contextManager = nullptr;
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED && !defined(NULL_RENDERER)
 
     // Reminder for Andrey/AntonKap: this needs to be properly handled
     //SAFE_DELETE(g_pSDynTexture_PoolAlloc)
@@ -4246,14 +4199,6 @@ void CRenderer::WriteXY(int x, int y, float xscale, float yscale, float r, float
 //////////////////////////////////////////////////////////////////////////
 void CRenderer::DrawTextQueued(Vec3 pos, SDrawTextInfo& ti, const char* text)
 {
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    if (IsRenderToTextureActive())
-    {
-        // don't add debug text from the render to texture pass
-        return;
-    }
-#endif // AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-
     int nT = m_pRT->GetThreadList();
     if (text && !gEnv->IsDedicated())
     {
@@ -4268,14 +4213,6 @@ void CRenderer::DrawTextQueued(Vec3 pos, SDrawTextInfo& ti, const char* text)
 //////////////////////////////////////////////////////////////////////////
 void CRenderer::DrawTextQueued(Vec3 pos, SDrawTextInfo& ti, const char* format, va_list args)
 {
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    if (IsRenderToTextureActive())
-    {
-        // don't add debug text from the render to texture pass
-        return;
-    }
-#endif // AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-
     int nT = m_pRT->GetThreadList();
     if (format && !gEnv->IsDedicated())
     {
@@ -4296,14 +4233,6 @@ void CRenderer::DrawTextQueued(Vec3 pos, SDrawTextInfo& ti, const char* format, 
 void CRenderer::EF_RenderTextMessages()
 {
     ASSERT_IS_MAIN_THREAD(m_pRT)
-
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    if (IsRenderToTextureActive())
-    {
-        // don't draw debug text in the render to texture pass
-        return;
-    }
-#endif // AZ_RENDER_TO_TEXTURE_GEM_ENABLED
 
     CTextMessages& textMessage = m_TextMessages[m_RP.m_nFillThreadID];
     if (!textMessage.empty())
@@ -4455,14 +4384,6 @@ void CRenderer::RT_RenderTextMessages()
     ASSERT_IS_RENDER_THREAD(m_pRT)
     FUNCTION_PROFILER_LEGACYONLY(GetISystem(), PROFILE_RENDERER);
     AZ_TRACE_METHOD();
-
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    if (IsRenderToTextureActive())
-    {
-        // don't draw debug text in the render to texture pass
-        return;
-    }
-#endif // AZ_RENDER_TO_TEXTURE_GEM_ENABLED
 
     int nT = m_pRT->GetThreadList();
 
@@ -6617,7 +6538,6 @@ void CRenderer::EF_QueryImpl(ERenderQueryTypes eQuery, void* pInOut0, uint32 nIn
                         {
                             nCurMip = 0;
                         }
-                        int nMips = tp->GetNumMipsNonVirtual();
                         nCurMip = min(nCurMip, nPersMip);
 
                         int nTexSize = tp->StreamComputeDevDataSize(nCurMip);
@@ -6672,16 +6592,7 @@ void CRenderer::EF_QueryImpl(ERenderQueryTypes eQuery, void* pInOut0, uint32 nIn
 
     case EFQ_GetFogCullDistance:
     {
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-        // only return the culling distance for the main camera, this helps
-        // prevent r_displayinfo flickering
-        if (!IsRenderToTextureActive())
-        {
-            WriteQueryResult(pInOut0, nInOutSize0, m_fogCullDistance);
-        }
-#else
         WriteQueryResult(pInOut0, nInOutSize0, m_fogCullDistance);
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
     }
     break;
 
@@ -8648,55 +8559,3 @@ int CRenderer::GetDrawCallsPerNode(IRenderNode* pRenderNode)
     return 0;
 }
 #endif
-
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-bool CRenderer::IsRenderToTextureActive() const
-{
-    return ((m_RP.m_TI[m_pRT->GetThreadList()].m_PersFlags & RBPF_RENDER_SCENE_TO_TEXTURE) != 0);
-}
-
-int CRenderer::GetWidth() const
-{
-    return IsRenderToTextureActive() ? m_RP.m_pRenderViews[m_pRT->GetThreadList()]->GetWidth() : m_width;
-}
-
-void CRenderer::SetWidth(int width)
-{
-    if (IsRenderToTextureActive())
-    {
-        m_RP.m_pRenderViews[m_pRT->GetThreadList()]->SetWidth(width);
-    }
-    else
-    {
-        m_width = width;
-    }
-}
-
-int CRenderer::GetHeight() const
-{
-    return IsRenderToTextureActive() ? m_RP.m_pRenderViews[m_pRT->GetThreadList()]->GetHeight() : m_height;
-}
-
-void CRenderer::SetHeight(int height)
-{
-    if (IsRenderToTextureActive())
-    {
-        m_RP.m_pRenderViews[m_pRT->GetThreadList()]->SetHeight(height);
-    }
-    else
-    {
-        m_height = height;
-    }
-}
-
-int CRenderer::GetOverlayWidth() const
-{
-    return IsRenderToTextureActive() ? m_RP.m_pRenderViews[m_pRT->GetThreadList()]->GetWidth() : m_nativeWidth;
-}
-
-int CRenderer::GetOverlayHeight() const
-{
-    return IsRenderToTextureActive() ? m_RP.m_pRenderViews[m_pRT->GetThreadList()]->GetHeight() : m_nativeHeight;
-}
-
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED

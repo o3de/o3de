@@ -268,7 +268,6 @@ bool UiDraggableComponent::OfferDragHandOff(AZ::EntityId currentActiveInteractab
 {
     // A child interactable element is offering to hand-off a drag interaction to this element
 
-    bool result = false;
     bool handedOffToParent = false;
     bool dragDetected = CheckForDragOrHandOffToParent(currentActiveInteractable, startPoint, currentPoint, dragThreshold, handedOffToParent);
 
@@ -798,7 +797,6 @@ AZ::EntityId UiDraggableComponent::FindDropTargetOrInteractableOnAllCanvases(
 
     // reverse iterate over the loaded canvases so that the front most canvas gets first chance to
     // handle the event
-    bool areAnyInWorldInputCanvasesLoaded = false;
     for (auto iter = canvases.rbegin(); iter != canvases.rend() && !result.IsValid(); ++iter)
     {
         AZ::EntityId canvasEntityId = *iter;

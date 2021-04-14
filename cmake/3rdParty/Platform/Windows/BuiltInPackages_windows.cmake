@@ -39,7 +39,9 @@ ly_associate_package(PACKAGE_NAME Blast-1.1.7-rev1-multiplatform                
 ly_associate_package(PACKAGE_NAME PVRTexTool-4.24.0-rev4-multiplatform                   TARGETS PVRTexTool                 PACKAGE_HASH d0d6da61c7557de0d2c71fc35ba56c3be49555b703f0e853d4c58225537acf1e)
 
 # platform-specific:
-ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev1-windows  TARGETS AWSNativeSDK    PACKAGE_HASH 58e199f253a28964b96056ed4a6db06216fcde14a96d6d94b0d6ad3437516bdc)
+ly_associate_package(PACKAGE_NAME freetype-2.10.4.14-windows         TARGETS freetype        PACKAGE_HASH 88dedc86ccb8c92f14c2c033e51ee7d828fa08eafd6475c6aa963938a99f4bf3)
+ly_associate_package(PACKAGE_NAME tiff-4.2.0.14-windows              TARGETS tiff            PACKAGE_HASH ab60d1398e4e1e375ec0f1a00cdb1d812a07c0096d827db575ce52dd6d714207)
+ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev3-windows  TARGETS AWSNativeSDK    PACKAGE_HASH 929873d4252c464620a9d288e41bd5d47c0bd22750aeb3a1caa68a3da8247c48)
 ly_associate_package(PACKAGE_NAME PhysX-4.1.0.25992954-rev1-windows  TARGETS PhysX           PACKAGE_HASH 198bed89d1aae7caaf5dadba24cee56235fe41725d004b64040d4e50d0f3aa1a)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-windows          TARGETS mikkelsen       PACKAGE_HASH 872c4d245a1c86139aa929f2b465b63ea4ea55b04ced50309135dd4597457a4e)
 ly_associate_package(PACKAGE_NAME googletest-1.8.1-rev4-windows      TARGETS googletest      PACKAGE_HASH 7e8f03ae8a01563124e3daa06386f25a2b311c10bb95bff05cae6c41eff83837)
@@ -48,4 +50,4 @@ ly_associate_package(PACKAGE_NAME d3dx12-headers-rev1-windows        TARGETS d3d
 ly_associate_package(PACKAGE_NAME pyside2-qt-5.15.1-rev2-windows     TARGETS pyside2         PACKAGE_HASH c90f3efcc7c10e79b22a33467855ad861f9dbd2e909df27a5cba9db9fa3edd0f)
 ly_associate_package(PACKAGE_NAME openimageio-2.1.16.0-rev1-windows  TARGETS OpenImageIO     PACKAGE_HASH b9f6d6df180ad240b9f17a68c1862c7d8f38234de0e692e83116254b0ee467e5)
 ly_associate_package(PACKAGE_NAME qt-5.15.2-windows                  TARGETS Qt              PACKAGE_HASH edaf954c647c99727bfd313dab2959803d2df0873914bb96368c3d8286eed6d9)
-ly_associate_package(PACKAGE_NAME libsamplerate-0.2.1-rev1-windows   TARGETS libsamplerate   PACKAGE_HASH 3dcf883d22dc9c99866eeed7bed3ede7ab1fbcbce16c45fdb1174c1c6ab7e358)
+ly_associate_package(PACKAGE_NAME libsamplerate-0.2.1-rev2-windows   TARGETS libsamplerate   PACKAGE_HASH dcf3c11a96f212a52e2c9241abde5c364ee90b0f32fe6eeb6dcdca01d491829f)

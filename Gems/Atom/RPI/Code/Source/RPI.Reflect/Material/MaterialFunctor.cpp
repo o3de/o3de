@@ -63,8 +63,7 @@ namespace AZ
             }
             else
             {
-                const Name& shaderOptionName = layout->GetShaderOption(optionIndex).GetName();
-                AZ_Error("MaterialFunctor", false, "Shader option '%s' is not owned by this material.", shaderOptionName.GetCStr());
+                AZ_Error("MaterialFunctor", false, "Shader option '%s' is not owned by this material.", layout->GetShaderOption(optionIndex).GetName().GetCStr());
             }
 
             return false;
@@ -395,11 +394,13 @@ namespace AZ
         template const Color&    MaterialFunctor::EditorContext::GetMaterialPropertyValue<Color>    (const MaterialPropertyIndex& index) const;
         template const Data::Instance<Image>& MaterialFunctor::EditorContext::GetMaterialPropertyValue<Data::Instance<Image>> (const MaterialPropertyIndex& index) const;
 
-        void CheckPropertyAccess(const MaterialPropertyIndex& index, const MaterialPropertyFlags& materialPropertyDependencies, const MaterialPropertiesLayout& materialPropertiesLayout)
+        void CheckPropertyAccess(const MaterialPropertyIndex& index, const MaterialPropertyFlags& materialPropertyDependencies, [[maybe_unused]] const MaterialPropertiesLayout& materialPropertiesLayout)
         {
             if (!materialPropertyDependencies.test(index.GetIndex()))
             {
+#if defined(AZ_ENABLE_TRACING)
                 const MaterialPropertyDescriptor* propertyDescriptor = materialPropertiesLayout.GetPropertyDescriptor(index);
+#endif
                 AZ_Error("MaterialFunctor", false, "Material functor accessing an unregistered material property '%s'.",
                     propertyDescriptor ? propertyDescriptor->GetName().GetCStr() : "<unknown>");
             }

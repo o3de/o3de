@@ -139,8 +139,8 @@ void CDeviceTexture::Unbind()
 void CDeviceTexture::DownloadToStagingResource(uint32 nSubRes, StagingHook cbTransfer)
 {
     AZ_Assert(nSubRes < m_numSubResources, "Invalid SubResource ID %d, (should be < %d)", nSubRes, m_numSubResources);
-    D3DResource* pStagingResource;
-    if (!(pStagingResource = GetCurrDownloadStagingResource()))
+    D3DResource* pStagingResource = GetCurrDownloadStagingResource();
+    if (!pStagingResource)
     {
         pStagingResource = gcpRendD3D->m_DevMan.AllocateStagingResource(m_pD3DTexture, FALSE);
     }
@@ -189,8 +189,8 @@ void CDeviceTexture::DownloadToStagingResource()
 void CDeviceTexture::UploadFromStagingResource(const uint32 nSubRes, StagingHook cbTransfer)
 {
     AZ_Assert(nSubRes < m_numSubResources, "Invalid SubResource ID %d, (should be < %d)", nSubRes, m_numSubResources);
-    D3DResource* pStagingResource;
-    if (!(pStagingResource = GetCurrUploadStagingResource()))
+    D3DResource* pStagingResource = GetCurrUploadStagingResource();
+    if (!pStagingResource)
     {
         pStagingResource = gcpRendD3D->m_DevMan.AllocateStagingResource(m_pD3DTexture, TRUE);
     }

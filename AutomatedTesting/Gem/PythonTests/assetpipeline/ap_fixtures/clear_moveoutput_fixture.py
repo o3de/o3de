@@ -20,9 +20,9 @@ import ly_test_tools.lumberyard.pipeline_utils as pipeline_utils
 
 @pytest.fixture
 def clear_moveoutput_fixture(request, workspace) -> None:
-    pipeline_utils.delete_MoveOutput_folders([workspace.paths.dev(), workspace.paths.project()])
+    pipeline_utils.delete_MoveOutput_folders([workspace.paths.engine_root(), workspace.paths.project()])
 
     def teardown():
-        pipeline_utils.delete_MoveOutput_folders([workspace.paths.dev(), workspace.paths.project()])
+        pipeline_utils.delete_MoveOutput_folders([workspace.paths.engine_root(), workspace.paths.project()])
 
     request.addfinalizer(teardown)

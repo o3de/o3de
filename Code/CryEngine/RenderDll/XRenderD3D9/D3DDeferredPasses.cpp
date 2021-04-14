@@ -103,7 +103,6 @@ bool CD3D9Renderer::FX_DeferredCaustics()
     CreateDeferredUnitBox(arrDeferredInds, arrDeferredVerts);
 
     Vec3 vCamPos = gRenDev->GetViewParameters().vOrigin;
-    float fWaterPlaneSize = gRenDev->GetCamera().GetFarPlane();
 
     Matrix44A origMatView = m_RP.m_TI[m_RP.m_nProcessThreadID].m_matView;
     Matrix34 mLocal;
@@ -832,7 +831,6 @@ bool CD3D9Renderer::FX_DeferredSnowLayer()
 bool CD3D9Renderer::FX_DeferredSnowDisplacement()
 {
     const SSnowParams& snowVolParams = m_p3DEngineCommon.m_SnowInfo;
-    const SRainParams& rainVolParams = m_p3DEngineCommon.m_RainInfo;
     CShader* pShader = CShaderMan::s_ShaderDeferredSnow;
 
     if IsCVarConstAccess(constexpr) ((CRenderer::CV_r_snow < 1 || CRenderer::CV_r_snow_displacement < 1) || snowVolParams.m_fSnowAmount < 0.05f || snowVolParams.m_fRadius < 0.05f)

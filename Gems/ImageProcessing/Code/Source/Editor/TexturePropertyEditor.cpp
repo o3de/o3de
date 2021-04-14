@@ -178,8 +178,6 @@ namespace ImageProcessingEditor
 
             if (sourceControlActive)
             {
-                bool checkoutResult = false;
-
                 AzToolsFramework::SourceControlCommandBus::Broadcast(&AzToolsFramework::SourceControlCommandBus::Events::RequestDelete, legacyFile.c_str(),
                     [](bool success, const AzToolsFramework::SourceControlFileInfo& info)
                 {

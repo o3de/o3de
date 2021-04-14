@@ -527,7 +527,10 @@ inline void CryHeapCheck()
     #define AZ_RESTRICTED_SECTION PLATFORM_H_SECTION_11
     #include AZ_RESTRICTED_FILE(platform_h)
 #elif !defined(LINUX) && !defined(APPLE) // todo: this might be readded with later xdks?
-    int Result = _heapchk();
+#if !defined(NDEBUG)
+    int Result =
+#endif
+        _heapchk();
     assert(Result != _HEAPBADBEGIN);
     assert(Result != _HEAPBADNODE);
     assert(Result != _HEAPBADPTR);

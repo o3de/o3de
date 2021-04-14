@@ -121,9 +121,9 @@ bool CVolumeTexture::Update([[maybe_unused]] unsigned int width, [[maybe_unused]
     }
 
     m_FrameIndex ^= m_FrameIndex;
-    uint8_t* stagingData = GetCurrentStagingData();
     
 #if !defined(NULL_RENDERER)
+    uint8_t* stagingData = GetCurrentStagingData();
     unsigned int cpyWidth = min(width, m_width);
     unsigned int cpyHeight = min(height, m_height);
     unsigned int cpyDepth = min(depth, m_depth);

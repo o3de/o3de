@@ -324,7 +324,7 @@ namespace UnitTest
         // Double Begin
         {
             auto query = RHI::Factory::Get().CreateQuery();
-            RHI::ResultCode result = occlusionQueryPool->InitQuery(query.get());
+            occlusionQueryPool->InitQuery(query.get());
             query->Begin(dummyCommandList);
             AZ_TEST_START_ASSERTTEST;
             EXPECT_EQ(RHI::ResultCode::Fail, query->Begin(dummyCommandList));
@@ -333,7 +333,7 @@ namespace UnitTest
         // End without Begin
         {
             auto query = RHI::Factory::Get().CreateQuery();
-            RHI::ResultCode result = occlusionQueryPool->InitQuery(query.get());
+            occlusionQueryPool->InitQuery(query.get());
             AZ_TEST_START_ASSERTTEST;
             EXPECT_EQ(RHI::ResultCode::Fail, query->End(dummyCommandList));
             AZ_TEST_STOP_ASSERTTEST(1);
@@ -341,7 +341,7 @@ namespace UnitTest
         // End with another command list
         {            
             auto query = RHI::Factory::Get().CreateQuery();
-            RHI::ResultCode result = occlusionQueryPool->InitQuery(query.get());
+            occlusionQueryPool->InitQuery(query.get());
             uint64_t anotherData;
             RHI::CommandList& anotherDummyCmdList = reinterpret_cast<RHI::CommandList&>(anotherData);
             EXPECT_EQ(RHI::ResultCode::Success, query->Begin(dummyCommandList));
@@ -352,7 +352,7 @@ namespace UnitTest
         // Invalid flag
         {            
             auto query = RHI::Factory::Get().CreateQuery();
-            RHI::ResultCode result = statisticsQueryPool->InitQuery(query.get());
+            statisticsQueryPool->InitQuery(query.get());
             AZ_TEST_START_ASSERTTEST;
             EXPECT_EQ(RHI::ResultCode::InvalidArgument, query->Begin(dummyCommandList, RHI::QueryControlFlags::PreciseOcclusion));
             AZ_TEST_STOP_ASSERTTEST(1);
@@ -360,7 +360,7 @@ namespace UnitTest
         // Invalid Begin for Timestamp
         {
             auto query = RHI::Factory::Get().CreateQuery();
-            RHI::ResultCode result = timestampQueryPool->InitQuery(query.get());
+            timestampQueryPool->InitQuery(query.get());
             AZ_TEST_START_ASSERTTEST;
             EXPECT_EQ(RHI::ResultCode::Fail, query->Begin(dummyCommandList));
             AZ_TEST_STOP_ASSERTTEST(1);
@@ -368,7 +368,7 @@ namespace UnitTest
         // Invalid End for Timestamp
         {
             auto query = RHI::Factory::Get().CreateQuery();
-            RHI::ResultCode result = timestampQueryPool->InitQuery(query.get());
+            timestampQueryPool->InitQuery(query.get());
             AZ_TEST_START_ASSERTTEST;
             EXPECT_EQ(RHI::ResultCode::Fail, query->End(dummyCommandList));
             AZ_TEST_STOP_ASSERTTEST(1);
@@ -376,7 +376,7 @@ namespace UnitTest
         // Invalid WriteTimestamp
         {
             auto query = RHI::Factory::Get().CreateQuery();
-            RHI::ResultCode result = occlusionQueryPool->InitQuery(query.get());
+            occlusionQueryPool->InitQuery(query.get());
             AZ_TEST_START_ASSERTTEST;
             EXPECT_EQ(RHI::ResultCode::Fail, query->WriteTimestamp(dummyCommandList));
             AZ_TEST_STOP_ASSERTTEST(1);
@@ -384,7 +384,7 @@ namespace UnitTest
         // Correct WriteTimestamp
         {
             auto query = RHI::Factory::Get().CreateQuery();
-            RHI::ResultCode result = timestampQueryPool->InitQuery(query.get());
+            timestampQueryPool->InitQuery(query.get());
             EXPECT_EQ(RHI::ResultCode::Success, query->WriteTimestamp(dummyCommandList));
         }
     }

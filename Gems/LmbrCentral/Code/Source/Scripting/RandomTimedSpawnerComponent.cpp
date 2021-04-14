@@ -37,7 +37,6 @@ namespace LmbrCentral
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->EBus<RandomTimedSpawnerComponentRequestBus>("RandomTimedSpawnerRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
 
                 ->Event("Enable", &RandomTimedSpawnerComponentRequestBus::Events::Enable)
                 ->Event("Disable", &RandomTimedSpawnerComponentRequestBus::Events::Disable)

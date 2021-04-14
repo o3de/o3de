@@ -441,7 +441,6 @@ namespace DX12
             while (it != m_ReleaseHeap.end())
             {
                 AZ::u32 resourceFrameNumber = it->second.frameNumber;
-                ID3D12Resource* resource = it->second.resource;
                 if (m_FrameCounter > (resourceFrameNumber + RESOURCE_RECYCLE_LATENCY) || releasePolicy == ResourceReleasePolicy::Immediate)
                 {
                     m_RecycleHeap.insert(*it);

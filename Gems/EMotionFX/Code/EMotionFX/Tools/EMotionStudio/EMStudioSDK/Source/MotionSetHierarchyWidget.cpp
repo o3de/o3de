@@ -243,8 +243,8 @@ namespace EMStudio
             parentMotionSetItem->setText(1, parentMotionSet->GetFilename());
             parentMotionSetItem->setWhatsThis(0, QString("%1").arg(MCORE_INVALIDINDEX32));
 
-            const EMotionFX::MotionSet::MotionEntries& motionEnries = parentMotionSet->GetMotionEntries();
-            for (const auto& item : motionEntries)
+            const EMotionFX::MotionSet::MotionEntries& parentMotionEntries = parentMotionSet->GetMotionEntries();
+            for (const auto& item : parentMotionEntries)
             {
                 const EMotionFX::MotionSet::MotionEntry* motionEntry = item.second;
 

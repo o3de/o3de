@@ -39,7 +39,6 @@ TEST_F(ScriptCanvasTestFixture, BehaviorContextObjectGenericConstructor)
     auto graph = graphEntity->FindComponent<ScriptCanvas::Graph>();
     EXPECT_NE(nullptr, graph);
 
-    const AZ::EntityId& graphEntityId = graph->GetEntityId();
     const ScriptCanvasId& graphUniqueId = graph->GetScriptCanvasId();
     
     //Validates the GenericConstructorOverride attribute is being used to construct types that are normally not initialized in C++
@@ -81,7 +80,6 @@ TEST_F(ScriptCanvasTestFixture, BehaviorContext_BusHandlerNodeFootPrint)
     ScriptCanvas::Graph* graph = AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::Graph>(graphEntity);
     graphEntity->Init();
 
-    const AZ::EntityId& graphEntityId = graph->GetEntityId();
     const ScriptCanvasId& graphUniqueId = graph->GetScriptCanvasId();
 
     AZ::EntityId uuidEventHandlerId;

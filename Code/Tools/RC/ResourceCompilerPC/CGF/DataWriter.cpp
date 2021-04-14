@@ -275,12 +275,21 @@ void DataWriter::ExpandBuffer(const uint32 addBytes)
         const uint32 newBufferSize = m_currentBufferSize + BUFFERINCREASESIZE;
         if (m_outputBuffer)
         {
-            m_outputBuffer = realloc(m_outputBuffer, newBufferSize);
+            void* tmpBuffer = realloc(m_outputBuffer, newBufferSize);
+            AZ_Assert(
+                tmpBuffer != nullptr,
+                "realloc failed, this is possible when allocating a large data array whose size is comparable to RAM size, and also when "
+                "the memory is highly segmented");
+            if (tmpBuffer)
+            {
+                m_outputBuffer = tmpBuffer;
+                m_currentBufferSize = newBufferSize;
+            }
         }
         else
         {
             m_outputBuffer = malloc(newBufferSize);
+            m_currentBufferSize = newBufferSize;
         }
-        m_currentBufferSize = newBufferSize;
     }
 }

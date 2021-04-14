@@ -354,26 +354,6 @@ protected:
 
     void RenderAll();
 
-    struct SPreviousContext
-    {
-        CCamera rendererCamera;
-        HWND window;
-        int width;
-        int height;
-        bool mainViewport;
-    };
-
-    SPreviousContext m_preWidgetContext;
-
-    // Create an auto-sized render context that is sized based on the Editor's current
-    // viewport.
-    SPreviousContext SetCurrentContext() const;
-
-    SPreviousContext SetCurrentContext(int newWidth, int newHeight) const;
-    void RestorePreviousContext(const SPreviousContext& x) const;
-
-    void PreWidgetRendering() override;
-    void PostWidgetRendering() override;
     void OnBeginPrepareRender() override;
 
     // Update the safe frame, safe action, safe title, and borders rectangles based on
@@ -574,11 +554,12 @@ protected:
     bool CheckRespondToInput() const;
 
     // AzFramework::InputSystemCursorConstraintRequestBus
-    void* GetSystemCursorConstraintWindow() const override { return renderOverlayHWND(); }
+    void* GetSystemCursorConstraintWindow() const override;
 
     void BuildDragDropContext(AzQtComponents::ViewportDragContext& context, const QPoint& pt) override;
 
 private:
+    void SetAsActiveViewport();
     void PushDisableRendering();
     void PopDisableRendering();
     bool IsRenderingDisabled() const;
@@ -606,13 +587,10 @@ private:
 
     AzFramework::EntityVisibilityQuery m_entityVisibilityQuery;
 
-    SPreviousContext m_previousContext;
     QSet<int> m_keyDown;
 
     bool m_freezeViewportInput = false;
 
-    size_t m_cameraSetForWidgetRenderingCount = 0; ///< How many calls to PreWidgetRendering happened before
-                                                   ///< subsequent calls to PostWidetRendering.
     AZStd::shared_ptr<AzToolsFramework::ManipulatorManager> m_manipulatorManager;
 
     // Used to prevent circular set camera events
@@ -626,6 +604,8 @@ private:
     AZ::RPI::ViewportContext::MatrixChangedEvent::Handler m_cameraViewMatrixChangeHandler;
     AZ::RPI::ViewportContext::MatrixChangedEvent::Handler m_cameraProjectionMatrixChangeHandler;
     AzFramework::DebugDisplayRequests* m_debugDisplay = nullptr;
+
+    AZ::Name m_defaultViewportContextName;
 
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 };

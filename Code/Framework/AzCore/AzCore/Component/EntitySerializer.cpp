@@ -40,10 +40,26 @@ namespace AZ
                 (*idMapper)->SetIsEntityReference(false);
             }
 
-            JSR::ResultCode idLoadResult =
-                ContinueLoadingFromJsonObjectField(&entityInstance->m_id,
-                    azrtti_typeid<decltype(entityInstance->m_id)>(),
-                    inputValue, "Id", context);
+            JSR::ResultCode idLoadResult = ContinueLoadingFromJsonObjectField(
+                &entityInstance->m_id, azrtti_typeid<decltype(entityInstance->m_id)>(), inputValue, "Id", context);
+
+            // If the entity has an invalid ID, there's no point in deserializing, the entity will be unusable.
+            // It's also dangerous to generate new IDs here:
+            // - They need to be globally unique
+            // - We don't know *why* it's invalid (maybe just a typo on the name "Id" for example), so we don't know the ramifications
+            //   of changing it.  There might be many other entities that have references to this one that would become invalid as well
+            //   if we try to silently fix it up.
+            // - Unless we save the ID immediately, it will change every time we serialize the data in, which can happen multiple times
+            //   during the serialization pipeline.  So it either needs to be saved back immediately, or we need a deterministic way
+            //   to generate a globally unique ID for the entity.
+            if (!entityInstance->GetId().IsValid())
+            {
+                // Since we're going to halt processing anyways, we just return the error here immediately.
+                return context.Report(
+                    JSR::ResultCode(JSR::Tasks::ReadField, JSR::Outcomes::Invalid),
+                    "Invalid or missing entity ID - please add an 'Id' field to this entity with a globally unique id.  \n"
+                    "Failed to load entity information.");
+            }
 
             if (hasValidIdMapper)
             {
@@ -93,9 +109,10 @@ namespace AZ
                     inputValue, "IsRuntimeActive", context);
         }
 
-        return context.Report(result,
-            result.GetProcessing() == JSR::Processing::Halted ? "Succesfully loaded entity information." :
-            "Failed to load entity information.");
+        return context.Report(
+            result,
+            result.GetProcessing() != JSR::Processing::Halted ? "Succesfully loaded entity information."
+                                                              : "Failed to load entity information.");
     }
 
     JsonSerializationResult::Result JsonEntitySerializer::Store(rapidjson::Value& outputValue,
@@ -199,7 +216,7 @@ namespace AZ
         }
 
         return context.Report(result,
-            result.GetProcessing() == JSR::Processing::Halted ? "Successfully stored Entity information." :
+            result.GetProcessing() != JSR::Processing::Halted ? "Successfully stored Entity information." :
             "Failed to store Entity information.");
     }
 

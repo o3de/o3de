@@ -713,7 +713,6 @@ uint32 CFFont::WriteTextQuadsToBuffers(SVF_P2F_C4B_T2F_F4B* verts, uint16* indic
     {
     };
 
-    IRenderer* pRenderer = gEnv->pRenderer;
 
     CreateQuadsForText(x, y, z, pStr, asciiMultiLine, ctx, AddQuad, BeginPass);
 

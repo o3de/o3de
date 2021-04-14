@@ -338,7 +338,9 @@ AZ_POP_DISABLE_WARNING
         //////////////////////////////////////////////////////////////////////////
         DWORD& floatMxCsr = ctx.MxCsr; // Hold FPE Mask and Status for MMX (SSE) floating point registers
         WORD& floatControlWord = ctx.FltSave.ControlWord;   // Hold FPE Mask for floating point registers
+    #ifndef _RELEASE
         WORD& floatStatuslWord = ctx.FltSave.StatusWord;    // Holds FPE Status for floating point registers
+    #endif
 #else
         DWORD& floatMxCsr = *(DWORD*)(&ctx.ExtendedRegisters[24]);  // Hold FPE Mask and Status for MMX (SSE) floating point registers
         DWORD& floatControlWord = ctx.FloatSave.ControlWord;    // Hold FPE Mask for floating point registers

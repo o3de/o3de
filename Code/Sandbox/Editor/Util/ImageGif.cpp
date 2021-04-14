@@ -315,9 +315,11 @@ bool CImageGif::Load(const QString& fileName, CImageEx& outImage)
         }
         }
 
-        while ((ch = NEXTBYTE))
+        ch = NEXTBYTE;
+        while (ch)
         {
             ptr += ch;
+            ch = NEXTBYTE;
         }
     }
 

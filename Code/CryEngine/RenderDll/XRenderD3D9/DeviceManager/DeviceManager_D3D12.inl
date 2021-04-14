@@ -79,9 +79,9 @@ void CDeviceTexture::DownloadToStagingResource(uint32 nSubRes, StagingHook cbTra
     D3D11_RESOURCE_DIMENSION eResourceDimension;
     m_pD3DTexture->GetType(&eResourceDimension);
 
-    D3DResource* pStagingResource;
+    D3DResource* pStagingResource = GetCurrDownloadStagingResource();
     void* pStagingMemory = nullptr;
-    if (!(pStagingResource = GetCurrDownloadStagingResource()))
+    if (!pStagingResource)
     {
         pStagingResource = gcpRendD3D->m_DevMan.AllocateStagingResource(m_pD3DTexture, FALSE);
     }
@@ -135,9 +135,9 @@ void CDeviceTexture::UploadFromStagingResource(uint32 nSubRes, StagingHook cbTra
     D3D11_RESOURCE_DIMENSION eResourceDimension;
     m_pD3DTexture->GetType(&eResourceDimension);
 
-    D3DResource* pStagingResource;
+    D3DResource* pStagingResource = GetCurrUploadStagingResource();
     void* pStagingMemory = nullptr;
-    if (!(pStagingResource = GetCurrUploadStagingResource()))
+    if (!pStagingResource)
     {
         pStagingResource = gcpRendD3D->m_DevMan.AllocateStagingResource(m_pD3DTexture, TRUE);
     }

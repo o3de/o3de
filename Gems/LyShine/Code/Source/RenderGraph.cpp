@@ -518,8 +518,6 @@ namespace LyShine
             return;
         }
 
-        int priorBaseState = uiRenderer->GetBaseState();
-
         ISystem* system = gEnv->pSystem;
         if (system && !gEnv->IsDedicated())
         {

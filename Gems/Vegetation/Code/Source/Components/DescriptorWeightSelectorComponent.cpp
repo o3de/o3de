@@ -53,7 +53,6 @@ namespace Vegetation
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<DescriptorWeightSelectorConfig>()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Constructor()
                 ->Property("noiseType",
@@ -98,7 +97,6 @@ namespace Vegetation
             behaviorContext->Class<DescriptorWeightSelectorComponent>()->RequestBus("DescriptorWeightSelectorRequestBus");
 
             behaviorContext->EBus<DescriptorWeightSelectorRequestBus>("DescriptorWeightSelectorRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Event("GetSortBehavior", &DescriptorWeightSelectorRequestBus::Events::GetSortBehavior)
                 ->Event("SetSortBehavior", &DescriptorWeightSelectorRequestBus::Events::SetSortBehavior)

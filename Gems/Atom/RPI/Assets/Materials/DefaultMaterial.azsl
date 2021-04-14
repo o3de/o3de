@@ -106,7 +106,7 @@ PixelOutput MainPS(VertexOutput input)
     if (o_useNormalMap)
     {
         float4 sampledValue = MaterialSrg::m_normalMap.Sample(MaterialSrg::m_sampler, input.m_uv);
-        normal = GetWorldSpaceNormal(sampledValue, input.m_normal, input.m_tangent, input.m_bitangent);
+        normal = GetWorldSpaceNormal(sampledValue.xy, input.m_normal, input.m_tangent, input.m_bitangent);
     }
     else
     {

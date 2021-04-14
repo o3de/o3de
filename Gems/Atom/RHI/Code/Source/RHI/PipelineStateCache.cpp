@@ -30,6 +30,7 @@ namespace AZ
 
         void PipelineStateCache::ValidateCacheIntegrity() const
         {
+#if defined(AZ_ENABLE_TRACING)
             for (size_t i = 0; i < m_globalLibrarySet.size(); ++i)
             {
                 const GlobalLibraryEntry& globalLibraryEntry = m_globalLibrarySet[i];
@@ -53,7 +54,6 @@ namespace AZ
 
                 for (size_t i = 0; i < libraryCount; ++i)
                 {
-                    const GlobalLibraryEntry& globalLibraryEntry = m_globalLibrarySet[i];
                     const ThreadLibraryEntry& threadLibraryEntry = threadLibrarySet[i];
 
                     if (!m_globalLibraryActiveBits[i])
@@ -64,6 +64,7 @@ namespace AZ
                     AZ_Assert(threadLibraryEntry.m_threadLocalCache.empty(), "Thread library should not have any items in its local cache.");
                 }
             });
+#endif
         }
 
         void PipelineStateCache::Reset()
@@ -283,7 +284,6 @@ namespace AZ
             AZStd::shared_lock<AZStd::shared_mutex> lock(m_mutex);
 
             GlobalLibraryEntry& globalLibraryEntry = m_globalLibrarySet[handle.GetIndex()];
-            const PipelineStateSet& readOnlyCache = globalLibraryEntry.m_readOnlyCache;
             PipelineStateHash pipelineStateHash = descriptor.GetHash();
 
             // Search the read-only cache first.
@@ -323,7 +323,7 @@ namespace AZ
 
                     ConstPtr<PipelineState> pipelineState = CompilePipelineState(globalLibraryEntry, threadLibraryEntry, descriptor, pipelineStateHash);
 
-                    bool success = InsertPipelineState(threadLocalCache, PipelineStateEntry(pipelineStateHash, pipelineState, descriptor));
+                    [[maybe_unused]] bool success = InsertPipelineState(threadLocalCache, PipelineStateEntry(pipelineStateHash, pipelineState, descriptor));
                     AZ_Assert(success, "PipelineStateEntry already exists in the thread cache.");
 
                     return pipelineState.get();
@@ -354,7 +354,7 @@ namespace AZ
                 // but don't initialize it yet. We can safely allocate the 'empty' instance and cache it.
                 pipelineState = Factory::Get().CreatePipelineState();
 
-                bool success = InsertPipelineState(pendingCache, PipelineStateEntry(pipelineStateHash, pipelineState, descriptor));
+                [[maybe_unused]] bool success = InsertPipelineState(pendingCache, PipelineStateEntry(pipelineStateHash, pipelineState, descriptor));
                 AZ_Assert(success, "PipelineStateEntry already exists in the pending cache.");
             }
 

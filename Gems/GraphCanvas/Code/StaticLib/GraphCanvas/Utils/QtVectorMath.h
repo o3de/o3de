@@ -61,8 +61,6 @@ namespace GraphCanvas
                 return 0;
             }
 
-            int distance = -1;
-
             // Find the line between the two rectangles.
             QPointF direction = rectA.center() - rectB.center();
             QLineF directionLine(rectA.center(), rectB.center());

@@ -955,7 +955,6 @@ SHWActivatedShader::~SHWActivatedShader()
 }
 bool CShaderMan::mfReleasePreactivatedShaderData()
 {
-    bool bRes = true;
     FXCompressedShadersItor it;
     std::vector<CCryNameTSCRC> DelStuff;
     for (it = CHWShader::m_CompressedShaders.begin(); it != CHWShader::m_CompressedShaders.end(); ++it)
@@ -992,7 +991,6 @@ bool CShaderMan::mfPreactivateShaders2(
     bool bLoaded = LevelLookup.LoadData((pathPerLevel + "lookupdata.bin").c_str(), CParserBin::m_bEndians, true);
     if (bLoaded)
     {
-        const AZStd::string& pathGlobal = gRenDev->m_cEF.m_ShadersCache;
         
         const char* cgcShaders = "cgcshaders";
         const char* cgdShaders = "cgdshaders";

@@ -369,7 +369,7 @@ TEST_F(SpawnerComponentTest, DestroySpawnedSlice_BeforeOnSpawnBegin_ContextFires
     AzFramework::SliceInstantiationTicket ticket = m_spawnerComponent->SpawnSlice(m_sliceAssetRef);
     m_spawnerComponent->DestroySpawnedSlice(ticket);
 
-    bool onSpawnedSliceDestroyed = TickUntil([this, ticket]() { return m_spawnWatcher->m_tickets[ticket].m_onSpawnedSliceDestroyed; });
+    TickUntil([this, ticket]() { return m_spawnWatcher->m_tickets[ticket].m_onSpawnedSliceDestroyed; });
 
     bool onSliceInstantiationFailed = contextWatcher.m_onSliceInstantiationFailedTickets.count(ticket) > 0;
     EXPECT_TRUE(onSliceInstantiationFailed);
@@ -646,7 +646,8 @@ public:
 
         if (m_object)
         {
-            if (m_editorSpawnerComponent = azrtti_cast<LmbrCentral::EditorSpawnerComponent*>(m_object->GetTemplate()))
+            m_editorSpawnerComponent = azrtti_cast<LmbrCentral::EditorSpawnerComponent*>(m_object->GetTemplate());
+            if (m_editorSpawnerComponent)
             {
                 m_readConfigSuccess = m_editorSpawnerComponent->GetConfiguration(m_spawnerConfig);
             }

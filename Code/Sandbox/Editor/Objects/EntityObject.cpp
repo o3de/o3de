@@ -1881,7 +1881,6 @@ CMaterial* CEntityObject::GetRenderMaterial() const
 //////////////////////////////////////////////////////////////////////////
 void CEntityObject::SetHelperScale(float scale)
 {
-    bool bChanged = m_helperScale != scale;
     m_helperScale = scale;
 }
 
@@ -2034,8 +2033,6 @@ void CEntityObject::ApplyOptics(const QString& opticsFullName, IOpticsElementBas
 //////////////////////////////////////////////////////////////////////////
 void CEntityObject::SetOpticsName(const QString& opticsFullName)
 {
-    bool bUpdateOpticsProperty = true;
-
     if (opticsFullName.isEmpty())
     {
         CDLight* pLight = GetLightProperty();

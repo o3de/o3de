@@ -1406,7 +1406,6 @@ void TranslateVariableName(HLSLCrossCompilerContext* psContext, const Operand* p
 {
     bool hasConstructor = false;
     bstring glsl = *psContext->currentGLSLString;
-    int numComponents = GetNumSwizzleElements(psOperand);
 
     *pui32IgnoreSwizzle = 0;
 
@@ -1747,7 +1746,6 @@ char ResourceGroupPrefix(ResourceGroup eResGroup)
 
 void ResourceName(bstring output, Shader* psShader, const char* szName, ResourceGroup eGroup, const char* szSecondaryName, ResourceGroup eSecondaryGroup, uint32_t ui32ArrayOffset, const char* szModifier)
 {
-    int i = 0;
 
     const char* pBracket;
 
@@ -1784,7 +1782,6 @@ void TextureName(bstring output, Shader* psShader, const uint32_t ui32TextureReg
     ResourceBinding* psTextureBinding = 0;
     ResourceBinding* psSamplerBinding = 0;
     int found;
-    uint32_t ui32ArrayOffset = 0;
     const char* szModifier = bCompare ? "c" : "";
 
     found = GetResourceFromBindingPoint(RGROUP_TEXTURE, ui32TextureRegister, &psShader->sInfo, &psTextureBinding);

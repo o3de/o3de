@@ -50,6 +50,15 @@ namespace AZ
                 }
             }
 
+            void MeshVertexColorData::CloneAttributesFrom(const IGraphObject* sourceObject)
+            {
+                IMeshVertexColorData::CloneAttributesFrom(sourceObject);
+                if (const auto* typedSource = azrtti_cast<const MeshVertexColorData*>(sourceObject))
+                {
+                    SetCustomName(typedSource->GetCustomName());
+                }
+            }
+
             const AZ::Name& MeshVertexColorData::GetCustomName() const
             {
                 return m_customName;
@@ -59,7 +68,10 @@ namespace AZ
             {
                 m_customName = name;
             }
-
+            void MeshVertexColorData::SetCustomName(const AZ::Name& name)
+            {
+                m_customName = name;
+            }
 
             size_t MeshVertexColorData::GetCount() const
             {

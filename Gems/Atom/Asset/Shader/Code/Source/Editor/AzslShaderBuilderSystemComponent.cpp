@@ -102,7 +102,8 @@ namespace AZ
             // Register Shader Resource Group Layout Builder
             AssetBuilderSDK::AssetBuilderDesc srgLayoutBuilderDescriptor;
             srgLayoutBuilderDescriptor.m_name = "Shader Resource Group Layout Builder";
-            srgLayoutBuilderDescriptor.m_version = 52; // ATOM-15196
+            srgLayoutBuilderDescriptor.m_version = 53; // ATOM-15196
+
             srgLayoutBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.azsl", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             srgLayoutBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.azsli", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             srgLayoutBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern(AZStd::string::format("*.%s", SrgLayoutBuilder::MergedPartialSrgsExtension), AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
@@ -144,7 +145,7 @@ namespace AZ
             // Register Precompiled Shader Builder
             AssetBuilderSDK::AssetBuilderDesc precompiledShaderBuilderDescriptor;
             precompiledShaderBuilderDescriptor.m_name = "Precompiled Shader Builder";
-            precompiledShaderBuilderDescriptor.m_version = 6; // ATOM-14918
+            precompiledShaderBuilderDescriptor.m_version = 7; // ATOM-14780
             precompiledShaderBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern(AZStd::string::format("*.%s", AZ::PrecompiledShaderBuilder::Extension), AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             precompiledShaderBuilderDescriptor.m_busId = azrtti_typeid<PrecompiledShaderBuilder>();
             precompiledShaderBuilderDescriptor.m_createJobFunction = AZStd::bind(&PrecompiledShaderBuilder::CreateJobs, &m_precompiledShaderBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);

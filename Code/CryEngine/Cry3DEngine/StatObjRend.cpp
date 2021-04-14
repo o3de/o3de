@@ -155,7 +155,6 @@ void CStatObj::FillRenderObject(const SRendParams& rParams, IRenderNode* pRender
     // Specify transformation
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    IRenderer* pRend = GetRenderer();
 
     assert(pObj);
     if (!pObj)

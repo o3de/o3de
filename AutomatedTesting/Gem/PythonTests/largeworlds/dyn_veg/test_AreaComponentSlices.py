@@ -30,28 +30,28 @@ class TestAreaComponents(object):
     @pytest.fixture(autouse=True)
     def setup_teardown(self, request, workspace, project, level):
         # Cleanup our temp level
-        file_system.delete([os.path.join(workspace.paths.dev(), project, "Levels", level)], True, True)
+        file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
 
         # Cleanup the test slices
-        file_system.delete([os.path.join(workspace.paths.dev(), project, "slices", "TestSlice_1.slice")], True, True)
-        file_system.delete([os.path.join(workspace.paths.dev(), project, "slices", "TestSlice_2.slice")], True, True)
+        file_system.delete([os.path.join(workspace.paths.engine_root(), project, "slices", "TestSlice_1.slice")], True, True)
+        file_system.delete([os.path.join(workspace.paths.engine_root(), project, "slices", "TestSlice_2.slice")], True, True)
 
         def teardown():
             # Cleanup our temp level
-            file_system.delete([os.path.join(workspace.paths.dev(), project, "Levels", level)], True, True)
+            file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
 
             # Cleanup the test slices
             file_system.delete(
-                [os.path.join(workspace.paths.dev(), project, "slices", "TestSlice_1.slice")], True, True
+                [os.path.join(workspace.paths.engine_root(), project, "slices", "TestSlice_1.slice")], True, True
             )
             file_system.delete(
-                [os.path.join(workspace.paths.dev(), project, "slices", "TestSlice_2.slice")], True, True
+                [os.path.join(workspace.paths.engine_root(), project, "slices", "TestSlice_2.slice")], True, True
             )
 
         request.addfinalizer(teardown)
 
     @pytest.mark.test_case_id("C2627900", "C2627905", "C2627904")
-    @pytest.mark.SUITE_main
+    @pytest.mark.SUITE_periodic
     def test_AreaComponents_SliceCreationVisibilityToggleWorks(self, request, editor, level, workspace,
                                                               launcher_platform):
         cfg_args = [level]

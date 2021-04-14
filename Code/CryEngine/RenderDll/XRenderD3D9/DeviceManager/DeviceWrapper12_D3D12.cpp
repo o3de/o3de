@@ -159,9 +159,6 @@ void CDeviceResourceSet_DX12::Build()
         gcpRendD3D->m_DevBufMan.ReleaseDescriptorBlock(m_DescriptorBlockHandle);
     }
 
-    auto pContext = reinterpret_cast<CCryDX12DeviceContext*>(&gcpRendD3D->GetDeviceContext());
-    auto pCoreCommandList = pContext->GetCoreGraphicsCommandList();
-
     // CBV_SRV_UAV heap, SMP heap not yet supported
     uint32 numberResources = m_ConstantBuffers.size() + m_Textures.size() + m_Buffers.size();
     uint32 blockSize = std::max(numberResources, 1u);

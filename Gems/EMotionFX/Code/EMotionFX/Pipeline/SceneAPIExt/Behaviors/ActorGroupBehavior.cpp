@@ -147,7 +147,6 @@ namespace EMotionFX
 
                 Group::ActorGroup* group = azrtti_cast<Group::ActorGroup*>(&target);
                 group->SetName(AZ::SceneAPI::DataTypes::Utilities::CreateUniqueName<Group::IActorGroup>(scene.GetName(), scene.GetManifest()));
-                AZ::SceneAPI::Containers::RuleContainer& rules = group->GetRuleContainer();
 
                 // LOD Rule need to be built first in the actor, so we know which mesh and bone belongs to LOD.
                 // After this call, LOD rule will be populated with all the LOD bones
@@ -198,7 +197,6 @@ namespace EMotionFX
             {
                 bool updated = false;
                 SceneContainers::SceneManifest& manifest = scene.GetManifest();
-                const SceneContainers::SceneGraph& sceneGraph = scene.GetGraph();
                 auto valueStorage = manifest.GetValueStorage();
                 auto view = AZ::SceneAPI::Containers::MakeDerivedFilterView<Group::ActorGroup>(valueStorage);
                 for (Group::ActorGroup& group : view)

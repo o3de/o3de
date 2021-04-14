@@ -205,7 +205,7 @@ namespace AZ
             {
                 SceneManifest testManifest;
                 AZStd::shared_ptr<MockManifestInt> testDataObject = AZStd::make_shared<MockManifestInt>(100);
-                bool result = testManifest.AddEntry(AZStd::move(testDataObject));
+                testManifest.AddEntry(AZStd::move(testDataObject));
                 EXPECT_FALSE(testManifest.IsEmpty());
             }
 
@@ -214,7 +214,7 @@ namespace AZ
             {
                 SceneManifest testManifest;
                 AZStd::shared_ptr<MockManifestInt> testDataObject = AZStd::make_shared<MockManifestInt>(100);
-                bool result = testManifest.AddEntry(AZStd::move(testDataObject));
+                testManifest.AddEntry(AZStd::move(testDataObject));
                 EXPECT_FALSE(testManifest.IsEmpty());
                 testManifest.Clear();
                 EXPECT_TRUE(testManifest.IsEmpty());

@@ -30,8 +30,6 @@ namespace
     // Shirleys concentric mapping
     static Vec2 ToUnitDisk(Vec2 O, float blades, [[maybe_unused]] float fstop)
     {
-        float max_fstops = 8;
-        float min_fstops = 1;
         float normalizedStops = 1.0f;
 
         float phi, r;

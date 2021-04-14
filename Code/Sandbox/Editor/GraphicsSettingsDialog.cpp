@@ -491,7 +491,7 @@ void GraphicsSettingsDialog::LoadPlatformConfigurations()
         m_currentConfigFilename = m_cfgFiles[m_currentPlatform][cfgFileIndex];
         GetISystem()->LoadConfiguration(m_currentConfigFilename.c_str(), this, true);
 
-        CVarGroupInfo& specFileGroup = m_cvarGroupData["SpecFile"];
+        /*CVarGroupInfo& specFileGroup =*/ m_cvarGroupData["SpecFile"];
         m_graphicsSettingsModel->setHeaderData(cfgFileIndex + CVAR_VALUE_COLUMN_OFFSET, Qt::Horizontal, QApplication::translate("GraphicsSettingsDialog", m_cfgFiles[m_currentPlatform][cfgFileIndex].c_str()));
     }
 

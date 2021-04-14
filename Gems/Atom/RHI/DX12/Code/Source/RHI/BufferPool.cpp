@@ -330,13 +330,17 @@ namespace AZ
                 mappedData += request.m_byteOffset;
                 
             }
-            else if(mappedData = GetResolver()->MapBuffer(request))
-            {
-                m_memoryUsage.m_transferPull.m_bytesPerFrame += RHI::AlignUp(request.m_byteCount, Alignment::Buffer);
-            }
             else
             {
-                return RHI::ResultCode::OutOfMemory;
+                mappedData = GetResolver()->MapBuffer(request);
+                if (mappedData)
+                {
+                    m_memoryUsage.m_transferPull.m_bytesPerFrame += RHI::AlignUp(request.m_byteCount, Alignment::Buffer);
+                }
+                else
+                {
+                    return RHI::ResultCode::OutOfMemory;
+                }
             }
 
             response.m_data = mappedData;
