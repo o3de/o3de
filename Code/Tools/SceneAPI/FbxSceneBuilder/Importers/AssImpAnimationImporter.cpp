@@ -48,10 +48,10 @@ namespace AZ
             {
                 const double totalTicks = duration / ticksPerSecond;
                 AZ::u32 numKeys = keysSize;
-                double dT = totalTicks / AssImpAnimationImporter::s_defaultTimeStepBetweenFrames;
-                if (!AZ::IsClose(dT, numKeys, 1))
+                double totalTicksAtDefaultTimeStep = totalTicks / AssImpAnimationImporter::s_defaultTimeStepBetweenFrames;
+                if (!AZ::IsClose(totalTicksAtDefaultTimeStep, numKeys, 1))
                 {
-                    numKeys = AZStd::ceilf(dT) + 1; // +1 because the animation is from [0, duration] - we have a keyframe at the end of the duration which needs to be included
+                    numKeys = AZStd::ceilf(totalTicksAtDefaultTimeStep) + 1; // +1 because the animation is from [0, duration] - we have a keyframe at the end of the duration which needs to be included
                 }
                 return numKeys;
             }
