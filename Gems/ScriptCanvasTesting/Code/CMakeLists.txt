@@ -23,8 +23,6 @@ ly_add_target(
         PRIVATE
             Source
             .
-        PUBLIC
-            Include
     COMPILE_DEFINITIONS
         PRIVATE
             SCRIPTCANVAS_EDITOR

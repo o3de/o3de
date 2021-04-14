@@ -408,7 +408,7 @@ int rcmain(int argc, char** argv, [[maybe_unused]] char** envp)
         Config mainConfig;
         mainConfig.SetConfigKeyRegistry(&rc);
 
-        QSettings settings("HKEY_CURRENT_USER\\Software\\Amazon\\Lumberyard\\Settings", QSettings::NativeFormat);
+        QSettings settings("HKEY_CURRENT_USER\\Software\\Amazon\\O3DE\\Settings", QSettings::NativeFormat);
         bool enableSourceControl = settings.value("RC_EnableSourceControl", true).toBool();
         mainConfig.SetKeyValue(eCP_PriorityCmdline, "nosourcecontrol", enableSourceControl ? "0" : "1");
 

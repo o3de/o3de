@@ -32,7 +32,7 @@ namespace EMotionFX
         /**
          * Represents an EMotionFX actor asset.
          * Each asset maintains storage of the original EMotionFX binary asset (via EMotionFXAsset base class).
-         * Initialization of the asset constructs Lumberyard rendering objects, such as the render mesh and material,
+         * Initialization of the asset constructs Open 3D Engine rendering objects, such as the render mesh and material,
          * directly from the instantiated EMotionFX actor.
          * An easy future memory optimization is to wipe the EMotionFXAsset buffer after the actor, render meshes,
          * and materials are created, since it's technically no longer necessary. At this stage it's worth keeping
@@ -68,7 +68,7 @@ namespace EMotionFX
 
         /**
          * Asset handler for loading and initializing actor assets.
-         * The OnInitAsset stage constructs Lumberyard render meshes and materials by extracting
+         * The OnInitAsset stage constructs Open 3D Engine render meshes and materials by extracting
          * said data from the EMotionFX actor.
          */
         class ActorAssetHandler

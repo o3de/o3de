@@ -17,7 +17,7 @@ import time
 from typing import Sequence
 from .report import Report
 
-# Lumberyard specific imports
+# Open 3D Engine specific imports
 import azlmbr.legacy.general as general
 import azlmbr.legacy.settings as settings
 

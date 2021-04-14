@@ -18,6 +18,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Utils/Utils.h>
 
 #include <AzFramework/Physics/CharacterBus.h>
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
@@ -860,16 +861,13 @@ namespace EMotionFX
             using namespace AzToolsFramework;
 
             // Construct data folder that is used by the tool for loading assets (images etc.).
-            AZStd::string devRootPath;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(devRootPath, &AzFramework::ApplicationRequests::GetEngineRoot);
-            devRootPath += "Gems/EMotionFX/Assets/Editor/";
-            AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::NormalizePathKeepCase, devRootPath);
+            auto editorAssetsPath = (AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / "Gems/EMotionFX/Assets/Editor").LexicallyNormal();
 
             // Re-initialize EMStudio.
             int argc = 0;
             char** argv = nullptr;
 
-            MysticQt::Initializer::Init("", devRootPath.c_str());
+            MysticQt::Initializer::Init("", editorAssetsPath.c_str());
             EMStudio::Initializer::Init(qApp, argc, argv);
 
             InitializeEMStudioPlugins();

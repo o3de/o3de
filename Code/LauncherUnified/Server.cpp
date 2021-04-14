@@ -12,7 +12,7 @@
 
 #include <AzCore/std/string/string_view.h>
 
-namespace LumberyardLauncher
+namespace O3DELauncher
 {
     bool WaitForAssetProcessorConnect()
     {

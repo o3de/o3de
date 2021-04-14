@@ -17,7 +17,7 @@
 #include <AzCore/Debug/Trace.h>
 
 #include <AzCore/Memory/OSAllocator.h>
-
+#include <AzCore/IO/Path/Path.h>
 
 namespace AZ
 {
@@ -28,9 +28,9 @@ namespace AZ
             namespace
             {
                 ////////////////////////////////////////////////////////////////
-                const char* GetApkAssetsPrefix()
+                constexpr const char* GetApkAssetsPrefix()
                 {
-                    return "/APK/";
+                    return "/APK";
                 }
             }
 
@@ -104,19 +104,14 @@ namespace AZ
             ////////////////////////////////////////////////////////////////
             bool IsApkPath(const char* filePath)
             {
-                return (strncmp(filePath, GetApkAssetsPrefix(), 4) == 0); // +3 for "APK", +1 for '/' starting slash
+                return AZ::IO::PathView(filePath).IsRelativeTo(AZ::IO::PathView(GetApkAssetsPrefix()));
             }
 
             ////////////////////////////////////////////////////////////////
-            const char* StripApkPrefix(const char* filePath)
+            AZ::IO::FixedMaxPath StripApkPrefix(const char* filePath)
             {
-                const int prefixLength = 5; // +3 for "APK", +2 for '/' on either end
-                if (!IsApkPath(filePath))
-                {
-                    return filePath;
-                }
-
-                return filePath + prefixLength;
+                constexpr AZ::IO::PathView apkPrefixView = GetApkAssetsPrefix();
+                return AZ::IO::PathView(filePath).LexicallyProximate(apkPrefixView);
             }
 
             ////////////////////////////////////////////////////////////////
@@ -130,7 +125,7 @@ namespace AZ
                 // first check to see if they are in public storage (application specific)
                 const char* publicAppStorage = GetAppPublicStoragePath();
 
-                OSString path = OSString::format("%s/bootstrap.cfg", publicAppStorage);
+                OSString path = OSString::format("%s/engine.json", publicAppStorage);
                 AZ_TracePrintf("Android::Utils", "Searching for %s\n", path.c_str());
 
                 FILE* f = fopen(path.c_str(), "r");
@@ -145,7 +140,7 @@ namespace AZ
                 AAssetManager* mgr = GetAssetManager();
                 if (mgr)
                 {
-                    AAsset* asset = AAssetManager_open(mgr, "bootstrap.cfg", AASSET_MODE_UNKNOWN);
+                    AAsset* asset = AAssetManager_open(mgr, "engine.json", AASSET_MODE_UNKNOWN);
                     if (asset)
                     {
                         AAsset_close(asset);

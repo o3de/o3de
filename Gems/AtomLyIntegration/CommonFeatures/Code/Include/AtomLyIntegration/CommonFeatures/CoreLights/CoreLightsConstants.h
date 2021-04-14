@@ -22,10 +22,6 @@ namespace AZ
     {
         static constexpr const char* const AreaLightComponentTypeId = "{744B3961-6242-4461-983F-2817D9D29C30}";
         static constexpr const char* const EditorAreaLightComponentTypeId = "{8B605C0C-9027-4E0B-BA8C-19E396F8F262}";
-        static constexpr const char* const PointLightComponentTypeId = "{0A0E44AB-F583-481F-8AE8-68C4B1F9CD05}";
-        static constexpr const char* const EditorPointLightComponentTypeId = "{C4D354BE-5247-41FD-9A8D-550C6772EE5B}";
-        static constexpr const char* const SpotLightComponentTypeId = "{441DF0EC-6B70-451E-AEBE-6452A17BB852}";
-        static constexpr const char* const EditorSpotLightComponentTypeId = "{9A32D37B-C5D2-43A7-B574-E2EA1CDC7D64}";
         static constexpr const char* const DirectionalLightComponentTypeId = "{13054592-2753-46C2-B19E-59670D4CE03D}";
         static constexpr const char* const EditorDirectionalLightComponentTypeId = "{45B97527-6E72-411B-BC23-00068CF01580}";
 

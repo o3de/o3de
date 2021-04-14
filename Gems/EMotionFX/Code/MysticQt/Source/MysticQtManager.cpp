@@ -14,7 +14,7 @@
 #include "MysticQtManager.h"
 #include <MCore/Source/StringConversions.h>
 #include <QtGui/QIcon>
-
+#include <QDir>
 
 namespace MysticQt
 {
@@ -48,7 +48,7 @@ namespace MysticQt
     MysticQtManager::IconData::IconData(const char* filename)
     {
         mFileName = filename;
-        mIcon = new QIcon(AZStd::string::format("%s%s", GetMysticQt()->GetDataDir().c_str(), filename).c_str());
+        mIcon = new QIcon(QDir{ QString(GetMysticQt()->GetDataDir().c_str()) }.filePath(filename));
     }
 
 

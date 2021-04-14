@@ -226,7 +226,7 @@ void IDebugCallStack::FatalError(const char* description)
     bShowDebugScreen = bShowDebugScreen && gEnv->mMainThreadId == CryGetCurrentThreadId();
     if (bShowDebugScreen)
     {
-        EBUS_EVENT(AZ::NativeUI::NativeUIRequestBus, DisplayOkDialog, "Lumberyard Fatal Error", description, false);
+        EBUS_EVENT(AZ::NativeUI::NativeUIRequestBus, DisplayOkDialog, "Open 3D Engine Fatal Error", description, false);
     }
 #endif
 

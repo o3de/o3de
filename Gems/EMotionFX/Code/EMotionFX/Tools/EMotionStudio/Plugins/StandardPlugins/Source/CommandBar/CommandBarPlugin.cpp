@@ -17,6 +17,7 @@
 #include "../MotionWindow/MotionListWindow.h"
 #include <AzQtComponents/Components/Widgets/Slider.h>
 #include <QAction>
+#include <QDir>
 #include <QLineEdit>
 #include <QApplication>
 #include <QAction>
@@ -87,8 +88,9 @@ namespace EMStudio
         m_toggleLockSelectionCallback = new CommandToggleLockSelectionCallback(false);
         GetCommandManager()->RegisterCommandCallback("ToggleLockSelection", m_toggleLockSelectionCallback);
 
-        m_lockEnabledIcon    = new QIcon(AZStd::string(MysticQt::GetDataDir() + "/Images/Icons/LockEnabled.svg").c_str());
-        m_lockDisabledIcon   = new QIcon(AZStd::string(MysticQt::GetDataDir() + "/Images/Icons/LockDisabled.svg").c_str());
+        QDir dataDir{ QString(MysticQt::GetDataDir().c_str()) };
+        m_lockEnabledIcon    = new QIcon(dataDir.filePath("Images/Icons/LockEnabled.svg"));
+        m_lockDisabledIcon   = new QIcon(dataDir.filePath("Images/Icons/LockDisabled.svg"));
 
         m_commandEdit = new QLineEdit();
         m_commandEdit->setPlaceholderText("Enter command");
@@ -108,7 +110,7 @@ namespace EMStudio
         connect(m_globalSimSpeedSlider, &AzQtComponents::SliderDouble::valueChanged, this, &CommandBarPlugin::OnGlobalSimSpeedChanged);
         m_globalSimSpeedSliderAction = mBar->addWidget(m_globalSimSpeedSlider);
 
-        m_globalSimSpeedResetAction = mBar->addAction(MysticQt::GetMysticQt()->FindIcon("/Images/Icons/Reset.svg"),
+        m_globalSimSpeedResetAction = mBar->addAction(MysticQt::GetMysticQt()->FindIcon("Images/Icons/Reset.svg"),
             tr("Reset the global simulation speed factor to its normal speed"),
             this, &CommandBarPlugin::ResetGlobalSimSpeed);
 
@@ -127,7 +129,7 @@ namespace EMStudio
         m_progressBarAction = mBar->addWidget(m_progressBar);
         m_progressBarAction->setVisible(false);
 
-        m_lockSelectionAction = mBar->addAction(MysticQt::GetMysticQt()->FindIcon("/Images/Icons/Reset.svg"),
+        m_lockSelectionAction = mBar->addAction(MysticQt::GetMysticQt()->FindIcon("Images/Icons/Reset.svg"),
             tr("Lock or unlock the selection of actor instances"),
             this, &CommandBarPlugin::OnLockSelectionButton);
 

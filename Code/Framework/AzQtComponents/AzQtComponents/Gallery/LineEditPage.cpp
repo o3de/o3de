@@ -11,7 +11,7 @@
 */
 
 #include "LineEditPage.h"
-#include "Gallery/ui_LineEditPage.h"
+#include <AzQtComponents/Gallery/ui_LineEditPage.h>
 
 #include <QValidator>
 #include <QDoubleValidator>
