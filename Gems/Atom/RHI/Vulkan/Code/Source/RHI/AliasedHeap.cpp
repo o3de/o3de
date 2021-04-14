@@ -57,7 +57,6 @@ namespace AZ
 
         void AliasedHeap::ShutdownResourceInternal(RHI::Resource& resource)
         {
-            Device& device = GetVulkanRHIDevice();
             if (Buffer* buffer = azrtti_cast<Buffer*>(&resource))
             {
                 buffer->m_memoryView = {};

@@ -607,8 +607,6 @@ namespace EMStudio
 
         if (azrtti_typeid(parentNode) == azrtti_typeid<EMotionFX::AnimGraphStateMachine>())
         {
-            const EMotionFX::AnimGraphStateMachine* stateMachine = static_cast<const EMotionFX::AnimGraphStateMachine*>(parentNode);
-
             AZStd::optional<AZStd::string> contents;
             if (conditionType == azrtti_typeid<EMotionFX::AnimGraphMotionCondition>() &&
                 sourceNode && azrtti_typeid(sourceNode) == azrtti_typeid<EMotionFX::AnimGraphMotionNode>())
@@ -693,8 +691,6 @@ namespace EMStudio
         {
             return;
         }
-
-        EMotionFX::AnimGraphStateTransition* transition = m_displayingModelIndex.data(AnimGraphModel::ROLE_TRANSITION_POINTER).value<EMotionFX::AnimGraphStateTransition*>();
 
         QMenu menu(this);
 

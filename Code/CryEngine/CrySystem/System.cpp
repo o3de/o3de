@@ -944,7 +944,6 @@ public:
         LARGE_INTEGER stepStart, stepEnd;
 #endif
         LARGE_INTEGER waitStart, waitEnd;
-        uint64 yieldBegin = 0U;
         MarkThisThreadForDebugging("Physics");
 
 #if defined(AZ_RESTRICTED_PLATFORM)
@@ -1452,20 +1451,12 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
     //bool bPause = false;
     bool bNoUpdate = false;
 #ifndef EXCLUDE_UPDATE_ON_CONSOLE
-    //check what is the current process
-    IProcess* pProcess = GetIProcess();
-    if (!pProcess)
-    {
-        return (true); //should never happen
-    }
     if (m_sysNoUpdate && m_sysNoUpdate->GetIVal())
     {
         bNoUpdate = true;
         updateFlags = ESYSUPDATE_IGNORE_PHYSICS;
     }
 
-    //if ((pProcess->GetFlags() & PROC_MENU) || (m_sysNoUpdate && m_sysNoUpdate->GetIVal()))
-    //  bPause = true;
     m_bNoUpdate = bNoUpdate;
 #endif //EXCLUDE_UPDATE_ON_CONSOLE
 
@@ -1538,7 +1529,7 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
     }
 
     //////////////////////////////////////////////////////////////////////////
-    if (m_env.pRenderer->GetIStereoRenderer()->IsRenderingToHMD())
+    if (m_env.pRenderer && m_env.pRenderer->GetIStereoRenderer()->IsRenderingToHMD())
     {
         EBUS_EVENT(AZ::VR::HMDDeviceRequestBus, UpdateInternalState);
     }
@@ -1635,7 +1626,7 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
         // AI gets to steer entities before they travel over cliffs etc.
         const float maxTimeStep = 0.25f;
         int maxSteps = 1;
-        float fCurTime = m_Time.GetCurrTime();
+        //float fCurTime = m_Time.GetCurrTime();
         float timeToDo = m_Time.GetFrameTime();//fCurTime - fPrevTime;
         if (m_env.bMultiplayer)
         {
@@ -2697,7 +2688,10 @@ void CSystem::RegisterWindowMessageHandler(IWindowMessageHandler* pHandler)
 void CSystem::UnregisterWindowMessageHandler(IWindowMessageHandler* pHandler)
 {
 #if AZ_LEGACY_CRYSYSTEM_TRAIT_USE_MESSAGE_HANDLER
-    bool bRemoved = stl::find_and_erase(m_windowMessageHandlers, pHandler);
+#if !defined(NDEBUG)
+    bool bRemoved =
+#endif
+        stl::find_and_erase(m_windowMessageHandlers, pHandler);
     assert(pHandler && bRemoved && "This IWindowMessageHandler was not registered");
 #else
     CRY_ASSERT(false && "This platform does not support window message handlers");
@@ -2858,8 +2852,6 @@ bool CSystem::HandleMessage([[maybe_unused]] HWND hWnd, UINT uMsg, WPARAM wParam
     default:
         return false;
     }
-
-    return true;
 }
 
 #endif

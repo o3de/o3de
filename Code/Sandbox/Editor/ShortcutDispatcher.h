@@ -45,10 +45,10 @@ class QKeyEvent;
   More documentation on Qt shortcuts
   -------------------------------------------
 
-  Here's some more detailed info regarding shortcuts in Qt. Not specific Lumberyard but
+  Here's some more detailed info regarding shortcuts in Qt. Not specific Open 3D Engine but
   useful as not explained in Qt docs much.
 
-  P.S.: The following text details the strategy used in an earlier Lumberyard version. Not sure which
+  P.S.: The following text details the strategy used in an earlier Open 3D Engine version. Not sure which
         shortcut context type it uses nowadays, but eitherway, the following text is educational,
         and all the traps still exist in current Qt (5.11).
 

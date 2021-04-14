@@ -11,7 +11,7 @@
 */
 
 #include "BreadCrumbsPage.h"
-#include "Gallery/ui_BreadCrumbsPage.h"
+#include <AzQtComponents/Gallery/ui_BreadCrumbsPage.h>
 
 #include <QDebug>
 #include <QStyle>

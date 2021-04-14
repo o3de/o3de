@@ -507,7 +507,6 @@ namespace AZ
                     return Events::ProcessingResult::Ignored;
                 }
                 Events::ProcessingResultCombiner combinedAnimationResult;
-                aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
 
                 // In:
                 //  Key index

@@ -357,7 +357,7 @@ namespace PhysX
 #endif // AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
     {
         AZ::Transform floorTransform = AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisZ(-0.5f));
-        auto floor = PhysX::TestUtils::AddStaticFloorToScene(m_testSceneHandle, floorTransform);
+        PhysX::TestUtils::AddStaticFloorToScene(m_testSceneHandle, floorTransform);
         auto ragdoll = CreateRagdoll(m_testSceneHandle);
         ragdoll->EnableSimulation(GetTPose());
 

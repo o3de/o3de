@@ -64,6 +64,7 @@ ly_add_target(
             3rdParty::etc2comp
             3rdParty::PVRTexTool
             3rdParty::squish-ccr
+            3rdParty::zlib
             3rdParty::tiff
             Legacy::CryCommon
             AZ::AzCore

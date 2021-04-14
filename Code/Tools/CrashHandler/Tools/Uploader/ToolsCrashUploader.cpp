@@ -32,11 +32,11 @@
 
 #include "UI/ui_submit_report.h"
 
-namespace Lumberyard
+namespace O3de
 {
     void InstallCrashUploader(int& argc, char* argv[])
     {
-        Lumberyard::CrashUploader::SetCrashUploader(std::make_shared<Lumberyard::ToolsCrashUploader>(argc, argv));
+        O3de::CrashUploader::SetCrashUploader(std::make_shared<O3de::ToolsCrashUploader>(argc, argv));
     }
     QString GetReportString(const std::wstring& reportPath)
     {

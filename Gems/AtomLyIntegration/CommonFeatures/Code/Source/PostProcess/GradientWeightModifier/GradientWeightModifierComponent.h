@@ -16,7 +16,7 @@
 #include <AzFramework/Components/ComponentAdapter.h>
 #include <AtomLyIntegration/CommonFeatures/PostProcess/GradientWeightModifier/GradientWeightModifierComponentConstants.h>
 #include <AtomLyIntegration/CommonFeatures/PostProcess/GradientWeightModifier/GradientWeightModifierComponentConfig.h>
-#include <PostProcess/GradientWeightModifier/GradientWeightModifierComponentController.h>
+#include <PostProcess/GradientWeightModifier/GradientWeightModifierController.h>
 
 namespace AZ
 {

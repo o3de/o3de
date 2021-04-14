@@ -70,7 +70,7 @@ namespace
 }
 
 
-namespace LumberyardLauncher
+namespace O3DELauncher
 {
     bool IncreaseResourceLimits()
     {

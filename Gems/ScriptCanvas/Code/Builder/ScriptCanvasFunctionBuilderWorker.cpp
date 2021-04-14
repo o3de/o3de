@@ -298,7 +298,6 @@ namespace ScriptCanvasBuilder
                 if (saveRuntimAssetOutcome.IsSuccess())
                 {
                     // \todo this file is only required on PC editor builds, cull it in packaging, here or wherever appropriate
-                    ScriptCanvasEditor::ScriptCanvasFunctionDataComponent* sourceDataComponent = asset.Get()->GetFunctionData();
                     AzFramework::StringFunc::Path::StripExtension(fileNameOnly);
 
                     ScriptCanvas::SubgraphInterfaceData functionInterface;

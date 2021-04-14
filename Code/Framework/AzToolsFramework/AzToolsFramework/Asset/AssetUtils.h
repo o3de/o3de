@@ -52,5 +52,5 @@ namespace AzToolsFramework::AssetUtils
     //!        which will be normalized and updated to be correct casing.
     //! @return if such a file does NOT exist, it returns FALSE, else returns TRUE.
     //! @note A very expensive function!  Call sparingly.
-    bool UpdateFilePathToCorrectCase(const QString& root, QString& relativePathFromRoot);
+    bool UpdateFilePathToCorrectCase(AZStd::string_view root, AZStd::string& relativePathFromRoot);
 } //namespace AzToolsFramework::AssetUtils

@@ -1599,11 +1599,7 @@ void CD3D9Renderer::RT_BeginFrame()
 
 #if defined(SUPPORT_DEVICE_INFO)
 
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    if (m_bEditor && !IsRenderToTextureActive())
-#else
     if (m_bEditor)
-#endif //if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
     {
         const int width = GetWidth();
         const int height = GetHeight();
@@ -2495,10 +2491,6 @@ void CD3D9Renderer::DebugDrawStats1()
     size_t nMemApp = 0;
     size_t nMemDevVB = 0;
     size_t nMemDevIB = 0;
-    size_t nMemDevVBPool = 0;
-    size_t nMemDevIBPool = 0;
-    size_t nMemDevVBPoolUsed = 0;
-    size_t nMemDevIBPoolUsed = 0;
     {
         AUTO_LOCK(CRenderMesh::m_sLinkLock);
         for (util::list<CRenderMesh>* iter = CRenderMesh::m_MeshList.prev; iter != &CRenderMesh::m_MeshList; iter = iter->prev)
@@ -3024,7 +3016,6 @@ void CD3D9Renderer::DebugVidResourcesBars([[maybe_unused]] int nX, [[maybe_unuse
             {
                 if (!tp->IsStreamed())
                 {
-                    int nnn = 0;
                 }
                 if (tp->GetName()[0] != '$' && tp->GetNumMips() <= 1)
                 {
@@ -3551,7 +3542,6 @@ void CD3D9Renderer::DebugDrawStats2()
     Draw2dLabel(nX, nY, 2.0f, &col.r, false, "FX Shader: %s, Technique: %s (%d out of %d), Pass: %d", pTech->pShader->GetName(), pTech->pTech->m_NameStr.c_str(), snTech, Techs.Num(), 0);
     nY += 25;
 
-    CHWShader_D3D* pVS = pTech->pVS;
     CHWShader_D3D* pPS = pTech->pPS;
     DebugPrintShader(pTech->pVS, pTech->pVSInst, nX - 10, nY, Col_White);
     DebugPrintShader(pPS, pTech->pPSInst, nX + 450, nY, Col_Cyan);
@@ -3614,7 +3604,6 @@ void CD3D9Renderer::DebugDrawStats()
             IRenderer::RNDrawcallsMapNodeItor pItor = m_RP.m_pRNDrawCallsInfoPerNode[m_RP.m_nProcessThreadID].begin();
             for (; pItor != pEnd; ++pItor)
             {
-                IRenderNode* pRenderNode = pItor->first;
                 SDrawCallCountInfo& pInfo = pItor->second;
 
                 uint32 nDrawcalls = pInfo.nShadows + pInfo.nZpass + pInfo.nGeneral + pInfo.nTransparent + pInfo.nMisc;
@@ -3699,11 +3688,6 @@ void CD3D9Renderer::RT_RenderDebug([[maybe_unused]] bool bRenderStats)
         return;
     }
 #if !defined(_RELEASE)
-    if (CV_r_showbufferusage)
-    {
-        const uint32 xStartCoord = 695;
-        int YStep = 12;
-    }
 
 #if REFRACTION_PARTIAL_RESOLVE_DEBUG_VIEWS
     if (CV_r_RefractionPartialResolvesDebug)
@@ -4332,7 +4316,6 @@ void CD3D9Renderer::RT_RenderDebug([[maybe_unused]] bool bRenderStats)
                     s.Trim();
                     if (s.length() > 0)
                     {
-                        const char* curName = s.c_str();
                         nameList.push_back(s);
                     }
                     p = azstrtok(NULL, 0, " ", &nextToken);
@@ -4468,7 +4451,6 @@ void CD3D9Renderer::RT_EndFrame(bool isLoading)
         return;
     }
 
-    float fTime = 0; //iTimer->GetAsyncCurTimePrec();
     HRESULT hReturn = E_FAIL;
 
     CTimeValue TimeEndF = iTimer->GetAsyncTime();
@@ -4932,7 +4914,6 @@ bool CD3D9Renderer::ScreenShotInternal([[maybe_unused]] const char* filename, [[
     // ignore invalid file access for screenshots
     CDebugAllowFileAccess ignoreInvalidFileAccess;
 
-    bool bRet = true;
 #if !defined(_RELEASE) || defined(WIN32) || defined(WIN64) || defined(ENABLE_LW_PROFILERS)
     if (m_pRT && !m_pRT->IsRenderThread())
     {
@@ -5059,8 +5040,11 @@ bool CD3D9Renderer::ScreenShotInternal([[maybe_unused]] const char* filename, [[
 
     return CaptureFrameBufferToFile(path);
 
+#else
+
+    return true;
+
 #endif//_RELEASE
-    return bRet;
 }
 
 bool CD3D9Renderer::ScreenShot(const char* filename, int iPreWidth)
@@ -5674,8 +5658,6 @@ bool CD3D9Renderer::CaptureFrameBufferFast([[maybe_unused]] unsigned char* pDstR
     }
 
     SAFE_RELEASE(pSourceTexture);
-
-    return bStatus;
 #endif
 
     return bStatus;
@@ -5728,8 +5710,6 @@ bool CD3D9Renderer::CopyFrameBufferFast([[maybe_unused]] unsigned char* pDstRGBA
         GetDeviceContext().Unmap(pCopyTexture, 0);
         bStatus = true;
     }
-
-    return bStatus;
 #endif
 
     return bStatus;
@@ -6033,12 +6013,7 @@ void CD3D9Renderer::RT_DrawImageWithUVInternal(float xpos, float ypos, float z, 
 
     PROFILE_FRAME(Draw_2DImage);
 
-    HRESULT hReturn = S_OK;
 
-    float fx = xpos;
-    float fy = ypos;
-    float fw = w;
-    float fh = h;
 
     SetCullMode(R_CULL_DISABLE);
     EF_SetColorOp(eCO_MODULATE, eCO_MODULATE, DEF_TEXARG0, DEF_TEXARG0);
@@ -6193,7 +6168,6 @@ void CD3D9Renderer::PopMatrix()
 //-----------------------------------------------------------------------------
 Matrix44A OffCenterProjection(const CCamera& cam, const Vec3& nv, unsigned short max, unsigned short win_width, unsigned short win_height)
 {
-    int nThreadID = gRenDev->m_pRT->GetThreadList();
 
     //get the size of near plane
     float l = +nv.x;
@@ -6288,7 +6262,6 @@ void CD3D9Renderer::SetCamera(const CCamera& cam)
     mViewFinal.m31 = mView.m32;
     mViewFinal.m32 = -mView.m31;
 
-    Matrix44A* m = &m_RP.m_TI[nThreadID].m_matView;
     m_RP.m_TI[nThreadID].m_matView = mViewFinal;
 
     mViewFinal.m30 = 0;

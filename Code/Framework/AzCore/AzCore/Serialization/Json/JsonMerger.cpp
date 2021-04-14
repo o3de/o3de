@@ -20,7 +20,7 @@ namespace AZ
 {
     JsonSerializationResult::ResultCode JsonMerger::ApplyPatch(rapidjson::Value& target,
         rapidjson::Document::AllocatorType& allocator, const rapidjson::Value& patch,
-        const JsonApplyPatchSettings& settings)
+        JsonApplyPatchSettings& settings)
     {
         using namespace JsonSerializationResult;
 
@@ -122,7 +122,7 @@ namespace AZ
 
     JsonSerializationResult::ResultCode JsonMerger::CreatePatch(rapidjson::Value& patch,
         rapidjson::Document::AllocatorType& allocator, const rapidjson::Value& source,
-        const rapidjson::Value& target, const JsonCreatePatchSettings& settings)
+        const rapidjson::Value& target, JsonCreatePatchSettings& settings)
     {
         StackedString element(StackedString::Format::JsonPointer);
         return CreatePatchInternal(patch.SetArray(), allocator, source, target, element, settings);
@@ -130,7 +130,7 @@ namespace AZ
 
     JsonSerializationResult::ResultCode JsonMerger::ApplyMergePatch(rapidjson::Value& target,
         rapidjson::Document::AllocatorType& allocator, const rapidjson::Value& patch,
-        const JsonApplyPatchSettings& settings)
+        JsonApplyPatchSettings& settings)
     {
         using namespace JsonSerializationResult;
 
@@ -196,14 +196,14 @@ namespace AZ
 
     JsonSerializationResult::ResultCode JsonMerger::CreateMergePatch(rapidjson::Value& patch,
         rapidjson::Document::AllocatorType& allocator, const rapidjson::Value& source,
-        const rapidjson::Value& target, const JsonCreatePatchSettings& settings)
+        const rapidjson::Value& target, JsonCreatePatchSettings& settings)
     {
         StackedString element(StackedString::Format::JsonPointer);
         return CreateMergePatchInternal(patch, allocator, source, target, element, settings);
     }
 
     JsonSerializationResult::ResultCode JsonMerger::ApplyPatch_GetFromValue(rapidjson::Value** fromValue, rapidjson::Pointer& fromPointer,
-        rapidjson::Value& target, const rapidjson::Value& entry, StackedString& element, const JsonApplyPatchSettings& settings)
+        rapidjson::Value& target, const rapidjson::Value& entry, StackedString& element, JsonApplyPatchSettings& settings)
     {
         using namespace JsonSerializationResult;
 
@@ -242,7 +242,7 @@ namespace AZ
 
     JsonSerializationResult::ResultCode JsonMerger::ApplyPatch_Add(rapidjson::Value& target,
         rapidjson::Document::AllocatorType& allocator, const rapidjson::Value& entry, const rapidjson::Pointer& path,
-        StackedString& element, const JsonApplyPatchSettings& settings)
+        StackedString& element, JsonApplyPatchSettings& settings)
     {
         using namespace JsonSerializationResult;
 
@@ -261,7 +261,7 @@ namespace AZ
 
     JsonSerializationResult::ResultCode JsonMerger::ApplyPatch_AddValue(rapidjson::Value& target,
         rapidjson::Document::AllocatorType& allocator, const rapidjson::Pointer& path, rapidjson::Value&& newValue,
-        StackedString& element, const JsonApplyPatchSettings& settings)
+        StackedString& element, JsonApplyPatchSettings& settings)
     {
         using namespace JsonSerializationResult;
 
@@ -347,7 +347,7 @@ namespace AZ
     }
 
     JsonSerializationResult::ResultCode JsonMerger::ApplyPatch_Remove(rapidjson::Value& target, const rapidjson::Pointer& path,
-        StackedString& element, const JsonApplyPatchSettings& settings)
+        StackedString& element, JsonApplyPatchSettings& settings)
     {
         using namespace JsonSerializationResult;
 
@@ -399,7 +399,7 @@ namespace AZ
 
     JsonSerializationResult::ResultCode JsonMerger::ApplyPatch_Replace(rapidjson::Value& target,
         rapidjson::Document::AllocatorType& allocator, const rapidjson::Value& entry, const rapidjson::Pointer& path,
-        StackedString& element, const JsonApplyPatchSettings& settings)
+        StackedString& element, JsonApplyPatchSettings& settings)
     {
         using namespace JsonSerializationResult;
 
@@ -426,7 +426,7 @@ namespace AZ
 
     JsonSerializationResult::ResultCode JsonMerger::ApplyPatch_Move(rapidjson::Value& target,
         rapidjson::Document::AllocatorType& allocator, const rapidjson::Value& entry, const rapidjson::Pointer& path,
-        StackedString& element, const JsonApplyPatchSettings& settings)
+        StackedString& element, JsonApplyPatchSettings& settings)
     {
         using namespace JsonSerializationResult;
 
@@ -445,7 +445,7 @@ namespace AZ
 
     JsonSerializationResult::ResultCode JsonMerger::ApplyPatch_Copy(rapidjson::Value& target,
         rapidjson::Document::AllocatorType& allocator, const rapidjson::Value& entry, const rapidjson::Pointer& path,
-        StackedString& element, const JsonApplyPatchSettings& settings)
+        StackedString& element, JsonApplyPatchSettings& settings)
     {
         using namespace JsonSerializationResult;
 
@@ -463,7 +463,7 @@ namespace AZ
     }
 
     JsonSerializationResult::ResultCode JsonMerger::ApplyPatch_Test(rapidjson::Value& target, const rapidjson::Value& entry,
-        const rapidjson::Pointer& path, StackedString& element, const JsonApplyPatchSettings& settings)
+        const rapidjson::Pointer& path, StackedString& element, JsonApplyPatchSettings& settings)
     {
         using namespace JsonSerializationResult;
 
@@ -495,7 +495,7 @@ namespace AZ
 
     JsonSerializationResult::ResultCode JsonMerger::CreatePatchInternal(rapidjson::Value& patch,
         rapidjson::Document::AllocatorType& allocator, const rapidjson::Value& source,
-        const rapidjson::Value& target, StackedString& element, const JsonCreatePatchSettings& settings)
+        const rapidjson::Value& target, StackedString& element, JsonCreatePatchSettings& settings)
     {
         using namespace JsonSerializationResult;
         
@@ -633,7 +633,7 @@ namespace AZ
 
     JsonSerializationResult::ResultCode JsonMerger::CreateMergePatchInternal(rapidjson::Value& patch,
         rapidjson::Document::AllocatorType& allocator, const rapidjson::Value& source,
-        const rapidjson::Value& target, StackedString& element, const JsonCreatePatchSettings& settings)
+        const rapidjson::Value& target, StackedString& element, JsonCreatePatchSettings& settings)
     {
         using namespace JsonSerializationResult;
 

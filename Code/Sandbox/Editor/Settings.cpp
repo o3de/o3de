@@ -703,6 +703,10 @@ void SEditorSettings::Save()
 //////////////////////////////////////////////////////////////////////////
 void SEditorSettings::Load()
 {
+    // Load from Settings Registry
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(
+        prefabSystem, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+
     const int settingsVersion = s_editorSettings()->value(QStringLiteral("Settings/EditorSettingsVersion"), 0).toInt();
 
     if (settingsVersion != EditorSettingsVersion)
@@ -942,11 +946,6 @@ void SEditorSettings::Load()
             searchPaths[id].push_back(path);
         }
     }
-
-    // Load from Settings Registry
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        prefabSystem, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1091,7 +1090,7 @@ void SEditorSettings::ConvertPath(const AZStd::string_view sourcePath, AZStd::st
 {
     // This API accepts pipe-separated paths like "Category1|Category2|AttributeName"
     // But the SettingsManager requires 2 arguments, a Category like "Category1\Category2" and an attribute "AttributeName"
-    // The reason for the difference is to have this API be consistent with the path syntax in Lumberyard Python APIs.
+    // The reason for the difference is to have this API be consistent with the path syntax in Open 3D Engine Python APIs.
 
     // Find the last pipe separator ("|") in the path
     int lastSeparator = sourcePath.find_last_of("|");

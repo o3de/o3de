@@ -96,8 +96,8 @@ namespace AZ::IO
         constexpr int Compare(const value_type* pathString) const noexcept;
 
         // decomposition
-        //! Given a windows path of "C:\lumberyard\foo\bar\name.txt" and a posix path of
-        //! "/lumberyard/foo/bar/name.txt"
+        //! Given a windows path of "C:\O3DE\foo\bar\name.txt" and a posix path of
+        //! "/O3DE/foo/bar/name.txt"
         //! The following functions return the following
 
         //! Returns the root name part of the path. if it has one.
@@ -114,10 +114,10 @@ namespace AZ::IO
         constexpr PathView RootPath() const;
         //! Returns the relative path portion of the path.
         //! This contains the path parts after the root path
-        //! windows = "lumberyard\foo\bar\name.txt", posix = "lumberyard/foo/bar/name.txt"
+        //! windows = "O3DE\foo\bar\name.txt", posix = "O3DE/foo/bar/name.txt"
         constexpr PathView RelativePath() const;
         //! Returns the parent directory of filename contained within the path
-        //! windows = "C:\lumberyard\foo\bar", posix = "/lumberyard/foo/bar"
+        //! windows = "C:\O3DE\foo\bar", posix = "/O3DE/foo/bar"
         //! NOTE: If the path ends with a trailing separator "test/foo/" it is treated as being a path of
         //! "test/foo" as if the filename of the path is "foo" and the parent directory is "test"
         constexpr PathView ParentPath() const;
@@ -150,7 +150,7 @@ namespace AZ::IO
         //! The root portion of the path is made up of root_name() / root_directory()
         [[nodiscard]] constexpr bool HasRootPath() const;
         //! checks whether the relative part of path is empty
-        //! (C:\\     lumberyard\dev\)
+        //! (C:\\     O3DE\dev\)
         //!    ^            ^
         //! root part    relative part
         [[nodiscard]] constexpr bool HasRelativePath() const;
@@ -485,10 +485,10 @@ namespace AZ::IO
         constexpr PathView RootPath() const;
         //! Returns the relative path portion of the path.
         //! This contains the path parts after the root path
-        //! windows = "lumberyard\foo\bar\name.txt", posix = "lumberyard/foo/bar/name.txt"
+        //! windows = "O3DE\foo\bar\name.txt", posix = "O3DE/foo/bar/name.txt"
         constexpr PathView RelativePath() const;
         //! Returns the parent directory of filename contained within the path
-        //! windows = "C:\lumberyard\foo\bar", posix = "/lumberyard/foo/bar"
+        //! windows = "C:\O3DE\foo\bar", posix = "/O3DE/foo/bar"
         //! NOTE: If the path ends with a trailing separator "test/foo/" it is treated as being a path of
         //! "test/foo" as if the filename of the path is "foo" and the parent directory is "test"
         constexpr PathView ParentPath() const;
@@ -521,8 +521,8 @@ namespace AZ::IO
         //! The root portion of the path is made up of root_name() / root_directory()
         [[nodiscard]] constexpr bool HasRootPath() const;
         //! checks whether the relative part of path is empty
-        //! (C:\\     lumberyard\dev\)
-        //!    ^            ^
+        //! (C:\\     O3DE\dev\)
+        //!    ^          ^
         //! root part    relative part
         [[nodiscard]] constexpr bool HasRelativePath() const;
         //! checks whether the path has a parent path that  empty
@@ -544,8 +544,8 @@ namespace AZ::IO
         [[nodiscard]] constexpr bool IsRelativeTo(const PathView& base) const;
 
         // decomposition
-        //! Given a windows path of "C:\lumberyard\foo\bar\name.txt" and a posix path of
-        //! "/lumberyard/foo/bar/name.txt"
+        //! Given a windows path of "C:\O3DE\foo\bar\name.txt" and a posix path of
+        //! "/O3DE/foo/bar/name.txt"
         //! The following functions return the following
 
         // query

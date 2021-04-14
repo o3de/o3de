@@ -11,7 +11,7 @@
 */
 
 #include "StyleSheetPage.h"
-#include "Gallery/ui_StyleSheetPage.h"
+#include <AzQtComponents/Gallery/ui_StyleSheetPage.h>
 
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>

@@ -116,7 +116,6 @@ namespace AZ
 
         void ImagePool::ShutdownResourceInternal(RHI::Resource& resourceBase)
         {
-            auto& device = static_cast<Device&>(GetDevice());
             auto& image = static_cast<Image&>(resourceBase);
 
             m_memoryAllocator.DeAllocate(image.m_memoryView);

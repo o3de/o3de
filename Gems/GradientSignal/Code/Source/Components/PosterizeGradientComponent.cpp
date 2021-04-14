@@ -56,7 +56,6 @@ namespace GradientSignal
         {
             behaviorContext->Class<PosterizeGradientConfig>()
                 ->Constructor()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Property("bands", BehaviorValueProperty(&PosterizeGradientConfig::m_bands))
                 ->Property("mode", 
@@ -101,7 +100,6 @@ namespace GradientSignal
             behaviorContext->Class<PosterizeGradientComponent>()->RequestBus("PosterizeGradientRequestBus");
 
             behaviorContext->EBus<PosterizeGradientRequestBus>("PosterizeGradientRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Event("GetBands", &PosterizeGradientRequestBus::Events::GetBands)
                 ->Event("SetBands", &PosterizeGradientRequestBus::Events::SetBands)

@@ -16,6 +16,8 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/Pass/PassFilter.h>
+#include <Atom/RPI.Public/ViewportContext.h>
+#include <Atom/RPI.Public/ViewportContextBus.h>
 
 namespace AZ
 {
@@ -225,12 +227,29 @@ namespace AZ
             return nullptr;
         }
 
-        bool ImGuiSystemComponent::RenderImGuiBuffersToDefaultPass(const ImDrawData& drawData)
+        bool ImGuiSystemComponent::RenderImGuiBuffersToCurrentViewport(const ImDrawData& drawData)
         {
-            if (m_defaultImguiPassStack.size() > 0)
+            auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+
+            RPI::ViewportContextPtr viewportContext = atomViewportRequests->GetDefaultViewportContext();
+            if (viewportContext == nullptr)
             {
-                m_defaultImguiPassStack.back()->RenderImguiDrawData(drawData);
-                return true;
+                return false;
+            }
+
+            auto renderPipeline = viewportContext->GetCurrentPipeline();
+            if (renderPipeline == nullptr)
+            {
+                return false;
+            }
+
+            for (auto imGuiPass : m_defaultImguiPassStack)
+            {
+                if (imGuiPass->GetRenderPipeline() == renderPipeline.get())
+                {
+                    imGuiPass->RenderImguiDrawData(drawData);
+                    return true;
+                }
             }
             return false;
         }

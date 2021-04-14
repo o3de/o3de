@@ -501,6 +501,7 @@ namespace AWSClientAuthUnitTest
             m_settingsRegistry->SetContext(m_registrationContext.get());
 
             AZ::ComponentApplicationBus::Handler::BusConnect();
+            AZ::Interface<AZ::ComponentApplicationRequests>::Register(this);
 
             if (m_connectClientAuthBus)
             {
@@ -551,10 +552,11 @@ namespace AWSClientAuthUnitTest
             AZ::JsonSystemComponent::Reflect(m_registrationContext.get());
             m_registrationContext->DisableRemoveReflection();
 
+            AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(this);
             AZ::ComponentApplicationBus::Handler::BusDisconnect();
             if (m_connectClientAuthBus)
             {
-               AZ::Interface<IAWSClientAuthRequests>::Unregister(this);
+                AZ::Interface<IAWSClientAuthRequests>::Unregister(this);
                 AWSClientAuth::AWSClientAuthRequestBus::Handler::BusDisconnect();
             }
 
@@ -573,6 +575,8 @@ namespace AWSClientAuthUnitTest
         AZ::ComponentApplication* GetApplication() override { return nullptr; }
         void RegisterComponentDescriptor(const AZ::ComponentDescriptor*) override { }
         void UnregisterComponentDescriptor(const AZ::ComponentDescriptor*) override { }
+        void RegisterEntityAddedEventHandler(AZ::EntityAddedEvent::Handler&) override { }
+        void RegisterEntityRemovedEventHandler(AZ::EntityRemovedEvent::Handler&) override { }
         bool AddEntity(AZ::Entity*) override { return true; }
         bool RemoveEntity(AZ::Entity*) override { return true; }
         bool DeleteEntity(const AZ::EntityId&) override { return true; }

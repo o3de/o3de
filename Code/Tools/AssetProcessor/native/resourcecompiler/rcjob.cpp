@@ -410,6 +410,7 @@ namespace AssetProcessor
         AssetProcessor::SetThreadLocalJobId(builderParams.m_rcJob->GetJobEntry().m_jobRunKey);
         AssetUtilities::JobLogTraceListener jobLogTraceListener(builderParams.m_rcJob->m_jobDetails.m_jobEntry);
 
+#if defined(AZ_ENABLE_TRACING)
         QString sourceFullPath(builderParams.m_processJobRequest.m_fullPath.c_str());
         auto failReason = builderParams.m_processJobRequest.m_jobDescription.m_jobParameters.find(AZ_CRC(AssetProcessor::AutoFailReasonKey));
         if (failReason != builderParams.m_processJobRequest.m_jobDescription.m_jobParameters.end())
@@ -456,6 +457,7 @@ namespace AssetProcessor
                 }
             });
         }
+#endif
 
         // note that this line below is printed out to be consistent with the output from a job that normally failed, so 
         // applications reading log file will find it.
@@ -481,6 +483,7 @@ namespace AssetProcessor
             AssetBuilderSDK::JobCancelListener JobCancelListener(builderParams.m_rcJob->m_jobDetails.m_jobEntry.m_jobRunKey);
             result.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed; // failed by default
 
+#if defined(AZ_ENABLE_TRACING)
             auto warningMessage = builderParams.m_processJobRequest.m_jobDescription.m_jobParameters.find(AZ_CRC(AssetProcessor::JobWarningKey));
             if (warningMessage != builderParams.m_processJobRequest.m_jobDescription.m_jobParameters.end())
             {
@@ -492,6 +495,7 @@ namespace AssetProcessor
                     AZ_Warning(AssetBuilderSDK::WarningWindow, false, "%s", token.c_str());
                 }
             }
+#endif
 
             // create a temporary directory for Builder to work in.
             // lets make it as a subdir of a known temp dir

@@ -237,6 +237,13 @@ namespace ScriptCanvas
             writer.Indent();
         }
 
+        AZStd::string GraphToLua::SanitizeFunctionCallName(AZStd::string_view name)
+        {
+            AZStd::string sanitized(name);
+            AZ::RemovePropertyNameArtifacts(sanitized);
+            return Grammar::ToIdentifier(sanitized);
+        }
+
         AZ::Outcome<TargetResult, ErrorList> GraphToLua::Translate(const Grammar::AbstractCodeModel& model)
         {
             GraphToLua translation(model);
@@ -626,6 +633,10 @@ namespace ScriptCanvas
             {
                 WriteEventDisconnectCall(execution, PostDisconnectAction::SetToNil);
             }
+            else if (Grammar::IsGlobalPropertyRead(execution))
+            {
+                WriteGlobalPropertyRead(execution);
+            }
             else
             {
                 const bool isNullCheckRequired = Grammar::IsFunctionCallNullCheckRequired(execution);
@@ -846,7 +857,6 @@ namespace ScriptCanvas
         {
             for (const auto& nameAndEventThread : ebusHandling->m_events)
             {
-                const AZStd::string& eventName = nameAndEventThread.first;
                 const Grammar::ExecutionTreeConstPtr& eventThread = nameAndEventThread.second;
 
                 const bool hasResults = eventThread->HasReturnValues();
@@ -1766,7 +1776,12 @@ namespace ScriptCanvas
 
             return 0;
         }
-        
+
+        void GraphToLua::WriteGlobalPropertyRead(Grammar::ExecutionTreeConstPtr execution)
+        {
+            m_dotLua.WriteLine(SanitizeFunctionCallName(execution->GetName()));
+        }
+
         void GraphToLua::WriteHeader()
         {
             // no one will ever the see header or the do not modify, so these will not be necessary

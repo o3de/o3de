@@ -19,6 +19,7 @@ set(FILES
     EngineFinder.cmake
     FileUtil.cmake
     Findo3de.cmake
+    Install.cmake
     LyAutoGen.cmake
     LySet.cmake
     LYTestWrappers.cmake

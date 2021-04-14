@@ -342,9 +342,6 @@ namespace ImageProcessingAtom
 
         AZ::Data::Asset<AZ::RPI::StreamingImageAsset> LoadImageAsset(const AZ::Data::AssetId& imageAssetId)
         {
-            RPI::StreamingImageAssetHandler* imageAssetHandler = static_cast<RPI::StreamingImageAssetHandler*>(
-                Data::AssetManager::Instance().GetHandler(RPI::StreamingImageAsset::RTTI_Type()));
-
             // Blocking loading streaming image asset with its mipchain assets
             AZ::Data::Asset<AZ::RPI::StreamingImageAsset> imageAsset = AZ::Data::AssetManager::Instance().GetAsset<AZ::RPI::StreamingImageAsset>(imageAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
 

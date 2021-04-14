@@ -522,12 +522,12 @@ void COctreeNode::LoadSingleObject(byte*& pPtr, [[maybe_unused]] std::vector<ISt
         {
             for (uint32 j(0); j < pChunk->m_numVertices; ++j)
             {
-                SWaterVolumeVertex* pVertex(StepData<SWaterVolumeVertex>(pPtr, eEndian));
+                StepData<SWaterVolumeVertex>(pPtr, eEndian);
             }
 
             for (uint32 j(0); j < pChunk->m_numVerticesPhysAreaContour; ++j)
             {
-                SWaterVolumeVertex* pVertex(StepData<SWaterVolumeVertex>(pPtr, eEndian));
+                StepData<SWaterVolumeVertex>(pPtr, eEndian);
             }
 
             return;
@@ -537,7 +537,7 @@ void COctreeNode::LoadSingleObject(byte*& pPtr, [[maybe_unused]] std::vector<ISt
 
         int auxCntSrc = pChunk->m_volumeTypeAndMiscBits >> 24, auxCntDst;
         float* pAuxDataDst = pObj->GetAuxSerializationDataPtr(auxCntDst);
-        const float* pAuxDataSrc = StepData<float>(pPtr, auxCntSrc, eEndian);
+        StepData<float>(pPtr, auxCntSrc, eEndian);
         memcpy(pAuxDataDst, pAuxDataDst, min(auxCntSrc, auxCntDst) * sizeof(float));
 
         // read common node data

@@ -116,13 +116,15 @@ namespace AssetProcessor
             QString m_fileName;
             bool m_isDelete = false;
             bool m_isFromScanner = false;
+            AZStd::chrono::system_clock::time_point m_initialProcessTime{};
 
             FileEntry() = default;
 
-            FileEntry(const QString& fileName, bool isDelete, bool isFromScanner=false)
+            FileEntry(const QString& fileName, bool isDelete, bool isFromScanner = false, AZStd::chrono::system_clock::time_point initialProcessTime = {})
                 : m_fileName(fileName)
                 , m_isDelete(isDelete)
                 , m_isFromScanner(isFromScanner)
+                , m_initialProcessTime(initialProcessTime)
             {
             }
 
@@ -305,7 +307,9 @@ namespace AssetProcessor
         void CheckSource(const FileEntry& source);
         void CheckMissingJobs(QString relativeSourceFile, const ScanFolderInfo* scanFolder, const AZStd::vector<JobDetails>& jobsThisTime);
         void CheckDeletedProductFile(QString normalizedPath);
-        void CheckDeletedSourceFile(QString normalizedPath, QString relativePath, QString databaseSourceFile);
+        void CheckDeletedSourceFile(
+            QString normalizedPath, QString relativePath, QString databaseSourceFile,
+            AZStd::chrono::system_clock::time_point initialProcessTime);
         void CheckModifiedSourceFile(QString normalizedPath, QString databaseSourceFile, const ScanFolderInfo* scanFolderInfo);
         bool AnalyzeJob(JobDetails& details);
         void CheckDeletedCacheFolder(QString normalizedPath);

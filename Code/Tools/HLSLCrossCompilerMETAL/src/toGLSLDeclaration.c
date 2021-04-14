@@ -227,9 +227,9 @@ void PreDeclareStructType(bstring glsl, const char* Name, const struct ShaderVar
 
     if(psType->Class == SVC_STRUCT)
     {
-        
+#if defined(_DEBUG)
         uint32_t unnamed_struct = strcmp(Name, "$Element") == 0 ? 1 : 0;
-
+#endif
         //Not supported at the moment
         ASSERT(!unnamed_struct);
 
@@ -307,13 +307,16 @@ const char* GetDeclaredOutputName(const HLSLCrossCompilerContext* psContext,
     char* cstr;
     InOutSignature* psOut;
 
-    int foundOutput = GetOutputSignatureFromRegister(
-        psContext->currentPhase,
-        psOperand->ui32RegisterNumber,
-        psOperand->ui32CompMask,
-        psContext->psShader->ui32CurrentVertexOutputStream,
-        &psContext->psShader->sInfo,
-        &psOut);
+#if defined(_DEBUG)
+    int foundOutput =
+#endif
+        GetOutputSignatureFromRegister(
+            psContext->currentPhase,
+            psOperand->ui32RegisterNumber,
+            psOperand->ui32CompMask,
+            psContext->psShader->ui32CurrentVertexOutputStream,
+            &psContext->psShader->sInfo,
+            &psOut);
 
     ASSERT(foundOutput);
 
@@ -463,7 +466,6 @@ static void DeclareInput(
             {
                 if(iNumComponents == 1)
                 {
-                    const uint32_t regNum =  psDecl->asOperands[0].ui32RegisterNumber;
                     const uint32_t arraySize = psDecl->asOperands[0].aui32ArraySizes[0];
 
                     psContext->psShader->abScalarInput[psDecl->asOperands[0].ui32RegisterNumber] = -1;
@@ -1154,7 +1156,10 @@ void DeclareBufferVariable(HLSLCrossCompilerContext* psContext, const uint32_t u
                             bstring glsl)
 {
     bstring StructName;
-    uint32_t unnamed_struct = strcmp(psCBuf->asVars[0].Name, "$Element") == 0 ? 1 : 0;
+#if defined(_DEBUG)
+    uint32_t unnamed_struct =
+#endif
+        strcmp(psCBuf->asVars[0].Name, "$Element") == 0 ? 1 : 0;
 
     ASSERT(psCBuf->ui32NumVars == 1);
     ASSERT(unnamed_struct);
@@ -1868,7 +1873,6 @@ Would generate a vec2 and a vec3. We discard the second one making .z invalid!
         }
         case OPCODE_DCL_TEMPS:
         {
-            uint32_t i = 0; 
             const uint32_t ui32NumTemps = psDecl->value.ui32NumTemps;
 
             if(ui32NumTemps > 0)

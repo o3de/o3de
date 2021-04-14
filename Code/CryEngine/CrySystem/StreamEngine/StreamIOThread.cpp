@@ -279,7 +279,7 @@ void CStreamingIOThread::Run()
                 if (pFileRequest->m_eMediaType != eStreamSourceTypeMemory)
                 {
                     pFileRequest->m_nReadHeadOffsetKB = (int32)(((int64)pFileRequest->m_nDiskOffset - m_nLastReadDiskOffset) >> 10); // in KB
-                    m_nLastReadDiskOffset = pFileRequest->m_nDiskOffset + pFileRequest->m_nSizeOnMedia;
+                    m_nLastReadDiskOffset = pFileRequest->m_nDiskOffset + nSizeOnMedia;
 
 #ifdef STREAMENGINE_ENABLE_STATS
                     m_NotInMemoryStats.m_nTempReadOffset += abs(pFileRequest->m_nReadHeadOffsetKB);
@@ -288,7 +288,7 @@ void CStreamingIOThread::Run()
                     m_NotInMemoryStats.m_nTempRequestCount++;
 
                     // Calc IO bandwidth only for non memory files.
-                    m_NotInMemoryStats.m_nTempBytesRead += pFileRequest->m_nSizeOnMedia;
+                    m_NotInMemoryStats.m_nTempBytesRead += nSizeOnMedia;
                     m_NotInMemoryStats.m_TempReadTime += pFileRequest->m_readTime;
 #endif
                 }
@@ -298,7 +298,7 @@ void CStreamingIOThread::Run()
                     m_InMemoryStats.m_nTempRequestCount++;
 
                     // Calc IO bandwidth only for in memory files.
-                    m_InMemoryStats.m_nTempBytesRead += pFileRequest->m_nSizeOnMedia;
+                    m_InMemoryStats.m_nTempBytesRead += nSizeOnMedia;
                     m_InMemoryStats.m_TempReadTime += pFileRequest->m_readTime;
 #endif
                 }
@@ -753,9 +753,14 @@ void CStreamingWorkerThread::Run()
             {
             case eWorkerAsyncCallback:
             {
+#ifndef _RELEASE
                 float fTime = gEnv->pTimer->GetAsyncCurTime();
+#endif
+                    
                 m_pStreamEngine->ReportAsyncFileRequestComplete(pFileRequest);
+#ifndef _RELEASE
                 float fTime1 = gEnv->pTimer->GetAsyncCurTime();
+#endif
 
 #ifdef STREAMENGINE_ENABLE_STATS
                 CryInterlockedDecrement(&m_pStreamEngine->GetStreamingStatistics().nCurrentAsyncCount);

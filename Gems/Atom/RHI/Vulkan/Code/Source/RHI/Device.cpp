@@ -65,12 +65,12 @@ namespace AZ
             auto& physicalDevice = static_cast<Vulkan::PhysicalDevice&>(physicalDeviceBase);
             RawStringList requiredLayers = GetRequiredLayers();
             RawStringList requiredExtensions = GetRequiredExtensions();
-            
+
             StringList deviceExtensions = physicalDevice.GetDeviceExtensionNames();
-            RawStringList optionalDeviceExtensions = {{ 
-                VK_EXT_SAMPLE_LOCATIONS_EXTENSION_NAME, 
+            RawStringList optionalDeviceExtensions = { {
+                VK_EXT_SAMPLE_LOCATIONS_EXTENSION_NAME,
                 VK_EXT_CONDITIONAL_RENDERING_EXTENSION_NAME,
-                VK_EXT_MEMORY_BUDGET_EXTENSION_NAME, 
+                VK_EXT_MEMORY_BUDGET_EXTENSION_NAME,
                 VK_EXT_DEPTH_CLIP_ENABLE_EXTENSION_NAME,
                 VK_EXT_CONSERVATIVE_RASTERIZATION_EXTENSION_NAME,
                 VK_KHR_DRAW_INDIRECT_COUNT_EXTENSION_NAME,
@@ -150,11 +150,11 @@ namespace AZ
                 {
                     queuePriorities[index] = 1.0f;
                 }
-                
+
                 queueCreateInfo.queueFamilyIndex = static_cast<uint32_t>(familyIndex);
                 queueCreateInfo.queueCount = familyProperties.queueCount;
-                queueCreateInfo.pQueuePriorities = queuePriorities; 
-                
+                queueCreateInfo.pQueuePriorities = queuePriorities;
+
                 queueCreationInfo.push_back(queueCreateInfo);
             }
 
@@ -162,9 +162,27 @@ namespace AZ
             uint32_t majorVersion = VK_VERSION_MAJOR(physicalProperties.apiVersion);
             uint32_t minorVersion = VK_VERSION_MINOR(physicalProperties.apiVersion);
 
+            // unbounded array functionality
+            VkPhysicalDeviceDescriptorIndexingFeatures descriptorIndexingFeatures = {};
+            descriptorIndexingFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES;
+            descriptorIndexingFeatures.shaderInputAttachmentArrayDynamicIndexing = VK_TRUE;
+            descriptorIndexingFeatures.shaderUniformTexelBufferArrayDynamicIndexing = VK_TRUE;
+            descriptorIndexingFeatures.shaderStorageTexelBufferArrayDynamicIndexing = VK_TRUE;
+            descriptorIndexingFeatures.shaderUniformBufferArrayNonUniformIndexing = VK_TRUE;
+            descriptorIndexingFeatures.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
+            descriptorIndexingFeatures.shaderStorageBufferArrayNonUniformIndexing = VK_TRUE;
+            descriptorIndexingFeatures.shaderStorageImageArrayNonUniformIndexing = VK_TRUE;
+            descriptorIndexingFeatures.shaderInputAttachmentArrayNonUniformIndexing = VK_TRUE;
+            descriptorIndexingFeatures.shaderUniformTexelBufferArrayNonUniformIndexing = VK_TRUE;
+            descriptorIndexingFeatures.shaderStorageTexelBufferArrayNonUniformIndexing = VK_TRUE;
+            descriptorIndexingFeatures.descriptorBindingPartiallyBound = VK_TRUE;
+            descriptorIndexingFeatures.descriptorBindingVariableDescriptorCount = VK_TRUE;
+            descriptorIndexingFeatures.runtimeDescriptorArray = VK_TRUE;
+
             VkPhysicalDeviceDepthClipEnableFeaturesEXT depthClipEnabled = {};
             depthClipEnabled.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_ENABLE_FEATURES_EXT;
             depthClipEnabled.depthClipEnable = physicalDevice.GetPhysicalDeviceDepthClipEnableFeatures().depthClipEnable;
+            descriptorIndexingFeatures.pNext = &depthClipEnabled;
 
             VkPhysicalDeviceRobustness2FeaturesEXT robustness2 = {};
             robustness2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT;
@@ -200,7 +218,7 @@ namespace AZ
 
             VkDeviceCreateInfo deviceInfo = {};
             deviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-            deviceInfo.pNext = &depthClipEnabled;
+            deviceInfo.pNext = &descriptorIndexingFeatures;
             deviceInfo.flags = 0;
             deviceInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreationInfo.size());
             deviceInfo.pQueueCreateInfos = queueCreationInfo.data();
@@ -322,7 +340,7 @@ namespace AZ
                 // Need to create an image to get the requirements.
                 // This will not allocate or bind memory.
                 Image image;
-                RHI::ResultCode result = image.Init(*this, descriptor);
+                [[maybe_unused]] RHI::ResultCode result = image.Init(*this, descriptor);
                 AZ_Assert(result == RHI::ResultCode::Success, "Failed to get memory requirements");
                 auto it2 = cache.insert(hash, image.m_memoryRequirements);
                 return it2.first->second;

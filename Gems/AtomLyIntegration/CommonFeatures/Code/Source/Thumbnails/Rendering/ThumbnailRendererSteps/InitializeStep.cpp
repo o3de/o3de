@@ -147,7 +147,7 @@ namespace AZ
                 data->m_renderPipeline->SetDefaultView(data->m_view);
 
                 // Create lighting preset
-                data->m_lightingPresetAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(LightingPresetPath);
+                data->m_lightingPresetAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(ThumbnailRendererData::LightingPresetPath);
                 if (data->m_lightingPresetAsset.IsReady())
                 {
                     auto preset = data->m_lightingPresetAsset->GetDataAs<Render::LightingPreset>();

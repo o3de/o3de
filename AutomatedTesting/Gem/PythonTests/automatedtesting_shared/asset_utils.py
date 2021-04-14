@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # Built-in Imports
 from __future__ import annotations
 
-# Lumberyard Imports
+# Open 3D Engine Imports
 import azlmbr.bus as bus
 import azlmbr.asset as azasset
 import azlmbr.math as math

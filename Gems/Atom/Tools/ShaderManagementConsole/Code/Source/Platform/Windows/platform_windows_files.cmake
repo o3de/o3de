@@ -13,4 +13,5 @@ set(FILES
     ShaderManagementConsole_Traits_Platform.h
     ShaderManagementConsole_Traits_Windows.h
     ShaderManagementConsole_Windows.cpp
+    ShaderManagementConsole.rc
 )

@@ -11,7 +11,7 @@
 */
 
 #include "TypographyPage.h"
-#include <Gallery/ui_TypographyPage.h>
+#include <AzQtComponents/Gallery/ui_TypographyPage.h>
 
 #include <QLabel>
 #include <AzQtComponents/Components/Style.h>

@@ -9,6 +9,7 @@
            Icon="Editor/Icons/ScriptCanvas/DrawText.png"
 		   Category="Utilities/Debug"
 		   Version="1"
+           Deprecated="True"
            GeneratePropertyFriend="True"
            Description="Displays text on the viewport.">
         <In Name="Show" Description="Shows the debug text on the viewport"/>

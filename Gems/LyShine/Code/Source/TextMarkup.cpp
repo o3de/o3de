@@ -38,14 +38,10 @@ namespace
                     targetBuffer.insert(pos, CharStartTag);
                     pos += CharStartTag.length();
 
-                    AZStd::string::size_type substrStart = pos;
-
                     pos = targetBuffer.find("<", pos);
 
                     if (AZStd::string::npos != pos)
                     {
-                        AZStd::string::size_type substrEnd = pos;
-
                         static const AZStd::string CharEndTag("\" />");
                         targetBuffer.insert(pos, CharEndTag);
                         pos += CharEndTag.length();

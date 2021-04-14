@@ -161,7 +161,7 @@ namespace PhysXDebug
         /// Initialise the PhysX debug draw colors based on defaults.
         void InitPhysXColorMappings();
 
-        /// Register debug drawing PhysX commands with Lumberyard console during game mode.
+        /// Register debug drawing PhysX commands with Open 3D Engine console during game mode.
         void RegisterCommands();
 
         /// Draw the culling box being used by the viewport.

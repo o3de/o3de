@@ -73,31 +73,32 @@ if (set_and_validate_viewport_size(150, 300)):
 
 # Set different view pane layouts and verify it works
 success = True
-general.set_view_pane_layout(0)
+#general.set_view_pane_layout(0)
 general.idle_wait(0.5)
+
 success = success and (general.get_view_pane_layout() == 0)
 success = success and (general.get_viewport_count() == 1)
-general.set_view_pane_layout(1)
-general.idle_wait(0.5)
-success = success and (general.get_view_pane_layout() == 1)
-success = success and (general.get_viewport_count() == 2)
+# general.set_view_pane_layout(1)
+# general.idle_wait(0.5)
+# success = success and (general.get_view_pane_layout() == 1)
+# success = success and (general.get_viewport_count() == 2)
 if success:
     print("get_view_pane_layout works")
     print("set_view_pane_layout works")
     print("get_viewport_count works")
 
-success = True
-general.set_active_viewport(0)
-general.idle_wait(0.5)
-success = success and (general.get_active_viewport() == 0)
-general.set_active_viewport(1)
-general.idle_wait(0.5)
-success = success and (general.get_active_viewport() == 1)
-if success:
-    print("get_active_viewport works")
-    print("set_active_viewport works")
+#success = True
+#general.set_active_viewport(0)
+#general.idle_wait(0.5)
+#success = success and (general.get_active_viewport() == 0)
+#general.set_active_viewport(1)
+#general.idle_wait(0.5)
+#success = success and (general.get_active_viewport() == 1)
+#if success:
+#    print("get_active_viewport works")
+#    print("set_active_viewport works")
 
-general.set_view_pane_layout(0)
+#general.set_view_pane_layout(0)
 general.idle_wait(0.5)
 
 editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'ExitNoPrompt')

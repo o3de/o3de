@@ -75,7 +75,6 @@ namespace AZ
             if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
                 behaviorContext->Class<MaterialComponentConfig>("MaterialComponentConfig")
-                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                     ->Attribute(AZ::Script::Attributes::Category, "render")
                     ->Attribute(AZ::Script::Attributes::Module, "render")

@@ -1452,6 +1452,13 @@ namespace AZ
 
         void* parentPtr = nodeStack.back().m_ptr;
         DataElementNode* parentDataElement = nodeStack.back().m_dataElement;
+        AZ_Assert(parentDataElement, "parentDataElement is null, cannot enumerate data from data element (%s:%s)",
+            m_element.m_name ? m_element.m_name : "", m_element.m_id.ToString<AZStd::string>().data());
+        if (!parentDataElement)
+        {
+            return false;
+        }
+
         bool success = true;
 
         if (!m_classData)
@@ -1472,7 +1479,6 @@ namespace AZ
         if (classElementFound)
         {
             void* dataAddress = nullptr;
-            void* reserveAddress = nullptr;
             IDataContainer* dataContainer = parentDataElement->m_classData->m_container;
             if (dataContainer) // container elements
             {
@@ -1500,7 +1506,7 @@ namespace AZ
                 dataAddress = reinterpret_cast<char*>(parentPtr) + classElement.m_offset;
             }
 
-            reserveAddress = dataAddress;
+            void* reserveAddress = dataAddress;
 
             // create a new instance if needed
             if (classElement.m_flags & SerializeContext::ClassElement::FLG_POINTER)

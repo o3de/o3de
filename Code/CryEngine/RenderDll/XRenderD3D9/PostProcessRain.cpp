@@ -267,8 +267,6 @@ void CRainDrops::DrawRaindrops([[maybe_unused]] int iViewportWidth, [[maybe_unus
     float fScreenW = iRTWidth;
     float fScreenH = iRTHeight;
 
-    float fInvScreenW = 1.0f / fScreenW;
-    float fInvScreenH = 1.0f / fScreenH;
 
     TransformationMatrices backupSceneMatrices;
 
