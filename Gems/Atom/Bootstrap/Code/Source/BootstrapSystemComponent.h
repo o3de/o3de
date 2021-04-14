@@ -85,6 +85,7 @@ namespace AZ
 
                 // TickBus::Handler overrides ...
                 void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+                int GetTickOrder() override;
 
                 // AzFramework::AssetCatalogEventBus::Handler overrides ...
                 void OnCatalogLoaded(const char* catalogFile) override;

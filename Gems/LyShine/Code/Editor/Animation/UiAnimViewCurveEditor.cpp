@@ -21,7 +21,7 @@
 #include "UiAnimViewTrack.h"
 #include "AnimationContext.h"
 
-#include <Animation/ui_UiAnimViewCurveEditor.h>
+#include <Editor/Animation/ui_UiAnimViewCurveEditor.h>
 
 #include <QtUtil.h>
 #if defined(Q_OS_WIN)

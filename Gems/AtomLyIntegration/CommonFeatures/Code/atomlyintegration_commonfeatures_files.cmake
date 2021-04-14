@@ -27,21 +27,16 @@ set(FILES
     Source/CoreLights/LightDelegateBase.h
     Source/CoreLights/LightDelegateBase.inl
     Source/CoreLights/LightDelegateInterface.h
-    Source/CoreLights/PointLightComponent.h
-    Source/CoreLights/PointLightComponent.cpp
-    Source/CoreLights/PointLightComponentController.h
-    Source/CoreLights/PointLightComponentController.cpp
     Source/CoreLights/PolygonLightDelegate.h
     Source/CoreLights/PolygonLightDelegate.cpp
     Source/CoreLights/QuadLightDelegate.h
     Source/CoreLights/QuadLightDelegate.cpp
+    Source/CoreLights/SimplePointLightDelegate.h
+    Source/CoreLights/SimplePointLightDelegate.cpp
+    Source/CoreLights/SimpleSpotLightDelegate.h
+    Source/CoreLights/SimpleSpotLightDelegate.cpp
     Source/CoreLights/SphereLightDelegate.h
     Source/CoreLights/SphereLightDelegate.cpp
-    Source/CoreLights/SpotLightComponent.h
-    Source/CoreLights/SpotLightComponent.cpp
-    Source/CoreLights/SpotLightComponentConfig.cpp
-    Source/CoreLights/SpotLightComponentController.h
-    Source/CoreLights/SpotLightComponentController.cpp
     Source/Decals/DecalComponent.h
     Source/Decals/DecalComponent.cpp
     Source/Decals/DecalComponentController.h

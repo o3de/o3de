@@ -11,7 +11,7 @@
 */
 
 #include "SpinBoxPage.h"
-#include "Gallery/ui_SpinBoxPage.h"
+#include <AzQtComponents/Gallery/ui_SpinBoxPage.h>
 
 #include <AzQtComponents/Components/Widgets/SpinBox.h>
 #include <QUndoCommand>

@@ -665,7 +665,7 @@ void CMaterialManager::AddSourceFileOpeners(const char* fullSourceFileName, [[ma
             }
         };
 
-        openers.push_back({ "Lumberyard_MaterialEditor", "Open In Material Editor...", QIcon(), materialCallback });
+        openers.push_back({ "O3DE_MaterialEditor", "Open In Material Editor...", QIcon(), materialCallback });
     }
 }
 

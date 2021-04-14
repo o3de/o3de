@@ -12,7 +12,7 @@
 
 /** @file
  * Header file for the Component base class.
- * In Lumberyard's component entity system, each component defines a discrete  
+ * In Open 3D Engine's component entity system, each component defines a discrete  
  * feature that can be attached to an entity.
  */
 
@@ -76,7 +76,7 @@ namespace AZ
          * practice to access other components through EBuses instead of accessing them directly. 
          * For more information, see the 
          * <a href="http://docs.aws.amazon.com/lumberyard/latest/developerguide/component-entity-system-pg-intro.html">Programmer's Guide to Entities and Components</a> 
-         * in the Lumberyard Developer Guide.
+         * in the Open 3D Engine Developer Guide.
          * @return A pointer to the entity. If the component is not attached to any entity,
          * the return value is a null pointer.
          */
@@ -426,7 +426,7 @@ namespace AZ
 
     /**
      * Describes the properties of the component descriptor event bus.
-     * This bus uses AzTypeInfo::Uuid as the ID for the specific descriptor. Lumberyard allows only one
+     * This bus uses AzTypeInfo::Uuid as the ID for the specific descriptor. Open 3D Engine allows only one
      * descriptor for each component type. When you call functions on the bus for a specific component
      * type, you can safely pass only one result variable because aggregating or overwriting results
      * is impossible.

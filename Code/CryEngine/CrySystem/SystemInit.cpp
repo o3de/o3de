@@ -248,7 +248,7 @@ CUNIXConsole* pUnixConsole;
 #define LOCALIZATION_TRANSLATIONS_LIST_FILE_NAME "Libs/Localization/localization.xml"
 
 #define LOAD_LEGACY_RENDERER_FOR_EDITOR true // If you set this to false you must for now also set 'ed_useAtomNativeViewport' to true (see /Code/Sandbox/Editor/ViewManager.cpp)
-#define LOAD_LEGACY_RENDERER_FOR_LAUNCHER true
+#define LOAD_LEGACY_RENDERER_FOR_LAUNCHER false
 
 //////////////////////////////////////////////////////////////////////////
 // Where possible, these are defaults used to initialize cvars
@@ -1256,7 +1256,7 @@ bool CSystem::OpenRenderLibrary(int type, const SSystemInitParams& initParams)
                 if (allowPrompts)
                 {
                     AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Asking user if they wish to continue...");
-                    const int mbRes = MessageBoxW(0, GetErrorStringUnsupportedGPU(gpuName, gpuVendorId, gpuDeviceId).c_str(), L"Lumberyard", MB_ICONWARNING | MB_OKCANCEL | MB_DEFBUTTON2 | MB_DEFAULT_DESKTOP_ONLY);
+                    const int mbRes = MessageBoxW(0, GetErrorStringUnsupportedGPU(gpuName, gpuVendorId, gpuDeviceId).c_str(), L"Open 3D Engine", MB_ICONWARNING | MB_OKCANCEL | MB_DEFBUTTON2 | MB_DEFAULT_DESKTOP_ONLY);
                     if (mbRes == IDCANCEL)
                     {
                         AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "User chose to cancel startup due to unsupported GPU.");
@@ -2093,7 +2093,7 @@ static bool CheckCPURequirements([[maybe_unused]] CCpuFeatures* pCpu, [[maybe_un
             if (allowPrompts)
             {
                 AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Asking user if they wish to continue...");
-                const int mbRes = MessageBoxW(0, GetErrorStringUnsupportedCPU().c_str(), L"Lumberyard", MB_ICONWARNING | MB_OKCANCEL | MB_DEFBUTTON2 | MB_DEFAULT_DESKTOP_ONLY);
+                const int mbRes = MessageBoxW(0, GetErrorStringUnsupportedCPU().c_str(), L"Open 3D Engine", MB_ICONWARNING | MB_OKCANCEL | MB_DEFBUTTON2 | MB_DEFAULT_DESKTOP_ONLY);
                 if (mbRes == IDCANCEL)
                 {
                     AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "User chose to cancel startup.");
@@ -2305,7 +2305,7 @@ AZ_POP_DISABLE_WARNING
 
         if (!bIsWindowsXPorLater)
         {
-            AZ_Error(AZ_TRACE_SYSTEM_WINDOW, false, "Lumberyard requires an OS version of Windows XP or later.");
+            AZ_Error(AZ_TRACE_SYSTEM_WINDOW, false, "Open 3D Engine requires an OS version of Windows XP or later.");
             return false;
         }
     }
@@ -2420,7 +2420,7 @@ AZ_POP_DISABLE_WARNING
             azstrcpy(
                 headerString,
                 AZ_ARRAY_SIZE(headerString),
-                "Lumberyard - "
+                "Open 3D Engine - "
 #if defined(LINUX)
                 "Linux "
 #elif defined(MAC)

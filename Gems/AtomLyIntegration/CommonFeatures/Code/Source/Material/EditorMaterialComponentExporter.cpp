@@ -175,19 +175,19 @@ namespace AZ
                     tableWidget->setCellWidget(row, OverwriteFileColumn, overwriteCheckBoxContainer);
 
                     // Whenever the selection is updated, automatically apply the change to the export item
-                    QObject::connect(materialSlotCheckBox, &QCheckBox::stateChanged, materialSlotCheckBox, [&]([[maybe_unused]] int state) {
+                    QObject::connect(materialSlotCheckBox, &QCheckBox::stateChanged, materialSlotCheckBox, [&exportItem, materialFileWidget, materialSlotCheckBox, overwriteCheckBox]([[maybe_unused]] int state) {
                         exportItem.m_enabled = materialSlotCheckBox->isChecked();
                         materialFileWidget->setEnabled(exportItem.m_enabled);
                         overwriteCheckBox->setEnabled(exportItem.m_enabled && exportItem.m_exists);
                     });
 
                     // Whenever the overwrite check box is updated, automatically apply the change to the export item
-                    QObject::connect(overwriteCheckBox, &QCheckBox::stateChanged, overwriteCheckBox, [&]([[maybe_unused]] int state) {
+                    QObject::connect(overwriteCheckBox, &QCheckBox::stateChanged, overwriteCheckBox, [&exportItem, overwriteCheckBox]([[maybe_unused]] int state) {
                         exportItem.m_overwrite = overwriteCheckBox->isChecked();
                     });
 
                     // Whenever the browse button is clicked, open a save file dialog in the same location as the current export file setting
-                    QObject::connect(materialFileWidget, &AzQtComponents::BrowseEdit::attachedButtonTriggered, materialFileWidget, [&]() {
+                    QObject::connect(materialFileWidget, &AzQtComponents::BrowseEdit::attachedButtonTriggered, materialFileWidget, [&dialog, &exportItem, materialFileWidget, overwriteCheckBox]() {
                         QFileInfo fileInfo = QFileDialog::getSaveFileName(&dialog,
                             QString("Select Material Filename"),
                             exportItem.m_exportPath.c_str(),
@@ -201,7 +201,7 @@ namespace AZ
                             exportItem.m_exportPath = fileInfo.absoluteFilePath().toUtf8().constData();
                             exportItem.m_exists = fileInfo.exists();
                             exportItem.m_overwrite = fileInfo.exists();
-\
+
                             // Update the controls to display the new state
                             materialFileWidget->setText(fileInfo.fileName());
                             overwriteCheckBox->setChecked(exportItem.m_overwrite);

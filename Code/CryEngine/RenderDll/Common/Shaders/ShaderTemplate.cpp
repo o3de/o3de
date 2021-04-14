@@ -771,7 +771,6 @@ const char* CShaderMan::mfTemplateTexIdToName(int Id)
     default:
         return "Unknown";
     }
-    return "Unknown";
 }
 
 CTexAnim* CShaderMan::mfReadTexSequence(const char* na, int Flags, [[maybe_unused]] bool bFindOnly)

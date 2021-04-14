@@ -597,9 +597,9 @@ namespace AZ
             {
                 // here we are making sure that the buffer being passed in has enough space to include the alias in it.
                 // we are trying to find the LONGEST match, meaning of the following two examples, the second should 'win'
-                // File:  g:/lumberyard/dev/files/morefiles/blah.xml
-                // Alias1 links to 'g:/lumberyard/dev/'
-                // Alias2 links to 'g:/lumberyard/dev/files/morefiles'
+                // File:  g:/O3DE/dev/files/morefiles/blah.xml
+                // Alias1 links to 'g:/O3DE/dev/'
+                // Alias2 links to 'g:/O3DE/dev/files/morefiles'
                 // so returning Alias2 is preferred as it is more specific, even though alias1 includes it.
                 // note that its not possible for this to be matched if the string is shorter than the length of the alias itself so we skip
                 // strings that are shorter than the alias's mapped path without checking.

@@ -4540,9 +4540,17 @@ void ModtimeScanningTest::TearDown()
 
 void ModtimeScanningTest::ProcessAssetJobs()
 {
+    m_data->m_productPaths.clear();
+
     for (const auto& processResult : m_data->m_processResults)
     {
         auto file = QDir(processResult.m_destinationPath).absoluteFilePath(processResult.m_jobEntry.m_databaseSourceName + ".arc1");
+        m_data->m_productPaths.emplace(
+            QDir(processResult.m_jobEntry.m_watchFolderPath)
+                .absoluteFilePath(processResult.m_jobEntry.m_databaseSourceName)
+                .toUtf8()
+                .constData(),
+            file);
 
         // Create the file on disk
         ASSERT_TRUE(UnitTestUtils::CreateDummyFile(file, "products."));
@@ -4791,6 +4799,123 @@ TEST_F(ModtimeScanningTest, ModtimeSkipping_ModifyFile_AndThenRevert_ProcessesAg
 
     // Expect processing to happen again
     ExpectWork(2, 2);
+}
+
+struct LockedFileTest
+    : ModtimeScanningTest
+    , AssetProcessor::ConnectionBus::Handler
+{
+    MOCK_METHOD3(SendRaw, size_t (unsigned, unsigned, const QByteArray&));
+    MOCK_METHOD3(SendPerPlatform, size_t (unsigned, const AzFramework::AssetSystem::BaseAssetProcessorMessage&, const QString&));
+    MOCK_METHOD4(SendRawPerPlatform, size_t (unsigned, unsigned, const QByteArray&, const QString&));
+    MOCK_METHOD2(SendRequest, unsigned (const AzFramework::AssetSystem::BaseAssetProcessorMessage&, const ResponseCallback&));
+    MOCK_METHOD2(SendResponse, size_t (unsigned, const AzFramework::AssetSystem::BaseAssetProcessorMessage&));
+    MOCK_METHOD1(RemoveResponseHandler, void (unsigned));
+
+    size_t Send(unsigned, const AzFramework::AssetSystem::BaseAssetProcessorMessage&) override
+    {
+        if(m_callback)
+        {
+            m_callback();
+        }
+
+        return 0;
+    }
+
+    void SetUp() override
+    {
+        ModtimeScanningTest::SetUp();
+
+        ConnectionBus::Handler::BusConnect(0);
+    }
+
+    void TearDown() override
+    {
+        ConnectionBus::Handler::BusDisconnect();
+
+        ModtimeScanningTest::TearDown();
+    }
+
+    AZStd::function<void()> m_callback;
+};
+
+TEST_F(LockedFileTest, DeleteFile_LockedProduct_DeleteFails)
+{
+    auto theFile = m_data->m_absolutePath[1].toUtf8();
+    const char* theFileString = theFile.constData();
+    auto [sourcePath, productPath] = *m_data->m_productPaths.find(theFileString);
+    
+    {
+        QFile file(theFileString);
+        file.remove();
+    }
+
+    ASSERT_GT(m_data->m_productPaths.size(), 0);
+    QFile product(productPath);
+
+    ASSERT_TRUE(product.open(QIODevice::ReadOnly));
+
+    // Check if we can delete the file now, if we can't, proceed with the test
+    // If we can, it means the OS running this test doesn't lock open files so there's nothing to test
+    if (!AZ::IO::SystemFile::Delete(productPath.toUtf8().constData()))
+    {
+        QMetaObject::invokeMethod(
+            m_assetProcessorManager.get(), "AssessDeletedFile", Qt::QueuedConnection, Q_ARG(QString, QString(theFileString)));
+
+        EXPECT_TRUE(BlockUntilIdle(5000));
+
+        EXPECT_TRUE(QFile::exists(productPath));
+        EXPECT_EQ(m_data->m_deletedSources.size(), 0);
+    }
+    else
+    {
+        SUCCEED() << "Skipping test.  OS does not lock open files.";
+    }
+}
+
+TEST_F(LockedFileTest, DeleteFile_LockedProduct_DeletesWhenReleased)
+{
+    auto theFile = m_data->m_absolutePath[1].toUtf8();
+    const char* theFileString = theFile.constData();
+    auto [sourcePath, productPath] = *m_data->m_productPaths.find(theFileString);
+
+    {
+        QFile file(theFileString);
+        file.remove();
+    }
+
+    ASSERT_GT(m_data->m_productPaths.size(), 0);
+    QFile product(productPath);
+
+    ASSERT_TRUE(product.open(QIODevice::ReadOnly));
+
+    // Check if we can delete the file now, if we can't, proceed with the test
+    // If we can, it means the OS running this test doesn't lock open files so there's nothing to test
+    if (!AZ::IO::SystemFile::Delete(productPath.toUtf8().constData()))
+    {
+        AZStd::thread workerThread;
+
+        m_callback = [&product, &workerThread]() {
+            workerThread = AZStd::thread([&product]() {
+                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(60));
+                product.close();
+            });
+        };
+
+        QMetaObject::invokeMethod(
+            m_assetProcessorManager.get(), "AssessDeletedFile", Qt::QueuedConnection, Q_ARG(QString, QString(theFileString)));
+
+        EXPECT_TRUE(BlockUntilIdle(5000));
+
+        EXPECT_FALSE(QFile::exists(productPath));
+        EXPECT_EQ(m_data->m_deletedSources.size(), 1);
+
+        workerThread.join();
+    }
+    else
+    {
+        SUCCEED() << "Skipping test.  OS does not lock open files.";
+    }
 }
 
 TEST_F(ModtimeScanningTest, ModtimeSkipping_ModifyFilesSameHash_BothProcess)

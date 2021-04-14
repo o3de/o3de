@@ -39,7 +39,7 @@ namespace EMotionFX
         hLayout->addWidget(m_pickButton);
 
         m_resetButton = new QPushButton(this);
-        EMStudio::EMStudioManager::MakeTransparentButton(m_resetButton, "/Images/Icons/Clear.svg", "Reset selection");
+        EMStudio::EMStudioManager::MakeTransparentButton(m_resetButton, "Images/Icons/Clear.svg", "Reset selection");
         connect(m_resetButton, &QPushButton::clicked, this, &ActorMorphTargetPicker::OnResetClicked);
         hLayout->addWidget(m_resetButton);
 

@@ -15,6 +15,7 @@ set(FILES
     Tests/CoreLights/ShadowmapAtlasTest.cpp
     Tests/IndexedDataVectorTests.cpp
     Tests/IndexableListTests.cpp
+    Tests/SparseVectorTests.cpp
     Tests/SkinnedMesh/SkinnedMeshDispatchItemTests.cpp
     Tests/Decals/DecalTextureArrayTests.cpp
 )

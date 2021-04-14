@@ -231,16 +231,16 @@ namespace EMStudio
         QToolBar* toolBar = new QToolBar(this);
         toolBar->setObjectName("MotionSetWindow.ToolBar");
 
-        m_addAction = toolBar->addAction(MysticQt::GetMysticQt()->FindIcon("/Images/Icons/Plus.svg"),
+        m_addAction = toolBar->addAction(MysticQt::GetMysticQt()->FindIcon("Images/Icons/Plus.svg"),
             tr("Add a new entry"),
             this, &MotionSetWindow::OnAddNewEntry);
         m_addAction->setObjectName("MotionSetWindow.ToolBar.AddANewEntry");
 
-        m_loadAction = toolBar->addAction(MysticQt::GetMysticQt()->FindIcon("/Images/Icons/Open.svg"),
+        m_loadAction = toolBar->addAction(MysticQt::GetMysticQt()->FindIcon("Images/Icons/Open.svg"),
             tr("Add entries by selecting motions."),
             this, &MotionSetWindow::OnLoadEntries);
 
-        m_editAction = toolBar->addAction(MysticQt::GetMysticQt()->FindIcon("/Images/Icons/Edit.svg"),
+        m_editAction = toolBar->addAction(MysticQt::GetMysticQt()->FindIcon("Images/Icons/Edit.svg"),
             tr("Batch edit selected motion IDs"),
             this, &MotionSetWindow::OnEditButton);
 
@@ -554,7 +554,7 @@ namespace EMStudio
 
             QTableWidgetItem* exclamationTableItem = new QTableWidgetItem("");
             exclamationTableItem->setFlags(Qt::NoItemFlags);
-            exclamationTableItem->setIcon(MysticQt::GetMysticQt()->FindIcon("/Images/Icons/ExclamationMark.svg"));
+            exclamationTableItem->setIcon(MysticQt::GetMysticQt()->FindIcon("Images/Icons/ExclamationMark.svg"));
             exclamationTableItem->setToolTip(tooltipText.c_str());
             tableWidget->setItem(rowIndex, 0, exclamationTableItem);
         }
@@ -779,7 +779,7 @@ namespace EMStudio
 
                 QTableWidgetItem* exclamationTableItem = new QTableWidgetItem("");
                 exclamationTableItem->setFlags(Qt::NoItemFlags);
-                exclamationTableItem->setIcon(MysticQt::GetMysticQt()->FindIcon("/Images/Icons/ExclamationMark.svg"));
+                exclamationTableItem->setIcon(MysticQt::GetMysticQt()->FindIcon("Images/Icons/ExclamationMark.svg"));
                 exclamationTableItem->setToolTip(tooltipText.c_str());
                 tableWidget->setItem(row, 0, exclamationTableItem);
             }

@@ -31,12 +31,15 @@ ly_associate_package(PACKAGE_NAME glad-2.0.0-beta-rev2-multiplatform        TARG
 ly_associate_package(PACKAGE_NAME lux_core-2.2-rev5-multiplatform           TARGETS lux_core    PACKAGE_HASH c8c13cf7bc351643e1abd294d0841b24dee60e51647dff13db7aec396ad1e0b5)
 ly_associate_package(PACKAGE_NAME xxhash-0.7.4-rev1-multiplatform           TARGETS xxhash      PACKAGE_HASH e81f3e6c4065975833996dd1fcffe46c3cf0f9e3a4207ec5f4a1b564ba75861e)
 ly_associate_package(PACKAGE_NAME PVRTexTool-4.24.0-rev4-multiplatform      TARGETS PVRTexTool  PACKAGE_HASH d0d6da61c7557de0d2c71fc35ba56c3be49555b703f0e853d4c58225537acf1e)
+ly_associate_package(PACKAGE_NAME poly2tri-0.3.3-rev2-multiplatform         TARGETS poly2tri    PACKAGE_HASH 04092d06716f59b936b61906eaf3647db23b685d81d8b66131eb53e0aeaa1a38)
+ly_associate_package(PACKAGE_NAME v-hacd-2.0-rev1-multiplatform             TARGETS v-hacd      PACKAGE_HASH 5c71aef19cc9787d018d64eec076e9f51ea5a3e0dc6b6e22e57c898f6cc4afe3)
 
 # platform-specific:
 ly_associate_package(PACKAGE_NAME freetype-2.10.4.14-linux          TARGETS freetype        PACKAGE_HASH 9ad246873067717962c6b780d28a5ce3cef3321b73c9aea746a039c798f52e93)
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-linux               TARGETS tiff            PACKAGE_HASH ae92b4d3b189c42ef644abc5cac865d1fb2eb7cb5622ec17e35642b00d1a0a76)
 ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev3-linux   TARGETS AWSNativeSDK    PACKAGE_HASH e69c55682638dc1e7fa571a61a82c8a69d395c74a008543a5188f4bd2b6b10c4)
 ly_associate_package(PACKAGE_NAME PhysX-4.1.0.25992954-rev1-linux   TARGETS PhysX           PACKAGE_HASH e3ca36106a8dbf1524709f8bb82d520920ebd3ff3a92672d382efff406c75ee3)
+ly_associate_package(PACKAGE_NAME etc2comp-9cd0f9cae0-rev1-linux    TARGETS etc2comp        PACKAGE_HASH 9283aa5db5bb7fb90a0ddb7a9f3895317c8ebe8044943124bbb3673a41407430)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-linux           TARGETS mikkelsen       PACKAGE_HASH 5973b1e71a64633588eecdb5b5c06ca0081f7be97230f6ef64365cbda315b9c8)
 ly_associate_package(PACKAGE_NAME googletest-1.8.1-rev4-linux       TARGETS googletest      PACKAGE_HASH 7b7ad330f369450c316a4c4592d17fbb4c14c731c95bd8f37757203e8c2bbc1b)
 ly_associate_package(PACKAGE_NAME googlebenchmark-1.5.0-rev2-linux  TARGETS GoogleBenchmark PACKAGE_HASH 4038878f337fc7e0274f0230f71851b385b2e0327c495fc3dd3d1c18a807928d)

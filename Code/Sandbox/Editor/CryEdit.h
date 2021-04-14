@@ -196,7 +196,7 @@ public:
     void OnUpdateShowWelcomeScreen(QAction* action);
     void OnDocumentationTutorials();
     void OnDocumentationGlossary();
-    void OnDocumentationLumberyard();
+    void OnDocumentationO3DE();
     void OnDocumentationGamelift();
     void OnDocumentationReleaseNotes();
     void OnDocumentationGameDevBlog();

@@ -99,6 +99,12 @@ inline size_t IndexedDataVector<DataType, IndexType>::GetDataCount() const
 }
 
 template<typename DataType, typename IndexType>
+inline AZStd::vector<DataType>& IndexedDataVector<DataType, IndexType>::GetDataVector()
+{
+    return m_data;
+}
+
+template<typename DataType, typename IndexType>
 inline const AZStd::vector<DataType>& IndexedDataVector<DataType, IndexType>::GetDataVector() const
 {
     return m_data;

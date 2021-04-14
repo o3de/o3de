@@ -10,7 +10,7 @@
 #
 
 # Responsible for generating a settings registry file containing the moduleload dependencies of any ly_delayed_load_targets
-# This is used for example, to allow Lumberyard Applications to know which set of gems have built for a particular project/target
+# This is used for example, to allow Open 3D Engine Applications to know which set of gems have built for a particular project/target
 # combination
 
 include_guard()

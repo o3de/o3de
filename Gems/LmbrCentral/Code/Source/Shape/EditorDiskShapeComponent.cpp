@@ -53,7 +53,6 @@ namespace LmbrCentral
     {
         EditorBaseShapeComponent::GetProvidedServices(provided);
         provided.push_back(AZ_CRC("DiskShapeService", 0xd90c482b));
-        provided.push_back(AZ_CRC("AreaLightShapeService", 0x68ea78dc));
     }
 
     void EditorDiskShapeComponent::Init()
