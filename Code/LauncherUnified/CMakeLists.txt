@@ -73,6 +73,21 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
     # If the project_path is relative, it is evaluated relative to the ${LY_ROOT_FOLDER}
     # Otherwise the the absolute project_path is returned with symlinks resolved
     file(REAL_PATH ${project_path} project_real_path BASE_DIRECTORY ${LY_ROOT_FOLDER})
+    if(NOT project_name)
+        if(NOT EXISTS ${project_real_path}/project.json)
+            message(FATAL_ERROR "The specified project path of ${project_real_path} does not contain a project.json file with a \"project name\" entry in it")
+        else()
+            # Add the project_name to global LY_PROJECTS_TARGET_NAME property
+            file(READ "${project_real_path}/project.json" project_json)
+            string(JSON project_name ERROR_VARIABLE json_error GET ${project_json} "project_name")
+            if(json_error)
+                message(FATAL_ERROR "There is an error reading the \"project_name\" key from the '${project_real_path}/project.json' file: ${json_error}")
+            endif()
+            message(WARNING "The project located at path ${project_real_path} has a valid \"project name\" of '${project_name}' read from it's project.json file."
+                " This indicates that the ${project_real_path}/CMakeLists.txt is not properly appending the \"project name\" "
+                "to the LY_PROJECTS_TARGET_NAME global property. Other configuration errors might occur")
+        endif()
+    endif()
     ################################################################################
     # Monolithic game
     ################################################################################
