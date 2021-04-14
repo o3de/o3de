@@ -30,6 +30,14 @@ float3 DecodeTBNDelta(uint3 encodedTBN)
 	return float3(encodedTBN) * f - 2.0f;
 }
 
+float4 DecodeColorDelta(uint4 encodedColor)
+{
+    // Color deltas are in a range of -1.0 to 1.0
+    // 8 bits per channel, 4 channels
+    float f = 2.0f / 255.0f;
+    return float4(encodedColor) * f - 1.0f;
+}
+
 int3 EncodeFloatsToInts(float3 f, float integerEncoding)
 {
     return int3(f * integerEncoding);
@@ -38,4 +46,14 @@ int3 EncodeFloatsToInts(float3 f, float integerEncoding)
 float3 DecodeIntsToFloats(int3 i, float inverseIntegerEncoding)
 {
     return float3(i) * inverseIntegerEncoding;
+}
+
+int4 EncodeFloatsToInts(float4 f, float integerEncoding)
+{
+    return int4(f * integerEncoding);
+}
+
+float4 DecodeIntsToFloats(int4 i, float inverseIntegerEncoding)
+{
+    return float4(i) * inverseIntegerEncoding;
 }

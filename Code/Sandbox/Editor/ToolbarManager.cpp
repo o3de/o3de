@@ -217,7 +217,7 @@ public:
 ToolbarManager::ToolbarManager(ActionManager* actionManager, MainWindow* mainWindow)
     : m_mainWindow(mainWindow)
     , m_actionManager(actionManager)
-    , m_settings("amazon", "lumberyard")
+    , m_settings("amazon", "O3DE")
     , m_expanderWatcher(new AmazonToolBarExpanderWatcher())
 {
     // Note that we don't actually save/load from AmazonToolbar::List

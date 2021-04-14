@@ -18,6 +18,7 @@
 #include <MCore/Source/LogManager.h>
 #include <MCore/Source/MemoryFile.h>
 
+#include <AzCore/IO/Path/Path.h>
 #include <AzQtComponents/Components/FancyDocking.h>
 
 #include <QByteArray>
@@ -38,7 +39,7 @@ namespace EMStudio
 
     void LayoutManager::SaveDialogAccepted()
     {
-        const AZStd::string filename = AZStd::string::format("%sLayouts/%s.layout", MysticQt::GetDataDir().c_str(), m_inputDialog->GetText().toUtf8().data());
+        const auto filename = AZ::IO::Path(MysticQt::GetDataDir()) / AZStd::string::format("Layouts/%s.layout", m_inputDialog->GetText().toUtf8().data());
 
         // If the file already exists, ask to overwrite or not.
         if (QFile::exists(filename.c_str()))

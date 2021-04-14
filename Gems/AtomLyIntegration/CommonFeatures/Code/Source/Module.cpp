@@ -17,8 +17,6 @@
 #include <CommonFeaturesSystemComponent.h>
 #include <CoreLights/AreaLightComponent.h>
 #include <CoreLights/DirectionalLightComponent.h>
-#include <CoreLights/PointLightComponent.h>
-#include <CoreLights/SpotLightComponent.h>
 #include <Decals/DecalComponent.h>
 #include <DiffuseProbeGrid/DiffuseProbeGridComponent.h>
 #include <Grid/GridComponent.h>
@@ -47,8 +45,6 @@
 #include <PostProcess/EditorPostFxSystemComponent.h>
 #include <CoreLights/EditorAreaLightComponent.h>
 #include <CoreLights/EditorDirectionalLightComponent.h>
-#include <CoreLights/EditorPointLightComponent.h>
-#include <CoreLights/EditorSpotLightComponent.h>
 #include <Decals/EditorDecalComponent.h>
 #include <DiffuseProbeGrid/EditorDiffuseProbeGridComponent.h>
 #include <Grid/EditorGridComponent.h>
@@ -106,10 +102,8 @@ namespace AZ
                         MaterialComponent::CreateDescriptor(),
                         MeshComponent::CreateDescriptor(),
                         PhysicalSkyComponent::CreateDescriptor(),
-                        PointLightComponent::CreateDescriptor(),
                         PostFxLayerComponent::CreateDescriptor(),
                         ReflectionProbeComponent::CreateDescriptor(),
-                        SpotLightComponent::CreateDescriptor(),
                         RadiusWeightModifierComponent::CreateDescriptor(),
                         ShapeWeightModifierComponent::CreateDescriptor(),
                         EntityReferenceComponent::CreateDescriptor(),
@@ -138,10 +132,8 @@ namespace AZ
                         EditorMeshSystemComponent::CreateDescriptor(),
                         EditorMeshComponent::CreateDescriptor(),
                         EditorPhysicalSkyComponent::CreateDescriptor(),
-                        EditorPointLightComponent::CreateDescriptor(),
                         EditorPostFxLayerComponent::CreateDescriptor(),
                         EditorReflectionProbeComponent::CreateDescriptor(),
-                        EditorSpotLightComponent::CreateDescriptor(),
                         EditorRadiusWeightModifierComponent::CreateDescriptor(),
                         EditorShapeWeightModifierComponent::CreateDescriptor(),
                         EditorEntityReferenceComponent::CreateDescriptor(),

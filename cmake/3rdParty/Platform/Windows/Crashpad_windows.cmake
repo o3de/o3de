@@ -9,11 +9,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-set(libpath ${BASE_PATH}/bin/windows/vs2015/$<IF:$<CONFIG:debug>,Debug,Release>_x64)
+set(libpath ${BASE_PATH}/bin/windows/vs2019/$<IF:$<CONFIG:debug>,Debug,Release>_x64)
 
 set(CRASHPAD_LIBS 
     ${libpath}/base.lib
     ${libpath}/crashpad_client.lib
+    ${libpath}/crashpad_context.lib
     ${libpath}/crashpad_util.lib
     winhttp
     version
@@ -30,6 +31,6 @@ set(CRASHPAD_HANDLER_LIBS
     ${libpath}/third_party/getopt.lib
     ${libpath}/crashpad_minidump.lib
     ${libpath}/crashpad_snapshot.lib
-    ${libpath}/crashpad_handler_lib.lib
+    ${libpath}/crashpad_handler.lib
     ${libpath}/third_party/zlib.lib
 )

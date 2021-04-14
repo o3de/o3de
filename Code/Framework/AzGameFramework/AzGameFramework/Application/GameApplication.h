@@ -24,7 +24,7 @@ namespace AzGameFramework
         AZ_CLASS_ALLOCATOR(GameApplication, AZ::SystemAllocator, 0);
 
         GameApplication();
-        GameApplication(int* argc, char*** argvS);
+        GameApplication(int argc, char** argvS);
         ~GameApplication();
 
         AZ::ComponentTypeList GetRequiredSystemComponents() const override;

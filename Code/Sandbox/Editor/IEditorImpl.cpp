@@ -1432,10 +1432,10 @@ AZStd::string CEditorImpl::LoadProjectIdFromProjectData()
     QByteArray editorProjectNameUtf8 = editorProjectName.toUtf8();
     AZ::Uuid id = AZ::Uuid::CreateName(editorProjectNameUtf8.constData());
 
-    // The projects that Lumberyard ships with had their project IDs hand-generated based on the name of the level.
+    // The projects that Open 3D Engine ships with had their project IDs hand-generated based on the name of the level.
     // Therefore, if the UUID from the project name is the same as the UUID in the file, it's one of our projects
     // and we can therefore send the name back, making it easier for Metrics to determine which level it was.
-    // We are checking to see if this is a project we ship with Lumberyard, and therefore we can unobfuscate non-customer information.
+    // We are checking to see if this is a project we ship with Open 3D Engine, and therefore we can unobfuscate non-customer information.
     if (id != AZ::Uuid(projectId.data()))
     {
         return projectId;
@@ -2097,7 +2097,7 @@ namespace
 
 void CEditorImpl::LoadSettings()
 {
-    QSettings settings(QStringLiteral("Amazon"), QStringLiteral("Lumberyard"));
+    QSettings settings(QStringLiteral("Amazon"), QStringLiteral("O3DE"));
 
     settings.beginGroup(QStringLiteral("Editor"));
     settings.beginGroup(QStringLiteral("CoordSys"));
@@ -2116,7 +2116,7 @@ void CEditorImpl::LoadSettings()
 
 void CEditorImpl::SaveSettings() const
 {
-    QSettings settings(QStringLiteral("Amazon"), QStringLiteral("Lumberyard"));
+    QSettings settings(QStringLiteral("Amazon"), QStringLiteral("O3DE"));
 
     settings.beginGroup(QStringLiteral("Editor"));
     settings.beginGroup(QStringLiteral("CoordSys"));

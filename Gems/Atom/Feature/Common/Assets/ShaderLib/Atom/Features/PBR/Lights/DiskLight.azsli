@@ -13,6 +13,12 @@
 #pragma once
 
 #include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
+#include <Atom/Features/Shadow/ProjectedShadow.azsli>
+
+enum DiskLightFlag
+{
+    UseConeAngle = 1,
+};
 
 void ApplyDiskLight(ViewSrg::DiskLight light, Surface surface, inout LightingData lightingData)
 {
@@ -22,33 +28,42 @@ void ApplyDiskLight(ViewSrg::DiskLight light, Surface surface, inout LightingDat
 
     float3 posToLightDir = normalize(posToLight);
 
-    // Adjust direction if light emits both direction and is pointing away.
-    float facing = sign(dot(posToLightDir, -light.m_direction));
-    float3 lightDirection = light.m_direction;
-    if (facing * light.m_bothDirectionsFactor > 0.0 )
-    {
-        lightDirection = -lightDirection;
-    }
-
     // Reduce the brightness based on how much the disk is facing this pixel.
-    float angleFalloff = dot(posToLightDir, -lightDirection);
+    float angleFalloff = dot(posToLightDir, -light.m_direction);
 
     // Only calculate shading if light is in range
     if (falloff < 1.0f && angleFalloff > 0.0f)
     {
+        bool useConeAngle = light.m_flags & DiskLightFlag::UseConeAngle;
+        float3 dirToConeTip;
+        float dotWithDirection;
+
+        if (useConeAngle)
+        {
+            float3 coneTipPosition = light.m_position + light.m_bulbPositionOffset * -light.m_direction;
+            dirToConeTip = normalize(coneTipPosition - surface.position);
+            dotWithDirection = dot(dirToConeTip, -normalize(light.m_direction));
+
+            // If outside the outer cone angle return.
+            if (dotWithDirection < light.m_cosOuterConeAngle)
+            {
+                return;
+            }
+        }
+
         // Smoothly adjusts the light intensity so it reaches 0 at light.m_attenuationRadius distance
         float radiusAttenuation = 1.0 - (falloff * falloff);
         radiusAttenuation = radiusAttenuation * radiusAttenuation;
         
         // Find the distance to the closest point on the disk
-        float distanceToPlane = dot(posToLight, -lightDirection);
+        float distanceToPlane = dot(posToLight, -light.m_direction);
         float distanceToPlane2 = distanceToPlane * distanceToPlane;
         float pointOnPlaneToLightDistance = sqrt(distanceToLight2 - distanceToPlane2); // pythagorean theorem 
         float pointOnPlaneToDiskDistance = max(pointOnPlaneToLightDistance - light.m_diskRadius, 0.0f); 
         float distanceToDisk2 = pointOnPlaneToDiskDistance * pointOnPlaneToDiskDistance + distanceToPlane2;
 
         // Update the light direction based on the edges of the disk as visible from this point instead of the center.
-        float3 pointOnPlane = -lightDirection * distanceToPlane;
+        float3 pointOnPlane = -light.m_direction * distanceToPlane;
         float3 pointOnPlaneToLightDir = normalize(posToLight - pointOnPlane);
         float3 nearSideDir = normalize(pointOnPlane + pointOnPlaneToLightDir * (pointOnPlaneToLightDistance - light.m_diskRadius));
         float3 farSideDir = normalize(pointOnPlane + pointOnPlaneToLightDir * (pointOnPlaneToLightDistance + light.m_diskRadius));
@@ -63,17 +78,52 @@ void ApplyDiskLight(ViewSrg::DiskLight light, Surface surface, inout LightingDat
         // 0 radius disks are unaffected.
         lightIntensity /= ((light.m_diskRadius / distanceToPlane) + 1.0);
 
+        // shadow
+        float litRatio = 1.0;
+        
+        // How much is back face shadowed, it's set to the reverse of litRatio to share the same default value with thickness, which should be 0 if no shadow map available
+        float backShadowRatio = 0.0;
+        if (o_enableShadows)
+        {
+            litRatio = ProjectedShadow::GetVisibility(
+                light.m_shadowIndex,
+                light.m_position,
+                surface.position,
+                -dirToConeTip,
+                surface.normal);
+             
+            // Use backShadowRatio to carry thickness from shadow map for thick mode
+            backShadowRatio = 1.0 - litRatio;
+            if (o_transmission_mode == TransmissionMode::ThickObject)
+            {
+                backShadowRatio = ProjectedShadow::GetThickness(
+                    light.m_shadowIndex,
+                    surface.position);
+            }
+        }
+
+        if (useConeAngle && dotWithDirection < light.m_cosInnerConeAngle) // in penumbra
+        {   
+            // Normalize into 0.0 - 1.0 space.
+            float penumbraMask = (dotWithDirection - light.m_cosOuterConeAngle) / (light.m_cosInnerConeAngle - light.m_cosOuterConeAngle);
+            
+            // Apply smoothstep
+            penumbraMask = penumbraMask * penumbraMask * (3.0 - 2.0 * penumbraMask);
+            
+            lightIntensity *= penumbraMask;
+        }
+
         // Diffuse contribution
-        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, posToLightDir);
+        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, posToLightDir) * litRatio;
 
         // Tranmission contribution
-        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, lightIntensity, posToLightDir, 0.0);
+        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, lightIntensity, posToLightDir, 0.0) * litRatio;
         
         // Adjust the light direction for specular based on disk size
 
-        // Calculate the reflection off the normal from the view lightDirection
+        // Calculate the reflection off the normal from the view direction
         float3 reflectionDir = reflect(-lightingData.dirToCamera, surface.normal);
-        float reflectionDotLight = dot(reflectionDir, -lightDirection);
+        float reflectionDotLight = dot(reflectionDir, -light.m_direction);
         
         // Let 'Intersection' denote the point where the reflection ray intersects the diskLight plane
         // As such, posToIntersection denotes the vector from pos to the intersection of the reflection ray and the disk plane:
@@ -90,21 +140,21 @@ void ApplyDiskLight(ViewSrg::DiskLight light, Surface surface, inout LightingDat
             // then treat that as the reflection plane intersection.
             float3 posToFarOffPoint = reflectionDir * distanceToPlane * 10000.0;
             float3 lightToFarOffPoint = posToFarOffPoint - posToLight;
-            float3 intersectionToFarOffPoint = dot(lightToFarOffPoint, lightDirection) * lightDirection;
+            float3 intersectionToFarOffPoint = dot(lightToFarOffPoint, light.m_direction) * light.m_direction;
             posToIntersection = posToFarOffPoint - intersectionToFarOffPoint;
         }
     
         // Calculate a vector from the reflection vector to the light
         float3 intersectionToLight = posToLight - posToIntersection;
 
-        // Adjust the lightDirection to light based on the bulb size
+        // Adjust the direction to light based on the bulb size
         posToLight -= intersectionToLight * saturate(light.m_diskRadius / length(intersectionToLight));
 
         // Adjust the intensity of the light based on the bulb size to conserve energy
         float diskIntensityNormalization = GetIntensityAdjustedByRadiusAndRoughness(surface.roughnessA, light.m_diskRadius, distanceToLight2);
 
         // Specular contribution
-        lightingData.specularLighting += diskIntensityNormalization * GetSpecularLighting(surface, lightingData, lightIntensity, normalize(posToLight));
+        lightingData.specularLighting += diskIntensityNormalization * GetSpecularLighting(surface, lightingData, lightIntensity, normalize(posToLight)) * litRatio;
     }
 }
 
@@ -147,7 +197,7 @@ void ValidateDiskLight(ViewSrg::DiskLight light, Surface surface, inout Lighting
     {
         float2 randomPoint = GetHammersleyPoint(i, sampleCount);
         float3 samplePoint = SampleDisk(randomPoint, light);
-        AddSampleContribution(surface, lightingData, samplePoint, light.m_direction, light.m_bothDirectionsFactor, diffuseAcc, specularAcc, translucentAcc);
+        AddSampleContribution(surface, lightingData, samplePoint, light.m_direction, 0.0, diffuseAcc, specularAcc, translucentAcc);
     }
     
     lightingData.diffuseLighting += (diffuseAcc / float(sampleCount)) * light.m_rgbIntensityCandelas;

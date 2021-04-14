@@ -454,7 +454,6 @@ namespace ImGui
             {
                 return m_rootNode->AddChild(name, numInputs, numOutputs);
             }
-            return nullptr;
         }
         
         //!Resolve all the overlapping nodes.

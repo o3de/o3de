@@ -19,7 +19,7 @@
 #include <QPushButton>
 #include <QMessageBox>
 #include <AzCore/Casting/numeric_cast.h>
-#include <Components/Widgets/Internal/ui_OverlayWidgetLayer.h>
+#include <AzQtComponents/Components/Widgets/Internal/ui_OverlayWidgetLayer.h>
 #include <AzCore/Debug/Trace.h>
 
 namespace AzQtComponents

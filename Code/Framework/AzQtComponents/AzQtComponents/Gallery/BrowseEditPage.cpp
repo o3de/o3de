@@ -11,7 +11,7 @@
 */
 
 #include "BrowseEditPage.h"
-#include "Gallery/ui_BrowseEditPage.h"
+#include <AzQtComponents/Gallery/ui_BrowseEditPage.h>
 
 #include <AzQtComponents/Components/Widgets/BrowseEdit.h>
 #include <QIntValidator>

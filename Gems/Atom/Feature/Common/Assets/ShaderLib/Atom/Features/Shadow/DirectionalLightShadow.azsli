@@ -16,11 +16,11 @@
 #include "JitterTablePcf.azsli"
 #include "Shadow.azsli"
 #include "ShadowmapAtlasLib.azsli"
+#include "BicubicPcfFilters.azsli"
 
 // Before including this azsli file, a PassSrg must be defined with the following members:
 // Texture2DArray<float> m_directionalLightShadowmap;
 // Texture2DArray<float> m_directionalLightExponentialShadowmap;
-// Texture2DArray<float> m_spotLightShadowmaps;
 // Sampler LinearSampler;
 
 // This matchs ShadowFilterMethod in ShadowConstants.h
@@ -101,6 +101,9 @@ class DirectionalLightShadow
 
     // This outputs visibility ratio (from 0.0 to 1.0) for ESM+PCF.
     float GetVisibilityFromLightEsmPcf();
+
+    float SamplePcfBicubic();
+    float SamplePcfBicubic(float3 shadowCoord, uint indexOfCascade);
 
     uint m_lightIndex;
     float3 m_shadowCoords[ViewSrg::MaxCascadeCount];
@@ -281,6 +284,11 @@ float DirectionalLightShadow::GetVisibilityFromLightPcf()
     {
         return GetVisibilityFromLightNoFilter();
     }
+    
+    if (ViewSrg::m_directionalLightShadows[m_lightIndex].m_pcfFilterMethod == PcfFilterMethod_Bicubic)
+    {
+        return SamplePcfBicubic();
+    }    
 
     const float3 lightDirection = 
         normalize(SceneSrg::m_directionalLights[m_lightIndex].m_direction);
@@ -402,6 +410,57 @@ float DirectionalLightShadow::GetVisibilityFromLightEsmPcf()
     m_debugInfo.m_usePcfFallback = false;
     m_debugInfo.m_cascadeIndex = cascadeCount;
     return 1.;
+}
+
+float DirectionalLightShadow::SamplePcfBicubic()
+{
+    static const float DepthMargin = 0.01; // avoiding artifact when near depth bounds.
+    static const float PixelMargin = 1.5; // avoiding artifact between cascade levels.
+
+    const uint size = ViewSrg::m_directionalLightShadows[m_lightIndex].m_shadowmapSize;
+    const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
+    for (uint indexOfCascade = 0; indexOfCascade < cascadeCount; ++indexOfCascade)
+    {
+        const float3 shadowCoord = m_shadowCoords[indexOfCascade];
+    
+        if (shadowCoord.x >= 0. && shadowCoord.x * size < size - PixelMargin &&
+            shadowCoord.y >= 0. && shadowCoord.y * size < size - PixelMargin && 
+            shadowCoord.z < 1. - DepthMargin)
+        {
+            return SamplePcfBicubic(shadowCoord, indexOfCascade);
+        }
+    }
+    m_debugInfo.m_cascadeIndex = cascadeCount;
+    return 1.;
+}
+
+float DirectionalLightShadow::SamplePcfBicubic(float3 shadowCoord, uint indexOfCascade)
+{
+    const uint filteringSampleCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_filteringSampleCount;
+    const uint size = ViewSrg::m_directionalLightShadows[m_lightIndex].m_shadowmapSize;
+    const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
+    Texture2DArray<float> shadowmap = PassSrg::m_directionalLightShadowmap;
+
+    SampleShadowMapBicubicParameters param;
+    param.shadowMap = shadowmap;
+    param.shadowPos = float3(shadowCoord.xy, indexOfCascade);
+    param.shadowMapSize = size;
+    param.invShadowMapSize = rcp(size); 
+    param.comparisonValue = shadowCoord.z;
+    param.samplerState = SceneSrg::m_hwPcfSampler;
+
+    if (filteringSampleCount <= 4)       
+    {
+        return SampleShadowMapBicubic_4Tap(param);
+    }
+    else if (filteringSampleCount <= 9)
+    {
+        return SampleShadowMapBicubic_9Tap(param);
+    }
+    else
+    {
+        return SampleShadowMapBicubic_16Tap(param);
+    }
 }
 
 float DirectionalLightShadow::GetVisibility(

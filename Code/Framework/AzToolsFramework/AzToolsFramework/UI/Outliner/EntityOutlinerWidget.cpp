@@ -49,7 +49,7 @@
 #include <QTimer>
 #include <QToolButton>
 
-#include <UI/Outliner/ui_EntityOutlinerWidget.h>
+#include <AzToolsFramework/UI/Outliner/ui_EntityOutlinerWidget.h>
 
 namespace
 {
