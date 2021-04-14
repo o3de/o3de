@@ -130,7 +130,13 @@ namespace AZ
         //! @param entity A reference to the entity whose name you are seeking.
         //! @return The name of the entity with the specified entity ID. 
         //! If no entity is found for the specified ID, it returns an empty string. 
-        virtual AZStd::string GetEntityName(const EntityId& id) { (void)id; return AZStd::string(); };
+        virtual AZStd::string GetEntityName(const EntityId& id) { (void)id; return AZStd::string(); }
+
+        //! Sets the name of the entity that has the specified entity ID.
+        //! Entity names are not enforced to be unique.
+        //! @param entityId A reference to the entity whose name you want to change.
+        //! @return True if the name was changed successfully, false if it wasn't.
+        virtual bool SetEntityName([[maybe_unused]] const EntityId& id, [[maybe_unused]] const AZStd::string& name) { return false; }
 
         //! The type that AZ::ComponentApplicationRequests::EnumerateEntities uses to
         //! pass entity callbacks to the application for enumeration.
