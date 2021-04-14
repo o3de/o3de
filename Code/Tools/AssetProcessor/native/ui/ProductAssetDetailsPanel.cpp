@@ -112,7 +112,7 @@ namespace AssetProcessor
             [&](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry)
         {
             assetId = AZ::Data::AssetId(sourceEntry.m_sourceGuid, productItemData->m_databaseInfo.m_subID);
-            // Use a decimal value to display the sub ID and not hex. Lumberyard is not consistent about
+            // Use a decimal value to display the sub ID and not hex. Open 3D Engine is not consistent about
             // how sub IDs are displayed, so it's important to double check what format a sub ID is in before using it elsewhere.
             m_ui->productAssetIdValueLabel->setText(assetId.ToString<AZStd::string>(AZ::Data::AssetId::SubIdDisplayType::Decimal).c_str());
 

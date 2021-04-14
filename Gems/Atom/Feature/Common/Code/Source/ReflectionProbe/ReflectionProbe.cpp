@@ -31,7 +31,7 @@ namespace AZ
         ReflectionProbe::~ReflectionProbe()
         {
             Data::AssetBus::MultiHandler::BusDisconnect();
-            m_scene->GetCullingSystem()->UnregisterCullable(m_cullable);
+            m_scene->GetCullingScene()->UnregisterCullable(m_cullable);
             m_meshFeatureProcessor->ReleaseMesh(m_visualizationMeshHandle);
         }
 
@@ -363,7 +363,7 @@ namespace AZ
             m_cullable.m_cullData.m_visibilityEntry.m_typeFlags = AzFramework::VisibilityEntry::TYPE_RPI_Cullable;
 
             // register with culling system
-            m_scene->GetCullingSystem()->RegisterOrUpdateCullable(m_cullable);
+            m_scene->GetCullingScene()->RegisterOrUpdateCullable(m_cullable);
         }
     } // namespace Render
 } // namespace AZ

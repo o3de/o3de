@@ -1,0 +1,76 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+#include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
+
+void ApplySimpleSpotLight(ViewSrg::SimpleSpotLight light, Surface surface, inout LightingData lightingData)
+{
+    float3 posToLight = light.m_position - surface.position;
+    
+    float3 dirToLight = normalize(posToLight);
+    float dotWithDirection = dot(dirToLight, -normalize(light.m_direction));
+
+    // If outside the outer cone angle return.
+    if (dotWithDirection < light.m_cosOuterConeAngle)
+    {
+        return;
+    }
+
+    float d2 = dot(posToLight, posToLight); // light distance squared
+    float falloff = d2 * light.m_invAttenuationRadiusSquared;
+
+    // Only calculate shading if light is in range
+    if (falloff < 1.0f)
+    {
+        // Smoothly adjusts the light intensity so it reaches 0 at light.m_attenuationRadius distance
+        float radiusAttenuation = 1.0 - (falloff * falloff);
+        radiusAttenuation = radiusAttenuation * radiusAttenuation;
+        
+        // Standard quadratic falloff
+        d2 = max(0.001 * 0.001, d2); // clamp the light to at least 1mm away to avoid extreme values.
+        float3 lightIntensity = (light.m_rgbIntensityCandelas / d2) * radiusAttenuation;
+        float3 posToLightDir = normalize(posToLight);
+
+        if (dotWithDirection < light.m_cosInnerConeAngle) // in penumbra
+        {   
+            // Normalize into 0.0 - 1.0 space.
+            float penumbraMask = (dotWithDirection - light.m_cosOuterConeAngle) / (light.m_cosInnerConeAngle - light.m_cosOuterConeAngle);
+            
+            // Apply smoothstep
+            penumbraMask = penumbraMask * penumbraMask * (3.0 - 2.0 * penumbraMask);
+            
+            lightIntensity *= penumbraMask;
+        }
+
+        // Diffuse contribution
+        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, posToLightDir);
+
+        // Specular contribution
+        lightingData.specularLighting += GetSpecularLighting(surface, lightingData, lightIntensity, posToLightDir);
+    }
+}
+
+void ApplySimpleSpotLights(Surface surface, inout LightingData lightingData)
+{
+    lightingData.tileIterator.LoadAdvance();
+                
+    while( !lightingData.tileIterator.IsDone() ) 
+    { 
+        uint currLightIndex = lightingData.tileIterator.GetValue(); 
+        lightingData.tileIterator.LoadAdvance();
+    
+        ViewSrg::SimpleSpotLight light = ViewSrg::m_simpleSpotLights[currLightIndex];
+        ApplySimpleSpotLight(light, surface, lightingData);
+    }
+}

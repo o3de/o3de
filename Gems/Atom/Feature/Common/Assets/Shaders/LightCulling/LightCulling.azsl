@@ -24,12 +24,35 @@ enum QuadLightFlag // Copied from QuadLight.azsli. See https://jira.agscollab.co
     UseFastApproximation = 0x02, // 1 << 1, // Use a fast approximation instead of linearly transformed cosines.
 };
 
+enum DiskLightFlag
+{
+    UseConeAngle = 1,
+};
+
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
     // Figure out how to remove duplicate struct definitions.
     // These are also defined in View.srg
     // https://jira.agscollab.com/browse/ATOM-3731
     
+    struct SimplePointLight
+    {
+        float3 m_position;
+        float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
+        float3 m_rgbIntensityCandelas;
+        float m_padding; // explicit padding.
+    };
+
+    struct SimpleSpotLight
+    {
+        float3 m_position;
+        float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
+        float3 m_direction;
+        float m_cosInnerConeAngle; // cosine of the outer cone angle
+        float3 m_rgbIntensityCandelas;
+        float m_cosOuterConeAngle; // cosine of the inner cone angle
+    };
+
     struct PointLight
     {
         float3 m_position;
@@ -38,35 +61,20 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         float m_bulbRadius;
     };
 
-    struct SpotLight
-    {
-        float3 m_position;
-        float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
-
-        float3 m_rgbIntensityCandelas;
-        float m_innerConeAngle; // cosine of the angle from the direction axis at which this light starts to fall off.
-
-        float3 m_direction; // the direction of the spot light
-        float m_outerConeAngle; // cosine of the angle from the direction axis at which this light no longer has an effect.
-
-        float m_penumbraBias; // bias of the falloff curve between inner and outer cone angles.
-
-        int m_shadowIndex; // index for SpotLightShadow.
-
-        float m_bulbRadius; // Radius disk representing the spot light bulb
-        float m_bulbPositionOffset; // Amount of offset from the disk of the spot light to the tip of the cone.
-    };
-
     struct DiskLight
     {
         float3 m_position;
         float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
-        float3 m_direction;
-        float m_bothDirectionsFactor; // 0.0f for one direction, -1.0f for both.
         float3 m_rgbIntensityCandelas;
         float m_diskRadius;
+        float3 m_direction;
+        uint m_flags;
+        float m_cosInnerConeAngle;
+        float m_cosOuterConeAngle;
+        float m_bulbPositionOffset;
+        uint m_shadowIndex;
     };
-    
+
     struct CapsuleLight
     {
         float3 m_startPoint;   // One of the end points of the capsule
@@ -103,13 +111,15 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     LightCullingConstants m_constantData;
 
     // Source light data 
+    StructuredBuffer<SimplePointLight> m_simplePointLights;
+    StructuredBuffer<SimpleSpotLight> m_simpleSpotLights;
     StructuredBuffer<PointLight> m_pointLights;
-    StructuredBuffer<SpotLight> m_spotLights;
     StructuredBuffer<DiskLight> m_diskLights;
     StructuredBuffer<CapsuleLight> m_capsuleLights;
     StructuredBuffer<QuadLight> m_quadLights;
+    uint m_simplePointLightCount;
+    uint m_simpleSpotLightCount;
     uint m_pointLightCount;
-    uint m_spotLightCount;
     uint m_diskLightCount;
     uint m_capsuleLightCount;
     uint m_quadLightCount;
@@ -306,10 +316,16 @@ void CopySharedLightsToMainMemory(uint lightCount, uint groupIndex, uint3 groupI
 }
 
 // Return the minz and maxz of this light in view space
-float2 ComputePointLightMinMaxZ(PassSrg::PointLight light, float3 lightPosition)
-{
-    float lightRadius = rsqrt(light.m_invAttenuationRadiusSquared);                       
+float2 ComputePointLightMinMaxZ(float lightRadius, float3 lightPosition)
+{                    
     float2 minmax = lightPosition.z + lightRadius * float2(-1,1) * RH_COORD_SYSTEM_REVERSE;  
+    return minmax;
+}
+
+float2 ComputeSimpleSpotLightMinMax(PassSrg::SimpleSpotLight light, float3 lightPosition)
+{
+    float lightRadius = rsqrt(light.m_invAttenuationRadiusSquared);
+    float2 minmax = lightPosition.z + lightRadius * float2(-1, 1) * RH_COORD_SYSTEM_REVERSE;  
     return minmax;
 }
 
@@ -330,16 +346,9 @@ float2 ComputeQuadLightMinMaxZ_SingleSided(PassSrg::QuadLight light, float3 ligh
     return ComputeQuadLightMinMaxZ_DoubleSided(light, lightPosition);
 }
 
-float2 ComputeSpotLightMinMax(PassSrg::SpotLight light, float3 lightPosition)
-{
-    float lightRadius = rsqrt(light.m_invAttenuationRadiusSquared) + light.m_bulbPositionOffset;
-    float2 minmax = lightPosition.z + lightRadius * float2(-1, 1) * RH_COORD_SYSTEM_REVERSE;  
-    return minmax;
-}
-
 float2 ComputeDiskLightMinMax(PassSrg::DiskLight light, float3 lightPosition)
 {
-    float lightRadius = rsqrt(light.m_invAttenuationRadiusSquared);                       
+    float lightRadius = rsqrt(light.m_invAttenuationRadiusSquared) + light.m_bulbPositionOffset;                       
     float2 minmax = lightPosition.z + lightRadius * float2(-1, 1) * RH_COORD_SYSTEM_REVERSE;  
     return minmax;
 }
@@ -375,44 +384,58 @@ void CullDecals(uint groupIndex, TileLightData tileLightData, float3 aabb_center
     }   
 }
 
-void CullPointLights(uint groupIndex, TileLightData tileLightData, float3 aabb_center, float3 aabb_extents, float2 tile_center_uv)
+void CullPointLight(uint lightIndex, float3 lightPosition, float invLightRadius, TileLightData tileLightData, float3 aabb_center, float3 aabb_extents)
+{
+    lightPosition = WorldToView_Point(lightPosition); 
+    bool potentiallyIntersects = TestSphereVsAabbInvSqrt(lightPosition, invLightRadius, aabb_center, aabb_extents);
+    if (potentiallyIntersects)
+    {                                           
+        // Implement and profile fine-grained light culling testing
+        // https://jira.agscollab.com/browse/ATOM-3732
+
+        uint inside = 0;
+        float2 minmax = ComputePointLightMinMaxZ(rsqrt(invLightRadius), lightPosition);
+        if (IsObjectInsideTile(tileLightData, minmax, inside))
+        {
+            MarkLightAsVisibleInSharedMemory(lightIndex, inside);            
+        }
+    }       
+}
+
+void CullSimplePointLights(uint groupIndex, TileLightData tileLightData, float3 aabb_center, float3 aabb_extents)
+{
+    for (uint lightIndex = groupIndex ; lightIndex < PassSrg::m_simplePointLightCount ; lightIndex += TILE_DIM_X * TILE_DIM_Y)
+    {
+        PassSrg::SimplePointLight light = PassSrg::m_simplePointLights[lightIndex];
+        CullPointLight(lightIndex, light.m_position, light.m_invAttenuationRadiusSquared, tileLightData, aabb_center, aabb_extents);
+    }  
+}
+
+void CullPointLights(uint groupIndex, TileLightData tileLightData, float3 aabb_center, float3 aabb_extents)
 {
     for (uint lightIndex = groupIndex ; lightIndex < PassSrg::m_pointLightCount ; lightIndex += TILE_DIM_X * TILE_DIM_Y)
     {
         PassSrg::PointLight light = PassSrg::m_pointLights[lightIndex];
-        float3 lightPosition = WorldToView_Point(light.m_position); 
-        bool potentiallyIntersects = TestSphereVsAabbInvSqrt(lightPosition, light.m_invAttenuationRadiusSquared, aabb_center, aabb_extents);
-        if (potentiallyIntersects)
-        {                                           
-            // Implement and profile fine-grained light culling testing
-            // https://jira.agscollab.com/browse/ATOM-3732
-
-            uint inside = 0;
-            float2 minmax = ComputePointLightMinMaxZ(light, lightPosition);
-            if (IsObjectInsideTile(tileLightData, minmax, inside))
-            {
-                MarkLightAsVisibleInSharedMemory(lightIndex, inside);            
-            }
-        }        
+        CullPointLight(lightIndex, light.m_position, light.m_invAttenuationRadiusSquared, tileLightData, aabb_center, aabb_extents);
     }  
 }
 
-void CullSpotLights(uint groupIndex, TileLightData tileLightData, float3 aabb_center, float3 aabb_extents)
+void CullSimpleSpotLights(uint groupIndex, TileLightData tileLightData, float3 aabb_center, float3 aabb_extents)
 {
-    for (uint lightIndex = groupIndex ; lightIndex < PassSrg::m_spotLightCount ; lightIndex += TILE_DIM_X * TILE_DIM_Y)
+    for (uint lightIndex = groupIndex ; lightIndex < PassSrg::m_simpleSpotLightCount ; lightIndex += TILE_DIM_X * TILE_DIM_Y)
     {
-        PassSrg::SpotLight light = PassSrg::m_spotLights[lightIndex];
-        float3 lightPosition = WorldToView_Point(light.m_position - light.m_bulbPositionOffset * light.m_direction);
+        PassSrg::SimpleSpotLight light = PassSrg::m_simpleSpotLights[lightIndex];
+        float3 lightPosition = WorldToView_Point(light.m_position);
         float3 lightDirection = WorldToView_Vector(light.m_direction);
         
-        bool potentiallyIntersects = TestSphereVsCone(aabb_center, length(aabb_extents), lightPosition, lightDirection, light.m_outerConeAngle, rsqrt(light.m_invAttenuationRadiusSquared) + light.m_bulbPositionOffset);
+        bool potentiallyIntersects = TestSphereVsCone(aabb_center, length(aabb_extents), lightPosition, lightDirection, light.m_cosOuterConeAngle, rsqrt(light.m_invAttenuationRadiusSquared));
         if (potentiallyIntersects)
         {
             // Implement and profile fine-grained light culling testing
             // https://jira.agscollab.com/browse/ATOM-3732
 
             uint inside = 0;
-            float2 minmax = ComputeSpotLightMinMax(light, lightPosition);
+            float2 minmax = ComputeSimpleSpotLightMinMax(light, lightPosition);
             if (IsObjectInsideTile(tileLightData, minmax, inside))
             {
                 MarkLightAsVisibleInSharedMemory(lightIndex, inside);            
@@ -421,29 +444,36 @@ void CullSpotLights(uint groupIndex, TileLightData tileLightData, float3 aabb_ce
     }   
 }
 
-
 void CullDiskLights(uint groupIndex, TileLightData tileLightData, float3 aabb_center, float3 aabb_extents)
 {
-
     for (uint lightIndex = groupIndex ; lightIndex < PassSrg::m_diskLightCount ; lightIndex += TILE_DIM_X * TILE_DIM_Y)
     {
         PassSrg::DiskLight light = PassSrg::m_diskLights[lightIndex];
-        float3 lightPosition = WorldToView_Point(light.m_position);
+        float3 lightPosition = WorldToView_Point(light.m_position - light.m_bulbPositionOffset * light.m_direction);
         float lightRadius = rsqrt(light.m_invAttenuationRadiusSquared) + light.m_diskRadius;
         float lightRadiusSqr = lightRadius * lightRadius;
         float aabbRadius = length(aabb_extents);
-        bool potentiallyIntersects = TestSphereVsAabb(lightPosition, lightRadiusSqr, aabb_center, aabb_extents);
+        float3 lightDirection = WorldToView_Vector(light.m_direction);
 
-        if (potentiallyIntersects && light.m_bothDirectionsFactor == 0)
-        {           
-            // Only one side is visible, check that we are above the hemisphere
-            float3 lightDirection = WorldToView_Vector(light.m_direction);
-            float3 toAABBCenter = aabb_center - lightPosition;
-            float distanceToLightPlane = dot(lightDirection, toAABBCenter);
+        bool potentiallyIntersects;
+        if (light.m_flags & DiskLightFlag::UseConeAngle > 0)
+        {
+            potentiallyIntersects = TestSphereVsCone(aabb_center, length(aabb_extents), lightPosition, lightDirection, light.m_cosOuterConeAngle, rsqrt(light.m_invAttenuationRadiusSquared) + light.m_bulbPositionOffset);
+        }
+        else
+        {
+            potentiallyIntersects = TestSphereVsAabb(lightPosition, lightRadiusSqr, aabb_center, aabb_extents);
+
+            if (potentiallyIntersects)
+            {
+                // Only one side is visible, check that we are above the hemisphere
+                float3 toAABBCenter = aabb_center - lightPosition;
+                float distanceToLightPlane = dot(lightDirection, toAABBCenter);
                 
-            potentiallyIntersects = distanceToLightPlane >= -aabbRadius; 
-        }             
-   
+                potentiallyIntersects = distanceToLightPlane >= -aabbRadius;
+            }
+        }
+
         if (potentiallyIntersects)
         {
             // Implement and profile fine-grained light culling testing
@@ -454,7 +484,7 @@ void CullDiskLights(uint groupIndex, TileLightData tileLightData, float3 aabb_ce
             if (IsObjectInsideTile(tileLightData, minmax, inside))
             {
                 MarkLightAsVisibleInSharedMemory(lightIndex, inside);            
-            }
+            } 
         }                                      
     }   
 }
@@ -603,11 +633,6 @@ uint WriteCullingDataToMainMemory(uint lightCount, uint groupIndex, uint3 groupI
 // Point light index << 16 | bitmask contains which bits the light is present in
 // ...
 // End of Group
-// Spot light index << 16 | bitmask contains which bits the light is present in
-// Spot light index << 16 | bitmask contains which bits the light is present in
-// Spot light index << 16 | bitmask contains which bits the light is present in
-// ...
-// End of Group
 // Disk light index << 16 | bitmask contains which bits the light is present in
 // Disk light index << 16 | bitmask contains which bits the light is present in
 // Disk light index << 16 | bitmask contains which bits the light is present in
@@ -643,14 +668,19 @@ void MainCS(
     
     ClearSharedLightCountWithDoubleBarrier(groupIndex);
             
-    CullPointLights(groupIndex, tileLightData, aabb_center, aabb_extents, tileCenterUv); 
+    CullSimplePointLights(groupIndex, tileLightData, aabb_center, aabb_extents); 
     lightCount = WriteCullingDataToMainMemory(lightCount, groupIndex, groupID );
     
     ClearSharedLightCountWithDoubleBarrier(groupIndex);
 
-    CullSpotLights(groupIndex, tileLightData, aabb_center, aabb_extents);
+    CullSimpleSpotLights(groupIndex, tileLightData, aabb_center, aabb_extents); 
     lightCount = WriteCullingDataToMainMemory(lightCount, groupIndex, groupID );
+    
+    ClearSharedLightCountWithDoubleBarrier(groupIndex);
 
+    CullPointLights(groupIndex, tileLightData, aabb_center, aabb_extents); 
+    lightCount = WriteCullingDataToMainMemory(lightCount, groupIndex, groupID );
+    
     ClearSharedLightCountWithDoubleBarrier(groupIndex);
 
     CullDiskLights(groupIndex, tileLightData, aabb_center, aabb_extents);

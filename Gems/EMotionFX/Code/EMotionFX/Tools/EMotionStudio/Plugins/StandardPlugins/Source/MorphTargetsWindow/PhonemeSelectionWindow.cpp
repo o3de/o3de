@@ -175,11 +175,11 @@ namespace EMStudio
         mRemovePhonemesButtonArrow = new QPushButton("");
         mClearPhonemesButton = new QPushButton("");
 
-        EMStudioManager::MakeTransparentButton(mAddPhonemesButtonArrow,    "/Images/Icons/PlayForward.svg",    "Assign the selected phonemes to the morph target.");
-        EMStudioManager::MakeTransparentButton(mRemovePhonemesButtonArrow, "/Images/Icons/PlayBackward.svg",   "Unassign the selected phonemes from the morph target.");
-        EMStudioManager::MakeTransparentButton(mAddPhonemesButton,         "/Images/Icons/Plus.svg",           "Assign the selected phonemes to the morph target.");
-        EMStudioManager::MakeTransparentButton(mRemovePhonemesButton,      "/Images/Icons/Minus.svg",          "Unassign the selected phonemes from the morph target.");
-        EMStudioManager::MakeTransparentButton(mClearPhonemesButton,       "/Images/Icons/Clear.svg",          "Unassign all phonemes from the morph target.");
+        EMStudioManager::MakeTransparentButton(mAddPhonemesButtonArrow,    "Images/Icons/PlayForward.svg",    "Assign the selected phonemes to the morph target.");
+        EMStudioManager::MakeTransparentButton(mRemovePhonemesButtonArrow, "Images/Icons/PlayBackward.svg",   "Unassign the selected phonemes from the morph target.");
+        EMStudioManager::MakeTransparentButton(mAddPhonemesButton,         "Images/Icons/Plus.svg",           "Assign the selected phonemes to the morph target.");
+        EMStudioManager::MakeTransparentButton(mRemovePhonemesButton,      "Images/Icons/Minus.svg",          "Unassign the selected phonemes from the morph target.");
+        EMStudioManager::MakeTransparentButton(mClearPhonemesButton,       "Images/Icons/Clear.svg",          "Unassign all phonemes from the morph target.");
 
         // init the visime tables
         mPossiblePhonemeSetsTable = new DragTableWidget(0, 1);

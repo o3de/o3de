@@ -355,7 +355,7 @@ class TestBenchmarkAssetLoads(object):
             # Load 650 MB from a single root 10MB asset that has 64 dependent 10MB assets
             Benchmark('10mb_64x1', 1),
             # Load 650 MB from a single root 10MB asset where each asset has 1 dependent 10MB asset 64 levels deep
-            # (Currently removed because it crashes Lumberyard, re-enable once LY can handle it - SPEC-1314)
+            # (Currently removed because it crashes Open 3D Engine, re-enable once LY can handle it - SPEC-1314)
             #Benchmark('10mb_1x64', 1),
 
             # The second set of benchmarks measures the load time effects of different quantities of parallel asset loads.

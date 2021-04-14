@@ -11,7 +11,7 @@
  */
 
 #include "TitleBarPage.h"
-#include <Gallery/ui_TitleBarPage.h>
+#include <AzQtComponents/Gallery/ui_TitleBarPage.h>
 
 TitleBarPage::TitleBarPage(QWidget* parent)
     : QWidget(parent)

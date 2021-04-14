@@ -166,8 +166,8 @@ namespace EMStudio
         connect(mPresetNameLineEdit, &QLineEdit::textEdited, this, &GameControllerWindow::OnPresetNameEdited);
         connect(mPresetNameLineEdit, &QLineEdit::returnPressed, this, &GameControllerWindow::OnPresetNameChanged);
 
-        EMStudioManager::MakeTransparentButton(mAddPresetButton, "/Images/Icons/Plus.svg", "Add a game controller preset");
-        EMStudioManager::MakeTransparentButton(mRemovePresetButton, "/Images/Icons/Remove.svg", "Remove a game controller preset");
+        EMStudioManager::MakeTransparentButton(mAddPresetButton, "Images/Icons/Plus.svg", "Add a game controller preset");
+        EMStudioManager::MakeTransparentButton(mRemovePresetButton, "Images/Icons/Remove.svg", "Remove a game controller preset");
 
         QHBoxLayout* buttonsLayout = new QHBoxLayout();
         buttonsLayout->addWidget(mAddPresetButton);
