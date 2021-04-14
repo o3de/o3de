@@ -15,7 +15,7 @@
 
 namespace AzFramework
 {
-    AZ_CVAR(bool,     bg_octreeUseQuadtree,        false, nullptr, AZ::ConsoleFunctorFlags::ReadOnly, "If set to true, the octreeSystemComponent will degenerate to a quadtree split along the X/Y plane");
+    AZ_CVAR(bool,     bg_octreeUseQuadtree,        false, nullptr, AZ::ConsoleFunctorFlags::ReadOnly, "If set to true, the visibility octrees will degenerate to a quadtree split along the X/Y plane");
     AZ_CVAR(float,    bg_octreeMaxWorldExtents, 16384.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "Maximum supported world size by the world octreeSystemComponent");
     AZ_CVAR(uint32_t, bg_octreeNodeMaxEntries,       64, nullptr, AZ::ConsoleFunctorFlags::Null, "Maximum number of entries to allow in any node before forcing a split");
     AZ_CVAR(uint32_t, bg_octreeNodeMinEntries,       32, nullptr, AZ::ConsoleFunctorFlags::Null, "Minimum number of entries to allow in a node resulting from a merge operation");
@@ -67,9 +67,9 @@ namespace AzFramework
     }
 
 
-    void OctreeNode::Insert(OctreeSystemComponent& octreeSystemComponent, VisibilityEntry* entry)
+    void OctreeNode::Insert(OctreeScene& octreeScene, VisibilityEntry* entry)
     {
-        AZ_Assert(entry->m_internalNode == nullptr, "Double-insertion: Insert invoked for an entry already bound to the OctreeSystemComponent");
+        AZ_Assert(entry->m_internalNode == nullptr, "Double-insertion: Insert invoked for an entry already bound to the OctreeScene");
 
         // If this is not a leaf node, try to insert into the child nodes
         if (m_children != nullptr)
@@ -80,7 +80,7 @@ namespace AzFramework
             {
                 if (AZ::ShapeIntersection::Contains(m_children[child].m_bounds, boundingVolume))
                 {
-                    return m_children[child].Insert(octreeSystemComponent, entry);
+                    return m_children[child].Insert(octreeScene, entry);
                 }
             }
         }
@@ -90,8 +90,8 @@ namespace AzFramework
         if ((m_children == nullptr) && (m_entries.size() >= bg_octreeNodeMaxEntries))
         {
             // If we're not already split, and our entry list gets too large, split this node
-            Split(octreeSystemComponent);
-            Insert(octreeSystemComponent, entry);
+            Split(octreeScene);
+            Insert(octreeScene, entry);
         }
         else
         {
@@ -102,7 +102,7 @@ namespace AzFramework
     }
 
 
-    void OctreeNode::Update(OctreeSystemComponent& octreeSystemComponent, VisibilityEntry* entry)
+    void OctreeNode::Update(OctreeScene& octreeScene, VisibilityEntry* entry)
     {
         AZ_Assert(entry->m_internalNode == this, "Update invoked for an entry bound to a different OctreeNode");
 
@@ -116,7 +116,7 @@ namespace AzFramework
         }
 
         // Remove the entry from our current node, since it is no longer contained
-        Remove(octreeSystemComponent, entry);
+        Remove(octreeScene, entry);
 
         // Traverse up our ancestor nodes to find the first node that fully contains the entry
         // This strategy assumes an entry will typically move a small distance relative to the total world
@@ -125,14 +125,14 @@ namespace AzFramework
         {
             if (AZ::ShapeIntersection::Contains(insertCheck->m_bounds, boundingVolume))
             {
-                return insertCheck->Insert(octreeSystemComponent, entry);
+                return insertCheck->Insert(octreeScene, entry);
             }
             insertCheck = insertCheck->m_parent;
         }
     }
 
 
-    void OctreeNode::Remove(OctreeSystemComponent& octreeSystemComponent, VisibilityEntry* entry)
+    void OctreeNode::Remove(OctreeScene& octreeScene, VisibilityEntry* entry)
     {
         AZ_Assert(entry->m_internalNode == this, "Remove invoked for an entry bound to a different OctreeNode");
         AZ_Assert(m_entries[entry->m_internalNodeIndex] == entry, "Visibility entry data is corrupt");
@@ -150,29 +150,30 @@ namespace AzFramework
 
         if (m_parent != nullptr)
         {
-            m_parent->TryMerge(octreeSystemComponent);
+            m_parent->TryMerge(octreeScene);
         }
     }
 
 
-    void OctreeNode::Enumerate(const AZ::Aabb& aabb, const IVisibilitySystem::EnumerateCallback& callback) const
+    void OctreeNode::Enumerate(const AZ::Aabb& aabb, const IVisibilityScene::EnumerateCallback& callback) const
     {
         EnumerateHelper(aabb, callback);
     }
 
 
-    void OctreeNode::Enumerate(const AZ::Sphere& sphere, const IVisibilitySystem::EnumerateCallback& callback) const
+    void OctreeNode::Enumerate(const AZ::Sphere& sphere, const IVisibilityScene::EnumerateCallback& callback) const
     {
         EnumerateHelper(sphere, callback);
     }
 
 
-    void OctreeNode::Enumerate(const AZ::Frustum& frustum, const IVisibilitySystem::EnumerateCallback& callback) const
+    void OctreeNode::Enumerate(const AZ::Frustum& frustum, const IVisibilityScene::EnumerateCallback& callback) const
     {
         EnumerateHelper(frustum, callback);
     }
 
-    void OctreeNode::EnumerateNoCull(const IVisibilitySystem::EnumerateCallback& callback) const
+
+    void OctreeNode::EnumerateNoCull(const IVisibilityScene::EnumerateCallback& callback) const
     {
         // Invoke the callback for the current node
         if (!m_entries.empty())
@@ -190,6 +191,7 @@ namespace AzFramework
             }
         }
     }
+
 
     const AZStd::vector<VisibilityEntry*>& OctreeNode::GetEntries() const
     {
@@ -209,7 +211,7 @@ namespace AzFramework
     }
 
 
-    void OctreeNode::TryMerge(OctreeSystemComponent& octreeSystemComponent)
+    void OctreeNode::TryMerge(OctreeScene& octreeScene)
     {
         if (IsLeaf())
         {
@@ -222,7 +224,7 @@ namespace AzFramework
         const uint32_t childCount = GetChildNodeCount();
         for (uint32_t child = 0; child < childCount; ++child)
         {
-            m_children[child].TryMerge(octreeSystemComponent);
+            m_children[child].TryMerge(octreeScene);
             if (!m_children[child].IsLeaf())
             {
                 return;
@@ -232,13 +234,13 @@ namespace AzFramework
 
         if (potentialNodeCount <= bg_octreeNodeMinEntries)
         {
-            Merge(octreeSystemComponent);
+            Merge(octreeScene);
         }
     }
 
 
     template <typename T>
-    void OctreeNode::EnumerateHelper(const T& boundingVolume, const IVisibilitySystem::EnumerateCallback& callback) const
+    void OctreeNode::EnumerateHelper(const T& boundingVolume, const IVisibilityScene::EnumerateCallback& callback) const
     {
         AZ_Assert(AZ::ShapeIntersection::Overlaps(boundingVolume, m_bounds), "EnumerateHelper invoked on an octreeSystemComponent node that is not within the bounding volume");
 
@@ -263,11 +265,11 @@ namespace AzFramework
     }
 
 
-    void OctreeNode::Split(OctreeSystemComponent& octreeSystemComponent)
+    void OctreeNode::Split(OctreeScene& octreeScene)
     {
-        AZ_Assert(m_children == nullptr, "Split invoked on an octreeSystemComponent node that has already been split");
-        m_childNodeIndex = octreeSystemComponent.AllocateChildNodes();
-        m_children = octreeSystemComponent.GetChildNodesAtIndex(m_childNodeIndex);
+        AZ_Assert(m_children == nullptr, "Split invoked on an octreeScene node that has already been split");
+        m_childNodeIndex = octreeScene.AllocateChildNodes();
+        m_children = octreeScene.GetChildNodesAtIndex(m_childNodeIndex);
 
         // Set child split planes and bounding volumes
         {
@@ -308,14 +310,14 @@ namespace AzFramework
         {
             entry->m_internalNode = nullptr;
             entry->m_internalNodeIndex = 0;
-            Insert(octreeSystemComponent, entry);
+            Insert(octreeScene, entry);
         }
     }
 
 
-    void OctreeNode::Merge(OctreeSystemComponent& octreeSystemComponent)
+    void OctreeNode::Merge(OctreeScene& octreeScene)
     {
-        AZ_Assert(m_children != nullptr, "Merge invoked on an octreeSystemComponent node that does not have children");
+        AZ_Assert(m_children != nullptr, "Merge invoked on an octreeScene node that does not have children");
 
         // Move all child entries to our own entry set
         const uint32_t childCount = GetChildNodeCount();
@@ -330,46 +332,20 @@ namespace AzFramework
             m_children[child].m_entries.clear();
         }
 
-        octreeSystemComponent.ReleaseChildNodes(m_childNodeIndex);
+        octreeScene.ReleaseChildNodes(m_childNodeIndex);
         m_childNodeIndex = InvalidChildNodeIndex;
         m_children = nullptr;
     }
 
-
-    void OctreeSystemComponent::Reflect(AZ::ReflectContext* context)
+    OctreeScene::OctreeScene(const AZ::Name& sceneName)
+        : m_sceneName(sceneName)
+        , m_root(AZ::Aabb::CreateFromMinMax(AZ::Vector3(-bg_octreeMaxWorldExtents), AZ::Vector3(bg_octreeMaxWorldExtents)))
     {
-        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-        {
-            serializeContext->Class<OctreeSystemComponent, AZ::Component>()
-                ->Version(1);
-        }
+        AZ_Assert(!sceneName.IsEmpty(), "sceneName must be a valid string");
     }
 
-
-    void OctreeSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+    OctreeScene::~OctreeScene()
     {
-        provided.push_back(AZ_CRC_CE("VisibilityService"));
-    }
-
-
-    void OctreeSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
-    {
-        incompatible.push_back(AZ_CRC_CE("VisibilityService"));
-    }
-
-
-    OctreeSystemComponent::OctreeSystemComponent()
-        : m_root(AZ::Aabb::CreateFromMinMax(AZ::Vector3(-bg_octreeMaxWorldExtents), AZ::Vector3(bg_octreeMaxWorldExtents)))
-    {
-        AZ::Interface<IVisibilitySystem>::Register(this);
-        IVisibilitySystemRequestBus::Handler::BusConnect();
-    }
-
-
-    OctreeSystemComponent::~OctreeSystemComponent()
-    {
-        IVisibilitySystemRequestBus::Handler::BusDisconnect();
-        AZ::Interface<IVisibilitySystem>::Unregister(this);
         for (auto page : m_nodeCache)
         {
             delete page;
@@ -378,21 +354,14 @@ namespace AzFramework
         m_nodeCache.shrink_to_fit();
     }
 
-
-    void OctreeSystemComponent::Activate()
+    const AZ::Name& OctreeScene::GetName() const
     {
-        ;
+        return m_sceneName;
     }
 
-
-    void OctreeSystemComponent::Deactivate()
+    void OctreeScene::InsertOrUpdateEntry(VisibilityEntry& entry)
     {
-        ;
-    }
-
-
-    void OctreeSystemComponent::InsertOrUpdateEntry(VisibilityEntry& entry)
-    {
+        AZStd::lock_guard<AZStd::shared_mutex> lock(m_sharedMutex);
         if (entry.m_internalNode != nullptr)
         {
             static_cast<OctreeNode*>(entry.m_internalNode)->Update(*this, &entry);
@@ -405,8 +374,9 @@ namespace AzFramework
     }
 
 
-    void OctreeSystemComponent::RemoveEntry(VisibilityEntry& entry)
+    void OctreeScene::RemoveEntry(VisibilityEntry& entry)
     {
+        AZStd::lock_guard<AZStd::shared_mutex> lock(m_sharedMutex);
         if (entry.m_internalNode)
         {
             static_cast<OctreeNode*>(entry.m_internalNode)->Remove(*this, &entry);
@@ -415,70 +385,71 @@ namespace AzFramework
     }
 
 
-    void OctreeSystemComponent::Enumerate(const AZ::Aabb& aabb, const IVisibilitySystem::EnumerateCallback& callback) const
+    void OctreeScene::Enumerate(const AZ::Aabb& aabb, const IVisibilityScene::EnumerateCallback& callback) const
     {
+        AZStd::shared_lock<AZStd::shared_mutex> lock(m_sharedMutex);
         m_root.Enumerate(aabb, callback);
     }
 
 
-    void OctreeSystemComponent::Enumerate(const AZ::Sphere& sphere, const IVisibilitySystem::EnumerateCallback& callback) const
+    void OctreeScene::Enumerate(const AZ::Sphere& sphere, const IVisibilityScene::EnumerateCallback& callback) const
     {
+        AZStd::shared_lock<AZStd::shared_mutex> lock(m_sharedMutex);
         m_root.Enumerate(sphere, callback);
     }
 
 
-    void OctreeSystemComponent::Enumerate(const AZ::Frustum& frustum, const IVisibilitySystem::EnumerateCallback& callback) const
+    void OctreeScene::Enumerate(const AZ::Frustum& frustum, const IVisibilityScene::EnumerateCallback& callback) const
     {
+        AZStd::shared_lock<AZStd::shared_mutex> lock(m_sharedMutex);
         m_root.Enumerate(frustum, callback);
     }
 
-    void OctreeSystemComponent::EnumerateNoCull(const IVisibilitySystem::EnumerateCallback& callback) const
+
+    void OctreeScene::EnumerateNoCull(const IVisibilityScene::EnumerateCallback& callback) const
     {
+        AZStd::shared_lock<AZStd::shared_mutex> lock(m_sharedMutex);
         m_root.EnumerateNoCull(callback);
     }
 
-    uint32_t OctreeSystemComponent::GetEntryCount() const
+
+    uint32_t OctreeScene::GetEntryCount() const
     {
         return m_entryCount;
     }
 
-    OctreeNode& OctreeSystemComponent::GetRoot()
-    {
-        return m_root;
-    }
-
-    uint32_t OctreeSystemComponent::GetNodeCount() const
+    uint32_t OctreeScene::GetNodeCount() const
     {
         return m_nodeCount;
     }
 
 
-    uint32_t OctreeSystemComponent::GetFreeNodeCount() const
+    uint32_t OctreeScene::GetFreeNodeCount() const
     {
         // Each entry represents GetChildNodeCount() nodes
         return aznumeric_cast<uint32_t>(m_freeOctreeNodes.size() * GetChildNodeCount());
     }
 
 
-    uint32_t OctreeSystemComponent::GetPageCount() const
+    uint32_t OctreeScene::GetPageCount() const
     {
         return aznumeric_cast<uint32_t>(m_nodeCache.size());
     }
 
 
-    uint32_t OctreeSystemComponent::GetChildNodeCount() const
+    uint32_t OctreeScene::GetChildNodeCount() const
     {
         return AzFramework::GetChildNodeCount();
     }
 
 
-    void OctreeSystemComponent::DumpStats([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
+    void OctreeScene::DumpStats()
     {
-        AZ_TracePrintf("Console", "OctreeNode::EntryCount = %u", GetEntryCount());
-        AZ_TracePrintf("Console", "OctreeNode::NodeCount = %u", GetNodeCount());
-        AZ_TracePrintf("Console", "OctreeNode::FreeNodeCount = %u", GetFreeNodeCount());
-        AZ_TracePrintf("Console", "OctreeNode::PageCount = %u", GetPageCount());
-        AZ_TracePrintf("Console", "OctreeNode::ChildNodeCount = %u", GetChildNodeCount());
+        AZ_TracePrintf("Console", "OctreeScene[\"%s\"]::EntryCount = %u", GetName().GetCStr(), GetEntryCount());
+        AZ_TracePrintf("Console", "OctreeScene[\"%s\"]::NodeCount = %u", GetName().GetCStr(), GetNodeCount());
+        AZ_TracePrintf("Console", "OctreeScene[\"%s\"]::FreeNodeCount = %u", GetName().GetCStr(), GetFreeNodeCount());
+        AZ_TracePrintf("Console", "OctreeScene[\"%s\"]::PageCount = %u", GetName().GetCStr(), GetPageCount());
+        AZ_TracePrintf("Console", "OctreeScene[\"%s\"]::ChildNodeCount = %u", GetName().GetCStr(), GetChildNodeCount());
     }
 
 
@@ -496,7 +467,7 @@ namespace AzFramework
     }
 
 
-    uint32_t OctreeSystemComponent::AllocateChildNodes()
+    uint32_t OctreeScene::AllocateChildNodes()
     {
         const uint32_t childCount = GetChildNodeCount();
         m_nodeCount += childCount;
@@ -540,18 +511,124 @@ namespace AzFramework
     }
 
 
-    void OctreeSystemComponent::ReleaseChildNodes(uint32_t nodeIndex)
+    void OctreeScene::ReleaseChildNodes(uint32_t nodeIndex)
     {
         m_nodeCount -= GetChildNodeCount();
         m_freeOctreeNodes.push(nodeIndex);
     }
 
 
-    OctreeNode* OctreeSystemComponent::GetChildNodesAtIndex(uint32_t nodeIndex) const
+    OctreeNode* OctreeScene::GetChildNodesAtIndex(uint32_t nodeIndex) const
     {
         uint32_t childPage;
         uint32_t childOffset;
         ExtractPageAndOffsetFromIndex(nodeIndex, childPage, childOffset);
         return &(*m_nodeCache[childPage])[childOffset];
+    }
+
+
+    void OctreeSystemComponent::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<OctreeSystemComponent, AZ::Component>()
+                ->Version(1);
+        }
+    }
+
+
+    void OctreeSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+    {
+        provided.push_back(AZ_CRC("OctreeService"));
+    }
+
+
+    void OctreeSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    {
+        incompatible.push_back(AZ_CRC("OctreeService"));
+    }
+
+
+    OctreeSystemComponent::OctreeSystemComponent()        
+    {
+        AZ::Interface<IVisibilitySystem>::Register(this);
+        IVisibilitySystemRequestBus::Handler::BusConnect();
+
+        m_defaultScene = aznew OctreeScene(AZ::Name("DefaultVisibilityScene"));
+    }
+
+
+    OctreeSystemComponent::~OctreeSystemComponent()
+    {
+        AZ_Assert(m_scenes.empty(), "All IVisibilityScenes must be destroyed before shutdown");
+
+        delete m_defaultScene;
+
+        IVisibilitySystemRequestBus::Handler::BusDisconnect();
+        AZ::Interface<IVisibilitySystem>::Unregister(this);        
+    }
+
+
+    void OctreeSystemComponent::Activate()
+    {
+        ;
+    }
+
+
+    void OctreeSystemComponent::Deactivate()
+    {
+        ;
+    }
+
+    IVisibilityScene* OctreeSystemComponent::GetDefaultVisibilityScene()
+    {
+        return m_defaultScene;
+    }
+
+    IVisibilityScene* OctreeSystemComponent::CreateVisibilityScene(const AZ::Name& sceneName)
+    {
+        AZ_Assert(FindVisibilityScene(sceneName) == nullptr, "Scene with same name already created!");
+        OctreeScene* newScene = aznew OctreeScene(sceneName);
+        m_scenes.push_back(newScene);
+        return newScene;
+    }
+
+
+    void OctreeSystemComponent::DestroyVisibilityScene(IVisibilityScene* visScene)
+    {
+        for (auto iter = m_scenes.begin(); iter != m_scenes.end(); ++iter)
+        {
+            if (*iter == visScene)
+            {
+                delete visScene;
+                m_scenes.erase(iter);
+                return;
+            }
+        }
+        AZ_Assert(false, "visScene[\"%s\"] not found in the OctreeSystemComponent", visScene->GetName().GetCStr());
+    }
+
+
+    IVisibilityScene* OctreeSystemComponent::FindVisibilityScene(const AZ::Name& sceneName)
+    {
+        for (OctreeScene* scene : m_scenes)
+        {
+            if(scene->GetName() == sceneName)
+            {
+                return scene;
+            }
+        }
+        return nullptr;
+    }
+
+
+    void OctreeSystemComponent::DumpStats([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
+    {
+        for (OctreeScene* scene : m_scenes)
+        {
+            AZ_TracePrintf("Console", "============================================");
+            scene->DumpStats();
+        }
+        AZ_TracePrintf("Console", "============================================");
     }
 }

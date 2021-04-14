@@ -212,7 +212,7 @@ namespace InAppPurchases
             }
             else
             {
-                AZ_Warning("LumberyardInAppPurchases", false, "The JSON string provided does not contain an array named ProductIds!(Property *has* to be an array)");
+                AZ_Warning("O3DEInAppPurchases", false, "The JSON string provided does not contain an array named ProductIds!(Property *has* to be an array)");
             }
         }
     }

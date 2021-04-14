@@ -22,7 +22,7 @@
 #include "Objects/BaseObject.h"
 
 #include "QtUtilWin.h"
-#include <Animation/ui_UiAVSequenceProps.h>
+#include <Editor/Animation/ui_UiAVSequenceProps.h>
 #include <QMessageBox>
 
 

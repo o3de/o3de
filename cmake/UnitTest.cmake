@@ -39,7 +39,7 @@ set(CTEST_RUN_FLAGS ${CTEST_RUN_FLAGS_STRING} CACHE STRING "Command line argumen
 set(CMAKE_CTEST_ARGUMENTS ${CTEST_RUN_FLAGS} -LE SUITE_benchmark)
 
 #! ly_add_suite_build_and_run_targets - Add CMake Targets for associating dependencies with each
-#  suite of test supported by Lumberyard
+#  suite of test supported by Open 3D Engine
 function(ly_add_suite_build_and_run_targets)
     if(NOT PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         return()

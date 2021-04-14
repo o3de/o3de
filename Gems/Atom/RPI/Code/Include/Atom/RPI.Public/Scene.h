@@ -44,7 +44,7 @@ namespace AZ
         class FeatureProcessor;
         class ShaderResourceGroup;
         class ShaderResourceGroupAsset;
-        class CullingSystem;
+        class CullingScene;
         class DynamicDrawSystem;
 
         // Callback function to modify values of a ShaderResourceGroup
@@ -162,9 +162,9 @@ namespace AZ
 
             bool HasOutputForPipelineState(RHI::DrawListTag drawListTag) const;
 
-            AZ::RPI::CullingSystem* GetCullingSystem()
+            AZ::RPI::CullingScene* GetCullingScene()
             {
-                return m_cullingSystem;
+                return m_cullingScene;
             }
 
             RenderPipelinePtr FindRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle);
@@ -212,7 +212,7 @@ namespace AZ
             // CPU simulation job completion for track all feature processors' simulation jobs
             AZ::JobCompletion* m_simulationCompletion = nullptr;
 
-            AZ::RPI::CullingSystem* m_cullingSystem;
+            AZ::RPI::CullingScene* m_cullingScene;
 
             // Cached views for current rendering frame. It gets re-built every frame.
             AZ::RPI::FeatureProcessor::SimulatePacket m_simulatePacket;

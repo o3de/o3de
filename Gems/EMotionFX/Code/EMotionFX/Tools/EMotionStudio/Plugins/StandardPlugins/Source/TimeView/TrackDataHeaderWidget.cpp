@@ -16,6 +16,7 @@
 #include "TimeInfoWidget.h"
 #include "TrackHeaderWidget.h"
 #include "TimeViewToolBar.h"
+#include <QDir>
 #include <QPainter>
 #include <QToolTip>
 #include <QPaintEvent>
@@ -90,8 +91,8 @@ namespace EMStudio
         mDataFont.setPixelSize(13);
 
         // load the time handle top image
-        QString imageName = MysticQt::GetMysticQt()->GetDataDir().c_str();
-        mTimeHandleTop = QPixmap(imageName + "Images/Icons/TimeHandleTop.png");
+        QDir imageName{ QString(MysticQt::GetMysticQt()->GetDataDir().c_str()) };
+        mTimeHandleTop = QPixmap(imageName.filePath("Images/Icons/TimeHandleTop.png"));
 
         setMouseTracking(true);
         setAcceptDrops(true);

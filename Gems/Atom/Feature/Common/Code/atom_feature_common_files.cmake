@@ -42,7 +42,9 @@ set(FILES
     Include/Atom/Feature/Utils/FrameCaptureBus.h
     Include/Atom/Feature/Utils/GpuBufferHandler.h
     Include/Atom/Feature/Utils/MultiIndexedDataVector.h
+    Include/Atom/Feature/Utils/MultiSparseVector.h
     Include/Atom/Feature/Utils/ProfilingCaptureBus.h
+    Include/Atom/Feature/Utils/SparseVector.h
     Include/Atom/Feature/LuxCore/LuxCoreBus.h
     Include/Atom/Feature/LuxCore/LuxCoreTexturePass.h
     Include/Atom/Feature/LuxCore/RenderTexturePass.h
@@ -83,16 +85,18 @@ set(FILES
     Source/CoreLights/IndexedDataVector.inl
     Source/CoreLights/LtcCommon.h
     Source/CoreLights/LtcCommon.cpp
-    Source/CoreLights/SpotLightFeatureProcessor.h
-    Source/CoreLights/SpotLightFeatureProcessor.cpp
-    Source/CoreLights/SpotLightShadowmapsPass.h
-    Source/CoreLights/SpotLightShadowmapsPass.cpp
     Source/CoreLights/PointLightFeatureProcessor.h
     Source/CoreLights/PointLightFeatureProcessor.cpp
     Source/CoreLights/PolygonLightFeatureProcessor.h
     Source/CoreLights/PolygonLightFeatureProcessor.cpp
+    Source/CoreLights/ProjectedShadowmapsPass.h
+    Source/CoreLights/ProjectedShadowmapsPass.cpp
     Source/CoreLights/QuadLightFeatureProcessor.h
     Source/CoreLights/QuadLightFeatureProcessor.cpp
+    Source/CoreLights/SimplePointLightFeatureProcessor.h
+    Source/CoreLights/SimplePointLightFeatureProcessor.cpp
+    Source/CoreLights/SimpleSpotLightFeatureProcessor.h
+    Source/CoreLights/SimpleSpotLightFeatureProcessor.cpp
     Source/CoreLights/Shadow.h
     Source/CoreLights/Shadow.cpp
     Source/CoreLights/ShadowmapAtlas.h
@@ -246,10 +250,6 @@ set(FILES
     Source/PostProcessing/SsaoPasses.h
     Source/PostProcessing/SubsurfaceScatteringPass.cpp
     Source/PostProcessing/SubsurfaceScatteringPass.h
-    Source/ScreenSpace/DeferredFogSettings.cpp
-    Source/ScreenSpace/DeferredFogSettings.h
-    Source/ScreenSpace/DeferredFogPass.cpp
-    Source/ScreenSpace/DeferredFogPass.h
     Source/RayTracing/RayTracingFeatureProcessor.h
     Source/RayTracing/RayTracingFeatureProcessor.cpp
     Source/RayTracing/RayTracingAccelerationStructurePass.cpp
@@ -262,6 +262,12 @@ set(FILES
     Source/ReflectionScreenSpace/ReflectionScreenSpaceBlurChildPass.h
     Source/ReflectionScreenSpace/ReflectionCopyFrameBufferPass.cpp
     Source/ReflectionScreenSpace/ReflectionCopyFrameBufferPass.h
+    Source/ScreenSpace/DeferredFogSettings.cpp
+    Source/ScreenSpace/DeferredFogSettings.h
+    Source/ScreenSpace/DeferredFogPass.cpp
+    Source/ScreenSpace/DeferredFogPass.h
+    Source/Shadows/ProjectedShadowFeatureProcessor.h
+    Source/Shadows/ProjectedShadowFeatureProcessor.cpp
     Source/SkinnedMesh/SkinnedMeshComputePass.cpp
     Source/SkinnedMesh/SkinnedMeshComputePass.h
     Source/SkinnedMesh/SkinnedMeshDispatchItem.cpp

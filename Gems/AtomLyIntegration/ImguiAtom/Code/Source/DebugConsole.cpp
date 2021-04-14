@@ -12,6 +12,8 @@
 
 #include <DebugConsole.h>
 
+#if defined(IMGUI_ENABLED)
+
 #include <AzFramework/Input/Devices/Gamepad/InputDeviceGamepad.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
@@ -322,8 +324,8 @@ namespace AZ
 
         // Draw the debug console in a closeable, moveable, and resizeable IMGUI window.
         bool continueShowing = true;
-        ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_FirstUseEver);
-        if (!ImGui::Begin("Debug Console", &continueShowing))
+        ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_Once);
+        if (!ImGui::Begin("Debug Console", &continueShowing, ImGuiWindowFlags_NoCollapse))
         {
             ImGui::End();
             return false;
@@ -367,6 +369,10 @@ namespace AZ
         }
 
         // Focus on the text input field.
+        if (ImGui::IsWindowAppearing())
+        {
+            ImGui::SetKeyboardFocusHere(-1);
+        }
         ImGui::SetItemDefaultFocus();
 
         // Show a button to clear the debug log.
@@ -437,3 +443,5 @@ namespace AZ
         }
     }
 }
+
+#endif // defined(IMGUI_ENABLED)

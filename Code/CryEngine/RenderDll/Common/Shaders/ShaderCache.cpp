@@ -776,9 +776,6 @@ static bool sIterateDL(DWORD& dwDL)
         else
         {
             return false;
-            nLights = 2;
-            nType[0] = SLMF_DIRECT;
-            nType[1] = SLMF_POINT;
         }
         break;
     case 2:

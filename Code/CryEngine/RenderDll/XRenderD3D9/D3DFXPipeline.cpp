@@ -2909,7 +2909,6 @@ byte CD3D9Renderer::FX_StartQuery(SRendItem* pRI)
         return 0;
     }
 #endif
-    return 0;
 }
 
 void CD3D9Renderer::FX_EndQuery(SRendItem* pRI, byte bStartQ)

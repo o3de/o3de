@@ -61,7 +61,7 @@ namespace AZ
 
             ///
             /// Attempt to initialize this device. If initialization is initially successful (device exists and is able to startup) then this device should connect to the 
-            /// HMDDeviceRequestBus in order to be used as an HMD from the main Lumberyard system.
+            /// HMDDeviceRequestBus in order to be used as an HMD from the main Open 3D Engine system.
             ///
             /// @return If true, initialization fully succeeded.
             ///

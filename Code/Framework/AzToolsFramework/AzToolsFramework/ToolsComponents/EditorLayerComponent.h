@@ -58,7 +58,7 @@ namespace AzToolsFramework
             AZ::Color m_color = AZ::Color::CreateOne();
             // Default to text files, so the save history is easier to understand in source control.
             // This attribute only effects writing layers, and is safe to store here instead of on the component.
-            // When reading files off disk, Lumberyard figures out the correct format automatically.
+            // When reading files off disk, Open 3D Engine figures out the correct format automatically.
             bool m_saveAsBinary = false;
 
             // The layer entity needs to be invisible to all other systems, so they don't show up in the viewport.
@@ -338,7 +338,7 @@ namespace AzToolsFramework
             EditorLayer* m_loadedLayer = nullptr;
             AZStd::string m_layerFileName;
 
-            // Lumberyard's serialization system requires everything in the editor to have a serialized to disk counterpart.
+            // Open 3D Engine's serialization system requires everything in the editor to have a serialized to disk counterpart.
             // Layers have their data split into two categories: Stuff that should save to the layer file, and stuff that should
             // save to the layer component in the level. To allow the layer component to edit the data that goes in the layer file,
             // a placeholder value is serialized. This is only used at edit time, and is copied and cleared during serialization.

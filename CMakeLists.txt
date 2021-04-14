@@ -9,7 +9,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-# Cmake version 3.17 is the minimum version needed for all of lumberyard's supported platforms
+# Cmake version 3.17 is the minimum version needed for all of Open 3D Engine's supported platforms
 cmake_minimum_required(VERSION 3.19)
 
 # CMP0111 introduced in 3.19 has a bug that produces the policy to warn every time there is an
@@ -23,17 +23,22 @@ endif()
 
 include(cmake/Version.cmake)
 
+set(INSTALLED_ENGINE TRUE)
+
 if(NOT PROJECT_NAME)
     project(O3DE
         LANGUAGES C CXX
         VERSION ${LY_VERSION_STRING}
     )
+
+    set(INSTALLED_ENGINE FALSE)
 endif()
 
 include(cmake/Initialize.cmake)
 include(cmake/FileUtil.cmake)
 include(cmake/PAL.cmake)
 include(cmake/PALTools.cmake)
+include(cmake/Install.cmake)
 include(cmake/Configurations.cmake) # Requires to be after PAL so we get platform variable definitions
 include(cmake/Dependencies.cmake)
 include(cmake/Deployment.cmake)
@@ -54,9 +59,13 @@ include(cmake/CMakeFiles.cmake)
 # Add the projects first so the Launcher can find them
 include(cmake/Projects.cmake)
 
-# Add the rest of the targets
-add_subdirectory(Code)
-add_subdirectory(Gems)
+if(NOT INSTALLED_ENGINE)
+    # Add the rest of the targets
+    add_subdirectory(Code)
+    add_subdirectory(Gems)
+else()
+    ly_find_o3de_packages()
+endif()
 
 set(enabled_platforms
     ${PAL_PLATFORM_NAME}
@@ -95,7 +104,7 @@ foreach(external_directory ${LY_EXTERNAL_SUBDIRS})
     add_subdirectory(${external_directory} ${CMAKE_BINARY_DIR}/${directory_name}-${full_directory_hash})
 endforeach()
 
-# The following steps have to be done after all targets were registered:
+# The following steps have to be done after all targets are registered:
 # 1. generate a settings registry .setreg file for all ly_add_project_dependencies() and ly_add_target_dependencies() calls
 #    to provide applications with the filenames of gem modules to load
 #    This must be done before ly_delayed_target_link_libraries() as that inserts BUILD_DEPENDENCIE as MANUALLY_ADDED_DEPENDENCIES
@@ -113,3 +122,7 @@ endif()
 include(cmake/RuntimeDependencies.cmake)
 # 5. Perform test impact framework post steps once all of the targets have been enumerated
 ly_test_impact_post_step()
+# 6. Generate the O3DE find file and setup install locations for scripts, tools, assets etc., required by the engine 
+if(NOT INSTALLED_ENGINE)
+    ly_setup_o3de_install()
+endif()

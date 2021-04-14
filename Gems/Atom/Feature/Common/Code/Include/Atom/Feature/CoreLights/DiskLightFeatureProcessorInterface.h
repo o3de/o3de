@@ -14,6 +14,7 @@
 
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
+#include <Atom/Feature/CoreLights/ShadowConstants.h>
 
 namespace AZ
 {
@@ -24,18 +25,28 @@ namespace AZ
     {
         struct DiskLightData
         {
+            enum Flags
+            {
+                UseConeAngle = 0b1,
+            };
+
             AZStd::array<float, 3> m_position = { { 0.0f, 0.0f, 0.0f } };
             float m_invAttenuationRadiusSquared = 0.0f; // Inverse of the distance at which this light no longer has an effect, squared. Also used for falloff calculations.
-            AZStd::array<float, 3> m_direction = { { 0.0f, 0.0f, 0.0f } };
-            float m_bothDirectionsFactor = 0.0f; // 0.0f if single direction, -1.0f if both directions.
+
             AZStd::array<float, 3> m_rgbIntensity = { { 0.0f, 0.0f, 0.0f } };
             float m_diskRadius = 0.0f; // Radius of disk light in meters.
 
-            void SetLightEmitsBothDirections(bool isBothDirections)
-            {
-                m_bothDirectionsFactor = isBothDirections ? -1.0f : 0.0f;
-            }
+            AZStd::array<float, 3> m_direction = { { 1.0f, 0.0f, 0.0f } };
+            uint32_t m_flags = 0; // See Flags enum above.
+
+            float m_cosInnerConeAngle = 0.0f; // cosine of inner cone angle
+            float m_cosOuterConeAngle = 0.0f; // cosine of outer cone angle
+            float m_bulbPositionOffset = 0.0f; // Distance from the light disk surface to the tip of the cone of the light. m_bulbRadius * tanf(pi/2 - m_outerConeAngle).
+            uint16_t m_shadowIndex = -1; // index for ProjectedShadowData. A value of 0xFFFF indicates an illegal index.
+            uint16_t m_padding; // Explicit padding.
         };
+
+        static constexpr size_t size = sizeof(DiskLightData);
 
         //! DiskLightFeatureProcessorInterface provides an interface to acquire, release, and update a disk light. This is necessary for code outside of
         //! the Atom features gem to communicate with the DiskLightFeatureProcessor.
@@ -55,21 +66,46 @@ namespace AZ
             //! Creates a new LightHandle by copying data from an existing LightHandle.
             virtual LightHandle CloneLight(LightHandle handle) = 0;
 
+            // Generic Disk Light Settings
+
             //! Sets the intensity in RGB candela for a given LightHandle.
             virtual void SetRgbIntensity(LightHandle handle, const PhotometricColor<PhotometricUnitType>& lightColor) = 0;
             //! Sets the position for a given LightHandle.
             virtual void SetPosition(LightHandle handle, const AZ::Vector3& lightPosition) = 0;
             //! Sets the direction for a given LightHandle.
             virtual void SetDirection(LightHandle handle, const AZ::Vector3& lightDirection) = 0;
-            //! Sets if the disk light emits light in both directions for a given LightHandle.
-            virtual void SetLightEmitsBothDirections(LightHandle handle, bool lightEmitsBothDirections) = 0;
             //! Sets the radius in meters at which the provided LightHandle will no longer have an effect.
             virtual void SetAttenuationRadius(LightHandle handle, float attenuationRadius) = 0;
             //! Sets the disk radius for the provided LightHandle.
             virtual void SetDiskRadius(LightHandle handle, float radius) = 0;
 
+            // Cone Angle Settings 
+
+            //! Sets whether the disk should constrain its light to a cone. (use SetInnerConeAngle and SetOuterConeAngle to set cone angle parameters)
+            virtual void SetConstrainToConeLight(LightHandle handle, bool useCone) = 0;
+            //! Sets the inner and outer cone angles in radians.
+            virtual void SetConeAngles(LightHandle handle, float innerRadians, float outerRadians) = 0;
+
+            // Shadow Settings
+
+            //! Sets if shadows are enabled
+            virtual void SetShadowsEnabled(LightHandle handle, bool enabled) = 0;
+            //! Sets the shadowmap size (width and height) of the light.
+            virtual void SetShadowmapMaxResolution(LightHandle handle, ShadowmapSize shadowmapSize) = 0;
+            //! Specifies filter method of shadows.
+            virtual void SetShadowFilterMethod(LightHandle handle, ShadowFilterMethod method) = 0;
+            //! Specifies the width of boundary between shadowed area and lit area in radians. The degree ofshadowed gradually changes on the boundary. 0 disables softening.
+            virtual void SetSofteningBoundaryWidthAngle(LightHandle handle, float boundaryWidthRadians) = 0;
+            //! Sets sample count to predict boundary of shadow (up to 16). It will be clamped to be less than or equal to the filtering sample count.
+            virtual void SetPredictionSampleCount(LightHandle handle, uint16_t count) = 0;
+            //! Sets sample count for filtering of shadow boundary (up to 64)
+            virtual void SetFilteringSampleCount(LightHandle handle, uint16_t count) = 0;
+            //! Sets the shadowmap Pcf (percentage closer filtering) method.
+            virtual void SetPcfMethod(LightHandle handle, PcfMethod method) = 0;
+
             //! Sets all of the the disk data for the provided LightHandle.
             virtual void SetDiskData(LightHandle handle, const DiskLightData& data) = 0;
+            
         };
     } // namespace Render
 } // namespace AZ
