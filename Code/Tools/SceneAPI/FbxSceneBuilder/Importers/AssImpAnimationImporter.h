@@ -45,7 +45,7 @@ namespace AZ
                     const aiMeshMorphAnim* meshMorphAnim,
                     const aiMesh* mesh);
 
-                static const double s_defaultTimeStepSampleRate;
+                static const double s_defaultTimeStepBetweenFrames;
 
             protected:
                 static const char* s_animationNodeName;
