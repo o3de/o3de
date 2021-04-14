@@ -15,6 +15,10 @@
 #include <Source/MultiplayerSystemComponent.h>
 #include <AzNetworking/Framework/NetworkingSystemComponent.h>
 
+#ifdef MULTIPLAYER_EDITOR
+    #include <Source/Editor/MultiplayerEditorSystemComponent.h>
+#endif
+
 namespace Multiplayer
 {
     MultiplayerModule::MultiplayerModule()
@@ -23,6 +27,9 @@ namespace Multiplayer
         m_descriptors.insert(m_descriptors.end(), {
             AzNetworking::NetworkingSystemComponent::CreateDescriptor(),
             MultiplayerSystemComponent::CreateDescriptor(),
+#ifdef MULTIPLAYER_EDITOR
+            MultiplayerEditorSystemComponent::CreateDescriptor(),
+#endif
         });
     }
 
@@ -32,8 +39,11 @@ namespace Multiplayer
         {
             azrtti_typeid<AzNetworking::NetworkingSystemComponent>(),
             azrtti_typeid<MultiplayerSystemComponent>(),
+#ifdef MULTIPLAYER_EDITOR
+            azrtti_typeid<MultiplayerEditorSystemComponent>(),
+#endif
         };
     }
 }
 
-AZ_DECLARE_MODULE_CLASS(Gem_Multiplayer2, Multiplayer::MultiplayerModule);
+AZ_DECLARE_MODULE_CLASS(Gem_Multiplayer, Multiplayer::MultiplayerModule);
