@@ -1,12 +1,12 @@
 {
-    "BUILD_ENTRY_POINT": "Tools/build/JenkinsScripts/build/ci_build.py",
+    "BUILD_ENTRY_POINT": "scripts/build/ci_build.py",
     "PIPELINE_CONFIGS": [
-        "Tools/build/JenkinsScripts/build/Platform/*/pipeline.json",
-        "restricted/*/Tools/build/JenkinsScripts/build/pipeline.json"
+        "scripts/build/Platform/*/pipeline.json",
+        "restricted/*/scripts/build/pipeline.json"
     ],
     "BUILD_CONFIGS": [
-        "Tools/build/JenkinsScripts/build/Platform/*/build_config.json",
-        "restricted/*/Tools/build/JenkinsScripts/build/build_config.json"
+        "scripts/build/Platform/*/build_config.json",
+        "restricted/*/scripts/build/build_config.json"
     ],
     "PYTHON_DIR": "python"
 }
