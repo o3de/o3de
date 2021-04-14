@@ -626,7 +626,7 @@ void CSystem::RenderStats()
         float nTextPosX = 101 - 20, nTextPosY = -2, nTextStepY = 3;
         m_env.p3DEngine->DisplayInfo(nTextPosX, nTextPosY, nTextStepY, iDisplayInfo != 1);
 
-        // Dump Lumberyard CPU and GPU memory statistics to screen
+        // Dump Open 3D Engine CPU and GPU memory statistics to screen
         m_env.p3DEngine->DisplayMemoryStatistics();
 
     #if defined(ENABLE_LW_PROFILERS)

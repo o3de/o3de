@@ -114,8 +114,8 @@ namespace Twitch
                 " Notifications:" + UserNotificationsToString(info.Notifications) +
                 " CreatedDate:" + info.CreatedDate +
                 " UpdatedDate:" + info.UpdatedDate +
-                " EMailVerified:" + BoolName(info.EMailVerified, "Yes", "No");
-                " Partnered:" + BoolName(info.Partnered, "Yes", "No");
+                " EMailVerified:" + BoolName(info.EMailVerified, "Yes", "No") +
+                " Partnered:" + BoolName(info.Partnered, "Yes", "No") +
                 " TwitterConnected:" + BoolName(info.TwitterConnected, "Yes", "No");
     }
 
@@ -164,404 +164,404 @@ namespace Twitch
     }
 
     AZStd::string FriendInfoToString(const FriendInfo & info)
-    {
-        return  UserInfoIDToString(info.User) +
-                " CreatedDate:" + info.CreatedDate;
-    }
+   {
+       return  UserInfoIDToString(info.User) +
+               " CreatedDate:" + info.CreatedDate;
+   }
 
-    AZStd::string FriendListToString(const FriendList & info)
-    {
-        AZStd::string strList;
+   AZStd::string FriendListToString(const FriendList & info)
+   {
+       AZStd::string strList;
 
-        for (const auto & i : info)
-        {
-            if (!strList.empty())
-            {
-                strList += ",";
-            }
+       for (const auto & i : info)
+       {
+           if (!strList.empty())
+           {
+               strList += ",";
+           }
 
-            strList += "{";
-            strList += FriendInfoToString(i);
-            strList += "}";
-        }
+           strList += "{";
+           strList += FriendInfoToString(i);
+           strList += "}";
+       }
 
-        return strList;
-    }
+       return strList;
+   }
 
-    AZStd::string FriendRequestToString(const FriendRequest & info)
-    {
-        return  UserInfoIDToString(info.User) +
-                " IsRecommended:" + BoolName(info.IsRecommended, "Yes", "No") +
-                " IsStranger:" + BoolName(info.IsStranger, "Yes", "No") +
-                " NonStrangerReason:" + info.NonStrangerReason +
-                " RequestedDate:" + info.RequestedDate;
-    }
+   AZStd::string FriendRequestToString(const FriendRequest & info)
+   {
+       return  UserInfoIDToString(info.User) +
+               " IsRecommended:" + BoolName(info.IsRecommended, "Yes", "No") +
+               " IsStranger:" + BoolName(info.IsStranger, "Yes", "No") +
+               " NonStrangerReason:" + info.NonStrangerReason +
+               " RequestedDate:" + info.RequestedDate;
+   }
 
-    AZStd::string FriendRequestListToString(const FriendRequestList & info)
-    {
-        AZStd::string strList;
+   AZStd::string FriendRequestListToString(const FriendRequestList & info)
+   {
+       AZStd::string strList;
 
-        for (const auto & i : info)
-        {
-            if (!strList.empty())
-            {
-                strList += ",";
-            }
+       for (const auto & i : info)
+       {
+           if (!strList.empty())
+           {
+               strList += ",";
+           }
 
-            strList += "{";
-            strList += FriendRequestToString(i);
-            strList += "}";
-        }
+           strList += "{";
+           strList += FriendRequestToString(i);
+           strList += "}";
+       }
 
-        return strList;
-    }
+       return strList;
+   }
 
-    AZStd::string PresenceStatusToString(const PresenceStatus & info)
-    {
-        return  "UserID:" + info.UserID +
-                " Index:" + AZStd::string::format("%lld", info.Index) +
-                " UpdatedDate:" + AZStd::string::format("%lld", info.UpdatedDate) +
-                " ActivityType:" + PresenceActivityTypeToString(info.ActivityType) +
-                " Availability:" + PresenceAvailabilityToString(info.Availability);
-    }
+   AZStd::string PresenceStatusToString(const PresenceStatus & info)
+   {
+       return  "UserID:" + info.UserID +
+               " Index:" + AZStd::string::format("%lld", info.Index) +
+               " UpdatedDate:" + AZStd::string::format("%lld", info.UpdatedDate) +
+               " ActivityType:" + PresenceActivityTypeToString(info.ActivityType) +
+               " Availability:" + PresenceAvailabilityToString(info.Availability);
+   }
 
-    AZStd::string PresenceStatusListToString(const PresenceStatusList & info)
-    {
-        AZStd::string strList;
+   AZStd::string PresenceStatusListToString(const PresenceStatusList & info)
+   {
+       AZStd::string strList;
 
-        for (const auto & i : info)
-        {
-            if (!strList.empty())
-            {
-                strList += ",";
-            }
+       for (const auto & i : info)
+       {
+           if (!strList.empty())
+           {
+               strList += ",";
+           }
 
-            strList += "{";
-            strList += PresenceStatusToString(i);
-            strList += "}";
-        }
+           strList += "{";
+           strList += PresenceStatusToString(i);
+           strList += "}";
+       }
 
-        return strList;
-    }
+       return strList;
+   }
 
-    AZStd::string PresenceSettingsToString(const PresenceSettings & info)
-    {
-        return  "IsInvisible:" + BoolName(info.IsInvisible, "Yes", "No") +
-                " ShareActivity:" + BoolName(info.ShareActivity, "Shared", "None");
-    }
+   AZStd::string PresenceSettingsToString(const PresenceSettings & info)
+   {
+       return  "IsInvisible:" + BoolName(info.IsInvisible, "Yes", "No") +
+               " ShareActivity:" + BoolName(info.ShareActivity, "Shared", "None");
+   }
 
-    AZStd::string ChannelInfoToString(const ChannelInfo & info)
-    {
-        return  "Followers:" + AZStd::string::format("%llu", info.NumFollowers) +
-                "Views:" + AZStd::string::format("%llu", info.NumViews) +
-                "ItemsRecieved:" + AZStd::string::format("%llu", info.NumItemsRecieved) +
-                "Partner:" + BoolName(info.Partner, "Yes", "No") +
-                "Mature:" + BoolName(info.Mature, "Yes", "No") +
-                "Id:" + info.Id +
-                "BroadcasterLanguage:" + info.BroadcasterLanguage +
-                "DisplayName:" + info.DisplayName +
-                "eMail:" + info.eMail +
-                "GameName:" + info.GameName +
-                "Language:" + info.Lanugage +
-                "Logo:" + info.Logo +
-                "Name:" + info.Name +
-                "ProfileBanner:" + info.ProfileBanner +
-                "ProfileBannerBackgroundColor:" + info.ProfileBannerBackgroundColor +
-                "Status:" + info.Status +
-                "StreamKey:" + info.StreamKey +
-                "UpdatedDate:" + info.UpdatedDate +
-                "CreatedDate:" + info.CreatedDate +
-                "URL:" + info.URL +
-                "VideoBanner:" + info.VideoBanner;
-    }
+   AZStd::string ChannelInfoToString(const ChannelInfo & info)
+   {
+       return  "Followers:" + AZStd::string::format("%llu", info.NumFollowers) +
+               "Views:" + AZStd::string::format("%llu", info.NumViews) +
+               "ItemsRecieved:" + AZStd::string::format("%llu", info.NumItemsRecieved) +
+               "Partner:" + BoolName(info.Partner, "Yes", "No") +
+               "Mature:" + BoolName(info.Mature, "Yes", "No") +
+               "Id:" + info.Id +
+               "BroadcasterLanguage:" + info.BroadcasterLanguage +
+               "DisplayName:" + info.DisplayName +
+               "eMail:" + info.eMail +
+               "GameName:" + info.GameName +
+               "Language:" + info.Lanugage +
+               "Logo:" + info.Logo +
+               "Name:" + info.Name +
+               "ProfileBanner:" + info.ProfileBanner +
+               "ProfileBannerBackgroundColor:" + info.ProfileBannerBackgroundColor +
+               "Status:" + info.Status +
+               "StreamKey:" + info.StreamKey +
+               "UpdatedDate:" + info.UpdatedDate +
+               "CreatedDate:" + info.CreatedDate +
+               "URL:" + info.URL +
+               "VideoBanner:" + info.VideoBanner;
+   }
 
-    AZStd::string FollowerToString(const Follower& info)
-    {
-        return  UserInfoIDToString(info.User) +
-                " CreatedDate:" + info.CreatedDate +
-                " Notifications:" + BoolName(info.Notifications, "On", "Off");
-    }
+   AZStd::string FollowerToString(const Follower& info)
+   {
+       return  UserInfoIDToString(info.User) +
+               " CreatedDate:" + info.CreatedDate +
+               " Notifications:" + BoolName(info.Notifications, "On", "Off");
+   }
 
-    AZStd::string FollowerListToString(const FollowerList & info)
-    {
-        AZStd::string strList;
+   AZStd::string FollowerListToString(const FollowerList & info)
+   {
+       AZStd::string strList;
 
-        for (const auto & i : info)
-        {
-            if (!strList.empty())
-            {
-                strList += ",";
-            }
+       for (const auto & i : info)
+       {
+           if (!strList.empty())
+           {
+               strList += ",";
+           }
 
-            strList += "{";
-            strList += FollowerToString(i);
-            strList += "}";
-        }
+           strList += "{";
+           strList += FollowerToString(i);
+           strList += "}";
+       }
 
-        return strList;
-    }
+       return strList;
+   }
 
-    AZStd::string TeamInfoToString(const TeamInfo& info)
-    {
-        return  "ID:" + info.ID +
-                " Background:" + info.Background +
-                " Banner:" + info.Banner +
-                " CreatedDate:" + info.CreatedDate +
-                " DisplayName:" + info.DisplayName +
-                " Info:" + info.Info +
-                " Logo:" + info.Logo +
-                " Name:" + info.Name +
-                " UpdatedDate:" + info.UpdatedDate;
-    }
+   AZStd::string TeamInfoToString(const TeamInfo& info)
+   {
+       return  "ID:" + info.ID +
+               " Background:" + info.Background +
+               " Banner:" + info.Banner +
+               " CreatedDate:" + info.CreatedDate +
+               " DisplayName:" + info.DisplayName +
+               " Info:" + info.Info +
+               " Logo:" + info.Logo +
+               " Name:" + info.Name +
+               " UpdatedDate:" + info.UpdatedDate;
+   }
 
-    AZStd::string TeamInfoListToString(const TeamInfoList& info)
-    {
-        AZStd::string strList;
+   AZStd::string TeamInfoListToString(const TeamInfoList& info)
+   {
+       AZStd::string strList;
 
-        for (const auto & i : info)
-        {
-            if (!strList.empty())
-            {
-                strList += ",";
-            }
+       for (const auto & i : info)
+       {
+           if (!strList.empty())
+           {
+               strList += ",";
+           }
 
-            strList += "{";
-            strList += TeamInfoToString(i);
-            strList += "}";
-        }
+           strList += "{";
+           strList += TeamInfoToString(i);
+           strList += "}";
+       }
 
-        return strList;
-    }
+       return strList;
+   }
 
-    AZStd::string SubscriberInfoToString(const SubscriberInfo& info)
-    {
-        return  "ID:" + info.ID +
-                " CreatedDate:" + info.CreatedDate +
-                UserInfoIDToString(info.User);
-    }
+   AZStd::string SubscriberInfoToString(const SubscriberInfo& info)
+   {
+       return  "ID:" + info.ID +
+               " CreatedDate:" + info.CreatedDate +
+               UserInfoIDToString(info.User);
+   }
 
-    AZStd::string SubscriberInfoListToString(const SubscriberInfoList& info)
-    {
-        AZStd::string strList;
+   AZStd::string SubscriberInfoListToString(const SubscriberInfoList& info)
+   {
+       AZStd::string strList;
 
-        for (const auto & i : info)
-        {
-            if (!strList.empty())
-            {
-                strList += ",";
-            }
+       for (const auto & i : info)
+       {
+           if (!strList.empty())
+           {
+               strList += ",";
+           }
 
-            strList += "{";
-            strList += SubscriberInfoToString(i);
-            strList += "}";
-        }
+           strList += "{";
+           strList += SubscriberInfoToString(i);
+           strList += "}";
+       }
 
-        return strList;
-    }
+       return strList;
+   }
 
-    AZStd::string VideoInfoShortToString(const VideoInfo& info)
-    {
-        return "ID:" + info.ID;
-    }
+   AZStd::string VideoInfoShortToString(const VideoInfo& info)
+   {
+       return "ID:" + info.ID;
+   }
 
-    AZStd::string VideoInfoListToString(const VideoInfoList& info)
-    {
-        AZStd::string strList;
+   AZStd::string VideoInfoListToString(const VideoInfoList& info)
+   {
+       AZStd::string strList;
 
-        for (const auto & i : info)
-        {
-            if (!strList.empty())
-            {
-                strList += ",";
-            }
+       for (const auto & i : info)
+       {
+           if (!strList.empty())
+           {
+               strList += ",";
+           }
 
-            strList += "{";
-            strList += VideoInfoShortToString(i);
-            strList += "}";
-        }
+           strList += "{";
+           strList += VideoInfoShortToString(i);
+           strList += "}";
+       }
 
-        return strList;
-    }
+       return strList;
+   }
 
-    AZStd::string StartChannelCommercialResultToString(const StartChannelCommercialResult& info)
-    {
-        return  "Duration:" + AZStd::string::format("%llu", info.Duration) +
-                " RetryAfter:" + AZStd::string::format("%llu", info.RetryAfter) +
-                " Message:" + info.Message;
-    }
+   AZStd::string StartChannelCommercialResultToString(const StartChannelCommercialResult& info)
+   {
+       return  "Duration:" + AZStd::string::format("%llu", info.Duration) +
+               " RetryAfter:" + AZStd::string::format("%llu", info.RetryAfter) +
+               " Message:" + info.Message;
+   }
 
-    AZStd::string CommunityInfoToString(const CommunityInfo& info)
-    {
-        return  "ID:" + info.ID +
-                " AvatarImageURL:" + info.AvatarImageURL +
-                " CoverImageURL:" + info.CoverImageURL +
-                " Description:" + info.Description +
-                " DescriptionHTML:" + info.DescriptionHTML +
-                " Language:" + info.Language +
-                " Name:" + info.Name +
-                " OwnerID:" + info.OwnerID +
-                " Rules:" + info.Rules +
-                " RulesHTML:" + info.RulesHTML +
-                " Summary:" + info.Summary;
-    }
+   AZStd::string CommunityInfoToString(const CommunityInfo& info)
+   {
+       return  "ID:" + info.ID +
+               " AvatarImageURL:" + info.AvatarImageURL +
+               " CoverImageURL:" + info.CoverImageURL +
+               " Description:" + info.Description +
+               " DescriptionHTML:" + info.DescriptionHTML +
+               " Language:" + info.Language +
+               " Name:" + info.Name +
+               " OwnerID:" + info.OwnerID +
+               " Rules:" + info.Rules +
+               " RulesHTML:" + info.RulesHTML +
+               " Summary:" + info.Summary;
+   }
 
-    AZStd::string CommunityInfoListToString(const CommunityInfoList& info)
-    {
-        AZStd::string strList;
+   AZStd::string CommunityInfoListToString(const CommunityInfoList& info)
+   {
+       AZStd::string strList;
 
-        for (const auto & i : info)
-        {
-            if (!strList.empty())
-            {
-                strList += ",";
-            }
+       for (const auto & i : info)
+       {
+           if (!strList.empty())
+           {
+               strList += ",";
+           }
 
-            strList += "{";
-            strList += CommunityInfoToString(i);
-            strList += "}";
-        }
+           strList += "{";
+           strList += CommunityInfoToString(i);
+           strList += "}";
+       }
 
-        return strList;
-    }
+       return strList;
+   }
 
-    AZStd::string ReturnValueToString(const ReturnValue& info)
-    {
-        return  "ReceiptID:" + AZStd::string::format("%llu", info.GetID()) +
-                " Result: " + ResultCodeToString(info.Result);
-    }
+   AZStd::string ReturnValueToString(const ReturnValue& info)
+   {
+       return  "ReceiptID:" + AZStd::string::format("%llu", info.GetID()) +
+               " Result: " + ResultCodeToString(info.Result);
+   }
 
-    AZStd::string Int64Value::ToString() const
-    {
-        return  ReturnValueToString(*this) +
-                AZStd::string::format(" Int64:%lld", Value);
-    }
+   AZStd::string Int64Value::ToString() const
+   {
+       return  ReturnValueToString(*this) +
+               AZStd::string::format(" Int64:%lld", Value);
+   }
 
-    AZStd::string Uint64Value::ToString() const
-    {
-        return  ReturnValueToString(*this) +
-                AZStd::string::format(" Uint64:%llu", Value);
-    }
+   AZStd::string Uint64Value::ToString() const
+   {
+       return  ReturnValueToString(*this) +
+               AZStd::string::format(" Uint64:%llu", Value);
+   }
 
-    AZStd::string StringValue::ToString() const
-    {
-        return  ReturnValueToString(*this) +
-                " String:" + "\"" + Value + "\"";
-    }
+   AZStd::string StringValue::ToString() const
+   {
+       return  ReturnValueToString(*this) +
+               " String:" + "\"" + Value + "\"";
+   }
 
-    AZStd::string UserInfoValue::ToString() const
-    {
-        return  ReturnValueToString(*this) +
-                UserInfoToString(Value);
-    }
+   AZStd::string UserInfoValue::ToString() const
+   {
+       return  ReturnValueToString(*this) +
+               UserInfoToString(Value);
+   }
 
-    AZStd::string FriendRecommendationValue::ToString() const
-    {
-        return  ReturnValueToString(*this) +
-                " ListSize:" + AZStd::string::format("%llu-", static_cast<AZ::u64>(Value.size())) +
-                " Recommendations:" + FriendRecommendationsToString(Value);
-    }
+   AZStd::string FriendRecommendationValue::ToString() const
+   {
+       return  ReturnValueToString(*this) +
+               " ListSize:" + AZStd::string::format("%llu-", static_cast<AZ::u64>(Value.size())) +
+               " Recommendations:" + FriendRecommendationsToString(Value);
+   }
 
-    AZStd::string GetFriendValue::ToString() const
-    {
-        return  ReturnValueToString(*this) +
-                " ListSize:" + AZStd::string::format("%llu-", static_cast<AZ::u64>(Value.Friends.size())) +
-                " Cursor:" + Value.Cursor +
-                " Friends:" + FriendListToString(Value.Friends);
-    }
+   AZStd::string GetFriendValue::ToString() const
+   {
+       return  ReturnValueToString(*this) +
+               " ListSize:" + AZStd::string::format("%llu-", static_cast<AZ::u64>(Value.Friends.size())) +
+               " Cursor:" + Value.Cursor +
+               " Friends:" + FriendListToString(Value.Friends);
+   }
 
-    AZStd::string FriendStatusValue::ToString() const
-    {
-        return  ReturnValueToString(*this) +
-                " Status:" + Value.Status +
-                UserInfoToString(Value.User);
-    }
+   AZStd::string FriendStatusValue::ToString() const
+   {
+       return  ReturnValueToString(*this) +
+               " Status:" + Value.Status +
+               UserInfoToString(Value.User);
+   }
 
-    AZStd::string FriendRequestValue::ToString() const
-    {
-        return  ReturnValueToString(*this) +
-                " Total:" + AZStd::string::format("%llu", Value.Total) +
-                " Cursor:" + Value.Cursor +
-                " Requests:" + FriendRequestListToString(Value.Requests);
-    }
+   AZStd::string FriendRequestValue::ToString() const
+   {
+       return  ReturnValueToString(*this) +
+               " Total:" + AZStd::string::format("%llu", Value.Total) +
+               " Cursor:" + Value.Cursor +
+               " Requests:" + FriendRequestListToString(Value.Requests);
+   }
 
-    AZStd::string PresenceStatusValue::ToString() const
-    {
-        return  ReturnValueToString(*this) +
-                " Total:" + AZStd::string::format("%llu", static_cast<AZ::u64>(Value.size())) +
-                " StatusList:" + PresenceStatusListToString(Value);
-    }
+   AZStd::string PresenceStatusValue::ToString() const
+   {
+       return  ReturnValueToString(*this) +
+               " Total:" + AZStd::string::format("%llu", static_cast<AZ::u64>(Value.size())) +
+               " StatusList:" + PresenceStatusListToString(Value);
+   }
 
-    AZStd::string PresenceSettingsValue::ToString() const
-    {
-        return  ReturnValueToString(*this) +
-                " " + PresenceSettingsToString(Value);
-    }
+   AZStd::string PresenceSettingsValue::ToString() const
+   {
+       return  ReturnValueToString(*this) +
+               " " + PresenceSettingsToString(Value);
+   }
 
-    AZStd::string ChannelInfoValue::ToString() const
-    {
-        return  ReturnValueToString(*this) +
-                " " + ChannelInfoToString(Value);
-    }
+   AZStd::string ChannelInfoValue::ToString() const
+   {
+       return  ReturnValueToString(*this) +
+               " " + ChannelInfoToString(Value);
+   }
 
-    AZStd::string UserInfoListValue::ToString() const
-    {
-        return  ReturnValueToString(*this) +
-                " Total:" + AZStd::string::format("%llu", static_cast<AZ::u64>(Value.size())) +
-                " Users:" + UserInfoListToString(Value);
-    }
+   AZStd::string UserInfoListValue::ToString() const
+   {
+       return  ReturnValueToString(*this) +
+               " Total:" + AZStd::string::format("%llu", static_cast<AZ::u64>(Value.size())) +
+               " Users:" + UserInfoListToString(Value);
+   }
 
-    AZStd::string FollowerResultValue::ToString() const
-    {
-        return  ReturnValueToString(*this) +
-                " Total:" + AZStd::string::format("%llu", Value.Total) +
-                " Cursor:" + Value.Cursor +
-                " Followers:" + FollowerListToString(Value.Followers);
-    }
+   AZStd::string FollowerResultValue::ToString() const
+   {
+       return  ReturnValueToString(*this) +
+               " Total:" + AZStd::string::format("%llu", Value.Total) +
+               " Cursor:" + Value.Cursor +
+               " Followers:" + FollowerListToString(Value.Followers);
+   }
 
-    AZStd::string ChannelTeamValue::ToString() const
-    {
-        return  ReturnValueToString(*this) +
-                " Total:" + AZStd::string::format("%llu", static_cast<AZ::u64>(Value.size())) +
-                " Teams:" + TeamInfoListToString(Value);
-    }
+   AZStd::string ChannelTeamValue::ToString() const
+   {
+       return  ReturnValueToString(*this) +
+               " Total:" + AZStd::string::format("%llu", static_cast<AZ::u64>(Value.size())) +
+               " Teams:" + TeamInfoListToString(Value);
+   }
 
-    AZStd::string SubscriberValue::ToString() const
-    {
-        return  ReturnValueToString(*this) +
-                " Total:" + AZStd::string::format("%llu", Value.Total) +
-                " Subscribers:" + SubscriberInfoListToString(Value.Subscribers);
-    }
+   AZStd::string SubscriberValue::ToString() const
+   {
+       return  ReturnValueToString(*this) +
+               " Total:" + AZStd::string::format("%llu", Value.Total) +
+               " Subscribers:" + SubscriberInfoListToString(Value.Subscribers);
+   }
 
-    AZStd::string SubscriberbyUserValue::ToString() const
-    {
-        return  ReturnValueToString(*this) +
-                " SubscriberInfo:" + SubscriberInfoToString(Value);
-    }
+   AZStd::string SubscriberbyUserValue::ToString() const
+   {
+       return  ReturnValueToString(*this) +
+               " SubscriberInfo:" + SubscriberInfoToString(Value);
+   }
 
-    AZStd::string VideoReturnValue::ToString() const
-    {
-        return  ReturnValueToString(*this) +
-                " Total:" + AZStd::string::format("%llu", Value.Total) +
-                " Videos:" + VideoInfoListToString(Value.Videos);
-    }
+   AZStd::string VideoReturnValue::ToString() const
+   {
+       return  ReturnValueToString(*this) +
+               " Total:" + AZStd::string::format("%llu", Value.Total) +
+               " Videos:" + VideoInfoListToString(Value.Videos);
+   }
 
-    AZStd::string StartChannelCommercialValue::ToString() const
-    {
-        return  ReturnValueToString(*this) +
-                " " + StartChannelCommercialResultToString(Value);
-    }
+   AZStd::string StartChannelCommercialValue::ToString() const
+   {
+       return  ReturnValueToString(*this) +
+               " " + StartChannelCommercialResultToString(Value);
+   }
 
-    AZStd::string CommunityInfoValue::ToString() const
-    {
-        return  ReturnValueToString(*this) +
-                " " + CommunityInfoToString(Value);
-    }
+   AZStd::string CommunityInfoValue::ToString() const
+   {
+       return  ReturnValueToString(*this) +
+               " " + CommunityInfoToString(Value);
+   }
 
-    AZStd::string CommunityInfoReturnValue::ToString() const
-    {
-        return  ReturnValueToString(*this) +
-            " Total:" + AZStd::string::format("%llu", Value.Total) +
-            " Communities:" + CommunityInfoListToString(Value.Communities);
+   AZStd::string CommunityInfoReturnValue::ToString() const
+   {
+       return  ReturnValueToString(*this) +
+           " Total:" + AZStd::string::format("%llu", Value.Total) +
+           " Communities:" + CommunityInfoListToString(Value.Communities);
     }
 
     namespace Internal

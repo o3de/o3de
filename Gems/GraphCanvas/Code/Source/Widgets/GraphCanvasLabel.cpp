@@ -437,7 +437,5 @@ namespace GraphCanvas
         default:
             return QGraphicsWidget::sizeHint(which, constraint);
         }
-
-        return QGraphicsWidget::sizeHint(which, constraint);
     }
 }

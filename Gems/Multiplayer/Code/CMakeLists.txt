@@ -21,8 +21,6 @@ ly_add_target(
             Source
             AZ::AzNetworking
             .
-        PUBLIC
-            Include
     BUILD_DEPENDENCIES
         PUBLIC
             AZ::AzCore
@@ -51,8 +49,6 @@ ly_add_target(
         PRIVATE
             Source
             .
-        PUBLIC
-            Include
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::Multiplayer.Static

@@ -98,14 +98,18 @@ bool CCryMemoryManager::GetProcessMemInfo(SProcessMemInfo& minfo)
     }
     return false;
 
+#else
 
 #define AZ_RESTRICTED_SECTION_IMPLEMENTED
-#elif defined(AZ_RESTRICTED_PLATFORM)
-#define AZ_RESTRICTED_SECTION MEMORYMANAGER_CPP_SECTION_1
-#include AZ_RESTRICTED_FILE(MemoryManager_cpp)
+#if defined(AZ_RESTRICTED_PLATFORM)
+    #define AZ_RESTRICTED_SECTION MEMORYMANAGER_CPP_SECTION_1
+    #include AZ_RESTRICTED_FILE(MemoryManager_cpp)
 #endif
+
+    bool retVal = true;
+
 #if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
-#undef AZ_RESTRICTED_SECTION_IMPLEMENTED
+    #undef AZ_RESTRICTED_SECTION_IMPLEMENTED
 #elif defined(LINUX)
 
     MEMORYSTATUS MemoryStatus;
@@ -143,11 +147,15 @@ bool CCryMemoryManager::GetProcessMemInfo(SProcessMemInfo& minfo)
         return false;
     }
     minfo.WorkingSetSize = kTaskInfo.resident_size;
+
 #else
-    return false;
+
+    retVal = false;
+
 #endif
 
-    return true;
+    return retVal;
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////////

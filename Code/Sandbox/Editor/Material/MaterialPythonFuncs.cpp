@@ -393,8 +393,6 @@ namespace
             return EFTT_SPECULAR_2;
         }
         throw std::runtime_error("Invalid texture name.");
-
-        return EFTT_MAX;
     }
 
     template<typename STRING>

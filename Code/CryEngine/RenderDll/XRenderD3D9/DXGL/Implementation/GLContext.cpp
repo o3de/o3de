@@ -3641,7 +3641,7 @@ case _D3DValue:                                     \
         glDrawElements(m_ePrimitiveTopologyMode, uIndexCount, m_eIndexType, pvOffset);
 #endif
 
-        Lumberyard::OpenGL::CheckError();
+        O3de::OpenGL::CheckError();
 
         END_TRACE();
     }
@@ -3662,7 +3662,7 @@ case _D3DValue:                                     \
         CRY_ASSERT(m_ePrimitiveTopologyMode != GL_NONE);
         glDrawArrays(m_ePrimitiveTopologyMode, uStartVertexLocation, uVertexCount);
 
-        Lumberyard::OpenGL::CheckError();
+        O3de::OpenGL::CheckError();
 
         END_TRACE();
     }

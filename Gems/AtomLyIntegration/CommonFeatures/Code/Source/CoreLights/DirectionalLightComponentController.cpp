@@ -87,6 +87,8 @@ namespace AZ
                     ->Event("SetPredictionSampleCount", &DirectionalLightRequestBus::Events::SetPredictionSampleCount)
                     ->Event("GetFilteringSampleCount", &DirectionalLightRequestBus::Events::GetFilteringSampleCount)
                     ->Event("SetFilteringSampleCount", &DirectionalLightRequestBus::Events::SetFilteringSampleCount)
+                    ->Event("GetPcfMethod", &DirectionalLightRequestBus::Events::GetPcfMethod)
+                    ->Event("SetPcfMethod", &DirectionalLightRequestBus::Events::SetPcfMethod)
                     ->VirtualProperty("Color", "GetColor", "SetColor")
                     ->VirtualProperty("Intensity", "GetIntensity", "SetIntensity")
                     ->VirtualProperty("AngularDiameter", "GetAngularDiameter", "SetAngularDiameter")
@@ -103,7 +105,8 @@ namespace AZ
                     ->VirtualProperty("SofteningBoundaryWidth", "GetSofteningBoundaryWidth", "SetSofteningBoundaryWidth")
                     ->VirtualProperty("PredictionSampleCount", "GetPredictionSampleCount", "SetPredictionSampleCount")
                     ->VirtualProperty("FilteringSampleCount", "GetFilteringSampleCount", "SetFilteringSampleCount")
-                    ;
+                    ->VirtualProperty("PcfMethod", "GetPcfMethod", "SetPcfMethod");
+                ;
             }
         }
 
@@ -534,6 +537,7 @@ namespace AZ
             SetSofteningBoundaryWidth(m_configuration.m_boundaryWidth);
             SetPredictionSampleCount(m_configuration.m_predictionSampleCount);
             SetFilteringSampleCount(m_configuration.m_filteringSampleCount);
+            SetPcfMethod(m_configuration.m_pcfMethod);
 
             // [GFX TODO][ATOM-1726] share config for multiple light (e.g., light ID).
             // [GFX TODO][ATOM-2416] adapt to multiple viewports.
@@ -620,6 +624,16 @@ namespace AZ
             }
         }
 
+        PcfMethod DirectionalLightComponentController::GetPcfMethod() const
+        {
+            return m_configuration.m_pcfMethod;
+        }
+
+        void DirectionalLightComponentController::SetPcfMethod(PcfMethod method)
+        {
+            m_configuration.m_pcfMethod = method;
+            m_featureProcessor->SetPcfMethod(m_lightHandle, method);
+        }
   
     } // namespace Render
 } // namespace AZ

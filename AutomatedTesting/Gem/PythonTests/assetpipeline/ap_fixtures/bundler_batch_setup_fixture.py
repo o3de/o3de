@@ -26,8 +26,8 @@ from . import timeout_option_fixture as timeout
 from . import ap_config_backup_fixture as config_backup
 
 import ly_test_tools.environment.file_system as fs
-import ly_test_tools.lumberyard.pipeline_utils as utils
-from ly_test_tools.lumberyard.asset_processor import ASSET_PROCESSOR_PLATFORM_MAP
+import ly_test_tools.o3de.pipeline_utils as utils
+from ly_test_tools.o3de.asset_processor import ASSET_PROCESSOR_PLATFORM_MAP
 
 logger = logging.getLogger(__name__)
 

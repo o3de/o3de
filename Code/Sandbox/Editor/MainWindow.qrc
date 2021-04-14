@@ -75,7 +75,7 @@
     <file>res/source_control-warning_v2.svg</file>
   </qresource>
   <qresource prefix="/Application">
-    <file>res/lyeditor.ico</file>
+    <file>res/o3de_editor.ico</file>
   </qresource>
   <qresource prefix="/Icons">
       <file alias="Eye.svg">res/Eye.svg</file>
