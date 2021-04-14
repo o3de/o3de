@@ -371,18 +371,36 @@ namespace EMotionFX
             }
         }
 
+        NodeIndexContainer AnimGraphComponent::s_emptyNodeIndexContainer = {};
         const NodeIndexContainer& AnimGraphComponent::GetActiveStates() const
         {
-            const AZStd::shared_ptr<AnimGraphSnapshot> snapshot = m_animGraphInstance->GetSnapshot();
-            AZ_Error("EMotionFX", snapshot, "Call GetActiveStates function but no snapshot is created for this instance.");
-            return snapshot->GetActiveNodes();
+            if (m_animGraphInstance)
+            {
+                const AZStd::shared_ptr<AnimGraphSnapshot> snapshot = m_animGraphInstance->GetSnapshot();
+                if (snapshot)
+                {
+                    AZ_Warning("EMotionFX", snapshot, "Call GetActiveStates function but no snapshot is created for this instance.");
+                    return snapshot->GetActiveNodes();
+                }
+            }
+
+            return s_emptyNodeIndexContainer;
         }
 
+        MotionNodePlaytimeContainer AnimGraphComponent::s_emptyMotionNodePlaytimeContainer = {};
         const MotionNodePlaytimeContainer& AnimGraphComponent::GetMotionPlaytimes() const
         {
-            const AZStd::shared_ptr<AnimGraphSnapshot> snapshot = m_animGraphInstance->GetSnapshot();
-            AZ_Error("EMotionFX", snapshot, "Call GetActiveStates function but no snapshot is created for this instance.");
-            return snapshot->GetMotionNodePlaytimes();
+            if (m_animGraphInstance)
+            {
+                const AZStd::shared_ptr<AnimGraphSnapshot> snapshot = m_animGraphInstance->GetSnapshot();
+                if (snapshot)
+                {
+                    AZ_Warning("EMotionFX", snapshot, "Call GetActiveStates function but no snapshot is created for this instance.");
+                    return snapshot->GetMotionNodePlaytimes();
+                }
+            }
+
+            return s_emptyMotionNodePlaytimeContainer;
         }
 
         void AnimGraphComponent::UpdateActorExternal(float deltatime)
