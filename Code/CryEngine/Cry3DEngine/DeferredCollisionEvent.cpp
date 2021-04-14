@@ -216,7 +216,8 @@ IDeferredPhysicsEvent* CDeferredPhysicsEventManager::GetLastCollisionEventForEnt
     EventPhysCollision* pLastPhysEvent;
     for (int i = m_activeDeferredEvents.size() - 1; i >= 0; i--)
     {
-        if ((pLastPhysEvent = (EventPhysCollision*)m_activeDeferredEvents[i]->PhysicsEvent()) && pLastPhysEvent->idval == EventPhysCollision::id && pLastPhysEvent->pEntity[0] == pPhysEnt)
+        pLastPhysEvent = (EventPhysCollision*)m_activeDeferredEvents[i]->PhysicsEvent();
+        if (pLastPhysEvent && pLastPhysEvent->idval == EventPhysCollision::id && pLastPhysEvent->pEntity[0] == pPhysEnt)
         {
             return m_activeDeferredEvents[i];
         }

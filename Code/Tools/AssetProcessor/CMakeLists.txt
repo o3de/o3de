@@ -18,8 +18,6 @@ endif()
 add_subdirectory(AssetBuilderSDK)
 add_subdirectory(AssetBuilder)
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/Platform/${PAL_PLATFORM_NAME}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
-
 ly_add_target(
     NAME AssetProcessor.Static STATIC
     NAMESPACE AZ
@@ -63,7 +61,7 @@ ly_add_source_properties(
 )
 
 ly_add_target(
-    NAME AssetProcessor ${PAL_TRAIT_BUILD_ASSETPROCESSOR_APPLICATION_TYPE}
+    NAME AssetProcessor APPLICATION
     NAMESPACE AZ
     AUTOMOC
     AUTOUIC

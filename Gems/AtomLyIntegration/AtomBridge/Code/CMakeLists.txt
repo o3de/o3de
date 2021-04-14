@@ -21,7 +21,7 @@ ly_add_target(
             Include
     COMPILE_DEFINITIONS
         PRIVATE
-            ENABLE_ATOM_DEBUG_DISPLAY=0
+            ENABLE_ATOM_DEBUG_DISPLAY=1
     BUILD_DEPENDENCIES
         PUBLIC
             AZ::AtomCore
@@ -43,7 +43,7 @@ ly_add_target(
             Include
     COMPILE_DEFINITIONS
         PRIVATE
-            ENABLE_ATOM_DEBUG_DISPLAY=0
+            ENABLE_ATOM_DEBUG_DISPLAY=1
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::Atom_AtomBridge.Static

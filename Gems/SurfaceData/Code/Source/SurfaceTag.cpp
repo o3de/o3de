@@ -82,7 +82,6 @@ namespace SurfaceData
                 ->Constructor()
                 ->Constructor<const AZStd::string&>()
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Attribute(AZ::Script::Attributes::Module, "surface_data")
                 ->Method("SetTag", &SurfaceTag::SetTag)

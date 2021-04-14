@@ -8,6 +8,7 @@
            Base="ScriptCanvas::Nodes::Internal::BaseTimerNode"
            GeneratePropertyFriend="True"
            Deprecated="This node has been deprecated in favor of the nodeable form"
+           DeprecationUUID="{D3629902-02E9-AE59-0424-F366D342B433}"
            Description="Delays all incoming execution for the specified number of ticks">
         <In Name="In" Description="When signaled, execution is delayed at this node for the specified amount of times." Contracts="DisallowReentrantExecutionContract"/>
         <OutLatent Name="Out" Description="Signaled after waiting for the specified amount of times."/>
@@ -18,6 +19,7 @@
            Uuid="{399A2608-77E3-41F9-90FA-58A9B6E0E34D}"
            Base="ScriptCanvas::Node"
            GeneratePropertyFriend="True"
+           DeprecationUUID="{D3629902-02E9-AE59-0424-F366D342B433}"
            Deprecated="This node has been deprecated in favor of the nodeable form"
            Description="Delays all incoming execution for the specified number of ticks">
         <In Name="In" Description="When signaled, execution is delayed at this node for the specified amount of frames." Contracts="DisallowReentrantExecutionContract"/>
@@ -41,6 +43,7 @@
            Uuid="{FAEADF5A-F7D9-415A-A3E8-F534BD379B9A}"
            Base="ScriptCanvas::Node"
            Version="3"
+           DeprecationUUID="{233C84A7-44DE-A948-D65C-46C11F1F7162}"
            Deprecated="This node has been deprecated in favor of the nodeable form"
            VersionConverter="ScriptCanvas::VersionConverters::DelayVersionConverter"
            GeneratePropertyFriend="True"

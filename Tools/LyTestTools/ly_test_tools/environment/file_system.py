@@ -420,3 +420,34 @@ def reduce_file_name_length(file_name, max_length):
         file_name = file_name[:-reduce_amount]
 
     return file_name
+
+
+def find_ancestor_file(target_file_name, start_path=os.getcwd()):
+    """
+    Find a file with the given name in the ancestor directories by walking up the starting path until the file is found.
+
+    :param target_file_name: Name of the file to find.
+    :param start_path: Optional path to start looking for the file.
+    :return: Path to the file or None if not found.
+    """
+    current_path = os.path.normpath(start_path)
+    candidate_path = os.path.join(current_path, target_file_name)
+
+    # Limit the number of directories to traverse, to avoid infinite loop in path cycles
+    for _ in range(15):
+        if not os.path.exists(candidate_path):
+            parent_path = os.path.dirname(current_path)
+            if parent_path == current_path:
+                # Only true when we are at the directory root, can't keep searching
+                break
+            candidate_path = os.path.join(parent_path, target_file_name)
+            current_path = parent_path
+        else:
+            # Found the file we wanted
+            break
+
+    if not os.path.exists(candidate_path):
+        logger.warning(f'The candidate path {candidate_path} does not exist.')
+        return None
+
+    return candidate_path

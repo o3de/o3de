@@ -30,13 +30,13 @@ class TestPositionModifier(object):
     @pytest.fixture(autouse=True)
     def setup_teardown(self, request, workspace, project, level):
         def teardown():
-            file_system.delete([os.path.join(workspace.paths.dev(), project, "Levels", level)], True, True)
+            file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
         request.addfinalizer(teardown)
 
-        file_system.delete([os.path.join(workspace.paths.dev(), project, "Levels", level)], True, True)
+        file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
 
     @pytest.mark.test_case_id("C4874099", "C4814461")
-    @pytest.mark.SUITE_main
+    @pytest.mark.SUITE_periodic
     def test_PositionModifier_ComponentAndOverrides_InstancesPlantAtSpecifiedOffsets(self, request, editor, level,
                                                                                      launcher_platform):
 
@@ -58,13 +58,12 @@ class TestPositionModifier(object):
         )
 
     @pytest.mark.test_case_id("C4874100")
-    @pytest.mark.SUITE_main
+    @pytest.mark.SUITE_sandbox
     def test_PositionModifier_AutoSnapToSurfaceWorks(self, request, editor, level, launcher_platform):
 
         expected_lines = [
             "'Instance Spawner' created",
             "'Planting Surface' created",
-            "instance count validation: True (found=121, expected=121)",
             "Instance Spawner Configuration|Position X|Range Min: SUCCESS",
             "Instance Spawner Configuration|Position X|Range Max: SUCCESS",
             "PositionModifier_AutoSnapToSurface:  result=SUCCESS"

@@ -55,7 +55,7 @@ namespace Maestro
 
         // Don't RemoveEntityToAnimate if we are in the middle of an Undo event.
         // Doing so will create will mark this entity dirty and break the undo system.
-        if (!isDuringUndo)
+        if (!isDuringUndo && m_sequence)
         {
             for (int i = m_sequence->GetNodeCount(); --i >= 0;)
             {

@@ -62,7 +62,6 @@ namespace GradientSignal
                 ;
 
             behaviorContext->EBus<SmoothStepRequestBus>("SmoothStepRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Event("GetFallOffMidpoint", &SmoothStepRequestBus::Events::GetFallOffMidpoint)
                 ->Event("SetFallOffMidpoint", &SmoothStepRequestBus::Events::SetFallOffMidpoint)

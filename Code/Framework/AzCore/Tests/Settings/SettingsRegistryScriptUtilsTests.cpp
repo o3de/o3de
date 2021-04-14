@@ -62,7 +62,6 @@ namespace SettingsRegistryScriptUtilsTests
 
     TEST_F(SettingsRegistryBehaviorContextFixture, GlobalSettingsRegistry_CanBeQueried_Succeeds)
     {
-        constexpr const char* IsValidMethodName = "IsValid";
         constexpr const char* GlobalSettingsRegistryPropertyName = "g_SettingsRegistry";
         auto propIt = m_behaviorContext->m_properties.find(GlobalSettingsRegistryPropertyName);
         ASSERT_NE(m_behaviorContext->m_properties.end(), propIt);

@@ -438,7 +438,7 @@ namespace ScriptCanvasEditor
                         AZ::EntityId newConnectionId;
                         GraphCanvas::SlotRequestBus::EventResult(newConnectionId, newEndpoint.m_slotId, &GraphCanvas::SlotRequests::CreateConnectionWithEndpoint, targetEndpoint);
 
-                        bool created = graph->CreateConnection(newConnectionId, newEndpoint, targetEndpoint);
+                        [[maybe_unused]] bool created = graph->CreateConnection(newConnectionId, newEndpoint, targetEndpoint);
                         AZ_Warning("ScriptCanvas", created, "Failed to created connection between migrated endpoints, despite valid connection check.");
                     }
                 }
@@ -514,8 +514,23 @@ namespace ScriptCanvasEditor
 
     bool Graph::SanityCheckNodeReplacement(ScriptCanvas::Node* oldNode, ScriptCanvas::Node* newNode, AZStd::unordered_map<ScriptCanvas::SlotId, AZStd::vector<ScriptCanvas::SlotId>>& outSlotIdMap)
     {
+        auto findReplacementMatch = [](const ScriptCanvas::Slot* oldSlot, const AZStd::vector<const ScriptCanvas::Slot*>& newSlots)->ScriptCanvas::SlotId
+        {
+            for (auto& newSlot : newSlots)
+            {
+                if (newSlot->GetName() == oldSlot->GetName()
+                && newSlot->GetType() == oldSlot->GetType()
+                && (newSlot->IsExecution() || newSlot->GetDataType() == oldSlot->GetDataType()))
+                {
+                    return newSlot->GetId();
+                }
+            }
+
+            return {};
+        };
+
         oldNode->CustomizeReplacementNode(newNode, outSlotIdMap);
-        // Double check to make sure no stupid thing has been done
+
         if (!newNode)
         {
             AZ_Warning("ScriptCanvas", false, "Replacement node can not be null.");
@@ -523,7 +538,13 @@ namespace ScriptCanvasEditor
         }
 
         AZStd::unordered_map<AZStd::string, AZStd::vector<AZStd::string>> slotNameMap = oldNode->GetReplacementSlotsMap();
-        for (auto oldSlot : oldNode->GetAllSlots())
+
+        const auto newSlots = newNode->GetAllSlots();
+        const auto oldSlots = oldNode->GetAllSlots();
+        bool usingDefaults = true;
+        size_t defaultMatchesFound = 0;
+
+        for (auto oldSlot : oldSlots)
         {
             const ScriptCanvas::SlotId oldSlotId = oldSlot->GetId();
             const AZStd::string oldSlotName = oldSlot->GetName();
@@ -575,12 +596,30 @@ namespace ScriptCanvasEditor
                 }
                 outSlotIdMap.emplace(oldSlot->GetId(), newSlotIds);
             }
+            else if (slotNameMap.empty())
+            {
+                usingDefaults = true;
+                auto newSlotId = findReplacementMatch(oldSlot, newSlots);
+
+                if (newSlotId.IsValid())
+                {
+                    ++defaultMatchesFound;
+                    AZStd::vector<ScriptCanvas::SlotId> slotIds{ newSlotId };
+                    outSlotIdMap.emplace(oldSlot->GetId(), slotIds);
+                }
+            }
             else
             {
                 AZ_Warning("ScriptCanvas", false, "Failed to remap deprecated Node(%s) Slot(%s).", oldNode->GetNodeName().c_str(), oldSlot->GetName().c_str());
                 return false;
             }
         }
+
+        if (usingDefaults && defaultMatchesFound != oldSlots.size())
+        {
+            AZ_Warning("ScriptCanvas", false, "Failed to remap deprecated Node(%s) not all old slots were present in the new node.", oldNode->GetNodeName().c_str());
+        }
+
         return true;
     }
 
@@ -635,7 +674,6 @@ namespace ScriptCanvasEditor
                             if (variable)
                             {
                                 // functions 2.0 set variable scope to function 
-                                auto connectionType = slot->GetConnectionType();
                                 if (variable->GetScope() != ScriptCanvas::VariableFlags::Scope::Function)
                                 {
                                     variable->SetScope(ScriptCanvas::VariableFlags::Scope::Function);
@@ -2270,11 +2308,23 @@ namespace ScriptCanvasEditor
             ScriptCanvas::GraphVariableManagerRequestBus::EventResult(nameAvailable, GetScriptCanvasId(), &ScriptCanvas::GraphVariableManagerRequests::IsNameAvailable, variableName);
         }
 
+        int nameCount = 0;
         while (!nameAvailable)
         {
-            variableName.append(" (duplicate)");
+            if (nameCount == 0)
+            {
+                variableName.append(AZStd::string::format(" (%d)", ++nameCount));
+            }
+            else
+            {
+                AZ::StringFunc::Replace(variableName, AZStd::string::format("(%d)", nameCount-1).c_str(), AZStd::string::format("(%d)", nameCount).c_str());
+                ++nameCount;
+            }
+
             ScriptCanvas::GraphVariableManagerRequestBus::EventResult(nameAvailable, GetScriptCanvasId(), &ScriptCanvas::GraphVariableManagerRequests::IsNameAvailable, variableName);
         }
+
+        activeSlot->Rename(variableName);
 
         ScriptCanvas::Datum variableDatum;
 

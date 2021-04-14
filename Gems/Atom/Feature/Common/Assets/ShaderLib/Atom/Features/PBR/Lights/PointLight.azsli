@@ -14,7 +14,7 @@
 
 #include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
 
-void ApplyPointLight(ViewSrg::PointLight light, float3 dirToCamera, Surface surface, inout float3 diffuseLighting, inout float3 specularLighting, inout float3 translucentBackLighting)
+void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingData lightingData)
 {
     float3 posToLight = light.m_position - surface.position;
     float d2 = dot(posToLight, posToLight); // light distance squared
@@ -32,15 +32,15 @@ void ApplyPointLight(ViewSrg::PointLight light, float3 dirToCamera, Surface surf
         float3 lightIntensity = (light.m_rgbIntensityCandelas / d2) * radiusAttenuation;
 
         // Diffuse contribution
-        diffuseLighting += GetDiffuseLighting(surface, lightIntensity, dirToCamera, normalize(posToLight));
+        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, normalize(posToLight));
 
         // Tranmission contribution
-        translucentBackLighting += GetBackLighting(surface, lightIntensity, dirToCamera, normalize(posToLight), 0.0);
+        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, lightIntensity, normalize(posToLight), 0.0);
 
         // Adjust the light direcion for specular based on bulb size
 
         // Calculate the reflection off the normal from the view direction
-        float3 reflectionDir = reflect(-dirToCamera, surface.normal);
+        float3 reflectionDir = reflect(-lightingData.dirToCamera, surface.normal);
 
         // Calculate a vector from the reflection vector to the light
         float3 reflectionPosToLight = posToLight - dot(posToLight, reflectionDir) * reflectionDir;
@@ -52,7 +52,7 @@ void ApplyPointLight(ViewSrg::PointLight light, float3 dirToCamera, Surface surf
         float sphereIntensityNormalization = GetIntensityAdjustedByRadiusAndRoughness(surface.roughnessA, light.m_bulbRadius, d2);
 
         // Specular contribution
-        specularLighting += sphereIntensityNormalization * GetSpecularLighting(surface, lightIntensity, dirToCamera, normalize(posToLight));
+        lightingData.specularLighting += sphereIntensityNormalization * GetSpecularLighting(surface, lightingData, lightIntensity, normalize(posToLight));
     }
 }
 
@@ -65,7 +65,7 @@ float3 SampleSphere(float2 randomPoint)
     return float3(sinTheta * cos(angle), sinTheta * sin(angle), cosTheta);
 }
 
-void ValidatePointLight(ViewSrg::PointLight light, float3 dirToCamera, Surface surface, inout float3 diffuseLighting, inout float3 specularLighting, inout float3 translucentBackLighting)
+void ValidatePointLight(ViewSrg::PointLight light, Surface surface, inout LightingData lightingData)
 {
     const uint sampleCount = 512;
 
@@ -78,7 +78,7 @@ void ValidatePointLight(ViewSrg::PointLight light, float3 dirToCamera, Surface s
         float2 randomPoint = GetHammersleyPoint(i, sampleCount);
         float3 sampleDirection = SampleSphere(randomPoint);
         float3 samplePoint = light.m_position + sampleDirection * light.m_bulbRadius;
-        AddSampleContribution(surface, samplePoint, sampleDirection, dirToCamera, 0.0, diffuseAcc, specularAcc, translucentAcc);
+        AddSampleContribution(surface, lightingData, samplePoint, sampleDirection, 0.0, diffuseAcc, specularAcc, translucentAcc);
     }
 
     // Lighting value is in Candela, convert to Lumen for total light output of the light
@@ -87,29 +87,29 @@ void ValidatePointLight(ViewSrg::PointLight light, float3 dirToCamera, Surface s
     // equal directions across the hemisphere, so we need to account for that
     float3 intensity = intensityLumens * INV_PI;
 
-    diffuseLighting += (diffuseAcc / float(sampleCount)) * intensity;
-    translucentBackLighting += (translucentAcc / float(sampleCount)) * intensity;
-    specularLighting += (specularAcc / float(sampleCount)) * intensity;
+    lightingData.diffuseLighting += (diffuseAcc / float(sampleCount)) * intensity;
+    lightingData.translucentBackLighting += (translucentAcc / float(sampleCount)) * intensity;
+    lightingData.specularLighting += (specularAcc / float(sampleCount)) * intensity;
 }
 
-void ApplyPointLights(inout LightCullingTileIterator tileIterator, float3 dirToCamera, Surface surface, inout float3 diffuseLighting, inout float3 specularLighting, inout float3 translucentBackLighting)
+void ApplyPointLights(Surface surface, inout LightingData lightingData)
 {
-    tileIterator.LoadAdvance();
-                
-    while( !tileIterator.IsDone() ) 
+    lightingData.tileIterator.LoadAdvance();
+    
+    while( !lightingData.tileIterator.IsDone() ) 
     { 
-        uint currLightIndex = tileIterator.GetValue(); 
-        tileIterator.LoadAdvance();
+        uint currLightIndex = lightingData.tileIterator.GetValue(); 
+        lightingData.tileIterator.LoadAdvance();
     
         ViewSrg::PointLight light = ViewSrg::m_pointLights[currLightIndex];
         
         if (o_area_light_validation)
         {
-            ValidatePointLight(light, dirToCamera, surface, diffuseLighting, specularLighting, translucentBackLighting);
+            ValidatePointLight(light, surface, lightingData);
         }
         else
         {
-            ApplyPointLight(light, dirToCamera, surface, diffuseLighting, specularLighting, translucentBackLighting);
+            ApplyPointLight(light, surface, lightingData);
         }
     }
 }

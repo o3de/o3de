@@ -890,7 +890,6 @@ namespace EMStudio
             return;
         }
 
-        const CommandSystem::SelectionList& selectionList = GetCommandManager()->GetCurrentSelection();
         for (const auto& iterator : m_parameterWidgets)
         {
             const EMotionFX::Parameter* parameter = iterator.first;
@@ -1644,7 +1643,7 @@ namespace EMStudio
 
     void ParameterWindowTreeWidget::startDrag(Qt::DropActions supportedActions)
     {
-        Q_D(ParameterWindowTreeWidget);
+        [[maybe_unused]] Q_D(ParameterWindowTreeWidget);
 
         QModelIndexList indexes = selectedIndexes();
         if (indexes.count() > 0)

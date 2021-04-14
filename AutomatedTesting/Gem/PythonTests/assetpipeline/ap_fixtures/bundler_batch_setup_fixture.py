@@ -66,7 +66,7 @@ def bundler_batch_setup_fixture(request, workspace, asset_processor, timeout) ->
             self.bundler_batch = os.path.join(self.bin_dir, "AssetBundlerBatch")
             self.test_dir = tempDir
             self.asset_alias = workspace.paths.platform_cache()
-            self.tools_dir = os.path.join(workspace.paths.dev(), "Tools")
+            self.tools_dir = os.path.join(workspace.paths.engine_root(), "Tools")
             self.seed_list_file_name = "testSeedListFile.seed"
             self.seed_list_file = os.path.join(self.test_dir, self.seed_list_file_name)
             self.asset_info_file_name = "assetFileInfo.assetlist"
@@ -297,7 +297,7 @@ def bundler_batch_setup_fixture(request, workspace, asset_processor, timeout) ->
             Note: the platform's are bit flags, so their values are powers of 2: 1 << position_in_file
             """
             platform_declaration_file = os.path.join(
-                workspace.paths.dev(),
+                workspace.paths.engine_root(),
                 "Code",
                 "Framework",
                 "AzFramework",

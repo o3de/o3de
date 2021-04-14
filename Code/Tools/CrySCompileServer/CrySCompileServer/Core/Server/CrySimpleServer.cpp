@@ -71,15 +71,6 @@
 
 AZStd::atomic_long CCrySimpleServer::ms_ExceptionCount    = {0};
 
-const static std::string SHADER_PROFILER            =   "NVShaderPerf" EXTENSION;
-
-const static std::string SHADER_PATH_SOURCE         =   "Source";
-const static std::string SHADER_PATH_BINARY         =   "Binary";
-const static std::string SHADER_PATH_HALFSTRIPPED   =   "HalfStripped";
-const static std::string SHADER_PATH_DISASSEMBLED   =   "DisAsm";
-const static std::string SHADER_PATH_STRIPPPED      =   "Stripped";
-const static std::string SHADER_PATH_CACHE          =   "Cache";
-
 static const bool autoDeleteJobWhenDone = true;
 static const int sleepTimeWhenWaiting = 10;
 
@@ -335,7 +326,6 @@ void CompileJob::Process()
             }
 
             const char* pVersion        = pElement->Attribute("Version");
-            const char* pPlatform       = pElement->Attribute("Platform");
             const char* pHardwareTarget = nullptr;
 
             //new request type?
@@ -575,31 +565,45 @@ void TickThread()
 //////////////////////////////////////////////////////////////////////////
 void LoadCache()
 {
-    const std::string& cachePath = SEnviropment::Instance().m_CachePath;
-    if (CCrySimpleCache::Instance().LoadCacheFile(cachePath + "Cache.dat"))
+    AZ::IO::Path cacheDatFile{ SEnviropment::Instance().m_CachePath };
+    AZ::IO::Path cacheBakFile = cacheDatFile;
+    cacheDatFile /= "Cache.dat";
+    cacheBakFile /= "Cache.bak";
+    if (CCrySimpleCache::Instance().LoadCacheFile(cacheDatFile.c_str()))
     {
+        AZ::IO::Path cacheBakFile2 = cacheBakFile;
+        cacheBakFile2.ReplaceFilename("Cache.bak2");
+
         printf("Creating cache backup...\n");
-        AZ::IO::SystemFile::Delete((cachePath + "Cache.bak2").c_str());
-        printf("Move %s to %s\n", (cachePath + "Cache.bak").c_str(), (cachePath + "Cache.bak2").c_str());
-        AZ::IO::SystemFile::Rename((cachePath + "Cache.bak").c_str(), (cachePath + "Cache.bak2").c_str());
-        printf("Copy %s to %s\n", (cachePath + "Cache.dat").c_str(), (cachePath + "Cache.bak").c_str());
-        CopyFileOnPlatform((cachePath + "Cache.dat").c_str(), (cachePath + "Cache.bak").c_str(), FALSE);
+        AZ::IO::SystemFile::Delete(cacheBakFile2.c_str());
+        printf("Move %s to %s\n", cacheBakFile.c_str(), cacheBakFile2.c_str());
+        AZ::IO::SystemFile::Rename(cacheBakFile.c_str(), cacheBakFile2.c_str());
+        printf("Copy %s to %s\n", cacheDatFile.c_str(), cacheBakFile.c_str());
+        CopyFileOnPlatform(cacheDatFile.c_str(), cacheBakFile.c_str(), false);
         printf("Cache backup done.\n");
     }
     else
     {
         // Restoring backup cache!
-        printf("Cache file corrupted!!!\n");
+        if (AZ::IO::SystemFile::Exists(cacheDatFile.c_str()))
+        {
+            printf("Cache file corrupted!!!\n");
+            AZ::IO::SystemFile::Delete(cacheDatFile.c_str());
+        }
+
         printf("Restoring backup cache...\n");
-        AZ::IO::SystemFile::Delete((cachePath + "Cache.dat").c_str());
-        printf("Copy %s to %s\n", (cachePath + "Cache.bak").c_str(), (cachePath + "Cache.dat").c_str());
-        CopyFileOnPlatform((cachePath + "Cache.bak").c_str(), (cachePath + "Cache.dat").c_str(), FALSE);
-        if (!CCrySimpleCache::Instance().LoadCacheFile(cachePath + "Cache.dat"))
+        printf("Copy %s to %s\n", cacheBakFile.c_str(), cacheDatFile.c_str());
+        CopyFileOnPlatform(cacheBakFile.c_str(), cacheDatFile.c_str(), false);
+        if (!CCrySimpleCache::Instance().LoadCacheFile(cacheDatFile.c_str()))
         {
             // Backup file corrupted too!
-            printf("Backup file corrupted too!!!\n");
+            if (AZ::IO::SystemFile::Exists(cacheDatFile.c_str()))
+            {
+                printf("Backup file corrupted too!!!\n");
+                AZ::IO::SystemFile::Delete(cacheDatFile.c_str());
+            }
             printf("Deleting cache completely\n");
-            AZ::IO::SystemFile::Delete((cachePath + "Cache.dat").c_str());
+            AZ::IO::SystemFile::Delete(cacheDatFile.c_str());
         }
     }
 
@@ -664,56 +668,9 @@ CCrySimpleServer::CCrySimpleServer()
     CrySimple_SECURE_END
 }
 
-bool GetBaseDirectory(AZStd::string& baseDir)
-{
-    char executableDir[AZ_MAX_PATH_LEN];
-    if (AZ::Utils::GetExecutableDirectory(executableDir, AZ_MAX_PATH_LEN) == AZ::Utils::ExecutablePathResult::Success)
-    {
-        AZStd::string_view executableDirView(executableDir);
-        if (executableDirView.size() > 1 && !executableDirView.ends_with(AZ_CORRECT_FILESYSTEM_SEPARATOR) && executableDirView.size() < AZStd::size(executableDir) - 1)
-        {
-            executableDir[executableDirView.size()] = AZ_CORRECT_FILESYSTEM_SEPARATOR;
-            executableDir[executableDirView.size() + 1] = '\0';
-            executableDirView = { executableDir, executableDirView.size() + 1 };
-        }
-        baseDir = AZStd::string(executableDir);
-
-        return true;
-
-    }
-    else
-    {
-        return false;
-    }
-}
-
-void NormalizePath(AZStd::string& pathToNormalize)
-{
-    AzFramework::StringFunc::Root::Normalize(pathToNormalize);
-}
-
-void NormalizePath(std::string& pathToNormalize)
-{
-    AZStd::string tempString = pathToNormalize.c_str();
-    NormalizePath(tempString);
-    pathToNormalize = tempString.c_str();
-}
-
 bool IsPathValid(const AZStd::string& path)
 {
-    // Calculating base directory every time.
-    // It's slower than using a cached value, but safer.
-    AZStd::string baseDir;
-    if (GetBaseDirectory(baseDir))
-    {
-        AZStd::string basePath(AZ::IO::Path(baseDir).LexicallyNormal().Native());
-        AZStd::string subPath(AZ::IO::Path(path).LexicallyNormal().Native());
-        return strncmp(basePath.c_str(), subPath.c_str(), basePath.size()) == 0;
-    }
-    else
-    {
-        return false;
-    }
+    return AZ::IO::PathView(path).IsRelativeTo(AZ::IO::PathView(SEnviropment::Instance().m_Root));
 }
 
 bool IsPathValid(const std::string& path)
@@ -724,48 +681,29 @@ bool IsPathValid(const std::string& path)
 
 void CCrySimpleServer::Init()
 {
-    char executableDir[AZ_MAX_PATH_LEN];
-    AZ::Utils::GetExecutableDirectory(executableDir, AZ_MAX_PATH_LEN);
-    AZStd::string_view executableDirView(executableDir);
-    if (executableDirView.size() > 1 && !executableDirView.ends_with(AZ_CORRECT_FILESYSTEM_SEPARATOR) && executableDirView.size() < AZStd::size(executableDir) - 1)
-    {
-        executableDir[executableDirView.size()] = AZ_CORRECT_FILESYSTEM_SEPARATOR;
-        executableDir[executableDirView.size() + 1] = '\0';
-        executableDirView = { executableDir, executableDirView.size() + 1 };
-    }
-    SEnviropment::Instance().m_Root = std::string(executableDir);
-
-    AZStd::string baseDir;
-    GetBaseDirectory(baseDir);
-    SEnviropment::Instance().m_CompilerPath  = baseDir.c_str();
-    SEnviropment::Instance().m_CompilerPath += "/Compiler/";
-
-    SEnviropment::Instance().m_CachePath = SEnviropment::Instance().m_Root + "Cache/";
+    SEnviropment::Instance().m_Root = AZ::Utils::GetExecutableDirectory();
+    SEnviropment::Instance().m_CompilerPath = SEnviropment::Instance().m_Root / "Compiler";
+    SEnviropment::Instance().m_CachePath = SEnviropment::Instance().m_Root / "Cache";
     
     if (SEnviropment::Instance().m_TempPath.empty())
     {
-        SEnviropment::Instance().m_TempPath = SEnviropment::Instance().m_Root + "Temp/";
+        SEnviropment::Instance().m_TempPath = SEnviropment::Instance().m_Root / "Temp";
     }
     if (SEnviropment::Instance().m_ErrorPath.empty())
     {
-        SEnviropment::Instance().m_ErrorPath = SEnviropment::Instance().m_Root + "Error/";
+        SEnviropment::Instance().m_ErrorPath = SEnviropment::Instance().m_Root / "Error";
     }
     if (SEnviropment::Instance().m_ShaderPath.empty())
     {
-        SEnviropment::Instance().m_ShaderPath = SEnviropment::Instance().m_Root + "Shaders/";
+        SEnviropment::Instance().m_ShaderPath = SEnviropment::Instance().m_Root / "Shaders";
     }
 
-    NormalizePath(SEnviropment::Instance().m_Root);
-    NormalizePath(SEnviropment::Instance().m_CompilerPath);
-    NormalizePath(SEnviropment::Instance().m_CachePath);
-    NormalizePath(SEnviropment::Instance().m_ErrorPath);
-    NormalizePath(SEnviropment::Instance().m_TempPath);
-    NormalizePath(SEnviropment::Instance().m_ShaderPath);
-
-    AZ::IO::SystemFile::CreateDir(SEnviropment::Instance().m_ErrorPath.c_str());
-    AZ::IO::SystemFile::CreateDir(SEnviropment::Instance().m_TempPath.c_str());
-    AZ::IO::SystemFile::CreateDir(SEnviropment::Instance().m_CachePath.c_str());
-    AZ::IO::SystemFile::CreateDir(SEnviropment::Instance().m_ShaderPath.c_str());
+    SEnviropment::Instance().m_Root = SEnviropment::Instance().m_Root.LexicallyNormal();
+    SEnviropment::Instance().m_CompilerPath = SEnviropment::Instance().m_CompilerPath.LexicallyNormal();
+    SEnviropment::Instance().m_CachePath = SEnviropment::Instance().m_CachePath.LexicallyNormal();
+    SEnviropment::Instance().m_ErrorPath = SEnviropment::Instance().m_ErrorPath.LexicallyNormal();
+    SEnviropment::Instance().m_TempPath = SEnviropment::Instance().m_TempPath.LexicallyNormal();
+    SEnviropment::Instance().m_ShaderPath = SEnviropment::Instance().m_ShaderPath.LexicallyNormal();
 
     if (SEnviropment::Instance().m_Caching)
     {

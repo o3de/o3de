@@ -162,7 +162,6 @@ namespace AtomToolsFramework
     const AtomToolsFramework::DynamicProperty* FindDynamicPropertyForInstanceDataNode(const AzToolsFramework::InstanceDataNode* pNode)
     {
         // Traverse up the hierarchy from the input node to search for an instance corresponding to material inspector property
-        const AZ::SerializeContext::ClassElement* elementData = pNode->GetElementMetadata();
         for (const AzToolsFramework::InstanceDataNode* currentNode = pNode; currentNode; currentNode = currentNode->GetParent())
         {
             const AZ::SerializeContext* context = currentNode->GetSerializeContext();

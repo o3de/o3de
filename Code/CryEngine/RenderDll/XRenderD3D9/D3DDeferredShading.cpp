@@ -1256,11 +1256,9 @@ bool CDeferredShading::DeferredDecalPass(const SDeferredDecal& rDecal, uint32 in
     gcpRendD3D->m_RP.m_FlagsShader_RT &= ~(RT_LIGHTSMASK | g_HWSR_MaskBit[HWSR_SAMPLE4]);
 
     CD3D9Renderer* const __restrict rd = gcpRendD3D;
-    int nThreadID = rd->m_RP.m_nProcessThreadID;
 
     rd->m_RP.m_nDeferredPrimitiveID = SHAPE_PROJECTOR;
 
-    bool bProj2D = true;
     bool bStencilMask = false;
     bool bUseLightVolumes = true;
 
@@ -1503,11 +1501,9 @@ void CDeferredShading::DeferredDecalEmissivePass(const SDeferredDecal& rDecal, [
     gcpRendD3D->m_RP.m_FlagsShader_RT &= ~(RT_LIGHTSMASK | g_HWSR_MaskBit[HWSR_SAMPLE4]);
 
     CD3D9Renderer* const __restrict rd = gcpRendD3D;
-    int nThreadID = rd->m_RP.m_nProcessThreadID;
 
     rd->m_RP.m_nDeferredPrimitiveID = SHAPE_PROJECTOR;
 
-    bool bProj2D = true;
     bool bUseLightVolumes = true;
 
     rd->EF_Scissor(false, 0, 0, 1, 1);
@@ -3073,23 +3069,8 @@ void CDeferredShading::ScreenSpaceReflectionPass()
         0.5f, 0.5f, 0,    1.0f);
     const uint32 numGPUs = rd->GetActiveGPUCount();
 
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    // render to texture supports view projections for multiple cameras
-    const CCamera& camera = rd->m_RP.m_TI[rd->m_RP.m_nProcessThreadID].m_cam;
-    const AZ::EntityId cameraID = camera.GetEntityId();
-    const int frameID = camera.GetFrameUpdateId();
-    const uint32 prevViewProjID = max((frameID - (int)numGPUs) % MAX_GPU_NUM, 0);
-    auto iter = m_prevViewProj[prevViewProjID].find(cameraID);
-    if (iter == m_prevViewProj[prevViewProjID].end())
-    {
-        // initialize with the current view projection in case this is a one-off render.
-        m_prevViewProj[prevViewProjID].insert({ cameraID, mViewProj });
-    }
-    Matrix44 mViewProjPrev = m_prevViewProj[prevViewProjID][cameraID] * mViewport;
-#else
     const int frameID = GetUtils().m_iFrameCounter;
     Matrix44 mViewProjPrev = m_prevViewProj[max((frameID - (int)numGPUs) % MAX_GPU_NUM, 0)] * mViewport;
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
 
     PROFILE_LABEL_SCOPE("SS_REFLECTIONS");
 
@@ -3227,21 +3208,7 @@ void CDeferredShading::ScreenSpaceReflectionPass()
     rd->RT_SetViewport(prevVpX, prevVpY, prevVpWidth, prevVpHeight);
 
     // Array used for MGPU support
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    // Don't use array assignment to insert or Matrix44 will assert because
-    // the allocator calls the constructor with an invalid Matrix44
-    iter = m_prevViewProj[frameID % MAX_GPU_NUM].find(cameraID);
-    if (iter == m_prevViewProj[frameID % MAX_GPU_NUM].end())
-    {
-        m_prevViewProj[frameID % MAX_GPU_NUM].insert({ cameraID, mViewProj });
-    }
-    else
-    {
-       iter->second = mViewProj;
-    }
-#else
     m_prevViewProj[frameID % MAX_GPU_NUM] = mViewProj;
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
 }
 
 void CDeferredShading::ApplySSReflections()
@@ -3762,7 +3729,6 @@ void CDeferredShading::DeferredShadingPass()
 {
     CD3D9Renderer* const __restrict rd = gcpRendD3D;
 
-    int nRec = SRendItem::m_RecurseLevel[rd->m_RP.m_nProcessThreadID];
 
     if (rd->IsShadowPassEnabled())
     {
@@ -4180,7 +4146,6 @@ bool CDeferredShading::PackToPool(CPowerOf2BlockPacker* pBlockPack, SRenderLight
 
     //////////////////////////////////////////////////////////////////////////
     int nBlockW = firstFrustum.nTexSize >> TEX_POOL_BLOCKLOGSIZE;
-    int nBlockH = firstFrustum.nTexSize >> TEX_POOL_BLOCKLOGSIZE;
     int nLogBlockW = IntegerLog2((uint32)nBlockW);
     int nLogBlockH = nLogBlockW;
 
@@ -4571,7 +4536,6 @@ bool CDeferredShading::ShadowLightPasses(const SRenderLight& light)
 
         //////////////////////////////////////////////////////////////////////////
 
-        int nShadowQuality = rd->FX_ApplyShadowQuality();
 
         m_nCurLighID = light.m_lightId;
 
@@ -4876,8 +4840,10 @@ struct DeffDecalSort
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void CDeferredShading::SetupGmemPath()
 {
+#if !defined(NDEBUG)
     bool bTiledDeferredShading = CRenderer::CV_r_DeferredShadingTiled >= 2;
     assert(!bTiledDeferredShading); // NOT SUPPORTED IN GMEM PATH!
+#endif
 
     SetupPasses();
     TArray<SRenderLight>& rDeferredLights = m_pLights[eDLT_DeferredLight][m_nThreadID][m_nRecurseLevel];
@@ -4887,9 +4853,8 @@ void CDeferredShading::SetupGmemPath()
     m_nCurrentShadowPoolLight = 0;
     m_nFirstCandidateShadowPoolLight = 0;
 
-    CD3D9Renderer* const __restrict rd = gcpRendD3D;
-
 #if !defined(_RELEASE)
+    CD3D9Renderer* const __restrict rd = gcpRendD3D;
     rd->m_RP.m_PS[m_nThreadID].m_NumShadowPoolFrustums = 0;
     rd->m_RP.m_PS[m_nThreadID].m_NumShadowPoolAllocsThisFrame = 0;
     rd->m_RP.m_PS[m_nThreadID].m_NumShadowMaskChannels = 0;

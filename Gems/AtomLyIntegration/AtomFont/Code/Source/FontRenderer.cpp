@@ -309,7 +309,7 @@ Vec2 AZ::FontRenderer::GetKerning(uint32_t leftGlyph, uint32_t rightGlyph)
         const FT_UInt leftGlyphIndex = FT_Get_Char_Index(m_face, leftGlyph);
         const FT_UInt rightGlyphIndex = FT_Get_Char_Index(m_face, rightGlyph);
 
-        FT_Error ftError = FT_Get_Kerning(m_face, leftGlyphIndex, rightGlyphIndex, FT_KERNING_DEFAULT, &kerningOffsets);
+        [[maybe_unused]] FT_Error ftError = FT_Get_Kerning(m_face, leftGlyphIndex, rightGlyphIndex, FT_KERNING_DEFAULT, &kerningOffsets);
 
 #if !defined(_RELEASE)
         if (0 != ftError)

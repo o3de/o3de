@@ -207,8 +207,7 @@ void CAtomShimRenderer::BeginFrame()
         shaderOptionsWrap.push_back(AZ::RPI::ShaderOption(AZ::Name("o_clamp"), AZ::Name("false")));
         m_shaderVariantWrap = m_dynamicDraw->UseShaderVariant(shaderOptionsWrap);
 
-        AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = m_dynamicDraw->NewDrawSrg();
-        const AZ::RHI::ShaderResourceGroupLayout* layout = drawSrg->GetAsset()->GetLayout();
+        m_dynamicDraw->NewDrawSrg();
 
         m_isFinalInitializationDone = true;
     }
@@ -295,7 +294,12 @@ void CAtomShimRenderer::EndFrame()
     if (!m_viewportContext)
     {
         auto viewContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
-        m_viewportContext = viewContextManager->GetViewportContextByName(viewContextManager->GetDefaultViewportContextName());
+        auto viewportContext = viewContextManager->GetViewportContextByName(viewContextManager->GetDefaultViewportContextName());
+        // If the viewportContext exists and is created with the default ID, we can safely assume control
+        if (viewportContext && viewportContext->GetId() == -10)
+        {
+            m_viewportContext = viewportContext;
+        }
     }
 
     if (m_viewportContext)
@@ -377,11 +381,6 @@ void CAtomShimRenderer::DrawImage(float xpos, float ypos, float w, float h, int 
 ///////////////////////////////////////////
 void CAtomShimRenderer::DrawImageWithUV(float xpos, float ypos, float z, float w, float h, int texture_id, float s[4], float t[4], float r, float g, float b, float a, bool filtered)
 {
-    float fx = xpos;
-    float fy = ypos;
-    float fw = w;
-    float fh = h;
-
     SetCullMode(R_CULL_DISABLE);
     EF_SetColorOp(eCO_MODULATE, eCO_MODULATE, DEF_TEXARG0, DEF_TEXARG0);
     EF_SetSrgbWrite(false);
@@ -559,7 +558,6 @@ void CAtomShimRenderer::SetCamera(const CCamera& cam)
     mViewFinal.m31 = mView.m32;
     mViewFinal.m32 = -mView.m31;
 
-    Matrix44A* m = &m_RP.m_TI[nThreadID].m_matView;
     m_RP.m_TI[nThreadID].m_matView = mViewFinal;
 
     mViewFinal.m30 = 0;

@@ -1357,12 +1357,17 @@ int OnWaterUpdate(const EventPhysAreaChange* pEvent)
 void CWaterVolumeRenderNode::SyncToPhysMesh(const QuatT& qtSurface, IGeometry* pSurface, float depth)
 {
     mesh_data* pmd;
-    if (!pSurface || pSurface->GetType() != GEOM_TRIMESH || !(pmd = (mesh_data*)pSurface->GetData()))
+    if (!pSurface || pSurface->GetType() != GEOM_TRIMESH)
     {
         return;
     }
-    bool bResized = false;
-    if (bResized = m_waterSurfaceVertices.size() != pmd->nVertices)
+    pmd = (mesh_data*)pSurface->GetData();
+    if (!pmd)
+    {
+        return;
+    }
+    bool bResized = m_waterSurfaceVertices.size() != pmd->nVertices;
+    if (bResized)
     {
         m_waterSurfaceVertices.resize(pmd->nVertices);
     }

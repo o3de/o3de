@@ -787,7 +787,6 @@ void CD3D9Renderer::FX_StencilFrustumCull(int nStencilID, const SRenderLight* pL
     CShader*  pShader = CShaderMan::s_ShaderShadowMaskGen;
     static CCryNameTSCRC StencilCullTechName = "DeferredShadowPass";
 
-    float Z = 1.0f;
 
     Matrix44A mProjection = m_IdentityMatrix;
     Matrix44A mView = m_IdentityMatrix;
@@ -1556,7 +1555,6 @@ bool CD3D9Renderer::FX_DeferredShadows(SRenderLight* pLight, int maskRTWidth, in
 
     // set shader
     CShader* pSH(CShaderMan::s_ShaderShadowMaskGen);
-    uint32 nPasses = 0;
     static CCryNameR TechName("DeferredShadowPass");
     
     if IsCVarConstAccess(constexpr) (CRenderer::CV_r_DeferredShadingLBuffersFmt == 2)

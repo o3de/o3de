@@ -111,13 +111,11 @@ namespace AZ
                 Property("segmentFraction", BehaviorValueProperty(&SplineAddress::m_segmentFraction));
 
             behaviorContext->Class<PositionSplineQueryResult>()->
-                Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)->
                 Attribute(Script::Attributes::Storage, Script::Attributes::StorageType::Value)->
                 Property("splineAddress", [](PositionSplineQueryResult* thisPtr) { return thisPtr->m_splineAddress; }, nullptr)->
                 Property("distanceSq", [](PositionSplineQueryResult* thisPtr) { return thisPtr->m_distanceSq; }, nullptr);
 
             behaviorContext->Class<RaySplineQueryResult>()->
-                Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)->
                 Attribute(Script::Attributes::Storage, Script::Attributes::StorageType::Value)->
                 Property("splineAddress", [](RaySplineQueryResult* thisPtr) { return thisPtr->m_splineAddress; }, nullptr)->
                 Property("distanceSq", [](RaySplineQueryResult* thisPtr) { return thisPtr->m_distanceSq; }, nullptr)->

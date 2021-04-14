@@ -66,15 +66,6 @@ IF NOT EXIST "%LY_ANDROID_NDK%" (
     GOTO :error
 )
 
-REM Delete output directory if CLEAN_OUTPUT_DIRECTORY env variable is set
-IF "%CLEAN_OUTPUT_DIRECTORY%"=="true" (
-    IF EXIST %OUTPUT_DIRECTORY% (
-        ECHO [ci_build] CLEAN_OUTPUT_DIRECTORY option set with value "%CLEAN_OUTPUT_DIRECTORY%"
-        ECHO [ci_build] Deleting "%OUTPUT_DIRECTORY%"
-        DEL /s /q /f %OUTPUT_DIRECTORY% 1>nul
-    )
-)
-
 IF NOT EXIST %OUTPUT_DIRECTORY% (
     mkdir %OUTPUT_DIRECTORY%
 )

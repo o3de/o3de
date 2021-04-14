@@ -330,9 +330,6 @@ FbxMesh* CFBXExporter::CreateFBXMesh(const Export::Object* pObj)
     int numVertices = pObj->GetVertexCount();
     const Export::Vector3D* pVerts = pObj->GetVertexBuffer();
 
-    int numNormals = pObj->GetNormalCount();
-    const Export::Vector3D* pNorms = pObj->GetNormalBuffer();
-
     int numMeshes = pObj->GetMeshCount();
 
     int numAllFaces = 0;

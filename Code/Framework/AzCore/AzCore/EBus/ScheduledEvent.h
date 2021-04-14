@@ -29,6 +29,9 @@ namespace AZ
     class ScheduledEvent
     {
     public:
+        //! Default constructor only for AZStd::deque compatibility.
+        ScheduledEvent() = default;
+
         //! Constructor of ScheduledEvent class.
         //! @param callback  a call back function to be executed when the event triggers
         //! @param eventName name of the scheduled event for easier debugging
@@ -81,8 +84,6 @@ namespace AZ
 
         //! Clears any currently set handle pointer.
         void ClearHandle();
-
-        AZ_DISABLE_COPY_MOVE(ScheduledEvent);
 
         Name m_eventName; //< Scheduled event name
         AZStd::function<void()> m_callback; //< A callback function to run when the scheduled event triggers

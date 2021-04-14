@@ -79,7 +79,6 @@ bool CEditorFileMonitor::RegisterListener(IFileChangeListener* pListener, const 
     CFileChangeMonitor* fileChangeMonitor = CFileChangeMonitor::Instance();
     AZ_Assert(fileChangeMonitor, "CFileChangeMonitor singleton missing.");
 
-    int modIndex = 0;
     naivePath += gameFolder;
     // Append slash in preparation for appending the second part.
     naivePath = PathUtil::AddSlash(naivePath);

@@ -40,6 +40,7 @@
 #include <SkyBox/HDRiSkyboxComponent.h>
 #include <SkyBox/PhysicalSkyComponent.h>
 #include <Scripting/EntityReferenceComponent.h>
+#include <SurfaceData/SurfaceDataMeshComponent.h>
 
 #ifdef ATOMLYINTEGRATION_FEATURE_COMMON_EDITOR
 #include <EditorCommonFeaturesSystemComponent.h>
@@ -71,6 +72,7 @@
 #include <SkyBox/EditorHDRiSkyboxComponent.h>
 #include <SkyBox/EditorPhysicalSkyComponent.h>
 #include <Scripting/EditorEntityReferenceComponent.h>
+#include <SurfaceData/EditorSurfaceDataMeshComponent.h>
 #endif
 
 namespace AZ
@@ -114,6 +116,7 @@ namespace AZ
                         GradientWeightModifierComponent::CreateDescriptor(),
                         DiffuseProbeGridComponent::CreateDescriptor(),
                         DeferredFogComponent::CreateDescriptor(),
+                        SurfaceData::SurfaceDataMeshComponent::CreateDescriptor(),
 
 #ifdef ATOMLYINTEGRATION_FEATURE_COMMON_EDITOR
                         EditorAreaLightComponent::CreateDescriptor(),
@@ -145,6 +148,7 @@ namespace AZ
                         EditorGradientWeightModifierComponent::CreateDescriptor(),
                         EditorDiffuseProbeGridComponent::CreateDescriptor(),
                         EditorDeferredFogComponent::CreateDescriptor(),
+                        SurfaceData::EditorSurfaceDataMeshComponent::CreateDescriptor(),
 #endif
                     });
             }

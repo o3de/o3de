@@ -943,8 +943,7 @@ static void TranslateTexCoord(HLSLCrossCompilerContext* psContext,
 static int GetNumTextureDimensions(HLSLCrossCompilerContext* psContext,
     const RESOURCE_DIMENSION eResDim)
 {
-    int constructor = 0;
-    bstring glsl = *psContext->currentGLSLString;
+    (void)(psContext);
 
     switch (eResDim)
     {
@@ -1441,7 +1440,6 @@ static void TranslateShaderStorageStore(HLSLCrossCompilerContext* psContext, Ins
 {
     bstring glsl = *psContext->currentGLSLString;
     ShaderVarType* psVarType = NULL;
-    uint32_t ui32DataTypeFlag = TO_FLAG_INTEGER;
     int component;
     int srcComponent = 0;
 
@@ -1450,7 +1448,6 @@ static void TranslateShaderStorageStore(HLSLCrossCompilerContext* psContext, Ins
     Operand* psDestByteOff = 0;
     Operand* psSrc = 0;
     int structured = 0;
-    int groupshared = 0;
 
     switch (psInst->eOpcode)
     {
@@ -1474,7 +1471,6 @@ static void TranslateShaderStorageStore(HLSLCrossCompilerContext* psContext, Ins
         ASSERT(psInst->asOperands[0].eSelMode == OPERAND_4_COMPONENT_MASK_MODE);
         if (psInst->asOperands[0].ui32CompMask & (1 << component))
         {
-            SHADER_VARIABLE_TYPE eSrcDataType = GetOperandDataType(psContext, psSrc);
             uint32_t swizzle = 0;
             if (structured && psDest->eType != OPERAND_TYPE_THREAD_GROUP_SHARED_MEMORY)
             {
@@ -1575,7 +1571,6 @@ static void TranslateShaderPLSStore(HLSLCrossCompilerContext* psContext, Instruc
 {
     bstring glsl = *psContext->currentGLSLString;
     ShaderVarType* psVarType = NULL;
-    uint32_t ui32DataTypeFlag = TO_FLAG_INTEGER;
     int component;
     int srcComponent = 0;
 
@@ -1607,7 +1602,6 @@ static void TranslateShaderPLSStore(HLSLCrossCompilerContext* psContext, Instruc
         ASSERT(psInst->asOperands[0].eSelMode == OPERAND_4_COMPONENT_MASK_MODE);
         if (psInst->asOperands[0].ui32CompMask & (1 << component))
         {
-            SHADER_VARIABLE_TYPE eSrcDataType = GetOperandDataType(psContext, psSrc);
 
             ASSERT(psDest->eType != OPERAND_TYPE_THREAD_GROUP_SHARED_MEMORY);
 
@@ -1999,7 +1993,6 @@ static void TranslateShaderPLSLoad(HLSLCrossCompilerContext* psContext, Instruct
     bstring glsl = *psContext->currentGLSLString;
     ShaderVarType* psVarType = NULL;
     uint32_t aui32Swizzle[4] = { OPERAND_4_COMPONENT_X };
-    uint32_t ui32DataTypeFlag = TO_FLAG_INTEGER;
     int component;
     int destComponent = 0;
 
@@ -2833,7 +2826,6 @@ void SetDataTypes(HLSLCrossCompilerContext* psContext, Instruction* psInst, cons
         case OPCODE_IMM_ATOMIC_CMP_EXCH:
         {
             Operand* dest = &psInst->asOperands[1];
-            Operand* destAddr = &psInst->asOperands[2];
             ShaderVarType* type = LookupStructuredVar(psContext, dest, NULL, 0);
             eNewType = type->Type;
             break;
@@ -4485,7 +4477,6 @@ void TranslateInstruction(HLSLCrossCompilerContext* psContext, Instruction* psIn
     case OPCODE_LD_MS:
     {
         ResourceBinding* psBinding = 0;
-        uint32_t dstSwizCount = GetNumSwizzleElements(&psInst->asOperands[0]);
         uint32_t ui32FetchTypeToFlags;
 #ifdef _DEBUG
         AddIndentation(psContext);
@@ -5120,7 +5111,6 @@ void TranslateInstruction(HLSLCrossCompilerContext* psContext, Instruction* psIn
             //  Here's the description of what bitfieldExtract actually does
             //  https://www.opengl.org/registry/specs/ARB/gpu_shader5.txt
 
-            int numComponents = psInst->asOperands[0].iNumComponents;
 
             AddIndentation(psContext);
             bcatcstr(glsl, "{\n");
@@ -5456,7 +5446,6 @@ void TranslateInstruction(HLSLCrossCompilerContext* psContext, Instruction* psIn
     }
     case OPCODE_RESINFO:
     {
-        const RESOURCE_DIMENSION eResDim = psContext->psShader->aeResourceDims[psInst->asOperands[2].ui32RegisterNumber];
         const RESINFO_RETURN_TYPE eResInfoReturnType = psInst->eResInfoReturnType;
         uint32_t destElemCount = GetNumSwizzleElements(&psInst->asOperands[0]);
         uint32_t destElem;

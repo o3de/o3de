@@ -166,5 +166,11 @@ namespace UnitTest
 
             return entity;
         }
+
+        void DestroyEntity(AZ::Entity* entity)
+        {
+            entity->Deactivate();
+            delete entity;
+        }
     };
 }

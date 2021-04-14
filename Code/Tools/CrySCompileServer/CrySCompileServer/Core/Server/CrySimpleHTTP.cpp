@@ -133,12 +133,12 @@ protected:
 
 
         Ret += CreateInfoText("<b>Setup</b>:", "");
-        Ret += CreateInfoText("Root", SEnviropment::Instance().m_Root);
-        Ret += CreateInfoText("CompilerPath", SEnviropment::Instance().m_CompilerPath);
-        Ret += CreateInfoText("CachePath", SEnviropment::Instance().m_CachePath);
-        Ret += CreateInfoText("TempPath", SEnviropment::Instance().m_TempPath);
-        Ret += CreateInfoText("ErrorPath", SEnviropment::Instance().m_ErrorPath);
-        Ret += CreateInfoText("ShaderPath", SEnviropment::Instance().m_ShaderPath);
+        Ret += CreateInfoText("Root", SEnviropment::Instance().m_Root.c_str());
+        Ret += CreateInfoText("CompilerPath", SEnviropment::Instance().m_CompilerPath.c_str());
+        Ret += CreateInfoText("CachePath", SEnviropment::Instance().m_CachePath.c_str());
+        Ret += CreateInfoText("TempPath", SEnviropment::Instance().m_TempPath.c_str());
+        Ret += CreateInfoText("ErrorPath", SEnviropment::Instance().m_ErrorPath.c_str());
+        Ret += CreateInfoText("ShaderPath", SEnviropment::Instance().m_ShaderPath.c_str());
         Ret += CreateInfoText("FailEMail", SEnviropment::Instance().m_FailEMail);
         Ret += CreateInfoText("MailServer", SEnviropment::Instance().m_MailServer);
         Ret += CreateInfoText("port", SEnviropment::Instance().m_port);

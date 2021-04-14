@@ -773,8 +773,10 @@ void MaterialHelpers::SetShaderParamsFromXml(SInputShaderResources& pShaderResou
             SShaderParam Param;
             Param.m_Name = key;
             Param.m_Value.m_Color[0] = Param.m_Value.m_Color[1] = Param.m_Value.m_Color[2] = Param.m_Value.m_Color[3] = 0;
-
-            int res = azsscanf(val, "%f,%f,%f,%f", &Param.m_Value.m_Color[0], &Param.m_Value.m_Color[1], &Param.m_Value.m_Color[2], &Param.m_Value.m_Color[3]);
+#if !defined(NDEBUG)
+            int res =
+#endif
+                azsscanf(val, "%f,%f,%f,%f", &Param.m_Value.m_Color[0], &Param.m_Value.m_Color[1], &Param.m_Value.m_Color[2], &Param.m_Value.m_Color[3]);
             assert(res);
 
             pShaderResources.m_ShaderParams.push_back(Param);

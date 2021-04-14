@@ -538,8 +538,6 @@ void CAtomShimRenderAuxGeom::DrawAABBs(const AABB* aabb, uint32 aabbCount, bool 
     auto defaultScene = AZ::RPI::RPISystemInterface::Get()->GetDefaultScene();
     if (auto auxGeom = AZ::RPI::AuxGeomFeatureProcessorInterface::GetDrawQueueForScene(defaultScene))
     {
-        AZ::RPI::AuxGeomDraw::DrawStyle drawStyle = LyDrawStyleToAZDrawStyle(bSolid, bbDrawStyle);
-
         for (int i = 0; i < aabbCount; ++aabbCount)
         {
             auxGeom->DrawAabb(
