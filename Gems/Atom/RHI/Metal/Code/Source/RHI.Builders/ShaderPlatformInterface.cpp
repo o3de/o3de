@@ -835,6 +835,8 @@ namespace AZ
             size_t prevEndOfLine = argBufferStr.rfind("\n", resourceStartPos);
             size_t nextEndOfLine = argBufferStr.find("\n", resourceStartPos);
             size_t startOfEntryPos = argBufferStr.find(resourceStr, prevEndOfLine);
+            
+            //Check to see if a valid entry is found. 
             if(startOfEntryPos == AZStd::string::npos || startOfEntryPos > nextEndOfLine)
             {
                 AZ_Error(MetalShaderPlatformName, startOfEntryPos != AZStd::string::npos, "Entry-> %s not found within Descriptor set %s", resourceStr, argBufferStr.c_str());

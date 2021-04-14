@@ -33,7 +33,7 @@ namespace AZ
             /// Supports input assembly access through a IndexBufferView or StreamBufferView. This flag is for buffers that are not updated often
             InputAssembly   = AZ_BIT(0),
             
-            /// Supports input assembly access through a IndexBufferView or StreamBufferView. This flag is for buffers that are updated perf frame
+            /// Supports input assembly access through a IndexBufferView or StreamBufferView. This flag is for buffers that are updated frequently
             DynamicInputAssembly = AZ_BIT(1),
             
             /// Supports constant access through a ShaderResourceGroup.
