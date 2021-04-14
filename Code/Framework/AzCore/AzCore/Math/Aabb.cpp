@@ -243,7 +243,7 @@ namespace AZ
     void Aabb::ApplyMatrix3x4(const Matrix3x4& matrix3x4)
     {
         const AZ::Vector3 extents = GetExtents();
-        const AZ::Vector3 center = GetCenter();
+        const AZ::Vector3 center = matrix3x4 * GetCenter();
         AZ::Vector3 newHalfExtents(
             0.5f * matrix3x4.GetRowAsVector3(0).GetAbs().Dot(extents),
             0.5f * matrix3x4.GetRowAsVector3(1).GetAbs().Dot(extents),
