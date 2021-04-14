@@ -30,7 +30,7 @@ namespace EMotionFX
             m_entityId = AZ::EntityId(740216387);
             m_entity->SetId(m_entityId);
 
-            auto transformComponent = m_entity->CreateComponent<AzFramework::TransformComponent>();
+            m_entity->CreateComponent<AzFramework::TransformComponent>();
             auto actorComponent = m_entity->CreateComponent<Integration::ActorComponent>();
             auto animGraphComponent = m_entity->CreateComponent<Integration::AnimGraphComponent>();
 
