@@ -1098,6 +1098,8 @@ namespace UnitTest
         }
 
         void UnregisterComponentDescriptor(const ComponentDescriptor*) override {}
+        void RegisterEntityAddedEventHandler(EntityAddedEvent::Handler&) override {}
+        void RegisterEntityRemovedEventHandler(EntityRemovedEvent::Handler&) override {}
         bool AddEntity(Entity*) override { return true; }
         bool RemoveEntity(Entity*) override { return true; }
         bool DeleteEntity(const EntityId&) override { return true; }

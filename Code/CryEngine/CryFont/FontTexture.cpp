@@ -267,8 +267,9 @@ int CFontTexture::PreCacheString(const char* szString, int* pUpdated, float size
     int iUpdated = 0;
 
     uint32 cChar;
-    for (Unicode::CIterator<const char*, false> it(szString); cChar = *it; ++it)
+    for (Unicode::CIterator<const char*, false> it(szString); *it; ++it)
     {
+        cChar = *it;
         CTextureSlot* pSlot = GetCharSlot(cChar, clampedGlyphSize);
 
         if (!pSlot)

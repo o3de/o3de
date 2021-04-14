@@ -36,10 +36,10 @@ class TestViewPaneAutomation(object):
             "get_viewport_expansion_policy works",
             "set_viewport_expansion_policy works",
             "get_view_pane_layout works",
-            "set_view_pane_layout works",
-            "get_viewport_count works",
-            "get_active_viewport works",
-            "set_active_viewport works"
+            "set_view_pane_layout works"
+#            "get_viewport_count works",
+#            "get_active_viewport works",
+#            "set_active_viewport works"
             ]
         
         test_case_file = os.path.join(os.path.dirname(__file__), 'ViewPaneCommands_test_case.py')

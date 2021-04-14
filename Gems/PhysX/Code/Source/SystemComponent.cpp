@@ -466,7 +466,7 @@ namespace PhysX
 
     void SystemComponent::AddColliderComponentToEntity(AZ::Entity* entity, const Physics::ColliderConfiguration& colliderConfiguration, const Physics::ShapeConfiguration& shapeConfiguration, [[maybe_unused]] bool addEditorComponents)
     {
-        Physics::ShapeType shapeType = shapeConfiguration.GetShapeType();
+        [[maybe_unused]] Physics::ShapeType shapeType = shapeConfiguration.GetShapeType();
 
 #ifdef PHYSX_EDITOR
         if (addEditorComponents)
@@ -664,7 +664,8 @@ namespace PhysX
 
     void SystemComponent::ActivatePhysXSystem()
     {
-        if (m_physXSystem = GetPhysXSystem())
+        m_physXSystem = GetPhysXSystem();
+        if (m_physXSystem)
         {
             m_physXSystem->RegisterSystemInitializedEvent(m_onSystemInitializedHandler);
             m_physXSystem->RegisterSystemConfigurationChangedEvent(m_onSystemConfigChangedHandler);

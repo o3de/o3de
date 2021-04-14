@@ -649,8 +649,6 @@ bool UiScrollBarComponent::DoesSupportDragHandOff(AZ::Vector2 startPoint)
 /////////////////////////////////////////////////////////////////
 bool UiScrollBarComponent::OfferDragHandOff(AZ::EntityId currentActiveInteractable, AZ::Vector2 startPoint, AZ::Vector2 currentPoint, float dragThreshold)
 {
-    bool result = false;
-
     bool handedOffToParent = false;
     bool dragDetected = CheckForDragOrHandOffToParent(currentActiveInteractable, startPoint, currentPoint, dragThreshold, handedOffToParent);
 

@@ -27,7 +27,11 @@ void COcclusionQuery::Create()
     D3D11_QUERY_DESC desc;
     desc.Query = D3D11_QUERY_OCCLUSION;
     desc.MiscFlags = 0;
-    HRESULT hr(gcpRendD3D->GetDevice().CreateQuery(&desc, &pVizQuery));
+
+#if !defined(NDEBUG)
+    HRESULT hr =
+#endif
+        gcpRendD3D->GetDevice().CreateQuery(&desc, &pVizQuery);
     assert(SUCCEEDED(hr));
 
     m_nOcclusionID = (UINT_PTR) pVizQuery;

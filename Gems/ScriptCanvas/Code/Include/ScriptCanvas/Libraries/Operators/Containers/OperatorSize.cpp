@@ -96,7 +96,6 @@ namespace ScriptCanvas
                 const SlotId inSlotId = OperatorSizeProperty::GetInSlotId(this);
                 if (slotId == inSlotId)
                 {
-                    bool pushedSize = false;
 
                     SlotId sourceSlotId = OperatorSizeProperty::GetSourceSlotId(this);
                     SlotId sizeSlotId = OperatorSizeProperty::GetSizeSlotId(this);
@@ -115,7 +114,6 @@ namespace ScriptCanvas
 
                         // Index
                         Datum sizeResult = sizeOutcome.TakeValue();
-                        const size_t* sizePtr = sizeResult.GetAs<size_t>();
 
                         PushOutput(sizeResult, *GetSlot(sizeSlotId));                        
                     }

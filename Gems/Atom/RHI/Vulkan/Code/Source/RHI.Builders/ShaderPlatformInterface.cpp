@@ -247,7 +247,7 @@ namespace AZ
             // Enable half precision types when shader model >= 6.2
             int shaderModelMajor = 0;
             int shaderModelMinor = 0;
-            int numValuesRead = azsscanf(shaderModelVersion.c_str(), "%d_%d", &shaderModelMajor, &shaderModelMinor);
+            [[maybe_unused]] int numValuesRead = azsscanf(shaderModelVersion.c_str(), "%d_%d", &shaderModelMajor, &shaderModelMinor);
             AZ_Assert(numValuesRead == 2, "Unknown shader model version format");
 
             // For mobile, which has 16 bit support in almost all GPUs, we allow 16 bit types in the shader.

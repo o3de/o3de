@@ -17,10 +17,12 @@ namespace UnitTest
     MockComponentApplication::MockComponentApplication()
     {
         AZ::ComponentApplicationBus::Handler::BusConnect();
+        AZ::Interface<AZ::ComponentApplicationRequests>::Register(this);
     }
 
     MockComponentApplication::~MockComponentApplication()
     {
+        AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(this);
         AZ::ComponentApplicationBus::Handler::BusDisconnect();
     }
 } // namespace UnitTest

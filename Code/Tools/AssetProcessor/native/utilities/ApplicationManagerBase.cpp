@@ -11,6 +11,7 @@
 */
 #include "ApplicationManagerBase.h"
 
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/sort.h>
 
@@ -1592,10 +1593,9 @@ void ApplicationManagerBase::BuilderLogV(const AZ::Uuid& builderId, const char* 
 
     if (m_builderDescMap.find(builderId) != m_builderDescMap.end())
     {
-        const AssetBuilderSDK::AssetBuilderDesc& builderDesc = m_builderDescMap[builderId];
         char messageBuffer[1024];
         azvsnprintf(messageBuffer, 1024, message, list);
-        AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Builder name : %s Message : %s.\n", builderDesc.m_name.c_str(), messageBuffer);
+        AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Builder name : %s Message : %s.\n", m_builderDescMap[builderId].m_name.c_str(), messageBuffer);
     }
     else
     {
@@ -1691,7 +1691,7 @@ bool ApplicationManagerBase::CheckSufficientDiskSpace(const QString& savePath, q
     }
 
     qint64 bytesFree = 0;
-    bool result = AzToolsFramework::ToolsFileUtils::GetFreeDiskSpace(savePath, bytesFree);
+    [[maybe_unused]] bool result = AzToolsFramework::ToolsFileUtils::GetFreeDiskSpace(savePath, bytesFree);
 
     AZ_Assert(result, "Unable to determine the amount of free space on drive containing path (%s).", savePath.toUtf8().constData());
     
@@ -1717,7 +1717,15 @@ void ApplicationManagerBase::RemoveOldTempFolders()
         return;
     }
 
-    QString startFolder = rootDir.absolutePath();
+    QString startFolder;
+    if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+    {
+        if (AZ::IO::Path userPath; settingsRegistry->Get(userPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath))
+        {
+            startFolder = QString::fromUtf8(userPath.c_str(), aznumeric_cast<int>(userPath.Native().size()));
+        }
+    }
+
     QDir root;
     if (!AssetUtilities::CreateTempRootFolder(startFolder, root))
     {

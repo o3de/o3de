@@ -158,3 +158,95 @@ class TestReplaceLineInFile(unittest.TestCase):
         ly_test_tools.lumberyard.settings._edit_text_settings_file(self.file_name, 'Setting5', 'NewSetting!')
 
         mock_stdout.assert_has_calls(expected_print_lines)
+
+
+class TestJsonSettings(unittest.TestCase):
+
+    def setUp(self):
+        self.test_file_name = 'something.json'
+        self.mock_file_content = """
+            {
+                "name": "Foo",
+                "weight": 30,
+                "scale": {
+                    "x": 1,
+                    "y": 2,
+                    "z": 3
+                },
+                " ":"secret",
+                "": 0
+                
+            }"""
+
+    def test_ReadJson_RetrieveKey_Success(self,):
+        mock_open = mock.mock_open(read_data=self.mock_file_content)
+
+        with mock.patch('builtins.open', mock_open):
+            with ly_test_tools.lumberyard.settings.JsonSettings(self.test_file_name) as js:
+                # get the whole document
+                value = js.get_key('')
+                assert len(value) == 5
+
+                # get a nested key
+                value = js.get_key('/scale/x')
+                assert value == 1
+
+                # get the " " key ad the root level
+                value = js.get_key('/ ')
+                assert value == 'secret'
+
+                # get the "" key at the root level
+                value = js.get_key('/')
+                assert value == 0
+
+    def test_ReadJson_RetrieveMissingKey_DefaultReturned(self):
+        mock_open = mock.mock_open(read_data=self.mock_file_content)
+        default_value = -10
+
+        with mock.patch('builtins.open', mock_open):
+            with ly_test_tools.lumberyard.settings.JsonSettings(self.test_file_name) as js:
+                value = js.get_key('/scale/w', default_value)
+                assert value == default_value
+
+    def test_ReadJson_ModifyKey_KeyModified(self):
+        mock_open = mock.mock_open(read_data=self.mock_file_content)
+        expected = 100
+
+        with mock.patch('builtins.open', mock_open):
+            with ly_test_tools.lumberyard.settings.JsonSettings(self.test_file_name) as js:
+                js.set_key('/scale/x', expected)
+                value = js.get_key('/scale/x')
+                assert value == expected
+
+    @mock.patch('json.dump')
+    def test_WriteJson_ModifyKey_KeyModified(self, json_dump):
+        mock_open = mock.mock_open(read_data=self.mock_file_content)
+        expected = "this is the new value"
+        new_dict_content = None
+
+        def _mock_dump(content, file_path, indent):
+            nonlocal new_dict_content
+            new_dict_content = content
+        json_dump.side_effect = _mock_dump
+
+        with mock.patch('builtins.open', mock_open):
+            with ly_test_tools.lumberyard.settings.JsonSettings(self.test_file_name) as js:
+                js.set_key('/name', expected)
+
+        assert expected == new_dict_content['name']
+
+    @mock.patch('json.dump')
+    def test_WriteJson_RemoveKey_KeyRemoved(self, json_dump):
+        mock_open = mock.mock_open(read_data=self.mock_file_content)
+        new_dict_content = None
+
+        def _mock_dump(content, file_path, indent):
+            nonlocal new_dict_content
+            new_dict_content = content
+        json_dump.side_effect = _mock_dump
+
+        with mock.patch('builtins.open', mock_open):
+            with ly_test_tools.lumberyard.settings.JsonSettings(self.test_file_name) as js:
+                js.remove_key('/scale/z')
+
+        assert len(new_dict_content['scale']) == 2

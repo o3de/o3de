@@ -111,5 +111,7 @@ set(FILES
     Source/Thumbnails/Rendering/ThumbnailRendererSteps/ReleaseResourcesStep.h
     Source/Scripting/EditorEntityReferenceComponent.cpp
     Source/Scripting/EditorEntityReferenceComponent.h
+    Source/SurfaceData/EditorSurfaceDataMeshComponent.cpp
+    Source/SurfaceData/EditorSurfaceDataMeshComponent.h
     Resources/AtomLyIntegrationResources.qrc
 )

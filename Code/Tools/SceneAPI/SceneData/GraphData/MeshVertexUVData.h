@@ -34,8 +34,11 @@ namespace AZ
 
                 SCENE_DATA_API ~MeshVertexUVData() override = default;
 
+                SCENE_DATA_API void CloneAttributesFrom(const IGraphObject* sourceObject) override;
+
                 SCENE_DATA_API const AZ::Name& GetCustomName() const override;
                 SCENE_DATA_API void SetCustomName(const char* name);
+                SCENE_DATA_API void SetCustomName(const AZ::Name& name);
 
                 SCENE_DATA_API size_t GetCount() const override;
                 SCENE_DATA_API const AZ::Vector2& GetUV(size_t index) const override;

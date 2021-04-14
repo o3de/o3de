@@ -1353,9 +1353,9 @@ namespace
                 }
                 else
                 {
-                    uint16 nSlot = aznumeric_cast<uint16>(TryConvertingCStringToEEfResTextures(subCategoryName));
                     AZ_Warning("ShadersSystem", false, "PyGetProperty - Error: empty 'subCategoryName' texture slot [%d] for material %s",
-                        nSlot, pMaterial->GetName().toStdString().c_str());
+                        aznumeric_cast<uint16>(TryConvertingCStringToEEfResTextures(subCategoryName)),
+                        pMaterial->GetName().toStdString().c_str());
                 }
             }
             // ########## Texture Maps / [Tiling | Rotator | Oscillator] ##########
@@ -1485,9 +1485,9 @@ namespace
                 }
                 else
                 {
-                    uint16 nSlot = aznumeric_cast<uint16>(TryConvertingCStringToEEfResTextures(subSubCategoryName));
                     AZ_Warning("ShadersSystem", false, "PyGetProperty - Error: empty 'subSubCategoryName' texture slot [%d] for material %s",
-                        nSlot, pMaterial->GetName().toStdString().c_str());
+                        aznumeric_cast<uint16>(TryConvertingCStringToEEfResTextures(subSubCategoryName)),
+                        pMaterial->GetName().toStdString().c_str());
                 }
             }
             else

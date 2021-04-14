@@ -13,10 +13,12 @@
 #pragma once
 
 #include <AzCore/EBus/ScheduledEvent.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <Source/NetworkEntity/INetworkEntityManager.h>
 #include <Source/NetworkEntity/NetworkEntityAuthorityTracker.h>
 #include <Source/NetworkEntity/NetworkEntityTracker.h>
 #include <Source/NetworkEntity/NetworkEntityRpcMessage.h>
+#include <Source/EntityDomains/IEntityDomain.h>
 
 namespace Multiplayer
 {
@@ -28,6 +30,9 @@ namespace Multiplayer
     public:
         NetworkEntityManager();
         ~NetworkEntityManager();
+
+        //! Only invoked for authoritative hosts
+        void Initialize(HostId hostId, AZStd::unique_ptr<IEntityDomain> entityDomain);
 
         //! INetworkEntityManager overrides.
         //! @{
@@ -53,8 +58,14 @@ namespace Multiplayer
         void HandleLocalRpcMessage(NetworkEntityRpcMessage& message) override;
         //! @}
 
+        void DispatchLocalDeferredRpcMessages();
+        void UpdateEntityDomain();
+        void OnEntityExitDomain(NetEntityId entityId);
+
     private:
 
+        void OnEntityAdded(AZ::Entity* entity);
+        void OnEntityRemoved(AZ::Entity* entity);
         void RemoveEntities();
 
         NetworkEntityTracker m_networkEntityTracker;
@@ -63,14 +74,22 @@ namespace Multiplayer
         AZStd::vector<NetEntityId> m_removeList;
         AZStd::vector<AZ::Entity*> m_nonNetworkedEntities; // Contains entities that we've instantiated, but are not networked entities
 
+        AZStd::unique_ptr<IEntityDomain> m_entityDomain;
+        AZ::ScheduledEvent m_updateEntityDomainEvent;
+
+        IEntityDomain::EntitiesNotInDomain m_entitiesNotInDomain;
+        OwnedEntitySet m_ownedEntities;
+
         EntityExitDomainEvent m_entityExitDomainEvent;
         AZ::Event<> m_onEntityMarkedDirty;
         AZ::Event<> m_onEntityNotifyChanges;
         ControllersActivatedEvent m_controllersActivatedEvent;
         ControllersDeactivatedEvent m_controllersDeactivatedEvent;
+        AZ::EntityAddedEvent::Handler m_entityAddedEventHandler;
+        AZ::EntityRemovedEvent::Handler m_entityRemovedEventHandler;
 
         HostId m_hostId = InvalidHostId;
-        int32_t m_nextEntityIndex = 0;
+        NetEntityId m_nextEntityId = NetEntityId{ 0 };
 
         // Local RPCs are buffered and dispatched at the end of the frame rather than processed immediately
         // This is done to prevent local and network sent RPC's from having different dispatch behaviours

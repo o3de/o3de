@@ -36,10 +36,10 @@ class TestGraphComponentSync(object):
     @pytest.fixture(autouse=True)
     def setup_teardown(self, request, workspace, project, level):
         def teardown():
-            file_system.delete([os.path.join(workspace.paths.dev(), project, "Levels", level)], True, True)
+            file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
         request.addfinalizer(teardown)
 
-        file_system.delete([os.path.join(workspace.paths.dev(), project, "Levels", level)], True, True)
+        file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
 
     @pytest.mark.test_case_id('C4705586')
     @pytest.mark.BAT
@@ -62,7 +62,7 @@ class TestGraphComponentSync(object):
                                           cfg_args=cfg_args)
 
     @pytest.mark.test_case_id('C22715182')
-    @pytest.mark.SUITE_main
+    @pytest.mark.SUITE_periodic
     def test_LandscapeCanvas_GraphUpdates_UpdateComponents(self, request, editor, level, launcher_platform):
         cfg_args = [level]
 
@@ -84,7 +84,7 @@ class TestGraphComponentSync(object):
                                           cfg_args=cfg_args)
 
     @pytest.mark.test_case_id('C22602072')
-    @pytest.mark.SUITE_main
+    @pytest.mark.SUITE_periodic
     def test_LandscapeCanvas_ComponentUpdates_UpdateGraph(self, request, editor, level, launcher_platform):
         cfg_args = [level]
 
@@ -117,7 +117,7 @@ class TestGraphComponentSync(object):
 
     @pytest.mark.test_case_id('C15987206')
     @pytest.mark.SUITE_main
-    def test_LandscapeCanvasGradientMixerNodeConstruction(self, request, editor, level, launcher_platform):
+    def test_LandscapeCanvas_GradientMixerNodeConstruction(self, request, editor, level, launcher_platform):
         """
         Verifies a Gradient Mixer can be setup in Landscape Canvas and all references are property set.
         """
@@ -139,8 +139,8 @@ class TestGraphComponentSync(object):
                                           expected_lines, cfg_args=cfg_args)
 
     @pytest.mark.test_case_id('C21333743')
-    @pytest.mark.SUITE_main
-    def test_LandscapeCanvasLayerBlenderNodeConstruction(self, request, editor, level, launcher_platform):
+    @pytest.mark.SUITE_periodic
+    def test_LandscapeCanvas_LayerBlenderNodeConstruction(self, request, editor, level, launcher_platform):
         """
         Verifies a Layer Blender can be setup in Landscape Canvas and all references are property set.
         """

@@ -63,7 +63,6 @@ namespace Vegetation
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<ScaleModifierConfig>()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Constructor()
                 ->Property("allowOverrides", BehaviorValueProperty(&ScaleModifierConfig::m_allowOverrides))
@@ -110,7 +109,6 @@ namespace Vegetation
             behaviorContext->Class<ScaleModifierComponent>()->RequestBus("ScaleModifierRequestBus");
 
             behaviorContext->EBus<ScaleModifierRequestBus>("ScaleModifierRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Event("GetAllowOverrides", &ScaleModifierRequestBus::Events::GetAllowOverrides)
                 ->Event("SetAllowOverrides", &ScaleModifierRequestBus::Events::SetAllowOverrides)

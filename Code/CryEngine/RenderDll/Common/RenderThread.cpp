@@ -2628,7 +2628,6 @@ void SRenderThread::ProcessCommands(bool loadTimeProcessing)
             int    flags   = ReadCommand<int>(n);
             float  fGround = ReadCommand<float>(n);
 
-            int d = *(int*)&m_Commands[threadId][n];
 
             Vec3* pv = (Vec3*)&m_Commands[threadId][n += 4];
             n += nump * sizeof(Vec3);

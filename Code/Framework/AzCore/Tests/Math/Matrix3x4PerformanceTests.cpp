@@ -84,7 +84,7 @@ namespace Benchmark
     {
         for (auto _ : state)
         {
-            for (auto& testData : m_testDataArray)
+            for ([[maybe_unused]] auto& testData : m_testDataArray)
             {
                 AZ::Matrix3x4 result = AZ::Matrix3x4::CreateIdentity();
                 benchmark::DoNotOptimize(result);
@@ -96,7 +96,7 @@ namespace Benchmark
     {
         for (auto _ : state)
         {
-            for (auto& testData : m_testDataArray)
+            for ([[maybe_unused]] auto& testData : m_testDataArray)
             {
                 AZ::Matrix3x4 result = AZ::Matrix3x4::CreateZero();
                 benchmark::DoNotOptimize(result);

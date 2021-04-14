@@ -12,7 +12,7 @@
 
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 
-#include <LmbrCentral/Rendering/MeshComponentBus.h>
+#include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
 
 #include <Editor/PropertyTypes.h>
 #include <Editor/MeshNodeHandler.h>
@@ -120,10 +120,10 @@ namespace NvCloth
 
         AZ::Data::Asset<AZ::Data::AssetData> MeshNodeHandler::GetMeshAsset(const AZ::EntityId entityId) const
         {
-            AZ::Data::Asset<AZ::Data::AssetData> meshAsset;
-            LmbrCentral::MeshComponentRequestBus::EventResult(
-                meshAsset, entityId, &LmbrCentral::MeshComponentRequestBus::Events::GetMeshAsset);
-            return meshAsset;
+            AZ::Data::Asset<AZ::RPI::ModelAsset> modelAsset;
+            AZ::Render::MeshComponentRequestBus::EventResult(
+                modelAsset, entityId, &AZ::Render::MeshComponentRequestBus::Events::GetModelAsset);
+            return modelAsset;
         }
     } // namespace Editor
 } // namespace NvCloth

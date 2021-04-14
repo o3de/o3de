@@ -945,7 +945,6 @@ namespace Unicode
                 const size_t fixedOffset = Append && offset >= extent<T>::value
                     ? extent<T>::value - 1 // In case the buffer is already full and not terminated.
                     : offset;
-                CharType* base = static_cast<CharType*>(out);
                 Super::ptr = out + fixedOffset; // Qualification for Super required for two-phase lookup.
             }
         };

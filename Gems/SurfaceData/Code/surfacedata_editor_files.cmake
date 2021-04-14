@@ -18,8 +18,6 @@ set(FILES
     Source/Editor/EditorSurfaceDataSystemComponent.h
     Source/Editor/EditorSurfaceDataColliderComponent.cpp
     Source/Editor/EditorSurfaceDataColliderComponent.h
-    Source/Editor/EditorSurfaceDataMeshComponent.cpp
-    Source/Editor/EditorSurfaceDataMeshComponent.h
     Source/Editor/EditorSurfaceDataShapeComponent.cpp
     Source/Editor/EditorSurfaceDataShapeComponent.h
     Source/SurfaceDataModule.cpp

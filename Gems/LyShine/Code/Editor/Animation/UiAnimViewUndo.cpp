@@ -229,7 +229,7 @@ void CAbstractUndoSequenceTransaction::AddSequence()
     pUiAnimationSystem->AddSequence(m_pSequence->m_pAnimSequence.get());
 
     // Release ownership and add node back to UI Animation system
-    CUiAnimViewSequence* pSequence = m_pStoredUiAnimViewSequence.release();
+    m_pStoredUiAnimViewSequence.release();
     pSequenceManager->m_sequences.push_back(std::unique_ptr<CUiAnimViewSequence>(m_pSequence));
 
     pSequenceManager->OnSequenceAdded(m_pSequence);
@@ -348,7 +348,7 @@ void CAbstractUndoAnimNodeTransaction::AddNode()
     m_pParentNode->m_pAnimSequence->AddNode(m_pNode->m_pAnimNode.get());
 
     // Release ownership and add node back to parent node
-    CUiAnimViewNode* pNode = m_pStoredUiAnimViewNode.release();
+    m_pStoredUiAnimViewNode.release();
     m_pParentNode->AddNode(m_pNode);
 
     m_pNode->BindToEditorObjects();
@@ -496,7 +496,10 @@ CUndoAnimNodeReparent::CUndoAnimNodeReparent(CUiAnimViewAnimNode* pAnimNode, CUi
     , m_pNewParent(pNewParent)
     , m_pOldParent(m_pParentNode)
 {
-    CUiAnimViewSequence* pSequence = pAnimNode->GetSequence();
+#if !defined(NDEBUG)
+    CUiAnimViewSequence* pSequence =
+#endif
+        pAnimNode->GetSequence();
     assert(pSequence == m_pNewParent->GetSequence() && pSequence == m_pOldParent->GetSequence());
 
     Reparent(pNewParent);

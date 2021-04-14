@@ -398,7 +398,6 @@ void SMeshSubSetIndicesJobEntry::CreateSubSetRenderMesh()
 
 
     pSrcMesh->LockForThreadAccess();
-    int nIndCount = pSrcMesh->GetIndicesCount();
     if (vtx_idx* pInds = pSrcMesh->GetIndexPtr(FSL_READ))
     {
         TRenderChunkArray newChunks;

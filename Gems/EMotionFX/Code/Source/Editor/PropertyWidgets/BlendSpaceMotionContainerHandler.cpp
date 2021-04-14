@@ -260,9 +260,6 @@ namespace EMotionFX
             return;
         }
 
-        // Get the anim graph instance in case only exactly one actor instance is selected.
-        EMotionFX::AnimGraphInstance* animGraphInstance = GetSingleSelectedAnimGraphInstance();
-
         for (const AZStd::string& selectedMotionId : selectedMotionIds)
         {
             bool alreadyExists = false;

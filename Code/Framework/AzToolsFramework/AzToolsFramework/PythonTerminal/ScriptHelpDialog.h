@@ -163,7 +163,8 @@ namespace AzToolsFramework
             QMainWindow* mainWindow = nullptr;
             for (QWidget* w : qApp->topLevelWidgets())
             {
-                if (mainWindow = qobject_cast<QMainWindow*>(w))
+                mainWindow = qobject_cast<QMainWindow*>(w);
+                if (mainWindow)
                 {
                     return mainWindow;
                 }

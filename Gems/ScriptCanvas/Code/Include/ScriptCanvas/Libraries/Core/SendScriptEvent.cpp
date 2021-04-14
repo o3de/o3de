@@ -366,7 +366,7 @@ namespace ScriptCanvas
                 }
 
                 ScriptEvents::Method scriptEventMethod;
-                bool methodFound = definition.FindMethod(method->m_name, scriptEventMethod);
+                definition.FindMethod(method->m_name, scriptEventMethod);
                 
                 size_t argIndex = 0;
                 
@@ -471,7 +471,6 @@ namespace ScriptCanvas
                 if (asset && asset.IsReady())
                 {
                     const ScriptEvents::ScriptEvent& definition = asset.Get()->m_definition;
-                    const AZStd::string& name = definition.GetName();
 
                     AZ::BehaviorMethod* method{};
                     if (m_version != definition.GetVersion())

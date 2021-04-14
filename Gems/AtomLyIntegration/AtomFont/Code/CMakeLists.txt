@@ -23,7 +23,7 @@ ly_add_target(
             Source
     BUILD_DEPENDENCIES
         PRIVATE
-            3rdParty::FreeType2
+            3rdParty::freetype
             AZ::AzCore
             AZ::AtomCore
             Legacy::CryCommon

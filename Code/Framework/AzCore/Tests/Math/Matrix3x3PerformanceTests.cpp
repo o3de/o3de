@@ -66,7 +66,7 @@ namespace Benchmark
     {
         for (auto _ : state)
         {
-            for (auto& testData : m_testDataArray)
+            for ([[maybe_unused]] auto& testData : m_testDataArray)
             {
                 AZ::Matrix3x3 result = AZ::Matrix3x3::CreateIdentity();
                 benchmark::DoNotOptimize(result);
@@ -78,7 +78,7 @@ namespace Benchmark
     {
         for (auto _ : state)
         {
-            for (auto& testData : m_testDataArray)
+            for ([[maybe_unused]] auto& testData : m_testDataArray)
             {
                 AZ::Matrix3x3 result = AZ::Matrix3x3::CreateZero();
                 benchmark::DoNotOptimize(result);
@@ -134,7 +134,7 @@ namespace Benchmark
     {
         for (auto _ : state)
         {
-            for (auto& testData : m_testDataArray)
+            for ([[maybe_unused]] auto& testData : m_testDataArray)
             {
                 AZ::Matrix3x3 result = AZ::Matrix3x3::CreateFromRowMajorFloat9(s_mat3x3testArray);
                 benchmark::DoNotOptimize(result);
@@ -146,7 +146,7 @@ namespace Benchmark
     {
         for (auto _ : state)
         {
-            for (auto& testData : m_testDataArray)
+            for ([[maybe_unused]] auto& testData : m_testDataArray)
             {
                 AZ::Matrix3x3 result = AZ::Matrix3x3::CreateFromColumnMajorFloat9(s_mat3x3testArray);
                 benchmark::DoNotOptimize(result);

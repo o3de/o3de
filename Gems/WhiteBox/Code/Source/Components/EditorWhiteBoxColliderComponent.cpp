@@ -85,7 +85,8 @@ namespace WhiteBox
         m_physicsColliderConfiguration.SetPropertyVisibility(Physics::ColliderConfiguration::Offset, false);
         m_physicsColliderConfiguration.SetPropertyVisibility(Physics::ColliderConfiguration::IsTrigger, false);
 
-        if (m_sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        m_sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
+        if (m_sceneInterface)
         {
             m_editorSceneHandle = m_sceneInterface->GetSceneHandle(AzPhysics::EditorPhysicsSceneName);
         }

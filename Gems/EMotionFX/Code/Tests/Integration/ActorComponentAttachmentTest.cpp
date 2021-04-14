@@ -33,7 +33,7 @@ namespace EMotionFX
         AZStd::unique_ptr<Actor> actor = ActorFactory::CreateAndInit<JackNoMeshesActor>();
         AZ::Data::Asset<Integration::ActorAsset> actorAsset = TestActorAssets::GetAssetFromActor(actorAssetId, AZStd::move(actor));
 
-        auto transformComponent = gameEntity->CreateComponent<AzFramework::TransformComponent>();
+        gameEntity->CreateComponent<AzFramework::TransformComponent>();
         auto actorComponent = gameEntity->CreateComponent<Integration::ActorComponent>();
         
         gameEntity->Init();
@@ -48,7 +48,7 @@ namespace EMotionFX
         actorConfig.m_attachmentTarget = entityId;
         actorConfig.m_attachmentType = Integration::AttachmentType::SkinAttachment;
 
-        auto transformComponentAttachmentEntity = gameEntityAttachment->CreateComponent<AzFramework::TransformComponent>();
+        gameEntityAttachment->CreateComponent<AzFramework::TransformComponent>();
         auto actorComponentAttachmentEntity = gameEntityAttachment->CreateComponent<Integration::ActorComponent>(&actorConfig);
 
         gameEntityAttachment->Init();
@@ -74,7 +74,7 @@ namespace EMotionFX
         AZStd::unique_ptr<Actor> actor = ActorFactory::CreateAndInit<JackNoMeshesActor>();
         AZ::Data::Asset<Integration::ActorAsset> actorAsset = TestActorAssets::GetAssetFromActor(actorAssetId, AZStd::move(actor));
 
-        auto transformComponent = gameEntity->CreateComponent<AzFramework::TransformComponent>();
+        gameEntity->CreateComponent<AzFramework::TransformComponent>();
         auto actorComponent = gameEntity->CreateComponent<Integration::ActorComponent>();
         
         gameEntity->Init();
@@ -89,7 +89,7 @@ namespace EMotionFX
         actorConfig.m_attachmentTarget = entityId;
         actorConfig.m_attachmentType = Integration::AttachmentType::SkinAttachment;
 
-        auto transformComponentAttachmentEntity = gameEntityAttachment->CreateComponent<AzFramework::TransformComponent>();
+        gameEntityAttachment->CreateComponent<AzFramework::TransformComponent>();
         auto actorComponentAttachmentEntity = gameEntityAttachment->CreateComponent<Integration::ActorComponent>(&actorConfig);
 
         gameEntityAttachment->Init();

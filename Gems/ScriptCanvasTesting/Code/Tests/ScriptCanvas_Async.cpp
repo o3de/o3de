@@ -164,17 +164,16 @@ TEST_F(ScriptCanvasTestFixture, Asynchronous_Behaviors)
     AZ::Entity* graphEntity = graph->GetEntity();
     graphEntity->Init();
 
-    const AZ::EntityId& graphEntityId = graph->GetEntityId();
     const ScriptCanvasId& graphUniqueId = graph->GetScriptCanvasId();
 
     AZ::Entity* startEntity{ aznew AZ::Entity };
     startEntity->Init();
 
     AZ::EntityId startNodeId;
-    ScriptCanvas::Nodes::Core::Start* startNode = CreateTestNode<ScriptCanvas::Nodes::Core::Start>(graphUniqueId, startNodeId);
+    CreateTestNode<ScriptCanvas::Nodes::Core::Start>(graphUniqueId, startNodeId);
 
     AZ::EntityId asyncNodeId;
-    AsyncNode* asyncNode = CreateTestNode<AsyncNode>(graphUniqueId, asyncNodeId);
+    CreateTestNode<AsyncNode>(graphUniqueId, asyncNodeId);
 
     EXPECT_TRUE(Connect(*graph, startNodeId, ScriptCanvas::CommonSlots::GeneralOutSlot::GetName(), asyncNodeId, ScriptCanvas::CommonSlots::GeneralInSlot::GetName()));
     
@@ -295,14 +294,13 @@ TEST_F(ScriptCanvasTestFixture, ComputeFibonacciAsyncGraphTest)
     AZ::Entity* graphEntity = graph->GetEntity();
     graphEntity->Init();
 
-    const AZ::EntityId& graphEntityId = graph->GetEntityId();
     const ScriptCanvasId& graphUniqueId = graph->GetScriptCanvasId();
 
     AZ::EntityId startNodeId;
-    ScriptCanvas::Nodes::Core::Start* startNode = CreateTestNode<ScriptCanvas::Nodes::Core::Start>(graphUniqueId, startNodeId);
+    CreateTestNode<ScriptCanvas::Nodes::Core::Start>(graphUniqueId, startNodeId);
 
     AZ::EntityId asyncNodeId;
-    AsyncFibonacciComputeNode* asyncNode = CreateTestNode<AsyncFibonacciComputeNode>(graphUniqueId, asyncNodeId);
+    CreateTestNode<AsyncFibonacciComputeNode>(graphUniqueId, asyncNodeId);
 
     EXPECT_TRUE(Connect(*graph, startNodeId, "Out", asyncNodeId, "In"));
 

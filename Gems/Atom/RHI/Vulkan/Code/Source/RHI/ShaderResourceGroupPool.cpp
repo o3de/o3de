@@ -79,8 +79,6 @@ namespace AZ
 
         RHI::ResultCode ShaderResourceGroupPool::InitGroupInternal(RHI::ShaderResourceGroup& groupBase)
         {
-            const RHI::ShaderResourceGroupLayout& rhiLayout = *GetDescriptor().m_layout;
-            auto& device = static_cast<Device&>(GetDevice());
             RHI::ResultCode result = RHI::ResultCode::Success;
 
             auto& group = static_cast<ShaderResourceGroup&>(groupBase);
@@ -133,6 +131,23 @@ namespace AZ
                 descriptorSet.UpdateImageViews(layoutIndex, imgViews, shaderImageList[groupIndex].m_type);
             }
 
+            for (uint32_t groupIndex = 0; groupIndex < static_cast<uint32_t>(layout->GetShaderInputListForBufferUnboundedArrays().size()); ++groupIndex)
+            {
+                const RHI::ShaderInputBufferUnboundedArrayIndex index(groupIndex);
+                auto bufViews = groupData.GetBufferViewUnboundedArray(index);
+                uint32_t layoutIndex = m_descriptorSetLayout->GetLayoutIndexFromGroupIndex(groupIndex, DescriptorSetLayout::ResourceType::BufferViewUnboundedArray);
+                descriptorSet.UpdateBufferViews(layoutIndex, bufViews);
+            }
+
+            auto const& shaderImageUnboundeArrayList = layout->GetShaderInputListForImageUnboundedArrays();
+            for (uint32_t groupIndex = 0; groupIndex < static_cast<uint32_t>(layout->GetShaderInputListForImageUnboundedArrays().size()); ++groupIndex)
+            {
+                const RHI::ShaderInputImageUnboundedArrayIndex index(groupIndex);
+                auto imgViews = groupData.GetImageViewUnboundedArray(index);
+                uint32_t layoutIndex = m_descriptorSetLayout->GetLayoutIndexFromGroupIndex(groupIndex, DescriptorSetLayout::ResourceType::ImageViewUnboundedArray);
+                descriptorSet.UpdateImageViews(layoutIndex, imgViews, shaderImageUnboundeArrayList[groupIndex].m_type);
+            }
+
             for (uint32_t groupIndex = 0; groupIndex < static_cast<uint32_t>(layout->GetShaderInputListForSamplers().size()); ++groupIndex)
             {
                 const RHI::ShaderInputSamplerIndex index(groupIndex);
@@ -154,7 +169,6 @@ namespace AZ
         void ShaderResourceGroupPool::ShutdownResourceInternal(RHI::Resource& resourceBase)
         {
             ShaderResourceGroup& group = static_cast<ShaderResourceGroup&>(resourceBase);
-            auto& device = static_cast<Device&>(GetDevice());
             for (size_t i = 0; i < m_descriptorSetCount; ++i)
             {
                 m_descriptorSetAllocator->DeAllocate(group.m_compiledData[i]);

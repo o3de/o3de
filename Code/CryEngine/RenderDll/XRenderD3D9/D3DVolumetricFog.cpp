@@ -288,13 +288,6 @@ void CVolumetricFog::CreateResources()
             && ((CRenderer::CV_r_VolumetricFogDownscaledSunShadow == 1 && !m_downscaledShadow[2])
                 || (CRenderer::CV_r_VolumetricFogDownscaledSunShadow != 1 && m_downscaledShadow[2])));
 
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    if(gcpRendD3D->IsRenderToTextureActive())
-    {
-        return;
-    }
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-
     if (validVolumeTexture && validDownscaledShadowMaps)
     {
         return;
@@ -1387,13 +1380,6 @@ void CVolumetricFog::PushFogVolume(CREFogVolume* pFogVolume, const SRenderingPas
 
 void CVolumetricFog::ClearFogVolumes()
 {
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    if(gcpRendD3D->IsRenderToTextureActive())
-    {
-        return;
-    }
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-
     const uint32 nThreadID = gcpRendD3D->m_RP.m_nFillThreadID;
     int32 nRecurseLevel = SRendItem::m_RecurseLevel[nThreadID];
 
@@ -1408,13 +1394,6 @@ void CVolumetricFog::ClearFogVolumes()
 
 void CVolumetricFog::ClearAllFogVolumes()
 {
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    if(gcpRendD3D->IsRenderToTextureActive())
-    {
-        return;
-    }
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-
     for (int32 i = 0; i < RT_COMMAND_BUF_COUNT; ++i)
     {
         for (int32 j = 0; j < MAX_REND_RECURSION_LEVELS; ++j)
@@ -1446,12 +1425,6 @@ bool CVolumetricFog::IsViable() const
 {
     int nThreadID = gcpRendD3D->m_RP.m_nProcessThreadID;
     int nRecurseLevel = SRendItem::m_RecurseLevel[nThreadID];
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    if ((gcpRendD3D->m_RP.m_TI[nThreadID].m_PersFlags & RBPF_RENDER_SCENE_TO_TEXTURE) != 0)
-    {
-        return false;
-    }
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
 
     bool v = CD3D9Renderer::CV_r_VolumetricFog != 0     // IsEnableInFrame() and e_VolumetricFog are accumulated.
         && gcpRendD3D->m_RP.m_TI[nThreadID].m_FS.m_bEnable
@@ -2372,7 +2345,6 @@ void CVolumetricFog::RenderDownscaledDepth()
         int nScreenWidth = m_MaxDepthTemp->GetWidth();
         int nScreenHeight = m_MaxDepthTemp->GetHeight();
         int nSrcTexWidth = CTexture::s_ptexZTargetScaled->GetWidth();
-        int nSrcTexHeight = CTexture::s_ptexZTargetScaled->GetHeight();
 
         static CCryNameR paramDispatchParams("maxDepthDispatchParams");
         float destW = (float)nScreenWidth;
@@ -2430,7 +2402,6 @@ void CVolumetricFog::RenderDownscaledDepth()
         int nScreenWidth = m_MaxDepth->GetWidth();
         int nScreenHeight = m_MaxDepth->GetHeight();
         int nSrcTexWidth = m_MaxDepthTemp->GetWidth();
-        int nSrcTexHeight = m_MaxDepthTemp->GetHeight();
 
         static CCryNameR paramDispatchParams("maxDepthDispatchParams");
         float destW = (float)nScreenWidth;
@@ -2521,7 +2492,6 @@ void CVolumetricFog::RenderClipVolumeToVolumeStencil(int nClipAreaReservedStenci
     {
         float fFar = rd->GetViewParameters().fFar;
         float fNear = rd->GetViewParameters().fNear;
-        float invMaxIndexMinusOne = 1.0f / (static_cast<f32>(maxDepthCount) - 1.0f);
         a = fFar / (fFar - fNear);
         b = fNear * -a;
 

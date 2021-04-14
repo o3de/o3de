@@ -82,7 +82,7 @@ namespace PhysX
 
     void CharacterControllerComponent::Activate()
     {
-        EnablePhysics();
+        CreateController();
 
         AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
         Physics::CharacterRequestBus::Handler::BusConnect(GetEntityId());
@@ -92,7 +92,7 @@ namespace PhysX
 
     void CharacterControllerComponent::Deactivate()
     {
-        DisablePhysics();
+        DestroyController();
 
         Physics::CollisionFilteringRequestBus::Handler::BusDisconnect();
         Physics::WorldBodyRequestBus::Handler::BusDisconnect();
@@ -193,47 +193,17 @@ namespace PhysX
 
     void CharacterControllerComponent::EnablePhysics()
     {
-        if (IsPhysicsEnabled())
-        {
-            return;
-        }
-
-        bool success = CreateController();
-        if (success)
-        {
-            Physics::WorldBodyNotificationBus::Event(GetEntityId(), &Physics::WorldBodyNotifications::OnPhysicsEnabled);
-        }
+        CreateController();
     }
 
     void CharacterControllerComponent::DisablePhysics()
     {
-        if(IsPhysicsEnabled())
-        {
-            m_controller->DisablePhysics();
-
-            // The character is first removed from the scene, and then its deletion is deferred.
-            // This ensures trigger exit events are raised correctly on deleted objects.
-            {
-                auto* scene = azdynamic_cast<PhysX::PhysXScene*>(m_controller->GetScene());
-                AZ_Assert(scene, "Invalid PhysX scene");
-                scene->DeferDelete(AZStd::move(m_controller));
-                m_controller.reset();
-            }
-
-            m_preSimulateHandler.Disconnect();
-
-            if (CharacterControllerRequestBus::Handler::BusIsConnected())
-            {
-                CharacterControllerRequestBus::Handler::BusDisconnect();
-            }
-
-            Physics::WorldBodyNotificationBus::Event(GetEntityId(), &Physics::WorldBodyNotifications::OnPhysicsDisabled);
-        }
+        DestroyController();
     }
 
     bool CharacterControllerComponent::IsPhysicsEnabled() const
     {
-        return m_controller && m_controller->m_simulating;
+        return m_controller != nullptr;
     }
 
     AZ::Aabb CharacterControllerComponent::GetAabb() const
@@ -410,14 +380,19 @@ namespace PhysX
         }
     }
 
-    bool CharacterControllerComponent::CreateController()
+    void CharacterControllerComponent::CreateController()
     {
+        if (m_controller)
+        {
+            return;
+        }
+
         AzPhysics::SceneHandle defaultSceneHandle = AzPhysics::InvalidSceneHandle;
         Physics::DefaultWorldBus::BroadcastResult(defaultSceneHandle, &Physics::DefaultWorldRequests::GetDefaultSceneHandle);
         if (defaultSceneHandle == AzPhysics::InvalidSceneHandle)
         {
             AZ_Error("PhysX Character Controller Component", false, "Failed to retrieve default scene.");
-            return false;
+            return;
         }
 
         m_characterConfig->m_debugName = GetEntity()->GetName();
@@ -427,7 +402,7 @@ namespace PhysX
         if (!m_controller)
         {
             AZ_Error("PhysX Character Controller Component", false, "Failed to create character controller.");
-            return false;
+            return;
         }
         m_controller->EnablePhysics(*m_characterConfig);
 
@@ -437,6 +412,7 @@ namespace PhysX
         // make the foot position coincide with the entity position.
         m_controller->SetBasePosition(entityTranslation);
         AttachColliders(*m_controller);
+
         CharacterControllerRequestBus::Handler::BusConnect(GetEntityId());
 
         m_preSimulateHandler = AzPhysics::SystemEvents::OnPresimulateEvent::Handler(
@@ -451,7 +427,32 @@ namespace PhysX
             physXSystem->RegisterPreSimulateEvent(m_preSimulateHandler);
         }
 
-        return true;
+        Physics::WorldBodyNotificationBus::Event(GetEntityId(), &Physics::WorldBodyNotifications::OnPhysicsEnabled);
+    }
+
+    void CharacterControllerComponent::DestroyController()
+    {
+        if (!m_controller)
+        {
+            return;
+        }
+
+        m_controller->DisablePhysics();
+
+        // The character is first removed from the scene, and then its deletion is deferred.
+        // This ensures trigger exit events are raised correctly on deleted objects.
+        {
+            auto* scene = azdynamic_cast<PhysX::PhysXScene*>(m_controller->GetScene());
+            AZ_Assert(scene, "Invalid PhysX scene");
+            scene->DeferDelete(AZStd::move(m_controller));
+            m_controller.reset();
+        }
+
+        m_preSimulateHandler.Disconnect();
+
+        CharacterControllerRequestBus::Handler::BusDisconnect();
+
+        Physics::WorldBodyNotificationBus::Event(GetEntityId(), &Physics::WorldBodyNotifications::OnPhysicsDisabled);
     }
 
     void CharacterControllerComponent::AttachColliders(Physics::Character& character)

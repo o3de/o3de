@@ -351,58 +351,68 @@ namespace AzToolsFramework
 
     QVariant EntityOutlinerListModel::dataForVisibility(const QModelIndex& index, int role) const
     {
-        auto id = GetEntityFromIndex(index);
+        auto entityId = GetEntityFromIndex(index);
+        auto entityUiHandler = m_editorEntityFrameworkInterface->GetHandler(entityId);
 
-        switch (role)
+        if (!entityUiHandler || entityUiHandler->CanToggleLockVisibility(entityId))
         {
+            switch (role)
+            {
             case Qt::CheckStateRole:
-            {
-                return IsEntitySetToBeVisible(id) ? Qt::Checked : Qt::Unchecked;
-            }
+                {
+                    return IsEntitySetToBeVisible(entityId) ? Qt::Checked : Qt::Unchecked;
+                }
             case Qt::ToolTipRole:
-            {
-                return QString("Show/Hide Entity");
-            }
+                {
+                    return QString("Show/Hide Entity");
+                }
             case Qt::SizeHintRole:
-            {
-                return QSize(20, 20);
+                {
+                    return QSize(20, 20);
+                }
             }
+            return dataForAll(index, role);
         }
 
-        return dataForAll(index, role);
+        return QVariant();
     }
 
     QVariant EntityOutlinerListModel::dataForLock(const QModelIndex& index, int role) const
     {
-        auto id = GetEntityFromIndex(index);
+        auto entityId = GetEntityFromIndex(index);
+        auto entityUiHandler = m_editorEntityFrameworkInterface->GetHandler(entityId);
 
-        switch (role)
+        if (!entityUiHandler || entityUiHandler->CanToggleLockVisibility(entityId))
         {
+            switch (role)
+            {
             case Qt::CheckStateRole:
-            {
-                bool isLocked = false;
-                // Lock state is tracked in 3 places:
-                // EditorLockComponent, EditorEntityModel, and ComponentEntityObject.
-                // In addition to that, entities that are in layers can have the layer's lock state override their own.
-                // Retrieving the lock state from the lock component is ideal for drawing the lock icon in the outliner because
-                // the outliner needs to show that specific entity's lock state, and not the actual final lock state including the layer behavior.
-                // The EditorLockComponent only knows about the specific entity's lock state and not the hierarchy.
-                EditorLockComponentRequestBus::EventResult(
-                    isLocked, id, &EditorLockComponentRequests::GetLocked);
+                {
+                    bool isLocked = false;
+                    // Lock state is tracked in 3 places:
+                    // EditorLockComponent, EditorEntityModel, and ComponentEntityObject.
+                    // In addition to that, entities that are in layers can have the layer's lock state override their own.
+                    // Retrieving the lock state from the lock component is ideal for drawing the lock icon in the outliner because
+                    // the outliner needs to show that specific entity's lock state, and not the actual final lock state including the layer
+                    // behavior. The EditorLockComponent only knows about the specific entity's lock state and not the hierarchy.
+                    EditorLockComponentRequestBus::EventResult(isLocked, entityId, &EditorLockComponentRequests::GetLocked);
 
-                return isLocked ? Qt::Checked : Qt::Unchecked;
-            }
+                    return isLocked ? Qt::Checked : Qt::Unchecked;
+                }
             case Qt::ToolTipRole:
-            {
-                return QString("Lock/Unlock Entity (Locked means the entity cannot be moved in the viewport)");
-            }
+                {
+                    return QString("Lock/Unlock Entity (Locked means the entity cannot be moved in the viewport)");
+                }
             case Qt::SizeHintRole:
-            {
-                return QSize(20, 20);
+                {
+                    return QSize(20, 20);
+                }
             }
+
+            return dataForAll(index, role);
         }
 
-        return dataForAll(index, role);
+        return QVariant();
     }
 
     QVariant EntityOutlinerListModel::dataForSortIndex(const QModelIndex& index, int role) const
@@ -429,8 +439,12 @@ namespace AzToolsFramework
             if (value.canConvert<Qt::CheckState>())
             {
                 const auto entityId = GetEntityFromIndex(index);
-                switch (index.column())
+                auto entityUiHandler = m_editorEntityFrameworkInterface->GetHandler(entityId);
+
+                if (!entityUiHandler || entityUiHandler->CanToggleLockVisibility(entityId))
                 {
+                    switch (index.column())
+                    {
                     case ColumnVisibilityToggle:
                         ToggleEntityVisibility(entityId);
                         break;
@@ -438,6 +452,7 @@ namespace AzToolsFramework
                     case ColumnLockToggle:
                         ToggleEntityLockState(entityId);
                         break;
+                    }
                 }
             }
         }
@@ -826,7 +841,6 @@ namespace AzToolsFramework
             for (const ComponentAssetPair& pair : componentAssetPairs)
             {
                 const AZ::TypeId& componentType = pair.first;
-                const AZ::Data::AssetId& assetId = pair.second;
 
                 componentsToAdd.push_back(componentType);
             }
@@ -853,7 +867,6 @@ namespace AzToolsFramework
             }
 
             // Assign asset associated with each created component.
-            const AZ::Entity::ComponentArrayType& componentsAdded = addComponentsOutcome.GetValue()[targetEntityId].m_componentsAdded;
             for (const ComponentAssetPair& pair : componentAssetPairs)
             {
                 const AZ::TypeId& componentType = pair.first;
@@ -1979,7 +1992,8 @@ namespace AzToolsFramework
         }
 
         // Retrieve the Entity UI Handler
-        AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
+        auto firstColumnIndex = index.siblingAtColumn(0);
+        AZ::EntityId entityId(firstColumnIndex.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
         auto entityUiHandler = m_editorEntityFrameworkInterface->GetHandler(entityId);
 
         const bool isSelected = (option.state & QStyle::State_Selected);
@@ -2002,8 +2016,11 @@ namespace AzToolsFramework
             case EntityOutlinerListModel::ColumnVisibilityToggle:
             case EntityOutlinerListModel::ColumnLockToggle:
             {
-                // Paint the Visibility and Lock state checkboxes
-                PaintCheckboxes(painter, option, index, isHovered);
+                if (!entityUiHandler || entityUiHandler->CanToggleLockVisibility(entityId))
+                {
+                    // Paint the Visibility and Lock state checkboxes
+                    PaintCheckboxes(painter, option, index, isHovered);
+                }
             }
             break;
             case EntityOutlinerListModel::ColumnName:

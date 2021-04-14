@@ -48,7 +48,6 @@ namespace EMotionFX
 
         // Try to find all 5 nodes by name.
         Node* testNode = m_skeleton->FindNodeByName("rootJoint");
-        Node* indexNode = m_skeleton->FindNodeByID(0);
         EXPECT_TRUE(testNode) << "rootJoint should be found in skeleton.";
         testNode = m_skeleton->FindNodeByName("joint1");
         EXPECT_TRUE(testNode) << "joint1 should be found in skeleton.";

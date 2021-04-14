@@ -364,16 +364,16 @@ TEST_F(ScriptCanvasTestFixture, ValueTypes)
     double numberDoubleValue = *numberDouble.GetAs<double>();
 
     Datum numberHex(Datum(0xff));
-    int numberHexValue = *numberHex.GetAs<int>();
+    /*int numberHexValue =*/ *numberHex.GetAs<int>();
 
     Datum numberPi(Datum(3.14f));
     float numberPiValue = *numberPi.GetAs<float>();
 
     Datum numberSigned(Datum(-100));
-    int numberSignedValue = *numberSigned.GetAs<int>();
+    /*int numberSignedValue =*/ *numberSigned.GetAs<int>();
 
     Datum numberUnsigned(Datum(100u));
-    unsigned int numberUnsignedValue = *numberUnsigned.GetAs<unsigned int>();
+    /*unsigned int numberUnsignedValue =*/ *numberUnsigned.GetAs<unsigned int>();
 
     Datum numberDoublePi(Datum(6.28));
     double numberDoublePiValue = *numberDoublePi.GetAs<double>();
@@ -456,7 +456,6 @@ TEST_F(ScriptCanvasTestFixture, Contracts)
     EXPECT_TRUE(graph != nullptr);
     graph->GetEntity()->Init();
 
-    const AZ::EntityId& graphEntityId = graph->GetEntityId();
     const ScriptCanvasId& graphUniqueId = graph->GetScriptCanvasId();
 
     // Make the nodes.
@@ -704,7 +703,6 @@ TEST_F(ScriptCanvasTestFixture, EntityRefTest)
     graph->GetEntity()->CreateComponent<ScriptCanvasTests::TestComponent>();
     graph->GetEntity()->Init();
 
-    const AZ::EntityId& graphEntityId = graph->GetEntityId();
     const ScriptCanvasId& graphUniqueId = graph->GetScriptCanvasId();
 
     AZ::EntityId startID;
@@ -805,7 +803,6 @@ TEST_F(ScriptCanvasTestFixture, ExecutionLength)
     EXPECT_TRUE(graph != nullptr);
     graph->GetEntity()->Init();
 
-    const AZ::EntityId& graphEntityID = graph->GetEntityId();
     const ScriptCanvasId& graphUniqueId = graph->GetScriptCanvasId();
 
     AZ::EntityId startID;

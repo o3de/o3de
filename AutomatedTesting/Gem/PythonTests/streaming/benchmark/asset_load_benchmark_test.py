@@ -115,7 +115,7 @@ class TestBenchmarkAssetLoads(object):
 
 
     def get_temp_benchmark_asset_directory(self, workspace):
-        return os.path.join(workspace.paths.dev(), workspace.project, 'benchmark')
+        return os.path.join(workspace.paths.engine_root(), workspace.project, 'benchmark')
 
     def create_benchmark_assets(self, dest_directory, benchmarks):
         """ 

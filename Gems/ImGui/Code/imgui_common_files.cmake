@@ -13,6 +13,7 @@ set(FILES
     Source/ImGui_precompiled.cpp
     Source/ImGui_precompiled.h
     Include/ImGuiBus.h
+    Include/ImGuiContextScope.h
     Include/OtherActiveImGuiBus.h
     Source/ImGuiColorDefines.h
     Source/ImGuiManager.h

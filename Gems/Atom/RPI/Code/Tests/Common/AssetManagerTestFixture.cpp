@@ -32,10 +32,12 @@ namespace UnitTest
         m_reflectionManager->AddReflectContext<AZ::SerializeContext>();
 
         AZ::ComponentApplicationBus::Handler::BusConnect();
+        AZ::Interface<AZ::ComponentApplicationRequests>::Register(this);
     }
 
     void AssetManagerTestFixture::TearDown()
     {
+        AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(this);
         AZ::ComponentApplicationBus::Handler::BusDisconnect();
         using namespace AZ::Data;
 

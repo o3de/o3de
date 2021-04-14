@@ -34,7 +34,7 @@ namespace PakLoadDataUtils
     {
         while (nDataSize & 3)
         {
-            size_t nRes = GetISystem()->GetIPak()->FSeek(fileHandle, 1, SEEK_CUR);
+            [[maybe_unused]] size_t nRes = GetISystem()->GetIPak()->FSeek(fileHandle, 1, SEEK_CUR);
             AZ_Assert(nRes == 0, "FSeek failed for 1 byte");
             AZ_Assert(nDataSize, "nDataSize reached zero" );
             nDataSize--;

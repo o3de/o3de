@@ -1169,10 +1169,6 @@ uint32 CDeviceTexture::TextureDataSize(D3DBaseView* pView)
                 eTF = CTexture::TexFormatFromDeviceFormat(sDesc.Format);
             }
 
-            D3DUnorderedAccessView* pUAV = nullptr;
-            D3DShaderResourceView* pSRV = nullptr;
-            D3DDepthSurface* pDSV = nullptr;
-            D3DSurface* pRTV = nullptr;
 
             return CTexture::TextureDataSize(nWidth, nHeight, nDepth, nMips, nSlices, eTF);
         }

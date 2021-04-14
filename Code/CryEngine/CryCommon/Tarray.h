@@ -112,7 +112,7 @@ public:
     void Free()
     {
         m_nCount = 0;
-        if (m_nAllocatedCount)
+        if (m_nAllocatedCount && AZ::AllocatorInstance<CryLegacySTLAllocator>::IsReady())
         {
             AZ::AllocatorInstance<CryLegacySTLAllocator>::Get().DeAllocate(m_pElements);
         }

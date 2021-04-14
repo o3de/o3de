@@ -154,8 +154,15 @@ struct CTypeInfo
         bool IsBaseClass() const                            { return bBaseClass; }
         bool IsInline() const
         {
-            const CVarInfo* pFirst;
-            return bBaseClass && Offset == 0 && (pFirst = Type.NextSubVar(0)) && pFirst->IsBaseClass();
+            if (bBaseClass && Offset == 0)
+            {
+                const CVarInfo* pFirst = Type.NextSubVar(0);
+                if (pFirst)
+                {
+                    return pFirst->IsBaseClass();
+                }
+            }
+            return false;
         }
 
         bool GetLimit(ENumericLimit eLimit, float& fVal) const
@@ -198,7 +205,7 @@ struct CTypeInfo
     inline bool HasSubVars() const
     { return NextSubVar(0) != 0; }
     #define AllSubVars(pVar, Info) \
-    (const CTypeInfo::CVarInfo* pVar = 0; pVar = (Info).NextSubVar(pVar); )
+    (const CTypeInfo::CVarInfo* pVar = (Info).NextSubVar(0); pVar; pVar = (Info).NextSubVar(pVar))
 
     // Named var search.
     virtual const CVarInfo* FindSubVar([[maybe_unused]] cstr name) const

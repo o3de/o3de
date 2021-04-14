@@ -117,8 +117,8 @@ set(FILES
     Source/PostProcess/GradientWeightModifier/GradientWeightModifierComponent.h
     Source/PostProcess/GradientWeightModifier/GradientWeightModifierComponent.cpp
     Source/PostProcess/GradientWeightModifier/GradientWeightModifierComponentConfig.cpp
-    Source/PostProcess/GradientWeightModifier/GradientWeightModifierComponentController.h
-    Source/PostProcess/GradientWeightModifier/GradientWeightModifierComponentController.cpp
+    Source/PostProcess/GradientWeightModifier/GradientWeightModifierController.h
+    Source/PostProcess/GradientWeightModifier/GradientWeightModifierController.cpp
     Source/ScreenSpace/DeferredFogComponentController.h
     Source/ScreenSpace/DeferredFogComponentController.cpp
     Source/ScreenSpace/DeferredFogComponent.h
@@ -145,4 +145,6 @@ set(FILES
     Source/Scripting/EntityReferenceComponentConfig.cpp
     Source/Scripting/EntityReferenceComponentController.cpp
     Source/Scripting/EntityReferenceComponentController.h
+    Source/SurfaceData/SurfaceDataMeshComponent.cpp
+    Source/SurfaceData/SurfaceDataMeshComponent.h
 )

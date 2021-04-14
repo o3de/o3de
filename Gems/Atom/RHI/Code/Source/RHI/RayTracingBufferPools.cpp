@@ -70,7 +70,7 @@ namespace AZ
 
                 m_shaderTableBufferPool = RHI::Factory::Get().CreateBufferPool();
                 m_shaderTableBufferPool->SetName(Name("RayTracingShaderTableBufferPool"));
-                RHI::ResultCode resultCode = m_shaderTableBufferPool->Init(*device, bufferPoolDesc);
+                [[maybe_unused]] RHI::ResultCode resultCode = m_shaderTableBufferPool->Init(*device, bufferPoolDesc);
                 AZ_Assert(resultCode == RHI::ResultCode::Success, "Failed to initialize ray tracing shader table buffer pool");
             }
 
@@ -82,7 +82,7 @@ namespace AZ
 
                 m_scratchBufferPool = RHI::Factory::Get().CreateBufferPool();
                 m_scratchBufferPool->SetName(Name("RayTracingScratchBufferPool"));
-                RHI::ResultCode resultCode = m_scratchBufferPool->Init(*device, bufferPoolDesc);
+                [[maybe_unused]] RHI::ResultCode resultCode = m_scratchBufferPool->Init(*device, bufferPoolDesc);
                 AZ_Assert(resultCode == RHI::ResultCode::Success, "Failed to initialize ray tracing scratch buffer pool");
             }
 
@@ -94,7 +94,7 @@ namespace AZ
 
                 m_blasBufferPool = RHI::Factory::Get().CreateBufferPool();
                 m_blasBufferPool->SetName(Name("RayTracingBlasBufferPool"));
-                RHI::ResultCode resultCode = m_blasBufferPool->Init(*device, bufferPoolDesc);
+                [[maybe_unused]] RHI::ResultCode resultCode = m_blasBufferPool->Init(*device, bufferPoolDesc);
                 AZ_Assert(resultCode == RHI::ResultCode::Success, "Failed to initialize ray tracing BLAS buffer pool");
             }
 
@@ -106,7 +106,7 @@ namespace AZ
 
                 m_tlasInstancesBufferPool = RHI::Factory::Get().CreateBufferPool();
                 m_tlasInstancesBufferPool->SetName(Name("RayTracingTlasInstancesBufferPool"));
-                RHI::ResultCode resultCode = m_tlasInstancesBufferPool->Init(*device, bufferPoolDesc);
+                [[maybe_unused]] RHI::ResultCode resultCode = m_tlasInstancesBufferPool->Init(*device, bufferPoolDesc);
                 AZ_Assert(resultCode == RHI::ResultCode::Success, "Failed to initialize ray tracing TLAS instances buffer pool");
             }
 
@@ -118,7 +118,7 @@ namespace AZ
 
                 m_tlasBufferPool = RHI::Factory::Get().CreateBufferPool();
                 m_tlasBufferPool->SetName(Name("RayTracingTLASBufferPool"));
-                RHI::ResultCode resultCode = m_tlasBufferPool->Init(*device, bufferPoolDesc);
+                [[maybe_unused]] RHI::ResultCode resultCode = m_tlasBufferPool->Init(*device, bufferPoolDesc);
                 AZ_Assert(resultCode == RHI::ResultCode::Success, "Failed to initialize ray tracing TLAS buffer pool");
             }
 
