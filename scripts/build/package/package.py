@@ -16,7 +16,7 @@ import progressbar
 from optparse import OptionParser
 from PackageEnv import PackageEnv
 cur_dir = cur_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, f'{cur_dir}/../../../Tools/build/JenkinsScripts/build')
+sys.path.insert(0, f'{cur_dir}/..')
 from ci_build import build
 from util import *
 from glob3 import glob

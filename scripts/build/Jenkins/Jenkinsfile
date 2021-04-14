@@ -201,7 +201,7 @@ def CheckoutBootstrapScripts(String branchName) {
                 sparseCheckoutPaths: [
                   [ $class: "SparseCheckoutPath", path: "scripts/build/Jenkins/" ],
                   [ $class: "SparseCheckoutPath", path: "scripts/build/bootstrap/" ],
-                  [ $class: "SparseCheckoutPath", path: "Tools/build/JenkinsScripts/build/Platform" ]
+                  [ $class: "SparseCheckoutPath", path: "scripts/build/Platform" ]
                 ]
               ],
               [
