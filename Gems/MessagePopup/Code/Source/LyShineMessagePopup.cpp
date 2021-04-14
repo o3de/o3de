@@ -200,7 +200,6 @@ namespace MessagePopup
             }
 
             // Disable the popup
-            AZ::Entity* instructionsTextElement = nullptr;
             EBUS_EVENT_ID(canvasEntityId, UiCanvasBus, SetEnabled, false);
 
             gEnv->pLyShine->ReleaseCanvas(canvasEntityId, false);

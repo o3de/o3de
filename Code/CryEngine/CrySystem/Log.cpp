@@ -305,7 +305,7 @@ void CLog::LogWarning(const char* szFormat, ...)
     va_list ArgList;
     char        szBuffer[MAX_WARNING_LENGTH];
     va_start(ArgList, szFormat);
-    int count = vsnprintf_s(szBuffer, sizeof(szBuffer), sizeof(szBuffer) - 1, szFormat, ArgList);
+    vsnprintf_s(szBuffer, sizeof(szBuffer), sizeof(szBuffer) - 1, szFormat, ArgList);
     szBuffer[sizeof(szBuffer) - 1] = '\0';
     va_end(ArgList);
 
@@ -325,7 +325,7 @@ void CLog::LogError(const char* szFormat, ...)
     va_list ArgList;
     char        szBuffer[MAX_WARNING_LENGTH];
     va_start(ArgList, szFormat);
-    int count = vsnprintf_s(szBuffer, sizeof(szBuffer), sizeof(szBuffer) - 1, szFormat, ArgList);
+    vsnprintf_s(szBuffer, sizeof(szBuffer), sizeof(szBuffer) - 1, szFormat, ArgList);
     szBuffer[sizeof(szBuffer) - 1] = '\0';
     va_end(ArgList);
 

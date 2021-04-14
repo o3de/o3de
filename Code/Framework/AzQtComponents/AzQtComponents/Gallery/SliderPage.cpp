@@ -11,7 +11,7 @@
 */
 
 #include "SliderPage.h"
-#include "Gallery/ui_SliderPage.h"
+#include <AzQtComponents/Gallery/ui_SliderPage.h>
 
 #include <AzQtComponents/Components/Widgets/Slider.h>
 

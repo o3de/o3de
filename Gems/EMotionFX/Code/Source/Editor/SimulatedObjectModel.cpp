@@ -152,8 +152,6 @@ namespace EMotionFX
                 SimulatedJoint* joint = object->GetSimulatedRootJoint(row);
                 return createIndex(row, column, joint);
             }
-
-            return QModelIndex();
         }
     }
 

@@ -181,13 +181,29 @@ namespace AssetUtilsInternal
         if (AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(settingsRegistry, AssetProcessorUserSettingsRootKey,
             apSettingsStream, apDumperSettings))
         {
+            constexpr const char* AssetProcessorTmpSetreg = "asset_processor.setreg.tmp";
+            // Write to a temporary file first before renaming it to the final file location
+            // This is needed to reduce the potential of a race condition which occurs when other applications attempt to load settings registry
+            // files from the project's user Registry folder while the AssetProcessor is writing the file out the asset_processor.setreg
+            // at the same time
+            QString tempDirValue;
+            AssetUtilities::CreateTempWorkspace(tempDirValue);
+            QDir tempDir(tempDirValue);
+            AZ::IO::FixedMaxPath tmpSetregPath = tempDir.absoluteFilePath(QString(AssetProcessorTmpSetreg)).toUtf8().data();
 
             constexpr auto modeFlags = AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY | AZ::IO::SystemFile::SF_OPEN_CREATE
                 | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH;
-            if (AZ::IO::SystemFile apSetregFile; apSetregFile.Open(setregPath.c_str(), modeFlags))
+            if (AZ::IO::SystemFile apSetregFile; apSetregFile.Open(tmpSetregPath.c_str(), modeFlags))
             {
                 size_t bytesWritten = apSetregFile.Write(apSettingsJson.data(), apSettingsJson.size());
-                return bytesWritten == apSettingsJson.size();
+                // Close the file so that it can be renamed.
+                apSetregFile.Close();
+                if (bytesWritten == apSettingsJson.size())
+                {
+                    // Create the directory to contain the moved setreg file
+                    AZ::IO::SystemFile::CreateDir(AZ::IO::FixedMaxPath(setregPath.ParentPath()).c_str());
+                    return AZ::IO::SystemFile::Rename(tmpSetregPath.c_str(), setregPath.c_str(), true);
+                }
             }
             else
             {
@@ -1478,7 +1494,14 @@ to ensure that the address is correct. Asset Processor won't be running in serve
             return false;
         }
 #endif
-        return AzToolsFramework::AssetUtils::UpdateFilePathToCorrectCase(rootPath, relativePathFromRoot);
+
+        AZStd::string relPathFromRoot = relativePathFromRoot.toUtf8().constData();
+        if(AzToolsFramework::AssetUtils::UpdateFilePathToCorrectCase(rootPath.toUtf8().constData(), relPathFromRoot))
+        {
+            relativePathFromRoot = QString::fromUtf8(relPathFromRoot.c_str(), aznumeric_cast<int>(relPathFromRoot.size()));
+            return true;
+        }
+        return false;
     }
 
     BuilderFilePatternMatcher::BuilderFilePatternMatcher(const AssetBuilderSDK::AssetBuilderPattern& pattern, const AZ::Uuid& builderDescID)

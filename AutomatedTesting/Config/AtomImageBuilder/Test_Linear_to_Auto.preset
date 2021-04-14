@@ -1,0 +1,18 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "MultiplatformPresetSettings",
+    "ClassData": {
+        "DefaultPreset": {
+            "UUID": "{9E5BBFB4-BDDA-4759-AB74-D047EE25A35D}",
+            "Name": "Test_Linear_to_Auto",
+            "SourceColor": "Linear",
+            "DestColor": "Auto",
+            "FileMasks": [
+                "_linear-to-auto"
+            ],
+            "PixelFormat": "R8G8B8X8",
+            "DiscardAlpha": true
+        }
+    }
+}

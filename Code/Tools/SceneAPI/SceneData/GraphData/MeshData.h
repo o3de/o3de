@@ -35,6 +35,9 @@ namespace AZ
                 static void Reflect(ReflectContext* context);
 
                 SCENE_DATA_API ~MeshData() override;
+
+                SCENE_DATA_API void CloneAttributesFrom(const IGraphObject* sourceObject) override;
+
                 //assumes 1 to 1 mapping for these position, normal, color, uv
                 //positions with more than one normal or uv (seam) will duplicate shared values in multiple verts
                 SCENE_DATA_API virtual void AddPosition(const AZ::Vector3& position);

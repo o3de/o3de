@@ -296,8 +296,6 @@ void AZ::FFont::DrawStringUInternal(float x, float y, float z, const char* str, 
 
     const bool orthoMode = ctx.m_overrideViewProjMatrices;
 
-    int baseState = ctx.m_baseState;
-
     const RHI::Viewport& viewport = m_windowContext->GetViewport();
     const float viewX = viewport.m_minX;
     const float viewY = viewport.m_minY;
@@ -322,7 +320,6 @@ void AZ::FFont::DrawStringUInternal(float x, float y, float z, const char* str, 
     }
 
     size_t startingVertexCount = m_vertexCount;
-    size_t startingIndexCount = m_indexCount;
 
     // Local function that is passed into CreateQuadsForText as the AddQuad function
     AddFunction AddQuad = [this, startingVertexCount]

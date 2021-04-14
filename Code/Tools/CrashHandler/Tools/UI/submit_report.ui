@@ -80,7 +80,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Lumberyard has encountered a fatal error.  We're sorry for the inconvenience.</string>
+    <string>Open 3D Engine has encountered a fatal error.  We're sorry for the inconvenience.</string>
    </property>
    <property name="wordWrap">
     <bool>true</bool>
@@ -96,7 +96,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>A Lumberyard Editor crash debugging file has been created at:</string>
+    <string>An Open 3D Engine Editor crash debugging file has been created at:</string>
    </property>
    <property name="wordWrap">
     <bool>true</bool>
@@ -134,7 +134,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>If you are willing to submit this file to Amazon it will help us improve the Lumberyard experience.  We will treat this report as confidential.</string>
+    <string>If you are willing to submit this file to Amazon it will help us improve the Open 3D Engine experience.  We will treat this report as confidential.</string>
    </property>
    <property name="wordWrap">
     <bool>true</bool>

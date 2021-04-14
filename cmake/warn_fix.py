@@ -62,8 +62,13 @@ def fix_4100(fileLines, lineNumber, columnNumber, message):
 
     return False
 
+def fix_4189(fileLines, lineNumber, columnNumber, message):
+    del fileLines[lineNumber]
+    return True
+
 warning_fixers = dict()
 warning_fixers[4100] = fix_4100
+warning_fixers[4189] = fix_4189
 
 def loadBuildLog(build_log):
     try:
@@ -114,7 +119,7 @@ def processWarnings():
 
         if hasEdit:
             # p4 edit the file
-            subprocess.check_call(['p4', 'edit', filename])
+            # subprocess.check_call(['p4', 'edit', filename])
             with open(filename, 'w') as destination_file:
                 destination_file.writelines(fileLines)
 

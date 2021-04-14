@@ -97,7 +97,6 @@ namespace ScriptCanvasEditor
 
         AZ::Data::AssetInfo GetSourceInfoByProductId(AZ::Data::AssetId assetId, AZ::Data::AssetType assetType)
         {
-            bool infoFound = false;
             AZStd::string watchFolder;
             AZ::Data::AssetInfo assetInfo;
             const AZStd::string platformName = ""; // Empty for default

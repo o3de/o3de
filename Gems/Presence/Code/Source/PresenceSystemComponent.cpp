@@ -61,7 +61,6 @@ namespace Presence
         {
             behaviorContext->Class<PresenceDetails>()
                 ->Constructor<PresenceDetails&>()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)
                 ->Property("localUserId", BehaviorValueProperty(&PresenceDetails::localUserId))
                 ->Property("titleId", BehaviorValueProperty(&PresenceDetails::titleId))

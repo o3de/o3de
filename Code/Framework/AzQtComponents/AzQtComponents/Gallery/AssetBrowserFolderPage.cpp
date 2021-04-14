@@ -10,7 +10,7 @@
 *
 */
 #include "AssetBrowserFolderPage.h"
-#include "Gallery/ui_AssetBrowserFolderPage.h"
+#include <AzQtComponents/Gallery/ui_AssetBrowserFolderPage.h>
 
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserFolderWidget.h>
 #include <AzCore/Casting/numeric_cast.h>

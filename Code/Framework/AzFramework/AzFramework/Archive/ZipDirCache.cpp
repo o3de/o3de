@@ -831,7 +831,7 @@ namespace AZ::IO::ZipDir
         //arrFiles.SortByFileOffset();
         size_t nSizeCDR = arrFiles.GetStats().nSizeCDR;
         void* pCDR = m_allocator->Allocate(nSizeCDR, alignof(uint8_t), 0, "Cache::WriteCDR");
-        size_t nSizeCDRSerialized = arrFiles.MakeZipCDR(m_lCDROffset, pCDR);
+        [[maybe_unused]] size_t nSizeCDRSerialized = arrFiles.MakeZipCDR(m_lCDROffset, pCDR);
         AZ_Assert(nSizeCDRSerialized == nSizeCDR, "Serialized CDR size %zu does not match size in memory %zu", nSizeCDRSerialized, nSizeCDR);
         if (m_encryptedHeaders == ZipFile::HEADERS_ENCRYPTED_TEA)
         {

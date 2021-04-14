@@ -89,7 +89,7 @@ namespace
 
             AZ::Uuid type = dataModel->data(index, CommandListDataModel::CustomRole::Types).value<AZ::Uuid>();
 
-            const AZ::SerializeContext::ClassData* classData = serializeContext->FindClassData(type);
+            [[maybe_unused]] const AZ::SerializeContext::ClassData* classData = serializeContext->FindClassData(type);
             AZ_Assert(classData, "Failed to find ClassData for ID: %s", type.ToString<AZStd::string>().data());
 
             ScriptCanvasEditor::Nodes::StyleConfiguration styleConfiguration;

@@ -114,7 +114,7 @@ namespace AZ
                     data.m_bufferViewsInfo[i] = bufferInfo;
                     
                     // if this is a buffer view of a RayTracingTLAS we need to store the vkAccelerationStructureKHR with it
-                    if (type == VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR)
+                    if (bufferView && (type == VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR))
                     {
                         data.m_accelerationStructures[i] = static_cast<const BufferView&>(*bufferView.get()).GetNativeAccelerationStructure();
                     }
@@ -176,7 +176,6 @@ namespace AZ
         void DescriptorSet::UpdateSamplers(uint32_t layoutIndex, const AZStd::array_view<RHI::SamplerState>& samplers)
         {
             auto& device = static_cast<Device&>(GetDevice());
-            const DescriptorSetLayout& layout = *m_descriptor.m_descriptorSetLayout;
 
             WriteDescriptorData data;
             data.m_layoutIndex = layoutIndex;
@@ -228,19 +227,23 @@ namespace AZ
             AZ_Assert(descriptor.m_descriptorSetLayout, "DescriptorSetLayout is null.");
             Base::Init(*descriptor.m_device);
 
-            VkDescriptorSetLayout nativeLayout = descriptor.m_descriptorSetLayout->GetNativeDescriptorSetLayout();
-            VkDescriptorSetAllocateInfo allocInfo{};
-            allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-            allocInfo.pNext = nullptr;
-            allocInfo.descriptorPool = descriptor.m_descriptorPool->GetNativeDescriptorPool();
-            allocInfo.descriptorSetCount = 1;
-            allocInfo.pSetLayouts = &nativeLayout;
-
-            VkResult result = vkAllocateDescriptorSets(descriptor.m_device->GetNativeDevice(), &allocInfo, &m_nativeDescriptorSet);
-            AssertSuccess(result);
-            if (result != VK_SUCCESS)
+            // if this descriptor set contains an unbounded array we need to defer allocation until UpdateNativeDescriptorSet(),
+            // since we do not know the number of views in the unbounded array
+            if (!descriptor.m_descriptorSetLayout->GetHasUnboundedArray())
             {
-                return result;
+                VkDescriptorSetLayout nativeLayout = descriptor.m_descriptorSetLayout->GetNativeDescriptorSetLayout();
+                VkDescriptorSetAllocateInfo allocInfo{};
+                allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+                allocInfo.descriptorPool = descriptor.m_descriptorPool->GetNativeDescriptorPool();
+                allocInfo.descriptorSetCount = 1;
+                allocInfo.pSetLayouts = &nativeLayout;
+
+                VkResult result = vkAllocateDescriptorSets(descriptor.m_device->GetNativeDevice(), &allocInfo, &m_nativeDescriptorSet);
+                AssertSuccess(result);
+                if (result != VK_SUCCESS)
+                {
+                    return result;
+                }
             }
 
             // Check if we need to create a uniform buffer for the constants
@@ -268,12 +271,12 @@ namespace AZ
             m_nullDescriptorSupported = static_cast<const PhysicalDevice&>(m_descriptor.m_device->GetPhysicalDevice()).IsFeatureSupported(DeviceFeature::NullDescriptor);
 
             SetName(GetName());
-            return result;
+            return VK_SUCCESS;
         }
 
         void DescriptorSet::SetNameInternal(const AZStd::string_view& name)
         {
-            if (IsInitialized() && !name.empty())
+            if (IsInitialized() && !name.empty() && m_nativeDescriptorSet != VK_NULL_HANDLE)
             {
                 Debug::SetNameToObject(reinterpret_cast<uint64_t>(m_nativeDescriptorSet), name.data(), VK_OBJECT_TYPE_DESCRIPTOR_SET, static_cast<Device&>(GetDevice()));
             }
@@ -295,9 +298,15 @@ namespace AZ
 
         void DescriptorSet::UpdateNativeDescriptorSet()
         {
+            // if this descriptor set has an unbounded array we need to allocate it now, or if it
+            // is already allocated adjust the allocation size
+            if (m_descriptor.m_descriptorSetLayout->GetHasUnboundedArray())
+            {
+                AllocateDescriptorSetWithUnboundedArray();
+            }
+
             AZStd::vector<VkWriteDescriptorSet> writeDescSetDescs;
             AZStd::vector<VkWriteDescriptorSetAccelerationStructureKHR> writeAccelerationStructureDescs;
-
             const DescriptorSetLayout& layout = *m_descriptor.m_descriptorSetLayout;
             for (const WriteDescriptorData& updateData : m_updateData)
             {
@@ -360,7 +369,6 @@ namespace AZ
                         writeAccelerationStructure.pAccelerationStructures = updateData.m_accelerationStructures.data() + interval.m_min;
                         writeAccelerationStructureDescs.push_back(AZStd::move(writeAccelerationStructure));
 
-                        // writeDescSet.pBufferInfo = updateData.m_bufferViewsInfo.data() + interval.m_min;
                         writeDescSet.dstArrayElement = interval.m_min;
                         writeDescSet.descriptorCount = interval.m_max - interval.m_min;
                         writeDescSet.pNext = &writeAccelerationStructureDescs.back();
@@ -380,6 +388,71 @@ namespace AZ
             }
 
             m_updateData.clear();
+        }
+
+        void DescriptorSet::AllocateDescriptorSetWithUnboundedArray()
+        {
+            const DescriptorSetLayout& layout = *m_descriptor.m_descriptorSetLayout;
+            uint32_t unboundedArraySize = 0;
+
+            // find the unbounded array in the update data
+            for (const WriteDescriptorData& updateData : m_updateData)
+            {
+                if ((layout.GetNativeBindingFlags()[updateData.m_layoutIndex] & VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT) != 0)
+                {
+                    // this is the unbounded array, find the size
+                    const VkDescriptorType descType = layout.GetDescriptorType(updateData.m_layoutIndex);
+
+                    switch (descType)
+                    {
+                    case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER:
+                    case VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER:
+                    case VK_DESCRIPTOR_TYPE_STORAGE_BUFFER:
+                        unboundedArraySize = aznumeric_cast<uint32_t>(updateData.m_bufferViewsInfo.size());
+                        break;
+                    case VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE:
+                    case VK_DESCRIPTOR_TYPE_STORAGE_IMAGE:
+                        unboundedArraySize = aznumeric_cast<uint32_t>(updateData.m_imageViewsInfo.size());
+                        break;
+                    default:
+                        AZ_Assert(false, "Unsupported descriptor type for unbounded array");
+                        return;
+                    }
+
+                    if (unboundedArraySize != m_currentUnboundedArrayAllocation)
+                    {
+                        // release existing descriptor set if necessary
+                        if (m_nativeDescriptorSet)
+                        {
+                            AssertSuccess(vkFreeDescriptorSets(m_descriptor.m_device->GetNativeDevice(), m_descriptor.m_descriptorPool->GetNativeDescriptorPool(), 1, &m_nativeDescriptorSet));
+                            m_nativeDescriptorSet = VK_NULL_HANDLE;
+                        }
+                    }
+
+                    break;
+                }
+            }
+
+            if (m_nativeDescriptorSet == VK_NULL_HANDLE)
+            {
+                VkDescriptorSetVariableDescriptorCountAllocateInfo variableDescriptorCounts = {};
+                variableDescriptorCounts.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO;
+                variableDescriptorCounts.descriptorSetCount = 1;
+                variableDescriptorCounts.pDescriptorCounts = &unboundedArraySize;
+
+                VkDescriptorSetLayout nativeLayout = m_descriptor.m_descriptorSetLayout->GetNativeDescriptorSetLayout();
+                VkDescriptorSetAllocateInfo allocInfo{};
+                allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+                allocInfo.pNext = &variableDescriptorCounts;
+                allocInfo.descriptorPool = m_descriptor.m_descriptorPool->GetNativeDescriptorPool();
+                allocInfo.descriptorSetCount = 1;
+                allocInfo.pSetLayouts = &nativeLayout;
+
+                AssertSuccess(vkAllocateDescriptorSets(m_descriptor.m_device->GetNativeDevice(), &allocInfo, &m_nativeDescriptorSet));
+
+                m_currentUnboundedArrayAllocation = unboundedArraySize;
+                SetName(GetName());
+            }
         }
 
         bool DescriptorSet::IsNullDescriptorInfo(const VkDescriptorBufferInfo& descriptorInfo)

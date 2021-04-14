@@ -36,8 +36,6 @@ void CDeferredRenderUtils::CreateUnitFrustumMesh(int tessx, int tessy, t_arrDefe
     float szx = 1.0f;
     float szy = 1.0f;
 
-    float hsizex = szx / 2;
-    float hsizey = szy / 2;
     float deltax = szx / (tessx - 1.0f);
     float deltay = szy / (tessy - 1.0f);
 
@@ -169,8 +167,6 @@ void CDeferredRenderUtils::CreateUnitFrustumMeshTransformed(SRenderLight* pLight
     float szx = 1.0f;
     float szy = 1.0f;
 
-    float hsizex = szx / 2;
-    float hsizey = szy / 2;
     float deltax = szx / (tessx - 1);
     float deltay = szy / (tessy - 1);
 

@@ -193,45 +193,6 @@ void CThumbnailGenerator::GenerateForDirectory(const QString& path)
     //GetIEditor()->ShowConsole( false );
 }
 
-void CThumbnailGenerator::GenerateForFile(const QString& fileName)
+void CThumbnailGenerator::GenerateForFile([[maybe_unused]] const QString& fileName)
 {
-    return;
-
-    I3DEngine* engine = GetIEditor()->Get3DEngine();
-
-    int thumbSize = 128;
-    CImageEx image;
-    image.Allocate(thumbSize, thumbSize);
-
-    char drive[_MAX_DRIVE];
-    char fdir[_MAX_DIR];
-    char fname[_MAX_FNAME];
-    char fext[_MAX_EXT];
-    char bmpFile[1024];
-
-    _splitpath_s(fileName.toUtf8().data(), drive, fdir, fname, fext);
-
-    _makepath_s(bmpFile, drive, fdir, fname, ".tmb");
-    FileTimeType ft1, ft2;
-    GetThumbFileTime(fileName.toUtf8().data(), ft1);
-    GetThumbFileTime(bmpFile, ft2);
-    // Both cgf and bmp have same time stamp.
-    if (ThumbFileTimeIsEqual(ft1, ft2))
-    {
-        return;
-    }
-
-    _smart_ptr<IStatObj> obj = engine->LoadStatObjAutoRef(fileName.toUtf8().data(), NULL, NULL, false);
-    if (obj)
-    {
-        assert(!"IStatObj::MakeObjectPicture does not exist anymore");
-        //      obj->MakeObjectPicture( (unsigned char*)image.GetData(),thumbSize );
-
-        CImageUtil::SaveBitmap(bmpFile, image);
-        SetThumbFileTime(bmpFile, ft1);
-#if defined(AZ_PLATFORM_WINDOWS)
-        SetFileAttributes(bmpFile, FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_NOT_CONTENT_INDEXED);
-#endif
-        obj->Release();
-    }
 }

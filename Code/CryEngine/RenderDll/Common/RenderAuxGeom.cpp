@@ -2039,7 +2039,7 @@ void  CAuxGeomCB::RenderText(Vec3 pos, SDrawTextInfo& ti, const char* format, va
     {
         char str[512];
 
-        int written = vsnprintf_s(str, sizeof(str), sizeof(str) - 1, format, args);
+        vsnprintf_s(str, sizeof(str), sizeof(str) - 1, format, args);
         str[sizeof(str) - 1] = '\0';
         gEnv->pRenderer->DrawTextQueued(pos, ti, str);
     }

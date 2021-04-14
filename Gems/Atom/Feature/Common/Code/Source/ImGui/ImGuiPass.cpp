@@ -158,7 +158,7 @@ namespace AZ
             auto imguiContextScope = ImguiContextScope(m_imguiContext);
             auto& io = ImGui::GetIO();
             io.AddInputCharactersUTF8(textUTF8.c_str());
-            return io.WantCaptureKeyboard;
+            return io.WantTextInput;
         }
 
         AZ::s32 ImGuiPass::GetPriority() const

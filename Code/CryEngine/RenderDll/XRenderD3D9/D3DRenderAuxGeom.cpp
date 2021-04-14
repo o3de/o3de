@@ -1656,7 +1656,6 @@ void CRenderAuxGeomD3D::AdjustRenderStates(const SAuxGeomRenderFlags& renderFlag
     if (newPointSize != m_curPointSize)
     {
         assert(newPointSize > 0);
-        float pointSize((float) newPointSize);
         assert(0);
         m_curPointSize = newPointSize;
     }

@@ -240,7 +240,7 @@ namespace AZ
                 {
                     using Traversal = typename SceneGraphDownwardsIteratorContext<TypeParam>::Traversal;
                     auto sceneView = MakeSceneGraphDownwardsView<Traversal>(this->m_graph, this->GetRootHierarchyIterator(), this->m_graph.GetNameStorage().begin(), true);
-                    for (auto& it : sceneView)
+                    for ([[maybe_unused]] auto& it : sceneView)
                     {
                     }
                 }
@@ -252,7 +252,7 @@ namespace AZ
                     size_t localCount = 0;
 
                     auto sceneView = MakeSceneGraphDownwardsView<Traversal>(this->m_graph, this->GetRootHierarchyIterator(), this->m_graph.GetNameStorage().begin(), true);
-                    for (auto& it : sceneView)
+                    for ([[maybe_unused]] auto& it : sceneView)
                     {
                         localCount++;
                     }

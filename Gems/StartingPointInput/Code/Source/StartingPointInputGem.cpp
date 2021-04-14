@@ -151,7 +151,6 @@ namespace StartingPointInput
             if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
                 behaviorContext->Class<InputEventNotificationId>("InputEventNotificationId")
-                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                     ->Constructor<const char*>()
                         ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)
                         ->Attribute(AZ::Script::Attributes::ConstructorOverride, &InputEventNonIntrusiveConstructor)
@@ -168,7 +167,6 @@ namespace StartingPointInput
                         { "actionName", "The name of the Input event action used to create an InputEventNotificationId" } } });
 
                 behaviorContext->EBus<InputEventNotificationBus>("InputEventNotificationBus")
-                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                     ->Handler<BehaviorInputEventNotificationBusHandler>()
                     ->Event("OnPressed", &InputEventNotificationBus::Events::OnPressed)
                     ->Event("OnHeld", &InputEventNotificationBus::Events::OnHeld)

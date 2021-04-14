@@ -23,7 +23,7 @@ namespace AZ
         {
             AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(ShadowmapType, uint32_t,
                 (Directional, 0),
-                Spot);
+                Projected);
 
             const Matrix4x4& GetClipToShadowmapTextureMatrix();
         } // namespace Shadow

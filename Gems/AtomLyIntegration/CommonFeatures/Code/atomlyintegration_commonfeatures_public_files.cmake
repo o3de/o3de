@@ -15,10 +15,6 @@ set(FILES
     Include/AtomLyIntegration/CommonFeatures/CoreLights/CoreLightsConstants.h
     Include/AtomLyIntegration/CommonFeatures/CoreLights/DirectionalLightBus.h
     Include/AtomLyIntegration/CommonFeatures/CoreLights/DirectionalLightComponentConfig.h
-    Include/AtomLyIntegration/CommonFeatures/CoreLights/PointLightBus.h
-    Include/AtomLyIntegration/CommonFeatures/CoreLights/PointLightComponentConfig.h
-    Include/AtomLyIntegration/CommonFeatures/CoreLights/SpotLightBus.h
-    Include/AtomLyIntegration/CommonFeatures/CoreLights/SpotLightComponentConfig.h
     Include/AtomLyIntegration/CommonFeatures/Decals/DecalBus.h
     Include/AtomLyIntegration/CommonFeatures/Decals/DecalComponentConfig.h
     Include/AtomLyIntegration/CommonFeatures/Decals/DecalConstants.h

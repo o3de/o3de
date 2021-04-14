@@ -461,8 +461,6 @@ namespace UnitTest
 
     TEST_F(QuadShapeTest, DistanceFromPoint)
     {
-        float distance = 0.0f;
-
         const uint32_t dimCount = 2;
         const uint32_t transformCount = 3;
         const AZ::Vector2 dims[dimCount] = { AZ::Vector2 { 0.5f, 2.0f }, AZ::Vector2 { 1.5f, 0.25f } };

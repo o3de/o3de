@@ -1072,7 +1072,6 @@ bool CREVolumeObject::mfDraw(CShader* ef, [[maybe_unused]] SShaderPass* sfm)
 #if !defined(EXCLUDE_DOCUMENTATION_PURPOSE)
 bool CREPrismObject::mfDraw(CShader* ef, [[maybe_unused]] SShaderPass* sfm)
 {
-    CD3D9Renderer* rd(gcpRendD3D);
 
     // render
     uint32 nPasses(0);
@@ -1447,20 +1446,17 @@ void CREWaterOcean::Create(uint32 nVerticesCount, SVF_P3F_C4B_T2F* pVertices, ui
         return;
     }
 
-    CD3D9Renderer* rd(gcpRendD3D);
     ReleaseOcean();
 
     m_nVerticesCount = nVerticesCount;
     m_nIndicesCount = nIndicesCount;
     m_nIndexSizeof = nIndexSizeof;
-    HRESULT hr(S_OK);
     //////////////////////////////////////////////////////////////////////////////////////////////////
     // Create vertex buffer
     //////////////////////////////////////////////////////////////////////////////////////////////////
     {
         D3DBuffer* pVertexBuffer = 0;
         D3D11_BUFFER_DESC BufDesc;
-        SVF_P3F_C4B_T2F* dst = 0;
 
         uint32 size = nVerticesCount * sizeof(SVF_P3F_C4B_T2F);
         BufDesc.ByteWidth = size;
@@ -1541,7 +1537,6 @@ void CREWaterOcean::FrameUpdate()
         void* pRawPtr = NULL;
         WaterSimMgr()->Update(nFrameID, fUpdateTime, false, pRawPtr);
 
-        uint32 pitch = 4 * sizeof(f32) * nGridSize;
         uint32 width = nGridSize;
         uint32 height = nGridSize;
 
@@ -1619,7 +1614,6 @@ bool CREWaterOcean::mfDraw(CShader* ef, [[maybe_unused]] SShaderPass* sfm)
 
 
     N3DEngineCommon::SOceanInfo& OceanInfo = gRenDev->m_p3DEngineCommon.m_OceanInfo;
-    Vec4& pParams = OceanInfo.m_vMeshParams;
 
     uint32 nPrevStateOr = rd->m_RP.m_StateOr;
     uint32 nPrevStateAnd = rd->m_RP.m_StateAnd;
@@ -1736,8 +1730,6 @@ bool CREOcclusionQuery::mfDraw([[maybe_unused]] CShader* ef, [[maybe_unused]] SS
         return true;
     }
 
-    int w =  r->GetWidth();
-    int h =  r->GetHeight();
 
     if (!m_nOcclusionID)
     {
@@ -1753,7 +1745,6 @@ bool CREOcclusionQuery::mfDraw([[maybe_unused]] CShader* ef, [[maybe_unused]] SS
         }
     }
 
-    int nFrame = r->GetFrameID();
 
     if (!m_nDrawFrame) // only allow queries update, if finished already with previous query
     { // draw test box
@@ -1969,10 +1960,6 @@ bool CREBeam::mfDraw(CShader* ef, [[maybe_unused]] SShaderPass* sl)
 
     PROFILE_LABEL_SCOPE("LIGHT BEAM");
 
-    EShaderQuality nShaderQuality = (EShaderQuality)gcpRendD3D->EF_GetShaderQuality(eST_FX);
-    ERenderQuality nRenderQuality = gRenDev->m_RP.m_eQuality;
-    bool bLowSpecShafts = (nShaderQuality == eSQ_Low) || (nRenderQuality == eRQ_Low);
-
     STexState pState(FILTER_BILINEAR, true);
     const int texStateID(CTexture::GetTexState(pState));
 
@@ -2025,8 +2012,6 @@ bool CREBeam::mfDraw(CShader* ef, [[maybe_unused]] SShaderPass* sl)
     float fAngleCoeff = 1.0f / tan_tpl((90.0f - fLightAngle) * gf_PI / 180.0f);
     float fNear = pDL->m_fProjectorNearPlane;
     float fFar = pDL->m_fRadius;
-    float fScaleNear = fNear * fAngleCoeff;
-    float fScaleFar = fFar * fAngleCoeff;
     Vec3 vLightPos = pDL->m_Origin;
     Vec3 vAxis = rInstInfo.m_Matrix.GetColumn0();
 
@@ -2059,7 +2044,6 @@ bool CREBeam::mfDraw(CShader* ef, [[maybe_unused]] SShaderPass* sl)
 
     if ((e > 0.0f) && (eSq >= (dSq * fCosSq)))
     {
-        float fSinSq = fSin * fSin;
         dSq = vVertToSphere.dot(vVertToSphere);
         e = vVertToSphere.dot(vAxis);
 
@@ -2301,19 +2285,7 @@ bool CREGeomCache::mfDraw(CShader* ef, SShaderPass* sfm)
 
     Matrix44A prevMatrix;
 
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    // render to texture does not currently support motion blur in the render target
-    if (threadInfo.m_PersFlags & RBPF_RENDER_SCENE_TO_TEXTURE)
-    {
-        prevMatrix = rRP.m_pCurObject->m_II.m_Matrix;
-    }
-    else
-    {
-        CMotionBlur::GetPrevObjToWorldMat(rRP.m_pCurObject, prevMatrix);
-    }
-#else
     CMotionBlur::GetPrevObjToWorldMat(rRP.m_pCurObject, prevMatrix);
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
 
     const uint64 oldFlagsShader_RT = rRP.m_FlagsShader_RT;
     uint64 flagsShader_RT = rRP.m_FlagsShader_RT;

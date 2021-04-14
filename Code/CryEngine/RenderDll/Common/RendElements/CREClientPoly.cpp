@@ -32,7 +32,6 @@ CRendElementBase* CREClientPoly::mfCopyConstruct(void)
 void CREClientPoly::mfPrepare(bool bCheckOverflow)
 {
     CRenderer* rd = gRenDev;
-    CShader* ef = rd->m_RP.m_pShader;
     int i, n;
 
     rd->m_RP.m_CurVFormat = eVF_P3F_C4B_T2F;

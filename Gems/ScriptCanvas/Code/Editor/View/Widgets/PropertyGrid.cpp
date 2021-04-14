@@ -746,7 +746,9 @@ namespace ScriptCanvasEditor
                 {
                     break;
                 }
-            } while (componentNode = componentNode->GetParent());
+                componentNode = componentNode->GetParent();
+            }
+            while (componentNode);
 
             if (!componentNode)
             {

@@ -17,6 +17,7 @@
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Viewport/ViewportControllerList.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
+#include <AzToolsFramework/Viewport/ViewportTypes.h>
 #include <AzCore/Math/MathUtils.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/Bootstrap/BootstrapRequestBus.h>
@@ -55,10 +56,20 @@ namespace AtomToolsFramework
         AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Handler::BusConnect(GetId());
         AzFramework::InputChannelEventListener::Connect();
         AZ::TickBus::Handler::BusConnect();
+        AzFramework::WindowRequestBus::Handler::BusConnect(params.windowHandle);
 
         setUpdatesEnabled(false);
         setFocusPolicy(Qt::FocusPolicy::WheelFocus);
         setMouseTracking(true);
+    }
+
+    RenderViewportWidget::~RenderViewportWidget()
+    {
+        AzFramework::WindowRequestBus::Handler::BusDisconnect();
+        AZ::TickBus::Handler::BusDisconnect();
+        AzFramework::InputChannelEventListener::Disconnect();
+        AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Handler::BusDisconnect();
+        AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler::BusDisconnect();
     }
 
     void RenderViewportWidget::LockRenderTargetSize(uint32_t width, uint32_t height)
@@ -184,7 +195,8 @@ namespace AtomToolsFramework
             return false;
         }
 
-        return m_controllerList->HandleInputChannelEvent({GetId(), inputChannel});
+        AzFramework::NativeWindowHandle windowId = reinterpret_cast<AzFramework::NativeWindowHandle>(winId());
+        return m_controllerList->HandleInputChannelEvent({GetId(), windowId, inputChannel});
     }
 
     void RenderViewportWidget::OnTick([[maybe_unused]]float deltaTime, AZ::ScriptTimePoint time)
@@ -235,14 +247,16 @@ namespace AtomToolsFramework
 
         // Now that we've looked a viewport local mouse position,
         // we can go ahead and broadcast the system cursor input event to the controllers.
-        // This allows any controllers not listening to pure mosue deltas to consistently
+        // This allows any controllers not listening to pure mouse deltas to consistently
         // look up the mouse position in viewport screen coordinates.
         const AzFramework::InputDevice* mouseInputDevice = nullptr;
-        if (AzFramework::InputDeviceRequestBus::EventResult(mouseInputDevice, AzFramework::InputDeviceMouse::Id, &AzFramework::InputDeviceRequests::GetInputDevice);
+        if (AzFramework::InputDeviceRequestBus::EventResult(
+                mouseInputDevice, AzFramework::InputDeviceMouse::Id, &AzFramework::InputDeviceRequests::GetInputDevice);
             mouseInputDevice != nullptr)
         {
+            const AzFramework::NativeWindowHandle windowId = reinterpret_cast<AzFramework::NativeWindowHandle>(winId());
             AzFramework::InputChannel syntheticInput(AzFramework::InputDeviceMouse::SystemCursorPosition, *mouseInputDevice);
-            m_controllerList->HandleInputChannelEvent({GetId(), syntheticInput});
+            m_controllerList->HandleInputChannelEvent({GetId(), windowId, syntheticInput});
         }
 
         if (m_capturingCursor && m_lastCursorPosition.has_value())
@@ -263,7 +277,7 @@ namespace AtomToolsFramework
         const qreal deficePixelRatio = devicePixelRatioF();
         const QSize windowSize = uiWindowSize * deficePixelRatio;
 
-        AzFramework::NativeWindowHandle windowId = reinterpret_cast<AzFramework::NativeWindowHandle>(winId());
+        const AzFramework::NativeWindowHandle windowId = reinterpret_cast<AzFramework::NativeWindowHandle>(winId());
         AzFramework::WindowNotificationBus::Event(windowId, &AzFramework::WindowNotifications::OnWindowResized, windowSize.width(), windowSize.height());
         m_windowResizedEvent = false;
     }
@@ -392,7 +406,8 @@ namespace AtomToolsFramework
         return projectedPosition.GetAsVector3() / projectedPosition.GetW();
     }
 
-    AZStd::optional<AzToolsFramework::ViewportInteraction::ProjectedViewportRay> RenderViewportWidget::ViewportScreenToWorldRay(const QPoint& screenPosition)
+    AZStd::optional<AzToolsFramework::ViewportInteraction::ProjectedViewportRay> RenderViewportWidget::ViewportScreenToWorldRay(
+        const QPoint& screenPosition)
     {
         auto pos0 = ViewportScreenToWorld(screenPosition, 0.f);
         auto pos1 = ViewportScreenToWorld(screenPosition, 1.f);
@@ -408,14 +423,16 @@ namespace AtomToolsFramework
         return AzToolsFramework::ViewportInteraction::ProjectedViewportRay{rayOrigin, rayDirection};
     }
 
-    QPoint RenderViewportWidget::ViewportCursorScreenPosition()
+    AzFramework::ScreenPoint RenderViewportWidget::ViewportCursorScreenPosition()
     {
-        return m_mousePosition.toPoint();
+        return AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(m_mousePosition.toPoint());
     }
 
-    AZStd::optional<QPoint> RenderViewportWidget::PreviousViewportCursorScreenPosition()
+    AZStd::optional<AzFramework::ScreenPoint> RenderViewportWidget::PreviousViewportCursorScreenPosition()
     {
-        return m_lastCursorPosition.has_value() ? mapFromGlobal(m_lastCursorPosition.value()) : m_lastCursorPosition;
+        using AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint;
+        return m_lastCursorPosition.has_value() ? ScreenPointFromQPoint(mapFromGlobal(m_lastCursorPosition.value()))
+                                                : AZStd::optional<AzFramework::ScreenPoint>{};
     }
 
     void RenderViewportWidget::BeginCursorCapture()

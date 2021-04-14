@@ -501,24 +501,30 @@ namespace GraphModel
         }
     }
 
-    void Node::AssertPointerIsNew(SlotDefinitionPtr newSlotDefinition, const SlotDefinitionList& existingSlotDefinitions) const
+    void Node::AssertPointerIsNew([[maybe_unused]] SlotDefinitionPtr newSlotDefinition, [[maybe_unused]] const SlotDefinitionList& existingSlotDefinitions) const
     {
+#if defined(AZ_ENABLE_TRACING)
         auto iter = AZStd::find(existingSlotDefinitions.begin(), existingSlotDefinitions.end(), newSlotDefinition);
         AZ_Assert(iter == existingSlotDefinitions.end(), "This slot has already been registered");
+#endif
     }
 
-    void Node::AssertNameIsNew(SlotDefinitionPtr newSlotDefinition, const SlotDefinitionList& existingSlotDefinitions) const
+    void Node::AssertNameIsNew([[maybe_unused]] SlotDefinitionPtr newSlotDefinition, [[maybe_unused]] const SlotDefinitionList& existingSlotDefinitions) const
     {
+#if defined(AZ_ENABLE_TRACING)
         auto iter = AZStd::find_if(existingSlotDefinitions.begin(), existingSlotDefinitions.end(),
             [newSlotDefinition](SlotDefinitionPtr existingSlotDefinition) { return newSlotDefinition->GetName() == existingSlotDefinition->GetName(); });
         AZ_Assert(iter == existingSlotDefinitions.end(), "Another slot with name [%s] already exists", newSlotDefinition->GetName().c_str());
+#endif
     }
 
-    void Node::AssertDisplayNameIsNew(SlotDefinitionPtr newSlotDefinition, const SlotDefinitionList& existingSlotDefinitions) const
+    void Node::AssertDisplayNameIsNew([[maybe_unused]] SlotDefinitionPtr newSlotDefinition, [[maybe_unused]] const SlotDefinitionList& existingSlotDefinitions) const
     {
+#if defined(AZ_ENABLE_TRACING)
         auto iter = AZStd::find_if(existingSlotDefinitions.begin(), existingSlotDefinitions.end(),
             [newSlotDefinition](SlotDefinitionPtr existingSlotDefinition) { return newSlotDefinition->GetDisplayName() == existingSlotDefinition->GetDisplayName(); });
         AZ_Assert(iter == existingSlotDefinitions.end(), "Another slot with display name [%s] already exists", newSlotDefinition->GetDisplayName().c_str());
+#endif
     }
 
 } // namespace GraphModel

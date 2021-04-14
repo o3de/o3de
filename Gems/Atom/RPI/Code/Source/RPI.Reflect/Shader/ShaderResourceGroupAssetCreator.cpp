@@ -80,6 +80,22 @@ namespace AZ
             }
         }
 
+        void ShaderResourceGroupAssetCreator::AddShaderInput(const RHI::ShaderInputBufferUnboundedArrayDescriptor& shaderInputBufferUnboundedArray)
+        {
+            if (ValidateIsReady())
+            {
+                m_shaderResourceGroupLayout->AddShaderInput(shaderInputBufferUnboundedArray);
+            }
+        }
+
+        void ShaderResourceGroupAssetCreator::AddShaderInput(const RHI::ShaderInputImageUnboundedArrayDescriptor& shaderInputImageUnboundedArray)
+        {
+            if (ValidateIsReady())
+            {
+                m_shaderResourceGroupLayout->AddShaderInput(shaderInputImageUnboundedArray);
+            }
+        }
+
         void ShaderResourceGroupAssetCreator::AddShaderInput(const RHI::ShaderInputSamplerDescriptor& shaderInputSampler)
         {
             if (ValidateIsReady())

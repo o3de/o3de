@@ -39,7 +39,6 @@ namespace News
         pbuf->sputn(m_resource.GetData().data(), m_resource.GetData().size());
         Aws::String awsUrl;
 
-        bool good = ss->good();
         if (!s3Connector.PutObject(
             m_resource.GetId().toStdString().c_str(),
             ss,

@@ -44,6 +44,7 @@ namespace AtomToolsFramework
         //! Requires the Atom RPI to be initialized in order
         //! to internally construct an RPI::ViewportContext.
         explicit RenderViewportWidget(AzFramework::ViewportId id = AzFramework::InvalidViewportId, QWidget* parent = nullptr);
+        ~RenderViewportWidget();
 
         //! Gets the name associated with this viewport's ViewportContext.
         //! This context name can be used to adjust the current Camera
@@ -93,8 +94,8 @@ namespace AtomToolsFramework
         // AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Handler ...
         void BeginCursorCapture() override;
         void EndCursorCapture() override;
-        QPoint ViewportCursorScreenPosition() override;
-        AZStd::optional<QPoint> PreviousViewportCursorScreenPosition() override;
+        AzFramework::ScreenPoint ViewportCursorScreenPosition() override;
+        AZStd::optional<AzFramework::ScreenPoint> PreviousViewportCursorScreenPosition() override;
 
         // AzFramework::WindowRequestBus::Handler ...
         void SetWindowTitle(const AZStd::string& title) override;

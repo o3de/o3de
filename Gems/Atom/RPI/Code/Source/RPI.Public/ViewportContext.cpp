@@ -101,8 +101,11 @@ namespace AZ
 
         void ViewportContext::RenderTick()
         {
-            if (m_currentPipeline)
+            // add the current pipeline to next render tick if it's not already added.
+            if (m_currentPipeline && m_currentPipeline->GetRenderMode() != RenderPipeline::RenderMode::RenderOnce)
             {
+                ViewportContextNotificationBus::Event(GetName(), &ViewportContextNotificationBus::Events::OnRenderTick);
+                ViewportContextIdNotificationBus::Event(GetId(), &ViewportContextIdNotificationBus::Events::OnRenderTick);
                 m_currentPipeline->AddToRenderTickOnce();
             }
         }

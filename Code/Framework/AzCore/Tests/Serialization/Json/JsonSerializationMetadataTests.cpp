@@ -93,8 +93,10 @@ namespace JsonSerializationTests
 
     TEST_F(JsonSerializationMetadataTests, Add_MoveDuplicateValue_ReturnsFalse)
     {
+        AZ_TEST_START_TRACE_SUPPRESSION;
         m_metadata->Add(TestSettingsA{ 42 });
         EXPECT_FALSE(m_metadata->Add(TestSettingsA{ 88 }));
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
     }
 
     TEST_F(JsonSerializationMetadataTests, Add_CopyNewValue_ReturnsTrue)
@@ -119,11 +121,13 @@ namespace JsonSerializationTests
 
     TEST_F(JsonSerializationMetadataTests, Find_MultipleValues_ReturnsFirstValue)
     {
-        m_metadata->Add(TestSettingsA{ 42 });
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        m_metadata->Add(TestSettingsA{42});
         m_metadata->Add(TestSettingsA{ 88 });
         TestSettingsA* value = m_metadata->Find<TestSettingsA>();
         ASSERT_NE(nullptr, value);
         EXPECT_EQ(42, value->m_number);
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
     }
 
     TEST_F(JsonSerializationMetadataTests, FindConst_PreviouslyAddedValue_ReturnsConstPointer)

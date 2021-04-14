@@ -89,7 +89,9 @@ void CObjManager::UnloadObjects(bool bDeleteAll)
             m_lstLoadedObjects.clear();
         }
 
+#if !defined(_RELEASE)
         int nNumLeaks = 0;
+#endif
         std::vector<CStatObj*> garbage;
         for (CStatObj* pStatObj = CStatObj::get_intrusive_list_root(); pStatObj; pStatObj = pStatObj->m_next_intrusive)
         {
@@ -1120,8 +1122,7 @@ bool CObjManager::SphereRenderMeshIntersection(IRenderMesh* pRenderMesh, const V
 
     // get indices
     vtx_idx* pInds = pRenderMesh->GetIndexPtr(FSL_READ);
-    int nInds = pRenderMesh->GetIndicesCount();
-    assert(nInds % 3 == 0);
+    assert(pRenderMesh->GetIndicesCount() % 3 == 0);
 
     // test tris
     TRenderChunkArray& Chunks = pRenderMesh->GetChunks();

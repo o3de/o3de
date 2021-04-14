@@ -1284,17 +1284,13 @@ void ResourceCompiler::LogMultiLine(const char* szText)
 
         *pLine++ = *p++;
     }
-    while (*p)
-    {
-        ;
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
 void ResourceCompiler::ShowHelp(const bool bDetailed)
 {
     RCLog("");
-    RCLog("Usage: RC filespec /p=<platform> [/Key1=Value1] [/Key2=Value2] etc...");
+    RCLog("Usage: RC filespec --platform=<platform> [--Key1=Value1] [--Key2=Value2] etc...");
 
     if (bDetailed)
     {
@@ -2372,8 +2368,6 @@ typedef std::set<const char*, stl::less_strcmp<const char*> > References;
 
 void ResourceCompiler::ScanForAssetReferences(std::vector<string>& outReferences, const string& refsRoot)
 {
-    const IConfig* const config = &m_multiConfig.getConfig();
-
     const char* const scanRoot = ".";
 
     RCLog("Scanning for asset references in \"%s\"", scanRoot);
@@ -2526,8 +2520,6 @@ static bool MatchesWildcardsSet(const string& str, const std::vector<string>& ma
 //////////////////////////////////////////////////////////////////////////
 void ResourceCompiler::SaveAssetReferences(const std::vector<string>& references, const string& filename, const string& includeMasksStr, const string& excludeMasksStr)
 {
-    const IConfig* const config = &m_multiConfig.getConfig();
-
     std::vector<string> includeMasks;
     StringHelpers::Split(includeMasksStr, ";", false, includeMasks);
 
@@ -2868,8 +2860,6 @@ int ResourceCompiler::ProcessJobFile()
 //////////////////////////////////////////////////////////////////////////
 void ResourceCompiler::ExtractJobDefaultProperties(std::vector<string>& properties, const XmlNodeRef& jobNode)
 {
-    IConfig* const config = &m_multiConfig.getConfig();
-
     if (jobNode->isTag("DefaultProperties"))
     {
         // Attributes are config modifiers.
@@ -3109,12 +3099,12 @@ int ResourceCompiler::EvaluateJobXmlNode(CPropertyVars& properties, XmlNodeRef& 
         // Check current platform property against start-up platform setting
         // Reason: This setting cannot be modified after start-up
         const char* pCurrentPlatform = NULL;
-        if (config->GetKeyValue("p", pCurrentPlatform) && pCurrentPlatform)
+        if (config->GetKeyValue("platform", pCurrentPlatform) && pCurrentPlatform)
         {
             int currentPlatformIndex = FindPlatform(pCurrentPlatform);
             if (GetMultiplatformConfig().getActivePlatform() != currentPlatformIndex)
             {
-                RCLogWarning("The platform property '/p=%s' is ignored because it can only be specified on the command-line", pCurrentPlatform);
+                RCLogWarning("The platform property '--platform=%s' is ignored because it can only be specified on the command-line", pCurrentPlatform);
             }
         }
 
@@ -3257,6 +3247,8 @@ void ResourceCompiler::RegisterDefaultKeys()
 {
     RegisterKey("_debug", "");   // hidden key for debug-related activities. parsing is module-dependent and subject to change without prior notice.
 
+    RegisterKey("project-path", "Path to project. Used to find files related to the project.");
+    RegisterKey("project-name", R"(Name of the project. It's value is derived from the project.json file "project_name" field.)");
     RegisterKey("wait",
         "wait for an user action on start and/or finish of RC:\n"
         "0-don't wait (default),\n"
@@ -3267,7 +3259,7 @@ void ResourceCompiler::RegisterDefaultKeys()
     RegisterKey("wx", "pause and display message box in case of warning or error");
     RegisterKey("recursive", "traverse input directory with sub folders");
     RegisterKey("refresh", "force recompilation of resources with up to date timestamp");
-    RegisterKey("p", "to specify platform (for supported names see [_platform] sections in ini)");
+    RegisterKey("platform", "to specify platform (for supported names see [_platform] sections in ini)");
     RegisterKey("pi", "provides the platform id from the Asset Processor");
     RegisterKey("statistics", "log statistics to rc_stats_* files");
     RegisterKey("dependencies",
@@ -3281,7 +3273,6 @@ void ResourceCompiler::RegisterDefaultKeys()
     RegisterKey("logfiles", "to suppress generating log file rc_log.log");
     RegisterKey("logprefix", "prepends this prefix to every log file name used (by default the prefix is the exe's folder).");
     RegisterKey("logtime", "logs time passed: 0=off, 1=on (default)");
-    RegisterKey("gameroot", "The root of the current game project.  Used to find files related to the current game.");
     RegisterKey("watchfolder", "The watched root folder that this file is located in.  Used to produce the relative asset name.");
     RegisterKey("nosourcecontrol", "Boolean - if true, disables initialization of source control.  Disabling Source Control in the editor automatically disables it here, too.");
     RegisterKey("sourceroot", "list of source folders separated by semicolon");
@@ -3334,7 +3325,6 @@ void ResourceCompiler::RegisterDefaultKeys()
     RegisterKey("job", "Process a job xml file");
     RegisterKey("jobtarget", "Run only a job with specific name instead of whole job-file. Used only with /job option");
     RegisterKey("unittest", "Run the unit tests for resource compiler and nothing else");
-    RegisterKey("gamesubdirectory", "The relative path to game folder from root from @devroot@.  Defines @devassets@ when concatenated with @devroot@.  Used to find files related to the this game.");
     RegisterKey("unattended", "Prevents RC from opening any dialogs or message boxes");
     RegisterKey("createjobs", "Instructs RC to read the specified input file (a CreateJobsRequest) and output a CreateJobsResponse");
     RegisterKey("port", "Specifies the port that should be used to connect to the asset processor.  If not set, the default from the bootstrap cfg will be used instead");

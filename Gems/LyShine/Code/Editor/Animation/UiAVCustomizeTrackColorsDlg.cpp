@@ -28,7 +28,7 @@
 #include "UiAVCustomizeTrackColorsDlg.h"
 #include "UiAnimViewDialog.h"
 
-#include <Animation/ui_UiAVCustomizeTrackColorsDialog.h>
+#include <Editor/Animation/ui_UiAVCustomizeTrackColorsDialog.h>
 
 #include <QLabel>
 #include <QMessageBox>

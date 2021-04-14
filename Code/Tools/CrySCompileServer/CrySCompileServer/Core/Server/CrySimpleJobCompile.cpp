@@ -282,7 +282,7 @@ bool CCrySimpleJobCompile::Compile(const TiXmlElement* pElement, std::vector<uin
         shaderPath = AZStd::string::format("%s%s/", SEnviropment::Instance().m_ShaderPath.c_str(), language.c_str());
     }
     
-    NormalizePath(shaderPath);
+    shaderPath = AZ::IO::PathView(shaderPath).LexicallyNormal().Native();
     if (!IsPathValid(shaderPath))
     {
         State(ECSJS_ERROR);
@@ -347,17 +347,14 @@ bool CCrySimpleJobCompile::Compile(const TiXmlElement* pElement, std::vector<uin
     static AZStd::atomic_long nTmpCounter = { 0 };
     ++nTmpCounter;
 
-    char tmpstr[64];
-    azsprintf(tmpstr, "%ld", static_cast<long>(nTmpCounter));
+    const auto tmpIndex = AZStd::string::format("%ld", static_cast<long>(nTmpCounter));
+    const AZ::IO::Path TmpIn = SEnviropment::Instance().m_TempPath / (tmpIndex + ".In");
+    const AZ::IO::Path TmpOut = SEnviropment::Instance().m_TempPath / (tmpIndex + ".Out");
+    CCrySimpleFileGuard FGTmpIn(TmpIn.c_str());
+    CCrySimpleFileGuard FGTmpOut(TmpOut.c_str());
+    CSTLHelper::ToFile(TmpIn.c_str(), std::vector<uint8_t>(pProgram, &pProgram[strlen(pProgram)]));
 
-
-    const std::string TmpIn =   SEnviropment::Instance().m_TempPath + tmpstr + ".In";
-    const std::string TmpOut =   SEnviropment::Instance().m_TempPath + tmpstr + ".Out";
-    CCrySimpleFileGuard FGTmpIn(TmpIn);
-    CCrySimpleFileGuard FGTmpOut(TmpOut);
-    CSTLHelper::ToFile(TmpIn, std::vector<uint8_t>(pProgram, &pProgram[strlen(pProgram)]));
-
-    const AZStd::string compilerPath = SEnviropment::Instance().m_CompilerPath.c_str();
+    AZ::IO::Path compilerPath = SEnviropment::Instance().m_CompilerPath;
     AZStd::string command;
     if (m_Version >= EPV_V0022)
     {
@@ -370,7 +367,7 @@ bool CCrySimpleJobCompile::Compile(const TiXmlElement* pElement, std::vector<uin
             return false;
         }
 
-        AZStd::string commandStringToFormat = compilerPath + compilerExecutable;
+        AZStd::string commandStringToFormat = (compilerPath / compilerExecutable).Native();
         
 #if defined(AZ_PLATFORM_LINUX) || defined(AZ_PLATFORM_MAC)
         // Surrounding compiler path+executable with quotes to support spaces in the path.
@@ -392,7 +389,7 @@ bool CCrySimpleJobCompile::Compile(const TiXmlElement* pElement, std::vector<uin
                 return false;
             }
         
-            AZStd::string fxcLocation = compilerPath + fxcCompilerExecutable;
+            AZ::IO::Path fxcLocation = compilerPath / fxcCompilerExecutable;
             
             // Handle an extra string parameter to specify the base directory where the fxc compiler is located
             command = AZStd::move(AZStd::string::format(commandStringToFormat.c_str(), fxcLocation.c_str(), pEntry, pProfile, TmpOut.c_str(), TmpIn.c_str()));
@@ -434,7 +431,7 @@ bool CCrySimpleJobCompile::Compile(const TiXmlElement* pElement, std::vector<uin
             AZStd::string insertPattern = "\\\"";
 
             // Search for the next space until that path exists. Then we assume that's the path to the executable.
-            size_t startPos = command.find(compilerPath);
+            size_t startPos = command.find(compilerPath.Native());
             for (size_t pos = command.find(" ", startPos); pos != AZStd::string::npos; pos = command.find(" ", pos + 1))
             {
                 if (AZ::IO::SystemFile::Exists(command.substr(startPos, pos - startPos).c_str()))
@@ -449,7 +446,7 @@ bool CCrySimpleJobCompile::Compile(const TiXmlElement* pElement, std::vector<uin
             command = AZStd::move(AZStd::string::format(pCompileFlags, pEntry, pProfile, TmpOut.c_str(), TmpIn.c_str()));
         }
         
-        command = compilerPath + command;
+        command = compilerPath.Native() + command;
     }
 
     AZStd::string hardwareTarget;
@@ -540,11 +537,13 @@ bool CCrySimpleJobCompile::Compile(const TiXmlElement* pElement, std::vector<uin
         std::string tags = pTags ? pTags : "";
 
         std::string filteredError;
-        CSTLHelper::Replace(filteredError, outError, TmpIn + ".patched", "%filename%"); // DXPS does its own patching
-        CSTLHelper::Replace(filteredError, filteredError, TmpIn, "%filename%");
+        AZ::IO::Path patchFilePath = TmpIn;
+        patchFilePath.ReplaceFilename(AZ::IO::PathView{ AZStd::string{ TmpIn.Filename().Native() } + ".patched" });
+        CSTLHelper::Replace(filteredError, outError, patchFilePath.c_str(), "%filename%"); // DXPS does its own patching
+        CSTLHelper::Replace(filteredError, filteredError, TmpIn.c_str(), "%filename%");
         // replace any that don't have the full path
-        CSTLHelper::Replace(filteredError, filteredError, std::string(tmpstr) + ".In.patched", "%filename%"); // DXPS does its own patching
-        CSTLHelper::Replace(filteredError, filteredError, std::string(tmpstr) + ".In", "%filename%");
+        CSTLHelper::Replace(filteredError, filteredError, (tmpIndex + ".In.patched").c_str(), "%filename%"); // DXPS does its own patching
+        CSTLHelper::Replace(filteredError, filteredError, (tmpIndex + ".In").c_str(), "%filename%");
 
         CSTLHelper::Replace(filteredError, filteredError, "\r\n", "\n");
 
@@ -552,11 +551,11 @@ bool CCrySimpleJobCompile::Compile(const TiXmlElement* pElement, std::vector<uin
         throw new CCompilerError(pEntry, filteredError, ccs, sIP, pShaderRequestLine, pProgram, project, platform.c_str(), compiler.c_str(), language.c_str(), tags, pProfile);
     }
 
-    if (!CSTLHelper::FromFile(TmpOut, rVec))
+    if (!CSTLHelper::FromFile(TmpOut.c_str(), rVec))
     {
         State(ECSJS_ERROR_FILEIO);
         std::string errorString("Could not read: ");
-        errorString += TmpOut;
+        errorString += std::string(TmpOut.c_str(), TmpOut.Native().size());
         CrySimple_ERROR(errorString.c_str());
         return false;
     }

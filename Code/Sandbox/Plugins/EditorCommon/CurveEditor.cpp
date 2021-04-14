@@ -2134,12 +2134,6 @@ void CCurveEditor::UpdateTangents()
                     key.m_inTangent = Vec2(prevKey.m_time - key.m_time, prevKey.m_value - key.m_value) / 3.0f;
                     key.m_outTangent = -key.m_outTangent;
                 }
-                else
-                {
-                    SCurveEditorKey& prevKey = curve.m_keys[keyIx - 1];
-                    SCurveEditorKey& nextKey = curve.m_keys[keyIx + 1];
-
-                }
                 key.m_bAdded = false;
             }
             if (keyIx > 0)

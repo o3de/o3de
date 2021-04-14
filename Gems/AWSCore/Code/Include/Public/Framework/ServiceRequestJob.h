@@ -372,6 +372,7 @@ namespace AWSCore
 
                 }
 
+#if defined(AZ_ENABLE_TRACING)
                 AZStd::string message = AZStd::string::format("An %s error occurred when performing %s %s on service %s using %s: %s\n\nRequest Content:\n%s\n\nResponse Content:\n%s\n\n",
                     RequestType::error.type.c_str(),
                     ServiceRequestJobType::HttpMethodToString(RequestType::Method()),
@@ -404,6 +405,7 @@ namespace AWSCore
                 {
                     AZ_Warning(ServiceClientJobType::COMPONENT_DISPLAY_NAME, false, message.c_str());
                 }
+#endif
 
                 OnFailure();
 

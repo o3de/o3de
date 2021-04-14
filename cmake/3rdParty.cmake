@@ -107,6 +107,7 @@ function(ly_add_external_target)
             set(BASE_PATH "${LY_3RDPARTY_PATH}/${ly_add_external_target_3RDPARTY_DIRECTORY}")
 
         else()
+            ly_install_external_target(${ly_add_external_target_3RDPARTY_ROOT_DIRECTORY})
             set(BASE_PATH "${ly_add_external_target_3RDPARTY_ROOT_DIRECTORY}")
         endif()
 
@@ -284,6 +285,25 @@ function(ly_add_external_target)
             )
         endif()
 
+    endif()
+
+endfunction()
+
+#! ly_install_external_target: external libraries which are not part of 3rdParty need to be installed
+#
+# \arg:3RDPARTY_ROOT_DIRECTORY custom 3rd party directory which needs to be installed
+function(ly_install_external_target 3RDPARTY_ROOT_DIRECTORY)
+    
+    # Install the Find file to our <install_location>/cmake directory 
+    install(FILES ${CMAKE_CURRENT_LIST_FILE} DESTINATION cmake)
+
+    # We only want to install external targets that are part of our source tree
+    # Checking for relative path beginning with "../" also works when the path
+    # given is on another drive letter on windows(i.e., RELATIVE_PATH returns an absolute path)
+    file(RELATIVE_PATH rel_path ${CMAKE_SOURCE_DIR} ${3RDPARTY_ROOT_DIRECTORY})
+    if (NOT ${rel_path} MATCHES "^../")
+        get_filename_component(rel_path ${rel_path} DIRECTORY)
+        install(DIRECTORY ${3RDPARTY_ROOT_DIRECTORY} DESTINATION ${rel_path})
     endif()
 
 endfunction()

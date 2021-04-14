@@ -68,6 +68,12 @@ namespace AZ
 
     AZStd::vector<AZStd::pair<const BehaviorMethod*, const BehaviorClass*>> OverloadsToVector(const BehaviorMethod&, const BehaviorClass*);
 
+    void RemovePropertyGetterNameArtifacts(AZStd::string& name);
+
+    void RemovePropertySetterNameArtifacts(AZStd::string& name);
+
+    void RemovePropertyNameArtifacts(AZStd::string& name);
+
     AZStd::string ReplaceCppArtifacts(AZStd::string_view sourceName);
 
     void StripQualifiers(AZStd::string& name);

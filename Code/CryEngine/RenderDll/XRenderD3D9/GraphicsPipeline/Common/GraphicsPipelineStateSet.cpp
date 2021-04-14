@@ -40,8 +40,9 @@ SGraphicsPipelineStateDescription::SGraphicsPipelineStateDescription(
     {
         SSkinningData* pSkinningData = NULL;
         SRenderObjData* pOD = pObj->GetObjData();
-        if (pOD && (pSkinningData = pOD->m_pSkinningData))
+        if (pOD && pOD->m_pSkinningData)
         {
+            pSkinningData = pOD->m_pSkinningData;
             if (pSkinningData->nHWSkinningFlags & eHWS_Skinning_Matrix)
             {
                 objectRuntimeMask |= (g_HWSR_MaskBit[HWSR_SKINNING_MATRIX]);

@@ -38,13 +38,22 @@ namespace ScriptCanvasEditor::Nodes
     NodeIdPair CreateFunctionDefinitionNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasId, bool isInput, AZStd::string rootName)
     {
         ScriptCanvasEditor::Nodes::StyleConfiguration styleConfiguration;
-        auto nodeAndPair = CreateAndGetNode(azrtti_typeid<ScriptCanvas::Nodes::Core::FunctionDefinitionNode>(), scriptCanvasId, styleConfiguration);
+        auto nodeAndPair = CreateAndGetNode(azrtti_typeid<ScriptCanvas::Nodes::Core::FunctionDefinitionNode>(), scriptCanvasId, styleConfiguration, [isInput](ScriptCanvas::Node* node)
+            {
+                ScriptCanvas::Nodes::Core::FunctionDefinitionNode* fdn = azrtti_cast<ScriptCanvas::Nodes::Core::FunctionDefinitionNode*>(node);
+                if (!isInput)
+                {
+                    fdn->MarkExecutionExit();
+                }
+            }
+        );
         NodeIdPair createdPair = nodeAndPair.second;
 
         auto functionDefinitionNode = azrtti_cast<ScriptCanvas::Nodes::Core::FunctionDefinitionNode*>(nodeAndPair.first);
 
         if (functionDefinitionNode && createdPair.m_scriptCanvasId.IsValid())
         {
+
             AZStd::unordered_set<AZStd::string> nodelingNames;
 
             auto enumerationFunction = [&nodelingNames, scriptCanvasId](ScriptCanvas::NodelingRequests* nodelingRequests)
@@ -83,24 +92,6 @@ namespace ScriptCanvasEditor::Nodes
             
             GraphCanvas::NodeTitleRequestBus::Event(createdPair.m_graphCanvasId, &GraphCanvas::NodeTitleRequests::SetSubTitle, "Function");
 
-            
-
-            // Because of how the extender slots are registered, there isn't an easy way to only create one or the other based on
-            // the type of nodeling, so instead they both get created and we need to remove the inapplicable one
-            GraphCanvas::ConnectionType typeToRemove = (isInput) ? GraphCanvas::CT_Input : GraphCanvas::CT_Output;
-
-            AZStd::vector<GraphCanvas::SlotId> extenderSlotIds, executionSlotIds;
-            GraphCanvas::NodeRequestBus::EventResult(extenderSlotIds, createdPair.m_graphCanvasId, &GraphCanvas::NodeRequests::FindVisibleSlotIdsByType, typeToRemove, GraphCanvas::SlotTypes::ExtenderSlot);
-            if (!extenderSlotIds.empty())
-            {
-                GraphCanvas::NodeRequestBus::Event(createdPair.m_graphCanvasId, &GraphCanvas::NodeRequests::RemoveSlot, *extenderSlotIds.begin());
-            }
-
-            GraphCanvas::NodeRequestBus::EventResult(executionSlotIds, createdPair.m_graphCanvasId, &GraphCanvas::NodeRequests::FindVisibleSlotIdsByType, typeToRemove, GraphCanvas::SlotTypes::ExecutionSlot);
-            if (!executionSlotIds.empty())
-            {
-                GraphCanvas::NodeRequestBus::Event(createdPair.m_graphCanvasId, &GraphCanvas::NodeRequests::RemoveSlot, *executionSlotIds.begin());
-            }
         }
 
         return createdPair;
@@ -111,7 +102,7 @@ namespace ScriptCanvasEditor::Nodes
         return CreateAndGetNode(classId, scriptCanvasId, styleConfiguration).second;
     }
 
-    AZStd::pair<ScriptCanvas::Node*, NodeIdPair> CreateAndGetNode(const AZ::Uuid& classId, const ScriptCanvas::ScriptCanvasId& scriptCanvasId, const StyleConfiguration& styleConfiguration)
+    AZStd::pair<ScriptCanvas::Node*, NodeIdPair> CreateAndGetNode(const AZ::Uuid& classId, const ScriptCanvas::ScriptCanvasId& scriptCanvasId, const StyleConfiguration& styleConfiguration, AZStd::function<void(ScriptCanvas::Node*)> onCreateCallback)
     {
         AZ_PROFILE_TIMER("ScriptCanvas", __FUNCTION__);
         NodeIdPair nodeIdPair;
@@ -121,6 +112,10 @@ namespace ScriptCanvasEditor::Nodes
         scriptCanvasEntity->Init();
         nodeIdPair.m_scriptCanvasId = scriptCanvasEntity->GetId();
         ScriptCanvas::SystemRequestBus::BroadcastResult(node, &ScriptCanvas::SystemRequests::CreateNodeOnEntity, scriptCanvasEntity->GetId(), scriptCanvasId, classId);
+        if (onCreateCallback)
+        {
+            onCreateCallback(node);
+        }
         scriptCanvasEntity->SetName(AZStd::string::format("SC-Node(%s)", scriptCanvasEntity->GetName().data()));
 
         AZ::EntityId graphCanvasGraphId;
@@ -242,7 +237,7 @@ namespace ScriptCanvasEditor::Nodes
         ScriptCanvas::NamespacePath emptyNamespacePath;
         methodNode->InitializeFree(emptyNamespacePath, methodName);
 
-        AZStd::string_view displayName = methodNode->GetName();
+        AZStd::string displayName = methodNode->GetName();
         scriptCanvasEntity->SetName(AZStd::string::format("SC-Node(%.*s)", aznumeric_cast<int>(displayName.size()), displayName.data()));
 
         AZ::EntityId graphCanvasGraphId;

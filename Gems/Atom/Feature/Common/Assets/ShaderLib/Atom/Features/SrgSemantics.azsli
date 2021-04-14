@@ -60,37 +60,7 @@ ShaderResourceGroupSemantic SRG_RayTracingGlobal
     FrequencyId = 0;
 };
 
-ShaderResourceGroupSemantic SRG_RayTracingLocal_1
+ShaderResourceGroupSemantic SRG_RayTracingScene
 {
     FrequencyId = 1;
-};
-
-ShaderResourceGroupSemantic SRG_RayTracingLocal_2
-{
-    FrequencyId = 2;
-};
-
-ShaderResourceGroupSemantic SRG_RayTracingLocal_3
-{
-    FrequencyId = 3;
-};
-
-ShaderResourceGroupSemantic SRG_RayTracingLocal_4
-{
-    FrequencyId = 4;
-};
-
-ShaderResourceGroupSemantic SRG_RayTracingLocal_5
-{
-    FrequencyId = 5;
-};
-
-ShaderResourceGroupSemantic SRG_RayTracingLocal_6
-{
-    FrequencyId = 6;
-};
-
-ShaderResourceGroupSemantic SRG_RayTracingLocal_7
-{
-    FrequencyId = 7;
 };

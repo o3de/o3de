@@ -689,7 +689,6 @@ CTexture* CTexture::Create2DTexture(const char* szName, int nWidth, int nHeight,
 
     CTexture* pTex = CreateTextureObject(szName, nWidth, nHeight, 1, eTT_2D, nFlags, eTFDst, -1);
     pTex->m_bAsyncDevTexCreation = bAsyncDevTexCreation;
-    bool bFound = false;
 
     pTex->Create2DTexture(nWidth, nHeight, nMips, nFlags, pData, eTFSrc, eTFDst);
 
@@ -723,7 +722,6 @@ bool CTexture::Create3DTexture(int nWidth, int nHeight, int nDepth, int nMips, [
 CTexture* CTexture::Create3DTexture(const char* szName, int nWidth, int nHeight, int nDepth, int nMips, int nFlags, const byte* pData, ETEX_Format eTFSrc, ETEX_Format eTFDst)
 {
     CTexture* pTex = CreateTextureObject(szName, nWidth, nHeight, nDepth, eTT_3D, nFlags, eTFDst, -1);
-    bool bFound = false;
 
     pTex->Create3DTexture(nWidth, nHeight, nDepth, nMips, nFlags, pData, eTFSrc, eTFDst);
 
@@ -930,7 +928,8 @@ void CTexture::RT_Precache()
     int pakLogFileAccess = 0;
     if IsCVarConstAccess(constexpr) (!CRenderer::CV_r_texturesstreaming)
     {
-        if (sysPakLogInvalidAccess = gEnv->pConsole->GetCVar("sys_PakLogInvalidFileAccess"))
+        sysPakLogInvalidAccess = gEnv->pConsole->GetCVar("sys_PakLogInvalidFileAccess");
+        if (sysPakLogInvalidAccess)
         {
             pakLogFileAccess = sysPakLogInvalidAccess->GetIVal();
         }
@@ -1473,7 +1472,9 @@ bool CTexture::ImagePreprocessing(STexData& td)
 {
     FUNCTION_PROFILER_FAST(GetISystem(), PROFILE_RENDERER, g_bProfilerEnabled);
 
+#if !defined(_RELEASE)
     const char* pTexFileName = td.m_pFilePath ? td.m_pFilePath : "$Unknown";
+#endif
 
     const ETEX_Format eTFDst = ClosestFormatSupported(m_eTFDst);
     if (eTFDst == eTF_Unknown)
@@ -2412,7 +2413,6 @@ Ang3 sDeltAngles(Ang3& Ang0, Ang3& Ang1)
 
 SEnvTexture* CTexture::FindSuitableEnvTex(Vec3& Pos, Ang3& Angs, bool bMustExist, [[maybe_unused]] int RendFlags, [[maybe_unused]] bool bUseExistingREs, [[maybe_unused]] CShader* pSH, [[maybe_unused]] CShaderResources* pRes, CRenderObject* pObj, bool bReflect, IRenderElement* pRE, bool* bMustUpdate)
 {
-    SEnvTexture* cm = NULL;
     float time0 = iTimer->GetAsyncCurTime();
 
     int i;
@@ -2639,7 +2639,6 @@ bool CTexture::ReloadFile(const char* szFileName)
     char realNameBuffer[256];
     fpConvertDOSToUnixName(realNameBuffer, szFileName);
 
-    char* realName = realNameBuffer;
 
     bool bStatus = false;
 
@@ -3233,10 +3232,10 @@ void CRenderer::EF_PrintRTStats(const char* szName)
 
 bool CTexture::IsMSAAChanged()
 {
-    const RenderTargetData* pRtdt = m_pRenderTargetData;
 #if defined(NULL_RENDERER)
     return false;
 #else
+    const RenderTargetData* pRtdt = m_pRenderTargetData;
     return pRtdt && (pRtdt->m_nMSAASamples != gRenDev->m_RP.m_MSAAData.Type || pRtdt->m_nMSAAQuality != gRenDev->m_RP.m_MSAAData.Quality);
 #endif
 }

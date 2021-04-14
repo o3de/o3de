@@ -41,7 +41,7 @@ def C14861502_PhysXCollider_AssetAutoAssigned():
      6) The physics asset in PhysX Collider component is auto-assigned.
 
     Note:
-     - This test file must be called from the Lumberyard Editor command terminal
+     - This test file must be called from the Open 3D Engine Editor command terminal
      - Any passed and failed tests are written to the Editor.log file.
             Parsing the file or running a log_monitor are required to observe the test results.
 
@@ -59,7 +59,7 @@ def C14861502_PhysXCollider_AssetAutoAssigned():
     from editor_entity_utils import EditorEntity as Entity
     from asset_utils import Asset
 
-    # Lumberyard Imports
+    # Open 3D Engine Imports
     import azlmbr.legacy.general as general
 
     MESH_ASSET_PATH = os.path.join("Objects", "SphereBot", "r0-b_body.cgf")

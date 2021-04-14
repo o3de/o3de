@@ -104,8 +104,10 @@ namespace AZ::RPI
                 AZ_Assert(blendShapeData, "Node is expected to be a blend shape.");
                 if (blendShapeData)
                 {
+#if defined(AZ_ENABLE_TRACING)
                     const Containers::SceneGraph::NodeIndex morphMeshParentIndex = sceneGraph.GetNodeParent(sceneNodeIndex);
                     const char* meshNodeName = sceneGraph.GetNodeName(morphMeshParentIndex).GetName();
+#endif
 
                     AZ_Assert(AZ::StringFunc::Equal(sourceMesh.m_name.GetCStr(), meshNodeName, /*bCaseSensitive=*/true),
                         "Scene graph mesh node (%s) has a different name than the product mesh (%s).",
@@ -230,25 +232,35 @@ namespace AZ::RPI
 
                     const AZ::Vector3 deltaNormal = targetNormal - neutralNormal;
 
-                    currentDelta.m_normalX = Compress<uint8_t>(deltaNormal.GetX(), -2.0f, 2.0f);
-                    currentDelta.m_normalY = Compress<uint8_t>(deltaNormal.GetY(), -2.0f, 2.0f);
-                    currentDelta.m_normalZ = Compress<uint8_t>(deltaNormal.GetZ(), -2.0f, 2.0f);
+                    currentDelta.m_normalX = Compress<uint8_t>(deltaNormal.GetX(), MorphTargetDeltaConstants::s_tangentSpaceDeltaMin, MorphTargetDeltaConstants::s_tangentSpaceDeltaMax);
+                    currentDelta.m_normalY = Compress<uint8_t>(deltaNormal.GetY(), MorphTargetDeltaConstants::s_tangentSpaceDeltaMin, MorphTargetDeltaConstants::s_tangentSpaceDeltaMax);
+                    currentDelta.m_normalZ = Compress<uint8_t>(deltaNormal.GetZ(), MorphTargetDeltaConstants::s_tangentSpaceDeltaMin, MorphTargetDeltaConstants::s_tangentSpaceDeltaMax);
                 }
 
                 // Tangent
                 {
                     // Insert zero-delta until morphed tangents are supported in SceneAPI
-                    currentDelta.m_tangentX = Compress<uint8_t>(0.0f, -2.0f, 2.0f);
-                    currentDelta.m_tangentY = Compress<uint8_t>(0.0f, -2.0f, 2.0f);
-                    currentDelta.m_tangentZ = Compress<uint8_t>(0.0f, -2.0f, 2.0f);
+                    currentDelta.m_tangentX = Compress<uint8_t>(0.0f, MorphTargetDeltaConstants::s_tangentSpaceDeltaMin, MorphTargetDeltaConstants::s_tangentSpaceDeltaMax);
+                    currentDelta.m_tangentY = Compress<uint8_t>(0.0f, MorphTargetDeltaConstants::s_tangentSpaceDeltaMin, MorphTargetDeltaConstants::s_tangentSpaceDeltaMax);
+                    currentDelta.m_tangentZ = Compress<uint8_t>(0.0f, MorphTargetDeltaConstants::s_tangentSpaceDeltaMin, MorphTargetDeltaConstants::s_tangentSpaceDeltaMax);
                 }
 
                 // Bitangent
                 {
                     // Insert zero-delta until morphed bitangents are supported in SceneAPI
-                    currentDelta.m_bitangentX = Compress<uint8_t>(0.0f, -2.0f, 2.0f);
-                    currentDelta.m_bitangentY = Compress<uint8_t>(0.0f, -2.0f, 2.0f);
-                    currentDelta.m_bitangentZ = Compress<uint8_t>(0.0f, -2.0f, 2.0f);
+                    currentDelta.m_bitangentX = Compress<uint8_t>(0.0f, MorphTargetDeltaConstants::s_tangentSpaceDeltaMin, MorphTargetDeltaConstants::s_tangentSpaceDeltaMax);
+                    currentDelta.m_bitangentY = Compress<uint8_t>(0.0f, MorphTargetDeltaConstants::s_tangentSpaceDeltaMin, MorphTargetDeltaConstants::s_tangentSpaceDeltaMax);
+                    currentDelta.m_bitangentZ = Compress<uint8_t>(0.0f, MorphTargetDeltaConstants::s_tangentSpaceDeltaMin, MorphTargetDeltaConstants::s_tangentSpaceDeltaMax);
+                }
+
+                // Color
+                {
+                    metaData.m_hasColorDeltas = true;
+                    productMesh.m_hasMorphedColors = true;
+                    currentDelta.m_colorR = Compress<uint8_t>(0.0f, MorphTargetDeltaConstants::s_colorDeltaMin, MorphTargetDeltaConstants::s_colorDeltaMax);
+                    currentDelta.m_colorG = Compress<uint8_t>(0.0f, MorphTargetDeltaConstants::s_colorDeltaMin, MorphTargetDeltaConstants::s_colorDeltaMax);
+                    currentDelta.m_colorB = Compress<uint8_t>(0.0f, MorphTargetDeltaConstants::s_colorDeltaMin, MorphTargetDeltaConstants::s_colorDeltaMax);
+                    currentDelta.m_colorA = Compress<uint8_t>(0.0f, MorphTargetDeltaConstants::s_colorDeltaMin, MorphTargetDeltaConstants::s_colorDeltaMax);
                 }
             }
         }

@@ -179,7 +179,7 @@ namespace AzQtComponents
         {
             m_guestWidget = nullptr;
 
-            // the Lumberyard Editor has code that checks for Modal widgets, and blocks on doing other things
+            // the Open 3D Engine Editor has code that checks for Modal widgets, and blocks on doing other things
             // if there are still active Modal dialogs.
             // So we need to ensure that this WindowDecorationWrapper doesn't report itself as being modal
             // after the guest widget has been deleted.
