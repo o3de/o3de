@@ -19,44 +19,29 @@
 
 namespace AzPhysics
 {
-    struct SimulatedBody;
-}
-
-namespace Physics
-{
-    //! Requests for generic physical world bodies
-    class WorldBodyRequests
+    //! Requests for physics simulated body components.
+    class SimulatedBodyComponentRequests
         : public AZ::ComponentBus
     {
     public:
         using MutexType = AZStd::recursive_mutex;
 
-        //! Enable physics for this body
+        //! Enable physics for this body.
         virtual void EnablePhysics() = 0;
-        //! Disable physics for this body
+        //! Disable physics for this body.
         virtual void DisablePhysics() = 0;
-        //! Retrieve whether physics is enabled for this body
+        //! Retrieve whether physics is enabled for this body.
         virtual bool IsPhysicsEnabled() const = 0;
 
-        //! Retrieves the AABB(aligned-axis bounding box) for this body
+        //! Retrieves the AABB(aligned-axis bounding box) for this body.
         virtual AZ::Aabb GetAabb() const = 0;
-        //! Retrieves current WorldBody* for this body. Note: Do not hold a reference to AzPhysics::SimulatedBody* as could be deleted 
-        virtual AzPhysics::SimulatedBody* GetWorldBody() = 0;
-
-        //! Perform a single-object raycast against this body
+        //! Get the Simulated Body Handle for this body.
+        virtual AzPhysics::SimulatedBodyHandle GetSimulatedBodyHandle() = 0;
+        //! Retrieves current WorldBody* for this body.
+        //! @note Do not hold a reference to AzPhysics::SimulatedBody* as it could be deleted or moved.
+        virtual AzPhysics::SimulatedBody* GetSimulatedBody() = 0;
+        //! Perform a single-object raycast against this body.
         virtual AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& request) = 0;
     };
-    using WorldBodyRequestBus = AZ::EBus<WorldBodyRequests>;
-
-    //! Notifications for generic physical world bodies
-    class WorldBodyNotifications
-        : public AZ::ComponentBus
-    {
-    public:
-        //! Notification for physics enabled
-        virtual void OnPhysicsEnabled() = 0;
-        //! Notification for physics disabled
-        virtual void OnPhysicsDisabled() = 0;
-    };
-    using WorldBodyNotificationBus = AZ::EBus<WorldBodyNotifications>;
+    using SimulatedBodyComponentRequestsBus = AZ::EBus<SimulatedBodyComponentRequests>;
 }
