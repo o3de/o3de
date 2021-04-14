@@ -300,6 +300,14 @@ namespace AZ
     }
 
 
+    AZ_MATH_INLINE Aabb Aabb::GetTransformedAabb(const Matrix3x4& matrix3x4) const
+    {
+        Aabb aabb = Aabb::CreateFromMinMax(m_min, m_max);
+        aabb.ApplyMatrix3x4(matrix3x4);
+        return aabb;
+    }
+
+
     AZ_MATH_INLINE bool Aabb::IsClose(const Aabb& rhs, float tolerance) const
     {
         return m_min.IsClose(rhs.m_min, tolerance) && m_max.IsClose(rhs.m_max, tolerance);

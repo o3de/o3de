@@ -504,7 +504,7 @@ namespace AZ
             box.m_faceCullMode = ConvertRPIFaceCullFlag(faceCull);
             box.m_color = color;
             box.m_scale = localMatrix3x4.ExtractScale() * extents;
-            box.m_position = localMatrix3x4.GetTranslation() + center;
+            box.m_position = matrix3x4 * center;
             box.m_rotationMatrix = Matrix3x3::CreateFromMatrix3x4(localMatrix3x4);
             box.m_pointSize = m_pointSize;
             box.m_viewProjOverrideIndex = viewProjOverrideIndex;

@@ -78,10 +78,10 @@ namespace AZ
             return this;
         }
         
-        RayTracingTlasDescriptor* RayTracingTlasDescriptor::Transform(const AZ::Transform& transform)
+        RayTracingTlasDescriptor* RayTracingTlasDescriptor::Matrix3x4(const AZ::Matrix3x4& matrix3x4)
         {
-            AZ_Assert(m_buildContext, "Transform property can only be added to an Instance entry");
-            m_buildContext->m_transform = transform;
+            AZ_Assert(m_buildContext, "Matrix3x4 property can only be added to an Instance entry");
+            m_buildContext->m_matrix3x4 = matrix3x4;
             return this;
         }
         

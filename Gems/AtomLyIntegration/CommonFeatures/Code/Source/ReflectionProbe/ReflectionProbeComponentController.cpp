@@ -199,7 +199,7 @@ namespace AZ
                 return;
             }
 
-            m_featureProcessor->SetProbeTransform(m_handle, world);
+            m_featureProcessor->SetProbeMatrix3x4(m_handle, Matrix3x4::CreateFromTransform(world));
         }
 
         void ReflectionProbeComponentController::OnShapeChanged(ShapeChangeReasons changeReason)

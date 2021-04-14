@@ -137,7 +137,10 @@ namespace AZ
             AZ::Transform transform = AZ::Transform::CreateIdentity();
             AZ::TransformBus::EventResult(transform, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
 
-            return m_controller.GetModel()->RayIntersection(transform, src, dir, distance);
+            AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne();
+            AZ::NonUniformScaleRequestBus::EventResult(nonUniformScale, GetEntityId(), &AZ::NonUniformScaleRequests::GetScale);
+
+            return m_controller.GetModel()->RayIntersection(transform, nonUniformScale, src, dir, distance);
         }
 
         bool EditorMeshComponent::SupportsEditorRayIntersect()

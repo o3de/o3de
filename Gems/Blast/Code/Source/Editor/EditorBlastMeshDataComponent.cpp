@@ -193,7 +193,7 @@ namespace Blast
 
             AZ::Transform transform = AZ::Transform::Identity();
             AZ::TransformBus::EventResult(transform, GetEntityId(), &AZ::TransformInterface::GetWorldTM);
-            m_meshFeatureProcessor->SetTransform(m_meshHandle, transform);
+            m_meshFeatureProcessor->SetMatrix3x4(m_meshHandle, AZ::Matrix3x4::CreateFromTransform(transform));
         }
     }
 
@@ -232,7 +232,7 @@ namespace Blast
     {
         if (m_meshFeatureProcessor)
         {
-            m_meshFeatureProcessor->SetTransform(m_meshHandle, world);
+            m_meshFeatureProcessor->SetMatrix3x4(m_meshHandle, AZ::Matrix3x4::CreateFromTransform(world));
         }
     }
 } // namespace Blast

@@ -14,6 +14,7 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Component/NonUniformScaleBus.h>
 
 #include <AtomCore/Instance/InstanceDatabase.h>
 
@@ -120,16 +121,25 @@ namespace AZ
             void UnregisterModel();
             void RefreshModelRegistration();
 
+            void HandleNonUniformScaleChange(const AZ::Vector3& nonUniformScale);
+            void UpdateOverallMatrix();
+
             Render::MeshFeatureProcessorInterface* m_meshFeatureProcessor = nullptr;
             Render::MeshFeatureProcessorInterface::MeshHandle m_meshHandle;
             TransformInterface* m_transformInterface = nullptr;
             AZ::EntityId m_entityId;
             bool m_isVisible = true;
             MeshComponentConfig m_configuration;
+            AZ::Vector3 m_cachedNonUniformScale = AZ::Vector3::CreateOne();
 
             MeshFeatureProcessorInterface::ModelChangedEvent::Handler m_changeEventHandler
             {
                 [&](Data::Instance<RPI::Model> model) { HandleModelChange(model); }
+            };
+
+            AZ::NonUniformScaleChangedEvent::Handler m_nonUniformScaleChangedHandler
+            {
+                [&](const AZ::Vector3& nonUniformScale) { HandleNonUniformScaleChange(nonUniformScale); }
             };
         };
 

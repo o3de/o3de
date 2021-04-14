@@ -34,10 +34,10 @@ namespace AZ
             //! Releases an object ID to be used by others. The passed in handle is invalidated.
             virtual void ReleaseObjectId(ObjectId& id) = 0;
 
-            //! Sets the transform for a given id. Id must be one reserved earlier.
-            virtual void SetTransformForId(ObjectId id, const AZ::Transform& transform) = 0;
-            //! Gets the transform for a given id. Id must be one reserved earlier.
-            virtual AZ::Transform GetTransformForId(ObjectId) const = 0;
+            //! Sets the Matrix3x4 for a given id. Id must be one reserved earlier.
+            virtual void SetMatrix3x4ForId(ObjectId id, const AZ::Matrix3x4& transform) = 0;
+            //! Gets the Matrix3x4 for a given id. Id must be one reserved earlier.
+            virtual AZ::Matrix3x4 GetMatrix3x4ForId(ObjectId) const = 0;
 
         };
     }

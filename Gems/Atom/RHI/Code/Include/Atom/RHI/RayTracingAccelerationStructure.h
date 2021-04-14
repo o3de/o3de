@@ -12,7 +12,7 @@
 #pragma once
 
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/Math/Transform.h>
+#include <AzCore/Math/Matrix3x4.h>
 #include <Atom/RHI/IndexBufferView.h>
 #include <Atom/RHI/StreamBufferView.h>
 #include <Atom/RHI.Reflect/Format.h>
@@ -110,7 +110,7 @@ namespace AZ
         {
             uint32_t m_instanceID = 0;
             uint32_t m_hitGroupIndex = 0;
-            AZ::Transform m_transform = AZ::Transform::CreateIdentity();
+            AZ::Matrix3x4 m_matrix3x4 = AZ::Matrix3x4::CreateIdentity();
             RHI::Ptr<RHI::RayTracingBlas> m_blas;
         };
         using RayTracingTlasInstanceVector = AZStd::vector<RayTracingTlasInstance>;
@@ -153,7 +153,7 @@ namespace AZ
             RayTracingTlasDescriptor* Instance();
             RayTracingTlasDescriptor* InstanceID(uint32_t instanceID);
             RayTracingTlasDescriptor* HitGroupIndex(uint32_t hitGroupIndex);
-            RayTracingTlasDescriptor* Transform(const AZ::Transform& transform);
+            RayTracingTlasDescriptor* Matrix3x4(const AZ::Matrix3x4& matrix3x4);
             RayTracingTlasDescriptor* Blas(RHI::Ptr<RHI::RayTracingBlas>& blas);
             RayTracingTlasDescriptor* InstancesBuffer(RHI::Ptr<RHI::Buffer>& tlasInstances);
             RayTracingTlasDescriptor* NumInstances(uint32_t numInstancesInBuffer);

@@ -223,7 +223,7 @@ namespace AZ
         {
             AZStd::shared_ptr<ReflectionProbe> reflectionProbe = AZStd::make_shared<ReflectionProbe>();
             reflectionProbe->Init(GetParentScene(), &m_reflectionRenderData);
-            reflectionProbe->SetTransform(transform);
+            reflectionProbe->SetMatrix3x4(AZ::Matrix3x4::CreateFromTransform(transform));
             reflectionProbe->SetUseParallaxCorrection(useParallaxCorrection);
             m_reflectionProbes.push_back(reflectionProbe);
             m_probeSortRequired = true;
@@ -264,10 +264,10 @@ namespace AZ
             probe->SetCubeMapImage(cubeMapImage);
         }
 
-        void ReflectionProbeFeatureProcessor::SetProbeTransform(const ReflectionProbeHandle& probe, const AZ::Transform& transform)
+        void ReflectionProbeFeatureProcessor::SetProbeMatrix3x4(const ReflectionProbeHandle& probe, const AZ::Matrix3x4& matrix3x4)
         {
-            AZ_Assert(probe.get(), "SetProbeTransform called with an invalid handle");
-            probe->SetTransform(transform);
+            AZ_Assert(probe.get(), "SetProbeMatrix3x4 called with an invalid handle");
+            probe->SetMatrix3x4(matrix3x4);
             m_probeSortRequired = true;
         }
 

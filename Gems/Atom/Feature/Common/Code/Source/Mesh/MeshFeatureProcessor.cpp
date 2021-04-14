@@ -256,7 +256,7 @@ namespace AZ
             }
         }
 
-        void MeshFeatureProcessor::SetTransform(const MeshHandle& meshHandle, const AZ::Transform& transform)
+        void MeshFeatureProcessor::SetMatrix3x4(const MeshHandle& meshHandle, const AZ::Matrix3x4& matrix3x4)
         {
             if (meshHandle.IsValid())
             {
@@ -264,26 +264,26 @@ namespace AZ
                 meshData.m_cullBoundsNeedsUpdate = true;
                 meshData.m_objectSrgNeedsUpdate = true;
 
-                m_transformService->SetTransformForId(meshHandle->m_objectId, transform);
+                m_transformService->SetMatrix3x4ForId(meshHandle->m_objectId, matrix3x4);
 
                 // ray tracing data needs to be updated with the new transform
                 if (m_rayTracingFeatureProcessor)
                 {
-                    m_rayTracingFeatureProcessor->SetMeshTransform(meshHandle->m_objectId, transform);
+                    m_rayTracingFeatureProcessor->SetMeshMatrix3x4(meshHandle->m_objectId, matrix3x4);
                 }
             }
         }
 
-        Transform MeshFeatureProcessor::GetTransform(const MeshHandle& meshHandle)
+        Matrix3x4 MeshFeatureProcessor::GetMatrix3x4(const MeshHandle& meshHandle)
         {
             if (meshHandle.IsValid())
             {
-                return m_transformService->GetTransformForId(meshHandle->m_objectId);
+                return m_transformService->GetMatrix3x4ForId(meshHandle->m_objectId);
             }
             else
             {
                 AZ_Assert(false, "Invalid mesh handle");
-                return Transform::CreateIdentity();
+                return Matrix3x4::CreateIdentity();
             }
         }
 
@@ -841,7 +841,7 @@ namespace AZ
             AZ_Assert(m_cullBoundsNeedsUpdate, "This function only needs to be called if the culling bounds need to be rebuilt");
             AZ_Assert(m_model, "The model has not finished loading yet");
 
-            Transform localToWorld = transformService->GetTransformForId(m_objectId);
+            Matrix3x4 localToWorld = transformService->GetMatrix3x4ForId(m_objectId);
 
             Vector3 center;
             float radius;
@@ -919,11 +919,11 @@ namespace AZ
 
                 // retrieve the list of probes that contain the centerpoint of the mesh
                 TransformServiceFeatureProcessor* transformServiceFeatureProcessor = m_scene->GetFeatureProcessor<TransformServiceFeatureProcessor>();
-                Transform transform = transformServiceFeatureProcessor->GetTransformForId(m_objectId);
+                Matrix3x4 matrix3x4 = transformServiceFeatureProcessor->GetMatrix3x4ForId(m_objectId);
 
                 ReflectionProbeFeatureProcessor* reflectionProbeFeatureProcessor = m_scene->GetFeatureProcessor<ReflectionProbeFeatureProcessor>();
                 ReflectionProbeFeatureProcessor::ReflectionProbeVector reflectionProbes;
-                reflectionProbeFeatureProcessor->FindReflectionProbes(transform.GetTranslation(), reflectionProbes);
+                reflectionProbeFeatureProcessor->FindReflectionProbes(matrix3x4.GetTranslation(), reflectionProbes);
 
                 if (!reflectionProbes.empty() && reflectionProbes[0])
                 {

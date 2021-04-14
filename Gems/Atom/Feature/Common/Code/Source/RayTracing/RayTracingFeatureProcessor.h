@@ -66,7 +66,7 @@ namespace AZ
                 SubMeshVector m_subMeshes;
 
                 // mesh transform
-                AZ::Transform m_transform = AZ::Transform::CreateIdentity();
+                AZ::Matrix3x4 m_matrix3x4 = AZ::Matrix3x4::CreateIdentity();
 
                 // flag indicating if the Blas objects in the sub-meshes are built
                 bool m_blasBuilt = false;
@@ -85,7 +85,7 @@ namespace AZ
 
             //! Sets the ray tracing mesh transform
             //! This will cause an update to the RayTracing acceleration structure on the next frame
-            void SetMeshTransform(const ObjectId objectId, const AZ::Transform transform);
+            void SetMeshMatrix3x4(const ObjectId objectId, const AZ::Matrix3x4 matrix3x4);
 
             //! Retrieves ray tracing data for all meshes in the scene
             const MeshMap& GetMeshes() const { return m_meshes; }

@@ -37,7 +37,7 @@ namespace AZ
             void SetProbeOuterExtents(const ReflectionProbeHandle& probe, const AZ::Vector3& outerExtents) override;
             void SetProbeInnerExtents(const ReflectionProbeHandle& probe, const AZ::Vector3& innerExtents) override;
             void SetProbeCubeMap(const ReflectionProbeHandle& probe, Data::Instance<RPI::Image>& cubeMapImage) override;
-            void SetProbeTransform(const ReflectionProbeHandle& probe, const AZ::Transform& transform) override;
+            void SetProbeMatrix3x4(const ReflectionProbeHandle& probe, const AZ::Matrix3x4& matrix3x4) override;
             void BakeProbe(const ReflectionProbeHandle& probe, BuildCubeMapCallback callback) override;
             void NotifyCubeMapAssetReady(const AZStd::string relativePath, NotifyCubeMapAssetReadyCallback callback) override;
             bool IsValidProbeHandle(const ReflectionProbeHandle& probe) const override { return (probe.get() != nullptr); }

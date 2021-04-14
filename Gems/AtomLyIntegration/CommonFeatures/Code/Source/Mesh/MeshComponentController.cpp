@@ -180,6 +180,11 @@ namespace AZ
             m_meshFeatureProcessor = RPI::Scene::GetFeatureProcessorForEntity<MeshFeatureProcessorInterface>(m_entityId);
             AZ_Error("MeshComponentController", m_meshFeatureProcessor, "Unable to find a MeshFeatureProcessorInterface on the entityId.");
 
+            m_cachedNonUniformScale = AZ::Vector3::CreateOne();
+            AZ::NonUniformScaleRequestBus::EventResult(m_cachedNonUniformScale, m_entityId, &AZ::NonUniformScaleRequests::GetScale);
+            AZ::NonUniformScaleRequestBus::Event(m_entityId, &AZ::NonUniformScaleRequests::RegisterScaleChangedEvent,
+                m_nonUniformScaleChangedHandler);
+
             MeshComponentRequestBus::Handler::BusConnect(m_entityId);
             TransformNotificationBus::Handler::BusConnect(m_entityId);
             MaterialReceiverRequestBus::Handler::BusConnect(m_entityId);
@@ -216,11 +221,24 @@ namespace AZ
             return m_configuration;
         }
 
-        void MeshComponentController::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
+        void MeshComponentController::OnTransformChanged([[maybe_unused]] const AZ::Transform& local, [[maybe_unused]] const AZ::Transform& world)
+        {
+            UpdateOverallMatrix();
+        }
+
+        void MeshComponentController::HandleNonUniformScaleChange(const AZ::Vector3 & nonUniformScale)
+        {
+            m_cachedNonUniformScale = nonUniformScale;
+            UpdateOverallMatrix();
+        }
+
+        void MeshComponentController::UpdateOverallMatrix()
         {
             if (m_meshFeatureProcessor)
             {
-                m_meshFeatureProcessor->SetTransform(m_meshHandle, world);
+                Matrix3x4 world = Matrix3x4::CreateFromTransform(m_transformInterface->GetWorldTM());
+                world.MultiplyByScale(m_cachedNonUniformScale);
+                m_meshFeatureProcessor->SetMatrix3x4(m_meshHandle, world);
             }
         }
 
@@ -266,8 +284,8 @@ namespace AZ
                 m_meshHandle = m_meshFeatureProcessor->AcquireMesh(m_configuration.m_modelAsset, materials);
                 m_meshFeatureProcessor->ConnectModelChangeEventHandler(m_meshHandle, m_changeEventHandler);
 
-                const AZ::Transform& transform = m_transformInterface ? m_transformInterface->GetWorldTM() : Transform::Identity();
-                m_meshFeatureProcessor->SetTransform(m_meshHandle, transform);
+                const AZ::Matrix3x4& matrix3x4 = m_transformInterface ? Matrix3x4::CreateFromTransform(m_transformInterface->GetWorldTM()) : Matrix3x4::Identity();
+                m_meshFeatureProcessor->SetMatrix3x4(m_meshHandle, matrix3x4);
                 m_meshFeatureProcessor->SetSortKey(m_meshHandle, m_configuration.m_sortKey);
                 m_meshFeatureProcessor->SetLodOverride(m_meshHandle, m_configuration.m_lodOverride);
                 m_meshFeatureProcessor->SetExcludeFromReflectionCubeMaps(m_meshHandle, m_configuration.m_excludeFromReflectionCubeMaps);
@@ -403,7 +421,17 @@ namespace AZ
         Aabb MeshComponentController::GetLocalBounds()
         {
             const Data::Instance<RPI::Model> model = GetModel();
-            return model ? model->GetAabb() : Aabb::CreateNull();
+            if (model)
+            {
+                Aabb aabb = model->GetAabb();
+                aabb.SetMin(aabb.GetMin() * m_cachedNonUniformScale);
+                aabb.SetMax(aabb.GetMax() * m_cachedNonUniformScale);
+                return aabb;
+            }
+            else
+            {
+                return Aabb::CreateNull();
+            }
         }
     } // namespace Render
 } // namespace AZ

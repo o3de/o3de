@@ -187,8 +187,9 @@ namespace AZ
 
         void AtomActorInstance::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
         {
-            // The mesh transform is used to determine where the actor instance is actually rendered
-            m_meshFeatureProcessor->SetTransform(*m_meshHandle, world); // handle validity is checked internally.
+            // The mesh Matrix3x4 is used to determine where the actor instance is actually rendered
+            AZ::Matrix3x4 matrix3x4 = AZ::Matrix3x4::CreateFromTransform(world);
+            m_meshFeatureProcessor->SetMatrix3x4(*m_meshHandle, matrix3x4); // handle validity is checked internally.
 
             if (m_skinnedMeshRenderProxy.IsValid())
             {

@@ -97,7 +97,7 @@ namespace AZ
             }
 
             // set initial transform
-            mesh.m_transform = m_transformServiceFeatureProcessor->GetTransformForId(objectId);
+            mesh.m_matrix3x4 = m_transformServiceFeatureProcessor->GetMatrix3x4ForId(objectId);
 
             m_revision++;
             m_subMeshCount += aznumeric_cast<uint32_t>(subMeshes.size());
@@ -119,7 +119,7 @@ namespace AZ
             }
         }
 
-        void RayTracingFeatureProcessor::SetMeshTransform(const ObjectId objectId, AZ::Transform transform)
+        void RayTracingFeatureProcessor::SetMeshMatrix3x4(const ObjectId objectId, const AZ::Matrix3x4 matrix3x4)
         {
             if (!m_rayTracingEnabled)
             {
@@ -129,7 +129,7 @@ namespace AZ
             MeshMap::iterator itMesh = m_meshes.find(objectId.GetIndex());
             if (itMesh != m_meshes.end())
             {
-                itMesh->second.m_transform = transform;
+                itMesh->second.m_matrix3x4 = matrix3x4;
                 m_revision++;
             }
         }

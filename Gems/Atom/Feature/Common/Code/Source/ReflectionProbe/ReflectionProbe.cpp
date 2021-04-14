@@ -70,7 +70,7 @@ namespace AZ
             m_visualizationMeshHandle = m_meshFeatureProcessor->AcquireMesh(m_visualizationModelAsset);
             m_meshFeatureProcessor->SetExcludeFromReflectionCubeMaps(m_visualizationMeshHandle, true);
             m_meshFeatureProcessor->SetRayTracingEnabled(m_visualizationMeshHandle, false);
-            m_meshFeatureProcessor->SetTransform(m_visualizationMeshHandle, AZ::Transform::CreateIdentity());
+            m_meshFeatureProcessor->SetMatrix3x4(m_visualizationMeshHandle, AZ::Matrix3x4::CreateIdentity());
 
             // We have to pre-load this asset before creating a Material instance because the InstanceDatabase will attempt a blocking load which could deadlock,
             // particularly when slices are involved.
@@ -206,10 +206,10 @@ namespace AZ
         }
 
 
-        void ReflectionProbe::SetTransform(const AZ::Transform& transform)
+        void ReflectionProbe::SetMatrix3x4(const AZ::Matrix3x4& matrix3x4)
         {
-            m_position = transform.GetTranslation();
-            m_meshFeatureProcessor->SetTransform(m_visualizationMeshHandle, transform);
+            m_position = matrix3x4.GetTranslation();
+            m_meshFeatureProcessor->SetMatrix3x4(m_visualizationMeshHandle, matrix3x4);
             m_outerAabbWs = Aabb::CreateCenterHalfExtents(m_position, m_outerExtents / 2.0f);
             m_innerAabbWs = Aabb::CreateCenterHalfExtents(m_position, m_innerExtents / 2.0f);
             m_updateSrg = true;

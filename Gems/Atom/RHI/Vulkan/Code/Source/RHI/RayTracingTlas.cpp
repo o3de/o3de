@@ -92,9 +92,7 @@ namespace AZ
             
                     mappedData[i].instanceCustomIndex = instance.m_instanceID;
                     mappedData[i].instanceShaderBindingTableRecordOffset = instance.m_hitGroupIndex;
-                    // convert transform to row-major 3x4
-                    AZ::Matrix3x4 matrix34 = AZ::Matrix3x4::CreateFromTransform(instance.m_transform);
-                    matrix34.StoreToRowMajorFloat12(&mappedData[i].transform.matrix[0][0]);
+                    instance.m_matrix3x4.StoreToRowMajorFloat12(&mappedData[i].transform.matrix[0][0]);
             
                     RayTracingBlas* blas = static_cast<RayTracingBlas*>(instance.m_blas.get());
                     VkAccelerationStructureDeviceAddressInfoKHR addressInfo = {};
