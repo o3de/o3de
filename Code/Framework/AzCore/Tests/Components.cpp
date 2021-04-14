@@ -1081,13 +1081,11 @@ namespace UnitTest
             AZStd::string filePath;
             if (providerId == UserSettings::CT_GLOBAL)
             {
-                filePath.append(static_cast<AZStd::string_view>(m_exeDirectory));
-                filePath.append("GlobalUserSettings.xml");
+                filePath = (m_exeDirectory / "GlobalUserSettings.xml").String();
             }
             else if (providerId == UserSettings::CT_LOCAL)
             {
-                filePath.append(static_cast<AZStd::string_view>(m_exeDirectory));
-                filePath.append("LocalUserSettings.xml");
+                filePath = (m_exeDirectory / "LocalUserSettings.xml").String();
             }
             return filePath;
         }

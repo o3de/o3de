@@ -11,7 +11,7 @@
 */
 
 #include "ToggleSwitchPage.h"
-#include <Gallery/ui_ToggleSwitchPage.h>
+#include <AzQtComponents/Gallery/ui_ToggleSwitchPage.h>
 
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
 

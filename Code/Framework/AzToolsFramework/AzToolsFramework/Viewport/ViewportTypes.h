@@ -214,7 +214,7 @@ namespace AzToolsFramework
             return AzFramework::ScreenPoint{qpoint.x(), qpoint.y()};
         }
 
-        /// Map from Qt -> Lumberyard buttons.
+        /// Map from Qt -> Open 3D Engine buttons.>>>>>>> main
         inline AZ::u32 TranslateMouseButtons(const Qt::MouseButtons buttons)
         {
             AZ::u32 result = 0;
@@ -224,7 +224,7 @@ namespace AzToolsFramework
             return result;
         }
 
-        /// Map from Qt -> Lumberyard modifiers.
+        /// Map from Qt -> Open 3D Engine modifiers.
         inline AZ::u32 TranslateKeyboardModifiers(const Qt::KeyboardModifiers modifiers)
         {
             AZ::u32 result = 0;
@@ -234,13 +234,13 @@ namespace AzToolsFramework
             return result;
         }
 
-        /// Interface to translate Qt modifiers to Lumberyard modifiers.
+        /// Interface to translate Qt modifiers to Open 3D Engine modifiers.
         inline KeyboardModifiers BuildKeyboardModifiers(const Qt::KeyboardModifiers modifiers)
         {
             return KeyboardModifiers(TranslateKeyboardModifiers(modifiers));
         }
 
-        /// Interface to translate Qt buttons to Lumberyard buttons.
+        /// Interface to translate Qt buttons to Open 3D Engine buttons.
         inline MouseButtons BuildMouseButtons(const Qt::MouseButtons buttons)
         {
             return MouseButtons(TranslateMouseButtons(buttons));

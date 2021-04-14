@@ -56,6 +56,16 @@ namespace UnitTest
         EXPECT_THAT(obb.GetAxisZ(), IsClose(Vector3(1.0f, 0.0f, 0.0f)));
     }
 
+    TEST(MATH_Obb, TestScaleTransform)
+    {
+        Obb obb = Obb::CreateFromPositionRotationAndHalfLengths(position, rotation, halfLengths);
+        Vector3 scaleFactors = Vector3(1.0f, 2.0f, 3.0f);
+        Transform transform = Transform::CreateScale(scaleFactors);
+        obb = transform * obb;
+        EXPECT_THAT(obb.GetPosition(), IsClose(Vector3(1.0f, 4.0f, 9.0f)));
+        EXPECT_THAT(obb.GetHalfLengths(), IsClose(Vector3(0.5f, 1.0f, 1.5f)));
+    }
+
     TEST(MATH_Obb, TestSetPosition)
     {
         Obb obb;

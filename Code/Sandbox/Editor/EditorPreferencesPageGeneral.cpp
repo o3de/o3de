@@ -101,10 +101,10 @@ void CEditorPreferencesPage_General::Reflect(AZ::SerializeContext& serialize)
             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &GeneralSettings::m_stylusMode, "Stylus Mode", "Stylus Mode for tablets and other pointing devices")
             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &GeneralSettings::m_restoreViewportCamera, EditorPreferencesGeneralRestoreViewportCameraSettingName, "Keep the original editor viewport transform when exiting game mode.")
             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &GeneralSettings::m_enableSceneInspector, "Enable Scene Inspector (EXPERIMENTAL)", "Enable the option to inspect the internal data loaded from scene files like .fbx. This is an experimental feature. Restart the Scene Settings if the option is not visible under the Help menu.")
-            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &GeneralSettings::m_enablePrefabSystem, "Enable Prefab System (EXPERIMENTAL)", "Enable this option to preview Lumberyard's new prefab system. Enabling this setting removes slice support for level entities; you will need to restart the Editor for the change to take effect.");
+            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &GeneralSettings::m_enablePrefabSystem, "Enable Prefab System (EXPERIMENTAL)", "Enable this option to preview Open 3D Engine's new prefab system. Enabling this setting removes slice support for level entities; you will need to restart the Editor for the change to take effect.");
 
         editContext->Class<Messaging>("Messaging", "")
-            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Messaging::m_showDashboard, "Show Welcome to Lumberyard at startup", "Show Welcome to Lumberyard at startup")
+            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Messaging::m_showDashboard, "Show Welcome to Open 3D Engine at startup", "Show Welcome to Open 3D Engine at startup")
             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Messaging::m_showCircularDependencyError, "Show Error: Circular dependency", "Show an error message when adding a slice instance to the target slice would create a cyclic asset dependency. All other valid overrides will be saved even if this is turned off.");
 
         editContext->Class<Undo>("Undo", "")

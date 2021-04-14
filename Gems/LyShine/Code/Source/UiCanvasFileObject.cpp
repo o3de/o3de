@@ -101,16 +101,6 @@ UiCanvasFileObject* UiCanvasFileObject::LoadCanvasFromStream(AZ::IO::GenericStre
                     stream.GetFilename());
             }
         }
-        else if (fileFormat == FileFormat::ReallyOld)
-        {
-            // We never shipped anything to customers using this ancient serialization format
-            // Canvas files saved on 12/3/2015 used the newer serialization format.
-            // R1 FC was 12/14/2015
-            // So this message is only for internal Lumberyard users who may have a REALLY old
-            // canvas file lying around.
-            AZ_Warning("UI", false, "UI canvas file: %s is in an obsolete format, use an earlier lumberyard version (prior to v1.7) to open and resave it.",
-                stream.GetFilename());
-        }
         else
         {
             // This does not look like an old format canvas file so treat it as new format

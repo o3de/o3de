@@ -73,6 +73,7 @@ namespace AZ
             float padding2 = 0.0f; // Padding between float3s in shader, can be used for other data later.
         };
 
+        // [GFX TODO][ATOM-15172] Look into compacting struct DirectionalLightShadowData
         struct DirectionalLightShadowData
         {
             AZStd::array<Matrix4x4, Shadow::MaxNumberOfCascades> m_depthBiasMatrices =
@@ -103,8 +104,10 @@ namespace AZ
             uint32_t m_predictionSampleCount = 0;
             uint32_t m_filteringSampleCount = 0;
             uint32_t m_debugFlags = 0;
-            uint32_t m_shadowFilterMethod = 0;
+            uint32_t m_shadowFilterMethod = 0; 
             float m_far_minus_near = 0;
+            PcfMethod m_pcfMethod = PcfMethod::BoundarySearch;
+            uint32_t m_padding[3];
         };
 
         class DirectionalLightFeatureProcessor final
@@ -218,6 +221,7 @@ namespace AZ
             void SetPredictionSampleCount(LightHandle handle, uint16_t count) override;
             void SetFilteringSampleCount(LightHandle handle, uint16_t count) override;
             void SetShadowBoundaryWidth(LightHandle handle, float boundaryWidth) override;
+            void SetPcfMethod(LightHandle handle, PcfMethod method) override;
 
             const Data::Instance<RPI::Buffer> GetLightBuffer() const;
             uint32_t GetLightCount() const;

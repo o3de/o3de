@@ -16,6 +16,7 @@
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
 #include <CoreLights/IndexedDataVector.h>
+#include <Shadows/ProjectedShadowFeatureProcessor.h>
 
 namespace AZ
 {
@@ -48,21 +49,46 @@ namespace AZ
             void SetRgbIntensity(LightHandle handle, const PhotometricColor<PhotometricUnitType>& lightColor) override;
             void SetPosition(LightHandle handle, const AZ::Vector3& lightPosition) override;
             void SetDirection(LightHandle handle, const AZ::Vector3& lightDirection) override;
-            void SetLightEmitsBothDirections(LightHandle handle, bool lightEmitsBothDirections) override;
             void SetAttenuationRadius(LightHandle handle, float attenuationRadius) override;
             void SetDiskRadius(LightHandle handle, float radius) override;
+            void SetConstrainToConeLight(LightHandle handle, bool useCone) override;
+            void SetConeAngles(LightHandle handle, float innerDegrees, float outerDegrees) override;
+            void SetShadowsEnabled(LightHandle handle, bool enabled) override;
+            void SetShadowmapMaxResolution(LightHandle handle, ShadowmapSize shadowmapSize) override;
+            void SetShadowFilterMethod(LightHandle handle, ShadowFilterMethod method) override;
+            void SetSofteningBoundaryWidthAngle(LightHandle handle, float boundaryWidthRadians) override;
+            void SetPredictionSampleCount(LightHandle handle, uint16_t count) override;
+            void SetFilteringSampleCount(LightHandle handle, uint16_t count) override;
+            void SetPcfMethod(LightHandle handle, PcfMethod method);
+
             void SetDiskData(LightHandle handle, const DiskLightData& data) override;
 
             const Data::Instance<RPI::Buffer> GetLightBuffer()const;
             uint32_t GetLightCount()const;
 
         private:
-            DiskLightFeatureProcessor(const DiskLightFeatureProcessor&) = delete;
 
             static constexpr const char* FeatureProcessorName = "DiskLightFeatureProcessor";
+            static constexpr float MaxConeRadians = AZ::DegToRad(90.0f);
+            static constexpr float MaxProjectedShadowRadians = ProjectedShadowFeatureProcessorInterface::MaxProjectedShadowRadians * 0.5f;
+            using ShadowId = ProjectedShadowFeatureProcessor::ShadowId;
+
+            DiskLightFeatureProcessor(const DiskLightFeatureProcessor&) = delete;
+            
+            static void UpdateBulbPositionOffset(DiskLightData& light);
+
+            void ValidateAndSetConeAngles(LightHandle handle, float innerRadians, float outerRadians);
+            void UpdateShadow(LightHandle handle);
+
+            // Convenience function for forwarding requests to the ProjectedShadowFeatureProcessor
+            template <typename Functor, typename ParamType>
+            void SetShadowSetting(LightHandle handle, Functor&&, ParamType&& param);
+
+            ProjectedShadowFeatureProcessor* m_shadowFeatureProcessor;
 
             IndexedDataVector<DiskLightData> m_diskLightData;
             GpuBufferHandler m_lightBufferHandler;
+
             bool m_deviceBufferNeedsUpdate = false;
         };
     } // namespace Render

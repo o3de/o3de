@@ -23,7 +23,7 @@
 
 #include <ISplines.h>
 #include <QVBoxLayout>
-#include <Animation/ui_UiAnimViewTrackPropsDlg.h>
+#include <Editor/Animation/ui_UiAnimViewTrackPropsDlg.h>
 
 
 //////////////////////////////////////////////////////////////////////////

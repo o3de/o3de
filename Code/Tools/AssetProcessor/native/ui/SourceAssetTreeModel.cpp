@@ -76,7 +76,7 @@ namespace AssetProcessor
 
         AzFramework::StringFunc::AssetDatabasePath::Join(scanFolder.m_scanFolder.c_str(), fullPath.c_str(), fullPath, true, false);
 
-        // It's common for Lumberyard game projects and scan folders to be in a subfolder
+        // It's common for Open 3D Engine game projects and scan folders to be in a subfolder
         // of the engine install. To improve readability of the source files, strip out
         // that portion of the path if it overlaps.
         if (!m_assetRootSet)

@@ -353,7 +353,7 @@ namespace EMotionFX
             mAssetSourceFolder = assetSourcePath;
 
             // Add an ending slash in case there is none yet.
-            // TODO: Remove this and adopt EMotionFX code to work with folder paths without slash at the end like Lumberyard does.
+            // TODO: Remove this and adopt EMotionFX code to work with folder paths without slash at the end like Open 3D Engine does.
             if (mAssetSourceFolder.empty() == false)
             {
                 const char lastChar = AzFramework::StringFunc::LastCharacter(mAssetSourceFolder.c_str());
@@ -378,7 +378,7 @@ namespace EMotionFX
             mAssetCacheFolder = assetCachePath;
 
             // Add an ending slash in case there is none yet.
-            // TODO: Remove this and adopt EMotionFX code to work with folder paths without slash at the end like Lumberyard does.
+            // TODO: Remove this and adopt EMotionFX code to work with folder paths without slash at the end like Open 3D Engine does.
             if (mAssetCacheFolder.empty() == false)
             {
                 const char lastChar = AzFramework::StringFunc::LastCharacter(mAssetCacheFolder.c_str());

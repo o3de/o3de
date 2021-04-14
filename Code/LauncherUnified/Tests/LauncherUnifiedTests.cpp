@@ -26,7 +26,7 @@ protected:
 
 TEST_F(UnifiedLauncherTestFixture, PlatformMainInfoAddArgument_NoCommandLineFunctions_Success)
 {
-    LumberyardLauncher::PlatformMainInfo test;
+    O3DELauncher::PlatformMainInfo test;
 
     EXPECT_STREQ(test.m_commandLine, "");
     EXPECT_EQ(test.m_argC, 0);
@@ -34,7 +34,7 @@ TEST_F(UnifiedLauncherTestFixture, PlatformMainInfoAddArgument_NoCommandLineFunc
 
 TEST_F(UnifiedLauncherTestFixture, PlatformMainInfoAddArgument_ValidParams_Success)
 {
-    LumberyardLauncher::PlatformMainInfo test;
+    O3DELauncher::PlatformMainInfo test;
 
     const char* testArguments[] = { "-arg", "value1", "-arg2", "value2", "-argspace", "value one"};
     for (const char* testArgument : testArguments)
@@ -55,7 +55,7 @@ TEST_F(UnifiedLauncherTestFixture, PlatformMainInfoAddArgument_ValidParams_Succe
 
 TEST_F(UnifiedLauncherTestFixture, PlatformMainInfoCopyCommandLineArgCArgV_ValidParams_Success)
 {
-    LumberyardLauncher::PlatformMainInfo test;
+    O3DELauncher::PlatformMainInfo test;
 
     const char* constTestArguments[] = { "-arg", "value1", "-arg2", "value2", "-argspace", "value one" };
     char** testArguments = const_cast<char**>(constTestArguments);

@@ -644,7 +644,7 @@ namespace AzToolsFramework
                     QString cleanAssetSafeFolder(QDir::cleanPath(assetSafeFolder.c_str()));
                     // Compare using clean paths so slash direction does not matter.
                     // Note that this comparison is case sensitive because some file systems
-                    // Lumberyard supports are case sensitive.
+                    // Open 3D Engine supports are case sensitive.
                     if (cleanSaveAs.startsWith(cleanAssetSafeFolder))
                     {
                         isPathSafeForAssets = true;

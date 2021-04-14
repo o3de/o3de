@@ -11,7 +11,7 @@
 */
 
 #include "HyperlinkPage.h"
-#include <Gallery/ui_HyperlinkPage.h>
+#include <AzQtComponents/Gallery/ui_HyperlinkPage.h>
 
 #include <QLabel>
 #include <AzQtComponents/Components/Style.h>
