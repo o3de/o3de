@@ -243,7 +243,6 @@ void UiTooltipComponent::TriggerTooltip(UiTooltipDisplayInterface::TriggerMode t
 
     if (displayElementId.IsValid())
     {
-        bool enableShortDelay = m_curTriggerMode == UiTooltipDisplayInterface::TriggerMode::OnHover;
         UiTooltipDisplayBus::Event(displayElementId, &UiTooltipDisplayBus::Events::PrepareToShow, GetEntityId());
 
         m_curDisplayElementId = displayElementId;

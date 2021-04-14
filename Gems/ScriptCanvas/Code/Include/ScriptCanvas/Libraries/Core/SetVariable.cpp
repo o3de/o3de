@@ -74,8 +74,7 @@ namespace ScriptCanvas
                     {
                         m_variableView.AssignToDatum((*sourceDatum));
 
-                        const Datum* variableDatum = m_variableView.GetDatum();
-                        SC_EXECUTION_TRACE_VARIABLE_CHANGE((m_variableId), (CreateVariableChange((*variableDatum), m_variableId)));
+                        SC_EXECUTION_TRACE_VARIABLE_CHANGE((m_variableId), (CreateVariableChange((*m_variableView.GetDatum()), m_variableId)));
                     }
                     
                     Slot* resultSlot = GetSlot(m_variableDataOutSlotId);

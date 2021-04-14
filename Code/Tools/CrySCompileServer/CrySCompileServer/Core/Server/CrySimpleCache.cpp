@@ -56,14 +56,15 @@ void CCrySimpleCache::Init()
 
 std::string CCrySimpleCache::CreateFileName(const tdHash& rHash) const
 {
-    std::string Name;
-    Name    =   CSTLHelper::Hash2String(rHash);
+    AZStd::string Name;
+    Name    =   CSTLHelper::Hash2String(rHash).c_str();
     char Tmp[4] = "012";
     Tmp[0]  =   Name.c_str()[0];
     Tmp[1]  =   Name.c_str()[1];
     Tmp[2]  =   Name.c_str()[2];
 
-    return SEnviropment::Instance().m_CachePath + Tmp + "/" + Name;
+    AZ::IO::Path resultFileName = SEnviropment::Instance().m_CachePath / Tmp / Name;
+    return std::string{ resultFileName.c_str(), resultFileName.Native().size() };
 }
 
 
@@ -159,7 +160,6 @@ bool CCrySimpleCache::LoadCacheFile(const std::string& filename)
     uint32_t num = 0;
 
     uint64_t nFilePos = 0;
-    uint64_t nFilePos2 = 0;
 
     //////////////////////////////////////////////////////////////////////////
     AZ::IO::SystemFile cacheFile;
@@ -303,7 +303,8 @@ void CCrySimpleCache::ThreadFunc_SavePendingCacheEntries()
 
         if (pPendingCacheEntry)
         {
-            CSTLHelper::AppendToFile(SEnviropment::Instance().m_CachePath + "Cache.dat", *pPendingCacheEntry);
+            AZ::IO::Path cacheDatPath = SEnviropment::Instance().m_CachePath / "Cache.dat";
+            CSTLHelper::AppendToFile(std::string{ cacheDatPath.c_str(), cacheDatPath.Native().size() }, *pPendingCacheEntry);
             delete pPendingCacheEntry;
         }
     } while (!bListEmpty);

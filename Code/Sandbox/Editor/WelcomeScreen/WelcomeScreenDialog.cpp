@@ -58,8 +58,6 @@ using namespace AzQtComponents;
 
 static int GetSmallestScreenHeight()
 {
-    QDesktopWidget* desktopWidget = QApplication::desktop();
-
     int smallestHeight = -1;
     for (QScreen* screen : QApplication::screens())
     {

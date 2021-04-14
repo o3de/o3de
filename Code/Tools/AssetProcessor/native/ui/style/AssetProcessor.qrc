@@ -16,6 +16,6 @@
         <file>AssetProcessor_arrow_down.svg</file>
         <file>AssetProcessor_arrow_up.svg</file>
         <file>AssetProcessor_refresh.png</file>
-        <file>lyassetprocessor.png</file>
+        <file>o3de_assetprocessor.png</file>
     </qresource>
 </RCC>

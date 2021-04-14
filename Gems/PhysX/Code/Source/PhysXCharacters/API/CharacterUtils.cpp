@@ -104,9 +104,11 @@ namespace PhysX
                 PhysX::PhysXScene* physxScene = nullptr;
                 if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
                 {
-                    if (scene = physicsSystem->GetScene(sceneHandle))
+                    scene = physicsSystem->GetScene(sceneHandle);
+                    if (scene)
                     {
-                        if (physxScene = azrtti_cast<PhysX::PhysXScene*>(scene))
+                        physxScene = azrtti_cast<PhysX::PhysXScene*>(scene);
+                        if (physxScene)
                         {
                             manager = physxScene->GetOrCreateControllerManager();
                         }

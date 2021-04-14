@@ -241,7 +241,7 @@ public: // member functions
     // ~UiCanvasComponentImplementationInterface
 
     void UpdateCanvas(float deltaTime, bool isInGame);
-    void RenderCanvas(bool isInGame, AZ::Vector2 viewportSize);
+    void RenderCanvas(bool isInGame, AZ::Vector2 viewportSize, UiRenderer* uiRenderer = nullptr);
 
     AZ::Entity* GetRootElement() const;
 

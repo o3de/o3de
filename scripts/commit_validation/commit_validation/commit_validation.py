@@ -172,7 +172,7 @@ BUILD_FILE_PATTERNS: Tuple[re.Pattern, ...] = (
 SOURCE_AND_SCRIPT_FILE_PATTERNS: Tuple[re.Pattern, ...] = BUILD_FILE_PATTERNS
 
 EXCLUDED_VALIDATION_PATTERNS = [
-    '.git/*',
+    '*/.git/*',
     '*/3rdParty/*',
     '*/__pycache__/*',
     '*/External/*',

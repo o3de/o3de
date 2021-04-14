@@ -82,9 +82,6 @@
 
 static const char* s_azFrameworkWarningWindow = "AzFramework";
 
-static const char* s_engineConfigFileName = "engine.json";
-static const char* s_engineConfigEngineVersionKey = "LumberyardVersion";
-
 namespace AzFramework
 {
     namespace ApplicationInternal
@@ -264,24 +261,8 @@ namespace AzFramework
 
     void Application::PreModuleLoad()
     {
-        // Calculate the engine root by reading the engine.json file
-        AZStd::string engineJsonPath = AZStd::string_view{ m_engineRoot };
-        engineJsonPath += s_engineConfigFileName;
-        AzFramework::StringFunc::Path::Normalize(engineJsonPath);
-        AZ::IO::LocalFileIO localFileIO;
-        auto readJsonResult = AzFramework::FileFunc::ReadJsonFile(engineJsonPath, &localFileIO);
-
-        if (readJsonResult.IsSuccess())
-        {
-            SetRootPath(RootPathType::EngineRoot, m_engineRoot.c_str());
-            AZ_TracePrintf(s_azFrameworkWarningWindow, "Engine Path: %s\n", m_engineRoot.c_str());
-        }
-        else
-        {
-            // If there is any problem reading the engine.json file, then default to engine root to the app root
-            AZ_Warning(s_azFrameworkWarningWindow, false, "Unable to read engine.json file '%s' (%s).  Defaulting the engine root to '%s'", engineJsonPath.c_str(), readJsonResult.GetError().c_str(), m_appRoot.c_str());
-            SetRootPath(RootPathType::EngineRoot, m_appRoot.c_str());
-        }
+        SetRootPath(RootPathType::EngineRoot, m_engineRoot.c_str());
+        AZ_TracePrintf(s_azFrameworkWarningWindow, "Engine Path: %s\n", m_engineRoot.c_str());
     }
 
 
@@ -504,13 +485,13 @@ namespace AzFramework
 
     void Application::ResolveEnginePath(AZStd::string& engineRelativePath) const
     {
-        AZStd::string fullPath = AZStd::string(m_engineRoot) + AZStd::string(AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING) + engineRelativePath;
-        engineRelativePath = fullPath;
+        AZ::IO::FixedMaxPath fullPath = m_engineRoot / engineRelativePath;
+        engineRelativePath = fullPath.String();
     }
 
     void Application::CalculateBranchTokenForEngineRoot(AZStd::string& token) const
     {
-        AzFramework::StringFunc::AssetPath::CalculateBranchToken(AZStd::string(m_engineRoot), token);
+        AzFramework::StringFunc::AssetPath::CalculateBranchToken(m_engineRoot.String(), token);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -648,37 +629,21 @@ namespace AzFramework
 
     void Application::SetRootPath(RootPathType type, const char* source)
     {
-        size_t sourceLen = strlen(source);
-
-        constexpr AZStd::string_view pathSeparators{ AZ_CORRECT_AND_WRONG_FILESYSTEM_SEPARATOR };
-        // Determine if we need to append a trailing path separator
-        bool appendTrailingPathSep = sourceLen > 0 && pathSeparators.find_first_of(source[sourceLen - 1]) == AZStd::string_view::npos;
+        const size_t sourceLen = strlen(source);
 
         // Copy the source path to the intended root path and correct the path separators as well
         switch (type)
         {
         case RootPathType::AppRoot:
         {
-            AZ_Assert(sourceLen < m_appRoot.max_size(), "String overflow for App Root: %s", source);
-            m_appRoot = source;
-
-            AZStd::replace(std::begin(m_appRoot), std::end(m_appRoot), AZ_WRONG_FILESYSTEM_SEPARATOR, AZ_CORRECT_FILESYSTEM_SEPARATOR);
-            if (appendTrailingPathSep)
-            {
-                m_appRoot.push_back(AZ_CORRECT_FILESYSTEM_SEPARATOR);
-            }
+            AZ_Assert(sourceLen < m_appRoot.Native().max_size(), "String overflow for App Root: %s", source);
+            m_appRoot = AZ::IO::PathView(source).LexicallyNormal();
         }
         break;
         case RootPathType::EngineRoot:
         {
-            AZ_Assert(sourceLen < m_engineRoot.max_size(), "String overflow for Engine Root: %s", source);
-            m_engineRoot = source;
-
-            AZStd::replace(std::begin(m_engineRoot), std::end(m_engineRoot), AZ_WRONG_FILESYSTEM_SEPARATOR, AZ_CORRECT_FILESYSTEM_SEPARATOR);
-            if (appendTrailingPathSep)
-            {
-                m_engineRoot.push_back(AZ_CORRECT_FILESYSTEM_SEPARATOR);
-            }
+            AZ_Assert(sourceLen < m_engineRoot.Native().max_size(), "String overflow for Engine Root: %s", source);
+            m_engineRoot = AZ::IO::PathView(source).LexicallyNormal();
         }
         break;
         default:

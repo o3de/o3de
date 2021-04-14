@@ -151,7 +151,7 @@ GraphicsSettingsDialog::GraphicsSettingsDialog(QWidget* parent /* = nullptr */)
         m_ui->m_platformEntry->addItem(platform);
     }
 
-    QSettings settings("Amazon", "Lumberyard");
+    QSettings settings("Amazon", "O3DE");
     settings.beginGroup("GraphicsSettingsDialog");
 
     if (settings.contains("Platform"))
@@ -179,7 +179,7 @@ GraphicsSettingsDialog::GraphicsSettingsDialog(QWidget* parent /* = nullptr */)
 
 GraphicsSettingsDialog::~GraphicsSettingsDialog()
 {
-    QSettings settings("Amazon", "Lumberyard");
+    QSettings settings("Amazon", "O3DE");
     settings.beginGroup("GraphicsSettingsDialog");
 
     auto platformCheck = [this](AZStd::pair<AZStd::string, ESystemConfigPlatform>& stringConfigPair) { return stringConfigPair.second == m_currentPlatform; };
@@ -491,7 +491,7 @@ void GraphicsSettingsDialog::LoadPlatformConfigurations()
         m_currentConfigFilename = m_cfgFiles[m_currentPlatform][cfgFileIndex];
         GetISystem()->LoadConfiguration(m_currentConfigFilename.c_str(), this, true);
 
-        CVarGroupInfo& specFileGroup = m_cvarGroupData["SpecFile"];
+        /*CVarGroupInfo& specFileGroup =*/ m_cvarGroupData["SpecFile"];
         m_graphicsSettingsModel->setHeaderData(cfgFileIndex + CVAR_VALUE_COLUMN_OFFSET, Qt::Horizontal, QApplication::translate("GraphicsSettingsDialog", m_cfgFiles[m_currentPlatform][cfgFileIndex].c_str()));
     }
 
@@ -561,7 +561,7 @@ void GraphicsSettingsDialog::LoadPlatformConfigurations()
 
     setUpdatesEnabled(true);
 
-    QSettings settings("Amazon", "Lumberyard");
+    QSettings settings("Amazon", "O3DE");
     settings.beginGroup("GraphicsSettingsDialog");
     settings.beginGroup("cvarGroup");
 
@@ -624,7 +624,7 @@ void GraphicsSettingsDialog::CleanUI()
 {
     setUpdatesEnabled(false);
 
-    QSettings settings("Amazon", "Lumberyard");
+    QSettings settings("Amazon", "O3DE");
     settings.beginGroup("GraphicsSettingsDialog");
     settings.beginGroup("cvarGroup");
 

@@ -45,7 +45,6 @@ namespace AZ::MeshBuilder
         void SetJoints(const AZStd::vector<size_t>& jointList) { m_jointList = jointList; }
         const AZStd::vector<size_t>& GetJoints() const { return m_jointList; }
 
-        void Optimize();
         void AddPolygon(const AZStd::vector<MeshBuilderVertexLookup>& indices, const AZStd::vector<size_t>& jointList);
         bool CanHandlePolygon(const AZStd::vector<size_t>& orgVertexNumbers, size_t materialIndex, AZStd::vector<size_t>& outJointList) const;
 

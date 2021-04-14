@@ -96,7 +96,7 @@ namespace UnitTest
         // when
         // add an editor white box collider component
         entity.Deactivate();
-        auto editorWhiteBoxColliderComponent = entity.CreateComponent<WhiteBox::EditorWhiteBoxColliderComponent>();
+        entity.CreateComponent<WhiteBox::EditorWhiteBoxColliderComponent>();
         entity.Activate();
 
         // then

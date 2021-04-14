@@ -543,7 +543,7 @@ namespace SVOGI
 
         AZStd::shared_ptr<MeshData> data = AZStd::make_shared<MeshData>(entityId, transform, worldAabb, meshAsset, material);
 
-        bool inserted = m_globalInsertions.insert({ entityId, data }).second;
+        [[maybe_unused]] bool inserted = m_globalInsertions.insert({ entityId, data }).second;
         AZ_Assert(inserted, "Tried to double insert mesh.");
 
         // NOTE: At this point the mesh will be added to:

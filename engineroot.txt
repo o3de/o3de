@@ -1,3 +1,0 @@
-This file denotes the engine's root folder.  
-The Lumberyard Setup Assistant will look for this file to identify an engine installation.  
-If this file is not present, it will not recognise this folder.

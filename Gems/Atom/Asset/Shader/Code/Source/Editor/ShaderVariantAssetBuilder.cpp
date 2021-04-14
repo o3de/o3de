@@ -409,13 +409,11 @@ namespace AZ
             {
                 if (jobParameters.find(ShouldExitEarlyFromProcessJobParam) != jobParameters.end())
                 {
-                    const AZStd::string& shaderVariantListPath = jobParameters.at(ShaderVariantLoadErrorParam);
-                    AZ_TracePrintf(ShaderVariantAssetBuilderName, "Doing nothing on behalf of [%s] because it's been overriden by game project.", shaderVariantListPath.c_str());
+                    AZ_TracePrintf(ShaderVariantAssetBuilderName, "Doing nothing on behalf of [%s] because it's been overriden by game project.", jobParameters.at(ShaderVariantLoadErrorParam).c_str());
                     response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
                     return;
                 }
-                const AZStd::string& errorMessage = jobParameters.at(ShaderVariantLoadErrorParam);
-                AZ_Error(ShaderVariantAssetBuilderName, false, "Error during CreateJobs: %s", errorMessage.c_str());
+                AZ_Error(ShaderVariantAssetBuilderName, false, "Error during CreateJobs: %s", jobParameters.at(ShaderVariantLoadErrorParam).c_str());
                 response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
                 return;
             }

@@ -50,7 +50,6 @@ CUnsavedChangedDialog::CUnsavedChangedDialog(QWidget* parent)
     if (parent)
     {
         QPoint center = parent->mapToGlobal(parent->geometry().center());
-        QDesktopWidget* desktop = QApplication::desktop();
         const QRect screenDimensions = QApplication::screenAt(center)->geometry();
         if (screenDimensions.contains(center))
         {

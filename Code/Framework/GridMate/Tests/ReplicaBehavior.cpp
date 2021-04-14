@@ -604,8 +604,9 @@ namespace ReplicaBehavior {
             m_replicaLengths.push_back(len);
         }
 
-        void ResetCounts(bool trace = false)
+        void ResetCounts([[maybe_unused]] bool trace = false)
         {
+#if defined(AZ_ENABLE_TRACING)
             if (trace && m_replicaLengths.size() > 0)
             {
                 AZ_TracePrintf("GridMate", "Driller saw replicas with the following byte sizes:\n");
@@ -614,6 +615,7 @@ namespace ReplicaBehavior {
                     AZ_TracePrintf("GridMate", "\t\t\t %d \n", length);
                 }
             }
+#endif
 
             m_replicaLengths.clear();
         }

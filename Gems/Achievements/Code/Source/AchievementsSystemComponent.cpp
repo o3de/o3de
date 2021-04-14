@@ -69,7 +69,6 @@ namespace Achievements
             
             behaviorContext->Class<AchievementDetails>()
                 ->Constructor<AchievementDetails&>()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)
                 ->Property("id", BehaviorValueProperty(&AchievementDetails::id))
                 ->Property("name", BehaviorValueProperty(&AchievementDetails::name))

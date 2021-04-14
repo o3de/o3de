@@ -169,7 +169,6 @@ bool CSTLHelper::FromFile(const std::string& rFileName, std::vector<uint8_t>&   
         return false;
     }
 
-    size_t nNumRead = 0;
     rIn.resize(fileSize);
     AZ::IO::SystemFile::SizeType actualReadAmount = inputFile.Read(fileSize, &rIn[0]);
 
@@ -276,7 +275,7 @@ bool CSTLHelper::AppendToFile(const std::string& rFileName, const std::vector<ui
         return false;
     }
 
-    AZ::IO::SystemFile::SizeType bytesWritten = outputFile.Write(rOut.data(), rOut.size());
+    [[maybe_unused]] AZ::IO::SystemFile::SizeType bytesWritten = outputFile.Write(rOut.data(), rOut.size());
     AZ_Warning("ShaderCompiler", bytesWritten == rOut.size(), "Did not write out all the data to the file: %s", rFileName.c_str());
     return true;
 }

@@ -30,13 +30,13 @@ class Test_DynVeg_Regressions(object):
     def setup_teardown(self, request, workspace, project, level):
         def teardown():
             # delete temp level
-            file_system.delete([os.path.join(workspace.paths.dev(), project, "Levels", level)], True, True)
+            file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
 
         # Setup - add the teardown finalizer
         request.addfinalizer(teardown)
 
         # Make sure the temp level doesn't already exist
-        file_system.delete([os.path.join(workspace.paths.dev(), project, "Levels", level)], True, True)
+        file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
 
     @pytest.mark.test_case_id("C29470845")
     @pytest.mark.SUITE_periodic

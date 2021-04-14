@@ -364,10 +364,12 @@ namespace AssetProcessor
 
         if (!results.isEmpty())
         {
+#if defined(AZ_ENABLE_TRACING)
             for (const AssetProcessor::QueueElementID& result : results)
             {
                 AZ_TracePrintf(AssetProcessor::DebugChannel, "OnEscalateJobsBySourceUUID:  %s --> %s\n", sourceUuid.ToString<AZStd::string>().c_str(), result.GetInputAssetName().toUtf8().constData());
             }
+#endif
             m_RCQueueSortModel.OnEscalateJobs(escalationList);
         }
         // do not print a warning out when this fails, its fine for things to escalate jobs as a matter of course just to "make sure" they are escalated

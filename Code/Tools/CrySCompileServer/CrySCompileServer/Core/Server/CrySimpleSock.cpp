@@ -44,7 +44,7 @@ namespace
     };
 
     static AZStd::atomic_long numberOfOpenSockets = {0};
-    const int MAX_DATA_SIZE = 1024 * 1024; // Only allow 1 MB of data to come through. Lumberyard Game Engine has the same size constraint
+    const int MAX_DATA_SIZE = 1024 * 1024; // Only allow 1 MB of data to come through. Open 3D Engine has the same size constraint
     const size_t BLOCKSIZE = 4 * 1024;
     const size_t MAX_ERROR_MESSAGE_SIZE = 1024;
     const size_t MAX_HOSTNAME_BUFFER_SIZE = 1024;
@@ -554,7 +554,6 @@ bool CCrySimpleSock::Recv(std::vector<uint8_t>& rVec)
 
     if (size.m_Data64 > MAX_DATA_SIZE)
     {
-        int WSAError = WSAGetLastError();
         char acTmp[MAX_ERROR_MESSAGE_SIZE];
         azsprintf(acTmp, "Error while receiving size of data - Size is greater than max support data size.");
         CrySimple_ERROR(acTmp);

@@ -89,7 +89,7 @@ namespace AzToolsFramework
             const AzFramework::CameraState& cameraState,
             const ViewportInteraction::MouseInteraction& mouseInteraction);
 
-        // LUMBERYARD_DEPRECATED(LY-117150)
+        // O3DE_DEPRECATED(LY-117150)
         /// Check if the modifier key state has changed - if so we may need to refresh
         /// certain manipulator bounds.
         AZ_DEPRECATED(

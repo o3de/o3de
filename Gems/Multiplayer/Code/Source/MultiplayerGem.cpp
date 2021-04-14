@@ -13,6 +13,8 @@
 #include <Source/Multiplayer_precompiled.h>
 #include <Source/MultiplayerGem.h>
 #include <Source/MultiplayerSystemComponent.h>
+#include <Source/Components/NetBindComponent.h>
+#include <Source/AutoGen/AutoComponentTypes.h>
 #include <AzNetworking/Framework/NetworkingSystemComponent.h>
 
 #ifdef MULTIPLAYER_EDITOR
@@ -27,9 +29,13 @@ namespace Multiplayer
         m_descriptors.insert(m_descriptors.end(), {
             AzNetworking::NetworkingSystemComponent::CreateDescriptor(),
             MultiplayerSystemComponent::CreateDescriptor(),
+            NetBindComponent::CreateDescriptor(),
 #ifdef MULTIPLAYER_EDITOR
             MultiplayerEditorSystemComponent::CreateDescriptor(),
 #endif
+        });
+
+        CreateComponentDescriptors(m_descriptors);
         });
     }
 

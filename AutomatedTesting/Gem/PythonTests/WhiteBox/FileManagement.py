@@ -264,7 +264,7 @@ class FileManagement:
                 """
                 root_path = parent_path
                 if root_path is not None:
-                    root_path = os.path.join(workspace.paths.dev(), root_path)
+                    root_path = os.path.join(workspace.paths.engine_root(), root_path)
                 else:
                     # Default to project folder (AutomatedTesting)
                     root_path = workspace.paths.project()
@@ -325,7 +325,7 @@ class FileManagement:
                 """
                 root_path = parent_path
                 if root_path is not None:
-                    root_path = os.path.join(workspace.paths.dev(), root_path)
+                    root_path = os.path.join(workspace.paths.engine_root(), root_path)
                 else:
                     # Default to project folder (AutomatedTesting)
                     root_path = workspace.paths.project()

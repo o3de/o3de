@@ -445,7 +445,7 @@ typedef struct
 
 // NOTE: HLSLCC flags are specified by command line when executing this cross compiler.
 //       If these flags change, the command line switch '-flags=XXX' must change as well.
-//       Lumberyard composes the command line in file 'dev\Code\CryEngine\RenderDll\Common\Shaders\RemoteCompiler.cpp'
+//       Open 3D Engine composes the command line in file 'dev\Code\CryEngine\RenderDll\Common\Shaders\RemoteCompiler.cpp'
 
 /*HLSL constant buffers are treated as default-block unform arrays by default. This is done
   to support versions of GLSL which lack ARB_uniform_buffer_object functionality.

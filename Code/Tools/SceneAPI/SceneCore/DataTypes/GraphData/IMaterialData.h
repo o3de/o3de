@@ -47,6 +47,8 @@ namespace AZ
 
                 ~IMaterialData() override = default;
 
+                void CloneAttributesFrom([[maybe_unused]] const IGraphObject* sourceObject) override {}
+
                 void GetDebugOutput(AZ::SceneAPI::Utilities::DebugOutput& output) const override
                 {
                     output.Write("MaterialName", GetMaterialName());

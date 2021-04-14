@@ -59,7 +59,6 @@ namespace GradientSignal
         {
             behaviorContext->Class<MixedGradientLayer>()
                 ->Constructor()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Property("enabled", BehaviorValueProperty(&MixedGradientLayer::m_enabled))
                 ->Property("mixingOperation",
@@ -156,7 +155,6 @@ namespace GradientSignal
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<MixedGradientConfig>()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Constructor()
                 ->Method("GetNumLayers", &MixedGradientConfig::GetNumLayers)
@@ -202,7 +200,6 @@ namespace GradientSignal
             behaviorContext->Class<MixedGradientComponent>()->RequestBus("MixedGradientRequestBus");
 
             behaviorContext->EBus<MixedGradientRequestBus>("MixedGradientRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Event("GetNumLayers", &MixedGradientRequestBus::Events::GetNumLayers)
                 ->Event("AddLayer", &MixedGradientRequestBus::Events::AddLayer)

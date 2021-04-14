@@ -30,6 +30,7 @@
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Math/VectorConversions.h>
+#include <AzCore/Console/IConsole.h>
 
 // AzFramework
 #include <AzFramework/Components/CameraBus.h>
@@ -76,6 +77,7 @@
 #include "EditorPreferencesPageGeneral.h"
 #include "ViewportManipulatorController.h"
 #include "LegacyViewportCameraController.h"
+#include "ModernViewportCameraController.h"
 
 #include "ViewPane.h"
 #include "CustomResolutionDlg.h"
@@ -92,9 +94,14 @@
 // Atom
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/ViewportContextManager.h>
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Math/MatrixUtils.h>
 
 #include <QtGui/private/qhighdpiscaling_p.h>
+
+AZ_CVAR(
+    bool, ed_visibility_logTiming, false, nullptr, AZ::ConsoleFunctorFlags::Null,
+    "Output the timing of the new IVisibilitySystem query");
 
 EditorViewportWidget* EditorViewportWidget::m_pPrimaryViewport = nullptr;
 
@@ -105,6 +112,10 @@ void StartFixedCursorMode(QObject *viewport);
 
 #define RENDER_MESH_TEST_DISTANCE (0.2f)
 #define CURSOR_FONT_HEIGHT  8.0f
+
+AZ_CVAR(
+    bool, ed_useNewCameraSystem, false, nullptr, AZ::ConsoleFunctorFlags::Null,
+    "Use the new Editor camera system (the Atom-native Editor viewport (experimental) must also be enabled)");
 
 namespace AZ::ViewportHelpers
 {
@@ -138,35 +149,6 @@ namespace AZ::ViewportHelpers
         EditorViewportWidget& m_renderViewport;
     };
 } // namespace AZ::ViewportHelpers
-
-struct EditorViewportWidget::SScopedCurrentContext
-{
-    const EditorViewportWidget* m_viewport;
-    EditorViewportWidget::SPreviousContext m_previousContext;
-
-    explicit SScopedCurrentContext(const EditorViewportWidget* viewport)
-        : m_viewport(viewport)
-    {
-        m_previousContext = viewport->SetCurrentContext();
-
-        // During normal updates of RenderViewport the value of m_cameraSetForWidgetRenderingCount is expected to be 0.
-        // This is to guarantee no loss in performance by tracking unnecessary calls to SetCurrentContext/RestorePreviousContext.
-        // If some code makes additional calls to Pre/PostWidgetRendering then the assert will be triggered because
-        // m_cameraSetForWidgetRenderingCount will be greater than 0.
-        // There is a legitimate case where the counter can be greater than 0. This is when QtViewport is processing mouse callbacks.
-        // QtViewport::MouseCallback() is surrounded by Pre/PostWidgetRendering and the m_processingMouseCallbacksCounter
-        // tracks this specific case. If an update of a RenderViewport happens while processing the mouse callback,
-        // for example when showing a QMessageBox, then both counters must match.
-        AZ_Assert(viewport->m_cameraSetForWidgetRenderingCount == viewport->m_processingMouseCallbacksCounter,
-            "SScopedCurrentContext constructor was called while viewport widget context is active "
-            "- this is unnecessary");
-    }
-
-    ~SScopedCurrentContext()
-    {
-        m_viewport->RestorePreviousContext(m_previousContext);
-    }
-};
 
 //////////////////////////////////////////////////////////////////////////
 // EditorViewportWidget
@@ -224,7 +206,7 @@ EditorViewportWidget::EditorViewportWidget(const QString& name, QWidget* parent)
     m_manipulatorManager = GetIEditor()->GetViewManager()->GetManipulatorManager();
     if (!m_pPrimaryViewport)
     {
-        m_pPrimaryViewport = this;
+        SetAsActiveViewport();
     }
 }
 
@@ -489,7 +471,7 @@ void EditorViewportWidget::Update()
         {
             if (CheckRespondToInput()) // If this is the focused window, set primary viewport.
             {
-                m_pPrimaryViewport = this;
+                SetAsActiveViewport();
             }
             else if (!m_bUpdateViewport) // Skip this viewport.
             {
@@ -546,8 +528,6 @@ void EditorViewportWidget::Update()
 
     // Render
     {
-        SScopedCurrentContext context(this);
-
         // TODO: Move out this logic to a controller and refactor to work with Atom
         // m_renderer->SetClearColor(Vec3(0.4f, 0.4f, 0.4f));
         // 3D engine stats
@@ -579,6 +559,19 @@ void EditorViewportWidget::Update()
         GetIEditor()->GetSystem()->RenderEnd(m_bRenderStats);
 
         gEnv->pSystem->SetViewCamera(CurCamera);
+    }
+
+    {
+        auto start = std::chrono::steady_clock::now();
+
+        m_entityVisibilityQuery.UpdateVisibility(GetCameraState());
+
+        if (ed_visibility_logTiming)
+        {
+            auto stop = std::chrono::steady_clock::now();
+            std::chrono::duration<double> diff = stop - start;
+            AZ_Printf("Visibility", "FindVisibleEntities (new) - Duration: %f", diff);
+        }
     }
 
     QtViewport::Update();
@@ -680,19 +673,14 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
 
                 if (deviceInfo)
                 {
+                    // Note: This may also need to adjust the viewport size
                     outputToHMD->Set(1);
-                    m_previousContext = SetCurrentContext(deviceInfo->renderWidth, deviceInfo->renderHeight);
                     SetActiveWindow();
                     SetFocus();
                     SetSelected(true);
                 }
             }
-            else
-            {
-                m_previousContext = SetCurrentContext();
-            }
             SetCurrentCursor(STD_CURSOR_GAME);
-            AzFramework::InputSystemCursorConstraintRequestBus::Handler::BusConnect();
         }
     }
     break;
@@ -700,13 +688,11 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
     case eNotify_OnEndGameMode:
         if (GetIEditor()->GetViewManager()->GetGameViewport() == this)
         {
-            AzFramework::InputSystemCursorConstraintRequestBus::Handler::BusDisconnect();
             SetCurrentCursor(STD_CURSOR_DEFAULT);
             if (gSettings.bEnableGameModeVR)
             {
                 outputToHMD->Set(0);
             }
-            RestorePreviousContext(m_previousContext);
             m_bInRotateMode = false;
             m_bInMoveMode = false;
             m_bInOrbitMode = false;
@@ -893,10 +879,6 @@ void EditorViewportWidget::OnBeginPrepareRender()
     }
 
     GetIEditor()->GetSystem()->SetViewCamera(m_Camera);
-
-    CGameEngine* ge = GetIEditor()->GetGameEngine();
-
-    bool levelIsDisplayable = (ge && ge->IsLevelLoaded() && GetIEditor()->GetDocument() && GetIEditor()->GetDocument()->IsDocumentReady());
 
     PreWidgetRendering();
 
@@ -1180,15 +1162,7 @@ void EditorViewportWidget::FindVisibleEntities(AZStd::vector<AZ::EntityId>& visi
 {
     FUNCTION_PROFILER(GetIEditor()->GetSystem(), PROFILE_EDITOR);
 
-    if (m_displayContext.GetView() == nullptr)
-    {
-        return;
-    }
-
-    const AZStd::vector<AZ::EntityId>& entityIdCache =
-        m_displayContext.GetView()->GetVisibleObjectsCache()->GetEntityIdCache();
-
-    visibleEntitiesOut.assign(entityIdCache.begin(), entityIdCache.end());
+    visibleEntitiesOut.assign(m_entityVisibilityQuery.Begin(), m_entityVisibilityQuery.End());
 }
 
 QPoint EditorViewportWidget::ViewportWorldToScreen(const AZ::Vector3& worldPosition)
@@ -1233,6 +1207,7 @@ void EditorViewportWidget::SetViewportId(int id)
 
     // Now that we have an ID, we can initialize our viewport.
     m_renderViewport = new AtomToolsFramework::RenderViewportWidget(id, this);
+    m_defaultViewportContextName = m_renderViewport->GetViewportContext()->GetName();
     QBoxLayout* layout = new QBoxLayout(QBoxLayout::Direction::TopToBottom, this);
     layout->setContentsMargins(QMargins());
     layout->addWidget(m_renderViewport);
@@ -1242,8 +1217,22 @@ void EditorViewportWidget::SetViewportId(int id)
     viewportContext->ConnectProjectionMatrixChangedHandler(m_cameraProjectionMatrixChangeHandler);
 
     m_renderViewport->GetControllerList()->Add(AZStd::make_shared<SandboxEditor::ViewportManipulatorController>());
-    m_renderViewport->GetControllerList()->Add(AZStd::make_shared<SandboxEditor::LegacyViewportCameraController>());
+
+    if (ed_useNewCameraSystem)
+    {
+        m_renderViewport->GetControllerList()->Add(AZStd::make_shared<SandboxEditor::ModernViewportCameraController>());
+    }
+    else
+    {
+        m_renderViewport->GetControllerList()->Add(AZStd::make_shared<SandboxEditor::LegacyViewportCameraController>());
+    }
+
     UpdateScene();
+
+    if (m_pPrimaryViewport == this)
+    {
+        SetAsActiveViewport();
+    }
 }
 
 void EditorViewportWidget::ConnectViewportInteractionRequestBus()
@@ -1251,10 +1240,14 @@ void EditorViewportWidget::ConnectViewportInteractionRequestBus()
     AzToolsFramework::ViewportInteraction::ViewportFreezeRequestBus::Handler::BusConnect(GetViewportId());
     AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequestBus::Handler::BusConnect(GetViewportId());
     m_viewportUi.ConnectViewportUiBus(GetViewportId());
+
+    AzFramework::InputSystemCursorConstraintRequestBus::Handler::BusConnect();
 }
 
 void EditorViewportWidget::DisconnectViewportInteractionRequestBus()
 {
+    AzFramework::InputSystemCursorConstraintRequestBus::Handler::BusDisconnect();
+
     m_viewportUi.DisconnectViewportUiBus();
     AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequestBus::Handler::BusDisconnect();
     AzToolsFramework::ViewportInteraction::ViewportFreezeRequestBus::Handler::BusDisconnect();
@@ -1986,9 +1979,6 @@ void EditorViewportWidget::RenderSelectedRegion()
 
 Vec3 EditorViewportWidget::WorldToView3D(const Vec3& wp, [[maybe_unused]] int nFlags) const
 {
-    AZ_Assert(m_cameraSetForWidgetRenderingCount > 0,
-        "WorldToView3D was called but viewport widget rendering was not set. PreWidgetRendering must be called before.");
-
     Vec3 out(0, 0, 0);
     float x, y, z;
 
@@ -2007,10 +1997,6 @@ Vec3 EditorViewportWidget::WorldToView3D(const Vec3& wp, [[maybe_unused]] int nF
 //////////////////////////////////////////////////////////////////////////
 QPoint EditorViewportWidget::WorldToView(const Vec3& wp) const
 {
-    AZ_Assert(m_cameraSetForWidgetRenderingCount > 0,
-        "WorldToView was called but viewport widget rendering was not set. PreWidgetRendering must be called before.");
-
-
     return m_renderViewport->ViewportWorldToScreen(LYVec3ToAZVec3(wp));
 }
 //////////////////////////////////////////////////////////////////////////
@@ -2178,9 +2164,6 @@ void EditorViewportWidget::ProjectToScreen(float ptx, float pty, float ptz, floa
 //////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::ViewToWorldRay(const QPoint& vp, Vec3& raySrc, Vec3& rayDir) const
 {
-    AZ_Assert(m_cameraSetForWidgetRenderingCount > 0,
-        "ViewToWorldRay was called but SScopedCurrentContext was not set at a higher scope! This means the camera for this call is incorrect.");
-
     QRect rc = m_rcClient;
 
     Vec3 pos0, pos1;
@@ -2245,7 +2228,7 @@ bool EditorViewportWidget::CheckRespondToInput() const
         return false;
     }
 
-    if (!hasFocus())
+    if (!hasFocus() && !m_renderViewport->hasFocus())
     {
         return false;
     }
@@ -2651,55 +2634,6 @@ void EditorViewportWidget::OnStopPlayInEditor()
 }
 
 //////////////////////////////////////////////////////////////////////////
-EditorViewportWidget::SPreviousContext EditorViewportWidget::SetCurrentContext(int /*newWidth*/, int /*newHeight*/) const
-{
-    SPreviousContext x;
-
-    return x;
-}
-
-//////////////////////////////////////////////////////////////////////////
-EditorViewportWidget::SPreviousContext EditorViewportWidget::SetCurrentContext() const
-{
-    const auto r = rect();
-    return SetCurrentContext(r.width(), r.height());
-}
-
-//////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::RestorePreviousContext(const SPreviousContext& /*x*/) const
-{
-}
-
-void EditorViewportWidget::PreWidgetRendering()
-{
-    // if we have not already set the render context for the viewport, do it now
-    // based on the current state of the renderer/viewport, record the previous
-    // context to restore afterwards
-    if (m_cameraSetForWidgetRenderingCount == 0)
-    {
-        m_preWidgetContext = SetCurrentContext();
-    }
-
-    // keep track of how many times we've attempted to update the context
-    m_cameraSetForWidgetRenderingCount++;
-}
-
-void EditorViewportWidget::PostWidgetRendering()
-{
-    if (m_cameraSetForWidgetRenderingCount > 0)
-    {
-        m_cameraSetForWidgetRenderingCount--;
-
-        // unwinding - when the viewport context is no longer required,
-        // restore the previous context when widget rendering first began
-        if (m_cameraSetForWidgetRenderingCount == 0)
-        {
-            RestorePreviousContext(m_preWidgetContext);
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::OnCameraFOVVariableChanged([[maybe_unused]] IVariable* var)
 {
     if (m_viewPane)
@@ -2799,6 +2733,20 @@ void EditorViewportWidget::UpdateCurrentMousePos(const QPoint& newPosition)
     m_mousePos = newPosition;
 }
 
+void* EditorViewportWidget::GetSystemCursorConstraintWindow() const
+{
+    AzFramework::SystemCursorState systemCursorState = AzFramework::SystemCursorState::Unknown;
+
+    AzFramework::InputSystemCursorRequestBus::EventResult(
+        systemCursorState, AzFramework::InputDeviceMouse::Id, &AzFramework::InputSystemCursorRequests::GetSystemCursorState);
+
+    const bool systemCursorConstrained =
+        (systemCursorState == AzFramework::SystemCursorState::ConstrainedAndHidden ||
+         systemCursorState == AzFramework::SystemCursorState::ConstrainedAndVisible);
+
+    return systemCursorConstrained ? renderOverlayHWND() : nullptr;
+}
+
 void EditorViewportWidget::BuildDragDropContext(AzQtComponents::ViewportDragContext& context, const QPoint& pt)
 {
     const auto scaledPoint = WidgetToViewport(pt);
@@ -2886,6 +2834,38 @@ void EditorViewportWidget::UpdateCameraFromViewportContext()
     SetViewTM(m);
     SetFOV(cameraState.m_fovOrZoom);
     m_Camera.SetZRange(cameraState.m_nearClip, cameraState.m_farClip);
+}
+
+void EditorViewportWidget::SetAsActiveViewport()
+{
+    auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+
+    const AZ::Name defaultContextName = viewportContextManager->GetDefaultViewportContextName();
+
+    // If another viewport was active before, restore its name to its per-ID one.
+    if (m_pPrimaryViewport && m_pPrimaryViewport != this && m_pPrimaryViewport->m_renderViewport)
+    {
+        auto viewportContext = m_pPrimaryViewport->m_renderViewport->GetViewportContext();
+        if (viewportContext)
+        {
+            // Remove the old viewport's camera from the stack, as it's no longer the owning viewport
+            viewportContextManager->PopView(defaultContextName, viewportContext->GetDefaultView());
+            viewportContextManager->RenameViewportContext(viewportContext, m_pPrimaryViewport->m_defaultViewportContextName);
+        }
+    }
+
+    m_pPrimaryViewport = this;
+    if (m_renderViewport)
+    {
+        auto viewportContext = m_renderViewport->GetViewportContext();
+        if (viewportContext)
+        {
+            // Push our camera onto the default viewport's view stack to preserve camera state continuity
+            // Other views can still be pushed on top of our view for e.g. game mode
+            viewportContextManager->PushView(defaultContextName, viewportContext->GetDefaultView());
+            viewportContextManager->RenameViewportContext(viewportContext, defaultContextName);
+        }
+    }
 }
 
 #include <moc_EditorViewportWidget.cpp>

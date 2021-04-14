@@ -16,21 +16,13 @@
 
 bool CShadowUtils::bShadowFrustumCacheValid = false;
 
-void CShadowUtils::CalcDifferentials(const CCamera& cam, float fViewWidth, float fViewHeight, float& fFragSizeX)
+void CShadowUtils::CalcDifferentials(const CCamera& cam, float fViewWidth, [[maybe_unused]] float fViewHeight, float& fFragSizeX)
 {
     Vec3 vNearEdge = cam.GetEdgeN();
 
-    float fFar = cam.GetFarPlane();
-    float fNear = abs(vNearEdge.y);
     float fWorldWidthDiv2 = abs(vNearEdge.x);
-    float fWorldHeightDiv2 = abs(vNearEdge.z);
 
     fFragSizeX = (fWorldWidthDiv2 * 2.0f) / fViewWidth;
-    float fFragSizeY = (fWorldHeightDiv2 * 2.0f) / fViewHeight;
-
-    float fDDZ = fWorldWidthDiv2 / fViewHeight;
-
-    return;
 }
 
 void CShadowUtils::CalcScreenToWorldExpansionBasis(const CCamera& cam, const Vec2& vJitter, float fViewWidth, float fViewHeight, Vec3& vWBasisX, Vec3& vWBasisY, Vec3& vWBasisZ, bool bWPos)
@@ -454,7 +446,6 @@ void CShadowUtils::mathMatrixLookAtSnap(Matrix44A* pMatr, const Vec3& Eye, const
 
     float fTranslX = (*pMatr)(3, 0);
     float fTranslY = (*pMatr)(3, 1);
-    float fTranslZ = (*pMatr)(3, 2);
 
     (*pMatr)(3, 0) = snap_frac2(fTranslX, fSnapXY);
     (*pMatr)(3, 1) = snap_frac2(fTranslY, fSnapXY);

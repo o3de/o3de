@@ -62,7 +62,7 @@ namespace EMotionFX
             Integration::ActorComponent::Configuration actorConf;
             actorConf.m_actorAsset = actorAsset;
 
-            auto transformComponent = m_entity->CreateComponent<AzFramework::TransformComponent>();
+            m_entity->CreateComponent<AzFramework::TransformComponent>();
             auto actorComponent = m_entity->CreateComponent<Integration::ActorComponent>(&actorConf);
             auto animGraphComponent = m_entity->CreateComponent<Integration::AnimGraphComponent>();
 

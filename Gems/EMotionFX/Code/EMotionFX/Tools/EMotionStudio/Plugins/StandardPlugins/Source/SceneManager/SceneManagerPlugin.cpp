@@ -388,10 +388,9 @@ namespace EMStudio
     bool SceneManagerPlugin::CommandScaleActorDataCallback::Undo(MCore::Command* command, const MCore::CommandLine& commandLine)    { MCORE_UNUSED(command); MCORE_UNUSED(commandLine); return ReInitSceneManagerPlugin(); }
 
 
-    bool SceneManagerPlugin::RemoveActorCallback::Execute(MCore::Command* command, const MCore::CommandLine& commandLine)
+    bool SceneManagerPlugin::RemoveActorCallback::Execute([[maybe_unused]] MCore::Command* command, const MCore::CommandLine& commandLine)
     {
         MCORE_UNUSED(commandLine);
-        CommandSystem::CommandRemoveActor* removeActorCommand = static_cast<CommandSystem::CommandRemoveActor*>(command);
         return ReInitSceneManagerPlugin();
     }
 

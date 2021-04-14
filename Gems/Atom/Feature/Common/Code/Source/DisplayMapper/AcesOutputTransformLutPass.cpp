@@ -71,7 +71,7 @@ namespace AZ
 
             AZ::RHI::AttachmentId imageAttachmentId = AZ::RHI::AttachmentId("DisplayMapperLutImageAttachmentId");
             // Check and assert that the image attachment id exists (it should've been imported by the write lut pass)
-            auto attachment = frameGraph.GetAttachmentDatabase().IsAttachmentValid(imageAttachmentId);
+            [[maybe_unused]] auto attachment = frameGraph.GetAttachmentDatabase().IsAttachmentValid(imageAttachmentId);
             AZ_Assert(attachment, "AcesOutputTransformLutPass invalid attachment \"DisplayMapperLutImageAttachmentId\"");
 
             RHI::ImageScopeAttachmentDescriptor desc;

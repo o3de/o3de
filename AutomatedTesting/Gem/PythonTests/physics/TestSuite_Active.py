@@ -27,7 +27,7 @@ from base import TestAutomationBase
 revert_physics_config = fm.file_revert_list(['physxdebugconfiguration.setreg', 'physxdefaultsceneconfiguration.setreg', 'physxsystemconfiguration.setreg'], 'AutomatedTesting/Registry')
 
 
-@pytest.mark.SUITE_sandbox
+@pytest.mark.SUITE_main
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomation(TestAutomationBase):
@@ -40,16 +40,6 @@ class TestAutomation(TestAutomationBase):
     @revert_physics_config
     def test_C000000_RigidBody_EnablingGravityWorksPoC_DUPLICATE(self, request, workspace, editor, launcher_platform):
         from . import C100000_RigidBody_EnablingGravityWorksPoC as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @revert_physics_config
-    def test_C100000_RigidBody_EnablingGravityWorksPoC(self, request, workspace, editor, launcher_platform):
-        from . import C100000_RigidBody_EnablingGravityWorksPoC as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @revert_physics_config
-    def test_C111111_RigidBody_EnablingGravityWorksUsingNotificationsPoC(self, request, workspace, editor, launcher_platform):
-        from . import C111111_RigidBody_EnablingGravityWorksUsingNotificationsPoC as test_module
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
@@ -73,11 +63,6 @@ class TestAutomation(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
-    def test_C5932040_ForceRegion_CubeExertsWorldForce(self, request, workspace, editor, launcher_platform):
-        from . import C5932040_ForceRegion_CubeExertsWorldForce as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @revert_physics_config
     def test_C5932041_PhysXForceRegion_LocalSpaceForceOnRigidBodies(self, request, workspace, editor, launcher_platform):
         from . import C5932041_PhysXForceRegion_LocalSpaceForceOnRigidBodies as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -90,16 +75,6 @@ class TestAutomation(TestAutomationBase):
     @revert_physics_config
     def test_C5932043_ForceRegion_SimpleDragOnRigidBodies(self, request, workspace, editor, launcher_platform):
         from . import C5932043_ForceRegion_SimpleDragOnRigidBodies as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @revert_physics_config
-    def test_C5932044_ForceRegion_PointForceOnRigidBody(self, request, workspace, editor, launcher_platform):
-        from . import C5932044_ForceRegion_PointForceOnRigidBody as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @revert_physics_config
-    def test_C5959759_RigidBody_ForceRegionSpherePointForce(self, request, workspace, editor, launcher_platform):
-        from . import C5959759_RigidBody_ForceRegionSpherePointForce as test_module
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
@@ -289,11 +264,6 @@ class TestAutomation(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
-    def test_C5959809_ForceRegion_RotationalOffset(self, request, workspace, editor, launcher_platform):
-        from . import C5959809_ForceRegion_RotationalOffset as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @revert_physics_config
     def test_C12712453_ScriptCanvas_MultipleRaycastNode(self, request, workspace, editor, launcher_platform):
         from . import C12712453_ScriptCanvas_MultipleRaycastNode as test_module
         # Fixme: unexpected_lines = ["Assert"] + test_module.Lines.unexpected
@@ -475,16 +445,6 @@ class TestAutomation(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
-    def test_C15096740_Material_LibraryUpdatedCorrectly(self, request, workspace, editor, launcher_platform):
-        from . import C15096740_Material_LibraryUpdatedCorrectly as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @revert_physics_config
-    def test_C4976236_AddPhysxColliderComponent(self, request, workspace, editor, launcher_platform):
-        from . import C4976236_AddPhysxColliderComponent as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @revert_physics_config
     def test_C14861500_DefaultSetting_ColliderShape(self, request, workspace, editor, launcher_platform):
         from . import C14861500_DefaultSetting_ColliderShape as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -515,11 +475,6 @@ class TestAutomation(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
-    def test_C14861502_PhysXCollider_AssetAutoAssigned(self, request, workspace, editor, launcher_platform):
-        from . import C14861502_PhysXCollider_AssetAutoAssigned as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @revert_physics_config
     def test_C4982802_PhysXColliderShape_CanBeSelected(self, request, workspace, editor, launcher_platform):
         from . import C4982802_PhysXColliderShape_CanBeSelected as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -527,14 +482,42 @@ class TestAutomation(TestAutomationBase):
     def test_C17411467_AddPhysxRagdollComponent(self, request, workspace, editor, launcher_platform):
         from . import C17411467_AddPhysxRagdollComponent as test_module
         self._run_test(request, workspace, editor, test_module)
-        
-    def test_C14861501_PhysXCollider_RenderMeshAutoAssigned(self, request, workspace, editor, launcher_platform):
-        from . import C14861501_PhysXCollider_RenderMeshAutoAssigned as test_module
-        self._run_test(request, workspace, editor, test_module)
 
     def test_C12905528_ForceRegion_WithNonTriggerCollider(self, request, workspace, editor, launcher_platform):
         from . import C12905528_ForceRegion_WithNonTriggerCollider as test_module
         # Fixme: expected_lines = ["[Warning] (PhysX Force Region) - Please ensure collider component marked as trigger exists in entity"]
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_C5932040_ForceRegion_CubeExertsWorldForce(self, request, workspace, editor, launcher_platform):
+        from . import C5932040_ForceRegion_CubeExertsWorldForce as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_C5932044_ForceRegion_PointForceOnRigidBody(self, request, workspace, editor, launcher_platform):
+        from . import C5932044_ForceRegion_PointForceOnRigidBody as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_C5959759_RigidBody_ForceRegionSpherePointForce(self, request, workspace, editor, launcher_platform):
+        from . import C5959759_RigidBody_ForceRegionSpherePointForce as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_C5959809_ForceRegion_RotationalOffset(self, request, workspace, editor, launcher_platform):
+        from . import C5959809_ForceRegion_RotationalOffset as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_C15096740_Material_LibraryUpdatedCorrectly(self, request, workspace, editor, launcher_platform):
+        from . import C15096740_Material_LibraryUpdatedCorrectly as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_C4976236_AddPhysxColliderComponent(self, request, workspace, editor, launcher_platform):
+        from . import C4976236_AddPhysxColliderComponent as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_C14861502_PhysXCollider_AssetAutoAssigned(self, request, workspace, editor, launcher_platform):
+        from . import C14861502_PhysXCollider_AssetAutoAssigned as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_C14861501_PhysXCollider_RenderMeshAutoAssigned(self, request, workspace, editor, launcher_platform):
+        from . import C14861501_PhysXCollider_RenderMeshAutoAssigned as test_module
         self._run_test(request, workspace, editor, test_module)
 
     def test_C4044695_PhysXCollider_AddMultipleSurfaceFbx(self, request, workspace, editor, launcher_platform):
@@ -543,4 +526,12 @@ class TestAutomation(TestAutomationBase):
 
     def test_C14861504_RenderMeshAsset_WithNoPxAsset(self, request, workspace, editor, launcher_platform):
         from . import C14861504_RenderMeshAsset_WithNoPxAsset as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_C100000_RigidBody_EnablingGravityWorksPoC(self, request, workspace, editor, launcher_platform):
+        from . import C100000_RigidBody_EnablingGravityWorksPoC as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_C111111_RigidBody_EnablingGravityWorksUsingNotificationsPoC(self, request, workspace, editor, launcher_platform):
+        from . import C111111_RigidBody_EnablingGravityWorksUsingNotificationsPoC as test_module
         self._run_test(request, workspace, editor, test_module)

@@ -1931,7 +1931,7 @@ void CCryEditDoc::Fetch(const QString& holdName, const QString& relativeHoldPath
     if (!LoadXmlArchiveArray(arrXmlAr, holdFilename, holdPath))
     {
         QMessageBox::critical(QApplication::activeWindow(), "Error", "The temporary 'Hold' level failed to load successfully.  Your level might be corrupted, you should restart the Editor.", QMessageBox::Ok);
-        AZ_Error("CryEditDoc", false, "Fetch failed to load the Xml Archive");
+        AZ_Error("EditDoc", false, "Fetch failed to load the Xml Archive");
         return;
     }
 

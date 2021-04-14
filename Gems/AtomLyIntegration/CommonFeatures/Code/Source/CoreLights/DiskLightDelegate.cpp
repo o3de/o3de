@@ -14,62 +14,121 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <AtomLyIntegration/CommonFeatures/CoreLights/AreaLightComponentConfig.h>
 
-namespace AZ
+namespace AZ::Render
 {
-    namespace Render
+    DiskLightDelegate::DiskLightDelegate(LmbrCentral::DiskShapeComponentRequests* shapeBus, EntityId entityId, bool isVisible)
+        : LightDelegateBase<DiskLightFeatureProcessorInterface>(entityId, isVisible)
+        , m_shapeBus(shapeBus)
     {
-        DiskLightDelegate::DiskLightDelegate(LmbrCentral::DiskShapeComponentRequests* shapeBus, EntityId entityId, bool isVisible)
-            : LightDelegateBase<DiskLightFeatureProcessorInterface>(entityId, isVisible)
-            , m_shapeBus(shapeBus)
-        {
-            InitBase(entityId);
-        }
-                
-        void DiskLightDelegate::SetLightEmitsBothDirections(bool lightEmitsBothDirections)
-        {
-            if (GetLightHandle().IsValid())
-            {
-                GetFeatureProcessor()->SetLightEmitsBothDirections(GetLightHandle(), lightEmitsBothDirections);
-            }
-        }
+        InitBase(entityId);
+    }
 
-        float DiskLightDelegate::CalculateAttenuationRadius(float lightThreshold) const
-        {
-            // Calculate the radius at which the irradiance will be equal to cutoffIntensity.
-            float intensity = GetPhotometricValue().GetCombinedIntensity(PhotometricUnit::Lumen);
-            return sqrt(intensity / lightThreshold);
-        }
+    float DiskLightDelegate::CalculateAttenuationRadius(float lightThreshold) const
+    {
+        // Calculate the radius at which the irradiance will be equal to cutoffIntensity.
+        float intensity = GetPhotometricValue().GetCombinedIntensity(PhotometricUnit::Lumen);
+        return sqrt(intensity / lightThreshold);
+    }
 
-        void DiskLightDelegate::HandleShapeChanged()
+    void DiskLightDelegate::HandleShapeChanged()
+    {
+        if (GetLightHandle().IsValid())
         {
-            if (GetLightHandle().IsValid())
-            {
-                GetFeatureProcessor()->SetPosition(GetLightHandle(), GetTransform().GetTranslation());
-                GetFeatureProcessor()->SetDirection(GetLightHandle(), m_shapeBus->GetNormal());
-                GetFeatureProcessor()->SetDiskRadius(GetLightHandle(), GetRadius());
-            }
+            GetFeatureProcessor()->SetPosition(GetLightHandle(), GetTransform().GetTranslation());
+            GetFeatureProcessor()->SetDirection(GetLightHandle(), m_shapeBus->GetNormal());
+            GetFeatureProcessor()->SetDiskRadius(GetLightHandle(), GetRadius());
         }
+    }
 
-        float DiskLightDelegate::GetSurfaceArea() const
+    float DiskLightDelegate::GetSurfaceArea() const
+    {
+        float radius = GetRadius();
+        return Constants::Pi * radius * radius;
+    }
+
+    float DiskLightDelegate::GetRadius() const
+    {
+        return m_shapeBus->GetRadius() * GetTransform().GetScale().GetMaxElement();
+    }
+
+    void DiskLightDelegate::DrawDebugDisplay(const Transform& transform, const Color& color, AzFramework::DebugDisplayRequests& debugDisplay, bool isSelected) const
+    {
+        if (isSelected)
         {
-            float radius = GetRadius();
-            return Constants::Pi * radius * radius;
-        }
+            debugDisplay.SetColor(color);
 
-        float DiskLightDelegate::GetRadius() const
+            // Draw a disk for the attenuation radius
+            debugDisplay.DrawWireSphere(transform.GetTranslation(), CalculateAttenuationRadius(AreaLightComponentConfig::CutoffIntensity));
+        }
+    }
+    
+    void DiskLightDelegate::SetEnableShutters(bool enabled)
+    {
+        Base::SetEnableShutters(enabled);
+        GetFeatureProcessor()->SetConstrainToConeLight(GetLightHandle(), true);
+    }
+
+    void DiskLightDelegate::SetShutterAngles(float innerAngleDegrees, float outerAngleDegrees)
+    {
+        if (GetShuttersEnabled())
         {
-            return m_shapeBus->GetRadius() * GetTransform().GetScale().GetMaxElement();
+            GetFeatureProcessor()->SetConeAngles(GetLightHandle(), DegToRad(innerAngleDegrees), DegToRad(outerAngleDegrees));
         }
+    }
 
-        void DiskLightDelegate::DrawDebugDisplay(const Transform& transform, const Color& color, AzFramework::DebugDisplayRequests& debugDisplay, bool isSelected) const
+    void DiskLightDelegate::SetEnableShadow(bool enabled)
+    {
+        Base::SetEnableShadow(enabled);
+        GetFeatureProcessor()->SetShadowsEnabled(GetLightHandle(), enabled);
+    }
+
+    void DiskLightDelegate::SetShadowmapMaxSize(ShadowmapSize size)
+    {
+        if (GetShadowsEnabled())
         {
-            if (isSelected)
-            {
-                debugDisplay.SetColor(color);
-
-                // Draw a disk for the attenuation radius
-                debugDisplay.DrawWireSphere(transform.GetTranslation(), CalculateAttenuationRadius(AreaLightComponentConfig::CutoffIntensity));
-            }
+            GetFeatureProcessor()->SetShadowmapMaxResolution(GetLightHandle(), size);
         }
-    } // namespace Render
-} // namespace AZ
+    }
+
+    void DiskLightDelegate::SetShadowFilterMethod(ShadowFilterMethod method)
+    {
+        if (GetShadowsEnabled())
+        {
+            GetFeatureProcessor()->SetShadowFilterMethod(GetLightHandle(), method);
+        }
+    }
+
+    void DiskLightDelegate::SetSofteningBoundaryWidthAngle(float widthInDegrees)
+    {
+        if (GetShadowsEnabled())
+        {
+            GetFeatureProcessor()->SetSofteningBoundaryWidthAngle(GetLightHandle(), DegToRad(widthInDegrees));
+        }
+    }
+
+    void DiskLightDelegate::SetPredictionSampleCount(uint32_t count)
+    {
+        if (GetShadowsEnabled())
+        {
+            GetFeatureProcessor()->SetPredictionSampleCount(GetLightHandle(), count);
+        }
+    }
+
+    void DiskLightDelegate::SetFilteringSampleCount(uint32_t count)
+    {
+        if (GetShadowsEnabled())
+        {
+            GetFeatureProcessor()->SetFilteringSampleCount(GetLightHandle(), count);
+        }
+    }
+
+    void DiskLightDelegate::SetPcfMethod(PcfMethod method)
+    {
+        if (GetShadowsEnabled())
+        {
+            GetFeatureProcessor()->SetPcfMethod(GetLightHandle(), method);
+        }
+    }
+
+    
+} // namespace AZ::Render

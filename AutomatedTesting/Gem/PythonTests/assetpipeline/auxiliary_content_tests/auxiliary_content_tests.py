@@ -19,7 +19,7 @@ import subprocess
 import glob
 from ly_test_tools.builtin.helpers import *
 from ly_test_tools.environment.process_utils import *
-from ly_test_tools.lumberyard.asset_processor import ASSET_PROCESSOR_PLATFORM_MAP
+from ly_test_tools.o3de.asset_processor import ASSET_PROCESSOR_PLATFORM_MAP
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +30,7 @@ project_list = ['AutomatedTesting']
 class TestAuxiliaryContent:
     @pytest.fixture(autouse=True)
     def setup_teardown(self, request, workspace, project):
-        path_to_dev = workspace.paths.dev()
+        path_to_dev = workspace.paths.engine_root()
         os.chdir(path_to_dev)
         auxiliaryContentDirName = str.lower(project) + f"_{ASSET_PROCESSOR_PLATFORM_MAP[workspace.asset_processor_platform]}_paks"
         self.auxiliaryContentPath = os.path.join(path_to_dev, auxiliaryContentDirName)
@@ -53,14 +53,14 @@ class TestAuxiliaryContent:
         This test ensure that Auxiliary Content contain level.pak files
         """
 
-        path_to_dev = workspace.paths.dev()
+        path_to_dev = workspace.paths.engine_root()
         bin_path = workspace.paths.build_directory()
 
         auxiliaryContentScriptPath = os.path.join(path_to_dev, 'BuildReleaseAuxiliaryContent.py')
         subprocess.check_call(['python', auxiliaryContentScriptPath,
                                "--buildFolder={0}".format(bin_path),
                                "--platforms=pc",
-                               f"--project={workspace.project}"])
+                               f"--project-path={workspace.project}"])
 
         assert os.path.exists(self.auxiliaryContentPath)
         assert not self.scanForLevelPak(self.auxiliaryContentPath) == 0
@@ -72,7 +72,7 @@ class TestAuxiliaryContent:
         This test ensure that Auxiliary Content contain no level.pak file
         """
 
-        path_to_dev = workspace.paths.dev()
+        path_to_dev = workspace.paths.engine_root()
         bin_path = workspace.paths.build_directory()
 
         auxiliaryContentScriptPath = os.path.join(path_to_dev, 'BuildReleaseAuxiliaryContent.py')
@@ -80,7 +80,7 @@ class TestAuxiliaryContent:
                                "--buildFolder={0}".format(bin_path),
                                "--platforms=pc",
                                "--skiplevelPaks",
-                               f"--project={workspace.project}"])
+                               f"--project-path={workspace.project}"])
         assert os.path.exists(self.auxiliaryContentPath)
 
         assert self.scanForLevelPak(self.auxiliaryContentPath) == 0

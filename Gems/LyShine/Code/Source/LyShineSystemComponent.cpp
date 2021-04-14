@@ -301,7 +301,6 @@ namespace LyShine
     {
         UiCanvasFileObject* canvasFileObject = static_cast<UiCanvasFileObject*>(canvas);
         AZ::Entity* oldRootSliceEntity = canvasFileObject->m_rootSliceEntity;
-        AZ::SliceComponent* oldSliceComponent = oldRootSliceEntity->FindComponent<AZ::SliceComponent>();
         AZ::EntityId idToReuse = oldRootSliceEntity->GetId();
         
         AZ::Entity* newRootSliceEntity = aznew AZ::Entity(idToReuse, AZStd::to_string(static_cast<AZ::u64>(idToReuse)).c_str());

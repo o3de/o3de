@@ -17,7 +17,7 @@
 #include <AzQtComponents/Components/ToolButtonComboBox.h>
 #include <AzQtComponents/Components/ToolButtonLineEdit.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
-#include <AzQtComponents/Components/LumberyardStylesheet.h>
+#include <AzQtComponents/Components/O3DEStylesheet.h>
 #include "MyCombo.h"
 
 #include <QPushButton>
@@ -183,7 +183,7 @@ int main(int argc, char **argv)
     QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
 
     QApplication app(argc, argv);
-    AzQtComponents::LumberyardStylesheet stylesheet(&app);
+    AzQtComponents::O3DEStylesheet stylesheet(&app);
     AZ::IO::FixedMaxPath engineRootPath;
     {
         AZ::ComponentApplication componentApplication(argc, argv);
@@ -210,7 +210,7 @@ int main(int argc, char **argv)
     action->setMenu(fileMenu);
     auto openDock = fileMenu->addAction("Open dockwidget");
     QObject::connect(openDock, &QAction::triggered, w, [&w] {
-        auto dock = new AzQtComponents::StyledDockWidget(QLatin1String("Amazon Lumberyard"), w);
+        auto dock = new AzQtComponents::StyledDockWidget(QLatin1String("Open 3D Engine"), w);
         auto button = new QPushButton("Click to dock");
         auto wid = new QWidget();
         auto widLayout = new QVBoxLayout(wid);

@@ -226,7 +226,7 @@ void IDebugCallStack::FatalError(const char* description)
     bShowDebugScreen = bShowDebugScreen && gEnv->mMainThreadId == CryGetCurrentThreadId();
     if (bShowDebugScreen)
     {
-        EBUS_EVENT(AZ::NativeUI::NativeUIRequestBus, DisplayOkDialog, "Lumberyard Fatal Error", description, false);
+        EBUS_EVENT(AZ::NativeUI::NativeUIRequestBus, DisplayOkDialog, "Open 3D Engine Fatal Error", description, false);
     }
 #endif
 
@@ -243,7 +243,7 @@ void IDebugCallStack::WriteLineToLog(const char* format, ...)
     va_list ArgList;
     char        szBuffer[MAX_WARNING_LENGTH];
     va_start(ArgList, format);
-    int count = vsnprintf_s(szBuffer, sizeof(szBuffer), sizeof(szBuffer) - 1, format, ArgList);
+    vsnprintf_s(szBuffer, sizeof(szBuffer), sizeof(szBuffer) - 1, format, ArgList);
     cry_strcat(szBuffer, "\n");
     szBuffer[sizeof(szBuffer) - 1] = '\0';
     va_end(ArgList);

@@ -95,7 +95,6 @@ void CRECloud::IlluminateCloud(Vec3 vLightPos, [[maybe_unused]] Vec3 vObjPos, Co
     }
 
     rd->FX_SetFPMode();
-    HRESULT h = S_OK;
 
     rd->EF_ClearTargetsLater(FRT_CLEAR, Clr_White, Clr_FarPlane.r, 0);
     rd->FX_Commit();
@@ -105,7 +104,6 @@ void CRECloud::IlluminateCloud(Vec3 vLightPos, [[maybe_unused]] Vec3 vObjPos, Co
     // the solid angle over which we will sample forward-scattered light.
     float fSolidAngle = 0.09f;
     int i;
-    int iNumFailed = 0;
     int nParts = m_particles.size();
     for (i = 0; i < nParts; i++)
     {
@@ -259,7 +257,6 @@ void CRECloud::DisplayWithoutImpostor(const CameraViewParameters& camera)
     int nCurParts;
 
     CRenderObject* pObj = rd->m_RP.m_pCurObject;
-    SRenderObjData* pOD = pObj->GetObjData();
     CShader* pSH = rd->m_RP.m_pShader;
     SShaderTechnique* pSHT = rd->m_RP.m_pCurTechnique;
     SShaderPass* pPass = rd->m_RP.m_pCurPass;
@@ -342,9 +339,6 @@ void CRECloud::DisplayWithoutImpostor(const CameraViewParameters& camera)
 
             // get various run-time parameters to determine cloud shading
             Vec3 sunDir(gEnv->p3DEngine->GetSunDir().GetNormalized());
-
-            float minHeight(m_boundingBox.GetMin().z);
-            float totalHeight(m_boundingBox.GetMax().z - minHeight);
 
             ColorF cloudSpec, cloudDiff;
             GetIllumParams(cloudSpec, cloudDiff);
@@ -507,7 +501,6 @@ bool CRECloud::GenerateCloudImposter(CShader* pShader, CShaderResources* pRes, C
 bool CRECloud::UpdateImposter(CRenderObject* pObj)
 {
     CD3D9Renderer* rd = gcpRendD3D;
-    SRenderObjData* pOD = pObj->GetObjData();
     CREImposter* pRE = (CREImposter*)pObj->GetRE();
 
     if (!pRE->PrepareForUpdate())
@@ -627,7 +620,6 @@ bool CRECloud::UpdateImposter(CRenderObject* pObj)
 bool CRECloud::mfDisplay(bool bDisplayFrontOfSplit)
 {
     CD3D9Renderer* rd = gcpRendD3D;
-    int nThreadID = rd->m_RP.m_nProcessThreadID;
     CRenderObject* pObj = rd->m_RP.m_pCurObject;
     CREImposter* pRE = (CREImposter*)pObj->GetRE();
     Vec3 vPos = pRE->m_vPos;
@@ -801,10 +793,6 @@ bool CRECloud::mfDisplay(bool bDisplayFrontOfSplit)
         }
         if IsCVarConstAccess(constexpr) (CRenderer::CV_r_impostersdraw & 2)
         {
-            CRenderObject* pObject = rd->m_RP.m_pCurObject;
-            int colR = ((DWORD)((UINT_PTR)pObject) >> 4) & 0xf;
-            int colG = ((DWORD)((UINT_PTR)pObject) >> 8) & 0xf;
-            int colB = ((DWORD)((UINT_PTR)pObject) >> 12) & 0xf;
             Vec3 v[4];
             v[0] = vPos - y - x;
             v[1] = vPos - y + x;

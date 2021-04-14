@@ -32,7 +32,6 @@ namespace TestAssetBuilder
         }
         AZ::Data::AssetInfo assetInfo;
         AZStd::string rootFilePath;
-        bool result = false;
         AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequests::GetAssetInfoById, assetId);
         if (assetInfo.m_assetId.IsValid())
         {

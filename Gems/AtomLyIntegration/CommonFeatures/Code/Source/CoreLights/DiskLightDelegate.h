@@ -30,15 +30,27 @@ namespace AZ
         class DiskLightDelegate final
             : public LightDelegateBase<DiskLightFeatureProcessorInterface>
         {
+            using Base = LightDelegateBase<DiskLightFeatureProcessorInterface>;
+
         public:
             DiskLightDelegate(LmbrCentral::DiskShapeComponentRequests* shapeBus, EntityId entityId, bool isVisible);
 
             // LightDelegateBase overrides...
-            void SetLightEmitsBothDirections(bool lightEmitsBothDirections) override;
             float GetSurfaceArea() const override;
             float GetEffectiveSolidAngle() const override { return PhotometricValue::DirectionalEffectiveSteradians; }
             float CalculateAttenuationRadius(float lightThreshold) const override;
             void DrawDebugDisplay(const Transform& transform, const Color& color, AzFramework::DebugDisplayRequests& debugDisplay, bool isSelected) const override;
+
+            void SetEnableShutters(bool enabled) override;
+            void SetShutterAngles(float innerAngleDegrees, float outerAngleDegrees) override;
+
+            void SetEnableShadow(bool enabled) override;
+            void SetShadowmapMaxSize(ShadowmapSize size) override;
+            void SetShadowFilterMethod(ShadowFilterMethod method) override;
+            void SetSofteningBoundaryWidthAngle(float widthInDegrees) override;
+            void SetPredictionSampleCount(uint32_t count) override;
+            void SetFilteringSampleCount(uint32_t count) override;
+            void SetPcfMethod(PcfMethod method) override;
 
         private:
 

@@ -118,7 +118,6 @@ namespace ImageProcessingAtom
 
         // Build mip chain assets.
         // Start from smallest mips so the mip chain asset for the lowest resolutions may contain more high level mips
-        bool ready = false;
         uint32_t lastMip = imageDesc.m_mipLevels;
         uint32_t totalSize = 0;
         AZStd::vector<Data::Asset<RPI::ImageMipChainAsset>> mipChains;

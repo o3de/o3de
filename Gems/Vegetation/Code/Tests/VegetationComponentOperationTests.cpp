@@ -150,13 +150,19 @@ namespace UnitTest
 
         AZ::Data::Asset<MockMeshAsset> CreateMockMeshAsset()
         {
-            AZ::Data::Asset<MockMeshAsset> mockAsset(&m_mockMeshAssetData, AZ::Data::AssetLoadBehavior::Default);
+            m_mockMeshAssetData = new MockMeshAsset();
+            AZ::Data::Asset<MockMeshAsset> mockAsset(m_mockMeshAssetData, AZ::Data::AssetLoadBehavior::Default);
             return mockAsset;
         }
 
         void DestroyMockMeshAsset(AZ::Data::Asset<MockMeshAsset>& mockAsset)
         {
-            mockAsset.Release();
+            if (m_mockMeshAssetData)
+            {
+                mockAsset.Reset();
+                delete m_mockMeshAssetData;
+                m_mockMeshAssetData = nullptr;
+            }
         }
 
         AZStd::unique_ptr<AZ::Entity> CreateMockMeshEntity(const AZ::Data::Asset<MockMeshAsset>& mockAsset, AZ::Vector3 position,
@@ -221,7 +227,7 @@ namespace UnitTest
         MockMeshRequestBus m_mockMeshRequestBus;
         MockTransformBus m_mockTransformBus;
         MockShapeComponentNotificationsBus m_mockShapeBus;
-        MockMeshAsset m_mockMeshAssetData;
+        MockMeshAsset* m_mockMeshAssetData;
     };
 #if AZ_TRAIT_DISABLE_FAILED_VEGETATION_TESTS
     TEST_F(VegetationComponentOperationTests, DISABLED_MeshBlockerComponent)
@@ -237,6 +243,9 @@ namespace UnitTest
         // Test the point at (0, 0, 0).  It should be blocked.
         const int numPointsBlocked = 1;
         TestMeshBlockerPoint(entity, AZ::Vector3::CreateZero(), numPointsBlocked);
+
+        // Have to destroy the entity here before we destroy the mock mesh asset
+        DestroyEntity(entity.release());
 
         DestroyMockMeshAsset(mockAsset);
     }
@@ -255,6 +264,9 @@ namespace UnitTest
         const int numPointsBlocked = 0;
         TestMeshBlockerPoint(entity, AZ::Vector3(0.5f, 0.5f, 2.0f), numPointsBlocked);
 
+        // Have to destroy the entity here before we destroy the mock mesh asset
+        DestroyEntity(entity.release());
+
         DestroyMockMeshAsset(mockAsset);
     }
 
@@ -270,43 +282,49 @@ namespace UnitTest
             AZ::Vector3(-1.0f, -1.0f, -1.0f), AZ::Vector3(1.0f, 1.0f, 1.0f),
             0.0f, 1.0f);
 
-        AreaBusScope scope(*this, *entity.get());
+        {
+            // Putting this into scope so that the AreaBus disconnects before we do any destruction of entities/assets at the end
+            AreaBusScope scope(*this, *entity.get());
 
-        Vegetation::AreaNotificationBus::Event(entity->GetId(), &Vegetation::AreaNotificationBus::Events::OnAreaConnect);
+            Vegetation::AreaNotificationBus::Event(entity->GetId(), &Vegetation::AreaNotificationBus::Events::OnAreaConnect);
 
-        bool prepared = false;
-        Vegetation::EntityIdStack idStack;
-        Vegetation::AreaRequestBus::EventResult(prepared, entity->GetId(), &Vegetation::AreaRequestBus::Events::PrepareToClaim, idStack);
-        EXPECT_TRUE(prepared);
+            bool prepared = false;
+            Vegetation::EntityIdStack idStack;
+            Vegetation::AreaRequestBus::EventResult(prepared, entity->GetId(), &Vegetation::AreaRequestBus::Events::PrepareToClaim, idStack);
+            EXPECT_TRUE(prepared);
 
-        // Create two different contexts that "reuse" the same claim handle for different points.
-        // The first one has a point at (0, 0, 0) that will be successfully blocked.
-        // The second one has a point at (2, 2, 2) that should *not* be successfully blocked.
-        // Bug LY96068 is that claim handles that change location don't refresh correctly in the Mesh Blocker component.
-        AZ::Vector3 claimPosition1 = AZ::Vector3::CreateZero();
-        AZ::Vector3 claimPosition2 = AZ::Vector3(2.0f);
-        Vegetation::ClaimContext context = CreateContext<1>({ claimPosition1 });
-        Vegetation::ClaimContext contextWithReusedHandle = CreateContext<1>({ claimPosition2 });
-        contextWithReusedHandle.m_availablePoints[0].m_handle = context.m_availablePoints[0].m_handle;
+            // Create two different contexts that "reuse" the same claim handle for different points.
+            // The first one has a point at (0, 0, 0) that will be successfully blocked.
+            // The second one has a point at (2, 2, 2) that should *not* be successfully blocked.
+            // Bug LY96068 is that claim handles that change location don't refresh correctly in the Mesh Blocker component.
+            AZ::Vector3 claimPosition1 = AZ::Vector3::CreateZero();
+            AZ::Vector3 claimPosition2 = AZ::Vector3(2.0f);
+            Vegetation::ClaimContext context = CreateContext<1>({ claimPosition1 });
+            Vegetation::ClaimContext contextWithReusedHandle = CreateContext<1>({ claimPosition2 });
+            contextWithReusedHandle.m_availablePoints[0].m_handle = context.m_availablePoints[0].m_handle;
 
-        // The first time we try with this claim handler, the point should be claimed by the MeshBlocker.
-        Vegetation::AreaRequestBus::Event(entity->GetId(), &Vegetation::AreaRequestBus::Events::ClaimPositions, idStack, context);
-        EXPECT_EQ(1, m_createdCallbackCount);
+            // The first time we try with this claim handler, the point should be claimed by the MeshBlocker.
+            Vegetation::AreaRequestBus::Event(entity->GetId(), &Vegetation::AreaRequestBus::Events::ClaimPositions, idStack, context);
+            EXPECT_EQ(1, m_createdCallbackCount);
 
-        // Clear out our results
-        m_createdCallbackCount = 0;
+            // Clear out our results
+            m_createdCallbackCount = 0;
 
-        // Send out a "surface changed" notification, as will as a tick bus tick, to give our mesh blocker a chance to refresh.
-        SurfaceData::SurfaceDataSystemNotificationBus::Broadcast(&SurfaceData::SurfaceDataSystemNotificationBus::Events::OnSurfaceChanged, entity->GetId(),
-            AZ::Aabb::CreateFromPoint(claimPosition1), AZ::Aabb::CreateFromPoint(claimPosition2));
-        AZ::TickBus::Broadcast(&AZ::TickBus::Events::OnTick, 0.f, AZ::ScriptTimePoint{});
+            // Send out a "surface changed" notification, as will as a tick bus tick, to give our mesh blocker a chance to refresh.
+            SurfaceData::SurfaceDataSystemNotificationBus::Broadcast(&SurfaceData::SurfaceDataSystemNotificationBus::Events::OnSurfaceChanged, entity->GetId(),
+                AZ::Aabb::CreateFromPoint(claimPosition1), AZ::Aabb::CreateFromPoint(claimPosition2));
+            AZ::TickBus::Broadcast(&AZ::TickBus::Events::OnTick, 0.f, AZ::ScriptTimePoint{});
 
-        // Try claiming again, this time with the same claim handle, but a different location.
-        // This should *not* be claimed by the MeshBlocker.
-        Vegetation::AreaRequestBus::Event(entity->GetId(), &Vegetation::AreaRequestBus::Events::ClaimPositions, idStack, contextWithReusedHandle);
-        EXPECT_EQ(0, m_createdCallbackCount);
+            // Try claiming again, this time with the same claim handle, but a different location.
+            // This should *not* be claimed by the MeshBlocker.
+            Vegetation::AreaRequestBus::Event(entity->GetId(), &Vegetation::AreaRequestBus::Events::ClaimPositions, idStack, contextWithReusedHandle);
+            EXPECT_EQ(0, m_createdCallbackCount);
 
-        Vegetation::AreaNotificationBus::Event(entity->GetId(), &Vegetation::AreaNotificationBus::Events::OnAreaDisconnect);
+            Vegetation::AreaNotificationBus::Event(entity->GetId(), &Vegetation::AreaNotificationBus::Events::OnAreaDisconnect);
+        }
+
+        // Have to destroy the entity here before we destroy the mock mesh asset
+        DestroyEntity(entity.release());
 
         DestroyMockMeshAsset(mockAsset);
     }

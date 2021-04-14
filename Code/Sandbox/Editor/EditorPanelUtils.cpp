@@ -242,7 +242,7 @@ public:
 
     virtual bool HotKey_LoadExisting() override
     {
-        QSettings settings("Amazon", "Lumberyard");
+        QSettings settings("Amazon", "O3DE");
         QString group = "Hotkeys/";
 
         HotKey_BuildDefaults();
@@ -278,12 +278,11 @@ public:
 
     virtual void HotKey_SaveCurrent() override
     {
-        QSettings settings("Amazon", "Lumberyard");
+        QSettings settings("Amazon", "O3DE");
         QString group = "Hotkeys/";
         settings.remove("Hotkeys/");
         settings.sync();
         settings.beginWriteArray(group);
-        int hotkeyCount = hotkeys.count();
         int saveIndex = 0;
         for (HotKey key : hotkeys)
         {

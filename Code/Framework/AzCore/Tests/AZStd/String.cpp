@@ -1769,7 +1769,6 @@ namespace UnitTest
         {
             return "HelloWorld";
         };
-        constexpr const TypeParam* compileTimeString1 = MakeCompileTimeString1();
         constexpr basic_string_view<TypeParam> modifierView("HelloWorld");
         // A constexpr lambda is used to evaluate non constexpr string_view instances' member functions which
         // have been marked as constexpr at compile time
@@ -2334,7 +2333,6 @@ namespace UnitTest
         const char* filter1{ "*" };
         const char* filter2{ "*?" };
         const char* filter3{ "?*" };
-        const char* testValue{ "" };
         EXPECT_TRUE(wildcard_match(filter1, "Hello"));
         EXPECT_TRUE(wildcard_match(filter1, "?"));
         EXPECT_TRUE(wildcard_match(filter1, "*"));

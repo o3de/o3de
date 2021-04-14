@@ -560,7 +560,8 @@ public:
         {
             CryComment("Load System Shader (refresh) '%s'...", szName);
 
-            if (pSysShader = mfForName(szName, EF_SYSTEM))
+            pSysShader = mfForName(szName, EF_SYSTEM);
+            if (pSysShader)
             {
                 if (pSysShader->m_Flags & EF_NOTFOUND)
                 {

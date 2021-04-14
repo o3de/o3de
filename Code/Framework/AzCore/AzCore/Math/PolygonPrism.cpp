@@ -53,7 +53,6 @@ namespace AZ
         if (auto behaviorContext = azrtti_cast<BehaviorContext*>(context))
         {
             behaviorContext->Class<PolygonPrism>()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(Script::Attributes::Storage, Script::Attributes::StorageType::RuntimeOwn)
                 ->Property("height", BehaviorValueGetter(&PolygonPrism::m_height), nullptr)
                 ->Property("vertexContainer", BehaviorValueGetter(&PolygonPrism::m_vertexContainer), nullptr)

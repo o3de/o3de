@@ -737,8 +737,8 @@ bool LensFlareElementTreeModel::removeRows(int row, int count, const QModelIndex
 QStringList LensFlareElementTreeModel::mimeTypes() const
 {
     QStringList types;
-    types << QStringLiteral("application/x-lumberyard-flareelements");
-    types << QStringLiteral("application/x-lumberyard-flaretypes");
+    types << QStringLiteral("application/x-o3de-flareelements");
+    types << QStringLiteral("application/x-o3de-flaretypes");
     return types;
 }
 
@@ -754,7 +754,7 @@ QMimeData* LensFlareElementTreeModel::mimeData(const QModelIndexList& indexes) c
         array.append(reinterpret_cast<const char*>(&pElement), sizeof(CLensFlareElement*));
     }
 
-    data->setData(QStringLiteral("application/x-lumberyard-flareelements"), array);
+    data->setData(QStringLiteral("application/x-o3de-flareelements"), array);
 
     return data;
 }
@@ -1052,11 +1052,11 @@ bool LensFlareElementTreeModel::MoveElement(CLensFlareElement* pElement, int row
 
 bool LensFlareElementTreeModel::dropMimeData(const QMimeData* data, [[maybe_unused]] Qt::DropAction action, int row, [[maybe_unused]] int column, const QModelIndex& parent)
 {
-    if (data->hasFormat(QStringLiteral("application/x-lumberyard-flaretypes")))
+    if (data->hasFormat(QStringLiteral("application/x-o3de-flaretypes")))
     {
         // drop from atomic list
 
-        QByteArray encoded = data->data(QStringLiteral("application/x-lumberyard-flaretypes"));
+        QByteArray encoded = data->data(QStringLiteral("application/x-o3de-flaretypes"));
         QDataStream stream(&encoded, QIODevice::ReadOnly);
 
         while (!stream.atEnd())
@@ -1070,9 +1070,9 @@ bool LensFlareElementTreeModel::dropMimeData(const QMimeData* data, [[maybe_unus
 
         return true;
     }
-    else if (data->hasFormat(QStringLiteral("application/x-lumberyard-flareelements")))
+    else if (data->hasFormat(QStringLiteral("application/x-o3de-flareelements")))
     {
-        QByteArray array = data->data("application/x-lumberyard-flareelements");
+        QByteArray array = data->data("application/x-o3de-flareelements");
 
         int count = array.size() / sizeof(CLensFlareElement*);
         auto ppElements = reinterpret_cast<CLensFlareElement**>(array.data());

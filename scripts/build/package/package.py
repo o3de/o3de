@@ -10,15 +10,13 @@
 #
 import os
 import sys
-import glob_to_regex
 import zipfile
 import timeit
-import stat
 import progressbar
 from optparse import OptionParser
 from PackageEnv import PackageEnv
 cur_dir = cur_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, f'{cur_dir}/../../../Tools/build/JenkinsScripts/build')
+sys.path.insert(0, f'{cur_dir}/..')
 from ci_build import build
 from util import *
 from glob3 import glob
@@ -26,18 +24,6 @@ from glob3 import glob
 
 def package(options):
     package_env = PackageEnv(options.platform, options.type, options.package_env)
-    engine_root = package_env.get('ENGINE_ROOT')
-
-    if not package_env.get('SKIP_SCRUBBING'):
-        # Ask the validator code to tell us which files need to be removed from the package
-        prohibited_file_mask = get_prohibited_file_mask(options.platform, engine_root)
-
-        # Scrub files. This is destructive, but is necessary to allow the current file existance checks to work properly. Better to copy and then build, or to
-        # mask on sync, but this is what we have for now
-        scrub_files(package_env, prohibited_file_mask)
-
-        # validate files
-        validate_restricted_files(options.platform, options.type, package_env)
 
     # Override values in bootstrap.cfg for PC package
     override_bootstrap_cfg(package_env)
@@ -93,61 +79,6 @@ def override_bootstrap_cfg(package_env):
     print('{} updated with value {}'.format(bootstrap_path, replace_values))
 
 
-def get_prohibited_file_mask(platform, engine_root):
-    sys.path.append(os.path.join(engine_root, 'Tools', 'build', 'JenkinsScripts', 'distribution', 'scrubbing'))
-    from validator_data_LEGAL_REVIEW_REQUIRED import get_prohibited_platforms_for_package
-
-    # The list of prohibited platforms is controlled by the validator on a per-package basis
-    prohibited_platforms = get_prohibited_platforms_for_package(platform)
-    prohibited_platforms.append('all')
-    excludes_list = []
-    for p in prohibited_platforms:
-        platform_excludes = glob_to_regex.generate_excludes_for_platform(engine_root, p)
-        excludes_list.extend(platform_excludes)
-    prohibited_file_mask = re.compile('|'.join(excludes_list), re.IGNORECASE)
-    return prohibited_file_mask
-
-
-def scrub_files(package_env, prohibited_file_mask):
-    print('Perform the Code Scrubbing')
-    engine_root = package_env.get('ENGINE_ROOT')
-
-    success = True
-    for dirname, subFolders, files in os.walk(engine_root):
-        for filename in files:
-            full_path = os.path.join(dirname, filename)
-            if prohibited_file_mask.match(full_path):
-                try:
-                    print('Deleting: {}'.format(full_path))
-                    os.chmod(full_path, stat.S_IWRITE)
-                    os.unlink(full_path)
-                except:
-                    e = sys.exc_info()[0]
-                    sys.stderr.write('Error: could not delete {} ... aborting.\n'.format(full_path))
-                    sys.stderr.write('{}\n'.format(str(e)))
-                    success = False
-    if not success:
-        sys.stderr.write('ERROR: scrub_files failed\n')
-        sys.exit(1)
-
-
-def validate_restricted_files(package_platform, package_type, package_env):
-    print('Perform the Code Scrubbing')
-    engine_root = package_env.get('ENGINE_ROOT')
-
-    # Run validator
-    success = True
-    validator_path = os.path.join(engine_root, 'Tools/build/JenkinsScripts/distribution/scrubbing/validator.py')
-    python = get_python_path(package_env)
-    args = [python, validator_path, '--package_platform', package_platform, '--package_type', package_type, engine_root]
-    return_code = safe_execute_system_call(args)
-    if return_code != 0:
-        success = False
-    if not success:
-        error('Restricted file validator failed.')
-    print('Restricted file validator completed successfully.')
-
-
 def cmake_build(package_env):
     build_targets = package_env.get('BUILD_TARGETS')
     for build_target in build_targets:
@@ -161,15 +92,7 @@ def create_package(package_env, package_target):
     if file_list_type == 'All':
         filelist = os.path.join(cur_dir, 'package_filelists', package_target['FILE_LIST'])
     else:
-        # Search non-restricted platform first
         filelist = os.path.join(cur_dir, 'Platform', file_list_type, 'package_filelists', package_target['FILE_LIST'])
-        if not os.path.exists(filelist):
-            engine_root = package_env.get('ENGINE_ROOT')
-            # Use real path in case engine root is a symlink path
-            if os.name == 'posix' and os.path.islink(engine_root):
-                engine_root = os.readlink(engine_root)
-            rel_path = os.path.relpath(cur_dir, engine_root)
-            filelist = os.path.join(engine_root, 'restricted', file_list_type, rel_path, 'package_filelists', package_target['FILE_LIST'])
     with open(filelist, 'r') as source:
         data = json.load(source)
     lyengine = package_env.get('ENGINE_ROOT')
@@ -296,7 +219,3 @@ def parse_args():
 if __name__ == "__main__":
     (options, args) = parse_args()
     package(options)
-
-
-
-

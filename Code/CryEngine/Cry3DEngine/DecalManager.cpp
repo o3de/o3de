@@ -191,10 +191,10 @@ bool CDecalManager::SpawnHierarchical(const CryEngineDecalInfo& rootDecalInfo, C
 
     for (int nEntitySlotId = 0; nEntitySlotId < 16; nEntitySlotId++)
     {
-        CStatObj* _pStatObj = NULL;
         Matrix34A entSlotMatrix;
         entSlotMatrix.SetIdentity();
-        if (_pStatObj = (CStatObj*)rootDecalInfo.ownerInfo.pRenderNode->GetEntityStatObj(nEntitySlotId, ~0, &entSlotMatrix, true))
+        CStatObj* _pStatObj = (CStatObj*)rootDecalInfo.ownerInfo.pRenderNode->GetEntityStatObj(nEntitySlotId, ~0, &entSlotMatrix, true);
+        if (_pStatObj)
         {
             if (_pStatObj->m_nFlags & STATIC_OBJECT_COMPOUND)
             {
@@ -1014,7 +1014,9 @@ void CDecalManager::MoveToEdge(IRenderMesh* pRM, const float fRadius, Vec3& vOut
         return;
     }
 
+#if !defined(NDEBUG)
     int nInds = pRM->GetIndicesCount();
+#endif
 
     //  if(nInds>6000)
     //  return; // skip insane objects
@@ -1758,8 +1760,8 @@ IStatObj* SDecalOwnerInfo::GetOwner(Matrix34A& objMat)
         return NULL;
     }
 
-    IStatObj* pStatObj = NULL;
-    if (pStatObj = pRenderNode->GetEntityStatObj(nRenderNodeSlotId, nRenderNodeSlotSubObjectId, &objMat, true))
+    IStatObj* pStatObj = pRenderNode->GetEntityStatObj(nRenderNodeSlotId, nRenderNodeSlotSubObjectId, &objMat, true);
+    if (pStatObj)
     {
         if (nRenderNodeSlotSubObjectId >= 0 && nRenderNodeSlotSubObjectId < pStatObj->GetSubObjectCount())
         {

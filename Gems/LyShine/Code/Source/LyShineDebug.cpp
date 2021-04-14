@@ -399,7 +399,6 @@ static void DebugDrawStringWithSizeBox(IFFont* font, unsigned int effectIndex, c
 static void DebugDraw2dFontSizes(IFFont* font, unsigned int effectIndex, const char* fontName)
 {
     IDraw2d* draw2d = Draw2dHelper::GetDraw2d();
-    IRenderer* renderer = gEnv->pRenderer;
 
     draw2d->BeginDraw2d(g_deferDrawsToEndOfFrame);
 
@@ -527,7 +526,6 @@ static void DebugDraw2dFontAlignment()
 {
     IDraw2d* draw2d = Draw2dHelper::GetDraw2d();
     float w = draw2d->GetViewportWidth();
-    float h = draw2d->GetViewportHeight();
     float yPos = 20;
 
     {
@@ -629,7 +627,6 @@ static AZ::Vector2 DebugDrawFontColorTestBox(AZ::Vector2 pos, const char* string
 static void DebugDraw2dFontColorAndOpacity()
 {
     IDraw2d* draw2d = Draw2dHelper::GetDraw2d();
-    IRenderer* renderer = gEnv->pRenderer;
 
     draw2d->BeginDraw2d(g_deferDrawsToEndOfFrame);
 
@@ -862,7 +859,6 @@ static void DebugDraw2dImageUVs()
     float xStart = 20.0f;
     float yStart = 50.0f;
     float xSpacing = size.GetX() + 20.0f;
-    float ySpacing = size.GetY() + 20.0f;
 
     AZ::Vector2 pos(xStart, yStart);
 
@@ -946,9 +942,6 @@ static void DebugDraw2dImagePixelRounding()
 static void DebugDraw2dLineBasic()
 {
     IDraw2d* draw2d = Draw2dHelper::GetDraw2d();
-
-    ITexture* texture = GetColorTestTexture();
-    int texId = texture->GetTextureID();
 
     IDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
 
@@ -1279,7 +1272,7 @@ static void TestCanvasCreate ([[maybe_unused]] IConsoleCmdArgs* Cmd)
 
 
     // Create a "Show Image" button
-    AZ::Entity* showImageButtonElem = CreateButton("ShowImage", false, pauseMenuId,
+    [[maybe_unused]] AZ::Entity* showImageButtonElem = CreateButton("ShowImage", false, pauseMenuId,
             UiTransform2dInterface::Anchors(0.5, 0.5, 0.5, 0.5), UiTransform2dInterface::Offsets(-120.0f, -25.0f, 120.0f, 25.0f),
             "Show Image", blue, pink, red, white);
 
