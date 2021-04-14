@@ -23,7 +23,6 @@ ly_add_target(
         Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
-            PCH
             .
             ..
     BUILD_DEPENDENCIES

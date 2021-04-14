@@ -43,7 +43,7 @@ namespace
         
         if (!payload)
         {
-            AZ_TracePrintf("LumberyardInAppPurchases", "Payload is null!");
+            AZ_TracePrintf("O3DEInAppPurchases", "Payload is null!");
             return false;
         }
         
@@ -174,12 +174,12 @@ namespace InAppPurchases
             }
             else
             {
-                AZ_TracePrintf("LumberyardInAppPurchases", "Unable to find any product ids in product_ids.plist");
+                AZ_TracePrintf("O3DEInAppPurchases", "Unable to find any product ids in product_ids.plist");
             }
         }
         else
         {
-            AZ_TracePrintf("LumberyardInAppPurchases", "product_ids.plist does not exist");
+            AZ_TracePrintf("O3DEInAppPurchases", "product_ids.plist does not exist");
         }
     }
 
@@ -217,7 +217,7 @@ namespace InAppPurchases
         FILE* fp = fopen(receiptPath, "rb");
         if (!fp)
         {
-            AZ_TracePrintf("LumberyardInAppPurchases", "Unable to open receipt!");
+            AZ_TracePrintf("O3DEInAppPurchases", "Unable to open receipt!");
             return;
         }
         
@@ -225,7 +225,7 @@ namespace InAppPurchases
         fclose(fp);
         if (!p7)
         {
-            AZ_TracePrintf("LumberyardInAppPurchases", "PKCS7 container is null!");
+            AZ_TracePrintf("O3DEInAppPurchases", "PKCS7 container is null!");
             return;
         }
         

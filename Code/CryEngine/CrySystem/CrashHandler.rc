@@ -85,7 +85,7 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     PUSHBUTTON      "Save",IDB_CONFIRM_SAVE,4,96,68,20
     PUSHBUTTON      "Cancel",IDB_DONT_SAVE,206,96,68,20
-    LTEXT           "Lumberyard has encountered an error and needs to close.\n\nA backup has been saved to the '_savebackup' subfolder.\n\nIf you are unable to save your file, you can recover by copying the contents of the _savebackup folder over the broken files.",IDC_STATIC,60,8,210,61
+    LTEXT           "Open 3D Engine has encountered an error and needs to close.\n\nA backup has been saved to the '_savebackup' subfolder.\n\nIf you are unable to save your file, you can recover by copying the contents of the _savebackup folder over the broken files.",IDC_STATIC,60,8,210,61
     LTEXT           "Attempt save?",IDC_STATIC,60,72,180,21
     CONTROL         128,IDC_STATIC,"Static",SS_BITMAP | SS_CENTERIMAGE | SS_REALSIZEIMAGE,8,8,48,40
 END

@@ -138,7 +138,7 @@ namespace AZ
                     AZ_TracePrintf(Utilities::WarningWindow, "Opacity has been changed from 0 to full. Some DCC tools ignore the opacity and "
                         "write 0 to indicate opacity is not used. This causes meshes to turn invisible, which is often not the intention so "
                         "the opacity has been set to full automatically. If the intention was for a fully transparent mesh, please update "
-                        "the opacity in Lumberyards material editor.");
+                        "the opacity in Open 3D Engine's material editor.");
                 }
                 material->SetOpacity(opacity);
 

@@ -13,7 +13,7 @@ include_guard()
 include(cmake/LySet.cmake)
 
 # OVERVIEW:
-# this is the Lumberyard Package system.
+# this is the Open 3D Engine Package system.
 # It allows you to host a package on a server and download it as needed when a target
 # requests that specific package, or manually whenever you want to do so.
 # Most users will just call ly_associate_package(...) to associate a package with a target

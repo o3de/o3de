@@ -980,7 +980,7 @@ void CViewportTitleDlg::UpdateSearchOptionsText()
 
 void CViewportTitleDlg::LoadCustomPresets(const QString& section, const QString& keyName, QStringList& outCustompresets)
 {
-    QSettings settings("Amazon", "Lumberyard"); // Temporary solution until we have the global Settings class.
+    QSettings settings("Amazon", "O3DE"); // Temporary solution until we have the global Settings class.
     settings.beginGroup(section);
     outCustompresets = settings.value(keyName).toStringList();
     settings.endGroup();
@@ -988,7 +988,7 @@ void CViewportTitleDlg::LoadCustomPresets(const QString& section, const QString&
 
 void CViewportTitleDlg::SaveCustomPresets(const QString& section, const QString& keyName, const QStringList& custompresets)
 {
-    QSettings settings("Amazon", "Lumberyard"); // Temporary solution until we have the global Settings class.
+    QSettings settings("Amazon", "O3DE"); // Temporary solution until we have the global Settings class.
     settings.beginGroup(section);
     settings.setValue(keyName, custompresets);
     settings.endGroup();

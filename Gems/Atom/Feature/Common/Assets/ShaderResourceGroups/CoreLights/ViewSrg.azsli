@@ -36,7 +36,36 @@ partial ShaderResourceGroup ViewSrg
         float2 m_padding; // explicit padding
     };
 
-    // Point lights
+    // Simple Point Lights 
+
+    struct SimplePointLight
+    {
+        float3 m_position;
+        float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
+        float3 m_rgbIntensityCandelas;
+        float m_padding; // explicit padding.
+    };
+
+    StructuredBuffer<SimplePointLight> m_simplePointLights;
+    uint m_simplePointLightCount;
+
+    // Simple Spot Lights
+
+    struct SimpleSpotLight
+    {
+        float3 m_position;
+        float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
+        float3 m_direction;
+        float m_cosInnerConeAngle; // cosine of the outer cone angle
+        float3 m_rgbIntensityCandelas;
+        float m_cosOuterConeAngle; // cosine of the inner cone angle
+    };
+
+    StructuredBuffer<SimpleSpotLight> m_simpleSpotLights;
+    uint m_simpleSpotLightCount;
+
+
+    // Point lights (sphere lights)
 
     struct PointLight
     {
@@ -49,47 +78,22 @@ partial ShaderResourceGroup ViewSrg
     StructuredBuffer<PointLight> m_pointLights;
     uint m_pointLightCount;
 
-    // Spot Lights
-    
-    struct SpotLight
-    {
-        float3 m_position;
-        float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
+    // Projected Shadows
 
-        float3 m_rgbIntensityCandelas;
-        float m_innerConeAngle; // cosine of the angle from the direction axis at which this light starts to fall off.
-
-        float3 m_direction; // the direction of the spot light
-        float m_outerConeAngle; // cosine of the angle from the direction axis at which this light no longer has an effect.
-
-        float m_penumbraBias; // bias of the falloff curve between inner and outer cone angles.
-
-        int m_shadowIndex; // index for SpotLightShadow.
-
-        float m_bulbRadius; // Radius disk representing the spot light bulb
-        float m_bulbPositionOffset; // Amount of offset from the disk of the spot light to the tip of the cone.
-    };
-
-    StructuredBuffer<SpotLight> m_spotLights;
-    uint m_spotLightCount;
-    
-    struct SpotLightShadow
+    struct ProjectedShadow
     {
         float4x4 m_depthBiasMatrix;
         uint m_shadowmapArraySlice; // array slice who has shadowmap in the atlas.
-        uint2 m_shadowmapOriginInSlice; // shadowmap origin in the slice of the atlas.
-        uint m_shadowmapSize; // width and height of shadowmap
-        uint m_shadowFilterMethod;
+        uint m_shadowFilterMethod; // Includes overall filter method in top 16 bits and pcf method in bottom 16 bits.
         float m_boundaryScale;
         uint m_predictionSampleCount;
         uint m_filteringSampleCount;
         float2 m_unprojectConstants;
         float m_bias;
-        uint m_pcfFilterMethod; // Matches with PcfFilterMethod in ShadowConstants.h
     };
 
-    StructuredBuffer<SpotLightShadow> m_spotLightShadows;
-    StructuredBuffer<FilterParameter> m_esmsSpot;
+    StructuredBuffer<ProjectedShadow> m_projectedShadows;
+    StructuredBuffer<FilterParameter> m_projectedFilterParams;
 
     float m_shadowmapAtlasSize; // image size of shadowmap atlas. width and height has the same value.
     float m_invShadowmapAtlasSize; // reciprocal of the atlas size
@@ -113,6 +117,8 @@ partial ShaderResourceGroup ViewSrg
         uint m_debugFlags;
         uint m_shadowFilterMethod;
         float m_far_minus_near;
+        uint m_pcfFilterMethod; // Matches with PcfFilterMethod in ShadowConstants.h
+        uint m_padding[3];
     };
 
     enum ShadowFilterMethod
@@ -135,10 +141,14 @@ partial ShaderResourceGroup ViewSrg
     {
         float3 m_position;
         float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
-        float3 m_direction;
-        float m_bothDirectionsFactor; // 0.0f for one direction, -1.0f for both.
         float3 m_rgbIntensityCandelas;
         float m_diskRadius;
+        float3 m_direction;
+        uint m_flags;
+        float m_cosInnerConeAngle;
+        float m_cosOuterConeAngle;
+        float m_bulbPositionOffset;
+        uint m_shadowIndex;
     };
 
     StructuredBuffer<DiskLight> m_diskLights;

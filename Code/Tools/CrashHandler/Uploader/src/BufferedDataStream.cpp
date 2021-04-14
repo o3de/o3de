@@ -12,7 +12,7 @@
 
 #include <BufferedDataStream.h>
 
-namespace Lumberyard
+namespace O3de
 {
     BufferedDataStream::BufferedDataStream(uint32_t stream_type, const void* data, size_t data_size)
         : crashpad::MinidumpUserExtensionStreamDataSource(stream_type)

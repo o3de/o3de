@@ -92,7 +92,7 @@ namespace AzToolsFramework
     namespace Internal
     {
         static const char* s_engineConfigFileName = "engine.json";
-        static const char* s_engineConfigEngineVersionKey = "LumberyardVersion";
+        static const char* s_engineConfigEngineVersionKey = "O3DEVersion";
 
         static const char* s_startupLogWindow = "Startup";
 

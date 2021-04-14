@@ -97,9 +97,18 @@ namespace AZ
         }
     } // namespace JsonSerializationInternal
 
+    JsonSerializationResult::ResultCode JsonSerialization::ApplyPatch(
+        rapidjson::Value& target, rapidjson::Document::AllocatorType& allocator, const rapidjson::Value& patch, JsonMergeApproach approach,
+        const JsonApplyPatchSettings& settings)
+    {
+        // Explicitly make a copy to call the correct overloaded version and avoid infinite recursion on this function.
+        JsonApplyPatchSettings settingsCopy{ settings };
+        return ApplyPatch(target, allocator, patch, approach, settingsCopy);
+    }
+
     JsonSerializationResult::ResultCode JsonSerialization::ApplyPatch(rapidjson::Value& target,
         rapidjson::Document::AllocatorType& allocator, const rapidjson::Value& patch, JsonMergeApproach approach,
-        JsonApplyPatchSettings settings)
+        JsonApplyPatchSettings& settings)
     {
         using namespace JsonSerializationResult;
 
@@ -126,8 +135,17 @@ namespace AZ
         }
     }
 
+    JsonSerializationResult::ResultCode JsonSerialization::ApplyPatch(
+        rapidjson::Value& output, rapidjson::Document::AllocatorType& allocator, const rapidjson::Value& source,
+        const rapidjson::Value& patch, JsonMergeApproach approach, const JsonApplyPatchSettings& settings)
+    {
+        // Explicitly make a copy to call the correct overloaded version and avoid infinite recursion on this function.
+        JsonApplyPatchSettings settingsCopy{settings};
+        return ApplyPatch(output, allocator, source, patch, approach, settingsCopy);
+    }
+
     JsonSerializationResult::ResultCode JsonSerialization::ApplyPatch(rapidjson::Value& output, rapidjson::Document::AllocatorType& allocator,
-        const rapidjson::Value& source, const rapidjson::Value& patch, JsonMergeApproach approach, JsonApplyPatchSettings settings)
+        const rapidjson::Value& source, const rapidjson::Value& patch, JsonMergeApproach approach, JsonApplyPatchSettings& settings)
     {
         using namespace JsonSerializationResult;
 
@@ -166,9 +184,18 @@ namespace AZ
         return result;
     }
 
+    JsonSerializationResult::ResultCode JsonSerialization::CreatePatch(
+        rapidjson::Value& patch, rapidjson::Document::AllocatorType& allocator, const rapidjson::Value& source,
+        const rapidjson::Value& target, JsonMergeApproach approach, const JsonCreatePatchSettings& settings)
+    {
+        // Explicitly make a copy to call the correct overloaded version and avoid infinite recursion on this function.
+        JsonCreatePatchSettings settingsCopy{settings};
+        return CreatePatch(patch, allocator, source, target, approach, settingsCopy);
+    }
 
-    JsonSerializationResult::ResultCode JsonSerialization::CreatePatch(rapidjson::Value& patch, rapidjson::Document::AllocatorType& allocator,
-        const rapidjson::Value& source, const rapidjson::Value& target, JsonMergeApproach approach, JsonCreatePatchSettings settings)
+    JsonSerializationResult::ResultCode JsonSerialization::CreatePatch(
+        rapidjson::Value& patch, rapidjson::Document::AllocatorType& allocator, const rapidjson::Value& source,
+        const rapidjson::Value& target, JsonMergeApproach approach, JsonCreatePatchSettings& settings)
     {
         using namespace JsonSerializationResult;
 
@@ -194,7 +221,16 @@ namespace AZ
         }
     }
 
-    JsonSerializationResult::ResultCode JsonSerialization::Load(void* object, const Uuid& objectType, const rapidjson::Value& root, JsonDeserializerSettings settings)
+    JsonSerializationResult::ResultCode JsonSerialization::Load(
+        void* object, const Uuid& objectType, const rapidjson::Value& root, const JsonDeserializerSettings& settings)
+    {
+        // Explicitly make a copy to call the correct overloaded version and avoid infinite recursion on this function.
+        JsonDeserializerSettings settingsCopy{settings};
+        return Load(object, objectType, root, settingsCopy);
+    }
+
+    JsonSerializationResult::ResultCode JsonSerialization::Load(
+        void* object, const Uuid& objectType, const rapidjson::Value& root, JsonDeserializerSettings& settings)
     {
         using namespace JsonSerializationResult;
 
@@ -212,14 +248,23 @@ namespace AZ
         if (result.GetOutcome() == Outcomes::Success)
         {
             StackedString path(StackedString::Format::JsonPointer);
-            JsonDeserializerContext context(AZStd::move(settings));
+            JsonDeserializerContext context(settings);
             result = JsonDeserializer::Load(object, objectType, root, context);
         }
         return result;
     }
 
+    JsonSerializationResult::ResultCode JsonSerialization::LoadTypeId(
+        Uuid& typeId, const rapidjson::Value& input, const Uuid* baseClassTypeId, AZStd::string_view jsonPath,
+        const JsonDeserializerSettings& settings)
+    {
+        // Explicitly make a copy to call the correct overloaded version and avoid infinite recursion on this function.
+        JsonDeserializerSettings settingsCopy{settings};
+        return LoadTypeId(typeId, input, baseClassTypeId, jsonPath, settingsCopy);
+    }
+
     JsonSerializationResult::ResultCode JsonSerialization::LoadTypeId(Uuid& typeId, const rapidjson::Value& input,
-        const Uuid* baseClassTypeId, AZStd::string_view jsonPath, JsonDeserializerSettings settings)
+        const Uuid* baseClassTypeId, AZStd::string_view jsonPath, JsonDeserializerSettings& settings)
     {
         using namespace JsonSerializationResult;
 
@@ -236,7 +281,7 @@ namespace AZ
         ResultCode result = JsonSerializationInternal::GetContexts(settings, settings.m_serializeContext, settings.m_registrationContext);
         if (result.GetOutcome() == Outcomes::Success)
         {
-            JsonDeserializerContext context(AZStd::move(settings));
+            JsonDeserializerContext context(settings);
             context.PushPath(jsonPath);
 
             result = JsonDeserializer::LoadTypeId(typeId, input, context, baseClassTypeId);
@@ -244,8 +289,18 @@ namespace AZ
         return result;
     }
 
-    JsonSerializationResult::ResultCode JsonSerialization::Store(rapidjson::Value& output, rapidjson::Document::AllocatorType& allocator,
-        const void* object, const void* defaultObject, const Uuid& objectType, JsonSerializerSettings settings)
+    JsonSerializationResult::ResultCode JsonSerialization::Store(
+        rapidjson::Value& output, rapidjson::Document::AllocatorType& allocator, const void* object, const void* defaultObject,
+        const Uuid& objectType, const JsonSerializerSettings& settings)
+    {
+        // Explicitly make a copy to call the correct overloaded version and avoid infinite recursion on this function.
+        JsonSerializerSettings settingsCopy{settings};
+        return Store(output, allocator, object, defaultObject, objectType, settingsCopy);
+    }
+
+    JsonSerializationResult::ResultCode JsonSerialization::Store(
+        rapidjson::Value& output, rapidjson::Document::AllocatorType& allocator, const void* object, const void* defaultObject,
+        const Uuid& objectType, JsonSerializerSettings& settings)
     {
         using namespace JsonSerializationResult;
 
@@ -269,15 +324,24 @@ namespace AZ
                 settings.m_keepDefaults = false;
             }
 
-            JsonSerializerContext context(AZStd::move(settings), allocator);
+            JsonSerializerContext context(settings, allocator);
             StackedString path(StackedString::Format::ContextPath);
             result = JsonSerializer::Store(output, object, defaultObject, objectType, context);
         }
         return result;
     }
 
+    JsonSerializationResult::ResultCode JsonSerialization::StoreTypeId(
+        rapidjson::Value& output, rapidjson::Document::AllocatorType& allocator, const Uuid& typeId, AZStd::string_view elementPath,
+        const JsonSerializerSettings& settings)
+    {
+        // Explicitly make a copy to call the correct overloaded version and avoid infinite recursion on this function.
+        JsonSerializerSettings settingsCopy{settings};
+        return StoreTypeId(output, allocator, typeId, elementPath, settingsCopy);
+    }
+
     JsonSerializationResult::ResultCode JsonSerialization::StoreTypeId(rapidjson::Value& output, rapidjson::Document::AllocatorType& allocator,
-        const Uuid& typeId, AZStd::string_view elementPath, JsonSerializerSettings settings)
+        const Uuid& typeId, AZStd::string_view elementPath, JsonSerializerSettings& settings)
     {
         using namespace JsonSerializationResult;
 
@@ -294,7 +358,7 @@ namespace AZ
         ResultCode result = JsonSerializationInternal::GetContexts(settings, settings.m_serializeContext, settings.m_registrationContext);
         if (result.GetOutcome() == Outcomes::Success)
         {
-            JsonSerializerContext context(AZStd::move(settings), allocator);
+            JsonSerializerContext context(settings, allocator);
             context.PushPath(elementPath);
             result = JsonSerializer::StoreTypeName(output, typeId, context);
         }

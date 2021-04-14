@@ -28,7 +28,7 @@ AZ_POP_DISABLE_WARNING
 
 namespace AWSNativeSDKInit
 {
-    // Entry point for Lumberyard managing the AWSNativeSDK's initialization and shutdown requirements
+    // Entry point for Open 3D Engine managing the AWSNativeSDK's initialization and shutdown requirements
     // Use an AZ::Environment variable to enforce only one init and shutdown
     class InitializationManager
     {
@@ -38,7 +38,7 @@ namespace AWSNativeSDKInit
         InitializationManager();
         ~InitializationManager();
 
-        // Call to guarantee that the API is initialized with proper Lumberyard settings.
+        // Call to guarantee that the API is initialized with proper Open 3D Engine settings.
         // It's fine to call this from every module which needs to use the NativeSDK
         // Creates a static shared pointer using the AZ EnvironmentVariable system.
         // This will prevent a the AWS SDK from going through the shutdown routine until all references are gone, or

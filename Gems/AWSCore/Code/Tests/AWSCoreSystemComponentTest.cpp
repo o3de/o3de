@@ -130,7 +130,7 @@ TEST_F(AWSCoreSystemComponentTest, GetDefaultJobContext_Call_JobContextIsNotNull
 TEST_F(AWSCoreSystemComponentTest, GetDefaultConfig_Call_GetConfigWithExpectedValue)
 {
     auto actualDefaultConfig = m_coreSystemsComponent->GetDefaultConfig();
-    EXPECT_TRUE(actualDefaultConfig->userAgent == "/Lumberyard_AwsApiJob");
+    EXPECT_TRUE(actualDefaultConfig->userAgent == "/O3DE_AwsApiJob");
     EXPECT_TRUE(actualDefaultConfig->requestTimeoutMs == 30000);
     EXPECT_TRUE(actualDefaultConfig->connectTimeoutMs == 30000);
 

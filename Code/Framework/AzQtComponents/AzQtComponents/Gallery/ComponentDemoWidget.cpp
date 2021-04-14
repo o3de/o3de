@@ -11,7 +11,7 @@
 */
 
 #include "ComponentDemoWidget.h"
-#include "Gallery/ui_ComponentDemoWidget.h"
+#include "AzQtComponents/Gallery/ui_ComponentDemoWidget.h"
 #include "AssetBrowserFolderPage.h"
 #include "BreadCrumbsPage.h"
 #include "BrowseEditPage.h"
