@@ -18,8 +18,8 @@ int main(int argc, char* argv[])
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
     UIApplicationMain(argc,
                       argv,
-                      @"LumberyardApplication_iOS",
-                      @"LumberyardApplicationDelegate_iOS");
+                      @"O3DEApplication_iOS",
+                      @"O3DEApplicationDelegate_iOS");
     [pool release];
     return 0;
 }

@@ -168,7 +168,7 @@ namespace Physics
         MaterialId m_id;
     };
 
-    /// An asset that holds a list of materials to be edited and assigned in Lumberyard Editor
+    /// An asset that holds a list of materials to be edited and assigned in Open 3D Engine Editor
     /// ======================================================================================
     ///
     /// Use Asset Editor to create a MaterialLibraryAsset and add materials to it.\n

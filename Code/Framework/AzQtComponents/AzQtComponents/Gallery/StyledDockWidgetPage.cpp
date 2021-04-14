@@ -11,7 +11,7 @@
  */
 
 #include "StyledDockWidgetPage.h"
-#include "Gallery/ui_StyledDockWidgetPage.h"
+#include <AzQtComponents/Gallery/ui_StyledDockWidgetPage.h>
 
 #include <AzQtComponents/Components/DockMainWindow.h>
 #include <AzQtComponents/Components/FancyDocking.h>

@@ -124,4 +124,5 @@ set(FILES
     Gallery/TreeViewPage.ui
     Gallery/TreeViewPage.cpp
     Gallery/TreeViewPage.h
+    Gallery/Gallery.rc
 )

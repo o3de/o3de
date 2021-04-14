@@ -18,7 +18,7 @@ namespace AZ
 {
     namespace Render
     {
-        static constexpr float MaxSpotLightConeAngleDegree = 360.f;
-        static constexpr float MaxSpotLightConeAngleDegreeWithShadow = 170.f;
+        static constexpr float MaxDiskLightConeAngleDegree = 180.0f;
+        static constexpr float MaxDiskLightConeAngleDegreeWithShadow = 170.f;
     } // namespace Render
 } // namespace AZ

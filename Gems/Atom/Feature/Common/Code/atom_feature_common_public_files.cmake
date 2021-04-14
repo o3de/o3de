@@ -18,8 +18,9 @@ set(FILES
     Include/Atom/Feature/CoreLights/PointLightFeatureProcessorInterface.h
     Include/Atom/Feature/CoreLights/PolygonLightFeatureProcessorInterface.h
     Include/Atom/Feature/CoreLights/QuadLightFeatureProcessorInterface.h
+    Include/Atom/Feature/CoreLights/SimplePointLightFeatureProcessorInterface.h
+    Include/Atom/Feature/CoreLights/SimpleSpotLightFeatureProcessorInterface.h
     Include/Atom/Feature/CoreLights/ShadowConstants.h
-    Include/Atom/Feature/CoreLights/SpotLightFeatureProcessorInterface.h
     Include/Atom/Feature/Decals/DecalFeatureProcessorInterface.h
     Include/Atom/Feature/DiffuseProbeGrid/DiffuseProbeGridFeatureProcessorInterface.h
     Include/Atom/Feature/DisplayMapper/DisplayMapperFeatureProcessorInterface.h
@@ -64,6 +65,7 @@ set(FILES
     Include/Atom/Feature/ScreenSpace/DeferredFogSettingsInterface.h
     Include/Atom/Feature/ScreenSpace/DeferredFogParams.inl
     Include/Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessorInterface.h
+    Include/Atom/Feature/Shadows/ProjectedShadowFeatureProcessorInterface.h
     Include/Atom/Feature/SkinnedMesh/SkinnedMeshFeatureProcessorBus.h
     Include/Atom/Feature/SkinnedMesh/SkinnedMeshFeatureProcessorInterface.h
     Include/Atom/Feature/SkinnedMesh/SkinnedMeshInputBuffers.h

@@ -26,7 +26,7 @@ namespace AZ
     class JsonBaseContext
     {
     public:
-        JsonBaseContext(JsonSerializationMetadata metadata, JsonSerializationResult::JsonIssueCallback reporting,
+        JsonBaseContext(JsonSerializationMetadata& metadata, JsonSerializationResult::JsonIssueCallback reporting,
             StackedString::Format pathFormat, SerializeContext* serializeContext, JsonRegistrationContext* registrationContext);
         virtual ~JsonBaseContext() = default;
 
@@ -71,16 +71,16 @@ namespace AZ
         const JsonRegistrationContext* GetRegistrationContext() const;
 
     protected:
-        //! Metadata that's passed in by the settings as additional configuration options or metadata that's collected
-        //! during processing for later use.
-        JsonSerializationMetadata m_metadata;
-
         //! Callback used to report progress and issues. Users of the serialization can update the return code to change
         //! the behavior of the serializer.
         AZStd::stack<JsonSerializationResult::JsonIssueCallback> m_reporters;
 
         //! Path to the element that's currently being operated on.
         StackedString m_path;
+
+        //! Metadata that's passed in by the settings as additional configuration options or metadata that's collected
+        //! during processing for later use.
+        JsonSerializationMetadata& m_metadata;
 
         //! The Serialize Context that can be used to retrieve meta data during processing.
         SerializeContext* m_serializeContext = nullptr;
@@ -92,8 +92,7 @@ namespace AZ
         : public JsonBaseContext
     {
     public:
-        explicit JsonDeserializerContext(const JsonDeserializerSettings& settings);
-        explicit JsonDeserializerContext(JsonDeserializerSettings&& settings);
+        explicit JsonDeserializerContext(JsonDeserializerSettings& settings);
         ~JsonDeserializerContext() override = default;
 
         JsonDeserializerContext(const JsonDeserializerContext&) = delete;
@@ -114,8 +113,7 @@ namespace AZ
         : public JsonBaseContext
     {
     public:
-        explicit JsonSerializerContext(const JsonSerializerSettings& settings, rapidjson::Document::AllocatorType& jsonAllocator);
-        explicit JsonSerializerContext(JsonSerializerSettings&& settings, rapidjson::Document::AllocatorType& jsonAllocator);
+        JsonSerializerContext(JsonSerializerSettings& settings, rapidjson::Document::AllocatorType& jsonAllocator);
         ~JsonSerializerContext() override = default;
 
         JsonSerializerContext(const JsonSerializerContext&) = delete;

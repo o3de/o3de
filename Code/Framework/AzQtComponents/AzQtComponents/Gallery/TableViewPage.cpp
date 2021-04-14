@@ -19,7 +19,7 @@
 
 #include <AzQtComponents/Components/Widgets/Text.h>
 
-#include <Gallery/ui_TableViewPage.h>
+#include <AzQtComponents/Gallery/ui_TableViewPage.h>
 
 #include <QDateTime>
 #include <QFileSystemModel>

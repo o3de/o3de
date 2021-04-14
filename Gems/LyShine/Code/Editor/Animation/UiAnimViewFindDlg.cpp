@@ -23,7 +23,7 @@
 
 #include <QListWidgetItem>
 
-#include <Animation/ui_UiAnimViewFindDlg.h>
+#include <Editor/Animation/ui_UiAnimViewFindDlg.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CUiAnimViewFindDlg dialog

@@ -292,7 +292,7 @@ QLensFlareAtomicListModel::Item* QLensFlareAtomicListModel::ItemFromIndex(QModel
 QStringList QLensFlareAtomicListModel::mimeTypes() const
 {
     return {
-               QStringLiteral("application/x-lumberyard-flaretypes")
+               QStringLiteral("application/x-o3de-flaretypes")
     };
 }
 
@@ -308,7 +308,7 @@ QMimeData* QLensFlareAtomicListModel::mimeData(const QModelIndexList& indexes) c
         stream << static_cast<int>(FlareTypeFromIndex(index));
     }
 
-    data->setData(QStringLiteral("application/x-lumberyard-flaretypes"), encoded);
+    data->setData(QStringLiteral("application/x-o3de-flaretypes"), encoded);
 
     return data;
 }

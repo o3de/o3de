@@ -52,6 +52,10 @@ namespace AZ
             {
                 m_shaderOptions.m_applyMorphTargets = true;
             }
+            if (inputBuffers->GetLod(lodIndex).HasDynamicColors())
+            {
+                m_shaderOptions.m_applyColorMorphTargets = true;
+            }
 
             // CreateShaderOptionGroup will also connect to the SkinnedMeshShaderOptionNotificationBus
             m_shaderOptionGroup = skinnedMeshComputePass->CreateShaderOptionGroup(m_shaderOptions, *this);
@@ -129,9 +133,18 @@ namespace AZ
                 AZ_Assert(false, "Invalid skinning method for SkinnedMeshDispatchItem.");
             }
 
-            AZ_Assert(aznumeric_cast<uint8_t>(m_outputBufferOffsetsInBytes.size()) == static_cast<uint8_t>(SkinnedMeshOutputVertexStreams::NumVertexStreams), "Not enough offsets were given to the SkinnedMeshDispatchItem");
+            AZ_Assert(aznumeric_cast<uint8_t>(m_outputBufferOffsetsInBytes.size()) == static_cast<uint8_t>(SkinnedMeshOutputVertexStreams::NumVertexStreams) && m_shaderOptions.m_applyColorMorphTargets
+                   || aznumeric_cast<uint8_t>(m_outputBufferOffsetsInBytes.size()) == static_cast<uint8_t>(SkinnedMeshOutputVertexStreams::NumVertexStreams) - 1 && !m_shaderOptions.m_applyColorMorphTargets,
+                "Not enough offsets were given to the SkinnedMeshDispatchItem");
+
             for (uint8_t outputStream = 0; outputStream < static_cast<uint8_t>(SkinnedMeshOutputVertexStreams::NumVertexStreams); outputStream++)
             {
+                // Skip colors if they are not being morphed
+                if (outputStream == static_cast<uint8_t>(SkinnedMeshOutputVertexStreams::Color) && !m_shaderOptions.m_applyColorMorphTargets)
+                {
+                    continue;
+                }
+
                 // Set the buffer offsets
                 const SkinnedMeshOutputVertexStreamInfo& outputStreamInfo = SkinnedMeshVertexStreamPropertyInterface::Get()->GetOutputStreamInfo(static_cast<SkinnedMeshOutputVertexStreams>(outputStream));
                 {
@@ -142,7 +155,7 @@ namespace AZ
                         return false;
                     }
 
-                    // The shader has a view of with 4 bytes per element
+                    // The shader has a view with 4 bytes per element
                     // Divide the byte offset here so it doesn't need to be done in the shader
                     m_instanceSrg->SetConstant(outputOffsetIndex, m_outputBufferOffsetsInBytes[outputStream] / 4);
                 }
@@ -163,6 +176,13 @@ namespace AZ
             RHI::ShaderInputConstantIndex morphBitangentOffsetIndex = m_instanceSrg->FindShaderInputConstantIndex(Name{ "m_morphTargetBitangentDeltaOffset" });
             // The buffer is using 32-bit integers, so divide the offset by 4 here so it doesn't have to be done in the shader
             m_instanceSrg->SetConstant(morphBitangentOffsetIndex, m_morphTargetInstanceMetaData.m_accumulatedBitangentDeltaOffsetInBytes / 4);
+
+            if (m_shaderOptions.m_applyColorMorphTargets)
+            {
+                RHI::ShaderInputConstantIndex morphColorOffsetIndex = m_instanceSrg->FindShaderInputConstantIndex(Name{ "m_morphTargetColorDeltaOffset" });
+                // The buffer is using 32-bit integers, so divide the offset by 4 here so it doesn't have to be done in the shader
+                m_instanceSrg->SetConstant(morphColorOffsetIndex, m_morphTargetInstanceMetaData.m_accumulatedColorDeltaOffsetInBytes / 4);
+            }
 
             RHI::ShaderInputConstantIndex morphDeltaIntegerEncodingIndex = m_instanceSrg->FindShaderInputConstantIndex(Name{ "m_morphTargetDeltaInverseIntegerEncoding" });
             m_instanceSrg->SetConstant(morphDeltaIntegerEncodingIndex, 1.0f / m_morphTargetDeltaIntegerEncoding);

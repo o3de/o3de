@@ -25,7 +25,7 @@ namespace AZ
     {
         DiffuseProbeGrid::~DiffuseProbeGrid()
         {
-            m_scene->GetCullingSystem()->UnregisterCullable(m_cullable);
+            m_scene->GetCullingScene()->UnregisterCullable(m_cullable);
         }
 
         void DiffuseProbeGrid::Init(RPI::Scene* scene, DiffuseProbeGridRenderData* renderData)
@@ -646,7 +646,7 @@ namespace AZ
             m_cullable.m_cullData.m_visibilityEntry.m_typeFlags = AzFramework::VisibilityEntry::TYPE_RPI_Cullable;
 
             // register with culling system
-            m_scene->GetCullingSystem()->RegisterOrUpdateCullable(m_cullable);
+            m_scene->GetCullingScene()->RegisterOrUpdateCullable(m_cullable);
         }
     }   // namespace Render
 }   // namespace AZ

@@ -14,6 +14,7 @@
 
 #include <AzCore/Component/TransformBus.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
+#include <Atom/Feature/CoreLights/ShadowConstants.h>
 
 namespace AzFramework
 {
@@ -56,6 +57,31 @@ namespace AZ
             virtual void DrawDebugDisplay(const Transform& transform, const Color& color, AzFramework::DebugDisplayRequests& debugDisplay, bool isSelected) const = 0;
             //! Turns the visibility of this light on/off.
             virtual void SetVisibility(bool visibility) = 0;
+
+            // Shutters
+
+            // Sets if the light should be restricted to shutter angles.
+            virtual void SetEnableShutters(bool enabled) = 0;
+            // Sets the inner and outer angles of the shutters in degrees for where the light
+            // beam starts to attenuate (inner) to where it is completely occluded (outer).
+            virtual void SetShutterAngles(float innerAngleDegrees, float outerAngleDegrees) = 0;
+
+            // Shadows
+
+            //! Sets if shadows should be enabled 
+            virtual void SetEnableShadow(bool enabled) = 0;
+            //! Sets the maximum resolution of the shadow map
+            virtual void SetShadowmapMaxSize(ShadowmapSize size) = 0;
+            //! Sets the filter method for the shadow
+            virtual void SetShadowFilterMethod(ShadowFilterMethod method) = 0;
+            //! Sets the width of boundary between shadowed area and lit area in degrees.
+            virtual void SetSofteningBoundaryWidthAngle(float widthInDegrees) = 0;
+            //! Sets the sample count to predict the boundary of the shadow. Max 16, should be less than filtering sample count.
+            virtual void SetPredictionSampleCount(uint32_t count) = 0;
+            //! Sets the sample count for filtering of the shadow boundary, max 64.
+            virtual void SetFilteringSampleCount(uint32_t count) = 0;
+            //! Sets the Pcf (Percentage closer filtering) method to use.
+            virtual void SetPcfMethod(PcfMethod method) = 0;
         };
     } //  namespace Render
 } // namespace AZ

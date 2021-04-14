@@ -12,7 +12,7 @@
 #pragma once
 
 
-namespace LumberyardLauncher
+namespace O3DELauncher
 {
     const char* GetAppResourcePath();
 }
