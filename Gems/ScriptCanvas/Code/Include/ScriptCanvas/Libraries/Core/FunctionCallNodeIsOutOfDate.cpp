@@ -24,8 +24,6 @@ namespace ScriptCanvas
         {
            bool IsFunctionCallNodeOutOfDate(const IsFunctionCallOutOfDateConfig& config)
            {
-                bool changedToNodeable = false;
-
                 if (Grammar::IsFunctionSourceIdNodeable(config.sourceId))
                 {
                     const bool latestIsNodeable = config.latestInterface.IsUserNodeable();

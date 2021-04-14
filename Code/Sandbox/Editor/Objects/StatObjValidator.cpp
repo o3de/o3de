@@ -159,8 +159,6 @@ void CStatObjValidator::Validate(IStatObj* statObj, CMaterial* editorMaterial)
         }
     }
 
-    const char* errorText = 0;
-    const char* nodeName = 0;
     if (statObj && editorMaterial)
     {
         std::vector<SMeshMaterialIssue> issues;

@@ -149,7 +149,10 @@ namespace AssetProcessor
         {
             return normalized.toLower();
         }
-        return normalized;
+        else
+        {
+            return normalized;
+        }
     }
 
     void FileStateCache::AddOrUpdateFileInternal(QFileInfo fileInfo)

@@ -1210,7 +1210,6 @@ ConsoleVariableEditor::ConsoleVariableEditor(QWidget* parent)
     mainLayout->addWidget(m_tableView, 1);
 
     // Set the console variables
-    IConsole* console = GetIEditor()->GetSystem()->GetIConsole();
     m_varBlock = VarBlockFromConsoleVars();
     SetVarBlock(m_varBlock);
 }

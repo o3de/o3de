@@ -29,8 +29,7 @@ set(FILES
     Source/SurfaceTag.cpp
     Source/Components/SurfaceDataColliderComponent.cpp
     Source/Components/SurfaceDataColliderComponent.h
-    Source/Components/SurfaceDataMeshComponent.cpp
-    Source/Components/SurfaceDataMeshComponent.h
     Source/Components/SurfaceDataShapeComponent.cpp
     Source/Components/SurfaceDataShapeComponent.h
+    Source/SurfaceDataUtility.cpp
 )

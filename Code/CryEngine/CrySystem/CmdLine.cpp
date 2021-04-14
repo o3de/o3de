@@ -160,7 +160,8 @@ string CCmdLine::Next(char*& src)
     char ch = 0;
     char* org = src;
 
-    while (ch = *src++)
+    ch = *src++;
+    while (ch)
     {
         switch (ch)
         {
@@ -194,6 +195,7 @@ string CCmdLine::Next(char*& src)
 
             return string(org, src);
         }
+        ch = *src++;
     }
 
     return string();

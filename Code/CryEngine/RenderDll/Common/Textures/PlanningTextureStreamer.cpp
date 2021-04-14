@@ -217,7 +217,6 @@ void CPlanningTextureStreamer::ApplySchedule(EApplyScheduleFlags asf)
         ptrdiff_t nMemFreeUpper = schedule.memState.nMemFreeUpper;
         ptrdiff_t nMemFreeLower = schedule.memState.nMemFreeLower;
         int nBalancePoint = schedule.nBalancePoint;
-        int nOnScreenPoint = schedule.nOnScreenPoint;
 
         // Everything < nBalancePoint can only be trimmed (trimmable list), everything >= nBalancePoint can be kicked
         // We should be able to load everything in the requested list
@@ -381,10 +380,6 @@ bool CPlanningTextureStreamer::TryBegin_FromDisk(CTexture* pTex, uint32 nTexPers
         ++estp;
     }
 
-    uint32 nWantedWidth = max(1, pTex->m_nWidth >> nTexWantedMip);
-    uint32 nWantedHeight = max(1, pTex->m_nHeight >> nTexWantedMip);
-    uint32 nAvailWidth = max(1, pTex->m_nWidth >> nTexAvailMip);
-    uint32 nAvailHeight = max(1, pTex->m_nHeight >> nTexAvailMip);
 
     ptrdiff_t nRequired = pTex->StreamComputeDevDataSize(nTexWantedMip) - pTex->StreamComputeDevDataSize(nTexAvailMip);
 
@@ -486,10 +481,6 @@ bool CPlanningTextureStreamer::TryBegin_Composite(CTexture* pTex, [[maybe_unused
     ptrdiff_t& nMemFreeLower, ptrdiff_t& nMemFreeUpper, int& nKickIdx,
     [[maybe_unused]] int& nNumSubmittedLoad, [[maybe_unused]] size_t& nAmtSubmittedLoad)
 {
-    uint32 nWantedWidth = max(1, pTex->m_nWidth >> nTexWantedMip);
-    uint32 nWantedHeight = max(1, pTex->m_nHeight >> nTexWantedMip);
-    uint32 nAvailWidth = max(1, pTex->m_nWidth >> nTexAvailMip);
-    uint32 nAvailHeight = max(1, pTex->m_nHeight >> nTexAvailMip);
 
     ptrdiff_t nRequired = pTex->StreamComputeDevDataSize(nTexWantedMip) - pTex->StreamComputeDevDataSize(nTexAvailMip);
 
@@ -787,7 +778,6 @@ bool CPlanningTextureStreamer::TrimTexture(int nBias, TStreamerTextureVec& trimm
     {
         CTexture* pTrimTex = trimmable[i];
 
-        bool bRemove = false;
 
         if (pTrimTex->m_bStreamPrepared)
         {
@@ -881,10 +871,6 @@ ptrdiff_t CPlanningTextureStreamer::KickTextures(CTexture** pTextures, ptrdiff_t
             // unload textures that are older than 4 update cycles
             if (nKillPersMip > nKillMip)
             {
-                uint32 nKillWidth = pKillTex->m_nWidth >> nKillMip;
-                uint32 nKillHeight = pKillTex->m_nHeight >> nKillMip;
-                int nKillMips = nKillPersMip - nKillMip;
-                ETEX_Format nKillFormat = pKillTex->m_eTFSrc;
 
                 // How much is available?
                 ptrdiff_t nProfit = pKillTex->StreamComputeDevDataSize(nKillMip) - pKillTex->StreamComputeDevDataSize(nKillPersMip);

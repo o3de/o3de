@@ -151,7 +151,6 @@ namespace AZ
             {
                 if (passAttachment == binding.m_attachment)
                 {
-                    RHI::AttachmentType type = binding.m_attachment->GetAttachmentType();
                     RHI::AttachmentId attachmentId = binding.m_attachment->GetAttachmentId();
                     
                     // Append slot index and pass name so the read back's name won't be same as the attachment used in other passes.

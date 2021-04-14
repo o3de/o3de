@@ -285,7 +285,7 @@ namespace Blast
     void BlastSystemComponent::LoadConfiguration()
     {
         BlastGlobalConfiguration globalConfiguration;
-        bool loaded = AZ::Utils::LoadObjectFromFileInPlace<BlastGlobalConfiguration>(
+        [[maybe_unused]] bool loaded = AZ::Utils::LoadObjectFromFileInPlace<BlastGlobalConfiguration>(
             DefaultConfigurationPath, globalConfiguration);
         AZ_Warning("Blast", loaded, "Failed to load Blast configuration, initializing with default configs.");
 
@@ -305,7 +305,7 @@ namespace Blast
         AZStd::string fullPath;
         AzFramework::StringFunc::Path::Join(assetRoot, DefaultConfigurationPath, fullPath);
 
-        bool saved = AZ::Utils::SaveObjectToFile<BlastGlobalConfiguration>(
+        [[maybe_unused]] bool saved = AZ::Utils::SaveObjectToFile<BlastGlobalConfiguration>(
             fullPath.c_str(), AZ::DataStream::ST_XML, &m_configuration);
         AZ_Warning("BlastSystemComponent", saved, "Failed to save Blast configuration");
     }

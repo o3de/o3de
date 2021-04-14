@@ -130,11 +130,13 @@ void CCoverageBuffer::ClipPolygon(PodArray<Vec3>& PolygonOut, const PodArray<Vec
     }
 
     // check result
+#if !defined(NDEBUG)
     for (int i = 0; i < PolygonOut.Count(); i++)
     {
-        float d1 = -ClipPlane.DistFromPlane(PolygonOut.GetAt(i));
+        float d1 = -ClipPlane.DistFromPlane(PolygonOut.GetAt(i));           
         assert(d1 >= -0.01f);
     }
+#endif
 
     assert(PolygonOut.Count() == 0 || PolygonOut.Count() >= 3);
 }

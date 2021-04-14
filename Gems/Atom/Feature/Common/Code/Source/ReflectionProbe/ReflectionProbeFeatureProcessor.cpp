@@ -40,7 +40,6 @@ namespace AZ
 
         void ReflectionProbeFeatureProcessor::Activate()
         {
-            AZ::RPI::Scene* scene = GetParentScene();
             RHI::RHISystemInterface* rhiSystem = RHI::RHISystemInterface::Get();
 
             m_reflectionProbes.reserve(InitialProbeAllocationSize);
@@ -51,7 +50,7 @@ namespace AZ
 
             m_bufferPool = RHI::Factory::Get().CreateBufferPool();
             m_bufferPool->SetName(Name("ReflectionProbeBoxBufferPool"));
-            RHI::ResultCode resultCode = m_bufferPool->Init(*rhiSystem->GetDevice(), desc);
+            [[maybe_unused]] RHI::ResultCode resultCode = m_bufferPool->Init(*rhiSystem->GetDevice(), desc);
             AZ_Error("ReflectionProbeFeatureProcessor", resultCode == RHI::ResultCode::Success, "Failed to initialize buffer pool");
 
             // create box mesh vertices and indices

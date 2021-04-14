@@ -166,7 +166,6 @@ int CIconManager::GetIconTexture(const char* iconName)
             if (QString::compare(ext, "bmp", Qt::CaseInsensitive) == 0 || QString::compare(ext, "jpg", Qt::CaseInsensitive) == 0)
             {
                 int sz = image.GetWidth() * image.GetHeight();
-                int h = image.GetHeight();
                 uint8* buf = (uint8*)image.GetData();
                 for (int i = 0; i < sz; i++)
                 {

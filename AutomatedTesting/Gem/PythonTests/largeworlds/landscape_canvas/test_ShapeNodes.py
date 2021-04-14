@@ -33,13 +33,13 @@ class TestShapeNodes(object):
     @pytest.fixture(autouse=True)
     def setup_teardown(self, request, workspace, project, level):
         def teardown():
-            file_system.delete([os.path.join(workspace.paths.dev(), project, "Levels", level)], True, True)
+            file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
         request.addfinalizer(teardown)
 
-        file_system.delete([os.path.join(workspace.paths.dev(), project, "Levels", level)], True, True)
+        file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
 
     @pytest.mark.test_case_id('C13767843')
-    @pytest.mark.SUITE_main
+    @pytest.mark.SUITE_periodic
     def test_LandscapeCanvas_ShapeNodes_EntityCreatedOnNodeAdd(self, request, editor, level, launcher_platform):
         cfg_args = [level]
 
@@ -62,7 +62,7 @@ class TestShapeNodes(object):
                                           expected_lines, cfg_args=cfg_args)
 
     @pytest.mark.test_case_id('C17412059')
-    @pytest.mark.SUITE_main
+    @pytest.mark.SUITE_periodic
     def test_LandscapeCanvas_ShapeNodes_EntityRemovedOnNodeDelete(self, request, editor, level, launcher_platform):
         cfg_args = [level]
 

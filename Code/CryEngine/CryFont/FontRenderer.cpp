@@ -308,7 +308,7 @@ Vec2 CFontRenderer::GetKerning(uint32_t leftGlyph, uint32_t rightGlyph)
         const FT_UInt leftGlyphIndex = FT_Get_Char_Index(m_pFace, leftGlyph);
         const FT_UInt rightGlyphIndex = FT_Get_Char_Index(m_pFace, rightGlyph);
 
-        FT_Error ftError = FT_Get_Kerning(m_pFace, leftGlyphIndex, rightGlyphIndex, FT_KERNING_DEFAULT, &kerningOffsets);
+        [[maybe_unused]] FT_Error ftError = FT_Get_Kerning(m_pFace, leftGlyphIndex, rightGlyphIndex, FT_KERNING_DEFAULT, &kerningOffsets);
 
 #if !defined(_RELEASE)
         if (0 != ftError)

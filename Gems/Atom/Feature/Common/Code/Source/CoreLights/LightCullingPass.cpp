@@ -28,8 +28,9 @@
 #include <AzCore/std/algorithm.h>
 #include <AzCore/Math/MatrixUtils.h>
 #include <Atom/RPI.Public/Scene.h>
+#include <CoreLights/SimplePointLightFeatureProcessor.h>
+#include <CoreLights/SimpleSpotLightFeatureProcessor.h>
 #include <CoreLights/PointLightFeatureProcessor.h>
-#include <CoreLights/SpotLightFeatureProcessor.h>
 #include <CoreLights/DiskLightFeatureProcessor.h>
 #include <CoreLights/CapsuleLightFeatureProcessor.h>
 #include <CoreLights/QuadLightFeatureProcessor.h>
@@ -116,18 +117,20 @@ namespace AZ
         LightCullingPass::LightCullingPass(const RPI::PassDescriptor& descriptor)
             : RPI::ComputePass(descriptor)
         {
-            m_lightdata[eLightTypes_Point].m_lightCountIndex    = Name("m_pointLightCount");
-            m_lightdata[eLightTypes_Point].m_lightBufferIndex   = Name("m_pointLights");
-            m_lightdata[eLightTypes_Spot].m_lightCountIndex     = Name("m_spotLightCount");
-            m_lightdata[eLightTypes_Spot].m_lightBufferIndex    = Name("m_spotLights");
-            m_lightdata[eLightTypes_Disk].m_lightCountIndex     = Name("m_diskLightCount");
-            m_lightdata[eLightTypes_Disk].m_lightBufferIndex    = Name("m_diskLights");
-            m_lightdata[eLightTypes_Capsule].m_lightCountIndex  = Name("m_capsuleLightCount");
-            m_lightdata[eLightTypes_Capsule].m_lightBufferIndex = Name("m_capsuleLights");
-            m_lightdata[eLightTypes_Quad].m_lightCountIndex     = Name("m_quadLightCount");
-            m_lightdata[eLightTypes_Quad].m_lightBufferIndex    = Name("m_quadLights");
-            m_lightdata[eLightTypes_Decal].m_lightCountIndex    = Name("m_decalCount");
-            m_lightdata[eLightTypes_Decal].m_lightBufferIndex   = Name("m_decals");
+            m_lightdata[eLightTypes_SimplePoint].m_lightCountIndex  = Name("m_simplePointLightCount");
+            m_lightdata[eLightTypes_SimplePoint].m_lightBufferIndex = Name("m_simplePointLights");
+            m_lightdata[eLightTypes_SimpleSpot].m_lightCountIndex   = Name("m_simpleSpotLightCount");
+            m_lightdata[eLightTypes_SimpleSpot].m_lightBufferIndex  = Name("m_simpleSpotLights");
+            m_lightdata[eLightTypes_Point].m_lightCountIndex        = Name("m_pointLightCount");
+            m_lightdata[eLightTypes_Point].m_lightBufferIndex       = Name("m_pointLights");
+            m_lightdata[eLightTypes_Disk].m_lightCountIndex         = Name("m_diskLightCount");
+            m_lightdata[eLightTypes_Disk].m_lightBufferIndex        = Name("m_diskLights");
+            m_lightdata[eLightTypes_Capsule].m_lightCountIndex      = Name("m_capsuleLightCount");
+            m_lightdata[eLightTypes_Capsule].m_lightBufferIndex     = Name("m_capsuleLights");
+            m_lightdata[eLightTypes_Quad].m_lightCountIndex         = Name("m_quadLightCount");
+            m_lightdata[eLightTypes_Quad].m_lightBufferIndex        = Name("m_quadLights");
+            m_lightdata[eLightTypes_Decal].m_lightCountIndex        = Name("m_decalCount");
+            m_lightdata[eLightTypes_Decal].m_lightBufferIndex       = Name("m_decals");
         }
 
         void LightCullingPass::CompileResources(const RHI::FrameGraphCompileContext& context)
@@ -187,7 +190,7 @@ namespace AZ
         void LightCullingPass::SetLightListToSRG()
         {
             auto inputIndex = m_shaderResourceGroup->FindShaderInputBufferIndex(AZ::Name("m_lightList"));
-            bool succeeded = m_shaderResourceGroup->SetBuffer(inputIndex, m_lightList);
+            [[maybe_unused]] bool succeeded = m_shaderResourceGroup->SetBuffer(inputIndex, m_lightList);
             AZ_Assert(succeeded, "SetImage failed for light list");
         }
 
@@ -274,13 +277,17 @@ namespace AZ
 
         void LightCullingPass::GetLightDataFromFeatureProcessor()
         {
+            const auto simplePointLightFP = m_pipeline->GetScene()->GetFeatureProcessor<SimplePointLightFeatureProcessor>();
+            m_lightdata[eLightTypes_SimplePoint].m_lightBuffer = simplePointLightFP->GetLightBuffer();
+            m_lightdata[eLightTypes_SimplePoint].m_lightCount = simplePointLightFP->GetLightCount();
+
+            const auto simpleSpotLightFP = m_pipeline->GetScene()->GetFeatureProcessor<SimpleSpotLightFeatureProcessor>();
+            m_lightdata[eLightTypes_SimpleSpot].m_lightBuffer = simpleSpotLightFP->GetLightBuffer();
+            m_lightdata[eLightTypes_SimpleSpot].m_lightCount = simpleSpotLightFP->GetLightCount();
+
             const auto pointLightFP = m_pipeline->GetScene()->GetFeatureProcessor<PointLightFeatureProcessor>();
             m_lightdata[eLightTypes_Point].m_lightBuffer = pointLightFP->GetLightBuffer();
             m_lightdata[eLightTypes_Point].m_lightCount = pointLightFP->GetLightCount();
-
-            const auto spotLightFP = m_pipeline->GetScene()->GetFeatureProcessor<SpotLightFeatureProcessor>();
-            m_lightdata[eLightTypes_Spot].m_lightBuffer = spotLightFP->GetLightBuffer();
-            m_lightdata[eLightTypes_Spot].m_lightCount = spotLightFP->GetLightCount();
 
             const auto diskLightFP = m_pipeline->GetScene()->GetFeatureProcessor<DiskLightFeatureProcessor>();
             m_lightdata[eLightTypes_Disk].m_lightBuffer = diskLightFP->GetLightBuffer();

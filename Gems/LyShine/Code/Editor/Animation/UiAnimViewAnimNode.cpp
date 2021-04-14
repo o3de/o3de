@@ -133,7 +133,6 @@ CUiAnimViewAnimNode::CUiAnimViewAnimNode(IUiAnimSequence* pSequence, IUiAnimNode
         }
 
         // Set owner to update entity UI Animation system entity IDs and remove it again
-        AZ::Entity* pNodeEntity = nullptr;
         EBUS_EVENT_ID_RESULT(m_nodeEntityId, m_pAnimNode.get(), UiAnimNodeBus, GetAzEntityId);
 
         m_pAnimNode->SetNodeOwner(nullptr);
@@ -192,9 +191,6 @@ void CUiAnimViewAnimNode::UiElementPropertyChanged()
 
                     AZ_Assert(oldComponentType == newComponentType, "Components have different types");
 
-                    void* classPtr = AZ::SerializeTypeInfo<AZ::Component>::RttiCast(
-                            oldComponent, AZ::SerializeTypeInfo<AZ::Component>::GetRttiTypeId(oldComponent));
-
                     const AZ::Uuid& classId = AZ::SerializeTypeInfo<AZ::Component>::GetUuid(oldComponent);
 
                     const AZ::SerializeContext::ClassData* classData = context->FindClassData(classId);
@@ -227,7 +223,7 @@ void CUiAnimViewAnimNode::UiElementPropertyChanged()
             // do this before calling OnKeysChanged because that can end up causing
             // UiElementPropertyChanged to get called again
             AZ::IO::ByteContainerStream<AZStd::string> saveStream(&m_azEntityDataCache);
-            bool success = AZ::Utils::SaveObjectToStream(saveStream, AZ::ObjectStream::ST_XML, pNodeEntity);
+            [[maybe_unused]] bool success = AZ::Utils::SaveObjectToStream(saveStream, AZ::ObjectStream::ST_XML, pNodeEntity);
             AZ_Assert(success, "Failed to serialize canvas entity to XML");
 
             if (valueChanged)
@@ -346,12 +342,12 @@ void CUiAnimViewAnimNode::SetComponentParamValueAz(float time,
     }
     else if (element.m_typeId == AZ::SerializeTypeInfo<int>::GetUuid())
     {
-        int srcElementValue = *reinterpret_cast<int*>(srcElementData);
+        // int srcElementValue = *reinterpret_cast<int*>(srcElementData);
         //        m_pAnimNode->SetParamValueAz(time, param, srcElementValue);
     }
     else if (element.m_typeId == AZ::SerializeTypeInfo<unsigned int>::GetUuid())
     {
-        unsigned int srcElementValue = *reinterpret_cast<unsigned int*>(srcElementData);
+        // unsigned int srcElementValue = *reinterpret_cast<unsigned int*>(srcElementData);
         //        m_pAnimNode->SetParamValueAz(time, param, srcElementValue);
     }
     else if (element.m_typeId == AZ::SerializeTypeInfo<AZ::Vector2>::GetUuid())
@@ -564,7 +560,7 @@ void CUiAnimViewAnimNode::BindToEditorObjects()
             {
                 // save a cache of the current values of all the entities properties
                 AZ::IO::ByteContainerStream<AZStd::string> charStream(&m_azEntityDataCache);
-                bool success = AZ::Utils::SaveObjectToStream(charStream, AZ::ObjectStream::ST_XML, pNodeEntity);
+                [[maybe_unused]] bool success = AZ::Utils::SaveObjectToStream(charStream, AZ::ObjectStream::ST_XML, pNodeEntity);
                 AZ_Assert(success, "Failed to serialize canvas entity to XML");
             }
         }
@@ -994,8 +990,6 @@ CUiAnimViewTrack* CUiAnimViewAnimNode::GetTrackForParameter(const CUiAnimParamTy
 //////////////////////////////////////////////////////////////////////////
 CUiAnimViewTrack* CUiAnimViewAnimNode::GetTrackForParameterAz(const UiAnimParamData& param) const
 {
-    uint32 currentIndex = 0;
-
     for (auto iter = m_childNodes.begin(); iter != m_childNodes.end(); ++iter)
     {
         CUiAnimViewNode* pNode = (*iter).get();
@@ -1088,7 +1082,7 @@ void CUiAnimViewAnimNode::Animate(const SUiAnimContext& animContext)
         if (pNodeEntity)
         {
             AZ::IO::ByteContainerStream<AZStd::string> saveStream(&m_azEntityDataCache);
-            bool success = AZ::Utils::SaveObjectToStream(saveStream, AZ::ObjectStream::ST_XML, pNodeEntity);
+            [[maybe_unused]] bool success = AZ::Utils::SaveObjectToStream(saveStream, AZ::ObjectStream::ST_XML, pNodeEntity);
             AZ_Assert(success, "Failed to serialize canvas entity to XML");
         }
     }
@@ -1341,7 +1335,6 @@ CUiAnimViewAnimNodeBundle CUiAnimViewAnimNode::AddSelectedUiElements()
         }
 
         // Get node type (either entity or camera)
-        EUiAnimNodeType nodeType = eUiAnimNodeType_Invalid;
         CUiAnimViewAnimNode* pAnimNode = nullptr;
 
         // Since entity names in canvases do not tend to be unique add the element ID

@@ -166,8 +166,8 @@ namespace EMStudio
         connect(mPresetNameLineEdit, &QLineEdit::textEdited, this, &GameControllerWindow::OnPresetNameEdited);
         connect(mPresetNameLineEdit, &QLineEdit::returnPressed, this, &GameControllerWindow::OnPresetNameChanged);
 
-        EMStudioManager::MakeTransparentButton(mAddPresetButton, "/Images/Icons/Plus.svg", "Add a game controller preset");
-        EMStudioManager::MakeTransparentButton(mRemovePresetButton, "/Images/Icons/Remove.svg", "Remove a game controller preset");
+        EMStudioManager::MakeTransparentButton(mAddPresetButton, "Images/Icons/Plus.svg", "Add a game controller preset");
+        EMStudioManager::MakeTransparentButton(mRemovePresetButton, "Images/Icons/Remove.svg", "Remove a game controller preset");
 
         QHBoxLayout* buttonsLayout = new QHBoxLayout();
         buttonsLayout->addWidget(mAddPresetButton);
@@ -1029,7 +1029,6 @@ namespace EMStudio
 
         // check if the button info is pointing to a correct parameter
         const AZStd::string parameterName = settingsInfo->m_string;
-        const EMotionFX::Parameter* parameter = mAnimGraph->FindParameterByName(parameterName);
         if (parameterName.empty())
         {
             // The parameter name is empty in case the button info has not been assigned with one yet.

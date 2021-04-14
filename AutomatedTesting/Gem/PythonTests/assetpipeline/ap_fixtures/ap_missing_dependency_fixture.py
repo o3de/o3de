@@ -21,7 +21,7 @@ from typing import Dict, List, Tuple, Any, Set
 
 from ly_test_tools.environment.file_system import create_backup, restore_backup, unlock_file
 from automatedtesting_shared import asset_database_utils as db_utils
-from ly_test_tools.lumberyard.ap_log_parser import APLogParser
+from ly_test_tools.o3de.ap_log_parser import APLogParser
 
 from . import ap_setup_fixture as ap_setup_fixture
 

@@ -20,6 +20,7 @@ set(FILES
     FileUtil.cmake
     Findo3de.cmake
     Initialize.cmake
+    Install.cmake
     LyAutoGen.cmake
     LySet.cmake
     LYTestWrappers.cmake

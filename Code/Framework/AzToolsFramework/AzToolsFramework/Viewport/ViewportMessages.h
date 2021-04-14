@@ -21,7 +21,12 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
 
-class QPoint;
+class QPoint; // LYN-2315 in-progress, remove this
+
+namespace AzFramework
+{
+    struct ScreenPoint;
+}
 
 namespace AzToolsFramework
 {
@@ -235,12 +240,12 @@ namespace AzToolsFramework
             /// Restores the cursor and ends locking it in place, allowing it to be moved freely.
             virtual void EndCursorCapture() = 0;
             /// Gets the most recent recorded cursor position in the viewport in screen space coordinates.
-            virtual QPoint ViewportCursorScreenPosition() = 0;
+            virtual AzFramework::ScreenPoint ViewportCursorScreenPosition() = 0;
             /// Gets the cursor position recorded prior to the most recent cursor position.
             /// Note: The cursor may be captured by the viewport, in which case this may not correspond to the last result
             /// from ViewportCursorScreenPosition. This method will always return the correct position to generate a mouse
             /// position delta.
-            virtual AZStd::optional<QPoint> PreviousViewportCursorScreenPosition() = 0;
+            virtual AZStd::optional<AzFramework::ScreenPoint> PreviousViewportCursorScreenPosition() = 0;
 
         protected:
             ~ViewportMouseCursorRequests() = default;

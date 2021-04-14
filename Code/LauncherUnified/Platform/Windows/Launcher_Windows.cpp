@@ -17,7 +17,7 @@ int APIENTRY WinMain([[maybe_unused]] HINSTANCE hInstance, [[maybe_unused]] HINS
 {
     InitRootDir();
 
-    using namespace LumberyardLauncher;
+    using namespace O3DELauncher;
 
     PlatformMainInfo mainInfo;
 

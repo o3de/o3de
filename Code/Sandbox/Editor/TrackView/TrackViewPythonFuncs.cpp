@@ -481,8 +481,6 @@ namespace
         default:
             throw std::runtime_error("Unsupported key type");
         }
-
-        return AZStd::any();
     }
 
     AZStd::any PyTrackViewGetKeyValue(const char* paramName, int trackIndex, int keyIndex, const char* nodeName, const char* parentDirectorName)

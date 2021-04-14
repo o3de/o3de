@@ -32,7 +32,7 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/ToolsComponents/ComponentMimeData.h>
 #include <AzToolsFramework/ToolsComponents/EditorInspectorComponentBus.h>
-#include <AzQtComponents/Components/LumberyardStylesheet.h>
+#include <AzQtComponents/Components/O3DEStylesheet.h>
 
 #include <QtWidgets/QWidget>
 #include <QtGui/QIcon>

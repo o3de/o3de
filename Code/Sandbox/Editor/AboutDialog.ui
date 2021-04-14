@@ -29,7 +29,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>About Lumberyard Editor</string>
+   <string>About Open 3D Engine Editor</string>
   </property>
   <property name="styleSheet">
    <string notr="true">background-color: transparent</string>
@@ -92,7 +92,7 @@
        <item>
         <widget class="QLabel" name="m_transparentVersion">
          <property name="text">
-          <string>Lumberyard Editor</string>
+          <string>Open 3D Engine Editor</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>

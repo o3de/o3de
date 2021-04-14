@@ -65,7 +65,6 @@ protected:
 
     bool WaitForConnectionStateToBeEqual(AzFramework::AssetSystem::AssetProcessorConnection& connectionObject, AzFramework::SocketConnection::EConnectionState desired)
     {
-        int tries = 0;
         auto started = AZStd::chrono::system_clock::now();
         while (connectionObject.GetConnectionState() != desired )
         {

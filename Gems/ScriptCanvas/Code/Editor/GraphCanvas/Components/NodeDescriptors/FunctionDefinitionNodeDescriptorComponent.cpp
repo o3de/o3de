@@ -96,7 +96,13 @@ namespace ScriptCanvasEditor
 
     bool FunctionDefinitionNodeDescriptorComponent::OnMouseDoubleClick(const QGraphicsSceneMouseEvent*)
     {
-        return RenameDialog(this);
+        bool rename = RenameDialog(this);
+
+        ScriptCanvas::ScriptCanvasId activeScriptCanvasId;
+        ScriptCanvasEditor::GeneralRequestBus::BroadcastResult(activeScriptCanvasId, &ScriptCanvasEditor::GeneralRequests::GetActiveScriptCanvasId);
+        GeneralRequestBus::Broadcast(&GeneralRequests::PostUndoPoint, activeScriptCanvasId);
+
+        return rename;
     }
 }
 

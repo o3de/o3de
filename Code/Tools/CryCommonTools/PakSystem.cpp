@@ -114,7 +114,7 @@ PakSystemFile* PakSystem::Open(const char* a_path, const char* a_mode)
             dirToSearch = PathHelpers::GetDirectory(dirToSearch);
 
             AZ::IO::LocalFileIO localFileIO;
-            bool foundOK = localFileIO.FindFiles(dirToSearch.c_str(), "*.pak", [&](const char* filePath) -> bool
+            localFileIO.FindFiles(dirToSearch.c_str(), "*.pak", [&](const char* filePath) -> bool
             {
                 const string foundFilename(filePath);
                 if (StringHelpers::EqualsIgnoreCase(PathHelpers::FindExtension(foundFilename), "pak"))

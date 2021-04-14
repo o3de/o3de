@@ -43,7 +43,6 @@ namespace LmbrCentral
                 ;
 
             behaviorContext->EBus<AudioPreloadComponentRequestBus>("AudioPreloadComponentRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Event("Load", &AudioPreloadComponentRequestBus::Events::Load)
                 ->Event("Unload", &AudioPreloadComponentRequestBus::Events::Unload)
                 ->Event("LoadPreload", &AudioPreloadComponentRequestBus::Events::LoadPreload)

@@ -1521,10 +1521,10 @@ namespace AssetProcessor
     //! Given a scan folder path, get its complete info
     const AssetProcessor::ScanFolderInfo* PlatformConfiguration::GetScanFolderByPath(const QString& scanFolderPath) const
     {
-        QString normalized = AssetUtilities::NormalizeFilePath(scanFolderPath);
+        AZ::IO::Path scanFolderPathView(scanFolderPath.toUtf8().constData());
         for (int pathIdx = 0; pathIdx < m_scanFolders.size(); ++pathIdx)
         {
-            if (QString::compare(m_scanFolders[pathIdx].ScanPath(), normalized, Qt::CaseSensitive) == 0)
+            if (AZ::IO::PathView(m_scanFolders[pathIdx].ScanPath().toUtf8().constData()) == scanFolderPathView)
             {
                 return &m_scanFolders[pathIdx];
             }

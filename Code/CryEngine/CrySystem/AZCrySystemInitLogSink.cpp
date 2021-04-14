@@ -35,7 +35,7 @@ namespace AZ
             }
 
             AZ::OSString msgBoxMessage;
-            msgBoxMessage.append("CrySystem could not initialize correctly for the following reason(s):");
+            msgBoxMessage.append("O3DE could not initialize correctly for the following reason(s):");
 
             for (const AZ::OSString& errMsg : m_errorStringsCollected)
             {
@@ -47,7 +47,7 @@ namespace AZ
             Trace::Output(nullptr, msgBoxMessage.c_str());
             Trace::Output(nullptr, "\n==================================================================\n");
 
-            EBUS_EVENT(AZ::NativeUI::NativeUIRequestBus, DisplayOkDialog, "CrySystem Initialization Failed", msgBoxMessage.c_str(), false);
+            EBUS_EVENT(AZ::NativeUI::NativeUIRequestBus, DisplayOkDialog, "O3DE Initialization Failed", msgBoxMessage.c_str(), false);
         }
     } // namespace Debug
 } // namespace AZ

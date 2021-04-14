@@ -204,9 +204,9 @@ namespace EMStudio
         mRemoveButton   = new QPushButton();
         mClearButton    = new QPushButton();
 
-        EMStudioManager::MakeTransparentButton(mAddButton,     "/Images/Icons/Plus.svg",   "Add a new node group");
-        EMStudioManager::MakeTransparentButton(mRemoveButton,  "/Images/Icons/Minus.svg",  "Remove selected node groups");
-        EMStudioManager::MakeTransparentButton(mClearButton,   "/Images/Icons/Clear.svg",  "Remove all node groups");
+        EMStudioManager::MakeTransparentButton(mAddButton,     "Images/Icons/Plus.svg",   "Add a new node group");
+        EMStudioManager::MakeTransparentButton(mRemoveButton,  "Images/Icons/Minus.svg",  "Remove selected node groups");
+        EMStudioManager::MakeTransparentButton(mClearButton,   "Images/Icons/Clear.svg",  "Remove all node groups");
 
         // add the buttons to the button layout
         QHBoxLayout* buttonLayout = new QHBoxLayout();

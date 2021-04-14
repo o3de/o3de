@@ -580,8 +580,6 @@ void COctreeNode::UpdateObjects(IRenderNode* pObj)
     AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::ThreeDEngineDetailed);
 
     float fObjMaxViewDistance = 0;
-    size_t numCasters = 0;
-    IObjManager* pObjManager = GetObjManager();
 
     bool bVegetHasAlphaTrans = false;
     int nFlags = pObj->GetRndFlags();
@@ -659,7 +657,6 @@ void COctreeNode::UpdateObjects(IRenderNode* pObj)
     }
 
     bool bUpdateParentShadowFlags = false;
-    bool bUpdateParentOcclusionFlags = false;
 
     // fill shadow casters list
     const bool bHasPerObjectShadow = GetCVars()->e_ShadowsPerObject && p3DEngine->GetPerObjectShadow(pObj);
@@ -1138,26 +1135,11 @@ bool CObjManager::IsBoxOccluded(const AABB& objBox,
     CVisAreaManager* pVisAreaManager = GetVisAreaManager();
     if (GetCVars()->e_OcclusionVolumes && pVisAreaManager && pVisAreaManager->IsOccludedByOcclVolumes(objBox, passInfo))
     {
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-        // do not set the lastOccludedMainFrameID because it is camera agnostic so the main pass might occlude
-        // objects that should only be occluded in the render scene to texture pass
-        if (!passInfo.IsRenderSceneToTexturePass())
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-        {
-            pOcclTestVars->nLastOccludedMainFrameID = mainFrameID;
-        }
+        pOcclTestVars->nLastOccludedMainFrameID = mainFrameID;
         return true;
     }
 
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    // don't use coverage buffer results if we are checking occlusion for a render to texture camera
-    // because the render to texture pass does not currently write to the coverage buffer and
-    // the frame IDs will not work correctly.
-    if (GetCVars()->e_CoverageBuffer && !passInfo.IsRenderSceneToTexturePass())
-#else
     if (GetCVars()->e_CoverageBuffer)
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-
     {
         return pOcclTestVars->nLastOccludedMainFrameID == mainFrameID - 1;
     }

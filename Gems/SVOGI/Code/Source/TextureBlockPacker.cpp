@@ -174,7 +174,6 @@ namespace SVOGI
 
         AZ::u32 dwW = m_width / nHS;
         AZ::u32 dwH = m_height / nHS;
-        AZ::u32 dwD = m_depth / nHS;
 
         for (AZ::u32 dwZ = rectUM.m_minZ; dwZ < rectUM.m_maxZ; ++dwZ)
         {

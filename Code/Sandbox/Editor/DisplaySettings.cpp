@@ -70,7 +70,6 @@ void CDisplaySettings::LoadRegistry()
 
 void CDisplaySettings::SetObjectHideMask(int hideMask)
 {
-    int prevMask = m_objectHideMask;
     m_objectHideMask = hideMask;
 
     gSettings.objectHideMask = m_objectHideMask;
@@ -87,7 +86,6 @@ void CDisplaySettings::PostInitApply()
 //////////////////////////////////////////////////////////////////////////
 void CDisplaySettings::SetRenderFlags(int flags)
 {
-    int prev = m_renderFlags;
     m_renderFlags = flags;
 
     if (!GetIEditor()->Get3DEngine())

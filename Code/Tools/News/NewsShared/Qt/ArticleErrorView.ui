@@ -168,7 +168,7 @@
              <string notr="true">a { text-decoration: underline; color: red }</string>
             </property>
             <property name="text">
-             <string>We couldn’t connect to the network or access our news database. To see the latest Lumberyard news, blogs, tutorials, and more, please visit the &lt;a href=&quot;http://aws.amazon.com/lumberyard/&quot;&gt;Lumberyard website&lt;/a&gt;.</string>
+             <string>We couldn’t connect to the network or access our news database. To see the latest Open 3D Engine news, blogs, tutorials, and more, please visit the &lt;a href=&quot;http://aws.amazon.com/lumberyard/&quot;&gt;Lumberyard website&lt;/a&gt;.</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>

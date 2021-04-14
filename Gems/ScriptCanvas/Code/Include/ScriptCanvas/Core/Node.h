@@ -975,7 +975,7 @@ protected:
         virtual void OnInputSignal(const SlotId& /*slot*/) {}
 
         //! Signal sent once the OwningScriptCanvasId is set.
-        virtual void OnGraphSet() {};
+        virtual void OnGraphSet() {}
 
         //! Signal sent when a Dynamic Group Display type is changed
         void SignalSlotDisplayTypeChanged(const SlotId& slotId, const Data::Type& dataType);

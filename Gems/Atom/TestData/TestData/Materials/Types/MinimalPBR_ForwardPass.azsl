@@ -43,6 +43,7 @@ struct VSOutput
 };
 
 #include <Atom/Features/PBR/LightingModel.azsli>
+#include <Atom/Features/Vertex/VertexHelper.azsli>
 
 VSOutput MinimalPBR_MainPassVS(VSInput IN)
 {
@@ -50,7 +51,7 @@ VSOutput MinimalPBR_MainPassVS(VSInput IN)
  
     float3 worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_position, 1.0)).xyz;
  
-    PbrVsHelper(IN, OUT, worldPosition);
+    VertexHelper(IN, OUT, worldPosition);
 
     return OUT;
 }

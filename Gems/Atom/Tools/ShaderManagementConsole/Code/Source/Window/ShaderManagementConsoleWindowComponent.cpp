@@ -174,7 +174,7 @@ namespace ShaderManagementConsole
                 watchFolder
             );
 
-            bool succeeded = assetDatabaseConnection.QueryDirectReverseProductDependenciesBySourceGuidSubId(
+            assetDatabaseConnection.QueryDirectReverseProductDependenciesBySourceGuidSubId(
                 materialTypeSourceAssetInfo.m_assetId.m_guid,
                 materialTypeSourceAssetInfo.m_assetId.m_subId,
                 [&](AzToolsFramework::AssetDatabase::ProductDatabaseEntry& entry) {

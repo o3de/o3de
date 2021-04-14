@@ -153,7 +153,6 @@ namespace AZ
                 break;
             }
 
-            auto& device = static_cast<Device&>(commandList.GetDevice());
             for (const auto& barrier : m_scopeBarriers[static_cast<uint32_t>(slot)])
             {
                 const VkMemoryBarrier* memoryBarriers = nullptr;

@@ -347,10 +347,12 @@ namespace AZ
                 MockSceneComponentApplication()
                 {
                     AZ::ComponentApplicationBus::Handler::BusConnect();
+                    AZ::Interface<AZ::ComponentApplicationRequests>::Register(this);
                 }
 
                 ~MockSceneComponentApplication()
                 {
+                    AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(this);
                     AZ::ComponentApplicationBus::Handler::BusDisconnect();
                 }
 
@@ -359,6 +361,8 @@ namespace AZ
                 MOCK_METHOD0(Destroy, void());
                 MOCK_METHOD1(RegisterComponentDescriptor, void(const AZ::ComponentDescriptor*));
                 MOCK_METHOD1(UnregisterComponentDescriptor, void(const AZ::ComponentDescriptor*));
+                MOCK_METHOD1(RegisterEntityAddedEventHandler, void(AZ::EntityAddedEvent::Handler&));
+                MOCK_METHOD1(RegisterEntityRemovedEventHandler, void(AZ::EntityRemovedEvent::Handler&));
                 MOCK_METHOD1(RemoveEntity, bool(AZ::Entity*));
                 MOCK_METHOD1(DeleteEntity, bool(const AZ::EntityId&));
                 MOCK_METHOD1(GetEntityName, AZStd::string(const AZ::EntityId&));

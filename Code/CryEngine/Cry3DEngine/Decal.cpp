@@ -253,8 +253,6 @@ void CDecal::Render(const float fCurTime, int nAfterWater, float fDistanceFading
         m_arrBigDecalRMCustomData[14] = vNormal.z * (m_fSize / m_fWSSize);
         m_arrBigDecalRMCustomData[15] = 0;
 
-        CStatObj* pBody = NULL;
-        bool bUseBending = GetCVars()->e_VegetationBending != 0;
 
         // draw complex decal using new indices and original object vertices
         pObj->m_fAlpha = fAlpha;

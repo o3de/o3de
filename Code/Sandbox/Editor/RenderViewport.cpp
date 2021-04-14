@@ -94,9 +94,6 @@
 AZ_CVAR(
     bool, ed_visibility_use, true, nullptr, AZ::ConsoleFunctorFlags::Null,
     "Enable/disable using the new IVisibilitySystem for Entity visibility determination");
-AZ_CVAR(
-    bool, ed_visibility_logTiming, false, nullptr, AZ::ConsoleFunctorFlags::Null,
-    "Output the timing of the new IVisibilitySystem query");
 
 CRenderViewport* CRenderViewport::m_pPrimaryViewport = nullptr;
 
@@ -1394,13 +1391,6 @@ void CRenderViewport::Update()
         auto start = std::chrono::steady_clock::now();
 
         m_entityVisibilityQuery.UpdateVisibility(GetCameraState());
-
-        if (ed_visibility_logTiming)
-        {
-            auto stop = std::chrono::steady_clock::now();
-            std::chrono::duration<double> diff = stop - start;
-            AZ_Printf("Visibility", "FindVisibleEntities (new) - Duration: %f", diff);
-        }
     }
 
     {
@@ -1556,7 +1546,6 @@ void CRenderViewport::OnEditorNotifyEvent(EEditorNotifyEvent event)
                 m_previousContext = SetCurrentContext();
             }
             SetCurrentCursor(STD_CURSOR_GAME);
-            AzFramework::InputSystemCursorConstraintRequestBus::Handler::BusConnect();
         }
     }
     break;
@@ -1564,7 +1553,6 @@ void CRenderViewport::OnEditorNotifyEvent(EEditorNotifyEvent event)
     case eNotify_OnEndGameMode:
         if (GetIEditor()->GetViewManager()->GetGameViewport() == this)
         {
-            AzFramework::InputSystemCursorConstraintRequestBus::Handler::BusDisconnect();
             SetCurrentCursor(STD_CURSOR_DEFAULT);
             if (m_renderer->GetCurrentContextHWND() != renderOverlayHWND())
             {
@@ -2422,9 +2410,7 @@ void CRenderViewport::SetWindowTitle(const AZStd::string& title)
 
 AzFramework::WindowSize CRenderViewport::GetClientAreaSize() const
 {
-    const QWidget* window = this->window();
-    QSize windowSize = window->size();
-    return AzFramework::WindowSize(windowSize.width(), windowSize.height());
+    return AzFramework::WindowSize(m_rcClient.width(), m_rcClient.height());
 }
 
 
@@ -2462,10 +2448,14 @@ void CRenderViewport::ConnectViewportInteractionRequestBus()
     AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler::BusConnect(GetViewportId());
     AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequestBus::Handler::BusConnect(GetViewportId());
     m_viewportUi.ConnectViewportUiBus(GetViewportId());
+
+    AzFramework::InputSystemCursorConstraintRequestBus::Handler::BusConnect();
 }
 
 void CRenderViewport::DisconnectViewportInteractionRequestBus()
 {
+    AzFramework::InputSystemCursorConstraintRequestBus::Handler::BusDisconnect();
+
     m_viewportUi.DisconnectViewportUiBus();
     AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequestBus::Handler::BusDisconnect();
     AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler::BusDisconnect();
@@ -4615,6 +4605,22 @@ void CRenderViewport::BuildDragDropContext(AzQtComponents::ViewportDragContext& 
 {
     const auto scaledPoint = WidgetToViewport(pt);
     QtViewport::BuildDragDropContext(context, scaledPoint);
+}
+
+void* CRenderViewport::GetSystemCursorConstraintWindow() const
+{
+    AzFramework::SystemCursorState systemCursorState = AzFramework::SystemCursorState::Unknown;
+
+    AzFramework::InputSystemCursorRequestBus::EventResult(
+        systemCursorState,
+        AzFramework::InputDeviceMouse::Id,
+        &AzFramework::InputSystemCursorRequests::GetSystemCursorState);
+
+    const bool systemCursorConstrained =
+        (systemCursorState == AzFramework::SystemCursorState::ConstrainedAndHidden ||
+         systemCursorState == AzFramework::SystemCursorState::ConstrainedAndVisible);
+
+    return systemCursorConstrained ? renderOverlayHWND() : nullptr;
 }
 
 void CRenderViewport::RestoreViewportAfterGameMode()

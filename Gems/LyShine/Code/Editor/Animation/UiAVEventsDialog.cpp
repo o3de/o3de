@@ -13,7 +13,7 @@
 
 #include "UiCanvasEditor_precompiled.h"
 #include "UiAVEventsDialog.h"
-#include <Animation/ui_UiAVEventsDialog.h>
+#include <Editor/Animation/ui_UiAVEventsDialog.h>
 #include "UiAnimViewUndo.h"
 #include "StringDlg.h"
 #include "UiAnimViewSequence.h"

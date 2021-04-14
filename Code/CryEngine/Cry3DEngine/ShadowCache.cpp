@@ -30,15 +30,6 @@ void ShadowCache::InitShadowFrustum(ShadowMapFrustum*& pFr, int nLod, int nFirst
         return;
     }
 
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    // ShadowCache not supported in render scene to texture passes yet.
-    // It is very common to jump large distances.
-    if (passInfo.IsRenderSceneToTexturePass())
-    {
-        return;
-    }
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-
     if (!pFr)
     {
         pFr = new ShadowMapFrustum;

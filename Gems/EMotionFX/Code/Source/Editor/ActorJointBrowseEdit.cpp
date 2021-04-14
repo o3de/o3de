@@ -52,7 +52,6 @@ namespace EMStudio
             AZ_Warning("EMotionFX", false, "Cannot open joint selection window. Please select an actor instance first.");
             return;
         }
-        const EMotionFX::Actor* actor = actorInstance->GetActor();
 
         CommandSystem::SelectionList selectionList;
         for (const SelectionItem& selectedJoint : m_selectedJoints)

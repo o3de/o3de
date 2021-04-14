@@ -408,7 +408,6 @@ namespace EMStudio
 
         QSettings settings(filename, QSettings::IniFormat, (QWidget*)GetManager()->GetMainWindow());
 
-        int32 version   = settings.value("version", -1).toInt();
         mFilename       = filename;
 
         AZStd::string commandsString = FromQtString(settings.value("startScript", "").toString());

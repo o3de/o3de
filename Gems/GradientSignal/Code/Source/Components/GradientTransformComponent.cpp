@@ -113,7 +113,6 @@ namespace GradientSignal
         {
             behaviorContext->Class<GradientTransformConfig>()
                 ->Constructor()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Property("advancedMode", BehaviorValueProperty(&GradientTransformConfig::m_advancedMode))
                 ->Property("allowReference", BehaviorValueProperty(&GradientTransformConfig::m_allowReference))
@@ -227,7 +226,6 @@ namespace GradientSignal
             behaviorContext->Class<GradientTransformComponent>()->RequestBus("GradientTransformModifierRequestBus");
 
             behaviorContext->EBus<GradientTransformModifierRequestBus>("GradientTransformModifierRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Event("GetAllowReference", &GradientTransformModifierRequestBus::Events::GetAllowReference)
                 ->Event("SetAllowReference", &GradientTransformModifierRequestBus::Events::SetAllowReference)

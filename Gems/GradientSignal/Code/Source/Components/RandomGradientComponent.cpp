@@ -54,7 +54,6 @@ namespace GradientSignal
         {
             behaviorContext->Class<RandomGradientConfig>()
                 ->Constructor()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Property("randomSeed", BehaviorValueProperty(&RandomGradientConfig::m_randomSeed))
                 ;
@@ -96,7 +95,6 @@ namespace GradientSignal
             behaviorContext->Class<RandomGradientComponent>()->RequestBus("RandomGradientRequestBus");
 
             behaviorContext->EBus<RandomGradientRequestBus>("RandomGradientRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Event("GetRandomSeed", &RandomGradientRequestBus::Events::GetRandomSeed)
                 ->Event("SetRandomSeed", &RandomGradientRequestBus::Events::SetRandomSeed)

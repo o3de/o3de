@@ -94,6 +94,8 @@ class CrashpadClient {
   //!     a background thread. Optionally, WaitForHandlerStart() can be used at
   //!     a suitable time to retreive the result of background startup. This
   //!     option is only used on Windows.
+  //! \param[in] attachments Vector that stores file paths that should be
+  //!     captured with each report at the time of the crash.
   //!
   //! \return `true` on success, `false` on failure with a message logged.
   bool StartHandler(const base::FilePath& handler,
@@ -103,7 +105,8 @@ class CrashpadClient {
                     const std::map<std::string, std::string>& annotations,
                     const std::vector<std::string>& arguments,
                     bool restartable,
-                    bool asynchronous_start);
+                    bool asynchronous_start,
+                    const std::vector<base::FilePath>& attachments = {});
 
 #if defined(OS_MACOSX) || DOXYGEN
   //! \brief Sets the process’ crash handler to a Mach service registered with

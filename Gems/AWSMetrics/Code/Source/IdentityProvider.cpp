@@ -27,7 +27,7 @@ namespace AWSMetrics
     AZStd::string IdentityProvider::GetEngineVersion()
     {
         static constexpr const char* EngineConfigFilePath = "@root@/engine.json";
-        static constexpr const char* EngineVersionJsonKey = "LumberyardVersion";
+        static constexpr const char* EngineVersionJsonKey = "O3DEVersion";
 
         AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetDirectInstance();
         if (!fileIO)

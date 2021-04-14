@@ -142,13 +142,11 @@ namespace AZ
             return allocationInfo;
         }
 
-        RHI::ResultCode StreamingImagePool::InitInternal(RHI::Device& deviceBase, [[maybe_unused]] const RHI::StreamingImagePoolDescriptor& descriptor)
+        RHI::ResultCode StreamingImagePool::InitInternal([[maybe_unused]] RHI::Device& deviceBase, [[maybe_unused]] const RHI::StreamingImagePoolDescriptor& descriptor)
         {
             AZ_TRACE_METHOD();
 
-            Device& device = static_cast<Device&>(deviceBase);
 
-            ID3D12DeviceX* dx12Device = device.GetDevice();
 
 #ifdef AZ_RHI_USE_TILED_RESOURCES
             {
@@ -408,7 +406,6 @@ namespace AZ
                 resolver->OnResourceShutdown(resourceBase);
             }
 
-            const RHI::ImageDescriptor& descriptor = image.GetDescriptor();
 
             RHI::HeapMemoryUsage& memoryUsage = m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
             memoryUsage.m_residentInBytes -= image.m_residentSizeInBytes;

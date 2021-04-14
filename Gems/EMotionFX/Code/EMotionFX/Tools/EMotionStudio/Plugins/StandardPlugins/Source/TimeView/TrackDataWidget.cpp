@@ -1642,8 +1642,6 @@ namespace EMStudio
             const int numSteps      = numDegrees / 15;
             float delta             = numSteps / 10.0f;
 
-            double zoomDelta = delta * 4 * MCore::Clamp(plugin->GetTimeScale() / 2.0, 1.0, 22.0);
-
             if (EMotionFX::GetRecorder().GetIsRecording() == false)
             {
                 if (delta > 0)

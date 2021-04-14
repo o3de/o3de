@@ -280,7 +280,7 @@ public:
     virtual CViewport *asCViewport() { return this; }
 
 protected:
-    CLayoutViewPane* m_viewPane;
+    CLayoutViewPane* m_viewPane = nullptr;
     CViewManager* m_viewManager;
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     // Viewport matrix.
