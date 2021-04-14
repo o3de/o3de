@@ -31,7 +31,6 @@ ly_add_target(
             Include
             Source
             3rdParty/ACES
-            ../External/ImGui
     COMPILE_DEFINITIONS
         PRIVATE
             IMGUI_DISABLE_OBSOLETE_FUNCTIONS

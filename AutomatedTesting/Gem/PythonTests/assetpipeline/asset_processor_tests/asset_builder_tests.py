@@ -25,8 +25,8 @@ from ..ap_fixtures.asset_processor_fixture import asset_processor as asset_proce
 from ..ap_fixtures.ap_setup_fixture import ap_setup_fixture as ap_setup_fixture
 
 # Import LyShared
-import ly_test_tools.lumberyard.pipeline_utils as utils
-from ly_test_tools.lumberyard.asset_processor import ASSET_PROCESSOR_PLATFORM_MAP
+import ly_test_tools.o3de.pipeline_utils as utils
+from ly_test_tools.o3de.asset_processor import ASSET_PROCESSOR_PLATFORM_MAP
 # Use the following logging pattern to hook all test logging together:
 logger = logging.getLogger(__name__)
 # Configuring the logging is done in ly_test_tools at the following location:

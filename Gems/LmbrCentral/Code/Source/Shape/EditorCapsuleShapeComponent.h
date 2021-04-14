@@ -38,7 +38,6 @@ namespace LmbrCentral
         {
             EditorBaseShapeComponent::GetProvidedServices(provided);
             provided.push_back(AZ_CRC("CapsuleShapeService", 0x9bc1122c));
-            provided.push_back(AZ_CRC("AreaLightShapeService", 0x68ea78dc));
         }
 
         // EditorComponentBase

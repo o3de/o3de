@@ -68,16 +68,16 @@ namespace EMStudio
 
         QToolBar* toolBar = new QToolBar(this);
 
-        m_addAction = toolBar->addAction(MysticQt::GetMysticQt()->FindIcon("/Images/Icons/Plus.svg"),
+        m_addAction = toolBar->addAction(MysticQt::GetMysticQt()->FindIcon("Images/Icons/Plus.svg"),
             tr("Add new motion event preset"),
             this, &MotionEventPresetsWidget::AddMotionEventPreset);
 
-        m_loadAction = toolBar->addAction(MysticQt::GetMysticQt()->FindIcon("/Images/Icons/Open.svg"),
+        m_loadAction = toolBar->addAction(MysticQt::GetMysticQt()->FindIcon("Images/Icons/Open.svg"),
             tr("Load motion event preset config file"),
             this, [=]() { LoadPresets(); /* use lambda so that we get the default value for the showDialog parameter */ });
 
         m_saveMenuAction = toolBar->addAction(
-            MysticQt::GetMysticQt()->FindIcon("/Images/Icons/Save.svg"),
+            MysticQt::GetMysticQt()->FindIcon("Images/Icons/Save.svg"),
             tr("Save motion event preset config"));
         {
             QToolButton* toolButton = qobject_cast<QToolButton*>(toolBar->widgetForAction(m_saveMenuAction));

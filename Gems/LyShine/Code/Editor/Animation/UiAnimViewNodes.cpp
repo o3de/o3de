@@ -301,7 +301,7 @@ enum EMenuItem
 
 // The 'MI' represents a Menu Item.
 
-#include <Animation/ui_UiAnimViewNodes.h>
+#include <Editor/Animation/ui_UiAnimViewNodes.h>
 
 
 //////////////////////////////////////////////////////////////////////////

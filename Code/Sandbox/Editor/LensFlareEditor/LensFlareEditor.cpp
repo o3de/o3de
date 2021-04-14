@@ -1173,7 +1173,7 @@ LensFlareItemTreeModel::LensFlareItemTreeModel(CDatabaseFrameWnd* pParent)
 QStringList LensFlareItemTreeModel::mimeTypes() const
 {
     QStringList mimeTypes = LibraryItemTreeModel::mimeTypes();
-    mimeTypes << QStringLiteral("application/x-lumberyard-flaretypes");
+    mimeTypes << QStringLiteral("application/x-o3de-flaretypes");
     return mimeTypes;
 }
 
@@ -1184,9 +1184,9 @@ bool LensFlareItemTreeModel::dropMimeData(const QMimeData* data, Qt::DropAction 
         return true;
     }
 
-    if (data->hasFormat(QStringLiteral("application/x-lumberyard-flaretypes")))
+    if (data->hasFormat(QStringLiteral("application/x-o3de-flaretypes")))
     {
-        QByteArray encoded = data->data(QStringLiteral("application/x-lumberyard-flaretypes"));
+        QByteArray encoded = data->data(QStringLiteral("application/x-o3de-flaretypes"));
         QDataStream stream(&encoded, QIODevice::ReadOnly);
 
         while (!stream.atEnd())

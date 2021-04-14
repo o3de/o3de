@@ -53,7 +53,6 @@ namespace LmbrCentral
     {
         EditorBaseShapeComponent::GetProvidedServices(provided);
         provided.push_back(AZ_CRC("QuadShapeService", 0xe449b0fc));
-        provided.push_back(AZ_CRC("AreaLightShapeService", 0x68ea78dc));
     }
 
     void EditorQuadShapeComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)

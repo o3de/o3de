@@ -111,7 +111,10 @@ int32 CFFont::Release()
                 m_pCryFont = nullptr;
             }
 
-            gEnv->pRenderer->DeleteFont(this);
+            if (gEnv->pRenderer)
+            {
+                gEnv->pRenderer->DeleteFont(this);
+            }
             return 0;
         }
         return nRef;

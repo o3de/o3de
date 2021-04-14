@@ -165,7 +165,7 @@ namespace LyShineEditor
     {
         if (AZStd::wildcard_match("*.uicanvas", fullSourceFileName))
         {
-            openers.push_back({ "Lumberyard_UICanvas_Editor",
+            openers.push_back({ "O3DE_UICanvas_Editor",
                 "Open in UI Canvas Editor...",
                 QIcon(),
                 [](const char* fullSourceFileNameInCallback, const AZ::Uuid& /*sourceUUID*/)

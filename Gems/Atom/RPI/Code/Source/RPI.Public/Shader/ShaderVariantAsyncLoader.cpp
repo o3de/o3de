@@ -103,7 +103,6 @@ namespace AZ
                             pairItor->m_shaderAsset->GetShaderOptionGroupLayout(), pairItor->m_shaderVariantId);
                         if (searchResult.IsRoot())
                         {
-                            AZ_Error(LogName, false, "Searching for a variant should never yield the root variant: %s", shaderVariantTreeAsset.GetHint().c_str());
                             pairItor = newShaderVariantPendingRequests.erase(pairItor);
                             continue;
                         }
