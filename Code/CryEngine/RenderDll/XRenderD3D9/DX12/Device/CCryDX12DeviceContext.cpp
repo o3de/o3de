@@ -525,9 +525,10 @@ void CCryDX12DeviceContext::DebugPrintResources(DX12::CommandMode commandMode)
     DX12_LOG("Resource Heap Descriptor Tables:");
 
     auto& state = m_PipelineState[commandMode];
-    UINT stateFlags = state.m_StateFlags;
+#ifdef GFX_DEBUG
     UINT resourceDescriptorOffset = 0;
     UINT samplerDescriptorOffset = 0;
+#endif
 
     // Bind constant buffers
     for (const DX12::ResourceLayoutBinding& resourceBinding : layout.m_TableResources)
@@ -535,9 +536,9 @@ void CCryDX12DeviceContext::DebugPrintResources(DX12::CommandMode commandMode)
         const DX12::EShaderStage i = resourceBinding.ShaderStage;
         if (resourceBinding.ViewType == D3D12_DESCRIPTOR_RANGE_TYPE_CBV)
         {
-            CCryDX12Buffer* buffer = state.Stages[i].ConstantBufferViews.Get(resourceBinding.ShaderSlot);
             auto bindRange = state.Stages[i].ConstBufferBindRange.Get(resourceBinding.ShaderSlot);
 #ifdef GFX_DEBUG
+            CCryDX12Buffer* buffer = state.Stages[i].ConstantBufferViews.Get(resourceBinding.ShaderSlot);
             AZ_Assert(buffer, "ConstantBuffer is required by the PSO but has not been set!");
             AZ_Assert(resourceDescriptorOffset == resourceBinding.DescriptorOffset, "ConstantBuffer offset has shifted: resource mapping invalid!");
 #endif
@@ -555,8 +556,8 @@ void CCryDX12DeviceContext::DebugPrintResources(DX12::CommandMode commandMode)
         }
         else if (resourceBinding.ViewType == D3D12_DESCRIPTOR_RANGE_TYPE_SRV)
         {
-            CCryDX12ShaderResourceView* resource = state.Stages[i].ShaderResourceViews.Get(resourceBinding.ShaderSlot);
 #ifdef GFX_DEBUG
+            CCryDX12ShaderResourceView* resource = state.Stages[i].ShaderResourceViews.Get(resourceBinding.ShaderSlot);
             AZ_Assert(resource, "ShaderResourceView is required by the PSO but has not been set!");
             AZ_Assert(resourceDescriptorOffset == resourceBinding.DescriptorOffset, "ShaderResourceView offset has shifted: resource mapping invalid!");
 #endif
@@ -574,8 +575,8 @@ void CCryDX12DeviceContext::DebugPrintResources(DX12::CommandMode commandMode)
         }
         else if (resourceBinding.ViewType == D3D12_DESCRIPTOR_RANGE_TYPE_UAV)
         {
-            CCryDX12UnorderedAccessView* resource = state.Stages[i].UnorderedAccessViews.Get(resourceBinding.ShaderSlot);
 #ifdef GFX_DEBUG
+            CCryDX12UnorderedAccessView* resource = state.Stages[i].UnorderedAccessViews.Get(resourceBinding.ShaderSlot);
             AZ_Assert(resource, "UnorderedAccessView is required by the PSO but has not been set!");
             AZ_Assert(resourceDescriptorOffset == resourceBinding.DescriptorOffset, "UnorderedAccessView offset has shifted: resource mapping invalid!");
 #endif
@@ -599,8 +600,8 @@ void CCryDX12DeviceContext::DebugPrintResources(DX12::CommandMode commandMode)
         const DX12::EShaderStage i = samplerBinding.ShaderStage;
         AZ_Assert(samplerBinding.ViewType == D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, "");
         {
-            CCryDX12SamplerState* sampler = state.Stages[i].SamplerState.Get(samplerBinding.ShaderSlot);
 #ifdef GFX_DEBUG
+            CCryDX12SamplerState* sampler = state.Stages[i].SamplerState.Get(samplerBinding.ShaderSlot);
             AZ_Assert(sampler, "Sampler is required by the PSO but has not been set!");
             AZ_Assert(samplerDescriptorOffset == samplerBinding.DescriptorOffset, "Sampler offset has shifted: resource mapping invalid!");
 #endif
@@ -1135,11 +1136,10 @@ void STDMETHODCALLTYPE CCryDX12DeviceContext::Unmap(
 
     DX12_LOG("Unmapping resource: %p (%d)", pResource, Subresource);
     ICryDX12Resource* dx12Resource = DX12_EXTRACT_ICRYDX12RESOURCE(pResource);
-    DX12::Resource& resource = dx12Resource->GetDX12Resource();
 
     // NOTE: Don't know MapType, can't optimize writeRange!
 
-    AZ_Assert(!D3D12IsLayoutOpaque(resource.GetDesc().Layout), "Opaque layouts are unmappable until 12.2!");
+    AZ_Assert(!D3D12IsLayoutOpaque(dx12Resource->GetDX12Resource().GetDesc().Layout), "Opaque layouts are unmappable until 12.2!");
     dx12Resource->GetD3D12Resource()->Unmap(Subresource, NULL);
 }
 
@@ -1418,7 +1418,8 @@ HRESULT STDMETHODCALLTYPE CCryDX12DeviceContext::GetData(
             FlushToFence(pEventQuery->GetFenceValue());
         }
 
-        return (*reinterpret_cast<BOOL*>(pData) = bComplete) ? S_OK : S_FALSE;
+        *reinterpret_cast<BOOL*>(pData) = bComplete;
+        return bComplete ? S_OK : S_FALSE;
     }
     else if (desc.Query == D3D11_QUERY_TIMESTAMP_DISJOINT)
     {
@@ -1786,7 +1787,6 @@ void STDMETHODCALLTYPE CCryDX12DeviceContext::UploadResource(
     DX12_FUNC_LOG
     AZ_TRACE_METHOD();
 
-    ID3D12Resource* pDstResource12 = pDstResource->GetD3D12Resource();
     DX12::Resource& dstResource = pDstResource->GetDX12Resource();
     DX12::Resource::InitialData* id = dstResource.GetOrCreateInitialData();
 
@@ -1907,8 +1907,10 @@ void STDMETHODCALLTYPE CCryDX12DeviceContext::ClearUnorderedAccessViewUint(
     DX12_FUNC_LOG
 
     DX12::ResourceView* view = DX12_EXTRACT_DX12VIEW(pUnorderedAccessView);
+#ifndef NDEBUG
     CCryDX12UnorderedAccessView* uav = reinterpret_cast<CCryDX12UnorderedAccessView*>(pUnorderedAccessView);
     DX12_LOG("Clearing unordered access view [int]: %p %s", pUnorderedAccessView, uav->GetResourceName().c_str());
+#endif
 
     m_DirectCommandList->ClearUnorderedAccessView(*view, Values);
 }
@@ -1920,8 +1922,10 @@ void STDMETHODCALLTYPE CCryDX12DeviceContext::ClearUnorderedAccessViewFloat(
     DX12_FUNC_LOG
 
     DX12::ResourceView* view = DX12_EXTRACT_DX12VIEW(pUnorderedAccessView);
+#ifndef NDEBUG
     CCryDX12UnorderedAccessView* uav = reinterpret_cast<CCryDX12UnorderedAccessView*>(pUnorderedAccessView);
     DX12_LOG("Clearing unordered access view [float]: %p %s", pUnorderedAccessView, uav->GetResourceName().c_str());
+#endif
 
     m_DirectCommandList->ClearUnorderedAccessView(*view, Values);
 }
@@ -1935,8 +1939,10 @@ void STDMETHODCALLTYPE CCryDX12DeviceContext::ClearDepthStencilView(
     DX12_FUNC_LOG
 
     DX12::ResourceView* view = DX12_EXTRACT_DX12VIEW(pDepthStencilView);
+#ifndef NDEBUG
     CCryDX12DepthStencilView* dsv = reinterpret_cast<CCryDX12DepthStencilView*>(pDepthStencilView);
     DX12_LOG("Clearing depth stencil view: %p %s", pDepthStencilView, dsv->GetResourceName().c_str());
+#endif
 
     m_DirectCommandList->ClearDepthStencilView(*view, D3D12_CLEAR_FLAGS(ClearFlags), Depth, Stencil);
 }
@@ -2885,8 +2891,10 @@ void STDMETHODCALLTYPE CCryDX12DeviceContext::ClearRectsRenderTargetView(
     DX12_FUNC_LOG
 
     DX12::ResourceView* view = DX12_EXTRACT_DX12VIEW(pRenderTargetView);
+#ifndef NDEBUG
     CCryDX12RenderTargetView* rtv = reinterpret_cast<CCryDX12RenderTargetView*>(pRenderTargetView);
     DX12_LOG("Clearing render target view: %p %s", pRenderTargetView, rtv->GetResourceName().c_str());
+#endif
 
     m_DirectCommandList->ClearRenderTargetView(*view, ColorRGBA, NumRects, pRects);
 }
@@ -2900,8 +2908,10 @@ void STDMETHODCALLTYPE CCryDX12DeviceContext::ClearRectsUnorderedAccessViewUint(
     DX12_FUNC_LOG
 
     DX12::ResourceView* view = DX12_EXTRACT_DX12VIEW(pUnorderedAccessView);
+#ifndef NDEBUG
     CCryDX12UnorderedAccessView* uav = reinterpret_cast<CCryDX12UnorderedAccessView*>(pUnorderedAccessView);
     DX12_LOG("Clearing unordered access view [int]: %p %s", pUnorderedAccessView, uav->GetResourceName().c_str());
+#endif
 
     m_DirectCommandList->ClearUnorderedAccessView(*view, Values, NumRects, pRects);
 }
@@ -2915,8 +2925,10 @@ void STDMETHODCALLTYPE CCryDX12DeviceContext::ClearRectsUnorderedAccessViewFloat
     DX12_FUNC_LOG
 
     DX12::ResourceView* view = DX12_EXTRACT_DX12VIEW(pUnorderedAccessView);
+#ifndef NDEBUG
     CCryDX12UnorderedAccessView* uav = reinterpret_cast<CCryDX12UnorderedAccessView*>(pUnorderedAccessView);
     DX12_LOG("Clearing unordered access view [float]: %p %s", pUnorderedAccessView, uav->GetResourceName().c_str());
+#endif
 
     m_DirectCommandList->ClearUnorderedAccessView(*view, Values, NumRects, pRects);
 }
@@ -2932,8 +2944,10 @@ void STDMETHODCALLTYPE CCryDX12DeviceContext::ClearRectsDepthStencilView(
     DX12_FUNC_LOG
 
     DX12::ResourceView* view = DX12_EXTRACT_DX12VIEW(pDepthStencilView);
+#ifndef NDEBUG
     CCryDX12DepthStencilView* dsv = reinterpret_cast<CCryDX12DepthStencilView*>(pDepthStencilView);
     DX12_LOG("Clearing depth stencil view: %p %s", pDepthStencilView, dsv->GetResourceName().c_str());
+#endif
 
     m_DirectCommandList->ClearDepthStencilView(*view, D3D12_CLEAR_FLAGS(ClearFlags), Depth, Stencil, NumRects, pRects);
 }

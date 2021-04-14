@@ -21,7 +21,7 @@ namespace AzFramework
     {
         AZStd::string GetPersistentName()
         {
-            AZStd::string persistentName = "Lumberyard";
+            AZStd::string persistentName = "Open 3D Engine";
 
             char procPath[AZ_MAX_PATH_LEN];
             AZ::Utils::GetExecutablePathReturnType ret = AZ::Utils::GetExecutablePath(procPath, AZ_MAX_PATH_LEN);

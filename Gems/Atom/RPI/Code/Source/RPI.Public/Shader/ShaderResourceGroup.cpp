@@ -288,6 +288,11 @@ namespace AZ
             return false;
         }
 
+        bool ShaderResourceGroup::SetImageViewUnboundedArray(RHI::ShaderInputImageUnboundedArrayIndex inputIndex, AZStd::array_view<const RHI::ImageView*> imageViews)
+        {
+            return m_data.SetImageViewUnboundedArray(inputIndex, imageViews);
+        }
+
         bool ShaderResourceGroup::SetBufferView(RHI::ShaderInputNameIndex& inputIndex, const RHI::BufferView* bufferView, uint32_t arrayIndex)
         {
             if (inputIndex.ValidateOrFindBufferIndex(GetLayout()))
@@ -332,6 +337,11 @@ namespace AZ
                 return isValidAll;
             }
             return false;
+        }
+
+        bool ShaderResourceGroup::SetBufferViewUnboundedArray(RHI::ShaderInputBufferUnboundedArrayIndex inputIndex, AZStd::array_view<const RHI::BufferView*> bufferViews)
+        {
+            return m_data.SetBufferViewUnboundedArray(inputIndex, bufferViews);
         }
 
         bool ShaderResourceGroup::SetSampler(RHI::ShaderInputNameIndex& inputIndex, const RHI::SamplerState& sampler, uint32_t arrayIndex)

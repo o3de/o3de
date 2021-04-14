@@ -98,9 +98,9 @@ namespace AZ
                 {
                     exponentiationPass->SetShadowmapType(Shadow::ShadowmapType::Directional);
                 }
-                else if (m_lightTypeName == Name("spot"))
+                else if (m_lightTypeName == Name("projected"))
                 {
-                    exponentiationPass->SetShadowmapType(Shadow::ShadowmapType::Spot);
+                    exponentiationPass->SetShadowmapType(Shadow::ShadowmapType::Projected);
                 }
                 else
                 {

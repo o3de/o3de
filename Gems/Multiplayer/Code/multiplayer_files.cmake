@@ -20,8 +20,12 @@ set(FILES
     Source/AutoGen/AutoComponent_Source.jinja
     Source/AutoGen/AutoComponent_Common.jinja
     Source/AutoGen/AutoComponentTypes_Header.jinja
+    Source/AutoGen/AutoComponentTypes_Source.jinja
+    Source/AutoGen/LocalPredictionPlayerInputComponent.AutoComponent.xml
     Source/AutoGen/Multiplayer.AutoPackets.xml
     Source/AutoGen/NetworkTransformComponent.AutoComponent.xml
+    Source/Components/LocalPredictionPlayerInputComponent.cpp
+    Source/Components/LocalPredictionPlayerInputComponent.h
     Source/Components/MultiplayerComponent.cpp
     Source/Components/MultiplayerComponent.h
     Source/Components/MultiplayerController.cpp
@@ -34,21 +38,9 @@ set(FILES
     Source/ConnectionData/ServerToClientConnectionData.cpp
     Source/ConnectionData/ServerToClientConnectionData.h
     Source/ConnectionData/ServerToClientConnectionData.inl
-    Source/ConnectionData/ServerToServerConnectionData.cpp
-    Source/ConnectionData/ServerToServerConnectionData.h
-    Source/ConnectionData/ServerToServerConnectionData.inl
     Source/EntityDomains/FullOwnershipEntityDomain.cpp
     Source/EntityDomains/FullOwnershipEntityDomain.h
-    Source/EntityDomains/GlobalEntityDomain.cpp
-    Source/EntityDomains/GlobalEntityDomain.h
     Source/EntityDomains/IEntityDomain.h
-    Source/EntityDomains/RoundRobinEntityDomain.cpp
-    Source/EntityDomains/RoundRobinEntityDomain.h
-    Source/EntityDomains/SpatialEntityDomain.cpp
-    Source/EntityDomains/SpatialEntityDomain.h
-    Source/EntityDomains/SpatialEntityDomain.inl
-    Source/EntityDomains/SpatialMapPartitioner.h
-    Source/EntityDomains/SpatialMapPartitioner.cpp
     Source/NetworkEntity/EntityReplication/EntityReplicationManager.cpp
     Source/NetworkEntity/EntityReplication/EntityReplicationManager.h
     Source/NetworkEntity/EntityReplication/EntityReplicator.cpp
@@ -92,6 +84,4 @@ set(FILES
     Source/ReplicationWindows/IReplicationWindow.h
     Source/ReplicationWindows/ServerToClientReplicationWindow.cpp
     Source/ReplicationWindows/ServerToClientReplicationWindow.h
-    Source/ReplicationWindows/ServerToServerReplicationWindow.cpp
-    Source/ReplicationWindows/ServerToServerReplicationWindow.h
 )

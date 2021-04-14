@@ -120,7 +120,7 @@ MaterialBrowserWidget::MaterialBrowserWidget(QWidget* parent)
     connect(m_ui->treeView, &QWidget::customContextMenuRequested, this, [=](const QPoint& point)
         {
             CMaterialBrowserRecord record;
-            bool found = TryGetSelectedRecord(record);
+            TryGetSelectedRecord(record);
             ShowContextMenu(record, point);
         });
 
@@ -416,8 +416,6 @@ void MaterialBrowserWidget::SelectItem(IDataBaseItem* pItem, [[maybe_unused]] ID
     {
         return;
     }
-
-    bool bFound = false;
 
     _smart_ptr<CMaterial> material = static_cast<CMaterial*>(pItem);
     SetSelectedItem(material, 0, true);

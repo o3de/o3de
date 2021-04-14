@@ -41,6 +41,11 @@ namespace AZ
             /// The root index of the SRG resource descriptor table (if it exists).
             RootParameterIndex m_resourceTable;
 
+            /// The root indices of the SRG unbounded array resource descriptor tables (if any).
+            /// Note that on DX12 we support at most one SRV and one UAV in a Srg.
+            static const uint32_t MaxUnboundedArrays = 2;
+            RootParameterIndex m_unboundedArrayResourceTables[MaxUnboundedArrays];
+
             /// The root index of the SRG sampler descriptor table (if it exists).
             RootParameterIndex m_samplerTable;
 

@@ -82,7 +82,7 @@ namespace AZ
             }
 
             RHI::RenderAttachmentLayout layout;
-            RHI::ResultCode result = builder.End(layout);
+            [[maybe_unused]] RHI::ResultCode result = builder.End(layout);
             AZ_Assert(result == RHI::ResultCode::Success, "RenderPass [%s] failed to create render attachment layout", GetPathName().GetCStr());
             return RHI::RenderAttachmentConfiguration{ layout, 0 };
         }

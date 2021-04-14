@@ -104,8 +104,6 @@ void CD3D9Renderer::DisplaySplash()
         GetObjectA(hImage, sizeof(bm), &bm);
         SelectObject(hDCBitmap, hImage);
 
-        DWORD x = rect.left + (((rect.right - rect.left) - bm.bmWidth) >> 1);
-        DWORD y = rect.top + (((rect.bottom - rect.top) - bm.bmHeight) >> 1);
 
 
         //    BitBlt(hDC, x, y, bm.bmWidth, bm.bmHeight, hDCBitmap, 0, 0, SRCCOPY);
@@ -266,7 +264,6 @@ bool CD3D9Renderer::CreateMSAADepthBuffer()
         if (m_RP.m_MSAAData.Type > 1 && !m_RP.m_MSAAData.m_pZBuffer)
         {
             // Create depth stencil texture
-            ID3D11Texture2D* pDepthStencil = NULL;
             D3D11_TEXTURE2D_DESC descDepth;
             ZeroStruct(descDepth);
             descDepth.Width = m_width;
@@ -446,7 +443,6 @@ bool CD3D9Renderer::ChangeResolution(int nNewWidth, int nNewHeight, int nNewColD
         nNewWidth = m_deskwidth;
         nNewHeight = m_deskheight;
     }
-    HRESULT hr = S_OK;
     if (bNeedReset)
     {
 #if defined(SUPPORT_DEVICE_INFO)
@@ -551,7 +547,7 @@ bool CD3D9Renderer::ChangeResolution(int nNewWidth, int nNewHeight, int nNewColD
     ICryFont* pCryFont = gEnv->pCryFont;
     if (pCryFont)
     {
-        IFFont* pFont = pCryFont->GetFont("default");
+        pCryFont->GetFont("default");
     }
 
     PostDeviceReset();
@@ -1150,7 +1146,6 @@ void CD3D9Renderer::ShutDown(bool bReInit)
 LRESULT CALLBACK LowLevelKeyboardProc (INT nCode, WPARAM wParam, LPARAM lParam)
 {
     KBDLLHOOKSTRUCT* pkbhs = (KBDLLHOOKSTRUCT*) lParam;
-    BOOL bControlKeyDown = 0;
     switch (nCode)
     {
     case HC_ACTION:
@@ -2089,7 +2084,6 @@ bool SPixFormat::CheckSupport(D3DFormat Format, const char* szDescr, [[maybe_unu
     {
         if (nOptions & (D3D11_FORMAT_SUPPORT_TEXTURE2D | D3D11_FORMAT_SUPPORT_TEXTURECUBE))
         {
-            bool canAutoGenMips = (nOptions & D3D11_FORMAT_SUPPORT_MIP_AUTOGEN) != 0;
             bool canReadSRGB = CTexture::IsDeviceFormatSRGBReadable(Format);
 
             //  TODO: check if need to allow other compressed formats to stay here formats here too?
@@ -2391,7 +2385,8 @@ HRESULT CALLBACK CD3D9Renderer::OnD3D11CreateDevice(D3DDevice* pd3dDevice)
     rd->m_bDeviceSupportsInstancing = true;
 #endif
 
-    if (rd->m_bDeviceSupportsVertexTexture = (rd->m_Features & RFT_HW_SM30) != 0)
+    rd->m_bDeviceSupportsVertexTexture = (rd->m_Features & RFT_HW_SM30);
+    if (rd->m_bDeviceSupportsVertexTexture != 0)
     {
         rd->m_Features |= RFT_HW_VERTEXTEXTURES;
     }

@@ -98,7 +98,6 @@ namespace Path
         const char*             szSourceDirectory(strSourceDirectory.c_str());
         const char*             pchCurrentPosition(szSourceDirectory);
         const char*             pchLastPosition(szSourceDirectory);
-        const char*             pchAuxPosition(szSourceDirectory);
 
         rcstrDirectoryTree.clear();
 

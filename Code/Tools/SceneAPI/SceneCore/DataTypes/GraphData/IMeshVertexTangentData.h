@@ -47,6 +47,8 @@ namespace AZ
 
                 virtual ~IMeshVertexTangentData() override = default;
 
+                void CloneAttributesFrom([[maybe_unused]] const IGraphObject* sourceObject) override {}
+
                 virtual size_t GetCount() const = 0;
                 virtual const AZ::Vector4& GetTangent(size_t index) const = 0;
                 virtual void SetTangent(size_t vertexIndex, const AZ::Vector4& tangent) = 0;

@@ -69,7 +69,6 @@ namespace Vegetation
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<DescriptorListConfig>()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Constructor()
                 ->Method("GetDescriptorListSourceType", &DescriptorListConfig::GetDescriptorListSourceType)
@@ -182,7 +181,6 @@ namespace Vegetation
             behaviorContext->Class<DescriptorListComponent>()->RequestBus("DescriptorListRequestBus");
 
             behaviorContext->EBus<DescriptorListRequestBus>("DescriptorListRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Event("GetDescriptorListSourceType", &DescriptorListRequestBus::Events::GetDescriptorListSourceType)
                 ->Event("SetDescriptorListSourceType", &DescriptorListRequestBus::Events::SetDescriptorListSourceType)

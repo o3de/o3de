@@ -16,7 +16,6 @@ namespace LyViewPane
 {
     static const char* const CategoryTools = "Tools";
     static const char* const CategoryOther = "Other";
-    static const char* const CategoryPlugIns = "Plug-Ins";
     //----
     static const char* const CategoryEditor = "Editor";
     static const char* const CategoryViewport = "Viewport";

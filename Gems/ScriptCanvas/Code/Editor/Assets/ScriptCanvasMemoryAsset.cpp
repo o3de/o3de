@@ -583,7 +583,7 @@ namespace ScriptCanvasEditor
         AZStd::string tempPath = AZStd::string::format("@usercache@/scriptcanvas/%s.temp", tempFilename.data());
 
         AZStd::array<char, AZ::IO::MaxPathLength> resolvedPath{};
-        AZ::IO::FileIOBase::GetInstance()->ResolvePath(tempPath.data(), resolvedPath.data(), resolvedPath.size());
+        fileIO->ResolvePath(tempPath.data(), resolvedPath.data(), resolvedPath.size());
         return resolvedPath.data();
     }
 
@@ -714,7 +714,7 @@ namespace ScriptCanvasEditor
         AZStd::string tempPath = AZStd::string::format("@usercache@/scriptcanvas/%s.temp", tempFilename.data());
 
         AZStd::array<char, AZ::IO::MaxPathLength> resolvedPath{};
-        AZ::IO::FileIOBase::GetInstance()->ResolvePath(tempPath.data(), resolvedPath.data(), resolvedPath.size());
+        fileIO->ResolvePath(tempPath.data(), resolvedPath.data(), resolvedPath.size());
         return resolvedPath.data();
     }
 

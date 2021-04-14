@@ -659,7 +659,7 @@ void DeviceInfo::ResizeDXGIBuffers()
     flags |= DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT;
 #endif
 
-    HRESULT hr = m_pSwapChain->ResizeBuffers(0, m_swapChainDesc.BufferDesc.Width, m_swapChainDesc.BufferDesc.Height, m_swapChainDesc.BufferDesc.Format, flags);
+    m_pSwapChain->ResizeBuffers(0, m_swapChainDesc.BufferDesc.Width, m_swapChainDesc.BufferDesc.Height, m_swapChainDesc.BufferDesc.Format, flags);
 
     CreateViews();
 }
@@ -735,7 +735,6 @@ void DeviceInfo::ProcessSystemEvent(ESystemEvent event, UINT_PTR wParam, [[maybe
         const bool activate = LOWORD(wParam) != 0;
         if (m_activated != activate)
         {
-            HWND hWnd = (HWND) gcpRendD3D->GetHWND();
 
             const bool isFullscreen = gcpRendD3D->IsFullscreen();
             if (isFullscreen && !activate)

@@ -75,7 +75,7 @@ namespace UnitTest
         EntityAlias entityAlias = entityAliasRef.value();
 
         //update template
-        ASSERT_TRUE(m_instanceToTemplateInterface->PatchEntityInTemplate(patch, entityAlias, templateId));
+        ASSERT_TRUE(m_instanceToTemplateInterface->PatchEntityInTemplate(patch, entityId));
 
         //undo change
         instanceEntityUndo.Undo();

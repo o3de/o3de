@@ -707,7 +707,7 @@ namespace AzToolsFramework
     {
         QMessageBox::warning(AzToolsFramework::GetActiveWindow(),
             QStringLiteral("Can't instantiate the selected slice"),
-            QString("The slice may contain UI elements that can't be instantiated in the main Lumberyard editor. "
+            QString("The slice may contain UI elements that can't be instantiated in the main Open 3D Engine editor. "
                 "Use the UI Editor to instantiate this slice or select another one."),
             QMessageBox::Ok);
     }

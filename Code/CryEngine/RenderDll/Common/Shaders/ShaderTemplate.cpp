@@ -771,7 +771,6 @@ const char* CShaderMan::mfTemplateTexIdToName(int Id)
     default:
         return "Unknown";
     }
-    return "Unknown";
 }
 
 CTexAnim* CShaderMan::mfReadTexSequence(const char* na, int Flags, [[maybe_unused]] bool bFindOnly)
@@ -813,7 +812,8 @@ CTexAnim* CShaderMan::mfReadTexSequence(const char* na, int Flags, [[maybe_unuse
         {
             name[nm - nName] = 0;
             char* speed = &nName[nm - nName + 1];
-            if (nm = strchr(speed, ')'))
+            nm = strchr(speed, ')');
+            if (nm)
             {
                 speed[nm - speed] = 0;
             }
@@ -912,7 +912,6 @@ CTexAnim* CShaderMan::mfReadTexSequence(const char* na, int Flags, [[maybe_unuse
             ta->m_Time = fSpeed;
         }
 
-        ITexture* pTex = (ITexture*)tp;
         ta->m_TexPics.AddElem(tp);
         n++;
     }
@@ -1048,7 +1047,8 @@ bool CShaderMan::mfLoadResourceTexture(ResourceSlotIndex Id, CShaderResources& R
             TextureWarning(pTextureRes->m_Name.c_str(), "Texture file is missing: '%s%s' in material \'%s\'", RS.m_TexturePath.c_str(), pTextureRes->m_Name.c_str(), RS.m_szMaterialName);
         }
 
-        if (!(bTextureLoaded = texSampler.m_pTex->IsTextureLoaded()) && bReplaceMeOnFail)
+        bTextureLoaded = texSampler.m_pTex->IsTextureLoaded();
+        if (!bTextureLoaded && bReplaceMeOnFail)
         {
             texSampler.m_pTex = mfLoadResourceTexture("EngineAssets/TextureMsg/ReplaceMe.tif", RS.m_TexturePath.c_str(), texSampler.GetTexFlags() | CustomFlags, pTextureRes);
         }

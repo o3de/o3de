@@ -395,9 +395,9 @@ void CAnimMaterialNode::AnimateNamedParameter(SAnimContext& ec, IRenderShaderRes
 
 _smart_ptr<IMaterial> CAnimMaterialNode::GetMaterialByName(const char* pName)
 {
-    const char* pCh;
+    const char* pCh = strstr(pName, ".[");
 
-    if (pCh = strstr(pName, ".["))
+    if (pCh)
     {
         char MatName[256];
         cry_strcpy(MatName, pName, (size_t)(pCh - pName));

@@ -103,7 +103,6 @@ set(FILES
     VRCommon.h
     StereoRendererBus.h
     HeightmapUpdateNotificationBus.h
-    RTTBus.h
     IObjManager.h
     INavigationSystem.h
     IMNM.h

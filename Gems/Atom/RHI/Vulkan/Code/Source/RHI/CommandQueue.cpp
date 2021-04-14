@@ -60,7 +60,6 @@ namespace AZ
                     vulkanQueue->BeginDebugLabel(request.m_debugLabel.c_str());
                 }
 
-                auto& device = static_cast<Device&>(m_queue->GetDevice());
                 AZStd::vector<VkSemaphore> semaphoresToSignal(request.m_semaphoresToSignal.size());
                 for (size_t index = 0; index < request.m_semaphoresToSignal.size(); ++index)
                 {

@@ -63,7 +63,6 @@ namespace Vegetation
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<MeshBlockerConfig>()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Constructor()
                 ->Property("inheritBehavior", BehaviorValueProperty(&MeshBlockerConfig::m_inheritBehavior))
@@ -112,7 +111,6 @@ namespace Vegetation
             behaviorContext->Class<MeshBlockerComponent>()->RequestBus("MeshBlockerRequestBus");
 
             behaviorContext->EBus<MeshBlockerRequestBus>("MeshBlockerRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Event("GetAreaPriority", &MeshBlockerRequestBus::Events::GetAreaPriority)
                 ->Event("SetAreaPriority", &MeshBlockerRequestBus::Events::SetAreaPriority)
@@ -145,7 +143,7 @@ namespace Vegetation
 
     void MeshBlockerComponent::Activate()
     {
-        LmbrCentral::MeshComponentNotificationBus::Handler::BusConnect(GetEntityId());
+        AZ::Render::MeshComponentNotificationBus::Handler::BusConnect(GetEntityId());
 
         UpdateMeshData();
         m_refresh = false;
@@ -165,7 +163,7 @@ namespace Vegetation
 
         m_refresh = false;
         AZ::TickBus::Handler::BusDisconnect();
-        LmbrCentral::MeshComponentNotificationBus::Handler::BusDisconnect();
+        AZ::Render::MeshComponentNotificationBus::Handler::BusDisconnect();
         MeshBlockerRequestBus::Handler::BusDisconnect();
     }
 
@@ -202,7 +200,7 @@ namespace Vegetation
             return false;
         }
 
-        LmbrCentral::MeshAsset* mesh = m_meshAssetData.GetAs<LmbrCentral::MeshAsset>();
+        AZ::RPI::ModelAsset* mesh = m_meshAssetData.GetAs<AZ::RPI::ModelAsset>();
         if (!mesh)
         {
             return false;
@@ -233,7 +231,7 @@ namespace Vegetation
         }
 
 
-        LmbrCentral::MeshAsset* mesh = m_meshAssetData.GetAs<LmbrCentral::MeshAsset>();
+        AZ::RPI::ModelAsset* mesh = m_meshAssetData.GetAs<AZ::RPI::ModelAsset>();
         if (!mesh)
         {
             return false;
@@ -270,7 +268,7 @@ namespace Vegetation
         AZ::Vector3 outNormal;
         const AZ::Vector3 rayOrigin(point.m_position.GetX(), point.m_position.GetY(), m_meshBoundsForIntersection.GetMax().GetZ());
         const AZ::Vector3 rayDirection = -AZ::Vector3::CreateAxisZ();
-        const bool intersected = SurfaceData::GetMeshRayIntersection(*mesh, m_meshWorldTM, m_meshWorldTMInverse, rayOrigin, rayDirection, outPosition, outNormal) &&
+        bool intersected = SurfaceData::GetMeshRayIntersection(*mesh, m_meshWorldTM, m_meshWorldTMInverse, rayOrigin, rayDirection, outPosition, outNormal) &&
             m_meshBoundsForIntersection.Contains(outPosition);
         m_cachedRayHits[point.m_handle] = intersected;
         return intersected;
@@ -349,18 +347,7 @@ namespace Vegetation
         OnCompositionChanged();
     }
 
-    void MeshBlockerComponent::OnMeshDestroyed()
-    {
-        LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
-    }
-
-    void MeshBlockerComponent::OnMeshCreated(const AZ::Data::Asset<AZ::Data::AssetData>& asset)
-    {
-        (void)asset;
-        LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
-    }
-
-    void MeshBlockerComponent::OnBoundsReset()
+    void MeshBlockerComponent::OnModelReady([[maybe_unused]] const AZ::Data::Asset<AZ::RPI::ModelAsset>& modelAsset, [[maybe_unused]]const AZ::Data::Instance<AZ::RPI::Model>& model)
     {
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
@@ -384,10 +371,10 @@ namespace Vegetation
         m_cachedRayHits.clear();
 
         m_meshAssetData = {};
-        LmbrCentral::MeshComponentRequestBus::EventResult(m_meshAssetData, GetEntityId(), &LmbrCentral::MeshComponentRequests::GetMeshAsset);
+        AZ::Render::MeshComponentRequestBus::EventResult(m_meshAssetData, GetEntityId(), &AZ::Render::MeshComponentRequests::GetModelAsset);
 
         m_meshBounds = AZ::Aabb::CreateNull();
-        LmbrCentral::MeshComponentRequestBus::EventResult(m_meshBounds, GetEntityId(), &LmbrCentral::MeshComponentRequestBus::Events::GetWorldBounds);
+        AZ::Render::MeshComponentRequestBus::EventResult(m_meshBounds, GetEntityId(), &AZ::Render::MeshComponentRequestBus::Events::GetWorldBounds);
         m_meshBoundsForIntersection = m_meshBounds;
         if (m_meshBoundsForIntersection.IsValid())
         {
@@ -405,7 +392,7 @@ namespace Vegetation
         }
 
         m_meshVisible = false;
-        LmbrCentral::MeshComponentRequestBus::EventResult(m_meshVisible, GetEntityId(), &LmbrCentral::MeshComponentRequests::GetVisibility);
+        AZ::Render::MeshComponentRequestBus::EventResult(m_meshVisible, GetEntityId(), &AZ::Render::MeshComponentRequests::GetVisibility);
 
         m_meshWorldTM = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(m_meshWorldTM, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);

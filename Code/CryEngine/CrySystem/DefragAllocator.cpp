@@ -316,8 +316,6 @@ bool CDefragAllocator::AppendSegment(UINT_PTR capacity)
             SDefragAllocChunk& freeChunk = m_chunks[freeBlockIdx];
             SDefragAllocChunk& addrEndSentinal = m_chunks[AddrEndSentinal];
 
-            uint32 segIdx = (uint32)m_segments.size();
-
             uint32 allocCapacity = m_capacity;
 
             headSentinalChunk.ptr = allocCapacity;
@@ -370,7 +368,7 @@ void CDefragAllocator::UnAppendSegment()
     // Can't remove the last segment!
     CDBA_ASSERT(m_segments.size() > 1);
 
-    bool bHasMoves = Defrag_CompletePendingMoves();
+    [[maybe_unused]] bool bHasMoves = Defrag_CompletePendingMoves();
 
     // All outstanding moves should be completed.
     CDBA_ASSERT(!bHasMoves);
@@ -389,8 +387,6 @@ void CDefragAllocator::UnAppendSegment()
     ReleaseChunk(segment.headSentinalChunkIdx);
 
     SDefragAllocChunk* pChunk = &m_chunks[chunkIdx];
-
-    int numValidSegs = (int)m_segments.size() - 1;
 
     while (pChunk->ptr != endAddress)
     {
@@ -1255,7 +1251,6 @@ size_t CDefragAllocator::Defrag_FindMovesBwd(PendingMove** pMoves, size_t maxMov
         {
             for (Index candidateIdx = m_chunks[freeChunkIdx].addrPrevIdx; numMoves < maxMoves && curAmount < maxAmount; )
             {
-                SDefragAllocChunk& freeChunk = m_chunks[freeChunkIdx];
                 SDefragAllocChunk& candidateChunk = m_chunks[candidateIdx];
                 SDefragAllocChunkAttr candidateChunkAttr = candidateChunk.attr;
 
@@ -1947,6 +1942,7 @@ void CDefragAllocator::ValidateAddressChain()
 
 void CDefragAllocator::ValidateFreeLists()
 {
+#if defined(CDBA_DEBUG)
     for (size_t bucket = 0; bucket < NumBuckets; ++bucket)
     {
         size_t rootIdx = m_freeBuckets[bucket];
@@ -1976,4 +1972,5 @@ void CDefragAllocator::ValidateFreeLists()
             CDBA_ASSERT(m_chunks[chunk.freePrevIdx].freeNextIdx == idx);
         }
     }
+#endif
 }

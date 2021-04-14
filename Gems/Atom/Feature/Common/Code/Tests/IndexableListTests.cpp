@@ -80,7 +80,7 @@ namespace UnitTest
     {
         const int testValue = 123;
         IndexableList<int> container;
-        int position = container.push_front(testValue);
+        container.push_front(testValue);
         int listHead = container.begin();
         EXPECT_EQ(testValue, container[listHead]);
     }
@@ -91,8 +91,8 @@ namespace UnitTest
         const int testValue1 = 456;
 
         IndexableList<int> container;
-        int element0 = container.push_front(testValue0);
-        int element1 = container.push_front(testValue1);
+        container.push_front(testValue0);
+        container.push_front(testValue1);
 
         int iterator = container.begin();
         iterator = container.next(iterator);
@@ -102,10 +102,10 @@ namespace UnitTest
     TEST_F(IndexableListTests, TestNextMultiple)
     {
         IndexableList<int> container;
-        int element0 = container.push_front(0);
-        int element1 = container.push_front(1);
+        container.push_front(0);
+        container.push_front(1);
         int element2 = container.push_front(2);
-        int element3 = container.push_front(3);
+        container.push_front(3);
         container.erase(element2);
 
         int numItemsIteratedThrough = 0;

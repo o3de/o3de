@@ -24,8 +24,8 @@ from ..ap_fixtures.ap_setup_fixture import ap_setup_fixture as ap_setup_fixture
 
 # Import LyShared
 from automatedtesting_shared import file_utils as file_utils
-from ly_test_tools.lumberyard.ap_log_parser import APLogParser, APOutputParser
-import ly_test_tools.lumberyard.pipeline_utils as utils
+from ly_test_tools.o3de.ap_log_parser import APLogParser, APOutputParser
+import ly_test_tools.o3de.pipeline_utils as utils
 
 # Use the following logging pattern to hook all test logging together:
 logger = logging.getLogger(__name__)
@@ -69,7 +69,7 @@ class TestsAssetProcessorBatch_DependenycyTests(object):
         asset_processor.add_scan_folder("Gems/LyShineExamples/Assets")
         gem_asset_path = "Gems/CertificateManager/Assets"
         asset_processor.add_scan_folder(gem_asset_path)
-        engine_schema_path = os.path.join(workspace.paths.dev(), "Engine", "Schema")
+        engine_schema_path = os.path.join(workspace.paths.engine_root(), "Engine", "Schema")
         gem_schema_path = os.path.join(asset_processor.temp_asset_root(), gem_asset_path, "Schema")
 
         # EXPECT Assets process successfully

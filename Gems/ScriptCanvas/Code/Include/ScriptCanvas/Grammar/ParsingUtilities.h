@@ -105,6 +105,10 @@ namespace ScriptCanvas
 
         bool IsFunctionCallNullCheckRequired(const ExecutionTreeConstPtr& execution);
 
+        bool IsGlobalPropertyRead(ExecutionTreeConstPtr execution);
+
+        bool IsGlobalPropertyWrite(ExecutionTreeConstPtr execution);
+
         bool IsIfCondition(const ExecutionTreeConstPtr& execution);
 
         bool IsInfiniteSelfEntityActivationLoop(const AbstractCodeModel& model, ExecutionTreeConstPtr execution);

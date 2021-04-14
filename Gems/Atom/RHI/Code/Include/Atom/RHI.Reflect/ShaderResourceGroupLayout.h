@@ -94,6 +94,8 @@ namespace AZ
              */
             void AddShaderInput(const ShaderInputBufferDescriptor& buffer);
             void AddShaderInput(const ShaderInputImageDescriptor& image);
+            void AddShaderInput(const ShaderInputBufferUnboundedArrayDescriptor& bufferUnboundedArray);
+            void AddShaderInput(const ShaderInputImageUnboundedArrayDescriptor& imageUnboundedArray);
             void AddShaderInput(const ShaderInputSamplerDescriptor& sampler);
             void AddShaderInput(const ShaderInputConstantDescriptor& constant);
 
@@ -120,6 +122,9 @@ namespace AZ
             ShaderInputSamplerIndex   FindShaderInputSamplerIndex(const Name& name) const;
             ShaderInputConstantIndex  FindShaderInputConstantIndex(const Name& name) const;
 
+            ShaderInputBufferUnboundedArrayIndex FindShaderInputBufferUnboundedArrayIndex(const Name& name) const;
+            ShaderInputImageUnboundedArrayIndex  FindShaderInputImageUnboundedArrayIndex(const Name& name) const;
+
             /**
              * Returns the shader input associated with the requested index. It is not permitted
              * to call this method with a null index. An assert will fire otherwise.
@@ -128,6 +133,9 @@ namespace AZ
             const ShaderInputImageDescriptor&     GetShaderInput(ShaderInputImageIndex index) const;
             const ShaderInputSamplerDescriptor&   GetShaderInput(ShaderInputSamplerIndex index) const;
             const ShaderInputConstantDescriptor&  GetShaderInput(ShaderInputConstantIndex index) const;
+
+            const ShaderInputBufferUnboundedArrayDescriptor& GetShaderInput(ShaderInputBufferUnboundedArrayIndex index) const;
+            const ShaderInputImageUnboundedArrayDescriptor& GetShaderInput(ShaderInputImageUnboundedArrayIndex index) const;
 
             /**
              * Returns the full lists of each kind of shader input added to the layout. Inputs
@@ -138,6 +146,9 @@ namespace AZ
             AZStd::array_view<ShaderInputImageDescriptor>    GetShaderInputListForImages() const;
             AZStd::array_view<ShaderInputSamplerDescriptor>  GetShaderInputListForSamplers() const;
             AZStd::array_view<ShaderInputConstantDescriptor> GetShaderInputListForConstants() const;
+
+            AZStd::array_view<ShaderInputBufferUnboundedArrayDescriptor> GetShaderInputListForBufferUnboundedArrays() const;
+            AZStd::array_view<ShaderInputImageUnboundedArrayDescriptor>  GetShaderInputListForImageUnboundedArrays() const;
 
             /**
              * Each shader input may contain multiple shader resources. The layout computes
@@ -173,6 +184,8 @@ namespace AZ
              */
             uint32_t GetGroupSizeForBuffers() const;
             uint32_t GetGroupSizeForImages() const;
+            uint32_t GetGroupSizeForBufferUnboundedArrays() const;
+            uint32_t GetGroupSizeForImageUnboundedArrays() const;
             uint32_t GetGroupSizeForSamplers() const;
 
             /// Constants are different and live in an opaque buffer of bytes instead of a resource group.
@@ -213,6 +226,13 @@ namespace AZ
             bool ValidateAccess(RHI::ShaderInputImageIndex inputIndex, uint32_t arrayIndex) const;
             bool ValidateAccess(RHI::ShaderInputSamplerIndex inputIndex, uint32_t arrayIndex) const;
 
+            /**
+             * Validates that the inputIndex is valid.
+             * Emits an assert and returns false on failure; returns true on success. If validation is disabled true is always returned.
+             */
+            bool ValidateAccess(RHI::ShaderInputBufferUnboundedArrayIndex inputIndex) const;
+            bool ValidateAccess(RHI::ShaderInputImageUnboundedArrayIndex inputIndex) const;
+
         private:
             ShaderResourceGroupLayout();
 
@@ -230,7 +250,13 @@ namespace AZ
             template<typename IndexType>
             bool ValidateAccess(IndexType inputIndex, uint32_t arrayIndex, size_t inputIndexLimit, const char* inputArrayTypeName) const;
 
-            /// Helper function for building up data caches for a single group of shader inputs.
+            using IdReflectionMapForBuffers = NameIdReflectionMap<ShaderInputBufferIndex>;
+            using IdReflectionMapForImages = NameIdReflectionMap<ShaderInputImageIndex>;
+            using IdReflectionMapForBufferUnboundedArrays = NameIdReflectionMap<ShaderInputBufferUnboundedArrayIndex>;
+            using IdReflectionMapForImageUnboundedArrays = NameIdReflectionMap<ShaderInputImageUnboundedArrayIndex>;
+            using IdReflectionMapForSamplers = NameIdReflectionMap<ShaderInputSamplerIndex>;
+
+            /// Helper functions for building up data caches for a single group of shader inputs.
             template<typename NameIdReflectionMapT, typename ShaderInputDescriptorT, typename ShaderInputIndexT>
             bool FinalizeShaderInputGroup(
                 const AZStd::vector<ShaderInputDescriptorT>& shaderInputDescriptors,
@@ -238,13 +264,22 @@ namespace AZ
                 NameIdReflectionMapT& nameIdReflectionMap,
                 uint32_t& groupSize);
 
+            template<typename NameIdReflectionMapT, typename ShaderInputDescriptorT, typename ShaderInputIndexT>
+            bool FinalizeUnboundedArrayShaderInputGroup(
+                const AZStd::vector<ShaderInputDescriptorT>& shaderInputDescriptors,
+                NameIdReflectionMapT& nameIdReflectionMap,
+                uint32_t& groupSize);
+
             AZ_SERIALIZE_FRIEND();
 
             AZStd::vector<ShaderInputStaticSamplerDescriptor> m_staticSamplers;
 
-            AZStd::vector<ShaderInputBufferDescriptor>   m_inputsForBuffers;
-            AZStd::vector<ShaderInputImageDescriptor>    m_inputsForImages;
-            AZStd::vector<ShaderInputSamplerDescriptor>  m_inputsForSamplers;
+            AZStd::vector<ShaderInputBufferDescriptor> m_inputsForBuffers;
+            AZStd::vector<ShaderInputImageDescriptor> m_inputsForImages;
+            AZStd::vector<ShaderInputSamplerDescriptor> m_inputsForSamplers;
+
+            AZStd::vector<ShaderInputBufferUnboundedArrayDescriptor> m_inputsForBufferUnboundedArrays;
+            AZStd::vector<ShaderInputImageUnboundedArrayDescriptor>  m_inputsForImageUnboundedArrays;
 
             AZStd::vector<Interval> m_intervalsForBuffers;
             AZStd::vector<Interval> m_intervalsForImages;
@@ -252,6 +287,8 @@ namespace AZ
 
             uint32_t m_groupSizeForBuffers = 0;
             uint32_t m_groupSizeForImages = 0;
+            uint32_t m_groupSizeForBufferUnboundedArrays = 0;
+            uint32_t m_groupSizeForImageUnboundedArrays = 0;
             uint32_t m_groupSizeForSamplers = 0;
 
             uint32_t m_shaderVariantKeyFallbackSize = 0;
@@ -260,14 +297,12 @@ namespace AZ
             /// resolving the index during the Finalize() step
             Name m_shaderVariantKeyFallbackConstantId;
 
-            using IdReflectionMapForBuffers = NameIdReflectionMap<ShaderInputBufferIndex>;
-            using IdReflectionMapForImages = NameIdReflectionMap<ShaderInputImageIndex>;
-            using IdReflectionMapForSamplers = NameIdReflectionMap<ShaderInputSamplerIndex>;
-
             /// Reflection information for each kind of shader input, stored in
             /// sorted vectors. Binary search is used to find entries.
             IdReflectionMapForBuffers m_idReflectionForBuffers;
             IdReflectionMapForImages m_idReflectionForImages;
+            IdReflectionMapForBufferUnboundedArrays m_idReflectionForBufferUnboundedArrays;
+            IdReflectionMapForImageUnboundedArrays m_idReflectionForImageUnboundedArrays;
             IdReflectionMapForSamplers m_idReflectionForSamplers;
 
             /// The logical binding slot used by all groups in this layout.

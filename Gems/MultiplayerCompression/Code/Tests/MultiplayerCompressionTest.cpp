@@ -88,8 +88,6 @@ TEST_F(MultiplayerCompressionTest, MultiplayerCompression_OversizeTest)
     char* badInput = new char[badInputSize];
     char* pBuffer = new char[bufferSize];
     size_t compressedSize = 0;
-    size_t consumedSize = 0;
-    size_t uncompressedSize = 0;
 
     MultiplayerCompression::LZ4Compressor lz4Compressor;
 
@@ -106,7 +104,6 @@ TEST_F(MultiplayerCompressionTest, MultiplayerCompressionTest_UndersizeTest)
     size_t bufferSize = 4;
     char* badInput = new char[badInputSize];
     char* pBuffer = new char[bufferSize];
-    size_t compressedSize = 0;
     size_t consumedSize = 0;
     size_t uncompressedSize = 0;
 

@@ -688,9 +688,6 @@ void CUiAnimViewDopeSheetBase::OnRButtonDown(Qt::KeyboardModifiers modifiers, co
     {
         m_bCursorWasInKey = true;
 
-        CUiAnimViewNode* pNode = GetNodeFromPoint(point);
-        CUiAnimViewTrack* pTrack = static_cast<CUiAnimViewTrack*>(pNode);
-
         keyHandle.Select(true);
         m_keyTimeOffset = 0;
         update();
@@ -1291,7 +1288,6 @@ void CUiAnimViewDopeSheetBase::ShowKeyTooltip(const CUiAnimViewKeyHandle& keyHan
 
     const float time = keyHandle.GetTime();
     const char* desc = keyHandle.GetDescription();
-    float duration = keyHandle.GetDuration();
 
     QString tipText;
     if (GetTickDisplayMode() == eUiAVTickMode_InSeconds)
@@ -2909,7 +2905,6 @@ void CUiAnimViewDopeSheetBase::DrawTimeline(QPainter* painter, const QRect& rcUp
     const QPen black(textCol);
     const QPen redpen(lineCol);
     // Draw time ticks every tick step seconds.
-    const Range& timeRange = m_timeRange;
 
     painter->setPen(dkgray);
 

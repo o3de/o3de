@@ -25,6 +25,11 @@ namespace AZ
             /// The GPU descriptor handle for views to bind to the command list.
             GpuDescriptorHandle m_gpuViewsDescriptorHandle = {};
 
+            /// The GPU descriptor handle for unbounded arrays to bind to the command list.
+            /// Note that one SRG can only contain at most two unbounded arrays, one SRV and one UAV.
+            static const uint32_t MaxUnboundedArrays = 2;
+            GpuDescriptorHandle m_gpuUnboundedArraysDescriptorHandles[MaxUnboundedArrays] = {};
+
             /// The GPU descriptor handle for samplers to bind to the command list.
             GpuDescriptorHandle m_gpuSamplersDescriptorHandle = {};
 
@@ -64,7 +69,10 @@ namespace AZ
             DescriptorTable m_viewsDescriptorTable;
 
             /// The allocated descriptor table for samplers.
-            DescriptorTable m_samplersDescriptorTable;
+            DescriptorTable m_samplersDescriptorTable; 
+
+            /// The descriptor tables for unbounded arrays.  Allocated on demand.
+            AZStd::array<DescriptorTable, ShaderResourceGroupCompiledData::MaxUnboundedArrays * RHI::Limits::Device::FrameCountMax> m_unboundedDescriptorTables;
         };
     }
 }

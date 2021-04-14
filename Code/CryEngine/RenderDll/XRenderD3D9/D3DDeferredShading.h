@@ -278,21 +278,10 @@ private:
 
         m_nShadowPoolSize = 0;
 
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-        // render to texture supports multiple cameras
-        const AZ::EntityId defaultEntityId;
-        Matrix44 identityMatrix;
-        identityMatrix.SetIdentity();
-        for (int i = 0; i < MAX_GPU_NUM; ++i)
-        {
-            m_prevViewProj[i].insert({ defaultEntityId, identityMatrix });
-        }
-#else
         for (int i = 0; i < MAX_GPU_NUM; ++i)
         {
             m_prevViewProj[i].SetIdentity();
         }
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
 
         m_nRenderState = GS_BLSRC_ONE | GS_BLDST_ONE;
 
@@ -418,15 +407,7 @@ private:
     Matrix44A m_pViewProjI;
     Matrix44A m_pView;
 
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    // render to texture supports multiple cameras
-    // we do not use Matrix44A here because this is used with Matrix44s and will
-    // fail to compile in release mode due to alignment errors
-    AZStd::unordered_map<AZ::EntityId, Matrix44> m_prevViewProj[MAX_GPU_NUM];
-#else
     Matrix44A m_prevViewProj[MAX_GPU_NUM];
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-
 
     Vec4 vWorldBasisX, vWorldBasisY, vWorldBasisZ;
 

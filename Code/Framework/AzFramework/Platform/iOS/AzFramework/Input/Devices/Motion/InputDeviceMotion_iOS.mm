@@ -85,7 +85,7 @@ namespace AzFramework
         //!
         //! return another vector relative to the specified display orientation, and such that the
         //! +y axis points out the back of the screen and z+ axis points out the top of the device.
-        //! This flipping of axes is to match Lumberyard's z-up and left-handed coordinate system.
+        //! This flipping of axes is to match Open 3D Engine's z-up and left-handed coordinate system.
         //!
         //! \param[in] x The x component of the vector to be aligned
         //! \param[in] y The y component of the vector to be aligned

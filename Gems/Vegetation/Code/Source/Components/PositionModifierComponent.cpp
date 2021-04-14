@@ -135,7 +135,6 @@ namespace Vegetation
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<PositionModifierConfig>()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Constructor()
                 ->Property("allowOverrides", BehaviorValueProperty(&PositionModifierConfig::m_allowOverrides))
@@ -220,7 +219,6 @@ namespace Vegetation
             behaviorContext->Class<PositionModifierComponent>()->RequestBus("PositionModifierRequestBus");
 
             behaviorContext->EBus<PositionModifierRequestBus>("PositionModifierRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Event("GetAllowOverrides", &PositionModifierRequestBus::Events::GetAllowOverrides)
                 ->Event("SetAllowOverrides", &PositionModifierRequestBus::Events::SetAllowOverrides)

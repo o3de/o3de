@@ -117,7 +117,6 @@ size_t ITextureStreamer::StatsComputeRequiredMipMemUsage()
         {
             int nPersMip = tp->m_nMips - tp->m_CacheFileHeader.m_nMipsPersistent;
             int nReqMip = tp->m_bForceStreamHighRes ? 0 : (bStale ? nPersMip : tp->GetRequiredMipNonVirtual());
-            int nMips = tp->GetNumMipsNonVirtual();
             nReqMip = min(nReqMip, nPersMip);
 
             int nWantedSize = tp->StreamComputeDevDataSize(nReqMip);

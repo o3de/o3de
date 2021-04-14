@@ -72,7 +72,6 @@ namespace Vegetation
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<DistributionFilterConfig>()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Constructor()
                 ->Property("filterStage",
@@ -134,7 +133,6 @@ namespace Vegetation
             behaviorContext->Class<DistributionFilterComponent>()->RequestBus("DistributionFilterRequestBus");
 
             behaviorContext->EBus<DistributionFilterRequestBus>("DistributionFilterRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Event("GetThresholdMin", &DistributionFilterRequestBus::Events::GetThresholdMin)
                 ->Event("SetThresholdMin", &DistributionFilterRequestBus::Events::SetThresholdMin)

@@ -204,6 +204,8 @@ namespace UnitTest
         EXPECT_TRUE(feature->m_viewSetCount == 1);
         pipeline2->SetPersistentView(viewTag, nullptr);
         EXPECT_TRUE(feature->m_viewSetCount == 2);
+
+        testScene->Deactivate();
     }
 
     TEST_F(SceneTests, SceneNotificationTest_ConnectAfterRenderPipelineAdded)
@@ -253,6 +255,8 @@ namespace UnitTest
         EXPECT_TRUE(feature->m_lastPipeline == pipeline1.get());
         EXPECT_TRUE(feature->m_viewSetCount == 1);
         EXPECT_TRUE(feature->m_pipelineChangedCount == 0);
+
+        testScene->Deactivate();
     }
 
 
@@ -286,6 +290,8 @@ namespace UnitTest
         testScene->DisableFeatureProcessor<TestFeatureProcessorImplementation>();
         EXPECT_TRUE(testScene->GetFeatureProcessor<TestFeatureProcessorInterface>() == nullptr);
         EXPECT_TRUE(testScene->GetFeatureProcessor<TestFeatureProcessorImplementation>() == nullptr);
+
+        testScene->Deactivate();
     }
 
     TEST_F(SceneTests, GetFeatureProcessorByNameId_UsingStringForFeatureProcessorId_ReturnsValidFeatureProcessor)
@@ -297,6 +303,8 @@ namespace UnitTest
         testScene->Activate();
 
         EXPECT_TRUE(testScene->GetFeatureProcessor(FeatureProcessorId{ "TestFeatureProcessor1" }) != nullptr);
+
+        testScene->Deactivate();
     }
 
     //
@@ -315,6 +323,8 @@ namespace UnitTest
 
         FeatureProcessor* secondImplementation = testScene->EnableFeatureProcessor(FeatureProcessorId{ TestFeatureProcessorImplementation2::RTTI_TypeName() });
         EXPECT_TRUE(secondImplementation != nullptr);
+
+        testScene->Deactivate();
     }
 
     TEST_F(SceneTests, EnableDisableFeatureProcessorByType_MultipleImplmentationsOfTheSameInterface_ReturnsValidFeatureProcessor)
@@ -330,6 +340,8 @@ namespace UnitTest
 
         FeatureProcessor* secondImplementation = testScene->EnableFeatureProcessor<TestFeatureProcessorImplementation2>();
         EXPECT_TRUE(secondImplementation != nullptr);
+
+        testScene->Deactivate();
     }
 
     TEST_F(SceneTests, GetFeatureProcessorByNameId_MultipleImplmentationsOfTheSameInterface_ReturnsValidFeatureProcessor)
@@ -347,6 +359,8 @@ namespace UnitTest
         FeatureProcessor* secondImplementation = testScene->EnableFeatureProcessor<TestFeatureProcessorImplementation2>();
         featureProcessor = testScene->GetFeatureProcessor(FeatureProcessorId{ TestFeatureProcessorImplementation2::RTTI_TypeName() });
         EXPECT_TRUE(secondImplementation == featureProcessor);
+
+        testScene->Deactivate();
     }
 
     TEST_F(SceneTests, GetFeatureProcessorByInterface_MultipleImplmentationsOfTheSameInterface_ReturnsValidFeatureProcessor)
@@ -366,6 +380,8 @@ namespace UnitTest
 
         featureProcessorInterface = testScene->GetFeatureProcessor<TestFeatureProcessorInterface>();
         EXPECT_TRUE(secondImplementation == featureProcessorInterface);
+
+        testScene->Deactivate();
     }    
 
     //
@@ -384,6 +400,8 @@ namespace UnitTest
         EXPECT_TRUE(featureProcessor == nullptr);
         EXPECT_TRUE(testScene->GetFeatureProcessor<TestFeatureProcessorImplementation>() == nullptr);
         EXPECT_TRUE(testScene->GetFeatureProcessor<TestFeatureProcessorInterface>() == nullptr);
+
+        testScene->Deactivate();
     }
 
     TEST_F(SceneTests, DisableFeatureProcessor_ByInterface_FailsToDisable)
@@ -396,6 +414,8 @@ namespace UnitTest
         testScene->DisableFeatureProcessor(FeatureProcessorId{ TestFeatureProcessorInterface::RTTI_TypeName() });
         EXPECT_TRUE(testScene->GetFeatureProcessor<TestFeatureProcessorImplementation>() != nullptr);
         EXPECT_TRUE(testScene->GetFeatureProcessor<TestFeatureProcessorInterface>() != nullptr);
+
+        testScene->Deactivate();
     }
 
     TEST_F(SceneTests, EnableFeatureProcessor_MultipleImplmentationsOfTheSameInterface_FailsToEnable)
@@ -416,6 +436,8 @@ namespace UnitTest
         
         // If another implementation that uses the same interface exists, that will be the feature processor that is returned
         EXPECT_TRUE(secondImplementation == firstImplementation);
+
+        testScene->Deactivate();
     }
 
 }  // namespace UnitTest

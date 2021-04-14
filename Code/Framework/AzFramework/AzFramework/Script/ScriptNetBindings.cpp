@@ -93,9 +93,9 @@ namespace AzFramework
             "DataSet31","DataSet32"
         };
 
-        if (s_chunkIndex > AZ_ARRAY_SIZE(s_nameArray) && AZ_ARRAY_SIZE(s_nameArray) >= 0)
+        if ((s_chunkIndex >= AZ_ARRAY_SIZE(s_nameArray)) && (AZ_ARRAY_SIZE(s_nameArray) >= 0))
         {
-            s_chunkIndex = s_chunkIndex%AZ_ARRAY_SIZE(s_nameArray);
+            s_chunkIndex = s_chunkIndex % AZ_ARRAY_SIZE(s_nameArray);
         }
 
         return s_nameArray[s_chunkIndex++];

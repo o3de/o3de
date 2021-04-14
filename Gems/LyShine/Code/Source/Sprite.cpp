@@ -682,7 +682,6 @@ CSprite* CSprite::LoadSprite(const string& pathname)
         return loadedSprite;
     }
 
-    ITexture* texture = nullptr;
     // Try to use a texture atlas instead
     TextureAtlasNamespace::TextureAtlas* atlas = nullptr;
     TextureAtlasNamespace::AtlasCoordinates atlasCoordinates;

@@ -176,7 +176,6 @@ namespace AZ
                         for (rapidjson::Value::ConstMemberIterator itr2 = attributeMember.MemberBegin(); itr2 != attributeMember.MemberEnd(); ++itr2)
                         {
 
-                            bool isSystemSemanticDefined = false;
                             AZStd::string name = itr2->name.GetString();
                             const rapidjson::Value& value = itr2->value;
                             rapidjson::Type type = value.GetType();
@@ -570,7 +569,6 @@ namespace AZ
                             for (rapidjson::Value::ConstMemberIterator itr4 = attributeArray.MemberBegin(); itr4 != attributeArray.MemberEnd(); ++itr4)
                             {
                                 AZStd::string attributeArrayMemberName = itr4->name.GetString();
-                                const rapidjson::Value& attributeArrayMemberValue = itr4->value;
 
                                 if (attributeArrayMemberName == "count")
                                 {
@@ -621,7 +619,6 @@ namespace AZ
                             for (rapidjson::Value::ConstMemberIterator itr4 = attributeArray.MemberBegin(); itr4 != attributeArray.MemberEnd(); ++itr4)
                             {
                                 const char* attributeArrayMemberName = itr4->name.GetString();
-                                const rapidjson::Value& attributeArrayMemberValue = itr4->value;
 
                                 if (AzFramework::StringFunc::Equal(attributeArrayMemberName, "addressU"))
                                 {
@@ -722,7 +719,6 @@ namespace AZ
                                 for (rapidjson::Value::ConstMemberIterator itr4 = attributeArray.MemberBegin(); itr4 != attributeArray.MemberEnd(); ++itr4)
                                 {
                                     AZStd::string attributeArrayMemberName = itr4->name.GetString();
-                                    const rapidjson::Value& attributeArrayMemberValue = itr4->value;
 
                                     if (attributeArrayMemberName == "count")
                                     {
@@ -751,7 +747,6 @@ namespace AZ
                                 for (rapidjson::Value::ConstMemberIterator itr4 = attributeArray.MemberBegin(); itr4 != attributeArray.MemberEnd(); ++itr4)
                                 {
                                     AZStd::string attributeArrayMemberName = itr4->name.GetString();
-                                    const rapidjson::Value& attributeArrayMemberValue = itr4->value;
 
                                     if (attributeArrayMemberName == "count")
                                     {
@@ -909,7 +904,6 @@ namespace AZ
 
             uint32_t explicitlyOrdered = 0;
             uint32_t implicitlyOrdered = 0;
-            auto shaderOptionsCount = shaderOptions.Size();
             for (rapidjson::Value::ConstValueIterator optItr = shaderOptions.Begin(); optItr != shaderOptions.End(); ++optItr)
             {
                 const rapidjson::Value& optionEntry = *optItr;

@@ -371,7 +371,7 @@ namespace ScriptCanvasEditor
 
         while (m_ui->typeSelectionFrame->layout()->count() > 0)
         {
-            QLayoutItem* layoutItem = m_ui->typeSelectionFrame->layout()->takeAt(0);
+            m_ui->typeSelectionFrame->layout()->takeAt(0);
         }
 
         for (ContainerTypeLineEdit* lineEdit : m_containerTypeLineEdit)

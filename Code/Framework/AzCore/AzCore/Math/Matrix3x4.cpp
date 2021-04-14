@@ -374,7 +374,7 @@ namespace AZ
 
         targetForward.Normalize();
 
-        // Lumberyard is Z-up and is right-handed.
+        // Open 3D Engine is Z-up and is right-handed.
         Vector3 up = Vector3::CreateAxisZ();
 
         // We have a degenerate case if target forward is parallel to the up axis,
@@ -391,7 +391,7 @@ namespace AZ
         up.Normalize();
 
         // Passing in forwardAxis allows you to force a particular local-space axis to look
-        // at the target point.  In Lumberyard, the default is forward is along Y+.
+        // at the target point.  In Open 3D Engine, the default is forward is along Y+.
         switch (forwardAxis)
         {
         case Axis::XPositive:

@@ -30,18 +30,6 @@
 
 namespace AZ::Internal
 {
-    AZ::IO::FixedMaxPath GetExecutableDirectory()
-    {
-        AZStd::fixed_string<AZ::IO::MaxPathLength> value;
-
-        // Binary folder
-        AZ::Utils::ExecutablePathResult pathResult = Utils::GetExecutableDirectory(value.data(), value.capacity());
-        // Update the size value of the executable directory fixed string to correctly be the length of the null-terminated string stored within it
-        value.resize_no_construct(AZStd::char_traits<char>::length(value.data()));
-
-        return value;
-    }
-
     AZ::SettingsRegistryInterface::FixedValueString GetEngineMonikerForProject(
         SettingsRegistryInterface& settingsRegistry, const AZ::IO::FixedMaxPath& projectPath)
     {
@@ -146,7 +134,7 @@ namespace AZ::Internal
     {
 
         AZStd::fixed_string<AZ::IO::MaxPathLength> executableDir;
-        if (Utils::GetExecutableDirectory(executableDir.data(), executableDir.capacity()) == Utils::ExecutablePathResult::Success)
+        if (AZ::Utils::GetExecutableDirectory(executableDir.data(), executableDir.capacity()) == Utils::ExecutablePathResult::Success)
         {
             // Update the size value of the executable directory fixed string to correctly be the length of the null-terminated string
             // stored within it
@@ -494,7 +482,7 @@ namespace AZ::SettingsRegistryMergeUtils
     void MergeSettingsToRegistry_AddRuntimeFilePaths(SettingsRegistryInterface& registry)
     {
         // Binary folder
-        AZ::IO::FixedMaxPath path = Internal::GetExecutableDirectory();
+        AZ::IO::FixedMaxPath path = AZ::Utils::GetExecutableDirectory();
         registry.Set(FilePathKey_BinaryFolder, path.LexicallyNormal().Native());
 
         // Engine root folder - corresponds to the @engroot@ and @devroot@ aliases
@@ -588,20 +576,38 @@ namespace AZ::SettingsRegistryMergeUtils
                 aznumeric_cast<int>(projectPathKey.size()), projectPathKey.data());
         }
 
-#if !AZ_TRAIT_USE_ASSET_CACHE_FOLDER
-        // Setup the cache and user paths for Platforms where the Asset Cache Folder isn't used
+#if !AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
+        // Setup the cache and user paths when to platform specific locations when running on non-host platforms
         path = engineRoot;
-        registry.Set(FilePathKey_CacheProjectRootFolder, path.LexicallyNormal().Native());
-        registry.Set(FilePathKey_CacheRootFolder, path.LexicallyNormal().Native());
-        registry.Set(FilePathKey_DevWriteStorage, path.LexicallyNormal().Native());
-        registry.Set(FilePathKey_ProjectUserPath, (path / "user").LexicallyNormal().Native());
-#endif // AZ_TRAIT_USE_ASSET_CACHE_FOLDER
+        if (AZStd::optional<AZ::IO::FixedMaxPathString> nonHostCacheRoot = Utils::GetDefaultAppRootPath();
+            nonHostCacheRoot)
+        {
+            registry.Set(FilePathKey_CacheProjectRootFolder, *nonHostCacheRoot);
+            registry.Set(FilePathKey_CacheRootFolder, *nonHostCacheRoot);
+        }
+        else
+        {
+            registry.Set(FilePathKey_CacheProjectRootFolder, path.LexicallyNormal().Native());
+            registry.Set(FilePathKey_CacheRootFolder, path.LexicallyNormal().Native());
+        }
+        if (AZStd::optional<AZ::IO::FixedMaxPathString> devWriteStorage = Utils::GetDevWriteStoragePath();
+            devWriteStorage)
+        {
+            registry.Set(FilePathKey_DevWriteStorage, *devWriteStorage);
+            registry.Set(FilePathKey_ProjectUserPath, *devWriteStorage);
+        }
+        else
+        {
+            registry.Set(FilePathKey_DevWriteStorage, path.LexicallyNormal().Native());
+            registry.Set(FilePathKey_ProjectUserPath, (path / "user").LexicallyNormal().Native());
+        }
+#endif // AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
     }
 
     void MergeSettingsToRegistry_TargetBuildDependencyRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
         const SettingsRegistryInterface::Specializations& specializations, AZStd::vector<char>* scratchBuffer)
     {
-        AZ::IO::FixedMaxPath mergePath = Internal::GetExecutableDirectory();
+        AZ::IO::FixedMaxPath mergePath = AZ::Utils::GetExecutableDirectory();
         if (!mergePath.empty())
         {
             registry.MergeSettingsFolder((mergePath / SettingsRegistryInterface::RegistryFolder).Native(),
@@ -998,4 +1004,12 @@ namespace AZ::SettingsRegistryMergeUtils
 
         return visitor.Finalize();
     }
+
+    bool IsPathAncestorDescendantOrEqual(AZStd::string_view candidatePath, AZStd::string_view inputPath)
+    {
+        AZ::IO::PathView candidateView{ candidatePath, AZ::IO::PosixPathSeparator };
+        AZ::IO::PathView inputView{ inputPath, AZ::IO::PosixPathSeparator };
+        return inputView.empty() || candidateView.IsRelativeTo(inputView) || inputView.IsRelativeTo(candidateView);
+    }
+
 }

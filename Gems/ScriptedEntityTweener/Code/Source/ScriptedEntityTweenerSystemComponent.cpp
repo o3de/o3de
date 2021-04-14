@@ -72,7 +72,6 @@ namespace ScriptedEntityTweener
         if (behaviorContext)
         {
             behaviorContext->EBus<ScriptedEntityTweenerBus>("ScriptedEntityTweenerBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Event("AnimateEntity", &ScriptedEntityTweenerBus::Events::AnimateEntityScript)
                     ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::List)
                 ->Event("SetOptionalParams", &ScriptedEntityTweenerBus::Events::SetOptionalParams)
@@ -86,7 +85,6 @@ namespace ScriptedEntityTweener
                 ->Event("GetVirtualPropertyValue", &ScriptedEntityTweenerBus::Events::GetVirtualPropertyValue);
 
             behaviorContext->EBus<ScriptedEntityTweenerNotificationsBus>("ScriptedEntityTweenerNotificationBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Handler<ScriptedEntityTweenerNotificationBusHandler>();
 
             behaviorContext->Enum<(int)ScriptedEntityTweener::EasingMethod::Linear>("ScriptedEntityTweenerEasingMethod_Linear")

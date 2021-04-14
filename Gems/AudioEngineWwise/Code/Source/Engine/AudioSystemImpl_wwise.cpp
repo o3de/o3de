@@ -1905,8 +1905,6 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CAudioSystemImpl_wwise::ParseRtpcImpl(const AZ::rapidxml::xml_node<char>* node, AkRtpcID& akRtpcId, float& mult, float& shift)
     {
-        SATLRtpcImplData_wwise* newRtpcImpl = nullptr;
-
         if (node && azstricmp(node->name(), WwiseXmlTags::WwiseRtpcTag) == 0)
         {
             auto rtpcAttr = node->first_attribute(WwiseXmlTags::WwiseNameAttribute, 0, false);

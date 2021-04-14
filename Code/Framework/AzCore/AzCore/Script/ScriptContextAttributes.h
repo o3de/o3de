@@ -51,11 +51,11 @@ namespace AZ
             const static AZ::Crc32 ExcludeFrom = AZ_CRC("ExcludeFrom", 0xa98972fe);
             enum ExcludeFlags : AZ::u64
             {
-                List          = 1 << 0,
-                Documentation = 1 << 1,
-                Preview       = 1 << 2,
-                ListOnly      = 1 << 3,
-                All           = (List | Documentation | Preview)
+                List               = 1 << 0, //< The reflected item will be excluded from any list (e.g. node palette)
+                Documentation      = 1 << 1, //< The reflected item will be excluded from the Lua class reference
+                Unused             = 1 << 2, //< This flag is unused (deprecated)
+                ListOnly           = 1 << 3, //< Some elements should be excluded from lists, but available for documentation
+                All           = (List | Documentation) //< Used to exclude reflections from lists and documentation
             };
 
             //! Used to specify the usage of a Behavior Context element (e.g. Class or EBus) designed for automation scripts
