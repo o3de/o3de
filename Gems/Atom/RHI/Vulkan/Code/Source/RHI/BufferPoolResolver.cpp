@@ -99,7 +99,6 @@ namespace AZ
         void BufferPoolResolver::Resolve(CommandList& commandList)
         {
             auto& device = static_cast<Device&>(commandList.GetDevice());
-            const VkCommandBuffer commandBuffer = commandList.GetNativeCommandBuffer();
             VkBufferCopy bufCopy{};
             for (const BufferUploadPacket& packet : m_uploadPackets)
             {

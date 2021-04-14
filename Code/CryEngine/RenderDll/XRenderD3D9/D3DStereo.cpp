@@ -318,9 +318,8 @@ void CD3DStereoRenderer::Update()
 }
 
 
-CCamera CD3DStereoRenderer::PrepareCamera(EStereoEye nEye,  const CCamera& currentCamera, const SRenderingPassInfo& passInfo)
+CCamera CD3DStereoRenderer::PrepareCamera(EStereoEye nEye,  const CCamera& currentCamera, [[maybe_unused]] const SRenderingPassInfo& passInfo)
 {
-    int nThreadID = passInfo.ThreadID();
     CCamera cam = currentCamera;
 
     if (IsRenderingToHMD())

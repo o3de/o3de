@@ -11,6 +11,7 @@
 */
 
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AzCore/Name/NameDictionary.h>
 #include <AzFramework/Visibility/OctreeSystemComponent.h>
 
 #if defined(HAVE_BENCHMARK)
@@ -33,7 +34,12 @@ namespace Benchmark
                 m_ownsSystemAllocator = true;
             }
 
+            if (!AZ::NameDictionary::IsReady())
+            {
+                AZ::NameDictionary::Create();
+            }
             m_octreeSystemComponent = new AzFramework::OctreeSystemComponent;
+            m_visScene = m_octreeSystemComponent->CreateVisibilityScene(AZ::Name("OctreeBenchmarkVisibilityScene"));
             m_dataArray.resize(1000000);
             m_queryDataArray.resize(1000);
 
@@ -72,7 +78,9 @@ namespace Benchmark
 
         void TearDown([[maybe_unused]] const ::benchmark::State& state) override
         {
+            m_octreeSystemComponent->DestroyVisibilityScene(m_visScene);
             delete m_octreeSystemComponent;
+            AZ::NameDictionary::Destroy();
 
             m_dataArray.clear();
             m_dataArray.shrink_to_fit();
@@ -89,19 +97,17 @@ namespace Benchmark
 
         void InsertEntries(uint32_t entryCount)
         {
-            AzFramework::IVisibilitySystem* visSystem = AZ::Interface<AzFramework::IVisibilitySystem>::Get();
             for (uint32_t i = 0; i < entryCount; ++i)
             {
-                visSystem->InsertOrUpdateEntry(m_dataArray[i]);
+                m_visScene->InsertOrUpdateEntry(m_dataArray[i]);
             }
         }
 
         void RemoveEntries(uint32_t entryCount)
         {
-            AzFramework::IVisibilitySystem* visSystem = AZ::Interface<AzFramework::IVisibilitySystem>::Get();
             for (uint32_t i = 0; i < entryCount; ++i)
             {
-                visSystem->RemoveEntry(m_dataArray[i]);
+                m_visScene->RemoveEntry(m_dataArray[i]);
             }
         }
 
@@ -115,7 +121,8 @@ namespace Benchmark
         bool m_ownsSystemAllocator = false;
         AZStd::vector<AzFramework::VisibilityEntry> m_dataArray;
         AZStd::vector<QueryData> m_queryDataArray;
-        AzFramework::OctreeSystemComponent* m_octreeSystemComponent;
+        AzFramework::OctreeSystemComponent* m_octreeSystemComponent = nullptr;
+        AzFramework::IVisibilityScene* m_visScene = nullptr;
     };
 
     BENCHMARK_F(BM_Octree, InsertDelete1000)(benchmark::State& state)
@@ -166,7 +173,7 @@ namespace Benchmark
         {
             for (auto& queryData : m_queryDataArray)
             {
-                m_octreeSystemComponent->Enumerate(queryData.aabb, [](const AzFramework::IVisibilitySystem::NodeData&) {});
+                m_visScene->Enumerate(queryData.aabb, [](const AzFramework::IVisibilityScene::NodeData&) {});
             }
         }
         RemoveEntries(EntryCount);
@@ -180,7 +187,7 @@ namespace Benchmark
         {
             for (auto& queryData : m_queryDataArray)
             {
-                m_octreeSystemComponent->Enumerate(queryData.aabb, [](const AzFramework::IVisibilitySystem::NodeData&) {});
+                m_visScene->Enumerate(queryData.aabb, [](const AzFramework::IVisibilityScene::NodeData&) {});
             }
         }
         RemoveEntries(EntryCount);
@@ -194,7 +201,7 @@ namespace Benchmark
         {
             for (auto& queryData : m_queryDataArray)
             {
-                m_octreeSystemComponent->Enumerate(queryData.aabb, [](const AzFramework::IVisibilitySystem::NodeData&) {});
+                m_visScene->Enumerate(queryData.aabb, [](const AzFramework::IVisibilityScene::NodeData&) {});
             }
         }
         RemoveEntries(EntryCount);
@@ -208,7 +215,7 @@ namespace Benchmark
         {
             for (auto& queryData : m_queryDataArray)
             {
-                m_octreeSystemComponent->Enumerate(queryData.aabb, [](const AzFramework::IVisibilitySystem::NodeData&) {});
+                m_visScene->Enumerate(queryData.aabb, [](const AzFramework::IVisibilityScene::NodeData&) {});
             }
         }
         RemoveEntries(EntryCount);
@@ -222,7 +229,7 @@ namespace Benchmark
         {
             for (auto& queryData : m_queryDataArray)
             {
-                m_octreeSystemComponent->Enumerate(queryData.sphere, [](const AzFramework::IVisibilitySystem::NodeData&) {});
+                m_visScene->Enumerate(queryData.sphere, [](const AzFramework::IVisibilityScene::NodeData&) {});
             }
         }
         RemoveEntries(EntryCount);
@@ -236,7 +243,7 @@ namespace Benchmark
         {
             for (auto& queryData : m_queryDataArray)
             {
-                m_octreeSystemComponent->Enumerate(queryData.sphere, [](const AzFramework::IVisibilitySystem::NodeData&) {});
+                m_visScene->Enumerate(queryData.sphere, [](const AzFramework::IVisibilityScene::NodeData&) {});
             }
         }
         RemoveEntries(EntryCount);
@@ -250,7 +257,7 @@ namespace Benchmark
         {
             for (auto& queryData : m_queryDataArray)
             {
-                m_octreeSystemComponent->Enumerate(queryData.sphere, [](const AzFramework::IVisibilitySystem::NodeData&) {});
+                m_visScene->Enumerate(queryData.sphere, [](const AzFramework::IVisibilityScene::NodeData&) {});
             }
         }
         RemoveEntries(EntryCount);
@@ -264,7 +271,7 @@ namespace Benchmark
         {
             for (auto& queryData : m_queryDataArray)
             {
-                m_octreeSystemComponent->Enumerate(queryData.sphere, [](const AzFramework::IVisibilitySystem::NodeData&) {});
+                m_visScene->Enumerate(queryData.sphere, [](const AzFramework::IVisibilityScene::NodeData&) {});
             }
         }
         RemoveEntries(EntryCount);
@@ -278,7 +285,7 @@ namespace Benchmark
         {
             for (auto& queryData : m_queryDataArray)
             {
-                m_octreeSystemComponent->Enumerate(queryData.frustum, [](const AzFramework::IVisibilitySystem::NodeData&) {});
+                m_visScene->Enumerate(queryData.frustum, [](const AzFramework::IVisibilityScene::NodeData&) {});
             }
         }
         RemoveEntries(EntryCount);
@@ -292,7 +299,7 @@ namespace Benchmark
         {
             for (auto& queryData : m_queryDataArray)
             {
-                m_octreeSystemComponent->Enumerate(queryData.frustum, [](const AzFramework::IVisibilitySystem::NodeData&) {});
+                m_visScene->Enumerate(queryData.frustum, [](const AzFramework::IVisibilityScene::NodeData&) {});
             }
         }
         RemoveEntries(EntryCount);
@@ -306,7 +313,7 @@ namespace Benchmark
         {
             for (auto& queryData : m_queryDataArray)
             {
-                m_octreeSystemComponent->Enumerate(queryData.frustum, [](const AzFramework::IVisibilitySystem::NodeData&) {});
+                m_visScene->Enumerate(queryData.frustum, [](const AzFramework::IVisibilityScene::NodeData&) {});
             }
         }
         RemoveEntries(EntryCount);
@@ -320,7 +327,7 @@ namespace Benchmark
         {
             for (auto& queryData : m_queryDataArray)
             {
-                m_octreeSystemComponent->Enumerate(queryData.frustum, [](const AzFramework::IVisibilitySystem::NodeData&) {});
+                m_visScene->Enumerate(queryData.frustum, [](const AzFramework::IVisibilityScene::NodeData&) {});
             }
         }
         RemoveEntries(EntryCount);

@@ -67,7 +67,6 @@ namespace GradientSignal
         {
             behaviorContext->Class<DitherGradientConfig>()
                 ->Constructor()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Property("useSystemPointsPerUnit", BehaviorValueProperty(&DitherGradientConfig::m_useSystemPointsPerUnit))
                 ->Property("pointsPerUnit", BehaviorValueProperty(&DitherGradientConfig::m_pointsPerUnit))
@@ -119,7 +118,6 @@ namespace GradientSignal
             behaviorContext->Class<DitherGradientComponent>()->RequestBus("DitherGradientRequestBus");
 
             behaviorContext->EBus<DitherGradientRequestBus>("DitherGradientRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Event("GetUseSystemPointsPerUnit", &DitherGradientRequestBus::Events::GetUseSystemPointsPerUnit)
                 ->Event("SetUseSystemPointsPerUnit", &DitherGradientRequestBus::Events::SetUseSystemPointsPerUnit)

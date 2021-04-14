@@ -21,7 +21,6 @@ set(GEM_DEPENDENCIES
     Gem::Gestures
     Gem::CertificateManager
     Gem::DebugDraw
-    Gem::GameLift
     Gem::AudioSystem
     Gem::InAppPurchases
     Gem::AutomatedTesting
@@ -43,4 +42,16 @@ set(GEM_DEPENDENCIES
     Gem::SurfaceData
     Gem::GradientSignal
     Gem::Vegetation
+
+    Gem::Atom_RHI.Private
+    Gem::Atom_RPI.Private
+    Gem::Atom_Feature_Common
+    Gem::Atom_Bootstrap
+    Gem::Atom_Component_DebugCamera
+    Gem::AtomImGuiTools
+    Gem::AtomLyIntegration_CommonFeatures
+    Gem::EMotionFX_Atom
+    Gem::ImguiAtom
+    Gem::Atom_AtomBridge
+    Gem::AtomFont
 )

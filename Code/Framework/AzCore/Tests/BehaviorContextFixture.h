@@ -9,10 +9,12 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 *
 */
-#pragma once
-#include <AzCore/UnitTest/TestTypes.h>
 
+#pragma once
+
+#include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Interface/Interface.h>
 
 namespace UnitTest
 {
@@ -29,10 +31,12 @@ namespace UnitTest
             m_behaviorContext = aznew AZ::BehaviorContext();
 
             AZ::ComponentApplicationBus::Handler::BusConnect();
+            AZ::Interface<AZ::ComponentApplicationRequests>::Register(this);
         }
 
         void TearDown() override
         {            
+            AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(this);
             AZ::ComponentApplicationBus::Handler::BusDisconnect();
 
             // Just destroy everything before we complete the tear down.
@@ -45,7 +49,8 @@ namespace UnitTest
         // ComponentApplicationBus
         AZ::ComponentApplication* GetApplication() override { return nullptr; }
         void RegisterComponentDescriptor(const AZ::ComponentDescriptor*) override {}
-
+        void RegisterEntityAddedEventHandler(AZ::EntityAddedEvent::Handler&) override {}
+        void RegisterEntityRemovedEventHandler(AZ::EntityRemovedEvent::Handler&) override {}
         void UnregisterComponentDescriptor(const AZ::ComponentDescriptor*) override {}
         bool AddEntity(AZ::Entity*) override { return true; }
         bool RemoveEntity(AZ::Entity*) override { return true; }

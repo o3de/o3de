@@ -571,7 +571,6 @@ namespace AudioControls
         CATLControl* pControl = GetControlFromIndex(m_pATLControlsTree->currentIndex());
         if (pControl)
         {
-            EACEControlType eControlType = pControl->GetType();
             switch (pControl->GetType())
             {
             case eACET_TRIGGER:

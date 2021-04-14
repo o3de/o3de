@@ -459,7 +459,6 @@ static bool Dilate(CTexture* pTex, CTexture* pOutput, int nPhase, std::vector<II
     const ColorF& inMissColour = pInputParams->dilateMagicColour;
     Vec4 missColour = Vec4(inMissColour.r, inMissColour.g, inMissColour.b, inMissColour.a);
     Vec4 whiteColour = Vec4(1.0f, 1.0f, 1.0f, 1.0f);
-    uint32 extraPasses = 0;
     uint32 nPasses = 0;
     if (!pSH)
     {
@@ -478,7 +477,7 @@ static bool Dilate(CTexture* pTex, CTexture* pOutput, int nPhase, std::vector<II
 
     CTexture* pTemp = CTexture::CreateRenderTarget("MeshBaker_DilateTemp", uvMapWidth, uvMapHeight, Clr_Unknown, eTT_2D, FT_STATE_CLAMP, pTex->GetTextureDstFormat());
     int TempX, TempY, TempWidth, TempHeight;
-    int nTexStateIdRepeat = CTexture::GetTexState(STexState(FILTER_TRILINEAR, false));
+    CTexture::GetTexState(STexState(FILTER_TRILINEAR, false));
     rd->GetViewport(&TempX, &TempY, &TempWidth, &TempHeight);
     rd->RT_SetViewport(0, 0, uvMapWidth, uvMapHeight);
 
@@ -850,7 +849,6 @@ bool CD3D9Renderer::BakeMesh([[maybe_unused]] const SMeshBakingInputParams* pInp
                     ri[numChunks].pObj = pObj;
                     ri[numChunks].nOcclQuery = m; // Stash in this in something that doesn't effect sorting
                     ri[numChunks].ObjSort = (pObj->m_ObjFlags & 0xffff0000) | pObj->m_nSort;
-                    int nThreadID2 = m_RP.m_nProcessThreadID;
                     ri[numChunks].nBatchFlags = EF_BatchFlags(pSH, pObj, pRE, passInfo);  // naughty
                     ri[numChunks].nStencRef = pObj->m_nClipVolumeStencilRef;
                     uint32 nResID = pR ? pR->m_Id : 0;

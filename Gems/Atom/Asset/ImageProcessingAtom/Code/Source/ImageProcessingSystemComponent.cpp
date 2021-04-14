@@ -193,7 +193,7 @@ namespace ImageProcessingAtom
 
             AZ::Uuid sourceId = source->GetSourceUuid();
 
-            QAction* editImportSettingsAction = menu->addAction("Edit Texture Settings...", [sourceId, this]()
+            menu->addAction("Edit Texture Settings...", [sourceId, this]()
                 {
                     OpenSourceTextureFile(sourceId);
                 });
@@ -205,7 +205,7 @@ namespace ImageProcessingAtom
             if (product->GetAssetType() == azrtti_typeid<AZ::RPI::StreamingImageAsset>())
             {
                 AZ::Data::AssetId assetId = product->GetAssetId();
-                QAction* editImportSettingsAction = menu->addAction("Save as DDS...", [assetId, this]()
+                menu->addAction("Save as DDS...", [assetId, this]()
                     {
                         QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save to file"), m_lastSavedPath, QString("DDS file (*.dds)"));
                         if (filePath.isEmpty())

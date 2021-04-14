@@ -307,9 +307,9 @@ namespace EMotionFX
             const float updatedPositionY = m_actorInstance->GetWorldSpaceTransform().mPosition.GetY();
             const float actualDeltaX = AZ::GetAbs(updatedPositionX - originalPositionX);
             const float actualDeltaY = AZ::GetAbs(updatedPositionY - originalPositionY);
-            EXPECT_TRUE(AZ::GetAbs(actualDeltaX - expectedDeltaX) < 0.001f)
+            EXPECT_NEAR(actualDeltaX, expectedDeltaX, 0.001f)
                 << "Diagonal Rotation: The absolute difference between actual delta and expected delta of X-axis should be less than 0.001f.";
-            EXPECT_TRUE(AZ::GetAbs(actualDeltaY - expectedDeltaY) < 0.001f)
+            EXPECT_NEAR(actualDeltaY, expectedDeltaY, 0.001f)
                 << "Diagonal Rotation: The absolute difference between actual delta and expected delta of Y-axis should be less than 0.001f.";
         }
     }

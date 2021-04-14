@@ -28,7 +28,6 @@ set(FILES
     PakHelpers.h
     PakManager.h
     CfgFile.cpp
-    CmdLine.cpp
     Config.cpp
     DependencyList.cpp
     ExcelExport.cpp
@@ -40,7 +39,6 @@ set(FILES
     ResourceCompiler_precompiled.h
     TextFileReader.cpp
     CfgFile.h
-    CmdLine.h
     Config.h
     ConvertContext.h
     DebugLog.h

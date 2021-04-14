@@ -250,7 +250,6 @@ bool CVariableIArchive::SerializeResourceSelector(const Serialization::SStruct& 
 bool CVariableIArchive::SerializeStringListStaticValue(const Serialization::SStruct& ser, const char* name, [[maybe_unused]] const char* label)
 {
     StringListStaticValue* const pStringListStaticValue = reinterpret_cast< StringListStaticValue* >(ser.pointer());
-    const StringListStatic& stringListStatic = pStringListStaticValue->stringList();
 
     _smart_ptr< IVariable > pChild = VarUtil::FindChildVariable(m_pVariable, m_childIndexOverride, name);
     if (pChild)

@@ -120,7 +120,8 @@ namespace EMotionFX
                 const uint vertexCount = static_cast<uint>(verticesForThisMorph.size());
                 for (uint vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
                 {
-                    blendShapeData->AddVertex(verticesForThisMorph.at(vertexIndex), /*normal=*/AZ::Vector3(0.0f, 0.0f, 1.0f));
+                    blendShapeData->AddPosition(verticesForThisMorph.at(vertexIndex));
+                    blendShapeData->AddNormal(AZ::Vector3::CreateAxisZ());
                     blendShapeData->SetVertexIndexToControlPointIndexMap(vertexIndex, vertexIndex);
                 }
                 blendShapeData->AddFace({{0, 1, 2}});

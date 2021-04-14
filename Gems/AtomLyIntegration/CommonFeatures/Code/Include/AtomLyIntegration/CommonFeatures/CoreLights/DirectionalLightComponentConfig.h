@@ -117,11 +117,14 @@ namespace AZ
             //! It is used only when the pixel is predicted as on the boundary.
             uint16_t m_filteringSampleCount = 32;
 
+            PcfMethod m_pcfMethod = PcfMethod::BoundarySearch;
+
             bool IsSplitManual() const;
             bool IsSplitAutomatic() const;
             bool IsCascadeCorrectionDisabled() const;
             bool IsShadowFilteringDisabled() const;
             bool IsShadowPcfDisabled() const;
+            bool IsPcfBoundarySearchDisabled() const;
         };
     } // namespace Render
 } // namespace AZ

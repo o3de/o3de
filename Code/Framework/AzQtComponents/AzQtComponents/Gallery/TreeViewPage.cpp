@@ -17,7 +17,7 @@
 #include <AzQtComponents/Components/Widgets/Text.h>
 #include <AzQtComponents/Components/Widgets/TreeView.h>
 
-#include <Gallery/ui_TreeViewPage.h>
+#include <AzQtComponents/Gallery/ui_TreeViewPage.h>
 
 namespace
 {

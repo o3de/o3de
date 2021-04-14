@@ -165,7 +165,7 @@ namespace News
         QCustomMessageBox msgBox(
             QCustomMessageBox::Critical,
             tr("Publish resources"),
-            tr("You are about to overwrite the current Lumberyard Welcome Message. Are you sure you want to publish?"),
+            tr("You are about to overwrite the current Open 3D Engine Welcome Message. Are you sure you want to publish?"),
             this);
         msgBox.AddButton("Yes", Yes);
         msgBox.AddButton("No", No);

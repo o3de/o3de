@@ -301,7 +301,6 @@ namespace ImGui
         //!Draw the current node on the active window.
         void Paint(ImGuiFrameVisualizerNode* node, const ImVec2& offset,unsigned int& nodeID)
         {
-            ImGuiWindow* window = GetCurrentWindow();
             ImGuiIO& io = ImGui::GetIO();
 
             const float nodeSlotRadius = 4.0f;
@@ -455,7 +454,6 @@ namespace ImGui
             {
                 return m_rootNode->AddChild(name, numInputs, numOutputs);
             }
-            return nullptr;
         }
         
         //!Resolve all the overlapping nodes.

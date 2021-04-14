@@ -631,8 +631,6 @@ CTrackViewNodesCtrl::CRecord* CTrackViewNodesCtrl::AddAnimNodeRecord(CRecord* pP
 //////////////////////////////////////////////////////////////////////////
 CTrackViewNodesCtrl::CRecord* CTrackViewNodesCtrl::AddTrackRecord(CRecord* pParentRecord, CTrackViewTrack* pTrack)
 {
-    const CTrackViewAnimNode* animNode = pTrack->GetAnimNode();
-
     CRecord* pNewTrackRecord = new CRecord(pTrack);
     pNewTrackRecord->setSizeHint(0, QSize(30, 18));
     pNewTrackRecord->setText(0, pTrack->GetName());
@@ -785,7 +783,6 @@ void CTrackViewNodesCtrl::UpdateAnimNodeRecord(CRecord* record, CTrackViewAnimNo
     if (nodeType == AnimNodeType::Component)
     {
         // get the component icon from cached component icons
-        bool searchCompleted = false;
         
         AZ::Entity* azEntity = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(azEntity, &AZ::ComponentApplicationBus::Events::FindEntity, 
@@ -1526,7 +1523,7 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
         if (animNode)
         {
             QString matName;
-            int subMtlIndex = GetMatNameAndSubMtlIndexFromName(matName, animNode->GetName());
+            GetMatNameAndSubMtlIndexFromName(matName, animNode->GetName());
             QString newMatName;
             newMatName = tr("%1.[%2]").arg(matName).arg(cmd - eMI_SelectSubmaterialBase + 1);
             CUndo undo("Rename TrackView node");
@@ -1671,7 +1668,6 @@ void CTrackViewNodesCtrl::ImportFromFBX()
 
         for (unsigned int trackID = 0; trackID < numTracks; ++trackID)
         {
-            CTrackViewTrack* pTrack = tracks.GetTrack(trackID);
             undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
         }
 
@@ -2275,7 +2271,6 @@ int CTrackViewNodesCtrl::ShowPopupMenuMultiSelection(SContextMenu& contextMenu)
     for (int currentNode = 0; currentNode < records.size(); ++currentNode)
     {
         CRecord* pItemInfo = (CRecord*)records[currentNode];
-        ETrackViewNodeType type = pItemInfo->GetNode()->GetNodeType();
 
         if (pItemInfo->GetNode()->GetNodeType() == eTVNT_AnimNode)
         {
@@ -2622,7 +2617,8 @@ void CTrackViewNodesCtrl::ShowNextResult()
 
             if (!items.empty())
             {
-                m_currentMatchIndex = ++m_currentMatchIndex % m_matchCount;
+                ++m_currentMatchIndex;
+                m_currentMatchIndex = m_currentMatchIndex % m_matchCount;
                 ui->treeWidget->selectionModel()->clear();
                 items[m_currentMatchIndex]->setSelected(true);
             }
@@ -2812,8 +2808,7 @@ CTrackViewNodesCtrl::CRecord* CTrackViewNodesCtrl::GetNodeRecord(const CTrackVie
         return nullptr;
     }
 
-    CRecord* record = findIter->second;
-    assert (record->GetNode() == pNode);
+    assert (findIter->second->GetNode() == pNode);
     return findIter->second;
 }
 

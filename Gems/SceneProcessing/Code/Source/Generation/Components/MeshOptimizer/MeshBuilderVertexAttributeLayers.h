@@ -111,11 +111,11 @@ namespace AZ::MeshBuilder
             }
             else if constexpr (AZStd::is_floating_point_v<AttribType>)
             {
-                return AZ::IsClose(mVertices[orgVtx][duplicate].mValue, mVertexValue);
+                return AZ::IsClose(mVertices[orgVtx][duplicate].mValue, mVertexValue, 0.00001f);
             }
             else
             {
-                return mVertices[orgVtx][duplicate].mValue.IsClose(mVertexValue);
+                return mVertices[orgVtx][duplicate].mValue.IsClose(mVertexValue, 0.00001f);
             }
         }
 

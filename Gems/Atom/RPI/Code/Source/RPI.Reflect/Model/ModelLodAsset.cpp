@@ -138,19 +138,6 @@ namespace AZ
             return nullptr;
         }
 
-        AZStd::array_view<uint8_t> ModelLodAsset::Mesh::GetSemanticBuffer(const AZ::Name& semantic) const
-        {
-            if (const BufferAssetView* bufferAssetView = GetSemanticBufferAssetView(semantic))
-            {
-                if (const BufferAsset* bufferAsset = bufferAssetView->GetBufferAsset().Get())
-                {
-                    return bufferAsset->GetBuffer();
-                }
-            }
-
-            return {};
-        }
-
         void ModelLodAsset::SetReady()
         {
             m_status = Data::AssetData::AssetStatus::Ready;

@@ -224,7 +224,6 @@ namespace EMStudio
         const size_t numConditions = transition->GetNumConditions();
         const size_t numActions = transition->GetTriggerActionSetup().GetNumActions();
         const size_t sumSize = numConditions + numActions;
-        EMotionFX::TriggerActionSetup& actionSetup = transition->GetTriggerActionSetup();
 
         // precalculate some values we need for the condition rendering
         const float             shapeDiameter = 3.0f;
@@ -280,7 +279,6 @@ namespace EMStudio
 
             for (size_t i = 0; i < numActions; ++i)
             {
-                EMotionFX::AnimGraphTriggerAction* action = actionSetup.GetAction(i);
                 brush->setColor(actionColor);
 
                 // calculate the rect left top

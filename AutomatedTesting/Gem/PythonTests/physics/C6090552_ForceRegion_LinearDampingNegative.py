@@ -64,7 +64,7 @@ def C6090552_ForceRegion_LinearDampingNegative():
         7) Exit game mode and close the editor
 
     Note:
-    - This test file must be called from the Lumberyard Editor command terminal
+    - This test file must be called from the Open 3D Engine Editor command terminal
     - Any passed and failed tests are written to the Editor.log file.
         Parsing the file or running a log_monitor are required to observe the test results.
 

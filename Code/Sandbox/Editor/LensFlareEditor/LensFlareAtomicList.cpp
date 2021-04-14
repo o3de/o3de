@@ -185,9 +185,17 @@ int QLensFlareAtomicListModel::rowCount(const QModelIndex& parent) const
 QVariant QLensFlareAtomicListModel::data(const QModelIndex& index, int role) const
 {
     Item* item;
-    if (!index.isValid() || !(item = ItemFromIndex(index)))
+    if (!index.isValid())
     {
         return QVariant();
+    }
+    else
+    {
+        item = ItemFromIndex(index);
+        if (!item)
+        {
+            return QVariant();
+        }
     }
 
     switch (role)
@@ -212,9 +220,17 @@ QVariant QLensFlareAtomicListModel::data(const QModelIndex& index, int role) con
 bool QLensFlareAtomicListModel::setData(const QModelIndex& index, const QVariant& value, int role)
 {
     Item* item;
-    if (!index.isValid() || !(item = ItemFromIndex(index)))
+    if (index.isValid())
     {
         return false;
+    }
+    else
+    {
+        item = ItemFromIndex(index);
+        if (!item)
+        {
+            return false;
+        }
     }
 
     switch (role)
@@ -247,9 +263,17 @@ Qt::ItemFlags QLensFlareAtomicListModel::flags(const QModelIndex& index) const
 EFlareType QLensFlareAtomicListModel::FlareTypeFromIndex(QModelIndex index) const
 {
     Item* item;
-    if (!index.isValid() || !(item = ItemFromIndex(index)))
+    if (!index.isValid())
     {
         return eFT_Max;
+    }
+    else
+    {
+        item = ItemFromIndex(index);
+        if (!item)
+        {
+            return eFT_Max;
+        }
     }
 
     return item->flareType;
@@ -268,7 +292,7 @@ QLensFlareAtomicListModel::Item* QLensFlareAtomicListModel::ItemFromIndex(QModel
 QStringList QLensFlareAtomicListModel::mimeTypes() const
 {
     return {
-               QStringLiteral("application/x-lumberyard-flaretypes")
+               QStringLiteral("application/x-o3de-flaretypes")
     };
 }
 
@@ -284,7 +308,7 @@ QMimeData* QLensFlareAtomicListModel::mimeData(const QModelIndexList& indexes) c
         stream << static_cast<int>(FlareTypeFromIndex(index));
     }
 
-    data->setData(QStringLiteral("application/x-lumberyard-flaretypes"), encoded);
+    data->setData(QStringLiteral("application/x-o3de-flaretypes"), encoded);
 
     return data;
 }

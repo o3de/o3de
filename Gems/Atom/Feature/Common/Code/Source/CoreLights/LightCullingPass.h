@@ -83,8 +83,9 @@ namespace AZ
 
             enum LightTypes
             {
+                eLightTypes_SimplePoint,
+                eLightTypes_SimpleSpot,
                 eLightTypes_Point,
-                eLightTypes_Spot,
                 eLightTypes_Disk,
                 eLightTypes_Capsule,
                 eLightTypes_Quad,

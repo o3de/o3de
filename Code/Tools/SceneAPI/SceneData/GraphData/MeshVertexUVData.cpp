@@ -40,12 +40,25 @@ namespace AZ
                 }
             }
 
+            void MeshVertexUVData::CloneAttributesFrom(const IGraphObject* sourceObject)
+            {
+                IMeshVertexUVData::CloneAttributesFrom(sourceObject);
+                if (const auto* typedSource = azrtti_cast<const MeshVertexUVData*>(sourceObject))
+                {
+                    SetCustomName(typedSource->GetCustomName());
+                }
+            }
+
             const AZ::Name& MeshVertexUVData::GetCustomName() const
             {
                 return m_customName;
             }
 
             void MeshVertexUVData::SetCustomName(const char* name)
+            {
+                m_customName = name;
+            }
+            void MeshVertexUVData::SetCustomName(const AZ::Name& name)
             {
                 m_customName = name;
             }

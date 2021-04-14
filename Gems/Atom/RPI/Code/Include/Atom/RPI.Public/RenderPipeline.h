@@ -173,6 +173,16 @@ namespace AZ
             void RemoveFromRenderTick();
 
             ~RenderPipeline();
+                        
+            enum class RenderMode : uint8_t
+            {
+                RenderEveryTick, // Render at each RPI system render tick
+                RenderOnce, // Render once in next RPI system render tick
+                NoRender // Render disabled.
+            };
+
+            //! Get current render mode
+            RenderMode GetRenderMode() const;
 
         private:
             RenderPipeline() = default;
@@ -204,12 +214,6 @@ namespace AZ
             // End of functions accessed by Scene class
             //////////////////////////////////////////////////
 
-            enum class RenderMode : uint8_t
-            {
-                RenderEveryTick,    // Render at each RPI system render tick
-                RenderOnce,         // Render once in next RPI system render tick
-                NoRender            // Render disabled.
-            };
 
             RenderMode m_renderMode = RenderMode::RenderEveryTick;
 

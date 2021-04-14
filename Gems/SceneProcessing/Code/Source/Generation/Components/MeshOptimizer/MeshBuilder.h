@@ -71,11 +71,6 @@ namespace AZ::MeshBuilder
         size_t CalcNumIndices() const;  // calculate the number of indices in the mesh
         size_t CalcNumVertices() const; // calculate the number of vertices in the mesh
 
-        void OptimizeTriangleList();    // call this in order to optimize the index buffers on cache efficiency
-
-        bool CheckIfIsTriangleMesh() const;
-        bool CheckIfIsQuadMesh() const;
-
         size_t GetNumOrgVerts() const { return m_numOrgVerts; }
         void SetSkinningInfo(AZStd::unique_ptr<MeshBuilderSkinningInfo> skinningInfo);
         const MeshBuilderSkinningInfo* GetSkinningInfo() const         { return m_skinningInfo.get(); }
@@ -97,8 +92,9 @@ namespace AZ::MeshBuilder
         };
 
         size_t FindRealVertexNr(const MeshBuilderSubMesh* subMesh, size_t orgVtx, size_t dupeNr) const;
-        const SubMeshVertex* FindSubMeshVertex(MeshBuilderSubMesh* subMesh, size_t orgVtx, size_t dupeNr) const;
-        size_t CalcNumVertexDuplicates(MeshBuilderSubMesh* subMesh, size_t orgVtx) const;
+        void SetRealVertexNrForSubMeshVertex(const MeshBuilderSubMesh* subMesh, size_t orgVtx, size_t dupeNr, size_t realVertexNr);
+        const SubMeshVertex* FindSubMeshVertex(const MeshBuilderSubMesh* subMesh, size_t orgVtx, size_t dupeNr) const;
+        size_t CalcNumVertexDuplicates(const MeshBuilderSubMesh* subMesh, size_t orgVtx) const;
 
         void GenerateSubMeshVertexOrders();
 
@@ -133,6 +129,10 @@ namespace AZ::MeshBuilder
         MeshBuilderSubMesh* FindSubMeshForPolygon(const AZStd::vector<size_t>& orgVertexNumbers, size_t materialIndex)
         {
             return const_cast<MeshBuilderSubMesh*>(static_cast<const MeshBuilder*>(this)->FindSubMeshForPolygon(orgVertexNumbers, materialIndex));
+        }
+        SubMeshVertex* FindSubMeshVertex(const MeshBuilderSubMesh* subMesh, size_t orgVtx, size_t dupeNr)
+        {
+            return const_cast<SubMeshVertex*>(static_cast<const MeshBuilder*>(this)->FindSubMeshVertex(subMesh, orgVtx, dupeNr));
         }
         void ExtractBonesForPolygon(const AZStd::vector<size_t>& orgVertexNumbers, AZStd::vector<size_t>& outPolyJointList) const;
         void AddPolygon(const AZStd::vector<MeshBuilderVertexLookup>& indices, const AZStd::vector<size_t>& orgVertexNumbers, size_t materialIndex);

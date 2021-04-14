@@ -199,7 +199,7 @@ namespace EMStudio
     }
 
 
-    bool AnimGraphPlugin::CommandPlayMotionCallback::Execute(MCore::Command* command, const MCore::CommandLine& commandLine)
+    bool AnimGraphPlugin::CommandPlayMotionCallback::Execute([[maybe_unused]] MCore::Command* command, const MCore::CommandLine& commandLine)
     {
         AZ_UNUSED(commandLine);
 
@@ -209,7 +209,6 @@ namespace EMStudio
             return false;
         }
 
-        CommandSystem::CommandRecorderClear* clearRecorderCommand = static_cast<CommandSystem::CommandRecorderClear*>(command);
         AnimGraphPlugin* animGraphPlugin = static_cast<AnimGraphPlugin*>(plugin);
         animGraphPlugin->GetParameterWindow()->Reinit();
 

@@ -59,7 +59,6 @@ CReflectedVarAnimation AnimationPropertyCtrl::value() const
 
 void AnimationPropertyCtrl::OnApplyClicked()
 {
-    CUIEnumerations &roGeneralProxy = CUIEnumerations::GetUIEnumerationsInstance();
     QStringList cSelectedAnimations;
     size_t nTotalAnimations(0);
     size_t nCurrentAnimation(0);

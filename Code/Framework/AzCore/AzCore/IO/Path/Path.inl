@@ -214,6 +214,20 @@ namespace AZ::IO::Internal
         // logic
         return IsAbsolute(pathView.begin(), pathView.end(), preferredSeparator);
     }
+
+    // Compares path segments using either Posix  or Windows path rules based on the path separator in use
+    // Posix paths perform a case-sensitive comparison, while Windows paths perform a case-insensitive comparison
+    static int ComparePathSegment(AZStd::string_view left, AZStd::string_view right, char pathSeparator)
+    {
+        const size_t maxCharsToCompare = (AZStd::min)(left.size(), right.size());
+
+        int charCompareResult = pathSeparator == PosixPathSeparator
+            ? strncmp(left.data(), right.data(), maxCharsToCompare)
+            : azstrnicmp(left.data(), right.data(), maxCharsToCompare);
+        return charCompareResult == 0
+            ? aznumeric_cast<ptrdiff_t>(left.size()) - aznumeric_cast<ptrdiff_t>(right.size())
+            : charCompareResult;
+    }
 }
 
 //! PathParser implementation
@@ -351,7 +365,6 @@ namespace AZ::IO::parser
         constexpr void Decrement() noexcept
         {
             auto pathStart = m_path_view.begin();
-            auto pathEnd = m_path_view.end();
             auto currentPathEntry = getCurrentTokenStartPos();
 
             if (currentPathEntry == pathStart)
@@ -613,7 +626,7 @@ namespace AZ::IO::parser
         {
             return pathParser->InRootName() ? **pathParser : "";
         };
-        int res = GetRootName(lhsPathParser).compare(GetRootName(rhsPathParser));
+        int res = Internal::ComparePathSegment(GetRootName(lhsPathParser), GetRootName(rhsPathParser), lhsPathParser->m_preferred_separator);
         ConsumeRootName(lhsPathParser);
         ConsumeRootName(rhsPathParser);
         return res;
@@ -642,7 +655,8 @@ namespace AZ::IO::parser
 
         while (lhsPathParser && rhsPathParser)
         {
-            if (int res = (*lhsPathParser).compare(*rhsPathParser); res != 0)
+            if (int res = Internal::ComparePathSegment(*lhsPathParser, *rhsPathParser, lhsPathParser.m_preferred_separator);
+                res != 0)
             {
                 return res;
             }
@@ -1033,11 +1047,25 @@ namespace AZ::IO
         parser::PathParser patternParserEnd(pathPatternView.relative_path_view(), parser::ParserState::PS_AtEnd, pathPatternView.m_preferred_separator);
 
         // move the parser from the end to a valid filename by decrementing
-        for(--pathParserEnd, --patternParserEnd; pathParserEnd && patternParserEnd; --pathParserEnd, --patternParserEnd)
+        // Windows Paths are case-insensitive, while Posix paths are case-sensitive
+        if (m_preferred_separator == PosixPathSeparator)
         {
-            if (!AZStd::wildcard_match_case(*patternParserEnd, *pathParserEnd))
+            for (--pathParserEnd, --patternParserEnd; pathParserEnd && patternParserEnd; --pathParserEnd, --patternParserEnd)
             {
-                return false;
+                if (!AZStd::wildcard_match_case(*patternParserEnd, *pathParserEnd))
+                {
+                    return false;
+                }
+            }
+        }
+        else
+        {
+            for (--pathParserEnd, --patternParserEnd; pathParserEnd && patternParserEnd; --pathParserEnd, --patternParserEnd)
+            {
+                if (!AZStd::wildcard_match(*patternParserEnd, *pathParserEnd))
+                {
+                    return false;
+                }
             }
         }
 

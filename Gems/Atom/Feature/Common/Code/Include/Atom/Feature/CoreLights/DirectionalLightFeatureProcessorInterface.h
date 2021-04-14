@@ -169,6 +169,9 @@ namespace AZ
             //! @param width Boundary width. The shadow is gradually changed the degree of shadowed.
             //! If width == 0, softening edge is disabled. Units are in meters.
             virtual void SetShadowBoundaryWidth(LightHandle handle, float boundaryWidth) = 0;
+
+            //! Sets the shadowmap Pcf method.
+            virtual void SetPcfMethod(LightHandle handle, PcfMethod method) = 0;
         };
     } // namespace Render
 } // namespace AZ

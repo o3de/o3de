@@ -52,7 +52,6 @@ namespace Vegetation
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<LevelSettingsConfig>()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Constructor()
                 ->Property("areaSystemConfig", BehaviorValueProperty(&LevelSettingsConfig::m_areaSystemConfig))
@@ -84,7 +83,6 @@ namespace Vegetation
             behaviorContext->Class<LevelSettingsComponent>()->RequestBus("LevelSettingsRequestBus");
 
             behaviorContext->EBus<LevelSettingsRequestBus>("LevelSettingsRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Event("GetAreaSystemConfig", &LevelSettingsRequestBus::Events::GetAreaSystemConfig)
                 ->Event("GetInstanceSystemConfig", &LevelSettingsRequestBus::Events::GetInstanceSystemConfig)

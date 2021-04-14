@@ -84,7 +84,6 @@ namespace EMotionFX
             if (behaviorContext)
             {
                 behaviorContext->EBus<SimpleMotionComponentRequestBus>("SimpleMotionComponentRequestBus")
-                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::Preview)
                     ->Event("LoopMotion", &SimpleMotionComponentRequestBus::Events::LoopMotion)
                     ->Event("GetLoopMotion", &SimpleMotionComponentRequestBus::Events::GetLoopMotion)
                         ->Attribute("Hidden", AZ::Edit::Attributes::PropertyHidden)

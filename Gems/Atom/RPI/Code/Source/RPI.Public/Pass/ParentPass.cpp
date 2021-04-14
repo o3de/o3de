@@ -92,7 +92,7 @@ namespace AZ
             AZ_Assert(pass->m_parent == this, "Trying to remove a pass of which we are not the parent.");
 
             // Find child and move it to the end of the list
-            auto it = AZStd::remove(m_children.begin(), m_children.end(), pass);
+            [[maybe_unused]] auto it = AZStd::remove(m_children.begin(), m_children.end(), pass);
             AZ_Assert((it + 1) == m_children.end(), "Pass::RemoveChild found more than one Ptr<Pass> in m_children, which is not allowed.");
 
             // Delete the child that is now at the end of the list

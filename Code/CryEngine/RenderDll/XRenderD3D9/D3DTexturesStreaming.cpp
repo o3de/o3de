@@ -54,7 +54,6 @@ bool CTexture::IsStillUsedByGPU()
     if (pDeviceTexture)
     {
         D3D_CHK_RENDTH;
-        D3DBaseTexture* pD3DTex = pDeviceTexture->GetBaseTexture();
     }
     return false;
 }
@@ -97,7 +96,6 @@ void CTexture::StreamExpandMip(const void* vpRawData, int nMip, int nBaseMipOffs
     const int nSrcSurfaceSize = CTexture::TextureDataSize(nCurMipWidth, nCurMipHeight, 1, 1, 1, m_eTFSrc, m_eSrcTileMode);
     const int nSrcSidePitch = nSrcSurfaceSize + nSideDelta;
 
-    SRenderThread* pRT = gRenDev->m_pRT;
     if (mh.m_Mips && mh.m_SideSize > 0)
     {
         for (int iSide = 0; iSide < nSides; ++iSide)
@@ -470,9 +468,6 @@ ID3D11CommandList* CTexture::StreamCreateDeferred(int nStartMip, int nEndMip, ST
 
     if (CTexture::s_pStreamDeferredCtx)
     {
-        CD3D9Renderer* r = gcpRendD3D;
-        CDeviceManager* pDevMan = &r->m_DevMan;
-        HRESULT h = S_OK;
         nEndMip =   min(nEndMip + 1, (int)m_nMips) - 1;//+1 -1 needed as the compare is <=
         STexMipHeader* mh = m_pFileTexMips->m_pMipHeader;
 
@@ -648,7 +643,6 @@ void CTexture::StreamAssignPoolItem(STexPoolItem* pItem, int nMinMip)
         SRVDesc.Format = CTexture::ConvertToSRGBFmt(SRVDesc.Format);
     }
 
-    int nDevMip = m_nMips - pItemOwner->m_nMips;
 
     // Recreate shader resource view
     if (m_eTT == eTT_2D)
@@ -680,7 +674,10 @@ void CTexture::StreamAssignPoolItem(STexPoolItem* pItem, int nMinMip)
     }
 
     D3DShaderResourceView* pNewResourceView = NULL;
-    HRESULT hr = gcpRendD3D->GetDevice().CreateShaderResourceView(pItem->m_pDevTexture->GetBaseTexture(), &SRVDesc, &pNewResourceView);
+#if !defined(NDEBUG)
+    HRESULT hr =
+#endif
+        gcpRendD3D->GetDevice().CreateShaderResourceView(pItem->m_pDevTexture->GetBaseTexture(), &SRVDesc, &pNewResourceView);
     assert(hr == S_OK);
 
     SetShaderResourceView(pNewResourceView, false);

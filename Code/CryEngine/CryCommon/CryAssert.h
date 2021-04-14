@@ -48,8 +48,12 @@
 // Using AZ_Assert for all assert kinds (assert =, CRY_ASSERT, AZ_Assert).
 // see Trace::Assert for implementation
 #if defined(USE_AZ_ASSERT)
-#undef assert
-#define assert(condition) AZ_Assert(condition, "%s", #condition)
+    #undef assert
+    #if !defined(NDEBUG)
+        #define assert(condition) AZ_Assert(condition, "%s", #condition)
+    #else
+        #define assert(condition)
+    #endif
 #endif //defined(USE_AZ_ASSERT)
 
 //-----------------------------------------------------------------------------------------------------

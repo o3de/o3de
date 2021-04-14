@@ -30,16 +30,16 @@ class TestDebugger(object):
     @pytest.fixture(autouse=True)
     def setup_teardown(self, request, workspace, project, level):
         # Cleanup our temp level
-        file_system.delete([os.path.join(workspace.paths.dev(), project, "Levels", level)], True, True)
+        file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
 
         def teardown():
             # Cleanup our temp level
-            file_system.delete([os.path.join(workspace.paths.dev(), project, "Levels", level)], True, True)
+            file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
 
         request.addfinalizer(teardown)
 
     @pytest.mark.test_case_id("C2789148")
-    @pytest.mark.SUITE_main
+    @pytest.mark.SUITE_periodic
     def test_Debugger_DebugCVarsWork(self, request, editor, level, workspace, launcher_platform):
         cfg_args = [level]
 

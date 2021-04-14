@@ -594,7 +594,8 @@ Quatern snuggle(Quatern q, HVect* k)
         mag[2] = (double)q.y * q.z + (double)q.x * q.w;
         for (i = 0; i < 3; i++)
         {
-            if (neg[i] = (mag[i] < 0.0))
+            neg[i] = (mag[i] < 0.0);
+            if (neg[i])
             {
                 mag[i] = -mag[i];
             }
@@ -670,7 +671,8 @@ Quatern snuggle(Quatern q, HVect* k)
         for (i = 0; i < 4; i++)
         {
             pa[i] = 0.0;
-            if (neg[i] = (qa[i] < 0.0))
+            neg[i] = (qa[i] < 0.0);
+            if (neg[i])
             {
                 qa[i] = -qa[i];
             }

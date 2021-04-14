@@ -48,6 +48,8 @@ namespace AZ
             //! Adds a shader input to the ShaderResourceGroupLayout.
             void AddShaderInput(const RHI::ShaderInputBufferDescriptor& shaderInputBuffer);
             void AddShaderInput(const RHI::ShaderInputImageDescriptor& shaderInputImage);
+            void AddShaderInput(const RHI::ShaderInputBufferUnboundedArrayDescriptor& shaderInputBufferUnboundedArray);
+            void AddShaderInput(const RHI::ShaderInputImageUnboundedArrayDescriptor& shaderInputImageUnboundedArray);
             void AddShaderInput(const RHI::ShaderInputSamplerDescriptor& shaderInputSampler);
             void AddShaderInput(const RHI::ShaderInputConstantDescriptor& shaderInputConstant);
 

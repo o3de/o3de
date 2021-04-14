@@ -60,8 +60,34 @@ namespace AZ
         {
         public:
             virtual void OnModelReady(const Data::Asset<RPI::ModelAsset>& modelAsset, const Data::Instance<RPI::Model>& model) = 0;
+            virtual void OnModelPreDestroy() {}
+
+            /**
+             * When connecting to this bus if the asset is ready you will immediately get an OnModelReady event
+             */
+            template<class Bus>
+            struct ConnectionPolicy
+                : public AZ::EBusConnectionPolicy<Bus>
+            {
+                static void Connect(
+                    typename Bus::BusPtr& busPtr,
+                    typename Bus::Context& context,
+                    typename Bus::HandlerNode& handler,
+                    typename Bus::Context::ConnectLockGuard& connectLock,
+                    const typename Bus::BusIdType& id = 0)
+                {
+                    AZ::EBusConnectionPolicy<Bus>::Connect(busPtr, context, handler, connectLock, id);
+
+                    Data::Instance<RPI::Model> model;
+                    MeshComponentRequestBus::EventResult(model, id, &MeshComponentRequestBus::Events::GetModel);
+                    if (model &&
+                        model->GetModelAsset().GetStatus() == AZ::Data::AssetData::AssetStatus::Ready)
+                    {
+                        handler->OnModelReady(model->GetModelAsset(), model);
+                    }
+                }
+            };
         };
         using MeshComponentNotificationBus = EBus<MeshComponentNotifications>;
-
     } // namespace Render
 } // namespace AZ

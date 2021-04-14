@@ -104,9 +104,9 @@ namespace AZ
             // As one return value (hit point) is based on the other (hit time), for simplicity, the Lua implementation
             // just returns all three values: does the ray hit? When does it hit? Where does it hit?
 
-            if (!dc.IsClass<Vector3>(0) || !dc.IsClass<Vector3>(0))
+            if (!dc.IsClass<Vector3>(0) || !dc.IsClass<Vector3>(1))
             {
-                AZ_Error("Script", false, "ScriptPlane CastRay requires two ScriptVector3s as arguments.");
+                AZ_Error("Script", false, "ScriptPlane IntersectSegment requires two ScriptVector3s as arguments.");
                 return;
             }
 
@@ -147,7 +147,6 @@ namespace AZ
         {
             behaviorContext->Class<Plane>()->
                 Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)->
-                Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)->
                 Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)->
                 Attribute(AZ::Script::Attributes::GenericConstructorOverride, &Internal::PlaneDefaultConstructor)->
                 Method("ToString", &Internal::PlaneToString)->

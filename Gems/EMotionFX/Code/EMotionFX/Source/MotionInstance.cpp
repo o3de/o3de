@@ -147,7 +147,6 @@ namespace EMotionFX
         outState.m_numLoops = inState.m_numLoops;
         outState.m_isFrozen = inState.m_isFrozen;
 
-        bool hasLooped = false;
         if (inState.m_playMode == PLAYMODE_FORWARD)
         {
             float newCurrentTime = inCurrentTime + (timePassed * inState.m_playSpeed);

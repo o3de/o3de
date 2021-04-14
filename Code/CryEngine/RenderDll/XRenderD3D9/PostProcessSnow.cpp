@@ -335,7 +335,6 @@ void CSceneSnow::HalfResComposite()
 void CSceneSnow::DrawClusters()
 {
     // Previous view projection matrix for motion blur.
-    float fCurrFrameTime = gEnv->pTimer->GetFrameTime();
     Matrix44A mViewProjPrev = gRenDev->GetPreviousFrameMatrixSet().m_ViewMatrix;
     mViewProjPrev = mViewProjPrev * GetUtils().m_pProj;
     mViewProjPrev.Transpose();

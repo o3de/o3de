@@ -463,19 +463,6 @@ void CUiAnimAzEntityNode::Animate(SUiAnimContext& ec)
         return;
     }
 
-
-    int entityUpdateFlags = 0;
-    bool bScaleModified = false;
-    bool bApplyNoise = false;
-    bool bScriptPropertyModified = false;
-    bool bForceEntityActivation = false;
-
-    IUiAnimTrack* pPosTrack = NULL;
-    IUiAnimTrack* pRotTrack = NULL;
-    IUiAnimTrack* sclTrack = NULL;
-
-    int nAnimCharacterLayer = 0, iAnimationTrack = 0;
-    size_t nNumAudioTracks = 0;
     int trackCount = NumTracks();
     for (int paramIndex = 0; paramIndex < trackCount; paramIndex++)
     {
@@ -1017,8 +1004,6 @@ IUiAnimTrack* CUiAnimAzEntityNode::CreateVectorTrack(const UiAnimParamData& para
     IUiAnimTrack* track = CreateTrackInternal(eUiAnimParamType_AzComponentField, eUiAnimCurveType_BezierFloat, valueType);
 
     track->SetParamData(param);
-
-    int numSubTracks = track->GetSubTrackCount();
 
     track->SetSubTrackName(0, "X");
     track->SetSubTrackName(1, "Y");

@@ -317,8 +317,6 @@ namespace GraphCanvas
 
         AZStd::vector< NodeId > elementsToSearch = groupedElements;
 
-        SceneRequests* requests = SceneRequestBus::FindFirstHandler(graphId);
-
         while (!elementsToSearch.empty())
         {
             AZ::EntityId searchedElement = elementsToSearch.front();

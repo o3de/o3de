@@ -410,17 +410,23 @@ namespace AZ
             const RayTracingPipelineState* rayTracingPipelineState = static_cast<const RayTracingPipelineState*>(dispatchRaysItem.m_rayTracingPipelineState);
             vkCmdBindPipeline(m_nativeCommandBuffer, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, rayTracingPipelineState->GetNativePipeline());
 
-            const ShaderResourceGroup* globalSrg = static_cast<const ShaderResourceGroup*>(dispatchRaysItem.m_globalSrg);
-            auto& compiledData = globalSrg->GetCompiledData();
-            VkDescriptorSet descriptorSet = compiledData.GetNativeDescriptorSet();
+            // bind Srgs
+            AZStd::vector<VkDescriptorSet> descriptorSets;
+            descriptorSets.reserve(dispatchRaysItem.m_shaderResourceGroupCount);
+
+            for (uint32_t srgIndex = 0; srgIndex < dispatchRaysItem.m_shaderResourceGroupCount; ++srgIndex)
+            {
+                const ShaderResourceGroup* srg = static_cast<const ShaderResourceGroup*>(dispatchRaysItem.m_shaderResourceGroups[srgIndex]);
+                descriptorSets.emplace_back(srg->GetCompiledData().GetNativeDescriptorSet());
+            }
 
             vkCmdBindDescriptorSets(
                 m_nativeCommandBuffer,
                 VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR,
                 rayTracingPipelineState->GetNativePipelineLayout(),
                 0,
-                1,
-                &descriptorSet,
+                aznumeric_cast<uint32_t>(descriptorSets.size()),
+                descriptorSets.data(),
                 0,
                 nullptr);
 
@@ -750,7 +756,6 @@ namespace AZ
                 }
 
                 bindings.m_pipelineState = pipelineState;
-                auto& device = static_cast<Device&>(GetDevice());
 
                 Pipeline* pipeline = pipelineState->GetPipeline();
                 vkCmdBindPipeline(
