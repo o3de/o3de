@@ -1933,9 +1933,11 @@ BOOL CCryEditApp::InitInstance()
     if (GetIEditor()->GetCommandManager()->IsRegistered("editor.open_lnm_editor"))
     {
         CCommand0::SUIInfo uiInfo;
-        bool ok = GetIEditor()->GetCommandManager()->GetUIInfo("editor.open_lnm_editor", uiInfo);
+#if !defined(NDEBUG)
+        bool ok =
+#endif
+            GetIEditor()->GetCommandManager()->GetUIInfo("editor.open_lnm_editor", uiInfo);
         assert(ok);
-        int ID_VIEW_AI_LNMEDITOR(uiInfo.commandId);
     }
 
     RunInitPythonScript(cmdInfo);
@@ -2481,7 +2483,6 @@ int CCryEditApp::IdleProcessing(bool bBackgroundUpdate)
     static AZStd::chrono::system_clock::time_point lastUpdate = now;
 
     AZStd::chrono::duration<float> delta = now - lastUpdate;
-    float deltaTime = delta.count();
 
     lastUpdate = now;
 
@@ -4837,7 +4838,6 @@ void CCryEditApp::OnEditRenameobject()
         QString newName;
         QString str = dlg.GetString();
         int num = 0;
-        bool bWarningShown = false;
 
         for (int i = 0; i < pSelection->GetCount(); ++i)
         {
@@ -4952,7 +4952,6 @@ void CCryEditApp::OnValidateObjectPositions()
     std::vector<CBaseObject*> foundObjects;
 
     std::vector<GUID> objIDs;
-    bool reportVeg = false;
 
     for (int i1 = 0; i1 < objCount; ++i1)
     {
@@ -5391,7 +5390,6 @@ void CCryEditApp::SetEditorWindowTitle(QString sTitleStr, QString sPreTitleStr, 
     if (MainWindow::instance() || m_pConsoleDialog)
     {
         QString platform = "";
-        const SFileVersion& v = GetIEditor()->GetFileVersion();
 
 #ifdef WIN64
         platform = "[x64]";
@@ -5492,7 +5490,7 @@ void CCryEditApp::StartProcessDetached(const char* process, const char* args)
     }
 
     // Launch the process
-    bool startDetachedReturn = QProcess::startDetached(
+    [[maybe_unused]] bool startDetachedReturn = QProcess::startDetached(
         process,
         argsList,
         QCoreApplication::applicationDirPath()

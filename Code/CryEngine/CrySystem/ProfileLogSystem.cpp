@@ -117,7 +117,8 @@ void CProfileLogSystem::SetTime(ILogElement* pElement, float time)
         return;
     }
 
-    if (m_pLastElelent = pElement->SetTime(time))
+    m_pLastElelent = pElement->SetTime(time);
+    if (m_pLastElelent)
     {
         return;
     }

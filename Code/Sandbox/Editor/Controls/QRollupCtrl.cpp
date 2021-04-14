@@ -215,7 +215,6 @@ void QRollupCtrl::writeSettings(const QString& qSettingsGroup)
 
 void QRollupCtrl::updateTabs()
 {
-    QRollupCtrlButton* lastButton = 0;
     for (auto i = m_pageList.constBegin(); i != m_pageList.constEnd(); ++i)
     {
         QRollupCtrlButton* tB = (*i).button;

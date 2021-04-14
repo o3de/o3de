@@ -213,6 +213,18 @@ namespace EMotionFX
         GetEMotionFX().Update(0.2f);
     }
 
+    TEST_F(BlendSpace1DFixture, ComputeMotionCoordinates_Nullptr_Asserts_FT)
+    {
+        AZ_TEST_START_TRACE_SUPPRESSION;
+
+        AZ::Vector2 testVec(0.0f, 0.0f);
+
+        m_blendSpace1DNode->ComputeMotionCoordinates("", nullptr, testVec);
+
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+    }
+
+
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     TEST_F(BlendSpace2DFixture, MotionCoordinatesTest)
@@ -417,4 +429,16 @@ namespace EMotionFX
         m_floatNodeY->SetValue(0.0f);
         GetEMotionFX().Update(0.2f);
     }
+
+    TEST_F(BlendSpace2DFixture, MotionCoordinates_Nullptr_Asserts_FT)
+    {
+        AZ_TEST_START_TRACE_SUPPRESSION;
+
+        AZ::Vector2 testVec(0.0f, 0.0f);
+
+        m_blendSpace2DNode->ComputeMotionCoordinates("", nullptr, testVec);
+
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+    }
+
 } // namespace EMotionFX

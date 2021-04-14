@@ -313,8 +313,6 @@ TEST_F(CryPrimitives, CUT_CryString)
     string str4aNF("b-a");
     string str4bNF("12");
 
-    size_t nPosition3A(string::npos);
-
     nPosition = strTestFindLastNotOfOverload1.find_last_not_of('d', 7);
     EXPECT_TRUE(nPosition == 5);
 

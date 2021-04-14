@@ -71,8 +71,6 @@ void CTrackGizmo::Display(DisplayContext& dc)
         return;
     }
 
-    uint32 hideMask = gSettings.objectHideMask;
-
     CAnimationContext* ac = GetIEditor()->GetAnimation();
 
     // Should have animation sequence.
@@ -236,7 +234,6 @@ void CTrackGizmo::DrawKeys(DisplayContext& dc, CTrackViewTrack* pTrack, CTrackVi
 
     float zOffset = TRACK_DRAW_Z_OFFSET;
 
-    float sz = 0.2f;
     int nkeys = pKeysTrack->GetKeyCount();
     for (int i = 0; i < nkeys; i++)
     {

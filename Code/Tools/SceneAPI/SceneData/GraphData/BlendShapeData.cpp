@@ -23,11 +23,14 @@ namespace AZ
 
             BlendShapeData::~BlendShapeData() = default;
 
-            unsigned int BlendShapeData::AddVertex(const Vector3& position, const Vector3& normal)
+            void BlendShapeData::AddPosition(const Vector3& position)
             {
                 m_positions.push_back(position);
+            }
+
+            void BlendShapeData::AddNormal(const Vector3& normal)
+            {
                 m_normals.push_back(normal);
-                return static_cast<unsigned int>(m_positions.size()-1);
             }
 
             void BlendShapeData::AddTangentAndBitangent(const Vector4& tangent, const Vector3& bitangent)
@@ -133,6 +136,12 @@ namespace AZ
             unsigned int BlendShapeData::GetFaceCount() const
             {
                 return static_cast<unsigned int>(m_faces.size());
+            }
+
+            const BlendShapeData::Face& BlendShapeData::GetFaceInfo(unsigned int index) const
+            {
+                AZ_Assert(index < m_faces.size(), "GetFaceInfo index not in range");
+                return m_faces[index];
             }
 
             const Vector3& BlendShapeData::GetPosition(unsigned int index) const

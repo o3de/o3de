@@ -323,7 +323,6 @@ namespace GeomCacheDecoder
         const uint numSIMDIterations = numVertices / numVerticesPerIteration;
 
         float* pPrevPositionsF = updateContext.m_prevPositions.size() > 0 ? (float*)&updateContext.m_prevPositions[0] : NULL;
-        float* pStaticPositionsF = staticMeshData.m_positions.size() > 0 ? (float*)&staticMeshData.m_positions[0] : NULL;
         float* pVelocitiesF = (float*)&updateContext.m_pVelocities[0];
         __m128i* pFloorPositions128 = (__m128i*)&pFloorPositions[0];
         __m128i* pCeilPositions128 = (__m128i*)&pCeilPositions[0];
@@ -569,7 +568,6 @@ namespace GeomCacheDecoder
                 continue;
             }
 
-            const GeomCacheFile::SMeshFrameHeader* pFrameHeader = reinterpret_cast<GeomCacheFile::SMeshFrameHeader*>(pData);
             pData += sizeof(GeomCacheFile::SMeshFrameHeader);
 
             const GeomCacheFile::EStreams streamMask = currentStaticMeshData.m_animatedStreams;

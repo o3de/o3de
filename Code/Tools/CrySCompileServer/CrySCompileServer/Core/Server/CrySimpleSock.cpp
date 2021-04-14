@@ -554,7 +554,6 @@ bool CCrySimpleSock::Recv(std::vector<uint8_t>& rVec)
 
     if (size.m_Data64 > MAX_DATA_SIZE)
     {
-        int WSAError = WSAGetLastError();
         char acTmp[MAX_ERROR_MESSAGE_SIZE];
         azsprintf(acTmp, "Error while receiving size of data - Size is greater than max support data size.");
         CrySimple_ERROR(acTmp);

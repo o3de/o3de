@@ -434,7 +434,7 @@ namespace NvCloth
         m_factory->Init();
 
         // Create Default Solver
-        ISolver* solver = FindOrCreateSolver(DefaultSolverName);
+        [[maybe_unused]] ISolver* solver = FindOrCreateSolver(DefaultSolverName);
         AZ_Assert(solver, "Error: Default solver failed to be created");
 
         AZ::Interface<IClothSystem>::Register(this);

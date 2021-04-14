@@ -70,7 +70,6 @@ namespace EMotionFX
         const EMStudio::GraphNode* graphNodeForMotionNode0 = nodeGraph->FindGraphNode(motionNodeA);
         const EMStudio::GraphNode* graphNodeForMotionNode1 = nodeGraph->FindGraphNode(motionNodeB);
         EMStudio::AnimGraphModel& model = m_animGraphPlugin->GetAnimGraphModel();
-        EMStudio::AttributesWindow* attributesWindow = m_animGraphPlugin->GetAttributesWindow();
         
         // Resize blend graph window to show both nodes
         m_blendGraphWidget->resize(500, 500);

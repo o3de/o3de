@@ -988,9 +988,7 @@ namespace GraphCanvas
         {
             return;
         }
-
-        AZ::SerializeContext* serializeContext = AZ::EntityUtils::GetApplicationSerializeContext();
-        
+       
         AZStd::vector<char> buffer;
         SerializeToBuffer(serializationTarget, buffer);
 
@@ -3940,7 +3938,6 @@ namespace GraphCanvas
             AZ::Entity* entity = entityRef;
             if (entity)
             {
-                AZ::Entity::State state = entity->GetState();
                 if (entity->GetState() == AZ::Entity::State::Constructed)
                 {
                     entity->Init();
@@ -4216,7 +4213,6 @@ namespace GraphCanvas
                 bool ambiguousNode = false;
                 AZ::EntityId hoveredNode;
 
-                bool ambiguousConnection = false;
                 AZStd::vector< AZ::EntityId > ambiguousConnections;
 
                 for (const AZ::EntityId& currentEntity : intersectedEntities)

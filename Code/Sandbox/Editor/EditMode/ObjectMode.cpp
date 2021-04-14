@@ -70,8 +70,6 @@ CObjectMode::~CObjectMode()
 
 void CObjectMode::DrawSelectionPreview(struct DisplayContext& dc, CBaseObject* drawObject)
 {
-    int childColVal = 0;
-
     AABB bbox;
     drawObject->GetBoundBox(bbox);
 
@@ -312,7 +310,6 @@ bool CObjectMode::OnLButtonDown(CViewport* view, int nFlags, const QPoint& point
 
     // CPointF ptMarker;
     QPoint ptCoord;
-    int iCurSel = -1;
 
     if (GetIEditor()->IsInGameMode() || GetIEditor()->IsInSimulationMode())
     {

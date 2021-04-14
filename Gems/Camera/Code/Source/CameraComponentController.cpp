@@ -166,10 +166,12 @@ namespace Camera
         if ((!m_viewSystem)||(!m_system))
         {
             // perform first-time init
-            if (m_system = gEnv->pSystem)
+            m_system = gEnv->pSystem;
+            if (m_system)
             {
                 // Initialize local view.
-                if (!(m_viewSystem = m_system->GetIViewSystem()))
+                m_viewSystem = m_system->GetIViewSystem();
+                if (!m_viewSystem)
                 {
                     AZ_Error("CameraComponent", m_viewSystem != nullptr, "The CameraComponent shouldn't be used without a local view system");
                 }

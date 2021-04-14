@@ -559,7 +559,6 @@ bool LoadTableInner(const SParseParams& parseParams, XmlNodeRef& definition, Xml
         }
     }
 
-    const char* tag = definition->getTag();
     if (parseParams.useAlways != (IXmlNode*)NULL)
     {
         assert(!definition->haveAttr("type"));

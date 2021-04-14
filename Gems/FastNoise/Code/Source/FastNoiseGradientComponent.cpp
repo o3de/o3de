@@ -165,7 +165,6 @@ namespace FastNoiseGem
         {
             behaviorContext->Class<FastNoiseGradientConfig>()
                 ->Constructor()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Property("randomSeed", BehaviorValueProperty(&FastNoiseGradientConfig::m_seed))
                 ->Property("frequency", BehaviorValueProperty(&FastNoiseGradientConfig::m_frequency))
@@ -220,7 +219,6 @@ namespace FastNoiseGem
             behaviorContext->Class<FastNoiseGradientComponent>()->RequestBus("FastNoiseGradientRequestBus");
 
             behaviorContext->EBus<FastNoiseGradientRequestBus>("FastNoiseGradientRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Event("GetRandomSeed", &FastNoiseGradientRequestBus::Events::GetRandomSeed)
                 ->Event("SetRandomSeed", &FastNoiseGradientRequestBus::Events::SetRandomSeed)

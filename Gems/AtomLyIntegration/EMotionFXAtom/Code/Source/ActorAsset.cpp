@@ -81,7 +81,6 @@ namespace AZ
             lodIndexCount = 0;
             lodVertexCount = 0;
 
-            uint32_t subMeshIndexOffset = 0;
             const Data::Asset<RPI::ModelLodAsset>& lodAsset = actor->GetMeshAsset()->GetLodAssets()[lodIndex];
             const AZStd::array_view<RPI::ModelLodAsset::Mesh> modelMeshes = lodAsset->GetMeshes();
             for (const RPI::ModelLodAsset::Mesh& modelMesh : modelMeshes)
@@ -395,7 +394,6 @@ namespace AZ
                 uvBufferData.resize_no_construct(lodVertexCount);
 
                 // Now iterate over the actual data and populate the data for the per-actor buffers
-                size_t lodVertexStart = 0;
                 size_t indexBufferOffset = 0;
                 size_t vertexBufferOffset = 0;
                 size_t skinnedMeshSubmeshIndex = 0;
@@ -410,7 +408,6 @@ namespace AZ
                     // Each of these is one long buffer containing the data for all sub-meshes in the joint
                     const AZ::Vector3* sourcePositions = static_cast<const AZ::Vector3*>(mesh->FindOriginalVertexData(EMotionFX::Mesh::ATTRIB_POSITIONS));
                     const AZ::Vector3* sourceNormals = static_cast<const AZ::Vector3*>(mesh->FindOriginalVertexData(EMotionFX::Mesh::ATTRIB_NORMALS));
-                    const uint32_t* sourceOriginalVertex = static_cast<const uint32_t*>(mesh->FindOriginalVertexData(EMotionFX::Mesh::ATTRIB_ORGVTXNUMBERS));
                     const AZ::Vector4* sourceTangents = static_cast<const AZ::Vector4*>(mesh->FindOriginalVertexData(EMotionFX::Mesh::ATTRIB_TANGENTS));
                     const AZ::Vector3* sourceBitangents = static_cast<const AZ::Vector3*>(mesh->FindOriginalVertexData(EMotionFX::Mesh::ATTRIB_BITANGENTS));
                     const AZ::Vector2* sourceUVs = static_cast<const AZ::Vector2*>(mesh->FindOriginalVertexData(EMotionFX::Mesh::ATTRIB_UVCOORDS, 0));

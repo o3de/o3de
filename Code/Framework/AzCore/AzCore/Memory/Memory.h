@@ -720,9 +720,9 @@ namespace AZ
                 StoragePolicyBase<Allocator>::Destroy(Base::GetModuleAllocatorInstance());
             }
 
-            AZ_FORCE_INLINE static bool IsReady()
+            static bool IsReady()
             {
-                return true;
+                return Base::GetModuleAllocatorInstance().IsReady();
             }
         };
     }

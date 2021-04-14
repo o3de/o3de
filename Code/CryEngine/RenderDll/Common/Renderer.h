@@ -25,13 +25,6 @@
 
 #include <LoadScreenBus.h>
 
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED && !defined(NULL_RENDERER)
-namespace AzRTT
-{
-    class RenderContextManager;
-}
-#endif // AZ_RENDER_TO_TEXTURE_GEM_ENABLED && !defined(NULL_RENDERER)
-
 #if defined(AZ_RESTRICTED_PLATFORM)
 #undef AZ_RESTRICTED_SECTION
 #define RENDERER_H_SECTION_1 1
@@ -919,8 +912,8 @@ public:
 
     virtual void GetCurrentNumberOfDrawCalls([[maybe_unused]] int& nGeneral, [[maybe_unused]] int& nShadowGen) const
     {
-        int nDIPs = 0;
 #if defined(ENABLE_PROFILING_CODE)
+        int nDIPs = 0;
         int nThr = m_pRT->GetThreadList();
         for (int i = 0; i < EFSLIST_NUM; i++)
         {
@@ -1151,17 +1144,6 @@ public:
         ScaleCoordInternal(x, y);
     }
 
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    bool IsRenderToTextureActive() const override;
-
-    int GetWidth() const override;
-    void SetWidth(int width);
-    int GetHeight() const override;
-    void SetHeight(int height);
-
-    int GetOverlayWidth() const override;
-    int GetOverlayHeight() const override;
-#else
     void SetWidth(int nW) { m_width = nW; }
     void SetHeight(int nH) { m_height = nH; }
 
@@ -1170,7 +1152,6 @@ public:
 
     virtual int GetOverlayWidth() const { return m_nativeWidth; }
     virtual int GetOverlayHeight() const { return m_nativeHeight; }
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
 
     void SetPixelAspectRatio(float fPAR) {m_pixelAspectRatio = fPAR; }
     virtual float GetPixelAspectRatio() const { return (m_pixelAspectRatio); }
@@ -1249,16 +1230,6 @@ public:
     virtual void SetTextureStreamListener(ITextureStreamListener* pListener);
 
     virtual void GetLogVBuffers() = 0;
-
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    // Returns a frame ID that is sequential for the active camera.  This is 
-    // useful for camera-specific temporal data like motion vectors.
-    virtual int GetCameraFrameID() const
-    {
-        const int nThreadID = m_pRT ? m_pRT->GetThreadList() : 0;
-        return m_RP.m_TI[nThreadID].m_cam.GetFrameUpdateId();
-    }
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
 
     virtual int GetFrameID(bool bIncludeRecursiveCalls = true)
     {
@@ -1973,7 +1944,6 @@ public:
     static ICVar* CV_r_ShowDynTexturesFilter;
     static ICVar*   CV_r_ShaderCompilerServer;
     static int CV_r_AssetProcessorShaderCompiler; // If true, will forward requests for shader compilation to the Asset Processor instead of the server directly.
-    static ICVar* CV_r_ShaderCompilerFolderSuffix;
     static ICVar* CV_r_ShaderEmailTags;
     static ICVar* CV_r_ShaderEmailCCs;
     static ICVar* CV_r_excludeshader;
@@ -2221,11 +2191,6 @@ public:
     static int CV_r_PostProcess;
     DeclareStaticConstIntCVar(CV_r_PostProcessFilters, 1);
     DeclareStaticConstIntCVar(CV_r_PostProcessGameFx, 1);
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    static int CV_r_FinalOutputsRGB;
-    static int CV_r_FinalOutputAlpha;
-    static int CV_r_RTT;
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
     static int CV_r_colorgrading;
     DeclareStaticConstIntCVar(CV_r_colorgrading_levels, 1);
     DeclareStaticConstIntCVar(CV_r_colorgrading_filters, 1);
@@ -2760,10 +2725,6 @@ private:
     RendererAssetListener m_assetListener;
 
     unsigned long m_nvidiaDriverVersion = 0;
-    
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED && !defined(NULL_RENDERER)
-    AZStd::unique_ptr<AzRTT::RenderContextManager> m_contextManager;
-#endif // AZ_RENDER_TO_TEXTURE_GEM_ENABLED && !defined(NULL_RENDERER)
 };
 
 

@@ -104,20 +104,6 @@ public:
 private:
     friend class CMotionBlurPass;
 
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    //! Return the current buffer index to use (thread safe)
-    static uint32_t GetCurrentBufferIndex() 
-    { 
-        return gRenDev->GetCameraFrameID() % s_maxObjectBuffers;
-    }
-
-    //! Return the previous buffer index to use (thread safe)
-    static uint32_t GetPrevBufferIndex() 
-    { 
-        return (gRenDev->GetCameraFrameID() + s_maxObjectBuffers - 1) % s_maxObjectBuffers;
-    }
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-
     CEffectParam* m_pRadBlurAmount, * m_pRadBlurScreenPosX, * m_pRadBlurScreenPosY, * m_pRadBlurRadius;
     CEffectParam* m_pDirectionalBlurVec;
 

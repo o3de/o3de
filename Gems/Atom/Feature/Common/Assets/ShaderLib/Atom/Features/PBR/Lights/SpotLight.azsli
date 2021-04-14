@@ -15,7 +15,7 @@
 #include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
 #include <Atom/Features/Shadow/SpotLightShadow.azsli>
 
-void ApplySpotLight(ViewSrg::SpotLight spotLight, float3 dirToCamera, Surface surface, uint lightIndex, inout float3 diffuseLighting, inout float3 specularLighting, inout float3 translucentBackLighting)
+void ApplySpotLight(ViewSrg::SpotLight spotLight, Surface surface, inout LightingData lightingData, uint lightIndex)
 {
     float3 posToLight = spotLight.m_position - surface.position;
     float distanceToLight2 = dot(posToLight, posToLight); // light distance squared
@@ -98,11 +98,11 @@ void ApplySpotLight(ViewSrg::SpotLight spotLight, float3 dirToCamera, Surface su
             lightIntensity *= penumbraMask;
         }
 
-        diffuseLighting += GetDiffuseLighting(surface, lightIntensity, dirToCamera, dirToLight) * litRatio;
-        translucentBackLighting += GetBackLighting(surface, lightIntensity, dirToCamera, dirToLight, backShadowRatio);
+        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, dirToLight) * litRatio;
+        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, lightIntensity, dirToLight, backShadowRatio);
 
         // Calculate the reflection off the normal from the view lightDirection
-        float3 reflectionDir = reflect(-dirToCamera, surface.normal);
+        float3 reflectionDir = reflect(-lightingData.dirToCamera, surface.normal);
         float reflectionDotLight = dot(reflectionDir, -spotLight.m_direction);
         
         // Let 'Intersection' denote the point where the reflection ray intersects the diskLight plane
@@ -133,20 +133,20 @@ void ApplySpotLight(ViewSrg::SpotLight spotLight, float3 dirToCamera, Surface su
         // Adjust the intensity of the light based on the bulb size to conserve energy
         float diskIntensityNormalization = GetIntensityAdjustedByRadiusAndRoughness(surface.roughnessA, spotLight.m_bulbRadius, distanceToLight2);
 
-        specularLighting += diskIntensityNormalization * GetSpecularLighting(surface, lightIntensity, dirToCamera, normalize(posToLight)) * litRatio;
+        lightingData.specularLighting += diskIntensityNormalization * GetSpecularLighting(surface, lightingData, lightIntensity, normalize(posToLight)) * litRatio;
     }
 }
 
-void ApplySpotLights(inout LightCullingTileIterator tileIterator, float3 dirToCamera, Surface surface, inout float3 diffuseLighting, inout float3 specularLighting, inout float3 translucentBackLighting)
+void ApplySpotLights(Surface surface, inout LightingData lightingData)
 {    
-    tileIterator.LoadAdvance();
+    lightingData.tileIterator.LoadAdvance();
                 
-    while( !tileIterator.IsDone() ) 
+    while( !lightingData.tileIterator.IsDone() ) 
     { 
-        uint currLightIndex = tileIterator.GetValue(); 
-        tileIterator.LoadAdvance();
+        uint currLightIndex = lightingData.tileIterator.GetValue(); 
+        lightingData.tileIterator.LoadAdvance();
         
         ViewSrg::SpotLight light = ViewSrg::m_spotLights[currLightIndex];
-        ApplySpotLight(light, dirToCamera, surface, currLightIndex, diffuseLighting, specularLighting, translucentBackLighting);
+        ApplySpotLight(light, surface, lightingData, currLightIndex);
     }
 }

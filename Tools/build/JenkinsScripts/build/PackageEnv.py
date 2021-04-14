@@ -68,7 +68,7 @@ class PackageEnv(Params):
         def validate_engine_root(engine_root):
             if not os.path.isdir(engine_root):
                 return False
-            return os.path.exists(os.path.join(engine_root, 'engineroot.txt'))
+            return os.path.exists(os.path.join(engine_root, 'engine.json'))
 
         # Jenkins only
         workspace = os.getenv('WORKSPACE')

@@ -626,7 +626,6 @@ namespace ScriptCanvasEditor
 
     QMimeData* GraphVariablesModel::mimeData(const QModelIndexList &indexes) const
     {
-        QMimeData* mimeData = nullptr;
         GraphCanvas::GraphCanvasMimeContainer container;
 
         bool isSet = ((QApplication::keyboardModifiers() & Qt::Modifier::ALT) != 0);

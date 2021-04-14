@@ -49,14 +49,7 @@ namespace AZ
 
         void RayTracingAccelerationStructurePass::FrameBeginInternal(FramePrepareParams params)
         {
-            // check raytracing data revision
-            RPI::Scene* scene = m_pipeline->GetScene();
-            RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
-            if (rayTracingFeatureProcessor && rayTracingFeatureProcessor->GetRevision() != m_rayTracingRevision)
-            {
-                // ray tracing data has changed, add the scope in order to update the TLAS
-                params.m_frameGraphBuilder->ImportScopeProducer(*this);
-            }
+            params.m_frameGraphBuilder->ImportScopeProducer(*this);
         }
 
         void RayTracingAccelerationStructurePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
@@ -64,66 +57,94 @@ namespace AZ
             RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
 
             RPI::Scene* scene = m_pipeline->GetScene();
-            TransformServiceFeatureProcessor* transformFeatureProcessor = scene->GetFeatureProcessor<TransformServiceFeatureProcessor>();
             RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
-            RHI::RayTracingBufferPools& rayTracingBufferPools = rayTracingFeatureProcessor->GetBufferPools();
-            RayTracingFeatureProcessor::MeshMap& rayTracingMeshes = rayTracingFeatureProcessor->GetMeshes();
-            uint32_t rayTracingSubMeshCount = rayTracingFeatureProcessor->GetSubMeshCount();
 
-            // create the TLAS descriptor
-            RHI::RayTracingTlasDescriptor tlasDescriptor;
-            RHI::RayTracingTlasDescriptor* tlasDescriptorBuild = tlasDescriptor.Build();
-
-            uint32_t blasIndex = 0;
-            for (auto& rayTracingMesh : rayTracingMeshes)
+            if (rayTracingFeatureProcessor)
             {
-                for (auto& rayTracingSubMesh : rayTracingMesh.second.m_subMeshes)
+                if (rayTracingFeatureProcessor->GetRevision() != m_rayTracingRevision)
                 {
-                    tlasDescriptorBuild->Instance()
-                        ->InstanceID(blasIndex)
-                        ->HitGroupIndex(blasIndex)
-                        ->Blas(rayTracingSubMesh.m_blas)
-                        ->Transform(rayTracingMesh.second.m_transform)
-                    ;
+                    RHI::RayTracingBufferPools& rayTracingBufferPools = rayTracingFeatureProcessor->GetBufferPools();
+                    RayTracingFeatureProcessor::MeshMap& rayTracingMeshes = rayTracingFeatureProcessor->GetMeshes();
+                    uint32_t rayTracingSubMeshCount = rayTracingFeatureProcessor->GetSubMeshCount();
+
+                    // create the TLAS descriptor
+                    RHI::RayTracingTlasDescriptor tlasDescriptor;
+                    RHI::RayTracingTlasDescriptor* tlasDescriptorBuild = tlasDescriptor.Build();
+
+                    uint32_t blasIndex = 0;
+                    for (auto& rayTracingMesh : rayTracingMeshes)
+                    {
+                        for (auto& rayTracingSubMesh : rayTracingMesh.second.m_subMeshes)
+                        {
+                            tlasDescriptorBuild->Instance()
+                                ->InstanceID(blasIndex)
+                                ->HitGroupIndex(blasIndex)
+                                ->Blas(rayTracingSubMesh.m_blas)
+                                ->Transform(rayTracingMesh.second.m_transform)
+                                ;
+                        }
+
+                        blasIndex++;
+                    }
+
+                    // create the TLAS buffers based on the descriptor
+                    RHI::Ptr<RHI::RayTracingTlas>& rayTracingTlas = rayTracingFeatureProcessor->GetTlas();
+                    rayTracingTlas->CreateBuffers(*device, &tlasDescriptor, rayTracingBufferPools);
+
+                    // import and attach the TLAS buffer
+                    const RHI::Ptr<RHI::Buffer>& rayTracingTlasBuffer = rayTracingTlas->GetTlasBuffer();
+                    if (rayTracingTlasBuffer && rayTracingSubMeshCount)
+                    {
+                        AZ::RHI::AttachmentId tlasAttachmentId = rayTracingFeatureProcessor->GetTlasAttachmentId();
+                        if (frameGraph.GetAttachmentDatabase().IsAttachmentValid(tlasAttachmentId) == false)
+                        {
+                            [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportBuffer(tlasAttachmentId, rayTracingTlasBuffer);
+                            AZ_Assert(result == RHI::ResultCode::Success, "Failed to import ray tracing TLAS buffer with error %d", result);
+                        }
+
+                        uint32_t tlasBufferByteCount = aznumeric_cast<uint32_t>(rayTracingTlasBuffer->GetDescriptor().m_byteCount);
+                        RHI::BufferViewDescriptor tlasBufferViewDescriptor = RHI::BufferViewDescriptor::CreateRayTracingTLAS(tlasBufferByteCount);
+
+                        RHI::BufferScopeAttachmentDescriptor desc;
+                        desc.m_attachmentId = tlasAttachmentId;
+                        desc.m_bufferViewDescriptor = tlasBufferViewDescriptor;
+                        desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::DontCare;
+
+                        frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::Write);
+                    }
                 }
 
-                blasIndex++;
+                // update and compile the RayTracingSceneSrg
+                // Note: the timing of this update is very important, it needs to be updated after the TLAS is allocated so it can
+                // be set on the RayTracingSceneSrg for this frame, and the ray tracing mesh data in the RayTracingSceneSrg must
+                // exactly match the TLAS.  Any mismatch in this data may result in a TDR.
+                rayTracingFeatureProcessor->UpdateRayTracingSceneSrg();
             }
-
-            // create the TLAS buffers based on the descriptor
-            RHI::Ptr<RHI::RayTracingTlas>& rayTracingTlas = rayTracingFeatureProcessor->GetTlas();
-            rayTracingTlas->CreateBuffers(*device, &tlasDescriptor, rayTracingBufferPools);
-
-            // import and attach the TLAS buffer
-            const RHI::Ptr<RHI::Buffer>& rayTracingTlasBuffer = rayTracingTlas->GetTlasBuffer();
-            if (rayTracingTlasBuffer && rayTracingSubMeshCount)
-            {
-                AZ::RHI::AttachmentId tlasAttachmentId = rayTracingFeatureProcessor->GetTlasAttachmentId();
-                if (frameGraph.GetAttachmentDatabase().IsAttachmentValid(tlasAttachmentId) == false)
-                {
-                    RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportBuffer(tlasAttachmentId, rayTracingTlasBuffer);
-                    AZ_Assert(result == RHI::ResultCode::Success, "Failed to import ray tracing TLAS buffer with error %d", result);
-                }
-
-                uint32_t tlasBufferByteCount = aznumeric_cast<uint32_t>(rayTracingTlasBuffer->GetDescriptor().m_byteCount);
-                RHI::BufferViewDescriptor tlasBufferViewDescriptor = RHI::BufferViewDescriptor::CreateRayTracingTLAS(tlasBufferByteCount);
-
-                RHI::BufferScopeAttachmentDescriptor desc;
-                desc.m_attachmentId = tlasAttachmentId;
-                desc.m_bufferViewDescriptor = tlasBufferViewDescriptor;
-                desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::DontCare;
-
-                frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::Write);
-            }
-
-            m_rayTracingRevision = rayTracingFeatureProcessor->GetRevision();
         }
 
         void RayTracingAccelerationStructurePass::BuildCommandList(const RHI::FrameGraphExecuteContext& context)
         {
             RPI::Scene* scene = m_pipeline->GetScene();
             RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
-            AZ_Assert(rayTracingFeatureProcessor, "RayTracingAccelerationStructurePass requires the RayTracingFeatureProcessor");
+
+            if (!rayTracingFeatureProcessor)
+            {
+                return;
+            }
+
+            if (!rayTracingFeatureProcessor->GetTlas()->GetTlasBuffer())
+            {
+                return;
+            }
+
+            if (rayTracingFeatureProcessor->GetRevision() == m_rayTracingRevision)
+            {
+                // TLAS is up to date
+                return;
+            }
+
+            // update the stored revision, even if we don't have any meshes to process
+            m_rayTracingRevision = rayTracingFeatureProcessor->GetRevision();
 
             if (!rayTracingFeatureProcessor->GetSubMeshCount())
             {

@@ -186,7 +186,6 @@ CTrackViewKeyHandle CTrackViewTrack::GetNextKey(const float time)
 
     const float startTime = time;
     float closestTime = std::numeric_limits<float>::max();
-    bool bFoundKey = false;
 
     const int numKeys = m_pAnimTrack->GetNumKeys();
     for (int i = 0; i < numKeys; ++i)
@@ -619,7 +618,7 @@ void CTrackViewTrack::SelectKeys(const bool bSelected)
     {
         // Affect sub tracks
         unsigned int childCount = GetChildCount();
-        for (unsigned int childIndex = 0; childIndex < childCount; ++childCount)
+        for (unsigned int childIndex = 0; childIndex < childCount; ++childIndex)
         {
             CTrackViewTrack* pChildTrack = static_cast<CTrackViewTrack*>(GetChild(childIndex));
             pChildTrack->SelectKeys(bSelected);

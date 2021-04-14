@@ -12,6 +12,7 @@
 
 #include "ImGui_precompiled.h"
 #include "ImGuiManager.h"
+#include <ImGuiContextScope.h>
 #include <AzCore/PlatformIncl.h>
 #include <OtherActiveImGuiBus.h>
 
@@ -147,7 +148,6 @@ void ImGuiManager::Initialize()
         return;
     }
     // Register for Buses
-    ISystem::CrySystemNotificationBus::Handler::BusConnect();
     ImGuiManagerListenerBus::Handler::BusConnect();
 
     // Register for Input Notifications
@@ -171,12 +171,8 @@ void ImGuiManager::Initialize()
 #endif // defined(LOAD_IMGUI_LIB_DYNAMICALLY)  && !defined(AZ_MONOLITHIC_BUILD)
 
     // Create ImGui Context
-    ImGui::CreateContext();
-
-    if (AZ::Interface<AzFramework::AtomActiveInterface>::Get())
-    {
-        InitWindowSize();
-    }
+    m_imguiContext = ImGui::CreateContext();
+    ImGui::ImGuiContextScope contextScope(m_imguiContext);
 
     // Set config file
     ImGuiIO& io = ImGui::GetIO();
@@ -272,7 +268,6 @@ void ImGuiManager::Shutdown()
 #endif
 
     // Unregister from Buses
-    ISystem::CrySystemNotificationBus::Handler::BusDisconnect();
     ImGuiManagerListenerBus::Handler::BusDisconnect();
     InputChannelEventListener::Disconnect();
     InputTextEventListener::Disconnect();
@@ -283,6 +278,7 @@ void ImGuiManager::Shutdown()
         // Destroy ImGui Font Texture
         if (gEnv->pRenderer && m_fontTextureId > 0)
         {
+            ImGui::ImGuiContextScope contextScope(m_imguiContext);
             ImGuiIO& io = ImGui::GetIO();
             io.Fonts->SetTexID(nullptr);
             gEnv->pRenderer->RemoveTexture(m_fontTextureId);
@@ -290,18 +286,19 @@ void ImGuiManager::Shutdown()
     }
 
     // Finally, destroy the ImGui Context.
-    ImGui::DestroyContext();
+    ImGui::DestroyContext(m_imguiContext);
 }
 
-void ImGuiManager::OnPreRender()
+void ImGuiManager::Render()
 {
     if (m_clientMenuBarState == DisplayState::Hidden && m_editorWindowState == DisplayState::Hidden)
     {
         return;
     }
 
+    ImGui::ImGuiContextScope contextScope(m_imguiContext);
+
     // Update Display Size
-    IRenderer* renderer = gEnv->pRenderer;
     ImGuiIO& io = ImGui::GetIO();
     io.DisplaySize = m_lastRenderResolution;
 
@@ -332,6 +329,7 @@ void ImGuiManager::OnPreRender()
                 systemCursorPositionNormalized,
                 InputDeviceMouse::Id,
                 &InputSystemCursorRequests::GetSystemCursorPositionNormalized);
+                       
             io.MousePos.x = systemCursorPositionNormalized.GetX() * m_lastRenderResolution.x;
             io.MousePos.y = systemCursorPositionNormalized.GetY() * m_lastRenderResolution.y;
             m_controllerMousePosition[0] = io.MousePos.x;
@@ -375,14 +373,6 @@ void ImGuiManager::OnPreRender()
 
     // Start New Frame
     ImGui::NewFrame();
-}
-
-void ImGuiManager::OnPostRender()
-{
-    if (m_clientMenuBarState == DisplayState::Hidden && m_editorWindowState == DisplayState::Hidden)
-    {
-        return;
-    }
 
     //// START FROM PREUPDATE
     ICVar* consoleDisabled = gEnv->pConsole->GetCVar("sys_DeactivateConsole");
@@ -393,7 +383,6 @@ void ImGuiManager::OnPostRender()
     }
 
     // Advance ImGui by Elapsed Frame Time
-    ImGuiIO& io = ImGui::GetIO();
     io.DeltaTime = gEnv->pTimer->GetFrameTime();
     //// END FROM PREUPDATE
 
@@ -484,6 +473,8 @@ void ImGuiManager::OnPostRender()
  */
 bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
 {
+    ImGui::ImGuiContextScope contextScope(m_imguiContext);
+
     ImGuiIO& io = ImGui::GetIO();
     const InputChannelId& inputChannelId = inputChannel.GetInputChannelId();
     const InputDeviceId& inputDeviceId = inputChannel.GetInputDevice().GetInputDeviceId();
@@ -654,19 +645,11 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
     if (m_clientMenuBarState == DisplayState::Visible
         || m_editorWindowState == DisplayState::Visible)
     {
-        io.WantCaptureMouse = true;
-        io.WantCaptureKeyboard = true;
-        
         // If we have the Discrete Input Mode Enabled.. then consume the input here. 
         if (m_enableDiscreteInputMode)
         {
             return true;
         }
-    }
-    else
-    {
-        io.WantCaptureMouse = false;
-        io.WantCaptureKeyboard = false;
     }
 
     return false;
@@ -679,6 +662,8 @@ bool ImGuiManager::IsControllerSupportModeEnabled(ImGuiControllerModeFlags::Flag
 
 void ImGuiManager::EnableControllerSupportMode(ImGuiControllerModeFlags::FlagType controllerMode, bool enable)
 {
+    ImGui::ImGuiContextScope contextScope(m_imguiContext);
+
     if (enable)
     {
         // Enable - Add flag by or'ing in.
@@ -710,6 +695,8 @@ void ImGuiManager::EnableControllerSupportMode(ImGuiControllerModeFlags::FlagTyp
 
 bool ImGuiManager::OnInputTextEventFiltered(const AZStd::string& textUTF8)
 {
+    ImGui::ImGuiContextScope contextScope(m_imguiContext);
+
     ImGuiIO& io = ImGui::GetIO();
     io.AddInputCharactersUTF8(textUTF8.c_str());
 
@@ -720,11 +707,13 @@ bool ImGuiManager::OnInputTextEventFiltered(const AZStd::string& textUTF8)
         m_simulateBackspaceKeyPressed = true;
     }
 
-    return io.WantCaptureKeyboard && m_clientMenuBarState == DisplayState::Visible;
+    return io.WantTextInput && m_clientMenuBarState == DisplayState::Visible;;
 }
 
 void ImGuiManager::ToggleThroughImGuiVisibleState(int controllerIndex)
 {
+    ImGui::ImGuiContextScope contextScope(m_imguiContext);
+
     switch (m_clientMenuBarState)
     {
         case DisplayState::Hidden:
@@ -733,6 +722,21 @@ void ImGuiManager::ToggleThroughImGuiVisibleState(int controllerIndex)
             
             // Draw the ImGui Mouse cursor if either the hardware mouse is connected, or the controller mouse is enabled.
             ImGui::GetIO().MouseDrawCursor = m_hardwardeMouseConnected || IsControllerSupportModeEnabled(ImGuiControllerModeFlags::Mouse);
+
+            // Disable system cursor if it's in editor and it's not editor game mode
+            if (gEnv->IsEditor() && !gEnv->IsEditorGameMode())
+            {
+                // Constrain and hide the system cursor
+                AzFramework::InputSystemCursorRequestBus::Event(
+                    AzFramework::InputDeviceMouse::Id, &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
+                    AzFramework::SystemCursorState::ConstrainedAndHidden);
+
+                // Disable discrete input mode
+                m_enableDiscreteInputMode = false;
+            }
+
+            // get window size if it wasn't initialized
+            InitWindowSize();
             break;
 
         case DisplayState::Visible:
@@ -749,6 +753,15 @@ void ImGuiManager::ToggleThroughImGuiVisibleState(int controllerIndex)
         default:
             m_clientMenuBarState = DisplayState::Hidden;
             m_currentControllerIndex = -1;
+
+            // Enable system cursor if it's in editor and it's not editor game mode
+            if (gEnv->IsEditor() && !gEnv->IsEditorGameMode())
+            {
+                // unconstrain and show the system cursor
+                AzFramework::InputSystemCursorRequestBus::Event(
+                    AzFramework::InputDeviceMouse::Id, &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
+                    AzFramework::SystemCursorState::UnconstrainedAndVisible);
+            }
             break;
     }
 
@@ -757,6 +770,8 @@ void ImGuiManager::ToggleThroughImGuiVisibleState(int controllerIndex)
 
 void ImGuiManager::RenderImGuiBuffers(const ImVec2& scaleRects)
 {
+    ImGui::ImGuiContextScope contextScope(m_imguiContext);
+
     // Trigger all listeners to run their updates
     EBUS_EVENT(ImGuiUpdateListenerBus, OnImGuiUpdate);
 

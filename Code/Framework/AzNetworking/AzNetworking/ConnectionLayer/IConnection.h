@@ -103,6 +103,14 @@ namespace AzNetworking
         //! @return the connection identifier for this connection instance
         ConnectionId GetConnectionId() const;
 
+        //! Sets connection user data to the provided value.
+        //! @param userData the user data value to bind to this connection
+        void SetUserData(void* userData);
+
+        //! Retrieves the connection user data bound to this instance.
+        //! @return the connection user data bound to this instance
+        void* GetUserData() const;
+
         //! Sets the remote address for this connection instance.
         //! @param address the remote address to use for this connection instance
         void SetRemoteAddress(const IpAddress& address);
@@ -122,9 +130,10 @@ namespace AzNetworking
     private:
 
         // The following data members are here in the interface for performance reasons
-        ConnectionId      m_connectionId;
+        ConnectionId      m_connectionId = InvalidConnectionId;
         IpAddress         m_remoteAddress;
         ConnectionMetrics m_connectionMetrics;
+        void*             m_userData = nullptr;
     };
 }
 

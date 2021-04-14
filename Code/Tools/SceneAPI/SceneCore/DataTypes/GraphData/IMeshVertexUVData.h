@@ -36,6 +36,8 @@ namespace AZ
 
                 virtual ~IMeshVertexUVData() override = default;
 
+                void CloneAttributesFrom([[maybe_unused]] const IGraphObject* sourceObject) override {}
+
                 virtual const AZ::Name& GetCustomName() const = 0;
 
                 virtual size_t GetCount() const = 0;

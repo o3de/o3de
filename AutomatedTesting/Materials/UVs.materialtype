@@ -1,0 +1,7 @@
+{
+    "shaders": [
+        {
+            "file": "UVs.shader"
+        }
+    ]
+}

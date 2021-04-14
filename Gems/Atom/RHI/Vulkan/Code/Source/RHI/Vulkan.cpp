@@ -345,7 +345,7 @@ namespace AZ
                         createInfo.messageSeverity |= VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT;
                     }
 
-                    VkResult result = vkCreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &s_messageCallback);
+                    [[maybe_unused]] VkResult result = vkCreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &s_messageCallback);
 
                     AZ_Error("Vulkan", !result, "Failed to initialize the debug messaging system");
                 }
@@ -376,7 +376,7 @@ namespace AZ
                         dbgCreateInfo.flags |= VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT;
                     }
 
-                    VkResult result = vkCreateDebugReportCallbackEXT(
+                    [[maybe_unused]] VkResult result = vkCreateDebugReportCallbackEXT(
                         instance,
                         &dbgCreateInfo,
                         nullptr,

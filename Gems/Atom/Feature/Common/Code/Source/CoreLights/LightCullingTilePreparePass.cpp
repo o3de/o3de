@@ -163,7 +163,7 @@ namespace AZ
             constantData.depthBufferWidth = resolution.m_width;
             constantData.depthBufferHeight = resolution.m_height;
 
-            bool setOk = m_shaderResourceGroup->SetConstant(m_constantDataIndex, constantData);
+            [[maybe_unused]] bool setOk = m_shaderResourceGroup->SetConstant(m_constantDataIndex, constantData);
             AZ_Assert(setOk, "LightCullingTilePreparePass::SetConstantData() - could not set constant data");
         }
 

@@ -108,7 +108,7 @@ namespace LmbrCentral
 
     void EditorRandomTimedSpawnerComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
-        RandomTimedSpawnerComponent* component = gameEntity->CreateComponent<RandomTimedSpawnerComponent>(&m_config);
+        gameEntity->CreateComponent<RandomTimedSpawnerComponent>(&m_config);
     }
 
 } //namespace LmbrCentral

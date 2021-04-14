@@ -86,7 +86,6 @@
             "ExpressionEvaluation": "#include",
             "FastNoise": "#include",
             "GameEffectSystem": "#include",
-            "GameLift": "#include",
             "GameState": "#include",
             "GameStateSamples": "#include",
             "Gestures": "#include",

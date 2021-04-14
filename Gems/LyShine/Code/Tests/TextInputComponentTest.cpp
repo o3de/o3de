@@ -167,7 +167,7 @@ namespace UnitTest
         AZ::Entity* uiTextInputEntity = uiCanvasComponent->CreateChildElement("Ui Text Input");
         uiTextInputEntity->Deactivate(); //< deactivate so that we can add components
         uiTextInputEntity->CreateComponent<UiTransform2dComponent>(); //< required by UiTextInputComponent
-        UiTextInputComponent* uiTextInputComponent = uiTextInputEntity->CreateComponent<UiTextInputComponent>();
+        uiTextInputEntity->CreateComponent<UiTextInputComponent>();
         uiTextInputEntity->Activate();
 
         AZ::EntityId uiTextInputEntityId = uiTextInputEntity->GetId();

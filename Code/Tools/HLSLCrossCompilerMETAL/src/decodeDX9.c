@@ -408,8 +408,6 @@ static void SetupRegisterUsage(const ShaderData* psShader, const uint32_t ui32To
 // In dx9 there is only one constant buffer per shader.
 static void DeclareConstantBuffer(const ShaderData* psShader, Declaration* psDecl)
 {
-    DECLUSAGE_DX9 eUsage = (DECLUSAGE_DX9)0;
-    uint32_t ui32UsageIndex = 0;
     // Pick any constant register in the table. Might not start at c0 (e.g. when register(cX) is used).
     uint32_t ui32RegNum = psShader->sInfo.psConstantBuffers->asVars[0].ui32StartOffset / 16;
     OPERAND_TYPE_DX9 ui32RegType = OPERAND_TYPE_DX9_CONST;
@@ -447,9 +445,7 @@ static void DeclareConstantBuffer(const ShaderData* psShader, Declaration* psDec
 
 static void DecodeDeclarationDX9(const ShaderData* psShader, const uint32_t ui32Token0, const uint32_t ui32Token1, Declaration* psDecl)
 {
-    DECLUSAGE_DX9 eUsage = DecodeUsageDX9(ui32Token0);
-    uint32_t ui32UsageIndex = DecodeUsageIndexDX9(ui32Token0);
-    uint32_t ui32RegNum = DecodeOperandRegisterNumberDX9(ui32Token1);
+    /*uint32_t ui32UsageIndex = DecodeUsageIndexDX9(ui32Token0);*/
     uint32_t ui32RegType = DecodeOperandTypeDX9(ui32Token1);
 
     if (psShader->eShaderType == VERTEX_SHADER)

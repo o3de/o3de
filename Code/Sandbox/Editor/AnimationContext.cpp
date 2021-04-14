@@ -56,8 +56,6 @@ protected:
     void OnSetCamera(const SCameraParams& Params)
     {
         // Only switch camera when in Play mode.
-        CAnimationContext* ac = GetIEditor()->GetAnimation();
-
         GUID camObjId = GUID_NULL;
         if (Params.cameraEntityId.IsValid())
         {

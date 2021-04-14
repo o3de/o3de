@@ -114,7 +114,6 @@ bool CD3D9Renderer::EF_PrepareShadowGenForLight(SRenderLight* pLight, int nLight
         return false;
     }
 
-    ShadowMapFrustum* pCopyFrustum = NULL;
 
     int32 nCurLOD = 0;
 
@@ -190,7 +189,6 @@ bool CD3D9Renderer::PrepareShadowGenForFrustum(ShadowMapFrustum* pCurFrustum, SR
         }
     }
 
-    SDynTexture_Shadow* pTX = NULL;
 
 
     bool bNotNeedUpdate = false;
@@ -407,8 +405,10 @@ bool CD3D9Renderer::PrepareShadowGenForFrustum(ShadowMapFrustum* pCurFrustum, SR
 void CD3D9Renderer::PrepareShadowGenForFrustumNonJobs([[maybe_unused]] const int nFlags)
 {
     int nThreadID  = m_RP.m_nFillThreadID;
+#if !defined(NDEBUG)
     int nCurRecLevel = SRendItem::m_RecurseLevel[nThreadID];
     assert(nCurRecLevel >= 0);
+#endif
 
     CCamera tmpCamera;
 
@@ -416,7 +416,6 @@ void CD3D9Renderer::PrepareShadowGenForFrustumNonJobs([[maybe_unused]] const int
     {
         SRenderPipeline::SShadowFrustumToRender& rFrustumToRender = m_RP.SShadowFrustumToRenderList[nThreadID][i];
         ShadowMapFrustum* pCurFrustum = rFrustumToRender.pFrustum;
-        SRenderLight* pLight = rFrustumToRender.pLight;
 
         int nSides = pCurFrustum->bOmniDirectionalShadow ? OMNI_SIDES_NUM : 1;
 
@@ -452,14 +451,6 @@ void CD3D9Renderer::PrepareShadowGenForFrustumNonJobs([[maybe_unused]] const int
                 nRenderingFlags |= SRenderingPassInfo::DISABLE_RENDER_CHUNK_MERGE;
             }
 #endif
-
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-            if (IsRenderToTextureActive())
-            {
-                // the shadow render pass needs to know if we are rendering to texture
-                nRenderingFlags |= SRenderingPassInfo::RENDER_SCENE_TO_TEXTURE;
-            }
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
 
             // create a matching rendering pass info for shadows
             SRenderingPassInfo passInfo = SRenderingPassInfo::CreateShadowPassRenderingInfo(tmpCamera, pCurFrustum->m_Flags, pCurFrustum->nShadowMapLod,
@@ -1173,7 +1164,6 @@ bool CD3D9Renderer::PrepareDepthMap(ShadowMapFrustum* lof, int nLightFrustumID, 
                 SetRasterState(&CurRS);
             }
 
-            int nBorder = max(4, lof->nShadowMapSize / 64);
 
             if (!(lof->m_Flags & DLF_LIGHT_BEAM))
             {
@@ -1548,7 +1538,6 @@ void CD3D9Renderer::FX_SetupShadowsForTransp()
 
     m_RP.m_FlagsShader_RT &= ~(g_HWSR_MaskBit[HWSR_POINT_LIGHT] | g_HWSR_MaskBit[HWSR_SHADOW_MIXED_MAP_G16R16]);
 
-    CRenderObject* pObj = m_RP.m_pCurObject;
 
     m_RP.m_FlagsShader_RT |= g_HWSR_MaskBit[HWSR_PARTICLE_SHADOW];
 
@@ -1902,7 +1891,6 @@ void CD3D9Renderer::FX_MergeShadowMaps(ShadowMapFrustum* pDst, const ShadowMapFr
     // do we need to merge static shadows into the dynamic shadow map?
     if (bRequireCopy)
     {
-        ETEX_Format texFormat = CV_r_ShadowsCacheFormat == 0 ? eTF_D32F : eTF_D16;
 
         SDynTexture_Shadow* pDynTex = SDynTexture_Shadow::GetForFrustum(pDst);
         pDst->pDepthTex = pDynTex->m_pTexture;

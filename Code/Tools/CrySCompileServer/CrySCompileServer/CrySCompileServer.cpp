@@ -65,7 +65,7 @@ public:
         }
         if (azstricmp(strKey.c_str(), "TempDir") == 0)
         {
-            SEnviropment::Instance().m_TempPath = AddSlash(strValue);
+            SEnviropment::Instance().m_TempPath = AZStd::string_view{ strValue.c_str(), strValue.size() };
         }
         if (azstricmp(strKey.c_str(), "MailServer") == 0)
         {

@@ -159,7 +159,6 @@ namespace DX12
         UINT64 SetFenceValue(UINT64 fenceValue, const int id, const int type)
         {
             // Check submitted completed fence
-            UINT64 utilizedValue = fenceValue;
             UINT64 previousValue = m_FenceValues[type][id];
 
 #define DX12_FREETHREADED_RESOURCES

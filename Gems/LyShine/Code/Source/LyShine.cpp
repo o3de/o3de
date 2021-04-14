@@ -289,6 +289,18 @@ UiRenderer* CLyShine::GetUiRenderer()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+UiRenderer* CLyShine::GetUiRendererForEditor()
+{
+    return m_uiRendererForEditor.get();
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void CLyShine::SetUiRendererForEditor(AZStd::shared_ptr<UiRenderer> uiRenderer)
+{
+    m_uiRendererForEditor = uiRenderer;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 AZ::EntityId CLyShine::CreateCanvas()
 {
     return m_uiCanvasManager->CreateCanvas();
@@ -414,7 +426,7 @@ void CLyShine::Render()
 {
     FRAME_PROFILER(__FUNCTION__, gEnv->pSystem, PROFILE_UI);
 
-    // LYSHINE_ATOM_TODO - verify that this is no longer needed and remove
+    // LYSHINE_ATOM_TODO - convert to use Atom interface to check for null renderer
     if (!gEnv || !gEnv->pRenderer || gEnv->pRenderer->GetRenderType() == ERenderType::eRT_Null)
     {
         // if the renderer is not initialized or it is the null renderer (e.g. running as a server)
