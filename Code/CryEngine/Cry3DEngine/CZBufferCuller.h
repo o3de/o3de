@@ -97,7 +97,10 @@ protected:
             {
                 return true;
             }
-            MinX = 0;
+            else
+            {
+                MinX = 0;
+            }
         }
         if (MaxX > m_SizeX)
         {
@@ -105,7 +108,10 @@ protected:
             {
                 return true;
             }
-            MaxX = m_SizeX;
+            else
+            {
+                MaxX = m_SizeX;
+            }
         }
         if (MinY < 0)
         {
@@ -113,7 +119,10 @@ protected:
             {
                 return true;
             }
-            MinY = 0;
+            else
+            {
+                MinY = 0;
+            }
         }
         if (MaxY > m_SizeY)
         {
@@ -121,7 +130,10 @@ protected:
             {
                 return true;
             }
-            MaxY = m_SizeY;
+            else
+            {
+                MaxY = m_SizeY;
+            }
         }
         if constexpr (ROTATE == 2)
         {

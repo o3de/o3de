@@ -711,6 +711,7 @@ bool SRenderThread::RC_CreateDeviceTexture(CTexture* pTex, const byte* pData[6])
         return pTex->RT_CreateDeviceTexture(pData);
     }
 
+#if !defined(MULTITHREADED_RESOURCE_CREATION)
     if (pTex->IsAsyncDevTexCreation())
     {
         return !IsFailed();
@@ -727,6 +728,7 @@ bool SRenderThread::RC_CreateDeviceTexture(CTexture* pTex, const byte* pData[6])
     FlushAndWait();
 
     return !IsFailed();
+#endif
 }
 
 void SRenderThread::RC_CopyDataToTexture(

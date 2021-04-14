@@ -26,8 +26,8 @@ from typing import List
 import ly_test_tools.builtin.helpers as helpers
 import ly_test_tools.environment.file_system as fs
 import ly_test_tools.environment.process_utils as process_utils
-from ly_test_tools.lumberyard import asset_processor as asset_processor_utils
-from ly_test_tools.lumberyard.asset_processor import ASSET_PROCESSOR_PLATFORM_MAP
+from ly_test_tools.o3de import asset_processor as asset_processor_utils
+from ly_test_tools.o3de.asset_processor import ASSET_PROCESSOR_PLATFORM_MAP
 
 # Import fixtures
 from ..ap_fixtures.asset_processor_fixture import asset_processor as asset_processor
@@ -37,7 +37,7 @@ from ..ap_fixtures.clear_moveoutput_fixture import clear_moveoutput_fixture as c
 from ..ap_fixtures.clear_testingAssets_dir import clear_testingAssets_dir as clear_testingAssets_dir
 
 # Import LyShared
-import ly_test_tools.lumberyard.pipeline_utils as utils
+import ly_test_tools.o3de.pipeline_utils as utils
 
 # Use the following logging pattern to hook all test logging together:
 logger = logging.getLogger(__name__)

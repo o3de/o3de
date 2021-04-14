@@ -4914,7 +4914,6 @@ bool CD3D9Renderer::ScreenShotInternal([[maybe_unused]] const char* filename, [[
     // ignore invalid file access for screenshots
     CDebugAllowFileAccess ignoreInvalidFileAccess;
 
-    bool bRet = true;
 #if !defined(_RELEASE) || defined(WIN32) || defined(WIN64) || defined(ENABLE_LW_PROFILERS)
     if (m_pRT && !m_pRT->IsRenderThread())
     {
@@ -5041,8 +5040,11 @@ bool CD3D9Renderer::ScreenShotInternal([[maybe_unused]] const char* filename, [[
 
     return CaptureFrameBufferToFile(path);
 
+#else
+
+    return true;
+
 #endif//_RELEASE
-    return bRet;
 }
 
 bool CD3D9Renderer::ScreenShot(const char* filename, int iPreWidth)
@@ -5656,8 +5658,6 @@ bool CD3D9Renderer::CaptureFrameBufferFast([[maybe_unused]] unsigned char* pDstR
     }
 
     SAFE_RELEASE(pSourceTexture);
-
-    return bStatus;
 #endif
 
     return bStatus;
@@ -5710,8 +5710,6 @@ bool CD3D9Renderer::CopyFrameBufferFast([[maybe_unused]] unsigned char* pDstRGBA
         GetDeviceContext().Unmap(pCopyTexture, 0);
         bStatus = true;
     }
-
-    return bStatus;
 #endif
 
     return bStatus;

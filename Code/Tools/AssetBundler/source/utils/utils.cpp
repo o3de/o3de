@@ -485,7 +485,7 @@ namespace AssetBundler
 
         return AZ::Failure(AZStd::string::format(
             "Unable to locate the Project Cache path from Settings Registry at key %s."
-            " Please run the Lumberyard Asset Processor to generate a Cache and build assets.",
+            " Please run the Open 3D Engine Asset Processor to generate a Cache and build assets.",
             AZ::SettingsRegistryMergeUtils::FilePathKey_CacheProjectRootFolder));
     }
 
@@ -503,7 +503,7 @@ namespace AssetBundler
 
         if (tempPlatformList.empty())
         {
-            return AZ::Failure(AZStd::string("Cache is empty. Please run the Lumberyard Asset Processor to generate a Cache and build assets."));
+            return AZ::Failure(AZStd::string("Cache is empty. Please run the Open 3D Engine Asset Processor to generate a Cache and build assets."));
         }
 
         for (const QString& platform : tempPlatformList)
@@ -520,7 +520,7 @@ namespace AssetBundler
         if (assetCatalogFilePath.empty())
         {
             return AZ::Failure(AZStd::string::format(
-                "Unable to retrieve cache platform path from Settings Registry at key: %s. Please run the Lumberyard Asset Processor to generate platform-specific cache folders and build assets.",
+                "Unable to retrieve cache platform path from Settings Registry at key: %s. Please run the Open 3D Engine Asset Processor to generate platform-specific cache folders and build assets.",
                 AZ::SettingsRegistryMergeUtils::FilePathKey_CacheProjectRootFolder));
         }
 

@@ -11,7 +11,7 @@
 */
 
 #include "SliderComboPage.h"
-#include <Gallery/ui_SliderComboPage.h>
+#include <AzQtComponents/Gallery/ui_SliderComboPage.h>
 
 #include <AzQtComponents/Components/Widgets/Slider.h>
 #include <AzQtComponents/Components/Widgets/SliderCombo.h>

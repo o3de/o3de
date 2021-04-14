@@ -77,6 +77,72 @@ namespace AZ
 
             //! Sets the photometric unit to the one provided and converts the intensity to the photometric unit so actual light intensity remains constant.
             virtual void ConvertToIntensityMode(PhotometricUnit intensityMode) = 0;
+
+            // Shutters
+
+            //! Returns true if shutters are enabled.
+            virtual bool GetEnableShutters() const = 0;
+
+            //! Sets if shutters should be enabled.
+            virtual void SetEnableShutters(bool enabled) = 0;
+
+            //! Returns the inner angle of the shutters in degrees
+            virtual float GetInnerShutterAngle() const = 0;
+
+            //! Sets the inner angle of the shutters in degrees
+            virtual void SetInnerShutterAngle(float degrees) = 0;
+            
+            //! Returns the outer angle of the shutters in degrees
+            virtual float GetOuterShutterAngle() const = 0;
+
+            //! Sets the outer angle of the shutters in degrees
+            virtual void SetOuterShutterAngle(float degrees) = 0;
+
+            // Shadows
+
+            //! Returns true if shadows are enabled.
+            virtual bool GetEnableShadow() const = 0;
+
+            //! Sets if shadows should be enabled.
+            virtual void SetEnableShadow(bool enabled) = 0;
+
+            //! Returns the maximum width and height of shadowmap.
+            virtual ShadowmapSize GetShadowmapMaxSize() const = 0;
+
+            //! Sets the maximum width and height of shadowmap.
+            virtual void SetShadowmapMaxSize(ShadowmapSize size) = 0;
+
+            //! Returns the filter method of shadows.
+            virtual ShadowFilterMethod GetShadowFilterMethod() const = 0;
+
+            //! Sets the filter method of shadows.
+            virtual void SetShadowFilterMethod(ShadowFilterMethod method) = 0;
+
+            //! Gets the width of softening boundary between shadowed area and lit area in degrees.
+            virtual float GetSofteningBoundaryWidthAngle() const = 0;
+            
+            //! Sets the width of softening boundary between shadowed area and lit area in degrees.
+            //! 0 disables softening.
+            virtual void SetSofteningBoundaryWidthAngle(float degrees) = 0;
+
+            //! Gets the sample count to predict boundary of shadow.
+            virtual uint32_t GetPredictionSampleCount() const = 0;
+            
+            //! Sets the sample count to predict boundary of shadow. Maximum 16, and should also be 
+            //! less than the filtering sample count.
+            virtual void SetPredictionSampleCount(uint32_t count) = 0;
+
+            //! Gets the sample count for filtering of the shadow boundary.
+            virtual uint32_t GetFilteringSampleCount() const = 0;
+
+            //! Sets the sample count for filtering of the shadow boundary. Maximum 64.
+            virtual void SetFilteringSampleCount(uint32_t count) = 0;
+            
+            //! Gets the type of Pcf (percentage-closer filtering) to use.
+            virtual PcfMethod GetPcfMethod() const = 0;
+
+            //! Sets the type of Pcf (percentage-closer filtering) to use.
+            virtual void SetPcfMethod(PcfMethod method) = 0;
         };
 
         //! The EBus for requests to for setting and getting light component properties.

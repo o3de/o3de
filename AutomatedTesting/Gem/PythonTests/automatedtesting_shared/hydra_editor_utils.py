@@ -296,8 +296,8 @@ def get_set_test(entity: object, component_index: int, path: str, value: object)
 
 def get_set_property_test(ly_object: object, attribute_name: str, value: object, expected_result: object = None) -> bool:
     """
-    Used to set and validate BehaviorContext property changes in Lumberyard objects
-    :param ly_object: The lumberyard object to test
+    Used to set and validate BehaviorContext property changes in Open 3D Engine objects
+    :param ly_object: The Open 3D Engine object to test
     :param attribute_name: property (attribute) name in the BehaviorContext
     :param value: new value for the variable being changed in the component
     :param expected_result: (optional) check the result against a specific expected value other than the one set
@@ -410,7 +410,7 @@ def set_editor_settings_by_path(path, value, is_bool = False):
 def get_component_type_id_map(component_name_list):
     """
     Given a list of component names, returns a map of component name -> component type id
-    :param component_name_list: The lumberyard object to test
+    :param component_name_list: The Open 3D Engine object to test
     :return: Dictionary of component name -> component type id pairs
     """
     # Remove any duplicates so we don't have to query for the same TypeId

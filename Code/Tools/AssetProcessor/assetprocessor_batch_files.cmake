@@ -12,4 +12,5 @@
 set(FILES
     native/main_batch.cpp
     native/AssetProcessorBatchBuildTarget.cpp
+    Platform/Windows/AssetProcessorBatch.rc
 )

@@ -12,7 +12,6 @@
 set(LY_UNITY_BUILD OFF CACHE BOOL "UNITY builds")
 
 include(CMakeFindDependencyMacro)
-include(CMakeParseArguments)
 include(cmake/LyAutoGen.cmake)
 
 ly_get_absolute_pal_filename(pal_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Platform/${PAL_PLATFORM_NAME})
@@ -53,6 +52,8 @@ define_property(TARGET PROPERTY GEM_MODULE
 # \arg:HEADERONLY (bool) defines this target to be a header only library. A ${NAME}_HEADERS project will be created for the IDE
 # \arg:EXECUTABLE (bool) defines this target to be an executable
 # \arg:APPLICATION (bool) defines this target to be an application (executable that is not a console)
+# \arg:UNKNOWN (bool) defines this target to be unknown. This is used when importing installed targets from Find files
+# \arg:IMPORTED (bool) defines this target to be imported.
 # \arg:NAMESPACE namespace declaration for this target. It will be used for IDE and dependencies
 # \arg:OUTPUT_NAME (optional) overrides the name of the output target. If not specified, the name will be used.
 # \arg:OUTPUT_SUBDIRECTORY places the runtime binary in a subfolder within the output folder (this only affects to runtime binaries)
@@ -75,7 +76,7 @@ define_property(TARGET PROPERTY GEM_MODULE
 # \arg:AUTOGEN_RULES a set of AutoGeneration rules to be passed to the AzAutoGen expansion system
 function(ly_add_target)
 
-    set(options STATIC SHARED MODULE GEM_MODULE HEADERONLY EXECUTABLE APPLICATION AUTOMOC AUTOUIC AUTORCC NO_UNITY)
+    set(options STATIC SHARED MODULE GEM_MODULE HEADERONLY EXECUTABLE APPLICATION UNKNOWN IMPORTED AUTOMOC AUTOUIC AUTORCC NO_UNITY)
     set(oneValueArgs NAME NAMESPACE OUTPUT_SUBDIRECTORY OUTPUT_NAME)
     set(multiValueArgs FILES_CMAKE GENERATED_FILES INCLUDE_DIRECTORIES COMPILE_DEFINITIONS BUILD_DEPENDENCIES RUNTIME_DEPENDENCIES PLATFORM_INCLUDE_FILES TARGET_PROPERTIES AUTOGEN_RULES)
 
@@ -85,8 +86,10 @@ function(ly_add_target)
     if(NOT ly_add_target_NAME)
         message(FATAL_ERROR "You must provide a name for the target")
     endif()
-    if(NOT ly_add_target_FILES_CMAKE)
-        message(FATAL_ERROR "You must provide a list of _files.cmake files for the target")
+    if(NOT ly_add_target_IMPORTED)
+        if(NOT ly_add_target_FILES_CMAKE)
+            message(FATAL_ERROR "You must provide a list of _files.cmake files for the target")
+        endif()
     endif()
 
     # If the GEM_MODULE tag is passed set the normal MODULE argument
@@ -125,8 +128,12 @@ function(ly_add_target)
         set(linking_options APPLICATION)
         set(linking_count "${linking_count}1")
     endif()
+    if(ly_add_target_UNKNOWN)
+        set(linking_options UNKNOWN)
+        set(linking_count "${linking_count}1")
+    endif()
     if(NOT ("${linking_count}" STREQUAL "1"))
-        message(FATAL_ERROR "More than one of the following options [STATIC | SHARED | MODULE | HEADERONLY | EXECUTABLE | APPLICATION] was specified and they are mutually exclusive")
+        message(FATAL_ERROR "More than one of the following options [STATIC | SHARED | MODULE | HEADERONLY | EXECUTABLE | APPLICATION | UNKNOWN] was specified and they are mutually exclusive")
     endif()
 
     if(ly_add_target_NAMESPACE)
@@ -157,6 +164,11 @@ function(ly_add_target)
             SOURCES ${ALLFILES} ${ly_add_target_GENERATED_FILES}
         )
         set(project_NAME ${ly_add_target_NAME}_HEADERS)
+    elseif(ly_add_target_UNKNOWN)
+        add_library(${ly_add_target_NAME}
+            ${linking_options}
+            IMPORTED
+        )
     else()
         add_library(${ly_add_target_NAME}
             ${linking_options}
@@ -197,7 +209,7 @@ function(ly_add_target)
     endif()
 
     if (ly_add_target_INCLUDE_DIRECTORIES)
-        target_include_directories(${ly_add_target_NAME}
+        ly_target_include_directories(${ly_add_target_NAME}
             ${ly_add_target_INCLUDE_DIRECTORIES}
         )
     endif()
@@ -325,6 +337,17 @@ function(ly_add_target)
         )
     endif()
 
+    if(NOT ly_add_target_IMPORTED)
+        ly_install_target(
+            ${ly_add_target_NAME}
+            NAMESPACE ${ly_add_target_NAMESPACE}
+            INCLUDE_DIRECTORIES ${ly_add_target_INCLUDE_DIRECTORIES}
+            BUILD_DEPENDENCIES ${ly_add_target_BUILD_DEPENDENCIES}
+            RUNTIME_DEPENDENCIES ${ly_add_target_RUNTIME_DEPENDENCIES}
+            COMPILE_DEFINITIONS ${ly_add_target_COMPILE_DEFINITIONS}
+        )
+    endif()
+
 endfunction()
 
 #! ly_target_link_libraries: wraps target_link_libraries handling also MODULE linkage.
@@ -384,7 +407,7 @@ function(ly_delayed_target_link_libraries)
                     endif()
 
                     if(item_type STREQUAL MODULE_LIBRARY)
-                        target_include_directories(${target} ${visibility} $<TARGET_PROPERTY:${item},INTERFACE_INCLUDE_DIRECTORIES>)
+                        ly_target_include_directories(${target} ${visibility} $<TARGET_PROPERTY:${item},INTERFACE_INCLUDE_DIRECTORIES>)
                         target_link_libraries(${target} ${visibility} $<TARGET_PROPERTY:${item},INTERFACE_LINK_LIBRARIES>)
                         target_compile_definitions(${target} ${visibility} $<TARGET_PROPERTY:${item},INTERFACE_COMPILE_DEFINITIONS>)
                         target_compile_options(${target} ${visibility} $<TARGET_PROPERTY:${item},INTERFACE_COMPILE_OPTIONS>)
@@ -485,7 +508,7 @@ endfunction()
 # Looks at the the following variables within the platform include file to set the equivalent target properties
 # LY_FILES_CMAKE -> extract list of files -> target_sources
 # LY_FILES -> target_source
-# LY_INCLUDE_DIRECTORIES -> target_include_directories
+# LY_INCLUDE_DIRECTORIES -> ly_target_include_directories
 # LY_COMPILE_DEFINITIONS -> target_compile_definitions
 # LY_COMPILE_OPTIONS -> target_compile_options
 # LY_LINK_OPTIONS -> target_link_options
@@ -511,11 +534,7 @@ macro(ly_configure_target_platform_properties)
             message(FATAL_ERROR "The supplied PLATFORM_INCLUDE_FILE(${platform_include_file}) cannot be included.\
  Parsing of target will halt")
         endif()
-        if(ly_add_target_HEADERONLY)
-            target_sources(${ly_add_target_NAME} INTERFACE ${platform_include_file})
-        else()
-            target_sources(${ly_add_target_NAME} PRIVATE ${platform_include_file})
-        endif()
+        target_sources(${ly_add_target_NAME} PRIVATE ${platform_include_file})
         ly_source_groups_from_folders("${platform_include_file}")
 
         if(LY_FILES_CMAKE)
@@ -531,7 +550,7 @@ macro(ly_configure_target_platform_properties)
             target_sources(${ly_add_target_NAME} PRIVATE ${LY_FILES})
         endif()
         if (LY_INCLUDE_DIRECTORIES)
-            target_include_directories(${ly_add_target_NAME} ${LY_INCLUDE_DIRECTORIES})
+            ly_target_include_directories(${ly_add_target_NAME} ${LY_INCLUDE_DIRECTORIES})
         endif()
         if(LY_COMPILE_DEFINITIONS)
             target_compile_definitions(${ly_add_target_NAME} ${LY_COMPILE_DEFINITIONS})
@@ -631,6 +650,42 @@ function(ly_add_source_properties)
             APPEND PROPERTY ${ly_add_source_properties_PROPERTY} ${ly_add_source_properties_VALUES}
         )
     endif()
+
+endfunction()
+
+function(ly_target_include_directories TARGET)
+
+    # Add the includes to the build and install interface
+    set(reserved_keywords PRIVATE PUBLIC INTERFACE)
+    unset(last_keyword)
+    foreach(include ${ARGN})
+        if(${include} IN_LIST reserved_keywords)
+            list(APPEND adapted_includes ${include})
+        elseif(IS_ABSOLUTE ${include})
+            list(APPEND adapted_includes
+                $<BUILD_INTERFACE:${include}>
+            )
+        else()
+            string(GENEX_STRIP ${include} include_genex_expr)
+            if(include_genex_expr STREQUAL include) # only for cases where there are no generation expressions
+                # We will be installing the includes using the same directory structure used in our source tree.
+                # The INSTALL_INTERFACE path tells CMake the location of the includes relative to the install prefix.
+                # When the target is imported into an external project, cmake will find these includes at <install_prefix>/include/<path_relative_to_root>
+                # where <install_prefix> is the location of the lumberyard install on disk.
+                file(REAL_PATH ${include} include_real)
+                file(RELATIVE_PATH install_dir ${CMAKE_SOURCE_DIR} ${include_real})
+                list(APPEND adapted_includes
+                    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${include}>
+                    $<INSTALL_INTERFACE:include/${install_dir}>
+                )
+            else()
+                list(APPEND adapted_includes
+                    ${include}
+                )
+            endif()
+        endif()
+    endforeach()
+    target_include_directories(${TARGET} ${adapted_includes})
 
 endfunction()
 

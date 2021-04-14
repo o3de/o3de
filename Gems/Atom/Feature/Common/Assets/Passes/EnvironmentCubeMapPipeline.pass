@@ -49,12 +49,12 @@
                     ]
                 },
                 {
-                    "Name": "SpotLightShadowmapsPass",
-                    "TemplateName": "SpotLightShadowmapsTemplate",
+                    "Name": "ProjectedShadowmapsPass",
+                    "TemplateName": "ProjectedShadowmapsTemplate",
                     "PassData": {
                         "$type": "RasterPassData",
                         "DrawListTag": "shadow",
-                        "PipelineViewTag": "SpotLightView"
+                        "PipelineViewTag": "ProjectedShadowView"
                     },
                     "Connections": [
                         {
@@ -84,17 +84,17 @@
                     ]
                 },
                 {
-                    "Name": "EsmShadowmapsPassSpot",
+                    "Name": "EsmShadowmapsPassProjected",
                     "TemplateName": "EsmShadowmapsTemplate",
                     "PassData": {
                         "$type": "EsmShadowmapsPassData",
-                        "LightType": "spot"
+                        "LightType": "projected"
                     },
                     "Connections": [
                         {
                             "LocalSlot": "DepthShadowmaps",
                             "AttachmentRef": {
-                                "Pass": "SpotLightShadowmapsPass",
+                                "Pass": "ProjectedShadowmapsPass",
                                 "Attachment": "Shadowmap"
                             }
                         }
@@ -243,16 +243,16 @@
                             }
                         },
                         {
-                            "LocalSlot": "SpotLightShadowmap",
+                            "LocalSlot": "ProjectedShadowmap",
                             "AttachmentRef": {
-                                "Pass": "SpotLightShadowmapsPass",
+                                "Pass": "ProjectedShadowmapsPass",
                                 "Attachment": "Shadowmap"
                             }
                         },
                         {
-                            "LocalSlot": "ExponentialShadowmapSpot",
+                            "LocalSlot": "ExponentialShadowmapProjected",
                             "AttachmentRef": {
-                                "Pass": "EsmShadowmapsPassSpot",
+                                "Pass": "EsmShadowmapsPassProjected",
                                 "Attachment": "EsmShadowmaps"
                             }
                         },

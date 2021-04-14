@@ -11,7 +11,7 @@
 */
 
 #include "SplitterPage.h"
-#include <Gallery/ui_SplitterPage.h>
+#include <AzQtComponents/Gallery/ui_SplitterPage.h>
 
 SplitterPage::SplitterPage(QWidget* parent)
     : QWidget(parent)

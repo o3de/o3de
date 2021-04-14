@@ -12,7 +12,9 @@
 set(FILES
     ../Common/Configurations_common.cmake
     ../Common/Clang/Configurations_clang.cmake
+    ../Common/Install_common.cmake
     Configurations_linux.cmake
+    Install_linux.cmake
     LYTestWrappers_linux.cmake
     LYWrappers_linux.cmake
     PAL_linux.cmake

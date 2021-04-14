@@ -185,10 +185,13 @@ namespace UnitTest
         // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
         // in the unit tests.
         AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
+
+        AZ::Data::AssetManager::Instance().RegisterHandler(&m_assetHandler, azrtti_typeid<TestAsset>());
     }
 
     void PrefabBuilderTests::TearDown()
     {
+        AZ::Data::AssetManager::Instance().UnregisterHandler(&m_assetHandler);
         m_testComponentDescriptor = nullptr;
 
         m_app.Stop();

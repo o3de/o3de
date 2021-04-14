@@ -28,7 +28,7 @@ from cmake.Tools.Platform.Android import android_support
 
 GRADLE_ARGUMENT_NAME = '--gradle-install-path'
 GRADLE_MIN_VERSION = LooseVersion('4.10.1')
-GRADLE_MAX_VERSION = LooseVersion('5.6.4')
+GRADLE_MAX_VERSION = LooseVersion('7.0.0')
 GRADLE_VERSION_REGEX = re.compile(r"Gradle\s(\d+.\d+.?\d*)")
 GRADLE_EXECUTABLE = 'gradle.bat' if platform.system() == 'Windows' else 'gradle'
 

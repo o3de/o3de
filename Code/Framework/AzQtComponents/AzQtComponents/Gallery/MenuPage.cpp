@@ -11,7 +11,7 @@
 */
 
 #include "MenuPage.h"
-#include <Gallery/ui_MenuPage.h>
+#include <AzQtComponents/Gallery/ui_MenuPage.h>
 
 #include <QMenu>
 
@@ -83,7 +83,7 @@ action->setChecked(true);
 auto submenu = menu->addMenu(QStringLiteral("Submenu"));
 submenu->addAction(actionText);
 
-// Note: some Lumberyard menus (like the one in the MainWindow) forcefully hide icons by design.
+// Note: some Open 3D Engine menus (like the one in the MainWindow) forcefully hide icons by design.
 
 </pre>
 
