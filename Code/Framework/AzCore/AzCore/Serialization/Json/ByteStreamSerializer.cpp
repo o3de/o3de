@@ -15,6 +15,7 @@
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
+#include <AzCore/StringFunc/StringFunc.h>
 
 namespace AZ
 {
@@ -31,11 +32,13 @@ namespace AZ
             {
             case rapidjson::kStringType: {
                 JsonByteStream* valAsByteStream = static_cast<JsonByteStream*>(outputValue);
-                JsonByteStream buffer;
-                buffer.resize(inputValue.GetStringLength());
-                AZStd::copy(inputValue.GetString(), inputValue.GetString() + inputValue.GetStringLength(), buffer.begin());
-                *valAsByteStream = AZStd::move(buffer);
-                return context.Report(Tasks::ReadField, Outcomes::Success, "Successfully read ByteStream.");
+                JsonByteStream buffer(inputValue.GetStringLength());
+                if (AZ::StringFunc::Base64::Decode(buffer, inputValue.GetString(), inputValue.GetStringLength()))
+                {
+                    *valAsByteStream = AZStd::move(buffer);
+                    return context.Report(Tasks::ReadField, Outcomes::Success, "Successfully read ByteStream.");
+                }
+                return context.Report(Tasks::ReadField, Outcomes::Invalid, "Decode of Base64 encoded ByteStream failed.");
             }
             case rapidjson::kArrayType:
             case rapidjson::kObjectType:
@@ -58,12 +61,10 @@ namespace AZ
             using JsonSerializationResult::Tasks;
 
             const JsonByteStream& valAsByteStream = *static_cast<const JsonByteStream*>(inputValue);
-            if (context.ShouldKeepDefaults() || !defaultValue ||
-                (valAsByteStream != *static_cast<const JsonByteStream*>(defaultValue)))
+            if (context.ShouldKeepDefaults() || !defaultValue || (valAsByteStream != *static_cast<const JsonByteStream*>(defaultValue)))
             {
-                outputValue.SetString(
-                    reinterpret_cast<const char*>(valAsByteStream.data()), aznumeric_caster(valAsByteStream.size()),
-                    context.GetJsonAllocator());
+                const auto base64ByteStream = AZ::StringFunc::Base64::Encode(valAsByteStream.data(), valAsByteStream.size());
+                outputValue.SetString(base64ByteStream.c_str(), base64ByteStream.size(), context.GetJsonAllocator());
                 return context.Report(Tasks::WriteValue, Outcomes::Success, "ByteStream successfully stored.");
             }
 
