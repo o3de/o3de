@@ -9,6 +9,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
+set(_default_component "com.o3de.default")
 
 #! ly_install_target: registers the target to be installed by cmake install.
 #
@@ -21,6 +22,12 @@
 # \arg:RUNTIME_DEPENDENCIES list of dependencies this target depends on at runtime
 # \arg:COMPILE_DEFINITIONS list of compilation definitions this target will use to compile
 function(ly_install_target ly_install_target_NAME)
+
+    set(options)
+    set(oneValueArgs NAMESPACE COMPONENT)
+    set(multiValueArgs INCLUDE_DIRECTORIES BUILD_DEPENDENCIES RUNTIME_DEPENDENCIES COMPILE_DEFINITIONS)
+
+    cmake_parse_arguments(ly_install_target "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     # All include directories marked PUBLIC or INTERFACE will be installed
     set(include_location "include")
@@ -43,14 +50,23 @@ function(ly_install_target ly_install_target_NAME)
     install(
         TARGETS ${ly_install_target_NAME}
         EXPORT ${ly_install_target_NAME}Targets
-        LIBRARY DESTINATION lib/$<CONFIG>
-        ARCHIVE DESTINATION lib/$<CONFIG>
-        RUNTIME DESTINATION bin/$<CONFIG>
-        PUBLIC_HEADER DESTINATION ${include_location}
+        LIBRARY
+            DESTINATION lib/$<CONFIG>
+            COMPONENT ${ly_install_target_COMPONENT}
+        ARCHIVE
+            DESTINATION lib/$<CONFIG>
+            COMPONENT ${ly_install_target_COMPONENT}
+        RUNTIME
+            DESTINATION bin/$<CONFIG>
+            COMPONENT ${ly_install_target_COMPONENT}
+        PUBLIC_HEADER
+            DESTINATION ${include_location}
+            COMPONENT ${ly_install_target_COMPONENT}
     )
-    
+
     install(EXPORT ${ly_install_target_NAME}Targets
         DESTINATION cmake_autogen/${ly_install_target_NAME}
+        COMPONENT ${ly_install_target_COMPONENT}
     )
 
     # Header only targets(i.e., INTERFACE) don't have outputs
@@ -60,11 +76,13 @@ function(ly_install_target ly_install_target_NAME)
 
         install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${ly_install_target_NAME}_$<CONFIG>.cmake"
             DESTINATION cmake_autogen/${ly_install_target_NAME}
+            COMPONENT ${ly_install_target_COMPONENT}
         )
     endif()
 
     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/Find${ly_install_target_NAME}.cmake"
-        DESTINATION cmake
+        DESTINATION .
+        COMPONENT ${ly_install_target_COMPONENT}
     )
 
 endfunction()
@@ -81,7 +99,7 @@ endfunction()
 # \arg:RUNTIME_DEPENDENCIES list of dependencies this target depends on at runtime
 # \arg:COMPILE_DEFINITIONS list of compilation definitions this target will use to compile
 function(ly_generate_target_find_file)
-    
+
     set(options)
     set(oneValueArgs NAME NAMESPACE)
     set(multiValueArgs COMPILE_DEFINITIONS BUILD_DEPENDENCIES RUNTIME_DEPENDENCIES INCLUDE_DIRECTORIES)
@@ -154,7 +172,7 @@ endfunction()
 # These per config files will be included by the target's find file to set the location of the binary/
 # \arg:NAME name of the target
 function(ly_generate_target_config_file NAME)
-    
+
     # SHARED_LIBRARY is omitted from this list because we link to the implib on Windows
     set(BINARY_DIR_OUTPUTS EXECUTABLE APPLICATION)
     set(target_file_contents "")
@@ -205,7 +223,7 @@ endfunction()
 
 #! ly_setup_o3de_install: generates the Findo3de.cmake file and setup install locations for scripts, tools, assets etc.,
 function(ly_setup_o3de_install)
-    
+
     get_property(all_targets GLOBAL PROPERTY LY_ALL_TARGETS)
     unset(find_package_list)
     foreach(target IN LISTS all_targets)
@@ -222,10 +240,12 @@ function(ly_setup_o3de_install)
 
     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/Findo3de.cmake"
         DESTINATION cmake
+        COMPONENT ${_default_component}
     )
 
     install(FILES "${CMAKE_SOURCE_DIR}/CMakeLists.txt"
         DESTINATION .
+        COMPONENT ${_default_component}
     )
 
 endfunction()
@@ -237,14 +257,15 @@ function(ly_install_o3de_directories)
     # List of directories we want to install relative to engine root
     set(DIRECTORIES_TO_INSTALL Tools/LyTestTools Tools/RemoteConsole ctest_scripts scripts)
     foreach(dir ${DIRECTORIES_TO_INSTALL})
-        
+
         get_filename_component(install_path ${dir} DIRECTORY)
         if (NOT install_path)
             set(install_path .)
         endif()
-        
+
         install(DIRECTORY "${CMAKE_SOURCE_DIR}/${dir}"
             DESTINATION ${install_path}
+            COMPONENT ${_default_component}
         )
 
     endforeach()
@@ -252,11 +273,13 @@ function(ly_install_o3de_directories)
     # Directories which have excludes
     install(DIRECTORY "${CMAKE_SOURCE_DIR}/cmake"
         DESTINATION .
+        COMPONENT ${_default_component}
         REGEX "Findo3de.cmake" EXCLUDE
     )
 
     install(DIRECTORY "${CMAKE_SOURCE_DIR}/python"
         DESTINATION .
+        COMPONENT ${_default_component}
         REGEX "downloaded_packages" EXCLUDE
         REGEX "runtime" EXCLUDE
     )
@@ -273,12 +296,15 @@ function(ly_install_launcher_target_generator)
         ${CMAKE_SOURCE_DIR}/Code/LauncherUnified/LauncherProject.cpp
         ${CMAKE_SOURCE_DIR}/Code/LauncherUnified/StaticModules.in
         DESTINATION LauncherGenerator
+        COMPONENT ${_default_component}
     )
     install(DIRECTORY ${CMAKE_SOURCE_DIR}/Code/LauncherUnified/Platform
         DESTINATION LauncherGenerator
+        COMPONENT ${_default_component}
     )
     install(FILES ${CMAKE_SOURCE_DIR}/Code/LauncherUnified/FindLauncherGenerator.cmake
         DESTINATION cmake
+        COMPONENT ${_default_component}
     )
 
 endfunction()
