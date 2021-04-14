@@ -148,7 +148,7 @@
 //      }
 // 
 // As you can see, this macro pattern allows us to add a member to Box or Cylinder by adding a single line to BoxParams.inl or CylinderParams.inl
-// Because of the number of classes an boiler plate code involved in creating Lumberyard Component, this macro system allows us to change one line
+// Because of the number of classes an boiler plate code involved in creating Open 3D Engine Component, this macro system allows us to change one line
 // in one file instead of changing over a dozens of lines in half a dozen files.
 // 
 // ___________________________________________________________________________________________________________________________________________________

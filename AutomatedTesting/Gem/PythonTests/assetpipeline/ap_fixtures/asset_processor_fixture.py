@@ -18,7 +18,7 @@ import pytest
 import logging
 
 # Import LyTestTools
-import ly_test_tools.lumberyard.asset_processor as asset_processor_commands
+import ly_test_tools.o3de.asset_processor as asset_processor_commands
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ def asset_processor(request: pytest.fixture, workspace: pytest.fixture) -> asset
     """
     Sets up usage of the asset proc
     :param request:
-    :return: ly_test_tools.lumberyard.asset_processor.AssetProcessor
+    :return: ly_test_tools.03de.asset_processor.AssetProcessor
     """
 
     # Initialize the Asset Processor

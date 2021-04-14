@@ -124,6 +124,7 @@ namespace AZ
 
                 MaterialUid m_materialUid;
                 bool CanBeMerged() const { return m_clothData.empty(); }
+                bool m_hasMorphedColors = false;
             };
             using ProductMeshContentList = AZStd::vector<ProductMeshContent>;
 
@@ -196,6 +197,12 @@ namespace AZ
                 const SourceMeshContentList& sourceMeshContentList,
                 AZStd::unordered_map<AZStd::string, uint16_t>& jointNameToIndexMap,
                 MorphTargetMetaAssetCreator& morphTargetMetaCreator);
+
+            //! Checks if this is a skinned mesh and if soe,
+            //! adds some extra padding to make vertex streams align for skinning
+            //! Skinning is applied on an entire lod at once, so it presumes that
+            //! Each vertex stream that is modified by skinning is the same length
+            void PadVerticesForSkinning(ProductMeshContentList& productMeshList);
 
             //! Takes in a ProductMeshContentList and merges all elements that share the same MaterialUid.
             ProductMeshContentList MergeMeshesByMaterialUid(

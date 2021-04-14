@@ -1,5 +1,7 @@
 {
-    "local_env": {},
+    "local_env": {
+        "S3_PREFIX": "${BRANCH_NAME}/Mac"
+    },
     "types":{
         "all":{
             "PACKAGE_TARGETS":[
@@ -7,6 +9,16 @@
                     "FILE_LIST": "all.json",
                     "FILE_LIST_TYPE": "All",
                     "PACKAGE_NAME": "${PACKAGE_NAME_PATTERN}-mac-all-${BUILD_NUMBER}.zip"
+                },
+                {
+                    "FILE_LIST": "3rdParty.json",
+                    "FILE_LIST_TYPE": "Mac",
+                    "PACKAGE_NAME": "${PACKAGE_NAME_PATTERN}-mac-3rdParty-${BUILD_NUMBER}.zip"
+                },
+                {
+                    "FILE_LIST": "3rdParty.json",
+                    "FILE_LIST_TYPE": "3rdParty",
+                    "PACKAGE_NAME": "${PACKAGE_NAME_PATTERN}-mac-3rdParty-Warsaw-${BUILD_NUMBER}.zip"
                 }
             ],
             "BOOTSTRAP_CFG_GAME_FOLDER":"CMakeTestbed",

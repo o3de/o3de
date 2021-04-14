@@ -30,8 +30,8 @@ namespace AZ
         {
             using namespace RPI;
 
-            CullingSystem* cullSys = scene->GetCullingSystem();
-            CullingDebugContext& debugCtx = cullSys->GetDebugContext();
+            CullingScene* cullScene = scene->GetCullingScene();
+            CullingDebugContext& debugCtx = cullScene->GetDebugContext();
 
             ImGui::SetNextWindowSize(ImVec2(900.f, 700.f), ImGuiCond_Once);
             if (ImGui::Begin("Culling Debug", &draw, ImGuiWindowFlags_None))

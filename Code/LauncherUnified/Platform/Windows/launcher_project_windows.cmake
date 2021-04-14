@@ -29,7 +29,7 @@ endif()
 
 if(EXISTS ${ICON_FILE})
     set(target_file ${CMAKE_CURRENT_BINARY_DIR}/${project_name}.GameLauncher.rc)
-    configure_file(Platform/Windows/Launcher.rc.in
+    configure_file(${CMAKE_CURRENT_LIST_DIR}/Launcher.rc.in
         ${target_file}
         @ONLY
     )

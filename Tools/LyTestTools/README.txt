@@ -67,14 +67,14 @@ PACKAGE STRUCTURE
 
 The project is organized into packages. Each package corresponds to a tool:
 
-- LyTestTools.ly_test_tools._internal: contains logging setup, pytest fixture, and lumberyard workspace manager modules
+- LyTestTools.ly_test_tools._internal: contains logging setup, pytest fixture, and o3de workspace manager modules
 - LyTestTools.ly_test_tools.builtin: builtin helpers and fixtures for quickly writing tests
 - LyTestTools.ly_test_tools.console: modules used for consoles
 - LyTestTools.ly_test_tools.environment: functions related to file/process management and cleanup
 - LyTestTools.ly_test_tools.image: modules related to image capturing and processing
 - LyTestTools.ly_test_tools.launchers: game launchers library
 - LyTestTools.ly_test_tools.log: modules for interacting with generated or existing log files
-- LyTestTools.ly_test_tools.lumberyard: modules used to interact with lumberyard
+- LyTestTools.ly_test_tools.o3de: modules used to interact with Open 3D Engine
 - LyTestTools.ly_test_tools.mobile: modules used for android/ios
 - LyTestTools.ly_test_tools.report: modules used for reporting
 - LyTestTools.tests: LyTestTools integration, unit, and example usage tests

@@ -28,9 +28,9 @@ namespace AzGameFramework
     GameApplication::GameApplication()
     {
     }
- 
-    GameApplication::GameApplication(int* argc, char*** argv)
-        : Application(argc, argv)
+
+    GameApplication::GameApplication(int argc, char** argv)
+        : Application(&argc, &argv)
     {
     }
 
@@ -108,7 +108,7 @@ namespace AzGameFramework
     }
 
     void GameApplication::QueryApplicationType(AZ::ApplicationTypeQuery& appType) const
-    { 
+    {
         appType.m_maskValue = AZ::ApplicationTypeQuery::Masks::Game;
     };
 

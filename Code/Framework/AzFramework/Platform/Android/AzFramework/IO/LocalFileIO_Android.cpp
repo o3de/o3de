@@ -16,13 +16,14 @@
 #include <AzCore/Android/APKFileHandler.h>
 #include <AzCore/Android/Utils.h>
 #include <AzCore/IO/IOUtils.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/functional.h>
 
 #include <android/api-level.h>
 
 #if __ANDROID_API__ == 19
-    // The following were apparently introduced in API 21, however in earlier versions of the 
+    // The following were apparently introduced in API 21, however in earlier versions of the
     // platform specific headers they were defines.  In the move to unified headers, the following
     // defines were removed from stat.h
     #ifndef stat64
@@ -52,7 +53,7 @@ namespace AZ
 
             if (AZ::Android::Utils::IsApkPath(resolvedPath))
             {
-                return AZ::Android::APKFileHandler::IsDirectory(AZ::Android::Utils::StripApkPrefix(resolvedPath));
+                return AZ::Android::APKFileHandler::IsDirectory(AZ::Android::Utils::StripApkPrefix(resolvedPath).c_str());
             }
 
             struct stat result;
@@ -108,7 +109,7 @@ namespace AZ
 
             if (isInAPK)
             {
-                AZ::OSString strippedPath = AZ::Android::Utils::StripApkPrefix(pathWithoutSlash.c_str());
+                AZ::IO::FixedMaxPath strippedPath = AZ::Android::Utils::StripApkPrefix(pathWithoutSlash.c_str());
 
                 char tempBuffer[AZ_MAX_PATH_LEN] = {0};
 

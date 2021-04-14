@@ -18,7 +18,7 @@ namespace EditorPythonBindings
 {
     namespace PythonProxyBusManagement
     {
-        //! Creates the 'azlmbr.bus' module so that Python script can use Lumberyard buses
+        //! Creates the 'azlmbr.bus' module so that Python script can use Open 3D Engine buses
         void CreateSubmodule(pybind11::module module);
     }
 }

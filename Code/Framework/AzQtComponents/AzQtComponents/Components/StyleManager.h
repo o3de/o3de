@@ -37,7 +37,7 @@ namespace AzQtComponents
     class AutoCustomWindowDecorations;
 
     /**
-     * Wrapper around classes dealing with Lumberyard style.
+     * Wrapper around classes dealing with Open 3D Engine style.
      *
      * New applications should work like this:
      *   

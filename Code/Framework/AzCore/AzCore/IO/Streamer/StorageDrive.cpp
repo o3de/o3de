@@ -97,19 +97,22 @@ namespace AZ
                     CancelRequest(request, args.m_target);
                     return;
                 }
-                else if constexpr (AZStd::is_same_v<Command, FileRequest::FlushData>)
+                else
                 {
-                    FlushCache(args.m_path);
+                    if constexpr (AZStd::is_same_v<Command, FileRequest::FlushData>)
+                    {
+                        FlushCache(args.m_path);
+                    }
+                    else if constexpr (AZStd::is_same_v<Command, FileRequest::FlushAllData>)
+                    {
+                        FlushEntireCache();
+                    }
+                    else if constexpr (AZStd::is_same_v<Command, FileRequest::ReportData>)
+                    {
+                        Report(args);
+                    }
+                    StreamStackEntry::QueueRequest(request);
                 }
-                else if constexpr (AZStd::is_same_v<Command, FileRequest::FlushAllData>)
-                {
-                    FlushEntireCache();
-                }
-                else if constexpr (AZStd::is_same_v<Command, FileRequest::ReportData>)
-                {
-                    Report(args);
-                }
-                StreamStackEntry::QueueRequest(request);
             }, request->GetCommand());
         }
 

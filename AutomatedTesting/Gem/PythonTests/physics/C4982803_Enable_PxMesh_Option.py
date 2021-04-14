@@ -49,7 +49,7 @@ def C4982803_Enable_PxMesh_Option():
      7) Verify that the entity falls on the ground and collides with the terrain.
 
     Note:
-    - This test file must be called from the Lumberyard Editor command terminal
+    - This test file must be called from the Open 3D Engine Editor command terminal
     - Any passed and failed tests are written to the Editor.log file.
         Parsing the file or running a log_monitor are required to observe the test results.
 
@@ -69,7 +69,7 @@ def C4982803_Enable_PxMesh_Option():
     from asset_utils import Asset
     import azlmbr.math as math
 
-    # Lumberyard Imports
+    # Open 3D Engine Imports
     import azlmbr
     import azlmbr.legacy.general as general
 

@@ -57,7 +57,7 @@ namespace Maestro
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<MaestroSystemComponent>("Maestro", "Provides the Lumberyard Cinematics Service")
+                ec->Class<MaestroSystemComponent>("Maestro", "Provides the Open 3D Engine Cinematics Service")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         // ->Attribute(AZ::Edit::Attributes::Category, "") Set a category
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
