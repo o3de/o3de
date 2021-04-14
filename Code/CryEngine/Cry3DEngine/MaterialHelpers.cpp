@@ -844,7 +844,6 @@ void MaterialHelpers::MigrateXmlLegacyData(SInputShaderResources& pShaderResourc
         CryWarning(VALIDATOR_MODULE_3DENGINE, VALIDATOR_WARNING, "Material %s has had legacy GlowAmount automatically converted to Emissive Intensity.  The material parameters related to Emittance should be manually adjusted for this material.", materialName.c_str());
     }
     
-    // In Lumberyard version 1.9 BlendLayer2Specular became a color instead of a single float, so it needs to be updated
     XmlNodeRef publicParamsNode = node->findChild("PublicParams");
     if (publicParamsNode && publicParamsNode->haveAttr("BlendLayer2Specular"))
     {

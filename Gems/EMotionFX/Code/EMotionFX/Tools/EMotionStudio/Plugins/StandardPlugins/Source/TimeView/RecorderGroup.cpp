@@ -27,15 +27,15 @@ namespace EMStudio
         : QObject(toolbar)
     {
         m_clearRecordAction = toolbar->addAction(
-            MysticQt::GetMysticQt()->FindIcon("/Images/Icons/Clear.svg"),
+            MysticQt::GetMysticQt()->FindIcon("Images/Icons/Clear.svg"),
             "Clear recording", toolbar, &TimeViewToolBar::OnClearRecordButton);
 
         m_recordAction = toolbar->addAction(
-            MysticQt::GetMysticQt()->FindIcon("/Images/Icons/RecordButton.svg"),
+            MysticQt::GetMysticQt()->FindIcon("Images/Icons/RecordButton.svg"),
             "Clear recording", toolbar, &TimeViewToolBar::OnRecordButton);
 
         m_recordOptionsAction = toolbar->addAction(
-            MysticQt::GetMysticQt()->FindIcon("/Images/Icons/Settings.svg"), "");
+            MysticQt::GetMysticQt()->FindIcon("Images/Icons/Settings.svg"), "");
         {
             QMenu* recordOptionsMenu = new QMenu(toolbar);
             recordOptionsMenu->addAction(tr("Recording options"))->setEnabled(false);
@@ -70,7 +70,7 @@ namespace EMStudio
         }
 
         m_displayOptionsAction = toolbar->addAction(
-            MysticQt::GetMysticQt()->FindIcon("/Images/Icons/Visualization.svg"),
+            MysticQt::GetMysticQt()->FindIcon("Images/Icons/Visualization.svg"),
             "Show display and visual options");
         {
             QMenu* contextMenu = new QMenu(toolbar);

@@ -56,10 +56,10 @@ namespace AzFramework
         m_octreeDebug.Clear();
         m_visibleEntityIds.clear();
 
-        visSystem->Enumerate(
+        visSystem->GetDefaultVisibilityScene()->Enumerate(
             viewFrustum,
             [&viewFrustum, &visibleEntityIdsOut = m_visibleEntityIds,
-             &octreeDebug = m_octreeDebug](const AzFramework::IVisibilitySystem::NodeData& nodeData)
+             &octreeDebug = m_octreeDebug](const AzFramework::IVisibilityScene::NodeData& nodeData)
             {
                 if (ed_visibility_showDebug)
                 {

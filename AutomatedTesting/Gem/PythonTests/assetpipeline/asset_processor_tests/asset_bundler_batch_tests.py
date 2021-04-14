@@ -36,8 +36,8 @@ from ..ap_fixtures.bundler_batch_setup_fixture \
 from ..ap_fixtures.ap_config_backup_fixture import ap_config_backup_fixture as config_backup
 
 # Import LyShared
-import ly_test_tools.lumberyard.pipeline_utils as utils
-from ly_test_tools.lumberyard.asset_processor import ASSET_PROCESSOR_PLATFORM_MAP
+import ly_test_tools.o3de.pipeline_utils as utils
+from ly_test_tools.o3de.asset_processor import ASSET_PROCESSOR_PLATFORM_MAP
 
 win_and_mac_platforms = [ASSET_PROCESSOR_PLATFORM_MAP['windows'],
                          ASSET_PROCESSOR_PLATFORM_MAP['mac']]

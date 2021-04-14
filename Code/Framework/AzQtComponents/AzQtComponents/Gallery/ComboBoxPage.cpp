@@ -11,7 +11,7 @@
 */
 
 #include "ComboBoxPage.h"
-#include "Gallery/ui_ComboBoxPage.h"
+#include <AzQtComponents/Gallery/ui_ComboBoxPage.h>
 
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
 #include <AzQtComponents/Components/Widgets/ComboBox.h>

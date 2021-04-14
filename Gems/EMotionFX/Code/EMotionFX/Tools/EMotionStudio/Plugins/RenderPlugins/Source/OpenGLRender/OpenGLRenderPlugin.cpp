@@ -22,6 +22,7 @@
 #include <EMotionFX/Source/AnimGraph.h>
 #include <EMotionFX/Source/AnimGraphInstance.h>
 
+#include <AzCore/IO/Path/Path.h>
 
 namespace EMStudio
 {
@@ -59,7 +60,7 @@ namespace EMStudio
         }
 
         // get the absolute directory path where all the shaders will be located
-        const AZStd::string shaderPath = MysticQt::GetDataDir() + "Shaders/";
+        const auto shaderPath = AZ::IO::Path(MysticQt::GetDataDir()) / "Shaders";
 
         // create graphics manager and initialize it
         mGraphicsManager = new RenderGL::GraphicsManager();

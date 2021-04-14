@@ -12,7 +12,7 @@
 
 #include "ButtonPage.h"
 #include "FixedStateButton.h"
-#include "Gallery/ui_ButtonPage.h"
+#include <AzQtComponents/Gallery/ui_ButtonPage.h>
 
 #include <AzQtComponents/Components/Widgets/PushButton.h>
 

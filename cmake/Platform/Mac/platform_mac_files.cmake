@@ -13,6 +13,7 @@ set(FILES
     ../Common/Configurations_common.cmake
     ../Common/Clang/Configurations_clang.cmake
     Configurations_mac.cmake
+    Install_mac.cmake
     LYTestWrappers_mac.cmake
     LYWrappers_mac.cmake
     PAL_mac.cmake

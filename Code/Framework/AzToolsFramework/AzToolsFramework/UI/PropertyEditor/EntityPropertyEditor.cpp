@@ -100,7 +100,7 @@ AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // 4244: con
 #include <QTimer>
 AZ_POP_DISABLE_WARNING
 
-#include <UI/PropertyEditor/ui_EntityPropertyEditor.h>
+#include <AzToolsFramework/UI/PropertyEditor/ui_EntityPropertyEditor.h>
 
 // This has to live outside of any namespaces due to issues on Linux with calls to Q_INIT_RESOURCE if they are inside a namespace
 void initEntityPropertyEditorResources()

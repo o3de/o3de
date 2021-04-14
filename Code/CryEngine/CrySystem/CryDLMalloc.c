@@ -4871,7 +4871,9 @@ static void* tmalloc_small(mstate m, size_t nb)
     }
 
     CORRUPTION_ERROR_ACTION(m);
+#if PROCEED_ON_ERROR
     return 0;
+#endif
 }
 
 /* --------------------------- realloc support --------------------------- */
@@ -4930,7 +4932,9 @@ static void* internal_realloc(mstate m, void* oldmem, size_t bytes)
         {
             USAGE_ERROR_ACTION(m, oldmem);
             POSTACTION(m);
+#if PROCEED_ON_ERROR
             return 0;
+#endif
         }
 #if DEBUG
         if (newp != 0)
@@ -5884,7 +5888,9 @@ void* mspace_malloc(mspace msp, size_t bytes)
     if (!ok_magic(ms))
     {
         USAGE_ERROR_ACTION(ms, ms);
+#if PROCEED_ON_ERROR
         return 0;
+#endif
     }
     if (!PREACTION(ms))
     {
@@ -6150,7 +6156,9 @@ void* mspace_calloc(mspace msp, size_t n_elements, size_t elem_size)
     if (!ok_magic(ms))
     {
         USAGE_ERROR_ACTION(ms, ms);
+#if PROCEED_ON_ERROR
         return 0;
+#endif
     }
     if (n_elements != 0)
     {
@@ -6193,7 +6201,9 @@ void* mspace_realloc(mspace msp, void* oldmem, size_t bytes)
         if (!ok_magic(ms))
         {
             USAGE_ERROR_ACTION(ms, ms);
+#if PROCEED_ON_ERROR
             return 0;
+#endif
         }
         return internal_realloc(ms, oldmem, bytes);
     }
@@ -6205,7 +6215,9 @@ void* mspace_memalign(mspace msp, size_t alignment, size_t bytes)
     if (!ok_magic(ms))
     {
         USAGE_ERROR_ACTION(ms, ms);
+#if PROCEED_ON_ERROR
         return 0;
+#endif
     }
     return internal_memalign(ms, alignment, bytes);
 }
@@ -6218,7 +6230,9 @@ void** mspace_independent_calloc(mspace msp, size_t n_elements,
     if (!ok_magic(ms))
     {
         USAGE_ERROR_ACTION(ms, ms);
+#if PROCEED_ON_ERROR
         return 0;
+#endif
     }
     return ialloc(ms, n_elements, &sz, 3, chunks);
 }
@@ -6230,7 +6244,9 @@ void** mspace_independent_comalloc(mspace msp, size_t n_elements,
     if (!ok_magic(ms))
     {
         USAGE_ERROR_ACTION(ms, ms);
+#if PROCEED_ON_ERROR
         return 0;
+#endif
     }
     return ialloc(ms, n_elements, sizes, 0, chunks);
 }

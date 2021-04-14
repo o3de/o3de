@@ -13,9 +13,9 @@ set(FILES
     Launcher_Mac.mm
     Launcher_Traits_Mac.h
     Launcher_Traits_Platform.h
-    LumberyardApplication_Mac.h
-    LumberyardApplication_Mac.mm
-    LumberyardApplicationDelegate_Mac.mm
+    O3DEApplication_Mac.h
+    O3DEApplication_Mac.mm
+    O3DEApplicationDelegate_Mac.mm
     ../Common/Apple/Launcher_Apple.mm
     ../Common/Apple/Launcher_Apple.h
     ../Common/UnixLike/Launcher_UnixLike.cpp

@@ -15,7 +15,7 @@ Fixture for clearing out 'MoveOutput' folders from \dev and \dev\PROJECT
 import pytest
 
 # Import ly_shared
-import ly_test_tools.lumberyard.pipeline_utils as pipeline_utils
+import ly_test_tools.o3de.pipeline_utils as pipeline_utils
 
 
 @pytest.fixture

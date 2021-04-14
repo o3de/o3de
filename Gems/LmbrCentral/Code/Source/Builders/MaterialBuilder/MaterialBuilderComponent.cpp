@@ -285,7 +285,7 @@ namespace MaterialBuilder
             }
             else if (hasExtension)
             {
-                AZ_Warning(s_materialBuilder, false, "Failed to resolve texture path %s as the path is not to a supported texture format. Please make sure that textures in materials are formats supported by Lumberyard.", aliasedPath.c_str());
+                AZ_Warning(s_materialBuilder, false, "Failed to resolve texture path %s as the path is not to a supported texture format. Please make sure that textures in materials are formats supported by Open 3D Engine.", aliasedPath.c_str());
                 return false;
             }
 

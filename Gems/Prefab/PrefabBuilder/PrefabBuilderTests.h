@@ -15,13 +15,14 @@
 #include <PrefabBuilderComponent.h>
 #include <AzTest/AzTest.h>
 #include <Application/ToolsApplication.h>
+#include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Component/ComponentApplication.h>
 
 namespace UnitTest
 {
-    struct VersionChangingData : AZ::Data::AssetData
+    struct VersionChangingData final : AZ::Data::AssetData
     {
-        AZ_TYPE_INFO(VersionChangingData, "{E3A37E19-AE61-4C2F-809E-03B4D83261E8}");
+        AZ_RTTI(VersionChangingData, "{E3A37E19-AE61-4C2F-809E-03B4D83261E8}", AZ::Data::AssetData);
 
         static void Reflect(AZ::ReflectContext* context)
         {
@@ -34,9 +35,9 @@ namespace UnitTest
         inline static int m_version = 0;
     };
 
-    struct TestAsset : AZ::Data::AssetData
+    struct TestAsset final : AZ::Data::AssetData
     {
-        AZ_TYPE_INFO(TestAsset, "{8E736462-5424-4720-A2D9-F71DFC5905E3}");
+        AZ_RTTI(TestAsset, "{8E736462-5424-4720-A2D9-F71DFC5905E3}", AZ::Data::AssetData);
 
         static void Reflect(AZ::ReflectContext* context)
         {
@@ -47,7 +48,35 @@ namespace UnitTest
         }
     };
 
-    struct TestComponent : AZ::Component
+    struct TestAssetHandler final : AZ::Data::AssetHandler
+    {
+    public:
+        AZ::Data::AssetPtr CreateAsset(
+            [[maybe_unused]] const AZ::Data::AssetId& id, [[maybe_unused]] const AZ::Data::AssetType& type) override
+        {
+            return aznew TestAsset();
+        }
+
+        void DestroyAsset(AZ::Data::AssetPtr ptr) override
+        {
+            delete ptr;
+        }
+
+        void GetHandledAssetTypes(AZStd::vector<AZ::Data::AssetType>& assetTypes) override
+        {
+            assetTypes.push_back(azrtti_typeid<TestAsset>());
+        }
+
+        AZ::Data::AssetHandler::LoadResult LoadAssetData(
+            [[maybe_unused]] const AZ::Data::Asset<AZ::Data::AssetData>& asset,
+            [[maybe_unused]] AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
+            [[maybe_unused]] const AZ::Data::AssetFilterCB& assetLoadFilterCB) override
+        {
+            return AZ::Data::AssetHandler::LoadResult::LoadComplete;
+        }
+    };
+
+    struct TestComponent final : AZ::Component
     {
         AZ_COMPONENT(TestComponent, "{E3982C6A-0B01-4B04-A3E2-D95729D4B9C6}");
 
@@ -81,7 +110,7 @@ namespace UnitTest
         AZStd::vector<char> m_bufferData;
     };
 
-    struct TestPrefabBuilderComponent : AZ::Prefab::PrefabBuilderComponent
+    struct TestPrefabBuilderComponent final : AZ::Prefab::PrefabBuilderComponent
     {
     protected:
         AZStd::unique_ptr<AZ::IO::GenericStream> GetOutputStream(const AZ::IO::Path& path) const override;
@@ -95,5 +124,6 @@ namespace UnitTest
 
         AzToolsFramework::ToolsApplication m_app;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_testComponentDescriptor{};
+        TestAssetHandler m_assetHandler;
     };
 }

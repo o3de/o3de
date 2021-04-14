@@ -86,6 +86,8 @@ namespace AZ
             void SetPredictionSampleCount(uint32_t count) override;
             uint32_t GetFilteringSampleCount() const override;
             void SetFilteringSampleCount(uint32_t count) override;
+            PcfMethod GetPcfMethod() const override;
+            void SetPcfMethod(PcfMethod method) override;
 
         private:
             friend class EditorDirectionalLightComponent;

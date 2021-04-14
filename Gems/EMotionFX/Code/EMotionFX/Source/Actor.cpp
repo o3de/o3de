@@ -3031,6 +3031,9 @@ namespace EMotionFX
             {
                 MorphTargetStandard* morphTarget = static_cast<MorphTargetStandard*>(morphSetup->GetMorphTarget(mtIndex));
 
+                // Remove all previously added deform datas for the given joint as we set a new mesh.
+                morphTarget->RemoveAllDeformDatasFor(meshJoint);
+
                 const AZStd::vector<AZ::RPI::MorphTargetMetaAsset::MorphTarget>& metaDatas = m_morphTargetMetaAsset->GetMorphTargets();
                 for (const auto& metaData : metaDatas)
                 {

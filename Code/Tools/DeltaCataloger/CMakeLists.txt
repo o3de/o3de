@@ -13,6 +13,20 @@ if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
     return()
 endif()
 
+if(PAL_HOST_PLATFORM_NAME_LOWERCASE STREQUAL "windows")
+ly_add_target(
+    NAME DeltaCataloger EXECUTABLE
+    NAMESPACE AZ
+    FILES_CMAKE
+        deltacataloger_files.cmake
+        deltacataloger_win_files.cmake
+    BUILD_DEPENDENCIES
+        PRIVATE
+            AZ::AzCore
+            AZ::AzFramework
+            AZ::AzToolsFramework
+)
+else()
 ly_add_target(
     NAME DeltaCataloger EXECUTABLE
     NAMESPACE AZ
@@ -24,6 +38,7 @@ ly_add_target(
             AZ::AzFramework
             AZ::AzToolsFramework
 )
+endif()
 
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 

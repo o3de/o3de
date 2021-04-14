@@ -1091,7 +1091,7 @@ void CSystem::FatalError(const char* format, ...)
         {
             ::ShowWindow((HWND)gEnv->pRenderer->GetHWND(), SW_MINIMIZE);
         }
-        ::MessageBox(NULL, szBuffer, "Lumberyard Error", MB_OK | MB_ICONERROR | MB_SYSTEMMODAL);
+        ::MessageBox(NULL, szBuffer, "Open 3D Engine Error", MB_OK | MB_ICONERROR | MB_SYSTEMMODAL);
     }
 
     // Dump callstack.
