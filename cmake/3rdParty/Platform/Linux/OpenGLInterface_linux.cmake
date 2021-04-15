@@ -8,11 +8,3 @@
 # remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
-
-set(FILES
-    BuiltInPackages_ios.cmake
-    OpenGLInterface_ios.cmake
-    OpenSSL_ios.cmake
-    RadTelemetry_ios.cmake
-    Wwise_ios.cmake
-)

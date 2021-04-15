@@ -16,6 +16,4 @@ add_library(3rdParty::OpenGLInterface INTERFACE IMPORTED GLOBAL)
 target_link_libraries(3rdParty::OpenGLInterface INTERFACE OpenGL::GL)
 
 set(pal_file ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME}/OpenGLInterface_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
-if(EXISTS ${pal_file})
-    include(${pal_file})
-endif()
+include(${pal_file})
