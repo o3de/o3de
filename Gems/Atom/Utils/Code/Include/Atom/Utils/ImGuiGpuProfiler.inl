@@ -105,9 +105,9 @@ namespace AZ
 
             // [GFX TODO][ATOM-4001] Cache the timestamp and PipelineStatistics results.
             // Get the query results from the passes.
-            m_timestampResult = pass->GetTimestampResult();
+            m_timestampResult = pass->GetLatestTimestampResult();
 
-            const RPI::PipelineStatisticsResult rps = pass->GetPipelineStatisticsResult();
+            const RPI::PipelineStatisticsResult rps = pass->GetLatestPipelineStatisticsResult();
             m_pipelineStatistics = { rps.m_vertexCount, rps.m_primitiveCount, rps.m_vertexShaderInvocationCount,
                 rps.m_rasterizedPrimitiveCount, rps.m_renderedPrimitiveCount, rps.m_pixelShaderInvocationCount, rps.m_computeShaderInvocationCount };
 
@@ -153,7 +153,9 @@ namespace AZ
 
         }
 
-        inline void ImGuiPipelineStatisticsView::DrawPipelineStatisticsWindow(bool& draw, const PassEntry* rootPassEntry, AZStd::unordered_map<Name, PassEntry>& passEntryDatabase)
+        inline void ImGuiPipelineStatisticsView::DrawPipelineStatisticsWindow(bool& draw,
+            const PassEntry* rootPassEntry, AZStd::unordered_map<Name, PassEntry>& passEntryDatabase,
+            AZ::RHI::Ptr<RPI::ParentPass> rootPass)
         {
             // Early out if nothing is supposed to be drawn
             if (!draw)
@@ -184,12 +186,6 @@ namespace AZ
 
                     // Filter depending on the user input.
                     if (!m_passFilter.PassFilter(passEntry.m_name.GetCStr()))
-                    {
-                        continue;
-                    }
-
-                    // Filter out disabled passes for the PipelineStatistics window if necessary.
-                    if (!m_showDisabledPasses && !passEntry.IsPipelineStatisticsEnabled())
                     {
                         continue;
                     }
@@ -230,6 +226,13 @@ namespace AZ
             // Start drawing the PipelineStatistics window.
             if (ImGui::Begin("PipelineStatistics Window", &draw, ImGuiWindowFlags_NoResize))
             {
+                // Pause/unpause the profiling
+                if (ImGui::Button(m_paused ? "Resume" : "Pause"))
+                {
+                    m_paused = !m_paused;
+                    rootPass->SetPipelineStatisticsQueryEnabled(!m_paused);
+                }
+
                 ImGui::Columns(2, "HeaderColumns");
 
                 // Draw the statistics of the RootPass.
@@ -426,23 +429,16 @@ namespace AZ
                     }
 
                     AZStd::string label;
-                    if (passEntry->IsPipelineStatisticsEnabled())
+                    if (rootEntry && m_showAttributeContribution)
                     {
-                        if (rootEntry && m_showAttributeContribution)
-                        {
-                            label = AZStd::string::format("%llu (%u%%)",
-                                static_cast<AZ::u64>(passEntry->m_pipelineStatistics[attributeIdx]),
-                                static_cast<uint32_t>(normalized * 100.0f));
-                        }
-                        else
-                        {
-                            label = AZStd::string::format("%llu",
-                                static_cast<AZ::u64>(passEntry->m_pipelineStatistics[attributeIdx]));
-                        }
+                        label = AZStd::string::format("%llu (%u%%)",
+                            static_cast<AZ::u64>(passEntry->m_pipelineStatistics[attributeIdx]),
+                            static_cast<uint32_t>(normalized * 100.0f));
                     }
                     else
                     {
-                        label = "-";
+                        label = AZStd::string::format("%llu",
+                            static_cast<AZ::u64>(passEntry->m_pipelineStatistics[attributeIdx]));
                     }
 
                     if (rootEntry)
@@ -523,7 +519,9 @@ namespace AZ
 
         // --- ImGuiTimestampView ---
 
-        inline void ImGuiTimestampView::DrawTimestampWindow(bool& draw, const PassEntry* rootPassEntry, AZStd::unordered_map<Name, PassEntry>& timestampEntryDatabase)
+        inline void ImGuiTimestampView::DrawTimestampWindow(
+            bool& draw, const PassEntry* rootPassEntry, AZStd::unordered_map<Name, PassEntry>& timestampEntryDatabase,
+            AZ::RHI::Ptr<RPI::ParentPass> rootPass)
         {
             // Early out if nothing is supposed to be drawn
             if (!draw)
@@ -534,10 +532,28 @@ namespace AZ
             // Clear the references from the previous frame.
             m_passEntryReferences.clear();
 
+            // pass entry grid based on its timestamp
+            AZStd::vector<PassEntry*> sortedPassEntries;
+            AZStd::vector<AZStd::vector<PassEntry*>> sortedPassGrid;
+
             // Set the child of the parent, only if it passes the filter.
             for (auto& passEntryIt : timestampEntryDatabase)
             {
                 PassEntry* passEntry = &passEntryIt.second;
+
+                // Collect all pass entries with non-zero durations
+                if (passEntry->m_timestampResult.GetDurationInTicks() > 0)
+                {
+                    sortedPassEntries.push_back(passEntry);
+                }
+
+                // Skip the pass if the pass' timestamp duration is 0
+                if (m_hideZeroPasses && (!passEntry->m_isParent) && passEntry->m_timestampResult.GetDurationInTicks() == 0)
+                {
+                    continue;
+                }
+
+                // Only add pass if it pass the filter.
                 if (m_passFilter.PassFilter(passEntry->m_name.GetCStr()))
                 {
                     if (passEntry->m_parent && !passEntry->m_linked)
@@ -545,9 +561,78 @@ namespace AZ
                         passEntry->m_parent->LinkChild(passEntry);
                     }
 
-                    AZ_Assert(m_passEntryReferences.size() < TimestampEntryCount, "Too many PassEntry references. Increase the size of the array.");
+                    AZ_Assert(
+                        m_passEntryReferences.size() < TimestampEntryCount,
+                        "Too many PassEntry references. Increase the size of the array.");
                     m_passEntryReferences.push_back(passEntry);
                 }
+            }
+
+            // Sort the pass entries based on their starting time and duration
+            AZStd::sort(sortedPassEntries.begin(), sortedPassEntries.end(), [](const PassEntry* passEntry1, const PassEntry* passEntry2) {
+                if (passEntry1->m_timestampResult.GetTimestampBeginInTicks() == passEntry2->m_timestampResult.GetTimestampBeginInTicks())
+                {
+                    return passEntry1->m_timestampResult.GetDurationInTicks() < passEntry2->m_timestampResult.GetDurationInTicks();
+                }
+                return passEntry1->m_timestampResult.GetTimestampBeginInTicks() < passEntry2->m_timestampResult.GetTimestampBeginInTicks();
+            });
+
+            // calculate the total GPU duration.
+            RPI::TimestampResult gpuTimestamp;
+            if (sortedPassEntries.size() > 0)
+            {
+                gpuTimestamp = sortedPassEntries.front()->m_timestampResult;
+                gpuTimestamp.Add(sortedPassEntries.back()->m_timestampResult);
+            }
+
+            // Add a pass to the pass grid which none of the pass's timestamp range won't overlap each other.
+            // Search each row until the pass can be added to the end of row without overlap the previous one.
+            for (auto& passEntry : sortedPassEntries)
+            {
+                auto row = sortedPassGrid.begin();
+                for (; row != sortedPassGrid.end(); row++)
+                {
+                    if (row->empty())
+                    {
+                        break;
+                    }
+                    auto last = (*row).back();
+                    if (passEntry->m_timestampResult.GetTimestampBeginInTicks() >=
+                        last->m_timestampResult.GetTimestampBeginInTicks() + last->m_timestampResult.GetDurationInTicks())
+                    {
+                        row->push_back(passEntry);
+                        break;
+                    }
+                }
+                if (row == sortedPassGrid.end())
+                {
+                    sortedPassGrid.push_back();
+                    sortedPassGrid.back().push_back(passEntry);
+                }
+            }
+
+            // Refresh timestamp query
+            bool needEnable = false;
+            if (!m_paused)
+            {
+                if (m_refreshType == RefreshType::OncePerSecond)
+                {
+                    auto now = AZStd::GetTimeNowMicroSecond();
+                    if (m_lastUpdateTimeMicroSecond == 0 || now - m_lastUpdateTimeMicroSecond > 1000000)
+                    {
+                        needEnable = true;
+                        m_lastUpdateTimeMicroSecond = now;
+                    }
+                }
+                else if (m_refreshType == RefreshType::Realtime)
+                {
+                    needEnable = true;
+                }
+            }
+
+            if (rootPass->IsTimestampQueryEnabled() != needEnable)
+            {
+                rootPass->SetTimestampQueryEnabled(needEnable);
             }
 
             const ImVec2 windowSize(680.0f, 620.0f);
@@ -556,8 +641,14 @@ namespace AZ
             {
                 // Draw the header.
                 {
+                    // Pause/unpause the profiling
+                    if (ImGui::Button(m_paused? "Resume":"Pause"))
+                    {
+                        m_paused = !m_paused;
+                    }
+
                     // Draw the frame time (GPU).
-                    const AZStd::string formattedTimestamp = FormatTimestampLabel(rootPassEntry->m_interpolatedTimestampInNanoseconds);
+                    const AZStd::string formattedTimestamp = FormatTimestampLabel(gpuTimestamp.GetDurationInNanoseconds());
                     const AZStd::string headerFrameTime = AZStd::string::format("Total frame duration (GPU): %s", formattedTimestamp.c_str());
                     ImGui::Text(headerFrameTime.c_str());
 
@@ -565,6 +656,17 @@ namespace AZ
                     ImGui::RadioButton("Hierarchical", reinterpret_cast<int32_t*>(&m_viewType), static_cast<int32_t>(ProfilerViewType::Hierarchical));
                     ImGui::SameLine();
                     ImGui::RadioButton("Flat", reinterpret_cast<int32_t*>(&m_viewType), static_cast<int32_t>(ProfilerViewType::Flat));
+
+                    // Draw the refresh option
+                    ImGui::RadioButton("Realtime", reinterpret_cast<int32_t*>(&m_refreshType), static_cast<int32_t>(RefreshType::Realtime));
+                    ImGui::SameLine();
+                    ImGui::RadioButton("Once Per Second", reinterpret_cast<int32_t*>(&m_refreshType), static_cast<int32_t>(RefreshType::OncePerSecond));
+
+                    // Show/hide non-parent passes which have zero execution time
+                    ImGui::Checkbox("Hide Zero Cost Passes", &m_hideZeroPasses);
+
+                    // Show/hide the timeline bar of all the passes which has non-zero execution time
+                    ImGui::Checkbox("Show Timeline", &m_showTimeline);
 
                     // Draw advanced options.
                     const ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_None;
@@ -586,6 +688,56 @@ namespace AZ
                 }
 
                 ImGui::Separator();
+
+                // Draw the pass entry grid
+                if (!sortedPassEntries.empty() && m_showTimeline)
+                {
+                    const float passBarHeight = 20.f;
+                    const float passBarSpace = 3.f;
+                    float areaWidth = ImGui::GetContentRegionAvail().x - 20.f;
+
+                    if (ImGui::BeginChild("Timeline", ImVec2(areaWidth, (passBarHeight + passBarSpace) * sortedPassGrid.size()), false))
+                    {
+                        // start tick and end tick for the area
+                        uint64_t areaStartTick = sortedPassEntries.front()->m_timestampResult.GetTimestampBeginInTicks();
+                        uint64_t areaEndTick = sortedPassEntries.back()->m_timestampResult.GetTimestampBeginInTicks() +
+                            sortedPassEntries.back()->m_timestampResult.GetDurationInTicks();
+                        uint64_t areaDurationInTicks = areaEndTick - areaStartTick;
+
+                        float rowStartY = 0.f;
+                        for (auto& row : sortedPassGrid)
+                        {
+                            // row start y 
+                            for (auto passEntry : row)
+                            {
+                                // button start and end
+                                float buttonStartX = (passEntry->m_timestampResult.GetTimestampBeginInTicks() - areaStartTick) * areaWidth /
+                                    areaDurationInTicks;
+                                float buttonWidth =  passEntry->m_timestampResult.GetDurationInTicks() * areaWidth / areaDurationInTicks;
+                                ImGui::SetCursorPosX(buttonStartX);
+                                ImGui::SetCursorPosY(rowStartY);
+
+                                // Adds a button and the hover colors.
+                                ImGui::Button(passEntry->m_name.GetCStr(), ImVec2(buttonWidth, passBarHeight));
+
+                                if (ImGui::IsItemHovered())
+                                {
+                                    ImGui::BeginTooltip();
+                                    ImGui::Text("Name: %s", passEntry->m_name.GetCStr());
+                                    ImGui::Text("Path: %s", passEntry->m_path.GetCStr());
+                                    ImGui::Text("Duration in ticks: %u", passEntry->m_timestampResult.GetDurationInTicks());
+                                    ImGui::Text("Duration in microsecond: %.3f us", passEntry->m_timestampResult.GetDurationInNanoseconds()/1000.f);
+                                    ImGui::EndTooltip();
+                                }
+                            }
+
+                            rowStartY += passBarHeight + passBarSpace;
+                        }
+                    }
+                    ImGui::EndChild();
+
+                    ImGui::Separator();
+                }
 
                 // Draw the timestamp view.
                 {
@@ -713,20 +865,18 @@ namespace AZ
             const auto drawWorkloadBar = [this](const AZStd::string& entryTime, const PassEntry* entry)
             {
                 ImGui::NextColumn();
-                ImGui::Text(entryTime.c_str());
-                ImGui::NextColumn();
-
-                // Only draw the workload bar when the entry is enabled.
-                if (entry->IsTimestampEnabled())
+                if (entry->m_isParent)
                 {
-                    DrawFrameWorkloadBar(NormalizeFrameWorkload(entry->m_interpolatedTimestampInNanoseconds));
+                    ImGui::NextColumn();
+                    ImGui::NextColumn();
                 }
                 else
                 {
-                    ImGui::ProgressBar(0.0f, ImVec2(-1.0f, 0.0f), "Disabled");
+                    ImGui::Text(entryTime.c_str());
+                    ImGui::NextColumn();
+                    DrawFrameWorkloadBar(NormalizeFrameWorkload(entry->m_interpolatedTimestampInNanoseconds));
+                    ImGui::NextColumn();
                 }
-
-                ImGui::NextColumn();
             };
 
             static const auto createHoverMarker = [](const char* text)
@@ -800,23 +950,17 @@ namespace AZ
             // Draw the flat view.
             for (const PassEntry* entry : m_passEntryReferences)
             {
+                if (entry->m_isParent)
+                {
+                    continue;
+                }
                 const AZStd::string entryTime = FormatTimestampLabel(entry->m_interpolatedTimestampInNanoseconds);
 
                 ImGui::Text(entry->m_name.GetCStr());
                 ImGui::NextColumn();
                 ImGui::Text(entryTime.c_str());
                 ImGui::NextColumn();
-
-                // Only draw the workload bar if the entry is enabled.
-                if (entry->IsTimestampEnabled())
-                {
-                    DrawFrameWorkloadBar(NormalizeFrameWorkload(entry->m_interpolatedTimestampInNanoseconds));
-                }
-                else
-                {
-                    ImGui::ProgressBar(0.0f, ImVec2(-1.0f, 0.0f), "Disabled");
-                }
-
+                DrawFrameWorkloadBar(NormalizeFrameWorkload(entry->m_interpolatedTimestampInNanoseconds));
                 ImGui::NextColumn();
             }
         }
@@ -890,23 +1034,33 @@ namespace AZ
             // Update the PassEntry database.
             const PassEntry* rootPassEntryRef = CreatePassEntries(rootPass);
 
+            bool wasDraw = draw;
+
             GpuProfilerImGuiHelper::Begin("Gpu Profiler", &draw, ImGuiWindowFlags_NoResize, [this, &rootPass]()
             {
-                ImGui::Checkbox("Enable TimestampView", &m_drawTimestampView);
+                if (ImGui::Checkbox("Enable TimestampView", &m_drawTimestampView))
+                {
+                    rootPass->SetTimestampQueryEnabled(m_drawTimestampView);
+                }
                 ImGui::Spacing();
-                ImGui::Checkbox("Enable PipelineStatisticsView", &m_drawPipelineStatisticsView);
+                if(ImGui::Checkbox("Enable PipelineStatisticsView", &m_drawPipelineStatisticsView))
+                {
+                    rootPass->SetPipelineStatisticsQueryEnabled(m_drawPipelineStatisticsView);
+                }
             });
 
             // Draw the PipelineStatistics window.
-            m_timestampView.DrawTimestampWindow(m_drawTimestampView, rootPassEntryRef, m_passEntryDatabase);
+            m_timestampView.DrawTimestampWindow(m_drawTimestampView, rootPassEntryRef, m_passEntryDatabase, rootPass);
 
             // Draw the PipelineStatistics window.
-            m_pipelineStatisticsView.DrawPipelineStatisticsWindow(m_drawPipelineStatisticsView, rootPassEntryRef, m_passEntryDatabase);
+            m_pipelineStatisticsView.DrawPipelineStatisticsWindow(m_drawPipelineStatisticsView, rootPassEntryRef, m_passEntryDatabase, rootPass);
 
-            // [GFX TODO][ATOM-13792] Optimization: ImGui GpuProfiler Pass hierarchy traversal.
-            // Enable/Disable the Timestamp and PipelineStatistics on the RootPass
-            rootPass->SetTimestampQueryEnabled(draw && m_drawTimestampView);
-            rootPass->SetPipelineStatisticsQueryEnabled(draw && m_drawPipelineStatisticsView);
+            //closing window
+            if (wasDraw && !draw)
+            {
+                rootPass->SetTimestampQueryEnabled(false);
+                rootPass->SetPipelineStatisticsQueryEnabled(false);
+            }
         }
 
         inline void ImGuiGpuProfiler::InterpolatePassEntries(AZStd::unordered_map<Name, PassEntry>& passEntryDatabase, float weight) const
@@ -918,7 +1072,7 @@ namespace AZ
                 {
                     // Interpolate the timestamps.
                     const double interpolated = Lerp(static_cast<double>(oldEntryIt->second.m_interpolatedTimestampInNanoseconds),
-                        static_cast<double>(entry.second.m_timestampResult.GetTimestampInNanoseconds()),
+                        static_cast<double>(entry.second.m_timestampResult.GetDurationInNanoseconds()),
                         static_cast<double>(weight));
                     entry.second.m_interpolatedTimestampInNanoseconds = static_cast<uint64_t>(interpolated);
                 }
