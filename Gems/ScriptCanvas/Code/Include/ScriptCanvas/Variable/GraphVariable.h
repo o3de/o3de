@@ -52,8 +52,10 @@ namespace ScriptCanvas
 
         enum class Scope : AZ::u8
         {
-            Graph = 0,
-            Function = 1,
+            Graph,
+            Function,
+            FunctionReadOnly,
+            COUNT
         };
 
         enum InitialValueSource : AZ::u8
@@ -142,6 +144,7 @@ namespace ScriptCanvas
         void SetScriptInputControlVisibility(const AZ::Crc32& inputControlVisibility);
 
         AZ::Crc32 GetInputControlVisibility() const;
+        AZ::Crc32 GetScopeControlVisibility() const;
         AZ::Crc32 GetScriptInputControlVisibility() const;
         AZ::Crc32 GetNetworkSettingsVisibility() const;
         AZ::Crc32 GetFunctionInputControlVisibility() const;
@@ -181,6 +184,7 @@ namespace ScriptCanvas
         int GetSortPriority() const;
 
         static const char* s_InitialValueSourceNames[VariableFlags::InitialValueSource::COUNT];
+        static const char* GraphVariable::s_ScopeNames[VariableFlags::Scope::COUNT];
 
     private:
 
