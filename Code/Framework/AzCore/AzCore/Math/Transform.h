@@ -38,6 +38,13 @@ namespace AZ
         bool CompareValueData(const void* lhs, const void* rhs) override;
     };
 
+    //! Limits for transform scale values.
+    //! The scale should not be zero to avoid problems with inverting.
+    //! @{
+    static constexpr float MinTransformScale = 1e-2f;
+    static constexpr float MaxTransformScale = 1e9f;
+    //! @}
+
     //! The basic transformation class, represented using a quaternion rotation, vector scale and vector translation.
     //! By design, cannot represent skew transformations.
     class Transform

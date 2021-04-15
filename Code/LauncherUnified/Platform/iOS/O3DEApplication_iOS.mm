@@ -16,12 +16,12 @@
 #include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
 
 
-@interface LumberyardApplication_iOS : UIApplication
+@interface O3DEApplication_iOS : UIApplication
 {
 }
-@end    // LumberyardApplication_iOS Interface
+@end    // O3DEApplication_iOS Interface
 
-@implementation LumberyardApplication_iOS
+@implementation O3DEApplication_iOS
 
 - (void)touchesBegan: (NSSet<UITouch*>*)touches withEvent: (UIEvent*)event
 {
@@ -65,4 +65,4 @@
     [self touchesEnded: touches withEvent: event];
 }
 
-@end // LumberyardApplication_iOS Implementation
+@end // O3DEApplication_iOS Implementation

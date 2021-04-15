@@ -214,6 +214,11 @@ def CheckoutBootstrapScripts(String branchName) {
 }
 
 def CheckoutRepo(boolean disableSubmodules = false) {
+
+    if (!fileExists(ENGINE_REPOSITORY_NAME)) {
+        palMkdir(ENGINE_REPOSITORY_NAME)
+    }
+    
     palSh('git lfs uninstall', 'Git LFS Uninstall') // Prevent git from pulling lfs objects during checkout
 
     if(fileExists('.git')) {
@@ -270,7 +275,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String projectName, String pipeline,
         if(env.IS_UNIX) pythonCmd = 'sudo -E python -u '
         else pythonCmd = 'python -u '
 
-        if(env.RECREATE_VOLUME.toBoolean()) {
+        if(env.RECREATE_VOLUME?.toBoolean()) {
             palSh("${pythonCmd} ${INCREMENTAL_BUILD_SCRIPT_PATH} --action delete --project ${projectName} --pipeline ${pipeline} --branch ${branchName} --platform ${platform} --build_type ${buildType}", 'Deleting volume')
         }
         timeout(5) {
@@ -291,7 +296,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String projectName, String pipeline,
 
     // Cleanup previous repo location, we are currently at the root of the workspace, if we have a .git folder
     // we need to cleanup. Once all branches take this relocation, we can remove this
-    if(env.CLEAN_WORKSPACE.toBoolean() || fileExists("${workspace}/.git")) {
+    if(env.CLEAN_WORKSPACE?.toBoolean() || fileExists("${workspace}/.git")) {
         if(fileExists(workspace)) {
             palRmDir(workspace)
         }
@@ -315,7 +320,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String projectName, String pipeline,
                 script: 'python/get_python.bat'
         }
 
-        if(env.CLEAN_OUTPUT_DIRECTORY.toBoolean() || env.CLEAN_ASSETS.toBoolean()) {
+        if(env.CLEAN_OUTPUT_DIRECTORY?.toBoolean() || env.CLEAN_ASSETS?.toBoolean()) {
             def command = "${pipelineConfig.BUILD_ENTRY_POINT} --platform ${platform} --type clean"
             if (env.IS_UNIX) {
                 sh label: "Running ${platform} clean",
@@ -457,7 +462,7 @@ try {
         }
     }
 
-    if(env.BUILD_NUMBER == '1') {
+    if(env.BUILD_NUMBER == '1' && !branchName.startsWith('PR-')) {
         // Exit pipeline early on the intial build. This allows Jenkins to load the pipeline for the branch and enables users
         // to select build parameters on their first actual build. See https://issues.jenkins.io/browse/JENKINS-41929
         currentBuild.result = 'SUCCESS'
