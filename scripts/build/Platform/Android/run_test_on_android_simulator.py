@@ -20,7 +20,8 @@ import logging
 
 CURRENT_PATH = pathlib.Path(os.path.dirname(__file__)).absolute()
 
-ENGINE_ROOT = CURRENT_PATH.parent.parent.parent.parent
+# The engine root is based on the location of this file (<ENGINE_ROOT>/scripts/build/Platform/Android). Walk up to calculate the engine root
+ENGINE_ROOT = CURRENT_PATH.parents[3]
 
 
 class AndroidEmuError(Exception):
