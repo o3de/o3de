@@ -96,7 +96,7 @@ namespace ScriptCanvasTests
     {
         using namespace ScriptCanvas;
         AZ::Outcome<VariableId, AZStd::string> addVariableOutcome = AZ::Failure(AZStd::string());
-        GraphVariableManagerRequestBus::EventResult(addVariableOutcome, scriptCanvasId, &GraphVariableManagerRequests::AddVariable, variableName, Datum(value));
+        GraphVariableManagerRequestBus::EventResult(addVariableOutcome, scriptCanvasId, &GraphVariableManagerRequests::AddVariable, variableName, Datum(value), false);
         if (!addVariableOutcome)
         {
             AZ_Warning("Script Canvas Test", false, "%s", addVariableOutcome.GetError().data());
