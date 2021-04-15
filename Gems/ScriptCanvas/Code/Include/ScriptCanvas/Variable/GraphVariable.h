@@ -184,7 +184,7 @@ namespace ScriptCanvas
         int GetSortPriority() const;
 
         static const char* s_InitialValueSourceNames[VariableFlags::InitialValueSource::COUNT];
-        static const char* GraphVariable::s_ScopeNames[VariableFlags::Scope::COUNT];
+        static const char* GraphVariable::s_ScopeNames[static_cast<int>(VariableFlags::Scope::COUNT)];
 
     private:
 
