@@ -994,13 +994,16 @@ namespace AzToolsFramework
 
         void AssetEditorWidget::UpdateRecentFileListState()
         {
-            if (!m_userSettings || m_userSettings->m_recentPaths.empty())
+            if (m_recentFileMenu)
             {
-                m_recentFileMenu->setEnabled(false);
-            }
-            else
-            {
-                m_recentFileMenu->setEnabled(true);
+                if (!m_userSettings || m_userSettings->m_recentPaths.empty())
+                {
+                    m_recentFileMenu->setEnabled(false);
+                }
+                else
+                {
+                    m_recentFileMenu->setEnabled(true);
+                }
             }
         }
 
