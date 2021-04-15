@@ -15,6 +15,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/std/containers/queue.h>
+#include <AzCore/std/containers/set.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceUpdateExecutorInterface.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 
@@ -45,6 +46,19 @@ namespace AzToolsFramework
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
             TemplateInstanceMapperInterface* m_templateInstanceMapperInterface = nullptr;
             int m_instanceCountToUpdateInBatch = 0;
+
+            class UniqueInstanceQueue
+            {
+            public:
+                Instance* front();
+                void pop();
+                void emplace(Instance* instance);
+                size_t size();
+            private:
+                AZStd::queue<Instance*> m_instancesQueue;
+                AZStd::unordered_set<Instance*> m_instancesSet;
+            };
+            //UniqueInstanceQueue m_instancesUpdateQueue;
             AZStd::queue<Instance*> m_instancesUpdateQueue;
             bool m_updatingTemplateInstancesInQueue { false };
         };

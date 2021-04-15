@@ -27,8 +27,10 @@ namespace AzToolsFramework
     namespace Prefab
     {
         class Instance;
+
         class InstanceEntityMapperInterface;
         class InstanceToTemplateInterface;
+        class PrefabLoaderInterface;
         class PrefabSystemComponentInterface;
 
         class PrefabPublicHandler final
@@ -42,7 +44,7 @@ namespace AzToolsFramework
             void UnregisterPrefabPublicHandlerInterface();
 
             // PrefabPublicInterface...
-            PrefabOperationResult CreatePrefab(const AZStd::vector<AZ::EntityId>& entityIds, AZStd::string_view filePath) override;
+            PrefabOperationResult CreatePrefab(const AZStd::vector<AZ::EntityId>& entityIds, AZ::IO::PathView filePath) override;
             PrefabOperationResult InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parent, AZ::Vector3 position) override;
             PrefabOperationResult SavePrefab(AZ::IO::Path filePath) override;
             PrefabEntityResult CreateEntity(AZ::EntityId parentId, const AZ::Vector3& position) override;
@@ -74,6 +76,7 @@ namespace AzToolsFramework
 
             InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
             InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;
+            PrefabLoaderInterface* m_prefabLoaderInterface = nullptr;
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
 
             // Caches entity states for undo/redo purposes

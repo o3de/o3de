@@ -15,6 +15,7 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Instance/TemplateInstanceMapperInterface.h>
@@ -117,6 +118,8 @@ namespace AzToolsFramework
                                     currentTemplateId);
 
                                 isUpdateSuccessful = false;
+                                m_instancesUpdateQueue.pop();
+                                continue;
                             }
                         }
 
@@ -139,9 +142,16 @@ namespace AzToolsFramework
                         }
 
                         m_instancesUpdateQueue.pop();
-
                     }
 
+                    for (auto entityIdIterator = selectedEntityIds.begin(); entityIdIterator != selectedEntityIds.end(); entityIdIterator++)
+                    {
+                        AZ::Entity* entity = GetEntityById(*entityIdIterator);
+                        if (entity == nullptr)
+                        {
+                            selectedEntityIds.erase(entityIdIterator--);
+                        }
+                    }
                     ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, selectedEntityIds);
 
                     // Enable the Outliner
@@ -162,6 +172,51 @@ namespace AzToolsFramework
             }
 
             return isUpdateSuccessful;
+        }
+
+        Instance* InstanceUpdateExecutor::UniqueInstanceQueue::front()
+        {
+            return m_instancesQueue.front();
+        }
+
+        void InstanceUpdateExecutor::UniqueInstanceQueue::pop()
+        {
+            m_instancesSet.erase(m_instancesQueue.front());
+            m_instancesQueue.pop();
+        }
+
+        void InstanceUpdateExecutor::UniqueInstanceQueue::emplace(Instance* instance)
+        {
+            Instance* ancestorInstance = instance;
+
+            while (ancestorInstance != nullptr)
+            {
+                if (m_instancesSet.contains(ancestorInstance))
+                {
+                    return;
+                }
+
+                auto parent = ancestorInstance->GetParentInstance();
+                if (parent.has_value())
+                {
+                    ancestorInstance = &(parent->get());
+                }
+                else
+                {
+                    ancestorInstance = nullptr;
+                }
+            }
+
+            // TODO - remove child instances too?
+            // Optimization.
+
+            m_instancesQueue.emplace(instance);
+            m_instancesSet.emplace(instance);
+        }
+
+        size_t InstanceUpdateExecutor::UniqueInstanceQueue::size()
+        {
+            return m_instancesQueue.size();
         }
     }
 }

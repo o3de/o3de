@@ -104,7 +104,6 @@ namespace AzToolsFramework
                 return nullptr;
             }
 
-             
             AZStd::unique_ptr<Instance> newInstance = AZStd::make_unique<Instance>(AZStd::move(containerEntity));
 
             for (AZ::Entity* entity : entities)
@@ -120,8 +119,11 @@ namespace AzToolsFramework
 
                 newInstance->AddInstance(AZStd::move(instance));
             }
-
-            newInstance->SetTemplateSourcePath(relativeFilePath);
+            /*
+            AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+                &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, EntityList{containerEntity->GetId()});
+            */
+            newInstance->SetTemplateSourcePath(filePath);
 
             TemplateId newTemplateId = CreateTemplateFromInstance(*newInstance);
             if (newTemplateId == InvalidTemplateId)
@@ -157,11 +159,16 @@ namespace AzToolsFramework
 
         void PrefabSystemComponent::UpdatePrefabTemplate(TemplateId templateId, const PrefabDom& updatedDom)
         {
-            PrefabDom& templateDomToUpdate = FindTemplateDom(templateId);
-            if (AZ::JsonSerialization::Compare(templateDomToUpdate, updatedDom) != AZ::JsonSerializerCompareResult::Equal)
+            auto templateRef = FindTemplate(templateId);
+            if (templateRef.has_value())
             {
-                templateDomToUpdate.CopyFrom(updatedDom, templateDomToUpdate.GetAllocator());
-                PropagateTemplateChanges(templateId);
+                PrefabDom& templateDomToUpdate = templateRef->get().GetPrefabDom();
+                if (AZ::JsonSerialization::Compare(templateDomToUpdate, updatedDom) != AZ::JsonSerializerCompareResult::Equal)
+                {
+                    templateDomToUpdate.CopyFrom(updatedDom, templateDomToUpdate.GetAllocator());
+                    templateRef->get().MarkAsDirty(true);
+                    PropagateTemplateChanges(templateId);
+                }
             }
         }
 
@@ -615,7 +622,12 @@ namespace AzToolsFramework
                 instancesValue = memberFound->value;
             }
 
-            instancesValue->get().AddMember(rapidjson::StringRef(instanceAlias.c_str()), PrefabDomValue(), targetTemplateDom.GetAllocator());
+            // Only add the instance if it's not there already
+            if (instancesValue->get().FindMember(rapidjson::StringRef(instanceAlias.c_str())) == instancesValue->get().MemberEnd())
+            {
+                instancesValue->get().AddMember(
+                    rapidjson::StringRef(instanceAlias.c_str()), PrefabDomValue(), targetTemplateDom.GetAllocator());
+            }
 
             Template& sourceTemplate = sourceTemplateRef->get();
 
@@ -628,9 +640,12 @@ namespace AzToolsFramework
             newLink.GetLinkDom().AddMember(rapidjson::StringRef(PrefabDomUtils::SourceName),
                 rapidjson::StringRef(sourceTemplate.GetFilePath().c_str()), newLink.GetLinkDom().GetAllocator());
 
+            PrefabDom linkPatchCopy;
+            linkPatchCopy.CopyFrom(linkPatch->get(), newLink.GetLinkDom().GetAllocator());
+
             if (linkPatch && linkPatch->get().IsArray() && !(linkPatch->get().Empty()))
             {
-                m_instanceToTemplatePropagator.AddPatchesToLink(linkPatch.value(), newLink);
+                m_instanceToTemplatePropagator.AddPatchesToLink(linkPatchCopy, newLink);
             }
 
             //update the target template dom to have the proper values for the source template dom
