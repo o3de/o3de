@@ -295,10 +295,10 @@ namespace AZ
 
                 for (const auto& mesh : m_meshes)
                 {
-                    AZ::Transform meshTransform = transformFeatureProcessor->GetTransformForId(TransformServiceFeatureProcessorInterface::ObjectId(mesh.first));
-                    AZ::Transform noScaleTransform = meshTransform;
-                    noScaleTransform.ExtractScale();
-                    AZ::Matrix3x3 rotationMatrix = Matrix3x3::CreateFromTransform(noScaleTransform);
+                    AZ::Matrix3x4 meshMatrix3x4 = transformFeatureProcessor->GetMatrix3x4ForId(TransformServiceFeatureProcessorInterface::ObjectId(mesh.first));
+                    AZ::Matrix3x4 noScaleMatrix3x4 = meshMatrix3x4;
+                    noScaleMatrix3x4.ExtractScale();
+                    AZ::Matrix3x3 rotationMatrix = Matrix3x3::CreateFromMatrix3x4(noScaleMatrix3x4);
                     rotationMatrix = rotationMatrix.GetInverseFull().GetTranspose();
 
                     const RayTracingFeatureProcessor::SubMeshVector& subMeshes = mesh.second.m_subMeshes;

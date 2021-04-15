@@ -80,7 +80,7 @@ namespace AZ
                                 ->InstanceID(blasIndex)
                                 ->HitGroupIndex(blasIndex)
                                 ->Blas(rayTracingSubMesh.m_blas)
-                                ->Transform(rayTracingMesh.second.m_transform)
+                                ->Matrix3x4(rayTracingMesh.second.m_matrix3x4)
                                 ;
                         }
 
