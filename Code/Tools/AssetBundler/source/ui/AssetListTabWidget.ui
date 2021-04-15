@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>AssetListTabWidget</class>
+ <widget class="QWidget" name="AssetListTabWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>813</width>
+    <height>673</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Asset List Tab Widget</string>
+  </property>
+  <layout class="QVBoxLayout" name="mainVerticalLayout">
+   <item>
+    <layout class="QHBoxLayout" name="projectLabelHorizontalLayout">
+     <item>
+      <widget class="QLabel" name="activeProjectLabel"/>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_3">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="generateBundleButton">
+       <property name="text">
+        <string>Generate Bundle</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="0,0">
+     <item>
+      <widget class="QFrame" name="fileTableFrame">
+       <property name="frameShape">
+        <enum>QFrame::StyledPanel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Raised</enum>
+       </property>
+       <layout class="QVBoxLayout" name="fileTableVerticalLayout">
+        <item>
+         <widget class="QFrame" name="fileTableHeaderFrame">
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <layout class="QVBoxLayout" name="fileTableHeaderLayout">
+           <item>
+            <widget class="QLabel" name="assetListFilesLabel">
+             <property name="text">
+              <string>Asset List Files</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="AzQtComponents::FilteredSearchWidget" name="fileFilteredSearchWidget">
+          <property name="placeholderText" stdset="0">
+           <string>Filter by file name</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="AzQtComponents::TableView" name="assetListsTable"/>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="QFrame" name="fileContentsFrame">
+       <property name="frameShape">
+        <enum>QFrame::StyledPanel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Raised</enum>
+       </property>
+       <layout class="QVBoxLayout" name="fileContentsVerticalLayout">
+        <item>
+         <widget class="QFrame" name="fileContentsHeaderFrame">
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <layout class="QHBoxLayout" name="fileContentsHeaderLayout">
+           <item>
+            <widget class="QLabel" name="assetListContentsLabel">
+             <property name="text">
+              <string>Asset List</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="assetListFileAbsolutePathLabel">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="AzQtComponents::FilteredSearchWidget" name="assetListContentsFilteredSearchWidget">
+          <property name="placeholderText" stdset="0">
+           <string>Filter by file name</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="AzQtComponents::TableView" name="assetListContentsTable"/>
+        </item>
+       </layout>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>AzQtComponents::TableView</class>
+   <extends>QTreeView</extends>
+   <header location="global">AzQtComponents/Components/Widgets/TableView.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>AzQtComponents::FilteredSearchWidget</class>
+   <extends>QTreeView</extends>
+   <header location="global">AzQtComponents/Components/FilteredSearchWidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

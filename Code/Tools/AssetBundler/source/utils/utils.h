@@ -19,7 +19,9 @@
 #include <AzFramework/Platform/PlatformDefaults.h>
 #include <AzToolsFramework/Asset/AssetBundler.h>
 #include <AzToolsFramework/Asset/AssetUtils.h>
-
+#include <QDir>
+#include <QStringList>
+#include <QJsonObject>
 
 namespace AssetBundler
 {
@@ -120,7 +122,19 @@ namespace AssetBundler
     ////////////////////////////////////////////////////////////////////////////////////////////
 
     extern const char* AssetCatalogFilename;
+    extern char g_cachedEngineRoot[AZ::IO::MaxPathLength];
     static const size_t MaxErrorMessageLength = 4096;
+
+    //! This struct stores gem related information
+    struct GemInfo
+    {
+        AZ_CLASS_ALLOCATOR(GemInfo, AZ::SystemAllocator, 0);
+        GemInfo(AZStd::string name, AZStd::string relativeFilePath, AZStd::string absoluteFilePath);
+        GemInfo() = default;
+        AZStd::string m_gemName;
+        AZStd::string m_relativeFilePath;
+        AZStd::string m_absoluteFilePath;
+    };
 
 
     // The Warning Absorber is used to absorb warnings 
@@ -192,6 +206,8 @@ namespace AssetBundler
     */
     AZ::IO::Path GetPlatformSpecificCacheFolderPath();
 
+    AZStd::string GenerateKeyFromAbsolutePath(const AZStd::string& absoluteFilePath);
+
     void ConvertToRelativePath(AZStd::string_view parentFolderPath, AZStd::string& absoluteFilePath);
 
     AZ::Outcome<void, AZStd::string> MakePath(const AZStd::string& path);
@@ -228,6 +244,9 @@ namespace AssetBundler
     //! Returns platformFlags of all enabled platforms by parsing all the asset processor config files.
     //! Please note that the game project could be in a different location to the engine therefore we need the assetRoot param.
     AzFramework::PlatformFlags GetEnabledPlatformFlags(AZStd::string_view enginePath, AZStd::string_view assetRoot, AZStd::string_view projectPath);
+
+    QJsonObject ReadJson(const AZStd::string& filePath);
+    void SaveJson(const AZStd::string& filePath, const QJsonObject& jsonObject);
 
     //! Filepath is a helper class that is used to find the absolute path of a file
     //! if the inputted file path is an absolute path than it does nothing

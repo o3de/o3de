@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/AssetBundler/style">
+        <file>AssetBundler.qss</file>
+        <file>AssetBundlerConfig.ini</file>
+        <file>AssetBundlerIcon.ico</file>
+    </qresource>
+</RCC>

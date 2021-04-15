@@ -13,9 +13,13 @@ if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
     return()
 endif()
 
+include(${CMAKE_CURRENT_SOURCE_DIR}/Platform/${PAL_PLATFORM_NAME}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+
+# AssetBundlerBatch - CLI Application
 ly_add_target(
-    NAME AssetBundler.Static STATIC
+    NAME AssetBundlerBatch.Static STATIC
     NAMESPACE AZ
+    AUTOMOC
     FILES_CMAKE
         assetbundlerbatch_files.cmake
     INCLUDE_DIRECTORIES
@@ -23,6 +27,9 @@ ly_add_target(
             .
     BUILD_DEPENDENCIES
         PUBLIC
+            3rdParty::Qt::Core
+            3rdParty::Qt::Gui
+            3rdParty::Qt::Widgets
             AZ::AzToolsFramework
             ${additional_dependencies}
 )
@@ -31,13 +38,42 @@ ly_add_target(
     NAME AssetBundlerBatch EXECUTABLE
     NAMESPACE AZ
     FILES_CMAKE
-        assetbundlerbatch_exe_files.cmake
+        assetbundler_exe_files.cmake
+    COMPILE_DEFINITIONS
+        PRIVATE
+            AB_BATCH_MODE
     INCLUDE_DIRECTORIES
         PRIVATE
             .
     BUILD_DEPENDENCIES
         PRIVATE
-            AZ::AssetBundler.Static
+            AZ::AssetBundlerBatch.Static
+)
+
+# AssetBundler - Qt GUI Application
+ly_add_target(
+    NAME AssetBundler ${PAL_TRAIT_BUILD_ASSETBUNDLER_APPLICATION_TYPE}
+    NAMESPACE AZ
+    AUTOMOC
+    AUTOUIC
+    AUTORCC
+    FILES_CMAKE 
+        assetbundlergui_files.cmake
+        assetbundler_exe_files.cmake
+        Platform/${PAL_PLATFORM_NAME}/assetbundlergui_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+    INCLUDE_DIRECTORIES
+        PUBLIC
+            Platform/${PAL_PLATFORM_NAME}
+        PRIVATE
+            .
+    BUILD_DEPENDENCIES
+        PUBLIC
+            3rdParty::Qt::Core
+            3rdParty::Qt::Gui
+            3rdParty::Qt::Widgets
+            AZ::AzToolsFramework
+            AZ::AssetBundlerBatch.Static
+            ${additional_dependencies}
 )
 
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
@@ -53,7 +89,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzTest
-                AZ::AssetBundler.Static
+                AZ::AssetBundlerBatch.Static
                 AZ::AzFrameworkTestShared
     )
 

@@ -31,6 +31,7 @@ AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option")
 #include <QDir>
 #include <QString>
 #include <QStringList>
+#include <QJsonDocument>
 AZ_POP_DISABLE_WARNING
 
 namespace AssetBundler
@@ -107,6 +108,8 @@ namespace AssetBundler
     const char* BundleSeedCommand = "bundleSeed";
 
     const char* AssetCatalogFilename = "assetcatalog.xml";
+
+    char g_cachedEngineRoot[AZ::IO::MaxPathLength];
 
     
     const char EngineDirectoryName[] = "Engine";
@@ -203,10 +206,21 @@ namespace AssetBundler
 
     AZ::IO::FixedMaxPath GetEngineRoot()
     {
+        if (g_cachedEngineRoot[0])
+        {
+            //JESSIE TODO figure out all this path/string nonsense
+            return AZ::IO::FixedMaxPath(g_cachedEngineRoot);
+        }
+
         AZ::IO::FixedMaxPath engineRootPath;
         if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
         {
             settingsRegistry->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+        }
+
+        if (!engineRootPath.empty())
+        {
+            azstrcpy(g_cachedEngineRoot, AZ_MAX_PATH_LEN, engineRootPath.c_str());
         }
 
         return engineRootPath;
@@ -538,6 +552,14 @@ namespace AssetBundler
         return platformSpecificCacheFolderPath;
     }
 
+    AZStd::string GenerateKeyFromAbsolutePath(const AZStd::string& absoluteFilePath)
+    {
+        AZStd::string key(absoluteFilePath);
+        AzFramework::StringFunc::Path::Normalize(key);
+        AzFramework::StringFunc::Path::StripDrive(key);
+        return key;
+    }
+
     void ConvertToRelativePath(AZStd::string_view parentFolderPath, AZStd::string& absoluteFilePath)
     {
         absoluteFilePath = AZ::IO::PathView(absoluteFilePath).LexicallyRelative(parentFolderPath).String();
@@ -821,5 +843,27 @@ namespace AssetBundler
             }
         }
         return false;
+    }
+
+    QJsonObject ReadJson(const AZStd::string& filePath)
+    {
+        QByteArray byteArray;
+        QFile jsonFile;
+        jsonFile.setFileName(filePath.c_str());
+        jsonFile.open(QIODevice::ReadOnly | QIODevice::Text);
+        byteArray = jsonFile.readAll();
+        jsonFile.close();
+
+        return QJsonDocument::fromJson(byteArray).object();
+    }
+
+    void SaveJson(const AZStd::string& filePath, const QJsonObject& jsonObject)
+    {
+        QFile jsonFile(filePath.c_str());
+        QJsonDocument JsonDocument;
+        JsonDocument.setObject(jsonObject);
+        jsonFile.open(QFile::WriteOnly | QFile::Text | QFile::Truncate);
+        jsonFile.write(JsonDocument.toJson());
+        jsonFile.close();
     }
 }
