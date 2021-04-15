@@ -22,6 +22,7 @@
 #include <EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderPlugin.h>
 #include <MCore/Source/AzCoreConversions.h>
 #include <MysticQt/Source/KeyboardShortcutManager.h>
+#include <QDir>
 #include <QMessageBox>
 
 
@@ -695,8 +696,9 @@ namespace EMStudio
     bool RenderPlugin::Init()
     {
         // load the cursors
-        mZoomInCursor       = new QCursor(QPixmap(AZStd::string(MysticQt::GetDataDir() + "Images/Rendering/ZoomInCursor.png").c_str()).scaled(32, 32));
-        mZoomOutCursor      = new QCursor(QPixmap(AZStd::string(MysticQt::GetDataDir() + "Images/Rendering/ZoomOutCursor.png").c_str()).scaled(32, 32));
+        QDir dataDir{ QString(MysticQt::GetDataDir().c_str()) };
+        mZoomInCursor       = new QCursor(QPixmap(dataDir.filePath("Images/Rendering/ZoomInCursor.png")).scaled(32, 32));
+        mZoomOutCursor      = new QCursor(QPixmap(dataDir.filePath("Images/Rendering/ZoomOutCursor.png")).scaled(32, 32));
 
         mCurrentSelection   = &GetCommandManager()->GetCurrentSelection();
 
@@ -1229,8 +1231,6 @@ namespace EMStudio
         const bool renderTangents       = widget->GetRenderFlag(RenderViewWidget::RENDER_TANGENTS);
         const bool renderWireframe      = widget->GetRenderFlag(RenderViewWidget::RENDER_WIREFRAME);
         const bool renderCollisionMeshes= widget->GetRenderFlag(RenderViewWidget::RENDER_COLLISIONMESHES);
-
-        const EMotionFX::Actor* actor = actorInstance->GetActor();
 
         if (renderVertexNormals || renderFaceNormals || renderTangents || renderWireframe || renderCollisionMeshes)
         {

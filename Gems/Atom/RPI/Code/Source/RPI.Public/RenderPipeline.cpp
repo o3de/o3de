@@ -496,6 +496,11 @@ namespace AZ
             m_renderMode = RenderMode::NoRender;
             m_rootPass->SetEnabled(false);
         }
+
+        RenderPipeline::RenderMode RenderPipeline::GetRenderMode() const
+        {
+            return m_renderMode;
+        }
         
         bool RenderPipeline::NeedsRender() const
         {

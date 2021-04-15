@@ -16,7 +16,7 @@
 #include <minidump/minidump_user_extension_stream_data_source.h>
 #include <vector>
 
-namespace Lumberyard
+namespace O3de
 {
     class BufferedDataStream : public crashpad::MinidumpUserExtensionStreamDataSource
     {

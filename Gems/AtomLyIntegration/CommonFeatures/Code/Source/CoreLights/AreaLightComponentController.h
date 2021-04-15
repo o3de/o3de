@@ -38,7 +38,7 @@ namespace AZ
             static void Reflect(AZ::ReflectContext* context);
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
             static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
-            static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
+            static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
             AreaLightComponentController() = default;
             AreaLightComponentController(const AreaLightComponentConfig& config);
@@ -71,15 +71,41 @@ namespace AZ
             void SetAttenuationRadiusMode(LightAttenuationRadiusMode attenuationRadiusMode) override;
             void ConvertToIntensityMode(PhotometricUnit intensityMode) override;
 
+            bool GetEnableShutters() const override;
+            void SetEnableShutters(bool enabled) override;
+            float GetInnerShutterAngle() const override;
+            void SetInnerShutterAngle(float degrees) override;
+            float GetOuterShutterAngle() const override;
+            void SetOuterShutterAngle(float degrees) override;
+
+            bool GetEnableShadow() const override;
+            void SetEnableShadow(bool enabled) override;
+            ShadowmapSize GetShadowmapMaxSize() const override;
+            void SetShadowmapMaxSize(ShadowmapSize size) override;
+            ShadowFilterMethod GetShadowFilterMethod() const override;
+            void SetShadowFilterMethod(ShadowFilterMethod method) override;
+            float GetSofteningBoundaryWidthAngle() const override;
+            void SetSofteningBoundaryWidthAngle(float width) override;
+            uint32_t GetPredictionSampleCount() const override;
+            void SetPredictionSampleCount(uint32_t count) override;
+            uint32_t GetFilteringSampleCount() const override;
+            void SetFilteringSampleCount(uint32_t count) override;
+            PcfMethod GetPcfMethod() const override;
+            void SetPcfMethod(PcfMethod method) override;
+
             void HandleDisplayEntityViewport(
                 const AzFramework::ViewportInfo& viewportInfo,
                 AzFramework::DebugDisplayRequests& debugDisplay,
                 bool isSelected);
 
+            void VerifyLightTypeAndShapeComponent();
+
             void ConfigurationChanged();
             void IntensityChanged();
             void ChromaChanged();
             void AttenuationRadiusChanged();
+            void ShuttersChanged();
+            void ShadowsChanged();
             
             //! Handles calculating the attenuation radius when LightAttenuationRadiusMode is auto
             void AutoCalculateAttenuationRadius();

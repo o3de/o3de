@@ -39,7 +39,6 @@ namespace LmbrCentral
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->EBus<AudioRtpcComponentRequestBus>("AudioRtpcComponentRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Event("SetValue", &AudioRtpcComponentRequestBus::Events::SetValue)
                 ->Event("SetRtpcValue", &AudioRtpcComponentRequestBus::Events::SetRtpcValue)
                 ;

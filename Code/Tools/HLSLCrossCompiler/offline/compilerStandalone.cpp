@@ -349,7 +349,6 @@ int GetOptions(int argc, char** argv, Options* psOptions)
 {
     int i;
     int fullShaderChain = -1;
-    int hashOut = 0;
 
     InitOptions(psOptions);
 
@@ -412,8 +411,6 @@ int GetOptions(int argc, char** argv, Options* psOptions)
 
             uint64_t hash = hash64((const uint8_t*)psOptions->outputShaderFile, (uint32_t)strlen(psOptions->outputShaderFile), 0);
 
-            uint32_t high = (uint32_t)(hash >> 32);
-            uint32_t low = (uint32_t)(hash & 0x00000000FFFFFFFF);
 
             dir = strrchr(psOptions->outputShaderFile, '\\');
 
@@ -484,7 +481,6 @@ int Run(const char* srcPath, const char* destPath, GLLang language, int flags, c
     Timer_t timer;
     int compiledOK = 0;
     double crossCompileTime = 0;
-    double glslCompileTime = 0;
 
     HLSLcc_SetMemoryFunctions(malloc_hook, calloc_hook, free_hook, realloc_hook);
 

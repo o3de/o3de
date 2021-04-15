@@ -49,7 +49,6 @@ namespace Vegetation
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<DescriptorListCombinerConfig>()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Constructor()
                 ->Method("GetNumDescriptors", &DescriptorListCombinerConfig::GetNumDescriptors)
@@ -133,7 +132,6 @@ namespace Vegetation
             behaviorContext->Class<DescriptorListCombinerComponent>()->RequestBus("DescriptorListCombinerRequestBus");
 
             behaviorContext->EBus<DescriptorListCombinerRequestBus>("DescriptorListCombinerRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Event("GetNumDescriptors", &DescriptorListCombinerRequestBus::Events::GetNumDescriptors)
                 ->Event("GetDescriptorEntityId", &DescriptorListCombinerRequestBus::Events::GetDescriptorEntityId)

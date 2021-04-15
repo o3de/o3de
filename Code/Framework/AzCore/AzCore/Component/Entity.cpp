@@ -18,7 +18,7 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Component/NamedEntityId.h>
-
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Casting/lossy_cast.h>
 
 #include <AzCore/Serialization/Json/RegistrationContext.h>
@@ -159,10 +159,11 @@ namespace AZ
         AZ_Assert(m_state == State::Constructed, "Component should be in Constructed state to be Initialized!");
         SetState(State::Initializing);
 
-        bool result = true;
-        EBUS_EVENT_RESULT(result, ComponentApplicationBus, AddEntity, this);
-        (void)result;
-        AZ_Assert(result, "Failed to add entity '%s' [0x%llx]! Did you already register an entity with this ID?", m_name.c_str(), m_id);
+        if (AZ::Interface<ComponentApplicationRequests>::Get() != nullptr)
+        {
+            [[maybe_unused]] const bool result = AZ::Interface<ComponentApplicationRequests>::Get()->AddEntity(this);
+            AZ_Assert(result, "Failed to add entity '%s' [0x%llx]! Did you already register an entity with this ID?", m_name.c_str(), m_id);
+        }
 
         for (ComponentArrayType::iterator it = m_components.begin(); it != m_components.end();)
         {

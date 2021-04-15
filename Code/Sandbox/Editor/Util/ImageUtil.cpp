@@ -288,8 +288,6 @@ bool CImageUtil::LoadImage(const QString& fileName, CImageEx& image, bool* pQual
     {
         return CImageUtil::Load(fileName, image);
     }
-
-    return false;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -320,8 +318,6 @@ bool CImageUtil::SaveImage(const QString& fileName, CImageEx& image)
     {
         return Save(fileName, image);
     }
-
-    return false;
 }
 
 //////////////////////////////////////////////////////////////////////////

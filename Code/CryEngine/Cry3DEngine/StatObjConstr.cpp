@@ -974,11 +974,14 @@ IStatObj* CStatObj::Clone(bool bCloneGeometry, bool bCloneChildren, bool bMeshes
         pNewObj->m_bSharesChildren = true;
     }
 
-    if (pNewObj->m_hasClothTangentsData = m_hasClothTangentsData)
+    pNewObj->m_hasClothTangentsData = m_hasClothTangentsData;
+    if (pNewObj->m_hasClothTangentsData)
     {
         pNewObj->m_pClothTangentsData = m_pClothTangentsData;
     }
-    if (pNewObj->m_hasSkinInfo = m_hasSkinInfo)
+
+    pNewObj->m_hasSkinInfo = m_hasSkinInfo;
+    if (pNewObj->m_hasSkinInfo)
     {
         pNewObj->m_pSkinInfo = m_pSkinInfo;
     }

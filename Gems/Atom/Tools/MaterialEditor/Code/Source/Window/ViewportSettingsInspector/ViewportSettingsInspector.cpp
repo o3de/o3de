@@ -57,7 +57,6 @@ namespace MaterialEditor
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<GeneralViewportSettings>("GeneralViewportSettings")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Category, "Editor")
                 ->Attribute(AZ::Script::Attributes::Module, "render")
@@ -135,7 +134,7 @@ namespace MaterialEditor
         if (m_modelPreset)
         {
             auto inspectorWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
-                m_modelPreset.get(), nullptr, m_modelPreset.get()->TYPEINFO_Uuid(), nullptr, groupWidget);
+                m_modelPreset.get(), nullptr, m_modelPreset.get()->TYPEINFO_Uuid(), this, groupWidget);
 
             groupWidget->layout()->addWidget(inspectorWidget);
         }
@@ -222,7 +221,7 @@ namespace MaterialEditor
         if (m_lightingPreset)
         {
             auto inspectorWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
-                m_lightingPreset.get(), nullptr, m_lightingPreset.get()->TYPEINFO_Uuid(), nullptr, groupWidget);
+                m_lightingPreset.get(), nullptr, m_lightingPreset.get()->TYPEINFO_Uuid(), this, groupWidget);
 
             groupWidget->layout()->addWidget(inspectorWidget);
         }

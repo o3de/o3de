@@ -118,7 +118,7 @@ bool CShaderMan::mfReloadShaderIncludes(const char* szPath, int nFlags)
             {
                 fpStripExtension(handle.m_filename.data(), nmf);
                 bool bCh = false;
-                SShaderBin* pBin = m_Bin.GetBinShader(nmf, true, 0, &bCh);
+                m_Bin.GetBinShader(nmf, true, 0, &bCh);
                 if (bCh)
                 {
                     bChanged = true;
@@ -155,7 +155,7 @@ bool CShaderMan::mfReloadAllShaders([[maybe_unused]] int nFlags, [[maybe_unused]
     // Check include changing
     if IsCVarConstAccess(constexpr) (!CRenderer::CV_r_shadersignoreincludeschanging)
     {
-        bool bChanged = mfReloadShaderIncludes(m_ShadersPath.c_str(), nFlags);
+        mfReloadShaderIncludes(m_ShadersPath.c_str(), nFlags);
     }
     CCryNameTSCRC Name = CShader::mfGetClassName();
     SResourceContainer* pRL = CBaseResource::GetResourcesForClass(Name);
@@ -858,7 +858,6 @@ SShaderItem CShaderMan::mfShaderItemForName (const char* nameEf, bool bShare, in
     }
 
     SI.m_pShader = mfForName(shadName, flags, (CShaderResources*)SI.m_pShaderResources, nMaskGen);
-    CShader* pSH = (CShader*)SI.m_pShader;
 
     // Get technique
     if (strTechnique.size())
@@ -1013,7 +1012,6 @@ CShader* CShaderMan::mfForName (const char* nameSh, int flags, const CShaderReso
     ef->m_NameShader = nameEf;
     ef->m_NameShaderICRC = CCrc32::ComputeLowercase(nameEf);
 
-    bool bSuccess = false;
 #ifndef NULL_RENDERER
     // Check for the new cryFX format
     sprintf_s(nameNew, "%sCryFX/%s.cfx", m_ShadersPath.c_str(), nameEf);

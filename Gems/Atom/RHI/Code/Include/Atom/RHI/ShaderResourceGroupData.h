@@ -12,13 +12,15 @@
 #pragma once
 
 #include <Atom/RHI/ConstantsData.h>
+#include <Atom/RHI/Image.h>
+#include <Atom/RHI/ImageView.h>
+#include <Atom/RHI/Buffer.h>
+#include <Atom/RHI/BufferView.h>
 
 namespace AZ
 {
     namespace RHI
     {
-        class BufferView;
-        class ImageView;
         class ShaderResourceGroup;
         class ShaderResourceGroupPool;
 
@@ -69,11 +71,17 @@ namespace AZ
             //! Sets an array of image view for the given shader input index.
             bool SetImageViewArray(ShaderInputImageIndex inputIndex, AZStd::array_view<const ImageView*> imageViews, uint32_t arrayIndex = 0);
 
+            //! Sets an unbounded array of image view for the given shader input index.
+            bool SetImageViewUnboundedArray(ShaderInputImageUnboundedArrayIndex inputIndex, AZStd::array_view<const ImageView*> imageViews);
+
             //! Sets one buffer view for the given shader input index.
             bool SetBufferView(ShaderInputBufferIndex inputIndex, const BufferView* bufferView, uint32_t arrayIndex = 0);
 
             //! Sets an array of image view for the given shader input index.
             bool SetBufferViewArray(ShaderInputBufferIndex inputIndex, AZStd::array_view<const BufferView*> bufferViews, uint32_t arrayIndex = 0);
+
+            //! Sets an unbounded array of buffer view for the given shader input index.
+            bool SetBufferViewUnboundedArray(ShaderInputBufferUnboundedArrayIndex inputIndex, AZStd::array_view<const BufferView*> bufferViews);
 
             //! Sets one sampler for the given shader input index, using the bindingIndex as the key.
             bool SetSampler(ShaderInputSamplerIndex inputIndex, const SamplerState& sampler, uint32_t arrayIndex = 0);
@@ -117,11 +125,17 @@ namespace AZ
             //! Returns an array of image views associated with the given image shader input index.
             AZStd::array_view<ConstPtr<ImageView>> GetImageViewArray(ShaderInputImageIndex inputIndex) const;
 
+            //! Returns an unbounded array of image views associated with the given buffer shader input index.
+            AZStd::array_view<ConstPtr<ImageView>> GetImageViewUnboundedArray(ShaderInputImageUnboundedArrayIndex inputIndex) const;
+
             //! Returns a single buffer view associated with the buffer shader input index and array offset.
             const ConstPtr<BufferView>& GetBufferView(ShaderInputBufferIndex inputIndex, uint32_t arrayIndex) const;
 
             //! Returns an array of buffer views associated with the given buffer shader input index.
             AZStd::array_view<ConstPtr<BufferView>> GetBufferViewArray(ShaderInputBufferIndex inputIndex) const;
+
+            //! Returns an unbounded array of buffer views associated with the given buffer shader input index.
+            AZStd::array_view<ConstPtr<BufferView>> GetBufferViewUnboundedArray(ShaderInputBufferUnboundedArrayIndex inputIndex) const;
 
             //! Returns a single sampler associated with the sampler shader input index and array offset.
             const SamplerState& GetSampler(ShaderInputSamplerIndex inputIndex, uint32_t arrayIndex) const;
@@ -174,12 +188,19 @@ namespace AZ
             bool ValidateSetImageView(ShaderInputImageIndex inputIndex, const ImageView* imageView, uint32_t arrayIndex) const;
             bool ValidateSetBufferView(ShaderInputBufferIndex inputIndex, const BufferView* bufferView, uint32_t arrayIndex) const;
 
+            template<typename TShaderInput, typename TShaderInputDescriptor>
+            bool ValidateImageViewAccess(TShaderInput inputIndex, const ImageView* imageView, uint32_t arrayIndex) const;
+            template<typename TShaderInput, typename TShaderInputDescriptor>
+            bool ValidateBufferViewAccess(TShaderInput inputIndex, const BufferView* bufferView, uint32_t arrayIndex) const;
+
             ConstPtr<ShaderResourceGroupLayout> m_shaderResourceGroupLayout;
 
             //! The backing data store of bound resources for the shader resource group.
             AZStd::vector<ConstPtr<ImageView>> m_imageViews;
             AZStd::vector<ConstPtr<BufferView>> m_bufferViews;
             AZStd::vector<SamplerState> m_samplers;
+            AZStd::vector<ConstPtr<ImageView>> m_imageViewsUnboundedArray;
+            AZStd::vector<ConstPtr<BufferView>> m_bufferViewsUnboundedArray;
 
             //! The backing data store of constants for the shader resource group.
             ConstantsData m_constantsData;
@@ -227,5 +248,216 @@ namespace AZ
             return m_constantsData.SetConstantMatrixRows(inputIndex, value, rowCount);
         }
 
+        template<typename TShaderInput, typename TShaderInputDescriptor>
+        bool ShaderResourceGroupData::ValidateImageViewAccess(TShaderInput inputIndex, const ImageView* imageView, [[maybe_unused]] uint32_t arrayIndex) const
+        {
+            if (!Validation::IsEnabled())
+            {
+                return true;
+            }
+
+            const TShaderInputDescriptor& shaderInputImage = GetLayout()->GetShaderInput(inputIndex);
+            const ImageViewDescriptor& imageViewDescriptor = imageView->GetDescriptor();
+            const Image& image = imageView->GetImage();
+            const ImageDescriptor& imageDescriptor = image.GetDescriptor();
+            const ImageFrameAttachment* frameAttachment = image.GetFrameAttachment();
+
+            // The image must have the correct bind flags for the slot.
+            const bool isValidAccess =
+                (shaderInputImage.m_access == ShaderInputImageAccess::Read && CheckBitsAll(imageDescriptor.m_bindFlags, ImageBindFlags::ShaderRead)) ||
+                (shaderInputImage.m_access == ShaderInputImageAccess::ReadWrite && CheckBitsAll(imageDescriptor.m_bindFlags, ImageBindFlags::ShaderReadWrite));
+
+            if (!isValidAccess)
+            {
+                AZ_Error("ShaderResourceGroupData", false,
+                    "Image Input '%s[%d]': Invalid 'Read / Write' access. Expected '%s'.",
+                    shaderInputImage.m_name.GetCStr(), arrayIndex, GetShaderInputAccessName(shaderInputImage.m_access));
+                return false;
+            }
+
+            if (shaderInputImage.m_access == ShaderInputImageAccess::ReadWrite)
+            {
+                // An image view assigned to an input with read-write access must be an attachment on the frame scheduler.
+                if (!frameAttachment)
+                {
+                    AZ_Error("ShaderResourceGroupData", false,
+                        "Image Input '%s[%d]': Image is bound to a ReadWrite shader input, "
+                        "but it is not an attachment on the frame scheduler. All GPU-writable resources "
+                        "must be declared as attachments in order to provide hazard tracking.",
+                        shaderInputImage.m_name.GetCStr(), arrayIndex, GetShaderInputAccessName(shaderInputImage.m_access));
+                    return false;
+                }
+
+                // NOTE: We aren't able to validate the scope attachment here, because shader resource groups aren't directly
+                // associated with a scope. Instead, the CommandListValidator class will check that the access is correct at
+                // command list submission time.
+            }
+
+            bool isValidType = true;
+            switch (shaderInputImage.m_type)
+            {
+            case ShaderInputImageType::Unknown:
+                // Unable to validate.
+                break;
+
+            case ShaderInputImageType::Image1DArray:
+            case ShaderInputImageType::Image1D:
+                isValidType &= (imageDescriptor.m_dimension == ImageDimension::Image1D);
+                break;
+
+            case ShaderInputImageType::SubpassInput:
+                isValidType &= (imageDescriptor.m_dimension == ImageDimension::Image2D);
+                break;
+
+            case ShaderInputImageType::Image2DArray:
+            case ShaderInputImageType::Image2D:
+                isValidType &= (imageDescriptor.m_dimension == ImageDimension::Image2D);
+                isValidType &= (imageDescriptor.m_multisampleState.m_samples == 1);
+                break;
+
+            case ShaderInputImageType::Image2DMultisample:
+            case ShaderInputImageType::Image2DMultisampleArray:
+                isValidType &= (imageDescriptor.m_dimension == ImageDimension::Image2D);
+                isValidType &= (imageDescriptor.m_multisampleState.m_samples > 1);
+                break;
+
+            case ShaderInputImageType::Image3D:
+                isValidType &= (imageDescriptor.m_dimension == ImageDimension::Image3D);
+                break;
+
+            case ShaderInputImageType::ImageCube:
+            case ShaderInputImageType::ImageCubeArray:
+                isValidType &= (imageDescriptor.m_dimension == ImageDimension::Image2D);
+                isValidType &= (imageViewDescriptor.m_isCubemap != 0);
+                break;
+
+            default:
+                AZ_Assert(false, "Image Input '%s[%d]': Invalid image type!", shaderInputImage.m_name.GetCStr(), arrayIndex);
+                return false;
+            }
+
+            if (!isValidType)
+            {
+                AZ_Error("ShaderResourceGroupData", false,
+                    "Image Input '%s[%d]': Does not match expected type '%s'",
+                    shaderInputImage.m_name.GetCStr(), arrayIndex, GetShaderInputTypeName(shaderInputImage.m_type));
+                return false;
+            }
+
+            return true;
+        }
+
+        template<typename TShaderInput, typename TShaderInputDescriptor>
+        bool ShaderResourceGroupData::ValidateBufferViewAccess(TShaderInput inputIndex, const BufferView* bufferView, [[maybe_unused]] uint32_t arrayIndex) const
+        {
+            if (!Validation::IsEnabled())
+            {
+                return true;
+            }
+
+            const TShaderInputDescriptor& shaderInputBuffer = GetLayout()->GetShaderInput(inputIndex);
+            const BufferViewDescriptor& bufferViewDescriptor = bufferView->GetDescriptor();
+            const Buffer& buffer = bufferView->GetBuffer();
+            const BufferDescriptor& bufferDescriptor = buffer.GetDescriptor();
+            const BufferFrameAttachment* frameAttachment = buffer.GetFrameAttachment();
+
+            const bool isValidAccess =
+                (shaderInputBuffer.m_access == ShaderInputBufferAccess::Constant && CheckBitsAll(bufferDescriptor.m_bindFlags, BufferBindFlags::Constant)) ||
+                (shaderInputBuffer.m_access == ShaderInputBufferAccess::Read && CheckBitsAll(bufferDescriptor.m_bindFlags, BufferBindFlags::ShaderRead)) ||
+                (shaderInputBuffer.m_access == ShaderInputBufferAccess::Read && CheckBitsAll(bufferDescriptor.m_bindFlags, BufferBindFlags::RayTracingAccelerationStructure)) ||
+                (shaderInputBuffer.m_access == ShaderInputBufferAccess::ReadWrite && CheckBitsAll(bufferDescriptor.m_bindFlags, BufferBindFlags::ShaderReadWrite));
+
+            if (!isValidAccess)
+            {
+                AZ_Error("ShaderResourceGroupData", false,
+                    "Buffer Input '%s[%d]': Invalid 'Constant / Read / Write' access. Expected '%s'",
+                    shaderInputBuffer.m_name.GetCStr(), arrayIndex, GetShaderInputAccessName(shaderInputBuffer.m_access));
+                return false;
+            }
+
+            if (shaderInputBuffer.m_access == ShaderInputBufferAccess::ReadWrite && !bufferView->IgnoreFrameAttachmentValidation())
+            {
+                // A buffer view assigned to an input with read-write access must be an attachment on the frame scheduler.
+                if (!frameAttachment)
+                {
+                    AZ_Error("ShaderResourceGroupData", false,
+                        "Buffer Input '%s[%d]': Buffer is bound to a ReadWrite shader input, "
+                        "but it is not an attachment on the frame scheduler. All GPU-writable resources "
+                        "must be declared as attachments in order to provide hazard tracking.",
+                        shaderInputBuffer.m_name.GetCStr(), arrayIndex, GetShaderInputAccessName(shaderInputBuffer.m_access));
+                    return false;
+                }
+
+                // NOTE: We aren't able to validate the scope attachment here, because shader resource groups aren't directly
+                // associated with a scope. Instead, the CommandListValidator class will check that the access is correct at
+                // command list submission time.
+            }
+
+            if (shaderInputBuffer.m_type == ShaderInputBufferType::Constant)
+            {
+                //For Constant type the stride (full constant buffer) must be larger or equal than the buffer view size (element size x element count).
+                if (!(shaderInputBuffer.m_strideSize >= (bufferViewDescriptor.m_elementSize * bufferViewDescriptor.m_elementCount)))
+                {
+                    AZ_Error("ShaderResourceGroupData", false,
+                        "Buffer Input '%s[%d]': stride size %d must be larger than or equal to the buffer view size %d",
+                        shaderInputBuffer.m_name.GetCStr(), arrayIndex, shaderInputBuffer.m_strideSize,
+                        (bufferViewDescriptor.m_elementSize * bufferViewDescriptor.m_elementCount));
+                    return false;
+                }
+            }
+            else
+            {
+                // For any other type the buffer view's element size should match the stride.
+                if (shaderInputBuffer.m_strideSize != bufferViewDescriptor.m_elementSize)
+                {
+                    // [GFX TODO][ATOM-5735][AZSL] ByteAddressBuffer shader input is setting a stride of 16 instead of 4
+                    AZ_Error("ShaderResourceGroupData", false, "Buffer Input '%s[%d]': Does not match expected stride size %d",
+                        shaderInputBuffer.m_name.GetCStr(), arrayIndex, bufferViewDescriptor.m_elementSize);
+                    return false;
+                }
+            }
+
+            bool isValidType = true;
+            switch (shaderInputBuffer.m_type)
+            {
+            case ShaderInputBufferType::Unknown:
+                // Unable to validate.
+                break;
+
+            case ShaderInputBufferType::Constant:
+                // Element format is not relevant for viewing a buffer as a constant buffer, any format would be valid.
+                break;
+
+            case ShaderInputBufferType::Structured:
+                isValidType &= bufferViewDescriptor.m_elementFormat == Format::Unknown;
+                break;
+
+            case ShaderInputBufferType::Typed:
+                isValidType &= bufferViewDescriptor.m_elementFormat != Format::Unknown;
+                break;
+
+            case ShaderInputBufferType::Raw:
+                isValidType &= bufferViewDescriptor.m_elementFormat == Format::R32_UINT;
+                break;
+
+            case ShaderInputBufferType::AccelerationStructure:
+                isValidType &= bufferViewDescriptor.m_elementFormat == Format::R32_UINT;
+                break;
+
+            default:
+                AZ_Assert(false, "Buffer Input '%s[%d]': Invalid buffer type!", shaderInputBuffer.m_name.GetCStr(), arrayIndex);
+                return false;
+            }
+
+            if (!isValidType)
+            {
+                AZ_Error("ShaderResourceGroupData", false,
+                    "Buffer Input '%s[%d]': Does not match expected type '%s'",
+                    shaderInputBuffer.m_name.GetCStr(), arrayIndex, GetShaderInputTypeName(shaderInputBuffer.m_type));
+                return false;
+            }
+
+            return true;
+        }
     } // namespace RHI
 } // namespace AZ

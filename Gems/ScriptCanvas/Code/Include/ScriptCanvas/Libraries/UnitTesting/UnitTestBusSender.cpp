@@ -388,7 +388,10 @@ namespace ScriptCanvas
             {
                 AZ::ScriptCanvasAttributes::HiddenIndices uniqueIdIndex = { 0 };
 
-                auto builder = behaviorContext->Class<EventSender>("Unit Testing");
+                auto builder = behaviorContext->Class<EventSender>("Unit Testing")
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                    ;
+
                 builder->Method("Add Failure", &EventSender::AddFailure, { { {"", "", behaviorContext->MakeDefaultValue(UniqueId)}, {"Report", "additional notes for the test report"} } })
                         ->Attribute(AZ::ScriptCanvasAttributes::HiddenParameterIndex, uniqueIdIndex)
                     ->Method("Add Success", &EventSender::AddSuccess, { { {"", "", behaviorContext->MakeDefaultValue(UniqueId)}, {"Report", "additional notes for the test report"}  } })

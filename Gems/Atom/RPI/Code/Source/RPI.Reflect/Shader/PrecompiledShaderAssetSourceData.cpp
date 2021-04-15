@@ -39,6 +39,7 @@ namespace AZ
                 serializeContext->Class<PrecompiledShaderAssetSourceData>()
                     ->Version(0)
                     ->Field("ShaderAssetFileName", &PrecompiledShaderAssetSourceData::m_shaderAssetFileName)
+                    ->Field("PlatformIdentifiers", &PrecompiledShaderAssetSourceData::m_platformIdentifiers)
                     ->Field("ShaderResourceGroupAssets", &PrecompiledShaderAssetSourceData::m_srgAssetFileNames)
                     ->Field("RootShaderVariantAssets", &PrecompiledShaderAssetSourceData::m_rootShaderVariantAssets)
                     ;

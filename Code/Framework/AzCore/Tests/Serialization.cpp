@@ -1230,6 +1230,8 @@ namespace UnitTest
         ComponentApplication* GetApplication() override { return nullptr; }
         void RegisterComponentDescriptor(const ComponentDescriptor*) override { }
         void UnregisterComponentDescriptor(const ComponentDescriptor*) override { }
+        void RegisterEntityAddedEventHandler(EntityAddedEvent::Handler&) override { }
+        void RegisterEntityRemovedEventHandler(EntityRemovedEvent::Handler&) override { }
         bool AddEntity(Entity*) override { return false; }
         bool RemoveEntity(Entity*) override { return false; }
         bool DeleteEntity(const EntityId&) override { return false; }

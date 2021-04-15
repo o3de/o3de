@@ -19,6 +19,7 @@
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Instance/TemplateInstanceMapperInterface.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
+#include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Template/Template.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerWidgetInterface.h>
@@ -121,8 +122,12 @@ namespace AzToolsFramework
 
                         Template& currentTemplate = currentTemplateReference->get();
                         Instance::EntityList newEntities;
-                        if (!PrefabDomUtils::LoadInstanceFromPrefabDom(
-                                *instanceToUpdate, newEntities, currentTemplate.GetPrefabDom()))
+                        if (PrefabDomUtils::LoadInstanceFromPrefabDom(*instanceToUpdate, newEntities, currentTemplate.GetPrefabDom()))
+                        {
+                            AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+                                &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, newEntities);
+                        }
+                        else
                         {
                             AZ_Error(
                                 "Prefab", false,
@@ -132,8 +137,6 @@ namespace AzToolsFramework
 
                             isUpdateSuccessful = false;
                         }
-                        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
-                            &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, newEntities);
 
                         m_instancesUpdateQueue.pop();
 
@@ -142,12 +145,17 @@ namespace AzToolsFramework
                     ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, selectedEntityIds);
 
                     // Enable the Outliner
-                    AZ::SystemTickBus::QueueFunction([entityOutlinerWidgetInterface]() {
-                        if (entityOutlinerWidgetInterface)
+                    if (entityOutlinerWidgetInterface)
+                    {
+                        entityOutlinerWidgetInterface->SetUpdatesEnabled(true);
+
+                        auto prefabPublicInterface = AZ::Interface<PrefabPublicInterface>::Get();
+                        if (prefabPublicInterface)
                         {
-                            entityOutlinerWidgetInterface->SetUpdatesEnabled(true);
+                            AZ::EntityId rootEntityId = prefabPublicInterface->GetLevelInstanceContainerEntityId();
+                            entityOutlinerWidgetInterface->ExpandEntityChildren(rootEntityId);
                         }
-                    });
+                    }
                 }
 
                 m_updatingTemplateInstancesInQueue = false;

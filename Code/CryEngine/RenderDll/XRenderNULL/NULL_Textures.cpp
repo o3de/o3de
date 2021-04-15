@@ -42,13 +42,6 @@ bool CNULLRenderer::EF_PrecacheResource([[maybe_unused]] ITexture* pTP, [[maybe_
     return false;
 }
 
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-bool CTexture::RenderToTexture(int handle, const CCamera& camera, AzRTT::RenderContextId contextId)
-{
-    return true;
-}
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-
 bool CTexture::RenderEnvironmentCMHDR([[maybe_unused]] int size, [[maybe_unused]] Vec3& Pos, [[maybe_unused]] TArray<unsigned short>& vecData)
 {
     return true;

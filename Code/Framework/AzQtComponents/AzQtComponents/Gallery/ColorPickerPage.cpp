@@ -11,7 +11,7 @@
 */
 
 #include "ColorPickerPage.h"
-#include "Gallery/ui_ColorPickerPage.h"
+#include <AzQtComponents/Gallery/ui_ColorPickerPage.h>
 
 #include <AzQtComponents/Components/Widgets/ColorPicker.h>
 #include <AzQtComponents/Utilities/Conversions.h>

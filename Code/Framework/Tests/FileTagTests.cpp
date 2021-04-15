@@ -136,7 +136,6 @@ namespace UnitTest
 
         void TearDown() override
         {
-            AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
 
             AZ::IO::FileIOBase::SetInstance(nullptr);
             AZ::IO::FileIOBase::SetInstance(m_data->m_priorFileIO);

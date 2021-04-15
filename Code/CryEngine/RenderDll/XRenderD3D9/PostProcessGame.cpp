@@ -108,7 +108,6 @@ void CHudSilhouettes::RenderDeferredSilhouettes(float fBlendParam, float fType)
     gcpRendD3D->RT_SetViewport(PostProcessUtils().m_pScreenRect.left, PostProcessUtils().m_pScreenRect.top, PostProcessUtils().m_pScreenRect.right, PostProcessUtils().m_pScreenRect.bottom);
     PostProcessUtils().m_pCurDepthSurface = &gcpRendD3D->m_DepthBufferOrig;
 
-    CTexture* pScreen = CTexture::s_ptexSceneNormalsMap;
     CTexture* pMask = CTextureManager::Instance()->GetBlackTexture();
     CTexture* pMaskBlurred = CTextureManager::Instance()->GetBlackTexture();
 

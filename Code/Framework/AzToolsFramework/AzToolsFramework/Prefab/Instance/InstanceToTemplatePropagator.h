@@ -31,21 +31,19 @@ namespace AzToolsFramework
             bool GeneratePatch(PrefabDom& generatedPatch, const PrefabDom& initialState, const PrefabDom& modifiedState) override;
             bool GeneratePatchForLink(PrefabDom& generatedPatch, const PrefabDom& initialState,
                 const PrefabDom& modifiedState, LinkId linkId) override;
-            bool PatchEntityInTemplate(PrefabDomValue& providedPatch, const AZ::EntityId& entityId) override;
-            bool PatchEntityInTemplate(PrefabDomValue& providedPatch, const EntityAlias& entityAlias, const TemplateId& templateId) override;
+            bool PatchEntityInTemplate(PrefabDom& providedPatch, AZ::EntityId entityId) override;
 
             void AppendEntityAliasToPatchPaths(PrefabDom& providedPatch, const AZ::EntityId& entityId) override;
 
             InstanceOptionalReference GetTopMostInstanceInHierarchy(AZ::EntityId entityId);
 
-            void PatchTemplate(PrefabDomValue& providedPatch, const AzToolsFramework::Prefab::TemplateId& templateId) override;
+            bool PatchTemplate(PrefabDomValue& providedPatch, TemplateId templateId) override;
 
             void ApplyPatchesToInstance(const AZ::EntityId& entityId, PrefabDom& patches, const Instance& instanceToAddPatches) override;
 
             void AddPatchesToLink(PrefabDom& patches, Link& link);
 
         private:
-            
 
             InstanceEntityMapperInterface* m_instanceEntityMapperInterface;
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface;

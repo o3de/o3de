@@ -22,7 +22,7 @@
 #include "Objects/BaseObject.h"
 
 #include "QtUtilWin.h"
-#include <Animation/ui_UiAVSequenceProps.h>
+#include <Editor/Animation/ui_UiAVSequenceProps.h>
 #include <QMessageBox>
 
 
@@ -52,7 +52,6 @@ BOOL CUiAVSequenceProps::OnInitDialog()
 {
     QString name = m_pSequence->GetName();
     ui->NAME->setText(name);
-    int seqFlags = m_pSequence->GetFlags();
 
     ui->MOVE_SCALE_KEYS->setChecked(false);
 

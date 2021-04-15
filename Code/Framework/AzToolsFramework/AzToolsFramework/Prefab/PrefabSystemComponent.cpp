@@ -498,12 +498,14 @@ namespace AzToolsFramework
                 return false;
             }
 
-            Template& sourceTemplate = sourceTemplateReference->get();
             Template& targetTemplate = targetTemplateReference->get();
 
+#if defined(AZ_ENABLE_TRACING)
+            Template& sourceTemplate = sourceTemplateReference->get();
             AZStd::string_view instanceName(instanceIterator->name.GetString(), instanceIterator->name.GetStringLength());
             const AZStd::string& targetTemplateFilePath = targetTemplate.GetFilePath().Native();
             const AZStd::string& sourceTemplateFilePath = sourceTemplate.GetFilePath().Native();
+#endif
 
             LinkId newLinkId = CreateUniqueLinkId();
             Link newLink(newLinkId);
@@ -731,10 +733,11 @@ namespace AzToolsFramework
             }
 
             Template& sourceTemplate = sourceTemplateReference->get();
+#if defined(AZ_ENABLE_TRACING)
             Template& targetTemplate = targetTemplateReference->get();
+#endif
 
             AZStd::string_view instanceName(instanceIterator->name.GetString(), instanceIterator->name.GetStringLength());
-            const AZStd::string& targetTemplateFilePath = targetTemplate.GetFilePath().Native();
 
             link.SetSourceTemplateId(sourceTemplateId);
             link.SetTargetTemplateId(targetTemplateId);

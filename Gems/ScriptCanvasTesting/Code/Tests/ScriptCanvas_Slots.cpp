@@ -278,7 +278,7 @@ TEST_F(ScriptCanvasTestFixture, SlotConnecting_ExecutionBasic)
 {
     using namespace ScriptCanvas;
 
-    ScriptCanvas::Graph* graph = CreateGraph();
+    CreateGraph();
     ConfigurableUnitTestNode* inputNode = CreateConfigurableNode();
     ConfigurableUnitTestNode* outputNode = CreateConfigurableNode();
 
@@ -298,7 +298,7 @@ TEST_F(ScriptCanvasTestFixture, SlotConnecting_ExecutionFailure)
 
     const bool invalidConnection = false;
 
-    ScriptCanvas::Graph* graph = CreateGraph();
+    CreateGraph();
     ConfigurableUnitTestNode* inputNode = CreateConfigurableNode();
     ConfigurableUnitTestNode* outputNode = CreateConfigurableNode();
 
@@ -424,7 +424,7 @@ TEST_F(ScriptCanvasTestFixture, SlotConnecting_DataBasic)
 {
     using namespace ScriptCanvas;
 
-    ScriptCanvas::Graph* graph = CreateGraph();
+    CreateGraph();
     ConfigurableUnitTestNode* inputNode = CreateConfigurableNode();
     ConfigurableUnitTestNode* outputNode = CreateConfigurableNode();
 

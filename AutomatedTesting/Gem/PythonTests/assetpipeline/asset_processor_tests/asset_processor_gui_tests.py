@@ -25,8 +25,8 @@ import ly_test_tools.environment.waiter as waiter
 import ly_test_tools.environment.file_system as fs
 import ly_test_tools.environment.process_utils as process_utils
 import ly_test_tools.launchers.launcher_helper as launcher_helper
-from ly_test_tools.lumberyard.asset_processor import ASSET_PROCESSOR_PLATFORM_MAP
-from ly_test_tools.lumberyard.asset_processor import AssetProcessorError
+from ly_test_tools.o3de.asset_processor import ASSET_PROCESSOR_PLATFORM_MAP
+from ly_test_tools.o3de.asset_processor import AssetProcessorError
 
 # Import fixtures
 from ..ap_fixtures.asset_processor_fixture import asset_processor as asset_processor
@@ -38,7 +38,7 @@ from ..ap_fixtures.ap_fast_scan_setting_backup_fixture import (
 
 
 # Import LyShared
-import ly_test_tools.lumberyard.pipeline_utils as utils
+import ly_test_tools.o3de.pipeline_utils as utils
 
 # Use the following logging pattern to hook all test logging together:
 logger = logging.getLogger(__name__)

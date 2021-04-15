@@ -91,7 +91,6 @@ Vec3 CSetVectorDlg::GetVectorFromEditor()
     Vec3 v;
     int emode = GetIEditor()->GetEditMode();
     CBaseObject* obj = GetIEditor()->GetSelectedObject();
-    RefCoordSys coordSys = GetIEditor()->GetReferenceCoordSys();
     bool bWorldSpace = GetIEditor()->GetReferenceCoordSys() == COORDS_WORLD;
 
     if (obj)

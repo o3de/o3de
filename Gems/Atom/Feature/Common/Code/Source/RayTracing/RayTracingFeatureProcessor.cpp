@@ -11,9 +11,20 @@
 */
 
 #include <RayTracing/RayTracingFeatureProcessor.h>
+#include <AzCore/Debug/EventTrace.h>
+#include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
+#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/Scene.h>
+#include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
+#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
+#include <Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessor.h>
+#include <CoreLights/DirectionalLightFeatureProcessor.h>
+#include <CoreLights/PointLightFeatureProcessor.h>
+#include <CoreLights/DiskLightFeatureProcessor.h>
+#include <CoreLights/CapsuleLightFeatureProcessor.h>
+#include <CoreLights/QuadLightFeatureProcessor.h>
 
 namespace AZ
 {
@@ -50,7 +61,13 @@ namespace AZ
             m_tlasAttachmentId = RHI::AttachmentId(AZStd::string::format("RayTracingTlasAttachmentId_%s", uuidString.c_str()));
 
             // create the TLAS object
-            m_tlas = AZ::RHI::RayTracingTlas::CreateRHIRayTracingTlas();       
+            m_tlas = AZ::RHI::RayTracingTlas::CreateRHIRayTracingTlas();
+
+            // load the RayTracingSceneSrg asset
+            Data::Asset<RPI::ShaderResourceGroupAsset> rayTracingSceneSrgAsset =
+                RPI::AssetUtils::LoadAssetByProductPath<RPI::ShaderResourceGroupAsset>("shaderlib/raytracingscenesrg_raytracingscenesrg.azsrg", RPI::AssetUtils::TraceLevel::Error);
+
+            m_rayTracingSceneSrg = RPI::ShaderResourceGroup::Create(rayTracingSceneSrgAsset);
         }
 
         void RayTracingFeatureProcessor::SetMesh(const ObjectId objectId, const SubMeshVector& subMeshes)
@@ -101,6 +118,8 @@ namespace AZ
 
             m_revision++;
             m_subMeshCount += aznumeric_cast<uint32_t>(subMeshes.size());
+
+            m_meshInfoBufferNeedsUpdate = true;
         }
 
         void RayTracingFeatureProcessor::RemoveMesh(const ObjectId objectId)
@@ -117,6 +136,8 @@ namespace AZ
                 m_meshes.erase(itMesh);
                 m_revision++;
             }
+
+            m_meshInfoBufferNeedsUpdate = true;
         }
 
         void RayTracingFeatureProcessor::SetMeshMatrix3x4(const ObjectId objectId, const AZ::Matrix3x4 matrix3x4)
@@ -131,6 +152,171 @@ namespace AZ
             {
                 itMesh->second.m_matrix3x4 = matrix3x4;
                 m_revision++;
+            }
+
+            m_meshInfoBufferNeedsUpdate = true;
+        }
+
+        void RayTracingFeatureProcessor::UpdateRayTracingSceneSrg()
+        {
+            if (!m_tlas->GetTlasBuffer())
+            {
+                return;
+            }
+
+            if (m_rayTracingSceneSrg->IsQueuedForCompile())
+            {
+                //[GFX TODO][ATOM-14792] AtomSampleViewer: Reset scene and feature processors before switching to sample
+                return;
+            }
+
+            // update the mesh info buffer with the latest ray tracing enabled meshes
+            UpdateMeshInfoBuffer();
+
+            // update the RayTracingSceneSrg
+            const RHI::ShaderResourceGroupLayout* srgLayout = m_rayTracingSceneSrg->GetLayout();
+            RHI::ShaderInputImageIndex imageIndex;
+            RHI::ShaderInputBufferIndex bufferIndex;
+            RHI::ShaderInputConstantIndex constantIndex;
+
+            // TLAS
+            uint32_t tlasBufferByteCount = aznumeric_cast<uint32_t>(m_tlas->GetTlasBuffer()->GetDescriptor().m_byteCount);
+            RHI::BufferViewDescriptor bufferViewDescriptor = RHI::BufferViewDescriptor::CreateRayTracingTLAS(tlasBufferByteCount);
+
+            bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_scene"));
+            m_rayTracingSceneSrg->SetBufferView(bufferIndex, m_tlas->GetTlasBuffer()->GetBufferView(bufferViewDescriptor).get());
+
+            // directional lights
+            const auto directionalLightFP = GetParentScene()->GetFeatureProcessor<DirectionalLightFeatureProcessor>();
+            bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_directionalLights"));
+            m_rayTracingSceneSrg->SetBufferView(bufferIndex, directionalLightFP->GetLightBuffer()->GetBufferView());
+
+            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_directionalLightCount"));
+            m_rayTracingSceneSrg->SetConstant(constantIndex, directionalLightFP->GetLightCount());
+
+            // point lights
+            const auto pointLightFP = GetParentScene()->GetFeatureProcessor<PointLightFeatureProcessor>();
+            bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_pointLights"));
+            m_rayTracingSceneSrg->SetBufferView(bufferIndex, pointLightFP->GetLightBuffer()->GetBufferView());
+
+            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_pointLightCount"));
+            m_rayTracingSceneSrg->SetConstant(constantIndex, pointLightFP->GetLightCount());
+
+            // disk lights
+            const auto diskLightFP = GetParentScene()->GetFeatureProcessor<DiskLightFeatureProcessor>();
+            bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_diskLights"));
+            m_rayTracingSceneSrg->SetBufferView(bufferIndex, diskLightFP->GetLightBuffer()->GetBufferView());
+
+            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_diskLightCount"));
+            m_rayTracingSceneSrg->SetConstant(constantIndex, diskLightFP->GetLightCount());
+
+            // capsule lights
+            const auto capsuleLightFP = GetParentScene()->GetFeatureProcessor<CapsuleLightFeatureProcessor>();
+            bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_capsuleLights"));
+            m_rayTracingSceneSrg->SetBufferView(bufferIndex, capsuleLightFP->GetLightBuffer()->GetBufferView());
+
+            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_capsuleLightCount"));
+            m_rayTracingSceneSrg->SetConstant(constantIndex, capsuleLightFP->GetLightCount());
+
+            // quad lights
+            const auto quadLightFP = GetParentScene()->GetFeatureProcessor<QuadLightFeatureProcessor>();
+            bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_quadLights"));
+            m_rayTracingSceneSrg->SetBufferView(bufferIndex, quadLightFP->GetLightBuffer()->GetBufferView());
+
+            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_quadLightCount"));
+            m_rayTracingSceneSrg->SetConstant(constantIndex, quadLightFP->GetLightCount());
+
+            // diffuse environment map for sky hits
+            ImageBasedLightFeatureProcessor* imageBasedLightFeatureProcessor = GetParentScene()->GetFeatureProcessor<ImageBasedLightFeatureProcessor>();
+            if (imageBasedLightFeatureProcessor)
+            {
+                imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_diffuseEnvMap"));
+                m_rayTracingSceneSrg->SetImage(imageIndex, imageBasedLightFeatureProcessor->GetDiffuseImage());
+
+                constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_iblOrientation"));
+                m_rayTracingSceneSrg->SetConstant(constantIndex, imageBasedLightFeatureProcessor->GetOrientation());
+
+                constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_iblExposure"));
+                m_rayTracingSceneSrg->SetConstant(constantIndex, imageBasedLightFeatureProcessor->GetExposure());
+            }
+
+            bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_meshInfo"));
+            m_rayTracingSceneSrg->SetBufferView(bufferIndex, m_meshInfoBuffer->GetBufferView());
+
+            if (m_subMeshCount)
+            {
+                AZStd::vector<const RHI::BufferView*> meshBuffers;
+                for (const auto& mesh : m_meshes)
+                {
+                    const SubMeshVector& subMeshes = mesh.second.m_subMeshes;
+                    for (const auto& subMesh : subMeshes)
+                    {
+                        // add the index, position, and normal buffers for this sub-mesh to the mesh buffer list, this will
+                        // go into the shader as an unbounded array in the Srg
+                        meshBuffers.push_back(subMesh.m_indexShaderBufferView.get());
+                        meshBuffers.push_back(subMesh.m_positionShaderBufferView.get());
+                        meshBuffers.push_back(subMesh.m_normalShaderBufferView.get());
+                    }
+                }
+
+                RHI::ShaderInputBufferUnboundedArrayIndex bufferUnboundedArrayIndex = srgLayout->FindShaderInputBufferUnboundedArrayIndex(AZ::Name("m_meshBuffers"));
+                m_rayTracingSceneSrg->SetBufferViewUnboundedArray(bufferUnboundedArrayIndex, meshBuffers);
+            }
+
+            m_rayTracingSceneSrg->Compile();
+        }
+
+        void RayTracingFeatureProcessor::UpdateMeshInfoBuffer()
+        {
+            if (m_meshInfoBufferNeedsUpdate && (m_subMeshCount > 0))
+            {
+                TransformServiceFeatureProcessor* transformFeatureProcessor = GetParentScene()->GetFeatureProcessor<TransformServiceFeatureProcessor>();
+
+                AZStd::vector<MeshInfo> meshInfos;
+                meshInfos.reserve(m_subMeshCount);
+
+                uint32_t newMeshByteCount = m_subMeshCount * sizeof(MeshInfo);
+
+                if (m_meshInfoBuffer == nullptr)
+                {
+                    // allocate the MeshInfo structured buffer
+                    RPI::CommonBufferDescriptor desc;
+                    desc.m_poolType = RPI::CommonBufferPoolType::ReadOnly;
+                    desc.m_bufferName = "RayTracingMeshInfo";
+                    desc.m_byteCount = newMeshByteCount;
+                    desc.m_elementSize = sizeof(MeshInfo);
+                    m_meshInfoBuffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+                }
+                else if (m_meshInfoBuffer->GetBufferSize() < newMeshByteCount)
+                {
+                    // resize for the new sub-mesh count
+                    m_meshInfoBuffer->Resize(newMeshByteCount);
+                }
+
+                for (const auto& mesh : m_meshes)
+                {
+                    AZ::Transform meshTransform = transformFeatureProcessor->GetTransformForId(TransformServiceFeatureProcessorInterface::ObjectId(mesh.first));
+                    AZ::Transform noScaleTransform = meshTransform;
+                    noScaleTransform.ExtractScale();
+                    AZ::Matrix3x3 rotationMatrix = Matrix3x3::CreateFromTransform(noScaleTransform);
+                    rotationMatrix = rotationMatrix.GetInverseFull().GetTranspose();
+
+                    const RayTracingFeatureProcessor::SubMeshVector& subMeshes = mesh.second.m_subMeshes;
+                    for (const auto& subMesh : subMeshes)
+                    {
+                        MeshInfo meshInfo;
+                        meshInfo.m_indexOffset = subMesh.m_indexBufferView.GetByteOffset();
+                        meshInfo.m_positionOffset = subMesh.m_positionVertexBufferView.GetByteOffset();
+                        meshInfo.m_normalOffset = subMesh.m_normalVertexBufferView.GetByteOffset();
+                        subMesh.m_irradianceColor.StoreToFloat4(meshInfo.m_irradianceColor.data());
+                        rotationMatrix.StoreToRowMajorFloat9(meshInfo.m_worldInvTranspose.data());
+
+                        meshInfos.emplace_back(meshInfo);
+                    }
+                }
+
+                m_meshInfoBuffer->UpdateData(meshInfos.data(), newMeshByteCount);
+                m_meshInfoBufferNeedsUpdate = false;
             }
         }
     }        

@@ -173,7 +173,12 @@ namespace AZ
 
         MaterialAssignmentMap AtomActorInstance::GetMaterialAssignments() const
         {
-            return GetMaterialAssignmentsFromModel(m_skinnedMeshInstance->m_model);
+            if (m_skinnedMeshInstance && m_skinnedMeshInstance->m_model)
+            {
+                return GetMaterialAssignmentsFromModel(m_skinnedMeshInstance->m_model);
+            }
+
+            return MaterialAssignmentMap{};
         }
 
         AZStd::unordered_set<AZ::Name> AtomActorInstance::GetModelUvNames() const
@@ -466,10 +471,15 @@ namespace AZ
             MaterialComponentNotificationBus::Handler::BusConnect(m_entityId);
             MeshComponentRequestBus::Handler::BusConnect(m_entityId);
             LmbrCentral::MeshComponentRequestBus::Handler::BusConnect(m_entityId);
+
+            const Data::Instance<RPI::Model> model = m_meshFeatureProcessor->GetModel(*m_meshHandle);
+            MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnModelReady, model->GetModelAsset(), model);
         }
 
         void AtomActorInstance::UnregisterActor()
         {
+            MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnModelPreDestroy);
+
             LmbrCentral::MeshComponentRequestBus::Handler::BusDisconnect();
             MeshComponentRequestBus::Handler::BusDisconnect();
             MaterialComponentNotificationBus::Handler::BusDisconnect();

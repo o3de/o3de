@@ -84,7 +84,7 @@ namespace AzFramework
         {
             if (IVisibilitySystem* visibilitySystem = AZ::Interface<IVisibilitySystem>::Get())
             {
-                visibilitySystem->RemoveEntry(instance_it->second.m_visibilityEntry);
+                visibilitySystem->GetDefaultVisibilityScene()->RemoveEntry(instance_it->second.m_visibilityEntry);
                 m_entityVisibilityBoundsUnionInstanceMapping.erase(instance_it);
             }
         }
@@ -104,7 +104,7 @@ namespace AzFramework
             if (visibilitySystem && !worldEntityBoundsUnion.IsClose(instance.m_visibilityEntry.m_boundingVolume))
             {
                 instance.m_visibilityEntry.m_boundingVolume = worldEntityBoundsUnion;
-                visibilitySystem->InsertOrUpdateEntry(instance.m_visibilityEntry);
+                visibilitySystem->GetDefaultVisibilityScene()->InsertOrUpdateEntry(instance.m_visibilityEntry);
             }
         }
     }

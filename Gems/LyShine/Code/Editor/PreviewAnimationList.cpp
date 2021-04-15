@@ -70,7 +70,7 @@ void PreviewAnimationList::Activate(AZ::EntityId canvasEntityId)
         {
             IUiAnimSequence* animSequence = animationSystem->GetSequence(i);
             QString sequenceName(animSequence->GetName());
-            QListWidgetItem* item = new QListWidgetItem(sequenceName, m_listWidget);
+            new QListWidgetItem(sequenceName, m_listWidget);
         }
 
         // set the first item in the list to be selected

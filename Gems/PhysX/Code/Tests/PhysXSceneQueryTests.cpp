@@ -394,7 +394,6 @@ namespace PhysX
             AZ::Vector3(60.0f, 0.0f, 0.0f), 5.0f);
         AzPhysics::SimulatedBodyHandle blockingStaticBoxHandle = TestUtils::AddStaticBoxToScene(m_testSceneHandle,
             AZ::Vector3(80.0f, 0.0f, 0.0f), AZ::Vector3(5.0f, 5.0f, 5.0f));
-        auto* blockingBox = sceneInterface->GetSimulatedBodyFromHandle(m_testSceneHandle, blockingStaticBoxHandle);
         AzPhysics::SimulatedBodyHandle farSphereHandle = TestUtils::AddSphereToScene(m_testSceneHandle,
             AZ::Vector3(120.0f, 0.0f, 0.0f), 10.0f);
 
@@ -449,7 +448,6 @@ namespace PhysX
 
         // Add a cube to the scene
         AzPhysics::SimulatedBodyHandle rigidBodyhandle = TestUtils::AddStaticTriangleMeshCubeToScene(m_testSceneHandle, 3.0f);
-        AzPhysics::SimulatedBody* rigidBody = sceneInterface->GetSimulatedBodyFromHandle(m_testSceneHandle, rigidBodyhandle);
 
         // Do a simple raycast from the inside of the cube
         AzPhysics::RayCastRequest request;

@@ -17,9 +17,15 @@
 #include <AzCore/Math/IntersectSegment.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector3.h>
-#include <LmbrCentral/Rendering/MeshAsset.h>
-#include <IStatObj.h>
 #include <MathConversion.h>
+
+namespace AZ
+{
+    namespace RPI
+    {
+        class ModelAsset;
+    }
+}
 
 namespace SurfaceData
 {
@@ -79,37 +85,12 @@ namespace SurfaceData
 
         return false;
     }
-    AZ_INLINE bool GetMeshRayIntersection(
-        const LmbrCentral::MeshAsset& meshAsset,
-        const AZ::Transform& meshTransform,
-        const AZ::Transform& meshTransformInverse,
-        const AZ::Vector3& rayOrigin,
-        const AZ::Vector3& rayDirection,
-        AZ::Vector3& outPosition,
-        AZ::Vector3& outNormal)
-    {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
 
-        IStatObj* pStatObj = meshAsset.m_statObj.get();
-        if (pStatObj)
-        {
-            const Vec3 rayOriginLocal = AZVec3ToLYVec3(meshTransformInverse.TransformPoint(rayOrigin));
-            const Vec3 rayDirectionLocal = AZVec3ToLYVec3(meshTransformInverse.TransformVector(rayDirection).GetNormalized());
-
-            SRayHitInfo hitInfo = {};
-            hitInfo.inReferencePoint = rayOriginLocal;
-            hitInfo.inRay = Ray(rayOriginLocal, rayDirectionLocal);
-
-            if (pStatObj->RayIntersection(hitInfo))
-            {
-                outPosition = meshTransform.TransformPoint(LYVec3ToAZVec3(hitInfo.vHitPos));
-                outNormal = meshTransform.TransformVector(LYVec3ToAZVec3(hitInfo.vHitNormal)).GetNormalized();
-                return true;
-            }
-        }
-
-        return false;
-    }
+    bool GetMeshRayIntersection(
+        const AZ::RPI::ModelAsset& meshAsset, const AZ::Transform& meshTransform,
+        const AZ::Transform& meshTransformInverse, const AZ::Vector3& rayOrigin,
+        const AZ::Vector3& rayDirection, AZ::Vector3& outPosition,
+        AZ::Vector3& outNormal);
 
     AZ_INLINE void AddMaxValueForMasks(SurfaceTagWeightMap& masks, const AZ::Crc32 tag, const float value)
     {

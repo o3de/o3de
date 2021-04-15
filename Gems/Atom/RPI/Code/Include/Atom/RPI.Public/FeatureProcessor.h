@@ -70,7 +70,7 @@ namespace AZ
                 //! Whether to run jobs in parallel or not (for debugging)
                 RHI::JobPolicy m_jobPolicy;
 
-                class CullingSystem* m_cullingSystem;
+                class CullingScene* m_cullingScene;
             };            
 
             AZ_RTTI(FeatureProcessor, "{B8027170-C65C-4237-964D-B557FC9D7575}");

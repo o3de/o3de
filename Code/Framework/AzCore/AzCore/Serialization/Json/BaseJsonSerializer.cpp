@@ -22,9 +22,9 @@ namespace AZ
     // JsonBaseContext
     //
 
-    JsonBaseContext::JsonBaseContext(JsonSerializationMetadata metadata, JsonSerializationResult::JsonIssueCallback reporting,
+    JsonBaseContext::JsonBaseContext(JsonSerializationMetadata& metadata, JsonSerializationResult::JsonIssueCallback reporting,
         StackedString::Format pathFormat, SerializeContext* serializeContext, JsonRegistrationContext* registrationContext)
-        : m_metadata(AZStd::move(metadata))
+        : m_metadata(metadata)
         , m_serializeContext(serializeContext)
         , m_registrationContext(registrationContext)
         , m_path(pathFormat)
@@ -126,15 +126,8 @@ namespace AZ
     // JsonDeserializerContext
     //
 
-    JsonDeserializerContext::JsonDeserializerContext(const JsonDeserializerSettings& settings)
+    JsonDeserializerContext::JsonDeserializerContext(JsonDeserializerSettings& settings)
         : JsonBaseContext(settings.m_metadata, settings.m_reporting,
-            StackedString::Format::JsonPointer, settings.m_serializeContext, settings.m_registrationContext)
-        , m_clearContainers(settings.m_clearContainers)
-    {
-    }
-
-    JsonDeserializerContext::JsonDeserializerContext(JsonDeserializerSettings&& settings)
-        : JsonBaseContext(AZStd::move(settings.m_metadata), AZStd::move(settings.m_reporting),
             StackedString::Format::JsonPointer, settings.m_serializeContext, settings.m_registrationContext)
         , m_clearContainers(settings.m_clearContainers)
     {
@@ -151,16 +144,8 @@ namespace AZ
     // JsonSerializerContext
     // 
 
-    JsonSerializerContext::JsonSerializerContext(const JsonSerializerSettings& settings, rapidjson::Document::AllocatorType& jsonAllocator)
+    JsonSerializerContext::JsonSerializerContext(JsonSerializerSettings& settings, rapidjson::Document::AllocatorType& jsonAllocator)
         : JsonBaseContext(settings.m_metadata, settings.m_reporting, StackedString::Format::ContextPath,
-            settings.m_serializeContext, settings.m_registrationContext)
-        , m_jsonAllocator(jsonAllocator)
-        , m_keepDefaults(settings.m_keepDefaults)
-    {
-    }
-
-    JsonSerializerContext::JsonSerializerContext(JsonSerializerSettings&& settings, rapidjson::Document::AllocatorType& jsonAllocator)
-        : JsonBaseContext(AZStd::move(settings.m_metadata), AZStd::move(settings.m_reporting), StackedString::Format::ContextPath,
             settings.m_serializeContext, settings.m_registrationContext)
         , m_jsonAllocator(jsonAllocator)
         , m_keepDefaults(settings.m_keepDefaults)

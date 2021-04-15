@@ -13,11 +13,13 @@
 #pragma once
 
 #include <AzCore/base.h>
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Sphere.h>
 #include <AzCore/Math/Frustum.h>
+#include <AzCore/Name/Name.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/std/containers/vector.h>
 
@@ -35,7 +37,6 @@ namespace AzFramework
         {
             TYPE_None = 0,
             TYPE_Entity = 1 << 0,      // All entities
-            TYPE_NetEntity = 1 << 1,   // NetBound entities
             TYPE_RPI_Cullable = 1 << 2 // Cullable by the render system
         };
 
@@ -46,12 +47,15 @@ namespace AzFramework
         TypeFlags m_typeFlags = TYPE_None;
     };
 
-    //! @class IVisibilitySystem
-    //! @brief This is an AZ::Interface<> useful for extremely fast, CPU only, proximity and visibility queries.
-    class IVisibilitySystem
+    //! @class IVisibilityScene
+    //! @brief This is the interface for managing objects and visibility queries for a given scene.
+    class IVisibilityScene
     {
     public:
-        AZ_RTTI(IVisibilitySystem, "{7C6C710F-ACDB-44CD-867D-A2C4B912ECF5}");
+        AZ_RTTI(IVisibilityScene, "{822BC414-3CE3-40B4-A9A2-A42EA5B9499F}");
+
+        IVisibilityScene() = default;
+        virtual ~IVisibilityScene() = default;
 
         struct NodeData
         {
@@ -60,8 +64,8 @@ namespace AzFramework
         };
         using EnumerateCallback = AZStd::function<void(const NodeData&)>;
 
-        IVisibilitySystem() = default;
-        virtual ~IVisibilitySystem() = default;
+        //! Get the unique scene name, used to look up the scene in the IVisibilitySystem. Duplicate names will assert on creation.
+        virtual const AZ::Name& GetName() const = 0;
 
         //! Insert or update an entry within the visibility system.
         //! This encompasses the following three scenarios:
@@ -69,11 +73,11 @@ namespace AzFramework
         //   2. A previously added entry moves to a new position within its current node in the spatial hash.
         //   3. A previously added entry moves to a new node in the spatial hash.
         //       (causing it to be removed from its original node and added to its new node)
-        //! @param visibilityEntry data for the object being added to the visibility system
+        //! @param visibilityEntry data for the object being added/updated
         virtual void InsertOrUpdateEntry(VisibilityEntry& visibilityEntry) = 0;
 
         //! Removes an entry from the visibility system.
-        //! @param visibilityEntry data for the object being added to the visibility system
+        //! @param visibilityEntry data for the object being removed
         virtual void RemoveEntry(VisibilityEntry& visibilityEntry) = 0;
 
         //! Intersects an axis aligned bounding box against the visibility system.
@@ -100,6 +104,34 @@ namespace AzFramework
 
         //! Return the number of VisibilityEntries that have been added to the system
         virtual uint32_t GetEntryCount() const = 0;
+    };
+
+    //! @class IVisibilitySystem
+    //! @brief This is an AZ::Interface<> useful for extremely fast, CPU only, proximity and visibility queries.
+    class IVisibilitySystem
+    {
+    public:
+        AZ_RTTI(IVisibilitySystem, "{7C6C710F-ACDB-44CD-867D-A2C4B912ECF5}");
+
+        IVisibilitySystem() = default;
+        virtual ~IVisibilitySystem() = default;
+
+        //! Return the default IVisibilityScene for entities.
+        virtual IVisibilityScene* GetDefaultVisibilityScene() = 0;
+
+        //! Create a new IVisibilityScene that is uniquely identified by the scene name.
+        virtual IVisibilityScene* CreateVisibilityScene(const AZ::Name& sceneName) = 0;
+
+        //! Destroy the visibility scene.
+        //! This does not destroy the entities that are a part of the scene, only the visibility scene.
+        //! This will set the visScene to nullptr
+        virtual void DestroyVisibilityScene(IVisibilityScene* visScene) = 0;
+
+        //! Find the IVisibilityScene that is identified by sceneName.
+        virtual IVisibilityScene* FindVisibilityScene(const AZ::Name& sceneName) = 0;
+
+        //! Logs stats about the visibility system to the console.
+        virtual void DumpStats(const AZ::ConsoleCommandContainer& arguments) = 0;
 
         AZ_DISABLE_COPY_MOVE(IVisibilitySystem);
     };
@@ -113,6 +145,4 @@ namespace AzFramework
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
     };
     using IVisibilitySystemRequestBus = AZ::EBus<IVisibilitySystem, IVisibilitySystemRequests>;
-
-    
 }

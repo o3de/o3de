@@ -202,7 +202,6 @@ namespace LmbrCentral
         {
             behaviorContext->Class<AZ::GameplayNotificationId>("GameplayNotificationId")
                 ->Attribute(AZ::Script::Attributes::Deprecated, true)
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Constructor<AZ::EntityId, AZ::Crc32>()
                     ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)
                     ->Attribute(AZ::Script::Attributes::ConstructorOverride, &GameplayEventIdNonIntrusiveConstructor)

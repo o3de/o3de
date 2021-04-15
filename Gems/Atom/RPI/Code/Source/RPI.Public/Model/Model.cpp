@@ -137,7 +137,7 @@ namespace AZ
             return m_modelAsset;
         }
 
-        bool Model::LocalRayIntersection(const AZ::Vector3& rayStart, const AZ::Vector3& dir, float& distance) const
+        bool Model::LocalRayIntersection(const AZ::Vector3& rayStart, const AZ::Vector3& dir, float& distance, AZ::Vector3& normal) const
         {
             AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
             float firstHit;
@@ -150,7 +150,7 @@ namespace AZ
                     AZ::Debug::Timer timer;
                     timer.Stamp();
 #endif
-                    const bool hit = modelAssetPtr->LocalRayIntersectionAgainstModel(rayStart, dir, distance);
+                    const bool hit = modelAssetPtr->LocalRayIntersectionAgainstModel(rayStart, dir, distance, normal);
 #if defined(AZ_RPI_PROFILE_RAYCASTING_AGAINST_MODELS)
                     if (hit)
                     {
@@ -164,7 +164,7 @@ namespace AZ
             return false;
         }
 
-        bool Model::RayIntersection(const AZ::Transform& modelTransform, const AZ::Vector3& nonUniformScale, const AZ::Vector3& rayStart, const AZ::Vector3& dir, float& distanceFactor) const
+        bool Model::RayIntersection(const AZ::Transform& modelTransform, const AZ::Vector3& nonUniformScale, const AZ::Vector3& rayStart, const AZ::Vector3& dir, float& distanceFactor, AZ::Vector3& normal) const
         {
             AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
             const AZ::Transform inverseTM = modelTransform.GetInverse();
@@ -175,7 +175,9 @@ namespace AZ
             const AZ::Vector3 rayDestLocal = inverseTM.TransformPoint(rayDest) / nonUniformScale;
             const AZ::Vector3 rayDirLocal = rayDestLocal - raySrcLocal;
 
-            return LocalRayIntersection(raySrcLocal, rayDirLocal, distanceFactor);
+            bool result = LocalRayIntersection(raySrcLocal, rayDirLocal, distanceFactor, normal);
+            normal = (normal * nonUniformScale).GetNormalized();
+            return result;
         }
 
         const AZStd::unordered_set<AZ::Name>& Model::GetUvNames() const

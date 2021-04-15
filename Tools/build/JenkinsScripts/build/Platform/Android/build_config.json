@@ -1,11 +1,18 @@
 {
+  "clean": {
+    "TAGS": [],
+    "COMMAND": "../Windows/clean_windows.cmd",
+    "PARAMETERS": {
+      "OUTPUT_DIRECTORY": "build",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting"
+    }
+  },
   "profile_pipe": {
     "TAGS": [
       "default"
     ],
     "steps": [
-      "profile",
-      "gradle"
+      "profile"
     ]
   },
   "metrics": {
@@ -77,7 +84,7 @@
         "CMAKE_TARGET":"AssetProcessorBatch",
         "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
         "ASSET_PROCESSOR_BINARY": "bin\\profile\\AssetProcessorBatch.exe",
-        "ASSET_PROCESSOR_OPTIONS": "/zeroAnalysisMode",
+        "ASSET_PROCESSOR_OPTIONS": "/zeroAnalysisMode --regset=\"/Amazon/AssetProcessor/Settings/Exclude Android/pattern=.*/DiffuseGlobalIllumination/.*precompiledshader\"",
         "ASSET_PROCESSOR_PLATFORMS":"es3"
     }
   },
@@ -85,21 +92,13 @@
     "TAGS":[
         "nightly"
     ],
-    "PIPELINE_ENV":{
-        "CLEAN_OUTPUT_DIRECTORY":"1"
+    "PIPELINE_ENV": {
+        "CLEAN_ASSETS": "1"
     },
-    "COMMAND":"../Windows/build_asset_windows.cmd",
-    "PARAMETERS": {
-        "CONFIGURATION":"profile",
-        "OUTPUT_DIRECTORY":"build\\windows_vs2019",
-        "CMAKE_OPTIONS":"-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE",
-        "CMAKE_LY_PROJECTS":"AutomatedTesting",
-        "CMAKE_TARGET":"AssetProcessorBatch",
-        "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
-        "ASSET_PROCESSOR_BINARY": "bin\\profile\\AssetProcessorBatch.exe",
-        "ASSET_PROCESSOR_OPTIONS": "/zeroAnalysisMode",
-        "ASSET_PROCESSOR_PLATFORMS":"es3"
-    }
+    "steps": [
+        "clean",
+        "asset_profile"
+    ]
   },
   "release": {
     "TAGS":[

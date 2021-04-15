@@ -77,7 +77,6 @@ namespace EMotionFX
     TEST_F(BlendTreeTransformNodeTests, Evaluate)
     {
         Evaluate();
-        const Transform& outputRoot = GetOutputTransform();
         ASSERT_EQ(Transform::CreateIdentity(), GetOutputTransform());
     }
 

@@ -45,7 +45,6 @@ namespace GradientSignal
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<ReferenceGradientConfig>()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Constructor()
                 ->Property("gradientSampler", BehaviorValueProperty(&ReferenceGradientConfig::m_gradientSampler))
@@ -88,7 +87,6 @@ namespace GradientSignal
             behaviorContext->Class<ReferenceGradientComponent>()->RequestBus("ReferenceGradientRequestBus");
 
             behaviorContext->EBus<ReferenceGradientRequestBus>("ReferenceGradientRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Event("GetGradientSampler", &ReferenceGradientRequestBus::Events::GetGradientSampler)
                 ;

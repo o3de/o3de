@@ -63,18 +63,54 @@ namespace mesh_compiler
                 for (uint streamIndex = 0; streamIndex < CMesh::maxStreamsPerType; ++streamIndex)
                 {
                     SMeshTexCoord* texCoords = mesh.GetStreamPtr<SMeshTexCoord>(CMesh::TEXCOORDS, streamIndex);
-                    if (texCoords && (res = memcmp(&texCoords[a], &texCoords[b], sizeof(texCoords[a]))))
+                    if (texCoords)
+                    {
+                        res = memcmp(&texCoords[a], &texCoords[b], sizeof(texCoords[a]));
+                        if (res)
+                        {
+                            return res < 0;
+                        }
+                    }
+                }
+                if (mesh.m_pNorms)
+                {
+                    res = memcmp(&mesh.m_pNorms[a], &mesh.m_pNorms[b], sizeof(mesh.m_pNorms[a]));
+                    if (res)
                     {
                         return res < 0;
                     }
                 }
-                if ((mesh.m_pNorms    && (res = memcmp(&mesh.m_pNorms[a],    &mesh.m_pNorms[b],    sizeof(mesh.m_pNorms[a])))) ||
-                    (mesh.m_pColor0   && (res = memcmp(&mesh.m_pColor0[a],   &mesh.m_pColor0[b],   sizeof(mesh.m_pColor0[a])))) ||
-                    (mesh.m_pColor1   && (res = memcmp(&mesh.m_pColor1[a],   &mesh.m_pColor1[b],   sizeof(mesh.m_pColor1[a])))) ||
-                    (mesh.m_pVertMats && (res = memcmp(&mesh.m_pVertMats[a], &mesh.m_pVertMats[b], sizeof(mesh.m_pVertMats[a])))) ||
-                    (mesh.m_pTangents && (res = memcmp(&mesh.m_pTangents[a], &mesh.m_pTangents[b], sizeof(mesh.m_pTangents[a])))))
+                if (mesh.m_pColor0)
                 {
-                    return res < 0;
+                    res = memcmp(&mesh.m_pColor0[a], &mesh.m_pColor0[b], sizeof(mesh.m_pColor0[a]));
+                    if (res)
+                    {
+                        return res < 0;
+                    }
+                }
+                if (mesh.m_pColor1)
+                {
+                    res = memcmp(&mesh.m_pColor1[a], &mesh.m_pColor1[b], sizeof(mesh.m_pColor1[a]));
+                    if (res)
+                    {
+                        return res < 0;
+                    }
+                }
+                if (mesh.m_pVertMats)
+                {
+                    res = memcmp(&mesh.m_pVertMats[a], &mesh.m_pVertMats[b], sizeof(mesh.m_pVertMats[a]));
+                    if (res)
+                    {
+                        return res < 0;
+                    }
+                }
+                if (mesh.m_pTangents)
+                {
+                    res = memcmp(&mesh.m_pTangents[a], &mesh.m_pTangents[b], sizeof(mesh.m_pTangents[a]));
+                    if (res)
+                    {
+                        return res < 0;
+                    }
                 }
 
                 return false;

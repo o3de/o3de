@@ -47,8 +47,6 @@ namespace EMotionFX
               =>| A |<----->| B |
                 +-+-+       +-+-+
             */
-            AnimGraphStateMachine* rootStateMachine = m_animGraph->GetRootStateMachine();
-
             m_stateA = m_motionNodeAnimGraph->GetMotionNodeA();
             m_stateB = m_motionNodeAnimGraph->GetMotionNodeB();
 

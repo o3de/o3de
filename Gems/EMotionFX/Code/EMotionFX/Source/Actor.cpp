@@ -2860,7 +2860,6 @@ namespace EMotionFX
         for (size_t lodLevel = 0; lodLevel < numLODLevels; ++lodLevel)
         {
             const AZ::Data::Asset<AZ::RPI::ModelLodAsset>& lodAsset = lodAssets[lodLevel];
-            const AZStd::array_view<AZ::RPI::ModelLodAsset::Mesh>& sourceMeshes = lodAsset->GetMeshes();
 
             lodLevels[lodLevel].mNodeInfos.Resize(numNodes);
 
@@ -3015,13 +3014,25 @@ namespace EMotionFX
 
             // The lod has shared buffers that combine the data from each submesh. These buffers can be accessed through the first submesh in their entirety
             const AZ::RPI::ModelLodAsset::Mesh& sourceMesh = sourceMeshes[0];
-            const AZStd::array_view<uint8_t> morphTargetDeltaView = sourceMesh.GetSemanticBuffer(AZ::Name("MORPHTARGET_VERTEXDELTAS"));
+            AZStd::array_view<uint8_t> morphTargetDeltaView;
+            if (const auto* bufferAssetView = sourceMesh.GetSemanticBufferAssetView(AZ::Name("MORPHTARGET_VERTEXDELTAS")))
+            {
+                if (const auto* bufferAsset = bufferAssetView->GetBufferAsset().Get())
+                {
+                    // The buffer of the view is the buffer of the whole LOD, not just the source mesh.
+                    morphTargetDeltaView = bufferAsset->GetBuffer();
+                }
+            }
+            AZ_Assert(morphTargetDeltaView.data(), "Unable to find MORPHTARGET_VERTEXDELTAS buffer");
             const AZ::RPI::PackedCompressedMorphTargetDelta* vertexDeltas = reinterpret_cast<const AZ::RPI::PackedCompressedMorphTargetDelta*>(morphTargetDeltaView.data());
 
             const AZ::u32 numMorphTargets = morphSetup->GetNumMorphTargets();
             for (AZ::u32 mtIndex = 0; mtIndex < numMorphTargets; ++mtIndex)
             {
                 MorphTargetStandard* morphTarget = static_cast<MorphTargetStandard*>(morphSetup->GetMorphTarget(mtIndex));
+
+                // Remove all previously added deform datas for the given joint as we set a new mesh.
+                morphTarget->RemoveAllDeformDatasFor(meshJoint);
 
                 const AZStd::vector<AZ::RPI::MorphTargetMetaAsset::MorphTarget>& metaDatas = m_morphTargetMetaAsset->GetMorphTargets();
                 for (const auto& metaData : metaDatas)

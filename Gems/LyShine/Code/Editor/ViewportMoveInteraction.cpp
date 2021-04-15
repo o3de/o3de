@@ -84,9 +84,8 @@ ViewportMoveInteraction::ViewportMoveInteraction(
     {
         // This should never happen but when we had an assert here it was occasionally hit but not in a reproducable way.
         // It is recoverable so we don't want to crash if this happens. Report a warning and do not crash.
-        const AZStd::string& activeElementName = activeElement ? activeElement->GetName() : "None";
         AZ_Warning("UI", false, "The active element is not one of the selected elements. Active element is '%s'. There are %d selected elements and %d top level selected elements.",
-            activeElementName.c_str(), selectedItems.count(), topLevelSelectedElements.size());
+            activeElement ? activeElement->GetName().c_str() : "None", selectedItems.count(), topLevelSelectedElements.size());
     }
 }
 

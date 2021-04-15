@@ -153,6 +153,6 @@ void CAlembicCompiler::AddSourceFileOpeners(const char* fullSourceFileName, [[ma
             }
         };
 
-        openers.push_back({ "Lumberyard_AlembicCompiler", "Open In Alembic Compiler...", QIcon(), alembicCallback });
+        openers.push_back({ "O3DE_AlembicCompiler", "Open In Alembic Compiler...", QIcon(), alembicCallback });
     }
 }
