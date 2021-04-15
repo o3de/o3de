@@ -725,7 +725,7 @@ namespace AZ
                                     ImGui::BeginTooltip();
                                     ImGui::Text("Name: %s", passEntry->m_name.GetCStr());
                                     ImGui::Text("Path: %s", passEntry->m_path.GetCStr());
-                                    ImGui::Text("Duration in ticks: %u", passEntry->m_timestampResult.GetDurationInTicks());
+                                    ImGui::Text("Duration in ticks: %lu", passEntry->m_timestampResult.GetDurationInTicks());
                                     ImGui::Text("Duration in microsecond: %.3f us", passEntry->m_timestampResult.GetDurationInNanoseconds()/1000.f);
                                     ImGui::EndTooltip();
                                 }
