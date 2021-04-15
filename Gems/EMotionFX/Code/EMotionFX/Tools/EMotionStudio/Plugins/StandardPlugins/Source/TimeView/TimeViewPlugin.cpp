@@ -28,6 +28,7 @@
 #include "../../../../EMStudioSDK/Source/MainWindow.h"
 
 #include <QCheckBox>
+#include <QDir>
 #include <QDockWidget>
 #include <QGridLayout>
 #include <QPushButton>
@@ -200,8 +201,8 @@ namespace EMStudio
         GetCommandManager()->RegisterCommandCallback("PlayMotion", m_commandCallbacks.back());
 
         // load the cursors
-        mZoomInCursor       = new QCursor(QPixmap(AZStd::string(MysticQt::GetDataDir() + "Images/Rendering/ZoomInCursor.png").c_str()).scaled(32, 32));
-        mZoomOutCursor      = new QCursor(QPixmap(AZStd::string(MysticQt::GetDataDir() + "Images/Rendering/ZoomOutCursor.png").c_str()).scaled(32, 32));
+        mZoomInCursor = new QCursor(QPixmap(QDir{ QString(MysticQt::GetDataDir().c_str()) }.filePath("Images/Rendering/ZoomInCursor.png")).scaled(32, 32));
+        mZoomOutCursor = new QCursor(QPixmap(QDir{ QString(MysticQt::GetDataDir().c_str()) }.filePath("Images/Rendering/ZoomOutCursor.png")).scaled(32, 32));
 
         // create main widget
         mMainWidget = new QWidget(mDock);

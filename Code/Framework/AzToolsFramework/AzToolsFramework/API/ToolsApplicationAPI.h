@@ -601,7 +601,7 @@ namespace AzToolsFramework
         virtual ResolveToolPathOutcome ResolveConfigToolsPath(const char* toolApplicationName) const = 0;
 
         /**
-         * LUMBERYARD INTERNAL USE ONLY.
+         * Open 3D Engine Internal use only.
          *
          * Run a specific redo command separate from the undo/redo system.
          * In many cases before a modifcation on an entity takes place, it is first packaged into 

@@ -115,9 +115,6 @@ ApplicationManager::BeforeRunStatus GUIApplicationManager::BeforeRun()
 #endif
     AssetProcessor::MessageInfoBus::Handler::BusConnect();
 
-    QString bootstrapPath = devRoot.filePath("bootstrap.cfg");
-    m_qtFileWatcher.addPath(bootstrapPath);
-
     // we have to monitor both the cache folder and the database file and restart AP if either of them gets deleted
     // It is important to note that we are monitoring the parent folder and not the actual cache folder itself since
     // we want to handle the use case on Mac OS if the user moves the cache folder to the trash.
@@ -134,33 +131,6 @@ ApplicationManager::BeforeRunStatus GUIApplicationManager::BeforeRun()
 
     QObject::connect(&m_qtFileWatcher, &QFileSystemWatcher::fileChanged, this, &GUIApplicationManager::FileChanged);
     QObject::connect(&m_qtFileWatcher, &QFileSystemWatcher::directoryChanged, this, &GUIApplicationManager::DirectoryChanged);
-
-    // Register a notifier for when the project_path property changes within the SettingsRegistry
-    if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
-    {
-        // Needs to be updated to project_path.
-        auto OnProjectPathChanged = [this, cachedProjectPath = projectPath](AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
-        {
-            constexpr auto projectPathKey =
-                AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)
-                + "/project_path";
-            if (projectPathKey == path)
-            {
-                AZ::SettingsRegistryInterface::FixedValueString newProjectPath;
-                if (auto registry = AZ::SettingsRegistry::Get(); registry && registry->Get(newProjectPath, path))
-                {
-                    // we only have to quit if the project path has changed, not if just the bootstrap has changed.
-                    if (cachedProjectPath.compare(newProjectPath.c_str()) != 0)
-                    {
-                        AZ_TracePrintf(AssetProcessor::ConsoleChannel, "bootstrap.cfg Project Path changed from %s to %s.  Quitting\n",
-                            cachedProjectPath.toUtf8().constData(), newProjectPath.c_str());
-                        QMetaObject::invokeMethod(this, "QuitRequested", Qt::QueuedConnection);
-                    }
-                }
-            }
-        };
-        m_bootstrapGameFolderChangedHandler = settingsRegistry->RegisterNotifier(AZStd::move(OnProjectPathChanged));
-    }
 
     return ApplicationManager::BeforeRunStatus::Status_Success;
 }
@@ -306,7 +276,7 @@ bool GUIApplicationManager::Run()
         m_trayIcon = new QSystemTrayIcon(m_mainWindow);
         m_trayIcon->setContextMenu(trayIconMenu);
         m_trayIcon->setToolTip(QObject::tr("Asset Processor"));
-        m_trayIcon->setIcon(QIcon(":/lyassetprocessor.png"));
+        m_trayIcon->setIcon(QIcon(":/o3de_assetprocessor.png"));
         m_trayIcon->show();
         QObject::connect(m_trayIcon, &QSystemTrayIcon::activated, m_mainWindow, [&, wrapper](QSystemTrayIcon::ActivationReason reason)
             {
@@ -328,8 +298,8 @@ bool GUIApplicationManager::Run()
         if (startHidden)
         {
             m_trayIcon->showMessage(
-                QCoreApplication::translate("Tray Icon", "Lumberyard Asset Processor has started"),
-                QCoreApplication::translate("Tray Icon", "The Lumberyard Asset Processor monitors raw project assets and converts those assets into runtime-ready data."),
+                QCoreApplication::translate("Tray Icon", "Open 3D Engine Asset Processor has started"),
+                QCoreApplication::translate("Tray Icon", "The Open 3D Engine Asset Processor monitors raw project assets and converts those assets into runtime-ready data."),
                 QSystemTrayIcon::Information, 3000);
         }
     }
@@ -651,29 +621,10 @@ void GUIApplicationManager::DirectoryChanged([[maybe_unused]] QString path)
 void GUIApplicationManager::FileChanged(QString path)
 {
     QDir devRoot = ApplicationManager::GetSystemRoot();
-    QString bootstrapPath = devRoot.filePath("bootstrap.cfg");
     QDir projectCacheRoot;
     AssetUtilities::ComputeProjectCacheRoot(projectCacheRoot);
     QString assetDbPath = projectCacheRoot.filePath("assetdb.sqlite");
-    if (QString::compare(AssetUtilities::NormalizeFilePath(path), bootstrapPath, Qt::CaseInsensitive) == 0)
-    {
-        AssetUtilities::UpdateBranchToken();
-
-        if (m_connectionManager)
-        {
-            m_connectionManager->UpdateAllowedListFromBootStrap();
-        }
-
-        // Re-merge the Bootstrap.cfg into the SettingsRegistry
-        AZStd::vector<char> scratchBuffer;
-        AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get();
-        AZ_Assert(settingsRegistry, "Unable to retrieve global SettingsRegistry, it should be available now");
-        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_Bootstrap(*settingsRegistry);
-        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(*settingsRegistry, AZ_TRAIT_OS_PLATFORM_CODENAME, {});
-        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*settingsRegistry, *m_frameworkApp.GetAzCommandLine(), false);
-        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*settingsRegistry);
-    }
-    else if (QString::compare(AssetUtilities::NormalizeFilePath(path), assetDbPath, Qt::CaseInsensitive) == 0)
+    if (QString::compare(AssetUtilities::NormalizeFilePath(path), assetDbPath, Qt::CaseInsensitive) == 0)
     {
         if (!QFile::exists(assetDbPath))
         {
@@ -868,7 +819,7 @@ void GUIApplicationManager::ShowTrayIconErrorMessage(QString msg)
         {
             m_timeWhenLastWarningWasShown = currentTime;
             m_trayIcon->showMessage(
-                QCoreApplication::translate("Tray Icon", "Lumberyard Asset Processor"),
+                QCoreApplication::translate("Tray Icon", "Open 3D Engine Asset Processor"),
                 QCoreApplication::translate("Tray Icon", msg.toUtf8().data()),
                 QSystemTrayIcon::Critical, 3000);
         }
@@ -880,7 +831,7 @@ void GUIApplicationManager::ShowTrayIconMessage(QString msg)
     if (m_trayIcon && m_mainWindow && !m_mainWindow->isVisible())
     {
         m_trayIcon->showMessage(
-            QCoreApplication::translate("Tray Icon", "Lumberyard Asset Processor"),
+            QCoreApplication::translate("Tray Icon", "Open 3D Engine Asset Processor"),
             QCoreApplication::translate("Tray Icon", msg.toUtf8().data()),
             QSystemTrayIcon::Information, 3000);
     }

@@ -55,16 +55,28 @@ namespace AZ
                 return false;
             }
 
-            // Get the shader variant and instance SRG
-            const RPI::ShaderVariant& shaderVariant = m_morphTargetShader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId);
+            AZ::RPI::ShaderOptionGroup shaderOptionGroup = m_morphTargetShader->CreateShaderOptionGroup();
+            // In case there are several options you don't care about, it's good practice to initialize them with default values.
+            shaderOptionGroup.SetUnspecifiedToDefaultValues();
+            shaderOptionGroup.SetValue(AZ::Name("o_hasColorDeltas"), RPI::ShaderOptionValue{ m_morphTargetMetaData.m_hasColorDeltas });
 
-            RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
-            shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
+            // Get the shader variant and instance SRG
+            RPI::ShaderReloadNotificationBus::Handler::BusConnect(m_morphTargetShader->GetAssetId());
+            const RPI::ShaderVariant& shaderVariant = m_morphTargetShader->GetVariant(shaderOptionGroup.GetShaderVariantId());
 
             if (!InitPerInstanceSRG())
             {
                 return false;
             }
+
+            if (!shaderVariant.IsFullyBaked() && m_instanceSrg->HasShaderVariantKeyFallbackEntry())
+            {
+                m_instanceSrg->SetShaderVariantKeyFallbackValue(shaderOptionGroup.GetShaderVariantKeyFallbackValue());
+            }
+
+            RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
+            shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
+
 
             InitRootConstants(pipelineStateDescriptor.m_pipelineLayoutDescriptor->GetRootConstantsLayout());
 
@@ -130,6 +142,9 @@ namespace AZ
             AZ_Error("MorphTargetDispatchItem", tangentOffsetIndex.IsValid(), "Could not find root constant 's_targetTangentOffset' in the shader");
             auto bitangentOffsetIndex = rootConstantsLayout->FindShaderInputIndex(AZ::Name{ "s_targetBitangentOffset" });
             AZ_Error("MorphTargetDispatchItem", bitangentOffsetIndex.IsValid(), "Could not find root constant 's_targetBitangentOffset' in the shader");
+            auto colorOffsetIndex = rootConstantsLayout->FindShaderInputIndex(AZ::Name{ "s_targetColorOffset" });
+            AZ_Error("MorphTargetDispatchItem", colorOffsetIndex.IsValid(), "Could not find root constant 's_targetColorOffset' in the shader");
+
             auto minIndex = rootConstantsLayout->FindShaderInputIndex(AZ::Name{ "s_min" });
             AZ_Error("MorphTargetDispatchItem", minIndex.IsValid(), "Could not find root constant 's_min' in the shader");
             auto maxIndex = rootConstantsLayout->FindShaderInputIndex(AZ::Name{ "s_max" });
@@ -150,6 +165,11 @@ namespace AZ
             m_rootConstantData.SetConstant(normalOffsetIndex, m_morphInstanceMetaData.m_accumulatedNormalDeltaOffsetInBytes / 4);
             m_rootConstantData.SetConstant(tangentOffsetIndex, m_morphInstanceMetaData.m_accumulatedTangentDeltaOffsetInBytes / 4);
             m_rootConstantData.SetConstant(bitangentOffsetIndex, m_morphInstanceMetaData.m_accumulatedBitangentDeltaOffsetInBytes / 4);
+
+            if (m_morphTargetMetaData.m_hasColorDeltas)
+            {
+                m_rootConstantData.SetConstant(colorOffsetIndex, m_morphInstanceMetaData.m_accumulatedColorDeltaOffsetInBytes / 4);
+            }
 
             m_dispatchItem.m_rootConstantSize = m_rootConstantData.GetConstantData().size();
             m_dispatchItem.m_rootConstants = m_rootConstantData.GetConstantData().data();
@@ -176,6 +196,22 @@ namespace AZ
             if (!Init())
             {
                 AZ_Error("MorphTargetDispatchItem", false, "Failed to re-initialize after the shader was re-loaded.");
+            }
+        }
+
+        void MorphTargetDispatchItem::OnShaderAssetReinitialized([[maybe_unused]] const Data::Asset<AZ::RPI::ShaderAsset>& shaderAsset)
+        {
+            if (!Init())
+            {
+                AZ_Error("MorphTargetDispatchItem", false, "Failed to re-initialize after the shader asset was re-loaded.");
+            }
+        }
+
+        void MorphTargetDispatchItem::OnShaderVariantReinitialized([[maybe_unused]] const RPI::Shader& shader, [[maybe_unused]] const RPI::ShaderVariantId& shaderVariantId, [[maybe_unused]] RPI::ShaderVariantStableId shaderVariantStableId)
+        {
+            if (!Init())
+            {
+                AZ_Error("MorphTargetDispatchItem", false, "Failed to re-initialize after the shader variant was loaded.");
             }
         }
 

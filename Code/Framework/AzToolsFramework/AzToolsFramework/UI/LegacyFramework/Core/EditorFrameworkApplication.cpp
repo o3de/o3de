@@ -112,7 +112,6 @@ namespace LegacyFramework
         m_applicationEntity = NULL;
         m_ptrSystemEntity = NULL;
         m_applicationModule[0] = 0;
-        m_appRoot[0] = 0;
     }
 
     HMODULE Application::GetMainModule()

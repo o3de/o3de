@@ -36,7 +36,8 @@ namespace AZ
             DataType& GetData(IndexType index);
             const DataType& GetData(IndexType index) const;
             size_t GetDataCount() const;
-
+            
+            AZStd::vector<DataType>& GetDataVector();
             const AZStd::vector<DataType>& GetDataVector() const;
 
             IndexType GetRawIndex(IndexType index) const;

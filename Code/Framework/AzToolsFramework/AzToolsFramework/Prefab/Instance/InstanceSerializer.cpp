@@ -219,11 +219,10 @@ namespace AzToolsFramework
                 entitiesInInstance.emplace_back(entity.get());
             }
 
-            InstanceEntityScrubber** instanceEntityScrubber = jsonDeserializerContext.GetMetadata().Find<InstanceEntityScrubber*>();
-            if (instanceEntityScrubber && (*instanceEntityScrubber))
-
+            InstanceEntityScrubber* instanceEntityScrubber = jsonDeserializerContext.GetMetadata().Find<InstanceEntityScrubber>();
+            if (instanceEntityScrubber)
             {
-                (*instanceEntityScrubber)->AddEntitiesToScrub(entitiesInInstance);
+                instanceEntityScrubber->AddEntitiesToScrub(entitiesInInstance);
             }
         }
 

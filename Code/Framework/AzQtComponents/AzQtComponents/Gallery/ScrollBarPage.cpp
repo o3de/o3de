@@ -11,7 +11,7 @@
 */
 
 #include "ScrollBarPage.h"
-#include <Gallery/ui_ScrollBarPage.h>
+#include <AzQtComponents/Gallery/ui_ScrollBarPage.h>
 
 #include <AzQtComponents/Components/Widgets/ScrollBar.h>
 

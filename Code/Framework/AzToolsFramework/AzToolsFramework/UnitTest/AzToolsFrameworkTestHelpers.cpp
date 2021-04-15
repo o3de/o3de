@@ -246,7 +246,7 @@ namespace UnitTest
                 R"(... client unittest_workspace)" "\r\n"
                 R"(... status pending)" "\r\n"
                 R"(... changeType public)" "\r\n"
-                R"(... desc *Lumberyard Auto)" "\r\n"
+                R"(... desc *Open 3D Engine Auto)" "\r\n"
                 "\r\n";
         }
         else if (m_commandArgs.starts_with("fstat"))

@@ -934,6 +934,7 @@ namespace UnitTest
     //          *---*---*---*
     //           \ / \ / \ / \
     //            *---*---*---*
+    template<class x> class TD;
     class TwoSeparatedPlanesMesh
     {
     public:

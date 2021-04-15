@@ -97,7 +97,7 @@ namespace StandaloneTools
     {
         const int k_processIntervalInSecs = 2;
         const bool doSDKInitShutdown = true;
-        EBUS_EVENT(Telemetry::TelemetryEventsBus, Initialize, "LumberyardIDE", k_processIntervalInSecs, doSDKInitShutdown);
+        EBUS_EVENT(Telemetry::TelemetryEventsBus, Initialize, "O3DE_IDE", k_processIntervalInSecs, doSDKInitShutdown);
 
         bool launched = LaunchDiscoveryService();
 
