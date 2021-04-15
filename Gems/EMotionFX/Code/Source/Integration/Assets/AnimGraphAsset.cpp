@@ -90,6 +90,7 @@ namespace EMotionFX
                 }
             }
 
+            assetData->ReleaseEmotionFXData();
             AZ_Error("EMotionFX", assetData->m_emfxAnimGraph, "Failed to initialize anim graph asset %s", asset.GetHint().c_str());
             return static_cast<bool>(assetData->m_emfxAnimGraph);
         }

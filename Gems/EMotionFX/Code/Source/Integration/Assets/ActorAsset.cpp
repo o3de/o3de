@@ -78,6 +78,7 @@ namespace EMotionFX
 
             // Note: Render actor depends on the mesh asset, so we need to manually create it after mesh asset has been loaded.
 
+            assetData->ReleaseEmotionFXData();
             return static_cast<bool>(assetData->m_emfxActor);
         }
 

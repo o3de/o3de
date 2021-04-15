@@ -597,6 +597,7 @@ namespace EMotionFX
         // get rid of shared data
         ResetSharedData(sharedData);
         sharedData.Clear();
+        sharedData.Shrink();
 
         return motion;
     }
