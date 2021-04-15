@@ -36,7 +36,6 @@ namespace Multiplayer
         });
 
         CreateComponentDescriptors(m_descriptors);
-        });
     }
 
     AZ::ComponentTypeList MultiplayerModule::GetRequiredSystemComponents() const
