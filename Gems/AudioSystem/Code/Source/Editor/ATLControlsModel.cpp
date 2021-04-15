@@ -64,7 +64,6 @@ namespace AudioControls
     {
         if (id != ACE_INVALID_CID)
         {
-            size_t size = m_controls.size();
             for (auto it = m_controls.begin(); it != m_controls.end(); ++it)
             {
                 AZStd::shared_ptr<CATLControl>& control = *it;

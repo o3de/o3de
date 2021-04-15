@@ -397,8 +397,6 @@ set(FILES
     Controls/SplineCtrl.h
     Controls/SplineCtrlEx.cpp
     Controls/SplineCtrlEx.h
-    Controls/SyntaxColorizer.cpp
-    Controls/SyntaxColorizer.h
     Controls/TextEditorCtrl.cpp
     Controls/TextEditorCtrl.h
     Controls/TimelineCtrl.cpp
@@ -998,6 +996,8 @@ set(FILES
     ViewportManipulatorController.h
     LegacyViewportCameraController.cpp
     LegacyViewportCameraController.h
+    ModernViewportCameraController.cpp
+    ModernViewportCameraController.h
     RenderViewport.cpp
     RenderViewport.h
     TopRendererWnd.cpp

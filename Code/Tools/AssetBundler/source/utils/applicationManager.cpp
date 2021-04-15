@@ -22,6 +22,7 @@
 #include <AzCore/Module/ModuleManagerBus.h>
 #include <AzCore/Slice/SliceSystemComponent.h>
 #include <AzCore/std/string/conversions.h>
+#include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzCore/Utils/Utils.h>
 
@@ -31,7 +32,6 @@
 #include <AzFramework/FileTag/FileTagComponent.h>
 #include <AzFramework/Input/System/InputSystemComponent.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
-#include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/Components/AzFrameworkConfigurationSystemComponent.h>
 
 #include <AzToolsFramework/Archive/ArchiveComponent.h>
@@ -66,7 +66,7 @@ namespace AssetBundler
         AzToolsFramework::AssetFileInfoListComparison::Reflect(context);
         AzToolsFramework::AssetBundleSettings::Reflect(context);
 
-        AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
+        [[maybe_unused]] AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
         AZ_Assert(fileIO != nullptr, "AZ::IO::FileIOBase must be ready for use.\n");
 
         m_assetSeedManager = AZStd::make_unique<AzToolsFramework::AssetSeedManager>();
@@ -86,7 +86,7 @@ namespace AssetBundler
 
     bool ApplicationManager::Run()
     {
-        const AzFramework::CommandLine* parser = GetCommandLine();
+        const AZ::CommandLine* parser = GetCommandLine();
 
         bool shouldPrintHelp = ShouldPrintHelp(parser);
 
@@ -196,7 +196,7 @@ namespace AssetBundler
     // Get Generic Command Info
     ////////////////////////////////////////////////////////////////////////////////////////////
 
-    CommandType ApplicationManager::GetCommandType(const AzFramework::CommandLine* parser, [[maybe_unused]] bool suppressErrors)
+    CommandType ApplicationManager::GetCommandType(const AZ::CommandLine* parser, [[maybe_unused]] bool suppressErrors)
     {
         // Verify that the user has only typed in one sub-command
         size_t numMiscValues = parser->GetNumMiscValues();
@@ -247,12 +247,12 @@ namespace AssetBundler
         }
     }
 
-    bool ApplicationManager::ShouldPrintHelp(const AzFramework::CommandLine* parser)
+    bool ApplicationManager::ShouldPrintHelp(const AZ::CommandLine* parser)
     {
         return parser->HasSwitch(AssetBundler::HelpFlag) || parser->HasSwitch(AssetBundler::HelpFlagAlias);
     }
 
-    bool ApplicationManager::ShouldPrintVerbose(const AzFramework::CommandLine* parser)
+    bool ApplicationManager::ShouldPrintVerbose(const AZ::CommandLine* parser)
     {
         return parser->HasSwitch(AssetBundler::VerboseFlag);
     }
@@ -368,16 +368,9 @@ namespace AssetBundler
     // Store Detailed Command Info
     ////////////////////////////////////////////////////////////////////////////////////////////
 
-    AZ::Outcome<SeedsParams, AZStd::string> ApplicationManager::ParseSeedsCommandData(const AzFramework::CommandLine* parser)
+    AZ::Outcome<SeedsParams, AZStd::string> ApplicationManager::ParseSeedsCommandData(const AZ::CommandLine* parser)
     {
         using namespace AzToolsFramework;
-
-        auto validateArgsOutcome = ValidateInputArgs(parser, m_allSeedsArgs);
-        if (!validateArgsOutcome.IsSuccess())
-        {
-            OutputHelpSeeds();
-            return AZ::Failure(validateArgsOutcome.TakeError());
-        }
 
         SeedsParams params;
 
@@ -467,15 +460,8 @@ namespace AssetBundler
         return AZStd::string::format(FailureMessage, arg1, arg2);
     }
 
-    AZ::Outcome<AssetListsParams, AZStd::string> ApplicationManager::ParseAssetListsCommandData(const AzFramework::CommandLine* parser)
+    AZ::Outcome<AssetListsParams, AZStd::string> ApplicationManager::ParseAssetListsCommandData(const AZ::CommandLine* parser)
     {
-        auto validateArgsOutcome = ValidateInputArgs(parser, m_allAssetListsArgs);
-        if (!validateArgsOutcome.IsSuccess())
-        {
-            OutputHelpAssetLists();
-            return AZ::Failure(validateArgsOutcome.TakeError());
-        }
-
         AssetListsParams params;
 
         // Read in Platform arg
@@ -537,15 +523,8 @@ namespace AssetBundler
         return AZ::Success(params);
     }
 
-    AZ::Outcome<ComparisonRulesParams, AZStd::string> ApplicationManager::ParseComparisonRulesCommandData(const AzFramework::CommandLine* parser)
+    AZ::Outcome<ComparisonRulesParams, AZStd::string> ApplicationManager::ParseComparisonRulesCommandData(const AZ::CommandLine* parser)
     {
-        auto validateArgsOutcome = ValidateInputArgs(parser, m_allComparisonRulesArgs);
-        if (!validateArgsOutcome.IsSuccess())
-        {
-            OutputHelpComparisonRules();
-            return AZ::Failure(validateArgsOutcome.TakeError());
-        }
-
         ScopedTraceHandler traceHandler;
         ComparisonRulesParams params;
 
@@ -572,7 +551,7 @@ namespace AssetBundler
                 break;
             case 1:
                 params.m_comparisonRulesStepAction = ComparisonRulesStepAction::Add;
-                params.m_destinationLine = static_cast<size_t>(AzFramework::StringFunc::ToInt(parser->GetSwitchValue(AddComparisonStepArg, 0).c_str()));
+                params.m_destinationLine = static_cast<size_t>(AZ::StringFunc::ToInt(parser->GetSwitchValue(AddComparisonStepArg, 0).c_str()));
                 break;
             default:
                 return AZ::Failure(AZStd::string::format("Invalid command: \"--%s\" cannot have more than one input value.", AddComparisonStepArg));
@@ -604,7 +583,7 @@ namespace AssetBundler
             }
 
             params.m_comparisonRulesStepAction = ComparisonRulesStepAction::Remove;
-            params.m_initialLine = static_cast<size_t>(AzFramework::StringFunc::ToInt(parser->GetSwitchValue(RemoveComparisonStepArg, 0).c_str()));
+            params.m_initialLine = static_cast<size_t>(AZ::StringFunc::ToInt(parser->GetSwitchValue(RemoveComparisonStepArg, 0).c_str()));
         }
 
         // Read in Move Comparison Step arg
@@ -625,8 +604,8 @@ namespace AssetBundler
             }
 
             params.m_comparisonRulesStepAction = ComparisonRulesStepAction::Move;
-            params.m_initialLine = static_cast<size_t>(AzFramework::StringFunc::ToInt(parser->GetSwitchValue(MoveComparisonStepArg, 0).c_str()));
-            params.m_destinationLine = static_cast<size_t>(AzFramework::StringFunc::ToInt(parser->GetSwitchValue(MoveComparisonStepArg, 1).c_str()));
+            params.m_initialLine = static_cast<size_t>(AZ::StringFunc::ToInt(parser->GetSwitchValue(MoveComparisonStepArg, 0).c_str()));
+            params.m_destinationLine = static_cast<size_t>(AZ::StringFunc::ToInt(parser->GetSwitchValue(MoveComparisonStepArg, 1).c_str()));
         }
 
         // Read in Edit Comparison Step arg
@@ -642,12 +621,12 @@ namespace AssetBundler
             if (parser->GetNumSwitchValues(EditComparisonStepArg) != 1)
             {
                 return AZ::Failure(AZStd::string::format(
-                    "Invalid command: \"--%s\" requires exatly one input value (the line number of the Comparison Step you wish to edit)",
+                    "Invalid command: \"--%s\" requires exactly one input value (the line number of the Comparison Step you wish to edit)",
                     EditComparisonStepArg));
             }
 
             params.m_comparisonRulesStepAction = ComparisonRulesStepAction::Edit;
-            params.m_initialLine = static_cast<size_t>(AzFramework::StringFunc::ToInt(parser->GetSwitchValue(EditComparisonStepArg, 0).c_str()));
+            params.m_initialLine = static_cast<size_t>(AZ::StringFunc::ToInt(parser->GetSwitchValue(EditComparisonStepArg, 0).c_str()));
 
             // When editing a Comparison Step, we can only accept one input for every value type
             auto parseComparisonTypesForEditOutcome = ParseComparisonTypesAndPatternsForEditCommand(parser, params);
@@ -686,7 +665,7 @@ namespace AssetBundler
         return AZ::Success(params);
     }
 
-    AZ::Outcome<void, AZStd::string> ApplicationManager::ParseComparisonTypesAndPatterns(const AzFramework::CommandLine* parser, ComparisonRulesParams& params)
+    AZ::Outcome<void, AZStd::string> ApplicationManager::ParseComparisonTypesAndPatterns(const AZ::CommandLine* parser, ComparisonRulesParams& params)
     {
         int filePatternsConsumed = 0;
         size_t numComparisonTypes = parser->GetNumSwitchValues(ComparisonTypeArg);
@@ -770,7 +749,7 @@ namespace AssetBundler
         return AZ::Success();
     }
 
-    AZ::Outcome<void, AZStd::string> ApplicationManager::ParseComparisonTypesAndPatternsForEditCommand(const AzFramework::CommandLine* parser, ComparisonRulesParams& params)
+    AZ::Outcome<void, AZStd::string> ApplicationManager::ParseComparisonTypesAndPatternsForEditCommand(const AZ::CommandLine* parser, ComparisonRulesParams& params)
     {
         if (parser->HasSwitch(ComparisonTypeArg))
         {
@@ -855,7 +834,7 @@ namespace AssetBundler
         return AZ::Success();
     }
 
-    AZ::Outcome<void, AZStd::string> ApplicationManager::ParseComparisonRulesFirstAndSecondInputArgs(const AzFramework::CommandLine* parser, ComparisonRulesParams& params)
+    AZ::Outcome<void, AZStd::string> ApplicationManager::ParseComparisonRulesFirstAndSecondInputArgs(const AZ::CommandLine* parser, ComparisonRulesParams& params)
     {
         if (params.m_comparisonTypeList.size() > 1 && (parser->HasSwitch(ComparisonFirstInputArg) || parser->HasSwitch(ComparisonSecondInputArg)))
         {
@@ -926,15 +905,8 @@ namespace AssetBundler
         return AZ::Success();
     }
 
-    AZ::Outcome<ComparisonParams, AZStd::string> ApplicationManager::ParseCompareCommandData(const AzFramework::CommandLine* parser)
+    AZ::Outcome<ComparisonParams, AZStd::string> ApplicationManager::ParseCompareCommandData(const AZ::CommandLine* parser)
     {
-        auto validateArgsOutcome = ValidateInputArgs(parser, m_allCompareArgs);
-        if (!validateArgsOutcome.IsSuccess())
-        {
-            OutputHelpCompare();
-            return AZ::Failure(validateArgsOutcome.TakeError());
-        }
-
         ComparisonParams params;
 
         // Read in Platform arg
@@ -1024,15 +996,8 @@ namespace AssetBundler
         return AZ::Success(params);
     }
 
-    AZ::Outcome<BundleSettingsParams, AZStd::string> ApplicationManager::ParseBundleSettingsCommandData(const AzFramework::CommandLine* parser)
+    AZ::Outcome<BundleSettingsParams, AZStd::string> ApplicationManager::ParseBundleSettingsCommandData(const AZ::CommandLine* parser)
     {
-        auto validateArgsOutcome = ValidateInputArgs(parser, m_allBundleSettingsArgs);
-        if (!validateArgsOutcome.IsSuccess())
-        {
-            OutputHelpBundleSettings();
-            return AZ::Failure(validateArgsOutcome.TakeError());
-        }
-
         BundleSettingsParams params;
 
         // Read in Platform arg
@@ -1099,7 +1064,7 @@ namespace AssetBundler
         return AZ::Success(params);
     }
 
-    AZ::Outcome<BundlesParamsList, AZStd::string> ApplicationManager::ParseBundleSettingsAndOverrides(const AzFramework::CommandLine* parser, const char* commandName)
+    AZ::Outcome<BundlesParamsList, AZStd::string> ApplicationManager::ParseBundleSettingsAndOverrides(const AZ::CommandLine* parser, const char* commandName)
     {
         // Read in Bundle Settings File args
         auto bundleSettingsOutcome = GetArgsList<FilePath>(parser, BundleSettingsFileArg, commandName);
@@ -1235,15 +1200,8 @@ namespace AssetBundler
         return AZ::Success(bundleParamsList);
     }
 
-    AZ::Outcome<BundlesParamsList, AZStd::string> ApplicationManager::ParseBundlesCommandData(const AzFramework::CommandLine* parser)
+    AZ::Outcome<BundlesParamsList, AZStd::string> ApplicationManager::ParseBundlesCommandData(const AZ::CommandLine* parser)
     {
-        auto validateArgsOutcome = ValidateInputArgs(parser, m_allBundlesArgs);
-        if (!validateArgsOutcome.IsSuccess())
-        {
-            OutputHelpBundles();
-            return AZ::Failure(validateArgsOutcome.TakeError());
-        }
-
         auto parseSettingsOutcome = ParseBundleSettingsAndOverrides(parser, BundlesCommand);
         if (!parseSettingsOutcome.IsSuccess())
         {
@@ -1253,16 +1211,8 @@ namespace AssetBundler
         return AZ::Success(parseSettingsOutcome.TakeValue());
     }
 
-    AZ::Outcome<BundleSeedParams, AZStd::string> ApplicationManager::ParseBundleSeedCommandData(const AzFramework::CommandLine* parser)
+    AZ::Outcome<BundleSeedParams, AZStd::string> ApplicationManager::ParseBundleSeedCommandData(const AZ::CommandLine* parser)
     {
-
-        auto validateArgsOutcome = ValidateInputArgs(parser, m_allBundleSeedArgs);
-        if (!validateArgsOutcome.IsSuccess())
-        {
-            OutputHelpBundles();
-            return AZ::Failure(validateArgsOutcome.TakeError());
-        }
-
         BundleSeedParams params;
 
         params.m_addSeedList = GetAddSeedArgList(parser);
@@ -1278,7 +1228,7 @@ namespace AssetBundler
         return AZ::Success(params);
     }
 
-    AZ::Outcome<void, AZStd::string> ApplicationManager::ValidateInputArgs(const AzFramework::CommandLine* parser, const AZStd::vector<const char*>& validArgList)
+    AZ::Outcome<void, AZStd::string> ApplicationManager::ValidateInputArgs(const AZ::CommandLine* parser, const AZStd::vector<const char*>& validArgList)
     {
         for (const auto& paramInfo : *parser)
         {
@@ -1291,7 +1241,7 @@ namespace AssetBundler
 
             for (const auto& validArg : validArgList)
             {
-                if (AzFramework::StringFunc::Equal(paramInfo.m_option, validArg))
+                if (AZ::StringFunc::Equal(paramInfo.m_option, validArg))
                 {
                     isValidArg = true;
                     break;
@@ -1300,14 +1250,14 @@ namespace AssetBundler
 
             if (!isValidArg)
             {
-                return AZ::Failure(AZStd::string::format("Invalid command: \"--%s\" is not a valid argument for this sub-command.", paramInfo.m_option.c_str()));
+                return AZ::Failure(AZStd::string::format("Unknown argument: \"--%s\" is not an unknown argument for this sub-command.", paramInfo.m_option.c_str()));
             }
         }
 
         return AZ::Success();
     }
 
-    AZ::Outcome<AZStd::string, AZStd::string> ApplicationManager::GetFilePathArg(const AzFramework::CommandLine* parser, const char* argName, const char* subCommandName, bool isRequired)
+    AZ::Outcome<AZStd::string, AZStd::string> ApplicationManager::GetFilePathArg(const AZ::CommandLine* parser, const char* argName, const char* subCommandName, bool isRequired)
     {
         if (!parser->HasSwitch(argName))
         {
@@ -1328,7 +1278,7 @@ namespace AssetBundler
 
     
     template <typename T>
-    AZ::Outcome<AZStd::vector<T>, AZStd::string> ApplicationManager::GetArgsList(const AzFramework::CommandLine* parser, const char* argName, const char* subCommandName, bool isRequired)
+    AZ::Outcome<AZStd::vector<T>, AZStd::string> ApplicationManager::GetArgsList(const AZ::CommandLine* parser, const char* argName, const char* subCommandName, bool isRequired)
     {
         AZStd::vector<T> args;
 
@@ -1352,7 +1302,7 @@ namespace AssetBundler
         return AZ::Success(args);
     }
 
-    AZ::Outcome<AzFramework::PlatformFlags, AZStd::string> ApplicationManager::GetPlatformArg(const AzFramework::CommandLine* parser)
+    AZ::Outcome<AzFramework::PlatformFlags, AZStd::string> ApplicationManager::GetPlatformArg(const AZ::CommandLine* parser)
     {
         using namespace AzFramework;
         PlatformFlags platform = AzFramework::PlatformFlags::Platform_NONE;
@@ -1395,7 +1345,7 @@ namespace AssetBundler
         return platformFlags;
     }
 
-    AZStd::vector<AZStd::string> ApplicationManager::GetAddSeedArgList(const AzFramework::CommandLine* parser)
+    AZStd::vector<AZStd::string> ApplicationManager::GetAddSeedArgList(const AZ::CommandLine* parser)
     {
         AZStd::vector<AZStd::string> addSeedList;
         size_t numAddSeedArgs = parser->GetNumSwitchValues(AddSeedArg);
@@ -1406,7 +1356,7 @@ namespace AssetBundler
         return addSeedList;
     }
 
-    AZStd::vector<AZStd::string> ApplicationManager::GetSkipArgList(const AzFramework::CommandLine* parser)
+    AZStd::vector<AZStd::string> ApplicationManager::GetSkipArgList(const AZ::CommandLine* parser)
     {
         AZStd::vector<AZStd::string> skipList;
         size_t numArgs = parser->GetNumSwitchValues(SkipArg);
@@ -1920,10 +1870,12 @@ namespace AssetBundler
                 AZStd::vector<AZStd::string> destructiveOverwriteFilePaths = comparisonOperations.GetDestructiveOverwriteFilePaths();
                 if (!destructiveOverwriteFilePaths.empty())
                 {
+#if defined(AZ_ENABLE_TRACING)
                     for (const AZStd::string& path : destructiveOverwriteFilePaths)
                     {
                         AZ_Error(AssetBundler::AppWindowName, false, "Asset List file ( %s ) already exists, running this command would perform a destructive overwrite.", path.c_str());
                     }
+#endif
                     AZ_Printf(AssetBundler::AppWindowName, "\nRun your command again with the ( --%s ) arg if you want to save over the existing file.\n\n", AllowOverwritesFlag)
                     hasError = true;
                     continue;
@@ -2028,7 +1980,7 @@ namespace AssetBundler
             AZStd::string assetListFilePath = FilePath(params.m_assetListFile.AbsolutePath(), platformName).AbsolutePath();
             if (!assetListFilePath.empty())
             {
-                if (!AzFramework::StringFunc::EndsWith(assetListFilePath, AssetSeedManager::GetAssetListFileExtension()))
+                if (!AZ::StringFunc::EndsWith(assetListFilePath, AssetSeedManager::GetAssetListFileExtension()))
                 {
                     AZ_Error(AppWindowName, false, "Cannot set Asset List file to ( %s ): file extension must be ( %s ).", assetListFilePath.c_str(), AssetSeedManager::GetAssetListFileExtension());
                     return false;
@@ -2041,7 +1993,7 @@ namespace AssetBundler
                 }
 
                 // Make the path relative to the engine root folder before saving
-                AzFramework::StringFunc::Replace(assetListFilePath, GetEngineRoot(), "");
+                AZ::StringFunc::Replace(assetListFilePath, GetEngineRoot(), "");
 
                 bundleSettings.m_assetFileInfoListPath = assetListFilePath;
             }
@@ -2050,14 +2002,14 @@ namespace AssetBundler
             AZStd::string outputBundlePath = FilePath(params.m_outputBundlePath.AbsolutePath(), platformName).AbsolutePath();
             if (!outputBundlePath.empty())
             {
-                if (!AzFramework::StringFunc::EndsWith(outputBundlePath, AssetBundleSettings::GetBundleFileExtension()))
+                if (!AZ::StringFunc::EndsWith(outputBundlePath, AssetBundleSettings::GetBundleFileExtension()))
                 {
                     AZ_Error(AppWindowName, false, "Cannot set Output Bundle Path to ( %s ): file extension must be ( %s ).", outputBundlePath.c_str(), AssetBundleSettings::GetBundleFileExtension());
                     return false;
                 }
 
                 // Make the path relative to the engine root folder before saving
-                AzFramework::StringFunc::Replace(outputBundlePath, GetEngineRoot(), "");
+                AZ::StringFunc::Replace(outputBundlePath, GetEngineRoot(), "");
 
                 bundleSettings.m_bundleFilePath = outputBundlePath;
             }
@@ -2341,7 +2293,7 @@ namespace AssetBundler
             AZStd::string platformSpecificAssetCatalogPath;
             if (assetCatalogFile.empty())
             {
-                AzFramework::StringFunc::Path::ConstructFull(
+                AZ::StringFunc::Path::ConstructFull(
                     PlatformAddressedAssetCatalog::GetAssetRootForPlatform(platformId).c_str(),
                     AssetBundler::AssetCatalogFilename,
                     platformSpecificAssetCatalogPath);
@@ -2489,7 +2441,7 @@ namespace AssetBundler
             if (params.m_generateDebugFile)
             {
                 debugListFileAbsolutePath = assetListFileAbsolutePath;
-                AzFramework::StringFunc::Path::ReplaceExtension(debugListFileAbsolutePath, AssetFileDebugInfoList::GetAssetListDebugFileExtension());
+                AZ::StringFunc::Path::ReplaceExtension(debugListFileAbsolutePath, AssetFileDebugInfoList::GetAssetListDebugFileExtension());
                 AZ_TracePrintf(AssetBundler::AppWindowName, "Saving Asset List Debug file to ( %s )...\n", debugListFileAbsolutePath.c_str());
             }
 
@@ -2667,9 +2619,9 @@ namespace AssetBundler
             AZ_Printf(AppWindowName, "\n");
             AZ_Printf(AppWindowName, "Some args in this tool take paths as arguments, and there are two main types:\n");
             AZ_Printf(AppWindowName, "          \"path\" - This refers to an Engine-Root-Relative path.\n");
-            AZ_Printf(AppWindowName, "                 - Example: \"C:\\Lumberyard\\dev\\AutomatedTesting\\test.txt\" can be represented as \"AutomatedTesting\\test.txt\".\n");
+            AZ_Printf(AppWindowName, "                 - Example: \"C:\\O3DE\\dev\\SamplesProject\\test.txt\" can be represented as \"SamplesProject\\test.txt\".\n");
             AZ_Printf(AppWindowName, "    \"cache path\" - This refers to a Cache-Relative path.\n");
-            AZ_Printf(AppWindowName, "                 - Example: \"C:\\Lumberyard\\dev\\AutomatedTesting\\Cache\\pc\\animations\\skeletonlist.xml\" is represented as \"animations\\skeletonlist.xml\".\n");
+            AZ_Printf(AppWindowName, "                 - Example: \"C:\\O3DE\\dev\\Cache\\SamplesProject\\pc\\samplesproject\\animations\\skeletonlist.xml\" is represented as \"animations\\skeletonlist.xml\".\n");
             AZ_Printf(AppWindowName, "\n");
 
             OutputHelpSeeds();
@@ -2706,7 +2658,7 @@ namespace AssetBundler
         AZ_Printf(AppWindowName, "    --%-25s-Outputs the contents of the Seed List file after performing any specified operations.\n", PrintFlag);
         AZ_Printf(AppWindowName, "    --%-25s-Specifies the platform(s) referenced by all Seed operations.\n", PlatformArg);
         AZ_Printf(AppWindowName, "%-31s---Requires an existing cache of assets for the input platform(s).\n", "");
-        AZ_Printf(AppWindowName, "%-31s---Defaults to all enabled platforms. Platforms can be changed by modifying AssetProcessorPlatformConfig.ini.\n", "");
+        AZ_Printf(AppWindowName, "%-31s---Defaults to all enabled platforms. Platforms can be changed by modifying AssetProcessorPlatformConfig.setreg.\n", "");
         AZ_Printf(AppWindowName, "    --%-25s-Updates the path hints stored in the Seed List file.\n", UpdateSeedPathArg);
         AZ_Printf(AppWindowName, "    --%-25s-Removes the path hints stored in the Seed List file.\n", RemoveSeedPathArg);
         AZ_Printf(AppWindowName, "    --%-25s-Allows input file path to still match if the file path case is different than on disk.\n", IgnoreFileCaseFlag);
@@ -2726,10 +2678,10 @@ namespace AssetBundler
         AZ_Printf(AppWindowName, "    --%-25s-The specified files and all dependencies will be ignored when generating the Asset List file.\n", SkipArg);
         AZ_Printf(AppWindowName, "%-31s---Takes in a comma-separated list of either: cache paths to pre-processed assets, or wildcard patterns.\n", "");
         AZ_Printf(AppWindowName, "    --%-25s-Automatically include all default Seed List files in generated Asset List File.\n", AddDefaultSeedListFilesFlag);
-        AZ_Printf(AppWindowName, "%-31s---This will include Seed List files for the Lumberyard Engine and all enabled Gems.\n", "");
+        AZ_Printf(AppWindowName, "%-31s---This will include Seed List files for the Open 3D Engine Engine and all enabled Gems.\n", "");
         AZ_Printf(AppWindowName, "    --%-25s-Specifies the platform(s) to generate an Asset List file for.\n", PlatformArg);
         AZ_Printf(AppWindowName, "%-31s---Requires an existing cache of assets for the input platform(s).\n", "");
-        AZ_Printf(AppWindowName, "%-31s---Defaults to all enabled platforms. Platforms can be changed by modifying AssetProcessorPlatformConfig.ini.\n", "");
+        AZ_Printf(AppWindowName, "%-31s---Defaults to all enabled platforms. Platforms can be changed by modifying AssetProcessorPlatformConfig.setreg.\n", "");
         AZ_Printf(AppWindowName, "    --%-25s-[Testing] Specifies the Asset Catalog file referenced by all Asset List operations.\n", AssetCatalogFileArg);
         AZ_Printf(AppWindowName, "%-31s---Designed to be used in Unit Tests.\n", "");
         AZ_Printf(AppWindowName, "    --%-25s-Outputs the contents of the Asset List file after adding any specified seed files.\n", PrintFlag);
@@ -2793,7 +2745,7 @@ namespace AssetBundler
         AZ_Printf(AppWindowName, "%-31s---Leave list blank to just print the final comparison result.\n", "");
         AZ_Printf(AppWindowName, "    --%-25s-Specifies the platform(s) referenced when determining which Asset List files to compare.\n", PlatformArg);
         AZ_Printf(AppWindowName, "%-31s---All input Asset List files must exist for all specified platforms\n", "");
-        AZ_Printf(AppWindowName, "%-31s---Defaults to all enabled platforms. Platforms can be changed by modifying AssetProcessorPlatformConfig.ini.\n", "");
+        AZ_Printf(AppWindowName, "%-31s---Defaults to all enabled platforms. Platforms can be changed by modifying AssetProcessorPlatformConfig.setreg.\n", "");
         AZ_Printf(AppWindowName, "    --%-25s-Allow destructive overwrites of files. Include this arg in automation.\n", AllowOverwritesFlag);
         AZ_Printf(AppWindowName, "    --%-25s-Specifies the game project to use rather than the current default project set in bootstrap.cfg's project_path.\n", ProjectArg);
     }
@@ -2805,11 +2757,11 @@ namespace AssetBundler
         AZ_Printf(AppWindowName, "    --%-25s-[Required] Specifies the Bundle Settings file to operate on by path. Must include (.%s) file extension.\n", BundleSettingsFileArg, AssetBundleSettings::GetBundleSettingsFileExtension());
         AZ_Printf(AppWindowName, "    --%-25s-Sets the Asset List file to use for Bundle generation. Must include (.%s) file extension.\n", AssetListFileArg, AssetSeedManager::GetAssetListFileExtension());
         AZ_Printf(AppWindowName, "    --%-25s-Sets the path where generated Bundles will be stored. Must include (.%s) file extension.\n", OutputBundlePathArg, AssetBundleSettings::GetBundleFileExtension());
-        AZ_Printf(AppWindowName, "    --%-25s-Determines which version of Lumberyard Bundles to generate. Current version is (%i).\n", BundleVersionArg, AzFramework::AssetBundleManifest::CurrentBundleVersion);
+        AZ_Printf(AppWindowName, "    --%-25s-Determines which version of Open 3D Engine Bundles to generate. Current version is (%i).\n", BundleVersionArg, AzFramework::AssetBundleManifest::CurrentBundleVersion);
         AZ_Printf(AppWindowName, "    --%-25s-Sets the maximum size for a single Bundle (in MB). Default size is (%i MB).\n", MaxBundleSizeArg, AssetBundleSettings::GetMaxBundleSizeInMB());
         AZ_Printf(AppWindowName, "%-31s---Bundles larger than this limit will be divided into a series of smaller Bundles and named accordingly.\n", "");
         AZ_Printf(AppWindowName, "    --%-25s-Specifies the platform(s) referenced by all Bundle Settings operations.\n", PlatformArg);
-        AZ_Printf(AppWindowName, "%-31s---Defaults to all enabled platforms. Platforms can be changed by modifying AssetProcessorPlatformConfig.ini.\n", "");
+        AZ_Printf(AppWindowName, "%-31s---Defaults to all enabled platforms. Platforms can be changed by modifying AssetProcessorPlatformConfig.setreg.\n", "");
         AZ_Printf(AppWindowName, "    --%-25s-Outputs the contents of the Bundle Settings file after modifying any specified values.\n", PrintFlag);
         AZ_Printf(AppWindowName, "    --%-25s-Specifies the game project to use rather than the current default project set in bootstrap.cfg's project_path.\n", ProjectArg);
     }
@@ -2822,7 +2774,7 @@ namespace AssetBundler
         AZ_Printf(AppWindowName, "%-31s---If any other args are specified, they will override the values stored inside this file.\n", "");
         AZ_Printf(AppWindowName, "    --%-25s-Sets the Asset List files to use for Bundle generation. Must include (.%s) file extension.\n", AssetListFileArg, AssetSeedManager::GetAssetListFileExtension());
         AZ_Printf(AppWindowName, "    --%-25s-Sets the paths where generated Bundles will be stored. Must include (.%s) file extension.\n", OutputBundlePathArg, AssetBundleSettings::GetBundleFileExtension());
-        AZ_Printf(AppWindowName, "    --%-25s-Determines which versions of Lumberyard Bundles to generate. Current version is (%i).\n", BundleVersionArg, AzFramework::AssetBundleManifest::CurrentBundleVersion);
+        AZ_Printf(AppWindowName, "    --%-25s-Determines which versions of Open 3D Engine Bundles to generate. Current version is (%i).\n", BundleVersionArg, AzFramework::AssetBundleManifest::CurrentBundleVersion);
         AZ_Printf(AppWindowName, "    --%-25s-Sets the maximum size for Bundles (in MB). Default size is (%i MB).\n", MaxBundleSizeArg, AssetBundleSettings::GetMaxBundleSizeInMB());
         AZ_Printf(AppWindowName, "%-31s---Bundles larger than this limit will be divided into a series of smaller Bundles and named accordingly.\n", "");
         AZ_Printf(AppWindowName, "    --%-25s-Specifies the platform(s) that will be referenced when generating Bundles.\n", PlatformArg);
@@ -2839,7 +2791,7 @@ namespace AssetBundler
         AZ_Printf(AppWindowName, "%-31s---Takes in a cache path to a pre-processed asset. A cache path is a path relative to \"ProjectPath\\Cache\\platform\\\"\n", "");
         AZ_Printf(AppWindowName, "    --%-25s-Specifies the Bundle Settings file to operate on by path. Must include (.%s) file extension.\n", BundleSettingsFileArg, AssetBundleSettings::GetBundleSettingsFileExtension());
         AZ_Printf(AppWindowName, "    --%-25s-Sets the path where generated Bundles will be stored. Must include (.%s) file extension.\n", OutputBundlePathArg, AssetBundleSettings::GetBundleFileExtension());
-        AZ_Printf(AppWindowName, "    --%-25s-Determines which version of Lumberyard Bundles to generate. Current version is (%i).\n", BundleVersionArg, AzFramework::AssetBundleManifest::CurrentBundleVersion);
+        AZ_Printf(AppWindowName, "    --%-25s-Determines which version of Open 3D Engine Bundles to generate. Current version is (%i).\n", BundleVersionArg, AzFramework::AssetBundleManifest::CurrentBundleVersion);
         AZ_Printf(AppWindowName, "    --%-25s-Sets the maximum size for a single Bundle (in MB). Default size is (%i MB).\n", MaxBundleSizeArg, AssetBundleSettings::GetMaxBundleSizeInMB());
         AZ_Printf(AppWindowName, "%-31s---Bundles larger than this limit will be divided into a series of smaller Bundles and named accordingly.\n", "");
         AZ_Printf(AppWindowName, "    --%-25s-Specifies the platform(s) that will be referenced when generating Bundles.\n", PlatformArg);

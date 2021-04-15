@@ -534,7 +534,10 @@ bool CResFile::mfPrepareDir()
     }
     else
     {
-        int nRes = mfLoadDir(m_pStreamInfo);
+#ifndef NDEBUG
+        int nRes =
+#endif
+            mfLoadDir(m_pStreamInfo);
         assert(nRes);
     }
 

@@ -103,6 +103,7 @@ _LOGGER.debug('Initializing: {0}.'.format({module_name}))
 
 
 class LegacyFilesConverter(QtWidgets.QDialog):
+
     def __init__(self, parent=None):
         super(LegacyFilesConverter, self).__init__(parent)
 

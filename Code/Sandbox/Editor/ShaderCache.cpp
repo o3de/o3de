@@ -63,7 +63,6 @@ bool CLevelShaderCache::Load(const char* filename)
 bool CLevelShaderCache::LoadBuffer(const QString& textBuffer, bool bClearOld)
 {
     const char* separators = "\r\n,";
-    int curPos = 0;
 
     int nNumLines = 0;
     if (bClearOld)

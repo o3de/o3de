@@ -58,7 +58,7 @@ class AddDeleteComponentsTest(EditorTestHelper):
         7) Undo deletion of component
 
         Note:
-        - This test file must be called from the Lumberyard Editor command terminal
+        - This test file must be called from the Open 3D Engine Editor command terminal
         - Any passed and failed tests are written to the Editor.log file.
                 Parsing the file or running a log_monitor are required to observe the test results.
 
@@ -72,6 +72,7 @@ class AddDeleteComponentsTest(EditorTestHelper):
             component_index = pyside_utils.find_child_by_pattern(tree, component_name)
             if component_index.isValid():
                 print(f"{component_name} found")
+            tree.expand(component_index)
             tree.setCurrentIndex(component_index)
             QtTest.QTest.keyClick(tree, Qt.Key_Enter, Qt.NoModifier)
 
@@ -93,8 +94,8 @@ class AddDeleteComponentsTest(EditorTestHelper):
             print("Entity Created")
 
         # 3) Select the newly created entity
-        general.clear_selection()
         general.select_object("Entity2")
+
         # Give the Entity Inspector time to fully create its contents
         general.idle_wait(0.5)
 
@@ -103,14 +104,11 @@ class AddDeleteComponentsTest(EditorTestHelper):
         entity_inspector = editor_window.findChild(QtWidgets.QDockWidget, "Entity Inspector")
         add_comp_btn = entity_inspector.findChild(QtWidgets.QPushButton, "m_addComponentButton")
         await add_component("Box Shape")
-    
         print(f"Box Shape Component added: {hydra.has_components(entity_id, ['Box Shape'])}")
 
         # 5) Add/verify Mesh component
         await add_component("Mesh")
-        print(
-            f"Box Shape and Mesh Components present in the entity: {hydra.has_components(entity_id, ['Box Shape', 'Mesh'])}"
-        )
+        print(f"Mesh Component added: {hydra.has_components(entity_id, ['Mesh'])}")
 
         # 6) Delete Mesh Component
         general.idle_wait(0.5)

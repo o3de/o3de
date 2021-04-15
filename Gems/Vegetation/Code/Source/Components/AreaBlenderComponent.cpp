@@ -55,7 +55,6 @@ namespace Vegetation
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<AreaBlenderConfig>()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Constructor()
                 ->Property("inheritBehavior", BehaviorValueProperty(&AreaBlenderConfig::m_inheritBehavior))
@@ -131,7 +130,6 @@ namespace Vegetation
             behaviorContext->Class<AreaBlenderComponent>()->RequestBus("AreaBlenderRequestBus");
 
             behaviorContext->EBus<AreaBlenderRequestBus>("AreaBlenderRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Event("GetAreaPriority", &AreaBlenderRequestBus::Events::GetAreaPriority)
                 ->Event("SetAreaPriority", &AreaBlenderRequestBus::Events::SetAreaPriority)

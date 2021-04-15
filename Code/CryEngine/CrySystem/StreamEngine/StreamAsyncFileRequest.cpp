@@ -512,7 +512,8 @@ uint32 CAsyncIOFileRequest::ReadFile(CStreamingIOThread* pIOThread)
     }
 
     CCryFile file;
-    if ((nError = OpenFile(file)))
+    nError = OpenFile(file);
+    if (nError)
     {
         return nError;
     }
@@ -555,12 +556,14 @@ uint32 CAsyncIOFileRequest::ReadFile(CStreamingIOThread* pIOThread)
     }
 
     auto pZipEntry = ((AZ::IO::Archive*)(gEnv->pCryPak))->GetOpenedFileDataInZip(file.GetHandle());
-    if ((nError = ConfigureRead(pZipEntry.get())))
+    nError = ConfigureRead(pZipEntry.get());
+    if (nError)
     {
         return nError;
     }
 
-    if ((nError = AllocateOutput(pZipEntry.get())))
+    nError = AllocateOutput(pZipEntry.get());
+    if (nError)
     {
         return nError;
     }
@@ -578,14 +581,16 @@ uint32 CAsyncIOFileRequest::ReadFileResume(CStreamingIOThread* pIOThread)
     }
 
     CCryFile file;
-    if ((nError = OpenFile(file)))
+    nError = OpenFile(file);
+    if (nError)
     {
         return nError;
     }
 
     auto pZipEntry = ((AZ::IO::Archive*)(gEnv->pCryPak))->GetOpenedFileDataInZip(file.GetHandle());
 
-    if ((nError = AllocateOutput(pZipEntry.get())))
+    nError = AllocateOutput(pZipEntry.get());
+    if (nError)
     {
         return nError;
     }
@@ -653,7 +658,8 @@ uint32 CAsyncIOFileRequest::ReadFileInPages(CStreamingIOThread* pIOThread, CCryF
         }
 
         //check if job needs to be pre-empted
-        if ((nError = ReadFileCheckPreempt(pIOThread)))
+        nError = ReadFileCheckPreempt(pIOThread);
+        if (nError)
         {
             return nError;
         }

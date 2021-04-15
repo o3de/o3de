@@ -319,7 +319,8 @@ namespace PhysX
 
     void EditorColliderComponent::Activate()
     {
-        if (m_sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        m_sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
+        if (m_sceneInterface)
         {
             m_editorSceneHandle = m_sceneInterface->GetSceneHandle(AzPhysics::EditorPhysicsSceneName);
         }
@@ -696,7 +697,7 @@ namespace PhysX
 
         // Here we check the material indices assigned to every shape and validate that every index is used at least once.
         // It's not an error if the validation fails here but something we want to let the designers know about.
-        size_t surfacesNum = physicsAsset->m_assetData.m_surfaceNames.size();
+        [[maybe_unused]] size_t surfacesNum = physicsAsset->m_assetData.m_surfaceNames.size();
         const AZStd::vector<AZ::u16>& indexPerShape = physicsAsset->m_assetData.m_materialIndexPerShape;
 
         AZStd::unordered_set<AZ::u16> usedIndices;
@@ -879,7 +880,6 @@ namespace PhysX
             return;
         }
 
-        const AZ::Data::Asset<Pipeline::MeshAsset>& physicsAsset = m_shapeConfiguration.m_physicsAsset.m_pxAsset;
         const Physics::PhysicsAssetShapeConfiguration& physicsAssetConfiguration = m_shapeConfiguration.m_physicsAsset.m_configuration;
 
         Physics::ShapeConfigurationList shapeConfigList;

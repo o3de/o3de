@@ -18,11 +18,8 @@ namespace AZ
 {
     Quaternion CreateRandomQuaternion(SimpleLcgRandom& rng)
     {
-        float u1 = rng.GetRandomFloat();
         float u2 = rng.GetRandomFloat();
         float u3 = rng.GetRandomFloat();
-        float c1 = Sqrt(1.0f - u1);
-        float c2 = Sqrt(u1);
         float x, y, z, w;
         SinCos(Constants::TwoPi * u2, x, y);
         SinCos(Constants::TwoPi * u3, z, w);

@@ -313,7 +313,10 @@ CThreadTaskManager::~CThreadTaskManager()
     AUTO_MODIFYLOCK(m_threadsPoolsLock);
     while (!m_threadsPools.empty())
     {
-        bool res = DestroyThreadsPool(m_threadsPools.begin()->m_hHandle);
+#if !defined(NDEBUG)
+        bool res =
+#endif
+            DestroyThreadsPool(m_threadsPools.begin()->m_hHandle);
         assert(res);
     }
 }

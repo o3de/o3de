@@ -13,6 +13,8 @@
 #include <Source/Multiplayer_precompiled.h>
 #include <Source/MultiplayerGem.h>
 #include <Source/MultiplayerSystemComponent.h>
+#include <Source/Components/NetBindComponent.h>
+#include <Source/AutoGen/AutoComponentTypes.h>
 #include <AzNetworking/Framework/NetworkingSystemComponent.h>
 
 namespace Multiplayer
@@ -23,7 +25,10 @@ namespace Multiplayer
         m_descriptors.insert(m_descriptors.end(), {
             AzNetworking::NetworkingSystemComponent::CreateDescriptor(),
             MultiplayerSystemComponent::CreateDescriptor(),
+            NetBindComponent::CreateDescriptor(),
         });
+
+        CreateComponentDescriptors(m_descriptors);
     }
 
     AZ::ComponentTypeList MultiplayerModule::GetRequiredSystemComponents() const
@@ -36,4 +41,4 @@ namespace Multiplayer
     }
 }
 
-AZ_DECLARE_MODULE_CLASS(Gem_Multiplayer2, Multiplayer::MultiplayerModule);
+AZ_DECLARE_MODULE_CLASS(Gem_Multiplayer, Multiplayer::MultiplayerModule);

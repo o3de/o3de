@@ -1090,7 +1090,6 @@ namespace ImageProcessingAtom
         uint32 pitch1, pitch2;
 
         float sumDeltaSqLinear = 0;
-        AZ::u32 sumPixelCount = 0;
 
         //only process the highest mip
         image1->GetImagePointer(0, mem1, pitch1);

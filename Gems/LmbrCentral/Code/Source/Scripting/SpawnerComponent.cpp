@@ -68,9 +68,11 @@ namespace LmbrCentral
     // modern editor-component or game-component.
     bool ConvertLegacySpawnerComponent(AZ::SerializeContext& serializeContext, AZ::SerializeContext::DataElementNode& classNode)
     {
+#ifdef LMBR_CENTRAL_EDITOR
         // To determine whether we want an editor or runtime component, we check
         // if the old component was contained within GenericComponentWrapper::m_template.
         bool isEditorComponent = (classNode.GetName() == AZ::Crc32("m_template"));
+#endif
 
         // Get Component::m_id from the base class.
         AZ::u64 componentId = 0;

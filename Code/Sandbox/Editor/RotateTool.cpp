@@ -222,7 +222,6 @@ void CRotateTool::DrawAngleDecorator(DisplayContext& dc)
         Vec3 cameraViewDir = dc.camera->GetViewMatrix().GetColumn1().GetNormalized(); //Get the viewDir from the camera instead of from the view
         // FIXME: The angle and sweep calculation here is incorrect.
         float cameraAngle = atan2f(cameraViewDir.y, -cameraViewDir.x);
-        float angle = m_initialViewAxisAngleRadians - cameraAngle - (g_PI / 2);
         float angleDelta = (m_angleToCursor - g_PI2 * floor(m_initialViewAxisAngleRadians / g_PI2)) - (m_initialViewAxisAngleRadians - (cameraAngle - (g_PI / 2)));
 
         RotationDrawHelper::AngleDecorator::Draw(dc, m_object->GetWorldPos(), cameraViewDir, m_initialViewAxisAngleRadians, angleDelta, m_arcRotationStepRadians, m_viewAxisRadius, GetScreenScale(dc.view, dc.camera));

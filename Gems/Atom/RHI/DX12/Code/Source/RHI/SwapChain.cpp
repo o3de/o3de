@@ -35,7 +35,6 @@ namespace AZ
 
         RHI::ResultCode SwapChain::InitImageInternal(const InitImageRequest& request)
         {
-            const RHI::SwapChainDescriptor& descriptor = GetDescriptor();
 
             Device& device = GetDevice();
 

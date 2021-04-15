@@ -20,7 +20,7 @@
 #include <AzCore/Socket/AzSocket.h>
 #include <AzCore/NativeUI/NativeUIRequests.h>
 #include <AzCore/PlatformId/PlatformId.h>
-#include <AzCore/Utils/Utils.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzFramework/Network/SocketConnection.h>
 #include <AzFramework/Asset/AssetSystemTypes.h>
 
@@ -307,20 +307,15 @@ namespace NRemoteCompiler
 
         m_RequestLineRootFolder = "";
 
-        auto projectName = AZ::Utils::GetProjectName();
-        ICVar* pCompilerFolderSuffix = CRenderer::CV_r_ShaderCompilerFolderSuffix;
-
-        if (!projectName.empty())
+        AZ::IO::FixedMaxPathString projectUserPath;
+        if (auto settingsRegistry{ AZ::SettingsRegistry::Get() }; settingsRegistry != nullptr)
         {
-            if (pCompilerFolderSuffix)
-            {
-                string suffix = pCompilerFolderSuffix->GetString();
-                suffix.Trim();
-                projectName.append(suffix);
-            }
+            settingsRegistry->Get(projectUserPath, AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath);
+        }
 
-            projectName.append("/");
-            m_RequestLineRootFolder.assign(projectName.c_str(), projectName.size());
+        if (!projectUserPath.empty())
+        {
+            m_RequestLineRootFolder.assign(projectUserPath.c_str(), projectUserPath.size());
         }
 
         if (m_RequestLineRootFolder.empty())
@@ -694,7 +689,9 @@ namespace NRemoteCompiler
     bool CShaderSrv::CommitPLCombinations(std::vector<SCacheCombination>&   rVec)
     {
         const uint32 STEPSIZE = 32;
+#if defined(AZ_ENABLE_TRACING)
         float T0 = iTimer->GetAsyncCurTime();
+#endif
         for (uint32 i = 0; i < rVec.size(); i += STEPSIZE)
         {
             string Line;
@@ -713,7 +710,9 @@ namespace NRemoteCompiler
                 return false;
             }
         }
+#if defined(AZ_ENABLE_TRACING)
         float T1    =   iTimer->GetAsyncCurTime();
+#endif
         if(VerboseLogging())
         {
             AZ_TracePrintf("RemoteCompiler", "CShaderSrv::CommitPLCombinations() : %3.3f to commit %" PRISIZE_T " Combinations\n", T1 - T0, rVec.size());

@@ -1519,7 +1519,6 @@ namespace EMStudio
         }
 
         StateConnection* stateConnection = static_cast<StateConnection*>(connection);
-        const EMotionFX::AnimGraphNode* currentNode = GetActiveGraph()->GetModelIndex().data(AnimGraphModel::ROLE_NODE_POINTER).value<EMotionFX::AnimGraphNode*>();
         EMotionFX::AnimGraphStateTransition* transition = connection->GetModelIndex().data(AnimGraphModel::ROLE_TRANSITION_POINTER).value<EMotionFX::AnimGraphStateTransition*>();
 
         AZStd::optional<AZStd::string> newSourceNodeName = AZStd::nullopt;

@@ -1983,7 +1983,6 @@ public:
 
         for (size_t i = 0, count = m_subsets.size(); i < count; ++i)
         {
-            const SMeshSubset& subset = m_subsets[i];
 
             float posArea;
             float texArea;

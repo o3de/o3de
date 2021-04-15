@@ -63,6 +63,7 @@ namespace AZ
         // [GFX TODO][ATOM-13182] Add unit tests for DynamicBufferAllocator's Allocate function 
         RHI::Ptr<DynamicBuffer> DynamicBufferAllocator::Allocate(uint32_t size, [[maybe_unused]]uint32_t alignment)
         {
+            size = RHI::AlignUp(size, alignment);
             uint32_t allocatePosition = 0;
 
             //m_ringBufferStartAddress can be null for Null back end

@@ -140,7 +140,6 @@ TEST_F(ScriptCanvasTestFixture, NodeGenerics)
     EXPECT_TRUE(graph != nullptr);
     graph->GetEntity()->Init();
 
-    const AZ::EntityId& graphEntityId = graph->GetEntityId();
     const ScriptCanvasId& graphUniqueId = graph->GetScriptCanvasId();
 
     AZ::EntityId startID;
@@ -154,7 +153,7 @@ TEST_F(ScriptCanvasTestFixture, NodeGenerics)
     CreateTestNode<NoArgsReturnNode>(graphUniqueId, noArgsReturnNodeID);
 
     AZ::EntityId normalizeWithDefaultNodeID;
-    auto normalizeWithDefaultNode = CreateTestNode<NormalizeWithDefaultNode>(graphUniqueId, normalizeWithDefaultNodeID);
+    CreateTestNode<NormalizeWithDefaultNode>(graphUniqueId, normalizeWithDefaultNodeID);
 
     AZ::EntityId unused0, unused1;
     CreateTestNode<ArgsReturnMultiNode>(graphUniqueId, unused0);
@@ -189,7 +188,6 @@ TEST_F(ScriptCanvasTestFixture, NodeGenericsByValue)
     EXPECT_TRUE(graph != nullptr);
     graph->GetEntity()->Init();
 
-    const AZ::EntityId& graphEntityId = graph->GetEntityId();
     const ScriptCanvasId& graphUniqueId = graph->GetScriptCanvasId();
 
     AZ::EntityId startID;
@@ -279,7 +277,6 @@ TEST_F(ScriptCanvasTestFixture, NodeGenericsByPointer)
     EXPECT_TRUE(graph != nullptr);
     graph->GetEntity()->Init();
 
-    const AZ::EntityId& graphEntityId = graph->GetEntityId();
     const ScriptCanvasId& graphUniqueId = graph->GetScriptCanvasId();
 
     AZ::EntityId startID;
@@ -372,7 +369,6 @@ TEST_F(ScriptCanvasTestFixture, NodeGenericsByReference)
     EXPECT_TRUE(graph != nullptr);
     graph->GetEntity()->Init();
 
-    const AZ::EntityId& graphEntityId = graph->GetEntityId();
     const ScriptCanvasId& graphUniqueId = graph->GetScriptCanvasId();
 
     AZ::EntityId startID;
@@ -542,7 +538,6 @@ TEST_F(ScriptCanvasTestFixture, NodeGenericsByPointerInteger)
     EXPECT_TRUE(graph != nullptr);
     graph->GetEntity()->Init();
 
-    const AZ::EntityId& graphEntityId = graph->GetEntityId();
     const ScriptCanvasId& graphUniqueId = graph->GetScriptCanvasId();
 
     AZ::EntityId startID;
@@ -624,7 +619,6 @@ TEST_F(ScriptCanvasTestFixture, NodeGenericsByReferenceInteger)
     EXPECT_TRUE(graph != nullptr);
     graph->GetEntity()->Init();
 
-    const AZ::EntityId& graphEntityId = graph->GetEntityId();
     const ScriptCanvasId& graphUniqueId = graph->GetScriptCanvasId();
 
     AZ::EntityId startID;
@@ -706,7 +700,6 @@ TEST_F(ScriptCanvasTestFixture, NodeGenericsByValueMulti)
     EXPECT_TRUE(graph != nullptr);
     graph->GetEntity()->Init();
 
-    const AZ::EntityId& graphEntityId = graph->GetEntityId();
     const ScriptCanvasId& graphUniqueId = graph->GetScriptCanvasId();
 
     AZ::EntityId startID;
@@ -837,7 +830,6 @@ TEST_F(ScriptCanvasTestFixture, NodeGenericsByReferenceMulti)
     EXPECT_TRUE(graph != nullptr);
     graph->GetEntity()->Init();
 
-    const AZ::EntityId& graphEntityId = graph->GetEntityId();
     const ScriptCanvasId& graphUniqueId = graph->GetScriptCanvasId();
 
     AZ::EntityId startID;
@@ -968,7 +960,6 @@ TEST_F(ScriptCanvasTestFixture, NodeGenericsByPointerMulti)
     EXPECT_TRUE(graph != nullptr);
     graph->GetEntity()->Init();
 
-    const AZ::EntityId& graphEntityId = graph->GetEntityId();
     const ScriptCanvasId& graphUniqueId = graph->GetScriptCanvasId();
 
     AZ::EntityId startID;

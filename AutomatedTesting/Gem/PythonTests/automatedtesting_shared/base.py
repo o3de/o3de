@@ -20,7 +20,7 @@ import ly_test_tools.environment.file_system as file_system
 import ly_test_tools.environment.process_utils as process_utils
 import ly_test_tools.environment.waiter as waiter
 
-from ly_test_tools.lumberyard.asset_processor import AssetProcessor
+from ly_test_tools.o3de.asset_processor import AssetProcessor
 from ly_test_tools.launchers.exceptions import WaitTimeoutError
 from ly_test_tools.log.log_monitor import LogMonitor, LogMonitorException
 

@@ -39,7 +39,6 @@ namespace EMotionFX
         for (const AZStd::pair<AZ::TypeId, AZStd::string>& typePair : m_types)
         {
             const AZ::TypeId& type = typePair.first;
-            const AZStd::string& typeString = typePair.second;
 
             if (m_typePrefix.empty())
             {

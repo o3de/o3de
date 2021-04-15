@@ -457,8 +457,9 @@ namespace DebugDraw
 
         // Determine if we need gamma conversion
         bool needsGammaConversion = false;
-        bool isInGameMode = true;
+
         #ifdef DEBUGDRAW_GEM_EDITOR
+        bool isInGameMode = true;
         AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(isInGameMode, &AzToolsFramework::EditorEntityContextRequestBus::Events::IsEditorRunningGame);
         if (isInGameMode)
         {

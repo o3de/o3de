@@ -28,6 +28,17 @@ function(ios_get_dependencies_recursive ios_DEPENDENCIES ly_TARGET)
         return() # Nothing to do
     endif()
 
+    # See if we already have dependencies cached.
+    get_property(are_dependencies_cached GLOBAL PROPERTY LY_RUNTIME_DEPENDENCIES_${ly_TARGET} SET)
+    if(are_dependencies_cached)
+
+        # We already walked through this target
+        get_property(cached_dependencies GLOBAL PROPERTY LY_RUNTIME_DEPENDENCIES_${ly_TARGET})
+        set(${ios_DEPENDENCIES} ${cached_dependencies} PARENT_SCOPE)
+        return()
+
+    endif()
+
     # Collect all direct dependencies.
     unset(direct_dependencies)
     unset(dependencies)
@@ -102,6 +113,7 @@ function(ios_get_dependencies_recursive ios_DEPENDENCIES ly_TARGET)
 
     # Remove duplicate dependencies and return.
     list(REMOVE_DUPLICATES all_dependencies)
+    set_property(GLOBAL PROPERTY LY_RUNTIME_DEPENDENCIES_${ly_TARGET} "${all_dependencies}")
     set(${ios_DEPENDENCIES} ${all_dependencies} PARENT_SCOPE)
 
 endfunction()

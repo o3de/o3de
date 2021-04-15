@@ -39,7 +39,7 @@ namespace AzQtComponents
     } // namespace Internal
 
     /**
-    * The UI 2.0 Lumberyard Qt Style.
+    * The UI 2.0 Open 3D Engine Qt Style.
     * 
     * Should not need to be used directly; use the AzQtComponents::StyleManager instead.
     *

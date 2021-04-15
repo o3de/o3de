@@ -16,12 +16,13 @@
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
+#include <AzFramework/Viewport/ScreenGeometry.h>
 #include <AzCore/Script/ScriptTimePoint.h>
 
 #include <QApplication>
 
-static const auto ManipulatorPriority = AzFramework::ViewportControllerPriority::Highest;
-static const auto InteractionPriority = AzFramework::ViewportControllerPriority::High;
+static const auto ManipulatorPriority = AzFramework::ViewportControllerPriority::High;
+static const auto InteractionPriority = AzFramework::ViewportControllerPriority::Low;
 
 namespace SandboxEditor
 {
@@ -99,18 +100,16 @@ bool ViewportManipulatorControllerInstance::HandleInputChannelEvent(const AzFram
         // Cache the ray trace results when doing manipulator interaction checks, no need to recalculate after
         if (event.m_priority == ManipulatorPriority)
         {
-            QPoint screenPosition = QPoint();
+            AzFramework::ScreenPoint screenPosition = AzFramework::ScreenPoint(0, 0);
             ViewportMouseCursorRequestBus::EventResult(
-                screenPosition, GetViewportId(),
-                &ViewportMouseCursorRequestBus::Events::ViewportCursorScreenPosition
-            );
-            m_state.m_mousePick.m_screenCoordinates = AzFramework::ScreenPoint{screenPosition.x(), screenPosition.y()};
+                screenPosition, GetViewportId(), &ViewportMouseCursorRequestBus::Events::ViewportCursorScreenPosition);
+
+            m_state.m_mousePick.m_screenCoordinates = screenPosition;
             AZStd::optional<ProjectedViewportRay> ray;
             ViewportInteractionRequestBus::EventResult(
-                ray, GetViewportId(),
-                &ViewportInteractionRequestBus::Events::ViewportScreenToWorldRay,
-                screenPosition
-            );
+                ray, GetViewportId(), &ViewportInteractionRequestBus::Events::ViewportScreenToWorldRay,
+                QPoint(screenPosition.m_x, screenPosition.m_y));
+
             if (ray.has_value())
             {
                 m_state.m_mousePick.m_rayOrigin = ray.value().origin;

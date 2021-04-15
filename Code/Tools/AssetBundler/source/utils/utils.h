@@ -14,7 +14,7 @@
 
 #include <AzCore/std/string/string.h>
 #include <AzCore/Debug/TraceMessageBus.h>
-#include <AzCore/IO/SystemFile.h> //AZ_MAX_PATH_LEN
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
 #include <AzToolsFramework/Asset/AssetBundler.h>
@@ -246,10 +246,10 @@ namespace AssetBundler
         AZStd::string ErrorString() const;
         bool IsValid() const;
     private:
-        void ComputeAbsolutePath(AZStd::string& filePath, const AZStd::string& platformIdentifier, bool checkFileCase, bool ignoreFileCase);
+        void ComputeAbsolutePath(const AZStd::string& platformIdentifier, bool checkFileCase, bool ignoreFileCase);
 
-        AZStd::string m_absolutePath;
-        AZStd::string m_originalPath;
+        AZ::IO::Path m_absolutePath;
+        AZ::IO::Path m_originalPath;
         AZStd::string m_errorString;
         bool m_validPath = false;
     };

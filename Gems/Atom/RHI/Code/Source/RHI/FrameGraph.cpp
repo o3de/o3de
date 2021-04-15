@@ -235,6 +235,7 @@ namespace AZ
             ImageFrameAttachment& frameAttachment,
             const ResolveScopeAttachmentDescriptor& descriptor)
         {
+#if defined(AZ_ENABLE_TRACING)
             if (Validation::IsEnabled())
             {
                 auto found = AZStd::find_if(m_currentScope->m_imageAttachments.begin(), m_currentScope->m_imageAttachments.end(), [&descriptor](const auto& scopeAttachment)
@@ -248,6 +249,7 @@ namespace AZ
                     descriptor.m_resolveAttachmentId.GetCStr(),
                     descriptor.m_attachmentId.GetCStr());
             }
+#endif
 
             // TODO:[ATOM-1267] Replace with writer / reader dependencies.
             if (Scope* producer = frameAttachment.GetLastScope())

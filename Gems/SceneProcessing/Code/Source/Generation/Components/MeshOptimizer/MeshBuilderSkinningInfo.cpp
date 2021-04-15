@@ -14,6 +14,8 @@
 #include <AzCore/std/sort.h>
 
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/std/algorithm.h>
+#include <AzCore/std/numeric.h>
 #include "MeshBuilderSkinningInfo.h"
 #include "MeshBuilderSubMesh.h"
 #include "MeshBuilder.h"
@@ -35,58 +37,30 @@ namespace AZ::MeshBuilder
     // optimize weights
     void MeshBuilderSkinningInfo::OptimizeSkinningInfluences(AZStd::vector<Influence>& influences, float tolerance, size_t maxWeights)
     {
-        if (influences.empty())
+        const auto influenceLess = [](const Influence& left, const Influence& right) { return left.mWeight < right.mWeight; };
+
+        // Move all the items greater than the tolerance to the end of the array
+        auto removePoint = AZStd::remove_if(begin(influences), end(influences), [tolerance](const Influence& influence) { return influence.mWeight < tolerance; });
+        if (removePoint == begin(influences))
         {
-            return; // vertex has no weights, so nothing to optimize
+            // If this would remove all influences, keep the biggest one
+            auto [_, maxElement] = AZStd::minmax_element(begin(influences), end(influences), influenceLess);
+            AZStd::swap(removePoint, maxElement);
+            ++removePoint;
         }
         // remove all weights below the tolerance
-        // at least keep one weight left after this optimization
-        for (auto it = begin(influences); it != end(influences);)
-        {
-            if (influences.size() == 1)
-            {
-                break;
-            }
-
-            float weight = it->mWeight;
-            if (weight < tolerance)
-            {
-                influences.erase(it);
-            }
-            else
-            {
-                ++it;
-            }
-        }
-
+        influences.erase(removePoint, end(influences));
 
         // reduce number of weights when needed
         while (influences.size() > maxWeights)
         {
-            float minWeight = FLT_MAX;
-            AZStd::vector<Influence>::iterator minInfluence = end(influences);
-
-            // find the smallest weight
-            for (auto it = begin(influences); it != end(influences); ++it)
-            {
-                if (it->mWeight < minWeight)
-                {
-                    minWeight = it->mWeight;
-                    minInfluence = it;
-                }
-            }
-
             // remove this smallest weight
+            const auto [minInfluence, _] = AZStd::minmax_element(begin(influences), end(influences), influenceLess);
             influences.erase(minInfluence);
         }
 
-
         // calculate the total weight
-        float totalWeight = 0;
-        for (const Influence& influence : influences)
-        {
-            totalWeight += influence.mWeight;
-        }
+        const float totalWeight = AZStd::accumulate(begin(influences), end(influences), 0.0f, [](float total, const Influence& influence) { return total + influence.mWeight; });
 
         // normalize
         for (Influence& influence : influences)

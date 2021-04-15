@@ -669,7 +669,6 @@ AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS
     StringOutcome BuilderSettingManager::LoadBuilderSettings()
     {
         StringOutcome outcome = STRING_OUTCOME_ERROR("");
-        AZ::IO::FileIOBase* ioInstance = AZ::IO::FileIOBase::GetInstance();
         // Construct the project setting path that is used by the tool for loading setting file
         const char* gameFolderPath = nullptr;
         AzToolsFramework::AssetSystemRequestBus::BroadcastResult(gameFolderPath, &AzToolsFramework::AssetSystemRequestBus::Events::GetAbsoluteDevGameFolderPath);

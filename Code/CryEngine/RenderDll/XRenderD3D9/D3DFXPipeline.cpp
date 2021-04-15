@@ -452,7 +452,6 @@ void CD3D9Renderer::FX_SetActiveRenderTargets(bool /*bAllowDip*/)
         return;
     }
     FUNCTION_PROFILER_RENDER_FLAT
-    HRESULT hr = S_OK;
     bool bDirty = false;
     if (m_nMaxRT2Commit >= 0)
     {
@@ -1757,8 +1756,8 @@ void CD3D9Renderer::FX_CommitStates(const SShaderTechnique* pTech, const SShader
         rRP.m_FlagsShader_RT |= g_HWSR_MaskBit[HWSR_ALPHATEST];
     }
 
-    int nBlend;
-    if (nBlend = (rRP.m_CurState & (GS_BLEND_MASK & ~GS_BLALPHA_MASK)))
+    int nBlend = rRP.m_CurState & (GS_BLEND_MASK & ~GS_BLALPHA_MASK);
+    if (nBlend)
     {
         //set alpha blend shader flag when the blend mode for color is set to alpha blend.
         if (nBlend == (GS_BLSRC_SRCALPHA | GS_BLDST_ONEMINUSSRCALPHA)
@@ -2433,16 +2432,14 @@ TArray<CRenderObject*> CD3D9Renderer::s_tempObjects[2];
 TArray<SRendItem*> CD3D9Renderer::s_tempRIs;
 
 // Actual drawing of instances
-void CD3D9Renderer::FX_DrawInstances([[maybe_unused]] CShader* ef, SShaderPass* slw, int nRE, uint32 nStartInst, uint32 nLastInst, uint32 nUsedAttr, [[maybe_unused]] byte* InstanceData, int nInstAttrMask, byte Attributes[], [[maybe_unused]] short dwCBufSlot)
+void CD3D9Renderer::FX_DrawInstances([[maybe_unused]] CShader* ef, SShaderPass* slw, [[maybe_unused]] int nRE, uint32 nStartInst, uint32 nLastInst, uint32 nUsedAttr, [[maybe_unused]] byte* InstanceData, int nInstAttrMask, byte Attributes[], [[maybe_unused]] short dwCBufSlot)
 {
     DETAILED_PROFILE_MARKER("FX_DrawInstances");
     uint32 i;
 
-    CHWShader_D3D* vp = (CHWShader_D3D*)slw->m_VShader;
 
     SRenderPipeline& RESTRICT_REFERENCE rRP = m_RP;
 
-    SRendItem** rRIs = &(rRP.m_RIs[nRE][0]);
 
     if (!CHWShader_D3D::s_pCurInstVS || !CHWShader_D3D::s_pCurInstPS || CHWShader_D3D::s_pCurInstVS->m_bFallback || CHWShader_D3D::s_pCurInstPS->m_bFallback)
     {
@@ -2454,7 +2451,6 @@ void CD3D9Renderer::FX_DrawInstances([[maybe_unused]] CShader* ef, SShaderPass* 
     {
         // Set the stream 3 to be per instance data and iterate once per instance
         rRP.m_PersFlags1 &= ~(RBPF1_USESTREAM << 3);
-        int nCompared = 0;
         if (!FX_CommitStreams(slw, false))
         {
             return;
@@ -2520,7 +2516,6 @@ void CD3D9Renderer::FX_DrawInstances([[maybe_unused]] CShader* ef, SShaderPass* 
     int nInsts = nLastInst - nStartInst + 1;
     {
         //PROFILE_FRAME(Draw_ShaderIndexMesh);
-        int nPolysPerInst = rRP.m_RendNumIndices / 3;
 #ifndef _RELEASE
         char instanceLabel[64];
         if (CV_r_geominstancingdebug)
@@ -2551,6 +2546,7 @@ void CD3D9Renderer::FX_DrawInstances([[maybe_unused]] CShader* ef, SShaderPass* 
 #endif
 
 #if defined(ENABLE_PROFILING_CODE)
+        int nPolysPerInst = rRP.m_RendNumIndices / 3;
         int nPolysAll = nPolysPerInst * nInsts;
         rRP.m_PS[rRP.m_nProcessThreadID].m_nPolygons[rRP.m_nPassGroupDIP] += rRP.m_RendNumIndices / 3;
         rRP.m_PS[rRP.m_nProcessThreadID].m_nDIPs[rRP.m_nPassGroupDIP] += nInsts;
@@ -2766,7 +2762,6 @@ void CD3D9Renderer::FX_DrawShader_InstancedHW(CShader* ef, SShaderPass* slw)
                 int nStreamMask = rRP.m_FlagsStreams_Stream >> 1;
                 int nVFormat = rRP.m_CurVFormat.GetEnum();
                 uint32 nCO = 0;
-                int nCI = 0;
                 uint32 dwDeclarationSize = 0;
                 if (dwDeclarationSize + nUsedAttr - 1 > 16)
                 {
@@ -2785,7 +2780,6 @@ void CD3D9Renderer::FX_DrawShader_InstancedHW(CShader* ef, SShaderPass* slw)
                                 nLastInst = nCurInst + (nParamsPerInstAllowed / nUsedAttr) - 1;
                             }
                         }
-                        byte* inddata = NULL;
                         {
                             vb.Allocate(nLastInst - nCurInst + 1, nUsedAttr * INST_PARAM_SIZE);
                             data = (byte*) vb.Lock();
@@ -2915,7 +2909,6 @@ byte CD3D9Renderer::FX_StartQuery(SRendItem* pRI)
         return 0;
     }
 #endif
-    return 0;
 }
 
 void CD3D9Renderer::FX_EndQuery(SRendItem* pRI, byte bStartQ)
@@ -2946,7 +2939,6 @@ void CD3D9Renderer::FX_DrawBatchesSkinned(CShader* pSh, SShaderPass* pPass, SSki
     CREMeshImpl* pRE = (CREMeshImpl*) rRP.m_pRE;
     CRenderObject* const pSaveObj = rRP.m_pCurObject;
 
-    size_t size = 0, offset = 0;
     CHWShader_D3D* pCurGS = (CHWShader_D3D*)pPass->m_GShader;
 
 
@@ -3137,9 +3129,8 @@ done:
 #if defined(DO_RENDERSTATS)
 void CD3D9Renderer::FX_TrackStats([[maybe_unused]] CRenderObject* pObj, [[maybe_unused]] IRenderMesh* pRenderMesh)
 {
-    SRenderPipeline& RESTRICT_REFERENCE rRP = m_RP;
 #if !defined(_RELEASE)
-
+    SRenderPipeline& RESTRICT_REFERENCE rRP = m_RP;
     if (pObj)
     {
         if (IRenderNode* pRenderNode = (IRenderNode*)pObj->m_pRenderNode)
@@ -3271,8 +3262,9 @@ void CD3D9Renderer::FX_DrawBatches(CShader* pSh, SShaderPass* pPass)
     if (bHWSkinning)
     {
         SRenderObjData* pOD = rRP.m_pCurObject->GetObjData();
-        if (!pOD || !(pSkinningData = pOD->m_pSkinningData))
+        if (!pOD || !pOD->m_pSkinningData)
         {
+            pSkinningData = pOD->m_pSkinningData;
             bHWSkinning = false;
             Warning("Warning: Skinned geometry used without character instance");
         }
@@ -3497,7 +3489,6 @@ void CD3D9Renderer::FX_DrawShader_General(CShader* ef, SShaderTechnique* pTech)
 
     PROFILE_FRAME(DrawShader_Generic);
 
-    SThreadInfo& RESTRICT_REFERENCE rTI = m_RP.m_TI[m_RP.m_nProcessThreadID];
 
     EF_Scissor(false, 0, 0, 0, 0);
 
@@ -3555,7 +3546,6 @@ void CD3D9Renderer::FX_DrawShader_Fur(CShader* ef, SShaderTechnique* pTech)
     {
         PROFILE_FRAME(DrawShader_Fur);
 
-        SThreadInfo& RESTRICT_REFERENCE rTI = m_RP.m_TI[m_RP.m_nProcessThreadID];
 
         EF_Scissor(false, 0, 0, 0, 0);
 
@@ -3847,8 +3837,6 @@ void CD3D9Renderer::FX_DrawMultiLayers()
             {
                 s_tempRIs.SetUse(0);
 
-                float fDistToCam = 500.0f;
-                float fDist = CV_r_detaildistance;
                 CRenderObject* pObj = m_RP.m_pCurObject;
                 uint32 nObj = 0;
 
@@ -3870,7 +3858,6 @@ void CD3D9Renderer::FX_DrawMultiLayers()
                 }
             }
 
-            SShaderItem& pMtlShaderItem = pCurrMtl->GetShaderItem();
             int nSaveLastRE = m_RP.m_nLastRE;
             m_RP.m_nLastRE = 0;
 
@@ -4112,7 +4099,6 @@ bool CD3D9Renderer::FX_SetResourcesState()
         m_RP.m_FlagsPerFlush &= ~RBSI_INSTANCED;
     }
 
-    bool bRes = true;
     if (uResFlags & MTL_FLAG_2SIDED)
     {
         D3DSetCull(eCULL_None);
@@ -4715,8 +4701,7 @@ void CD3D9Renderer::FX_FlushShader_ShadowGen()
         }
     }
 
-    SThreadInfo& RESTRICT_REFERENCE rTI = rRP.m_TI[rRP.m_nProcessThreadID];
-    assert(rTI.m_PersFlags & RBPF_SHADOWGEN);
+    assert(rRP.m_TI[rRP.m_nProcessThreadID].m_PersFlags & RBPF_SHADOWGEN);
 
     CRenderObject* pObj = rRP.m_pCurObject;
 
@@ -4734,7 +4719,6 @@ void CD3D9Renderer::FX_FlushShader_ShadowGen()
     }
 #endif
 
-    SPipeStat& rPS = rRP.m_PS[rRP.m_nProcessThreadID];
 #ifndef _RELEASE
     sBatchStats(rRP);
 #endif
@@ -4874,8 +4858,7 @@ void CD3D9Renderer::FX_FlushShader_ZPass()
         }
     }
 
-    SThreadInfo& RESTRICT_REFERENCE rTI = rRP.m_TI[rRP.m_nProcessThreadID];
-    assert(!(rTI.m_PersFlags & RBPF_SHADOWGEN));
+    assert(!(rRP.m_TI[rRP.m_nProcessThreadID].m_PersFlags & RBPF_SHADOWGEN));
     assert(rRP.m_nBatchFilter & (FB_Z | FB_ZPREPASS | FB_POST_3D_RENDER));
 
 #ifdef DO_RENDERLOG
@@ -5098,7 +5081,6 @@ void TexBlurAnisotropicVertical(CTexture* pTex, int nAmount, float fScale, [[may
     gRenDev->FX_SetState(GS_NODEPTHTEST);
 
     // setup texture offsets, for texture sampling
-    float s1 = 1.0f / (float) pTex->GetWidth();
     float t1 = 1.0f / (float) pTex->GetHeight();
 
     Vec4 pWeightsPS;
@@ -5233,14 +5215,6 @@ bool CD3D9Renderer::FX_DrawToRenderTarget(CShader* pShader, CShaderResources* pR
 
             bMakeEnvironmentTexture = (!pEnvTex->m_pTex || pEnvTex->m_pTex->GetFormat() != eTF);
         }
-
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-        // do not re-create the environment texture for the RTT pass for now, just use the existing one.
-        if (m_RP.m_TI[nThreadList].m_PersFlags & RBPF_RENDER_SCENE_TO_TEXTURE && pEnvTex->m_pTex)
-        {
-            bMakeEnvironmentTexture = false;
-        }
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
 
         // clamping to a reasonable texture size
         if (nWidth < 32)
@@ -5402,7 +5376,6 @@ bool CD3D9Renderer::FX_DrawToRenderTarget(CShader* pShader, CShaderResources* pR
         Vec3 camPos = GetCamera().GetPosition();
         float fDistCam = (camPos - m_RP.m_LastWaterPosUpdate).GetLength();
         float fDotView = camView * m_RP.m_LastWaterViewdirUpdate;
-        float fDotUp = camUp * m_RP.m_LastWaterUpdirUpdate;
         float fFOV = GetCamera().GetFov();
         if (m_RP.m_fLastWaterUpdate - 1.0f > m_RP.m_TI[nThreadList].m_RealTime)
         {

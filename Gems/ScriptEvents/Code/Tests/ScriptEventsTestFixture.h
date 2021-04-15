@@ -82,8 +82,7 @@ namespace ScriptEventsTests
 
                 Utilities::Reflect(behaviorContext);
 
-                AZ::Entity* systemEntity = s_application->FindEntity(AZ::SystemEntityId);
-                AZ_Assert(systemEntity, "SystemEntity must exist");
+                AZ_Assert(s_application->FindEntity(AZ::SystemEntityId), "SystemEntity must exist");
 
             }
 
@@ -92,8 +91,7 @@ namespace ScriptEventsTests
 
         static void TearDownTestCase()
         {
-            AZ::Entity* systemEntity = s_application->FindEntity(AZ::SystemEntityId);
-            AZ_Assert(systemEntity, "SystemEntity must exist");
+            AZ_Assert(s_application->FindEntity(AZ::SystemEntityId), "SystemEntity must exist");
 
             AZ::Data::AssetManager::Instance().DispatchEvents();
 

@@ -44,6 +44,7 @@ namespace AZ
             void PushView(const Name& contextName, ViewPtr view) override;
             bool PopView(const Name& contextName, ViewPtr view) override;
             ViewPtr GetCurrentView(const Name& contextName) const override;
+            ViewportContextPtr GetDefaultViewportContext() const override;
 
         private:
             void RegisterViewportContext(const Name& contextName, ViewportContextPtr viewportContext);
@@ -67,6 +68,8 @@ namespace AZ
             AZStd::unordered_map<AZ::Name, ViewPtrStack> m_viewportViews;
             mutable AZStd::recursive_mutex m_containerMutex;
             AZStd::atomic<AzFramework::ViewportId> m_currentViewportId = StartingViewportId;
+
+            AZ::Name m_defaultViewportContextName;
 
             friend class RPISystem;
             friend class ViewportContext;

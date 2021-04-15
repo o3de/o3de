@@ -272,7 +272,6 @@ namespace EMStudio
 
                 // All the connections are stored in the downstream node, so the target node is constant
                 // across all connections
-                GraphNode* targetNode = graphNode;
                 EMotionFX::AnimGraphNode* emfxTargetNode = indexAndGraphNode.first.data(AnimGraphModel::ROLE_NODE_POINTER).value<EMotionFX::AnimGraphNode*>();
 
                 // iterate through all connections connected to this node

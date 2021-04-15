@@ -52,7 +52,6 @@ namespace SurfaceData
         {
             behaviorContext->Class<SurfacePoint>()
                 ->Constructor()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Attribute(AZ::Script::Attributes::Module, "surface_data")
                 ->Property("entityId", BehaviorValueProperty(&SurfacePoint::m_entityId))
@@ -66,7 +65,6 @@ namespace SurfaceData
                 ;
 
             behaviorContext->EBus<SurfaceDataSystemRequestBus>("SurfaceDataSystemRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Attribute(AZ::Script::Attributes::Module, "surface_data")
                 ->Event("GetSurfacePoints", &SurfaceDataSystemRequestBus::Events::GetSurfacePoints)

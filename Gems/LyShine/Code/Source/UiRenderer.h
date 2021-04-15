@@ -32,20 +32,16 @@ public: // types
     struct UiShaderData
     {
         AZ::RHI::ShaderInputImageIndex m_imageInputIndex;
-        AZ::RHI::ShaderInputSamplerIndex m_samplerInputIndex;
         AZ::RHI::ShaderInputConstantIndex m_viewProjInputIndex;
         AZ::RHI::ShaderInputConstantIndex m_isClampInputIndex;
 
         AZ::RPI::ShaderVariantId m_shaderVariantDefault;
-
-        AZ::RPI::ShaderVariantKey m_shaderVariantKeyFallback;
-        AZ::RPI::ShaderVariantStableId m_defaultVariantStableId;
     };
 
 public: // member functions
 
     //! Constructor, constructed by the LyShine class
-    UiRenderer();
+    UiRenderer(AZ::RPI::ViewportContextPtr viewportContext = nullptr);
     ~UiRenderer();
 
     //! Returns whether RPI has loaded all its assets and is ready to render
@@ -63,7 +59,7 @@ public: // member functions
     //! End the rendering of a UI canvas
     void EndCanvasRender();
 
-    //! Return the dynamic draw context used for LyShine
+    //! Return the dynamic draw context associated with this UI renderer
     AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> GetDynamicDrawContext();
 
     //! Return the shader data for the ui shader
@@ -109,12 +105,21 @@ private: // member functions
     void OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene) override;
     // ~AZ::Render::Bootstrap::Notification
 
+    //! Create a scene for the user defined viewportContext
+    AZ::RPI::ScenePtr CreateScene(AZStd::shared_ptr<AZ::RPI::ViewportContext> viewportContext);
+
+    //! Create a dynamic draw context for this renderer
+    void CreateDynamicDrawContext(AZ::RPI::ScenePtr scene, AZ::Data::Instance<AZ::RPI::Shader>);
+
+    //! Return the viewport context set by the user, or the default if not set
+    AZStd::shared_ptr<AZ::RPI::ViewportContext> GetViewportContext();
+
     //! Bind the global white texture for all the texture units we use
     void BindNullTexture();
 
     //! Store shader data for later use
-    void CacheShaderData(const AZ::Data::Instance<AZ::RPI::Shader> shader);
-    
+    void CacheShaderData(const AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext>& dynamicDraw);
+
 protected: // attributes
 
     static constexpr char LogName[] = "UiRenderer";
@@ -124,8 +129,10 @@ protected: // attributes
 
     UiShaderData m_uiShaderData;
     AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> m_dynamicDraw;
+    bool m_isRPIReady = false;
 
-    bool m_isReady = false;
+    // Set by user when viewport context is not the main/default viewport
+    AZStd::shared_ptr<AZ::RPI::ViewportContext> m_viewportContext;
 
 #ifndef _RELEASE
     int m_debugTextureDataRecordLevel = 0;

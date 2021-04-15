@@ -120,7 +120,6 @@ namespace AZ
             const RHI::ResultCode result = BuildNativeFramebuffer();
             if (result == RHI::ResultCode::Success)
             {
-                auto& device = static_cast<Device&>(GetDevice());
                 SetName(GetName());
             }
             return result;

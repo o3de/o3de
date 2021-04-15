@@ -25,9 +25,5 @@ typedef AZ::s32 int32;
 typedef AZ::s32 sint32;
 typedef AZ::u32 uint32;
 
-typedef AZ::s64 int64;
-typedef AZ::s64 sint64;
-typedef AZ::u64 uint64;
-
 typedef float  f32;
 typedef double f64;
