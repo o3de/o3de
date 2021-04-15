@@ -210,6 +210,12 @@ namespace AZ
             {
                 return GetCPUGPUMemoryMode();
             }
+            
+            //This flag is used for IA buffers that is updated frequently and hence shared mmory is the best fit
+            if (RHI::CheckBitsAll(descriptor.m_bindFlags, RHI::BufferBindFlags::DynamicInputAssembly))
+            {
+                return MTLStorageModeShared;
+            }
                  
             return GetCPUGPUMemoryMode();
         }

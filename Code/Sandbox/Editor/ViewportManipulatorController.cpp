@@ -21,8 +21,8 @@
 
 #include <QApplication>
 
-static const auto ManipulatorPriority = AzFramework::ViewportControllerPriority::Highest;
-static const auto InteractionPriority = AzFramework::ViewportControllerPriority::High;
+static const auto ManipulatorPriority = AzFramework::ViewportControllerPriority::High;
+static const auto InteractionPriority = AzFramework::ViewportControllerPriority::Low;
 
 namespace SandboxEditor
 {

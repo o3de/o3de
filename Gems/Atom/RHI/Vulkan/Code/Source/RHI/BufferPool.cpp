@@ -107,6 +107,7 @@ namespace AZ
             bool forceUnique = RHI::CheckBitsAny(
                 bufferDescriptor.m_bindFlags,
                 RHI::BufferBindFlags::InputAssembly |
+                RHI::BufferBindFlags::DynamicInputAssembly |
                 RHI::BufferBindFlags::RayTracingAccelerationStructure |
                 RHI::BufferBindFlags::RayTracingShaderTable);
 
