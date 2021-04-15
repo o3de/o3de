@@ -56,6 +56,27 @@ ly_add_target(
         Gem::CertificateManager
 )
 
+
+if (PAL_TRAIT_BUILD_HOST_TOOLS)
+    ly_add_target(
+        NAME Multiplayer.Tools MODULE
+        NAMESPACE Gem
+        OUTPUT_NAME Gem.Multiplayer.Tools
+        FILES_CMAKE
+            multiplayer_tools_files.cmake
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                Source
+                .
+            PUBLIC
+                Include
+        BUILD_DEPENDENCIES
+            PRIVATE
+                AZ::AzToolsFramework
+                Gem::Multiplayer.Static
+    )
+endif()
+
 ################################################################################
 # Tests
 ################################################################################

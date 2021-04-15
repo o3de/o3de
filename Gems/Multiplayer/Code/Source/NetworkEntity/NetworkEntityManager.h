@@ -14,11 +14,15 @@
 
 #include <AzCore/EBus/ScheduledEvent.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzFramework/Spawnable/RootSpawnableInterface.h>
+#include <AzFramework/Spawnable/SpawnableMonitor.h>
 #include <Source/NetworkEntity/INetworkEntityManager.h>
 #include <Source/NetworkEntity/NetworkEntityAuthorityTracker.h>
 #include <Source/NetworkEntity/NetworkEntityTracker.h>
 #include <Source/NetworkEntity/NetworkEntityRpcMessage.h>
 #include <Source/EntityDomains/IEntityDomain.h>
+#include <Source/NetworkEntity/NetworkSpawnableLibrary.h>
+
 
 namespace Multiplayer
 {
@@ -26,6 +30,7 @@ namespace Multiplayer
     //! This class creates and manages all networked entities.
     class NetworkEntityManager final
         : public INetworkEntityManager
+        , public AzFramework::RootSpawnableNotificationBus::Handler
     {
     public:
         NetworkEntityManager();
@@ -40,6 +45,11 @@ namespace Multiplayer
         NetworkEntityAuthorityTracker* GetNetworkEntityAuthorityTracker() override;
         HostId GetHostId() const override;
         ConstNetworkEntityHandle GetEntity(NetEntityId netEntityId) const override;
+
+        EntityList CreateEntitiesImmediate(const AzFramework::Spawnable& spawnable);
+
+        void CreateEntitiesImmediate(const PrefabEntityId& a_SliceEntryId) override;
+
         uint32_t GetEntityCount() const override;
         NetworkEntityHandle AddEntityToEntityMap(NetEntityId netEntityId, AZ::Entity* entity) override;
         void MarkForRemoval(const ConstNetworkEntityHandle& entityHandle) override;
@@ -61,19 +71,32 @@ namespace Multiplayer
         void DispatchLocalDeferredRpcMessages();
         void UpdateEntityDomain();
         void OnEntityExitDomain(NetEntityId entityId);
+        //! RootSpawnableNotificationBus
+        //! @{
+        void OnRootSpawnableAssigned(AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable, uint32_t generation) override;
+        void OnRootSpawnableReleased(uint32_t generation) override;
+        //! @}
 
     private:
+        class NetworkSpawnableMonitor final : public AzFramework::SpawnableMonitor
+        {
+        public:
+            explicit NetworkSpawnableMonitor(NetworkEntityManager& entityManager);
+            void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+
+            NetworkEntityManager& m_entityManager;
+        };
 
         void OnEntityAdded(AZ::Entity* entity);
         void OnEntityRemoved(AZ::Entity* entity);
         void RemoveEntities();
 
+        NetEntityId NextId();
+
         NetworkEntityTracker m_networkEntityTracker;
         NetworkEntityAuthorityTracker m_networkEntityAuthorityTracker;
         AZ::ScheduledEvent m_removeEntitiesEvent;
         AZStd::vector<NetEntityId> m_removeList;
-        AZStd::vector<AZ::Entity*> m_nonNetworkedEntities; // Contains entities that we've instantiated, but are not networked entities
-
         AZStd::unique_ptr<IEntityDomain> m_entityDomain;
         AZ::ScheduledEvent m_updateEntityDomainEvent;
 
@@ -95,5 +118,9 @@ namespace Multiplayer
         // This is done to prevent local and network sent RPC's from having different dispatch behaviours
         typedef AZStd::deque<NetworkEntityRpcMessage> DeferredRpcMessages;
         DeferredRpcMessages m_localDeferredRpcMessages;
+
+        NetworkSpawnableLibrary m_networkPrefabLibrary;
+        NetworkSpawnableMonitor m_rootSpawnableMonitor;
+        AZ::Data::Asset<AzFramework::Spawnable> m_rootSpawnableAsset;
     };
 }

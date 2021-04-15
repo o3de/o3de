@@ -60,6 +60,8 @@ set(FILES
     Source/NetworkEntity/NetworkEntityHandle.inl
     Source/NetworkEntity/NetworkEntityManager.cpp
     Source/NetworkEntity/NetworkEntityManager.h
+    Source/NetworkEntity/NetworkSpawnableLibrary.cpp
+    Source/NetworkEntity/NetworkSpawnableLibrary.h
     Source/NetworkEntity/NetworkEntityRpcMessage.cpp
     Source/NetworkEntity/NetworkEntityRpcMessage.h
     Source/NetworkEntity/NetworkEntityTracker.cpp
@@ -81,6 +83,10 @@ set(FILES
     Source/NetworkTime/NetworkTime.h
     Source/NetworkTime/RewindableObject.h
     Source/NetworkTime/RewindableObject.inl
+    Source/Pipeline/NetBindMarkerComponent.cpp
+    Source/Pipeline/NetBindMarkerComponent.h
+    Source/Pipeline/NetworkSpawnableHolderComponent.cpp
+    Source/Pipeline/NetworkSpawnableHolderComponent.h
     Source/ReplicationWindows/IReplicationWindow.h
     Source/ReplicationWindows/ServerToClientReplicationWindow.cpp
     Source/ReplicationWindows/ServerToClientReplicationWindow.h

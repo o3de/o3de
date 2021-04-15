@@ -16,6 +16,8 @@
 #include <Source/Components/NetBindComponent.h>
 #include <Source/AutoGen/AutoComponentTypes.h>
 #include <AzNetworking/Framework/NetworkingSystemComponent.h>
+#include <Source/Pipeline/NetBindMarkerComponent.h>
+#include <Source/Pipeline/NetworkSpawnableHolderComponent.h>
 
 namespace Multiplayer
 {
@@ -26,6 +28,8 @@ namespace Multiplayer
             AzNetworking::NetworkingSystemComponent::CreateDescriptor(),
             MultiplayerSystemComponent::CreateDescriptor(),
             NetBindComponent::CreateDescriptor(),
+            NetBindMarkerComponent::CreateDescriptor(),
+            NetworkSpawnableHolderComponent::CreateDescriptor(),
         });
 
         CreateComponentDescriptors(m_descriptors);

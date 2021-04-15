@@ -544,7 +544,7 @@ namespace Multiplayer
         if (createEntity)
         {
             //replicatorEntity = GetNetworkEntityManager()->CreateSingleEntityImmediateInternal(prefabEntityId, EntitySpawnType::Replicate, AutoActivate::DoNotActivate, netEntityId, localNetworkRole, AZ::Transform::Identity());
-            AZ_Assert(replicatorEntity != nullptr, "Failed to create entity from prefab");// %s", prefabEntityId.GetString());
+            AZ_Assert(replicatorEntity != nullptr, "Failed to create entity from prefab %s", prefabEntityId.m_prefabName.GetCStr());
             if (replicatorEntity == nullptr)
             {
                 return false;
