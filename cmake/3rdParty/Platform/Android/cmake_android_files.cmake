@@ -12,7 +12,6 @@
 set(FILES
     BuiltInPackages_android.cmake
     civetweb_android.cmake
-    OpenGLInterface_android.cmake
     VkValidation_android.cmake
     Wwise_android.cmake
 )
