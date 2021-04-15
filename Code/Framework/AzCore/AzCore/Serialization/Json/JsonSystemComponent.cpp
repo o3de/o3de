@@ -69,7 +69,7 @@ namespace AZ
             jsonContext->Serializer<JsonStringSerializer>()->HandlesType<AZStd::string>();
             jsonContext->Serializer<JsonOSStringSerializer>()->HandlesType<OSString>();
 
-            jsonContext->Serializer<JsonByteStreamSerializer>()->HandlesType<AZStd::vector<AZ::u8>>();
+            jsonContext->Serializer<JsonByteStreamSerializer>()->HandlesType<JsonByteStream>();
 
             jsonContext->Serializer<JsonBasicContainerSerializer>()
                 ->HandlesType<AZStd::fixed_vector>()
