@@ -93,7 +93,9 @@ namespace AZ
             ImGuiPipelineStatisticsView();
 
             //! Draw the PipelineStatistics window.
-            void DrawPipelineStatisticsWindow(bool& draw, const PassEntry* rootPassEntry, AZStd::unordered_map<AZ::Name, PassEntry>& m_timestampEntryDatabase);
+            void DrawPipelineStatisticsWindow(bool& draw, const PassEntry* rootPassEntry,
+                AZStd::unordered_map<AZ::Name, PassEntry>& m_timestampEntryDatabase,
+                AZ::RHI::Ptr<AZ::RPI::ParentPass> rootPass);
 
             //! Total number of columns (Attribute columns + PassName column).
             static const uint32_t HeaderAttributeCount = PassEntry::PipelineStatisticsAttributeCount + 1u;
@@ -139,6 +141,9 @@ namespace AZ
 
             // ImGui filter used to filter passes by the user's input.
             ImGuiTextFilter m_passFilter;
+                        
+            // Pause and showing the pipeline statistics result when it's paused.
+            bool m_paused = false;
         };
 
         class ImGuiTimestampView
@@ -180,9 +185,19 @@ namespace AZ
                 Count
             };
 
+            // Timestamp refresh type .
+            enum class RefreshType : int32_t
+            {
+                Realtime = 0,
+                OncePerSecond,
+                Count
+            };
+
         public:
             //! Draw the Timestamp window.
-            void DrawTimestampWindow(bool& draw, const PassEntry* rootPassEntry, AZStd::unordered_map<Name, PassEntry>& m_timestampEntryDatabase);
+            void DrawTimestampWindow(bool& draw, const PassEntry* rootPassEntry,
+                AZStd::unordered_map<Name, PassEntry>& m_timestampEntryDatabase,
+                AZ::RHI::Ptr<AZ::RPI::ParentPass> rootPass);
 
         private:
             // Draw option for the hierarchical view of the passes.
@@ -223,6 +238,20 @@ namespace AZ
 
             // ImGui filter used to filter passes.
             ImGuiTextFilter m_passFilter;
+
+            // Pause and showing the timestamp result when it's paused.
+            bool m_paused = false;
+
+            // Hide non-parent passes which has 0 execution time.
+            bool m_hideZeroPasses = false;
+
+            // Show pass execution timeline
+            bool m_showTimeline = false;
+
+            // Controls how often the timestamp data is refreshed
+            RefreshType m_refreshType = RefreshType::OncePerSecond;
+            AZStd::sys_time_t m_lastUpdateTimeMicroSecond;
+
         };
 
         class ImGuiGpuProfiler
