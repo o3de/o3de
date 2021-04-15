@@ -916,7 +916,7 @@ struct IAnimStringTable
 struct IAnimSequence
 {
     AZ_RTTI(IAnimSequence, "{A60F95F5-5A4A-47DB-B3BB-525BBC0BC8DB}");
-    AZ_CLASS_ALLOCATOR(IAnimSequence, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR(IAnimSequence, AZ::SystemAllocator, 0);
 
     static const int kSequenceVersion = 4;
 
