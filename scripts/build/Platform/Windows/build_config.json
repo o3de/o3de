@@ -281,5 +281,19 @@
       "CMAKE_TARGET": "ALL_BUILD",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
     }
+  },
+  "install_profile_vs2019": {
+    "TAGS": [
+      "nightly"
+    ],
+    "COMMAND": "build_windows.cmd",
+    "PARAMETERS": {
+        "CONFIGURATION": "profile",
+        "OUTPUT_DIRECTORY": "build\\windows_vs2019",
+        "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DCMAKE_INSTALL_PREFIX=build\\install",
+        "CMAKE_LY_PROJECTS": "",
+        "CMAKE_TARGET": "INSTALL",
+        "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
+    }
   }
 }
