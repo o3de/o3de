@@ -124,7 +124,7 @@ namespace Multiplayer
             AzFramework::TransformComponent* transformComponent = netEntity->FindComponent<AzFramework::TransformComponent>();
             breadcrumbEntity->CreateComponent<AzFramework::TransformComponent>(*transformComponent);
             
-            // TODO: Add NetBindMarkerComponent here referring to the net entity
+            // TODO: Configure NetBindMarkerComponent to refer to the net entity
             sourceInstance->AddEntity(*breadcrumbEntity);
         }
 
@@ -133,6 +133,7 @@ namespace Multiplayer
             AZ::Data::AssetId assetId = networkSpawnable->GetId();
             AZ::Data::Asset<AzFramework::Spawnable> networkSpawnableAsset;
             networkSpawnableAsset.Create(assetId);
+            networkSpawnableAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
 
             EntityOptionalReference containerEntityRef = sourceInstance->GetContainerEntity();
             if (containerEntityRef.has_value())

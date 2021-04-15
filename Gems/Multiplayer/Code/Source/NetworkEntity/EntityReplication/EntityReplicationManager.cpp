@@ -29,6 +29,7 @@
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
 #include <AzCore/Math/Transform.h>
+#include <Include/INetworkEntityManager.h>
 
 namespace Multiplayer
 {
@@ -532,7 +533,7 @@ namespace Multiplayer
         NetEntityId netEntityId,
         NetEntityRole localNetworkRole,
         AzNetworking::ISerializer& serializer,
-        [[maybe_unused]] const PrefabEntityId& prefabEntityId
+        const PrefabEntityId& prefabEntityId
     )
     {
         ConstNetworkEntityHandle replicatorEntity = GetNetworkEntityManager()->GetEntity(netEntityId);
@@ -544,6 +545,15 @@ namespace Multiplayer
         if (createEntity)
         {
             //replicatorEntity = GetNetworkEntityManager()->CreateSingleEntityImmediateInternal(prefabEntityId, EntitySpawnType::Replicate, AutoActivate::DoNotActivate, netEntityId, localNetworkRole, AZ::Transform::Identity());
+            INetworkEntityManager::EntityList entityList = GetNetworkEntityManager()->CreateEntitiesImmediate(
+                prefabEntityId, netEntityId, localNetworkRole,
+                AZ::Transform::Identity());
+
+            if (entityList.size() == 1)
+            {
+                replicatorEntity = entityList[0];
+            }
+            
             AZ_Assert(replicatorEntity != nullptr, "Failed to create entity from prefab %s", prefabEntityId.m_prefabName.GetCStr());
             if (replicatorEntity == nullptr)
             {

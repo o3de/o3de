@@ -12,13 +12,13 @@
 
 #include <Source/Multiplayer_precompiled.h>
 #include <Source/MultiplayerToolsModule.h>
-#include "Pipeline/NetworkPrefabProcessor.h"
-#include "AzCore/Serialization/Json/RegistrationContext.h"
-#include "Prefab/Instance/InstanceSerializer.h"
+#include <Pipeline/NetworkPrefabProcessor.h>
+#include <AzCore/Serialization/Json/RegistrationContext.h>
+#include <Prefab/Instance/InstanceSerializer.h>
 
 namespace Multiplayer
 {
-    //! Multiplayer system component wraps the bridging logic between the game and transport layer.
+    //! Multiplayer Tools system component provides serialize context reflection for tools-only systems.
     class MultiplayerToolsSystemComponent final
         : public AZ::Component
     {

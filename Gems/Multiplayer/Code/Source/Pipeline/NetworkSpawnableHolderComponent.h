@@ -27,7 +27,7 @@ namespace Multiplayer
 
         static void Reflect(AZ::ReflectContext* context);
 
-        NetworkSpawnableHolderComponent() = default;
+        NetworkSpawnableHolderComponent();;
         ~NetworkSpawnableHolderComponent() override = default;
 
         //! AZ::Component overrides.
@@ -37,6 +37,7 @@ namespace Multiplayer
         //! @}
 
         void SetNetworkSpawnableAsset(AZ::Data::Asset<AzFramework::Spawnable> networkSpawnableAsset);
+        AZ::Data::Asset<AzFramework::Spawnable> GetNetworkSpawnableAsset();
 
     private:
         AZ::Data::Asset<AzFramework::Spawnable> m_networkSpawnableAsset{ AZ::Data::AssetLoadBehavior::PreLoad };

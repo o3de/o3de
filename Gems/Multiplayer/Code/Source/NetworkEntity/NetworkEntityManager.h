@@ -15,7 +15,6 @@
 #include <AzCore/EBus/ScheduledEvent.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzFramework/Spawnable/RootSpawnableInterface.h>
-#include <AzFramework/Spawnable/SpawnableMonitor.h>
 #include <Source/NetworkEntity/INetworkEntityManager.h>
 #include <Source/NetworkEntity/NetworkEntityAuthorityTracker.h>
 #include <Source/NetworkEntity/NetworkEntityTracker.h>
@@ -46,9 +45,11 @@ namespace Multiplayer
         HostId GetHostId() const override;
         ConstNetworkEntityHandle GetEntity(NetEntityId netEntityId) const override;
 
-        EntityList CreateEntitiesImmediate(const AzFramework::Spawnable& spawnable);
+        EntityList CreateEntitiesImmediate(const AzFramework::Spawnable& spawnable, NetEntityRole netEntityRole);
 
-        void CreateEntitiesImmediate(const PrefabEntityId& a_SliceEntryId) override;
+        EntityList CreateEntitiesImmediate(
+            const PrefabEntityId& prefabEntryId, NetEntityId netEntityId, NetEntityRole netEntityRole,
+            const AZ::Transform& transform) override;
 
         uint32_t GetEntityCount() const override;
         NetworkEntityHandle AddEntityToEntityMap(NetEntityId netEntityId, AZ::Entity* entity) override;
@@ -78,15 +79,6 @@ namespace Multiplayer
         //! @}
 
     private:
-        class NetworkSpawnableMonitor final : public AzFramework::SpawnableMonitor
-        {
-        public:
-            explicit NetworkSpawnableMonitor(NetworkEntityManager& entityManager);
-            void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
-
-            NetworkEntityManager& m_entityManager;
-        };
-
         void OnEntityAdded(AZ::Entity* entity);
         void OnEntityRemoved(AZ::Entity* entity);
         void RemoveEntities();
@@ -120,7 +112,6 @@ namespace Multiplayer
         DeferredRpcMessages m_localDeferredRpcMessages;
 
         NetworkSpawnableLibrary m_networkPrefabLibrary;
-        NetworkSpawnableMonitor m_rootSpawnableMonitor;
         AZ::Data::Asset<AzFramework::Spawnable> m_rootSpawnableAsset;
     };
 }
