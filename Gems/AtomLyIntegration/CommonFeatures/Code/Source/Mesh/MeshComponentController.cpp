@@ -293,7 +293,9 @@ namespace AZ
                 m_meshHandle = m_meshFeatureProcessor->AcquireMesh(m_configuration.m_modelAsset, materials);
                 m_meshFeatureProcessor->ConnectModelChangeEventHandler(m_meshHandle, m_changeEventHandler);
 
-                const AZ::Matrix3x4& matrix3x4 = m_transformInterface ? Matrix3x4::CreateFromTransform(m_transformInterface->GetWorldTM()) : Matrix3x4::Identity();
+                const AZ::Matrix3x4& matrix3x4 = m_transformInterface
+                    ? Matrix3x4::CreateFromTransform(m_transformInterface->GetWorldTM()) * Matrix3x4::CreateScale(m_cachedNonUniformScale)
+                    : Matrix3x4::Identity();
                 m_meshFeatureProcessor->SetMatrix3x4(m_meshHandle, matrix3x4);
                 m_meshFeatureProcessor->SetSortKey(m_meshHandle, m_configuration.m_sortKey);
                 m_meshFeatureProcessor->SetLodOverride(m_meshHandle, m_configuration.m_lodOverride);
