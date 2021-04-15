@@ -17,8 +17,7 @@
 #include <SceneAPI/FbxSceneBuilder/FbxSceneSystem.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/AssImpBoneImporter.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/AssImpImporterUtilities.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/FbxImporterUtilities.h>
-#include <SceneAPI/FbxSDKWrapper/FbxNodeWrapper.h>
+#include <SceneAPI/FbxSceneBuilder/Importers/ImporterUtilities.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneData/GraphData/BoneData.h>
 #include <SceneAPI/SceneData/GraphData/RootBoneData.h>

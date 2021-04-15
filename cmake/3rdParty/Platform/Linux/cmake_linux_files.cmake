@@ -16,6 +16,5 @@ set(FILES
     Clang_linux.cmake
     dyad_linux.cmake
     etc2comp_linux.cmake
-    FbxSdk_linux.cmake
     Wwise_linux.cmake
 )
