@@ -330,7 +330,6 @@ namespace PhysX
         }
 
         const bool hasNonUniformScale = (AZ::NonUniformScaleRequestBus::FindFirstHandler(GetEntityId()) != nullptr);
-        AZ::u8 subdivisionLevel = physicsAssetConfiguration.m_subdivisionLevel;
         Utils::GetShapesFromAsset(physicsAssetConfiguration, componentColliderConfiguration, hasNonUniformScale,
             physicsAssetConfiguration.m_subdivisionLevel, m_shapes);
 
