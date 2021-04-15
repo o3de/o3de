@@ -55,7 +55,7 @@ namespace AZ
                 EditContext* editContext = serializeContext->GetEditContext();
                 if (editContext)
                 {
-                    editContext->Class<BlendShapeRule>("Blend shapes", "Select mesh targets to configure blend shapes at a later time using Lumberyard.")
+                    editContext->Class<BlendShapeRule>("Blend shapes", "Select mesh targets to configure blend shapes at a later time using Open 3D Engine.")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                             ->Attribute("AutoExpand", true)
                             ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")

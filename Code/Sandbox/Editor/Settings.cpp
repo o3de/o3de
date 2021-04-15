@@ -1090,7 +1090,7 @@ void SEditorSettings::ConvertPath(const AZStd::string_view sourcePath, AZStd::st
 {
     // This API accepts pipe-separated paths like "Category1|Category2|AttributeName"
     // But the SettingsManager requires 2 arguments, a Category like "Category1\Category2" and an attribute "AttributeName"
-    // The reason for the difference is to have this API be consistent with the path syntax in Lumberyard Python APIs.
+    // The reason for the difference is to have this API be consistent with the path syntax in Open 3D Engine Python APIs.
 
     // Find the last pipe separator ("|") in the path
     int lastSeparator = sourcePath.find_last_of("|");

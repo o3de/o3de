@@ -306,7 +306,7 @@ Change FBX Setting's \"Update Materials\" to true or modify the associated mater
                         
                         if (index == GFxFramework::MaterialExport::g_materialNotFound)
                         {
-                            AZ_TracePrintf(SceneAPI::Utilities::ErrorWindow, "Unable to find material named %s in mtl file while building FBX to Lumberyard material index table.", nodeName.c_str());
+                            AZ_TracePrintf(SceneAPI::Utilities::ErrorWindow, "Unable to find material named %s in mtl file while building FBX to Open 3D Engine material index table.", nodeName.c_str());
                             result += SceneEvents::ProcessingResult::Failure;
                         }
                         table.push_back(index);

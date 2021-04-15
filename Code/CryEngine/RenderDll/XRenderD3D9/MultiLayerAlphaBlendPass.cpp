@@ -90,7 +90,7 @@ bool MultiLayerAlphaBlendPass::IsSupported()
         }
         #else
             m_supported = SupportLevel::NOT_SUPPORTED;
-            AZ_Warning("Rendering", false, "Multi-Layer Alpha Blending requires Lumberyard to have been built with the Windows 10 SDK or higher.");
+            AZ_Warning("Rendering", false, "Multi-Layer Alpha Blending requires Open 3D Engine to have been built with the Windows 10 SDK or higher.");
         #endif
     }
 

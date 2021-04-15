@@ -12,6 +12,8 @@
 
 #pragma once
 
+struct ImGuiContext;
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace ImGui
 {
@@ -22,16 +24,21 @@ namespace ImGui
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
-        explicit ImGuiContextScope(ImGuiContext* newContext)
-            : m_previousContext(ImGui::GetCurrentContext())
+        explicit ImGuiContextScope([[maybe_unused]] ImGuiContext* newContext)
+            : m_previousContext(nullptr)
         {
+#if defined(IMGUI_ENABLED)
+            m_previousContext = ImGui::GetCurrentContext();
             ImGui::SetCurrentContext(newContext);
+#endif
         }
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         ~ImGuiContextScope()
         {
+#if defined(IMGUI_ENABLED)
             ImGui::SetCurrentContext(m_previousContext);
+#endif
         }
 
     private:

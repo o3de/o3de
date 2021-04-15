@@ -191,7 +191,7 @@ set(FILES
     Passes/SMAAConvertToPerceptualColor.pass
     Passes/SMAAEdgeDetection.pass
     Passes/SMAANeighborhoodBlending.pass
-    Passes/SpotLightShadowmaps.pass
+    Passes/ProjectedShadowmaps.pass
     Passes/SsaoCompute.pass
     Passes/SsaoHalfRes.pass
     Passes/SsaoParent.pass
@@ -249,7 +249,6 @@ set(FILES
     ShaderLib/Atom/Features/PBR/Lights/PointLight.azsli
     ShaderLib/Atom/Features/PBR/Lights/PolygonLight.azsli
     ShaderLib/Atom/Features/PBR/Lights/QuadLight.azsli
-    ShaderLib/Atom/Features/PBR/Lights/SpotLight.azsli
     ShaderLib/Atom/Features/PBR/Microfacet/Brdf.azsli
     ShaderLib/Atom/Features/PBR/Microfacet/Fresnel.azsli
     ShaderLib/Atom/Features/PBR/Microfacet/Ggx.azsli
@@ -274,7 +273,7 @@ set(FILES
     ShaderLib/Atom/Features/Shadow/JitterTablePcf.azsli
     ShaderLib/Atom/Features/Shadow/Shadow.azsli
     ShaderLib/Atom/Features/Shadow/ShadowmapAtlasLib.azsli
-    ShaderLib/Atom/Features/Shadow/SpotLightShadow.azsli
+    ShaderLib/Atom/Features/Shadow/ProjectedShadow.azsli
     ShaderResourceGroups/SceneSrg.azsli
     ShaderResourceGroups/SceneSrgAll.azsli
     ShaderResourceGroups/SceneTimeSrg.azsli

@@ -14,7 +14,7 @@
 #include "SaveChangesDialog.hxx"
 
 AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option")
-#include <UI/UICore/ui_SaveChangesDialog.h>
+#include <AzToolsFramework/UI/UICore/ui_SaveChangesDialog.h>
 AZ_POP_DISABLE_WARNING
 
 namespace AzToolsFramework

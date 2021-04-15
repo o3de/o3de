@@ -357,7 +357,7 @@ void android_main(android_app* appState)
     AZ::Android::Utils::ShowSplashScreen();
 
     // run the Lumberyard application
-    using namespace LumberyardLauncher;
+    using namespace O3DELauncher;
     
     PlatformMainInfo mainInfo;
     mainInfo.m_updateResourceLimits = IncreaseResourceLimits;

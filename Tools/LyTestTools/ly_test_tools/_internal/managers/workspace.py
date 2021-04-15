@@ -19,9 +19,9 @@ import tempfile
 
 import ly_test_tools.environment.file_system
 import ly_test_tools.environment.process_utils as process_utils
-import ly_test_tools.lumberyard.asset_processor
-import ly_test_tools.lumberyard.settings as settings
-import ly_test_tools.lumberyard.shader_compiler
+import ly_test_tools.o3de.asset_processor
+import ly_test_tools.o3de.settings as settings
+import ly_test_tools.o3de.shader_compiler
 import ly_test_tools._internal.managers.artifact_manager as artifact_manager
 import ly_test_tools._internal.managers.abstract_resource_locator as arl
 
@@ -46,7 +46,7 @@ class AbstractWorkspaceManager:
         The workspace contains information about the workspace being used and the running pytest test.
 
         :param resource_locator: A resource locator to create paths for the workspace
-        :param project: Lumberyard project to use for the LumberyardRelease object
+        :param project: O3DE project to use for the LumberyardRelease object
         :param tmp_path: A path to use for storing temp files, if not specified default to the system's tmp
         :param output_path: A path used to store artifacts, if not specified defaults to
             "<build>\\dev\\TestResults\\<timestamp>"
@@ -55,8 +55,8 @@ class AbstractWorkspaceManager:
         self.project = project
     
         self.artifact_manager = artifact_manager.NullArtifactManager()
-        self.asset_processor = ly_test_tools.lumberyard.asset_processor.AssetProcessor(self)
-        self.shader_compiler = ly_test_tools.lumberyard.shader_compiler.ShaderCompiler(self)
+        self.asset_processor = ly_test_tools.o3de.asset_processor.AssetProcessor(self)
+        self.shader_compiler = ly_test_tools.o3de.shader_compiler.ShaderCompiler(self)
         self._original_cwd = os.getcwd()
         self.tmp_path = tmp_path
         self.output_path = output_path

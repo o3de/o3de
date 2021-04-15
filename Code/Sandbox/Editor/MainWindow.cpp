@@ -406,7 +406,7 @@ MainWindow::MainWindow(QWidget* parent)
     , m_undoStateAdapter(new UndoStackStateAdapter(this))
     , m_keyboardCustomization(nullptr)
     , m_activeView(nullptr)
-    , m_settings("amazon", "lumberyard") // TODO_KDAB: Replace with a central settings class
+    , m_settings("amazon", "O3DE") // TODO_KDAB: Replace with a central settings class
     , m_toolbarManager(new ToolbarManager(m_actionManager, this))
     , m_assetImporterManager(new AssetImporterManager(this))
     , m_levelEditorMenuHandler(new LevelEditorMenuHandler(this, m_viewPaneManager, m_settings))
@@ -1373,7 +1373,7 @@ void MainWindow::InitActions()
 
     am->AddAction(ID_DOCUMENTATION_GLOSSARY, tr("Glossary"))
         .SetReserved();
-    am->AddAction(ID_DOCUMENTATION_LUMBERYARD, tr("Lumberyard Documentation"))
+    am->AddAction(ID_DOCUMENTATION_O3DE, tr("Open 3D Engine Documentation"))
         .SetReserved();
     am->AddAction(ID_DOCUMENTATION_GAMELIFT, tr("GameLift Documentation"))
         .SetReserved();
@@ -1391,11 +1391,11 @@ void MainWindow::InitActions()
 
     am->AddAction(ID_DOCUMENTATION_FEEDBACK, tr("Give Us Feedback"))
         .SetReserved();
-    am->AddAction(ID_APP_ABOUT, tr("&About Lumberyard"))
+    am->AddAction(ID_APP_ABOUT, tr("&About Open 3D Engine"))
         .SetStatusTip(tr("Display program information, version number and copyright"))
         .SetReserved();
     am->AddAction(ID_APP_SHOW_WELCOME, tr("&Welcome"))
-        .SetStatusTip(tr("Show the Welcome to Lumberyard dialog box"))
+        .SetStatusTip(tr("Show the Welcome to Open 3D Engine dialog box"))
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateShowWelcomeScreen);
 
     // Editors Toolbar actions

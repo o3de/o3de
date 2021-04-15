@@ -52,7 +52,11 @@ namespace AZ
             // EditorRenderComponentAdapter overrides...
             bool ShouldActivateController() const override;
 
-            AZ::u32 OnConfigurationChanged() override;
+            bool HandleLightTypeChange();
+
+            u32 OnConfigurationChanged() override;
+
+            AreaLightComponentConfig::LightType m_lightType; // Used to detect when the configuration's light type changes.
         };
 
     } // namespace Render

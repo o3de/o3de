@@ -14,7 +14,7 @@ import unittest
 
 import pytest
 
-import ly_test_tools.lumberyard.settings
+import ly_test_tools.o3de.settings
 
 pytestmark = pytest.mark.SUITE_smoke
 
@@ -51,10 +51,10 @@ class TestReplaceLineInFile(unittest.TestCase):
 
         try:
             with mock.patch('__builtin__.open'):
-                ly_test_tools.lumberyard.settings._edit_text_settings_file(self.file_name, self.search_for, self.replace_with)
+                ly_test_tools.o3de.settings._edit_text_settings_file(self.file_name, self.search_for, self.replace_with)
         except ImportError:
             with mock.patch('builtins.open'):
-                ly_test_tools.lumberyard.settings._edit_text_settings_file(self.file_name, self.search_for, self.replace_with)
+                ly_test_tools.o3de.settings._edit_text_settings_file(self.file_name, self.search_for, self.replace_with)
 
         mock_log_warning.assert_called_once()
 
@@ -68,10 +68,10 @@ class TestReplaceLineInFile(unittest.TestCase):
         with pytest.raises(NotImplementedError):
             try:
                 with mock.patch('__builtin__.open'):
-                    ly_test_tools.lumberyard.settings._edit_text_settings_file(self.file_name, self.search_for, self.replace_with)
+                    ly_test_tools.o3de.settings._edit_text_settings_file(self.file_name, self.search_for, self.replace_with)
             except ImportError:
                 with mock.patch('builtins.open'):
-                    ly_test_tools.lumberyard.settings._edit_text_settings_file(self.file_name, self.search_for, self.replace_with)
+                    ly_test_tools.o3de.settings._edit_text_settings_file(self.file_name, self.search_for, self.replace_with)
 
     @mock.patch('fileinput.input')
     @mock.patch('os.path.isfile')
@@ -80,10 +80,10 @@ class TestReplaceLineInFile(unittest.TestCase):
 
         try:
             with mock.patch('__builtin__.open'):
-                ly_test_tools.lumberyard.settings._edit_text_settings_file(self.file_name, self.search_for, self.replace_with)
+                ly_test_tools.o3de.settings._edit_text_settings_file(self.file_name, self.search_for, self.replace_with)
         except ImportError:
             with mock.patch('builtins.open'):
-                ly_test_tools.lumberyard.settings._edit_text_settings_file(self.file_name, self.search_for, self.replace_with)
+                ly_test_tools.o3de.settings._edit_text_settings_file(self.file_name, self.search_for, self.replace_with)
 
         mock_input.return_value.close.assert_called_once_with()
 
@@ -101,7 +101,7 @@ class TestReplaceLineInFile(unittest.TestCase):
             mock.call.write("Setting4="), mock.call.write('\n'),
         ]
 
-        ly_test_tools.lumberyard.settings._edit_text_settings_file(self.file_name, 'Setting1', 'NewFoo')
+        ly_test_tools.o3de.settings._edit_text_settings_file(self.file_name, 'Setting1', 'NewFoo')
 
         mock_stdout.assert_has_calls(expected_print_lines)
 
@@ -119,7 +119,7 @@ class TestReplaceLineInFile(unittest.TestCase):
             mock.call.write("Setting4="), mock.call.write('\n'),
         ]
 
-        ly_test_tools.lumberyard.settings._edit_text_settings_file(self.file_name, 'Setting2', 'NewBar')
+        ly_test_tools.o3de.settings._edit_text_settings_file(self.file_name, 'Setting2', 'NewBar')
 
         mock_stdout.assert_has_calls(expected_print_lines)
 
@@ -137,7 +137,7 @@ class TestReplaceLineInFile(unittest.TestCase):
             mock.call.write("Setting4=NewContent"), mock.call.write('\n'),
         ]
 
-        ly_test_tools.lumberyard.settings._edit_text_settings_file(self.file_name, 'Setting4', 'NewContent')
+        ly_test_tools.o3de.settings._edit_text_settings_file(self.file_name, 'Setting4', 'NewContent')
 
         mock_stdout.assert_has_calls(expected_print_lines)
 
@@ -155,7 +155,7 @@ class TestReplaceLineInFile(unittest.TestCase):
             mock.call.write("Setting4="), mock.call.write('\n'),
         ]
 
-        ly_test_tools.lumberyard.settings._edit_text_settings_file(self.file_name, 'Setting5', 'NewSetting!')
+        ly_test_tools.o3de.settings._edit_text_settings_file(self.file_name, 'Setting5', 'NewSetting!')
 
         mock_stdout.assert_has_calls(expected_print_lines)
 
@@ -182,7 +182,7 @@ class TestJsonSettings(unittest.TestCase):
         mock_open = mock.mock_open(read_data=self.mock_file_content)
 
         with mock.patch('builtins.open', mock_open):
-            with ly_test_tools.lumberyard.settings.JsonSettings(self.test_file_name) as js:
+            with ly_test_tools.o3de.settings.JsonSettings(self.test_file_name) as js:
                 # get the whole document
                 value = js.get_key('')
                 assert len(value) == 5
@@ -204,7 +204,7 @@ class TestJsonSettings(unittest.TestCase):
         default_value = -10
 
         with mock.patch('builtins.open', mock_open):
-            with ly_test_tools.lumberyard.settings.JsonSettings(self.test_file_name) as js:
+            with ly_test_tools.o3de.settings.JsonSettings(self.test_file_name) as js:
                 value = js.get_key('/scale/w', default_value)
                 assert value == default_value
 
@@ -213,7 +213,7 @@ class TestJsonSettings(unittest.TestCase):
         expected = 100
 
         with mock.patch('builtins.open', mock_open):
-            with ly_test_tools.lumberyard.settings.JsonSettings(self.test_file_name) as js:
+            with ly_test_tools.o3de.settings.JsonSettings(self.test_file_name) as js:
                 js.set_key('/scale/x', expected)
                 value = js.get_key('/scale/x')
                 assert value == expected
@@ -230,7 +230,7 @@ class TestJsonSettings(unittest.TestCase):
         json_dump.side_effect = _mock_dump
 
         with mock.patch('builtins.open', mock_open):
-            with ly_test_tools.lumberyard.settings.JsonSettings(self.test_file_name) as js:
+            with ly_test_tools.o3de.settings.JsonSettings(self.test_file_name) as js:
                 js.set_key('/name', expected)
 
         assert expected == new_dict_content['name']
@@ -246,7 +246,7 @@ class TestJsonSettings(unittest.TestCase):
         json_dump.side_effect = _mock_dump
 
         with mock.patch('builtins.open', mock_open):
-            with ly_test_tools.lumberyard.settings.JsonSettings(self.test_file_name) as js:
+            with ly_test_tools.o3de.settings.JsonSettings(self.test_file_name) as js:
                 js.remove_key('/scale/z')
 
         assert len(new_dict_content['scale']) == 2

@@ -15,7 +15,7 @@
 
 namespace PhysX
 {
-    //! Implementation of the PhysX error callback interface directing errors to Lumberyard error output.
+    //! Implementation of the PhysX error callback interface directing errors to Open 3D Engine error output.
     class PxAzErrorCallback
         : public physx::PxErrorCallback
     {
