@@ -117,12 +117,30 @@ endif()
 #endif()
 
 ## Editor Python Bindings ##
+#if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
+#    ly_add_pytest(
+#        NAME AutomatedTesting::EditorPythonBindings
+#        TEST_SUITE sandbox
+#        TEST_SERIAL
+#        PATH ${CMAKE_CURRENT_LIST_DIR}/EditorPythonBindings
+#        TIMEOUT 3600
+#        RUNTIME_DEPENDENCIES
+#            Legacy::Editor
+#            Legacy::CryRenderNULL
+#            AZ::AssetProcessor
+#            AutomatedTesting.Assets
+#            Gem::EditorPythonBindings.Editor
+#        COMPONENT TestTools
+#    )
+#endif()
+
+## Python Asset Builder ##
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_pytest(
-        NAME AutomatedTesting::EditorPythonBindings
-        TEST_SUITE sandbox
+        NAME AutomatedTesting::PythonAssetBuilder
+        TEST_SUITE periodic
         TEST_SERIAL
-        PATH ${CMAKE_CURRENT_LIST_DIR}/EditorPythonBindings
+        PATH ${CMAKE_CURRENT_LIST_DIR}/PythonAssetBuilder
         TIMEOUT 3600
         RUNTIME_DEPENDENCIES
             Legacy::Editor
@@ -130,6 +148,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
             AZ::AssetProcessor
             AutomatedTesting.Assets
             Gem::EditorPythonBindings.Editor
+            Gem::PythonAssetBuilder.Editor
         COMPONENT TestTools
     )
 endif()
