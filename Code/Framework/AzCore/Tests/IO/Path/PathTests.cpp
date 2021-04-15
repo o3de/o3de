@@ -547,7 +547,7 @@ namespace UnitTest
             PathLexicallyNormalParams{ '/', "foo/./bar/..", "foo" },
             PathLexicallyNormalParams{ '/', "foo/.///bar/../", "foo" },
             PathLexicallyNormalParams{ '/', R"(/foo\./bar\..\)", "/foo" },
-            PathLexicallyNormalParams{ '\\', R"(C:/lumberyard/dev/Cache\game/../pc)", R"(C:\lumberyard\dev\Cache\pc)" }
+            PathLexicallyNormalParams{ '\\', R"(C:/O3DE/dev/Cache\game/../pc)", R"(C:\O3DE\dev\Cache\pc)" }
         )
     );
 
@@ -756,13 +756,13 @@ namespace UnitTest
             PathPrefixParams{ "C:\\foo\\", "C:\\foo", true },
             PathPrefixParams{ "C:", "C:\\foo", true },
             PathPrefixParams{ "D:\\", "C:\\foo", false },
-            PathPrefixParams{ "/lumberyard/dev/", "/lumberyard/dev", true },
-            PathPrefixParams{ "/lumberyard/dev", "/lumberyard/dev/", true },
-            PathPrefixParams{ "/lumberyard/dev/", "/lumberyard/dev/Cache", true },
-            PathPrefixParams{ "/lumberyard/dev", "/lumberyard/dev/Cache", true },
-            PathPrefixParams{ "/lumberyard/dev", "/lumberyard/dev/Cache/", true },
-            PathPrefixParams{ "lumberyard/dev/", "lumberyard/dev/Cache/", true },
-            PathPrefixParams{ "lumberyard\\dev/Assets", "lumberyard/dev/Cache/", false }
+            PathPrefixParams{ "/O3DE/dev/", "/O3DE/dev", true },
+            PathPrefixParams{ "/O3DE/dev", "/O3DE/dev/", true },
+            PathPrefixParams{ "/O3DE/dev/", "/O3DE/dev/Cache", true },
+            PathPrefixParams{ "/O3DE/dev", "/O3DE/dev/Cache", true },
+            PathPrefixParams{ "/O3DE/dev", "/O3DE/dev/Cache/", true },
+            PathPrefixParams{ "O3DE/dev/", "O3DE/dev/Cache/", true },
+            PathPrefixParams{ "O3DE\\dev/Assets", "O3DE/dev/Cache/", false }
     ));
 
     struct PathDecompositionParams
@@ -854,7 +854,7 @@ namespace Benchmark
         }
     protected:
         AZStd::fixed_vector<const char*, 20> m_appendPaths{ "foo", "bar", "baz", "bazzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz",
-            "boo/bar/base", "C:\\path\\to\\lumberyard", "C", "\\\\", "/", R"(test\\path/with\mixed\separators)" };
+            "boo/bar/base", "C:\\path\\to\\O3DE", "C", "\\\\", "/", R"(test\\path/with\mixed\separators)" };
     };
 
     BENCHMARK_F(PathBenchmarkFixture, BM_PathAppendFixedPath)(benchmark::State& state)

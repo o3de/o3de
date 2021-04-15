@@ -85,7 +85,7 @@ namespace AZ
         Scene::Scene()
         {
             m_id = Uuid::CreateRandom();
-            m_cullingSystem = aznew CullingSystem();
+            m_cullingScene = aznew CullingScene();
             SceneRequestBus::Handler::BusConnect(m_id);
         }
 
@@ -105,7 +105,7 @@ namespace AZ
             m_pipelines.clear();
             AZ::RPI::PassSystemInterface::Get()->ProcessQueuedChanges();
 
-            delete m_cullingSystem;
+            delete m_cullingScene;
         }
 
         void Scene::Activate()
@@ -114,7 +114,7 @@ namespace AZ
 
             m_activated = true;
 
-            m_cullingSystem->Activate(this);
+            m_cullingScene->Activate(this);
 
             // We have to tick the PassSystem in order for all the pass attachments to get created. 
             // This has to be done before FeatureProcessors are activated, because they may try to
@@ -139,7 +139,7 @@ namespace AZ
                 fp->Deactivate();
             }
 
-            m_cullingSystem->Deactivate();
+            m_cullingScene->Deactivate();
 
             m_activated = false;
             m_pipelineStatesLookup.clear();
@@ -424,8 +424,8 @@ namespace AZ
 
             // Init render packet
             m_renderPacket.m_views.clear();
-            AZ_Assert(m_cullingSystem, "Culling System is not initialized");
-            m_renderPacket.m_cullingSystem = m_cullingSystem;
+            AZ_Assert(m_cullingScene, "m_cullingScene is not initialized");
+            m_renderPacket.m_cullingScene = m_cullingScene;
             m_renderPacket.m_jobPolicy = jobPolicy;
             
 
@@ -486,15 +486,15 @@ namespace AZ
                 }
 
                 // Launch CullingSystem::ProcessCullables() jobs (will run concurrently with FeatureProcessor::Render() jobs)
-                m_cullingSystem->BeginCulling(m_renderPacket.m_views);
+                m_cullingScene->BeginCulling(m_renderPacket.m_views);
                 for (ViewPtr& viewPtr : m_renderPacket.m_views)
                 {
                     AZ::Job* processCullablesJob = AZ::CreateJobFunction([this, &viewPtr](AZ::Job& thisJob)
                         {
-                            m_cullingSystem->ProcessCullables(*this, *viewPtr, thisJob);
+                            m_cullingScene->ProcessCullables(*this, *viewPtr, thisJob);
                         },
                         true, nullptr); //auto-deletes
-                    if (m_cullingSystem->GetDebugContext().m_parallelOctreeTraversal)
+                    if (m_cullingScene->GetDebugContext().m_parallelOctreeTraversal)
                     {
                         processCullablesJob->SetDependent(collectDrawPacketsCompletion);
                         processCullablesJob->Start();
@@ -507,7 +507,7 @@ namespace AZ
 
                 WaitAndCleanCompletionJob(collectDrawPacketsCompletion);
 
-                m_cullingSystem->EndCulling();
+                m_cullingScene->EndCulling();
 
                 // Add dynamic draw data for all the views
                 if (m_dynamicDrawSystem)

@@ -134,7 +134,7 @@ namespace MaterialEditor
         if (m_modelPreset)
         {
             auto inspectorWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
-                m_modelPreset.get(), nullptr, m_modelPreset.get()->TYPEINFO_Uuid(), nullptr, groupWidget);
+                m_modelPreset.get(), nullptr, m_modelPreset.get()->TYPEINFO_Uuid(), this, groupWidget);
 
             groupWidget->layout()->addWidget(inspectorWidget);
         }
@@ -221,7 +221,7 @@ namespace MaterialEditor
         if (m_lightingPreset)
         {
             auto inspectorWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
-                m_lightingPreset.get(), nullptr, m_lightingPreset.get()->TYPEINFO_Uuid(), nullptr, groupWidget);
+                m_lightingPreset.get(), nullptr, m_lightingPreset.get()->TYPEINFO_Uuid(), this, groupWidget);
 
             groupWidget->layout()->addWidget(inspectorWidget);
         }

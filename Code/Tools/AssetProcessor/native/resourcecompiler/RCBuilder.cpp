@@ -424,12 +424,12 @@ namespace AssetProcessor
 
     bool InternalRecognizerBasedBuilder::FindRC(QString& rcAbsolutePathOut)
     {
-        char executableDirectory[AZ_MAX_PATH_LEN];
-        if (AZ::Utils::GetExecutableDirectory(executableDirectory, AZStd::size(executableDirectory)) == AZ::Utils::ExecutablePathResult::Success)
+        AZ::IO::FixedMaxPath executableDirectory = AZ::Utils::GetExecutableDirectory();
+        executableDirectory /= ASSETPROCESSOR_TRAIT_LEGACY_RC_RELATIVE_PATH;
+        if (AZ::IO::SystemFile::Exists(executableDirectory.c_str()))
         {
-            rcAbsolutePathOut = QString("%1/%2").arg(executableDirectory).arg(QString(ASSETPROCESSOR_TRAIT_LEGACY_RC_RELATIVE_PATH));
-
-            return AZ::IO::SystemFile::Exists(rcAbsolutePathOut.toUtf8().data());
+            rcAbsolutePathOut = QString::fromUtf8(executableDirectory.c_str(), executableDirectory.Native().size());
+            return true;
         }
 
         return false;

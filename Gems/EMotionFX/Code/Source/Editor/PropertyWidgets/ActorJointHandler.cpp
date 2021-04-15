@@ -40,7 +40,7 @@ namespace EMotionFX
     {
         connect(m_pickButton, &QPushButton::clicked, this, &ActorJointPicker::OnPickClicked);
 
-        EMStudio::EMStudioManager::MakeTransparentButton(m_resetButton, "/Images/Icons/Clear.svg", "Reset selection");
+        EMStudio::EMStudioManager::MakeTransparentButton(m_resetButton, "Images/Icons/Clear.svg", "Reset selection");
         connect(m_resetButton, &QPushButton::clicked, this, &ActorJointPicker::OnResetClicked);
 
         QHBoxLayout* hLayout = new QHBoxLayout();

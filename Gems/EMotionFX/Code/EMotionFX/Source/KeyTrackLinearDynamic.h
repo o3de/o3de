@@ -229,7 +229,7 @@ namespace EMotionFX
         void MakeLoopable(float fadeTime = 0.3f);
 
         /**
-         * Optimize the keytrack by removing redundent frames.
+         * Optimize the keytrack by removing redundant frames.
          * The way this is done is by comparing differences between the resulting curves when removing specific keyframes.
          * If the error (difference) between those curve before and after keyframe removal is within a given maximum error value, the keyframe can be
          * safely removed since there will not be much "visual" difference.
