@@ -54,6 +54,5 @@ namespace Multiplayer
         void OnTransformChangedEvent(const AZ::Transform& worldTm);
 
         AZ::TransformChangedEvent::Handler m_transformChangedHandler;
-        AZ::ScheduledEvent m_transformChangeEvent;
     };
 }
