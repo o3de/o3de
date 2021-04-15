@@ -113,7 +113,7 @@ namespace WhiteBox
             const auto size = stream->GetLength();
 
             Api::WhiteBoxMeshStream whiteBoxData;
-            whiteBoxData.reserve(size);
+            whiteBoxData.resize(size);
 
             stream->Read(size, whiteBoxData.data());
 

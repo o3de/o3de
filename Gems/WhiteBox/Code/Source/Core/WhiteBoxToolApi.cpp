@@ -3407,6 +3407,11 @@ namespace WhiteBox
         {
             AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
+            if (input.empty())
+            {
+                return false;
+            }
+
             std::string inputStr;
             inputStr.reserve(input.size());
             AZStd::copy(input.cbegin(), input.cend(), AZStd::back_inserter(inputStr));
