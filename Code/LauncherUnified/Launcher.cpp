@@ -313,7 +313,7 @@ namespace O3DELauncher
                 return "Failed to initialize the CrySystem Interface";
 
             case ReturnCode::ErrCryEnvironment:
-                return "Failed to initialize the CryEngine global environment";
+                return "Failed to initialize the global environment";
 
             case ReturnCode::ErrAssetProccessor:
                 return "Failed to connect to AssetProcessor while the /Amazon/AzCore/Bootstrap/wait_for_connect value is 1\n."

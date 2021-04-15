@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include <SceneAPI/SceneData/SceneDataConfiguration.h>
 #include <AzCore/std/string/string.h>
 #include <SceneAPI/SceneCore/Components/BehaviorComponent.h>
 #include <SceneAPI/SceneCore/Events/AssetImportRequest.h>
@@ -27,7 +28,7 @@ namespace AZ
     {
         namespace Behaviors
         {
-            class ScriptProcessorRuleBehavior
+            class SCENE_DATA_CLASS ScriptProcessorRuleBehavior
                 : public SceneCore::BehaviorComponent
                 , public Events::AssetImportRequestBus::Handler
             {
@@ -36,12 +37,12 @@ namespace AZ
 
                 ~ScriptProcessorRuleBehavior() override = default;
 
-                void Activate() override;
-                void Deactivate() override;
+                SCENE_DATA_API void Activate() override;
+                SCENE_DATA_API void Deactivate() override;
                 static void Reflect(ReflectContext* context);
 
                 // AssetImportRequestBus::Handler
-                Events::ProcessingResult UpdateManifest(
+                SCENE_DATA_API Events::ProcessingResult UpdateManifest(
                     Containers::Scene& scene,
                     ManifestAction action,
                     RequestingApplication requester) override;
