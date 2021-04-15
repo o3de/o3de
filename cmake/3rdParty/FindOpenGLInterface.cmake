@@ -1,4 +1,4 @@
-﻿#
+#
 # All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
 # its licensors.
 #
@@ -9,13 +9,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-set(FILES
-    BuiltInPackages_mac.cmake
-    civetweb_mac.cmake
-    Clang_mac.cmake
-    DirectXShaderCompiler_mac.cmake
-    FbxSdk_mac.cmake
-    OpenGLInterface_mac.cmake
-    OpenSSL_mac.cmake
-    Wwise_mac.cmake
-)
+find_package(OpenGL QUIET REQUIRED)
+# Imported targets (like OpenGL::GL) are scoped to a directory. Add a
+# a global scope
+add_library(3rdParty::OpenGLInterface INTERFACE IMPORTED GLOBAL)
+target_link_libraries(3rdParty::OpenGLInterface INTERFACE OpenGL::GL)
+
+set(pal_file ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME}/OpenGLInterface_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+if(EXISTS ${pal_file})
+    include(${pal_file})
+endif()

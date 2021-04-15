@@ -1,4 +1,4 @@
-﻿#
+#
 # All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
 # its licensors.
 #
@@ -9,13 +9,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-set(FILES
-    BuiltInPackages_mac.cmake
-    civetweb_mac.cmake
-    Clang_mac.cmake
-    DirectXShaderCompiler_mac.cmake
-    FbxSdk_mac.cmake
-    OpenGLInterface_mac.cmake
-    OpenSSL_mac.cmake
-    Wwise_mac.cmake
+target_compile_definitions(3rdParty::OpenGLInterface
+    INTERFACE
+        # MacOS 10.14 deprecates OpenGL. This silences the warnings for now.
+        GL_SILENCE_DEPRECATION
 )
