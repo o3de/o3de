@@ -165,7 +165,7 @@ class WinLauncher(Launcher):
         """
         # Update settings via the settings registry to avoid modifying the bootstrap.cfg
         host_ip = '127.0.0.1'
-        self.args.append(f'--regset="/Amazon/AzCore/Bootstrap/project_path={self.workspace.project}"')
+        self.args.append(f'--regset="/Amazon/AzCore/Bootstrap/project_path={self.workspace.paths.project()}"')
         self.args.append(f'--regset="/Amazon/AzCore/Bootstrap/remote_ip={host_ip}"')
         self.args.append('--regset="/Amazon/AzCore/Bootstrap/wait_for_connect=1"')
         self.args.append(f'--regset="/Amazon/AzCore/Bootstrap/allowed_list={host_ip}"')

@@ -31,7 +31,6 @@ void ClassMenuItemAdder::generateMenu(QMenu& createItem, const StringList& combo
     {
         StringList path;
         splitStringList(&path, it->c_str(), '\\');
-        int level = 0;
         QMenu* item = &createItem;
         //createItem.addMenu(
         for (int level2 = 0; level2 < int(path.size()); ++level2)

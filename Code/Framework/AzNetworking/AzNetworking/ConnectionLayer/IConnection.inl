@@ -34,6 +34,16 @@ namespace AzNetworking
         return m_connectionId;
     }
 
+    inline void IConnection::SetUserData(void* userData)
+    {
+        m_userData = userData;
+    }
+
+    inline void* IConnection::GetUserData() const
+    {
+        return m_userData;
+    }
+
     inline void IConnection::SetRemoteAddress(const IpAddress& address)
     {
         m_remoteAddress = address;

@@ -527,7 +527,6 @@ namespace ScriptEventsTests
 
         WaitForAssetSystem([&]() { return assetHandler.IsDone(); });
 
-        bool result = false;
         AZ::IO::FileIOStream outFileStream("ScriptEvents_TestAsset.xml", AZ::IO::OpenMode::ModeWrite);
         if (outFileStream.IsOpen())
         {

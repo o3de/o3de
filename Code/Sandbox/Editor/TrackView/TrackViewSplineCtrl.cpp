@@ -210,7 +210,6 @@ private:
             return;
         }
 
-        CTrackViewSplineCtrl* pCtrl = FindControl(m_pCtrl);
         for (auto it = m_splineEntries.begin(); it != m_splineEntries.end(); ++it)
         {
             CSplineEntry& entry = *it;

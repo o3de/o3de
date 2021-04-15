@@ -66,7 +66,6 @@ namespace PhysX
             AZ::Vector3 diagonalElements = instance.GetDiagonal();
             for (int idx = 0; idx < 3; ++idx)
             {
-                float value = diagonalElements.GetElement(idx);
                 GUI->setValuebyIndex(diagonalElements.GetElement(idx), idx);
             }
             return true;

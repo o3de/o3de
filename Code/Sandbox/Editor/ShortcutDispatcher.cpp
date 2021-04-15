@@ -442,7 +442,8 @@ bool ShortcutDispatcher::shortcutFilter(QObject* obj, QShortcutEvent* shortcutEv
 
     QWidget* correctedTopLevel = nullptr;
     QWidget* p = currentFocusWidget;
-    while (correctedTopLevel = FindParentScopeRoot(p))
+    correctedTopLevel = FindParentScopeRoot(p);
+    while (correctedTopLevel)
     {
         if (FindCandidateActionAndFire(correctedTopLevel, shortcutEvent, candidates, previouslyVisited))
         {
@@ -450,6 +451,7 @@ bool ShortcutDispatcher::shortcutFilter(QObject* obj, QShortcutEvent* shortcutEv
         }
 
         p = correctedTopLevel;
+        correctedTopLevel = FindParentScopeRoot(p);
     }
 
 

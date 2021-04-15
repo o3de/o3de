@@ -79,7 +79,7 @@ namespace AZ
             }
 
             // Tell the FrameGraph which RHI QueryPool, and which RHI Queries need to be used.
-            RHI::ResultCode resultCode = frameGraph.UseQueryPool(m_queryPool->m_rhiQueryPool, rhiQueryIndices.value(), m_attachmentType, m_attachmentAccess);
+            [[maybe_unused]] RHI::ResultCode resultCode = frameGraph.UseQueryPool(m_queryPool->m_rhiQueryPool, rhiQueryIndices.value(), m_attachmentType, m_attachmentAccess);
             AZ_Assert(resultCode == RHI::ResultCode::Success, "Failed to add the queries to the scope builder");
 
             // Invalidate the ScopeId.
@@ -108,7 +108,7 @@ namespace AZ
                 return QueryResultCode::Fail;
             }
 
-            RHI::ResultCode resultCode = m_queryPool->BeginQueryInternal(rhiQueryIndices.value(), *context.GetCommandList());
+            [[maybe_unused]] RHI::ResultCode resultCode = m_queryPool->BeginQueryInternal(rhiQueryIndices.value(), *context.GetCommandList());
             AZ_Assert(resultCode == RHI::ResultCode::Success, "Failed to begin recording the query");
 
             m_cachedScopeId = context.GetScopeId();
@@ -144,7 +144,7 @@ namespace AZ
                 return QueryResultCode::Fail;
             }
 
-            RHI::ResultCode resultCode = m_queryPool->EndQueryInternal(rhiQueryIndices.value(), *context.GetCommandList());
+            [[maybe_unused]] RHI::ResultCode resultCode = m_queryPool->EndQueryInternal(rhiQueryIndices.value(), *context.GetCommandList());
             AZ_Assert(resultCode == RHI::ResultCode::Success, "Failed to end recording the query");
 
             return QueryResultCode::Success;

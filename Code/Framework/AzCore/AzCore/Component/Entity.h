@@ -12,7 +12,7 @@
 
 /** @file
  * Header file for the Entity class.
- * In Lumberyard's component entity system, an entity is an addressable container for
+ * In Open 3D Engine's component entity system, an entity is an addressable container for
  * a group of components. The entity represents the functionality and properties of an
  * object within your game.
  */

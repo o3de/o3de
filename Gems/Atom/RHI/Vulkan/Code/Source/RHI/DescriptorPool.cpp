@@ -115,7 +115,6 @@ namespace AZ
 
         DescriptorPool::AllocResult DescriptorPool::Allocate(const DescriptorSetLayout& descriptorSetLayout)
         {
-            auto& device = static_cast<Device&>(GetDevice());
             auto descriptorSets = DescriptorSet::Create();
             DescriptorSet::Descriptor descSetDesc;
             descSetDesc.m_device = static_cast<Device*>(&GetDevice());

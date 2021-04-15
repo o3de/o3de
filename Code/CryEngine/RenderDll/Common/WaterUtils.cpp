@@ -430,7 +430,6 @@ public:
     // Update simulation
     void Update(SWaterUpdateThreadInfo& pThreadInfo)
     {
-        int nFrameID = pThreadInfo.nFrameID;
         float fTime = pThreadInfo.fTime;
         bool bOnlyHeight = pThreadInfo.bOnlyHeight;
 
@@ -522,7 +521,6 @@ public:
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Renderer);
 
-        CRenderer* rd = gRenDev;
 
         m_nFillThreadID = m_nWorkerThreadID = 0;
 

@@ -24,7 +24,7 @@ class QMimeData;
 namespace AzQtComponents
 {
 
-    static const QString MIME_TYPE_PALETTE = QStringLiteral("application/x-lumberyard-color-palette+xml");
+    static const QString MIME_TYPE_PALETTE = QStringLiteral("application/x-o3de-color-palette+xml");
 
     class PaletteModel;
 

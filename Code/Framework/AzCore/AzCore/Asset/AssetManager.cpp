@@ -1117,7 +1117,7 @@ namespace AZ
             return asset;
         }
 
-        void AssetManager::UpdateDebugStatus(AZ::Data::Asset<AZ::Data::AssetData> asset)
+        void AssetManager::UpdateDebugStatus(const AZ::Data::Asset<AZ::Data::AssetData>& asset)
         {
             if(!m_debugAssetEvents)
             {
@@ -1750,7 +1750,6 @@ namespace AZ
         {
             AssetData* data = asset.Get();
             {
-                const AZ::Data::AssetId& assetId = asset.GetId();
 
                 AZStd::scoped_lock<AZStd::recursive_mutex> assetLock(m_assetMutex);
                 if (data)

@@ -15,7 +15,7 @@
  * Header file for the editor component base class.
  * Derive from this class to create a version of a component to use in the 
  * editor, as opposed to the version of the component that is used during run time. 
- * To learn more about editor components, see the [Lumberyard Developer Guide] 
+ * To learn more about editor components, see the [Open 3D Engine Developer Guide] 
  * (http://docs.aws.amazon.com/lumberyard/latest/developerguide/component-entity-system-pg-editor-components.html).
  */
 
@@ -52,7 +52,7 @@ namespace AzToolsFramework
          * To create one or more game components to represent your editor component 
          * in runtime, use BuildGameEntity(). 
          *
-         * To learn more about editor components, see the [Lumberyard Developer Guide]
+         * To learn more about editor components, see the [Open 3D Engine Developer Guide]
          * (http://docs.aws.amazon.com/lumberyard/latest/developerguide/component-entity-system-pg-editor-components.html).
          */
         class EditorComponentBase

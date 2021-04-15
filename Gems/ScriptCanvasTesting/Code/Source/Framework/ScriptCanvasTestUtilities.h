@@ -341,9 +341,8 @@ namespace ScriptCanvasTests
 
         ~TestBehaviorContextObject()
         {
-            AZ::u32 destroyedCount = ++s_destroyedCount;
-            AZ::u32 createdCount = s_createdCount;
-            AZ_Assert(destroyedCount <= createdCount, "ScriptCanvas execution error");
+            [[maybe_unused]] AZ::u32 destroyedCount = ++s_destroyedCount;
+            AZ_Assert(destroyedCount <= s_createdCount, "ScriptCanvas execution error");
         }
 
         TestBehaviorContextObject& operator=(const TestBehaviorContextObject& source)

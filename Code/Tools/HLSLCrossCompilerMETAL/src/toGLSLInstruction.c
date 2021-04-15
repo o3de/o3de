@@ -289,7 +289,6 @@ static void GLSLAddComparision(HLSLCrossCompilerContext* psContext, Instruction*
 static void GLSLAddMOVBinaryOp(HLSLCrossCompilerContext* psContext, const Operand* pDest, Operand* pSrc)
 {
     int numParenthesis = 0;
-    int destComponents = GetMaxComponentFromComponentMask(pDest);
     int srcSwizzleCount = GetNumSwizzleElements(pSrc);
     uint32_t writeMask = GetOperandWriteMask(pDest);
 
@@ -318,7 +317,6 @@ static void GLSLAddMOVCBinaryOp(HLSLCrossCompilerContext* psContext, const Opera
     uint32_t destElem;
 
     const SHADER_VARIABLE_TYPE eDestType = GetOperandDataType(psContext, pDest);
-    const SHADER_VARIABLE_TYPE eSrc0Type = GetOperandDataType(psContext, src0);
     /*
     for each component in dest[.mask]
     if the corresponding component in src0 (POS-swizzle)
@@ -499,9 +497,6 @@ static void GLSLCallTernaryOp(HLSLCrossCompilerContext* psContext,
                               uint32_t dataType)
 {
     bstring glsl = *psContext->currentShaderString;
-    uint32_t src2SwizCount = GetNumSwizzleElements(&psInst->asOperands[src2]);
-    uint32_t src1SwizCount = GetNumSwizzleElements(&psInst->asOperands[src1]);
-    uint32_t src0SwizCount = GetNumSwizzleElements(&psInst->asOperands[src0]);
     uint32_t dstSwizCount = GetNumSwizzleElements(&psInst->asOperands[dest]);
     uint32_t destMask = GetOperandWriteMask(&psInst->asOperands[dest]);
 
@@ -532,9 +527,6 @@ static void GLSLCallHelper3(HLSLCrossCompilerContext* psContext,
     uint32_t ui32Flags = TO_AUTO_BITCAST_TO_FLOAT;
     bstring glsl = *psContext->currentShaderString;
     uint32_t destMask = paramsShouldFollowWriteMask ? GetOperandWriteMask(&psInst->asOperands[dest]) : OPERAND_4_COMPONENT_MASK_ALL;
-    uint32_t src2SwizCount = GetNumSwizzleElements(&psInst->asOperands[src2]);
-    uint32_t src1SwizCount = GetNumSwizzleElements(&psInst->asOperands[src1]);
-    uint32_t src0SwizCount = GetNumSwizzleElements(&psInst->asOperands[src0]);
     uint32_t dstSwizCount = GetNumSwizzleElements(&psInst->asOperands[dest]);
     int numParenthesis = 0;
 
@@ -558,8 +550,6 @@ GLSLCallHelper2(HLSLCrossCompilerContext* psContext, const char* name, Instructi
     uint32_t ui32Flags = TO_AUTO_BITCAST_TO_FLOAT;
     bstring glsl = *psContext->currentShaderString;
     uint32_t destMask = paramsShouldFollowWriteMask ? GetOperandWriteMask(&psInst->asOperands[dest]) : OPERAND_4_COMPONENT_MASK_ALL;
-    uint32_t src1SwizCount = GetNumSwizzleElements(&psInst->asOperands[src1]);
-    uint32_t src0SwizCount = GetNumSwizzleElements(&psInst->asOperands[src0]);
     uint32_t dstSwizCount = GetNumSwizzleElements(&psInst->asOperands[dest]);
 
     int isDotProduct = (strncmp(name, "dot", 3) == 0) ? 1 : 0;
@@ -583,8 +573,6 @@ GLSLCallHelper2Int(HLSLCrossCompilerContext* psContext, const char* name, Instru
 {
     uint32_t ui32Flags = TO_AUTO_BITCAST_TO_INT;
     bstring glsl = *psContext->currentShaderString;
-    uint32_t src1SwizCount = GetNumSwizzleElements(&psInst->asOperands[src1]);
-    uint32_t src0SwizCount = GetNumSwizzleElements(&psInst->asOperands[src0]);
     uint32_t dstSwizCount = GetNumSwizzleElements(&psInst->asOperands[dest]);
     uint32_t destMask = paramsShouldFollowWriteMask ? GetOperandWriteMask(&psInst->asOperands[dest]) : OPERAND_4_COMPONENT_MASK_ALL;
     int numParenthesis = 0;
@@ -606,8 +594,6 @@ GLSLCallHelper2UInt(HLSLCrossCompilerContext* psContext, const char* name, Instr
 {
     uint32_t ui32Flags = TO_AUTO_BITCAST_TO_UINT;
     bstring glsl = *psContext->currentShaderString;
-    uint32_t src1SwizCount = GetNumSwizzleElements(&psInst->asOperands[src1]);
-    uint32_t src0SwizCount = GetNumSwizzleElements(&psInst->asOperands[src0]);
     uint32_t dstSwizCount = GetNumSwizzleElements(&psInst->asOperands[dest]);
     uint32_t destMask = paramsShouldFollowWriteMask ? GetOperandWriteMask(&psInst->asOperands[dest]) : OPERAND_4_COMPONENT_MASK_ALL;
     int numParenthesis = 0;
@@ -628,7 +614,6 @@ static void GLSLCallHelper1(HLSLCrossCompilerContext* psContext, const char* nam
 {
     uint32_t ui32Flags = TO_AUTO_BITCAST_TO_FLOAT;
     bstring glsl = *psContext->currentShaderString;
-    uint32_t src0SwizCount = GetNumSwizzleElements(&psInst->asOperands[src0]);
     uint32_t dstSwizCount = GetNumSwizzleElements(&psInst->asOperands[dest]);
     uint32_t destMask = paramsShouldFollowWriteMask ? GetOperandWriteMask(&psInst->asOperands[dest]) : OPERAND_4_COMPONENT_MASK_ALL;
     int numParenthesis = 0;
@@ -653,7 +638,6 @@ static void GLSLCallHelper1Int(HLSLCrossCompilerContext* psContext,
 {
     uint32_t ui32Flags = TO_AUTO_BITCAST_TO_INT;
     bstring glsl = *psContext->currentShaderString;
-    uint32_t src0SwizCount = GetNumSwizzleElements(&psInst->asOperands[src0]);
     uint32_t dstSwizCount = GetNumSwizzleElements(&psInst->asOperands[dest]);
     uint32_t destMask = paramsShouldFollowWriteMask ? GetOperandWriteMask(&psInst->asOperands[dest]) : OPERAND_4_COMPONENT_MASK_ALL;
     int numParenthesis = 0;
@@ -818,9 +802,7 @@ static void GLSLTranslateTexelFetchOffset(HLSLCrossCompilerContext* psContext, I
 // Currently supports floating point coord only, so not used for texelFetch.
 static void GLSLTranslateTexCoord(HLSLCrossCompilerContext* psContext, const RESOURCE_DIMENSION eResDim, Operand* psTexCoordOperand)
 {
-    int numParenthesis = 0;
     uint32_t flags = TO_AUTO_BITCAST_TO_FLOAT;
-    bstring glsl = *psContext->currentShaderString;
     uint32_t opMask = OPERAND_4_COMPONENT_MASK_ALL;
 
     switch (eResDim)
@@ -866,9 +848,7 @@ static void GLSLTranslateTexCoord(HLSLCrossCompilerContext* psContext, const RES
 
 static int GLSLGetNumTextureDimensions(HLSLCrossCompilerContext* psContext, const RESOURCE_DIMENSION eResDim)
 {
-    int constructor = 0;
-    bstring glsl = *psContext->currentShaderString;
-
+    (void)psContext;
     switch (eResDim)
     {
         case RESOURCE_DIMENSION_TEXTURE1D:
@@ -1299,7 +1279,6 @@ static void GLSLTranslateShaderStorageStore(HLSLCrossCompilerContext* psContext,
 {
     bstring glsl = *psContext->currentShaderString;
     ShaderVarType* psVarType = NULL;
-    uint32_t ui32DataTypeFlag = TO_FLAG_INTEGER;
     int component;
     int srcComponent = 0;
 
@@ -1308,7 +1287,6 @@ static void GLSLTranslateShaderStorageStore(HLSLCrossCompilerContext* psContext,
     Operand* psDestByteOff = 0;
     Operand* psSrc = 0;
     int structured = 0;
-    int groupshared = 0;
 
     switch (psInst->eOpcode)
     {
@@ -1329,11 +1307,9 @@ static void GLSLTranslateShaderStorageStore(HLSLCrossCompilerContext* psContext,
 
     for (component = 0; component < 4; component++)
     {
-        const char* swizzleString[] = {".x", ".y", ".z", ".w"};
         ASSERT(psInst->asOperands[0].eSelMode == OPERAND_4_COMPONENT_MASK_MODE);
         if (psInst->asOperands[0].ui32CompMask & (1 << component))
         {
-            SHADER_VARIABLE_TYPE eSrcDataType = GetOperandDataType(psContext, psSrc);
 
             if (structured && psDest->eType != OPERAND_TYPE_THREAD_GROUP_SHARED_MEMORY)
             {
@@ -1432,11 +1408,7 @@ static void GLSLTranslateShaderStorageStore(HLSLCrossCompilerContext* psContext,
 static void GLSLTranslateShaderStorageLoad(HLSLCrossCompilerContext* psContext, Instruction* psInst)
 {
     bstring glsl = *psContext->currentShaderString;
-    ShaderVarType* psVarType = NULL;
-    uint32_t aui32Swizzle[4] = {OPERAND_4_COMPONENT_X};
-    uint32_t ui32DataTypeFlag = TO_FLAG_INTEGER;
     int component;
-    int destComponent = 0;
     Operand* psDest = 0;
     Operand* psSrcAddr = 0;
     Operand* psSrcByteOff = 0;
@@ -2268,7 +2240,6 @@ void SetDataTypes(HLSLCrossCompilerContext* psContext, Instruction* psInst, cons
         // Only ever to int->float promotion (or int->uint), never the other way around
         for (i = 0; i < i32InstCount; ++i, psInst++)
         {
-            int k = 0;
             if (psInst->ui32NumOperands == 0)
                 continue;
 
@@ -2644,9 +2615,6 @@ void TranslateInstruction(HLSLCrossCompilerContext* psContext, Instruction* psIn
         {
             uint32_t dstCount = GetNumSwizzleElements(&psInst->asOperands[0]);
             uint32_t srcCount = GetNumSwizzleElements(&psInst->asOperands[1]);
-            uint32_t ui32DstFlags = TO_FLAG_DESTINATION;
-            const SHADER_VARIABLE_TYPE eSrcType = GetOperandDataType(psContext, &psInst->asOperands[1]);
-            const SHADER_VARIABLE_TYPE eDestType = GetOperandDataType(psContext, &psInst->asOperands[0]);
 
 #ifdef _DEBUG
             AddIndentation(psContext);
@@ -2683,8 +2651,6 @@ void TranslateInstruction(HLSLCrossCompilerContext* psContext, Instruction* psIn
         case OPCODE_ITOF:  // signed to float
         case OPCODE_UTOF:  // unsigned to float
         {
-            const SHADER_VARIABLE_TYPE eDestType = GetOperandDataType(psContext, &psInst->asOperands[0]);
-            const SHADER_VARIABLE_TYPE eSrcType = GetOperandDataType(psContext, &psInst->asOperands[1]);
             uint32_t dstCount = GetNumSwizzleElements(&psInst->asOperands[0]);
             uint32_t srcCount = GetNumSwizzleElements(&psInst->asOperands[1]);
 
@@ -2886,7 +2852,6 @@ void TranslateInstruction(HLSLCrossCompilerContext* psContext, Instruction* psIn
 
         case OPCODE_DP2:
         {
-            SHADER_VARIABLE_TYPE eDestDataType = GetOperandDataType(psContext, &psInst->asOperands[0]);
             int numParenthesis2 = 0;
 #ifdef _DEBUG
             AddIndentation(psContext);
@@ -3918,7 +3883,6 @@ void TranslateInstruction(HLSLCrossCompilerContext* psContext, Instruction* psIn
         case OPCODE_LD_MS:
         {
             ResourceBinding* psBinding = 0;
-            uint32_t dstSwizCount = GetNumSwizzleElements(&psInst->asOperands[0]);
 #ifdef _DEBUG
             AddIndentation(psContext);
             if (psInst->eOpcode == OPCODE_LD)
@@ -4463,8 +4427,6 @@ void TranslateInstruction(HLSLCrossCompilerContext* psContext, Instruction* psIn
         }
         case OPCODE_RESINFO:
         {
-            const RESOURCE_DIMENSION eResDim = psContext->psShader->aeResourceDims[psInst->asOperands[2].ui32RegisterNumber];
-            const RESINFO_RETURN_TYPE eResInfoReturnType = psInst->eResInfoReturnType;
             uint32_t destElemCount = GetNumSwizzleElements(&psInst->asOperands[0]);
             uint32_t destElem;
 #ifdef _DEBUG
@@ -4474,7 +4436,6 @@ void TranslateInstruction(HLSLCrossCompilerContext* psContext, Instruction* psIn
 
             for (destElem = 0; destElem < destElemCount; ++destElem)
             {
-                const char* swizzle[] = {".x", ".y", ".z", ".w"};
 
                 GetResInfoData(psContext, psInst, psInst->asOperands[2].aui32Swizzle[destElem], destElem);
             }

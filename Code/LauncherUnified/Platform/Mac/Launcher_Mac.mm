@@ -11,7 +11,7 @@
 */
 #include <Launcher.h>
 
-#include <LumberyardApplication_Mac.h>
+#include <O3DEApplication_Mac.h>
 #include <../Common/Apple/Launcher_Apple.h>
 #include <../Common/UnixLike/Launcher_UnixLike.h>
 
@@ -20,7 +20,7 @@
 int main(int argc, char* argv[])
 {
     // TODO: Implement for Mac
-    return static_cast<int>(LumberyardLauncher::ReturnCode::ErrUnitTestNotSupported);
+    return static_cast<int>(O3DELauncher::ReturnCode::ErrUnitTestNotSupported);
 }
 #else
 
@@ -32,8 +32,8 @@ int main(int argc, char* argv[])
 
     // Create a memory pool, a custom AppKit application, and a custom AppKit application delegate.
     NSAutoreleasePool* autoreleasePool = [[NSAutoreleasePool alloc] init];
-    [LumberyardApplication_Mac sharedApplication];
-    [NSApp setDelegate: [[LumberyardApplicationDelegate_Mac alloc] init]];
+    [O3DEApplication_Mac sharedApplication];
+    [NSApp setDelegate: [[O3DEApplicationDelegate_Mac alloc] init]];
 
     // Register some default application behaviours
     [[NSUserDefaults standardUserDefaults] registerDefaults:
@@ -46,8 +46,8 @@ int main(int argc, char* argv[])
     [NSApp finishLaunching];
     [autoreleasePool release];
 
-    // run the Lumberyard application
-    using namespace LumberyardLauncher;
+    // run the Open 3D Engine application
+    using namespace O3DELauncher;
 
     PlatformMainInfo mainInfo;
     mainInfo.m_updateResourceLimits = IncreaseResourceLimits;

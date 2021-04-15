@@ -11,11 +11,16 @@
  */
 
 #include <Source/MultiplayerSystemComponent.h>
+#include <Source/Components/MultiplayerComponent.h>
+#include <Source/AutoGen/AutoComponentTypes.h>
+#include <Source/ConnectionData/ServerToClientConnectionData.h>
+#include <Source/ReplicationWindows/ServerToClientReplicationWindow.h>
+#include <Source/EntityDomains/FullOwnershipEntityDomain.h>
+#include <AzNetworking/Framework/INetworking.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzNetworking/Framework/INetworking.h>
 
 namespace AZ::ConsoleTypeHelpers
 {
@@ -69,6 +74,8 @@ namespace Multiplayer
             serializeContext->Class<MultiplayerSystemComponent, AZ::Component>()
                 ->Version(1);
         }
+
+        MultiplayerComponent::Reflect(context);
     }
 
     void MultiplayerSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -103,16 +110,39 @@ namespace Multiplayer
         AZ::TickBus::Handler::BusConnect();
         m_networkInterface = AZ::Interface<INetworking>::Get()->CreateNetworkInterface(AZ::Name(s_networkInterfaceName), sv_protocol, TrustZone::ExternalClientToServer, *this);
         m_consoleCommandHandler.Connect(AZ::Interface<AZ::IConsole>::Get()->GetConsoleCommandInvokedEvent());
+        AZ::Interface<IMultiplayer>::Register(this);
     }
 
     void MultiplayerSystemComponent::Deactivate()
     {
+        AZ::Interface<IMultiplayer>::Unregister(this);
         AZ::TickBus::Handler::BusDisconnect();
     }
 
-    void MultiplayerSystemComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+    void MultiplayerSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
-        AZ::TimeMs elapsedMs = aznumeric_cast<AZ::TimeMs>(aznumeric_cast<int64_t>(deltaTime / 1000.0f));
+        AZ::TimeMs serverGameTimeMs = AZ::GetElapsedTimeMs();
+
+        // Handle deferred local rpc messages that were generated during the updates
+        m_networkEntityManager.DispatchLocalDeferredRpcMessages();
+        m_networkEntityManager.NotifyEntitiesChanged();
+        // Let the network system know the frame is done and we can collect dirty bits
+        m_networkEntityManager.NotifyEntitiesDirtied();
+
+        MultiplayerStats& stats = GetStats();
+        stats.m_entityCount = GetNetworkEntityManager()->GetEntityCount();
+
+        auto sendNetworkUpdates = [serverGameTimeMs](IConnection& connection)
+        {
+            if (connection.GetUserData() != nullptr)
+            {
+                IConnectionData* connectionData = reinterpret_cast<IConnectionData*>(connection.GetUserData());
+                connectionData->Update(serverGameTimeMs);
+            }
+        };
+
+        // Send out the game state update to all connections
+        m_networkInterface->GetConnectionSet().VisitConnections(sendNetworkUpdates);
 
         MultiplayerPackets::SyncConsole packet;
         AZ::ThreadSafeDeque<AZStd::string>::DequeType cvarUpdates;
@@ -190,9 +220,9 @@ namespace Multiplayer
 
     bool MultiplayerSystemComponent::HandleRequest
     (
-        IConnection* connection,
+        [[maybe_unused]] AzNetworking::IConnection* connection,
         [[maybe_unused]] const IPacketHeader& packetHeader,
-        [[maybe_unused]] const MultiplayerPackets::Connect& packet
+        [[maybe_unused]] MultiplayerPackets::Connect& packet
     )
     {
         if (connection->SendReliablePacket(MultiplayerPackets::Accept(InvalidHostId, sv_map)))
@@ -207,9 +237,9 @@ namespace Multiplayer
 
     bool MultiplayerSystemComponent::HandleRequest
     (
-        [[maybe_unused]] IConnection* connection,
+        [[maybe_unused]] AzNetworking::IConnection* connection,
         [[maybe_unused]] const IPacketHeader& packetHeader,
-        [[maybe_unused]] const MultiplayerPackets::Accept& packet
+        [[maybe_unused]] MultiplayerPackets::Accept& packet
     )
     {
         AZ::CVarFixedString commandString = "sv_map " + packet.GetMap();
@@ -226,9 +256,9 @@ namespace Multiplayer
 
     bool MultiplayerSystemComponent::HandleRequest
     (
-        [[maybe_unused]] IConnection* connection,
+        [[maybe_unused]] AzNetworking::IConnection* connection,
         [[maybe_unused]] const IPacketHeader& packetHeader,
-        const MultiplayerPackets::SyncConsole& packet
+        [[maybe_unused]] MultiplayerPackets::SyncConsole& packet
     )
     {
         ExecuteConsoleCommandList(connection, packet.GetCommandSet());
@@ -237,9 +267,9 @@ namespace Multiplayer
 
     bool MultiplayerSystemComponent::HandleRequest
     (
-        [[maybe_unused]] IConnection* connection,
+        [[maybe_unused]] AzNetworking::IConnection* connection,
         [[maybe_unused]] const IPacketHeader& packetHeader,
-        const MultiplayerPackets::ConsoleCommand& packet
+        [[maybe_unused]] MultiplayerPackets::ConsoleCommand& packet
     )
     {
         const bool isAcceptor = (connection->GetConnectionRole() == ConnectionRole::Acceptor); // We're hosting if we accepted the connection
@@ -250,9 +280,9 @@ namespace Multiplayer
 
     bool MultiplayerSystemComponent::HandleRequest
     (
-        IConnection* connection,
+        [[maybe_unused]] AzNetworking::IConnection* connection,
         [[maybe_unused]] const IPacketHeader& packetHeader,
-        const MultiplayerPackets::SyncConnectionCvars& packet
+        [[maybe_unused]] MultiplayerPackets::SyncConnectionCvars& packet
     )
     {
         connection->SetConnectionQuality(ConnectionQuality(packet.GetLossPercent(), packet.GetLatencyMs(), packet.GetVarianceMs()));
@@ -261,29 +291,59 @@ namespace Multiplayer
 
     bool MultiplayerSystemComponent::HandleRequest
     (
-        [[maybe_unused]] IConnection* connection,
+        [[maybe_unused]] AzNetworking::IConnection* connection,
         [[maybe_unused]] const IPacketHeader& packetHeader,
-        [[maybe_unused]] const MultiplayerPackets::EntityUpdates& packet
+        [[maybe_unused]] MultiplayerPackets::EntityUpdates& packet
     )
     {
-        return false;
+        bool handledAll = true;
+        if (connection->GetUserData() == nullptr)
+        {
+            AZLOG_WARN("Missing connection data, likely due to a connection in the process of closing, entity updates size %u", aznumeric_cast<uint32_t>(packet.GetEntityMessages().size()));
+            return handledAll;
+        }
+
+        EntityReplicationManager& replicationManager = reinterpret_cast<IConnectionData*>(connection->GetUserData())->GetReplicationManager();
+        
+        // Ignore a_Request.GetServerGameTimePoint(), clients can't affect the server gametime
+        for (AZStd::size_t i = 0; i < packet.GetEntityMessages().size(); ++i)
+        {
+            const NetworkEntityUpdateMessage& updateMessage = packet.GetEntityMessages()[i];
+            handledAll &= replicationManager.HandleEntityUpdateMessage(connection, packetHeader, updateMessage);
+            AZ_Assert(handledAll, "GameServerToClientNetworkRequestHandler EntityUpdates Did not handle all updates");
+        }
+
+        return handledAll;
     }
 
     bool MultiplayerSystemComponent::HandleRequest
     (
-        [[maybe_unused]] IConnection* connection,
+        [[maybe_unused]] AzNetworking::IConnection* connection,
         [[maybe_unused]] const IPacketHeader& packetHeader,
-        [[maybe_unused]] const MultiplayerPackets::EntityRpcs& packet
+        [[maybe_unused]] MultiplayerPackets::EntityRpcs& packet
     )
     {
-        return false;
+        bool handledAll = true;
+        if (connection->GetUserData() == nullptr)
+        {
+            AZLOG_WARN("Missing connection data, likely due to a connection in the process of closing, entity updates size %u", aznumeric_cast<uint32_t>(packet.GetEntityRpcs().size()));
+            return handledAll;
+        }
+
+        EntityReplicationManager& replicationManager = reinterpret_cast<IConnectionData*>(connection->GetUserData())->GetReplicationManager();
+        for (AZStd::size_t i = 0; i < packet.GetEntityRpcs().size(); ++i)
+        {
+            handledAll &= replicationManager.HandleEntityRpcMessage(connection, packet.ModifyEntityRpcs()[i]);
+        }
+
+        return handledAll;
     }
 
     bool MultiplayerSystemComponent::HandleRequest
     (
-        [[maybe_unused]] IConnection* connection,
+        [[maybe_unused]] AzNetworking::IConnection* connection,
         [[maybe_unused]] const IPacketHeader& packetHeader,
-        [[maybe_unused]] const MultiplayerPackets::ClientMigration& packet
+        [[maybe_unused]] MultiplayerPackets::ClientMigration& packet
     )
     {
         return false;
@@ -293,7 +353,7 @@ namespace Multiplayer
     (
         [[maybe_unused]] AzNetworking::IConnection* connection,
         [[maybe_unused]] const AzNetworking::IPacketHeader& packetHeader,
-        [[maybe_unused]] const MultiplayerPackets::NotifyClientMigration& packet
+        [[maybe_unused]] MultiplayerPackets::NotifyClientMigration& packet
     )
     {
         return false;
@@ -303,7 +363,7 @@ namespace Multiplayer
     (
         [[maybe_unused]] AzNetworking::IConnection* connection,
         [[maybe_unused]] const AzNetworking::IPacketHeader& packetHeader,
-        [[maybe_unused]] const MultiplayerPackets::EntityMigration& packet
+        [[maybe_unused]] MultiplayerPackets::EntityMigration& packet
     )
     {
         return false;
@@ -319,7 +379,7 @@ namespace Multiplayer
         return ConnectResult::Accepted;
     }
 
-    void MultiplayerSystemComponent::OnConnect(IConnection* connection)
+    void MultiplayerSystemComponent::OnConnect(AzNetworking::IConnection* connection)
     {
         if (connection->GetConnectionRole() == ConnectionRole::Connector)
         {
@@ -335,9 +395,24 @@ namespace Multiplayer
             datum.m_agentType = MultiplayerAgentType::Client;
             m_connAcquiredEvent.Signal(datum);
         }
+
+        if (GetAgentType() == MultiplayerAgentType::ClientServer
+         || GetAgentType() == MultiplayerAgentType::DedicatedServer)
+        {
+            // TODO: This needs to be set to the players autonomous proxy ------------v
+            NetworkEntityHandle controlledEntity = GetNetworkEntityTracker()->Get(NetEntityId{ 0 });
+
+            if (connection->GetUserData() == nullptr) // Only add user data if the connect event handler has not already done so
+            {
+                connection->SetUserData(new ServerToClientConnectionData(connection, *this, controlledEntity));
+            }
+
+            AZStd::unique_ptr<IReplicationWindow> window = AZStd::make_unique<ServerToClientReplicationWindow>(controlledEntity, connection);
+            reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->GetReplicationManager().SetReplicationWindow(AZStd::move(window));
+        }
     }
 
-    bool MultiplayerSystemComponent::OnPacketReceived(IConnection* connection, const IPacketHeader& packetHeader, ISerializer& serializer)
+    bool MultiplayerSystemComponent::OnPacketReceived(AzNetworking::IConnection* connection, const IPacketHeader& packetHeader, ISerializer& serializer)
     {
         return MultiplayerPackets::DispatchPacket(connection, packetHeader, serializer, *this);
     }
@@ -347,7 +422,7 @@ namespace Multiplayer
         ;
     }
 
-    void MultiplayerSystemComponent::OnDisconnect(IConnection* connection, DisconnectReason reason, TerminationEndpoint endpoint)
+    void MultiplayerSystemComponent::OnDisconnect(AzNetworking::IConnection* connection, DisconnectReason reason, TerminationEndpoint endpoint)
     {
         const char* endpointString = (endpoint == TerminationEndpoint::Local) ? "Disconnecting" : "Remote host disconnected";
         AZStd::string reasonString = ToString(reason);
@@ -357,6 +432,14 @@ namespace Multiplayer
         if (connection->GetConnectionRole() == ConnectionRole::Acceptor)
         {
             m_shutdownEvent.Signal(m_networkInterface);
+        }
+
+        // Clean up any multiplayer connection data we've bound to this connection instance
+        if (connection->GetUserData() != nullptr)
+        {
+            IConnectionData* connectionData = reinterpret_cast<IConnectionData*>(connection->GetUserData());
+            delete connectionData;
+            connection->SetUserData(nullptr);
         }
     }
 
@@ -372,6 +455,11 @@ namespace Multiplayer
             if (multiplayerType == MultiplayerAgentType::ClientServer || multiplayerType == MultiplayerAgentType::DedicatedServer)
             {
                 m_initEvent.Signal(m_networkInterface);
+
+                const AZ::Aabb worldBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-16384.0f), AZ::Vector3(16384.0f));
+                //const AZ::Aabb worldBounds = AZ::Interface<IPhysics>.Get()->GetWorldBounds();
+                AZStd::unique_ptr<IEntityDomain> newDomain = AZStd::make_unique<FullOwnershipEntityDomain>();
+                m_networkEntityManager.Initialize(InvalidHostId, AZStd::move(newDomain));
             }
         }
         m_agentType = multiplayerType;
@@ -390,6 +478,23 @@ namespace Multiplayer
     void MultiplayerSystemComponent::AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler)
     {
         handler.Connect(m_shutdownEvent);
+    }
+
+    void MultiplayerSystemComponent::DumpStats([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
+    {
+        const MultiplayerStats& stats = GetStats();
+
+        AZLOG_INFO("Total networked entities: %llu", aznumeric_cast<AZ::u64>(stats.m_entityCount));
+        AZLOG_INFO("Total client connections: %llu", aznumeric_cast<AZ::u64>(stats.m_clientConnectionCount));
+        AZLOG_INFO("Total server connections: %llu", aznumeric_cast<AZ::u64>(stats.m_serverConnectionCount));
+        AZLOG_INFO("Total property updates sent: %llu", aznumeric_cast<AZ::u64>(stats.m_propertyUpdatesSent));
+        AZLOG_INFO("Total property updates sent bytes: %llu", aznumeric_cast<AZ::u64>(stats.m_propertyUpdatesSentBytes));
+        AZLOG_INFO("Total property updates received: %llu", aznumeric_cast<AZ::u64>(stats.m_propertyUpdatesRecv));
+        AZLOG_INFO("Total property updates received bytes: %llu", aznumeric_cast<AZ::u64>(stats.m_propertyUpdatesRecvBytes));
+        AZLOG_INFO("Total RPCs sent: %llu", aznumeric_cast<AZ::u64>(stats.m_rpcsSent));
+        AZLOG_INFO("Total RPCs sent bytes: %llu", aznumeric_cast<AZ::u64>(stats.m_rpcsSentBytes));
+        AZLOG_INFO("Total RPCs received: %llu", aznumeric_cast<AZ::u64>(stats.m_rpcsRecv));
+        AZLOG_INFO("Total RPCs received bytes: %llu", aznumeric_cast<AZ::u64>(stats.m_rpcsRecvBytes));
     }
 
     void MultiplayerSystemComponent::OnConsoleCommandInvoked

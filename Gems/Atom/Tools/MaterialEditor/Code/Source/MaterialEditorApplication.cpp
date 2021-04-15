@@ -490,8 +490,9 @@ namespace MaterialEditor
         appType.m_maskValue = AZ::ApplicationTypeQuery::Masks::Game;
     }
 
-    void MaterialEditorApplication::OnTraceMessage(AZStd::string_view message)
+    void MaterialEditorApplication::OnTraceMessage([[maybe_unused]] AZStd::string_view message)
     {
+#if defined(AZ_ENABLE_TRACING)
         AZStd::vector<AZStd::string> lines;
         AzFramework::StringFunc::Tokenize(
             message,
@@ -505,6 +506,7 @@ namespace MaterialEditor
         {
             AZ_TracePrintf("MaterialEditor", "Python: %s\n", line.c_str());
         }
+#endif
     }
 
     void MaterialEditorApplication::OnErrorMessage(AZStd::string_view message)

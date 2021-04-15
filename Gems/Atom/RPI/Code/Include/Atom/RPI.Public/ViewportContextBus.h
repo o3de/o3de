@@ -57,6 +57,9 @@ namespace AZ
             //! Gets the name of the default, primary ViewportContext, for common single-viewport scenarios.
             virtual AZ::Name GetDefaultViewportContextName() const = 0;
 
+            //! Get the ViewportConext which has default ViewportContext name
+            virtual ViewportContextPtr GetDefaultViewportContext() const = 0;
+
             //! Creates a ViewportContext and registers it by name.
             //! There may only be one context registered to a given name at any time.
             //! The ViewportContext will be automatically assigned a View from the stack registered to this context name.
@@ -109,6 +112,9 @@ namespace AZ
             virtual void OnViewportSizeChanged(AzFramework::WindowSize size){AZ_UNUSED(size);}
             //! Called when the active view for a given viewport context name changes.
             virtual void OnViewportDefaultViewChanged(AZ::RPI::ViewPtr view){AZ_UNUSED(view);}
+            //! Called when the viewport is to be rendered.
+            //! Add draws to this functions if they only need to be rendered to this viewport. 
+            virtual void OnRenderTick(){};
 
         protected:
             ~ViewportContextNotifications() = default;

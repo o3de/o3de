@@ -78,7 +78,6 @@ namespace GradientSignal
         {
             behaviorContext->Class<SmoothStepGradientConfig>()
                 ->Constructor()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Property("smoothStep", BehaviorValueProperty(&SmoothStepGradientConfig::m_smoothStep))
                 ->Property("gradientSampler", BehaviorValueProperty(&SmoothStepGradientConfig::m_gradientSampler))
@@ -123,7 +122,6 @@ namespace GradientSignal
                 ;
 
             behaviorContext->EBus<SmoothStepGradientRequestBus>("SmoothStepGradientRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Event("GetGradientSampler", &SmoothStepGradientRequestBus::Events::GetGradientSampler)
                 ;

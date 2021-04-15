@@ -44,11 +44,6 @@ int CRenderMeshMerger::Cmp_Materials(_smart_ptr<IMaterial> pMat1, _smart_ptr<IMa
     SShaderItem& shaderItem1 = pMat1->GetShaderItem();
     SShaderItem& shaderItem2 = pMat2->GetShaderItem();
 
-#ifdef _DEBUG
-    const char* pName1 = shaderItem1.m_pShader->GetName();
-    const char* pName2 = shaderItem2.m_pShader->GetName();
-#endif
-
     // vert format
     AZ::Vertex::Format vertexFormat1 = shaderItem1.m_pShader->GetVertexFormat();
     AZ::Vertex::Format vertexFormat2 = shaderItem2.m_pShader->GetVertexFormat();
@@ -323,7 +318,6 @@ void CRenderMeshMerger::MakeListOfAllCRenderChunks(SMergeInfo& info)
         pRM->GetBBox(vMin, vMax);
 
         // get indices
-        uint32 nIndCount = pRM->GetIndicesCount();
         vtx_idx* pSrcInds = pRM->GetIndexPtr(FSL_READ);
 
         Vec3 vOSPos(0, 0, 0);
@@ -346,6 +340,7 @@ void CRenderMeshMerger::MakeListOfAllCRenderChunks(SMergeInfo& info)
         CRenderChunk newMatInfo = pRM->GetChunks()[pRMI->nChunkId];
 
 #ifdef _DEBUG
+        uint32 nIndCount = pRM->GetIndicesCount();
         CRenderChunk Ch = newMatInfo;
         for (uint32 i = Ch.nFirstIndexId; i < Ch.nFirstIndexId + Ch.nNumIndices; i++)
         {
@@ -971,7 +966,6 @@ void CRenderMeshMerger::TryMergingChunks(SMergeInfo& info)
         else
         {
             _smart_ptr<IMaterial> pMat = mergChunk.pMaterial;
-            SShaderItem& shaderItem = pMat->GetShaderItem();
             chunkVertexFormat = mergChunk.rChunk.m_vertexFormat;
         }
 

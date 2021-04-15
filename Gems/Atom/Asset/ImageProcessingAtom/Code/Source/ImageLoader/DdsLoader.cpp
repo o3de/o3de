@@ -638,7 +638,6 @@ namespace ImageProcessingAtom
             DDS_FILE_DESC desc;
             DDS_HEADER_DXT10 exthead;
 
-            AZ::IO::SizeType startPos = fileLoadStream.GetCurPos();
             fileLoadStream.Read(sizeof(desc), &desc);
 
             if (desc.dwMagic != FOURCC_DDS || !desc.IsValid())

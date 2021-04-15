@@ -382,11 +382,12 @@ void DebugCallStack::LogExceptionInfo(EXCEPTION_POINTERS* pex)
     string path("");
     if ((gEnv) && (gEnv->pFileIO))
     {
-        const char* logAlias = nullptr;
-        if (
-            (logAlias = gEnv->pFileIO->GetAlias("@log@")) ||
-            (logAlias = gEnv->pFileIO->GetAlias("@root@"))
-            )
+        const char* logAlias = gEnv->pFileIO->GetAlias("@log@");
+        if (!logAlias)
+        {
+            logAlias = gEnv->pFileIO->GetAlias("@root@");
+        }
+        if (logAlias)
         {
             path = logAlias;
             path += "/";

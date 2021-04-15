@@ -504,7 +504,7 @@ namespace AZ
 
                 // Re-initialize the image.
                 Shutdown();
-                RHI::ResultCode resultCode = Init(*imageAsset);
+                [[maybe_unused]] RHI::ResultCode resultCode = Init(*imageAsset);
 
                 AZ_Assert(resultCode == RHI::ResultCode::Success, "Failed to re-initialize streaming image");
             }

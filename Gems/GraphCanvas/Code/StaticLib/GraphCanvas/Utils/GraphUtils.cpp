@@ -178,7 +178,7 @@ namespace GraphCanvas
 
             if (inserted)
             {
-                size_t removedCount = m_finalizedElements.erase(helper);
+                [[maybe_unused]] size_t removedCount = m_finalizedElements.erase(helper);
                 AZ_Error("GraphCanvas", removedCount == 0, "Inciting an element after it has already been finalized.");
 
                 m_triggeredNodes.insert(helper->GetOrderingStruct());
@@ -2154,8 +2154,6 @@ namespace GraphCanvas
         {
             ScopedGraphUndoBlocker undoBlocker(graphId);
 
-            SceneRequests* sceneRequests = SceneRequestBus::FindFirstHandler(graphId);
-
             // We want to align everything to the average position to try to minimize the amount of motion required to do the alignment
             for (const NodeOrderingStruct& nodeStruct : nodeOrdering)
             {
@@ -2449,8 +2447,6 @@ namespace GraphCanvas
 
                     AZStd::vector< SlotId > slotIds;
                     NodeRequestBus::EventResult(slotIds, entryId, &NodeRequests::GetSlotIds);
-
-                    bool incitedElements = false;
 
                     // Find each of the connections that will be triggered by the current node
                     for (SlotId slotId : slotIds)
@@ -3025,9 +3021,6 @@ namespace GraphCanvas
 
             if (itemInterface)
             {
-                bool isDisabled = false;
-                bool stateChanged = false;
-
                 if (enabledState == RootGraphicsItemEnabledState::ES_Enabled)
                 {
                     itemInterface->SetEnabledState(enabledState);
@@ -3557,8 +3550,6 @@ namespace GraphCanvas
                 exploredNodes.erase(nodeId);
             }
 
-            bool nodeDisabled = enabledState != RootGraphicsItemEnabledState::ES_Enabled;
-
             AZStd::vector< SlotId > nodeSlots;
             NodeRequestBus::EventResult(nodeSlots, nodeId, &NodeRequests::GetSlotIds);
 
@@ -3579,8 +3570,6 @@ namespace GraphCanvas
                 {
                     RootGraphicsItemEnabledState connectionState = RootGraphicsItemEnabledState::ES_Enabled;
                     RootGraphicsItemRequestBus::EventResult(connectionState, connectionId, &RootGraphicsItemRequests::GetEnabledState);
-
-                    bool connectionEnabled = connectionState != RootGraphicsItemEnabledState::ES_Enabled;
 
                     if (enabledState != connectionState)
                     {

@@ -39,7 +39,7 @@ class MockedWorkspace(object):
         self.shader_compiler = mock.MagicMock()
         self.settings = mock.MagicMock()
 
-        self.paths.dev.return_value = 'dev_path'
+        self.paths.engine_root.return_value = 'engine_path'
         self.paths.build_directory.return_value = 'build_directory'
         self.paths.autoexec_file.return_value = 'autoexec.cfg'
 
@@ -234,7 +234,7 @@ class TestAndroidLauncher:
         mock_workspace.shader_compiler.stop.assert_called_once()
 
     @mock.patch('ly_test_tools.launchers.platforms.base.Launcher._config_ini_to_dict')
-    @mock.patch('ly_test_tools.lumberyard.settings.LySettings.modify_platform_setting', mock.MagicMock)
+    @mock.patch('ly_test_tools.o3de.settings.LySettings.modify_platform_setting', mock.MagicMock)
     def test_ConfigureSettings_DefaultValues_SetsValues(self, mock_config):
         mock_config.return_value = VALID_ANDROID_CONFIG
         mock_workspace = MockedWorkspace()

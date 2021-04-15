@@ -50,7 +50,6 @@ namespace AZ
             application.Start(descriptor);
             AssetBuilderSDK::InitializeSerializationContext();
 
-            bool result = false;
             AssetBuilderSDK::ProcessJobResponse response;
 
             // Read ProcessJobRequest.xml from the output folder

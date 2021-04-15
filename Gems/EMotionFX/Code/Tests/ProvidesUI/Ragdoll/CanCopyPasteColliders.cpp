@@ -72,7 +72,6 @@ namespace EMotionFX
     {
         AutoRegisteredActor actor{ActorFactory::CreateAndInit<SimpleJointChainActor>(4)};
         const Physics::RagdollConfiguration& ragdollConfig = actor->GetPhysicsSetup()->GetRagdollConfig();
-        const Physics::CharacterColliderConfiguration& clothConfig = actor->GetPhysicsSetup()->GetClothConfig();
         const Physics::CharacterColliderConfiguration& simulatedObjectConfig = actor->GetPhysicsSetup()->GetSimulatedObjectColliderConfig();
 
         CommandRagdollHelpers::AddJointsToRagdoll(

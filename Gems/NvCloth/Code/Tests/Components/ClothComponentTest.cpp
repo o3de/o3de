@@ -79,13 +79,13 @@ namespace UnitTest
 
     bool NvClothComponent::IsConnectedToMeshComponentNotificationBus(NvCloth::ClothComponent* clothComponent) const
     {
-        return static_cast<LmbrCentral::MeshComponentNotificationBus::Handler*>(clothComponent)->BusIsConnectedId(clothComponent->GetEntityId());
+        return static_cast<AZ::Render::MeshComponentNotificationBus::Handler*>(clothComponent)->BusIsConnectedId(clothComponent->GetEntityId());
     }
 
     TEST_F(NvClothComponent, ClothComponent_WithoutDependencies_ReturnsMissingRequiredService)
     {
         AZStd::unique_ptr<AZ::Entity> entity = AZStd::make_unique<AZ::Entity>();
-        auto* clothComponent =entity->CreateComponent<NvCloth::ClothComponent>();
+        entity->CreateComponent<NvCloth::ClothComponent>();
         entity->Init();
 
         AZ::Entity::DependencySortOutcome sortOutcome = entity->EvaluateDependenciesGetDetails();
@@ -145,7 +145,11 @@ namespace UnitTest
         EXPECT_FALSE(IsConnectedToMeshComponentNotificationBus(clothComponent));
     }
 
-    TEST_F(NvClothComponent, ClothComponent_WithActorSetup_ReturnsValidClothComponentMesh)
+    // [TODO LYN-1891]
+    // Revisit when Cloth Component Mesh works with Actors adapted to Atom models.
+    // At the moment, CreateAssetFromActor fills only Actor to the ActorAsset, but not the RenderActor,
+    // because of that the AtomModel is not created and OnModelReady is not called.
+    TEST_F(NvClothComponent, DISABLED_ClothComponent_WithActorSetup_ReturnsValidClothComponentMesh)
     {
         const AZStd::string meshNodeName = "cloth_mesh_node";
 

@@ -220,7 +220,7 @@ namespace AZ
                 TemplateEntry* entry = GetEntry(pass->m_template->m_name);
                 if (entry)
                 {
-                    auto iter = AZStd::remove(entry->m_passes.begin(), entry->m_passes.end(), pass);
+                    [[maybe_unused]] auto iter = AZStd::remove(entry->m_passes.begin(), entry->m_passes.end(), pass);
 
                     AZ_Assert((iter + 1) == entry->m_passes.end(),
                         "Pass [%s] is being deleted but was not registered with it's PassTemlate [%s] in the PassLibrary.",
@@ -372,7 +372,6 @@ namespace AZ
             {
                 RHI::Format format = imageAttachment.m_imageDescriptor.m_format;
                 AZStd::string formatLocation = AZStd::string::format("PassAttachmentDesc [%s] on PassTemplate [%s]", imageAttachment.m_name.GetCStr(), passTemplate->m_name.GetCStr());
-                RHI::FormatCapabilities capabilities = RHI::FormatCapabilities::Sample;
                 imageAttachment.m_imageDescriptor.m_format = RHI::ValidateFormat(format, formatLocation.c_str(), imageAttachment.m_formatFallbacks);
             }
 

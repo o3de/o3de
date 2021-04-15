@@ -53,7 +53,7 @@ namespace PhysX
 
     /// System component for PhysX.
     /// The system component handles underlying tasks such as initialization and shutdown of PhysX, managing a
-    /// Lumberyard memory allocator for PhysX allocations, scheduling for PhysX jobs, and connections to the PhysX
+    /// Open 3D Engine memory allocator for PhysX allocations, scheduling for PhysX jobs, and connections to the PhysX
     /// Visual Debugger.  It also owns fundamental PhysX objects which manage worlds, rigid bodies, shapes, materials,
     /// constraints etc., and perform cooking (processing assets such as meshes and heightfields ready for use in PhysX).
     class SystemComponent

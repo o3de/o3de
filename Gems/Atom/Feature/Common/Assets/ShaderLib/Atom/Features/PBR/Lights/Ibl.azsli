@@ -12,25 +12,27 @@
 
 #pragma once
 
+#include <Atom/Features/PBR/LightingOptions.azsli>
+
 #include <Atom/RPI/Math.azsli>
 #include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
 #include <Atom/Features/PBR/LightingUtils.azsli>
 
-void ApplyIblDiffuse(Surface surface, float3 diffuseResponse, out float3 outDiffuse)
+void ApplyIblDiffuse(float3 normal, float3 albedo, float3 diffuseResponse, out float3 outDiffuse)
 {
-    float3 irradianceDir = MultiplyVectorQuaternion(surface.normal, SceneSrg::m_iblOrientation);
+    float3 irradianceDir = MultiplyVectorQuaternion(normal, SceneSrg::m_iblOrientation);
     float3 diffuseSample = SceneSrg::m_diffuseEnvMap.Sample(SceneSrg::m_samplerEnv, GetCubemapCoords(irradianceDir)).rgb;
 
-    outDiffuse = diffuseResponse * surface.albedo * diffuseSample;
+    outDiffuse = diffuseResponse * albedo * diffuseSample;
 }
 
-void ApplyIblSpecular(Surface surface, float3 specularResponse, float3 dirToCamera, float2 brdf, out float3 outSpecular)
+void ApplyIblSpecular(float3 position, float3 normal, float3 specularF0, float roughnessLinear, float3 specularResponse, float3 dirToCamera, float2 brdf, out float3 outSpecular)
 {
-    float3 reflectDir = reflect(-dirToCamera, surface.normal);
+    float3 reflectDir = reflect(-dirToCamera, normal);
     
     // global
-    outSpecular = SceneSrg::m_specularEnvMap.SampleLevel(SceneSrg::m_samplerEnv, GetCubemapCoords(reflectDir), GetRoughnessMip(surface.roughnessLinear)).rgb;
-    outSpecular *= (surface.specularF0 * brdf.x + brdf.y);
+    outSpecular = SceneSrg::m_specularEnvMap.SampleLevel(SceneSrg::m_samplerEnv, GetCubemapCoords(reflectDir), GetRoughnessMip(roughnessLinear)).rgb;
+    outSpecular *= (specularF0 * brdf.x + brdf.y);
     
     // reflection probe
     if (ObjectSrg::m_reflectionProbeData.m_useReflectionProbe)
@@ -38,24 +40,56 @@ void ApplyIblSpecular(Surface surface, float3 specularResponse, float3 dirToCame
         if (ObjectSrg::m_reflectionProbeData.m_useParallaxCorrection)
         {
             reflectDir = ApplyParallaxCorrection(
-                ObjectSrg::m_reflectionProbeData.m_outerAabbMin, 
-                ObjectSrg::m_reflectionProbeData.m_outerAabbMax, 
-                ObjectSrg::m_reflectionProbeData.m_aabbPos, 
-                surface.position, 
+                ObjectSrg::m_reflectionProbeData.m_outerAabbMin,
+                ObjectSrg::m_reflectionProbeData.m_outerAabbMax,
+                ObjectSrg::m_reflectionProbeData.m_aabbPos,
+                position,
                 reflectDir);
         }
     
-        float3 probeSpecular = ObjectSrg::m_reflectionProbeCubeMap.SampleLevel(SceneSrg::m_samplerEnv, GetCubemapCoords(reflectDir), GetRoughnessMip(surface.roughnessLinear)).rgb;
-        probeSpecular *= (surface.specularF0 * brdf.x + brdf.y);
+        float3 probeSpecular = ObjectSrg::m_reflectionProbeCubeMap.SampleLevel(SceneSrg::m_samplerEnv, GetCubemapCoords(reflectDir), GetRoughnessMip(roughnessLinear)).rgb;
+        probeSpecular *= (specularF0 * brdf.x + brdf.y);
     
         // compute blend amount based on world position in the reflection probe volume
         float blendAmount = ComputeLerpBetweenInnerOuterAABBs(
-            ObjectSrg::m_reflectionProbeData.m_innerAabbMin, 
-            ObjectSrg::m_reflectionProbeData.m_innerAabbMax, 
-            ObjectSrg::m_reflectionProbeData.m_outerAabbMax, 
-            ObjectSrg::m_reflectionProbeData.m_aabbPos, 
-            surface.position);
+            ObjectSrg::m_reflectionProbeData.m_innerAabbMin,
+            ObjectSrg::m_reflectionProbeData.m_innerAabbMax,
+            ObjectSrg::m_reflectionProbeData.m_outerAabbMax,
+            ObjectSrg::m_reflectionProbeData.m_aabbPos,
+            position);
     
         outSpecular = lerp(outSpecular, probeSpecular, blendAmount);
     }
 }
+
+void ApplyIBL(Surface surface, inout LightingData lightingData)
+{
+    if (o_opacity_mode == OpacityMode::Blended || o_opacity_mode == OpacityMode::TintedTransparent)
+    {
+        // transparencies currently require IBL in the forward pass
+        if (o_enableIBL)
+        {
+            float3 iblDiffuse = 0.0f;
+            float3 iblSpecular = 0.0f;
+            ApplyIblDiffuse(surface.normal, surface.albedo, lightingData.diffuseResponse, iblDiffuse);
+            ApplyIblSpecular(surface.position, surface.normal, surface.specularF0, surface.roughnessLinear, lightingData.specularResponse, lightingData.dirToCamera, lightingData.brdf, iblSpecular);
+
+            // Adjust IBL lighting by exposure.
+            float iblExposureFactor = pow(2.0, SceneSrg::m_iblExposure);
+            lightingData.diffuseLighting += (iblDiffuse * iblExposureFactor * lightingData.occlusion);
+            lightingData.specularLighting += (iblSpecular * iblExposureFactor);
+        }
+    }
+    else if (o_meshUseForwardPassIBLSpecular || o_materialUseForwardPassIBLSpecular)
+    {
+        if (o_enableIBL)
+        {
+            float3 iblSpecular = 0.0f;
+            ApplyIblSpecular(surface.position, surface.normal, surface.specularF0, surface.roughnessLinear, lightingData.specularResponse, lightingData.dirToCamera, lightingData.brdf, iblSpecular);
+            
+            float iblExposureFactor = pow(2.0f, SceneSrg::m_iblExposure);
+            lightingData.specularLighting += (iblSpecular * iblExposureFactor);
+        }
+    }
+}
+

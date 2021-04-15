@@ -34,13 +34,13 @@ class TestScaleOverrideWorksSuccessfully(object):
     @pytest.fixture(autouse=True)
     def setup_teardown(self, request, workspace, project, level):
         def teardown():
-            file_system.delete([os.path.join(workspace.paths.dev(), project, "Levels", level)], True, True)
+            file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
         request.addfinalizer(teardown)
 
-        file_system.delete([os.path.join(workspace.paths.dev(), project, "Levels", level)], True, True)
+        file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
 
     @pytest.mark.test_case_id("C4814462")
-    @pytest.mark.SUITE_main
+    @pytest.mark.SUITE_periodic
     def test_ScaleModifierOverrides_InstancesProperlyScale(self, request, editor, level, launcher_platform):
 
         expected_lines = [
@@ -69,7 +69,7 @@ class TestScaleOverrideWorksSuccessfully(object):
         )
 
     @pytest.mark.test_case_id("C4896937")
-    @pytest.mark.SUITE_main
+    @pytest.mark.SUITE_periodic
     def test_ScaleModifier_InstancesProperlyScale(self, request, editor, level, launcher_platform):
 
         expected_lines = [

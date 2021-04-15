@@ -139,7 +139,6 @@ namespace PhysX
             const AzToolsFramework::ReflectedPropertyEditor::WidgetList& widgets = m_propertyEditor->GetWidgets();
             for (auto& widgetIter : widgets)
             {
-                AzToolsFramework::InstanceDataNode* dataNode = widgetIter.first;
                 AzToolsFramework::PropertyRowWidget* rowWidget = widgetIter.second;
                 QWidget* widget = rowWidget->GetChildWidget();
                 if (widget == nullptr)

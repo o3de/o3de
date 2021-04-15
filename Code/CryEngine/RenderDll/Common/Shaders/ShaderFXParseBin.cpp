@@ -190,7 +190,7 @@ SShaderBin* CShaderManBin::SaveBinShader(
                 fpStripExtension(com, com);
 
                 // Get or load the included shader
-                SShaderBin* pBIncl = GetBinShader(com, true, 0);
+                GetBinShader(com, true, 0);
 
                 dwToken = CParserBin::fxToken(com, NULL);
                 dwToken = Parser.NewUserToken(dwToken, com, false);
@@ -649,7 +649,7 @@ void CShaderManBin::mfGeneratePublicFXParams(CShader* pSH, CParserBin& Parser)
                     {
                         szVal++;
                     }
-                    int n = azsscanf(szVal, "%f, %f, %f, %f", &sp.m_Value.m_Color[0], &sp.m_Value.m_Color[1], &sp.m_Value.m_Color[2], &sp.m_Value.m_Color[3]);
+                    [[maybe_unused]] int n = azsscanf(szVal, "%f, %f, %f, %f", &sp.m_Value.m_Color[0], &sp.m_Value.m_Color[1], &sp.m_Value.m_Color[2], &sp.m_Value.m_Color[3]);
                     AZ_Warning("Shaders", n == 4, "color value only has %d components", n);
                 }
                 else if (szWidget == "colora")
@@ -659,7 +659,7 @@ void CShaderManBin::mfGeneratePublicFXParams(CShader* pSH, CParserBin& Parser)
                     {
                         szVal++;
                     }
-                    int n = azsscanf(szVal, "%f, %f, %f, %f", &sp.m_Value.m_Color[0], &sp.m_Value.m_Color[1], &sp.m_Value.m_Color[2], &sp.m_Value.m_Color[3]);
+                    [[maybe_unused]] int n = azsscanf(szVal, "%f, %f, %f, %f", &sp.m_Value.m_Color[0], &sp.m_Value.m_Color[1], &sp.m_Value.m_Color[2], &sp.m_Value.m_Color[3]);
                     AZ_Warning("Shaders", n == 4, "color value only has %d components", n);
                 }
                 else
@@ -1151,9 +1151,9 @@ SShaderBin* CShaderManBin::GetBinShader(const char* szName, bool bInclude, uint3
     memset(&Header, 0, 2 * sizeof(SShaderBinHeader));
     char nameFile[256], nameBin[256];
     AZ::IO::HandleType srcFileHandle = AZ::IO::InvalidHandle;
-    uint32 nSourceCRC32 = 0;
     sprintf_s(nameFile, "%sCryFX/%s.%s", gRenDev->m_cEF.m_ShadersPath.c_str(), szName, bInclude ? "cfi" : "cfx");
 #if !defined(_RELEASE)
+    uint32 nSourceCRC32 = 0;
     {
         srcFileHandle = gEnv->pCryPak->FOpen(nameFile, "rb");
         nSourceCRC32 = srcFileHandle != AZ::IO::InvalidHandle ? gEnv->pCryPak->ComputeCRC(nameFile) : 0;
@@ -2517,7 +2517,6 @@ bool CShaderManBin::ParseBinFX_Sampler(CParserBin& Parser, SParserFrame& Frame, 
             break;
         default:
         {
-            const char* szFilter = Parser.GetString(nFilter);
             assert(0);
         }
         break;
@@ -2746,13 +2745,10 @@ bool CShaderManBin::ParseBinFX_Sampler(CParserBin& Parser, SParserFrame& Frame, 
             break;
         default:
         {
-            const char* szFilter = Parser.GetString(nFilter);
             CRY_ASSERT(0);
-            int nnn = 0;
         }
         break;
         }
-        int nnn = 0;
     }
     if (nFiltMag > 0 && nFiltMin > 0 && nFiltMip > 0)
     {
@@ -3244,7 +3240,6 @@ bool CShaderManBin::ParseBinFX_Technique_Pass_PackParameters (CParserBin& Parser
 
     std::vector<SFXRegisterBin> Registers;
     std::vector<SFXPackedName> PackedNames;
-    uint32 nMergeMask = (eSHClass == eHWSC_Pixel) ? 1 : 2;
     for (i = 0; i < AffectedParams.size(); i++)
     {
         SFXParam* pr = &AffectedParams[i];
@@ -4124,7 +4119,6 @@ bool CShaderManBin::ParseBinFX_Technique_Pass(CParserBin& Parser, SParserFrame& 
     byte AlphaRef = 0;
     int State = GS_DEPTHWRITE;
 
-    int nMaxTMU = 0;
     signed char Cull = -1;
     int nIndex;
     EToken eSrcBlend = eT_unknown;
@@ -4963,10 +4957,9 @@ bool CShaderManBin::ParseBinFX(SShaderBin* pBin, CShader* ef, uint64 nMaskGen)
     ef->mfFree();
 
     assert (ef->m_HWTechniques.Num() == 0);
-    int nInd = 0;
 
-    ETokenStorageClass nTokenStorageClass;
-    while (nTokenStorageClass = Parser.ParseObject(sCommands))
+    ETokenStorageClass nTokenStorageClass = Parser.ParseObject(sCommands);
+    while (nTokenStorageClass)
     {
         EToken eT = Parser.GetToken();
         SCodeFragment Fr;
@@ -4991,9 +4984,6 @@ bool CShaderManBin::ParseBinFX(SShaderBin* pBin, CShader* ef, uint64 nMaskGen)
         {
             SFXSampler Pr;
             Parser.CopyTokens(Parser.m_Name, Pr.m_dwName);
-#ifdef _DEBUG
-            const char* sampName = Parser.GetString(Parser.m_Name);
-#endif
             if (eT == eT_SamplerState)
             {
                 Pr.m_eType = eSType_Sampler;
@@ -5021,11 +5011,6 @@ bool CShaderManBin::ParseBinFX(SShaderBin* pBin, CShader* ef, uint64 nMaskGen)
             if (!Parser.m_Assign.IsEmpty())
             {
                 nTokAssign = Parser.m_Tokens[Parser.m_Assign.m_nFirstToken];
-            }
-            if (nTokAssign)
-            {
-                const char* assign = Parser.GetString(nTokAssign);
-                int nnn = 0;
             }
             Pr.PostLoad(Parser, Parser.m_Name, Parser.m_Annotations, Parser.m_Value, Parser.m_Assign);
 
@@ -5369,6 +5354,8 @@ bool CShaderManBin::ParseBinFX(SShaderBin* pBin, CShader* ef, uint64 nMaskGen)
             //CRY_ASSERT(0);
             break;
         }
+
+        nTokenStorageClass = Parser.ParseObject(sCommands);
     }
 
     FXP.m_FXParams.swap(s_tempFXParams);
@@ -5776,7 +5763,8 @@ bool CShaderManBin::ParseBinFX_Dummy(SShaderBin* pBin, std::vector<string>& Shad
 
     ETokenStorageClass nTokenStorageClass;
 
-    while (nTokenStorageClass = Parser.ParseObject(sCommands))
+    nTokenStorageClass = Parser.ParseObject(sCommands);
+    while (nTokenStorageClass)
     {
         EToken eT = Parser.GetToken();
         SCodeFragment Fr;
@@ -5836,7 +5824,7 @@ bool CShaderManBin::ParseBinFX_Dummy(SShaderBin* pBin, std::vector<string>& Shad
         {
             uint32 nToken = Parser.m_Tokens[Parser.m_Name.m_nFirstToken];
             bool bPublicTechnique = false;
-            SShaderTechnique* pShTech = ParseBinFX_Technique(Parser, Parser.m_Data, Parser.m_Annotations, techParams, &bPublicTechnique);
+            ParseBinFX_Technique(Parser, Parser.m_Data, Parser.m_Annotations, techParams, &bPublicTechnique);
             if (bPublicTechnique)
             {
                 const char* name = Parser.GetString(nToken);
@@ -5848,6 +5836,7 @@ bool CShaderManBin::ParseBinFX_Dummy(SShaderBin* pBin, std::vector<string>& Shad
         default:
             CRY_ASSERT(0);
         }
+        nTokenStorageClass = Parser.ParseObject(sCommands);
     }
 
     if (bPublic)
@@ -6344,13 +6333,6 @@ CTexture* CShaderMan::mfParseFXTechnique_LoadShaderTexture (STexSamplerRT* smp, 
     {
         return NULL;
     }
-
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    // store the CRC for this sampler's texture name for fast lookup
-    // this is particularly useful for shared engine textures
-    CCryNameTSCRC crc(szName);
-    smp->m_nCrc = crc.get();
-#endif // #if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
 
     if (szName[0] == '$')
     {

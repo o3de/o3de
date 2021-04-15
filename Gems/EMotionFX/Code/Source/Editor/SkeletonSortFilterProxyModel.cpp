@@ -143,10 +143,6 @@ namespace EMotionFX
 
         bool shouldShow = false;
 
-        const Node* node = sourceIndex.data(SkeletonModel::ROLE_POINTER).value<Node*>();
-        const Actor* actor = sourceIndex.data(SkeletonModel::ROLE_ACTOR_POINTER).value<Actor*>();
-        const ActorInstance* actorInstance = sourceIndex.data(SkeletonModel::ROLE_ACTOR_INSTANCE_POINTER).value<ActorInstance*>();
-
         if (AllFiltersDisabled())
         {
             shouldShow = true;

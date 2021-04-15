@@ -18,8 +18,8 @@ from typing import List
 
 # Import LyTestTools
 import ly_test_tools.builtin.helpers as helpers
-from ly_test_tools.lumberyard import asset_processor as asset_processor_utils
-from ly_test_tools.lumberyard.asset_processor import ASSET_PROCESSOR_PLATFORM_MAP
+from ly_test_tools.o3de import asset_processor as asset_processor_utils
+from ly_test_tools.o3de.asset_processor import ASSET_PROCESSOR_PLATFORM_MAP
 
 # Import fixtures
 from ..ap_fixtures.asset_processor_fixture import asset_processor as asset_processor
@@ -29,7 +29,7 @@ from ..ap_fixtures.ap_config_default_platform_fixture import ap_config_default_p
 
 
 # Import LyShared
-import ly_test_tools.lumberyard.pipeline_utils as utils
+import ly_test_tools.o3de.pipeline_utils as utils
 from automatedtesting_shared import asset_database_utils as asset_db_utils
 
 logger = logging.getLogger(__name__)

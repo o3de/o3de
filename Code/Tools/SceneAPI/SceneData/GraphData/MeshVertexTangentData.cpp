@@ -44,6 +44,16 @@ namespace AZ
                 }
             }
 
+            void MeshVertexTangentData::CloneAttributesFrom(const IGraphObject* sourceObject)
+            {
+                IMeshVertexTangentData::CloneAttributesFrom(sourceObject);
+                if (const auto* typedSource = azrtti_cast<const MeshVertexTangentData*>(sourceObject))
+                {
+                    SetTangentSpace(typedSource->GetTangentSpace());
+                    SetTangentSetIndex(typedSource->GetTangentSetIndex());
+                }
+            }
+
             size_t MeshVertexTangentData::GetCount() const
             {
                 return m_tangents.size();

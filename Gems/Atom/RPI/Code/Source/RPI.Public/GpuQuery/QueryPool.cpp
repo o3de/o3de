@@ -57,7 +57,7 @@ namespace AZ
                 queryPoolDesc.m_pipelineStatisticsMask = m_statisticsFlags;
 
                 m_rhiQueryPool = RHI::Factory::Get().CreateQueryPool();
-                auto result = m_rhiQueryPool->Init(*device, queryPoolDesc);
+                [[maybe_unused]] auto result = m_rhiQueryPool->Init(*device, queryPoolDesc);
                 AZ_Assert(result == RHI::ResultCode::Success, "Failed to create the query pool");
             }
 

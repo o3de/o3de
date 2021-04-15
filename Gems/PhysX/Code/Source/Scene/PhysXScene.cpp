@@ -1011,9 +1011,9 @@ namespace PhysX
             m_pxScene->getSimulationStatistics(stats);
         }
 
-        const char* RootCategory = "PhysX/%s/%s";
+        [[maybe_unused]] const char* RootCategory = "PhysX/%s/%s";
 
-        const char* ShapesSubCategory = "Shapes";
+        [[maybe_unused]] const char* ShapesSubCategory = "Shapes";
         AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbShapes[PxGeometryType::eSPHERE], RootCategory, ShapesSubCategory, "Sphere");
         AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbShapes[PxGeometryType::ePLANE], RootCategory, ShapesSubCategory, "Plane");
         AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbShapes[PxGeometryType::eCAPSULE], RootCategory, ShapesSubCategory, "Capsule");
@@ -1022,7 +1022,7 @@ namespace PhysX
         AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbShapes[PxGeometryType::eTRIANGLEMESH], RootCategory, ShapesSubCategory, "TriangleMesh");
         AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbShapes[PxGeometryType::eHEIGHTFIELD], RootCategory, ShapesSubCategory, "Heightfield");
 
-        const char* ObjectsSubCategory = "Objects";
+        [[maybe_unused]] const char* ObjectsSubCategory = "Objects";
         AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbActiveConstraints, RootCategory, ObjectsSubCategory, "ActiveConstraints");
         AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbActiveDynamicBodies, RootCategory, ObjectsSubCategory, "ActiveDynamicBodies");
         AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbActiveKinematicBodies, RootCategory, ObjectsSubCategory, "ActiveKinematicBodies");
@@ -1032,13 +1032,13 @@ namespace PhysX
         AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbAggregates, RootCategory, ObjectsSubCategory, "Aggregates");
         AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbArticulations, RootCategory, ObjectsSubCategory, "Articulations");
 
-        const char* SolverSubCategory = "Solver";
+        [[maybe_unused]] const char* SolverSubCategory = "Solver";
         AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbAxisSolverConstraints, RootCategory, SolverSubCategory, "AxisSolverConstraints");
         AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.compressedContactSize, RootCategory, SolverSubCategory, "CompressedContactSize");
         AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.requiredContactConstraintMemory, RootCategory, SolverSubCategory, "RequiredContactConstraintMemory");
         AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.peakConstraintMemory, RootCategory, SolverSubCategory, "PeakConstraintMemory");
 
-        const char* BroadphaseSubCategory = "Broadphase";
+        [[maybe_unused]] const char* BroadphaseSubCategory = "Broadphase";
         AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.getNbBroadPhaseAdds(), RootCategory, BroadphaseSubCategory, "BroadPhaseAdds");
         AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.getNbBroadPhaseRemoves(), RootCategory, BroadphaseSubCategory, "BroadPhaseRemoves");
 
@@ -1060,7 +1060,7 @@ namespace PhysX
             }
         }
 
-        const char* CollisionsSubCategory = "Collisions";
+        [[maybe_unused]] const char* CollisionsSubCategory = "Collisions";
         AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, ccdPairs, RootCategory, CollisionsSubCategory, "CCDPairs");
         AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, modifiedPairs, RootCategory, CollisionsSubCategory, "ModifiedPairs");
         AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, triggerPairs, RootCategory, CollisionsSubCategory, "TriggerPairs");

@@ -54,6 +54,8 @@ namespace AZ
                 ConstantData,
                 BufferView,
                 ImageView,
+                BufferViewUnboundedArray,
+                ImageViewUnboundedArray,
                 Sampler,
                 Count
             };
@@ -75,8 +77,11 @@ namespace AZ
             uint32_t GetDescriptorCount(size_t descIndex) const;
             uint32_t GetConstantDataSize() const;
             const AZStd::vector<VkDescriptorSetLayoutBinding>& GetNativeLayoutBindings() const;
-
+            const AZStd::vector<VkDescriptorBindingFlags>& GetNativeBindingFlags() const;
             const RHI::ShaderResourceGroupLayout* GetShaderResourceGroupLayout() const;
+
+            static const uint32_t MaxUnboundedArrayDescriptors = (1024 * 1024 * 2); // 2M
+            bool GetHasUnboundedArray() const { return m_hasUnboundedArray; }
 
         private:
             DescriptorSetLayout() = default;
@@ -98,10 +103,12 @@ namespace AZ
 
             VkDescriptorSetLayout m_nativeDescriptorSetLayout = VK_NULL_HANDLE;
             AZStd::vector<VkDescriptorSetLayoutBinding> m_descriptorSetLayoutBindings;
+            AZStd::vector<VkDescriptorBindingFlags> m_descriptorBindingFlags;
             uint32_t m_constantDataSize = 0;
             AZStd::array<uint32_t, ResourceTypeSize> m_layoutIndexOffset;
             AZStd::vector<VkSampler> m_nativeSamplers;
             RHI::ConstPtr<RHI::ShaderResourceGroupLayout> m_shaderResourceGroupLayout;
+            bool m_hasUnboundedArray = false;
         };
     }
 }

@@ -963,8 +963,6 @@ void SplineWidget::DrawKeys(QPainter* painter, int splineIndex, [[maybe_unused]]
     const QPen pOldPen = painter->pen();
     painter->setPen(Qt::black);
 
-    int lastKeyX = m_rcSpline.left() - 100;
-
     int i;
 
     int nTotalNumberOfDimensions(0);
@@ -1135,9 +1133,7 @@ void SplineWidget::OnLButtonDown(const QPoint& point, Qt::KeyboardModifiers modi
     ISplineInterpolator* pSpline = HitSpline(m_cMouseDownPos);
 
     // Get control key status.
-    bool bAltClick = modifiers & Qt::AltModifier;
     bool bCtrlClick = modifiers & Qt::ControlModifier;
-    bool bShiftClick = modifiers & Qt::ShiftModifier;
 
     switch (m_hitCode)
     {
@@ -1385,12 +1381,10 @@ void SplineWidget::mouseMoveEvent(QMouseEvent* event)
             StoreUndo();
 
             bool bAltClick = event->modifiers() & Qt::AltModifier;
-            bool bCtrlClick = event->modifiers() & Qt::ControlModifier;
-            bool bShiftClick = event->modifiers() & Qt::ShiftModifier;
-
 
             Vec2 v0 = ClientToWorld(m_cMouseDownPos);
             Vec2 v1 = ClientToWorld(event->pos());
+
             if (bAltClick)
             {
                 TimeScaleKeys(m_fTimeMarker, v0.x, v1.x);
@@ -1563,14 +1557,6 @@ void SplineWidget::OnLButtonUp([[maybe_unused]] const QPoint& point, Qt::Keyboar
 
         if (!m_startedDragging)
         {
-            // Get control key status.
-            bool bAltClick = modifiers & Qt::AltModifier;
-            bool bCtrlClick = modifiers & Qt::ControlModifier;
-            bool bShiftClick = modifiers & Qt::ShiftModifier;
-
-            bool bAddSelect = bCtrlClick;
-            bool bUnselect = bAltClick;
-
             HitSpline(m_cMouseDownPos);
         }
     }
@@ -1580,7 +1566,6 @@ void SplineWidget::OnLButtonUp([[maybe_unused]] const QPoint& point, Qt::Keyboar
         // Get control key status.
         bool bAltClick = modifiers & Qt::AltModifier;
         bool bCtrlClick = modifiers & Qt::ControlModifier;
-        bool bShiftClick = modifiers & Qt::ShiftModifier;
 
         bool bAddSelect = bCtrlClick;
         bool bUnselect = bAltClick;
@@ -2631,7 +2616,6 @@ void AbstractSplineWidget::SelectAll()
     for (int splineIndex = 0, splineCount = m_splines.size(); splineIndex < splineCount; ++splineIndex)
     {
         ISplineInterpolator* pSpline = m_splines[splineIndex].pSpline;
-        ISplineInterpolator* pDetailSpline = m_splines[splineIndex].pDetailSpline;
 
         for (int i = 0; i < (int)pSpline->GetKeyCount(); i++)
         {
@@ -2678,7 +2662,6 @@ void SplineWidget::SetTimelineCtrl(TimelineWidget* pTimelineCtrl)
     m_pTimelineCtrl = pTimelineCtrl;
     if (m_pTimelineCtrl)
     {
-        QWidget* pOwner = pTimelineCtrl->parentWidget();
         pTimelineCtrl->setParent(this);
         pTimelineCtrl->SetZoom(m_grid.zoom.x);
         pTimelineCtrl->SetOrigin(m_grid.origin.x);

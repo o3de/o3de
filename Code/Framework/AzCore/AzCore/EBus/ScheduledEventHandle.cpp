@@ -16,11 +16,11 @@
 
 namespace AZ
 {
-    ScheduledEventHandle::ScheduledEventHandle(TimeMs executeTimeMs, TimeMs durationTimeMs, ScheduledEvent* scheduledEvent, bool isAutoDelete)
+    ScheduledEventHandle::ScheduledEventHandle(TimeMs executeTimeMs, TimeMs durationTimeMs, ScheduledEvent* scheduledEvent, bool ownsScheduledEvent)
         : m_executeTimeMs(executeTimeMs)
         , m_durationMs(durationTimeMs)
         , m_event(scheduledEvent)
-        , m_autoDelete(isAutoDelete)
+        , m_ownsScheduledEvent(ownsScheduledEvent)
     {
         ;
     }
@@ -49,11 +49,6 @@ namespace AZ
                     else // Not configured to auto-requeue, so remove the handle
                     {
                         m_event->ClearHandle();
-                        if (m_autoDelete)
-                        {
-                            delete m_event;
-                        }
-                        m_event = nullptr;
                     }
                 }
             }
@@ -65,11 +60,6 @@ namespace AZ
         return false; // Event has been deleted, so the handle class must be deleted after this function.
     }
 
-    void ScheduledEventHandle::Clear()
-    {
-        m_event = nullptr;
-    }
-
     TimeMs ScheduledEventHandle::GetExecuteTimeMs() const
     {
         return m_executeTimeMs;
@@ -78,5 +68,15 @@ namespace AZ
     TimeMs ScheduledEventHandle::GetDurationTimeMs() const
     {
         return m_durationMs;
+    }
+
+    bool ScheduledEventHandle::GetOwnsScheduledEvent() const
+    {
+        return m_ownsScheduledEvent;
+    }
+
+    ScheduledEvent* ScheduledEventHandle::GetScheduledEvent() const
+    {
+        return m_event;
     }
 }

@@ -23,7 +23,7 @@ from . import ap_setup_fixture as ap_setup_fixture
 @pytest.fixture
 def ap_all_platforms_setup_fixture(request, workspace, ap_setup_fixture) -> Dict[str, str]:
 
-    dev_dir = os.path.join(workspace.paths.dev())
+    dev_dir = os.path.join(workspace.paths.engine_root())
     cache_dir = workspace.paths.cache()
 
     # add some useful locations

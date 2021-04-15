@@ -126,7 +126,7 @@ namespace AZ
             uint32_t commandQueueIndex = 0;
             if (SelectQueueFamily(device, familyIndex, RHI::HardwareQueueClassMask::None, supportsPresentation))
             {                
-                RHI::ResultCode result = CreateQueue(device, commandQueueIndex, familyIndex, "Presentation queue");
+                [[maybe_unused]] RHI::ResultCode result = CreateQueue(device, commandQueueIndex, familyIndex, "Presentation queue");
                 AZ_Assert(result == RHI::ResultCode::Success, "Failed to create presentation queue");                
             }
             else

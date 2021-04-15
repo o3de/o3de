@@ -47,7 +47,7 @@ namespace AssetBundler
     const char* AssetCatalogFileArg = "overrideAssetCatalogFile";
     const char* AllowOverwritesFlag = "allowOverwrites";
     const char* IgnoreFileCaseFlag = "ignoreFileCase";
-    const char* ProjectArg = "project";
+    const char* ProjectArg = "project-path";
 
     // Seeds
     const char* SeedsCommand = "seeds";
@@ -485,7 +485,7 @@ namespace AssetBundler
 
         return AZ::Failure(AZStd::string::format(
             "Unable to locate the Project Cache path from Settings Registry at key %s."
-            " Please run the Lumberyard Asset Processor to generate a Cache and build assets.",
+            " Please run the Open 3D Engine Asset Processor to generate a Cache and build assets.",
             AZ::SettingsRegistryMergeUtils::FilePathKey_CacheProjectRootFolder));
     }
 
@@ -503,7 +503,7 @@ namespace AssetBundler
 
         if (tempPlatformList.empty())
         {
-            return AZ::Failure(AZStd::string("Cache is empty. Please run the Lumberyard Asset Processor to generate a Cache and build assets."));
+            return AZ::Failure(AZStd::string("Cache is empty. Please run the Open 3D Engine Asset Processor to generate a Cache and build assets."));
         }
 
         for (const QString& platform : tempPlatformList)
@@ -520,7 +520,7 @@ namespace AssetBundler
         if (assetCatalogFilePath.empty())
         {
             return AZ::Failure(AZStd::string::format(
-                "Unable to retrieve cache platform path from Settings Registry at key: %s. Please run the Lumberyard Asset Processor to generate platform-specific cache folders and build assets.",
+                "Unable to retrieve cache platform path from Settings Registry at key: %s. Please run the Open 3D Engine Asset Processor to generate platform-specific cache folders and build assets.",
                 AZ::SettingsRegistryMergeUtils::FilePathKey_CacheProjectRootFolder));
         }
 
@@ -607,9 +607,9 @@ namespace AssetBundler
         if (!filePath.empty())
         {
             m_validPath = true;
-            m_originalPath = m_absolutePath = filePath;
-            AzFramework::StringFunc::Path::Normalize(m_originalPath);
-            ComputeAbsolutePath(m_absolutePath, platform, checkFileCase, ignoreFileCase);
+            m_absolutePath = AZ::IO::PathView(filePath).LexicallyNormal();
+            m_originalPath = m_absolutePath;
+            ComputeAbsolutePath(platform, checkFileCase, ignoreFileCase);
         }
     }
 
@@ -621,12 +621,12 @@ namespace AssetBundler
 
     const AZStd::string& FilePath::AbsolutePath() const
     {
-        return m_absolutePath;
+        return m_absolutePath.Native();
     }
 
     const AZStd::string& FilePath::OriginalPath() const
     {
-        return m_originalPath;
+        return m_originalPath.Native();
     }
 
     bool FilePath::IsValid() const
@@ -639,60 +639,37 @@ namespace AssetBundler
         return m_errorString;
     }
 
-    void FilePath::ComputeAbsolutePath(AZStd::string& filePath, const AZStd::string& platformIdentifier, bool checkFileCase, bool ignoreFileCase)
+    void FilePath::ComputeAbsolutePath(const AZStd::string& platformIdentifier, bool checkFileCase, bool ignoreFileCase)
     {
-        if (AzToolsFramework::AssetFileInfoListComparison::IsTokenFile(filePath))
+        if (AzToolsFramework::AssetFileInfoListComparison::IsTokenFile(m_absolutePath.Native()))
         {
             return;
         }
 
         if (!platformIdentifier.empty())
         {
-            AssetBundler::AddPlatformIdentifier(filePath, platformIdentifier);
+            AssetBundler::AddPlatformIdentifier(m_absolutePath.Native(), platformIdentifier);
         }
 
-        const char* appRoot = nullptr;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(appRoot, &AzFramework::ApplicationRequests::GetAppRoot);
-
-#if AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
-        AZStd::string driveString;
-        AzFramework::StringFunc::Path::GetDrive(appRoot, driveString);
-
-        if (AzFramework::StringFunc::FirstCharacter(filePath.c_str()) == AZ_CORRECT_FILESYSTEM_SEPARATOR)
-        {
-            AzFramework::StringFunc::Path::ConstructFull(driveString.c_str(), filePath.c_str(), filePath, true);
-        }
-#endif
-
-        if (!AzFramework::StringFunc::Path::IsRelative(filePath.c_str()))
-        {
-            // it is already an absolute path
-            AzFramework::StringFunc::Path::Normalize(filePath);
-        }
-        else
-        {
-            AzFramework::StringFunc::Path::ConstructFull(appRoot, m_absolutePath.c_str(), m_absolutePath, true);
-        }
-
+        AZ::IO::Path enginePath = AZ::IO::PathView(AZ::Utils::GetEnginePath());
+        m_absolutePath = enginePath / m_absolutePath;
         if (checkFileCase)
         {
-            QDir rootDir(appRoot);
-            QString relFilePath = rootDir.relativeFilePath(m_absolutePath.c_str());
-            if (AzToolsFramework::AssetUtils::UpdateFilePathToCorrectCase(QString(appRoot), relFilePath))
+            AZ::IO::Path relFilePath = m_absolutePath.LexicallyProximate(enginePath);
+            if (AzToolsFramework::AssetUtils::UpdateFilePathToCorrectCase(enginePath.Native(), relFilePath.Native()))
             {
                 if (ignoreFileCase)
                 {
-                    AzFramework::StringFunc::Path::ConstructFull(appRoot, relFilePath.toUtf8().data(), m_absolutePath, true);
+                    m_absolutePath = (enginePath / relFilePath).String();
                 }
                 else
                 {
-                    AZStd::string absfilePath(rootDir.filePath(relFilePath).toUtf8().data());
-                    AzFramework::StringFunc::Path::Normalize(absfilePath);
-                    if (!AZ::StringFunc::Equal(absfilePath.c_str(), m_absolutePath.c_str(), true))
+                    AZ::IO::Path absfilePath = (enginePath / relFilePath).LexicallyNormal();
+                    if (absfilePath != AZ::IO::PathView(m_absolutePath))
                     {
-                        m_errorString = AZStd::string::format("File case mismatch, file ( %s ) does not exist on disk, did you mean file ( %s ). \
-Please run the command again with the correct file path or use ( --%s ) arg if you want to allow case insensitive file match.\n",
-m_absolutePath.c_str(), rootDir.filePath(relFilePath.toUtf8().data()).toUtf8().data(), IgnoreFileCaseFlag);
+                        m_errorString = AZStd::string::format("File case mismatch, file ( %s ) does not exist on disk, did you mean file ( %s )."
+                            " Please run the command again with the correct file path or use ( --%s ) arg if you want to allow case insensitive file match.\n",
+                            m_absolutePath.c_str(), absfilePath.c_str(), IgnoreFileCaseFlag);
                         m_validPath = false;
                     }
                 }
@@ -731,10 +708,12 @@ m_absolutePath.c_str(), rootDir.filePath(relFilePath.toUtf8().data()).toUtf8().d
     void ScopedTraceHandler::ReportErrors()
     {
         m_reportingError = true;
+#if defined(AZ_ENABLE_TRACING)
         for (const AZStd::string& error : m_errors)
         {
             AZ_Error(AssetBundler::AppWindowName, false, error.c_str());
         }
+#endif
 
         ClearErrors();
         m_reportingError = false;
