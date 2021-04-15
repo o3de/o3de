@@ -563,7 +563,7 @@ namespace AzToolsFramework
 
         AZ::EntityId Instance::GetContainerEntityId() const
         {
-            return m_containerEntity->GetId();
+            return m_containerEntity ? m_containerEntity->GetId() : AZ::EntityId();
         }
 
         bool Instance::HasContainerEntity() const
