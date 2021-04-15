@@ -19,9 +19,6 @@ namespace AZ
 {
     class Vector3;
 
-    //! Do not allow the scale to be zero to avoid problems with inverting scale.
-    static constexpr float MinNonUniformScale = 1e-3f;
-
     using NonUniformScaleChangedEvent = AZ::Event<const AZ::Vector3&>;
 
     //! Requests for working with non-uniform scale.
