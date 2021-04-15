@@ -37,6 +37,7 @@
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QApplication>
 #include <QDialog>
+#include <QDialogButtonBox>
 #include <QFileInfo>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -534,7 +535,7 @@ namespace AZ
                 inspector->Populate();
                 inspector->SetOverrides(propertyOverrideMap);
 
-                // Create the menu bottom row with actions for exporting or canceling the operation
+                // Create the menu botton
                 QToolButton* menuButton = new QToolButton(&dialog);
                 menuButton->setAutoRaise(true);
                 menuButton->setIcon(QIcon(":/Cards/img/UI20/Cards/menu_ico.svg"));
@@ -545,10 +546,6 @@ namespace AZ
                     QMenu menu(&dialog);
                     action = menu.addAction("Clear Overrides", [&] { inspector->SetOverrides(MaterialPropertyOverrideMap()); });
                     action = menu.addAction("Revert Changes", [&] { inspector->SetOverrides(propertyOverrideMap); });
-
-                    menu.addSeparator();
-                    action = menu.addAction("Confirm Changes", [&] { dialog.accept(); });
-                    action = menu.addAction("Cancel Changes", [&] { dialog.reject(); });
 
                     menu.addSeparator();
                     action = menu.addAction("Save Material", [&] { inspector->SaveMaterial(); });
@@ -563,12 +560,19 @@ namespace AZ
                     menu.exec(QCursor::pos());
                 });
 
+                QDialogButtonBox* buttonBox = new QDialogButtonBox(&dialog);
+                buttonBox->setStandardButtons(QDialogButtonBox::Cancel | QDialogButtonBox::Ok);
+                QObject::connect(buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+                QObject::connect(buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
                 QObject::connect(&dialog, &QDialog::rejected, &dialog, [&] { inspector->SetOverrides(propertyOverrideMap); });
 
                 QVBoxLayout* dialogLayout = new QVBoxLayout(&dialog);
                 dialogLayout->addWidget(menuButton);
                 dialogLayout->addWidget(inspector);
+                dialogLayout->addWidget(buttonBox);
                 dialog.setLayout(dialogLayout);
+                dialog.setModal(true);
 
                 // Forcing the initial dialog size to accomodate typical content.
                 // Temporarily settng fixed size because dialog.show/exec invokes WindowDecorationWrapper::showEvent.
