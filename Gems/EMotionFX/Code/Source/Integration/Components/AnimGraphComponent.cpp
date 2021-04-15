@@ -379,7 +379,7 @@ namespace EMotionFX
                 const AZStd::shared_ptr<AnimGraphSnapshot> snapshot = m_animGraphInstance->GetSnapshot();
                 if (snapshot)
                 {
-                    AZ_Warning("EMotionFX", snapshot, "Call GetActiveStates function but no snapshot is created for this instance.");
+                    AZ_Warning("EMotionFX", false, "Call GetActiveStates function but no snapshot is created for this instance.");
                     return snapshot->GetActiveNodes();
                 }
             }
@@ -395,7 +395,7 @@ namespace EMotionFX
                 const AZStd::shared_ptr<AnimGraphSnapshot> snapshot = m_animGraphInstance->GetSnapshot();
                 if (snapshot)
                 {
-                    AZ_Warning("EMotionFX", snapshot, "Call GetActiveStates function but no snapshot is created for this instance.");
+                    AZ_Warning("EMotionFX", false, "Call GetActiveStates function but no snapshot is created for this instance.");
                     return snapshot->GetMotionNodePlaytimes();
                 }
             }
