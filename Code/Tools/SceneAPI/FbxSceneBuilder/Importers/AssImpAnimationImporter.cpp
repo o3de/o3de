@@ -48,7 +48,7 @@ namespace AZ
             {
                 if (AZ::IsClose(ticksPerSecond, 0))
                 {
-                    AZ_Warning("AnimationImporter", false, "Animation ticks per second should not be zero, defaulting to to %d keyframes for animation.", keysSize);
+                    AZ_Warning("AnimationImporter", false, "Animation ticks per second should not be zero, defaulting to %d keyframes for animation.", keysSize);
                     return keysSize;
                 }
                 const double totalTicks = duration / ticksPerSecond;
