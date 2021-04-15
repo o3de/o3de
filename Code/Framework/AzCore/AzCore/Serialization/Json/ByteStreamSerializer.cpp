@@ -31,10 +31,10 @@ namespace AZ
             switch (inputValue.GetType())
             {
             case rapidjson::kStringType: {
-                JsonByteStream* valAsByteStream = static_cast<JsonByteStream*>(outputValue);
-                JsonByteStream buffer(inputValue.GetStringLength());
+                JsonByteStream buffer;
                 if (AZ::StringFunc::Base64::Decode(buffer, inputValue.GetString(), inputValue.GetStringLength()))
                 {
+                    JsonByteStream* valAsByteStream = static_cast<JsonByteStream*>(outputValue);
                     *valAsByteStream = AZStd::move(buffer);
                     return context.Report(Tasks::ReadField, Outcomes::Success, "Successfully read ByteStream.");
                 }
