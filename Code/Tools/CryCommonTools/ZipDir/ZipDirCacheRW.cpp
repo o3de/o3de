@@ -1699,7 +1699,10 @@ bool ZipDir::CacheRW::WriteCDR(FILE* fTarget, bool encryptCDR)
     //arrFiles.SortByFileOffset();
     size_t nSizeCDR = arrFiles.GetStats().nSizeCDR;
     void* pCDR = malloc(nSizeCDR);
-    size_t nSizeCDRSerialized = arrFiles.MakeZipCDR(m_lCDROffset, pCDR, encryptCDR);
+#if !defined(NDEBUG)
+    size_t nSizeCDRSerialized =
+#endif
+        arrFiles.MakeZipCDR(m_lCDROffset, pCDR, encryptCDR);
     assert (nSizeCDRSerialized == nSizeCDR);
 
     if (encryptCDR)
@@ -1931,9 +1934,6 @@ bool ZipDir::CacheRW::EncryptArchive(EncryptionChange change, IEncryptPredicate*
     FileRecordList arrFiles(GetRoot());
     arrFiles.SortByFileOffset();
 
-    // the total size of data in the queue
-    unsigned nQueueSize = 0;
-
     size_t unusedSpace = 0;
     size_t lastDataEnd = 0;
 
@@ -1973,8 +1973,6 @@ bool ZipDir::CacheRW::EncryptArchive(EncryptionChange change, IEncryptPredicate*
         {
             return false;
         }
-
-        bool methodChanged = false;
 
         ZipFile::ushort oldMethod = entry->nMethod;
         ZipFile::ushort newMethod = oldMethod;

@@ -100,7 +100,6 @@ bool SDeviceObjectHelpers::GetConstantBuffersFromShader(std::vector<SDeviceObjec
         {
             VectorSet<EConstantBufferShaderSlot> usedBuffersSlots;
             auto* pInstance = reinterpret_cast<CHWShader_D3D::SHWSInstance*>(hwShaders[shaderClass].pHwShaderInstance);
-            auto* pHwShader = reinterpret_cast<CHWShader_D3D*>(hwShaders[shaderClass].pHwShader);
 
             const int vectorCount[] =
             {

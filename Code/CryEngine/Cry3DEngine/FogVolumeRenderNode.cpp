@@ -444,13 +444,7 @@ void CFogVolumeRenderNode::Render(const SRendParams& rParam, const SRenderingPas
     m_cachedFogColor = GetFogColor();
     m_cachedSoftEdgesLerp = GetSoftEdgeLerp(viewerPosOS);
 
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    // volumetric fog is not supported in the render scene to texture pass
-    bool bVolFog = (GetCVars()->e_VolumetricFog != 0) && !passInfo.IsRenderSceneToTexturePass();
-#else
     bool bVolFog = (GetCVars()->e_VolumetricFog != 0);
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-
 
     // reset elapsed time for noise when FogVolume stayed out of viewport for 30 frames.
     // this prevents the time from being too large number.

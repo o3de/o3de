@@ -48,7 +48,6 @@ namespace GradientSignal
         {
             behaviorContext->Class<ConstantGradientConfig>()
                 ->Constructor()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Property("constantValue", BehaviorValueProperty(&ConstantGradientConfig::m_value))
                 ;
@@ -90,7 +89,6 @@ namespace GradientSignal
             behaviorContext->Class<ConstantGradientComponent>()->RequestBus("ConstantGradientRequestBus");
 
             behaviorContext->EBus<ConstantGradientRequestBus>("ConstantGradientRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Event("GetConstantValue", &ConstantGradientRequestBus::Events::GetConstantValue)
                 ->Event("SetConstantValue", &ConstantGradientRequestBus::Events::SetConstantValue)

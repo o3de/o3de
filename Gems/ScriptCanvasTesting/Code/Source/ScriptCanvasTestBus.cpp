@@ -20,6 +20,21 @@
 
 namespace ScriptCanvasTesting
 {
+    void Reflect(AZ::ReflectContext* context)
+    {
+        ScriptCanvasTesting::GlobalBusTraits::Reflect(context);
+        ScriptCanvasTesting::LocalBusTraits::Reflect(context);
+        ScriptCanvasTesting::NativeHandlingOnlyBusTraits::Reflect(context);
+        ScriptCanvasTesting::TestTupleMethods::Reflect(context);
+
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->EnumProperty<(AZ::u32)TestEnum::Alpha>("ALPHA");
+            behaviorContext->EnumProperty<(AZ::u32)TestEnum::Bravo>("BRAVO");
+            behaviorContext->EnumProperty<(AZ::u32)TestEnum::Charlie>("CHARLIE");
+        }
+    }
+
     class GlobalEBusHandler
         : public GlobalEBus::Handler
         , public AZ::BehaviorEBusHandler
@@ -99,6 +114,7 @@ namespace ScriptCanvasTesting
             modVoidDesc.m_eventName = "OnEvent-ZeroParam";
 
             behaviorContext->EBus<GlobalEBus>("GlobalEBus")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Handler<GlobalEBusHandler>()
                 ->Event("AppendSweet", &GlobalEBus::Events::AppendSweet)
                 ->Event("Increment", &GlobalEBus::Events::Increment)
@@ -154,6 +170,7 @@ namespace ScriptCanvasTesting
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->EBus<LocalEBus>("LocalEBus")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Handler<LocalEBusHandler>()
                 ->Event("AppendSweet", &LocalEBus::Events::AppendSweet)
                 ->Event("Increment", &LocalEBus::Events::Increment)
@@ -167,6 +184,7 @@ namespace ScriptCanvasTesting
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->EBus<NativeHandlingOnlyEBus>("NativeHandlingOnlyEBus")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Event("AppendSweet", &NativeHandlingOnlyEBus::Events::AppendSweet)
                 ->Event("Increment", &NativeHandlingOnlyEBus::Events::Increment)
                 ->Event("Not", &NativeHandlingOnlyEBus::Events::Not)

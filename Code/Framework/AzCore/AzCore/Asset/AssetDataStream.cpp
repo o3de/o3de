@@ -90,8 +90,8 @@ namespace AZ::Data
                 // Get the results 
                 auto streamer = AZ::Interface<AZ::IO::IStreamer>::Get();
                 AZ::u64 bytesRead = 0;
-                bool result = streamer->GetReadRequestResult(fileHandle, m_buffer, bytesRead,
-                                                             AZ::IO::IStreamerTypes::ClaimMemory::Yes);
+                streamer->GetReadRequestResult(fileHandle, m_buffer, bytesRead,
+                                               AZ::IO::IStreamerTypes::ClaimMemory::Yes);
                 auto status = streamer->GetRequestStatus(fileHandle);
                 m_loadedSize = aznumeric_cast<size_t>(bytesRead);
 

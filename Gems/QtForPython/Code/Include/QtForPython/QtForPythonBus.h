@@ -30,7 +30,7 @@ namespace QtForPython
         //! The path of the Qt plugins such as /qtlibs/plugins
         AZStd::string m_qtPluginsFolder;
 
-        //! The 'winId' of the main Qt window in the Lumberyard editor
+        //! The 'winId' of the main Qt window in the Open 3D Engine editor
         AZ::u64 m_mainWindowId;
     };
 

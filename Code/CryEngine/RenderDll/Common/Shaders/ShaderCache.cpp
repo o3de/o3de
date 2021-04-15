@@ -776,9 +776,6 @@ static bool sIterateDL(DWORD& dwDL)
         else
         {
             return false;
-            nLights = 2;
-            nType[0] = SLMF_DIRECT;
-            nType[1] = SLMF_POINT;
         }
         break;
     case 2:
@@ -1650,7 +1647,6 @@ void CShaderMan::_PrecacheShaderList(bool bStatsOnly)
         m_bReload = true;
         m_nCombinationsCompiled = 0;
         m_nCombinationsEmpty = 0;
-        uint64 nGLLast = -1;
         for (int i = 0; i < Cmbs.size(); i++)
         {
             SCacheCombination* cmb = &Cmbs[i];
@@ -2311,14 +2307,22 @@ void CShaderMan::_MergeShaders()
         uint32 nLen = strlen(szName1);
         pCache = CHWShader::mfInitCache(szNameA, NULL, false, CRC32, false);
         SResFileLookupData* pData;
-        if (pCache->m_pRes[CACHE_USER] && (pData = pCache->m_pRes[CACHE_USER]->GetLookupData(false, 0, 0)))
+        if (pCache->m_pRes[CACHE_USER])
         {
-            CRC32 = pData->m_CRC32;
+            pData = pCache->m_pRes[CACHE_USER]->GetLookupData(false, 0, 0);
+            if (pData)
+            {
+                CRC32 = pData->m_CRC32;
+            }
         }
         else
-        if (pCache->m_pRes[CACHE_READONLY] && (pData = pCache->m_pRes[CACHE_READONLY]->GetLookupData(false, 0, 0)))
+        if (pCache->m_pRes[CACHE_READONLY])
         {
-            CRC32 = pData->m_CRC32;
+            pData = pCache->m_pRes[CACHE_READONLY]->GetLookupData(false, 0, 0);
+            if (pData)
+            {
+                CRC32 = pData->m_CRC32;
+            }
         }
         else
         {
@@ -2368,7 +2372,7 @@ void CShaderMan::_MergeShaders()
         pRes->mfClose();
         pRes->mfOpen(RA_CREATE, &gRenDev->m_cEF.m_ResLookupDataMan[CACHE_USER]);
 
-        SResFileLookupData* pLookup = pRes->GetLookupData(true, CRC32, FX_CACHE_VER);
+        pRes->GetLookupData(true, CRC32, FX_CACHE_VER);
         pRes->mfFlush();
 
         int nDeviceShadersCounter = 0x10000000;
@@ -2571,7 +2575,7 @@ bool CShaderMan::mfPreloadBinaryShaders()
             const string& file = FilesCFI[i];
             cry_strcpy(sName, file.c_str());
             fpStripExtension(sName, sName);
-            SShaderBin* pBin = m_Bin.GetBinShader(sName, true, 0);
+            [[maybe_unused]] SShaderBin* pBin = m_Bin.GetBinShader(sName, true, 0);
             AZ_Error("Rendering", pBin, "Error pre-loading binary shader %s", file.c_str());
         }
     }
@@ -2588,7 +2592,7 @@ bool CShaderMan::mfPreloadBinaryShaders()
             const string& file = FilesCFX[i];
             cry_strcpy(sName, file.c_str());
             fpStripExtension(sName, sName);
-            SShaderBin* pBin = m_Bin.GetBinShader(sName, false, 0);
+            [[maybe_unused]] SShaderBin* pBin = m_Bin.GetBinShader(sName, false, 0);
             AZ_Error("Rendering", pBin, "Error pre-loading binary shader %s", file.c_str());
         }
     }

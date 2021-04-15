@@ -10,7 +10,7 @@
 *
 */
 #include "mainwidget.h"
-#include <StyleGallery/ui_mainwidget.h>
+#include <AzQtComponents/StyleGallery/ui_mainwidget.h>
 #include <AzQtComponents/Components/ButtonStripe.h>
 #include <AzQtComponents/Components/DockBarButton.h>
 

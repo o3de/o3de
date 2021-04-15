@@ -362,7 +362,6 @@ void CSaverCGF::SaveNodes(
     for (uint i = 0; i < numNodes; i++)
     {
         CNodeCGF* pNode = m_pCGF->GetNode(i);
-        const char* pNodeName = pNode->name;
         SaveNode(pNode, bSwapEndian, bStorePositionsAsF16, bUseQtangents, bStoreIndicesAsU16);
     }
 }
@@ -459,7 +458,6 @@ int CSaverCGF::SaveNode(
             : SaveHelperChunk(pNode, bSwapEndian);
     }
 
-    int nextChunk = m_pChunkFile->NumChunks();
     int positionIndex = pNode->pos_cont_id;
     int rotationIndex = pNode->rot_cont_id;
     int scaleIndex = pNode->scl_cont_id;

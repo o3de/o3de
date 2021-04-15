@@ -15,6 +15,8 @@
 #include <CoreLights/DiskLightDelegate.h>
 #include <CoreLights/PolygonLightDelegate.h>
 #include <CoreLights/QuadLightDelegate.h>
+#include <CoreLights/SimplePointLightDelegate.h>
+#include <CoreLights/SimpleSpotLightDelegate.h>
 #include <CoreLights/SphereLightDelegate.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
 
@@ -31,297 +33,593 @@
 #include <LmbrCentral/Shape/PolygonPrismShapeComponentBus.h>
 #include <LmbrCentral/Shape/QuadShapeComponentBus.h>
 
-namespace AZ
+namespace AZ::Render
 {
-    namespace Render
+    void AreaLightComponentController::Reflect(ReflectContext* context)
     {
-        void AreaLightComponentController::Reflect(ReflectContext* context)
-        {
-            AreaLightComponentConfig::Reflect(context);
+        AreaLightComponentConfig::Reflect(context);
 
-            if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
+        if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
+        {
+            serializeContext->Class<AreaLightComponentController>()
+                ->Version(1)
+                ->Field("Configuration", &AreaLightComponentController::m_configuration);
+        }
+
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->EBus<AreaLightRequestBus>("AreaLightRequestBus")
+                ->Event("GetAttenuationRadius", &AreaLightRequestBus::Events::GetAttenuationRadius)
+                ->Event("SetAttenuationRadius", &AreaLightRequestBus::Events::SetAttenuationRadius)
+                ->Event("SetAttenuationRadiusMode", &AreaLightRequestBus::Events::SetAttenuationRadiusMode)
+                ->Event("GetColor", &AreaLightRequestBus::Events::GetColor)
+                ->Event("SetColor", &AreaLightRequestBus::Events::SetColor)
+                ->Event("GetEmitsLightBothDirections", &AreaLightRequestBus::Events::GetLightEmitsBothDirections)
+                ->Event("SetEmitsLightBothDirections", &AreaLightRequestBus::Events::SetLightEmitsBothDirections)
+                ->Event("GetUseFastApproximation", &AreaLightRequestBus::Events::GetUseFastApproximation)
+                ->Event("SetUseFastApproximation", &AreaLightRequestBus::Events::SetUseFastApproximation)
+                ->Event("GetIntensity", &AreaLightRequestBus::Events::GetIntensity)
+                ->Event("SetIntensity", static_cast<void(AreaLightRequestBus::Events::*)(float)>(&AreaLightRequestBus::Events::SetIntensity))
+                ->Event("GetIntensityMode", &AreaLightRequestBus::Events::GetIntensityMode)
+                ->Event("ConvertToIntensityMode", &AreaLightRequestBus::Events::ConvertToIntensityMode)
+
+                ->Event("GetEnableShutters", &AreaLightRequestBus::Events::GetEnableShutters)
+                ->Event("SetEnableShutters", &AreaLightRequestBus::Events::SetEnableShutters)
+                ->Event("GetInnerShutterAngle", &AreaLightRequestBus::Events::GetInnerShutterAngle)
+                ->Event("SetInnerShutterAngle", &AreaLightRequestBus::Events::SetInnerShutterAngle)
+                ->Event("GetOuterShutterAngle", &AreaLightRequestBus::Events::GetOuterShutterAngle)
+                ->Event("SetOuterShutterAngle", &AreaLightRequestBus::Events::SetOuterShutterAngle)
+
+                ->Event("GetEnableShadow", &AreaLightRequestBus::Events::GetEnableShadow)
+                ->Event("SetEnableShadow", &AreaLightRequestBus::Events::SetEnableShadow)
+                ->Event("GetShadowmapMaxSize", &AreaLightRequestBus::Events::GetShadowmapMaxSize)
+                ->Event("SetShadowmapMaxSize", &AreaLightRequestBus::Events::SetShadowmapMaxSize)
+                ->Event("GetShadowFilterMethod", &AreaLightRequestBus::Events::GetShadowFilterMethod)
+                ->Event("SetShadowFilterMethod", &AreaLightRequestBus::Events::SetShadowFilterMethod)
+                ->Event("GetSofteningBoundaryWidthAngle", &AreaLightRequestBus::Events::GetSofteningBoundaryWidthAngle)
+                ->Event("SetSofteningBoundaryWidthAngle", &AreaLightRequestBus::Events::SetSofteningBoundaryWidthAngle)
+                ->Event("GetPredictionSampleCount", &AreaLightRequestBus::Events::GetPredictionSampleCount)
+                ->Event("SetPredictionSampleCount", &AreaLightRequestBus::Events::SetPredictionSampleCount)
+                ->Event("GetFilteringSampleCount", &AreaLightRequestBus::Events::GetFilteringSampleCount)
+                ->Event("SetFilteringSampleCount", &AreaLightRequestBus::Events::SetFilteringSampleCount)
+                ->Event("GetPcfMethod", &AreaLightRequestBus::Events::GetPcfMethod)
+                ->Event("SetPcfMethod", &AreaLightRequestBus::Events::SetPcfMethod)
+            
+                ->VirtualProperty("AttenuationRadius", "GetAttenuationRadius", "SetAttenuationRadius")
+                ->VirtualProperty("Color", "GetColor", "SetColor")
+                ->VirtualProperty("EmitsLightBothDirections", "GetEmitsLightBothDirections", "SetEmitsLightBothDirections")
+                ->VirtualProperty("UseFastApproximation", "GetUseFastApproximation", "SetUseFastApproximation")
+                ->VirtualProperty("Intensity", "GetIntensity", "SetIntensity")
+                
+                ->VirtualProperty("ShuttersEnabled", "GetEnableShutters", "SetEnableShutters")
+                ->VirtualProperty("InnerShutterAngle", "GetInnerShutterAngle", "SetInnerShutterAngle")
+                ->VirtualProperty("OuterShutterAngle", "GetOuterShutterAngle", "SetOuterShutterAngle")
+
+                ->VirtualProperty("ShadowsEnabled", "GetEnableShadow", "SetEnableShadow")
+                ->VirtualProperty("ShadowmapMaxSize", "GetShadowmapMaxSize", "SetShadowmapMaxSize")
+                ->VirtualProperty("ShadowFilterMethod", "GetShadowFilterMethod", "SetShadowFilterMethod")
+                ->VirtualProperty("SofteningBoundaryWidthAngle", "GetSofteningBoundaryWidthAngle", "SetSofteningBoundaryWidthAngle")
+                ->VirtualProperty("PredictionSampleCount", "GetPredictionSampleCount", "SetPredictionSampleCount")
+                ->VirtualProperty("FilteringSampleCount", "GetFilteringSampleCount", "SetFilteringSampleCount")
+                ->VirtualProperty("PcfMethod", "GetPcfMethod", "SetPcfMethod");
+                ;
+        }
+    }
+
+    void AreaLightComponentController::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+    {
+        provided.push_back(AZ_CRC_CE("AreaLightService"));
+    }
+
+    void AreaLightComponentController::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    {
+        incompatible.push_back(AZ_CRC_CE("AreaLightService"));
+    }
+    
+    void AreaLightComponentController::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
+    {
+        dependent.push_back(AZ_CRC_CE("ShapeService"));
+    }
+
+    AreaLightComponentController::AreaLightComponentController(const AreaLightComponentConfig& config)
+        : m_configuration(config)
+    {
+    }
+
+    void AreaLightComponentController::Activate(EntityId entityId)
+    {
+        m_entityId = entityId;
+        
+        // Used to determine which features are supported.
+        m_configuration.m_shapeType = 0;
+        LmbrCentral::ShapeComponentRequestsBus::EventResult(m_configuration.m_shapeType, m_entityId, &LmbrCentral::ShapeComponentRequestsBus::Events::GetShapeType);
+
+        VerifyLightTypeAndShapeComponent();
+        CreateLightShapeDelegate();
+
+        if (m_configuration.RequiresShapeComponent() && m_lightShapeDelegate == nullptr)
+        {
+            AZ_Error("AreaLightComponentController", false, "AreaLightComponentController activated without having required shape component.");
+        }
+
+        AreaLightRequestBus::Handler::BusConnect(m_entityId);
+
+        ConfigurationChanged();
+    }
+
+    void AreaLightComponentController::Deactivate()
+    {
+        AreaLightRequestBus::Handler::BusDisconnect(m_entityId);
+        m_lightShapeDelegate.reset();
+    }
+
+    void AreaLightComponentController::SetConfiguration(const AreaLightComponentConfig& config)
+    {
+        m_configuration = config;
+        VerifyLightTypeAndShapeComponent();
+        ConfigurationChanged();
+    }
+
+    const AreaLightComponentConfig& AreaLightComponentController::GetConfiguration() const
+    {
+        return m_configuration;
+    }
+
+    void AreaLightComponentController::SetVisibiliy(bool isVisible)
+    {
+        m_isVisible = isVisible;
+        if (m_lightShapeDelegate)
+        {
+            m_lightShapeDelegate->SetVisibility(m_isVisible);
+            if (m_isVisible)
             {
-                serializeContext->Class<AreaLightComponentController>()
-                    ->Version(0)
-                    ->Field("Configuration", &AreaLightComponentController::m_configuration);
-            }
-
-            if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-            {
-                behaviorContext->EBus<AreaLightRequestBus>("AreaLightRequestBus")
-                    ->Event("GetAttenuationRadius", &AreaLightRequestBus::Events::GetAttenuationRadius)
-                    ->Event("SetAttenuationRadius", &AreaLightRequestBus::Events::SetAttenuationRadius)
-                    ->Event("SetAttenuationRadiusMode", &AreaLightRequestBus::Events::SetAttenuationRadiusMode)
-                    ->Event("GetColor", &AreaLightRequestBus::Events::GetColor)
-                    ->Event("SetColor", &AreaLightRequestBus::Events::SetColor)
-                    ->Event("GetEmitsLightBothDirections", &AreaLightRequestBus::Events::GetLightEmitsBothDirections)
-                    ->Event("SetEmitsLightBothDirections", &AreaLightRequestBus::Events::SetLightEmitsBothDirections)
-                    ->Event("GetUseFastApproximation", &AreaLightRequestBus::Events::GetUseFastApproximation)
-                    ->Event("SetUseFastApproximation", &AreaLightRequestBus::Events::SetUseFastApproximation)
-                    ->Event("GetIntensity", &AreaLightRequestBus::Events::GetIntensity)
-                    ->Event("SetIntensity", static_cast<void(AreaLightRequestBus::Events::*)(float)>(&AreaLightRequestBus::Events::SetIntensity))
-                    ->Event("GetIntensityMode", &AreaLightRequestBus::Events::GetIntensityMode)
-                    ->Event("ConvertToIntensityMode", &AreaLightRequestBus::Events::ConvertToIntensityMode)
-                    ->VirtualProperty("AttenuationRadius", "GetAttenuationRadius", "SetAttenuationRadius")
-                    ->VirtualProperty("Color", "GetColor", "SetColor")
-                    ->VirtualProperty("EmitsLightBothDirections", "GetEmitsLightBothDirections", "SetEmitsLightBothDirections")
-                    ->VirtualProperty("UseFastApproximation", "GetUseFastApproximation", "SetUseFastApproximation")
-                    ->VirtualProperty("Intensity", "GetIntensity", "SetIntensity")
-                    ;
-            }
-        }
-
-        void AreaLightComponentController::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
-        {
-            provided.push_back(AZ_CRC_CE("AreaLightService"));
-        }
-
-        void AreaLightComponentController::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
-        {
-            incompatible.push_back(AZ_CRC_CE("AreaLightService"));
-        }
-
-        void AreaLightComponentController::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
-        {
-            required.push_back(AZ_CRC_CE("AreaLightShapeService"));
-        }
-
-        AreaLightComponentController::AreaLightComponentController(const AreaLightComponentConfig& config)
-            : m_configuration(config)
-        {
-        }
-
-        void AreaLightComponentController::Activate(EntityId entityId)
-        {
-            m_entityId = entityId;
-
-            CreateLightShapeDelegate();
-            AZ_Warning("AreaLightComponentController", m_lightShapeDelegate, "AreaLightComponentController activated without having required component.");
-
-            // Used to determine if the shape can be double-sided.
-            LmbrCentral::ShapeComponentRequestsBus::EventResult(m_configuration.m_shapeType, m_entityId, &LmbrCentral::ShapeComponentRequestsBus::Events::GetShapeType);
-
-            AreaLightRequestBus::Handler::BusConnect(m_entityId);
-
-            ConfigurationChanged();
-        }
-
-        void AreaLightComponentController::Deactivate()
-        {
-            AreaLightRequestBus::Handler::BusDisconnect(m_entityId);
-            m_lightShapeDelegate.reset();
-        }
-
-        void AreaLightComponentController::SetConfiguration(const AreaLightComponentConfig& config)
-        {
-            m_configuration = config;
-            ConfigurationChanged();
-        }
-
-        const AreaLightComponentConfig& AreaLightComponentController::GetConfiguration() const
-        {
-            return m_configuration;
-        }
-
-        void AreaLightComponentController::SetVisibiliy(bool isVisible)
-        {
-            m_isVisible = isVisible;
-            if (m_lightShapeDelegate)
-            {
-                m_lightShapeDelegate->SetVisibility(m_isVisible);
-            }
-        }
-
-        void AreaLightComponentController::ConfigurationChanged()
-        {
-            ChromaChanged();
-            IntensityChanged();
-            AttenuationRadiusChanged();
-
-            if (m_lightShapeDelegate)
-            {
-                m_lightShapeDelegate->SetLightEmitsBothDirections(m_configuration.m_lightEmitsBothDirections);
-                m_lightShapeDelegate->SetUseFastApproximation(m_configuration.m_useFastApproximation);
-            }
-        }
-
-        void AreaLightComponentController::IntensityChanged()
-        {
-            AreaLightNotificationBus::Event(m_entityId, &AreaLightNotifications::OnColorOrIntensityChanged, m_configuration.m_color, m_configuration.m_intensity);
-
-            if (m_lightShapeDelegate)
-            {
-                m_lightShapeDelegate->SetPhotometricUnit(m_configuration.m_intensityMode);
-                m_lightShapeDelegate->SetIntensity(m_configuration.m_intensity);
-            }
-        }
-
-        void AreaLightComponentController::ChromaChanged()
-        {
-            if (m_lightShapeDelegate)
-            {
-                m_lightShapeDelegate->SetChroma(m_configuration.m_color);
-            }
-        }
-
-        void AreaLightComponentController::AttenuationRadiusChanged()
-        {
-            if (m_configuration.m_attenuationRadiusMode == LightAttenuationRadiusMode::Automatic)
-            {
-                AutoCalculateAttenuationRadius();
-            }
-            AreaLightNotificationBus::Event(m_entityId, &AreaLightNotifications::OnAttenutationRadiusChanged, m_configuration.m_attenuationRadius);
-
-            if (m_lightShapeDelegate)
-            {
-                m_lightShapeDelegate->SetAttenuationRadius(m_configuration.m_attenuationRadius);
+                // If the light is made visible, make sure to apply the configuration so all properties as set correctly.
+                ConfigurationChanged();
             }
         }
+    }
+    
+    void AreaLightComponentController::VerifyLightTypeAndShapeComponent()
+    {
+        constexpr Crc32 SphereShapeTypeId = AZ_CRC_CE("Sphere");
+        constexpr Crc32 DiskShapeTypeId = AZ_CRC_CE("DiskShape");
+        constexpr Crc32 CapsuleShapeTypeId = AZ_CRC_CE("Capsule");
+        constexpr Crc32 QuadShapeTypeId = AZ_CRC_CE("QuadShape");
+        constexpr Crc32 PoylgonShapeTypeId = AZ_CRC_CE("PolygonPrism");
 
-        void AreaLightComponentController::AutoCalculateAttenuationRadius()
+        if (m_configuration.m_lightType == AreaLightComponentConfig::LightType::Unknown)
         {
-            if (m_lightShapeDelegate)
+            // Light type is unknown, see if it can be determined from a shape component.
+            switch (m_configuration.m_shapeType)
             {
-                m_configuration.m_attenuationRadius = m_lightShapeDelegate->CalculateAttenuationRadius(AreaLightComponentConfig::CutoffIntensity);
+            case SphereShapeTypeId:
+                m_configuration.m_lightType = AreaLightComponentConfig::LightType::Sphere;
+                break;
+            case DiskShapeTypeId:
+                m_configuration.m_lightType = AreaLightComponentConfig::LightType::SpotDisk;
+                break;
+            case CapsuleShapeTypeId:
+                m_configuration.m_lightType = AreaLightComponentConfig::LightType::Capsule;
+                break;
+            case QuadShapeTypeId:
+                m_configuration.m_lightType = AreaLightComponentConfig::LightType::Quad;
+                break;
+            case PoylgonShapeTypeId:
+                m_configuration.m_lightType = AreaLightComponentConfig::LightType::Polygon;
+                break;
+            default:
+                break; // Light type can't be deduced. 
             }
         }
-
-        const Color& AreaLightComponentController::GetColor() const
+        else if (m_configuration.m_shapeType == Crc32(0))
         {
-            return m_configuration.m_color;
+            AZ_Error("AreaLightComponentController", !m_configuration.RequiresShapeComponent(), "The light type used on this area light requires a corresponding shape component");
         }
-
-        void AreaLightComponentController::SetColor(const Color& color)
+        else
         {
-            m_configuration.m_color = color;
-            AreaLightNotificationBus::Event(m_entityId, &AreaLightNotifications::OnColorChanged, color);
-            ChromaChanged();
+            // Validate the the light type matches up with shape type if the light type is an area light.
+            AZ_Error("AreaLightComponentController",
+                !(m_configuration.m_lightType == AreaLightComponentConfig::LightType::Sphere && m_configuration.m_shapeType != SphereShapeTypeId),
+                "The light type is a sphere, but the shape component is not.");
+            AZ_Error("AreaLightComponentController",
+                !(m_configuration.m_lightType == AreaLightComponentConfig::LightType::SpotDisk && m_configuration.m_shapeType != DiskShapeTypeId),
+                "The light type is a disk, but the shape component is not.");
+            AZ_Error("AreaLightComponentController",
+                !(m_configuration.m_lightType == AreaLightComponentConfig::LightType::Capsule && m_configuration.m_shapeType != CapsuleShapeTypeId),
+                "The light type is a capsule, but the shape component is not.");
+            AZ_Error("AreaLightComponentController",
+                !(m_configuration.m_lightType == AreaLightComponentConfig::LightType::Quad && m_configuration.m_shapeType != QuadShapeTypeId),
+                "The light type is a quad, but the shape component is not.");
+            AZ_Error("AreaLightComponentController",
+                !(m_configuration.m_lightType == AreaLightComponentConfig::LightType::Polygon && m_configuration.m_shapeType != PoylgonShapeTypeId),
+                "The light type is a polygon, but the shape component is not.");
         }
+    }
 
-        bool AreaLightComponentController::GetLightEmitsBothDirections() const
+    void AreaLightComponentController::ConfigurationChanged()
+    {
+        ChromaChanged();
+        IntensityChanged();
+        AttenuationRadiusChanged();
+        ShuttersChanged();
+        ShadowsChanged();
+
+        if (m_lightShapeDelegate)
         {
-            return m_configuration.m_lightEmitsBothDirections;
+            m_lightShapeDelegate->SetLightEmitsBothDirections(m_configuration.m_lightEmitsBothDirections);
+            m_lightShapeDelegate->SetUseFastApproximation(m_configuration.m_useFastApproximation);
         }
+    }
 
-        void AreaLightComponentController::SetLightEmitsBothDirections(bool value)
+    void AreaLightComponentController::IntensityChanged()
+    {
+        AreaLightNotificationBus::Event(m_entityId, &AreaLightNotifications::OnColorOrIntensityChanged, m_configuration.m_color, m_configuration.m_intensity);
+
+        if (m_lightShapeDelegate)
         {
-            m_configuration.m_lightEmitsBothDirections = value;
+            m_lightShapeDelegate->SetPhotometricUnit(m_configuration.m_intensityMode);
+            m_lightShapeDelegate->SetIntensity(m_configuration.m_intensity);
         }
+    }
 
-        bool AreaLightComponentController::GetUseFastApproximation() const
+    void AreaLightComponentController::ChromaChanged()
+    {
+        if (m_lightShapeDelegate)
         {
-            return m_configuration.m_useFastApproximation;
+            m_lightShapeDelegate->SetChroma(m_configuration.m_color);
         }
+    }
 
-        void AreaLightComponentController::SetUseFastApproximation(bool value)
+    void AreaLightComponentController::AttenuationRadiusChanged()
+    {
+        if (m_configuration.m_attenuationRadiusMode == LightAttenuationRadiusMode::Automatic)
         {
-            m_configuration.m_useFastApproximation = value;
+            AutoCalculateAttenuationRadius();
         }
+        AreaLightNotificationBus::Event(m_entityId, &AreaLightNotifications::OnAttenutationRadiusChanged, m_configuration.m_attenuationRadius);
 
-        PhotometricUnit AreaLightComponentController::GetIntensityMode() const
+        if (m_lightShapeDelegate)
         {
-            return m_configuration.m_intensityMode;
+            m_lightShapeDelegate->SetAttenuationRadius(m_configuration.m_attenuationRadius);
         }
-
-        float AreaLightComponentController::GetIntensity() const
+    }
+    
+    void AreaLightComponentController::ShuttersChanged()
+    {
+        if (m_lightShapeDelegate)
         {
-            return m_configuration.m_intensity;
+            m_lightShapeDelegate->SetEnableShutters(m_configuration.m_enableShutters);
+            if (m_configuration.m_enableShutters)
+            {
+                m_lightShapeDelegate->SetShutterAngles(m_configuration.m_innerShutterAngleDegrees, m_configuration.m_outerShutterAngleDegrees);
+            }
         }
+    }
 
-        void AreaLightComponentController::SetIntensity(float intensity, PhotometricUnit intensityMode)
+    void AreaLightComponentController::ShadowsChanged()
+    {
+        if (m_lightShapeDelegate)
+        {
+            m_lightShapeDelegate->SetEnableShadow(m_configuration.m_enableShadow);
+            if (m_configuration.m_enableShadow)
+            {
+                m_lightShapeDelegate->SetShadowmapMaxSize(m_configuration.m_shadowmapMaxSize);
+                m_lightShapeDelegate->SetShadowFilterMethod(m_configuration.m_shadowFilterMethod);
+                m_lightShapeDelegate->SetSofteningBoundaryWidthAngle(m_configuration.m_boundaryWidthInDegrees);
+                m_lightShapeDelegate->SetPredictionSampleCount(m_configuration.m_predictionSampleCount);
+                m_lightShapeDelegate->SetFilteringSampleCount(m_configuration.m_filteringSampleCount);
+                m_lightShapeDelegate->SetPcfMethod(m_configuration.m_pcfMethod);
+            }
+        }
+    }
+
+    void AreaLightComponentController::AutoCalculateAttenuationRadius()
+    {
+        if (m_lightShapeDelegate)
+        {
+            m_configuration.m_attenuationRadius = m_lightShapeDelegate->CalculateAttenuationRadius(AreaLightComponentConfig::CutoffIntensity);
+        }
+    }
+
+    const Color& AreaLightComponentController::GetColor() const
+    {
+        return m_configuration.m_color;
+    }
+
+    void AreaLightComponentController::SetColor(const Color& color)
+    {
+        m_configuration.m_color = color;
+        AreaLightNotificationBus::Event(m_entityId, &AreaLightNotifications::OnColorChanged, color);
+        ChromaChanged();
+    }
+
+    bool AreaLightComponentController::GetLightEmitsBothDirections() const
+    {
+        return m_configuration.m_lightEmitsBothDirections;
+    }
+
+    void AreaLightComponentController::SetLightEmitsBothDirections(bool value)
+    {
+        m_configuration.m_lightEmitsBothDirections = value;
+    }
+
+    bool AreaLightComponentController::GetUseFastApproximation() const
+    {
+        return m_configuration.m_useFastApproximation;
+    }
+
+    void AreaLightComponentController::SetUseFastApproximation(bool value)
+    {
+        m_configuration.m_useFastApproximation = value;
+    }
+
+    PhotometricUnit AreaLightComponentController::GetIntensityMode() const
+    {
+        return m_configuration.m_intensityMode;
+    }
+
+    float AreaLightComponentController::GetIntensity() const
+    {
+        return m_configuration.m_intensity;
+    }
+
+    void AreaLightComponentController::SetIntensity(float intensity, PhotometricUnit intensityMode)
+    {
+        m_configuration.m_intensityMode = intensityMode;
+        m_configuration.m_intensity = intensity;
+
+        AreaLightNotificationBus::Event(m_entityId, &AreaLightNotifications::OnIntensityChanged, intensity, intensityMode);
+        IntensityChanged();
+    }
+
+    void AreaLightComponentController::SetIntensity(float intensity)
+    {
+        m_configuration.m_intensity = intensity;
+
+        AreaLightNotificationBus::Event(m_entityId, &AreaLightNotifications::OnIntensityChanged, intensity, m_configuration.m_intensityMode);
+        IntensityChanged();
+    }
+
+    float AreaLightComponentController::GetAttenuationRadius() const
+    {
+        return m_configuration.m_attenuationRadius;
+    }
+
+    void AreaLightComponentController::SetAttenuationRadius(float radius)
+    {
+        m_configuration.m_attenuationRadius = radius;
+        m_configuration.m_attenuationRadiusMode = LightAttenuationRadiusMode::Explicit;
+        AttenuationRadiusChanged();
+    }
+
+    void AreaLightComponentController::SetAttenuationRadiusMode(LightAttenuationRadiusMode attenuationRadiusMode)
+    {
+        m_configuration.m_attenuationRadiusMode = attenuationRadiusMode;
+        AttenuationRadiusChanged();
+    }
+
+    void AreaLightComponentController::ConvertToIntensityMode(PhotometricUnit intensityMode)
+    {
+        if (m_lightShapeDelegate && m_lightShapeDelegate->GetPhotometricValue().GetType() != intensityMode)
         {
             m_configuration.m_intensityMode = intensityMode;
-            m_configuration.m_intensity = intensity;
-
-            AreaLightNotificationBus::Event(m_entityId, &AreaLightNotifications::OnIntensityChanged, intensity, intensityMode);
-            IntensityChanged();
+            m_configuration.m_intensity = m_lightShapeDelegate->SetPhotometricUnit(intensityMode);
         }
+    }
+    
+    bool AreaLightComponentController::GetEnableShutters() const
+    {
+        return m_configuration.m_enableShutters;
+    }
 
-        void AreaLightComponentController::SetIntensity(float intensity)
+    void AreaLightComponentController::SetEnableShutters(bool enabled)
+    {
+        m_configuration.m_enableShutters = enabled && m_configuration.SupportsShutters();
+        if (m_lightShapeDelegate)
         {
-            m_configuration.m_intensity = intensity;
-
-            AreaLightNotificationBus::Event(m_entityId, &AreaLightNotifications::OnIntensityChanged, intensity, m_configuration.m_intensityMode);
-            IntensityChanged();
+            m_lightShapeDelegate->SetEnableShutters(enabled);
         }
+    }
 
-        float AreaLightComponentController::GetAttenuationRadius() const
+    float AreaLightComponentController::GetInnerShutterAngle() const
+    {
+        return m_configuration.m_innerShutterAngleDegrees;
+    }
+
+    void AreaLightComponentController::SetInnerShutterAngle(float degrees)
+    {
+        m_configuration.m_innerShutterAngleDegrees = degrees;
+        if (m_lightShapeDelegate)
         {
-            return m_configuration.m_attenuationRadius;
+            m_lightShapeDelegate->SetShutterAngles(m_configuration.m_innerShutterAngleDegrees, m_configuration.m_outerShutterAngleDegrees);
         }
+    }
 
-        void AreaLightComponentController::SetAttenuationRadius(float radius)
+    float AreaLightComponentController::GetOuterShutterAngle() const
+    {
+        return m_configuration.m_outerShutterAngleDegrees;
+    }
+
+    void AreaLightComponentController::SetOuterShutterAngle(float degrees)
+    {
+        m_configuration.m_outerShutterAngleDegrees = degrees;
+        if (m_lightShapeDelegate)
         {
-            m_configuration.m_attenuationRadius = radius;
-            m_configuration.m_attenuationRadiusMode = LightAttenuationRadiusMode::Explicit;
-            AttenuationRadiusChanged();
+            m_lightShapeDelegate->SetShutterAngles(m_configuration.m_innerShutterAngleDegrees, m_configuration.m_outerShutterAngleDegrees);
         }
+    }
 
-        void AreaLightComponentController::SetAttenuationRadiusMode(LightAttenuationRadiusMode attenuationRadiusMode)
+    bool AreaLightComponentController::GetEnableShadow() const
+    {
+        return m_configuration.m_enableShadow;
+    }
+
+    void AreaLightComponentController::SetEnableShadow(bool enabled)
+    {
+        m_configuration.m_enableShadow = enabled && m_configuration.SupportsShadows();
+        if (m_lightShapeDelegate)
         {
-            m_configuration.m_attenuationRadiusMode = attenuationRadiusMode;
-            AttenuationRadiusChanged();
+            m_lightShapeDelegate->SetEnableShadow(enabled);
         }
+    }
 
-        void AreaLightComponentController::ConvertToIntensityMode(PhotometricUnit intensityMode)
+    ShadowmapSize AreaLightComponentController::GetShadowmapMaxSize() const
+    {
+        return m_configuration.m_shadowmapMaxSize;
+    }
+
+    void AreaLightComponentController::SetShadowmapMaxSize(ShadowmapSize size)
+    {
+        m_configuration.m_shadowmapMaxSize = size;
+        if (m_lightShapeDelegate)
         {
-            if (m_lightShapeDelegate && m_lightShapeDelegate->GetPhotometricValue().GetType() != intensityMode)
-            {
-                m_configuration.m_intensityMode = intensityMode;
-                m_configuration.m_intensity = m_lightShapeDelegate->SetPhotometricUnit(intensityMode);
-            }
+            m_lightShapeDelegate->SetShadowmapMaxSize(size);
         }
+    }
 
-        void AreaLightComponentController::HandleDisplayEntityViewport(
-            [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo,
-            AzFramework::DebugDisplayRequests& debugDisplay,
-            bool isSelected)
+    ShadowFilterMethod AreaLightComponentController::GetShadowFilterMethod() const
+    {
+        return m_configuration.m_shadowFilterMethod;
+    }
+
+    void AreaLightComponentController::SetShadowFilterMethod(ShadowFilterMethod method)
+    {
+        m_configuration.m_shadowFilterMethod = method;
+        if (m_lightShapeDelegate)
         {
-            Transform transform = Transform::CreateIdentity();
-            TransformBus::EventResult(transform, m_entityId, &TransformBus::Events::GetWorldTM);
-            if (m_lightShapeDelegate)
-            {
-                m_lightShapeDelegate->DrawDebugDisplay(transform, m_configuration.m_color, debugDisplay, isSelected);
-            }
+            m_lightShapeDelegate->SetShadowFilterMethod(method);
         }
+    }
 
-        void AreaLightComponentController::CreateLightShapeDelegate()
+    float AreaLightComponentController::GetSofteningBoundaryWidthAngle() const
+    {
+        return m_configuration.m_boundaryWidthInDegrees;
+    }
+
+    void AreaLightComponentController::SetSofteningBoundaryWidthAngle(float width)
+    {
+        m_configuration.m_boundaryWidthInDegrees = width;
+        if (m_lightShapeDelegate)
+        {
+            m_lightShapeDelegate->SetSofteningBoundaryWidthAngle(width);
+        }
+    }
+
+    uint32_t AreaLightComponentController::GetPredictionSampleCount() const
+    {
+        return m_configuration.m_predictionSampleCount;
+    }
+
+    void AreaLightComponentController::SetPredictionSampleCount(uint32_t count)
+    {
+        m_configuration.m_predictionSampleCount = count;
+        if (m_lightShapeDelegate)
+        {
+            m_lightShapeDelegate->SetPredictionSampleCount(count);
+        }
+    }
+
+    uint32_t AreaLightComponentController::GetFilteringSampleCount() const
+    {
+        return m_configuration.m_filteringSampleCount;
+    }
+
+    void AreaLightComponentController::SetFilteringSampleCount(uint32_t count)
+    {
+        m_configuration.m_filteringSampleCount = count;
+        if (m_lightShapeDelegate)
+        {
+            m_lightShapeDelegate->SetFilteringSampleCount(count);
+        }
+    }
+
+    void AreaLightComponentController::HandleDisplayEntityViewport(
+        [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo,
+        AzFramework::DebugDisplayRequests& debugDisplay,
+        bool isSelected)
+    {
+        Transform transform = Transform::CreateIdentity();
+        TransformBus::EventResult(transform, m_entityId, &TransformBus::Events::GetWorldTM);
+        if (m_lightShapeDelegate)
+        {
+            m_lightShapeDelegate->DrawDebugDisplay(transform, m_configuration.m_color, debugDisplay, isSelected);
+        }
+    }
+    
+    PcfMethod AreaLightComponentController::GetPcfMethod() const
+    {
+        return m_configuration.m_pcfMethod;
+    }
+
+    void AreaLightComponentController::SetPcfMethod(PcfMethod method)
+    {
+        m_configuration.m_pcfMethod = method;
+        if (m_lightShapeDelegate)
+        {
+            m_lightShapeDelegate->SetPcfMethod(method);
+        }
+    }
+
+    void AreaLightComponentController::CreateLightShapeDelegate()
+    {
+        switch (m_configuration.m_lightType)
+        {
+
+        // Simple types
+        case AreaLightComponentConfig::LightType::SimplePoint:
+            m_lightShapeDelegate = AZStd::make_unique<SimplePointLightDelegate>(m_entityId, m_isVisible);
+            break;
+        case AreaLightComponentConfig::LightType::SimpleSpot:
+            m_lightShapeDelegate = AZStd::make_unique<SimpleSpotLightDelegate>(m_entityId, m_isVisible);
+            break;
+
+        // Area light types
+        case AreaLightComponentConfig::LightType::Sphere:
         {
             LmbrCentral::SphereShapeComponentRequests* sphereShapeInterface = LmbrCentral::SphereShapeComponentRequestsBus::FindFirstHandler(m_entityId);
             if (sphereShapeInterface)
             {
                 m_lightShapeDelegate = AZStd::make_unique<SphereLightDelegate>(sphereShapeInterface, m_entityId, m_isVisible);
-                return;
             }
-
+            break;
+        }
+        case AreaLightComponentConfig::LightType::SpotDisk:
+        {
             LmbrCentral::DiskShapeComponentRequests* diskShapeInterface = LmbrCentral::DiskShapeComponentRequestBus::FindFirstHandler(m_entityId);
             if (diskShapeInterface)
             {
                 m_lightShapeDelegate = AZStd::make_unique<DiskLightDelegate>(diskShapeInterface, m_entityId, m_isVisible);
-                return;
             }
-
+            break;
+        }
+        case AreaLightComponentConfig::LightType::Capsule:
+        {
             LmbrCentral::CapsuleShapeComponentRequests* capsuleShapeInterface = LmbrCentral::CapsuleShapeComponentRequestsBus::FindFirstHandler(m_entityId);
             if (capsuleShapeInterface)
             {
                 m_lightShapeDelegate = AZStd::make_unique<CapsuleLightDelegate>(capsuleShapeInterface, m_entityId, m_isVisible);
-                return;
             }
-
+            break;
+        }
+        case AreaLightComponentConfig::LightType::Quad:
+        {
             LmbrCentral::QuadShapeComponentRequests* quadShapeInterface = LmbrCentral::QuadShapeComponentRequestBus::FindFirstHandler(m_entityId);
             if (quadShapeInterface)
             {
                 m_lightShapeDelegate = AZStd::make_unique<QuadLightDelegate>(quadShapeInterface, m_entityId, m_isVisible);
-                return;
             }
-
+            break;
+        }
+        case AreaLightComponentConfig::LightType::Polygon:
+        {
             LmbrCentral::PolygonPrismShapeComponentRequests* polyPrismShapeInterface = LmbrCentral::PolygonPrismShapeComponentRequestBus::FindFirstHandler(m_entityId);
             if (polyPrismShapeInterface)
             {
                 m_lightShapeDelegate = AZStd::make_unique<PolygonLightDelegate>(polyPrismShapeInterface, m_entityId, m_isVisible);
-                return;
             }
+            break;
         }
+        }
+    }
 
-    } // namespace Render
-} // namespace AZ
+} // namespace AZ::Render

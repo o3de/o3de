@@ -58,7 +58,7 @@ bool ComputeProbeSpecular(float2 screenCoords, float3 positionWS, float3 aabbMin
     float3 probeSpecular = ObjectSrg::m_reflectionCubeMap.SampleLevel(SceneSrg::m_samplerEnv, GetCubemapCoords(localReflectDir), GetRoughnessMip(roughness)).rgb;
 
     // compute final specular amount
-    float3 multiScatterCompensation = GetMultiScatterCompensation(NdotV, specularF0, brdf, multiScatterCompensationEnabled);
+    float3 multiScatterCompensation = GetMultiScatterCompensation(specularF0, brdf, multiScatterCompensationEnabled);
     specular = probeSpecular * multiScatterCompensation * (specularF0.xyz * brdf.x + brdf.y);
 
     // compute clear coat specular amount

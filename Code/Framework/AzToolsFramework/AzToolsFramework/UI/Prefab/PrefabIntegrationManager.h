@@ -19,6 +19,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserSourceDropBus.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
+#include <AzToolsFramework/UI/Prefab/LevelRootUiHandler.h>
 #include <AzToolsFramework/UI/Prefab/PrefabEditManager.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationBus.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
@@ -77,6 +78,9 @@ namespace AzToolsFramework
             // Manages the Edit Mode UI for prefabs
             PrefabEditManager m_prefabEditManager;
 
+            // Used to handle the UI for the level root
+            LevelRootUiHandler m_levelRootUiHandler;
+
             // Used to handle the UI for prefab entities
             PrefabUiHandler m_prefabUiHandler;
 
@@ -85,6 +89,7 @@ namespace AzToolsFramework
             static void ContextMenu_InstantiatePrefab();
             static void ContextMenu_EditPrefab(AZ::EntityId containerEntity);
             static void ContextMenu_SavePrefab(AZ::EntityId containerEntity);
+            static void ContextMenu_DeleteSelected();
 
             // Prompt and resolve dialogs
             static bool QueryUserForPrefabSaveLocation(

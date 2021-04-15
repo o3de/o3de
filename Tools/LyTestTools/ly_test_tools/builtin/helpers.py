@@ -62,33 +62,6 @@ def create_builtin_workspace(
     return instance
 
 
-def setup_bootstrap_project(workspace, project):
-    """
-    Sets up the bootstrap.cfg file to be used for the given project
-
-    :param workspace: workspace to use
-    :param project: Lumberyard project to set as target
-    :return: None
-    """
-    bootstrap_cfg = os.path.join(workspace.paths.dev(), "bootstrap.cfg")
-    os.chmod(bootstrap_cfg, stat.S_IWRITE)
-    lines = None
-    with open(bootstrap_cfg) as f:
-        lines = f.readlines()
-
-    found_gamefolder = False
-    for i, line in enumerate(lines):
-        if line.lstrip().startswith("project_path"):
-            lines[i] = f"project_path={project}\n"
-            found_gamefolder = True
-            break
-
-    assert found_gamefolder, "'project_path' not found in bootstrap.cfg"
-
-    with open(bootstrap_cfg, "w") as f:
-        f.writelines(lines)
-
-
 def setup_builtin_workspace(workspace, test_name, artifact_folder_count):
     # type: (internal_workspace.AbstractWorkspaceManager, str, int) -> internal_workspace.AbstractWorkspaceManager
     """

@@ -205,7 +205,7 @@ void CVars::Init()
 
 #ifndef _RELEASE
     DefineConstIntCVar(e_DebugDrawListSize, 24, VF_DEV_ONLY,    "num objects in the list for e_DebugDraw list infodebug");
-    ICVar* e_DebugDrawListFilter = REGISTER_STRING_CB_DEV_ONLY("e_DebugDrawListFilter", "",  VF_NULL,
+    REGISTER_STRING_CB_DEV_ONLY("e_DebugDrawListFilter", "",  VF_NULL,
             "filter for e_DebugDraw list. Combine object type letters to create the filter\n"
             "(example: e_DebugDrawListFilter BVC = shows Characters+StatObject). 'all' = no filter.\n"
             " C: Character\n"
@@ -922,7 +922,7 @@ void CVars::Init()
         "Will not render CGFs past the given amount of drawcalls\n"
         "(<=0 off (default), >0 draw calls limit)");
 
-    REGISTER_CVAR(e_CheckOctreeObjectsBoxSize, 1, VF_NULL, "CryWarning for crazy sized COctreeNode m_objectsBoxes");
+    REGISTER_CVAR(e_CheckOctreeObjectsBoxSize, 1, VF_NULL, "Warning for crazy sized COctreeNode m_objectsBoxes");
     REGISTER_CVAR(e_DebugGeomPrep, 0, VF_NULL,  "enable logging of Geom preparation");
     DefineConstIntCVar(e_GeomCaches, 1, VF_NULL, "Activates drawing of geometry caches");
     REGISTER_CVAR(e_GeomCacheBufferSize, 128, VF_CHEAT, "Geometry cache stream buffer upper limit size in MB. Default: 128");

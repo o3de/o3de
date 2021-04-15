@@ -173,7 +173,6 @@ void CComponentEntityObject::AssignEntity(AZ::Entity* entity, bool destroyOld)
             entity->FindComponent<AzToolsFramework::Components::TransformComponent>();
         if (transformComponent)
         {
-            const AZ::Transform& worldTransform = transformComponent->GetWorldTM();
             OnTransformChanged(transformComponent->GetLocalTM(), transformComponent->GetWorldTM());
         }
     }
@@ -439,45 +438,8 @@ void CComponentEntityObject::OnEntityIconChanged(const AZ::Data::AssetId& entity
     SetupEntityIcon();
 }
 
-void CComponentEntityObject::OnParentChanged([[maybe_unused]] AZ::EntityId oldParent, AZ::EntityId newParent)
+void CComponentEntityObject::OnParentChanged([[maybe_unused]] AZ::EntityId oldParent, [[maybe_unused]] AZ::EntityId newParent)
 {
-    return;
-
-    if (m_parentingReentryGuard) // Ignore if action originated from Sandbox.
-    {
-        EditorActionScope parentChange(m_parentingReentryGuard);
-
-        CComponentEntityObject* currentParent = static_cast<CComponentEntityObject*>(GetParent());
-
-        if (!currentParent && !newParent.IsValid())
-        {
-            // No change in parent.
-            return;
-        }
-
-        if (currentParent && currentParent->GetAssociatedEntityId() == newParent)
-        {
-            // No change in parent.
-            return;
-        }
-
-        DetachThis();
-
-        if (newParent.IsValid())
-        {
-            CComponentEntityObject* componentEntity = CComponentEntityObject::FindObjectForEntity(newParent);
-
-            if (componentEntity)
-            {
-                // The action is originating from Sandbox, so ignore the return events.
-                EditorActionScope transformChange(m_transformReentryGuard);
-
-                componentEntity->AttachChild(this);
-            }
-        }
-
-        InvalidateTM(0);
-    }
 }
 
 void CComponentEntityObject::OnMeshCreated(const AZ::Data::Asset<AZ::Data::AssetData>& asset)

@@ -13,6 +13,7 @@
 #include "BehaviorContextUtils.h"
 
 #include <AzCore/std/containers/map.h>
+#include <AzCore/RTTI/BehaviorContextUtilities.h>
 #include <ScriptCanvas/Core/GraphData.h>
 #include <ScriptCanvas/Libraries/Core/Method.h>
 
@@ -245,19 +246,13 @@ namespace ScriptCanvas
         }
         else
         {
-            // The method is not in the behaviorContext Global Methods, so check the Global Properties
-            for (auto [propertyName, behaviorProperty] : behaviorContext->m_properties)
+            AZStd::string propertyName(methodName);
+            AZ::RemovePropertyNameArtifacts(propertyName);
+
+            auto iter = behaviorContext->m_properties.find(propertyName);
+            if (iter != behaviorContext->m_properties.end())
             {
-                if (behaviorProperty->m_getter && behaviorProperty->m_getter->m_name == methodName)
-                {
-                    method = behaviorProperty->m_getter;
-                    break;
-                }
-                if (behaviorProperty->m_setter && behaviorProperty->m_setter->m_name == methodName)
-                {
-                    method = behaviorProperty->m_setter;
-                    break;
-                }
+                method = iter->second->m_getter ? iter->second->m_getter : iter->second->m_setter;
             }
 
             if (!method)

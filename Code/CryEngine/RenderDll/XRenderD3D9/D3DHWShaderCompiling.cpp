@@ -211,7 +211,7 @@ void CHWShader_D3D::mfAddFXParameter(
             pParams = &OutParams.Params[0];
         }
         uint32 nOffs = pParams->size();
-        bool bRes = gRenDev->m_cEF.mfParseFXParameter(FXParams, pr, ParamName, ef, bInstParam, pBind->m_RegisterCount, pParams, eSHClass, false);
+        [[maybe_unused]] bool bRes = gRenDev->m_cEF.mfParseFXParameter(FXParams, pr, ParamName, ef, bInstParam, pBind->m_RegisterCount, pParams, eSHClass, false);
         AZ_Assert(bRes, "Error: CHWShader_D3D::mfAddFXParameter - bRes is false");
 
         if (pParams->size() > nOffs)
@@ -245,7 +245,6 @@ bool CHWShader_D3D::mfAddFXParameter(SHWSInstance* pInst, SParamsGroup& OutParam
             {
                 bn->m_RegisterCount = pr->m_nArray;
             }
-            bool bRes = mfAddFXTexture(pInst, FXParams, pr, param, bn, pFXShader, eSHClass);
             return true;
         }
     }
@@ -259,7 +258,6 @@ bool CHWShader_D3D::mfAddFXParameter(SHWSInstance* pInst, SParamsGroup& OutParam
             {
                 bn->m_RegisterCount = pr->m_nArray;
             }
-            bool bRes = mfAddFXSampler(pInst, FXParams, pr, param, bn, pFXShader, eSHClass);
             return true;
         }
     }
@@ -337,7 +335,6 @@ void CHWShader_D3D::mfCreateBinds(SHWSInstance* pInst, void* pConstantTable, [[m
         }
         for (i = 0; i < SBDesc.Variables; i++)
         {
-            uint32 nCount = 1;
             ID3D11ShaderReflectionVariable* pCV = pCB->GetVariableByIndex(i);
             ID3D11ShaderReflectionType* pVT = pCV->GetType();
             D3D11_SHADER_VARIABLE_DESC CDesc;
@@ -410,7 +407,6 @@ void CHWShader_D3D::mfGatherFXParameters(SHWSInstance* pInst, std::vector<SCGBin
     uint32 i, j;
     SAliasSampler samps[MAX_TMU];
     int nMaxSampler = -1;
-    int nParam = 0;
     SParamsGroup Group;
     SShaderFXParams& FXParams = gRenDev->m_cEF.m_Bin.mfGetFXParams(pInst->m_bFallback ? CShaderMan::s_ShaderFallback : pFXShader);
     if (parameters.size())
@@ -683,9 +679,11 @@ void CHWShader_D3D::mfGatherFXParameters(SHWSInstance* pInst, std::vector<SCGBin
             }
         }
     }
+#if !defined(NDEBUG)
     int nMax = AzRHI::GetConstantRegisterCountMax(pSH->m_eSHClass);
     assert(pInst->m_nMaxVecs[0] < nMax);
     assert(pInst->m_nMaxVecs[1] < nMax);
+#endif
 
     if ((pInst->m_Ident.m_RTMask & g_HWSR_MaskBit[HWSR_INSTANCING_ATTR]) && pSH->m_eSHClass == eHWSC_Vertex)
     {
@@ -704,7 +702,6 @@ void CHWShader_D3D::mfGatherFXParameters(SHWSInstance* pInst, std::vector<SCGBin
                 SCGBind bn;
                 bn.m_RegisterCount = b.m_RegisterCount;
                 bn.m_RegisterOffset = nID;
-                bool bRes = mfAddFXParameter(pInst, Group, FXParams, b.m_Name.c_str(), &bn, true, pSH->m_eSHClass, pFXShader);
 
                 nNumInst++;
             }
@@ -858,7 +855,6 @@ AZ::Vertex::Format CHWShader_D3D::mfVertexFormat(SHWSInstance* pInst, CHWShader_
     bool bHWSkin = false;
     bool bVelocity = false;
     bool bMorph = false;
-    bool bBoneSpace = false;
     bool bPSize = false;
     bool bSH[2] = {false, false};
     bool bTC0 = false;
@@ -1357,7 +1353,6 @@ bool CHWShader_D3D::mfGetCacheTokenMap(FXShaderToken*& Table, TArray<uint32>*& p
 
 bool CHWShader_D3D::mfGenerateScript(CShader* pSH, SHWSInstance*& pInst, std::vector<SCGBind>& InstBindVars, uint32 nFlags, FXShaderToken* Table, TArray<uint32>* pSHData, TArray<char>& sNewScr)
 {
-    char* cgs = NULL;
 
     bool bTempMap = (Table == NULL);
     assert((Table && pSHData) || (!Table && !pSHData));
@@ -1897,7 +1892,6 @@ bool CHWShader_D3D::ConvertBinScriptToASCII(CParserBin& Parser, [[maybe_unused]]
 
     uint32* pTokens = &Parser.m_Tokens[0];
     uint32 nT = Parser.m_Tokens.size();
-    const char* szPrev = " ";
     int nLevel = 0;
     for (i = 0; i < nT; i++)
     {
@@ -2209,7 +2203,6 @@ SShaderCache::~SShaderCache()
     if (m_pStreamInfo)
     {
         CResFile* pRes = m_pStreamInfo->m_pRes;
-        bool bWarn = false;
         if (pRes)
         {
             assert(pRes == m_pRes[0] || pRes == m_pRes[1]);
@@ -2911,7 +2904,7 @@ bool CHWShader::_OpenCacheFile(float fVersion, SShaderCache* pCache, CHWShader* 
                 return false;
             }
 
-            SResFileLookupData* pLookup = pRF->GetLookupData(true, CRC32, FX_CACHE_VER);
+            pRF->GetLookupData(true, CRC32, FX_CACHE_VER);
             if (pSHHW)
             {
                 pRF->mfFlush();
@@ -3808,7 +3801,6 @@ bool CHWShader_D3D::mfRequestAsync(CShader* pSH, SHWSInstance* pInst, std::vecto
     pInst->m_pAsync->m_pFXShader->AddRef();
     pInst->m_pAsync->m_nCombination = gRenDev->m_cEF.m_nCombinationsProcess;
     assert(!azstricmp(m_NameSourceFX.c_str(), pInst->m_pAsync->m_pFXShader->m_NameFile.c_str()));
-    InstContainer* pInstCont = &m_Insts;
     if (m_bUseLookUpTable)
     {
         pInst->m_pAsync->m_nHashInst = pInst->m_nContIndex;
@@ -4051,10 +4043,8 @@ LPD3D10BLOB CHWShader_D3D::mfCompileHLSL(CShader* pSH, char* prog_text, void** p
     //  LOADING_TIME_PROFILE_SECTION(iSystem);
 
     // Test adding source text to context
-    SHWSInstance* pInst = m_pCurInst;
     string strErr;
     LPD3D10BLOB pCode = NULL;
-    HRESULT hr = S_OK;
     if (!prog_text)
     {
         assert(0);
@@ -4065,7 +4055,7 @@ LPD3D10BLOB CHWShader_D3D::mfCompileHLSL(CShader* pSH, char* prog_text, void** p
         return NULL;
     }
 
-    bool bResult = mfCompileHLSL_Int(pSH, prog_text, &pCode, ppConstantTable, ppErrorMsgs, strErr, InstBindVars);
+    mfCompileHLSL_Int(pSH, prog_text, &pCode, ppConstantTable, ppErrorMsgs, strErr, InstBindVars);
     if (!pCode)
     {
         if (CRenderer::CV_r_shadersasynccompiling)
@@ -4312,7 +4302,6 @@ bool CHWShader_D3D::mfActivate(CShader* pSH, uint32 nFlags, FXShaderToken* Table
         //if (!(m_Flags & HWSG_PRECACHEPHASE) && !(nFlags & HWSF_NEXT))
         //  mfSetHWStartProfile(nFlags);
 
-        bool bCreate = false;
         // We need a different source and desination for fpStripExtension
         // since a call to strcpy with the same src and dst results in
         // undefined behaviour
@@ -4542,7 +4531,6 @@ void CAsyncShaderTask::FlushPendingShaders()
     }
     {
         AUTO_LOCK(g_cAILock);
-        int n = 0;
         for (pAI = BuildList().m_Prev; pAI != &BuildList(); pAI = pAINext)
         {
             pAINext = pAI->m_Prev;
@@ -4910,7 +4898,6 @@ bool STexSamplerFX::Export(SShaderSerializeContext& SC)
     if (m_nTexState > 0)
     {
         TS.m_bTexState = 1;
-        STexState* pTS = &CTexture::s_TexStates[m_nTexState];
         memcpy(&TS.ST, &CTexture::s_TexStates[m_nTexState], sizeof(TS.ST));
         TS.ST.m_pDeviceState = NULL;
     }
@@ -5180,7 +5167,6 @@ bool CHWShader_D3D::Export(SShaderSerializeContext& SC)
     SCHWShader SHWTemp = SHW;
 
     SHW.Export(SC.Data);
-    uint32 nOffs = 0;
 
     bRes &= ExportSamplers(SHW, SC);
     bRes &= ExportParams(SHW, SC);
@@ -5268,7 +5254,6 @@ CHWShader* CHWShader::Import(SShaderSerializeContext& SC, int nOffs, uint32 CRC3
         ImportParams(SC, pSHW, pData, Params);
     }
 
-    bool bPrecache = (SC.SSR.m_Flags & EF_PRECACHESHADER) != 0;
 
     //static CHWShader *mfForName(const char *name, const char *nameSource, uint32 CRC32, const char *szEntryFunc, EHWShaderClass eClass, TArray<uint32>& SHData, FXShaderToken *pTable, uint32 dwType, CShader *pFX, uint64 nMaskGen=0, uint64 nMaskGenFX=0);
     pHWSH = CHWShader::mfForName(szName,            szNameSource,            CRC32,        szNameEntry,             pSHW->m_eSHClass,     SHData,                  pTable,                pSHW->m_dwShaderType,  pSH, pSHW->m_nMaskGenShader, pSHW->m_nMaskGenFX);
@@ -5372,7 +5357,6 @@ const char* CHWShader::GetCurrentShaderCombinations(bool bForLevel)
 
     Name = CHWShader::mfGetClassName(eHWSC_Pixel);
     pRL = CBaseResource::GetResourcesForClass(Name);
-    int n = 0;
     if (pRL)
     {
         ResourcesMapItor itor;

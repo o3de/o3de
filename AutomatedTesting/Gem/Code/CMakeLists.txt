@@ -25,6 +25,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
+            Gem::Atom_AtomBridge.Static
 )
 
 ################################################################################
@@ -37,6 +38,7 @@ ly_add_project_dependencies(
         AutomatedTesting.GameLauncher
     DEPENDENCIES_FILES
         runtime_dependencies.cmake
+        ${pal_dir}/runtime_dependencies.cmake
 )
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)

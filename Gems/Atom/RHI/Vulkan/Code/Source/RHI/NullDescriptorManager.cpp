@@ -76,7 +76,6 @@ namespace AZ
         RHI::ResultCode NullDescriptorManager::CreateImage()
         {
             Device& device = static_cast<Device&>(GetDevice());
-            const PhysicalDevice& physicalDevice = static_cast<const PhysicalDevice&>(device.GetPhysicalDevice());
 
             const uint32_t imageDimension = 8;
             const uint32_t pixelSize = 4;

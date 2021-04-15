@@ -16,7 +16,7 @@ from xml.etree import ElementTree
 
 class Physmaterial_Editor:
     """
-    This class is used to adjust physmaterial files for use with Lumberyard.
+    This class is used to adjust physmaterial files for use with Open 3D Engine.
 
     NOTEWORTHY:
         - Must use save_changes() for library modifications to take affect
@@ -177,7 +177,7 @@ class Physmaterial_Editor:
     @staticmethod
     def _get_combine_id(combine_name):
         # type: (str) -> int
-        # Maps the Combine mode to its enumerated value used by the Lumberyard Editor
+        # Maps the Combine mode to its enumerated value used by the Open 3D Engine Editor
         combine_dictionary = {"Average": "0", "Minimum": "1", "Maximum": "2", "Multiply": "3"}
         if combine_name not in combine_dictionary:
             raise ValueError("Invalid Combine Value given. {} is not in combine map".format(combine_name))

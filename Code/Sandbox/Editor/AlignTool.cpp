@@ -40,10 +40,6 @@ void CAlignPickCallback::OnPick(CBaseObject* picked)
     const Vec3& pickedScale = picked->GetScale();
     const Vec3& pickedPos = picked->GetPos();
 
-    float fPickedWidth = pickedAABB.max.x - pickedAABB.min.x;
-    float fPickedHeight = pickedAABB.max.z - pickedAABB.min.z;
-    float fPickedLength = pickedAABB.max.y - pickedAABB.min.y;
-
     bool bKeepScale = CheckVirtualKey(Qt::Key_Shift);
     bool bKeepRotation = CheckVirtualKey(Qt::Key_Alt);
     bool bAlignToBoundBox = CheckVirtualKey(Qt::Key_Control);

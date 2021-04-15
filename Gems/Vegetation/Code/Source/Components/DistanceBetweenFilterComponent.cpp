@@ -64,7 +64,6 @@ namespace Vegetation
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<DistanceBetweenFilterConfig>()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Constructor()
                 ->Property("allowOverrides", BehaviorValueProperty(&DistanceBetweenFilterConfig::m_allowOverrides))
@@ -117,7 +116,6 @@ namespace Vegetation
             behaviorContext->Class<DistanceBetweenFilterComponent>()->RequestBus("DistanceBetweenFilterRequestBus");
 
             behaviorContext->EBus<DistanceBetweenFilterRequestBus>("DistanceBetweenFilterRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Event("GetAllowOverrides", &DistanceBetweenFilterRequestBus::Events::GetAllowOverrides)
                 ->Event("SetAllowOverrides", &DistanceBetweenFilterRequestBus::Events::SetAllowOverrides)

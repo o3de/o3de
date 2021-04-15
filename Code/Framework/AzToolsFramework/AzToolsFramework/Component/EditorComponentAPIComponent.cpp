@@ -191,10 +191,17 @@ namespace AzToolsFramework
                         {
                             if (componentClass->m_editData->m_name == componentTypeNames[i])
                             {
+                                // Although it is rare, it can happen that two (or more) components can have the same name.
+                                // We should only count the first occurrence, so that none of the names in componentTypeNames
+                                // get skipped, but whichever component type that is encountered last will be the one
+                                // that is captured in order to preserve the pre-existing behavior.
+                                if (foundTypeIds[i].IsNull())
+                                {
+                                    ++counter;
+                                }
+
                                 foundTypeIds[i] = componentClass->m_typeId;
-                                ++counter;
-                                //Although it is rare, it can happen that two components can have the same name.
-                                //We will capture only the first occurrence.
+
                                 return true;
                             }
                         }

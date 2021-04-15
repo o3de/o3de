@@ -1405,7 +1405,6 @@ void CTrackViewDopeSheetBase::ShowKeyTooltip(CTrackViewKeyHandle& keyHandle, con
 
     const float time = keyHandle.GetTime();
     const char* desc = keyHandle.GetDescription();
-    float duration = keyHandle.GetDuration();
 
     QString tipText;
     if (GetTickDisplayMode() == eTVTickMode_InSeconds)
@@ -1848,8 +1847,6 @@ void CTrackViewDopeSheetBase::SetScrollOffset(int hpos)
 //////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::LButtonDownOnTimeAdjustBar([[maybe_unused]] const QPoint& point, CTrackViewKeyHandle& keyHandle, bool bStart)
 {
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
-
     m_keyTimeOffset = 0;
     m_keyForTimeAdjust = keyHandle;
 
@@ -2568,9 +2565,6 @@ void CTrackViewDopeSheetBase::DrawTrack(CTrackViewTrack* pTrack, QPainter* paint
 //////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::DrawSelectTrack(const Range& timeRange, QPainter* painter, CTrackViewTrack* pTrack, const QRect& rc)
 {
-    int x0 = TimeToClient(timeRange.start);
-    float t0 = timeRange.start;
-
     const QBrush prevBrush = painter->brush();
     painter->setBrush(m_selectTrackBrush);
 
@@ -2682,9 +2676,6 @@ void CTrackViewDopeSheetBase::DrawBoolTrack(const Range& timeRange, QPainter* pa
 //////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::DrawSequenceTrack(const Range& timeRange, QPainter* painter, CTrackViewTrack* pTrack, const QRect& rc)
 {
-    int x0 = TimeToClient(timeRange.start);
-    float t0 = timeRange.start;
-
     const QBrush prevBrush = painter->brush();
     painter->setBrush(m_selectTrackBrush);
 
@@ -3386,7 +3377,6 @@ void CTrackViewDopeSheetBase::DrawTimeline(QPainter* painter, const QRect& rcUpd
     const QPen black(textCol);
     const QPen redpen(lineCol);
     // Draw time ticks every tick step seconds.
-    const Range& timeRange = m_timeRange;
 
     painter->setPen(dkgray);
 

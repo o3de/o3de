@@ -11,8 +11,10 @@
 */
 
 #include "LegacyViewportCameraController.h"
+
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
+#include <AzFramework/Viewport/ScreenGeometry.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Atom/RPI.Public/ViewportContext.h>
@@ -73,7 +75,8 @@ AZ::RPI::ViewportContextPtr LegacyViewportCameraControllerInstance::GetViewportC
     return viewportContextManager->GetViewportContextById(GetViewportId());
 }
 
-bool LegacyViewportCameraControllerInstance::HandleMouseMove(const QPoint& currentMousePos, const QPoint& previousMousePos)
+bool LegacyViewportCameraControllerInstance::HandleMouseMove(
+    const AzFramework::ScreenPoint& currentMousePos, const AzFramework::ScreenPoint& previousMousePos)
 {
     if (previousMousePos == currentMousePos)
     {
@@ -100,7 +103,7 @@ bool LegacyViewportCameraControllerInstance::HandleMouseMove(const QPoint& curre
         Vec3 ydir = m.GetColumn1().GetNormalized();
         Vec3 pos = m.GetTranslation();
 
-        const float posDelta = 0.2f * (previousMousePos.y() - currentMousePos.y()) * speedScale;
+        const float posDelta = 0.2f * (previousMousePos.m_y - currentMousePos.m_y) * speedScale;
         pos = pos - ydir * posDelta;
         m_orbitDistance = m_orbitDistance + posDelta;
         m_orbitDistance = fabs(m_orbitDistance);
@@ -111,7 +114,7 @@ bool LegacyViewportCameraControllerInstance::HandleMouseMove(const QPoint& curre
     }
     else if (m_inRotateMode)
     {
-        Ang3 angles(-currentMousePos.y() + previousMousePos.y(), 0, -currentMousePos.x() + previousMousePos.x());
+        Ang3 angles(-currentMousePos.m_y + previousMousePos.m_y, 0, -currentMousePos.m_x + previousMousePos.m_x);
         angles = angles * 0.002f * gSettings.cameraRotateSpeed;
         if (gSettings.invertYRotation)
         {
@@ -143,7 +146,7 @@ bool LegacyViewportCameraControllerInstance::HandleMouseMove(const QPoint& curre
         }
 
         Vec3 pos = m.GetTranslation();
-        pos += 0.1f * xdir * (currentMousePos.x() - previousMousePos.x()) * speedScale + 0.1f * zdir * (previousMousePos.y() - currentMousePos.y()) * speedScale;
+        pos += 0.1f * xdir * (currentMousePos.m_x - previousMousePos.m_x) * speedScale + 0.1f * zdir * (previousMousePos.m_y - currentMousePos.m_y) * speedScale;
         m.SetTranslation(pos);
 
         AZ::Transform transform = viewportContext->GetCameraTransform();
@@ -153,7 +156,7 @@ bool LegacyViewportCameraControllerInstance::HandleMouseMove(const QPoint& curre
     }
     else if (m_inOrbitMode)
     {
-        Ang3 angles(-currentMousePos.y() + previousMousePos.y(), 0, -currentMousePos.x() + previousMousePos.x());
+        Ang3 angles(-currentMousePos.m_y + previousMousePos.m_y, 0, -currentMousePos.m_x + previousMousePos.m_x);
         angles = angles * 0.002f * gSettings.cameraRotateSpeed;
 
         if (gSettings.invertPan)
@@ -289,14 +292,13 @@ bool LegacyViewportCameraControllerInstance::HandleInputChannelEvent(const AzFra
 
     if (id == AzFramework::InputDeviceMouse::SystemCursorPosition)
     {
-        QPoint screenPosition = QPoint();
         bool result = false;
         AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Event(
             GetViewportId(),
             [this, &result](AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequests* mouseRequests)
             {
-                auto previousMousePosition = mouseRequests->PreviousViewportCursorScreenPosition();
-                if (previousMousePosition.has_value())
+                if (auto previousMousePosition = mouseRequests->PreviousViewportCursorScreenPosition();
+                    previousMousePosition.has_value())
                 {
                     result = HandleMouseMove(mouseRequests->ViewportCursorScreenPosition(), previousMousePosition.value());
                 }
@@ -340,7 +342,6 @@ bool LegacyViewportCameraControllerInstance::HandleInputChannelEvent(const AzFra
                 m_inRotateMode = true;
             }
 
-            shouldConsumeEvent = true;
             shouldCaptureCursor = true;
         }
         else if (state == InputChannel::State::Ended)

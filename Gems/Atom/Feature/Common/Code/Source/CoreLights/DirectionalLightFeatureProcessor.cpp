@@ -146,7 +146,6 @@ namespace AZ
         void DirectionalLightFeatureProcessor::Activate()
         {
             const RHI::ShaderResourceGroupLayout* sceneSrgLayout = RPI::RPISystemInterface::Get()->GetSceneSrgAsset()->GetLayout();
-            const RHI::ShaderResourceGroupLayout* viewSrgLayout = RPI::RPISystemInterface::Get()->GetViewSrgAsset()->GetLayout();
 
             GpuBufferHandler::Descriptor desc;
 
@@ -609,6 +608,16 @@ namespace AZ
             }
             m_shadowBufferNeedsUpdate = true;
         }
+
+        void DirectionalLightFeatureProcessor::SetPcfMethod(LightHandle handle, PcfMethod method)
+        {
+            for (auto& it : m_shadowData)
+            {
+                it.second.GetData(handle.GetIndex()).m_pcfMethod = method;
+            }
+            m_shadowBufferNeedsUpdate = true;
+        }
+
 
         void DirectionalLightFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
         {
@@ -1111,7 +1120,6 @@ namespace AZ
                 return;
             }
 
-            ShadowProperty& property = m_shadowProperties.GetData(handle.GetIndex());
             for (const auto& passIt : m_esmShadowmapsPasses)
             {
                 const RPI::View* cameraView = passIt.second.front()->GetRenderPipeline()->GetDefaultView().get();

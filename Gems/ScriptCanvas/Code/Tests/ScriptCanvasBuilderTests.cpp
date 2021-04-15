@@ -80,6 +80,8 @@ protected:
     AZ::ComponentApplication* GetApplication() override { return nullptr; }
     void RegisterComponentDescriptor(const AZ::ComponentDescriptor*) override { }
     void UnregisterComponentDescriptor(const AZ::ComponentDescriptor*) override { }
+    void RegisterEntityAddedEventHandler(AZ::EntityAddedEvent::Handler&) override { }
+    void RegisterEntityRemovedEventHandler(AZ::EntityRemovedEvent::Handler&) override { }
     bool AddEntity(AZ::Entity*) override { return true; }
     bool RemoveEntity(AZ::Entity*) override { return true; }
     bool DeleteEntity(const AZ::EntityId&) override { return true; }
@@ -104,6 +106,7 @@ protected:
 
         m_serializeContext = aznew AZ::SerializeContext(true, true);
         AZ::ComponentApplicationBus::Handler::BusConnect();
+        AZ::Interface<AZ::ComponentApplicationRequests>::Register(this);
 
         m_mockAssetDescriptor = MockAssetRefComponent::CreateDescriptor();
         MockAssetRefComponent::Reflect(m_serializeContext);
@@ -121,6 +124,7 @@ protected:
 
     void TearDown() override
     {
+        AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(this);
         AZ::ComponentApplicationBus::Handler::BusDisconnect();
 
         AZ::Data::AssetManager::Destroy();

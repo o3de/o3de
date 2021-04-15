@@ -293,8 +293,6 @@ void ConsoleHide(IConsoleCmdArgs*)
 
 void Bind(IConsoleCmdArgs* cmdArgs)
 {
-    int count = cmdArgs->GetArgCount();
-
     if (cmdArgs->GetArgCount() >= 3)
     {
         string arg;
@@ -2230,11 +2228,12 @@ void CXConsole::DisplayHelp(const char* help, const char* name)
     else
     {
         char* start, * pos;
-        for (pos = (char*)help, start = (char*)help; pos = strstr(pos, "\n"); start = ++pos)
+        for (pos = strstr((char*)help, "\n"), start = (char*)help; pos; start = ++pos)
         {
             string s = start;
             s.resize(pos - start);
             ConsoleLogInputResponse("    $3%s", s.c_str());
+            pos = strstr(pos, "\n");
         }
         ConsoleLogInputResponse("    $3%s", start);
     }
@@ -2507,7 +2506,7 @@ void CXConsole::ExecuteDeferredCommands()
     //  float curX = 10;
     //  float curY = 10;
 
-    IRenderer* pRenderer = gEnv->pRenderer;
+    //IRenderer* pRenderer = gEnv->pRenderer;
 
     // Print the deferred messages
     //  it = m_deferredCommands.begin();
@@ -3532,9 +3531,8 @@ uint64 CXConsole::GetCheatVarHash()
 void CXConsole::SetCheatVarHashRange(size_t firstVar, size_t lastVar)
 {
     // check inputs are sane
-#ifndef _RELEASE
+#if !defined(NDEBUG)
     size_t numVars = GetNumCheatVars();
-
     assert(firstVar < numVars && lastVar < numVars && lastVar >= firstVar);
 #endif
 

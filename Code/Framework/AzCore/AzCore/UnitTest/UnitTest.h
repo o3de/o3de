@@ -278,7 +278,7 @@ namespace UnitTest
 #define AZ_TEST_STATIC_ASSERT(_Exp)                         static_assert(_Exp, "Test Static Assert")
 #ifdef AZ_ENABLE_TRACING
 /*
- * The AZ_TEST_START_ASSERTTEST and AZ_TEST_STOP_ASSERTTEST macros have been deprecated and will be removed in a future Lumberyard release.
+ * The AZ_TEST_START_ASSERTTEST and AZ_TEST_STOP_ASSERTTEST macros have been deprecated and will be removed in a future Open 3D Engine release.
  * The AZ_TEST_START_TRACE_SUPPRESSION and AZ_TEST_STOP_TRACE_SUPPRESSION is the recommend macros
  * The reason for the deprecation is that the AZ_TEST_(START|STOP)_ASSERTTEST implies that they should be used to for writing assert unit test
  * where the asserts themselves are expected to cause the test process to terminate.

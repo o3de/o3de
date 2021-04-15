@@ -16,7 +16,7 @@
     #include <StaticModules.inl>
 #endif //  defined(AZ_MONOLITHIC_BUILD)
 
-namespace LumberyardLauncher
+namespace O3DELauncher
 {
     //! This file is to be added only to the ${project}.[Game|Server]Launcher build target
     //! This function returns the build system target name

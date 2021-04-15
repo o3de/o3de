@@ -106,10 +106,6 @@ namespace AZ
                         RenamedNodesMap::SanitizeNodeName(nodeName, context.m_scene.GetGraph(), context.m_currentGraphPosition, "BlendShape");
                         AZ_TraceContext("Blend shape name", nodeName);
 
-                        int firstMeshVertexIndex = -1;
-                        int previousMeshVertexIndex = -1;
-                        int verticesInMeshFace = 0;
-
                         AZStd::bitset<SceneData::GraphData::BlendShapeData::MaxNumUVSets> uvSetUsedFlags;
                         for (AZ::u8 uvSetIndex = 0; uvSetIndex < SceneData::GraphData::BlendShapeData::MaxNumUVSets; ++uvSetIndex)
                         {
@@ -131,16 +127,17 @@ namespace AZ
                             context.m_sourceSceneSystem.SwapVec3ForUpAxis(vertex);
                             context.m_sourceSceneSystem.ConvertUnit(vertex);
 
+                            blendShapeData->AddPosition(vertex);
+                            blendShapeData->SetVertexIndexToControlPointIndexMap(vertIdx, vertIdx);
+
                             // Add normals
-                            AZ::Vector3 normal;
                             if (aiAnimMesh->HasNormals())
                             {
-                                normal = AssImpSDKWrapper::AssImpTypeConverter::ToVector3(aiAnimMesh->mNormals[vertIdx]);
+                                AZ::Vector3 normal(AssImpSDKWrapper::AssImpTypeConverter::ToVector3(aiAnimMesh->mNormals[vertIdx]));
                                 context.m_sourceSceneSystem.SwapVec3ForUpAxis(normal);
                                 normal.NormalizeSafe();
+                                blendShapeData->AddNormal(normal);
                             }
-                            blendShapeData->AddVertex(vertex, normal);
-                            blendShapeData->SetVertexIndexToControlPointIndexMap(vertIdx, vertIdx);
 
                             // Add tangents and bitangents
                             if (aiAnimMesh->HasTangentsAndBitangents())

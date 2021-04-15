@@ -57,7 +57,7 @@ void GetClearCoatInputs(Texture2D influenceMap, float2 influenceUV, float clearC
     if (useNormalMap)
     {  
         float4 sampledValue = normalMap.Sample(mapSampler, normalUV);
-        clearCoatNormal = GetWorldSpaceNormal(sampledValue, normal, tangent, bitangent, uvMatrix, normalStrength);
+        clearCoatNormal = GetWorldSpaceNormal(sampledValue.xy, normal, tangent, bitangent, uvMatrix, normalStrength);
     }
     else
     {

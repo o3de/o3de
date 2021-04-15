@@ -19,6 +19,7 @@
 #include <Core/Common.h>
 #include <tinyxml/tinyxml.h>
 #include <AzCore/Debug/Trace.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/string/string.h>
 
 
@@ -30,7 +31,7 @@ CCrySimpleJobGetShaderList::CCrySimpleJobGetShaderList(uint32_t requestIP, std::
 
 bool CCrySimpleJobGetShaderList::Execute(const TiXmlElement* pElement)
 {
-    AZStd::string shaderListFilename;
+    AZ::IO::Path shaderListFilename;
 
     const char* project = pElement->Attribute("Project");
     const char* shaderList = pElement->Attribute("ShaderList");
@@ -38,7 +39,10 @@ bool CCrySimpleJobGetShaderList::Execute(const TiXmlElement* pElement)
     const char* compiler = pElement->Attribute("Compiler");
     const char* language = pElement->Attribute("Language");
 
-    shaderListFilename = AZStd::string::format("./Cache/%s%s-%s-%s/%s", project, platform, compiler, language, shaderList);
+    shaderListFilename = project;
+    shaderListFilename /= "Cache";
+    shaderListFilename /= AZStd::string::format("%s-%s-%s", platform, compiler, language);
+    shaderListFilename /= shaderList;
 
     //open the file and read into the rVec
     

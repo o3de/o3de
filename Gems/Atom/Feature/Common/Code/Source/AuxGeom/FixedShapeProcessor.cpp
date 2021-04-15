@@ -911,10 +911,10 @@ namespace AZ
                 normals.push_back(normal);
             }
 
-            uint16_t indexOfBottomCenter = 0;
-            uint16_t indexOfBottomStart = 1;
-            uint16_t indexOfTopCenter = numSections + 1;
-            uint16_t indexOfTopStart = numSections + 2;
+            //uint16_t indexOfBottomCenter = 0;
+            //uint16_t indexOfBottomStart = 1;
+            //uint16_t indexOfTopCenter = numSections + 1;
+            //uint16_t indexOfTopStart = numSections + 2;
             uint16_t indexOfSidesStart = 2 * numSections + 2;
 
             // build point indices

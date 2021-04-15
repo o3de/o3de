@@ -23,7 +23,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetPicker/AssetPickerDialog.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4244, "-Wunknown-warning-option") // disable warnings spawned by QT
-#include "AssetBrowser/AssetPicker/ui_AssetPickerDialog.h"
+#include <AzToolsFramework/AssetBrowser/AssetPicker/ui_AssetPickerDialog.h>
 #include <QPushButton>
 #include <QDialogButtonBox>
 #include <QKeyEvent>

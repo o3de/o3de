@@ -444,7 +444,6 @@ void PoundPoundContext::Impl::ProcessInclude(char** buf)
 {
     auto tokens = TokenizeLine(buf, "\\s*\\(\\s*(\\w+)\\s*,\\s*(\\w+)\\s*\\)\\s*$");
 
-    auto oldLayer = m_ownedLayer;
     m_ownedLayer = new Layer(m_ownedLayer);
     m_ownedLayer->m_interdictionState = Layer::InterdictionState::interdictionPaused;
 

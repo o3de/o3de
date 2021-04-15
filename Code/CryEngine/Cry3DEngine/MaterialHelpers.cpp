@@ -773,8 +773,10 @@ void MaterialHelpers::SetShaderParamsFromXml(SInputShaderResources& pShaderResou
             SShaderParam Param;
             Param.m_Name = key;
             Param.m_Value.m_Color[0] = Param.m_Value.m_Color[1] = Param.m_Value.m_Color[2] = Param.m_Value.m_Color[3] = 0;
-
-            int res = azsscanf(val, "%f,%f,%f,%f", &Param.m_Value.m_Color[0], &Param.m_Value.m_Color[1], &Param.m_Value.m_Color[2], &Param.m_Value.m_Color[3]);
+#if !defined(NDEBUG)
+            int res =
+#endif
+                azsscanf(val, "%f,%f,%f,%f", &Param.m_Value.m_Color[0], &Param.m_Value.m_Color[1], &Param.m_Value.m_Color[2], &Param.m_Value.m_Color[3]);
             assert(res);
 
             pShaderResources.m_ShaderParams.push_back(Param);
@@ -842,7 +844,6 @@ void MaterialHelpers::MigrateXmlLegacyData(SInputShaderResources& pShaderResourc
         CryWarning(VALIDATOR_MODULE_3DENGINE, VALIDATOR_WARNING, "Material %s has had legacy GlowAmount automatically converted to Emissive Intensity.  The material parameters related to Emittance should be manually adjusted for this material.", materialName.c_str());
     }
     
-    // In Lumberyard version 1.9 BlendLayer2Specular became a color instead of a single float, so it needs to be updated
     XmlNodeRef publicParamsNode = node->findChild("PublicParams");
     if (publicParamsNode && publicParamsNode->haveAttr("BlendLayer2Specular"))
     {

@@ -1273,7 +1273,6 @@ void CTrackViewSequence::OffsetSelectedKeys(const float timeOffset)
     // may become invalid after sorted with a new time.
     bool notifyListeners = false;
 
-    const CTrackViewTrack* pTrack = nullptr;
     for (int k = 0; k < (int)selectedKeys.GetKeyCount(); ++k)
     {
         CTrackViewKeyHandle skey = selectedKeys.GetKey(k);

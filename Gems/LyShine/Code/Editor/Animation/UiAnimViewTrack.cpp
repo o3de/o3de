@@ -134,7 +134,6 @@ CUiAnimViewKeyHandle CUiAnimViewTrack::GetNextKey(const float time)
 
     const float startTime = time;
     float closestTime = std::numeric_limits<float>::max();
-    bool bFoundKey = false;
 
     const int numKeys = m_pAnimTrack->GetNumKeys();
     for (int i = 0; i < numKeys; ++i)
@@ -548,7 +547,7 @@ void CUiAnimViewTrack::SelectKeys(const bool bSelected)
     {
         // Affect sub tracks
         unsigned int childCount = GetChildCount();
-        for (unsigned int childIndex = 0; childIndex < childCount; ++childCount)
+        for (unsigned int childIndex = 0; childIndex < childCount; ++childIndex)
         {
             CUiAnimViewTrack* pChildTrack = static_cast<CUiAnimViewTrack*>(GetChild(childIndex));
             pChildTrack->SelectKeys(bSelected);

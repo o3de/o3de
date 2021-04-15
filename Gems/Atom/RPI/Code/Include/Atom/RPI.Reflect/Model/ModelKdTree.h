@@ -35,7 +35,7 @@ namespace AZ
             ModelKdTree() = default;
 
             bool Build(const ModelAsset* model);
-            bool RayIntersection(const AZ::Vector3& raySrc, const AZ::Vector3& rayDir, float& distance) const;
+            bool RayIntersection(const AZ::Vector3& raySrc, const AZ::Vector3& rayDir, float& distance, AZ::Vector3& normal) const;
             void GetPenetratedBoxes(const AZ::Vector3& raySrc, const AZ::Vector3& rayDir, AZStd::vector<AZ::Aabb>& outBoxes);
 
             enum ESplitAxis
@@ -53,7 +53,7 @@ namespace AZ
         private:
 
             void BuildRecursively(ModelKdTreeNode* pNode, const AZ::Aabb& boundbox, AZStd::vector<ObjectIdTriangleIndices>& indices);
-            bool RayIntersectionRecursively(ModelKdTreeNode* pNode, const AZ::Vector3& raySrc, const AZ::Vector3& rayDir, float& distance) const;
+            bool RayIntersectionRecursively(ModelKdTreeNode* pNode, const AZ::Vector3& raySrc, const AZ::Vector3& rayDir, float& distance, AZ::Vector3& normal) const;
             void GetPenetratedBoxesRecursively(ModelKdTreeNode* pNode, const AZ::Vector3& raySrc, const AZ::Vector3& rayDir, AZStd::vector<AZ::Aabb>& outBoxes);
             void ConstructMeshList(const ModelAsset* model, const AZ::Transform& matParent);
 

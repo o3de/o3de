@@ -64,7 +64,7 @@ static void ReadInputSignatures(const uint32_t* pui32Tokens,
     InOutSignature* psSignatures;
     const uint32_t* pui32FirstSignatureToken = pui32Tokens;
     const uint32_t ui32ElementCount = *pui32Tokens++;
-    const uint32_t ui32Key = *pui32Tokens++;
+    /*const uint32_t ui32Key =*/ *pui32Tokens++;
 
     psSignatures = hlslcc_malloc(sizeof(InOutSignature) * ui32ElementCount);
     psShaderInfo->psInputSignatures = psSignatures;
@@ -114,7 +114,7 @@ static void ReadOutputSignatures(const uint32_t* pui32Tokens,
     InOutSignature* psSignatures;
     const uint32_t* pui32FirstSignatureToken = pui32Tokens;
     const uint32_t ui32ElementCount = *pui32Tokens++;
-    const uint32_t ui32Key = *pui32Tokens++;
+    /*const uint32_t ui32Key =*/ *pui32Tokens++;
 
     psSignatures = hlslcc_malloc(sizeof(InOutSignature) * ui32ElementCount);
     psShaderInfo->psOutputSignatures = psSignatures;
@@ -170,7 +170,7 @@ static void ReadPatchConstantSignatures(const uint32_t* pui32Tokens,
     InOutSignature* psSignatures;
     const uint32_t* pui32FirstSignatureToken = pui32Tokens;
     const uint32_t ui32ElementCount = *pui32Tokens++;
-    const uint32_t ui32Key = *pui32Tokens++;
+    /*const uint32_t ui32Key =*/ *pui32Tokens++;
 
     psSignatures = hlslcc_malloc(sizeof(InOutSignature) * ui32ElementCount);
     psShaderInfo->psPatchConstantSignatures = psSignatures;
@@ -338,10 +338,10 @@ static const uint32_t* ReadConstantBuffer(ShaderInfo* psShaderInfo,
 
         if (psShaderInfo->ui32MajorVersion  >= 5)
         {
-            uint32_t StartTexture = *pui32VarToken++;
-            uint32_t TextureSize = *pui32VarToken++;
-            uint32_t StartSampler = *pui32VarToken++;
-            uint32_t SamplerSize = *pui32VarToken++;
+            /* uint32_t StartTexture = */ *pui32VarToken++;
+            /* uint32_t TextureSize = */ *pui32VarToken++;
+            /* uint32_t StartSampler = */ *pui32VarToken++;
+            /* uint32_t SamplerSize = */ *pui32VarToken++;
         }
 
         psVar->haveDefaultValue = 0;
@@ -395,8 +395,8 @@ static void ReadResources(const uint32_t* pui32Tokens,//in
 
     uint32_t ui32NumResourceBindings = *pui32Tokens++;
     uint32_t ui32ResourceBindingOffset = *pui32Tokens++;
-    uint32_t ui32ShaderModel = *pui32Tokens++;
-    uint32_t ui32CompileFlags = *pui32Tokens++;//D3DCompile flags? http://msdn.microsoft.com/en-us/library/gg615083(v=vs.85).aspx
+    /*uint32_t ui32ShaderModel =*/ *pui32Tokens++;
+    /*uint32_t ui32CompileFlags =*/ *pui32Tokens++;//D3DCompile flags? http://msdn.microsoft.com/en-us/library/gg615083(v=vs.85).aspx
 
     //Resources
     pui32ResourceBindings = (const uint32_t*)((const char*)pui32FirstToken + ui32ResourceBindingOffset);
@@ -490,7 +490,7 @@ static void ReadInterfaces(const uint32_t* pui32Tokens,
     const uint32_t ui32ClassInstanceCount = *pui32Tokens++;
     const uint32_t ui32ClassTypeCount = *pui32Tokens++;
     const uint32_t ui32InterfaceSlotRecordCount = *pui32Tokens++;
-    const uint32_t ui32InterfaceSlotCount = *pui32Tokens++;
+    /*const uint32_t ui32InterfaceSlotCount =*/ *pui32Tokens++;
     const uint32_t ui32ClassInstanceOffset = *pui32Tokens++;
     const uint32_t ui32ClassTypeOffset = *pui32Tokens++;
     const uint32_t ui32InterfaceSlotOffset = *pui32Tokens++;
@@ -788,7 +788,6 @@ int GetShaderVarFromOffset(const uint32_t ui32Vec4Offset,
     int32_t* pi32Rebase)
 {
     uint32_t i;
-    const uint32_t ui32BaseByteOffset = ui32Vec4Offset * 16;
 
     uint32_t ui32ByteOffset = ui32Vec4Offset * 16;
 
@@ -870,7 +869,6 @@ void LoadShaderInfo(const uint32_t ui32MajorVersion,
     const uint32_t* pui32Outputs11 = psChunks->pui32Outputs11;
     const uint32_t* pui32OutputsWithStreams = psChunks->pui32OutputsWithStreams;
     const uint32_t* pui32PatchConstants = psChunks->pui32PatchConstants;
-    const uint32_t* pui32Effects10Data = psChunks->pui32Effects10Data;
 
     psInfo->eTessOutPrim = TESSELLATOR_OUTPUT_UNDEFINED;
     psInfo->eTessPartitioning = TESSELLATOR_PARTITIONING_UNDEFINED;
