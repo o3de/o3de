@@ -39,7 +39,7 @@ namespace AZ
             {
                 m_device = &device;
 
-                if (RHI::CheckBitsAll(descriptor.m_bindFlags, RHI::BufferBindFlags::InputAssembly))
+                if(RHI::CheckBitsAny(descriptor.m_bindFlags, RHI::BufferBindFlags::InputAssembly | RHI::BufferBindFlags::DynamicInputAssembly))
                 {
                     m_readOnlyState |= D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER | D3D12_RESOURCE_STATE_INDEX_BUFFER;
                 }
