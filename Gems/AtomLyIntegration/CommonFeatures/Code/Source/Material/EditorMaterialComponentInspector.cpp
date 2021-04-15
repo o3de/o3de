@@ -535,7 +535,7 @@ namespace AZ
                 inspector->Populate();
                 inspector->SetOverrides(propertyOverrideMap);
 
-                // Create the menu botton
+                // Create the menu button
                 QToolButton* menuButton = new QToolButton(&dialog);
                 menuButton->setAutoRaise(true);
                 menuButton->setIcon(QIcon(":/Cards/img/UI20/Cards/menu_ico.svg"));
