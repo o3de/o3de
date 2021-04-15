@@ -44,19 +44,25 @@ namespace AZ
             // length of the animations, they still play back at 30 frames per second.
             const double AssImpAnimationImporter::s_defaultTimeStepBetweenFrames = 1.0 / 30.0;
 
-            AZ::u32 GetNumKeyFrames(const AZ::u32 keysSize, const double duration, const double ticksPerSecond)
+            AZ::u32 GetNumKeyFrames(AZ::u32 keysSize, double duration, double ticksPerSecond)
             {
+                if (AZ::IsClose(ticksPerSecond, 0))
+                {
+                    AZ_Warning("AnimationImporter", false, "Animation ticks per second should not be zero, defaulting to to %d keyframes for animation.", keysSize);
+                    return keysSize;
+                }
                 const double totalTicks = duration / ticksPerSecond;
                 AZ::u32 numKeys = keysSize;
-                double totalFramesAtDefaultTimeStep = totalTicks / AssImpAnimationImporter::s_defaultTimeStepBetweenFrames;
+                // +1 because the animation is from [0, duration] - we have a keyframe at the end of the duration which needs to be included
+                double totalFramesAtDefaultTimeStep = totalTicks / AssImpAnimationImporter::s_defaultTimeStepBetweenFrames + 1;
                 if (!AZ::IsClose(totalFramesAtDefaultTimeStep, numKeys, 1))
                 {
-                    numKeys = AZStd::ceilf(totalFramesAtDefaultTimeStep) + 1; // +1 because the animation is from [0, duration] - we have a keyframe at the end of the duration which needs to be included
+                    numKeys = AZStd::ceilf(totalFramesAtDefaultTimeStep);
                 }
                 return numKeys;
             }
 
-            double GetTimeForFrame(const AZ::u32 frame, const double ticksPerSecond)
+            double GetTimeForFrame(AZ::u32 frame, double ticksPerSecond)
             {
                 return frame * AssImpAnimationImporter::s_defaultTimeStepBetweenFrames * ticksPerSecond;
             }
@@ -98,8 +104,8 @@ namespace AZ
                 start = AZ::Lerp(start, end, t);
             }
 
-            template<class T, class T2>
-            bool SampleKeyFrame(T2& result, const T& keys, AZ::u32 numKeys, double time, AZ::u32& lastIndex)
+            template<class KeyContainerType, class FrameValueType>
+            bool SampleKeyFrame(FrameValueType& result, const KeyContainerType& keys, AZ::u32 numKeys, double time, AZ::u32& lastIndex)
             {
                 if (numKeys == 0)
                 {
@@ -129,7 +135,8 @@ namespace AZ
                     else
                     {
                         AZ_Warning("AnimationImporter", false,
-                            "Duplicates has keys with duplicate time, at indices %d and %d. The second will be ignored.",
+                            "Animation has keys with duplicate time %5.5f, at indices %d and %d. The second will be ignored.",
+                            keys[lastIndex].mTime,
                             lastIndex,
                             lastIndex + 1);
                     }
@@ -297,7 +304,7 @@ namespace AZ
                     {
                         AZ_Error(
                             "AnimationImporter", false,
-                            "Animation name %s has a speed of 0 ticks per second and cannot be processed.",
+                            "Animation name %s has a sample rate of 0 ticks per second and cannot be processed.",
                             animation->mName.C_Str());
                         return Events::ProcessingResult::Failure;
                     }
