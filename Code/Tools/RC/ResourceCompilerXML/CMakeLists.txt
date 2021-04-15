@@ -22,7 +22,6 @@ ly_add_target(
     INCLUDE_DIRECTORIES
         PRIVATE
             .
-            PCH
     BUILD_DEPENDENCIES
         PRIVATE
             3rdParty::Qt::Core

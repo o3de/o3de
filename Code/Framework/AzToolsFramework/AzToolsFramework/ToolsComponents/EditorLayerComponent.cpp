@@ -408,7 +408,7 @@ namespace AzToolsFramework
 
             QString fullLayerPath(layerFolder.filePath(myLayerFileName));
 
-            // Lumberyard will read in the layer in whatever format it's in, so there's no need to check what the save format is set to.
+            // Open 3D Engine will read in the layer in whatever format it's in, so there's no need to check what the save format is set to.
             // The save format is also set in this object that is being loaded, so it wouldn't even be available.
             m_loadedLayer = AZ::Utils::LoadObjectFromFile<EditorLayer>(fullLayerPath.toUtf8().data());
 
@@ -1051,7 +1051,6 @@ namespace AzToolsFramework
                 currentFailure));
 
             // FileIO doesn't support removing directory, so use Qt.
-            // QDir::IsEmpty isn't available until a newer version fo Qt than Lumberyard is using.
             if (layerTempFolder.entryInfoList(
                 QDir::NoDotAndDotDot | QDir::AllEntries | QDir::System | QDir::Hidden).count() == 0)
             {
@@ -1485,7 +1484,7 @@ namespace AzToolsFramework
 
             if (!newLayerEntityId.IsValid())
             {
-                return LayerResult(LayerResultStatus::Error, "Lumberyard was unable to create a layer entity.");
+                return LayerResult(LayerResultStatus::Error, "Open 3D Engine was unable to create a layer entity.");
             }
 
             // If this new layer has a parent, then set its parent.

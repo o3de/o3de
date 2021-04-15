@@ -184,7 +184,7 @@ bool CPluginManager::LoadPlugins(const char* pPathWithMask)
             continue;
         }
 
-        // Lumberyard:
+        // Open 3D Engine:
         // Query the plugin settings, check for manual load...
         TPfnQueryPluginSettings pfnQuerySettings = reinterpret_cast<TPfnQueryPluginSettings>(hPlugin->resolve("QueryPluginSettings"));
 

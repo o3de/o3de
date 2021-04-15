@@ -31,7 +31,7 @@ namespace PhysX
         const char* GetDescription() const override { return "PhysX general memory allocator"; }
     };
 
-    //! Implementation of the PhysX memory allocation callback interface using Lumberyard allocator.
+    //! Implementation of the PhysX memory allocation callback interface using Open 3D Engine allocator.
     class PxAzAllocatorCallback
         : public physx::PxAllocatorCallback
     {

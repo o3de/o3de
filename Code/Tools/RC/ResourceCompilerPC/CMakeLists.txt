@@ -23,7 +23,6 @@ ly_add_target(
     INCLUDE_DIRECTORIES
         PUBLIC
             .
-            PCH
     COMPILE_DEFINITIONS
         PRIVATE
             RESOURCE_COMPILER

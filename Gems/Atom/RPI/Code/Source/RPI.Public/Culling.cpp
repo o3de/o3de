@@ -237,25 +237,23 @@ namespace AZ
             }
         }
 
-        void CullingSystem::RegisterOrUpdateCullable(Cullable& cullable)
+        void CullingScene::RegisterOrUpdateCullable(Cullable& cullable)
         {
-            // [GFX TODO][ATOM-15036] Remove lock from CullingSystem visibility updates
-            m_mutex.lock();
-            AZ::Interface<AzFramework::IVisibilitySystem>::Get()->InsertOrUpdateEntry(cullable.m_cullData.m_visibilityEntry);
-            m_mutex.unlock();
+            m_cullDataConcurrencyCheck.soft_lock();
+            m_visScene->InsertOrUpdateEntry(cullable.m_cullData.m_visibilityEntry);
+            m_cullDataConcurrencyCheck.soft_unlock();
         }
 
-        void CullingSystem::UnregisterCullable(Cullable& cullable)
+        void CullingScene::UnregisterCullable(Cullable& cullable)
         {
-            // [GFX TODO][ATOM-15036] Remove lock from CullingSystem visibility updates
-            m_mutex.lock();
-            AZ::Interface<AzFramework::IVisibilitySystem>::Get()->RemoveEntry(cullable.m_cullData.m_visibilityEntry);
-            m_mutex.unlock();
+            m_cullDataConcurrencyCheck.soft_lock();
+            m_visScene->RemoveEntry(cullable.m_cullData.m_visibilityEntry);
+            m_cullDataConcurrencyCheck.soft_unlock();
         }
 
-        uint32_t CullingSystem::GetNumCullables() const
+        uint32_t CullingScene::GetNumCullables() const
         {
-            return AZ::Interface<AzFramework::IVisibilitySystem>::Get()->GetEntryCount();
+            return m_visScene->GetEntryCount();
         }
 
         class AddObjectsToViewJob final
@@ -269,10 +267,10 @@ namespace AZ
             const Scene* m_scene;
             View* m_view;
             Frustum m_frustum;
-            CullingSystem::WorkListType m_worklist;
+            CullingScene::WorkListType m_worklist;
 
         public:
-            AddObjectsToViewJob(CullingDebugContext& debugCtx, const Scene& scene, View& view, Frustum& frustum, CullingSystem::WorkListType& worklist)
+            AddObjectsToViewJob(CullingDebugContext& debugCtx, const Scene& scene, View& view, Frustum& frustum, CullingScene::WorkListType& worklist)
                 : Job(true, nullptr)        //auto-deletes, no JobContext
                 , m_debugCtx(&debugCtx)
                 , m_scene(&scene)
@@ -292,7 +290,7 @@ namespace AZ
                 uint32_t numDrawPackets = 0;
                 uint32_t numVisibleCullables = 0;
 
-                for (const AzFramework::IVisibilitySystem::NodeData& nodeData : m_worklist)
+                for (const AzFramework::IVisibilityScene::NodeData& nodeData : m_worklist)
                 {
                     //If a node is entirely contained within the frustum, then we can skip the fine grained culling.
                     bool nodeIsContainedInFrustum = ShapeIntersection::Contains(m_frustum, nodeData.m_bounds);
@@ -415,9 +413,9 @@ namespace AZ
             }
         };
 
-        void CullingSystem::ProcessCullables(const Scene& scene, View& view, AZ::Job& parentJob)
+        void CullingScene::ProcessCullables(const Scene& scene, View& view, AZ::Job& parentJob)
         {
-            AZ_PROFILE_SCOPE_DYNAMIC(Debug::ProfileCategory::AzRender, "CullingSystem::ProcessCullables() - %s", view.GetName().GetCStr());
+            AZ_PROFILE_SCOPE_DYNAMIC(Debug::ProfileCategory::AzRender, "CullingScene::ProcessCullables() - %s", view.GetName().GetCStr());
 
             const Matrix4x4& worldToClip = view.GetWorldToClipMatrix();
             Frustum frustum = Frustum::CreateFromMatrixColumnMajor(worldToClip);
@@ -447,7 +445,7 @@ namespace AZ
             }
 
             WorkListType worklist;
-            auto nodeVisitorLambda = [this, &scene, &view, &parentJob, &frustum, &worklist](const AzFramework::IVisibilitySystem::NodeData& nodeData) -> void
+            auto nodeVisitorLambda = [this, &scene, &view, &parentJob, &frustum, &worklist](const AzFramework::IVisibilityScene::NodeData& nodeData) -> void
             {
                 AZ_PROFILE_SCOPE(Debug::ProfileCategory::AzRender, "nodeVisitorLambda()");
                 AZ_Assert(nodeData.m_entries.size() > 0, "should not get called with 0 entries");
@@ -469,11 +467,11 @@ namespace AZ
 
             if (m_debugCtx.m_enableFrustumCulling)
             {
-                AZ::Interface<AzFramework::IVisibilitySystem>::Get()->Enumerate(frustum, nodeVisitorLambda);
+                m_visScene->Enumerate(frustum, nodeVisitorLambda);                    
             }
             else
             {
-                AZ::Interface<AzFramework::IVisibilitySystem>::Get()->EnumerateNoCull(nodeVisitorLambda);
+                m_visScene->EnumerateNoCull(nodeVisitorLambda);
             }
 
             if (worklist.size() > 0)
@@ -534,23 +532,34 @@ namespace AZ
             return numVisibleDrawPackets;
         }
 
-        void CullingSystem::Activate(const Scene* parentScene)
+        void CullingScene::Activate(const Scene* parentScene)
         {
             m_parentScene = parentScene;
+
+            AZ_Assert(m_visScene == nullptr, "IVisibilityScene already created for this RPI::Scene");
+            char sceneIdBuf[40] = "";
+            m_parentScene->GetId().ToString(sceneIdBuf);
+            AZ::Name visSceneName(AZStd::string::format("RenderCullScene[%s]", sceneIdBuf));
+            m_visScene = AZ::Interface<AzFramework::IVisibilitySystem>::Get()->CreateVisibilityScene(visSceneName);
 
 #ifdef AZ_CULL_DEBUG_ENABLED
             AZ_Assert(CountObjectsInScene() == 0, "The culling system should start with 0 entries in this scene.");
 #endif
         }
 
-        void CullingSystem::Deactivate()
+        void CullingScene::Deactivate()
         {
 #ifdef AZ_CULL_DEBUG_ENABLED
             AZ_Assert(CountObjectsInScene() == 0, "All culling entries must be removed from the scene before shutdown.");
 #endif
+            if (m_visScene)
+            {
+                AZ::Interface<AzFramework::IVisibilitySystem>::Get()->DestroyVisibilityScene(m_visScene);
+                m_visScene = nullptr;
+            }
         }
 
-        void CullingSystem::BeginCulling(const AZStd::vector<ViewPtr>& views)
+        void CullingScene::BeginCulling(const AZStd::vector<ViewPtr>& views)
         {
             m_cullDataConcurrencyCheck.soft_lock();
 
@@ -591,16 +600,16 @@ namespace AZ
             }
         }
 
-        void CullingSystem::EndCulling()
+        void CullingScene::EndCulling()
         {            
             m_cullDataConcurrencyCheck.soft_unlock();
         }
 
-        size_t CullingSystem::CountObjectsInScene()
+        size_t CullingScene::CountObjectsInScene()
         {
             size_t numObjects = 0;
-            AZ::Interface<AzFramework::IVisibilitySystem>::Get()->EnumerateNoCull(
-                [this, &numObjects](const AzFramework::IVisibilitySystem::NodeData& nodeData)
+            m_visScene->EnumerateNoCull(
+                [this, &numObjects](const AzFramework::IVisibilityScene::NodeData& nodeData)
                 {
                     for (AzFramework::VisibilityEntry* visibleEntry : nodeData.m_entries)
                     {

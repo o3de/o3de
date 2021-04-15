@@ -331,8 +331,6 @@ namespace
         {
             return QColor(color);
         }
-
-        return QColor();
     }
 
     bool IsColorValid(const QString& value)

@@ -13,11 +13,11 @@
 /**
  * @file
  * Header file for event bus (EBus), a general-purpose communication system
- * that Lumberyard uses to dispatch notifications and receive requests.
+ * that Open 3D Engine uses to dispatch notifications and receive requests.
  * EBuses are configurable and support many different use cases.
  * For more information about %EBuses, see AZ::EBus in this guide and
  * [Event Bus](http://docs.aws.amazon.com/lumberyard/latest/developerguide/asset-pipeline-ebus.html)
- * in the *Lumberyard Developer Guide*.
+ * in the *Open 3D Engine Developer Guide*.
  */
 
 #pragma once
@@ -70,7 +70,7 @@ namespace AZ
      *
      * For more information about %EBuses, see EBus in this guide and
      * [Event Bus](http://docs.aws.amazon.com/lumberyard/latest/developerguide/asset-pipeline-ebus.html)
-     * in the *Lumberyard Developer Guide*.
+     * in the *Open 3D Engine Developer Guide*.
      */
     struct EBusTraits
     {
@@ -256,7 +256,7 @@ namespace AZ
 
     /**
      * Event buses (EBuses) are a general-purpose communication system
-     * that Lumberyard uses to dispatch notifications and receive requests.
+     * that Open 3D Engine uses to dispatch notifications and receive requests.
      *
      * @tparam Interface A class whose virtual functions define the events
      *                   dispatched or received by the %EBus.
@@ -268,7 +268,7 @@ namespace AZ
      * For more information about EBuses, see
      * [Event Bus](http://docs.aws.amazon.com/lumberyard/latest/developerguide/asset-pipeline-ebus.html)
      * and [Components and EBuses: Best Practices ](http://docs.aws.amazon.com/lumberyard/latest/developerguide/component-entity-system-pg-components-ebuses-best-practices.html)
-     * in the *Lumberyard Developer Guide*.
+     * in the *Open 3D Engine Developer Guide*.
      *
      * ## How Components Use EBuses
      * Components commonly use EBuses in two ways: to dispatch events or to handle requests.
