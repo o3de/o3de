@@ -21,6 +21,7 @@
 
 #include <QAction>
 #include <QActionEvent>
+#include <QApplication>
 #include <QHBoxLayout>
 #include <QIcon>
 #include <QLayout>
@@ -419,6 +420,14 @@ namespace AzQtComponents
         // a mouse move. The paint handler updates the close button's visibility
         setAttribute(Qt::WA_Hover);
         AzQtComponents::Style::addClass(this, g_emptyStyleClass);
+
+        QIcon icon = QIcon(QStringLiteral(":/Cursors/Grab release.svg"));
+        m_hoverCursor = QCursor(icon.pixmap(32), 10, 5);
+
+        icon = QIcon(QStringLiteral(":/Cursors/Grabbing.svg"));
+        m_dragCursor = QCursor(icon.pixmap(32), 10, 5);
+
+        this->setCursor(m_hoverCursor);                                  
     }
 
     void TabBar::setHandleOverflow(bool handleOverflow)
@@ -479,6 +488,13 @@ namespace AzQtComponents
 
     void TabBar::mouseReleaseEvent(QMouseEvent* mouseEvent)
     {
+        // Ensure we don't reset the cursor in the case of a dummy event being sent from DockTabWidget to trigger the animation.
+        Qt::MouseButtons realButtons = QApplication::mouseButtons();
+        if (QApplication::overrideCursor() && !(realButtons & Qt::LeftButton))
+        {
+            QApplication::restoreOverrideCursor();
+        }
+
         if (m_movingTab && !(mouseEvent->buttons() & Qt::LeftButton))
         {
             // When a moving tab is released, there is a short animation to put the moving tab
@@ -632,13 +648,7 @@ namespace AzQtComponents
                 {
                     QPoint p = tabRect(i).topLeft();
 
-                    int rightPadding = g_closeButtonPadding;
-                    if (m_overflowing == Overflowing)
-                    {
-                        rightPadding = 0;
-                    }
-
-                    p.setX(p.x() + tabRect(i).width() - rightPadding - g_closeButtonWidth);
+                    p.setX(p.x() + tabRect(i).width() - g_closeButtonPadding - g_closeButtonWidth);
                     p.setY(p.y() + 1 + (tabRect(i).height() - g_closeButtonWidth) / 2);
                     tabBtn->move(p);
                 }

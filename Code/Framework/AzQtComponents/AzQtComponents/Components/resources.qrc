@@ -636,5 +636,7 @@
 </qresource>
   <qresource prefix="/Cursors">
     <file alias="Pointer.svg">img/UI20/Cursors/Pointer.svg</file>
+    <file alias="Grab_release.svg">img/UI20/Cursors/Grab_release.svg</file>
+    <file alias="Grabbing.svg">img/UI20/Cursors/Grabbing.svg</file>
   </qresource>
 </RCC>

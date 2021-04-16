@@ -159,6 +159,8 @@ namespace AzQtComponents
         // Timer for updating our hovered drop zone opacity
         QObject::connect(m_dropZoneHoverFadeInTimer, &QTimer::timeout, this, &FancyDocking::onDropZoneHoverFadeInUpdate);
         m_dropZoneHoverFadeInTimer->setInterval(g_FancyDockingConstants.dropZoneHoverFadeUpdateIntervalMS);
+        QIcon dragIcon = QIcon(QStringLiteral(":/Cursors/Grabbing.svg"));
+        m_dragCursor = QCursor(dragIcon.pixmap(32), 10, 5);
     }
 
     FancyDocking::~FancyDocking()
@@ -1884,6 +1886,8 @@ namespace AzQtComponents
             return;
         }
 
+        QApplication::setOverrideCursor(m_dragCursor);
+
         QPoint relativePressPos = pressPos;
 
         // If we are dragging a floating window, we need to grab a reference to its
@@ -1997,6 +2001,11 @@ namespace AzQtComponents
             }
 
             clearDraggingState();
+        }
+
+        if (QApplication::overrideCursor())
+        {
+            QApplication::restoreOverrideCursor();
         }
 
         return true;
@@ -2376,6 +2385,11 @@ namespace AzQtComponents
      */
     void FancyDocking::dropDockWidget(QDockWidget* dock, QWidget* onto, Qt::DockWidgetArea area)
     {
+        if (QApplication::overrideCursor())
+        {
+            QApplication::restoreOverrideCursor();
+        }                                         
+
         // If the dock widget we are dropping is currently a tab, we need to retrieve it from
         // the tab widget, and remove it as a tab.  We also need to remove its item from our
         // cache of widget <-> tab container since we are moving it somewhere else.
