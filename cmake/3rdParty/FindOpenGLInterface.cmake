@@ -9,11 +9,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-find_package(OpenGL QUIET REQUIRED)
-# Imported targets (like OpenGL::GL) are scoped to a directory. Add a
-# a global scope
-add_library(3rdParty::OpenGLInterface INTERFACE IMPORTED GLOBAL)
-target_link_libraries(3rdParty::OpenGLInterface INTERFACE OpenGL::GL)
+find_package(OpenGL)
 
-set(pal_file ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME}/OpenGLInterface_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
-include(${pal_file})
+ly_add_external_target(
+    NAME OpenGLInterface
+    VERSION ""
+    BUILD_DEPENDENCIES
+        OpenGL::GL
+)

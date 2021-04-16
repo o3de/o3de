@@ -9,8 +9,5 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-target_compile_definitions(3rdParty::OpenGLInterface
-    INTERFACE
-        # MacOS 10.14 deprecates OpenGL. This silences the warnings for now.
-        GL_SILENCE_DEPRECATION
-)
+# MacOS 10.14 deprecates OpenGL. This silences the warnings for now.
+set(OPENGLINTERFACE_COMPILE_DEFINITIONS GL_SILENCE_DEPRECATION)
