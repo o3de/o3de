@@ -337,13 +337,15 @@ function(ly_add_editor_python_test)
         message(FATAL_ERROR "Must supply a value for TEST_SUITE")
     endif()
 
+    file(REAL_PATH ${ly_add_editor_python_test_TEST_PROJECT} project_real_path BASE_DIRECTORY ${LY_ROOT_FOLDER})
+
     # Run test via the run_epbtest.cmake script.
     # Parameters used are explained in run_epbtest.cmake.
     ly_add_test(
         NAME ${ly_add_editor_python_test_NAME}
         TEST_REQUIRES ${ly_add_editor_python_test_TEST_REQUIRES}
         TEST_COMMAND ${CMAKE_COMMAND}
-            -DCMD_ARG_TEST_PROJECT=${ly_add_editor_python_test_TEST_PROJECT} 
+            -DCMD_ARG_TEST_PROJECT=${project_real_path} 
             -DCMD_ARG_EDITOR=$<TARGET_FILE:Legacy::Editor> 
             -DCMD_ARG_PYTHON_SCRIPT=${ly_add_editor_python_test_PATH}
             -DPLATFORM=${PAL_PLATFORM_NAME}
