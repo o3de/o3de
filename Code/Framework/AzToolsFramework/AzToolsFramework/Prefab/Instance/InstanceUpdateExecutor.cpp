@@ -123,6 +123,15 @@ namespace AzToolsFramework
                             }
                         }
 
+                        auto findInstancesResult = m_templateInstanceMapperInterface->FindInstancesOwnedByTemplate(instanceTemplateId)->get();
+
+                        if (findInstancesResult.find(instanceToUpdate) == findInstancesResult.end())
+                        {
+                            isUpdateSuccessful = false;
+                            m_instancesUpdateQueue.pop();
+                            continue;
+                        }
+
                         Template& currentTemplate = currentTemplateReference->get();
                         Instance::EntityList newEntities;
                         if (PrefabDomUtils::LoadInstanceFromPrefabDom(*instanceToUpdate, newEntities, currentTemplate.GetPrefabDom()))
@@ -172,51 +181,6 @@ namespace AzToolsFramework
             }
 
             return isUpdateSuccessful;
-        }
-
-        Instance* InstanceUpdateExecutor::UniqueInstanceQueue::front()
-        {
-            return m_instancesQueue.front();
-        }
-
-        void InstanceUpdateExecutor::UniqueInstanceQueue::pop()
-        {
-            m_instancesSet.erase(m_instancesQueue.front());
-            m_instancesQueue.pop();
-        }
-
-        void InstanceUpdateExecutor::UniqueInstanceQueue::emplace(Instance* instance)
-        {
-            Instance* ancestorInstance = instance;
-
-            while (ancestorInstance != nullptr)
-            {
-                if (m_instancesSet.contains(ancestorInstance))
-                {
-                    return;
-                }
-
-                auto parent = ancestorInstance->GetParentInstance();
-                if (parent.has_value())
-                {
-                    ancestorInstance = &(parent->get());
-                }
-                else
-                {
-                    ancestorInstance = nullptr;
-                }
-            }
-
-            // TODO - remove child instances too?
-            // Optimization.
-
-            m_instancesQueue.emplace(instance);
-            m_instancesSet.emplace(instance);
-        }
-
-        size_t InstanceUpdateExecutor::UniqueInstanceQueue::size()
-        {
-            return m_instancesQueue.size();
         }
     }
 }

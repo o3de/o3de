@@ -334,7 +334,7 @@ namespace AzToolsFramework
             // Create Undo node on entities if they belong to an instance
             InstanceOptionalReference instanceOptionalReference = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
 
-            if (instanceOptionalReference.has_value() && !IsInstanceContainerEntity(entityId))
+            if (instanceOptionalReference.has_value())
             {
                 PrefabDom afterState;
                 AZ::Entity* entity = GetEntityById(entityId);

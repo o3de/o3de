@@ -144,7 +144,6 @@ namespace AzToolsFramework
 
         void PrefabSystemComponent::PropagateTemplateChanges(TemplateId templateId)
         {
-            UpdatePrefabInstances(templateId);
             auto templateIdToLinkIdsIterator = m_templateToLinkIdsMap.find(templateId);
             if (templateIdToLinkIdsIterator != m_templateToLinkIdsMap.end())
             {
@@ -154,6 +153,10 @@ namespace AzToolsFramework
                 linkIdsToUpdateQueue.push(LinkIds(templateIdToLinkIdsIterator->second.begin(),
                     templateIdToLinkIdsIterator->second.end()));
                 UpdateLinkedInstances(linkIdsToUpdateQueue);
+            }
+            else
+            {
+                UpdatePrefabInstances(templateId);
             }
         }
 
