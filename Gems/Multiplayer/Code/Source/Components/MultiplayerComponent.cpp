@@ -43,8 +43,12 @@ namespace Multiplayer
 
     NetEntityId MultiplayerComponent::GetNetEntityId() const
     {
-        const NetBindComponent* netBindComponent = GetNetBindComponent();
-        return netBindComponent ? netBindComponent->GetNetEntityId() : InvalidNetEntityId;
+        return m_netBindComponent ? m_netBindComponent->GetNetEntityId() : InvalidNetEntityId;
+    }
+
+    NetEntityRole MultiplayerComponent::GetNetEntityRole() const
+    {
+        return m_netBindComponent ? m_netBindComponent->GetNetEntityRole() : NetEntityRole::InvalidRole;
     }
 
     ConstNetworkEntityHandle MultiplayerComponent::GetEntityHandle() const
