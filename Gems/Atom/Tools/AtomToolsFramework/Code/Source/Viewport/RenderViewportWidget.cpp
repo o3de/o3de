@@ -186,7 +186,7 @@ namespace AtomToolsFramework
             }
             else
             {
-                // Not an event we should listen to, abort
+                // Not an event we should listen to, abort.
                 return false;
             }
         }
