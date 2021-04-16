@@ -146,15 +146,8 @@ namespace AzToolsFramework
                                                      "(A null instance is returned)."));
                 }
 
-                PrefabDom commonRootInstanceDomAfterCreate;
-                m_instanceToTemplateInterface->GenerateDomForInstance(
-                    commonRootInstanceDomAfterCreate, commonRootEntityOwningInstance->get());
-
-                auto commonRootInstanceUndoNode = aznew PrefabUndoInstance("Undo Instance Node");
-                commonRootInstanceUndoNode->Capture(
-                    commonRootInstanceDomBeforeCreate, commonRootInstanceDomAfterCreate, commonRootOwningTemplateId);
-                commonRootInstanceUndoNode->SetParent(undoBatch.GetUndoBatch());
-                commonRootInstanceUndoNode->Redo();
+                PrefabUndoHelpers::UpdatePrefabInstance(
+                    commonRootEntityOwningInstance->get(), "Undo detaching entity", commonRootInstanceDomBeforeCreate, undoBatch.GetUndoBatch());
 
                 linkRemoveUndo->Redo();
 
@@ -208,22 +201,17 @@ namespace AzToolsFramework
                     undoBatch.MarkEntityDirty(topLevelEntity->GetId());
                     AZ::TransformBus::Event(topLevelEntity->GetId(), &AZ::TransformBus::Events::SetParent, containerEntityId);
                 }
-
-                /*
+                
                 // Select Container Entity
                 {
                     auto selectionUndo = aznew SelectionCommand({containerEntityId}, "Select Prefab Container Entity");
                     selectionUndo->SetParent(undoBatch.GetUndoBatch());
-
                     ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequestBus::Events::RunRedoSeparately, selectionUndo);
-                }*/
+                }
             }
 
             // Save Template to file
             m_prefabLoaderInterface->SaveTemplate(instance->get().GetTemplateId());
-
-            // This function does not support undo/redo yet, so clear the undo stack to prevent issues.
-            //AzToolsFramework::ToolsApplicationRequestBus::Broadcast(&AzToolsFramework::ToolsApplicationRequestBus::Events::FlushUndo);
             
             return AZ::Success();
         }
