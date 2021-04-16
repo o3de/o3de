@@ -82,17 +82,15 @@ def IsPullRequest(branchName) {
 }
 
 def IsJobEnabled(branchName, buildTypeMap, pipelineName, platformName) {
-    def job_list_override = params.JOB_LIST_OVERRIDE.tokenize(',')
-    if (!IsPullRequest(branchName) && !job_list_override.isEmpty()) {
+    if (IsPullRequest(branchName)) {
+        return buildTypeMap.value.TAGS && buildTypeMap.value.TAGS.contains(pipelineName)
+    }
+    def job_list_override = params.JOB_LIST_OVERRIDE ? params.JOB_LIST_OVERRIDE.tokenize(',') : ''
+    if (!job_list_override.isEmpty()) {
         return params[platformName] && job_list_override.contains(buildTypeMap.key);
     } else {
-        if (params[platformName]) {
-            if(buildTypeMap.value.TAGS) {
-                return buildTypeMap.value.TAGS.contains(pipelineName)
-            }
-        }
+        return params[platformName] && buildTypeMap.value.TAGS && buildTypeMap.value.TAGS.contains(pipelineName)
     }
-    return false
 }
 
 def GetRunningPipelineName(JENKINS_JOB_NAME) {
