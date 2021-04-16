@@ -155,7 +155,7 @@ public:
     }
 
     static void Reflect(AZ::ReflectContext* context);
-    
+
 private:
     void ComputeTimeRange();
     void CopyNodeChildren(XmlNodeRef& xmlNode, IAnimNode* pAnimNode);
