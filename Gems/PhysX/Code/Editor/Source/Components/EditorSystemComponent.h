@@ -30,6 +30,7 @@ namespace PhysX
         : public AZ::Component
         , public Physics::EditorWorldBus::Handler
         , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
+        , private AzToolsFramework::EditorEvents::Bus::Handler
     {
     public:
         AZ_COMPONENT(EditorSystemComponent, "{560F08DC-94F5-4D29-9AD4-CDFB3B57C654}");
@@ -59,6 +60,10 @@ namespace PhysX
         // AzToolsFramework::EditorEntityContextNotificationBus
         void OnStartPlayInEditorBegin() override;
         void OnStopPlayInEditor() override;
+
+        // AztoolsFramework::EditorEvents::Bus::Handler
+        void PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, int flags) override;
+        void NotifyRegisterViews() override;
 
         AZ::Data::AssetId GenerateSurfaceTypesLibrary();
 
