@@ -421,7 +421,7 @@ namespace AzQtComponents
         setAttribute(Qt::WA_Hover);
         AzQtComponents::Style::addClass(this, g_emptyStyleClass);
 
-        QIcon icon = QIcon(QStringLiteral(":/Cursors/Grab release.svg"));
+        QIcon icon = QIcon(QStringLiteral(":/Cursors/Grab_release.svg"));
         m_hoverCursor = QCursor(icon.pixmap(32), 10, 5);
 
         icon = QIcon(QStringLiteral(":/Cursors/Grabbing.svg"));
