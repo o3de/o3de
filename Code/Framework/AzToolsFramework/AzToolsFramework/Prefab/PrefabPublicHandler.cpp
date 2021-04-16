@@ -27,6 +27,7 @@
 #include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/PrefabUndo.h>
+#include <AzToolsFramework/Prefab/PrefabUndoHelpers.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 
 namespace AzToolsFramework
@@ -57,7 +58,7 @@ namespace AzToolsFramework
             m_prefabUndoCache.Destroy();
         }
 
-        PrefabOperationResult PrefabPublicHandler::CreatePrefab(const AZStd::vector<AZ::EntityId>& entityIds, AZStd::string_view filePath)
+        PrefabOperationResult PrefabPublicHandler::CreatePrefab(const AZStd::vector<AZ::EntityId>& entityIds, AZ::IO::PathView filePath)
         {
             // Retrieve entityList from entityIds
             EntityList inputEntityList;
@@ -247,23 +248,8 @@ namespace AzToolsFramework
 
             ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, selection);
 
-            PrefabDom instanceDomAfterUpdate;
-            m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomAfterUpdate, entityOwningInstance);
-
-            // Generate the patch comparing the instance before and after the entity addition.
-            PrefabDom patch;
-            if (!m_instanceToTemplateInterface->GeneratePatch(patch, instanceDomBeforeUpdate, instanceDomAfterUpdate))
-            {
-                return AZ::Failure(AZStd::string::format(
-                    "A valid patch couldn't be created for adding an entity with id '%llu'", static_cast<AZ::u64>(entityId)));
-            }
-
-            // create undo node
-            PrefabUndoInstance* state = aznew PrefabUndoInstance(AZStd::string::format("%llu", static_cast<AZ::u64>(entityId)));
-            state->Capture(instanceDomBeforeUpdate, instanceDomAfterUpdate, entityOwningInstance.GetTemplateId());
-            state->SetParent(undoBatch.GetUndoBatch());
-
-            state->Redo();
+            PrefabUndoHelpers::UpdatePrefabInstance(
+                entityOwningInstance, "Undo adding entity", instanceDomBeforeUpdate, undoBatch.GetUndoBatch());
 
             return AZ::Success(entityId);
         }
@@ -643,14 +629,17 @@ namespace AzToolsFramework
         }
 
         bool PrefabPublicHandler::RetrieveAndSortPrefabEntitiesAndInstances(
-            const EntityList& inputEntities, const Instance& commonRootEntityOwningInstance,
+            const EntityList& inputEntities, Instance& commonRootEntityOwningInstance,
             EntityList& outEntities, AZStd::vector<AZStd::unique_ptr<Instance>>& outInstances) const
         {
             AZStd::queue<AZ::Entity*> entityQueue;
 
             for (auto inputEntity : inputEntities)
             {
-                entityQueue.push(inputEntity);
+                if (inputEntity && !IsLevelInstanceContainerEntity(inputEntity->GetId()))
+                {
+                    entityQueue.push(inputEntity);
+                }
             }
 
             // Support sets to easily identify if we're processing the same entity multiple times.
@@ -664,17 +653,19 @@ namespace AzToolsFramework
 
                 // Get this entity's owning instance.
                 InstanceOptionalReference owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(entity->GetId());
-                AZ_Assert(owningInstance.has_value(), "An error occored while retrieving entities and prefab instances : "
-                    "Owning instance of entity with id '%llu' couldn't be found", entity->GetId());
+                AZ_Assert(
+                    owningInstance.has_value(),
+                    "An error occored while retrieving entities and prefab instances : "
+                    "Owning instance of entity with id '%llu' couldn't be found",
+                    entity->GetId());
 
                 // Check if this entity is owned by the same instance owning the root.
                 if (&owningInstance->get() == &commonRootEntityOwningInstance)
                 {
-                    AZStd::unique_ptr<AZ::Entity> detachedEntity = owningInstance->get().DetachEntity(entity->GetId());
                     // If it's the same instance, we can add this entity to the new instance entities.
                     int priorEntitiesSize = entities.size();
                     
-                    entities.insert(detachedEntity.release());
+                    entities.insert(entity);
 
                     // If the size of entities increased, then it wasn't added before.
                     // In that case, add the children of this entity to the queue.
@@ -714,20 +705,18 @@ namespace AzToolsFramework
 
             // Store results
             outEntities.clear();
-            outEntities.resize(entities.size());
-            AZStd::copy(entities.begin(), entities.end(), outEntities.begin());
+            outEntities.reserve(entities.size());
+
+            for (AZ::Entity* entity : entities)
+            {
+                outEntities.emplace_back(commonRootEntityOwningInstance.DetachEntity(entity->GetId()).release());
+            }
 
             outInstances.clear();
             outInstances.reserve(instances.size());
             for (Instance* instancePtr : instances)
             {
-                auto parentInstance = instancePtr->GetParentInstance();
-
-                if (parentInstance.has_value())
-                {
-                    auto uniquePtr = parentInstance->get().DetachNestedInstance(instancePtr->GetInstanceAlias());
-                    outInstances.push_back(AZStd::move(uniquePtr));
-                }
+                outInstances.push_back(AZStd::move(commonRootEntityOwningInstance.DetachNestedInstance(instancePtr->GetInstanceAlias())));
             }
 
             return true;
@@ -745,8 +734,20 @@ namespace AzToolsFramework
             for (AZ::EntityId entityId : entityIds)
             {
                 InstanceOptionalReference owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
-                // If this is the container entity, it actually represents the instance so get its owner
-                if (owningInstance->get().GetContainerEntityId() == entityId)
+
+                if (!owningInstance.has_value())
+                {
+                    AZ_Assert(
+                        false,
+                        "An error occored in function EntitiesBelongToSameInstance: "
+                        "Owning instance of entity with id '%llu' couldn't be found",
+                        entityId);
+                    return false;
+                }
+
+                // If this is a container entity, it actually represents a child instance so get its owner.
+                // The only exception in the level root instance. We leave it as is to streamline operations.
+                if (owningInstance->get().GetContainerEntityId() == entityId && !IsLevelInstanceContainerEntity(entityId))
                 {
                     owningInstance = owningInstance->get().GetParentInstance();
                 }

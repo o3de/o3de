@@ -101,12 +101,12 @@ namespace AZ
             // To avoid the warning:
             //    "No job was found to match the job dependency criteria declared by file "..."
             // We will schedule the job, but will do nothing 
-            bool shouldSkipFile = false;
+            //bool shouldSkipFile = false;
 
             // We treat some issues as warnings and return "Success" from CreateJobs allows us to report the dependency.
             // If/when a valid dependency file appears, that will trigger the ShaderVariantAssetBuilder to run again.
             // Since CreateJobs will pass, we forward this message to ProcessJob which will report it as an error.
-            bool gotPreprocessingError = false;
+            //bool gotPreprocessingError = false;
 
 
             // The following if-block will be removed once [GFX TODO][ATOM-5302] is addressed, and

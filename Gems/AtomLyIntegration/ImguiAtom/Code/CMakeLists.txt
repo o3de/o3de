@@ -17,8 +17,6 @@ ly_add_target(
     INCLUDE_DIRECTORIES
         PRIVATE
             Source
-        PUBLIC
-            Include
     BUILD_DEPENDENCIES
         PUBLIC
             AZ::AtomCore
@@ -35,8 +33,6 @@ ly_add_target(
     INCLUDE_DIRECTORIES
         PRIVATE
             Source
-        PUBLIC
-            Include
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzFramework

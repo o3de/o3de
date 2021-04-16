@@ -81,7 +81,6 @@ namespace AZ
             lodIndexCount = 0;
             lodVertexCount = 0;
 
-            uint32_t subMeshIndexOffset = 0;
             const Data::Asset<RPI::ModelLodAsset>& lodAsset = actor->GetMeshAsset()->GetLodAssets()[lodIndex];
             const AZStd::array_view<RPI::ModelLodAsset::Mesh> modelMeshes = lodAsset->GetMeshes();
             for (const RPI::ModelLodAsset::Mesh& modelMesh : modelMeshes)
@@ -212,41 +211,44 @@ namespace AZ
             const uint32_t* sourceOriginalVertex = static_cast<uint32_t*>(mesh->FindOriginalVertexData(EMotionFX::Mesh::ATTRIB_ORGVTXNUMBERS));
             const uint32_t vertexCount = subMesh->GetNumVertices();
             const uint32_t vertexStart = subMesh->GetStartVertex();
-            for (uint32_t vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
+            if (sourceSkinningInfo)
             {
-                const uint32_t originalVertex = sourceOriginalVertex[vertexIndex + vertexStart];
-                const uint32_t influenceCount = AZStd::GetMin<uint32_t>(MaxSupportedSkinInfluences, sourceSkinningInfo->GetNumInfluences(originalVertex));
-                uint32_t influenceIndex = 0;
-                float weightError = 1.0f;
-
-                AZStd::vector<uint32_t> localIndices;
-                for (; influenceIndex < influenceCount; ++influenceIndex)
+                for (uint32_t vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
                 {
-                    EMotionFX::SkinInfluence* influence = sourceSkinningInfo->GetInfluence(originalVertex, influenceIndex);
-                    localIndices.push_back(static_cast<uint32_t>(influence->GetNodeNr()));
-                    blendWeightBufferData[atomVertexBufferOffset + vertexIndex][influenceIndex] = influence->GetWeight();
-                    weightError -= blendWeightBufferData[atomVertexBufferOffset + vertexIndex][influenceIndex];
-                }
+                    const uint32_t originalVertex = sourceOriginalVertex[vertexIndex + vertexStart];
+                    const uint32_t influenceCount = AZStd::GetMin<uint32_t>(MaxSupportedSkinInfluences, sourceSkinningInfo->GetNumInfluences(originalVertex));
+                    uint32_t influenceIndex = 0;
+                    float weightError = 1.0f;
 
-                // Zero out any unused ids/weights
-                for (; influenceIndex < MaxSupportedSkinInfluences; ++influenceIndex)
-                {
-                    localIndices.push_back(0);
-                    blendWeightBufferData[atomVertexBufferOffset + vertexIndex][influenceIndex] = 0.0f;
-                }
-
-                // Now that we have the 16-bit indices, pack them into 32-bit uints
-                for (size_t i = 0; i < localIndices.size(); ++i)
-                {
-                    if (i % 2 == 0)
+                    AZStd::vector<uint32_t> localIndices;
+                    for (; influenceIndex < influenceCount; ++influenceIndex)
                     {
-                        // Put the first/even ids in the most significant bits
-                        blendIndexBufferData[atomVertexBufferOffset + vertexIndex][i/2] = localIndices[i] << 16;
+                        EMotionFX::SkinInfluence* influence = sourceSkinningInfo->GetInfluence(originalVertex, influenceIndex);
+                        localIndices.push_back(static_cast<uint32_t>(influence->GetNodeNr()));
+                        blendWeightBufferData[atomVertexBufferOffset + vertexIndex][influenceIndex] = influence->GetWeight();
+                        weightError -= blendWeightBufferData[atomVertexBufferOffset + vertexIndex][influenceIndex];
                     }
-                    else
+
+                    // Zero out any unused ids/weights
+                    for (; influenceIndex < MaxSupportedSkinInfluences; ++influenceIndex)
                     {
-                        // Put the next/odd ids in the least significant bits
-                        blendIndexBufferData[atomVertexBufferOffset + vertexIndex][i / 2] |= localIndices[i];
+                        localIndices.push_back(0);
+                        blendWeightBufferData[atomVertexBufferOffset + vertexIndex][influenceIndex] = 0.0f;
+                    }
+
+                    // Now that we have the 16-bit indices, pack them into 32-bit uints
+                    for (size_t i = 0; i < localIndices.size(); ++i)
+                    {
+                        if (i % 2 == 0)
+                        {
+                            // Put the first/even ids in the most significant bits
+                            blendIndexBufferData[atomVertexBufferOffset + vertexIndex][i / 2] = localIndices[i] << 16;
+                        }
+                        else
+                        {
+                            // Put the next/odd ids in the least significant bits
+                            blendIndexBufferData[atomVertexBufferOffset + vertexIndex][i / 2] |= localIndices[i];
+                        }
                     }
                 }
             }
@@ -269,7 +271,9 @@ namespace AZ
             // Static triangles are the ones that all its vertices won't move during simulation and
             // therefore its weights won't be altered so they are controlled by GPU.
             // This additional simplification has been disabled in ClothComponentMesh.cpp for now.
-            if (hasClothData)
+
+            // If there is no skinning info, default to 0 weights and display an error
+            if (hasClothData || !sourceSkinningInfo)
             {
                 for (uint32_t vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
                 {
@@ -395,7 +399,6 @@ namespace AZ
                 uvBufferData.resize_no_construct(lodVertexCount);
 
                 // Now iterate over the actual data and populate the data for the per-actor buffers
-                size_t lodVertexStart = 0;
                 size_t indexBufferOffset = 0;
                 size_t vertexBufferOffset = 0;
                 size_t skinnedMeshSubmeshIndex = 0;
@@ -410,7 +413,6 @@ namespace AZ
                     // Each of these is one long buffer containing the data for all sub-meshes in the joint
                     const AZ::Vector3* sourcePositions = static_cast<const AZ::Vector3*>(mesh->FindOriginalVertexData(EMotionFX::Mesh::ATTRIB_POSITIONS));
                     const AZ::Vector3* sourceNormals = static_cast<const AZ::Vector3*>(mesh->FindOriginalVertexData(EMotionFX::Mesh::ATTRIB_NORMALS));
-                    const uint32_t* sourceOriginalVertex = static_cast<const uint32_t*>(mesh->FindOriginalVertexData(EMotionFX::Mesh::ATTRIB_ORGVTXNUMBERS));
                     const AZ::Vector4* sourceTangents = static_cast<const AZ::Vector4*>(mesh->FindOriginalVertexData(EMotionFX::Mesh::ATTRIB_TANGENTS));
                     const AZ::Vector3* sourceBitangents = static_cast<const AZ::Vector3*>(mesh->FindOriginalVertexData(EMotionFX::Mesh::ATTRIB_BITANGENTS));
                     const AZ::Vector2* sourceUVs = static_cast<const AZ::Vector2*>(mesh->FindOriginalVertexData(EMotionFX::Mesh::ATTRIB_UVCOORDS, 0));
@@ -474,47 +476,72 @@ namespace AZ
                     }   // for all submeshes
                 } // for all meshes
 
-                // Now that the data has been prepped, create the actual buffers
+                // Now that the data has been prepped, set the actual buffers
+                skinnedMeshLod.SetModelLodAsset(modelLodAsset);
 
-                // Create read-only buffers and views for input buffers that are shared across all instances
+                // Set read-only buffers and views for input buffers that are shared across all instances
                 AZStd::string lodString = AZStd::string::format("_Lod%zu", lodIndex);
                 skinnedMeshLod.SetSkinningInputBufferAsset(mesh0.GetSemanticBufferAssetView(Name{ "POSITION" })->GetBufferAsset(), SkinnedMeshInputVertexStreams::Position);
                 skinnedMeshLod.SetSkinningInputBufferAsset(mesh0.GetSemanticBufferAssetView(Name{ "NORMAL" })->GetBufferAsset(), SkinnedMeshInputVertexStreams::Normal);
                 skinnedMeshLod.SetSkinningInputBufferAsset(mesh0.GetSemanticBufferAssetView(Name{ "TANGENT" })->GetBufferAsset(), SkinnedMeshInputVertexStreams::Tangent);
                 skinnedMeshLod.SetSkinningInputBufferAsset(mesh0.GetSemanticBufferAssetView(Name{ "BITANGENT" })->GetBufferAsset(), SkinnedMeshInputVertexStreams::BiTangent);
-                
-                Data::Asset<RPI::BufferAsset> jointIndicesBufferAsset = mesh0.GetSemanticBufferAssetView(Name{ "SKIN_JOINTINDICES" })->GetBufferAsset();
-                skinnedMeshLod.SetSkinningInputBufferAsset(jointIndicesBufferAsset, SkinnedMeshInputVertexStreams::BlendIndices);
-                Data::Asset<RPI::BufferAsset> skinWeightsBufferAsset = mesh0.GetSemanticBufferAssetView(Name{ "SKIN_WEIGHTS" })->GetBufferAsset();
-                skinnedMeshLod.SetSkinningInputBufferAsset(skinWeightsBufferAsset, SkinnedMeshInputVertexStreams::BlendWeights);
 
-                // We're using the indices/weights buffers directly from the model.
-                // However, EMFX has done some re-mapping of the id's, so we need to update the GPU buffer for it to have the correct data.
-                size_t remappedJointIndexBufferSizeInBytes = blendIndexBufferData.size() * sizeof(blendIndexBufferData[0]);
-                size_t remappedSkinWeightsBufferSizeInBytes = blendWeightBufferData.size() * sizeof(blendWeightBufferData[0]);
+                if (!mesh0.GetSemanticBufferAssetView(Name{ "SKIN_JOINTINDICES" }) || !mesh0.GetSemanticBufferAssetView(Name{ "SKIN_WEIGHTS" }))
+                {
+                    AZ_Error("ProcessSkinInfluences", false, "Actor '%s' lod '%zu' has no skin influences, and will be stuck in bind pose.", fullFileName.c_str(), lodIndex);
+                }
+                else
+                {
+                    Data::Asset<RPI::BufferAsset> jointIndicesBufferAsset = mesh0.GetSemanticBufferAssetView(Name{ "SKIN_JOINTINDICES" })->GetBufferAsset();
+                    skinnedMeshLod.SetSkinningInputBufferAsset(jointIndicesBufferAsset, SkinnedMeshInputVertexStreams::BlendIndices);
+                    Data::Asset<RPI::BufferAsset> skinWeightsBufferAsset = mesh0.GetSemanticBufferAssetView(Name{ "SKIN_WEIGHTS" })->GetBufferAsset();
+                    skinnedMeshLod.SetSkinningInputBufferAsset(skinWeightsBufferAsset, SkinnedMeshInputVertexStreams::BlendWeights);
 
-                AZ_Assert(jointIndicesBufferAsset->GetBufferDescriptor().m_byteCount == remappedJointIndexBufferSizeInBytes, "Joint indices data from EMotionFX is not the same size as the buffer from the model in '%s', lod '%d'", fullFileName.c_str(), lodIndex);
-                AZ_Assert(skinWeightsBufferAsset->GetBufferDescriptor().m_byteCount == remappedSkinWeightsBufferSizeInBytes, "Skin weights data from EMotionFX is not the same size as the buffer from the model in '%s', lod '%d'", fullFileName.c_str(), lodIndex);
+                    // We're using the indices/weights buffers directly from the model.
+                    // However, EMFX has done some re-mapping of the id's, so we need to update the GPU buffer for it to have the correct data.
+                    size_t remappedJointIndexBufferSizeInBytes = blendIndexBufferData.size() * sizeof(blendIndexBufferData[0]);
+                    size_t remappedSkinWeightsBufferSizeInBytes = blendWeightBufferData.size() * sizeof(blendWeightBufferData[0]);
 
-                Data::Instance<RPI::Buffer> jointIndicesBuffer = RPI::Buffer::FindOrCreate(jointIndicesBufferAsset);
-                jointIndicesBuffer->UpdateData(blendIndexBufferData.data(), remappedJointIndexBufferSizeInBytes);
-                Data::Instance<RPI::Buffer> skinWeightsBuffer = RPI::Buffer::FindOrCreate(skinWeightsBufferAsset);
-                skinWeightsBuffer->UpdateData(blendWeightBufferData.data(), remappedSkinWeightsBufferSizeInBytes);
-                
+                    AZ_Assert(jointIndicesBufferAsset->GetBufferDescriptor().m_byteCount == remappedJointIndexBufferSizeInBytes, "Joint indices data from EMotionFX is not the same size as the buffer from the model in '%s', lod '%d'", fullFileName.c_str(), lodIndex);
+                    AZ_Assert(skinWeightsBufferAsset->GetBufferDescriptor().m_byteCount == remappedSkinWeightsBufferSizeInBytes, "Skin weights data from EMotionFX is not the same size as the buffer from the model in '%s', lod '%d'", fullFileName.c_str(), lodIndex);
+
+                    Data::Instance<RPI::Buffer> jointIndicesBuffer = RPI::Buffer::FindOrCreate(jointIndicesBufferAsset);
+                    jointIndicesBuffer->UpdateData(blendIndexBufferData.data(), remappedJointIndexBufferSizeInBytes);
+                    Data::Instance<RPI::Buffer> skinWeightsBuffer = RPI::Buffer::FindOrCreate(skinWeightsBufferAsset);
+                    skinWeightsBuffer->UpdateData(blendWeightBufferData.data(), remappedSkinWeightsBufferSizeInBytes);
+                }
 
                 // Create read-only input assembly buffers that are not modified during skinning and shared across all instances
-                skinnedMeshLod.SetIndexBuffer(mesh0.GetIndexBufferAssetView().GetBufferAsset());
-                skinnedMeshLod.CreateStaticBuffer(uvBufferData.data(), SkinnedMeshStaticVertexStreams::UV_0, fullFileName + lodString + "_SkinnedMeshStaticUVs");
-
-                // Set the data that needs to be tracked on a per-sub-mesh basis
-                // and create the common, shared sub-mesh buffer views
-                skinnedMeshLod.SetSubMeshProperties(subMeshes);
+                skinnedMeshLod.SetIndexBufferAsset(mesh0.GetIndexBufferAssetView().GetBufferAsset());
+                skinnedMeshLod.SetStaticBufferAsset(mesh0.GetSemanticBufferAssetView(Name{ "UV" })->GetBufferAsset(), SkinnedMeshStaticVertexStreams::UV_0);
 
                 const RPI::BufferAssetView* morphBufferAssetView = mesh0.GetSemanticBufferAssetView(Name{ "MORPHTARGET_VERTEXDELTAS" });
                 if (morphBufferAssetView)
                 {
                     ProcessMorphsForLod(actor, morphBufferAssetView->GetBufferAsset(), lodIndex, fullFileName, skinnedMeshLod);
                 }
+
+                // Set colors after morphs are set, so that we know whether or not they are dynamic (if they exist)
+                const RPI::BufferAssetView* colorView = mesh0.GetSemanticBufferAssetView(Name{ "COLOR" });
+                if (colorView)
+                {
+                    if (skinnedMeshLod.HasDynamicColors())
+                    {
+                        // If colors are being morphed,
+                        // add them as input to the skinning compute shader, which will apply the morph
+                        skinnedMeshLod.SetSkinningInputBufferAsset(colorView->GetBufferAsset(), SkinnedMeshInputVertexStreams::Color);
+                    }
+                    else
+                    {
+                        // If colors exist but are not modified dynamically,
+                        // add them to the static streams that are shared by all instances of the same skinned mesh
+                        skinnedMeshLod.SetStaticBufferAsset(colorView->GetBufferAsset(), SkinnedMeshStaticVertexStreams::Color);
+                    }
+                }
+
+                // Set the data that needs to be tracked on a per-sub-mesh basis
+                // and create the common, shared sub-mesh buffer views
+                skinnedMeshLod.SetSubMeshProperties(subMeshes);
 
                 skinnedMeshInputBuffers->SetLod(lodIndex, skinnedMeshLod);
 

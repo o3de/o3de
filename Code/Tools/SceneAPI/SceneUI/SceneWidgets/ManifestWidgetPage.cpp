@@ -178,7 +178,8 @@ namespace AZ
             {
                 if (node)
                 {
-                    while (node = node->GetParent())
+                    node = node->GetParent();
+                    while (node)
                     {
                         if (const AZ::SerializeContext::ClassData* classData = node->GetClassMetadata(); classData && classData->m_azRtti)
                         {
@@ -193,6 +194,7 @@ namespace AZ
                                 break;
                             }
                         }
+                        node = node->GetParent();
                     }
                 }
             }

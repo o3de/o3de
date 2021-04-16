@@ -148,8 +148,17 @@ int CStatObj::SetDeformationMorphTarget(IStatObj* pDeformed)
     {
         ((CStatObj*)pDeformed)->MakeRenderMesh();
     }
-    if (!(pMeshA = GetRenderMesh()) || !(pMeshB = pDeformed->GetRenderMesh()) ||
-        !(pFaceToFace0A = m_pMapFaceToFace0) || !(pFaceToFace0B = ((CStatObj*)pDeformed)->m_pMapFaceToFace0))
+    if (!(pMeshA = GetRenderMesh()) || !(pMeshB = pDeformed->GetRenderMesh()))
+    {
+        return 0;
+    }
+    pFaceToFace0A = m_pMapFaceToFace0;
+    if (!pFaceToFace0A)
+    {
+        return 0;
+    }
+    pFaceToFace0B = ((CStatObj*)pDeformed)->m_pMapFaceToFace0;
+    if (!pFaceToFace0B)
     {
         return 0;
     }
@@ -1088,11 +1097,20 @@ int CStatObj::PhysicalizeSubobjects(IPhysicalEntity* pent, const Matrix34* pMtx,
     for (i = 0; i < nObj; i++)
     {
         if ((pSubObj = GetSubObject(i))->nType == STATIC_SUB_OBJECT_MESH && pSubObj->pStatObj && pSubObj->pStatObj->GetPhysGeom() &&
-            pSubObj->bHidden &&
-            (!strncmp(pSubObj->name, "childof_", 8) && (pSubObj1 = FindSubObject((const char*)pSubObj->name + 8)) ||
-             (pSubObj1 = GetSubObject(pSubObj->nParent)) && strstr(pSubObj1->properties, "group")))
+            pSubObj->bHidden && (!strncmp(pSubObj->name, "childof_", 8)))
         {
-            pSubObj->bHidden = pSubObj1->bHidden;
+            pSubObj1 = FindSubObject((const char*)pSubObj->name + 8);
+            if (pSubObj1)
+            {
+                pSubObj1 = GetSubObject(pSubObj->nParent);
+                if (pSubObj1)
+                {
+                    if (strstr(pSubObj1->properties, "group"))
+                    {
+                        pSubObj->bHidden = pSubObj1->bHidden;
+                    }
+                }
+            }
         }
     }
 
@@ -1127,12 +1145,19 @@ int CStatObj::PhysicalizeSubobjects(IPhysicalEntity* pent, const Matrix34* pMtx,
                 float mindist = 1e10f, curdist;
                 for (j = 0, i0 = i; j < nObj; j++)
                 {
-                    if (j != i && (pSubObj1 = GetSubObject(j)) && pSubObj1->pStatObj && ((CStatObj*)pSubObj1->pStatObj)->m_nRenderTrisCount > 0 &&
-                        (curdist = (pSubObj1->localTM * (((CStatObj*)pSubObj1->pStatObj)->m_vBoxMin +
-                                                         ((CStatObj*)pSubObj1->pStatObj)->m_vBoxMax) * 0.5f - center).len2()) < mindist)
+                    if (j != i)
                     {
-                        mindist = curdist;
-                        i0 = j;
+                        pSubObj1 = GetSubObject(j);
+                        if (pSubObj1 && pSubObj1->pStatObj && ((CStatObj*)pSubObj1->pStatObj)->m_nRenderTrisCount > 0)
+                        {
+                            curdist = (pSubObj1->localTM * (((CStatObj*)pSubObj1->pStatObj)->m_vBoxMin +
+                                ((CStatObj*)pSubObj1->pStatObj)->m_vBoxMax) * 0.5f - center).len2();
+                            if (curdist < mindist)
+                            {
+                                mindist = curdist;
+                                i0 = j;
+                            }
+                        }
                     }
                 }
                 pSubObj->pStatObj->GetPhysGeom()->pGeom->SetForeignData(GetSubObject(i0)->pStatObj, 0);
@@ -1357,7 +1382,8 @@ int CStatObj::PhysicalizeSubobjects(IPhysicalEntity* pent, const Matrix34* pMtx,
                 psj.axisx = pMtx->TransformVector(psj.axisx).normalized();
             }
 
-            if ((pval = strstr(properties, "limit")) && (pval - 11 < properties - 11 || strncmp(pval - 11, "constraint_", 11)))
+            pval = strstr(properties, "limit");
+            if (pval && (pval - 11 < properties - 11 || strncmp(pval - 11, "constraint_", 11)))
             {
                 for (pval += 5; *pval && !isdigit(*pval); pval++)
                 {
@@ -1373,7 +1399,8 @@ int CStatObj::PhysicalizeSubobjects(IPhysicalEntity* pent, const Matrix34* pMtx,
                 //              psj.maxForcePush = psj.maxForcePull*2.5f;
                 psj.bBreakable = 1;
             }
-            if (pval = strstr(properties, "twist"))
+            pval = strstr(properties, "twist");
+            if (pval)
             {
                 for (pval += 5; *pval && !isdigit(*pval); pval++)
                 {
@@ -1384,7 +1411,8 @@ int CStatObj::PhysicalizeSubobjects(IPhysicalEntity* pent, const Matrix34* pMtx,
                     psj.maxTorqueTwist = aznumeric_caster(atof(pval));
                 }
             }
-            if (pval = strstr(properties, "bend"))
+            pval = strstr(properties, "bend");
+            if (pval)
             {
                 for (pval += 4; *pval && !isdigit(*pval); pval++)
                 {
@@ -1395,7 +1423,8 @@ int CStatObj::PhysicalizeSubobjects(IPhysicalEntity* pent, const Matrix34* pMtx,
                     psj.maxTorqueBend = aznumeric_caster(atof(pval));
                 }
             }
-            if (pval = strstr(properties, "push"))
+            pval = strstr(properties, "push");
+            if (pval)
             {
                 for (pval += 4; *pval && !isdigit(*pval); pval++)
                 {
@@ -1406,7 +1435,8 @@ int CStatObj::PhysicalizeSubobjects(IPhysicalEntity* pent, const Matrix34* pMtx,
                     psj.maxForcePush = aznumeric_caster(atof(pval));
                 }
             }
-            if (pval = strstr(properties, "pull"))
+            pval = strstr(properties, "pull");
+            if (pval)
             {
                 for (pval += 4; *pval && !isdigit(*pval); pval++)
                 {
@@ -1417,7 +1447,8 @@ int CStatObj::PhysicalizeSubobjects(IPhysicalEntity* pent, const Matrix34* pMtx,
                     psj.maxForcePull = aznumeric_caster(atof(pval));
                 }
             }
-            if (pval = strstr(properties, "shift"))
+            pval = strstr(properties, "shift");
+            if (pval)
             {
                 for (pval += 5; *pval && !isdigit(*pval); pval++)
                 {
@@ -1428,7 +1459,8 @@ int CStatObj::PhysicalizeSubobjects(IPhysicalEntity* pent, const Matrix34* pMtx,
                     psj.maxForceShift = aznumeric_caster(atof(pval));
                 }
             }
-            if (pval = strstr(properties, "damage_accum"))
+            pval = strstr(properties, "damage_accum");
+            if (pval)
             {
                 for (pval += 5; *pval && !isdigit(*pval); pval++)
                 {
@@ -1439,7 +1471,8 @@ int CStatObj::PhysicalizeSubobjects(IPhysicalEntity* pent, const Matrix34* pMtx,
                     psj.damageAccum = aznumeric_caster(atof(pval));
                 }
             }
-            if (pval = strstr(properties, "damage_accum_threshold"))
+            pval = strstr(properties, "damage_accum_threshold");
+            if (pval)
             {
                 for (pval += 5; *pval && !isdigit(*pval); pval++)
                 {
@@ -1470,48 +1503,99 @@ int CStatObj::PhysicalizeSubobjects(IPhysicalEntity* pent, const Matrix34* pMtx,
             psj.bDirectBreaksOnly = strstr(properties, "hits_only") != 0;
             psj.limitConstraint.zero();
             psj.bConstraintWillIgnoreCollisions = 1;
-            if ((len = 16, pval = strstr(properties, "constraint_limit")) || (len = 5, pval = strstr(properties, "C_lmt")))
+
+            len = 16;
+            pval = strstr(properties, "constraint_limit");
+            if (pval)
             {
-                for (pval += len; *pval && !isdigit(*pval); pval++)
-                {
-                    ;
-                }
+                for (pval += len; *pval && !isdigit(*pval); pval++);
                 if (pval)
                 {
                     psj.limitConstraint.z = aznumeric_caster(atof(pval));
                 }
             }
-            if ((len = 17, pval = strstr(properties, "constraint_minang")) || (len = 5, pval = strstr(properties, "C_min")))
+            else
             {
-                for (pval += len; *pval && !isdigit(*pval) && *pval != '-'; pval++)
+                len = 5;
+                pval = strstr(properties, "C_lmt");
+                if (pval)
                 {
-                    ;
+                    for (pval += len; *pval && !isdigit(*pval); pval++)
+                        ;
+                    if (pval)
+                    {
+                        psj.limitConstraint.z = aznumeric_caster(atof(pval));
+                    }
                 }
+            }
+            len = 17;
+            pval = strstr(properties, "constraint_minang");
+            if (pval)
+            {
+                for (pval += len; *pval && !isdigit(*pval) && *pval != '-'; pval++);
                 if (pval)
                 {
                     psj.limitConstraint.x = aznumeric_caster(DEG2RAD(atof(pval)));
                 }
             }
-            if ((len = 17, pval = strstr(properties, "constraint_maxang")) || (len = 5, pval = strstr(properties, "C_max")))
+            else
             {
-                for (pval += len; *pval && !isdigit(*pval) && *pval != '-'; pval++)
+                len = 5;
+                pval = strstr(properties, "C_min");
+                if (pval)
                 {
-                    ;
+                    for (pval += len; *pval && !isdigit(*pval) && *pval != '-'; pval++)
+                        ;
+                    if (pval)
+                    {
+                        psj.limitConstraint.x = aznumeric_caster(DEG2RAD(atof(pval)));
+                    }
                 }
+            }
+            len = 17;
+            pval = strstr(properties, "constraint_maxang");
+            if (pval)
+            {
+                for (pval += len; *pval && !isdigit(*pval) && *pval != '-'; pval++);
                 if (pval)
                 {
                     psj.limitConstraint.y = aznumeric_caster(DEG2RAD(atof(pval)));
                 }
             }
-            if ((len = 18, pval = strstr(properties, "constraint_damping")) || (len = 5, pval = strstr(properties, "C_dmp")))
+            else
             {
-                for (pval += len; *pval && !isdigit(*pval); pval++)
+                len = 5;
+                pval = strstr(properties, "C_max");
+                if (pval)
                 {
-                    ;
+                    for (pval += len; *pval && !isdigit(*pval) && *pval != '-'; pval++);
+                    if (pval)
+                    {
+                        psj.limitConstraint.y = aznumeric_caster(DEG2RAD(atof(pval)));
+                    }
                 }
+            }
+            len = 18;
+            pval = strstr(properties, "constraint_damping");
+            if (pval)
+            {
+                for (pval += len; *pval && !isdigit(*pval); pval++);
                 if (pval)
                 {
                     psj.dampingConstraint = aznumeric_caster(atof(pval));
+                }
+            }
+            else
+            {
+                len = 5;
+                pval = strstr(properties, "C_dmp");
+                if (pval)
+                {
+                    for (pval += len; *pval && !isdigit(*pval); pval++);
+                    if (pval)
+                    {
+                        psj.dampingConstraint = aznumeric_caster(atof(pval));
+                    }
                 }
             }
             if (strstr(properties, "constraint_collides") || strstr(properties, "C_coll"))
@@ -1565,94 +1649,107 @@ int CStatObj::PhysicalizeSubobjects(IPhysicalEntity* pent, const Matrix34* pMtx,
         for (i = 0; i < nObj; i++)
         {
             if ((pSubObj = GetSubObject(i))->nType == STATIC_SUB_OBJECT_MESH && pSubObj->pStatObj && pSubObj->pStatObj->GetPhysGeom() && !pSubObj->bHidden &&
-                !strncmp(pSubObj->name, "skeleton_", 9) && (pSubObj1 = FindSubObject((const char*)pSubObj->name + 9)))
+                !strncmp(pSubObj->name, "skeleton_", 9))
             {
-                pe_params_skeleton ps;
-                properties = szPropsOverride ? szPropsOverride : (const char*)pSubObj->properties;
-                if (pval = strstr(properties, "stiffness"))
+                pSubObj1 = FindSubObject((const char*)pSubObj->name + 9);
+                if (pSubObj1)
                 {
-                    for (pval += 9; *pval && !isdigit(*pval); pval++)
-                    {
-                        ;
-                    }
+                    pe_params_skeleton ps;
+                    properties = szPropsOverride ? szPropsOverride : (const char*)pSubObj->properties;
+                    pval = strstr(properties, "stiffness");
                     if (pval)
                     {
-                        ps.stiffness = aznumeric_caster(atof(pval));
+                        for (pval += 9; *pval && !isdigit(*pval); pval++)
+                        {
+                            ;
+                        }
+                        if (pval)
+                        {
+                            ps.stiffness = aznumeric_caster(atof(pval));
+                        }
                     }
-                }
-                if (pval = strstr(properties, "thickness"))
-                {
-                    for (pval += 9; *pval && !isdigit(*pval); pval++)
-                    {
-                        ;
-                    }
+                    pval = strstr(properties, "thickness");
                     if (pval)
                     {
-                        ps.thickness = aznumeric_caster(atof(pval));
+                        for (pval += 9; *pval && !isdigit(*pval); pval++)
+                        {
+                            ;
+                        }
+                        if (pval)
+                        {
+                            ps.thickness = aznumeric_caster(atof(pval));
+                        }
                     }
-                }
-                if (pval = strstr(properties, "max_stretch"))
-                {
-                    for (pval += 11; *pval && !isdigit(*pval); pval++)
-                    {
-                        ;
-                    }
+                    pval = strstr(properties, "max_stretch");
                     if (pval)
                     {
-                        ps.maxStretch = aznumeric_caster(atof(pval));
+                        for (pval += 11; *pval && !isdigit(*pval); pval++)
+                        {
+                            ;
+                        }
+                        if (pval)
+                        {
+                            ps.maxStretch = aznumeric_caster(atof(pval));
+                        }
                     }
-                }
-                if (pval = strstr(properties, "max_impulse"))
-                {
-                    for (pval += 11; *pval && !isdigit(*pval); pval++)
-                    {
-                        ;
-                    }
+                    pval = strstr(properties, "max_impulse");
                     if (pval)
                     {
-                        ps.maxImpulse = aznumeric_caster(atof(pval));
+                        for (pval += 11; *pval && !isdigit(*pval); pval++)
+                        {
+                            ;
+                        }
+                        if (pval)
+                        {
+                            ps.maxImpulse = aznumeric_caster(atof(pval));
+                        }
                     }
-                }
-                if (pval = strstr(properties, "skin_dist"))
-                {
-                    for (pval += 9; *pval && !isdigit(*pval); pval++)
-                    {
-                        ;
-                    }
+                    pval = strstr(properties, "skin_dist");
                     if (pval)
                     {
-                        pp.minContactDist = aznumeric_caster(atof(pval));
+                        for (pval += 9; *pval && !isdigit(*pval); pval++)
+                        {
+                            ;
+                        }
+                        if (pval)
+                        {
+                            pp.minContactDist = aznumeric_caster(atof(pval));
+                        }
                     }
-                }
-                if (pval = strstr(properties, "hardness"))
-                {
-                    for (pval += 8; *pval && !isdigit(*pval); pval++)
-                    {
-                        ;
-                    }
+                    pval = strstr(properties, "hardness");
                     if (pval)
                     {
-                        ps.hardness = aznumeric_caster(atof(pval));
+                        for (pval += 8; *pval && !isdigit(*pval); pval++)
+                        {
+                            ;
+                        }
+                        if (pval)
+                        {
+                            ps.hardness = aznumeric_caster(atof(pval));
+                        }
                     }
-                }
-                if (pval = strstr(properties, "explosion_scale"))
-                {
-                    for (pval += 15; *pval && !isdigit(*pval); pval++)
-                    {
-                        ;
-                    }
+                    pval = strstr(properties, "explosion_scale");
                     if (pval)
                     {
-                        ps.explosionScale = aznumeric_caster(atof(pval));
+                        for (pval += 15; *pval && !isdigit(*pval); pval++)
+                        {
+                            ;
+                        }
+                        if (pval)
+                        {
+                            ps.explosionScale = aznumeric_caster(atof(pval));
+                        }
                     }
-                }
 
-                pp.partid = ps.partid = aznumeric_cast<int>((pSubObj1 - &m_subObjects[0])) + id0;
-                pp.idSkeleton = i + id0;
-                pent->SetParams(&pp);
-                pent->SetParams(&ps);
-                ((CStatObj*)pSubObj1->pStatObj)->PrepareSkinData(pSubObj1->localTM.GetInverted() * pSubObj->localTM, pSubObj->pStatObj->GetPhysGeom()->pGeom,
-                    is_unused(pp.minContactDist) ? 0.0f : pp.minContactDist);
+                    pp.partid = ps.partid = aznumeric_cast<int>((pSubObj1 - &m_subObjects[0])) + id0;
+                    pp.idSkeleton = i + id0;
+                    pent->SetParams(&pp);
+                    pent->SetParams(&ps);
+                    ((CStatObj*)pSubObj1->pStatObj)
+                        ->PrepareSkinData(
+                            pSubObj1->localTM.GetInverted() * pSubObj->localTM, pSubObj->pStatObj->GetPhysGeom()->pGeom,
+                            is_unused(pp.minContactDist) ? 0.0f : pp.minContactDist);
+                }
             }
         }
     }
@@ -1660,14 +1757,22 @@ int CStatObj::PhysicalizeSubobjects(IPhysicalEntity* pent, const Matrix34* pMtx,
     new(&pp)pe_params_part;
     for (i = 0; i < nObj; i++)
     {
-        if ((pSubObj = GetSubObject(i))->nType == STATIC_SUB_OBJECT_MESH && pSubObj->pStatObj && pSubObj->pStatObj->GetPhysGeom() && !pSubObj->bHidden &&
-            (!strncmp(pSubObj->name, "childof_", 8) && (pSubObj1 = FindSubObject((const char*)pSubObj->name + 8)) ||
-             (pSubObj1 = GetSubObject(pSubObj->nParent)) && strstr(pSubObj1->properties, "group")))
+        pSubObj = GetSubObject(i);
+        if (pSubObj->nType == STATIC_SUB_OBJECT_MESH && pSubObj->pStatObj && pSubObj->pStatObj->GetPhysGeom() && !pSubObj->bHidden &&
+            !strncmp(pSubObj->name, "childof_", 8))
         {
-            pp.partid = i + id0;
-            pp.idParent = aznumeric_caster(pSubObj1 - &m_subObjects[0]);
-            pent->SetParams(&pp);
-            pSubObj->bHidden = true;
+            pSubObj1 = FindSubObject((const char*)pSubObj->name + 8);
+            if (pSubObj1)
+            {
+                pSubObj1 = GetSubObject(pSubObj->nParent);
+                if (pSubObj1 && strstr(pSubObj1->properties, "group"))
+                {
+                    pp.partid = i + id0;
+                    pp.idParent = aznumeric_caster(pSubObj1 - &m_subObjects[0]);
+                    pent->SetParams(&pp);
+                    pSubObj->bHidden = true;
+                }
+            }
         }
     }
 

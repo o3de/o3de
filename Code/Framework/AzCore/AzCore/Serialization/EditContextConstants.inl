@@ -105,7 +105,7 @@ namespace AZ
             const static AZ::Crc32 ChangeNotify = AZ_CRC("ChangeNotify", 0xf793bc19);
             const static AZ::Crc32 ClearNotify = AZ_CRC("ClearNotify", 0x88914c8c);
 
-            //! Specifies a function to accept or reject a value changed in the Lumberyard Editor.
+            //! Specifies a function to accept or reject a value changed in the Open 3D Engine Editor.
             //! For example, a component could reject AZ::EntityId values that reference its own entity.
             //!
             //! Element type to use this with:   Any type that you reflect using AZ::EditContext::ClassInfo::DataElement().

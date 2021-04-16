@@ -290,8 +290,10 @@ float NumToFromString(float val, int digits, bool floating, char buffer[], int b
     {
         sprintf_s(buffer, buf_size, "%.*f", digits, float(val));
     }
-
-    int readCount = azsscanf(buffer, "%g", &val);
+#if !defined(NDEBUG)
+    int readCount =
+#endif
+        azsscanf(buffer, "%g", &val);
     assert(readCount == 1);
     return val;
 }

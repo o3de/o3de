@@ -136,7 +136,6 @@ namespace UnitTest
         builder.Add("RandomKey", this->GetValue());
 
         AzFramework::SpawnableMetaData metaData(builder.BuildMetaData());
-        GetType stored{};
         EXPECT_EQ(this->GetValueType(), metaData.GetType("RandomKey"));
     }
 

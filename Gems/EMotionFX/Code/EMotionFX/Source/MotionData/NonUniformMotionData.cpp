@@ -899,8 +899,9 @@ namespace EMotionFX
     }
 
     template <>
-    void LogTrack<AZ::Vector3>(const AZStd::string& name, const AZStd::string& channel, NonUniformMotionData::KeyTrack<AZ::Vector3>& track)
+    void LogTrack<AZ::Vector3>([[maybe_unused]] const AZStd::string& name, [[maybe_unused]] const AZStd::string& channel, [[maybe_unused]] NonUniformMotionData::KeyTrack<AZ::Vector3>& track)
     {
+#if defined(AZ_ENABLE_TRACING)
         AZ_Printf("EMotionFX", "Vector3 Track (Name='%s', Channel='%s', NumKeys=%d):", name.c_str(), channel.c_str(), track.m_times.size());
         const size_t numKeys = track.m_times.size();
         for (size_t i = 0; i < numKeys; ++i)
@@ -913,11 +914,13 @@ namespace EMotionFX
                 static_cast<float>(value.GetY()),
                 static_cast<float>(value.GetZ()));
         }
+#endif
     }
 
     template <>
-    void LogTrack<AZ::Quaternion>(const AZStd::string& name, const AZStd::string& channel, NonUniformMotionData::KeyTrack<AZ::Quaternion>& track)
+    void LogTrack<AZ::Quaternion>([[maybe_unused]] const AZStd::string& name, [[maybe_unused]] const AZStd::string& channel, [[maybe_unused]] NonUniformMotionData::KeyTrack<AZ::Quaternion>& track)
     {
+#if defined(AZ_ENABLE_TRACING)
         AZ_Printf("EMotionFX", "Quaternion Track (Name='%s', Channel='%s', NumKeys=%d):", name.c_str(), channel.c_str(), track.m_times.size());
         const size_t numKeys = track.m_times.size();
         for (size_t i = 0; i < numKeys; ++i)
@@ -931,6 +934,7 @@ namespace EMotionFX
                 static_cast<float>(value.GetZ()),
                 static_cast<float>(value.GetW()));
         }
+#endif
     }
 
     void NonUniformMotionData::Optimize(const OptimizeSettings& settings)

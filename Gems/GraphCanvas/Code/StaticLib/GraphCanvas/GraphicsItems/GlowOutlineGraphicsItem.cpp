@@ -101,7 +101,6 @@ namespace GraphCanvas
         }
 
         float scaledZoomLevel = 1.0f;
-        float zoomPercent = 0.0f;
         
         if (zoomLevel > 0.0f)
         {

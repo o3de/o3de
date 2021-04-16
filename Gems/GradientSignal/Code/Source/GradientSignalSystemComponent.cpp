@@ -82,7 +82,6 @@ namespace GradientSignal
         {
             behaviorContext->Class<GradientSampleParams>()
                 ->Constructor()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Property("position", BehaviorValueProperty(&GradientSampleParams::m_position))
                 ;

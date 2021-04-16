@@ -597,7 +597,7 @@ protected:
     bool CheckRespondToInput() const;
 
     // AzFramework::InputSystemCursorConstraintRequestBus
-    void* GetSystemCursorConstraintWindow() const override { return renderOverlayHWND(); }
+    void* GetSystemCursorConstraintWindow() const override;
 
     void BuildDragDropContext(AzQtComponents::ViewportDragContext& context, const QPoint& pt) override;
 

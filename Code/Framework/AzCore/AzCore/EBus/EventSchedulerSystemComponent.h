@@ -16,6 +16,7 @@
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/EBus/ScheduledEventHandle.h>
+#include <AzCore/EBus/ScheduledEvent.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/queue.h>
@@ -89,9 +90,11 @@ namespace AZ
         //! @}
 
     private:
-        ScheduledEventHandle* AllocateHandle(TimeMs executeTimeMs, TimeMs durationTimeMs, ScheduledEvent* scheduledEvent);
-        // Allocates a single use event to capture the passed in callback. Event is cleaned up on completion.
-        ScheduledEvent* AllocateManagedEvent(TimeMs executeTimeMs, TimeMs durationTimeMs, const AZStd::function<void()>& callback, const Name& eventName);
+        ScheduledEventHandle* AllocateHandle();
+
+        //! Allocates a single use event to capture the passed in callback. Event is cleaned up on completion.
+        ScheduledEvent* AllocateManagedEvent(const AZStd::function<void()>& callback, const Name& eventName);
+
         void FreeHandle(ScheduledEventHandle* handle);
 
         // Bind the DumpStats member function to the console as 'EventSchedulerSystemComponent.DumpStats'
@@ -100,6 +103,8 @@ namespace AZ
         // Priority queues of scheduled events sorted by execution time
         AZStd::priority_queue<ScheduledEventHandle*, AZStd::vector<ScheduledEventHandle*>, CompareScheduledEventPtrs> m_queue;
         AZStd::priority_queue<ScheduledEventHandle*, AZStd::vector<ScheduledEventHandle*>, PrioritizeScheduledEventPtrs> m_pendingQueue;
+        AZStd::deque<ScheduledEvent> m_ownedEvents;
+        AZStd::vector<ScheduledEvent*> m_freeEvents;
         AZStd::deque<ScheduledEventHandle> m_handles;
         AZStd::vector<ScheduledEventHandle*> m_freeHandles;
     };

@@ -131,7 +131,6 @@ namespace ScriptCanvasEditor
     {
         ExecutionLogTreeItem* treeItem = nullptr;
 
-        bool signalChanged = false;
         if (m_updatePolicy == UpdatePolicy::Batched)
         {
             if (!m_additionTimer.isActive())

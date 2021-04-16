@@ -1187,8 +1187,6 @@ namespace EMStudio
                 mActiveGraph->GetReplaceTransitionInfo(&connection, &oldStartOffset, &oldEndOffset, &oldSourceNode, &oldTargetNode);
                 GraphNode* newDropNode = mActiveGraph->FindNode(event->pos());
 
-                StateConnection* stateConnection = static_cast<StateConnection*>(connection);
-
                 if (newDropNode && newDropNode != oldSourceNode)
                 {
                     if (mActiveGraph->GetIsRepositioningTransitionHead())

@@ -43,7 +43,6 @@ void CZBufferCuller::BeginFrame(const SRenderingPassInfo& passInfo)
     m_Camera        =   rCam;
     m_Position  =   rCam.GetPosition();
     uint32 oldSizeX = m_SizeX;
-    uint32 oldSizeY = m_SizeY;
 
     const uint32 sizeX = min(max(1, GetCVars()->e_CoverageBufferResolution), 1024);
     const uint32 sizeY = sizeX;
@@ -128,10 +127,6 @@ bool CZBufferCuller::IsBoxVisible(const AABB& objBox, [[maybe_unused]] uint32* c
         return Rasterize<2>(Verts, 8);
     }
     return Rasterize<0>(Verts, 8);
-
-    ++m_ObjectsTestedAndRejected;
-
-    return false;
 }
 
 static int sh   =   8;

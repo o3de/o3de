@@ -111,7 +111,7 @@ namespace AZ
                 bool loadFileToMemory = Get().ShouldLoadFileToMemory(filename);
                 int assetMode = loadFileToMemory ? AASSET_MODE_BUFFER : AASSET_MODE_UNKNOWN;
 
-                asset = AAssetManager_open(Utils::GetAssetManager(), Utils::StripApkPrefix(filename), assetMode);
+                asset = AAssetManager_open(Utils::GetAssetManager(), Utils::StripApkPrefix(filename).c_str(), assetMode);
 
                 if (asset != nullptr)
                 {
@@ -192,7 +192,7 @@ namespace AZ
                 {
                     buf->m_offset = buf->m_totalSize - offset;
                 }
-            
+
                 if (buf->m_offset > buf->m_totalSize)
                 {
                     buf->m_offset = buf->m_totalSize;
@@ -320,12 +320,19 @@ namespace AZ
 
         bool APKFileHandler::DirectoryOrFileExists(const char* path)
         {
-            ANDROID_IO_PROFILE_SECTION_ARGS("APK DirOrFileexists");
+            ANDROID_IO_PROFILE_SECTION_ARGS("APK DirOrFileExists");
 
-            AZ::IO::PathView insideApkPathView(Utils::StripApkPrefix(path));
+            AZ::IO::FixedMaxPath insideApkPath(Utils::StripApkPrefix(path));
 
-            AZ::IO::FixedMaxPathString filename{ insideApkPathView.Filename().Native() };
-            AZ::IO::FixedMaxPathString pathToFile{ insideApkPathView.ParentPath().Native() };
+            // Check for the case where the input path is equal to the APK Assets Prefix of /APK
+            // In that case the directory is the "root" of APK assets in which case the directory exist
+            if (insideApkPath.empty() && Utils::IsApkPath(path))
+            {
+                return true;
+            }
+
+            AZ::IO::FixedMaxPathString filename{ insideApkPath.Filename().Native() };
+            AZ::IO::FixedMaxPathString pathToFile{ insideApkPath.ParentPath().Native() };
             bool foundFile = false;
 
             ParseDirectory(pathToFile.c_str(), [&](const char* name)

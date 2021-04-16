@@ -769,8 +769,8 @@ namespace AZ
             *! This has similar behavior to Python pathlib '/' operator and os.path.join
             *! Specifically, that it uses the last absolute path as the anchor for the resulting path
             *! https://docs.python.org/3/library/pathlib.html#pathlib.PurePath
-            *! This means that joining StringFunc::Path::Join("C:\\lumberyard" "F:\\lumberyard") results in "F:\\lumberyard"
-            *! not "C:\\lumberyard\\F:\\lumberyard"
+            *! This means that joining StringFunc::Path::Join("C:\\O3DE" "F:\\O3DE") results in "F:\\O3DE"
+            *! not "C:\\O3DE\\F:\\O3DE"
             *! EX: StringFunc::Path::Join("C:\\p4\\game","info\\some.file", a) == true; a== "C:\\p4\\game\\info\\some.file"
             *! EX: StringFunc::Path::Join("C:\\p4\\game\\info", "game\\info\\some.file", a) == true; a== "C:\\p4\\game\\info\\game\\info\\some.file"
             *! EX: StringFunc::Path::Join("C:\\p4\\game\\info", "\\game\\info\\some.file", a) == true; a== "C:\\game\\info\\some.file"

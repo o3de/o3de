@@ -219,8 +219,6 @@ namespace spline
             int count = 0;
             int curr = seek_key(time);
             int next = (curr < num_keys() - 1) ? curr + 1 : curr;
-            float range_min = this->time(curr);
-            float range_max = this->time(next);
             // Clamp the time first.
             if (time < this->time(0))
             {

@@ -383,6 +383,9 @@
     <file>img/UI20/toolbar/Y_axis.svg</file>
     <file>img/UI20/toolbar/Z_axis.svg</file>
     <file>img/UI20/toolbar/XY2_copy.svg</file>
+    <file>img/triangle0.png</file>
+    <file>img/triangle0_highlighted.png</file>
+    <file>img/line.png</file>
 </qresource>
 <qresource>
     <file alias="Editor/Style/EditorStylesheetVariables_Dark.json">../../../../Sandbox/Editor/Style/EditorStylesheetVariables_Dark.json</file>

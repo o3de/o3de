@@ -90,6 +90,7 @@ protected:
         
         // Adding this handler to allow utility functions access the serialize context
         AZ::ComponentApplicationBus::Handler::BusConnect();
+        AZ::Interface<AZ::ComponentApplicationRequests>::Register(this);
 
         //load qt plugins for some image file formats support
         int argc = 0;
@@ -112,6 +113,7 @@ protected:
         BuilderSettingManager::DestroyInstance();
         CPixelFormats::DestroyInstance();
 
+        AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(this);
         AZ::ComponentApplicationBus::Handler::BusDisconnect();
 
         m_coreApplication.reset();
@@ -121,6 +123,8 @@ protected:
     AZ::ComponentApplication* GetApplication() override { return nullptr; }
     void RegisterComponentDescriptor(const AZ::ComponentDescriptor*) override { }
     void UnregisterComponentDescriptor(const AZ::ComponentDescriptor*) override { }
+    void RegisterEntityAddedEventHandler(AZ::EntityAddedEvent::Handler&) override { }
+    void RegisterEntityRemovedEventHandler(AZ::EntityRemovedEvent::Handler&) override { }
     bool AddEntity(AZ::Entity*) override { return false; }
     bool RemoveEntity(AZ::Entity*) override { return false; }
     bool DeleteEntity(const AZ::EntityId&) override { return false; }

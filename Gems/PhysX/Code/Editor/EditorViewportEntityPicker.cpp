@@ -49,7 +49,6 @@ namespace PhysX
         AZ::EntityId entityIdUnderCursor;
         pickPosition = AZ::Vector3::CreateZero();
         pickAabb = AZ::Aabb::CreateNull();
-        float closestDistance = FLT_MAX;
 
         for (size_t entityCacheIndex = 0; entityCacheIndex < m_entityDataCache->VisibleEntityDataCount(); ++entityCacheIndex)
         {

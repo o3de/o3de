@@ -17,8 +17,6 @@ ly_add_target(
     INCLUDE_DIRECTORIES
         PRIVATE
             Source
-        PUBLIC
-            Include
     BUILD_DEPENDENCIES
         PUBLIC
             AZ::AzCore
@@ -34,8 +32,6 @@ ly_add_target(
     INCLUDE_DIRECTORIES
         PRIVATE
             Source
-        PUBLIC
-            Include
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::AtomImGuiTools.Static

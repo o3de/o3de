@@ -83,8 +83,6 @@ namespace ScriptCanvasEditor
             ScriptCanvasRootPaletteTreeItem* root = aznew ScriptCanvasRootPaletteTreeItem(nodePaletteModel, assetModel);
 
             {
-                GraphCanvas::NodePaletteTreeItem* utilitiesRoot = root->GetCategoryNode("Utilities");
-
                 GraphCanvas::NodePaletteTreeItem* variablesRoot = root->CreateChildNode<LocalVariablesListNodePaletteTreeItem>("Variables");
                 root->RegisterCategoryNode(variablesRoot, "Variables");
 
@@ -605,7 +603,6 @@ namespace ScriptCanvasEditor
                 AZStd::vector<const ScriptCanvas::Grammar::In*> onNodeIns;
                 AZStd::vector<const ScriptCanvas::Grammar::In*> pureIns;
 
-                auto onNodeParent = parent;
                 auto pureParent = functionCategory;
 
                 for (auto& in : ins)
@@ -768,8 +765,6 @@ namespace ScriptCanvasEditor
             ClearCycleTarget();
 
             AZStd::unordered_set< ScriptCanvas::VariableId > variableSet;
-
-            GraphCanvas::NodePaletteWidget* paletteWidget = GetNodePaletteWidget();
 
             QModelIndexList indexList = GetTreeView()->selectionModel()->selectedRows();
 

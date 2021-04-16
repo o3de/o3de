@@ -101,8 +101,9 @@ bool DisplayYesNoMessageBox(const char* title, const char* message)
     return MessageBox(0, message, title, MB_YESNO) == IDYES;
 #elif defined(AZ_PLATFORM_MAC)
     return MessageBox(title, message, CFSTR("Yes"), CFSTR("No")) == kCFUserNotificationDefaultResponse;
-#endif
+#else
     return false;
+#endif
 }
 
 void DisplayErrorMessageBox(const char* message)
@@ -129,10 +130,10 @@ void ClearPlatformCVars(ISystem* pISystem)
     pISystem->GetIConsole()->ExecuteString("r_ShadersOrbis = 0");
 }
 
-bool IsLumberyardRunning()
+bool IsO3DERunning()
 {
     bool isRunning = false;
-    const char* mutexName = "LumberyardApplication";
+    const char* mutexName = "O3DEApplication";
 #if defined(AZ_PLATFORM_WINDOWS)
     HANDLE mutex = CreateMutex(NULL, TRUE, mutexName);
     isRunning = GetLastError() == ERROR_ALREADY_EXISTS;
@@ -222,17 +223,17 @@ int main_wrapped(int argc, char* argv[])
         s_displayMessageBox = false;
     }
 
-    if (IsLumberyardRunning())
+    if (IsO3DERunning())
     {
         if (CryStringUtils::stristr(commandLine, "-devmode") == 0)
         {
-            DisplayErrorMessageBox("There is already a Lumberyard application running. Cannot start another one!");
+            DisplayErrorMessageBox("There is already a Open 3D Engine application running. Cannot start another one!");
             return errorCode;
         }
 
         if (s_displayMessageBox)
         {
-            if (!DisplayYesNoMessageBox("Too many apps", "There is already a Lumberyard application running\nDo you want to start another one?"))
+            if (!DisplayYesNoMessageBox("Too many apps", "There is already a Open 3D Engine application running\nDo you want to start another one?"))
             {
                 return errorCode;
             }
@@ -461,7 +462,7 @@ int main(int argc, char* argv[])
     AZ::AllocatorInstance<AZ::LegacyAllocator>::Create();
     AZ::AllocatorInstance<CryStringAllocator>::Create();
 
-    AzFramework::Application app;
+    AzFramework::Application app(&argc, &argv);
     AzFramework::Application::StartupParameters startupParams;
     AzFramework::Application::Descriptor descriptor;
     app.Start(descriptor, startupParams);

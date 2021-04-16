@@ -211,11 +211,11 @@ namespace AZ
             //! Prints the pass
             virtual void DebugPrint() const;
 
-            //! Return the Timestamp result of this pass
-            TimestampResult GetTimestampResult() const;
+            //! Return the latest Timestamp result of this pass
+            TimestampResult GetLatestTimestampResult() const;
 
-            //! Return the PipelineStatistic result of this pass
-            PipelineStatisticsResult GetPipelineStatisticsResult() const;
+            //! Return the latest PipelineStatistic result of this pass
+            PipelineStatisticsResult GetLatestPipelineStatisticsResult() const;
 
             //! Enables/Disables Timestamp queries for this pass
             virtual void SetTimestampQueryEnabled(bool enable);

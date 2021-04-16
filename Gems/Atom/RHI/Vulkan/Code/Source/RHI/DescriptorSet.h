@@ -91,6 +91,7 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             void UpdateNativeDescriptorSet();
+            void AllocateDescriptorSetWithUnboundedArray();
 
             template<typename T>
             AZStd::vector<RHI::Interval> GetValidDescriptorsIntervals(const AZStd::vector<T>& descriptorsInfo) const;
@@ -106,6 +107,7 @@ namespace AZ
             RHI::Ptr<Buffer> m_constantDataBuffer;
             RHI::Ptr<BufferView> m_constantDataBufferView;
             bool m_nullDescriptorSupported = false;
+            uint32_t m_currentUnboundedArrayAllocation = 0;
         };
 
         template<typename T>

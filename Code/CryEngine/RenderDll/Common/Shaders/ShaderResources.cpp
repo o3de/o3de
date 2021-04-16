@@ -111,7 +111,6 @@ void CShaderResources::ConvertToInputResource(SInputShaderResources* pDst)
 
 size_t CShaderResources::GetResourceMemoryUsage(ICrySizer*  pSizer)
 {
-    size_t  nCurrentElement(0);
     size_t  nCurrentElementSize(0);
     size_t  nTotalSize(0);
 

@@ -13,6 +13,7 @@
 #include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponent.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Components/NonUniformScaleComponent.h>
+#include <AzCore/Math/Transform.h>
 #include <AzCore/Math/ToString.h>
 
 namespace AzToolsFramework
@@ -44,7 +45,9 @@ namespace AzToolsFramework
                         ->DataElement(
                             AZ::Edit::UIHandlers::Default, &EditorNonUniformScaleComponent::m_scale, "Non-uniform Scale",
                             "Non-uniform scale for this entity only (does not propagate through hierarchy)")
-                        ->Attribute(AZ::Edit::Attributes::Min, AZ::MinNonUniformScale)
+                        ->Attribute(AZ::Edit::Attributes::Min, AZ::MinTransformScale)
+                        ->Attribute(AZ::Edit::Attributes::Max, AZ::MaxTransformScale)
+                        ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorNonUniformScaleComponent::OnScaleChanged)
                         ;
                 }
@@ -106,13 +109,13 @@ namespace AzToolsFramework
 
         void EditorNonUniformScaleComponent::SetScale(const AZ::Vector3& scale)
         {
-            if (scale.GetMinElement() >= AZ::MinNonUniformScale)
+            if (scale.GetMinElement() >= AZ::MinTransformScale && scale.GetMaxElement() <= AZ::MaxTransformScale)
             {
                 m_scale = scale;
             }
             else
             {
-                AZ::Vector3 clampedScale = scale.GetMax(AZ::Vector3(AZ::MinNonUniformScale));
+                AZ::Vector3 clampedScale = scale.GetClamp(AZ::Vector3(AZ::MinTransformScale), AZ::Vector3(AZ::MaxTransformScale));
                 AZ_Warning("Editor Non-uniform Scale Component", false, "SetScale value was clamped from %s to %s for entity %s",
                     AZ::ToString(scale).c_str(), AZ::ToString(clampedScale).c_str(), GetEntity()->GetName().c_str());
                 m_scale = clampedScale;

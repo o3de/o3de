@@ -284,7 +284,9 @@ void PreDeclareStructTypeMETAL(bstring metal, const char* Name, const struct Sha
 
     if (psType->Class == SVC_STRUCT)
     {
+#if defined(_DEBUG)
         uint32_t unnamed_struct = strcmp(Name, "$Element") == 0 ? 1 : 0;
+#endif
 
         //Not supported at the moment
         ASSERT(!unnamed_struct);
@@ -335,7 +337,10 @@ char* GetDeclaredOutputNameMETAL(const HLSLCrossCompilerContext* psContext,
     char* cstr;
     InOutSignature* psOut;
 
-    int foundOutput = GetOutputSignatureFromRegister(
+#if defined(_DEBUG)
+    int foundOutput =
+#endif
+        GetOutputSignatureFromRegister(
             psContext->currentPhase,
             psOperand->ui32RegisterNumber,
             psOperand->ui32CompMask,
@@ -422,7 +427,6 @@ static void DeclareInput(
     {
         
         InOutSignature* psSignature = NULL;
-        int emptyQualifier = 0;
 
         const char* type = "float";
         if (minPrecision == OPERAND_MIN_PRECISION_FLOAT_16)
@@ -506,7 +510,6 @@ static void DeclareInput(
                 psContext->psShader->abScalarInput[psDecl->asOperands[0].ui32RegisterNumber] = -1;
             }
 
-            const uint32_t regNum = psDecl->asOperands[0].ui32RegisterNumber;
             const uint32_t arraySize = psDecl->asOperands[0].aui32ArraySizes[0];
 
             bformata(metal, " [%d]", arraySize);
@@ -714,7 +717,6 @@ void AddBuiltinOutputMETAL(HLSLCrossCompilerContext* psContext, const Declaratio
 
     if (OutputNeedsDeclaringMETAL(psContext, &psDecl->asOperands[0], arrayElements ? arrayElements : 1))
     {
-        char* OutputName = GetDeclaredOutputNameMETAL(psContext, VERTEX_SHADER, &psDecl->asOperands[0]);
         psContext->currentShaderString = &psContext->declaredOutputs;
         metal = *psContext->currentShaderString;
         InOutSignature* psSignature = NULL;
@@ -826,8 +828,6 @@ void AddUserOutputMETAL(HLSLCrossCompilerContext* psContext, const Declaration* 
         case VERTEX_SHADER:
         {
             int iNumComponents = 4;//GetMaxComponentFromComponentMaskMETAL(&psDecl->asOperands[0]);
-            const char* Interpolation = "";
-            int stream = 0;
             char* OutputName = GetDeclaredOutputNameMETAL(psContext, VERTEX_SHADER, psOperand);
 
             bformata(metal, "%s%d %s [[ user(varying%d) ]];\n", type, iNumComponents, OutputName, psDecl->asOperands[0].ui32RegisterNumber);
@@ -850,7 +850,9 @@ void DeclareBufferVariableMETAL(HLSLCrossCompilerContext* psContext, const uint3
     (void)ui32BindingPoint;
 
     bstring StructName;
+#if !defined(NDEBUG)
     uint32_t unnamed_struct = strcmp(psCBuf->asVars[0].Name, "$Element") == 0 ? 1 : 0;
+#endif
 
     ASSERT(psCBuf->ui32NumVars == 1);
     ASSERT(unnamed_struct);
@@ -1320,7 +1322,6 @@ char* GetSamplerTypeMETAL(HLSLCrossCompilerContext* psContext,
 static void TranslateResourceTexture(HLSLCrossCompilerContext* psContext, const Declaration* psDecl, uint32_t samplerCanDoShadowCmp)
 {
     bstring metal = *psContext->currentShaderString;
-    ShaderData* psShader = psContext->psShader;
 
     const char* samplerTypeName = GetSamplerTypeMETAL(psContext,
             psDecl->value.eResourceDimension,
@@ -1534,9 +1535,7 @@ void TranslateDeclarationMETAL(HLSLCrossCompilerContext* psContext, const Declar
     {
         const Operand* psOperand = &psDecl->asOperands[0];
         int iNumComponents = 4;//GetMaxComponentFromComponentMask(psOperand);
-        const char* StorageQualifier = "";
         const char* InputName = GetDeclaredInputNameMETAL(psContext, PIXEL_SHADER, psOperand);
-        const char* Interpolation = "";
 
         DeclareInput(psContext, psDecl,
             "user", (OPERAND_MIN_PRECISION)psOperand->eMinPrecision, iNumComponents, INDEX_1D, InputName);
@@ -1545,7 +1544,6 @@ void TranslateDeclarationMETAL(HLSLCrossCompilerContext* psContext, const Declar
     }
     case OPCODE_DCL_TEMPS:
     {
-        uint32_t i = 0;
         const uint32_t ui32NumTemps = psDecl->value.ui32NumTemps;
 
         if (ui32NumTemps > 0)

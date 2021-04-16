@@ -15,6 +15,7 @@
 #define __CRYSIMPLESERVER__
 
 #include <Core/Common.h>
+#include <AzCore/IO//Path/Path.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/containers/unordered_map.h>
@@ -24,11 +25,6 @@
 
 extern bool g_Success;
 
-bool GetExecutableDirectory(AZStd::string& executableDir);
-bool GetBaseDirectory(AZStd::string& baseDir);
-
-void NormalizePath(AZStd::string& pathToNormalize);
-void NormalizePath(std::string& pathToNormalize);
 
 bool IsPathValid(const AZStd::string& path);
 bool IsPathValid(const std::string& path);
@@ -42,12 +38,12 @@ class CCrySimpleSock;
 class SEnviropment
 {
 public:
-    std::string     m_Root;
-    std::string     m_CompilerPath;
-    std::string     m_CachePath;
-    std::string     m_TempPath;
-    std::string     m_ErrorPath;
-    std::string     m_ShaderPath;
+    AZ::IO::Path  m_Root;
+    AZ::IO::Path  m_CompilerPath;
+    AZ::IO::Path  m_CachePath;
+    AZ::IO::Path  m_TempPath;
+    AZ::IO::Path  m_ErrorPath;
+    AZ::IO::Path  m_ShaderPath;
 
     std::string   m_FailEMail;
     std::string   m_MailServer;

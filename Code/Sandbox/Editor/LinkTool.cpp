@@ -250,7 +250,8 @@ bool CLinkTool::ChildIsValid(CBaseObject* pParent, CBaseObject* pChild, int nDir
     CBaseObject* pObj;
     if (nDir & 1)
     {
-        if (pObj = pChild->GetParent())
+        pObj = pChild->GetParent();
+        if (pObj)
         {
             if (!ChildIsValid(pParent, pObj, 1))
             {
@@ -262,7 +263,8 @@ bool CLinkTool::ChildIsValid(CBaseObject* pParent, CBaseObject* pChild, int nDir
     {
         for (int i = 0; i < pChild->GetChildCount(); i++)
         {
-            if (pObj = pChild->GetChild(i))
+            pObj = pChild->GetChild(i);
+            if (pObj)
             {
                 if (!ChildIsValid(pParent, pObj, 2))
                 {

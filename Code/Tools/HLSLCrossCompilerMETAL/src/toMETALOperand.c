@@ -1606,7 +1606,6 @@ static void METALMETALTranslateVariableNameWithMask(HLSLCrossCompilerContext* ps
             {
                 // Array of matrices is treated as array of vec4s in HLSL,
                 // but that would mess up uniform types in metal. Do gymnastics.
-                SHADER_VARIABLE_TYPE eType2 = GetOperandDataTypeMETAL(psContext, psOperand->psSubOperand[0]);
                 uint32_t opFlags = TO_FLAG_INTEGER;
 
                 if (psVarType && (psVarType->Class == SVC_MATRIX_COLUMNS || psVarType->Class == SVC_MATRIX_ROWS) && (psVarType->Elements > 1))
@@ -1689,7 +1688,6 @@ static void METALMETALTranslateVariableNameWithMask(HLSLCrossCompilerContext* ps
             }
             else if (psOperand->psSubOperand[1] != NULL)
             {
-                SHADER_VARIABLE_TYPE eType2 = GetOperandDataTypeMETAL(psContext, psOperand->psSubOperand[1]);
                 bcatcstr(metal, "[");
                 TranslateOperandMETAL(psContext, psOperand->psSubOperand[1], TO_FLAG_INTEGER);
                 bcatcstr(metal, "]");
@@ -2151,7 +2149,6 @@ void TranslateOperandWithMaskMETAL(HLSLCrossCompilerContext* psContext, const Op
 {
     bstring metal = *psContext->currentShaderString;
     uint32_t ui32IgnoreSwizzle = 0;
-    SHADER_VARIABLE_TYPE eType = GetOperandDataTypeExMETAL(psContext, psOperand, TypeFlagsToSVTTypeMETAL(ui32TOFlag));
 
     if (ui32TOFlag & TO_FLAG_NAME_ONLY)
     {
