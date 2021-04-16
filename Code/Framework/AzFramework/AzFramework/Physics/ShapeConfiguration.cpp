@@ -26,6 +26,22 @@ namespace Physics
                 ->Field("Scale", &ShapeConfiguration::m_scale)
                 ;
         }
+
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            #define REFLECT_SHAPETYPE_ENUM_VALUE(EnumValue)                                                                                            \
+                behaviorContext->EnumProperty<(int)Physics::ShapeType::EnumValue>("ShapeType_"#EnumValue)                                                      \
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)                                         \
+                    ->Attribute(AZ::Script::Attributes::Module, "physics");
+
+            // Note: Here we only expose the types that are available to the user in the editor
+            REFLECT_SHAPETYPE_ENUM_VALUE(Box);
+            REFLECT_SHAPETYPE_ENUM_VALUE(Sphere);
+            REFLECT_SHAPETYPE_ENUM_VALUE(Cylinder);
+            REFLECT_SHAPETYPE_ENUM_VALUE(PhysicsAsset);
+
+            #undef REFLECT_SHAPETYPE_ENUM_VALUE
+        }
     }
 
     void SphereShapeConfiguration::Reflect(AZ::ReflectContext* context)

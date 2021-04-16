@@ -27,7 +27,7 @@ class Tests():
 def C4976236_AddPhysxColliderComponent():
     """
     Summary:
-    Load level with Entity having PhysX Collider component. Verify that editor remains stable in Game mode.
+    Opens an empty level and creates an Entity with PhysX Collider. Verify that editor remains stable in Game mode.
 
     Expected Behavior:
     The Editor is stable there are no warnings or errors.
@@ -37,16 +37,10 @@ def C4976236_AddPhysxColliderComponent():
      2) Create test entity
      3) Start the Tracer to catch any errors and warnings
      4) Add the PhysX Collider component and change shape to box
-     5) Add Mesh component and an asset
-     6) Enter game mode
-     7) Verify there are no errors and warnings in the logs
-     8) Exit game mode
-     9) Close the editor
-
-    Note:
-    - This test file must be called from the Open 3D Engine Editor command terminal
-    - Any passed and failed tests are written to the Editor.log file.
-        Parsing the file or running a log_monitor are required to observe the test results.
+     5) Enter game mode
+     6) Verify there are no errors and warnings in the logs
+     7) Exit game mode
+     8) Close the editor
 
     :return: None
     """
@@ -55,12 +49,15 @@ def C4976236_AddPhysxColliderComponent():
     import ImportPathHelper as imports
 
     imports.init()
+    
+    import azlmbr
+    
     from utils import Report
     from utils import TestHelper as helper
     from utils import Tracer
     from editor_entity_utils import EditorEntity
     from asset_utils import Asset
-
+    
     helper.init_idle()
     # 1) Load the level
     helper.open_level("Physics", "Base")
@@ -74,17 +71,12 @@ def C4976236_AddPhysxColliderComponent():
         # 4) Add the PhysX Collider component and change shape to box
         collider_component = test_entity.add_component("PhysX Collider")
         Report.result(Tests.add_physx_collider, test_entity.has_component("PhysX Collider"))
-        collider_component.set_component_property_value('Shape Configuration|Shape', 1)
+        collider_component.set_component_property_value('Shape Configuration|Shape', azlmbr.physics.ShapeType_Box)
 
-        # 5) Add Mesh component and an asset
-        mesh_component = test_entity.add_component("Mesh")
-        asset = Asset.find_asset_by_path(r"Objects\default\primitive_cube.cgf")
-        mesh_component.set_component_property_value('MeshComponentRenderNode|Mesh asset', asset.id)
-
-        # 6) Enter game mode
+        # 5) Enter game mode
         helper.enter_game_mode(Tests.enter_game_mode)
 
-    # 7) Verify there are no errors and warnings in the logs
+    # 6) Verify there are no errors and warnings in the logs
     success_condition = not (section_tracer.has_errors or section_tracer.has_warnings)
     Report.result(Tests.no_errors_and_warnings_found, success_condition)
     if not success_condition:
@@ -94,7 +86,7 @@ def C4976236_AddPhysxColliderComponent():
             Report.info(f"Errors found: {section_tracer.errors}")
         Report.failure(Tests.no_errors_and_warnings_found)
 
-    # 8) Exit game mode
+    # 7) Exit game mode
     helper.exit_game_mode(Tests.exit_game_mode)
 
 
