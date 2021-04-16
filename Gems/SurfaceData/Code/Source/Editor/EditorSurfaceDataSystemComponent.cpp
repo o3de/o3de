@@ -145,24 +145,36 @@ namespace SurfaceData
 
     void EditorSurfaceDataSystemComponent::OnCatalogLoaded(const char* /*catalogFile*/)
     {
-        //automatically register all surface tag list assets
+        //automatically register all existing surface tag list assets at Editor startup
 
-        // First run through all the assets and trigger loads on them.
+        AZStd::vector<AZ::Data::AssetId> surfaceTagAssetIds;
+
+        // First run through all the assets and gather up the asset IDs for all surface tag list assets
         AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::EnumerateAssets,
             nullptr,
-            [this](const AZ::Data::AssetId assetId, const AZ::Data::AssetInfo& assetInfo) {
+            [&surfaceTagAssetIds](const AZ::Data::AssetId assetId, const AZ::Data::AssetInfo& assetInfo) {
                 const auto assetType = azrtti_typeid<EditorSurfaceTagListAsset>();
                 if (assetInfo.m_assetType == assetType)
                 {
-                    m_surfaceTagNameAssets[assetId] = AZ::Data::AssetManager::Instance().GetAsset(assetId, assetType, AZ::Data::AssetLoadBehavior::Default);
+                    surfaceTagAssetIds.emplace_back(assetId);
                 }
             },
             nullptr);
 
-        // After all the loads are triggered, block to make sure they've all completed.
-        for (auto& asset : m_surfaceTagNameAssets)
+        // Next, trigger all the loads.  This is done outside of EnumerateAssets to ensure that we don't have any deadlocks caused by
+        // lock inversion.  If this thread locks AssetCatalogRequestBus mutex with EnumerateAssets, then locks m_assetMutex in
+        // AssetManager::FindOrCreateAsset, it's possible for those locks to get locked in reverse on a loading thread, causing a deadlock.
+        for (auto& assetId : surfaceTagAssetIds)
         {
-            asset.second.BlockUntilLoadComplete();
+            m_surfaceTagNameAssets[assetId] = AZ::Data::AssetManager::Instance().GetAsset(
+                assetId, azrtti_typeid<EditorSurfaceTagListAsset>(), AZ::Data::AssetLoadBehavior::Default);
+
+            // If any assets are still loading (which they likely will be), listen for the OnAssetReady event and refresh the Editor
+            // UI as each one finishes loading.
+            if (!m_surfaceTagNameAssets[assetId].IsReady())
+            {
+                AZ::Data::AssetBus::MultiHandler::BusConnect(assetId);
+            }
         }
     }
 

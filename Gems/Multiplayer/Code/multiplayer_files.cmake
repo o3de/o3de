@@ -34,6 +34,9 @@ set(FILES
     Source/Components/NetBindComponent.h
     Source/Components/NetworkTransformComponent.cpp
     Source/Components/NetworkTransformComponent.h
+    Source/ConnectionData/ClientToServerConnectionData.cpp
+    Source/ConnectionData/ClientToServerConnectionData.h
+    Source/ConnectionData/ClientToServerConnectionData.inl
     Source/ConnectionData/IConnectionData.h
     Source/ConnectionData/ServerToClientConnectionData.cpp
     Source/ConnectionData/ServerToClientConnectionData.h
@@ -87,6 +90,8 @@ set(FILES
     Source/Pipeline/NetBindMarkerComponent.h
     Source/Pipeline/NetworkSpawnableHolderComponent.cpp
     Source/Pipeline/NetworkSpawnableHolderComponent.h
+    Source/ReplicationWindows/NullReplicationWindow.cpp
+    Source/ReplicationWindows/NullReplicationWindow.h
     Source/ReplicationWindows/IReplicationWindow.h
     Source/ReplicationWindows/ServerToClientReplicationWindow.cpp
     Source/ReplicationWindows/ServerToClientReplicationWindow.h

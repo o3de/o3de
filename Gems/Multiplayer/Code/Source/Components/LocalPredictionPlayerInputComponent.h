@@ -42,6 +42,6 @@ namespace Multiplayer
 
         void HandleSendClientInput(const Multiplayer::NetworkInputVector& inputArray, const uint32_t& stateHash, const AzNetworking::PacketEncodingBuffer& clientState) override;
         void HandleSendMigrateClientInput(const Multiplayer::MigrateNetworkInputVector& inputArray) override;
-        void HandleSendClientInputCorrection(const Multiplayer::NetworkInputId& inputId, const AzNetworking::PacketEncodingBuffer& correction) override;
+        void HandleSendClientInputCorrection(const Multiplayer::ClientInputId& inputId, const AzNetworking::PacketEncodingBuffer& correction) override;
     };
 }

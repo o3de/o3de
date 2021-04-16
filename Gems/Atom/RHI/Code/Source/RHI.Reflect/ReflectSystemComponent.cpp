@@ -54,7 +54,7 @@ namespace AZ
             if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<ReflectSystemComponent, AZ::Component>()
-                    ->Version(2);
+                    ->Version(3);
             }
 
             ReflectNamedEnums(context);
@@ -266,6 +266,7 @@ namespace AZ
             serializeContext->Enum<BufferBindFlags>()
                 ->Value("None", BufferBindFlags::None)
                 ->Value("InputAssembly", BufferBindFlags::InputAssembly)
+                ->Value("DynamicInputAssembly", BufferBindFlags::DynamicInputAssembly)
                 ->Value("Constant", BufferBindFlags::Constant)
                 ->Value("CopyRead", BufferBindFlags::CopyRead)
                 ->Value("CopyWrite", BufferBindFlags::CopyWrite)
