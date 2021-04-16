@@ -420,7 +420,9 @@ void CLayoutWnd::CreateLayout(EViewLayout layout, bool bBindViewports, EViewport
 
     // Ensure we delete our old view immediately so it can relinquish its backing ViewportContext
     if (m_maximizedView)
+    {
         delete m_maximizedView;
+    }
 
     m_maximizedView = new CLayoutViewPane(this);
     m_maximizedView->SetId(0);
