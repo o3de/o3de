@@ -12,6 +12,7 @@
 
 #include <Source/NetworkEntity/NetworkEntityManager.h>
 #include <Source/Components/NetBindComponent.h>
+#include <Include/IMultiplayer.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
@@ -34,6 +35,12 @@ namespace Multiplayer
         , m_entityRemovedEventHandler([this](AZ::Entity* entity) { OnEntityRemoved(entity); })
     {
         AZ::Interface<INetworkEntityManager>::Register(this);
+        if (AZ::Interface<AZ::ComponentApplicationRequests>::Get() != nullptr)
+        {
+            // Null guard needed for unit tests
+            AZ::Interface<AZ::ComponentApplicationRequests>::Get()->RegisterEntityAddedEventHandler(m_entityAddedEventHandler);
+            AZ::Interface<AZ::ComponentApplicationRequests>::Get()->RegisterEntityRemovedEventHandler(m_entityRemovedEventHandler);
+        }
     }
 
     NetworkEntityManager::~NetworkEntityManager()
@@ -43,13 +50,6 @@ namespace Multiplayer
 
     void NetworkEntityManager::Initialize(HostId hostId, AZStd::unique_ptr<IEntityDomain> entityDomain)
     {
-        if (AZ::Interface<AZ::ComponentApplicationRequests>::Get() != nullptr)
-        {
-            // Null guard needed for unit tests
-            AZ::Interface<AZ::ComponentApplicationRequests>::Get()->RegisterEntityAddedEventHandler(m_entityAddedEventHandler);
-            AZ::Interface<AZ::ComponentApplicationRequests>::Get()->RegisterEntityRemovedEventHandler(m_entityRemovedEventHandler);
-        }
-
         m_hostId = hostId;
         m_entityDomain = AZStd::move(entityDomain);
         m_updateEntityDomainEvent.Enqueue(net_EntityDomainUpdateMs, true);
@@ -282,8 +282,13 @@ namespace Multiplayer
         NetBindComponent* netBindComponent = entity->FindComponent<NetBindComponent>();
         if (netBindComponent != nullptr)
         {
+            // @pereslav
+            // Note that this is a total hack.. we should not be listening to this event on a client
+            // Entities should instead be spawned by the prefabEntityId inside EntityReplicationManager::HandlePropertyChangeMessage()
+            const bool isClient = AZ::Interface<IMultiplayer>::Get()->GetAgentType() == MultiplayerAgentType::Client;
+            const NetEntityRole netEntityRole = isClient ? NetEntityRole::Client: NetEntityRole::Authority;
             const NetEntityId netEntityId = m_nextEntityId++;
-            netBindComponent->PreInit(entity, PrefabEntityId(), netEntityId, NetEntityRole::Authority);
+            netBindComponent->PreInit(entity, PrefabEntityId(), netEntityId, netEntityRole);
         }
     }
 
