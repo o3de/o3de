@@ -830,7 +830,7 @@ void CAnimSequence::Reflect(AZ::ReflectContext* context)
     if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context); serializeContext != nullptr)
     {
         serializeContext->Class<CAnimSequence, IAnimSequence>()
-            ->Version(IAnimSequence::kSequenceVersion)
+            ->Version(IAnimSequence::kSequenceVersion, &AnimSequenceVersionConverter)
             ->Field("Name", &CAnimSequence::m_name)
             ->Field("SequenceEntityId", &CAnimSequence::m_sequenceEntityId)
             ->Field("Flags", &CAnimSequence::m_flags)
@@ -842,6 +842,18 @@ void CAnimSequence::Reflect(AZ::ReflectContext* context)
             ->Field("Expanded", &CAnimSequence::m_expanded)
             ->Field("ActiveDirectorNodeId", &CAnimSequence::m_activeDirectorNodeId);
     }
+}
+
+bool CAnimSequence::AnimSequenceVersionConverter(
+    AZ::SerializeContext& serializeContext,
+    AZ::SerializeContext::DataElementNode& rootElement)
+{
+    if (rootElement.GetVersion() < 5)
+    {
+        rootElement.AddElement(serializeContext, "BaseClass1", azrtti_typeid<IAnimSequence>());
+    }
+
+    return true;
 }
 
 //////////////////////////////////////////////////////////////////////////

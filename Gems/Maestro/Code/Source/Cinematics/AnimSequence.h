@@ -155,7 +155,10 @@ public:
     }
 
     static void Reflect(AZ::ReflectContext* context);
-
+    static bool AnimSequenceVersionConverter(
+        AZ::SerializeContext& serializeContext,
+        AZ::SerializeContext::DataElementNode& rootElement);
+    
 private:
     void ComputeTimeRange();
     void CopyNodeChildren(XmlNodeRef& xmlNode, IAnimNode* pAnimNode);
