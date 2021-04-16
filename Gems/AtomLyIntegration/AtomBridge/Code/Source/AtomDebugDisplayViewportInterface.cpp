@@ -17,8 +17,8 @@
 #include <AzCore/Math/Obb.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Frustum.h>
-
 #include <AtomDebugDisplayViewportInterface.h>
+#include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <AzCore/Interface/Interface.h>
 
