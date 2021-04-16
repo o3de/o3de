@@ -115,7 +115,7 @@ namespace AzNetworking
 
         ContainerType m_container;
 
-        template <AZStd::size_t, typename ElementType>
+        template <AZStd::size_t, typename>
         friend class FixedSizeVectorBitset;
     };
 }
