@@ -82,11 +82,8 @@ def IsPullRequest(branchName) {
 }
 
 def IsJobEnabled(branchName, buildTypeMap, pipelineName, platformName) {
-    if (IsPullRequest(branchName)) {
-        return true
-    }
     def job_list_override = params.JOB_LIST_OVERRIDE.tokenize(',')
-    if (!job_list_override.isEmpty()) {
+    if (!IsPullRequest(branchName) && !job_list_override.isEmpty()) {
         return params[platformName] && job_list_override.contains(buildTypeMap.key);
     } else {
         if (params[platformName]) {
