@@ -575,6 +575,91 @@ namespace UnitTest
         EXPECT_EQ(baseStatus, expected_base_status);
     }
 
+    struct DebugListener : AZ::Interface<IDebugAssetEvent>::Registrar
+    {
+        void AssetStatusUpdate(AZ::Data::AssetId id, AZ::Data::AssetData::AssetStatus status) override
+        {
+            AZ::Debug::Trace::Output(
+                "", AZStd::string::format("Status %s - %d\n", id.ToString<AZStd::string>().c_str(), static_cast<int>(status)).c_str());
+        }
+        void ReleaseAsset(AZ::Data::AssetId id) override
+        {
+            AZ::Debug::Trace::Output(
+                "", AZStd::string::format("Release %s\n", id.ToString<AZStd::string>().c_str()).c_str());
+        }
+    };
+
+    TEST_F(AssetJobsFloodTest, Cancel)
+    {
+        DebugListener listener;  
+        auto assetUuids = {
+            MyAsset1Id,
+            //MyAsset2Id,
+            //MyAsset3Id,
+        };
+
+        AZStd::vector<AZStd::thread> threads;
+        AZStd::mutex mutex;
+        AZStd::atomic<int> threadCount((int)assetUuids.size());
+        AZStd::condition_variable cv;
+        AZStd::atomic_bool keepDispatching(true);
+
+        auto dispatch = [&keepDispatching]() {
+            while (keepDispatching)
+            {
+                AssetManager::Instance().DispatchEvents();
+            }
+        };
+
+        AZStd::thread dispatchThread(dispatch);
+
+        for (const auto& assetUuid : assetUuids)
+        {
+            threads.emplace_back([this, &threadCount, &cv, assetUuid]() {
+                bool checkLoaded = true;
+
+                for (int i = 0; i < 1000; i++)
+                {
+                    Asset<AssetWithAssetReference> asset1 =
+                        m_testAssetManager->GetAsset(assetUuid, azrtti_typeid<AssetWithAssetReference>(), AZ::Data::AssetLoadBehavior::PreLoad);
+
+                    if (checkLoaded)
+                    {
+                        asset1.BlockUntilLoadComplete();
+
+                        EXPECT_TRUE(asset1.IsReady()) << "Iteration " << i << " failed.  Asset status: " <<  static_cast<int>(asset1.GetStatus());
+                    }
+
+                    checkLoaded = !checkLoaded;
+                }
+
+                threadCount--;
+                cv.notify_one();
+            });
+        }
+
+        bool timedOut = false;
+
+        // Used to detect a deadlock.  If we wait for more than 5 seconds, it's likely a deadlock has occurred
+        while (threadCount > 0 && !timedOut)
+        {
+            AZStd::unique_lock<AZStd::mutex> lock(mutex);
+            timedOut = (AZStd::cv_status::timeout == cv.wait_until(lock, AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds * 20000));
+        }
+
+        ASSERT_EQ(threadCount, 0) << "Thread count is non-zero, a thread has likely deadlocked.  Test will not shut down cleanly.";
+
+        for (auto& thread : threads)
+        {
+            thread.join();
+        }
+
+        keepDispatching = false;
+        dispatchThread.join();
+
+        AssetManager::Destroy();
+    }
+
 #if AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     TEST_F(AssetJobsFloodTest, DISABLED_AssetLoadBehaviorIsPreserved)
 #else
