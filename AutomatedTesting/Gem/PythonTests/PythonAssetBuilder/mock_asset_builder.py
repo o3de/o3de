@@ -58,7 +58,7 @@ def process_file(request):
     mockFilename = mockFilename.replace('\\', '/').lower()
     tempFilename = os.path.join(request.tempDirPath, mockFilename)
 
-    # write out a tempFilename like a JSON or something?
+    # write out a tempFilename like a JSON
     fileOutput = open(tempFilename, "w")
     fileOutput.write('{}')
     fileOutput.close()

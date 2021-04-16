@@ -24,7 +24,7 @@ mockAssetType = azlmbr.math.Uuid_CreateString('{9274AD17-3212-4651-9F3B-7DCCB080
 mockAssetPath = 'gem/pythontests/pythonassetbuilder/test_asset.mock_asset'
 assetId = azlmbr.asset.AssetCatalogRequestBus(azlmbr.bus.Broadcast, 'GetAssetIdByPath', mockAssetPath, mockAssetType, False)
 if (assetId.is_valid() is False):
-    raise_and_stop(f'Mock AssetId is not valid!')
+    raise_and_stop(f'Mock AssetId is not valid! Got {assetId.to_string()} instead')
 
 if (assetId.to_string().endswith(':54c06b89') is False):
     raise_and_stop(f'Mock AssetId has unexpected sub-id for {mockAssetPath}!')
