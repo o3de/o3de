@@ -3403,13 +3403,13 @@ namespace WhiteBox
             return false;
         }
 
-        bool ReadMesh(WhiteBoxMesh& whiteBox, const WhiteBoxMeshStream& input)
+        ReadResult ReadMesh(WhiteBoxMesh& whiteBox, const WhiteBoxMeshStream& input)
         {
             AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
             if (input.empty())
             {
-                return false;
+                return ReadResult::Empty;
             }
 
             std::string inputStr;
@@ -3423,19 +3423,19 @@ namespace WhiteBox
             return ReadMesh(whiteBox, whiteBoxStream);
         }
 
-        bool ReadMesh(WhiteBoxMesh& whiteBox, std::istream& input)
+        ReadResult ReadMesh(WhiteBoxMesh& whiteBox, std::istream& input)
         {
             const auto skipws = input.flags() & std::ios_base::skipws;
             AZ_Assert(skipws == 0, "Input stream must not skip white space characters");
 
             if (skipws != 0)
             {
-                return false;
+                return ReadResult::Error;
             }
 
             AZStd::lock_guard lg(g_omSerializationLock);
             OpenMesh::IO::Options options{OpenMesh::IO::Options::FaceTexCoord | OpenMesh::IO::Options::FaceNormal};
-            return OpenMesh::IO::read_mesh(whiteBox.mesh, input, ".om", options);
+            return OpenMesh::IO::read_mesh(whiteBox.mesh, input, ".om", options) ? ReadResult::Full : ReadResult::Error;
         }
 
         WhiteBoxMeshPtr CloneMesh(const WhiteBoxMesh& whiteBox)
@@ -3449,7 +3449,7 @@ namespace WhiteBox
             }
 
             WhiteBoxMeshPtr newMesh = CreateWhiteBoxMesh();
-            if (!ReadMesh(*newMesh, clonedData))
+            if (ReadMesh(*newMesh, clonedData) != ReadResult::Full)
             {
                 return nullptr;
             }
