@@ -166,7 +166,7 @@ namespace AZ
             AZ_CONSOLEFUNC(MeshFeatureProcessor,
                 ForceRebuildDrawPackets,
                 AZ::ConsoleFunctorFlags::Null,
-                "(For Testing) Calling this console functor sets m_forceRebuildDrawPackets = true."
+                "(For Testing) Invalidates all mesh draw packets, causing them to rebuild on the next frame."
             );
 
             MeshFeatureProcessor(const MeshFeatureProcessor&) = delete;
