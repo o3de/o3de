@@ -469,6 +469,8 @@ try {
         return
     }
 
+    def someBuildHappened = false
+
     // Build and Post-Build Testing Stage
     def buildConfigs = [:]
 
@@ -479,6 +481,7 @@ try {
                 def envVars = GetBuildEnvVars(platform.value.PIPELINE_ENV ?: EMPTY_JSON, build_job.value.PIPELINE_ENV ?: EMPTY_JSON, pipelineName)
                 envVars['JOB_NAME'] = "${branchName}_${platform.key}_${build_job.key}" // backwards compatibility, some scripts rely on this
                 def nodeLabel = envVars['NODE_LABEL']
+                someBuildHappened = true
 
                 buildConfigs["${platform.key} [${build_job.key}]"] = {
                     node("${nodeLabel}") {
@@ -537,6 +540,9 @@ try {
         }
 
         echo 'All builds successful'
+    }
+    if (!someBuildHappened) {
+        currentBuild.result = 'NOT_BUILT'
     }
 }
 catch(Exception e) {
