@@ -54,8 +54,9 @@ namespace AZ
                 RPI::SceneDescriptor sceneDesc;
                 sceneDesc.m_featureProcessorNames.push_back("AZ::Render::TransformServiceFeatureProcessor");
                 sceneDesc.m_featureProcessorNames.push_back("AZ::Render::MeshFeatureProcessor");
+                sceneDesc.m_featureProcessorNames.push_back("AZ::Render::SimplePointLightFeatureProcessor");
+                sceneDesc.m_featureProcessorNames.push_back("AZ::Render::SimpleSpotLightFeatureProcessor");
                 sceneDesc.m_featureProcessorNames.push_back("AZ::Render::PointLightFeatureProcessor");
-                sceneDesc.m_featureProcessorNames.push_back("AZ::Render::SpotLightFeatureProcessor");
                 // There is currently a bug where having multiple DirectionalLightFeatureProcessors active can result in shadow flickering [ATOM-13568]
                 // as well as continually rebuilding MeshDrawPackets [ATOM-13633]. Lets just disable the directional light FP for now.
                 // Possibly re-enable with [GFX TODO][ATOM-13639] 
