@@ -97,6 +97,10 @@ namespace UnitTest
         m_mpComponent->OnConnect(&connMock2);
 
         EXPECT_EQ(m_connectionAcquiredCount, 25);
+
+        // Clean up connection data
+        m_mpComponent->OnDisconnect(&connMock1, AzNetworking::DisconnectReason::None, AzNetworking::TerminationEndpoint::Local);
+        m_mpComponent->OnDisconnect(&connMock2, AzNetworking::DisconnectReason::None, AzNetworking::TerminationEndpoint::Local);
     }
 }
 
