@@ -17,6 +17,7 @@
 #include <AzCore/JSON/pointer.h>
 #include <AzCore/JSON/prettywriter.h>
 #include <AzCore/JSON/writer.h>
+#include <AzCore/PlatformId/PlatformDefaults.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Settings/CommandLine.h>
 #include <AzCore/std/string/conversions.h>
@@ -463,18 +464,6 @@ namespace AZ::SettingsRegistryMergeUtils
     void MergeSettingsToRegistry_Bootstrap(SettingsRegistryInterface& registry)
     {
         ConfigParserSettings parserSettings;
-        parserSettings.m_commentPrefixFunc = [](AZStd::string_view line) -> AZStd::string_view
-        {
-            constexpr AZStd::string_view commentPrefixes[]{ "--", ";","#" };
-            for (AZStd::string_view commentPrefix : commentPrefixes)
-            {
-                if (size_t commentOffset = line.find(commentPrefix); commentOffset != AZStd::string_view::npos)
-                {
-                    return line.substr(0, commentOffset);
-                }
-            }
-            return line;
-        };
         parserSettings.m_registryRootPointerPath = BootstrapSettingsRootKey;
         MergeSettingsToRegistry_ConfigFile(registry, "bootstrap.cfg", parserSettings);
     }
@@ -501,9 +490,10 @@ namespace AZ::SettingsRegistryMergeUtils
             // and if that's missing just get "assets".
             constexpr char platformName[] = AZ_TRAIT_OS_PLATFORM_CODENAME_LOWER;
 
-            SettingsRegistryInterface::FixedValueString assetPlatform;
             buffer = AZStd::fixed_string<bufferSize>::format("%s/%s_assets", BootstrapSettingsRootKey, platformName);
             AZStd::string_view assetPlatformKey(buffer);
+            // Use the platform codename to retrieve the default asset platform value
+            SettingsRegistryInterface::FixedValueString assetPlatform = AZ::OSPlatformToDefaultAssetPlatform(AZ_TRAIT_OS_PLATFORM_CODENAME);
             if (!registry.Get(assetPlatform, assetPlatformKey))
             {
                 buffer = AZStd::fixed_string<bufferSize>::format("%s/assets", BootstrapSettingsRootKey);
