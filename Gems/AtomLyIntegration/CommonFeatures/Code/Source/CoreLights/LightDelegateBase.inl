@@ -59,6 +59,12 @@ namespace AZ
                 m_featureProcessor->SetRgbIntensity(m_lightHandle, m_photometricValue.GetCombinedRgb<FeatureProcessorType::PhotometricUnitType>());
             }
         }
+        
+        template <typename FeatureProcessorType>
+        void LightDelegateBase<FeatureProcessorType>::SetConfig(const AreaLightComponentConfig* config)
+        {
+            m_componentConfig = config;
+        }
 
         template <typename FeatureProcessorType>
         void LightDelegateBase<FeatureProcessorType>::SetChroma(const AZ::Color& color)

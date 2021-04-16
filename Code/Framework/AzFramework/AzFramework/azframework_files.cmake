@@ -145,6 +145,7 @@ set(FILES
     Components/NonUniformScaleComponent.cpp
     FileFunc/FileFunc.h
     FileFunc/FileFunc.cpp
+    Font/FontInterface.h
     Gem/GemInfo.cpp
     Gem/GemInfo.h
     StringFunc/StringFunc.h
