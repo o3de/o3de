@@ -311,6 +311,17 @@ namespace AZ
             return false;
         }
 
+        bool Buffer::ResetBufferData(uint8_t clearValue, uint64_t clearSizeInBytes, uint64_t bufferByteOffset)
+        {
+            if (void* buf = Map(clearSizeInBytes, bufferByteOffset))
+            {
+                memset(buf, clearValue, clearSizeInBytes);
+                Unmap();
+                return true;
+            }
+            return false;
+        }
+
         const RHI::AttachmentId& Buffer::GetAttachmentId() const
         {
             AZ_Assert(!m_attachmentId.GetStringView().empty(), "Read-only buffer doesn't need attachment id");

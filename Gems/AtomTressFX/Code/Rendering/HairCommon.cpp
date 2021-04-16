@@ -1,0 +1,193 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <Atom/RHI/Factory.h>
+#include <Atom/RHI/RHIUtils.h>
+
+#include <Atom/RPI.Public/Shader/Shader.h>
+#include <Atom/RPI.Public/Image/StreamingImage.h>
+#include <Atom/RPI.Reflect/Buffer/BufferAssetView.h>
+
+// Hair specific
+#include <Rendering/HairCommon.h>
+
+namespace AZ
+{
+    namespace Render
+    {
+        namespace Hair
+        {
+
+            //!=====================================================================================
+            //!
+            //!                                Utility Functions
+            //!
+            //!=====================================================================================
+
+            // [To Do] examine if most of these functions can become global in RPI
+
+            //! Utility function to generate the Srg given the shader and the desired Srg name to be associated to.
+            //! If several shaders are sharing the same Srg (for example perView, perScene), it is enough to
+            //! create the Srg by associating it with a single shader and since the GPU signature and the data
+            //! are referring to the same shared description (preferable set in an [SrgDeclaration].aszli file)
+            //! The association with all shaders will work properly.
+            Data::Instance<RPI::ShaderResourceGroup> UtilityClass::CreateShaderResourceGroup(
+                Data::Instance<RPI::Shader> shader,
+                const char* shaderResourceGroupId,
+                const char* moduleName)
+            {
+                const Data::Asset<RPI::ShaderResourceGroupAsset> srgAsset = shader->FindShaderResourceGroupAsset(AZ::Name{ shaderResourceGroupId });
+                if (!srgAsset.GetId().IsValid())
+                {
+                    AZ_Error(moduleName, false, "Could not find shader resource group asset '%s'", shaderResourceGroupId);
+                    return nullptr;
+                }
+                else if (!srgAsset.IsReady())
+                {
+                    AZ_Error(moduleName, false, "Shader resource group asset is not loaded");
+                    return nullptr;
+                }
+
+                Data::Instance<RPI::ShaderResourceGroup> srg = RPI::ShaderResourceGroup::Create(srgAsset);
+                if (!srg)
+                {
+                    AZ_Error(moduleName, false, "Failed to create shader resource group");
+                    return nullptr;
+                }
+                return srg;
+            }
+
+
+            //! If srg is nullptr the index handle will NOT be set.
+            //! This can be useful when creating a constant buffer or an image.
+            Data::Instance<RPI::Buffer> UtilityClass::CreateBuffer(
+                const char* warningHeader,
+                SrgBufferDescriptor& bufferDesc,
+                Data::Instance<RPI::ShaderResourceGroup> srg)
+            {
+                // If srg is provided, match the shader Srg bind index (returned via the descriptor)
+                if (srg)
+                {   // Not always do we want to associate Srg when creating a buffer
+                    bufferDesc.m_resourceShaderIndex = srg->FindShaderInputBufferIndex(bufferDesc.m_paramNameInSrg).GetIndex();
+                    if (bufferDesc.m_resourceShaderIndex == uint32_t(-1))
+                    {
+                        AZ_Error(warningHeader, false, "Failed to find shader input index for [%s] in the SRG.",
+                            bufferDesc.m_paramNameInSrg.GetCStr());
+                        return nullptr;
+                    }
+                }
+
+                // Descriptor setting
+                RPI::CommonBufferDescriptor desc;
+                desc.m_elementFormat = bufferDesc.m_elementFormat;
+                desc.m_poolType = bufferDesc.m_poolType;;
+                desc.m_elementSize = bufferDesc.m_elementSize;
+                desc.m_bufferName = bufferDesc.m_bufferName.GetCStr();
+                desc.m_byteCount = (uint64_t)bufferDesc.m_elementCount * bufferDesc.m_elementSize;
+                desc.m_bufferData = nullptr;    // set during asset load - use Update
+
+                // Buffer creation
+                return RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+            }
+
+
+            Data::Instance<RPI::Buffer> UtilityClass::CreateBufferAndBindToSrg(
+                const char* warningHeader,
+                SrgBufferDescriptor& bufferDesc,
+                Data::Instance<RPI::ShaderResourceGroup> srg)
+            {
+                // Buffer creation
+                Data::Instance<RPI::Buffer> buffer = CreateBuffer(warningHeader, bufferDesc, srg);
+
+                if (!buffer)
+                {
+                    AZ_Error(warningHeader, false, "Failed to create buffer for [%s]", bufferDesc.m_bufferName.GetCStr());
+                    return nullptr;
+                }
+
+                // Buffer binding to Srg (if buffer was created)
+                if (buffer && (!srg->SetBufferView(RHI::ShaderInputBufferIndex(bufferDesc.m_resourceShaderIndex), buffer->GetBufferView())))
+                {
+                    AZ_Error(warningHeader, false, "Failed to bind buffer view for [%s]", bufferDesc.m_bufferName.GetCStr());
+                    return nullptr;
+                }
+
+                return buffer;
+            }
+
+            Data::Instance<RHI::ImagePool> UtilityClass::CreateImagePool(RHI::ImagePoolDescriptor& imagePoolDesc)
+            {
+                RHI::Ptr<RHI::Device> device = RHI::GetRHIDevice();
+                Data::Instance<RHI::ImagePool> imagePool = RHI::Factory::Get().CreateImagePool();
+                RHI::ResultCode result = imagePool->Init(*device, imagePoolDesc);
+                if (result != RHI::ResultCode::Success)
+                {
+                    AZ_Error("CreateImagePool", false, "Failed to create or initialize image pool");
+                    return nullptr;
+                }
+                return imagePool;
+            }
+
+            Data::Instance<RHI::Image> UtilityClass::CreateImage2D(RHI::ImagePool* imagePool, RHI::ImageDescriptor& imageDesc)
+            {
+                Data::Instance<RHI::Image> rhiImage = RHI::Factory::Get().CreateImage();
+                RHI::ImageInitRequest request;
+                request.m_image = rhiImage.get();
+                request.m_descriptor = imageDesc;
+                RHI::ResultCode result = imagePool->InitImage(request);
+                if (result != RHI::ResultCode::Success)
+                {
+                    AZ_Error("CreateImage2D", false, "Failed to create or initialize image");
+                    return nullptr;
+                }
+                return rhiImage;
+            }
+
+            // [GXF TODO][ATOM-13418]
+            // Move this method to be a global utility function - also implement similar method using AssetId.
+            Data::Instance<RPI::StreamingImage> UtilityClass::LoadStreamingImage(
+                const char* textureFilePath, [[maybe_unused]] const char* sampleName)
+            {
+                Data::AssetId streamingImageAssetId;
+                Data::AssetCatalogRequestBus::BroadcastResult(
+                    streamingImageAssetId, &Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
+                    textureFilePath, azrtti_typeid<RPI::StreamingImageAsset>(), false);
+
+                if (!streamingImageAssetId.IsValid())
+                {
+                    AZ_Error(sampleName, false, "Failed to get streaming image asset id with path %s", textureFilePath);
+                    return nullptr;
+                }
+
+                auto streamingImageAsset = Data::AssetManager::Instance().GetAsset<RPI::StreamingImageAsset>(
+                    streamingImageAssetId,
+                    Data::AssetLoadBehavior::PreLoad);
+                streamingImageAsset.BlockUntilLoadComplete();
+
+                if (!streamingImageAsset.IsReady())
+                {
+                    AZ_Error(sampleName, false, "Failed to get streaming image asset '%s'", textureFilePath);
+                    return nullptr;
+                }
+
+                auto image = RPI::StreamingImage::FindOrCreate(streamingImageAsset);
+                if (!image)
+                {
+                    AZ_Error(sampleName, false, "Failed to find or create an image instance from image asset '%s'", textureFilePath);
+                    return nullptr;
+                }
+                return image;
+            }
+
+        } // namespace Hair
+    } // namespace Render
+} // namespace AZ

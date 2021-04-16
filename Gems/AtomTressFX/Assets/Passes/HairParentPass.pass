@@ -1,0 +1,24 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "HairParentPassTemplate",
+            "PassClass": "HairParentPass",
+            "Slots": [
+            ],
+            "Connections": [
+            ],
+            "PassRequests": [
+                {
+                    "Name": "HairSkinningComputePass",
+                    "TemplateName": "HairSkinningComputePassTemplate",
+                    "Connections": [
+                    ]
+                }
+            ]
+        }
+    }
+}
+ 
