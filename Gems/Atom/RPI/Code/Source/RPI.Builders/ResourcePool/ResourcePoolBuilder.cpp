@@ -45,7 +45,7 @@ namespace AZ
             AssetBuilderSDK::AssetBuilderDesc builderDescriptor;
 
             builderDescriptor.m_name = "Atom Resource Pool Asset Builder";
-            builderDescriptor.m_version = 3; //ATOM-15196
+            builderDescriptor.m_version = 2; //ATOM-15196
             builderDescriptor.m_patterns.emplace_back(AssetBuilderSDK::AssetBuilderPattern(AZStd::string("*.") + s_sourcePoolAssetExt,
                 AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             builderDescriptor.m_busId = azrtti_typeid<ResourcePoolBuilder>();
