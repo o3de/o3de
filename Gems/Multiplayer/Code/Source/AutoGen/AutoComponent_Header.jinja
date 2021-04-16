@@ -33,22 +33,20 @@ const {{ Property.attrib['Type'] }}& Get{{ PropertyName }}() const;
 #}
 {% macro DeclareNetworkPropertySetter(Property) %}
 {% set PropertyName = UpperFirst(Property.attrib['Name']) %}
-{%     if Property.attrib['IsPredictable'] | booleanTrue %}
-{%         if Property.attrib['Container'] == 'Array' %}
-void Set{{ PropertyName }}(const Multiplayer::NetworkInput&, int32_t index, const {{ Property.attrib['Type'] }}& value);
-{{ Property.attrib['Type'] }}& Modify{{ PropertyName }}(const Multiplayer::NetworkInput&, int32_t index);
-{%         elif Property.attrib['Container'] == 'Vector' %}
-void Set{{ PropertyName }}(const Multiplayer::NetworkInput&, int32_t index, const {{ Property.attrib['Type'] }}& value);
-{{ Property.attrib['Type'] }}& Modify{{ PropertyName }}(const Multiplayer::NetworkInput&, int32_t index);
-bool {{ PropertyName }}PushBack(const Multiplayer::NetworkInput&, const {{ Property.attrib['Type'] }}& value);
-bool {{ PropertyName }}PopBack(const Multiplayer::NetworkInput&);
-void {{ PropertyName }}Clear(const Multiplayer::NetworkInput&);
-{%         elif Property.attrib['Container'] == 'Object' %}
-void Set{{ PropertyName }}(const Multiplayer::NetworkInput&, const {{ Property.attrib['Type'] }}& value);
-{{ Property.attrib['Type'] }}& Modify{{ PropertyName }}(const Multiplayer::NetworkInput&);
-{%         else %}
-void Set{{ PropertyName }}(const Multiplayer::NetworkInput&, const {{ Property.attrib['Type'] }}& value);
-{%         endif %}
+{%     if Property.attrib['Container'] == 'Array' %}
+void Set{{ PropertyName }}(int32_t index, const {{ Property.attrib['Type'] }}& value);
+{{ Property.attrib['Type'] }}& Modify{{ PropertyName }}(int32_t index);
+{%     elif Property.attrib['Container'] == 'Vector' %}
+void Set{{ PropertyName }}(int32_t index, const {{ Property.attrib['Type'] }}& value);
+{{ Property.attrib['Type'] }}& Modify{{ PropertyName }}(int32_t index);
+bool {{ PropertyName }}PushBack(const {{ Property.attrib['Type'] }}& value);
+bool {{ PropertyName }}PopBack();
+void {{ PropertyName }}Clear();
+{%     elif Property.attrib['Container'] == 'Object' %}
+void Set{{ PropertyName }}(const {{ Property.attrib['Type'] }}& value);
+{{ Property.attrib['Type'] }}& Modify{{ PropertyName }}();
+{%     else %}
+void Set{{ PropertyName }}(const {{ Property.attrib['Type'] }}& value);
 {%     endif %}
 {% endmacro %}
 {#
@@ -417,6 +415,7 @@ namespace {{ Component.attrib['Namespace'] }}
         static const Multiplayer::NetComponentId s_componentId = static_cast<Multiplayer::NetComponentId>({{ Component.attrib['Namespace'] }}::ComponentTypes::{{ Component.attrib['Name'] }});
 
         static void Reflect(AZ::ReflectContext* context);
+        static void ReflectToEditContext(AZ::ReflectContext* context);
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);

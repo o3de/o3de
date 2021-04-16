@@ -270,7 +270,7 @@ namespace AzNetworking
             value.StoreToFloat3(values);
             serializer.Serialize(values[0], "xValue");
             serializer.Serialize(values[1], "yValue");
-            serializer.Serialize(values[1], "zValue");
+            serializer.Serialize(values[2], "zValue");
             value = AZ::Vector3::CreateFromFloat3(values);
             return serializer.IsValid();
         }
@@ -285,8 +285,8 @@ namespace AzNetworking
             value.StoreToFloat4(values);
             serializer.Serialize(values[0], "xValue");
             serializer.Serialize(values[1], "yValue");
-            serializer.Serialize(values[1], "zValue");
-            serializer.Serialize(values[1], "wValue");
+            serializer.Serialize(values[2], "zValue");
+            serializer.Serialize(values[3], "wValue");
             value = AZ::Vector4::CreateFromFloat4(values);
             return serializer.IsValid();
         }
@@ -301,8 +301,8 @@ namespace AzNetworking
             value.StoreToFloat4(values);
             serializer.Serialize(values[0], "xValue");
             serializer.Serialize(values[1], "yValue");
-            serializer.Serialize(values[1], "zValue");
-            serializer.Serialize(values[1], "wValue");
+            serializer.Serialize(values[2], "zValue");
+            serializer.Serialize(values[3], "wValue");
             value = AZ::Quaternion::CreateFromFloat4(values);
             return serializer.IsValid();
         }

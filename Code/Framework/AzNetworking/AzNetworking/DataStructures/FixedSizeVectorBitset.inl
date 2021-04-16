@@ -192,19 +192,11 @@ namespace AzNetworking
     template <AZStd::size_t CAPACITY, typename ElementType>
     inline void FixedSizeVectorBitset<CAPACITY, ElementType>::ClearUnusedBits()
     {
-        constexpr ElementType AllOnes  = static_cast<ElementType>(~0);
-        const ElementType LastUsedBits = (GetSize() % BitsetType::ElementTypeBits);
-#pragma warning(push)
-#pragma warning(disable : 4293) // shift count negative or too big, undefined behaviour
-#pragma warning(disable : 6326) // constant constant comparison
-        const ElementType ShiftAmount  = (LastUsedBits == 0) ? 0 : BitsetType::ElementTypeBits - LastUsedBits;
-        const ElementType ClearBitMask = AllOnes >> ShiftAmount;
-#pragma warning(pop)
         uint32_t usedElementSize = (GetSize() + BitsetType::ElementTypeBits - 1) / BitsetType::ElementTypeBits;
-        for (uint32_t i = usedElementSize + 1; i < CAPACITY; ++i)
+        for (uint32_t i = usedElementSize + 1; i < BitsetType::ElementCount; ++i)
         {
             m_bitset.GetContainer()[i] = 0;
         }
-        m_bitset.GetContainer()[m_bitset.GetContainer().size() - 1] &= ClearBitMask;
+        m_bitset.ClearUnusedBits();
     }
 }
