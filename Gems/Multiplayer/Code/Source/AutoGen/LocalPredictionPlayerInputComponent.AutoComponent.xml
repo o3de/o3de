@@ -16,7 +16,7 @@
     <Include File="Source/NetworkInput/NetworkInputVector.h"/>
     <Include File="AzNetworking/DataStructures/ByteBuffer.h"/>
 
-    <NetworkProperty Type="Multiplayer::NetworkInputId" Name="LastInputId" Init="Multiplayer::NetworkInputId{0}" ReplicateFrom="Authority" ReplicateTo="Authority" IsRewindable="false" IsPredictable="false" IsPublic="false" Container="Object" ExposeToEditor="false" GenerateEventBindings="false" />
+    <NetworkProperty Type="Multiplayer::ClientInputId" Name="LastInputId" Init="Multiplayer::ClientInputId{0}" ReplicateFrom="Authority" ReplicateTo="Authority" IsRewindable="false" IsPredictable="false" IsPublic="false" Container="Object" ExposeToEditor="false" GenerateEventBindings="false" />
 
     <RemoteProcedure Name="SendClientInput" InvokeFrom="Autonomous" HandleOn="Authority" IsPublic="true" IsReliable="false" Description="Client to server move / input RPC">
         <Param Type="Multiplayer::NetworkInputVector" Name="inputArray"  />
@@ -25,7 +25,7 @@
     </RemoteProcedure>
 
     <RemoteProcedure Name="SendClientInputCorrection" InvokeFrom="Authority" HandleOn="Autonomous" IsPublic="true" IsReliable="false" Description="Autonomous proxy correction RPC">
-        <Param Type="Multiplayer::NetworkInputId" Name="inputId" />
+        <Param Type="Multiplayer::ClientInputId" Name="inputId" />
         <Param Type="AzNetworking::PacketEncodingBuffer" Name="correction" />
     </RemoteProcedure>
 
