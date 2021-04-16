@@ -1186,6 +1186,7 @@ bool ApplicationManagerBase::GetAssetDatabaseLocation(AZStd::string& location)
 
 // ------------------------------------------------------------
 
+#pragma optimize( "", off )
 bool ApplicationManagerBase::Activate()
 {
     QDir projectCache;
@@ -1304,6 +1305,7 @@ bool ApplicationManagerBase::Activate()
     }
     return true;
 }
+#pragma optimize( "", on )
 
 bool ApplicationManagerBase::PostActivate()
 {
