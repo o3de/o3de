@@ -135,18 +135,19 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
 endif()
 
 ## Blast ##
-#if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
-#    ly_add_pytest(
-#        NAME AutomatedTesting::BlastTests
-#        TEST_SERIAL TRUE
-#        PATH ${CMAKE_CURRENT_LIST_DIR}/Blast/TestSuite_Active.py
-#        TIMEOUT 3600
-#        RUNTIME_DEPENDENCIES
-#            Legacy::Editor
-#            AZ::AssetProcessor
-#            AutomatedTesting.Assets
-#    )
-#endif()
+if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
+    ly_add_pytest(
+        NAME AutomatedTesting::BlastTests
+        TEST_SERIAL TRUE
+        TEST_SUITE sandbox
+        PATH ${CMAKE_CURRENT_LIST_DIR}/Blast/TestSuite_Active.py
+        TIMEOUT 3600
+        RUNTIME_DEPENDENCIES
+            Legacy::Editor
+            AZ::AssetProcessor
+            AutomatedTesting.Assets
+    )
+endif()
 
 #############
 
