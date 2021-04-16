@@ -34,7 +34,6 @@ namespace AZ
 #if !defined(IMGUI_ENABLED)
     class DebugConsole {};
 #else
-#endif // defined(IMGUI_ENABLED)
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //! A debug console used to enter debug console commands and display debug log messages.
     //!
@@ -132,4 +131,5 @@ namespace AZ
         bool m_autoScroll = true; //!< Should we auto-scroll as new entries are added?
         bool m_forceScroll = false; //!< Do we need to force scroll after input entered?
     };
+#endif // defined(IMGUI_ENABLED)
 } // namespace AZ

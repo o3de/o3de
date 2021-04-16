@@ -32,8 +32,8 @@ namespace Multiplayer
         NetworkInput& operator[](uint32_t index);
         const NetworkInput& operator[](uint32_t index) const;
 
-        void SetPreviousInputId(NetworkInputId previousInputId);
-        NetworkInputId GetPreviousInputId() const;
+        void SetPreviousInputId(ClientInputId previousInputId);
+        ClientInputId GetPreviousInputId() const;
 
         bool Serialize(AzNetworking::ISerializer& serializer);
 
@@ -48,7 +48,7 @@ namespace Multiplayer
 
         ConstNetworkEntityHandle m_owner;
         AZStd::fixed_vector<Wrapper, MaxElements> m_inputs;
-        NetworkInputId m_previousInputId;
+        ClientInputId m_previousInputId;
     };
 
     //! @class MigrateNetworkInputVector
