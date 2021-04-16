@@ -1043,12 +1043,12 @@ namespace AzToolsFramework
         EditorEntityLockComponentNotificationBus::Router::BusRouterConnect();
         EditorManipulatorCommandUndoRedoRequestBus::Handler::BusConnect(entityContextId);
 
+        CreateTestSwitcher();
+
         CreateTransformModeSelectionCluster();
         RegisterActions();
         SetupBoxSelect();
         RefreshSelectedEntityIdsAndRegenerateManipulators();
-
-        CreateTestSwitcher();
     }
 
     EditorTransformComponentSelection::~EditorTransformComponentSelection()

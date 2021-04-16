@@ -49,6 +49,9 @@ namespace AzToolsFramework::ViewportUi::Internal
             QIcon buttonIcon = QString((button->m_icon).c_str());
 
             m_activeButton = new QToolButton();
+
+            // No hover effect for the main button as it's not clickable
+            m_activeButton->setProperty("IconHasHoverEffect", false);
             m_activeButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
             m_activeButton->setIcon(buttonIcon);
             m_activeButton->setText(buttonName);
@@ -85,11 +88,35 @@ namespace AzToolsFramework::ViewportUi::Internal
    
     void ViewportUiSwitcher::RemoveButton(ButtonId buttonId)
     {
-        ButtonId deleteLater = buttonId;
+        if (auto actionEntry = m_buttonActionMap.find(buttonId); actionEntry != m_buttonActionMap.end())
+        {
+            QAction* action = actionEntry->second;
+
+            // remove the action from the toolbar
+            removeAction(action);
+
+            // deregister from the widget manager
+            m_widgetCallbacks.RemoveWidget(action);
+
+            // resize to fit new area with minimum extra space
+            resize(minimumSizeHint());
+
+            m_buttonActionMap.erase(buttonId);
+
+            // reset current active mode if its the button being removed
+            if (buttonId == m_currentMode)
+            {
+                if (auto nextEntry = m_buttonActionMap.find(ButtonId(buttonId + 1)); nextEntry != m_buttonActionMap.end())
+                {
+                    SetActiveMode(nextEntry->first);
+                }
+            }
+        }
     }
     
     void ViewportUiSwitcher::Update()
     {
+        m_widgetCallbacks.Update();
     }
 
     void ViewportUiSwitcher::SetActiveMode(ButtonId buttonId)
@@ -117,6 +144,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         {
             itr = m_buttonActionMap.find(m_currentMode);
             action = itr->second;
+
             addAction(action);
         }
 
