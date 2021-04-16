@@ -114,6 +114,9 @@ namespace AzNetworking
         void ClearUnusedBits();
 
         ContainerType m_container;
+
+        template <AZStd::size_t, typename>
+        friend class FixedSizeVectorBitset;
     };
 }
 

@@ -14,6 +14,7 @@
 #include <AzCore/Serialization/Json/ArraySerializer.h>
 #include <AzCore/Serialization/Json/BasicContainerSerializer.h>
 #include <AzCore/Serialization/Json/BoolSerializer.h>
+#include <AzCore/Serialization/Json/ByteStreamSerializer.h>
 #include <AzCore/Serialization/Json/DoubleSerializer.h>
 #include <AzCore/Serialization/Json/IntSerializer.h>
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
@@ -67,6 +68,8 @@ namespace AZ
 
             jsonContext->Serializer<JsonStringSerializer>()->HandlesType<AZStd::string>();
             jsonContext->Serializer<JsonOSStringSerializer>()->HandlesType<OSString>();
+
+            jsonContext->Serializer<JsonByteStreamSerializer>()->HandlesType<JsonByteStream>();
 
             jsonContext->Serializer<JsonBasicContainerSerializer>()
                 ->HandlesType<AZStd::fixed_vector>()

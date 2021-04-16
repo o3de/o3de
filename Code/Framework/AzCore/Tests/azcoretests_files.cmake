@@ -98,6 +98,7 @@ set(FILES
     Serialization/Json/BaseJsonSerializerTests.cpp
     Serialization/Json/BasicContainerSerializerTests.cpp
     Serialization/Json/BoolSerializerTests.cpp
+    Serialization/Json/ByteStreamSerializerTests.cpp
     Serialization/Json/ColorSerializerTests.cpp
     Serialization/Json/DoubleSerializerTests.cpp
     Serialization/Json/IntSerializerTests.cpp
