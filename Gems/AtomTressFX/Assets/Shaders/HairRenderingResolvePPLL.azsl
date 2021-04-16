@@ -1,0 +1,210 @@
+//---------------------------------------------------------------------------------------
+// Shader code related to per-pixel linked lists.
+//-------------------------------------------------------------------------------------
+//
+// Copyright (c) 2019 Advanced Micro Devices, Inc. All rights reserved.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#include <HairLighting.azsli>
+#include <Atom/Features/PostProcessing/FullscreenVertexInfo.azsli>
+#include <Atom/Features/PostProcessing/FullscreenVertexUtil.azsli>
+
+// Generates a fullscreen triangle from pipeline provided vertex id 
+VSOutput FullScreenVS(VSInput input)
+{
+    VSOutput OUT;
+
+    float4 posTex = GetVertexPositionAndTexCoords(input.m_vertexID);
+
+    OUT.m_texCoord = float2(posTex.z, posTex.w);
+    OUT.m_position = float4(posTex.x, posTex.y, 0.0, 1.0);
+
+    return OUT;
+}
+
+
+//////////////////////////////////////////////////////////////
+// Bind data for PPLLResolvePS
+
+#define NODE_DATA(x) LinkedListNodes[x].data
+#define NODE_NEXT(x) LinkedListNodes[x].uNext
+#define NODE_DEPTH(x) LinkedListNodes[x].depth
+#define NODE_COLOR(x) LinkedListNodes[x].color
+
+#define GET_DEPTH_AT_INDEX(uIndex) kBuffer[uIndex].x
+#define GET_DATA_AT_INDEX(uIndex) kBuffer[uIndex].y
+#define GET_COLOR_AT_INDEX(uIndex) kBuffer[uIndex].z
+#define STORE_DEPTH_AT_INDEX(uIndex, uValue) kBuffer[uIndex].x = uValue
+#define STORE_DATA_AT_INDEX( uIndex, uValue) kBuffer[uIndex].y = uValue
+#define STORE_COLOR_AT_INDEX( uIndex, uValue ) kBuffer[uIndex].z = uValue
+
+
+float4 GatherLinkedList(float2 vfScreenAddress)
+{
+    uint2 vScreenAddress = uint2(vfScreenAddress);
+    uint pointer = FragmentListHead[vScreenAddress];
+
+//    FragmentListHead[vScreenAddress] = FRAGMENT_LIST_NULL; // Clear for next frame;
+
+    if (pointer == FRAGMENT_LIST_NULL)
+        discard;
+
+    uint4 kBuffer[KBUFFER_SIZE];
+
+    // Init kbuffer to large values
+    [unroll]
+    for (int t = 0; t < KBUFFER_SIZE; ++t)
+    {
+        STORE_DEPTH_AT_INDEX(t, asuint(100000.0));
+        STORE_DATA_AT_INDEX(t, 0);
+    }
+
+    // Get first K elements from the top (top to bottom)
+    // And store them in the kbuffer for later
+    for (int p = 0; p < KBUFFER_SIZE; ++p)
+    {
+        if (pointer != FRAGMENT_LIST_NULL)
+        {
+            STORE_DEPTH_AT_INDEX(p, NODE_DEPTH(pointer));
+            STORE_DATA_AT_INDEX(p, NODE_DATA(pointer));
+            STORE_COLOR_AT_INDEX(p, NODE_COLOR(pointer));
+            pointer = NODE_NEXT(pointer);
+        }
+    }
+
+    float4 fcolor = float4(0, 0, 0, 1);
+
+    // Go through the remaining layers of hair
+    [allow_uav_condition]
+    for (int iFragment = 0; iFragment < MAX_FRAGMENTS && pointer != FRAGMENT_LIST_NULL; ++iFragment)
+    {
+        if (pointer == FRAGMENT_LIST_NULL) break;
+
+        int id = 0;
+        float max_depth = 0;
+
+        // Find the current furthest sample in the KBuffer
+        for (int i = 0; i < KBUFFER_SIZE; i++)
+        {
+            float fDepth = asfloat(GET_DEPTH_AT_INDEX(i));
+            if (max_depth < fDepth)
+            {
+                max_depth = fDepth;
+                id = i;
+            }
+        }
+
+        // Fetch the node data
+        uint data = NODE_DATA(pointer);
+        uint color = NODE_COLOR(pointer);
+        uint nodeDepth = NODE_DEPTH(pointer);
+        float fNodeDepth = asfloat(nodeDepth);
+
+        // If the node in the linked list is nearer than the furthest one in the local array, exchange the node 
+        // in the local array for the one in the linked list.
+        if (max_depth > fNodeDepth)
+        {
+            uint tmp = GET_DEPTH_AT_INDEX(id);
+            STORE_DEPTH_AT_INDEX(id, nodeDepth);
+            fNodeDepth = asfloat(tmp);
+
+            tmp = GET_DATA_AT_INDEX(id);
+            STORE_DATA_AT_INDEX(id, data);
+            data = tmp;
+
+            tmp = GET_COLOR_AT_INDEX(id);
+            STORE_COLOR_AT_INDEX(id, color);
+            color = tmp;
+        }
+
+        // Calculate color contribution from whatever sample we are using
+        float4 vData = UnpackUintIntoFloat4(data);
+        float3 vTangent = vData.xyz;
+        float alpha = vData.w;
+
+        uint shadeParamIndex;	// So we know what settings to shade with
+        float3 vColor = UnpackUintIntoFloat3Byte(color, shadeParamIndex);
+        
+        // Shade the bottom hair layers (cheap shading, just uses scalp base color)
+        // Just blend in the color for cheap underhairs
+        fcolor.xyz = fcolor.xyz * (1.f - alpha) + (vColor * alpha) * alpha;
+        fcolor.w *= (1.f - alpha);
+
+        pointer = NODE_NEXT(pointer);
+    }
+
+    // Make sure we are blending the correct number of strands (don't blend more than we have)
+    float maxAlpha = 0;
+
+    // Blend the top-most entries
+    for (int j = 0; j < KBUFFER_SIZE; j++)
+    {
+        int id = 0;
+        float max_depth = 0;
+
+        // find the furthest node in the array
+        for (int i = 0; i < KBUFFER_SIZE; i++)
+        {
+            float fDepth = asfloat(GET_DEPTH_AT_INDEX(i));
+            if (max_depth < fDepth)
+            {
+                max_depth = fDepth;
+                id = i;
+            }
+        }
+
+        // take this node out of the next search
+        uint nodeDepth = GET_DEPTH_AT_INDEX(id);
+        uint data = GET_DATA_AT_INDEX(id);
+        uint color = GET_COLOR_AT_INDEX(id);
+
+        // take this node out of the next search
+        STORE_DEPTH_AT_INDEX(id, 0);
+
+        // Use high quality shading for the nearest k fragments
+        float fDepth = asfloat(nodeDepth);
+        float4 vData = UnpackUintIntoFloat4(data);
+        float3 vTangent = vData.xyz;
+        float alpha = vData.w;
+        uint shadeParamIndex;	// So we know what settings to shade with
+        float3 vColor = UnpackUintIntoFloat3Byte(color, shadeParamIndex);
+        float3 fragmentColor = TressFXShading(vfScreenAddress, fDepth, vTangent, vColor, shadeParamIndex);
+
+        // Blend in the fragment color
+        fcolor.xyz = fcolor.xyz * (1.f - alpha) + (fragmentColor * alpha) * alpha;
+        fcolor.w *= (1.f - alpha);
+    }
+
+    return fcolor;
+}
+
+//////////////////////////////////////////////////////////////
+// PPLL Resolve PS
+// Full-screen pass that sorts through the written samples and shades the hair
+//[earlydepthstencil]
+float4 PPLLResolvePS(VSOutput input) : SV_Target
+//float4 PPLLResolvePS(VS_OUTPUT_SCREENQUAD input) : SV_Target
+{
+//    return float4(input.m_texCoord.xy,0.0,0.9985);    // perfect 0..1 as expected 
+//    return float4(input.m_position.xy * 0.001,0.0,0.995);   // xy coordinates in pixels
+    return saturate(float4(GatherLinkedList(input.m_position.xy).rgb, 0.1) + float4(0,0.2,0,.21));
+    return GatherLinkedList(input.m_position.xy);
+}

@@ -267,6 +267,71 @@
                         }
                     ]
                 },
+
+                {
+                    "Name": "HairSkinningComputePass",
+                    "TemplateName": "HairSkinningComputePassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+//                        {
+//                            "LocalSlot": "RenderTargetInputOutput",
+//                            "AttachmentRef": {
+//                                "Pass": "TransparentPass",
+//                                "Attachment": "InputOutput"
+//                            }
+//                        }
+                    ]
+                },
+                {
+                    "Name": "HairPPLLRasterPass",
+                    "TemplateName": "HairPPLLRasterPassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkinnedHairSharedBuffer",
+                            "AttachmentRef": {
+                                "Pass": "HairSkinningComputePass",
+                                "Attachment": "SkinnedHairSharedBuffer"
+                            }
+                        },
+                        {
+                            "LocalSlot": "RenderTargetInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "TransparentPass",
+                                "Attachment": "InputOutput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "HairPPLLResolvePass",
+                    "TemplateName": "HairPPLLResolvePassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "PerPixelListHead",
+                            "AttachmentRef": {
+                                "Pass": "HairPPLLRasterPass",
+                                "Attachment": "PerPixelListHead"
+                            }
+                        },
+                        {
+                            "LocalSlot": "PerPixelLinkedList",
+                            "AttachmentRef": {
+                                "Pass": "HairPPLLRasterPass",
+                                "Attachment": "PerPixelLinkedList"
+                            }
+                        },
+                        {
+                            "LocalSlot": "RenderTargetInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "TransparentPass",
+                                "Attachment": "InputOutput"
+                            }
+                        }
+                    ]
+                },
+
                 {
                     "Name": "DeferredFogPass",
                     "TemplateName": "DeferredFogPassTemplate",
@@ -289,8 +354,8 @@
                         {
                             "LocalSlot": "RenderTargetInputOutput",
                             "AttachmentRef": {
-                                "Pass": "TransparentPass",
-                                "Attachment": "InputOutput"
+                                "Pass": "HairPPLLResolvePass",
+                                "Attachment": "RenderTargetInputOutput"
                             }
                         }
                     ],

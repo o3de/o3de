@@ -245,6 +245,18 @@
                 "Path": "Passes/DeferredFog.pass"
             },
             {
+                "Name": "HairSkinningComputePassTemplate",
+                "Path": "Passes/HairSkinningCompute.pass"
+            },
+			{
+                "Name": "HairPPLLRasterPassTemplate",
+                "Path": "Passes/HairFillPPLL.pass"
+            },
+            {
+                "Name": "HairPPLLResolvePassTemplate",
+                "Path": "Passes/HairResolvePPLL.pass"
+            },
+            {
                 "Name": "SubsurfaceScatteringPassTemplate",
                 "Path": "Passes/SubsurfaceScattering.pass"
             },

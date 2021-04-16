@@ -1,0 +1,97 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "HairPPLLRasterPassTemplate",
+            "PassClass": "HairPPLLRasterPass",
+            "Slots": [
+                {
+                    "Name": "RenderTargetInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "LoadAction": "DontCare",
+                        "StoreAction": "Store"
+                    }
+                },
+                {
+                    "Name": "SkinnedHairSharedBuffer",
+                    "ShaderInputName": "m_skinnedHairSharedBuffer",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+//                    "LoadStoreAction": {
+//                        "LoadAction": "DontCare"
+//                    }
+                },
+                {
+                    "Name": "PPLLIndexCounter",
+                    "ShaderInputName": "m_linkedListCounter",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "ClearValue": {
+                            "Value": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ]
+                        },
+                        "LoadAction": "Clear",
+                        "StoreAction": "Store"
+                    }
+                },
+                {
+                    "Name": "PerPixelListHead",
+                    "ShaderInputName": "m_fragmentListHead",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "ClearValue": {
+                            "Value": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ]
+                        },
+                        "LoadAction": "Clear",
+                        "StoreAction": "Store"
+                    }
+                },
+                {
+                    "Name": "PerPixelLinkedList",
+                    "ShaderInputName": "m_linkedListNodes",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "ClearValue": {
+                            "Value": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ]
+                        },
+                        "LoadAction": "Clear",
+                        "StoreAction": "Store"
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "RasterPassData",
+                "DrawListTag": "hairFillPass",
+                "PipelineViewTag": "MainCamera"
+                //                "ShaderAsset": {
+                // Looking for it in the Shaders directory relative to the Assets directory
+                //    "FilePath": "Shaders/HairRenderingFillPPLL.shader"
+                //}
+                //                "PassSrgAsset": {
+                //                    "FilePath": "Shaders/HairSrgs.azsli:HairPerPassSrg"
+                //                }
+            }
+        }
+    }
+}

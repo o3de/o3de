@@ -29,6 +29,7 @@ namespace AZ
             static void Reflect(AZ::ReflectContext* context);
 
             ImagePoolDescriptor() = default;
+            ImagePoolDescriptor(ImageBindFlags bindFlags) : m_bindFlags(bindFlags) {};
 
             /// The set of image bind flags supported by this pool.
             ImageBindFlags m_bindFlags = ImageBindFlags::Color;

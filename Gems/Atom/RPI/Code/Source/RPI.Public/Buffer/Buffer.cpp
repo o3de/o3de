@@ -74,9 +74,8 @@ namespace AZ
 
         const RHI::BufferView* Buffer::GetBufferView() const
         {
-            if(RHI::CheckBitsAny(m_rhiBuffer->GetDescriptor().m_bindFlags, RHI::BufferBindFlags::InputAssembly | RHI::BufferBindFlags::DynamicInputAssembly))
+            if (m_rhiBuffer->GetDescriptor().m_bindFlags == RHI::BufferBindFlags::InputAssembly)
             {
-                
                 AZ_Assert(false, "Input assembly buffer doesn't need a regular buffer view, it requires a stream or index buffer view.");
                 return nullptr;
             }
@@ -204,11 +203,11 @@ namespace AZ
         void Buffer::InitBufferView()
         {
             // Skip buffer view creation for input assembly buffers
-            if(RHI::CheckBitsAny(m_rhiBuffer->GetDescriptor().m_bindFlags, RHI::BufferBindFlags::InputAssembly | RHI::BufferBindFlags::DynamicInputAssembly))
+            if (m_rhiBuffer->GetDescriptor().m_bindFlags == RHI::BufferBindFlags::InputAssembly)
             {
                 return;
             }
-               
+            
             m_bufferView = m_rhiBuffer->GetBufferView(m_bufferViewDescriptor);
 
             if(!m_bufferView.get())
@@ -305,6 +304,17 @@ namespace AZ
                 return true;
             }
 
+            return false;
+        }
+
+        bool Buffer::ResetBufferData(uint8_t clearValue, uint64_t clearSizeInBytes, uint64_t bufferByteOffset)
+        {
+            if (void* buf = Map(clearSizeInBytes, bufferByteOffset))
+            {
+                memset(buf, clearValue, clearSizeInBytes);
+                Unmap();
+                return true;
+            }
             return false;
         }
 
