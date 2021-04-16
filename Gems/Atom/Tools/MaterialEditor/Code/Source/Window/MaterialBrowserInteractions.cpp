@@ -11,6 +11,7 @@
 */
 
 #include <QApplication>
+#include <QClipboard>
 #include <QMenu>
 #include <QInputDialog>
 #include <QMessageBox>
@@ -61,6 +62,8 @@ namespace MaterialEditor
             m_caller = nullptr;
         });
 
+        AddGenericContextMenuActions(caller, menu, entry);
+
         if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
         {
             const auto source = azalias_cast<const SourceAssetBrowserEntry*>(entry);
@@ -82,6 +85,18 @@ namespace MaterialEditor
             const auto folder = azalias_cast<const FolderAssetBrowserEntry*>(entry);
             AddContextMenuActionsForFolder(caller, menu, folder);
         }
+    }
+
+    void MaterialBrowserInteractions::AddGenericContextMenuActions([[maybe_unused]] QWidget* caller, QMenu* menu, const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry)
+    {
+        menu->addAction(QObject::tr("Copy Name To Clipboard"), [=]()
+            {
+                QApplication::clipboard()->setText(entry->GetName().c_str());
+            });
+        menu->addAction(QObject::tr("Copy Path To Clipboard"), [=]()
+            {
+                QApplication::clipboard()->setText(entry->GetFullPath().c_str());
+            });
     }
 
     void MaterialBrowserInteractions::AddContextMenuActionsForMaterialTypeSource(QWidget* caller, QMenu* menu, const AzToolsFramework::AssetBrowser::SourceAssetBrowserEntry* entry)
