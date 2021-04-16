@@ -164,6 +164,8 @@ namespace AtomToolsFramework
 
     bool RenderViewportWidget::OnInputChannelEventFiltered(const AzFramework::InputChannel& inputChannel)
     {
+        bool shouldConsumeEvent = true;
+
         // Grab keyboard focus if we've been clicked on.
         // Qt normally handles this for us, but we're filtering native events before they get
         // synthesized into QMouseEvents.
@@ -175,9 +177,18 @@ namespace AtomToolsFramework
         // Don't consume new input events if we don't currently have focus.
         // We do forward Ended events, as they may be relevant to our current state
         // (e.g. a key gets released after we lose focus, it shouldn't remain "stuck").
-        if (!hasFocus() && inputChannel.GetState() != AzFramework::InputChannel::State::Ended)
+        if (!hasFocus())
         {
-            return false;
+            if (inputChannel.GetState() == AzFramework::InputChannel::State::Ended)
+            {
+                // Forward the input ended event to our controllers, but don't prevent other viewports from receiving it.
+                shouldConsumeEvent = false;
+            }
+            else
+            {
+                // Not an event we should listen to, abort
+                return false;
+            }
         }
 
         // If we receive a mouse button event from outside of our viewport, ignore it even if we have focus.
@@ -196,7 +207,9 @@ namespace AtomToolsFramework
         }
 
         AzFramework::NativeWindowHandle windowId = reinterpret_cast<AzFramework::NativeWindowHandle>(winId());
-        return m_controllerList->HandleInputChannelEvent({GetId(), windowId, inputChannel});
+        const bool eventHandled = m_controllerList->HandleInputChannelEvent({GetId(), windowId, inputChannel});
+        // If our controllers handled the event and it's one we can safely consume (i.e. it's not an Ended event that other viewports might need), consume it.
+        return eventHandled && shouldConsumeEvent;
     }
 
     void RenderViewportWidget::OnTick([[maybe_unused]]float deltaTime, AZ::ScriptTimePoint time)
