@@ -13,6 +13,17 @@
             ],
             "textureMap": "Textures/chain_basecolor.png"
         },
+        "general": {
+            "applySpecularAA": true
+        },
+        "irradiance": {
+            "color": [
+                0.4891279339790344,
+                0.7931944727897644,
+                1.0,
+                1.0
+            ]
+        },
         "metallic": {
             "textureMap": "Textures/chain_alpha.png"
         },
@@ -21,7 +32,7 @@
         },
         "opacity": {
             "alphaSource": "Split",
-            "factor": 1.0,
+            "factor": 0.30000001192092898,
             "mode": "Cutout",
             "textureMap": "Textures/chain_alpha.png"
         },
