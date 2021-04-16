@@ -1603,7 +1603,7 @@ namespace AzToolsFramework
 
                 const AZ::Vector3 uniformScale = AZ::Vector3(action.m_start.m_sign * sumVectorElements(action.LocalScaleOffset()));
                 const AZ::Vector3 scale = (AZ::Vector3::CreateOne() +
-                    (uniformScale / initialScale)).GetMax(AZ::Vector3(0.01f));
+                    (uniformScale / initialScale)).GetClamp(AZ::Vector3(AZ::MinTransformScale), AZ::Vector3(AZ::MaxTransformScale));
                 const AZ::Transform scaleTransform = AZ::Transform::CreateScale(scale);
 
                 if (action.m_modifiers.Alt())
