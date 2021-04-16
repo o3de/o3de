@@ -26,7 +26,7 @@ namespace AZ
 {
     class Transform;
 
-    using TransformChangedEvent = Event<Transform, Transform>;
+    using TransformChangedEvent = Event<const Transform&, const Transform&>;
 
     using ParentChangedEvent = Event<EntityId, EntityId>;
 

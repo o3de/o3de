@@ -47,6 +47,10 @@ namespace Multiplayer
         //! @return the networkId for the entity that owns this controller
         NetEntityId GetNetEntityId() const;
 
+        //! Returns the networkRole for the entity that owns this controller.
+        //! @return the networkRole for the entity that owns this controller
+        NetEntityRole GetNetEntityRole() const;
+
         //! Returns the raw AZ::Entity pointer for the entity that owns this controller.
         //! @return the raw AZ::Entity pointer for the entity that owns this controller
         AZ::Entity* GetEntity() const;

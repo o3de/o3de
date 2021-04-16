@@ -62,6 +62,7 @@ namespace Multiplayer
         //! @}
 
         NetEntityId GetNetEntityId() const;
+        NetEntityRole GetNetEntityRole() const;
         ConstNetworkEntityHandle GetEntityHandle() const;
         NetworkEntityHandle GetEntityHandle();
         void MarkDirty();
@@ -109,7 +110,8 @@ namespace Multiplayer
         int32_t bitIndex,
         TYPE& value,
         const char* name,
-        [[maybe_unused]] NetComponentId componentId
+        [[maybe_unused]] NetComponentId componentId,
+        MultiplayerStats& stats
     )
     {
         if (bitset.GetBit(bitIndex))
@@ -119,6 +121,7 @@ namespace Multiplayer
             serializer.Serialize(value, name);
             if (modifyRecord && !serializer.GetTrackedChangesFlag())
             {
+                // If the serializer didn't change any values, then lower the flag so we don't unnecessarily notify
                 bitset.SetBit(bitIndex, false);
             }
             const uint32_t postUpdateSize = serializer.GetSize();
@@ -126,8 +129,7 @@ namespace Multiplayer
             const uint32_t updateSize = (postUpdateSize - prevUpdateSize);
             if (updateSize > 0)
             {
-                MultiplayerStats& stats = AZ::Interface<IMultiplayer>::Get()->GetStats();
-                if (serializer.GetSerializerMode() == AzNetworking::SerializerMode::WriteToObject)
+                if (modifyRecord)
                 {
                     stats.m_propertyUpdatesRecv++;
                     stats.m_propertyUpdatesRecvBytes += updateSize;
