@@ -823,6 +823,18 @@ void CAnimSequence::SetId(uint32 newId)
 }
 
 //////////////////////////////////////////////////////////////////////////
+static bool AnimSequenceVersionConverter(
+    AZ::SerializeContext& serializeContext,
+    AZ::SerializeContext::DataElementNode& rootElement)
+{
+    if (rootElement.GetVersion() < 5)
+    {
+        rootElement.AddElement(serializeContext, "BaseClass1", azrtti_typeid<IAnimSequence>());
+    }
+
+    return true;
+}
+
 void CAnimSequence::Reflect(AZ::ReflectContext* context)
 {
     IAnimSequence::Reflect(context);
@@ -842,18 +854,6 @@ void CAnimSequence::Reflect(AZ::ReflectContext* context)
             ->Field("Expanded", &CAnimSequence::m_expanded)
             ->Field("ActiveDirectorNodeId", &CAnimSequence::m_activeDirectorNodeId);
     }
-}
-
-bool CAnimSequence::AnimSequenceVersionConverter(
-    AZ::SerializeContext& serializeContext,
-    AZ::SerializeContext::DataElementNode& rootElement)
-{
-    if (rootElement.GetVersion() < 5)
-    {
-        rootElement.AddElement(serializeContext, "BaseClass1", azrtti_typeid<IAnimSequence>());
-    }
-
-    return true;
 }
 
 //////////////////////////////////////////////////////////////////////////
