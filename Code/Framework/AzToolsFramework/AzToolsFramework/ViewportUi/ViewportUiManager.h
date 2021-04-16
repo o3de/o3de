@@ -32,8 +32,11 @@ namespace AzToolsFramework::ViewportUi
         
         // ViewportUiRequestBus ...
         const ClusterId CreateCluster() override;
+        const ClusterId CreateSwitcher(ButtonId currMode) override;
         void SetClusterActiveButton(ClusterId clusterId, ButtonId buttonId) override;
+        void SetSwitcherActiveButton(ClusterId clusterId, ButtonId buttonId) override;
         const ButtonId CreateClusterButton(ClusterId clusterId, const AZStd::string& icon) override;
+        const ButtonId CreateSwitcherButton(ClusterId clusterId, const AZStd::string& icon, const AZStd::string& name = AZStd::string()) override;
         void RegisterClusterEventHandler(ClusterId clusterId, AZ::Event<ButtonId>::Handler& handler) override;
         void RemoveCluster(ClusterId clusterId) override;
         void SetClusterVisible(ClusterId clusterId, bool visible);
@@ -71,6 +74,8 @@ namespace AzToolsFramework::ViewportUi
         TextFieldId RegisterNewTextField(AZStd::shared_ptr<Internal::TextField>& textField);
         //! Update the corresponding ui element for the given cluster.
         void UpdateClusterUi(Internal::Cluster* cluster);
+        //! Update the corresponding ui element for the given cluster.
+        void UpdateSwitcherUi(Internal::Cluster* cluster);
         //! Update the corresponding ui element for the given text field.
         void UpdateTextFieldUi(Internal::TextField* textField);
     };

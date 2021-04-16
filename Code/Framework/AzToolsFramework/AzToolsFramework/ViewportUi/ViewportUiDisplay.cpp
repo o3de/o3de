@@ -18,6 +18,7 @@
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiDisplay.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiCluster.h>
+#include <AzToolsFramework/ViewportUi/ViewportUiSwitcher.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiTextField.h>
 #include <QWidget>
 
@@ -90,6 +91,51 @@ namespace AzToolsFramework::ViewportUi::Internal
         if (auto cluster = qobject_cast<ViewportUiCluster*>(GetViewportUiElement(clusterId).get()))
         {
             cluster->Update();
+        }
+    }
+
+    void ViewportUiDisplay::AddSwitcher(AZStd::shared_ptr<Cluster> cluster, ButtonId currMode)
+    {
+        if (!cluster.get())
+        {
+            return;
+        }
+
+        auto viewportUiSwitcher = AZStd::make_shared<ViewportUiSwitcher>(cluster, currMode);
+        auto id = AddViewportUiElement(viewportUiSwitcher);
+        cluster->SetViewportUiElementId(id);
+        PositionViewportUiElementAnchored(id, Qt::AlignTop | Qt::AlignLeft);
+    }
+
+    void ViewportUiDisplay::AddSwitcherButton(const ViewportUiElementId clusterId, Button* button)
+    {
+        if (auto viewportUiSwitcher = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(clusterId).get()))
+        {
+            viewportUiSwitcher->AddButton(button);
+        }
+    }
+
+    void ViewportUiDisplay::RemoveSwitcherButton(ViewportUiElementId clusterId, ButtonId buttonId)
+    {
+        if (auto cluster = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(clusterId).get()))
+        {
+            cluster->RemoveButton(buttonId);
+        }
+    }
+
+    void ViewportUiDisplay::UpdateSwitcher(ViewportUiElementId clusterId)
+    {
+        if (auto cluster = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(clusterId).get()))
+        {
+            cluster->Update();
+        }
+    }
+
+    void ViewportUiDisplay::SetSwitcherActiveMode(ViewportUiElementId clusterId, ButtonId buttonId)
+    {
+        if (auto viewportUiSwitcher = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(clusterId).get()))
+        {
+            viewportUiSwitcher->SetActiveMode(buttonId);
         }
     }
 

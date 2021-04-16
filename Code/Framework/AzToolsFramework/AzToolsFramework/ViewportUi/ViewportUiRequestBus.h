@@ -46,10 +46,17 @@ namespace AzToolsFramework::ViewportUi
     public:
         //! Creates and registers a cluster with the Viewport UI system.
         virtual const ClusterId CreateCluster() = 0;
+        //! Creates and registers a switcher with the Viewport UI system.
+        virtual const ClusterId CreateSwitcher(ButtonId currMode) = 0;
         //! Sets the active button of the cluster. This is the button which will display as highlighted.
         virtual void SetClusterActiveButton(ClusterId clusterId, ButtonId buttonId) = 0;
+        //! Sets the active button of the switcher. This is the button which will display as highlighted.
+        //! Maybe update this comment
+        virtual void SetSwitcherActiveButton(ClusterId clusterId, ButtonId buttonId) = 0;
         //! Registers a new button onto a cluster.
         virtual const ButtonId CreateClusterButton(const ClusterId clusterId, const AZStd::string& icon) = 0;
+        //! Registers a new button onto a switcher.
+        virtual const ButtonId CreateSwitcherButton(const ClusterId clusterId, const AZStd::string& icon, const AZStd::string& name = AZStd::string()) = 0;
         //! Registers an event handler to handle events from the cluster.
         virtual void RegisterClusterEventHandler(ClusterId clusterId, AZ::Event<ButtonId>::Handler& handler) = 0;
         //! Removes a cluster from the Viewport UI system.

@@ -440,6 +440,13 @@ namespace AzToolsFramework
             &ViewportUi::ViewportUiRequestBus::Events::RemoveCluster,
             clusterId);
     }
+  
+    static void RemoveTestSwitcher(const ViewportUi::ClusterId clusterId)
+    {
+        ViewportUi::ViewportUiRequestBus::Event(
+            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RemoveCluster,
+            clusterId);
+    }
 
     static void SetViewportUiClusterVisible(ViewportUi::ClusterId clusterId, bool visible)
     {
@@ -464,6 +471,18 @@ namespace AzToolsFramework
             buttonId, ViewportUi::DefaultViewportId,
             &ViewportUi::ViewportUiRequestBus::Events::CreateClusterButton,
             clusterId, AZStd::string::format(":/stylesheet/img/UI20/toolbar/%s.svg", iconName));
+
+        return buttonId;
+    }
+
+    static ViewportUi::ButtonId RegisterSwitcherButton(
+        ViewportUi::ClusterId clusterId, const char* iconName, const char* buttonName)
+    {
+        ViewportUi::ButtonId buttonId;
+        ViewportUi::ViewportUiRequestBus::EventResult(
+            buttonId, ViewportUi::DefaultViewportId,
+            &ViewportUi::ViewportUiRequestBus::Events::CreateSwitcherButton, clusterId,
+            AZStd::string::format("Editor/Icons/Switcher/%s.svg", iconName), buttonName);
 
         return buttonId;
     }
@@ -1028,6 +1047,8 @@ namespace AzToolsFramework
         RegisterActions();
         SetupBoxSelect();
         RefreshSelectedEntityIdsAndRegenerateManipulators();
+
+        CreateTestSwitcher();
     }
 
     EditorTransformComponentSelection::~EditorTransformComponentSelection()
@@ -1037,6 +1058,8 @@ namespace AzToolsFramework
 
         DestroyTransformModeSelectionCluster(m_transformModeClusterId);
         UnregisterActions();
+
+        RemoveTestSwitcher(m_testSwitcherId);
 
         m_pivotOverrideFrame.Reset();
 
@@ -2559,6 +2582,50 @@ namespace AzToolsFramework
             &ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler,
             m_transformModeClusterId,
             m_transformModeSelectionHandler);
+    }
+
+    void EditorTransformComponentSelection::CreateTestSwitcher()
+    {
+        // Create test switcher
+        // & Set Current Active Mode
+        ViewportUi::ViewportUiRequestBus::EventResult(
+            m_testSwitcherId, ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateSwitcher,
+            ViewportUi::ButtonId(1));
+
+        // create and register the buttons
+        m_boxShapeButtonId = RegisterSwitcherButton(m_testSwitcherId, "BoxShape", "Box Shape");
+        m_physxColliderButtonId = RegisterSwitcherButton(m_testSwitcherId, "PhysXCollider", "PhysX Collider");
+        m_transformButtonId = RegisterSwitcherButton(m_testSwitcherId, "Transform", "Transform");
+
+        // Change current active button for now
+        const auto onButtonClicked = [this](ViewportUi::ButtonId buttonId) {
+            if (buttonId == m_boxShapeButtonId)
+            {
+                ViewportUi::ViewportUiRequestBus::Event(
+                    ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton, m_testSwitcherId,
+                    m_boxShapeButtonId);
+                AZ_Printf("ViewportUi", "Box Shape");
+            }
+            else if (buttonId == m_physxColliderButtonId)
+            {
+                ViewportUi::ViewportUiRequestBus::Event(
+                    ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton, m_testSwitcherId,
+                    m_physxColliderButtonId);
+                AZ_Printf("ViewportUi", "PhysXCollider");
+            }
+            else if (buttonId == m_transformButtonId)
+            {
+                ViewportUi::ViewportUiRequestBus::Event(
+                    ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton, m_testSwitcherId,
+                    m_transformButtonId);
+                AZ_Printf("ViewportUi", "Transform");
+            }
+        };
+
+        m_testSwitcherHandler = AZ::Event<ViewportUi::ButtonId>::Handler(onButtonClicked);
+        ViewportUi::ViewportUiRequestBus::Event(
+            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler, m_testSwitcherId,
+            m_testSwitcherHandler);
     }
 
     EditorTransformComponentSelectionRequests::Mode EditorTransformComponentSelection::GetTransformMode()

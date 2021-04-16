@@ -13,6 +13,9 @@
 #include <AzToolsFramework/ViewportUi/Button.h>
 #include <AzToolsFramework/ViewportUi/Cluster.h>
 
+#pragma optimize("", off)
+#pragma inline_depth(0)
+
 namespace AzToolsFramework::ViewportUi::Internal
 {
     Cluster::Cluster()
@@ -53,11 +56,18 @@ namespace AzToolsFramework::ViewportUi::Internal
         }
     }
 
-    ButtonId Cluster::AddButton(const AZStd::string& icon)
+    ButtonId Cluster::AddButton(const AZStd::string& icon, const AZStd::string& name)
     {
         auto buttonId = ButtonId(m_buttons.size() + 1);
 
-        m_buttons.insert({buttonId, AZStd::make_unique<Button>(icon, buttonId)});
+        if (name == AZStd::string())
+        {
+            m_buttons.insert({buttonId, AZStd::make_unique<Button>(icon, buttonId)});
+        }
+        else
+        {
+            m_buttons.insert({buttonId, AZStd::make_unique<Button>(icon, name, buttonId)});
+        }
         return buttonId;
     }
 

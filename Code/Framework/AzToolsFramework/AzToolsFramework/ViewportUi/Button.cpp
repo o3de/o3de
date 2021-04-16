@@ -22,4 +22,11 @@ namespace AzToolsFramework::ViewportUi::Internal
         , m_buttonId(buttonId)
     {
     }
+
+    Button::Button(AZStd::string icon, AZStd::string name, ButtonId buttonId)
+        : m_icon(AZStd::move(icon))
+        , m_name(AZStd::move(name))
+        , m_buttonId(buttonId)
+    {
+    }
 } // namespace AzToolsFramework::ViewportUi::Internal

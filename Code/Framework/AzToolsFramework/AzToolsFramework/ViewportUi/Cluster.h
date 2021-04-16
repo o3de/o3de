@@ -34,7 +34,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         void SetClusterId(ClusterId id);
         ClusterId GetClusterId() const;
 
-        ButtonId AddButton(const AZStd::string& icon);
+        ButtonId AddButton(const AZStd::string& icon, const AZStd::string& name = AZStd::string());
         Button* GetButton(ButtonId buttonId);
         AZStd::vector<Button*> GetButtons();
 

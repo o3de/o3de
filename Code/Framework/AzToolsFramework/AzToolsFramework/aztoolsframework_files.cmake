@@ -498,6 +498,8 @@ set(FILES
     ViewportUi/ViewportUiTextField.cpp
     ViewportUi/ViewportUiCluster.h
     ViewportUi/ViewportUiCluster.cpp
+    ViewportUi/ViewportUiSwitcher.h
+    ViewportUi/ViewportUiSwitcher.cpp
     ViewportUi/ViewportUiWidgetCallbacks.h
     ViewportUi/ViewportUiWidgetCallbacks.cpp
     ViewportUi/ViewportUiDisplayLayout.h
