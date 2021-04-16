@@ -36,7 +36,7 @@ namespace AZ
         //!         buffer->Write(data, size);
         //!         // Use the buffer view for DrawItem or etc.
         //!     }
-        //! Note: DynamicBuffer should only be used for InputAssembly buffer or Constant buffer (not supported yet).
+        //! Note: DynamicBuffer should only be used for DynamicInputAssembly buffer or Constant buffer (not supported yet).
         class DynamicBuffer
             : public AZStd::intrusive_base
         {

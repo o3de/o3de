@@ -118,6 +118,9 @@ namespace AzToolsFramework
             void OnAssetSaveFailedSignal(const AZStd::string& error);
             void OnAssetOpenedSignal(const AZ::Data::Asset<AZ::Data::AssetData>& asset);
 
+        protected: // IPropertyEditorNotify  
+            void UpdateRecentFileListState();
+
         private:
             AssetEditorTab* MakeNewTab(const QString& name);
             AssetEditorTab* FindTabForAsset(const AZ::Data::AssetId& assetId) const;

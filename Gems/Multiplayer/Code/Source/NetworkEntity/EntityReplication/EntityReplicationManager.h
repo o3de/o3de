@@ -22,6 +22,7 @@
 #include <AzNetworking/PacketLayer/IPacketHeader.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/containers/deque.h>
 #include <AzCore/std/limits.h>
 #include <AzCore/EBus/Event.h>
 #include <AzCore/EBus/ScheduledEvent.h>
@@ -114,7 +115,7 @@ namespace Multiplayer
         using RpcMessages = AZStd::list<NetworkEntityRpcMessage>;
         bool DispatchOrphanedRpc(NetworkEntityRpcMessage& message, EntityReplicator* entityReplicator);
 
-        using EntityReplicatorList = AZStd::vector<EntityReplicator*>;
+        using EntityReplicatorList = AZStd::deque<EntityReplicator*>;
         EntityReplicatorList GenerateEntityUpdateList();
 
         void SendEntityUpdatesPacketHelper(AZ::TimeMs serverGameTimeMs, EntityReplicatorList& toSendList, uint32_t maxPayloadSize, AzNetworking::IConnection& connection);
