@@ -261,6 +261,8 @@ namespace PhysX
         bool m_hasNonUniformScale = false; //!< Whether there is a non-uniform scale component on this entity.
         AZ::Vector3 m_cachedNonUniformScale = AZ::Vector3::CreateOne(); //!< Caches the current non-uniform scale.
         mutable AZStd::optional<Physics::CookedMeshShapeConfiguration> m_scaledPrimitive; //!< Approximation for non-uniformly scaled primitive.
+        AZ::Aabb m_cachedAabb = AZ::Aabb::CreateNull(); //!< Cache the Aabb to avoid recalculating it.
+        bool m_cachedAabbDirty = true; //!< Track whether the cached Aabb needs to be recomputed.
 
         AZ::ComponentDescriptor::StringWarningArray m_componentWarnings;
     };

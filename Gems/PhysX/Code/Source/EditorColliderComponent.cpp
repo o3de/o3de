@@ -514,6 +514,8 @@ namespace PhysX
             break;
         case Physics::ShapeType::PhysicsAsset:
             colliderComponent = gameEntity->CreateComponent<MeshColliderComponent>();
+
+            m_shapeConfiguration.m_physicsAsset.m_configuration.m_subdivisionLevel = m_shapeConfiguration.m_subdivisionLevel;
             colliderComponent->SetShapeConfigurationList({ AZStd::make_pair(sharedColliderConfig,
                 AZStd::make_shared<Physics::PhysicsAssetShapeConfiguration>(m_shapeConfiguration.m_physicsAsset.m_configuration)) });
 
@@ -561,6 +563,8 @@ namespace PhysX
 
     void EditorColliderComponent::CreateStaticEditorCollider()
     {
+        m_cachedAabbDirty = true;
+
         // Don't create static rigid body in the editor if current entity components
         // don't allow creation of runtime static rigid body component
         if (!StaticRigidBodyUtils::CanCreateRuntimeComponent(*GetEntity()))
@@ -1014,11 +1018,17 @@ namespace PhysX
     // PhysX::ColliderShapeBus
     AZ::Aabb EditorColliderComponent::GetColliderShapeAabb()
     {
-        return PhysX::Utils::GetColliderAabb(GetWorldTM()
-            , m_hasNonUniformScale
-            , m_shapeConfiguration.m_subdivisionLevel
-            , m_shapeConfiguration.GetCurrent()
-            , m_configuration);
+        if (m_cachedAabbDirty)
+        {
+            m_cachedAabb = PhysX::Utils::GetColliderAabb(GetWorldTM()
+                , m_hasNonUniformScale
+                , m_shapeConfiguration.m_subdivisionLevel
+                , m_shapeConfiguration.GetCurrent()
+                , m_configuration);
+            m_cachedAabbDirty = false;
+        }
+
+        return m_cachedAabb;
     }
 
     void EditorColliderComponent::UpdateShapeConfigurationScale()

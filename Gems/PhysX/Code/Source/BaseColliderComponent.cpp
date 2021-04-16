@@ -330,10 +330,8 @@ namespace PhysX
         }
 
         const bool hasNonUniformScale = (AZ::NonUniformScaleRequestBus::FindFirstHandler(GetEntityId()) != nullptr);
-        // the value for the subdivision level doesn't matter in the runtime, because any approximation of primitives will already have
-        // happened in the editor, so can pass an arbitrary value here
-        AZ::u8 subdivisionLevel = 0;
-        Utils::GetShapesFromAsset(physicsAssetConfiguration, componentColliderConfiguration, hasNonUniformScale, subdivisionLevel, m_shapes);
+        Utils::GetShapesFromAsset(physicsAssetConfiguration, componentColliderConfiguration, hasNonUniformScale,
+            physicsAssetConfiguration.m_subdivisionLevel, m_shapes);
 
         return true;
     }
