@@ -154,8 +154,8 @@ public:
         return m_nextTrackId++;
     }
 
-    static void Reflect(AZ::SerializeContext* serializeContext);
-
+    static void Reflect(AZ::ReflectContext* context);
+    
 private:
     void ComputeTimeRange();
     void CopyNodeChildren(XmlNodeRef& xmlNode, IAnimNode* pAnimNode);
