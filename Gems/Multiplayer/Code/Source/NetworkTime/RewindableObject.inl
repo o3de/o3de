@@ -73,7 +73,7 @@ namespace Multiplayer
     template <typename BASE_TYPE, AZStd::size_t REWIND_SIZE>
     inline BASE_TYPE& RewindableObject<BASE_TYPE, REWIND_SIZE>::Modify()
     {
-        ApplicationFrameId frameTime = GetCurrentTimeForProperty();
+        const ApplicationFrameId frameTime = GetCurrentTimeForProperty();
         if (frameTime < m_headTime)
         {
             AZ_Assert(false, "Trying to mutate a rewindable in the past");
@@ -82,7 +82,7 @@ namespace Multiplayer
         {
             SetValueForTime(GetValueForTime(frameTime), frameTime);
         }
-        const BASE_TYPE& returnValue = GetValueForTime(GetCurrentTimeForProperty());
+        const BASE_TYPE& returnValue = GetValueForTime(frameTime);
         return const_cast<BASE_TYPE&>(returnValue);
     }
 
@@ -103,10 +103,11 @@ namespace Multiplayer
     template <typename BASE_TYPE, AZStd::size_t REWIND_SIZE>
     inline bool RewindableObject<BASE_TYPE, REWIND_SIZE>::Serialize(AzNetworking::ISerializer& serializer)
     {
-        BASE_TYPE current = GetValueForTime(GetCurrentTimeForProperty());
-        if (serializer.Serialize(current, "Element") && (serializer.GetSerializerMode() == AzNetworking::SerializerMode::WriteToObject))
+        const ApplicationFrameId frameTime = GetCurrentTimeForProperty();
+        BASE_TYPE value = GetValueForTime(frameTime);
+        if (serializer.Serialize(value, "Element") && (serializer.GetSerializerMode() == AzNetworking::SerializerMode::WriteToObject))
         {
-            SetValueForTime(current, GetCurrentTimeForProperty());
+            SetValueForTime(value, frameTime);
         }
         return serializer.IsValid();
     }
