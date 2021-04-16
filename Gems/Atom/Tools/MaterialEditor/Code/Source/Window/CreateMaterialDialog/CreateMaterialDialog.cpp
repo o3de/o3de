@@ -37,6 +37,8 @@ namespace MaterialEditor
         //Connect ok and cancel buttons
         QObject::connect(m_ui->m_buttonBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
         QObject::connect(m_ui->m_buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
+
+        setModal(true);
     }
 
     void CreateMaterialDialog::InitMaterialTypeSelection()
