@@ -19,6 +19,7 @@ namespace Multiplayer
 {
     enum class ConnectionDataType
     {
+        ClientToServer,
         ServerToClient,
         ServerToServer
     };

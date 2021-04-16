@@ -109,8 +109,8 @@ namespace MaterialEditor
         AZ::RHI::Ptr<AZ::RPI::ParentPass> rootPass = AZ::RPI::PassSystemInterface::Get()->GetRootPass();
         if (rootPass)
         {
-            AZ::RPI::TimestampResult timestampResult = rootPass->GetTimestampResult();
-            double gpuFrameTimeMs = aznumeric_cast<double>(timestampResult.GetTimestampInNanoseconds()) / 1000000;
+            AZ::RPI::TimestampResult timestampResult = rootPass->GetLatestTimestampResult();
+            double gpuFrameTimeMs = aznumeric_cast<double>(timestampResult.GetDurationInNanoseconds()) / 1000000;
             m_gpuFrameTimeMs.PushSample(gpuFrameTimeMs);
         }
     }
