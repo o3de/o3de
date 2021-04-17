@@ -133,23 +133,14 @@ namespace AZ::Internal
 
     AZ::IO::FixedMaxPath ScanUpRootLocator(AZStd::string_view rootFileToLocate)
     {
-
-        AZStd::fixed_string<AZ::IO::MaxPathLength> executableDir;
-        if (AZ::Utils::GetExecutableDirectory(executableDir.data(), executableDir.capacity()) == Utils::ExecutablePathResult::Success)
-        {
-            // Update the size value of the executable directory fixed string to correctly be the length of the null-terminated string
-            // stored within it
-            executableDir.resize_no_construct(AZStd::char_traits<char>::length(executableDir.data()));
-        }
-
-        AZ::IO::FixedMaxPath engineRootCandidate{ executableDir };
+        AZ::IO::FixedMaxPath rootCandidate{ AZ::Utils::GetExecutableDirectory() };
 
         bool rootPathVisited = false;
         do
         {
-            if (AZ::IO::SystemFile::Exists((engineRootCandidate / rootFileToLocate).c_str()))
+            if (AZ::IO::SystemFile::Exists((rootCandidate / rootFileToLocate).c_str()))
             {
-                return engineRootCandidate;
+                return rootCandidate;
             }
 
             // Note for posix filesystems the parent directory of '/' is '/' and for windows
@@ -157,38 +148,69 @@ namespace AZ::Internal
 
             // Validate that the parent directory isn't itself, that would imply
             // that it is the filesystem root path
-            AZ::IO::PathView parentPath = engineRootCandidate.ParentPath();
-            rootPathVisited = (engineRootCandidate == parentPath);
+            AZ::IO::PathView parentPath = rootCandidate.ParentPath();
+            rootPathVisited = (rootCandidate == parentPath);
             // Recurse upwards one directory
-            engineRootCandidate = AZStd::move(parentPath);
+            rootCandidate = AZStd::move(parentPath);
 
         } while (!rootPathVisited);
 
         return {};
     }
 
+    void InjectSettingToCommandLineFront(AZ::SettingsRegistryInterface& settingsRegistry,
+        AZStd::string_view path, AZStd::string_view value)
+    {
+        AZ::CommandLine commandLine;
+        AZ::SettingsRegistryMergeUtils::GetCommandLineFromRegistry(settingsRegistry, commandLine);
+        AZ::CommandLine::ParamContainer paramContainer;
+        commandLine.Dump(paramContainer);
+
+        auto projectPathOverride = AZStd::string::format(R"(--regset="%.*s=%.*s")",
+            aznumeric_cast<int>(path.size()), path.data(), aznumeric_cast<int>(value.size()), value.data());
+        paramContainer.emplace(paramContainer.begin(), AZStd::move(projectPathOverride));
+        commandLine.Parse(paramContainer);
+        AZ::SettingsRegistryMergeUtils::StoreCommandLineToRegistry(settingsRegistry, commandLine);
+    }
 } // namespace AZ::Internal
 
 namespace AZ::SettingsRegistryMergeUtils
 {
+    constexpr AZStd::string_view InternalScanUpEngineRootKey{ "/O3DE/Settings/Internal/engine_root_scan_up_path" };
+    constexpr AZStd::string_view InternalScanUpProjectRootKey{ "/O3DE/Settings/Internal/project_root_scan_up_path" };
+
     AZ::IO::FixedMaxPath FindEngineRoot(SettingsRegistryInterface& settingsRegistry)
     {
         AZ::IO::FixedMaxPath engineRoot;
-
         // This is the 'external' engine root key, as in passed from command-line or .setreg files.
         auto engineRootKey = SettingsRegistryInterface::FixedValueString::format("%s/engine_path", BootstrapSettingsRootKey);
+
+        // Step 1 Run the scan upwards logic once to find the location of the engine.json if it exist
+        // Once this step is run the {InternalScanUpEngineRootKey} is set in the Settings Registry
+        // to have this scan logic only run once InternalScanUpEngineRootKey the supplied registry
+        if (settingsRegistry.GetType(InternalScanUpEngineRootKey) == SettingsRegistryInterface::Type::NoType)
+        {
+            // We can scan up from exe directory to find engine.json, use that for engine root if it exists.
+            engineRoot = Internal::ScanUpRootLocator("engine.json");
+            // Set the {InternalScanUpEngineRootKey} to make sure this code path isn't called again for this settings registry
+            settingsRegistry.Set(InternalScanUpEngineRootKey, engineRoot.Native());
+            if (!engineRoot.empty())
+            {
+                settingsRegistry.Set(engineRootKey, engineRoot.Native());
+                // Inject the engine root into the front of the command line settings
+                Internal::InjectSettingToCommandLineFront(settingsRegistry, engineRootKey, engineRoot.Native());
+                return engineRoot;
+            }
+        }
+
+        // Step 2 check if the engine_path key has been supplied
         if (settingsRegistry.Get(engineRoot.Native(), engineRootKey); !engineRoot.empty())
         {
             return engineRoot;
         }
 
-        // We can scan up from exe directory to find engine.json, use that for engine root if it exists.
-        if (engineRoot = Internal::ScanUpRootLocator("engine.json"); !engineRoot.empty())
-        {
-            settingsRegistry.Set(engineRootKey, engineRoot.c_str());
-            return engineRoot;
-        }
-
+        // Step 3 locate the project root and attempt to find the engine root using the registered engine
+        // for the project in the project.json file
         AZ::IO::FixedMaxPath projectRoot = FindProjectRoot(settingsRegistry);
         if (projectRoot.empty())
         {
@@ -208,16 +230,30 @@ namespace AZ::SettingsRegistryMergeUtils
     AZ::IO::FixedMaxPath FindProjectRoot(SettingsRegistryInterface& settingsRegistry)
     {
         AZ::IO::FixedMaxPath projectRoot;
-        // This is the 'external' project root key, as in passed from command-line or .setreg files.
-        auto projectRootKey = SettingsRegistryInterface::FixedValueString::format("%s/project_path", BootstrapSettingsRootKey);
-        if (settingsRegistry.Get(projectRoot.Native(), projectRootKey))
+        const auto projectRootKey = SettingsRegistryInterface::FixedValueString::format("%s/project_path", BootstrapSettingsRootKey);
+
+        // Step 1 Run the scan upwards logic once to find the location of the project.json if it exist
+        // Once this step is run the {InternalScanUpProjectRootKey} is set in the Settings Registry
+        // to have this scan logic only run once for the supplied registry
+        // SettingsRegistryInterface::GetType is used to check if a key is set
+        if (settingsRegistry.GetType(InternalScanUpProjectRootKey) == SettingsRegistryInterface::Type::NoType)
         {
-            return projectRoot;
+            projectRoot = Internal::ScanUpRootLocator("project.json");
+            // Set the {InternalScanUpProjectRootKey} to make sure this code path isn't called again for this settings registry
+            settingsRegistry.Set(InternalScanUpProjectRootKey, projectRoot.Native());
+            if (!projectRoot.empty())
+            {
+                settingsRegistry.Set(projectRootKey, projectRoot.c_str());
+                // Inject the project root into the front of the command line settings
+                Internal::InjectSettingToCommandLineFront(settingsRegistry, projectRootKey, projectRoot.Native());
+                return projectRoot;
+            }
         }
 
-        if (projectRoot = Internal::ScanUpRootLocator("project.json"); !projectRoot.empty())
+        // Step 2 Check the project-path key
+        // This is the project path root key, as in passed from command-line or .setreg files.
+        if (settingsRegistry.Get(projectRoot.Native(), projectRootKey))
         {
-            settingsRegistry.Set(projectRootKey, projectRoot.c_str());
             return projectRoot;
         }
 
@@ -797,6 +833,11 @@ namespace AZ::SettingsRegistryMergeUtils
             ++argumentIndex;
             commandLinePath.resize(commandLineRootSize);
         }
+
+        // This key is used allow Notification Handlers to know when the command line has been updated within the
+        // registry. The value itself is meaningless. The JSON path of {CommandLineValueChangedKey}
+        // being passed to the Notification Event Handler indicates that the command line has be updated
+        registry.Set(CommandLineValueChangedKey, true);
     }
 
     bool GetCommandLineFromRegistry(SettingsRegistryInterface& registry, AZ::CommandLine& commandLine)
@@ -813,8 +854,14 @@ namespace AZ::SettingsRegistryMergeUtils
                 }
                 else if (valueName == "Value" && !value.empty())
                 {
-                    m_arguments.push_back(value);
+                    // Make sure value types are in quotes in case they start with a command option prefix
+                    m_arguments.push_back(QuoteArgument(value));
                 }
+            }
+
+            AZStd::string QuoteArgument(AZStd::string_view arg)
+            {
+                return !arg.empty() ? AZStd::string::format(R"("%.*s")", aznumeric_cast<int>(arg.size()), arg.data()) : AZStd::string{ arg };
             }
 
             // The first parameter is skipped by the ComamndLine::Parse function so initialize
