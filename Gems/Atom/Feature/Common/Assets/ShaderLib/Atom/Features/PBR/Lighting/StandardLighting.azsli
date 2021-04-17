@@ -117,3 +117,16 @@ PbrLightingOutput GetPbrLightingOutput(Surface surface, LightingData lightingDat
 
     return lightingOutput;
 }
+
+PbrLightingOutput DebugOutput(float3 color)
+{
+    PbrLightingOutput output = (PbrLightingOutput)0;
+
+    float defaultNormal = float3(0.0f, 0.0f, 1.0f);
+
+    output.m_diffuseColor = float4(color.rgb, 1.0f);
+    output.m_normal.rgb = EncodeNormalSignedOctahedron(defaultNormal);
+    output.m_clearCoatNormal = float4(EncodeNormalSphereMap(defaultNormal), 0.0f, 1.0f);
+
+    return output;
+}
