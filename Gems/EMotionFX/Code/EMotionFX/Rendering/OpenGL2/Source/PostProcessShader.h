@@ -13,6 +13,7 @@
 #ifndef __RENDERGL_POSTPROCESS_SHADER_H
 #define __RENDERGL_POSTPROCESS_SHADER_H
 
+#include <AzCore/IO/Path/Path_fwd.h>
 #include "GLSLShader.h"
 #include "RenderTexture.h"
 
@@ -34,7 +35,7 @@ namespace RenderGL
 
         void Deactivate() override;
 
-        bool Init(const char* filename);
+        bool Init(AZ::IO::PathView filename);
         void Render();
 
     private:
