@@ -17,7 +17,7 @@
 
 // Then include custom surface and lighting data types
 #include <Atom/Features/PBR/Lighting/LightingData.azsli>
-#include <Atom/Features/PBR/Surfaces/StandardSurface.azsli>
+#include <Atom/Features/PBR/Surfaces/SkinSurface.azsli>
 
 #include <Atom/Features/PBR/LightingUtils.azsli>
 #include <Atom/Features/PBR/Microfacet/Brdf.azsli>
@@ -98,12 +98,12 @@ struct PbrLightingOutput
 };
 
 
-PbrLightingOutput GetPbrLightingOutput(Surface surface, LightingData lightingData, float alpha)
+PbrLightingOutput GetPbrLightingOutput(Surface surface, LightingData lightingData)
 {
     PbrLightingOutput lightingOutput;
 
-    lightingOutput.m_diffuseColor = float4(lightingData.diffuseLighting, alpha);
-    lightingOutput.m_specularColor = float4(lightingData.specularLighting, 1.0);
+    lightingOutput.m_diffuseColor = float4(lightingData.diffuseLighting, 1.0f);
+    lightingOutput.m_specularColor = float4(lightingData.specularLighting, 1.0f);
 
     // albedo, specularF0, roughness, and normals for later passes (specular IBL, Diffuse GI, SSR, AO, etc)
     lightingOutput.m_specularF0 = float4(surface.specularF0, surface.roughnessLinear);
