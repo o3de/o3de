@@ -12,22 +12,20 @@
 
 #pragma once
 
-option bool o_applySpecularAA;
+#include <Atom/Features/PBR/Surfaces/AnisotropicSurfaceData.azsli>
+#include <Atom/Features/PBR/Surfaces/BasePbrSurfaceData.azsli>
+#include <Atom/Features/PBR/Surfaces/ClearCoatSurfaceData.azsli>
+#include <Atom/Features/PBR/Surfaces/TransmissionSurfaceData.azsli>
 
-// ------- Constants -------
-
-// For artists workflows, specular F0 for dialectric (non-metal) materials is exposed as a 0-1 scale
-// However the specular F0 for dialectrics is much lower than metals, so we expose this scaling factor here
-static const float3 MaxDielectricSpecularF0 = 0.08f;
-
-// Make sure roughnessA is above 0 to avoid precision and divide by zero issues.
-// 0.0005f is sufficient for directional lights since they tend to be quite bright.
-static const float MinRoughnessA = 0.0005f;
-
-// ------- Surface Data -------
-
-class BasePbrSurfaceData
+class Surface //: BasePbrSurfaceData
 {
+    //BasePbrSurfaceData pbr;
+    AnisotropicSurfaceData anisotropy;
+    ClearCoatSurfaceData clearCoat;
+    TransmissionSurfaceData transmission;
+
+    // ------- BasePbrSurfaceData -------
+    
     float3 position;            //!< Position in world-space
     float3 normal;              //!< Normal in world-space
     float3 albedo;              //!< Albedo color of the non-metallic material, will be multiplied against the diffuse lighting value
@@ -44,13 +42,13 @@ class BasePbrSurfaceData
 
     //! Sets albedo and specularF0 using metallic workflow
     void SetAlbedoAndSpecularF0(float3 baseColor, float inSpecularF0, float metallic);
+
 };
 
-// ------- Functions -------
 
 // Specular Anti-Aliasing technique from this paper:
 // http://www.jp.square-enix.com/tech/library/pdf/ImprovedGeometricSpecularAA.pdf
-void BasePbrSurfaceData::ApplySpecularAA()
+void Surface::ApplySpecularAA()
 {
     // Constants for formula below
     const float screenVariance = 0.25f;
@@ -63,12 +61,9 @@ void BasePbrSurfaceData::ApplySpecularAA()
     float kernelRoughnessA2 = min(2.0 * variance , varianceThresh );
     float filteredRoughnessA2 = saturate ( roughnessA2 + kernelRoughnessA2 );
     roughnessA2 = filteredRoughnessA2;
-
-    roughnessA = sqrt(roughnessA2);
-    roughnessLinear = sqrt(roughnessA);
 }
 
-void BasePbrSurfaceData::CalculateRoughnessA()
+void Surface::CalculateRoughnessA()
 {
     // The roughness value in microfacet calculations (called "alpha" in the literature) does not give perceptually
     // linear results. Disney found that squaring the roughness value before using it in microfacet equations causes
@@ -85,7 +80,7 @@ void BasePbrSurfaceData::CalculateRoughnessA()
     }
 }
 
-void BasePbrSurfaceData::SetAlbedoAndSpecularF0(float3 baseColor, float inSpecularF0, float metallic)
+void Surface::SetAlbedoAndSpecularF0(float3 baseColor, float inSpecularF0, float metallic)
 {
     float3 dielectricSpecularF0 = MaxDielectricSpecularF0 * inSpecularF0;
 
@@ -93,3 +88,4 @@ void BasePbrSurfaceData::SetAlbedoAndSpecularF0(float3 baseColor, float inSpecul
     albedo = lerp(baseColor, float3(0.0f, 0.0f, 0.0f), metallic);
     specularF0 = lerp(dielectricSpecularF0, baseColor, metallic);
 }
+

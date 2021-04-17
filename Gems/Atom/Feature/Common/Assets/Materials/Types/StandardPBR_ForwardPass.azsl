@@ -10,11 +10,25 @@
 *
 */
 
-#include <viewsrg.srgi>
 #include "StandardPBR_Common.azsli"
+
+// SRGs
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <Atom/Features/PBR/ForwardPassSrg.azsli>
+
+// Pass Output
 #include <Atom/Features/PBR/ForwardPassOutput.azsli>
+
+// Utility
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
+#include <Atom/Features/PBR/AlphaUtils.azsli>
+
+// Custom Surface & Lighting
+#include <Atom/Features/PBR/Lighting/StandardLighting.azsli>
+
+// Decals
+#include <Atom/Features/PBR/Decals.azsli>
+
 
 // ---------- Material Parameters ----------
 
@@ -37,6 +51,8 @@ COMMON_OPTIONS_PARALLAX()
 // Transmission
 #include "MaterialInputs/TransmissionInput.azsli"
 
+
+// ---------- Vertex Shader ----------
 
 struct VSInput
 {
@@ -66,8 +82,6 @@ struct VSOutput
     float2 m_uv[UvSetCount] : UV1;
 };
 
-#include <Atom/Features/PBR/AlphaUtils.azsli>
-#include <Atom/Features/PBR/LightingModel.azsli>
 #include <Atom/Features/Vertex/VertexHelper.azsli>
 
 VSOutput StandardPbr_ForwardPassVS(VSInput IN)
@@ -84,6 +98,9 @@ VSOutput StandardPbr_ForwardPassVS(VSInput IN)
 
     return OUT;
 }
+
+
+// ---------- Pixel Shader ----------
 
 PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float depth)
 {
@@ -112,7 +129,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     {
         float3x3 uvMatrix = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrix : CreateIdentity3x3();
         float3x3 uvMatrixInverse = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrixInverse : CreateIdentity3x3();
-        GetParallaxInput(IN.m_normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex], MaterialSrg::m_depthFactor, 
+        GetParallaxInput(IN.m_normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex], MaterialSrg::m_depthFactor,
                          ObjectSrg::GetWorldMatrix(), uvMatrix, uvMatrixInverse,
                          IN.m_uv[MaterialSrg::m_parallaxUvIndex], IN.m_worldPosition, depth);
 
@@ -129,7 +146,6 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
 
     Surface surface;
     surface.position = IN.m_worldPosition.xyz;
-
 
     // ------- Alpha & Clip -------
 
@@ -250,9 +266,9 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
         lightingData.diffuseResponse *= 1.0 - (FresnelSchlickWithRoughness(lightingData.NdotV, float3(0.04, 0.04, 0.04), surface.clearCoat.roughness) * surface.clearCoat.factor);
     }
 
-    // Multiscatter compensation factor
-    lightingData.CalculateMultiscatterCompensation(surface.specularF0, o_specularF0_enableMultiScatterCompensation);
+    // ------- Multiscatter -------
 
+    lightingData.CalculateMultiscatterCompensation(surface.specularF0, o_specularF0_enableMultiScatterCompensation);
 
     // ------- Lighting Calculation -------
 

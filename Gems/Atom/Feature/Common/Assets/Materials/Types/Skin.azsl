@@ -13,6 +13,7 @@
 #include <viewsrg.srgi>
 #include "Skin_Common.azsli"
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <Atom/Features/PBR/ForwardPassSrg.azsli>
 #include <Atom/Features/PBR/ForwardPassOutput.azsli>
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
 

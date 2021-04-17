@@ -10,10 +10,23 @@
 *
 */
 
+// SRGs
 #include <viewsrg.srgi>
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <Atom/Features/PBR/ForwardPassSrg.azsli>
+
+// Pass Output
 #include <Atom/Features/PBR/ForwardPassOutput.azsli>
+
+// Utility
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
+#include <Atom/Features/PBR/AlphaUtils.azsli>
+
+// Custom Surface & Lighting
+#include <Atom/Features/PBR/Lighting/StandardLighting.azsli>
+
+// Decals
+#include <Atom/Features/PBR/Decals.azsli>
 
 // ---------- Material Parameters ----------
 
@@ -46,6 +59,9 @@ DEFINE_LAYER_OPTIONS(o_layer3_)
 #include "MaterialInputs/SubsurfaceInput.azsli"
 #include "MaterialInputs/TransmissionInput.azsli"
 #include "StandardMultilayerPBR_Common.azsli"
+
+
+// ---------- Vertex Shader ----------
 
 struct VSInput
 {
@@ -83,7 +99,6 @@ struct VSOutput
     float3 m_blendMask : UV7;
 };
 
-#include <Atom/Features/PBR/AlphaUtils.azsli>
 #include <Atom/Features/PBR/LightingModel.azsli>
 #include <Atom/Features/Vertex/VertexHelper.azsli>
 
@@ -114,6 +129,9 @@ VSOutput ForwardPassVS(VSInput IN)
 
     return OUT;
 }
+
+
+// ---------- Pixel Shader ----------
 
 PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float depth)
 {
