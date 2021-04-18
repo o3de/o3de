@@ -17,7 +17,7 @@
 #include <Atom/Features/PBR/ForwardPassSrg.azsli>
 
 // Pass Output
-#include <Atom/Features/PBR/ForwardPassOutput.azsli>
+#include <Atom/Features/PBR/ForwardSubsurfacePassOutput.azsli>
 
 // Utility
 #include <Atom/Features/ColorManagement/TransformColor.azsli>

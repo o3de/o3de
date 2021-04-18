@@ -296,15 +296,6 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     surface.transmission.thickness = transmissionTintThickness.w;
     surface.transmission.transmissionParams = MaterialSrg::m_transmissionParams;
     
-    // ------- Anisotropy -------
-
-    if (o_enableAnisotropy)
-    {
-        const float anisotropyAngle = 0.0f;
-        const float anisotropyFactor = 0.0f;
-        surface.anisotropy.Init(surface.normal, tangents[0], bitangents[0], anisotropyAngle, anisotropyFactor, surface.roughnessA);
-    }
-
     // ------- Lighting Data -------
 
     LightingData lightingData;
@@ -456,7 +447,6 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
         // Pack factor and quality, drawback: because of precision limit of float16 cannot represent exact 1, maximum representable value is 0.9961
         uint factorAndQuality = dot(round(float2(saturate(surfaceScatteringFactor), MaterialSrg::m_subsurfaceScatteringQuality) * 255), float2(256, 1));
         lightingOutput.m_diffuseColor.w = factorAndQuality * (o_enableSubsurfaceScattering ? 1.0 : -1.0);
-        lightingOutput.m_scatterDistance = MaterialSrg::m_scatterDistance;
     }
     
 
@@ -476,7 +466,6 @@ ForwardPassOutputWithDepth ForwardPassPS(VSOutput IN, bool isFrontFace : SV_IsFr
     OUT.m_albedo = lightingOutput.m_albedo;
     OUT.m_normal = lightingOutput.m_normal;
     OUT.m_clearCoatNormal = lightingOutput.m_clearCoatNormal;
-    OUT.m_scatterDistance = lightingOutput.m_scatterDistance;
     OUT.m_depth = depth;
     return OUT;
 }
@@ -495,7 +484,6 @@ ForwardPassOutput ForwardPassPS_EDS(VSOutput IN, bool isFrontFace : SV_IsFrontFa
     OUT.m_albedo = lightingOutput.m_albedo;
     OUT.m_normal = lightingOutput.m_normal;
     OUT.m_clearCoatNormal = lightingOutput.m_clearCoatNormal;
-    OUT.m_scatterDistance = lightingOutput.m_scatterDistance;
 
     return OUT;
 }

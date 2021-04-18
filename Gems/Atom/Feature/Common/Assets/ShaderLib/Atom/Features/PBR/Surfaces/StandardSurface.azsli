@@ -20,7 +20,6 @@
 class Surface //: BasePbrSurfaceData
 {
     //BasePbrSurfaceData pbr;
-    AnisotropicSurfaceData anisotropy;
     ClearCoatSurfaceData clearCoat;
     TransmissionSurfaceData transmission;
 

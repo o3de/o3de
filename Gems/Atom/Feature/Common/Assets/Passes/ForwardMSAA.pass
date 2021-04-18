@@ -164,22 +164,6 @@
                         },
                         "LoadAction": "Clear"
                     }
-                },
-                {
-                    "Name": "ScatterDistanceOutput",
-                    "SlotType": "Output",
-                    "ScopeAttachmentUsage": "RenderTarget",
-                    "LoadStoreAction": {
-                        "ClearValue": {
-                            "Value": [
-                                0.0,
-                                0.0,
-                                0.0,
-                                0.0
-                            ]
-                        },
-                        "LoadAction": "Clear"
-                    }
                 }
             ],
             "ImageAttachments": [
@@ -291,23 +275,6 @@
                         "Format": "R16G16B16A16_FLOAT",
                         "SharedQueueMask": "Graphics"
                     }
-                },
-                {
-                    "Name": "ScatterDistanceImage",
-                    "SizeSource": {
-                        "Source": {
-                            "Pass": "Parent",
-                            "Attachment": "SwapChainOutput"
-                        }
-                    },
-                    "MultisampleSource": {
-                        "Pass": "This",
-                        "Attachment": "DepthStencilInputOutput"
-                    },                                         
-                    "ImageDescriptor": {
-                        "Format": "R11G11B10_FLOAT",       
-                        "SharedQueueMask": "Graphics"
-                    }
                 }
             ],
             "Connections": [
@@ -358,13 +325,6 @@
                     "AttachmentRef": {
                         "Pass": "This",
                         "Attachment": "ClearCoatNormalImage"
-                    }
-                },
-                {
-                    "LocalSlot": "ScatterDistanceOutput",
-                    "AttachmentRef": {
-                        "Pass": "This",
-                        "Attachment": "ScatterDistanceImage"
                     }
                 }
             ]

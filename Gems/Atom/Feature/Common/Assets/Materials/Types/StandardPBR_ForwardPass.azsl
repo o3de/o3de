@@ -202,15 +202,6 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     surface.transmission.thickness = transmissionTintThickness.w;
     surface.transmission.transmissionParams = MaterialSrg::m_transmissionParams;
 
-    // ------- Anisotropy -------
-
-    if (o_enableAnisotropy)
-    {
-        const float anisotropyAngle = 0.0f;
-        const float anisotropyFactor = 0.0f;
-        surface.anisotropy.Init(surface.normal, tangents[0], bitangents[0], anisotropyAngle, anisotropyFactor, surface.roughnessA);
-    }
-
     // ------- Lighting Data -------
 
     LightingData lightingData;
@@ -329,7 +320,6 @@ ForwardPassOutputWithDepth StandardPbr_ForwardPassPS(VSOutput IN, bool isFrontFa
     OUT.m_albedo = lightingOutput.m_albedo;
     OUT.m_normal = lightingOutput.m_normal;
     OUT.m_clearCoatNormal = lightingOutput.m_clearCoatNormal;
-    OUT.m_scatterDistance = lightingOutput.m_scatterDistance;
     OUT.m_depth = depth;
     return OUT;
 }
@@ -348,7 +338,6 @@ ForwardPassOutput StandardPbr_ForwardPassPS_EDS(VSOutput IN, bool isFrontFace : 
     OUT.m_albedo = lightingOutput.m_albedo;
     OUT.m_normal = lightingOutput.m_normal;
     OUT.m_clearCoatNormal = lightingOutput.m_clearCoatNormal;
-    OUT.m_scatterDistance = lightingOutput.m_scatterDistance;
 
     return OUT;
 }

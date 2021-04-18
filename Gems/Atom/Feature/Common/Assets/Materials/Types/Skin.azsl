@@ -17,7 +17,7 @@
 #include <Atom/Features/PBR/ForwardPassSrg.azsli>
 
 // Pass Output
-#include <Atom/Features/PBR/ForwardPassOutput.azsli>
+#include <Atom/Features/PBR/ForwardSubsurfacePassOutput.azsli>
 
 // Utility
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
@@ -319,15 +319,6 @@ PbrLightingOutput SkinPS_Common(VSOutput IN)
     surface.transmission.tint = transmissionTintThickness.rgb;
     surface.transmission.thickness = transmissionTintThickness.w;
     surface.transmission.transmissionParams = MaterialSrg::m_transmissionParams;
-
-    // ------- Anisotropy -------
-
-    if (o_enableAnisotropy)
-    {
-        const float anisotropyAngle = 0.0f;
-        const float anisotropyFactor = 0.0f;
-        surface.anisotropy.Init(surface.normal, tangents[0], bitangents[0], anisotropyAngle, anisotropyFactor, surface.roughnessA);
-    }
 
     // ------- Lighting Data -------
 

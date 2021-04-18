@@ -49,16 +49,7 @@ float3 GetDiffuseLighting(Surface surface, LightingData lightingData, float3 lig
 
 float3 GetSpecularLighting(Surface surface, LightingData lightingData, const float3 lightIntensity, const float3 dirToLight)
 {
-    float3 specular;
-    if (o_enableAnisotropy)
-    {
-        specular = AnisotropicGGX( lightingData.dirToCamera, dirToLight, surface.normal, surface.anisotropy.tangent, surface.anisotropy.bitangent, surface.anisotropy.anisotropyFactors,
-                       surface.specularF0, lightingData.NdotV, lightingData.multiScatterCompensation );
-    }
-    else
-    {
-        specular = SpecularGGX(lightingData.dirToCamera, dirToLight, surface.normal, surface.specularF0, lightingData.NdotV, surface.roughnessA2, lightingData.multiScatterCompensation);
-    }
+    float3 specular = SpecularGGX(lightingData.dirToCamera, dirToLight, surface.normal, surface.specularF0, lightingData.NdotV, surface.roughnessA2, lightingData.multiScatterCompensation);
 
     if(o_clearCoat_feature_enabled)
     {
