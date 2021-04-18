@@ -57,7 +57,7 @@ namespace AZ
             PassConnection childInputConnection;
             childInputConnection.m_localSlot = "Output";
             childInputConnection.m_attachmentRef.m_pass = "Parent";
-            childInputConnection.m_attachmentRef.m_attachment = "CubeMapOutput";
+            childInputConnection.m_attachmentRef.m_attachment = "Output";
             childRequest.m_connections.emplace_back(childInputConnection);
 
             PassSystemInterface* passSystem = PassSystemInterface::Get();
@@ -120,15 +120,17 @@ namespace AZ
 
             // create output PassAttachment
             m_passAttachment = aznew PassAttachment();
-            m_passAttachment->m_name = "CubeMapOutput";
-            m_passAttachment->m_path = "CubeMapOutput";
+            m_passAttachment->m_name = "Output";
+            //m_passAttachment->m_path = "Output";
+            AZ::Name attachmentPath(AZStd::string::format("%s.%s", GetPathName().GetCStr(), m_passAttachment->m_name.GetCStr()));
+            m_passAttachment->m_path = attachmentPath;
             m_passAttachment->m_lifetime = RHI::AttachmentLifetimeType::Transient;
             m_passAttachment->m_descriptor = m_outputImageDesc;
 
             // create pass attachment binding
             PassAttachmentBinding outputAttachment;
-            outputAttachment.m_name = "CubeMapOutput";
-            outputAttachment.m_slotType = PassSlotType::Output;
+            outputAttachment.m_name = "Output";
+            outputAttachment.m_slotType = PassSlotType::InputOutput;
             outputAttachment.m_attachment = m_passAttachment;
             outputAttachment.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::RenderTarget;
 
