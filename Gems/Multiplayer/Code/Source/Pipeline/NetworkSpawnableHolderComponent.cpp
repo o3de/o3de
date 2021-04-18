@@ -26,6 +26,10 @@ namespace Multiplayer
         }
     }
 
+    NetworkSpawnableHolderComponent::NetworkSpawnableHolderComponent()
+    {
+    }
+
     void NetworkSpawnableHolderComponent::Activate()
     {
     }
@@ -43,9 +47,4 @@ namespace Multiplayer
     {
         return m_networkSpawnableAsset;
     }
-
-    NetworkSpawnableHolderComponent::NetworkSpawnableHolderComponent()
-    {
-    }
-
 }

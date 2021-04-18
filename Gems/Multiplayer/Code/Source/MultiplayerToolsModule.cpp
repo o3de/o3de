@@ -62,4 +62,4 @@ namespace Multiplayer
     }
 } // namespace Multiplayer
 
-AZ_DECLARE_MODULE_CLASS(Gem_Multiplayer2_Tools, Multiplayer::MultiplayerToolsModule);
+AZ_DECLARE_MODULE_CLASS(Gem_Multiplayer_Tools, Multiplayer::MultiplayerToolsModule);

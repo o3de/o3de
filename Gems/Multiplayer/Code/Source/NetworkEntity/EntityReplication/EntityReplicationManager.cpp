@@ -9,7 +9,7 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 *
 */
-
+#pragma optimize("", off)
 #include <Source/NetworkEntity/EntityReplication/EntityReplicationManager.h>
 #include <Source/NetworkEntity/EntityReplication/EntityReplicator.h>
 #include <Source/NetworkEntity/EntityReplication/PropertyPublisher.h>
@@ -18,6 +18,7 @@
 #include <Source/EntityDomains/IEntityDomain.h>
 #include <Source/NetworkEntity/NetworkEntityUpdateMessage.h>
 #include <Source/NetworkEntity/NetworkEntityRpcMessage.h>
+#include <Source/NetworkEntity/INetworkEntityManager.h>
 #include <Source/Components/NetBindComponent.h>
 #include <Source/AutoGen/Multiplayer.AutoPackets.h>
 #include <AzNetworking/ConnectionLayer/IConnection.h>
@@ -30,7 +31,6 @@
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
 #include <AzCore/Math/Transform.h>
-#include <Include/INetworkEntityManager.h>
 
 namespace Multiplayer
 {

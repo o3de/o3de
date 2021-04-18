@@ -39,12 +39,6 @@ namespace Multiplayer
     {
         AZ::Interface<INetworkEntityManager>::Register(this);
         AzFramework::RootSpawnableNotificationBus::Handler::BusConnect();
-        if (AZ::Interface<AZ::ComponentApplicationRequests>::Get() != nullptr)
-        {
-            // Null guard needed for unit tests
-            AZ::Interface<AZ::ComponentApplicationRequests>::Get()->RegisterEntityAddedEventHandler(m_entityAddedEventHandler);
-            AZ::Interface<AZ::ComponentApplicationRequests>::Get()->RegisterEntityRemovedEventHandler(m_entityRemovedEventHandler);
-        }
     }
 
     NetworkEntityManager::~NetworkEntityManager()
@@ -58,6 +52,12 @@ namespace Multiplayer
         m_hostId = hostId;
         m_entityDomain = AZStd::move(entityDomain);
         m_updateEntityDomainEvent.Enqueue(net_EntityDomainUpdateMs, true);
+        if (AZ::Interface<AZ::ComponentApplicationRequests>::Get() != nullptr)
+        {
+            // Null guard needed for unit tests
+            AZ::Interface<AZ::ComponentApplicationRequests>::Get()->RegisterEntityAddedEventHandler(m_entityAddedEventHandler);
+            AZ::Interface<AZ::ComponentApplicationRequests>::Get()->RegisterEntityRemovedEventHandler(m_entityRemovedEventHandler);
+        }
     }
 
     NetworkEntityTracker* NetworkEntityManager::GetNetworkEntityTracker()
