@@ -121,7 +121,7 @@ namespace AzToolsFramework
                     commonRootEntityOwningInstance->get(), "Update prefab instance", commonRootInstanceDomBeforeCreate, undoBatch.GetUndoBatch());
 
                 CreateLink(
-                    topLevelEntities, instanceToCreate->get(), commonRootEntityOwningInstance->get(), undoBatch.GetUndoBatch(),
+                    topLevelEntities, instanceToCreate->get(), commonRootEntityOwningInstance->get().GetTemplateId(), undoBatch.GetUndoBatch(),
                     commonRootEntityId);
                 AZ::EntityId containerEntityId = instanceToCreate->get().GetContainerEntityId();
 
@@ -182,10 +182,10 @@ namespace AzToolsFramework
         }
 
         void PrefabPublicHandler::CreateLink(
-            const EntityList& topLevelEntities, Instance& instanceToAdd, Instance& parentInstance, UndoSystem::URSequencePoint* undoBatch,
-            AZ::EntityId commonRootEntityId)
+            const EntityList& topLevelEntities, Instance& sourceInstance, TemplateId targetTemplateId,
+            UndoSystem::URSequencePoint* undoBatch, AZ::EntityId commonRootEntityId)
         {
-            AZ::EntityId containerEntityId = instanceToAdd.GetContainerEntityId();
+            AZ::EntityId containerEntityId = sourceInstance.GetContainerEntityId();
             AZ::Entity* containerEntity = GetEntityById(containerEntityId);
             Prefab::PrefabDom containerEntityDomBefore;
             m_instanceToTemplateInterface->GenerateDomForEntity(containerEntityDomBefore, *containerEntity);
@@ -210,7 +210,7 @@ namespace AzToolsFramework
             m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(patch, containerEntityId);
 
             PrefabUndoHelpers::CreateLink(
-                instanceToAdd.GetTemplateId(), parentInstance.GetTemplateId(), patch, instanceToAdd.GetInstanceAlias(),
+                sourceInstance.GetTemplateId(), targetTemplateId, patch, sourceInstance.GetInstanceAlias(),
                 undoBatch);
 
             // Update the cache - this prevents these changes from being stored in the regular undo/redo nodes

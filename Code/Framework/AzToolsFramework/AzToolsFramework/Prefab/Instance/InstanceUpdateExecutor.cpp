@@ -117,6 +117,7 @@ namespace AzToolsFramework
                                     "Could not find Template using Id '%llu'. Unable to update Instance.",
                                     currentTemplateId);
 
+                                // Remove the instance from update queue if it's corresponding template couldn't be found
                                 isUpdateSuccessful = false;
                                 m_instancesUpdateQueue.pop();
                                 continue;
@@ -127,6 +128,8 @@ namespace AzToolsFramework
 
                         if (findInstancesResult.find(instanceToUpdate) == findInstancesResult.end())
                         {
+                            // Since nested instances get reconstructed during propgation, remove any nested instance that no longer
+                            // maps to a template.
                             isUpdateSuccessful = false;
                             m_instancesUpdateQueue.pop();
                             continue;
@@ -155,6 +158,8 @@ namespace AzToolsFramework
 
                     for (auto entityIdIterator = selectedEntityIds.begin(); entityIdIterator != selectedEntityIds.end(); entityIdIterator++)
                     {
+                        // Since entities get recreated during propagation, we need to check whether the entities correspoding to the list
+                        // of selected entity ids are present or not.
                         AZ::Entity* entity = GetEntityById(*entityIdIterator);
                         if (entity == nullptr)
                         {
