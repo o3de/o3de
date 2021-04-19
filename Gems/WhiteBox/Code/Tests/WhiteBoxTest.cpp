@@ -470,6 +470,7 @@ namespace UnitTest
     TEST_F(WhiteBoxTestFixture, MeshNotDeserializedWithSkipWhiteSpaceStream)
     {
         namespace Api = WhiteBox::Api;
+        using testing::Eq;
 
         Api::InitializeAsUnitCube(*m_whiteBox);
         AZStd::vector<AZ::u8> serializedWhiteBox;
@@ -485,7 +486,7 @@ namespace UnitTest
         // note: std::stringstream will default to skip white space characters
 
         AZ_TEST_START_TRACE_SUPPRESSION;
-        EXPECT_FALSE(Api::ReadMesh(*m_whiteBox, whiteBoxStream));
+        EXPECT_THAT(Api::ReadMesh(*m_whiteBox, whiteBoxStream), Eq(Api::ReadResult::Error));
         AZ_TEST_STOP_TRACE_SUPPRESSION(1);
     }
 

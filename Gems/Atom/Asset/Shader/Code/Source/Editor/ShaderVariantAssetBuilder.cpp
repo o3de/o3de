@@ -162,7 +162,7 @@ namespace AZ
             AZStd::string expectedHigherPrecedenceFileFullPath;
             AzFramework::StringFunc::Path::Join(gameProjectPath, RPI::ShaderVariantTreeAsset::CommonSubFolder, expectedHigherPrecedenceFileFullPath, false /* handle directory overlap? */, false /* be case insensitive? */);
             AzFramework::StringFunc::Path::Join(expectedHigherPrecedenceFileFullPath.c_str(), shaderProductFileRelativePath.c_str(), expectedHigherPrecedenceFileFullPath, false /* handle directory overlap? */, false /* be case insensitive? */);
-            AzFramework::StringFunc::Path::ReplaceExtension(expectedHigherPrecedenceFileFullPath, AZ::RPI::ShaderVariantAsset::Extension);
+            AzFramework::StringFunc::Path::ReplaceExtension(expectedHigherPrecedenceFileFullPath, AZ::RPI::ShaderVariantListSourceData::Extension);
             AzFramework::StringFunc::Path::Normalize(expectedHigherPrecedenceFileFullPath);
 
             AZStd::string normalizedShaderVariantListFileFullPath = shaderVariantListFileFullPath;
