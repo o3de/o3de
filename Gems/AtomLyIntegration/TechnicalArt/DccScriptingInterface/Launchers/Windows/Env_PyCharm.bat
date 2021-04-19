@@ -21,9 +21,9 @@ cd %~dp0
 PUSHD %~dp0
 
 :: version Major
-SET PYCHARM_VERSION_YEAR=2020
+SET PYCHARM_VERSION_YEAR=2021
 :: version Major
-SET PYCHARM_VERSION_MAJOR=2
+SET PYCHARM_VERSION_MAJOR=1
 
 ::"C:\Program Files\JetBrains\PyCharm 2019.1.3\bin"
 ::"C:\Program Files\JetBrains\PyCharm Community Edition 2018.3.5\bin\pycharm64.exe"
