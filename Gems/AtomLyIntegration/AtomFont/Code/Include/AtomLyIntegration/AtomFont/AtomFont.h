@@ -20,7 +20,13 @@
 #include <IXml.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/smart_ptr/weak_ptr.h>
+#include <AzCore/std/parallel/shared_mutex.h>
 #include <map>
+
+#include <AzFramework/Font/FontInterface.h>
+#include <AzFramework/Scene/SceneSystemBus.h>
+
+#include <Atom/RPI.Public/DynamicDraw/DynamicDrawContext.h>
 
 namespace AZ
 {
@@ -33,6 +39,8 @@ namespace AZ
     //! and manages their loading & saving together.
     class AtomFont
         : public ICryFont
+        , public AzFramework::FontQueryInterface
+        , public AzFramework::SceneSystemNotificationBus::Handler
     {
         friend class FFont;
 
@@ -79,16 +87,31 @@ namespace AZ
         void ReloadAllFonts() override;
         //////////////////////////////////////////////////////////////////////////////////
 
+        //////////////////////////////////////////////////////////////////////////////////
+        // FontQueryInterface implementation
+        AzFramework::FontDrawInterface* GetFontDrawInterface(AzFramework::FontId fontId) const override;
+        AzFramework::FontDrawInterface* GetDefaultFontDrawInterface() const override;
+
+        // SceneSystemNotificationBus handlers
+        void SceneAboutToBeRemoved(AzFramework::Scene& scene) override;
+
+
+        // Atom DynamicDraw interface management
+        AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> GetOrCreateDynamicDrawForScene(AZ::RPI::Scene* scene);
+
+
     public:
         void UnregisterFont(const char* fontName);
 
     private:
-        typedef std::map<string, FFont*> FontMap;
-        typedef FontMap::iterator FontMapItor;
-        typedef FontMap::const_iterator FontMapConstItor;
+        using FontMap = std::unordered_map<AzFramework::FontId, FFont*>;
+        using FontMapItor = FontMap::iterator;
+        using FontMapConstItor = FontMap::const_iterator;
 
-        typedef AZStd::map<AZStd::string, AZStd::weak_ptr<FontFamily>> FontFamilyMap;
-        typedef AZStd::map<FontFamily*, FontFamilyMap::iterator> FontFamilyReverseLookupMap;
+        using FontFamilyMap = AZStd::unordered_map<AZStd::string, AZStd::weak_ptr<FontFamily>>;
+        using FontFamilyReverseLookupMap = AZStd::unordered_map<FontFamily*, FontFamilyMap::iterator>;
+
+        using SceneToDynamicDrawMap = AZStd::unordered_map<AZ::RPI::Scene*, AZ::RPI::Ptr<AZ::RPI::DynamicDrawContext>>;
 
     private:
         //! Convenience method for loading fonts
@@ -119,9 +142,13 @@ namespace AZ
         FontFamilyReverseLookupMap m_fontFamilyReverseLookup; //<! FontFamily pointer reverse-lookup for quick removal
         ISystem* m_system;
 
+        AzFramework::FontDrawInterface* m_defaultFontDrawInterface = nullptr;
+
         int r_persistFontFamilies = 1; //!< Persist fonts for application lifetime to prevent unnecessary work; enabled by default.
         AZStd::vector<FontFamilyPtr> m_persistedFontFamilies; //!< Stores persisted fonts (if "persist font families" is enabled)
 
+        SceneToDynamicDrawMap m_sceneToDynamicDrawMap;
+        AZStd::shared_mutex m_sceneToDynamicDrawMutex;
     };
 }
 #endif

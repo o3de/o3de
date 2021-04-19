@@ -73,6 +73,11 @@ namespace AZ
                 || m_lightType == LightType::Polygon;
         }
 
+        bool AreaLightComponentConfig::LightTypeIsSelected() const
+        {
+            return m_lightType != LightType::Unknown;
+        }
+
         bool AreaLightComponentConfig::IsAttenuationRadiusModeAutomatic() const
         {
             return m_attenuationRadiusMode == LightAttenuationRadiusMode::Automatic;

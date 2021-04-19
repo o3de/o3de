@@ -42,14 +42,14 @@
           <widget class="QSvgWidget" name="m_logo" native="true">
            <property name="minimumSize">
             <size>
-             <width>250</width>
-             <height>60</height>
+             <width>161</width>
+             <height>49</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
-             <width>250</width>
-             <height>60</height>
+             <width>161</width>
+             <height>50</height>
             </size>
            </property>
           </widget>

@@ -79,4 +79,30 @@ namespace AWSClientAuth
     {
         return m_tokensExpireTimeSeconds;
     }
+
+    void AuthenticationTokens::Reflect(AZ::ReflectContext* context)
+    {
+        auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
+        if (serializeContext)
+        {
+            serializeContext->Class<AuthenticationTokens>()
+                ->Field("AccessToken", &AuthenticationTokens::m_accessToken)
+                ->Field("OpenIdToken", &AuthenticationTokens::m_openIdToken)
+                ->Field("RefreshToken", &AuthenticationTokens::m_refreshToken);
+        }
+
+        AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context);
+        if (behaviorContext)
+        {
+            behaviorContext->Class<AuthenticationTokens>()
+                ->Attribute(AZ::Script::Attributes::Category, "AWSClientAuth")
+                ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Constructor()
+                ->Constructor<const AuthenticationTokens&>()
+                ->Property("AccessToken", BehaviorValueGetter(&AuthenticationTokens::m_accessToken), BehaviorValueSetter(&AuthenticationTokens::m_accessToken))
+                ->Property("OpenIdToken", BehaviorValueGetter(&AuthenticationTokens::m_openIdToken), BehaviorValueSetter(&AuthenticationTokens::m_accessToken))
+                ->Property("RefreshToken", BehaviorValueGetter(&AuthenticationTokens::m_refreshToken), BehaviorValueSetter(&AuthenticationTokens::m_accessToken));
+        }
+    }
 } // namespace AWSClientAuth

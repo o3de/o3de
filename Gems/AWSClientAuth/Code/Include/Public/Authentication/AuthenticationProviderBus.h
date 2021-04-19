@@ -16,7 +16,7 @@
 
 namespace AWSClientAuth
 {
-    //@ Abstract class for authentication provider requests.
+    //! Abstract class for authentication provider requests.
     class IAuthenticationProviderRequests
     {
     public:
@@ -35,32 +35,40 @@ namespace AWSClientAuth
         virtual bool IsSignedIn(const ProviderNameEnum& providerName) = 0;
 
         //! Get cached tokens from last last successful sign-in for the provider.
+        //! @param providerName Provider to get authentication tokens.
+        //! @return AuthenticationTokens tokens from successful authentication.
         virtual AuthenticationTokens GetAuthenticationTokens(const ProviderNameEnum& providerName) = 0;
 
         // Below methods have corresponding notifications for success and failures.
 
         //! Call sign in endpoint for provider password grant flow.
+        //! @param providerName Provider to call sign in.
         //! @param username Username to use to for sign in.
         //! @param password Password to use to for sign in.
         virtual void PasswordGrantSingleFactorSignInAsync(const ProviderNameEnum& providerName, const AZStd::string& username, const AZStd::string& password) = 0;
 
         //! Call sign in endpoint for provider password grant multi factor authentication flow.
+        //! @param providerName Provider to call MFA sign in.
         //! @param username Username to use for MFA sign in.
         //! @param password Password to use for MFA sign in.
         virtual void PasswordGrantMultiFactorSignInAsync(const ProviderNameEnum& providerName, const AZStd::string& username, const AZStd::string& password) = 0;
 
         //! Call confirm endpoint for provider password grant multi factor authentication flow .
+        //! @param providerName Provider to call MFA confirm sign in.
         //! @param username Username to use for MFA confirm.
         //! @param confirmationCode Confirmation code (sent to email/text) to use for MFA confirm.
         virtual void PasswordGrantMultiFactorConfirmSignInAsync(const ProviderNameEnum& providerName, const AZStd::string& username, const AZStd::string& confirmationCode) = 0;
 
         //! Call code-pair endpoint for provider device grant flow.
+        //! @param providerName Provider to call device sign in.
         virtual void DeviceCodeGrantSignInAsync(const ProviderNameEnum& providerName) = 0;
 
         //! Call tokens endpoint for provider device grant flow.
+        //! @param providerName Provider to call device confirm sign in.
         virtual void DeviceCodeGrantConfirmSignInAsync(const ProviderNameEnum& providerName) = 0;
 
         //! Call refresh endpoint for provider refresh grant flow.
+        //! @param providerName Provider to call refresh tokens.
         virtual void RefreshTokensAsync(const ProviderNameEnum& providerName) = 0;
 
         //! Call refresh token if token not valid. If token valid, fires corresponding event.

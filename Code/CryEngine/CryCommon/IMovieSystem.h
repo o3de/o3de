@@ -19,6 +19,7 @@
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Math/Quaternion.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 #include <Range.h>
 #include <AnimKey.h>
@@ -914,9 +915,18 @@ struct IAnimStringTable
  */
 struct IAnimSequence
 {
-    AZ_RTTI(IAnimSequence, "{A60F95F5-5A4A-47DB-B3BB-525BBC0BC8DB}")
+    AZ_RTTI(IAnimSequence, "{A60F95F5-5A4A-47DB-B3BB-525BBC0BC8DB}");
+    AZ_CLASS_ALLOCATOR(IAnimSequence, AZ::SystemAllocator, 0);
 
-    static const int kSequenceVersion = 4;
+    static const int kSequenceVersion = 5;
+
+    static void Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context); serializeContext != nullptr)
+        {
+            serializeContext->Class<IAnimSequence>();
+        }
+    }
 
     //! Flags used for SetFlags(),GetFlags(),SetParentFlags(),GetParentFlags() methods.
     enum EAnimSequenceFlags
