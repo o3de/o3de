@@ -37,7 +37,7 @@
 #include <AzFramework/API/AtomActiveInterface.h>
 #include <AzCore/Console/IConsole.h>
 
-AZ_CVAR(bool, ed_useAtomNativeViewport, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Use the new Atom-native Editor viewport (experimental, not yet stable");
+AZ_CVAR(bool, ed_useAtomNativeViewport, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Use the new Atom-native Editor viewport (experimental, not yet stable");
 
 bool CViewManager::IsMultiViewportEnabled()
 {

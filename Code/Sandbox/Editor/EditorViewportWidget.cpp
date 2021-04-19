@@ -1617,11 +1617,6 @@ void EditorViewportWidget::keyPressEvent(QKeyEvent* event)
     // because we want the movement to be butter smooth.
     if (!event->isAutoRepeat())
     {
-        if (m_keyDown.isEmpty())
-        {
-            grabKeyboard();
-        }
-
         m_keyDown.insert(event->key());
     }
 

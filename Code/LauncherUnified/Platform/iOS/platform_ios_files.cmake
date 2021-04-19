@@ -13,8 +13,8 @@ set(FILES
     Launcher_iOS.mm
     Launcher_Traits_iOS.h
     Launcher_Traits_Platform.h
-    LumberyardApplication_iOS.mm
-    LumberyardApplicationDelegate_iOS.mm
+    O3DEApplication_iOS.mm
+    O3DEApplicationDelegate_iOS.mm
     ../Common/Apple/Launcher_Apple.mm
     ../Common/Apple/Launcher_Apple.h
     ../Common/UnixLike/Launcher_UnixLike.cpp

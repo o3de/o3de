@@ -1,6 +1,7 @@
 #pragma once
 
 #include <AzCore/std/containers/list.h>
+#include <Source/MultiplayerTypes.h>
 
 namespace AZ
 {
@@ -17,7 +18,13 @@ namespace {{ Namespace }}
 {% set ComponentName = Component.attrib['Name'] %}
         {{ ComponentName }},
 {% endfor %}
+        Count
     };
+    static_assert(ComponentTypes::Count < static_cast<ComponentTypes>(Multiplayer::InvalidNetComponentId), "ComponentId overflow");
 
+    //! For reflecting multiplayer components into the serialize, edit, and behaviour contexts.
     void CreateComponentDescriptors(AZStd::list<AZ::ComponentDescriptor*>& descriptors);
+
+    //! For creating multiplayer component network inputs.
+    void CreateComponentNetworkInput();
 }

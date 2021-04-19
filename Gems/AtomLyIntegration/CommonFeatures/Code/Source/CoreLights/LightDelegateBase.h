@@ -14,6 +14,7 @@
 
 #include <AzCore/Component/TransformBus.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
+#include <AtomLyIntegration/CommonFeatures/CoreLights/AreaLightComponentConfig.h>
 #include <LmbrCentral/Shape/SphereShapeComponentBus.h>
 #include <CoreLights/LightDelegateInterface.h>
 
@@ -39,6 +40,8 @@ namespace AZ
         public:
             LightDelegateBase(EntityId entityId, bool isVisible);
             virtual ~LightDelegateBase();
+
+            void SetConfig(const AreaLightComponentConfig* config) override;
 
             // LightDelegateInterface overrides...
             void SetChroma(const AZ::Color& chroma) override;
@@ -66,6 +69,7 @@ namespace AZ
 
             // Trivial getters
             FeatureProcessorType* GetFeatureProcessor() const { return m_featureProcessor; };
+            const AreaLightComponentConfig* GetConfig() const { return m_componentConfig; };
             typename FeatureProcessorType::LightHandle GetLightHandle() const { return m_lightHandle; };
             const AZ::Transform& GetTransform() const { return m_transform; };
             bool GetShuttersEnabled() { return m_shuttersEnabled; };
@@ -81,6 +85,7 @@ namespace AZ
         private:
             FeatureProcessorType* m_featureProcessor = nullptr;
             typename FeatureProcessorType::LightHandle m_lightHandle;
+            const AreaLightComponentConfig* m_componentConfig = nullptr;
 
             LmbrCentral::ShapeComponentRequests* m_shapeBus;
             AZ::Transform m_transform;

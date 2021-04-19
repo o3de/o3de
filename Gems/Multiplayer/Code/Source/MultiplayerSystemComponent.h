@@ -21,8 +21,8 @@
 #include <AzNetworking/ConnectionLayer/IConnectionListener.h>
 #include <Include/IMultiplayer.h>
 #include <Source/NetworkTime/NetworkTime.h>
-#include <Source/AutoGen/Multiplayer.AutoPacketDispatcher.h>
 #include <Source/NetworkEntity/NetworkEntityManager.h>
+#include <Source/AutoGen/Multiplayer.AutoPacketDispatcher.h>
 
 namespace AzNetworking
 {
