@@ -250,7 +250,7 @@ namespace MaterialEditor
 
         menu->addSeparator();
 
-        QAction* createMaterialAction = menu->addAction(QObject::tr("Create New Material"));
+        QAction* createMaterialAction = menu->addAction(QObject::tr("Create Material..."));
         QObject::connect(createMaterialAction, &QAction::triggered, caller, [caller, entry]()
             {
                 CreateMaterialDialog createDialog(entry->GetFullPath().c_str(), caller);
