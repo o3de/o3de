@@ -181,13 +181,6 @@
                             }
                         },
                         {
-                            "LocalSlot": "ClearCoatNormalInput",
-                            "AttachmentRef": {
-                                "Pass": "ForwardMSAAPass",
-                                "Attachment": "ClearCoatNormalOutput"
-                            }
-                        },
-                        {
                             "LocalSlot": "DepthStencilInputOutput",
                             "AttachmentRef": {
                                 "Pass": "ForwardMSAAPass",
@@ -262,7 +255,7 @@
                         "ShaderAsset": {
                             "FilePath": "Shaders/Reflections/ReflectionComposite.shader"
                         },
-                        "StencilRef": 1,
+                        "StencilRef": 1, // See RenderCommon.h and ReflectionComposite.shader
                         "PipelineViewTag": "MainCamera"
                     }
                 },
