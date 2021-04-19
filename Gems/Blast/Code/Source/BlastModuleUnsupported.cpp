@@ -14,4 +14,4 @@
 // DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
 // The first parameter should be GemName_GemIdLower
 // The second should be the fully qualified name of the class above
-AZ_DECLARE_MODULE_CLASS(Blast_414bd211c99d4f74aef3a266b9ca208c, AZ::Module)
+AZ_DECLARE_MODULE_CLASS(Gem_Blast, AZ::Module)
