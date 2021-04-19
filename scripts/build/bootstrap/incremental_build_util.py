@@ -205,7 +205,7 @@ def create_volume(ec2_client, availability_zone, repository_name, project, pipel
             'ResourceType': 'volume',
             'Tags': [
                 { 'Key': 'Name', 'Value': mount_name },
-                {'Key': 'RepositoryName', 'Value': repository_name},
+                { 'Key': 'RepositoryName', 'Value': repository_name},
                 { 'Key': 'Project', 'Value': project },
                 { 'Key': 'Pipeline', 'Value': pipeline },
                 { 'Key': 'BranchName', 'Value': branch },
