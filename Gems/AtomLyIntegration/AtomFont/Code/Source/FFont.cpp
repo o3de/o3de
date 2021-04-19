@@ -84,6 +84,20 @@ AZ::FFont::FFont(AtomFont* atomFont, const char* fontName)
     AZ::Render::Bootstrap::NotificationBus::Handler::BusConnect();
 }
 
+AZ::RPI::ViewportContextPtr AZ::FFont::GetDefaultViewportContext() const
+{
+    auto viewContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+    return viewContextManager->GetDefaultViewportContext();
+}
+
+AZ::RPI::WindowContextSharedPtr AZ::FFont::GetDefaultWindowContext() const
+{
+    if (auto defaultViewportContext = GetDefaultViewportContext())
+    {
+        return defaultViewportContext->GetWindowContext();
+    }
+    return {};
+}
 
 bool AZ::FFont::InitFont()
 {
@@ -92,11 +106,8 @@ bool AZ::FFont::InitFont()
         return true;
     }
 
-    InitDefaultWindowContext();
-    InitDefaultViewportContext();
-
     // Create and initialize DynamicDrawContext for font draw
-    AZ::RPI::Ptr<AZ::RPI::DynamicDrawContext> dynamicDraw = m_atomFont->GetOrCreateDynamicDrawForScene(m_defaultViewportContext->GetRenderScene().get());
+    AZ::RPI::Ptr<AZ::RPI::DynamicDrawContext> dynamicDraw = m_atomFont->GetOrCreateDynamicDrawForScene(GetDefaultViewportContext()->GetRenderScene().get());
 
     // Save draw srg input indices for later use
     Data::Instance<RPI::ShaderResourceGroup> drawSrg = dynamicDraw->NewDrawSrg();
@@ -259,7 +270,7 @@ void AZ::FFont::DrawString(float x, float y, const char* str, const bool asciiMu
         return;
     }
 
-    DrawStringUInternal(m_defaultWindowContext->GetViewport(), m_defaultViewportContext.get(), x, y, 1.0f, str, asciiMultiLine, ctx);
+    DrawStringUInternal(GetDefaultWindowContext()->GetViewport(), GetDefaultViewportContext().get(), x, y, 1.0f, str, asciiMultiLine, ctx);
 }
 
 void AZ::FFont::DrawString(float x, float y, float z, const char* str, const bool asciiMultiLine, const TextDrawContext& ctx)
@@ -269,7 +280,7 @@ void AZ::FFont::DrawString(float x, float y, float z, const char* str, const boo
         return;
     }
 
-    DrawStringUInternal(m_defaultWindowContext->GetViewport(), m_defaultViewportContext.get(), x, y, z, str, asciiMultiLine, ctx);
+    DrawStringUInternal(GetDefaultWindowContext()->GetViewport(), GetDefaultViewportContext().get(), x, y, z, str, asciiMultiLine, ctx);
 }
 
 void AZ::FFont::DrawStringUInternal(
@@ -282,6 +293,8 @@ void AZ::FFont::DrawStringUInternal(
     const bool asciiMultiLine, 
     const TextDrawContext& ctx)
 {
+    InitFont();
+
     if (!str
         || !m_vertexBuffer // vertex buffer isn't created until BootstrapScene is ready, Editor tries to render text before that.
         || !m_fontTexture
@@ -400,7 +413,7 @@ Vec2 AZ::FFont::GetTextSize(const char* str, const bool asciiMultiLine, const Te
         return Vec2(0.0f, 0.0f);
     }
 
-    return GetTextSizeUInternal(m_defaultWindowContext->GetViewport(), str, asciiMultiLine, ctx);
+    return GetTextSizeUInternal(GetDefaultWindowContext()->GetViewport(), str, asciiMultiLine, ctx);
 }
 
 Vec2 AZ::FFont::GetTextSizeUInternal(
@@ -746,7 +759,7 @@ uint32_t AZ::FFont::WriteTextQuadsToBuffers(SVF_P2F_C4B_T2F_F4B* verts, uint16_t
             return true;
         };
 
-    CreateQuadsForText(m_defaultWindowContext->GetViewport(), x, y, z, str, asciiMultiLine, ctx, AddQuad);
+    CreateQuadsForText(GetDefaultWindowContext()->GetViewport(), x, y, z, str, asciiMultiLine, ctx, AddQuad);
 
     return numQuadsWritten;
 }
@@ -1438,7 +1451,7 @@ void AZ::FFont::AddCharsToFontTexture(const char* chars, int glyphSizeX, int gly
 
 Vec2 AZ::FFont::GetKerning(uint32_t leftGlyph, uint32_t rightGlyph, const TextDrawContext& ctx) const
 {
-    return GetKerningInternal(m_defaultWindowContext->GetViewport(), leftGlyph, rightGlyph, ctx);
+    return GetKerningInternal(GetDefaultWindowContext()->GetViewport(), leftGlyph, rightGlyph, ctx);
 }
 
 Vec2 AZ::FFont::GetKerningInternal(const RHI::Viewport& viewport, uint32_t leftGlyph, uint32_t rightGlyph, const TextDrawContext& ctx) const
@@ -1454,7 +1467,7 @@ float AZ::FFont::GetAscender(const TextDrawContext& ctx) const
 
 float AZ::FFont::GetBaseline(const TextDrawContext& ctx) const
 {
-    return GetBaselineInternal(m_defaultWindowContext->GetViewport(), ctx);
+    return GetBaselineInternal(GetDefaultWindowContext()->GetViewport(), ctx);
 }
 
 float AZ::FFont::GetBaselineInternal(const RHI::Viewport& viewport, const TextDrawContext& ctx) const
