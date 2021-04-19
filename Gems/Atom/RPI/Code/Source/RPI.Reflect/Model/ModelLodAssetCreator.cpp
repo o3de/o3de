@@ -10,6 +10,8 @@
 *
 */
 
+#include <AzCore/std/containers/set.h>
+#include <Atom/RPI.Reflect/Buffer/BufferAssetCreator.h>
 #include <Atom/RPI.Reflect/Model/ModelLodAssetCreator.h>
 #include <AzCore/Asset/AssetManager.h>
 
@@ -239,6 +241,104 @@ namespace AZ
             }
 
             return true;
+        }
+
+        bool ModelLodAssetCreator::Clone(const Data::Asset<ModelLodAsset>& sourceAsset, Data::Asset<ModelLodAsset>& clonedResult, Data::AssetId& inOutLastCreatedAssetId)
+        {
+            AZStd::array_view<ModelLodAsset::Mesh> sourceMeshes = sourceAsset->GetMeshes();
+            if (sourceMeshes.empty())
+            {
+                return true;
+            }
+
+            ModelLodAssetCreator creator;
+            inOutLastCreatedAssetId.m_subId = inOutLastCreatedAssetId.m_subId + 1;
+            creator.Begin(inOutLastCreatedAssetId);
+
+            // Add the index buffer
+            const Data::Asset<BufferAsset> sourceIndexBufferAsset = sourceMeshes[0].GetIndexBufferAssetView().GetBufferAsset();
+            Data::Asset<BufferAsset> indexBufferAsset;
+            BufferAssetCreator::Clone(sourceIndexBufferAsset, indexBufferAsset, inOutLastCreatedAssetId);
+            creator.SetLodIndexBuffer(AZStd::move(indexBufferAsset));
+
+            // Add meshes
+            AZStd::unordered_map<AZ::Data::AssetId, AZ::Data::AssetId> oldToNewBufferAssetIds;
+            for (const ModelLodAsset::Mesh& sourceMesh : sourceMeshes)
+            {
+                // Add stream buffers
+                for (const AZ::RPI::ModelLodAsset::Mesh::StreamBufferInfo& streamBufferInfo : sourceMesh.GetStreamBufferInfoList())
+                {
+                    const Data::Asset<BufferAsset>& sourceStreamBuffer = streamBufferInfo.m_bufferAssetView.GetBufferAsset();
+                    const AZ::Data::AssetId sourceBufferAssetId = sourceStreamBuffer.GetId();
+
+                    // In case the buffer asset id is not part of our old to new asset id mapping, we did not convert and add it yet.
+                    if (oldToNewBufferAssetIds.find(sourceBufferAssetId) == oldToNewBufferAssetIds.end())
+                    {
+                        Data::Asset<BufferAsset> streamBufferAsset;
+                        if (!BufferAssetCreator::Clone(sourceStreamBuffer, streamBufferAsset, inOutLastCreatedAssetId))
+                        {
+                            AZ_Error("ModelLodAssetCreator", false,
+                                "Cannot clone buffer asset for '%s'.", sourceBufferAssetId.ToString<AZStd::string>().c_str());
+                            return false;
+                        }
+
+                        oldToNewBufferAssetIds[sourceBufferAssetId] = streamBufferAsset.GetId();
+                        creator.AddLodStreamBuffer(AZStd::move(streamBufferAsset));
+                    }
+                }
+
+                // Add mesh
+                creator.BeginMesh();
+                creator.SetMeshName(sourceMesh.GetName());
+                AZ::Aabb aabb = sourceMesh.GetAabb();
+                creator.SetMeshAabb(AZStd::move(aabb));
+                creator.SetMeshMaterialAsset(sourceMesh.GetMaterialAsset());
+
+                // Mesh index buffer view
+                const BufferAssetView& sourceIndexBufferView = sourceMesh.GetIndexBufferAssetView();
+                BufferAssetView indexBufferAssetView(sourceIndexBufferAsset, sourceIndexBufferView.GetBufferViewDescriptor());
+                creator.SetMeshIndexBuffer(sourceIndexBufferView);
+
+                // Mesh stream buffer views
+                for (const AZ::RPI::ModelLodAsset::Mesh::StreamBufferInfo& streamBufferInfo : sourceMesh.GetStreamBufferInfoList())
+                {
+                    // Get the corresponding new buffer asset id from the source buffer.
+                    const AZ::Data::AssetId sourceBufferAssetId = streamBufferInfo.m_bufferAssetView.GetBufferAsset().GetId();
+                    const auto assetIdIterator = oldToNewBufferAssetIds.find(sourceBufferAssetId);
+                    if (assetIdIterator != oldToNewBufferAssetIds.end())
+                    {
+                        const AZStd::array_view<Data::Asset<BufferAsset>> newStreamBufferAssets = creator.m_asset->GetStreamBuffers();
+                        const AZ::Data::AssetId& newBufferAssetId = assetIdIterator->second;
+
+                        // Find the corresponding new buffer asset that we created above.
+                        const auto bufferAssetIterator = AZStd::find_if(newStreamBufferAssets.begin(), newStreamBufferAssets.end(),
+                            [&newBufferAssetId](const Data::Asset<BufferAsset>& asset) { return (newBufferAssetId == asset.GetId()); });
+                        if (bufferAssetIterator != newStreamBufferAssets.end())
+                        {
+                            BufferAssetView bufferAssetView(*bufferAssetIterator, streamBufferInfo.m_bufferAssetView.GetBufferViewDescriptor());
+                            creator.AddMeshStreamBuffer(streamBufferInfo.m_semantic, streamBufferInfo.m_customName, bufferAssetView);
+                        }
+                        else
+                        {
+                            AZ_Error("ModelLodAssetCreator", false,
+                                "Cannot find corresponding stream buffer asset for asset id %s",
+                                newBufferAssetId.ToString<AZStd::string>().c_str());
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        AZ_Error("ModelLodAssetCreator", false,
+                            "Cannot find new buffer asset for source buffer asset '%s' even though we added it to the conversion map.",
+                            sourceBufferAssetId.ToString<AZStd::string>().c_str());
+                        return false;
+                    }
+                }
+
+                creator.EndMesh();
+            }
+
+            return creator.End(clonedResult);
         }
     } // namespace RPI
 } // namespace AZ

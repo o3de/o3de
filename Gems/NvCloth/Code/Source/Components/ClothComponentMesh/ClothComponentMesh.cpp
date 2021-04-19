@@ -448,9 +448,14 @@ namespace NvCloth
         const auto& renderTangents = renderData.m_tangents;
         const auto& renderBitangents = renderData.m_bitangents;
 
-        AZ::Data::Asset<AZ::RPI::ModelAsset> modelAsset;
-        AZ::Render::MeshComponentRequestBus::EventResult(
-            modelAsset, m_entityId, &AZ::Render::MeshComponentRequestBus::Events::GetModelAsset);
+        AZ::Data::Instance<AZ::RPI::Model> model;
+        AZ::Render::MeshComponentRequestBus::EventResult(model, m_entityId, &AZ::Render::MeshComponentRequestBus::Events::GetModel);
+        if (!model)
+        {
+            return;
+        }
+
+        AZ::Data::Asset<AZ::RPI::ModelAsset> modelAsset = model->GetModelAsset();
         if (!modelAsset.IsReady())
         {
             return;

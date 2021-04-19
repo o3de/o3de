@@ -52,6 +52,7 @@ namespace AZ
                 bool m_readyToCapture = true;
                 //! This is necessary to suspend capture to allow a frame for Material and Mesh components to assign materials
                 int m_ticksToCapture = 0;
+                AZ::Data::AssetId m_prevAssetId;
             };
         } // namespace Thumbnails
     } // namespace LyIntegration

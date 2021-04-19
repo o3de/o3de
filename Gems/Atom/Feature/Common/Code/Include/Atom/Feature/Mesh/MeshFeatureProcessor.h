@@ -39,7 +39,6 @@ namespace AZ
             const RPI::Cullable& GetCullable() { return m_cullable; }
 
         private:
-
             class MeshLoader
                 : private Data::AssetBus::Handler
             {
@@ -55,6 +54,11 @@ namespace AZ
                 // AssetBus::Handler overrides...
                 void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
                 void OnAssetError(Data::Asset<Data::AssetData> asset) override;
+
+                //! Check if the model asset requires to be cloned (e.g. cloth) for unique model instances.
+                //! @param modelAsset The model asset to check.
+                //! @result True in case e.g. a cloth buffer is found, false if no indication is found that requires unique model instances.
+                bool RequiresInstancing(const Data::Asset<RPI::ModelAsset>& modelAsset) const;
 
                 MeshFeatureProcessorInterface::ModelChangedEvent m_modelChangedEvent;
                 Data::Asset<RPI::ModelAsset> m_modelAsset;
@@ -83,6 +87,9 @@ namespace AZ
             MaterialAssignmentMap m_materialAssignments;
 
             Data::Instance<RPI::Model> m_model;
+
+            //! A reference to the original model asset in case it got cloned before creating the model instance.
+            Data::Asset<RPI::ModelAsset> m_originalModelAsset;
             Data::Instance<RPI::ShaderResourceGroup> m_shaderResourceGroup;
             AZStd::unique_ptr<MeshLoader> m_meshLoader;
             RPI::Scene* m_scene = nullptr;
@@ -139,6 +146,7 @@ namespace AZ
             MeshHandle CloneMesh(const MeshHandle& meshHandle) override;
 
             Data::Instance<RPI::Model> GetModel(const MeshHandle& meshHandle) const override;
+            Data::Asset<RPI::ModelAsset>* GetModelAsset(const MeshHandle& meshHandle) const override;
             void SetMaterialAssignmentMap(const MeshHandle& meshHandle, const Data::Instance<RPI::Material>& material) override;
             void SetMaterialAssignmentMap(const MeshHandle& meshHandle, const MaterialAssignmentMap& materials) override;
             const MaterialAssignmentMap& GetMaterialAssignmentMap(const MeshHandle& meshHandle) const override;

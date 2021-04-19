@@ -21,6 +21,8 @@
 #include <Atom/RPI.Public/Culling.h>
 #include <Atom/Utils/StableDynamicArray.h>
 
+#include <Atom/RPI.Reflect/Model/ModelAssetCreator.h>
+
 #include <AtomCore/Instance/InstanceDatabase.h>
 
 #include <AzCore/Console/IConsole.h>
@@ -166,8 +168,8 @@ namespace AZ
 
             meshDataHandle->m_scene = GetParentScene();
             meshDataHandle->m_materialAssignments = materials;
-
             meshDataHandle->m_objectId = m_transformService->ReserveObjectId();
+            meshDataHandle->m_originalModelAsset = modelAsset;
             meshDataHandle->m_meshLoader = AZStd::make_unique<MeshDataInstance::MeshLoader>(modelAsset, &*meshDataHandle);
 
             return meshDataHandle;
@@ -205,7 +207,7 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                MeshHandle clone = AcquireMesh(meshHandle->m_model->GetModelAsset(), meshHandle->m_materialAssignments);
+                MeshHandle clone = AcquireMesh(meshHandle->m_originalModelAsset, meshHandle->m_materialAssignments);
                 return clone;
             }
             return MeshFeatureProcessor::MeshHandle();
@@ -214,6 +216,16 @@ namespace AZ
         Data::Instance<RPI::Model> MeshFeatureProcessor::GetModel(const MeshHandle& meshHandle) const
         {
             return meshHandle.IsValid() ? meshHandle->m_model : nullptr;
+        }
+
+        Data::Asset<RPI::ModelAsset>* MeshFeatureProcessor::GetModelAsset(const MeshHandle& meshHandle) const
+        {
+            if (meshHandle.IsValid())
+            {
+                return &meshHandle->m_originalModelAsset;
+            }
+
+            return nullptr;
         }
 
         void MeshFeatureProcessor::SetMaterialAssignmentMap(const MeshHandle& meshHandle, const Data::Instance<RPI::Material>& material)
@@ -446,12 +458,59 @@ namespace AZ
             return m_modelChangedEvent;
         }
 
+        bool MeshDataInstance::MeshLoader::RequiresInstancing(const Data::Asset<RPI::ModelAsset>& modelAsset) const
+        {
+            // Is the model asset containing a cloth buffer? If yes, we need to clone the model asset for instancing.
+            const AZStd::array_view<AZ::Data::Asset<AZ::RPI::ModelLodAsset>> lodAssets = modelAsset->GetLodAssets();
+            for (const AZ::Data::Asset<AZ::RPI::ModelLodAsset>& lodAsset : lodAssets)
+            {
+                const AZStd::array_view<AZ::RPI::ModelLodAsset::Mesh> meshes = lodAsset->GetMeshes();
+                for (const AZ::RPI::ModelLodAsset::Mesh& mesh : meshes)
+                {
+                    if (mesh.GetSemanticBufferAssetView(AZ::Name("CLOTH_DATA")) != nullptr)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
         //! AssetBus::Handler overrides...
         void MeshDataInstance::MeshLoader::OnAssetReady(Data::Asset<Data::AssetData> asset)
         {
             AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            Data::Asset<RPI::ModelAsset> modelAsset = asset;
 
-            Data::Instance<RPI::Model> model = RPI::Model::FindOrCreate(asset);
+            // Assign the fully loaded asset back to the mesh handle to not only hold asset id, but the actual data as well.
+            m_parent->m_originalModelAsset = asset;
+
+            Data::Instance<RPI::Model> model;
+            if (RequiresInstancing(modelAsset))
+            {
+                // Clone the model asset to force create another model instance.
+                AZ::Data::AssetId newId(AZ::Uuid::CreateRandom(), /*subId=*/0);
+                Data::Asset<RPI::ModelAsset> clonedAsset;
+                if (AZ::RPI::ModelAssetCreator::Clone(modelAsset, clonedAsset, newId))
+                {
+                    AZ_Printf("Atom", "Clone asset id: %s, original id: %s",
+                        clonedAsset->GetId().ToString<AZStd::string>().c_str(),
+                        modelAsset->GetId().ToString<AZStd::string>().c_str());
+                    model = RPI::Model::FindOrCreate(clonedAsset);
+                }
+                else
+                {
+                    AZ_Error("MeshDataInstance", false, "Cannot clone model for '%s'. Cloth simulation results won't be individual per entity.", modelAsset->GetName().GetCStr());
+                    model = RPI::Model::FindOrCreate(modelAsset);
+                }
+            }
+            else
+            {
+                // Static mesh, no cloth buffer present.
+                model = RPI::Model::FindOrCreate(modelAsset);
+            }
+            
             if (model)
             {
                 m_parent->Init(model);

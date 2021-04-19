@@ -12,9 +12,11 @@
 #pragma once
 
 #include <AzCore/EBus/Event.h>
+#include <AzCore/Outcome/Outcome.h>
 #include <Atom/Feature/Material/MaterialAssignment.h>
 #include <Atom/RPI.Public/Culling.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/Utils/StableDynamicArray.h>
 
 namespace AZ
@@ -52,6 +54,8 @@ namespace AZ
 
             //! Gets the underlying RPI::Model instance for a meshHandle. May be null if the model has not loaded.
             virtual Data::Instance<RPI::Model> GetModel(const MeshHandle& meshHandle) const = 0;
+            //! Gets the underlying RPI::ModelAsset for a meshHandle.
+            virtual Data::Asset<RPI::ModelAsset>* GetModelAsset(const MeshHandle& meshHandle) const = 0;
             //! Sets the MaterialAssignmentMap for a meshHandle, using just a single material for the DefaultMaterialAssignmentId.
             //! Note if there is already a material assignment map, this will replace the entire map with just a single material.
             virtual void SetMaterialAssignmentMap(const MeshHandle& meshHandle, const Data::Instance<RPI::Material>& material) = 0;
