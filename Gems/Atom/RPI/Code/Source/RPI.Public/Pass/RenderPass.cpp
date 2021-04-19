@@ -539,7 +539,7 @@ namespace AZ
                 const uint32_t TimestampResultQueryCount = 2u;
                 uint64_t timestampResult[TimestampResultQueryCount] = {0};
                 query->GetLatestResult(&timestampResult, sizeof(uint64_t) * TimestampResultQueryCount);
-                m_timestampResult = TimestampResult(timestampResult[0], timestampResult[1]);
+                m_timestampResult = TimestampResult(timestampResult[0], timestampResult[1], RHI::HardwareQueueClass::Graphics);
             });
 
             ExecuteOnPipelineStatisticsQuery([this](RHI::Ptr<Query> query)

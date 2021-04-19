@@ -21,41 +21,39 @@ namespace AZ
     namespace RPI
     {
         // --- TimestampResult ---
-
-        TimestampResult::TimestampResult(uint64_t timestampInTicks)
+        TimestampResult::TimestampResult(uint64_t beginTick, uint64_t endTick, RHI::HardwareQueueClass hardwareQueueClass)
         {
-            m_timestampInTicks = timestampInTicks;
+            AZ_Assert(endTick >= beginTick, "TimestampResult: bad inputs");
+            m_begin = beginTick;
+            m_duration = endTick - beginTick;
+            m_hardwareQueueClass = hardwareQueueClass;
         }
 
-        TimestampResult::TimestampResult(uint64_t timestampQueryResultLow, uint64_t timestampQueryResultHigh)
-        {
-            const uint64_t low  = AZStd::min(timestampQueryResultLow, timestampQueryResultHigh);
-            const uint64_t high = AZStd::max(timestampQueryResultLow, timestampQueryResultHigh);
-
-            m_timestampInTicks = high - low;
-        }
-
-        TimestampResult::TimestampResult(AZStd::array_view<TimestampResult>&& timestampResultArray)
-        {
-            // Loop through all the child passes, and accumulate all the timestampTicks
-            for (const TimestampResult& timestampResult : timestampResultArray)
-            {
-                m_timestampInTicks += timestampResult.m_timestampInTicks;
-            }
-        }
-
-        uint64_t TimestampResult::GetTimestampInNanoseconds() const
+        uint64_t TimestampResult::GetDurationInNanoseconds() const
         {
             const RHI::Ptr<RHI::Device> device = RHI::GetRHIDevice();
-            const AZStd::chrono::microseconds timeInMicroseconds = device->GpuTimestampToMicroseconds(m_timestampInTicks, RHI::HardwareQueueClass::Graphics);
+            const AZStd::chrono::microseconds timeInMicroseconds = device->GpuTimestampToMicroseconds(m_duration, m_hardwareQueueClass);
             const auto timeInNanoseconds = AZStd::chrono::nanoseconds(timeInMicroseconds);
 
             return static_cast<uint64_t>(timeInNanoseconds.count());
         }
 
-        uint64_t TimestampResult::GetTimestampInTicks() const
+        uint64_t TimestampResult::GetDurationInTicks() const
         {
-            return m_timestampInTicks;
+            return m_duration;
+        }
+
+        uint64_t TimestampResult::GetTimestampBeginInTicks() const
+        {
+            return m_begin;
+        }
+
+        void TimestampResult::Add(const TimestampResult& extent)
+        {
+            uint64_t end1 = m_begin + m_duration;
+            uint64_t end2 = extent.m_begin + extent.m_duration;
+            m_begin = m_begin < extent.m_begin ? m_begin : extent.m_begin;
+            m_duration = (end1 > end2 ? end1 : end2) - m_begin;
         }
 
         // --- PipelineStatisticsResult ---
