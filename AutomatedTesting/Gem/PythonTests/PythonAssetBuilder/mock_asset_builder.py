@@ -48,7 +48,7 @@ def on_create_jobs(args):
 def process_file(request):
     # prepare output folder
     basePath, _ = os.path.split(request.sourceFile)
-    outputPath = os.path.join(request.tempDirPath, basePath)
+    outputPath = os.path.join(request.tempDirPath, basePath).lower()
     os.makedirs(outputPath, exist_ok=True)
 
     # write out a mock file
