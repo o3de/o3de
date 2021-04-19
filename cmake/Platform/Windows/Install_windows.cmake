@@ -9,10 +9,4 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-ly_add_external_target(
-    NAME etc2comp
-    VERSION 2017_04_24-az.2
-    INCLUDE_DIRECTORIES
-        EtcLib/Etc
-        EtcLib/EtcCodec
-)
+include(cmake/Platform/Common/Install_common.cmake)

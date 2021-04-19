@@ -36,12 +36,15 @@ ly_associate_package(PACKAGE_NAME glad-2.0.0-beta-rev2-multiplatform            
 ly_associate_package(PACKAGE_NAME lux_core-2.2-rev5-multiplatform                        TARGETS lux_core                   PACKAGE_HASH c8c13cf7bc351643e1abd294d0841b24dee60e51647dff13db7aec396ad1e0b5)
 ly_associate_package(PACKAGE_NAME xxhash-0.7.4-rev1-multiplatform                        TARGETS xxhash                     PACKAGE_HASH e81f3e6c4065975833996dd1fcffe46c3cf0f9e3a4207ec5f4a1b564ba75861e)
 ly_associate_package(PACKAGE_NAME PVRTexTool-4.24.0-rev4-multiplatform                   TARGETS PVRTexTool                 PACKAGE_HASH d0d6da61c7557de0d2c71fc35ba56c3be49555b703f0e853d4c58225537acf1e)
+ly_associate_package(PACKAGE_NAME poly2tri-0.3.3-rev2-multiplatform                      TARGETS poly2tri                   PACKAGE_HASH 04092d06716f59b936b61906eaf3647db23b685d81d8b66131eb53e0aeaa1a38)
+ly_associate_package(PACKAGE_NAME v-hacd-2.0-rev1-multiplatform                          TARGETS v-hacd                     PACKAGE_HASH 5c71aef19cc9787d018d64eec076e9f51ea5a3e0dc6b6e22e57c898f6cc4afe3)
 
 # platform-specific:
 ly_associate_package(PACKAGE_NAME freetype-2.10.4.14-mac-ios         TARGETS freetype        PACKAGE_HASH 67b4f57aed92082d3fd7c16aa244a7d908d90122c296b0a63f73e0a0b8761977)
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-mac-ios              TARGETS tiff            PACKAGE_HASH a23ae1f8991a29f8e5df09d6d5b00d7768a740f90752cef465558c1768343709)
 ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev3-mac      TARGETS AWSNativeSDK    PACKAGE_HASH 21920372e90355407578b45ac19580df1463a39a25a867bcd0ffd8b385c8254a)
 ly_associate_package(PACKAGE_NAME PhysX-4.1.0.25992954-rev1-mac      TARGETS PhysX           PACKAGE_HASH 149f5e9b44bd27291b1c4772f5e89a1e0efa88eef73c7e0b188935ed4d0c4a70)
+ly_associate_package(PACKAGE_NAME etc2comp-9cd0f9cae0-rev1-mac       TARGETS etc2comp        PACKAGE_HASH 1966ab101c89db7ecf30984917e0a48c0d02ee0e4d65b798743842b9469c0818)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-mac              TARGETS mikkelsen       PACKAGE_HASH 83af99ca8bee123684ad254263add556f0cf49486c0b3e32e6d303535714e505)
 ly_associate_package(PACKAGE_NAME googletest-1.8.1-rev4-mac          TARGETS googletest      PACKAGE_HASH cbf020d5ef976c5db8b6e894c6c63151ade85ed98e7c502729dd20172acae5a8)
 ly_associate_package(PACKAGE_NAME googlebenchmark-1.5.0-rev2-mac     TARGETS GoogleBenchmark PACKAGE_HASH ad25de0146769c91e179953d845de2bec8ed4a691f973f47e3eb37639381f665)

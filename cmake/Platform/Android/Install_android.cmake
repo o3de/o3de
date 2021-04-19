@@ -9,4 +9,4 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-set(ETC2COMP_LIBS ${BASE_PATH}/EtcLib/Linux_x64/libEtcLib.a)
+include(cmake/Platform/Common/Install_common.cmake)

@@ -9,4 +9,4 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-set(ETC2COMP_LIBS ${BASE_PATH}/EtcLib/OSX_x86/$<IF:$<CONFIG:Debug>,Debug,Release>/libEtcLib.a)
+include(cmake/Platform/Common/Install_common.cmake)

@@ -42,7 +42,6 @@ set(GEM_DEPENDENCIES
     Gem::SurfaceData
     Gem::GradientSignal
     Gem::Vegetation
-
     Gem::Atom_RHI.Private
     Gem::Atom_RPI.Private
     Gem::Atom_Feature_Common
@@ -54,4 +53,5 @@ set(GEM_DEPENDENCIES
     Gem::ImguiAtom
     Gem::Atom_AtomBridge
     Gem::AtomFont
+    Gem::Blast
 )
