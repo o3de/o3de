@@ -31,14 +31,9 @@ struct ImGuiInputTextCallbackData;
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AZ
 {
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    //! The default maximum number of entries to display in the debug log.
-    constexpr int DefaultMaxEntriesToDisplay = 1028;
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    //! The default maximum number of input history items to retain.
-    constexpr int DefaultMaxInputHistorySize = 512;
-
+#if !defined(IMGUI_ENABLED)
+    class DebugConsole {};
+#else
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //! A debug console used to enter debug console commands and display debug log messages.
     //!
@@ -49,6 +44,14 @@ namespace AZ
     class DebugConsole : public AzFramework::InputChannelEventListener
                        , public AZ::RPI::ViewportContextNotificationBus::Handler
     {
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! The default maximum number of entries to display in the debug log.
+        static constexpr int DefaultMaxEntriesToDisplay = 1028;
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! The default maximum number of input history items to retain.
+        static constexpr int DefaultMaxInputHistorySize = 512;
+
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
@@ -128,4 +131,5 @@ namespace AZ
         bool m_autoScroll = true; //!< Should we auto-scroll as new entries are added?
         bool m_forceScroll = false; //!< Do we need to force scroll after input entered?
     };
+#endif // defined(IMGUI_ENABLED)
 } // namespace AZ

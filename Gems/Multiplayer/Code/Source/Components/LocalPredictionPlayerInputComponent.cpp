@@ -24,7 +24,6 @@ namespace Multiplayer
             serializeContext->Class<LocalPredictionPlayerInputComponent, LocalPredictionPlayerInputComponentBase>()
                 ->Version(1);
         }
-
         LocalPredictionPlayerInputComponentBase::Reflect(context);
     }
 
@@ -48,7 +47,7 @@ namespace Multiplayer
 
     void LocalPredictionPlayerInputComponentController::HandleSendClientInputCorrection
     (
-        [[maybe_unused]] const Multiplayer::NetworkInputId& inputId,
+        [[maybe_unused]] const Multiplayer::ClientInputId& inputId,
         [[maybe_unused]] const AzNetworking::PacketEncodingBuffer& correction
     )
     {

@@ -26,14 +26,12 @@ namespace LmbrCentral
     {
         provided.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
         provided.push_back(AZ_CRC("CapsuleShapeService", 0x9bc1122c));
-        provided.push_back(AZ_CRC("AreaLightShapeService", 0x68ea78dc));
     }
 
     void CapsuleShapeComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
         incompatible.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
         incompatible.push_back(AZ_CRC("CapsuleShapeService", 0x9bc1122c));
-        incompatible.push_back(AZ_CRC("AreaLightShapeService", 0x68ea78dc));
     }
 
     void CapsuleShapeComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

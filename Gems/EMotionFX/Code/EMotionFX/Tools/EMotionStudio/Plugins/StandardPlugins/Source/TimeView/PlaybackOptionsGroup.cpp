@@ -22,27 +22,27 @@ namespace EMStudio
         : QObject(toolbar)
     {
         m_loopForeverAction = toolbar->addAction(
-            MysticQt::GetMysticQt()->FindIcon("/Images/Icons/Loop.svg"),
+            MysticQt::GetMysticQt()->FindIcon("Images/Icons/Loop.svg"),
             "Loop forever", toolbar, &TimeViewToolBar::UpdateMotions);
         m_loopForeverAction->setCheckable(true);
 
         m_mirrorAction = toolbar->addAction(
-            MysticQt::GetMysticQt()->FindIcon("/Images/Icons/Mirror.svg"),
+            MysticQt::GetMysticQt()->FindIcon("Images/Icons/Mirror.svg"),
             "Mirror", toolbar, &TimeViewToolBar::UpdateMotions);
         m_mirrorAction->setCheckable(true);
 
         m_backwardAction = toolbar->addAction(
-            MysticQt::GetMysticQt()->FindIcon("/Images/Icons/MoveBackward.svg"),
+            MysticQt::GetMysticQt()->FindIcon("Images/Icons/MoveBackward.svg"),
             "Move backward", toolbar, &TimeViewToolBar::UpdateMotions);
         m_backwardAction->setCheckable(true);
 
         m_inPlaceAction = toolbar->addAction(
-            MysticQt::GetMysticQt()->FindIcon("/Images/Icons/InPlace.svg"),
+            MysticQt::GetMysticQt()->FindIcon("Images/Icons/InPlace.svg"),
             "In place", toolbar, &TimeViewToolBar::UpdateMotions);
         m_inPlaceAction->setCheckable(true);
 
         m_retargetAction = toolbar->addAction(
-            MysticQt::GetMysticQt()->FindIcon("/Images/Icons/Retarget.svg"),
+            MysticQt::GetMysticQt()->FindIcon("Images/Icons/Retarget.svg"),
             "Retarget", toolbar, &TimeViewToolBar::UpdateMotions);
         m_retargetAction->setCheckable(true);
 
@@ -58,7 +58,7 @@ namespace EMStudio
         m_speedAction = toolbar->addWidget(m_speedSlider);
 
         m_speedResetAction = toolbar->addAction(
-            MysticQt::GetMysticQt()->FindIcon("/Images/Icons/Reset.svg"),
+            MysticQt::GetMysticQt()->FindIcon("Images/Icons/Reset.svg"),
             tr("Reset the play speed to its normal speed."), this, &PlaybackOptionsGroup::ResetPlaySpeed);
         connect(m_speedResetAction, &QAction::triggered, toolbar, &TimeViewToolBar::UpdateMotions);
 

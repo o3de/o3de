@@ -90,7 +90,7 @@ char testSaveData[testSaveDataSize] = {'a', 'b', 'c', '1', '2', '3', 'x', 'y', '
 
 AZStd::string GetTestSaveDataCustomDirectoryNameRelative()
 {
-    return "Amazon/Lumberyard/SaveDataTest";
+    return "Amazon/O3DE/SaveDataTest";
 }
 
 #if defined(AZ_PLATFORM_WINDOWS)

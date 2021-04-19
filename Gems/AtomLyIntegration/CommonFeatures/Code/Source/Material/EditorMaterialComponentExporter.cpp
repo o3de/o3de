@@ -25,6 +25,7 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnin
 #include <QApplication>
 #include <QCheckBox>
 #include <QComboBox>
+#include <QDialogButtonBox>
 #include <QFileDialog>
 #include <QHBoxLayout>
 #include <QHeaderView>
@@ -175,19 +176,19 @@ namespace AZ
                     tableWidget->setCellWidget(row, OverwriteFileColumn, overwriteCheckBoxContainer);
 
                     // Whenever the selection is updated, automatically apply the change to the export item
-                    QObject::connect(materialSlotCheckBox, &QCheckBox::stateChanged, materialSlotCheckBox, [&]([[maybe_unused]] int state) {
+                    QObject::connect(materialSlotCheckBox, &QCheckBox::stateChanged, materialSlotCheckBox, [&exportItem, materialFileWidget, materialSlotCheckBox, overwriteCheckBox]([[maybe_unused]] int state) {
                         exportItem.m_enabled = materialSlotCheckBox->isChecked();
                         materialFileWidget->setEnabled(exportItem.m_enabled);
                         overwriteCheckBox->setEnabled(exportItem.m_enabled && exportItem.m_exists);
                     });
 
                     // Whenever the overwrite check box is updated, automatically apply the change to the export item
-                    QObject::connect(overwriteCheckBox, &QCheckBox::stateChanged, overwriteCheckBox, [&]([[maybe_unused]] int state) {
+                    QObject::connect(overwriteCheckBox, &QCheckBox::stateChanged, overwriteCheckBox, [&exportItem, overwriteCheckBox]([[maybe_unused]] int state) {
                         exportItem.m_overwrite = overwriteCheckBox->isChecked();
                     });
 
                     // Whenever the browse button is clicked, open a save file dialog in the same location as the current export file setting
-                    QObject::connect(materialFileWidget, &AzQtComponents::BrowseEdit::attachedButtonTriggered, materialFileWidget, [&]() {
+                    QObject::connect(materialFileWidget, &AzQtComponents::BrowseEdit::attachedButtonTriggered, materialFileWidget, [&dialog, &exportItem, materialFileWidget, overwriteCheckBox]() {
                         QFileInfo fileInfo = QFileDialog::getSaveFileName(&dialog,
                             QString("Select Material Filename"),
                             exportItem.m_exportPath.c_str(),
@@ -201,7 +202,7 @@ namespace AZ
                             exportItem.m_exportPath = fileInfo.absoluteFilePath().toUtf8().constData();
                             exportItem.m_exists = fileInfo.exists();
                             exportItem.m_overwrite = fileInfo.exists();
-\
+
                             // Update the controls to display the new state
                             materialFileWidget->setText(fileInfo.fileName());
                             overwriteCheckBox->setChecked(exportItem.m_overwrite);
@@ -215,19 +216,10 @@ namespace AZ
                 tableWidget->sortItems(MaterialSlotColumn);
 
                 // Create the bottom row of the dialog with action buttons for exporting or canceling the operation
-                QWidget* buttonRow = new QWidget(&dialog);
-                buttonRow->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
-
-                QPushButton* confirmButton = new QPushButton("Confirm", buttonRow);
-                QObject::connect(confirmButton, &QPushButton::clicked, confirmButton, [&dialog] { dialog.accept(); });
-
-                QPushButton* cancelButton = new QPushButton("Cancel", buttonRow);
-                QObject::connect(cancelButton, &QPushButton::clicked, cancelButton, [&dialog] { dialog.reject(); });
-
-                QHBoxLayout* buttonLayout = new QHBoxLayout(buttonRow);
-                buttonLayout->addStretch();
-                buttonLayout->addWidget(confirmButton);
-                buttonLayout->addWidget(cancelButton);
+                QDialogButtonBox* buttonBox = new QDialogButtonBox(&dialog);
+                buttonBox->setStandardButtons(QDialogButtonBox::Cancel | QDialogButtonBox::Ok);
+                QObject::connect(buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+                QObject::connect(buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
 
                 // Create a heading label for the top of the dialog
                 QLabel* labelWidget = new QLabel("\nSelect the material slots that you want to generate new source materials for. Edit the material file name and location using the file picker.\n", &dialog);
@@ -236,8 +228,9 @@ namespace AZ
                 QVBoxLayout* dialogLayout = new QVBoxLayout(&dialog);
                 dialogLayout->addWidget(labelWidget);
                 dialogLayout->addWidget(tableWidget);
-                dialogLayout->addWidget(buttonRow);
+                dialogLayout->addWidget(buttonBox);
                 dialog.setLayout(dialogLayout);
+                dialog.setModal(true);
 
                 // Forcing the initial dialog size to accomodate typical content.
                 // Temporarily settng fixed size because dialog.show/exec invokes WindowDecorationWrapper::showEvent.

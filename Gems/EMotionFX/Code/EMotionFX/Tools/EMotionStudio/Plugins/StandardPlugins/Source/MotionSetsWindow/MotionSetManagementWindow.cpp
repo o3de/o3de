@@ -279,17 +279,17 @@ namespace EMStudio
         QToolBar* toolBar = new QToolBar(this);
         toolBar->setObjectName("MotionSetManagementWindow.ToolBar");
 
-        m_addAction = toolBar->addAction(MysticQt::GetMysticQt()->FindIcon("/Images/Icons/Plus.svg"),
+        m_addAction = toolBar->addAction(MysticQt::GetMysticQt()->FindIcon("Images/Icons/Plus.svg"),
             tr("Add new motion set"),
             this, &MotionSetManagementWindow::OnCreateMotionSet);
         m_addAction->setObjectName("MotionSetManagementWindow.ToolBar.AddNewMotionSet");
 
-        m_openAction = toolBar->addAction(MysticQt::GetMysticQt()->FindIcon("/Images/Icons/Open.svg"),
+        m_openAction = toolBar->addAction(MysticQt::GetMysticQt()->FindIcon("Images/Icons/Open.svg"),
             tr("Load motion set from a file"),
             this, &MotionSetManagementWindow::OnOpen);
 
         m_saveMenuAction = toolBar->addAction(
-            MysticQt::GetMysticQt()->FindIcon("/Images/Icons/Save.svg"),
+            MysticQt::GetMysticQt()->FindIcon("Images/Icons/Save.svg"),
             tr("Save selected root motion set"));
         {
             QToolButton* toolButton = qobject_cast<QToolButton*>(toolBar->widgetForAction(m_saveMenuAction));

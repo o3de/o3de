@@ -73,18 +73,17 @@ void {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}AddEvent(AZ::Even
 {#
 
 #}
-{% macro DefineNetworkPropertyPredictableSet(Component, ReplicateFrom, ReplicateTo, ClassName, Property) %}
-{%     if Property.attrib['IsPredictable'] | booleanTrue %}
-{%         if Property.attrib['Container'] == 'Array' %}
-void {{ ClassName }}::Set{{ UpperFirst(Property.attrib['Name']) }}(const Multiplayer::NetworkInput& inputCommand, int32_t index, const {{ Property.attrib['Type'] }}& value)
+{% macro DefineNetworkPropertySet(Component, ReplicateFrom, ReplicateTo, ClassName, Property) %}
+{%     if Property.attrib['Container'] == 'Array' %}
+void {{ ClassName }}::Set{{ UpperFirst(Property.attrib['Name']) }}(int32_t index, const {{ Property.attrib['Type'] }}& value)
 {
     if (GetParent().m_{{ LowerFirst(Property.attrib['Name']) }}[index] != value)
     {
-        Modify{{ UpperFirst(Property.attrib['Name']) }}(inputCommand, index) = value;
+        Modify{{ UpperFirst(Property.attrib['Name']) }}(index) = value;
     }
 }
 
-{{ Property.attrib['Type'] }}& {{ ClassName }}::Modify{{ UpperFirst(Property.attrib['Name']) }}(const Multiplayer::NetworkInput&, int32_t index)
+{{ Property.attrib['Type'] }}& {{ ClassName }}::Modify{{ UpperFirst(Property.attrib['Name']) }}(int32_t index)
 {
     int32_t bitIndex = index + static_cast<int32_t>({{ AutoComponentMacros.GetNetPropertiesQualifiedPropertyDirtyEnum(Component.attrib['Name'], ReplicateFrom, ReplicateTo, Property, 'Start') }});
     GetParent().m_currentRecord->m_{{ LowerFirst(AutoComponentMacros.GetNetPropertiesSetName(ReplicateFrom, ReplicateTo)) }}.SetBit(bitIndex, true);
@@ -92,16 +91,16 @@ void {{ ClassName }}::Set{{ UpperFirst(Property.attrib['Name']) }}(const Multipl
     return GetParent().m_{{ LowerFirst(Property.attrib['Name']) }}[index];
 }
 
-{%         elif Property.attrib['Container'] == 'Vector' %}
-void {{ ClassName }}::Set{{ UpperFirst(Property.attrib['Name']) }}(const Multiplayer::NetworkInput& inputCommand, int32_t index, const {{ Property.attrib['Type'] }}& value)
+{%     elif Property.attrib['Container'] == 'Vector' %}
+void {{ ClassName }}::Set{{ UpperFirst(Property.attrib['Name']) }}(int32_t index, const {{ Property.attrib['Type'] }}& value)
 {
     if (GetParent().m_{{ LowerFirst(Property.attrib['Name']) }}[index] != value)
     {
-        Modify{{ UpperFirst(Property.attrib['Name']) }}(inputCommand, index) = value;
+        Modify{{ UpperFirst(Property.attrib['Name']) }}(index) = value;
     }
 }
 
-{{ Property.attrib['Type'] }}& {{ ClassName }}::Modify{{ UpperFirst(Property.attrib['Name']) }}(const Multiplayer::NetworkInput&, int32_t index)
+{{ Property.attrib['Type'] }}& {{ ClassName }}::Modify{{ UpperFirst(Property.attrib['Name']) }}(int32_t index)
 {
     int32_t bitIndex = index + static_cast<int32_t>({{ AutoComponentMacros.GetNetPropertiesQualifiedPropertyDirtyEnum(Component.attrib['Name'], ReplicateFrom, ReplicateTo, Property, 'Start') }});
     GetParent().m_currentRecord->m_{{ LowerFirst(AutoComponentMacros.GetNetPropertiesSetName(ReplicateFrom, ReplicateTo)) }}.SetBit(bitIndex, true);
@@ -109,7 +108,7 @@ void {{ ClassName }}::Set{{ UpperFirst(Property.attrib['Name']) }}(const Multipl
     return GetParent().m_{{ LowerFirst(Property.attrib['Name']) }}[index];
 }
 
-bool {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}PushBack(const Multiplayer::NetworkInput& inputCommand, const {{ Property.attrib['Type'] }} &value)
+bool {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}PushBack(const {{ Property.attrib['Type'] }} &value)
 {
     int32_t indexToSet = GetParent().m_{{ LowerFirst(Property.attrib['Name']) }}.GetSize();
     GetParent().m_{{ LowerFirst(Property.attrib['Name']) }}.PushBack(value);
@@ -134,24 +133,24 @@ void {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}Clear(const Multi
     GetParent().MarkDirty();
 }
 
-{%         elif Property.attrib['Container'] == 'Object' %}
-void {{ ClassName }}::Set{{ UpperFirst(Property.attrib['Name']) }}(const Multiplayer::NetworkInput& inputCommand, const {{ Property.attrib['Type'] }}& value)
+{%     elif Property.attrib['Container'] == 'Object' %}
+void {{ ClassName }}::Set{{ UpperFirst(Property.attrib['Name']) }}(const {{ Property.attrib['Type'] }}& value)
 {
     if (GetParent().m_{{ LowerFirst(Property.attrib['Name']) }} != value)
     {
-        Modify{{ UpperFirst(Property.attrib['Name']) }}(inputCommand) = value;
+        Modify{{ UpperFirst(Property.attrib['Name']) }}() = value;
     }
 }
 
-{{ Property.attrib['Type'] }}& {{ ClassName }}::Modify{{ UpperFirst(Property.attrib['Name']) }}(const Multiplayer::NetworkInput&)
+{{ Property.attrib['Type'] }}& {{ ClassName }}::Modify{{ UpperFirst(Property.attrib['Name']) }}()
 {
     GetParent().m_currentRecord->m_{{ LowerFirst(AutoComponentMacros.GetNetPropertiesSetName(ReplicateFrom, ReplicateTo)) }}.SetBit(static_cast<int32_t>({{ AutoComponentMacros.GetNetPropertiesQualifiedPropertyDirtyEnum(Component.attrib['Name'], ReplicateFrom, ReplicateTo, Property) }}), true);
     GetParent().MarkDirty();
     return GetParent().m_{{ LowerFirst(Property.attrib['Name']) }}{% if Property.attrib['IsRewindable']|booleanTrue %}.Modify(){% endif %};
 }
 
-{%         else %}
-void {{ ClassName }}::Set{{ UpperFirst(Property.attrib['Name']) }}(const Multiplayer::NetworkInput&, const {{ Property.attrib['Type'] }}& value)
+{%     else %}
+void {{ ClassName }}::Set{{ UpperFirst(Property.attrib['Name']) }}(const {{ Property.attrib['Type'] }}& value)
 {
     if (GetParent().m_{{ LowerFirst(Property.attrib['Name']) }} != value)
     {
@@ -161,7 +160,6 @@ void {{ ClassName }}::Set{{ UpperFirst(Property.attrib['Name']) }}(const Multipl
     }
 }
 
-{%         endif %}
 {%     endif %}
 {% endmacro %}
 {#
@@ -273,7 +271,7 @@ void {{ ClassName }}::Set{{ UpperFirst(Property.attrib['Name']) }}(const {{ Prop
 {% call(Property) AutoComponentMacros.ParseNetworkProperties(Component, ReplicateFrom, ReplicateTo) %}
 {% if Property.attrib['IsPublic'] | booleanTrue != IsProtected %}
 {{ DefineNetworkPropertyGet(ClassName, Property, "GetParent().") }}
-{{ DefineNetworkPropertyPredictableSet(Component, ReplicateFrom, ReplicateTo, ClassName, Property) }}
+{{ DefineNetworkPropertySet(Component, ReplicateFrom, ReplicateTo, ClassName, Property) }}
 {% endif %}
 {% endcall %}
 {% endmacro %}
@@ -478,6 +476,7 @@ bool {{ ClassName }}::Serialize{{ AutoComponentMacros.GetNetPropertiesSetName(Re
 {%-      if networkPropertyCount.update({'value': networkPropertyCount.value + 1}) %}{% endif -%} 
 {% endcall %}
 {% if networkPropertyCount.value > 0 %}
+    MultiplayerStats& stats = AZ::Interface<IMultiplayer>::Get()->GetStats();
     // We modify the record if we are writing an update so that we don't notify for a change that really didn't change the value (just a duplicated send from the server)
     [[maybe_unused]] bool modifyRecord = serializer.GetSerializerMode() == AzNetworking::SerializerMode::WriteToObject;
 {% call(Property) AutoComponentMacros.ParseNetworkProperties(Component, ReplicateFrom, ReplicateTo) %}
@@ -509,7 +508,8 @@ bool {{ ClassName }}::Serialize{{ AutoComponentMacros.GetNetPropertiesSetName(Re
         static_cast<int32_t>({{ AutoComponentMacros.GetNetPropertiesQualifiedPropertyDirtyEnum(Component.attrib['Name'], ReplicateFrom, ReplicateTo, Property) }}), 
         m_{{ LowerFirst(Property.attrib['Name']) }}, 
         "{{ Property.attrib['Name'] }}", 
-        GetNetComponentId()
+        GetNetComponentId(), 
+        stats
     );
 {%     endif %}
 {% endcall %}
@@ -1111,23 +1111,29 @@ namespace {{ Component.attrib['Namespace'] }}
 {{ DefineNetworkPropertyReflection(Component, 'Authority', 'Client', ComponentBaseName)|indent(16) -}}
 {{ DefineNetworkPropertyReflection(Component, 'Authority', 'Autonomous', ComponentBaseName)|indent(16) -}}
 {{ DefineNetworkPropertyReflection(Component, 'Autonomous', 'Authority', ComponentBaseName)|indent(16) }}
-                {{ DefineArchetypePropertyReflection(Component, ComponentBaseName)|indent(16) }}
-                ;
+                {{ DefineArchetypePropertyReflection(Component, ComponentBaseName)|indent(16) }};
+        }
+        ReflectToEditContext(context);
+    }
 
+    void {{ ComponentBaseName }}::{{ ComponentBaseName }}::ReflectToEditContext(AZ::ReflectContext* context)
+    {
+        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
+        if (serializeContext)
+        {
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
             {
-                editContext->Class<{{ ComponentBaseName }}>("{{ ComponentName }}", "{{ Component.attrib['Description'] }}")
+                editContext->Class<{{ ComponentName }}>("{{ ComponentName }}", "{{ Component.attrib['Description'] }}")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Multiplayer")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
-                    {{ DefineNetworkPropertyEditReflection(Component, 'Authority', 'Authority', ComponentBaseName)|indent(20) -}}
-{{ DefineNetworkPropertyEditReflection(Component, 'Authority', 'Server', ComponentBaseName)|indent(20) -}}
-{{ DefineNetworkPropertyEditReflection(Component, 'Authority', 'Client', ComponentBaseName)|indent(20) -}}
-{{ DefineNetworkPropertyEditReflection(Component, 'Authority', 'Autonomous', ComponentBaseName)|indent(20) -}}
-{{ DefineNetworkPropertyEditReflection(Component, 'Autonomous', 'Authority', ComponentBaseName)|indent(20) }}
-                    {{ DefineArchetypePropertyEditReflection(Component, ComponentBaseName)|indent(20) }}
-                    ;
+                    {{ DefineNetworkPropertyEditReflection(Component, 'Authority', 'Authority', ComponentName)|indent(20) -}}
+{{ DefineNetworkPropertyEditReflection(Component, 'Authority', 'Server', ComponentName)|indent(20) -}}
+{{ DefineNetworkPropertyEditReflection(Component, 'Authority', 'Client', ComponentName)|indent(20) -}}
+{{ DefineNetworkPropertyEditReflection(Component, 'Authority', 'Autonomous', ComponentName)|indent(20) -}}
+{{ DefineNetworkPropertyEditReflection(Component, 'Autonomous', 'Authority', ComponentName)|indent(20) }}
+                    {{ DefineArchetypePropertyEditReflection(Component, ComponentName)|indent(20) }};
             }
         }
     }

@@ -23,7 +23,7 @@
 
 namespace ImGui
 {
-    // Resolution Widths to recommend for usage for both LumberYard Rendering and/or ImGui Rendering
+    // Resolution Widths to recommend for usage for both O3DE Rendering and/or ImGui Rendering
     static int s_renderResolutionWidths[7] = { 800, 1280, 1600, 1920, 2560, 3440, 3840 };
     static int s_renderAspectRatios[4][2] = { {16,9}, {16,10}, {43,18}, {4,3} };
     static const char* s_toggleTelemetryConsoleCmd = "radtm_ToggleEnabled 1";
@@ -158,8 +158,8 @@ namespace ImGui
             // Add some space before the first menu so it won't overlap with view control buttons
             ImGui::SetCursorPosX(40.f);
 
-            // Main LumberYard menu
-            if (ImGui::BeginMenu("LumberYard"))
+            // Main Open 3D Engine menu
+            if (ImGui::BeginMenu("Open 3D Engine"))
             {
                 // Asset Explorer
                 if (ImGui::MenuItem("Asset Explorer"))
