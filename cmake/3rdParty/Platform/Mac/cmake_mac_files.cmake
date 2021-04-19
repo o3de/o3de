@@ -14,8 +14,8 @@ set(FILES
     civetweb_mac.cmake
     Clang_mac.cmake
     DirectXShaderCompiler_mac.cmake
-    etc2comp_mac.cmake
     FbxSdk_mac.cmake
+    OpenGLInterface_mac.cmake
     OpenSSL_mac.cmake
     Wwise_mac.cmake
 )

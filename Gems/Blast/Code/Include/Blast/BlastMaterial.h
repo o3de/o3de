@@ -133,7 +133,7 @@ namespace Blast
         BlastMaterialId m_id;
     };
 
-    //! An asset that holds a list of materials to be edited and assigned in Lumberyard Editor
+    //! An asset that holds a list of materials to be edited and assigned in Open 3D Engine Editor
     //! Use Asset Editor to create a BlastMaterialLibraryAsset and add materials to it.
     //! Please note, BlastMaterialLibraryAsset is used only to provide a way to edit materials in the
     //! Editor, if you need to create materials at runtime (for example, from custom configuration files)

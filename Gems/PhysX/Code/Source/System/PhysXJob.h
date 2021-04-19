@@ -17,7 +17,7 @@
 
 namespace PhysX
 {
-    //! Handles PhysX tasks in the Lumberyard job scheduler.
+    //! Handles PhysX tasks in the Open 3D Engine job scheduler.
     class PhysXJob
         : public AZ::Job
     {

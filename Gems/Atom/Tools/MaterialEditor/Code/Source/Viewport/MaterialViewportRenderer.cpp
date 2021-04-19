@@ -357,6 +357,11 @@ namespace MaterialEditor
             return;
         }
 
+        if (preset->m_modelAsset.GetId() == m_modelAssetId)
+        {
+            return;
+        }
+
         AZ::Render::MeshComponentRequestBus::Event(m_modelEntity->GetId(),
             &AZ::Render::MeshComponentRequestBus::Events::SetModelAsset, preset->m_modelAsset);
 

@@ -18,6 +18,8 @@
 
 #include "ToolBox.h"
 
+#include <AzCore/Utils/Utils.h>
+
 // AzToolsFramework
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
@@ -419,9 +421,8 @@ void CToolBoxManager::Load(QString xmlpath, AmazonToolbar* pToolbar, bool bToolb
         }
     }
 
-    const char* engineRoot = nullptr;
-    AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(engineRoot, &AzToolsFramework::ToolsApplicationRequests::GetEngineRootPath);
-    QDir engineDir = engineRoot ? QDir(engineRoot) : QDir::current();
+    AZ::IO::FixedMaxPathString engineRoot = AZ::Utils::GetEnginePath();
+    QDir engineDir = !engineRoot.empty() ? QDir(QString(engineRoot.c_str())) : QDir::current();
 
     string enginePath = PathUtil::AddSlash(engineDir.absolutePath().toUtf8().data());
 

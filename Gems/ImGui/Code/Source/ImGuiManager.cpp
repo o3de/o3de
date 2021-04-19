@@ -142,11 +142,6 @@ namespace
 
 void ImGuiManager::Initialize()
 {
-    if (!gEnv || !gEnv->pRenderer)
-    {
-        AZ_Warning("ImGuiManager", false, "%s %s", __func__, "gEnv Invalid -- Skipping ImGui Initialization.");
-        return;
-    }
     // Register for Buses
     ImGuiManagerListenerBus::Handler::BusConnect();
 
@@ -223,23 +218,13 @@ void ImGuiManager::Initialize()
     s_lyInputToImGuiNavIndexMap.insert(LyButtonImGuiNavIndexPair(InputDeviceGamepad::ThumbStickDirection::LL, ImGuiNavInput_LStickLeft));
     s_lyInputToImGuiNavIndexMap.insert(LyButtonImGuiNavIndexPair(InputDeviceGamepad::ThumbStickDirection::LR, ImGuiNavInput_LStickRight));
 
-    // Set the Display Size
-    IRenderer* renderer = gEnv->pRenderer;
-    io.DisplaySize.x = static_cast<float>(renderer->GetWidth());
-    io.DisplaySize.y = static_cast<float>(renderer->GetHeight());
+    // Set the initial Display Size (gets updated each frame anyway)
+    io.DisplaySize.x = 1920;
+    io.DisplaySize.y = 1080;
 
-    // Create Font Texture
-    unsigned char* pixels;
-    int width, height;
-    io.Fonts->GetTexDataAsAlpha8(&pixels, &width, &height);
-    ITexture* fontTexture =
-        renderer->Create2DTexture("ImGuiFont", width, height, 1, FT_ALPHA, pixels, eTF_A8);
-
-    if (fontTexture)
-    {
-        m_fontTextureId = fontTexture->GetTextureID();
-        io.Fonts->SetTexID(static_cast<void*>(fontTexture));
-    }
+    // Create a default font
+    io.Fonts->AddFontDefault();
+    io.Fonts->Build();
 
     // Broadcast ImGui Ready to Listeners
     ImGuiUpdateListenerBus::Broadcast(&IImGuiUpdateListener::OnImGuiInitialize);
@@ -272,18 +257,6 @@ void ImGuiManager::Shutdown()
     InputChannelEventListener::Disconnect();
     InputTextEventListener::Disconnect();
     AzFramework::WindowNotificationBus::Handler::BusDisconnect();
-
-    if (!AZ::Interface<AzFramework::AtomActiveInterface>::Get())
-    {
-        // Destroy ImGui Font Texture
-        if (gEnv->pRenderer && m_fontTextureId > 0)
-        {
-            ImGui::ImGuiContextScope contextScope(m_imguiContext);
-            ImGuiIO& io = ImGui::GetIO();
-            io.Fonts->SetTexID(nullptr);
-            gEnv->pRenderer->RemoveTexture(m_fontTextureId);
-        }
-    }
 
     // Finally, destroy the ImGui Context.
     ImGui::DestroyContext(m_imguiContext);
@@ -386,7 +359,6 @@ void ImGuiManager::Render()
     io.DeltaTime = gEnv->pTimer->GetFrameTime();
     //// END FROM PREUPDATE
 
-    IRenderer* renderer = gEnv->pRenderer;
     TransformationMatrices backupSceneMatrices;
 
     AZ::u32 backBufferWidth = 0;
@@ -396,11 +368,6 @@ void ImGuiManager::Render()
     {
         backBufferWidth = m_windowSize.m_width;
         backBufferHeight = m_windowSize.m_height;
-    }
-    else
-    {
-        backBufferWidth = renderer->GetBackBufferWidth();
-        backBufferHeight = renderer->GetBackBufferHeight();
     }
 
     // Find ImGui Render Resolution. 
@@ -441,24 +408,8 @@ void ImGuiManager::Render()
     m_lastRenderResolution.x = static_cast<float>(renderRes[0]);
     m_lastRenderResolution.y = static_cast<float>(renderRes[1]);
 
-    if (!AZ::Interface<AzFramework::AtomActiveInterface>::Get())
-    {
-        // Configure Renderer for 2D ImGui Rendering
-        renderer->SetCullMode(R_CULL_DISABLE);
-        renderer->Set2DMode(renderRes[0], renderRes[1], backupSceneMatrices);
-        renderer->SetColorOp(eCO_REPLACE, eCO_MODULATE, eCA_Diffuse, DEF_TEXARG0);
-        renderer->SetSrgbWrite(false);
-        renderer->SetState(GS_BLSRC_SRCALPHA | GS_BLDST_ONEMINUSSRCALPHA | GS_NODEPTHTEST);
-    }
-
     // Render!
     RenderImGuiBuffers(scaleRects);
-
-    if (!AZ::Interface<AzFramework::AtomActiveInterface>::Get())
-    {
-        // Cleanup Renderer Settings
-        renderer->Unset2DMode(backupSceneMatrices);
-    }
 
     // Clear the simulated backspace key
     if (m_simulateBackspaceKeyPressed)
@@ -792,91 +743,6 @@ void ImGuiManager::RenderImGuiBuffers(const ImVec2& scaleRects)
         if (AZ::Interface<AzFramework::AtomActiveInterface>::Get())
         {
             OtherActiveImGuiRequestBus::Broadcast(&OtherActiveImGuiRequestBus::Events::RenderImGuiBuffers, *drawData);
-        }
-        else
-        {
-            IRenderer* renderer = gEnv->pRenderer;
-
-            // Expand vertex buffer if necessary
-            m_vertBuffer.reserve(drawData->TotalVtxCount);
-            if (m_vertBuffer.size() < drawData->TotalVtxCount)
-            {
-                m_vertBuffer.insert(m_vertBuffer.end(),
-                                    drawData->TotalVtxCount - m_vertBuffer.size(),
-                                    SVF_P3F_C4B_T2F());
-            }
-
-            // Expand index buffer if necessary
-            m_idxBuffer.reserve(drawData->TotalIdxCount);
-            if (m_idxBuffer.size() < drawData->TotalIdxCount)
-            {
-                m_idxBuffer.insert(m_idxBuffer.end(), drawData->TotalIdxCount - m_idxBuffer.size(), 0);
-            }
-
-            // Process each draw command list individually
-            for (int n = 0; n < drawData->CmdListsCount; n++)
-            {
-                const ImDrawList* cmd_list = drawData->CmdLists[n];
-
-                // Cache max vert count for easy access
-                int numVerts = cmd_list->VtxBuffer.Size;
-
-                // Copy command list verts into buffer
-                for (int i = 0; i < numVerts; ++i)
-                {
-                    const ImDrawVert& imguiVert = cmd_list->VtxBuffer[i];
-                    SVF_P3F_C4B_T2F& vert = m_vertBuffer[i];
-
-                    vert.xyz = Vec3(imguiVert.pos.x, imguiVert.pos.y, 0.0f);
-                    // Convert color from RGBA to ARGB
-                    vert.color.dcolor = (imguiVert.col & 0xFF00FF00)
-                                        | ((imguiVert.col & 0xFF0000) >> 16)
-                                        | ((imguiVert.col & 0xFF) << 16);
-                    vert.st = Vec2(imguiVert.uv.x, imguiVert.uv.y);
-                }
-
-                // Copy command list indices into buffer
-                for (int i = 0; i < cmd_list->IdxBuffer.Size; ++i)
-                {
-                    m_idxBuffer[i] = uint16(cmd_list->IdxBuffer[i]);
-                }
-
-                // Use offset pointer to step along rendering operation
-                uint16* idxBufferDataOffset = m_idxBuffer.data();
-
-                // Process each draw command individually
-                for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.size(); cmd_i++)
-                {
-                    const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];
-
-                    // Defer to user rendering callback, if appropriate
-                    if (pcmd->UserCallback)
-                    {
-                        pcmd->UserCallback(cmd_list, pcmd);
-                    }
-                    // Otherwise render our buffers
-                    else
-                    {
-                        int textureId = ((ITexture*)pcmd->TextureId)->GetTextureID();
-                        renderer->SetTexture(textureId);
-                        renderer->SetScissor((int)pcmd->ClipRect.x,
-                                                (int)(pcmd->ClipRect.y),
-                                                (int)(pcmd->ClipRect.z - pcmd->ClipRect.x),
-                                                (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
-                        renderer->DrawDynVB(m_vertBuffer.data(),
-                                            idxBufferDataOffset,
-                                            numVerts,
-                                            pcmd->ElemCount,
-                                            prtTriangleList);
-                    }
-
-                    // Update offset pointer into command list's index buffer
-                    idxBufferDataOffset += pcmd->ElemCount;
-                }
-            }
-
-            // Reset scissor usage on renderer
-            renderer->SetScissor();
         }
     }
 }

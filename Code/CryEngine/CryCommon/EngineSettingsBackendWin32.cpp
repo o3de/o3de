@@ -26,7 +26,7 @@
 
 #define REG_SOFTWARE            L"Software\\"
 #define REG_COMPANY_NAME        L"Amazon\\"
-#define REG_PRODUCT_NAME        L"Lumberyard\\"
+#define REG_PRODUCT_NAME        L"Open 3D Engine\\"
 #define REG_SETTING             L"Settings\\"
 #define REG_BASE_SETTING_KEY  REG_SOFTWARE REG_COMPANY_NAME REG_PRODUCT_NAME REG_SETTING
 
@@ -181,7 +181,7 @@ bool CEngineSettingsBackendWin32::SetModuleSpecificBoolEntry(const char* key, co
 
 bool CEngineSettingsBackendWin32::GetInstalledBuildRootPathUtf16(const int index, CWCharBuffer name, CWCharBuffer path)
 {
-    RegKey key(REG_BASE_SETTING_KEY L"LumberyardExport\\ProjectBuilds", false);
+    RegKey key(REG_BASE_SETTING_KEY L"O3DEExport\\ProjectBuilds", false);
     if (key.pKey)
     {
         DWORD type;

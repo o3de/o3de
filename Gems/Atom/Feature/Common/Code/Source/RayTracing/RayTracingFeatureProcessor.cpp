@@ -21,7 +21,6 @@
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessor.h>
 #include <CoreLights/DirectionalLightFeatureProcessor.h>
-#include <CoreLights/SpotLightFeatureProcessor.h>
 #include <CoreLights/PointLightFeatureProcessor.h>
 #include <CoreLights/DiskLightFeatureProcessor.h>
 #include <CoreLights/CapsuleLightFeatureProcessor.h>
@@ -67,6 +66,7 @@ namespace AZ
             // load the RayTracingSceneSrg asset
             Data::Asset<RPI::ShaderResourceGroupAsset> rayTracingSceneSrgAsset =
                 RPI::AssetUtils::LoadAssetByProductPath<RPI::ShaderResourceGroupAsset>("shaderlib/raytracingscenesrg_raytracingscenesrg.azsrg", RPI::AssetUtils::TraceLevel::Error);
+            AZ_Assert(rayTracingSceneSrgAsset.IsReady(), "Failed to load RayTracingSceneSrg asset");
 
             m_rayTracingSceneSrg = RPI::ShaderResourceGroup::Create(rayTracingSceneSrgAsset);
         }
@@ -194,14 +194,6 @@ namespace AZ
 
             constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_directionalLightCount"));
             m_rayTracingSceneSrg->SetConstant(constantIndex, directionalLightFP->GetLightCount());
-
-            // spot lights
-            const auto spotLightFP = GetParentScene()->GetFeatureProcessor<SpotLightFeatureProcessor>();
-            bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_spotLights"));
-            m_rayTracingSceneSrg->SetBufferView(bufferIndex, spotLightFP->GetLightBuffer()->GetBufferView());
-
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_spotLightCount"));
-            m_rayTracingSceneSrg->SetConstant(constantIndex, spotLightFP->GetLightCount());
 
             // point lights
             const auto pointLightFP = GetParentScene()->GetFeatureProcessor<PointLightFeatureProcessor>();

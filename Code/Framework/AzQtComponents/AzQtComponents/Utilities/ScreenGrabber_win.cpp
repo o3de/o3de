@@ -117,7 +117,7 @@ namespace AzQtComponents
         // the correct size, but with garbage data in the last scanline. We crop this in the callback.
         m_magnifier = CreateWindowW(
             WC_MAGNIFIERW,
-            L"Lumberyard Color Picker Eyedropper Helper",
+            L"Open 3D Engine Color Picker Eyedropper Helper",
             WS_CHILD | WS_VISIBLE,
             0,
             0,

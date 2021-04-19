@@ -16,6 +16,23 @@
 
 namespace AZ::RPI
 {
+    namespace MorphTargetDeltaConstants
+    {
+        // Min/max values for compression should correspond to what is used in MorphTargetCompression.azsli
+
+        // A tangent/bitangent/normal will be between -1.0 and 1.0 on any given axis
+        // The largest a delta needs to be is 2.0 in either positive or negative direction
+        // to modify a value from 1 to -1 or from -1 to 1
+        constexpr float s_tangentSpaceDeltaMin = -2.0f;
+        constexpr float s_tangentSpaceDeltaMax = 2.0f;
+
+        // A color will be between 0.0 and 1.0 for any given channel
+        // The largest a delta needs to be is positive or negative 1.0
+        // to modify a value from 0 to 1 or from 1 to 0
+        constexpr float s_colorDeltaMin = -1.0f;
+        constexpr float s_colorDeltaMax = 1.0f;
+    }
+
     //! This class represents the data that is passed to the morph target compute shader for an individual delta
     //! See MorphTargetSRG.azsli for the corresponding shader struct
     //! It is 16-byte aligned to work with structured buffers
@@ -32,8 +49,10 @@ namespace AZ::RPI
         uint32_t m_normalZTangentXYZ;
         // 8 bit padding plus 8 bits per component for bitangent deltas
         uint32_t m_padBitangentXYZ;
+        // 8 bits per component for color deltas
+        uint32_t m_colorRGBA;
         // Explicit padding so the struct is 16 byte aligned for structured buffers
-        uint32_t m_pad[3];
+        uint32_t m_pad[2];
     };
 
     //! A morph target delta that is compressed, but split into individual components
@@ -60,6 +79,12 @@ namespace AZ::RPI
         uint8_t m_bitangentX;
         uint8_t m_bitangentY;
         uint8_t m_bitangentZ;
+
+        // 8 bits per channel for color deltas
+        uint8_t m_colorR;
+        uint8_t m_colorG;
+        uint8_t m_colorB;
+        uint8_t m_colorA;
     };
 
     PackedCompressedMorphTargetDelta PackMorphTargetDelta(const CompressedMorphTargetDelta& compressedDelta);

@@ -19,8 +19,6 @@ ly_add_target(
     INCLUDE_DIRECTORIES
         PRIVATE
             Source
-        PUBLIC
-            Include
     BUILD_DEPENDENCIES
         PUBLIC
             3rdParty::lz4
@@ -36,8 +34,6 @@ ly_add_target(
     INCLUDE_DIRECTORIES
         PRIVATE
             Source
-        PUBLIC
-            Include
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::MultiplayerCompression.Static

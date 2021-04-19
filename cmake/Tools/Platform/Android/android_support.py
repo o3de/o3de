@@ -787,14 +787,14 @@ class AndroidProjectGenerator(object):
                 gradle_build_env[f'CUSTOM_APPLY_ASSET_LAYOUT_{native_config_upper}_TASK'] = \
                     CUSTOM_GRADLE_COPY_NATIVE_CONFIG_BUILD_ARTIFACTS_FORMAT_STR.format(config=native_config,
                                                                                        config_lower=native_config_lower,
-                                                                                       asset_layout_folder=(self.build_dir / 'app/src/main/assets').as_posix(),
+                                                                                       asset_layout_folder=(self.build_dir / 'app/src/main/assets').resolve().as_posix(),
                                                                                        file_includes='Test.Assets/**/*.*')
             else:
                 # Copy over settings registry files from the Registry folder with build output directory
                 gradle_build_env[f'CUSTOM_APPLY_ASSET_LAYOUT_{native_config_upper}_TASK'] = \
                     CUSTOM_GRADLE_COPY_NATIVE_CONFIG_BUILD_ARTIFACTS_FORMAT_STR.format(config=native_config,
                                                                                        config_lower=native_config_lower,
-                                                                                       asset_layout_folder=(self.build_dir / 'app/src/main/assets').as_posix(),
+                                                                                       asset_layout_folder=(self.build_dir / 'app/src/main/assets').resolve().as_posix(),
                                                                                        file_includes='**/Registry/*.setreg')
 
             if self.include_assets_in_apk:
@@ -805,7 +805,7 @@ class AndroidProjectGenerator(object):
                                                                          asset_type=self.asset_type,
                                                                          project_path=self.project_path.as_posix(),
                                                                          asset_mode=self.asset_mode if native_config != 'Release' else 'PAK',
-                                                                         asset_layout_folder=common.normalize_path_for_settings(self.build_dir / 'app/src/main/assets'),
+                                                                         asset_layout_folder=(self.build_dir / 'app/src/main/assets').resolve().as_posix(),
                                                                          config=native_config)
             else:
                 gradle_build_env[f'CUSTOM_APPLY_ASSET_LAYOUT_{native_config_upper}_TASK'] = ''

@@ -58,7 +58,7 @@ namespace AzToolsFramework
             m_prefabUndoCache.Destroy();
         }
 
-        PrefabOperationResult PrefabPublicHandler::CreatePrefab(const AZStd::vector<AZ::EntityId>& entityIds, AZStd::string_view filePath)
+        PrefabOperationResult PrefabPublicHandler::CreatePrefab(const AZStd::vector<AZ::EntityId>& entityIds, AZ::IO::PathView filePath)
         {
             // Retrieve entityList from entityIds
             EntityList inputEntityList = EntityIdListToEntityList(entityIds);

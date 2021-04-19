@@ -109,7 +109,7 @@ void KeyboardCustomizationSettings::LoadDefaults()
 
 void KeyboardCustomizationSettings::Load()
 {
-    QSettings settings(QStringLiteral("Amazon"), QStringLiteral("Lumberyard"));
+    QSettings settings(QStringLiteral("Amazon"), QStringLiteral("O3DE"));
     settings.beginGroup(QStringLiteral("Keyboard Shortcuts"));
     settings.beginGroup(m_group);
 
@@ -156,7 +156,7 @@ void KeyboardCustomizationSettings::LoadFromSnapshot(const Snapshot& snapshot)
 
 void KeyboardCustomizationSettings::Save()
 {
-    QSettings settings(QStringLiteral("Amazon"), QStringLiteral("Lumberyard"));
+    QSettings settings(QStringLiteral("Amazon"), QStringLiteral("O3DE"));
     settings.beginGroup(QStringLiteral("Keyboard Shortcuts"));
     settings.beginGroup(m_group);
 
@@ -189,7 +189,7 @@ KeyboardCustomizationSettings::Snapshot KeyboardCustomizationSettings::CreateSna
 
 void KeyboardCustomizationSettings::ExportToFile(QWidget* parent)
 {
-    QString fileName = QFileDialog::getSaveFileName(parent, QObject::tr("Export Keyboard Shortcuts"), QStringLiteral("lumberyard.keys"), QObject::tr("Keyboard Settings (*.keys)"));
+    QString fileName = QFileDialog::getSaveFileName(parent, QObject::tr("Export Keyboard Shortcuts"), QStringLiteral("o3de.keys"), QObject::tr("Keyboard Settings (*.keys)"));
     if (fileName.isEmpty())
     {
         return;
@@ -205,7 +205,7 @@ void KeyboardCustomizationSettings::ExportToFile(QWidget* parent)
 
     QJsonObject store;
     store.insert("version", "1.0");
-    store.insert("Content-Type", "application/x-lumberyard-sdk-keyboard-settings+json");
+    store.insert("Content-Type", "application/x-o3de-sdk-keyboard-settings+json");
     QJsonObject groups;
 
     for (auto instance = m_instances.constBegin(); instance != m_instances.constEnd(); instance++)
@@ -262,7 +262,7 @@ void KeyboardCustomizationSettings::ImportFromFile(QWidget* parent)
     QJsonDocument imported(QJsonDocument::fromJson(rawData));
     QJsonObject store = imported.object();
 
-    if (store.value("Content-Type") != "application/x-lumberyard-sdk-keyboard-settings+json" || store.value("version") != "1.0")
+    if (store.value("Content-Type") != "application/x-o3de-sdk-keyboard-settings+json" || store.value("version") != "1.0")
     {
         QMessageBox::critical(parent, QObject::tr("Shortcut Import Error"), QObject::tr("\"%1\" doesn't appear to contain keyboard settings").arg(fileName));
         return;

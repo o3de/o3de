@@ -173,7 +173,12 @@ namespace AZ
 
         MaterialAssignmentMap AtomActorInstance::GetMaterialAssignments() const
         {
-            return GetMaterialAssignmentsFromModel(m_skinnedMeshInstance->m_model);
+            if (m_skinnedMeshInstance && m_skinnedMeshInstance->m_model)
+            {
+                return GetMaterialAssignmentsFromModel(m_skinnedMeshInstance->m_model);
+            }
+
+            return MaterialAssignmentMap{};
         }
 
         AZStd::unordered_set<AZ::Name> AtomActorInstance::GetModelUvNames() const

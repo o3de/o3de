@@ -12,6 +12,7 @@
 
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
+#include <AzCore/IO/FileIO.h>
 
 #include <Authentication/AuthenticationProviderTypes.h>
 #include <Authentication/AWSCognitoAuthenticationProvider.h>
@@ -25,12 +26,14 @@ namespace AWSClientAuth
     {
         AZ::Interface<IAuthenticationProviderRequests>::Register(this);
         AuthenticationProviderRequestBus::Handler::BusConnect();
+        AuthenticationProviderScriptCanvasRequestBus::Handler::BusConnect();
     }
 
     AuthenticationProviderManager::~AuthenticationProviderManager()
     {
         ResetProviders();
         m_settingsRegistry.reset();
+        AuthenticationProviderScriptCanvasRequestBus::Handler::BusDisconnect();
         AuthenticationProviderRequestBus::Handler::BusDisconnect();
         AZ::Interface<IAuthenticationProviderRequests>::Unregister(this);
     }
@@ -38,12 +41,19 @@ namespace AWSClientAuth
     bool AuthenticationProviderManager::Initialize(const AZStd::vector<ProviderNameEnum>& providerNames, const AZStd::string& settingsRegistryPath)
     {
         ResetProviders();
+        AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
+        AZ_Assert(fileIO, "File IO is not initialized.");
+        
         m_settingsRegistry.reset();
         m_settingsRegistry = AZStd::make_shared<AZ::SettingsRegistryImpl>();
 
-        if (!m_settingsRegistry->MergeSettingsFile(settingsRegistryPath, AZ::SettingsRegistryInterface::Format::JsonMergePatch))
+        AZStd::array<char, AZ::IO::MaxPathLength> resolvedPath{};
+        AZ::IO::FileIOBase::GetInstance()->ResolvePath(settingsRegistryPath.data(), resolvedPath.data(), resolvedPath.size());
+
+
+        if (!m_settingsRegistry->MergeSettingsFile(resolvedPath.data(), AZ::SettingsRegistryInterface::Format::JsonMergePatch))
         {
-            AZ_Error("AuthenticationProviderManager", true, "Error merging settings registry for path: %s", settingsRegistryPath.c_str());
+            AZ_Error("AuthenticationProviderManager", true, "Error merging settings registry for path: %s", resolvedPath.data());
             return false;
         }
 
@@ -112,6 +122,7 @@ namespace AWSClientAuth
         {
             AuthenticationProviderNotificationBus::Broadcast(&AuthenticationProviderNotifications::OnRefreshTokensFail
                 , "Provider is not initialized");
+                return;
         }
 
         AuthenticationTokens tokens = m_authenticationProvidersMap[providerName]->GetAuthenticationTokens();
@@ -179,6 +190,78 @@ namespace AWSClientAuth
         {
             providerInterface.reset();
         }
+    }
+
+    ProviderNameEnum AuthenticationProviderManager::GetProviderNameEnum(AZStd::string name)
+    {
+        auto enumValue = ProviderNameEnumNamespace::FromStringToProviderNameEnum(name);
+        if (enumValue.has_value())
+        {
+            return enumValue.value();
+        }
+        AZ_Warning("AuthenticationProviderManager", true, "Incorrect string value for enum: %s", name.c_str());
+        return ProviderNameEnum::None;
+    }
+
+    bool AuthenticationProviderManager::Initialize(
+        const AZStd::vector<AZStd::string>& providerNames, const AZStd::string& settingsRegistryPath)
+    {
+        AZStd::vector<ProviderNameEnum> providerNamesEnum;
+        for (auto name : providerNames)
+        {
+            providerNamesEnum.push_back(GetProviderNameEnum(name));
+        }
+        return Initialize(providerNamesEnum, settingsRegistryPath);
+    }
+
+    void AuthenticationProviderManager::PasswordGrantSingleFactorSignInAsync(const AZStd::string& providerName, const AZStd::string& username, const AZStd::string& password)
+    {
+        PasswordGrantSingleFactorSignInAsync(GetProviderNameEnum(providerName), username, password);
+    }
+
+    void AuthenticationProviderManager::PasswordGrantMultiFactorSignInAsync(const AZStd::string& providerName, const AZStd::string& username, const AZStd::string& password)
+    {
+        PasswordGrantMultiFactorSignInAsync(GetProviderNameEnum(providerName), username, password);
+    }
+
+    void AuthenticationProviderManager::PasswordGrantMultiFactorConfirmSignInAsync(const AZStd::string& providerName, const AZStd::string& username, const AZStd::string& confirmationCode)
+    {
+        PasswordGrantMultiFactorConfirmSignInAsync(GetProviderNameEnum(providerName), username, confirmationCode);
+    }
+
+    void AuthenticationProviderManager::DeviceCodeGrantSignInAsync(const AZStd::string& providerName)
+    {
+        DeviceCodeGrantSignInAsync(GetProviderNameEnum(providerName));
+    }
+
+    void AuthenticationProviderManager::DeviceCodeGrantConfirmSignInAsync(const AZStd::string& providerName)
+    {
+        DeviceCodeGrantConfirmSignInAsync(GetProviderNameEnum(providerName));
+    }
+
+    void AuthenticationProviderManager::RefreshTokensAsync(const AZStd::string& providerName)
+    {
+        RefreshTokensAsync(GetProviderNameEnum(providerName));
+    }
+
+    void AuthenticationProviderManager::GetTokensWithRefreshAsync(const AZStd::string& providerName)
+    {
+        GetTokensWithRefreshAsync(GetProviderNameEnum(providerName));
+    }
+
+    bool AuthenticationProviderManager::IsSignedIn(const AZStd::string& providerName)
+    {
+        return IsSignedIn(GetProviderNameEnum(providerName));
+    }
+
+    bool AuthenticationProviderManager::SignOut(const AZStd::string& providerName)
+    {
+        return SignOut(GetProviderNameEnum(providerName));
+    }
+
+    AuthenticationTokens AuthenticationProviderManager::GetAuthenticationTokens(const AZStd::string& providerName)
+    {
+        return GetAuthenticationTokens(GetProviderNameEnum(providerName));
     }
 
 } // namespace AWSClientAuth

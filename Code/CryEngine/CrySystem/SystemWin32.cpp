@@ -605,7 +605,7 @@ void CSystem::DebugStats([[maybe_unused]] bool checkpoint, [[maybe_unused]] bool
     {
         if (!dbgmodules[i].handle)
         {
-            CryLogAlways("WARNING: <CrySystem> CSystem::DebugStats: NULL handle for %s", dbgmodules[i].name.c_str());
+            CryLogAlways("WARNING: CSystem::DebugStats: NULL handle for %s", dbgmodules[i].name.c_str());
             nolib++;
             continue;
         }
@@ -642,7 +642,7 @@ void CSystem::DebugStats([[maybe_unused]] bool checkpoint, [[maybe_unused]] bool
         }
         else
         {
-            CryLogAlways("WARNING: <CrySystem> CSystem::DebugStats: could not retrieve function from DLL %s", dbgmodules[i].name.c_str());
+            CryLogAlways("WARNING: CSystem::DebugStats: could not retrieve function from DLL %s", dbgmodules[i].name.c_str());
             nolib++;
         };
 #endif
@@ -1066,7 +1066,7 @@ void CSystem::FatalError(const char* format, ...)
 
     if (szSysErrorMessage)
     {
-        CryLogAlways("<CrySystem> Last System Error: %s", szSysErrorMessage);
+        CryLogAlways("Last System Error: %s", szSysErrorMessage);
     }
 
     if (GetUserCallback())
@@ -1091,7 +1091,7 @@ void CSystem::FatalError(const char* format, ...)
         {
             ::ShowWindow((HWND)gEnv->pRenderer->GetHWND(), SW_MINIMIZE);
         }
-        ::MessageBox(NULL, szBuffer, "Lumberyard Error", MB_OK | MB_ICONERROR | MB_SYSTEMMODAL);
+        ::MessageBox(NULL, szBuffer, "Open 3D Engine Error", MB_OK | MB_ICONERROR | MB_SYSTEMMODAL);
     }
 
     // Dump callstack.

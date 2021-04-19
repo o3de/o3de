@@ -14,7 +14,7 @@
 #include "UiCanvasEditor_precompiled.h"
 #include "UiAnimViewNewSequenceDialog.h"
 #include "Animation/UiAnimViewSequenceManager.h"
-#include <Animation/ui_UiAnimViewNewSequenceDialog.h>
+#include <Editor/Animation/ui_UiAnimViewNewSequenceDialog.h>
 #include <QMessageBox>
 #include "QtUtil.h"
 

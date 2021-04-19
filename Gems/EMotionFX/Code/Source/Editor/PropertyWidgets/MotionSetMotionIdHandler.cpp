@@ -304,7 +304,7 @@ namespace EMotionFX
             topRowLayout->addWidget(m_addMotionsLabel);
 
             m_pickButton = new QPushButton(this);
-            EMStudio::EMStudioManager::MakeTransparentButton(m_pickButton, "/Images/Icons/Plus.svg", "Add motions to blend space");
+            EMStudio::EMStudioManager::MakeTransparentButton(m_pickButton, "Images/Icons/Plus.svg", "Add motions to blend space");
             m_pickButton->setObjectName("EMFX.MotionSetMotionIdPicker.PickButton");
             connect(m_pickButton, &QPushButton::clicked, this, &MotionSetMotionIdPicker::OnPickClicked);
             topRowLayout->addWidget(m_pickButton);
