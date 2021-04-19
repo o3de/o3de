@@ -48,14 +48,14 @@ def on_create_jobs(args):
 def process_file(request):
     # prepare output folder
     basePath, _ = os.path.split(request.sourceFile)
-    outputPath = os.path.join(request.tempDirPath, basePath).lower()
+    outputPath = os.path.join(request.tempDirPath, basePath)
     os.makedirs(outputPath, exist_ok=True)
 
     # write out a mock file
     basePath, sourceFile = os.path.split(request.sourceFile)
     mockFilename = os.path.splitext(sourceFile)[0] + '.mock_asset'
     mockFilename = os.path.join(basePath, mockFilename)
-    mockFilename = mockFilename.replace('\\', '/').lower()
+    mockFilename = mockFilename.replace('\\', '/')
     tempFilename = os.path.join(request.tempDirPath, mockFilename)
 
     # write out a tempFilename like a JSON
