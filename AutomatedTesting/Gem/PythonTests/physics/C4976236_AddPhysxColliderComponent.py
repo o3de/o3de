@@ -81,7 +81,6 @@ def C4976236_AddPhysxColliderComponent():
             Report.info(f"Warnings found: {section_tracer.warnings}")
         if section_tracer.has_errors:
             Report.info(f"Errors found: {section_tracer.errors}")
-        Report.failure(Tests.no_errors_and_warnings_found)
 
     # 7) Exit game mode
     helper.exit_game_mode(Tests.exit_game_mode)
