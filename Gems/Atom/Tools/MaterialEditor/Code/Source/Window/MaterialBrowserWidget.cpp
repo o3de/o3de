@@ -73,7 +73,7 @@ namespace MaterialEditor
         m_filterModel->SetFilter(CreateFilter());
 
         m_ui->m_assetBrowserTreeViewWidget->setModel(m_filterModel);
-        m_ui->m_assetBrowserTreeViewWidget->SetShowSourceControlIcons(true);
+        m_ui->m_assetBrowserTreeViewWidget->SetShowSourceControlIcons(false);
         m_ui->m_assetBrowserTreeViewWidget->setSelectionMode(QAbstractItemView::SelectionMode::ExtendedSelection);
 
         // Maintains the tree expansion state between runs
