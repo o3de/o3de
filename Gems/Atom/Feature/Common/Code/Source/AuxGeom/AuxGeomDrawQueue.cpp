@@ -289,7 +289,7 @@ namespace AZ
         void AuxGeomDrawQueue::DrawQuad(
             float width, 
             float height, 
-            const AZ::Transform& transform, 
+            const AZ::Matrix3x4& transform, 
             const AZ::Color& color, 
             DrawStyle style, 
             DepthTest depthTest, 
@@ -302,8 +302,8 @@ namespace AZ
                 return;
             }
 
-            Transform noScaleTransform = transform;
-            noScaleTransform.ExtractScale();
+            AZ::Matrix3x4 noScaleTransform = transform;
+            AZ::Vector3 scale = noScaleTransform.ExtractScale();
 
             ShapeBufferEntry shape;
             shape.m_shapeType = ShapeType_Quad;
@@ -311,9 +311,9 @@ namespace AZ
             shape.m_depthWrite = ConvertRPIDepthWriteFlag(depthWrite);
             shape.m_faceCullMode = ConvertRPIFaceCullFlag(faceCull);
             shape.m_color = color;
-            shape.m_rotationMatrix = Matrix3x3::CreateFromTransform(noScaleTransform);
+            shape.m_rotationMatrix = Matrix3x3::CreateFromMatrix3x4(noScaleTransform);
             shape.m_position = transform.GetTranslation();
-            shape.m_scale = transform.GetScale() * Vector3(width, 1.0f, height);
+            shape.m_scale = scale * Vector3(width, 1.0f, height);
             shape.m_pointSize = m_pointSize;
             shape.m_viewProjOverrideIndex = viewProjOverrideIndex;
 

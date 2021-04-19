@@ -519,8 +519,8 @@ void CAtomShimRenderAuxGeom::DrawQuad(float width, float height, const Matrix34&
     if (auto auxGeom = AZ::RPI::AuxGeomFeatureProcessorInterface::GetDrawQueueForScene(defaultScene))
     {
         AZ::RPI::AuxGeomDraw::DrawStyle drawStyle = drawShaded ? AZ::RPI::AuxGeomDraw::DrawStyle::Shaded : AZ::RPI::AuxGeomDraw::DrawStyle::Solid;
-        AZ::Transform transform = LYTransformToAZTransform(matWorld);
-        auxGeom->DrawQuad(width, height, transform, LYColorBToAZColor(col), drawStyle, m_drawArgs.m_depthTest);
+        AZ::Matrix3x4 local2World = LYTransformToAZMatrix3x4(matWorld);
+        auxGeom->DrawQuad(width, height, local2World, LYColorBToAZColor(col), drawStyle, m_drawArgs.m_depthTest);
     }
 }
 

@@ -179,7 +179,7 @@ namespace Blast
 
     void EditorBlastMeshDataComponent::RegisterModel()
     {
-        if (m_meshFeatureProcessor && m_meshAssets[0].GetId().IsValid())
+        if (m_meshFeatureProcessor && !m_meshAssets.empty() && m_meshAssets[0].GetId().IsValid())
         {
             AZ::Render::MaterialAssignmentMap materials;
             AZ::Render::MaterialComponentRequestBus::EventResult(

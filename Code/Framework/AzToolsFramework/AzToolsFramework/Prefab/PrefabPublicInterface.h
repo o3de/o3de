@@ -49,7 +49,7 @@ namespace AzToolsFramework
              * @param filePath The path for the new prefab file.
              * @return An outcome object; on failure, it comes with an error message detailing the cause of the error.
              */
-            virtual PrefabOperationResult CreatePrefab(const AZStd::vector<AZ::EntityId>& entityIds, AZStd::string_view filePath) = 0;
+            virtual PrefabOperationResult CreatePrefab(const AZStd::vector<AZ::EntityId>& entityIds, AZ::IO::PathView filePath) = 0;
 
             /**
              * Instantiate a prefab from a prefab file.

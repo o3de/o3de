@@ -387,6 +387,11 @@ namespace AZ
             }
         }
 
+        void MeshFeatureProcessor::ForceRebuildDrawPackets([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
+        {
+            m_forceRebuildDrawPackets = true;
+        }
+
         void MeshFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
         {
             m_forceRebuildDrawPackets = true;;

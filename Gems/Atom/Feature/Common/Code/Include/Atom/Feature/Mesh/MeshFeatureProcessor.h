@@ -21,6 +21,7 @@
 #include <RayTracing/RayTracingFeatureProcessor.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AtomCore/std/parallel/concurrency_checker.h>
+#include <AzCore/Console/Console.h>
 
 namespace AZ
 {
@@ -160,8 +161,14 @@ namespace AZ
 
             // called when reflection probes are modified in the editor so that meshes can re-evaluate their probes
             void UpdateMeshReflectionProbes();
-
         private:
+            void ForceRebuildDrawPackets(const AZ::ConsoleCommandContainer& arguments);
+            AZ_CONSOLEFUNC(MeshFeatureProcessor,
+                ForceRebuildDrawPackets,
+                AZ::ConsoleFunctorFlags::Null,
+                "(For Testing) Invalidates all mesh draw packets, causing them to rebuild on the next frame."
+            );
+
             MeshFeatureProcessor(const MeshFeatureProcessor&) = delete;
 
             // RPI::SceneNotificationBus::Handler overrides...

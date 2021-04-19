@@ -38,6 +38,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Asset/AssetTypeInfoBus.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/Asset/SimpleAsset.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
@@ -1212,9 +1213,8 @@ namespace AzToolsFramework
 
                 if (!QFile::exists(path))
                 {
-                    const char* engineRoot = nullptr;
-                    AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(engineRoot, &AzToolsFramework::ToolsApplicationRequests::GetEngineRootPath);
-                    QDir engineDir = engineRoot ? QDir(engineRoot) : QDir::current();
+                    AZ::IO::FixedMaxPathString engineRoot = AZ::Utils::GetEnginePath();
+                    QDir engineDir = !engineRoot.empty() ? QDir(QString(engineRoot.c_str())) : QDir::current();
 
                     path = engineDir.absoluteFilePath(iconPath.c_str());
                 }

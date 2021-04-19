@@ -24,6 +24,8 @@
 #include <AzFramework/Components/TransformComponent.h>
 #include <PhysX/ComponentTypeIds.h>
 #include <PhysX/SystemComponentBus.h>
+#include <Source/SphereColliderComponent.h>
+#include <Source/CapsuleColliderComponent.h>
 #include <System/PhysXSystem.h>
 #include <Tests/PhysXTestFixtures.h>
 #include <Tests/PhysXTestUtil.h>
@@ -31,6 +33,51 @@
 
 namespace PhysX
 {
+    namespace Internal
+    {
+        void AddColliderComponentToEntity(AZ::Entity* entity, const Physics::ColliderConfiguration& colliderConfiguration, const Physics::ShapeConfiguration& shapeConfiguration)
+        {
+            Physics::ShapeType shapeType = shapeConfiguration.GetShapeType();
+
+            switch (shapeType)
+            {
+            case Physics::ShapeType::Sphere:
+            {
+                const Physics::SphereShapeConfiguration& sphereConfiguration = static_cast<const Physics::SphereShapeConfiguration&>(shapeConfiguration);
+                auto sphereColliderComponent = entity->CreateComponent<SphereColliderComponent>();
+                sphereColliderComponent->SetShapeConfigurationList({ AZStd::make_pair(
+                    AZStd::make_shared<Physics::ColliderConfiguration>(colliderConfiguration),
+                    AZStd::make_shared<Physics::SphereShapeConfiguration>(sphereConfiguration)) });
+            }
+            break;
+            case Physics::ShapeType::Box:
+            {
+                const Physics::BoxShapeConfiguration& boxConfiguration = static_cast<const Physics::BoxShapeConfiguration&>(shapeConfiguration);
+                auto boxColliderComponent = entity->CreateComponent<BoxColliderComponent>();
+                boxColliderComponent->SetShapeConfigurationList({ AZStd::make_pair(
+                    AZStd::make_shared<Physics::ColliderConfiguration>(colliderConfiguration),
+                    AZStd::make_shared<Physics::BoxShapeConfiguration>(boxConfiguration)) });
+            }
+            break;
+            case Physics::ShapeType::Capsule:
+            {
+                const Physics::CapsuleShapeConfiguration& capsuleConfiguration = static_cast<const Physics::CapsuleShapeConfiguration&>(shapeConfiguration);
+                auto capsuleColliderComponent = entity->CreateComponent<CapsuleColliderComponent>();
+                capsuleColliderComponent->SetShapeConfigurationList({ AZStd::make_pair(
+                    AZStd::make_shared<Physics::ColliderConfiguration>(colliderConfiguration),
+                    AZStd::make_shared<Physics::CapsuleShapeConfiguration>(capsuleConfiguration)) });
+            }
+            break;
+            default:
+            {
+                AZ_Error("PhysX", false,
+                    "AddColliderComponentToEntity(): Using Shape of type %d is not implemented.", static_cast<AZ::u8>(shapeType));
+            }
+            break;
+            }
+        }
+    }
+
     // transform for a floor centred at x = 0, y = 0, with top at level z = 0
     static const AZ::Transform DefaultFloorTransform = AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisZ(-0.5f));
 
@@ -367,8 +414,7 @@ namespace PhysX
         auto triggerEntity = AZStd::make_unique<AZ::Entity>("TriggerEntity");
         triggerEntity->CreateComponent<AzFramework::TransformComponent>()->SetWorldTM(AZ::Transform::Identity());
         triggerEntity->CreateComponent(PhysX::StaticRigidBodyComponentTypeId);
-        Physics::SystemRequestBus::Broadcast(&Physics::SystemRequests::AddColliderComponentToEntity,
-            triggerEntity.get(), triggerConfig, boxConfig, false);
+        Internal::AddColliderComponentToEntity(triggerEntity.get(), triggerConfig, boxConfig);
         triggerEntity->Init();
         triggerEntity->Activate();
 

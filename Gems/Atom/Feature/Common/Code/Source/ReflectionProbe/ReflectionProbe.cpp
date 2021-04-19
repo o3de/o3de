@@ -248,6 +248,9 @@ namespace AZ
 
             AZ::RPI::RenderPipelineDescriptor environmentCubeMapPipelineDesc;
             environmentCubeMapPipelineDesc.m_mainViewTagName = "MainCamera";
+            environmentCubeMapPipelineDesc.m_renderSettings.m_multisampleState.m_samples = 4;
+            environmentCubeMapPipelineDesc.m_renderSettings.m_size.m_width = RPI::EnvironmentCubeMapPass::CubeMapFaceSize;
+            environmentCubeMapPipelineDesc.m_renderSettings.m_size.m_height = RPI::EnvironmentCubeMapPass::CubeMapFaceSize;
 
             // create a unique name for the pipeline
             AZ::Uuid uuid = AZ::Uuid::CreateRandom();

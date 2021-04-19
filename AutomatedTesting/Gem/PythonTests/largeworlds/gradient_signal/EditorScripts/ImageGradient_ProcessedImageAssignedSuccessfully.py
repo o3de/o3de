@@ -77,13 +77,13 @@ class TestImageGradient(EditorTestHelper):
         # 3) Assign the processed gradient signal image as the Image Gradient's image asset and verify success
 
         # First, check for the base image in the workspace
-        base_image = "lumberyard_gsi.png"
+        base_image = "image_grad_test_gsi.png"
         base_image_path = os.path.join("AutomatedTesting", "Assets", "ImageGradients", base_image)
         if os.path.isfile(base_image_path):
             print(f"{base_image} was found in the workspace")
 
         # Next, assign the processed image to the Image Gradient's Image Asset property
-        processed_image_path = os.path.join("Assets", "ImageGradients", "lumberyard_gsi.gradimage")
+        processed_image_path = os.path.join("Assets", "ImageGradients", "image_grad_test_gsi.gradimage")
         asset_id = asset.AssetCatalogRequestBus(bus.Broadcast, "GetAssetIdByPath", processed_image_path, math.Uuid(),
                                                 False)
         hydra.get_set_test(image_gradient_entity, 0, "Configuration|Image Asset", asset_id)
