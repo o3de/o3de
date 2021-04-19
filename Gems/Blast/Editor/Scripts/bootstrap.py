@@ -9,4 +9,5 @@ remove or modify any license notices. This file is distributed on an "AS IS" BAS
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
 
-#import asset_builder_blast
+# LYN-652 to re-enable the next line
+# import asset_builder_blast

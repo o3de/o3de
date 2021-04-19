@@ -277,6 +277,7 @@ namespace PhysX
             force.Deactivate();
         }
 
+        m_nonUniformScaleChangedHandler.Disconnect();
         AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
         EditorComponentBase::Deactivate();
     }

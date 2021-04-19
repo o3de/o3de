@@ -273,6 +273,7 @@ namespace PhysX
         m_debugDisplayDataChangeHandler.Disconnect();
 
         Physics::WorldBodyRequestBus::Handler::BusDisconnect();
+        m_nonUniformScaleChangedHandler.Disconnect();
         m_sceneStartSimHandler.Disconnect();
         Physics::ColliderComponentEventBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
