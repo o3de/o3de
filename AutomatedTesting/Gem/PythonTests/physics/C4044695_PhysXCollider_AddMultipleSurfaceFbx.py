@@ -65,8 +65,8 @@ def C4044695_PhysXCollider_AddMultipleSurfaceFbx():
     SURFACE_TAG_COUNT = 4  # Number of surface tags included in used asset
 
     # Asset paths
-    STATIC_MESH = "assets/c4044695_physxcollider_addmultiplesurfacefbx/test.azmodel"
-    PHYSX_MESH = "assets/c4044695_physxcollider_addmultiplesurfacefbx/test.pxmesh"
+    STATIC_MESH = os.path.join("assets", "c4044695_physxcollider_addmultiplesurfacefbx", "test.azmodel")
+    PHYSX_MESH = os.path.join("assets", "c4044695_physxcollider_addmultiplesurfacefbx", "test.pxmesh")
 
     helper.init_idle()
     # 1) Load the empty level
