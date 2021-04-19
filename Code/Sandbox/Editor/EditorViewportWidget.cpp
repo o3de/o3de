@@ -881,6 +881,11 @@ void EditorViewportWidget::OnBeginPrepareRender()
 
     GetIEditor()->GetSystem()->SetViewCamera(m_Camera);
 
+    if (GetIEditor()->IsInGameMode())
+    {
+        return;
+    }
+
     PreWidgetRendering();
 
     RenderAll();
