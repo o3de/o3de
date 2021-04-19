@@ -10,7 +10,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # This script must be run as root
-if [ "`whoami`" != "root" ]
+if [[ $EUID -ne 0 ]]
 then
     echo "This script must be run as root (sudo)"
     exit 1

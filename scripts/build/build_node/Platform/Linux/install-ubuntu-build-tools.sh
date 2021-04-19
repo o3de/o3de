@@ -10,7 +10,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # This script must be run as root
-if [ "`whoami`" != "root" ]
+if [[ $EUID -ne 0 ]]
 then
     echo "This script must be run as root (sudo)"
     exit 1
@@ -41,7 +41,8 @@ fi
 #
 # Always install the latest version of cmake (from kitware)
 #
-echo Installing the latest version of CMake
+CMAKE_DISTRO_VERSION=3.20.1-0kitware1ubuntu20.04.1
+echo Installing CMake package $CMAKE_DISTRO_VERSION
 
 # Remove any pre-existing version of cmake 
 apt purge --auto-remove cmake -y
@@ -59,7 +60,7 @@ fi
 apt-get update
 
 # Install cmake
-apt-get install cmake -y
+apt-get install cmake $CMAKE_DISTRO_VERSION -y
 
 
 #
