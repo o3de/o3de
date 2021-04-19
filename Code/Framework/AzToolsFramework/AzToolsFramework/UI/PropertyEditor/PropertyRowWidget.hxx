@@ -129,6 +129,7 @@ namespace AzToolsFramework
         void SetSelectionEnabled(bool selectionEnabled);
         void SetSelected(bool selected);
         bool eventFilter(QObject *watched, QEvent *event) override;
+        void paintEvent(QPaintEvent*) override;
 
         /// Apply tooltip to widget and some of its children.
         void SetDescription(const QString& text);
@@ -164,9 +165,6 @@ namespace AzToolsFramework
         QHBoxLayout* m_leftHandSideLayout;
         QHBoxLayout* m_middleLayout;
         QHBoxLayout* m_rightHandSideLayout;
-        QVBoxLayout* m_outerLayout;
-        QSvgWidget m_separatorLine;
-        QSpacerItem* m_separatorIndent;
         
         QPointer <QCheckBox> m_dropDownArrow;
         QPointer <QToolButton> m_containerClearButton;

@@ -27,6 +27,7 @@ AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // 4244: con
 #include <QtGui/QTextLayout>
 #include <QtGui/QPainter>
 #include <QMessageBox>
+#include <QStylePainter>
 AZ_POP_DISABLE_WARNING
 
 static const int LabelColumnStretch = 2;
@@ -43,24 +44,6 @@ namespace AzToolsFramework
         static QIcon s_iconClosed(":/PropertyEditor/Resources/group_closed.png");
         m_iconOpen = s_iconOpen;
         m_iconClosed = s_iconClosed;
-
-        m_outerLayout = new QVBoxLayout(nullptr);
-        m_outerLayout->setSpacing(0);
-        m_outerLayout->setContentsMargins(0, 0, 0, 0);
-
-        // separatorLayout will contain a spacer and a separator line. The width of the spacer is adjusted later to ensure the line is the
-        // correct length.
-        QHBoxLayout* separatorLayout = new QHBoxLayout(nullptr);
-        m_outerLayout->addLayout(separatorLayout);
-
-        m_separatorIndent = new QSpacerItem(1, 1);
-        separatorLayout->addItem(m_separatorIndent);
-
-        m_separatorLine.load(QStringLiteral(":/Gallery/line.svg"));
-        m_separatorLine.setFixedHeight(3);
-
-        separatorLayout->addWidget(&m_separatorLine);
-        m_separatorLine.setVisible(false);
 
         m_mainLayout = new QHBoxLayout();
         m_mainLayout->setSpacing(0);
@@ -136,8 +119,20 @@ namespace AzToolsFramework
         m_handler = nullptr;
         m_containerSize = 0;
 
-        m_outerLayout->addLayout(m_mainLayout);
-        setLayout(m_outerLayout);
+        setLayout(m_mainLayout);
+    }
+
+    void PropertyRowWidget::paintEvent(QPaintEvent* event)
+    {
+        QStylePainter p(this);
+
+        if (IsSectionSeparator())
+        {
+            const QPen linePen(QColor(0x3B3E3F));
+            p.setPen(linePen);
+            int indent = m_treeDepth * m_treeIndentation;
+            p.drawLine(event->rect().topLeft() + QPoint(indent, 0), event->rect().topRight());
+        }
     }
 
     bool PropertyRowWidget::HasChildWidgetAlready() const
@@ -321,7 +316,6 @@ namespace AzToolsFramework
             }
 
             m_isSectionSeparator = false;
-            m_separatorLine.setVisible(false);
 
             RefreshAttributesFromNode(true);
 
@@ -970,7 +964,6 @@ namespace AzToolsFramework
         }
         else if (attributeName == AZ::Edit::Attributes::RPESectionSeparator)
         {
-            m_separatorLine.setVisible(true);
             m_isSectionSeparator = true;
         }
     }
@@ -1097,7 +1090,6 @@ namespace AzToolsFramework
             {
                 m_dropDownArrow->hide();
             }
-            m_separatorIndent->changeSize((m_treeDepth * m_treeIndentation) + m_leafIndentation, 1, QSizePolicy::Fixed, QSizePolicy::Fixed);
             m_indent->changeSize((m_treeDepth * m_treeIndentation) + m_leafIndentation, 1, QSizePolicy::Fixed, QSizePolicy::Fixed);
             m_leftHandSideLayout->invalidate();
             m_leftHandSideLayout->update();
@@ -1113,7 +1105,6 @@ namespace AzToolsFramework
                 connect(m_dropDownArrow, &QCheckBox::clicked, this, &PropertyRowWidget::OnClickedExpansionButton);
             }
             m_dropDownArrow->show();
-            m_separatorIndent->changeSize((m_treeDepth * m_treeIndentation), 1, QSizePolicy::Fixed, QSizePolicy::Fixed);
             m_indent->changeSize((m_treeDepth * m_treeIndentation), 1, QSizePolicy::Fixed, QSizePolicy::Fixed);
             m_leftHandSideLayout->invalidate();
             m_leftHandSideLayout->update();
@@ -1124,7 +1115,6 @@ namespace AzToolsFramework
 
     void PropertyRowWidget::SetIndentSize(int w)
     {
-        m_separatorIndent->changeSize(w, 1, QSizePolicy::Fixed, QSizePolicy::Fixed);
         m_indent->changeSize(w, 1, QSizePolicy::Fixed, QSizePolicy::Fixed);
         m_leftHandSideLayout->invalidate();
         m_leftHandSideLayout->update();
