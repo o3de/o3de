@@ -276,9 +276,6 @@ void EditorViewportWidget::paintEvent([[maybe_unused]] QPaintEvent* event)
     if ((ge && ge->IsLevelLoaded()) || (GetType() != ET_ViewportCamera))
     {
         setRenderOverlayVisible(true);
-        m_isOnPaint = true;
-        Update();
-        m_isOnPaint = false;
     }
     else
     {
@@ -808,6 +805,10 @@ void EditorViewportWidget::OnBeginPrepareRender()
     {
         return;
     }
+
+    m_isOnPaint = true;
+    Update();
+    m_isOnPaint = false;
 
     float fNearZ = GetIEditor()->GetConsoleVar("cl_DefaultNearPlane");
     float fFarZ = m_Camera.GetFarPlane();
