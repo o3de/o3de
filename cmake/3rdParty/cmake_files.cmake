@@ -18,6 +18,7 @@ set(FILES
     Finddyad.cmake
     FindFbxSdk.cmake
     Findlibav.cmake
+    FindOpenGLInterface.cmake
     FindOpenSSL.cmake
     FindRadTelemetry.cmake
     FindVkValidation.cmake
