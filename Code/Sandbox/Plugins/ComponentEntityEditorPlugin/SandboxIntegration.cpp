@@ -1231,7 +1231,7 @@ void SandboxIntegrationManager::CloneSelection(bool& handled)
 
     AzToolsFramework::EntityIdSet duplicationSet = AzToolsFramework::GetCulledEntityHierarchy(entities);
 
-    if (duplicationSet.size() > 0)
+    if (!duplicationSet.empty())
     {
         AZStd::unordered_set<AZ::EntityId> clonedEntities;
         handled = AzToolsFramework::CloneInstantiatedEntities(duplicationSet, clonedEntities);

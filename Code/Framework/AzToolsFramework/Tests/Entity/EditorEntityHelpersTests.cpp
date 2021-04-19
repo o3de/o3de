@@ -18,9 +18,6 @@
 
 namespace UnitTest
 {
-    using namespace AZ;
-    using namespace AzToolsFramework;
-
     class EditorEntityHelpersTest
         : public ToolsApplicationFixture
     {
@@ -47,25 +44,14 @@ namespace UnitTest
 
     TEST_F(EditorEntityHelpersTest, EditorEntityHelpersTests_GetCulledEntityHierarchy)
     {
-        EntityIdList testEntityIds{ m_parent1, m_child1, m_child2, m_grandChild1, m_parent2 };
+        AzToolsFramework::EntityIdList testEntityIds{ m_parent1, m_child1, m_child2, m_grandChild1, m_parent2 };
 
-        EntityIdSet culledSet = GetCulledEntityHierarchy(testEntityIds);
+        AzToolsFramework::EntityIdSet culledSet = AzToolsFramework::GetCulledEntityHierarchy(testEntityIds);
 
         // There should only be two EntityIds returned (m_parent1, and m_parent2),
         // since all the others should be culled out since they have a common ancestor
         // in the list already
-        EXPECT_EQ(culledSet.size(), 2);
-
-        EntityIdList foundEntityIds{ m_parent1, m_parent2 };
-        for (auto& entityId : foundEntityIds)
-        {
-            EXPECT_TRUE(AZStd::find(culledSet.begin(), culledSet.end(), entityId) != culledSet.end());
-        }
-
-        EntityIdList culledEntityIds{ m_child1, m_child2, m_grandChild1 };
-        for (auto& entityId : culledEntityIds)
-        {
-            EXPECT_FALSE(AZStd::find(culledSet.begin(), culledSet.end(), entityId) != culledSet.end());
-        }
+        using ::testing::UnorderedElementsAre;
+        EXPECT_THAT(culledSet, UnorderedElementsAre(m_parent1, m_parent2));
     }
 }
