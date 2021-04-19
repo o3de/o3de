@@ -86,6 +86,8 @@ namespace AzToolsFramework
         // Remove the default label and append the text to the name label.
         bool GetAppendDefaultLabelToName();
         void AppendDefaultLabelToName(bool doAppend);
+        AZ::u32 GetChildRowCount() const;
+        PropertyRowWidget* GetChildRowByIndex(AZ::u32 index) const;
 
         AZStd::vector<PropertyRowWidget*>& GetChildrenRows() { return m_childrenRows; }
         bool HasChildRows() const;
@@ -125,6 +127,7 @@ namespace AzToolsFramework
 
         void SetSelectionEnabled(bool selectionEnabled);
         void SetSelected(bool selected);
+        bool GetSelected();
         bool eventFilter(QObject *watched, QEvent *event) override;
 
         /// Apply tooltip to widget and some of its children.
@@ -146,6 +149,27 @@ namespace AzToolsFramework
         QLabel* GetNameLabel() { return m_nameLabel; }
         void SetIndentSize(int w);
         void SetAsCustom(bool custom) { m_custom = custom; }
+
+        bool CanChildrenBeReordered() const;
+        bool CanBeReordered() const;
+        bool CanMoveUp() const;
+        bool CanMoveDown() const;
+
+        QImage createDragImage();
+
+        enum DropArea
+        {
+            Above,
+            Below
+        };
+
+        void SetDropTarget(bool dropTarget);
+        void SetDropArea(DropArea dropArea);
+        bool IsDropTarget() const;
+        DropArea GetDropArea() const;
+        void SetBeingDragged(bool beingDragged);
+        bool IsBeingDragged();
+
     protected:
         int CalculateLabelWidth() const;
 
@@ -208,6 +232,7 @@ namespace AzToolsFramework
         bool m_isMultiSizeContainer = false;
         bool m_isFixedSizeOrSmartPtrContainer = false;
         bool m_custom = false;
+        bool m_canChildrenBeReordered = false;
 
         bool m_isSelected = false;
         bool m_selectionEnabled = false;
@@ -228,6 +253,10 @@ namespace AzToolsFramework
         int m_treeDepth = 0;
         int m_treeIndentation = 14;
         int m_leafIndentation = 16;
+
+        DropArea m_dropArea = DropArea::Above;
+        bool m_isDropTarget = false;
+        bool m_isBeingDragged = false;
 
         QIcon m_iconOpen;
         QIcon m_iconClosed;

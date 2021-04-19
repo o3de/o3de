@@ -111,6 +111,7 @@ void initEntityPropertyEditorResources()
 namespace AzToolsFramework
 {
     static const char* kComponentEditorIndexMimeType = "editor/componentEditorIndices";
+    static const char* kComponentEditorRowWidgetType = "editor/componentEditorRowWidget"; 
 
     //since component editors are spaced apart to make room for drop indicator,
     //giving drop logic simple buffer so drops between editors don't go to the bottom
@@ -153,6 +154,7 @@ namespace AzToolsFramework
             : QWidget(parent)
             , m_editor(editor)
             , m_dropIndicatorOffset(8)
+            , m_dropIndicatorRowWidgetOffset(2)
         {
             setPalette(Qt::transparent);
             setWindowFlags(Qt::FramelessWindowHint);
@@ -178,33 +180,113 @@ namespace AzToolsFramework
             bool drag = false;
             bool drop = false;
 
-            for (auto componentEditor : m_editor->m_componentEditors)
+            ComponentEditor* rowWidgetDragEditor = m_editor->GetEditorContiningDraggedRowWidget();
+            if (rowWidgetDragEditor)
             {
-                if (!componentEditor->isVisible())
+                for (auto componentEditor : m_editor->m_componentEditors)
                 {
-                    continue;
+                    if (!componentEditor->isVisible())
+                    {
+                        continue;
+                    }
+
+                    if (componentEditor != rowWidgetDragEditor)
+                    {
+                        continue;
+                    }
+
+                    for (AZStd::pair<InstanceDataNode*, PropertyRowWidget*> widgetPair : componentEditor->GetPropertyEditor()->GetWidgets())
+                    {
+                        PropertyRowWidget* rowWidget = widgetPair.second;
+                        if (!rowWidget->isVisible())
+                        {
+                            continue;
+                        }
+
+                        QRect globalRect = m_editor->GetWidgetAndVisibleChildrenGlobalRect(rowWidget);
+
+                        currRect = QRect(
+                            QPoint(mapFromGlobal(globalRect.topLeft()) + QPoint(LeftMargin, TopMargin)),
+                            QPoint(mapFromGlobal(globalRect.bottomRight()) - QPoint(RightMargin, BottomMargin)));
+
+                        currRect.setWidth(currRect.width() - 1);
+
+                        if (rowWidget->IsBeingDragged())
+                        {
+                            QStyleOption opt;
+                            opt.init(this);
+                            opt.rect = currRect;
+                            static_cast<AzQtComponents::Style*>(style())->drawDragIndicator(&opt, &painter, this);
+                            drag = true;
+                        }
+
+                        if (rowWidget->IsDropTarget())
+                        {
+                            QRect dropRect = currRect;
+                            if (rowWidget->GetDropArea() == PropertyRowWidget::Above)
+                            {
+                                dropRect.setTop(currRect.top() - m_dropIndicatorRowWidgetOffset);
+                            }
+                            else
+                            {
+                                dropRect.setTop(currRect.bottom());
+                            }
+
+                            dropRect.setHeight(0);
+
+                            QStyleOption opt;
+                            opt.init(this);
+                            opt.rect = dropRect;
+                            style()->drawPrimitive(QStyle::PE_IndicatorItemViewItemDrop, &opt, &painter, this);
+
+                            drop = true;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                for (auto componentEditor : m_editor->m_componentEditors)
+                {
+                    if (!componentEditor->isVisible())
+                    {
+                        continue;
+                    }
+
+                    QRect globalRect = m_editor->GetWidgetGlobalRect(componentEditor);
+
+                    currRect = QRect(
+                        QPoint(mapFromGlobal(globalRect.topLeft()) + QPoint(LeftMargin, TopMargin)),
+                        QPoint(mapFromGlobal(globalRect.bottomRight()) - QPoint(RightMargin, BottomMargin)));
+
+                    currRect.setWidth(currRect.width() - 1);
+                    currRect.setHeight(currRect.height() - 1);
+
+                    if (componentEditor->IsDragged())
+                    {
+                        QStyleOption opt;
+                        opt.init(this);
+                        opt.rect = currRect;
+                        static_cast<AzQtComponents::Style*>(style())->drawDragIndicator(&opt, &painter, this);
+                        drag = true;
+                    }
+
+                    if (componentEditor->IsDropTarget())
+                    {
+                        QRect dropRect = currRect;
+                        dropRect.setTop(currRect.top() - m_dropIndicatorOffset);
+                        dropRect.setHeight(0);
+
+                        QStyleOption opt;
+                        opt.init(this);
+                        opt.rect = dropRect;
+                        style()->drawPrimitive(QStyle::PE_IndicatorItemViewItemDrop, &opt, &painter, this);
+
+                        drop = true;
+                    }
                 }
 
-                QRect globalRect = m_editor->GetWidgetGlobalRect(componentEditor);
-
-                currRect = QRect(
-                    QPoint(mapFromGlobal(globalRect.topLeft()) + QPoint(LeftMargin, TopMargin)),
-                    QPoint(mapFromGlobal(globalRect.bottomRight()) - QPoint(RightMargin, BottomMargin))
-                );
-
-                currRect.setWidth(currRect.width() - 1);
-                currRect.setHeight(currRect.height() - 1);
-
-                if (componentEditor->IsDragged())
-                {
-                    QStyleOption opt;
-                    opt.init(this);
-                    opt.rect = currRect;
-                    static_cast<AzQtComponents::Style*>(style())->drawDragIndicator(&opt, &painter, this);
-                    drag = true;
-                }
-
-                if (componentEditor->IsDropTarget())
+                if (drag && !drop)
                 {
                     QRect dropRect = currRect;
                     dropRect.setTop(currRect.top() - m_dropIndicatorOffset);
@@ -214,21 +296,7 @@ namespace AzToolsFramework
                     opt.init(this);
                     opt.rect = dropRect;
                     style()->drawPrimitive(QStyle::PE_IndicatorItemViewItemDrop, &opt, &painter, this);
-
-                    drop = true;
                 }
-            }
-
-            if (drag && !drop)
-            {
-                QRect dropRect = currRect;
-                dropRect.setTop(currRect.top() - m_dropIndicatorOffset);
-                dropRect.setHeight(0);
-
-                QStyleOption opt;
-                opt.init(this);
-                opt.rect = dropRect;
-                style()->drawPrimitive(QStyle::PE_IndicatorItemViewItemDrop, &opt, &painter, this);
             }
         }
 
@@ -284,6 +352,7 @@ namespace AzToolsFramework
     private:
         EntityPropertyEditor* m_editor;        
         int m_dropIndicatorOffset;
+        int m_dropIndicatorRowWidgetOffset;
     };
 
     EntityPropertyEditor::SharedComponentInfo::SharedComponentInfo(AZ::Component* component, AZ::Component* sliceReferenceComponent)
@@ -3382,6 +3451,37 @@ namespace AzToolsFramework
         return this == widget || isAncestorOf(widget);
     }
 
+    AZ::u32 EntityPropertyEditor::GetHeightOfRowAndVisibleChildren(const PropertyRowWidget* row) const
+    {
+        if (!row->isVisible())
+        {
+            return 0;
+        }
+
+        QRect rect = QRect(row->mapToGlobal(row->rect().topLeft()), row->mapToGlobal(row->rect().bottomRight()));
+
+        AZ::u32 height = rect.height() + 1;
+
+        for (AZ::u32 childIndex = 0; childIndex < row->GetChildRowCount(); childIndex++)
+        {
+            PropertyRowWidget* childRow = row->GetChildRowByIndex(childIndex);
+            if (childRow->isVisible())
+            {
+                height += GetHeightOfRowAndVisibleChildren(childRow);
+            }
+        }
+
+        return height;
+    }
+
+    QRect EntityPropertyEditor::GetWidgetAndVisibleChildrenGlobalRect(const PropertyRowWidget* widget) const
+    {
+        QRect rect = QRect(widget->mapToGlobal(widget->rect().topLeft()), widget->mapToGlobal(widget->rect().bottomRight()));
+        rect.setHeight(GetHeightOfRowAndVisibleChildren(widget));
+
+        return rect;
+    }
+
     QRect EntityPropertyEditor::GetWidgetGlobalRect(const QWidget* widget) const
     {
         return QRect(
@@ -4212,10 +4312,133 @@ namespace AzToolsFramework
         return true;
     }
 
+    bool EntityPropertyEditor::FindAllowedRowWidgetReorderDropTarget(const QPoint& globalPos)
+    {
+        const QRect globalRect(globalPos, globalPos);
+
+        AZ_Assert(m_draggingRowWidgetEditor, "Missing editor for row widget drag.");
+
+        AzToolsFramework::ReflectedPropertyEditor::WidgetList widgets = m_draggingRowWidgetEditor->GetPropertyEditor()->GetWidgets();
+        for (auto widgetPair : widgets)
+        {
+            PropertyRowWidget* widget = widgetPair.second;
+            if (!widget)
+            {
+                continue;
+            }
+
+            if (DoesIntersectWidget(globalRect, reinterpret_cast<QWidget*>(widget)))
+            {
+                if (widget->CanBeReordered() && widget->GetParentRow() == m_draggingRowWidget->GetParentRow())
+                {
+                    if (m_currentDropTarget && widget != m_currentDropTarget)
+                    {
+                        m_currentDropTarget->SetDropTarget(false);
+                    }
+
+                    m_currentDropTarget = widget;
+
+                    QRect widgetRect = GetWidgetAndVisibleChildrenGlobalRect(widget);
+                    if (globalPos.y() < widgetRect.center().y())
+                    {
+                        widget->SetDropArea(PropertyRowWidget::Above);
+                    }
+                    else
+                    {
+                        widget->SetDropArea(PropertyRowWidget::Below);
+                    }
+                    widget->SetDropTarget(true);
+                    return true;
+                }
+
+                // We're hovering over a child of a reorderable ancestor, use the ancestor as the drop target.
+                PropertyRowWidget* parent = widget->GetParentRow();
+                while (parent)
+                {
+                    if (parent->CanBeReordered() && parent->GetParentRow() == m_draggingRowWidget->GetParentRow())
+                    {
+                        if (m_currentDropTarget && parent != m_currentDropTarget)
+                        {
+                            m_currentDropTarget->SetDropTarget(false);
+                        }
+
+                        m_currentDropTarget = parent;
+
+                        QRect widgetRect = GetWidgetAndVisibleChildrenGlobalRect(parent);
+                        if (globalPos.y() < widgetRect.center().y())
+                        {
+                            parent->SetDropArea(PropertyRowWidget::Above);
+                        }
+                        else
+                        {
+                            parent->SetDropArea(PropertyRowWidget::Below);
+                        }
+                        parent->SetDropTarget(true);
+                        return true;
+                    }
+                    parent = parent->GetParentRow();
+                }
+            }
+        }
+
+        return false;
+    }
+
+    bool EntityPropertyEditor::UpdateRowWidgetDrag(const QPoint& localPos, Qt::MouseButtons mouseButtons, const QMimeData* /*mimeData*/)
+    {
+        const QPoint globalPos(mapToGlobal(localPos));
+        const QRect globalRect(globalPos, globalPos);
+
+        if (!m_draggingRowWidget)
+        {
+            return false;
+        }
+
+        if (m_currentDropTarget)
+        {
+            m_currentDropTarget->SetDropTarget(false);
+            m_currentDropTarget = nullptr;
+        }
+
+        UpdateOverlay();
+
+        // additional checks since handling is done in event filter
+        if ((mouseButtons & Qt::LeftButton) && DoesIntersectWidget(globalRect, this))
+        {
+            FindAllowedRowWidgetReorderDropTarget(globalPos);
+            {
+                UpdateOverlay();
+                // update drop indicators for detected drop targets
+                // if (IsDropAllowedForComponentReorder(mimeData, globalPos))
+                /* {
+                     ComponentEditor* targetComponentEditor =
+                         GetReorderDropTarget(GetInflatedRectFromPoint(globalPos, kComponentEditorDropTargetPrecision));
+
+                     if (targetComponentEditor)
+                     {
+                         targetComponentEditor->SetDropTarget(true);
+                         UpdateOverlay();
+                     }
+                 }*/
+
+                return true;
+            }
+        }
+        return false;
+    }
+
     bool EntityPropertyEditor::UpdateDrag(const QPoint& localPos, Qt::MouseButtons mouseButtons, const QMimeData* mimeData)
     {
         const QPoint globalPos(mapToGlobal(localPos));
         const QRect globalRect(globalPos, globalPos);
+
+        if (m_draggingRowWidget)
+        {
+            UpdateRowWidgetDrag(localPos, mouseButtons, mimeData);
+            QueueAutoScroll();
+            UpdateOverlay();
+            return true;
+        }
 
         //reset drop indicators
         for (auto componentEditor : m_componentEditors)
@@ -4293,7 +4516,34 @@ namespace AzToolsFramework
             }
         }
 
+        bool draggingRowWidget = false;
         if (!intersectsHeader)
+        {
+            for (auto componentEditor : componentEditors)
+            {
+                AzToolsFramework::ReflectedPropertyEditor::WidgetList widgets = componentEditor->GetPropertyEditor()->GetWidgets();
+                for (AZStd::pair<InstanceDataNode*, PropertyRowWidget*> w : widgets)
+                {
+                    if (w.second)
+                    {
+                        if (DoesIntersectWidget(dragRect, reinterpret_cast<QWidget*>(w.second)) && w.second->CanBeReordered())
+                        {
+                            m_draggingRowWidget = w.second;
+                            m_draggingRowWidget->SetBeingDragged(true);
+                            m_draggingRowWidgetEditor = componentEditor;
+                            if (m_currentDropTarget)
+                            {
+                                m_currentDropTarget->SetDropTarget(false);
+                                m_currentDropTarget = nullptr;
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!intersectsHeader && !m_draggingRowWidget)
         {
             return false;
         }
@@ -4305,87 +4555,103 @@ namespace AzToolsFramework
 
         QRect dragImageRect;
 
-        AZStd::vector<AZ::s32> componentEditorIndices;
-        componentEditorIndices.reserve(componentEditors.size());
-        for (auto componentEditor : componentEditors)
+        if (m_draggingRowWidget)
         {
-            //compute the drag image size
-            if (componentEditorIndices.empty())
-            {
-                dragImageRect = componentEditor->rect();
-            }
-            else
-            {
-                dragImageRect.setHeight(dragImageRect.height() + componentEditor->rect().height());
-            }
+            // We're dragging a PropertyRowWidget, grab the image from that.
+            mimeData->setData(kComponentEditorRowWidgetType, QByteArray());
 
-            //add component editor index to drag data
-            auto componentEditorIndex = GetComponentEditorIndex(componentEditor);
-            if (componentEditorIndex >= 0)
-            {
-                componentEditorIndices.push_back(GetComponentEditorIndex(componentEditor));
-            }
+            drag->setMimeData(mimeData);
+            drag->setPixmap(QPixmap::fromImage(m_draggingRowWidget->createDragImage()));
+            drag->setHotSpot(m_dragStartPosition - GetWidgetGlobalRect(m_draggingRowWidget).topLeft());
+            drag->exec(Qt::MoveAction, Qt::MoveAction);
         }
-
-        //build image from dragged editor UI
-        QImage dragImage(dragImageRect.size(), QImage::Format_ARGB32_Premultiplied);
-        QPainter painter(&dragImage);
-        painter.setCompositionMode(QPainter::CompositionMode_Source);
-        painter.fillRect(dragImageRect, Qt::transparent);
-        painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
-        painter.setOpacity(0.5f);
-
-        //render a vertical stack of component editors, may change to render just the headers
-        QPoint dragImageOffset(0, 0);
-        for (AZ::s32 index : componentEditorIndices)
+        else
         {
-            auto componentEditor = GetComponentEditorsFromIndex(index);
-            if (componentEditor)
+            AZStd::vector<AZ::s32> componentEditorIndices;
+            componentEditorIndices.reserve(componentEditors.size());
+            for (auto componentEditor : componentEditors)
             {
-                if (DoesIntersectWidget(dragRect, componentEditor))
+                // compute the drag image size
+                if (componentEditorIndices.empty())
                 {
-                    //offset drag image from the drag start position
-                    drag->setHotSpot(dragImageOffset + (m_dragStartPosition - GetWidgetGlobalRect(componentEditor).topLeft()));
+                    dragImageRect = componentEditor->rect();
+                }
+                else
+                {
+                    dragImageRect.setHeight(dragImageRect.height() + componentEditor->rect().height());
                 }
 
-                //render the component editor to the drag image
-                componentEditor->render(&painter, dragImageOffset);
-
-                //update the render offset by the component editor height
-                dragImageOffset.setY(dragImageOffset.y() + componentEditor->rect().height());
+                // add component editor index to drag data
+                auto componentEditorIndex = GetComponentEditorIndex(componentEditor);
+                if (componentEditorIndex >= 0)
+                {
+                    componentEditorIndices.push_back(GetComponentEditorIndex(componentEditor));
+                }
             }
-        }
-        painter.end();
 
-        //mark dragged components after drag initiated to draw indicators
-        for (AZ::s32 index : componentEditorIndices)
-        {
-            auto componentEditor = GetComponentEditorsFromIndex(index);
-            if (componentEditor)
+            // build image from dragged editor UI
+            QImage dragImage(dragImageRect.size(), QImage::Format_ARGB32_Premultiplied);
+            QPainter painter(&dragImage);
+            painter.setCompositionMode(QPainter::CompositionMode_Source);
+            painter.fillRect(dragImageRect, Qt::transparent);
+            painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+            painter.setOpacity(0.5f);
+
+            // render a vertical stack of component editors, may change to render just the headers
+            QPoint dragImageOffset(0, 0);
+            for (AZ::s32 index : componentEditorIndices)
             {
-                componentEditor->SetDragged(true);
+                auto componentEditor = GetComponentEditorsFromIndex(index);
+                if (componentEditor)
+                {
+                    if (DoesIntersectWidget(dragRect, componentEditor))
+                    {
+                        // offset drag image from the drag start position
+                        drag->setHotSpot(dragImageOffset + (m_dragStartPosition - GetWidgetGlobalRect(componentEditor).topLeft()));
+                    }
+
+                    // render the component editor to the drag image
+                    componentEditor->render(&painter, dragImageOffset);
+
+                    // update the render offset by the component editor height
+                    dragImageOffset.setY(dragImageOffset.y() + componentEditor->rect().height());
+                }
             }
-        }
-        UpdateOverlay();
+            painter.end();
 
-        //encode component editor indices as internal drag data
-        mimeData->setData(
-            kComponentEditorIndexMimeType,
-            QByteArray(reinterpret_cast<char*>(componentEditorIndices.data()), static_cast<int>(componentEditorIndices.size() * sizeof(AZ::s32))));
-
-        drag->setMimeData(mimeData);
-        drag->setPixmap(QPixmap::fromImage(dragImage));
-        drag->exec(Qt::MoveAction, Qt::MoveAction);
-
-        //mark dragged components after drag completed to stop drawing indicators
-        for (AZ::s32 index : componentEditorIndices)
-        {
-            auto componentEditor = GetComponentEditorsFromIndex(index);
-            if (componentEditor)
+            // mark dragged components after drag initiated to draw indicators
+            for (AZ::s32 index : componentEditorIndices)
             {
-                componentEditor->SetDragged(false);
+                auto componentEditor = GetComponentEditorsFromIndex(index);
+                if (componentEditor)
+                {
+                    componentEditor->SetDragged(true);
+                }
+            }
+            UpdateOverlay();
+
+            // encode component editor indices as internal drag data
+            mimeData->setData(
+                kComponentEditorIndexMimeType,
+                QByteArray(
+                    reinterpret_cast<char*>(componentEditorIndices.data()),
+                    static_cast<int>(componentEditorIndices.size() * sizeof(AZ::s32))));
+
+            drag->setMimeData(mimeData);
+            drag->setPixmap(QPixmap::fromImage(dragImage));
+            drag->exec(Qt::MoveAction, Qt::MoveAction);
+
+            // mark dragged components after drag completed to stop drawing indicators
+            for (AZ::s32 index : componentEditorIndices)
+            {
+                auto componentEditor = GetComponentEditorsFromIndex(index);
+                if (componentEditor)
+                {
+                    componentEditor->SetDragged(false);
+                }
             }
         }
+        
         UpdateOverlay();
         return true;
     }
@@ -4394,15 +4660,44 @@ namespace AzToolsFramework
     {
         const QPoint globalPos(mapToGlobal(event->pos()));
         const QMimeData* mimeData = event->mimeData();
-        if (IsDropAllowed(mimeData, globalPos))
+
+        if (m_draggingRowWidget)
         {
-            //handle drop for supported mime types
-            HandleDropForComponentTypes(event);
-            HandleDropForComponentAssets(event);
-            HandleDropForAssetBrowserEntries(event);
-            HandleDropForComponentReorder(event);
+            if (FindAllowedRowWidgetReorderDropTarget(globalPos))
+            {
+                if (m_currentDropTarget->GetDropArea() == PropertyRowWidget::Above)
+                {
+                    m_draggingRowWidgetEditor->GetPropertyEditor()->MoveNodeBefore(
+                        m_draggingRowWidget->GetNode(), m_currentDropTarget->GetNode());
+                }
+                else
+                {
+                    m_draggingRowWidgetEditor->GetPropertyEditor()->MoveNodeAfter(
+                        m_draggingRowWidget->GetNode(), m_currentDropTarget->GetNode());
+                }
+            }
+
             event->acceptProposedAction();
-            return true;
+
+            m_currentDropTarget->SetDropTarget(false);
+            m_currentDropTarget = nullptr;
+            m_draggingRowWidget->SetBeingDragged(false);
+            m_draggingRowWidget = nullptr;
+            m_draggingRowWidgetEditor = nullptr;
+            m_overlay->setVisible(false);
+        }
+        else
+        {
+            if (IsDropAllowed(mimeData, globalPos))
+            {
+                // handle drop for supported mime types
+                HandleDropForComponentTypes(event);
+                HandleDropForComponentAssets(event);
+                HandleDropForAssetBrowserEntries(event);
+                HandleDropForComponentReorder(event);
+                event->acceptProposedAction();
+                return true;
+            }
         }
         return false;
     }
@@ -4756,6 +5051,11 @@ namespace AzToolsFramework
     {
         m_isSystemEntityEditor = isSystemEntityEditor;
         UpdateContents();
+    }
+
+    ComponentEditor* EntityPropertyEditor::GetEditorContainingDraggedRowWidget()
+    {
+        return m_draggingRowWidgetEditor;
     }
 
     void EntityPropertyEditor::OnEntityComponentPropertyChanged(AZ::ComponentId componentId)

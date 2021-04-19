@@ -148,6 +148,8 @@ namespace AzToolsFramework
 
         void SetSystemEntityEditor(bool isSystemEntityEditor);
 
+        ComponentEditor* GetEditorContainingDraggedRowWidget();
+
         static void SortComponentsByPriority(AZ::Entity::ComponentArrayType& componentsOnEntity);
 
         bool IsLockedToSpecificEntities() const { return !m_overrideSelectedEntityIds.empty(); }
@@ -385,6 +387,8 @@ namespace AzToolsFramework
         void ResetToSlice();
 
         bool DoesOwnFocus() const;
+        AZ::u32 GetHeightOfRowAndVisibleChildren(const PropertyRowWidget* row) const;
+        QRect GetWidgetAndVisibleChildrenGlobalRect(const PropertyRowWidget* widget) const;
         QRect GetWidgetGlobalRect(const QWidget* widget) const;
         bool DoesIntersectWidget(const QRect& globalRect, const QWidget* widget) const;
         bool DoesIntersectSelectedComponentEditor(const QRect& globalRect) const;
@@ -453,6 +457,8 @@ namespace AzToolsFramework
 
         ComponentEditor* GetReorderDropTarget(const QRect& globalRect) const;
         bool ResetDrag(QMouseEvent* event);
+        bool EntityPropertyEditor::FindAllowedRowWidgetReorderDropTarget(const QPoint& globalPos);
+        bool UpdateRowWidgetDrag(const QPoint& localPos, Qt::MouseButtons mouseButtons, const QMimeData* mimeData);      
         bool UpdateDrag(const QPoint& localPos, Qt::MouseButtons mouseButtons, const QMimeData* mimeData);
         bool StartDrag(QMouseEvent* event);
         bool HandleDrop(QDropEvent* event);
@@ -545,6 +551,10 @@ namespace AzToolsFramework
 
         QIcon m_emptyIcon;
         QIcon m_clearIcon;
+
+        PropertyRowWidget* m_draggingRowWidget = nullptr;
+        PropertyRowWidget* m_currentDropTarget = nullptr;
+        ComponentEditor* m_draggingRowWidgetEditor = nullptr; 
 
         QStandardItem* m_comboItems[StatusItems];
         EntityIdSet m_overrideSelectedEntityIds;

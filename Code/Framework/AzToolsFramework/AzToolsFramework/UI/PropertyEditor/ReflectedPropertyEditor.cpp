@@ -22,6 +22,7 @@
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QVBoxLayout>
+#include <QPainter>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 'QTextFormat::d': class 'QSharedDataPointer<QTextFormatPrivate>' needs to have dll-interface to be used by clients of class 'QTextFormat'
 #include <QtWidgets/QInputDialog>
 AZ_POP_DISABLE_WARNING
@@ -1622,6 +1623,304 @@ namespace AzToolsFramework
         AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
             &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay,
             AzToolsFramework::Refresh_EntireTree);
+    }
+
+    void ReflectedPropertyEditor::OnPropertyRowRequestClear(PropertyRowWidget* widget, InstanceDataNode* node)
+    {
+        AZ::SerializeContext::IDataContainer* container = node->GetClassMetadata()->m_container;
+        AZ_Assert(container->IsFixedSize() == false || container->IsSmartPointer(), "Attempted to clear elements in a static container");
+
+        bool isContainerEmpty = false;
+        for (size_t i = 0; !isContainerEmpty && i < node->GetNumInstances(); ++i)
+        {
+            isContainerEmpty = container->Size(node->GetInstance(i)) == 0;
+        }
+
+        // Bail out if the user aborts (or the container is empty, which is by definition a no-op)
+        if (isContainerEmpty ||
+            QMessageBox::question(
+                this, QStringLiteral("Clear container?"),
+                QStringLiteral("Are you sure you want to remove all elements from this container?")) == QMessageBox::No)
+        {
+            return;
+        }
+
+        // get the property editor
+        if (m_impl->m_ptrNotify)
+        {
+            m_impl->m_ptrNotify->BeforePropertyModified(node);
+        }
+
+        // make space for number of elements stored by each instance
+        AZStd::vector<size_t> instanceElements(node->GetNumInstances());
+        for (size_t instanceIndex = 0; instanceIndex < node->GetNumInstances(); ++instanceIndex)
+        {
+            // record how many elements were in each instance
+            instanceElements[instanceIndex] = container->Size(node->GetInstance(instanceIndex));
+            // clear all elements
+            container->ClearElements(node->GetInstance(instanceIndex), node->GetSerializeContext());
+        }
+
+        if (m_impl->m_ptrNotify)
+        {
+            m_impl->m_ptrNotify->AfterPropertyModified(node);
+            m_impl->m_ptrNotify->SealUndoStack();
+        }
+
+        // fire remove notification for each element removed
+        for (const AZ::Edit::AttributePair& attribute : node->GetElementEditMetadata()->m_attributes)
+        {
+            if (attribute.first == AZ::Edit::Attributes::RemoveNotify)
+            {
+                if (InstanceDataNode* pParent = node->GetParent())
+                {
+                    if (auto funcVoid = azdynamic_cast<AZ::Edit::AttributeFunction<void()>*>(attribute.second))
+                    {
+                        for (size_t instanceIndex = 0; instanceIndex < pParent->GetNumInstances(); ++instanceIndex)
+                        {
+                            // remove all elements in reverse order
+                            for (AZ::s64 elementIndex = instanceElements[instanceIndex] - 1; elementIndex >= 0; --elementIndex)
+                            {
+                                // remove callback (without element index)
+                                funcVoid->Invoke(pParent->GetInstance(instanceIndex));
+                            }
+                        }
+                    }
+                    else if (auto funcIndex = azdynamic_cast<AZ::Edit::AttributeFunction<void(size_t)>*>(attribute.second))
+                    {
+                        for (size_t instanceIndex = 0; instanceIndex < pParent->GetNumInstances(); ++instanceIndex)
+                        {
+                            // remove all elements in reverse order
+                            for (AZ::s64 elementIndex = instanceElements[instanceIndex] - 1; elementIndex >= 0; --elementIndex)
+                            {
+                                // remove callback (with element index)
+                                size_t tempElementIndex = elementIndex;
+                                funcIndex->Invoke(pParent->GetInstance(instanceIndex), AZStd::move(tempElementIndex));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Fire general change notifications for the container widget.
+        if (widget)
+        {
+            widget->DoPropertyNotify();
+        }
+
+        // Need to refresh any pinned inspectors as well to keep the container state in sync
+        QueueInvalidation(Refresh_EntireTree);
+        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+            &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
+    }
+
+    InstanceDataNode* ReflectedPropertyEditor::FindContainerNodeForNode(InstanceDataNode* node) const
+    {
+        // Locate the owning container. There may be a level of indirection due to wrappers, such as DynamicSerializableField.
+        InstanceDataNode* pContainerNode = node->GetParent();
+        if (!pContainerNode)
+        {
+            return nullptr;
+        }
+
+        while (pContainerNode && !pContainerNode->GetClassMetadata()->m_container)
+        {
+            pContainerNode = pContainerNode->GetParent();
+            node = node->GetParent();
+        }
+
+        if (IsParentAssociativeContainer(pContainerNode) && IsPairContainer(pContainerNode))
+        {
+            // Go up one more level to the associative container, we'll remove the pair from that container
+            pContainerNode = pContainerNode->GetParent();
+            node = node->GetParent();
+        }
+
+        AZ_Assert(
+            pContainerNode, "Failed to locate parent container for element \"%s\" of type %s.",
+            node->GetElementMetadata() ? node->GetElementMetadata()->m_name : node->GetClassMetadata()->m_name,
+            node->GetClassMetadata()->m_typeId.ToString<AZStd::string>().c_str());
+
+        return pContainerNode;
+    }
+
+    void ReflectedPropertyEditor::ChangeNodeIndex(InstanceDataNode* containerNode, InstanceDataNode* node, int fromIndex, int toIndex)
+    {
+        auto container = containerNode->GetElementMetadata()
+            ? containerNode->GetElementMetadata()->m_genericClassInfo->GetClassData()->m_container
+            : nullptr;
+
+        if (!container)
+        {
+            return;
+        }
+
+        if (container->GetAssociativeContainerInterface())
+        {
+            return;
+        }
+
+        if (fromIndex == toIndex)
+        {
+            return;
+        }
+
+        AZ::Uuid typeId = node->GetClassMetadata()->m_typeId;
+
+        if (m_impl->m_ptrNotify)
+        {
+            m_impl->m_ptrNotify->BeforePropertyModified(containerNode);
+        }
+
+        const AZ::SerializeContext::ClassElement* containerClassElement = container->GetElement(container->GetDefaultElementNameCrc());
+
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+
+        // Backup the item we're moving.
+        void* srcElement = nullptr;
+        void* destElement = nullptr;
+
+        int destIndex = -1;
+        int srcIndex = fromIndex;
+
+        srcElement = container->GetElementByIndex(containerNode->GetInstance(0), containerClassElement, srcIndex);
+
+        void* tmpBuffer = serializeContext->CloneObject(srcElement, typeId);
+
+        // Shuffle all intervening items up (or down).
+        int inc = 1;
+        if (toIndex < fromIndex)
+        {
+            inc = -1;
+        }
+
+        while (destIndex != toIndex - inc)
+        {
+            destIndex = srcIndex;
+            srcIndex += inc;
+
+            destElement = srcElement;
+
+            srcElement = container->GetElementByIndex(containerNode->GetInstance(0), containerClassElement, srcIndex);
+
+            serializeContext->CloneObjectInplace(destElement, srcElement, typeId);
+        }
+
+        // Now replace the final element with the one backed up previously.
+        destElement = srcElement;
+
+        serializeContext->CloneObjectInplace(destElement, tmpBuffer, typeId);
+
+        if (m_impl->m_ptrNotify)
+        {
+            m_impl->m_ptrNotify->AfterPropertyModified(containerNode);
+            m_impl->m_ptrNotify->SealUndoStack();
+        }
+
+        // Need to refresh any pinned inspectors as well to keep the container state in sync
+        QueueInvalidation(Refresh_EntireTree);
+        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+            &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
+    }
+
+    void ReflectedPropertyEditor::MoveNodeUp(InstanceDataNode* node)
+    {
+        InstanceDataNode* pContainerNode = FindContainerNodeForNode(node);
+
+        AZ::SerializeContext::IDataContainer* container = pContainerNode->GetClassMetadata()->m_container;
+
+        AZStd::vector<void*> nodeInstancesOut;
+        const size_t elementIndex = CalculateElementIndexInContainer(node, pContainerNode->GetInstance(0), container, nodeInstancesOut);
+
+        if (elementIndex == 0)
+        {
+            return;
+        }
+
+        ChangeNodeIndex(pContainerNode, node, elementIndex, elementIndex - 2);
+    }
+
+    void ReflectedPropertyEditor::MoveNodeDown(InstanceDataNode* node)
+    {
+        InstanceDataNode* pContainerNode = FindContainerNodeForNode(node);
+
+        AZ::SerializeContext::IDataContainer* container = pContainerNode->GetClassMetadata()->m_container;
+
+        AZStd::vector<void*> nodeInstancesOut;
+        const size_t elementIndex = CalculateElementIndexInContainer(node, pContainerNode->GetInstance(0), container, nodeInstancesOut);
+
+        if (elementIndex == container->Size(pContainerNode->GetInstance(0)) - 1)
+        {
+            return;
+        }
+
+        ChangeNodeIndex(pContainerNode, node, elementIndex, elementIndex + 1);
+    }
+
+    void ReflectedPropertyEditor::MoveNodeBefore(InstanceDataNode* nodeToMove, InstanceDataNode* nodeToMoveBefore)
+    {
+        InstanceDataNode* pContainerNode = FindContainerNodeForNode(nodeToMove);
+        InstanceDataNode* pContainerNodeTarget = FindContainerNodeForNode(nodeToMoveBefore);
+
+        if (nodeToMove == nodeToMoveBefore)
+        {
+            return;
+        }
+
+        // Can only move nodes within the same parent.
+        if (pContainerNode != pContainerNodeTarget)
+        {
+            return;
+        }
+
+        AZ::SerializeContext::IDataContainer* container = pContainerNode->GetClassMetadata()->m_container;
+
+        AZStd::vector<void*> nodeInstancesOut;
+        size_t elementIndex = CalculateElementIndexInContainer(nodeToMove, pContainerNode->GetInstance(0), container, nodeInstancesOut);
+        nodeInstancesOut.clear();
+        size_t elementIndexTarget =
+            CalculateElementIndexInContainer(nodeToMoveBefore, pContainerNode->GetInstance(0), container, nodeInstancesOut);
+
+        if (elementIndex < elementIndexTarget)
+        {
+            elementIndexTarget -= 1;
+        }
+
+        ChangeNodeIndex(pContainerNode, nodeToMove, elementIndex, elementIndexTarget);
+    }
+
+    void ReflectedPropertyEditor::MoveNodeAfter(InstanceDataNode* nodeToMove, InstanceDataNode* nodeToMoveBefore)
+    {
+        InstanceDataNode* pContainerNode = FindContainerNodeForNode(nodeToMove);
+        InstanceDataNode* pContainerNodeTarget = FindContainerNodeForNode(nodeToMoveBefore);
+
+        if (nodeToMove == nodeToMoveBefore)
+        {
+            return;
+        }
+
+        // Can only move nodes within the same parent.
+        if (pContainerNode != pContainerNodeTarget)
+        {
+            return;
+        }
+
+        AZ::SerializeContext::IDataContainer* container = pContainerNode->GetClassMetadata()->m_container;
+
+        AZStd::vector<void*> nodeInstancesOut;
+        size_t elementIndex = CalculateElementIndexInContainer(nodeToMove, pContainerNode->GetInstance(0), container, nodeInstancesOut);
+        nodeInstancesOut.clear();
+        size_t elementIndexTarget =
+            CalculateElementIndexInContainer(nodeToMoveBefore, pContainerNode->GetInstance(0), container, nodeInstancesOut);
+
+        if (elementIndex > elementIndexTarget)
+        {
+            elementIndexTarget += 1;
+        }
+
+        ChangeNodeIndex(pContainerNode, nodeToMove, elementIndex, elementIndexTarget);
     }
 
     void ReflectedPropertyEditor::OnPropertyRowRequestContainerRemoveItem(PropertyRowWidget* widget, InstanceDataNode* node)

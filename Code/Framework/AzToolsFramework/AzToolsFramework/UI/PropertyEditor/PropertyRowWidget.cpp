@@ -548,7 +548,12 @@ namespace AzToolsFramework
         AZ_Assert(m_selectionEnabled, "Property is not selectable");
         m_isSelected = selected;
         m_nameLabel->setProperty("selected", selected);
-    }    
+    }
+
+    bool PropertyRowWidget::GetSelected()
+    {
+        return m_isSelected;
+    }                                    
     
     void PropertyRowWidget::SetSelectionEnabled(bool selectionEnabled)
     {
@@ -945,6 +950,10 @@ namespace AzToolsFramework
         else if ((initial) && (attributeName == AZ::Edit::Attributes::StringLineEditingCompleteNotify))
         {
             HandleChangeNotifyAttribute(reader, m_sourceNode ? m_sourceNode->GetParent() : nullptr, m_editingCompleteNotifiers);
+        }
+        else if ((initial) && (attributeName == AZ::Edit::Attributes::UserCanReorderChildren))
+        {
+            m_canChildrenBeReordered = true;
         }
     }
 
@@ -1661,6 +1670,111 @@ namespace AzToolsFramework
         m_nameLabel->setFilter(m_currentFilterString);
     }
 
+    bool PropertyRowWidget::CanChildrenBeReordered() const
+    {
+        return m_canChildrenBeReordered;
+    }
+
+    bool PropertyRowWidget::CanBeReordered() const
+    {
+        if (!m_parentRow)
+        {
+            return false;
+        }
+
+        return m_parentRow->CanChildrenBeReordered();
+    }
+
+    bool PropertyRowWidget::CanMoveUp() const
+    {
+        if (!CanBeReordered())
+        {
+            return false;
+        }
+
+        PropertyRowWidget* firstChildOfParent = m_parentRow->GetChildRowByIndex(0);
+        if (this == firstChildOfParent)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    bool PropertyRowWidget::CanMoveDown() const
+    {
+        if (!CanBeReordered())
+        {
+            return false;
+        }
+
+        AZ::u32 numChildrenOfParent = m_parentRow->GetChildRowCount();
+        PropertyRowWidget* lastChild = m_parentRow->GetChildRowByIndex(numChildrenOfParent - 1);
+        if (this == lastChild)
+        {
+            return false;
+        }
+        return true;
+    }
+
+    QImage PropertyRowWidget::createDragImage()
+    {
+        // Make the drag box as wide as the containing editor so that it looks correct.
+        QWidget* parent = parentWidget()->parentWidget()->parentWidget();
+
+        QRect imageRect = QRect(0, 0, parent->rect().width(), rect().height());
+
+        QImage dragImage(imageRect.size(), QImage::Format_ARGB32_Premultiplied);
+
+        QPainter dragPainter(&dragImage);
+        dragPainter.setCompositionMode(QPainter::CompositionMode_Source);
+        dragPainter.fillRect(imageRect, Qt::transparent);
+        dragPainter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+        dragPainter.setOpacity(0.35f);
+        dragPainter.fillRect(imageRect, QColor("#F6F99E"));
+
+        int marginWidth = (imageRect.width() - rect().width()) / 2;
+        render(&dragPainter, QPoint(marginWidth, 0));
+
+        QPen pen;
+        pen.setColor(QColor("#EAECAA"));
+        pen.setWidth(1);
+        dragPainter.setPen(pen);
+        dragPainter.drawRect(0, 0, imageRect.width() - 1, imageRect.height() - 1);
+
+        dragPainter.end();
+        return dragImage;
+    }
+
+    void PropertyRowWidget::SetDropTarget(bool dropTarget)
+    {
+        m_isDropTarget = dropTarget;
+    }
+
+    void PropertyRowWidget::SetDropArea(DropArea dropArea)
+    {
+        m_dropArea = dropArea;
+    }
+
+    bool PropertyRowWidget::IsDropTarget() const
+    {
+        return m_isDropTarget;
+    }
+
+    PropertyRowWidget::DropArea PropertyRowWidget::GetDropArea() const
+    {
+        return m_dropArea;
+    }
+
+    void PropertyRowWidget::SetBeingDragged(bool beingDragged)
+    {
+        m_isBeingDragged = beingDragged;
+    }
+
+    bool PropertyRowWidget::IsBeingDragged()
+    {
+        return m_isBeingDragged;
+    }
 }
 
 #include "UI/PropertyEditor/moc_PropertyRowWidget.cpp"
