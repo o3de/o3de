@@ -906,11 +906,6 @@ void EditorViewportWidget::OnBeginPrepareRender()
     m_debugDisplay->DepthTestOn();
 
     PostWidgetRendering();
-
-    if (!m_renderer->IsStereoEnabled())
-    {
-        GetIEditor()->GetSystem()->RenderStatistics();
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
