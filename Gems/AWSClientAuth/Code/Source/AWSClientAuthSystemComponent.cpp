@@ -22,6 +22,11 @@
 #include <aws/cognito-identity/CognitoIdentityClient.h>
 #include <aws/cognito-idp/CognitoIdentityProviderClient.h>
 
+namespace AZ
+{
+    AZ_TYPE_INFO_SPECIALIZE(AWSClientAuth::ProviderNameEnum, "{FB34B23A-B249-47A2-B1F1-C05284B50CCC}");
+}
+
 namespace AWSClientAuth
 {
     constexpr char SerializeComponentName[] = "AWSClientAuth";
@@ -44,20 +49,35 @@ namespace AWSClientAuth
             AWSClientAuth::GoogleProviderSetting::Reflect(*serialize);
         }
 
+        AWSClientAuth::AuthenticationTokens::Reflect(context);
+        AWSClientAuth::ClientAuthAWSCredentials::Reflect(context);
+
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->EBus<AuthenticationProviderRequestBus>("AuthenticationProviderRequestBus")
+            behaviorContext->Enum<(int)ProviderNameEnum::None>("ProviderNameEnum_None")
+                ->Enum<(int)ProviderNameEnum::AWSCognitoIDP>("ProviderNameEnum_AWSCognitoIDP")
+                ->Enum<(int)ProviderNameEnum::LoginWithAmazon>("ProviderNameEnum_LoginWithAmazon")
+                ->Enum<(int)ProviderNameEnum::Google>("ProviderNameEnum_Google");
+
+            behaviorContext->EBus<AuthenticationProviderScriptCanvasRequestBus>("AuthenticationProviderRequestBus")
                 ->Attribute(AZ::Script::Attributes::Category, SerializeComponentName)
-                ->Event("Initialize", &AuthenticationProviderRequestBus::Events::Initialize)
-                ->Event("IsSignedIn", &AuthenticationProviderRequestBus::Events::IsSignedIn)
-                ->Event("GetAuthenticationTokens", &AuthenticationProviderRequestBus::Events::GetAuthenticationTokens)
+                ->Event("Initialize", &AuthenticationProviderScriptCanvasRequestBus::Events::Initialize)
+                ->Event("IsSignedIn", &AuthenticationProviderScriptCanvasRequestBus::Events::IsSignedIn)
+                ->Event("GetAuthenticationTokens", &AuthenticationProviderScriptCanvasRequestBus::Events::GetAuthenticationTokens)
                 ->Event(
-                    "PasswordGrantSingleFactorSignInAsync", &AuthenticationProviderRequestBus::Events::PasswordGrantSingleFactorSignInAsync)
-                ->Event("DeviceCodeGrantSignInAsync", &AuthenticationProviderRequestBus::Events::DeviceCodeGrantSignInAsync)
-                ->Event("DeviceCodeGrantConfirmSignInAsync", &AuthenticationProviderRequestBus::Events::DeviceCodeGrantConfirmSignInAsync)
-                ->Event("RefreshTokensAsync", &AuthenticationProviderRequestBus::Events::RefreshTokensAsync)
-                ->Event("GetTokensWithRefreshAsync", &AuthenticationProviderRequestBus::Events::GetTokensWithRefreshAsync)
-                ->Event("SignOut", &AuthenticationProviderRequestBus::Events::SignOut);
+                    "PasswordGrantSingleFactorSignInAsync",
+                    &AuthenticationProviderScriptCanvasRequestBus::Events::PasswordGrantSingleFactorSignInAsync)
+                ->Event(
+                    "PasswordGrantMultiFactorSignInAsync",
+                    &AuthenticationProviderScriptCanvasRequestBus::Events::PasswordGrantMultiFactorSignInAsync)
+                ->Event(
+                    "PasswordGrantMultiFactorConfirmSignInAsync",
+                    &AuthenticationProviderScriptCanvasRequestBus::Events::PasswordGrantMultiFactorConfirmSignInAsync)
+                ->Event("DeviceCodeGrantSignInAsync", &AuthenticationProviderScriptCanvasRequestBus::Events::DeviceCodeGrantSignInAsync)
+                ->Event("DeviceCodeGrantConfirmSignInAsync", &AuthenticationProviderScriptCanvasRequestBus::Events::DeviceCodeGrantConfirmSignInAsync)
+                ->Event("RefreshTokensAsync", &AuthenticationProviderScriptCanvasRequestBus::Events::RefreshTokensAsync)
+                ->Event("GetTokensWithRefreshAsync", &AuthenticationProviderScriptCanvasRequestBus::Events::GetTokensWithRefreshAsync)
+                ->Event("SignOut", &AuthenticationProviderScriptCanvasRequestBus::Events::SignOut);
 
             behaviorContext->EBus<AWSCognitoAuthorizationRequestBus>("AWSCognitoAuthorizationRequestBus")
                 ->Attribute(AZ::Script::Attributes::Category, SerializeComponentName)
@@ -77,11 +97,15 @@ namespace AWSClientAuth
                 ->Event("ConfirmForgotPasswordAsync", &AWSCognitoUserManagementRequestBus::Events::ConfirmForgotPasswordAsync)
                 ->Event("EnableMFAAsync", &AWSCognitoUserManagementRequestBus::Events::EnableMFAAsync);
 
+
             behaviorContext->EBus<AuthenticationProviderNotificationBus>("AuthenticationProviderNotificationBus")
+                ->Attribute(AZ::Script::Attributes::Category, SerializeComponentName)
                 ->Handler<AuthenticationNotificationBusBehaviorHandler>();
             behaviorContext->EBus<AWSCognitoUserManagementNotificationBus>("AWSCognitoUserManagementNotificationBus")
+                ->Attribute(AZ::Script::Attributes::Category, SerializeComponentName)
                 ->Handler<UserManagementNotificationBusBehaviorHandler>();
             behaviorContext->EBus<AWSCognitoAuthorizationNotificationBus>("AWSCognitoAuthorizationNotificationBus")
+                ->Attribute(AZ::Script::Attributes::Category, SerializeComponentName)
                 ->Handler<AWSCognitoAuthorizationNotificationBusBehaviorHandler>();
         }
     }

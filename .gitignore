@@ -18,3 +18,4 @@ _savebackup/
 #Output folder for test results when running Automated Tests
 TestResults/**
 *.swatches
+/imgui.ini

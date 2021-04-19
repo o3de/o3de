@@ -17,11 +17,20 @@
 #include <Atom/RPI.Public/Scene.h> 
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
 #include <Atom/RHI/DrawPacketBuilder.h>
+#include <AzCore/Console/Console.h>
 
 namespace AZ
 {   
     namespace RPI
     {
+        AZ_CVAR(bool,
+            r_forceRootShaderVariantUsage,
+            false,
+            [](const bool&) { AZ::Interface<AZ::IConsole>::Get()->PerformCommand("MeshFeatureProcessor.ForceRebuildDrawPackets"); },
+            ConsoleFunctorFlags::Null,
+            "(For Testing) Forces usage of root shader variant in the mesh draw packet level, ignoring any other shader variants that may exist."
+        );
+
         MeshDrawPacket::MeshDrawPacket(
             ModelLod& modelLod,
             size_t modelLodMeshIndex,
@@ -187,7 +196,7 @@ namespace AZ
                 }
 
                 const ShaderVariantId finalVariantId = shaderOptions.GetShaderVariantId();
-                const ShaderVariant& variant = shader->GetVariant(finalVariantId);
+                const ShaderVariant& variant = r_forceRootShaderVariantUsage ? shader->GetRootVariant() : shader->GetVariant(finalVariantId);
 
                 Data::Instance<ShaderResourceGroup> drawSrg;
                 if (drawSrgAsset)

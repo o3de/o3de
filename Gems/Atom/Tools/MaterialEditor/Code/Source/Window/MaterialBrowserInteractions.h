@@ -44,6 +44,7 @@ namespace MaterialEditor
         //! AssetBrowserInteractionNotificationBus::Handler overrides...
         void AddContextMenuActions(QWidget* caller, QMenu* menu, const AZStd::vector<AzToolsFramework::AssetBrowser::AssetBrowserEntry*>& entries) override;
 
+        void AddGenericContextMenuActions(QWidget* caller, QMenu* menu, const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry);
         void AddContextMenuActionsForOtherSource(QWidget* caller, QMenu* menu, const AzToolsFramework::AssetBrowser::SourceAssetBrowserEntry* entry);
         void AddContextMenuActionsForMaterialSource(QWidget* caller, QMenu* menu, const AzToolsFramework::AssetBrowser::SourceAssetBrowserEntry* entry);
         void AddContextMenuActionsForMaterialTypeSource(QWidget* caller, QMenu* menu, const AzToolsFramework::AssetBrowser::SourceAssetBrowserEntry* entry);
