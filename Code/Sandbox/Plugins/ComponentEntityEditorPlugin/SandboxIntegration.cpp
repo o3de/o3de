@@ -2777,26 +2777,6 @@ AZ::u32 SandboxIntegrationManager::SetState(AZ::u32 state)
     return 0;
 }
 
-AZ::u32 SandboxIntegrationManager::SetStateFlag(AZ::u32 state)
-{
-    if (m_dc)
-    {
-        return m_dc->SetStateFlag(state);
-    }
-
-    return 0;
-}
-
-AZ::u32 SandboxIntegrationManager::ClearStateFlag(AZ::u32 state)
-{
-    if (m_dc)
-    {
-        return m_dc->ClearStateFlag(state);
-    }
-
-    return 0;
-}
-
 void SandboxIntegrationManager::PushMatrix(const AZ::Transform& tm)
 {
     if (m_dc)

@@ -105,8 +105,6 @@ namespace AzFramework
         virtual bool SetDrawInFrontMode(bool bOn) { (void)bOn; return false; }
         virtual AZ::u32 GetState() { return 0; }
         virtual AZ::u32 SetState(AZ::u32 state) { (void)state; return 0; }
-        virtual AZ::u32 SetStateFlag(AZ::u32 state) { (void)state; return 0; }
-        virtual AZ::u32 ClearStateFlag(AZ::u32 state) { (void)state; return 0; }
         virtual void PushMatrix(const AZ::Transform& tm) { (void)tm; }
         virtual void PopMatrix() {}
 

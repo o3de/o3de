@@ -44,7 +44,7 @@ CD /d %LY_PROJECT_PATH%\%DEV_REL_PATH%
 set LY_DEV=%CD%
 echo     LY_DEV = %LY_DEV%
 
-CALL %LY_DEV%\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\Launchers\Windows\Env.bat
+CALL %LY_DEV%\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\Launchers\Windows\Env_Maya.bat
 
 rem :: Constant Vars (Global)
 rem SET LYPY_GDEBUG=0
