@@ -276,10 +276,10 @@ def PreBuildCommonSteps(Map pipelineConfig, String repositoryName, String projec
         else pythonCmd = 'python -u '
 
         if(env.RECREATE_VOLUME?.toBoolean()) {
-            palSh("${pythonCmd} ${INCREMENTAL_BUILD_SCRIPT_PATH} --action delete --repository_name ${repositoryName} --project ${projectName} --pipeline ${pipeline} --branch ${branchName} --platform ${platform} --build_type ${buildType}", 'Deleting volume')
+            palSh("${pythonCmd} ${INCREMENTAL_BUILD_SCRIPT_PATH} --action delete --repository_name ${repositoryName} --project ${projectName} --pipeline ${pipeline} --branch ${branchName} --platform ${platform} --build_type ${buildType}", 'Deleting volume', winSlashReplacement=false)
         }
         timeout(5) {
-            palSh("${pythonCmd} ${INCREMENTAL_BUILD_SCRIPT_PATH} --action mount --repository_name ${repositoryName} --project ${projectName} --pipeline ${pipeline} --branch ${branchName} --platform ${platform} --build_type ${buildType}", 'Mounting volume')
+            palSh("${pythonCmd} ${INCREMENTAL_BUILD_SCRIPT_PATH} --action mount --repository_name ${repositoryName} --project ${projectName} --pipeline ${pipeline} --branch ${branchName} --platform ${platform} --build_type ${buildType}", 'Mounting volume', winSlashReplacement=false)
         }
 
         if(env.IS_UNIX) {
