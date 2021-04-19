@@ -122,7 +122,6 @@ namespace AZ
 
         private:
             // RPI::Pass overrides...
-            TimestampResult GetTimestampResultInternal() const override;
             PipelineStatisticsResult GetPipelineStatisticsResultInternal() const override;
 
             // --- Hierarchy related functions ---

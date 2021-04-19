@@ -23,15 +23,11 @@ endif()
 
 include(cmake/Version.cmake)
 
-set(INSTALLED_ENGINE TRUE)
-
 if(NOT PROJECT_NAME)
     project(O3DE
         LANGUAGES C CXX
         VERSION ${LY_VERSION_STRING}
     )
-
-    set(INSTALLED_ENGINE FALSE)
 endif()
 
 include(cmake/Initialize.cmake)

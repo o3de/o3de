@@ -21,20 +21,23 @@
 
 # EditorPythonBindings need to be enabled for the project we launch
 
+# Check the AP is not open
+if(${PLATFORM} STREQUAL "Windows")
+    execute_process(COMMAND taskkill /F /IM AssetProcessor.exe)
+else()
+    execute_process(COMMAND killall -I AssetProcessor)
+endif()
+
 execute_process(
-    COMMAND ${CMD_ARG_EDITOR} -NullRenderer --skipWelcomeScreenDialog --autotest_mode --regset="/Amazon/AzCore/Bootstrap/project_path=${CMD_ARG_TEST_PROJECT}" --runpython ${CMD_ARG_PYTHON_SCRIPT}
+    COMMAND ${CMD_ARG_EDITOR} -rhi=null -NullRenderer --skipWelcomeScreenDialog -BatchMode --autotest_mode --regset="/Amazon/AzCore/Bootstrap/project_path=${CMD_ARG_TEST_PROJECT}" --runpython ${CMD_ARG_PYTHON_SCRIPT}
     TIMEOUT 1800
     RESULT_VARIABLE TEST_CMD_RESULT
 )
 
 if(${PLATFORM} STREQUAL "Windows")
-    execute_process(
-        COMMAND taskkill /F /IM AssetProcessor.exe
-    )
+    execute_process(COMMAND taskkill /F /IM AssetProcessor.exe)
 else()
-    execute_process(
-        COMMAND killall -I AssetProcessor
-    )
+    execute_process(COMMAND killall -I AssetProcessor)
 endif()
 
 if(TEST_CMD_RESULT)

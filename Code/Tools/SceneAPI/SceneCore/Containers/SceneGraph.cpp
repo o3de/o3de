@@ -43,7 +43,7 @@ namespace AZ
                 AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context);
                 if (behaviorContext)
                 {
-                    behaviorContext->Class<SceneGraph::NodeIndex>()
+                    behaviorContext->Class<SceneGraph::NodeIndex>("NodeIndex")
                         ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                         ->Attribute(AZ::Script::Attributes::Module, "scene.graph")
                         ->Constructor<>()
@@ -57,7 +57,7 @@ namespace AZ
                             ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::ToString)
                         ;
 
-                    behaviorContext->Class<SceneGraph::Name>()
+                    behaviorContext->Class<SceneGraph::Name>("SceneGraphName")
                         ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                         ->Attribute(AZ::Script::Attributes::Module, "scene.graph")
                         ->Constructor()

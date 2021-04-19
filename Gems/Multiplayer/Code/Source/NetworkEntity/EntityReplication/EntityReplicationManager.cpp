@@ -25,6 +25,7 @@
 #include <AzNetworking/PacketLayer/IPacketHeader.h>
 #include <AzNetworking/Serialization/NetworkInputSerializer.h>
 #include <AzNetworking/Serialization/NetworkOutputSerializer.h>
+#include <AzNetworking/Serialization/TrackChangedSerializer.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
@@ -126,9 +127,9 @@ namespace Multiplayer
         MultiplayerPackets::EntityUpdates entityUpdatePacket;
         entityUpdatePacket.SetHostTimeMs(serverGameTimeMs);
         // Serialize everything
-        for (auto it = toSendList.begin(); it != toSendList.end();)
+        while (!toSendList.empty())
         {
-            EntityReplicator* replicator = *it;
+            EntityReplicator* replicator = toSendList.front();
             NetworkEntityUpdateMessage updateMessage(replicator->GenerateUpdatePacket());
 
             const uint32_t nextMessageSize = updateMessage.GetEstimatedSerializeSize();
@@ -144,15 +145,15 @@ namespace Multiplayer
 
             pendingPacketSize += nextMessageSize;
             entityUpdatePacket.ModifyEntityMessages().push_back(updateMessage);
-            replicatorUpdatedList.push_back(*it);
-            it = toSendList.erase(it);
+            replicatorUpdatedList.push_back(replicator);
+            toSendList.pop_front();
 
             if (largeEntityDetected)
             {
                 AZLOG_WARN("\n\n*******************************");
                 AZLOG_WARN
                 (
-                    "Serializing Extremely Large Entity (%u) - MaxPayload: %d NeededSize %d",
+                    "Serializing extremely large entity (%u) - MaxPayload: %d NeededSize %d",
                     aznumeric_cast<uint32_t>(replicator->GetEntityHandle().GetNetEntityId()),
                     maxPayloadSize,
                     nextMessageSize
@@ -173,16 +174,16 @@ namespace Multiplayer
 
     EntityReplicationManager::EntityReplicatorList EntityReplicationManager::GenerateEntityUpdateList()
     {
+        if (m_replicationWindow == nullptr)
+        {
+            return EntityReplicatorList();
+        }
+
         // Generate a list of all our entities that need updates
-        EntityReplicatorList autonomousReplicators;
-        autonomousReplicators.reserve(m_replicatorsPendingSend.size());
-        EntityReplicatorList proxyReplicators;
-        proxyReplicators.reserve(m_replicatorsPendingSend.size());
+        EntityReplicatorList toSendList;
 
         uint32_t elementsAdded = 0;
-        for (auto iter = m_replicatorsPendingSend.begin(); 
-            iter != m_replicatorsPendingSend.end()
-            && elementsAdded < m_replicationWindow->GetMaxEntityReplicatorSendCount();)
+        for (auto iter = m_replicatorsPendingSend.begin(); iter != m_replicatorsPendingSend.end() && elementsAdded < m_replicationWindow->GetMaxEntityReplicatorSendCount(); )
         {
             EntityReplicator* replicator = GetEntityReplicator(*iter);
             bool clearPendingSend = true;
@@ -218,13 +219,13 @@ namespace Multiplayer
 
                         if (replicator->GetRemoteNetworkRole() == NetEntityRole::Autonomous)
                         {
-                            autonomousReplicators.push_back(replicator);
+                            toSendList.push_back(replicator);
                         }
                         else
                         {
                             if (elementsAdded < m_replicationWindow->GetMaxEntityReplicatorSendCount())
                             {
-                                proxyReplicators.push_back(replicator);
+                                toSendList.push_back(replicator);
                             }
                         }
                     }
@@ -243,9 +244,6 @@ namespace Multiplayer
             }
         }
 
-        EntityReplicatorList toSendList;
-        toSendList.swap(autonomousReplicators);
-        toSendList.insert(toSendList.end(), proxyReplicators.begin(), proxyReplicators.end());
         return toSendList;
     }
 
@@ -543,6 +541,7 @@ namespace Multiplayer
         // Create an entity if we don't have one
         if (createEntity)
         {
+            // @pereslav
             //replicatorEntity = GetNetworkEntityManager()->CreateSingleEntityImmediateInternal(prefabEntityId, EntitySpawnType::Replicate, AutoActivate::DoNotActivate, netEntityId, localNetworkRole, AZ::Transform::Identity());
             AZ_Assert(replicatorEntity != nullptr, "Failed to create entity from prefab");// %s", prefabEntityId.GetString());
             if (replicatorEntity == nullptr)
@@ -765,7 +764,7 @@ namespace Multiplayer
             return HandleEntityDeleteMessage(entityReplicator, packetHeader, updateMessage);
         }
 
-        AzNetworking::NetworkOutputSerializer outputSerializer(updateMessage.GetData()->GetBuffer(), updateMessage.GetData()->GetSize());
+        AzNetworking::TrackChangedSerializer<AzNetworking::NetworkOutputSerializer> outputSerializer(updateMessage.GetData()->GetBuffer(), updateMessage.GetData()->GetSize());
 
         PrefabEntityId prefabEntityId;
         if (updateMessage.GetHasValidPrefabId())
@@ -1125,7 +1124,7 @@ namespace Multiplayer
         {
             if (message.GetPropertyUpdateData().GetSize() > 0)
             {
-                AzNetworking::NetworkOutputSerializer outputSerializer(message.ModifyPropertyUpdateData().GetBuffer(), message.ModifyPropertyUpdateData().GetSize());
+                AzNetworking::TrackChangedSerializer<AzNetworking::NetworkOutputSerializer> outputSerializer(message.ModifyPropertyUpdateData().GetBuffer(), message.ModifyPropertyUpdateData().GetSize());
                 if (!HandlePropertyChangeMessage
                 (
                     replicator,

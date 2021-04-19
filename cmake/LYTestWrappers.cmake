@@ -213,8 +213,14 @@ function(ly_add_test)
             add_custom_target(${unaliased_test_name} COMMAND ${CMAKE_COMMAND} -E true ${args_TEST_COMMAND} ${args_TEST_ARGUMENTS})
 
             file(RELATIVE_PATH project_path ${LY_ROOT_FOLDER} ${CMAKE_CURRENT_SOURCE_DIR})
+            set(ide_path ${project_path})
+            # Visual Studio doesn't support a folder layout that starts with ".."
+            # So strip away the parent directory of a relative path
+            if (${project_path} MATCHES [[^(\.\./)+(.*)]])
+                set(ide_path "${CMAKE_MATCH_2}")
+            endif()
             set_target_properties(${unaliased_test_name} PROPERTIES 
-                FOLDER "${project_path}"
+                FOLDER "${ide_path}"
                 VS_DEBUGGER_COMMAND ${test_command}
                 VS_DEBUGGER_COMMAND_ARGUMENTS "${test_arguments_line}"
             )
@@ -331,13 +337,15 @@ function(ly_add_editor_python_test)
         message(FATAL_ERROR "Must supply a value for TEST_SUITE")
     endif()
 
+    file(REAL_PATH ${ly_add_editor_python_test_TEST_PROJECT} project_real_path BASE_DIRECTORY ${LY_ROOT_FOLDER})
+
     # Run test via the run_epbtest.cmake script.
     # Parameters used are explained in run_epbtest.cmake.
     ly_add_test(
         NAME ${ly_add_editor_python_test_NAME}
         TEST_REQUIRES ${ly_add_editor_python_test_TEST_REQUIRES}
         TEST_COMMAND ${CMAKE_COMMAND}
-            -DCMD_ARG_TEST_PROJECT=${ly_add_editor_python_test_TEST_PROJECT} 
+            -DCMD_ARG_TEST_PROJECT=${project_real_path} 
             -DCMD_ARG_EDITOR=$<TARGET_FILE:Legacy::Editor> 
             -DCMD_ARG_PYTHON_SCRIPT=${ly_add_editor_python_test_PATH}
             -DPLATFORM=${PAL_PLATFORM_NAME}

@@ -222,6 +222,10 @@ void ImGuiManager::Initialize()
     io.DisplaySize.x = 1920;
     io.DisplaySize.y = 1080;
 
+    // Create a default font
+    io.Fonts->AddFontDefault();
+    io.Fonts->Build();
+
     // Broadcast ImGui Ready to Listeners
     ImGuiUpdateListenerBus::Broadcast(&IImGuiUpdateListener::OnImGuiInitialize);
     m_currentControllerIndex = -1;
