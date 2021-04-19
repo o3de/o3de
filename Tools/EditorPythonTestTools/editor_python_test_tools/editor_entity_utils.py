@@ -13,8 +13,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 from __future__ import annotations
 from typing import List, Tuple, Union
 
-# Helper file Imports
-import utils
 
 # Open 3D Engine Imports
 import azlmbr
@@ -23,6 +21,8 @@ import azlmbr.editor as editor
 import azlmbr.math as math
 import azlmbr.legacy.general as general
 
+# Helper file Imports
+from editor_python_test_tools.utils import Report
 
 class EditorComponent:
     """
@@ -61,7 +61,7 @@ class EditorComponent:
             build_prop_tree_outcome.IsSuccess()
         ), f"Failure: Could not build property tree of component: '{self.get_component_name()}'"
         prop_tree = build_prop_tree_outcome.GetValue()
-        utils.Report.info(prop_tree.build_paths_list())
+        Report.info(prop_tree.build_paths_list())
         return prop_tree
 
     def get_component_property_value(self, component_property_path: str):
@@ -291,7 +291,7 @@ class EditorEntity:
             status_text = "inactive"
         elif status == azlmbr.globals.property.EditorEntityStartStatus_EditorOnly:
             status_text = "editor"
-        utils.Report.info(f"The start status for {self.get_name} is {status_text}")
+        Report.info(f"The start status for {self.get_name} is {status_text}")
         self.start_status = status
         return status
 
@@ -308,7 +308,7 @@ class EditorEntity:
         elif desired_start_status == "editor":
             status_to_set = azlmbr.globals.property.EditorEntityStartStatus_EditorOnly
         else:
-            utils.Report.info(
+            Report.info(
                 f"Invalid desired_start_status argument for {self.get_name} set_start_status command;\
                 Use editor, active, or inactive"
             )
