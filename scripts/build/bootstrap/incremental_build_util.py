@@ -94,8 +94,8 @@ def error(message):
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-a', '--action', dest="action", help="Action (mount|unmount|delete)")
-    parser.add_argument('-proj', '--repository_name', dest="repository_name", help="Repository name")
-    parser.add_argument('-proj', '--project', dest="project", help="Project")
+    parser.add_argument('-repository_name', '--repository_name', dest="repository_name", help="Repository name")
+    parser.add_argument('-project', '--project', dest="project", help="Project")
     parser.add_argument('-pipe', '--pipeline', dest="pipeline", help="Pipeline")
     parser.add_argument('-b', '--branch', dest="branch", help="Branch")
     parser.add_argument('-plat', '--platform', dest="platform", help="Platform")
