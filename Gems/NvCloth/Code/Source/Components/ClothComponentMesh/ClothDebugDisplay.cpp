@@ -286,10 +286,12 @@ namespace NvCloth
         const AZ::Transform& transform,
         [[maybe_unused]] const AZ::Color& color)
     {
+        const float heightStraightSection = AZStd::max(0.0f, height - 2.0f * radius);
+
         debugDisplay.PushMatrix(transform);
 
         debugDisplay.SetColor(AzFramework::ViewportColors::WireColor);
-        debugDisplay.DrawWireCapsule(AZ::Vector3::CreateZero(), AZ::Vector3::CreateAxisZ(), radius, height);
+        debugDisplay.DrawWireCapsule(AZ::Vector3::CreateZero(), AZ::Vector3::CreateAxisZ(), radius, heightStraightSection);
 
         debugDisplay.PopMatrix();
     }
