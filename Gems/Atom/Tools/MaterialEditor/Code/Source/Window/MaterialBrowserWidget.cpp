@@ -115,19 +115,29 @@ namespace MaterialEditor
     {
         using namespace AzToolsFramework::AssetBrowser;
 
+        // Material Browser uses the following filters:
+        // 1. [All source files (no products) that contain products matching the assetType specified by searchWidget (default is materials and textures)]
+        // 2. [All folders (including empty folders)]
+        // 3. [All Sources and folders matching the search text typed in search widget]
+        // Final filter = ((1 OR 2) AND 3)
+
         QSharedPointer<EntryTypeFilter> sourceFilter(new EntryTypeFilter);
         sourceFilter->SetEntryType(AssetBrowserEntry::AssetEntryType::Source);
+
+        QSharedPointer<CompositeFilter> assetTypeFilter(new CompositeFilter(CompositeFilter::LogicOperatorType::AND));
+        assetTypeFilter->AddFilter(sourceFilter);
+        assetTypeFilter->AddFilter(m_ui->m_searchWidget->GetTypesFilter());
 
         QSharedPointer<EntryTypeFilter> folderFilter(new EntryTypeFilter);
         folderFilter->SetEntryType(AssetBrowserEntry::AssetEntryType::Folder);
 
         QSharedPointer<CompositeFilter> sourceOrFolderFilter(new CompositeFilter(CompositeFilter::LogicOperatorType::OR));
-        sourceOrFolderFilter->AddFilter(sourceFilter);
+        sourceOrFolderFilter->AddFilter(assetTypeFilter);
         sourceOrFolderFilter->AddFilter(folderFilter);
 
         QSharedPointer<CompositeFilter> finalFilter(new CompositeFilter(CompositeFilter::LogicOperatorType::AND));
         finalFilter->AddFilter(sourceOrFolderFilter);
-        finalFilter->AddFilter(m_ui->m_searchWidget->GetFilter());
+        finalFilter->AddFilter(m_ui->m_searchWidget->GetStringFilter());
 
         return finalFilter;
     }
