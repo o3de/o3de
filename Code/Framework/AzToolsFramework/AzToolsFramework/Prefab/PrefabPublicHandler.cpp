@@ -63,58 +63,41 @@ namespace AzToolsFramework
 
         PrefabOperationResult PrefabPublicHandler::CreatePrefab(const AZStd::vector<AZ::EntityId>& entityIds, AZ::IO::PathView filePath)
         {
-            // Retrieve entityList from entityIds
-            EntityList inputEntityList;
-            EntityIdListToEntityList(entityIds, inputEntityList);
-
-            // Find common root and top level entities
-            bool entitiesHaveCommonRoot = false;
+            EntityList inputEntityList, topLevelEntities;
             AZ::EntityId commonRootEntityId;
-            EntityList topLevelEntities;
-
-            AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
-                entitiesHaveCommonRoot, &AzToolsFramework::ToolsApplicationRequests::FindCommonRootInactive, inputEntityList,
-                commonRootEntityId, &topLevelEntities);
-
-            // Bail if entities don't share a common root
-            if (!entitiesHaveCommonRoot)
+            InstanceOptionalReference commonRootEntityOwningInstance;
+            PrefabOperationResult findCommonRootOutcome = FindCommonRootOwningInstance(
+                entityIds, inputEntityList, topLevelEntities, commonRootEntityId, commonRootEntityOwningInstance);
+            if (!findCommonRootOutcome.IsSuccess())
             {
-                return AZ::Failure(
-                    AZStd::string("Could not create a new prefab out of the entities provided - entities do not share a common root."));
+                return findCommonRootOutcome;
             }
 
-            AZ::Entity* commonRootEntity = nullptr;
-            if (commonRootEntityId.IsValid())
-            {
-                commonRootEntity = GetEntityById(commonRootEntityId);
-            }
-
-            // Retrieve the owning instance of the common root entity, which will be our new instance's parent instance.
-            InstanceOptionalReference commonRootEntityOwningInstance = GetOwnerInstanceByEntityId(commonRootEntityId);
-            AZ_Assert(
-                commonRootEntityOwningInstance.has_value(),
-                "Failed to create prefab : "
-                "Couldn't get a valid owning instance for the common root entity of the enities provided");
-
-            AZStd::vector<AZ::Entity*> entities;
-            AZStd::vector<AZStd::unique_ptr<Instance>> instances;
-
-            InstanceOptionalReference instance;
+            InstanceOptionalReference instanceToCreate;
             {
                 // Initialize Undo Batch object
                 ScopedUndoBatch undoBatch("Create Prefab");
 
-                TemplateId commonRootOwningTemplateId = commonRootEntityOwningInstance->get().GetTemplateId();
-
                 PrefabDom commonRootInstanceDomBeforeCreate;
                 m_instanceToTemplateInterface->GenerateDomForInstance(
                     commonRootInstanceDomBeforeCreate, commonRootEntityOwningInstance->get());
+
+                AZStd::vector<AZ::Entity*> entities;
+                AZStd::vector<AZStd::unique_ptr<Instance>> instances;
 
                 // Retrieve all entities affected and identify Instances
                 if (!RetrieveAndSortPrefabEntitiesAndInstances(inputEntityList, commonRootEntityOwningInstance->get(), entities, instances))
                 {
                     return AZ::Failure(
                         AZStd::string("Could not create a new prefab out of the entities provided - entities do not share a common root."));
+                }
+
+                // When you move instances from another template, you have to remove the links and propagate changes to target template.
+                for (auto& nestedInstance : instances)
+                {
+                    PrefabUndoHelpers::RemoveLink(
+                        nestedInstance->GetTemplateId(), commonRootEntityOwningInstance->get().GetTemplateId(),
+                        nestedInstance->GetInstanceAlias(), nestedInstance->GetLinkId(), undoBatch.GetUndoBatch());
                 }
 
                 auto prefabEditorEntityOwnershipInterface = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
@@ -124,35 +107,23 @@ namespace AzToolsFramework
                                                      "(PrefabEditorEntityOwnershipInterface unavailable)."));
                 }
 
-                // When you move instances from another template, you have to remove the links and propagate changes to target template.
-                auto linkRemoveUndo = aznew PrefabUndoInstanceLink("Undo Link Remove Node");
-                for (auto& nestedInstance : instances)
-                {
-                    PrefabDom emptyLinkDom;
-                    linkRemoveUndo->Capture(
-                        commonRootOwningTemplateId, nestedInstance->GetTemplateId(), nestedInstance->GetInstanceAlias(), emptyLinkDom,
-                        nestedInstance->GetLinkId());
-                    linkRemoveUndo->SetParent(undoBatch.GetUndoBatch());
-                }
-
                 // Create the Prefab
-                instance = prefabEditorEntityOwnershipInterface->CreatePrefab(
+                instanceToCreate = prefabEditorEntityOwnershipInterface->CreatePrefab(
                     entities, AZStd::move(instances), filePath, commonRootEntityOwningInstance);
 
-                if (!instance)
+                if (!instanceToCreate)
                 {
                     return AZ::Failure(AZStd::string("Could not create a new prefab out of the entities provided - internal error "
                                                      "(A null instance is returned)."));
                 }
 
                 PrefabUndoHelpers::UpdatePrefabInstance(
-                    commonRootEntityOwningInstance->get(), "Undo detaching entity", commonRootInstanceDomBeforeCreate, undoBatch.GetUndoBatch());
+                    commonRootEntityOwningInstance->get(), "Update prefab instance", commonRootInstanceDomBeforeCreate, undoBatch.GetUndoBatch());
 
-                linkRemoveUndo->Redo();
-
-                AZ::EntityId containerEntityId = instance->get().GetContainerEntityId();
-
-                AddLink(topLevelEntities, instance->get(), commonRootEntityOwningInstance->get(), undoBatch.GetUndoBatch(), commonRootEntityId);
+                CreateLink(
+                    topLevelEntities, instanceToCreate->get(), commonRootEntityOwningInstance->get(), undoBatch.GetUndoBatch(),
+                    commonRootEntityId);
+                AZ::EntityId containerEntityId = instanceToCreate->get().GetContainerEntityId();
 
                 // Change top level entities to be parented to the container entity
                 // Mark them as dirty so this change is correctly applied to the template
@@ -172,12 +143,45 @@ namespace AzToolsFramework
             }
 
             // Save Template to file
-            m_prefabLoaderInterface->SaveTemplate(instance->get().GetTemplateId());
+            m_prefabLoaderInterface->SaveTemplate(instanceToCreate->get().GetTemplateId());
             
             return AZ::Success();
         }
 
-        void PrefabPublicHandler::AddLink(
+        PrefabOperationResult PrefabPublicHandler::FindCommonRootOwningInstance(
+            const AZStd::vector<AZ::EntityId>& entityIds, EntityList& inputEntityList, EntityList& topLevelEntities,
+            AZ::EntityId& commonRootEntityId, InstanceOptionalReference& commonRootEntityOwningInstance)
+        {
+            // Retrieve entityList from entityIds
+            EntityIdListToEntityList(entityIds, inputEntityList);
+
+            // Find common root and top level entities
+            bool entitiesHaveCommonRoot = false;
+
+            AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                entitiesHaveCommonRoot, &AzToolsFramework::ToolsApplicationRequests::FindCommonRootInactive, inputEntityList,
+                commonRootEntityId, &topLevelEntities);
+
+            // Bail if entities don't share a common root
+            if (!entitiesHaveCommonRoot)
+            {
+                return AZ::Failure(AZStd::string("Failed to create a prefab: Provided entities do not share a common root."));
+            }
+
+            // Retrieve the owning instance of the common root entity, which will be our new instance's parent instance.
+            commonRootEntityOwningInstance = GetOwnerInstanceByEntityId(commonRootEntityId);
+            if (!commonRootEntityOwningInstance)
+            {
+                AZ_Assert(
+                    false,
+                    "Failed to create prefab : Couldn't get a valid owning instance for the common root entity of the enities provided");
+                return AZ::Failure(AZStd::string(
+                    "Failed to create prefab : Couldn't get a valid owning instance for the common root entity of the enities provided"));
+            }
+            return AZ::Success();
+        }
+
+        void PrefabPublicHandler::CreateLink(
             const EntityList& topLevelEntities, Instance& instanceToAdd, Instance& parentInstance, UndoSystem::URSequencePoint* undoBatch,
             AZ::EntityId commonRootEntityId)
         {
@@ -205,8 +209,8 @@ namespace AzToolsFramework
             m_instanceToTemplateInterface->GeneratePatch(patch, containerEntityDomBefore, containerEntityDomAfter);
             m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(patch, containerEntityId);
 
-            PrefabUndoHelpers::AddLink(
-                "Add Link", instanceToAdd.GetTemplateId(), parentInstance.GetTemplateId(), patch, instanceToAdd.GetInstanceAlias(),
+            PrefabUndoHelpers::CreateLink(
+                instanceToAdd.GetTemplateId(), parentInstance.GetTemplateId(), patch, instanceToAdd.GetInstanceAlias(),
                 undoBatch);
 
             // Update the cache - this prevents these changes from being stored in the regular undo/redo nodes

@@ -69,9 +69,13 @@ namespace AzToolsFramework
             InstanceOptionalReference GetOwnerInstanceByEntityId(AZ::EntityId entityId) const;
             bool EntitiesBelongToSameInstance(const EntityIdList& entityIds) const;
 
-            void AddLink(
+            void CreateLink(
                 const EntityList& topLevelEntities, Instance& instanceToAdd, Instance& parentInstance,
                 UndoSystem::URSequencePoint* undoBatch, AZ::EntityId commonRootEntityId);
+
+            PrefabOperationResult FindCommonRootOwningInstance(
+                const AZStd::vector<AZ::EntityId>& entityIds, EntityList& inputEntityList, EntityList& topLevelEntities,
+                AZ::EntityId& commonRootEntityId, InstanceOptionalReference& commonRootEntityOwningInstance);
 
             static Instance* GetParentInstance(Instance* instance);
             static Instance* GetAncestorOfInstanceThatIsChildOfRoot(const Instance* ancestor, Instance* descendant);
