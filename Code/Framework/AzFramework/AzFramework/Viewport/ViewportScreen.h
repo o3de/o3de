@@ -28,6 +28,11 @@ namespace AzFramework
     struct ScreenPoint;
     struct ViewportInfo;
 
+    //! Projects a position in world space to screen space normalized device coordinates for the given camera.
+    AZ::Vector3 WorldToScreenNDC(
+        const AZ::Vector3& worldPosition, const AZ::Matrix4x4& cameraView, const AZ::Matrix4x4& cameraProjection);
+
+
     //! Projects a position in world space to screen space for the given camera.
     ScreenPoint WorldToScreen(const AZ::Vector3& worldPosition, const CameraState& cameraState);
 

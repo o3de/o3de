@@ -36,5 +36,6 @@ namespace MaterialEditor
         QScopedPointer<Ui::CreateMaterialDialog> m_ui;
         void InitMaterialTypeSelection();
         void InitMaterialFileSelection();
+        void UpdateMaterialTypeSelection();
     };
 } // namespace MaterialEditor

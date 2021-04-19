@@ -7,14 +7,14 @@
       "CMAKE_LY_PROJECTS": "AutomatedTesting"
     }
   },
-  "profile_pipe": {
+  "profile_nounity_pipe": {
     "TAGS": [
       "default"
     ],
     "steps": [
       "profile_nounity",
-      "asset_profile",
-      "test_profile"
+      "asset_profile_nounity",
+      "test_profile_nounity"
     ]
   },
   "metrics": {
@@ -84,6 +84,18 @@
       "CTEST_OPTIONS": "-E (Gem::EMotionFX.Editor.Tests|Gem::AWSClientAuth.Tests|Gem::AWSCore.Editor.Tests) -L FRAMEWORK_googletest"
     }
   },
+  "test_profile_nounity": {
+    "TAGS": [],
+    "COMMAND": "build_test_linux.sh",
+    "PARAMETERS": {
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build/linux",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=FALSE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "all",
+      "CTEST_OPTIONS": "-E (Gem::EMotionFX.Editor.Tests|Gem::AWSClientAuth.Tests|Gem::AWSCore.Editor.Tests) -L FRAMEWORK_googletest"
+    }
+  },
   "asset_profile": {
     "TAGS": [
       "weekly-build-metrics"
@@ -93,6 +105,20 @@
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build/linux",
       "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "AssetProcessorBatch",
+      "ASSET_PROCESSOR_BINARY": "bin/profile/AssetProcessorBatch",
+      "ASSET_PROCESSOR_OPTIONS": "/zeroAnalysisMode",
+      "ASSET_PROCESSOR_PLATFORMS": "pc,server"
+    }
+  },
+  "asset_profile_nounity": {
+    "TAGS": [],
+    "COMMAND": "build_asset_linux.sh",
+    "PARAMETERS": {
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build/linux",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=FALSE -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "AssetProcessorBatch",
       "ASSET_PROCESSOR_BINARY": "bin/profile/AssetProcessorBatch",
