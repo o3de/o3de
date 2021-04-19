@@ -12,6 +12,8 @@
 
 #include <AzCore/Casting/numeric_cast.h>
 #include <SceneAPI/SceneData/GraphData/BlendShapeData.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 
 namespace AZ
 {
@@ -22,6 +24,47 @@ namespace AZ
             namespace DataTypes = SceneAPI::DataTypes;
 
             BlendShapeData::~BlendShapeData() = default;
+
+            void BlendShapeData::Reflect(ReflectContext* context)
+            {
+                SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
+                if (serializeContext)
+                {
+                    serializeContext->Class<BlendShapeData, SceneAPI::DataTypes::IBlendShapeData>()
+                        ->Version(1);
+                }
+
+                BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context);
+                if (behaviorContext)
+                {
+                    //virtual size_t GetUsedControlPointCount() const = 0;
+                    //virtual int GetControlPointIndex(int vertexIndex) const = 0;
+                    //virtual int GetUsedPointIndexForControlPoint(int controlPointIndex) const = 0;
+                    //virtual unsigned int GetVertexCount() const = 0;
+                    //virtual unsigned int GetFaceCount() const = 0;
+                    //virtual const Face& GetFaceInfo(unsigned int index) const = 0;
+                    //virtual const AZ::Vector3& GetPosition(unsigned int index) const = 0;
+                    //virtual const AZ::Vector3& GetNormal(unsigned int index) const = 0;
+                    //virtual unsigned int GetFaceVertexIndex(unsigned int face, unsigned int vertexIndex) const = 0;
+
+                    behaviorContext->Class<SceneAPI::DataTypes::IBlendShapeData>()
+                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                        ->Attribute(AZ::Script::Attributes::Module, "scene")
+                        ->Method("GetUsedControlPointCount", &SceneAPI::DataTypes::IBlendShapeData::GetUsedControlPointCount)
+                        ->Method("GetControlPointIndex", &SceneAPI::DataTypes::IBlendShapeData::GetControlPointIndex)
+                        ->Method("GetUsedPointIndexForControlPoint", &SceneAPI::DataTypes::IBlendShapeData::GetUsedPointIndexForControlPoint)
+                        ->Method("GetVertexCount", &SceneAPI::DataTypes::IBlendShapeData::GetVertexCount)
+                        ->Method("GetFaceCount", &SceneAPI::DataTypes::IBlendShapeData::GetFaceCount)
+                        ->Method("GetFaceInfo", &SceneAPI::DataTypes::IBlendShapeData::GetFaceInfo)
+                        ->Method("GetPosition", &SceneAPI::DataTypes::IBlendShapeData::GetPosition)
+                        ->Method("GetNormal", &SceneAPI::DataTypes::IBlendShapeData::GetNormal)
+                        ->Method("GetFaceVertexIndex", &SceneAPI::DataTypes::IBlendShapeData::GetFaceVertexIndex);
+
+                    behaviorContext->Class<BlendShapeData>()
+                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                        ->Attribute(AZ::Script::Attributes::Module, "scene");
+                }
+            }
 
             void BlendShapeData::AddPosition(const Vector3& position)
             {

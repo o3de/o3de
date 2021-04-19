@@ -29,6 +29,7 @@
 #include <SceneAPI/SceneData/GraphData/MeshVertexColorData.h>
 #include <SceneAPI/SceneData/GraphData/MeshVertexTangentData.h>
 #include <SceneAPI/SceneData/GraphData/MeshVertexUVData.h>
+#include <SceneAPI/SceneData/GraphData/AnimationData.h>
 
 namespace AZ
 {
@@ -99,6 +100,27 @@ namespace AZ
                         tangentData->AppendTangent(AZ::Vector4{0.21f, 0.43f, 0.65f, 0.87f});
                         tangentData->SetTangentSpace(AZ::SceneAPI::DataTypes::TangentSpace::EMotionFX);
                         tangentData->SetTangentSetIndex(2);
+                        return true;
+                    }
+                    else if (data.get_type_info().m_id == azrtti_typeid<AZ::SceneData::GraphData::AnimationData>())
+                    {
+                        auto* animationData = AZStd::any_cast<AZ::SceneData::GraphData::AnimationData>(&data);
+                        animationData->ReserveKeyFrames(3);
+                        animationData->AddKeyFrame(DataTypes::MatrixType::CreateFromValue(1.0));
+                        animationData->AddKeyFrame(DataTypes::MatrixType::CreateFromValue(2.0));
+                        animationData->AddKeyFrame(DataTypes::MatrixType::CreateFromValue(3.0));
+                        animationData->SetTimeStepBetweenFrames(4.0);
+                        return true;
+                    }
+                    else if (data.get_type_info().m_id == azrtti_typeid<AZ::SceneData::GraphData::BlendShapeAnimationData>())
+                    {
+                        auto* blendShapeAnimationData = AZStd::any_cast<AZ::SceneData::GraphData::BlendShapeAnimationData>(&data);
+                        blendShapeAnimationData->SetBlendShapeName("mockBlendShapeName");
+                        blendShapeAnimationData->ReserveKeyFrames(3);
+                        blendShapeAnimationData->AddKeyFrame(1.0);
+                        blendShapeAnimationData->AddKeyFrame(2.0);
+                        blendShapeAnimationData->AddKeyFrame(3.0);
+                        blendShapeAnimationData->SetTimeStepBetweenFrames(4.0);
                         return true;
                     }
                     return false;
@@ -295,6 +317,31 @@ namespace AZ
                 ExpectExecute("TestExpectFloatEquals(tangentData.w, 0.29)");
                 ExpectExecute("TestExpectIntegerEquals(meshVertexTangentData:GetTangentSetIndex(), 2)");
                 ExpectExecute("TestExpectTrue(meshVertexTangentData:GetTangentSpace(), MeshVertexTangentData.EMotionFX)");
+            }
+
+            TEST_F(GrapDatahBehaviorScriptTest, SceneGraph_AnimationData_AccessWorks)
+            {
+                ExpectExecute("animationData = AnimationData()");
+                ExpectExecute("TestExpectTrue(animationData ~= nil)");
+                ExpectExecute("MockGraphData.FillData(animationData)");
+                ExpectExecute("TestExpectIntegerEquals(animationData:GetKeyFrameCount(), 3)");
+                ExpectExecute("TestExpectFloatEquals(animationData:GetTimeStepBetweenFrames(), 4.0)");
+                ExpectExecute("TestExpectFloatEquals(animationData:GetKeyFrame(0).basisX.x, 1.0)");
+                ExpectExecute("TestExpectFloatEquals(animationData:GetKeyFrame(1).basisX.y, 2.0)");
+                ExpectExecute("TestExpectFloatEquals(animationData:GetKeyFrame(2).basisX.z, 3.0)");
+            }
+
+            TEST_F(GrapDatahBehaviorScriptTest, SceneGraph_BlendShapeAnimationData_AccessWorks)
+            {
+                ExpectExecute("blendShapeAnimationData = BlendShapeAnimationData()");
+                ExpectExecute("TestExpectTrue(blendShapeAnimationData ~= nil)");
+                ExpectExecute("MockGraphData.FillData(blendShapeAnimationData)");
+                ExpectExecute("TestExpectTrue(blendShapeAnimationData:GetBlendShapeName() == 'mockBlendShapeName')");
+                ExpectExecute("TestExpectIntegerEquals(blendShapeAnimationData:GetKeyFrameCount(), 3)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeAnimationData:GetKeyFrame(0), 1.0)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeAnimationData:GetKeyFrame(1), 2.0)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeAnimationData:GetKeyFrame(2), 3.0)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeAnimationData:GetTimeStepBetweenFrames(), 4.0)");
             }
         }
     }
