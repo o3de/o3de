@@ -138,6 +138,7 @@ namespace MaterialEditor
         QSharedPointer<CompositeFilter> finalFilter(new CompositeFilter(CompositeFilter::LogicOperatorType::AND));
         finalFilter->AddFilter(sourceOrFolderFilter);
         finalFilter->AddFilter(m_ui->m_searchWidget->GetStringFilter());
+        finalFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
 
         return finalFilter;
     }
