@@ -108,7 +108,6 @@ namespace UnitTest
 
         EXPECT_TRUE(assetHelper.get() != nullptr);
         EXPECT_TRUE(azrtti_cast<NvCloth::MeshAssetHelper*>(assetHelper.get()) != nullptr);
-        EXPECT_FALSE(assetHelper->DoesSupportSkinnedAnimation());
     }
 
     TEST_F(NvClothMeshAssetHelper, MeshAssetHelper_CreateAssetHelperWithActor_ReturnsValidMeshAssetHelper)
@@ -124,21 +123,6 @@ namespace UnitTest
 
         EXPECT_TRUE(assetHelper.get() != nullptr);
         EXPECT_TRUE(azrtti_cast<NvCloth::MeshAssetHelper*>(assetHelper.get()) != nullptr);
-        EXPECT_TRUE(assetHelper->DoesSupportSkinnedAnimation());
-    }
-
-    TEST_F(NvClothMeshAssetHelper, MeshAssetHelper_DoesSupportSkinnedAnimation_ReturnsTrue)
-    {
-        {
-            auto actor = AZStd::make_unique<ActorHelper>("actor_test");
-            actor->FinishSetup();
-
-            m_actorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));
-        }
-
-        AZStd::unique_ptr<NvCloth::AssetHelper> assetHelper = NvCloth::AssetHelper::CreateAssetHelper(m_actorComponent->GetEntityId());
-
-        EXPECT_TRUE(assetHelper->DoesSupportSkinnedAnimation());
     }
 
     TEST_F(NvClothMeshAssetHelper, MeshAssetHelper_GatherClothMeshNodesWithEmptyActor_ReturnsEmptyInfo)

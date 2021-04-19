@@ -19,7 +19,6 @@
 #include <Components/ClothComponentMesh/ClothComponentMesh.h>
 
 #include <UnitTestHelper.h>
-#include <CryRenderMeshStub.h>
 #include <ActorHelper.h>
 #include <Integration/Components/ActorComponent.h>
 
@@ -465,14 +464,15 @@ namespace UnitTest
                 AZ::ScriptTimePoint(AZStd::chrono::system_clock::now()));
         }
 
+        /*
         CryRenderMeshStub renderMesh(MeshVertices);
 
-        /*LmbrCentral::MeshModificationNotificationBus::Event(
+        LmbrCentral::MeshModificationNotificationBus::Event(
             m_actorComponent->GetEntityId(),
             &LmbrCentral::MeshModificationNotificationBus::Events::ModifyMesh,
             LodLevel,
             0,
-            &renderMesh);*/
+            &renderMesh);
 
         const AZStd::vector<NvCloth::SimParticleFormat>& clothParticles = clothComponentMesh.GetRenderData().m_particles;
         const AZStd::vector<Vec3>& renderMeshPositions = renderMesh.m_positions;
@@ -482,5 +482,6 @@ namespace UnitTest
         {
             EXPECT_THAT(LYVec3ToAZVec3(renderMeshPositions[i]), IsCloseTolerance(clothParticles[i].GetAsVector3(), Tolerance));
         }
+        */
     }
 } // namespace UnitTest

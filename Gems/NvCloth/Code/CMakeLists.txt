@@ -30,8 +30,12 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PUBLIC
             3rdParty::NvCloth
-            Gem::LmbrCentral
-            Gem::AtomLyIntegration_CommonFeatures.Static
+            # CryCommon required for 'gEnv->IsDedicated()'.
+            # Because of this the module will need CrySystemEventBus to initialize gEnv
+            # and tests targets will need to fake gEnv. To be removed when there is
+            # an AZ replacement for asking if the game is running on a server or not.
+            Legacy::CryCommon
+            Gem::AtomLyIntegration_CommonFeatures.Public
         PRIVATE
             Gem::EMotionFXStaticLib
 )
@@ -50,10 +54,9 @@ ly_add_target(
         PUBLIC
             AZ::AzCore
         PRIVATE
-            Legacy::CryCommon
             Gem::NvCloth.Static
     RUNTIME_DEPENDENCIES
-        Gem::LmbrCentral
+        Gem::AtomLyIntegration_CommonFeatures
 )
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
@@ -76,8 +79,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::NvCloth.Static
                 AZ::AzToolsFramework
                 AZ::SceneCore
-            PRIVATE
-                Gem::EMotionFXStaticLib
     )
 
     ly_add_target(
@@ -95,10 +96,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 NVCLOTH_EDITOR
         BUILD_DEPENDENCIES
             PRIVATE
-                Legacy::CryCommon
                 Gem::NvCloth.Editor.Static
         RUNTIME_DEPENDENCIES
-            Gem::LmbrCentral.Editor
+            Gem::AtomLyIntegration_CommonFeatures.Editor
     )
 endif()
 
@@ -118,7 +118,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 Source
         BUILD_DEPENDENCIES
             PRIVATE
-                Legacy::CryCommon
                 AZ::AzTestShared
                 AZ::AzTest
                 Gem::NvCloth.Static
@@ -126,7 +125,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 Gem::EMotionFX.Tests.Static
         RUNTIME_DEPENDENCIES
             Gem::EMotionFX
-            Gem::LmbrCentral
     )
     ly_add_googletest(
         NAME Gem::NvCloth.Tests
@@ -148,7 +146,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     NVCLOTH_EDITOR
             BUILD_DEPENDENCIES
                 PRIVATE
-                    Legacy::CryCommon
                     AZ::AzTestShared
                     AZ::AzTest
                     AZ::AzToolsFrameworkTestCommon
@@ -157,7 +154,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     Gem::EMotionFX.Tests.Static
             RUNTIME_DEPENDENCIES
                 Gem::EMotionFX.Editor
-                Gem::LmbrCentral.Editor
         )
         ly_add_googletest(
             NAME Gem::NvCloth.Editor.Tests
