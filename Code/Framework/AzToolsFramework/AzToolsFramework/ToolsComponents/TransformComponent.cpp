@@ -1276,7 +1276,6 @@ namespace AzToolsFramework
                             Attribute(AZ::Edit::Attributes::SliceFlags, AZ::Edit::SliceFlags::NotPushableOnSliceRoot)->
                         DataElement(TransformScaleHandler, &EditorTransform::m_scale, "Scale", "Local Scale")->
                             Attribute(AZ::Edit::Attributes::Step, 0.1f)->
-                            Attribute(AZ::Edit::Attributes::Min, 0.01f)->
                             Attribute(AZ::Edit::Attributes::ReadOnly, &EditorTransform::m_locked)
                         ;
                 }
