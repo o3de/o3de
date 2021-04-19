@@ -21,6 +21,9 @@ namespace AzToolsFramework
             void UpdatePrefabInstance(
                 const Instance& instance, AZStd::string_view undoMessage, const PrefabDom& instanceDomBeforeUpdate,
                 UndoSystem::URSequencePoint* undoBatch);
+            void AddLink(
+                AZStd::string_view undoMessage, TemplateId sourceTemplateId, TemplateId targetTemplateId, PrefabDomReference patch,
+                const InstanceAlias& instanceAlias, UndoSystem::URSequencePoint* undoBatch);
         }
     } // namespace Prefab
 } // namespace AzToolsFramework

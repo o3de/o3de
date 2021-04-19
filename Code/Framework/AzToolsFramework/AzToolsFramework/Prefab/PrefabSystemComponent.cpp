@@ -120,7 +120,7 @@ namespace AzToolsFramework
                 newInstance->AddInstance(AZStd::move(instance));
             }
 
-            newInstance->SetTemplateSourcePath(filePath);
+            newInstance->SetTemplateSourcePath(relativeFilePath);
 
             TemplateId newTemplateId = CreateTemplateFromInstance(*newInstance);
             if (newTemplateId == InvalidTemplateId)

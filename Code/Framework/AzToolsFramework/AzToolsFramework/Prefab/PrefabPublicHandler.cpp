@@ -100,7 +100,6 @@ namespace AzToolsFramework
             AZStd::vector<AZStd::unique_ptr<Instance>> instances;
 
             InstanceOptionalReference instance;
-
             {
                 // Initialize Undo Batch object
                 ScopedUndoBatch undoBatch("Create Prefab");
@@ -151,47 +150,9 @@ namespace AzToolsFramework
 
                 linkRemoveUndo->Redo();
 
-
                 AZ::EntityId containerEntityId = instance->get().GetContainerEntityId();
-                AZ::Entity* containerEntity = GetEntityById(containerEntityId);
 
-                // Apply Transform changes as overrides
-                {
-                    Prefab::PrefabDom containerEntityDomBefore;
-                    m_instanceToTemplateInterface->GenerateDomForEntity(containerEntityDomBefore, *containerEntity);
-
-                    AZ::Vector3 containerEntityTranslation(AZ::Vector3::CreateZero());
-                    AZ::Quaternion containerEntityRotation(AZ::Quaternion::CreateZero());
-
-                    // Set the transform (translation, rotation) of the container entity
-                    GenerateContainerEntityTransform(topLevelEntities, containerEntityTranslation, containerEntityRotation);
-
-                    // Set container entity to be child of common root
-                    AZ::TransformBus::Event(containerEntityId, &AZ::TransformBus::Events::SetParent, commonRootEntityId);
-
-                    AZ::TransformBus::Event(containerEntityId, &AZ::TransformBus::Events::SetLocalTranslation, containerEntityTranslation);
-                    AZ::TransformBus::Event(containerEntityId, &AZ::TransformBus::Events::SetLocalRotationQuaternion, containerEntityRotation);
-
-                    PrefabDom containerEntityDomAfter;
-                    m_instanceToTemplateInterface->GenerateDomForEntity(containerEntityDomAfter, *containerEntity);
-
-                    PrefabDom patch;
-                    m_instanceToTemplateInterface->GeneratePatch(patch, containerEntityDomBefore, containerEntityDomAfter);
-
-                    m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(patch, containerEntityId);
-
-                    
-                    auto linkAddUndo = aznew PrefabUndoInstanceLink("Undo Link Add Node");
-                    linkAddUndo->Capture(
-                        commonRootEntityOwningInstance->get().GetTemplateId(), instance->get().GetTemplateId(), instance->get().GetInstanceAlias(),
-                        patch, InvalidLinkId);
-                    linkAddUndo->SetParent(undoBatch.GetUndoBatch());
-
-                    linkAddUndo->Redo();
-                    
-                    // Update the cache - this prevents these changes from being stored in the regular undo/redo nodes
-                    m_prefabUndoCache.Store(containerEntityId, AZStd::move(containerEntityDomAfter));
-                }
+                AddLink(topLevelEntities, instance->get(), commonRootEntityOwningInstance->get(), undoBatch.GetUndoBatch(), commonRootEntityId);
 
                 // Change top level entities to be parented to the container entity
                 // Mark them as dirty so this change is correctly applied to the template
@@ -214,6 +175,42 @@ namespace AzToolsFramework
             m_prefabLoaderInterface->SaveTemplate(instance->get().GetTemplateId());
             
             return AZ::Success();
+        }
+
+        void PrefabPublicHandler::AddLink(
+            const EntityList& topLevelEntities, Instance& instanceToAdd, Instance& parentInstance, UndoSystem::URSequencePoint* undoBatch,
+            AZ::EntityId commonRootEntityId)
+        {
+            AZ::EntityId containerEntityId = instanceToAdd.GetContainerEntityId();
+            AZ::Entity* containerEntity = GetEntityById(containerEntityId);
+            Prefab::PrefabDom containerEntityDomBefore;
+            m_instanceToTemplateInterface->GenerateDomForEntity(containerEntityDomBefore, *containerEntity);
+
+            AZ::Vector3 containerEntityTranslation(AZ::Vector3::CreateZero());
+            AZ::Quaternion containerEntityRotation(AZ::Quaternion::CreateZero());
+
+            // Set the transform (translation, rotation) of the container entity
+            GenerateContainerEntityTransform(topLevelEntities, containerEntityTranslation, containerEntityRotation);
+
+            // Set container entity to be child of common root
+            AZ::TransformBus::Event(containerEntityId, &AZ::TransformBus::Events::SetParent, commonRootEntityId);
+
+            AZ::TransformBus::Event(containerEntityId, &AZ::TransformBus::Events::SetLocalTranslation, containerEntityTranslation);
+            AZ::TransformBus::Event(containerEntityId, &AZ::TransformBus::Events::SetLocalRotationQuaternion, containerEntityRotation);
+
+            PrefabDom containerEntityDomAfter;
+            m_instanceToTemplateInterface->GenerateDomForEntity(containerEntityDomAfter, *containerEntity);
+
+            PrefabDom patch;
+            m_instanceToTemplateInterface->GeneratePatch(patch, containerEntityDomBefore, containerEntityDomAfter);
+            m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(patch, containerEntityId);
+
+            PrefabUndoHelpers::AddLink(
+                "Add Link", instanceToAdd.GetTemplateId(), parentInstance.GetTemplateId(), patch, instanceToAdd.GetInstanceAlias(),
+                undoBatch);
+
+            // Update the cache - this prevents these changes from being stored in the regular undo/redo nodes
+            m_prefabUndoCache.Store(containerEntityId, AZStd::move(containerEntityDomAfter));
         }
 
         PrefabOperationResult PrefabPublicHandler::InstantiatePrefab(AZStd::string_view /*filePath*/, AZ::EntityId /*parent*/, AZ::Vector3 /*position*/)
