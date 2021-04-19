@@ -42,7 +42,7 @@ namespace AWSClientAuth
     {
         ResetProviders();
         AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
-        AZ_Assert(fileIO), "File IO is not initialized.");
+        AZ_Assert(fileIO, "File IO is not initialized.");
         
         m_settingsRegistry.reset();
         m_settingsRegistry = AZStd::make_shared<AZ::SettingsRegistryImpl>();
