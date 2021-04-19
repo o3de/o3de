@@ -9,11 +9,11 @@
             "SourceColor": "Linear",
             "DestColor": "Linear",
             "FileMasks": [
-				"_ddna",
-				"_normala",
-				"_nrma",
-				"_nma",
-				"_na"
+                "_ddna",
+                "_normala",
+                "_nrma",
+                "_nma",
+                "_na"
             ],
             "PixelFormat": "BC5s",
             "PixelFormatAlpha": "BC4",
