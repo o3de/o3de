@@ -8,6 +8,6 @@
         "BudgetInBytes": 25165824,
         "BufferPoolHeapMemoryLevel": "Host",
         "BufferPoolhostMemoryAccess": "Write",
-        "BufferPoolBindFlags": "InputAssembly"
+        "BufferPoolBindFlags": "DynamicInputAssembly"
     }
 }

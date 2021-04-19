@@ -33,20 +33,34 @@ namespace Multiplayer
         return *this;
     }
 
-    void NetworkInput::SetNetworkInputId(NetworkInputId inputId)
+    void NetworkInput::SetClientInputId(ClientInputId inputId)
     {
         m_inputId = inputId;
     }
 
-    NetworkInputId NetworkInput::GetNetworkInputId() const
+    ClientInputId NetworkInput::GetClientInputId() const
     {
         return m_inputId;
     }
 
-
-    NetworkInputId& NetworkInput::ModifyNetworkInputId()
+    ClientInputId& NetworkInput::ModifyClientInputId()
     {
         return m_inputId;
+    }
+
+    void NetworkInput::SetServerTimeMs(AZ::TimeMs serverTimeMs)
+    {
+        m_serverTimeMs = serverTimeMs;
+    }
+
+    AZ::TimeMs NetworkInput::GetServerTimeMs() const
+    {
+        return m_serverTimeMs;
+    }
+
+    AZ::TimeMs& NetworkInput::ModifyServerTimeMs()
+    {
+        return m_serverTimeMs;
     }
 
     void NetworkInput::AttachNetBindComponent(NetBindComponent* netBindComponent)
@@ -62,7 +76,6 @@ namespace Multiplayer
 
     bool NetworkInput::Serialize(AzNetworking::ISerializer& serializer)
     {
-        //static_assert(UINT8_MAX >= Multiplayer::ComponentTypes::c_Count, "Expected fewer than 255 components, this code needs to be updated");
         if (!serializer.Serialize(m_inputId, "InputId"))
         {
             return false;
@@ -135,8 +148,9 @@ namespace Multiplayer
     void NetworkInput::CopyInternal(const NetworkInput& rhs)
     {
         m_inputId = rhs.m_inputId;
+        m_serverTimeMs = rhs.m_serverTimeMs;
         m_componentInputs.resize(rhs.m_componentInputs.size());
-        for (int i = 0; i < rhs.m_componentInputs.size(); ++i)
+        for (int32_t i = 0; i < rhs.m_componentInputs.size(); ++i)
         {
             if (m_componentInputs[i] == nullptr || m_componentInputs[i]->GetComponentId() != rhs.m_componentInputs[i]->GetComponentId())
             {

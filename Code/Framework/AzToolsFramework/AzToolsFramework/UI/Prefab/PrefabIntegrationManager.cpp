@@ -24,6 +24,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
+#include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 #include <AzToolsFramework/ToolsComponents/EditorLayerComponentBus.h>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiInterface.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
@@ -39,9 +40,12 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
+        
         EditorEntityUiInterface* PrefabIntegrationManager::s_editorEntityUiInterface = nullptr;
         PrefabPublicInterface* PrefabIntegrationManager::s_prefabPublicInterface = nullptr;
         PrefabEditInterface* PrefabIntegrationManager::s_prefabEditInterface = nullptr;
+        PrefabLoaderInterface* PrefabIntegrationManager::s_prefabLoaderInterface = nullptr;
+
         const AZStd::string PrefabIntegrationManager::s_prefabFileExtension = ".prefab";
 
         void PrefabUserSettings::Reflect(AZ::ReflectContext* context)
@@ -76,6 +80,13 @@ namespace AzToolsFramework
             if (s_prefabEditInterface == nullptr)
             {
                 AZ_Assert(false, "Prefab - could not get PrefabEditInterface on PrefabIntegrationManager construction.");
+                return;
+            }
+
+            s_prefabLoaderInterface = AZ::Interface<PrefabLoaderInterface>::Get();
+            if (s_prefabLoaderInterface == nullptr)
+            {
+                AZ_Assert(false, "Prefab - could not get PrefabLoaderInterface on PrefabIntegrationManager construction.");
                 return;
             }
 
@@ -320,14 +331,15 @@ namespace AzToolsFramework
 
                 GenerateSuggestedFilenameFromEntities(prefabRootEntities, suggestedName);
 
-                if (!QueryUserForPrefabSaveLocation(suggestedName, targetDirectory, AZ_CRC("PrefabUserSettings"), activeWindow, prefabName, prefabFilePath))
+                if (!QueryUserForPrefabSaveLocation(
+                        suggestedName, targetDirectory, AZ_CRC("PrefabUserSettings"), activeWindow, prefabName, prefabFilePath))
                 {
                     // User canceled prefab creation, or error prevented continuation.
                     return;
                 }
             }
 
-            auto createPrefabOutcome = s_prefabPublicInterface->CreatePrefab(selectedEntities, prefabFilePath);
+            auto createPrefabOutcome = s_prefabPublicInterface->CreatePrefab(selectedEntities, s_prefabLoaderInterface->GetRelativePathToProject(prefabFilePath.data()));
 
             if (!createPrefabOutcome.IsSuccess())
             {

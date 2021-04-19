@@ -27,28 +27,28 @@ from base import TestAutomationBase
 class TestAutomation(TestAutomationBase):
     def test_ActorSplitsAfterCollision(self, request, workspace, editor, launcher_platform):
         from . import ActorSplitsAfterCollision as test_module
-        self._run_test(request, workspace, editor, test_module, expected_lines=[], unexpected_lines=["Assert"])
+        self._run_test(request, workspace, editor, test_module)
 
     def test_ActorSplitsAfterRadialDamage(self, request, workspace, editor, launcher_platform):
         from . import ActorSplitsAfterRadialDamage as test_module
-        self._run_test(request, workspace, editor, test_module, expected_lines=[], unexpected_lines=["Assert"])
+        self._run_test(request, workspace, editor, test_module)
 
     def test_ActorSplitsAfterCapsuleDamage(self, request, workspace, editor, launcher_platform):
         from . import ActorSplitsAfterCapsuleDamage as test_module
-        self._run_test(request, workspace, editor, test_module, expected_lines=[], unexpected_lines=["Assert"])
+        self._run_test(request, workspace, editor, test_module)
 
     def test_ActorSplitsAfterImpactSpreadDamage(self, request, workspace, editor, launcher_platform):
         from . import ActorSplitsAfterImpactSpreadDamage as test_module
-        self._run_test(request, workspace, editor, test_module, expected_lines=[], unexpected_lines=["Assert"])
+        self._run_test(request, workspace, editor, test_module)
 
     def test_ActorSplitsAfterShearDamage(self, request, workspace, editor, launcher_platform):
         from . import ActorSplitsAfterShearDamage as test_module
-        self._run_test(request, workspace, editor, test_module, expected_lines=[], unexpected_lines=["Assert"])
+        self._run_test(request, workspace, editor, test_module)
 
     def test_ActorSplitsAfterTriangleDamage(self, request, workspace, editor, launcher_platform):
         from . import ActorSplitsAfterTriangleDamage as test_module
-        self._run_test(request, workspace, editor, test_module, expected_lines=[], unexpected_lines=["Assert"])
+        self._run_test(request, workspace, editor, test_module)
 
     def test_ActorSplitsAfterStressDamage(self, request, workspace, editor, launcher_platform):
         from . import ActorSplitsAfterStressDamage as test_module
-        self._run_test(request, workspace, editor, test_module, expected_lines=[], unexpected_lines=["Assert"])
+        self._run_test(request, workspace, editor, test_module)

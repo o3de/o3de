@@ -348,14 +348,14 @@ namespace WhiteBox
         else
         {
             // attempt to load the mesh
-            if (Api::ReadMesh(*m_whiteBox, m_whiteBoxData))
+            const auto result = Api::ReadMesh(*m_whiteBox, m_whiteBoxData);
+            AZ_Error("EditorWhiteBoxComponent", result != WhiteBox::Api::ReadResult::Error, "Error deserializing white box mesh stream");
+
+            // if the read was successful but the byte stream is empty
+            // (there was nothing to load), create a default mesh
+            if (result == Api::ReadResult::Empty)
             {
-                // if the read was successful but the byte stream is empty
-                // (there was nothing to load), create a default mesh
-                if (m_whiteBoxData.empty())
-                {
-                    Api::InitializeAsUnitCube(*m_whiteBox);
-                }
+                Api::InitializeAsUnitCube(*m_whiteBox);
             }
         }
     }

@@ -53,6 +53,9 @@ namespace MaterialEditor
         //! Modify camera's field of view
         //! @param value field of view in degrees
         virtual void SetFieldOfView(float value) = 0;
+
+        //! Check if camera is looking directly at a model
+        virtual bool IsCameraCentered() const = 0;
     };
 
     using MaterialEditorViewportInputControllerRequestBus = AZ::EBus<MaterialEditorViewportInputControllerRequests>;

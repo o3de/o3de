@@ -202,8 +202,7 @@ namespace Multiplayer
 
     void ServerToClientReplicationWindow::OnEntityActivated(const AZ::EntityId& entityId)
     {
-        AZ::Entity* entity = nullptr;
-        EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, entityId);
+        AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(entityId);
 
         ConstNetworkEntityHandle entityHandle(entity, GetNetworkEntityTracker());
         NetBindComponent* netBindComponent = entityHandle.GetNetBindComponent();
@@ -234,8 +233,7 @@ namespace Multiplayer
 
     void ServerToClientReplicationWindow::OnEntityDeactivated(const AZ::EntityId& entityId)
     {
-        AZ::Entity* entity = nullptr;
-        EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, entityId);
+        AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(entityId);
 
         ConstNetworkEntityHandle entityHandle(entity, GetNetworkEntityTracker());
         NetBindComponent* netBindComponent = entityHandle.GetNetBindComponent();
