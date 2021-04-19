@@ -476,7 +476,9 @@ namespace AssetProcessor
             // CheckDeletedSourceFile actually expects the database name as the second value
             // iter.key is the full path normalized.  iter.value is the database path.
             // we need the relative path too, which involves removing the scan folder outputprefix it present:
-            CheckDeletedSourceFile(iter.key(), iter.value().m_sourceRelativeToWatchFolder, iter.value().m_sourceDatabaseName);
+            CheckDeletedSourceFile(
+                iter.key(), iter.value().m_sourceRelativeToWatchFolder, iter.value().m_sourceDatabaseName,
+                AZStd::chrono::system_clock::now());
         }
 
         // we want to remove any left over scan folders from the database only after
@@ -1524,7 +1526,7 @@ namespace AssetProcessor
         // even if the entry already exists,
         // overwrite the entry here, so if you modify, then delete it, its the latest action thats always on the list.
 
-        m_filesToExamine[normalizedFilePath] = FileEntry(normalizedFilePath, source.m_isDelete, source.m_isFromScanner);
+        m_filesToExamine[normalizedFilePath] = FileEntry(normalizedFilePath, source.m_isDelete, source.m_isFromScanner, source.m_initialProcessTime);
 
         // this block of code adds anything which DEPENDS ON the file that was changed, back into the queue so that files
         // that depend on it also re-analyze in case they need rebuilding.  However, files that are deleted will be added
@@ -1773,40 +1775,31 @@ namespace AssetProcessor
         return successfullyRemoved;
     }
 
-    void AssetProcessorManager::CheckDeletedSourceFile(QString normalizedPath, QString relativePath, QString databaseSourceFile)
+    void AssetProcessorManager::CheckDeletedSourceFile(QString normalizedPath, QString relativePath, QString databaseSourceFile,
+        AZStd::chrono::system_clock::time_point initialProcessTime)
     {
         // getting here means an input asset has been deleted
         // and no overrides exist for it.
         // we must delete its products.
         using namespace AzToolsFramework::AssetDatabase;
+        
+        // If we fail to delete a product, the deletion event gets requeued
+        // To avoid retrying forever, we keep track of the time of the first deletion failure and only retry
+        // if less than this amount of time has passed.
+        constexpr int MaxRetryPeriodMS = 500;
+        AZStd::chrono::duration<double, AZStd::milli> duration = AZStd::chrono::system_clock::now() - initialProcessTime;
 
-        // Check if this file causes any file types to be re-evaluated
-        CheckMetaDataRealFiles(normalizedPath);
-
-        // when a source is deleted, we also have to queue anything that depended on it, for re-processing:        
-        SourceFileDependencyEntryContainer results;
-        m_stateData->GetSourceFileDependenciesByDependsOnSource(databaseSourceFile, SourceFileDependencyEntry::DEP_Any, results);
-        // the jobIdentifiers that have identified it as a job dependency
-        for (SourceFileDependencyEntry& existingEntry : results)
+        if (initialProcessTime > AZStd::chrono::system_clock::time_point{}
+            && duration >= AZStd::chrono::milliseconds(MaxRetryPeriodMS))
         {
-            // this row is [Source] --> [Depends on Source].
-            QString absolutePath = m_platformConfig->FindFirstMatchingFile(QString::fromUtf8(existingEntry.m_source.c_str()));
-            if (!absolutePath.isEmpty())
-            {
-                AssessFileInternal(absolutePath, false);
-            }
-            // also, update it in the database to be missing, ie, add the "missing file" prefix:
-            existingEntry.m_dependsOnSource = QString(PlaceHolderFileName + relativePath).toUtf8().constData();
-            m_stateData->RemoveSourceFileDependency(existingEntry.m_sourceDependencyID);
-            m_stateData->SetSourceFileDependency(existingEntry);
+            AZ_Warning(AssetProcessor::ConsoleChannel, false, "Failed to delete product(s) from source file `%s` after retrying for %fms.  Giving up.",
+                normalizedPath.toUtf8().constData(), duration.count());
+            return;
         }
 
-        // now that the right hand column (in terms of [thing] -> [depends on thing]) has been updated, eliminate anywhere its on the left hand side:
-        results.clear();
-        m_stateData->GetDependsOnSourceBySource(databaseSourceFile.toUtf8().constData(), SourceFileDependencyEntry::DEP_Any, results);
-        m_stateData->RemoveSourceFileDependencies(results);
-
+        bool deleteFailure = false;
         AzToolsFramework::AssetDatabase::SourceDatabaseEntryContainer sources;
+
         if (m_stateData->GetSourcesBySourceName(databaseSourceFile, sources))
         {
             for (const auto& source : sources)
@@ -1827,7 +1820,13 @@ namespace AssetProcessor
                             {
                                 // DeleteProducts will make an attempt to retry deleting each product
                                 // We can't just re-queue the whole file with CheckSource because we're deleting bits from the database as we go
-                                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Delete failed on %s.\n", normalizedPath.toUtf8().constData());
+                                deleteFailure = true;
+                                CheckSource(FileEntry(
+                                    normalizedPath, true, false,
+                                    initialProcessTime > AZStd::chrono::system_clock::time_point{} ? initialProcessTime
+                                                                                                   : AZStd::chrono::system_clock::now()));
+                                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Delete failed on %s. Will retry!\n", normalizedPath.toUtf8().constData());
+                                continue;
                             }
                         }
                         else
@@ -1843,13 +1842,48 @@ namespace AssetProcessor
                         Q_EMIT JobRemoved(jobInfo);
                     }
                 }
-                // delete the source from the database too since otherwise it believes we have no products.
-                m_stateData->RemoveSource(source.m_sourceID);
+
+                if (!deleteFailure)
+                {
+                    // delete the source from the database too since otherwise it believes we have no products.
+                    m_stateData->RemoveSource(source.m_sourceID);
+                }
             }
         }
 
+        if(deleteFailure)
+        {
+            return;
+        }
+        
+        // Check if this file causes any file types to be re-evaluated
+        CheckMetaDataRealFiles(normalizedPath);
 
-        Q_EMIT SourceDeleted(databaseSourceFile);  // note that this removes it from the RC Queue Model, also
+        // when a source is deleted, we also have to queue anything that depended on it, for re-processing:
+        SourceFileDependencyEntryContainer results;
+        m_stateData->GetSourceFileDependenciesByDependsOnSource(databaseSourceFile, SourceFileDependencyEntry::DEP_Any, results);
+        // the jobIdentifiers that have identified it as a job dependency
+        for (SourceFileDependencyEntry& existingEntry : results)
+        {
+            // this row is [Source] --> [Depends on Source].
+            QString absolutePath = m_platformConfig->FindFirstMatchingFile(QString::fromUtf8(existingEntry.m_source.c_str()));
+            if (!absolutePath.isEmpty())
+            {
+                AssessFileInternal(absolutePath, false);
+            }
+            // also, update it in the database to be missing, ie, add the "missing file" prefix:
+            existingEntry.m_dependsOnSource = QString(PlaceHolderFileName + relativePath).toUtf8().constData();
+            m_stateData->RemoveSourceFileDependency(existingEntry.m_sourceDependencyID);
+            m_stateData->SetSourceFileDependency(existingEntry);
+        }
+
+        // now that the right hand column (in terms of [thing] -> [depends on thing]) has been updated, eliminate anywhere its on the left
+        // hand side:
+        results.clear();
+        m_stateData->GetDependsOnSourceBySource(databaseSourceFile.toUtf8().constData(), SourceFileDependencyEntry::DEP_Any, results);
+        m_stateData->RemoveSourceFileDependencies(results);
+
+        Q_EMIT SourceDeleted(databaseSourceFile); // note that this removes it from the RC Queue Model, also
     }
 
     void AssetProcessorManager::AddKnownFoldersRecursivelyForFile(QString fullFile, QString root)
@@ -2568,7 +2602,7 @@ namespace AssetProcessor
 
                             jobdetail.m_jobParam[AZ_CRC(AutoFailReasonKey)] = AZStd::string::format(
                                 "Source file ( %s ) contains non ASCII characters.\n"
-                                "Lumberyard currently only supports file paths having ASCII characters and therefore asset processor will not be able to process this file.\n"
+                                "Open 3D Engine currently only supports file paths having ASCII characters and therefore asset processor will not be able to process this file.\n"
                                 "Please rename the source file to fix this error.\n",
                                 normalizedPath.toUtf8().data());
 
@@ -2641,7 +2675,7 @@ namespace AssetProcessor
                     AZ::Uuid sourceUUID = AssetUtilities::CreateSafeSourceUUIDFromName(databasePathToFile.toUtf8().data());
                     AzToolsFramework::AssetSystem::SourceFileNotificationMessage message(AZ::OSString(sourceFile.toUtf8().constData()), AZ::OSString(scanFolderInfo->ScanPath().toUtf8().constData()), AzToolsFramework::AssetSystem::SourceFileNotificationMessage::FileRemoved, sourceUUID);
                     EBUS_EVENT(AssetProcessor::ConnectionBus, Send, 0, message);
-                    CheckDeletedSourceFile(normalizedPath, relativePathToFile, databasePathToFile);
+                    CheckDeletedSourceFile(normalizedPath, relativePathToFile, databasePathToFile, examineFile.m_initialProcessTime);
                 }
                 else
                 {

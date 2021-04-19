@@ -12,7 +12,7 @@
 
 #include "GradientSliderPage.h"
 #include <AzQtComponents/Utilities/Conversions.h>
-#include "Gallery/ui_GradientSliderPage.h"
+#include <AzQtComponents/Gallery/ui_GradientSliderPage.h>
 
 #include <AzQtComponents/Components/Widgets/GradientSlider.h>
 #include <AzCore/Casting/numeric_cast.h>

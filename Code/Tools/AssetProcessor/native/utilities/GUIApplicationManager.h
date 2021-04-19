@@ -112,7 +112,6 @@ private:
 
     QPointer<QSystemTrayIcon> m_trayIcon;
     QPointer<MainWindow> m_mainWindow;
-    AZ::SettingsRegistryInterface::NotifyEventHandler m_bootstrapGameFolderChangedHandler;
 
     AZStd::chrono::system_clock::time_point m_timeWhenLastWarningWasShown;
 };

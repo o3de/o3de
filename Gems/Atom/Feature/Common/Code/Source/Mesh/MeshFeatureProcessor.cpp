@@ -399,6 +399,11 @@ namespace AZ
             }
         }
 
+        void MeshFeatureProcessor::ForceRebuildDrawPackets([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
+        {
+            m_forceRebuildDrawPackets = true;
+        }
+
         void MeshFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
         {
             m_forceRebuildDrawPackets = true;;
@@ -532,7 +537,7 @@ namespace AZ
 
         void MeshDataInstance::DeInit()
         {
-            m_scene->GetCullingSystem()->UnregisterCullable(m_cullable);
+            m_scene->GetCullingScene()->UnregisterCullable(m_cullable);
 
             // remove from ray tracing
             RayTracingFeatureProcessor* rayTracingFeatureProcessor = m_scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
@@ -910,7 +915,7 @@ namespace AZ
             m_cullable.m_cullData.m_visibilityEntry.m_boundingVolume = localAabb.GetTransformedAabb(localToWorld);
             m_cullable.m_cullData.m_visibilityEntry.m_userData = &m_cullable;
             m_cullable.m_cullData.m_visibilityEntry.m_typeFlags = AzFramework::VisibilityEntry::TYPE_RPI_Cullable;
-            m_scene->GetCullingSystem()->RegisterOrUpdateCullable(m_cullable);
+            m_scene->GetCullingScene()->RegisterOrUpdateCullable(m_cullable);
 
             m_cullBoundsNeedsUpdate = false;
         }

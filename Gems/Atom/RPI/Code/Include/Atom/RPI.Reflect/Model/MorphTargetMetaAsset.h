@@ -56,6 +56,9 @@ namespace AZ::RPI
             float m_minPositionDelta; 
             float m_maxPositionDelta;
 
+            //! Boolean to indicate the presence or absence of color deltas
+            bool m_hasColorDeltas = false;
+
             static void Reflect(AZ::ReflectContext* context);
         };
 

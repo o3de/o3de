@@ -11,7 +11,7 @@
 */
 
 #include "ReflectedPropertyEditorPage.h"
-#include <Gallery/ui_ReflectedPropertyEditorPage.h>
+#include <AzQtComponents/Gallery/ui_ReflectedPropertyEditorPage.h>
 
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Serialization/SerializeContext.h>

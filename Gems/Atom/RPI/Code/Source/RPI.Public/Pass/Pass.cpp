@@ -1273,24 +1273,14 @@ namespace AZ
             }
         }
 
-        TimestampResult Pass::GetTimestampResult() const
+        TimestampResult Pass::GetLatestTimestampResult() const
         {
-            if (IsEnabled() && IsTimestampQueryEnabled())
-            {
-                return GetTimestampResultInternal();
-            }
-
-            return TimestampResult();
+            return GetTimestampResultInternal();
         }
 
-        PipelineStatisticsResult Pass::GetPipelineStatisticsResult() const
+        PipelineStatisticsResult Pass::GetLatestPipelineStatisticsResult() const
         {
-            if (IsEnabled() && IsPipelineStatisticsQueryEnabled())
-            {
-                return GetPipelineStatisticsResultInternal();
-            }
-
-            return PipelineStatisticsResult();
+            return GetPipelineStatisticsResultInternal();
         }
 
         TimestampResult Pass::GetTimestampResultInternal() const

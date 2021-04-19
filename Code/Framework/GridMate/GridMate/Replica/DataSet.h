@@ -47,7 +47,7 @@ namespace GridMate
          * 
          * By default, DataSet::BindInterface<C, &C::Callback> only invokes on client/non-authoritative replica chunks.
          * This switch enables the callback on server/authoritative replica chunks.
-         * Warning: this change should not be enabled on existing Lumberyard components as they were not written with this option in mind.
+         * Warning: this change should not be enabled on existing Open 3D Engine components as they were not written with this option in mind.
          * 
          * New user custom replica chunk will work just fine.
          */

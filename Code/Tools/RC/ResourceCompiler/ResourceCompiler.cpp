@@ -1284,10 +1284,6 @@ void ResourceCompiler::LogMultiLine(const char* szText)
 
         *pLine++ = *p++;
     }
-    while (*p)
-    {
-        ;
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -38,8 +38,8 @@
                     }
                 },
                 {
-                    "Name": "SpotLightShadowmap",
-                    "ShaderInputName": "m_spotLightShadowmaps",
+                    "Name": "ProjectedShadowmap",
+                    "ShaderInputName": "m_projectedShadowmaps",
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader",
                     "ImageViewDesc": {
@@ -47,8 +47,8 @@
                     }
                 },
                 {
-                    "Name": "ExponentialShadowmapSpot",
-                    "ShaderInputName": "m_spotLightExponentialShadowmap",
+                    "Name": "ExponentialShadowmapProjected",
+                    "ShaderInputName": "m_projectedExponentialShadowmap",
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader",
                     "ImageViewDesc": {
