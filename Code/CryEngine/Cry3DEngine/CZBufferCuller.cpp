@@ -127,10 +127,6 @@ bool CZBufferCuller::IsBoxVisible(const AABB& objBox, [[maybe_unused]] uint32* c
         return Rasterize<2>(Verts, 8);
     }
     return Rasterize<0>(Verts, 8);
-
-    ++m_ObjectsTestedAndRejected;
-
-    return false;
 }
 
 static int sh   =   8;
