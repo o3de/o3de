@@ -119,10 +119,7 @@ namespace AzToolsFramework
 
                 newInstance->AddInstance(AZStd::move(instance));
             }
-            /*
-            AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
-                &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, EntityList{containerEntity->GetId()});
-            */
+
             newInstance->SetTemplateSourcePath(filePath);
 
             TemplateId newTemplateId = CreateTemplateFromInstance(*newInstance);
@@ -162,14 +159,14 @@ namespace AzToolsFramework
 
         void PrefabSystemComponent::UpdatePrefabTemplate(TemplateId templateId, const PrefabDom& updatedDom)
         {
-            auto templateRef = FindTemplate(templateId);
-            if (templateRef.has_value())
+            auto templateToUpdate = FindTemplate(templateId);
+            if (templateToUpdate)
             {
-                PrefabDom& templateDomToUpdate = templateRef->get().GetPrefabDom();
+                PrefabDom& templateDomToUpdate = templateToUpdate->get().GetPrefabDom();
                 if (AZ::JsonSerialization::Compare(templateDomToUpdate, updatedDom) != AZ::JsonSerializerCompareResult::Equal)
                 {
                     templateDomToUpdate.CopyFrom(updatedDom, templateDomToUpdate.GetAllocator());
-                    templateRef->get().MarkAsDirty(true);
+                    templateToUpdate->get().MarkAsDirty(true);
                     PropagateTemplateChanges(templateId);
                 }
             }
@@ -643,12 +640,9 @@ namespace AzToolsFramework
             newLink.GetLinkDom().AddMember(rapidjson::StringRef(PrefabDomUtils::SourceName),
                 rapidjson::StringRef(sourceTemplate.GetFilePath().c_str()), newLink.GetLinkDom().GetAllocator());
 
-            PrefabDom linkPatchCopy;
-            linkPatchCopy.CopyFrom(linkPatch->get(), newLink.GetLinkDom().GetAllocator());
-
             if (linkPatch && linkPatch->get().IsArray() && !(linkPatch->get().Empty()))
             {
-                m_instanceToTemplatePropagator.AddPatchesToLink(linkPatchCopy, newLink);
+                m_instanceToTemplatePropagator.AddPatchesToLink(linkPatch.value(), newLink);
             }
 
             //update the target template dom to have the proper values for the source template dom

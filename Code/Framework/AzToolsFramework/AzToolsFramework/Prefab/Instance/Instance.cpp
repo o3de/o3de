@@ -283,7 +283,7 @@ namespace AzToolsFramework
         {
             if (!m_instanceEntityMapper->RegisterEntityToInstance(entityId, *this))
             {
-                AZ_Error("Prefab", false,
+                AZ_Assert(false,
                     "Prefab - Failed to register entity with id %s with a Prefab Instance derived from source asset %s "
                     "This entity is likely already registered. Check for a double add.",
                     entityId.ToString().c_str(),
