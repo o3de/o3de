@@ -121,7 +121,6 @@ namespace AZ
             // create output PassAttachment
             m_passAttachment = aznew PassAttachment();
             m_passAttachment->m_name = "Output";
-            //m_passAttachment->m_path = "Output";
             AZ::Name attachmentPath(AZStd::string::format("%s.%s", GetPathName().GetCStr(), m_passAttachment->m_name.GetCStr()));
             m_passAttachment->m_path = attachmentPath;
             m_passAttachment->m_lifetime = RHI::AttachmentLifetimeType::Transient;
