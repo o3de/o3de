@@ -346,13 +346,20 @@ namespace EMotionFX
 
         void AnimGraphComponent::CreateSnapshot(bool isAuthoritative)
         {
-            AZ_Error("EMotionFX", m_animGraphInstance, "Call create snapshot function only when anim graph is ready in this component.");
-            m_animGraphInstance->CreateSnapshot(isAuthoritative);
-            m_animGraphInstance->OnNetworkConnected();
+            if (m_animGraphInstance)
+            {
+                m_animGraphInstance->CreateSnapshot(isAuthoritative);
+                m_animGraphInstance->OnNetworkConnected();
 
-            // This will stop the MCore Job schedule update the actor instance and anim graph for authoritative entity.
-            // After doing so, we will have to update this actor manuelly in the networking update.
-            m_animGraphInstance->GetActorInstance()->SetIsEnabled(!isAuthoritative);
+                // This will stop the MCore Job schedule update the actor instance and anim graph for authoritative entity.
+                // After doing so, we will have to update this actor manually in the networking update.
+                m_animGraphInstance->GetActorInstance()->SetIsEnabled(!isAuthoritative);
+            }
+            else
+            {
+                AZ_Error("EMotionFX", false, "Cannot create snapshot as anim graph instance has not been created yet. "
+                    "Please make sure you selected an anim graph in the anim graph component.");
+            }
         }
 
         void AnimGraphComponent::SetActiveStates(const AZStd::vector<AZ::u32>& activeStates)
