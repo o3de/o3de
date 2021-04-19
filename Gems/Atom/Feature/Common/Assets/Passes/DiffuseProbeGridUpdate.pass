@@ -26,6 +26,10 @@
                 {
                     "Name": "DiffuseProbeGridRelocationPass",
                     "TemplateName": "DiffuseProbeGridRelocationPassTemplate"
+                },
+                {
+                    "Name": "DiffuseProbeGridClassificationPass",
+                    "TemplateName": "DiffuseProbeGridClassificationPassTemplate"
                 }
             ]
         }
