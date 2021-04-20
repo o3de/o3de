@@ -59,7 +59,7 @@ namespace AZ
                 //! Check if the model asset requires to be cloned (e.g. cloth) for unique model instances.
                 //! @param modelAsset The model asset to check.
                 //! @result True in case e.g. a cloth buffer is found, false if no indication is found that requires unique model instances.
-                bool RequiresInstancing(const Data::Asset<RPI::ModelAsset>& modelAsset) const;
+                bool RequiresCloning(const Data::Asset<RPI::ModelAsset>& modelAsset) const;
 
                 MeshFeatureProcessorInterface::ModelChangedEvent m_modelChangedEvent;
                 Data::Asset<RPI::ModelAsset> m_modelAsset;
@@ -147,7 +147,7 @@ namespace AZ
             MeshHandle CloneMesh(const MeshHandle& meshHandle) override;
 
             Data::Instance<RPI::Model> GetModel(const MeshHandle& meshHandle) const override;
-            Data::Asset<RPI::ModelAsset>* GetModelAsset(const MeshHandle& meshHandle) const override;
+            Data::Asset<RPI::ModelAsset> GetModelAsset(const MeshHandle& meshHandle) const override;
             void SetMaterialAssignmentMap(const MeshHandle& meshHandle, const Data::Instance<RPI::Material>& material) override;
             void SetMaterialAssignmentMap(const MeshHandle& meshHandle, const MaterialAssignmentMap& materials) override;
             const MaterialAssignmentMap& GetMaterialAssignmentMap(const MeshHandle& meshHandle) const override;

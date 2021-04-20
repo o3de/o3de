@@ -218,14 +218,14 @@ namespace AZ
             return meshHandle.IsValid() ? meshHandle->m_model : nullptr;
         }
 
-        Data::Asset<RPI::ModelAsset>* MeshFeatureProcessor::GetModelAsset(const MeshHandle& meshHandle) const
+        Data::Asset<RPI::ModelAsset> MeshFeatureProcessor::GetModelAsset(const MeshHandle& meshHandle) const
         {
             if (meshHandle.IsValid())
             {
-                return &meshHandle->m_originalModelAsset;
+                return meshHandle->m_originalModelAsset;
             }
 
-            return nullptr;
+            return {};
         }
 
         void MeshFeatureProcessor::SetMaterialAssignmentMap(const MeshHandle& meshHandle, const Data::Instance<RPI::Material>& material)
@@ -466,7 +466,7 @@ namespace AZ
             return m_modelChangedEvent;
         }
 
-        bool MeshDataInstance::MeshLoader::RequiresInstancing(const Data::Asset<RPI::ModelAsset>& modelAsset) const
+        bool MeshDataInstance::MeshLoader::RequiresCloning(const Data::Asset<RPI::ModelAsset>& modelAsset) const
         {
             // Is the model asset containing a cloth buffer? If yes, we need to clone the model asset for instancing.
             const AZStd::array_view<AZ::Data::Asset<AZ::RPI::ModelLodAsset>> lodAssets = modelAsset->GetLodAssets();
@@ -495,7 +495,7 @@ namespace AZ
             m_parent->m_originalModelAsset = asset;
 
             Data::Instance<RPI::Model> model;
-            if (RequiresInstancing(modelAsset))
+            if (RequiresCloning(modelAsset))
             {
                 // Clone the model asset to force create another model instance.
                 AZ::Data::AssetId newId(AZ::Uuid::CreateRandom(), /*subId=*/0);

@@ -254,10 +254,10 @@ namespace AZ
 
         void MeshComponentController::HandleModelChange(Data::Instance<RPI::Model> model)
         {
-            Data::Asset<RPI::ModelAsset>* modelAsset = m_meshFeatureProcessor->GetModelAsset(m_meshHandle);
+            Data::Asset<RPI::ModelAsset> modelAsset = m_meshFeatureProcessor->GetModelAsset(m_meshHandle);
             if (model && modelAsset)
             {
-                m_configuration.m_modelAsset = *modelAsset;
+                m_configuration.m_modelAsset = modelAsset;
                 MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnModelReady, m_configuration.m_modelAsset, model);
                 MaterialReceiverNotificationBus::Event(m_entityId, &MaterialReceiverNotificationBus::Events::OnMaterialAssignmentsChanged);
                 AzFramework::EntityBoundsUnionRequestBus::Broadcast(
@@ -329,17 +329,8 @@ namespace AZ
             }
         }
 
-        const Data::Asset<RPI::ModelAsset>& MeshComponentController::GetModelAsset() const
+        Data::Asset<const RPI::ModelAsset> MeshComponentController::GetModelAsset() const
         {
-            if (m_meshHandle.IsValid())
-            {
-                Data::Asset<RPI::ModelAsset>* modelAsset = m_meshFeatureProcessor->GetModelAsset(m_meshHandle);
-                if (modelAsset)
-                {
-                    return *modelAsset;
-                }
-            }
-
             return m_configuration.m_modelAsset;
         }
 
@@ -362,7 +353,7 @@ namespace AZ
             return assetPathString;
         }
 
-        const Data::Instance<RPI::Model> MeshComponentController::GetModel() const
+        Data::Instance<RPI::Model> MeshComponentController::GetModel() const
         {
             return m_meshFeatureProcessor ? m_meshFeatureProcessor->GetModel(m_meshHandle) : Data::Instance<RPI::Model>();
         }

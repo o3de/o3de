@@ -216,7 +216,7 @@ namespace AZ
             // it's created at runtime from an Actor Asset.
         }
 
-        const Data::Asset<RPI::ModelAsset>& AtomActorInstance::GetModelAsset() const
+        Data::Asset<const RPI::ModelAsset> AtomActorInstance::GetModelAsset() const
         {
             return m_skinnedMeshInstance->m_model->GetModelAsset();
         }
@@ -243,7 +243,7 @@ namespace AZ
             return GetModelAsset().GetHint();
         }
 
-        const AZ::Data::Instance<RPI::Model> AtomActorInstance::GetModel() const
+        AZ::Data::Instance<RPI::Model> AtomActorInstance::GetModel() const
         {
             return m_skinnedMeshInstance->m_model;
         }
