@@ -111,8 +111,12 @@ public:
     int GetTickOrder() override;
     // ~TickEvents
 
-    // Get the UIRenderer (which is owned by CLyShine). This is not exposed outside the gem.
+    // Get the UIRenderer for the game (which is owned by CLyShine). This is not exposed outside the gem.
     UiRenderer* GetUiRenderer();
+
+    // Get/set the UIRenderer for the Editor (which is owned by CLyShine). This is not exposed outside the gem.
+    UiRenderer* GetUiRendererForEditor();
+    void SetUiRendererForEditor(AZStd::shared_ptr<UiRenderer> uiRenderer);
 
 public: // static member functions
 
@@ -138,6 +142,7 @@ private: // data
 
     std::unique_ptr<CDraw2d> m_draw2d;  // using a pointer rather than an instance to avoid including Draw2d.h
     std::unique_ptr<UiRenderer> m_uiRenderer;  // using a pointer rather than an instance to avoid including UiRenderer.h
+    AZStd::shared_ptr<UiRenderer> m_uiRendererForEditor;
 
     std::unique_ptr<UiCanvasManager> m_uiCanvasManager;
 

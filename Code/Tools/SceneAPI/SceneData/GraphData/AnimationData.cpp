@@ -66,6 +66,15 @@ namespace AZ
             {
             }
 
+            void BlendShapeAnimationData::CloneAttributesFrom(const IGraphObject* sourceObject)
+            {
+                IBlendShapeAnimationData::CloneAttributesFrom(sourceObject);
+                if (const auto* typedSource = azrtti_cast<const BlendShapeAnimationData*>(sourceObject))
+                {
+                    SetBlendShapeName(typedSource->GetBlendShapeName());
+                }
+            }
+
             void BlendShapeAnimationData::SetBlendShapeName(const char* blendShapeName)
             {
                 m_blendShapeName = blendShapeName;

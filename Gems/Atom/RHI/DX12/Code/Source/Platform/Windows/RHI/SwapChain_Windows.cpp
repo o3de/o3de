@@ -101,7 +101,7 @@ namespace AZ
                 // But it cannot be used in an application that is currently in full screen exclusive mode, set by calling SetFullscreenState(TRUE).
                 // To use this flag in full screen Win32 apps the application should present to a fullscreen borderless window and disable automatic
                 // ALT+ENTER fullscreen switching using IDXGIFactory::MakeWindowAssociation (please see implementation of SwapChain::InitInternal).
-                UINT presentFlags = (m_isTearingSupported && !m_isInFullScreenExclusiveState) ? DXGI_PRESENT_ALLOW_TEARING : 0;
+                // UINT presentFlags = (m_isTearingSupported && !m_isInFullScreenExclusiveState) ? DXGI_PRESENT_ALLOW_TEARING : 0;
                 HRESULT hresult = m_swapChain->Present(GetDescriptor().m_verticalSyncInterval, 0);
 
                 if (hresult == DXGI_ERROR_DEVICE_REMOVED)
@@ -269,7 +269,7 @@ namespace AZ
             {
                 if (colorSpaceSupport & DXGI_SWAP_CHAIN_COLOR_SPACE_SUPPORT_FLAG_PRESENT)
                 {
-                    HRESULT hr = m_swapChain->SetColorSpace1(colorSpace);
+                    [[maybe_unused]] HRESULT hr = m_swapChain->SetColorSpace1(colorSpace);
                     AZ_Assert(S_OK == hr, "Failed to set swap chain color space.");
                     m_colorSpace = colorSpace;
                 }
@@ -279,7 +279,7 @@ namespace AZ
         void SwapChain::DisableHdr()
         {
             // Reset the HDR metadata.
-            HRESULT hr = m_swapChain->SetHDRMetaData(DXGI_HDR_METADATA_TYPE_NONE, 0, nullptr);
+            [[maybe_unused]] HRESULT hr = m_swapChain->SetHDRMetaData(DXGI_HDR_METADATA_TYPE_NONE, 0, nullptr);
             AZ_Assert(S_OK == hr, "Failed to reset HDR metadata.");
         }
 
@@ -335,7 +335,7 @@ namespace AZ
             HDR10MetaData.MinMasteringLuminance = static_cast<UINT>(minOutputNits * LuminanceScalingFactor);
             HDR10MetaData.MaxContentLightLevel = static_cast<UINT16>(maxContentLightLevelNits);
             HDR10MetaData.MaxFrameAverageLightLevel = static_cast<UINT16>(maxFrameAverageLightLevelNits);
-            HRESULT hr = m_swapChain->SetHDRMetaData(DXGI_HDR_METADATA_TYPE_HDR10, sizeof(DXGI_HDR_METADATA_HDR10), &HDR10MetaData);
+            [[maybe_unused]] HRESULT hr = m_swapChain->SetHDRMetaData(DXGI_HDR_METADATA_TYPE_HDR10, sizeof(DXGI_HDR_METADATA_HDR10), &HDR10MetaData);
             AZ_Assert(S_OK == hr, "Failed to set HDR meta data.");
         }
     }

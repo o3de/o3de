@@ -48,14 +48,14 @@ CStartupLogoDialog::CStartupLogoDialog(QString versionText, QString richTextCopy
     QImage backgroundImage(QStringLiteral(":/StartupLogoDialog/splashscreen_1_27.png"));
     m_backgroundImage = QPixmap::fromImage(backgroundImage.scaled(m_enforcedWidth, m_enforcedHeight, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
 
-    // Draw the Lumberyard logo from svg
-    m_ui->m_logo->load(QStringLiteral(":/StartupLogoDialog/lumberyard_logo.svg"));
+    // Draw the Open 3D Engine logo from svg
+    m_ui->m_logo->load(QStringLiteral(":/StartupLogoDialog/o3de_logo.svg"));
 
     m_ui->m_TransparentConfidential->setObjectName("copyrightNotice");
     m_ui->m_TransparentConfidential->setTextFormat(Qt::RichText);
     m_ui->m_TransparentConfidential->setText(richTextCopyrightNotice);
 
-    setWindowTitle(tr("Starting Lumberyard Editor"));
+    setWindowTitle(tr("Starting Open 3D Engine Editor"));
 
     setStyleSheet( "CStartupLogoDialog > QLabel { background: transparent; color: 'white' }\
                     CStartupLogoDialog > QLabel#copyrightNotice { color: #AAAAAA; font-size: 9px; } ");

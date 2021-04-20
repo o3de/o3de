@@ -36,7 +36,7 @@ class _MacResourceLocator(AbstractResourceLocator):
         ex. engine_root/dev/system_osx_osx_gl.cfg
         :return: path to the platform config file
         """
-        return os.path.join(self.dev(), CONFIG_FILE)
+        return os.path.join(self.engine_root(), CONFIG_FILE)
 
     def platform_cache(self):
         """

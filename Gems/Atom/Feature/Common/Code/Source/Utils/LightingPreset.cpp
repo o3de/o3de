@@ -43,7 +43,6 @@ namespace AZ
             if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
                 behaviorContext->Class<ExposureControlConfig>("ExposureControlConfig")
-                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                     ->Attribute(AZ::Script::Attributes::Category, "Editor")
                     ->Attribute(AZ::Script::Attributes::Module, "render")
@@ -79,7 +78,6 @@ namespace AZ
             if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
                 behaviorContext->Class<LightConfig>("LightConfig")
-                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                     ->Attribute(AZ::Script::Attributes::Category, "Editor")
                     ->Attribute(AZ::Script::Attributes::Module, "render")
@@ -107,8 +105,7 @@ namespace AZ
                 serializeContext->RegisterGenericType<AZStd::vector<LightConfig>>();
 
                 serializeContext->Class<LightingPreset>()
-                    ->Version(4)
-                    ->Field("autoSelect", &LightingPreset::m_autoSelect)
+                    ->Version(5)
                     ->Field("displayName", &LightingPreset::m_displayName)
                     ->Field("iblDiffuseImageAsset", &LightingPreset::m_iblDiffuseImageAsset)
                     ->Field("iblSpecularImageAsset", &LightingPreset::m_iblSpecularImageAsset)
@@ -125,13 +122,11 @@ namespace AZ
             if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
                 behaviorContext->Class<LightingPreset>("LightingPreset")
-                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                     ->Attribute(AZ::Script::Attributes::Category, "Editor")
                     ->Attribute(AZ::Script::Attributes::Module, "render")
                     ->Constructor()
                     ->Constructor<const LightingPreset&>()
-                    ->Property("autoSelect", BehaviorValueProperty(&LightingPreset::m_autoSelect))
                     ->Property("displayName", BehaviorValueProperty(&LightingPreset::m_displayName))
                     ->Property("alternateSkyboxImageAsset", BehaviorValueProperty(&LightingPreset::m_alternateSkyboxImageAsset))
                     ->Property("skyboxImageAsset", BehaviorValueProperty(&LightingPreset::m_skyboxImageAsset))

@@ -131,9 +131,8 @@ void CMatEditPreviewDlg::OnPreviewCustom()
 /////////////////////////////////////////////////////////////////////////////
 // CMatEditPreviewDlg message handlers
 
-void CMatEditPreviewDlg::OnDataBaseItemEvent(IDataBaseItem* pItem, EDataBaseItemEvent event)
+void CMatEditPreviewDlg::OnDataBaseItemEvent([[maybe_unused]] IDataBaseItem* pItem, EDataBaseItemEvent event)
 {
-    CMaterial* pMtl = (CMaterial*)pItem;
     switch (event)
     {
     case EDB_ITEM_EVENT_SELECTED:

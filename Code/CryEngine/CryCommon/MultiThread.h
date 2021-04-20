@@ -198,7 +198,6 @@ Spin:
     }
 # else
     // NOTE: The code below will fail on 64bit architectures!
-    uint loops = 0;
     while (_InterlockedCompareExchange((volatile LONG*)pLock, setVal, checkVal) != checkVal)
     {
         _mm_pause();

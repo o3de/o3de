@@ -1982,7 +1982,6 @@ namespace GraphCanvas
             border.setWidth(1);
             painter->setPen(border);
 
-            qreal penWidth = border.width();
             qreal halfPenWidth = border.width() * 0.5f;
             qreal spacing = 3;
             qreal initialSpacing = 0;

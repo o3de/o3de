@@ -331,8 +331,6 @@ namespace
         {
             return QColor(color);
         }
-
-        return QColor();
     }
 
     bool IsColorValid(const QString& value)
@@ -1036,7 +1034,6 @@ namespace GraphCanvas
                 }
 
                 QString candidate = QString::fromUtf8(rawSelector->GetString());
-                bool br = candidate == "slot";
 
                 if (candidate.contains(invalidStart))
                 {

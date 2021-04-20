@@ -31,7 +31,7 @@ namespace AzToolsFramework
         class InstanceEntityScrubber
         {
         public:
-            AZ_RTTI(InstanceEntityScrubber, "{0BC12562-C240-48AD-89C6-EDF572C9B485}");
+            AZ_TYPE_INFO(InstanceEntityScrubber, "{0BC12562-C240-48AD-89C6-EDF572C9B485}");
 
             explicit InstanceEntityScrubber(Instance::EntityList& entities);
 

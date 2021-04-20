@@ -122,7 +122,6 @@ namespace Maestro
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->EBus<SequenceComponentRequestBus>("SequenceComponentRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Event("Play", &SequenceComponentRequestBus::Events::Play)
                 ->Event("PlayBetweenTimes", &SequenceComponentRequestBus::Events::PlayBetweenTimes)
                 ->Event("Stop", &SequenceComponentRequestBus::Events::Stop)
@@ -135,11 +134,9 @@ namespace Maestro
                 ->Event("GetCurrentPlayTime", &SequenceComponentRequestBus::Events::GetCurrentPlayTime)
                 ->Event("GetPlaySpeed", &SequenceComponentRequestBus::Events::GetPlaySpeed)
                 ;
-            behaviorContext->Class<SequenceComponent>()->RequestBus("SequenceComponentRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview);
+            behaviorContext->Class<SequenceComponent>()->RequestBus("SequenceComponentRequestBus");
 
             behaviorContext->EBus<SequenceComponentNotificationBus>("SequenceComponentNotificationBus")->
-                Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)->
                 Handler<BehaviorSequenceComponentNotificationBusHandler>();
         }
     }
@@ -249,7 +246,6 @@ namespace Maestro
     void SequenceComponent::GetAnimatedPropertyValue(AnimatedValue& returnValue, const AZ::EntityId& animatedEntityId, const AnimatablePropertyAddress& animatableAddress)
     {
         const Maestro::SequenceAgentEventBusId ebusId(GetEntityId(), animatedEntityId);
-        float retVal = .0f;
 
         EBUS_EVENT_ID(ebusId, Maestro::SequenceAgentComponentRequestBus, GetAnimatedPropertyValue, returnValue, animatableAddress);
     }

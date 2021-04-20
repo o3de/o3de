@@ -55,6 +55,7 @@ namespace AZ
 
                 SCENE_DATA_API BlendShapeAnimationData();
                 SCENE_DATA_API ~BlendShapeAnimationData() override = default;
+                SCENE_DATA_API void CloneAttributesFrom(const IGraphObject* sourceObject) override;
                 SCENE_DATA_API virtual void SetBlendShapeName(const char* name);
                 SCENE_DATA_API virtual void AddKeyFrame(double keyFrameValue);
                 SCENE_DATA_API virtual void ReserveKeyFrames(size_t count);

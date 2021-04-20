@@ -174,6 +174,7 @@ struct ModtimeScanningTest
         QString m_relativePathFromWatchFolder[3];
         AZStd::vector<QString> m_absolutePath;
         AZStd::vector<AssetProcessor::JobDetails> m_processResults;
+        AZStd::unordered_multimap<AZStd::string, QString> m_productPaths;
         AZStd::vector<QString> m_deletedSources;
         AZStd::shared_ptr<AssetProcessor::InternalMockBuilder> m_builderTxtBuilder;
         MockBuilderInfoHandler m_mockBuilderInfoHandler;

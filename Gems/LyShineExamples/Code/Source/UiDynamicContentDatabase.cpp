@@ -119,7 +119,7 @@ namespace LyShineExamples
             AZStd::string fileBuf;
             fileBuf.resize(fileSize);
 
-            size_t read = gEnv->pCryPak->FRead(fileBuf.data(), fileSize, readHandle);
+            gEnv->pCryPak->FRead(fileBuf.data(), fileSize, readHandle);
 
             m_documentParsed[colorType] = false;
 

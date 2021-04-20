@@ -617,7 +617,10 @@ void CTexture::StreamLoadFromCache([[maybe_unused]] const int Flags)
             // ignore error for optional attached alpha channel
             if (!m_bNoTexture && !(m_nFlags & FT_ALPHA) && (m_nFlags & FT_FROMIMAGE))
             {
-                bool bRes = Reload();
+#ifndef NDEBUG
+                bool bRes =
+#endif
+                    Reload();
                 assert(bRes);
             }
         }
@@ -725,7 +728,6 @@ bool CTexture::StreamPrepareComposition()
 
     int nMipsPersistent = DDSSplitted::GetNumLastMips(nWidth, nHeight, nMips, nSides, eTFSrc, 0);
 
-    bool bStreamable = true;
 
     m_nFlags &= ~(FT_SPLITTED | FT_TEX_WAS_NOT_PRE_TILED | FT_HAS_ATTACHED_ALPHA | FT_DONT_STREAM | FT_FROMIMAGE);
 
@@ -1681,7 +1683,6 @@ void CTexture::InitStreaming()
         s_pPoolMgr = new CTextureStreamPoolMgr();
     }
 
-    SSystemGlobalEnvironment* pEnv = iSystem->GetGlobalEnvironment();
 
 #if !defined(CONSOLE)
     if (CRenderer::CV_r_texturesstreaming)
@@ -1948,7 +1949,10 @@ void CTexture::AbortStreamingTasks(CTexture* pTex)
                 }
             }
 
-            bool bCommitted = streamState.TryCommit();
+#ifndef NDEBUG
+            bool bCommitted =
+#endif
+                streamState.TryCommit();
             assert (bCommitted);
 
             StreamState_ReleaseIn(&streamState);

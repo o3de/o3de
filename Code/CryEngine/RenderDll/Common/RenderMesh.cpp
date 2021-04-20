@@ -257,15 +257,18 @@ try_again:
 
     static void FreeMeshInstanceData(void* ptr)
     {
-        size_t size = 0u;
-        if (s_MeshPool.m_MeshInstancePool && (size = s_MeshPool.m_MeshInstancePool->UsableSize(ptr)))
+        if (s_MeshPool.m_MeshInstancePool)
         {
+            size_t size = s_MeshPool.m_MeshInstancePool->UsableSize(ptr);
+            if (size)
+            {
 #     if !defined(_RELEASE)
-            AUTO_LOCK(s_MeshPool.m_MeshPoolCS);
-            s_MeshPool.m_MeshDataPoolStats.nInstancePoolInUse -= size;
+                AUTO_LOCK(s_MeshPool.m_MeshPoolCS);
+                s_MeshPool.m_MeshDataPoolStats.nInstancePoolInUse -= size;
 #     endif
-            s_MeshPool.m_MeshInstancePool->Free(ptr);
-            return;
+                s_MeshPool.m_MeshInstancePool->Free(ptr);
+                return;
+            }
         }
         CryModuleMemalignFree(ptr);
     }
@@ -646,7 +649,6 @@ void* CRenderMesh::LockVB(int nStream, uint32 nFlags, int nVerts, int* nStride, 
     m_nFlags |= FRM_READYTOUPLOAD;
 
     byte* pD;
-    int nFrame = gRenDev->m_RP.m_TI[gRenDev->m_RP.m_nFillThreadID].m_nFrameUpdateID;
 
     if (nFlags == FSL_SYSTEM_CREATE)
     {
@@ -730,7 +732,8 @@ lSysUpdate:
             if (!MS->m_pLockedData)
             {
                 MESSAGE_VIDEO_BUFFER_ACC_ATTEMPT;
-                if (MS->m_pLockedData = gRenDev->m_DevBufMan.BeginRead(nVB))
+                MS->m_pLockedData = gRenDev->m_DevBufMan.BeginRead(nVB);
+                if (MS->m_pLockedData)
                 {
                     MS->m_nLockFlags |= FSL_LOCKED;
                 }
@@ -752,6 +755,7 @@ lSysUpdate:
         buffer_handle_t nVB = ~0u;
 #   if BUFFER_ENABLE_DIRECT_ACCESS && !defined(NULL_RENDERER)
         nVB = MS->m_nID;
+        int nFrame = gRenDev->m_RP.m_TI[gRenDev->m_RP.m_nFillThreadID].m_nFrameUpdateID;
         if ((nVB != ~0u && (MS->m_nFrameCreate != nFrame || MS->m_nElements != m_nVerts)) || !CRenderer::CV_r_buffer_enable_lockless_updates)
 #   endif
         goto lSysCreate;
@@ -890,7 +894,8 @@ lSysUpdate:
             if (!m_IBStream.m_pLockedData)
             {
                 MESSAGE_VIDEO_BUFFER_ACC_ATTEMPT;
-                if (m_IBStream.m_pLockedData = gRenDev->m_DevBufMan.BeginRead(nIB))
+                m_IBStream.m_pLockedData = gRenDev->m_DevBufMan.BeginRead(nIB);
+                if (m_IBStream.m_pLockedData)
                 {
                     m_IBStream.m_nLockFlags |= FSL_LOCKED;
                 }
@@ -1826,7 +1831,6 @@ int CRenderMesh::GetRenderChunksCount(_smart_ptr<IMaterial> pMaterial, int& nRen
     int nCount = 0;
     nRenderTrisCount = 0;
 
-    CRenderer* rd = gRenDev;
     const uint32 ni = (uint32)m_Chunks.size();
     for (uint32 i = 0; i < ni; i++)
     {
@@ -2425,7 +2429,6 @@ void CRenderMesh::BuildAdjacency(const byte* pVerts, const AZ::Vertex::Format& v
     std::vector<int> arrSortedVertIDs;
     // we allocate a bit more (by one) because we will need extra element for scan operation (lower)
     arrSortedVertIDs.resize(nVerts + 1);
-    int* _iSortedVerts = &arrSortedVertIDs[0];
     for (int iv = 0; iv < nVerts; ++iv)
     {
         arrSortedVertIDs[iv] = iv;
@@ -2472,7 +2475,6 @@ void CRenderMesh::BuildAdjacency(const byte* pVerts, const AZ::Vertex::Format& v
     {
         arrConnectedTrianglesCount[i] = 0;
     }
-    int* _nConnectedTriangles = &arrConnectedTrianglesCount[0];
     for (int it = 0; it < nTrgs; ++it)
     {
         const vtx_idx* pTrg = &pIndexBuffer[it * 3];
@@ -2695,7 +2697,6 @@ bool CRenderMesh::RT_CheckUpdate(CRenderMesh* pVContainer, uint32 nStreamMask, [
                             else
                             if (i != VSF_HWSKIN_INFO)
                             {
-                                int nnn = 0;
                                 if (pMS->m_nID == ~0u)
                                 {
                                     return false;
@@ -3042,7 +3043,6 @@ bool CRenderMesh::UpdateVidIndices(SMeshStream& IBStream, [[maybe_unused]] bool 
         UnlockIndexStream();
         if (m_IBStream.m_pUpdateData)
         {
-            bool bRes = true;
             return gRenDev->m_DevBufMan.UpdateBuffer(IBStream.m_nID, IBStream.m_pUpdateData, m_nInds * sizeof(vtx_idx));
         }
     }
@@ -3055,7 +3055,6 @@ bool CRenderMesh::CreateVidVertices(int nStream)
     AZ_TRACE_METHOD();
 
     SREC_AUTO_LOCK(m_sResLock);
-    CRenderer* pRend = gRenDev;
 
     if (gRenDev->m_bDeviceLost)
     {
@@ -3342,7 +3341,6 @@ void CRenderMesh::AddRenderElements(_smart_ptr<IMaterial> pIMatInfo, CRenderObje
 
     if (gRenDev->m_pDefaultMaterial && gRenDev->m_pTerrainDefaultMaterial)
     {
-        IShader* pShader = pIMatInfo->GetShaderItem().m_pShader;
         pIMatInfo = gRenDev->m_pDefaultMaterial;
     }
 
@@ -3800,7 +3798,6 @@ void CRenderMesh::UpdateBBoxFromMesh()
 
     int nVertCount = _GetVertexContainer()->GetVerticesCount();
     int nPosStride = 0;
-    int nIndCount = GetIndicesCount();
     const byte* pPositions = GetPosPtr(nPosStride, FSL_READ);
     const vtx_idx* pIndices = GetIndexPtr(FSL_READ);
 
@@ -4050,7 +4047,8 @@ void CRenderMesh::GetRandomPos(PosNorm& ran, EGeomForm eForm, SSkinningData cons
     LockForThreadAccess();
 
     SkinnedPosNormData vdata;
-    if (vdata.aPos.data = (Vec3*)GetPosPtr(vdata.aPos.iStride, FSL_READ))
+    vdata.aPos.data = (Vec3*)GetPosPtr(vdata.aPos.iStride, FSL_READ);
+    if (vdata.aPos.data)
     {
         // Check possible sources for normals.
 #if ENABLE_NORMALSTREAM_SUPPORT
@@ -4066,7 +4064,8 @@ void CRenderMesh::GetRandomPos(PosNorm& ran, EGeomForm eForm, SSkinningData cons
 
         vtx_idx* pInds = GetIndexPtr(FSL_READ);
 
-        if (vdata.pSkinningData = pSkinning)
+        vdata.pSkinningData = pSkinning;
+        if (vdata.pSkinningData)
         {
             GetStridedArray(vdata.aSkinning, VSF_HWSKIN_INFO);
         #if SKIN_MORPHING
@@ -4568,7 +4567,6 @@ void CRenderMesh::UpdateModified()
 void CRenderMesh::Tick()
 {    
     ASSERT_IS_RENDER_THREAD(gRenDev->m_pRT)
-    bool bKeepSystem = false;
     const threadID threadId = gRenDev->m_pRT->IsMultithreaded() ? gRenDev->m_RP.m_nProcessThreadID : threadID(1);
     int nFrame = gRenDev->m_RP.m_TI[gRenDev->m_RP.m_nProcessThreadID].m_nFrameUpdateID;
 
@@ -5135,7 +5133,6 @@ void CRenderMesh::BindStreamsToRenderPipeline()
 bool CRenderMesh::GetRemappedSkinningData([[maybe_unused]] uint32 guid, [[maybe_unused]] CRendElementBase::SGeometryStreamInfo &streamInfo)
 {
 #if !defined(NULL_RENDERER)
-    CD3D9Renderer *rd = gcpRendD3D;
     size_t offset = 0;
     const void *pVB = 0;
 

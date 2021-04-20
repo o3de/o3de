@@ -14,11 +14,11 @@
 #include <CrashReporting/GameCrashUploader.h>
 #include <CrashSupport.h>
 
-namespace Lumberyard
+namespace O3de
 {
     void InstallCrashUploader(int& argc, char* argv[])
     {
-        Lumberyard::CrashUploader::SetCrashUploader(std::make_shared<Lumberyard::GameCrashUploader>(argc, argv));
+        O3de::CrashUploader::SetCrashUploader(std::make_shared<O3de::GameCrashUploader>(argc, argv));
     }
 
     std::string GameCrashUploader::GetRootFolder()

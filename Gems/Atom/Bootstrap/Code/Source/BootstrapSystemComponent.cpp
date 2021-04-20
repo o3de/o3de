@@ -115,7 +115,7 @@ namespace AZ
                 {
                     // GFX TODO - investigate window creation being part of the GameApplication.
 
-                    m_nativeWindow = AZStd::make_unique<AzFramework::NativeWindow>("LumberyardLauncher", AzFramework::WindowGeometry(0, 0, 1920, 1080));
+                    m_nativeWindow = AZStd::make_unique<AzFramework::NativeWindow>("O3DELauncher", AzFramework::WindowGeometry(0, 0, 1920, 1080));
                     AZ_Assert(m_nativeWindow, "Failed to create the game window\n");
 
                     m_nativeWindow->Activate();
@@ -378,6 +378,23 @@ namespace AZ
             {
                 m_simulateTime += deltaTime;
                 m_deltaTime = deltaTime;
+
+                // Temp: When running in the launcher without the legacy renderer
+                // we need to call RenderTick on the viewport context each frame.
+                if (m_viewportContext)
+                {
+                    AZ::ApplicationTypeQuery appType;
+                    ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
+                    if (appType.IsGame())
+                    {
+                        m_viewportContext->RenderTick();
+                    }
+                }
+            }
+
+            int BootstrapSystemComponent::GetTickOrder()
+            {
+                return TICK_LAST;
             }
 
             void BootstrapSystemComponent::OnWindowClosed()

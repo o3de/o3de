@@ -51,6 +51,15 @@ namespace AZ
 
                 virtual ~IMeshData() override = default;
 
+                void CloneAttributesFrom(const IGraphObject* sourceObject) override
+                {
+                    if (const auto* typedSource = azrtti_cast<const IMeshData*>(sourceObject))
+                    {
+                        SetUnitSizeInMeters(typedSource->GetUnitSizeInMeters());
+                        SetOriginalUnitSizeInMeters(typedSource->GetOriginalUnitSizeInMeters());
+                    }
+                }
+
                 virtual unsigned int GetVertexCount() const = 0;
                 virtual bool HasNormalData() const = 0;
 

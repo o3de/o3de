@@ -32,7 +32,7 @@ namespace CopyDependencyBuilder
         {
             if (!AzFramework::StringFunc::Path::HasExtension(fileName.c_str()))
             {
-                // Lumberyard makes use of some files without extensions, only replace the extension if there is an expected extension.
+                // Open 3D Engine makes use of some files without extensions, only replace the extension if there is an expected extension.
                 if (!expectedExtension.empty())
                 {
                     AzFramework::StringFunc::Path::ReplaceExtension(fileName, expectedExtension.c_str());

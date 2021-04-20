@@ -512,7 +512,6 @@ public:
     bool drop([[maybe_unused]] QPoint screenPoint)
     {
         bool rowLayoutChanged = false;
-        PropertyTreeModel* model = tree_->model();
         if (row_ && hoveredRow_){
             YASLI_ASSERT(destinationRow_);
             clickedRow_->setSelected(false);
@@ -1187,15 +1186,13 @@ void QPropertyTree::updateHeights(bool recalculateTextSize)
 
     updateValidatorIcons();
 
-    int padding = 4;
-
     int totalHeight = 0;
     model()->root()->adjustVerticalPosition(this, totalHeight);
     totalHeight += 4;
     QPoint oldSize = size_;
     size_.setY(totalHeight);
 
-    bool hasScrollBar = updateScrollBar();
+    updateScrollBar();
 
     area_.setLeft(widgetRect.left() + 2);
     area_.setRight(widgetRect.right() - 2 - scrollBarW);
@@ -2493,7 +2490,6 @@ void QPropertyTree::paintEvent([[maybe_unused]] QPaintEvent* ev)
     QPainter painter(this);
     QRect clientRect = this->rect();
 
-    int clientWidth = clientRect.width();
     int clientHeight = clientRect.height();
     backgroundColor_ = palette().color(QPalette::Window);
     painter.fillRect(clientRect, QBrush(backgroundColor_));
@@ -2624,9 +2620,6 @@ void QPropertyTree::mousePressEvent(QMouseEvent* ev)
 
     if (ev->button() == Qt::LeftButton)
     {
-        int x = ev->x();
-        int y = ev->y();
-
         PropertyRow* row = rowByPoint(ev->pos());
         if (row && !row->isSelectable())
             row = row->parent();
@@ -2698,7 +2691,6 @@ void QPropertyTree::mouseReleaseEvent(QMouseEvent* ev)
         }
         else {
             QPoint point = ev->pos();
-            PropertyRow* row = rowByPoint(point);
             if (capturedRow_){
                 QRect rowRect = capturedRow_->rect();
                 onRowLMBUp(capturedRow_, rowRect, pointToRootSpace(ev->pos()));

@@ -130,11 +130,11 @@ namespace EMStudio
         mClearButton                    = new QToolButton();
         mCancelSelectionButton          = new QToolButton();
 
-        EMStudioManager::MakeTransparentButton(mOpenAttachmentButton,              "/Images/Icons/Open.svg",   "Open actor from file and add it as regular attachment");
-        EMStudioManager::MakeTransparentButton(mOpenDeformableAttachmentButton,    "/Images/Icons/Open.svg",   "Open actor from file and add it as skin attachment");
-        EMStudioManager::MakeTransparentButton(mRemoveButton,                      "/Images/Icons/Minus.svg",  "Remove selected attachments");
-        EMStudioManager::MakeTransparentButton(mClearButton,                       "/Images/Icons/Clear.svg",  "Remove all attachments");
-        EMStudioManager::MakeTransparentButton(mCancelSelectionButton,             "/Images/Icons/Remove.svg", "Cancel attachment selection");
+        EMStudioManager::MakeTransparentButton(mOpenAttachmentButton,              "Images/Icons/Open.svg",   "Open actor from file and add it as regular attachment");
+        EMStudioManager::MakeTransparentButton(mOpenDeformableAttachmentButton,    "Images/Icons/Open.svg",   "Open actor from file and add it as skin attachment");
+        EMStudioManager::MakeTransparentButton(mRemoveButton,                      "Images/Icons/Minus.svg",  "Remove selected attachments");
+        EMStudioManager::MakeTransparentButton(mClearButton,                       "Images/Icons/Clear.svg",  "Remove all attachments");
+        EMStudioManager::MakeTransparentButton(mCancelSelectionButton,             "Images/Icons/Remove.svg", "Cancel attachment selection");
 
         // create the buttons layout
         QHBoxLayout* buttonLayout = new QHBoxLayout();

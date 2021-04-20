@@ -43,6 +43,9 @@ namespace AZ
 {
     const static AZ::Crc32 RuntimeEBusAttribute = AZ_CRC("RuntimeEBus", 0x466b899b); ///< Signals that this reflected ebus should only be available at runtime, helps tools filter out data driven ebuses
 
+    constexpr const char* k_PropertyNameGetterSuffix = "::Getter";
+    constexpr const char* k_PropertyNameSetterSuffix = "::Setter";
+    
     /// Typedef for class unwrapping callback (i.e. used for things like smart_ptr<T> to unwrap for T)
     using BehaviorClassUnwrapperFunction = void(*)(void* /*classPtr*/, void*& /*unwrappedClass*/, AZ::Uuid& /*unwrappedClassTypeId*/, void* /*userData*/);
 
@@ -2525,7 +2528,7 @@ namespace AZ
             getterPropertyName += "::";
         }
         getterPropertyName += m_name;
-        getterPropertyName += "::Getter";
+        getterPropertyName += k_PropertyNameGetterSuffix;
         m_getter = aznew GetterType(getter, context, getterPropertyName);
 
         if (AZStd::is_class<typename GetterType::ClassType>::value)
@@ -2603,7 +2606,7 @@ namespace AZ
             setterPropertyName += "::";
         }
         setterPropertyName += m_name;
-        setterPropertyName += "::Setter";
+        setterPropertyName += k_PropertyNameSetterSuffix;
         m_setter = aznew SetterType(setter, context, setterPropertyName);
         if (AZStd::is_class<typename SetterType::ClassType>::value)
         {

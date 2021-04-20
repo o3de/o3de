@@ -11,7 +11,7 @@
  */
 
 #include "FilteredSearchWidgetPage.h"
-#include "Gallery/ui_FilteredSearchWidgetPage.h"
+#include <AzQtComponents/Gallery/ui_FilteredSearchWidgetPage.h>
 
 FilteredSearchWidgetPage::FilteredSearchWidgetPage(QWidget* parent)
     : QWidget(parent)

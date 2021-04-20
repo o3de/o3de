@@ -74,6 +74,15 @@ namespace AZ
 
             MeshData::~MeshData() = default;
 
+            void MeshData::CloneAttributesFrom(const IGraphObject* sourceObject)
+            {
+                IMeshData::CloneAttributesFrom(sourceObject);
+                if (const auto* typedSource = azrtti_cast<const MeshData*>(sourceObject))
+                {
+                    SetSdkMeshIndex(typedSource->GetSdkMeshIndex());
+                }
+            }
+
             void MeshData::AddPosition(const AZ::Vector3& position)
             {
                 m_positions.push_back(position);

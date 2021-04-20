@@ -505,6 +505,8 @@ set(FILES
     Serialization/Json/BasicContainerSerializer.cpp
     Serialization/Json/BoolSerializer.h
     Serialization/Json/BoolSerializer.cpp
+    Serialization/Json/ByteStreamSerializer.h
+    Serialization/Json/ByteStreamSerializer.cpp
     Serialization/Json/CastingHelpers.h
     Serialization/Json/DoubleSerializer.h
     Serialization/Json/DoubleSerializer.cpp
@@ -605,6 +607,8 @@ set(FILES
     Utils/Utils.h
     Script/lua/lua.h
     Memory/HeapSchema.cpp
+    PlatformId/PlatformDefaults.h
+    PlatformId/PlatformDefaults.cpp
     PlatformId/PlatformId.h
     PlatformId/PlatformId.cpp
     Socket/AzSocket_fwd.h

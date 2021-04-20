@@ -114,12 +114,17 @@ class SceneManifest():
     def mesh_group_unselect_node(self, meshGroup, nodeName):
         meshGroup['nodeSelectionList']['unselectedNodes'].append(nodeName)
 
-    def mesh_group_set_origin(self, meshGroup, originNodeName, x, y, z, scale):
+    def mesh_group_add_advanced_coordinate_system(self, meshGroup, originNodeName, translation, rotation, scale):
         originRule =  {}
-        originRule['$type'] = 'OriginRule'
-        originRule['originNodeName'] = 'World' if originNodeName is None else originNodeName
-        originRule['translation'] = [x, y, z]
-        originRule['scale'] = scale
+        originRule['$type'] = 'CoordinateSystemRule'
+        originRule['useAdvancedData'] = True
+        originRule['originNodeName'] = '' if originNodeName is None else originNodeName
+        if translation is not None:
+            originRule['translation'] = translation
+        if rotation is not None:
+            originRule['rotation'] = rotation
+        if scale != 1.0:
+            originRule['scale'] = scale
         meshGroup['rules']['rules'].append(originRule)
 
     def mesh_group_add_comment(self, meshGroup, comment):

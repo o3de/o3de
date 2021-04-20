@@ -37,7 +37,7 @@ def C14861500_DefaultSetting_ColliderShape():
      4) Check value of Shape property on PhysX Collider
 
     Note:
-     - This test file must be called from the Lumberyard Editor command terminal
+     - This test file must be called from the Open 3D Engine Editor command terminal
      - Any passed and failed tests are written to the Editor.log file.
             Parsing the file or running a log_monitor are required to observe the test results.
 
@@ -51,7 +51,7 @@ def C14861500_DefaultSetting_ColliderShape():
     from utils import TestHelper as helper
     from editor_entity_utils import EditorEntity as Entity
 
-    # Lumberyard Imports
+    # Open 3D Engine Imports
     import azlmbr.legacy.general as general
 
     PHYSICS_ASSET_INDEX = 7  # Hardcoded enum index value for Shape property

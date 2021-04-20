@@ -31,9 +31,9 @@ ly_add_target(
         PUBLIC
             3rdParty::NvCloth
             Gem::LmbrCentral
+            Gem::AtomLyIntegration_CommonFeatures.Static
         PRIVATE
             Gem::EMotionFXStaticLib
-            Gem::AtomLyIntegration_CommonFeatures.Static
 )
 
 ly_add_target(

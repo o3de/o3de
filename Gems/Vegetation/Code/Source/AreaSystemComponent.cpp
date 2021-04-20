@@ -185,7 +185,6 @@ namespace Vegetation
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<AreaSystemConfig>()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Constructor()
                 ->Property("viewRectangleSize", BehaviorValueProperty(&AreaSystemConfig::m_viewRectangleSize))
@@ -1361,11 +1360,10 @@ namespace Vegetation
                 VEG_PROFILE_METHOD(DebugNotificationBus::TryQueueBroadcast(&DebugNotificationBus::Events::FillAreaEnd, area.m_id, AZStd::chrono::system_clock::now(), aznumeric_cast<AZ::u32>(activeContext.m_availablePoints.size())));
             }
         }
-        size_t remainingPointCount = activeContext.m_availablePoints.size();
 
         ReleaseUnusedClaims(sectorInfo);
 
-        VEG_PROFILE_METHOD(DebugNotificationBus::TryQueueBroadcast(&DebugNotificationBus::Events::FillSectorEnd, sectorInfo.GetSectorX(), sectorInfo.GetSectorY(), AZStd::chrono::system_clock::now(), aznumeric_cast<AZ::u32>(remainingPointCount)));
+        VEG_PROFILE_METHOD(DebugNotificationBus::TryQueueBroadcast(&DebugNotificationBus::Events::FillSectorEnd, sectorInfo.GetSectorX(), sectorInfo.GetSectorY(), AZStd::chrono::system_clock::now(), aznumeric_cast<AZ::u32>(activeContext.m_availablePoints.size())));
     }
 
     void AreaSystemComponent::VegetationThreadTasks::EmptySector(SectorInfo& sectorInfo)
@@ -1575,7 +1573,6 @@ namespace Vegetation
 
         auto& worldToSector = m_cachedMainThreadData.m_worldToSector;
         auto& currViewRect = m_cachedMainThreadData.m_currViewRect;
-        auto& sectorSizeInMeters = m_cachedMainThreadData.m_sectorSizeInMeters;
 
         // only process the sectors if the allocation has happened
         if (worldToSector <= 0.0f)

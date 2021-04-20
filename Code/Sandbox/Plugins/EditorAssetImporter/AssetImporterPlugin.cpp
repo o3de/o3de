@@ -88,6 +88,12 @@ AZStd::unique_ptr<AZ::DynamicModuleHandle> AssetImporterPlugin::LoadSceneLibrary
 void AssetImporterPlugin::EditImportSettings(const AZStd::string& sourceFilePath)
 {
     const QtViewPane* assetImporterPane = GetIEditor()->OpenView(m_toolName.c_str());
+
+    if(!assetImporterPane)
+    {
+        return;
+    }
+
     AssetImporterWindow* assetImporterWindow = qobject_cast<AssetImporterWindow*>(assetImporterPane->Widget());
     if (!assetImporterWindow)
     {

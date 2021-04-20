@@ -155,17 +155,17 @@
                             }
                         },
                         {
-                            "LocalSlot": "SpotLightShadowmap",
+                            "LocalSlot": "ProjectedShadowmap",
                             "AttachmentRef": {
                                 "Pass": "ShadowPass",
-                                "Attachment": "SpotLightShadowmap"
+                                "Attachment": "ProjectedShadowmap"
                             }
                         },
                         {
-                            "LocalSlot": "SpotLightESM",
+                            "LocalSlot": "ProjectedESM",
                             "AttachmentRef": {
                                 "Pass": "ShadowPass",
-                                "Attachment": "SpotLightESM"
+                                "Attachment": "ProjectedESM"
                             }
                         },
                         {
@@ -224,17 +224,17 @@
                             }
                         },
                         {
-                            "LocalSlot": "SpotLightShadowmap",
+                            "LocalSlot": "ProjectedShadowmap",
                             "AttachmentRef": {
                                 "Pass": "ShadowPass",
-                                "Attachment": "SpotLightShadowmap"
+                                "Attachment": "ProjectedShadowmap"
                             }
                         },
                         {
-                            "LocalSlot": "SpotLightESM",
+                            "LocalSlot": "ProjectedESM",
                             "AttachmentRef": {
                                 "Pass": "ShadowPass",
-                                "Attachment": "SpotLightESM"
+                                "Attachment": "ProjectedESM"
                             }
                         },
                         {

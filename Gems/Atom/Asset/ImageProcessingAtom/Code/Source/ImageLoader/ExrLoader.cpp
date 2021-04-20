@@ -119,8 +119,6 @@ namespace ImageProcessingAtom
                 ImfMath::Box2i dw = header.dataWindow();
                 width = dw.max.x - dw.min.x + 1;
                 height = dw.max.y - dw.min.y + 1;
-                int dx = dw.min.x;
-                int dy = dw.min.y;
 
                 // Create IImageObject
                 IImageObject* newImage = IImageObject::CreateImage(width, height, 1, format);

@@ -578,16 +578,6 @@ namespace AzToolsFramework
          */
         virtual bool IsEditorInIsolationMode() = 0;
 
-        /*!
-        * Get the engine root path that the current tool is running under.  
-        */
-        virtual const char* GetEngineRootPath() const = 0;
-
-        /**
-        * Get the version of the engine the current tools application is running under
-        */
-        virtual const char* GetEngineVersion() const = 0;
-
         /**
         * Creates and adds a new entity to the tools application from components which match at least one of the requiredTags
         * The tag matching occurs on AZ::Edit::SystemComponentTags attribute from the reflected class data in the serialization context
@@ -601,7 +591,7 @@ namespace AzToolsFramework
         virtual ResolveToolPathOutcome ResolveConfigToolsPath(const char* toolApplicationName) const = 0;
 
         /**
-         * LUMBERYARD INTERNAL USE ONLY.
+         * Open 3D Engine Internal use only.
          *
          * Run a specific redo command separate from the undo/redo system.
          * In many cases before a modifcation on an entity takes place, it is first packaged into 

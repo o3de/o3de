@@ -755,7 +755,6 @@ namespace AZ::IO
         path.InitFromAbsolutePath(m_dummyFilepath + "/Broken/Path.txt");
 
         request->CreateRead(nullptr, buffer, readSize, path, 0, readSize);
-        bool resultSet = false;
         EXPECT_CALL(*mock, QueueRequest(request)).
             WillOnce([this](AZ::IO::FileRequest* request)
                 {

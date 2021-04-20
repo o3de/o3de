@@ -10,6 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
 
 import os
+import math as pymath
 import sys
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -17,6 +18,8 @@ import azlmbr
 import azlmbr.asset as asset
 import azlmbr.bus as bus
 import azlmbr.components as components
+import azlmbr.editor as editor
+import azlmbr.legacy.general as general
 import azlmbr.math as math
 
 
@@ -63,6 +66,9 @@ class test_MeshBlocker_InstancesBlockedByMeshHeightTuning(EditorTestHelper):
             use_terrain=False,
         )
 
+        general.set_current_view_position(500.49, 498.69, 46.66)
+        general.set_current_view_rotation(-42.05, 0.00, -36.33)
+
         # 2) Create entity with components "Vegetation Layer Spawner", "Vegetation Asset List", "Box Shape"
         entity_position = math.Vector3(512.0, 512.0, 32.0)
         asset_path = os.path.join("Slices", "PurpleFlower.dynamicslice")
@@ -74,29 +80,46 @@ class test_MeshBlocker_InstancesBlockedByMeshHeightTuning(EditorTestHelper):
         # 3) Create surface entity to plant on
         dynveg.create_surface_entity("Surface Entity", entity_position, 10.0, 10.0, 1.0)
 
-        # 4) Create blocker entity with cube mesh
-        entity_position = math.Vector3(512.0, 512.0, 36.0)
+        # 4) Create blocker entity with rotated cube mesh
+        y_rotation = pymath.radians(45.0)
+        mesh_type_id = azlmbr.globals.property.EditorMeshComponentTypeId
         blocker_entity = hydra.Entity("Blocker Entity")
         blocker_entity.create_entity(entity_position,
-                                     ["Mesh", "Vegetation Layer Blocker (Mesh)"])
+                                     ["Vegetation Layer Blocker (Mesh)"])
+        blocker_entity.add_component_of_type(mesh_type_id)
         if blocker_entity.id.IsValid():
             print(f"'{blocker_entity.name}' created")
-
-        sphereId = asset.AssetCatalogRequestBus(
-            bus.Broadcast, "GetAssetIdByPath", os.path.join("objects", "default", "primitive_sphere.cgf"), math.Uuid(),
+        sphere_id = asset.AssetCatalogRequestBus(
+            bus.Broadcast, "GetAssetIdByPath", os.path.join("objects", "_primitives", "_box_1x1.azmodel"), math.Uuid(),
             False)
-        blocker_entity.get_set_test(0, "MeshComponentRenderNode|Mesh asset", sphereId)
+        blocker_entity.get_set_test(1, "Controller|Configuration|Mesh Asset", sphere_id)
         components.TransformBus(bus.Event, "SetLocalScale", blocker_entity.id, math.Vector3(5.0, 5.0, 5.0))
+        components.TransformBus(bus.Event, "SetLocalRotation", blocker_entity.id, math.Vector3(0.0, y_rotation, 0.0))
+
+        # Disable/Re-enable Mesh component due to ATOM-14299
+        general.idle_wait(1.0)
+        editor.EditorComponentAPIBus(bus.Broadcast, 'DisableComponents', [blocker_entity.components[1]])
+        is_enabled = editor.EditorComponentAPIBus(bus.Broadcast, 'IsComponentEnabled', blocker_entity.components[1])
+        if is_enabled:
+            print("Mesh component is still enabled")
+        else:
+            print("Mesh component was disabled")
+        editor.EditorComponentAPIBus(bus.Broadcast, 'EnableComponents', [blocker_entity.components[1]])
+        is_enabled = editor.EditorComponentAPIBus(bus.Broadcast, 'IsComponentEnabled', blocker_entity.components[1])
+        if is_enabled:
+            print("Mesh component is now enabled")
+        else:
+            print("Mesh component is still disabled")
 
         # 5) Adjust the height Max percentage values of blocker
-        blocker_entity.get_set_test(1, "Configuration|Mesh Height Percent Max", 0.8)
+        blocker_entity.get_set_test(0, "Configuration|Mesh Height Percent Max", 0.8)
 
         # 6) Verify spawned instance counts are accurate after adjusting height Max percentage of Blocker Entity
-        # The number of "PurpleFlower" instances that plant on a 10 x 10 surface minus those blocked by the sphere at
+        # The number of "PurpleFlower" instances that plant on a 10 x 10 surface minus those blocked by the rotated at
         # 80% max height factored in.
-        num_expected = 117
+        num_expected = 127
         result = self.wait_for_condition(lambda: dynveg.validate_instance_count_in_entity_shape(spawner_entity.id,
-                                                                                                num_expected), 2.0)
+                                                                                                num_expected), 5.0)
         self.test_success = self.test_success and result
 
 

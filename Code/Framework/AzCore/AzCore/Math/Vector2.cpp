@@ -167,14 +167,14 @@ namespace AZ
         }
     }
 
-    AZ_MATH_INLINE Vector2::Vector2(const Vector3& source)
+    Vector2::Vector2(const Vector3& source)
         : m_x(source.GetX())
         , m_y(source.GetY())
     {
     }
 
 
-    AZ_MATH_INLINE Vector2::Vector2(const Vector4& source)
+    Vector2::Vector2(const Vector4& source)
         : m_x(source.GetX())
         , m_y(source.GetY())
     {

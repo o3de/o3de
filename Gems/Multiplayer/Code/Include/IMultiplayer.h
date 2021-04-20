@@ -23,10 +23,25 @@ namespace AzNetworking
 
 namespace Multiplayer
 {
+    struct MultiplayerStats
+    {
+        uint64_t m_entityCount = 0;
+        uint64_t m_clientConnectionCount = 0;
+        uint64_t m_serverConnectionCount = 0;
+        uint64_t m_propertyUpdatesSent = 0;
+        uint64_t m_propertyUpdatesSentBytes = 0;
+        uint64_t m_propertyUpdatesRecv = 0;
+        uint64_t m_propertyUpdatesRecvBytes = 0;
+        uint64_t m_rpcsSent = 0;
+        uint64_t m_rpcsSentBytes = 0;
+        uint64_t m_rpcsRecv = 0;
+        uint64_t m_rpcsRecvBytes = 0;
+    };
+
     //! Collection of types of Multiplayer Connections
     enum class MultiplayerAgentType
     {
-        Uninitialized,   ///< Agent is ununitialized.
+        Uninitialized,   ///< Agent is uninitialized.
         Client,          ///< A Client connected to either a server or host.
         ClientServer,    ///< A Client that also hosts and is the authority of the session
         DedicatedServer  ///< A Dedicated Server which does not locally host any clients
@@ -72,5 +87,28 @@ namespace Multiplayer
         //! Adds a SessionShutdownEvent Handler which is invoked when the current network session ends
         //! @param handler The SessionShutdownEvent handler to add
         virtual void AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler) = 0;
+
+        //! Retrieve the stats object bound to this multiplayer instance.
+        //! @return the stats object bound to this multiplayer instance
+        MultiplayerStats& GetStats() { return m_stats; }
+
+    private:
+        MultiplayerStats m_stats;
     };
+
+    inline const char* GetEnumString(MultiplayerAgentType value)
+    {
+        switch (value)
+        {
+        case MultiplayerAgentType::Uninitialized:
+            return "Uninitialized";
+        case MultiplayerAgentType::Client:
+            return "Client";
+        case MultiplayerAgentType::ClientServer:
+            return "ClientServer";
+        case MultiplayerAgentType::DedicatedServer:
+            return "DedicatedServer";
+        }
+        return "INVALID";
+    }
 }

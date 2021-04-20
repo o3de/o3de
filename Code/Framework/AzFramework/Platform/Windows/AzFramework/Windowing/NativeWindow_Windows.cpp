@@ -56,7 +56,7 @@ namespace AzFramework
         bool m_isInBorderlessWindowFullScreenState = false; //!< Was a borderless window used to enter full screen state?
     };
 
-    const char* NativeWindowImpl_Win32::s_defaultClassName = "LumberyardWin32Class";
+    const char* NativeWindowImpl_Win32::s_defaultClassName = "O3DEWin32Class";
 
     NativeWindow::Implementation* NativeWindow::Implementation::Create()
     {

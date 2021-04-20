@@ -313,8 +313,6 @@ namespace LyShine
         };
 
         // Get the prefab component from the prefab sourceSliceAsset
-        AZ::SliceComponent* sourceSliceData = (sourceSliceAsset.Get()) ? sourceSliceAsset.Get()->GetComponent() : nullptr;
-
         AzToolsFramework::SliceCompilationResult sliceCompilationResult = AzToolsFramework::CompileEditorSlice(sourceSliceAsset, platformTags, *context, handlers);
 
         if (!sliceCompilationResult)

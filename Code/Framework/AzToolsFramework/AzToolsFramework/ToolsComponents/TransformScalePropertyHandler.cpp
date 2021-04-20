@@ -12,6 +12,7 @@
 
 #include "AzToolsFramework_precompiled.h"
 #include <ToolsComponents/TransformScalePropertyHandler.h>
+#include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector3.h>
 
 namespace AzToolsFramework
@@ -36,8 +37,8 @@ namespace AzToolsFramework
                     AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::RequestWrite, newCtrl);
                 });
 
-            newCtrl->setMinimum(0.01f);
-            newCtrl->setMaximum(std::numeric_limits<float>::max());
+            newCtrl->setMinimum(AZ::MinTransformScale);
+            newCtrl->setMaximum(AZ::MaxTransformScale);
 
             return newCtrl;
         }

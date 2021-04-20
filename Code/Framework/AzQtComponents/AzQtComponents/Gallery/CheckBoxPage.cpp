@@ -11,7 +11,7 @@
 */
 
 #include "CheckBoxPage.h"
-#include "Gallery/ui_CheckBoxPage.h"
+#include <AzQtComponents/Gallery/ui_CheckBoxPage.h>
 
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
 

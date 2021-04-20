@@ -13,7 +13,7 @@
 
 #include <cstddef>
 
-namespace LumberyardLauncher
+namespace O3DELauncher
 {
     // Increase the core and stack limits
     bool IncreaseResourceLimits();

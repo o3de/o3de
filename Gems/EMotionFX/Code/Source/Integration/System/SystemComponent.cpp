@@ -18,6 +18,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Utils/Utils.h>
 
 #include <AzFramework/Physics/CharacterBus.h>
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
@@ -400,7 +401,6 @@ namespace EMotionFX
                 // In order for a property to be displayed in ScriptCanvas. Both a setter and a getter are necessary(both must be non-null).
                 // This is being worked on in dragon branch, once this is complete the dummy lambda functions can be removed.
                 behaviorContext->Class<MotionEvent>("MotionEvent")
-                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::Preview)
                     ->Property("entityId", BehaviorValueGetter(&MotionEvent::m_entityId), [](MotionEvent*, const AZ::EntityId&) {})
                     ->Property("parameter", BehaviorValueGetter(&MotionEvent::m_parameter), [](MotionEvent*, const char*) {})
                     ->Property("eventType", BehaviorValueGetter(&MotionEvent::m_eventType), [](MotionEvent*, const AZ::u32&) {})
@@ -412,7 +412,6 @@ namespace EMotionFX
                 ;
 
                 behaviorContext->EBus<ActorNotificationBus>("ActorNotificationBus")
-                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::Preview)
                     ->Handler<ActorNotificationBusHandler>()
                     ->Event("OnMotionEvent", &ActorNotificationBus::Events::OnMotionEvent)
                     ->Event("OnMotionLoop", &ActorNotificationBus::Events::OnMotionLoop)
@@ -862,16 +861,13 @@ namespace EMotionFX
             using namespace AzToolsFramework;
 
             // Construct data folder that is used by the tool for loading assets (images etc.).
-            AZStd::string devRootPath;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(devRootPath, &AzFramework::ApplicationRequests::GetEngineRoot);
-            devRootPath += "Gems/EMotionFX/Assets/Editor/";
-            AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::NormalizePathKeepCase, devRootPath);
+            auto editorAssetsPath = (AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / "Gems/EMotionFX/Assets/Editor").LexicallyNormal();
 
             // Re-initialize EMStudio.
             int argc = 0;
             char** argv = nullptr;
 
-            MysticQt::Initializer::Init("", devRootPath.c_str());
+            MysticQt::Initializer::Init("", editorAssetsPath.c_str());
             EMStudio::Initializer::Init(qApp, argc, argv);
 
             InitializeEMStudioPlugins();

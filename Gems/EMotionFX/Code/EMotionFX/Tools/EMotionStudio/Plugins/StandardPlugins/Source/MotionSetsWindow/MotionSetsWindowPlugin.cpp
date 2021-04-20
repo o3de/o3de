@@ -509,11 +509,9 @@ namespace EMStudio
     }
 
 
-    bool MotionSetsWindowPlugin::CommandCreateMotionSetCallback::Execute(MCore::Command* command, const MCore::CommandLine& commandLine)
+    bool MotionSetsWindowPlugin::CommandCreateMotionSetCallback::Execute([[maybe_unused]] MCore::Command* command, const MCore::CommandLine& commandLine)
     {
         MCORE_UNUSED(commandLine);
-        CommandSystem::CommandCreateMotionSet* createMotionSetCommand = static_cast<CommandSystem::CommandCreateMotionSet*>(command);
-        EMotionFX::MotionSet* motionSet = EMotionFX::GetMotionManager().FindMotionSetByID(createMotionSetCommand->mPreviouslyUsedID);
         return ReInitMotionSetsPlugin();
     }
 
@@ -521,10 +519,9 @@ namespace EMStudio
     bool MotionSetsWindowPlugin::CommandCreateMotionSetCallback::Undo(MCore::Command* command, const MCore::CommandLine& commandLine)                   { MCORE_UNUSED(command); MCORE_UNUSED(commandLine); return ReInitMotionSetsPlugin(); }
 
 
-    bool MotionSetsWindowPlugin::CommandReinitCallback::Execute(MCore::Command* command, const MCore::CommandLine& commandLine)
+    bool MotionSetsWindowPlugin::CommandReinitCallback::Execute([[maybe_unused]] MCore::Command* command, const MCore::CommandLine& commandLine)
     {
         MCORE_UNUSED(commandLine);
-        CommandSystem::CommandRemoveMotionSet* removeMotionSetCommand = static_cast<CommandSystem::CommandRemoveMotionSet*>(command);
         return ReInitMotionSetsPlugin();
     }
 
@@ -701,13 +698,6 @@ namespace EMStudio
                 motionSetsPlugin->SetSelectedSet(motionSet2);
                 break;
             }
-        }
-
-        //Generate metrics
-        if (motionSetsPlugin->GetSelectedSet())
-        {
-            //for Morph Target use
-            const EMotionFX::MotionSet* motionSet2 = motionSetsPlugin->GetSelectedSet();
         }
 
         return ReInitMotionSetsPlugin();

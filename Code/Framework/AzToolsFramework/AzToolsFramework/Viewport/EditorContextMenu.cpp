@@ -65,7 +65,7 @@ namespace AzToolsFramework
 
                 if (!contextMenu.m_menu->isEmpty())
                 {
-                    contextMenu.m_menu->popup(QCursor::pos());
+                    contextMenu.m_menu->exec(QCursor::pos());
                 }
             }
         }

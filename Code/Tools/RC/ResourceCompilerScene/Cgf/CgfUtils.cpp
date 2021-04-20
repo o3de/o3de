@@ -81,8 +81,6 @@ namespace AZ
             result += SceneAPI::Events::Process(containerContext);
             result += SceneAPI::Events::Process<ContainerExportContext>(containerContext, Phase::Filling);
 
-            const SceneAPI::Containers::SceneGraph& graph = context.m_scene.GetGraph();
-
             ProcessMeshType(containerContext, content, targetNodes, PHYS_GEOM_TYPE_NONE);
 
             result += SceneAPI::Events::Process<ContainerExportContext>(containerContext, Phase::Finalizing);

@@ -16,13 +16,11 @@ set(FILES
     FindClang.cmake
     FindDirectXShaderCompiler.cmake
     Finddyad.cmake
-    Findetc2comp.cmake
     FindFbxSdk.cmake
-    FindFreeType2.cmake
     Findlibav.cmake
+    FindOpenGLInterface.cmake
     FindOpenSSL.cmake
     FindRadTelemetry.cmake
-    Findtiff.cmake
     FindVkValidation.cmake
     FindWwise.cmake
 )

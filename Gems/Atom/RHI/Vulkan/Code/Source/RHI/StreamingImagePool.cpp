@@ -148,7 +148,6 @@ namespace AZ
         RHI::ResultCode StreamingImagePool::TrimImageInternal(RHI::Image& imageBase, uint32_t targetMipLevel)
         {
             auto& image = static_cast<Image&>(imageBase);
-            auto& device = static_cast<Device&>(GetDevice());
 
             WaitFinishUploading(image);
 
@@ -181,7 +180,6 @@ namespace AZ
         void StreamingImagePool::ShutdownResourceInternal(RHI::Resource& resourceBase)
         {
             auto& image = static_cast<Image&>(resourceBase);
-            auto& device = static_cast<Device&>(GetDevice());
 
             WaitFinishUploading(image);
 

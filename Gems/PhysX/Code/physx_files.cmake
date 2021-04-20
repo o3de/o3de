@@ -12,6 +12,8 @@
 set(FILES
     Source/PhysX_precompiled.cpp
     Source/PhysX_precompiled.h
+    Source/SystemComponent.cpp
+    Source/SystemComponent.h
     Include/PhysX/SystemComponentBus.h
     Include/PhysX/ColliderComponentBus.h
     Include/PhysX/NativeTypeIdentifiers.h

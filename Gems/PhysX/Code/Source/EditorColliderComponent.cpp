@@ -319,7 +319,8 @@ namespace PhysX
 
     void EditorColliderComponent::Activate()
     {
-        if (m_sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        m_sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
+        if (m_sceneInterface)
         {
             m_editorSceneHandle = m_sceneInterface->GetSceneHandle(AzPhysics::EditorPhysicsSceneName);
         }
@@ -390,6 +391,8 @@ namespace PhysX
         Physics::WorldBodyRequestBus::Handler::BusDisconnect();
         m_colliderDebugDraw.Disconnect();
         AZ::Data::AssetBus::MultiHandler::BusDisconnect();
+        m_nonUniformScaleChangedHandler.Disconnect();
+        EditorColliderComponentRequestBus::Handler::BusDisconnect();
         AZ::Render::MeshComponentNotificationBus::Handler::BusDisconnect();
         LmbrCentral::MeshComponentNotificationBus::Handler::BusDisconnect();
         ColliderShapeRequestBus::Handler::BusDisconnect();
@@ -513,6 +516,8 @@ namespace PhysX
             break;
         case Physics::ShapeType::PhysicsAsset:
             colliderComponent = gameEntity->CreateComponent<MeshColliderComponent>();
+
+            m_shapeConfiguration.m_physicsAsset.m_configuration.m_subdivisionLevel = m_shapeConfiguration.m_subdivisionLevel;
             colliderComponent->SetShapeConfigurationList({ AZStd::make_pair(sharedColliderConfig,
                 AZStd::make_shared<Physics::PhysicsAssetShapeConfiguration>(m_shapeConfiguration.m_physicsAsset.m_configuration)) });
 
@@ -560,6 +565,8 @@ namespace PhysX
 
     void EditorColliderComponent::CreateStaticEditorCollider()
     {
+        m_cachedAabbDirty = true;
+
         // Don't create static rigid body in the editor if current entity components
         // don't allow creation of runtime static rigid body component
         if (!StaticRigidBodyUtils::CanCreateRuntimeComponent(*GetEntity()))
@@ -692,7 +699,7 @@ namespace PhysX
 
         // Here we check the material indices assigned to every shape and validate that every index is used at least once.
         // It's not an error if the validation fails here but something we want to let the designers know about.
-        size_t surfacesNum = physicsAsset->m_assetData.m_surfaceNames.size();
+        [[maybe_unused]] size_t surfacesNum = physicsAsset->m_assetData.m_surfaceNames.size();
         const AZStd::vector<AZ::u16>& indexPerShape = physicsAsset->m_assetData.m_materialIndexPerShape;
 
         AZStd::unordered_set<AZ::u16> usedIndices;
@@ -875,7 +882,6 @@ namespace PhysX
             return;
         }
 
-        const AZ::Data::Asset<Pipeline::MeshAsset>& physicsAsset = m_shapeConfiguration.m_physicsAsset.m_pxAsset;
         const Physics::PhysicsAssetShapeConfiguration& physicsAssetConfiguration = m_shapeConfiguration.m_physicsAsset.m_configuration;
 
         Physics::ShapeConfigurationList shapeConfigList;
@@ -1014,11 +1020,17 @@ namespace PhysX
     // PhysX::ColliderShapeBus
     AZ::Aabb EditorColliderComponent::GetColliderShapeAabb()
     {
-        return PhysX::Utils::GetColliderAabb(GetWorldTM()
-            , m_hasNonUniformScale
-            , m_shapeConfiguration.m_subdivisionLevel
-            , m_shapeConfiguration.GetCurrent()
-            , m_configuration);
+        if (m_cachedAabbDirty)
+        {
+            m_cachedAabb = PhysX::Utils::GetColliderAabb(GetWorldTM()
+                , m_hasNonUniformScale
+                , m_shapeConfiguration.m_subdivisionLevel
+                , m_shapeConfiguration.GetCurrent()
+                , m_configuration);
+            m_cachedAabbDirty = false;
+        }
+
+        return m_cachedAabb;
     }
 
     void EditorColliderComponent::UpdateShapeConfigurationScale()

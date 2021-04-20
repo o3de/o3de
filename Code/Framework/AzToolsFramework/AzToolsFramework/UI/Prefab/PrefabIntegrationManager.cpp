@@ -24,6 +24,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
+#include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 #include <AzToolsFramework/ToolsComponents/EditorLayerComponentBus.h>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiInterface.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
@@ -39,9 +40,12 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
+        
         EditorEntityUiInterface* PrefabIntegrationManager::s_editorEntityUiInterface = nullptr;
         PrefabPublicInterface* PrefabIntegrationManager::s_prefabPublicInterface = nullptr;
         PrefabEditInterface* PrefabIntegrationManager::s_prefabEditInterface = nullptr;
+        PrefabLoaderInterface* PrefabIntegrationManager::s_prefabLoaderInterface = nullptr;
+
         const AZStd::string PrefabIntegrationManager::s_prefabFileExtension = ".prefab";
 
         void PrefabUserSettings::Reflect(AZ::ReflectContext* context)
@@ -76,6 +80,13 @@ namespace AzToolsFramework
             if (s_prefabEditInterface == nullptr)
             {
                 AZ_Assert(false, "Prefab - could not get PrefabEditInterface on PrefabIntegrationManager construction.");
+                return;
+            }
+
+            s_prefabLoaderInterface = AZ::Interface<PrefabLoaderInterface>::Get();
+            if (s_prefabLoaderInterface == nullptr)
+            {
+                AZ_Assert(false, "Prefab - could not get PrefabLoaderInterface on PrefabIntegrationManager construction.");
                 return;
             }
 
@@ -130,14 +141,14 @@ namespace AzToolsFramework
             AzFramework::ApplicationRequests::Bus::BroadcastResult(
                 prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
 
+            AzToolsFramework::EntityIdList selectedEntities;
+            AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+                selectedEntities, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
+
             if (prefabWipFeaturesEnabled)
             {
                 // Create Prefab
                 {
-                    AzToolsFramework::EntityIdList selectedEntities;
-                    AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
-                        selectedEntities, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
-
                     if (!selectedEntities.empty())
                     {
                         bool layerInSelection = false;
@@ -186,10 +197,6 @@ namespace AzToolsFramework
 
             // Edit/Save Prefab
             {
-                AzToolsFramework::EntityIdList selectedEntities;
-                AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
-                    selectedEntities, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
-
                 if (selectedEntities.size() == 1)
                 {
                     AZ::EntityId selectedEntity = selectedEntities[0];
@@ -236,6 +243,14 @@ namespace AzToolsFramework
             if (itemWasShown)
             {
                 menu->addSeparator();
+            }
+
+            QAction* deleteAction = menu->addAction(QObject::tr("Delete"));
+            QObject::connect(deleteAction, &QAction::triggered, deleteAction, [this] { ContextMenu_DeleteSelected(); });
+            if (selectedEntities.size() == 0 ||
+                (selectedEntities.size() == 1 && s_prefabPublicInterface->IsLevelInstanceContainerEntity(selectedEntities[0])))
+            {
+                deleteAction->setDisabled(true);
             }
         }
 
@@ -316,14 +331,15 @@ namespace AzToolsFramework
 
                 GenerateSuggestedFilenameFromEntities(prefabRootEntities, suggestedName);
 
-                if (!QueryUserForPrefabSaveLocation(suggestedName, targetDirectory, AZ_CRC("PrefabUserSettings"), activeWindow, prefabName, prefabFilePath))
+                if (!QueryUserForPrefabSaveLocation(
+                        suggestedName, targetDirectory, AZ_CRC("PrefabUserSettings"), activeWindow, prefabName, prefabFilePath))
                 {
                     // User canceled prefab creation, or error prevented continuation.
                     return;
                 }
             }
 
-            auto createPrefabOutcome = s_prefabPublicInterface->CreatePrefab(selectedEntities, prefabFilePath);
+            auto createPrefabOutcome = s_prefabPublicInterface->CreatePrefab(selectedEntities, s_prefabLoaderInterface->GetRelativePathToProject(prefabFilePath.data()));
 
             if (!createPrefabOutcome.IsSuccess())
             {
@@ -367,6 +383,16 @@ namespace AzToolsFramework
             {
                 WarnUserOfError("Prefab Save Error", savePrefabOutcome.GetError());
             }
+        }
+
+        void PrefabIntegrationManager::ContextMenu_DeleteSelected()
+        {
+            AzToolsFramework::EntityIdList selectedEntityIds;
+            AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+                selectedEntityIds, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
+
+            AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+                &AzToolsFramework::ToolsApplicationRequests::DeleteEntitiesAndAllDescendants, selectedEntityIds);
         }
 
         void PrefabIntegrationManager::GenerateSuggestedFilenameFromEntities(const EntityIdList& entityIds, AZStd::string& outName)
@@ -630,7 +656,7 @@ namespace AzToolsFramework
                     QString cleanAssetSafeFolder(QDir::cleanPath(assetSafeFolder.c_str()));
                     // Compare using clean paths so slash direction does not matter.
                     // Note that this comparison is case sensitive because some file systems
-                    // Lumberyard supports are case sensitive.
+                    // Open 3D Engine supports are case sensitive.
                     if (cleanSaveAs.startsWith(cleanAssetSafeFolder))
                     {
                         isPathSafeForAssets = true;
@@ -972,7 +998,14 @@ namespace AzToolsFramework
 
         void PrefabIntegrationManager::OnPrefabComponentActivate(AZ::EntityId entityId)
         {
-            s_editorEntityUiInterface->RegisterEntity(entityId, m_prefabUiHandler.GetHandlerId());
+            if (s_prefabPublicInterface->IsLevelInstanceContainerEntity(entityId))
+            {
+                s_editorEntityUiInterface->RegisterEntity(entityId, m_levelRootUiHandler.GetHandlerId());
+            }
+            else
+            {
+                s_editorEntityUiInterface->RegisterEntity(entityId, m_prefabUiHandler.GetHandlerId());
+            }
         }
 
         void PrefabIntegrationManager::OnPrefabComponentDeactivate(AZ::EntityId entityId)

@@ -116,7 +116,7 @@ namespace AZ
 
             if (m_deviceBufferNeedsUpdate)
             {
-                bool success = m_decalBufferHandler.UpdateBuffer(m_decalData.GetDataVector<0>());
+                [[maybe_unused]] bool success = m_decalBufferHandler.UpdateBuffer(m_decalData.GetDataVector<0>());
                 AZ_Error(FeatureProcessorName, success, "Unable to update buffer during Simulate().");
                 m_deviceBufferNeedsUpdate = false;
             }
@@ -265,7 +265,7 @@ namespace AZ
         void DecalFeatureProcessor::SetDecalTransform(DecalHandle handle, const AZ::Transform& world)
         {
             // https://jira.agscollab.com/browse/ATOM-4330
-            // Original Lumberyard uploads a 4x4 matrix rather than quaternion, rotation, scale.
+            // Original Open 3D Engine uploads a 4x4 matrix rather than quaternion, rotation, scale.
             // That is more memory but less calculation because it is doing a matrix inverse rather than a polar decomposition
             // I've done some experiments and uploading a 3x4 transform matrix with 3x3 matrix inverse should be possible
             // I am putting it as part of a separate Jira because I would have to upload different data to the light culling system

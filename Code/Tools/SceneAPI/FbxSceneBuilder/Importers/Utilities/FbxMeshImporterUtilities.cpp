@@ -248,7 +248,8 @@ namespace AZ
                         sceneSystem.SwapVec3ForUpAxis(meshVertexNormal);
                         meshVertexNormal.Normalize();
 
-                        blendShape->AddVertex(meshVertexPosition, meshVertexNormal);
+                        blendShape->AddPosition(meshVertexPosition);
+                        blendShape->AddNormal(meshVertexNormal);
 
                         // Add face
                         {

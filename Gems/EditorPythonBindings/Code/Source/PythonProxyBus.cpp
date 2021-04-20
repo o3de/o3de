@@ -209,7 +209,9 @@ namespace EditorPythonBindings
                     if (eventName == e.m_name)
                     {
                         AZStd::string eventNameValue{ eventName };
+#if defined(AZ_ENABLE_TRACING)
                         const auto& callbackIt = m_callbackMap.find(eventNameValue);
+#endif
                         AZ_Warning("python", m_callbackMap.end() == callbackIt, "Replacing callback for eventName:%s", eventNameValue.c_str());
                         m_callbackMap[eventNameValue] = callback;
                         return true;
@@ -254,7 +256,6 @@ namespace EditorPythonBindings
                     const AZ::BehaviorEBusHandler::EventArray& events = m_handler->GetEvents();
                     for (int iEvent = 0; iEvent < static_cast<int>(events.size()); ++iEvent)
                     {
-                        const AZ::BehaviorEBusHandler::BusForwarderEvent& e = events[iEvent];
                         m_handler->InstallGenericHook(iEvent, &PythonProxyNotificationHandler::OnEventGenericHook, this);
                     }
                 }

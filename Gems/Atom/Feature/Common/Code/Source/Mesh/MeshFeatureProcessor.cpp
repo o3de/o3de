@@ -387,6 +387,11 @@ namespace AZ
             }
         }
 
+        void MeshFeatureProcessor::ForceRebuildDrawPackets([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
+        {
+            m_forceRebuildDrawPackets = true;
+        }
+
         void MeshFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
         {
             m_forceRebuildDrawPackets = true;;
@@ -473,7 +478,7 @@ namespace AZ
 
         void MeshDataInstance::DeInit()
         {
-            m_scene->GetCullingSystem()->UnregisterCullable(m_cullable);
+            m_scene->GetCullingScene()->UnregisterCullable(m_cullable);
 
             // remove from ray tracing
             RayTracingFeatureProcessor* rayTracingFeatureProcessor = m_scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
@@ -653,7 +658,7 @@ namespace AZ
 
                 // retrieve vertex/index buffers
                 RPI::ModelLod::StreamBufferViewList streamBufferViews;
-                bool result = modelLod->GetStreamsForMesh(inputStreamLayout, streamBufferViews, shaderInputContract, meshIndex);
+                [[maybe_unused]] bool result = modelLod->GetStreamsForMesh(inputStreamLayout, streamBufferViews, shaderInputContract, meshIndex);
                 AZ_Assert(result, "Failed to retrieve mesh stream buffer views");
 
                 // note that the element count is the size of the entire buffer, even though this mesh may only
@@ -773,8 +778,8 @@ namespace AZ
             lodData.m_lods.resize(modelLodCount);
             cullData.m_drawListMask.reset();
 
-            size_t lodIndex = 0;
-            for (const auto& lodAsset : lodAssets)
+            const size_t lodCount = lodAssets.size();
+            for (size_t lodIndex = 0; lodIndex < lodCount; ++lodIndex)
             {
                 //initialize the lod
                 RPI::Cullable::LodData::Lod& lod = lodData.m_lods[lodIndex];
@@ -815,8 +820,6 @@ namespace AZ
                         lod.m_drawPackets.push_back(rhiDrawPacket);
                     }
                 }
-
-                ++lodIndex;
             }
 
             cullData.m_hideFlags = RPI::View::UsageNone;
@@ -853,7 +856,7 @@ namespace AZ
             m_cullable.m_cullData.m_visibilityEntry.m_boundingVolume = localAabb.GetTransformedAabb(localToWorld);
             m_cullable.m_cullData.m_visibilityEntry.m_userData = &m_cullable;
             m_cullable.m_cullData.m_visibilityEntry.m_typeFlags = AzFramework::VisibilityEntry::TYPE_RPI_Cullable;
-            m_scene->GetCullingSystem()->RegisterOrUpdateCullable(m_cullable);
+            m_scene->GetCullingScene()->RegisterOrUpdateCullable(m_cullable);
 
             m_cullBoundsNeedsUpdate = false;
         }

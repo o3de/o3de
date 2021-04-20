@@ -65,7 +65,7 @@ void logmessage(const char* text, ...)
     error += ret;
     bufferlen -= ret;
 
-    int count = vsnprintf(error, bufferlen, text, arg);
+    vsnprintf(error, bufferlen, text, arg);
 
     AZ_TracePrintf(0, szBuffer);
 

@@ -36,6 +36,8 @@ namespace AZ
 
                 virtual ~ISkinWeightData() override = default;
 
+                void CloneAttributesFrom([[maybe_unused]] const IGraphObject* sourceObject) override {}
+
                 virtual size_t GetVertexCount() const = 0;
                 virtual size_t GetLinkCount(size_t vertexIndex) const = 0;
                 virtual const Link& GetLink(size_t vertexIndex, size_t linkIndex) const = 0;

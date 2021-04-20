@@ -448,7 +448,7 @@ namespace UnitTest
         entity->Deactivate();
 
         // Add placeholder component which implements component mode.
-        const AZ::Component* placeholder1 = entity->CreateComponent<OverrideMouseInteractionComponent>();
+        entity->CreateComponent<OverrideMouseInteractionComponent>();
 
         entity->Activate();
 

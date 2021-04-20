@@ -465,8 +465,6 @@ void DockWidget::RestoreState(bool forceDefault)
 
 QRect DockWidget::ProperGeometry() const
 {
-    Qt::DockWidgetArea area = isFloating() ? Qt::NoDockWidgetArea : m_mainWindow->dockWidgetArea(const_cast<DockWidget*>(this));
-
     QRect myGeom(pos(), size());
 
     // we need this state in global coordinates, but if we're parented to one of those group dock windows, there is a problem, it will be local coords.
@@ -1366,7 +1364,7 @@ bool QtViewPaneManager::RestoreLayout(QString layoutName)
 
     for (const QString& paneName : state.viewPanes)
     {
-        const QtViewPane* pane = OpenPane(paneName, QtViewPane::OpenMode::OnlyOpen);
+        OpenPane(paneName, QtViewPane::OpenMode::OnlyOpen);
     }
 
     // must do this after opening all of the panes!

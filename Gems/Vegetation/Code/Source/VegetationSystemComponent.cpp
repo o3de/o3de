@@ -98,7 +98,6 @@ namespace Vegetation
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->EBus<FilterRequestBus>("FilterRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Event("GetFilterStage", &FilterRequestBus::Events::GetFilterStage)
                 ->Event("SetFilterStage", &FilterRequestBus::Events::SetFilterStage)

@@ -2422,7 +2422,7 @@ namespace NCryOpenGL
             return false;
         }
 
-        Lumberyard::OpenGL::ClearErrors();
+        O3de::OpenGL::ClearErrors();
         GLint major = 0, minor = 0;
         glGetIntegerv(GL_MAJOR_VERSION, &major);
         glGetIntegerv(GL_MINOR_VERSION, &minor);
@@ -2431,7 +2431,7 @@ namespace NCryOpenGL
 
         pAdapter->m_sVersion.m_uMajorVersion = static_cast<uint32>(major);
         pAdapter->m_sVersion.m_uMinorVersion = static_cast<uint32>(minor);
-        return Lumberyard::OpenGL::CheckError() == GL_NO_ERROR;
+        return O3de::OpenGL::CheckError() == GL_NO_ERROR;
     }
 
     bool ParseExtensions(SAdapterPtr& pAdapter)
@@ -2443,7 +2443,7 @@ namespace NCryOpenGL
 
         int num = 0, index;
         bool result = true;
-        Lumberyard::OpenGL::ClearErrors();
+        O3de::OpenGL::ClearErrors();
         glGetIntegerv(GL_NUM_EXTENSIONS, &num);
         for (index = 0; index < num; ++index)
         {
@@ -2458,7 +2458,7 @@ namespace NCryOpenGL
             pAdapter->AddExtension(extension);
         }
 
-        return result && Lumberyard::OpenGL::CheckError() == GL_NO_ERROR;
+        return result && O3de::OpenGL::CheckError() == GL_NO_ERROR;
     }
 
     bool DetectAdapters(std::vector<SAdapterPtr>& kAdapters)
@@ -2971,7 +2971,7 @@ namespace NCryOpenGL
 #endif //DXGL_CHECK_ERRORS
 } // namespace NCryOpenGL
 
-namespace Lumberyard
+namespace O3de
 {
     namespace OpenGL
     {
@@ -2994,4 +2994,4 @@ namespace Lumberyard
         }
 #endif
     } // namespace OpenGL
-} // namespace Lumberyard
+} // namespace O3de

@@ -26,23 +26,23 @@ namespace EMStudio
         : QObject(toolbar)
     {
         m_skipBackwardAction = toolbar->addAction(
-            MysticQt::GetMysticQt()->FindIcon("/Images/Icons/SkipBackward.svg"),
+            MysticQt::GetMysticQt()->FindIcon("Images/Icons/SkipBackward.svg"),
             "Skip backward", toolbar, &TimeViewToolBar::OnSkipBackwardButton);
 
         m_seekBackwardAction = toolbar->addAction(
-            MysticQt::GetMysticQt()->FindIcon("/Images/Icons/SeekBackward.svg"),
+            MysticQt::GetMysticQt()->FindIcon("Images/Icons/SeekBackward.svg"),
             "Seek backward", toolbar, &TimeViewToolBar::OnSeekBackwardButton);
 
         m_playForwardAction = toolbar->addAction(
-            MysticQt::GetMysticQt()->FindIcon("/Images/Icons/PlayForward.svg"),
+            MysticQt::GetMysticQt()->FindIcon("Images/Icons/PlayForward.svg"),
             "Play", toolbar, &TimeViewToolBar::OnPlayForwardButton);
 
         m_seekForwardAction = toolbar->addAction(
-            MysticQt::GetMysticQt()->FindIcon("/Images/Icons/SeekForward.svg"),
+            MysticQt::GetMysticQt()->FindIcon("Images/Icons/SeekForward.svg"),
             "Seek forward", toolbar, &TimeViewToolBar::OnSeekForwardButton);
 
         m_skipForwardAction = toolbar->addAction(
-            MysticQt::GetMysticQt()->FindIcon("/Images/Icons/SkipForward.svg"),
+            MysticQt::GetMysticQt()->FindIcon("Images/Icons/SkipForward.svg"),
             "Skip forward", toolbar, &TimeViewToolBar::OnSkipForwardButton);
 
         m_separatorRight = toolbar->addSeparator();

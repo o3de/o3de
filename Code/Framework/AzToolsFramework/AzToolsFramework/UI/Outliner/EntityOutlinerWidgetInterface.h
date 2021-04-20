@@ -22,8 +22,8 @@ namespace AzToolsFramework
     public:
         AZ_RTTI(EntityOutlinerWidgetInterface, "{30C0F252-EC84-4196-BF59-EB9E73B8ADCB}");
 
-        virtual void SetRootEntity(AZ::EntityId rootEntityId) = 0;
         virtual void SetUpdatesEnabled(bool enable) = 0;
+        virtual void ExpandEntityChildren(AZ::EntityId entityId) = 0;
     };
 
 } // namespace AzToolsFramework

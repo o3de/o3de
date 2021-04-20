@@ -14,7 +14,7 @@
 
 #include <AzCore/std/containers/vector.h>
 
-#include <Window/CreateMaterialDialog/ui_CreateMaterialDialog.h>
+#include <Source/Window/CreateMaterialDialog/ui_CreateMaterialDialog.h>
 
 #include <QFileInfo>
 
@@ -36,5 +36,6 @@ namespace MaterialEditor
         QScopedPointer<Ui::CreateMaterialDialog> m_ui;
         void InitMaterialTypeSelection();
         void InitMaterialFileSelection();
+        void UpdateMaterialTypeSelection();
     };
 } // namespace MaterialEditor

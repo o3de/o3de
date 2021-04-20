@@ -66,7 +66,7 @@ namespace EMotionFX
 
         QString GetLayoutFileDirectory() const
         {
-            return QString("%1Layouts").arg(MysticQt::GetDataDir().c_str());
+            return QDir{ QString(MysticQt::GetDataDir().c_str()) }.filePath("Layouts");
         }
 
         QString GetLayoutFileName()
