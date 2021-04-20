@@ -145,5 +145,20 @@
       "GRADLE_BUILD_CMD": "build",
       "ADDITIONAL_GENERATE_ARGS": ""
     }
+  },
+  "periodic_test_profile": {
+    "TAGS":[
+    ],
+    "COMMAND":"build_and_run_unit_tests.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION":"profile",
+      "OUTPUT_DIRECTORY":"build\\android_unittest",
+      "GAME_PROJECT": "AutomatedTesting",
+      "ANDROID_NDK_PLATFORM": "21",
+      "ANDROID_SDK_PLATFORM": "29",
+      "SIGN_APK": "true",
+      "GRADLE_BUILD_CMD": "assemble",
+      "ADDITIONAL_GENERATE_ARGS": "--unit-test"
+    }
   }
 }
