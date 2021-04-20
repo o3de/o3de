@@ -79,6 +79,7 @@ void PbrVsHelper(in VSInput IN, inout VSOutput OUT, float3 worldPosition, bool s
 
 struct PbrLightingOutput
 {
+    // Note some of these use special encodings, which are identical to struct ForwardPassOutput
     float4 m_diffuseColor;
     float4 m_specularColor;
     float4 m_albedo;
@@ -98,7 +99,7 @@ PbrLightingOutput PbrLighting(  in VSOutput IN,
                                 float3 vtxBitangent,
                                 float2 anisotropy,  // angle and factor
                                 float3 emissive,
-                                float occlusion,
+                                float diffuseAmbientOcclusion,
                                 float4 transmissionTintThickness,
                                 float4 transmissionParams,
                                 float clearCoatFactor,
@@ -213,7 +214,7 @@ PbrLightingOutput PbrLighting(  in VSOutput IN,
         }
 
         // Apply ambient occlusion to indirect diffuse
-        iblDiffuse *= occlusion;
+        iblDiffuse *= diffuseAmbientOcclusion;
 
         // Adjust IBL lighting by exposure.
         float iblExposureFactor = pow(2.0, SceneSrg::m_iblExposure);
@@ -259,8 +260,7 @@ PbrLightingOutput PbrLighting(  in VSOutput IN,
 
     // albedo, specularF0, roughness, and normals for later passes (specular IBL, Diffuse GI, SSR, AO, etc)
     lightingOutput.m_specularF0 = float4(specularF0, roughness);
-    lightingOutput.m_albedo.rgb = surface.albedo * diffuseResponse;
-    lightingOutput.m_albedo.a = occlusion;
+    lightingOutput.m_albedo.rgb = surface.albedo * diffuseResponse * diffuseAmbientOcclusion;
     lightingOutput.m_normal.rgb = EncodeNormalSignedOctahedron(normal);
     lightingOutput.m_normal.a = o_specularF0_enableMultiScatterCompensation ? 1.0f : 0.0f;
     
