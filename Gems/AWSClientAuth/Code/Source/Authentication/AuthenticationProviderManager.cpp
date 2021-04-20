@@ -41,15 +41,19 @@ namespace AWSClientAuth
     bool AuthenticationProviderManager::Initialize(const AZStd::vector<ProviderNameEnum>& providerNames, const AZStd::string& settingsRegistryPath)
     {
         ResetProviders();
-        AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
-        AZ_Assert(fileIO, "File IO is not initialized.");
-        
         m_settingsRegistry.reset();
         m_settingsRegistry = AZStd::make_shared<AZ::SettingsRegistryImpl>();
 
         AZStd::array<char, AZ::IO::MaxPathLength> resolvedPath{};
-        fileIO->ResolvePath(settingsRegistryPath.data(), resolvedPath.data(), resolvedPath.size());
-
+        if (auto fileIO = AZ::IO::FileIOBase::GetInstance())
+        {
+            fileIO->ResolvePath(settingsRegistryPath.data(), resolvedPath.data(), resolvedPath.size());
+        }
+        else
+        {
+            AZ_Error("AuthenticationProviderManager", true, "File IO is not initialized.");
+            return false;
+        }
 
         if (!m_settingsRegistry->MergeSettingsFile(resolvedPath.data(), AZ::SettingsRegistryInterface::Format::JsonMergePatch))
         {
