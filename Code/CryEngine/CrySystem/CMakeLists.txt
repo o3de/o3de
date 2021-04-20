@@ -60,6 +60,7 @@ ly_add_target(
             Legacy::CrySystem.XMLBinary
             Legacy::RemoteConsoleCore
             AZ::AzFramework
+            AZ::CrashHandler
     RUNTIME_DEPENDENCIES
         Legacy::Cry3DEngine
 )
