@@ -14,17 +14,11 @@
 
 #include <Utils/MeshAssetHelper.h>
 
-#include <Integration/ActorComponentBus.h>
-
 namespace NvCloth
 {
     MeshAssetHelper::MeshAssetHelper(AZ::EntityId entityId)
         : AssetHelper(entityId)
     {
-        EMotionFX::ActorInstance* actorInstance = nullptr;
-        EMotionFX::Integration::ActorComponentRequestBus::EventResult(
-            actorInstance, entityId, &EMotionFX::Integration::ActorComponentRequestBus::Events::GetActorInstance);
-        m_supportSkinnedAnimation = actorInstance != nullptr;
     }
 
     void MeshAssetHelper::GatherClothMeshNodes(MeshNodeList& meshNodes)
