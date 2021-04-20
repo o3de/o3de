@@ -869,10 +869,10 @@ namespace ScriptCanvas
 
                 const bool hasResults = eventThread->HasReturnValues();
 
-                AZStd::optional<size_t> eventIndex = ebusHandling->m_node->GetEventIndex(eventName);
+                AZStd::optional<size_t> eventIndex = ebusHandling->m_node->GetEventIndex(nameAndEventThread.first);
                 if (!eventIndex)
                 {
-                    AddError(nullptr, aznew Internal::ParseError(ebusHandling->m_node->GetEntityId(), AZStd::string::format("EBus handler did not return a valid index for event %s", eventName.c_str())));
+                    AddError(nullptr, aznew Internal::ParseError(ebusHandling->m_node->GetEntityId(), AZStd::string::format("EBus handler did not return a valid index for event %s", nameAndEventThread.first.c_str())));
                     return;
                 }
 

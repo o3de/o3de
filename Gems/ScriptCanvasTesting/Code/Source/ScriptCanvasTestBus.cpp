@@ -24,6 +24,7 @@ namespace ScriptCanvasTesting
     {
         ScriptCanvasTesting::GlobalBusTraits::Reflect(context);
         ScriptCanvasTesting::LocalBusTraits::Reflect(context);
+        ScriptCanvasTesting::PerformanceStressBusTraits::Reflect(context);
         ScriptCanvasTesting::NativeHandlingOnlyBusTraits::Reflect(context);
         ScriptCanvasTesting::TestTupleMethods::Reflect(context);
 
