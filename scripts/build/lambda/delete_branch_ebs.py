@@ -19,6 +19,12 @@ log.setLevel(logging.INFO)
 
 
 def delete_ebs_volumes(repository_name, branch_name):
+    """
+    Delete all EBS volumes that are tagged with repository_name and branch_name
+    :param repository_name: Full repository name.
+    :param branch_name: Branch name that is deleted.
+    :return: Number of EBS volumes that are deleted successfully, number of EBS volumes that are not deleted.
+    """
     success = 0
     failure = 0
     ec2_client = boto3.resource('ec2')

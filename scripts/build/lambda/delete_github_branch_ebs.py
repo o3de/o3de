@@ -11,18 +11,18 @@
 
 import os
 import boto3
-import time
-import logging
 import json
 import hmac
 import hashlib
 
-TIMEOUT = 300
-log = logging.getLogger(__name__)
-log.setLevel(logging.INFO)
-
 
 def delete_volumes(repository_name, branch_name):
+    """
+    Trigger lambda function that deletes EBS volumes.
+    :param repository_name: Full repository name.
+    :param branch_name: Branch name that is deleted.
+    :return: Number of EBS volumes that are deleted successfully, number of EBS volumes that are not deleted.
+    """
     client = boto3.client('lambda')
     payload = {
         'repository_name': repository_name,
@@ -38,16 +38,33 @@ def delete_volumes(repository_name, branch_name):
 
 
 def verify_signature(headers, payload):
-    # GITHUB_WEBHOOK_SECRET is encrypted with AWS KMS key
-    secret = os.environ.get('GITHUB_WEBHOOK_SECRET', '')
+    """
+    Validate POST request headers and payload to only receive the expected GitHub webhook requests.
+    :param headers: Headers from POST request.
+    :param payload: Payload from POST request.
+    :return: True if request is verified, otherwise, return False.
+    """
+    # secret is stored in AWS Secret Manager
+    secret_name = os.environ.get('GITHUB_WEBHOOK_SECRET_NAME', '')
+    client = boto3.client(service_name='secretsmanager')
+    response = client.get_secret_value(SecretId=secret_name)
+    secret = response['SecretString']
     # Using X-Hub-Signature-256 is recommended by https://docs.github.com/en/developers/webhooks-and-events/securing-your-webhooks
     signature = headers.get('X-Hub-Signature-256', '')
     computed_hash = hmac.new(secret.encode(), payload.encode(), hashlib.sha256).hexdigest()
     computed_signature = f'sha256={computed_hash}'
-    return computed_signature, hmac.compare_digest(computed_signature.encode(), signature.encode())
+    return hmac.compare_digest(computed_signature.encode(), signature.encode())
 
 
 def create_response(status, success=0, failure=0, repository_name=None, branch_name=None):
+    """
+    :param status: Status of EBS deletion request.
+    :param success: Number of EBS volumes that are deleted successfully.
+    :param failure: Number of EBS volumes that are not deleted.
+    :param repository_name: Full repository name.
+    :param branch_name: Branch name that is deleted.
+    :return: JSON response.
+    """
     response = {
         'success': {
             'statusCode': 200,
