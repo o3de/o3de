@@ -56,3 +56,4 @@ ly_associate_package(PACKAGE_NAME qt-5.15.2-windows                  TARGETS Qt 
 ly_associate_package(PACKAGE_NAME libsamplerate-0.2.1-rev2-windows   TARGETS libsamplerate   PACKAGE_HASH dcf3c11a96f212a52e2c9241abde5c364ee90b0f32fe6eeb6dcdca01d491829f)
 ly_associate_package(PACKAGE_NAME OpenMesh-8.1-rev1-windows          TARGETS OpenMesh        PACKAGE_HASH 1c1df639358526c368e790dfce40c45cbdfcfb1c9a041b9d7054a8949d88ee77)
 ly_associate_package(PACKAGE_NAME OpenSSL-1.1.1b-rev2-windows        TARGETS OpenSSL         PACKAGE_HASH 9af1c50343f89146b4053101a7aeb20513319a3fe2f007e356d7ce25f9241040)
+ly_associate_package(PACKAGE_NAME Crashpad-0.8.0-windows             TARGETS Crashpad        PACKAGE_HASH 6a6ae2d1c5bbc2083823c2a8a0a7c01b88ee47261c64e529e14c1f83f3436de2)
