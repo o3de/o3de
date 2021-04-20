@@ -1357,6 +1357,21 @@ namespace AzToolsFramework
         return !m_childrenRows.empty(); 
     }
 
+    AZ::u32 PropertyRowWidget::GetChildRowCount() const
+    {
+        return m_childrenRows.size();
+    }
+
+    PropertyRowWidget* PropertyRowWidget::GetChildRowByIndex(AZ::u32 index) const
+    {
+        if (index >= m_childrenRows.size())
+        {
+            return nullptr;
+        }
+
+        return m_childrenRows[index];
+    }
+
     bool PropertyRowWidget::ShouldPreValidatePropertyChange() const
     {
         return (m_changeValidators.size() > 0);

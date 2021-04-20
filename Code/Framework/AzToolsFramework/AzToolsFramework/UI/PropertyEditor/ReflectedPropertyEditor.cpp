@@ -1625,96 +1625,6 @@ namespace AzToolsFramework
             AzToolsFramework::Refresh_EntireTree);
     }
 
-    void ReflectedPropertyEditor::OnPropertyRowRequestClear(PropertyRowWidget* widget, InstanceDataNode* node)
-    {
-        AZ::SerializeContext::IDataContainer* container = node->GetClassMetadata()->m_container;
-        AZ_Assert(container->IsFixedSize() == false || container->IsSmartPointer(), "Attempted to clear elements in a static container");
-
-        bool isContainerEmpty = false;
-        for (size_t i = 0; !isContainerEmpty && i < node->GetNumInstances(); ++i)
-        {
-            isContainerEmpty = container->Size(node->GetInstance(i)) == 0;
-        }
-
-        // Bail out if the user aborts (or the container is empty, which is by definition a no-op)
-        if (isContainerEmpty ||
-            QMessageBox::question(
-                this, QStringLiteral("Clear container?"),
-                QStringLiteral("Are you sure you want to remove all elements from this container?")) == QMessageBox::No)
-        {
-            return;
-        }
-
-        // get the property editor
-        if (m_impl->m_ptrNotify)
-        {
-            m_impl->m_ptrNotify->BeforePropertyModified(node);
-        }
-
-        // make space for number of elements stored by each instance
-        AZStd::vector<size_t> instanceElements(node->GetNumInstances());
-        for (size_t instanceIndex = 0; instanceIndex < node->GetNumInstances(); ++instanceIndex)
-        {
-            // record how many elements were in each instance
-            instanceElements[instanceIndex] = container->Size(node->GetInstance(instanceIndex));
-            // clear all elements
-            container->ClearElements(node->GetInstance(instanceIndex), node->GetSerializeContext());
-        }
-
-        if (m_impl->m_ptrNotify)
-        {
-            m_impl->m_ptrNotify->AfterPropertyModified(node);
-            m_impl->m_ptrNotify->SealUndoStack();
-        }
-
-        // fire remove notification for each element removed
-        for (const AZ::Edit::AttributePair& attribute : node->GetElementEditMetadata()->m_attributes)
-        {
-            if (attribute.first == AZ::Edit::Attributes::RemoveNotify)
-            {
-                if (InstanceDataNode* pParent = node->GetParent())
-                {
-                    if (auto funcVoid = azdynamic_cast<AZ::Edit::AttributeFunction<void()>*>(attribute.second))
-                    {
-                        for (size_t instanceIndex = 0; instanceIndex < pParent->GetNumInstances(); ++instanceIndex)
-                        {
-                            // remove all elements in reverse order
-                            for (AZ::s64 elementIndex = instanceElements[instanceIndex] - 1; elementIndex >= 0; --elementIndex)
-                            {
-                                // remove callback (without element index)
-                                funcVoid->Invoke(pParent->GetInstance(instanceIndex));
-                            }
-                        }
-                    }
-                    else if (auto funcIndex = azdynamic_cast<AZ::Edit::AttributeFunction<void(size_t)>*>(attribute.second))
-                    {
-                        for (size_t instanceIndex = 0; instanceIndex < pParent->GetNumInstances(); ++instanceIndex)
-                        {
-                            // remove all elements in reverse order
-                            for (AZ::s64 elementIndex = instanceElements[instanceIndex] - 1; elementIndex >= 0; --elementIndex)
-                            {
-                                // remove callback (with element index)
-                                size_t tempElementIndex = elementIndex;
-                                funcIndex->Invoke(pParent->GetInstance(instanceIndex), AZStd::move(tempElementIndex));
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // Fire general change notifications for the container widget.
-        if (widget)
-        {
-            widget->DoPropertyNotify();
-        }
-
-        // Need to refresh any pinned inspectors as well to keep the container state in sync
-        QueueInvalidation(Refresh_EntireTree);
-        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-            &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
-    }
-
     InstanceDataNode* ReflectedPropertyEditor::FindContainerNodeForNode(InstanceDataNode* node) const
     {
         // Locate the owning container. There may be a level of indirection due to wrappers, such as DynamicSerializableField.
@@ -1839,7 +1749,7 @@ namespace AzToolsFramework
             return;
         }
 
-        ChangeNodeIndex(pContainerNode, node, elementIndex, elementIndex - 2);
+        ChangeNodeIndex(pContainerNode, node, elementIndex, elementIndex - 1);
     }
 
     void ReflectedPropertyEditor::MoveNodeDown(InstanceDataNode* node)

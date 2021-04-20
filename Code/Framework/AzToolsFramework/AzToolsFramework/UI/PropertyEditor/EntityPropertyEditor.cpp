@@ -180,7 +180,7 @@ namespace AzToolsFramework
             bool drag = false;
             bool drop = false;
 
-            ComponentEditor* rowWidgetDragEditor = m_editor->GetEditorContiningDraggedRowWidget();
+            ComponentEditor* rowWidgetDragEditor = m_editor->GetEditorContainingDraggedRowWidget();
             if (rowWidgetDragEditor)
             {
                 for (auto componentEditor : m_editor->m_componentEditors)
@@ -1949,127 +1949,154 @@ namespace AzToolsFramework
         if (!rootSlice)
         {
             AZ_Error("PropertyEditor", false, "Entity context has no root slice");
-            return;
         }
-
-        AZ::SliceComponent::SliceInstanceAddress address;
-        AzFramework::SliceEntityRequestBus::EventResult(address, entity->GetId(),
-            &AzFramework::SliceEntityRequests::GetOwningSlice);
-        AZ::SliceComponent::SliceReference* sliceReference = address.GetReference();
-        if (sliceReference)
+        else
         {
-            // This entity is instanced from a slice, so show data push/pull options
-            AZ::SliceComponent::EntityAncestorList ancestors;
-            sliceReference->GetInstanceEntityAncestry(entity->GetId(), ancestors);
-
-            AZ_Error("PropertyEditor", !ancestors.empty(), "Entity \"%s\" belongs to a slice, but its source entity could not be located.", entity->GetName().c_str());
-            if (!ancestors.empty())
+            AZ::SliceComponent::SliceInstanceAddress address;
+            AzFramework::SliceEntityRequestBus::EventResult(address, entity->GetId(), &AzFramework::SliceEntityRequests::GetOwningSlice);
+            AZ::SliceComponent::SliceReference* sliceReference = address.GetReference();
+            if (sliceReference)
             {
-                menu.addSeparator();
+                // This entity is instanced from a slice, so show data push/pull options
+                AZ::SliceComponent::EntityAncestorList ancestors;
+                sliceReference->GetInstanceEntityAncestry(entity->GetId(), ancestors);
 
-                // Populate slice push options.
-                // Address should start with the fully-addressable component Id to resolve within the target entity.
-                InstanceDataHierarchy::Address pushFieldAddress;
-                CalculateAndAdjustNodeAddress(*fieldNode, AddressRootType::RootAtEntity, pushFieldAddress);
-                if (!pushFieldAddress.empty())
+                AZ_Error(
+                    "PropertyEditor", !ancestors.empty(), "Entity \"%s\" belongs to a slice, but its source entity could not be located.",
+                    entity->GetName().c_str());
+                if (!ancestors.empty())
                 {
-                    SliceUtilities::PopulateQuickPushMenu(
-                        menu, 
-                        entity->GetId(), 
-                        pushFieldAddress, 
-                        SliceUtilities::QuickPushMenuOptions("Save field override", SliceUtilities::QuickPushMenuOverrideDisplayCount::ShowOverrideCountOnlyWhenMultiple));
+                    menu.addSeparator();
+
+                    // Populate slice push options.
+                    // Address should start with the fully-addressable component Id to resolve within the target entity.
+                    InstanceDataHierarchy::Address pushFieldAddress;
+                    CalculateAndAdjustNodeAddress(*fieldNode, AddressRootType::RootAtEntity, pushFieldAddress);
+                    if (!pushFieldAddress.empty())
+                    {
+                        SliceUtilities::PopulateQuickPushMenu(
+                            menu, entity->GetId(), pushFieldAddress,
+                            SliceUtilities::QuickPushMenuOptions(
+                                "Save field override",
+                                SliceUtilities::QuickPushMenuOverrideDisplayCount::ShowOverrideCountOnlyWhenMultiple));
+                    }
                 }
             }
-        }
 
-        menu.addSeparator();
+            menu.addSeparator();
 
-        // by leaf node, we mean a visual leaf node in the property editor (ie, we do not have any visible children)
-        bool isLeafNode = !fieldNode->GetClassMetadata() || !fieldNode->GetClassMetadata()->m_container;
+            // by leaf node, we mean a visual leaf node in the property editor (ie, we do not have any visible children)
+            bool isLeafNode = !fieldNode->GetClassMetadata() || !fieldNode->GetClassMetadata()->m_container;
 
-        if (isLeafNode)
-        {
-            for (const InstanceDataNode& childNode : fieldNode->GetChildren())
+            if (isLeafNode)
             {
-                if (HasAnyVisibleElements(childNode))
+                for (const InstanceDataNode& childNode : fieldNode->GetChildren())
                 {
-                    // If we have any visible children, we must not be a leaf node
-                    isLeafNode = false;
-                    break;
+                    if (HasAnyVisibleElements(childNode))
+                    {
+                        // If we have any visible children, we must not be a leaf node
+                        isLeafNode = false;
+                        break;
+                    }
                 }
             }
-        }
 
 #ifdef ENABLE_SLICE_EDITOR
-        // Show PreventOverride & HideProperty options
-        if (GetEntityDataPatchAddress(fieldNode, m_dataPatchAddressBuffer))
-        {
-            AZ::DataPatch::Flags nodeFlags = rootSlice->GetEntityDataFlagsAtAddress(entity->GetId(), m_dataPatchAddressBuffer);
+            // Show PreventOverride & HideProperty options
+            if (GetEntityDataPatchAddress(fieldNode, m_dataPatchAddressBuffer))
+            {
+                AZ::DataPatch::Flags nodeFlags = rootSlice->GetEntityDataFlagsAtAddress(entity->GetId(), m_dataPatchAddressBuffer);
 
-            if (nodeFlags & AZ::DataPatch::Flag::PreventOverrideSet)
-            {
-                QAction* PreventOverrideAction = menu.addAction(tr("Allow property override"));
-                PreventOverrideAction->setEnabled(isLeafNode);
-                connect(PreventOverrideAction, &QAction::triggered, this, [this, fieldNode]
+                if (nodeFlags & AZ::DataPatch::Flag::PreventOverrideSet)
                 {
-                    ContextMenuActionSetDataFlag(fieldNode, AZ::DataPatch::Flag::PreventOverrideSet, false);
-                    InvalidatePropertyDisplay(Refresh_AttributesAndValues);
+                    QAction* PreventOverrideAction = menu.addAction(tr("Allow property override"));
+                    PreventOverrideAction->setEnabled(isLeafNode);
+                    connect(PreventOverrideAction, &QAction::triggered, this, [this, fieldNode] {
+                        ContextMenuActionSetDataFlag(fieldNode, AZ::DataPatch::Flag::PreventOverrideSet, false);
+                        InvalidatePropertyDisplay(Refresh_AttributesAndValues);
+                    });
                 }
-                );
-            }
-            else
-            {
-                QAction* PreventOverrideAction = menu.addAction(tr("Prevent property override"));
-                PreventOverrideAction->setEnabled(isLeafNode);
-                connect(PreventOverrideAction, &QAction::triggered, this, [this, fieldNode]
+                else
                 {
-                    ContextMenuActionSetDataFlag(fieldNode, AZ::DataPatch::Flag::PreventOverrideSet, true);
-                    InvalidatePropertyDisplay(Refresh_AttributesAndValues);
+                    QAction* PreventOverrideAction = menu.addAction(tr("Prevent property override"));
+                    PreventOverrideAction->setEnabled(isLeafNode);
+                    connect(PreventOverrideAction, &QAction::triggered, this, [this, fieldNode] {
+                        ContextMenuActionSetDataFlag(fieldNode, AZ::DataPatch::Flag::PreventOverrideSet, true);
+                        InvalidatePropertyDisplay(Refresh_AttributesAndValues);
+                    });
                 }
-                );
-            }
 
-            if (nodeFlags & AZ::DataPatch::Flag::HidePropertySet)
-            {
-                QAction* HideProperyAction = menu.addAction(tr("Show property on instances"));
-                HideProperyAction->setEnabled(isLeafNode);
-                connect(HideProperyAction, &QAction::triggered, this, [this, fieldNode]
+                if (nodeFlags & AZ::DataPatch::Flag::HidePropertySet)
                 {
-                    ContextMenuActionSetDataFlag(fieldNode, AZ::DataPatch::Flag::HidePropertySet, false);
-                    InvalidatePropertyDisplay(Refresh_AttributesAndValues);
+                    QAction* HideProperyAction = menu.addAction(tr("Show property on instances"));
+                    HideProperyAction->setEnabled(isLeafNode);
+                    connect(HideProperyAction, &QAction::triggered, this, [this, fieldNode] {
+                        ContextMenuActionSetDataFlag(fieldNode, AZ::DataPatch::Flag::HidePropertySet, false);
+                        InvalidatePropertyDisplay(Refresh_AttributesAndValues);
+                    });
                 }
-                );
-            }
-            else
-            {
-                QAction* HideProperyAction = menu.addAction(tr("Hide property on instances"));
-                HideProperyAction->setEnabled(isLeafNode);
-                connect(HideProperyAction, &QAction::triggered, this, [this, fieldNode]
+                else
                 {
-                    ContextMenuActionSetDataFlag(fieldNode, AZ::DataPatch::Flag::HidePropertySet, true);
-                    InvalidatePropertyDisplay(Refresh_AttributesAndValues);
+                    QAction* HideProperyAction = menu.addAction(tr("Hide property on instances"));
+                    HideProperyAction->setEnabled(isLeafNode);
+                    connect(HideProperyAction, &QAction::triggered, this, [this, fieldNode] {
+                        ContextMenuActionSetDataFlag(fieldNode, AZ::DataPatch::Flag::HidePropertySet, true);
+                        InvalidatePropertyDisplay(Refresh_AttributesAndValues);
+                    });
                 }
-                );
             }
-        }
 #endif
 
-        if (sliceReference)
-        {
-            // This entity is referenced from a slice, so show property override options
-            bool hasChanges = fieldNode->HasChangesVersusComparison(false);
-
-            if (!hasChanges && isLeafNode)
+            if (sliceReference)
             {
-                // Add an option to set the ForceOverride flag for this field
-                menu.setToolTipsVisible(true);
-                QAction* forceOverrideAction = menu.addAction(tr("Force property override"));
-                forceOverrideAction->setToolTip(tr("Prevents a property from inheriting from its source slice"));
-                connect(forceOverrideAction, &QAction::triggered, this, [this, fieldNode]()
-                    {
+                // This entity is referenced from a slice, so show property override options
+                bool hasChanges = fieldNode->HasChangesVersusComparison(false);
+
+                if (!hasChanges && isLeafNode)
+                {
+                    // Add an option to set the ForceOverride flag for this field
+                    menu.setToolTipsVisible(true);
+                    QAction* forceOverrideAction = menu.addAction(tr("Force property override"));
+                    forceOverrideAction->setToolTip(tr("Prevents a property from inheriting from its source slice"));
+                    connect(forceOverrideAction, &QAction::triggered, this, [this, fieldNode]() {
                         ContextMenuActionSetDataFlag(fieldNode, AZ::DataPatch::Flag::ForceOverrideSet, true);
-                    }
-                    );
+                    });
+                }
+            }
+        }
+
+        // Add move up/down actions if appropriate
+        auto componentEditorIterator = m_componentToEditorMap.find(componentInstance);
+        AZ_Assert(componentEditorIterator != m_componentToEditorMap.end(), "Unable to find a component editor for the given component");
+        if (componentEditorIterator != m_componentToEditorMap.end())
+        {
+            auto componentEditor = componentEditorIterator->second;
+            PropertyRowWidget* widget = componentEditor->GetPropertyEditor()->GetWidgetFromNode(fieldNode);
+            if (widget->CanBeReordered())
+            {
+                QAction* moveUpAction = menu.addAction(tr("Move %1 Up").arg(widget->GetNameLabel()->text()));
+                moveUpAction->setEnabled(false);
+
+                if (widget->CanMoveUp())
+                {
+                    moveUpAction->setEnabled(true);
+                    connect(moveUpAction, &QAction::triggered, this, [this, fieldNode, componentEditor] {
+                        ContextMenuActionMoveItemUp(componentEditor, fieldNode);
+                    });
+                }
+
+                QAction* moveDownAction = menu.addAction(tr("Move %1 Down").arg(widget->GetNameLabel()->text()));
+                moveDownAction->setEnabled(false);
+
+                if (widget->CanMoveDown())
+                {
+                    moveDownAction->setEnabled(true);
+                    connect(moveDownAction, &QAction::triggered, this, [this, fieldNode, componentEditor] {
+                        ContextMenuActionMoveItemDown(componentEditor, fieldNode);
+                    });
+                }
+
+                menu.addSeparator();
             }
         }
     }
@@ -2368,6 +2395,16 @@ namespace AzToolsFramework
             AfterPropertyModified(node);
             InvalidatePropertyDisplay(Refresh_AttributesAndValues);
         }
+    }
+
+    void EntityPropertyEditor::ContextMenuActionMoveItemUp(ComponentEditor* componentEditor, InstanceDataNode* node)
+    {
+        componentEditor->GetPropertyEditor()->MoveNodeUp(node);
+    }
+
+    void EntityPropertyEditor::ContextMenuActionMoveItemDown(ComponentEditor* componentEditor, InstanceDataNode* node)
+    {
+        componentEditor->GetPropertyEditor()->MoveNodeDown(node);
     }
 
     void EntityPropertyEditor::CalculateAndAdjustNodeAddress(const InstanceDataNode& componentFieldNode, AddressRootType rootType, InstanceDataNode::Address& outAddress) const
@@ -4408,19 +4445,6 @@ namespace AzToolsFramework
             FindAllowedRowWidgetReorderDropTarget(globalPos);
             {
                 UpdateOverlay();
-                // update drop indicators for detected drop targets
-                // if (IsDropAllowedForComponentReorder(mimeData, globalPos))
-                /* {
-                     ComponentEditor* targetComponentEditor =
-                         GetReorderDropTarget(GetInflatedRectFromPoint(globalPos, kComponentEditorDropTargetPrecision));
-
-                     if (targetComponentEditor)
-                     {
-                         targetComponentEditor->SetDropTarget(true);
-                         UpdateOverlay();
-                     }
-                 }*/
-
                 return true;
             }
         }
@@ -4516,7 +4540,6 @@ namespace AzToolsFramework
             }
         }
 
-        bool draggingRowWidget = false;
         if (!intersectsHeader)
         {
             for (auto componentEditor : componentEditors)

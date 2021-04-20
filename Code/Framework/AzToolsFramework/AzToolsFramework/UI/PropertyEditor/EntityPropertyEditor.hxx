@@ -250,6 +250,9 @@ namespace AzToolsFramework
         void ContextMenuActionPullFieldData(AZ::Component* parentComponent, InstanceDataNode* fieldNode);
         void ContextMenuActionSetDataFlag(InstanceDataNode* node, AZ::DataPatch::Flag flag, bool additive);
 
+        void ContextMenuActionMoveItemUp(ComponentEditor* componentEditor, InstanceDataNode* node);
+        void ContextMenuActionMoveItemDown(ComponentEditor* componentEditor, InstanceDataNode* node);
+
         /// Given an InstanceDataNode, calculate a DataPatch address relative to the entity.
         /// @return true if successful.
         bool GetEntityDataPatchAddress(const InstanceDataNode* componentFieldNode, AZ::DataPatch::AddressType& dataPatchAddressOut, AZ::EntityId* entityIdOut = nullptr) const;
