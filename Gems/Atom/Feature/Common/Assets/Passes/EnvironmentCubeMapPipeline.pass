@@ -9,7 +9,8 @@
             "Slots": [
                 {
                     "Name": "Output",
-                    "SlotType": 2
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "RenderTarget"
                 }
             ],
             "PassRequests": [
@@ -101,84 +102,20 @@
                     ]
                 },
                 {
-                    "Name": "DepthMSAAPass",
-                    "TemplateName": "EnvironmentCubeMapDepthMSAAPassTemplate",
-                    "PassData": {
-                        "$type": "RasterPassData",
-                        "DrawListTag": "depth",
-                        "PipelineViewTag": "MainCamera"
-                    },
+                    "Name": "DepthPrePass",
+                    "TemplateName": "DepthMSAAParentTemplate",
                     "Connections": [
                         {
                             "LocalSlot": "SkinnedMeshes",
                             "AttachmentRef": {
                                 "Pass": "SkinningPass",
                                 "Attachment": "SkinnedMeshOutputStream"
-                            }
-                        }
-                    ]
-                },
-                // The light culling system can do highly accurate culling of transparent objects but it needs
-                // more depth information than the opaque geometry pass can provide
-                // Specifically the minimum and maximum depth of transparent objects
-                {
-                    "Name": "DepthTransparentMinPass",
-                    "TemplateName": "DepthPassTemplate",
-                    "PassData": {
-                        "$type": "RasterPassData",
-                        "DrawListTag": "depthTransparentMin",
-                        "PipelineViewTag": "MainCamera"
-                    },
-                    "Connections": [
-                        {
-                            "LocalSlot": "SkinnedMeshes",
-                            "AttachmentRef": {
-                                "Pass": "SkinningPass",
-                                "Attachment": "SkinnedMeshOutputStream"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "Name": "DepthTransparentMaxPass",
-                    "TemplateName": "DepthMaxPassTemplate",
-                    "PassData": {
-                        "$type": "RasterPassData",
-                        "DrawListTag": "depthTransparentMax",
-                        "PipelineViewTag": "MainCamera"
-                    },
-                    "Connections": [
-                        {
-                            "LocalSlot": "SkinnedMeshes",
-                            "AttachmentRef": {
-                                "Pass": "SkinningPass",
-                                "Attachment": "SkinnedMeshOutputStream"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "Name": "LightCullingTilePreparePass",
-                    "TemplateName": "LightCullingTilePrepareMSAATemplate",
-                    "Connections": [
-                        {
-                            "LocalSlot": "Depth",
-                            "AttachmentRef": {
-                                "Pass": "DepthMSAAPass",
-                                "Attachment": "Output"
                             }
                         },
                         {
-                            "LocalSlot": "DepthTransparentMin",
+                            "LocalSlot": "SwapChainOutput",
                             "AttachmentRef": {
-                                "Pass": "DepthTransparentMinPass",
-                                "Attachment": "Output"
-                            }
-                        },
-                        {
-                            "LocalSlot": "DepthTransparentMax",
-                            "AttachmentRef": {
-                                "Pass": "DepthTransparentMaxPass",
+                                "Pass": "Parent",
                                 "Attachment": "Output"
                             }
                         }
@@ -186,40 +123,27 @@
                 },
                 {
                     "Name": "LightCullingPass",
-                    "TemplateName": "LightCullingTemplate",
+                    "TemplateName": "LightCullingParentTemplate",
                     "Connections": [
                         {
-                            "LocalSlot": "TileLightData",
+                            "LocalSlot": "SkinnedMeshes",
                             "AttachmentRef": {
-                                "Pass": "LightCullingTilePreparePass",
-                                "Attachment": "TileLightData"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "Name": "LightCullingRemapPass",
-                    "TemplateName": "LightCullingRemapTemplate",
-                    "Connections": [
-                        {
-                            "LocalSlot": "TileLightData",
-                            "AttachmentRef": {
-                                "Pass": "LightCullingTilePreparePass",
-                                "Attachment": "TileLightData"
+                                "Pass": "SkinningPass",
+                                "Attachment": "SkinnedMeshOutputStream"
                             }
                         },
                         {
-                            "LocalSlot": "LightCount",
+                            "LocalSlot": "DepthMSAA",
                             "AttachmentRef": {
-                                "Pass": "LightCullingPass",
-                                "Attachment": "LightCount"
+                                "Pass": "DepthPrePass",
+                                "Attachment": "DepthMSAA"
                             }
                         },
                         {
-                            "LocalSlot": "LightList",
+                            "LocalSlot": "SwapChainOutput",
                             "AttachmentRef": {
-                                "Pass": "LightCullingPass",
-                                "Attachment": "LightList"
+                                "Pass": "Parent",
+                                "Attachment": "Output"
                             }
                         }
                     ]
@@ -259,21 +183,21 @@
                         {
                             "LocalSlot": "DepthStencilInputOutput",
                             "AttachmentRef": {
-                                "Pass": "DepthMSAAPass",
-                                "Attachment": "Output"
+                                "Pass": "DepthPrePass",
+                                "Attachment": "DepthMSAA"
                             }
                         },
                         {
                             "LocalSlot": "TileLightData",
                             "AttachmentRef": {
-                                "Pass": "LightCullingRemapPass",
+                                "Pass": "LightCullingPass",
                                 "Attachment": "TileLightData"
                             }
                         },
                         {
                             "LocalSlot": "LightListRemapped",
                             "AttachmentRef": {
-                                "Pass": "LightCullingRemapPass",
+                                "Pass": "LightCullingPass",
                                 "Attachment": "LightListRemapped"
                             }
                         }

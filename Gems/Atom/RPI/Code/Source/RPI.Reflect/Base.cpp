@@ -16,6 +16,6 @@ namespace AZ
 {
     namespace RPI
     {
-        bool Validation::s_isEnabled = RHI::BuildOptions::IsDebugBuild;
+        bool Validation::s_isEnabled = RHI::BuildOptions::IsDebugBuild || RHI::BuildOptions::IsProfileBuild;
     }
 }

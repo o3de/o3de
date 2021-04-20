@@ -1245,28 +1245,6 @@ uint32 DisplayContext::SetState(uint32 state)
     return old;
 }
 
-//! Set a new render state flags.
-//! @param returns previous render state.
-uint32 DisplayContext::SetStateFlag(uint32 state)
-{
-    uint32 old = m_renderState;
-    m_renderState |= state;
-    m_renderState = pRenderAuxGeom->GetRenderFlags().m_renderFlags;
-    pRenderAuxGeom->SetRenderFlags(m_renderState);
-    return old;
-}
-
-//! Clear specified flags in render state.
-//! @param returns previous render state.
-uint32 DisplayContext::ClearStateFlag(uint32 state)
-{
-    uint32 old = m_renderState;
-    m_renderState &= ~state;
-    m_renderState = pRenderAuxGeom->GetRenderFlags().m_renderFlags;
-    pRenderAuxGeom->SetRenderFlags(m_renderState);
-    return old;
-}
-
 //////////////////////////////////////////////////////////////////////////
 void DisplayContext::DepthTestOff()
 {
