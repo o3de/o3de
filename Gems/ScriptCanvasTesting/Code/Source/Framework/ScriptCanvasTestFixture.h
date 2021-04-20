@@ -108,15 +108,9 @@ namespace ScriptCanvasTests
 
             auto m_serializeContext = s_application->GetSerializeContext();
             auto m_behaviorContext = s_application->GetBehaviorContext();
-            ScriptCanvasTesting::GlobalBusTraits::Reflect(m_serializeContext);
-            ScriptCanvasTesting::GlobalBusTraits::Reflect(m_behaviorContext);
-            ScriptCanvasTesting::LocalBusTraits::Reflect(m_serializeContext);
-            ScriptCanvasTesting::LocalBusTraits::Reflect(m_behaviorContext);
-            ScriptCanvasTesting::PerformanceStressBusTraits::Reflect(m_serializeContext);
-            ScriptCanvasTesting::PerformanceStressBusTraits::Reflect(m_behaviorContext);
-            ScriptCanvasTesting::NativeHandlingOnlyBusTraits::Reflect(m_serializeContext);
-            ScriptCanvasTesting::NativeHandlingOnlyBusTraits::Reflect(m_behaviorContext);
-            ScriptCanvasTesting::TestTupleMethods::Reflect(m_behaviorContext);
+
+            ScriptCanvasTesting::Reflect(m_serializeContext);
+            ScriptCanvasTesting::Reflect(m_behaviorContext);
 
             ::Nodes::InputMethodSharedDataSlotExampleNode::Reflect(m_serializeContext);
             ::Nodes::InputMethodSharedDataSlotExampleNode::Reflect(m_behaviorContext);
