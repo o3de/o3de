@@ -874,8 +874,11 @@ void EditorViewportWidget::OnBeginPrepareRender()
                 fov = 2 * atanf((h * tan(fov / 2)) / maxTargetHeight);
             }
         }
-
+#if 1 // ATOMSHIM FIXUP
+        m_Camera.SetFrustum(w, h, fov, fNearZ, 8000.0f);
+#else
         m_Camera.SetFrustum(w, h, fov, fNearZ, gEnv->p3DEngine->GetMaxViewDistance());
+#endif
     }
 
     GetIEditor()->GetSystem()->SetViewCamera(m_Camera);
@@ -906,7 +909,9 @@ void EditorViewportWidget::OnBeginPrepareRender()
 
     PostWidgetRendering();
 
+#if 0 // ATOMSHIM FIXUP
     if (!m_renderer->IsStereoEnabled())
+#endif
     {
         GetIEditor()->GetSystem()->RenderStatistics();
     }
