@@ -117,7 +117,7 @@ namespace AzToolsFramework
                                     "Could not find Template using Id '%llu'. Unable to update Instance.",
                                     currentTemplateId);
 
-                                // Remove the instance from update queue if it's corresponding template couldn't be found
+                                // Remove the instance from update queue if its corresponding template couldn't be found
                                 isUpdateSuccessful = false;
                                 m_instancesUpdateQueue.pop();
                                 continue;
@@ -128,7 +128,7 @@ namespace AzToolsFramework
 
                         if (findInstancesResult.find(instanceToUpdate) == findInstancesResult.end())
                         {
-                            // Since nested instances get reconstructed during propgation, remove any nested instance that no longer
+                            // Since nested instances get reconstructed during propagation, remove any nested instance that no longer
                             // maps to a template.
                             isUpdateSuccessful = false;
                             m_instancesUpdateQueue.pop();
