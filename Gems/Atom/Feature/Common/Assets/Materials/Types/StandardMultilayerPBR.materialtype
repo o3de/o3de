@@ -1171,13 +1171,6 @@
             ],
             "layer1_occlusion": [
                 {
-                    "id": "enable",
-                    "displayName": "Enable",
-                    "description": "Whether to enable the occlusion features.",
-                    "type": "Bool",
-                    "defaultValue": false
-                },
-                {
                     "id": "diffuseTextureMap",
                     "displayName": "Diffuse AO",
                     "description": "Texture map for defining occlusion area for diffuse ambient lighting.",
@@ -1870,13 +1863,6 @@
                 }
             ],
             "layer2_occlusion": [
-                {
-                    "id": "enable",
-                    "displayName": "Enable",
-                    "description": "Whether to enable the occlusion features.",
-                    "type": "Bool",
-                    "defaultValue": false
-                },
                 {
                     "id": "diffuseTextureMap",
                     "displayName": "Diffuse AO",
@@ -2571,13 +2557,6 @@
             ],
             "layer3_occlusion": [
                 {
-                    "id": "enable",
-                    "displayName": "Enable",
-                    "description": "Whether to enable the occlusion features.",
-                    "type": "Bool",
-                    "defaultValue": false
-                },
-                {
                     "id": "diffuseTextureMap",
                     "displayName": "Diffuse AO",
                     "description": "Texture map for defining occlusion area for diffuse ambient lighting.",
@@ -3041,21 +3020,21 @@
             }
         },
         {
-            "type": "Lua",
+            "type": "UseTexture",
             "args": {
-                "file": "StandardPBR_DiffuseOcclusionState.lua",
-                "propertyNamePrefix": "layer1_",
-                "srgNamePrefix": "m_layer1_",
-                "optionsNamePrefix": "o_layer1_"
+                "textureProperty": "layer1_occlusion.diffuseTextureMap",
+                "useTextureProperty": "layer1_occlusion.diffuseUseTexture",
+                "dependentProperties": ["layer1_occlusion.diffuseTextureMapUv", "layer1_occlusion.diffuseFactor"],
+                "shaderOption": "o_layer1_o_diffuseOcclusion_useTexture"    
             }
         },
         {
-            "type": "Lua",
+            "type": "UseTexture",
             "args": {
-                "file": "StandardPBR_SpecularOcclusionState.lua",
-                "propertyNamePrefix": "layer1_",
-                "srgNamePrefix": "m_layer1_",
-                "optionsNamePrefix": "o_layer1_"
+                "textureProperty": "layer1_occlusion.specularTextureMap",
+                "useTextureProperty": "layer1_occlusion.specularUseTexture",
+                "dependentProperties": ["layer1_occlusion.specularTextureMapUv", "layer1_occlusion.specularFactor"],
+                "shaderOption": "o_layer1_o_specularOcclusion_useTexture"    
             }
         },
         {
@@ -3178,21 +3157,21 @@
             }
         },
         {
-            "type": "Lua",
+            "type": "UseTexture",
             "args": {
-                "file": "StandardPBR_DiffuseOcclusionState.lua",
-                "propertyNamePrefix": "layer2_",
-                "srgNamePrefix": "m_layer2_",
-                "optionsNamePrefix": "o_layer2_"
+                "textureProperty": "layer2_occlusion.diffuseTextureMap",
+                "useTextureProperty": "layer2_occlusion.diffuseUseTexture",
+                "dependentProperties": ["layer2_occlusion.diffuseTextureMapUv", "layer2_occlusion.diffuseFactor"],
+                "shaderOption": "o_layer2_o_diffuseOcclusion_useTexture"    
             }
         },
         {
-            "type": "Lua",
+            "type": "UseTexture",
             "args": {
-                "file": "StandardPBR_SpecularOcclusionState.lua",
-                "propertyNamePrefix": "layer2_",
-                "srgNamePrefix": "m_layer2_",
-                "optionsNamePrefix": "o_layer2_"
+                "textureProperty": "layer2_occlusion.specularTextureMap",
+                "useTextureProperty": "layer2_occlusion.specularUseTexture",
+                "dependentProperties": ["layer2_occlusion.specularTextureMapUv", "layer2_occlusion.specularFactor"],
+                "shaderOption": "o_layer2_o_specularOcclusion_useTexture"    
             }
         },
         {
@@ -3315,21 +3294,21 @@
             }
         },
         {
-            "type": "Lua",
+            "type": "UseTexture",
             "args": {
-                "file": "StandardPBR_DiffuseOcclusionState.lua",
-                "propertyNamePrefix": "layer3_",
-                "srgNamePrefix": "m_layer3_",
-                "optionsNamePrefix": "o_layer3_"
+                "textureProperty": "layer3_occlusion.diffuseTextureMap",
+                "useTextureProperty": "layer3_occlusion.diffuseUseTexture",
+                "dependentProperties": ["layer3_occlusion.diffuseTextureMapUv", "layer3_occlusion.diffuseFactor"],
+                "shaderOption": "o_layer3_o_diffuseOcclusion_useTexture"    
             }
         },
         {
-            "type": "Lua",
+            "type": "UseTexture",
             "args": {
-                "file": "StandardPBR_SpecularOcclusionState.lua",
-                "propertyNamePrefix": "layer3_",
-                "srgNamePrefix": "m_layer3_",
-                "optionsNamePrefix": "o_layer3_"
+                "textureProperty": "layer3_occlusion.specularTextureMap",
+                "useTextureProperty": "layer3_occlusion.specularUseTexture",
+                "dependentProperties": ["layer3_occlusion.specularTextureMapUv", "layer3_occlusion.specularFactor"],
+                "shaderOption": "o_layer3_o_specularOcclusion_useTexture"    
             }
         },
         {

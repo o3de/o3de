@@ -385,13 +385,6 @@
             ],
             "occlusion": [
                 {
-                    "id": "enable",
-                    "displayName": "Enable",
-                    "description": "Whether to enable the occlusion features.",
-                    "type": "Bool",
-                    "defaultValue": false
-                },
-                {
                     "id": "diffuseTextureMap",
                     "displayName": "Diffuse AO",
                     "description": "Texture map for defining occlusion area for diffuse ambient lighting.",
@@ -1069,15 +1062,21 @@
             }
         },
         {
-            "type": "Lua",
+            "type": "UseTexture",
             "args": {
-                "file": "StandardPBR_DiffuseOcclusionState.lua"
+                "textureProperty": "occlusion.diffuseTextureMap",
+                "useTextureProperty": "occlusion.diffuseUseTexture",
+                "dependentProperties": ["occlusion.diffuseTextureMapUv", "occlusion.diffuseFactor"],
+                "shaderOption": "o_diffuseOcclusion_useTexture"    
             }
         },
         {
-            "type": "Lua",
+            "type": "UseTexture",
             "args": {
-                "file": "StandardPBR_SpecularOcclusionState.lua"
+                "textureProperty": "occlusion.specularTextureMap",
+                "useTextureProperty": "occlusion.specularUseTexture",
+                "dependentProperties": ["occlusion.specularTextureMapUv", "occlusion.specularFactor"],
+                "shaderOption": "o_specularOcclusion_useTexture"    
             }
         },
         {

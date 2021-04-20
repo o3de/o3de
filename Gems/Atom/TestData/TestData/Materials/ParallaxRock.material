@@ -5,7 +5,6 @@
     "propertyLayoutVersion": 3,
     "properties": {
         "occlusion": {
-            "enable": true,
             "diffuseTextureMap": "TestData/Textures/cc0/Rock030_2K_AmbientOcclusion.jpg"
         },
         "baseColor": {

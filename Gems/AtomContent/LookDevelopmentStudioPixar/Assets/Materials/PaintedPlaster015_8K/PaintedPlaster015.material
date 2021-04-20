@@ -5,7 +5,6 @@
     "propertyLayoutVersion": 3,
     "properties": {
         "occlusion": {
-            "enable": true,
             "diffuseFactor": 0.30000001192092898,
             "diffuseTextureMap": "Materials/PaintedPlaster015_8K/PaintedPlaster015_8K_AmbientOcclusion.png"
         },

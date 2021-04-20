@@ -29,8 +29,7 @@
         },
         "layer1_occlusion": {
             "diffuseFactor": 1.6399999856948853,
-            "diffuseTextureMap": "TestData/Textures/cc0/bark1_disp.jpg",
-            "enable": true
+            "diffuseTextureMap": "TestData/Textures/cc0/bark1_disp.jpg"
         },
         "layer1_parallax": {
             "enable": true,
@@ -73,7 +72,6 @@
             "textureMap": "TestData/Textures/cc0/Lava004_1K_Normal.jpg"
         },
         "layer2_occlusion": {
-            "enable": true,
             "specularFactor": 2.0,
             "specularTextureMap": "TestData/Textures/cc0/Tiles009_1K_Displacement.jpg"
         },
@@ -113,8 +111,7 @@
         },
         "layer3_occlusion": {
             "diffuseFactor": 1.0399999618530274,
-            "diffuseTextureMap": "TestData/Textures/cc0/PaintedMetal003_1K_Displacement.jpg",
-            "enable": true
+            "diffuseTextureMap": "TestData/Textures/cc0/PaintedMetal003_1K_Displacement.jpg"
         },
         "layer3_parallax": {
             "enable": true,

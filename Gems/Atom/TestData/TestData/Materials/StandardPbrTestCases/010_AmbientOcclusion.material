@@ -6,8 +6,7 @@
     "properties": {
         "occlusion": {
             "diffuseFactor": 2.0,
-            "diffuseTextureMap": "TestData/Textures/cc0/Tiles009_1K_AmbientOcclusion.jpg",
-            "enable": true
+            "diffuseTextureMap": "TestData/Textures/cc0/Tiles009_1K_AmbientOcclusion.jpg"
         }
     }
 }
