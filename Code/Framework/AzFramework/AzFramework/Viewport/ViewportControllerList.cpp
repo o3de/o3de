@@ -89,19 +89,11 @@ namespace AzFramework
             return;
         }
 
-        for (const auto priority : {
-            ViewportControllerPriority::Highest,
-            ViewportControllerPriority::High,
-            ViewportControllerPriority::Normal,
-            ViewportControllerPriority::Low,
-            ViewportControllerPriority::Lowest })
+        for (const auto& controllerList : m_controllers)
         {
-            if (auto priorityListIt = m_controllers.find(priority); priorityListIt != m_controllers.end())
+            for (const auto& controller : controllerList.second)
             {
-                for (const auto& controller : priorityListIt->second)
-                {
-                    controller->ResetInputChannels();
-                }
+                controller->ResetInputChannels();
             }
         }
     }

@@ -38,7 +38,7 @@ namespace AzFramework
         //! InputChannelEvents are sent to controllers in priority order (from the lowest priority value to the highest).
         bool HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event) override;
         //! Dispatches a ResetInputChannels call to all controllers registered to this list.
-        //! Calls to controllers are made in priority order (from the lowest priority value to the highest).
+        //! Calls to controllers are made in an undefined order.
         void ResetInputChannels() override;
         //! Dispatches an update tick to all controllers registered to this list.
         //! This occurs in *reverse* priority order (i.e. from the highest priority value to the lowest) so that
