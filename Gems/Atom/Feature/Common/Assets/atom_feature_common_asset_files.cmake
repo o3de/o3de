@@ -23,6 +23,11 @@ set(FILES
     Materials/Types/EnhancedPBR_ForwardPass_EDS.shader
     Materials/Types/EnhancedPBR_Shadowmap_WithPS.azsl
     Materials/Types/EnhancedPBR_Shadowmap_WithPS.shader
+    Materials/Types/Skin.azsl
+    Materials/Types/Skin.materialtype
+    Materials/Types/Skin.shader
+    Materials/Types/Skin_Common.azsli
+    Materials/Types/Skin_WrinkleMaps.lua
     Materials/Types/StandardMultilayerPBR.materialtype
     Materials/Types/StandardMultilayerPBR_ClearCoatEnableFeature.lua
     Materials/Types/StandardMultilayerPBR_Common.azsli
@@ -56,6 +61,7 @@ set(FILES
     Materials/Types/MaterialInputs/AlphaInput.azsli
     Materials/Types/MaterialInputs/BaseColorInput.azsli
     Materials/Types/MaterialInputs/ClearCoatInput.azsli
+    Materials/Types/MaterialInputs/DetailMapsCommonFunctor.lua
     Materials/Types/MaterialInputs/DetailMapsInput.azsli
     Materials/Types/MaterialInputs/EmissiveInput.azsli
     Materials/Types/MaterialInputs/MetallicInput.azsli
@@ -105,6 +111,7 @@ set(FILES
     Passes/DepthUpsample.pass
     Passes/DiffuseComposite.pass
     Passes/DiffuseGlobalFullscreen.pass
+    Passes/DiffuseGlobalFullscreen_nomsaa.pass
     Passes/DiffuseGlobalIllumination.pass
     Passes/DiffuseProbeGridBlendDistance.pass
     Passes/DiffuseProbeGridBlendIrradiance.pass
@@ -161,6 +168,7 @@ set(FILES
     Passes/ReflectionComposite.pass
     Passes/ReflectionCopyFrameBuffer.pass
     Passes/ReflectionGlobalFullscreen.pass
+    Passes/ReflectionGlobalFullscreen_nomsaa.pass
     Passes/ReflectionProbeBlendWeight.pass
     Passes/ReflectionProbeRenderInner.pass
     Passes/ReflectionProbeRenderOuter.pass
@@ -172,6 +180,7 @@ set(FILES
     Passes/ReflectionScreenSpaceBlurVertical.pass
     Passes/ReflectionScreenSpaceComposite.pass
     Passes/ReflectionScreenSpaceTrace.pass
+    Passes/Reflections_nomsaa.pass
     Passes/ShadowParent.pass
     Passes/Skinning.pass
     Passes/SkyBox.pass
@@ -181,7 +190,7 @@ set(FILES
     Passes/SMAAConvertToPerceptualColor.pass
     Passes/SMAAEdgeDetection.pass
     Passes/SMAANeighborhoodBlending.pass
-    Passes/SpotLightShadowmaps.pass
+    Passes/ProjectedShadowmaps.pass
     Passes/SsaoCompute.pass
     Passes/SsaoHalfRes.pass
     Passes/SsaoParent.pass
@@ -190,6 +199,8 @@ set(FILES
     Passes/TransparentParent.pass
     Passes/UI.pass
     Passes/UIParent.pass
+    Scripts/material_property_overrides_demo.lua
+    ShaderLib/Atom/Features/BlendUtility.azsli
     ShaderLib/Atom/Features/IndirectRendering.azsli
     ShaderLib/Atom/Features/MatrixUtility.azsli
     ShaderLib/Atom/Features/ParallaxMapping.azsli
@@ -211,6 +222,7 @@ set(FILES
     ShaderLib/Atom/Features/Math/Filter.azsli
     ShaderLib/Atom/Features/Math/FilterPassSrg.azsli
     ShaderLib/Atom/Features/Math/IntersectionTests.azsli
+    ShaderLib/Atom/Features/MorphTargets/MorphTargetCompression.azsli
     ShaderLib/Atom/Features/PBR/AlphaUtils.azsli
     ShaderLib/Atom/Features/PBR/BackLighting.azsli
     ShaderLib/Atom/Features/PBR/Decals.azsli
@@ -219,21 +231,32 @@ set(FILES
     ShaderLib/Atom/Features/PBR/ForwardPassSrg.azsli
     ShaderLib/Atom/Features/PBR/Hammersley.azsli
     ShaderLib/Atom/Features/PBR/LightingModel.azsli
+    ShaderLib/Atom/Features/PBR/LightingOptions.azsli
     ShaderLib/Atom/Features/PBR/LightingUtils.azsli
     ShaderLib/Atom/Features/PBR/Surface.azsli
     ShaderLib/Atom/Features/PBR/TransparentPassSrg.azsli
+    ShaderLib/Atom/Features/PBR/Lighting/DualSpecularLighting.azsli
+    ShaderLib/Atom/Features/PBR/Lighting/LightingData.azsli
+    ShaderLib/Atom/Features/PBR/Lighting/StandardLighting.azsli
     ShaderLib/Atom/Features/PBR/Lights/CapsuleLight.azsli
     ShaderLib/Atom/Features/PBR/Lights/DirectionalLight.azsli
     ShaderLib/Atom/Features/PBR/Lights/DiskLight.azsli
     ShaderLib/Atom/Features/PBR/Lights/Ibl.azsli
+    ShaderLib/Atom/Features/PBR/Lights/Lights.azsli
     ShaderLib/Atom/Features/PBR/Lights/LightTypesCommon.azsli
     ShaderLib/Atom/Features/PBR/Lights/Ltc.azsli
     ShaderLib/Atom/Features/PBR/Lights/PointLight.azsli
+    ShaderLib/Atom/Features/PBR/Lights/PolygonLight.azsli
     ShaderLib/Atom/Features/PBR/Lights/QuadLight.azsli
-    ShaderLib/Atom/Features/PBR/Lights/SpotLight.azsli
     ShaderLib/Atom/Features/PBR/Microfacet/Brdf.azsli
     ShaderLib/Atom/Features/PBR/Microfacet/Fresnel.azsli
     ShaderLib/Atom/Features/PBR/Microfacet/Ggx.azsli
+    ShaderLib/Atom/Features/PBR/Surfaces/AnisotropicSurfaceData.azsli
+    ShaderLib/Atom/Features/PBR/Surfaces/BasePbrSurfaceData.azsli
+    ShaderLib/Atom/Features/PBR/Surfaces/ClearCoatSurfaceData.azsli
+    ShaderLib/Atom/Features/PBR/Surfaces/DualSpecularSurface.azsli
+    ShaderLib/Atom/Features/PBR/Surfaces/StandardSurface.azsli
+    ShaderLib/Atom/Features/PBR/Surfaces/TransmissionSurfaceData.azsli
     ShaderLib/Atom/Features/PostProcessing/Aces.azsli
     ShaderLib/Atom/Features/PostProcessing/AcesColorSpaceConversion.azsli
     ShaderLib/Atom/Features/PostProcessing/FullscreenPixelInfo.azsli
@@ -244,11 +267,12 @@ set(FILES
     ShaderLib/Atom/Features/PostProcessing/GlyphRender.azsli
     ShaderLib/Atom/Features/PostProcessing/PostProcessUtil.azsli
     ShaderLib/Atom/Features/ScreenSpace/ScreenSpaceUtil.azsli
+    ShaderLib/Atom/Features/Shadow/BicubicPcfFilters.azsli
     ShaderLib/Atom/Features/Shadow/DirectionalLightShadow.azsli
     ShaderLib/Atom/Features/Shadow/JitterTablePcf.azsli
     ShaderLib/Atom/Features/Shadow/Shadow.azsli
     ShaderLib/Atom/Features/Shadow/ShadowmapAtlasLib.azsli
-    ShaderLib/Atom/Features/Shadow/SpotLightShadow.azsli
+    ShaderLib/Atom/Features/Shadow/ProjectedShadow.azsli
     ShaderResourceGroups/SceneSrg.azsli
     ShaderResourceGroups/SceneSrgAll.azsli
     ShaderResourceGroups/SceneTimeSrg.azsli
@@ -278,10 +302,16 @@ set(FILES
     Shaders/Depth/DepthPassTransparentMin.shader
     Shaders/DiffuseGlobalIllumination/DiffuseComposite.azsl
     Shaders/DiffuseGlobalIllumination/DiffuseComposite.shader
+    Shaders/DiffuseGlobalIllumination/DiffuseComposite_nomsaa.azsl
+    Shaders/DiffuseGlobalIllumination/DiffuseComposite_nomsaa.shader
     Shaders/DiffuseGlobalIllumination/DiffuseGlobalFullscreen.azsl
     Shaders/DiffuseGlobalIllumination/DiffuseGlobalFullscreen.shader
+    Shaders/DiffuseGlobalIllumination/DiffuseGlobalFullscreen_nomsaa.azsl
+    Shaders/DiffuseGlobalIllumination/DiffuseGlobalFullscreen_nomsaa.shader
     Shaders/DiffuseGlobalIllumination/DiffuseProbeGridDownsample.azsl
     Shaders/DiffuseGlobalIllumination/DiffuseProbeGridDownsample.shader
+    Shaders/DiffuseGlobalIllumination/DiffuseProbeGridDownsample_nomsaa.azsl
+    Shaders/DiffuseGlobalIllumination/DiffuseProbeGridDownsample_nomsaa.shader
     Shaders/ImGui/ImGui.azsl
     Shaders/ImGui/ImGui.shader
     Shaders/LightCulling/LightCulling.azsl
@@ -397,8 +427,12 @@ set(FILES
     Shaders/Reflections/ReflectionCommon.azsli
     Shaders/Reflections/ReflectionComposite.azsl
     Shaders/Reflections/ReflectionComposite.shader
+    Shaders/Reflections/ReflectionComposite_nomsaa.azsl
+    Shaders/Reflections/ReflectionComposite_nomsaa.shader
     Shaders/Reflections/ReflectionGlobalFullscreen.azsl
     Shaders/Reflections/ReflectionGlobalFullscreen.shader
+    Shaders/Reflections/ReflectionGlobalFullscreen_nomsaa.azsl
+    Shaders/Reflections/ReflectionGlobalFullscreen_nomsaa.shader
     Shaders/Reflections/ReflectionProbeBlendWeight.azsl
     Shaders/Reflections/ReflectionProbeBlendWeight.shader
     Shaders/Reflections/ReflectionProbeRenderCommon.azsli

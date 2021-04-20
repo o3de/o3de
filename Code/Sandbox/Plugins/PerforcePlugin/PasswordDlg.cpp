@@ -102,7 +102,6 @@ namespace PerforceConnection
         // which CHARSET do we pick?  we prefer (servername) charset, but will fall back to just P4CHARSET
         for (const auto& value : m_retrievedSettings)
         {
-            QLineEdit *targetControl = nullptr;
             const AZStd::string& settingName = value.first;
             const SourceControlSettingInfo& info = value.second;
             ApplyValueToControl(GetControlForSetting(settingName), info);

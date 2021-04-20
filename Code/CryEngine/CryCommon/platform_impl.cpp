@@ -311,7 +311,7 @@ void InitRootDir(char szExeFileName[], uint nExeSize, char szExeRootName[], [[ma
                 firstIteration = false;
             }
             // Check if the engineroot exists
-            wcscat_s(szPath, L"\\engineroot.txt");
+            wcscat_s(szPath, L"\\engine.json");
             WIN32_FILE_ATTRIBUTE_DATA data;
             BOOL res = GetFileAttributesExW(szPath, GetFileExInfoStandard, &data);
             if (res != 0 && data.dwFileAttributes != INVALID_FILE_ATTRIBUTES)
@@ -376,7 +376,10 @@ void* CryInterlockedExchangePointer(void* volatile* dst, void* exchange)
 void CryInterlockedAdd(volatile size_t* pVal, ptrdiff_t iAdd)
 {
 #if defined (PLATFORM_64BIT)
-    size_t v = (size_t)InterlockedAdd64((volatile int64*)pVal, iAdd);
+#if !defined(NDEBUG)
+    size_t v = (size_t)
+#endif
+        InterlockedAdd64((volatile int64*)pVal, iAdd);
 #else
     size_t v = (size_t)CryInterlockedExchangeAdd((volatile long*)pVal, (long)iAdd);
     v += iAdd;

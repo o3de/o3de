@@ -186,7 +186,7 @@ namespace AZ
         {
             for (const RPI::Pass* pass : passes)
             {
-                m_timestampEntries.push_back({ pass->GetName(), pass->GetTimestampResult().GetTimestampInNanoseconds() });
+                m_timestampEntries.push_back({pass->GetName(), pass->GetLatestTimestampResult().GetDurationInNanoseconds()});
             }
         }
 
@@ -223,7 +223,7 @@ namespace AZ
         {
             for (const RPI::Pass* pass : passes)
             {
-                m_pipelineStatisticsEntries.push_back({ pass->GetName(), pass->GetPipelineStatisticsResult() });
+                m_pipelineStatisticsEntries.push_back({pass->GetName(), pass->GetLatestPipelineStatisticsResult()});
             }
         }
 

@@ -12,17 +12,7 @@
 
 #pragma once
 
-option bool o_specularF0_enableMultiScatterCompensation;
-option bool o_enableShadows = true;
-option bool o_enableDirectionalLights = true;
-option bool o_enablePunctualLights = true;
-option bool o_enableAreaLights = true;
-option bool o_enableIBL = true;
-option bool o_enableSubsurfaceScattering;
-option bool o_clearCoat_feature_enabled;
-option enum class TransmissionMode {None, ThickObject, ThinObject} o_transmission_mode;
-option bool o_meshUseForwardPassIBLSpecular = false;
-option bool o_materialUseForwardPassIBLSpecular = false;
+#include <Atom/Features/PBR/LightingOptions.azsli>
 
 #include <viewsrg.srgi>
 #include <scenesrg.srgi>
@@ -35,26 +25,12 @@ option bool o_materialUseForwardPassIBLSpecular = false;
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 #include <Atom/Features/PBR/ForwardPassSrg.azsli>
 
-#include <Atom/Features/PBR/Surface.azsli>
+#include <Atom/Features/PBR/Lighting/StandardLighting.azsli>
 #include <Atom/Features/PBR/Decals.azsli>
-#include <Atom/Features/PBR/Lights/DirectionalLight.azsli>
-#include <Atom/Features/PBR/Lights/PointLight.azsli>
-#include <Atom/Features/PBR/Lights/SpotLight.azsli>
-#include <Atom/Features/PBR/Lights/DiskLight.azsli>
-#include <Atom/Features/PBR/Lights/CapsuleLight.azsli>
-#include <Atom/Features/PBR/Lights/PolygonLight.azsli>
-#include <Atom/Features/PBR/Lights/QuadLight.azsli>
-#include <Atom/Features/PBR/Lights/Ibl.azsli>
-
-/**
-* The StandardPBR Material Template provides a foundation for creating PBR base materials.
-* A default StandardPBR base material is provided as well, built on top of this template, and
-* should suit many needs. Additional base materials can created as needed, using StandardPBR.material
-* as a reference.
-*/ 
 
 // VSInput, VSOutput, ObjectSrg must be defined before including this file.
 
+// DEPRECATED: Please use the VertexHelper(...) function in VertexHelper.azsli instead.
 //! @param skipShadowCoords can be useful for example when PixelDepthOffset is enable, because the pixel shader will have to run before the final world position is known
 void PbrVsHelper(in VSInput IN, inout VSOutput OUT, float3 worldPosition, bool skipShadowCoords = false)
 {
@@ -77,19 +53,10 @@ void PbrVsHelper(in VSInput IN, inout VSOutput OUT, float3 worldPosition, bool s
     }
 }
 
-struct PbrLightingOutput
-{
-    // Note some of these use special encodings, which are identical to struct ForwardPassOutput
-    float4 m_diffuseColor;
-    float4 m_specularColor;
-    float4 m_albedo;
-    float4 m_specularF0;
-    float4 m_normal;
-    float4 m_clearCoatNormal;
-    float3 m_scatterDistance;
-};
 
-PbrLightingOutput PbrLighting(  in VSOutput IN,
+// DEPRECATED: Please use the functions in StandardLighting.azsli instead.
+// For an example on how to use those functions, see StandardPBR_forwardPass.azsl
+PbrLightingOutput PbrLighting(  VSOutput IN,
                                 float3 baseColor,
                                 float metallic,
                                 float roughness,
@@ -109,24 +76,43 @@ PbrLightingOutput PbrLighting(  in VSOutput IN,
                                 float alpha,
                                 OpacityMode opacityMode)
 {
-    static const float3 MaxDielectricSpecularF0 = 0.08f;
-    float3 dirToCamera = normalize(ViewSrg::m_worldPosition.xyz - IN.m_worldPosition);
+    float3 worldPosition = IN.m_worldPosition;
+    float4 position = IN.m_position;
+    float3 shadowCoords[ViewSrg::MaxCascadeCount] = IN.m_shadowCoords;
 
-    // sample BRDF map (indexed by smoothness values rather than roughness)
-    float NdotV = dot(normal, dirToCamera);
-    float2 brdfUV = float2(saturate(NdotV), (1.0f - roughness));
-    float2 brdf = PassSrg::m_brdfMap.Sample(PassSrg::LinearSampler, brdfUV).rg;
+    // ______________________________________________________________________________________________
+    // Surface
 
-    // compute albedo and specularF0 based on metalness
-    float3 albedo = (o_enableSubsurfaceScattering) ? baseColor : lerp(baseColor, float3(0.0f, 0.0f, 0.0f), metallic);
+    Surface surface;
+
+    surface.position = worldPosition;
+    surface.normal = normal;
+    surface.roughnessLinear = roughness;
+    surface.transmission.tint = transmissionTintThickness.rgb;
+    surface.transmission.thickness = transmissionTintThickness.w;
+    surface.transmission.transmissionParams = transmissionParams;
+    surface.clearCoat.factor = clearCoatFactor;
+    surface.clearCoat.roughness = clearCoatRoughness;
+    surface.clearCoat.normal = clearCoatNormal;
+
+    surface.CalculateRoughnessA();
+    surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
+    surface.anisotropy.Init(normal, vtxTangent, vtxBitangent, anisotropy.x, anisotropy.y, surface.roughnessA);
+
+    // ______________________________________________________________________________________________
+    // LightingData
+
+    LightingData lightingData;
+
+    // Light iterator
+    lightingData.tileIterator.Init(position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
+    lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
     
-    // since the left hand side value of this interpolation is achromatic color, this value doesn't convert a color space.
-    float3 dielectricSpecularF0 = MaxDielectricSpecularF0 * specularF0Factor;
+    lightingData.emissiveLighting = emissive;
+    lightingData.occlusion = occlusion;
 
-    // because most of metal material theoratically conflicts with subsurface scattering
-    // (electrons hit to a conductor will be either 'absorbed' or reflected hence no chance to transmit),
-    // metallic is disabled if subsurface scattering turned on
-    float3 specularF0 = (o_enableSubsurfaceScattering) ?  dielectricSpecularF0 : lerp(dielectricSpecularF0, baseColor, metallic);
+    // Directional light shadow coordinates
+    lightingData.shadowCoords = shadowCoords;
 
     // manipulate base layer f0 if clear coat is enabled
     if(o_clearCoat_feature_enabled)
@@ -134,142 +120,44 @@ PbrLightingOutput PbrLighting(  in VSOutput IN,
         // modify base layer's normal incidence reflectance
         // for the derivation of the following equation please refer to:
         // https://google.github.io/filament/Filament.md.html#materialsystem/clearcoatmodel/baselayermodification
-        float3 f0 = (1.0 - 5.0 * sqrt(specularF0)) / (5.0 - sqrt(specularF0));
-        specularF0 = lerp(specularF0, f0 * f0, clearCoatFactor);
+        float3 f0 = (1.0 - 5.0 * sqrt(surface.specularF0)) / (5.0 - sqrt(surface.specularF0));
+        surface.specularF0 = lerp(surface.specularF0, f0 * f0, clearCoatFactor);
     }
 
-    // compute specular and diffuse response
-    float3 specularResponse = FresnelSchlickWithRoughness(NdotV, specularF0, roughness);
-    float3 diffuseResponse = 1.0 - specularResponse;
-    
-    if (o_clearCoat_feature_enabled)
+    // Diffuse and Specular response (used in IBL calculations)
+    lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
+    lightingData.diffuseResponse = 1.0 - lightingData.specularResponse;
+
+    if(o_clearCoat_feature_enabled)
     {
         // Clear coat layer has fixed IOR = 1.5 and transparent => F0 = (1.5 - 1)^2 / (1.5 + 1)^2 = 0.04
-        diffuseResponse *= 1.0 - (FresnelSchlickWithRoughness(NdotV, float3(0.04, 0.04, 0.04), clearCoatRoughness) * clearCoatFactor);
+        lightingData.diffuseResponse *= 1.0 - (FresnelSchlickWithRoughness(lightingData.NdotV, float3(0.04, 0.04, 0.04), surface.clearCoat.roughness) * surface.clearCoat.factor);
     }
 
-    // Set up the surface parameters.
-    Surface surface = (Surface)0.0;
-    surface.position = IN.m_worldPosition.xyz;
-    surface.normal = normal;
-    surface.albedo = albedo;
-    surface.specularF0 = specularF0;
-    surface.multiScatterCompensation = GetMultiScatterCompensation(NdotV, surface.specularF0, brdf, o_specularF0_enableMultiScatterCompensation);
-    // The roughness value in microfacet calculations (called "alpha" in the literature) does not give perceptually
-    // linear results. Disney found that squaring the roughness value before using it in microfacet equations causes
-    // the user-provided roughness parameter to be more perceptually linear. We keep both values available as some
-    // equations need roughnessLinear (i.e. IBL sampling) while others need roughnessA (i.e. GGX equations).
-    // See Burley's Disney PBR: https://pdfs.semanticscholar.org/eeee/3b125c09044d3e2f58ed0e4b1b66a677886d.pdf
-    surface.roughnessLinear = roughness; 
-    surface.thickness = transmissionTintThickness.w;
-    
-    // Thick object mode: (attenuation coefficient, power, distortion, scale)
-    // Thin  object mode:  (float3 scatter distance, scale)
-    surface.transmissionParams = transmissionParams;
+    // Multiscatter compensation factor
+    lightingData.CalculateMultiscatterCompensation(surface.specularF0, o_specularF0_enableMultiScatterCompensation);
 
-    // Parameters: (clear coat factor, perceptual roughness)
-    surface.clearCoatFactor = clearCoatFactor;
-    surface.clearCoatRoughness = clearCoatRoughness;
-    surface.clearCoatNormal = clearCoatNormal;
+    // ______________________________________________________________________________________________
+    // Lighting
 
-    // Make sure roughnessA is above 0 to avoid precision and divide by zero issues. 0.0005f is sufficient for directional lights since they tend to be quite bright.
-    surface.roughnessA = max(roughness * roughness, 0.0005f);
+    // Apply Decals
+    ApplyDecals(lightingData.tileIterator, surface);
 
-    if (o_enableAnisotropy)
+    // Apply Direct Lighting
+    ApplyDirectLighting(surface, lightingData);
+
+    // Apply Image Based Lighting (IBL)
+    ApplyIBL(surface, lightingData);
+
+    // Finalize Lighting
+    lightingData.FinalizeLighting(surface.transmission.tint);
+
+    if (o_opacity_mode == OpacityMode::Blended || o_opacity_mode == OpacityMode::TintedTransparent)
     {
-        CalculateSurfaceDirectionalAnisotropicData(surface, anisotropy, vtxTangent, vtxBitangent);
+        alpha = FresnelSchlickWithRoughness(lightingData.NdotV, alpha, surface.roughnessLinear).x; // Increase opacity at grazing angles.
     }
 
-    float3 diffuseLighting = 0.0f; // accumulation of diffuse lighting
-    float3 specularLighting = 0.0f; // accumulation of specular lighting
-    float3 translucentBackLighting = 0.0f; // accumulation of transmitted light on the back face of object for back lighting
-
-    LightCullingTileIterator tileIterator;
-    tileIterator.Init(IN.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
-    
-    ApplyDecals(tileIterator, surface);
-
-    if (o_enablePunctualLights)
-    {
-        ApplyPointLights(tileIterator, dirToCamera, surface, diffuseLighting, specularLighting, translucentBackLighting);
-        ApplySpotLights(tileIterator, dirToCamera, surface, diffuseLighting, specularLighting, translucentBackLighting);
-    }
-
-    if (o_enableAreaLights)
-    {
-        ApplyDiskLights(tileIterator, dirToCamera, surface, diffuseLighting, specularLighting, translucentBackLighting);
-        ApplyCapsuleLights(tileIterator, dirToCamera, surface, diffuseLighting, specularLighting, translucentBackLighting);
-        ApplyQuadLights(tileIterator, dirToCamera, surface, diffuseLighting, specularLighting, translucentBackLighting);
-        ApplyPolygonLights(dirToCamera, surface, diffuseLighting, specularLighting, translucentBackLighting);
-    }
-
-    if (opacityMode == OpacityMode::Blended || opacityMode == OpacityMode::TintedTransparent)
-    {
-        // transparencies currently require IBL in the forward pass
-        float3 iblDiffuse = 0.0f;
-        float3 iblSpecular = 0.0f;
-        if (o_enableIBL)
-        {
-            ApplyIblDiffuse(surface, diffuseResponse, iblDiffuse);
-            ApplyIblSpecular(surface, specularResponse, dirToCamera, brdf, iblSpecular);
-        }
-
-        // Apply ambient occlusion to indirect diffuse
-        iblDiffuse *= diffuseAmbientOcclusion;
-
-        // Adjust IBL lighting by exposure.
-        float iblExposureFactor = pow(2.0, SceneSrg::m_iblExposure);
-        iblDiffuse *= iblExposureFactor;
-        iblSpecular *= iblExposureFactor;
-        diffuseLighting += iblDiffuse;
-        specularLighting += iblSpecular;
-
-        alpha = FresnelSchlickWithRoughness(NdotV, alpha, roughness).x; // Increase opacity at grazing angles.
-    }
-    else if (o_meshUseForwardPassIBLSpecular || o_materialUseForwardPassIBLSpecular)
-    {
-        if (o_enableIBL)
-        {
-            float3 iblSpecular = 0.0f;
-            ApplyIblSpecular(surface, specularResponse, dirToCamera, brdf, iblSpecular);
-            
-            float iblExposureFactor = pow(2.0f, SceneSrg::m_iblExposure);
-            specularLighting += (iblSpecular * iblExposureFactor);
-        }
-    }
-
-    if (o_enableDirectionalLights)
-    {
-        ApplyDirectionalLights(dirToCamera, surface, IN.m_shadowCoords, diffuseLighting, specularLighting, translucentBackLighting);
-    }
-
-    // Transmitted light
-    if(o_transmission_mode != TransmissionMode::None)
-    {
-        diffuseLighting += translucentBackLighting * transmissionTintThickness.xyz;
-    }
-
-    specularLighting *= specularOcclusion;
-    
-    // Emissive contribution
-    // Emissive light is apply to specular now, as diffuse will be used for subsurface scattering later down the pipeline
-    // We may change this if specular is also used for other processing
-    specularLighting += emissive;
-
-    PbrLightingOutput lightingOutput;
-
-    lightingOutput.m_diffuseColor = float4(diffuseLighting, alpha);
-    lightingOutput.m_specularColor = float4(specularLighting, 1.0);
-
-    // albedo, specularF0, roughness, and normals for later passes (specular IBL, Diffuse GI, SSR, AO, etc)
-    lightingOutput.m_specularF0 = float4(specularF0, roughness);
-    lightingOutput.m_albedo.rgb = surface.albedo * diffuseResponse * diffuseAmbientOcclusion;
-    lightingOutput.m_albedo.a = specularOcclusion;
-    lightingOutput.m_normal.rgb = EncodeNormalSignedOctahedron(normal);
-    lightingOutput.m_normal.a = o_specularF0_enableMultiScatterCompensation ? 1.0f : 0.0f;
-    
-    // layout: (packedNormal.x, packedNormal.y, strength factor, clear coat roughness (not base material's roughness))
-    lightingOutput.m_clearCoatNormal = float4(EncodeNormalSphereMap(clearCoatNormal), o_clearCoat_feature_enabled ? clearCoatFactor : 0.0, clearCoatRoughness);
+    PbrLightingOutput lightingOutput = GetPbrLightingOutput(surface, lightingData, alpha);
 
     return lightingOutput;
 }
@@ -282,6 +170,7 @@ PbrLightingOutput PbrLighting(  in VSOutput IN,
 //! @param debugColor the color to be drawn
 //! @param normalWS world space normal vector
 //! @return a PbrLightingOutput as returned by the main PbrLighting() function
+
 PbrLightingOutput MakeDebugOutput(VSOutput IN, float3 debugColor, float3 normalWS)
 {
     // We happen to set this up initially using baseColor, but we could consider adding an option to use

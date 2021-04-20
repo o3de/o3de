@@ -667,7 +667,6 @@ namespace spline
         lastq.SetIdentity();
         for (int i = 0; i < num_keys(); ++i)
         {
-            key_type& k = key(i);
             q.SetRotationAA(angle(i), axis(i));
             q.Normalize(); // Normalize quaternion
             q = lastq * q;

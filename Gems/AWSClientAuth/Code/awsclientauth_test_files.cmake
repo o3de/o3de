@@ -14,7 +14,9 @@ set(FILES
     Tests/AWSClientAuthGemTest.cpp
     
     Tests/AWSClientAuthSystemComponentTest.cpp
+    Tests/Authentication/AuthenticationProviderManagerMock.h
     Tests/Authentication/AuthenticationProviderManagerTest.cpp
+    Tests/Authentication/AuthenticationProviderManagerScriptCanvasBusTest.cpp
     Tests/Authentication/AWSCognitoAuthenticationProviderTest.cpp
     Tests/Authentication/LWAAuthenticationProviderTest.cpp
     Tests/Authentication/GoogleAuthenticationProviderTest.cpp

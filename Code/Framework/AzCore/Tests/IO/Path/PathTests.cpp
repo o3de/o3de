@@ -149,7 +149,6 @@ namespace UnitTest
         ::testing::Values(
             AZStd::tuple<AZStd::string_view, AZStd::string_view>("test/foo", "test/foo"),
             AZStd::tuple<AZStd::string_view, AZStd::string_view>("test/foo", "test\\foo"),
-            AZStd::tuple<AZStd::string_view, AZStd::string_view>("test/foo", "test\\foo"),
             AZStd::tuple<AZStd::string_view, AZStd::string_view>("test////foo", "test///foo"),
             AZStd::tuple<AZStd::string_view, AZStd::string_view>("test/bar/baz//foo", "test/bar/baz\\\\\\foo")
         ));
@@ -159,16 +158,34 @@ namespace UnitTest
         constexpr AZ::IO::FixedMaxPath path1{ "foo/bar" };
         constexpr AZ::IO::FixedMaxPath path2{ "foo/bap" };
         constexpr AZ::IO::PathView pathView{ "foo/bar" };
-        static_assert(path1 == pathView);
-        static_assert(path1 != path2);
-        static_assert(path2 < path1);
-        static_assert(pathView <= path1);
-        static_assert(path1 > path2);
-        static_assert(pathView >= path2);
+        EXPECT_EQ(path1, pathView);
+        EXPECT_NE(path1, path2);
+        EXPECT_LT(path2, path1);
+        EXPECT_LE(pathView, path1);
+        EXPECT_GT(path1, path2);
+        EXPECT_GE(pathView, path2);
 
-        static_assert(pathView <= pathView);
-        static_assert(pathView >= pathView);
+        EXPECT_LE(pathView, pathView);
+        EXPECT_GE(pathView, pathView);
     }
+
+    using WindowsPathCompareParamFixture = PathParamFixture;
+
+    TEST_P(WindowsPathCompareParamFixture, OperatorEqual_ComparesPathCaseInsensitively)
+    {
+        AZ::IO::Path path1{ AZStd::get<0>(GetParam()), AZ::IO::WindowsPathSeparator };
+        AZ::IO::Path path2{ AZStd::get<1>(GetParam()), AZ::IO::WindowsPathSeparator };
+        EXPECT_EQ(path1, path2);
+    }
+
+    INSTANTIATE_TEST_CASE_P(
+        CompareWindowsPaths,
+        WindowsPathCompareParamFixture,
+        ::testing::Values(
+            AZStd::tuple<AZStd::string_view, AZStd::string_view>("C:/test/foo", R"(c:\test/foo)"),
+            AZStd::tuple<AZStd::string_view, AZStd::string_view>(R"(D:\test/bar/baz//foo)", "d:/test/bar/baz\\\\\\foo"),
+            AZStd::tuple<AZStd::string_view, AZStd::string_view>(R"(foO/Bar)", "foo/bar")
+        ));
 
     class PathSingleParamFixture
         : public ScopedAllocatorSetupFixture
@@ -530,7 +547,7 @@ namespace UnitTest
             PathLexicallyNormalParams{ '/', "foo/./bar/..", "foo" },
             PathLexicallyNormalParams{ '/', "foo/.///bar/../", "foo" },
             PathLexicallyNormalParams{ '/', R"(/foo\./bar\..\)", "/foo" },
-            PathLexicallyNormalParams{ '\\', R"(C:/lumberyard/dev/Cache\game/../pc)", R"(C:\lumberyard\dev\Cache\pc)" }
+            PathLexicallyNormalParams{ '\\', R"(C:/O3DE/dev/Cache\game/../pc)", R"(C:\O3DE\dev\Cache\pc)" }
         )
     );
 
@@ -739,13 +756,13 @@ namespace UnitTest
             PathPrefixParams{ "C:\\foo\\", "C:\\foo", true },
             PathPrefixParams{ "C:", "C:\\foo", true },
             PathPrefixParams{ "D:\\", "C:\\foo", false },
-            PathPrefixParams{ "/lumberyard/dev/", "/lumberyard/dev", true },
-            PathPrefixParams{ "/lumberyard/dev", "/lumberyard/dev/", true },
-            PathPrefixParams{ "/lumberyard/dev/", "/lumberyard/dev/Cache", true },
-            PathPrefixParams{ "/lumberyard/dev", "/lumberyard/dev/Cache", true },
-            PathPrefixParams{ "/lumberyard/dev", "/lumberyard/dev/Cache/", true },
-            PathPrefixParams{ "lumberyard/dev/", "lumberyard/dev/Cache/", true },
-            PathPrefixParams{ "lumberyard\\dev/Assets", "lumberyard/dev/Cache/", false }
+            PathPrefixParams{ "/O3DE/dev/", "/O3DE/dev", true },
+            PathPrefixParams{ "/O3DE/dev", "/O3DE/dev/", true },
+            PathPrefixParams{ "/O3DE/dev/", "/O3DE/dev/Cache", true },
+            PathPrefixParams{ "/O3DE/dev", "/O3DE/dev/Cache", true },
+            PathPrefixParams{ "/O3DE/dev", "/O3DE/dev/Cache/", true },
+            PathPrefixParams{ "O3DE/dev/", "O3DE/dev/Cache/", true },
+            PathPrefixParams{ "O3DE\\dev/Assets", "O3DE/dev/Cache/", false }
     ));
 
     struct PathDecompositionParams
@@ -837,7 +854,7 @@ namespace Benchmark
         }
     protected:
         AZStd::fixed_vector<const char*, 20> m_appendPaths{ "foo", "bar", "baz", "bazzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz",
-            "boo/bar/base", "C:\\path\\to\\lumberyard", "C", "\\\\", "/", R"(test\\path/with\mixed\separators)" };
+            "boo/bar/base", "C:\\path\\to\\O3DE", "C", "\\\\", "/", R"(test\\path/with\mixed\separators)" };
     };
 
     BENCHMARK_F(PathBenchmarkFixture, BM_PathAppendFixedPath)(benchmark::State& state)

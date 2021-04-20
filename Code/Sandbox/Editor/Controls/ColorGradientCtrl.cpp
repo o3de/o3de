@@ -137,10 +137,6 @@ void CColorGradientCtrl::PointToTimeValue(QPoint point, float& time, ISplineInte
 float CColorGradientCtrl::XOfsToTime(int x)
 {
     return m_grid.ClientToWorld(QPoint(x, 0)).x;
-
-    // m_fMinTime to m_fMaxTime time range.
-    float time = m_fMinTime + (float)((m_fMaxTime - m_fMinTime) * (x - m_rcGradient.left())) / m_rcGradient.width();
-    return time;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -194,9 +190,6 @@ void CColorGradientCtrl::paintEvent(QPaintEvent* e)
 //////////////////////////////////////////////////////////////////////////
 void CColorGradientCtrl::DrawGradient(QPaintEvent* e, QPainter* painter)
 {
-    int cx = m_rcGradient.width();
-    int cy = m_rcGradient.height();
-
     //Draw Curve
     // create and select a thick, white pen
     painter->setPen(QPen(QColor(128, 255, 128), 1, Qt::SolidLine));

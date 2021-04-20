@@ -1199,8 +1199,6 @@ bool CMaterial::IsBreakable2D() const
         return false;
     }
 
-    int result = 0;
-
     const QString& surfaceTypeName = GetSurfaceTypeName();
     if (ISurfaceTypeManager* pSurfaceManager = GetIEditor()->Get3DEngine()->GetMaterialManager()->GetSurfaceTypeManager())
     {

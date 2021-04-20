@@ -23,8 +23,15 @@
 #include "Ggx.azsli"
 #include "Fresnel.azsli"
 
-option bool o_applySpecularAA;
-option bool o_enableAnisotropy = false;
+
+// ------- Diffuse Lighting -------
+
+//! Simple Lambertian BRDF. 
+float3 DiffuseLambertian(float3 albedo, float3 normal, float3 dirToLight)
+{
+    float NdotL = saturate(dot(normal, dirToLight));
+    return albedo * NdotL * INV_PI;
+}
 
 // Normalized Disney diffuse function taken from Frostbite's PBR course notes (page 10):
 // https://media.contentapi.ea.com/content/dam/eacom/frostbite/files/course-notes-moving-frostbite-to-pbr-v32.pdf
@@ -73,29 +80,11 @@ float3 DiffuseTitanfall(float roughnessA, float3 albedo, float3 normal, float3 d
     return albedo * (single + albedo * multi) * NdotL;
 }
 
-//! Simple Lambertian BRDF. 
-float3 DiffuseLambertian(float3 albedo, float3 normal, float3 dirToLight)
-{
-    float NdotL = saturate(dot(normal, dirToLight));
-    return albedo * NdotL * INV_PI;
-}
 
-// Specular Anti-Aliasing technique from this paper:
-// http://www.jp.square-enix.com/tech/library/pdf/ImprovedGeometricSpecularAA.pdf
-float ApplySpecularAA(float roughnessA2, float3 normal)
-{
-    // Constants for formula below
-    const float screenVariance = 0.25f;
-    const float varianceThresh = 0.18f;
 
-    // Specular Anti-Aliasing
-    float3 dndu = ddx_fine( normal );
-    float3 dndv = ddy_fine( normal );
-    float variance = screenVariance * (dot( dndu , dndu ) + dot( dndv , dndv ));
-    float kernelRoughnessA2 = min(2.0 * variance , varianceThresh );
-    float filteredRoughnessA2 = saturate ( roughnessA2 + kernelRoughnessA2 );
-    return filteredRoughnessA2;
-}
+
+
+// ------- Specular Lighting -------
 
 //! Computes specular response from surfaces with microgeometry. The common form for microfacet
 //! implementations is D * G * F / (4.0 * NdotL * NdotV), with D G F being swappable terms.
@@ -103,53 +92,55 @@ float ApplySpecularAA(float roughnessA2, float3 normal)
 //!
 //! @param roughnessA2  alpha roughness ^ 2 (alpha roughness is the unpacked form of artist authored linear roughness and is what is used for lighting calculations)
 //! @param specularF0   the fresnel f0 spectral value of the surface
-float3 SpecularGGX( Surface surface, float3 dirToCamera, float3 dirToLight)
+float3 SpecularGGX( float3 dirToCamera, float3 dirToLight, float3 normal, float3 specularF0, float NdotV, float roughnessA2, float3 multiScatterCompensation )
 {
     float3 halfVector = normalize(dirToLight + dirToCamera);
-    float NdotH = saturate(dot(surface.normal, halfVector));
-    float NdotV = saturate(dot(surface.normal, dirToCamera));
-    float NdotL = saturate(dot(surface.normal, dirToLight));
+    float NdotH = saturate(dot(normal, halfVector));
+    float NdotL = saturate(dot(normal, dirToLight));
     float HdotV = saturate(dot(halfVector, dirToCamera)); // Note that HdotL = HdotV, so we don't need to calculate both
-
-    // Specular Anti-Aliasing correction
-    float roughnessA2 = surface.roughnessA * surface.roughnessA;
-    if(o_applySpecularAA)
-    {
-        roughnessA2 = ApplySpecularAA(roughnessA2, surface.normal);
-    }
 
     // D, G and F from the lighting equation
     // Note: the division by (4.0 * NdotL * NdotV) is already factored out in the G function as an optimization
-    float D, G;
-    if (o_enableAnisotropy)
-    {
-        D = NormalDistibution_AnisotropicGGX(
-                NdotH, halfVector, surface.tangentAniso, surface.bitangentAniso, surface.anisotropyFactors );
-        G = ShadowingMasking_AnisotropicSmithGGXCorrelated( 
-                surface.tangentAniso, surface.bitangentAniso, dirToCamera, dirToLight, NdotV, NdotL, surface.anisotropyFactors );
-    }
-    else
-    {
-        D = NormalDistributionGGX(NdotH, roughnessA2);
-        G = GeometricShadowingMaskingGGXCorrelated(NdotV, NdotL, roughnessA2);
-    }   
-    float3 F = FresnelSchlick(HdotV, surface.specularF0);
+    float D = NormalDistributionGGX(NdotH, roughnessA2);
+    float G = GeometricShadowingMaskingGGXCorrelated(NdotV, NdotL, roughnessA2);
+    float3 F = FresnelSchlick(HdotV, specularF0);
 
     D = max(0.0, D);
     G = max(0.0, G);
 
     // Multiply with multiscattering compensation in order to take account for several specular light bounces.
-    return surface.multiScatterCompensation * (D * G * F * NdotL);
+    return multiScatterCompensation * (D * G * F * NdotL);
+}
+
+float3 AnisotropicGGX( float3 dirToCamera, float3 dirToLight, float3 normal, float3 tangent, float3 bitangent, float2 anisotropyFactors,
+                       float3 specularF0, float NdotV, float3 multiScatterCompensation )
+{
+    float3 halfVector = normalize(dirToLight + dirToCamera);
+    float NdotH = saturate(dot(normal, halfVector));
+    float NdotL = saturate(dot(normal, dirToLight));
+    float HdotV = saturate(dot(halfVector, dirToCamera)); // Note that HdotL = HdotV, so we don't need to calculate both
+
+    // D, G and F from the lighting equation
+    // Note: the division by (4.0 * NdotL * NdotV) is already factored out in the G function as an optimization
+    float D = NormalDistibution_AnisotropicGGX( NdotH, halfVector, tangent, bitangent, anisotropyFactors );
+    float G = ShadowingMasking_AnisotropicSmithGGXCorrelated(tangent, bitangent, dirToCamera, dirToLight, NdotV, NdotL, anisotropyFactors);
+    float3 F = FresnelSchlick(HdotV, specularF0);
+
+    D = max(0.0, D);
+    G = max(0.0, G);
+
+    // Multiply with multiscattering compensation in order to take account for several specular light bounces.
+    return multiScatterCompensation * (D * G * F * NdotL);
 }
 
 float3 ClearCoatGGX(float NdotH, float HdotL, float NdotL, float3 normal, float roughnessA, float3 F)
 {
     // Specular Anti-Aliasing correction
     float roughnessA2 = roughnessA * roughnessA;
-    if(o_applySpecularAA)
-    {
-        roughnessA2 = ApplySpecularAA(roughnessA2, normal);
-    }
+    //if(o_applySpecularAA)
+    //{
+    //    roughnessA2 = ApplySpecularAA(roughnessA2, normal);
+    //}
 
     float D = NormalDistributionGGX(NdotH, roughnessA2);
     // Kelemen geometry term : Kelemen. C. and Szirmay-Kalos. L. 2001

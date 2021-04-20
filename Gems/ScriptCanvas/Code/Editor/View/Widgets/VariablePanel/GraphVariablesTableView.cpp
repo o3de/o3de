@@ -41,6 +41,7 @@
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <ScriptCanvas/Variable/GraphVariable.h>
 
 namespace ScriptCanvasEditor
 {
@@ -538,7 +539,24 @@ namespace ScriptCanvasEditor
             }
             else if (index.column() == ColumnIndex::Scope)
             {
-                // Scope is not changed by users
+                ScriptCanvas::GraphVariable* graphVariable = nullptr;
+                ScriptCanvas::GraphVariableManagerRequestBus::EventResult(graphVariable, m_scriptCanvasId, &ScriptCanvas::GraphVariableManagerRequests::FindVariableById, varId.m_identifier);
+
+                if (graphVariable)
+                {
+                    QString comboBoxValue = value.toString();
+
+                    if (!comboBoxValue.isEmpty())
+                    {
+                        AZStd::string scopeLabel = ScriptCanvas::VariableFlags::GetScopeDisplayLabel(graphVariable->GetScope());
+                        if (scopeLabel.compare(comboBoxValue.toUtf8().data()) != 0)
+                        {
+                            modifiedData = true;
+                            graphVariable->SetScope(ScriptCanvas::VariableFlags::GetScopeFromLabel(comboBoxValue.toUtf8().data()));
+                            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh, AzToolsFramework::Refresh_EntireTree);
+                        }
+                    }
+                }
             }
             else if (index.column() == ColumnIndex::InitialValueSource)
             {
@@ -607,7 +625,16 @@ namespace ScriptCanvasEditor
         }
         else if (index.column() == ColumnIndex::Scope)
         {
+            ScriptCanvas::GraphScopedVariableId varId = FindScopedVariableIdForIndex(index);
+
+            ScriptCanvas::GraphVariable* graphVariable = nullptr;
+            ScriptCanvas::GraphVariableManagerRequestBus::EventResult(graphVariable, m_scriptCanvasId, &ScriptCanvas::GraphVariableManagerRequests::FindVariableById, varId.m_identifier);
+
+            if (graphVariable->GetScope() != ScriptCanvas::VariableFlags::Scope::FunctionReadOnly)
+            {
             itemFlags |= Qt::ItemIsEditable;
+        }
+
         }
         else if (index.column() == ColumnIndex::InitialValueSource)
         {
@@ -626,7 +653,6 @@ namespace ScriptCanvasEditor
 
     QMimeData* GraphVariablesModel::mimeData(const QModelIndexList &indexes) const
     {
-        QMimeData* mimeData = nullptr;
         GraphCanvas::GraphCanvasMimeContainer container;
 
         bool isSet = ((QApplication::keyboardModifiers() & Qt::Modifier::ALT) != 0);

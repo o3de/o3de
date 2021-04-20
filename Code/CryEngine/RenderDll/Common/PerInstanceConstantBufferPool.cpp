@@ -254,10 +254,6 @@ void PerInstanceConstantBufferPool::SetConstantBuffer(SRendItem* renderItem)
     m_CurrentRenderItem = renderItem;
 
     AZ::u32 bufferIndex = directId / SPI_NUM_INSTS_PER_CB;
-    AZ::u32 itemIndex   = directId % SPI_NUM_INSTS_PER_CB;
-
-    AZ::u32 first[1] = { itemIndex * static_cast<AZ::u32>(sizeof(HLSL_PerInstanceConstantBuffer)) };
-    AZ::u32 count[1] = { static_cast<AZ::u32>(sizeof(HLSL_PerInstanceConstantBuffer)) };
 
     auto& deviceManager = gRenDev->m_DevMan;
 
@@ -278,6 +274,10 @@ void PerInstanceConstantBufferPool::SetConstantBuffer(SRendItem* renderItem)
     deviceManager.BindConstantBuffer(eHWSC_Vertex, m_PooledIndirectConstantBuffer[indirectId], eConstantBufferShaderSlot_SPIIndex);
     deviceManager.BindConstantBuffer(eHWSC_Pixel, m_PooledIndirectConstantBuffer[indirectId], eConstantBufferShaderSlot_SPIIndex);
 #else
+    AZ::u32 itemIndex = directId % SPI_NUM_INSTS_PER_CB;
+    AZ::u32 first[1] = {itemIndex * static_cast<AZ::u32>(sizeof(HLSL_PerInstanceConstantBuffer))};
+    AZ::u32 count[1] = {static_cast<AZ::u32>(sizeof(HLSL_PerInstanceConstantBuffer))};
+
     deviceManager.BindConstantBuffer(eHWSC_Vertex, m_PooledConstantBuffer[bufferIndex], eConstantBufferShaderSlot_SPI, first[0], count[0]);
     deviceManager.BindConstantBuffer(eHWSC_Pixel, m_PooledConstantBuffer[bufferIndex], eConstantBufferShaderSlot_SPI, first[0], count[0]);
 #endif

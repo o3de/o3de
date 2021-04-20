@@ -34,7 +34,6 @@ bool STexPoolItem::IsStillUsedByGPU(uint32 nTick)
     if (pDeviceTexture)
     {
         CHK_MAINORRENDTH;
-        D3DBaseTexture* pD3DTex = pDeviceTexture->GetBaseTexture();
     }
     return (nTick - m_nFreeTick) < 4;
 }

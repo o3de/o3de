@@ -164,7 +164,6 @@ namespace EMotionFX
 
             GetEMotionFX().Update(5.0f / 60.0f);
             const AZ::Vector3& testJointNewPos = jackPose->GetModelSpaceTransform(testJointIndex).mPosition;
-            const AZ::Vector3& testJointNewPos2 = jackPose->GetWorldSpaceTransform(testJointIndex).mPosition;
 
             // Based on weight, check if position of node changes to reachable goal position
             if (weight)

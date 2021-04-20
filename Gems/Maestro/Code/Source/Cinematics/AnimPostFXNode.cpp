@@ -417,8 +417,7 @@ void CAnimPostFXNode::OnReset()
     // Reset each postFX param to its default.
     for (size_t i = 0; i < m_tracks.size(); ++i)
     {
-        IAnimTrack* pTrack = m_tracks[i].get();
-        assert(pTrack);
+        assert(m_tracks[i].get());
         size_t paramIndex = (size_t)static_cast<int>(m_tracks[i]->GetParameterType().GetType()) - static_cast<int>(AnimParamType::User);
         assert(paramIndex < m_pDescription->m_nodeParams.size());
 

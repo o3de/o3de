@@ -85,6 +85,7 @@ struct VSOutput
 
 #include <Atom/Features/PBR/AlphaUtils.azsli>
 #include <Atom/Features/PBR/LightingModel.azsli>
+#include <Atom/Features/Vertex/VertexHelper.azsli>
 
 VSOutput ForwardPassVS(VSInput IN)
 {
@@ -109,7 +110,7 @@ VSOutput ForwardPassVS(VSInput IN)
     // We can skip per-vertex shadow coords when parallax is enabled because we need to calculate per-pixel shadow coords anyway.
     // We cannot skip shadow coords when o_debugDrawMode is on because some debug draw modes return before parallax.
     bool skipShadowCoords = o_debugDrawMode == DebugDrawMode::None && o_parallax_feature_enabled && o_parallax_enablePixelDepthOffset;
-    PbrVsHelper(IN, OUT, worldPosition, skipShadowCoords);
+    VertexHelper(IN, OUT, worldPosition, skipShadowCoords);
 
     return OUT;
 }
@@ -351,7 +352,8 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
 
     const float2 anisotropy = 0.0;    // Does not affect calculations unless 'o_enableAnisotropy' is enabled
 
-    PbrLightingOutput lightingOutput = PbrLighting(IN, baseColor, metallic, roughness, specularF0Factor, 
+    PbrLightingOutput lightingOutput = PbrLighting(IN,
+        baseColor, metallic, roughness, specularF0Factor, 
         normalWS, tangents[0], bitangents[0], anisotropy,
         emissive, diffuseAmbientOcclusion, specularOcclusion, transmissionTintThickness, MaterialSrg::m_transmissionParams, clearCoatFactor, clearCoatRoughness, clearCoatNormal, alpha, o_opacity_mode);
 

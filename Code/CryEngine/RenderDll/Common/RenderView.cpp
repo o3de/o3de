@@ -26,7 +26,6 @@ CRenderView::~CRenderView()
 
 void CRenderView::ClearRenderItems()
 {
-    int nR = 0;
 
     for (int i = 0; i < MAX_LIST_ORDER; i++)
     {

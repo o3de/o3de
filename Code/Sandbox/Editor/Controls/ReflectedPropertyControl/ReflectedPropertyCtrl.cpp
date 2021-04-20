@@ -672,7 +672,6 @@ CReflectedVar * ReflectedPropertyControl::GetReflectedVarFromCallbackInstance(Az
         return reinterpret_cast<CReflectedVar *>(pNode->GetInstance(0));
     else
         return GetReflectedVarFromCallbackInstance(pNode->GetParent());
-    return nullptr;
 }
 
 

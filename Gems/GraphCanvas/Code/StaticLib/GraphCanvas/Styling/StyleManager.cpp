@@ -611,7 +611,6 @@ namespace GraphCanvas
         QPainterPath path;
 
         qreal borderWidth = iconStyleHelper->GetAttribute(Styling::Attribute::BorderWidth, 1.0);
-        qreal borderRadius = iconStyleHelper->GetAttribute(Styling::Attribute::BorderRadius, 1.0);
 
         QRectF rect(margin, margin, width, height);
         QRectF adjusted = rect.marginsRemoved(QMarginsF(borderWidth / 2.0, borderWidth / 2.0, borderWidth / 2.0, borderWidth / 2.0));

@@ -36,9 +36,6 @@
 #include <DefaultWorldComponent.h>
 #include <Material.h>
 
-#ifdef PHYSX_EDITOR
-#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
-#endif
 namespace AzPhysics
 {
     struct StaticRigidBodyConfiguration;
@@ -53,7 +50,7 @@ namespace PhysX
 
     /// System component for PhysX.
     /// The system component handles underlying tasks such as initialization and shutdown of PhysX, managing a
-    /// Lumberyard memory allocator for PhysX allocations, scheduling for PhysX jobs, and connections to the PhysX
+    /// Open 3D Engine memory allocator for PhysX allocations, scheduling for PhysX jobs, and connections to the PhysX
     /// Visual Debugger.  It also owns fundamental PhysX objects which manage worlds, rigid bodies, shapes, materials,
     /// constraints etc., and perform cooking (processing assets such as meshes and heightfields ready for use in PhysX).
     class SystemComponent
@@ -61,10 +58,6 @@ namespace PhysX
         , public Physics::SystemRequestBus::Handler
         , public PhysX::SystemRequestsBus::Handler
         , public Physics::CharacterSystemRequestBus::Handler
-#ifdef PHYSX_EDITOR
-        , public AzToolsFramework::EditorEntityContextNotificationBus::Handler
-        , private AzToolsFramework::EditorEvents::Bus::Handler
-#endif
         , private Physics::CollisionRequestBus::Handler
         , private AZ::TickBus::Handler
     {
@@ -100,8 +93,6 @@ namespace PhysX
         bool CookTriangleMeshToMemory(const AZ::Vector3* vertices, AZ::u32 vertexCount,
             const AZ::u32* indices, AZ::u32 indexCount, AZStd::vector<AZ::u8>& result) override;
 
-        void AddColliderComponentToEntity(AZ::Entity* entity, const Physics::ColliderConfiguration& colliderConfiguration, const Physics::ShapeConfiguration& shapeConfiguration, bool addEditorComponents = false) override;
-
         physx::PxFilterData CreateFilterData(const AzPhysics::CollisionLayer& layer, const AzPhysics::CollisionGroup& group) override;
         physx::PxCooking* GetCooking() override;
 
@@ -124,13 +115,6 @@ namespace PhysX
         void Init() override;
         void Activate() override;
         void Deactivate() override;
-
-#ifdef PHYSX_EDITOR
-
-        // AztoolsFramework::EditorEvents::Bus::Handler overrides
-        void PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, int flags) override;
-        void NotifyRegisterViews() override;
-#endif
 
         // Physics::SystemRequestBus::Handler
         AZStd::shared_ptr<Physics::Shape> CreateShape(const Physics::ColliderConfiguration& colliderConfiguration, const Physics::ShapeConfiguration& configuration) override;

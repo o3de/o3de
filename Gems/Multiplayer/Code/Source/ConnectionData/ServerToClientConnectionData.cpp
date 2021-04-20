@@ -67,6 +67,8 @@ namespace Multiplayer
 
     void ServerToClientConnectionData::Update(AZ::TimeMs serverGameTimeMs)
     {
+        m_entityReplicationManager.ActivatePendingEntities();
+
         if (CanSendUpdates())
         {
             NetBindComponent* netBindComponent = m_controlledEntity.GetNetBindComponent();

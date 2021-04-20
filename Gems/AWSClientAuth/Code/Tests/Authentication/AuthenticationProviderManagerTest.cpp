@@ -10,8 +10,6 @@
 *
 */
 
-#include <AzTest/AzTest.h>
-#include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/utils.h>
@@ -20,42 +18,7 @@
 #include <Authentication/LWAAuthenticationProvider.h>
 #include <Authentication/AuthenticationTokens.h>
 #include <AWSClientAuthGemMock.h>
-
-namespace AWSClientAuthUnitTest
-{
-    class AuthenticationProviderManagerLocalMock
-        : public AWSClientAuth::AuthenticationProviderManager
-    {
-    public:
-        using AWSClientAuth::AuthenticationProviderManager::m_authenticationProvidersMap;
-        using AWSClientAuth::AuthenticationProviderManager::Initialize;
-        using AWSClientAuth::AuthenticationProviderManager::PasswordGrantSingleFactorSignInAsync;
-        using AWSClientAuth::AuthenticationProviderManager::PasswordGrantMultiFactorSignInAsync;
-        using AWSClientAuth::AuthenticationProviderManager::PasswordGrantMultiFactorConfirmSignInAsync;
-        using AWSClientAuth::AuthenticationProviderManager::DeviceCodeGrantSignInAsync;
-        using AWSClientAuth::AuthenticationProviderManager::DeviceCodeGrantConfirmSignInAsync;
-        using AWSClientAuth::AuthenticationProviderManager::RefreshTokensAsync;
-        using AWSClientAuth::AuthenticationProviderManager::GetTokensWithRefreshAsync;
-        using AWSClientAuth::AuthenticationProviderManager::GetAuthenticationTokens;
-        using AWSClientAuth::AuthenticationProviderManager::SignOut;
-        using AWSClientAuth::AuthenticationProviderManager::IsSignedIn;
-        
-        AZStd::unique_ptr<AWSClientAuth::AuthenticationProviderInterface> CreateAuthenticationProviderObjectMock(const AWSClientAuth::ProviderNameEnum& providerName)
-        {
-            auto providerObject = AWSClientAuth::AuthenticationProviderManager::CreateAuthenticationProviderObject(providerName);
-            providerObject.reset();
-            return AZStd::make_unique<testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderMock>>();
-        }
-
-        AuthenticationProviderManagerLocalMock()
-        {
-            ON_CALL(*this, CreateAuthenticationProviderObject(testing::_)).WillByDefault(
-                testing::Invoke(this, &AuthenticationProviderManagerLocalMock::CreateAuthenticationProviderObjectMock));
-        }
-
-       MOCK_METHOD1(CreateAuthenticationProviderObject, AZStd::unique_ptr<AWSClientAuth::AuthenticationProviderInterface>(const AWSClientAuth::ProviderNameEnum&));
-    };
-}
+#include <Authentication/AuthenticationProviderManagerMock.h>
 
 
 class AuthenticationProviderManagerTest
@@ -122,7 +85,6 @@ TEST_F(AuthenticationProviderManagerTest, PasswordGrantSingleFactorSignInAsync_S
 {
     m_mockController->Initialize(m_enabledProviderNames, m_settingspath);
     testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderMock> *cognitoProviderMock = (testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderMock>*)m_mockController->m_authenticationProvidersMap[AWSClientAuth::ProviderNameEnum::AWSCognitoIDP].get();
-    testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderMock> *lwaProviderMock = (testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderMock>*)m_mockController->m_authenticationProvidersMap[AWSClientAuth::ProviderNameEnum::LoginWithAmazon].get();
   
     EXPECT_CALL(*cognitoProviderMock, PasswordGrantSingleFactorSignInAsync(testing::_, testing::_)).Times(1);
     m_mockController->PasswordGrantSingleFactorSignInAsync(AWSClientAuth::ProviderNameEnum::AWSCognitoIDP, AWSClientAuthUnitTest::TEST_USERNAME, AWSClientAuthUnitTest::TEST_PASSWORD);
@@ -238,6 +200,15 @@ TEST_F(AuthenticationProviderManagerTest, GetTokensWithRefreshAsync_InvalidToken
     m_mockController->GetTokensWithRefreshAsync(AWSClientAuth::ProviderNameEnum::AWSCognitoIDP);
 
     cognitoProviderMock = nullptr;
+}
+
+TEST_F(AuthenticationProviderManagerTest, GetTokensWithRefreshAsync_NotInitializedProvider_Fail)
+{
+    AZ_TEST_START_TRACE_SUPPRESSION;
+    EXPECT_CALL(m_authenticationProviderNotificationsBusMock, OnRefreshTokensSuccess(testing::_)).Times(0);
+    EXPECT_CALL(m_authenticationProviderNotificationsBusMock, OnRefreshTokensFail(testing::_)).Times(1);
+    m_mockController->GetTokensWithRefreshAsync(AWSClientAuth::ProviderNameEnum::AWSCognitoIDP);
+    AZ_TEST_STOP_TRACE_SUPPRESSION(1);
 }
 
 TEST_F(AuthenticationProviderManagerTest, GetTokens_Success)

@@ -31,6 +31,7 @@ namespace AZ
         template <typename FeatureProcessorType>
         LightDelegateBase<FeatureProcessorType>::~LightDelegateBase()
         {
+            TransformNotificationBus::Handler::BusDisconnect();
             LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();
             if (m_lightHandle.IsValid())
             {
@@ -42,10 +43,27 @@ namespace AZ
         void LightDelegateBase<FeatureProcessorType>::InitBase(EntityId entityId)
         {
             m_photometricValue.SetEffectiveSolidAngle(GetEffectiveSolidAngle());
-            LmbrCentral::ShapeComponentNotificationsBus::Handler::BusConnect(entityId);
             m_shapeBus = LmbrCentral::ShapeComponentRequestsBus::FindFirstHandler(entityId);
             TransformBus::EventResult(m_transform, entityId, &TransformBus::Events::GetWorldTM);
-            OnShapeChanged(ShapeChangeReasons::TransformChanged);
+
+            if (m_shapeBus != nullptr)
+            {
+                LmbrCentral::ShapeComponentNotificationsBus::Handler::BusConnect(entityId);
+                OnShapeChanged(ShapeChangeReasons::TransformChanged);
+            }
+            else if (m_lightHandle.IsValid())
+            {
+                // Only connect to the transform bus if there's no shape bus, otherwise the shape bus handles transforms.
+                TransformNotificationBus::Handler::BusConnect(entityId);
+                HandleShapeChanged();
+                m_featureProcessor->SetRgbIntensity(m_lightHandle, m_photometricValue.GetCombinedRgb<FeatureProcessorType::PhotometricUnitType>());
+            }
+        }
+        
+        template <typename FeatureProcessorType>
+        void LightDelegateBase<FeatureProcessorType>::SetConfig(const AreaLightComponentConfig* config)
+        {
+            m_componentConfig = config;
         }
 
         template <typename FeatureProcessorType>
@@ -93,6 +111,13 @@ namespace AZ
             {
                 m_featureProcessor->SetRgbIntensity(m_lightHandle, m_photometricValue.GetCombinedRgb<FeatureProcessorType::PhotometricUnitType>());
             }
+            HandleShapeChanged();
+        }
+        
+        template <typename FeatureProcessorType>
+        void LightDelegateBase<FeatureProcessorType>::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
+        {
+            m_transform = world;
             HandleShapeChanged();
         }
 

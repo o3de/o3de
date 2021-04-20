@@ -209,7 +209,7 @@ namespace AzToolsFramework
             EntityList entitiesInInstance;
             entitiesInInstance.reserve(instance->m_entities.size() + 1);
 
-            if (instance->m_containerEntity->GetId().IsValid())
+            if (instance->m_containerEntity && instance->m_containerEntity->GetId().IsValid())
             {
                 entitiesInInstance.emplace_back(instance->m_containerEntity.get());
             }
@@ -219,11 +219,10 @@ namespace AzToolsFramework
                 entitiesInInstance.emplace_back(entity.get());
             }
 
-            InstanceEntityScrubber** instanceEntityScrubber = jsonDeserializerContext.GetMetadata().Find<InstanceEntityScrubber*>();
-            if (instanceEntityScrubber && (*instanceEntityScrubber))
-
+            InstanceEntityScrubber* instanceEntityScrubber = jsonDeserializerContext.GetMetadata().Find<InstanceEntityScrubber>();
+            if (instanceEntityScrubber)
             {
-                (*instanceEntityScrubber)->AddEntitiesToScrub(entitiesInInstance);
+                instanceEntityScrubber->AddEntitiesToScrub(entitiesInInstance);
             }
         }
 

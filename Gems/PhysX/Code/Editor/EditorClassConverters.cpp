@@ -217,7 +217,7 @@ namespace PhysX
             {
                 // version 6 moves the settings "DebugDraw" and "DebugDrawButtonState" into a separate object,
                 // "DebugDrawSettings", which is owned by the editor collider component.
-                AZ::SerializeContext::DataElementNode* debugDrawElement = dataElement.FindSubElement(AZ_CRC("DebugDraw", 0x42ef6229));
+                //AZ::SerializeContext::DataElementNode* debugDrawElement = dataElement.FindSubElement(AZ_CRC("DebugDraw", 0x42ef6229));
 
                 bool debugDraw = false;
                 const int debugDrawIndex = dataElement.FindElement(AZ_CRC("DebugDraw", 0x42ef6229));

@@ -98,15 +98,16 @@ namespace Camera
             AZ_Assert(m_atomCamera, "Attempted to activate Atom camera before component activation");
 
             const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
-            atomViewportRequests->PushView(contextName, m_atomCamera);
-            AZ::RPI::ViewportContextNotificationBus::Handler::BusConnect(contextName);
-
             // Ensure the Atom camera is updated with our current transform state
             AZ::Transform localTransform;
             AZ::TransformBus::EventResult(localTransform, m_entityId, &AZ::TransformBus::Events::GetLocalTM);
             AZ::Transform worldTransform;
             AZ::TransformBus::EventResult(worldTransform, m_entityId, &AZ::TransformBus::Events::GetWorldTM);
             OnTransformChanged(localTransform, worldTransform);
+
+            // Push the Atom camera after we make sure we're up-to-date with our component's transform to ensure the viewport reads the correct state
+            atomViewportRequests->PushView(contextName, m_atomCamera);
+            AZ::RPI::ViewportContextNotificationBus::Handler::BusConnect(contextName);
             UpdateCamera();
         }
     }
@@ -166,10 +167,12 @@ namespace Camera
         if ((!m_viewSystem)||(!m_system))
         {
             // perform first-time init
-            if (m_system = gEnv->pSystem)
+            m_system = gEnv->pSystem;
+            if (m_system)
             {
                 // Initialize local view.
-                if (!(m_viewSystem = m_system->GetIViewSystem()))
+                m_viewSystem = m_system->GetIViewSystem();
+                if (!m_viewSystem)
                 {
                     AZ_Error("CameraComponent", m_viewSystem != nullptr, "The CameraComponent shouldn't be used without a local view system");
                 }

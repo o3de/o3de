@@ -45,7 +45,7 @@ void GeomCacheDiskWriteThread::Write(std::vector<char>& buffer, long offset, int
     // Write and clear current read buffer
     const size_t bufferSize = buffer.size();
     m_bytesWritten += bufferSize;
-    size_t bytesWritten = fwrite(buffer.data(), 1, bufferSize, m_fileHandle);
+    /*size_t bytesWritten =*/ fwrite(buffer.data(), 1, bufferSize, m_fileHandle);
 
     //RCLog("Written %Iu/%Iu bytes with error: %d", bytesWritten, bufferSize, ferror(m_fileHandle));
 }

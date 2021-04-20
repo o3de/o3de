@@ -162,7 +162,7 @@ namespace AZ
             AZStd::string expectedHigherPrecedenceFileFullPath;
             AzFramework::StringFunc::Path::Join(gameProjectPath, RPI::ShaderVariantTreeAsset::CommonSubFolder, expectedHigherPrecedenceFileFullPath, false /* handle directory overlap? */, false /* be case insensitive? */);
             AzFramework::StringFunc::Path::Join(expectedHigherPrecedenceFileFullPath.c_str(), shaderProductFileRelativePath.c_str(), expectedHigherPrecedenceFileFullPath, false /* handle directory overlap? */, false /* be case insensitive? */);
-            AzFramework::StringFunc::Path::ReplaceExtension(expectedHigherPrecedenceFileFullPath, AZ::RPI::ShaderVariantAsset::Extension);
+            AzFramework::StringFunc::Path::ReplaceExtension(expectedHigherPrecedenceFileFullPath, AZ::RPI::ShaderVariantListSourceData::Extension);
             AzFramework::StringFunc::Path::Normalize(expectedHigherPrecedenceFileFullPath);
 
             AZStd::string normalizedShaderVariantListFileFullPath = shaderVariantListFileFullPath;
@@ -409,13 +409,11 @@ namespace AZ
             {
                 if (jobParameters.find(ShouldExitEarlyFromProcessJobParam) != jobParameters.end())
                 {
-                    const AZStd::string& shaderVariantListPath = jobParameters.at(ShaderVariantLoadErrorParam);
-                    AZ_TracePrintf(ShaderVariantAssetBuilderName, "Doing nothing on behalf of [%s] because it's been overriden by game project.", shaderVariantListPath.c_str());
+                    AZ_TracePrintf(ShaderVariantAssetBuilderName, "Doing nothing on behalf of [%s] because it's been overriden by game project.", jobParameters.at(ShaderVariantLoadErrorParam).c_str());
                     response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
                     return;
                 }
-                const AZStd::string& errorMessage = jobParameters.at(ShaderVariantLoadErrorParam);
-                AZ_Error(ShaderVariantAssetBuilderName, false, "Error during CreateJobs: %s", errorMessage.c_str());
+                AZ_Error(ShaderVariantAssetBuilderName, false, "Error during CreateJobs: %s", jobParameters.at(ShaderVariantLoadErrorParam).c_str());
                 response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
                 return;
             }

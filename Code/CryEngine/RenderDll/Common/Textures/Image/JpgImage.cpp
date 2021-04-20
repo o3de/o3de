@@ -72,7 +72,6 @@ namespace JpgImage {
 
     static void jo_writeBits(joBufferedIO* fp, int& bitBuf, int& bitCnt, const unsigned short* bs)
     {
-        auto pCryPak = gEnv->pCryPak;
 
         bitCnt += bs[1];
         bitBuf |= bs[0] << (24 - bitCnt);

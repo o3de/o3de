@@ -247,8 +247,6 @@ void CExportManager::AddEntityAnimationData(const CTrackViewTrack* pTrack, Expor
             float fOutTantentX = tout[0];
             float fOutTantentY = tout[1];
 
-            float fTangentDelta = 0.01f;
-
             if (fInTantentX == 0.0f)
             {
                 fInTantentX = kTangentDelta;
@@ -789,8 +787,6 @@ bool CExportManager::ProcessObjectsForExport()
     float fpsTimeInterval = 1.0f / m_FBXBakedExportFPS;
     float timeValue = 0.0f;
 
-    IObjectManager* pObjMgr = GetIEditor()->GetObjectManager();
-
     GetIEditor()->GetAnimation()->SetRecording(false);
     GetIEditor()->GetAnimation()->SetPlaying(false);
 
@@ -814,7 +810,6 @@ bool CExportManager::ProcessObjectsForExport()
 
             if (QString::compare(pObj2->name, kMasterCameraName) == 0)
             {
-                REFGUID camGUID = GetIEditor()->GetViewManager()->GetCameraObjectId();
                 pObject = GetIEditor()->GetObjectManager()->FindObject(GetIEditor()->GetViewManager()->GetCameraObjectId());
             }
             else

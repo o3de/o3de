@@ -4,6 +4,10 @@
     "parentMaterial": "",
     "propertyLayoutVersion": 3,
     "properties": {
+        "ambientOcclusion": {
+            "enable": true,
+            "textureMap": "Textures/roof_1k_ao.png"
+        },
         "baseColor": {
             "color": [
                 0.800000011920929,
@@ -11,24 +15,27 @@
                 0.800000011920929,
                 1.0
             ],
+            "textureBlendMode": "Lerp",
             "textureMap": "Textures/roof_1k_basecolor.png"
         },
+        "general": {
+            "applySpecularAA": true
+        },
         "metallic": {
-            "factor": 0.009999999776482582,
             "useTexture": false
         },
         "normal": {
+            "factor": 0.5,
+            "flipY": true,
             "textureMap": "Textures/roof_1k_normal.jpg"
         },
         "opacity": {
             "factor": 1.0
         },
         "parallax": {
-            "algorithm": "POM",
-            "enable": true,
+            "algorithm": "ContactRefinement",
             "factor": 0.019999999552965165,
-            "pdo": true,
-            "quality": "High",
+            "quality": "Medium",
             "textureMap": "Textures/roof_1k_height.png"
         },
         "roughness": {

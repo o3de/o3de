@@ -50,7 +50,6 @@ namespace GradientSignal
         {
             behaviorContext->Class<ThresholdGradientConfig>()
                 ->Constructor()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Property("threshold", BehaviorValueProperty(&ThresholdGradientConfig::m_threshold))
                 ->Property("gradientSampler", BehaviorValueProperty(&ThresholdGradientConfig::m_gradientSampler))
@@ -92,7 +91,6 @@ namespace GradientSignal
             behaviorContext->Class<ThresholdGradientComponent>()->RequestBus("ThresholdGradientRequestBus");
 
             behaviorContext->EBus<ThresholdGradientRequestBus>("ThresholdGradientRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Event("GetThreshold", &ThresholdGradientRequestBus::Events::GetThreshold)
                 ->Event("SetThreshold", &ThresholdGradientRequestBus::Events::SetThreshold)

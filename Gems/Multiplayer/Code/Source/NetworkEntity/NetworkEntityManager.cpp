@@ -12,6 +12,7 @@
 
 #include <Source/NetworkEntity/NetworkEntityManager.h>
 #include <Source/Components/NetBindComponent.h>
+#include <Include/IMultiplayer.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
@@ -24,17 +25,34 @@
 namespace Multiplayer
 {
     AZ_CVAR(bool, net_DebugCheckNetworkEntityManager, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Enables extra debug checks inside the NetworkEntityManager");
+    AZ_CVAR(AZ::TimeMs, net_EntityDomainUpdateMs, AZ::TimeMs{ 500 }, nullptr, AZ::ConsoleFunctorFlags::Null, "Frequency for updating the entity domain in ms");
 
     NetworkEntityManager::NetworkEntityManager()
         : m_networkEntityAuthorityTracker(*this)
         , m_removeEntitiesEvent([this] { RemoveEntities(); }, AZ::Name("NetworkEntityManager remove entities event"))
+        , m_updateEntityDomainEvent([this] { UpdateEntityDomain(); }, AZ::Name("NetworkEntityManager update entity domain event"))
+        , m_entityAddedEventHandler([this](AZ::Entity* entity) { OnEntityAdded(entity); })
+        , m_entityRemovedEventHandler([this](AZ::Entity* entity) { OnEntityRemoved(entity); })
     {
         AZ::Interface<INetworkEntityManager>::Register(this);
+        if (AZ::Interface<AZ::ComponentApplicationRequests>::Get() != nullptr)
+        {
+            // Null guard needed for unit tests
+            AZ::Interface<AZ::ComponentApplicationRequests>::Get()->RegisterEntityAddedEventHandler(m_entityAddedEventHandler);
+            AZ::Interface<AZ::ComponentApplicationRequests>::Get()->RegisterEntityRemovedEventHandler(m_entityRemovedEventHandler);
+        }
     }
 
     NetworkEntityManager::~NetworkEntityManager()
     {
         AZ::Interface<INetworkEntityManager>::Unregister(this);
+    }
+
+    void NetworkEntityManager::Initialize(HostId hostId, AZStd::unique_ptr<IEntityDomain> entityDomain)
+    {
+        m_hostId = hostId;
+        m_entityDomain = AZStd::move(entityDomain);
+        m_updateEntityDomainEvent.Enqueue(net_EntityDomainUpdateMs, true);
     }
 
     NetworkEntityTracker* NetworkEntityManager::GetNetworkEntityTracker()
@@ -74,10 +92,9 @@ namespace Multiplayer
         {
             if (net_DebugCheckNetworkEntityManager)
             {
-                NetBindComponent* netBindComponent = entityHandle.GetNetBindComponent();
-                AZ_Assert(netBindComponent, "No NetBindComponent found on networked entity");
-                const bool isClientOnlyEntity = false;// (ServerIdFromEntityId(it->first) == InvalidHostId);
-                AZ_Assert(netBindComponent->IsAuthority() || isClientOnlyEntity, "Trying to delete a proxy entity, this will lead to issues deserializing entity updates");
+                AZ_Assert(entityHandle.GetNetBindComponent(), "No NetBindComponent found on networked entity");
+                [[maybe_unused]] const bool isClientOnlyEntity = false;// (ServerIdFromEntityId(it->first) == InvalidHostId);
+                AZ_Assert(entityHandle.GetNetBindComponent()->IsAuthority() || isClientOnlyEntity, "Trying to delete a proxy entity, this will lead to issues deserializing entity updates");
             }
             m_removeList.push_back(entityHandle.GetNetEntityId());
             m_removeEntitiesEvent.Enqueue(AZ::TimeMs{ 0 });
@@ -185,6 +202,105 @@ namespace Multiplayer
         m_localDeferredRpcMessages.emplace_back(AZStd::move(message));
     }
 
+    void NetworkEntityManager::DispatchLocalDeferredRpcMessages()
+    {
+        for (NetworkEntityRpcMessage& rpcMessage : m_localDeferredRpcMessages)
+        {
+            AZ::Entity* entity = m_networkEntityTracker.GetRaw(rpcMessage.GetEntityId());
+            if (entity != nullptr)
+            {
+                NetBindComponent* netBindComponent = entity->FindComponent<NetBindComponent>();
+                AZ_Assert(netBindComponent != nullptr, "Attempting to send an RPC to an entity with no NetBindComponent");
+                netBindComponent->HandleRpcMessage(NetEntityRole::Server, rpcMessage);
+            }
+        }
+        m_localDeferredRpcMessages.clear();
+    }
+
+    void NetworkEntityManager::UpdateEntityDomain()
+    {
+        if (m_entityDomain == nullptr)
+        {
+            return;
+        }
+
+        m_entitiesNotInDomain.clear();
+        m_entityDomain->RetrieveEntitiesNotInDomain(m_entitiesNotInDomain);
+        for (NetEntityId exitingId : m_entitiesNotInDomain)
+        {
+            OnEntityExitDomain(exitingId);
+        }
+    }
+
+    void NetworkEntityManager::OnEntityExitDomain(NetEntityId entityId)
+    {
+        bool safeToExit = true;
+        NetworkEntityHandle entityHandle = m_networkEntityTracker.Get(entityId);
+
+        // ClientAutonomous entities need special handling here. When we migrate a player's entity the player's client must tell the new server which
+        //  entity they were controlling. If we tell them to migrate before they know which entity they control it results in them requesting a new entity
+        //  from the new server, resulting in an orphaned PlayerChar. PlayerControllerComponentServerAuthority::PlayerClientHasControlledEntity()
+        //  will tell us whether the client sent an RPC acknowledging that they now know which entity is theirs.
+        if (AZ::Entity* entity = entityHandle.GetEntity())
+        {
+            //if (PlayerComponent::Authority* playerController = FindController<PlayerComponent::Authority>(nonConstExitingEntityPtr))
+            //{
+            //    safeToExit = playerController->PlayerClientHasControlledEntity();
+            //}
+        }
+
+        // We also need special handling for the EntityHierarchyComponent as well, since related entities need to be migrated together
+        //auto* hierarchyController = FindController<EntityHierarchyComponent::Authority>(nonConstExitingEntityPtr);
+        //if (hierarchyController)
+        //{
+        //    if (hierarchyController->GetParentRelatedEntity())
+        //    {
+        //        safeToExit = false;
+        //    }
+        //}
+
+        // Validate that we aren't already planning to remove this entity
+        if (safeToExit)
+        {
+            for (auto entityId : m_removeList)
+            {
+                if (entityId == entityId)
+                {
+                    safeToExit = false;
+                }
+            }
+        }
+
+        if (safeToExit)
+        {
+            m_entityExitDomainEvent.Signal(entityHandle);
+        }
+    }
+
+    void NetworkEntityManager::OnEntityAdded(AZ::Entity* entity)
+    {
+        NetBindComponent* netBindComponent = entity->FindComponent<NetBindComponent>();
+        if (netBindComponent != nullptr)
+        {
+            // @pereslav
+            // Note that this is a total hack.. we should not be listening to this event on a client
+            // Entities should instead be spawned by the prefabEntityId inside EntityReplicationManager::HandlePropertyChangeMessage()
+            const bool isClient = AZ::Interface<IMultiplayer>::Get()->GetAgentType() == MultiplayerAgentType::Client;
+            const NetEntityRole netEntityRole = isClient ? NetEntityRole::Client: NetEntityRole::Authority;
+            const NetEntityId netEntityId = m_nextEntityId++;
+            netBindComponent->PreInit(entity, PrefabEntityId(), netEntityId, netEntityRole);
+        }
+    }
+
+    void NetworkEntityManager::OnEntityRemoved(AZ::Entity* entity)
+    {
+        NetBindComponent* netBindComponent = entity->FindComponent<NetBindComponent>();
+        if (netBindComponent != nullptr)
+        {
+            MarkForRemoval(netBindComponent->GetEntityHandle());
+        }
+    }
+
     void NetworkEntityManager::RemoveEntities()
     {
         //RewindableObjectState::ClearRewoundEntities();
@@ -213,10 +329,10 @@ namespace Multiplayer
 
                 // Delete Entity, method depends on how it was loaded
                 // Try slice removal first, then force delete
-                AZ::Entity* rawEntity = removeEntity.GetEntity();
+                //AZ::Entity* rawEntity = removeEntity.GetEntity();
                 //if (!rootSlice->RemoveEntity(rawEntity))
                 //{
-                    delete rawEntity;
+                //    delete rawEntity;
                 //}
             }
 

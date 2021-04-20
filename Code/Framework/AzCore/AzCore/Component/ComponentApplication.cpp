@@ -27,7 +27,6 @@
 #include <AzCore/Memory/OverrunDetectionAllocator.h>
 #include <AzCore/Memory/AllocatorManager.h>
 #include <AzCore/Memory/MallocSchema.h>
-#include <AzCore/IO/Path/Path.h>
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/ObjectStream.h>
@@ -174,78 +173,85 @@ namespace AZ
         return true;
     };
 
+
     //! SettingsRegistry notifier handler which updates relevant registry settings based
     //! on an update to '/Amazon/AzCore/Bootstrap/project_path' key.
     struct UpdateProjectSettingsEventHandler
     {
-        UpdateProjectSettingsEventHandler(AZ::SettingsRegistryInterface& registry)
+        UpdateProjectSettingsEventHandler(AZ::SettingsRegistryInterface& registry, AZ::CommandLine& commandLine)
             : m_registry{ registry }
+            , m_commandLine{ commandLine }
         {
         }
 
         void operator()(AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
         {
-            UpdateProjectSpecializationInRegistry(path);
+            using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+            // #1 Update the project settings when the project path is set
+            const auto projectPathKey = FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
+            AZ::IO::FixedMaxPath newProjectPath;
+            if (SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual(projectPathKey, path)
+                && m_registry.Get(newProjectPath.Native(), projectPathKey) && newProjectPath != m_oldProjectPath)
+            {
+                UpdateProjectSettingsFromProjectPath(AZ::IO::PathView(newProjectPath));
+            }
+
+            // #2 Update the project specialization when the project name is set
+            const auto projectNameKey = FixedValueString(AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey) + "/project_name";
+            FixedValueString newProjectName;
+            if (SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual(projectNameKey, path)
+                && m_registry.Get(newProjectName, projectNameKey) && newProjectName != m_oldProjectName)
+            {
+                UpdateProjectSpecializationFromProjectName(newProjectName);
+            }
+
+            // #3 Update the ComponentApplication CommandLine instance when the command line settings are merged into the Settings Registry
+            if (path == AZ::SettingsRegistryMergeUtils::CommandLineValueChangedKey)
+            {
+                UpdateCommandLine();
+            }
         }
 
         //! Add the project name as a specialization underneath the /Amazon/AzCore/Settings/Specializations path
         //! and remove the current project name specialization if one exists.
-        void UpdateProjectSpecializationInRegistry(AZStd::string_view path)
+        void UpdateProjectSpecializationFromProjectName(AZStd::string_view newProjectName)
         {
-            auto projectPathKey =
-                AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)
-                + "/project_path";
-            if (path == projectPathKey)
-            {
-                AZ::SettingsRegistryInterface::FixedValueString newProjectPath;
-                if (m_registry.Get(newProjectPath, path) && !newProjectPath.empty())
-                {
-                    // Make the path absolute by appending to app root, in case project path is relative.
-                    // If the project path is already absolute it will remain the same.
-                    // If we turn it from a relative path to an absolute path, write-back the absolute path to the registry.
-                    AZ::IO::FixedMaxPath projectPath = AZ::SettingsRegistryMergeUtils::FindEngineRoot(m_registry) / newProjectPath;
-                    if (projectPath.Compare(newProjectPath.c_str()))
-                    {
-                        m_registry.Set(path, projectPath.Native());
-                    }
+            using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+            // Add the project_name as a specialization for loading the build system dependency .setreg files
+            auto newProjectNameSpecialization = FixedValueString::format("%s/%.*s", AZ::SettingsRegistryMergeUtils::SpecializationsRootKey,
+                aznumeric_cast<int>(newProjectName.size()), newProjectName.data());
+            auto oldProjectNameSpecialization = FixedValueString::format("%s/%s", AZ::SettingsRegistryMergeUtils::SpecializationsRootKey,
+                m_oldProjectName.c_str());
+            m_registry.Remove(oldProjectNameSpecialization);
+            m_oldProjectName = newProjectName;
+            m_registry.Set(newProjectNameSpecialization, true);
+        }
 
-                    // Merge the project.json file into settings registry under ProjectSettingsRootKey path.
-                    AZ::IO::FixedMaxPath projectMetadataFile{ projectPath };
-                    projectMetadataFile /= "project.json";
-                    m_registry.MergeSettingsFile(projectMetadataFile.Native(),
-                        AZ::SettingsRegistryInterface::Format::JsonMergePatch, AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey);
+        void UpdateProjectSettingsFromProjectPath(AZ::IO::PathView newProjectPath)
+        {
+            // Update old Project path before attempting to merge in new Settings Registry values in order to prevent recursive calls
+            m_oldProjectPath = newProjectPath;
 
-                    // Get the 'project_name' value from what was in the 'project.json' file...
-                    auto projectNameKey =
-                        AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey)
-                        + "/project_name";
+            // Merge the project.json file into settings registry under ProjectSettingsRootKey path.
+            AZ::IO::FixedMaxPath projectMetadataFile{ AZ::SettingsRegistryMergeUtils::FindEngineRoot(m_registry) / newProjectPath };
+            projectMetadataFile /= "project.json";
+            m_registry.MergeSettingsFile(projectMetadataFile.Native(),
+                AZ::SettingsRegistryInterface::Format::JsonMergePatch, AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey);
 
-                    AZ::SettingsRegistryInterface::FixedValueString projectSpecialization;
-                    if (m_registry.Get(projectSpecialization, projectNameKey))
-                    {
-                        auto specializationKey = AZ::SettingsRegistryInterface::FixedValueString::format(
-                            "%s/%s", AZ::SettingsRegistryMergeUtils::SpecializationsRootKey, projectSpecialization.c_str());
-                        if (m_currentSpecialization != specializationKey)
-                        {
-                            m_registry.Set(specializationKey, true);
-                            if (!m_currentSpecialization.empty())
-                            {
-                                // Remove the previous Project Name from the specialization path if it was set.
-                                m_registry.Remove(m_currentSpecialization);
-                            }
-                            m_currentSpecialization = specializationKey;
+            // Update all the runtime file paths based on the new "project_path" value.
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(m_registry);
+        }
 
-                            // Update all the runtime file paths based on the new "project_path" value.
-                            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(m_registry);
-                        }
-                    }
-                }
-            }
+        void UpdateCommandLine()
+        {
+            AZ::SettingsRegistryMergeUtils::GetCommandLineFromRegistry(m_registry, m_commandLine);
         }
 
     private:
-        AZ::SettingsRegistryInterface::FixedValueString m_currentSpecialization;
+        AZ::IO::FixedMaxPath m_oldProjectPath;
+        AZ::SettingsRegistryInterface::FixedValueString m_oldProjectName;
         AZ::SettingsRegistryInterface& m_registry;
+        AZ::CommandLine& m_commandLine;
     };
 
     void ComponentApplication::Descriptor::AllocatorRemapping::Reflect(ReflectContext* context, ComponentApplication* app)
@@ -362,11 +368,20 @@ namespace AZ
     ComponentApplication::ComponentApplication()
         : ComponentApplication(0, nullptr)
     {
+        if (Interface<ComponentApplicationRequests>::Get() == nullptr)
+        {
+            Interface<ComponentApplicationRequests>::Register(this);
+        }
     }
 
     ComponentApplication::ComponentApplication(int argC, char** argV)
         : m_eventLogger{}
     {
+        if (Interface<ComponentApplicationRequests>::Get() == nullptr)
+        {
+            Interface<ComponentApplicationRequests>::Register(this);
+        }
+
         if (argV)
         {
             m_argC = argC;
@@ -415,7 +430,13 @@ namespace AZ
         // Add the Command Line arguments into the SettingsRegistry
         SettingsRegistryMergeUtils::StoreCommandLineToRegistry(*m_settingsRegistry, m_commandLine);
 
-        // Merge Command Line arguments 
+        // Add a notifier to update the project_settings when
+        // 1. The 'project_path' key changes
+        // 2. The project specialization when the 'project-name' key changes
+        // 3. The ComponentApplication command line when the command line is stored to the registry
+        m_projectChangedHandler = m_settingsRegistry->RegisterNotifier(UpdateProjectSettingsEventHandler{ *m_settingsRegistry, m_commandLine });
+
+        // Merge Command Line arguments
         constexpr bool executeRegDumpCommands = false;
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*m_settingsRegistry, m_commandLine, executeRegDumpCommands);
 
@@ -428,10 +449,6 @@ namespace AZ
         // If the current platform returns an engaged optional from Utils::GetDefaultAppRootPath(), that is used
         // for the application root.
         CalculateAppRoot();
-
-        // Add a notifier to update the /Amazon/AzCore/Settings/Specializations
-        // when the 'project_path' property changes within the SettingsRegistry
-        m_projectChangedHandler = m_settingsRegistry->RegisterNotifier(UpdateProjectSettingsEventHandler{ *m_settingsRegistry });
 
         // Merge the bootstrap.cfg file into the Settings Registry as soon as the OSAllocator has been created.
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_Bootstrap(*m_settingsRegistry);
@@ -462,6 +479,11 @@ namespace AZ
     //=========================================================================
     ComponentApplication::~ComponentApplication()
     {
+        if (Interface<ComponentApplicationRequests>::Get() == this)
+        {
+            Interface<ComponentApplicationRequests>::Unregister(this);
+        }
+
         if (m_isStarted)
         {
             Destroy();
@@ -495,8 +517,7 @@ namespace AZ
         DestroyAllocator();
     }
 
-    Entity* ComponentApplication::Create(const Descriptor& descriptor,
-        const StartupParameters& startupParameters)
+    Entity* ComponentApplication::Create(const Descriptor& descriptor, const StartupParameters& startupParameters)
     {
         AZ_Assert(!m_isStarted, "Component application already started!");
 
@@ -905,6 +926,8 @@ namespace AZ
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectUserRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, true);
 #endif
+        // Update the Runtime file paths in case the "{BootstrapSettingsRootKey}/assets" key was overriden by a setting registry
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(registry);
     }
 
     void ComponentApplication::SetSettingsRegistrySpecializations(SettingsRegistryInterface::Specializations& specializations)
@@ -943,6 +966,16 @@ namespace AZ
         }
     }
 
+    void ComponentApplication::RegisterEntityAddedEventHandler(EntityAddedEvent::Handler& handler)
+    {
+        handler.Connect(m_entityAddedEvent);
+    }
+
+    void ComponentApplication::RegisterEntityRemovedEventHandler(EntityRemovedEvent::Handler& handler)
+    {
+        handler.Connect(m_entityRemovedEvent);
+    }
+
     //=========================================================================
     // AddEntity
     // [5/30/2012]
@@ -954,7 +987,7 @@ namespace AZ
         {
             return false;
         }
-
+        m_entityAddedEvent.Signal(entity);
         return m_entities.insert(AZStd::make_pair(entity->GetId(), entity)).second;
     }
 
@@ -969,7 +1002,7 @@ namespace AZ
         {
             return false;
         }
-
+        m_entityRemovedEvent.Signal(entity);
         return (m_entities.erase(entity->GetId()) == 1);
     }
 
@@ -982,6 +1015,7 @@ namespace AZ
         Entity* entity = FindEntity(id);
         if (entity)
         {
+            m_entityRemovedEvent.Signal(entity);
             delete entity;
             return true;
         }
@@ -1371,10 +1405,7 @@ namespace AZ
     //=========================================================================
     void ComponentApplication::CalculateExecutablePath()
     {
-        Utils::GetExecutableDirectory(m_exeDirectory.data(), m_exeDirectory.capacity());
-        // Update the size value of the executable directory fixed string to correctly be the length of the null-terminated string stored within it
-        m_exeDirectory.resize_no_construct(AZStd::char_traits<char>::length(m_exeDirectory.data()));
-        m_exeDirectory.push_back(AZ_CORRECT_FILESYSTEM_SEPARATOR);
+        m_exeDirectory = Utils::GetExecutableDirectory();
     }
 
     void ComponentApplication::CalculateAppRoot()
@@ -1382,19 +1413,12 @@ namespace AZ
         if (AZStd::optional<AZ::StringFunc::Path::FixedString> appRootPath = Utils::GetDefaultAppRootPath(); appRootPath)
         {
             m_appRoot = AZStd::move(*appRootPath);
-            if (!m_appRoot.empty() && !m_appRoot.ends_with(AZ_CORRECT_FILESYSTEM_SEPARATOR))
-            {
-                m_appRoot.push_back(AZ_CORRECT_FILESYSTEM_SEPARATOR);
-            }
         }
     }
 
     void ComponentApplication::CalculateEngineRoot()
     {
-        if (m_engineRoot = AZ::SettingsRegistryMergeUtils::FindEngineRoot(*m_settingsRegistry).Native(); !m_engineRoot.empty())
-        {
-            m_engineRoot.push_back(AZ_CORRECT_FILESYSTEM_SEPARATOR);
-        }
+        m_engineRoot = AZ::SettingsRegistryMergeUtils::FindEngineRoot(*m_settingsRegistry).Native();
     }
 
     void ComponentApplication::ResolveModulePath([[maybe_unused]] AZ::OSString& modulePath)

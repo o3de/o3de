@@ -57,7 +57,6 @@ namespace Vegetation
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<ShapeIntersectionFilterConfig>()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Constructor()
                 ->Property("filterStage",
@@ -104,7 +103,6 @@ namespace Vegetation
             behaviorContext->Class<ShapeIntersectionFilterComponent>()->RequestBus("ShapeIntersectionFilterRequestBus");
 
             behaviorContext->EBus<ShapeIntersectionFilterRequestBus>("ShapeIntersectionFilterRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Event("GetShapeEntityId", &ShapeIntersectionFilterRequestBus::Events::GetShapeEntityId)
                 ->Event("SetShapeEntityId", &ShapeIntersectionFilterRequestBus::Events::SetShapeEntityId)

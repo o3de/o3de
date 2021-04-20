@@ -273,7 +273,10 @@ void CWindowsConsole::OnInit(ISystem* pSystem)
         m_pInputThread = new CWindowsConsoleInputThread(*this);
         m_pInputThread->Start();
 
-        BOOL handlerInstalled = SetConsoleCtrlHandler(CtrlHandler, TRUE);
+#if !defined(NDEBUG)
+        BOOL handlerInstalled =
+#endif
+            SetConsoleCtrlHandler(CtrlHandler, TRUE);
         CRY_ASSERT(handlerInstalled);
 
         m_initialized = true;
@@ -670,7 +673,6 @@ void CWindowsConsole::DrawStatus()
         // Current update rate and player count on the right.
 
         const char*             pMapName = m_pCVarSvMap->GetString();
-        const char*             pGameRules = m_pCVarSvGameRules->GetString();
 
         const char*             pMissionName = m_pCVarSvMission ? m_pCVarSvMission->GetString() : "";
         azsnprintf(bufferLeft, sizeof bufferLeft, " mission: %s map:%s", pMissionName, pMapName);
@@ -730,9 +732,7 @@ void CWindowsConsole::DrawStatus()
         pStatusRight = "";
     }
 
-    int                     leftWidth = strlen(pStatusLeft);
     int                     rightWidth = strlen(pStatusRight);
-    int                     pad = 0;
 
     m_statusBuffer.Clear();
     m_statusBuffer.PutText(0, 0, pStatusLeft);
@@ -991,7 +991,8 @@ void CWindowsConsole::CCellBuffer::Print(const char* pInszText, SPosition& posit
                 break;
             }
         case '\\':
-            if (m_escape = !m_escape)
+            m_escape = !m_escape;
+            if (m_escape)
             {
                 break;
             }

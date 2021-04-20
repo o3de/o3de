@@ -106,7 +106,7 @@ PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
     float NdotV = saturate(dot(normal, dirToCamera));
     NdotV = max(NdotV, 0.01f);    // [GFX TODO][ATOM-4466] This is a current band-aid for specular noise at grazing angles.
     float2 brdf = PassSrg::m_brdfMap.Sample(PassSrg::LinearSampler, GetBRDFTexCoords(roughness, NdotV)).rg;
-    float3 multiScatterCompensation = GetMultiScatterCompensation(NdotV, specularF0, brdf, multiScatterCompensationEnabled);
+    float3 multiScatterCompensation = GetMultiScatterCompensation(specularF0, brdf, multiScatterCompensationEnabled);
     float3 specular = blendWeight * globalSpecular * multiScatterCompensation * (specularF0 * brdf.x + brdf.y);
 
     float4 encodedClearCoatNormal = PassSrg::m_clearCoatNormal.Load(IN.m_position.xy, sampleIndex);

@@ -31,10 +31,7 @@ static WCHAR szFR[] = L"\\System32\\FaultRep.dll";
 
 WCHAR* GetFullPathToFaultrepDll(void)
 {
-    CHAR* lpRet = NULL;
-    UINT rc;
-
-    rc = GetSystemWindowsDirectoryW(szPath, ARRAYSIZE(szPath));
+    UINT rc = GetSystemWindowsDirectoryW(szPath, ARRAYSIZE(szPath));
     if (rc == 0 || rc > ARRAYSIZE(szPath) - ARRAYSIZE(szFR) - 1)
     {
         return NULL;
@@ -140,7 +137,7 @@ LONG WINAPI CryEngineExceptionFilterWER(struct _EXCEPTION_POINTERS* pExceptionPo
             pfn_REPORTFAULT pfn = (pfn_REPORTFAULT)GetProcAddress(hFaultRepDll, "ReportFault");
             if (pfn)
             {
-                EFaultRepRetVal rc = pfn(pExceptionPointers, 0);
+                pfn(pExceptionPointers, 0);
                 lRet = EXCEPTION_EXECUTE_HANDLER;
             }
             FreeLibrary(hFaultRepDll);

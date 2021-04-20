@@ -73,7 +73,7 @@ BEGIN
             VALUE "FileVersion", "1.1.8.6"
             VALUE "InternalName", "ResourceCompiler"
             VALUE "LegalCopyright", "Portions of this file Copyright (c) Amazon.com, Inc. or its affiliates. All Rights Reserved. Original file Copyright (c) Crytek GMBH. Used under license by Amazon.com, Inc. and its affiliates."
-            VALUE "LegalTrademarks", "Lumberyard"
+            VALUE "LegalTrademarks", "Open 3D Engine"
             VALUE "OriginalFilename", "rc.exe"
             VALUE "ProductName", "Resource Compiler"
             VALUE "ProductVersion", "1.1.8.6"

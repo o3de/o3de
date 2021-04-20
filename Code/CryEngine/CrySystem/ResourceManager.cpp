@@ -320,7 +320,6 @@ bool CResourceManager::LoadFastLoadPaks(bool bToMemory)
         }
 
         const char* const assetsDir = "@assets@";
-        const char* shaderPakDir = assetsDir;
         const char* shaderPakPath = "ShaderCacheStartup.pak";
 
 #if defined(AZ_RESTRICTED_PLATFORM)
@@ -826,8 +825,6 @@ void CResourceManager::OnSystemEvent(ESystemEvent event, [[maybe_unused]] UINT_P
 //////////////////////////////////////////////////////////////////////////
 void CResourceManager::GetMemoryStatistics(ICrySizer* pSizer)
 {
-    auto pResList = gEnv->pCryPak->GetResourceList(AZ::IO::IArchive::RFOM_Level);
-
     pSizer->AddContainer(m_openedPaks);
 }
 

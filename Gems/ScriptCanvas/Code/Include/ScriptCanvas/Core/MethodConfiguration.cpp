@@ -119,7 +119,6 @@ namespace ScriptCanvas
         void AddMethodOutputSlot(const MethodOutputConfig& outputConfig)
         {
             const AZ::BehaviorMethod& method = outputConfig.config.m_method;
-            const AZ::BehaviorClass* bcClass = outputConfig.config.m_class;
 
             // check for checked operation
             if (auto checkOpAttribute = AZ::FindAttribute(AZ::ScriptCanvasAttributes::CheckedOperation, method.m_attributes))

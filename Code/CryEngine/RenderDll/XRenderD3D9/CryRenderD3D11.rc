@@ -47,7 +47,7 @@ BEGIN
             VALUE "FileVersion", "1, 0, 0, 1"
 			VALUE "FileDescription", "CryRenderD3D11"
             VALUE "LegalCopyright", "Portions of this file Copyright (c) Amazon.com, Inc. or its affiliates. All Rights Reserved. Original file Copyright (c) Crytek GMBH. Used under license by Amazon.com, Inc. and its affiliates."
-            VALUE "ProductName", "Lumberyard"
+            VALUE "ProductName", "Open 3D Engine"
             VALUE "ProductVersion", "1, 0, 0, 1"
         END
     END

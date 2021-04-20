@@ -12,6 +12,8 @@
 
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UnitTest/UnitTest.h>
+#include <AzCore/Name/NameDictionary.h>
+#include <AzCore/Name/Name.h>
 #include <AzTest/AzTest.h>
 #include <MultiplayerSystemComponent.h>
 #include <IMultiplayerConnectionMock.h>
@@ -25,6 +27,7 @@ namespace UnitTest
         void SetUp() override
         {
             SetupAllocator();
+            AZ::NameDictionary::Create();
             m_mpComponent = new Multiplayer::MultiplayerSystemComponent();
 
             m_initHandler = Multiplayer::SessionInitEvent::Handler([this](AzNetworking::INetworkInterface* value) { TestInitEvent(value); });
@@ -38,6 +41,7 @@ namespace UnitTest
         void TearDown() override
         {
             delete m_mpComponent;
+            AZ::NameDictionary::Destroy();
             TeardownAllocator();
         }
 
@@ -93,6 +97,10 @@ namespace UnitTest
         m_mpComponent->OnConnect(&connMock2);
 
         EXPECT_EQ(m_connectionAcquiredCount, 25);
+
+        // Clean up connection data
+        m_mpComponent->OnDisconnect(&connMock1, AzNetworking::DisconnectReason::None, AzNetworking::TerminationEndpoint::Local);
+        m_mpComponent->OnDisconnect(&connMock2, AzNetworking::DisconnectReason::None, AzNetworking::TerminationEndpoint::Local);
     }
 }
 

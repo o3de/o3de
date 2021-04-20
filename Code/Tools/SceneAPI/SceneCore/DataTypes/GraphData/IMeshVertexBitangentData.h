@@ -36,6 +36,8 @@ namespace AZ
 
                 virtual ~IMeshVertexBitangentData() override = default;
 
+                void CloneAttributesFrom([[maybe_unused]] const IGraphObject* sourceObject) override {}
+
                 virtual size_t GetCount() const = 0;
                 virtual const AZ::Vector3& GetBitangent(size_t index) const = 0;
                 virtual void SetBitangent(size_t vertexIndex, const AZ::Vector3& bitangent) = 0;

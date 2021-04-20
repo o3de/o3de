@@ -1600,7 +1600,7 @@ static int Global_Typeid(lua_State* l)
     return 1;
 }
 
-#ifdef LUA_LUMBERYARD_EXTENSIONS
+#ifdef LUA_O3DE_EXTENSIONS
 
 //=========================================================================
 // LUA Dummy Node Extension
@@ -1631,7 +1631,7 @@ LUA_API const Node* lua_getDummyNode()
     return &(*s_luaDummyNodeVariable);
 }
 
-#endif // LUA_LUMBERYARD_EXTENSIONS
+#endif // LUA_O3DE_EXTENSIONS
 
     //////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////

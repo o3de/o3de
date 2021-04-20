@@ -18,7 +18,7 @@
 
 namespace Multiplayer
 {
-    //! @class InputCommandArray
+    //! @class NetworkInputVector
     //! @brief An array of network inputs. Used to mitigate loss of input packets on the server. Compresses subsequent elements.
     class NetworkInputVector final
     {
@@ -32,8 +32,8 @@ namespace Multiplayer
         NetworkInput& operator[](uint32_t index);
         const NetworkInput& operator[](uint32_t index) const;
 
-        void SetPreviousInputId(NetworkInputId previousInputId);
-        NetworkInputId GetPreviousInputId() const;
+        void SetPreviousInputId(ClientInputId previousInputId);
+        ClientInputId GetPreviousInputId() const;
 
         bool Serialize(AzNetworking::ISerializer& serializer);
 
@@ -48,7 +48,7 @@ namespace Multiplayer
 
         ConstNetworkEntityHandle m_owner;
         AZStd::fixed_vector<Wrapper, MaxElements> m_inputs;
-        NetworkInputId m_previousInputId;
+        ClientInputId m_previousInputId;
     };
 
     //! @class MigrateNetworkInputVector

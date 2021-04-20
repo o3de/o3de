@@ -31,7 +31,6 @@ namespace AZ
                 void Start() override;
 
             private:
-                static constexpr const char* LightingPresetPath = "lightingpresets/default.lightingpreset.azasset";
                 static constexpr float AspectRatio = 1.0f;
                 static constexpr float NearDist = 0.1f;
                 static constexpr float FarDist = 100.0f;

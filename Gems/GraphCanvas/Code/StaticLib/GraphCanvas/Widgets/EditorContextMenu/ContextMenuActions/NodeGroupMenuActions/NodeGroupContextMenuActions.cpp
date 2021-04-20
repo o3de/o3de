@@ -117,8 +117,6 @@ namespace GraphCanvas
         const GraphId& graphId = GetGraphId();
         AZ::EntityId groupTarget = GetTargetId();
 
-        SceneReaction reaction = SceneReaction::Nothing;
-
         if (GraphUtils::UngroupGroup(graphId, groupTarget))
         {
             return SceneReaction::PostUndo;

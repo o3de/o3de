@@ -154,7 +154,7 @@ namespace AzToolsFramework
             if (instanceToTemplateEntityIdIterator != m_instanceToTemplateEntityIdMap.end())
             {
                 entityAliasToRemove = instanceToTemplateEntityIdIterator->second;
-                bool isEntityRemoved = m_instanceEntityMapper->UnregisterEntity(entityId) &&
+                [[maybe_unused]] bool isEntityRemoved = m_instanceEntityMapper->UnregisterEntity(entityId) &&
                     m_templateToInstanceEntityIdMap.erase(entityAliasToRemove) && m_instanceToTemplateEntityIdMap.erase(entityId);
                 AZ_Assert(isEntityRemoved,
                     "Prefab - Failed to remove entity with id %s with a Prefab Instance derived from source asset %s "

@@ -197,26 +197,26 @@ namespace AZ
         //! Selects an lod (based on size-in-screnspace) and adds the appropriate DrawPackets to the view.
         uint32_t AddLodDataToView(const Vector3& pos, const Cullable::LodData& lodData, RPI::View& view);
 
-        //! Centralized manager for culling-related processing.
-        //! There is one CullingSystem owned by each Scene, so external systems (such as FeatureProcessors) should
-        //! access the CullingSystem via their parent Scene.
-        class CullingSystem
+        //! Centralized manager for culling-related processing for a given scene.
+        //! There is one CullingScene owned by each Scene, so external systems (such as FeatureProcessors) should
+        //! access the CullingScene via their parent Scene.
+        class CullingScene
         {
         public:
-            AZ_RTTI(CullingSystem, "{5B23B55B-8A1D-4B0D-9760-15E87FC8518A}");
-            AZ_CLASS_ALLOCATOR(CullingSystem, AZ::SystemAllocator, 0);
-            AZ_DISABLE_COPY_MOVE(CullingSystem);
+            AZ_RTTI(CullingScene, "{5B23B55B-8A1D-4B0D-9760-15E87FC8518A}");
+            AZ_CLASS_ALLOCATOR(CullingScene, AZ::SystemAllocator, 0);
+            AZ_DISABLE_COPY_MOVE(CullingScene);
 
-            CullingSystem() = default;
-            virtual ~CullingSystem() = default;
+            CullingScene() = default;
+            virtual ~CullingScene() = default;
 
             void Activate(const class Scene* parentScene);
             void Deactivate();
 
-            //! Notifies the CullingSystem that culling will begin for this frame.
+            //! Notifies the CullingScene that culling will begin for this frame.
             void BeginCulling(const AZStd::vector<ViewPtr>& views);
 
-            //! Notifies the CullingSystem that the culling is done for this frame.
+            //! Notifies the CullingScene that the culling is done for this frame.
             void EndCulling();
 
             //! Performs render culling and lod selection for a View, then adds the visible renderpackets to that View.
@@ -235,7 +235,7 @@ namespace AZ
             //! Is not threadsafe, so call this from the main thread outside of Begin/EndCulling()
             void UnregisterCullable(Cullable& cullable);
 
-            //! Returns the number of cullables that have been added to the CullingSystem
+            //! Returns the number of cullables that have been added to the CullingScene
             uint32_t GetNumCullables() const;
 
             CullingDebugContext& GetDebugContext()
@@ -244,12 +244,13 @@ namespace AZ
             }
 
             static const size_t WorkListCapacity = 5;
-            using WorkListType = AZStd::fixed_vector<AzFramework::IVisibilitySystem::NodeData, WorkListCapacity>;
+            using WorkListType = AZStd::fixed_vector<AzFramework::IVisibilityScene::NodeData, WorkListCapacity>;
 
         protected:
             size_t CountObjectsInScene();
 
             const Scene* m_parentScene = nullptr;
+            AzFramework::IVisibilityScene* m_visScene = nullptr;
 
             CullingDebugContext m_debugCtx;
 
