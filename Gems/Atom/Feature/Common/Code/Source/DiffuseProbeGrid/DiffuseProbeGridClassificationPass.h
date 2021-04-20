@@ -58,9 +58,6 @@ namespace AZ
             const RHI::PipelineState* m_pipelineState = nullptr;
             Data::Asset<RPI::ShaderResourceGroupAsset> m_srgAsset;
             RHI::DispatchDirect m_dispatchArgs;
-
-            // revision number of the ray tracing data when the shader table was built
-            uint32_t m_rayTracingDataRevision = 0;
         };
     }   // namespace Render
 }   // namespace AZ
