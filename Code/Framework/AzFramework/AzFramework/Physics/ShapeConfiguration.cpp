@@ -142,6 +142,7 @@ namespace Physics
                 ->Field("PhysicsAsset", &PhysicsAssetShapeConfiguration::m_asset)
                 ->Field("AssetScale", &PhysicsAssetShapeConfiguration::m_assetScale)
                 ->Field("UseMaterialsFromAsset", &PhysicsAssetShapeConfiguration::m_useMaterialsFromAsset)
+                ->Field("SubdivisionLevel", &PhysicsAssetShapeConfiguration::m_subdivisionLevel)
                 ;
 
             if (auto editContext = serializeContext->GetEditContext())

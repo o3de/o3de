@@ -145,6 +145,7 @@ set(FILES
     Components/NonUniformScaleComponent.cpp
     FileFunc/FileFunc.h
     FileFunc/FileFunc.cpp
+    Font/FontInterface.h
     Gem/GemInfo.cpp
     Gem/GemInfo.h
     StringFunc/StringFunc.h
@@ -316,7 +317,6 @@ set(FILES
     Terrain/TerrainDataRequestBus.h
     Terrain/TerrainDataRequestBus.cpp
     Platform/PlatformDefaults.h
-    Platform/PlatformDefaults.cpp
     Windowing/WindowBus.h
     Windowing/NativeWindow.cpp
     Windowing/NativeWindow.h

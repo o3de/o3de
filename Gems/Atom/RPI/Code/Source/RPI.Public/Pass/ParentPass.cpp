@@ -393,19 +393,6 @@ namespace AZ
             }
         }
 
-        TimestampResult ParentPass::GetTimestampResultInternal() const
-        {
-            AZStd::vector<TimestampResult> timestampResultArray;
-            timestampResultArray.reserve(m_children.size());
-
-            // Calculate the Timestamp result by summing all of its child's TimestampResults
-            for (const Ptr<Pass>& childPass : m_children)
-            {
-                timestampResultArray.emplace_back(childPass->GetTimestampResult());
-            }
-            return TimestampResult(timestampResultArray);
-        }
-
         PipelineStatisticsResult ParentPass::GetPipelineStatisticsResultInternal() const
         {
             AZStd::vector<PipelineStatisticsResult> pipelineStatisticsResultArray;
@@ -414,7 +401,7 @@ namespace AZ
             // Calculate the PipelineStatistics result by summing all of its child's PipelineStatistics
             for (const Ptr<Pass>& childPass : m_children)
             {
-                pipelineStatisticsResultArray.emplace_back(childPass->GetPipelineStatisticsResult());
+                pipelineStatisticsResultArray.emplace_back(childPass->GetLatestPipelineStatisticsResult());
             }
             return PipelineStatisticsResult(pipelineStatisticsResultArray);
         }

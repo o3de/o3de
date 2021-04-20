@@ -95,4 +95,20 @@ namespace Multiplayer
     private:
         MultiplayerStats m_stats;
     };
+
+    inline const char* GetEnumString(MultiplayerAgentType value)
+    {
+        switch (value)
+        {
+        case MultiplayerAgentType::Uninitialized:
+            return "Uninitialized";
+        case MultiplayerAgentType::Client:
+            return "Client";
+        case MultiplayerAgentType::ClientServer:
+            return "ClientServer";
+        case MultiplayerAgentType::DedicatedServer:
+            return "DedicatedServer";
+        }
+        return "INVALID";
+    }
 }
