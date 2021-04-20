@@ -679,6 +679,11 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
             }
             SetCurrentCursor(STD_CURSOR_GAME);
         }
+
+        if (m_renderViewport)
+        {
+            m_renderViewport->GetControllerList()->SetEnabled(false);
+        }
     }
     break;
 
@@ -696,6 +701,11 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
             m_bInZoomMode = false;
 
             RestoreViewportAfterGameMode();
+        }
+
+        if (m_renderViewport)
+        {
+            m_renderViewport->GetControllerList()->SetEnabled(true);
         }
         break;
 

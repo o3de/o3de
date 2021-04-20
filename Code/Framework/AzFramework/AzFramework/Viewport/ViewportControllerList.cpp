@@ -49,6 +49,11 @@ namespace AzFramework
 
     bool ViewportControllerList::HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event)
     {
+        if (!IsEnabled())
+        {
+            return false;
+        }
+
         // If our event priority is "custom", we should dispatch at all priority levels in order
         using AzFramework::ViewportControllerPriority;
         if (event.m_priority == AzFramework::ViewportControllerPriority::DispatchToAllPriorities)
@@ -73,6 +78,31 @@ namespace AzFramework
         {
             // Otherwise, dispatch to controllers at our priority
             return DispatchInputChannelEvent(event);
+        }
+    }
+
+    void ViewportControllerList::ResetInputChannels()
+    {
+        // We don't need to send this while we're disabled, we're guaranteed to call ResetInputChannels after being re-enabled.
+        if (!IsEnabled())
+        {
+            return;
+        }
+
+        for (const auto priority : {
+            ViewportControllerPriority::Highest,
+            ViewportControllerPriority::High,
+            ViewportControllerPriority::Normal,
+            ViewportControllerPriority::Low,
+            ViewportControllerPriority::Lowest })
+        {
+            if (auto priorityListIt = m_controllers.find(priority); priorityListIt != m_controllers.end())
+            {
+                for (const auto& controller : priorityListIt->second)
+                {
+                    controller->ResetInputChannels();
+                }
+            }
         }
     }
 
@@ -106,6 +136,11 @@ namespace AzFramework
 
     void ViewportControllerList::UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event)
     {
+        if (!IsEnabled())
+        {
+            return;
+        }
+
         // If our event priority is "custom", we should dispatch at all priority levels in reverse order
         // Reverse order lets high priority controllers get the last say in viewport update operations
         using AzFramework::ViewportControllerPriority;
@@ -171,6 +206,24 @@ namespace AzFramework
             for (auto& controller : controllerData.second)
             {
                 controller->UnregisterViewportContext(viewport);
+            }
+        }
+    }
+
+    bool ViewportControllerList::IsEnabled() const
+    {
+        return m_enabled;
+    }
+
+    void ViewportControllerList::SetEnabled(bool enabled)
+    {
+        if (m_enabled != enabled)
+        {
+            m_enabled = enabled;
+            // If we've been re-enabled, reset our input channels as they may have missed state changes.
+            if (m_enabled)
+            {
+                ResetInputChannels();
             }
         }
     }
