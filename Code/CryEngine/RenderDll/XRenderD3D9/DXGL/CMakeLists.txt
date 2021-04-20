@@ -46,6 +46,7 @@ if(DXGL_TRAIT_BUILD_OPENGL_SUPPORTED AND (NOT LY_MONOLITHIC_GAME OR LY_TRAIT_USE
         BUILD_DEPENDENCIES
             PUBLIC
                 AZ::AzFramework
+                AZ::HLSLcc.Headers
                 3rdParty::lz4
                 3rdParty::glad
                 Legacy::CryCommon
