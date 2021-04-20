@@ -1,20 +1,33 @@
 {
     "description": "",
-    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "materialType": "Materials/Types/EnhancedPBR.materialtype",
     "parentMaterial": "",
     "propertyLayoutVersion": 3,
     "properties": {
+        "emissive": {
+            "color": [
+                1.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "intensity": 4.119999885559082
+        },
         "subsurfaceScattering": {
             "enableSubsurfaceScattering": true,
             "influenceMap": "TestData/Textures/checker8x8_512.png",
             "scatterColor": [
                 1.0,
-                0.19937437772750855,
-                0.07179369777441025,
+                0.20000000298023225,
+                0.07058823853731156,
                 1.0
             ],
             "scatterDistance": 40.0,
-            "subsurfaceScatterFactor": 1.0
+            "subsurfaceScatterFactor": 1.0,
+            "thickness": 0.41999998688697817,
+            "transmissionMode": "ThinObject",
+            "transmissionScale": 6.599999904632568,
+            "useThicknessMap": false
         }
     }
 }
