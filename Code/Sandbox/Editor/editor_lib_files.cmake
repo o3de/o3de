@@ -533,8 +533,6 @@ set(FILES
     Dialogs/PythonScriptsDialog.ui
     Dialogs/Generic/UserOptions.cpp
     Dialogs/Generic/UserOptions.h
-    AlignTool.cpp
-    AlignTool.h
     ObjectCloneTool.cpp
     ObjectCloneTool.h
     EditMode/SubObjectSelectionReferenceFrameCalculator.cpp
@@ -545,10 +543,6 @@ set(FILES
     RotateTool.h
     EditTool.cpp
     EditTool.h
-    LinkTool.cpp
-    LinkTool.h
-    PickObjectTool.cpp
-    PickObjectTool.h
     VoxelAligningTool.cpp
     VoxelAligningTool.h
     Export/ExportManager.cpp

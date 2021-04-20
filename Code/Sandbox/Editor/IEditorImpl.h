@@ -181,10 +181,7 @@ public:
     void SelectObject(CBaseObject* obj);
     void LockSelection(bool bLock);
     bool IsSelectionLocked();
-    void PickObject(IPickObjectCallback* callback, const QMetaObject* targetClass = 0, const char* statusText = 0, bool bMultipick = false);
 
-    void CancelPick();
-    bool IsPicking();
     IDataBaseManager* GetDBItemManager(EDataBaseItemType itemType);
     CMaterialManager* GetMaterialManager() { return m_pMaterialManager; }
     CMusicManager* GetMusicManager() { return m_pMusicManager; };
@@ -409,7 +406,6 @@ protected:
     QString m_primaryCDFolder;
     QString m_userFolder;
     bool m_bSelectionLocked;
-    _smart_ptr<CEditTool> m_pPickTool;
     class CAxisGizmo* m_pAxisGizmo;
     CGameEngine* m_pGameEngine;
     CAnimationContext* m_pAnimationContext;

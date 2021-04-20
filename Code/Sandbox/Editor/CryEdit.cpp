@@ -95,8 +95,6 @@ AZ_POP_DISABLE_WARNING
 
 #include "Core/QtEditorApplication.h"
 #include "StringDlg.h"
-#include "LinkTool.h"
-#include "AlignTool.h"
 #include "VoxelAligningTool.h"
 #include "NewLevelDialog.h"
 #include "GridSettingsDialog.h"
@@ -400,8 +398,6 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_EDITMODE_MOVE, OnEditmodeMove)
     ON_COMMAND(ID_EDITMODE_ROTATE, OnEditmodeRotate)
     ON_COMMAND(ID_EDITMODE_SCALE, OnEditmodeScale)
-    ON_COMMAND(ID_EDITTOOL_LINK, OnEditToolLink)
-    ON_COMMAND(ID_EDITTOOL_UNLINK, OnEditToolUnlink)
     ON_COMMAND(ID_EDITMODE_SELECT, OnEditmodeSelect)
     ON_COMMAND(ID_EDIT_ESCAPE, OnEditEscape)
     ON_COMMAND(ID_OBJECTMODIFY_SETAREA, OnObjectSetArea)
@@ -421,7 +417,6 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_SELECTION_SAVE, OnSelectionSave)
     ON_COMMAND(ID_IMPORT_ASSET, OnOpenAssetImporter)
     ON_COMMAND(ID_SELECTION_LOAD, OnSelectionLoad)
-    ON_COMMAND(ID_OBJECTMODIFY_ALIGN, OnAlignObject)
     ON_COMMAND(ID_MODIFY_ALIGNOBJTOSURF, OnAlignToVoxel)
     ON_COMMAND(ID_OBJECTMODIFY_ALIGNTOGRID, OnAlignToGrid)
     ON_COMMAND(ID_LOCK_SELECTION, OnLockSelection)
@@ -2897,51 +2892,6 @@ void CCryEditApp::OnEditmodeScale()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnEditToolLink()
-{
-    // TODO: Add your command handler code here
-    if (qobject_cast<CLinkTool*>(GetIEditor()->GetEditTool()))
-    {
-        GetIEditor()->SetEditTool(0);
-    }
-    else
-    {
-        GetIEditor()->SetEditTool(new CLinkTool());
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnUpdateEditToolLink(QAction* action)
-{
-    if (!GetIEditor()->GetDocument())
-    {
-        action->setEnabled(false);
-        return;
-    }
-    action->setEnabled(GetIEditor()->GetDocument()->IsDocumentReady());
-    CEditTool* pEditTool = GetIEditor()->GetEditTool();
-    action->setChecked(qobject_cast<CLinkTool*>(pEditTool) != nullptr);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnEditToolUnlink()
-{
-    CUndo undo("Unlink Object(s)");
-    CSelectionGroup* pSelection = GetIEditor()->GetObjectManager()->GetSelection();
-    for (int i = 0; i < pSelection->GetCount(); i++)
-    {
-        CBaseObject* pBaseObj = pSelection->GetObject(i);
-        pBaseObj->DetachThis();
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnUpdateEditToolUnlink(QAction* action)
-{
-    action->setEnabled(false);
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnEditmodeSelect()
 {
     if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
@@ -3511,14 +3461,6 @@ void CCryEditApp::OnUpdateSelected(QAction* action)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnAlignObject()
-{
-    // Align pick callback will release itself.
-    CAlignPickCallback* alignCallback = new CAlignPickCallback;
-    GetIEditor()->PickObject(alignCallback, 0, "Align to Object");
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnAlignToGrid()
 {
     CSelectionGroup* sel = GetIEditor()->GetSelection();
@@ -3536,15 +3478,6 @@ void CCryEditApp::OnAlignToGrid()
             obj->OnEvent(EVENT_ALIGN_TOGRID);
         }
     }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnUpdateAlignObject(QAction* action)
-{
-    Q_ASSERT(action->isCheckable());
-    action->setChecked(CAlignPickCallback::IsActive());
-
-    action->setEnabled(!GetIEditor()->GetSelection()->IsEmpty());
 }
 
 //////////////////////////////////////////////////////////////////////////

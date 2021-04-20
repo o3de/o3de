@@ -224,10 +224,6 @@ public:
     void OnEditmodeMove();
     void OnEditmodeRotate();
     void OnEditmodeScale();
-    void OnEditToolLink();
-    void OnUpdateEditToolLink(QAction* action);
-    void OnEditToolUnlink();
-    void OnUpdateEditToolUnlink(QAction* action);
     void OnEditmodeSelect();
     void OnEditEscape();
     void OnObjectSetArea();
@@ -256,10 +252,8 @@ public:
     void OnOpenAssetImporter();
     void OnSelectionLoad();
     void OnUpdateSelected(QAction* action);
-    void OnAlignObject();
     void OnAlignToVoxel();
     void OnAlignToGrid();
-    void OnUpdateAlignObject(QAction* action);
     void OnUpdateAlignToVoxel(QAction* action);
     void OnLockSelection();
     void OnEditLevelData();
