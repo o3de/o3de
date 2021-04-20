@@ -33,12 +33,12 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
+        PUBLIC
+            AZ::GridMate
             3rdParty::md5
             3rdParty::zlib
             3rdParty::zstd
             3rdParty::lz4
-        PUBLIC
-            AZ::GridMate
 )
 
 if(LY_ENABLE_STATISTICAL_PROFILING)

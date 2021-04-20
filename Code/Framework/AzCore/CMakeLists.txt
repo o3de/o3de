@@ -40,14 +40,13 @@ ly_add_target(
             ${common_dir}
             ${AZ_CORE_RADTELEMETRY_INCLUDE_DIRECTORIES}
     BUILD_DEPENDENCIES
-        PRIVATE
-            3rdParty::zlib
-            3rdParty::zstd
-            3rdParty::cityhash
         PUBLIC
             3rdParty::Lua
             3rdParty::RapidJSON
             3rdParty::RapidXML
+            3rdParty::zlib
+            3rdParty::zstd
+            3rdParty::cityhash
             ${AZ_CORE_RADTELEMETRY_BUILD_DEPENDENCIES}
 )
 ly_add_source_properties(
