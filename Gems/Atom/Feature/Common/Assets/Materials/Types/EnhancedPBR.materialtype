@@ -49,9 +49,9 @@
                 "description": "Properties for configuring UV transforms."
             },
             {
-                "id": "ambientOcclusion",
-                "displayName": "Ambient Occlusion",
-                "description": "Properties for baked AO texture."
+                "id": "occlusion",
+                "displayName": "Occlusion",
+                "description": "Properties for baked textures that represent geometric occlusion of light."
             },
             {
                 "id": "emissive",
@@ -780,47 +780,96 @@
                     "step": 0.1
                 }
             ],
-            "ambientOcclusion": [
+            "occlusion": [
                 {
                     "id": "enable",
                     "displayName": "Enable",
-                    "description": "Whether to enable the ambient occlusion feature.",
+                    "description": "Whether to enable the occlusion features.",
                     "type": "Bool",
                     "defaultValue": false
                 },
                 {
-                    "id": "factor",
-                    "displayName": "Factor",
-                    "description": "Strength factor for scaling the values",
-                    "type": "Float",
-                    "defaultValue": 1.0,
-                    "min": 0.0,
-                    "max": 2.0,
-                    "connection": {
-                        "type": "ShaderInput",
-                        "id": "m_ambientOcclusionFactor"
-                    }
-                },
-                {
-                    "id": "textureMap",
-                    "displayName": "Texture Map",
-                    "description": "Texture map for defining ambient occlusion area.",
+                    "id": "diffuseTextureMap",
+                    "displayName": "Diffuse AO",
+                    "description": "Texture map for defining occlusion area for diffuse ambient lighting.",
                     "type": "Image",
                     "connection": {
                         "type": "ShaderInput",
-                        "id": "m_ambientOcclusionMap"
+                        "id": "m_diffuseOcclusionMap"
                     }
                 },
                 {
-                    "id": "textureMapUv",
-                    "displayName": "UV",
-                    "description": "Ambient occlusion texture map UV set",
+                    "id": "diffuseUseTexture",
+                    "displayName": "    Use Texture",
+                    "description": "Whether to use the Diffuse AO texture map.",
+                    "type": "Bool",
+                    "defaultValue": true
+                },
+                {
+                    "id": "diffuseTextureMapUv",
+                    "displayName": "    UV",
+                    "description": "Diffuse AO texture map UV set.",
                     "type": "Enum",
-                    "enumValues": [ "UV0", "UV1" ],
-                    "defaultValue": "UV0",
+                    "enumIsUv": true,
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
-                        "id": "m_ambientOcclusionMapUvIndex"
+                        "id": "m_diffuseOcclusionMapUvIndex"
+                    }
+                },
+                {
+                    "id": "diffuseFactor",
+                    "displayName": "    Factor",
+                    "description": "Strength factor for scaling the values of Diffuse AO",
+                    "type": "Float",
+                    "defaultValue": 1.0,
+                    "min": 0.0,
+                    "softMax": 2.0,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_diffuseOcclusionFactor"
+                    }
+                },
+                {
+                    "id": "specularTextureMap",
+                    "displayName": "Specular Cavity",
+                    "description": "Texture map for defining occlusion area for specular lighting.",
+                    "type": "Image",
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_specularOcclusionMap"
+                    }
+                },
+                {
+                    "id": "specularUseTexture",
+                    "displayName": "    Use Texture",
+                    "description": "Whether to use the Specular Cavity texture map.",
+                    "type": "Bool",
+                    "defaultValue": true
+                },
+                {
+                    "id": "specularTextureMapUv",
+                    "displayName": "    UV",
+                    "description": "Specular Cavity texture map UV set.",
+                    "type": "Enum",
+                    "enumIsUv": true,
+                    "defaultValue": "Tiled",
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_specularOcclusionMapUvIndex"
+                    }
+                },
+                {
+                    "id": "specularFactor",
+                    "displayName": "    Factor",
+                    "description": "Strength factor for scaling the values of Specular Cavity",
+                    "type": "Float",
+                    "defaultValue": 1.0,
+                    "min": 0.0,
+                    "softMax": 2.0,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_specularOcclusionFactor"
                     }
                 }
             ],
@@ -1641,17 +1690,15 @@
             }
         },
         {
-            // See the comment above for details.
-            "type": "UseTexture",
+            "type": "Lua",
             "args": {
-                "textureProperty": "ambientOcclusion.textureMap",
-                "dependentProperties": ["ambientOcclusion.textureMapUv"],
-                "useTextureProperty": "ambientOcclusion.enable",
-                "shaderTags": [ 
-                    "ForwardPass",
-                    "ForwardPass_EDS"
-                ],
-                "shaderOption": "o_ambientOcclusion_useTexture"
+                "file": "StandardPBR_DiffuseOcclusionState.lua"
+            }
+        },
+        {
+            "type": "Lua",
+            "args": {
+                "file": "StandardPBR_SpecularOcclusionState.lua"
             }
         },
         {
@@ -1710,31 +1757,6 @@
                     "ForwardPass_EDS"
                 ],
                 "shaderOption": "o_transmission_useTexture"
-            }
-        },
-        {
-            // Controls visibility for properties in the editor.
-            // @param actions            - a list of actions that are executed in order. visibility will be set when triggerProperty hits the triggerValue.
-            // @param affectedProperties - the properties that are affected by actions.
-            "type": "UpdatePropertyVisibility",
-            "args": {
-                "actions": [
-                    {
-                        "triggerProperty": "ambientOcclusion.enable",
-                        "triggerValue": true,
-                        "visibility": "Enabled"
-                    },
-                    {
-                        "triggerProperty": "ambientOcclusion.enable",
-                        "triggerValue": false,
-                        "visibility": "Disabled"
-                    }
-                ],
-                "affectedProperties": [
-                    "ambientOcclusion.factor",
-                    "ambientOcclusion.textureMap",
-                    "ambientOcclusion.textureMapUv"
-                ]
             }
         },
         {

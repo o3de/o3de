@@ -100,6 +100,7 @@ PbrLightingOutput PbrLighting(  in VSOutput IN,
                                 float2 anisotropy,  // angle and factor
                                 float3 emissive,
                                 float diffuseAmbientOcclusion,
+                                float specularOcclusion,
                                 float4 transmissionTintThickness,
                                 float4 transmissionParams,
                                 float clearCoatFactor,
@@ -237,11 +238,6 @@ PbrLightingOutput PbrLighting(  in VSOutput IN,
         }
     }
 
-    // Emissive contribution
-    // Emissive light is apply to specular now, as diffuse will be used for subsurface scattering later down the pipeline
-    // We may change this if specular is also used for other processing
-    specularLighting += emissive;
-
     if (o_enableDirectionalLights)
     {
         ApplyDirectionalLights(dirToCamera, surface, IN.m_shadowCoords, diffuseLighting, specularLighting, translucentBackLighting);
@@ -253,6 +249,13 @@ PbrLightingOutput PbrLighting(  in VSOutput IN,
         diffuseLighting += translucentBackLighting * transmissionTintThickness.xyz;
     }
 
+    specularLighting *= specularOcclusion;
+    
+    // Emissive contribution
+    // Emissive light is apply to specular now, as diffuse will be used for subsurface scattering later down the pipeline
+    // We may change this if specular is also used for other processing
+    specularLighting += emissive;
+
     PbrLightingOutput lightingOutput;
 
     lightingOutput.m_diffuseColor = float4(diffuseLighting, alpha);
@@ -261,6 +264,7 @@ PbrLightingOutput PbrLighting(  in VSOutput IN,
     // albedo, specularF0, roughness, and normals for later passes (specular IBL, Diffuse GI, SSR, AO, etc)
     lightingOutput.m_specularF0 = float4(specularF0, roughness);
     lightingOutput.m_albedo.rgb = surface.albedo * diffuseResponse * diffuseAmbientOcclusion;
+    lightingOutput.m_albedo.a = specularOcclusion;
     lightingOutput.m_normal.rgb = EncodeNormalSignedOctahedron(normal);
     lightingOutput.m_normal.a = o_specularF0_enableMultiScatterCompensation ? 1.0f : 0.0f;
     
@@ -299,7 +303,7 @@ PbrLightingOutput MakeDebugOutput(VSOutput IN, float3 debugColor, float3 normalW
 
     PbrLightingOutput lightingOutput = PbrLighting(IN, baseColor, metallic, roughness, specularF0Factor, 
         normal, IN.m_tangent, IN.m_bitangent, anisotropy,
-        emissive, occlusion, transmissionTintThickness, transmissionParams, clearCoatFactor, clearCoatRoughness, clearCoatNormal, alpha, OpacityMode::Opaque);
+        emissive, occlusion, occlusion, transmissionTintThickness, transmissionParams, clearCoatFactor, clearCoatRoughness, clearCoatNormal, alpha, OpacityMode::Opaque);
 
     return lightingOutput;
 }

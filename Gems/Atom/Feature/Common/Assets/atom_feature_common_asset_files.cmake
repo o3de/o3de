@@ -36,7 +36,6 @@ set(FILES
     Materials/Types/StandardMultilayerPBR_Shadowmap_WithPS.azsl
     Materials/Types/StandardMultilayerPBR_Shadowmap_WithPS.shader
     Materials/Types/StandardPBR.materialtype
-    Materials/Types/StandardPBR_AoState.lua
     Materials/Types/StandardPBR_ClearCoatEnableFeature.lua
     Materials/Types/StandardPBR_ClearCoatState.lua
     Materials/Types/StandardPBR_Common.azsli

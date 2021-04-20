@@ -4,9 +4,9 @@
     "parentMaterial": "Materials/Presets/PBR/metal_brass.material",
     "propertyLayoutVersion": 3,
     "properties": {
-        "ambientOcclusion": {
+        "occlusion": {
             "enable": true,
-            "textureMap": "Objects/Lucy/Lucy_ao.tif"
+            "diffuseTextureMap": "Objects/Lucy/Lucy_ao.tif"
         },
         "baseColor": {
             "color": [
