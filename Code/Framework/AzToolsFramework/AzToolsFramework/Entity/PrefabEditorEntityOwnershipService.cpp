@@ -94,6 +94,7 @@ namespace AzToolsFramework
             m_prefabSystemComponent->RemoveTemplate(templateId);
         }
         m_rootInstance->Reset();
+        m_rootInstance->SetContainerEntityName("Level");
 
         AzFramework::EntityOwnershipServiceNotificationBus::Event(
             m_entityContextId, &AzFramework::EntityOwnershipServiceNotificationBus::Events::OnEntityOwnershipServiceReset);
@@ -198,6 +199,7 @@ namespace AzToolsFramework
 
         m_rootInstance->SetTemplateId(templateId);
         m_rootInstance->SetTemplateSourcePath(m_loaderInterface->GetRelativePathToProject(filename));
+        m_rootInstance->SetContainerEntityName("Level");
         m_prefabSystemComponent->PropagateTemplateChanges(templateId);
 
         return true;
