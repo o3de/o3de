@@ -124,7 +124,6 @@ namespace AZ
             void RefreshModelRegistration();
 
             void HandleNonUniformScaleChange(const AZ::Vector3& nonUniformScale);
-            void UpdateOverallMatrix();
 
             Render::MeshFeatureProcessorInterface* m_meshFeatureProcessor = nullptr;
             Render::MeshFeatureProcessorInterface::MeshHandle m_meshHandle;

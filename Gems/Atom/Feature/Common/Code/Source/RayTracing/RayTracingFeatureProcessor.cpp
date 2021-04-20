@@ -115,7 +115,7 @@ namespace AZ
             }
 
             // set initial transform
-            mesh.m_matrix3x4 = m_transformServiceFeatureProcessor->GetMatrix3x4ForId(objectId);
+            mesh.m_transform = m_transformServiceFeatureProcessor->GetTransformForId(objectId);
 
             m_revision++;
             m_subMeshCount += aznumeric_cast<uint32_t>(subMeshes.size());
@@ -141,7 +141,7 @@ namespace AZ
             m_meshInfoBufferNeedsUpdate = true;
         }
 
-        void RayTracingFeatureProcessor::SetMeshMatrix3x4(const ObjectId objectId, const AZ::Matrix3x4 matrix3x4)
+        void RayTracingFeatureProcessor::SetMeshTransform(const ObjectId objectId, const AZ::Transform transform, const AZ::Vector3 nonUniformScale)
         {
             if (!m_rayTracingEnabled)
             {
@@ -151,7 +151,8 @@ namespace AZ
             MeshMap::iterator itMesh = m_meshes.find(objectId.GetIndex());
             if (itMesh != m_meshes.end())
             {
-                itMesh->second.m_matrix3x4 = matrix3x4;
+                itMesh->second.m_transform = transform;
+                itMesh->second.m_nonUniformScale = nonUniformScale;
                 m_revision++;
             }
 
@@ -296,10 +297,10 @@ namespace AZ
 
                 for (const auto& mesh : m_meshes)
                 {
-                    AZ::Matrix3x4 meshMatrix3x4 = transformFeatureProcessor->GetMatrix3x4ForId(TransformServiceFeatureProcessorInterface::ObjectId(mesh.first));
-                    AZ::Matrix3x4 noScaleMatrix3x4 = meshMatrix3x4;
-                    noScaleMatrix3x4.ExtractScale();
-                    AZ::Matrix3x3 rotationMatrix = Matrix3x3::CreateFromMatrix3x4(noScaleMatrix3x4);
+                    AZ::Transform meshTransform = transformFeatureProcessor->GetTransformForId(TransformServiceFeatureProcessorInterface::ObjectId(mesh.first));
+                    AZ::Transform noScaleTransform = meshTransform;
+                    noScaleTransform.ExtractScale();
+                    AZ::Matrix3x3 rotationMatrix = Matrix3x3::CreateFromTransform(noScaleTransform);
                     rotationMatrix = rotationMatrix.GetInverseFull().GetTranspose();
 
                     const RayTracingFeatureProcessor::SubMeshVector& subMeshes = mesh.second.m_subMeshes;

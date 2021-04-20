@@ -131,6 +131,8 @@ namespace AZ
 
         void ApplyMatrix3x4(const Matrix3x4& matrix3x4);
 
+        void MultiplyByScale(const Vector3& scale);
+
         //! Transforms an Aabb and returns the resulting Obb.
         Obb GetTransformedObb(const Transform& transform) const;
 

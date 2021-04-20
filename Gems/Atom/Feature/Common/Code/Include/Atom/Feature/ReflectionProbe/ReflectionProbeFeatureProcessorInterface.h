@@ -48,7 +48,7 @@ namespace AZ
             virtual void SetProbeOuterExtents(const ReflectionProbeHandle& handle, const AZ::Vector3& outerExtents) = 0;
             virtual void SetProbeInnerExtents(const ReflectionProbeHandle& handle, const AZ::Vector3& innerExtents) = 0;
             virtual void SetProbeCubeMap(const ReflectionProbeHandle& handle, Data::Instance<RPI::Image>& cubeMapImage) = 0;
-            virtual void SetProbeMatrix3x4(const ReflectionProbeHandle& handle, const AZ::Matrix3x4& matrix3x4) = 0;
+            virtual void SetProbeTransform(const ReflectionProbeHandle& handle, const AZ::Transform& transform) = 0;
             virtual void BakeProbe(const ReflectionProbeHandle& handle, BuildCubeMapCallback callback) = 0;
             virtual void NotifyCubeMapAssetReady(const AZStd::string relativePath, NotifyCubeMapAssetReadyCallback callback) = 0;
             virtual bool IsValidProbeHandle(const ReflectionProbeHandle& probe) const = 0;

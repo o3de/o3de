@@ -78,13 +78,20 @@ namespace AZ
             return this;
         }
         
-        RayTracingTlasDescriptor* RayTracingTlasDescriptor::Matrix3x4(const AZ::Matrix3x4& matrix3x4)
+        RayTracingTlasDescriptor* RayTracingTlasDescriptor::Transform(const AZ::Transform& transform)
         {
-            AZ_Assert(m_buildContext, "Matrix3x4 property can only be added to an Instance entry");
-            m_buildContext->m_matrix3x4 = matrix3x4;
+            AZ_Assert(m_buildContext, "Transform property can only be added to an Instance entry");
+            m_buildContext->m_transform = transform;
             return this;
         }
         
+        RayTracingTlasDescriptor* RayTracingTlasDescriptor::NonUniformScale(const AZ::Vector3& nonUniformScale)
+        {
+            AZ_Assert(m_buildContext, "NonUniformSCale property can only be added to an Instance entry");
+            m_buildContext->m_nonUniformScale = nonUniformScale;
+            return this;
+        }
+
         RayTracingTlasDescriptor* RayTracingTlasDescriptor::Blas(RHI::Ptr<RHI::RayTracingBlas>& blas)
         {
             AZ_Assert(m_buildContext, "Blas property can only be added to an Instance entry");

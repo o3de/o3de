@@ -74,10 +74,7 @@ namespace Blast
         {
             if (m_chunkActors[chunkId])
             {
-                auto matrix3x4 = AZ::Matrix3x4::CreateFromTransform(m_chunkActors[chunkId]->GetWorldBody()->GetTransform());
-                // Multiply by scale because the transform on the world body does not store scale
-                matrix3x4.MultiplyByScale(m_scale);
-                m_meshFeatureProcessor->SetMatrix3x4(m_chunkMeshHandles[chunkId], matrix3x4);
+                m_meshFeatureProcessor->SetTransform(m_chunkMeshHandles[chunkId], m_chunkActors[chunkId]->GetWorldBody()->GetTransform(), m_scale);
             }
         }
     }

@@ -89,7 +89,9 @@ namespace AZ
                     mappedData[i].InstanceID = instance.m_instanceID;
                     mappedData[i].InstanceContributionToHitGroupIndex = instance.m_hitGroupIndex;
                     // convert transform to row-major 3x4
-                    instance.m_matrix3x4.StoreToRowMajorFloat12(&mappedData[i].Transform[0][0]);
+                    AZ::Matrix3x4 matrix3x4 = AZ::Matrix3x4::CreateFromTransform(instance.m_transform);
+                    matrix3x4.MultiplyByScale(instance.m_nonUniformScale);
+                    matrix3x4.StoreToRowMajorFloat12(&mappedData[i].Transform[0][0]);
                     mappedData[i].AccelerationStructure = static_cast<DX12::Buffer*>(blas->GetBuffers().m_blasBuffer.get())->GetMemoryView().GetGpuAddress();
                     // [GFX TODO][ATOM-5270] Add ray tracing TLAS instance mask support
                     mappedData[i].InstanceMask = 0x1;

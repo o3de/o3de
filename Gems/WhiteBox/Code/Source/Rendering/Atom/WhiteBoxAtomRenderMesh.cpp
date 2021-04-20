@@ -248,7 +248,7 @@ namespace WhiteBox
 
     void AtomRenderMesh::UpdateTransform(const AZ::Transform& worldFromLocal)
     {
-        m_meshFeatureProcessor->SetMatrix3x4(m_meshHandle, AZ::Matrix3x4::CreateFromTransform(worldFromLocal));
+        m_meshFeatureProcessor->SetTransform(m_meshHandle, worldFromLocal);
     }
 
     void AtomRenderMesh::UpdateMaterial([[maybe_unused]] const WhiteBoxMaterial& material)

@@ -210,12 +210,14 @@ namespace AZ
             }
         }
 
-        void TransformServiceFeatureProcessor::SetMatrix3x4ForId(ObjectId id, const AZ::Matrix3x4& matrix3x4)
+        void TransformServiceFeatureProcessor::SetTransformForId(ObjectId id, const AZ::Transform& transform, const AZ::Vector3& nonUniformScale)
         {
             AZ_Error("TransformServiceFeatureProcessor", m_isWriteable, "Transform data cannot be written to during this phase");
             AZ_Error("TransformServiceFeatureProcessor", id.IsValid(), "Attempting to set the transform for an invalid handle.");
             if (id.IsValid())
             {
+                AZ::Matrix3x4 matrix3x4 = AZ::Matrix3x4::CreateFromTransform(transform);
+                matrix3x4.MultiplyByScale(nonUniformScale);
                 matrix3x4.StoreToRowMajorFloat12(m_objectToWorldTransforms.at(id.GetIndex()).m_transform);
 
                 // Inverse transpose to take the non-uniform scale out of the transform for usage with normals.
@@ -224,10 +226,20 @@ namespace AZ
             }
         }
 
-        AZ::Matrix3x4 TransformServiceFeatureProcessor::GetMatrix3x4ForId(ObjectId id) const
+        AZ::Transform TransformServiceFeatureProcessor::GetTransformForId(ObjectId id) const
         {
-            AZ_Error("TransformServiceFeatureProcessor", id.IsValid(), "Attempting to set the transform for an invalid handle.");
-            return AZ::Matrix3x4::CreateFromRowMajorFloat12(m_objectToWorldTransforms.at(id.GetIndex()).m_transform);
+            AZ_Error("TransformServiceFeatureProcessor", id.IsValid(), "Attempting to get the transform for an invalid handle.");
+            AZ::Matrix3x4 matrix3x4 = AZ::Matrix3x4::CreateFromRowMajorFloat12(m_objectToWorldTransforms.at(id.GetIndex()).m_transform);
+            AZ::Transform transform = AZ::Transform::CreateFromMatrix3x4(matrix3x4);
+            transform.ExtractScale();
+            return transform;
+        }
+
+        AZ::Vector3 TransformServiceFeatureProcessor::GetNonUniformScaleForId(ObjectId id) const
+        {
+            AZ_Error("TransformServiceFeatureProcessor", id.IsValid(), "Attempting to get the non-uniform scale for an invalid handle.");
+            AZ::Matrix3x4 matrix3x4 = AZ::Matrix3x4::CreateFromRowMajorFloat12(m_objectToWorldTransforms.at(id.GetIndex()).m_transform);
+            return matrix3x4.RetrieveScale();
         }
     }
 }

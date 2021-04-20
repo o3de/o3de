@@ -66,7 +66,10 @@ namespace AZ
                 SubMeshVector m_subMeshes;
 
                 // mesh transform
-                AZ::Matrix3x4 m_matrix3x4 = AZ::Matrix3x4::CreateIdentity();
+                AZ::Transform m_transform = AZ::Transform::CreateIdentity();
+
+                // mesh non-uniform scale
+                AZ::Vector3 m_nonUniformScale = AZ::Vector3::CreateOne();
 
                 // flag indicating if the Blas objects in the sub-meshes are built
                 bool m_blasBuilt = false;
@@ -85,7 +88,8 @@ namespace AZ
 
             //! Sets the ray tracing mesh transform
             //! This will cause an update to the RayTracing acceleration structure on the next frame
-            void SetMeshMatrix3x4(const ObjectId objectId, const AZ::Matrix3x4 matrix3x4);
+            void SetMeshTransform(const ObjectId objectId, const AZ::Transform transform,
+                const AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne());
 
             //! Retrieves ray tracing data for all meshes in the scene
             const MeshMap& GetMeshes() const { return m_meshes; }

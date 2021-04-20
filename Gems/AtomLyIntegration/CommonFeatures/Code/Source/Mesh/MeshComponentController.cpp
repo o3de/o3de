@@ -214,6 +214,8 @@ namespace AZ
             MaterialReceiverRequestBus::Handler::BusDisconnect();
             MaterialComponentNotificationBus::Handler::BusDisconnect();
 
+            m_nonUniformScaleChangedHandler.Disconnect();
+
             m_meshFeatureProcessor = nullptr;
             m_transformInterface = nullptr;
             m_entityId = AZ::EntityId(AZ::EntityId::InvalidEntityId);
@@ -232,22 +234,18 @@ namespace AZ
 
         void MeshComponentController::OnTransformChanged([[maybe_unused]] const AZ::Transform& local, [[maybe_unused]] const AZ::Transform& world)
         {
-            UpdateOverallMatrix();
+            if (m_meshFeatureProcessor)
+            {
+                m_meshFeatureProcessor->SetTransform(m_meshHandle, world, m_cachedNonUniformScale);
+            }
         }
 
         void MeshComponentController::HandleNonUniformScaleChange(const AZ::Vector3 & nonUniformScale)
         {
             m_cachedNonUniformScale = nonUniformScale;
-            UpdateOverallMatrix();
-        }
-
-        void MeshComponentController::UpdateOverallMatrix()
-        {
             if (m_meshFeatureProcessor)
             {
-                Matrix3x4 world = Matrix3x4::CreateFromTransform(m_transformInterface->GetWorldTM());
-                world.MultiplyByScale(m_cachedNonUniformScale);
-                m_meshFeatureProcessor->SetMatrix3x4(m_meshHandle, world);
+                m_meshFeatureProcessor->SetTransform(m_meshHandle, m_transformInterface->GetWorldTM(), m_cachedNonUniformScale);
             }
         }
 
@@ -293,10 +291,9 @@ namespace AZ
                 m_meshHandle = m_meshFeatureProcessor->AcquireMesh(m_configuration.m_modelAsset, materials);
                 m_meshFeatureProcessor->ConnectModelChangeEventHandler(m_meshHandle, m_changeEventHandler);
 
-                const AZ::Matrix3x4& matrix3x4 = m_transformInterface
-                    ? Matrix3x4::CreateFromTransform(m_transformInterface->GetWorldTM()) * Matrix3x4::CreateScale(m_cachedNonUniformScale)
-                    : Matrix3x4::Identity();
-                m_meshFeatureProcessor->SetMatrix3x4(m_meshHandle, matrix3x4);
+                const AZ::Transform& transform = m_transformInterface ? m_transformInterface->GetWorldTM() : AZ::Transform::CreateIdentity();
+
+                m_meshFeatureProcessor->SetTransform(m_meshHandle, transform, m_cachedNonUniformScale);
                 m_meshFeatureProcessor->SetSortKey(m_meshHandle, m_configuration.m_sortKey);
                 m_meshFeatureProcessor->SetLodOverride(m_meshHandle, m_configuration.m_lodOverride);
                 m_meshFeatureProcessor->SetExcludeFromReflectionCubeMaps(m_meshHandle, m_configuration.m_excludeFromReflectionCubeMaps);

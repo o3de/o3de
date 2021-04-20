@@ -76,7 +76,7 @@ namespace AZ
             void Simulate(uint32_t probeIndex);
 
             const Vector3& GetPosition() const { return m_position; }
-            void SetMatrix3x4(const AZ::Matrix3x4& matrix3x4);
+            void SetTransform(const AZ::Transform& transform);
 
             const AZ::Vector3& GetOuterExtents() const { return m_outerExtents; }
             void SetOuterExtents(const AZ::Vector3& outerExtents);
