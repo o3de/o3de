@@ -10,8 +10,13 @@
  *
  */
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
-{
-    return 0;
-}
+#pragma once
 
+#include <Artifact/Dynamic/TestImpactTestEnumerationSuite.h>
+#include <Test/TestImpactTestSuiteContainer.h>
+
+namespace TestImpact
+{
+    //! Representation of a given test target's enumerated tests.
+    using TestEnumeration = TestSuiteContainer<TestEnumerationSuite>;
+} // namespace TestImpact

@@ -10,8 +10,13 @@
  *
  */
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
-{
-    return 0;
-}
+#include <Artifact/Static/TestImpactTestTargetDescriptor.h>
 
+namespace TestImpact
+{
+    TestTargetDescriptor::TestTargetDescriptor(BuildTargetDescriptor&& buildTarget, TestTargetMeta&& testTargetMeta)
+        : BuildTargetDescriptor(AZStd::move(buildTarget))
+        , m_testMetaData(AZStd::move(testTargetMeta))
+    {
+    }
+} // namespace TestImpact

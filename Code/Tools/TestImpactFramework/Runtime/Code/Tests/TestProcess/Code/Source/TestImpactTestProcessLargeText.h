@@ -10,8 +10,10 @@
  *
  */
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
-{
-    return 0;
-}
+#pragma once
 
+namespace TestImpact
+{
+    // Large text blob in the form of a string literal so the app does not require the Az FileIO and Application environment
+    extern const char* const LongText;
+} // namespace TestImpact

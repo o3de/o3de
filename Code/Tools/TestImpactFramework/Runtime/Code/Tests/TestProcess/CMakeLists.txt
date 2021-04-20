@@ -9,11 +9,4 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-set(FILES
-    Process/TestImpactWin32_ProcessLauncher.cpp
-    Process/TestImpactWin32_Process.cpp
-    Process/TestImpactWin32_Process.h
-    Process/TestImpactWin32_Handle.h
-    Process/TestImpactWin32_Pipe.cpp
-    Process/TestImpactWin32_Pipe.h
-)
+add_subdirectory(Code)

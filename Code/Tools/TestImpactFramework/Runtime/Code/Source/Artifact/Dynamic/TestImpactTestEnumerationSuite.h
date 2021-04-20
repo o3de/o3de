@@ -10,8 +10,12 @@
  *
  */
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
-{
-    return 0;
-}
+#pragma once
 
+#include <Artifact/Dynamic/TestImpactTestSuite.h>
+
+namespace TestImpact
+{
+    using TestEnumerationCase = TestCase; //!< Test case for test enumeration artifacts.
+    using TestEnumerationSuite = TestSuite<TestEnumerationCase>; //!< Test suite for test enumeration artifacts.
+} // namespace TestImpact

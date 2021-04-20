@@ -10,8 +10,23 @@
  *
  */
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
-{
-    return 0;
-}
+#include "TestImpactTestTarget.h"
 
+namespace TestImpact
+{
+    TestTarget::TestTarget(Descriptor&& descriptor)
+        : BuildTarget(AZStd::move(descriptor), TargetType::Test)
+        , m_testMetaData(AZStd::move(descriptor.m_testMetaData))
+    {
+    }
+
+    const AZStd::string& TestTarget::GetSuite() const
+    {
+        return m_testMetaData.m_suite;
+    }
+
+    LaunchMethod TestTarget::GetLaunchMethod() const
+    {
+        return m_testMetaData.m_launchMethod;
+    }
+} // namespace TestImpact

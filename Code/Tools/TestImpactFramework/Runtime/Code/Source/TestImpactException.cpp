@@ -10,8 +10,22 @@
  *
  */
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
-{
-    return 0;
-}
+#include <TestImpactFramework/TestImpactException.h>
 
+namespace TestImpact
+{
+    Exception::Exception(const AZStd::string& msg)
+        : m_msg(msg)
+    {
+    }
+
+    Exception::Exception(const char* msg)
+        : m_msg(msg)
+    {
+    }
+
+    const char* Exception::what() const noexcept
+    {
+        return m_msg.c_str();
+    }
+} // namespace TestImpact

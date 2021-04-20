@@ -10,8 +10,19 @@
  *
  */
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
-{
-    return 0;
-}
+#pragma once
 
+#include <Artifact/Static/TestImpactBuildTargetDescriptor.h>
+#include <Artifact/Static/TestImpactTestTargetMeta.h>
+
+namespace TestImpact
+{
+    //! Artifact produced by the target artifact compiler that represents a test build target in the repository.
+    struct TestTargetDescriptor
+        : public BuildTargetDescriptor
+    {
+        TestTargetDescriptor(BuildTargetDescriptor&& buildTarget, TestTargetMeta&& testTargetMeta);
+
+        TestTargetMeta m_testMetaData;
+    };
+} // namespace TestImpact

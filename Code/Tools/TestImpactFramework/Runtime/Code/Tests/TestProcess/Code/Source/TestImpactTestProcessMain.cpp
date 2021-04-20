@@ -10,8 +10,10 @@
  *
  */
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
-{
-    return 0;
-}
+#include "TestImpactTestProcess.h"
 
+int main(int argc, char* argv[])
+{
+    TestImpact::TestProcess process(argc, argv);
+    return process.MainFunc();
+}

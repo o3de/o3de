@@ -10,8 +10,16 @@
  *
  */
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
-{
-    return 0;
-}
+#pragma once
 
+#include <TestImpactFramework/TestImpactException.h>
+
+namespace TestImpact
+{
+    //! Exception for test runs and test run related operations.
+    class TestRunException : public Exception
+    {
+    public:
+        using Exception::Exception;
+    };
+} // namespace TestImpact

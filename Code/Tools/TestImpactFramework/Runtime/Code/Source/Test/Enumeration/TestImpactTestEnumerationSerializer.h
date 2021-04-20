@@ -10,8 +10,17 @@
  *
  */
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
-{
-    return 0;
-}
+#pragma once
 
+#include <Test/Enumeration/TestImpactTestEnumeration.h>
+
+#include <AzCore/std/string/string.h>
+
+namespace TestImpact
+{
+    //! Serializes the specified test enumeration to JSON format.
+    AZStd::string SerializeTestEnumeration(const TestEnumeration& testEnumeration);
+
+    //! Deserializes a test enumeration from the specified test enumeration data in JSON format.
+    TestEnumeration DeserializeTestEnumeration(const AZStd::string& testEnumerationString);
+} // namespace TestImpact

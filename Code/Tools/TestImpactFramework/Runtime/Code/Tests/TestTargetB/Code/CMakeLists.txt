@@ -9,11 +9,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-set(FILES
-    Process/TestImpactWin32_ProcessLauncher.cpp
-    Process/TestImpactWin32_Process.cpp
-    Process/TestImpactWin32_Process.h
-    Process/TestImpactWin32_Handle.h
-    Process/TestImpactWin32_Pipe.cpp
-    Process/TestImpactWin32_Pipe.h
+################################################################################
+# Tests
+################################################################################
+
+ly_add_target(
+    NAME TestImpact.TestTargetB.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+    NAMESPACE AZ
+    FILES_CMAKE
+        testimpactframework_testtargetb_tests_files.cmake
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            Tests
+    BUILD_DEPENDENCIES
+        PRIVATE
+            AZ::AzCore
+            AZ::AzTestShared
+            AZ::AzTest
 )

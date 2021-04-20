@@ -10,8 +10,17 @@
  *
  */
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
-{
-    return 0;
-}
+#pragma once
 
+#include <Test/Run/TestImpactTestRun.h>
+
+#include <AzCore/std/string/string.h>
+
+namespace TestImpact
+{
+    //! Serializes the specified test run to JSON format.
+    AZStd::string SerializeTestRun(const TestRun& testRun);
+
+    //! Deserializes a test run from the specified test run data in JSON format.
+    TestRun DeserializeTestRun(const AZStd::string& testRunString);
+} // namespace TestImpact

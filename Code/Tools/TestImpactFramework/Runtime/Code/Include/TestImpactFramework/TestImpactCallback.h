@@ -10,8 +10,14 @@
  *
  */
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
-{
-    return 0;
-}
+#pragma once
 
+namespace TestImpact
+{
+    //! Generic callback result used by test impact systems.
+    enum class CallbackResult : bool
+    {
+        Continue,
+        Abort
+    };
+} // namespace TestImpact

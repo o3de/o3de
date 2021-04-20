@@ -10,8 +10,17 @@
  *
  */
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
-{
-    return 0;
-}
+#pragma once
 
+#include <Artifact/Dynamic/TestImpactCoverage.h>
+
+namespace TestImpact
+{
+    namespace Cobertura
+    {
+        //! Constructs a list of module coverage artifacts from the specified coverage data.
+        //! @param coverageData The raw coverage data in XML format.
+        //! @return The constructed list of module coverage artifacts.
+        AZStd::vector<ModuleCoverage> ModuleCoveragesFactory(const AZStd::string& coverageData);
+    } // namespace Cobertura
+} // namespace TestImpact

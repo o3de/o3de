@@ -10,8 +10,16 @@
  *
  */
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
-{
-    return 0;
-}
+#pragma once
 
+#include <Artifact/Static/TestImpactBuildTargetDescriptor.h>
+
+namespace TestImpact
+{
+    //! Artifact produced by the target artifact compiler that represents a production build target in the repository.
+    struct ProductionTargetDescriptor
+        : public BuildTargetDescriptor
+    {
+        ProductionTargetDescriptor(BuildTargetDescriptor&& buildTarget);
+    };
+} // namespace TestImpact

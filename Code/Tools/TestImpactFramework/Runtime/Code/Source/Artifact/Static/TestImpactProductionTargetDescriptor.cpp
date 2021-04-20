@@ -10,8 +10,12 @@
  *
  */
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
-{
-    return 0;
-}
+#include <Artifact/Static/TestImpactProductionTargetDescriptor.h>
 
+namespace TestImpact
+{
+    ProductionTargetDescriptor::ProductionTargetDescriptor(BuildTargetDescriptor&& buildTargetDescriptor)
+        : BuildTargetDescriptor(AZStd::move(buildTargetDescriptor))
+    {
+    }
+} // namespace TestImpact

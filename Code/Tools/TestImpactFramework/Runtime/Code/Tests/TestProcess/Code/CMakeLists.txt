@@ -9,11 +9,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-set(FILES
-    Process/TestImpactWin32_ProcessLauncher.cpp
-    Process/TestImpactWin32_Process.cpp
-    Process/TestImpactWin32_Process.h
-    Process/TestImpactWin32_Handle.h
-    Process/TestImpactWin32_Pipe.cpp
-    Process/TestImpactWin32_Pipe.h
+ly_add_target(
+    NAME TestImpact.TestProcess.Console EXECUTABLE
+    NAMESPACE AZ
+    FILES_CMAKE
+        testimpactframework_testprocess_files.cmake
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            Source
+    BUILD_DEPENDENCIES
+        PRIVATE
+            AZ::AzCore
+            AZ::AzFramework
 )

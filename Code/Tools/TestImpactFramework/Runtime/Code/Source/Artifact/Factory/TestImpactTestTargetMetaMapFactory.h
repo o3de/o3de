@@ -10,8 +10,16 @@
  *
  */
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
-{
-    return 0;
-}
+#pragma once
 
+#include <Artifact/Static/TestImpactTestTargetMeta.h>
+
+#include <AzCore/std/containers/vector.h>
+
+namespace TestImpact
+{
+    //! Constructs a list of test target meta-data artifacts from the specified master test list data.
+    //! @param masterTestListData The raw master test list data in JSON format.
+    //! @return The constructed list of test target meta-data artifacts.
+    TestTargetMetaMap TestTargetMetaMapFactory(const AZStd::string& masterTestListData);
+} // namespace TestImpact

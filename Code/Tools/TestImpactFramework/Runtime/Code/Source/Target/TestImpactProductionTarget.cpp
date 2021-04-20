@@ -10,8 +10,12 @@
  *
  */
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
-{
-    return 0;
-}
+#include "TestImpactProductionTarget.h"
 
+namespace TestImpact
+{
+    ProductionTarget::ProductionTarget(Descriptor&& descriptor)
+        : BuildTarget(AZStd::move(descriptor), TargetType::Production)
+    {
+    }
+} // namespace TestImpact

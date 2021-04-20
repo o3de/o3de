@@ -10,8 +10,13 @@
  *
  */
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
-{
-    return 0;
-}
+#pragma once
 
+#include <Target/TestImpactBuildTargetList.h>
+#include <Target/TestImpactTestTarget.h>
+
+namespace TestImpact
+{
+    //! Container for set of sorted test targets containing no duplicates.
+    using TestTargetList = BuildTargetList<TestTarget>;
+} // namespace TestImpact

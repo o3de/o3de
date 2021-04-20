@@ -10,8 +10,17 @@
  *
  */
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
-{
-    return 0;
-}
+#pragma once
 
+#include <TestImpactFramework/TestImpactException.h>
+
+namespace TestImpact
+{
+    //! Exception for test job related operations.
+    class TestJobException
+        : public Exception
+    {
+    public:
+        using Exception::Exception;
+    };
+} // namespace TestImpact

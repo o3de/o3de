@@ -10,8 +10,17 @@
  *
  */
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
-{
-    return 0;
-}
+#include <Test/Run/TestImpactTestRunJobData.h>
 
+namespace TestImpact
+{
+    TestRunJobData::TestRunJobData(const AZ::IO::Path& resultsArtifact)
+        : m_runArtifact(resultsArtifact)
+    {
+    }
+
+    const AZ::IO::Path& TestRunJobData::GetRunArtifactPath() const
+    {
+        return m_runArtifact;
+    }
+} // namespace TestImpact

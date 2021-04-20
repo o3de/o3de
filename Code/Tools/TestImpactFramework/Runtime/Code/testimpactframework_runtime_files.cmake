@@ -10,5 +10,20 @@
 #
 
 set(FILES
-    Source/Dummy.cpp
+    Include/TestImpactFramework/TestImpactException.h
+    Include/TestImpactFramework/TestImpactFrameworkPath.h
+    Include/TestImpactFramework/TestImpactCallback.h
+    Source/TestImpactException.cpp
+    Source/TestImpactFrameworkPath.cpp
+    Source/Process/TestImpactProcess.cpp
+    Source/Process/TestImpactProcess.h
+    Source/Process/TestImpactProcessException.h
+    Source/Process/TestImpactProcessInfo.cpp
+    Source/Process/TestImpactProcessInfo.h
+    Source/Process/TestImpactProcessLauncher.h
+    Source/Process/JobRunner/TestImpactProcessJob.h
+    Source/Process/JobRunner/TestImpactProcessJobInfo.h
+    Source/Process/JobRunner/TestImpactProcessJobRunner.h
+    Source/Process/Scheduler/TestImpactProcessScheduler.cpp
+    Source/Process/Scheduler/TestImpactProcessScheduler.h
 )

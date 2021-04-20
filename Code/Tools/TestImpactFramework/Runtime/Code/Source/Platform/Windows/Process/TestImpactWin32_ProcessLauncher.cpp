@@ -10,8 +10,15 @@
  *
  */
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
-{
-    return 0;
-}
+#include "TestImpactWin32_Process.h"
 
+#include <Process/TestImpactProcess.h>
+#include <Process/TestImpactProcessLauncher.h>
+
+namespace TestImpact
+{
+    AZStd::unique_ptr<Process> LaunchProcess(const ProcessInfo& processInfo)
+    {
+        return AZStd::make_unique<ProcessWin32>(processInfo);
+    }
+} // namespace TestImpact

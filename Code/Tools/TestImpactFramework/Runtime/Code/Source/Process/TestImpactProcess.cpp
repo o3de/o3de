@@ -10,8 +10,23 @@
  *
  */
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
-{
-    return 0;
-}
+#include <Process/TestImpactProcess.h>
+#include <Process/TestImpactProcessInfo.h>
 
+namespace TestImpact
+{
+    Process::Process(const ProcessInfo& processInfo)
+        : m_processInfo(processInfo)
+    {
+    }
+
+    const ProcessInfo& Process::GetProcessInfo() const
+    {
+        return m_processInfo;
+    }
+
+    AZStd::optional<ReturnCode> Process::GetReturnCode() const
+    {
+        return m_returnCode;
+    }
+} // namespace TestImpact

@@ -10,10 +10,13 @@
 #
 
 set(FILES
-    Process/TestImpactWin32_ProcessLauncher.cpp
-    Process/TestImpactWin32_Process.cpp
-    Process/TestImpactWin32_Process.h
-    Process/TestImpactWin32_Handle.h
-    Process/TestImpactWin32_Pipe.cpp
-    Process/TestImpactWin32_Pipe.h
+    Tests/Process/TestImpactProcessSchedulerTest.cpp
+    Tests/Process/TestImpactProcessTest.cpp
+    Tests/TestImpactExceptionTest.cpp
+    Tests/TestImpactFrameworkPathTest.cpp
+    Tests/TestImpactProcessSchedulerTest.cpp
+    Tests/TestImpactProcessTest.cpp
+    Tests/TestImpactProcessTestShared.cpp
+    Tests/TestImpactProcessTestShared.h
+    Tests/TestImpactTestMain.cpp
 )
