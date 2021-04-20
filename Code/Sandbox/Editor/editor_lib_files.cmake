@@ -316,8 +316,6 @@ set(FILES
     Material/MaterialHelpers.cpp
     Material/MaterialHelpers.h
     Material/MaterialDialog.qrc
-    Material/MaterialDialog.cpp
-    Material/MaterialDialog.h
     Material/MaterialPreviewModelView.cpp
     Material/MaterialPreviewModelView.h
     Material/PreviewModelView.cpp
@@ -535,8 +533,6 @@ set(FILES
     Dialogs/PythonScriptsDialog.ui
     Dialogs/Generic/UserOptions.cpp
     Dialogs/Generic/UserOptions.h
-    AlignTool.cpp
-    AlignTool.h
     ObjectCloneTool.cpp
     ObjectCloneTool.h
     EditMode/SubObjectSelectionReferenceFrameCalculator.cpp
@@ -547,10 +543,6 @@ set(FILES
     RotateTool.h
     EditTool.cpp
     EditTool.h
-    LinkTool.cpp
-    LinkTool.h
-    PickObjectTool.cpp
-    PickObjectTool.h
     VoxelAligningTool.cpp
     VoxelAligningTool.h
     Export/ExportManager.cpp
@@ -632,8 +624,6 @@ set(FILES
     LensFlareEditor/LensFlareView.h
     LogFileImpl.cpp
     LogFileImpl.h
-    MatEditMainDlg.cpp
-    MatEditMainDlg.h
     MatEditPreviewDlg.cpp
     MatEditPreviewDlg.h
     Material/MaterialBrowser.cpp

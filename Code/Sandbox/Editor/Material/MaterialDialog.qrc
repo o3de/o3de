@@ -1,39 +1,4 @@
 <RCC>
-    <qresource prefix="/MaterialDialog/ToolBar">
-        <file>images/materialdialog_add_disabled.png</file>
-        <file>images/materialdialog_copy_disabled.png</file>
-        <file>images/materialdialog_paste_disabled.png</file>
-        <file>images/materialdialog_preview_disabled.png</file>
-        <file>images/materialdialog_remove_disabled.png</file>
-        <file>images/materialdialog_save_disabled.png</file>
-        <file>images/materialdialog_assignselection_disabled.png</file>
-        <file>images/materialdialog_getfromselection_disabled.png</file>
-        <file>images/materialdialog_pick_disabled.png</file>
-        <file>images/materialdialog_reset_disabled.png</file>
-        <file>images/materialdialog_assignselection_active.png</file>
-        <file>images/materialdialog_assignselection_normal.png</file>
-        <file>images/materialdialog_add_active.png</file>
-        <file>images/materialdialog_add_normal.png</file>
-        <file>images/materialdialog_copy_active.png</file>
-        <file>images/materialdialog_copy_normal.png</file>
-        <file>images/materialdialog_getfromselection_active.png</file>
-        <file>images/materialdialog_getfromselection_normal.png</file>
-        <file>images/materialdialog_paste_active.png</file>
-        <file>images/materialdialog_paste_normal.png</file>
-        <file>images/materialdialog_pick_active.png</file>
-        <file>images/materialdialog_pick_normal.png</file>
-        <file>images/materialdialog_preview_active.png</file>
-        <file>images/materialdialog_preview_normal.png</file>
-        <file>images/materialdialog_remove_active.png</file>
-        <file>images/materialdialog_remove_normal.png</file>
-        <file>images/materialdialog_reset_active.png</file>
-        <file>images/materialdialog_reset_normal.png</file>
-        <file>images/materialdialog_save_active.png</file>
-        <file>images/materialdialog_save_normal.png</file>
-        <file>images/materialdialog_reset_viewport_active.png</file>
-        <file>images/materialdialog_reset_viewport_disabled.png</file>
-        <file>images/materialdialog_reset_viewport_normal.png</file>
-    </qresource>
     <qresource prefix="/MaterialBrowser">
         <file>images/material_browser_00.png</file>
         <file>images/material_browser_01.png</file>
