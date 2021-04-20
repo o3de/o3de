@@ -945,6 +945,12 @@ namespace AzToolsFramework
             return false;
         }
 
+        // Disable reparenting to the root level
+        if (!newParentId.IsValid())
+        {
+            return false;
+        }
+
         // Ignore entities not owned by the editor context. It is assumed that all entities belong
         // to the same context since multiple selection doesn't span across views.
         for (const AZ::EntityId& entityId : selectedEntityIds)
@@ -974,39 +980,33 @@ namespace AzToolsFramework
                 }
             }
 
-            if (newParentId.IsValid())
+            bool isLayerEntity = false;
+            Layers::EditorLayerComponentRequestBus::EventResult(
+                isLayerEntity,
+                entityId,
+                &Layers::EditorLayerComponentRequestBus::Events::HasLayer);
+            // Layers can only have other layers as parents, or have no parent.
+            if (isLayerEntity)
             {
-                bool isLayerEntity = false;
+                bool newParentIsLayer = false;
                 Layers::EditorLayerComponentRequestBus::EventResult(
-                    isLayerEntity,
-                    entityId,
+                    newParentIsLayer,
+                    newParentId,
                     &Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-                // Layers can only have other layers as parents, or have no parent.
-                if (isLayerEntity)
+                if (!newParentIsLayer)
                 {
-                    bool newParentIsLayer = false;
-                    Layers::EditorLayerComponentRequestBus::EventResult(
-                        newParentIsLayer,
-                        newParentId,
-                        &Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-                    if (!newParentIsLayer)
-                    {
-                        return false;
-                    }
+                    return false;
                 }
             }
         }
 
         //Only check the entity pointer if the entity id is valid because
         //we want to allow dragging items to unoccupied parts of the tree to un-parent them
-        if (newParentId.IsValid())
+        AZ::Entity* newParentEntity = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(newParentEntity, &AZ::ComponentApplicationRequests::FindEntity, newParentId);
+        if (!newParentEntity)
         {
-            AZ::Entity* newParentEntity = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(newParentEntity, &AZ::ComponentApplicationRequests::FindEntity, newParentId);
-            if (!newParentEntity)
-            {
-                return false;
-            }
+            return false;
         }
 
         //reject dragging on to yourself or your children
