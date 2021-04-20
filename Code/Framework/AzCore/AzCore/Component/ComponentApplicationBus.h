@@ -136,7 +136,7 @@ namespace AZ
         //! Entity names are not enforced to be unique.
         //! @param entityId A reference to the entity whose name you want to change.
         //! @return True if the name was changed successfully, false if it wasn't.
-        virtual bool SetEntityName([[maybe_unused]] const EntityId& id, [[maybe_unused]] const AZStd::string& name) { return false; }
+        virtual bool SetEntityName([[maybe_unused]] const EntityId& id, [[maybe_unused]] const AZStd::string_view name) { return false; }
 
         //! The type that AZ::ComponentApplicationRequests::EnumerateEntities uses to
         //! pass entity callbacks to the application for enumeration.
