@@ -12,8 +12,9 @@
 #include "LyShine_precompiled.h"
 #include "LyShineDebug.h"
 #include "IConsole.h"
-#include <LyShine/IDraw2d.h>
-#include "IRenderer.h"
+#include <LyShine/Draw2d.h>
+
+#include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -105,15 +106,24 @@ static bool g_deferDrawsToEndOfFrame = false;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 #if !defined(_RELEASE)
+#ifdef LYSHINE_ATOM_TODO
 static int Create2DTexture(int width, int height, byte* data, ETEX_Format format)
 {
     IRenderer* renderer = gEnv->pRenderer;
     return renderer->DownLoadToVideoMemory(data, width, height, format, format, 1);
 }
 #endif
+#endif
+
+static AZ::Vector2 GetTextureSize(AZ::Data::Instance<AZ::RPI::Image> image)
+{
+    AZ::RHI::Size size = image->GetDescriptor().m_size;
+    return AZ::Vector2(size.m_width, size.m_height);
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 #if !defined(_RELEASE)
+#ifdef LYSHINE_ATOM_TODO
 static void FillTextureRectWithCheckerboard(uint32* data, int textureWidth, int textureHeight,
     int minX, int minY, [[maybe_unused]] int rectWidth, int rectHeight,
     int tileWidth, int tileHeight, uint32* colors, bool varyAlpha)
@@ -139,11 +149,13 @@ static void FillTextureRectWithCheckerboard(uint32* data, int textureWidth, int 
     }
 }
 #endif
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 #if !defined(_RELEASE)
-static ITexture* CreateMonoTestTexture()
+static AZ::Data::Instance<AZ::RPI::Image> CreateMonoTestTexture()
 {
+#ifdef LYSHINE_ATOM_TODO
     const int width = 32;
     const int height = 32;
     uint32 data[width * height];
@@ -172,13 +184,18 @@ static ITexture* CreateMonoTestTexture()
     int textureId = Create2DTexture(width, height, (uint8*)data, eTF_R8G8B8A8);
 
     return gEnv->pRenderer->EF_GetTextureByID(textureId);
+#else
+    auto whiteTexture = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
+    return whiteTexture;
+#endif
 }
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 #if !defined(_RELEASE)
-static ITexture* CreateColorTestTexture()
+static AZ::Data::Instance<AZ::RPI::Image> CreateColorTestTexture()
 {
+#ifdef LYSHINE_ATOM_TODO
     const int width = 32;
     const int height = 32;
     uint32 data[width * height];
@@ -207,13 +224,18 @@ static ITexture* CreateColorTestTexture()
     int textureId = Create2DTexture(width, height, (uint8*)data, eTF_R8G8B8A8);
 
     return gEnv->pRenderer->EF_GetTextureByID(textureId);
+#else
+    auto whiteTexture = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
+    return whiteTexture;
+#endif
 }
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 #if !defined(_RELEASE)
-static ITexture* CreateMonoAlphaTestTexture()
+static AZ::Data::Instance<AZ::RPI::Image> CreateMonoAlphaTestTexture()
 {
+#ifdef LYSHINE_ATOM_TODO
     const int width = 32;
     const int height = 32;
     uint32 data[width * height];
@@ -242,13 +264,18 @@ static ITexture* CreateMonoAlphaTestTexture()
     int textureId = Create2DTexture(width, height, (uint8*)data, eTF_R8G8B8A8);
 
     return gEnv->pRenderer->EF_GetTextureByID(textureId);
+#else
+    auto whiteTexture = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
+    return whiteTexture;
+#endif
 }
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 #if !defined(_RELEASE)
-static ITexture* CreateColorAlphaTestTexture()
+static AZ::Data::Instance<AZ::RPI::Image> CreateColorAlphaTestTexture()
 {
+#ifdef LYSHINE_ATOM_TODO
     const int width = 32;
     const int height = 32;
     uint32 data[width * height];
@@ -277,14 +304,18 @@ static ITexture* CreateColorAlphaTestTexture()
     int textureId = Create2DTexture(width, height, (uint8*)data, eTF_R8G8B8A8);
 
     return gEnv->pRenderer->EF_GetTextureByID(textureId);
+#else
+    auto whiteTexture = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
+    return whiteTexture;
+#endif
 }
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 #if !defined(_RELEASE)
-static ITexture* GetMonoTestTexture()
+static AZ::Data::Instance<AZ::RPI::Image> GetMonoTestTexture()
 {
-    static ITexture* testImageMono = nullptr;
+    static AZ::Data::Instance<AZ::RPI::Image> testImageMono = nullptr;
 
     if (!testImageMono)
     {
@@ -297,9 +328,9 @@ static ITexture* GetMonoTestTexture()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 #if !defined(_RELEASE)
-static ITexture* GetColorTestTexture()
+static AZ::Data::Instance<AZ::RPI::Image> GetColorTestTexture()
 {
-    static ITexture* testImageColor = nullptr;
+    static AZ::Data::Instance<AZ::RPI::Image> testImageColor = nullptr;
 
     if (!testImageColor)
     {
@@ -312,9 +343,9 @@ static ITexture* GetColorTestTexture()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 #if !defined(_RELEASE)
-static ITexture* GetMonoAlphaTestTexture()
+static AZ::Data::Instance<AZ::RPI::Image> GetMonoAlphaTestTexture()
 {
-    static ITexture* testImageMonoAlpha = nullptr;
+    static AZ::Data::Instance<AZ::RPI::Image> testImageMonoAlpha = nullptr;
 
     if (!testImageMonoAlpha)
     {
@@ -327,9 +358,9 @@ static ITexture* GetMonoAlphaTestTexture()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 #if !defined(_RELEASE)
-static ITexture* GetColorAlphaTestTexture()
+static AZ::Data::Instance<AZ::RPI::Image> GetColorAlphaTestTexture()
 {
-    static ITexture* testImageColorAlpha = nullptr;
+    static AZ::Data::Instance<AZ::RPI::Image> testImageColorAlpha = nullptr;
 
     if (!testImageColorAlpha)
     {
@@ -347,14 +378,12 @@ static void DebugDrawColoredBox(AZ::Vector2 pos, AZ::Vector2 size, AZ::Color col
     IDraw2d::HAlign horizontalAlignment = IDraw2d::HAlign::Left,
     IDraw2d::VAlign verticalAlignment = IDraw2d::VAlign::Top)
 {
-    IDraw2d* draw2d = Draw2dHelper::GetDraw2d();
-    IRenderer* renderer = gEnv->pRenderer;
+    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     IDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
-    int whiteTextureId = renderer->GetWhiteTextureId();
-
     imageOptions.color = color.GetAsVector3();
-    draw2d->DrawImageAligned(whiteTextureId, pos, size, horizontalAlignment, verticalAlignment,
+    auto whiteTexture = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
+    draw2d->DrawImageAligned(whiteTexture, pos, size, horizontalAlignment, verticalAlignment,
         color.GetA(), 0.0f, nullptr, &imageOptions);
 }
 #endif
@@ -364,7 +393,7 @@ static void DebugDrawColoredBox(AZ::Vector2 pos, AZ::Vector2 size, AZ::Color col
 static void DebugDrawStringWithSizeBox(IFFont* font, unsigned int effectIndex, const char* sizeString,
     const char* testString, AZ::Vector2 pos, float spacing, float size)
 {
-    IDraw2d* draw2d = Draw2dHelper::GetDraw2d();
+    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     IDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
     if (font)
@@ -398,7 +427,7 @@ static void DebugDrawStringWithSizeBox(IFFont* font, unsigned int effectIndex, c
 #if !defined(_RELEASE)
 static void DebugDraw2dFontSizes(IFFont* font, unsigned int effectIndex, const char* fontName)
 {
-    IDraw2d* draw2d = Draw2dHelper::GetDraw2d();
+    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     draw2d->BeginDraw2d(g_deferDrawsToEndOfFrame);
 
@@ -524,7 +553,7 @@ static void DebugDrawAlignedTextWithOriginBox(AZ::Vector2 pos,
 #if !defined(_RELEASE)
 static void DebugDraw2dFontAlignment()
 {
-    IDraw2d* draw2d = Draw2dHelper::GetDraw2d();
+    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
     float w = draw2d->GetViewportWidth();
     float yPos = 20;
 
@@ -591,7 +620,7 @@ static void DebugDraw2dFontAlignment()
 #if !defined(_RELEASE)
 static AZ::Vector2 DebugDrawFontColorTestBox(AZ::Vector2 pos, const char* string, AZ::Vector3 color, float opacity)
 {
-    IDraw2d* draw2d = Draw2dHelper::GetDraw2d();
+    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     float pointSize = 32.0f;
     const float spacing = 6.0f;
@@ -626,7 +655,7 @@ static AZ::Vector2 DebugDrawFontColorTestBox(AZ::Vector2 pos, const char* string
 #if !defined(_RELEASE)
 static void DebugDraw2dFontColorAndOpacity()
 {
-    IDraw2d* draw2d = Draw2dHelper::GetDraw2d();
+    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     draw2d->BeginDraw2d(g_deferDrawsToEndOfFrame);
 
@@ -668,16 +697,13 @@ static void DebugDraw2dFontColorAndOpacity()
 #if !defined(_RELEASE)
 static void DebugDraw2dImageRotations()
 {
-    IDraw2d* draw2d = Draw2dHelper::GetDraw2d();
+    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
-    ITexture* texture = GetMonoTestTexture();
-    int texId = texture->GetTextureID();
+    AZ::Data::Instance<AZ::RPI::Image> texture = GetMonoTestTexture();
 
     draw2d->BeginDraw2d(g_deferDrawsToEndOfFrame);
 
-    float width = (float)texture->GetWidth();
-    float height = (float)texture->GetHeight();
-    AZ::Vector2 size(width, height);
+    AZ::Vector2 size = GetTextureSize(texture);
 
     float row = 20.0f;
     float xSpacing = size.GetX() * 2.0f;
@@ -690,7 +716,7 @@ static void DebugDraw2dImageRotations()
     for (int i = 0; i < 10; ++i)
     {
         AZ::Vector2 pos(xStart + xSpacing * i, row);
-        draw2d->DrawImage(texId, pos, size, 1.0f, 45.0f * i);
+        draw2d->DrawImage(texture, pos, size, 1.0f, 45.0f * i);
         DebugDrawColoredBox(AZ::Vector2(pos.GetX() - 2, pos.GetY() - 2), AZ::Vector2(5, 5), posBoxColor);
     }
 
@@ -703,7 +729,7 @@ static void DebugDraw2dImageRotations()
     {
         AZ::Vector2 pos(xStart + xSpacing * i, row);
         AZ::Vector2 pivot = pos + pivotOffset;
-        draw2d->DrawImage(texId, pos, size, 1.0f, 45.0f * i, &pivot);
+        draw2d->DrawImage(texture, pos, size, 1.0f, 45.0f * i, &pivot);
         DebugDrawColoredBox(AZ::Vector2(pos.GetX() - 2, pos.GetY() - 2), AZ::Vector2(5, 5), posBoxColor);
         DebugDrawColoredBox(AZ::Vector2(pivot.GetX() - 2, pivot.GetY() - 2), AZ::Vector2(5, 5), pivotBoxColor);
     }
@@ -715,7 +741,7 @@ static void DebugDraw2dImageRotations()
     for (int i = 0; i < 10; ++i)
     {
         AZ::Vector2 pos(xStart + xSpacing * i + size.GetX() * 0.5f, row + size.GetY() * 0.5f);
-        draw2d->DrawImageAligned(texId, pos, size, IDraw2d::HAlign::Center, IDraw2d::VAlign::Center, 1.0f, 45.0f * i);
+        draw2d->DrawImageAligned(texture, pos, size, IDraw2d::HAlign::Center, IDraw2d::VAlign::Center, 1.0f, 45.0f * i);
         DebugDrawColoredBox(AZ::Vector2(pos.GetX() - 2, pos.GetY() - 2), AZ::Vector2(5, 5), posBoxColor);
     }
 
@@ -727,10 +753,9 @@ static void DebugDraw2dImageRotations()
 #if !defined(_RELEASE)
 static void DebugDraw2dImageColor()
 {
-    IDraw2d* draw2d = Draw2dHelper::GetDraw2d();
+    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
-    ITexture* texture = GetMonoAlphaTestTexture();
-    int texId = texture->GetTextureID();
+    AZ::Data::Instance<AZ::RPI::Image> texture = GetMonoAlphaTestTexture();
 
     IDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
 
@@ -740,9 +765,7 @@ static void DebugDraw2dImageColor()
         "Testing image colors, image is black and white, top row is opacity=1, bottom row is opacity = 0.5",
         AZ::Vector2(20, 20), 16);
 
-    float width = texture->GetWidth() * 2.0f;
-    float height = texture->GetHeight() * 2.0f;
-    AZ::Vector2 size(width, height);
+    AZ::Vector2 size = GetTextureSize(texture) * 2.0f;
 
     float xStart = 20.0f;
     float yStart = 50.0f;
@@ -755,11 +778,11 @@ static void DebugDraw2dImageColor()
 
         // Draw the image with this color
         imageOptions.color = g_colorVec3[color];
-        draw2d->DrawImage(texId, pos, size, 1.0f, 0.0f, 0, 0, &imageOptions);
+        draw2d->DrawImage(texture, pos, size, 1.0f, 0.0f, 0, 0, &imageOptions);
 
         // draw below with half opacity to test combination of color and opacity
         pos.SetY(pos.GetY() + ySpacing);
-        draw2d->DrawImage(texId, pos, size, 0.5f, 0.0f, 0, 0, &imageOptions);
+        draw2d->DrawImage(texture, pos, size, 0.5f, 0.0f, 0, 0, &imageOptions);
     }
 
     draw2d->EndDraw2d();
@@ -770,13 +793,11 @@ static void DebugDraw2dImageColor()
 #if !defined(_RELEASE)
 static void DebugDraw2dImageBlendMode()
 {
-    IDraw2d* draw2d = Draw2dHelper::GetDraw2d();
-    IRenderer* renderer = gEnv->pRenderer;
+    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
-    int whiteTextureId = renderer->GetWhiteTextureId();
+    auto whiteTexture = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
 
-    ITexture* texture = GetColorAlphaTestTexture();
-    int texId = texture->GetTextureID();
+    AZ::Data::Instance<AZ::RPI::Image> texture = GetColorAlphaTestTexture();
 
     IDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
 
@@ -785,9 +806,9 @@ static void DebugDraw2dImageBlendMode()
     draw2d->DrawText("Testing blend modes, src blend changes across x-axis, dst blend changes across y axis",
         AZ::Vector2(20, 20), 16);
 
-    float width = (float)texture->GetWidth();
-    float height = (float)texture->GetHeight();
-    AZ::Vector2 size(width, height);
+    AZ::Vector2 size = GetTextureSize(texture);
+    float width = size.GetX();
+    float height = size.GetY();
 
     float xStart = 20.0f;
     float yStart = 60.0f;
@@ -824,12 +845,12 @@ static void DebugDraw2dImageBlendMode()
                     AZ::Vector2(0.0f, 1.0f)
                 },
             };
-            draw2d->DrawQuad(whiteTextureId, verts);
+            draw2d->DrawQuad(whiteTexture, verts);
 
             // Draw the image with this color
 
             imageOptions.blendMode = g_srcBlendModes[srcIndex] | g_dstBlendModes[dstIndex];
-            draw2d->DrawImage(texId, pos, size, 1.0f, 0.0f, 0, 0, &imageOptions);
+            draw2d->DrawImage(texture, pos, size, 1.0f, 0.0f, 0, 0, &imageOptions);
         }
     }
 
@@ -841,10 +862,9 @@ static void DebugDraw2dImageBlendMode()
 #if !defined(_RELEASE)
 static void DebugDraw2dImageUVs()
 {
-    IDraw2d* draw2d = Draw2dHelper::GetDraw2d();
+    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
-    ITexture* texture = GetColorTestTexture();
-    int texId = texture->GetTextureID();
+    AZ::Data::Instance<AZ::RPI::Image> texture = GetColorTestTexture();
 
     IDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
 
@@ -854,7 +874,7 @@ static void DebugDraw2dImageUVs()
         "Testing DrawImage with minMaxTexCoords. Full image, top left quadrant, middle section, full flipped",
         AZ::Vector2(20, 20), 16);
 
-    AZ::Vector2 size((float)texture->GetWidth() * 2.0f, (float)texture->GetHeight() * 2.0f);
+    AZ::Vector2 size = GetTextureSize(texture) * 2.0f;
 
     float xStart = 20.0f;
     float yStart = 50.0f;
@@ -867,25 +887,25 @@ static void DebugDraw2dImageUVs()
     // full image
     minMaxTexCoords[0] = AZ::Vector2(0, 0);
     minMaxTexCoords[1] = AZ::Vector2(1, 1);
-    draw2d->DrawImage(texId, pos, size, 1.0f, 0.0f, 0, minMaxTexCoords);
+    draw2d->DrawImage(texture, pos, size, 1.0f, 0.0f, 0, minMaxTexCoords);
 
     // top left quadrant of image
     pos.SetX(pos.GetX() + xSpacing);
     minMaxTexCoords[0] = AZ::Vector2(0, 0);
     minMaxTexCoords[1] = AZ::Vector2(0.5, 0.5);
-    draw2d->DrawImage(texId, pos, size, 1.0f, 0.0f, 0, minMaxTexCoords);
+    draw2d->DrawImage(texture, pos, size, 1.0f, 0.0f, 0, minMaxTexCoords);
 
     // middle of image
     pos.SetX(pos.GetX() + xSpacing);
     minMaxTexCoords[0] = AZ::Vector2(0.25, 0.25);
     minMaxTexCoords[1] = AZ::Vector2(0.75, 0.75);
-    draw2d->DrawImage(texId, pos, size, 1.0f, 0.0f, 0, minMaxTexCoords);
+    draw2d->DrawImage(texture, pos, size, 1.0f, 0.0f, 0, minMaxTexCoords);
 
     // flip of image
     pos.SetX(pos.GetX() + xSpacing);
     minMaxTexCoords[0] = AZ::Vector2(0.0, 1.0);
     minMaxTexCoords[1] = AZ::Vector2(1.0, 0.0);
-    draw2d->DrawImage(texId, pos, size, 1.0f, 0.0f, 0, minMaxTexCoords);
+    draw2d->DrawImage(texture, pos, size, 1.0f, 0.0f, 0, minMaxTexCoords);
 
     draw2d->EndDraw2d();
 }
@@ -895,10 +915,9 @@ static void DebugDraw2dImageUVs()
 #if !defined(_RELEASE)
 static void DebugDraw2dImagePixelRounding()
 {
-    IDraw2d* draw2d = Draw2dHelper::GetDraw2d();
+    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
-    ITexture* texture = GetColorTestTexture();
-    int texId = texture->GetTextureID();
+    AZ::Data::Instance<AZ::RPI::Image> texture = GetColorTestTexture();
 
     IDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
 
@@ -906,7 +925,7 @@ static void DebugDraw2dImagePixelRounding()
 
     draw2d->DrawText("Testing DrawImage pixel rounding options", AZ::Vector2(20, 20), 16);
 
-    AZ::Vector2 size((float)texture->GetWidth(), (float)texture->GetHeight());
+    AZ::Vector2 size = GetTextureSize(texture);
 
     float xStart = 20.0f;
     float yStart = 50.0f;
@@ -929,7 +948,7 @@ static void DebugDraw2dImagePixelRounding()
 
             imageOptions.pixelRounding = roundings[j];
 
-            draw2d->DrawImage(texId, pos, size, 1.0f, 0.0f, 0, 0, &imageOptions);
+            draw2d->DrawImage(texture, pos, size, 1.0f, 0.0f, 0, 0, &imageOptions);
         }
     }
 
@@ -941,7 +960,7 @@ static void DebugDraw2dImagePixelRounding()
 #if !defined(_RELEASE)
 static void DebugDraw2dLineBasic()
 {
-    IDraw2d* draw2d = Draw2dHelper::GetDraw2d();
+    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     IDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
 
@@ -1436,7 +1455,7 @@ void LyShineDebug::RenderDebug()
 #if !defined(_RELEASE)
 
 #ifndef EXCLUDE_DOCUMENTATION_PURPOSE
-    if (!Draw2dHelper::GetDraw2d())
+    if (!Draw2dHelper::GetDefaultDraw2d())
     {
         return;
     }

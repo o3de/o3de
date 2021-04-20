@@ -11,6 +11,7 @@
 */
 #include "LyShine_precompiled.h"
 #include "UiCanvasManager.h"
+#include <LyShine/Draw2d.h>
 
 #include "UiCanvasFileObject.h"
 #include "UiCanvasComponent.h"
@@ -32,6 +33,8 @@
 #include <LyShine/Bus/UiCursorBus.h>
 #include <LyShine/Bus/World/UiCanvasOnMeshBus.h>
 #include <LyShine/Bus/World/UiCanvasRefBus.h>
+
+#include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 
 #ifndef _RELEASE
 #include <AzFramework/IO/LocalFileIO.h>
@@ -998,7 +1001,7 @@ void UiCanvasManager::DebugDisplayCanvasData(int setting) const
 {
     bool onlyShowEnabledCanvases = (setting == 2) ? true : false;
 
-    IDraw2d* draw2d = Draw2dHelper::GetDraw2d();
+    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     draw2d->BeginDraw2d(false);
 
@@ -1007,7 +1010,8 @@ void UiCanvasManager::DebugDisplayCanvasData(int setting) const
 
     const int elementNameFieldLength = 20;
 
-   int blackTexture = gEnv->pRenderer->GetBlackTextureId();
+    auto blackTexture = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::Black);
+
     float textOpacity = 1.0f;
     float backgroundRectOpacity = 0.75f;
 
@@ -1159,14 +1163,14 @@ void UiCanvasManager::DebugDisplayCanvasData(int setting) const
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasManager::DebugDisplayDrawCallData() const
 {
-    IDraw2d* draw2d = Draw2dHelper::GetDraw2d();
+    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     draw2d->BeginDraw2d(false);
 
     float xOffset = 20.0f;
     float yOffset = 20.0f;
 
-    int blackTexture = gEnv->pRenderer->GetBlackTextureId();
+    auto blackTexture = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::Black);
     float textOpacity = 1.0f;
     float backgroundRectOpacity = 0.75f;
     const float lineSpacing = 20.0f;
@@ -1492,7 +1496,7 @@ void UiCanvasManager::DebugReportDrawCalls(const AZStd::string& name) const
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasManager::DebugDisplayElemBounds(int canvasIndexFilter) const
 {
-    IDraw2d* draw2d = Draw2dHelper::GetDraw2d();
+    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     draw2d->BeginDraw2d(false);
 
