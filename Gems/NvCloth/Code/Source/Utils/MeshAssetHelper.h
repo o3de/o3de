@@ -35,12 +35,14 @@ namespace NvCloth
             MeshClothInfo& meshClothInfo) override;
         bool DoesSupportSkinnedAnimation() const override
         {
-            return false;
+            return m_supportSkinnedAnimation;
         }
 
     private:
         bool CopyDataFromMeshes(
             const AZStd::vector<const AZ::RPI::ModelLodAsset::Mesh*>& meshes,
             MeshClothInfo& meshClothInfo);
+
+        bool m_supportSkinnedAnimation = false;
     };
 } // namespace NvCloth

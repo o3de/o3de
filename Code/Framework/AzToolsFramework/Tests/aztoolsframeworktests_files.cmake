@@ -85,7 +85,9 @@ set(FILES
     Prefab/SpawnableSortEntitiesTestFixture.cpp
     Prefab/SpawnableSortEntitiesTestFixture.h
     Entity/EditorEntityContextComponentTests.cpp
+    Entity/EditorEntityHelpersTests.cpp
     Entity/EditorEntitySearchComponentTests.cpp
+    Entity/EditorEntitySelectionTests.cpp
     SliceStabilityTests/SliceStabilityTestFramework.h
     SliceStabilityTests/SliceStabilityTestFramework.cpp
     SliceStabilityTests/SliceStabilityCreateTests.cpp

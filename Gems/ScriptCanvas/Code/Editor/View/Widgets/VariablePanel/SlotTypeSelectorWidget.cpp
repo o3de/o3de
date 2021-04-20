@@ -73,6 +73,8 @@ namespace ScriptCanvasEditor
     {
         ui->setupUi(this);
 
+        ui->variablePalette->SetActiveScene(scriptCanvasId);
+
         ui->searchFilter->setClearButtonEnabled(true);
         QObject::connect(ui->searchFilter, &QLineEdit::textChanged, this, &SlotTypeSelectorWidget::OnQuickFilterChanged);
         QObject::connect(ui->slotName, &QLineEdit::returnPressed, this, &SlotTypeSelectorWidget::OnReturnPressed);
