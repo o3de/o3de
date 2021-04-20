@@ -28,8 +28,9 @@ ly_add_target(
             ${pal_dir}
     BUILD_DEPENDENCIES
         PRIVATE
-            3rdParty::OpenSSL
             AZ::AzCore
+        PUBLIC
+            3rdParty::OpenSSL
 )
 
 ly_add_source_properties(
