@@ -15,7 +15,7 @@ from setuptools import setup, find_packages
 from setuptools.command.develop import develop
 from setuptools.command.build_py import build_py
 
-PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
+PACKAGE_ROOT = os.path.abspath(os.path.dirname(__file__))
 
 PYTHON_64 = platform.architecture()[0] == '64bit'
 
@@ -24,7 +24,7 @@ if __name__ == '__main__':
     if not PYTHON_64:
         raise RuntimeError("32-bit Python is not a supported platform.")
 
-    with open(os.path.join(PROJECT_ROOT, 'README.txt')) as f:
+    with open(os.path.join(PACKAGE_ROOT, 'README.txt')) as f:
         long_description = f.read()
 
     setup(
