@@ -209,13 +209,18 @@ namespace ScriptCanvas
             m_latents.push_back(out);
         }
 
-        void SubgraphInterface::AddOutKey(const AZStd::string& name)
+        bool SubgraphInterface::AddOutKey(const AZStd::string& name)
         {
             const AZ::Crc32 key(name);
 
             if (AZStd::find(m_outKeys.begin(), m_outKeys.end(), key) == m_outKeys.end())
             {
                 m_outKeys.push_back(key);
+                return true;
+            }
+            else
+            {
+                return false;
             }
         }
 
@@ -708,7 +713,7 @@ namespace ScriptCanvas
         }
 
         // Populates the list of out keys
-        void SubgraphInterface::Parse()
+        AZ::Outcome<void, AZStd::string> SubgraphInterface::Parse()
         {
             m_outKeys.clear();
 
@@ -716,14 +721,22 @@ namespace ScriptCanvas
             {
                 for (const auto& out : in.outs)
                 {
-                    AddOutKey(out.displayName);
+                    if (!AddOutKey(out.displayName))
+                    {
+                        return AZ::Failure(AZStd::string::format("Out %s was already in the list: %s", out.displayName.c_str()));
+                    }
                 }
             }
 
             for (const auto& latent : m_latents)
             {
-                AddOutKey(latent.displayName);
+                if (!AddOutKey(latent.displayName))
+                {
+                    return AZ::Failure(AZStd::string::format("Out %s was already in the list: %s", latent.displayName.c_str()));
+                }
             }
+
+            return AZ::Success();
         }
 
         void SubgraphInterface::Reflect(AZ::ReflectContext* refectContext)
