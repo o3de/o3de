@@ -79,8 +79,6 @@ namespace Multiplayer
         //! @}
 
     private:
-        void OnEntityAdded(AZ::Entity* entity);
-        void OnEntityRemoved(AZ::Entity* entity);
         void RemoveEntities();
 
         NetEntityId NextId();
@@ -100,8 +98,6 @@ namespace Multiplayer
         AZ::Event<> m_onEntityNotifyChanges;
         ControllersActivatedEvent m_controllersActivatedEvent;
         ControllersDeactivatedEvent m_controllersDeactivatedEvent;
-        AZ::EntityAddedEvent::Handler m_entityAddedEventHandler;
-        AZ::EntityRemovedEvent::Handler m_entityRemovedEventHandler;
 
         HostId m_hostId = InvalidHostId;
         NetEntityId m_nextEntityId = NetEntityId{ 0 };
