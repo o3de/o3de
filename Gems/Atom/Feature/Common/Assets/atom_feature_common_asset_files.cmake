@@ -233,7 +233,6 @@ set(FILES
     ShaderLib/Atom/Features/PBR/ForwardPassSrg.azsli
     ShaderLib/Atom/Features/PBR/ForwardSubsurfacePassOutput.azsli
     ShaderLib/Atom/Features/PBR/Hammersley.azsli
-    ShaderLib/Atom/Features/PBR/LightingModel.azsli
     ShaderLib/Atom/Features/PBR/LightingOptions.azsli
     ShaderLib/Atom/Features/PBR/LightingUtils.azsli
     ShaderLib/Atom/Features/PBR/TransparentPassSrg.azsli
