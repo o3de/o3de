@@ -92,7 +92,6 @@ AZ_POP_DISABLE_WARNING
 
 #include "TrackView/TrackViewDialog.h"
 #include "ErrorReportDialog.h"
-#include "Material/MaterialDialog.h"
 #include "LensFlareEditor/LensFlareEditor.h"
 #include "TimeOfDayDialog.h"
 
@@ -1105,15 +1104,6 @@ void MainWindow::InitActions()
             .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSelected)
             .SetIcon(Style::icon("Align_to_grid"))
             .SetApplyHoverEffect();
-        am->AddAction(ID_OBJECTMODIFY_ALIGN, tr("Align to object")).SetCheckable(true)
-#if AZ_TRAIT_OS_PLATFORM_APPLE
-            .SetStatusTip(tr(u8"\u2318: Align an object to a bounding box, \u2325 : Keep Rotation of the moved object, Shift : Keep Scale of the moved object"))
-#else
-            .SetStatusTip(tr("Ctrl: Align an object to a bounding box, Alt : Keep Rotation of the moved object, Shift : Keep Scale of the moved object"))
-#endif
-            .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateAlignObject)
-            .SetIcon(Style::icon("Align_to_Object"))
-            .SetApplyHoverEffect();
         am->AddAction(ID_MODIFY_ALIGNOBJTOSURF, tr("Align object to surface (Hold CTRL)")).SetCheckable(true)
             .SetToolTip(tr("Align object to surface  (Hold CTRL)"))
             .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateAlignToVoxel)
@@ -1450,15 +1440,6 @@ void MainWindow::InitActions()
         .SetApplyHoverEffect();
 
     // Edit Mode Toolbar Actions
-    am->AddAction(ID_EDITTOOL_LINK, tr("Link an object to parent"))
-        .SetIcon(Style::icon("add_link"))
-        .SetApplyHoverEffect()
-        .SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateEditToolLink);
-    am->AddAction(ID_EDITTOOL_UNLINK, tr("Unlink all selected objects"))
-        .SetIcon(Style::icon("remove_link"))
-        .SetApplyHoverEffect()
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateEditToolUnlink);
     am->AddAction(IDC_SELECTION_MASK, tr("Selected Object Types"));
     am->AddAction(ID_REF_COORDS_SYS, tr("Reference coordinate system"))
         .SetShortcut(tr("Ctrl+W"))
@@ -1974,7 +1955,6 @@ void MainWindow::RegisterStdViewClasses()
 
     if (!AZ::Interface<AzFramework::AtomActiveInterface>::Get())
     {
-        CMaterialDialog::RegisterViewClass();
         CLensFlareEditor::RegisterViewClass();
         CTimeOfDayDialog::RegisterViewClass();
     }

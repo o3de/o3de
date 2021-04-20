@@ -181,8 +181,6 @@
 #define ID_TV_STOP                                 33568
 #define ID_TV_PAUSE                                33569
 #define ID_ADDNODE                                 33570
-#define ID_EDITTOOL_LINK                           33571
-#define ID_EDITTOOL_UNLINK                         33572
 #define ID_ADDSCENETRACK                           33573
 #define ID_FIND                                    33574
 #define ID_SNAP_TO_GRID                            33575
@@ -214,7 +212,6 @@
 #define ID_TV_JUMPSTART                            33601
 #define ID_TV_PREVKEY                              33602
 #define ID_TV_NEXTKEY                              33603
-#define ID_OBJECTMODIFY_ALIGN                      33604
 #define ID_PLAY_LOOP                               33607
 #define ID_TERRAIN                                 33611
 #define ID_OBJECTMODIFY_ALIGNTOGRID                33619

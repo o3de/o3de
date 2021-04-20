@@ -148,8 +148,6 @@
   },
   "periodic_test_profile": {
     "TAGS":[
-        "nightly",
-        "weekly-build-metrics"
     ],
     "COMMAND":"build_and_run_unit_tests.cmd",
     "PARAMETERS": {
@@ -163,5 +161,4 @@
       "ADDITIONAL_GENERATE_ARGS": "--unit-test"
     }
   }
-
 }

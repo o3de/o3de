@@ -58,11 +58,10 @@ namespace AzToolsFramework
             m_prefabUndoCache.Destroy();
         }
 
-        PrefabOperationResult PrefabPublicHandler::CreatePrefab(const AZStd::vector<AZ::EntityId>& entityIds, AZStd::string_view filePath)
+        PrefabOperationResult PrefabPublicHandler::CreatePrefab(const AZStd::vector<AZ::EntityId>& entityIds, AZ::IO::PathView filePath)
         {
             // Retrieve entityList from entityIds
-            EntityList inputEntityList;
-            EntityIdListToEntityList(entityIds, inputEntityList);
+            EntityList inputEntityList = EntityIdListToEntityList(entityIds);
 
             // Find common root and top level entities
             bool entitiesHaveCommonRoot = false;
@@ -419,8 +418,7 @@ namespace AzToolsFramework
             InstanceOptionalReference instance = GetOwnerInstanceByEntityId(entityIds[0]);
 
             // Retrieve entityList from entityIds
-            EntityList inputEntityList;
-            EntityIdListToEntityList(entityIds, inputEntityList);
+            EntityList inputEntityList = EntityIdListToEntityList(entityIds);
 
             AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
@@ -766,19 +764,6 @@ namespace AzToolsFramework
             }
 
             return true;
-        }
-
-        void PrefabPublicHandler::EntityIdListToEntityList(const EntityIdList& inputEntityIds, EntityList& outEntities)
-        {
-            outEntities.reserve(inputEntityIds.size());
-
-            for (AZ::EntityId entityId : inputEntityIds)
-            {
-                if (entityId.IsValid())
-                {
-                    outEntities.emplace_back(GetEntityById(entityId));
-                }
-            }
         }
     }
 }

@@ -48,12 +48,12 @@ namespace Multiplayer
         return m_inputs[index].m_networkInput;
     }
 
-    void NetworkInputVector::SetPreviousInputId(NetworkInputId previousInputId)
+    void NetworkInputVector::SetPreviousInputId(ClientInputId previousInputId)
     {
         m_previousInputId = previousInputId;
     }
 
-    NetworkInputId NetworkInputVector::GetPreviousInputId() const
+    ClientInputId NetworkInputVector::GetPreviousInputId() const
     {
         return m_previousInputId;
     }

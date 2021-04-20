@@ -578,16 +578,6 @@ namespace AzToolsFramework
          */
         virtual bool IsEditorInIsolationMode() = 0;
 
-        /*!
-        * Get the engine root path that the current tool is running under.  
-        */
-        virtual const char* GetEngineRootPath() const = 0;
-
-        /**
-        * Get the version of the engine the current tools application is running under
-        */
-        virtual const char* GetEngineVersion() const = 0;
-
         /**
         * Creates and adds a new entity to the tools application from components which match at least one of the requiredTags
         * The tag matching occurs on AZ::Edit::SystemComponentTags attribute from the reflected class data in the serialization context
