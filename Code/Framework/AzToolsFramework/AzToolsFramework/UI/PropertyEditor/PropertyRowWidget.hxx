@@ -155,6 +155,7 @@ namespace AzToolsFramework
         bool CanMoveUp() const;
         bool CanMoveDown() const;
 
+        int GetParentWidgetWidth();
         QImage createDragImage();
 
         enum DropArea
@@ -172,6 +173,8 @@ namespace AzToolsFramework
 
     protected:
         int CalculateLabelWidth() const;
+        int GetHeightOfRowAndVisibleChildren();
+        int DrawDragImageAndVisibleChildrenInto(QPainter& painter, int xpos, int ypos);
 
         bool IsHidden(InstanceDataNode* node) const;
 

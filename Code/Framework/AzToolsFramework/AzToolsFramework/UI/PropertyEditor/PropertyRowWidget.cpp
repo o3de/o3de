@@ -1732,12 +1732,61 @@ namespace AzToolsFramework
         return true;
     }
 
+    int PropertyRowWidget::GetParentWidgetWidth()
+    {
+        QWidget* parent = parentWidget()->parentWidget()->parentWidget();
+
+        return parent->rect().width();
+    }
+
+    int PropertyRowWidget::GetHeightOfRowAndVisibleChildren()
+    {
+        int height = rect().height();
+
+        if (!GetChildRowCount() || !IsExpanded())
+        {
+            return height;
+        }
+
+        for (auto childRow : GetChildrenRows())
+        {
+            height += childRow->GetHeightOfRowAndVisibleChildren();
+        }
+
+        return height;
+    }
+
+    int PropertyRowWidget::DrawDragImageAndVisibleChildrenInto(QPainter& painter, int xpos, int ypos)
+    {
+        // Render our image into the given painter.
+        int ystart = ypos;
+
+        render(&painter, QPoint(xpos, ypos));
+
+        if (!GetChildRowCount() || !IsExpanded())
+        {
+            return rect().height();
+        }
+
+        ypos += rect().height();
+
+        // Recursively draw any children.
+        for (auto childRow : GetChildrenRows())
+        {
+            ypos += childRow->DrawDragImageAndVisibleChildrenInto(painter, xpos, ypos);
+        }
+
+        return ypos - ystart;
+    }
+
     QImage PropertyRowWidget::createDragImage()
     {
         // Make the drag box as wide as the containing editor so that it looks correct.
-        QWidget* parent = parentWidget()->parentWidget()->parentWidget();
+        int width = GetParentWidgetWidth();
 
-        QRect imageRect = QRect(0, 0, parent->rect().width(), rect().height());
+        int height = GetHeightOfRowAndVisibleChildren();
+        
+        QRect imageRect = QRect(0, 0, width, height);
 
         QImage dragImage(imageRect.size(), QImage::Format_ARGB32_Premultiplied);
 
@@ -1749,7 +1798,8 @@ namespace AzToolsFramework
         dragPainter.fillRect(imageRect, QColor("#F6F99E"));
 
         int marginWidth = (imageRect.width() - rect().width()) / 2;
-        render(&dragPainter, QPoint(marginWidth, 0));
+
+        DrawDragImageAndVisibleChildrenInto(dragPainter, marginWidth, 0);
 
         QPen pen;
         pen.setColor(QColor("#EAECAA"));

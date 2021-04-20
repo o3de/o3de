@@ -209,7 +209,8 @@ namespace AzToolsFramework
                             QPoint(mapFromGlobal(globalRect.topLeft()) + QPoint(LeftMargin, TopMargin)),
                             QPoint(mapFromGlobal(globalRect.bottomRight()) - QPoint(RightMargin, BottomMargin)));
 
-                        currRect.setWidth(currRect.width() - 1);
+                        currRect.setLeft(LeftMargin + 2);
+                        currRect.setWidth(rowWidget->GetParentWidgetWidth() - (RightMargin + LeftMargin));
 
                         if (rowWidget->IsBeingDragged())
                         {
