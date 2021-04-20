@@ -14,7 +14,6 @@
 
 #include <Utils/MeshAssetHelper.h>
 
-
 namespace NvCloth
 {
     const int InvalidIndex = -1;

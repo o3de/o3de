@@ -126,7 +126,6 @@ AZ_POP_DISABLE_WARNING
 #include "EditorPreferencesDialog.h"
 #include "GraphicsSettingsDialog.h"
 #include "FeedbackDialog/FeedbackDialog.h"
-#include "MatEditMainDlg.h"
 #include "AnimationContext.h"
 
 #include "GotoPositionDlg.h"
@@ -1897,14 +1896,6 @@ BOOL CCryEditApp::InitInstance()
     CWipFeatureManager::Instance()->EnableManager(!cmdInfo.m_bDeveloperMode);
     CWipFeatureManager::Init();
 #endif
-
-    if (GetIEditor()->IsInMatEditMode())
-    {
-        m_pMatEditDlg = new CMatEditMainDlg(QStringLiteral("Material Editor"));
-        m_pEditor->InitFinished();
-        m_pMatEditDlg->show();
-        return true;
-    }
 
     if (!m_bConsoleMode && !m_bPreviewMode)
     {

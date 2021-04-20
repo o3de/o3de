@@ -92,7 +92,6 @@ AZ_POP_DISABLE_WARNING
 
 #include "TrackView/TrackViewDialog.h"
 #include "ErrorReportDialog.h"
-#include "Material/MaterialDialog.h"
 #include "LensFlareEditor/LensFlareEditor.h"
 #include "TimeOfDayDialog.h"
 
@@ -1974,7 +1973,6 @@ void MainWindow::RegisterStdViewClasses()
 
     if (!AZ::Interface<AzFramework::AtomActiveInterface>::Get())
     {
-        CMaterialDialog::RegisterViewClass();
         CLensFlareEditor::RegisterViewClass();
         CTimeOfDayDialog::RegisterViewClass();
     }

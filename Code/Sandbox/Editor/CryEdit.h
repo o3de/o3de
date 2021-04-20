@@ -28,7 +28,6 @@
 
 class CCryDocManager;
 class CQuickAccessBar;
-class CMatEditMainDlg;
 class CCryEditDoc;
 class CEditCommandLineInfo;
 class CMainFrame;
@@ -367,7 +366,6 @@ private:
     //! Autotest mode: Special mode meant for automated testing, things like blocking dialogs or error report windows won't appear
     bool m_bAutotestMode = false;
 
-    CMatEditMainDlg* m_pMatEditDlg = nullptr;
     CConsoleDialog* m_pConsoleDialog = nullptr;
 
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
