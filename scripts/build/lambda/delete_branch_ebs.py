@@ -14,20 +14,25 @@ import time
 import logging
 
 TIMEOUT = 300
+log = logging.getLogger(__name__)
+log.setLevel(logging.INFO)
 
 
-def lambda_handler(event, context):
-    log = logging.getLogger(__name__)
-    log.setLevel(logging.INFO)
-    branch_name = event['detail']['referenceName']
+def delete_ebs_volumes(repository_name, branch_name):
+    success = 0
+    failure = 0
     ec2_client = boto3.resource('ec2')
     response = ec2_client.volumes.filter(Filters=[
+        {
+            'Name': 'tag:RepositoryName',
+            'Values': [repository_name]
+        },
         {
             'Name': 'tag:BranchName',
             'Values': [branch_name]
         }
     ])
-    log.info(f'Deleting EBS volumes for remote-branch {branch_name}.')
+    log.info(f'Deleting EBS volumes for remote-branch {branch_name} in repository {repository_name}.')
     for volume in response:
         if volume.attachments:
             ec2_instance_id = volume.attachments[0]['InstanceId']
@@ -49,9 +54,19 @@ def lambda_handler(event, context):
         try:
             log.info(f'Deleting volume {volume.volume_id}')
             volume.delete()
+            success += 1
         except Exception as e:
             log.error(f'Failed to delete volume {volume.volume_id}.')
             log.error(e)
+            failure += 1
+    return success, failure
 
 
-lambda_handler(event, context)
+def lambda_handler(event, context):
+    repository_name = event['repository_name']
+    branch_name = event['branch_name']
+    (success, failure) = delete_ebs_volumes(repository_name, branch_name)
+    return {
+        'success': success,
+        'failure': failure
+    }
