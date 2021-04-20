@@ -92,7 +92,8 @@ namespace AzToolsFramework
                         AZStd::string("Could not create a new prefab out of the entities provided - entities do not share a common root."));
                 }
 
-                // When you move instances from another template, you have to remove the links and propagate changes to target template.
+                // When we create a prefab with other prefab instances, we have to remove the existing links between the source and 
+                // target templates of the other instances.
                 for (auto& nestedInstance : instances)
                 {
                     PrefabUndoHelpers::RemoveLink(

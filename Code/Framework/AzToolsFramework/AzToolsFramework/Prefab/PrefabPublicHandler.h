@@ -72,7 +72,7 @@ namespace AzToolsFramework
             /**
              * Creates a link between the templates of an instance and its parent.
              * 
-             * \param topLevelEntities The list of entities that are immediate children of container entity of instance.
+             * \param topLevelEntities The list of entities that are immediate children to the container entity of the instance.
              * \param sourceInstance The instance that corresponds to the source template of the link.
              * \param targetInstance The id of the target template.
              * \param undoBatch The undo batch to set as parent for this create link action.
