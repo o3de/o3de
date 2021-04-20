@@ -727,6 +727,8 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
             // meters above the terrain (default terrain height is 32)
             viewTM.SetTranslation(Vec3(sx * 0.5f, sy * 0.5f, 34.0f));
             SetViewTM(viewTM);
+
+            UpdateScene();
         }
         break;
 
