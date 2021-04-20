@@ -446,4 +446,17 @@ namespace UnitTest
         EXPECT_THAT(transformedAabb.GetMin(), IsClose(aabbContainingTransformedObb.GetMin()));
         EXPECT_THAT(transformedAabb.GetMax(), IsClose(aabbContainingTransformedObb.GetMax()));
     }
+
+    TEST(MATH_AabbTransform, MultiplyByScale)
+    {
+        Vector3 min(2.0f, 6.0f, 8.0f);
+        Vector3 max(6.0f, 9.0f, 10.0f);
+        Aabb aabb = Aabb::CreateFromMinMax(min, max);
+
+        Vector3 scale(0.5f, 2.0f, 1.5f);
+        aabb.MultiplyByScale(scale);
+
+        EXPECT_THAT(aabb.GetMin(), IsClose(Vector3(1.0f, 12.0f, 12.0f)));
+        EXPECT_THAT(aabb.GetMax(), IsClose(Vector3(3.0f, 18.0f, 15.0f)));
+    }
 }

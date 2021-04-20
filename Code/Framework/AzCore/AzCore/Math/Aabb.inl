@@ -296,6 +296,7 @@ namespace AZ
     {
         m_min *= scale;
         m_max *= scale;
+        AZ_MATH_ASSERT(IsValid(), "Min must be less than Max");
     }
 
 
