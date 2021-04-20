@@ -41,7 +41,6 @@ if(DXGL_TRAIT_BUILD_DXMETAL_SUPPORTED AND NOT LY_MONOLITHIC_GAME) # Only Atom is
         BUILD_DEPENDENCIES
             PUBLIC
                 AZ::AzFramework
-                AZ::HLSLcc.Headers
                 Legacy::CryCommon
                 Legacy::CryCommon.EngineSettings.Static
     )
