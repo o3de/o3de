@@ -41,7 +41,6 @@ namespace AZ
                     m_context->GetData()->m_modelEntity->GetId(),
                     &Render::MaterialComponentRequestBus::Events::SetDefaultMaterialOverride,
                     m_context->GetData()->m_materialAsset.GetId());
-
                 Render::MeshComponentRequestBus::Event(
                     m_context->GetData()->m_modelEntity->GetId(),
                     &Render::MeshComponentRequestBus::Events::SetModelAsset,
