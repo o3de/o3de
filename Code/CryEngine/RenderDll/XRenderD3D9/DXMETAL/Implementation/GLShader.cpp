@@ -17,6 +17,11 @@
 #include "MetalDevice.hpp"
 #include "GLExtensions.hpp"
 
+//  Confetti BEGIN: Igor Lobanchikov
+#include "hlslcc.hpp"
+#include "hlslcc_bin.hpp"
+//  Confetti End: Igor Lobanchikov
+
 namespace NCryMetal
 {
     SSource::SSource(const char* pData, uint32 uDataSize)

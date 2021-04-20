@@ -14,6 +14,10 @@
 #include <Implementation/GLBlitFramebufferHelper.hpp>
 #include <Implementation/GLBlitShaders.hpp>
 #include <Implementation/GLContext.hpp>
+#if DXGL_INPUT_GLSL && DXGL_GLSL_FROM_HLSLCROSSCOMPILER
+#include <hlslcc.hpp>
+#endif //DXGL_INPUT_GLSL && DXGL_GLSL_FROM_HLSLCROSSCOMPILER
+#include <hlslcc_bin.hpp>
 
 namespace NCryOpenGL
 {
