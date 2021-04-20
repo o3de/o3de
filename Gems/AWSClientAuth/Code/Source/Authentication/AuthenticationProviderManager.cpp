@@ -48,7 +48,7 @@ namespace AWSClientAuth
         m_settingsRegistry = AZStd::make_shared<AZ::SettingsRegistryImpl>();
 
         AZStd::array<char, AZ::IO::MaxPathLength> resolvedPath{};
-        AZ::IO::FileIOBase::GetInstance()->ResolvePath(settingsRegistryPath.data(), resolvedPath.data(), resolvedPath.size());
+        fileIO->ResolvePath(settingsRegistryPath.data(), resolvedPath.data(), resolvedPath.size());
 
 
         if (!m_settingsRegistry->MergeSettingsFile(resolvedPath.data(), AZ::SettingsRegistryInterface::Format::JsonMergePatch))

@@ -68,12 +68,6 @@ ly_add_target(
 )
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
-
-    find_package(OpenGL QUIET REQUIRED)
-    # Imported targets (like OpenGL::GL) are scoped to a directory. Add a
-    # a global scope
-    add_library(3rdParty::OpenGLInterface INTERFACE IMPORTED GLOBAL)
-    target_link_libraries(3rdParty::OpenGLInterface INTERFACE OpenGL::GL)
     
     ly_add_target(
         NAME EMotionFX.Editor.Static STATIC

@@ -2347,7 +2347,7 @@ namespace ScriptCanvasEditor
         AZ::Outcome<ScriptCanvas::VariableId, AZStd::string> addOutcome;
 
         // #functions2 slot<->variable re-use the activeDatum, send the pointer (actually, all of the source slot information, and make a special conversion)
-        ScriptCanvas::GraphVariableManagerRequestBus::EventResult(addOutcome, GetScriptCanvasId(), &ScriptCanvas::GraphVariableManagerRequests::AddVariable, variableName, variableDatum);
+        ScriptCanvas::GraphVariableManagerRequestBus::EventResult(addOutcome, GetScriptCanvasId(), &ScriptCanvas::GraphVariableManagerRequests::AddVariable, variableName, variableDatum, true);
 
         if (addOutcome.IsSuccess())
         {
