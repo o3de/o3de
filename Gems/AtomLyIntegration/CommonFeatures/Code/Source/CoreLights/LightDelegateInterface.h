@@ -33,6 +33,9 @@ namespace AZ
         {
         public:
             virtual ~LightDelegateInterface() {};
+
+            //! Sets the area light component config so delegates don't have to cache the same data locally.
+            virtual void SetConfig(const AreaLightComponentConfig* config) = 0;
             //! Sets the color of the light independent of light intensity. The color is a mask on the total light intensity.
             virtual void SetChroma(const AZ::Color& chroma) = 0;
             //! Sets the light intensity

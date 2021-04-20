@@ -755,6 +755,7 @@ lSysUpdate:
         buffer_handle_t nVB = ~0u;
 #   if BUFFER_ENABLE_DIRECT_ACCESS && !defined(NULL_RENDERER)
         nVB = MS->m_nID;
+        int nFrame = gRenDev->m_RP.m_TI[gRenDev->m_RP.m_nFillThreadID].m_nFrameUpdateID;
         if ((nVB != ~0u && (MS->m_nFrameCreate != nFrame || MS->m_nElements != m_nVerts)) || !CRenderer::CV_r_buffer_enable_lockless_updates)
 #   endif
         goto lSysCreate;

@@ -116,10 +116,6 @@ function(ly_add_external_target)
         # Setting BASE_PATH variable in the parent scope to allow for the Find<3rdParty>.cmake scripts to use them
         set(BASE_PATH ${BASE_PATH} PARENT_SCOPE)
 
-        if(NOT EXISTS ${BASE_PATH})
-            message(FATAL_ERROR "Cannot find 3rdParty library ${ly_add_external_target_NAME} on path ${BASE_PATH}")
-        endif()
-
         add_library(3rdParty::${NAME_WITH_NAMESPACE} INTERFACE IMPORTED GLOBAL)
 
         if(ly_add_external_target_INCLUDE_DIRECTORIES)

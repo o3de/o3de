@@ -14,13 +14,6 @@ ly_set(LY_DEFAULT_INSTALL_COMPONENT "Core")
 #! ly_install_target: registers the target to be installed by cmake install.
 #
 # \arg:NAME name of the target
-# \arg:NAMESPACE namespace declaration for this target. It will be used for IDE and dependencies
-# \arg:INCLUDE_DIRECTORIES paths to the include directories
-# \arg:BUILD_DEPENDENCIES list of interfaces this target depends on (could be a compilation dependency
-#                             if the dependency is only exposing an include path, or could be a linking
-#                             dependency is exposing a lib)
-# \arg:RUNTIME_DEPENDENCIES list of dependencies this target depends on at runtime
-# \arg:COMPILE_DEFINITIONS list of compilation definitions this target will use to compile
 function(ly_install_target ly_install_target_NAME)
 
     set(options)
@@ -161,7 +154,7 @@ function(ly_generate_target_find_file)
         set(HEADER_ONLY_PLACEHOLDER TRUE)
     endif()
 
-    configure_file(${LY_ROOT_FOLDER}/cmake/FindTargetTemplate.cmake ${CMAKE_CURRENT_BINARY_DIR}/Find${ly_generate_target_find_file_NAME}.cmake @ONLY)
+    configure_file(${LY_ROOT_FOLDER}/cmake/FindTarget.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/Find${ly_generate_target_find_file_NAME}.cmake @ONLY)
 
 endfunction()
 
@@ -232,7 +225,7 @@ function(ly_setup_o3de_install)
 
     string(REPLACE ";" "\n" FIND_PACKAGES_PLACEHOLDER "${find_package_list}")
 
-    configure_file(${LY_ROOT_FOLDER}/cmake/Findo3deTemplate.cmake ${CMAKE_CURRENT_BINARY_DIR}/Findo3de.cmake @ONLY)
+    configure_file(${LY_ROOT_FOLDER}/cmake/Findo3de.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/Findo3de.cmake @ONLY)
 
     ly_install_launcher_target_generator()
 

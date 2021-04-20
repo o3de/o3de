@@ -65,7 +65,6 @@ AZ_POP_DISABLE_WARNING
 #include "UIEnumsDatabase.h"
 #include "Util/Ruler.h"
 #include "RenderHelpers/AxisHelper.h"
-#include "PickObjectTool.h"
 #include "Settings.h"
 #include "Include/IObjectManager.h"
 #include "Include/ISourceControl.h"
@@ -170,7 +169,6 @@ CEditorImpl::CEditorImpl()
     , m_pShaderEnum(nullptr)
     , m_pIconManager(nullptr)
     , m_bSelectionLocked(true)
-    , m_pPickTool(nullptr)
     , m_pAxisGizmo(nullptr)
     , m_pGameEngine(nullptr)
     , m_pAnimationContext(nullptr)
@@ -794,11 +792,6 @@ void CEditorImpl::SetEditTool(CEditTool* tool, bool bStopCurrentTool)
         m_pEditTool->BeginEditParams(this, 0);
     }
 
-    // Make sure pick is aborted.
-    if (tool != m_pPickTool)
-    {
-        m_pPickTool = nullptr;
-    }
     Notify(eNotify_OnEditToolChange);
 }
 
@@ -1067,34 +1060,6 @@ void CEditorImpl::LockSelection(bool bLock)
 bool CEditorImpl::IsSelectionLocked()
 {
     return m_bSelectionLocked;
-}
-
-void CEditorImpl::PickObject(IPickObjectCallback* callback, const QMetaObject* targetClass, const char* statusText, bool bMultipick)
-{
-    m_pPickTool = new CPickObjectTool(callback, targetClass);
-
-    static_cast<CPickObjectTool*>(m_pPickTool.get())->SetMultiplePicks(bMultipick);
-    if (statusText)
-    {
-        m_pPickTool.get()->SetStatusText(statusText);
-    }
-
-    SetEditTool(m_pPickTool);
-}
-
-void CEditorImpl::CancelPick()
-{
-    SetEditTool(0);
-    m_pPickTool = 0;
-}
-
-bool CEditorImpl::IsPicking()
-{
-    if (GetEditTool() == m_pPickTool && m_pPickTool != 0)
-    {
-        return true;
-    }
-    return false;
 }
 
 CViewManager* CEditorImpl::GetViewManager()
