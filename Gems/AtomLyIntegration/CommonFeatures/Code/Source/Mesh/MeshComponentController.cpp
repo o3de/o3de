@@ -240,7 +240,7 @@ namespace AZ
             }
         }
 
-        void MeshComponentController::HandleNonUniformScaleChange(const AZ::Vector3 & nonUniformScale)
+        void MeshComponentController::HandleNonUniformScaleChange(const AZ::Vector3& nonUniformScale)
         {
             m_cachedNonUniformScale = nonUniformScale;
             if (m_meshFeatureProcessor)
