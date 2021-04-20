@@ -13,7 +13,7 @@
 #include <source/models/AssetListFileTableModel.h>
 #include <source/models/AssetListTableModel.h>
 
-#include <source/Utils/utils.h>
+#include <source/utils/utils.h>
 
 #include <AzCore/Outcome/Outcome.h>
 #include <AzFramework/IO/LocalFileIO.h>

@@ -17,7 +17,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Lumberyard Asset Bundler</string>
+   <string>Asset Bundler</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -82,9 +82,9 @@
     <string>Documentation</string>
    </property>
   </action>
-  <action name="actionAbout_Lumberyard_Asset_Bundler">
+  <action name="actionAbout_Asset_Bundler">
    <property name="text">
-    <string>About Lumberyard Asset Bundler</string>
+    <string>About Asset Bundler</string>
    </property>
   </action>
   <action name="actionSaveAll">

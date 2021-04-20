@@ -80,10 +80,11 @@ namespace AssetBundler
         m_assetSeedManager = AZStd::make_unique<AzToolsFramework::AssetSeedManager>();
         AZ_TracePrintf(AssetBundler::AppWindowName, "\n");
 
+        g_cachedEngineRoot = AZ::IO::FixedMaxPath(GetEngineRoot());
+
         // There is no need to update the UserSettings file, so we can avoid a race condition by disabling save on shutdown
         AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
         return true;
-
     }
 
     void ApplicationManager::DestroyApplication()

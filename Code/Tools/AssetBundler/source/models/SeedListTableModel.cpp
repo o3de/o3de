@@ -12,7 +12,7 @@
 
 #include <source/models/SeedListTableModel.h>
 
-#include <source/Utils/utils.h>
+#include <source/utils/utils.h>
 
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/std/smart_ptr/make_shared.h>

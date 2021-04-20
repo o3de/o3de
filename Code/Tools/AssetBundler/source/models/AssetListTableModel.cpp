@@ -12,7 +12,7 @@
 
 #include <source/models/AssetListTableModel.h>
 
-#include <source/Utils/utils.h>
+#include <source/utils/utils.h>
 
 #include <AzFramework/StringFunc/StringFunc.h>
 

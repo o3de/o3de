@@ -35,10 +35,10 @@ namespace AssetBundler
         using namespace AzFramework;
 
         // Set up Platform Checkboxes
-        for (const AZStd::string& platformString : m_platformHelper->GetPlatforms(PlatformFlags::AllNamedPlatforms))
+        for (const AZStd::string_view& platformString : m_platformHelper->GetPlatforms(PlatformFlags::AllNamedPlatforms))
         {
             // Create the CheckBox and store what platform it maps to
-            QSharedPointer<QCheckBox> platformCheckBox(new QCheckBox(QString(platformString.c_str())));
+            QSharedPointer<QCheckBox> platformCheckBox(new QCheckBox(QString(platformString.data())));
             m_platformCheckBoxes.push_back(platformCheckBox);
             PlatformFlags currentPlatformFlag = m_platformHelper->GetPlatformFlag(platformString);
             m_platformList.push_back(currentPlatformFlag);

@@ -109,7 +109,7 @@ namespace AssetBundler
 
     const char* AssetCatalogFilename = "assetcatalog.xml";
 
-    char g_cachedEngineRoot[AZ::IO::MaxPathLength];
+    AZ::IO::FixedMaxPath g_cachedEngineRoot;
 
     
     const char EngineDirectoryName[] = "Engine";
@@ -131,7 +131,7 @@ namespace AssetBundler
             AZStd::unordered_map<AZStd::string, AZStd::string>& defaultSeedLists,
             AzFramework::PlatformFlags platformFlags)
         {
-            AZ::IO::FixedMaxPath engineRoot(GetEngineRoot());
+            AZ::IO::FixedMaxPath engineRoot(GetCachedEngineRoot());
             AZ::IO::FixedMaxPath engineRestrictedRoot = engineRoot / RestrictedDirectoryName;
 
             AZ::IO::FixedMaxPath engineLocalPath = AZ::IO::PathView(engineDirectory.LexicallyRelative(engineRoot));
@@ -204,26 +204,10 @@ namespace AssetBundler
         }
     }
 
-    AZ::IO::FixedMaxPath GetEngineRoot()
+    AZ::IO::FixedMaxPath GetCachedEngineRoot()
     {
-        if (g_cachedEngineRoot[0])
-        {
-            //JESSIE TODO figure out all this path/string nonsense
-            return AZ::IO::FixedMaxPath(g_cachedEngineRoot);
-        }
-
-        AZ::IO::FixedMaxPath engineRootPath;
-        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
-        {
-            settingsRegistry->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
-        }
-
-        if (!engineRootPath.empty())
-        {
-            azstrcpy(g_cachedEngineRoot, AZ_MAX_PATH_LEN, engineRootPath.c_str());
-        }
-
-        return engineRootPath;
+        AZ_Error(AppWindowName, !g_cachedEngineRoot.empty(), "Cached Engine Root has not been initialized by the Bundler.");
+        return g_cachedEngineRoot;
     }
 
     void AddPlatformIdentifier(AZStd::string& filePath, const AZStd::string& platformIdentifier)

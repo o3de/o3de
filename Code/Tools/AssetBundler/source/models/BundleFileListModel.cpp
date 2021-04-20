@@ -15,7 +15,7 @@
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzToolsFramework/AssetBundle/AssetBundleComponent.h>
 
-#include <source/Utils/utils.h>
+#include <source/utils/utils.h>
 
 #include <QFileInfo>
 

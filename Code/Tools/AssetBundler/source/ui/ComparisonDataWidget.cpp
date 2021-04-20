@@ -225,7 +225,7 @@ namespace AssetBundler
                 initialSelectionIndex = ComparisonTypeIndex::Complement;
                 break;
             default:
-                AZ_Warning("AssetBundler", false, "ComparisonType ( %u ) is not supported in the Lumberyard Asset Bundler", comparisonData.m_comparisonType);
+                AZ_Warning("AssetBundler", false, "ComparisonType ( %u ) is not supported in the Asset Bundler", comparisonData.m_comparisonType);
             }
         }
 

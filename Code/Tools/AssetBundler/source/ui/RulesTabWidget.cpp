@@ -17,7 +17,7 @@
 #include <source/ui/ComparisonDataWidget.h>
 #include <source/ui/NewFileDialog.h>
 #include <source/utils/GUIApplicationManager.h>
-#include <source/Utils/utils.h>
+#include <source/utils/utils.h>
 
 #include <AzCore/Outcome/Outcome.h>
 #include <AzFramework/StringFunc/StringFunc.h>

@@ -13,7 +13,7 @@
 #pragma once
 
 #include <source/models/AssetBundlerAbstractFileTableModel.h>
-#include <source/Utils/utils.h>
+#include <source/utils/utils.h>
 
 #include <AzToolsFramework/Asset/AssetBundler.h>
 

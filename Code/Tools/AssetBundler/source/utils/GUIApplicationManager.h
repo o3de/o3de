@@ -30,16 +30,16 @@
 #include <QFileSystemWatcher>
 #endif
 
-//JESSIE TODO list of broken stuff (so far):
-// platform selection widget is wrong about enabled platforms
-// can't add an asset that the AP Assets tab says is definitely in my cache
-// something with how product ids are being stored seems wrong, the subid shouldn't be hex (or should it?)
-// obviously the visuals are messed up
+//ZALADANE TODO list of broken stuff (so far):
+// The "Project Source" column in the Seeds tab is displaying garbage characters
+    // NOTE: the word "engine" displayed fine, but when I made a new Seed List for my project, "AutomatedTesting" didn't display properly
 // figure out how to get gem dependencies. The gem-specific seed list files aren't in the seeds tab
 // what am i gonna do about the project-specific _dependencies.xml files? Those used to come from the gem templates
-// The "Project Source" column in the Seeds tab is displaying garbage characters
-    // NOTE: this only happened for the AutomatedTesting project. AtomTest displayed fine.
-    //       Launching AP first didn't make a difference
+// Generating a Bundle takes so long I killed it after 20 min. On the CLI, it was near instantaneous. Something is
+    // very wrong here.
+// If you launch the GUI with a valid bundle in the Bundles folder, it will stall (forever?) as it tries to read in the
+    // bundle manifest. I have no idea why it's hanging, but it might be some bad input into the core functions?
+    // Maybe they changed in a way that still compiles but doesn't actually work?
 
 namespace AssetBundler
 {
@@ -154,7 +154,7 @@ namespace AssetBundler
 
         QSharedPointer<MainWindow> m_mainWindow;
 
-        //JESSIE TODO maybe turn these into AZ::IO::FixedMaxPath
+        //ZALADANE TODO maybe turn these into AZ::IO::FixedMaxPath
         AZStd::string m_currentProjectFolder;
         AZStd::string m_assetBundlingFolder;
         AZStd::string m_seedListsFolder;

@@ -122,7 +122,7 @@ namespace AssetBundler
     ////////////////////////////////////////////////////////////////////////////////////////////
 
     extern const char* AssetCatalogFilename;
-    extern char g_cachedEngineRoot[AZ::IO::MaxPathLength];
+    extern AZ::IO::FixedMaxPath g_cachedEngineRoot;
     static const size_t MaxErrorMessageLength = 4096;
 
     //! This struct stores gem related information
@@ -151,8 +151,8 @@ namespace AssetBundler
         bool OnPreWarning(const char* window, const char* fileName, int line, const char* func, const char* message) override;
     };
 
-    // Returns the engine root
-    AZ::IO::FixedMaxPath GetEngineRoot();
+    // Returns the cached engine root. Throws an error if the cached path has not been initialized by the Bundler Application.
+    AZ::IO::FixedMaxPath GetCachedEngineRoot();
 
     /** 
     * Determines the name of the currently enabled game project

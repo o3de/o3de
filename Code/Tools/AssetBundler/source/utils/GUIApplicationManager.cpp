@@ -13,9 +13,10 @@
 #include <source/utils/GUIApplicationManager.h>
 
 #include <source/ui/MainWindow.h>
-#include <source/Utils/utils.h>
+#include <source/utils/utils.h>
 
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzFramework/Asset/AssetCatalog.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/AssetCatalog/PlatformAddressedAssetCatalogBus.h>
@@ -160,7 +161,7 @@ namespace AssetBundler
         // Define some application-level settings
         QApplication::setOrganizationName("Amazon");
         QApplication::setOrganizationDomain("amazon.com");
-        QApplication::setApplicationName("Lumberyard Asset Bundler");
+        QApplication::setApplicationName("Asset Bundler");
 
         QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));
 
@@ -182,7 +183,7 @@ namespace AssetBundler
     {
         // Set up the Style Manager
         AzQtComponents::StyleManager styleManager(qApp);
-        styleManager.initialize(qApp, false);
+        styleManager.initialize(qApp, GetEngineRoot());
 
         AZ::IO::FixedMaxPath engineRoot(GetEngineRoot());
         QDir engineRootDir(engineRoot.c_str());
@@ -207,17 +208,17 @@ namespace AssetBundler
 
         qApp->setQuitOnLastWindowClosed(true);
 
-        // JESSIE TODO
+        // ZALADANE TODO
         AZStd::fixed_vector<AZStd::string, AzFramework::NumPlatforms> platformStrings =
             AzFramework::PlatformHelper::GetPlatformsInterpreted(m_enabledPlatforms);
         if (platformStrings.empty())
         {
-            AZ_Warning("JESSIE TODO", false, "CURRENT PLATFORMS VECTOR EMPTY");
+            AZ_Warning("ZALADANE TODO", false, "CURRENT PLATFORMS VECTOR EMPTY");
         }
 
         for (const auto& platformStr : platformStrings)
         {
-            AZ_Warning("JESSIE TODO", false, "%s", platformStr.c_str());
+            AZ_Warning("ZALADANE TODO", false, "%s", platformStr.c_str());
         }
 
         // Run the application
@@ -258,7 +259,7 @@ namespace AssetBundler
             // These are fatal initialization errors, and the application will shut down after the user closes the message box
             m_qApp.reset(new QApplication(*GetArgC(), *GetArgV()));
             QMessageBox errorMessageBox;
-            errorMessageBox.setWindowTitle("Lumberyard Asset Bundler");
+            errorMessageBox.setWindowTitle("Asset Bundler");
             errorMessageBox.setText(message);
             errorMessageBox.setStandardButtons(QMessageBox::Ok);
             errorMessageBox.setDefaultButton(QMessageBox::Ok);
@@ -349,17 +350,7 @@ namespace AssetBundler
         // Determine the enabled platforms
         const char* appRoot = nullptr;
         AzFramework::ApplicationRequests::Bus::BroadcastResult(appRoot, &AzFramework::ApplicationRequests::GetAppRoot);
-        m_enabledPlatforms = GetEnabledPlatformFlags(g_cachedEngineRoot, appRoot, m_currentProjectName.c_str());
-
-
-        //JESSIE TODO do I even need this?
-        /*
-        // Set the @assets@ alias for the entire application
-        // This is found at dev/Cache/ProjectName/platform/projectname/
-        AZStd::vector<AZStd::string> platformStrings = AzFramework::PlatformHelper::GetPlatformsInterpreted(m_enabledPlatforms);
-        AZStd::string assetsAliasPath = AssetBundler::GetPlatformSpecificCacheFolderPath(m_currentProjectCacheFolder, platformStrings[0], m_currentProjectName);
-        AZ::IO::FileIOBase::GetInstance()->SetAlias("@assets@", assetsAliasPath.c_str());
-        */
+        m_enabledPlatforms = GetEnabledPlatformFlags(GetEngineRoot(), appRoot, AZ::Utils::GetProjectPath().c_str());
 
         // Determine which Gems are enabled for the current project
         if (!AzFramework::GetGemsInfo(m_gemInfoList, *m_settingsRegistry))

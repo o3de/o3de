@@ -14,7 +14,7 @@
 #include <source/ui/ui_NewFileDialog.h>
 
 #include <source/ui/PlatformSelectionWidget.h>
-#include <source/Utils/utils.h>
+#include <source/utils/utils.h>
 
 #include <AzCore/IO/FileIO.h>
 #include <AzFramework/StringFunc/StringFunc.h>
