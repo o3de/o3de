@@ -276,9 +276,6 @@ void EditorViewportWidget::paintEvent([[maybe_unused]] QPaintEvent* event)
     if ((ge && ge->IsLevelLoaded()) || (GetType() != ET_ViewportCamera))
     {
         setRenderOverlayVisible(true);
-        m_isOnPaint = true;
-        Update();
-        m_isOnPaint = false;
     }
     else
     {
@@ -809,6 +806,10 @@ void EditorViewportWidget::OnBeginPrepareRender()
         return;
     }
 
+    m_isOnPaint = true;
+    Update();
+    m_isOnPaint = false;
+
     float fNearZ = GetIEditor()->GetConsoleVar("cl_DefaultNearPlane");
     float fFarZ = m_Camera.GetFarPlane();
 
@@ -880,6 +881,11 @@ void EditorViewportWidget::OnBeginPrepareRender()
 
     GetIEditor()->GetSystem()->SetViewCamera(m_Camera);
 
+    if (GetIEditor()->IsInGameMode())
+    {
+        return;
+    }
+
     PreWidgetRendering();
 
     RenderAll();
@@ -905,11 +911,6 @@ void EditorViewportWidget::OnBeginPrepareRender()
     m_debugDisplay->DepthTestOn();
 
     PostWidgetRendering();
-
-    if (!m_renderer->IsStereoEnabled())
-    {
-        GetIEditor()->GetSystem()->RenderStatistics();
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1617,11 +1618,6 @@ void EditorViewportWidget::keyPressEvent(QKeyEvent* event)
     // because we want the movement to be butter smooth.
     if (!event->isAutoRepeat())
     {
-        if (m_keyDown.isEmpty())
-        {
-            grabKeyboard();
-        }
-
         m_keyDown.insert(event->key());
     }
 

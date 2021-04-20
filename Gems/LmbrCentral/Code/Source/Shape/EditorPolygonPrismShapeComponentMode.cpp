@@ -65,6 +65,7 @@ namespace LmbrCentral
         ShapeComponentNotificationsBus::Handler::BusDisconnect();
         PolygonPrismShapeComponentNotificationBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
+        m_nonUniformScaleChangedHandler.Disconnect();
 
         DestroyManipulators();
     }

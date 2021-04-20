@@ -1,0 +1,9 @@
+{
+    "values":
+    [
+        {
+            "$type": "ScriptProcessorRule",
+            "scriptFilename": "Gem/PythonTests/PythonAssetBuilder/export_chunks_builder.py"
+        }
+    ]
+}
