@@ -42,10 +42,6 @@ namespace AZ
                     &Render::MaterialComponentRequestBus::Events::SetDefaultMaterialOverride,
                     m_context->GetData()->m_materialAsset.GetId());
 
-                AZ::Render::MeshComponentRequestBus::EventResult(m_prevAssetId,
-                    m_context->GetData()->m_modelEntity->GetId(),
-                    &AZ::Render::MeshComponentRequestBus::Events::GetModelAssetId);
-
                 Render::MeshComponentRequestBus::Event(
                     m_context->GetData()->m_modelEntity->GetId(),
                     &Render::MeshComponentRequestBus::Events::SetModelAsset,
@@ -58,11 +54,6 @@ namespace AZ
 
             void CaptureStep::Stop()
             {
-                Render::MeshComponentRequestBus::Event(
-                    m_context->GetData()->m_modelEntity->GetId(),
-                    &Render::MeshComponentRequestBus::Events::SetModelAssetId,
-                    m_prevAssetId);
-
                 m_context->GetData()->m_renderPipeline->RemoveFromRenderTick();
                 TickBus::Handler::BusDisconnect();
                 Render::FrameCaptureNotificationBus::Handler::BusDisconnect();

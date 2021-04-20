@@ -440,10 +440,13 @@ namespace AZ
                 return;
             }
 
-            // Check if the model is in the instance database
+            // Check if the model is in the instance database and skip the loading process in this case.
+            // The model asset id is used as instance id to indicate that it is a static and shared.
             Data::Instance<RPI::Model> model = Data::InstanceDatabase<RPI::Model>::Instance().Find(Data::InstanceId::CreateFromAssetId(m_modelAsset.GetId()));
             if (model)
             {
+                // In case the mesh asset requires instancing (e.g. when containing a cloth buffer), the model will always be cloned and there will not be a
+                // model instance with the asset id as instance id as searched above.
                 m_parent->Init(model);
                 m_modelChangedEvent.Signal(AZStd::move(model));
                 return;
@@ -499,9 +502,6 @@ namespace AZ
                 Data::Asset<RPI::ModelAsset> clonedAsset;
                 if (AZ::RPI::ModelAssetCreator::Clone(modelAsset, clonedAsset, newId))
                 {
-                    AZ_Printf("Atom", "Clone asset id: %s, original id: %s",
-                        clonedAsset->GetId().ToString<AZStd::string>().c_str(),
-                        modelAsset->GetId().ToString<AZStd::string>().c_str());
                     model = RPI::Model::FindOrCreate(clonedAsset);
                 }
                 else
