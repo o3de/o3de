@@ -14,32 +14,31 @@
 include(FindPackageHandleStandardArgs)
 
 ly_add_target(
-
-NAME @NAME_PLACEHOLDER@ UNKNOWN IMPORTED
-
-@NAMESPACE_PLACEHOLDER@
-
-@INCLUDE_DIRECTORIES_PLACEHOLDER@
-
-@BUILD_DEPENDENCIES_PLACEHOLDER@
-
-@RUNTIME_DEPENDENCIES_PLACEHOLDER@
-
+    NAME @NAME_PLACEHOLDER@ UNKNOWN IMPORTED
+    @NAMESPACE_PLACEHOLDER@
+    COMPILE_DEFINITIONS
+        INTERFACE
 @COMPILE_DEFINITIONS_PLACEHOLDER@
+    INCLUDE_DIRECTORIES
+        INTERFACE
+@INCLUDE_DIRECTORIES_PLACEHOLDER@
+    BUILD_DEPENDENCIES
+        INTERFACE
+@BUILD_DEPENDENCIES_PLACEHOLDER@
+    RUNTIME_DEPENDENCIES
+@RUNTIME_DEPENDENCIES_PLACEHOLDER@
 )
 
-# The below if was generated from if (NOT HEADER_ONLY_PLACEHOLDER)
-# HEADER_ONLY_PLACEHOLDER evaluates to TRUE or FALSE
-if (NOT @HEADER_ONLY_PLACEHOLDER@)
-    # Load information for each installed configuration.
-    foreach(config @ALL_CONFIGS@)
-        set(@NAME_PLACEHOLDER@_${config}_FOUND FALSE)
+unset(found_vars)
+foreach(config IN LISTS @CMAKE_CONFIGURATION_TYPES@)
+    set(@NAME_PLACEHOLDER@_${config}_FOUND FALSE)
+    if(EXISTS ${LY_ROOT_FOLDER}/cmake_autogen/@NAME_PLACEHOLDER@/@NAME_PLACEHOLDER@_${config}.cmake)
         include("${LY_ROOT_FOLDER}/cmake_autogen/@NAME_PLACEHOLDER@/@NAME_PLACEHOLDER@_${config}.cmake")
-    endforeach()
+        list(APPEND found_vars @NAME_PLACEHOLDER@_${config}_FOUND)
+    endif()
+endforeach()
 
-    find_package_handle_standard_args(@NAME_PLACEHOLDER@
-        "Could not find package @NAME_PLACEHOLDER@"
-        @TARGET_CONFIG_FOUND_VARS_PLACEHOLDER@)
-else()
-    set(@NAME_PLACEHOLDER@_FOUND TRUE)
-endif()
+find_package_handle_standard_args(@NAME_PLACEHOLDER@
+    "Could not find package @NAME_PLACEHOLDER@"
+    ${found_vars}
+)
