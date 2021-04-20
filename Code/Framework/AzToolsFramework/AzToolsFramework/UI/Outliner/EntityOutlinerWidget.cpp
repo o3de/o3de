@@ -30,6 +30,7 @@
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/UI/ComponentPalette/ComponentPaletteUtil.hxx>
+#include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiHandlerBase.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerDisplayOptionsMenu.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerListModel.hxx>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerSortFilterProxyModel.hxx>
@@ -270,6 +271,12 @@ namespace AzToolsFramework
         m_clearIcon = QIcon(":/AssetBrowser/Resources/close.png");
 
         m_listModel->Initialize();
+
+        m_editorEntityFrameworkInterface = AZ::Interface<AzToolsFramework::EditorEntityUiInterface>::Get();
+
+        AZ_Assert(
+            m_editorEntityFrameworkInterface != nullptr,
+            "EntityOutlinerListModel requires a EditorEntityFrameworkInterface instance on Initialize.");
 
         EditorPickModeNotificationBus::Handler::BusConnect(GetEntityContextId());
         EntityHighlightMessages::Bus::Handler::BusConnect();
@@ -562,7 +569,13 @@ namespace AzToolsFramework
 
             if (m_selectedEntityIds.size() == 1)
             {
-                contextMenu->addAction(m_actionToRenameSelection);
+                auto entityId = m_selectedEntityIds.front();
+                auto entityUiHandler = m_editorEntityFrameworkInterface->GetHandler(entityId);
+
+                if (!entityUiHandler || entityUiHandler->CanRename(entityId))
+                {
+                    contextMenu->addAction(m_actionToRenameSelection);
+                }
             }
 
             if (m_selectedEntityIds.size() == 1)
@@ -688,11 +701,17 @@ namespace AzToolsFramework
 
         if (m_selectedEntityIds.size() == 1)
         {
-            const QModelIndex proxyIndex = GetIndexFromEntityId(m_selectedEntityIds.front());
-            if (proxyIndex.isValid())
+            auto entityId = m_selectedEntityIds.front();
+            auto entityUiHandler = m_editorEntityFrameworkInterface->GetHandler(entityId);
+
+            if (!entityUiHandler || entityUiHandler->CanRename(entityId))
             {
-                m_gui->m_objectTree->setCurrentIndex(proxyIndex);
-                m_gui->m_objectTree->QTreeView::edit(proxyIndex);
+                const QModelIndex proxyIndex = GetIndexFromEntityId(entityId);
+                if (proxyIndex.isValid())
+                {
+                    m_gui->m_objectTree->setCurrentIndex(proxyIndex);
+                    m_gui->m_objectTree->QTreeView::edit(proxyIndex);
+                }
             }
         }
     }

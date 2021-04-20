@@ -42,6 +42,7 @@ namespace Ui
 
 namespace AzToolsFramework
 {
+    class EditorEntityUiInterface;
     class EntityOutlinerListModel;
     class EntityOutlinerSortFilterProxyModel;
 
@@ -193,6 +194,8 @@ namespace AzToolsFramework
         EntityIdSet m_entitiesToSort;
         EntityOutliner::DisplaySortMode m_sortMode;
         bool m_sortContentQueued;
+
+        EditorEntityUiInterface* m_editorEntityFrameworkInterface = nullptr;
     };
 
 }
