@@ -106,6 +106,14 @@ bool AZ::FFont::InitFont()
         return true;
     }
 
+    // If we're being initialized in another thread, abort.
+    if (m_fontInitializing)
+    {
+        return false;
+    }
+
+    m_fontInitializing = true;
+
     // Create and initialize DynamicDrawContext for font draw
     AZ::RPI::Ptr<AZ::RPI::DynamicDrawContext> dynamicDraw = m_atomFont->GetOrCreateDynamicDrawForScene(GetDefaultViewportContext()->GetRenderScene().get());
 
@@ -129,6 +137,7 @@ bool AZ::FFont::InitFont()
     m_indexCount = 0;
 
     m_fontInitialized = true;
+    m_fontInitializing = false;
     return true;
 }
 
@@ -293,7 +302,11 @@ void AZ::FFont::DrawStringUInternal(
     const bool asciiMultiLine, 
     const TextDrawContext& ctx)
 {
-    InitFont();
+    // Lazily ensure we're initialized before attempting to render.
+    if (!InitFont())
+    {
+        return;
+    }
 
     if (!str
         || !m_vertexBuffer // vertex buffer isn't created until BootstrapScene is ready, Editor tries to render text before that.

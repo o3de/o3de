@@ -302,6 +302,7 @@ namespace AZ
 
         bool m_fontTexDirty = false;
         bool m_fontInitialized = false;
+        AZStd::atomic_bool m_fontInitializing = false;
 
         FontEffects m_effects;
 
