@@ -134,16 +134,16 @@ namespace AZ
         void MultiplyByScale(const Vector3& scale);
 
         //! Transforms an Aabb and returns the resulting Obb.
-        Obb GetTransformedObb(const Transform& transform) const;
+        [[nodiscard]] Obb GetTransformedObb(const Transform& transform) const;
 
         //! Transforms an Aabb and returns the resulting Obb.
-        Obb GetTransformedObb(const Matrix3x4& matrix3x4) const;
+        [[nodiscard]] Obb GetTransformedObb(const Matrix3x4& matrix3x4) const;
 
         //! Returns a new AABB containing the transformed AABB.
-        Aabb GetTransformedAabb(const Transform& transform) const;
+        [[nodiscard]] Aabb GetTransformedAabb(const Transform& transform) const;
 
         //! Returns a new AABB containing the transformed AABB.
-        Aabb GetTransformedAabb(const Matrix3x4& matrix3x4) const;
+        [[nodiscard]] Aabb GetTransformedAabb(const Matrix3x4& matrix3x4) const;
 
         //! Checks if this aabb is equal to another within a floating point tolerance.
         bool IsClose(const Aabb& rhs, float tolerance = Constants::Tolerance) const;

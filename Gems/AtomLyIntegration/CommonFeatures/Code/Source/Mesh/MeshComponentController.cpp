@@ -433,8 +433,7 @@ namespace AZ
             if (model)
             {
                 Aabb aabb = model->GetAabb();
-                aabb.SetMin(aabb.GetMin() * m_cachedNonUniformScale);
-                aabb.SetMax(aabb.GetMax() * m_cachedNonUniformScale);
+                aabb.MultiplyByScale(m_cachedNonUniformScale);
                 return aabb;
             }
             else
