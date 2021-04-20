@@ -125,7 +125,7 @@ namespace AzToolsFramework
             m_templateSourcePath = sourcePath;
         }
 
-        void Instance::SetContainerEntityName(AZStd::string containerName)
+        void Instance::SetContainerEntityName(AZStd::string_view containerName)
         {
             m_containerEntity->SetName(containerName);
         }

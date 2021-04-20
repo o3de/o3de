@@ -309,7 +309,9 @@ namespace AzToolsFramework
         , m_isLevelEntityEditor(isLevelEntityEditor)
     {
         initEntityPropertyEditorResources();
+
         m_prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
+        AZ_Assert(m_prefabPublicInterface != nullptr, "EntityPropertyEditor requires a PrefabPublicInterface instance on Initialize.");
 
         setObjectName("EntityPropertyEditor");
         setAcceptDrops(true);

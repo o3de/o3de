@@ -986,9 +986,9 @@ bool QtViewPaneManager::ClosePanesWithRollback(const QVector<QString>& panesToKe
 void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
 {
     // Get whether the prefab system is enabled
-    bool usePrefabSystemEnabled = false;
+    bool isPrefabSystemEnabled = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+        isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
     if (resetSettings)
     {
@@ -1030,7 +1030,7 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
         state.viewPanes.push_back(LyViewPane::AssetBrowser);
         state.viewPanes.push_back(LyViewPane::Console);
 
-        if (!usePrefabSystemEnabled)
+        if (!isPrefabSystemEnabled)
         {
             state.viewPanes.push_back(LyViewPane::LevelInspector);
         }
@@ -1060,7 +1060,7 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
     const QtViewPane* consoleViewPane = OpenPane(LyViewPane::Console, QtViewPane::OpenMode::UseDefaultState);
 
     const QtViewPane* levelInspectorPane = nullptr;
-    if (!usePrefabSystemEnabled)
+    if (!isPrefabSystemEnabled)
     {
         levelInspectorPane = OpenPane(LyViewPane::LevelInspector, QtViewPane::OpenMode::UseDefaultState);
     }

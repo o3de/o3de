@@ -195,7 +195,7 @@ namespace AzToolsFramework
         EntityOutliner::DisplaySortMode m_sortMode;
         bool m_sortContentQueued;
 
-        EditorEntityUiInterface* m_editorEntityFrameworkInterface = nullptr;
+        EditorEntityUiInterface* m_editorEntityUiInterface = nullptr;
     };
 
 }
