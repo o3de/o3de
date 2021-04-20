@@ -316,8 +316,6 @@ set(FILES
     Material/MaterialHelpers.cpp
     Material/MaterialHelpers.h
     Material/MaterialDialog.qrc
-    Material/MaterialDialog.cpp
-    Material/MaterialDialog.h
     Material/MaterialPreviewModelView.cpp
     Material/MaterialPreviewModelView.h
     Material/PreviewModelView.cpp
@@ -632,8 +630,6 @@ set(FILES
     LensFlareEditor/LensFlareView.h
     LogFileImpl.cpp
     LogFileImpl.h
-    MatEditMainDlg.cpp
-    MatEditMainDlg.h
     MatEditPreviewDlg.cpp
     MatEditPreviewDlg.h
     Material/MaterialBrowser.cpp
