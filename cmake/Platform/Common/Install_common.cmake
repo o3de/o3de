@@ -9,7 +9,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-set(_default_component "com.o3de.default")
+ly_set(LY_DEFAULT_INSTALL_COMPONENT "Core")
 
 #! ly_install_target: registers the target to be installed by cmake install.
 #
@@ -240,12 +240,12 @@ function(ly_setup_o3de_install)
 
     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/Findo3de.cmake"
         DESTINATION cmake
-        COMPONENT ${_default_component}
+        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
 
     install(FILES "${CMAKE_SOURCE_DIR}/CMakeLists.txt"
         DESTINATION .
-        COMPONENT ${_default_component}
+        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
 
 endfunction()
@@ -265,7 +265,7 @@ function(ly_install_o3de_directories)
 
         install(DIRECTORY "${CMAKE_SOURCE_DIR}/${dir}"
             DESTINATION ${install_path}
-            COMPONENT ${_default_component}
+            COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
         )
 
     endforeach()
@@ -273,13 +273,13 @@ function(ly_install_o3de_directories)
     # Directories which have excludes
     install(DIRECTORY "${CMAKE_SOURCE_DIR}/cmake"
         DESTINATION .
-        COMPONENT ${_default_component}
+        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
         REGEX "Findo3de.cmake" EXCLUDE
     )
 
     install(DIRECTORY "${CMAKE_SOURCE_DIR}/python"
         DESTINATION .
-        COMPONENT ${_default_component}
+        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
         REGEX "downloaded_packages" EXCLUDE
         REGEX "runtime" EXCLUDE
     )
@@ -296,15 +296,15 @@ function(ly_install_launcher_target_generator)
         ${CMAKE_SOURCE_DIR}/Code/LauncherUnified/LauncherProject.cpp
         ${CMAKE_SOURCE_DIR}/Code/LauncherUnified/StaticModules.in
         DESTINATION LauncherGenerator
-        COMPONENT ${_default_component}
+        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
     install(DIRECTORY ${CMAKE_SOURCE_DIR}/Code/LauncherUnified/Platform
         DESTINATION LauncherGenerator
-        COMPONENT ${_default_component}
+        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
     install(FILES ${CMAKE_SOURCE_DIR}/Code/LauncherUnified/FindLauncherGenerator.cmake
         DESTINATION cmake
-        COMPONENT ${_default_component}
+        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
 
 endfunction()
