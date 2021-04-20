@@ -232,6 +232,7 @@ namespace EMotionFX
             // Set motion set's motion load callback, so if EMotion FX queries back for a motion,
             // we can pull the one managed through an AZ::Asset.
             assetData->m_emfxMotionSet->SetCallback(aznew CustomMotionSetCallback(asset));
+            assetData->ReleaseEmotionFXData();
 
             return true;
         }
