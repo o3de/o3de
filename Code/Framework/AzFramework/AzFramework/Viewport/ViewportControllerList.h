@@ -37,6 +37,9 @@ namespace AzFramework
         //! either a controller returns true to consume the event in OnInputChannelEvent or the controller list is exhausted.
         //! InputChannelEvents are sent to controllers in priority order (from the lowest priority value to the highest).
         bool HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event) override;
+        //! Dispatches a ResetInputChannels call to all controllers registered to this list.
+        //! Calls to controllers are made in priority order (from the lowest priority value to the highest).
+        void ResetInputChannels() override;
         //! Dispatches an update tick to all controllers registered to this list.
         //! This occurs in *reverse* priority order (i.e. from the highest priority value to the lowest) so that
         //! controllers with the highest registration priority may override the transforms of the controllers with the
@@ -50,6 +53,12 @@ namespace AzFramework
         //! All ViewportControllerLists have a priority of Custom to ensure
         //! that they receive events at all priorities from any parent controllers.
         AzFramework::ViewportControllerPriority GetPriority() const { return ViewportControllerPriority::DispatchToAllPriorities; }
+        //! Returns true if this controller list is enabled, i.e.
+        //! it is accepting and forwarding input and update events to its children.
+        bool IsEnabled() const;
+        //! Set this controller list's enabled state.
+        //! If a controller list is disabled, it will ignore all input and update events rather than dispatching them to its children.
+        void SetEnabled(bool enabled);
 
     private:
         void SortControllers();
@@ -58,5 +67,6 @@ namespace AzFramework
 
         AZStd::unordered_map<AzFramework::ViewportControllerPriority, AZStd::vector<ViewportControllerPtr>> m_controllers;
         AZStd::unordered_set<ViewportId> m_viewports;
+        bool m_enabled = true;
     };
 } //namespace AzFramework
