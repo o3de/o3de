@@ -100,7 +100,7 @@ namespace ScriptCanvas
         using LockType = AZStd::lock_guard<MutexType>;
         AZStd::unordered_map<const void*, BehaviorContextObject*> m_ownedObjectsByAddress;
         MutexType m_ownedObjectsByAddressMutex;
-        int m_infiniteLoopDetectionMaxIterations = 3000;
+        int m_infiniteLoopDetectionMaxIterations = 1000000;
         int m_maxHandlerStackDepth = 50;
 
         static void SafeRegisterPerformanceTracker();
