@@ -25,7 +25,6 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // class '...' needs t
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QFrame>
 #include <QtCore/QPointer>
-#include <QSvgWidget>
 #include <QtCore/QElapsedTimer>
 AZ_POP_DISABLE_WARNING
 
