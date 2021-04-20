@@ -21,11 +21,6 @@
 #define CryEngine_GLExtensions_hpp
 #pragma once
 
-#if DXGL_INPUT_GLSL && DXGL_GLSL_FROM_HLSLCROSSCOMPILER
-#include "hlslcc.hpp"
-#include "hlslcc_bin.hpp"
-#endif //DXGL_INPUT_GLSL && DXGL_GLSL_FROM_HLSLCROSSCOMPILER
-
 #if DXGLES && DXGLES_VERSION == DXGLES_VERSION_30 && defined(GL_EXT_separate_shader_objects) && defined(IOS)
 // On OpenGL ES separate shader programs are available as an extesion, so we
 // just define the normal api here to avoid ifdefing the entire code

@@ -19,11 +19,6 @@
 #include "GLDevice.hpp"
 #include <Common/RenderCapabilities.h>
 
-#if DXGL_INPUT_GLSL && DXGL_GLSL_FROM_HLSLCROSSCOMPILER
-#include "hlslcc.hpp"
-#endif //DXGL_INPUT_GLSL && DXGL_GLSL_FROM_HLSLCROSSCOMPILER
-#include "hlslcc_bin.hpp"
-
 struct SAutoBindProgram
 {
     SAutoBindProgram(const GLuint uProgram)
