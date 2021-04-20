@@ -301,8 +301,13 @@ namespace AZ
         AtomFont* m_atomFont = nullptr;
 
         bool m_fontTexDirty = false;
-        bool m_fontInitialized = false;
-        AZStd::atomic_bool m_fontInitializing = false;
+        enum class InitializationState : AZ::u8
+        {
+            Uninitialized,
+            Initializing,
+            Initialized
+        };
+        AZStd::atomic<InitializationState> m_fontInitializationState = InitializationState::Uninitialized;
 
         FontEffects m_effects;
 

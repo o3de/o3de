@@ -101,18 +101,15 @@ AZ::RPI::WindowContextSharedPtr AZ::FFont::GetDefaultWindowContext() const
 
 bool AZ::FFont::InitFont()
 {
-    if (m_fontInitialized)
+    auto initializationState = InitializationState::Uninitialized;
+    // Do an atomic transition to Initializing if we're in the Uninitialized state.
+    // Otherwise, check the current state.
+    // If we're Initialized, there's no more work to be done, return true to indicate we're good to go.
+    // If we're Initializing (on another thread), return false to let the consumer know it's not safe for us to be used yet.
+    if (!m_fontInitializationState.compare_exchange_strong(initializationState, InitializationState::Initializing))
     {
-        return true;
+        return initializationState == InitializationState::Initialized;
     }
-
-    // If we're being initialized in another thread, abort.
-    if (m_fontInitializing)
-    {
-        return false;
-    }
-
-    m_fontInitializing = true;
 
     // Create and initialize DynamicDrawContext for font draw
     AZ::RPI::Ptr<AZ::RPI::DynamicDrawContext> dynamicDraw = m_atomFont->GetOrCreateDynamicDrawForScene(GetDefaultViewportContext()->GetRenderScene().get());
@@ -136,8 +133,7 @@ bool AZ::FFont::InitFont()
     m_vertexCount = 0;
     m_indexCount = 0;
 
-    m_fontInitialized = true;
-    m_fontInitializing = false;
+    m_fontInitializationState = InitializationState::Initialized;
     return true;
 }
 
@@ -1522,7 +1518,7 @@ bool AZ::FFont::UpdateTexture()
 {
     using namespace AZ;
 
-    if (!m_fontInitialized || !m_fontImage)
+    if (m_fontInitializationState != InitializationState::Initialized || !m_fontImage)
     {
         return false;
     }
@@ -1590,7 +1586,7 @@ void AZ::FFont::Prepare(const char* str, bool updateTexture, const AtomFont::Gly
     const bool rerenderGlyphs = m_sizeBehavior == SizeBehavior::Rerender;
     const AtomFont::GlyphSize usedGlyphSize = rerenderGlyphs ? glyphSize : AtomFont::defaultGlyphSize;
     bool texUpdateNeeded = m_fontTexture->PreCacheString(str, nullptr, m_sizeRatio, usedGlyphSize, m_fontHintParams) == 1 || m_fontTexDirty;
-    if (m_fontInitialized && updateTexture && texUpdateNeeded && m_fontImage)
+    if (m_fontInitializationState == InitializationState::Initialized && updateTexture && texUpdateNeeded && m_fontImage)
     {
         UpdateTexture();
         m_fontTexDirty = false;
