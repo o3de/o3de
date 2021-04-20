@@ -178,14 +178,16 @@ namespace AZ
     //! on an update to '/Amazon/AzCore/Bootstrap/project_path' key.
     struct UpdateProjectSettingsEventHandler
     {
-        UpdateProjectSettingsEventHandler(AZ::SettingsRegistryInterface& registry)
+        UpdateProjectSettingsEventHandler(AZ::SettingsRegistryInterface& registry, AZ::CommandLine& commandLine)
             : m_registry{ registry }
+            , m_commandLine{ commandLine }
         {
         }
 
         void operator()(AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
         {
             using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+            // #1 Update the project settings when the project path is set
             const auto projectPathKey = FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
             AZ::IO::FixedMaxPath newProjectPath;
             if (SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual(projectPathKey, path)
@@ -194,12 +196,19 @@ namespace AZ
                 UpdateProjectSettingsFromProjectPath(AZ::IO::PathView(newProjectPath));
             }
 
+            // #2 Update the project specialization when the project name is set
             const auto projectNameKey = FixedValueString(AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey) + "/project_name";
             FixedValueString newProjectName;
             if (SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual(projectNameKey, path)
                 && m_registry.Get(newProjectName, projectNameKey) && newProjectName != m_oldProjectName)
             {
                 UpdateProjectSpecializationFromProjectName(newProjectName);
+            }
+
+            // #3 Update the ComponentApplication CommandLine instance when the command line settings are merged into the Settings Registry
+            if (path == AZ::SettingsRegistryMergeUtils::CommandLineValueChangedKey)
+            {
+                UpdateCommandLine();
             }
         }
 
@@ -233,10 +242,16 @@ namespace AZ
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(m_registry);
         }
 
+        void UpdateCommandLine()
+        {
+            AZ::SettingsRegistryMergeUtils::GetCommandLineFromRegistry(m_registry, m_commandLine);
+        }
+
     private:
         AZ::IO::FixedMaxPath m_oldProjectPath;
         AZ::SettingsRegistryInterface::FixedValueString m_oldProjectName;
         AZ::SettingsRegistryInterface& m_registry;
+        AZ::CommandLine& m_commandLine;
     };
 
     void ComponentApplication::Descriptor::AllocatorRemapping::Reflect(ReflectContext* context, ComponentApplication* app)
@@ -415,6 +430,12 @@ namespace AZ
         // Add the Command Line arguments into the SettingsRegistry
         SettingsRegistryMergeUtils::StoreCommandLineToRegistry(*m_settingsRegistry, m_commandLine);
 
+        // Add a notifier to update the project_settings when
+        // 1. The 'project_path' key changes
+        // 2. The project specialization when the 'project-name' key changes
+        // 3. The ComponentApplication command line when the command line is stored to the registry
+        m_projectChangedHandler = m_settingsRegistry->RegisterNotifier(UpdateProjectSettingsEventHandler{ *m_settingsRegistry, m_commandLine });
+
         // Merge Command Line arguments
         constexpr bool executeRegDumpCommands = false;
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*m_settingsRegistry, m_commandLine, executeRegDumpCommands);
@@ -428,10 +449,6 @@ namespace AZ
         // If the current platform returns an engaged optional from Utils::GetDefaultAppRootPath(), that is used
         // for the application root.
         CalculateAppRoot();
-
-        // Add a notifier to update the /Amazon/AzCore/Settings/Specializations
-        // when the 'project_path' property changes within the SettingsRegistry
-        m_projectChangedHandler = m_settingsRegistry->RegisterNotifier(UpdateProjectSettingsEventHandler{ *m_settingsRegistry });
 
         // Merge the bootstrap.cfg file into the Settings Registry as soon as the OSAllocator has been created.
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_Bootstrap(*m_settingsRegistry);
@@ -909,6 +926,8 @@ namespace AZ
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectUserRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, true);
 #endif
+        // Update the Runtime file paths in case the "{BootstrapSettingsRootKey}/assets" key was overriden by a setting registry
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(registry);
     }
 
     void ComponentApplication::SetSettingsRegistrySpecializations(SettingsRegistryInterface::Specializations& specializations)

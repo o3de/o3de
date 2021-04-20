@@ -19,6 +19,8 @@
 #include <QMessageBox>
 #include <QFileDialog>
 
+#include <AzCore/Utils/Utils.h>
+
 // AzToolsFramework
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
@@ -293,9 +295,8 @@ namespace
             // If not found try editor folder
             if (!CFileUtil::FileExists(path))
             {
-                const char* engineRoot = nullptr;
-                AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(engineRoot, &AzToolsFramework::ToolsApplicationRequests::GetEngineRootPath);
-                QDir engineDir = engineRoot ? QDir(engineRoot) : QDir::current();
+                AZ::IO::FixedMaxPathString engineRoot = AZ::Utils::GetEnginePath();
+                QDir engineDir = !engineRoot.empty() ? QDir(QString(engineRoot.c_str())) : QDir::current();
 
                 QString scriptFolder = engineDir.absoluteFilePath("Editor/Scripts/");
                 Path::ConvertBackSlashToSlash(scriptFolder);
