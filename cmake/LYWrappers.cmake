@@ -74,6 +74,8 @@ define_property(TARGET PROPERTY GEM_MODULE
 #                             for the list of variables that will be used by the target
 # \arg:TARGET_PROPERTIES additional properties to set to the target
 # \arg:AUTOGEN_RULES a set of AutoGeneration rules to be passed to the AzAutoGen expansion system
+# \arg:INSTALL_COMPONENT (optional) the grouping string of the target used for splitting up the install into smaller
+#                           packages.  If none is specified, LY_DEFAULT_INSTALL_COMPONENT will be used
 function(ly_add_target)
 
     set(options STATIC SHARED MODULE GEM_MODULE HEADERONLY EXECUTABLE APPLICATION UNKNOWN IMPORTED AUTOMOC AUTOUIC AUTORCC NO_UNITY)
