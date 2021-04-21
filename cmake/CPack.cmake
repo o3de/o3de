@@ -9,6 +9,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
+if(NOT PAL_TRAIT_BUILD_CPACK_SUPPORTED)
+    return()
+endif()
+
 set(LY_QTIFW_PATH "" CACHE PATH "Path to the Qt Installer Framework install path")
 
 if(LY_QTIFW_PATH)
