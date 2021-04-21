@@ -1,0 +1,29 @@
+{
+    "Amazon":
+    {
+        "AzCore":
+        {
+            "Streamer":
+            {
+                // Whether to use all available hardware or restrict to known paths.
+                "UseAllHardware": true,
+                // Whether to report hardware information
+                "ReportHardware": true,
+                "Profiles":
+                {
+                    "Generic":
+                    {
+                        "Stack":
+                        [
+                            {
+                                "$type": "AZ::IO::StorageDriveConfig",
+                                // The maximum number of file handles that the drive will cache.
+                                "MaxFileHandles": 1024 
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}
