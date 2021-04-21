@@ -653,7 +653,7 @@ namespace EditorPythonBindings
         }
         else
         {
-            // something when wrong with executing the test script
+            // something went wrong with executing the test script
             AZ::Debug::Trace::Terminate(0xF);
         }
     }
