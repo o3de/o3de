@@ -13,6 +13,7 @@
 
 #include <AzCore/EBus/Event.h>
 #include <AzCore/Outcome/Outcome.h>
+#include <AzCore/std/functional.h>
 #include <Atom/Feature/Material/MaterialAssignment.h>
 #include <Atom/RPI.Public/Culling.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
@@ -80,7 +81,7 @@ namespace AZ
             virtual void SetSortKey(const MeshHandle& meshHandle, RHI::DrawItemSortKey sortKey) = 0;
             //! Gets the sort key for a given mesh handle.
             virtual RHI::DrawItemSortKey GetSortKey(const MeshHandle& meshHandle) = 0;
-            //! Sets an LOD override for a given mesh handle. This LOD will always be rendered instead being automatitcally determined.
+            //! Sets an LOD override for a given mesh handle. This LOD will always be rendered instead being automatically determined.
             virtual void SetLodOverride(const MeshHandle& meshHandle, RPI::Cullable::LodOverride lodOverride) = 0;
             //! Gets the LOD override for a given mesh handle.
             virtual RPI::Cullable::LodOverride GetLodOverride(const MeshHandle& meshHandle) = 0;
