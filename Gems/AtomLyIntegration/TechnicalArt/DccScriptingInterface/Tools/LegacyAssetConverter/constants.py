@@ -18,7 +18,7 @@
 
 IMAGE_TYPES = ['.tif', '.tiff', '.png', '.jpg', '.jpeg', '.tga']
 
-DIRECTORY_EXCLUSION_LIST = ['.mayaSwatches']
+DIRECTORY_EXCLUSION_LIST = ['.mayaSwatches', '.Backups']
 
 LUMBERYARD_DATA_FILES = ['.mtl', '.assetinfo', '.material']
 

@@ -147,6 +147,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         self.section_data = {}
         self.template_lumberyard_material = {}
         self.default_material_definition = Path('standardPBR.template.material')
+        self.texture_path_root = 'Objects'
         self.log_file_location = os.path.join(Path.cwd(), 'output.log')
         self.directory_dictionary = {}
         self.materials_dictionary = {}
@@ -183,7 +184,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         self.input_directory_label.setFont(self.bold_font)
         self.input_directory_label.setFixedWidth(80)
         self.input_field_layout.addWidget(self.input_directory_label)
-        self.input_path_field = QtWidgets.QLineEdit()
+        self.input_path_field = QtWidgets.QLineEdit('C:/Users/benblac/Desktop/MadWorld/dlc/')
         self.input_path_field.textChanged.connect(self.set_io_directories)
         self.input_path_field.setFixedHeight(25)
         self.input_field_layout.addWidget(self.input_path_field)
@@ -199,7 +200,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         self.output_directory_label.setFont(self.bold_font)
         self.output_directory_label.setFixedWidth(80)
         self.output_field_layout.addWidget(self.output_directory_label)
-        self.output_path_field = QtWidgets.QLineEdit('C:/Users/benblac/Desktop/test')
+        self.output_path_field = QtWidgets.QLineEdit('C:/Users/benblac/Desktop/MadWorld/dlc/')
         self.output_path_field.textChanged.connect(self.set_io_directories)
         self.output_path_field.setFixedHeight(25)
         self.output_field_layout.addWidget(self.output_path_field)
@@ -246,6 +247,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         self.create_material_files_checkbox.setChecked(True)
         self.left_checkbox_items.addWidget(self.create_material_files_checkbox)
         self.create_maya_files_checkbox = QtWidgets.QCheckBox('Create Maya Files')
+        self.create_maya_files_checkbox.setChecked(False)
         self.left_checkbox_items.addWidget(self.create_maya_files_checkbox)
 
         # Center Column
@@ -256,7 +258,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         self.create_logs_checkbox.setChecked(True)
         self.center_checkbox_items.addWidget(self.create_logs_checkbox)
         self.create_checklist_checkbox = QtWidgets.QCheckBox('Create Asset Checklists')
-        self.create_checklist_checkbox.setChecked(True)
+        self.create_checklist_checkbox.setChecked(False)
         self.center_checkbox_items.addWidget(self.create_checklist_checkbox)
         self.reprocess_checkbox = QtWidgets.QCheckBox('Reprocess Existing Files')
         self.center_checkbox_items.addWidget(self.reprocess_checkbox)
@@ -590,6 +592,8 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         """
         This is the main launching point for processing assets and asset information. The loop processes each
         directory with an FBX file contained within it, and orchestrates image and pbr material conversions
+        :param directory_path: Path to the directory to be converted.
+        :param in_place: Output destination is the same as input location
         :return:
         """
         _LOGGER.info('Process directory')
@@ -611,19 +615,42 @@ class LegacyFilesConverter(QtWidgets.QDialog):
             self.create_maya_files(base_directory_path, destination_directory, fbx_files)
         self.reset_load_progress()
 
-    def process_single_asset(self, fbx_path):
+    def process_directories_in_place(self, directory_path):
+        _LOGGER.info('Process directories in place')
+        target_path = Path(directory_path)
+        directory_audit = lumberyard_data.walk_directories(target_path)
+        self.start_load_sequence(directory_audit)
+
+        for key, values in directory_audit.items():
+            _LOGGER.info(f'Key: {key}    Values: {values}')
+            for fbx_file in values.files.fbx:
+                _LOGGER.info(f'FBX---------------->> {fbx_file.name}')
+                self.progress_event_fired('fbx_{}'.format(fbx_file.name))
+                destination_directory = values.directorypath
+                _LOGGER.info(f'DESTINATION DIRECTORY---->> {destination_directory}')
+                _LOGGER.info(f'SENT DESTINATION---->> {fbx_file}')
+                mtl_info = lumberyard_data.get_material_info(Path(values.directorypath), f'{fbx_file.stem}.mtl')
+                asset_information = self.filter_asset_information(fbx_file, values, mtl_info)
+                self.set_material_information(asset_information, mtl_info, fbx_file, destination_directory)
+                self.create_maya_files(values.directorypath, destination_directory, [fbx_file])
+        self.reset_load_progress()
+
+    def process_single_asset(self, fbx_path, in_place=False):
         """
         Coordinates the processing of a single FBX asset, which includes generation of all material files
         associated with that FBX file, the conversion of attached textures, and a Maya file for preview
         :param fbx_path: Path to the FBX file to be converted.
+        :param in_place: Output destination is the same as input location
         :return:
         """
         _LOGGER.info('Process single asset')
         fbx_file = Path(fbx_path)
         base_directory_path = fbx_file.parent
-        directory_audit = lumberyard_data.walk_directories(fbx_file)
+        directory_contents = lumberyard_data.walk_directory(fbx_file)
+        directory_audit = Box({0: directory_contents})
         self.start_load_sequence(directory_audit)
-        destination_directory = self.set_destination_directory(directory_audit[0].directoryname)
+        destination_directory = self.output_directory if in_place else \
+            self.set_destination_directory(directory_audit[0].directoryname)
         self.progress_event_fired('fbx_{}'.format(fbx_file.name))
         mtl_info = lumberyard_data.get_material_info(fbx_file.parent, f'{fbx_file.stem}.mtl')
         asset_information = self.filter_asset_information(fbx_file, directory_audit[0], mtl_info)
@@ -698,7 +725,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
             converted_list = []
             for item in value:
                 item_value = 0 if item is 0 else float(item)
-                converted_list.append(item)
+                converted_list.append(item_value)
             return converted_list
         elif isinstance(value, str):
             if os.path.isfile(str(value)):
@@ -731,8 +758,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         :return:
         """
         _LOGGER.info(f'\n_\n******** {material_name} -- EXPORT INFO: {material_values}')
-        _LOGGER.info(f'Filename::::::::: {file_name}')
-        export_file_path = Path(destination_directory / file_name)
+        export_file_path = Path(destination_directory) / Path(file_name)
         if not export_file_path.is_file():
             material_description = {}
             material_template = self.template_lumberyard_material.copy()
@@ -853,6 +879,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
             directory_name = directory_audit.directoryname
             directory_path = Path(directory_audit.directorypath)
             directory_files = directory_audit.files
+            _LOGGER.info(f'SECOND LOCATION: {directory_path}')
             materials = self.get_material_information(directory_path, mtl_info, f'{target_path.name}.assetinfo')
             fbx_files = {target_path.name: {constants.FBX_MAYA_FILE: '', constants.FBX_MATERIALS: materials}}
             asset_dictionary = {constants.FBX_DIRECTORY_NAME: directory_name, constants.FBX_DIRECTORY_PATH: directory_path,
@@ -1200,7 +1227,8 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         :return:
         """
         _LOGGER.info(f'GetTexSet: {search_path}   MTL TEXTURES: {mtl_textures}')
-        destination_directory = self.set_destination_directory(search_path.name)
+        destination_directory = self.set_destination_directory(search_path.name) \
+            if self.input_directory != self.output_directory else search_path
         for key, value in mtl_textures.items():
             for file in search_path.iterdir():
                 if file.stem.lower() == value.stem:
@@ -1217,9 +1245,8 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         :return:
         """
         return_path = Path(full_path)
-        start_directory = 'Objects'
         path_list = return_path.parts
-        return_path = ('/').join(path_list[path_list.index(start_directory):])
+        return_path = ('/').join(path_list[path_list.index(self.texture_path_root):])
         return return_path
 
     def get_separator_bar(self):
@@ -1264,10 +1291,9 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                          and not x.name.endswith('USD')]
         if maya_versions:
             target_version = f'Maya{max(maya_versions)}'
-            self.create_maya_files_checkbox.setChecked(True)
             return self.autodesk_directory / target_version / 'bin\mayapy.exe'
         else:
-            self.create_maya_files_checkbox.setChecked(False)
+            self.create_maya_files_checkbox.setEnabled(False)
             return None
 
     def get_section_audit(self, key):
@@ -1344,8 +1370,10 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         :param destination_directory: The directory that assets will be saved to in the conversion process
         :return:
         """
-        fbx_files = asset_information.fbxfiles.values()
-        for key, values in fbx_files[0].materials.items():
+        fbx_files = asset_information.fbxfiles
+        fbx_values = fbx_files.get(fbx_file.name)
+        for key, values in fbx_values.materials.items():
+            _LOGGER.info(f'Material Listing +++++++++++++ Key: {key}    Values: {values}')
             for k, v in mtl_info.items():
                 if key is v.attributes.Name:
                     if v.attributes.Shader in constants.EXPORT_MATERIAL_TYPES:
@@ -1561,10 +1589,13 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         :param target_directory_name: The directory path to search for
         :return:
         """
-        destination_directory = self.output_directory / 'Assets\Objects' / target_directory_name
-        if not destination_directory.is_dir():
-            _LOGGER.info(f'Making Destination Directory: {destination_directory}')
-            destination_directory.mkdir()
+        if self.input_directory == self.output_directory:
+            destination_directory = self.output_directory
+        else:
+            destination_directory = self.output_directory / 'Assets\Objects' / target_directory_name
+            if not destination_directory.is_dir():
+                _LOGGER.info(f'Making Destination Directory: {destination_directory}')
+                destination_directory.mkdir()
         return destination_directory
 
     def set_directory_combobox(self, activate):
@@ -1620,11 +1651,18 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         _LOGGER.info(f'STARTING LOAD SEQUENCE :::::: {audit_info}')
         self.load_events = [0, 0]
         for key, listing in audit_info.items():
-            for fbx in listing['files']['.fbx']:
+            fbx_files = listing['files']['.fbx']
+            if isinstance(fbx_files, list):
+                for fbx in fbx_files:
+                    if self.create_maya_files_checkbox.isChecked():
+                        self.load_events[1] += constants.LOAD_WEIGHTS['maya'] + constants.LOAD_WEIGHTS['fbx']
+                    else:
+                        self.load_events[1] += constants.LOAD_WEIGHTS['fbx']
+            else:
                 if self.create_maya_files_checkbox.isChecked():
-                    self.load_events[1] += constants.LOAD_WEIGHTS['maya'] + constants.LOAD_WEIGHTS['fbx']
+                    self.load_events[1] = constants.LOAD_WEIGHTS['maya'] + constants.LOAD_WEIGHTS['fbx']
                 else:
-                    self.load_events[1] += constants.LOAD_WEIGHTS['fbx']
+                    self.load_events[1] = constants.LOAD_WEIGHTS['fbx']
         _LOGGER.info('LoadEventTotal: {}'.format(self.load_events[1]))
 
     def progress_event_fired(self, progress):
@@ -1637,6 +1675,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         event_type = progress.split('_')[0]
         progress_weight = constants.LOAD_WEIGHTS[event_type]
         self.load_events[0] += progress_weight
+        _LOGGER.info(f'LoadEvent----->>>>> {self.load_events}')
         load_percentage = int((self.load_events[0] / self.load_events[1]) * 100)
         self.progress_bar.setValue(load_percentage)
         self.app.processEvents()
@@ -1708,20 +1747,39 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         self.app.processEvents()
         invalid_path = False
         if self.use_directory_radio_button.isChecked():
-            directory_path = self.input_path_field.text()
-            if os.path.isdir(directory_path):
-                self.input_directory = os.path.normpath(directory_path)
-                self.set_output_directory()
-                self.process_directory(directory_path)
+            input_directory_path = self.input_path_field.text()
+            output_directory_path = self.output_path_field.text()
+            if os.path.isdir(input_directory_path) and os.path.isdir(output_directory_path):
+                self.input_directory = os.path.normpath(input_directory_path)
+                self.output_directory = os.path.normpath(output_directory_path)
+                if self.input_directory != self.output_directory:
+                    self.set_output_directory()
+                    self.process_directory(input_directory_path)
+                else:
+                    # This is executed for in-place conversion. Get base directory for texture relative path
+                    text, ok = QtWidgets.QInputDialog.getText(self, 'Set Relative Texture Path Base',
+                                                              'Enter the base directory for relative material texture paths:')
+                    if ok:
+                        self.texture_path_root = text
+                        self.process_directories_in_place(self.input_directory)
             else:
                 invalid_path = 'Please enter a valid directory path.'
 
         else:
             fbx_path = self.input_path_field.text()
-            if os.path.exists(fbx_path) and fbx_path.endswith('.fbx'):
+            if os.path.exists(fbx_path) and fbx_path.lower().endswith('.fbx'):
                 self.input_directory = os.path.normpath(os.path.dirname(fbx_path))
-                self.set_output_directory()
-                self.process_single_asset(fbx_path)
+                self.output_directory = os.path.normpath(self.output_path_field.text())
+                if os.path.isdir(self.output_directory) and self.output_directory == self.input_directory:
+                    # This is executed for in-place conversion. Get base directory for texture relative path
+                    text, ok = QtWidgets.QInputDialog.getText(self, 'Set Relative Texture Path Base',
+                                                    'Enter the base directory for relative material texture paths:')
+                    if ok:
+                        self.texture_path_root = text
+                        self.process_single_asset(fbx_path, True)
+                else:
+                    self.set_output_directory()
+                    self.process_single_asset(fbx_path)
             else:
                 invalid_path = 'Please enter a valid FBX path.'
 
@@ -1765,7 +1823,6 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         target_directory = self.asset_directory_combobox.currentText()
         target_key = self.fbx_combobox.currentText()
         _LOGGER.info(f'TargetDirectory: {target_directory}  TargetKey: {target_key}')
-        fbx_files = None
         for index, values in self.materials_db.items():
             if values[constants.FBX_DIRECTORY_NAME] == target_directory:
                 fbx_files = values[constants.FBX_FILES]
@@ -1787,7 +1844,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                 for val in fbx_values:
                     material_list = val[constants.FBX_MATERIALS]
                     for material_key, material_values in material_list.items():
-                        for texture_key, texture_path in material_values[FBX_TEXTURES].items():
+                        for texture_key, texture_path in material_values[constants.FBX_TEXTURES].items():
                             if texture_type:
                                 if os.path.exists(texture_path):
                                     try:
@@ -1829,7 +1886,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                 for val in fbx_values:
                     material_list = val[constants.FBX_MATERIALS]
                     for material_key, material_values in material_list.items():
-                        for texture_key, texture_path in material_values[FBX_TEXTURES].items():
+                        for texture_key, texture_path in material_values[constants.FBX_TEXTURES].items():
                             if texture_key == texture_type:
                                 if os.path.exists(texture_path):
                                     try:

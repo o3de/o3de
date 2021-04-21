@@ -29,6 +29,16 @@ module_name = 'legacy_asset_converter.main.lumberyard_data'
 _LOGGER = _logging.getLogger(module_name)
 
 
+def walk_directory(target_path):
+    temp_dictionary = {
+        'directoryname': target_path.parent.name,
+        'directorypath': target_path.parent,
+        'files': scan_directory(target_path.parent)
+    }
+    temp_dictionary['files']['.fbx'] = target_path
+    return temp_dictionary
+
+
 def walk_directories(target_path):
     """
     Records file and directory structure information for all content within specified base folder for operation
@@ -46,7 +56,7 @@ def walk_directories(target_path):
         temp_dictionary = {}
         root = Path(root)
         directory_name = root.name
-        is_object_directory = True if [x for x in root.iterdir() if x.suffix == '.fbx'] else False
+        is_object_directory = True if [x for x in root.iterdir() if x.suffix.lower() == '.fbx'] else False
         _LOGGER.info(f'\n_\nScanning Directory: {directory_name} -- Object directory? {is_object_directory}')
 
         if is_object_directory:
@@ -57,7 +67,7 @@ def walk_directories(target_path):
                 subdirectories = [x for x in root.iterdir() if x.is_dir()]
                 for subdirectory in subdirectories:
                     target_path = subdirectory.name
-                    if not [x for x in subdirectory.iterdir() if x.suffix == '.fbx'] and target_path \
+                    if not [x for x in subdirectory.iterdir() if x.suffix.lower() == '.fbx'] and target_path \
                         not in (exclusion_list +[base_directory_name]):
                         files_dictionary.update(scan_directory(root / subdirectory))
                 temp_dictionary['files'] = files_dictionary
@@ -77,8 +87,8 @@ def scan_directory(directory_path):
     for filename in directory_path.iterdir():
         filename = Path(filename)
         extension = filename.suffix
-        if extension in (constants.IMAGE_TYPES + constants.LUMBERYARD_DATA_FILES + ['.fbx']):
-            files_dictionary[extension] = [directory_path / filename] if filename.suffix not in list(files_dictionary) else \
+        if extension in (constants.IMAGE_TYPES + constants.LUMBERYARD_DATA_FILES + ['.fbx', '.FBX']):
+            files_dictionary[extension.lower()] = [directory_path / filename] if filename.suffix not in list(files_dictionary) else \
                 files_dictionary[extension] + [directory_path / filename]
     return files_dictionary
 

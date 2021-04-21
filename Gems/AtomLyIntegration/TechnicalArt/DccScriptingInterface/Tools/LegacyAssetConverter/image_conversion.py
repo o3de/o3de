@@ -33,6 +33,7 @@ _LOGGER = _logging.getLogger(module_name)
 
 def get_pbr_textures(legacy_textures, destination_directory, search_path, base_directory):
     pbr_textures = {}
+    _LOGGER.info(f'DESTINATION DIRECTORY::> {destination_directory}')
     for texture_type, texture_path in legacy_textures.items():
         _LOGGER.info(f'TEXTURETYPE::> {texture_type}  TEXTUREPATH::> {texture_path}')
         if not texture_path.is_file():
@@ -64,6 +65,7 @@ def get_pbr_textures(legacy_textures, destination_directory, search_path, base_d
             pass
 
     if pbr_textures and 'Metallic' not in pbr_textures.keys():
+        _LOGGER.info(f'OUTPUT START // -------------->> {pbr_textures}')
         _LOGGER.info(f'Metallic Not found... adding: {pbr_textures}')
         try:
             pbr_texture_keys = list(pbr_textures.keys())
