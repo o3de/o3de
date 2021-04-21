@@ -12,12 +12,12 @@
 set(FILES
     BuiltInPackages.cmake
     FindAWSGameLiftServerSDK.cmake
-    Findcivetweb.cmake
     FindClang.cmake
     FindDirectXShaderCompiler.cmake
     Finddyad.cmake
     FindFbxSdk.cmake
     Findlibav.cmake
+    FindOpenGLInterface.cmake
     FindOpenSSL.cmake
     FindRadTelemetry.cmake
     FindVkValidation.cmake

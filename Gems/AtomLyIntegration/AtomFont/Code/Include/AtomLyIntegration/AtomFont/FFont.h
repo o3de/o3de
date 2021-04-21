@@ -277,10 +277,10 @@ namespace AZ
 
         void ScaleCoord(const RHI::Viewport& viewport, float& x, float& y) const;
 
-        void InitDefaultWindowContext();
-        void InitDefaultViewportContext();
-
         void OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene) override;
+
+        RPI::WindowContextSharedPtr GetDefaultWindowContext() const;
+        RPI::ViewportContextPtr GetDefaultViewportContext() const;
 
     private:
         static constexpr uint32_t NumBuffers = 2;
@@ -294,9 +294,6 @@ namespace AZ
         size_t m_fontBufferSize = 0;
         unsigned char* m_fontBuffer = nullptr;
 
-        AZStd::shared_ptr<RPI::WindowContext> m_defaultWindowContext;
-        AZStd::shared_ptr<AZ::RPI::ViewportContext> m_defaultViewportContext;
-
         AZ::Data::Instance<AZ::RPI::StreamingImage> m_fontStreamingImage;
         AZ::RHI::Ptr<AZ::RHI::Image>     m_fontImage;
         uint32_t m_fontImageVersion = 0;
@@ -304,7 +301,13 @@ namespace AZ
         AtomFont* m_atomFont = nullptr;
 
         bool m_fontTexDirty = false;
-        bool m_fontInitialized = false;
+        enum class InitializationState : AZ::u8
+        {
+            Uninitialized,
+            Initializing,
+            Initialized
+        };
+        AZStd::atomic<InitializationState> m_fontInitializationState = InitializationState::Uninitialized;
 
         FontEffects m_effects;
 
@@ -342,28 +345,6 @@ namespace AZ
         }
 
         delete font;
-    }
-}
-
-inline void AZ::FFont::InitDefaultWindowContext()
-{
-    if (!m_defaultWindowContext)
-    {
-        // font is created before window & viewport in the editor so need to do late init
-        // TODO need to deal with multiple windows, such as the editor
-        AZ::Render::Bootstrap::DefaultWindowBus::BroadcastResult(m_defaultWindowContext, &AZ::Render::Bootstrap::DefaultWindowInterface::GetDefaultWindowContext);
-        AZ_Assert(m_defaultWindowContext, "Unable to get the main window context");
-    }
-}
-
-inline void AZ::FFont::InitDefaultViewportContext()
-{
-    if (!m_defaultViewportContext)
-    {
-        // font is created before window & viewport in the editor so need to do late init
-        auto viewContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
-        m_defaultViewportContext = viewContextManager->GetViewportContextByName(viewContextManager->GetDefaultViewportContextName());
-        AZ_Assert(m_defaultViewportContext, "Unable to get the viewport context");
     }
 }
 
