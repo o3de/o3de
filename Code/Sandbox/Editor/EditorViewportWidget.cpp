@@ -678,6 +678,11 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
             }
             SetCurrentCursor(STD_CURSOR_GAME);
         }
+
+        if (m_renderViewport)
+        {
+            m_renderViewport->GetControllerList()->SetEnabled(false);
+        }
     }
     break;
 
@@ -695,6 +700,11 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
             m_bInZoomMode = false;
 
             RestoreViewportAfterGameMode();
+        }
+
+        if (m_renderViewport)
+        {
+            m_renderViewport->GetControllerList()->SetEnabled(true);
         }
         break;
 
@@ -726,6 +736,8 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
             // meters above the terrain (default terrain height is 32)
             viewTM.SetTranslation(Vec3(sx * 0.5f, sy * 0.5f, 34.0f));
             SetViewTM(viewTM);
+
+            UpdateScene();
         }
         break;
 

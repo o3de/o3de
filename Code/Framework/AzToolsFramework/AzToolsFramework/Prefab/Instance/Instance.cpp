@@ -123,7 +123,11 @@ namespace AzToolsFramework
         void Instance::SetTemplateSourcePath(AZ::IO::PathView sourcePath)
         {
             m_templateSourcePath = sourcePath;
-            m_containerEntity->SetName(sourcePath.Filename().Native());
+        }
+
+        void Instance::SetContainerEntityName(AZStd::string_view containerName)
+        {
+            m_containerEntity->SetName(containerName);
         }
 
         bool Instance::AddEntity(AZ::Entity& entity)
@@ -563,7 +567,7 @@ namespace AzToolsFramework
 
         AZ::EntityId Instance::GetContainerEntityId() const
         {
-            return m_containerEntity->GetId();
+            return m_containerEntity ? m_containerEntity->GetId() : AZ::EntityId();
         }
 
         bool Instance::HasContainerEntity() const

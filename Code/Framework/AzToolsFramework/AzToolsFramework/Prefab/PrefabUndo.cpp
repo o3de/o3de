@@ -124,7 +124,7 @@ namespace AzToolsFramework
             const TemplateId& targetId,
             const TemplateId& sourceId,
             const InstanceAlias& instanceAlias,
-            const PrefabDomReference linkDom,
+            PrefabDomReference linkDom,
             const LinkId linkId)
         {
             m_targetId = targetId;

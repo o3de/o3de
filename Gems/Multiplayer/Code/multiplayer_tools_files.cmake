@@ -8,13 +8,12 @@
 # remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
-ly_add_external_target(
-    NAME AWSGameLiftServerSDK
-    VERSION 3.4.0
-    3RDPARTY_DIRECTORY AWS/GameLift
-    INCLUDE_DIRECTORIES include
-    COMPILE_DEFINITIONS 
-        AWS_CUSTOM_MEMORY_MANAGEMENT
-        PLATFORM_SUPPORTS_AWS_NATIVE_SDK
-        GAMELIFT_USE_STD
+
+set(FILES
+    Source/Multiplayer_precompiled.cpp
+    Source/Multiplayer_precompiled.h
+    Source/Pipeline/NetworkPrefabProcessor.cpp
+    Source/Pipeline/NetworkPrefabProcessor.h
+    Source/MultiplayerToolsModule.h
+    Source/MultiplayerToolsModule.cpp
 )

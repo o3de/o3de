@@ -143,15 +143,6 @@ ComponentEntityEditorPlugin::ComponentEntityEditorPlugin([[maybe_unused]] IEdito
         LyViewPane::CategoryTools,
         pinnedInspectorOptions);
 
-    ViewPaneOptions levelInspectorOptions;
-    levelInspectorOptions.canHaveMultipleInstances = false;
-    levelInspectorOptions.preferedDockingArea = Qt::RightDockWidgetArea;
-    levelInspectorOptions.paneRect = QRect(50, 50, 400, 700);
-    RegisterViewPane<QComponentLevelEntityEditorInspectorWindow>(
-        LyViewPane::LevelInspector,
-        LyViewPane::CategoryTools,
-        levelInspectorOptions);
-
     bool prefabSystemEnabled = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
@@ -170,8 +161,14 @@ ComponentEntityEditorPlugin::ComponentEntityEditorPlugin([[maybe_unused]] IEdito
     }
     else
     {
-        // Add the Legacy Outliner to the Tools Menu
+        ViewPaneOptions levelInspectorOptions;
+        levelInspectorOptions.canHaveMultipleInstances = false;
+        levelInspectorOptions.preferedDockingArea = Qt::RightDockWidgetArea;
+        levelInspectorOptions.paneRect = QRect(50, 50, 400, 700);
+        RegisterViewPane<QComponentLevelEntityEditorInspectorWindow>(
+            LyViewPane::LevelInspector, LyViewPane::CategoryTools, levelInspectorOptions);
 
+        // Add the Legacy Outliner to the Tools Menu
         ViewPaneOptions outlinerOptions;
         outlinerOptions.canHaveMultipleInstances = true;
         outlinerOptions.preferedDockingArea = Qt::LeftDockWidgetArea;
