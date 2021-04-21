@@ -86,7 +86,7 @@ namespace AZ
                     uvMap->ReserveContainerSpace(vertexCount);
 
                     AZStd::string name(AZStd::string::format("%s%d", m_defaultNodeName, texCoordIndex));
-                    if (mesh->mTextureCoordsNames[texCoordIndex].C_Str())
+                    if (mesh->mTextureCoordsNames[texCoordIndex].length)
                     {
                         name = AZStd::string::format("%s", mesh->mTextureCoordsNames[texCoordIndex].C_Str());
                     }
