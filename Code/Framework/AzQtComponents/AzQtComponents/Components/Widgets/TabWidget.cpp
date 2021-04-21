@@ -464,6 +464,11 @@ namespace AzQtComponents
     {
         if (mouseEvent->buttons() & Qt::LeftButton)
         {
+            if (!QApplication::overrideCursor() || *QApplication::overrideCursor() != m_dragCursor)
+            {
+                QApplication::setOverrideCursor(m_dragCursor);
+            }
+
             m_lastMousePress = mouseEvent->pos();
         }
 
@@ -478,6 +483,7 @@ namespace AzQtComponents
             // selected tab is moved around. The close button is not explicitly rendered for the
             // moved tab during this operation. We need to make sure not to set it visible again
             // while the tab is moving. This flag makes sure it happens.
+
             m_movingTab = true;
         }
 

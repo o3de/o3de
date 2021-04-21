@@ -2003,11 +2003,6 @@ namespace AzQtComponents
             clearDraggingState();
         }
 
-        if (QApplication::overrideCursor())
-        {
-            QApplication::restoreOverrideCursor();
-        }
-
         return true;
     }
 
@@ -2385,11 +2380,6 @@ namespace AzQtComponents
      */
     void FancyDocking::dropDockWidget(QDockWidget* dock, QWidget* onto, Qt::DockWidgetArea area)
     {
-        if (QApplication::overrideCursor())
-        {
-            QApplication::restoreOverrideCursor();
-        }                                         
-
         // If the dock widget we are dropping is currently a tab, we need to retrieve it from
         // the tab widget, and remove it as a tab.  We also need to remove its item from our
         // cache of widget <-> tab container since we are moving it somewhere else.
@@ -3573,6 +3563,11 @@ namespace AzQtComponents
      */
     void FancyDocking::clearDraggingState()
     {
+        if (QApplication::overrideCursor())
+        {
+            QApplication::restoreOverrideCursor();
+        }
+
         m_ghostWidget->hide();
 
         // Release the mouse and keyboard from our main window since we grab them when we start dragging
