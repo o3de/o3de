@@ -24,7 +24,6 @@
 #include "RenderHelpers/AxisHelper.h"
 #include "RenderHelpers/AxisHelperExtended.h"
 #include "IObjectManager.h"
-#include "EditTool.h"
 
 //////////////////////////////////////////////////////////////////////////
 // CAxisGizmo implementation.
@@ -381,12 +380,6 @@ bool CAxisGizmo::MouseCallback(CViewport* view, EMouseEvent event, QPoint& point
                 break;
             }
 
-            CEditTool* pEditTool = view->GetEditTool();
-            if (pEditTool)
-            {
-                pEditTool->OnManipulatorMouseEvent(view, this, event, point, nFlags);
-            }
-
             return true;
         }
     }
@@ -540,12 +533,6 @@ bool CAxisGizmo::MouseCallback(CViewport* view, EMouseEvent event, QPoint& point
             break;
             }
 
-            CEditTool* pEditTool = view->GetEditTool();
-            if (pEditTool && bCallBack)
-            {
-                pEditTool->OnManipulatorDrag(view, this, m_cMouseDownPos, point, vDragValue);
-            }
-
             return true;
         }
         else
@@ -573,12 +560,6 @@ bool CAxisGizmo::MouseCallback(CViewport* view, EMouseEvent event, QPoint& point
                 }
                 bHit = true;
             }
-
-            CEditTool* pEditTool = view->GetEditTool();
-            if (pEditTool)
-            {
-                pEditTool->OnManipulatorMouseEvent(view, this, event, point, nFlags, bHit);
-            }
         }
     }
     else if (event == eMouseLUp)
@@ -592,12 +573,6 @@ bool CAxisGizmo::MouseCallback(CViewport* view, EMouseEvent event, QPoint& point
             if (m_bAlwaysUseLocal)
             {
                 GetIEditor()->SetReferenceCoordSys(m_coordSysBackUp);
-            }
-
-            CEditTool* pEditTool = view->GetEditTool();
-            if (pEditTool)
-            {
-                pEditTool->OnManipulatorMouseEvent(view, this, event, point, nFlags);
             }
         }
     }
