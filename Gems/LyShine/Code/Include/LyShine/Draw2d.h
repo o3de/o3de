@@ -12,6 +12,7 @@
 #pragma once
 
 #include <LyShine/IDraw2d.h>
+#include <LyShine/ILyShine.h>
 
 #include <Atom/Bootstrap/BootstrapNotificationBus.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
