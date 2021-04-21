@@ -823,20 +823,37 @@ void CAnimSequence::SetId(uint32 newId)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CAnimSequence::Reflect(AZ::SerializeContext* serializeContext)
+static bool AnimSequenceVersionConverter(
+    AZ::SerializeContext& serializeContext,
+    AZ::SerializeContext::DataElementNode& rootElement)
 {
-    serializeContext->Class<CAnimSequence>()
-        ->Version(4)
-        ->Field("Name", &CAnimSequence::m_name)
-        ->Field("SequenceEntityId", &CAnimSequence::m_sequenceEntityId)
-        ->Field("Flags", &CAnimSequence::m_flags)
-        ->Field("TimeRange", &CAnimSequence::m_timeRange)
-        ->Field("ID", &CAnimSequence::m_id)
-        ->Field("Nodes", &CAnimSequence::m_nodes)
-        ->Field("SequenceType", &CAnimSequence::m_sequenceType)
-        ->Field("Events", &CAnimSequence::m_events)
-        ->Field("Expanded", &CAnimSequence::m_expanded)
-        ->Field("ActiveDirectorNodeId", &CAnimSequence::m_activeDirectorNodeId);
+    if (rootElement.GetVersion() < 5)
+    {
+        rootElement.AddElement(serializeContext, "BaseClass1", azrtti_typeid<IAnimSequence>());
+    }
+
+    return true;
+}
+
+void CAnimSequence::Reflect(AZ::ReflectContext* context)
+{
+    IAnimSequence::Reflect(context);
+
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context); serializeContext != nullptr)
+    {
+        serializeContext->Class<CAnimSequence, IAnimSequence>()
+            ->Version(IAnimSequence::kSequenceVersion, &AnimSequenceVersionConverter)
+            ->Field("Name", &CAnimSequence::m_name)
+            ->Field("SequenceEntityId", &CAnimSequence::m_sequenceEntityId)
+            ->Field("Flags", &CAnimSequence::m_flags)
+            ->Field("TimeRange", &CAnimSequence::m_timeRange)
+            ->Field("ID", &CAnimSequence::m_id)
+            ->Field("Nodes", &CAnimSequence::m_nodes)
+            ->Field("SequenceType", &CAnimSequence::m_sequenceType)
+            ->Field("Events", &CAnimSequence::m_events)
+            ->Field("Expanded", &CAnimSequence::m_expanded)
+            ->Field("ActiveDirectorNodeId", &CAnimSequence::m_activeDirectorNodeId);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////

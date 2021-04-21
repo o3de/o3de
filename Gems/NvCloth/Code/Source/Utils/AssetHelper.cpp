@@ -13,11 +13,6 @@
 #include <Utils/AssetHelper.h>
 
 #include <Utils/MeshAssetHelper.h>
-#include <Utils/ActorAssetHelper.h>
-
-#include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
-
-#include <Integration/ActorComponentBus.h>
 
 namespace NvCloth
 {
@@ -30,25 +25,9 @@ namespace NvCloth
 
     AZStd::unique_ptr<AssetHelper> AssetHelper::CreateAssetHelper(AZ::EntityId entityId)
     {
-        // Does the entity have an Actor Asset?
-        EMotionFX::ActorInstance* actorInstance = nullptr;
-        EMotionFX::Integration::ActorComponentRequestBus::EventResult(
-            actorInstance, entityId, &EMotionFX::Integration::ActorComponentRequestBus::Events::GetActorInstance);
-        if (actorInstance)
-        {
-            return AZStd::make_unique<ActorAssetHelper>(entityId);
-        }
-
-        AZ::Data::Asset<AZ::RPI::ModelAsset> modelAsset;
-        AZ::Render::MeshComponentRequestBus::EventResult(
-            modelAsset, entityId, &AZ::Render::MeshComponentRequestBus::Events::GetModelAsset);
-        if (modelAsset.GetId().IsValid())
-        {
-            return AZStd::make_unique<MeshAssetHelper>(entityId);
-        }
-
-        AZ_Warning("AssetHelper", false, "Unexpected asset type");
-        return nullptr;
+        return entityId.IsValid()
+            ? AZStd::make_unique<MeshAssetHelper>(entityId)
+            : nullptr;
     }
 
     float AssetHelper::ConvertBackstopOffset(float backstopOffset)
