@@ -44,7 +44,7 @@ namespace AZ
                 SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
                 if (serializeContext)
                 {
-                    serializeContext->Class<AssImpUvMapImporter, SceneCore::LoadingComponent>()->Version(2); // LYN-2576
+                    serializeContext->Class<AssImpUvMapImporter, SceneCore::LoadingComponent>()->Version(3); // LYN-2506
                 }
             }
 
