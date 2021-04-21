@@ -133,22 +133,32 @@ namespace Multiplayer
         // Let the network system know the frame is done and we can collect dirty bits
         m_networkEntityManager.NotifyEntitiesDirtied();
 
+        MultiplayerStats& stats = GetStats();
+        stats.m_entityCount = GetNetworkEntityManager()->GetEntityCount();
+        stats.m_serverConnectionCount = 0;
+        stats.m_clientConnectionCount = 0;
+
         // Send out the game state update to all connections
         {
-            auto sendNetworkUpdates = [serverGameTimeMs](IConnection& connection)
+            auto sendNetworkUpdates = [serverGameTimeMs, &stats](IConnection& connection)
             {
                 if (connection.GetUserData() != nullptr)
                 {
                     IConnectionData* connectionData = reinterpret_cast<IConnectionData*>(connection.GetUserData());
                     connectionData->Update(serverGameTimeMs);
+                    if (connectionData->GetConnectionDataType() == ConnectionDataType::ServerToClient)
+                    {
+                        stats.m_clientConnectionCount++;
+                    }
+                    else
+                    {
+                        stats.m_serverConnectionCount++;
+                    }
                 }
             };
 
             m_networkInterface->GetConnectionSet().VisitConnections(sendNetworkUpdates);
         }
-
-        MultiplayerStats& stats = GetStats();
-        stats.m_entityCount = GetNetworkEntityManager()->GetEntityCount();
 
         MultiplayerPackets::SyncConsole packet;
         AZ::ThreadSafeDeque<AZStd::string>::DequeType cvarUpdates;

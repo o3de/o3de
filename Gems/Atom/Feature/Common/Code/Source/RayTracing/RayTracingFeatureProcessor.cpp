@@ -21,6 +21,8 @@
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessor.h>
 #include <CoreLights/DirectionalLightFeatureProcessor.h>
+#include <CoreLights/SimplePointLightFeatureProcessor.h>
+#include <CoreLights/SimpleSpotLightFeatureProcessor.h>
 #include <CoreLights/PointLightFeatureProcessor.h>
 #include <CoreLights/DiskLightFeatureProcessor.h>
 #include <CoreLights/CapsuleLightFeatureProcessor.h>
@@ -195,7 +197,23 @@ namespace AZ
             constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_directionalLightCount"));
             m_rayTracingSceneSrg->SetConstant(constantIndex, directionalLightFP->GetLightCount());
 
-            // point lights
+            // simple point lights
+            const auto simplePointLightFP = GetParentScene()->GetFeatureProcessor<SimplePointLightFeatureProcessor>();
+            bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_simplePointLights"));
+            m_rayTracingSceneSrg->SetBufferView(bufferIndex, simplePointLightFP->GetLightBuffer()->GetBufferView());
+
+            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_simplePointLightCount"));
+            m_rayTracingSceneSrg->SetConstant(constantIndex, simplePointLightFP->GetLightCount());
+
+            // simple spot lights
+            const auto simpleSpotLightFP = GetParentScene()->GetFeatureProcessor<SimpleSpotLightFeatureProcessor>();
+            bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_simpleSpotLights"));
+            m_rayTracingSceneSrg->SetBufferView(bufferIndex, simpleSpotLightFP->GetLightBuffer()->GetBufferView());
+
+            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_simpleSpotLightCount"));
+            m_rayTracingSceneSrg->SetConstant(constantIndex, simpleSpotLightFP->GetLightCount());
+
+            // point lights (sphere)
             const auto pointLightFP = GetParentScene()->GetFeatureProcessor<PointLightFeatureProcessor>();
             bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_pointLights"));
             m_rayTracingSceneSrg->SetBufferView(bufferIndex, pointLightFP->GetLightBuffer()->GetBufferView());

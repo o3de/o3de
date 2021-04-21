@@ -16,6 +16,7 @@
 #include <Source/NetworkEntity/NetworkEntityHandle.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/EBus/Event.h>
+#include <AzCore/Asset/AssetCommon.h>
 
 namespace Multiplayer
 {
@@ -35,6 +36,7 @@ namespace Multiplayer
         AZ_RTTI(INetworkEntityManager, "{109759DE-9492-439C-A0B1-AE46E6FD029C}");
 
         using OwnedEntitySet = AZStd::unordered_set<ConstNetworkEntityHandle>;
+        using EntityList = AZStd::vector<NetworkEntityHandle>;
 
         virtual ~INetworkEntityManager() = default;
 
@@ -50,7 +52,10 @@ namespace Multiplayer
         //! @return the HostId for this INetworkEntityManager instance
         virtual HostId GetHostId() const = 0;
 
-        // TODO: Spawn methods for entities within slices/prefabs/levels
+        //! Creates new entities of the given archetype
+        //! @param prefabEntryId the name of the spawnable to spawn
+        virtual EntityList CreateEntitiesImmediate(
+            const PrefabEntityId& prefabEntryId, NetEntityId netEntityId, NetEntityRole netEntityRole, const AZ::Transform& transform) = 0;
 
         //! Returns an ConstEntityPtr for the provided entityId.
         //! @param netEntityId the netEntityId to get an ConstEntityPtr for

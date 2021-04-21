@@ -56,3 +56,4 @@ ly_associate_package(PACKAGE_NAME openimageio-2.1.16.0-rev1-windows  TARGETS Ope
 ly_associate_package(PACKAGE_NAME qt-5.15.2-windows                  TARGETS Qt              PACKAGE_HASH edaf954c647c99727bfd313dab2959803d2df0873914bb96368c3d8286eed6d9)
 ly_associate_package(PACKAGE_NAME libsamplerate-0.2.1-rev2-windows   TARGETS libsamplerate   PACKAGE_HASH dcf3c11a96f212a52e2c9241abde5c364ee90b0f32fe6eeb6dcdca01d491829f)
 ly_associate_package(PACKAGE_NAME OpenMesh-8.1-rev1-windows          TARGETS OpenMesh        PACKAGE_HASH 1c1df639358526c368e790dfce40c45cbdfcfb1c9a041b9d7054a8949d88ee77)
+ly_associate_package(PACKAGE_NAME civetweb-1.8-rev1-windows          TARGETS civetweb        PACKAGE_HASH 36d0e58a59bcdb4dd70493fb1b177aa0354c945b06c30416348fd326cf323dd4)
