@@ -9,6 +9,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
+set(LY_QTIFW_PATH "" CACHE PATH "Path to the Qt Installer Framework install path")
+
+if(LY_QTIFW_PATH)
+    file(TO_CMAKE_PATH ${LY_QTIFW_PATH} CPACK_IFW_ROOT)
+elseif(DEFINED ENV{QTIFWDIR})
+    file(TO_CMAKE_PATH $ENV{QTIFWDIR} CPACK_IFW_ROOT)
+endif()
+if(NOT EXISTS ${CPACK_IFW_ROOT})
+    message(STATUS "WARN: A valid LY_QTIFW_PATH argument or QTIFWDIR environment variable is required to enable cpack support")
+    return()
+endif()
+
 set(CPACK_GENERATOR "IFW")
 
 set(CPACK_PACKAGE_VENDOR "O3DE")
