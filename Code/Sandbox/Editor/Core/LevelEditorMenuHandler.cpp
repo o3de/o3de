@@ -580,7 +580,6 @@ void LevelEditorMenuHandler::PopulateEditMenu(ActionManager::MenuWrapper& editMe
 
         auto alignMenu = modifyMenu.AddMenu(tr("Align"));
         alignMenu.AddAction(ID_OBJECTMODIFY_ALIGNTOGRID);
-        alignMenu.AddAction(ID_OBJECTMODIFY_ALIGN);
         alignMenu.AddAction(ID_MODIFY_ALIGNOBJTOSURF);
 
         auto constrainMenu = modifyMenu.AddMenu(tr("Constrain"));

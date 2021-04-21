@@ -2,7 +2,6 @@
     "configurations": [
         {
             "displayName": "Substance: <template>",
-            "autoSelect": false,
             "iblSpecularImageFilePath": "materialeditor/lightingpresets/_Substance_/<latlong_image>_iblskyboxcm_iblspecular.exr.streamingimage",
             "iblDiffuseImageFilePath": "materialeditor/lightingpresets/_Substance_/<latlong_image>_iblskyboxcm_ibldiffuse.exr.streamingimage",
             "skyboxFilePath": "materialeditor/lightingpresets/_Substance_/<latlong_image>_iblskyboxcm.exr.streamingimage",
@@ -45,7 +44,6 @@
         },
         {
             "displayName": "Substance: <template> (Alt)",
-            "autoSelect": false,
             "iblSpecularImageFilePath": "materialeditor/lightingpresets/_Substance_/<latlong_image>_iblskyboxcm_iblspecular.exr.streamingimage",
             "iblDiffuseImageFilePath": "materialeditor/lightingpresets/_Substance_/<latlong_image>_iblskyboxcm_ibldiffuse.exr.streamingimage",
             "skyboxFilePath": "materialeditor/lightingpresets/_Substance_/<latlong_image>_iblskyboxcm_ibldiffuse.exr.streamingimage",

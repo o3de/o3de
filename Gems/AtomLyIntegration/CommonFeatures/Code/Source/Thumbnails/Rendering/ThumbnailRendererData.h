@@ -36,7 +36,7 @@ namespace AZ
             struct ThumbnailRendererData final
             {
                 static constexpr const char* LightingPresetPath = "lightingpresets/thumbnail.lightingpreset.azasset";
-                static constexpr const char* DefaultModelPath = "materialeditor/viewportmodels/quadsphere.azmodel";
+                static constexpr const char* DefaultModelPath = "models/sphere.azmodel";
                 static constexpr const char* DefaultMaterialPath = "materials/basic_grey.azmaterial";
 
                 RPI::ScenePtr m_scene;

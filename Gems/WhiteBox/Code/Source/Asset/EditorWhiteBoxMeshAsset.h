@@ -82,6 +82,7 @@ namespace WhiteBox
         void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
         void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
         void OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+        void OnAssetReloadError(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
 
         // WhiteBoxMeshAssetNotificationBus ...
         void OnWhiteBoxMeshAssetModified(AZ::Data::Asset<AZ::Data::AssetData> asset) override;

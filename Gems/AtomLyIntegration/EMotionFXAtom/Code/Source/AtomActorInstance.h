@@ -62,7 +62,6 @@ namespace AZ
             , public AzFramework::BoundsRequestBus::Handler
             , public AZ::Render::MaterialComponentNotificationBus::Handler
             , public AZ::Render::MeshComponentRequestBus::Handler
-            , public LmbrCentral::MeshComponentRequestBus::Handler
             , private AZ::Render::SkinnedMeshFeatureProcessorNotificationBus::Handler
             , private AZ::Render::SkinnedMeshOutputStreamNotificationBus::Handler
             , private LmbrCentral::SkeletalHierarchyRequestBus::Handler
@@ -141,14 +140,6 @@ namespace AZ
             RPI::Cullable::LodOverride GetLodOverride() const override;
             void SetVisibility(bool visible) override;
             bool GetVisibility() const override;
-            // GetWorldBounds/GetLocalBounds already overridden by BoundsRequestBus::Handler
-
-            //////////////////////////////////////////////////////////////////////////
-            // LmbrCentral::MeshComponentRequestBus::Handler
-            void SetMeshAsset(const AZ::Data::AssetId& id) override;
-            AZ::Data::Asset<AZ::Data::AssetData> GetMeshAsset() override;
-            bool GetVisibility() override;
-            // SetVisibility already overridden by MeshComponentRequestBus::Handler
             // GetWorldBounds/GetLocalBounds already overridden by BoundsRequestBus::Handler
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
