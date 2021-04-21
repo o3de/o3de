@@ -595,7 +595,6 @@ namespace ScriptCanvasEditor
         m_commandLine = new Widget::CommandLine(this);
         m_commandLine->setBaseSize(QSize(size().width(), m_commandLine->size().height()));
         m_commandLine->setObjectName("CommandLine");        
-//        m_commandLine->hide();
 
         m_layout->addWidget(m_commandLine);
         m_layout->addWidget(m_emptyCanvas);
