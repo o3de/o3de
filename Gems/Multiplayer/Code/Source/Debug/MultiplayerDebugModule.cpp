@@ -11,8 +11,8 @@
 */
 
 #include <Source/Multiplayer_precompiled.h>
-#include <Source/Imgui/MultiplayerDebugModule.h>
-#include <Source/Imgui/MultiplayerDebugSystemComponent.h>
+#include <Source/Debug/MultiplayerDebugModule.h>
+#include <Source/Debug/MultiplayerDebugSystemComponent.h>
 
 namespace Multiplayer
 {
