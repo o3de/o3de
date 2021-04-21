@@ -1,6 +1,0 @@
-<download name="TangentSpace" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="7398" md5="2c8715ff8b8410f7c43b05771e9bf010"/>
- </files>
-</download>

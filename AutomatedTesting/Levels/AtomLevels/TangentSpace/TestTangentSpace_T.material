@@ -1,8 +1,0 @@
-{
-    "materialType": "TestTangentSpace.materialtype",
-    "properties": {
-        "general": {
-            "o_axis": 0
-        }
-    }
-}
