@@ -10,7 +10,6 @@
 #
 
 set(FILES
-    AWSGameLiftServerSDK_windows.cmake
     BuiltInPackages_windows.cmake
     Crashpad_windows.cmake
     DirectXShaderCompiler_windows.cmake
