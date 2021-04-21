@@ -219,6 +219,8 @@ os.environ["DYNACONF_DCCSI_DEV_MODE"] = str(_DCCSI_DEV_MODE)
 # search up to get \dev
 _LY_DEV = azpy.config_utils.get_stub_check_path(in_path=_DCCSIG_PATH,
                                                 check_stub='engineroot.txt')
+print(f'---> LYDEV: {_LY_DEV}')
+
 os.environ["DYNACONF_LY_DEV"] = str(_LY_DEV.resolve())
 _LY_PROJECT = azpy.config_utils.get_current_project(_LY_DEV)
 os.environ["DYNACONF_LY_PROJECT"] = _LY_PROJECT
