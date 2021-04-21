@@ -341,6 +341,16 @@ namespace AZ
                     ;
             }
         }
+
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->EBus<ComponentApplicationBus>("ComponentApplicationBus")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Category, "Components")
+
+                ->Event("GetEntityName", &ComponentApplicationBus::Events::GetEntityName)
+                ->Event("SetEntityName", &ComponentApplicationBus::Events::SetEntityName);
+        }
     }
 
     //=========================================================================
@@ -1048,6 +1058,20 @@ namespace AZ
             return entity->GetName();
         }
         return AZStd::string();
+    }
+
+    //=========================================================================
+    // SetEntityName
+    //=========================================================================
+    bool ComponentApplication::SetEntityName(const EntityId& id, const AZStd::string_view name)
+    {
+        Entity* entity = FindEntity(id);
+        if (entity)
+        {
+            entity->SetName(name);
+            return true;
+        }
+        return false;
     }
 
     //=========================================================================
