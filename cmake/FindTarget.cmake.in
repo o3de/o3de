@@ -29,16 +29,6 @@ ly_add_target(
 @RUNTIME_DEPENDENCIES_PLACEHOLDER@
 )
 
-#unset(found_vars)
 foreach(config @CMAKE_CONFIGURATION_TYPES@)
-    if(EXISTS "${LY_ROOT_FOLDER}/cmake_autogen/@NAME_PLACEHOLDER@/@NAME_PLACEHOLDER@_${config}.cmake")
-        include("${LY_ROOT_FOLDER}/cmake_autogen/@NAME_PLACEHOLDER@/@NAME_PLACEHOLDER@_${config}.cmake")
-        #set(@NAME_PLACEHOLDER@_${config}_FOUND TRUE)
-        #list(APPEND found_vars @NAME_PLACEHOLDER@_${config}_FOUND)
-    endif()
+    include("${LY_ROOT_FOLDER}/cmake_autogen/@NAME_PLACEHOLDER@/@NAME_PLACEHOLDER@_${config}.cmake" OPTIONAL)
 endforeach()
-
-#find_package_handle_standard_args(@NAME_PLACEHOLDER@
-#    "Could not find package @NAME_PLACEHOLDER@"
-#    ${found_vars}
-#)
