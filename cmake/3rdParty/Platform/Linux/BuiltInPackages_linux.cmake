@@ -11,7 +11,6 @@
 
 # shared by other platforms:
 ly_associate_package(PACKAGE_NAME zlib-1.2.8-rev2-multiplatform             TARGETS zlib        PACKAGE_HASH e6f34b8ac16acf881e3d666ef9fd0c1aee94c3f69283fb6524d35d6f858eebbb)
-ly_associate_package(PACKAGE_NAME Lua-5.3.5-rev3-multiplatform              TARGETS Lua         PACKAGE_HASH 171dcdd60bd91fb325feaab0e53dd185c9d6e7b701d53e66fc6c2c6ee91d8bff)
 ly_associate_package(PACKAGE_NAME ilmbase-2.3.0-rev4-multiplatform          TARGETS ilmbase     PACKAGE_HASH 97547fdf1fbc4d81b8ccf382261f8c25514ed3b3c4f8fd493f0a4fa873bba348)
 ly_associate_package(PACKAGE_NAME hdf5-1.0.11-rev2-multiplatform            TARGETS hdf5        PACKAGE_HASH 11d5e04df8a93f8c52a5684a4cacbf0d9003056360983ce34f8d7b601082c6bd)
 ly_associate_package(PACKAGE_NAME alembic-1.7.11-rev3-multiplatform         TARGETS alembic     PACKAGE_HASH ba7a7d4943dd752f5a662374f6c48b93493df1d8e2c5f6a8d101f3b50700dd25)
@@ -36,6 +35,7 @@ ly_associate_package(PACKAGE_NAME PVRTexTool-4.24.0-rev4-multiplatform      TARG
 ly_associate_package(PACKAGE_NAME freetype-2.10.4.14-linux          TARGETS freetype        PACKAGE_HASH 9ad246873067717962c6b780d28a5ce3cef3321b73c9aea746a039c798f52e93)
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-linux               TARGETS tiff            PACKAGE_HASH ae92b4d3b189c42ef644abc5cac865d1fb2eb7cb5622ec17e35642b00d1a0a76)
 ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev3-linux   TARGETS AWSNativeSDK    PACKAGE_HASH e69c55682638dc1e7fa571a61a82c8a69d395c74a008543a5188f4bd2b6b10c4)
+ly_associate_package(PACKAGE_NAME Lua-5.3.5-rev5-linux              TARGETS Lua             PACKAGE_HASH 1adc812abe3dd0dbb2ca9756f81d8f0e0ba45779ac85bf1d8455b25c531a38b0)
 ly_associate_package(PACKAGE_NAME PhysX-4.1.0.25992954-rev1-linux   TARGETS PhysX           PACKAGE_HASH e3ca36106a8dbf1524709f8bb82d520920ebd3ff3a92672d382efff406c75ee3)
 ly_associate_package(PACKAGE_NAME etc2comp-9cd0f9cae0-rev1-linux    TARGETS etc2comp        PACKAGE_HASH 9283aa5db5bb7fb90a0ddb7a9f3895317c8ebe8044943124bbb3673a41407430)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-linux           TARGETS mikkelsen       PACKAGE_HASH 5973b1e71a64633588eecdb5b5c06ca0081f7be97230f6ef64365cbda315b9c8)
