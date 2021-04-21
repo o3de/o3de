@@ -12,7 +12,6 @@
 set(FILES
     BuiltInPackages.cmake
     FindAWSGameLiftServerSDK.cmake
-    Findcivetweb.cmake
     FindClang.cmake
     Finddyad.cmake
     Findetc2comp.cmake
