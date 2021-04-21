@@ -40,7 +40,7 @@ namespace Multiplayer
         //! @param componentType   the networked componentId of the component handling this RPC
         //! @param rpcMessageType  the component defined RPC type, so the component knows which RPC this message corresponds to
         //! @param isReliable      whether or not this RPC should be sent reliably
-        explicit NetworkEntityRpcMessage(RpcDeliveryType rpcDeliveryType, NetEntityId entityId, NetComponentId componentId, uint8_t rpcMessageType, ReliabilityType isReliable);
+        explicit NetworkEntityRpcMessage(RpcDeliveryType rpcDeliveryType, NetEntityId entityId, NetComponentId componentId, uint16_t rpcMessageType, ReliabilityType isReliable);
 
         NetworkEntityRpcMessage& operator =(NetworkEntityRpcMessage&& rhs);
         NetworkEntityRpcMessage& operator =(const NetworkEntityRpcMessage& rhs);
@@ -69,7 +69,7 @@ namespace Multiplayer
 
         //! Gets the current value of RpcMessageType.
         //! @return the current value of RpcMessageType
-        uint8_t GetRpcMessageType() const;
+        uint16_t GetRpcMessageType() const;
 
         //! Writes the data contained inside a_Params to this NetworkEntityRpcMessage's blob buffer.
         //! @param params the parameters to save inside this NetworkEntityRpcMessage instance
@@ -98,7 +98,7 @@ namespace Multiplayer
         RpcDeliveryType m_rpcDeliveryType = RpcDeliveryType::None;
         NetEntityId     m_entityId        = InvalidNetEntityId;
         NetComponentId  m_componentId     = InvalidNetComponentId;
-        uint8_t         m_rpcMessageType  = 0;
+        uint16_t        m_rpcMessageType  = 0;
 
         // Only allocated if we actually have data
         // This is to prevent blowing out stack memory if we declare an array of these EntityUpdateMessages

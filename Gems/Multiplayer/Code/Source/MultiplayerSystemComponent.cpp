@@ -114,6 +114,9 @@ namespace Multiplayer
         m_networkInterface = AZ::Interface<INetworking>::Get()->CreateNetworkInterface(AZ::Name(s_networkInterfaceName), sv_protocol, TrustZone::ExternalClientToServer, *this);
         m_consoleCommandHandler.Connect(AZ::Interface<AZ::IConsole>::Get()->GetConsoleCommandInvokedEvent());
         AZ::Interface<IMultiplayer>::Register(this);
+
+        //! Register our gems multiplayer components to assign NetComponentIds
+        RegisterMultiplayerComponents();
     }
 
     void MultiplayerSystemComponent::Deactivate()

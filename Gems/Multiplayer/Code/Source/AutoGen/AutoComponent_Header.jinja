@@ -329,7 +329,6 @@ namespace {{ Component.attrib['Namespace'] }}
         : public Multiplayer::IMultiplayerComponentInput
     {
     public:
-        static const Multiplayer::NetComponentId s_componentId = static_cast<Multiplayer::NetComponentId>({{ Component.attrib['Namespace'] }}::ComponentTypes::{{ Component.attrib['Name'] }});
         Multiplayer::NetComponentId GetComponentId() const override;
         INetworkInput& operator=(const INetworkInput& rhs) override;
         bool Serialize(AzNetworking::ISerializer& serializer);
@@ -412,8 +411,6 @@ namespace {{ Component.attrib['Namespace'] }}
         AZ_MULTIPLAYER_COMPONENT({{ Component.attrib['Namespace'] }}::{{ ComponentBaseName }}, s_{{ LowerFirst(ComponentName) }}ConcreteUuid, Multiplayer::MultiplayerComponent);
 {% endif %}
 
-        static const Multiplayer::NetComponentId s_componentId = static_cast<Multiplayer::NetComponentId>({{ Component.attrib['Namespace'] }}::ComponentTypes::{{ Component.attrib['Name'] }});
-
         static void Reflect(AZ::ReflectContext* context);
         static void ReflectToEditContext(AZ::ReflectContext* context);
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
@@ -489,6 +486,10 @@ namespace {{ Component.attrib['Namespace'] }}
         bool SerializeAutonomousToAuthorityProperties({{ RecordName }}& replicationRecord, AzNetworking::ISerializer& serializer);
         void NotifyChangesAutonomousToAuthorityProperties(const {{ RecordName }}& replicationRecord) const;
 
+        //! Debug name helpers
+        static const char* GetNetworkPropertyName(uint16_t propertyIndex);
+        static const char* GetRpcName(uint16_t rpcIndex);
+
         AZStd::unique_ptr<{{ RecordName }}> m_currentRecord;
         AZStd::unique_ptr<{{ ControllerName }}> m_controller;
 
@@ -518,6 +519,9 @@ namespace {{ Component.attrib['Namespace'] }}
 {% call(Type, Name) AutoComponentMacros.ParseComponentServiceTypeAndName(Component) %}
 	    {{ Type }}* {{ Name }} = nullptr;
 {% endcall %}
+
+        static NetComponentId s_netComponentId;
+        friend void RegisterMultiplayerComponents();
     };
 }
 {% endfor %}

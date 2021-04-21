@@ -285,15 +285,15 @@ void {{ ClassName }}::Set{{ UpperFirst(Property.attrib['Name']) }}(const {{ Prop
 {{     AutoComponentMacros.ParseRpcParams(Property, paramNames, paramTypes, paramDefines) }}
 void {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(paramDefines) }})
 {
-    constexpr uint8_t rpcId = static_cast<uint8_t>({{ UpperFirst(Component.attrib['Name']) }}Internal::RemoteProcedure::{{ UpperFirst(Property.attrib['Name']) }});
-    constexpr Multiplayer::NetComponentId componentId = static_cast<Multiplayer::NetComponentId>({{ Component.attrib['Namespace'] }}::ComponentTypes::{{ Component.attrib['Name'] }});
+    constexpr uint16_t rpcId = static_cast<uint16_t>({{ UpperFirst(Component.attrib['Name']) }}Internal::RemoteProcedure::{{ UpperFirst(Property.attrib['Name']) }});
 {% if Property.attrib['IsReliable']|booleanTrue %}
     constexpr AzNetworking::ReliabilityType isReliable = Multiplayer::ReliabilityType::Reliable;
 {% else %}
     constexpr AzNetworking::ReliabilityType isReliable = Multiplayer::ReliabilityType::Unreliable;
 {% endif %}
 
-    Multiplayer::NetworkEntityRpcMessage rpcMessage(Multiplayer::RpcDeliveryType::{{ InvokeFrom }}To{{ HandleOn }}, GetNetEntityId(), componentId, rpcId, isReliable);
+    const Multiplayer::NetComponentId netComponentId = GetParent().GetNetComponentId();
+    Multiplayer::NetworkEntityRpcMessage rpcMessage(Multiplayer::RpcDeliveryType::{{ InvokeFrom }}To{{ HandleOn }}, GetNetEntityId(), netComponentId, rpcId, isReliable);
 {%     if paramNames|count > 0 %}
     {{ UpperFirst(Component.attrib['Name']) }}Internal::{{ UpperFirst(Property.attrib['Name']) }}RpcStruct rpcStruct({{ ', '.join(paramNames) }});
 {%     else %}
@@ -901,6 +901,8 @@ m_{{ LowerFirst(Property.attrib['Name']) }} = m_{{ LowerFirst(Property.attrib['N
 
 namespace {{ Component.attrib['Namespace'] }}
 {
+    NetComponentId {{ UpperFirst(Component.attrib['Name']) }}::s_netComponentId = InvalidNetComponentId;
+
     namespace {{ UpperFirst(Component.attrib['Name']) }}Internal
     {
         {{ DeclareRemoteProcedureEnumerations(Component)|indent(8) }}
@@ -1229,7 +1231,7 @@ namespace {{ Component.attrib['Namespace'] }}
 
     Multiplayer::NetComponentId {{ ComponentBaseName }}::GetNetComponentId() const
     {
-        return s_componentId;
+        return s_netComponentId;
     }
 
 #pragma warning(push)
@@ -1379,6 +1381,15 @@ namespace {{ Component.attrib['Namespace'] }}
     }
 
 {%      endif %}
+    const char* {{ ComponentBaseName }}::GetNetworkPropertyName([[maybe_unused]] uint16_t propertyIndex)
+    {
+        return "";
+    }
+
+    const char* {{ ComponentBaseName }}::GetRpcName([[maybe_unused]] uint16_t rpcIndex)
+    {
+        return "";
+    }
 {% endfor %}
 }
 {% endfor %}

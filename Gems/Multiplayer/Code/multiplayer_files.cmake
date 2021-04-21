@@ -26,6 +26,8 @@ set(FILES
     Source/AutoGen/NetworkTransformComponent.AutoComponent.xml
     Source/Components/LocalPredictionPlayerInputComponent.cpp
     Source/Components/LocalPredictionPlayerInputComponent.h
+    Source/Components/MultiplayerComponentRegistry.cpp
+    Source/Components/MultiplayerComponentRegistry.h
     Source/Components/MultiplayerComponent.cpp
     Source/Components/MultiplayerComponent.h
     Source/Components/MultiplayerController.cpp
