@@ -297,7 +297,7 @@ namespace AZ
                 // Mesh index buffer view
                 const BufferAssetView& sourceIndexBufferView = sourceMesh.GetIndexBufferAssetView();
                 BufferAssetView indexBufferAssetView(clonedIndexBufferAsset, sourceIndexBufferView.GetBufferViewDescriptor());
-                creator.SetMeshIndexBuffer(sourceIndexBufferView);
+                creator.SetMeshIndexBuffer(indexBufferAssetView);
 
                 // Mesh stream buffer views
                 for (const AZ::RPI::ModelLodAsset::Mesh::StreamBufferInfo& streamBufferInfo : sourceMesh.GetStreamBufferInfoList())
