@@ -32,7 +32,7 @@ namespace AZ
     {
         namespace FbxSceneBuilder
         {
-            const char* AssImpUvMapImporter::m_defaultNodeName = "UVMap";
+            const char* AssImpUvMapImporter::m_defaultNodeName = "UV";
 
             AssImpUvMapImporter::AssImpUvMapImporter()
             {
@@ -84,7 +84,13 @@ namespace AZ
                     AZStd::shared_ptr<SceneData::GraphData::MeshVertexUVData> uvMap =
                         AZStd::make_shared<AZ::SceneData::GraphData::MeshVertexUVData>();
                     uvMap->ReserveContainerSpace(vertexCount);
+
                     AZStd::string name(AZStd::string::format("%s%d", m_defaultNodeName, texCoordIndex));
+                    if (mesh->mTextureCoordsNames[texCoordIndex].C_Str())
+                    {
+                        name = AZStd::string::format("%s", mesh->mTextureCoordsNames[texCoordIndex].C_Str());
+                    }
+
                     uvMap->SetCustomName(name.c_str());
 
                     for (int v = 0; v < mesh->mNumVertices; ++v)
