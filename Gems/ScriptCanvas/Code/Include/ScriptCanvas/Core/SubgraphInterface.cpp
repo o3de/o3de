@@ -723,7 +723,7 @@ namespace ScriptCanvas
                 {
                     if (!AddOutKey(out.displayName))
                     {
-                        return AZ::Failure(AZStd::string::format("Out %s was already in the list: %s", out.displayName.c_str()));
+                        return AZ::Failure(AZStd::string::format("Out %s was already in the list", out.displayName.c_str()));
                     }
                 }
             }
@@ -732,7 +732,7 @@ namespace ScriptCanvas
             {
                 if (!AddOutKey(latent.displayName))
                 {
-                    return AZ::Failure(AZStd::string::format("Out %s was already in the list: %s", latent.displayName.c_str()));
+                    return AZ::Failure(AZStd::string::format("Out %s was already in the list", latent.displayName.c_str()));
                 }
             }
 
