@@ -54,6 +54,7 @@ namespace AZ
 
             // ViewportContextNotificationBus overrides...
             void OnRenderTick() override;
+            void OnViewportSizeChanged(AzFramework::WindowSize size) override;
 
             DebugConsole m_debugConsole;
         };

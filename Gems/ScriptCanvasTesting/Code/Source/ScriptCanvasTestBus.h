@@ -46,6 +46,27 @@ namespace ScriptCanvasTesting
     };
     using GlobalEBus = AZ::EBus<GlobalBusTraits>;
 
+    class PerformanceStressBusTraits : public AZ::EBusTraits
+    {
+    public:
+        AZ_TYPE_INFO(PerformanceStressBusTraits, "{68AF0B81-70F4-4822-8127-AAC442D924C7}");
+
+        static void Reflect(AZ::ReflectContext* context);
+
+        virtual void ForceStringCompare0() = 0;
+        virtual void ForceStringCompare1() = 0;
+        virtual void ForceStringCompare2() = 0;
+        virtual void ForceStringCompare3() = 0;
+        virtual void ForceStringCompare4() = 0;
+        virtual void ForceStringCompare5() = 0;
+        virtual void ForceStringCompare6() = 0;
+        virtual void ForceStringCompare7() = 0;
+        virtual void ForceStringCompare8() = 0;
+        virtual void ForceStringCompare9() = 0;
+    };
+    using PerformanceStressEBus = AZ::EBus<PerformanceStressBusTraits>;
+
+
     class LocalBusTraits : public AZ::EBusTraits
     {
     public:
