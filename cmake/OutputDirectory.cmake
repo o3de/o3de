@@ -8,13 +8,9 @@
 # remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
-ly_add_external_target(
-    NAME AWSGameLiftServerSDK
-    VERSION 3.4.0
-    3RDPARTY_DIRECTORY AWS/GameLift
-    INCLUDE_DIRECTORIES include
-    COMPILE_DEFINITIONS 
-        AWS_CUSTOM_MEMORY_MANAGEMENT
-        PLATFORM_SUPPORTS_AWS_NATIVE_SDK
-        GAMELIFT_USE_STD
-)
+
+# Set output directories
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib CACHE PATH "Build directory for static libraries and import libraries")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin CACHE PATH "Build directory for shared libraries")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin CACHE PATH "Build directory for executables")
+set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install CACHE PATH "Installation prefix")

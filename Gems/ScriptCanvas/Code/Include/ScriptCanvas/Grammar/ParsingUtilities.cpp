@@ -1057,6 +1057,13 @@ namespace ScriptCanvas
                 && azrtti_istypeof<const ScriptCanvas::Nodes::Core::FunctionCallNode*>(execution->GetId().m_node);
         }
 
+        bool IsUserFunctionCallPure(const ExecutionTreeConstPtr& execution)
+        {
+            return (execution->GetSymbol() == Symbol::FunctionCall)
+                && azrtti_istypeof<const ScriptCanvas::Nodes::Core::FunctionCallNode*>(execution->GetId().m_node)
+                && azrtti_cast<const ScriptCanvas::Nodes::Core::FunctionCallNode*>(execution->GetId().m_node)->IsPure();
+        }
+
         bool IsUserFunctionDefinition(const ExecutionTreeConstPtr& execution)
         {
             auto nodeling = azrtti_cast<const ScriptCanvas::Nodes::Core::FunctionDefinitionNode*>(execution->GetId().m_node);
