@@ -90,9 +90,6 @@ public:
     MOCK_METHOD0(IsSelectionLocked, bool());
     MOCK_METHOD0(GetObjectManager, struct IObjectManager* ());
     MOCK_METHOD0(GetSettingsManager, CSettingsManager* ());
-    MOCK_METHOD4(PickObject, void(IPickObjectCallback*,const QMetaObject*,const char* ,bool bMultipick));
-    MOCK_METHOD0(CancelPick, void());
-    MOCK_METHOD0(IsPicking, bool());
     MOCK_METHOD1(GetDBItemManager, IDataBaseManager* (EDataBaseItemType));
     MOCK_METHOD0(GetMaterialManager, CMaterialManager* ());
     MOCK_METHOD0(GetMaterialManagerLibrary, IBaseLibraryManager* ()); 

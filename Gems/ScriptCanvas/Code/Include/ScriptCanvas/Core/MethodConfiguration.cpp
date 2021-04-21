@@ -57,7 +57,7 @@ namespace ScriptCanvas
 
             for (size_t resultIndex = 0; resultIndex < unpackedTypes.size(); ++resultIndex)
             {
-                const Data::Type outputType(Data::FromAZType(unpackedTypes[resultIndex]));
+                const Data::Type outputType = (unpackedTypes.size() == 1 && AZ::BehaviorContextHelper::IsStringParameter(*result)) ? Data::Type::String() : Data::FromAZType(unpackedTypes[resultIndex]);
 
                 const AZStd::string resultSlotName(AZStd::string::format("Result: %s", Data::GetName(outputType).data()));
                 SlotId addedSlotId;

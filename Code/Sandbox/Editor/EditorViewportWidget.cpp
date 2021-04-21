@@ -276,9 +276,6 @@ void EditorViewportWidget::paintEvent([[maybe_unused]] QPaintEvent* event)
     if ((ge && ge->IsLevelLoaded()) || (GetType() != ET_ViewportCamera))
     {
         setRenderOverlayVisible(true);
-        m_isOnPaint = true;
-        Update();
-        m_isOnPaint = false;
     }
     else
     {
@@ -682,6 +679,11 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
             }
             SetCurrentCursor(STD_CURSOR_GAME);
         }
+
+        if (m_renderViewport)
+        {
+            m_renderViewport->GetControllerList()->SetEnabled(false);
+        }
     }
     break;
 
@@ -699,6 +701,11 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
             m_bInZoomMode = false;
 
             RestoreViewportAfterGameMode();
+        }
+
+        if (m_renderViewport)
+        {
+            m_renderViewport->GetControllerList()->SetEnabled(true);
         }
         break;
 
@@ -730,6 +737,8 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
             // meters above the terrain (default terrain height is 32)
             viewTM.SetTranslation(Vec3(sx * 0.5f, sy * 0.5f, 34.0f));
             SetViewTM(viewTM);
+
+            UpdateScene();
         }
         break;
 
@@ -809,6 +818,10 @@ void EditorViewportWidget::OnBeginPrepareRender()
         return;
     }
 
+    m_isOnPaint = true;
+    Update();
+    m_isOnPaint = false;
+
     float fNearZ = GetIEditor()->GetConsoleVar("cl_DefaultNearPlane");
     float fFarZ = m_Camera.GetFarPlane();
 
@@ -880,6 +893,11 @@ void EditorViewportWidget::OnBeginPrepareRender()
 
     GetIEditor()->GetSystem()->SetViewCamera(m_Camera);
 
+    if (GetIEditor()->IsInGameMode())
+    {
+        return;
+    }
+
     PreWidgetRendering();
 
     RenderAll();
@@ -905,11 +923,6 @@ void EditorViewportWidget::OnBeginPrepareRender()
     m_debugDisplay->DepthTestOn();
 
     PostWidgetRendering();
-
-    if (!m_renderer->IsStereoEnabled())
-    {
-        GetIEditor()->GetSystem()->RenderStatistics();
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
