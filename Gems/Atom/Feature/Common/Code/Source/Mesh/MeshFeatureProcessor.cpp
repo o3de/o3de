@@ -170,6 +170,7 @@ namespace AZ
             meshDataHandle->m_materialAssignments = materials;
             meshDataHandle->m_objectId = m_transformService->ReserveObjectId();
             meshDataHandle->m_originalModelAsset = modelAsset;
+            meshDataHandle->m_requiresCloningCallback = m_requiresCloningCallback;
             meshDataHandle->m_meshLoader = AZStd::make_unique<MeshDataInstance::MeshLoader>(modelAsset, &*meshDataHandle);
 
             return meshDataHandle;
@@ -266,6 +267,12 @@ namespace AZ
             {
                 handler.Connect(meshHandle->m_meshLoader->GetModelChangedEvent());
             }
+        }
+
+        void MeshFeatureProcessor::SetRequiresCloningCallback(
+            const AZStd::function<bool(const Data::Asset<RPI::ModelAsset>& modelAsset)>& requiresCloningCallback)
+        {
+            m_requiresCloningCallback = requiresCloningCallback;
         }
 
         void MeshFeatureProcessor::SetTransform(const MeshHandle& meshHandle, const AZ::Transform& transform)
@@ -427,7 +434,6 @@ namespace AZ
         }
 
         // MeshDataInstance::MeshLoader...
-
         MeshDataInstance::MeshLoader::MeshLoader(const Data::Asset<RPI::ModelAsset>& modelAsset, MeshDataInstance* parent)
             : m_modelAsset(modelAsset)
             , m_parent(parent)
@@ -466,25 +472,6 @@ namespace AZ
             return m_modelChangedEvent;
         }
 
-        bool MeshDataInstance::MeshLoader::RequiresCloning(const Data::Asset<RPI::ModelAsset>& modelAsset) const
-        {
-            // Is the model asset containing a cloth buffer? If yes, we need to clone the model asset for instancing.
-            const AZStd::array_view<AZ::Data::Asset<AZ::RPI::ModelLodAsset>> lodAssets = modelAsset->GetLodAssets();
-            for (const AZ::Data::Asset<AZ::RPI::ModelLodAsset>& lodAsset : lodAssets)
-            {
-                const AZStd::array_view<AZ::RPI::ModelLodAsset::Mesh> meshes = lodAsset->GetMeshes();
-                for (const AZ::RPI::ModelLodAsset::Mesh& mesh : meshes)
-                {
-                    if (mesh.GetSemanticBufferAssetView(AZ::Name("CLOTH_DATA")) != nullptr)
-                    {
-                        return true;
-                    }
-                }
-            }
-
-            return false;
-        }
-
         //! AssetBus::Handler overrides...
         void MeshDataInstance::MeshLoader::OnAssetReady(Data::Asset<Data::AssetData> asset)
         {
@@ -495,7 +482,9 @@ namespace AZ
             m_parent->m_originalModelAsset = asset;
 
             Data::Instance<RPI::Model> model;
-            if (RequiresCloning(modelAsset))
+            // Check if a requires cloning callback got set and if so check if cloning the model asset is requested.
+            if (m_parent->m_requiresCloningCallback &&
+                m_parent->m_requiresCloningCallback(modelAsset))
             {
                 // Clone the model asset to force create another model instance.
                 AZ::Data::AssetId newId(AZ::Uuid::CreateRandom(), /*subId=*/0);

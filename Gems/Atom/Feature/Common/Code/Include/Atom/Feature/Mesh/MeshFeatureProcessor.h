@@ -56,11 +56,6 @@ namespace AZ
                 void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
                 void OnAssetError(Data::Asset<Data::AssetData> asset) override;
 
-                //! Check if the model asset requires to be cloned (e.g. cloth) for unique model instances.
-                //! @param modelAsset The model asset to check.
-                //! @result True in case e.g. a cloth buffer is found, false if no indication is found that requires unique model instances.
-                bool RequiresCloning(const Data::Asset<RPI::ModelAsset>& modelAsset) const;
-
                 MeshFeatureProcessorInterface::ModelChangedEvent m_modelChangedEvent;
                 Data::Asset<RPI::ModelAsset> m_modelAsset;
                 MeshDataInstance* m_parent = nullptr;
@@ -91,6 +86,8 @@ namespace AZ
 
             //! A reference to the original model asset in case it got cloned before creating the model instance.
             Data::Asset<RPI::ModelAsset> m_originalModelAsset;
+            AZStd::function<bool(const Data::Asset<RPI::ModelAsset>& modelAsset)> m_requiresCloningCallback;
+
             Data::Instance<RPI::ShaderResourceGroup> m_shaderResourceGroup;
             AZStd::unique_ptr<MeshLoader> m_meshLoader;
             RPI::Scene* m_scene = nullptr;
@@ -153,6 +150,8 @@ namespace AZ
             const MaterialAssignmentMap& GetMaterialAssignmentMap(const MeshHandle& meshHandle) const override;
             void ConnectModelChangeEventHandler(const MeshHandle& meshHandle, ModelChangedEvent::Handler& handler) override;
 
+            void SetRequiresCloningCallback(const AZStd::function<bool(const Data::Asset<RPI::ModelAsset>& modelAsset)>& requiresCloningCallback);
+
             void SetTransform(const MeshHandle& meshHandle, const AZ::Transform& transform) override;
             Transform GetTransform(const MeshHandle& meshHandle) override;
 
@@ -189,6 +188,7 @@ namespace AZ
             RayTracingFeatureProcessor* m_rayTracingFeatureProcessor = nullptr;
             AZ::RPI::ShaderSystemInterface::GlobalShaderOptionUpdatedEvent::Handler m_handleGlobalShaderOptionUpdate;
             bool m_forceRebuildDrawPackets = false;
+            AZStd::function<bool(const Data::Asset<RPI::ModelAsset>& modelAsset)> m_requiresCloningCallback;
         };
     } // namespace Render
 } // namespace AZ

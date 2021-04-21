@@ -82,7 +82,6 @@ namespace AZ
             const MeshComponentConfig& GetConfiguration() const;
 
         private:
-
             AZ_DISABLE_COPY(MeshComponentController);
 
             // MeshComponentRequestBus::Handler overrides ...
@@ -116,6 +115,11 @@ namespace AZ
 
             // MaterialComponentNotificationBus::Handler overrides ...
             void OnMaterialsUpdated(const MaterialAssignmentMap& materials) override;
+
+            //! Check if the model asset requires to be cloned (e.g. cloth) for unique model instances.
+            //! @param modelAsset The model asset to check.
+            //! @result True in case e.g. a cloth buffer is found, false if no indication is found that requires unique model instances.
+            static bool RequiresCloning(const Data::Asset<RPI::ModelAsset>& modelAsset);
 
             void HandleModelChange(Data::Instance<RPI::Model> model);
             void RegisterModel();

@@ -85,7 +85,7 @@ namespace AZ
                 if (!ModelLodAssetCreator::Clone(sourceLodAsset, lodAsset, lastUsedId))
                 {
                     AZ_Error("ModelAssetCreator", false,
-                        "Cannot clone model lod asset for '%s'.", sourceLodAsset.GetId().ToString<AZStd::string>().c_str());
+                        "Cannot clone model lod asset for '%s'.", sourceLodAsset.GetHint().c_str());
                     return false;
                 }
 
