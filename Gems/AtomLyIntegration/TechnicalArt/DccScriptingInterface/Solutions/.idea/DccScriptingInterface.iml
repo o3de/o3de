@@ -13,7 +13,7 @@
       <sourceFolder url="file://$MODULE_DIR$/../SDK" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$" type="java-resource" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.7 (Solutions) (2)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.7" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PyNamespacePackagesService">
