@@ -283,7 +283,7 @@ namespace UnitTest
         AZStd::vector<int> remappedVertices;
         NvCloth::Internal::WeldVertices(vertices, indices, weldedVertices, weldedIndices, remappedVertices);
 
-        EXPECT_EQ(weldedVertices.size(), expectedSizeAfterWelding);
+        ASSERT_EQ(weldedVertices.size(), expectedSizeAfterWelding);
         EXPECT_THAT(weldedVertices[0].GetAsVector3(), IsCloseTolerance(vertexPosition, Tolerance));
         EXPECT_NEAR(weldedVertices[0].GetW(), lowestInverseMass, Tolerance);
     }
@@ -307,9 +307,9 @@ namespace UnitTest
         AZStd::vector<int> remappedVertices;
         NvCloth::Internal::WeldVertices(vertices, indices, weldedVertices, weldedIndices, remappedVertices);
 
-        EXPECT_EQ(weldedVertices.size(), expectedSizeAfterWelding);
-        EXPECT_EQ(weldedIndices.size(), indices.size());
-        EXPECT_EQ(remappedVertices.size(), vertices.size());
+        ASSERT_EQ(weldedVertices.size(), expectedSizeAfterWelding);
+        ASSERT_EQ(weldedIndices.size(), indices.size());
+        ASSERT_EQ(remappedVertices.size(), vertices.size());
 
         for (size_t i = 0; i < remappedVertices.size(); ++i)
         {
@@ -347,9 +347,9 @@ namespace UnitTest
 
         // The result after calling WeldVertices is expected to have the same size.
         // The vertices inside will be reordered though due to the welding process.
-        EXPECT_EQ(weldedVertices.size(), vertices.size());
-        EXPECT_EQ(weldedIndices.size(), indices.size());
-        EXPECT_EQ(remappedVertices.size(), vertices.size());
+        ASSERT_EQ(weldedVertices.size(), vertices.size());
+        ASSERT_EQ(weldedIndices.size(), indices.size());
+        ASSERT_EQ(remappedVertices.size(), vertices.size());
 
         for (size_t i = 0; i < remappedVertices.size(); ++i)
         {
@@ -422,9 +422,9 @@ namespace UnitTest
         AZStd::vector<int> remappedVertices;
         NvCloth::Internal::RemoveStaticTriangles(vertices, indices, simplifiedVertices, simplifiedIndices, remappedVertices);
 
-        EXPECT_EQ(simplifiedVertices.size(), expectedVerticesSizeAfterSimplification);
-        EXPECT_EQ(simplifiedIndices.size(), expectedIndicesSizeAfterSimplification);
-        EXPECT_EQ(remappedVertices.size(), vertices.size());
+        ASSERT_EQ(simplifiedVertices.size(), expectedVerticesSizeAfterSimplification);
+        ASSERT_EQ(simplifiedIndices.size(), expectedIndicesSizeAfterSimplification);
+        ASSERT_EQ(remappedVertices.size(), vertices.size());
 
         for (size_t i = 0; i < remappedVertices.size(); ++i)
         {
@@ -477,9 +477,9 @@ namespace UnitTest
         AZStd::vector<int> remappedVertices;
         NvCloth::Internal::RemoveStaticTriangles(vertices, indices, simplifiedVertices, simplifiedIndices, remappedVertices);
 
-        EXPECT_EQ(simplifiedVertices.size(), expectedVerticesSizeAfterSimplification);
-        EXPECT_EQ(simplifiedIndices.size(), expectedIndicesSizeAfterSimplification);
-        EXPECT_EQ(remappedVertices.size(), vertices.size());
+        ASSERT_EQ(simplifiedVertices.size(), expectedVerticesSizeAfterSimplification);
+        ASSERT_EQ(simplifiedIndices.size(), expectedIndicesSizeAfterSimplification);
+        ASSERT_EQ(remappedVertices.size(), vertices.size());
 
         for (size_t i = 0; i < remappedVertices.size(); ++i)
         {
@@ -532,9 +532,9 @@ namespace UnitTest
 
         // The result after calling RemoveStaticTriangles is expected to have the same size.
         // The vertices will be reordered though due to the processing during simplification.
-        EXPECT_EQ(simplifiedVertices.size(), vertices.size());
-        EXPECT_EQ(simplifiedIndices.size(), indices.size());
-        EXPECT_EQ(remappedVertices.size(), vertices.size());
+        ASSERT_EQ(simplifiedVertices.size(), vertices.size());
+        ASSERT_EQ(simplifiedIndices.size(), indices.size());
+        ASSERT_EQ(remappedVertices.size(), vertices.size());
 
         for (size_t i = 0; i < remappedVertices.size(); ++i)
         {
@@ -576,9 +576,9 @@ namespace UnitTest
         AZStd::vector<int> remappedVertices;
         AZ::Interface<NvCloth::IFabricCooker>::Get()->SimplifyMesh(vertices, indices, simplifiedVertices, simplifiedIndices, remappedVertices, removeStaticTriangles);
 
-        EXPECT_EQ(simplifiedVertices.size(), expectedVerticesSizeAfterSimplification);
-        EXPECT_EQ(simplifiedIndices.size(), expectedIndicesSizeAfterSimplification);
-        EXPECT_EQ(remappedVertices.size(), vertices.size());
+        ASSERT_EQ(simplifiedVertices.size(), expectedVerticesSizeAfterSimplification);
+        ASSERT_EQ(simplifiedIndices.size(), expectedIndicesSizeAfterSimplification);
+        ASSERT_EQ(remappedVertices.size(), vertices.size());
 
         for (size_t i = 0; i < remappedVertices.size(); ++i)
         {
@@ -635,9 +635,9 @@ namespace UnitTest
         AZStd::vector<int> remappedVertices;
         AZ::Interface<NvCloth::IFabricCooker>::Get()->SimplifyMesh(vertices, indices, simplifiedVertices, simplifiedIndices, remappedVertices, removeStaticTriangles);
 
-        EXPECT_EQ(simplifiedVertices.size(), expectedVerticesSizeAfterSimplification);
-        EXPECT_EQ(simplifiedIndices.size(), expectedIndicesSizeAfterSimplification);
-        EXPECT_EQ(remappedVertices.size(), vertices.size());
+        ASSERT_EQ(simplifiedVertices.size(), expectedVerticesSizeAfterSimplification);
+        ASSERT_EQ(simplifiedIndices.size(), expectedIndicesSizeAfterSimplification);
+        ASSERT_EQ(remappedVertices.size(), vertices.size());
 
         for (size_t i = 0; i < remappedVertices.size(); ++i)
         {

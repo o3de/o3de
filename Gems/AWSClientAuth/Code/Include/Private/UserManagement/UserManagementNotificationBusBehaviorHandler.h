@@ -12,6 +12,7 @@
 #pragma once
 
 #include <UserManagement/AWSCognitoUserManagementBus.h>
+#include <AzCore/Component/TickBus.h>
 
 namespace AWSClientAuth
 {
@@ -32,62 +33,86 @@ namespace AWSClientAuth
 
         void OnEmailSignUpSuccess(const AZStd::string& uuid) override
         {
-            Call(FN_OnEmailSignUpSuccess, uuid);
+            AZ::TickBus::QueueFunction([uuid, this]() {
+                Call(FN_OnEmailSignUpSuccess, uuid);
+            });
         }
 
         void OnEmailSignUpFail(const AZStd::string& error) override
         {
-            Call(FN_OnEmailSignUpFail, error);
+            AZ::TickBus::QueueFunction([error, this]() {
+                Call(FN_OnEmailSignUpFail, error);
+            });
         }
 
         void OnPhoneSignUpSuccess(const AZStd::string& uuid) override
         {
-            Call(FN_OnPhoneSignUpSuccess, uuid);
+            AZ::TickBus::QueueFunction([uuid, this]() {
+                Call(FN_OnPhoneSignUpSuccess, uuid);
+            });
         }
 
         void OnPhoneSignUpFail(const AZStd::string& error) override
         {
-            Call(FN_OnPhoneSignUpFail, error);
+            AZ::TickBus::QueueFunction([error, this]() {
+                Call(FN_OnPhoneSignUpFail, error);
+            });
         }
 
         void OnConfirmSignUpSuccess() override
         {
-            Call(FN_OnConfirmSignUpSuccess);
+            AZ::TickBus::QueueFunction([this]() {
+                Call(FN_OnConfirmSignUpSuccess);
+            });
         }
 
         void OnConfirmSignUpFail(const AZStd::string& error) override
         {
-            Call(FN_OnConfirmSignUpFail, error);
+            AZ::TickBus::QueueFunction([error, this]() {
+                Call(FN_OnConfirmSignUpFail, error);
+            });
         }
 
         void OnForgotPasswordSuccess() override
         {
-            Call(FN_OnForgotPasswordSuccess);
+            AZ::TickBus::QueueFunction([this]() {
+                Call(FN_OnForgotPasswordSuccess);
+            });
         }
 
         void OnForgotPasswordFail(const AZStd::string& error) override
         {
-            Call(FN_OnForgotPasswordFail, error);
+            AZ::TickBus::QueueFunction([error, this]() {
+                Call(FN_OnForgotPasswordFail, error);
+            });
         }
 
         void OnConfirmForgotPasswordSuccess() override
         {
-            Call(FN_OnConfirmForgotPasswordSuccess);
+            AZ::TickBus::QueueFunction([this]() {
+                Call(FN_OnConfirmForgotPasswordSuccess);
+            });
         }
 
         void OnConfirmForgotPasswordFail(const AZStd::string& error) override
         {
-            Call(FN_OnConfirmForgotPasswordFail, error);
+            AZ::TickBus::QueueFunction([error, this]() {
+                Call(FN_OnConfirmForgotPasswordFail, error);
+            });
         }
 
         void OnEnableMFASuccess() override
         {
-            Call(FN_OnEnableMFASuccess);
+            AZ::TickBus::QueueFunction([this]() {
+                Call(FN_OnEnableMFASuccess);
+            });
         }
 
         void OnEnableMFAFail(const AZStd::string& error) override
         {
-            Call(FN_OnEnableMFAFail, error);
+            AZ::TickBus::QueueFunction([error, this]() {
+                Call(FN_OnEnableMFAFail, error);
+            });
         }
     };
 } // namespace AWSClientAuth

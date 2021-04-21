@@ -654,12 +654,6 @@ void SEditorSettings::Save()
     SaveValue("Settings", "ForceSkyUpdate", gSettings.bForceSkyUpdate);
 
     //////////////////////////////////////////////////////////////////////////
-    // Vertex snapping settings
-    //////////////////////////////////////////////////////////////////////////
-    SaveValue("Settings\\VertexSnapping", "VertexCubeSize", vertexSnappingSettings.vertexCubeSize);
-    SaveValue("Settings\\VertexSnapping", "RenderPenetratedBoundBox", vertexSnappingSettings.bRenderPenetratedBoundBox);
-
-    //////////////////////////////////////////////////////////////////////////
     // Smart file open settings
     //////////////////////////////////////////////////////////////////////////
     SaveValue("Settings\\SmartFileOpen", "LastSearchTerm", smartOpenSettings.lastSearchTerm);
@@ -885,12 +879,6 @@ void SEditorSettings::Load()
     LoadValue("Settings\\ObjectColors", "ChildGeometryAlpha", objectColorSettings.fChildGeomAlpha);
 
     LoadValue("Settings", "ForceSkyUpdate", gSettings.bForceSkyUpdate);
-
-    //////////////////////////////////////////////////////////////////////////
-    // Vertex snapping settings
-    //////////////////////////////////////////////////////////////////////////
-    LoadValue("Settings\\VertexSnapping", "VertexCubeSize", vertexSnappingSettings.vertexCubeSize);
-    LoadValue("Settings\\VertexSnapping", "RenderPenetratedBoundBox", vertexSnappingSettings.bRenderPenetratedBoundBox);
 
     //////////////////////////////////////////////////////////////////////////
     // Smart file open settings

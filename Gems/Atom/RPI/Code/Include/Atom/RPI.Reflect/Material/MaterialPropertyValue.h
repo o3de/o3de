@@ -65,6 +65,7 @@ namespace AZ
             MaterialPropertyValue(const Vector4& value) : m_value(value) {}
             MaterialPropertyValue(const Color& value) : m_value(value) {}
             MaterialPropertyValue(const Data::Asset<ImageAsset>& value) : m_value(value) {}
+            MaterialPropertyValue(const Data::Instance<Image>& value) : m_value(value) {}
             MaterialPropertyValue(const AZStd::string& value) : m_value(value) {}
 
             //! Copy constructor

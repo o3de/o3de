@@ -61,6 +61,11 @@ namespace AzToolsFramework
         return true;
     }
 
+    bool EditorEntityUiHandlerBase::CanRename(AZ::EntityId /*entityId*/) const
+    {
+        return true;
+    }
+
     void EditorEntityUiHandlerBase::PaintItemBackground(QPainter* /*painter*/, const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/) const
     {
     }
