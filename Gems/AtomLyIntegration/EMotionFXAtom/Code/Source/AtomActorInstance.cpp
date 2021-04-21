@@ -459,7 +459,7 @@ namespace AZ
             MeshComponentRequestBus::Handler::BusConnect(m_entityId);
 
             const Data::Instance<RPI::Model> model = m_meshFeatureProcessor->GetModel(*m_meshHandle);
-            MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnModelReady, model->GetModelAsset(), model);
+            MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnModelReady, m_actorInstance->GetActor()->GetMeshAsset(), model);
         }
 
         void AtomActorInstance::UnregisterActor()
