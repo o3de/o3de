@@ -18,8 +18,8 @@ ly_add_target(
     INCLUDE_DIRECTORIES
         PRIVATE
             ${pal_source_dir}
-            Source
             AZ::AzNetworking
+            Source
             .
         PUBLIC
             Include
@@ -28,8 +28,6 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             AZ::AzNetworking
-            Gem::CertificateManager
-            3rdParty::AWSNativeSDK::Core
     AUTOGEN_RULES
         *.AutoPackets.xml,AutoPackets_Header.jinja,$path/$fileprefix.AutoPackets.h
         *.AutoPackets.xml,AutoPackets_Inline.jinja,$path/$fileprefix.AutoPackets.inl
@@ -60,10 +58,27 @@ ly_add_target(
         Gem::CertificateManager
 )
 
-################################################################################
-# Tests
-################################################################################
-if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+if (PAL_TRAIT_BUILD_HOST_TOOLS)
+    ly_add_target(
+        NAME Multiplayer.Tools MODULE
+        NAMESPACE Gem
+        OUTPUT_NAME Gem.Multiplayer.Tools
+        FILES_CMAKE
+            multiplayer_tools_files.cmake
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                Source
+                .
+            PUBLIC
+                Include
+        BUILD_DEPENDENCIES
+            PRIVATE
+                AZ::AzToolsFramework
+                Gem::Multiplayer.Static
+    )
+endif()
+
+if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
         NAME Multiplayer.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
@@ -75,6 +90,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 ${pal_source_dir}
                 Source
                 .
+            PUBLIC
+                Include
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzTest
@@ -84,3 +101,25 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         NAME Gem::Multiplayer.Tests
     )
 endif()
+
+ly_add_target(
+    NAME Multiplayer.Debug ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAMESPACE Gem
+    FILES_CMAKE
+        multiplayer_debug_files.cmake
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            Source
+            .
+        PUBLIC
+            Include
+    BUILD_DEPENDENCIES
+        PRIVATE
+            AZ::AzCore
+            AZ::AtomCore
+            AZ::AzFramework
+            AZ::AzNetworking
+            Gem::Atom_Feature_Common.Static
+            Gem::Multiplayer.Static
+            Gem::ImGui.Static
+)

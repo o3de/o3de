@@ -15,37 +15,17 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-#include <AzFramework/Physics/Utils.h>
-#include <AzFramework/Physics/Material.h>
-#include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
-#include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
-#include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
-#include <AzFramework/Asset/AssetSystemBus.h>
-#include <AzFramework/API/ApplicationAPI.h>
 #include <PhysX/MeshAsset.h>
 #include <PhysX/HeightFieldAsset.h>
-#include <Source/RigidBody.h>
-#include <Source/RigidBodyStatic.h>
 #include <Source/Utils.h>
 #include <Source/Collision.h>
 #include <Source/Shape.h>
 #include <Source/Joint.h>
-#include <Source/SphereColliderComponent.h>
-#include <Source/BoxColliderComponent.h>
-#include <Source/CapsuleColliderComponent.h>
 #include <Source/Pipeline/MeshAssetHandler.h>
 #include <Source/Pipeline/HeightFieldAssetHandler.h>
 #include <Source/PhysXCharacters/API/CharacterUtils.h>
 #include <Source/PhysXCharacters/API/CharacterController.h>
 #include <Source/WindProvider.h>
-
-#ifdef PHYSX_EDITOR
-#include <Source/EditorColliderComponent.h>
-#include <Editor/EditorWindow.h>
-#include <Editor/PropertyTypes.h>
-#include <AzToolsFramework/SourceControl/SourceControlAPI.h>
-#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
-#endif
 
 #include <PhysX/Debug/PhysXDebugInterface.h>
 #include <System/PhysXSystem.h>
@@ -231,25 +211,13 @@ namespace PhysX
         Physics::SystemRequestBus::Handler::BusConnect();
         PhysX::SystemRequestsBus::Handler::BusConnect();
         Physics::CollisionRequestBus::Handler::BusConnect();
-        Physics::CharacterSystemRequestBus::Handler::BusConnect();
-
-#ifdef PHYSX_EDITOR
-        PhysX::Editor::RegisterPropertyTypes();
-        AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
-        AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
-#endif
 
         ActivatePhysXSystem();
     }
 
     void SystemComponent::Deactivate()
     {
-#ifdef PHYSX_EDITOR
-        AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
-        AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
-#endif
         AZ::TickBus::Handler::BusDisconnect();
-        Physics::CharacterSystemRequestBus::Handler::BusDisconnect();
         Physics::CollisionRequestBus::Handler::BusDisconnect();
         PhysX::SystemRequestsBus::Handler::BusDisconnect();
         Physics::SystemRequestBus::Handler::BusDisconnect();
@@ -271,19 +239,6 @@ namespace PhysX
         }
         m_assetHandlers.clear(); //this need to be after m_physXSystem->Shutdown(); For it will drop the default material library reference.
     }
-
-#ifdef PHYSX_EDITOR
-
-    // AztoolsFramework::EditorEvents::Bus::Handler overrides
-    void SystemComponent::PopulateEditorGlobalContextMenu([[maybe_unused]] QMenu* menu, [[maybe_unused]] const AZ::Vector2& point, [[maybe_unused]] int flags)
-    {
-    }
-
-    void SystemComponent::NotifyRegisterViews()
-    {
-        PhysX::Editor::EditorWindow::RegisterViewClass();
-    }
-#endif
 
     physx::PxConvexMesh* SystemComponent::CreateConvexMesh(const void* vertices, AZ::u32 vertexNum, AZ::u32 vertexStride)
     {
@@ -462,61 +417,6 @@ namespace PhysX
         {
             static_cast<physx::PxBase*>(nativeMeshObject)->release();
         }
-    }
-
-    void SystemComponent::AddColliderComponentToEntity(AZ::Entity* entity, const Physics::ColliderConfiguration& colliderConfiguration, const Physics::ShapeConfiguration& shapeConfiguration, [[maybe_unused]] bool addEditorComponents)
-    {
-        [[maybe_unused]] Physics::ShapeType shapeType = shapeConfiguration.GetShapeType();
-
-#ifdef PHYSX_EDITOR
-        if (addEditorComponents)
-        {
-            entity->CreateComponent<EditorColliderComponent>(colliderConfiguration, shapeConfiguration);
-        }
-        else
-#else
-        {
-            if (shapeType == Physics::ShapeType::Sphere)
-            {
-                const Physics::SphereShapeConfiguration& sphereConfiguration = static_cast<const Physics::SphereShapeConfiguration&>(shapeConfiguration);
-                auto sphereColliderComponent = entity->CreateComponent<SphereColliderComponent>();
-                sphereColliderComponent->SetShapeConfigurationList({ AZStd::make_pair(
-                    AZStd::make_shared<Physics::ColliderConfiguration>(colliderConfiguration),
-                    AZStd::make_shared<Physics::SphereShapeConfiguration>(sphereConfiguration)) });
-            }
-            else if (shapeType == Physics::ShapeType::Box)
-            {
-                const Physics::BoxShapeConfiguration& boxConfiguration = static_cast<const Physics::BoxShapeConfiguration&>(shapeConfiguration);
-                auto boxColliderComponent = entity->CreateComponent<BoxColliderComponent>();
-                boxColliderComponent->SetShapeConfigurationList({ AZStd::make_pair(
-                    AZStd::make_shared<Physics::ColliderConfiguration>(colliderConfiguration),
-                    AZStd::make_shared<Physics::BoxShapeConfiguration>(boxConfiguration)) });
-            }
-            else if (shapeType == Physics::ShapeType::Capsule)
-            {
-                const Physics::CapsuleShapeConfiguration& capsuleConfiguration = static_cast<const Physics::CapsuleShapeConfiguration&>(shapeConfiguration);
-                auto capsuleColliderComponent = entity->CreateComponent<CapsuleColliderComponent>();
-                capsuleColliderComponent->SetShapeConfigurationList({ AZStd::make_pair(
-                    AZStd::make_shared<Physics::ColliderConfiguration>(colliderConfiguration),
-                    AZStd::make_shared<Physics::CapsuleShapeConfiguration>(capsuleConfiguration)) });
-            }
-        }
-
-        AZ_Error("PhysX System", !addEditorComponents, "AddColliderComponentToEntity(): Trying to add an Editor collider component in a stand alone build.",
-            static_cast<AZ::u8>(shapeType));
-
-#endif
-        {
-            AZ_Error("PhysX System", shapeType == Physics::ShapeType::Sphere || shapeType == Physics::ShapeType::Box || shapeType == Physics::ShapeType::Capsule,
-                "AddColliderComponentToEntity(): Using Shape of type %d is not implemented.", static_cast<AZ::u8>(shapeType));
-        }
-    }
-
-    // Physics::CharacterSystemRequestBus
-    AZStd::unique_ptr<Physics::Character> SystemComponent::CreateCharacter(const Physics::CharacterConfiguration&
-        characterConfig, const Physics::ShapeConfiguration& shapeConfig, AzPhysics::SceneHandle& sceneHandle)
-    {
-        return Utils::Characters::CreateCharacterController(characterConfig, shapeConfig, sceneHandle);
     }
 
     AzPhysics::CollisionLayer SystemComponent::GetCollisionLayerByName(const AZStd::string& layerName)

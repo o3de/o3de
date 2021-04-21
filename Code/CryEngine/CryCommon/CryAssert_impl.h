@@ -323,7 +323,7 @@ void CryAssertTrace(const char* _pszFormat, ...)
 
 //-----------------------------------------------------------------------------------------------------
 
-static const char* gs_strRegSubKey  = "Software\\Amazon\\Lumberyard\\AssertWindow";
+static const char* gs_strRegSubKey  = "Software\\O3DE\\AssertWindow";
 static const char* gs_strRegXValue  = "AssertInfoX";
 static const char* gs_strRegYValue  = "AssertInfoY";
 

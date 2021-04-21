@@ -65,7 +65,6 @@ AZ_POP_DISABLE_WARNING
 #include "UIEnumsDatabase.h"
 #include "Util/Ruler.h"
 #include "RenderHelpers/AxisHelper.h"
-#include "PickObjectTool.h"
 #include "Settings.h"
 #include "Include/IObjectManager.h"
 #include "Include/ISourceControl.h"
@@ -170,7 +169,6 @@ CEditorImpl::CEditorImpl()
     , m_pShaderEnum(nullptr)
     , m_pIconManager(nullptr)
     , m_bSelectionLocked(true)
-    , m_pPickTool(nullptr)
     , m_pAxisGizmo(nullptr)
     , m_pGameEngine(nullptr)
     , m_pAnimationContext(nullptr)
@@ -794,11 +792,6 @@ void CEditorImpl::SetEditTool(CEditTool* tool, bool bStopCurrentTool)
         m_pEditTool->BeginEditParams(this, 0);
     }
 
-    // Make sure pick is aborted.
-    if (tool != m_pPickTool)
-    {
-        m_pPickTool = nullptr;
-    }
     Notify(eNotify_OnEditToolChange);
 }
 
@@ -1067,34 +1060,6 @@ void CEditorImpl::LockSelection(bool bLock)
 bool CEditorImpl::IsSelectionLocked()
 {
     return m_bSelectionLocked;
-}
-
-void CEditorImpl::PickObject(IPickObjectCallback* callback, const QMetaObject* targetClass, const char* statusText, bool bMultipick)
-{
-    m_pPickTool = new CPickObjectTool(callback, targetClass);
-
-    static_cast<CPickObjectTool*>(m_pPickTool.get())->SetMultiplePicks(bMultipick);
-    if (statusText)
-    {
-        m_pPickTool.get()->SetStatusText(statusText);
-    }
-
-    SetEditTool(m_pPickTool);
-}
-
-void CEditorImpl::CancelPick()
-{
-    SetEditTool(0);
-    m_pPickTool = 0;
-}
-
-bool CEditorImpl::IsPicking()
-{
-    if (GetEditTool() == m_pPickTool && m_pPickTool != 0)
-    {
-        return true;
-    }
-    return false;
 }
 
 CViewManager* CEditorImpl::GetViewManager()
@@ -1432,10 +1397,10 @@ AZStd::string CEditorImpl::LoadProjectIdFromProjectData()
     QByteArray editorProjectNameUtf8 = editorProjectName.toUtf8();
     AZ::Uuid id = AZ::Uuid::CreateName(editorProjectNameUtf8.constData());
 
-    // The projects that Lumberyard ships with had their project IDs hand-generated based on the name of the level.
+    // The projects that Open 3D Engine ships with had their project IDs hand-generated based on the name of the level.
     // Therefore, if the UUID from the project name is the same as the UUID in the file, it's one of our projects
     // and we can therefore send the name back, making it easier for Metrics to determine which level it was.
-    // We are checking to see if this is a project we ship with Lumberyard, and therefore we can unobfuscate non-customer information.
+    // We are checking to see if this is a project we ship with Open 3D Engine, and therefore we can unobfuscate non-customer information.
     if (id != AZ::Uuid(projectId.data()))
     {
         return projectId;
@@ -2097,7 +2062,7 @@ namespace
 
 void CEditorImpl::LoadSettings()
 {
-    QSettings settings(QStringLiteral("Amazon"), QStringLiteral("Lumberyard"));
+    QSettings settings(QStringLiteral("Amazon"), QStringLiteral("O3DE"));
 
     settings.beginGroup(QStringLiteral("Editor"));
     settings.beginGroup(QStringLiteral("CoordSys"));
@@ -2116,7 +2081,7 @@ void CEditorImpl::LoadSettings()
 
 void CEditorImpl::SaveSettings() const
 {
-    QSettings settings(QStringLiteral("Amazon"), QStringLiteral("Lumberyard"));
+    QSettings settings(QStringLiteral("Amazon"), QStringLiteral("O3DE"));
 
     settings.beginGroup(QStringLiteral("Editor"));
     settings.beginGroup(QStringLiteral("CoordSys"));

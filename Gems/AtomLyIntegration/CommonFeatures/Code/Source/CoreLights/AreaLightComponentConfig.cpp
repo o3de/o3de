@@ -21,7 +21,8 @@ namespace AZ
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<AreaLightComponentConfig, ComponentConfig>()
-                    ->Version(3)
+                    ->Version(5) // ATOM-14637
+                    ->Field("LightType", &AreaLightComponentConfig::m_lightType)
                     ->Field("Color", &AreaLightComponentConfig::m_color)
                     ->Field("IntensityMode", &AreaLightComponentConfig::m_intensityMode)
                     ->Field("Intensity", &AreaLightComponentConfig::m_intensity)
@@ -29,8 +30,52 @@ namespace AZ
                     ->Field("AttenuationRadius", &AreaLightComponentConfig::m_attenuationRadius)
                     ->Field("LightEmitsBothDirections", &AreaLightComponentConfig::m_lightEmitsBothDirections)
                     ->Field("UseFastApproximation", &AreaLightComponentConfig::m_useFastApproximation)
+                    // Shutters
+                    ->Field("EnableShutters", &AreaLightComponentConfig::m_enableShutters)
+                    ->Field("InnerShutterAngleDegrees", &AreaLightComponentConfig::m_innerShutterAngleDegrees)
+                    ->Field("OuterShutterAngleDegrees", &AreaLightComponentConfig::m_outerShutterAngleDegrees)
+                    // Shadows
+                    ->Field("Enable Shadow", &AreaLightComponentConfig::m_enableShadow)
+                    ->Field("Shadowmap Max Size", &AreaLightComponentConfig::m_shadowmapMaxSize)
+                    ->Field("Shadow Filter Method", &AreaLightComponentConfig::m_shadowFilterMethod)
+                    ->Field("Softening Boundary Width", &AreaLightComponentConfig::m_boundaryWidthInDegrees)
+                    ->Field("Prediction Sample Count", &AreaLightComponentConfig::m_predictionSampleCount)
+                    ->Field("Filtering Sample Count", &AreaLightComponentConfig::m_filteringSampleCount)
+                    ->Field("Pcf Method", &AreaLightComponentConfig::m_pcfMethod);
                     ;
             }
+        }
+        
+        AZStd::vector<Edit::EnumConstant<PhotometricUnit>> AreaLightComponentConfig::GetValidPhotometricUnits() const
+        {
+            AZStd::vector<Edit::EnumConstant<PhotometricUnit>> enumValues =
+            {
+                // Candela & lumen always supported.
+                Edit::EnumConstant<PhotometricUnit>(PhotometricUnit::Candela, "Candela"),
+                Edit::EnumConstant<PhotometricUnit>(PhotometricUnit::Lumen, "Lumen"),
+            };
+
+            if (RequiresShapeComponent())
+            {
+                // Lights with surface area also support nits and ev100.
+                enumValues.push_back(Edit::EnumConstant<PhotometricUnit>(PhotometricUnit::Nit, "Nit"));
+                enumValues.push_back(Edit::EnumConstant<PhotometricUnit>(PhotometricUnit::Ev100Luminance, "Ev100"));
+            }
+            return enumValues;
+        }
+
+        bool AreaLightComponentConfig::RequiresShapeComponent() const
+        {
+            return m_lightType == LightType::Sphere
+                || m_lightType == LightType::SpotDisk
+                || m_lightType == LightType::Capsule
+                || m_lightType == LightType::Quad
+                || m_lightType == LightType::Polygon;
+        }
+
+        bool AreaLightComponentConfig::LightTypeIsSelected() const
+        {
+            return m_lightType != LightType::Unknown;
         }
 
         bool AreaLightComponentConfig::IsAttenuationRadiusModeAutomatic() const
@@ -38,16 +83,41 @@ namespace AZ
             return m_attenuationRadiusMode == LightAttenuationRadiusMode::Automatic;
         }
 
-        bool AreaLightComponentConfig::Is2DSurface() const
+        bool AreaLightComponentConfig::SupportsBothDirections() const
         {
-            return m_shapeType == AZ_CRC_CE("DiskShape")
-                || m_shapeType == AZ_CRC_CE("QuadShape")
-                || m_shapeType == AZ_CRC_CE("PolygonPrism");
+            return m_lightType == LightType::Quad
+                || m_lightType == LightType::Polygon;
         }
 
         bool AreaLightComponentConfig::SupportsFastApproximation() const
         {
-            return m_shapeType == AZ_CRC_CE("QuadShape");
+            return m_lightType == LightType::Quad;
+        }
+        
+        bool AreaLightComponentConfig::SupportsShutters() const
+        {
+            return m_lightType == LightType::SimpleSpot
+                || m_lightType == LightType::SpotDisk;
+        }
+
+        bool AreaLightComponentConfig::ShuttersMustBeEnabled() const
+        {
+            return m_lightType == LightType::SpotDisk;
+        }
+
+        bool AreaLightComponentConfig::ShuttersDisabled() const
+        {
+            return  m_lightType == LightType::SpotDisk && !m_enableShutters;
+        }
+
+        bool AreaLightComponentConfig::SupportsShadows() const
+        {
+            return m_shapeType == AZ_CRC_CE("DiskShape");
+        }
+        
+        bool AreaLightComponentConfig::ShadowsDisabled() const
+        {
+            return !m_enableShadow;
         }
 
         const char* AreaLightComponentConfig::GetIntensitySuffix() const
@@ -109,6 +179,26 @@ namespace AZ
             }
             return 0.0f;
         }
+        
+        bool AreaLightComponentConfig::IsShadowFilteringDisabled() const
+        {
+            return (m_shadowFilterMethod == ShadowFilterMethod::None);
+        }
 
+        bool AreaLightComponentConfig::IsShadowPcfDisabled() const
+        {
+            return !(m_shadowFilterMethod == ShadowFilterMethod::Pcf ||
+                m_shadowFilterMethod == ShadowFilterMethod::EsmPcf);
+        }
+
+        bool AreaLightComponentConfig::IsPcfBoundarySearchDisabled() const
+        {
+            if (IsShadowPcfDisabled())
+            {
+                return true;
+            }
+
+            return m_pcfMethod != PcfMethod::BoundarySearch;
+        }
     }
 }

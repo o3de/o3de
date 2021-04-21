@@ -92,7 +92,6 @@ AZ_POP_DISABLE_WARNING
 
 #include "TrackView/TrackViewDialog.h"
 #include "ErrorReportDialog.h"
-#include "Material/MaterialDialog.h"
 #include "LensFlareEditor/LensFlareEditor.h"
 #include "TimeOfDayDialog.h"
 
@@ -406,7 +405,7 @@ MainWindow::MainWindow(QWidget* parent)
     , m_undoStateAdapter(new UndoStackStateAdapter(this))
     , m_keyboardCustomization(nullptr)
     , m_activeView(nullptr)
-    , m_settings("amazon", "lumberyard") // TODO_KDAB: Replace with a central settings class
+    , m_settings("amazon", "O3DE") // TODO_KDAB: Replace with a central settings class
     , m_toolbarManager(new ToolbarManager(m_actionManager, this))
     , m_assetImporterManager(new AssetImporterManager(this))
     , m_levelEditorMenuHandler(new LevelEditorMenuHandler(this, m_viewPaneManager, m_settings))
@@ -1105,15 +1104,6 @@ void MainWindow::InitActions()
             .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSelected)
             .SetIcon(Style::icon("Align_to_grid"))
             .SetApplyHoverEffect();
-        am->AddAction(ID_OBJECTMODIFY_ALIGN, tr("Align to object")).SetCheckable(true)
-#if AZ_TRAIT_OS_PLATFORM_APPLE
-            .SetStatusTip(tr(u8"\u2318: Align an object to a bounding box, \u2325 : Keep Rotation of the moved object, Shift : Keep Scale of the moved object"))
-#else
-            .SetStatusTip(tr("Ctrl: Align an object to a bounding box, Alt : Keep Rotation of the moved object, Shift : Keep Scale of the moved object"))
-#endif
-            .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateAlignObject)
-            .SetIcon(Style::icon("Align_to_Object"))
-            .SetApplyHoverEffect();
         am->AddAction(ID_MODIFY_ALIGNOBJTOSURF, tr("Align object to surface (Hold CTRL)")).SetCheckable(true)
             .SetToolTip(tr("Align object to surface  (Hold CTRL)"))
             .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateAlignToVoxel)
@@ -1373,7 +1363,7 @@ void MainWindow::InitActions()
 
     am->AddAction(ID_DOCUMENTATION_GLOSSARY, tr("Glossary"))
         .SetReserved();
-    am->AddAction(ID_DOCUMENTATION_LUMBERYARD, tr("Lumberyard Documentation"))
+    am->AddAction(ID_DOCUMENTATION_O3DE, tr("Open 3D Engine Documentation"))
         .SetReserved();
     am->AddAction(ID_DOCUMENTATION_GAMELIFT, tr("GameLift Documentation"))
         .SetReserved();
@@ -1391,11 +1381,11 @@ void MainWindow::InitActions()
 
     am->AddAction(ID_DOCUMENTATION_FEEDBACK, tr("Give Us Feedback"))
         .SetReserved();
-    am->AddAction(ID_APP_ABOUT, tr("&About Lumberyard"))
+    am->AddAction(ID_APP_ABOUT, tr("&About Open 3D Engine"))
         .SetStatusTip(tr("Display program information, version number and copyright"))
         .SetReserved();
     am->AddAction(ID_APP_SHOW_WELCOME, tr("&Welcome"))
-        .SetStatusTip(tr("Show the Welcome to Lumberyard dialog box"))
+        .SetStatusTip(tr("Show the Welcome to Open 3D Engine dialog box"))
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateShowWelcomeScreen);
 
     // Editors Toolbar actions
@@ -1450,15 +1440,6 @@ void MainWindow::InitActions()
         .SetApplyHoverEffect();
 
     // Edit Mode Toolbar Actions
-    am->AddAction(ID_EDITTOOL_LINK, tr("Link an object to parent"))
-        .SetIcon(Style::icon("add_link"))
-        .SetApplyHoverEffect()
-        .SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateEditToolLink);
-    am->AddAction(ID_EDITTOOL_UNLINK, tr("Unlink all selected objects"))
-        .SetIcon(Style::icon("remove_link"))
-        .SetApplyHoverEffect()
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateEditToolUnlink);
     am->AddAction(IDC_SELECTION_MASK, tr("Selected Object Types"));
     am->AddAction(ID_REF_COORDS_SYS, tr("Reference coordinate system"))
         .SetShortcut(tr("Ctrl+W"))
@@ -1974,7 +1955,6 @@ void MainWindow::RegisterStdViewClasses()
 
     if (!AZ::Interface<AzFramework::AtomActiveInterface>::Get())
     {
-        CMaterialDialog::RegisterViewClass();
         CLensFlareEditor::RegisterViewClass();
         CTimeOfDayDialog::RegisterViewClass();
     }

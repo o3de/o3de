@@ -13,7 +13,9 @@
 #include <Source/MultiplayerSystemComponent.h>
 #include <Source/Components/MultiplayerComponent.h>
 #include <Source/AutoGen/AutoComponentTypes.h>
+#include <Source/ConnectionData/ClientToServerConnectionData.h>
 #include <Source/ConnectionData/ServerToClientConnectionData.h>
+#include <Source/ReplicationWindows/NullReplicationWindow.h>
 #include <Source/ReplicationWindows/ServerToClientReplicationWindow.h>
 #include <Source/EntityDomains/FullOwnershipEntityDomain.h>
 #include <AzNetworking/Framework/INetworking.h>
@@ -66,6 +68,7 @@ namespace Multiplayer
     AZ_CVAR(AZ::CVarFixedString, sv_gamerules, "norules", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "GameRules server works with");
     AZ_CVAR(ProtocolType, sv_protocol, ProtocolType::Udp, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "This flag controls whether we use TCP or UDP for game networking");
     AZ_CVAR(bool, sv_isDedicated, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether the host command creates an independent or client hosted server");
+    AZ_CVAR(AZ::TimeMs, cl_defaultNetworkEntityActivationTimeSliceMs, AZ::TimeMs{ 0 }, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Max Ms to use to activate entities coming from the network, 0 means instantiate everything");
 
     void MultiplayerSystemComponent::Reflect(AZ::ReflectContext* context)
     {
@@ -126,23 +129,36 @@ namespace Multiplayer
         // Handle deferred local rpc messages that were generated during the updates
         m_networkEntityManager.DispatchLocalDeferredRpcMessages();
         m_networkEntityManager.NotifyEntitiesChanged();
+
         // Let the network system know the frame is done and we can collect dirty bits
         m_networkEntityManager.NotifyEntitiesDirtied();
 
         MultiplayerStats& stats = GetStats();
         stats.m_entityCount = GetNetworkEntityManager()->GetEntityCount();
-
-        auto sendNetworkUpdates = [serverGameTimeMs](IConnection& connection)
-        {
-            if (connection.GetUserData() != nullptr)
-            {
-                IConnectionData* connectionData = reinterpret_cast<IConnectionData*>(connection.GetUserData());
-                connectionData->Update(serverGameTimeMs);
-            }
-        };
+        stats.m_serverConnectionCount = 0;
+        stats.m_clientConnectionCount = 0;
 
         // Send out the game state update to all connections
-        m_networkInterface->GetConnectionSet().VisitConnections(sendNetworkUpdates);
+        {
+            auto sendNetworkUpdates = [serverGameTimeMs, &stats](IConnection& connection)
+            {
+                if (connection.GetUserData() != nullptr)
+                {
+                    IConnectionData* connectionData = reinterpret_cast<IConnectionData*>(connection.GetUserData());
+                    connectionData->Update(serverGameTimeMs);
+                    if (connectionData->GetConnectionDataType() == ConnectionDataType::ServerToClient)
+                    {
+                        stats.m_clientConnectionCount++;
+                    }
+                    else
+                    {
+                        stats.m_serverConnectionCount++;
+                    }
+                }
+            };
+
+            m_networkInterface->GetConnectionSet().VisitConnections(sendNetworkUpdates);
+        }
 
         MultiplayerPackets::SyncConsole packet;
         AZ::ThreadSafeDeque<AZStd::string>::DequeType cvarUpdates;
@@ -245,12 +261,8 @@ namespace Multiplayer
         AZ::CVarFixedString commandString = "sv_map " + packet.GetMap();
         AZ::Interface<AZ::IConsole>::Get()->PerformCommand(commandString.c_str());
 
-        // This is a bit tricky, so it warrants extra commenting
-        // The cry level loader has a 'map' command used to invoke the level load system
-        // We don't want any explicit cry dependencies, so instead we rely on the 
-        // az console binding inside SystemInit to echo any unhandled commands to
-        // the cry console by stripping off the prefix 'sv_'
-        AZ::Interface<AZ::IConsole>::Get()->PerformCommand(commandString.c_str() + 3);
+        AZ::CVarFixedString loadLevelString = "LoadLevel " + packet.GetMap();
+        AZ::Interface<AZ::IConsole>::Get()->PerformCommand(loadLevelString.c_str());
         return true;
     }
 
@@ -410,6 +422,16 @@ namespace Multiplayer
             AZStd::unique_ptr<IReplicationWindow> window = AZStd::make_unique<ServerToClientReplicationWindow>(controlledEntity, connection);
             reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->GetReplicationManager().SetReplicationWindow(AZStd::move(window));
         }
+        else
+        {
+            if (connection->GetUserData() == nullptr) // Only add user data if the connect event handler has not already done so
+            {
+                connection->SetUserData(new ClientToServerConnectionData(connection, *this));
+            }
+
+            AZStd::unique_ptr<IReplicationWindow> window = AZStd::make_unique<NullReplicationWindow>();
+            reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->GetReplicationManager().SetEntityActivationTimeSliceMs(cl_defaultNetworkEntityActivationTimeSliceMs);
+        }
     }
 
     bool MultiplayerSystemComponent::OnPacketReceived(AzNetworking::IConnection* connection, const IPacketHeader& packetHeader, ISerializer& serializer)
@@ -463,6 +485,7 @@ namespace Multiplayer
             }
         }
         m_agentType = multiplayerType;
+        AZLOG_INFO("Multiplayer operating in %s mode", GetEnumString(m_agentType));
     }
 
     void MultiplayerSystemComponent::AddConnectionAcquiredHandler(ConnectionAcquiredEvent::Handler& handler)
@@ -535,14 +558,15 @@ namespace Multiplayer
     void host([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
         Multiplayer::MultiplayerAgentType serverType = sv_isDedicated ? MultiplayerAgentType::DedicatedServer : MultiplayerAgentType::ClientServer;
+        AZ::Interface<IMultiplayer>::Get()->InitializeMultiplayer(serverType);
         INetworkInterface* networkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(s_networkInterfaceName));
         networkInterface->Listen(sv_port);
-        AZ::Interface<IMultiplayer>::Get()->InitializeMultiplayer(serverType);
     }
     AZ_CONSOLEFREEFUNC(host, AZ::ConsoleFunctorFlags::DontReplicate, "Opens a multiplayer connection as a host for other clients to connect to");
 
     void connect([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
+        AZ::Interface<IMultiplayer>::Get()->InitializeMultiplayer(MultiplayerAgentType::Client);
         INetworkInterface* networkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(s_networkInterfaceName));
 
         if (arguments.size() < 1)
@@ -567,12 +591,12 @@ namespace Multiplayer
         int32_t portNumber = atol(portStr);
         const IpAddress ipAddress(addressStr, aznumeric_cast<uint16_t>(portNumber), networkInterface->GetType());
         networkInterface->Connect(ipAddress);
-        AZ::Interface<IMultiplayer>::Get()->InitializeMultiplayer(MultiplayerAgentType::Client);
     }
     AZ_CONSOLEFREEFUNC(connect, AZ::ConsoleFunctorFlags::DontReplicate, "Opens a multiplayer connection to a remote host");
 
     void disconnect([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
+        AZ::Interface<IMultiplayer>::Get()->InitializeMultiplayer(MultiplayerAgentType::Uninitialized);
         INetworkInterface* networkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(s_networkInterfaceName));
         auto visitor = [](IConnection& connection) { connection.Disconnect(DisconnectReason::TerminatedByUser, TerminationEndpoint::Local); };
         networkInterface->GetConnectionSet().VisitConnections(visitor);

@@ -22,11 +22,12 @@ namespace AWSClientAuth
     public:
         AZ_TYPE_INFO(IAWSCognitoUserManagementRequests, "{A4C90F21-7056-4827-8C6B-401E6945697D}");
 
-        //! Initialize Cognito User pool.
+        //! Initialize Cognito User pool using settings from resource mappings.
         //! @param settingsRegistryPath settingsRegistryPath Path for the settings registry file to use.
         virtual bool Initialize() = 0;
 
         // Requests interface
+
         //! Cognito user pool email sign up start.
         //! @param username User name to use for sign up.
         //! @param password Password to use for sign up.
@@ -59,7 +60,7 @@ namespace AWSClientAuth
         virtual void EnableMFAAsync(const AZStd::string& accessToken) = 0;
     };
 
-    //! Manages various authentication provider implementations and implements AuthenticationProvider Request bus.
+    //! Implements AWS Cognito user pool user management requests.
     class AWSCognitoUserManagementRequests
         : public AZ::EBusTraits
     {

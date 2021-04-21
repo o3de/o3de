@@ -56,7 +56,7 @@ namespace ScriptCanvasEditor
             VarIdRole = Qt::UserRole
         };
 
-        static const char* GetMimeType() { return "lumberyard/x-scriptcanvas-varpanel"; }
+        static const char* GetMimeType() { return "o3de/x-scriptcanvas-varpanel"; }
 
         AZ_CLASS_ALLOCATOR(GraphVariablesModel, AZ::SystemAllocator, 0);
         GraphVariablesModel(QObject* parent = nullptr);

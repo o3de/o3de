@@ -17,11 +17,11 @@
                     "SlotType": "Input"
                 },
                 {
-                    "Name": "SpotLightShadowmap",
+                    "Name": "ProjectedShadowmap",
                     "SlotType": "Input"
                 },
                 {
-                    "Name": "SpotLightESM",
+                    "Name": "ProjectedESM",
                     "SlotType": "Input"
                 },
                 {
@@ -64,17 +64,17 @@
                             }
                         },
                         {
-                            "LocalSlot": "SpotLightShadowmap",
+                            "LocalSlot": "ProjectedShadowmap",
                             "AttachmentRef": {
                                 "Pass": "Parent",
-                                "Attachment": "SpotLightShadowmap"
+                                "Attachment": "ProjectedShadowmap"
                             }
                         },
                         {
-                            "LocalSlot": "ExponentialShadowmapSpot",
+                            "LocalSlot": "ExponentialShadowmapProjected",
                             "AttachmentRef": {
                                 "Pass": "Parent",
-                                "Attachment": "SpotLightESM"
+                                "Attachment": "ProjectedESM"
                             }
                         },
                         {

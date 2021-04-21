@@ -68,7 +68,7 @@ namespace UnitTest
             {
                 assets[idx] = AssetId(AZ::Uuid::CreateRandom(), 0);
                 AZ::Data::AssetInfo info;
-                info.m_relativePath = AZStd::string::format("Asset%d.txt", idx);
+                info.m_relativePath = AZStd::string::format("asset%d.txt", idx);
                 m_assetsPath[idx] = info.m_relativePath;
                 info.m_assetId = assets[idx];
                 m_assetRegistry->RegisterAsset(assets[idx], info);
@@ -623,7 +623,7 @@ namespace UnitTest
             EXPECT_TRUE(Search(assetList1, assets[fileIndex]));
             if (m_fileStreams[0][fileIndex].Open(m_assetsPathFull[0][fileIndex].c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeBinary | AZ::IO::OpenMode::ModeCreatePath))
             {
-                AZStd::string fileContent = AZStd::string::format("Asset%d.txt", fileIndex);
+                AZStd::string fileContent = AZStd::string::format("asset%d.txt", fileIndex);
                 m_fileStreams[0][fileIndex].Write(fileContent.size(), fileContent.c_str());
                 m_fileStreams[0][fileIndex].Close();
             }
@@ -654,7 +654,7 @@ namespace UnitTest
             EXPECT_TRUE(Search(assetList1, assets[fileIndex]));
             if (m_fileStreams[0][fileIndex].Open(m_assetsPathFull[0][fileIndex].c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeBinary | AZ::IO::OpenMode::ModeCreatePath))
             {
-                AZStd::string fileContent = AZStd::string::format("Asset%d.txt", fileIndex + 1);// changing file content
+                AZStd::string fileContent = AZStd::string::format("asset%d.txt", fileIndex + 1);// changing file content
                 m_fileStreams[0][fileIndex].Write(fileContent.size(), fileContent.c_str());
                 m_fileStreams[0][fileIndex].Close();
             }
@@ -987,7 +987,7 @@ namespace UnitTest
 
         m_assetSeedManager->AddSeedAsset(assets[0], AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_OSX);
 
-        m_assetSeedManager->RemoveSeedAsset("Asset0.txt", AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_OSX);
+        m_assetSeedManager->RemoveSeedAsset("asset0.txt", AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_OSX);
         const AzFramework::AssetSeedList& secondSeedList = m_assetSeedManager->GetAssetSeedList();
         EXPECT_EQ(secondSeedList.size(), 0);
     }
@@ -1003,7 +1003,7 @@ namespace UnitTest
 
         m_assetSeedManager->AddSeedAsset(assets[0], AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_OSX);
 
-        m_assetSeedManager->RemoveSeedAsset("Asset0.txt", AzFramework::PlatformFlags::Platform_PC);
+        m_assetSeedManager->RemoveSeedAsset("asset0.txt", AzFramework::PlatformFlags::Platform_PC);
         const AzFramework::AssetSeedList& secondSeedList = m_assetSeedManager->GetAssetSeedList();
         EXPECT_EQ(secondSeedList.size(), 1);
     }
@@ -1017,7 +1017,7 @@ namespace UnitTest
 
         EXPECT_EQ(seedList.size(), 1);
 
-        m_assetSeedManager->RemoveSeedAsset("Asset1.txt", AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_OSX);
+        m_assetSeedManager->RemoveSeedAsset("asset1.txt", AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_OSX);
         const AzFramework::AssetSeedList& secondSeedList = m_assetSeedManager->GetAssetSeedList();
         EXPECT_EQ(secondSeedList.size(), 1);
     }

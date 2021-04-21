@@ -278,7 +278,7 @@ namespace MaterialEditor
 
         MaterialViewportNotificationBus::Broadcast(&MaterialViewportNotificationBus::Events::OnLightingPresetAdded, presetPtr);
 
-        if (preset.m_autoSelect || m_lightingPresetVector.size() == 1)
+        if (m_lightingPresetVector.size() == 1)
         {
             SelectLightingPreset(presetPtr);
         }
@@ -373,7 +373,7 @@ namespace MaterialEditor
 
         MaterialViewportNotificationBus::Broadcast(&MaterialViewportNotificationBus::Events::OnModelPresetAdded, presetPtr);
 
-        if (preset.m_autoSelect || m_modelPresetVector.size() == 1)
+        if (m_modelPresetVector.size() == 1)
         {
             SelectModelPreset(presetPtr);
         }
@@ -510,6 +510,13 @@ namespace MaterialEditor
 
     void MaterialViewportComponent::OnCatalogLoaded([[maybe_unused]] const char* catalogFile)
     {
-        AZ::TickBus::QueueFunction([this]() { ReloadContent(); });
+        AZ::TickBus::QueueFunction([this]() {
+            ReloadContent();
+
+            // Automatically select preferred default presets if they exist
+            // We will later data drive this with editor settings
+            SelectLightingPresetByName("Neutral Urban");
+            SelectModelPresetByName("Shader Ball");
+        });
     }
 }

@@ -75,7 +75,7 @@ namespace EMStudio
         // Open actors
         {
             QAction* menuAction = toolBar->addAction(
-                MysticQt::GetMysticQt()->FindIcon("/Images/Icons/Open.svg"),
+                MysticQt::GetMysticQt()->FindIcon("Images/Icons/Open.svg"),
                 tr("Load actor from asset"));
 
             QToolButton* toolButton = qobject_cast<QToolButton*>(toolBar->widgetForAction(menuAction));
@@ -90,11 +90,11 @@ namespace EMStudio
             menuAction->setMenu(contextMenu);
         }
 
-        m_createInstanceAction = toolBar->addAction(MysticQt::GetMysticQt()->FindIcon("/Images/Icons/Plus.svg"),
+        m_createInstanceAction = toolBar->addAction(MysticQt::GetMysticQt()->FindIcon("Images/Icons/Plus.svg"),
             tr("Create a new instance of the selected actors"),
             this, &ActorsWindow::OnCreateInstanceButtonClicked);
 
-        m_saveAction = toolBar->addAction(MysticQt::GetMysticQt()->FindIcon("/Images/Icons/Save.svg"),
+        m_saveAction = toolBar->addAction(MysticQt::GetMysticQt()->FindIcon("Images/Icons/Save.svg"),
             tr("Save selected actors"),
             GetMainWindow(), &MainWindow::OnFileSaveSelectedActors);
 

@@ -110,12 +110,12 @@ namespace ScriptCanvasEditor
     {
         static const char* GetMimeType()
         {
-            return "application/x-lumberyard-scriptcanvas";
+            return "application/x-o3de-scriptcanvas";
         }
 
         static const char* GetWrappedNodeGroupingMimeType()
         {
-            return "application/x-lumberyard-scriptcanvas-wrappednodegrouping";
+            return "application/x-03de-scriptcanvas-wrappednodegrouping";
         }
     }
 
@@ -1884,7 +1884,7 @@ namespace ScriptCanvasEditor
                     AZStd::any* userData = nullptr;
                     GraphCanvas::NodeRequestBus::EventResult(userData, nodeId, &GraphCanvas::NodeRequests::GetUserData);
                     AZ::EntityId scSourceNodeId = (userData && userData->is<AZ::EntityId>()) ? *AZStd::any_cast<AZ::EntityId>(userData) : AZ::EntityId();
-
+                        
                         ScriptCanvas::Nodes::Core::FunctionDefinitionNode* nodeling = azrtti_cast<ScriptCanvas::Nodes::Core::FunctionDefinitionNode*>(FindNode(scSourceNodeId));
 
                     if (nodeling)
@@ -2347,7 +2347,7 @@ namespace ScriptCanvasEditor
         AZ::Outcome<ScriptCanvas::VariableId, AZStd::string> addOutcome;
 
         // #functions2 slot<->variable re-use the activeDatum, send the pointer (actually, all of the source slot information, and make a special conversion)
-        ScriptCanvas::GraphVariableManagerRequestBus::EventResult(addOutcome, GetScriptCanvasId(), &ScriptCanvas::GraphVariableManagerRequests::AddVariable, variableName, variableDatum);
+        ScriptCanvas::GraphVariableManagerRequestBus::EventResult(addOutcome, GetScriptCanvasId(), &ScriptCanvas::GraphVariableManagerRequests::AddVariable, variableName, variableDatum, true);
 
         if (addOutcome.IsSuccess())
         {

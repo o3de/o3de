@@ -33,8 +33,8 @@ namespace RenderGL
         ~ShaderCache();     // automatically calls Release
 
         void Release();
-        void AddShader(const char* filename, Shader* shader);
-        Shader* FindShader(const char* filename) const;
+        void AddShader(AZStd::string_view filename, Shader* shader);
+        Shader* FindShader(AZStd::string_view filename) const;
         bool CheckIfHasShader(Shader* shader) const;
 
     private:

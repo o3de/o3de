@@ -32,8 +32,8 @@
                     }
                 },
                 {
-                    "Name": "SpotLightShadowmap",
-                    "ShaderInputName": "m_spotLightShadowmaps",
+                    "Name": "ProjectedShadowmap",
+                    "ShaderInputName": "m_projectedShadowmaps",
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader",
                     "ImageViewDesc": {
@@ -41,18 +41,13 @@
                     }
                 },
                 {
-                    "Name": "ExponentialShadowmapSpot",
-                    "ShaderInputName": "m_spotLightExponentialShadowmap",
+                    "Name": "ExponentialShadowmapProjected",
+                    "ShaderInputName": "m_projectedExponentialShadowmap",
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader",
                     "ImageViewDesc": {
                         "IsArray": 1
                     }
-                },
-                {
-                    "Name": "DepthStencilInputOutput",
-                    "SlotType": "InputOutput",
-                    "ScopeAttachmentUsage": "DepthStencil"
                 },
                 {
                     "Name": "TileLightData",
@@ -66,6 +61,13 @@
                     "ShaderInputName": "m_lightListRemapped",
                     "ScopeAttachmentUsage": "Shader"
                 },
+                // Input/Outputs...
+                {
+                    "Name": "DepthStencilInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "DepthStencil"
+                },
+                // Outputs...
                 {
                     "Name": "DiffuseOutput",
                     "SlotType": "Output",
@@ -222,11 +224,12 @@
                             "Attachment": "Output"
                         }
                     },
+                    "MultisampleSource": {
+                        "Pass": "This",
+                        "Attachment": "DepthStencilInputOutput"
+                    },
                     "ImageDescriptor": {
                         "Format": "R8G8B8A8_UNORM",
-                        "MultisampleState": {
-                            "samples": 4
-                        },
                         "SharedQueueMask": "Graphics"
                     }
                 },

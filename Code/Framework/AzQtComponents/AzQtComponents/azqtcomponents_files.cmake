@@ -45,7 +45,7 @@ set(FILES
     Components/FilteredSearchWidget.ui
     Components/GlobalEventFilter.h
     Components/GlobalEventFilter.cpp
-    Components/LumberyardStylesheet.h
+    Components/O3DEStylesheet.h
     Components/Titlebar.cpp
     Components/Titlebar.h
     Components/TitleBarOverdrawHandler.cpp

@@ -136,16 +136,21 @@ namespace ScriptCanvas
             }
                         
         protected:
+            size_t GetRequiredOutCount() const override
+            {
+                return 2;
+            }
+
             void Lerp(float t)
             {
                 const t_Operand step = m_start + (m_difference * t);
                 // make a release note that the lerp complete and tick slot are two different execution threads
-                ExecutionOut(AZ_CRC_CE("Tick"), step, t);
+                ExecutionOut(0, step, t);
 
                 if (AZ::IsClose(t, 1.0f, AZ::Constants::FloatEpsilon))
                 {
                     StopLerp();
-                    ExecutionOut(AZ_CRC_CE("Lerp Complete"));
+                    ExecutionOut(1);
                 }
             }
 

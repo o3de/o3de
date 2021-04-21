@@ -52,14 +52,14 @@ namespace EMotionFX
         hLayout->addWidget(m_pickButton);
 
         m_resetButton = new QPushButton(this);
-        EMStudio::EMStudioManager::MakeTransparentButton(m_resetButton, "/Images/Icons/Clear.svg", "Reset selection");
+        EMStudio::EMStudioManager::MakeTransparentButton(m_resetButton, "Images/Icons/Clear.svg", "Reset selection");
         connect(m_resetButton, &QPushButton::clicked, this, &AnimGraphParameterPicker::OnResetClicked);
         hLayout->addWidget(m_resetButton);
 
         if (m_parameterMaskMode)
         {
             m_shrinkButton = new QPushButton();
-            EMStudio::EMStudioManager::MakeTransparentButton(m_shrinkButton, "/Images/Icons/Cut.svg", "Shrink the parameter mask to the ports that are actually connected.");
+            EMStudio::EMStudioManager::MakeTransparentButton(m_shrinkButton, "Images/Icons/Cut.svg", "Shrink the parameter mask to the ports that are actually connected.");
             connect(m_shrinkButton, &QPushButton::clicked, this, &AnimGraphParameterPicker::OnShrinkClicked);
             hLayout->addWidget(m_shrinkButton);
         }

@@ -21,6 +21,7 @@
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzCore/Module/ModuleManager.h>
 #include <AzCore/Outcome/Outcome.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/ReflectionManager.h>
@@ -208,6 +209,7 @@ namespace AZ
         bool DeleteEntity(const EntityId& id) override;
         Entity* FindEntity(const EntityId& id) override;
         AZStd::string GetEntityName(const EntityId& id) override;
+        bool SetEntityName(const EntityId& id, const AZStd::string_view name) override;
         void EnumerateEntities(const ComponentApplicationRequests::EntityCallback& callback) override;
         ComponentApplication* GetApplication() override { return this; }
         /// Returns the serialize context that has been registered with the app, if there is one.
@@ -392,9 +394,9 @@ namespace AZ
         void*                                       m_fixedMemoryBlock{ nullptr }; //!< Pointer to the memory block allocator, so we can free it OnDestroy.
         IAllocatorAllocate*                         m_osAllocator{ nullptr };
         EntitySetType                               m_entities;
-        AZ::IO::FixedMaxPathString                  m_exeDirectory;
-        AZ::IO::FixedMaxPathString                  m_engineRoot;
-        AZ::IO::FixedMaxPathString                  m_appRoot;
+        AZ::IO::FixedMaxPath                        m_exeDirectory;
+        AZ::IO::FixedMaxPath                        m_engineRoot;
+        AZ::IO::FixedMaxPath                        m_appRoot;
 
         AZ::SettingsRegistryInterface::NotifyEventHandler m_projectChangedHandler;
 

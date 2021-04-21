@@ -209,7 +209,7 @@ namespace EMotionFX
                 transitionLayout->addWidget(transitionLineEdit, row, 0);
 
                 QPushButton* removeTransitionButton = new QPushButton();
-                EMStudio::EMStudioManager::MakeTransparentButton(removeTransitionButton, "/Images/Icons/Trash.svg", "Remove transition from list");
+                EMStudio::EMStudioManager::MakeTransparentButton(removeTransitionButton, "Images/Icons/Trash.svg", "Remove transition from list");
                 connect(removeTransitionButton, &QPushButton::clicked, this, [this, removeTransitionButton, id]()
                     {
                         m_transitionIds.erase(AZStd::remove(m_transitionIds.begin(), m_transitionIds.end(), id), m_transitionIds.end());

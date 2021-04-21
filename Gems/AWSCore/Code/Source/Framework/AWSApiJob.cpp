@@ -31,7 +31,7 @@ namespace AWSCore
         static AwsApiJobConfigHolder<AwsApiJob::Config> s_configHolder{};
         return s_configHolder.GetConfig(nullptr,
             [](AwsApiJobConfig& config) {
-                config.userAgent = "/Lumberyard_AwsApiJob";
+                config.userAgent = "/O3DE_AwsApiJob";
                 config.requestTimeoutMs = 30000;
                 config.connectTimeoutMs = 30000;
             }

@@ -18,7 +18,8 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-#include <AzFramework/StringFunc/StringFunc.h>
+#include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/IO/RemoteStorageDrive.h>
 
@@ -230,7 +231,7 @@ namespace
 }
 
 
-namespace LumberyardLauncher
+namespace O3DELauncher
 {
     AZ_CVAR(bool, bg_ConnectToAssetProcessor, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "If true, the process will launch and connect to the asset processor");
 
@@ -312,7 +313,7 @@ namespace LumberyardLauncher
                 return "Failed to initialize the CrySystem Interface";
 
             case ReturnCode::ErrCryEnvironment:
-                return "Failed to initialize the CryEngine global environment";
+                return "Failed to initialize the global environment";
 
             case ReturnCode::ErrAssetProccessor:
                 return "Failed to connect to AssetProcessor while the /Amazon/AzCore/Bootstrap/wait_for_connect value is 1\n."
@@ -357,9 +358,9 @@ namespace LumberyardLauncher
         return connectedToAssetProcessor;
     }
 
-    //! Compiles the critical assets that are within the Engine directory of Lumberyard
+    //! Compiles the critical assets that are within the Engine directory of Open 3D Engine
     //! This code should be in a centralized location, but doesn't belong in AzFramework
-    //! since it is specific to how Lumberyard projects has assets setup
+    //! since it is specific to how Open 3D Engine projects has assets setup
     void CompileCriticalAssets()
     {
         // VERY early on, as soon as we can, request that the asset system make sure the following assets take priority over others,
@@ -385,62 +386,14 @@ namespace LumberyardLauncher
             AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey, "remote_filesystem");
         if (allowRemoteFilesystem != 0)
         {
-
             // The SetInstance calls below will assert if this has already been set and we don't clear first
             // Application::StartCommon will set a LocalFileIO base first.
             // This provides an opportunity for the RemoteFileIO to override the direct instance
-            auto remoteFileIo = new AZ::IO::RemoteFileIO(AZ::IO::FileIOBase::GetDirectInstance()); // Wrap AZ:I::LocalFileIO the direct instance
+            auto remoteFileIo = new AZ::IO::RemoteFileIO(AZ::IO::FileIOBase::GetDirectInstance()); // Wrap LocalFileIO the direct instance
             AZ::IO::FileIOBase::SetDirectInstance(nullptr);
             // Wrap AZ:IO::LocalFileIO the direct instance
             AZ::IO::FileIOBase::SetDirectInstance(remoteFileIo);
         }
-    }
-
-    //! Add the GameProjectName and Launcher build target name into the settings registry
-    void AddProjectMetadataToSettingsRegistry(AZ::SettingsRegistryInterface& settingsRegistry, AZ::CommandLine& commandLine)
-    {
-        // Inject the Project Path and Project into the CommandLine parameters to beginning of the command line
-        // in order to allow it to used as a fallback if the parameters aren't supplied launch parameters already
-        // Command Line parameters are the bootstrap settings into the Settings Registry, so they precedence
-        auto projectPathKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)
-            + "/project_path";
-        auto projectNameKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey)
-            + "/project_name";
-
-        AZ::CommandLine::ParamContainer commandLineArgs;
-        commandLine.Dump(commandLineArgs);
-
-        // Insert the project_name option to the front
-        const AZStd::string_view launcherProjectName = GetProjectName();
-        if (!launcherProjectName.empty())
-        {
-            auto projectNameOptionOverride = AZ::SettingsRegistryInterface::FixedValueString::format(R"(--regset="%s=%.*s")",
-                projectNameKey.c_str(), aznumeric_cast<int>(launcherProjectName.size()), launcherProjectName.data());
-            commandLineArgs.emplace(commandLineArgs.begin(), projectNameOptionOverride);
-        }
-
-        // Insert the project_path option to the front
-        const AZStd::string_view projectPath = GetProjectPath();
-        if (!projectPath.empty())
-        {
-            auto projectPathOptionOverride = AZ::SettingsRegistryInterface::FixedValueString::format(R"(--regset="%s=%.*s")",
-                projectPathKey.c_str(), aznumeric_cast<int>(projectPath.size()), projectPath.data());
-            commandLineArgs.emplace(commandLineArgs.begin(), projectPathOptionOverride);
-        }
-
-        commandLine.Parse(commandLineArgs);
-
-        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(settingsRegistry, commandLine, false);
-        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(settingsRegistry);
-
-        const AZStd::string_view buildTargetName = LumberyardLauncher::GetBuildTargetName();
-        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(settingsRegistry, buildTargetName);
-
-        AZ_TracePrintf("Launcher", R"(Running project "%.*s.)" "\n"
-            R"(The project name value has been successfully set in the Settings Registry at key "%s/project_name" for Launcher target "%.*s")" "\n",
-            aznumeric_cast<int>(launcherProjectName.size()), launcherProjectName.data(),
-            AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey,
-            aznumeric_cast<int>(buildTargetName.size()), buildTargetName.data());
     }
 
     ReturnCode Run(const PlatformMainInfo& mainInfo)
@@ -454,10 +407,65 @@ namespace LumberyardLauncher
         // Game Application (AzGameFramework)
         int     gameArgC = mainInfo.m_argC;
         char**  gameArgV = const_cast<char**>(mainInfo.m_argV);
-        int*    argCParam = (gameArgC > 0) ? &gameArgC : nullptr;
-        char*** argVParam = (gameArgC > 0) ? &gameArgV : nullptr;
+        constexpr size_t MaxCommandArgsCount = 128;
+        using ArgumentContainer = AZStd::fixed_vector<char*, MaxCommandArgsCount>;
+        ArgumentContainer argContainer(gameArgV, gameArgV + gameArgC);
 
-        AzGameFramework::GameApplication gameApplication(argCParam, argVParam);
+        using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+        // Inject the Engine Path, Project Path and Project Name into the CommandLine parameters to the command line
+        // in order to be used in the Settings Registry
+
+        // The command line overrides are stored in the following fixed strings
+        // until the ComponentApplication constructor can parse the command line parameters
+        FixedValueString projectNameOptionOverride;
+        FixedValueString projectPathOptionOverride;
+        FixedValueString enginePathOptionOverride;
+
+        // Insert the project_name option to the front
+        const AZStd::string_view launcherProjectName = GetProjectName();
+        if (!launcherProjectName.empty())
+        {
+            const auto projectNameKey = FixedValueString(AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey) + "/project_name";
+            projectNameOptionOverride = FixedValueString::format(R"(--regset="%s=%.*s")",
+                projectNameKey.c_str(), aznumeric_cast<int>(launcherProjectName.size()), launcherProjectName.data());
+            argContainer.emplace_back(projectNameOptionOverride.data());
+        }
+
+        // Non-host platforms cannot use the project path that is #defined within the launcher.
+        // In this case the the result of AZ::Utils::GetDefaultAppRoot is used instead
+        AZStd::string_view projectPath;
+#if AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
+        // Insert the project_path option to the front of the command line arguments
+        projectPath = GetProjectPath();
+#else
+        // Make sure the defaultAppRootPath variable is in scope long enough until the projectPath string_view is used below
+        AZStd::optional<AZ::IO::FixedMaxPathString> defaultAppRootPath = AZ::Utils::GetDefaultAppRootPath();
+        if (defaultAppRootPath.has_value())
+        {
+            projectPath = *defaultAppRootPath;
+        }
+#endif
+        if (!projectPath.empty())
+        {
+            const auto projectPathKey = FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)
+                + "/project_path";
+            projectPathOptionOverride = FixedValueString::format(R"(--regset="%s=%.*s")",
+                projectPathKey.c_str(), aznumeric_cast<int>(projectPath.size()), projectPath.data());
+            argContainer.emplace_back(projectPathOptionOverride.data());
+
+            // For non-host platforms set the engine root to be the project root
+            // Since the directories available during execution are limited on those platforms
+#if !AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
+            AZStd::string_view enginePath = projectPath;
+            const auto enginePathKey = FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)
+                + "/engine_path";
+            enginePathOptionOverride = FixedValueString ::format(R"(--regset="%s=%.*s")",
+                enginePathKey.c_str(), aznumeric_cast<int>(enginePath.size()), enginePath.data());
+            argContainer.emplace_back(enginePathOptionOverride.data());
+#endif
+        }
+
+        AzGameFramework::GameApplication gameApplication(aznumeric_cast<int>(argContainer.size()), argContainer.data());
         // The settings registry has been created by the AZ::ComponentApplication constructor at this point
         auto settingsRegistry = AZ::SettingsRegistry::Get();
         if (settingsRegistry == nullptr)
@@ -466,9 +474,15 @@ namespace LumberyardLauncher
             return ReturnCode::ErrValidation;
         }
 
-        // Inject the ${LY_GAMEFOLDER} project name define that from the Launcher build target
-        // into the settings registry
-        AddProjectMetadataToSettingsRegistry(*settingsRegistry, *gameApplication.GetAzCommandLine());
+        const AZStd::string_view buildTargetName = GetBuildTargetName();
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(*settingsRegistry, buildTargetName);
+
+        AZ_TracePrintf("Launcher", R"(Running project "%.*s.)" "\n"
+            R"(The project name value has been successfully set in the Settings Registry at key "%s/project_name)"
+            R"( for Launcher target "%.*s")" "\n",
+            aznumeric_cast<int>(launcherProjectName.size()), launcherProjectName.data(),
+            AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey,
+            aznumeric_cast<int>(buildTargetName.size()), buildTargetName.data());
 
         AZ::SettingsRegistryInterface::FixedValueString pathToAssets;
         if (!settingsRegistry->Get(pathToAssets, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
@@ -487,7 +501,7 @@ namespace LumberyardLauncher
 
         CryAllocatorsRAII cryAllocatorsRAII;
 
-        // System Init Params ("Legacy" Lumberyard)
+        // System Init Params ("Legacy" Open 3D Engine)
         SSystemInitParams systemInitParams;
         memset(&systemInitParams, 0, sizeof(SSystemInitParams));
 

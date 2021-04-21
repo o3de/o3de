@@ -26,7 +26,6 @@
 #include <SceneAPI/SceneData/Rules/LodRule.h>
 #include <SceneAPI/SceneData/Rules/MaterialRule.h>
 #include <SceneAPI/SceneData/Rules/StaticMeshAdvancedRule.h>
-#include <SceneAPI/SceneData/Rules/ScriptProcessorRule.h>
 #include <SceneAPI/SceneData/Rules/SkeletonProxyRule.h>
 #include <SceneAPI/SceneData/Rules/SkinMeshAdvancedRule.h>
 #include <SceneAPI/SceneData/Rules/SkinRule.h>
@@ -55,7 +54,6 @@ namespace AZ
             {
                 AZ_TraceContext("Object Type", target.RTTI_GetTypeName());
                 modifiers.push_back(SceneData::CommentRule::TYPEINFO_Uuid());
-                modifiers.push_back(SceneData::ScriptProcessorRule::TYPEINFO_Uuid());
 
                 if (target.RTTI_IsTypeOf(DataTypes::IMeshGroup::TYPEINFO_Uuid()))
                 {

@@ -11,7 +11,7 @@
 */
 
 #include "ToolBarPage.h"
-#include <Gallery/ui_ToolBarPage.h>
+#include <AzQtComponents/Gallery/ui_ToolBarPage.h>
 
 #include <AzQtComponents/Components/Widgets/Text.h>
 #include <AzQtComponents/Components/Widgets/ToolBar.h>

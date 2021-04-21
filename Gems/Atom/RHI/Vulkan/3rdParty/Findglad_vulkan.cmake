@@ -12,6 +12,6 @@
 ly_add_external_target(
     NAME glad_vulkan
     VERSION 2.0.0-beta
-    3RDPARTY_ROOT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/../External/glad
+    3RDPARTY_ROOT_DIRECTORY ${LY_ROOT_FOLDER}/Gems/Atom/RHI/Vulkan/External/glad
     INCLUDE_DIRECTORIES include
 )

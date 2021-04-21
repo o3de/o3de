@@ -217,8 +217,8 @@
                 "Path": "Passes/EnvironmentCubeMapPipeline.pass"
             },
             {
-                "Name": "SpotLightShadowmapsTemplate",
-                "Path": "Passes/SpotLightShadowmaps.pass"
+                "Name": "ProjectedShadowmapsTemplate",
+                "Path": "Passes/ProjectedShadowmaps.pass"
             },
             {
                 "Name": "LightCullingRemapTemplate",
@@ -415,6 +415,10 @@
             {
                 "Name": "DiffuseProbeGridRelocationPassTemplate",
                 "Path": "Passes/DiffuseProbeGridRelocation.pass"
+            },
+            {
+                "Name": "DiffuseProbeGridClassificationPassTemplate",
+                "Path": "Passes/DiffuseProbeGridClassification.pass"
             },
             {
                 "Name": "DiffuseGlobalIlluminationPassTemplate",

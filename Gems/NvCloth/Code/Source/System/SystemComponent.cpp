@@ -10,9 +10,6 @@
  *
  */
 
-#include <ISystem.h>
-#include <IConsole.h>
-
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -51,7 +48,7 @@ namespace NvCloth
             }
         };
 
-        // Implementation of the error callback interface directing nvcloth library errors to Lumberyard error output.
+        // Implementation of the error callback interface directing nvcloth library errors to Open 3D Engine error output.
         class AzClothErrorCallback
             : public physx::PxErrorCallback
         {
@@ -91,7 +88,7 @@ namespace NvCloth
             physx::PxErrorCode::Enum m_lastError = physx::PxErrorCode::eNO_ERROR;
         };
 
-        // Implementation of the assert handler interface directing nvcloth asserts to Lumberyard assertion system.
+        // Implementation of the assert handler interface directing nvcloth asserts to Open 3D Engine assertion system.
         class AzClothAssertHandler
             : public nv::cloth::PxAssertHandler
         {

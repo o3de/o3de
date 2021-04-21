@@ -11,7 +11,7 @@
 */
 
 #include "ProgressIndicatorPage.h"
-#include "Gallery/ui_ProgressIndicatorPage.h"
+#include <AzQtComponents/Gallery/ui_ProgressIndicatorPage.h>
 
 ProgressIndicatorPage::ProgressIndicatorPage(QWidget* parent)
 : QWidget(parent)

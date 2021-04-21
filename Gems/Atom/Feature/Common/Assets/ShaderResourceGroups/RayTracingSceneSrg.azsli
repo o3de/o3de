@@ -18,7 +18,7 @@ partial ShaderResourceGroup RayTracingSceneSrg
 {
     RaytracingAccelerationStructure m_scene;
 
-    // directional Lights
+    // directional lights
     struct DirectionalLight
     {
         float3 m_direction;
@@ -30,7 +30,33 @@ partial ShaderResourceGroup RayTracingSceneSrg
     StructuredBuffer<DirectionalLight> m_directionalLights;
     uint m_directionalLightCount;
     
-    // point Lights
+    // simple point lights 
+    struct SimplePointLight
+    {
+        float3 m_position;
+        float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
+        float3 m_rgbIntensityCandelas;
+        float m_padding; // explicit padding.
+    };
+
+    StructuredBuffer<SimplePointLight> m_simplePointLights;
+    uint m_simplePointLightCount;
+
+    // simple spot lights
+    struct SimpleSpotLight
+    {
+        float3 m_position;
+        float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
+        float3 m_direction;
+        float m_cosInnerConeAngle; // cosine of the outer cone angle
+        float3 m_rgbIntensityCandelas;
+        float m_cosOuterConeAngle; // cosine of the inner cone angle
+    };
+
+    StructuredBuffer<SimpleSpotLight> m_simpleSpotLights;
+    uint m_simpleSpotLightCount;
+
+    // point lights (sphere)
     struct PointLight
     {
         float3 m_position;
@@ -42,39 +68,25 @@ partial ShaderResourceGroup RayTracingSceneSrg
     StructuredBuffer<PointLight> m_pointLights;
     uint m_pointLightCount;
     
-    // spot Lights
-    // [GFX TODO][ATOM-4049] separate SRG for lights and shadows.
-    struct SpotLight
-    {
-        float3 m_position;
-        float  m_invAttenuationRadiusSquared;   // radius at which this light no longer has an effect, 1 / radius^2.
-        float3 m_rgbIntensityCandelas;
-        float  m_innerConeAngle;                // cosine of the angle from the direction axis at which this light starts to fall off.
-        float3 m_direction;                     // the direction of the spot light
-        float  m_outerConeAngle;                // cosine of the angle from the direction axis at which this light no longer has an effect.
-        float  m_penumbraBias;                  // bias of the falloff curve between inner and outer cone angles.
-        int    m_shadowIndex;                   // index for SpotLightShadow.
-        float2 m_padding;
-    };
-    
-    StructuredBuffer<SpotLight> m_spotLights;
-    uint m_spotLightCount;
-    
-    // disk Lights    
+    // disk lights
     struct DiskLight
     {
         float3 m_position;
-        float  m_invAttenuationRadiusSquared;   // radius at which this light no longer has an effect, 1 / radius^2.
-        float3 m_direction;
-        float  m_bothDirectionsFactor;          // 0.0f for one direction, -1.0f for both.
+        float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
         float3 m_rgbIntensityCandelas;
-        float  m_diskRadius;
+        float m_diskRadius;
+        float3 m_direction;
+        uint m_flags;
+        float m_cosInnerConeAngle;
+        float m_cosOuterConeAngle;
+        float m_bulbPositionOffset;
+        uint m_shadowIndex;
     };
     
     StructuredBuffer<DiskLight> m_diskLights;
     uint m_diskLightCount;
     
-    // capsule Lights    
+    // capsule lights
     struct CapsuleLight
     {
         float3 m_startPoint;                    // one of the end points of the capsule
@@ -88,7 +100,7 @@ partial ShaderResourceGroup RayTracingSceneSrg
     StructuredBuffer<CapsuleLight> m_capsuleLights;
     uint m_capsuleLightCount;
     
-    // quad Lights    
+    // quad lights 
     struct QuadLight
     {
         float3 m_position;

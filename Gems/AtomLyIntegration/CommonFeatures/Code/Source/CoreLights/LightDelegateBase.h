@@ -14,6 +14,7 @@
 
 #include <AzCore/Component/TransformBus.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
+#include <AtomLyIntegration/CommonFeatures/CoreLights/AreaLightComponentConfig.h>
 #include <LmbrCentral/Shape/SphereShapeComponentBus.h>
 #include <CoreLights/LightDelegateInterface.h>
 
@@ -34,41 +35,63 @@ namespace AZ
         class LightDelegateBase
             : public LightDelegateInterface
             , private LmbrCentral::ShapeComponentNotificationsBus::Handler
+            , private TransformNotificationBus::Handler
         {
         public:
             LightDelegateBase(EntityId entityId, bool isVisible);
             virtual ~LightDelegateBase();
 
+            void SetConfig(const AreaLightComponentConfig* config) override;
+
             // LightDelegateInterface overrides...
-            virtual void SetChroma(const AZ::Color& chroma) override;
-            virtual void SetIntensity(float intensity) override;
-            virtual float SetPhotometricUnit(PhotometricUnit unit) override;
-            virtual void SetAttenuationRadius(float radius) override;
-            virtual const PhotometricValue& GetPhotometricValue() const override { return m_photometricValue; };
-            virtual void SetLightEmitsBothDirections([[maybe_unused]] bool lightEmitsBothDirections) override {};
-            virtual void SetUseFastApproximation([[maybe_unused]] bool useFastApproximation) override {};
-            virtual void SetVisibility(bool visibility) override;
+            void SetChroma(const AZ::Color& chroma) override;
+            void SetIntensity(float intensity) override;
+            float SetPhotometricUnit(PhotometricUnit unit) override;
+            void SetAttenuationRadius(float radius) override;
+            const PhotometricValue& GetPhotometricValue() const override { return m_photometricValue; };
+            void SetLightEmitsBothDirections([[maybe_unused]] bool lightEmitsBothDirections) override {};
+            void SetUseFastApproximation([[maybe_unused]] bool useFastApproximation) override {};
+            void SetVisibility(bool visibility) override;
+            
+            void SetEnableShutters(bool enabled) override { m_shuttersEnabled = enabled; };
+            void SetShutterAngles([[maybe_unused]]float innerAngleDegrees, [[maybe_unused]]float outerAngleDegrees) override {};
+
+            void SetEnableShadow(bool enabled) override { m_shadowsEnabled = enabled; };
+            void SetShadowmapMaxSize([[maybe_unused]] ShadowmapSize size) override {};
+            void SetShadowFilterMethod([[maybe_unused]] ShadowFilterMethod method) override {};
+            void SetSofteningBoundaryWidthAngle([[maybe_unused]] float widthInDegrees) override {};
+            void SetPredictionSampleCount([[maybe_unused]] uint32_t count) override {};
+            void SetFilteringSampleCount([[maybe_unused]] uint32_t count) override {};
+            void SetPcfMethod([[maybe_unused]] PcfMethod method) override {};
 
         protected:
             void InitBase(EntityId entityId);
 
             // Trivial getters
             FeatureProcessorType* GetFeatureProcessor() const { return m_featureProcessor; };
+            const AreaLightComponentConfig* GetConfig() const { return m_componentConfig; };
             typename FeatureProcessorType::LightHandle GetLightHandle() const { return m_lightHandle; };
             const AZ::Transform& GetTransform() const { return m_transform; };
-
+            bool GetShuttersEnabled() { return m_shuttersEnabled; };
+            bool GetShadowsEnabled() { return m_shadowsEnabled; };
             virtual void HandleShapeChanged() = 0;
 
             // ShapeComponentNotificationsBus::Handler overrides...
             void OnShapeChanged(ShapeChangeReasons changeReason) override;
+            
+            // TransformNotificationBus::Handler overrides ...
+            void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 
         private:
             FeatureProcessorType* m_featureProcessor = nullptr;
             typename FeatureProcessorType::LightHandle m_lightHandle;
+            const AreaLightComponentConfig* m_componentConfig = nullptr;
 
             LmbrCentral::ShapeComponentRequests* m_shapeBus;
             AZ::Transform m_transform;
             PhotometricValue m_photometricValue;
+            bool m_shuttersEnabled = false;
+            bool m_shadowsEnabled = false;
         };
     } //  namespace Render
 } // namespace AZ

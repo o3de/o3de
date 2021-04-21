@@ -96,6 +96,11 @@ bool LegacyViewportCameraControllerInstance::HandleMouseMove(
         speedScale *= gSettings.cameraFastMoveSpeed;
     }
 
+    if (m_inMoveMode || m_inOrbitMode || m_inRotateMode || m_inZoomMode)
+    {
+        m_totalMouseMoveDelta += (QPoint(currentMousePos.m_x, currentMousePos.m_y)-QPoint(previousMousePos.m_x, previousMousePos.m_y)).manhattanLength();
+    }
+
     if ((m_inRotateMode && m_inMoveMode) || m_inZoomMode)
     {
         Matrix34 m = AZTransformToLYTransform(viewportContext->GetCameraTransform());
@@ -342,13 +347,16 @@ bool LegacyViewportCameraControllerInstance::HandleInputChannelEvent(const AzFra
                 m_inRotateMode = true;
             }
 
-            shouldConsumeEvent = true;
             shouldCaptureCursor = true;
+            // Record how much the cursor has been moved to see if we should own the mouse up event.
+            m_totalMouseMoveDelta = 0;
         }
         else if (state == InputChannel::State::Ended)
         {
             m_inZoomMode = false;
             m_inRotateMode = false;
+            // If we've moved the cursor more than a couple pixels, we should eat this mouse up event to prevent the context menu controller from seeing it.
+            shouldConsumeEvent = m_totalMouseMoveDelta > 2;
             shouldCaptureCursor = false;
         }
     }
@@ -400,6 +408,13 @@ bool LegacyViewportCameraControllerInstance::HandleInputChannelEvent(const AzFra
         }
     }
 
+    UpdateCursorCapture(shouldCaptureCursor);
+
+    return shouldConsumeEvent;
+}
+
+void LegacyViewportCameraControllerInstance::UpdateCursorCapture(bool shouldCaptureCursor)
+{
     if (m_capturingCursor != shouldCaptureCursor)
     {
         if (shouldCaptureCursor)
@@ -419,8 +434,14 @@ bool LegacyViewportCameraControllerInstance::HandleInputChannelEvent(const AzFra
 
         m_capturingCursor = shouldCaptureCursor;
     }
+}
 
-    return shouldConsumeEvent;
+void LegacyViewportCameraControllerInstance::ResetInputChannels()
+{
+    m_modifiers = 0;
+    m_pressedKeys.clear();
+    UpdateCursorCapture(false);
+    m_inRotateMode = m_inMoveMode = m_inOrbitMode = m_inZoomMode = false;
 }
 
 void LegacyViewportCameraControllerInstance::UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event)

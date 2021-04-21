@@ -28,7 +28,6 @@
 
 class CCryDocManager;
 class CQuickAccessBar;
-class CMatEditMainDlg;
 class CCryEditDoc;
 class CEditCommandLineInfo;
 class CMainFrame;
@@ -196,7 +195,7 @@ public:
     void OnUpdateShowWelcomeScreen(QAction* action);
     void OnDocumentationTutorials();
     void OnDocumentationGlossary();
-    void OnDocumentationLumberyard();
+    void OnDocumentationO3DE();
     void OnDocumentationGamelift();
     void OnDocumentationReleaseNotes();
     void OnDocumentationGameDevBlog();
@@ -225,10 +224,6 @@ public:
     void OnEditmodeMove();
     void OnEditmodeRotate();
     void OnEditmodeScale();
-    void OnEditToolLink();
-    void OnUpdateEditToolLink(QAction* action);
-    void OnEditToolUnlink();
-    void OnUpdateEditToolUnlink(QAction* action);
     void OnEditmodeSelect();
     void OnEditEscape();
     void OnObjectSetArea();
@@ -257,10 +252,8 @@ public:
     void OnOpenAssetImporter();
     void OnSelectionLoad();
     void OnUpdateSelected(QAction* action);
-    void OnAlignObject();
     void OnAlignToVoxel();
     void OnAlignToGrid();
-    void OnUpdateAlignObject(QAction* action);
     void OnUpdateAlignToVoxel(QAction* action);
     void OnLockSelection();
     void OnEditLevelData();
@@ -367,7 +360,6 @@ private:
     //! Autotest mode: Special mode meant for automated testing, things like blocking dialogs or error report windows won't appear
     bool m_bAutotestMode = false;
 
-    CMatEditMainDlg* m_pMatEditDlg = nullptr;
     CConsoleDialog* m_pConsoleDialog = nullptr;
 
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING

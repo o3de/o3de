@@ -28,6 +28,7 @@
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 #include <AzCore/std/containers/map.h>
+#include <AzFramework/Font/FontInterface.h>
 
 #include <Atom/RHI.Reflect/Base.h>
 #include <Atom/RHI/StreamBufferView.h>
@@ -57,6 +58,8 @@ namespace AZ
         void operator () (const AZStd::intrusive_refcount<AZStd::atomic_uint, FontDeleter>* ptr) const;
     };
 
+    using TextDrawContext = STextDrawContext;
+
     //! FFont is the implementation of IFFont used to draw text with a particular font (e.g. Consolas Italic)
     //! FFont manages creation of a gpu texture to cache the font and generates draw commands that use that texture.
     //! FFont's are managed by AtomFont as either individual font instances or a font family
@@ -64,12 +67,12 @@ namespace AZ
     class FFont
         : public IFFont
         , public AZStd::intrusive_refcount<AZStd::atomic_uint, FontDeleter>
+        , public AzFramework::FontDrawInterface
         , private AZ::Render::Bootstrap::NotificationBus::Handler
     {
         using ref_count = AZStd::intrusive_refcount<AZStd::atomic_uint, FontDeleter>;
         friend FontDeleter;
     public:
-        using TextDrawContext = STextDrawContext;
         //! Determines how characters of different sizes should be handled during render.
         enum class SizeBehavior
         {
@@ -201,6 +204,14 @@ namespace AZ
         uint32_t GetFontTextureVersion() override;
         /////////////////////////////////////////////////////////////////////////////////////////////////////
 
+        // AzFramework::FontDrawInterface implementation
+        void DrawScreenAlignedText2d(
+            const AzFramework::TextDrawParameters& params,
+            const AZStd::string_view& string) override;
+
+        void DrawScreenAlignedText3d(
+            const AzFramework::TextDrawParameters& params,
+            const AZStd::string_view& string) override;
 
     public:
         FFont(AtomFont* atomFont, const char* fontName);
@@ -220,8 +231,18 @@ namespace AZ
         bool InitCache();
 
         void Prepare(const char* str, bool updateTexture, const AtomFont::GlyphSize& glyphSize = AtomFont::defaultGlyphSize);
-        void DrawStringUInternal(float x, float y, float z, const char* str, const bool asciiMultiLine, const TextDrawContext& ctx);
-        Vec2 GetTextSizeUInternal(const char* str, const bool asciiMultiLine, const TextDrawContext& ctx);
+        void DrawStringUInternal(
+            const RHI::Viewport& viewport, 
+            RPI::ViewportContext* viewportContext, 
+            float x, 
+            float y, 
+            float z, 
+            const char* str, 
+            const bool asciiMultiLine, 
+            const TextDrawContext& ctx);
+        Vec2 GetTextSizeUInternal(const RHI::Viewport& viewport, const char* str, const bool asciiMultiLine, const TextDrawContext& ctx);
+        Vec2 GetKerningInternal(const RHI::Viewport& viewport, uint32_t leftGlyph, uint32_t rightGlyph, const TextDrawContext& ctx) const;
+        float GetBaselineInternal(const RHI::Viewport& viewport, const TextDrawContext& ctx) const;
 
         // returns true if add operation was successful, false otherwise
         using AddFunction = AZStd::function<bool(const Vec3&, const Vec3&, const Vec3&, const Vec3&, const Vec2&, const Vec2&, const Vec2&, const Vec2&, uint32_t)>;
@@ -229,6 +250,7 @@ namespace AZ
         //! This function is used by both DrawStringUInternal and WriteTextQuadsToBuffers
         //! To do this is takes a function pointer that implement the appropriate AddQuad behavior
         int CreateQuadsForText(
+            const RHI::Viewport& viewport, 
             float x,
             float y,
             float z,
@@ -247,18 +269,18 @@ namespace AZ
             float rcpCellWidth;
         };
 
-        TextScaleInfoInternal CalculateScaleInternal(const TextDrawContext& ctx) const;
+        TextScaleInfoInternal CalculateScaleInternal(const RHI::Viewport& viewport, const TextDrawContext& ctx) const;
 
         Vec2 GetRestoredFontSize(const TextDrawContext& ctx) const;
 
         bool UpdateTexture();
 
-        void ScaleCoord(float& x, float& y) const;
-
-        void InitWindowContext();
-        void InitViewportContext();
+        void ScaleCoord(const RHI::Viewport& viewport, float& x, float& y) const;
 
         void OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene) override;
+
+        RPI::WindowContextSharedPtr GetDefaultWindowContext() const;
+        RPI::ViewportContextPtr GetDefaultViewportContext() const;
 
     private:
         static constexpr uint32_t NumBuffers = 2;
@@ -272,9 +294,6 @@ namespace AZ
         size_t m_fontBufferSize = 0;
         unsigned char* m_fontBuffer = nullptr;
 
-        AZStd::shared_ptr<RPI::WindowContext> m_windowContext;
-        AZStd::shared_ptr<AZ::RPI::ViewportContext> m_viewportContext;
-
         AZ::Data::Instance<AZ::RPI::StreamingImage> m_fontStreamingImage;
         AZ::RHI::Ptr<AZ::RHI::Image>     m_fontImage;
         uint32_t m_fontImageVersion = 0;
@@ -282,7 +301,13 @@ namespace AZ
         AtomFont* m_atomFont = nullptr;
 
         bool m_fontTexDirty = false;
-        bool m_fontInitialized = false;
+        enum class InitializationState : AZ::u8
+        {
+            Uninitialized,
+            Initializing,
+            Initialized
+        };
+        AZStd::atomic<InitializationState> m_fontInitializationState = InitializationState::Uninitialized;
 
         FontEffects m_effects;
 
@@ -295,8 +320,6 @@ namespace AZ
         uint16_t                            m_indexCount = 0;
 
         FontShaderData                      m_fontShaderData;
-
-        AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> m_dynamicDraw;
 
         bool m_monospacedFont = false; //!< True if this font is fixed/monospaced, false otherwise (obtained from FreeType)
 
@@ -322,28 +345,6 @@ namespace AZ
         }
 
         delete font;
-    }
-}
-
-inline void AZ::FFont::InitWindowContext()
-{
-    if (!m_windowContext)
-    {
-        // font is created before window & viewport in the editor so need to do late init
-        // TODO need to deal with multiple windows, such as the editor
-        AZ::Render::Bootstrap::DefaultWindowBus::BroadcastResult(m_windowContext, &AZ::Render::Bootstrap::DefaultWindowInterface::GetDefaultWindowContext);
-        AZ_Assert(m_windowContext, "Unable to get the main window context");
-    }
-}
-
-inline void AZ::FFont::InitViewportContext()
-{
-    if (!m_viewportContext)
-    {
-        // font is created before window & viewport in the editor so need to do late init
-        auto viewContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
-        m_viewportContext = viewContextManager->GetViewportContextByName(viewContextManager->GetDefaultViewportContextName());
-        AZ_Assert(m_viewportContext, "Unable to get the viewport context");
     }
 }
 

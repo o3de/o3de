@@ -25,7 +25,7 @@ namespace AZ
     {
         DiffuseProbeGrid::~DiffuseProbeGrid()
         {
-            m_scene->GetCullingSystem()->UnregisterCullable(m_cullable);
+            m_scene->GetCullingScene()->UnregisterCullable(m_cullable);
         }
 
         void DiffuseProbeGrid::Init(RPI::Scene* scene, DiffuseProbeGridRenderData* renderData)
@@ -41,6 +41,7 @@ namespace AZ
             m_irradianceImageAttachmentId = AZStd::string::format("ProbeIrradianceImageAttachmentId_%s", uuidString.c_str());
             m_distanceImageAttachmentId = AZStd::string::format("ProbeDistanceImageAttachmentId_%s", uuidString.c_str());
             m_relocationImageAttachmentId = AZStd::string::format("ProbeRelocationImageAttachmentId_%s", uuidString.c_str());
+            m_classificationImageAttachmentId = AZStd::string::format("ProbeClassificationImageAttachmentId_%s", uuidString.c_str());
 
             // setup culling
             m_cullable.m_cullData.m_scene = m_scene;
@@ -252,6 +253,20 @@ namespace AZ
                 AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize m_probeRelocationImage image");
             }
 
+            // probe classification
+            {
+                uint32_t width = probeCountX;
+                uint32_t height = probeCountY;
+
+                m_classificationImage[m_currentImageIndex] = RHI::Factory::Get().CreateImage();
+
+                RHI::ImageInitRequest request;
+                request.m_image = m_classificationImage[m_currentImageIndex].get();
+                request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite, width, height, DiffuseProbeGridRenderData::ClassificationImageFormat);
+                RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
+                AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize m_probeClassificationImage image");
+            }
+
             m_updateTextures = false;
 
             // textures have changed so we need to update the render Srg to bind the new ones
@@ -401,6 +416,10 @@ namespace AZ
             imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeOffsets"));
             m_rayTraceSrg->SetImageView(imageIndex, m_relocationImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeRelocationImageViewDescriptor).get());
 
+            // probe classification
+            imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeStates"));
+            m_rayTraceSrg->SetImageView(imageIndex, m_classificationImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeClassificationImageViewDescriptor).get());
+
             // grid settings
             constantIndex = srgLayout->FindShaderInputConstantIndex(Name("m_ambientMultiplier"));
             m_rayTraceSrg->SetConstant(constantIndex, m_ambientMultiplier);
@@ -431,6 +450,9 @@ namespace AZ
             imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeIrradiance"));
             m_blendIrradianceSrg->SetImageView(imageIndex, m_irradianceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeIrradianceImageViewDescriptor).get());
 
+            imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeStates"));
+            m_blendIrradianceSrg->SetImageView(imageIndex, m_classificationImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeClassificationImageViewDescriptor).get());
+
             SetGridConstants(m_blendIrradianceSrg);
         }
 
@@ -450,6 +472,9 @@ namespace AZ
 
             imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeDistance"));
             m_blendDistanceSrg->SetImageView(imageIndex, m_distanceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeDistanceImageViewDescriptor).get());
+
+            imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeStates"));
+            m_blendDistanceSrg->SetImageView(imageIndex, m_classificationImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeClassificationImageViewDescriptor).get());
 
             SetGridConstants(m_blendDistanceSrg);
         }
@@ -559,6 +584,27 @@ namespace AZ
             SetGridConstants(m_relocationSrg);
         }
 
+        void DiffuseProbeGrid::UpdateClassificationSrg(const Data::Asset<RPI::ShaderResourceGroupAsset>& srgAsset)
+        {
+            if (!m_classificationSrg)
+            {
+                m_classificationSrg = RPI::ShaderResourceGroup::Create(srgAsset);
+                AZ_Error("DiffuseProbeGrid", m_classificationSrg.get(), "Failed to create Classification shader resource group");
+            }
+
+            const RHI::ShaderResourceGroupLayout* srgLayout = m_classificationSrg->GetLayout();
+            RHI::ShaderInputConstantIndex constantIndex;
+            RHI::ShaderInputImageIndex imageIndex;
+
+            imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeRayTrace"));
+            m_classificationSrg->SetImageView(imageIndex, m_rayTraceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeRayTraceImageViewDescriptor).get());
+
+            imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeStates"));
+            m_classificationSrg->SetImageView(imageIndex, m_classificationImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeClassificationImageViewDescriptor).get());
+
+            SetGridConstants(m_classificationSrg);
+        }
+
         void DiffuseProbeGrid::UpdateRenderObjectSrg()
         {
             if (!m_updateRenderObjectSrg)
@@ -600,6 +646,9 @@ namespace AZ
 
             imageIndex = srgLayout->FindShaderInputImageIndex(Name("m_probeOffsets"));
             m_renderObjectSrg->SetImageView(imageIndex, m_relocationImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeRelocationImageViewDescriptor).get());
+
+            imageIndex = srgLayout->FindShaderInputImageIndex(Name("m_probeStates"));
+            m_renderObjectSrg->SetImageView(imageIndex, m_classificationImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeClassificationImageViewDescriptor).get());
 
             SetGridConstants(m_renderObjectSrg);
 
@@ -646,7 +695,7 @@ namespace AZ
             m_cullable.m_cullData.m_visibilityEntry.m_typeFlags = AzFramework::VisibilityEntry::TYPE_RPI_Cullable;
 
             // register with culling system
-            m_scene->GetCullingSystem()->RegisterOrUpdateCullable(m_cullable);
+            m_scene->GetCullingScene()->RegisterOrUpdateCullable(m_cullable);
         }
     }   // namespace Render
 }   // namespace AZ
