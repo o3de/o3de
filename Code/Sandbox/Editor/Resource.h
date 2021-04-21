@@ -123,7 +123,6 @@
 #define ID_TOOL_SHELVE_LAST                        33375
 #define ID_EDIT_SELECTALL                          33376
 #define ID_EDIT_SELECTNONE                         33377
-#define ID_OBJECTMODIFY_VERTEXSNAPPING             33384
 #define ID_WIREFRAME                               33410
 #define ID_FILE_GENERATETERRAINTEXTURE             33445
 #define ID_GENERATORS_LIGHTING                     33446
@@ -275,7 +274,6 @@
 #define ID_GAME_PC_ENABLEMEDIUMSPEC                33961
 #define ID_GAME_PC_ENABLEHIGHSPEC                  33962
 #define ID_GAME_PC_ENABLEVERYHIGHSPEC              33963
-#define ID_MODIFY_ALIGNOBJTOSURF                   33968
 #define ID_PANEL_VEG_CREATE_SEL                    33990
 #define ID_TOOLS_UPDATEPROCEDURALVEGETATION        33999
 #define ID_DISPLAY_GOTOPOSITION                    34004

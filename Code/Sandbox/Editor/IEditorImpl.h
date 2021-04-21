@@ -229,18 +229,6 @@ public:
     void SetEditMode(int editMode);
     int GetEditMode();
 
-    //! A correct tool is one that corresponds to the previously set edit mode.
-    bool HasCorrectEditTool() const;
-
-    //! Returns the edit tool required for the edit mode specified.
-    CEditTool* CreateCorrectEditTool();
-
-    void SetEditTool(CEditTool* tool, bool bStopCurrentTool = true) override;
-    void SetEditTool(const QString& sEditToolName, bool bStopCurrentTool = true) override;
-    void ReinitializeEditTool() override;
-    //! Returns current edit tool.
-    CEditTool* GetEditTool() override;
-
     ITransformManipulator* ShowTransformManipulator(bool bShow);
     ITransformManipulator* GetTransformManipulator();
     void SetAxisConstraints(AxisConstrains axis);
@@ -400,7 +388,6 @@ protected:
     CXmlTemplateRegistry m_templateRegistry;
     CDisplaySettings* m_pDisplaySettings;
     CShaderEnum* m_pShaderEnum;
-    _smart_ptr<CEditTool> m_pEditTool;
     CIconManager* m_pIconManager;
     std::unique_ptr<SGizmoParameters> m_pGizmoParameters;
     QString m_primaryCDFolder;
