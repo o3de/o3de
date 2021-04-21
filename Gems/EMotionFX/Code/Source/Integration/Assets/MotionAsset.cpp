@@ -47,7 +47,7 @@ namespace EMotionFX
                 assetData->m_emfxMotion->SetIsOwnedByRuntime(true);
             }
 
-            assetData->ReleaseEmotionFXData();
+            assetData->ReleaseEMotionFXData();
             AZ_Error("EMotionFX", assetData->m_emfxMotion, "Failed to initialize motion asset %s", asset.GetHint().c_str());
             return (assetData->m_emfxMotion);
         }

@@ -68,7 +68,7 @@ namespace EMotionFX
                 &actorSettings,
                 "");
 
-            assetData->ReleaseEmotionFXData();
+            assetData->ReleaseEMotionFXData();
 
             if (!assetData->m_emfxActor)
             {
