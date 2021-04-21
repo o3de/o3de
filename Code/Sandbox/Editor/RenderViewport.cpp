@@ -66,7 +66,6 @@
 #include "Util/fastlib.h"
 #include "CryEditDoc.h"
 #include "GameEngine.h"
-#include "EditTool.h"
 #include "ViewManager.h"
 #include "Objects/DisplayContext.h"
 #include "DisplaySettings.h"
@@ -1948,12 +1947,6 @@ void CRenderViewport::RenderAll()
 
         m_entityVisibilityQuery.DisplayVisibility(*debugDisplay);
 
-        if (GetEditTool())
-        {
-            // display editing tool
-            GetEditTool()->Display(displayContext);
-        }
-
         if (m_manipulatorManager != nullptr)
         {
             using namespace AzToolsFramework::ViewportInteraction;
@@ -2775,35 +2768,6 @@ void CRenderViewport::OnMouseWheel(Qt::KeyboardModifiers modifiers, short zDelta
             MouseInteractionEvent(mouseInteraction, zDelta));
 
         handled = result != MouseInteractionResult::None;
-    }
-    else
-    {
-        if (m_manipulatorManager == nullptr || m_manipulatorManager->ConsumeViewportMouseWheel(mouseInteraction))
-        {
-            return;
-        }
-
-        if (AzToolsFramework::ComponentModeFramework::InComponentMode())
-        {
-            AzToolsFramework::EditorInteractionSystemViewportSelectionRequestBus::EventResult(
-                handled, AzToolsFramework::GetEntityContextId(),
-                &EditorInteractionSystemViewportSelectionRequestBus::Events::InternalHandleMouseViewportInteraction,
-                MouseInteractionEvent(mouseInteraction, zDelta));
-        }
-        else
-        {
-            //////////////////////////////////////////////////////////////////////////
-            // Asks current edit tool to handle mouse callback.
-            CEditTool* pEditTool = GetEditTool();
-            if (pEditTool && (modifiers & Qt::ControlModifier))
-            {
-                QPoint tempPoint(scaledPoint.x(), scaledPoint.y());
-                if (pEditTool->MouseCallback(this, eMouseWheel, tempPoint, zDelta))
-                {
-                    handled = true;
-                }
-            }
-        }
     }
 
     if (!handled)
@@ -4344,10 +4308,6 @@ void CRenderViewport::RenderSnappingGrid()
     }
     CGrid* pGrid = GetViewManager()->GetGrid();
     if (pGrid->IsEnabled() == false && pGrid->IsAngleSnapEnabled() == false)
-    {
-        return;
-    }
-    if (GetIEditor()->GetEditTool() && !GetIEditor()->GetEditTool()->IsDisplayGrid())
     {
         return;
     }

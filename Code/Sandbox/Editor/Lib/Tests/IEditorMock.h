@@ -125,10 +125,6 @@ public:
     MOCK_METHOD0(GetOperationMode, EOperationMode());
     MOCK_METHOD1(SetEditMode, void(int ));
     MOCK_METHOD0(GetEditMode, int());
-    MOCK_METHOD2(SetEditTool, void(CEditTool*, bool));
-    MOCK_METHOD2(SetEditTool, void(const QString&, bool));
-    MOCK_METHOD0(ReinitializeEditTool, void());
-    MOCK_METHOD0(GetEditTool, CEditTool* ());
     MOCK_METHOD1(ShowTransformManipulator, ITransformManipulator* (bool));
     MOCK_METHOD0(GetTransformManipulator, ITransformManipulator* ());
     MOCK_METHOD1(SetAxisConstraints, void(AxisConstrains ));
