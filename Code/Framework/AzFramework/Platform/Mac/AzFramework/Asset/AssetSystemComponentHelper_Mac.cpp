@@ -11,6 +11,7 @@
 */
 
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/IO/SystemFile.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 
 #include <sys/types.h>
@@ -20,6 +21,7 @@ namespace AzFramework::AssetSystem::Platform
 {
     void AllowAssetProcessorToForeground()
     {}
+
     bool LaunchAssetProcessor(AZStd::string_view executableDirectory, AZStd::string_view engineRoot,
         AZStd::string_view projectPath)
     {
@@ -28,6 +30,26 @@ namespace AzFramework::AssetSystem::Platform
         // has to go up from the Contents/MacOS folder the binary is in
         assetProcessorPath /= "../../../AssetProcessor.app";
         assetProcessorPath = assetProcessorPath.LexicallyNormal();
+
+        if (!AZ::IO::SystemFile::Exists(assetProcessorPath.c_str()))
+        {
+            // Check for existence of one under a "bin" directory, i.e. engineRoot is an SDK structure.
+            assetProcessorPath.Assign(engineRoot);
+            assetProcessorPath /= "bin";
+            #if defined(AZ_DEBUG_BUILD)
+            assetProcessorPath /= "debug";
+#elif defined(AZ_PROFILE_BUILD)
+            assetProcessorPath /= "profile";
+#else
+            assetProcessorPath /= "release";
+#endif
+            assetProcessorPath /= "AssetProcessor.app";
+
+            if (!AZ::IO::SystemFile::Exists(assetProcessorPath.c_str()))
+            {
+                return false;
+            }
+        }
 
         auto fullLaunchCommand = AZ::IO::FixedMaxPathString::format(R"(open -g "%s" --args --start-hidden)", assetProcessorPath.c_str());
         // Add the engine path to the launch command if not empty

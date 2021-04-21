@@ -12,6 +12,7 @@
 
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/IO/SystemFile.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 
 #include <Psapi.h>
@@ -66,6 +67,26 @@ namespace AzFramework::AssetSystem::Platform
     {
         AZ::IO::FixedMaxPath assetProcessorPath{ executableDirectory };
         assetProcessorPath /= "AssetProcessor.exe";
+
+        if (!AZ::IO::SystemFile::Exists(assetProcessorPath.c_str()))
+        {
+            // Check for existence of one under a "bin" directory, i.e. engineRoot is an SDK structure.
+            assetProcessorPath.Assign(engineRoot);
+            assetProcessorPath /= "bin";
+#if defined(AZ_DEBUG_BUILD)
+            assetProcessorPath /= "debug";
+#elif defined(AZ_PROFILE_BUILD)
+            assetProcessorPath /= "profile";
+#else
+            assetProcessorPath /= "release";
+#endif
+            assetProcessorPath /= "AssetProcessor.exe";
+
+            if (!AZ::IO::SystemFile::Exists(assetProcessorPath.c_str()))
+            {
+                return false;
+            }
+        }
 
         auto fullLaunchCommand = AZ::IO::FixedMaxPathString::format(R"("%s" --start-hidden)", assetProcessorPath.c_str());
 

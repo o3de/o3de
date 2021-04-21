@@ -29,6 +29,29 @@ namespace AzFramework::AssetSystem::Platform
     bool LaunchAssetProcessor(AZStd::string_view executableDirectory, AZStd::string_view engineRoot,
         AZStd::string_view projectPath)
     {
+        AZ::IO::FixedMaxPath assetProcessorPath{ executableDirectory };
+        assetProcessorPath /= "AssetProcessor";
+
+        if (!AZ::IO::SystemFile::Exists(assetProcessorPath.c_str()))
+        {
+            // Check for existence of one under a "bin" directory, i.e. engineRoot is an SDK structure.
+            assetProcessorPath.Assign(engineRoot);
+            assetProcessorPath /= "bin";
+#if defined(AZ_DEBUG_BUILD)
+            assetProcessorPath /= "debug";
+#elif defined(AZ_PROFILE_BUILD)
+            assetProcessorPath /= "profile";
+#else
+            assetProcessorPath /= "release";
+#endif
+            assetProcessorPath /= "AssetProcessor";
+
+            if (!AZ::IO::SystemFile::Exists(assetProcessorPath.c_str()))
+            {
+                return false;
+            }
+        }
+
         pid_t firstChildPid = fork();
         if (firstChildPid == 0)
         {
@@ -47,9 +70,6 @@ namespace AzFramework::AssetSystem::Platform
             pid_t secondChildPid = fork();
             if (secondChildPid == 0)
             {
-                AZ::IO::FixedMaxPath assetProcessorPath{ executableDirectory };
-                assetProcessorPath /= "AssetProcessor";
-
                 AZStd::array args {
                     assetProcessorPath.c_str(), assetProcessorPath.c_str(), "--start-hidden", 
                     static_cast<const char*>(nullptr), static_cast<const char*>(nullptr), static_cast<const char*>(nullptr)
