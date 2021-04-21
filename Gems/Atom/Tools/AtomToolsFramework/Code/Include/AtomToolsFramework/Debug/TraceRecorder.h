@@ -13,20 +13,24 @@
 #pragma once
 
 #include <AzCore/Debug/TraceMessageBus.h>
+#include <AzCore/std/containers/list.h>
 #include <AzCore/std/string/string.h>
 
 namespace AtomToolsFramework
 {
     // Records all TraceMessageBus activity to a string
-    class TraceRecorder
-        : private AZ::Debug::TraceMessageBus::Handler
+    class TraceRecorder : private AZ::Debug::TraceMessageBus::Handler
     {
     public:
         AZ_TYPE_INFO(AtomToolsFramework::TraceRecorder, "{7B49AFD0-D0AB-4CB7-A4B5-6D88D30DCBFD}");
 
-        TraceRecorder();
+        TraceRecorder(size_t maxMessageCount = std::numeric_limits<size_t>::max());
         ~TraceRecorder();
 
+        //! Get the combined output of all messages
+        AZStd::string GetDump() const;
+
+    private:
         //////////////////////////////////////////////////////////////////////////
         // AZ::Debug::TraceMessageBus::Handler overrides...
         bool OnAssert(const char* /*message*/) override;
@@ -36,6 +40,7 @@ namespace AtomToolsFramework
         bool OnPrintf(const char* /*window*/, const char* /*message*/) override;
         //////////////////////////////////////////////////////////////////////////
 
-        AZStd::string m_messageSink;
+        size_t m_maxMessageCount = std::numeric_limits<size_t>::max();
+        AZStd::list<AZStd::string> m_messages;
     };
 } // namespace AtomToolsFramework
