@@ -17,7 +17,7 @@
 
 import click
 import os
-# import main as app_main
+import main as app_main
 
 @click.command()
 @click.version_option('1.0.0')
@@ -27,7 +27,7 @@ import os
 @click.option('--overwrite', default='false', help='Overwrite existing conversion files. Options: [true, false]')
 @click.argument('source', type=click.STRING)
 @click.argument('destination', type=click.STRING)
-def main():
+def main(source, destination):
     """
     This is the commmand line interface for the Legacy Asset Converter tool. The purpose of this tool is to convert
     legacy Lumberyard material files (.mtl) and their associated textures to the current O3DE format (.material). The
@@ -50,11 +50,9 @@ def main():
     # ---->> Create Output Logs ::: Default setting = True
     # ---->> Reprocess Existing Files ::: Default setting = False
 
-    :param output:
-    :param operands:
-    :return:
     """
-    print('Hello')
+    print(f'Source: {source}')
+    print(f'Destination: {destination}')
 
 
 def validate():
