@@ -88,7 +88,7 @@ namespace AZ
                     AZStd::string name(AZStd::string::format("%s%d", m_defaultNodeName, texCoordIndex));
                     if (mesh->mTextureCoordsNames[texCoordIndex].length)
                     {
-                        name = AZStd::string::format("%s", mesh->mTextureCoordsNames[texCoordIndex].C_Str());
+                        name = mesh->mTextureCoordsNames[texCoordIndex].C_Str();
                     }
 
                     uvMap->SetCustomName(name.c_str());
