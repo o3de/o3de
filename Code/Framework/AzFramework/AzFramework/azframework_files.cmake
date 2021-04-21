@@ -316,7 +316,6 @@ set(FILES
     Terrain/TerrainDataRequestBus.h
     Terrain/TerrainDataRequestBus.cpp
     Platform/PlatformDefaults.h
-    Platform/PlatformDefaults.cpp
     Windowing/WindowBus.h
     Windowing/NativeWindow.cpp
     Windowing/NativeWindow.h

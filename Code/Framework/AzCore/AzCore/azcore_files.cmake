@@ -605,6 +605,8 @@ set(FILES
     Utils/Utils.h
     Script/lua/lua.h
     Memory/HeapSchema.cpp
+    PlatformId/PlatformDefaults.h
+    PlatformId/PlatformDefaults.cpp
     PlatformId/PlatformId.h
     PlatformId/PlatformId.cpp
     Socket/AzSocket_fwd.h
