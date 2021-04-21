@@ -1,0 +1,22 @@
+{
+    "propertyLayout": {
+        "version": 1,
+        "properties": {
+            "general": [
+                {
+                    "id": "o_axis",
+                    "type": "int",
+                    "connection": {
+                        "type": "shaderOption",
+                        "id": "o_axis"
+                    }
+                }
+            ]
+        }
+    },
+    "shaders": [
+        {
+            "file": "TestTangentSpace.shader"
+        }
+    ]
+}

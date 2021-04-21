@@ -1,0 +1,11 @@
+{
+    "description": "Uses normals to light the object, with medium normal factor.",
+    "materialType": "TestNormalMapping.materialtype",
+    "propertyLayoutVersion": 1,
+    "properties": {
+        "general": {
+            "o_mode": 2,
+            "m_normalFactor": 0.5
+        }
+    }
+}

@@ -1,0 +1,11 @@
+{
+    "description": "Draws the raw sampled normal map.",
+    "materialType": "TestNormalMapping.materialtype",
+    "propertyLayoutVersion": 1,
+    "properties": {
+        "general": {
+            "o_mode": 0,
+            "m_normalFactor": 0.0
+        }
+    }
+}

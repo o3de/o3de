@@ -1,0 +1,60 @@
+{
+    "description": "Specialized material for testing normal map calculation utility functions.",
+    "propertyLayout": {
+        "version": 1,
+        "properties": {
+            "general": [
+                {
+                    "id": "m_diffuseMap",
+                    "type": "image",
+                    "defaultValue": "EngineAssets/Textures/grey.dds",
+                    "connection": {
+                        "type": "shaderInput",
+                        "id": "m_diffuseMap"
+                    }
+                },
+                {
+                    "id": "m_normalMap",
+                    "type": "image",
+                    "defaultValue": "Levels/NormalMapping/test_ddn.tif",
+                    "connection": {
+                        "type": "shaderInput",
+                        "id": "m_normalMap"
+                    }
+                },
+                {
+                    "id": "m_normalFactor",
+                    "type": "float",
+                    "defaultValue": 1.0,
+                    "connection": {
+                        "type": "shaderInput",
+                        "id": "m_normalFactor"
+                    }
+                },
+                {
+                    "id": "m_defaultLightDir",
+                    "type": "vector3",
+                    "defaultValue": [ 0.0, 0.0, 1.0 ],
+                    "connection": {
+                        "type": "shaderInput",
+                        "id": "m_defaultLightDir"
+                    }
+                },
+                {
+                    "id": "o_mode",
+                    "type": "int",
+                    "defaultValue": 2,
+                    "connection": {
+                        "type": "shaderOption",
+                        "id": "o_mode"
+                    }
+                }
+            ]
+        }
+    },
+    "shaders": [
+        {
+            "file": "TestNormalMapping.shader"
+        }
+    ]
+}

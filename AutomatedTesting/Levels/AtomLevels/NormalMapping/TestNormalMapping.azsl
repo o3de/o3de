@@ -1,0 +1,101 @@
+
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <scenesrg.srgi>
+
+#include "../../Shaders/CommonVS.azsli"
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+
+ShaderResourceGroup MaterialSrg : SRG_PerMaterial
+{
+    Texture2D m_diffuseMap;
+
+    Texture2D m_normalMap;
+    float m_normalFactor;
+
+    float3 m_defaultLightDir;
+
+    Sampler m_sampler
+    {
+        MaxAnisotropy = 16;
+        AddressU = Wrap;
+        AddressV = Wrap;
+        AddressW = Wrap;
+    };
+}
+
+enum class Mode
+{
+    Raw,
+    Normal,
+    Lit
+};
+
+option Mode o_mode;
+
+struct PixelOutput
+{
+    float4 m_color : SV_Target0;
+};
+
+VertexOutput MainVS(VertexInput input)
+{
+    VertexOutput output = CommonVS(input);
+
+    // We don't have a utility function for scaling normals because the process is so simple. Still, the "NormalMapping" test level does test the 
+    // use of this common pattern. Other materials can do the same thing to scale normal maps: just multiply the final tangent and bitangent in the vertex shader. 
+    // Note, this assumes that we are using a tangent space algorithm that does not normalize the TBN basis vectors in the pixel shader (e.g. MikkT).
+    output.m_tangent *= MaterialSrg::m_normalFactor;
+    output.m_bitangent *= MaterialSrg::m_normalFactor;
+
+    output.m_bitangent *= -1; // The test normal map was baked opposite of what Atom expects
+    
+    return output;
+}
+
+
+PixelOutput MainPS(VertexOutput input)
+{
+    PixelOutput output;
+        
+    float4 normalMapSample = MaterialSrg::m_normalMap.Sample(MaterialSrg::m_sampler, input.m_uv);
+
+    if (o_mode == Mode::Raw)
+    {
+        output.m_color = float4(normalMapSample.xyz * 0.5 + 0.5, 1);
+        return output;
+    }
+
+    float3 normal = GetWorldSpaceNormal(normalMapSample, input.m_normal, input.m_tangent, input.m_bitangent);
+
+    if (o_mode == Mode::Normal)
+    {
+        output.m_color = float4(normal.xyz * 0.5 + 0.5, 1);
+        return output;
+    }
+
+    float3 lightDir = -SceneSrg::m_directionalLights[0].m_direction;
+    if (length(lightDir) == 0)
+    {
+        lightDir = normalize(MaterialSrg::m_defaultLightDir);
+    }
+
+    float NdotL = max(0.0, dot(normal, lightDir));
+
+    float4 baseColor = MaterialSrg::m_diffuseMap.Sample(MaterialSrg::m_sampler, input.m_uv);
+    float3 diffuse = (0.1 + saturate(NdotL)) * baseColor.xyz;
+    
+    output.m_color = float4(diffuse, 1);
+
+    return output;
+}

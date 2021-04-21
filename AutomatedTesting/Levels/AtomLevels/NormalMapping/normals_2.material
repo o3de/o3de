@@ -1,0 +1,11 @@
+{
+    "description":  "Draws normals with high normal factor.",
+    "materialType": "TestNormalMapping.materialtype",
+    "propertyLayoutVersion": 1,
+    "properties": {
+        "general": {
+            "o_mode": 1,
+            "m_normalFactor": 1.0
+        }
+    }
+}

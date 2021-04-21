@@ -1,0 +1,6 @@
+<download name="PbrMaterialChart" type="Map">
+ <index src="filelist.xml" dest="filelist.xml"/>
+ <files>
+  <file src="level.pak" dest="level.pak" size="7402" md5="e202b0f402305ab8d1382c68b166984c"/>
+ </files>
+</download>

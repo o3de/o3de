@@ -1,0 +1,13 @@
+{
+    "description": "Draws a realistic diffuse/normal pair. We use a non-1 m_normalFactor to regression-test the normal scaling feature.",
+    "materialType": "TestNormalMapping.materialtype",
+    "propertyLayoutVersion": 1,
+    "properties": {
+        "general": {
+            "m_diffuseMap": "Levels/NormalMapping/am_floor_tile_diff.tif",
+            "m_normalMap": "Levels/NormalMapping/am_floor_tile_ddn.tif",
+            "o_mode": 2,
+            "m_normalFactor": 2.0
+        }
+    }
+}

@@ -1,0 +1,6 @@
+<download name="MeshTest" type="Map">
+ <index src="filelist.xml" dest="filelist.xml"/>
+ <files>
+  <file src="level.pak" dest="level.pak" size="24708" md5="8b21d59bee95a559206acfebc5b3f2d9"/>
+ </files>
+</download>

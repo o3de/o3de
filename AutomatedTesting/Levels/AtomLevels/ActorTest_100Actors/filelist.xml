@@ -1,0 +1,6 @@
+<download name="ActorTest_100Actors" type="Map">
+ <index src="filelist.xml" dest="filelist.xml"/>
+ <files>
+  <file src="level.pak" dest="level.pak" size="11638" md5="cba94dd088b4d4bc141a158d564be048"/>
+ </files>
+</download>

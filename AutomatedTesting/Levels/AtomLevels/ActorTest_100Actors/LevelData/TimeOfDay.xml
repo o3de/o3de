@@ -1,0 +1,356 @@
+<TimeOfDay Time="12" TimeStart="0" TimeEnd="24" TimeAnimSpeed="0">
+ <Variable Name="Sun color" Color="1,0.97254902,0.97254902">
+  <Spline Keys="0:(1:0.972549:0.972549):0,1:(1:0.972549:0.972549):0,"/>
+ </Variable>
+ <Variable Name="Sun intensity" Value="74914.453">
+  <Spline Keys="0:119000:0,0:30736.9:0,1:119000:0,1:30736.9:0,"/>
+ </Variable>
+ <Variable Name="Sun specular multiplier" Value="1">
+  <Spline Keys="0:1:0,1:1:0,"/>
+ </Variable>
+ <Variable Name="Fog color" Color="0,0,0">
+  <Spline Keys="0:(0:0:0):0,1:(0:0:0):0,"/>
+ </Variable>
+ <Variable Name="Fog color multiplier" Value="0">
+  <Spline Keys="0:0:0,1:0:0,"/>
+ </Variable>
+ <Variable Name="Fog height (bottom)" Value="0">
+  <Spline Keys="0:0:0,1:0:0,"/>
+ </Variable>
+ <Variable Name="Fog layer density (bottom)" Value="1">
+  <Spline Keys="0:1:0,1:1:0,"/>
+ </Variable>
+ <Variable Name="Fog color (top)" Color="0,0,0">
+  <Spline Keys="0:(0:0:0):0,1:(0:0:0):0,"/>
+ </Variable>
+ <Variable Name="Fog color (top) multiplier" Value="0">
+  <Spline Keys="0:0:0,1:0:0,"/>
+ </Variable>
+ <Variable Name="Fog height (top)" Value="4000">
+  <Spline Keys="0:4000:0,1:4000:0,"/>
+ </Variable>
+ <Variable Name="Fog layer density (top)" Value="0">
+  <Spline Keys="0:0:0,1:0:0,"/>
+ </Variable>
+ <Variable Name="Fog color height offset" Value="0">
+  <Spline Keys="0:0:0,1:0:0,"/>
+ </Variable>
+ <Variable Name="Fog color (radial)" Color="0,0,0">
+  <Spline Keys="0:(0:0:0):0,1:(0:0:0):0,"/>
+ </Variable>
+ <Variable Name="Fog color (radial) multiplier" Value="0">
+  <Spline Keys="0:0:0,1:0:0,"/>
+ </Variable>
+ <Variable Name="Fog radial size" Value="0.75">
+  <Spline Keys="0:0.75:0,1:0.75:0,"/>
+ </Variable>
+ <Variable Name="Fog radial lobe" Value="0.5">
+  <Spline Keys="0:0.5:0,1:0.5:0,"/>
+ </Variable>
+ <Variable Name="Volumetric fog: Final density clamp" Value="1">
+  <Spline Keys="0:1:0,1:1:0,"/>
+ </Variable>
+ <Variable Name="Volumetric fog: Global density" Value="0.02">
+  <Spline Keys="0:0.02:0,1:0.02:0,"/>
+ </Variable>
+ <Variable Name="Volumetric fog: Ramp start" Value="0">
+  <Spline Keys="0:0:0,1:0:0,"/>
+ </Variable>
+ <Variable Name="Volumetric fog: Ramp end" Value="100">
+  <Spline Keys="0:100:0,1:100:0,"/>
+ </Variable>
+ <Variable Name="Volumetric fog: Ramp influence" Value="0">
+  <Spline Keys="0:0:0,1:0:0,"/>
+ </Variable>
+ <Variable Name="Volumetric fog: Shadow darkening" Value="0.25">
+  <Spline Keys="0:0.25:0,1:0.25:0,"/>
+ </Variable>
+ <Variable Name="Volumetric fog: Shadow darkening sun" Value="1">
+  <Spline Keys="0:1:0,1:1:0,"/>
+ </Variable>
+ <Variable Name="Volumetric fog: Shadow darkening ambient" Value="1">
+  <Spline Keys="0:1:0,1:1:0,"/>
+ </Variable>
+ <Variable Name="Volumetric fog: Shadow range" Value="0.1">
+  <Spline Keys="0:0.1:0,1:0.1:0,"/>
+ </Variable>
+ <Variable Name="Volumetric fog 2: Fog height (bottom)" Value="0">
+  <Spline Keys="0:0:0,1:0:0,"/>
+ </Variable>
+ <Variable Name="Volumetric fog 2: Fog layer density (bottom)" Value="1">
+  <Spline Keys="0:1:0,1:1:0,"/>
+ </Variable>
+ <Variable Name="Volumetric fog 2: Fog height (top)" Value="4000">
+  <Spline Keys="0:4000:0,1:4000:0,"/>
+ </Variable>
+ <Variable Name="Volumetric fog 2: Fog layer density (top)" Value="9.999999e-05">
+  <Spline Keys="0:0.0001:0,1:0.0001:0,"/>
+ </Variable>
+ <Variable Name="Volumetric fog 2: Global fog density" Value="0.1">
+  <Spline Keys="0:0.1:0,1:0.1:0,"/>
+ </Variable>
+ <Variable Name="Volumetric fog 2: Ramp start" Value="0">
+  <Spline Keys="0:0:0,1:0:0,"/>
+ </Variable>
+ <Variable Name="Volumetric fog 2: Ramp end" Value="0">
+  <Spline Keys="0:0:0,1:0:0,"/>
+ </Variable>
+ <Variable Name="Volumetric fog 2: Fog albedo color (atmosphere)" Color="1,1,1">
+  <Spline Keys="0:(1:1:1):0,1:(1:1:1):0,"/>
+ </Variable>
+ <Variable Name="Volumetric fog 2: Anisotropy factor (atmosphere)" Value="0.2">
+  <Spline Keys="0:0.2:0,1:0.2:0,"/>
+ </Variable>
+ <Variable Name="Volumetric fog 2: Fog albedo color (sun radial)" Color="1,1,1">
+  <Spline Keys="0:(1:1:1):0,1:(1:1:1):0,"/>
+ </Variable>
+ <Variable Name="Volumetric fog 2: Anisotropy factor (sun radial)" Value="0.94999999">
+  <Spline Keys="0:0.95:0,1:0.95:0,"/>
+ </Variable>
+ <Variable Name="Volumetric fog 2: Blend factor for sun scattering" Value="1">
+  <Spline Keys="0:1:0,1:1:0,"/>
+ </Variable>
+ <Variable Name="Volumetric fog 2: Blend mode for sun scattering" Value="0">
+  <Spline Keys="0:0:0,1:0:0,"/>
+ </Variable>
+ <Variable Name="Volumetric fog 2: Fog albedo color (entities)" Color="1,1,1">
+  <Spline Keys="0:(1:1:1):0,1:(1:1:1):0,"/>
+ </Variable>
+ <Variable Name="Volumetric fog 2: Anisotropy factor (entities)" Value="0.60000002">
+  <Spline Keys="0:0.6:0,1:0.6:0,"/>
+ </Variable>
+ <Variable Name="Volumetric fog 2: Maximum range of ray-marching" Value="64">
+  <Spline Keys="0:64:0,1:64:0,"/>
+ </Variable>
+ <Variable Name="Volumetric fog 2: In-scattering factor" Value="1">
+  <Spline Keys="0:1:0,1:1:0,"/>
+ </Variable>
+ <Variable Name="Volumetric fog 2: Extinction factor" Value="0.30000001">
+  <Spline Keys="0:0.3:0,1:0.3:0,"/>
+ </Variable>
+ <Variable Name="Volumetric fog 2: Analytical volumetric fog visibility" Value="0.5">
+  <Spline Keys="0:0.5:0,1:0.5:0,"/>
+ </Variable>
+ <Variable Name="Volumetric fog 2: Final density clamp" Value="1">
+  <Spline Keys="0:1:0,1:1:0,"/>
+ </Variable>
+ <Variable Name="Sky light: Sun intensity" Color="1,1,1">
+  <Spline Keys="0:(1:1:1):0,1:(1:1:1):0,"/>
+ </Variable>
+ <Variable Name="Sky light: Sun intensity multiplier" Value="50">
+  <Spline Keys="0:50:0,1:50:0,"/>
+ </Variable>
+ <Variable Name="Sky light: Mie scattering" Value="4.8000002">
+  <Spline Keys="0:4.8:0,1:4.8:0,"/>
+ </Variable>
+ <Variable Name="Sky light: Rayleigh scattering" Value="2">
+  <Spline Keys="0:2:0,1:2:0,"/>
+ </Variable>
+ <Variable Name="Sky light: Sun anisotropy factor" Value="-0.99699998">
+  <Spline Keys="0:-0.997:0,1:-0.997:0,"/>
+ </Variable>
+ <Variable Name="Sky light: Wavelength (R)" Value="693.99994">
+  <Spline Keys="0:694:0,1:694:0,"/>
+ </Variable>
+ <Variable Name="Sky light: Wavelength (G)" Value="597">
+  <Spline Keys="0:597:0,1:597:0,"/>
+ </Variable>
+ <Variable Name="Sky light: Wavelength (B)" Value="488">
+  <Spline Keys="0:488:0,1:488:0,"/>
+ </Variable>
+ <Variable Name="Night sky: Horizon color" Color="0.87058794,0.58039194,0.184314">
+  <Spline Keys="0:(0.870588:0.580392:0.184314):0,1:(0.870588:0.580392:0.184314):0,"/>
+ </Variable>
+ <Variable Name="Night sky: Horizon color multiplier" Value="9.999999e-05">
+  <Spline Keys="0:0.0001:0,1:0.0001:0,"/>
+ </Variable>
+ <Variable Name="Night sky: Zenith color" Color="0.0666667,0.14901999,0.30588198">
+  <Spline Keys="0:(0.0666667:0.14902:0.305882):0,1:(0.0666667:0.14902:0.305882):0,"/>
+ </Variable>
+ <Variable Name="Night sky: Zenith color multiplier" Value="1.9999999e-05">
+  <Spline Keys="0:2e-05:0,1:2e-05:0,"/>
+ </Variable>
+ <Variable Name="Night sky: Zenith shift" Value="0.25">
+  <Spline Keys="0:0.25:0,1:0.25:0,"/>
+ </Variable>
+ <Variable Name="Night sky: Star intensity" Value="0.0099999998">
+  <Spline Keys="0:0.01:0,1:0.01:0,"/>
+ </Variable>
+ <Variable Name="Night sky: Moon color" Color="1,1,1">
+  <Spline Keys="0:(1:1:1):0,1:(1:1:1):0,"/>
+ </Variable>
+ <Variable Name="Night sky: Moon color multiplier" Value="0.0099999998">
+  <Spline Keys="0:0.01:0,1:0.01:0,"/>
+ </Variable>
+ <Variable Name="Night sky: Moon inner corona color" Color="0.90196103,1,1">
+  <Spline Keys="0:(0.901961:1:1):0,1:(0.901961:1:1):0,"/>
+ </Variable>
+ <Variable Name="Night sky: Moon inner corona color multiplier" Value="9.999999e-05">
+  <Spline Keys="0:0.0001:0,1:0.0001:0,"/>
+ </Variable>
+ <Variable Name="Night sky: Moon inner corona scale" Value="0.49900001">
+  <Spline Keys="0:0.499:0,1:0.499:0,"/>
+ </Variable>
+ <Variable Name="Night sky: Moon outer corona color" Color="0.50196099,0.78431398,1">
+  <Spline Keys="0:(0.501961:0.784314:1):0,1:(0.501961:0.784314:1):0,"/>
+ </Variable>
+ <Variable Name="Night sky: Moon outer corona color multiplier" Value="4.9999995e-05">
+  <Spline Keys="0:5e-05:0,1:5e-05:0,"/>
+ </Variable>
+ <Variable Name="Night sky: Moon outer corona scale" Value="0.0059999996">
+  <Spline Keys="0:0.006:0,1:0.006:0,"/>
+ </Variable>
+ <Variable Name="Cloud shading: Sun light multiplier" Value="1.96">
+  <Spline Keys="0:1.96:0,1:1.96:0,"/>
+ </Variable>
+ <Variable Name="Cloud shading: Sun custom color" Color="0.84313697,0.78431398,0.66666698">
+  <Spline Keys="0:(0.843137:0.784314:0.666667):0,1:(0.843137:0.784314:0.666667):0,"/>
+ </Variable>
+ <Variable Name="Cloud shading: Sun custom color multiplier" Value="1">
+  <Spline Keys="0:1:0,1:1:0,"/>
+ </Variable>
+ <Variable Name="Cloud shading: Sun custom color influence" Value="0">
+  <Spline Keys="0:0:0,1:0:0,"/>
+ </Variable>
+ <Variable Name="Sun shafts visibility" Value="0.25">
+  <Spline Keys="0:0.25:0,1:0.25:0,"/>
+ </Variable>
+ <Variable Name="Sun rays visibility" Value="1">
+  <Spline Keys="0:1:0,1:1:0,"/>
+ </Variable>
+ <Variable Name="Sun rays attenuation" Value="5">
+  <Spline Keys="0:5:0,1:5:0,"/>
+ </Variable>
+ <Variable Name="Sun rays suncolor influence" Value="1">
+  <Spline Keys="0:1:0,1:1:0,"/>
+ </Variable>
+ <Variable Name="Sun rays custom color" Color="1,1,1">
+  <Spline Keys="0:(1:1:1):0,1:(1:1:1):0,"/>
+ </Variable>
+ <Variable Name="Ocean fog color" Color="0.113725,0.39999998,0.55294102">
+  <Spline Keys="0:(0.113725:0.4:0.552941):0,1:(0.113725:0.4:0.552941):0,"/>
+ </Variable>
+ <Variable Name="Ocean fog color multiplier" Value="1">
+  <Spline Keys="0:1:0,1:1:0,"/>
+ </Variable>
+ <Variable Name="Ocean fog density" Value="0.2">
+  <Spline Keys="0:0.2:0,1:0.2:0,"/>
+ </Variable>
+ <Variable Name="Static skybox multiplier" Value="1">
+  <Spline Keys="0:1:0,1:1:0,"/>
+ </Variable>
+ <Variable Name="Film curve shoulder scale" Value="1">
+  <Spline Keys="0:1:0,1:1:0,"/>
+ </Variable>
+ <Variable Name="Film curve midtones scale" Value="1">
+  <Spline Keys="0:1:0,1:1:0,"/>
+ </Variable>
+ <Variable Name="Film curve toe scale" Value="1">
+  <Spline Keys="0:1:0,1:1:0,"/>
+ </Variable>
+ <Variable Name="Film curve whitepoint" Value="1">
+  <Spline Keys="0:1:0,1:1:0,"/>
+ </Variable>
+ <Variable Name="Saturation" Value="1">
+  <Spline Keys="0:1:0,1:1:0,"/>
+ </Variable>
+ <Variable Name="Color balance" Color="1,1,1">
+  <Spline Keys="0:(1:1:1):0,1:(1:1:1):0,"/>
+ </Variable>
+ <Variable Name="Scene key" Value="0.18000001">
+  <Spline Keys="0:0.18:0,1:0.18:0,"/>
+ </Variable>
+ <Variable Name="Min exposure" Value="0.36000001">
+  <Spline Keys="0:0.36:0,1:0.36:0,"/>
+ </Variable>
+ <Variable Name="Max exposure" Value="2.8">
+  <Spline Keys="0:2.8:0,1:2.8:0,"/>
+ </Variable>
+ <Variable Name="EV Min" Value="4.5">
+  <Spline Keys="0:4.5:0,1:4.5:0,"/>
+ </Variable>
+ <Variable Name="EV Max" Value="17">
+  <Spline Keys="0:17:0,1:17:0,"/>
+ </Variable>
+ <Variable Name="EV Auto compensation" Value="1.5">
+  <Spline Keys="0:1.5:0,1:1.5:0,"/>
+ </Variable>
+ <Variable Name="Bloom amount" Value="0.1">
+  <Spline Keys="0:0.1:0,1:0.1:0,"/>
+ </Variable>
+ <Variable Name="Filters: grain" Value="0">
+  <Spline Keys="0:0:0,1:0:0,"/>
+ </Variable>
+ <Variable Name="Filters: photofilter color" Color="0.95200002,0.51700002,0.089999996">
+  <Spline Keys="0:(0.952:0.517:0.09):0,1:(0.952:0.517:0.09):0,"/>
+ </Variable>
+ <Variable Name="Filters: photofilter density" Value="0">
+  <Spline Keys="0:0:0,1:0:0,"/>
+ </Variable>
+ <Variable Name="Dof: focus range" Value="1000">
+  <Spline Keys="0:1000:0,1:1000:0,"/>
+ </Variable>
+ <Variable Name="Dof: blur amount" Value="0">
+  <Spline Keys="0:0:0,1:0:0,"/>
+ </Variable>
+ <Variable Name="Cascade 0: Bias" Value="1">
+  <Spline Keys="0:1:0,1:1:0,"/>
+ </Variable>
+ <Variable Name="Cascade 0: Slope Bias" Value="4">
+  <Spline Keys="0:4:0,1:4:0,"/>
+ </Variable>
+ <Variable Name="Cascade 1: Bias" Value="1">
+  <Spline Keys="0:1:0,1:1:0,"/>
+ </Variable>
+ <Variable Name="Cascade 1: Slope Bias" Value="2">
+  <Spline Keys="0:2:0,1:2:0,"/>
+ </Variable>
+ <Variable Name="Cascade 2: Bias" Value="1.9">
+  <Spline Keys="0:1.9:0,1:1.9:0,"/>
+ </Variable>
+ <Variable Name="Cascade 2: Slope Bias" Value="0.23999998">
+  <Spline Keys="0:0.24:0,1:0.24:0,"/>
+ </Variable>
+ <Variable Name="Cascade 3: Bias" Value="3">
+  <Spline Keys="0:3:0,1:3:0,"/>
+ </Variable>
+ <Variable Name="Cascade 3: Slope Bias" Value="0.23999998">
+  <Spline Keys="0:0.24:0,1:0.24:0,"/>
+ </Variable>
+ <Variable Name="Cascade 4: Bias" Value="2">
+  <Spline Keys="0:2:0,1:2:0,"/>
+ </Variable>
+ <Variable Name="Cascade 4: Slope Bias" Value="0.5">
+  <Spline Keys="0:0.5:0,1:0.5:0,"/>
+ </Variable>
+ <Variable Name="Cascade 5: Bias" Value="2">
+  <Spline Keys="0:2:0,1:2:0,"/>
+ </Variable>
+ <Variable Name="Cascade 5: Slope Bias" Value="0.5">
+  <Spline Keys="0:0.5:0,1:0.5:0,"/>
+ </Variable>
+ <Variable Name="Cascade 6: Bias" Value="2">
+  <Spline Keys="0:2:0,1:2:0,"/>
+ </Variable>
+ <Variable Name="Cascade 6: Slope Bias" Value="0.5">
+  <Spline Keys="0:0.5:0,1:0.5:0,"/>
+ </Variable>
+ <Variable Name="Cascade 7: Bias" Value="2">
+  <Spline Keys="0:2:0,1:2:0,"/>
+ </Variable>
+ <Variable Name="Cascade 7: Slope Bias" Value="0.5">
+  <Spline Keys="0:0.5:0,1:0.5:0,"/>
+ </Variable>
+ <Variable Name="Shadow jittering" Value="2.5">
+  <Spline Keys="0:2.5:0,1:2.5:0,"/>
+ </Variable>
+ <Variable Name="HDR dynamic power factor" Value="0">
+  <Spline Keys="0:0:0,1:0:0,"/>
+ </Variable>
+ <Variable Name="Sky brightening (terrain occlusion)" Value="0.30000001">
+  <Spline Keys="0:0.3:0,1:0.3:0,"/>
+ </Variable>
+ <Variable Name="Sun color multiplier" Value="1">
+  <Spline Keys="0:1:0,1:1:0,"/>
+ </Variable>
+</TimeOfDay>
