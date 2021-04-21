@@ -349,6 +349,18 @@ def Build(Map options, String platform, String type, String workspace) {
     }
 }
 
+def getJenkinsBaseUrl() {
+    def job_url = new URL(env.JOB_URL)
+
+    // Return a new URL using the protocol, host and port only.
+    return new URL(
+        job_url.getProtocol(),
+        job_url.getHost(),
+        job_url.getPort(),
+        ''
+    ).toString()
+}
+
 def TestMetrics(Map options, String workspace, String branchName, String repoName, String buildJobName, String outputDirectory, String configuration) {
     catchError(buildResult: null, stageResult: null) {
         def cmakeBuildDir = [workspace, ENGINE_REPOSITORY_NAME, outputDirectory].join('/')
@@ -360,7 +372,11 @@ def TestMetrics(Map options, String workspace, String branchName, String repoNam
                 userRemoteConfigs: [[url: "${env.MARS_REPO}", name: 'mars', credentialsId: "${env.GITHUB_USER}"]]
             ]
             withCredentials([usernamePassword(credentialsId: "${env.SERVICE_USER}", passwordVariable: 'apitoken', usernameVariable: 'username')]) {
-                def command = "${options.PYTHON_DIR}/python.cmd -u mars/scripts/python/ctest_test_metric_scraper.py -e jenkins.creds.user ${username} -e jenkins.creds.pass ${apitoken} ${cmakeBuildDir} ${branchName} %BUILD_NUMBER% AR ${configuration} ${repoName} "
+                def jenkins_url = getJenkinsBaseUrl()
+                def command = "${options.PYTHON_DIR}/python.cmd -u mars/scripts/python/ctest_test_metric_scraper.py" +
+                              "-e jenkins.creds.user ${username} -e jenkins.creds.pass ${apitoken} " +
+                              "-e jenkins.base_url ${jenkins_url}" +
+                              "${cmakeBuildDir} ${branchName} %BUILD_NUMBER% AR ${configuration} ${repoName} "
                 bat label: "Publishing ${buildJobName} Test Metrics",
                     script: command
             }
