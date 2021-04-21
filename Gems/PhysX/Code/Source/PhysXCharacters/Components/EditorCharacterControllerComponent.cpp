@@ -149,7 +149,10 @@ namespace PhysX
     {
         if (auto* physXSystem = GetPhysXSystem())
         {
-            physXSystem->RegisterSystemConfigurationChangedEvent(m_physXConfigChangedHandler);
+            if (!m_physXConfigChangedHandler.IsConnected())
+            {
+                physXSystem->RegisterSystemConfigurationChangedEvent(m_physXConfigChangedHandler);
+            }
         }
     }
 

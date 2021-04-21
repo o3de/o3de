@@ -155,7 +155,9 @@ namespace EMotionFX
             bool HasSnapshot() const override;
             void CreateSnapshot(bool isAuthoritative) override;
             void SetActiveStates(const NodeIndexContainer& activeStates) override;
+            static NodeIndexContainer s_emptyNodeIndexContainer;
             const NodeIndexContainer& GetActiveStates() const override;
+            static MotionNodePlaytimeContainer s_emptyMotionNodePlaytimeContainer;
             void SetMotionPlaytimes(const MotionNodePlaytimeContainer& motionNodePlaytimes) override;
             const MotionNodePlaytimeContainer& GetMotionPlaytimes() const override;
             void UpdateActorExternal(float deltatime) override;
