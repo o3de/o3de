@@ -270,32 +270,53 @@ namespace AZ
         void LightCullingPass::GetLightDataFromFeatureProcessor()
         {
             const auto simplePointLightFP = m_pipeline->GetScene()->GetFeatureProcessor<SimplePointLightFeatureProcessor>();
-            m_lightdata[eLightTypes_SimplePoint].m_lightBuffer = simplePointLightFP->GetLightBuffer();
-            m_lightdata[eLightTypes_SimplePoint].m_lightCount = simplePointLightFP->GetLightCount();
+            if (simplePointLightFP)
+            {
+                m_lightdata[eLightTypes_SimplePoint].m_lightBuffer = simplePointLightFP->GetLightBuffer();
+                m_lightdata[eLightTypes_SimplePoint].m_lightCount = simplePointLightFP->GetLightCount();
+            }
 
             const auto simpleSpotLightFP = m_pipeline->GetScene()->GetFeatureProcessor<SimpleSpotLightFeatureProcessor>();
-            m_lightdata[eLightTypes_SimpleSpot].m_lightBuffer = simpleSpotLightFP->GetLightBuffer();
-            m_lightdata[eLightTypes_SimpleSpot].m_lightCount = simpleSpotLightFP->GetLightCount();
+            if (simpleSpotLightFP)
+            {
+                m_lightdata[eLightTypes_SimpleSpot].m_lightBuffer = simpleSpotLightFP->GetLightBuffer();
+                m_lightdata[eLightTypes_SimpleSpot].m_lightCount = simpleSpotLightFP->GetLightCount();
+            }
 
             const auto pointLightFP = m_pipeline->GetScene()->GetFeatureProcessor<PointLightFeatureProcessor>();
-            m_lightdata[eLightTypes_Point].m_lightBuffer = pointLightFP->GetLightBuffer();
-            m_lightdata[eLightTypes_Point].m_lightCount = pointLightFP->GetLightCount();
+            if (pointLightFP)
+            {
+                m_lightdata[eLightTypes_Point].m_lightBuffer = pointLightFP->GetLightBuffer();
+                m_lightdata[eLightTypes_Point].m_lightCount = pointLightFP->GetLightCount();
+            }
 
             const auto diskLightFP = m_pipeline->GetScene()->GetFeatureProcessor<DiskLightFeatureProcessor>();
-            m_lightdata[eLightTypes_Disk].m_lightBuffer = diskLightFP->GetLightBuffer();
-            m_lightdata[eLightTypes_Disk].m_lightCount = diskLightFP->GetLightCount();
+            if (diskLightFP)
+            {
+                m_lightdata[eLightTypes_Disk].m_lightBuffer = diskLightFP->GetLightBuffer();
+                m_lightdata[eLightTypes_Disk].m_lightCount = diskLightFP->GetLightCount();
+            }
 
             const auto capsuleLightFP = m_pipeline->GetScene()->GetFeatureProcessor<CapsuleLightFeatureProcessor>();
-            m_lightdata[eLightTypes_Capsule].m_lightBuffer = capsuleLightFP->GetLightBuffer();
-            m_lightdata[eLightTypes_Capsule].m_lightCount = capsuleLightFP->GetLightCount();
+            if (capsuleLightFP)
+            {
+                m_lightdata[eLightTypes_Capsule].m_lightBuffer = capsuleLightFP->GetLightBuffer();
+                m_lightdata[eLightTypes_Capsule].m_lightCount = capsuleLightFP->GetLightCount();
+            }
 
             const auto quadLightFP = m_pipeline->GetScene()->GetFeatureProcessor<QuadLightFeatureProcessor>();
-            m_lightdata[eLightTypes_Quad].m_lightBuffer = quadLightFP->GetLightBuffer();
-            m_lightdata[eLightTypes_Quad].m_lightCount = quadLightFP->GetLightCount();
+            if (quadLightFP)
+            {
+                m_lightdata[eLightTypes_Quad].m_lightBuffer = quadLightFP->GetLightBuffer();
+                m_lightdata[eLightTypes_Quad].m_lightCount = quadLightFP->GetLightCount();
+            }
 
             const auto decalFP = m_pipeline->GetScene()->GetFeatureProcessor<DecalFeatureProcessorInterface>();
-            m_lightdata[eLightTypes_Decal].m_lightBuffer = decalFP->GetDecalBuffer();
-            m_lightdata[eLightTypes_Decal].m_lightCount = decalFP->GetDecalCount();
+            if (decalFP)
+            {
+                m_lightdata[eLightTypes_Decal].m_lightBuffer = decalFP->GetDecalBuffer();
+                m_lightdata[eLightTypes_Decal].m_lightCount = decalFP->GetDecalCount();
+            }
         }
 
         float LightCullingPass::CreateTraceValues(const AZ::Vector2& unprojection)
@@ -322,7 +343,7 @@ namespace AZ
             desc.m_elementSize = sizeof(uint32_t);
             desc.m_byteCount = tileBufferResolution.m_width * tileBufferResolution.m_height * 256 * sizeof(uint32_t);
             m_lightList = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
-            AZ_Assert(m_lightList != nullptr, "Unable to allocate buffer for culling light list");
+            //AZ_Assert(m_lightList != nullptr, "Unable to allocate buffer for culling light list");
             if (m_lightList != nullptr)
             {
                 m_lightList->SetAsStructured<uint32_t>();
