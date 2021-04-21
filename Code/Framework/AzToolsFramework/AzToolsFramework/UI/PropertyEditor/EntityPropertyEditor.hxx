@@ -521,6 +521,15 @@ namespace AzToolsFramework
         bool m_isSystemEntityEditor;
         bool m_isLevelEntityEditor = false;
 
+        enum class InspectorLayout
+        {
+            ENTITY = 0,     // All selected entities are regular entities
+            LEVEL,          // The selected entity is the level prefab container entity
+            INVALID         // Other entities are selected alongside the level prefab container entity
+        };
+
+        InspectorLayout GetCurrentInspectorLayout() const;
+
         // the spacer's job is to make sure that its always at the end of the list of components.
         QSpacerItem* m_spacer;
         bool m_isAlreadyQueuedRefresh;

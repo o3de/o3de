@@ -25,7 +25,6 @@
 #include <Editor/EditorSystemComponent.h>
 #include <Components/EditorClothComponent.h>
 #include <Pipeline/SceneAPIExt/ClothRuleBehavior.h>
-#include <Pipeline/RCExt/CgfClothExporter.h>
 #endif //NVCLOTH_EDITOR
 
 namespace NvCloth
@@ -59,7 +58,6 @@ namespace NvCloth
                 EditorSystemComponent::CreateDescriptor(),
                 EditorClothComponent::CreateDescriptor(),
                 Pipeline::ClothRuleBehavior::CreateDescriptor(),
-                Pipeline::CgfClothExporter::CreateDescriptor(),
 #endif //NVCLOTH_EDITOR
             });
         }
