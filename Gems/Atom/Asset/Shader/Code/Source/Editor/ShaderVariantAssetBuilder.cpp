@@ -420,6 +420,15 @@ namespace AZ
                 return;
             }
 
+            if (jobParameters.find(ShouldExitEarlyFromProcessJobParam) != jobParameters.end())
+            {
+                AZ_TracePrintf(
+                    ShaderVariantAssetBuilderName, "Doing nothing on behalf of [%s] because it's been overriden by game project.",
+                    jobParameters.at(ShaderVariantLoadErrorParam).c_str());
+                response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
+                return;
+            }
+
             AssetBuilderSDK::JobCancelListener jobCancelListener(request.m_jobId);
             if (jobCancelListener.IsCancelled())
             {
