@@ -594,13 +594,13 @@ namespace UnitTest
         DebugListener listener;  
         auto assetUuids = {
             MyAsset1Id,
-            //MyAsset2Id,
-            //MyAsset3Id,
+            MyAsset2Id,
+            MyAsset3Id,
         };
 
         AZStd::vector<AZStd::thread> threads;
         AZStd::mutex mutex;
-        AZStd::atomic<int> threadCount((int)assetUuids.size());
+        AZStd::atomic<int> threadCount(static_cast<int>(assetUuids.size()));
         AZStd::condition_variable cv;
         AZStd::atomic_bool keepDispatching(true);
 
@@ -618,10 +618,13 @@ namespace UnitTest
             threads.emplace_back([this, &threadCount, &cv, assetUuid]() {
                 bool checkLoaded = true;
 
-                for (int i = 0; i < 1000; i++)
+                for (int i = 0; i < 5000; i++)
                 {
                     Asset<AssetWithAssetReference> asset1 =
                         m_testAssetManager->GetAsset(assetUuid, azrtti_typeid<AssetWithAssetReference>(), AZ::Data::AssetLoadBehavior::PreLoad);
+                    AZ::Debug::Trace::Output("", AZStd::string::format("Got ref from GetAsset: %s.  Will block: %s\n",
+                        asset1.GetId().ToString<AZStd::string>().c_str(),
+                        checkLoaded ? "Yes" : "No").c_str());
 
                     if (checkLoaded)
                     {
@@ -633,7 +636,7 @@ namespace UnitTest
                     checkLoaded = !checkLoaded;
                 }
 
-                threadCount--;
+                --threadCount;
                 cv.notify_one();
             });
         }
