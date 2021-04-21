@@ -36,7 +36,7 @@ class TestAutomation(TestAutomationBase):
     def test_C3510642_Terrain_NotCollideWithTerrain(self, request, workspace, editor, launcher_platform):
         from . import C3510642_Terrain_NotCollideWithTerrain as test_module
         self._run_test(request, workspace, editor, test_module)
-'''
+        
     @revert_physics_config
     def test_C4976195_RigidBodies_InitialLinearVelocity(self, request, workspace, editor, launcher_platform):
         from . import C4976195_RigidBodies_InitialLinearVelocity as test_module
@@ -525,4 +525,3 @@ class TestAutomation(TestAutomationBase):
     def test_C111111_RigidBody_EnablingGravityWorksUsingNotificationsPoC(self, request, workspace, editor, launcher_platform):
         from . import C111111_RigidBody_EnablingGravityWorksUsingNotificationsPoC as test_module
         self._run_test(request, workspace, editor, test_module)
-'''
