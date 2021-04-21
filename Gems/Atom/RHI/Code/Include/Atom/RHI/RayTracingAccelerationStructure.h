@@ -12,7 +12,7 @@
 #pragma once
 
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/Math/Matrix3x4.h>
+#include <AzCore/Math/Transform.h>
 #include <Atom/RHI/IndexBufferView.h>
 #include <Atom/RHI/StreamBufferView.h>
 #include <Atom/RHI.Reflect/Format.h>

@@ -232,7 +232,7 @@ namespace AZ
             return m_configuration;
         }
 
-        void MeshComponentController::OnTransformChanged([[maybe_unused]] const AZ::Transform& local, [[maybe_unused]] const AZ::Transform& world)
+        void MeshComponentController::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
         {
             if (m_meshFeatureProcessor)
             {
