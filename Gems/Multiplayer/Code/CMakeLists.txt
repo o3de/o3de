@@ -103,10 +103,10 @@ if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 endif()
 
 ly_add_target(
-    NAME Multiplayer.Imgui ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME Multiplayer.Debug ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
-        multiplayer_imgui_files.cmake
+        multiplayer_debug_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
             Source
