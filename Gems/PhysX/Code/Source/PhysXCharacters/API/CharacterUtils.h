@@ -25,6 +25,7 @@ namespace Physics
 namespace PhysX
 {
     class CharacterController;
+    class PhysXScene;
 
     namespace Utils
     {
@@ -33,10 +34,9 @@ namespace PhysX
             AZ::Outcome<size_t> GetNodeIndex(const Physics::RagdollConfiguration& configuration, const AZStd::string& nodeName);
 
             //! Creates a character controller based on the supplied configuration in the specified world.
-            //! @param configuration Information required to create the controller such as shape, slope behavior etc.
-            //! @param sceneHandle A handle to the physics scene in which the character controller should be created.
-            AZStd::unique_ptr<CharacterController> CreateCharacterController(const Physics::CharacterConfiguration&
-                characterConfig, const Physics::ShapeConfiguration& shapeConfig, AzPhysics::SceneHandle sceneHandle);
+            //! @param scene The scene to add the character controller to.
+            //! @param characterConfig Information required to create the controller such as shape, slope behavior etc.
+            CharacterController* CreateCharacterController(PhysXScene* scene, const Physics::CharacterConfiguration& characterConfig);
 
             //! Creates a ragdoll based on the specified setup and initial pose.
             //! @param configuration Information about collider geometry and joint setup required to initialize the ragdoll.
