@@ -448,9 +448,18 @@ namespace NvCloth
         const auto& renderTangents = renderData.m_tangents;
         const auto& renderBitangents = renderData.m_bitangents;
 
-        AZ::Data::Asset<AZ::RPI::ModelAsset> modelAsset;
-        AZ::Render::MeshComponentRequestBus::EventResult(
-            modelAsset, m_entityId, &AZ::Render::MeshComponentRequestBus::Events::GetModelAsset);
+        // Since Atom has a 1:1 relation with between ModelAsset buffers and Model buffers,
+        // internally it created a new asset for the model instance. So it's important to
+        // get the asset from the model when we want to write to them, instead of getting the
+        // ModelAsset directly from the bus (which returns the original asset shared by all entities).
+        AZ::Data::Instance<AZ::RPI::Model> model;
+        AZ::Render::MeshComponentRequestBus::EventResult(model, m_entityId, &AZ::Render::MeshComponentRequestBus::Events::GetModel);
+        if (!model)
+        {
+            return;
+        }
+
+        AZ::Data::Asset<AZ::RPI::ModelAsset> modelAsset = model->GetModelAsset();
         if (!modelAsset.IsReady())
         {
             return;

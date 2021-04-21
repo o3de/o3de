@@ -90,7 +90,7 @@ namespace ScriptCanvas
         //! returns an AZ::Outcome which on success contains the VariableId and on Failure contains a string with error information
         virtual AZ::Outcome<VariableId, AZStd::string> CloneVariable(const GraphVariable& baseVariable) = 0;
         virtual AZ::Outcome<VariableId, AZStd::string> RemapVariable(const GraphVariable& variableConfiguration) = 0;
-        virtual AZ::Outcome<VariableId, AZStd::string> AddVariable(AZStd::string_view key, const Datum& value) = 0;
+        virtual AZ::Outcome<VariableId, AZStd::string> AddVariable(AZStd::string_view key, const Datum& value, bool functionScope) = 0;
         virtual AZ::Outcome<VariableId, AZStd::string> AddVariablePair(const AZStd::pair<AZStd::string_view, Datum>& keyValuePair) = 0;
 
         virtual VariableValidationOutcome IsNameValid(AZStd::string_view variableName) = 0;

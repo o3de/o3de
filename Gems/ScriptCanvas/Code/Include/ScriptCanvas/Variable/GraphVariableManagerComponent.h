@@ -63,7 +63,7 @@ namespace ScriptCanvas
         //// GraphVariableManagerRequestBus
         AZ::Outcome<VariableId, AZStd::string> CloneVariable(const GraphVariable& variableConfiguration) override;
         AZ::Outcome<VariableId, AZStd::string> RemapVariable(const GraphVariable& variableConfiguration) override;
-        AZ::Outcome<VariableId, AZStd::string> AddVariable(AZStd::string_view name, const Datum& value) override;
+        AZ::Outcome<VariableId, AZStd::string> AddVariable(AZStd::string_view name, const Datum& value, bool functionScope) override;
         AZ::Outcome<VariableId, AZStd::string> AddVariablePair(const AZStd::pair<AZStd::string_view, Datum>& nameValuePair) override;
 
         VariableValidationOutcome IsNameValid(AZStd::string_view key) override;

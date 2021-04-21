@@ -78,7 +78,6 @@ namespace AZ
             AZ_CLASS_ALLOCATOR(LightingPreset, AZ::SystemAllocator, 0);
             static void Reflect(AZ::ReflectContext* context);
 
-            bool m_autoSelect = false;
             AZStd::string m_displayName;
             AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_iblDiffuseImageAsset;
             AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_iblSpecularImageAsset;
