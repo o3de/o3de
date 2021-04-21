@@ -114,14 +114,13 @@
                     "recursive": 0,
                     "order": 10000
                 },
-                "ScanFolder Engine": {
-                    "watch": "@ENGINEROOT@/Engine",
+                "ScanFolder EngineAssets/Runtime": {
+                    "watch": "@ENGINEROOT@/EngineAssets/Engine",
                     "recursive": 1,
                     "order": 20000
                 },
-                "ScanFolder Editor": {
-                    "watch": "@ENGINEROOT@/Editor",
-                    "output": "editor",
+                "ScanFolder EngineAssets/Tools": {
+                    "watch": "@ENGINEROOT@/EngineAssets/Editor",
                     "recursive": 1,
                     "order": 30000,
                     "include": "tools,renderer"
