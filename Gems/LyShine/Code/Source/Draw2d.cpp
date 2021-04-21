@@ -28,8 +28,6 @@
 static const int g_defaultBlendState = GS_BLSRC_SRCALPHA | GS_BLDST_ONEMINUSSRCALPHA;
 static const int g_defaultBaseState = GS_NODEPTHTEST;
 
-static const int g_2dModeNotStarted = -1;
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // LOCAL STATIC FUNCTIONS
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -48,7 +46,6 @@ static AZ::u32 PackARGB8888(const AZ::Color& color)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 CDraw2d::CDraw2d(AZ::RPI::ViewportContextPtr viewportContext)
     : m_deferCalls(false)
-    , m_nestLevelAtWhichStarted2dMode(g_2dModeNotStarted)
     , m_viewportContext(viewportContext)
 {
     // These default options are set here and never change. They are stored so that if a null options
@@ -132,47 +129,6 @@ void CDraw2d::OnBootstrapSceneReady([[maybe_unused]] AZ::RPI::Scene* bootstrapSc
     AZ_Error("Draw2d", m_shaderData.m_viewProjInputIndex.IsValid(), "Failed to find shader input constant %s.",
         worldToProjIndexName);
 }
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-void CDraw2d::BeginDraw2d(bool deferCalls)
-{
-    // So that nested calls to BeginDraw2d/EndDraw2d do not end 2D drawmode prematurely we only
-    // switch to 2D mode once and do not do it again until the corresponding call to EndDraw2d
-    // is processed.
-    // It may seem overkill to allow nested calls rather than just asserting in that case. But
-    // a) it is more flexible to do so
-    // b) it can be useful to draw some debug primitives in deferred mode while rendering a
-    //    canvas in non-deferred mode for example
-
-    // Push the current state of the m_deferCalls onto a stack to support nested calls
-    m_deferCallsFlagStack.push(m_deferCalls);
-
-    m_deferCalls = deferCalls;
-
-    // if this is the outermost call with non-deferred rendering then switch to 2D mode
-    if (!m_deferCalls && m_nestLevelAtWhichStarted2dMode == g_2dModeNotStarted)
-    {
-        // remember the nesting level that we turned on 2D mode so we can turn it off as
-        // we unwind the stack
-        m_nestLevelAtWhichStarted2dMode = m_deferCallsFlagStack.size();
-    }
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-void CDraw2d::EndDraw2d()
-{
-    // if we are ending a non-deferred series of calls and we turned on 2D draw mode when we started
-    // this series then turn it off.
-    if (!m_deferCalls && m_nestLevelAtWhichStarted2dMode == m_deferCallsFlagStack.size())
-    {
-        m_nestLevelAtWhichStarted2dMode = -1;
-    }
-
-    // unwind the nesting stack
-    m_deferCalls = m_deferCallsFlagStack.top();
-    m_deferCallsFlagStack.pop();
-}
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Draw a textured quad with the top left corner at the given position.
@@ -416,6 +372,18 @@ void CDraw2d::RenderDeferredPrimitives()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+void CDraw2d::SetDeferPrimitives(bool deferPrimitives)
+{
+    m_deferCalls = deferPrimitives;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+bool CDraw2d::GetDeferPrimitives()
+{
+    return m_deferCalls;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 // PUBLIC STATIC FUNCTIONS
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -631,8 +599,7 @@ AZ::RPI::ViewportContextPtr CDraw2d::GetViewportContext() const
     {
         // Return the default viewport context
         auto viewContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
-        auto defaultViewportContext = viewContextManager->GetViewportContextByName(viewContextManager->GetDefaultViewportContextName());
-        return defaultViewportContext;
+        return viewContextManager->GetDefaultViewportContext();
     }
 
     // Return the user specified viewport context

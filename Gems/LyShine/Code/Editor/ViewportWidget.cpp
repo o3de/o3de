@@ -1145,7 +1145,7 @@ void ViewportWidget::RenderPreviewMode(float deltaTime)
         AZ::Vector2 topLeftInViewportSpace = CanvasHelpers::GetViewportPoint(canvasEntityId, AZ::Vector2(0.0f, 0.0f));
         AZ::Vector2 bottomRightInViewportSpace = CanvasHelpers::GetViewportPoint(canvasEntityId, canvasSize);
         AZ::Vector2 sizeInViewportSpace = bottomRightInViewportSpace - topLeftInViewportSpace;
-        Draw2dHelper draw2d(m_draw2d)
+        Draw2dHelper draw2d(m_draw2d.get())
         int texId = gEnv->pRenderer->GetBlackTextureId();
         draw2d.DrawImage(texId, topLeftInViewportSpace, sizeInViewportSpace);
 #endif

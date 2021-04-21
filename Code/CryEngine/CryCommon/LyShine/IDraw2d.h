@@ -115,12 +115,4 @@ public: // member functions
 
     //! Implement virtual destructor just for safety.
     virtual ~IDraw2d() {}
-
-    //! Start a section of 2D drawing function calls. This will set appropriate render state.
-    //
-    //! \param deferCalls   If true then actual render calls are deferred until the end of the frame
-    virtual void BeginDraw2d(bool deferCalls = false) = 0;
-
-    //! End a section of 2D drawing function calls. This will reset some render state.
-    virtual void EndDraw2d() = 0;
 };

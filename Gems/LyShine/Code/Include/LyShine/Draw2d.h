@@ -12,7 +12,6 @@
 #pragma once
 
 #include <LyShine/IDraw2d.h>
-#include <stack>
 
 #include <Atom/Bootstrap/BootstrapNotificationBus.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
@@ -23,9 +22,9 @@
 //! Implementation of IDraw2d interface for 2D drawing in screen space
 //
 //! The CDraw2d class implements the IDraw2d interface for drawing 2D images, shapes and text.
-//! Positions and sizes are specified in pixels in the current 2D viewport.
+//! Positions and sizes are specified in pixels in the associated 2D viewport.
 class CDraw2d
-    : public IDraw2d
+    : public IDraw2d // LYSHINE_ATOM_TODO - keep around until gEnv->pLyShine is replaced by bus interface
     , public AZ::Render::Bootstrap::NotificationBus::Handler
 {
 public: // member functions
@@ -36,12 +35,6 @@ public: // member functions
     // IDraw2d
 
     ~CDraw2d() override;
-
-    //! Start a section of 2D drawing function calls. This will set appropriate render state.
-    void BeginDraw2d(bool deferCalls = false) override;
-
-    //! End a section of 2D drawing function calls. This will reset some render state.
-    void EndDraw2d() override;
 
     // ~IDraw2d
 
@@ -140,13 +133,9 @@ public: // member functions
     AZ::Vector2 GetTextSize(const char* textString, float pointSize, TextOptions* textOptions = nullptr);
 
     //! Get the width of the rendering viewport (in pixels).
-    //
-    //! If rendering full screen this is the native width from IRenderer
     float GetViewportWidth() const;
 
     //! Get the height of the rendering viewport (in pixels).
-    //
-    //! If rendering full screen this is the native width from IRenderer
     float GetViewportHeight() const;
 
     //! Get the default values that would be used if no image options were passed in
@@ -161,6 +150,12 @@ public: // member functions
 
     //! Render the primitives that have been deferred
     void RenderDeferredPrimitives();
+
+    //! Specify whether to defer future primitives or render them right away
+    void SetDeferPrimitives(bool deferPrimitives);
+
+    //! Return whether future primitives will be deferred or rendered right away
+    bool GetDeferPrimitives();
 
 private:
 
@@ -273,16 +268,10 @@ protected: // attributes
     ImageOptions m_defaultImageOptions;     //!< The default image options used if nullptr is passed
     TextOptions m_defaultTextOptions;       //!< The default text options used if nullptr is passed
 
-    bool m_deferCalls;                      //!< True if the actual render of the primitives should be deferred until end of frame
+    //! True if the actual render of the primitives should be deferred to a RenderDeferredPrimitives call
+    bool m_deferCalls;
 
     std::vector<DeferredPrimitive*> m_deferredPrimitives;
-
-    //! These two data members allows nested calls to BeginDraw2d/EndDraw2d. We will begin 2D mode only on the
-    //! outermost call to BeginDraw2d with deferCalls set to false and will end 2D mode on the corresposnding
-    //! call to EndDraw2d. The stack is used to detect that corresponding call and we need the level it occurred
-    //! to know when to end 2D mode.
-    int m_nestLevelAtWhichStarted2dMode;
-    std::stack<bool> m_deferCallsFlagStack;
 
     AZ::RPI::ViewportContextPtr m_viewportContext;
     AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> m_dynamicDraw;
@@ -292,21 +281,20 @@ protected: // attributes
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! Helper class for using the IDraw2d interface
 //!
-//! The Draw2dHelper class is an inline wrapper that provides two convenience features:
-//! 1. It automatically calls BeginDraw2d/EndDraw2d in its construction/destruction.
-//! 2. It automatically sets member options structures to their defaults and provides set functions
-//!    to set them.
+//! The Draw2dHelper class is an inline wrapper that provides the convenience feature of
+//! automatically setting member options structures to their defaults and providing set functions.
 class Draw2dHelper
 {
 public: // member functions
 
-    //! Start a section of 2D drawing function calls. This will set appropriate render state.
+    //! Start a section of 2D drawing function calls that will render to the default viewport
     Draw2dHelper(bool deferCalls = false)
     {
         InitCommon(nullptr, deferCalls);
     }
 
-    //! Start a section of 2D drawing function calls. This will set appropriate render state.
+    //! Start a section of 2D drawing function calls that will render to the viewport
+    //! associated with the specified Draw2d object
     Draw2dHelper(CDraw2d* draw2d, bool deferCalls = false)
     {
         InitCommon(draw2d, deferCalls);
@@ -324,18 +312,19 @@ public: // member functions
 
         if (m_draw2d)
         {
-            m_draw2d->BeginDraw2d(deferCalls);
+            m_previousDeferCalls = m_draw2d->GetDeferPrimitives();
+            m_draw2d->SetDeferPrimitives(deferCalls);
             m_imageOptions = m_draw2d->GetDefaultImageOptions();
             m_textOptions = m_draw2d->GetDefaultTextOptions();
         }
     }
 
-    //! End a section of 2D drawing function calls. This will reset some render state.
+    //! End a section of 2D drawing function calls.
     ~Draw2dHelper()
     {
         if (m_draw2d)
         {
-            m_draw2d->EndDraw2d();
+            m_draw2d->SetDeferPrimitives(m_previousDeferCalls);
         }
     }
 
@@ -490,20 +479,6 @@ public: // static member functions
         return nullptr;
     }
 
-    //! Get the width of the rendering viewport (in pixels).
-    static float GetDefaultViewportWidth()
-    {
-        CDraw2d* draw2d = GetDefaultDraw2d();
-        return (draw2d) ? draw2d->GetViewportWidth() : 0.0f;
-    }
-
-    //! Get the height of the rendering viewport (in pixels).
-    static float GetDefaultViewportHeight()
-    {
-        CDraw2d* draw2d = GetDefaultDraw2d();
-        return (draw2d) ? draw2d->GetViewportHeight() : 0.0f;
-    }
-
     //! Round the X and Y coordinates of a point using the given rounding policy
     template<typename T>
     static T RoundXY(T value, IDraw2d::Rounding roundingType)
@@ -537,4 +512,5 @@ protected: // attributes
     IDraw2d::ImageOptions   m_imageOptions; //!< image options are stored locally and updated by member functions
     IDraw2d::TextOptions    m_textOptions;  //!< text options are stored locally and updated by member functions
     CDraw2d* m_draw2d;
+    bool m_previousDeferCalls;
 };

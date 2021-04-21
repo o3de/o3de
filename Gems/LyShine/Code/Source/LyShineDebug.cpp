@@ -429,8 +429,6 @@ static void DebugDraw2dFontSizes(IFFont* font, unsigned int effectIndex, const c
 {
     CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
-    draw2d->BeginDraw2d(g_deferDrawsToEndOfFrame);
-
     float xOffset = 20.0f;
     float yOffset = 20.0f;
     float xSpacing = 20.0f;
@@ -492,8 +490,6 @@ static void DebugDraw2dFontSizes(IFFont* font, unsigned int effectIndex, const c
 
     yOffset += 55.0f;
     DebugDrawStringWithSizeBox(font, effectIndex, "Size 49", testString, AZ::Vector2(xOffset, yOffset), xSpacing, 49);
-
-    draw2d->EndDraw2d();
 }
 #endif
 
@@ -657,8 +653,6 @@ static void DebugDraw2dFontColorAndOpacity()
 {
     CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
-    draw2d->BeginDraw2d(g_deferDrawsToEndOfFrame);
-
     AZ::Vector2 size;
     AZ::Vector2 pos(20.0f, 20.0f);
 
@@ -688,8 +682,6 @@ static void DebugDraw2dFontColorAndOpacity()
     draw2d->DrawText("Opacity=0.25f", pos, 24.0f);
     pos.SetX(pos.GetX() + 200.0f);
     draw2d->DrawText("Opacity=0.00f", pos, 24.0f);
-
-    draw2d->EndDraw2d();
 }
 #endif
 
@@ -700,8 +692,6 @@ static void DebugDraw2dImageRotations()
     CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     AZ::Data::Instance<AZ::RPI::Image> texture = GetMonoTestTexture();
-
-    draw2d->BeginDraw2d(g_deferDrawsToEndOfFrame);
 
     AZ::Vector2 size = GetTextureSize(texture);
 
@@ -744,8 +734,6 @@ static void DebugDraw2dImageRotations()
         draw2d->DrawImageAligned(texture, pos, size, IDraw2d::HAlign::Center, IDraw2d::VAlign::Center, 1.0f, 45.0f * i);
         DebugDrawColoredBox(AZ::Vector2(pos.GetX() - 2, pos.GetY() - 2), AZ::Vector2(5, 5), posBoxColor);
     }
-
-    draw2d->EndDraw2d();
 }
 #endif
 
@@ -758,8 +746,6 @@ static void DebugDraw2dImageColor()
     AZ::Data::Instance<AZ::RPI::Image> texture = GetMonoAlphaTestTexture();
 
     IDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
-
-    draw2d->BeginDraw2d(g_deferDrawsToEndOfFrame);
 
     draw2d->DrawText(
         "Testing image colors, image is black and white, top row is opacity=1, bottom row is opacity = 0.5",
@@ -784,8 +770,6 @@ static void DebugDraw2dImageColor()
         pos.SetY(pos.GetY() + ySpacing);
         draw2d->DrawImage(texture, pos, size, 0.5f, 0.0f, 0, 0, &imageOptions);
     }
-
-    draw2d->EndDraw2d();
 }
 #endif
 
@@ -800,8 +784,6 @@ static void DebugDraw2dImageBlendMode()
     AZ::Data::Instance<AZ::RPI::Image> texture = GetColorAlphaTestTexture();
 
     IDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
-
-    draw2d->BeginDraw2d(g_deferDrawsToEndOfFrame);
 
     draw2d->DrawText("Testing blend modes, src blend changes across x-axis, dst blend changes across y axis",
         AZ::Vector2(20, 20), 16);
@@ -853,8 +835,6 @@ static void DebugDraw2dImageBlendMode()
             draw2d->DrawImage(texture, pos, size, 1.0f, 0.0f, 0, 0, &imageOptions);
         }
     }
-
-    draw2d->EndDraw2d();
 }
 #endif
 
@@ -867,8 +847,6 @@ static void DebugDraw2dImageUVs()
     AZ::Data::Instance<AZ::RPI::Image> texture = GetColorTestTexture();
 
     IDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
-
-    draw2d->BeginDraw2d(g_deferDrawsToEndOfFrame);
 
     draw2d->DrawText(
         "Testing DrawImage with minMaxTexCoords. Full image, top left quadrant, middle section, full flipped",
@@ -906,8 +884,6 @@ static void DebugDraw2dImageUVs()
     minMaxTexCoords[0] = AZ::Vector2(0.0, 1.0);
     minMaxTexCoords[1] = AZ::Vector2(1.0, 0.0);
     draw2d->DrawImage(texture, pos, size, 1.0f, 0.0f, 0, minMaxTexCoords);
-
-    draw2d->EndDraw2d();
 }
 #endif
 
@@ -920,8 +896,6 @@ static void DebugDraw2dImagePixelRounding()
     AZ::Data::Instance<AZ::RPI::Image> texture = GetColorTestTexture();
 
     IDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
-
-    draw2d->BeginDraw2d(g_deferDrawsToEndOfFrame);
 
     draw2d->DrawText("Testing DrawImage pixel rounding options", AZ::Vector2(20, 20), 16);
 
@@ -951,8 +925,6 @@ static void DebugDraw2dImagePixelRounding()
             draw2d->DrawImage(texture, pos, size, 1.0f, 0.0f, 0, 0, &imageOptions);
         }
     }
-
-    draw2d->EndDraw2d();
 }
 #endif
 
@@ -963,8 +935,6 @@ static void DebugDraw2dLineBasic()
     CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     IDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
-
-    draw2d->BeginDraw2d(g_deferDrawsToEndOfFrame);
 
     draw2d->DrawText("Testing DrawLine", AZ::Vector2(20, 20), 16);
 
@@ -982,8 +952,6 @@ static void DebugDraw2dLineBasic()
     draw2d->DrawLine(center, center + AZ::Vector2(-offset, -offset),    AZ::Color(0.0f, 0.0f, 1.0f, 1.0f));
     draw2d->DrawLine(center, center + AZ::Vector2(0, -offset),          AZ::Color(1.0f, 0.0f, 1.0f, 1.0f));
     draw2d->DrawLine(center, center + AZ::Vector2(offset, -offset),     AZ::Color(0.0f, 0.0f, 0.0f, 1.0f));
-
-    draw2d->EndDraw2d();
 }
 #endif
 
@@ -1455,12 +1423,16 @@ void LyShineDebug::RenderDebug()
 #if !defined(_RELEASE)
 
 #ifndef EXCLUDE_DOCUMENTATION_PURPOSE
-    if (!Draw2dHelper::GetDefaultDraw2d())
+    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    if (!draw2d)
     {
         return;
     }
 
     g_deferDrawsToEndOfFrame = (CV_r_DebugUIDraw2dDefer) ? true : false;
+
+    // Set whether to defer draws or render immediately during scope of this helper
+    Draw2dHelper draw2dHelper(g_deferDrawsToEndOfFrame);
 
     if (CV_r_DebugUIDraw2dFont)
     {

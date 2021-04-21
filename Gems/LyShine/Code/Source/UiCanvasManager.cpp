@@ -1003,8 +1003,6 @@ void UiCanvasManager::DebugDisplayCanvasData(int setting) const
 
     CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
-    draw2d->BeginDraw2d(false);
-
     float xOffset = 20.0f;
     float yOffset = 20.0f;
 
@@ -1156,16 +1154,12 @@ void UiCanvasManager::DebugDisplayCanvasData(int setting) const
         totalEnabledIntrs, totalEnabledUpdates);
 
     WriteLine(buffer, red);
-
-    draw2d->EndDraw2d();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasManager::DebugDisplayDrawCallData() const
 {
     CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
-
-    draw2d->BeginDraw2d(false);
 
     float xOffset = 20.0f;
     float yOffset = 20.0f;
@@ -1297,8 +1291,6 @@ void UiCanvasManager::DebugDisplayDrawCallData() const
         totalDueToMaxVerts, totalDueToTextures);
 
     WriteLine(buffer, red);
-
-    draw2d->EndDraw2d();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1498,8 +1490,6 @@ void UiCanvasManager::DebugDisplayElemBounds(int canvasIndexFilter) const
 {
     CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
-    draw2d->BeginDraw2d(false);
-
     int canvasIndex = 0;
     for (auto canvas : m_loadedCanvases)
     {
@@ -1519,8 +1509,6 @@ void UiCanvasManager::DebugDisplayElemBounds(int canvasIndexFilter) const
 
         ++canvasIndex;  // only increments for enabled canvases so index matches "ui_DisplayCanvasData 2"
     }
-
-    draw2d->EndDraw2d();
 }
 
 #endif
