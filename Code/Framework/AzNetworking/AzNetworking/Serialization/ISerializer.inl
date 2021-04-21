@@ -18,6 +18,8 @@
 #include <AzCore/std/typetraits/is_enum.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/RTTI/TypeSafeIntegral.h>
+#include <AzCore/Name/Name.h>
+#include <AzCore/Name/NameDictionary.h>
 
 namespace AzNetworking
 {
@@ -171,6 +173,22 @@ namespace AzNetworking
             }
 
             return true;
+        }
+    };
+
+    template<>
+    struct SerializeObjectHelper<AZ::Name>
+    {
+        static bool SerializeObject(ISerializer& serializer, AZ::Name& value)
+        {
+            AZ::Name::Hash nameHash = value.GetHash();
+            bool result = serializer.Serialize(nameHash, "NameHash");
+
+            if (result && serializer.GetSerializerMode() == SerializerMode::WriteToObject)
+            {
+                value = AZ::NameDictionary::Instance().FindName(nameHash);
+            }
+            return result;
         }
     };
 }

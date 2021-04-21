@@ -131,6 +131,8 @@ set(FILES
     Source/DiffuseProbeGrid/DiffuseProbeGridBorderUpdatePass.h
     Source/DiffuseProbeGrid/DiffuseProbeGridRelocationPass.cpp
     Source/DiffuseProbeGrid/DiffuseProbeGridRelocationPass.h
+    Source/DiffuseProbeGrid/DiffuseProbeGridClassificationPass.cpp
+    Source/DiffuseProbeGrid/DiffuseProbeGridClassificationPass.h
     Source/DiffuseProbeGrid/DiffuseProbeGridRenderPass.cpp
     Source/DiffuseProbeGrid/DiffuseProbeGridRenderPass.h
     Source/DiffuseProbeGrid/DiffuseProbeGrid.cpp
