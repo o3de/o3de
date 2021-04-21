@@ -98,11 +98,23 @@ bool CBoolTrack::Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTr
 }
 
 //////////////////////////////////////////////////////////////////////////
+static bool BoolTrackVersionConverter(
+    AZ::SerializeContext& serializeContext,
+    AZ::SerializeContext::DataElementNode& rootElement)
+{
+    if (rootElement.GetVersion() < 3)
+    {
+        rootElement.AddElement(serializeContext, "BaseClass1", azrtti_typeid<IAnimTrack>());
+    }
+
+    return true;
+}
+
 template<>
 inline void TAnimTrack<IBoolKey>::Reflect(AZ::SerializeContext* serializeContext)
 {
-    serializeContext->Class<TAnimTrack<IBoolKey> >()
-        ->Version(2)
+    serializeContext->Class<TAnimTrack<IBoolKey>, IAnimTrack>()
+        ->Version(3, &BoolTrackVersionConverter)
         ->Field("Flags", &TAnimTrack<IBoolKey>::m_flags)
         ->Field("Range", &TAnimTrack<IBoolKey>::m_timeRange)
         ->Field("ParamType", &TAnimTrack<IBoolKey>::m_nParamType)
@@ -115,7 +127,7 @@ void CBoolTrack::Reflect(AZ::SerializeContext* serializeContext)
 {
     TAnimTrack<IBoolKey>::Reflect(serializeContext);
 
-    serializeContext->Class<CBoolTrack, TAnimTrack<IBoolKey> >()
+    serializeContext->Class<CBoolTrack, TAnimTrack<IBoolKey>>()
         ->Version(1)
         ->Field("DefaultValue", &CBoolTrack::m_bDefaultValue);
 }

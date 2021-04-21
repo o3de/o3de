@@ -63,11 +63,23 @@ void CSelectTrack::GetKeyInfo(int key, const char*& description, float& duration
 }
 
 //////////////////////////////////////////////////////////////////////////
+static bool SelectTrackVersionConverter(
+    AZ::SerializeContext& serializeContext,
+    AZ::SerializeContext::DataElementNode& rootElement)
+{
+    if (rootElement.GetVersion() < 3)
+    {
+        rootElement.AddElement(serializeContext, "BaseClass1", azrtti_typeid<IAnimTrack>());
+    }
+
+    return true;
+}
+
 template<>
 inline void TAnimTrack<ISelectKey>::Reflect(AZ::SerializeContext* serializeContext)
 {
-    serializeContext->Class<TAnimTrack<ISelectKey> >()
-        ->Version(2)
+    serializeContext->Class<TAnimTrack<ISelectKey>, IAnimTrack>()
+        ->Version(3, &SelectTrackVersionConverter)
         ->Field("Flags", &TAnimTrack<ISelectKey>::m_flags)
         ->Field("Range", &TAnimTrack<ISelectKey>::m_timeRange)
         ->Field("ParamType", &TAnimTrack<ISelectKey>::m_nParamType)
@@ -80,6 +92,6 @@ void CSelectTrack::Reflect(AZ::SerializeContext* serializeContext)
 {
     TAnimTrack<ISelectKey>::Reflect(serializeContext);
 
-    serializeContext->Class<CSelectTrack, TAnimTrack<ISelectKey> >()
+    serializeContext->Class<CSelectTrack, TAnimTrack<ISelectKey>>()
         ->Version(1);
 }

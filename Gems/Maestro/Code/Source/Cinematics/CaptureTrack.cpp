@@ -71,11 +71,23 @@ void CCaptureTrack::GetKeyInfo(int key, const char*& description, float& duratio
 }
 
 //////////////////////////////////////////////////////////////////////////
+static bool CaptureTrackVersionConverter(
+    AZ::SerializeContext& serializeContext,
+    AZ::SerializeContext::DataElementNode& rootElement)
+{
+    if (rootElement.GetVersion() < 3)
+    {
+        rootElement.AddElement(serializeContext, "BaseClass1", azrtti_typeid<IAnimTrack>());
+    }
+
+    return true;
+}
+
 template<>
 inline void TAnimTrack<ICaptureKey>::Reflect(AZ::SerializeContext* serializeContext)
 {
-    serializeContext->Class<TAnimTrack<ICaptureKey> >()
-        ->Version(2)
+    serializeContext->Class<TAnimTrack<ICaptureKey>, IAnimTrack>()
+        ->Version(3, &CaptureTrackVersionConverter)
         ->Field("Flags", &TAnimTrack<ICaptureKey>::m_flags)
         ->Field("Range", &TAnimTrack<ICaptureKey>::m_timeRange)
         ->Field("ParamType", &TAnimTrack<ICaptureKey>::m_nParamType)

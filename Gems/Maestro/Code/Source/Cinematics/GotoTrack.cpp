@@ -156,11 +156,23 @@ void CGotoTrack::SetKeyAtTime(float time, IKey* key)
 }
 
 //////////////////////////////////////////////////////////////////////////
+static bool GotoTrackVersionConverter(
+    AZ::SerializeContext& serializeContext,
+    AZ::SerializeContext::DataElementNode& rootElement)
+{
+    if (rootElement.GetVersion() < 3)
+    {
+        rootElement.AddElement(serializeContext, "BaseClass1", azrtti_typeid<IAnimTrack>());
+    }
+
+    return true;
+}
+
 template<>
 inline void TAnimTrack<IDiscreteFloatKey>::Reflect(AZ::SerializeContext* serializeContext)
 {
-    serializeContext->Class<TAnimTrack<IDiscreteFloatKey> >()
-        ->Version(2)
+    serializeContext->Class<TAnimTrack<IDiscreteFloatKey>, IAnimTrack>()
+        ->Version(3, &GotoTrackVersionConverter)
         ->Field("Flags", &TAnimTrack<IDiscreteFloatKey>::m_flags)
         ->Field("Range", &TAnimTrack<IDiscreteFloatKey>::m_timeRange)
         ->Field("ParamType", &TAnimTrack<IDiscreteFloatKey>::m_nParamType)

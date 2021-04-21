@@ -60,11 +60,23 @@ void CSoundTrack::GetKeyInfo(int key, const char*& description, float& duration)
 }
 
 //////////////////////////////////////////////////////////////////////////
+static bool SoundTrackVersionConverter(
+    AZ::SerializeContext& serializeContext,
+    AZ::SerializeContext::DataElementNode& rootElement)
+{
+    if (rootElement.GetVersion() < 3)
+    {
+        rootElement.AddElement(serializeContext, "BaseClass1", azrtti_typeid<IAnimTrack>());
+    }
+
+    return true;
+}
+
 template<>
 inline void TAnimTrack<ISoundKey>::Reflect(AZ::SerializeContext* serializeContext)
 {
-    serializeContext->Class<TAnimTrack<ISoundKey> >()
-        ->Version(2)
+    serializeContext->Class<TAnimTrack<ISoundKey>, IAnimTrack>()
+        ->Version(3, &SoundTrackVersionConverter)
         ->Field("Flags", &TAnimTrack<ISoundKey>::m_flags)
         ->Field("Range", &TAnimTrack<ISoundKey>::m_timeRange)
         ->Field("ParamType", &TAnimTrack<ISoundKey>::m_nParamType)
@@ -77,6 +89,6 @@ void CSoundTrack::Reflect(AZ::SerializeContext* serializeContext)
 {
     TAnimTrack<ISoundKey>::Reflect(serializeContext);
 
-    serializeContext->Class<CSoundTrack, TAnimTrack<ISoundKey> >()
+    serializeContext->Class<CSoundTrack, TAnimTrack<ISoundKey>>()
         ->Version(1);
 }

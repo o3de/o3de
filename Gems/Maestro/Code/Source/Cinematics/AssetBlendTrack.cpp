@@ -163,11 +163,23 @@ float CAssetBlendTrack::GetKeyDuration(int key) const
 }
 
 //////////////////////////////////////////////////////////////////////////
+static bool AssetBlendTrackVersionConverter(
+    AZ::SerializeContext& serializeContext,
+    AZ::SerializeContext::DataElementNode& rootElement)
+{
+    if (rootElement.GetVersion() < 3)
+    {
+        rootElement.AddElement(serializeContext, "BaseClass1", azrtti_typeid<IAnimTrack>());
+    }
+
+    return true;
+}
+
 template<>
 inline void TAnimTrack<AZ::IAssetBlendKey>::Reflect(AZ::SerializeContext* serializeContext)
 {
-    serializeContext->Class<TAnimTrack<AZ::IAssetBlendKey> >()
-        ->Version(2)
+    serializeContext->Class<TAnimTrack<AZ::IAssetBlendKey>, IAnimTrack>()
+        ->Version(3, &AssetBlendTrackVersionConverter)
         ->Field("Flags", &TAnimTrack<AZ::IAssetBlendKey>::m_flags)
         ->Field("Range", &TAnimTrack<AZ::IAssetBlendKey>::m_timeRange)
         ->Field("ParamType", &TAnimTrack<AZ::IAssetBlendKey>::m_nParamType)
@@ -281,6 +293,6 @@ void CAssetBlendTrack::Reflect(AZ::SerializeContext* serializeContext)
 {
     TAnimTrack<AZ::IAssetBlendKey>::Reflect(serializeContext);
 
-    serializeContext->Class<CAssetBlendTrack, TAnimTrack<AZ::IAssetBlendKey> >()
+    serializeContext->Class<CAssetBlendTrack, TAnimTrack<AZ::IAssetBlendKey>>()
         ->Version(1);
 }

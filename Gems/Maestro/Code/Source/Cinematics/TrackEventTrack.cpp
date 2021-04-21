@@ -159,11 +159,23 @@ void CTrackEventTrack::GetKeyInfo(int key, const char*& description, float& dura
 }
 
 //////////////////////////////////////////////////////////////////////////
+static bool EventTrackVersionConverter(
+    AZ::SerializeContext& serializeContext,
+    AZ::SerializeContext::DataElementNode& rootElement)
+{
+    if (rootElement.GetVersion() < 3)
+    {
+        rootElement.AddElement(serializeContext, "BaseClass1", azrtti_typeid<IAnimTrack>());
+    }
+
+    return true;
+}
+
 template<>
 inline void TAnimTrack<IEventKey>::Reflect(AZ::SerializeContext* serializeContext)
 {
-    serializeContext->Class<TAnimTrack<IEventKey> >()
-        ->Version(2)
+    serializeContext->Class<TAnimTrack<IEventKey>, IAnimTrack>()
+        ->Version(3, &EventTrackVersionConverter)
         ->Field("Flags", &TAnimTrack<IEventKey>::m_flags)
         ->Field("Range", &TAnimTrack<IEventKey>::m_timeRange)
         ->Field("ParamType", &TAnimTrack<IEventKey>::m_nParamType)
@@ -176,6 +188,6 @@ void CTrackEventTrack::Reflect(AZ::SerializeContext* serializeContext)
 {
     TAnimTrack<IEventKey>::Reflect(serializeContext);
 
-    serializeContext->Class<CTrackEventTrack, TAnimTrack<IEventKey> >()
+    serializeContext->Class<CTrackEventTrack, TAnimTrack<IEventKey>>()
         ->Version(1);
 }

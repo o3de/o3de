@@ -154,7 +154,7 @@ public:
         return m_nextTrackId++;
     }
 
-    static void Reflect(AZ::ReflectContext* context);
+    static void Reflect(AZ::SerializeContext* serializeContext);
     
 private:
     void ComputeTimeRange();

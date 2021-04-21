@@ -100,11 +100,23 @@ int CTimeRangesTrack::GetActiveKeyIndexForTime(const float time)
 }
 
 //////////////////////////////////////////////////////////////////////////
+static bool TimeRangesTrackVersionConverter(
+    AZ::SerializeContext& serializeContext,
+    AZ::SerializeContext::DataElementNode& rootElement)
+{
+    if (rootElement.GetVersion() < 3)
+    {
+        rootElement.AddElement(serializeContext, "BaseClass1", azrtti_typeid<IAnimTrack>());
+    }
+
+    return true;
+}
+
 template<>
 inline void TAnimTrack<ITimeRangeKey>::Reflect(AZ::SerializeContext* serializeContext)
 {
-    serializeContext->Class<TAnimTrack<ITimeRangeKey> >()
-        ->Version(2)
+    serializeContext->Class<TAnimTrack<ITimeRangeKey>, IAnimTrack>()
+        ->Version(3, &TimeRangesTrackVersionConverter)
         ->Field("Flags", &TAnimTrack<ITimeRangeKey>::m_flags)
         ->Field("Range", &TAnimTrack<ITimeRangeKey>::m_timeRange)
         ->Field("ParamType", &TAnimTrack<ITimeRangeKey>::m_nParamType)
@@ -115,8 +127,8 @@ inline void TAnimTrack<ITimeRangeKey>::Reflect(AZ::SerializeContext* serializeCo
 //////////////////////////////////////////////////////////////////////////
 void CTimeRangesTrack::Reflect(AZ::SerializeContext* serializeContext)
 {
-    TAnimTrack<IBoolKey>::Reflect(serializeContext);
+    TAnimTrack<ITimeRangeKey>::Reflect(serializeContext);
 
-    serializeContext->Class<CTimeRangesTrack, TAnimTrack<ITimeRangeKey> >()
+    serializeContext->Class<CTimeRangesTrack, TAnimTrack<ITimeRangeKey>>()
         ->Version(1);
 }

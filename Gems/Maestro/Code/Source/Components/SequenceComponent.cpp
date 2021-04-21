@@ -34,6 +34,7 @@
 #include <Cinematics/SelectTrack.h>
 #include <Cinematics/SequenceTrack.h>
 #include <Cinematics/SoundTrack.h>
+#include <Cinematics/TimeRangesTrack.h>
 #include <Cinematics/TrackEventTrack.h>
 
 #include <Cinematics/AnimSequence.h>
@@ -147,6 +148,7 @@ namespace Maestro
         CMovieSystem::Reflect(context);
         
         // Tracks
+        IAnimTrack::Reflect(context);
         TAnimSplineTrack<Vec2>::Reflect(context);
         CBoolTrack::Reflect(context);
         CCaptureTrack::Reflect(context);
@@ -163,10 +165,13 @@ namespace Maestro
         CSoundTrack::Reflect(context);
         CTrackEventTrack::Reflect(context);
         CAssetBlendTrack::Reflect(context);
+        CTimeRangesTrack::Reflect(context);
 
         // Nodes
+        IAnimSequence::Reflect(context);
         CAnimSequence::Reflect(context);
         CAnimSceneNode::Reflect(context);
+        IAnimNode::Reflect(context);
         CAnimNode::Reflect(context);
         CAnimAzEntityNode::Reflect(context);
         CAnimComponentNode::Reflect(context);

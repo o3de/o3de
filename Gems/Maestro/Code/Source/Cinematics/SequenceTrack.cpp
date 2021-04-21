@@ -83,11 +83,23 @@ void CSequenceTrack::GetKeyInfo(int key, const char*& description, float& durati
 }
 
 //////////////////////////////////////////////////////////////////////////
+static bool SequencTrackVersionConverter(
+    AZ::SerializeContext& serializeContext,
+    AZ::SerializeContext::DataElementNode& rootElement)
+{
+    if (rootElement.GetVersion() < 3)
+    {
+        rootElement.AddElement(serializeContext, "BaseClass1", azrtti_typeid<IAnimTrack>());
+    }
+
+    return true;
+}
+
 template<>
 inline void TAnimTrack<ISequenceKey>::Reflect(AZ::SerializeContext* serializeContext)
 {
-    serializeContext->Class<TAnimTrack<ISequenceKey> >()
-        ->Version(2)
+    serializeContext->Class<TAnimTrack<ISequenceKey>, IAnimTrack>()
+        ->Version(3, &SequencTrackVersionConverter)
         ->Field("Flags", &TAnimTrack<ISequenceKey>::m_flags)
         ->Field("Range", &TAnimTrack<ISequenceKey>::m_timeRange)
         ->Field("ParamType", &TAnimTrack<ISequenceKey>::m_nParamType)

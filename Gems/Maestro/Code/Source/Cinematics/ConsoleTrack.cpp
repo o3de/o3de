@@ -47,11 +47,23 @@ void CConsoleTrack::GetKeyInfo(int key, const char*& description, float& duratio
 }
 
 //////////////////////////////////////////////////////////////////////////
+static bool ConsoleTrackVersionConverter(
+    AZ::SerializeContext& serializeContext,
+    AZ::SerializeContext::DataElementNode& rootElement)
+{
+    if (rootElement.GetVersion() < 3)
+    {
+        rootElement.AddElement(serializeContext, "BaseClass1", azrtti_typeid<IAnimTrack>());
+    }
+
+    return true;
+}
+
 template<>
 inline void TAnimTrack<IConsoleKey>::Reflect(AZ::SerializeContext* serializeContext)
 {
-    serializeContext->Class<TAnimTrack<IConsoleKey> >()
-        ->Version(2)
+    serializeContext->Class<TAnimTrack<IConsoleKey>, IAnimTrack>()
+        ->Version(3, &ConsoleTrackVersionConverter)
         ->Field("Flags", &TAnimTrack<IConsoleKey>::m_flags)
         ->Field("Range", &TAnimTrack<IConsoleKey>::m_timeRange)
         ->Field("ParamType", &TAnimTrack<IConsoleKey>::m_nParamType)

@@ -179,11 +179,23 @@ bool CScreenFaderTrack::SetActiveTexture(int index)
 }
 
 //////////////////////////////////////////////////////////////////////////
+static bool ScreenFaderTrackVersionConverter(
+    AZ::SerializeContext& serializeContext,
+    AZ::SerializeContext::DataElementNode& rootElement)
+{
+    if (rootElement.GetVersion() < 3)
+    {
+        rootElement.AddElement(serializeContext, "BaseClass1", azrtti_typeid<IAnimTrack>());
+    }
+
+    return true;
+}
+
 template<>
 inline void TAnimTrack<IScreenFaderKey>::Reflect(AZ::SerializeContext* serializeContext)
 {
-    serializeContext->Class<TAnimTrack<IScreenFaderKey> >()
-        ->Version(2)
+    serializeContext->Class<TAnimTrack<IScreenFaderKey>, IAnimTrack>()
+        ->Version(3, &ScreenFaderTrackVersionConverter)
         ->Field("Flags", &TAnimTrack<IScreenFaderKey>::m_flags)
         ->Field("Range", &TAnimTrack<IScreenFaderKey>::m_timeRange)
         ->Field("ParamType", &TAnimTrack<IScreenFaderKey>::m_nParamType)

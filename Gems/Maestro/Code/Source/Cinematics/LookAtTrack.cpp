@@ -79,11 +79,23 @@ void CLookAtTrack::GetKeyInfo(int key, const char*& description, float& duration
 
 
 //////////////////////////////////////////////////////////////////////////
+static bool LookAtTrackVersionConverter(
+    AZ::SerializeContext& serializeContext,
+    AZ::SerializeContext::DataElementNode& rootElement)
+{
+    if (rootElement.GetVersion() < 3)
+    {
+        rootElement.AddElement(serializeContext, "BaseClass1", azrtti_typeid<IAnimTrack>());
+    }
+
+    return true;
+}
+
 template<>
 inline void TAnimTrack<ILookAtKey>::Reflect(AZ::SerializeContext* serializeContext)
 {
-    serializeContext->Class<TAnimTrack<ILookAtKey> >()
-        ->Version(2)
+    serializeContext->Class<TAnimTrack<ILookAtKey>, IAnimTrack>()
+        ->Version(3, &LookAtTrackVersionConverter)
         ->Field("Flags", &TAnimTrack<ILookAtKey>::m_flags)
         ->Field("Range", &TAnimTrack<ILookAtKey>::m_timeRange)
         ->Field("ParamType", &TAnimTrack<ILookAtKey>::m_nParamType)

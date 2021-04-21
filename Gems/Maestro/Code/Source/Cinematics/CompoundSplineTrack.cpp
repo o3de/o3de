@@ -604,10 +604,22 @@ void CCompoundSplineTrack::SetId(unsigned int id)
 }
 
 //////////////////////////////////////////////////////////////////////////
+static bool CompoundSplineTrackVersionConverter(
+    AZ::SerializeContext& serializeContext,
+    AZ::SerializeContext::DataElementNode& rootElement)
+{
+    if (rootElement.GetVersion() < 4)
+    {
+        rootElement.AddElement(serializeContext, "BaseClass1", azrtti_typeid<IAnimTrack>());
+    }
+
+    return true;
+}
+
 void CCompoundSplineTrack::Reflect(AZ::SerializeContext* serializeContext)
 {
-    serializeContext->Class<CCompoundSplineTrack>()
-        ->Version(3)
+    serializeContext->Class<CCompoundSplineTrack, IAnimTrack>()
+        ->Version(4, &CompoundSplineTrackVersionConverter)
         ->Field("Flags", &CCompoundSplineTrack::m_flags)
         ->Field("ParamType", &CCompoundSplineTrack::m_nParamType)
         ->Field("NumSubTracks", &CCompoundSplineTrack::m_nDimensions)

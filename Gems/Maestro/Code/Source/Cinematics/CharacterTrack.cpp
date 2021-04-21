@@ -150,11 +150,23 @@ float CCharacterTrack::GetKeyDuration(int key) const
 }
 
 //////////////////////////////////////////////////////////////////////////
+static bool CharacterTrackVersionConverter(
+    AZ::SerializeContext& serializeContext,
+    AZ::SerializeContext::DataElementNode& rootElement)
+{
+    if (rootElement.GetVersion() < 3)
+    {
+        rootElement.AddElement(serializeContext, "BaseClass1", azrtti_typeid<IAnimTrack>());
+    }
+
+    return true;
+}
+
 template<>
 inline void TAnimTrack<ICharacterKey>::Reflect(AZ::SerializeContext* serializeContext)
 {
-    serializeContext->Class<TAnimTrack<ICharacterKey> >()
-        ->Version(2)
+    serializeContext->Class<TAnimTrack<ICharacterKey>, IAnimTrack>()
+        ->Version(3, &CharacterTrackVersionConverter)
         ->Field("Flags", &TAnimTrack<ICharacterKey>::m_flags)
         ->Field("Range", &TAnimTrack<ICharacterKey>::m_timeRange)
         ->Field("ParamType", &TAnimTrack<ICharacterKey>::m_nParamType)

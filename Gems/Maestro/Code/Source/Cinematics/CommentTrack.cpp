@@ -78,11 +78,23 @@ void CCommentTrack::SerializeKey(ICommentKey& key, XmlNodeRef& keyNode, bool bLo
 
 
 //////////////////////////////////////////////////////////////////////////
+static bool CommentTrackVersionConverter(
+    AZ::SerializeContext& serializeContext,
+    AZ::SerializeContext::DataElementNode& rootElement)
+{
+    if (rootElement.GetVersion() < 3)
+    {
+        rootElement.AddElement(serializeContext, "BaseClass1", azrtti_typeid<IAnimTrack>());
+    }
+
+    return true;
+}
+
 template<>
 inline void TAnimTrack<ICommentKey>::Reflect(AZ::SerializeContext* serializeContext)
 {
-    serializeContext->Class<TAnimTrack<ICommentKey> >()
-        ->Version(2)
+    serializeContext->Class<TAnimTrack<ICommentKey>, IAnimTrack>()
+        ->Version(3, &CommentTrackVersionConverter)
         ->Field("Flags", &TAnimTrack<ICommentKey>::m_flags)
         ->Field("Range", &TAnimTrack<ICommentKey>::m_timeRange)
         ->Field("ParamType", &TAnimTrack<ICommentKey>::m_nParamType)
