@@ -100,7 +100,7 @@ class TestAutomationBase:
         try:
             editor.wait(TestAutomationBase.MAX_TIMEOUT)
         except WaitTimeoutError:
-            errors.append(TestRunError("TIMEOUT", "Editor did not close after {TestAutomationBase.MAX_TIMEOUT} seconds, verify the test is ending and the application didn't freeze"))
+            errors.append(TestRunError("TIMEOUT", f"Editor did not close after {TestAutomationBase.MAX_TIMEOUT} seconds, verify the test is ending and the application didn't freeze"))
             editor.kill()
             
         output = editor.get_output()
@@ -118,16 +118,16 @@ class TestAutomationBase:
             else:
                 error_str = "Test failed, no output available..\n"
             errors.append(TestRunError("FAILED TEST", error_str))
-            if return_code != TestAutomationBase.TEST_FAIL_RETCODE: # Crashed
+            if return_code and return_code != TestAutomationBase.TEST_FAIL_RETCODE: # Crashed
                 crash_info = "-- No crash log available --"
-                error_log = os.path.join(workspace.paths.project_log(), 'error.log')
+                crash_log = os.path.join(workspace.paths.project_log(), 'error.log')
                 try:
-                    waiter.wait_for(lambda: os.path.exists(error_log), timeout=TestAutomationBase.WAIT_FOR_CRASH_LOG)
+                    waiter.wait_for(lambda: os.path.exists(crash_log), timeout=TestAutomationBase.WAIT_FOR_CRASH_LOG)
                 except AssertionError:                    
                     pass
                     
                 try:
-                    with open(error_log) as f:
+                    with open(crash_log) as f:
                         crash_info = f.read()
                 except Exception as ex:
                     crash_info += f"\n{str(ex)}"
