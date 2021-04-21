@@ -21,21 +21,21 @@
 
 namespace Multiplayer
 {
-    class MultiplayerImguiSystemComponent final
+    class MultiplayerDebugSystemComponent final
         : public AZ::Component
 #ifdef IMGUI_ENABLED
         , public ImGui::ImGuiUpdateListenerBus::Handler
 #endif
     {
     public:
-        AZ_COMPONENT(MultiplayerImguiSystemComponent, "{060BF3F1-0BFE-4FCE-9C3C-EE991F0DA581}");
+        AZ_COMPONENT(MultiplayerDebugSystemComponent, "{060BF3F1-0BFE-4FCE-9C3C-EE991F0DA581}");
 
         static void Reflect(AZ::ReflectContext* context);
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatbile);
 
-        ~MultiplayerImguiSystemComponent() override = default;
+        ~MultiplayerDebugSystemComponent() override = default;
 
         //! AZ::Component overrides
         //! @{

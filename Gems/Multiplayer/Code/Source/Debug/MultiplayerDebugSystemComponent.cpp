@@ -10,45 +10,45 @@
 *
 */
 
-#include <Source/Imgui/MultiplayerImguiSystemComponent.h>
+#include <Source/Imgui/MultiplayerDebugSystemComponent.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Interface/Interface.h>
 #include <Include/IMultiplayer.h>
 
 namespace Multiplayer
 {
-    void MultiplayerImguiSystemComponent::Reflect(AZ::ReflectContext* context)
+    void MultiplayerDebugSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<MultiplayerImguiSystemComponent, AZ::Component>()
+            serializeContext->Class<MultiplayerDebugSystemComponent, AZ::Component>()
                 ->Version(1);
         }
     }
 
-    void MultiplayerImguiSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+    void MultiplayerDebugSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC_CE("MultiplayerImguiSystemComponent"));
+        provided.push_back(AZ_CRC_CE("MultiplayerDebugSystemComponent"));
     }
 
-    void MultiplayerImguiSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
+    void MultiplayerDebugSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         ;
     }
 
-    void MultiplayerImguiSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatbile)
+    void MultiplayerDebugSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatbile)
     {
-        incompatbile.push_back(AZ_CRC_CE("MultiplayerImguiSystemComponent"));
+        incompatbile.push_back(AZ_CRC_CE("MultiplayerDebugSystemComponent"));
     }
 
-    void MultiplayerImguiSystemComponent::Activate()
+    void MultiplayerDebugSystemComponent::Activate()
     {
 #ifdef IMGUI_ENABLED
         ImGui::ImGuiUpdateListenerBus::Handler::BusConnect();
 #endif
     }
 
-    void MultiplayerImguiSystemComponent::Deactivate()
+    void MultiplayerDebugSystemComponent::Deactivate()
     {
 #ifdef IMGUI_ENABLED
         ImGui::ImGuiUpdateListenerBus::Handler::BusDisconnect();
@@ -56,7 +56,7 @@ namespace Multiplayer
     }
 
 #ifdef IMGUI_ENABLED
-    void MultiplayerImguiSystemComponent::OnImGuiMainMenuUpdate()
+    void MultiplayerDebugSystemComponent::OnImGuiMainMenuUpdate()
     {
         if (ImGui::BeginMenu("Multiplayer"))
         {
@@ -95,7 +95,7 @@ namespace Multiplayer
         }
     }
 
-    void MultiplayerImguiSystemComponent::OnImGuiUpdate()
+    void MultiplayerDebugSystemComponent::OnImGuiUpdate()
     {
         if (m_displayStats)
         {

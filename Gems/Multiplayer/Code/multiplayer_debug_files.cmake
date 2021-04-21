@@ -12,8 +12,8 @@
 set(FILES
     Source/Multiplayer_precompiled.cpp
     Source/Multiplayer_precompiled.h
-    Source/Imgui/MultiplayerImguiModule.cpp
-    Source/Imgui/MultiplayerImguiModule.h
-    Source/Imgui/MultiplayerImguiSystemComponent.cpp
-    Source/Imgui/MultiplayerImguiSystemComponent.h
+    Source/Debug/MultiplayerDebugModule.cpp
+    Source/Debug/MultiplayerDebugModule.h
+    Source/Debug/MultiplayerDebugSystemComponent.cpp
+    Source/Debug/MultiplayerDebugSystemComponent.h
 )

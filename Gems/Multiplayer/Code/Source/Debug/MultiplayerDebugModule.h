@@ -16,15 +16,15 @@
 
 namespace Multiplayer
 {
-    class MultiplayerImguiModule
+    class MultiplayerDebugModule
         : public AZ::Module
     {
     public:
-        AZ_RTTI(MultiplayerImguiModule, "{9E1460FA-4513-4B5E-86B4-9DD8ADEFA714}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(MultiplayerImguiModule, AZ::SystemAllocator, 0);
+        AZ_RTTI(MultiplayerDebugModule, "{9E1460FA-4513-4B5E-86B4-9DD8ADEFA714}", AZ::Module);
+        AZ_CLASS_ALLOCATOR(MultiplayerDebugModule, AZ::SystemAllocator, 0);
 
-        MultiplayerImguiModule();
-        ~MultiplayerImguiModule() override = default;
+        MultiplayerDebugModule();
+        ~MultiplayerDebugModule() override = default;
 
         AZ::ComponentTypeList GetRequiredSystemComponents() const override;
     };

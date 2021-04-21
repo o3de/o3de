@@ -11,26 +11,26 @@
 */
 
 #include <Source/Multiplayer_precompiled.h>
-#include <Source/Imgui/MultiplayerImguiModule.h>
-#include <Source/Imgui/MultiplayerImguiSystemComponent.h>
+#include <Source/Imgui/MultiplayerDebugModule.h>
+#include <Source/Imgui/MultiplayerDebugSystemComponent.h>
 
 namespace Multiplayer
 {
-    MultiplayerImguiModule::MultiplayerImguiModule()
+    MultiplayerDebugModule::MultiplayerDebugModule()
         : AZ::Module()
     {
         m_descriptors.insert(m_descriptors.end(), {
-            MultiplayerImguiSystemComponent::CreateDescriptor(),
+            MultiplayerDebugSystemComponent::CreateDescriptor(),
         });
     }
 
-    AZ::ComponentTypeList MultiplayerImguiModule::GetRequiredSystemComponents() const
+    AZ::ComponentTypeList MultiplayerDebugModule::GetRequiredSystemComponents() const
     {
         return AZ::ComponentTypeList
         {
-            azrtti_typeid<MultiplayerImguiSystemComponent>(),
+            azrtti_typeid<MultiplayerDebugSystemComponent>(),
         };
     }
 }
 
-AZ_DECLARE_MODULE_CLASS(Gem_Multiplayer_Imgui, Multiplayer::MultiplayerImguiModule);
+AZ_DECLARE_MODULE_CLASS(Gem_Multiplayer_Imgui, Multiplayer::MultiplayerDebugModule);
