@@ -109,7 +109,8 @@ PbrLightingOutput PbrLighting(  VSOutput IN,
     lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
     
     lightingData.emissiveLighting = emissive;
-    lightingData.occlusion = occlusion;
+    lightingData.diffuseAmbientOcclusion = diffuseAmbientOcclusion;
+    lightingData.specularOcclusion = specularOcclusion;
 
     // Directional light shadow coordinates
     lightingData.shadowCoords = shadowCoords;
