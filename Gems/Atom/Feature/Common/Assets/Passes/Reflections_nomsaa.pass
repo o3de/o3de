@@ -273,8 +273,8 @@
                     }
                 },
                 {
-                    "Name": "ReflectionScreenSpacePass",
-                    "TemplateName": "ReflectionScreenSpacePassTemplate",
+                    "Name": "ReflectionScreenSpaceMobilePass",
+                    "TemplateName": "ReflectionScreenSpaceMobilePassTemplate",
                     "Enabled": false,
                     "Connections": [
                         {
