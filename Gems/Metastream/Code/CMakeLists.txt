@@ -47,7 +47,6 @@ ly_add_target(
         PRIVATE
             Gem::Metastream.Static
             Legacy::CryCommon
-            3rdParty::civetweb
 )
 
 
@@ -74,7 +73,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTest
                 Gem::Metastream.Static
                 Legacy::CryCommon
-                3rdParty::civetweb
     )
     ly_add_googletest(
         NAME Gem::Metastream.Tests

@@ -225,11 +225,8 @@ public:
     void OnEditmodeRotate();
     void OnEditmodeScale();
     void OnEditmodeSelect();
-    void OnEditEscape();
     void OnObjectSetArea();
     void OnObjectSetHeight();
-    void OnObjectVertexSnapping();
-    void OnUpdateEditmodeVertexSnapping(QAction* action);
     void OnUpdateEditmodeSelect(QAction* action);
     void OnUpdateEditmodeMove(QAction* action);
     void OnUpdateEditmodeRotate(QAction* action);
@@ -247,14 +244,11 @@ public:
     void OnUpdateSelectAxisY(QAction* action);
     void OnUpdateSelectAxisZ(QAction* action);
     void OnUndo();
-    void OnEditClone();
     void OnSelectionSave();
     void OnOpenAssetImporter();
     void OnSelectionLoad();
     void OnUpdateSelected(QAction* action);
-    void OnAlignToVoxel();
     void OnAlignToGrid();
-    void OnUpdateAlignToVoxel(QAction* action);
     void OnLockSelection();
     void OnEditLevelData();
     void OnFileEditLogFile();
@@ -491,7 +485,6 @@ private:
     void OnOpenAudioControlsEditor();
     void OnOpenUICanvasEditor();
     void OnGotoViewportSearch();
-    void OnMaterialPicktool();
     void OnTimeOfDay();
     void OnChangeGameSpec(UINT nID);
     void SetGameSpecCheck(ESystemConfigSpec spec, ESystemConfigPlatform platform, int &nCheck, bool &enable);

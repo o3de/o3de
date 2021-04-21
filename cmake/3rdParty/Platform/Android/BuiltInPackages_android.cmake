@@ -11,7 +11,6 @@
 
 # shared by other platforms:
 ly_associate_package(PACKAGE_NAME zlib-1.2.8-rev2-multiplatform      TARGETS zlib      PACKAGE_HASH e6f34b8ac16acf881e3d666ef9fd0c1aee94c3f69283fb6524d35d6f858eebbb)
-ly_associate_package(PACKAGE_NAME Lua-5.3.5-rev3-multiplatform       TARGETS Lua       PACKAGE_HASH 171dcdd60bd91fb325feaab0e53dd185c9d6e7b701d53e66fc6c2c6ee91d8bff)
 ly_associate_package(PACKAGE_NAME md5-2.0-multiplatform              TARGETS md5       PACKAGE_HASH 29e52ad22c78051551f78a40c2709594f0378762ae03b417adca3f4b700affdf)
 ly_associate_package(PACKAGE_NAME RapidJSON-1.1.0-multiplatform      TARGETS RapidJSON PACKAGE_HASH 18b0aef4e6e849389916ff6de6682ab9c591ebe15af6ea6017014453c1119ea1)
 ly_associate_package(PACKAGE_NAME RapidXML-1.13-multiplatform        TARGETS RapidXML  PACKAGE_HASH 510b3c12f8872c54b34733e34f2f69dd21837feafa55bfefa445c98318d96ebf)
@@ -25,6 +24,7 @@ ly_associate_package(PACKAGE_NAME lux_core-2.2-rev5-multiplatform    TARGETS lux
 ly_associate_package(PACKAGE_NAME freetype-2.10.4.14-android         TARGETS freetype        PACKAGE_HASH 74dd75382688323c3a2a5090f473840b5d7e9d2aed1a4fcdff05ed2a09a664f2)
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.14-android              TARGETS tiff            PACKAGE_HASH a9b30a1980946390c2fad0ed94562476a1d7ba8c1f36934ae140a89c54a8efd0)
 ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev3-android  TARGETS AWSNativeSDK    PACKAGE_HASH e2192157534cc8c4e22769545d88dff03ec6c1031599716ef63de3ebbb8c9a44)
+ly_associate_package(PACKAGE_NAME Lua-5.3.5-rev5-android             TARGETS Lua             PACKAGE_HASH 1f638e94a17a87fe9e588ea456d5893876094b4db191234380e4c4eb9e06c300)
 ly_associate_package(PACKAGE_NAME PhysX-4.1.0.25992954-rev1-android  TARGETS PhysX           PACKAGE_HASH 9c494576c2d4ff04dee5a9e092fcd9d5af4b2845f15ffdfcaabb0dbc5b88a7a9)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-android          TARGETS mikkelsen       PACKAGE_HASH 075e8e4940884971063b5a9963014e2e517246fa269c07c7dc55b8cf2cd99705)
 ly_associate_package(PACKAGE_NAME googletest-1.8.1-rev4-android      TARGETS googletest      PACKAGE_HASH 95671be75287a61c9533452835c3647e9c1b30f81b34b43bcb0ec1997cc23894)

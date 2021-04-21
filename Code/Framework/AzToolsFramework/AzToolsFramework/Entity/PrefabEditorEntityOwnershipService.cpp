@@ -94,6 +94,7 @@ namespace AzToolsFramework
             m_prefabSystemComponent->RemoveTemplate(templateId);
         }
         m_rootInstance->Reset();
+        m_rootInstance->SetContainerEntityName("Level");
 
         AzFramework::EntityOwnershipServiceNotificationBus::Event(
             m_entityContextId, &AzFramework::EntityOwnershipServiceNotificationBus::Events::OnEntityOwnershipServiceReset);
@@ -198,6 +199,7 @@ namespace AzToolsFramework
 
         m_rootInstance->SetTemplateId(templateId);
         m_rootInstance->SetTemplateSourcePath(m_loaderInterface->GetRelativePathToProject(filename));
+        m_rootInstance->SetContainerEntityName("Level");
         m_prefabSystemComponent->PropagateTemplateChanges(templateId);
 
         return true;
@@ -279,18 +281,29 @@ namespace AzToolsFramework
         AZStd::unique_ptr<Prefab::Instance> createdPrefabInstance =
             m_prefabSystemComponent->CreatePrefab(entities, AZStd::move(nestedPrefabInstances), filePath);
 
-        if (!instanceToParentUnder)
-        {
-            instanceToParentUnder = *m_rootInstance;
-        }
-
         if (createdPrefabInstance)
         {
+            if (!instanceToParentUnder)
+            {
+                instanceToParentUnder = *m_rootInstance;
+            }
+
             Prefab::Instance& addedInstance = instanceToParentUnder->get().AddInstance(AZStd::move(createdPrefabInstance));
-            HandleEntitiesAdded({addedInstance.m_containerEntity.get()});
+            AZ::Entity* containerEntity = addedInstance.m_containerEntity.get();
+            containerEntity->AddComponent(aznew Prefab::EditorPrefabComponent());
+            HandleEntitiesAdded({containerEntity});
+            HandleEntitiesAdded(entities);
+            
+            // Update the template of the instance since we modified the entities of the instance by calling HandleEntitiesAdded.
+            Prefab::PrefabDom serializedInstance;
+            if (Prefab::PrefabDomUtils::StoreInstanceInPrefabDom(addedInstance, serializedInstance))
+            {
+                m_prefabSystemComponent->UpdatePrefabTemplate(addedInstance.GetTemplateId(), serializedInstance);
+            }
+            
             return addedInstance;
         }
-        HandleEntitiesAdded(entities);
+
         return AZStd::nullopt;
     }
 

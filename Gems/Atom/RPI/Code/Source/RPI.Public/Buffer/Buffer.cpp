@@ -205,7 +205,8 @@ namespace AZ
         void Buffer::InitBufferView()
         {
             // Skip buffer view creation for input assembly buffers
-            if(RHI::CheckBitsAny(m_rhiBuffer->GetDescriptor().m_bindFlags, RHI::BufferBindFlags::InputAssembly | RHI::BufferBindFlags::DynamicInputAssembly))
+            if (m_rhiBuffer->GetDescriptor().m_bindFlags == RHI::BufferBindFlags::InputAssembly ||
+                m_rhiBuffer->GetDescriptor().m_bindFlags == RHI::BufferBindFlags::DynamicInputAssembly)
             {
                 return;
             }
