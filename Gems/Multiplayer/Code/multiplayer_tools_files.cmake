@@ -8,3 +8,12 @@
 # remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
+
+set(FILES
+    Source/Multiplayer_precompiled.cpp
+    Source/Multiplayer_precompiled.h
+    Source/Pipeline/NetworkPrefabProcessor.cpp
+    Source/Pipeline/NetworkPrefabProcessor.h
+    Source/MultiplayerToolsModule.h
+    Source/MultiplayerToolsModule.cpp
+)

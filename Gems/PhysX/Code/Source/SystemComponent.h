@@ -57,7 +57,6 @@ namespace PhysX
         : public AZ::Component
         , public Physics::SystemRequestBus::Handler
         , public PhysX::SystemRequestsBus::Handler
-        , public Physics::CharacterSystemRequestBus::Handler
         , private Physics::CollisionRequestBus::Handler
         , private AZ::TickBus::Handler
     {
@@ -95,10 +94,6 @@ namespace PhysX
 
         physx::PxFilterData CreateFilterData(const AzPhysics::CollisionLayer& layer, const AzPhysics::CollisionGroup& group) override;
         physx::PxCooking* GetCooking() override;
-
-        // Physics::CharacterSystemRequestBus
-        virtual AZStd::unique_ptr<Physics::Character> CreateCharacter(const Physics::CharacterConfiguration& characterConfig,
-            const Physics::ShapeConfiguration& shapeConfig, AzPhysics::SceneHandle& sceneHandle) override;
 
         // CollisionRequestBus
         AzPhysics::CollisionLayer GetCollisionLayerByName(const AZStd::string& layerName) override;
