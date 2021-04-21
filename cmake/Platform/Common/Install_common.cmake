@@ -36,17 +36,12 @@ function(ly_install_target ly_install_target_NAME)
 
     install(
         TARGETS ${ly_install_target_NAME}
-        EXPORT ${ly_install_target_NAME}Targets
         LIBRARY DESTINATION lib/$<CONFIG>
         ARCHIVE DESTINATION lib/$<CONFIG>
         RUNTIME DESTINATION bin/$<CONFIG>
         PUBLIC_HEADER DESTINATION ${include_location}
     )
-    
-    install(EXPORT ${ly_install_target_NAME}Targets
-        DESTINATION cmake_autogen/${ly_install_target_NAME}
-    )
-
+   
     ly_generate_target_config_file(${ly_install_target_NAME})
     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${ly_install_target_NAME}_$<CONFIG>.cmake"
         DESTINATION cmake_autogen/${ly_install_target_NAME}
@@ -80,7 +75,7 @@ function(ly_generate_target_find_file)
     unset(COMPILE_DEFINITIONS_PLACEHOLDER)
     unset(include_directories_interface_props)
     unset(INCLUDE_DIRECTORIES_PLACEHOLDER)
-    unset(RUNTIME_DEPENDENCIES_PLACEHOLDER)
+    set(RUNTIME_DEPENDENCIES_PLACEHOLDER ${ly_generate_target_find_file_RUNTIME_DEPENDENCIES})
 
     # These targets will be imported. We will expose PUBLIC and INTERFACE properties as INTERFACE properties since
     # only INTERFACE properties can be exposed on imported targets
@@ -92,20 +87,18 @@ function(ly_generate_target_find_file)
         set(NAMESPACE_PLACEHOLDER "NAMESPACE ${ly_generate_target_find_file_NAMESPACE}")
     endif()
 
+    string(REPLACE ";" "\n" COMPILE_DEFINITIONS_PLACEHOLDER "${COMPILE_DEFINITIONS_PLACEHOLDER}")
+
     # Includes need additional processing to add the install root
     foreach(include ${include_directories_interface_props})
         set(installed_include_prefix "\${LY_ROOT_FOLDER}/include/")
         file(RELATIVE_PATH relative_path ${CMAKE_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/${include})
-        string(APPEND INCLUDE_DIRECTORIES_PLACEHOLDER "${relative_path}\n")
+        list(APPEND INCLUDE_DIRECTORIES_PLACEHOLDER "include/${relative_path}")
     endforeach()
+    string(REPLACE ";" "\n" INCLUDE_DIRECTORIES_PLACEHOLDER "${INCLUDE_DIRECTORIES_PLACEHOLDER}")
 
-    # Interface libs aren't built so they don't generate a library. These are our HEADER_ONLY targets.
-    get_target_property(target_type ${ly_generate_target_find_file_NAME} TYPE)
-    if(NOT ${target_type} STREQUAL "INTERFACE_LIBRARY")
-        set(HEADER_ONLY_PLACEHOLDER FALSE)
-    else()
-        set(HEADER_ONLY_PLACEHOLDER TRUE)
-    endif()
+    string(REPLACE ";" "\n" BUILD_DEPENDENCIES_PLACEHOLDER "${BUILD_DEPENDENCIES_PLACEHOLDER}")
+    string(REPLACE ";" "\n" RUNTIME_DEPENDENCIES_PLACEHOLDER "${RUNTIME_DEPENDENCIES_PLACEHOLDER}")
 
     configure_file(${LY_ROOT_FOLDER}/cmake/FindTarget.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/Find${ly_generate_target_find_file_NAME}.cmake @ONLY)
 
@@ -139,7 +132,7 @@ function(ly_generate_target_config_file NAME)
 
 set_target_properties(${NAME} 
     PROPERTIES
-        IMPORTED_LOCATION \"\${LY_ROOT_FOLDER}/${out_dir}/$<CONFIG>/$<${out_file_generator}:${NAME}>\
+        IMPORTED_LOCATION \"\${LY_ROOT_FOLDER}/${out_dir}/$<CONFIG>/$<${out_file_generator}:${NAME}>\"
 )
 if(EXISTS \"\${LY_ROOT_FOLDER}/${out_dir}/$<CONFIG>/$<${out_file_generator}:${NAME}>\")
     set(${NAME}_$<CONFIG>_FOUND TRUE)
