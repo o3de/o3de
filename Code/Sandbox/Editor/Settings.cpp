@@ -196,7 +196,6 @@ SEditorSettings::SEditorSettings()
     enableSceneInspector = false;
 
     strStandardTempDirectory = "Temp";
-    strEditorEnv = "Editor/Editor.env";
 
     // Init source safe params.
     enableSourceControl = true;
@@ -532,7 +531,6 @@ void SEditorSettings::Save()
     SaveValue("Settings", "editorConfigSpec", editorConfigSpec);
 
     SaveValue("Settings", "TemporaryDirectory", strStandardTempDirectory);
-    SaveValue("Settings", "EditorEnv", strEditorEnv);
 
     SaveValue("Settings", "ConsoleBackgroundColorThemeV2", (int)consoleBackgroundColorTheme);
 
@@ -753,7 +751,6 @@ void SEditorSettings::Load()
 
 
     LoadValue("Settings", "TemporaryDirectory", strStandardTempDirectory);
-    LoadValue("Settings", "EditorEnv", strEditorEnv);
 
     int consoleBackgroundColorThemeInt = (int)consoleBackgroundColorTheme;
     LoadValue("Settings", "ConsoleBackgroundColorThemeV2", consoleBackgroundColorThemeInt);
@@ -766,7 +763,7 @@ void SEditorSettings::Load()
     LoadValue("Settings", "ShowTimeInConsole", bShowTimeInConsole);
 
     LoadValue("Settings", "EnableSceneInspector", enableSceneInspector);
-    
+
     //////////////////////////////////////////////////////////////////////////
     // Viewport Settings.
     //////////////////////////////////////////////////////////////////////////

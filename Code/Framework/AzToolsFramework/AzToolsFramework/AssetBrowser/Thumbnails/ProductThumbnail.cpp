@@ -55,7 +55,7 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
         // ProductThumbnail
         //////////////////////////////////////////////////////////////////////////
-        static const char* DEFAULT_PRODUCT_ICON_PATH = "Editor/Icons/AssetBrowser/DefaultProduct_16.svg";
+        static const char* DEFAULT_PRODUCT_ICON_PATH = "Icons/AssetBrowser/DefaultProduct_16.svg";
 
         ProductThumbnail::ProductThumbnail(Thumbnailer::SharedThumbnailKey key, int thumbnailSize)
             : Thumbnail(key, thumbnailSize)

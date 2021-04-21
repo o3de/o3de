@@ -71,24 +71,8 @@ CPythonScriptsDialog::CPythonScriptsDialog(QWidget* parent)
     AzQtComponents::LineEdit::applySearchStyle(ui->searchField);
 
     QStringList scriptFolders;
-
-    const auto editorEnvStr = gSettings.strEditorEnv.toLocal8Bit();
-    AZStd::string editorScriptsPath = AZStd::string::format("@engroot@/%s", editorEnvStr.constData());
-    XmlNodeRef envNode = XmlHelpers::LoadXmlFromFile(editorScriptsPath.c_str());
-    if (envNode)
-    {
-        QString scriptPath;
-        int childrenCount = envNode->getChildCount();
-        for (int idx = 0; idx < childrenCount; ++idx)
-        {
-            XmlNodeRef child = envNode->getChild(idx);
-            if (child->haveAttr("scriptPath"))
-            {
-                scriptPath = child->getAttr("scriptPath");
-                scriptFolders.push_back(scriptPath);
-            }
-        }
-    }
+    auto engineScriptPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / "EngineAssets" / "Editor" / "Scripts";
+    scriptFolders.push_back(engineScriptPath.c_str());
 
     AZ::IO::FixedMaxPathString projectPath = AZ::Utils::GetProjectPath();
     ScanFolderForScripts(QString("%1/Editor/Scripts").arg(projectPath.c_str()), scriptFolders);

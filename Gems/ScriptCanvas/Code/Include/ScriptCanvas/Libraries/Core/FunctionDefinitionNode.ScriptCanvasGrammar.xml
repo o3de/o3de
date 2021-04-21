@@ -6,7 +6,7 @@
            PreferredClassName="Function Definition"
            Uuid="{4EE28D9F-67FB-4E61-B777-5DC5B059710F}"
            Base="ScriptCanvas::Nodes::Core::Internal::Nodeling"
-           Icon="Editor/Icons/ScriptCanvas/Start.png"
+           Icon="Icons/ScriptCanvas/Start.png"
            Category="Core"
            Version="1"
            EditAttributes="AZ::Script::Attributes::ExcludeFrom@AZ::Script::Attributes::ExcludeFlags::All"

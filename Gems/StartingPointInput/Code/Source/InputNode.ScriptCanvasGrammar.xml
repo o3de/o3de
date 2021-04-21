@@ -6,7 +6,7 @@
 	       PreferredClassName="Input Handler"
            Uuid="{0B0AC61B-4BBA-42BF-BDCD-DAF2D3CA41A8}"
            Base="ScriptCanvas::Node"
-           Icon="Editor/Icons/ScriptCanvas/Bus.png"
+           Icon="Icons/ScriptCanvas/Bus.png"
            EditAttributes="AZ::Edit::Attributes::Category@Gameplay/Input"
            GraphEntryPoint="True"
            GeneratePropertyFriend="True"

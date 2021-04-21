@@ -6,7 +6,7 @@
          PreferredClassName="Nodeling"
          Uuid="{4413EEA0-8D81-4D61-A1E1-3C1A437F3643}"
          Base="ScriptCanvas::Node"
-         Icon="Editor/Icons/ScriptCanvas/Start.png"
+         Icon="Icons/ScriptCanvas/Start.png"
          Category="Core"
          Version="1"
          GeneratePropertyFriend="True"

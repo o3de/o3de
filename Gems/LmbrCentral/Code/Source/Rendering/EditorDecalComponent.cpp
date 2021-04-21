@@ -48,9 +48,9 @@ namespace LmbrCentral
                     "Decal", "The Decal component allows an entity to project a texture or material onto a mesh")->
                     ClassElement(AZ::Edit::ClassElements::EditorData, "")->
                     Attribute(AZ::Edit::Attributes::Category, "Rendering")->
-                    Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/Decal.svg")->
+                    Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Decal.svg")->
                     Attribute(AZ::Edit::Attributes::PrimaryAssetType, AZ::AzTypeInfo<LmbrCentral::MaterialAsset>::Uuid())->
-                    Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/Decal.png")->
+                    Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Decal.png")->
                     Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))->
                     Attribute(AZ::Edit::Attributes::AutoExpand, true)->
                     Attribute(AZ::Edit::Attributes::HelpPageURL, "https://docs.aws.amazon.com/lumberyard/latest/userguide/component-decal.html")->

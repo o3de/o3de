@@ -6,7 +6,7 @@
 	       PreferredClassName="Repeater"
            Uuid="{0A38EDCA-0571-48F0-9199-F6168C1EAAF0}"
            Base="ScriptCanvas::Nodes::Internal::BaseTimerNode"
-           Icon="Editor/Icons/ScriptCanvas/Placeholder.png"
+           Icon="Icons/ScriptCanvas/Placeholder.png"
            Deprecated="This node is deprecated"
            DeprecationUUID="{AB587027-2270-4CA6-242F-6069C6D9BBB6}"
            Category="Utilities"

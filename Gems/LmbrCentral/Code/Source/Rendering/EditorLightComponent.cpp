@@ -1949,7 +1949,7 @@ namespace LmbrCentral
             m_materialManager = m_editor->Get3DEngine()->GetMaterialManager();
         }
 
-        _smart_ptr<IMaterial> material = m_materialManager->LoadMaterial("Editor/Objects/envcube", false, true);
+        _smart_ptr<IMaterial> material = m_materialManager->LoadMaterial("Objects/envcube", false, true);
         QString matName = Path::GetFileName(textureName);
         if (material)
         {
@@ -1968,7 +1968,7 @@ namespace LmbrCentral
             }
         }
 
-        m_statObj = m_editor->Get3DEngine()->LoadStatObjAutoRef("Editor/Objects/envcube.cgf", nullptr, nullptr, false);
+        m_statObj = m_editor->Get3DEngine()->LoadStatObjAutoRef("Objects/envcube.cgf", nullptr, nullptr, false);
         if (m_statObj)
         {
             // We need to clone the object in order for multiple Environment Probes to not stomp each other's preview materials.

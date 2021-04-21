@@ -16,7 +16,7 @@ namespace AzToolsFramework
 {
     namespace Thumbnailer
     {
-        static const char* MISSING_ICON_PATH = "Editor/Icons/AssetBrowser/Default_16.svg";
+        static const char* MISSING_ICON_PATH = "Icons/AssetBrowser/Default_16.svg";
 
         MissingThumbnail::MissingThumbnail(int thumbnailSize)
             : Thumbnail(MAKE_TKEY(ThumbnailKey), thumbnailSize)

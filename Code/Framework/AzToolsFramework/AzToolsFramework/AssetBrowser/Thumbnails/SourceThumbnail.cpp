@@ -55,7 +55,7 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
         // SourceThumbnail
         //////////////////////////////////////////////////////////////////////////
-        static constexpr const char* DefaultFileIconPath = "Editor/Icons/AssetBrowser/Default_16.svg";
+        static constexpr const char* DefaultFileIconPath = "Icons/AssetBrowser/Default_16.svg";
         QMutex SourceThumbnail::m_mutex;
 
         SourceThumbnail::SourceThumbnail(SharedThumbnailKey key, int thumbnailSize)

@@ -6,7 +6,7 @@
 	       PreferredClassName="Set Variable"
            Uuid="{5EFD2942-AFF9-4137-939C-023AEAA72EB0}"
            Base="ScriptCanvas::Node"
-           Icon="Editor/Icons/ScriptCanvas/Placeholder.png"
+           Icon="Icons/ScriptCanvas/Placeholder.png"
            Version="1"
            GeneratePropertyFriend="True"
            Description="Node for setting a property within the graph">

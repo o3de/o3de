@@ -13,6 +13,8 @@
 
 #include "NewEntityDialog.h"
 
+#include <AzCore/Utils/Utils.h>
+
 // Qt
 #include <QPushButton>
 #include <QToolTip>
@@ -87,10 +89,10 @@ void NewEntityDialog::accept()
     {
         return;
     }
-    const char* devRoot = gEnv->pFileIO->GetAlias("@engroot@");
-    QString devRootPath(devRoot);
-    QFile entTemplateFile(devRootPath + "/Editor/NewEntityTemplate.ent_template");
-    QFile luaTemplateFile(devRootPath + "/Editor/NewEntityTemplate.lua_template");
+    auto engineAssetsPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / "EngineAssets";
+    QDir engineAssetSourceRoot(QString::fromUtf8(engineAssetsPath.c_str(), aznumeric_cast<int>(engineAssetsPath.Native().size())));
+    QFile entTemplateFile(engineAssetSourceRoot.filePath("Editor/NewEntityTemplate.ent_template"));
+    QFile luaTemplateFile(engineAssetSourceRoot.filePath("Editor/NewEntityTemplate.lua_template"));
     QFile entDestFile(nameBaseDir + ui->entityName->text() + ".ent");
     QFile luaDestFile(baseDir + ui->categoryName->text() + "/" + ui->entityName->text() + ".lua");
 

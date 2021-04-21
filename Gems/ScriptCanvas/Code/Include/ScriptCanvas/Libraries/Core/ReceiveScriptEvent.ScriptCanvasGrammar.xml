@@ -6,7 +6,7 @@
 	       PreferredClassName="Receive Script Event"
            Uuid="{76CF9938-4A7E-4CDA-8DF3-77C10239D99C}"
            Base="ScriptCanvas::Nodes::Core::Internal::ScriptEventBase"
-           Icon="Editor/Icons/ScriptCanvas/Bus.png"
+           Icon="Icons/ScriptCanvas/Bus.png"
            Version="4"
            VersionConverter="ScriptCanvas::VersionConverters::ReceiveScriptEventVersionConverter"
            EditAttributes="AZ::Script::Attributes::ExcludeFrom@AZ::Script::Attributes::ExcludeFlags::All"

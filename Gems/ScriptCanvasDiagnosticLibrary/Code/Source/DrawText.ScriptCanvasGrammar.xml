@@ -6,7 +6,7 @@
 	       PreferredClassName="Draw Text"
            Uuid="{AA209CEC-3813-4DC2-85A9-DE8B7A905CD6}"
            Base="ScriptCanvas::Node"
-           Icon="Editor/Icons/ScriptCanvas/DrawText.png"
+           Icon="Icons/ScriptCanvas/DrawText.png"
 		   Category="Utilities/Debug"
 		   Version="1"
            Deprecated="True"

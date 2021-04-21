@@ -16,6 +16,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/string/conversions.h>
+#include <AzCore/Utils/Utils.h>
 
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <ScriptCanvas/Bus/ScriptCanvasBus.h>
@@ -60,9 +61,10 @@ namespace ScriptCanvasDeveloperEditor
 
         void GenerateTSFile()
         {
-            AZStd::string tsFileName("@devroot@/editor/translation/scriptcanvas_en_us.ts");
+            auto translationScriptPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) /
+                "EngineAssets" / "Editor" / "Translation" / "scriptcanvas_en_us.ts";
 
-            XMLDocPtr tsDoc(XMLDoc::LoadFromDisk(tsFileName));
+            XMLDocPtr tsDoc(XMLDoc::LoadFromDisk(translationScriptPath.c_str()));
 
             if (tsDoc == nullptr)
             {
@@ -72,7 +74,7 @@ namespace ScriptCanvasDeveloperEditor
             DumpBehaviorContextMethods(tsDoc);
             DumpBehaviorContextEbuses(tsDoc);
 
-            tsDoc->WriteToDisk(tsFileName);
+            tsDoc->WriteToDisk(tsFileName.c_str());
         }
         
         void DumpBehaviorContextMethods(const XMLDocPtr& doc)

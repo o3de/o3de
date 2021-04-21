@@ -6,7 +6,7 @@
 	       PreferredClassName="Extract Properties"
            Uuid="{D4C9DA8E-838B-41C6-B870-C75294C323DC}"
            Base="ScriptCanvas::Node"
-           Icon="Editor/Icons/ScriptCanvas/Placeholder.png"
+           Icon="Icons/ScriptCanvas/Placeholder.png"
            Category="Utilities"
            Version="1"
            VersionConverter="VersionConverter"

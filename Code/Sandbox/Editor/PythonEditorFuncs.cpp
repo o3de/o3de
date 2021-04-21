@@ -298,7 +298,7 @@ namespace
                 AZ::IO::FixedMaxPathString engineRoot = AZ::Utils::GetEnginePath();
                 QDir engineDir = !engineRoot.empty() ? QDir(QString(engineRoot.c_str())) : QDir::current();
 
-                QString scriptFolder = engineDir.absoluteFilePath("Editor/Scripts/");
+                QString scriptFolder = engineDir.absoluteFilePath("EngineAssets/Editor/Scripts/");
                 Path::ConvertBackSlashToSlash(scriptFolder);
                 path = scriptFolder + pFile;
 

@@ -5,7 +5,7 @@
            QualifiedName="Nodeables::Time::HeartBeatNodeable"
            PreferredClassName="HeartBeat"
            Base="Nodeables::Time::BaseTimer"
-           Icon="Editor/Icons/ScriptCanvas/Placeholder.png"
+           Icon="Icons/ScriptCanvas/Placeholder.png"
            Category="Timing"
            GeneratePropertyFriend="True"
            Namespace="ScriptCanvas"

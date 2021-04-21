@@ -188,26 +188,6 @@ namespace ImageProcessingAtom
     // the request will contain the CreateJobResponse you constructed earlier, including any keys and values you placed into the hash table
     void ImageBuilderWorker::ProcessJob(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response)
     {
-        // Exclude the "Engine/EngineAssets/Textures/rotrandom.dds" which is not a legit dds file but required by Cry3dEngine.
-        // [GFX TODO] Remove this block of code when removing Cry3dEngine and its engine assets entirely. 
-        AZStd::string assetFileName;
-        AzFramework::StringFunc::Path::GetFullFileName(request.m_sourceFile.data(), assetFileName);
-        if (azstricmp(assetFileName.data(), "rotrandom.dds") == 0)
-        {
-            AZStd::string assetPath = request.m_fullPath;
-            AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::MakePathRootRelative, assetPath);
-            // The MakePathRootRelative only normalize but not convert the path to lower case, we need to call NormalizePath to convert it to lower case
-            AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::NormalizePath, assetPath);
-            AZStd::string excludePath = "Engine/EngineAssets/Textures/rotrandom.dds";
-            AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::NormalizePath, excludePath);
-
-            if (assetPath == excludePath)
-            {
-                response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-                return;
-            }
-        }
-
         // Before we begin, let's make sure we are not meant to abort.
         AssetBuilderSDK::JobCancelListener jobCancelListener(request.m_jobId);
 

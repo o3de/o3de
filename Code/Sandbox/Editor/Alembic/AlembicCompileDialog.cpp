@@ -19,6 +19,8 @@
 #include <QPushButton>
 
 // AzCore
+#include <AzCore/Utils/Utils.h>
+
 #include <Pak/CryPakUtils.h>
 
 // Editor
@@ -70,12 +72,13 @@ void CAlembicCompileDialog::OnInitDialog()
 
     SDirectoryEnumeratorHelper dirHelper;
 
-    dirHelper.ScanDirectoryRecursive(gEnv->pCryPak, "@engroot@/", "Editor/Presets/GeomCache", filePattern, presetFiles);
+    auto engineAssetSourceRoot = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / "EngineAssets";
+    dirHelper.ScanDirectoryRecursive(gEnv->pCryPak, engineAssetSourceRoot.c_str(), "Editor/Presets/GeomCache", filePattern, presetFiles);
 
     for (auto iter = presetFiles.begin(); iter != presetFiles.end(); ++iter)
     {
         const auto& file = *iter;
-        const AZStd::string filePath = "@engroot@/" + file;
+        const AZ::IO::FixedMaxPath filePath = engineAssetSourceRoot / file;
         m_presets.push_back(LoadConfig(Path::GetFileName(file.c_str()), XmlHelpers::LoadXmlFromFile(filePath.c_str())));
         m_ui->m_presetComboBox->addItem(m_presets.back().m_name);
     }

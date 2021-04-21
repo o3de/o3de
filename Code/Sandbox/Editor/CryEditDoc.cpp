@@ -2394,7 +2394,8 @@ void CCryEditDoc::InitEmptyLevel(int /*resolution*/, int /*unitSize*/, bool /*bU
         GetIEditor()->GetGameEngine()->SetLevelCreated(false);
 
         // Default time of day.
-        XmlNodeRef root = GetISystem()->LoadXmlFromFile("@engroot@/Editor/default_time_of_day.xml");
+        auto defaultTimeOfDayPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / "EngineAssets" / "Editor" / "default_time_of_day.xml";
+        XmlNodeRef root = GetISystem()->LoadXmlFromFile(defaultTimeOfDayPath.c_str());
         if (root)
         {
             ITimeOfDay* pTimeOfDay = gEnv->p3DEngine ? gEnv->p3DEngine->GetTimeOfDay() : nullptr;

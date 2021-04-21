@@ -377,9 +377,9 @@ private:
     // Tracks new entities that have not yet been saved.
     AZStd::unordered_set<AZ::EntityId> m_unsavedEntities;
 
-    const AZStd::string m_defaultComponentIconLocation = "Editor/Icons/Components/Component_Placeholder.svg";
-    const AZStd::string m_defaultComponentViewportIconLocation = "Editor/Icons/Components/Viewport/Component_Placeholder.png";
-    const AZStd::string m_defaultEntityIconLocation = "Editor/Icons/Components/Viewport/Transform.png";
+    const AZStd::string m_defaultComponentIconLocation = "Icons/Components/Component_Placeholder.svg";
+    const AZStd::string m_defaultComponentViewportIconLocation = "Icons/Components/Viewport/Component_Placeholder.png";
+    const AZStd::string m_defaultEntityIconLocation = "Icons/Components/Viewport/Transform.png";
 
     bool m_debugDisplayBusImplementationActive = false;
 

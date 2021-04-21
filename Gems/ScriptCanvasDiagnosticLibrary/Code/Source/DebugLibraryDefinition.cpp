@@ -34,7 +34,7 @@ namespace ScriptCanvas
                 {
                     editContext->Class<Debug>("Debug", "")->
                         ClassElement(AZ::Edit::ClassElements::EditorData, "")->
-                        Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/ScriptCanvas/Debug.png")
+                        Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/Debug.png")
                         ;
                 }
             }

@@ -376,7 +376,7 @@ namespace ScriptCanvas
                 {
                     editContext->Class<EventSender>("Unit Testing", "")->
                         ClassElement(AZ::Edit::ClassElements::EditorData, "")->
-                            Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/ScriptCanvas/Libraries/UnitTesting.png")->
+                            Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/Libraries/UnitTesting.png")->
                             Attribute(AZ::Edit::Attributes::CategoryStyle, ".method")->
                             Attribute(AZ::Edit::Attributes::Category, "Utilities/Unit Testing")->
                             Attribute(ScriptCanvas::Attributes::Node::TitlePaletteOverride, "TestingNodeTitlePalette")

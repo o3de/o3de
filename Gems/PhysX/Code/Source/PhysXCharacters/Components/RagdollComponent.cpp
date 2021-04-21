@@ -82,8 +82,8 @@ namespace PhysX
                     "PhysX Ragdoll", "Provides simulation of characters in PhysX.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
-                    ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/PhysXRagdoll.svg")
-                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/PhysXRagdoll.svg")
+                    ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXRagdoll.svg")
+                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/PhysXRagdoll.svg")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &RagdollComponent::m_positionIterations, "Position Iteration Count",

@@ -6,7 +6,7 @@
 	       PreferredClassName="Expect Equal"
            Uuid="{856DB72A-48CB-4142-A032-1253D3AB8BEC}"
            Base="ScriptCanvas::Node"
-           Icon="Editor/Icons/ScriptCanvas/ExpectEqual.png"
+           Icon="Icons/ScriptCanvas/ExpectEqual.png"
            Version="1"
            VersionConverter="ScriptCanvas::UnitTesting::ExpectComparisonVersioner"
            GeneratePropertyFriend="True"

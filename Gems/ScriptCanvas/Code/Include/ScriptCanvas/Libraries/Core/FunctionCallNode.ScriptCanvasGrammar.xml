@@ -6,7 +6,7 @@
            PreferredClassName="Function Call Node"
            Uuid="{ECFDD30E-A16D-4435-97B7-B2A4DF3C543A}"
            Base="ScriptCanvas::Node"
-           Icon="Editor/Icons/ScriptCanvas/Bus.png"
+           Icon="Icons/ScriptCanvas/Bus.png"
            Version="Version::Current"
            VersionConverter="ScriptCanvas::VersionConverters::FunctionNodeVersionConverter"
            DynamicSlotOrdering="True"

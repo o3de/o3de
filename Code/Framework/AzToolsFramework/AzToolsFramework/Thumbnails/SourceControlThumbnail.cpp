@@ -64,8 +64,8 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
         // SourceControlThumbnail
         //////////////////////////////////////////////////////////////////////////
-        static const char* WRITABLE_ICON_PATH = "Editor/Icons/AssetBrowser/Writable_16.svg";
-        static const char* NONWRITABLE_ICON_PATH = "Editor/Icons/AssetBrowser/NonWritable_16.svg";
+        static const char* WRITABLE_ICON_PATH = "Icons/AssetBrowser/Writable_16.svg";
+        static const char* NONWRITABLE_ICON_PATH = "Icons/AssetBrowser/NonWritable_16.svg";
 
         bool SourceControlThumbnail::m_readyForUpdate = true;
 

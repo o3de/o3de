@@ -363,8 +363,7 @@ namespace EditorPythonBindings
 
         auto resolveScriptPath = [&pythonPathStack](AZStd::string_view path)
         {
-            AZ::IO::Path editorScriptsPath(path);
-            editorScriptsPath /= "Editor/Scripts";
+            auto editorScriptsPath = AZ::IO::Path(path) / "Editor" / "Scripts";
             if (AZ::IO::SystemFile::Exists(editorScriptsPath.c_str()))
             {
                 pythonPathStack.emplace_back(AZStd::move(editorScriptsPath.LexicallyNormal().Native()));
@@ -372,7 +371,7 @@ namespace EditorPythonBindings
         };
 
         // The discovery order will be:
-        //   1 - engine
+        //   1 - engine-root/EngineAsets
         //   2 - gems
         //   3 - project
         //   4 - user(dev)
@@ -381,7 +380,7 @@ namespace EditorPythonBindings
         AZ::IO::FixedMaxPath engineRoot;
         if (settingsRegistry->Get(engineRoot.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder); !engineRoot.empty())
         {
-            resolveScriptPath(engineRoot.Native());
+            resolveScriptPath((engineRoot / "EngineAssets").Native());
         }
 
         // 2 - gems

@@ -6,7 +6,7 @@
            QualifiedName="StartingPointInput::InputHandlerNodeable"
            PreferredClassName="Input Handler"
            Base="ScriptCanvas::Nodeable"
-           Icon="Editor/Icons/ScriptCanvas/Bus.png"
+           Icon="Icons/ScriptCanvas/Bus.png"
            EditAttributes="AZ::Edit::Attributes::Category@Gameplay/Input"
            GraphEntryPoint="True"
            GeneratePropertyFriend="True"
