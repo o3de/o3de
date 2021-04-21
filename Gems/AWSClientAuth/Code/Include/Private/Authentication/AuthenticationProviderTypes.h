@@ -15,6 +15,14 @@
 
 namespace AWSClientAuth
 {
+    constexpr char ProvideNameEnumStringNone[] = "None";
+    constexpr char ProvideNameEnumStringAWSCognitoIDP[] = "AWSCognitoIDP";
+    constexpr char ProvideNameEnumStringLoginWithAmazon[] = "LoginWithAmazon";
+    constexpr char ProvideNameEnumStringGoogle[] = "Google";
+    constexpr char ProvideNameEnumStringApple[] = "Apple";
+    constexpr char ProvideNameEnumStringFacebook[] = "Facebook";
+    constexpr char ProvideNameEnumStringTwitch[] = "Twitch";
+    
     //! Holds Login with Amazon provider serialized settings
     class LWAProviderSetting
     {

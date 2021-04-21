@@ -18,6 +18,21 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
     # If the project_path is relative, it is evaluated relative to the ${LY_ROOT_FOLDER}
     # Otherwise the the absolute project_path is returned with symlinks resolved
     file(REAL_PATH ${project_path} project_real_path BASE_DIRECTORY ${LY_ROOT_FOLDER})
+    if(NOT project_name)
+        if(NOT EXISTS ${project_real_path}/project.json)
+            message(FATAL_ERROR "The specified project path of ${project_real_path} does not contain a project.json file")
+        else()
+            # Add the project_name to global LY_PROJECTS_TARGET_NAME property
+            file(READ "${project_real_path}/project.json" project_json)
+            string(JSON project_name ERROR_VARIABLE json_error GET ${project_json} "project_name")
+            if(json_error)
+                message(FATAL_ERROR "There is an error reading the \"project_name\" key from the '${project_real_path}/project.json' file: ${json_error}")
+            endif()
+            message(WARNING "The project located at path ${project_real_path} has a valid \"project name\" of '${project_name}' read from it's project.json file."
+                " This indicates that the ${project_real_path}/CMakeLists.txt is not properly appending the \"project name\" "
+                "to the LY_PROJECTS_TARGET_NAME global property. Other configuration errors might occur")
+        endif()
+    endif()
     ################################################################################
     # Monolithic game
     ################################################################################
@@ -32,7 +47,7 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
         unset(module_invocations)
 
         foreach(game_gem_dependency ${game_gem_dependencies})
-            # To match the convention on how gems targets vs gem modules are named, we remove the "Gem::" from prefix 
+            # To match the convention on how gems targets vs gem modules are named, we remove the "Gem::" from prefix
             # and remove the ".Static" from the suffix
             string(REGEX REPLACE "^Gem::" "Gem_" game_gem_dependency ${game_gem_dependency})
             string(REGEX REPLACE "^Project::" "Project_" game_gem_dependency ${game_gem_dependency})
@@ -48,7 +63,7 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
             ${CMAKE_CURRENT_BINARY_DIR}/${project_name}.GameLauncher/Includes/StaticModules.inl
         )
 
-        set(game_build_dependencies 
+        set(game_build_dependencies
             ${game_gem_dependencies}
             Legacy::CrySystem
             Legacy::CryFont
@@ -62,7 +77,7 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
             unset(module_invocations)
 
             foreach(server_gem_dependency ${server_gem_dependencies})
-                # To match the convention on how gems targets vs gem modules are named, we remove the "Gem::" from prefix 
+                # To match the convention on how gems targets vs gem modules are named, we remove the "Gem::" from prefix
                 # and remove the ".Static" from the suffix
                 string(REGEX REPLACE "^Gem::" "Gem_" server_gem_dependency ${server_gem_dependency})
                 string(REGEX REPLACE "^Project::" "Project_" server_gem_dependency ${server_gem_dependency})
@@ -78,7 +93,7 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
                 ${CMAKE_CURRENT_BINARY_DIR}/${project_name}.ServerLauncher/Includes/StaticModules.inl
             )
 
-            set(server_build_dependencies 
+            set(server_build_dependencies
                 ${game_gem_dependencies}
                 Legacy::CrySystem
                 Legacy::CryFont
@@ -136,7 +151,7 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
     )
     # Needs to be set manually after ly_add_target to prevent the default location overriding it
     set_target_properties(${project_name}.GameLauncher
-        PROPERTIES 
+        PROPERTIES
             FOLDER ${project_name}
     )
 
@@ -180,7 +195,7 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
             )
             # Needs to be set manually after ly_add_target to prevent the default location overriding it
             set_target_properties(${project_name}.ServerLauncher
-                PROPERTIES 
+                PROPERTIES
                     FOLDER ${project_name}
             )
         endif()

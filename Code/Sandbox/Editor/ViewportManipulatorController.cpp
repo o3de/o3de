@@ -202,6 +202,12 @@ bool ViewportManipulatorControllerInstance::HandleInputChannelEvent(const AzFram
     return interactionHandled;
 }
 
+void ViewportManipulatorControllerInstance::ResetInputChannels()
+{
+    m_pendingDoubleClicks.clear();
+    m_state = AzToolsFramework::ViewportInteraction::MouseInteraction();
+}
+
 void ViewportManipulatorControllerInstance::UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event)
 {
     m_curTime = event.m_time;

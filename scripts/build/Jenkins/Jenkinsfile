@@ -26,8 +26,7 @@ def pipelineParameters = [
     booleanParam(defaultValue: false, description: 'Deletes the contents of the output directory before building. This will cause a \"clean\" build. NOTE: does not imply CLEAN_ASSETS', name: 'CLEAN_OUTPUT_DIRECTORY'),
     booleanParam(defaultValue: false, description: 'Deletes the contents of the output directories of the AssetProcessor before building.', name: 'CLEAN_ASSETS'),
     booleanParam(defaultValue: false, description: 'Deletes the contents of the workspace and forces a complete pull.', name: 'CLEAN_WORKSPACE'),
-    booleanParam(defaultValue: false, description: 'Recreates the volume used for the workspace. The volume will be created out of a snapshot taken from main.', name: 'RECREATE_VOLUME'),
-    string(defaultValue: '', description: 'Filters and overrides the list of jobs to run for each of the below platforms (comma-separated). Can\'t be used during a pull request.', name: 'JOB_LIST_OVERRIDE')
+    booleanParam(defaultValue: false, description: 'Recreates the volume used for the workspace. The volume will be created out of a snapshot taken from main.', name: 'RECREATE_VOLUME')
 ]
 
 def palSh(cmd, lbl = '', winSlashReplacement = true) {
@@ -76,18 +75,22 @@ def palRmDir(path) {
     }
 }
 
-def IsJobEnabled(buildTypeMap, pipelineName, platformName) {
-    def job_list_override = params.JOB_LIST_OVERRIDE.tokenize(',')
+def IsPullRequest(branchName) {
+    // temporarily using the name to detect if we are in a PR
+    // In the future we will check with github
+    return branchName.startsWith('PR-')
+}
+
+def IsJobEnabled(branchName, buildTypeMap, pipelineName, platformName) {
+    if (IsPullRequest(branchName)) {
+        return buildTypeMap.value.TAGS && buildTypeMap.value.TAGS.contains(pipelineName)
+    }
+    def job_list_override = params.JOB_LIST_OVERRIDE ? params.JOB_LIST_OVERRIDE.tokenize(',') : ''
     if (!job_list_override.isEmpty()) {
         return params[platformName] && job_list_override.contains(buildTypeMap.key);
     } else {
-        if (params[platformName]) {
-            if(buildTypeMap.value.TAGS) {
-                return buildTypeMap.value.TAGS.contains(pipelineName)
-            }
-        }
+        return params[platformName] && buildTypeMap.value.TAGS && buildTypeMap.value.TAGS.contains(pipelineName)
     }
-    return false
 }
 
 def GetRunningPipelineName(JENKINS_JOB_NAME) {
@@ -270,7 +273,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String projectName, String pipeline,
         if(env.IS_UNIX) pythonCmd = 'sudo -E python -u '
         else pythonCmd = 'python -u '
 
-        if(env.RECREATE_VOLUME.toBoolean()) {
+        if(env.RECREATE_VOLUME?.toBoolean()) {
             palSh("${pythonCmd} ${INCREMENTAL_BUILD_SCRIPT_PATH} --action delete --project ${projectName} --pipeline ${pipeline} --branch ${branchName} --platform ${platform} --build_type ${buildType}", 'Deleting volume')
         }
         timeout(5) {
@@ -291,7 +294,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String projectName, String pipeline,
 
     // Cleanup previous repo location, we are currently at the root of the workspace, if we have a .git folder
     // we need to cleanup. Once all branches take this relocation, we can remove this
-    if(env.CLEAN_WORKSPACE.toBoolean() || fileExists("${workspace}/.git")) {
+    if(env.CLEAN_WORKSPACE?.toBoolean() || fileExists("${workspace}/.git")) {
         if(fileExists(workspace)) {
             palRmDir(workspace)
         }
@@ -315,7 +318,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String projectName, String pipeline,
                 script: 'python/get_python.bat'
         }
 
-        if(env.CLEAN_OUTPUT_DIRECTORY.toBoolean() || env.CLEAN_ASSETS.toBoolean()) {
+        if(env.CLEAN_OUTPUT_DIRECTORY?.toBoolean() || env.CLEAN_ASSETS?.toBoolean()) {
             def command = "${pipelineConfig.BUILD_ENTRY_POINT} --platform ${platform} --type clean"
             if (env.IS_UNIX) {
                 sh label: "Running ${platform} clean",
@@ -443,8 +446,12 @@ try {
                     pipelineConfig = LoadPipelineConfig(pipelineName, branchName)
 
                     // Add each platform as a parameter that the user can disable if needed
-                    pipelineConfig.platforms.each { platform ->
-                        pipelineParameters.add(booleanParam(defaultValue: true, description: '', name: platform.key))
+                    if (!IsPullRequest(branchName)) {
+                        pipelineParameters.add(stringParam(defaultValue: '', description: 'Filters and overrides the list of jobs to run for each of the below platforms (comma-separated). Can\'t be used during a pull request.', name: 'JOB_LIST_OVERRIDE'))
+
+                        pipelineConfig.platforms.each { platform ->
+                            pipelineParameters.add(booleanParam(defaultValue: true, description: '', name: platform.key))
+                        }
                     }
                     pipelineProperties.add(parameters(pipelineParameters))
                     properties(pipelineProperties)
@@ -457,12 +464,14 @@ try {
         }
     }
 
-    if(env.BUILD_NUMBER == '1') {
+    if(env.BUILD_NUMBER == '1' && !IsPullRequest(branchName)) {
         // Exit pipeline early on the intial build. This allows Jenkins to load the pipeline for the branch and enables users
         // to select build parameters on their first actual build. See https://issues.jenkins.io/browse/JENKINS-41929
         currentBuild.result = 'SUCCESS'
         return
     }
+
+    def someBuildHappened = false
 
     // Build and Post-Build Testing Stage
     def buildConfigs = [:]
@@ -470,10 +479,11 @@ try {
     // Platform Builds run on EC2
     pipelineConfig.platforms.each { platform ->
         platform.value.build_types.each { build_job ->
-            if (IsJobEnabled(build_job, pipelineName, platform.key)) {   // User can filter jobs, jobs are tagged by pipeline
+            if (IsJobEnabled(branchName, build_job, pipelineName, platform.key)) {   // User can filter jobs, jobs are tagged by pipeline
                 def envVars = GetBuildEnvVars(platform.value.PIPELINE_ENV ?: EMPTY_JSON, build_job.value.PIPELINE_ENV ?: EMPTY_JSON, pipelineName)
                 envVars['JOB_NAME'] = "${branchName}_${platform.key}_${build_job.key}" // backwards compatibility, some scripts rely on this
                 def nodeLabel = envVars['NODE_LABEL']
+                someBuildHappened = true
 
                 buildConfigs["${platform.key} [${build_job.key}]"] = {
                     node("${nodeLabel}") {
@@ -532,6 +542,9 @@ try {
         }
 
         echo 'All builds successful'
+    }
+    if (!someBuildHappened) {
+        currentBuild.result = 'NOT_BUILT'
     }
 }
 catch(Exception e) {
