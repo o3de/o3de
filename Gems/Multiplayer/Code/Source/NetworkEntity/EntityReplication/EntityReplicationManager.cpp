@@ -9,7 +9,7 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 *
 */
-#pragma optimize("", off)
+
 #include <Source/NetworkEntity/EntityReplication/EntityReplicationManager.h>
 #include <Source/NetworkEntity/EntityReplication/EntityReplicator.h>
 #include <Source/NetworkEntity/EntityReplication/PropertyPublisher.h>
