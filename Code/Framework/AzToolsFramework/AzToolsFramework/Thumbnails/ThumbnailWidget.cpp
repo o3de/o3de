@@ -79,7 +79,9 @@ namespace AzToolsFramework
                 int realHeight = qMin(aznumeric_cast<int>(originalWidth /aspectRatio), originalHeight);
                 int realWidth = aznumeric_cast<int>(realHeight * aspectRatio);
                 int x = (originalWidth - realWidth) / 2;
-                painter.drawPixmap(QRect(x, 0, realHeight, realWidth), pixmap);
+                // pixmap needs to be manually scaled to produce smoother result and avoid looking pixelated
+                // using painter.setRenderHint(QPainter::SmoothPixmapTransform); does not seem to work
+                painter.drawPixmap(QPoint(x, 0), pixmap.scaled(realWidth, realHeight, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
             }
             QWidget::paintEvent(event);
         }

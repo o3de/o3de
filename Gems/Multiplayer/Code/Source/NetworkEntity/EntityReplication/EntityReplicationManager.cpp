@@ -18,6 +18,7 @@
 #include <Source/EntityDomains/IEntityDomain.h>
 #include <Source/NetworkEntity/NetworkEntityUpdateMessage.h>
 #include <Source/NetworkEntity/NetworkEntityRpcMessage.h>
+#include <Source/NetworkEntity/INetworkEntityManager.h>
 #include <Source/Components/NetBindComponent.h>
 #include <Source/AutoGen/Multiplayer.AutoPackets.h>
 #include <AzNetworking/ConnectionLayer/IConnection.h>
@@ -530,7 +531,7 @@ namespace Multiplayer
         NetEntityId netEntityId,
         NetEntityRole localNetworkRole,
         AzNetworking::ISerializer& serializer,
-        [[maybe_unused]] const PrefabEntityId& prefabEntityId
+        const PrefabEntityId& prefabEntityId
     )
     {
         ConstNetworkEntityHandle replicatorEntity = GetNetworkEntityManager()->GetEntity(netEntityId);
@@ -543,7 +544,16 @@ namespace Multiplayer
         {
             // @pereslav
             //replicatorEntity = GetNetworkEntityManager()->CreateSingleEntityImmediateInternal(prefabEntityId, EntitySpawnType::Replicate, AutoActivate::DoNotActivate, netEntityId, localNetworkRole, AZ::Transform::Identity());
-            AZ_Assert(replicatorEntity != nullptr, "Failed to create entity from prefab");// %s", prefabEntityId.GetString());
+            INetworkEntityManager::EntityList entityList = GetNetworkEntityManager()->CreateEntitiesImmediate(
+                prefabEntityId, netEntityId, localNetworkRole,
+                AZ::Transform::Identity());
+
+            if (entityList.size() == 1)
+            {
+                replicatorEntity = entityList[0];
+            }
+            
+            AZ_Assert(replicatorEntity != nullptr, "Failed to create entity from prefab %s", prefabEntityId.m_prefabName.GetCStr());
             if (replicatorEntity == nullptr)
             {
                 return false;
