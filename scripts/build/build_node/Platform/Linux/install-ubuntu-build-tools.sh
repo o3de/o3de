@@ -51,17 +51,17 @@ CMAKE_DEB_REPO="'deb https://apt.kitware.com/ubuntu/ $UBUNTU_DISTRO main'"
 # Add the appropriate kitware repository to apt
 if [ "$UBUNTU_DISTRO" == "bionic" ]
 then
-    CMAKE_DISTRO_VERSION=3.20.1-0kitware1ubuntu20.04.1
+    CMAKE_DISTRO_VERSION=3.20.1-0kitware1ubuntu18.04.1
     apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main'
 elif [ "$UBUNTU_DISTRO" == "focal" ]
 then
-    CMAKE_DISTRO_VERSION=3.20.1-0kitware1ubuntu18.04.1
+    CMAKE_DISTRO_VERSION=3.20.1-0kitware1ubuntu20.04.1
     apt-add-repository 'deb https://apt.kitware.com/ubuntu/ focal main'
 fi
 apt-get update
 
 # Install cmake
-apt-get install cmake $CMAKE_DISTRO_VERSION -y
+apt-get install cmake=$CMAKE_DISTRO_VERSION -y
 
 
 #

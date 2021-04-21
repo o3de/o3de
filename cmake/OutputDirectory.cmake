@@ -9,8 +9,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-set(DIRECTXSHADERCOMPILER_BINARY_BASE_PATH "${BASE_PATH}/bin/win_x64/$<IF:$<CONFIG:Debug>,debug,release>/")
-
-set(DIRECTXSHADERCOMPILER_DXCGL_RUNTIME_DEPENDENCIES "${DIRECTXSHADERCOMPILER_BINARY_BASE_PATH}/dxcGL.exe\nCompiler/LLVMGL/$<IF:$<CONFIG:Debug>,debug,release>")
-
-set(DIRECTXSHADERCOMPILER_DXCMETAL_RUNTIME_DEPENDENCIES "${DIRECTXSHADERCOMPILER_BINARY_BASE_PATH}/dxcMetal.exe\nCompiler/LLVMMETAL/$<IF:$<CONFIG:Debug>,debug,release>")
+# Set output directories
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib CACHE PATH "Build directory for static libraries and import libraries")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin CACHE PATH "Build directory for shared libraries")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin CACHE PATH "Build directory for executables")
+set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install CACHE PATH "Installation prefix")

@@ -22,6 +22,7 @@ if(CMAKE_VERSION VERSION_EQUAL 3.19)
 endif()
 
 include(cmake/Version.cmake)
+include(cmake/OutputDirectory.cmake)
 
 if(NOT PROJECT_NAME)
     project(O3DE
@@ -30,7 +31,7 @@ if(NOT PROJECT_NAME)
     )
 endif()
 
-include(cmake/Initialize.cmake)
+include(cmake/GeneralSettings.cmake)
 include(cmake/FileUtil.cmake)
 include(cmake/PAL.cmake)
 include(cmake/PALTools.cmake)
