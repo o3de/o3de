@@ -16,6 +16,7 @@
 ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
 
 add_subdirectory(assetpipeline)
+add_subdirectory(atom_renderer)
 
 ## Physics ##
 # DISABLED - see LYN-2536

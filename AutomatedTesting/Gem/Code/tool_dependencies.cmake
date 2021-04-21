@@ -69,4 +69,6 @@ set(GEM_DEPENDENCIES
     Gem::AtomFont
     Gem::AtomToolsFramework.Editor
     Gem::Blast.Editor
+	Gem::DccScriptingInterface.Editor
+	Gem::QtForPython.Editor
 )
