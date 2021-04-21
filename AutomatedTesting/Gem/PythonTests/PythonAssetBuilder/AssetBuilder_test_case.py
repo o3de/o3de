@@ -26,8 +26,9 @@ assetId = azlmbr.asset.AssetCatalogRequestBus(azlmbr.bus.Broadcast, 'GetAssetIdB
 if (assetId.is_valid() is False):
     raise_and_stop(f'Mock AssetId is not valid! Got {assetId.to_string()} instead')
 
-if (assetId.to_string().endswith(':54c06b89') is False):
-    raise_and_stop(f'Mock AssetId has unexpected sub-id for {mockAssetPath}!')
+assetIdString = assetId.to_string()
+if (assetIdString.endswith(':528cca58') is False):
+    raise_and_stop(f'Mock AssetId {assetIdString} has unexpected sub-id for {mockAssetPath}!')
 
 print ('Mock asset exists')
 
@@ -41,12 +42,12 @@ def test_azmodel_product(generatedModelAssetPath, expectedSubId):
     else:
         print(f'Expected subId for asset ({generatedModelAssetPath}) found')
 
-test_azmodel_product('gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_center.azmodel', '10412075')
-test_azmodel_product('gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_X_positive.azmodel', '10d16e68')
-test_azmodel_product('gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_X_negative.azmodel', '10a71973')
-test_azmodel_product('gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_Y_positive.azmodel', '10130556')
-test_azmodel_product('gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_Y_negative.azmodel', '1065724d')
-test_azmodel_product('gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_Z_positive.azmodel', '1024be55')
-test_azmodel_product('gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_Z_negative.azmodel', '1052c94e')
+test_azmodel_product('gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_z_positive_1.azmodel', '10315ae0')
+test_azmodel_product('gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_z_negative_1.azmodel', '10661093')
+test_azmodel_product('gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_y_positive_1.azmodel', '10af8810')
+test_azmodel_product('gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_y_negative_1.azmodel', '10f8c263')
+test_azmodel_product('gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_x_positive_1.azmodel', '100ac47f')
+test_azmodel_product('gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_x_negative_1.azmodel', '105d8e0c')
+test_azmodel_product('gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_center_1.azmodel', '1002d464')
 
 azlmbr.editor.EditorToolsApplicationRequestBus(azlmbr.bus.Broadcast, 'ExitNoPrompt')
