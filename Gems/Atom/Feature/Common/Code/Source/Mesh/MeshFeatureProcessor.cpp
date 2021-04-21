@@ -978,7 +978,7 @@ namespace AZ
                     if (index.IsValid())
                     {
                         RPI::ShaderOptionValue value = shaderItem.GetShaderOptionGroup().GetValue(Name{ "o_materialUseForwardPassIBLSpecular" });
-                        if (value.GetIndex() != 0)
+                        if (value.GetIndex() == 1)
                         {
                             return true;
                         }
