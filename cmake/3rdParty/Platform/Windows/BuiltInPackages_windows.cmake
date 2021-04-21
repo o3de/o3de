@@ -51,7 +51,7 @@ ly_associate_package(PACKAGE_NAME googletest-1.8.1-rev4-windows      TARGETS goo
 ly_associate_package(PACKAGE_NAME googlebenchmark-1.5.0-rev2-windows TARGETS GoogleBenchmark PACKAGE_HASH 0c94ca69ae8e7e4aab8e90032b5c82c5964410429f3dd9dbb1f9bf4fe032b1d4)
 ly_associate_package(PACKAGE_NAME d3dx12-headers-rev1-windows        TARGETS d3dx12          PACKAGE_HASH 088c637159fba4a3e4c0cf08fb4921906fd4cca498939bd239db7c54b5b2f804)
 ly_associate_package(PACKAGE_NAME pyside2-qt-5.15.1-rev2-windows     TARGETS pyside2         PACKAGE_HASH c90f3efcc7c10e79b22a33467855ad861f9dbd2e909df27a5cba9db9fa3edd0f)
-ly_associate_package(PACKAGE_NAME openimageio-2.1.16.0-rev1-windows  TARGETS OpenImageIO     PACKAGE_HASH b9f6d6df180ad240b9f17a68c1862c7d8f38234de0e692e83116254b0ee467e5)
+ly_associate_package(PACKAGE_NAME openimageio-2.1.16.0-rev2-windows  TARGETS OpenImageIO     PACKAGE_HASH 85a2a6cf35cbc4c967c56ca8074babf0955c5b490c90c6e6fd23c78db99fc282)
 ly_associate_package(PACKAGE_NAME qt-5.15.2-windows                  TARGETS Qt              PACKAGE_HASH edaf954c647c99727bfd313dab2959803d2df0873914bb96368c3d8286eed6d9)
 ly_associate_package(PACKAGE_NAME libsamplerate-0.2.1-rev2-windows   TARGETS libsamplerate   PACKAGE_HASH dcf3c11a96f212a52e2c9241abde5c364ee90b0f32fe6eeb6dcdca01d491829f)
 ly_associate_package(PACKAGE_NAME OpenMesh-8.1-rev1-windows          TARGETS OpenMesh        PACKAGE_HASH 1c1df639358526c368e790dfce40c45cbdfcfb1c9a041b9d7054a8949d88ee77)
