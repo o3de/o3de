@@ -25,7 +25,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedT
         TIMEOUT 1200
         RUNTIME_DEPENDENCIES
             AssetProcessor
-            AtomTest.Assets
+            AutomatedTesting.Assets
             Editor
     )
 endif()

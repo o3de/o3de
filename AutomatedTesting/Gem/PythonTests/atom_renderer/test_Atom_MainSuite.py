@@ -48,22 +48,7 @@ class TestAtomLevels(object):
 
         request.addfinalizer(teardown)
 
-    @pytest.mark.test_case_id(
-        "C34428159",
-        "C34428160",
-        "C34428161",
-        "C34428162",
-        "C34428163",
-        "C34428165",
-        "C34428166",
-        "C34428167",
-        "C34428158",
-        "C34428172",
-        "C34428173",
-        "C34428174",
-        "C34428175",
-    )
-
+    @pytest.mark.test_case_id("C34428159")  # Level: ActorTest_100Actors
     def test_AllLevels_OpenClose(self, request, editor, level, workspace, project, launcher_platform):
 
         cfg_args = [level]

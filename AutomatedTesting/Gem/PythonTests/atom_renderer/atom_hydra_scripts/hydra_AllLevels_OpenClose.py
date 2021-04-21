@@ -23,7 +23,7 @@ from automatedtesting_shared.editor_test_helper import EditorTestHelper
 LEVELS = os.listdir(os.path.join(azlmbr.paths.devroot, "AutomatedTesting", "Levels", "AtomLevels"))
 
 
-class TestAllLevelsOpenClose(EditorTestHelper):
+class HydraAtomLevels(EditorTestHelper):
     """Tests that all expected Atom levels can be opened and load successfully."""
     def __init__(self):
         EditorTestHelper.__init__(self, log_prefix="Atom_TestAllLevelsOpenClose", args=["level"])
@@ -101,5 +101,5 @@ class TestAllLevelsOpenClose(EditorTestHelper):
             general.log(f"The following levels failed to open: {failed_to_open}")
 
 
-test = TestAllLevelsOpenClose()
+test = HydraAtomLevels()
 test.run()
