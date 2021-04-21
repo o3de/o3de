@@ -11,10 +11,12 @@
  */
 
 #include <AtomToolsFramework/Debug/TraceRecorder.h>
+#include <AzCore/StringFunc/StringFunc.h>
 
 namespace AtomToolsFramework
 {
-    TraceRecorder::TraceRecorder()
+    TraceRecorder::TraceRecorder(size_t maxMessageCount)
+        : m_maxMessageCount(maxMessageCount)
     {
         AZ::Debug::TraceMessageBus::Handler::BusConnect();
     }
@@ -24,42 +26,55 @@ namespace AtomToolsFramework
         AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
     }
 
+    AZStd::string TraceRecorder::GetDump() const
+    {
+        AZStd::string dump;
+        AZ::StringFunc::Join(dump, m_messages.begin(), m_messages.end(), "\n");
+        return dump;
+    }
+
     bool TraceRecorder::OnAssert(const char* message)
     {
-        m_messageSink += "Assert: ";
-        m_messageSink += message;
-        m_messageSink += "\n";
+        if (m_messages.size() < m_maxMessageCount)
+        {
+            m_messages.push_back(AZStd::string::format("Assert: %s", message));
+        }
         return false;
     }
 
     bool TraceRecorder::OnException(const char* message)
     {
-        m_messageSink += "Exception: ";
-        m_messageSink += message;
-        m_messageSink += "\n";
+        if (m_messages.size() < m_maxMessageCount)
+        {
+            m_messages.push_back(AZStd::string::format("Exception: %s", message));
+        }
         return false;
     }
 
     bool TraceRecorder::OnError(const char* /*window*/, const char* message)
     {
-        m_messageSink += "Error: ";
-        m_messageSink += message;
-        m_messageSink += "\n";
+        if (m_messages.size() < m_maxMessageCount)
+        {
+            m_messages.push_back(AZStd::string::format("Error: %s", message));
+        }
         return false;
     }
 
     bool TraceRecorder::OnWarning(const char* /*window*/, const char* message)
     {
-        m_messageSink += "Warning: ";
-        m_messageSink += message;
-        m_messageSink += "\n";
+        if (m_messages.size() < m_maxMessageCount)
+        {
+            m_messages.push_back(AZStd::string::format("Warning: %s", message));
+        }
         return false;
     }
 
     bool TraceRecorder::OnPrintf(const char* /*window*/, const char* message)
     {
-        m_messageSink += message;
-        m_messageSink += "\n";
+        if (m_messages.size() < m_maxMessageCount)
+        {
+            m_messages.push_back(AZStd::string::format("%s", message));
+        }
         return false;
     }
 
