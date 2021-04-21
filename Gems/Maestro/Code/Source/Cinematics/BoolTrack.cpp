@@ -111,23 +111,29 @@ static bool BoolTrackVersionConverter(
 }
 
 template<>
-inline void TAnimTrack<IBoolKey>::Reflect(AZ::SerializeContext* serializeContext)
+inline void TAnimTrack<IBoolKey>::Reflect(AZ::ReflectContext* context)
 {
-    serializeContext->Class<TAnimTrack<IBoolKey>, IAnimTrack>()
-        ->Version(3, &BoolTrackVersionConverter)
-        ->Field("Flags", &TAnimTrack<IBoolKey>::m_flags)
-        ->Field("Range", &TAnimTrack<IBoolKey>::m_timeRange)
-        ->Field("ParamType", &TAnimTrack<IBoolKey>::m_nParamType)
-        ->Field("Keys", &TAnimTrack<IBoolKey>::m_keys)
-        ->Field("Id", &TAnimTrack<IBoolKey>::m_id);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<TAnimTrack<IBoolKey>, IAnimTrack>()
+            ->Version(3, &BoolTrackVersionConverter)
+            ->Field("Flags", &TAnimTrack<IBoolKey>::m_flags)
+            ->Field("Range", &TAnimTrack<IBoolKey>::m_timeRange)
+            ->Field("ParamType", &TAnimTrack<IBoolKey>::m_nParamType)
+            ->Field("Keys", &TAnimTrack<IBoolKey>::m_keys)
+            ->Field("Id", &TAnimTrack<IBoolKey>::m_id);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CBoolTrack::Reflect(AZ::SerializeContext* serializeContext)
+void CBoolTrack::Reflect(AZ::ReflectContext* context)
 {
-    TAnimTrack<IBoolKey>::Reflect(serializeContext);
+    TAnimTrack<IBoolKey>::Reflect(context);
 
-    serializeContext->Class<CBoolTrack, TAnimTrack<IBoolKey>>()
-        ->Version(1)
-        ->Field("DefaultValue", &CBoolTrack::m_bDefaultValue);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<CBoolTrack, TAnimTrack<IBoolKey>>()
+            ->Version(1)
+            ->Field("DefaultValue", &CBoolTrack::m_bDefaultValue);
+    }
 }

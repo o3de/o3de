@@ -172,22 +172,28 @@ static bool EventTrackVersionConverter(
 }
 
 template<>
-inline void TAnimTrack<IEventKey>::Reflect(AZ::SerializeContext* serializeContext)
+inline void TAnimTrack<IEventKey>::Reflect(AZ::ReflectContext* context)
 {
-    serializeContext->Class<TAnimTrack<IEventKey>, IAnimTrack>()
-        ->Version(3, &EventTrackVersionConverter)
-        ->Field("Flags", &TAnimTrack<IEventKey>::m_flags)
-        ->Field("Range", &TAnimTrack<IEventKey>::m_timeRange)
-        ->Field("ParamType", &TAnimTrack<IEventKey>::m_nParamType)
-        ->Field("Keys", &TAnimTrack<IEventKey>::m_keys)
-        ->Field("Id", &TAnimTrack<IEventKey>::m_id);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<TAnimTrack<IEventKey>, IAnimTrack>()
+            ->Version(3, &EventTrackVersionConverter)
+            ->Field("Flags", &TAnimTrack<IEventKey>::m_flags)
+            ->Field("Range", &TAnimTrack<IEventKey>::m_timeRange)
+            ->Field("ParamType", &TAnimTrack<IEventKey>::m_nParamType)
+            ->Field("Keys", &TAnimTrack<IEventKey>::m_keys)
+            ->Field("Id", &TAnimTrack<IEventKey>::m_id);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CTrackEventTrack::Reflect(AZ::SerializeContext* serializeContext)
+void CTrackEventTrack::Reflect(AZ::ReflectContext* context)
 {
-    TAnimTrack<IEventKey>::Reflect(serializeContext);
+    TAnimTrack<IEventKey>::Reflect(context);
 
-    serializeContext->Class<CTrackEventTrack, TAnimTrack<IEventKey>>()
-        ->Version(1);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<CTrackEventTrack, TAnimTrack<IEventKey>>()
+            ->Version(1);
+    }
 }

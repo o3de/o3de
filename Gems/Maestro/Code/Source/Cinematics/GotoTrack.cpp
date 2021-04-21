@@ -169,22 +169,28 @@ static bool GotoTrackVersionConverter(
 }
 
 template<>
-inline void TAnimTrack<IDiscreteFloatKey>::Reflect(AZ::SerializeContext* serializeContext)
+inline void TAnimTrack<IDiscreteFloatKey>::Reflect(AZ::ReflectContext* context)
 {
-    serializeContext->Class<TAnimTrack<IDiscreteFloatKey>, IAnimTrack>()
-        ->Version(3, &GotoTrackVersionConverter)
-        ->Field("Flags", &TAnimTrack<IDiscreteFloatKey>::m_flags)
-        ->Field("Range", &TAnimTrack<IDiscreteFloatKey>::m_timeRange)
-        ->Field("ParamType", &TAnimTrack<IDiscreteFloatKey>::m_nParamType)
-        ->Field("Keys", &TAnimTrack<IDiscreteFloatKey>::m_keys)
-        ->Field("Id", &TAnimTrack<IDiscreteFloatKey>::m_id);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<TAnimTrack<IDiscreteFloatKey>, IAnimTrack>()
+            ->Version(3, &GotoTrackVersionConverter)
+            ->Field("Flags", &TAnimTrack<IDiscreteFloatKey>::m_flags)
+            ->Field("Range", &TAnimTrack<IDiscreteFloatKey>::m_timeRange)
+            ->Field("ParamType", &TAnimTrack<IDiscreteFloatKey>::m_nParamType)
+            ->Field("Keys", &TAnimTrack<IDiscreteFloatKey>::m_keys)
+            ->Field("Id", &TAnimTrack<IDiscreteFloatKey>::m_id);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CGotoTrack::Reflect(AZ::SerializeContext* serializeContext)
+void CGotoTrack::Reflect(AZ::ReflectContext* context)
 {
-    TAnimTrack<IDiscreteFloatKey>::Reflect(serializeContext);
+    TAnimTrack<IDiscreteFloatKey>::Reflect(context);
 
-    serializeContext->Class<CGotoTrack, TAnimTrack<IDiscreteFloatKey> >()
-        ->Version(1);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<CGotoTrack, TAnimTrack<IDiscreteFloatKey>>()
+            ->Version(1);
+    }
 }

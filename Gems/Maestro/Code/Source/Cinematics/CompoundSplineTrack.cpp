@@ -616,16 +616,19 @@ static bool CompoundSplineTrackVersionConverter(
     return true;
 }
 
-void CCompoundSplineTrack::Reflect(AZ::SerializeContext* serializeContext)
+void CCompoundSplineTrack::Reflect(AZ::ReflectContext* context)
 {
-    serializeContext->Class<CCompoundSplineTrack, IAnimTrack>()
-        ->Version(4, &CompoundSplineTrackVersionConverter)
-        ->Field("Flags", &CCompoundSplineTrack::m_flags)
-        ->Field("ParamType", &CCompoundSplineTrack::m_nParamType)
-        ->Field("NumSubTracks", &CCompoundSplineTrack::m_nDimensions)
-        ->Field("SubTracks", &CCompoundSplineTrack::m_subTracks)
-        ->Field("SubTrackNames", &CCompoundSplineTrack::m_subTrackNames)
-        ->Field("ValueType", &CCompoundSplineTrack::m_valueType)
-        ->Field("Expanded", &CCompoundSplineTrack::m_expanded)
-        ->Field("Id", &CCompoundSplineTrack::m_id);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<CCompoundSplineTrack, IAnimTrack>()
+            ->Version(4, &CompoundSplineTrackVersionConverter)
+            ->Field("Flags", &CCompoundSplineTrack::m_flags)
+            ->Field("ParamType", &CCompoundSplineTrack::m_nParamType)
+            ->Field("NumSubTracks", &CCompoundSplineTrack::m_nDimensions)
+            ->Field("SubTracks", &CCompoundSplineTrack::m_subTracks)
+            ->Field("SubTrackNames", &CCompoundSplineTrack::m_subTrackNames)
+            ->Field("ValueType", &CCompoundSplineTrack::m_valueType)
+            ->Field("Expanded", &CCompoundSplineTrack::m_expanded)
+            ->Field("Id", &CCompoundSplineTrack::m_id);
+    }
 }

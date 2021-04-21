@@ -96,22 +96,28 @@ static bool SequencTrackVersionConverter(
 }
 
 template<>
-inline void TAnimTrack<ISequenceKey>::Reflect(AZ::SerializeContext* serializeContext)
+inline void TAnimTrack<ISequenceKey>::Reflect(AZ::ReflectContext* context)
 {
-    serializeContext->Class<TAnimTrack<ISequenceKey>, IAnimTrack>()
-        ->Version(3, &SequencTrackVersionConverter)
-        ->Field("Flags", &TAnimTrack<ISequenceKey>::m_flags)
-        ->Field("Range", &TAnimTrack<ISequenceKey>::m_timeRange)
-        ->Field("ParamType", &TAnimTrack<ISequenceKey>::m_nParamType)
-        ->Field("Keys", &TAnimTrack<ISequenceKey>::m_keys)
-        ->Field("Id", &TAnimTrack<ISequenceKey>::m_id);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<TAnimTrack<ISequenceKey>, IAnimTrack>()
+            ->Version(3, &SequencTrackVersionConverter)
+            ->Field("Flags", &TAnimTrack<ISequenceKey>::m_flags)
+            ->Field("Range", &TAnimTrack<ISequenceKey>::m_timeRange)
+            ->Field("ParamType", &TAnimTrack<ISequenceKey>::m_nParamType)
+            ->Field("Keys", &TAnimTrack<ISequenceKey>::m_keys)
+            ->Field("Id", &TAnimTrack<ISequenceKey>::m_id);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CSequenceTrack::Reflect(AZ::SerializeContext* serializeContext)
+void CSequenceTrack::Reflect(AZ::ReflectContext* context)
 {
-    TAnimTrack<ISequenceKey>::Reflect(serializeContext);
+    TAnimTrack<ISequenceKey>::Reflect(context);
 
-    serializeContext->Class<CSequenceTrack, TAnimTrack<ISequenceKey> >()
-        ->Version(1);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<CSequenceTrack, TAnimTrack<ISequenceKey> >()
+            ->Version(1);
+    }
 }

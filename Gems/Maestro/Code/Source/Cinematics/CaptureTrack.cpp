@@ -84,22 +84,28 @@ static bool CaptureTrackVersionConverter(
 }
 
 template<>
-inline void TAnimTrack<ICaptureKey>::Reflect(AZ::SerializeContext* serializeContext)
+inline void TAnimTrack<ICaptureKey>::Reflect(AZ::ReflectContext* context)
 {
-    serializeContext->Class<TAnimTrack<ICaptureKey>, IAnimTrack>()
-        ->Version(3, &CaptureTrackVersionConverter)
-        ->Field("Flags", &TAnimTrack<ICaptureKey>::m_flags)
-        ->Field("Range", &TAnimTrack<ICaptureKey>::m_timeRange)
-        ->Field("ParamType", &TAnimTrack<ICaptureKey>::m_nParamType)
-        ->Field("Keys", &TAnimTrack<ICaptureKey>::m_keys)
-        ->Field("Id", &TAnimTrack<ICaptureKey>::m_id);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<TAnimTrack<ICaptureKey>, IAnimTrack>()
+            ->Version(3, &CaptureTrackVersionConverter)
+            ->Field("Flags", &TAnimTrack<ICaptureKey>::m_flags)
+            ->Field("Range", &TAnimTrack<ICaptureKey>::m_timeRange)
+            ->Field("ParamType", &TAnimTrack<ICaptureKey>::m_nParamType)
+            ->Field("Keys", &TAnimTrack<ICaptureKey>::m_keys)
+            ->Field("Id", &TAnimTrack<ICaptureKey>::m_id);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CCaptureTrack::Reflect(AZ::SerializeContext* serializeContext)
+void CCaptureTrack::Reflect(AZ::ReflectContext* context)
 {
-    TAnimTrack<ICaptureKey>::Reflect(serializeContext);
+    TAnimTrack<ICaptureKey>::Reflect(context);
 
-    serializeContext->Class<CCaptureTrack, TAnimTrack<ICaptureKey> >()
-        ->Version(1);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<CCaptureTrack, TAnimTrack<ICaptureKey>>()
+            ->Version(1);
+    }
 }

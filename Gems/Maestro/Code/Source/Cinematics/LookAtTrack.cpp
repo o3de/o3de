@@ -92,23 +92,29 @@ static bool LookAtTrackVersionConverter(
 }
 
 template<>
-inline void TAnimTrack<ILookAtKey>::Reflect(AZ::SerializeContext* serializeContext)
+inline void TAnimTrack<ILookAtKey>::Reflect(AZ::ReflectContext* context)
 {
-    serializeContext->Class<TAnimTrack<ILookAtKey>, IAnimTrack>()
-        ->Version(3, &LookAtTrackVersionConverter)
-        ->Field("Flags", &TAnimTrack<ILookAtKey>::m_flags)
-        ->Field("Range", &TAnimTrack<ILookAtKey>::m_timeRange)
-        ->Field("ParamType", &TAnimTrack<ILookAtKey>::m_nParamType)
-        ->Field("Keys", &TAnimTrack<ILookAtKey>::m_keys)
-        ->Field("Id", &TAnimTrack<ILookAtKey>::m_id);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<TAnimTrack<ILookAtKey>, IAnimTrack>()
+            ->Version(3, &LookAtTrackVersionConverter)
+            ->Field("Flags", &TAnimTrack<ILookAtKey>::m_flags)
+            ->Field("Range", &TAnimTrack<ILookAtKey>::m_timeRange)
+            ->Field("ParamType", &TAnimTrack<ILookAtKey>::m_nParamType)
+            ->Field("Keys", &TAnimTrack<ILookAtKey>::m_keys)
+            ->Field("Id", &TAnimTrack<ILookAtKey>::m_id);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CLookAtTrack::Reflect(AZ::SerializeContext* serializeContext)
+void CLookAtTrack::Reflect(AZ::ReflectContext* context)
 {
-    TAnimTrack<ILookAtKey>::Reflect(serializeContext);
+    TAnimTrack<ILookAtKey>::Reflect(context);
 
-    serializeContext->Class<CLookAtTrack, TAnimTrack<ILookAtKey> >()
-        ->Version(1)
-        ->Field("AnimationLayer", &CLookAtTrack::m_iAnimationLayer);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<CLookAtTrack, TAnimTrack<ILookAtKey>>()
+            ->Version(1)
+            ->Field("AnimationLayer", &CLookAtTrack::m_iAnimationLayer);
+    }
 }

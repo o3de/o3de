@@ -60,22 +60,28 @@ static bool ConsoleTrackVersionConverter(
 }
 
 template<>
-inline void TAnimTrack<IConsoleKey>::Reflect(AZ::SerializeContext* serializeContext)
+inline void TAnimTrack<IConsoleKey>::Reflect(AZ::ReflectContext* context)
 {
-    serializeContext->Class<TAnimTrack<IConsoleKey>, IAnimTrack>()
-        ->Version(3, &ConsoleTrackVersionConverter)
-        ->Field("Flags", &TAnimTrack<IConsoleKey>::m_flags)
-        ->Field("Range", &TAnimTrack<IConsoleKey>::m_timeRange)
-        ->Field("ParamType", &TAnimTrack<IConsoleKey>::m_nParamType)
-        ->Field("Keys", &TAnimTrack<IConsoleKey>::m_keys)
-        ->Field("Id", &TAnimTrack<IConsoleKey>::m_id);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<TAnimTrack<IConsoleKey>, IAnimTrack>()
+            ->Version(3, &ConsoleTrackVersionConverter)
+            ->Field("Flags", &TAnimTrack<IConsoleKey>::m_flags)
+            ->Field("Range", &TAnimTrack<IConsoleKey>::m_timeRange)
+            ->Field("ParamType", &TAnimTrack<IConsoleKey>::m_nParamType)
+            ->Field("Keys", &TAnimTrack<IConsoleKey>::m_keys)
+            ->Field("Id", &TAnimTrack<IConsoleKey>::m_id);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CConsoleTrack::Reflect(AZ::SerializeContext* serializeContext)
+void CConsoleTrack::Reflect(AZ::ReflectContext* context)
 {
-    TAnimTrack<IConsoleKey>::Reflect(serializeContext);
+    TAnimTrack<IConsoleKey>::Reflect(context);
 
-    serializeContext->Class<CConsoleTrack, TAnimTrack<IConsoleKey> >()
-        ->Version(1);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<CConsoleTrack, TAnimTrack<IConsoleKey> >()
+            ->Version(1);
+    }
 }

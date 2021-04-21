@@ -284,17 +284,20 @@ static bool AnimNodeVersionConverter(
     return true;
 }
 
-void CAnimNode::Reflect(AZ::SerializeContext* serializeContext)
+void CAnimNode::Reflect(AZ::ReflectContext* context)
 {
-    serializeContext->Class<CAnimNode, IAnimNode>()
-        ->Version(3, &AnimNodeVersionConverter)
-        ->Field("ID", &CAnimNode::m_id)
-        ->Field("Name", &CAnimNode::m_name)
-        ->Field("Flags", &CAnimNode::m_flags)
-        ->Field("Tracks", &CAnimNode::m_tracks)
-        ->Field("Parent", &CAnimNode::m_parentNodeId)
-        ->Field("Type", &CAnimNode::m_nodeType)
-        ->Field("Expanded", &CAnimNode::m_expanded);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<CAnimNode, IAnimNode>()
+            ->Version(3, &AnimNodeVersionConverter)
+            ->Field("ID", &CAnimNode::m_id)
+            ->Field("Name", &CAnimNode::m_name)
+            ->Field("Flags", &CAnimNode::m_flags)
+            ->Field("Tracks", &CAnimNode::m_tracks)
+            ->Field("Parent", &CAnimNode::m_parentNodeId)
+            ->Field("Type", &CAnimNode::m_nodeType)
+            ->Field("Expanded", &CAnimNode::m_expanded);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////

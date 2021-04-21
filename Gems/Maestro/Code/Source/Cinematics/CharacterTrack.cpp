@@ -163,15 +163,18 @@ static bool CharacterTrackVersionConverter(
 }
 
 template<>
-inline void TAnimTrack<ICharacterKey>::Reflect(AZ::SerializeContext* serializeContext)
+inline void TAnimTrack<ICharacterKey>::Reflect(AZ::ReflectContext* context)
 {
-    serializeContext->Class<TAnimTrack<ICharacterKey>, IAnimTrack>()
-        ->Version(3, &CharacterTrackVersionConverter)
-        ->Field("Flags", &TAnimTrack<ICharacterKey>::m_flags)
-        ->Field("Range", &TAnimTrack<ICharacterKey>::m_timeRange)
-        ->Field("ParamType", &TAnimTrack<ICharacterKey>::m_nParamType)
-        ->Field("Keys", &TAnimTrack<ICharacterKey>::m_keys)
-        ->Field("Id", &TAnimTrack<ICharacterKey>::m_id);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<TAnimTrack<ICharacterKey>, IAnimTrack>()
+            ->Version(3, &CharacterTrackVersionConverter)
+            ->Field("Flags", &TAnimTrack<ICharacterKey>::m_flags)
+            ->Field("Range", &TAnimTrack<ICharacterKey>::m_timeRange)
+            ->Field("ParamType", &TAnimTrack<ICharacterKey>::m_nParamType)
+            ->Field("Keys", &TAnimTrack<ICharacterKey>::m_keys)
+            ->Field("Id", &TAnimTrack<ICharacterKey>::m_id);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -181,11 +184,14 @@ AnimValueType CCharacterTrack::GetValueType()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CCharacterTrack::Reflect(AZ::SerializeContext* serializeContext)
+void CCharacterTrack::Reflect(AZ::ReflectContext* context)
 {
-    TAnimTrack<ICharacterKey>::Reflect(serializeContext);
+    TAnimTrack<ICharacterKey>::Reflect(context);
 
-    serializeContext->Class<CCharacterTrack, TAnimTrack<ICharacterKey> >()
-        ->Version(1)
-        ->Field("AnimationLayer", &CCharacterTrack::m_iAnimationLayer);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<CCharacterTrack, TAnimTrack<ICharacterKey>>()
+            ->Version(1)
+            ->Field("AnimationLayer", &CCharacterTrack::m_iAnimationLayer);
+    }
 }

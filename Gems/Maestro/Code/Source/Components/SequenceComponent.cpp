@@ -106,18 +106,16 @@ namespace Maestro
     {
     }
 
-    /*static*/ void SequenceComponent::Reflect(AZ::ReflectContext* context)
+    void SequenceComponent::Reflect(AZ::ReflectContext* context)
     {
-        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
-        
-        if (serializeContext)
+        // Reflect the Cinematics library
+        ReflectCinematicsLib(context);
+
+        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<SequenceComponent, AZ::Component>()
                 ->Version(2)
                 ->Field("Sequence", &SequenceComponent::m_sequence);
-
-            // Reflect the Cinematics library
-            ReflectCinematicsLib(serializeContext);
         }
 
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
@@ -142,7 +140,7 @@ namespace Maestro
         }
     }
 
-    /*static*/ void SequenceComponent::ReflectCinematicsLib(AZ::SerializeContext* context)
+    void SequenceComponent::ReflectCinematicsLib(AZ::ReflectContext* context)
     {
         // The Movie System itself
         CMovieSystem::Reflect(context);

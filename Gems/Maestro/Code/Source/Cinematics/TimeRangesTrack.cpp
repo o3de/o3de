@@ -113,22 +113,28 @@ static bool TimeRangesTrackVersionConverter(
 }
 
 template<>
-inline void TAnimTrack<ITimeRangeKey>::Reflect(AZ::SerializeContext* serializeContext)
+inline void TAnimTrack<ITimeRangeKey>::Reflect(AZ::ReflectContext* context)
 {
-    serializeContext->Class<TAnimTrack<ITimeRangeKey>, IAnimTrack>()
-        ->Version(3, &TimeRangesTrackVersionConverter)
-        ->Field("Flags", &TAnimTrack<ITimeRangeKey>::m_flags)
-        ->Field("Range", &TAnimTrack<ITimeRangeKey>::m_timeRange)
-        ->Field("ParamType", &TAnimTrack<ITimeRangeKey>::m_nParamType)
-        ->Field("Keys", &TAnimTrack<ITimeRangeKey>::m_keys)
-        ->Field("Id", &TAnimTrack<ITimeRangeKey>::m_id);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<TAnimTrack<ITimeRangeKey>, IAnimTrack>()
+            ->Version(3, &TimeRangesTrackVersionConverter)
+            ->Field("Flags", &TAnimTrack<ITimeRangeKey>::m_flags)
+            ->Field("Range", &TAnimTrack<ITimeRangeKey>::m_timeRange)
+            ->Field("ParamType", &TAnimTrack<ITimeRangeKey>::m_nParamType)
+            ->Field("Keys", &TAnimTrack<ITimeRangeKey>::m_keys)
+            ->Field("Id", &TAnimTrack<ITimeRangeKey>::m_id);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CTimeRangesTrack::Reflect(AZ::SerializeContext* serializeContext)
+void CTimeRangesTrack::Reflect(AZ::ReflectContext* context)
 {
-    TAnimTrack<ITimeRangeKey>::Reflect(serializeContext);
+    TAnimTrack<ITimeRangeKey>::Reflect(context);
 
-    serializeContext->Class<CTimeRangesTrack, TAnimTrack<ITimeRangeKey>>()
-        ->Version(1);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<CTimeRangesTrack, TAnimTrack<ITimeRangeKey>>()
+            ->Version(1);
+    }
 }
