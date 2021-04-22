@@ -18,6 +18,8 @@
 
 namespace NvCloth
 {
+    struct MeshNodeInfo;
+
     //! Maximum number of bones that can influence a particle.
     static const int MaxSkinningBones = 4;
 
@@ -42,7 +44,7 @@ namespace NvCloth
 
         static AZStd::unique_ptr<ActorClothSkinning> Create(
             AZ::EntityId entityId, 
-            const AZStd::string& meshNode,
+            const MeshNodeInfo& meshNodeInfo,
             const size_t numSimParticles,
             const AZStd::vector<int>& meshRemappedVertices);
 
