@@ -49,7 +49,7 @@ namespace Multiplayer
         : AZ::Module()
     {
         m_descriptors.insert(m_descriptors.end(), {
-                MultiplayerToolsSystemComponent::CreateDescriptor(),
+            MultiplayerToolsSystemComponent::CreateDescriptor(),
         });
     }
 

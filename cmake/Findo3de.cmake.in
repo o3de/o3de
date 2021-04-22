@@ -15,7 +15,7 @@ include(FindPackageHandleStandardArgs)
 
 # This will be called from within the installed engine's CMakeLists.txt
 macro(ly_find_o3de_packages)
-    @FIND_PACKAGES_PLACEHOLDER@
+@FIND_PACKAGES_PLACEHOLDER@
     find_package(LauncherGenerator)
 endmacro()
 

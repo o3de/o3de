@@ -60,7 +60,6 @@ AZ_POP_DISABLE_WARNING
 
 // Editor
 #include "Resource.h"
-#include "EditTool.h"
 #include "Core/LevelEditorMenuHandler.h"
 #include "ShortcutDispatcher.h"
 #include "LayoutWnd.h"
@@ -268,15 +267,6 @@ namespace
     bool PyIsViewPaneVisible(const char* viewClassName)
     {
         return QtViewPaneManager::instance()->IsVisible(viewClassName);
-    }
-
-    AZStd::string PyGetStatusText()
-    {
-        if (GetIEditor()->GetEditTool())
-        {
-            return AZStd::string(GetIEditor()->GetEditTool()->GetStatusText().toUtf8().data());
-        }
-        return AZStd::string("");
     }
 
     AZStd::vector<AZStd::string> PyGetViewPaneNames()
@@ -693,7 +683,6 @@ void MainWindow::closeEvent(QCloseEvent* event)
     }
     // Close all edit panels.
     GetIEditor()->ClearSelection();
-    GetIEditor()->SetEditTool(0);
     GetIEditor()->GetObjectManager()->EndEditParams();
 
     // force clean up of all deferred deletes, so that we don't have any issues with windows from plugins not being deleted yet
@@ -1104,11 +1093,6 @@ void MainWindow::InitActions()
             .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSelected)
             .SetIcon(Style::icon("Align_to_grid"))
             .SetApplyHoverEffect();
-        am->AddAction(ID_MODIFY_ALIGNOBJTOSURF, tr("Align object to surface (Hold CTRL)")).SetCheckable(true)
-            .SetToolTip(tr("Align object to surface  (Hold CTRL)"))
-            .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateAlignToVoxel)
-            .SetIcon(Style::icon("Align_object_to_surface"))
-            .SetApplyHoverEffect();
     }
 
     am->AddAction(ID_SNAP_TO_GRID, tr("Snap to grid"))
@@ -1459,10 +1443,6 @@ void MainWindow::InitActions()
             .SetIcon(QIcon(":/MainWindow/toolbars/object_toolbar-03.svg"))
             .SetApplyHoverEffect()
             .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSelected);
-        // vertex snapping not yet supported when the new Viewport Interaction Model is enabled
-        am->AddAction(ID_OBJECTMODIFY_VERTEXSNAPPING, tr("Vertex snapping"))
-            .SetIcon(Style::icon("Vertex_snapping"))
-            .SetApplyHoverEffect();
     }
 
     // Misc Toolbar Actions
@@ -1510,8 +1490,6 @@ void MainWindow::OnEscapeAction()
         {
             AzToolsFramework::EditorEvents::Bus::Broadcast(
                 &AzToolsFramework::EditorEvents::OnEscape);
-
-            CCryEditApp::instance()->OnEditEscape();
         }
     }
 }
@@ -2640,7 +2618,6 @@ namespace AzToolsFramework
             addLegacyGeneral(behaviorContext->Method("exit", PyExit, nullptr, "Exits the editor."));
             addLegacyGeneral(behaviorContext->Method("exit_no_prompt", PyExitNoPrompt, nullptr, "Exits the editor without prompting to save first."));
             addLegacyGeneral(behaviorContext->Method("report_test_result", PyReportTest, nullptr, "Report test information."));
-            addLegacyGeneral(behaviorContext->Method("get_status_text", PyGetStatusText, nullptr, "Gets the status text from the Editor's current edit tool"));
         }
     }
 }
