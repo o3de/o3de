@@ -27,7 +27,10 @@ def get_mesh_node_names(sceneGraph):
         nodeContent = sceneGraph.get_node_content(node)
         if nodeContent is not None and nodeContent.CastWithTypeName('MeshData'):
             if sceneGraph.is_node_end_point(node) is False:
-                meshDataList.append(sceneData.SceneGraphName(sceneGraph.get_node_name(node)))
+                nodeName = sceneData.SceneGraphName(sceneGraph.get_node_name(node))
+                nodePath = nodeName.get_path()
+                if (len(nodeName.get_path())):
+                    meshDataList.append(sceneData.SceneGraphName(sceneGraph.get_node_name(node)))
 
         # advance to next node
         if sceneGraph.has_node_sibling(node):
