@@ -656,14 +656,14 @@ class AssetProcessor(object):
 
         :return: None
         """
-        for copy_dir in [self._workspace.project, 'Engine']:
+        for copy_dir in [self._workspace.project, 'EngineAssets/Engine']:
             make_dir = os.path.join(self._temp_asset_root, copy_dir)
             if not os.path.isdir(make_dir):
                 os.makedirs(make_dir)
         for copyfile_name in ['bootstrap.cfg',
                               'AssetProcessorPlatformConfig.setreg',
                               os.path.join(self._workspace.project, "project.json"),
-                              os.path.join('Engine', 'exclude.filetag')]:
+                              os.path.join('EngineAssets', 'Engine', 'exclude.filetag')]:
             shutil.copyfile(os.path.join(self._workspace.paths.engine_root(), copyfile_name),
                             os.path.join(self._temp_asset_root, copyfile_name))
 
