@@ -155,24 +155,27 @@ namespace AzToolsFramework
             auto prefabEditorEntityOwnershipInterface = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
             if (!prefabEditorEntityOwnershipInterface)
             {
-                return AZ::Failure(AZStd::string("Could not create a new prefab out of the entities provided - internal error "
+                return AZ::Failure(AZStd::string("Could not instantiate prefab - internal error "
                                                  "(PrefabEditorEntityOwnershipInterface unavailable)."));
             }
 
-            auto instanceToParentUnder = m_instanceEntityMapperInterface->FindOwningInstance(parent);
+            InstanceOptionalReference instanceToParentUnder;
 
-            if (!instanceToParentUnder)
+            // Get parent entity and owning instance
+            if (parent.IsValid())
             {
-                instanceToParentUnder = prefabEditorEntityOwnershipInterface->GetRootPrefabInstance();
-                if (!parent.IsValid())
-                {
-                    parent = instanceToParentUnder->get().GetContainerEntityId();
-                }
+                instanceToParentUnder = m_instanceEntityMapperInterface->FindOwningInstance(parent);
             }
 
+            if (!instanceToParentUnder.has_value())
+            {
+                instanceToParentUnder = prefabEditorEntityOwnershipInterface->GetRootPrefabInstance();
+                parent = instanceToParentUnder->get().GetContainerEntityId();
+            }
+            
             {
                 // Initialize Undo Batch object
-                ScopedUndoBatch undoBatch("Initialize Prefab");
+                ScopedUndoBatch undoBatch("Instantiate Prefab");
 
                 PrefabDom instanceToParentUnderDomBeforeCreate;
                 m_instanceToTemplateInterface->GenerateDomForInstance(
