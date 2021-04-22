@@ -79,24 +79,42 @@ void CLookAtTrack::GetKeyInfo(int key, const char*& description, float& duration
 
 
 //////////////////////////////////////////////////////////////////////////
-template<>
-inline void TAnimTrack<ILookAtKey>::Reflect(AZ::SerializeContext* serializeContext)
+static bool LookAtTrackVersionConverter(
+    AZ::SerializeContext& serializeContext,
+    AZ::SerializeContext::DataElementNode& rootElement)
 {
-    serializeContext->Class<TAnimTrack<ILookAtKey> >()
-        ->Version(2)
-        ->Field("Flags", &TAnimTrack<ILookAtKey>::m_flags)
-        ->Field("Range", &TAnimTrack<ILookAtKey>::m_timeRange)
-        ->Field("ParamType", &TAnimTrack<ILookAtKey>::m_nParamType)
-        ->Field("Keys", &TAnimTrack<ILookAtKey>::m_keys)
-        ->Field("Id", &TAnimTrack<ILookAtKey>::m_id);
+    if (rootElement.GetVersion() < 3)
+    {
+        rootElement.AddElement(serializeContext, "BaseClass1", azrtti_typeid<IAnimTrack>());
+    }
+
+    return true;
+}
+
+template<>
+inline void TAnimTrack<ILookAtKey>::Reflect(AZ::ReflectContext* context)
+{
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<TAnimTrack<ILookAtKey>, IAnimTrack>()
+            ->Version(3, &LookAtTrackVersionConverter)
+            ->Field("Flags", &TAnimTrack<ILookAtKey>::m_flags)
+            ->Field("Range", &TAnimTrack<ILookAtKey>::m_timeRange)
+            ->Field("ParamType", &TAnimTrack<ILookAtKey>::m_nParamType)
+            ->Field("Keys", &TAnimTrack<ILookAtKey>::m_keys)
+            ->Field("Id", &TAnimTrack<ILookAtKey>::m_id);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CLookAtTrack::Reflect(AZ::SerializeContext* serializeContext)
+void CLookAtTrack::Reflect(AZ::ReflectContext* context)
 {
-    TAnimTrack<ILookAtKey>::Reflect(serializeContext);
+    TAnimTrack<ILookAtKey>::Reflect(context);
 
-    serializeContext->Class<CLookAtTrack, TAnimTrack<ILookAtKey> >()
-        ->Version(1)
-        ->Field("AnimationLayer", &CLookAtTrack::m_iAnimationLayer);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<CLookAtTrack, TAnimTrack<ILookAtKey>>()
+            ->Version(1)
+            ->Field("AnimationLayer", &CLookAtTrack::m_iAnimationLayer);
+    }
 }
