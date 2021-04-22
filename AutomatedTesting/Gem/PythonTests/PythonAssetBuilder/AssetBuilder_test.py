@@ -22,7 +22,7 @@ import ly_test_tools.environment.file_system as file_system
 import ly_test_tools.log.log_monitor
 import ly_test_tools.environment.waiter as waiter
 
-@pytest.mark.SUITE_main
+@pytest.mark.SUITE_periodic
 @pytest.mark.parametrize('launcher_platform', ['windows_editor'])
 @pytest.mark.parametrize('project', ['AutomatedTesting'])
 @pytest.mark.parametrize('level', ['auto_test'])
