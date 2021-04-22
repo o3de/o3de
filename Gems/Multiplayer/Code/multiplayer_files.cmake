@@ -11,6 +11,8 @@
 
 set(FILES
     Include/IMultiplayer.h
+    Include/MultiplayerStats.cpp
+    Include/MultiplayerStats.h
     Source/Multiplayer_precompiled.cpp
     Source/Multiplayer_precompiled.h
     Source/MultiplayerSystemComponent.cpp

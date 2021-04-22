@@ -513,14 +513,20 @@ namespace Multiplayer
         AZLOG_INFO("Total networked entities: %llu", aznumeric_cast<AZ::u64>(stats.m_entityCount));
         AZLOG_INFO("Total client connections: %llu", aznumeric_cast<AZ::u64>(stats.m_clientConnectionCount));
         AZLOG_INFO("Total server connections: %llu", aznumeric_cast<AZ::u64>(stats.m_serverConnectionCount));
-        AZLOG_INFO("Total property updates sent: %llu", aznumeric_cast<AZ::u64>(stats.m_propertyUpdatesSent));
-        AZLOG_INFO("Total property updates sent bytes: %llu", aznumeric_cast<AZ::u64>(stats.m_propertyUpdatesSentBytes));
-        AZLOG_INFO("Total property updates received: %llu", aznumeric_cast<AZ::u64>(stats.m_propertyUpdatesRecv));
-        AZLOG_INFO("Total property updates received bytes: %llu", aznumeric_cast<AZ::u64>(stats.m_propertyUpdatesRecvBytes));
-        AZLOG_INFO("Total RPCs sent: %llu", aznumeric_cast<AZ::u64>(stats.m_rpcsSent));
-        AZLOG_INFO("Total RPCs sent bytes: %llu", aznumeric_cast<AZ::u64>(stats.m_rpcsSentBytes));
-        AZLOG_INFO("Total RPCs received: %llu", aznumeric_cast<AZ::u64>(stats.m_rpcsRecv));
-        AZLOG_INFO("Total RPCs received bytes: %llu", aznumeric_cast<AZ::u64>(stats.m_rpcsRecvBytes));
+
+        const MultiplayerStats::Metric propertyUpdatesSent = stats.CalculateTotalPropertyUpdateSentMetrics();
+        const MultiplayerStats::Metric propertyUpdatesRecv = stats.CalculateTotalPropertyUpdateRecvMetrics();
+        const MultiplayerStats::Metric rpcsSent = stats.CalculateTotalRpcsSentMetrics();
+        const MultiplayerStats::Metric rpcsRecv = stats.CalculateTotalRpcsRecvMetrics();
+
+        AZLOG_INFO("Total property updates sent: %llu", aznumeric_cast<AZ::u64>(propertyUpdatesSent.m_totalCalls));
+        AZLOG_INFO("Total property updates sent bytes: %llu", aznumeric_cast<AZ::u64>(propertyUpdatesSent.m_totalBytes));
+        AZLOG_INFO("Total property updates received: %llu", aznumeric_cast<AZ::u64>(propertyUpdatesRecv.m_totalCalls));
+        AZLOG_INFO("Total property updates received bytes: %llu", aznumeric_cast<AZ::u64>(propertyUpdatesRecv.m_totalBytes));
+        AZLOG_INFO("Total RPCs sent: %llu", aznumeric_cast<AZ::u64>(rpcsSent.m_totalCalls));
+        AZLOG_INFO("Total RPCs sent bytes: %llu", aznumeric_cast<AZ::u64>(rpcsSent.m_totalBytes));
+        AZLOG_INFO("Total RPCs received: %llu", aznumeric_cast<AZ::u64>(rpcsRecv.m_totalCalls));
+        AZLOG_INFO("Total RPCs received bytes: %llu", aznumeric_cast<AZ::u64>(rpcsRecv.m_totalBytes));
     }
 
     void MultiplayerSystemComponent::OnConsoleCommandInvoked

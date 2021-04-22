@@ -15,6 +15,7 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzNetworking/ConnectionLayer/IConnection.h>
 #include <AzNetworking/DataStructures/ByteBuffer.h>
+#include <Include/MultiplayerStats.h>
 
 namespace AzNetworking
 {
@@ -23,21 +24,6 @@ namespace AzNetworking
 
 namespace Multiplayer
 {
-    struct MultiplayerStats
-    {
-        uint64_t m_entityCount = 0;
-        uint64_t m_clientConnectionCount = 0;
-        uint64_t m_serverConnectionCount = 0;
-        uint64_t m_propertyUpdatesSent = 0;
-        uint64_t m_propertyUpdatesSentBytes = 0;
-        uint64_t m_propertyUpdatesRecv = 0;
-        uint64_t m_propertyUpdatesRecvBytes = 0;
-        uint64_t m_rpcsSent = 0;
-        uint64_t m_rpcsSentBytes = 0;
-        uint64_t m_rpcsRecv = 0;
-        uint64_t m_rpcsRecvBytes = 0;
-    };
-
     //! Collection of types of Multiplayer Connections
     enum class MultiplayerAgentType
     {

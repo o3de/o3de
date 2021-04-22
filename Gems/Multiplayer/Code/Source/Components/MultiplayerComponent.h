@@ -104,13 +104,14 @@ namespace Multiplayer
     template <typename TYPE>
     inline void SerializeNetworkPropertyHelper
     (
-        AzNetworking::ISerializer& serializer,
-        bool modifyRecord,
-        AzNetworking::FixedSizeBitsetView& bitset,
-        int32_t bitIndex,
-        TYPE& value,
-        const char* name,
-        [[maybe_unused]] NetComponentId componentId,
+        AzNetworking::ISerializer& serializer, 
+        bool modifyRecord, 
+        AzNetworking::FixedSizeBitsetView& bitset, 
+        int32_t bitIndex, 
+        TYPE& value, 
+        const char* name, 
+        uint16_t componentId, 
+        uint16_t propertyId, 
         MultiplayerStats& stats
     )
     {
@@ -131,13 +132,11 @@ namespace Multiplayer
             {
                 if (modifyRecord)
                 {
-                    stats.m_propertyUpdatesRecv++;
-                    stats.m_propertyUpdatesRecvBytes += updateSize;
+                    stats.RecordPropertyReceived(componentId, propertyId, updateSize);
                 }
                 else
                 {
-                    stats.m_propertyUpdatesSent++;
-                    stats.m_propertyUpdatesSentBytes += updateSize;
+                    stats.RecordPropertySent(componentId, propertyId, updateSize);
                 }
             }
         }

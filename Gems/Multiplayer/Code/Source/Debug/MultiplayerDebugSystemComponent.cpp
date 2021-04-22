@@ -95,26 +95,72 @@ namespace Multiplayer
         }
     }
 
+    void ComputePerSecondValues(const MultiplayerStats& stats, const MultiplayerStats::Metric& metric, float& outCallsPerSecond, float& outBytesPerSecond)
+    {
+        uint64_t summedCalls = 0;
+        uint64_t summedBytes = 0;
+        for (uint32_t index = 0; index < MultiplayerStats::RingbufferSamples; ++index)
+        {
+            summedCalls += metric.m_callHistory[index];
+            summedBytes += metric.m_byteHistory[index];
+        }
+        const float totalTimeSeconds = static_cast<float>(stats.m_totalHistoryTimeMs) / 1000.0f;
+        outCallsPerSecond = static_cast<float>(summedCalls) / totalTimeSeconds;
+        outBytesPerSecond = static_cast<float>(summedBytes) / totalTimeSeconds;
+    }
+
+    void DrawMetricTitle(const ImVec4& entryColour)
+    {
+        ImGui::Columns(6);
+
+        ImGui::TextColored(entryColour, "Name"); ImGui::NextColumn();
+        ImGui::TextColored(entryColour, "Category"); ImGui::NextColumn();
+        ImGui::TextColored(entryColour, "Total Calls"); ImGui::NextColumn();
+        ImGui::TextColored(entryColour, "Total Bytes"); ImGui::NextColumn();
+        ImGui::TextColored(entryColour, "Calls/Sec"); ImGui::NextColumn();
+        ImGui::TextColored(entryColour, "Bytes/Sec"); ImGui::NextColumn();
+    }
+
+    void DrawMetricRow(const char* name, const char* category, const ImVec4& entryColour, const MultiplayerStats& stats, const MultiplayerStats::Metric& metric)
+    {
+        float callsPerSecond = 0.0f;
+        float bytesPerSecond = 0.0f;
+        ComputePerSecondValues(stats, metric, callsPerSecond, bytesPerSecond);
+
+        ImGui::TextColored(entryColour, "%s", name); ImGui::NextColumn();
+        ImGui::TextColored(entryColour, "%s", category); ImGui::NextColumn();
+        ImGui::TextColored(entryColour, "%10llu", aznumeric_cast<AZ::u64>(metric.m_totalCalls)); ImGui::NextColumn();
+        ImGui::TextColored(entryColour, "%10llu", aznumeric_cast<AZ::u64>(metric.m_totalBytes)); ImGui::NextColumn();
+        ImGui::TextColored(entryColour, "%10.2f", callsPerSecond); ImGui::NextColumn();
+        ImGui::TextColored(entryColour, "%10.2f", bytesPerSecond); ImGui::NextColumn();
+    }
+
     void MultiplayerDebugSystemComponent::OnImGuiUpdate()
     {
+        const ImVec4 titleColour = ImColor(1.00f, 0.80f, 0.12f);
+        const ImVec4 entryColour = ImColor(0.32f, 1.00f, 1.00f);
+
         if (m_displayStats)
         {
             if (ImGui::Begin("Multiplayer Stats", &m_displayStats, ImGuiWindowFlags_HorizontalScrollbar))
             {
                 IMultiplayer* multiplayer = AZ::Interface<IMultiplayer>::Get();
-                Multiplayer::MultiplayerStats& stats = multiplayer->GetStats();
+                const Multiplayer::MultiplayerStats& stats = multiplayer->GetStats();
                 ImGui::Text("Multiplayer operating in %s mode", GetEnumString(multiplayer->GetAgentType()));
                 ImGui::Text("Total networked entities: %llu", aznumeric_cast<AZ::u64>(stats.m_entityCount));
                 ImGui::Text("Total client connections: %llu", aznumeric_cast<AZ::u64>(stats.m_clientConnectionCount));
                 ImGui::Text("Total server connections: %llu", aznumeric_cast<AZ::u64>(stats.m_serverConnectionCount));
-                ImGui::Text("Total property updates sent: %llu", aznumeric_cast<AZ::u64>(stats.m_propertyUpdatesSent));
-                ImGui::Text("Total property updates sent bytes: %llu", aznumeric_cast<AZ::u64>(stats.m_propertyUpdatesSentBytes));
-                ImGui::Text("Total property updates received: %llu", aznumeric_cast<AZ::u64>(stats.m_propertyUpdatesRecv));
-                ImGui::Text("Total property updates received bytes: %llu", aznumeric_cast<AZ::u64>(stats.m_propertyUpdatesRecvBytes));
-                ImGui::Text("Total RPCs sent: %llu", aznumeric_cast<AZ::u64>(stats.m_rpcsSent));
-                ImGui::Text("Total RPCs sent bytes: %llu", aznumeric_cast<AZ::u64>(stats.m_rpcsSentBytes));
-                ImGui::Text("Total RPCs received: %llu", aznumeric_cast<AZ::u64>(stats.m_rpcsRecv));
-                ImGui::Text("Total RPCs received bytes: %llu", aznumeric_cast<AZ::u64>(stats.m_rpcsRecvBytes));
+
+                const MultiplayerStats::Metric propertyUpdatesSent = stats.CalculateTotalPropertyUpdateSentMetrics();
+                const MultiplayerStats::Metric propertyUpdatesRecv = stats.CalculateTotalPropertyUpdateRecvMetrics();
+                const MultiplayerStats::Metric rpcsSent = stats.CalculateTotalRpcsSentMetrics();
+                const MultiplayerStats::Metric rpcsRecv = stats.CalculateTotalRpcsRecvMetrics();
+
+                DrawMetricTitle(titleColour);
+                DrawMetricRow("Total", "PropertyUpdates Sent", entryColour, stats, propertyUpdatesSent);
+                DrawMetricRow("Total", "PropertyUpdates Received", entryColour, stats, propertyUpdatesRecv);
+                DrawMetricRow("Total", "Rpcs Sent", entryColour, stats, rpcsSent);
+                DrawMetricRow("Total", "Rpcs Received", entryColour, stats, rpcsRecv);
             }
             ImGui::End();
         }
