@@ -90,7 +90,7 @@ class CEditorImpl
 
 public:
     CEditorImpl();
-    ~CEditorImpl();
+    virtual ~CEditorImpl();
 
     void Initialize();
     void OnBeginShutdownSequence();
