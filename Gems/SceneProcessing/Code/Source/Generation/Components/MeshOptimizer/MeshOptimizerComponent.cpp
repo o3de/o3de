@@ -102,6 +102,7 @@ namespace AZ::SceneGenerationComponents
 
     MeshOptimizerComponent::MeshOptimizerComponent()
     {
+        BindToCall(&MeshOptimizerComponent::OptimizeMeshes);
     }
 
     void MeshOptimizerComponent::Reflect(AZ::ReflectContext* context)
