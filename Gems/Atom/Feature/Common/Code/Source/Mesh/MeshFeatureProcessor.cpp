@@ -270,7 +270,7 @@ namespace AZ
         }
 
         void MeshFeatureProcessor::SetRequiresCloningCallback(
-            const AZStd::function<bool(const Data::Asset<RPI::ModelAsset>& modelAsset)>& requiresCloningCallback)
+            const MeshFeatureProcessorInterface::RequiresCloneCallback& requiresCloningCallback)
         {
             m_requiresCloningCallback = requiresCloningCallback;
         }

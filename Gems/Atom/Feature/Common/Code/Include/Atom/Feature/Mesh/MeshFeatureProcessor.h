@@ -86,7 +86,7 @@ namespace AZ
 
             //! A reference to the original model asset in case it got cloned before creating the model instance.
             Data::Asset<RPI::ModelAsset> m_originalModelAsset;
-            AZStd::function<bool(const Data::Asset<RPI::ModelAsset>& modelAsset)> m_requiresCloningCallback;
+            MeshFeatureProcessorInterface::RequiresCloneCallback m_requiresCloningCallback;
 
             Data::Instance<RPI::ShaderResourceGroup> m_shaderResourceGroup;
             AZStd::unique_ptr<MeshLoader> m_meshLoader;
@@ -150,7 +150,7 @@ namespace AZ
             const MaterialAssignmentMap& GetMaterialAssignmentMap(const MeshHandle& meshHandle) const override;
             void ConnectModelChangeEventHandler(const MeshHandle& meshHandle, ModelChangedEvent::Handler& handler) override;
 
-            void SetRequiresCloningCallback(const AZStd::function<bool(const Data::Asset<RPI::ModelAsset>& modelAsset)>& requiresCloningCallback);
+            void SetRequiresCloningCallback(const MeshFeatureProcessorInterface::RequiresCloneCallback& requiresCloningCallback) override;
 
             void SetTransform(const MeshHandle& meshHandle, const AZ::Transform& transform) override;
             Transform GetTransform(const MeshHandle& meshHandle) override;
@@ -188,7 +188,7 @@ namespace AZ
             RayTracingFeatureProcessor* m_rayTracingFeatureProcessor = nullptr;
             AZ::RPI::ShaderSystemInterface::GlobalShaderOptionUpdatedEvent::Handler m_handleGlobalShaderOptionUpdate;
             bool m_forceRebuildDrawPackets = false;
-            AZStd::function<bool(const Data::Asset<RPI::ModelAsset>& modelAsset)> m_requiresCloningCallback;
+            MeshFeatureProcessorInterface::RequiresCloneCallback m_requiresCloningCallback;
         };
     } // namespace Render
 } // namespace AZ

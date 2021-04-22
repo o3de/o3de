@@ -71,7 +71,8 @@ namespace AZ
             //! Return true in case the model asset needs to be cloned before creating the model. False if there is a 1:1 relationship between
             //! the model asset and the model and it is static and shared. In the second case the m_originalModelAsset is equal to the model
             //! asset that the model is linked to.
-            virtual void SetRequiresCloningCallback(const AZStd::function<bool(const Data::Asset<RPI::ModelAsset>& modelAsset)>& requiresCloningCallback) = 0;
+            typedef AZStd::function<bool(const Data::Asset<RPI::ModelAsset>& modelAsset)> RequiresCloneCallback;
+            virtual void SetRequiresCloningCallback(const RequiresCloneCallback& requiresCloningCallback) = 0;
 
             //! Sets the transform for a given mesh handle.
             virtual void SetTransform(const MeshHandle& meshHandle, const AZ::Transform& transform) = 0;

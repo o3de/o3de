@@ -78,12 +78,15 @@ namespace AZ
                 {
                     AZ::EBusConnectionPolicy<Bus>::Connect(busPtr, context, handler, connectLock, id);
 
+                    Data::Asset<RPI::ModelAsset> modelAsset;
+                    MeshComponentRequestBus::EventResult(modelAsset, id, &MeshComponentRequestBus::Events::GetModelAsset);
                     Data::Instance<RPI::Model> model;
                     MeshComponentRequestBus::EventResult(model, id, &MeshComponentRequestBus::Events::GetModel);
+
                     if (model &&
-                        model->GetModelAsset().GetStatus() == AZ::Data::AssetData::AssetStatus::Ready)
+                        modelAsset.GetStatus() == AZ::Data::AssetData::AssetStatus::Ready)
                     {
-                        handler->OnModelReady(model->GetModelAsset(), model);
+                        handler->OnModelReady(modelAsset, model);
                     }
                 }
             };

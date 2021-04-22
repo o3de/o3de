@@ -89,7 +89,10 @@ namespace AZ
                     return false;
                 }
 
-                creator.AddLodAsset(AZStd::move(lodAsset));
+                if (lodAsset.IsReady())
+                {
+                    creator.AddLodAsset(AZStd::move(lodAsset));
+                }
             }
 
             return creator.End(clonedResult);
