@@ -184,7 +184,7 @@ function(ly_setup_cmake_install)
 
     install(DIRECTORY "${CMAKE_SOURCE_DIR}/cmake"
         DESTINATION .
-        REGEX "Findo3de.cmake" EXCLUDE  
+        REGEX "Findo3de.cmake" EXCLUDE
         REGEX "Platform\/.*\/BuiltInPackages_.*\.cmake" EXCLUDE
     )
     install(
