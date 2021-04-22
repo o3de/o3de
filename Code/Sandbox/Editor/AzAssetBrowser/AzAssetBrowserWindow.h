@@ -29,6 +29,7 @@ namespace AzToolsFramework
     namespace AssetBrowser
     {
         class AssetBrowserFilterModel;
+        class AssetBrowserTableModel;
         class AssetBrowserModel;
     }
 }
@@ -53,6 +54,7 @@ private:
 
     QScopedPointer<Ui::AzAssetBrowserWindowClass> m_ui;
     QScopedPointer<AzToolsFramework::AssetBrowser::AssetBrowserFilterModel> m_filterModel;
+    QScopedPointer<AzToolsFramework::AssetBrowser::AssetBrowserTableModel> m_tableModel;
     AzToolsFramework::AssetBrowser::AssetBrowserModel* m_assetBrowserModel;
     
     void UpdatePreview() const;
@@ -60,6 +62,7 @@ private:
 private Q_SLOTS:
     void SelectionChangedSlot(const QItemSelection& selected, const QItemSelection& deselected) const;
     void DoubleClickedItem(const QModelIndex& element);
+    void SwitchDisplayView(const int state);
 };
 
 extern const char* AZ_ASSET_BROWSER_PREVIEW_NAME;

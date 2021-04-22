@@ -18,6 +18,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/ViewPaneOptions.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserTableModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 
 // AzQtComponents
@@ -66,6 +67,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     : QWidget(parent)
     , m_ui(new Ui::AzAssetBrowserWindowClass())
     , m_filterModel(new AzToolsFramework::AssetBrowser::AssetBrowserFilterModel(parent))
+    , m_tableModel(new AzToolsFramework::AssetBrowser::AssetBrowserTableModel(parent))
 {
     m_ui->setupUi(this);
     m_ui->m_searchWidget->Setup(true, true);
@@ -76,7 +78,12 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     m_filterModel->setSourceModel(m_assetBrowserModel);
     m_filterModel->SetFilter(m_ui->m_searchWidget->GetFilter());
 
+    m_tableModel->setSourceModel(m_filterModel.data());
+
     m_ui->m_assetBrowserTreeViewWidget->setModel(m_filterModel.data());
+    m_ui->m_assetBrowserTableViewWidget->setModel(m_tableModel.data());
+
+    m_ui->m_assetBrowserTableViewWidget->setVisible(false);
 
     connect(m_ui->m_searchWidget->GetFilter().data(), &AssetBrowserEntryFilter::updatedSignal,
         m_filterModel.data(), &AssetBrowserFilterModel::filterUpdatedSlot);
@@ -92,7 +99,11 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
 
     connect(m_ui->m_assetBrowserTreeViewWidget, &AssetBrowserTreeView::ClearStringFilter, m_ui->m_searchWidget, &SearchWidget::ClearStringFilter);
     connect(m_ui->m_assetBrowserTreeViewWidget, &AssetBrowserTreeView::ClearTypeFilter, m_ui->m_searchWidget, &SearchWidget::ClearTypeFilter);
+
     m_ui->m_assetBrowserTreeViewWidget->SetName("AssetBrowserTreeView_main");
+    m_ui->m_assetBrowserTableViewWidget->SetName("AssetBrowserTableView_main");
+
+    connect(m_ui->m_viewSwitcherCheckBox, &QCheckBox::stateChanged, this, &AzAssetBrowserWindow::SwitchDisplayView);
 }
 
 AzAssetBrowserWindow::~AzAssetBrowserWindow()
@@ -218,6 +229,12 @@ void AzAssetBrowserWindow::DoubleClickedItem([[maybe_unused]] const QModelIndex&
         }
     }
 
+}
+
+void AzAssetBrowserWindow::SwitchDisplayView(const int state)
+{
+    m_ui->m_assetBrowserTableViewWidget->setVisible(state);
+    m_ui->m_assetBrowserTreeViewWidget->setVisible(!state);
 }
 
 #include <AzAssetBrowser/moc_AzAssetBrowserWindow.cpp>
