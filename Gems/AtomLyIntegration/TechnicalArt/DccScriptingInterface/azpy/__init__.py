@@ -67,7 +67,10 @@ _DCCSI_DEV_MODE = env_bool.env_bool(constants.ENVAR_DCCSI_DEV_MODE, False)
 # for py2.7 (Maya) we provide this, so we must assume some bootstrapping
 # has occured, see DccScriptingInterface\\config.py (_DCCSI_PYTHON_LIB_PATH)
 
-import pathlib
+try:
+    import pathlib
+except:
+    import pathlib2 as pathlib
 from pathlib import Path
 if _G_DEBUG:
     print('DCCsi debug breadcrumb, pathlib is: {}'.format(pathlib))

@@ -27,12 +27,6 @@ A simple path objecy based Node Class, for creating path hierarchies.
 """
 __author__ = 'HogJonny'
 
-_G_DEBUG = True        # global state for debugging
-_G_SETTINGS = None     # global Settings storage
-_G_LOG = None          # global LOGger storage
-
-_G_MASTER_NODE = None  # We intend to init a master node
-
 # -------------------------------------------------------------------------
 # built-ins
 import os
@@ -44,10 +38,31 @@ import logging
 from unipath import Path, AbstractPath
 
 # local ly imports
-from LyPy.si_shared.noodly.helpers import istext
-from LyPy.si_shared.noodly.find_arg import find_arg
-from LyPy.si_shared.noodly.synth import synthesize
-from LyPy.si_shared.noodly.node import Node
+from azpy.shared.noodely.helpers import istext
+from azpy.shared.noodely.find_arg import find_arg
+from azpy.shared.noodely.synth import synthesize
+from azpy.shared.noodely.node import Node
+
+import azpy
+from azpy.env_bool import env_bool
+from azpy.constants import ENVAR_DCCSI_GDEBUG
+from azpy.constants import ENVAR_DCCSI_DEV_MODE
+
+# -------------------------------------------------------------------------
+#  global space
+# To Do: update to dynaconf dynamic env and settings?
+_G_DEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
+_DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
+
+_MODULENAME = 'azpy.shared.noodely.pathnode'
+
+_log_level = int(20)
+if _G_DEBUG:
+    _log_level = int(10)
+_LOGGER = azpy.initialize_logger(_MODULENAME,
+                                 log_to_file=False,
+                                 default_log_level=_log_level)
+_LOGGER.debug('Starting:: {}.'.format({_MODULENAME}))
 # -------------------------------------------------------------------------
 
 
@@ -63,19 +78,11 @@ if os.path.supports_unicode_filenames:
 
 
 # -------------------------------------------------------------------------
-#  set up logger
-_G_LOGGER = logging.getLogger(__name__)
-# -------------------------------------------------------------------------
-
-
 class PathNode(Node):
     """doc string"""
 
     # share the debug state
     _DEBUG = _G_DEBUG
-
-    # logger
-    _LOGGER = _G_LOGGER
 
     # class header
     _message_header = 'noodly, PathNode(): Message'
@@ -117,7 +124,7 @@ class PathNode(Node):
 
         # -- secret keyword -----------------------------------------------
         self._temp_node = False
-        temp_node, kwargs = find_arg(argPosIndex=None, argTag='temp_node',
+        temp_node, kwargs = find_arg(arg_pos_index=None, argTag='temp_node',
                                      removeKwarg=True, inArgs=args,
                                      inKwargs=kwargs)  # <-- kwarg only
 
@@ -126,11 +133,11 @@ class PathNode(Node):
             self.k_wargs_dict['temp_node'] = self._temp_node
 
         # -- Node class args/kwargs ---------------------------------------
-        node_name, kwargs = find_arg(argPosIndex=2, argTag='node_name',
+        node_name, kwargs = find_arg(arg_pos_index=2, argTag='node_name',
                                      removeKwarg=True, inArgs=args,
                                      inKwargs=kwargs)  # <-- third arg, kwarg
 
-        parent_node, kwargs = find_arg(argPosIndex=3, argTag='parent_node',
+        parent_node, kwargs = find_arg(arg_pos_index=3, argTag='parent_node',
                                        removeKwarg=True, inArgs=args,
                                        inKwargs=kwargs)  # <-- fourth arg, kwarg
 
@@ -344,12 +351,12 @@ class PathNode(Node):
 # -------------------------------------------------------------------------
 def tests():
     from node import Node
-    default_node = Node()  # result: Node(node_name='MASTER')
+    default_node = Node()  # result: Node(node_name='PRIME')
     print(default_node)
 
     first_child = PathNode(path=None, node_name='first_child', parent_node=default_node)
     print(first_child)
-    # result: PathNode(temp_node=True, parent_node=Node(node_name='MASTER')).siblingNodeFromHashid('WNPZoKBVpXV16QLz')
+    # result: PathNode(temp_node=True, parent_node=Node(node_name='PRIME')).siblingNodeFromHashid('WNPZoKBVpXV16QLz')
     # first_child.nodeType
     # first_child.parent_node
     # first_child.node_name

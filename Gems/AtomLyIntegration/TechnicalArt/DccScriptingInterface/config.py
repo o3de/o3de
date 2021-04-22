@@ -26,7 +26,6 @@ import re
 # our framework for dcc tools need to run in apps like Maya that may still be
 # on py27 so we need to import and use after some boostrapping
 
-
 # -------------------------------------------------------------------+------
 #os.environ['PYTHONINSPECT'] = 'True'
 _MODULE_PATH = os.path.abspath(__file__)
@@ -78,7 +77,10 @@ _DCCSI_PYTHON_LIB_PATH = azpy.config_utils.bootstrap_dccsi_py_libs(_DCCSIG_PATH)
 
 # Now we should be able to just carry on with pth lib and dynaconf
 from dynaconf import Dynaconf
-from pathlib import Path
+try:
+    import pathlib
+except:
+    import pathlib2 as pathlib
 
 _DCCSIG_PATH = Path(_DCCSIG_PATH).resolve()
 _DCCSI_PYTHON_LIB_PATH = Path(_DCCSI_PYTHON_LIB_PATH).resolve()

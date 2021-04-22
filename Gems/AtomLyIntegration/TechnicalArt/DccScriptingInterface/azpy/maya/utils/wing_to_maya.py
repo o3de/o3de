@@ -145,7 +145,7 @@ def start_wing_to_maya_menu():
     port = object()  # init a dummy object
 
     # default name ... name is first arg, or a kwarg
-    portName, kwargs = setSynthArgKwarg(port, argPosIndex=0, argTag='portName',
+    portName, kwargs = setSynthArgKwarg(port, arg_pos_index=0, argTag='portName',
                                         inArgs=args, inKwargs=kwargs,
                                         defaultValue="127.0.0.1:6000")
 
