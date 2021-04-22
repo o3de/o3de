@@ -308,7 +308,7 @@ namespace AssetMemoryAnalyzer
         AZStd::function<void(AssetInfo*, AssetTreeNode*, int)> recurse;
         recurse = [&recurse](AssetInfo* outAsset, AssetTreeNode* inAsset, int depth)
         {
-            outAsset->m_id = inAsset->m_masterInfo ? inAsset->m_masterInfo->m_id->m_id.c_str() : nullptr;
+            outAsset->m_id = inAsset->m_primaryinfo ? inAsset->m_primaryinfo->m_id->m_id.c_str() : nullptr;
 
             // For every code point in this asset node, record its allocations
             for (auto& codePointInfo : inAsset->m_data.m_codePointsToAllocations)

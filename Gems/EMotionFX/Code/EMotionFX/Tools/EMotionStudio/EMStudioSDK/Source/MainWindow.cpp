@@ -1866,6 +1866,12 @@ namespace EMStudio
             // add each layout in the remove menu
             for (uint32 i = 0; i < numLayoutNames; ++i)
             {
+                // User cannot remove the default layout. This layout is referenced in the qrc file, removing it will
+                // cause compiling issue too.
+                if (mLayoutNames[i] == "AnimGraph")
+                {
+                    continue;
+                }
                 QAction* action = removeMenu->addAction(mLayoutNames[i].c_str());
                 connect(action, &QAction::triggered, this, &MainWindow::OnRemoveLayout);
             }

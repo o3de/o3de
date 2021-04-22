@@ -45,8 +45,8 @@ PbrLightingOutput GetPbrLightingOutput(Surface surface, LightingData lightingDat
 
     // albedo, specularF0, roughness, and normals for later passes (specular IBL, Diffuse GI, SSR, AO, etc)
     lightingOutput.m_specularF0 = float4(surface.specularF0, surface.roughnessLinear);
-    lightingOutput.m_albedo.rgb = surface.albedo * lightingData.diffuseResponse;
-    lightingOutput.m_albedo.a = lightingData.occlusion;
+    lightingOutput.m_albedo.rgb = surface.albedo * lightingData.diffuseResponse * lightingData.diffuseAmbientOcclusion;
+    lightingOutput.m_albedo.a = lightingData.specularOcclusion;
     lightingOutput.m_normal.rgb = EncodeNormalSignedOctahedron(surface.normal);
     lightingOutput.m_normal.a = o_specularF0_enableMultiScatterCompensation ? 1.0f : 0.0f;
     
@@ -55,9 +55,6 @@ PbrLightingOutput GetPbrLightingOutput(Surface surface, LightingData lightingDat
 
     return lightingOutput;
 }
-
-
-
 
 
 

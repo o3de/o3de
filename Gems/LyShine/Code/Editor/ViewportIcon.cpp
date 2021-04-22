@@ -12,25 +12,34 @@
 #include "UiCanvasEditor_precompiled.h"
 
 #include "EditorCommon.h"
+#include <LyShine/Draw2d.h>
+
+#include <Atom/RPI.Public/Image/StreamingImage.h>
+#include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 
 ViewportIcon::ViewportIcon(const char* textureFilename)
-    : m_texture(gEnv->pRenderer->EF_LoadTexture(textureFilename, FT_DONT_STREAM))
 {
+    m_image = CDraw2d::LoadTexture(textureFilename);
 }
 
 ViewportIcon::~ViewportIcon()
 {
-    gEnv->pRenderer->RemoveTexture(m_texture->GetTextureID());
 }
 
 AZ::Vector2 ViewportIcon::GetTextureSize() const
 {
-    return AZ::Vector2(aznumeric_cast<float>(m_texture->GetWidth()), aznumeric_cast<float>(m_texture->GetHeight()));
+    if (m_image)
+    {
+        AZ::RHI::Size size = m_image->GetDescriptor().m_size;
+        return AZ::Vector2(size.m_width, size.m_height);
+    }
+
+    return AZ::Vector2(0.0f, 0.0f);
 }
 
 void ViewportIcon::DrawImageAligned(Draw2dHelper& draw2d, AZ::Vector2& pivot, float opacity)
 {
-    draw2d.DrawImageAligned(m_texture->GetTextureID(),
+    draw2d.DrawImageAligned(m_image,
         pivot,
         GetTextureSize(),
         IDraw2d::HAlign::Center,
@@ -43,7 +52,7 @@ void ViewportIcon::DrawImageTiled(Draw2dHelper& draw2d, IDraw2d::VertexPosColUV*
     // Use default blending and rounding modes
     int blendMode = GS_BLSRC_SRCALPHA | GS_BLDST_ONEMINUSSRCALPHA;
     IDraw2d::Rounding rounding = IDraw2d::Rounding::Nearest;
-    draw2d.DrawQuad(m_texture->GetTextureID(), verts, blendMode, rounding);
+    draw2d.DrawQuad(m_image, verts, blendMode, rounding);
 }
 
 void ViewportIcon::DrawAxisAlignedBoundingBox(Draw2dHelper& draw2d, AZ::Vector2 bound0, AZ::Vector2 bound1)
@@ -73,7 +82,7 @@ void ViewportIcon::DrawAxisAlignedBoundingBox(Draw2dHelper& draw2d, AZ::Vector2 
         verts[0].uv = AZ::Vector2(0.0f, 0.5f);
         verts[1].uv = AZ::Vector2(endTexCoordU, 0.5f);
 
-        draw2d.DrawLineTextured(m_texture->GetTextureID(), verts);
+        draw2d.DrawLineTextured(m_image, verts);
     }
 
     // bound0
@@ -89,7 +98,7 @@ void ViewportIcon::DrawAxisAlignedBoundingBox(Draw2dHelper& draw2d, AZ::Vector2 
         verts[0].uv = AZ::Vector2(0.0f, 0.5f);
         verts[1].uv = AZ::Vector2(endTexCoordV, 0.5f);
 
-        draw2d.DrawLineTextured(m_texture->GetTextureID(), verts);
+        draw2d.DrawLineTextured(m_image, verts);
     }
 
     // bound0
@@ -105,7 +114,7 @@ void ViewportIcon::DrawAxisAlignedBoundingBox(Draw2dHelper& draw2d, AZ::Vector2 
         verts[0].uv = AZ::Vector2(0.0f, 0.5f);
         verts[1].uv = AZ::Vector2(endTexCoordU, 0.5f);
 
-        draw2d.DrawLineTextured(m_texture->GetTextureID(), verts);
+        draw2d.DrawLineTextured(m_image, verts);
     }
 
     // bound0
@@ -121,7 +130,7 @@ void ViewportIcon::DrawAxisAlignedBoundingBox(Draw2dHelper& draw2d, AZ::Vector2 
         verts[0].uv = AZ::Vector2(0.0f, 0.5f);
         verts[1].uv = AZ::Vector2(endTexCoordV, 0.5f);
 
-        draw2d.DrawLineTextured(m_texture->GetTextureID(), verts);
+        draw2d.DrawLineTextured(m_image, verts);
     }
 }
 
@@ -189,7 +198,7 @@ void ViewportIcon::Draw(Draw2dHelper& draw2d, AZ::Vector2 anchorPos, const AZ::M
         verts[3].position = originPos - widthVec * originRatio.GetX()        + heightVec * (1.0f - originRatio.GetY());
     }
 
-    draw2d.DrawQuad(m_texture->GetTextureID(), verts);
+    draw2d.DrawQuad(m_image, verts);
 }
 
 void ViewportIcon::DrawAnchorLines(Draw2dHelper& draw2d, AZ::Vector2 anchorPos, AZ::Vector2 targetPos, const AZ::Matrix4x4& transform,
@@ -252,7 +261,7 @@ void ViewportIcon::DrawDistanceLine(Draw2dHelper& draw2d, AZ::Vector2 start, AZ:
     verts[1].color = dottedColor;
     verts[1].uv = AZ::Vector2(endTexCoordU, 0.5f);
 
-    draw2d.DrawLineTextured(m_texture->GetTextureID(), verts);
+    draw2d.DrawLineTextured(m_image, verts);
 
     // Now draw the text rotated to match the angle of the line and slightly offset from the center point
 
@@ -379,7 +388,7 @@ void ViewportIcon::DrawElementRectOutline([[maybe_unused]] Draw2dHelper& draw2d,
     float rectHeight = heightVec.GetLength();
 
     // the outline "width" will be based on the texture height
-    int textureHeight = m_texture->GetHeight();
+    float textureHeight = GetTextureSize().GetY();
     if (textureHeight <= 0)
     {
         return; // should never happen - avoiding possible divide by zero later
@@ -464,6 +473,7 @@ void ViewportIcon::DrawElementRectOutline([[maybe_unused]] Draw2dHelper& draw2d,
         5, 1, 7,    1, 7, 3,    // right quad
     };
 
+#ifdef LYSHINE_ATOM_TODO
     IRenderer* renderer = gEnv->pRenderer;
     renderer->SetTexture(m_texture->GetTextureID());
 
@@ -472,4 +482,7 @@ void ViewportIcon::DrawElementRectOutline([[maybe_unused]] Draw2dHelper& draw2d,
 
     // This will end up using DrawIndexedPrimitive to render the quad
     renderer->DrawDynVB(vertices, indicies, NUM_VERTS, NUM_INDICES, prtTriangleList);
+#else
+    // LYSHINE_ATOM_TODO - add option in Draw2d to draw indexed primitive for this textured element outline
+#endif
 }
