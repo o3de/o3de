@@ -54,7 +54,6 @@ AZ_POP_DISABLE_WARNING
 #include "Export/ExportManager.h"
 #include "LevelIndependentFileMan.h"
 #include "Material/MaterialManager.h"
-#include "Material/MaterialPickTool.h"
 #include "TrackView/TrackViewSequenceManager.h"
 #include "AnimationContext.h"
 #include "GameEngine.h"
@@ -71,13 +70,9 @@ AZ_POP_DISABLE_WARNING
 #include "Objects/SelectionGroup.h"
 #include "Objects/ObjectManager.h"
 
-#include "RotateTool.h"
-#include "NullEditTool.h"
-
 #include "BackgroundTaskManager.h"
 #include "BackgroundScheduleManager.h"
 #include "EditorFileMonitor.h"
-#include "EditMode/VertexSnappingModeTool.h"
 #include "Mission.h"
 #include "MainStatusBar.h"
 
@@ -451,12 +446,6 @@ void CEditorImpl::RegisterTools()
 
     rc.pCommandManager = m_pCommandManager;
     rc.pClassFactory = m_pClassFactory;
-
-    CObjectMode::RegisterTool(rc);
-    CMaterialPickTool::RegisterTool(rc);
-    CVertexSnappingModeTool::RegisterTool(rc);
-    CRotateTool::RegisterTool(rc);
-    NullEditTool::RegisterTool(rc);
 }
 
 void CEditorImpl::ExecuteCommand(const char* sCommand, ...)
@@ -682,14 +671,6 @@ void CEditorImpl::SetEditMode(int editMode)
         }
     }
 
-    if ((EEditMode)editMode == eEditModeRotate)
-    {
-        if (GetEditTool() && GetEditTool()->IsCircleTypeRotateGizmo())
-        {
-            editMode = eEditModeRotateCircle;
-        }
-    }
-
     EEditMode newEditMode = (EEditMode)editMode;
     if (m_currEditMode == newEditMode)
     {
@@ -699,11 +680,6 @@ void CEditorImpl::SetEditMode(int editMode)
     m_currEditMode = newEditMode;
     AABB box(Vec3(0, 0, 0), Vec3(0, 0, 0));
     SetSelectedRegion(box);
-
-    if (GetEditTool() && !GetEditTool()->IsNeedMoveTool())
-    {
-        SetEditTool(0, true);
-    }
 
     Notify(eNotify_OnEditModeChange);
 }
@@ -717,139 +693,6 @@ void CEditorImpl::SetOperationMode(EOperationMode mode)
 EOperationMode CEditorImpl::GetOperationMode()
 {
     return m_operationMode;
-}
-
-bool CEditorImpl::HasCorrectEditTool() const
-{
-    if (!m_pEditTool)
-    {
-        return false;
-    }
-
-    switch (m_currEditMode)
-    {
-    case eEditModeRotate:
-        return qobject_cast<CRotateTool*>(m_pEditTool) != nullptr;
-    default:
-        return qobject_cast<CObjectMode*>(m_pEditTool) != nullptr && qobject_cast<CRotateTool*>(m_pEditTool) == nullptr;
-    }
-}
-
-CEditTool* CEditorImpl::CreateCorrectEditTool()
-{
-    if (m_currEditMode == eEditModeRotate)
-    {
-        CBaseObject* selectedObj = nullptr;
-        CSelectionGroup* pSelection = GetIEditor()->GetObjectManager()->GetSelection();
-        if (pSelection && pSelection->GetCount() > 0)
-        {
-            selectedObj = pSelection->GetObject(0);
-        }
-
-        return (new CRotateTool(selectedObj));
-    }
-
-    return (new CObjectMode);
-}
-
-void CEditorImpl::SetEditTool(CEditTool* tool, bool bStopCurrentTool)
-{
-    CViewport* pViewport = GetIEditor()->GetActiveView();
-    if (pViewport)
-    {
-        pViewport->SetCurrentCursor(STD_CURSOR_DEFAULT);
-    }
-
-    if (!tool)
-    {
-        if (HasCorrectEditTool())
-        {
-            return;
-        }
-        else
-        {
-            tool = CreateCorrectEditTool();
-        }
-    }
-
-    if (!tool->Activate(m_pEditTool))
-    {
-        return;
-    }
-
-    if (bStopCurrentTool)
-    {
-        if (m_pEditTool && m_pEditTool != tool)
-        {
-            m_pEditTool->EndEditParams();
-            SetStatusText("Ready");
-        }
-    }
-
-    m_pEditTool = tool;
-    if (m_pEditTool)
-    {
-        m_pEditTool->BeginEditParams(this, 0);
-    }
-
-    Notify(eNotify_OnEditToolChange);
-}
-
-void CEditorImpl::ReinitializeEditTool()
-{
-    if (m_pEditTool)
-    {
-        m_pEditTool->EndEditParams();
-        m_pEditTool->BeginEditParams(this, 0);
-    }
-}
-
-void CEditorImpl::SetEditTool(const QString& sEditToolName, [[maybe_unused]] bool bStopCurrentTool)
-{
-    CEditTool* pTool = GetEditTool();
-    if (pTool && pTool->GetClassDesc())
-    {
-        // Check if already selected.
-        if (QString::compare(pTool->GetClassDesc()->ClassName(), sEditToolName, Qt::CaseInsensitive) == 0)
-        {
-            return;
-        }
-    }
-
-    IClassDesc* pClass = GetIEditor()->GetClassFactory()->FindClass(sEditToolName.toUtf8().data());
-    if (!pClass)
-    {
-        Warning("Editor Tool %s not registered.", sEditToolName.toUtf8().data());
-        return;
-    }
-    if (pClass->SystemClassID() != ESYSTEM_CLASS_EDITTOOL)
-    {
-        Warning("Class name %s is not a valid Edit Tool class.", sEditToolName.toUtf8().data());
-        return;
-    }
-
-    QScopedPointer<QObject> o(pClass->CreateQObject());
-    if (CEditTool* pEditTool = qobject_cast<CEditTool*>(o.data()))
-    {
-        GetIEditor()->SetEditTool(pEditTool);
-        o.take();
-        return;
-    }
-    else
-    {
-        Warning("Class name %s is not a valid Edit Tool class.", sEditToolName.toUtf8().data());
-        return;
-    }
-}
-
-CEditTool* CEditorImpl::GetEditTool()
-{
-    if (m_isNewViewportInteractionModelEnabled)
-    {
-        return nullptr;
-    }
-    
-    return m_pEditTool;
 }
 
 ITransformManipulator* CEditorImpl::ShowTransformManipulator(bool bShow)

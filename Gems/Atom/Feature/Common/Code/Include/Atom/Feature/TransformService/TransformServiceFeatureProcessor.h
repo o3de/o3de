@@ -50,8 +50,10 @@ namespace AZ
             // TransformServiceFeatureProcessorInterface overrides ...
             ObjectId ReserveObjectId() override;
             void ReleaseObjectId(ObjectId& id) override;
-            void SetTransformForId(ObjectId id, const AZ::Transform& transform) override;
+            void SetTransformForId(ObjectId id, const AZ::Transform& transform,
+                const AZ::Vector3& nonUniformScale = AZ::Vector3::CreateOne()) override;
             AZ::Transform GetTransformForId(ObjectId id) const override;
+            AZ::Vector3 GetNonUniformScaleForId(ObjectId id) const override;
 
         private:
 

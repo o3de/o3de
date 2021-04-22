@@ -114,7 +114,7 @@ namespace Blast
 
         // ActorRenderManager::SyncMeshes
         {
-            EXPECT_CALL(*m_mockMeshFeatureProcessor, SetTransform(_, _))
+            EXPECT_CALL(*m_mockMeshFeatureProcessor, SetTransform(_, _, _))
                 .Times(aznumeric_cast<int>(m_actorFactory->m_mockActors[0]->GetChunkIndices().size()));
             actorRenderManager->SyncMeshes();
         }
