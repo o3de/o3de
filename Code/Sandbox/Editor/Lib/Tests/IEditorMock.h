@@ -20,7 +20,7 @@ class CEditorMock
     : public IEditor
 {
 public:
-    // GMock does not work with a variadic function (https://github.com/google/googlemock/blob/master/googlemock/docs/FrequentlyAskedQuestions.md)
+    // GMock does not work with a variadic function
     void ExecuteCommand(const char* sCommand, ...) override
     {
         va_list args;

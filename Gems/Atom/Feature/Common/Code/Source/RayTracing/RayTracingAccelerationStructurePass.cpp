@@ -81,6 +81,7 @@ namespace AZ
                                 ->HitGroupIndex(blasIndex)
                                 ->Blas(rayTracingSubMesh.m_blas)
                                 ->Transform(rayTracingMesh.second.m_transform)
+                                ->NonUniformScale(rayTracingMesh.second.m_nonUniformScale)
                                 ;
                         }
 
