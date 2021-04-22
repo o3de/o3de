@@ -19,6 +19,7 @@
 
 #include <QObject>
 #include <QList>
+#include <QThreadPool>
 #endif
 
 class QString;
@@ -40,6 +41,7 @@ namespace AzToolsFramework
         */
         class ThumbnailContext
             : public QObject
+            , public ThumbnailContextRequestBus::Handler
         {
             Q_OBJECT
         public:
@@ -58,9 +60,12 @@ namespace AzToolsFramework
             void UnregisterThumbnailProvider(const char* providerName);
 
             void RedrawThumbnail();
-            
+
             //! Default context used for most thumbnails
             static constexpr const char* DefaultContext = "Default";
+
+            // ThumbnailContextRequestBus::Handler interface overrides...
+            QThreadPool* GetThreadPool() override;
 
         private:
             struct ProviderCompare {
@@ -79,6 +84,9 @@ namespace AzToolsFramework
             SharedThumbnail m_loadingThumbnail;
             //! Thumbnail size (width and height in pixels)
             int m_thumbnailSize;
+            //! There is only a limited number of threads on global threadPool, because there can be many thumbnails rendering at once
+            //! an individual threadPool is needed to avoid deadlocks
+            QThreadPool m_threadPool;
         };
     } // namespace Thumbnailer
 } // namespace AzToolsFramework

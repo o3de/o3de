@@ -24,6 +24,7 @@ namespace ScriptCanvasTesting
     {
         ScriptCanvasTesting::GlobalBusTraits::Reflect(context);
         ScriptCanvasTesting::LocalBusTraits::Reflect(context);
+        ScriptCanvasTesting::PerformanceStressBusTraits::Reflect(context);
         ScriptCanvasTesting::NativeHandlingOnlyBusTraits::Reflect(context);
         ScriptCanvasTesting::TestTupleMethods::Reflect(context);
 
@@ -127,6 +128,87 @@ namespace ScriptCanvasTesting
                 ->Attribute(AZ::Script::Attributes::AzEventDescription, modObjectDesc)
                 ->Event("GetByValueEvent", &GlobalEBus::Events::GetByValueEvent)
                 ->Attribute(AZ::Script::Attributes::AzEventDescription, modValueDesc);
+        }
+    }
+
+    class PerformanceStressEBusHandler
+        : public PerformanceStressEBus::Handler
+        , public AZ::BehaviorEBusHandler
+    {
+    public:
+        AZ_EBUS_BEHAVIOR_BINDER(
+            PerformanceStressEBusHandler, "{EAE36675-F06B-4755-B3A5-CEC9495DC92E}", AZ::SystemAllocator
+            , ForceStringCompare0
+            , ForceStringCompare1
+            , ForceStringCompare2
+            , ForceStringCompare3
+            , ForceStringCompare4
+            , ForceStringCompare5
+            , ForceStringCompare6
+            , ForceStringCompare7
+            , ForceStringCompare8
+            , ForceStringCompare9
+        );
+
+        void ForceStringCompare0() override
+        {
+            Call(FN_ForceStringCompare0);
+        }
+        void ForceStringCompare1() override
+        {
+            Call(FN_ForceStringCompare1);
+        }
+        void ForceStringCompare2() override
+        {
+            Call(FN_ForceStringCompare2);
+        }
+        void ForceStringCompare3() override
+        {
+            Call(FN_ForceStringCompare3);
+        }
+        void ForceStringCompare4() override
+        {
+            Call(FN_ForceStringCompare4);
+        }
+        void ForceStringCompare5() override
+        {
+            Call(FN_ForceStringCompare5);
+        }
+        void ForceStringCompare6() override
+        {
+            Call(FN_ForceStringCompare6);
+        }
+        void ForceStringCompare7() override
+        {
+            Call(FN_ForceStringCompare7);
+        }
+        void ForceStringCompare8() override
+        {
+            Call(FN_ForceStringCompare8);
+        }
+        void ForceStringCompare9() override
+        {
+            Call(FN_ForceStringCompare9);
+        }
+    };
+
+    void PerformanceStressBusTraits::Reflect(AZ::ReflectContext* context)
+    {
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->EBus<PerformanceStressEBus>("PerformanceStressEBus")
+                ->Handler<PerformanceStressEBusHandler>()
+                ->Event("ForceStringCompare0", &PerformanceStressEBus::Events::ForceStringCompare0)
+                ->Event("ForceStringCompare1", &PerformanceStressEBus::Events::ForceStringCompare1)
+                ->Event("ForceStringCompare2", &PerformanceStressEBus::Events::ForceStringCompare2)
+                ->Event("ForceStringCompare3", &PerformanceStressEBus::Events::ForceStringCompare3)
+                ->Event("ForceStringCompare4", &PerformanceStressEBus::Events::ForceStringCompare4)
+                ->Event("ForceStringCompare5", &PerformanceStressEBus::Events::ForceStringCompare5)
+                ->Event("ForceStringCompare6", &PerformanceStressEBus::Events::ForceStringCompare6)
+                ->Event("ForceStringCompare7", &PerformanceStressEBus::Events::ForceStringCompare7)
+                ->Event("ForceStringCompare8", &PerformanceStressEBus::Events::ForceStringCompare8)
+                ->Event("ForceStringCompare9", &PerformanceStressEBus::Events::ForceStringCompare9)
+                ;
         }
     }
 

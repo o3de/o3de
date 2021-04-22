@@ -124,7 +124,6 @@ protected:
     bool m_bDragMode;
     QString m_sLastText;
 
-    CEditTool* m_editTool;
     Vec3 m_lastValue;
     Vec3 m_currValue;
     float m_oldMainVolume;

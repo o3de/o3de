@@ -88,14 +88,6 @@ private:
         bool m_stickDuplicate;
     };
 
-    struct VertexSnapping
-    {
-        AZ_TYPE_INFO(VertexSnapping, "{20F16350-990C-4096-86E3-40D56DDDD702}")
-
-        float m_vertexCubeSize;
-        bool m_bRenderPenetratedBoundBox;
-    };
-
     struct SliceSettings
     {
         AZ_TYPE_INFO(SliceSettings, "{8505CCC1-874C-4389-B51A-B9E5FF70CFDA}")
@@ -107,7 +99,6 @@ private:
     Messaging m_messaging;
     Undo m_undo;
     DeepSelection m_deepSelection;
-    VertexSnapping m_vertexSnapping;
     SliceSettings m_sliceSettings;
     QIcon m_icon;
 };

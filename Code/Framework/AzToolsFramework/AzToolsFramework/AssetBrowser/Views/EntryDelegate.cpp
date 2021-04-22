@@ -140,7 +140,7 @@ namespace AzToolsFramework
             else
             {
                 QPixmap pixmap = thumbnail->GetPixmap(size);
-                painter->drawPixmap(point.x(), point.y(), size.width(), size.height(), pixmap);
+                painter->drawPixmap(point, pixmap.scaled(size, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
             }
             return m_iconSize;
         }

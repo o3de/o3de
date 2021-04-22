@@ -197,8 +197,6 @@ namespace ScriptCanvas
         bool IsVectorContainerType(const AZ::Uuid& type);
         bool IsVectorContainerType(const Type& type);
 
-        bool IsAllowedBehaviorClassVariableType(const AZ::Uuid& id);
-
         AZStd::vector<AZ::Uuid> GetContainedTypes(const AZ::Uuid& type);
         AZStd::vector<Type> GetContainedTypes(const Type& type);
         AZStd::pair<AZ::Uuid, AZ::Uuid> GetOutcomeTypes(const AZ::Uuid& type);
