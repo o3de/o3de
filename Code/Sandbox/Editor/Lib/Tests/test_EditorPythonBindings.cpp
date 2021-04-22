@@ -200,8 +200,6 @@ namespace EditorPythonBindingsUnitTests
             EXPECT_TRUE(behaviorBus->m_events.find("OpenFileBox") != behaviorBus->m_events.end());
             EXPECT_TRUE(behaviorBus->m_events.find("GetAxisConstraint") != behaviorBus->m_events.end());
             EXPECT_TRUE(behaviorBus->m_events.find("SetAxisConstraint") != behaviorBus->m_events.end());
-            EXPECT_TRUE(behaviorBus->m_events.find("GetEditMode") != behaviorBus->m_events.end());
-            EXPECT_TRUE(behaviorBus->m_events.find("SetEditMode") != behaviorBus->m_events.end());
             EXPECT_TRUE(behaviorBus->m_events.find("GetPakFromFile") != behaviorBus->m_events.end());
             EXPECT_TRUE(behaviorBus->m_events.find("Log") != behaviorBus->m_events.end());
             EXPECT_TRUE(behaviorBus->m_events.find("Undo") != behaviorBus->m_events.end());
