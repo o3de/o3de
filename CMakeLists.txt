@@ -125,7 +125,7 @@ ly_test_impact_post_step()
 # 6. Generate the O3DE find file and setup install locations for scripts, tools, assets etc., required by the engine
 if(NOT INSTALLED_ENGINE)
     ly_setup_o3de_install()
-endif()
 
-# IMPORTANT: must be included last
-include(cmake/CPack.cmake)
+    # IMPORTANT: must be included last
+    include(cmake/CPack.cmake)
+endif()
