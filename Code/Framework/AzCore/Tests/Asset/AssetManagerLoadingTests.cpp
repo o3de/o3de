@@ -622,10 +622,7 @@ namespace UnitTest
                 {
                     Asset<AssetWithAssetReference> asset1 =
                         m_testAssetManager->GetAsset(assetUuid, azrtti_typeid<AssetWithAssetReference>(), AZ::Data::AssetLoadBehavior::PreLoad);
-                    AZ::Debug::Trace::Output("", AZStd::string::format("Got ref from GetAsset: %s.  Will block: %s\n",
-                        asset1.GetId().ToString<AZStd::string>().c_str(),
-                        checkLoaded ? "Yes" : "No").c_str());
-
+                    
                     if (checkLoaded)
                     {
                         asset1.BlockUntilLoadComplete();
