@@ -24,7 +24,6 @@ namespace EMotionFX
         const AZStd::vector<AZ::Vector3>& vertices,
         const AZStd::vector<AZ::Vector3>& normals,
         const AZStd::vector<AZ::Vector2>& uvs,
-        const AZStd::vector<AZ::Color>& clothData,
         const AZStd::vector<VertexSkinInfluences>& skinningInfo
     ) {
         const AZ::u32 vertCount = aznumeric_cast<AZ::u32>(vertices.size());
