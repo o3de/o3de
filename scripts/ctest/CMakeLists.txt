@@ -65,17 +65,17 @@ foreach(suite_name ${LY_TEST_GLOBAL_KNOWN_SUITE_NAMES})
 endforeach()
 
 # EPB Sanity test is being registered here to validate that the ly_add_editor_python_test function works.
-if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedTesting IN_LIST LY_PROJECTS_TARGET_NAME)
-    ly_add_editor_python_test(
-        NAME epb_sanity_smoke_no_gpu
-        TEST_PROJECT AutomatedTesting
-        PATH ${CMAKE_CURRENT_LIST_DIR}/epb_sanity_test.py
-        TEST_SUITE smoke
-        TEST_SERIAL TRUE
-        RUNTIME_DEPENDENCIES
-            AutomatedTesting.Assets
-    )
-endif()
+#if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedTesting IN_LIST LY_PROJECTS_TARGET_NAME)
+#    ly_add_editor_python_test(
+#        NAME epb_sanity_smoke_no_gpu
+#        TEST_PROJECT AutomatedTesting
+#        PATH ${CMAKE_CURRENT_LIST_DIR}/epb_sanity_test.py
+#        TEST_SUITE smoke
+#        TEST_SERIAL TRUE
+#        RUNTIME_DEPENDENCIES
+#            AutomatedTesting.Assets
+#    )
+#endif()
 
 # add a custom test which makes sure that the test filtering works!
 
