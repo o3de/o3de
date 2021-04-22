@@ -150,7 +150,7 @@ namespace AzToolsFramework
         }
 
         PrefabOperationResult PrefabPublicHandler::InstantiatePrefab(
-            AZStd::string_view filePath, AZ::EntityId parent, AZ::Vector3 /*position*/)
+            AZStd::string_view filePath, AZ::EntityId parent, AZ::Vector3 position)
         {
             auto prefabEditorEntityOwnershipInterface = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
             if (!prefabEditorEntityOwnershipInterface)
@@ -193,11 +193,12 @@ namespace AzToolsFramework
                 PrefabUndoHelpers::UpdatePrefabInstance(
                     instanceToParentUnder->get(), "Update prefab instance", instanceToParentUnderDomBeforeCreate, undoBatch.GetUndoBatch());
 
-                CreateLink({GetEntityById(parent)}, instanceToCreate->get(), instanceToParentUnder->get().GetTemplateId(),
+                CreateLink({}, instanceToCreate->get(), instanceToParentUnder->get().GetTemplateId(),
                     undoBatch.GetUndoBatch(), parent);
                 AZ::EntityId containerEntityId = instanceToCreate->get().GetContainerEntityId();
 
-                // TODO - apply position
+                // Apply position
+                AZ::TransformBus::Event(containerEntityId, &AZ::TransformBus::Events::SetWorldTranslation, position);
             }
 
             return AZ::Success();
