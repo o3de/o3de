@@ -408,6 +408,13 @@ bool LegacyViewportCameraControllerInstance::HandleInputChannelEvent(const AzFra
         }
     }
 
+    UpdateCursorCapture(shouldCaptureCursor);
+
+    return shouldConsumeEvent;
+}
+
+void LegacyViewportCameraControllerInstance::UpdateCursorCapture(bool shouldCaptureCursor)
+{
     if (m_capturingCursor != shouldCaptureCursor)
     {
         if (shouldCaptureCursor)
@@ -427,8 +434,14 @@ bool LegacyViewportCameraControllerInstance::HandleInputChannelEvent(const AzFra
 
         m_capturingCursor = shouldCaptureCursor;
     }
+}
 
-    return shouldConsumeEvent;
+void LegacyViewportCameraControllerInstance::ResetInputChannels()
+{
+    m_modifiers = 0;
+    m_pressedKeys.clear();
+    UpdateCursorCapture(false);
+    m_inRotateMode = m_inMoveMode = m_inOrbitMode = m_inZoomMode = false;
 }
 
 void LegacyViewportCameraControllerInstance::UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event)

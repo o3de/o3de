@@ -26,6 +26,7 @@ namespace SandboxEditor
         explicit ViewportManipulatorControllerInstance(AzFramework::ViewportId viewport);
 
         bool HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event) override;
+        void ResetInputChannels() override;
         void UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event) override;
 
     private:

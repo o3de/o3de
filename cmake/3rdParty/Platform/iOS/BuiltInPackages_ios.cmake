@@ -11,7 +11,6 @@
 
 # shared by other platforms:
 ly_associate_package(PACKAGE_NAME zlib-1.2.8-rev2-multiplatform      TARGETS zlib       PACKAGE_HASH e6f34b8ac16acf881e3d666ef9fd0c1aee94c3f69283fb6524d35d6f858eebbb)
-ly_associate_package(PACKAGE_NAME Lua-5.3.5-rev3-multiplatform       TARGETS Lua        PACKAGE_HASH 171dcdd60bd91fb325feaab0e53dd185c9d6e7b701d53e66fc6c2c6ee91d8bff)
 ly_associate_package(PACKAGE_NAME md5-2.0-multiplatform              TARGETS md5        PACKAGE_HASH 29e52ad22c78051551f78a40c2709594f0378762ae03b417adca3f4b700affdf)
 ly_associate_package(PACKAGE_NAME RapidJSON-1.1.0-multiplatform      TARGETS RapidJSON  PACKAGE_HASH 18b0aef4e6e849389916ff6de6682ab9c591ebe15af6ea6017014453c1119ea1)
 ly_associate_package(PACKAGE_NAME RapidXML-1.13-multiplatform        TARGETS RapidXML   PACKAGE_HASH 510b3c12f8872c54b34733e34f2f69dd21837feafa55bfefa445c98318d96ebf)
@@ -26,7 +25,8 @@ ly_associate_package(PACKAGE_NAME lux_core-2.2-rev5-multiplatform    TARGETS lux
 ly_associate_package(PACKAGE_NAME freetype-2.10.4.14-mac-ios     TARGETS freetype        PACKAGE_HASH 67b4f57aed92082d3fd7c16aa244a7d908d90122c296b0a63f73e0a0b8761977)
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-mac-ios          TARGETS tiff            PACKAGE_HASH a23ae1f8991a29f8e5df09d6d5b00d7768a740f90752cef465558c1768343709)
 ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev3-ios  TARGETS AWSNativeSDK    PACKAGE_HASH 1246219a213ccfff76b526011febf521586d44dbc1753e474f8fb5fd861654a4)
-ly_associate_package(PACKAGE_NAME PhysX-4.1.0.25992954-rev1-ios  TARGETS PhysX           PACKAGE_HASH a2a48a09128337c72b9c2c1b8f43187c6c914e8509c9c6cd91810108748d7e09)
+ly_associate_package(PACKAGE_NAME Lua-5.3.5-rev5-ios             TARGETS Lua             PACKAGE_HASH c2d3c4e67046c293049292317a7d60fdb8f23effeea7136aefaef667163e5ffe)
+ly_associate_package(PACKAGE_NAME PhysX-4.1.0.25992954-rev2-ios  TARGETS PhysX           PACKAGE_HASH 27e68bd90915dbd0bd5f26cae714e9a137f6b1aa8a8e0bf354a4a9176aa553d5)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-ios          TARGETS mikkelsen       PACKAGE_HASH 976aaa3ccd8582346132a10af253822ccc5d5bcc9ea5ba44d27848f65ee88a8a)
 ly_associate_package(PACKAGE_NAME googletest-1.8.1-rev4-ios      TARGETS googletest      PACKAGE_HASH 2f121ad9784c0ab73dfaa58e1fee05440a82a07cc556bec162eeb407688111a7)
 ly_associate_package(PACKAGE_NAME googlebenchmark-1.5.0-rev2-ios TARGETS GoogleBenchmark PACKAGE_HASH c2ffaed2b658892b1bcf81dee4b44cd1cb09fc78d55584ef5cb8ab87f2d8d1ae)

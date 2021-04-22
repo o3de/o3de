@@ -24,6 +24,8 @@
 #include <AzToolsFramework/ToolsComponents/EditorEntityIconComponentBus.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 
+#include <QtViewPane.h>
+
 #include "../Editor/Objects/EntityObject.h"
 #include <LmbrCentral/Rendering/MeshComponentBus.h>
 #include <LmbrCentral/Rendering/RenderBoundsBus.h>
