@@ -625,7 +625,6 @@ AmazonToolbar ToolbarManager::GetObjectToolbar() const
     t.AddAction(ID_GOTO_SELECTED, ORIGINAL_TOOLBAR_VERSION);
     t.AddAction(ID_OBJECTMODIFY_ALIGNTOGRID, ORIGINAL_TOOLBAR_VERSION);
     t.AddAction(ID_OBJECTMODIFY_SETHEIGHT, ORIGINAL_TOOLBAR_VERSION);
-    t.AddAction(ID_MODIFY_ALIGNOBJTOSURF, ORIGINAL_TOOLBAR_VERSION);
 
     if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
     {
@@ -633,8 +632,6 @@ AmazonToolbar ToolbarManager::GetObjectToolbar() const
         t.AddAction(ID_EDIT_FREEZE, ORIGINAL_TOOLBAR_VERSION);
         t.AddAction(ID_EDIT_UNFREEZEALL, ORIGINAL_TOOLBAR_VERSION);
     }
-
-    t.AddAction(ID_OBJECTMODIFY_VERTEXSNAPPING, ORIGINAL_TOOLBAR_VERSION);
 
     return t;
 }

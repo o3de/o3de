@@ -88,17 +88,7 @@ namespace ScriptCanvas
     void EBusHandler::InitializeEBusHandling(AZStd::string_view busName, AZ::BehaviorContext* behaviorContext)
     {
         CreateHandler(busName, behaviorContext);
-        
-        const AZ::BehaviorEBusHandler::EventArray& events = m_handler->GetEvents();
-        AZStd::vector<AZ::Crc32> eventKeys;
-        eventKeys.reserve(events.size());
-
-        for (int eventIndex(0); eventIndex < events.size(); ++eventIndex)
-        {
-            eventKeys.push_back(eventIndex);
-        }
-
-        InitializeExecutionOuts(eventKeys);
+        InitializeExecutionOuts(m_handler->GetEvents().size());
     }
 
     bool EBusHandler::IsConnected() const
@@ -137,7 +127,7 @@ namespace ScriptCanvas
 
     void EBusHandler::OnEvent(const char* /*eventName*/, const int eventIndex, AZ::BehaviorValueParameter* result, const int numParameters, AZ::BehaviorValueParameter* parameters)
     {
-        CallOut(AZ::Crc32(eventIndex), result, parameters, numParameters);
+        CallOut(eventIndex, result, parameters, numParameters);
     }
 
     void EBusHandler::Reflect(AZ::ReflectContext* reflectContext)

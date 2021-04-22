@@ -1,0 +1,26 @@
+{
+    "Amazon":
+    {
+        "Tools":
+        {
+            "Prefab":
+            {
+                "Processing":
+                {
+                    "Stack":
+                    {
+                        "GameObjectCreation":
+                        [
+                            { "$type": "AzToolsFramework::Prefab::PrefabConversionUtils::EditorInfoRemover" },
+                            { "$type": "{AF6C36DA-CBB9-4DF4-AE2D-7BC6CCE65176}" },
+                            { 
+                                "$type": "AzToolsFramework::Prefab::PrefabConversionUtils::PrefabCatchmentProcessor",
+                                "SerializationFormat": "Text" // Options are "Binary" (default) or "Text". Prefer "Binary" for performance.
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}

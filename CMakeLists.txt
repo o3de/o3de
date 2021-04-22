@@ -22,6 +22,7 @@ if(CMAKE_VERSION VERSION_EQUAL 3.19)
 endif()
 
 include(cmake/Version.cmake)
+include(cmake/OutputDirectory.cmake)
 
 # Set the engine_path and engine_json
 set(o3de_engine_path ${CMAKE_CURRENT_LIST_DIR})
@@ -33,7 +34,6 @@ if(NOT PROJECT_NAME)
         VERSION ${LY_VERSION_STRING}
     )
 
-    set(INSTALLED_ENGINE FALSE)
     # o3de manifest
     include(cmake/o3de_manifest.cmake)
 endif()
@@ -55,7 +55,7 @@ list(APPEND CMAKE_MODULE_PATH "${o3de_engine_path}/cmake")
 ################################################################################
 # Initialize
 ################################################################################
-include(cmake/Initialize.cmake)
+include(cmake/GeneralSettings.cmake)
 include(cmake/FileUtil.cmake)
 include(cmake/PAL.cmake)
 include(cmake/PALTools.cmake)

@@ -11,3 +11,7 @@
 
 # CivetHttpServer.cpp uses a try catch block
 set(LY_COMPILE_OPTIONS PRIVATE /EHsc)
+set(LY_BUILD_DEPENDENCIES
+    PRIVATE
+        3rdParty::civetweb
+)
