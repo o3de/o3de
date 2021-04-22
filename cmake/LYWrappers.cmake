@@ -74,12 +74,10 @@ define_property(TARGET PROPERTY GEM_MODULE
 #                             for the list of variables that will be used by the target
 # \arg:TARGET_PROPERTIES additional properties to set to the target
 # \arg:AUTOGEN_RULES a set of AutoGeneration rules to be passed to the AzAutoGen expansion system
-# \arg:INSTALL_COMPONENT (optional) the grouping string of the target used for splitting up the install into smaller
-#                           packages.  If none is specified, LY_DEFAULT_INSTALL_COMPONENT will be used
 function(ly_add_target)
 
     set(options STATIC SHARED MODULE GEM_MODULE HEADERONLY EXECUTABLE APPLICATION UNKNOWN IMPORTED AUTOMOC AUTOUIC AUTORCC NO_UNITY)
-    set(oneValueArgs NAME NAMESPACE OUTPUT_SUBDIRECTORY OUTPUT_NAME INSTALL_COMPONENT)
+    set(oneValueArgs NAME NAMESPACE OUTPUT_SUBDIRECTORY OUTPUT_NAME)
     set(multiValueArgs FILES_CMAKE GENERATED_FILES INCLUDE_DIRECTORIES COMPILE_DEFINITIONS BUILD_DEPENDENCIES RUNTIME_DEPENDENCIES PLATFORM_INCLUDE_FILES TARGET_PROPERTIES AUTOGEN_RULES)
 
     cmake_parse_arguments(ly_add_target "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -341,9 +339,7 @@ function(ly_add_target)
 
     if(NOT ly_add_target_IMPORTED)
         if(NOT ly_add_target_INSTALL_COMPONENT)
-            set(_component_id ${LY_DEFAULT_INSTALL_COMPONENT})
-        else()
-            set(_component_id ${ly_add_target_INSTALL_COMPONENT})
+            set(ly_add_target_INSTALL_COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT})
         endif()
 
         ly_install_target(
@@ -353,7 +349,7 @@ function(ly_add_target)
             BUILD_DEPENDENCIES ${ly_add_target_BUILD_DEPENDENCIES}
             RUNTIME_DEPENDENCIES ${ly_add_target_RUNTIME_DEPENDENCIES}
             COMPILE_DEFINITIONS ${ly_add_target_COMPILE_DEFINITIONS}
-            COMPONENT ${_component_id}
+            COMPONENT ${ly_add_target_INSTALL_COMPONENT}
         )
     endif()
 
