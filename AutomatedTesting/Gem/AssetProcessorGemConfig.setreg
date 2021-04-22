@@ -16,12 +16,6 @@
                 },
                 "Exclude Restricted AssetProcessorTestAssets": {
                     "pattern": ".*\\\\/asset_processor_tests\\\\/restricted\\\\/.*"
-                },
-                "Exclude EditorPythonBindings": {
-                    "pattern": ".*\\\\/EditorPythonBindings\\\\/.*"
-                },
-                "Exclude PythonAssetBuilder": {
-                    "pattern": ".*\\\\/PythonAssetBuilder\\\\/.*"
                 }
             }
         }
