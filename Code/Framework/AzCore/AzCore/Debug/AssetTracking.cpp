@@ -63,7 +63,7 @@ namespace AZ
             static AssetTrackingImpl* GetSharedInstance();
             static ThreadData& GetSharedThreadData();
 
-            using MasterAssets = AZStd::unordered_map<AssetTrackingId, AssetMasterInfo, AZStd::hash<AssetTrackingId>, AZStd::equal_to<AssetTrackingId>, AZStdAssetTrackingAllocator>;
+            using MasterAssets = AZStd::unordered_map<AssetTrackingId, AssetPrimaryInfo, AZStd::hash<AssetTrackingId>, AZStd::equal_to<AssetTrackingId>, AZStdAssetTrackingAllocator>;
             using ThreadData = ThreadData;
             using mutex_type = AZStd::mutex;
             using lock_type = AZStd::lock_guard<mutex_type>;
@@ -118,7 +118,7 @@ namespace AZ
             auto& threadData = GetSharedThreadData();
             AssetTreeNodeBase* parentAsset = threadData.m_currentAssetStack.empty() ? nullptr : threadData.m_currentAssetStack.back();
             AssetTreeNodeBase* childAsset;
-            AssetMasterInfo* assetMasterInfo;
+            AssetPrimaryInfo* assetMasterInfo;
 
             if (!parentAsset)
             {
@@ -137,7 +137,7 @@ namespace AZ
                 }
                 else
                 {
-                    auto insertResult = m_masterAssets.emplace(assetId, AssetMasterInfo());
+                    auto insertResult = m_masterAssets.emplace(assetId, AssetPrimaryInfo());
                     assetMasterInfo = &insertResult.first->second;
                     assetMasterInfo->m_id = &insertResult.first->first;
                 }
@@ -304,7 +304,7 @@ namespace AZ
                 char* pos = buffer;
                 for (auto itr = assetStack.rbegin(); itr != assetStack.rend(); ++itr)
                 {
-                    pos += azsnprintf(pos, BUFFER_SIZE - (pos - buffer), "%s\n", (*itr)->GetAssetMasterInfo()->m_id->m_id.c_str());
+                    pos += azsnprintf(pos, BUFFER_SIZE - (pos - buffer), "%s\n", (*itr)->GetAssetPrimaryInfo()->m_id->m_id.c_str());
 
                     if (pos >= buffer + BUFFER_SIZE)
                     {

@@ -49,7 +49,7 @@
     </layout>
    </item>
    <item>
-    <widget class="QCheckBox" name="m_exportOnlyMasterCameraCheckBox">
+    <widget class="QCheckBox" name="m_exportOnlyPrimaryCameraCheckBox">
      <property name="text">
       <string>Export Only Master Camera</string>
      </property>
