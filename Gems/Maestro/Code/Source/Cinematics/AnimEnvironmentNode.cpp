@@ -67,10 +67,13 @@ void CAnimEnvironmentNode::Initialize()
     }
 }
 //////////////////////////////////////////////////////////////////////////
-void CAnimEnvironmentNode::Reflect(AZ::SerializeContext* serializeContext)
+void CAnimEnvironmentNode::Reflect(AZ::ReflectContext* context)
 {
-    serializeContext->Class<CAnimEnvironmentNode, CAnimNode>()
-        ->Version(1);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<CAnimEnvironmentNode, CAnimNode>()
+            ->Version(1);
+    }
 }
 
 void CAnimEnvironmentNode::Animate(SAnimContext& ac)
