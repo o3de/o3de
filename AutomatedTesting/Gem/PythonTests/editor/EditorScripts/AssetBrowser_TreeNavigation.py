@@ -66,7 +66,7 @@ class AssetBrowserTreeNavigationTest(EditorTestHelper):
             return collapse_success and expand_success
 
         # This is the hierarchy we are expanding (4 steps inside)
-        self.file_path = ("AutomatedTesting", "Assets", "ImageGradients", "lumberyard_gsi.png")
+        self.file_path = ("AutomatedTesting", "Assets", "ImageGradients", "image_grad_test_gsi.png")
 
         # 1) Open a new level
         self.test_success = self.create_level(
