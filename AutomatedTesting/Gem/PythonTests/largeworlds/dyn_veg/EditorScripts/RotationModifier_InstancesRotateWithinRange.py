@@ -103,7 +103,7 @@ class TestRotationModifier_InstancesRotateWithinRange(EditorTestHelper):
             terrain_texture_resolution=4096,
             use_terrain=False,
         )
-        general.run_console("e_WaterOcean=0")
+        general.set_current_view_position(512.0, 480.0, 38.0)
 
         # 2) Set up vegetation entities
         asset_path = os.path.join("Slices", "PurpleFlower.dynamicslice")

@@ -10,7 +10,6 @@
 #
 
 set(FILES
-    AWSGameLiftServerSDK_linux.cmake
     BuiltInPackages_linux.cmake
     dyad_linux.cmake
     FbxSdk_linux.cmake

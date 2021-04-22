@@ -60,6 +60,8 @@ class TestLayerSpawnerInheritBehavior(EditorTestHelper):
             use_terrain=False,
         )
 
+        general.set_current_view_position(512.0, 480.0, 38.0)
+
         # Create Emitter entity and add the required components
         position = math.Vector3(512.0, 512.0, 32.0)
         emitter_entity = dynveg.create_surface_entity("emitter_entity", position, 16.0, 16.0, 1.0)

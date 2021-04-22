@@ -260,6 +260,11 @@ namespace ScriptCanvas
             return m_nodeable;
         }
 
+        AZStd::optional<size_t> ExecutionTree::GetOutCallIndex() const
+        {
+            return m_outCallIndex != std::numeric_limits<size_t>::max() ? AZStd::optional<size_t>(m_outCallIndex) : AZStd::nullopt;
+        }
+
         ExecutionTreeConstPtr ExecutionTree::GetParent() const
         {
             return m_parent;
@@ -557,6 +562,11 @@ namespace ScriptCanvas
         void ExecutionTree::SetNameLexicalScope(const LexicalScope& lexicalScope)
         {
             m_lexicalScope = lexicalScope;
+        }
+
+        void ExecutionTree::SetOutCallIndex(size_t index)
+        {
+            m_outCallIndex = index;
         }
 
         void ExecutionTree::SetParent(ExecutionTreePtr parent)

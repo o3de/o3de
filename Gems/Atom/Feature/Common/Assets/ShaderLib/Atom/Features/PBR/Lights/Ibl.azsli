@@ -76,7 +76,7 @@ void ApplyIBL(Surface surface, inout LightingData lightingData)
 
             // Adjust IBL lighting by exposure.
             float iblExposureFactor = pow(2.0, SceneSrg::m_iblExposure);
-            lightingData.diffuseLighting += (iblDiffuse * iblExposureFactor * lightingData.occlusion);
+            lightingData.diffuseLighting += (iblDiffuse * iblExposureFactor * lightingData.diffuseAmbientOcclusion);
             lightingData.specularLighting += (iblSpecular * iblExposureFactor);
         }
     }

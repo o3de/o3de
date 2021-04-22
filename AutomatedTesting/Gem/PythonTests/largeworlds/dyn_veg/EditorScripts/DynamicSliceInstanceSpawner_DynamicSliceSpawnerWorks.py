@@ -43,6 +43,7 @@ class TestDynamicSliceInstanceSpawner(EditorTestHelper):
             use_terrain=False,
         )
         general.idle_wait(1.0)
+        general.set_current_view_position(512.0, 480.0, 38.0)
 
         # Grab the UUID that we need for creating an Dynamic Slice Instance Spawner
         dynamic_slice_spawner_uuid = azlmbr.math.Uuid_CreateString('{BBA5CC1E-B4CA-4792-89F7-93711E98FBD1}', 0)

@@ -53,6 +53,8 @@ class TestAltitudeFilterFilterStageToggle(EditorTestHelper):
             use_terrain=False,
         )
 
+        general.set_current_view_position(512.0, 480.0, 38.0)
+
         # Create basic vegetation entity
         position = math.Vector3(512.0, 512.0, 32.0)
         asset_path = os.path.join("Slices", "PinkFlower.dynamicslice")

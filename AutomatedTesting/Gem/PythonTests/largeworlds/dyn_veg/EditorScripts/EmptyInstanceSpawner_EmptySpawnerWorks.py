@@ -43,6 +43,7 @@ class TestEmptyInstanceSpawner(EditorTestHelper):
             use_terrain=False,
         )
         general.idle_wait(1.0)
+        general.set_current_view_position(512.0, 480.0, 38.0)
 
         # Grab the UUID that we need for creating an Empty Spawner
         empty_spawner_uuid = azlmbr.math.Uuid_CreateString('{23C40FD4-A55F-4BD3-BE5B-DC5423F217C2}', 0)

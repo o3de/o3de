@@ -61,6 +61,9 @@ class test_MeshBlocker_InstancesBlockedByMesh(EditorTestHelper):
             use_terrain=False,
         )
 
+        general.set_current_view_position(500.49, 498.69, 46.66)
+        general.set_current_view_rotation(-42.05, 0.00, -36.33)
+
         # Create entity with components "Vegetation Layer Spawner", "Vegetation Asset List", "Box Shape"
         entity_position = math.Vector3(512.0, 512.0, 32.0)
         asset_path = os.path.join("Slices", "PurpleFlower.dynamicslice")

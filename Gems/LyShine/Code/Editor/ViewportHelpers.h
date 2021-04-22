@@ -11,6 +11,8 @@
 */
 #pragma once
 
+#include <LyShine/Draw2d.h>
+
 namespace ViewportHelpers
 {
     //-------------------------------------------------------------------------------

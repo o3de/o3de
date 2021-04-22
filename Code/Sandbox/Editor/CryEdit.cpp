@@ -95,7 +95,6 @@ AZ_POP_DISABLE_WARNING
 
 #include "Core/QtEditorApplication.h"
 #include "StringDlg.h"
-#include "VoxelAligningTool.h"
 #include "NewLevelDialog.h"
 #include "GridSettingsDialog.h"
 #include "LayoutConfigDialog.h"
@@ -110,7 +109,6 @@ AZ_POP_DISABLE_WARNING
 #include "DisplaySettings.h"
 #include "GameEngine.h"
 
-#include "ObjectCloneTool.h"
 #include "StartupTraceHandler.h"
 #include "ThumbnailGenerator.h"
 #include "ToolsConfigPage.h"
@@ -153,7 +151,6 @@ AZ_POP_DISABLE_WARNING
 #include "LevelIndependentFileMan.h"
 #include "WelcomeScreen/WelcomeScreenDialog.h"
 #include "Dialogs/DuplicatedObjectsHandlerDlg.h"
-#include "EditMode/VertexSnappingModeTool.h"
 
 #include "Controls/ReflectedPropertyControl/PropertyCtrl.h"
 #include "Controls/ReflectedPropertyControl/ReflectedVar.h"
@@ -399,11 +396,8 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_EDITMODE_ROTATE, OnEditmodeRotate)
     ON_COMMAND(ID_EDITMODE_SCALE, OnEditmodeScale)
     ON_COMMAND(ID_EDITMODE_SELECT, OnEditmodeSelect)
-    ON_COMMAND(ID_EDIT_ESCAPE, OnEditEscape)
     ON_COMMAND(ID_OBJECTMODIFY_SETAREA, OnObjectSetArea)
     ON_COMMAND(ID_OBJECTMODIFY_SETHEIGHT, OnObjectSetHeight)
-    ON_COMMAND(ID_OBJECTMODIFY_VERTEXSNAPPING, OnObjectVertexSnapping)
-    ON_COMMAND(ID_MODIFY_ALIGNOBJTOSURF, OnAlignToVoxel)
     ON_COMMAND(ID_OBJECTMODIFY_FREEZE, OnObjectmodifyFreeze)
     ON_COMMAND(ID_OBJECTMODIFY_UNFREEZE, OnObjectmodifyUnfreeze)
     ON_COMMAND(ID_EDITMODE_SELECTAREA, OnEditmodeSelectarea)
@@ -413,11 +407,9 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_SELECT_AXIS_XY, OnSelectAxisXy)
     ON_COMMAND(ID_UNDO, OnUndo)
     ON_COMMAND(ID_TOOLBAR_WIDGET_REDO, OnUndo)     // Can't use the same ID, because for the menu we can't have a QWidgetAction, while for the toolbar we want one
-    ON_COMMAND(ID_EDIT_CLONE, OnEditClone)
     ON_COMMAND(ID_SELECTION_SAVE, OnSelectionSave)
     ON_COMMAND(ID_IMPORT_ASSET, OnOpenAssetImporter)
     ON_COMMAND(ID_SELECTION_LOAD, OnSelectionLoad)
-    ON_COMMAND(ID_MODIFY_ALIGNOBJTOSURF, OnAlignToVoxel)
     ON_COMMAND(ID_OBJECTMODIFY_ALIGNTOGRID, OnAlignToGrid)
     ON_COMMAND(ID_LOCK_SELECTION, OnLockSelection)
     ON_COMMAND(ID_EDIT_LEVELDATA, OnEditLevelData)
@@ -524,12 +516,10 @@ void CCryEditApp::RegisterActionHandlers()
 
     ON_COMMAND(ID_OPEN_MATERIAL_EDITOR, OnOpenMaterialEditor)
     ON_COMMAND(ID_GOTO_VIEWPORTSEARCH, OnGotoViewportSearch)
-    ON_COMMAND(ID_MATERIAL_PICKTOOL, OnMaterialPicktool)
     ON_COMMAND(ID_DISPLAY_SHOWHELPERS, OnShowHelpers)
     ON_COMMAND(ID_OPEN_TRACKVIEW, OnOpenTrackView)
     ON_COMMAND(ID_OPEN_UICANVASEDITOR, OnOpenUICanvasEditor)
     ON_COMMAND(ID_GOTO_VIEWPORTSEARCH, OnGotoViewportSearch)
-    ON_COMMAND(ID_MATERIAL_PICKTOOL, OnMaterialPicktool)
     ON_COMMAND(ID_TERRAIN_TIMEOFDAY, OnTimeOfDay)
     ON_COMMAND(ID_TERRAIN_TIMEOFDAYBUTTON, OnTimeOfDay)
 
@@ -2739,90 +2729,12 @@ void CCryEditApp::OnEditDelete()
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::DeleteSelectedEntities([[maybe_unused]] bool includeDescendants)
 {
-    // If Edit tool active cannot delete object.
-    if (GetIEditor()->GetEditTool())
-    {
-        if (GetIEditor()->GetEditTool()->OnKeyDown(GetIEditor()->GetViewManager()->GetView(0), VK_DELETE, 0, 0))
-        {
-            return;
-        }
-    }
-
     GetIEditor()->BeginUndo();
     CUndo undo("Delete Selected Object");
     GetIEditor()->GetObjectManager()->DeleteSelection();
     GetIEditor()->AcceptUndo("Delete Selection");
     GetIEditor()->SetModifiedFlag();
     GetIEditor()->SetModifiedModule(eModifiedBrushes);
-}
-
-void CCryEditApp::OnEditClone()
-{
-    if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        if (GetIEditor()->GetObjectManager()->GetSelection()->IsEmpty())
-        {
-            QMessageBox::critical(AzToolsFramework::GetActiveWindow(), QString(),
-                QObject::tr("You have to select objects before you can clone them!"));
-            return;
-        }
-
-        // Clear Widget selection - Prevents issues caused by cloning entities while a property in the Reflected Property Editor is being edited.
-        if (QApplication::focusWidget())
-        {
-            QApplication::focusWidget()->clearFocus();
-        }
-
-        CEditTool* tool = GetIEditor()->GetEditTool();
-        if (tool && qobject_cast<CObjectCloneTool*>(tool))
-        {
-            ((CObjectCloneTool*)tool)->Accept();
-        }
-
-        CObjectCloneTool* cloneTool = new CObjectCloneTool;
-        GetIEditor()->SetEditTool(cloneTool);
-        GetIEditor()->SetModifiedFlag();
-        GetIEditor()->SetModifiedModule(eModifiedBrushes);
-
-        // Accept the clone operation if users didn't choose to stick duplicated entities to the cursor
-        // This setting can be changed in the global preference of the editor
-        if (!gSettings.deepSelectionSettings.bStickDuplicate)
-        {
-            cloneTool->Accept();
-            GetIEditor()->GetSelection()->FinishChanges();
-        }
-    }
-}
-
-void CCryEditApp::OnEditEscape()
-{
-    if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        CEditTool* pEditTool = GetIEditor()->GetEditTool();
-        // Abort current operation.
-        if (pEditTool)
-        {
-            // If Edit tool active cannot delete object.
-            CViewport* vp = GetIEditor()->GetActiveView();
-            if (GetIEditor()->GetEditTool()->OnKeyDown(vp, VK_ESCAPE, 0, 0))
-            {
-                return;
-            }
-
-            if (GetIEditor()->GetEditMode() == eEditModeSelectArea)
-            {
-                GetIEditor()->SetEditMode(eEditModeSelect);
-            }
-
-            // Disable current tool.
-            GetIEditor()->SetEditTool(0);
-        }
-        else
-        {
-            // Clear selection on escape.
-            GetIEditor()->ClearSelection();
-        }
-    }
 }
 
 void CCryEditApp::OnMoveObject()
@@ -2987,14 +2899,6 @@ void CCryEditApp::OnUpdateEditmodeScale(QAction* action)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnUpdateEditmodeVertexSnapping(QAction* action)
-{
-    Q_ASSERT(action->isCheckable());
-    CEditTool* pEditTool = GetIEditor()->GetEditTool();
-    action->setChecked(qobject_cast<CVertexSnappingModeTool*>(pEditTool) != nullptr);
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnObjectSetArea()
 {
     CSelectionGroup* pSelection = GetIEditor()->GetSelection();
@@ -3140,19 +3044,6 @@ void CCryEditApp::OnObjectSetHeight()
     else
     {
         QMessageBox::critical(AzToolsFramework::GetActiveWindow(), QString(), QObject::tr("No objects selected"));
-    }
-}
-
-void CCryEditApp::OnObjectVertexSnapping()
-{
-    CEditTool* pEditTool = GetIEditor()->GetEditTool();
-    if (qobject_cast<CVertexSnappingModeTool*>(pEditTool))
-    {
-        GetIEditor()->SetEditTool(NULL);
-    }
-    else
-    {
-        GetIEditor()->SetEditTool("EditTool.VertexSnappingMode");
     }
 }
 
@@ -3480,37 +3371,8 @@ void CCryEditApp::OnAlignToGrid()
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnAlignToVoxel()
-{
-    CEditTool* pEditTool = GetIEditor()->GetEditTool();
-    if (qobject_cast<CVoxelAligningTool*>(pEditTool) != nullptr)
-    {
-        GetIEditor()->SetEditTool(nullptr);
-    }
-    else
-    {
-        GetIEditor()->SetEditTool(new CVoxelAligningTool());
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnUpdateAlignToVoxel(QAction* action)
-{
-    Q_ASSERT(action->isCheckable());
-    CEditTool* pEditTool = GetIEditor()->GetEditTool();
-    action->setChecked(qobject_cast<CVoxelAligningTool*>(pEditTool) != nullptr);
-
-    action->setEnabled(!GetIEditor()->GetSelection()->IsEmpty());
-}
-
 void CCryEditApp::OnShowHelpers()
 {
-    CEditTool* pEditTool(GetIEditor()->GetEditTool());
-    if (pEditTool && pEditTool->IsNeedSpecificBehaviorForSpaceAcce())
-    {
-        return;
-    }
     GetIEditor()->GetDisplaySettings()->DisplayHelpers(!GetIEditor()->GetDisplaySettings()->IsDisplayHelpers());
     GetIEditor()->Notify(eNotify_OnDisplayRenderUpdate);
 }
@@ -5137,12 +4999,6 @@ void CCryEditApp::OnOpenUICanvasEditor()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnMaterialPicktool()
-{
-    GetIEditor()->SetEditTool("EditTool.PickMaterial");
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnTimeOfDay()
 {
     GetIEditor()->OpenView("Time Of Day");
@@ -5292,12 +5148,6 @@ bool CCryEditApp::IsInRegularEditorMode()
 void CCryEditApp::OnOpenQuickAccessBar()
 {
     if (m_pQuickAccessBar == NULL)
-    {
-        return;
-    }
-
-    CEditTool* pEditTool(GetIEditor()->GetEditTool());
-    if (pEditTool && pEditTool->IsNeedSpecificBehaviorForSpaceAcce())
     {
         return;
     }

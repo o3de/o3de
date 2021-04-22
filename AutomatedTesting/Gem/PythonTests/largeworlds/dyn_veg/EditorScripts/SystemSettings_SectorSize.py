@@ -15,6 +15,7 @@ import azlmbr.math as math
 import azlmbr.paths
 import azlmbr.editor as editor
 import azlmbr.bus as bus
+import azlmbr.legacy.general as general
 
 sys.path.append(os.path.join(azlmbr.paths.devroot, "AutomatedTesting", "Gem", "PythonTests"))
 import editor_python_test_tools.hydra_editor_utils as hydra
@@ -47,6 +48,8 @@ class TestSystemSettingsSectorSize(EditorTestHelper):
             terrain_texture_resolution=4096,
             use_terrain=False,
         )
+
+        general.set_current_view_position(512.0, 480.0, 38.0)
 
         # Create basic vegetation entity
         position = math.Vector3(512.0, 512.0, 32.0)

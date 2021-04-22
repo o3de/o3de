@@ -39,7 +39,6 @@
 #include "ViewManager.h"
 #include "IEditorImpl.h"
 #include "GameEngine.h"
-#include "EditTool.h"
 // To use the Andrew's algorithm in order to make convex hull from the points, this header is needed.
 #include "Util/GeometryUtil.h"
 
@@ -3264,11 +3263,6 @@ ERotationWarningLevel CBaseObject::GetRotationWarningLevel() const
 
 bool CBaseObject::IsSkipSelectionHelper() const
 {
-    CEditTool* pEditTool(GetIEditor()->GetEditTool());
-    if (pEditTool && pEditTool->IsNeedToSkipPivotBoxForObjects())
-    {
-        return true;
-    }
     return false;
 }
 

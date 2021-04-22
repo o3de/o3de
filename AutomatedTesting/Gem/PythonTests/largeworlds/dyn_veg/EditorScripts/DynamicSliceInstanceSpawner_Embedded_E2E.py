@@ -65,6 +65,8 @@ class TestDynamicSliceInstanceSpawnerEmbeddedEditor(EditorTestHelper):
             use_terrain=False,
         )
 
+        general.set_current_view_position(512.0, 480.0, 38.0)
+
         # 2) Create a new entity with required vegetation area components and Script Canvas component for launcher test
         center_point = math.Vector3(512.0, 512.0, 32.0)
         asset_path = os.path.join("Slices", "PinkFlower.dynamicslice")
