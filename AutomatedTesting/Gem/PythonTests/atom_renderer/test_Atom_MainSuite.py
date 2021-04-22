@@ -48,11 +48,12 @@ class TestAtomLevels(object):
 
         request.addfinalizer(teardown)
 
-    @pytest.mark.test_case_id("C34428159")  # Level: ActorTest_100Actors
+    @pytest.mark.test_case_id("C34428174")  # Level: ShadowTest
     def test_AllLevels_OpenClose(self, request, editor, level, workspace, project, launcher_platform):
 
         cfg_args = [level]
-        test_levels = os.path.join(str(PROJECT_DIRECTORY), "Levels", "AtomLevels")
+        test_levels = os.listdir(os.path.join(str(PROJECT_DIRECTORY), project, "Levels", "AtomLevels"))
+        test_levels.append(level)
 
         expected_lines = []
         for level in test_levels:
