@@ -78,28 +78,4 @@ namespace AzFramework
     };
 
     using SceneSystemNotificationBus = AZ::EBus<SceneSystemNotifications>;
-
-    //! Interface used for notifications about individual scenes
-    class SceneNotifications
-        : public AZ::EBusTraits
-    {
-    public:
-
-        virtual ~SceneNotifications() = default;
-
-        //! There can be multiple listeners to changes in the scene system.
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
-
-        //! Bus is listened to using the pointer of the scene
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
-
-        //! Specifies that events are addressed by the pointer to the scene
-        using BusIdType = Scene*;
-
-        //! Called just before a scene is removed.
-        virtual void SceneAboutToBeRemoved() {};
-    };
-
-    using SceneNotificationBus = AZ::EBus<SceneNotifications>;
-
 } // AzFramework

@@ -109,8 +109,7 @@ namespace AzFramework
             if (scene->GetName() == name)
             {
                 SceneSystemNotificationBus::Broadcast(&SceneSystemNotificationBus::Events::SceneAboutToBeRemoved, *scene);
-                SceneNotificationBus::Event(scene.get(), &SceneNotificationBus::Events::SceneAboutToBeRemoved);
-
+                
                 scene = AZStd::move(m_scenes.back());
                 m_scenes.pop_back();
                 return true;
