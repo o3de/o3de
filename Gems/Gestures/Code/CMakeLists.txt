@@ -20,6 +20,9 @@ ly_add_target(
         PUBLIC
             Include
     BUILD_DEPENDENCIES
+        PUBLIC
+            Gem::Atom_RPI.Public
+            AZ::AtomCore
         PRIVATE
             Legacy::CryCommon
 )
