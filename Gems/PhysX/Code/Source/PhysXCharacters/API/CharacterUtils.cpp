@@ -184,6 +184,7 @@ namespace PhysX
                 if (sceneInterface == nullptr)
                 {
                     AZ_Error("PhysX Ragdoll", false, "Unable to Create Ragdoll, Physics Scene Interface is missing.");
+                    delete ragdoll;
                     return nullptr;
                 }
 
@@ -206,6 +207,7 @@ namespace PhysX
                             else
                             {
                                 AZ_Error("PhysX Ragdoll", false, "Failed to create collider shape for ragdoll node %s", nodeConfig.m_debugName.c_str());
+                                delete ragdoll;
                                 return nullptr;
                             }
                         }
@@ -287,6 +289,7 @@ namespace PhysX
                         else
                         {
                             AZ_Error("PhysX Ragdoll", false, "Failed to create joint for node index %i.", nodeIndex);
+                            delete ragdoll;
                             return nullptr;
                         }
                     }
