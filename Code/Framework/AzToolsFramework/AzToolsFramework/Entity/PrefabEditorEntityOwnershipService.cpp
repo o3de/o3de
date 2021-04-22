@@ -277,7 +277,7 @@ namespace AzToolsFramework
         AZ::IO::PathView filePath, Prefab::InstanceOptionalReference instanceToParentUnder)
     {
         AZStd::unique_ptr<Prefab::Instance> createdPrefabInstance =
-            m_prefabSystemComponent->CreatePrefab(entities, AZStd::move(nestedPrefabInstances), filePath);
+            m_prefabSystemComponent->CreatePrefab(entities, AZStd::move(nestedPrefabInstances), filePath, nullptr, false);
 
         if (createdPrefabInstance)
         {
@@ -296,7 +296,7 @@ namespace AzToolsFramework
             Prefab::PrefabDom serializedInstance;
             if (Prefab::PrefabDomUtils::StoreInstanceInPrefabDom(addedInstance, serializedInstance))
             {
-                m_prefabSystemComponent->UpdatePrefabTemplate(addedInstance.GetTemplateId(), serializedInstance);
+                m_prefabSystemComponent->UpdatePrefabTemplate(addedInstance.GetTemplateId(), serializedInstance, false);
             }
             
             return addedInstance;

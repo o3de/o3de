@@ -190,8 +190,10 @@ namespace AzToolsFramework
             * @param filePath the path to associate the template of the new instance to
             * @return A pointer to the newly created instance. nullptr on failure
             */
-            AZStd::unique_ptr<Instance> CreatePrefab(const AZStd::vector<AZ::Entity*>& entities, AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume,
-                AZ::IO::PathView filePath, AZStd::unique_ptr<AZ::Entity> containerEntity = nullptr) override;
+            AZStd::unique_ptr<Instance> CreatePrefab(
+                const AZStd::vector<AZ::Entity*>& entities, AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume,
+                AZ::IO::PathView filePath, AZStd::unique_ptr<AZ::Entity> containerEntity = nullptr,
+                bool ShouldCreateLinks = true) override;
 
             PrefabDom& FindTemplateDom(TemplateId templateId) override;
 
@@ -201,7 +203,7 @@ namespace AzToolsFramework
              * @param templateId The id of the template to update.
              * @param updatedDom The DOM to update the template with.
              */
-            void UpdatePrefabTemplate(TemplateId templateId, const PrefabDom& updatedDom) override;
+            void UpdatePrefabTemplate(TemplateId templateId, const PrefabDom& updatedDom, bool shouldPropagateTemplateChanges = true) override;
 
             void PropagateTemplateChanges(TemplateId templateId) override;
 
@@ -262,7 +264,7 @@ namespace AzToolsFramework
             * along with any new Prefab Links representing any of the nested instances present
             * @param instance The instance used to generate the new Template
             */
-            TemplateId CreateTemplateFromInstance(Instance& instance);
+            TemplateId CreateTemplateFromInstance(Instance& instance, bool shouldCreateLinks);
 
             /**
              * Connect two templates with given link, and a nested instance value iterator
