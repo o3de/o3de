@@ -90,16 +90,6 @@ namespace EMotionFX
             uvsLayer->ResetToOriginalData();
         }
 
-        // The cloth layer.
-        EMotionFX::VertexAttributeLayerAbstractData* clothLayer = nullptr;
-        if (!clothData.empty() && clothData.size() == vertices.size())
-        {
-            clothLayer = EMotionFX::VertexAttributeLayerAbstractData::Create(vertCount, EMotionFX::Mesh::ATTRIB_CLOTH_DATA, sizeof(AZ::u32), false);
-            mesh->AddVertexAttributeLayer(clothLayer);
-            AZStd::transform(clothData.begin(), clothData.end(), static_cast<AZ::u32*>(clothLayer->GetOriginalData()), [](const AZ::Color& color) { return color.ToU32(); });
-            clothLayer->ResetToOriginalData();
-        }
-
         auto* subMesh = EMotionFX::SubMesh::Create(
             /*parentMesh=*/    mesh,
             /*startVertex=*/   0,
