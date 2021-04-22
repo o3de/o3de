@@ -70,6 +70,12 @@ namespace Multiplayer
         True
     };
 
+    enum class AutoActivate : uint8_t
+    {
+        DoNotActivate,
+        Activate
+    };
+
     // This is just a placeholder
     // The level/prefab cooking will devise the actual solution for identifying a dynamically spawnable entity within a prefab
     struct PrefabEntityId

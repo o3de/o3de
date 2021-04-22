@@ -542,11 +542,8 @@ namespace Multiplayer
         // Create an entity if we don't have one
         if (createEntity)
         {
-            // @pereslav
-            //replicatorEntity = GetNetworkEntityManager()->CreateSingleEntityImmediateInternal(prefabEntityId, EntitySpawnType::Replicate, AutoActivate::DoNotActivate, netEntityId, localNetworkRole, AZ::Transform::Identity());
             INetworkEntityManager::EntityList entityList = GetNetworkEntityManager()->CreateEntitiesImmediate(
-                prefabEntityId, netEntityId, localNetworkRole,
-                AZ::Transform::Identity());
+                prefabEntityId, netEntityId, localNetworkRole, AutoActivate::DoNotActivate, AZ::Transform::Identity());
 
             if (entityList.size() == 1)
             {

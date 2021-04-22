@@ -49,7 +49,7 @@ namespace Multiplayer
 
         EntityList CreateEntitiesImmediate(
             const PrefabEntityId& prefabEntryId, NetEntityId netEntityId, NetEntityRole netEntityRole,
-            const AZ::Transform& transform) override;
+            AutoActivate autoActivate, const AZ::Transform& transform) override;
 
         uint32_t GetEntityCount() const override;
         NetworkEntityHandle AddEntityToEntityMap(NetEntityId netEntityId, AZ::Entity* entity) override;

@@ -356,7 +356,7 @@ namespace Multiplayer
 
     INetworkEntityManager::EntityList NetworkEntityManager::CreateEntitiesImmediate(
         const PrefabEntityId& prefabEntryId, NetEntityId netEntityId, NetEntityRole netEntityRole,
-        const AZ::Transform& transform)
+        AutoActivate autoActivate, const AZ::Transform& transform)
     {
         INetworkEntityManager::EntityList returnList;
 
@@ -400,6 +400,11 @@ namespace Multiplayer
                 if (transformComponent)
                 {
                     transformComponent->SetWorldTM(transform);
+                }
+
+                if (autoActivate == AutoActivate::DoNotActivate)
+                {
+                    clone->SetRuntimeActiveByDefault(false);
                 }
 
                 AzFramework::GameEntityContextRequestBus::Broadcast(
