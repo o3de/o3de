@@ -81,6 +81,7 @@ try:
     import pathlib
 except:
     import pathlib2 as pathlib
+from pathlib import Path
 
 _DCCSIG_PATH = Path(_DCCSIG_PATH).resolve()
 _DCCSI_PYTHON_LIB_PATH = Path(_DCCSI_PYTHON_LIB_PATH).resolve()
