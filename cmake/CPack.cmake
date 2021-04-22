@@ -20,29 +20,35 @@ if(LY_QTIFW_PATH)
 elseif(DEFINED ENV{QTIFWDIR})
     file(TO_CMAKE_PATH $ENV{QTIFWDIR} CPACK_IFW_ROOT)
 endif()
-if(NOT EXISTS ${CPACK_IFW_ROOT})
-    message(STATUS "WARN: A valid LY_QTIFW_PATH argument or QTIFWDIR environment variable is required to enable cpack support")
+
+if(CPACK_IFW_ROOT)
+    if(NOT EXISTS ${CPACK_IFW_ROOT})
+        message(FATAL_ERROR "Invalid path supplied for LY_QTIFW_PATH argument or QTIFWDIR environment variable")
+        return()
+    endif()
+else()
     return()
 endif()
 
 set(CPACK_GENERATOR "IFW")
 
-set(CPACK_PACKAGE_VENDOR "O3DE")
-set(CPACK_PACKAGE_VERSION "1.0.0")
+set(CPACK_PACKAGE_VENDOR "${PROJECT_NAME}")
+set(CPACK_PACKAGE_VERSION "${LY_VERSION_STRING}")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Installation Tool")
 
-set(CPACK_PACKAGE_FILE_NAME "o3de_installer")
+string(TOLOWER ${PROJECT_NAME} _project_name_lower)
+set(CPACK_PACKAGE_FILE_NAME "${_project_name_lower}_installer")
 
 set(DEFAULT_LICENSE_NAME "Apache 2.0")
 set(DEFAULT_LICENSE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt")
 
 set(CPACK_RESOURCE_FILE_LICENSE ${DEFAULT_LICENSE_FILE})
 
-set(CPACK_IFW_PACKAGE_TITLE "O3DE Installer")
-set(CPACK_IFW_PACKAGE_PUBLISHER "O3DE")
+set(CPACK_IFW_PACKAGE_TITLE "${PROJECT_NAME} Installer")
+set(CPACK_IFW_PACKAGE_PUBLISHER "${PROJECT_NAME}")
 
-set(CPACK_IFW_TARGET_DIRECTORY "@ApplicationsDir@/O3DE/${LY_VERSION_STRING}")
-set(CPACK_IFW_PACKAGE_START_MENU_DIRECTORY "O3DE")
+set(CPACK_IFW_TARGET_DIRECTORY "@ApplicationsDir@/${PROJECT_NAME}/${LY_VERSION_STRING}")
+set(CPACK_IFW_PACKAGE_START_MENU_DIRECTORY "${PROJECT_NAME}")
 
 # IMPORTANT: required to be included AFTER setting all property overrides
 include(CPack REQUIRED)
@@ -72,7 +78,7 @@ function(ly_configure_cpack_component ly_configure_cpack_component_NAME)
         set(license_name ${ly_configure_cpack_component_LICENSE_NAME})
         set(license_file ${ly_configure_cpack_component_LICENSE_FILE})
     elseif(ly_configure_cpack_component_LICENSE_NAME OR ly_configure_cpack_component_LICENSE_FILE)
-        message(WARNING "Invalid argument configuration. Both LICENSE_NAME and LICENSE_FILE must be set for ly_configure_cpack_component")
+        message(FATAL_ERROR "Invalid argument configuration. Both LICENSE_NAME and LICENSE_FILE must be set for ly_configure_cpack_component")
     endif()
 
     cpack_add_component(
@@ -92,6 +98,6 @@ endfunction()
 # configure ALL components here
 ly_configure_cpack_component(
     ${LY_DEFAULT_INSTALL_COMPONENT} REQUIRED
-    DISPLAY_NAME "O3DE Core"
-    DESCRIPTION "O3DE Headers and Libraries"
+    DISPLAY_NAME "${PROJECT_NAME} Core"
+    DESCRIPTION "${PROJECT_NAME} Headers, Libraries and Tools"
 )
