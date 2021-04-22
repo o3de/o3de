@@ -761,6 +761,7 @@ void MainWindow::InitActions()
     am->AddAction(ID_TOOLBAR_WIDGET_SNAP_GRID, QString());
     am->AddAction(ID_TOOLBAR_WIDGET_ENVIRONMENT_MODE, QString());
     am->AddAction(ID_TOOLBAR_WIDGET_DEBUG_MODE, QString());
+    am->AddAction(ID_TOOLBAR_WIDGET_SPACER_RIGHT, QString());
 
     // File actions
     am->AddAction(ID_FILE_NEW, tr("New Level"))
@@ -1252,9 +1253,9 @@ void MainWindow::InitActions()
         .Connect(&QAction::triggered, this, &MainWindow::OnRefreshAudioSystem);
 
     // Fame actions
-    am->AddAction(ID_VIEW_SWITCHTOGAME, tr("Play &Game"))
+    am->AddAction(ID_VIEW_SWITCHTOGAME, tr("Play Console"))
         .SetShortcut(tr("Ctrl+G"))
-        .SetToolTip(tr("Play Game (Ctrl+G)"))
+        .SetToolTip(tr("Play Console (Ctrl+G)"))
         .SetStatusTip(tr("Activate the game input mode"))
         .SetApplyHoverEffect()
         .SetCheckable(true)
@@ -1624,6 +1625,14 @@ QToolButton* MainWindow::CreateDebugModeButton()
     debugModeButton->setMenu(debugModeMenu);
 
     return debugModeButton;
+}
+
+QWidget* MainWindow::CreateSpacerRightWidget()
+{
+    QWidget* spacer = new QWidget();
+    spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    spacer->setVisible(true);
+    return spacer;
 }
 
 void MainWindow::InitEnvironmentModeMenu(CVarMenu* environmentModeMenu)
@@ -2534,6 +2543,9 @@ QWidget* MainWindow::CreateToolbarWidget(int actionId)
         break;
     case ID_TOOLBAR_WIDGET_DEBUG_MODE:
         w = CreateDebugModeButton();
+        break;
+    case ID_TOOLBAR_WIDGET_SPACER_RIGHT:
+        w = CreateSpacerRightWidget();
         break;
     default:
         qWarning() << Q_FUNC_INFO << "Unknown id " << actionId;

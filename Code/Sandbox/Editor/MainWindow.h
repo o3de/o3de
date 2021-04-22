@@ -228,6 +228,7 @@ private:
 
     QWidget* CreateSnapToGridWidget();
     QWidget* CreateSnapToAngleWidget();
+    QWidget* CreateSpacerRightWidget();
 
     QComboBox* CreateRefCoordComboBox();
 
