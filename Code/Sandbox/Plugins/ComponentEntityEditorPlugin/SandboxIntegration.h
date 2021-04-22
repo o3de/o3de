@@ -162,7 +162,6 @@ private:
     bool GetUndoSliceOverrideSaveValue() override;
     bool GetShowCircularDependencyError() override;
     void SetShowCircularDependencyError(const bool& showCircularDependencyError) override;
-    void SetEditTool(const char* tool) override;
     void LaunchLuaEditor(const char* files) override;
     bool IsLevelDocumentOpen() override;
     AZStd::string GetLevelName() override;

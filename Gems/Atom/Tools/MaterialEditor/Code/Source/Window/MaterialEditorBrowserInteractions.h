@@ -31,14 +31,14 @@ namespace AzToolsFramework
 
 namespace MaterialEditor
 {
-    class MaterialBrowserInteractions
+    class MaterialEditorBrowserInteractions
         : public AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(MaterialBrowserInteractions, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MaterialEditorBrowserInteractions, AZ::SystemAllocator, 0);
 
-        MaterialBrowserInteractions();
-        ~MaterialBrowserInteractions();
+        MaterialEditorBrowserInteractions();
+        ~MaterialEditorBrowserInteractions();
 
     private:
         //! AssetBrowserInteractionNotificationBus::Handler overrides...
