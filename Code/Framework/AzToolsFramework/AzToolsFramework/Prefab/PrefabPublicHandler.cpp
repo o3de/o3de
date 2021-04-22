@@ -388,24 +388,12 @@ void PrefabPublicHandler::GenerateUndoNodesForEntityChangeAndUpdateCache(
 
             if (patch.IsArray() && !patch.Empty() && beforeState.IsObject())
             {
-                if (IsInstanceContainerEntity(entityId) && !IsLevelInstanceContainerEntity(entityId))
-                {
-                    // Save these changes as patches to the link
-                    PrefabUndoLinkUpdate* linkUpdate = aznew PrefabUndoLinkUpdate(AZStd::to_string(static_cast<AZ::u64>(entityId)));
-                    linkUpdate->SetParent(parentUndoBatch);
-                    linkUpdate->Capture(patch, owningInstance->get().GetLinkId());
+                // Update the state of the entity
+                PrefabUndoEntityUpdate* state = aznew PrefabUndoEntityUpdate(AZStd::to_string(static_cast<AZ::u64>(entityId)));
+                state->SetParent(parentUndoBatch);
+                state->Capture(beforeState, afterState, entityId);
 
-                    linkUpdate->Redo();
-                }
-                else
-                {
-                    // Update the state of the entity
-                    PrefabUndoEntityUpdate* state = aznew PrefabUndoEntityUpdate(AZStd::to_string(static_cast<AZ::u64>(entityId)));
-                    state->SetParent(parentUndoBatch);
-                    state->Capture(beforeState, afterState, entityId);
-
-                    state->Redo();
-                }
+                state->Redo();
             }
 
             // Update the cache
