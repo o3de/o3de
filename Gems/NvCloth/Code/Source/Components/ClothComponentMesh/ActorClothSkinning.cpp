@@ -16,7 +16,7 @@
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
 #include <Integration/ActorComponentBus.h>
 
- // Needed to access the Mesh information inside Actor.
+// Needed to access the Mesh information inside Actor.
 #include <EMotionFX/Source/TransformData.h>
 #include <EMotionFX/Source/ActorInstance.h>
 
@@ -113,9 +113,9 @@ namespace NvCloth
                     continue;
                 }
 
-                for (int index = 0; index < subMeshInfo.m_numVertices; ++index)
+                for (int vertexIndex = 0; vertexIndex < subMeshInfo.m_numVertices; ++vertexIndex)
                 {
-                    const int skinnedDataIndex = meshRemappedVertices[subMeshInfo.m_verticesFirstIndex + index];
+                    const int skinnedDataIndex = meshRemappedVertices[subMeshInfo.m_verticesFirstIndex + vertexIndex];
                     if (skinnedDataIndex < 0)
                     {
                         // Removed particle
@@ -128,8 +128,8 @@ namespace NvCloth
 
                     for (size_t influenceIndex = 0; influenceIndex < influenceCount; ++influenceIndex)
                     {
-                        const AZ::u16 jointIndex = sourceSkinJointIndices[index * influenceCount + influenceIndex];
-                        const float weight = sourceSkinWeights[index * influenceCount + influenceIndex];
+                        const AZ::u16 jointIndex = sourceSkinJointIndices[vertexIndex * influenceCount + influenceIndex];
+                        const float weight = sourceSkinWeights[vertexIndex * influenceCount + influenceIndex];
 
                         auto skeletonIndexIt = skinToSkeletonIndexMap.find(jointIndex);
                         if (skeletonIndexIt == skinToSkeletonIndexMap.end())
@@ -401,7 +401,7 @@ namespace NvCloth
         AZStd::set<AZ::u16> jointIndices;
         for (size_t particleIndex = 0; particleIndex < numSimParticles; ++particleIndex)
         {
-            const auto& skinningInfo = skinningData[particleIndex];
+            const SkinningInfo& skinningInfo = skinningData[particleIndex];
             for (size_t weightIndex = 0; weightIndex < skinningInfo.m_jointWeights.size(); ++weightIndex)
             {
                 const AZ::u16 jointIndex = skinningInfo.m_jointIndices[weightIndex];

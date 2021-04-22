@@ -402,6 +402,10 @@ namespace AZ
                     // For each sub-mesh within each mesh, we want to create a separate sub-piece.
                     const size_t numSubMeshes = mesh->GetNumSubMeshes();
 
+                    AZ_Assert(numSubMeshes == modelLodAsset->GetMeshes().size(),
+                        "Number of submeshes (%d) in EMotionFX mesh (lod %d and joint index %d) doesn't match the number of meshes (%d) in model lod asset",
+                        numSubMeshes, lodIndex, jointIndex, modelLodAsset->GetMeshes().size());
+
                     for (size_t subMeshIndex = 0; subMeshIndex < numSubMeshes; ++subMeshIndex)
                     {
                         const EMotionFX::SubMesh* subMesh = mesh->GetSubMesh(subMeshIndex);
