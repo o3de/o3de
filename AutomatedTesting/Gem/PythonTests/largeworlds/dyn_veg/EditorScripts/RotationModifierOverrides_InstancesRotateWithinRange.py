@@ -90,7 +90,7 @@ class TestRotationModifierOverrides_InstancesRotateWithinRange(EditorTestHelper)
             terrain_texture_resolution=4096,
             use_terrain=False,
         )
-        general.run_console("e_WaterOcean=0")
+        general.set_current_view_position(512.0, 480.0, 38.0)
 
         # 2) Create vegetation entity and add components
         entity_position = math.Vector3(512.0, 512.0, 32.0)

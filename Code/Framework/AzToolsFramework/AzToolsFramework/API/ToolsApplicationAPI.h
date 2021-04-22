@@ -815,8 +815,6 @@ namespace AzToolsFramework
         /// Hide or show the circular dependency error when saving slices
         virtual void SetShowCircularDependencyError(const bool& /*showCircularDependencyError*/) {}
 
-        virtual void SetEditTool(const char* /*tool*/) {}
-
         /// Launches the Lua editor and opens the specified (space separated) files.
         virtual void LaunchLuaEditor(const char* /*files*/) {}
 
