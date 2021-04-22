@@ -115,9 +115,8 @@ def C15096737_Materials_DefaultMaterialLibraryChanges():
 
     imports.init()
 
-
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
     import azlmbr.legacy.general as general
     import azlmbr.bus
     from Physmaterial_Editor import Physmaterial_Editor
@@ -301,5 +300,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C15096737_Materials_DefaultMaterialLibraryChanges)

@@ -279,8 +279,6 @@ void CCryEditDoc::DeleteContents()
     // [LY-90904] move this to the EditorVegetationManager component
     InstanceStatObjEventBus::Broadcast(&InstanceStatObjEventBus::Events::ReleaseData);
 
-    GetIEditor()->SetEditMode(eEditModeSelect);
-
     //////////////////////////////////////////////////////////////////////////
     // Clear all undo info.
     //////////////////////////////////////////////////////////////////////////
