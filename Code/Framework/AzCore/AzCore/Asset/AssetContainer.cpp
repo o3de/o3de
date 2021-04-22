@@ -345,11 +345,6 @@ namespace AZ
             HandleReadyAsset(asset);
         }
 
-        void AssetContainer::OnAssetCanceled(AssetId assetId)
-        {
-            AZ_Error("AssetContainer", false, "Asset %s load was incorrectly canceled.", assetId.ToString<AZStd::string>().c_str());
-        }
-
         void AssetContainer::HandleReadyAsset(Asset<AssetData> asset)
         {
             RemoveFromAllWaitingPreloads(asset->GetId());
