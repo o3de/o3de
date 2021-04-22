@@ -9,5 +9,5 @@ remove or modify any license notices. This file is distributed on an "AS IS" BAS
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
 
-# LYN-652 to re-enable the next line
+# LYN-652 to re-enable once the Blast gem tests are stable
 # import asset_builder_blast
