@@ -123,8 +123,6 @@ public:
     MOCK_METHOD0(GetRuler, CRuler* ());
     MOCK_METHOD1(SetOperationMode, void(EOperationMode ));
     MOCK_METHOD0(GetOperationMode, EOperationMode());
-    MOCK_METHOD1(SetEditMode, void(int ));
-    MOCK_METHOD0(GetEditMode, int());
     MOCK_METHOD1(ShowTransformManipulator, ITransformManipulator* (bool));
     MOCK_METHOD0(GetTransformManipulator, ITransformManipulator* ());
     MOCK_METHOD1(SetAxisConstraints, void(AxisConstrains ));
