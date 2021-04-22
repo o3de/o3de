@@ -38,7 +38,8 @@ namespace AzToolsFramework
             AZ::IO::PathView filePath, Prefab::InstanceOptionalReference instanceToParentUnder = AZStd::nullopt) = 0;
 
         //! Instantiate the prefab file provided.
-        //! /param entityToParentUnder The entity the newly created prefab instance is parented under.
+        //! /param filePath The filepath for the prefab file the instance should be created from.
+        //! /param instanceToParentUnder The instance the newly instantiated prefab instance is parented under.
         //! /return The optional reference to the prefab instance.
         virtual Prefab::InstanceOptionalReference InstantiatePrefab(
             AZ::IO::PathView filePath, Prefab::InstanceOptionalReference instanceToParentUnder = AZStd::nullopt) = 0;

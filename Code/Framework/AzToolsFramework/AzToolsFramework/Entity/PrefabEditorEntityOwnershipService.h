@@ -25,7 +25,6 @@ namespace AzToolsFramework
     namespace Prefab
     {
         class Instance;
-        class InstanceEntityMapperInterface;
         class PrefabSystemComponentInterface;
         class PrefabLoaderInterface;
     }
@@ -209,7 +208,6 @@ namespace AzToolsFramework
 
         AZStd::string m_rootPath;
         AZStd::unique_ptr<Prefab::Instance> m_rootInstance;
-        Prefab::InstanceEntityMapperInterface* m_instanceEntityMapperInterface;
         Prefab::PrefabSystemComponentInterface* m_prefabSystemComponent;
         Prefab::PrefabLoaderInterface* m_loaderInterface;
         AzFramework::EntityContextId m_entityContextId;
