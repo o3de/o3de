@@ -145,8 +145,10 @@ namespace AZ
             const MaterialAssignmentMap& GetMaterialAssignmentMap(const MeshHandle& meshHandle) const override;
             void ConnectModelChangeEventHandler(const MeshHandle& meshHandle, ModelChangedEvent::Handler& handler) override;
 
-            void SetTransform(const MeshHandle& meshHandle, const AZ::Transform& transform) override;
+            void SetTransform(const MeshHandle& meshHandle, const AZ::Transform& transform,
+                const AZ::Vector3& nonUniformScale = AZ::Vector3::CreateOne()) override;
             Transform GetTransform(const MeshHandle& meshHandle) override;
+            Vector3 GetNonUniformScale(const MeshHandle& meshHandle) override;
 
             void SetSortKey(const MeshHandle& meshHandle, RHI::DrawItemSortKey sortKey) override;
             RHI::DrawItemSortKey GetSortKey(const MeshHandle& meshHandle) override;
