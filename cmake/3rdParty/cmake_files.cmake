@@ -14,7 +14,6 @@ set(FILES
     FindAWSGameLiftServerSDK.cmake
     Findcivetweb.cmake
     FindClang.cmake
-    FindDirectXShaderCompiler.cmake
     Finddyad.cmake
     Findetc2comp.cmake
     FindFbxSdk.cmake
