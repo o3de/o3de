@@ -101,13 +101,17 @@ namespace NvCloth
 
                 if (sourceSkinJointIndices.empty() || sourceSkinWeights.empty())
                 {
-                    return false;
+                    continue;
                 }
                 AZ_Assert(sourceSkinJointIndices.size() == sourceSkinWeights.size(),
                     "Size of skin joint indices buffer (%zu) different from skin weights buffer (%zu)",
                     sourceSkinJointIndices.size(), sourceSkinWeights.size());
 
-                const AZ::u32 influenceCount = AZ::GetMin<AZ::u32>(MaxSkinningBones, sourceSkinWeights.size() / sourcePositions.size());
+                const size_t influenceCount = sourceSkinWeights.size() / sourcePositions.size();
+                if (influenceCount == 0)
+                {
+                    continue;
+                }
 
                 for (int index = 0; index < subMeshInfo.m_numVertices; ++index)
                 {
@@ -119,10 +123,10 @@ namespace NvCloth
                     }
 
                     SkinningInfo& skinningInfo = skinningData[skinnedDataIndex];
+                    skinningInfo.m_jointIndices.resize(influenceCount);
+                    skinningInfo.m_jointWeights.resize(influenceCount);
 
-                    AZ::u32 influenceIndex = 0;
-                    AZ::u8 weightError = 255;
-                    for (; influenceIndex < influenceCount; ++influenceIndex)
+                    for (size_t influenceIndex = 0; influenceIndex < influenceCount; ++influenceIndex)
                     {
                         const AZ::u16 jointIndex = sourceSkinJointIndices[index * influenceCount + influenceIndex];
                         const float weight = sourceSkinWeights[index * influenceCount + influenceIndex];
@@ -137,26 +141,7 @@ namespace NvCloth
                         }
 
                         skinningInfo.m_jointIndices[influenceIndex] = skeletonIndexIt->second;
-                        skinningInfo.m_jointWeights[influenceIndex] = static_cast<AZ::u8>(AZ::GetClamp<float>(weight * 255.0f, 0.0f, 255.0f));
-                        if (skinningInfo.m_jointWeights[influenceIndex] >= weightError)
-                        {
-                            skinningInfo.m_jointWeights[influenceIndex] = weightError;
-                            weightError = 0;
-                            influenceIndex++;
-                            break;
-                        }
-                        else
-                        {
-                            weightError -= skinningInfo.m_jointWeights[influenceIndex];
-                        }
-                    }
-
-                    skinningInfo.m_jointWeights[0] += weightError;
-
-                    for (; influenceIndex < MaxSkinningBones; ++influenceIndex)
-                    {
-                        skinningInfo.m_jointIndices[influenceIndex] = 0;
-                        skinningInfo.m_jointWeights[influenceIndex] = 0;
+                        skinningInfo.m_jointWeights[influenceIndex] = weight;
                     }
                 }
             }
@@ -274,15 +259,15 @@ namespace NvCloth
         const AZ::Matrix3x4* skinningMatrices)
     {
         AZ::Matrix3x4 clothSkinningMatrix = AZ::Matrix3x4::CreateZero();
-        for (int weightIndex = 0; weightIndex < MaxSkinningBones; ++weightIndex)
+        for (size_t weightIndex = 0; weightIndex < skinningInfo.m_jointWeights.size(); ++weightIndex)
         {
-            if (skinningInfo.m_jointWeights[weightIndex] == 0)
+            const AZ::u16 jointIndex = skinningInfo.m_jointIndices[weightIndex];
+            const float jointWeight = skinningInfo.m_jointWeights[weightIndex];
+
+            if (AZ::IsClose(jointWeight, 0.0f))
             {
                 continue;
             }
-
-            const AZ::u16 jointIndex = skinningInfo.m_jointIndices[weightIndex];
-            const float jointWeight = skinningInfo.m_jointWeights[weightIndex] / 255.0f;
 
             // Blending matrices the same way done in GPU shaders, by adding each weighted matrix element by element.
             // This way the skinning results are much similar to the skinning performed in GPU.
@@ -357,15 +342,15 @@ namespace NvCloth
         const AZStd::unordered_map<AZ::u16, DualQuat>& skinningDualQuaternions)
     {
         DualQuat clothSkinningDualQuaternion(type_zero::ZERO);
-        for (int weightIndex = 0; weightIndex < MaxSkinningBones; ++weightIndex)
+        for (size_t weightIndex = 0; weightIndex < skinningInfo.m_jointWeights.size(); ++weightIndex)
         {
-            if (skinningInfo.m_jointWeights[weightIndex] == 0)
+            const AZ::u16 jointIndex = skinningInfo.m_jointIndices[weightIndex];
+            const float jointWeight = skinningInfo.m_jointWeights[weightIndex];
+
+            if (AZ::IsClose(jointWeight, 0.0f))
             {
                 continue;
             }
-
-            const AZ::u16 jointIndex = skinningInfo.m_jointIndices[weightIndex];
-            const float jointWeight = skinningInfo.m_jointWeights[weightIndex] / 255.0f;
 
             clothSkinningDualQuaternion += skinningDualQuaternions.at(jointIndex) * jointWeight;
         }
@@ -416,14 +401,17 @@ namespace NvCloth
         AZStd::set<AZ::u16> jointIndices;
         for (size_t particleIndex = 0; particleIndex < numSimParticles; ++particleIndex)
         {
-            for (int weightIndex = 0; weightIndex < MaxSkinningBones; ++weightIndex)
+            const auto& skinningInfo = skinningData[particleIndex];
+            for (size_t weightIndex = 0; weightIndex < skinningInfo.m_jointWeights.size(); ++weightIndex)
             {
-                if (skinningData[particleIndex].m_jointWeights[weightIndex] == 0)
+                const AZ::u16 jointIndex = skinningInfo.m_jointIndices[weightIndex];
+                const float jointWeight = skinningInfo.m_jointWeights[weightIndex];
+
+                if (AZ::IsClose(jointWeight, 0.0f))
                 {
                     continue;
                 }
 
-                const AZ::u16 jointIndex = skinningData[particleIndex].m_jointIndices[weightIndex];
                 jointIndices.insert(jointIndex);
             }
         }

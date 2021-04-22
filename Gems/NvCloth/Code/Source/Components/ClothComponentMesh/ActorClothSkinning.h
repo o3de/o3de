@@ -20,17 +20,14 @@ namespace NvCloth
 {
     struct MeshNodeInfo;
 
-    //! Maximum number of bones that can influence a particle.
-    static const int MaxSkinningBones = 4;
-
     //! Skinning information of a particle.
     struct SkinningInfo
     {
         //! Weights of each joint that influence the particle.
-        AZStd::array<AZ::u8, MaxSkinningBones> m_jointWeights;
+        AZStd::vector<float> m_jointWeights;
 
         //! List of joints that influence the particle.
-        AZStd::array<AZ::u16, MaxSkinningBones> m_jointIndices;
+        AZStd::vector<AZ::u16> m_jointIndices;
     };
 
     //! Class to retrieve skinning information from an actor on the same entity
