@@ -126,6 +126,9 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     }
 
     m_ui->m_assetBrowserTreeViewWidget->setModel(m_filterModel.data());
+    m_ui->m_assetBrowserTableViewWidget->setModel(m_tableModel.data());
+
+    m_ui->m_assetBrowserTableViewWidget->setVisible(false);
 
     connect(
         m_ui->m_searchWidget->GetFilter().data(), &AzAssetBrowser::AssetBrowserEntryFilter::updatedSignal, m_filterModel.data(),
@@ -153,6 +156,9 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         &AzAssetBrowser::SearchWidget::ClearTypeFilter);
 
     m_ui->m_assetBrowserTreeViewWidget->SetName("AssetBrowserTreeView_main");
+    m_ui->m_assetBrowserTableViewWidget->SetName("AssetBrowserTableView_main");
+
+    connect(m_ui->m_viewSwitcherCheckBox, &QCheckBox::stateChanged, this, &AzAssetBrowserWindow::SwitchDisplayView);
 }
 
 AzAssetBrowserWindow::~AzAssetBrowserWindow()
@@ -284,6 +290,12 @@ void AzAssetBrowserWindow::DoubleClickedItem([[maybe_unused]] const QModelIndex&
             AzAssetBrowserRequestHandler::OpenWithOS(fullFilePath);
         }
     }
+}
+
+void AzAssetBrowserWindow::SwitchDisplayView(const int state)
+{
+    m_ui->m_assetBrowserTableViewWidget->setVisible(state);
+    m_ui->m_assetBrowserTreeViewWidget->setVisible(!state);
 }
 
 #include <AzAssetBrowser/moc_AzAssetBrowserWindow.cpp>
