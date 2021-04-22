@@ -36,7 +36,7 @@ _LOGGER.info('local_host: {}'.format(_LOCAL_HOST))
 
 # -------------------------------------------------------------------------
 def start_wing_to_maya(local_host=_LOCAL_HOST,
-                       comman_port=6000,
+                       command_port=6000,
                        logger=_LOGGER,
                        *args, **kwargs):
     """
@@ -58,7 +58,7 @@ def start_wing_to_maya(local_host=_LOCAL_HOST,
     except NameError:
         port = None
 
-    port_name = str('{0}:{1}'.format(local_host, comman_port))
+    port_name = str('{0}:{1}'.format(local_host, command_port))
 
     # should only be getting the port passed in
     _LOGGER.info('Attempting to open port:: {0}'.format(port_name))
@@ -145,10 +145,10 @@ def start_wing_to_maya_menu():
     port = object()  # init a dummy object
 
     # default name ... name is first arg, or a kwarg
-    portName, kwargs = setSynthArgKwarg(port, arg_pos_index=0, argTag='portName',
-                                        inArgs=args, inKwargs=kwargs,
-                                        defaultValue="127.0.0.1:6000")
+    portName, kwargs = set_synth_arg_kwarg(port, arg_pos_index=0, arg_tag='portName',
+                                        in_args=args, in_kwargs=kwargs,
+                                        default_value="127.0.0.1:6000")
 
-    port = start_wing_to_maya(local_host=_LOCAL_HOST, comman_port=6000)
+    port = start_wing_to_maya(local_host=_LOCAL_HOST, command_port=6000)
     return
 # -------------------------------------------------------------------------
