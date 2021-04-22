@@ -279,7 +279,6 @@ void CCryEditDoc::DeleteContents()
     // [LY-90904] move this to the EditorVegetationManager component
     InstanceStatObjEventBus::Broadcast(&InstanceStatObjEventBus::Events::ReleaseData);
 
-    GetIEditor()->SetEditTool(0); // Turn off any active edit tools.
     GetIEditor()->SetEditMode(eEditModeSelect);
 
     //////////////////////////////////////////////////////////////////////////

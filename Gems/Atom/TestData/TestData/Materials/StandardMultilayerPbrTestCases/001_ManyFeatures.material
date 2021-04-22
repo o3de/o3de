@@ -7,7 +7,7 @@
         "layer1_ambientOcclusion": {
             "enable": true,
             "factor": 1.6399999856948853,
-            "textureMap": "TestData/Textures/cc0/bark1disp2.jpg"
+            "textureMap": "TestData/Textures/cc0/bark1_disp.jpg"
         },
         "layer1_baseColor": {
             "color": [
@@ -16,7 +16,7 @@
                 0.12039368599653244,
                 1.0
             ],
-            "textureMap": "TestData/Textures/cc0/bark1col.jpg"
+            "textureMap": "TestData/Textures/cc0/bark1_col.jpg"
         },
         "layer1_emissive": {
             "color": [
@@ -30,16 +30,16 @@
         "layer1_normal": {
             "factor": 0.4444443881511688,
             "flipY": true,
-            "textureMap": "TestData/Textures/cc0/bark1norm.jpg"
+            "textureMap": "TestData/Textures/cc0/bark1_norm.jpg"
         },
         "layer1_parallax": {
             "enable": true,
             "factor": 0.02500000037252903,
-            "textureMap": "TestData/Textures/cc0/bark1disp2.jpg"
+            "textureMap": "TestData/Textures/cc0/bark1_disp.jpg"
         },
         "layer1_roughness": {
             "lowerBound": 0.010100999847054482,
-            "textureMap": "TestData/Textures/cc0/bark1roughness.jpg"
+            "textureMap": "TestData/Textures/cc0/bark1_roughness.jpg"
         },
         "layer1_specularF0": {
             "factor": 0.5099999904632568,
@@ -55,7 +55,7 @@
         },
         "layer2_ambientOcclusion": {
             "factor": 1.2200000286102296,
-            "textureMap": "TestData/Textures/cc0/bark1disp2.jpg"
+            "textureMap": "TestData/Textures/cc0/bark1_disp.jpg"
         },
         "layer2_baseColor": {
             "textureMap": "TestData/Textures/cc0/Lava004_1K_Color.jpg"

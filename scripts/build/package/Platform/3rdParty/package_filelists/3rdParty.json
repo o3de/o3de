@@ -2,8 +2,6 @@
     "@3rdParty": {
         "3rdParty.txt": "#include",
         "AWS/AWSNativeSDK/1.7.167-az.2/**": "#include",
-        "AWS/GameLift/3.4.0/**": "#include",
-        "civetweb/civetweb-20160922-az.2/**": "#include",
         "CMake/3.19.1/**": "#include",
         "DirectXShaderCompiler/1.0.1-az.1/**": "#include",
         "DirectXShaderCompiler/2020.08.07/**": "#include",
