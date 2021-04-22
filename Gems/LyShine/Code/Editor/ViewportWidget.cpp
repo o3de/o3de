@@ -203,7 +203,7 @@ namespace
 } // anonymous namespace.
 
 ViewportWidget::ViewportWidget(EditorWindow* parent)
-    : AtomToolsFramework::RenderViewportWidget(AzFramework::InvalidViewportId, parent)
+    : AtomToolsFramework::RenderViewportWidget(parent)
     , m_editorWindow(parent)
     , m_viewportInteraction(new ViewportInteraction(m_editorWindow))
     , m_viewportAnchor(new ViewportAnchor())
