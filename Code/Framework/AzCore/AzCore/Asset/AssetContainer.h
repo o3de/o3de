@@ -80,7 +80,6 @@ namespace AZ
             // AssetBus
             void OnAssetReady(Asset<AssetData> asset) override;
             void OnAssetError(Asset<AssetData> asset) override;
-            void OnAssetCanceled(AssetId assetId) override;
 
             //////////////////////////////////////////////////////////////////////////
             // AssetLoadBus
