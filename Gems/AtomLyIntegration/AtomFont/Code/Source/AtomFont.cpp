@@ -851,12 +851,14 @@ XmlNodeRef AZ::AtomFont::LoadFontFamilyXml(const char* fontFamilyName, string& o
 
 void AZ::AtomFont::SceneAboutToBeRemoved(AzFramework::Scene& scene)
 {
-    AZ::RPI::Scene* rpiScene = scene.GetSubsystem<AZ::RPI::Scene>();
-
-    AZStd::lock_guard<AZStd::shared_mutex> lock(m_sceneToDynamicDrawMutex);
-    if ( auto it = m_sceneToDynamicDrawMap.find(rpiScene); it != m_sceneToDynamicDrawMap.end())
+    AZ::RPI::ScenePtr* rpiScene = scene.FindSubsystem<AZ::RPI::ScenePtr>();
+    if (rpiScene)
     {
-        m_sceneToDynamicDrawMap.erase(it);
+        AZStd::lock_guard<AZStd::shared_mutex> lock(m_sceneToDynamicDrawMutex);
+        if (auto it = m_sceneToDynamicDrawMap.find(rpiScene->get()); it != m_sceneToDynamicDrawMap.end())
+        {
+            m_sceneToDynamicDrawMap.erase(it);
+        }
     }
 }
 
