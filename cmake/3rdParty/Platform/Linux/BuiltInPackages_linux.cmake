@@ -36,7 +36,7 @@ ly_associate_package(PACKAGE_NAME v-hacd-2.0-rev1-multiplatform             TARG
 # platform-specific:
 ly_associate_package(PACKAGE_NAME freetype-2.10.4.14-linux          TARGETS freetype        PACKAGE_HASH 9ad246873067717962c6b780d28a5ce3cef3321b73c9aea746a039c798f52e93)
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-linux               TARGETS tiff            PACKAGE_HASH ae92b4d3b189c42ef644abc5cac865d1fb2eb7cb5622ec17e35642b00d1a0a76)
-ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev3-linux   TARGETS AWSNativeSDK    PACKAGE_HASH e69c55682638dc1e7fa571a61a82c8a69d395c74a008543a5188f4bd2b6b10c4)
+ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev4-linux   TARGETS AWSNativeSDK    PACKAGE_HASH b4db38de49d35a5f7500aed7f4aee5ec511dd3b584ee06fe9097885690191a5d)
 ly_associate_package(PACKAGE_NAME Lua-5.3.5-rev5-linux              TARGETS Lua             PACKAGE_HASH 1adc812abe3dd0dbb2ca9756f81d8f0e0ba45779ac85bf1d8455b25c531a38b0)
 ly_associate_package(PACKAGE_NAME PhysX-4.1.0.25992954-rev1-linux   TARGETS PhysX           PACKAGE_HASH e3ca36106a8dbf1524709f8bb82d520920ebd3ff3a92672d382efff406c75ee3)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-linux           TARGETS mikkelsen       PACKAGE_HASH 5973b1e71a64633588eecdb5b5c06ca0081f7be97230f6ef64365cbda315b9c8)
