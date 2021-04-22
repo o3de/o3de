@@ -161,8 +161,9 @@ namespace Multiplayer
                 DrawMetricRow("Total", "PropertyUpdates Received", entryColour, stats, propertyUpdatesRecv);
                 DrawMetricRow("Total", "Rpcs Sent", entryColour, stats, rpcsSent);
                 DrawMetricRow("Total", "Rpcs Received", entryColour, stats, rpcsRecv);
+                ImGui::Columns(1);
+                ImGui::End();
             }
-            ImGui::End();
         }
     }
 #endif
