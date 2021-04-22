@@ -10,6 +10,7 @@
 #
 
 set(FILES
+    Include/AtomToolsFramework/Debug/TraceRecorder.h
     Include/AtomToolsFramework/DynamicProperty/DynamicProperty.h
     Include/AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h
     Include/AtomToolsFramework/Inspector/InspectorWidget.h
@@ -21,6 +22,7 @@ set(FILES
     Include/AtomToolsFramework/Util/MaterialPropertyUtil.h
     Include/AtomToolsFramework/Util/Util.h
     Include/AtomToolsFramework/Viewport/RenderViewportWidget.h
+    Source/Debug/TraceRecorder.cpp
     Source/DynamicProperty/DynamicProperty.cpp
     Source/DynamicProperty/DynamicPropertyGroup.cpp
     Source/Inspector/InspectorWidget.cpp
