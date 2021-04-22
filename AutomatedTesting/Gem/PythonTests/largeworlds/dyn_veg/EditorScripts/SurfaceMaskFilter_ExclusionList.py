@@ -103,6 +103,8 @@ class TestExclusiveSurfaceMasksTag(EditorTestHelper):
             use_terrain=False,
         )
 
+        general.set_current_view_position(512.0, 480.0, 38.0)
+
         # 2) Create entity with components "Vegetation Layer Spawner", "Vegetation Asset List", "Box Shape"
         entity_position = math.Vector3(512.0, 512.0, 32.0)
         asset_path = os.path.join("Slices", "PurpleFlower.dynamicslice")
