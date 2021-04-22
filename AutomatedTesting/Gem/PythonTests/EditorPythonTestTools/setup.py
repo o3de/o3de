@@ -30,7 +30,7 @@ if __name__ == '__main__':
     setup(
         name="editor_python_test_tools",
         version="1.0.0",
-        description='Lumberyard editor Python bindings test tools',
+        description='O3DE editor Python bindings test tools',
         long_description=long_description,
         packages=find_packages(where='Tools', exclude=['tests']),
         install_requires=[
