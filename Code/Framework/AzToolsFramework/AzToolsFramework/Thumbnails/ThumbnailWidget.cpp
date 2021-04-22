@@ -81,6 +81,9 @@ namespace AzToolsFramework
                 int x = (originalWidth - realWidth) / 2;
                 // pixmap needs to be manually scaled to produce smoother result and avoid looking pixelated
                 // using painter.setRenderHint(QPainter::SmoothPixmapTransform); does not seem to work
+                // Note: there is a potential issue with pixmap.scaled:
+                // it is multithreaded (using global threadPool) and blocking until finished.
+                // A deadlock will happen if global threadPool has no free threads available.
                 painter.drawPixmap(QPoint(x, 0), pixmap.scaled(realWidth, realHeight, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
             }
             QWidget::paintEvent(event);

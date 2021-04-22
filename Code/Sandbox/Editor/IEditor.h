@@ -40,7 +40,6 @@ struct QMetaObject;
 class CBaseObject;
 class CCryEditDoc;
 class CSelectionGroup;
-class CEditTool;
 class CAnimationContext;
 class CTrackViewSequenceManager;
 class CGameEngine;
@@ -623,14 +622,6 @@ struct IEditor
     //! editMode - EEditMode
     virtual void SetEditMode(int editMode) = 0;
     virtual int GetEditMode() = 0;
-    //! Assign current edit tool, destroy previously used edit too.
-    virtual void SetEditTool(CEditTool* tool, bool bStopCurrentTool = true) = 0;
-    //! Assign current edit tool by class name.
-    virtual void SetEditTool(const QString& sEditToolName, bool bStopCurrentTool = true) = 0;
-    //! Reinitializes the current edit tool if one is selected.
-    virtual void ReinitializeEditTool() = 0;
-    //! Returns current edit tool.
-    virtual CEditTool* GetEditTool() = 0;
     //! Shows/Hides transformation manipulator.
     //! if bShow is true also returns a valid ITransformManipulator pointer.
     virtual ITransformManipulator* ShowTransformManipulator(bool bShow) = 0;
