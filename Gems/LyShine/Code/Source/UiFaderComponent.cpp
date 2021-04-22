@@ -11,6 +11,7 @@
 */
 #include "LyShine_precompiled.h"
 #include "UiFaderComponent.h"
+#include <LyShine/Draw2d.h>
 
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Math/MathUtils.h>
