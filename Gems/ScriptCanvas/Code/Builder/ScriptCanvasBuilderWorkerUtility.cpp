@@ -329,7 +329,7 @@ namespace ScriptCanvasBuilder
                     }
 
                     nodeLookUpMap.erase(nodePair.second->GetId());
-                    size_t eraseCount = compiledGraphData.m_nodes.erase(nodePair.second);
+                    [[maybe_unused]] size_t eraseCount = compiledGraphData.m_nodes.erase(nodePair.second);
                     AZ_Assert(eraseCount == 1, "Failed to erase node from compiled graph data");
 
                     delete node;
@@ -394,11 +394,13 @@ namespace ScriptCanvasBuilder
 
     int GetBuilderVersion()
     {
+        // #functions2 remove-execution-out-hash include version from all library nodes, split fingerprint generation to relax Is Out of Data restriction when graphs only need a recompile
         return static_cast<int>(BuilderVersion::Current)
             + static_cast<int>(ScriptCanvas::GrammarVersion::Current)
             + static_cast<int>(ScriptCanvas::RuntimeVersion::Current)
             ;
     }
+
     AZ::Outcome < AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset>, AZStd::string> LoadEditorAsset(AZStd::string_view filePath)
     {
         AZStd::shared_ptr<AZ::Data::AssetDataStream> assetDataStream = AZStd::make_shared<AZ::Data::AssetDataStream>();

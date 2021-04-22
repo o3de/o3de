@@ -15,7 +15,7 @@
 
 #include <memory>
 
-namespace Lumberyard
+namespace O3de
 {
     FileStreamDataSource::FileStreamDataSource(const base::FilePath& filePath) :
         m_filePath{ filePath }

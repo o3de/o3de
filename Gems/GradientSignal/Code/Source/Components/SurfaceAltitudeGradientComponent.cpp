@@ -58,7 +58,6 @@ namespace GradientSignal
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<SurfaceAltitudeGradientConfig>()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Constructor()
                 ->Property("shapeEntityId", BehaviorValueProperty(&SurfaceAltitudeGradientConfig::m_shapeEntityId))
@@ -140,7 +139,6 @@ namespace GradientSignal
             behaviorContext->Class<SurfaceAltitudeGradientComponent>()->RequestBus("SurfaceAltitudeGradientRequestBus");
 
             behaviorContext->EBus<SurfaceAltitudeGradientRequestBus>("SurfaceAltitudeGradientRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Event("GetShapeEntityId", &SurfaceAltitudeGradientRequestBus::Events::GetShapeEntityId)
                 ->Event("SetShapeEntityId", &SurfaceAltitudeGradientRequestBus::Events::SetShapeEntityId)

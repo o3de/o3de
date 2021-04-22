@@ -1121,8 +1121,6 @@ namespace GraphCanvas
 
                 QPointF globalConnectionPoint = ConversionUtils::AZToQPoint(globalConnectionVector);
 
-                GraphCanvasGraphicsView* view = viewHandler->AsGraphicsView();
-
                 QPointF anchorPoint(0.0f, 0.0f);
 
                 ToastConfiguration toastConfiguration(ToastType::Error, "Unable to connect to slot", m_validationResult.m_failureReason);

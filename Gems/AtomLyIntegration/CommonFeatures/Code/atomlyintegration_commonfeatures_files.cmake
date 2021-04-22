@@ -27,21 +27,16 @@ set(FILES
     Source/CoreLights/LightDelegateBase.h
     Source/CoreLights/LightDelegateBase.inl
     Source/CoreLights/LightDelegateInterface.h
-    Source/CoreLights/PointLightComponent.h
-    Source/CoreLights/PointLightComponent.cpp
-    Source/CoreLights/PointLightComponentController.h
-    Source/CoreLights/PointLightComponentController.cpp
     Source/CoreLights/PolygonLightDelegate.h
     Source/CoreLights/PolygonLightDelegate.cpp
     Source/CoreLights/QuadLightDelegate.h
     Source/CoreLights/QuadLightDelegate.cpp
+    Source/CoreLights/SimplePointLightDelegate.h
+    Source/CoreLights/SimplePointLightDelegate.cpp
+    Source/CoreLights/SimpleSpotLightDelegate.h
+    Source/CoreLights/SimpleSpotLightDelegate.cpp
     Source/CoreLights/SphereLightDelegate.h
     Source/CoreLights/SphereLightDelegate.cpp
-    Source/CoreLights/SpotLightComponent.h
-    Source/CoreLights/SpotLightComponent.cpp
-    Source/CoreLights/SpotLightComponentConfig.cpp
-    Source/CoreLights/SpotLightComponentController.h
-    Source/CoreLights/SpotLightComponentController.cpp
     Source/Decals/DecalComponent.h
     Source/Decals/DecalComponent.cpp
     Source/Decals/DecalComponentController.h
@@ -117,8 +112,8 @@ set(FILES
     Source/PostProcess/GradientWeightModifier/GradientWeightModifierComponent.h
     Source/PostProcess/GradientWeightModifier/GradientWeightModifierComponent.cpp
     Source/PostProcess/GradientWeightModifier/GradientWeightModifierComponentConfig.cpp
-    Source/PostProcess/GradientWeightModifier/GradientWeightModifierComponentController.h
-    Source/PostProcess/GradientWeightModifier/GradientWeightModifierComponentController.cpp
+    Source/PostProcess/GradientWeightModifier/GradientWeightModifierController.h
+    Source/PostProcess/GradientWeightModifier/GradientWeightModifierController.cpp
     Source/ScreenSpace/DeferredFogComponentController.h
     Source/ScreenSpace/DeferredFogComponentController.cpp
     Source/ScreenSpace/DeferredFogComponent.h
@@ -145,4 +140,6 @@ set(FILES
     Source/Scripting/EntityReferenceComponentConfig.cpp
     Source/Scripting/EntityReferenceComponentController.cpp
     Source/Scripting/EntityReferenceComponentController.h
+    Source/SurfaceData/SurfaceDataMeshComponent.cpp
+    Source/SurfaceData/SurfaceDataMeshComponent.h
 )

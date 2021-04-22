@@ -67,7 +67,7 @@ namespace PhysX
     CharacterControllerComponent::CharacterControllerComponent() = default;
 
     CharacterControllerComponent::CharacterControllerComponent(AZStd::unique_ptr<Physics::CharacterConfiguration> characterConfig,
-        AZStd::unique_ptr<Physics::ShapeConfiguration> shapeConfig)
+        AZStd::shared_ptr<Physics::ShapeConfiguration> shapeConfig)
         : m_characterConfig(AZStd::move(characterConfig))
         , m_shapeConfig(AZStd::move(shapeConfig))
     {
@@ -82,7 +82,7 @@ namespace PhysX
 
     void CharacterControllerComponent::Activate()
     {
-        EnablePhysics();
+        CreateController();
 
         AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
         Physics::CharacterRequestBus::Handler::BusConnect(GetEntityId());
@@ -92,7 +92,7 @@ namespace PhysX
 
     void CharacterControllerComponent::Deactivate()
     {
-        DisablePhysics();
+        DestroyController();
 
         Physics::CollisionFilteringRequestBus::Handler::BusDisconnect();
         Physics::WorldBodyRequestBus::Handler::BusDisconnect();
@@ -188,52 +188,22 @@ namespace PhysX
 
     Physics::Character* CharacterControllerComponent::GetCharacter()
     {
-        return m_controller.get();
+        return m_controller;
     }
 
     void CharacterControllerComponent::EnablePhysics()
     {
-        if (IsPhysicsEnabled())
-        {
-            return;
-        }
-
-        bool success = CreateController();
-        if (success)
-        {
-            Physics::WorldBodyNotificationBus::Event(GetEntityId(), &Physics::WorldBodyNotifications::OnPhysicsEnabled);
-        }
+        CreateController();
     }
 
     void CharacterControllerComponent::DisablePhysics()
     {
-        if(IsPhysicsEnabled())
-        {
-            m_controller->DisablePhysics();
-
-            // The character is first removed from the scene, and then its deletion is deferred.
-            // This ensures trigger exit events are raised correctly on deleted objects.
-            {
-                auto* scene = azdynamic_cast<PhysX::PhysXScene*>(m_controller->GetScene());
-                AZ_Assert(scene, "Invalid PhysX scene");
-                scene->DeferDelete(AZStd::move(m_controller));
-                m_controller.reset();
-            }
-
-            m_preSimulateHandler.Disconnect();
-
-            if (CharacterControllerRequestBus::Handler::BusIsConnected())
-            {
-                CharacterControllerRequestBus::Handler::BusDisconnect();
-            }
-
-            Physics::WorldBodyNotificationBus::Event(GetEntityId(), &Physics::WorldBodyNotifications::OnPhysicsDisabled);
-        }
+        DestroyController();
     }
 
     bool CharacterControllerComponent::IsPhysicsEnabled() const
     {
-        return m_controller && m_controller->m_simulating;
+        return m_controller != nullptr;
     }
 
     AZ::Aabb CharacterControllerComponent::GetAabb() const
@@ -247,7 +217,7 @@ namespace PhysX
 
     AzPhysics::SimulatedBody* CharacterControllerComponent::GetWorldBody()
     {
-        return m_controller.get();
+        return GetCharacter();
     }
 
     AzPhysics::SceneQueryHit CharacterControllerComponent::RayCast(const AzPhysics::RayCastRequest& request)
@@ -410,33 +380,50 @@ namespace PhysX
         }
     }
 
-    bool CharacterControllerComponent::CreateController()
+    void CharacterControllerComponent::CreateController()
     {
+        if (IsPhysicsEnabled())
+        {
+            return;
+        }
+
         AzPhysics::SceneHandle defaultSceneHandle = AzPhysics::InvalidSceneHandle;
         Physics::DefaultWorldBus::BroadcastResult(defaultSceneHandle, &Physics::DefaultWorldRequests::GetDefaultSceneHandle);
         if (defaultSceneHandle == AzPhysics::InvalidSceneHandle)
         {
             AZ_Error("PhysX Character Controller Component", false, "Failed to retrieve default scene.");
-            return false;
+            return;
         }
 
         m_characterConfig->m_debugName = GetEntity()->GetName();
         m_characterConfig->m_entityId = GetEntityId();
+        m_characterConfig->m_shapeConfig = m_shapeConfig;
+        // get all the collider shapes and add it to the config
+        PhysX::ColliderComponentRequestBus::EnumerateHandlersId(GetEntityId(), [this](PhysX::ColliderComponentRequests* handler)
+            {
+                auto shapes = handler->GetShapes();
+                m_characterConfig->m_colliders.insert(m_characterConfig->m_colliders.end(), shapes.begin(), shapes.end());
+                return true;
+            });
 
-        m_controller = Utils::Characters::CreateCharacterController(*m_characterConfig, *m_shapeConfig, defaultSceneHandle);
-        if (!m_controller)
-        {
-            AZ_Error("PhysX Character Controller Component", false, "Failed to create character controller.");
-            return false;
-        }
-        m_controller->EnablePhysics(*m_characterConfig);
-
-        AZ::Vector3 entityTranslation = AZ::Vector3::CreateZero();
-        AZ::TransformBus::EventResult(entityTranslation, GetEntityId(), &AZ::TransformBus::Events::GetWorldTranslation);
         // It's usually more convenient to control the foot position rather than the centre of the capsule, so
         // make the foot position coincide with the entity position.
-        m_controller->SetBasePosition(entityTranslation);
-        AttachColliders(*m_controller);
+        AZ::Vector3 entityTranslation = AZ::Vector3::CreateZero();
+        AZ::TransformBus::EventResult(entityTranslation, GetEntityId(), &AZ::TransformBus::Events::GetWorldTranslation);
+        m_characterConfig->m_position = entityTranslation;
+
+        AZ_Assert(m_controller == nullptr, "Calling create CharacterControllerComponent::CreateController() with an already created controller.");
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            AzPhysics::SimulatedBodyHandle bodyHandle = sceneInterface->AddSimulatedBody(defaultSceneHandle, m_characterConfig.get());
+            m_controller = azdynamic_cast<PhysX::CharacterController*>(sceneInterface->GetSimulatedBodyFromHandle(defaultSceneHandle, bodyHandle));
+        }
+        if (m_controller == nullptr)
+        {
+            AZ_Error("PhysX Character Controller Component", false, "Failed to create character controller.");
+            return;
+        }
+        
         CharacterControllerRequestBus::Handler::BusConnect(GetEntityId());
 
         m_preSimulateHandler = AzPhysics::SystemEvents::OnPresimulateEvent::Handler(
@@ -450,20 +437,27 @@ namespace PhysX
         {
             physXSystem->RegisterPreSimulateEvent(m_preSimulateHandler);
         }
-
-        return true;
     }
 
-    void CharacterControllerComponent::AttachColliders(Physics::Character& character)
+    void CharacterControllerComponent::DestroyController()
     {
-        PhysX::ColliderComponentRequestBus::EnumerateHandlersId(GetEntityId(), [&character](PhysX::ColliderComponentRequests* handler)
+        if (!IsPhysicsEnabled())
         {
-            for (auto& shape : handler->GetShapes())
-            {
-                character.AttachShape(shape);
-            }
-            return true;
-        });
-    }
+            return;
+        }
 
+        m_controller->DisablePhysics();
+
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            sceneInterface->RemoveSimulatedBody(m_controller->m_sceneOwner, m_controller->m_bodyHandle);
+            m_controller = nullptr;
+        }
+
+        m_preSimulateHandler.Disconnect();
+
+        CharacterControllerRequestBus::Handler::BusDisconnect();
+
+        Physics::WorldBodyNotificationBus::Event(GetEntityId(), &Physics::WorldBodyNotifications::OnPhysicsDisabled);
+    }
 } // namespace PhysX

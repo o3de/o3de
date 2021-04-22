@@ -129,13 +129,8 @@ if(pteObj.IsSuccess()):
     pte = pteObj.GetValue()
 
 # Tests for the Asset<> case
-cubeId = asset.AssetCatalogRequestBus(bus.Broadcast, 'GetAssetIdByPath', 'objects/default/primitive_cube.cgf', math.Uuid(), False)
-GetSetCompareTest(component, "MeshComponentRenderNode|Mesh asset", cubeId)
-PteTest(pte, "MeshComponentRenderNode|Mesh asset", cubeId)
-
-# Tests for the SimpleAssetReference case
-materialId = asset.AssetCatalogRequestBus(bus.Broadcast, 'GetAssetIdByPath', 'engineassets/texturemsg/defaultsolids.mtl', math.Uuid(), False)
-GetSetCompareTest(component, "MeshComponentRenderNode|Material override", materialId)
-PteTest(pte, "MeshComponentRenderNode|Material override", materialId)
+testAssetId = asset.AssetCatalogRequestBus(bus.Broadcast, 'GetAssetIdByPath', 'assets/objects/foliage/cedar.azmodel', math.Uuid(), False)
+GetSetCompareTest(component, "Controller|Configuration|Mesh Asset", testAssetId)
+PteTest(pte, "Controller|Configuration|Mesh Asset", testAssetId)
 
 editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'ExitNoPrompt')

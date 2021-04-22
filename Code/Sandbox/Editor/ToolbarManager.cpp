@@ -217,7 +217,7 @@ public:
 ToolbarManager::ToolbarManager(ActionManager* actionManager, MainWindow* mainWindow)
     : m_mainWindow(mainWindow)
     , m_actionManager(actionManager)
-    , m_settings("amazon", "lumberyard")
+    , m_settings("amazon", "O3DE")
     , m_expanderWatcher(new AmazonToolBarExpanderWatcher())
 {
     // Note that we don't actually save/load from AmazonToolbar::List
@@ -585,13 +585,6 @@ AmazonToolbar ToolbarManager::GetEditModeToolbar() const
     t.AddAction(ID_TOOLBAR_WIDGET_UNDO, ORIGINAL_TOOLBAR_VERSION);
     t.AddAction(ID_TOOLBAR_WIDGET_REDO, ORIGINAL_TOOLBAR_VERSION);
 
-    if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        t.AddAction(ID_TOOLBAR_SEPARATOR, ORIGINAL_TOOLBAR_VERSION);
-        t.AddAction(ID_EDITTOOL_LINK, ORIGINAL_TOOLBAR_VERSION);
-        t.AddAction(ID_EDITTOOL_UNLINK, ORIGINAL_TOOLBAR_VERSION);
-    }
-
     t.AddAction(ID_TOOLBAR_SEPARATOR, ORIGINAL_TOOLBAR_VERSION);
 
     if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
@@ -630,10 +623,8 @@ AmazonToolbar ToolbarManager::GetObjectToolbar() const
     AmazonToolbar t = AmazonToolbar("Object", QObject::tr("Object Toolbar"));
     t.SetMainToolbar(true);
     t.AddAction(ID_GOTO_SELECTED, ORIGINAL_TOOLBAR_VERSION);
-    t.AddAction(ID_OBJECTMODIFY_ALIGN, ORIGINAL_TOOLBAR_VERSION);
     t.AddAction(ID_OBJECTMODIFY_ALIGNTOGRID, ORIGINAL_TOOLBAR_VERSION);
     t.AddAction(ID_OBJECTMODIFY_SETHEIGHT, ORIGINAL_TOOLBAR_VERSION);
-    t.AddAction(ID_MODIFY_ALIGNOBJTOSURF, ORIGINAL_TOOLBAR_VERSION);
 
     if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
     {
@@ -641,8 +632,6 @@ AmazonToolbar ToolbarManager::GetObjectToolbar() const
         t.AddAction(ID_EDIT_FREEZE, ORIGINAL_TOOLBAR_VERSION);
         t.AddAction(ID_EDIT_UNFREEZEALL, ORIGINAL_TOOLBAR_VERSION);
     }
-
-    t.AddAction(ID_OBJECTMODIFY_VERTEXSNAPPING, ORIGINAL_TOOLBAR_VERSION);
 
     return t;
 }
@@ -705,25 +694,33 @@ void ToolbarManager::RestoreToolbarDefaults(const QString& toolbarName)
         const AmazonToolbar* defaultToolbar = FindDefaultToolbar(toolbarName);
         AmazonToolbar* existingToolbar = FindToolbar(toolbarName);
         Q_ASSERT(existingToolbar != nullptr);
-        const bool isInstantiated = existingToolbar->IsInstantiated();
 
-        if (isInstantiated)
+        if (existingToolbar != nullptr)
         {
-            // We have a QToolBar instance, updated it too
-            for (QAction* action : existingToolbar->Toolbar()->actions())
+            const bool isInstantiated = existingToolbar->IsInstantiated();
+
+            if (isInstantiated)
             {
-                existingToolbar->Toolbar()->removeAction(action);
+                // We have a QToolBar instance, updated it too
+                for (QAction* action : existingToolbar->Toolbar()->actions())
+                {
+                    existingToolbar->Toolbar()->removeAction(action);
+                }
             }
-        }
 
-        existingToolbar->CopyActions(*defaultToolbar);
+            Q_ASSERT(defaultToolbar != nullptr);
+            if (defaultToolbar != nullptr)
+            {
+                existingToolbar->CopyActions(*defaultToolbar);
+            }
 
-        if (isInstantiated)
-        {
-            existingToolbar->SetActionsOnInternalToolbar(m_actionManager);
-            existingToolbar->UpdateAllowedAreas();
+            if (isInstantiated)
+            {
+                existingToolbar->SetActionsOnInternalToolbar(m_actionManager);
+                existingToolbar->UpdateAllowedAreas();
+            }
+            SaveToolbars();
         }
-        SaveToolbars();
     }
     else
     {
@@ -1166,7 +1163,7 @@ bool EditableQToolBar::eventFilter(QObject* obj, QEvent* ev)
         mimeData->setText(action->text());
         drag->setMimeData(mimeData);
 
-        Qt::DropAction dropAction = drag->exec();
+        drag->exec();
         m_dndIndicator->setLastDragPos(QPoint());
         return true;
     }

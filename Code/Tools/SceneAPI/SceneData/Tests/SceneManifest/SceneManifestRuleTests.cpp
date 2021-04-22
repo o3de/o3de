@@ -13,19 +13,23 @@
 #include <AzTest/AzTest.h>
 
 #include <SceneAPI/SceneCore/Containers/SceneManifest.h>
+#include <SceneAPI/SceneCore/Containers/Scene.h>
+#include <SceneAPI/SceneCore/DataTypes/Rules/IScriptProcessorRule.h>
 #include <SceneAPI/SceneData/ReflectionRegistrar.h>
 #include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
+#include <SceneAPI/SceneData/Behaviors/ScriptProcessorRuleBehavior.h>
 
+#include <AzCore/Math/Quaternion.h>
 #include <AzCore/Name/NameDictionary.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/RTTI/ReflectionManager.h>
-#include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
+#include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzCore/UnitTest/Mocks/MockSettingsRegistry.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzFramework/FileFunc/FileFunc.h>
-#include <AzCore/Math/Quaternion.h>
 
 namespace AZ
 {
@@ -94,6 +98,19 @@ namespace AZ
 
                 m_jsonSystemComponent = AZStd::make_unique<JsonSystemComponent>();
                 m_jsonSystemComponent->Reflect(m_jsonRegistrationContext.get());
+
+                m_data.reset(new DataMembers);
+
+                using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+
+                ON_CALL(m_data->m_settings, Get(::testing::Matcher<FixedValueString&>(::testing::_), testing::_))
+                    .WillByDefault([](FixedValueString& value, AZStd::string_view) -> bool
+                        {
+                            value = "mock_path";
+                            return true;
+                        });
+
+                AZ::SettingsRegistry::Register(&m_data->m_settings);
             }
 
             void TearDown() override
@@ -106,9 +123,19 @@ namespace AZ
                 m_jsonRegistrationContext.reset();
                 m_jsonSystemComponent.reset();
 
+                AZ::SettingsRegistry::Unregister(&m_data->m_settings);
+                m_data.reset();
+
                 AZ::NameDictionary::Destroy();
                 UnitTest::AllocatorsFixture::TearDown();
             }
+
+            struct DataMembers
+            {
+                AZ::NiceSettingsRegistrySimpleMock  m_settings;
+            };
+
+            AZStd::unique_ptr<DataMembers> m_data;
         };
 
         TEST_F(SceneManifest_JSON, LoadFromString_BlankManifest_HasDefaultParts)
@@ -222,6 +249,31 @@ namespace AZ
             EXPECT_THAT(jsonText.c_str(), ::testing::HasSubstr(R"(2.0)"));
             EXPECT_THAT(jsonText.c_str(), ::testing::HasSubstr(R"(3.0)"));
             EXPECT_THAT(jsonText.c_str(), ::testing::HasSubstr(R"("scale": 10.0)"));
+        }
+
+        TEST_F(SceneManifest_JSON, ScriptProcessorRule_LoadWithEmptyScriptFilename_ReturnsEarly)
+        {
+            using namespace SceneAPI::Containers;
+            using namespace SceneAPI::Events;
+
+            constexpr const char* jsonManifest = { R"JSON(
+            {
+                "values": [
+                    {
+                        "$type": "ScriptProcessorRule",
+                        "scriptFilename": ""
+                    }
+                ]
+            })JSON" };
+
+            auto scene = AZ::SceneAPI::Containers::Scene("mock");
+            auto result = scene.GetManifest().LoadFromString(jsonManifest, m_serializeContext.get(), m_jsonRegistrationContext.get());
+            EXPECT_TRUE(result.IsSuccess());
+            EXPECT_FALSE(scene.GetManifest().IsEmpty());
+
+            auto scriptProcessorRuleBehavior =  AZ::SceneAPI::Behaviors::ScriptProcessorRuleBehavior();
+            auto update = scriptProcessorRuleBehavior.UpdateManifest(scene, AssetImportRequest::Update, AssetImportRequest::Generic);
+            EXPECT_EQ(update, ProcessingResult::Ignored);
         }
     }
 }

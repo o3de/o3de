@@ -595,7 +595,6 @@ namespace ScriptCanvasEditor
         m_commandLine = new Widget::CommandLine(this);
         m_commandLine->setBaseSize(QSize(size().width(), m_commandLine->size().height()));
         m_commandLine->setObjectName("CommandLine");        
-        m_commandLine->hide();
 
         m_layout->addWidget(m_commandLine);
         m_layout->addWidget(m_emptyCanvas);
@@ -1174,6 +1173,8 @@ namespace ScriptCanvasEditor
             }
             else
             {
+                delete m_slotTypeSelector;
+
                 return false;
             }
 
@@ -3973,7 +3974,6 @@ namespace ScriptCanvasEditor
 
                 if (mimeEvent)
                 {
-                    bool isValid = false;
                     NodeIdPair finalNode = ProcessCreateNodeMimeEvent(mimeEvent, graphCanvasGraphId, AZ::Vector2(aznumeric_cast<float>(scenePoint.x()), aznumeric_cast<float>(scenePoint.y())));
 
                     if (finalNode.m_graphCanvasId.IsValid())
@@ -4225,7 +4225,6 @@ namespace ScriptCanvasEditor
 
             if (mimeEvent)
             {
-                bool isValid = false;
                 NodeIdPair finalNode = ProcessCreateNodeMimeEvent(mimeEvent, graphCanvasGraphId, AZ::Vector2(aznumeric_cast<float>(scenePoint.x()), aznumeric_cast<float>(scenePoint.y())));
 
                 GraphCanvas::Endpoint sourceEndpoint;

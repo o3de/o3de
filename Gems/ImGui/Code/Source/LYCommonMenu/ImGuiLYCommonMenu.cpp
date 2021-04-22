@@ -23,7 +23,7 @@
 
 namespace ImGui
 {
-    // Resolution Widths to recommend for usage for both LumberYard Rendering and/or ImGui Rendering
+    // Resolution Widths to recommend for usage for both O3DE Rendering and/or ImGui Rendering
     static int s_renderResolutionWidths[7] = { 800, 1280, 1600, 1920, 2560, 3440, 3840 };
     static int s_renderAspectRatios[4][2] = { {16,9}, {16,10}, {43,18}, {4,3} };
     static const char* s_toggleTelemetryConsoleCmd = "radtm_ToggleEnabled 1";
@@ -155,8 +155,11 @@ namespace ImGui
                 ImGui::SetCursorPosX(prevCursorPos);
             }
 
-            // Main LumberYard menu
-            if (ImGui::BeginMenu("LumberYard"))
+            // Add some space before the first menu so it won't overlap with view control buttons
+            ImGui::SetCursorPosX(40.f);
+
+            // Main Open 3D Engine menu
+            if (ImGui::BeginMenu("Open 3D Engine"))
             {
                 // Asset Explorer
                 if (ImGui::MenuItem("Asset Explorer"))
@@ -536,8 +539,8 @@ namespace ImGui
                     {
                         int assertLevelValue = gAssertLevelCVAR->GetIVal();
                         int dragIntVal = assertLevelValue;
-                        ImGui::Text("sys_asserts: %d ( 0-off | 1-log | 2-popup )", assertLevelValue);
-                        ImGui::SliderInt("##sys_asserts", &dragIntVal, 0, 2);
+                        ImGui::Text("sys_asserts: %d ( 0-off | 1-log | 2-popup | 3-crash )", assertLevelValue);
+                        ImGui::SliderInt("##sys_asserts", &dragIntVal, 0, 3);
                         if (dragIntVal != assertLevelValue)
                         {
                             gAssertLevelCVAR->Set(dragIntVal);

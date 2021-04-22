@@ -28,9 +28,9 @@ namespace AzGameFramework
     GameApplication::GameApplication()
     {
     }
- 
-    GameApplication::GameApplication(int* argc, char*** argv)
-        : Application(argc, argv)
+
+    GameApplication::GameApplication(int argc, char** argv)
+        : Application(&argc, &argv)
     {
     }
 
@@ -80,6 +80,8 @@ namespace AzGameFramework
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectUserRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, true);
 #endif
+        // Update the Runtime file paths in case the "{BootstrapSettingsRootKey}/assets" key was overriden by a setting registry
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(registry);
     }
 
     AZ::ComponentTypeList GameApplication::GetRequiredSystemComponents() const
@@ -108,7 +110,7 @@ namespace AzGameFramework
     }
 
     void GameApplication::QueryApplicationType(AZ::ApplicationTypeQuery& appType) const
-    { 
+    {
         appType.m_maskValue = AZ::ApplicationTypeQuery::Masks::Game;
     };
 

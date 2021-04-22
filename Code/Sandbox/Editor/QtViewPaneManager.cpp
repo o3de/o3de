@@ -36,6 +36,8 @@
 #include <algorithm>
 #include <QScopedValueRollback>
 
+#include <AzFramework/API/ApplicationAPI.h>
+
 #include <AzAssetBrowser/AzAssetBrowserWindow.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 #include <AzQtComponents/Utilities/AutoSettingsGroup.h>
@@ -465,8 +467,6 @@ void DockWidget::RestoreState(bool forceDefault)
 
 QRect DockWidget::ProperGeometry() const
 {
-    Qt::DockWidgetArea area = isFloating() ? Qt::NoDockWidgetArea : m_mainWindow->dockWidgetArea(const_cast<DockWidget*>(this));
-
     QRect myGeom(pos(), size());
 
     // we need this state in global coordinates, but if we're parented to one of those group dock windows, there is a problem, it will be local coords.
@@ -985,6 +985,11 @@ bool QtViewPaneManager::ClosePanesWithRollback(const QVector<QString>& panesToKe
  */
 void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
 {
+    // Get whether the prefab system is enabled
+    bool isPrefabSystemEnabled = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(
+        isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+
     if (resetSettings)
     {
         // We're going to do something destructive (removing all of the viewpane settings). Better confirm with the user
@@ -1024,7 +1029,11 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
         state.viewPanes.push_back(LyViewPane::EntityInspector);
         state.viewPanes.push_back(LyViewPane::AssetBrowser);
         state.viewPanes.push_back(LyViewPane::Console);
-        state.viewPanes.push_back(LyViewPane::LevelInspector);
+
+        if (!isPrefabSystemEnabled)
+        {
+            state.viewPanes.push_back(LyViewPane::LevelInspector);
+        }
 
         state.mainWindowState = m_defaultMainWindowState;
 
@@ -1049,7 +1058,12 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
     const QtViewPane* assetBrowserViewPane = OpenPane(LyViewPane::AssetBrowser, QtViewPane::OpenMode::UseDefaultState);
     const QtViewPane* entityInspectorViewPane = OpenPane(LyViewPane::EntityInspector, QtViewPane::OpenMode::UseDefaultState);
     const QtViewPane* consoleViewPane = OpenPane(LyViewPane::Console, QtViewPane::OpenMode::UseDefaultState);
-    const QtViewPane* levelInspectorPane = OpenPane(LyViewPane::LevelInspector, QtViewPane::OpenMode::UseDefaultState);
+
+    const QtViewPane* levelInspectorPane = nullptr;
+    if (!isPrefabSystemEnabled)
+    {
+        levelInspectorPane = OpenPane(LyViewPane::LevelInspector, QtViewPane::OpenMode::UseDefaultState);
+    }
 
     // This class does all kinds of behind the scenes magic to make docking / restore work, especially with groups
     // so instead of doing our special default layout attach / docking right now, we want to make it happen
@@ -1366,7 +1380,7 @@ bool QtViewPaneManager::RestoreLayout(QString layoutName)
 
     for (const QString& paneName : state.viewPanes)
     {
-        const QtViewPane* pane = OpenPane(paneName, QtViewPane::OpenMode::OnlyOpen);
+        OpenPane(paneName, QtViewPane::OpenMode::OnlyOpen);
     }
 
     // must do this after opening all of the panes!

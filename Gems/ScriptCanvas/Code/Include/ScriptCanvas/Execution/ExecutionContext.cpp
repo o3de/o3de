@@ -170,7 +170,8 @@ namespace ScriptCanvas
                 parameters.push_back(bvp);
             }
 
-            for (const auto& entityId : runtimeData.m_input.m_entityIds)
+            const size_t entityIdSize = runtimeData.m_input.m_entityIds.size();
+            for (size_t i = 0; i < entityIdSize; ++i)
             {
                 AZ::BehaviorValueParameter bvp;
                 bvp.m_typeId = azrtti_typeid<Data::EntityIDType>();

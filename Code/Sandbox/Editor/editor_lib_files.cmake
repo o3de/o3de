@@ -10,8 +10,6 @@
 #
 
 set(FILES
-    NullEditTool.h
-    NullEditTool.cpp
     Translations/editor_en-us.ts
     Translations/assetbrowser_en-us.ts
     DPIAware.xml
@@ -316,8 +314,6 @@ set(FILES
     Material/MaterialHelpers.cpp
     Material/MaterialHelpers.h
     Material/MaterialDialog.qrc
-    Material/MaterialDialog.cpp
-    Material/MaterialDialog.h
     Material/MaterialPreviewModelView.cpp
     Material/MaterialPreviewModelView.h
     Material/PreviewModelView.cpp
@@ -391,22 +387,16 @@ set(FILES
     Controls/NumberCtrl.h
     Controls/PreviewModelCtrl.cpp
     Controls/PreviewModelCtrl.h
-    Controls/QRollupCtrl.cpp
-    Controls/QRollupCtrl.h
     Controls/SplineCtrl.cpp
     Controls/SplineCtrl.h
     Controls/SplineCtrlEx.cpp
     Controls/SplineCtrlEx.h
-    Controls/SyntaxColorizer.cpp
-    Controls/SyntaxColorizer.h
     Controls/TextEditorCtrl.cpp
     Controls/TextEditorCtrl.h
     Controls/TimelineCtrl.cpp
     Controls/TimelineCtrl.h
     Controls/TimeOfDaySlider.cpp
     Controls/TimeOfDaySlider.h
-    Controls/ToolButton.cpp
-    Controls/ToolButton.h
     Controls/WndGridHelper.h
     Controls/ReflectedPropertyControl/PropertyAnimationCtrl.cpp
     Controls/ReflectedPropertyControl/PropertyAnimationCtrl.h
@@ -455,8 +445,6 @@ set(FILES
     CustomResolutionDlg.cpp
     CustomResolutionDlg.ui
     CustomResolutionDlg.h
-    Dialogs/ButtonsPanel.cpp
-    Dialogs/ButtonsPanel.h
     ErrorReportDialog.ui
     ErrorReportDialog.cpp
     ErrorReportDialog.h
@@ -537,24 +525,8 @@ set(FILES
     Dialogs/PythonScriptsDialog.ui
     Dialogs/Generic/UserOptions.cpp
     Dialogs/Generic/UserOptions.h
-    AlignTool.cpp
-    AlignTool.h
-    ObjectCloneTool.cpp
-    ObjectCloneTool.h
     EditMode/SubObjectSelectionReferenceFrameCalculator.cpp
     EditMode/SubObjectSelectionReferenceFrameCalculator.h
-    EditMode/ObjectMode.cpp
-    EditMode/ObjectMode.h
-    RotateTool.cpp
-    RotateTool.h
-    EditTool.cpp
-    EditTool.h
-    LinkTool.cpp
-    LinkTool.h
-    PickObjectTool.cpp
-    PickObjectTool.h
-    VoxelAligningTool.cpp
-    VoxelAligningTool.h
     Export/ExportManager.cpp
     Export/ExportManager.h
     Export/OBJExporter.cpp
@@ -585,7 +557,6 @@ set(FILES
     Dialogs/DuplicatedObjectsHandlerDlg.h
     DocMultiArchive.h
     EditMode/DeepSelection.h
-    EditMode/VertexSnappingModeTool.h
     FBXExporterDialog.h
     FileTypeUtils.h
     GridUtils.h
@@ -634,8 +605,6 @@ set(FILES
     LensFlareEditor/LensFlareView.h
     LogFileImpl.cpp
     LogFileImpl.h
-    MatEditMainDlg.cpp
-    MatEditMainDlg.h
     MatEditPreviewDlg.cpp
     MatEditPreviewDlg.h
     Material/MaterialBrowser.cpp
@@ -651,8 +620,6 @@ set(FILES
     Material/MaterialLibrary.h
     Material/MaterialManager.cpp
     Material/MaterialManager.h
-    Material/MaterialPickTool.cpp
-    Material/MaterialPickTool.h
     MaterialSender.h
     MaterialSender.cpp
     Material/MaterialPythonFuncs.h
@@ -754,7 +721,6 @@ set(FILES
     ErrorReportTableModel.h
     ErrorReportTableModel.cpp
     EditMode/DeepSelection.cpp
-    EditMode/VertexSnappingModeTool.cpp
     FBXExporterDialog.cpp
     FBXExporterDialog.ui
     FileTypeUtils.cpp
@@ -998,6 +964,8 @@ set(FILES
     ViewportManipulatorController.h
     LegacyViewportCameraController.cpp
     LegacyViewportCameraController.h
+    ModernViewportCameraController.cpp
+    ModernViewportCameraController.h
     RenderViewport.cpp
     RenderViewport.h
     TopRendererWnd.cpp

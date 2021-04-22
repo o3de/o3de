@@ -12,10 +12,9 @@
 
 #pragma once
 
-#include <Utils/AssetHelper.h>
+#include <Atom/RPI.Reflect/Model/ModelLodAsset.h>
 
-struct IRenderMesh;
-struct SMeshColor;
+#include <Utils/AssetHelper.h>
 
 namespace NvCloth
 {
@@ -34,15 +33,10 @@ namespace NvCloth
             const AZStd::string& meshNode,
             MeshNodeInfo& meshNodeInfo,
             MeshClothInfo& meshClothInfo) override;
-        bool DoesSupportSkinnedAnimation() const override
-        {
-            return false;
-        }
 
     private:
-        bool CopyDataFromRenderMesh(
-            IRenderMesh& renderMesh,
-            const AZStd::vector<SMeshColor>& renderMeshClothData,
+        bool CopyDataFromMeshes(
+            const AZStd::vector<const AZ::RPI::ModelLodAsset::Mesh*>& meshes,
             MeshClothInfo& meshClothInfo);
     };
 } // namespace NvCloth

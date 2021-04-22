@@ -147,7 +147,7 @@ namespace EMotionFX
             if (EMotionFX::GetActorManager().GetNumActorInstances() == 0)
             {
                 AutoRegisteredActor actor = ActorFactory::CreateAndInit<SimpleJointChainActor>(2, "CanAddSimulatedObjectWithJointsActor");
-                ActorInstance* actorInstance = ActorInstance::Create(actor.get());
+                ActorInstance::Create(actor.get());
 
                 EXPECT_EQ(EMotionFX::GetActorManager().GetNumActorInstances(), 1) << "Failed to create actor set for reset test.";
             }
@@ -158,7 +158,7 @@ namespace EMotionFX
             if (EMotionFX::GetActorManager().GetNumActorInstances() == 0)
             {
                 AutoRegisteredActor actor = ActorFactory::CreateAndInit<SimpleJointChainActor>(2, "CanAddSimulatedObjectWithJointsActor");
-                ActorInstance* actorInstance = ActorInstance::Create(actor.get());
+                ActorInstance::Create(actor.get());
 
                 EXPECT_EQ(EMotionFX::GetActorManager().GetNumActorInstances(), 1) << "Failed to create actor set for reset test.";
 

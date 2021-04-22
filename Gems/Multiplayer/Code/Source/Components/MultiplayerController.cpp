@@ -27,6 +27,11 @@ namespace Multiplayer
         return m_owner.GetNetEntityId();
     }
 
+    NetEntityRole MultiplayerController::GetNetEntityRole() const
+    {
+        return GetNetBindComponent()->GetNetEntityRole();
+    }
+
     AZ::Entity* MultiplayerController::GetEntity() const
     {
         return m_owner.GetEntity();

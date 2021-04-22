@@ -46,12 +46,15 @@ namespace AZ
 
                 virtual ~IBlendShapeData() override = default;
 
+                void CloneAttributesFrom([[maybe_unused]] const IGraphObject* sourceObject) override {}
+
                 virtual size_t GetUsedControlPointCount() const = 0;
                 virtual int GetControlPointIndex(int vertexIndex) const = 0;
                 virtual int GetUsedPointIndexForControlPoint(int controlPointIndex) const = 0;
 
                 virtual unsigned int GetVertexCount() const = 0;
                 virtual unsigned int GetFaceCount() const = 0;
+                virtual const Face& GetFaceInfo(unsigned int index) const = 0;
 
                 virtual const AZ::Vector3& GetPosition(unsigned int index) const = 0;
                 virtual const AZ::Vector3& GetNormal(unsigned int index) const = 0;

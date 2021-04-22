@@ -22,10 +22,10 @@ namespace
 {
     int HandlerMain(int argc, char* argv[])
     {
-        Lumberyard::InstallCrashUploader(argc, argv);
+        O3de::InstallCrashUploader(argc, argv);
 
         LOG(ERROR) << "Initializing windows crash uploader";
-        int resultCode = crashpad::HandlerMain(argc, argv, Lumberyard::CrashUploader::GetCrashUploader()->GetUserStreamSources());
+        int resultCode = crashpad::HandlerMain(argc, argv, O3de::CrashUploader::GetCrashUploader()->GetUserStreamSources());
         
         return resultCode;
     }

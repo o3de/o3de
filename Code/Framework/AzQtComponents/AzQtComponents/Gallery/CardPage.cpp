@@ -11,7 +11,7 @@
 */
 
 #include "CardPage.h"
-#include "Gallery/ui_CardPage.h"
+#include <AzQtComponents/Gallery/ui_CardPage.h>
 
 #include <AzQtComponents/Components/Widgets/Card.h>
 #include <AzQtComponents/Components/Widgets/CardNotification.h>

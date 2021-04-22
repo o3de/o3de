@@ -42,7 +42,6 @@ namespace AZ
 
         void DiffuseProbeGridFeatureProcessor::Activate()
         {
-            AZ::RPI::Scene* scene = GetParentScene();
             RHI::RHISystemInterface* rhiSystem = RHI::RHISystemInterface::Get();
 
             m_diffuseProbeGrids.reserve(InitialProbeGridAllocationSize);
@@ -53,7 +52,7 @@ namespace AZ
 
             m_bufferPool = RHI::Factory::Get().CreateBufferPool();
             m_bufferPool->SetName(Name("DiffuseProbeGridBoxBufferPool"));
-            RHI::ResultCode resultCode = m_bufferPool->Init(*rhiSystem->GetDevice(), desc);
+            [[maybe_unused]] RHI::ResultCode resultCode = m_bufferPool->Init(*rhiSystem->GetDevice(), desc);
             AZ_Error("DiffuseProbeGridFeatureProcessor", resultCode == RHI::ResultCode::Success, "Failed to initialize buffer pool");
 
             // create box mesh vertices and indices
@@ -65,7 +64,7 @@ namespace AZ
                 imagePoolDesc.m_bindFlags = RHI::ImageBindFlags::ShaderReadWrite;
 
                 m_probeGridRenderData.m_imagePool = RHI::Factory::Get().CreateImagePool();
-                RHI::ResultCode result = m_probeGridRenderData.m_imagePool->Init(*rhiSystem->GetDevice(), imagePoolDesc);
+                [[maybe_unused]] RHI::ResultCode result = m_probeGridRenderData.m_imagePool->Init(*rhiSystem->GetDevice(), imagePoolDesc);
                 AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize output image pool");
             }
 
@@ -74,6 +73,7 @@ namespace AZ
             m_probeGridRenderData.m_probeIrradianceImageViewDescriptor = RHI::ImageViewDescriptor::Create(DiffuseProbeGridRenderData::IrradianceImageFormat, 0, 0);
             m_probeGridRenderData.m_probeDistanceImageViewDescriptor = RHI::ImageViewDescriptor::Create(DiffuseProbeGridRenderData::DistanceImageFormat, 0, 0);
             m_probeGridRenderData.m_probeRelocationImageViewDescriptor = RHI::ImageViewDescriptor::Create(DiffuseProbeGridRenderData::RelocationImageFormat, 0, 0);
+            m_probeGridRenderData.m_probeClassificationImageViewDescriptor = RHI::ImageViewDescriptor::Create(DiffuseProbeGridRenderData::ClassificationImageFormat, 0, 0);
 
             // load shader
             // Note: the shader may not be available on all platforms

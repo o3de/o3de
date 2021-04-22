@@ -36,6 +36,8 @@ namespace AZ
 
                 SCENE_DATA_API ~MeshVertexBitangentData() override = default;
 
+                SCENE_DATA_API void CloneAttributesFrom(const IGraphObject* sourceObject) override;
+
                 SCENE_DATA_API size_t GetCount() const override;
                 SCENE_DATA_API const AZ::Vector3& GetBitangent(size_t index) const override;
                 SCENE_DATA_API void SetBitangent(size_t vertexIndex, const AZ::Vector3& bitangent) override;

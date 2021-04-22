@@ -28,6 +28,7 @@
 #include <AzToolsFramework/ToolsComponents/ComponentMimeData.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/API/ViewPaneOptions.h>
 
 #include <QLabel>
 

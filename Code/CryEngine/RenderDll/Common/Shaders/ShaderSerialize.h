@@ -117,7 +117,9 @@ void sAddDataArray_POD(TArray<byte>& Dst, TArray<T>& Src, uint32& nOffs, uint32 
 template <typename T>
 void sExport(TArray<byte>& dst, T& data)
 {
+#if defined(AZ_ENABLE_TRACING)
     int startNum = dst.Num();
+#endif
 
     data.Export(dst);
     
@@ -260,7 +262,7 @@ struct SSShader
 
     void Export(TArray<byte>& dst)
     {
-        uint32 startOffset = dst.Num();
+        [[maybe_unused]] uint32 startOffset = dst.Num();
 
         sAddData(dst, m_nMaskGenFX);
         sAddData(dst, (uint32)m_eSHDType);
@@ -353,7 +355,7 @@ struct SSShaderParam
 
     void Export(TArray<byte>& dst)
     {
-        uint32 startOffset = dst.Num();
+        [[maybe_unused]] uint32 startOffset = dst.Num();
 
         sAddData(dst, m_nameIdx);
         sAddData(dst, (uint32)m_Type);
@@ -609,7 +611,7 @@ struct SCHWShader
 
     void Export(TArray<byte>& dst)
     {
-        uint32 startOffset = dst.Num();
+        [[maybe_unused]] uint32 startOffset = dst.Num();
 
         sAddData(dst, m_nMaskGenShader);
         sAddData(dst, m_nMaskGenFX);
@@ -687,7 +689,7 @@ struct SSTexSamplerFX
 
     void Export(TArray<byte>& dst)
     {
-        uint32 startOffset = dst.Num();
+        [[maybe_unused]] uint32 startOffset = dst.Num();
 
         sAddData(dst, m_nsName);
         sAddData(dst, m_nsNameTexture);
@@ -846,7 +848,7 @@ struct SSFXParam
 
     void Export(TArray<byte>& dst)
     {
-        uint32 startOffset = dst.Num();
+        [[maybe_unused]] uint32 startOffset = dst.Num();
 
         sAddData(dst, m_nsName);
         sAddData(dst, m_nFlags);
@@ -912,7 +914,7 @@ struct SSFXSampler
 
     void Export(TArray<byte>& dst)
     {
-        uint32 startOffset = dst.Num();
+        [[maybe_unused]] uint32 startOffset = dst.Num();
 
         sAddData(dst, m_nsName);
         sAddData(dst, m_nFlags);
@@ -975,7 +977,7 @@ struct SSFXTexture
 
     void Export(TArray<byte>& dst)
     {
-        uint32 startOffset = dst.Num();
+        [[maybe_unused]] uint32 startOffset = dst.Num();
 
         sAddData(dst, m_nsName);
         sAddData(dst, m_nsNameTexture);

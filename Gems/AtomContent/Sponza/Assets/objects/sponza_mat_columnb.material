@@ -4,6 +4,10 @@
     "parentMaterial": "",
     "propertyLayoutVersion": 3,
     "properties": {
+        "ambientOcclusion": {
+            "enable": true,
+            "textureMap": "Textures/columnB_1k_ao.png"
+        },
         "baseColor": {
             "color": [
                 0.800000011920929,
@@ -12,6 +16,23 @@
                 1.0
             ],
             "textureMap": "Textures/columnB_1k_basecolor.png"
+        },
+        "clearCoat": {
+            "enable": true,
+            "factor": 0.5,
+            "normalMap": "Textures/columnB_1k_normal.jpg",
+            "roughness": 0.30000001192092898
+        },
+        "general": {
+            "applySpecularAA": true
+        },
+        "irradiance": {
+            "color": [
+                1.0,
+                0.9015335440635681,
+                0.8348516225814819,
+                1.0
+            ]
         },
         "metallic": {
             "textureMap": "Textures/columnB_1k_metallic.png"
@@ -23,7 +44,6 @@
             "factor": 1.0
         },
         "parallax": {
-            "enable": true,
             "factor": 0.020999999716877939,
             "pdo": true,
             "quality": "High",

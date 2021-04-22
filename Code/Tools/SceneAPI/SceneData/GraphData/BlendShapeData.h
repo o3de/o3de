@@ -37,7 +37,8 @@ namespace AZ
                 static constexpr AZ::u8 MaxNumUVSets = 8;
 
                 SCENE_DATA_API ~BlendShapeData() override;
-                SCENE_DATA_API virtual unsigned int AddVertex(const Vector3& position, const Vector3& normal);
+                SCENE_DATA_API void AddPosition(const AZ::Vector3& position);
+                SCENE_DATA_API void AddNormal(const AZ::Vector3& normal);
                 SCENE_DATA_API void AddTangentAndBitangent(const Vector4& tangent, const Vector3& bitangent);
                 SCENE_DATA_API void AddUV(const Vector2& uv, AZ::u8 uvSetIndex);
                 SCENE_DATA_API void AddColor(const SceneAPI::DataTypes::Color& color, AZ::u8 colorSetIndex);
@@ -57,6 +58,7 @@ namespace AZ
                 //assume consistent winding - no stripping or fanning expected (3 index per face)
                 SCENE_DATA_API unsigned int GetVertexCount() const override;
                 SCENE_DATA_API unsigned int GetFaceCount() const override;
+                SCENE_DATA_API const Face& GetFaceInfo(unsigned int index) const override;
 
                 SCENE_DATA_API const Vector3& GetPosition(unsigned int index) const override;
                 SCENE_DATA_API const Vector3& GetNormal(unsigned int index) const override;

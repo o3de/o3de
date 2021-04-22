@@ -25,7 +25,6 @@
 #include "Objects/SelectionGroup.h"
 #include "Include/IObjectManager.h"
 #include "MathConversion.h"
-#include "EditTool.h"
 
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <ui_InfoBar.h>
@@ -58,7 +57,6 @@ CInfoBar::CInfoBar(QWidget* parent)
     m_prevEditMode = 0;
     m_bSelectionLocked = false;
     m_bSelectionChanged = false;
-    m_editTool = 0;
     m_bDragMode = false;
     m_prevMoveSpeed = 0;
     m_currValue = Vec3(-111, +222, -333); //this wasn't initialized. I don't know what a good value is
@@ -251,28 +249,6 @@ void CInfoBar::OnVectorUpdate(bool followTerrain)
     ITransformManipulator* pManipulator = GetIEditor()->GetTransformManipulator();
     if (pManipulator)
     {
-        CEditTool* pEditTool = GetIEditor()->GetEditTool();
-
-        if (pEditTool)
-        {
-            Vec3 diff = v - m_lastValue;
-            if (emode == eEditModeMove)
-            {
-                //GetIEditor()->RestoreUndo();
-                pEditTool->OnManipulatorDrag(GetIEditor()->GetActiveView(), pManipulator, diff);
-            }
-            if (emode == eEditModeRotate)
-            {
-                diff = DEG2RAD(diff);
-                //GetIEditor()->RestoreUndo();
-                pEditTool->OnManipulatorDrag(GetIEditor()->GetActiveView(), pManipulator, diff);
-            }
-            if (emode == eEditModeScale)
-            {
-                //GetIEditor()->RestoreUndo();
-                pEditTool->OnManipulatorDrag(GetIEditor()->GetActiveView(), pManipulator, diff);
-            }
-        }
         return;
     }
 
@@ -421,39 +397,22 @@ void CInfoBar::IdleUpdate()
         updateUI = true;
     }
 
-    if (GetIEditor()->GetEditTool() != m_editTool)
-    {
-        updateUI = true;
-        m_editTool = GetIEditor()->GetEditTool();
-    }
-
     QString str;
-    if (m_editTool)
-    {
-        str = m_editTool->GetStatusText();
-        if (str != m_sLastText)
-        {
-            updateUI = true;
-        }
-    }
-
     if (updateUI)
     {
-        if (!m_editTool)
+        if (m_numSelected == 0)
         {
-            if (m_numSelected == 0)
-            {
-                str = tr("None Selected");
-            }
-            else if (m_numSelected == 1)
-            {
-                str = tr("1 Object Selected");
-            }
-            else
-            {
-                str = tr("%1 Objects Selected").arg(m_numSelected);
-            }
+            str = tr("None Selected");
         }
+        else if (m_numSelected == 1)
+        {
+            str = tr("1 Object Selected");
+        }
+        else
+        {
+            str = tr("%1 Objects Selected").arg(m_numSelected);
+        }
+
         ui->m_statusText->setText(str);
         m_sLastText = str;
     }
@@ -466,9 +425,6 @@ void CInfoBar::IdleUpdate()
     }
 
     {
-        int settings = GetIEditor()->GetDisplaySettings()->GetSettings();
-        bool noCollision = settings & SETTINGS_NOCOLLISION;
-
         bool bPhysics = GetIEditor()->GetGameEngine()->GetSimulationMode();
         if ((ui->m_physicsBtn->isChecked() && !bPhysics) ||
             (!ui->m_physicsBtn->isChecked() && bPhysics))

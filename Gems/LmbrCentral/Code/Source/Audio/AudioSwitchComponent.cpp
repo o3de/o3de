@@ -40,7 +40,6 @@ namespace LmbrCentral
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->EBus<AudioSwitchComponentRequestBus>("AudioSwitchComponentRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Event("SetState", &AudioSwitchComponentRequestBus::Events::SetState)
                 ->Event("SetSwitchState", &AudioSwitchComponentRequestBus::Events::SetSwitchState)
                 ;

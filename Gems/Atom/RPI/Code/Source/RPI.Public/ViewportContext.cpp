@@ -101,10 +101,17 @@ namespace AZ
 
         void ViewportContext::RenderTick()
         {
-            if (m_currentPipeline)
+            // add the current pipeline to next render tick if it's not already added.
+            if (m_currentPipeline && m_currentPipeline->GetRenderMode() != RenderPipeline::RenderMode::RenderOnce)
             {
                 m_currentPipeline->AddToRenderTickOnce();
             }
+        }
+
+        void ViewportContext::OnBeginPrepareRender()
+        {
+            ViewportContextNotificationBus::Event(GetName(), &ViewportContextNotificationBus::Events::OnRenderTick);
+            ViewportContextIdNotificationBus::Event(GetId(), &ViewportContextIdNotificationBus::Events::OnRenderTick);
         }
 
         AZ::Name ViewportContext::GetName() const
@@ -192,6 +199,9 @@ namespace AZ
             {
                 m_defaultView = view;
                 UpdatePipelineView();
+
+                m_viewMatrixChangedEvent.Signal(view->GetWorldToViewMatrix());
+                m_projectionMatrixChangedEvent.Signal(view->GetViewToClipMatrix());
             }
         }
 

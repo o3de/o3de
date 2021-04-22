@@ -963,7 +963,6 @@ bool OutlinerListModel::DropMimeDataAssets(const QMimeData* data, [[maybe_unused
     for (const ComponentAssetPair& pair : componentAssetPairs)
     {
         const AZ::TypeId& componentType = pair.first;
-        const AZ::Data::AssetId& assetId = pair.second;
 
         componentsToAdd.push_back(componentType);
     }
@@ -988,7 +987,6 @@ bool OutlinerListModel::DropMimeDataAssets(const QMimeData* data, [[maybe_unused
     }
 
     // Assign asset associated with each created component.
-    const AZ::Entity::ComponentArrayType& componentsAdded = addComponentsOutcome.GetValue()[targetEntityId].m_componentsAdded;
     for (const ComponentAssetPair& pair : componentAssetPairs)
     {
         const AZ::TypeId& componentType = pair.first;

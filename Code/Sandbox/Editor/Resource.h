@@ -123,7 +123,6 @@
 #define ID_TOOL_SHELVE_LAST                        33375
 #define ID_EDIT_SELECTALL                          33376
 #define ID_EDIT_SELECTNONE                         33377
-#define ID_OBJECTMODIFY_VERTEXSNAPPING             33384
 #define ID_WIREFRAME                               33410
 #define ID_FILE_GENERATETERRAINTEXTURE             33445
 #define ID_GENERATORS_LIGHTING                     33446
@@ -181,8 +180,6 @@
 #define ID_TV_STOP                                 33568
 #define ID_TV_PAUSE                                33569
 #define ID_ADDNODE                                 33570
-#define ID_EDITTOOL_LINK                           33571
-#define ID_EDITTOOL_UNLINK                         33572
 #define ID_ADDSCENETRACK                           33573
 #define ID_FIND                                    33574
 #define ID_SNAP_TO_GRID                            33575
@@ -214,7 +211,6 @@
 #define ID_TV_JUMPSTART                            33601
 #define ID_TV_PREVKEY                              33602
 #define ID_TV_NEXTKEY                              33603
-#define ID_OBJECTMODIFY_ALIGN                      33604
 #define ID_PLAY_LOOP                               33607
 #define ID_TERRAIN                                 33611
 #define ID_OBJECTMODIFY_ALIGNTOGRID                33619
@@ -278,7 +274,6 @@
 #define ID_GAME_PC_ENABLEMEDIUMSPEC                33961
 #define ID_GAME_PC_ENABLEHIGHSPEC                  33962
 #define ID_GAME_PC_ENABLEVERYHIGHSPEC              33963
-#define ID_MODIFY_ALIGNOBJTOSURF                   33968
 #define ID_PANEL_VEG_CREATE_SEL                    33990
 #define ID_TOOLS_UPDATEPROCEDURALVEGETATION        33999
 #define ID_DISPLAY_GOTOPOSITION                    34004
@@ -373,7 +368,7 @@
 #define ID_DOCUMENTATION_GETTINGSTARTEDGUIDE    36023
 #define ID_DOCUMENTATION_TUTORIALS              36024
 #define ID_DOCUMENTATION_GLOSSARY               36025
-#define ID_DOCUMENTATION_LUMBERYARD             36026
+#define ID_DOCUMENTATION_O3DE                   36026
 #define ID_DOCUMENTATION_GAMELIFT               36027
 #define ID_DOCUMENTATION_RELEASENOTES           36028
 #define ID_DOCUMENTATION_GAMEDEVBLOG            36029

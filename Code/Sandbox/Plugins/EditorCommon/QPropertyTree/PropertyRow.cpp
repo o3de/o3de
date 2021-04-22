@@ -1512,7 +1512,6 @@ void PropertyRow::dropInto(PropertyRow* parentRow, PropertyRow* cursorRow, QProp
     if(parentRow->isContainer()){
         tree->model()->rowAboutToBeChanged(tree->model()->root()); // FIXME: select optimal row
         setSelected(false);
-        PropertyRowContainer* container = static_cast<PropertyRowContainer*>(parentRow);
         PropertyRow* oldParent = parent();
         TreePath oldParentPath = tree->model()->pathFromRow(oldParent);
         oldParent->erase(this);

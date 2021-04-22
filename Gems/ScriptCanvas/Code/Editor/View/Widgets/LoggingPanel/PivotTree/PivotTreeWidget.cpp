@@ -254,8 +254,6 @@ namespace ScriptCanvasEditor
         QAbstractItemModel* model = sourceModel();
         QModelIndex index = model->index(sourceRow, PivotTreeItem::Column::Name, sourceParent);
 
-        PivotTreeItem* basePivotTreeItem = static_cast<PivotTreeItem*>(index.internalPointer());
-
         QString test = model->data(index, Qt::DisplayRole).toString();
 
         bool showRow = test.lastIndexOf(m_filterRegex) >= 0;

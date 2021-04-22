@@ -57,7 +57,7 @@ namespace ScriptCanvas
 
             for (size_t resultIndex = 0; resultIndex < unpackedTypes.size(); ++resultIndex)
             {
-                const Data::Type outputType(Data::FromAZType(unpackedTypes[resultIndex]));
+                const Data::Type outputType = (unpackedTypes.size() == 1 && AZ::BehaviorContextHelper::IsStringParameter(*result)) ? Data::Type::String() : Data::FromAZType(unpackedTypes[resultIndex]);
 
                 const AZStd::string resultSlotName(AZStd::string::format("Result: %s", Data::GetName(outputType).data()));
                 SlotId addedSlotId;
@@ -119,7 +119,6 @@ namespace ScriptCanvas
         void AddMethodOutputSlot(const MethodOutputConfig& outputConfig)
         {
             const AZ::BehaviorMethod& method = outputConfig.config.m_method;
-            const AZ::BehaviorClass* bcClass = outputConfig.config.m_class;
 
             // check for checked operation
             if (auto checkOpAttribute = AZ::FindAttribute(AZ::ScriptCanvasAttributes::CheckedOperation, method.m_attributes))

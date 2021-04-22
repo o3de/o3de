@@ -123,7 +123,11 @@ namespace AzToolsFramework
         void Instance::SetTemplateSourcePath(AZ::IO::PathView sourcePath)
         {
             m_templateSourcePath = sourcePath;
-            m_containerEntity->SetName(sourcePath.Filename().Native());
+        }
+
+        void Instance::SetContainerEntityName(AZStd::string_view containerName)
+        {
+            m_containerEntity->SetName(containerName);
         }
 
         bool Instance::AddEntity(AZ::Entity& entity)
@@ -154,7 +158,7 @@ namespace AzToolsFramework
             if (instanceToTemplateEntityIdIterator != m_instanceToTemplateEntityIdMap.end())
             {
                 entityAliasToRemove = instanceToTemplateEntityIdIterator->second;
-                bool isEntityRemoved = m_instanceEntityMapper->UnregisterEntity(entityId) &&
+                [[maybe_unused]] bool isEntityRemoved = m_instanceEntityMapper->UnregisterEntity(entityId) &&
                     m_templateToInstanceEntityIdMap.erase(entityAliasToRemove) && m_instanceToTemplateEntityIdMap.erase(entityId);
                 AZ_Assert(isEntityRemoved,
                     "Prefab - Failed to remove entity with id %s with a Prefab Instance derived from source asset %s "
@@ -563,7 +567,7 @@ namespace AzToolsFramework
 
         AZ::EntityId Instance::GetContainerEntityId() const
         {
-            return m_containerEntity->GetId();
+            return m_containerEntity ? m_containerEntity->GetId() : AZ::EntityId();
         }
 
         bool Instance::HasContainerEntity() const

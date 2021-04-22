@@ -60,7 +60,8 @@ namespace ScriptCanvas
             enum class IsNamed { No, Yes };
 
             static IsNamed IsInputNamed(Grammar::VariableConstPtr input, Grammar::ExecutionTreeConstPtr execution);
-            
+            static AZStd::string SanitizeFunctionCallName(AZStd::string_view name);
+
             RuntimeInputs m_runtimeInputs;
             BuildConfiguration m_executionConfig = BuildConfiguration::Release;
             FunctionBlockConfig m_functionBlockConfig = FunctionBlockConfig::Ignored;
@@ -143,6 +144,7 @@ namespace ScriptCanvas
             void WriteFunctionCallNullCheckPost(Grammar::ExecutionTreeConstPtr execution);
             void WriteFunctionCallNullCheckPre(Grammar::ExecutionTreeConstPtr execution);
             void WriteFunctionCallOfNode(Grammar::ExecutionTreeConstPtr, AZStd::string nameOverride = "", size_t inputOverride = AZStd::numeric_limits<size_t>::max());
+            void WriteGlobalPropertyRead(Grammar::ExecutionTreeConstPtr);
             void WriteHeader();
             void WriteInfiniteLoopCheckPost(Grammar::ExecutionTreeConstPtr execution);
             void WriteInfiniteLoopCheckPre(Grammar::ExecutionTreeConstPtr execution);

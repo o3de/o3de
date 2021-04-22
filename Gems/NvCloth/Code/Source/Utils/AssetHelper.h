@@ -28,7 +28,7 @@ namespace NvCloth
     //! While the simulation data is a single buffer for vertices and indices,
     //! this structure knows how to separate them in different submeshes, this will be
     //! be used when the MeshModificationNotificationBus request the modification
-    //! of an specific submesh (lodLevel and primitiveIndex).
+    //! of a specific submesh (lodLevel and primitiveIndex).
     struct MeshNodeInfo
     {
         //! LOD level of the mesh node inside the asset.
@@ -87,9 +87,6 @@ namespace NvCloth
             const AZStd::string& meshNode,
             MeshNodeInfo& meshNodeInfo,
             MeshClothInfo& meshClothInfo) = 0;
-
-        //! Returns whether the asset has support for skinned animation or not.
-        virtual bool DoesSupportSkinnedAnimation() const = 0;
 
     protected:
         static float ConvertBackstopOffset(float backstopOffset);

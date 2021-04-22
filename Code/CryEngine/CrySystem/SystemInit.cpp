@@ -248,7 +248,7 @@ CUNIXConsole* pUnixConsole;
 #define LOCALIZATION_TRANSLATIONS_LIST_FILE_NAME "Libs/Localization/localization.xml"
 
 #define LOAD_LEGACY_RENDERER_FOR_EDITOR true // If you set this to false you must for now also set 'ed_useAtomNativeViewport' to true (see /Code/Sandbox/Editor/ViewManager.cpp)
-#define LOAD_LEGACY_RENDERER_FOR_LAUNCHER true
+#define LOAD_LEGACY_RENDERER_FOR_LAUNCHER false
 
 //////////////////////////////////////////////////////////////////////////
 // Where possible, these are defaults used to initialize cvars
@@ -362,7 +362,7 @@ static void CmdCrashTest(IConsoleCmdArgs* pArgs)
         case 3:
             while (true)
             {
-                char* element = new char[10240];
+                new char[10240];
             }
             break;
         case 4:
@@ -371,7 +371,7 @@ static void CmdCrashTest(IConsoleCmdArgs* pArgs)
         case 5:
             while (true)
             {
-                char* element = new char[128];     //testing the crash handler an exception in the cry memory allocation occurred
+                new char[128];     //testing the crash handler an exception in the cry memory allocation occurred
             }
         case 6:
         {
@@ -1000,7 +1000,9 @@ bool CSystem::InitializeEngineModule(const char* dllName, const char* moduleClas
     {
         GetIMemoryManager()->GetProcessMemInfo(memEnd);
 
+#if defined(AZ_ENABLE_TRACING)
         uint64 memUsed = memEnd.WorkingSetSize - memStart.WorkingSetSize;
+#endif
         AZ_TracePrintf(AZ_TRACE_SYSTEM_WINDOW, "Initializing %s %s, MemUsage=%uKb", dllName, pModule ? "done" : "failed", uint32(memUsed / 1024));
     }
 
@@ -1254,7 +1256,7 @@ bool CSystem::OpenRenderLibrary(int type, const SSystemInitParams& initParams)
                 if (allowPrompts)
                 {
                     AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Asking user if they wish to continue...");
-                    const int mbRes = MessageBoxW(0, GetErrorStringUnsupportedGPU(gpuName, gpuVendorId, gpuDeviceId).c_str(), L"Lumberyard", MB_ICONWARNING | MB_OKCANCEL | MB_DEFBUTTON2 | MB_DEFAULT_DESKTOP_ONLY);
+                    const int mbRes = MessageBoxW(0, GetErrorStringUnsupportedGPU(gpuName, gpuVendorId, gpuDeviceId).c_str(), L"Open 3D Engine", MB_ICONWARNING | MB_OKCANCEL | MB_DEFBUTTON2 | MB_DEFAULT_DESKTOP_ONLY);
                     if (mbRes == IDCANCEL)
                     {
                         AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "User chose to cancel startup due to unsupported GPU.");
@@ -2091,7 +2093,7 @@ static bool CheckCPURequirements([[maybe_unused]] CCpuFeatures* pCpu, [[maybe_un
             if (allowPrompts)
             {
                 AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Asking user if they wish to continue...");
-                const int mbRes = MessageBoxW(0, GetErrorStringUnsupportedCPU().c_str(), L"Lumberyard", MB_ICONWARNING | MB_OKCANCEL | MB_DEFBUTTON2 | MB_DEFAULT_DESKTOP_ONLY);
+                const int mbRes = MessageBoxW(0, GetErrorStringUnsupportedCPU().c_str(), L"Open 3D Engine", MB_ICONWARNING | MB_OKCANCEL | MB_DEFBUTTON2 | MB_DEFAULT_DESKTOP_ONLY);
                 if (mbRes == IDCANCEL)
                 {
                     AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "User chose to cancel startup.");
@@ -2303,7 +2305,7 @@ AZ_POP_DISABLE_WARNING
 
         if (!bIsWindowsXPorLater)
         {
-            AZ_Error(AZ_TRACE_SYSTEM_WINDOW, false, "Lumberyard requires an OS version of Windows XP or later.");
+            AZ_Error(AZ_TRACE_SYSTEM_WINDOW, false, "Open 3D Engine requires an OS version of Windows XP or later.");
             return false;
         }
     }
@@ -2383,8 +2385,6 @@ AZ_POP_DISABLE_WARNING
 #if !defined(CONSOLE)
 #if !defined(_RELEASE)
     bool isDaemonMode = (m_pCmdLine->FindArg(eCLAT_Pre, "daemon") != 0);
-#else
-    bool isDaemonMode = false;
 #endif // !defined(_RELEASE)
 
 #if defined(USE_DEDICATED_SERVER_CONSOLE)
@@ -2420,7 +2420,7 @@ AZ_POP_DISABLE_WARNING
             azstrcpy(
                 headerString,
                 AZ_ARRAY_SIZE(headerString),
-                "Lumberyard - "
+                "Open 3D Engine - "
 #if defined(LINUX)
                 "Linux "
 #elif defined(MAC)
@@ -3733,17 +3733,6 @@ void CSystem::CreateSystemVars()
     m_cvMemStatsThreshold = REGISTER_INT ("MemStatsThreshold", 32000, VF_NULL, "");
     m_cvMemStatsMaxDepth = REGISTER_INT("MemStatsMaxDepth", 4, VF_NULL, "");
 
-
-    // allows for loading gems and map files for release mode dedicated servers
-    int dwPakPriorityFlags = VF_READONLY | VF_CHEAT;
-#if defined(_RELEASE)
-    if (gEnv->IsDedicated())
-    {
-        dwPakPriorityFlags = VF_DEDI_ONLY;
-    }
- #endif
-
-
     attachVariable("sys_PakReadSlice", &g_cvars.archiveVars.nReadSlice, "If non-0, means number of kilobytes to use to read files in portions. Should only be used on Win9x kernels");
 
     attachVariable("sys_PakInMemorySizeLimit", &g_cvars.archiveVars.nInMemoryPerPakSizeLimit, "Individual pak size limit for being loaded into memory (MB)");
@@ -4105,6 +4094,7 @@ void CSystem::CreateSystemVars()
         "0 = Suppress Asserts\n"
         "1 = Log Asserts\n"
         "2 = Show Assert Dialog\n"
+        "3 = Crashes the Application on Assert\n"
         "Note: when set to '0 = Suppress Asserts', assert expressions are still evaluated. To turn asserts into a no-op, undefine AZ_ENABLE_TRACING and recompile.",
         OnAssertLevelCvarChanged);
     CSystem::SetAssertLevel(defaultAssertValue);

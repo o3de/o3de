@@ -32,7 +32,7 @@ def teardown_editor(editor):
 
 
 def launch_and_validate_results(request, test_directory, editor, editor_script, expected_lines, unexpected_lines=[],
-                                halt_on_unexpected=False, run_python="--runpythontest", auto_test_mode=True, null_renderer=True, cfg_args=[],
+                                halt_on_unexpected=False, run_python="--runpythontest", auto_test_mode=True, null_renderer=False, cfg_args=[],
                                 timeout=300):
     """
     Runs the Editor with the specified script, and monitors for expected log lines.

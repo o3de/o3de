@@ -199,7 +199,6 @@ void* CREMeshImpl::mfGetPointer(ESrcPointer ePT, int* Stride, [[maybe_unused]] E
 
 void CREMeshImpl::mfGetPlane(Plane& pl)
 {
-    CRenderMesh* pRM = m_pRenderMesh->_GetVertexContainer();
 
     // fixme: plane orientation based on biggest bbox axis
     Vec3 pMin, pMax;
@@ -289,7 +288,6 @@ bool CREMeshImpl::mfPreDraw([[maybe_unused]] SShaderPass *sl)
     // Should never happen. Video buffer is missing
     if (!pRM->_HasVBStream(VSF_GENERAL) || !m_pRenderMesh->_HasIBStream())
         return false;
-    CD3D9Renderer *rd = gcpRendD3D;
 
     m_pRenderMesh->BindStreamsToRenderPipeline();
 

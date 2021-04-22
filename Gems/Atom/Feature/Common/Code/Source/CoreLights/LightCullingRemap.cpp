@@ -24,7 +24,6 @@
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <CoreLights/PointLightFeatureProcessor.h>
-#include <CoreLights/SpotLightFeatureProcessor.h>
 #include <CoreLights/DiskLightFeatureProcessor.h>
 #include <AzCore/Casting/lossy_cast.h>
 

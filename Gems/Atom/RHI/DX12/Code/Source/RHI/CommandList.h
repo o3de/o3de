@@ -448,6 +448,16 @@ namespace AZ
                         {
                             GetCommandList()->SetGraphicsRootDescriptorTable(binding.m_samplerTable.GetIndex(), compiledData.m_gpuSamplersDescriptorHandle);
                         }
+
+                        for (uint32_t unboundedArrayIndex = 0; unboundedArrayIndex < ShaderResourceGroupCompiledData::MaxUnboundedArrays; ++unboundedArrayIndex)
+                        {
+                            if (binding.m_unboundedArrayResourceTables[unboundedArrayIndex].IsValid())
+                            {
+                                GetCommandList()->SetGraphicsRootDescriptorTable(
+                                    binding.m_unboundedArrayResourceTables[unboundedArrayIndex].GetIndex(),
+                                    compiledData.m_gpuUnboundedArraysDescriptorHandles[unboundedArrayIndex]);
+                            }
+                        }
                         break;
 
                     case RHI::PipelineStateType::Dispatch:
@@ -464,6 +474,16 @@ namespace AZ
                         if (binding.m_samplerTable.IsValid())
                         {
                             GetCommandList()->SetComputeRootDescriptorTable(binding.m_samplerTable.GetIndex(), compiledData.m_gpuSamplersDescriptorHandle);
+                        }
+
+                        for (uint32_t unboundedArrayIndex = 0; unboundedArrayIndex < ShaderResourceGroupCompiledData::MaxUnboundedArrays; ++unboundedArrayIndex)
+                        {
+                            if (binding.m_unboundedArrayResourceTables[unboundedArrayIndex].IsValid())
+                            {
+                                GetCommandList()->SetComputeRootDescriptorTable(
+                                    binding.m_unboundedArrayResourceTables[unboundedArrayIndex].GetIndex(),
+                                    compiledData.m_gpuUnboundedArraysDescriptorHandles[unboundedArrayIndex]);
+                            }
                         }
                         break;
 

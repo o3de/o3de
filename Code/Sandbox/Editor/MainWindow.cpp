@@ -60,7 +60,6 @@ AZ_POP_DISABLE_WARNING
 
 // Editor
 #include "Resource.h"
-#include "EditTool.h"
 #include "Core/LevelEditorMenuHandler.h"
 #include "ShortcutDispatcher.h"
 #include "LayoutWnd.h"
@@ -92,7 +91,6 @@ AZ_POP_DISABLE_WARNING
 
 #include "TrackView/TrackViewDialog.h"
 #include "ErrorReportDialog.h"
-#include "Material/MaterialDialog.h"
 #include "LensFlareEditor/LensFlareEditor.h"
 #include "TimeOfDayDialog.h"
 
@@ -271,15 +269,6 @@ namespace
         return QtViewPaneManager::instance()->IsVisible(viewClassName);
     }
 
-    AZStd::string PyGetStatusText()
-    {
-        if (GetIEditor()->GetEditTool())
-        {
-            return AZStd::string(GetIEditor()->GetEditTool()->GetStatusText().toUtf8().data());
-        }
-        return AZStd::string("");
-    }
-
     AZStd::vector<AZStd::string> PyGetViewPaneNames()
     {
         const QtViewPanes panes = QtViewPaneManager::instance()->GetRegisteredPanes();
@@ -406,7 +395,7 @@ MainWindow::MainWindow(QWidget* parent)
     , m_undoStateAdapter(new UndoStackStateAdapter(this))
     , m_keyboardCustomization(nullptr)
     , m_activeView(nullptr)
-    , m_settings("amazon", "lumberyard") // TODO_KDAB: Replace with a central settings class
+    , m_settings("amazon", "O3DE") // TODO_KDAB: Replace with a central settings class
     , m_toolbarManager(new ToolbarManager(m_actionManager, this))
     , m_assetImporterManager(new AssetImporterManager(this))
     , m_levelEditorMenuHandler(new LevelEditorMenuHandler(this, m_viewPaneManager, m_settings))
@@ -637,8 +626,6 @@ MainWindow* MainWindow::instance()
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
-    auto cryEdit = CCryEditApp::instance();
-
     gSettings.Save();
 
     AzFramework::SystemCursorState currentCursorState;
@@ -696,7 +683,6 @@ void MainWindow::closeEvent(QCloseEvent* event)
     }
     // Close all edit panels.
     GetIEditor()->ClearSelection();
-    GetIEditor()->SetEditTool(0);
     GetIEditor()->GetObjectManager()->EndEditParams();
 
     // force clean up of all deferred deletes, so that we don't have any issues with windows from plugins not being deleted yet
@@ -1107,20 +1093,6 @@ void MainWindow::InitActions()
             .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSelected)
             .SetIcon(Style::icon("Align_to_grid"))
             .SetApplyHoverEffect();
-        am->AddAction(ID_OBJECTMODIFY_ALIGN, tr("Align to object")).SetCheckable(true)
-#if AZ_TRAIT_OS_PLATFORM_APPLE
-            .SetStatusTip(tr(u8"\u2318: Align an object to a bounding box, \u2325 : Keep Rotation of the moved object, Shift : Keep Scale of the moved object"))
-#else
-            .SetStatusTip(tr("Ctrl: Align an object to a bounding box, Alt : Keep Rotation of the moved object, Shift : Keep Scale of the moved object"))
-#endif
-            .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateAlignObject)
-            .SetIcon(Style::icon("Align_to_Object"))
-            .SetApplyHoverEffect();
-        am->AddAction(ID_MODIFY_ALIGNOBJTOSURF, tr("Align object to surface (Hold CTRL)")).SetCheckable(true)
-            .SetToolTip(tr("Align object to surface  (Hold CTRL)"))
-            .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateAlignToVoxel)
-            .SetIcon(Style::icon("Align_object_to_surface"))
-            .SetApplyHoverEffect();
     }
 
     am->AddAction(ID_SNAP_TO_GRID, tr("Snap to grid"))
@@ -1375,7 +1347,7 @@ void MainWindow::InitActions()
 
     am->AddAction(ID_DOCUMENTATION_GLOSSARY, tr("Glossary"))
         .SetReserved();
-    am->AddAction(ID_DOCUMENTATION_LUMBERYARD, tr("Lumberyard Documentation"))
+    am->AddAction(ID_DOCUMENTATION_O3DE, tr("Open 3D Engine Documentation"))
         .SetReserved();
     am->AddAction(ID_DOCUMENTATION_GAMELIFT, tr("GameLift Documentation"))
         .SetReserved();
@@ -1393,11 +1365,11 @@ void MainWindow::InitActions()
 
     am->AddAction(ID_DOCUMENTATION_FEEDBACK, tr("Give Us Feedback"))
         .SetReserved();
-    am->AddAction(ID_APP_ABOUT, tr("&About Lumberyard"))
+    am->AddAction(ID_APP_ABOUT, tr("&About Open 3D Engine"))
         .SetStatusTip(tr("Display program information, version number and copyright"))
         .SetReserved();
     am->AddAction(ID_APP_SHOW_WELCOME, tr("&Welcome"))
-        .SetStatusTip(tr("Show the Welcome to Lumberyard dialog box"))
+        .SetStatusTip(tr("Show the Welcome to Open 3D Engine dialog box"))
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateShowWelcomeScreen);
 
     // Editors Toolbar actions
@@ -1452,15 +1424,6 @@ void MainWindow::InitActions()
         .SetApplyHoverEffect();
 
     // Edit Mode Toolbar Actions
-    am->AddAction(ID_EDITTOOL_LINK, tr("Link an object to parent"))
-        .SetIcon(Style::icon("add_link"))
-        .SetApplyHoverEffect()
-        .SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateEditToolLink);
-    am->AddAction(ID_EDITTOOL_UNLINK, tr("Unlink all selected objects"))
-        .SetIcon(Style::icon("remove_link"))
-        .SetApplyHoverEffect()
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateEditToolUnlink);
     am->AddAction(IDC_SELECTION_MASK, tr("Selected Object Types"));
     am->AddAction(ID_REF_COORDS_SYS, tr("Reference coordinate system"))
         .SetShortcut(tr("Ctrl+W"))
@@ -1480,10 +1443,6 @@ void MainWindow::InitActions()
             .SetIcon(QIcon(":/MainWindow/toolbars/object_toolbar-03.svg"))
             .SetApplyHoverEffect()
             .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSelected);
-        // vertex snapping not yet supported when the new Viewport Interaction Model is enabled
-        am->AddAction(ID_OBJECTMODIFY_VERTEXSNAPPING, tr("Vertex snapping"))
-            .SetIcon(Style::icon("Vertex_snapping"))
-            .SetApplyHoverEffect();
     }
 
     // Misc Toolbar Actions
@@ -1531,8 +1490,6 @@ void MainWindow::OnEscapeAction()
         {
             AzToolsFramework::EditorEvents::Bus::Broadcast(
                 &AzToolsFramework::EditorEvents::OnEscape);
-
-            CCryEditApp::instance()->OnEditEscape();
         }
     }
 }
@@ -1819,7 +1776,6 @@ void MainWindow::OnUpdateSnapToGrid(QAction* action)
     bool bEnabled = gSettings.pGrid->IsEnabled();
     action->setChecked(bEnabled);
 
-    float gridSize = gSettings.pGrid->size;
     action->setText(QObject::tr("Snap To Grid"));
 }
 
@@ -1846,7 +1802,14 @@ void MainWindow::OpenViewPane(QtViewPane* pane)
     }
     else
     {
-        qWarning() << Q_FUNC_INFO << "Invalid pane" << pane->m_id << pane->m_category << pane->m_name;
+        if (pane)
+        {
+            qWarning() << Q_FUNC_INFO << "Invalid pane" << pane->m_id << pane->m_category << pane->m_name;
+        }
+        else
+        {
+            qWarning() << Q_FUNC_INFO << "Invalid pane";
+        }
     }
 }
 
@@ -1970,7 +1933,6 @@ void MainWindow::RegisterStdViewClasses()
 
     if (!AZ::Interface<AzFramework::AtomActiveInterface>::Get())
     {
-        CMaterialDialog::RegisterViewClass();
         CLensFlareEditor::RegisterViewClass();
         CTimeOfDayDialog::RegisterViewClass();
     }
@@ -2656,7 +2618,6 @@ namespace AzToolsFramework
             addLegacyGeneral(behaviorContext->Method("exit", PyExit, nullptr, "Exits the editor."));
             addLegacyGeneral(behaviorContext->Method("exit_no_prompt", PyExitNoPrompt, nullptr, "Exits the editor without prompting to save first."));
             addLegacyGeneral(behaviorContext->Method("report_test_result", PyReportTest, nullptr, "Report test information."));
-            addLegacyGeneral(behaviorContext->Method("get_status_text", PyGetStatusText, nullptr, "Gets the status text from the Editor's current edit tool"));
         }
     }
 }

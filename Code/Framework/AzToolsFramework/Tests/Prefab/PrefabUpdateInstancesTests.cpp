@@ -200,7 +200,6 @@ namespace UnitTest
         PrefabTestComponent* prefabTestComponent = aznew PrefabTestComponent(true);
         entity->Deactivate();
         entity->AddComponent(prefabTestComponent);
-        auto expectedComponentId = prefabTestComponent->GetId();
         PrefabDom updatedDom;
         ASSERT_TRUE(PrefabDomUtils::StoreInstanceInPrefabDom(*newInstance, updatedDom));
         newTemplateDom.CopyFrom(updatedDom, newTemplateDom.GetAllocator());

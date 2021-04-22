@@ -16,6 +16,11 @@
 #include <AzFramework/Windowing/WindowBus.h>
 #include <Atom/Feature/ImGui/ImGuiUtils.h>
 #include <Atom/Feature/ImGui/SystemBus.h>
+#include <Atom/RPI.Public/ViewportContext.h>
+
+#if defined(IMGUI_ENABLED)
+#include <ImGuiBus.h>
+#endif
 
 namespace AZ
 {
@@ -49,16 +54,44 @@ namespace AZ
         void ImguiAtomSystemComponent::Activate()
         {
             ImGui::OtherActiveImGuiRequestBus::Handler::BusConnect();
+
+            auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+            const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
+            AZ::RPI::ViewportContextNotificationBus::Handler::BusConnect(contextName);
+
+#if defined(IMGUI_ENABLED)
+            ImGui::ImGuiManagerListenerBus::Broadcast(&ImGui::IImGuiManagerListener::SetResolutionMode, ImGui::ImGuiResolutionMode::LockToResolution);
+            auto defaultViewportContext = atomViewportRequests->GetDefaultViewportContext();
+            if (defaultViewportContext)
+            {
+                OnViewportSizeChanged(defaultViewportContext->GetViewportSize());
+            }
+#endif
         }
 
         void ImguiAtomSystemComponent::Deactivate()
         {
             ImGui::OtherActiveImGuiRequestBus::Handler::BusDisconnect();
+            AZ::RPI::ViewportContextNotificationBus::Handler::BusDisconnect();
         }
 
         void ImguiAtomSystemComponent::RenderImGuiBuffers(const ImDrawData& drawData)
         {
-            Render::ImGuiSystemRequestBus::Broadcast(&Render::ImGuiSystemRequests::RenderImGuiBuffersToDefaultPass, drawData);
+            Render::ImGuiSystemRequestBus::Broadcast(&Render::ImGuiSystemRequests::RenderImGuiBuffersToCurrentViewport, drawData);
+        }
+
+        void ImguiAtomSystemComponent::OnRenderTick()
+        {
+#if defined(IMGUI_ENABLED)
+            ImGui::ImGuiManagerListenerBus::Broadcast(&ImGui::IImGuiManagerListener::Render);
+#endif
+        }
+
+        void ImguiAtomSystemComponent::OnViewportSizeChanged(AzFramework::WindowSize size)
+        {
+#if defined(IMGUI_ENABLED)
+            ImGui::ImGuiManagerListenerBus::Broadcast(&ImGui::IImGuiManagerListener::SetImGuiRenderResolution, ImVec2{aznumeric_cast<float>(size.m_width), aznumeric_cast<float>(size.m_height)});
+#endif
         }
     }
 }

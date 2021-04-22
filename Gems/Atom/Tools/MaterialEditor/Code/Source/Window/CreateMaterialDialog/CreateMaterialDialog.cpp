@@ -26,8 +26,14 @@
 namespace MaterialEditor
 {
     CreateMaterialDialog::CreateMaterialDialog(QWidget* parent)
+        : CreateMaterialDialog(QString(AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@")) + AZ_CORRECT_FILESYSTEM_SEPARATOR + "Materials", parent)
+    {
+    }
+
+    CreateMaterialDialog::CreateMaterialDialog(const QString& path, QWidget* parent)
         : QDialog(parent)
         , m_ui(new Ui::CreateMaterialDialog)
+        , m_path(path)
     {
         m_ui->setupUi(this);
 
@@ -37,6 +43,8 @@ namespace MaterialEditor
         //Connect ok and cancel buttons
         QObject::connect(m_ui->m_buttonBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
         QObject::connect(m_ui->m_buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
+
+        setModal(true);
     }
 
     void CreateMaterialDialog::InitMaterialTypeSelection()
@@ -58,21 +66,24 @@ namespace MaterialEditor
         AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::EnumerateAssets, nullptr, enumerateCB, nullptr);
 
         //Update the material type file info whenever the combo box selection changes 
-        QObject::connect(m_ui->m_materialTypeComboBox, static_cast<void(QComboBox::*)(const int)>(&QComboBox::currentIndexChanged), m_ui->m_materialTypeComboBox, [this](int index) {
-            QVariant data = m_ui->m_materialTypeComboBox->itemData(index);
-            m_materialTypeFileInfo = QFileInfo(data.toString());
-            });
+        QObject::connect(m_ui->m_materialTypeComboBox, static_cast<void (QComboBox::*)(const int)>(&QComboBox::currentIndexChanged), this, [this]() { UpdateMaterialTypeSelection(); });
+        QObject::connect(m_ui->m_materialTypeComboBox, &QComboBox::currentTextChanged, this, [this]() { UpdateMaterialTypeSelection(); });
 
-        //Select StandardPBR by default but we will later data drive this with editor settings
-        m_ui->m_materialTypeComboBox->setCurrentText("StandardPBR");
+        // Select StandardPBR by default but we will later data drive this with editor settings
+        const int index = m_ui->m_materialTypeComboBox->findText("StandardPBR");
+        if (index >= 0)
+        {
+            m_ui->m_materialTypeComboBox->setCurrentIndex(index);
+        }
+
+        UpdateMaterialTypeSelection();
     }
 
     void CreateMaterialDialog::InitMaterialFileSelection()
     {
         //Select a default location and unique name for the new material
         m_materialFileInfo = AtomToolsFramework::GetUniqueFileInfo(
-            QString(AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@")) +
-            AZ_CORRECT_FILESYSTEM_SEPARATOR + "Materials" +
+            m_path +
             AZ_CORRECT_FILESYSTEM_SEPARATOR + "untitled." +
             AZ::RPI::MaterialSourceData::Extension).absoluteFilePath();
 
@@ -86,15 +97,24 @@ namespace MaterialEditor
                 m_materialFileInfo.absoluteFilePath(),
                 QString("Material (*.material)"));
 
-            //Reject empty or invalid filenames which indicate user cancellation
+            // Reject empty or invalid filenames which indicate user cancellation
             if (!fileInfo.absoluteFilePath().isEmpty())
             {
                 m_materialFileInfo = fileInfo;
                 m_ui->m_materialFilePicker->setText(m_materialFileInfo.fileName());
             }
-            });
+        });
     }
 
+    void CreateMaterialDialog::UpdateMaterialTypeSelection()
+    {
+        const int index = m_ui->m_materialTypeComboBox->currentIndex();
+        if (index >= 0)
+        {
+            const QVariant itemData = m_ui->m_materialTypeComboBox->itemData(index);
+            m_materialTypeFileInfo = QFileInfo(itemData.toString());
+        }
+    }
 } // namespace MaterialEditor
 
 #include <Window/CreateMaterialDialog/moc_CreateMaterialDialog.cpp>

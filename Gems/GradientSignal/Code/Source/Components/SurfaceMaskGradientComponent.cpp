@@ -46,7 +46,6 @@ namespace GradientSignal
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<SurfaceMaskGradientConfig>()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Constructor()
                 ->Method("GetNumTags", &SurfaceMaskGradientConfig::GetNumTags)
@@ -116,7 +115,6 @@ namespace GradientSignal
             behaviorContext->Class<SurfaceMaskGradientComponent>()->RequestBus("SurfaceMaskGradientRequestBus");
 
             behaviorContext->EBus<SurfaceMaskGradientRequestBus>("SurfaceMaskGradientRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Event("GetNumTags", &SurfaceMaskGradientRequestBus::Events::GetNumTags)
                 ->Event("GetTag", &SurfaceMaskGradientRequestBus::Events::GetTag)

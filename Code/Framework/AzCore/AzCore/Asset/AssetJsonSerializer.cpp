@@ -10,7 +10,7 @@
 *
 */
 
-#include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetJsonSerializer.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/StackedString.h>
@@ -107,7 +107,8 @@ namespace AZ
                 result = ContinueLoading(&id, azrtti_typeid<AssetId>(), it->value, context);
                 if (!id.m_guid.IsNull())
                 {
-                    *instance = Asset<AssetData>(id, instance->GetType());
+                    *instance = AssetManager::Instance().FindOrCreateAsset(id, instance->GetType(), AssetLoadBehavior::NoLoad);
+
 
                     result.Combine(context.Report(result, "Successfully created Asset<T> with id."));
                 }

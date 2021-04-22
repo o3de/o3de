@@ -22,7 +22,6 @@ namespace Physics
             behaviorContext->EBus<Physics::CollisionFilteringRequestBus>("CollisionFilteringBus")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Module, "physics")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "PhysX")
                 ->Event("SetCollisionLayer", &Physics::CollisionFilteringRequestBus::Events::SetCollisionLayer)
                 ->Event("GetCollisionLayerName", &Physics::CollisionFilteringRequestBus::Events::GetCollisionLayerName)

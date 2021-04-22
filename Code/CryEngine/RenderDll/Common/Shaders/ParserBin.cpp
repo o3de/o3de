@@ -1414,7 +1414,6 @@ static void sCR(TArray<char>& Text, int nLevel)
 
 bool CParserBin::CorrectScript(uint32* pTokens, uint32& i, uint32 nT, TArray<char>& Text)
 {
-    bool bRes = true;
 
     int nTex = Text.Num() - 1;
     int nTT = nTex;
@@ -1453,7 +1452,6 @@ bool CParserBin::ConvertToAscii(uint32* pTokens, uint32 nT, FXShaderToken& Table
     uint32 i;
     bool bRes = true;
 
-    const char* szPrev = " ";
     int nLevel = 0;
     for (i = 0; i < nT; i++)
     {
@@ -1635,7 +1633,6 @@ bool CParserBin::IgnorePreprocessBlock(const uint32* pTokens, uint32& nT, int nM
 {
     int nLevel = 0;
     bool bEnded = false;
-    int nTFirst = nT;
     while (*pTokens != 0)
     {
         if ((int)nT >= nMaxTokens)
@@ -1974,7 +1971,6 @@ bool CParserBin::PreprocessTokens(ShaderTokensVec& Tokens, int nPass, PodArray<u
         break;
         case eT_undefine:
         {
-            uint32 nMacro = 0;
             nTokenParam = pTokens[nT++];
             int n = nPass;
             FXMacroBinItor it = m_Macros[nPass].find(nTokenParam);
@@ -2416,14 +2412,15 @@ int32 CParserBin::FindToken(uint32 nStart, uint32 nLast, const uint32* pToks)
     while (nStart <= nLast)
     {
         int n = 0;
-        uint32 nTok;
-        while (nTok = pToks[n])
+        uint32 nTok = pToks[n];
+        while (nTok)
         {
             if (pTokens[nStart] == nTok)
             {
                 return nStart;
             }
             n++;
+            nTok = pToks[n];
         }
         nStart++;
     }
@@ -2467,7 +2464,6 @@ int CParserBin::GetNextToken(uint32& nStart, ETokenStorageClass& nTokenStorageCl
         }
 
         nStart = m_CurFrame.m_nCurToken;
-        bool bFound = false;
 
         if (nToken == eT_quote)
         {
@@ -2643,9 +2639,6 @@ int CParserBin::GetNextToken(uint32& nStart, ETokenStorageClass& nTokenStorageCl
             else
             {
                 m_eToken = (EToken)nToken;
-#ifdef _DEBUG
-                const char* szToken = GetString(m_eToken);
-#endif
                 assert(m_eToken < eT_user_first);
                 m_CurFrame.m_nCurToken++;
                 break;
@@ -2810,7 +2803,6 @@ bool CParserBin::GetAssignmentData(SParserFrame& Frame)
 
 bool CParserBin::GetSubData(SParserFrame& Frame, EToken eT1, EToken eT2)
 {
-    bool bRes = true;
 
     Frame.m_nFirstToken = 0;
     Frame.m_nLastToken = 0;

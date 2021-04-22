@@ -66,6 +66,8 @@ namespace AZ
             AZ_CLASS_ALLOCATOR(MeshComponentController, AZ::SystemAllocator, 0);
             AZ_RTTI(AZ::Render::MeshComponentController, "{D0F35FAC-4194-4C89-9487-D000DDB8B272}");
 
+            ~MeshComponentController();
+
             static void Reflect(AZ::ReflectContext* context);
             static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);

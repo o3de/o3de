@@ -28,7 +28,7 @@ namespace AZ::IO::Internal
     static bool IsIgnored(const char* szPath);
 
     // Do not report missing LOD files if no CGF files depend on them
-    // Do not report missing .cgfm files since they're not actually created and used in Lumberyard
+    // Do not report missing .cgfm files since they're not actually created and used in Open 3D Engine
     // This checking prevents our missing dependency scanner from having a lot of false positives on these files
     static bool IgnoreCGFDependencies(const char* szPath);
 

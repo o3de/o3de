@@ -16,7 +16,7 @@ from typing import List, Tuple, Union
 # Helper file Imports
 import utils
 
-# Lumberyard Imports
+# Open 3D Engine Imports
 import azlmbr
 import azlmbr.bus as bus
 import azlmbr.editor as editor

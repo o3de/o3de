@@ -1,5 +1,0 @@
-Authtype Basic
-AuthName "Lumberyard HTML authentication"
-AuthUserFile /var/www/html/lybuilds/.htpasswd
-Require valid-user
-

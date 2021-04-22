@@ -43,7 +43,7 @@ namespace EMotionFX
             AnimGraphFixture::ConstructGraph();
 
             AnimGraphStateMachine* sm1 = AddSubStateMachine(m_rootStateMachine);
-            AnimGraphStateMachine* sm2 = AddSubStateMachine(m_rootStateMachine);
+            AddSubStateMachine(m_rootStateMachine);
 
             m_rootStateMachine->SetEntryState(sm1);
         }

@@ -66,7 +66,6 @@
 #include "Util/fastlib.h"
 #include "CryEditDoc.h"
 #include "GameEngine.h"
-#include "EditTool.h"
 #include "ViewManager.h"
 #include "Objects/DisplayContext.h"
 #include "DisplaySettings.h"
@@ -94,9 +93,6 @@
 AZ_CVAR(
     bool, ed_visibility_use, true, nullptr, AZ::ConsoleFunctorFlags::Null,
     "Enable/disable using the new IVisibilitySystem for Entity visibility determination");
-AZ_CVAR(
-    bool, ed_visibility_logTiming, false, nullptr, AZ::ConsoleFunctorFlags::Null,
-    "Output the timing of the new IVisibilitySystem query");
 
 CRenderViewport* CRenderViewport::m_pPrimaryViewport = nullptr;
 
@@ -1394,13 +1390,6 @@ void CRenderViewport::Update()
         auto start = std::chrono::steady_clock::now();
 
         m_entityVisibilityQuery.UpdateVisibility(GetCameraState());
-
-        if (ed_visibility_logTiming)
-        {
-            auto stop = std::chrono::steady_clock::now();
-            std::chrono::duration<double> diff = stop - start;
-            AZ_Printf("Visibility", "FindVisibleEntities (new) - Duration: %f", diff);
-        }
     }
 
     {
@@ -1556,7 +1545,6 @@ void CRenderViewport::OnEditorNotifyEvent(EEditorNotifyEvent event)
                 m_previousContext = SetCurrentContext();
             }
             SetCurrentCursor(STD_CURSOR_GAME);
-            AzFramework::InputSystemCursorConstraintRequestBus::Handler::BusConnect();
         }
     }
     break;
@@ -1564,7 +1552,6 @@ void CRenderViewport::OnEditorNotifyEvent(EEditorNotifyEvent event)
     case eNotify_OnEndGameMode:
         if (GetIEditor()->GetViewManager()->GetGameViewport() == this)
         {
-            AzFramework::InputSystemCursorConstraintRequestBus::Handler::BusDisconnect();
             SetCurrentCursor(STD_CURSOR_DEFAULT);
             if (m_renderer->GetCurrentContextHWND() != renderOverlayHWND())
             {
@@ -1959,12 +1946,6 @@ void CRenderViewport::RenderAll()
             AzFramework::ViewportInfo{ GetViewportId() }, *debugDisplay);
 
         m_entityVisibilityQuery.DisplayVisibility(*debugDisplay);
-
-        if (GetEditTool())
-        {
-            // display editing tool
-            GetEditTool()->Display(displayContext);
-        }
 
         if (m_manipulatorManager != nullptr)
         {
@@ -2422,9 +2403,7 @@ void CRenderViewport::SetWindowTitle(const AZStd::string& title)
 
 AzFramework::WindowSize CRenderViewport::GetClientAreaSize() const
 {
-    const QWidget* window = this->window();
-    QSize windowSize = window->size();
-    return AzFramework::WindowSize(windowSize.width(), windowSize.height());
+    return AzFramework::WindowSize(m_rcClient.width(), m_rcClient.height());
 }
 
 
@@ -2462,10 +2441,14 @@ void CRenderViewport::ConnectViewportInteractionRequestBus()
     AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler::BusConnect(GetViewportId());
     AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequestBus::Handler::BusConnect(GetViewportId());
     m_viewportUi.ConnectViewportUiBus(GetViewportId());
+
+    AzFramework::InputSystemCursorConstraintRequestBus::Handler::BusConnect();
 }
 
 void CRenderViewport::DisconnectViewportInteractionRequestBus()
 {
+    AzFramework::InputSystemCursorConstraintRequestBus::Handler::BusDisconnect();
+
     m_viewportUi.DisconnectViewportUiBus();
     AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequestBus::Handler::BusDisconnect();
     AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler::BusDisconnect();
@@ -2785,35 +2768,6 @@ void CRenderViewport::OnMouseWheel(Qt::KeyboardModifiers modifiers, short zDelta
             MouseInteractionEvent(mouseInteraction, zDelta));
 
         handled = result != MouseInteractionResult::None;
-    }
-    else
-    {
-        if (m_manipulatorManager == nullptr || m_manipulatorManager->ConsumeViewportMouseWheel(mouseInteraction))
-        {
-            return;
-        }
-
-        if (AzToolsFramework::ComponentModeFramework::InComponentMode())
-        {
-            AzToolsFramework::EditorInteractionSystemViewportSelectionRequestBus::EventResult(
-                handled, AzToolsFramework::GetEntityContextId(),
-                &EditorInteractionSystemViewportSelectionRequestBus::Events::InternalHandleMouseViewportInteraction,
-                MouseInteractionEvent(mouseInteraction, zDelta));
-        }
-        else
-        {
-            //////////////////////////////////////////////////////////////////////////
-            // Asks current edit tool to handle mouse callback.
-            CEditTool* pEditTool = GetEditTool();
-            if (pEditTool && (modifiers & Qt::ControlModifier))
-            {
-                QPoint tempPoint(scaledPoint.x(), scaledPoint.y());
-                if (pEditTool->MouseCallback(this, eMouseWheel, tempPoint, zDelta))
-                {
-                    handled = true;
-                }
-            }
-        }
     }
 
     if (!handled)
@@ -4357,10 +4311,6 @@ void CRenderViewport::RenderSnappingGrid()
     {
         return;
     }
-    if (GetIEditor()->GetEditTool() && !GetIEditor()->GetEditTool()->IsDisplayGrid())
-    {
-        return;
-    }
 
     DisplayContext& dc = m_displayContext;
 
@@ -4615,6 +4565,22 @@ void CRenderViewport::BuildDragDropContext(AzQtComponents::ViewportDragContext& 
 {
     const auto scaledPoint = WidgetToViewport(pt);
     QtViewport::BuildDragDropContext(context, scaledPoint);
+}
+
+void* CRenderViewport::GetSystemCursorConstraintWindow() const
+{
+    AzFramework::SystemCursorState systemCursorState = AzFramework::SystemCursorState::Unknown;
+
+    AzFramework::InputSystemCursorRequestBus::EventResult(
+        systemCursorState,
+        AzFramework::InputDeviceMouse::Id,
+        &AzFramework::InputSystemCursorRequests::GetSystemCursorState);
+
+    const bool systemCursorConstrained =
+        (systemCursorState == AzFramework::SystemCursorState::ConstrainedAndHidden ||
+         systemCursorState == AzFramework::SystemCursorState::ConstrainedAndVisible);
+
+    return systemCursorConstrained ? renderOverlayHWND() : nullptr;
 }
 
 void CRenderViewport::RestoreViewportAfterGameMode()

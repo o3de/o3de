@@ -107,7 +107,7 @@ namespace AzToolsFramework
             return result.GetProcessing() != AZ::JsonSerializationResult::Processing::Halted;
         }
 
-        bool InstanceToTemplatePropagator::PatchEntityInTemplate(PrefabDomValue& providedPatch, const AZ::EntityId& entityId)
+        bool InstanceToTemplatePropagator::PatchEntityInTemplate(PrefabDom& providedPatch, AZ::EntityId entityId)
         {
             InstanceOptionalReference instanceOptionalReference = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
 
@@ -119,54 +119,10 @@ namespace AzToolsFramework
                 return false;
             }
 
-            //get template space associated with instance
-            Instance& instance = instanceOptionalReference->get();
-            TemplateId templateId = instance.GetTemplateId();
-
-            //alias entity goes by in template -> get via owning instance map
-            AZStd::optional<EntityAlias> entityAlias = instance.GetEntityAlias(entityId);
-
-            if (!entityAlias)
-            {
-                AZ_Error("Prefab", false, "Failed to find an entity alias for the provided entity");
-                return false;
-            }
-
-            PrefabDom& templateDomReference = m_prefabSystemComponentInterface->FindTemplateDom(templateId);
-
-            return PatchEntityInTemplate(providedPatch, entityAlias.value(), templateId);
-        }
-
-        bool InstanceToTemplatePropagator::PatchEntityInTemplate(PrefabDomValue& providedPatch, const EntityAlias& entityAlias, const TemplateId& templateId)
-        {
-            PrefabDom& templateDomReference = m_prefabSystemComponentInterface->FindTemplateDom(templateId);
-
-            //query into the template dom for the alias
-            PrefabDomValueReference entityList = PrefabDomUtils::FindPrefabDomValue(templateDomReference, PrefabDomUtils::EntitiesName);
-
-            if (!entityList)
-            {
-                AZ_Error("Prefab", false, "Cannot patch entity in Template with id [%llu] because entity couldn't be found in the template", templateId);
-                return false;
-            }
-
-            PrefabDomValueReference entity = PrefabDomUtils::FindPrefabDomValue(entityList->get(), entityAlias.c_str());
-
-            if (!entity)
-            {
-                AZ_Error("Prefab", false, "Failed to aquire entity value reference");
-                return false;
-            }
-
-            //apply patch to section
-            AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::ApplyPatch(entity->get(),
-                templateDomReference.GetAllocator(), providedPatch, AZ::JsonMergeApproach::JsonPatch);
-
-            AZ_Error("Prefab", result.GetOutcome() == AZ::JsonSerializationResult::Outcomes::Success, "Patch was not successfully applied")
-
-            //trigger propagation
-            m_prefabSystemComponentInterface->PropagateTemplateChanges(templateId);
-            return true;
+            //get template id associated with instance
+            TemplateId templateId = instanceOptionalReference->get().GetTemplateId();
+            AppendEntityAliasToPatchPaths(providedPatch, entityId);
+            return PatchTemplate(providedPatch, templateId);
         }
 
         void InstanceToTemplatePropagator::AppendEntityAliasToPatchPaths(PrefabDom& providedPatch, const AZ::EntityId& entityId)
@@ -216,7 +172,7 @@ namespace AzToolsFramework
             }
         }
 
-        void InstanceToTemplatePropagator::PatchTemplate(PrefabDomValue& providedPatch, const TemplateId& templateId)
+        bool InstanceToTemplatePropagator::PatchTemplate(PrefabDomValue& providedPatch, TemplateId templateId)
         {
             PrefabDom& templateDomReference = m_prefabSystemComponentInterface->FindTemplateDom(templateId);
 
@@ -224,14 +180,17 @@ namespace AzToolsFramework
             AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::ApplyPatch(templateDomReference,
                 templateDomReference.GetAllocator(), providedPatch, AZ::JsonMergeApproach::JsonPatch);
 
-            AZ_Error("Prefab", result.GetOutcome() == AZ::JsonSerializationResult::Outcomes::Success,
-                "Patch was not successfully applied");
-
             //trigger propagation
             if (result.GetOutcome() == AZ::JsonSerializationResult::Outcomes::Success)
             {
                 m_prefabSystemComponentInterface->SetTemplateDirtyFlag(templateId, true);
                 m_prefabSystemComponentInterface->PropagateTemplateChanges(templateId);
+                return true;
+            }
+            else
+            {
+                AZ_Error("Prefab", false, "Patch was not successfully applied");
+                return false;
             }
         }
 
@@ -288,6 +247,8 @@ namespace AzToolsFramework
 
             AddPatchesToLink(patches, linkToApplyPatches);
             linkToApplyPatches.UpdateTarget();
+
+            m_prefabSystemComponentInterface->SetTemplateDirtyFlag(linkToApplyPatches.GetTargetTemplateId(), true);
             m_prefabSystemComponentInterface->PropagateTemplateChanges(linkToApplyPatches.GetTargetTemplateId());
         }
 
@@ -314,7 +275,6 @@ namespace AzToolsFramework
             PrefabDom& linkDom = link.GetLinkDom();
             PrefabDomValueReference linkPatchesReference =
                 PrefabDomUtils::FindPrefabDomValue(linkDom, PrefabDomUtils::PatchesName);
-            PrefabDom& templateDomReference = m_prefabSystemComponentInterface->FindTemplateDom(link.GetTargetTemplateId());
 
             // This logic only covers addition of patches. If patches already exists, the given list of patches must be appended to them.
             if (!linkPatchesReference.has_value())

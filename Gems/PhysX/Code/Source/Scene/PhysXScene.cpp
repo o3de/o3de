@@ -16,6 +16,7 @@
 #include <AzCore/Debug/ProfilerBus.h>
 #include <AzCore/std/containers/variant.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzFramework/Physics/Character.h>
 #include <AzFramework/Physics/Collision/CollisionEvents.h>
 #include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
 #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
@@ -27,6 +28,8 @@
 #include <Common/PhysXSceneQueryHelpers.h>
 #include <PhysX/PhysXLocks.h>
 #include <PhysX/Utils.h>
+#include <PhysXCharacters/API/CharacterController.h>
+#include <PhysXCharacters/API/CharacterUtils.h>
 #include <System/PhysXSystem.h>
 
 namespace PhysX
@@ -184,6 +187,26 @@ namespace PhysX
             }
             crc = AZ::Crc32(newBody, sizeof(*newBody));
             return newBody;
+        }
+
+        AzPhysics::SimulatedBody* CreateCharacterBody(PhysXScene* scene,
+            const Physics::CharacterConfiguration* characterConfig)
+        {
+            CharacterController* controller = Utils::Characters::CreateCharacterController(scene, *characterConfig);
+            if (controller == nullptr)
+            {
+                AZ_Error("PhysXScene", false, "Failed to create character controller.");
+                return nullptr;
+            }
+            controller->EnablePhysics(*characterConfig);
+            controller->SetBasePosition(characterConfig->m_position);
+
+            for (auto shape : characterConfig->m_colliders)
+            {
+                controller->AttachShape(shape);
+            }
+
+            return controller;
         }
 
         //helper to perform a ray cast
@@ -595,6 +618,10 @@ namespace PhysX
             newBody = Internal::CreateSimulatedBody<StaticRigidBody, AzPhysics::StaticRigidBodyConfiguration>(
                 azdynamic_cast<const AzPhysics::StaticRigidBodyConfiguration*>(simulatedBodyConfig), newBodyCrc);
         }
+        else if (azrtti_istypeof<Physics::CharacterConfiguration>(simulatedBodyConfig))
+        {
+            newBody = Internal::CreateCharacterBody(this, azdynamic_cast<const Physics::CharacterConfiguration*>(simulatedBodyConfig));
+        }
 
         if (newBody != nullptr)
         {
@@ -850,20 +877,24 @@ namespace PhysX
 
     void PhysXScene::EnableSimulationOfBodyInternal(AzPhysics::SimulatedBody& body)
     {
-        auto pxActor = static_cast<physx::PxActor*>(body.GetNativePointer());
-        AZ_Assert(pxActor, "Simulated Body doesn't have a valid physx actor");
-
+        //character controller is a special actor and only needs the m_simulating flag set, 
+        if (!azrtti_istypeof<PhysX::CharacterController>(body))
         {
-            PHYSX_SCENE_WRITE_LOCK(m_pxScene);
-            m_pxScene->addActor(*pxActor);
-        }
+            auto pxActor = static_cast<physx::PxActor*>(body.GetNativePointer());
+            AZ_Assert(pxActor, "Simulated Body doesn't have a valid physx actor");
 
-        if (azrtti_istypeof<PhysX::RigidBody>(body))
-        {
-            auto rigidBody = azdynamic_cast<PhysX::RigidBody*>(&body);
-            if (rigidBody->ShouldStartAsleep())
             {
-                rigidBody->ForceAsleep();
+                PHYSX_SCENE_WRITE_LOCK(m_pxScene);
+                m_pxScene->addActor(*pxActor);
+            }
+
+            if (azrtti_istypeof<PhysX::RigidBody>(body))
+            {
+                auto rigidBody = azdynamic_cast<PhysX::RigidBody*>(&body);
+                if (rigidBody->ShouldStartAsleep())
+                {
+                    rigidBody->ForceAsleep();
+                }
             }
         }
 
@@ -872,14 +903,17 @@ namespace PhysX
 
     void PhysXScene::DisableSimulationOfBodyInternal(AzPhysics::SimulatedBody& body)
     {
-        auto pxActor = static_cast<physx::PxActor*>(body.GetNativePointer());
-        AZ_Assert(pxActor, "Simulated Body doesn't have a valid physx actor");
-
+        //character controller is a special actor and only needs the m_simulating flag set, 
+        if (!azrtti_istypeof<PhysX::CharacterController>(body))
         {
-            PHYSX_SCENE_WRITE_LOCK(m_pxScene);
-            m_pxScene->removeActor(*pxActor);
-        }
+            auto pxActor = static_cast<physx::PxActor*>(body.GetNativePointer());
+            AZ_Assert(pxActor, "Simulated Body doesn't have a valid physx actor");
 
+            {
+                PHYSX_SCENE_WRITE_LOCK(m_pxScene);
+                m_pxScene->removeActor(*pxActor);
+            }
+        }
         body.m_simulating = false;
     }
 
@@ -907,11 +941,6 @@ namespace PhysX
         return m_controllerManager;
     }
 
-    void PhysXScene::DeferDelete(AZStd::unique_ptr<AzPhysics::SimulatedBody> worldBody)
-    {
-        m_deferredDeletions_uniquePtrs.push_back(AZStd::move(worldBody));
-    }
-
     void* PhysXScene::GetNativePointer() const
     {
         return m_pxScene;
@@ -924,7 +953,6 @@ namespace PhysX
             delete simulatedBody;
         }
         m_deferredDeletions.clear();
-        m_deferredDeletions_uniquePtrs.clear();
     }
 
     void PhysXScene::ProcessTriggerEvents()
@@ -1011,9 +1039,9 @@ namespace PhysX
             m_pxScene->getSimulationStatistics(stats);
         }
 
-        const char* RootCategory = "PhysX/%s/%s";
+        [[maybe_unused]] const char* RootCategory = "PhysX/%s/%s";
 
-        const char* ShapesSubCategory = "Shapes";
+        [[maybe_unused]] const char* ShapesSubCategory = "Shapes";
         AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbShapes[PxGeometryType::eSPHERE], RootCategory, ShapesSubCategory, "Sphere");
         AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbShapes[PxGeometryType::ePLANE], RootCategory, ShapesSubCategory, "Plane");
         AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbShapes[PxGeometryType::eCAPSULE], RootCategory, ShapesSubCategory, "Capsule");
@@ -1022,7 +1050,7 @@ namespace PhysX
         AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbShapes[PxGeometryType::eTRIANGLEMESH], RootCategory, ShapesSubCategory, "TriangleMesh");
         AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbShapes[PxGeometryType::eHEIGHTFIELD], RootCategory, ShapesSubCategory, "Heightfield");
 
-        const char* ObjectsSubCategory = "Objects";
+        [[maybe_unused]] const char* ObjectsSubCategory = "Objects";
         AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbActiveConstraints, RootCategory, ObjectsSubCategory, "ActiveConstraints");
         AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbActiveDynamicBodies, RootCategory, ObjectsSubCategory, "ActiveDynamicBodies");
         AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbActiveKinematicBodies, RootCategory, ObjectsSubCategory, "ActiveKinematicBodies");
@@ -1032,13 +1060,13 @@ namespace PhysX
         AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbAggregates, RootCategory, ObjectsSubCategory, "Aggregates");
         AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbArticulations, RootCategory, ObjectsSubCategory, "Articulations");
 
-        const char* SolverSubCategory = "Solver";
+        [[maybe_unused]] const char* SolverSubCategory = "Solver";
         AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.nbAxisSolverConstraints, RootCategory, SolverSubCategory, "AxisSolverConstraints");
         AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.compressedContactSize, RootCategory, SolverSubCategory, "CompressedContactSize");
         AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.requiredContactConstraintMemory, RootCategory, SolverSubCategory, "RequiredContactConstraintMemory");
         AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.peakConstraintMemory, RootCategory, SolverSubCategory, "PeakConstraintMemory");
 
-        const char* BroadphaseSubCategory = "Broadphase";
+        [[maybe_unused]] const char* BroadphaseSubCategory = "Broadphase";
         AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.getNbBroadPhaseAdds(), RootCategory, BroadphaseSubCategory, "BroadPhaseAdds");
         AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, stats.getNbBroadPhaseRemoves(), RootCategory, BroadphaseSubCategory, "BroadPhaseRemoves");
 
@@ -1060,7 +1088,7 @@ namespace PhysX
             }
         }
 
-        const char* CollisionsSubCategory = "Collisions";
+        [[maybe_unused]] const char* CollisionsSubCategory = "Collisions";
         AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, ccdPairs, RootCategory, CollisionsSubCategory, "CCDPairs");
         AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, modifiedPairs, RootCategory, CollisionsSubCategory, "ModifiedPairs");
         AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Physics, triggerPairs, RootCategory, CollisionsSubCategory, "TriggerPairs");

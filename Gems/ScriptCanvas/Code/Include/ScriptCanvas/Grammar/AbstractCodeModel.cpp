@@ -434,7 +434,7 @@ namespace ScriptCanvas
 
             if (!root->HasExplicitUserOutCalls())
             {
-                // there is a single out call, default or not
+                // there is a single out, default or not
                 Out out;
 
                 if (outCalls.empty())
@@ -468,9 +468,7 @@ namespace ScriptCanvas
             }
             else
             {
-                // for now, all outs must return all the same output,
-                // if the UI changes, we'll need to track the output of each individual output
-                if (outCalls.empty())
+                if (outCalls.size() < 2)
                 {
                     AddError(root->GetNodeId(), root, ScriptCanvas::ParseErrors::NotEnoughBranchesForReturn);
                     return;
@@ -502,6 +500,9 @@ namespace ScriptCanvas
                             , returnValueVariable->m_datum.GetType()
                             , returnValueVariable->m_sourceVariableId });
                     }
+
+                    AZStd::const_pointer_cast<ExecutionTree>(outCall)->SetOutCallIndex(m_outIndexCount);
+                    ++m_outIndexCount;
 
                     in.outs.push_back(AZStd::move(out));
                 }
@@ -543,6 +544,8 @@ namespace ScriptCanvas
                     , returnValueVariable->m_sourceVariableId });
             }
 
+            AZStd::const_pointer_cast<ExecutionTree>(outCall)->SetOutCallIndex(m_outIndexCount);
+            ++m_outIndexCount;
             m_subgraphInterface.AddLatent(AZStd::move(out));
         }
 
@@ -908,6 +911,7 @@ namespace ScriptCanvas
                 ebusHandling->m_startingAdress = startingAddress;
             }
 
+            ebusHandling->m_node = &node;
             m_ebusHandlingByNode.emplace(&node, ebusHandling);
             return true;
         }
@@ -1497,7 +1501,6 @@ namespace ScriptCanvas
 
             while (outputSource)
             {
-                AZ::s32 firstFoundIndex = 0;
                 // check every connected SC Node
                 for (const auto& scNodeAndOutputSlot : scriptCanvasNodesConnectedToInput)
                 {
@@ -2612,7 +2615,6 @@ namespace ScriptCanvas
 
         void AbstractCodeModel::ParseConstructionInputVariables()
         {
-            AZ::SerializeContext* serializeContext = AZ::EntityUtils::GetApplicationSerializeContext();
             AZStd::vector<AZStd::pair<AZ::EntityId, Nodeable*>> nodeablesById;
             AZStd::vector<VariableId> inputVariableIds;
             AZStd::unordered_map<VariableId, Grammar::VariableConstPtr> inputVariablesById;
@@ -3254,6 +3256,15 @@ namespace ScriptCanvas
                                 AZ_Assert(childOutSlot, "null slot in child out slot list");
                                 ExecutionTreePtr internalOut = OpenScope(child, node, childOutSlot);
                                 internalOut->SetNodeable(execution->GetNodeable());
+
+                                const size_t outIndex = node->GetOutIndex(*childOutSlot);
+                                if (outIndex == std::numeric_limits<size_t>::max())
+                                {
+                                    AddError(execution, aznew Internal::ParseError(node->GetEntityId(), AZStd::string::format("Missing internal out key for slot %s", childOutSlot->GetName().c_str())));
+                                    return;
+                                }
+
+                                internalOut->SetOutCallIndex(outIndex);
                                 internalOut->MarkInternalOut();
                                 internalOut->SetSymbol(Symbol::FunctionDefinition);
                                 auto outNameOutcome = node->GetInternalOutKey(*childOutSlot);
@@ -3895,6 +3906,14 @@ namespace ScriptCanvas
                             auto latentOutKeyOutcome = node.GetLatentOutKey(*slot);
                             if (latentOutKeyOutcome.IsSuccess())
                             {
+                                const size_t outIndex = node.GetOutIndex(*slot);
+                                if (outIndex == std::numeric_limits<size_t>::max())
+                                {
+                                    AddError(outRoot, aznew Internal::ParseError(node.GetEntityId(), AZStd::string::format("Missing internal out key for slot %s", slot->GetName().c_str())));
+                                    return;
+                                }
+
+                                outRoot->SetOutCallIndex(outIndex);
                                 outRoot->SetName(latentOutKeyOutcome.GetValue().data());
                                 AZStd::const_pointer_cast<NodeableParse>(nodeableParseIter->second)->m_latents.emplace_back(outRoot->GetName(), outRoot);
                             }
@@ -4624,7 +4643,13 @@ namespace ScriptCanvas
             m_userInsThatRequireTopology.clear();
   
             ParseUserOuts();
-            m_subgraphInterface.Parse();
+
+            auto parseOutcome = m_subgraphInterface.Parse();
+
+            if (!parseOutcome.IsSuccess())
+            {
+                AddError(nullptr, aznew Internal::ParseError(AZ::EntityId(), AZStd::string::format("Subgraph interface failed to parse: %s", parseOutcome.GetError().c_str()).c_str()));
+            }
         }
 
         void AbstractCodeModel::ParseUserIn(ExecutionTreePtr root, const Nodes::Core::FunctionDefinitionNode* nodeling)
@@ -4636,7 +4661,6 @@ namespace ScriptCanvas
             NodelingInParserIterationListener listener;
             TraverseTree(root, listener);
             auto& leavesWithoutNodelings = listener.GetLeavesWithoutNodelings();
-            auto& outCalls = listener.GetOutCalls();
             AZStd::unordered_set<const ScriptCanvas::Nodes::Core::FunctionDefinitionNode*> uniqueNodelingsOut = listener.GetNodelingsOut();
             // determine the the execution topology can be reduced to single function call with a single return point to graph execution
             const UserInParseTopologyResult result = ParseUserInTolopology(uniqueNodelingsOut.size(), leavesWithoutNodelings.size());

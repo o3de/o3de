@@ -61,8 +61,8 @@ namespace AZ
             //! Gets the context at the top of the active context stack. Returns nullptr if the stack is emtpy.
             virtual ImGuiContext* GetActiveContext() = 0;
 
-            //! Allows draw data from a different context to be passed in and rendered to the default context. ImDrawData must be from the ImGui version.
-            virtual bool RenderImGuiBuffersToDefaultPass(const ImDrawData& drawData) = 0;
+            //! Allows draw data from a different context to be passed in and rendered to the current viewport. ImDrawData must be from the ImGui version.
+            virtual bool RenderImGuiBuffersToCurrentViewport(const ImDrawData& drawData) = 0;
         };
 
         using ImGuiSystemRequestBus = AZ::EBus<ImGuiSystemRequests>;

@@ -17,11 +17,23 @@
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 
 class QPixmap;
+class QThreadPool;
 
 namespace AzToolsFramework
 {
     namespace Thumbnailer
     {
+        //! Interaction with thumbnail context
+        class ThumbnailContextRequests
+            : public AZ::EBusTraits
+        {
+        public:
+            //! Get thread pool for drawing thumbnails
+            virtual QThreadPool* GetThreadPool() = 0;
+        };
+
+        using ThumbnailContextRequestBus = AZ::EBus<ThumbnailContextRequests>;
+
         //! Interaction with thumbnailer
         class ThumbnailerRequests
             : public AZ::EBusTraits

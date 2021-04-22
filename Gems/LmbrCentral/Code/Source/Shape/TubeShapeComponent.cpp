@@ -54,7 +54,6 @@ namespace LmbrCentral
             behaviorContext->Constant("TubeShapeComponentTypeId", BehaviorConstant(TubeShapeComponentTypeId));
 
             behaviorContext->EBus<TubeShapeComponentRequestsBus>("TubeShapeComponentRequestsBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Shape")
                 ->Event("SetRadius", &TubeShapeComponentRequestsBus::Events::SetRadius)
                 ->Event("GetRadius", &TubeShapeComponentRequestsBus::Events::GetRadius)

@@ -105,11 +105,9 @@ namespace ScriptCanvas
 
     void DataSlotConfiguration::SetType(const AZ::BehaviorParameter& typeDesc)
     {
-        auto dataRegistry = GetDataRegistry();
         Data::Type scType = !AZ::BehaviorContextHelper::IsStringParameter(typeDesc) ? Data::FromAZType(typeDesc.m_typeId) : Data::Type::String();
-        auto typeIter = dataRegistry->m_creatableTypes.find(scType);
-
-        if (typeIter != dataRegistry->m_creatableTypes.end())
+        auto dataRegistry = GetDataRegistry();
+        if (dataRegistry->IsUseableInSlot(scType))
         {
             m_datum.SetType(scType);
         }

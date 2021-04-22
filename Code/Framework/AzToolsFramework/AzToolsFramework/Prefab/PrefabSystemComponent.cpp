@@ -104,7 +104,6 @@ namespace AzToolsFramework
                 return nullptr;
             }
 
-             
             AZStd::unique_ptr<Instance> newInstance = AZStd::make_unique<Instance>(AZStd::move(containerEntity));
 
             for (AZ::Entity* entity : entities)
@@ -122,6 +121,7 @@ namespace AzToolsFramework
             }
 
             newInstance->SetTemplateSourcePath(relativeFilePath);
+            newInstance->SetContainerEntityName(relativeFilePath.Stem().Native());
 
             TemplateId newTemplateId = CreateTemplateFromInstance(*newInstance);
             if (newTemplateId == InvalidTemplateId)
@@ -142,7 +142,6 @@ namespace AzToolsFramework
 
         void PrefabSystemComponent::PropagateTemplateChanges(TemplateId templateId)
         {
-            UpdatePrefabInstances(templateId);
             auto templateIdToLinkIdsIterator = m_templateToLinkIdsMap.find(templateId);
             if (templateIdToLinkIdsIterator != m_templateToLinkIdsMap.end())
             {
@@ -153,15 +152,24 @@ namespace AzToolsFramework
                     templateIdToLinkIdsIterator->second.end()));
                 UpdateLinkedInstances(linkIdsToUpdateQueue);
             }
+            else
+            {
+                UpdatePrefabInstances(templateId);
+            }
         }
 
         void PrefabSystemComponent::UpdatePrefabTemplate(TemplateId templateId, const PrefabDom& updatedDom)
         {
-            PrefabDom& templateDomToUpdate = FindTemplateDom(templateId);
-            if (AZ::JsonSerialization::Compare(templateDomToUpdate, updatedDom) != AZ::JsonSerializerCompareResult::Equal)
+            auto templateToUpdate = FindTemplate(templateId);
+            if (templateToUpdate)
             {
-                templateDomToUpdate.CopyFrom(updatedDom, templateDomToUpdate.GetAllocator());
-                PropagateTemplateChanges(templateId);
+                PrefabDom& templateDomToUpdate = templateToUpdate->get().GetPrefabDom();
+                if (AZ::JsonSerialization::Compare(templateDomToUpdate, updatedDom) != AZ::JsonSerializerCompareResult::Equal)
+                {
+                    templateDomToUpdate.CopyFrom(updatedDom, templateDomToUpdate.GetAllocator());
+                    templateToUpdate->get().MarkAsDirty(true);
+                    PropagateTemplateChanges(templateId);
+                }
             }
         }
 
@@ -498,12 +506,14 @@ namespace AzToolsFramework
                 return false;
             }
 
-            Template& sourceTemplate = sourceTemplateReference->get();
             Template& targetTemplate = targetTemplateReference->get();
 
+#if defined(AZ_ENABLE_TRACING)
+            Template& sourceTemplate = sourceTemplateReference->get();
             AZStd::string_view instanceName(instanceIterator->name.GetString(), instanceIterator->name.GetStringLength());
             const AZStd::string& targetTemplateFilePath = targetTemplate.GetFilePath().Native();
             const AZStd::string& sourceTemplateFilePath = sourceTemplate.GetFilePath().Native();
+#endif
 
             LinkId newLinkId = CreateUniqueLinkId();
             Link newLink(newLinkId);
@@ -613,7 +623,12 @@ namespace AzToolsFramework
                 instancesValue = memberFound->value;
             }
 
-            instancesValue->get().AddMember(rapidjson::StringRef(instanceAlias.c_str()), PrefabDomValue(), targetTemplateDom.GetAllocator());
+            // Only add the instance if it's not there already
+            if (instancesValue->get().FindMember(rapidjson::StringRef(instanceAlias.c_str())) == instancesValue->get().MemberEnd())
+            {
+                instancesValue->get().AddMember(
+                    rapidjson::StringRef(instanceAlias.c_str()), PrefabDomValue(), targetTemplateDom.GetAllocator());
+            }
 
             Template& sourceTemplate = sourceTemplateRef->get();
 
@@ -731,10 +746,11 @@ namespace AzToolsFramework
             }
 
             Template& sourceTemplate = sourceTemplateReference->get();
+#if defined(AZ_ENABLE_TRACING)
             Template& targetTemplate = targetTemplateReference->get();
+#endif
 
             AZStd::string_view instanceName(instanceIterator->name.GetString(), instanceIterator->name.GetStringLength());
-            const AZStd::string& targetTemplateFilePath = targetTemplate.GetFilePath().Native();
 
             link.SetSourceTemplateId(sourceTemplateId);
             link.SetTargetTemplateId(targetTemplateId);

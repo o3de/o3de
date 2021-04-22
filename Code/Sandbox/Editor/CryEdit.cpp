@@ -95,9 +95,6 @@ AZ_POP_DISABLE_WARNING
 
 #include "Core/QtEditorApplication.h"
 #include "StringDlg.h"
-#include "LinkTool.h"
-#include "AlignTool.h"
-#include "VoxelAligningTool.h"
 #include "NewLevelDialog.h"
 #include "GridSettingsDialog.h"
 #include "LayoutConfigDialog.h"
@@ -112,7 +109,6 @@ AZ_POP_DISABLE_WARNING
 #include "DisplaySettings.h"
 #include "GameEngine.h"
 
-#include "ObjectCloneTool.h"
 #include "StartupTraceHandler.h"
 #include "ThumbnailGenerator.h"
 #include "ToolsConfigPage.h"
@@ -126,7 +122,6 @@ AZ_POP_DISABLE_WARNING
 #include "EditorPreferencesDialog.h"
 #include "GraphicsSettingsDialog.h"
 #include "FeedbackDialog/FeedbackDialog.h"
-#include "MatEditMainDlg.h"
 #include "AnimationContext.h"
 
 #include "GotoPositionDlg.h"
@@ -156,7 +151,6 @@ AZ_POP_DISABLE_WARNING
 #include "LevelIndependentFileMan.h"
 #include "WelcomeScreen/WelcomeScreenDialog.h"
 #include "Dialogs/DuplicatedObjectsHandlerDlg.h"
-#include "EditMode/VertexSnappingModeTool.h"
 
 #include "Controls/ReflectedPropertyControl/PropertyCtrl.h"
 #include "Controls/ReflectedPropertyControl/ReflectedVar.h"
@@ -187,8 +181,8 @@ AZ_POP_DISABLE_WARNING
 
 #include <AzCore/std/smart_ptr/make_shared.h>
 
-static const char lumberyardEditorClassName[] = "LumberyardEditorClass";
-static const char lumberyardApplicationName[] = "LumberyardApplication";
+static const char O3DEEditorClassName[] = "O3DEEditorClass";
+static const char O3DEApplicationName[] = "O3DEApplication";
 
 static AZ::EnvironmentVariable<bool> inEditorBatchMode = nullptr;
 
@@ -378,7 +372,7 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_DOCUMENTATION_GETTINGSTARTEDGUIDE, OnDocumentationGettingStartedGuide)
     ON_COMMAND(ID_DOCUMENTATION_TUTORIALS, OnDocumentationTutorials)
     ON_COMMAND(ID_DOCUMENTATION_GLOSSARY, OnDocumentationGlossary)
-    ON_COMMAND(ID_DOCUMENTATION_LUMBERYARD, OnDocumentationLumberyard)
+    ON_COMMAND(ID_DOCUMENTATION_O3DE, OnDocumentationO3DE)
     ON_COMMAND(ID_DOCUMENTATION_GAMELIFT, OnDocumentationGamelift)
     ON_COMMAND(ID_DOCUMENTATION_RELEASENOTES, OnDocumentationReleaseNotes)
     ON_COMMAND(ID_DOCUMENTATION_GAMEDEVBLOG, OnDocumentationGameDevBlog)
@@ -401,14 +395,9 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_EDITMODE_MOVE, OnEditmodeMove)
     ON_COMMAND(ID_EDITMODE_ROTATE, OnEditmodeRotate)
     ON_COMMAND(ID_EDITMODE_SCALE, OnEditmodeScale)
-    ON_COMMAND(ID_EDITTOOL_LINK, OnEditToolLink)
-    ON_COMMAND(ID_EDITTOOL_UNLINK, OnEditToolUnlink)
     ON_COMMAND(ID_EDITMODE_SELECT, OnEditmodeSelect)
-    ON_COMMAND(ID_EDIT_ESCAPE, OnEditEscape)
     ON_COMMAND(ID_OBJECTMODIFY_SETAREA, OnObjectSetArea)
     ON_COMMAND(ID_OBJECTMODIFY_SETHEIGHT, OnObjectSetHeight)
-    ON_COMMAND(ID_OBJECTMODIFY_VERTEXSNAPPING, OnObjectVertexSnapping)
-    ON_COMMAND(ID_MODIFY_ALIGNOBJTOSURF, OnAlignToVoxel)
     ON_COMMAND(ID_OBJECTMODIFY_FREEZE, OnObjectmodifyFreeze)
     ON_COMMAND(ID_OBJECTMODIFY_UNFREEZE, OnObjectmodifyUnfreeze)
     ON_COMMAND(ID_EDITMODE_SELECTAREA, OnEditmodeSelectarea)
@@ -418,12 +407,9 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_SELECT_AXIS_XY, OnSelectAxisXy)
     ON_COMMAND(ID_UNDO, OnUndo)
     ON_COMMAND(ID_TOOLBAR_WIDGET_REDO, OnUndo)     // Can't use the same ID, because for the menu we can't have a QWidgetAction, while for the toolbar we want one
-    ON_COMMAND(ID_EDIT_CLONE, OnEditClone)
     ON_COMMAND(ID_SELECTION_SAVE, OnSelectionSave)
     ON_COMMAND(ID_IMPORT_ASSET, OnOpenAssetImporter)
     ON_COMMAND(ID_SELECTION_LOAD, OnSelectionLoad)
-    ON_COMMAND(ID_OBJECTMODIFY_ALIGN, OnAlignObject)
-    ON_COMMAND(ID_MODIFY_ALIGNOBJTOSURF, OnAlignToVoxel)
     ON_COMMAND(ID_OBJECTMODIFY_ALIGNTOGRID, OnAlignToGrid)
     ON_COMMAND(ID_LOCK_SELECTION, OnLockSelection)
     ON_COMMAND(ID_EDIT_LEVELDATA, OnEditLevelData)
@@ -530,12 +516,10 @@ void CCryEditApp::RegisterActionHandlers()
 
     ON_COMMAND(ID_OPEN_MATERIAL_EDITOR, OnOpenMaterialEditor)
     ON_COMMAND(ID_GOTO_VIEWPORTSEARCH, OnGotoViewportSearch)
-    ON_COMMAND(ID_MATERIAL_PICKTOOL, OnMaterialPicktool)
     ON_COMMAND(ID_DISPLAY_SHOWHELPERS, OnShowHelpers)
     ON_COMMAND(ID_OPEN_TRACKVIEW, OnOpenTrackView)
     ON_COMMAND(ID_OPEN_UICANVASEDITOR, OnOpenUICanvasEditor)
     ON_COMMAND(ID_GOTO_VIEWPORTSEARCH, OnGotoViewportSearch)
-    ON_COMMAND(ID_MATERIAL_PICKTOOL, OnMaterialPicktool)
     ON_COMMAND(ID_TERRAIN_TIMEOFDAY, OnTimeOfDay)
     ON_COMMAND(ID_TERRAIN_TIMEOFDAYBUTTON, OnTimeOfDay)
 
@@ -639,7 +623,7 @@ public:
         QString appRootOverride;
         parser.addHelpOption();
         parser.setSingleDashWordOptionMode(QCommandLineParser::ParseAsLongOptions);
-        parser.setApplicationDescription(QObject::tr("Amazon Lumberyard"));
+        parser.setApplicationDescription(QObject::tr("Open 3D Engine"));
         // nsDocumentRevisionDebugMode is an argument that the macOS system passed into an App bundle that is being debugged.
         // Need to include it here so that Qt argument parser does not error out.
         bool nsDocumentRevisionsDebugMode = false;
@@ -758,13 +742,13 @@ struct SharedData
 //      article Q141752 to locate the previous instance of the application. .
 BOOL CCryEditApp::FirstInstance(bool bForceNewInstance)
 {
-    QSystemSemaphore sem(QString(lumberyardApplicationName) + "_sem", 1);
+    QSystemSemaphore sem(QString(O3DEApplicationName) + "_sem", 1);
     sem.acquire();
     {
-        FixDanglingSharedMemory(lumberyardEditorClassName);
+        FixDanglingSharedMemory(O3DEEditorClassName);
     }
     sem.release();
-    m_mutexApplication = new QSharedMemory(lumberyardEditorClassName);
+    m_mutexApplication = new QSharedMemory(O3DEEditorClassName);
     if (!m_mutexApplication->create(sizeof(SharedData)) && !bForceNewInstance)
     {
         m_mutexApplication->attach();
@@ -789,7 +773,7 @@ BOOL CCryEditApp::FirstInstance(bool bForceNewInstance)
         sem.release();
         QTimer* t = new QTimer(this);
         connect(t, &QTimer::timeout, this, [this]() {
-            QSystemSemaphore sem(QString(lumberyardApplicationName) + "_sem", 1);
+            QSystemSemaphore sem(QString(O3DEApplicationName) + "_sem", 1);
             sem.acquire();
             SharedData* data = reinterpret_cast<SharedData*>(m_mutexApplication->data());
             QString preview = QString::fromLatin1(data->text);
@@ -1018,9 +1002,9 @@ QString FormatRichTextCopyrightNotice()
 {
     // copyright symbol is HTML Entity = &#xA9;
     QString copyrightHtmlSymbol = "&#xA9;";
-    QString copyrightString = QObject::tr("Lumberyard and related materials Copyright %1 %2 Amazon Web Services, Inc., its affiliates or licensors.<br>By accessing or using these materials, you agree to the terms of the AWS Customer Agreement.");
+    QString copyrightString = QObject::tr("Open 3D Engine and related materials Copyright %1 %2 Amazon Web Services, Inc., its affiliates or licensors.<br>By accessing or using these materials, you agree to the terms of the AWS Customer Agreement.");
 
-    return copyrightString.arg(copyrightHtmlSymbol).arg(LUMBERYARD_COPYRIGHT_YEAR);
+    return copyrightString.arg(copyrightHtmlSymbol).arg(O3DE_COPYRIGHT_YEAR);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1180,8 +1164,8 @@ BOOL CCryEditApp::CheckIfAlreadyRunning()
 
     if (!m_bPreviewMode)
     {
-        FixDanglingSharedMemory(lumberyardApplicationName);
-        m_mutexApplication = new QSharedMemory(lumberyardApplicationName);
+        FixDanglingSharedMemory(O3DEApplicationName);
+        m_mutexApplication = new QSharedMemory(O3DEApplicationName);
         if (!m_mutexApplication->create(16))
         {
             // Don't prompt the user in non-interactive export mode.  Instead, default to allowing multiple instances to 
@@ -1189,7 +1173,7 @@ BOOL CCryEditApp::CheckIfAlreadyRunning()
             // NOTE:  If you choose to do this, be sure to export *different* levels, since nothing prevents multiple runs 
             // from trying to write to the same level at the same time.
             // If we're running interactively, let's ask and make sure the user actually intended to do this.
-            if (!m_bExportMode && QMessageBox::question(AzToolsFramework::GetActiveWindow(), QObject::tr("Too many apps"), QObject::tr("There is already a Lumberyard application running\nDo you want to start another one?")) != QMessageBox::Yes)
+            if (!m_bExportMode && QMessageBox::question(AzToolsFramework::GetActiveWindow(), QObject::tr("Too many apps"), QObject::tr("There is already an Open 3D Engine application running\nDo you want to start another one?")) != QMessageBox::Yes)
             {
                 return false;
             }
@@ -1798,7 +1782,7 @@ BOOL CCryEditApp::InitInstance()
     GetIEditor()->GetCommandManager()->RegisterAutoCommands();
     GetIEditor()->AddUIEnums();
 
-    mainWindowWrapper->enableSaveRestoreGeometry("amazon", "lumberyard", "mainWindowGeometry");
+    mainWindowWrapper->enableSaveRestoreGeometry("amazon", "O3DE", "mainWindowGeometry");
     m_pDocManager->OnFileNew();
 
     if (IsInRegularEditorMode())
@@ -1898,14 +1882,6 @@ BOOL CCryEditApp::InitInstance()
     CWipFeatureManager::Init();
 #endif
 
-    if (GetIEditor()->IsInMatEditMode())
-    {
-        m_pMatEditDlg = new CMatEditMainDlg(QStringLiteral("Material Editor"));
-        m_pEditor->InitFinished();
-        m_pMatEditDlg->show();
-        return true;
-    }
-
     if (!m_bConsoleMode && !m_bPreviewMode)
     {
         GetIEditor()->UpdateViews();
@@ -1933,9 +1909,11 @@ BOOL CCryEditApp::InitInstance()
     if (GetIEditor()->GetCommandManager()->IsRegistered("editor.open_lnm_editor"))
     {
         CCommand0::SUIInfo uiInfo;
-        bool ok = GetIEditor()->GetCommandManager()->GetUIInfo("editor.open_lnm_editor", uiInfo);
+#if !defined(NDEBUG)
+        bool ok =
+#endif
+            GetIEditor()->GetCommandManager()->GetUIInfo("editor.open_lnm_editor", uiInfo);
         assert(ok);
-        int ID_VIEW_AI_LNMEDITOR(uiInfo.commandId);
     }
 
     RunInitPythonScript(cmdInfo);
@@ -2088,7 +2066,7 @@ void CCryEditApp::OnAppAbout()
     aboutDlg.exec();
 }
 
-// App command to run the Welcome to Lumberyard dialog
+// App command to run the Welcome to Open 3D Engine dialog
 void CCryEditApp::OnAppShowWelcomeScreen()
 {
     // This logic is a simplified version of the startup
@@ -2180,7 +2158,7 @@ void CCryEditApp::OnDocumentationGlossary()
     QDesktopServices::openUrl(QUrl(webLink));
 }
 
-void CCryEditApp::OnDocumentationLumberyard()
+void CCryEditApp::OnDocumentationO3DE()
 {
     QString webLink = tr("https://docs.aws.amazon.com/lumberyard/userguide");
     QDesktopServices::openUrl(QUrl(webLink));
@@ -2481,7 +2459,6 @@ int CCryEditApp::IdleProcessing(bool bBackgroundUpdate)
     static AZStd::chrono::system_clock::time_point lastUpdate = now;
 
     AZStd::chrono::duration<float> delta = now - lastUpdate;
-    float deltaTime = delta.count();
 
     lastUpdate = now;
 
@@ -2752,90 +2729,12 @@ void CCryEditApp::OnEditDelete()
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::DeleteSelectedEntities([[maybe_unused]] bool includeDescendants)
 {
-    // If Edit tool active cannot delete object.
-    if (GetIEditor()->GetEditTool())
-    {
-        if (GetIEditor()->GetEditTool()->OnKeyDown(GetIEditor()->GetViewManager()->GetView(0), VK_DELETE, 0, 0))
-        {
-            return;
-        }
-    }
-
     GetIEditor()->BeginUndo();
     CUndo undo("Delete Selected Object");
     GetIEditor()->GetObjectManager()->DeleteSelection();
     GetIEditor()->AcceptUndo("Delete Selection");
     GetIEditor()->SetModifiedFlag();
     GetIEditor()->SetModifiedModule(eModifiedBrushes);
-}
-
-void CCryEditApp::OnEditClone()
-{
-    if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        if (GetIEditor()->GetObjectManager()->GetSelection()->IsEmpty())
-        {
-            QMessageBox::critical(AzToolsFramework::GetActiveWindow(), QString(),
-                QObject::tr("You have to select objects before you can clone them!"));
-            return;
-        }
-
-        // Clear Widget selection - Prevents issues caused by cloning entities while a property in the Reflected Property Editor is being edited.
-        if (QApplication::focusWidget())
-        {
-            QApplication::focusWidget()->clearFocus();
-        }
-
-        CEditTool* tool = GetIEditor()->GetEditTool();
-        if (tool && qobject_cast<CObjectCloneTool*>(tool))
-        {
-            ((CObjectCloneTool*)tool)->Accept();
-        }
-
-        CObjectCloneTool* cloneTool = new CObjectCloneTool;
-        GetIEditor()->SetEditTool(cloneTool);
-        GetIEditor()->SetModifiedFlag();
-        GetIEditor()->SetModifiedModule(eModifiedBrushes);
-
-        // Accept the clone operation if users didn't choose to stick duplicated entities to the cursor
-        // This setting can be changed in the global preference of the editor
-        if (!gSettings.deepSelectionSettings.bStickDuplicate)
-        {
-            cloneTool->Accept();
-            GetIEditor()->GetSelection()->FinishChanges();
-        }
-    }
-}
-
-void CCryEditApp::OnEditEscape()
-{
-    if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        CEditTool* pEditTool = GetIEditor()->GetEditTool();
-        // Abort current operation.
-        if (pEditTool)
-        {
-            // If Edit tool active cannot delete object.
-            CViewport* vp = GetIEditor()->GetActiveView();
-            if (GetIEditor()->GetEditTool()->OnKeyDown(vp, VK_ESCAPE, 0, 0))
-            {
-                return;
-            }
-
-            if (GetIEditor()->GetEditMode() == eEditModeSelectArea)
-            {
-                GetIEditor()->SetEditMode(eEditModeSelect);
-            }
-
-            // Disable current tool.
-            GetIEditor()->SetEditTool(0);
-        }
-        else
-        {
-            // Clear selection on escape.
-            GetIEditor()->ClearSelection();
-        }
-    }
 }
 
 void CCryEditApp::OnMoveObject()
@@ -2902,51 +2801,6 @@ void CCryEditApp::OnEditmodeScale()
     {
         GetIEditor()->SetEditMode(eEditModeScale);
     }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnEditToolLink()
-{
-    // TODO: Add your command handler code here
-    if (qobject_cast<CLinkTool*>(GetIEditor()->GetEditTool()))
-    {
-        GetIEditor()->SetEditTool(0);
-    }
-    else
-    {
-        GetIEditor()->SetEditTool(new CLinkTool());
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnUpdateEditToolLink(QAction* action)
-{
-    if (!GetIEditor()->GetDocument())
-    {
-        action->setEnabled(false);
-        return;
-    }
-    action->setEnabled(GetIEditor()->GetDocument()->IsDocumentReady());
-    CEditTool* pEditTool = GetIEditor()->GetEditTool();
-    action->setChecked(qobject_cast<CLinkTool*>(pEditTool) != nullptr);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnEditToolUnlink()
-{
-    CUndo undo("Unlink Object(s)");
-    CSelectionGroup* pSelection = GetIEditor()->GetObjectManager()->GetSelection();
-    for (int i = 0; i < pSelection->GetCount(); i++)
-    {
-        CBaseObject* pBaseObj = pSelection->GetObject(i);
-        pBaseObj->DetachThis();
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnUpdateEditToolUnlink(QAction* action)
-{
-    action->setEnabled(false);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -3042,14 +2896,6 @@ void CCryEditApp::OnUpdateEditmodeScale(QAction* action)
         action->setChecked(GetIEditor()->GetEditMode() == eEditModeScale);
         action->setEnabled(true);
     }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnUpdateEditmodeVertexSnapping(QAction* action)
-{
-    Q_ASSERT(action->isCheckable());
-    CEditTool* pEditTool = GetIEditor()->GetEditTool();
-    action->setChecked(qobject_cast<CVertexSnappingModeTool*>(pEditTool) != nullptr);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -3198,19 +3044,6 @@ void CCryEditApp::OnObjectSetHeight()
     else
     {
         QMessageBox::critical(AzToolsFramework::GetActiveWindow(), QString(), QObject::tr("No objects selected"));
-    }
-}
-
-void CCryEditApp::OnObjectVertexSnapping()
-{
-    CEditTool* pEditTool = GetIEditor()->GetEditTool();
-    if (qobject_cast<CVertexSnappingModeTool*>(pEditTool))
-    {
-        GetIEditor()->SetEditTool(NULL);
-    }
-    else
-    {
-        GetIEditor()->SetEditTool("EditTool.VertexSnappingMode");
     }
 }
 
@@ -3519,14 +3352,6 @@ void CCryEditApp::OnUpdateSelected(QAction* action)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnAlignObject()
-{
-    // Align pick callback will release itself.
-    CAlignPickCallback* alignCallback = new CAlignPickCallback;
-    GetIEditor()->PickObject(alignCallback, 0, "Align to Object");
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnAlignToGrid()
 {
     CSelectionGroup* sel = GetIEditor()->GetSelection();
@@ -3546,46 +3371,8 @@ void CCryEditApp::OnAlignToGrid()
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnUpdateAlignObject(QAction* action)
-{
-    Q_ASSERT(action->isCheckable());
-    action->setChecked(CAlignPickCallback::IsActive());
-
-    action->setEnabled(!GetIEditor()->GetSelection()->IsEmpty());
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnAlignToVoxel()
-{
-    CEditTool* pEditTool = GetIEditor()->GetEditTool();
-    if (qobject_cast<CVoxelAligningTool*>(pEditTool) != nullptr)
-    {
-        GetIEditor()->SetEditTool(nullptr);
-    }
-    else
-    {
-        GetIEditor()->SetEditTool(new CVoxelAligningTool());
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnUpdateAlignToVoxel(QAction* action)
-{
-    Q_ASSERT(action->isCheckable());
-    CEditTool* pEditTool = GetIEditor()->GetEditTool();
-    action->setChecked(qobject_cast<CVoxelAligningTool*>(pEditTool) != nullptr);
-
-    action->setEnabled(!GetIEditor()->GetSelection()->IsEmpty());
-}
-
 void CCryEditApp::OnShowHelpers()
 {
-    CEditTool* pEditTool(GetIEditor()->GetEditTool());
-    if (pEditTool && pEditTool->IsNeedSpecificBehaviorForSpaceAcce())
-    {
-        return;
-    }
     GetIEditor()->GetDisplaySettings()->DisplayHelpers(!GetIEditor()->GetDisplaySettings()->IsDisplayHelpers());
     GetIEditor()->Notify(eNotify_OnDisplayRenderUpdate);
 }
@@ -4837,7 +4624,6 @@ void CCryEditApp::OnEditRenameobject()
         QString newName;
         QString str = dlg.GetString();
         int num = 0;
-        bool bWarningShown = false;
 
         for (int i = 0; i < pSelection->GetCount(); ++i)
         {
@@ -4952,7 +4738,6 @@ void CCryEditApp::OnValidateObjectPositions()
     std::vector<CBaseObject*> foundObjects;
 
     std::vector<GUID> objIDs;
-    bool reportVeg = false;
 
     for (int i1 = 0; i1 < objCount; ++i1)
     {
@@ -5214,12 +4999,6 @@ void CCryEditApp::OnOpenUICanvasEditor()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnMaterialPicktool()
-{
-    GetIEditor()->SetEditTool("EditTool.PickMaterial");
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnTimeOfDay()
 {
     GetIEditor()->OpenView("Time Of Day");
@@ -5373,12 +5152,6 @@ void CCryEditApp::OnOpenQuickAccessBar()
         return;
     }
 
-    CEditTool* pEditTool(GetIEditor()->GetEditTool());
-    if (pEditTool && pEditTool->IsNeedSpecificBehaviorForSpaceAcce())
-    {
-        return;
-    }
-
     QRect geo = m_pQuickAccessBar->geometry();
     geo.moveCenter(MainWindow::instance()->geometry().center());
     m_pQuickAccessBar->setGeometry(geo);
@@ -5391,7 +5164,6 @@ void CCryEditApp::SetEditorWindowTitle(QString sTitleStr, QString sPreTitleStr, 
     if (MainWindow::instance() || m_pConsoleDialog)
     {
         QString platform = "";
-        const SFileVersion& v = GetIEditor()->GetFileVersion();
 
 #ifdef WIN64
         platform = "[x64]";
@@ -5401,7 +5173,7 @@ void CCryEditApp::SetEditorWindowTitle(QString sTitleStr, QString sPreTitleStr, 
 
         if (sTitleStr.isEmpty())
         {
-            sTitleStr = QObject::tr("Lumberyard Editor Beta %1 - Build %2").arg(platform).arg(LY_BUILD);
+            sTitleStr = QObject::tr("Open 3D Engine Editor Beta %1 - Build %2").arg(platform).arg(LY_BUILD);
         }
 
         if (!sPreTitleStr.isEmpty())
@@ -5492,7 +5264,7 @@ void CCryEditApp::StartProcessDetached(const char* process, const char* args)
     }
 
     // Launch the process
-    bool startDetachedReturn = QProcess::startDetached(
+    [[maybe_unused]] bool startDetachedReturn = QProcess::startDetached(
         process,
         argsList,
         QCoreApplication::applicationDirPath()
@@ -5704,7 +5476,7 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
         int exitCode = 0;
 
         BOOL didCryEditStart = CCryEditApp::instance()->InitInstance();
-        AZ_Error("Editor", didCryEditStart, "CryEditor did not initialize correctly, and will close."
+        AZ_Error("Editor", didCryEditStart, "O3DE Editor did not initialize correctly, and will close."
             "\nThis could be because of incorrectly configured components, or missing required gems."
             "\nSee other errors for more details.");
 

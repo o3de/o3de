@@ -54,7 +54,6 @@ AZ_POP_DISABLE_WARNING
 #include "Export/ExportManager.h"
 #include "LevelIndependentFileMan.h"
 #include "Material/MaterialManager.h"
-#include "Material/MaterialPickTool.h"
 #include "TrackView/TrackViewSequenceManager.h"
 #include "AnimationContext.h"
 #include "GameEngine.h"
@@ -65,20 +64,15 @@ AZ_POP_DISABLE_WARNING
 #include "UIEnumsDatabase.h"
 #include "Util/Ruler.h"
 #include "RenderHelpers/AxisHelper.h"
-#include "PickObjectTool.h"
 #include "Settings.h"
 #include "Include/IObjectManager.h"
 #include "Include/ISourceControl.h"
 #include "Objects/SelectionGroup.h"
 #include "Objects/ObjectManager.h"
 
-#include "RotateTool.h"
-#include "NullEditTool.h"
-
 #include "BackgroundTaskManager.h"
 #include "BackgroundScheduleManager.h"
 #include "EditorFileMonitor.h"
-#include "EditMode/VertexSnappingModeTool.h"
 #include "Mission.h"
 #include "MainStatusBar.h"
 
@@ -170,7 +164,6 @@ CEditorImpl::CEditorImpl()
     , m_pShaderEnum(nullptr)
     , m_pIconManager(nullptr)
     , m_bSelectionLocked(true)
-    , m_pPickTool(nullptr)
     , m_pAxisGizmo(nullptr)
     , m_pGameEngine(nullptr)
     , m_pAnimationContext(nullptr)
@@ -453,12 +446,6 @@ void CEditorImpl::RegisterTools()
 
     rc.pCommandManager = m_pCommandManager;
     rc.pClassFactory = m_pClassFactory;
-
-    CObjectMode::RegisterTool(rc);
-    CMaterialPickTool::RegisterTool(rc);
-    CVertexSnappingModeTool::RegisterTool(rc);
-    CRotateTool::RegisterTool(rc);
-    NullEditTool::RegisterTool(rc);
 }
 
 void CEditorImpl::ExecuteCommand(const char* sCommand, ...)
@@ -684,14 +671,6 @@ void CEditorImpl::SetEditMode(int editMode)
         }
     }
 
-    if ((EEditMode)editMode == eEditModeRotate)
-    {
-        if (GetEditTool() && GetEditTool()->IsCircleTypeRotateGizmo())
-        {
-            editMode = eEditModeRotateCircle;
-        }
-    }
-
     EEditMode newEditMode = (EEditMode)editMode;
     if (m_currEditMode == newEditMode)
     {
@@ -701,11 +680,6 @@ void CEditorImpl::SetEditMode(int editMode)
     m_currEditMode = newEditMode;
     AABB box(Vec3(0, 0, 0), Vec3(0, 0, 0));
     SetSelectedRegion(box);
-
-    if (GetEditTool() && !GetEditTool()->IsNeedMoveTool())
-    {
-        SetEditTool(0, true);
-    }
 
     Notify(eNotify_OnEditModeChange);
 }
@@ -719,144 +693,6 @@ void CEditorImpl::SetOperationMode(EOperationMode mode)
 EOperationMode CEditorImpl::GetOperationMode()
 {
     return m_operationMode;
-}
-
-bool CEditorImpl::HasCorrectEditTool() const
-{
-    if (!m_pEditTool)
-    {
-        return false;
-    }
-
-    switch (m_currEditMode)
-    {
-    case eEditModeRotate:
-        return qobject_cast<CRotateTool*>(m_pEditTool) != nullptr;
-    default:
-        return qobject_cast<CObjectMode*>(m_pEditTool) != nullptr && qobject_cast<CRotateTool*>(m_pEditTool) == nullptr;
-    }
-}
-
-CEditTool* CEditorImpl::CreateCorrectEditTool()
-{
-    if (m_currEditMode == eEditModeRotate)
-    {
-        CBaseObject* selectedObj = nullptr;
-        CSelectionGroup* pSelection = GetIEditor()->GetObjectManager()->GetSelection();
-        if (pSelection && pSelection->GetCount() > 0)
-        {
-            selectedObj = pSelection->GetObject(0);
-        }
-
-        return (new CRotateTool(selectedObj));
-    }
-
-    return (new CObjectMode);
-}
-
-void CEditorImpl::SetEditTool(CEditTool* tool, bool bStopCurrentTool)
-{
-    CViewport* pViewport = GetIEditor()->GetActiveView();
-    if (pViewport)
-    {
-        pViewport->SetCurrentCursor(STD_CURSOR_DEFAULT);
-    }
-
-    if (!tool)
-    {
-        if (HasCorrectEditTool())
-        {
-            return;
-        }
-        else
-        {
-            tool = CreateCorrectEditTool();
-        }
-    }
-
-    if (!tool->Activate(m_pEditTool))
-    {
-        return;
-    }
-
-    if (bStopCurrentTool)
-    {
-        if (m_pEditTool && m_pEditTool != tool)
-        {
-            m_pEditTool->EndEditParams();
-            SetStatusText("Ready");
-        }
-    }
-
-    m_pEditTool = tool;
-    if (m_pEditTool)
-    {
-        m_pEditTool->BeginEditParams(this, 0);
-    }
-
-    // Make sure pick is aborted.
-    if (tool != m_pPickTool)
-    {
-        m_pPickTool = nullptr;
-    }
-    Notify(eNotify_OnEditToolChange);
-}
-
-void CEditorImpl::ReinitializeEditTool()
-{
-    if (m_pEditTool)
-    {
-        m_pEditTool->EndEditParams();
-        m_pEditTool->BeginEditParams(this, 0);
-    }
-}
-
-void CEditorImpl::SetEditTool(const QString& sEditToolName, [[maybe_unused]] bool bStopCurrentTool)
-{
-    CEditTool* pTool = GetEditTool();
-    if (pTool && pTool->GetClassDesc())
-    {
-        // Check if already selected.
-        if (QString::compare(pTool->GetClassDesc()->ClassName(), sEditToolName, Qt::CaseInsensitive) == 0)
-        {
-            return;
-        }
-    }
-
-    IClassDesc* pClass = GetIEditor()->GetClassFactory()->FindClass(sEditToolName.toUtf8().data());
-    if (!pClass)
-    {
-        Warning("Editor Tool %s not registered.", sEditToolName.toUtf8().data());
-        return;
-    }
-    if (pClass->SystemClassID() != ESYSTEM_CLASS_EDITTOOL)
-    {
-        Warning("Class name %s is not a valid Edit Tool class.", sEditToolName.toUtf8().data());
-        return;
-    }
-
-    QScopedPointer<QObject> o(pClass->CreateQObject());
-    if (CEditTool* pEditTool = qobject_cast<CEditTool*>(o.data()))
-    {
-        GetIEditor()->SetEditTool(pEditTool);
-        o.take();
-        return;
-    }
-    else
-    {
-        Warning("Class name %s is not a valid Edit Tool class.", sEditToolName.toUtf8().data());
-        return;
-    }
-}
-
-CEditTool* CEditorImpl::GetEditTool()
-{
-    if (m_isNewViewportInteractionModelEnabled)
-    {
-        return nullptr;
-    }
-    
-    return m_pEditTool;
 }
 
 ITransformManipulator* CEditorImpl::ShowTransformManipulator(bool bShow)
@@ -998,7 +834,6 @@ CBaseObject* CEditorImpl::CloneObject(CBaseObject* obj)
 
 CBaseObject* CEditorImpl::GetSelectedObject()
 {
-    CBaseObject* obj = nullptr;
     if (m_pObjectManager->GetSelection()->GetCount() != 1)
     {
         return nullptr;
@@ -1068,34 +903,6 @@ void CEditorImpl::LockSelection(bool bLock)
 bool CEditorImpl::IsSelectionLocked()
 {
     return m_bSelectionLocked;
-}
-
-void CEditorImpl::PickObject(IPickObjectCallback* callback, const QMetaObject* targetClass, const char* statusText, bool bMultipick)
-{
-    m_pPickTool = new CPickObjectTool(callback, targetClass);
-
-    static_cast<CPickObjectTool*>(m_pPickTool.get())->SetMultiplePicks(bMultipick);
-    if (statusText)
-    {
-        m_pPickTool.get()->SetStatusText(statusText);
-    }
-
-    SetEditTool(m_pPickTool);
-}
-
-void CEditorImpl::CancelPick()
-{
-    SetEditTool(0);
-    m_pPickTool = 0;
-}
-
-bool CEditorImpl::IsPicking()
-{
-    if (GetEditTool() == m_pPickTool && m_pPickTool != 0)
-    {
-        return true;
-    }
-    return false;
 }
 
 CViewManager* CEditorImpl::GetViewManager()
@@ -1433,10 +1240,10 @@ AZStd::string CEditorImpl::LoadProjectIdFromProjectData()
     QByteArray editorProjectNameUtf8 = editorProjectName.toUtf8();
     AZ::Uuid id = AZ::Uuid::CreateName(editorProjectNameUtf8.constData());
 
-    // The projects that Lumberyard ships with had their project IDs hand-generated based on the name of the level.
+    // The projects that Open 3D Engine ships with had their project IDs hand-generated based on the name of the level.
     // Therefore, if the UUID from the project name is the same as the UUID in the file, it's one of our projects
     // and we can therefore send the name back, making it easier for Metrics to determine which level it was.
-    // We are checking to see if this is a project we ship with Lumberyard, and therefore we can unobfuscate non-customer information.
+    // We are checking to see if this is a project we ship with Open 3D Engine, and therefore we can unobfuscate non-customer information.
     if (id != AZ::Uuid(projectId.data()))
     {
         return projectId;
@@ -2098,7 +1905,7 @@ namespace
 
 void CEditorImpl::LoadSettings()
 {
-    QSettings settings(QStringLiteral("Amazon"), QStringLiteral("Lumberyard"));
+    QSettings settings(QStringLiteral("Amazon"), QStringLiteral("O3DE"));
 
     settings.beginGroup(QStringLiteral("Editor"));
     settings.beginGroup(QStringLiteral("CoordSys"));
@@ -2117,7 +1924,7 @@ void CEditorImpl::LoadSettings()
 
 void CEditorImpl::SaveSettings() const
 {
-    QSettings settings(QStringLiteral("Amazon"), QStringLiteral("Lumberyard"));
+    QSettings settings(QStringLiteral("Amazon"), QStringLiteral("O3DE"));
 
     settings.beginGroup(QStringLiteral("Editor"));
     settings.beginGroup(QStringLiteral("CoordSys"));

@@ -11,7 +11,7 @@
 */
 
 #include "DragAndDropPage.h"
-#include <Gallery/ui_DragAndDropPage.h>
+#include <AzQtComponents/Gallery/ui_DragAndDropPage.h>
 
 #include <QLabel>
 #include <AzQtComponents/Components/Style.h>

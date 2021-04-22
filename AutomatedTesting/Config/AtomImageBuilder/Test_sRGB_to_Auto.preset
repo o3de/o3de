@@ -1,0 +1,18 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "MultiplatformPresetSettings",
+    "ClassData": {
+        "DefaultPreset": {
+            "UUID": "{EE397A40-4430-437F-B0EF-9EC8B6E35176}",
+            "Name": "Test_sRGB_to_Auto",
+            "SourceColor": "sRGB",
+            "DestColor": "Auto",
+            "FileMasks": [
+                "_srgb-to-auto"
+            ],
+            "PixelFormat": "R8G8B8X8",
+            "DiscardAlpha": true
+        }
+    }
+}

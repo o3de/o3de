@@ -331,11 +331,6 @@ void LevelEditorMenuHandler::ResetToolsMenus()
 
     CreateMenuOptions(&menuMap, otherSubMenu, LyViewPane::CategoryOther);
 
-    // Plug-Ins
-    auto plugInsMenu = m_toolsMenu.AddMenu(QObject::tr("Plug-Ins"));
-
-    CreateMenuOptions(&menuMap, plugInsMenu, LyViewPane::CategoryPlugIns);
-
     m_toolsMenu.AddSeparator();
 
     // Optional Sub Menus
@@ -585,8 +580,6 @@ void LevelEditorMenuHandler::PopulateEditMenu(ActionManager::MenuWrapper& editMe
 
         auto alignMenu = modifyMenu.AddMenu(tr("Align"));
         alignMenu.AddAction(ID_OBJECTMODIFY_ALIGNTOGRID);
-        alignMenu.AddAction(ID_OBJECTMODIFY_ALIGN);
-        alignMenu.AddAction(ID_MODIFY_ALIGNOBJTOSURF);
 
         auto constrainMenu = modifyMenu.AddMenu(tr("Constrain"));
         constrainMenu.AddAction(ID_SELECT_AXIS_X);
@@ -923,15 +916,15 @@ QMenu* LevelEditorMenuHandler::CreateHelpMenu()
 
                 QUrl docSearchUrl("https://docs.aws.amazon.com/search/doc-search.html");
                 QUrlQuery docSearchQuery;
-                QString lumberyardProductString = QUrl::toPercentEncoding("Amazon Lumberyard");
+                QString o3deProductString = QUrl::toPercentEncoding("Open 3D Engine");
                 // The order of these QueryItems matters. wiki Search URL Formatting
                 docSearchQuery.addQueryItem("searchPath", "documentation-product");
                 docSearchQuery.addQueryItem("searchQuery", text);
-                docSearchQuery.addQueryItem("this_doc_product", lumberyardProductString);
+                docSearchQuery.addQueryItem("this_doc_product", o3deProductString);
                 docSearchQuery.addQueryItem("ref", "lye");
                 docSearchQuery.addQueryItem("ev", productVersionString);
                 docSearchUrl.setQuery(docSearchQuery);
-                docSearchUrl.setFragment(QString("facet_doc_product=%1").arg(lumberyardProductString));
+                docSearchUrl.setFragment(QString("facet_doc_product=%1").arg(o3deProductString));
                 QDesktopServices::openUrl(docSearchUrl);
             }
             lineEdit->clear();
@@ -953,8 +946,8 @@ QMenu* LevelEditorMenuHandler::CreateHelpMenu()
     // Glossary
     documentationMenu.AddAction(ID_DOCUMENTATION_GLOSSARY);
 
-    // Lumberyard Documentation
-    documentationMenu.AddAction(ID_DOCUMENTATION_LUMBERYARD);
+    // Open 3D Engine Documentation
+    documentationMenu.AddAction(ID_DOCUMENTATION_O3DE);
 
     // GameLift Documentation
     documentationMenu.AddAction(ID_DOCUMENTATION_GAMELIFT);
@@ -985,7 +978,7 @@ QMenu* LevelEditorMenuHandler::CreateHelpMenu()
     // Report a Bug???
     // auto reportBugMenu = helpMenu.Get()->addAction(tr("Report a Bug"));
 
-    // About Lumberyard
+    // About Open 3D Engine
     helpMenu.AddAction(ID_APP_ABOUT);
 
     // Welcome dialog

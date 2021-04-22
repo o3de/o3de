@@ -36,7 +36,7 @@ namespace AssetProcessor
             m_platforms.push_back(QString::fromUtf8(info.m_identifier.c_str()));
         }
 
-        bool computedCacheRoot = AssetUtilities::ComputeProjectCacheRoot(m_cacheRoot);
+        [[maybe_unused]] bool computedCacheRoot = AssetUtilities::ComputeProjectCacheRoot(m_cacheRoot);
         AZ_Assert(computedCacheRoot, "Could not compute cache root for AssetCatalog");
 
         // save 30mb for this.  Really large projects do get this big (and bigger)
@@ -341,10 +341,10 @@ namespace AssetProcessor
                 {
                     auto settingsRegistry = AZ::SettingsRegistry::Get();
                     AZ::SettingsRegistryInterface::FixedValueString cacheRootFolder;
-                    settingsRegistry->Get(cacheRootFolder, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder);
+                    settingsRegistry->Get(cacheRootFolder, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheProjectRootFolder);
 
                     QString tempRegistryFile = QString("%1/%2").arg(workSpace).arg("assetcatalog.xml.tmp");
-                    QString platformCacheDir = QString::fromUtf8(cacheRootFolder.c_str(), aznumeric_cast<int>(cacheRootFolder.size()));
+                    QString platformCacheDir = QString("%1/%2").arg(cacheRootFolder.c_str()).arg(platform);
                     QString actualRegistryFile = QString("%1/%2").arg(platformCacheDir).arg("assetcatalog.xml");
 
                     AZ_TracePrintf(AssetProcessor::DebugChannel, "Creating asset catalog: %s --> %s\n", tempRegistryFile.toUtf8().constData(), actualRegistryFile.toUtf8().constData());
@@ -359,7 +359,7 @@ namespace AssetProcessor
                         if (!registryDir.exists())
                         {
                             QString absPath = registryDir.absolutePath();
-                            bool makeDirResult = AZ::IO::SystemFile::CreateDir(absPath.toUtf8().constData());
+                            [[maybe_unused]] bool makeDirResult = AZ::IO::SystemFile::CreateDir(absPath.toUtf8().constData());
                             AZ_Warning(AssetProcessor::ConsoleChannel, makeDirResult, "Failed create folder %s", platformCacheDir.toUtf8().constData());
                         }
                         
@@ -738,8 +738,6 @@ namespace AssetProcessor
         QString platform = GetDefaultAssetPlatform();
 
         QMutexLocker locker(&m_registriesMutex);
-
-        const auto& productDependencies = m_registries[platform].GetAssetDependencies(id);
 
         auto itr = m_registries[platform].m_assetDependencies.find(id);
 

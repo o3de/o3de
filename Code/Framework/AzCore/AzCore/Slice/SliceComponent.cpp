@@ -2900,7 +2900,7 @@ namespace AZ
                 {
                     AZ::Data::AssetCatalogRequestBus::BroadcastResult(referencedSliceAssetPath, &AZ::Data::AssetCatalogRequests::GetAssetPathById, slice.GetSliceAsset()->GetId());
                 }
-                AZ_Error("Slices", false, "Slice with asset ID %s and path %s has an invalid slice reference to slice with path %s. The Lumberyard editor may be unstable, it is recommended you re-launch the editor.",
+                AZ_Error("Slices", false, "Slice with asset ID %s and path %s has an invalid slice reference to slice with path %s. The Open 3D Engine editor may be unstable, it is recommended you re-launch the editor.",
                     !m_myAsset ? "invalid asset" : m_myAsset->GetId().ToString<AZStd::string>().c_str(),
                     mySliceAssetPath.empty() ? "invalid path" : mySliceAssetPath.c_str(),
                     referencedSliceAssetPath.empty() ? "invalid path" : referencedSliceAssetPath.c_str());

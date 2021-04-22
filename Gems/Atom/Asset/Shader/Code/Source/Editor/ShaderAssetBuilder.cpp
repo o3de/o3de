@@ -101,8 +101,7 @@ namespace AZ
                 return;
             }
             ShaderBuilderUtility::GetAbsolutePathToAzslFile(fullPath, descriptorParseOutput.GetValue().m_source, azslFullPath);
-            bool azslExists = IO::FileIOBase::GetInstance()->Exists(azslFullPath.c_str());
-            AZ_Warning(ShaderAssetBuilderName, azslExists, "Shader program listed as the source entry does not exist: %s.", azslFullPath.c_str());
+            AZ_Warning(ShaderAssetBuilderName, IO::FileIOBase::GetInstance()->Exists(azslFullPath.c_str()), "Shader program listed as the source entry does not exist: %s.", azslFullPath.c_str());
             GlobalBuildOptions buildOptions = ReadBuildOptions(ShaderAssetBuilderName);
             // *** end block (remove when [Atom-4225])
 
@@ -145,7 +144,7 @@ namespace AZ
                             ShaderAssetBuilderName, prependedAzslSourceCode, originalLocation, ShaderBuilderUtility::ExtractStemName(fullPath.c_str()), shaderPlatformInterface->GetAPIName().GetStringView());
                         PreprocessorData output;
                         buildOptions.m_compilerArguments.Merge(descriptorParseOutput.GetValue().m_compiler);
-                        bool result = PreprocessFile(azslFullPath, output, buildOptions.m_preprocessorSettings, true, true);
+                        PreprocessFile(azslFullPath, output, buildOptions.m_preprocessorSettings, true, true);
                         // srg layout builder job dependency on the azsl file itself.
                         // If there's a ShaderResourceGroup defined in this azsl file
                         // then its azsrg asset must be ready before We compile it. The azsrg requirement

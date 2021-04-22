@@ -17,6 +17,8 @@
 #include <OtherActiveImGuiBus.h>
 #include <DebugConsole.h>
 
+#include <Atom/RPI.Public/ViewportContextBus.h>
+
 namespace AZ
 {
     namespace LYIntegration
@@ -28,6 +30,8 @@ namespace AZ
         class ImguiAtomSystemComponent final
             : public AZ::Component
             , public ImGui::OtherActiveImGuiRequestBus::Handler
+            // The Imgui Gem's ImGuiManager can handle this directly when engine is fully switched to Atom Renderer
+            , public AZ::RPI::ViewportContextNotificationBus::Handler
         {
         public:
             AZ_COMPONENT(ImguiAtomSystemComponent, "{D423E075-D971-435A-A9C1-57C3B0623A9B}");
@@ -43,10 +47,15 @@ namespace AZ
             void Activate() override;
             void Deactivate() override;
 
+        private:
+
             // OtherActiveImGuiRequestBus overrides ...
             void RenderImGuiBuffers(const ImDrawData& drawData) override;
 
-        private:
+            // ViewportContextNotificationBus overrides...
+            void OnRenderTick() override;
+            void OnViewportSizeChanged(AzFramework::WindowSize size) override;
+
             DebugConsole m_debugConsole;
         };
     } // namespace LYIntegration

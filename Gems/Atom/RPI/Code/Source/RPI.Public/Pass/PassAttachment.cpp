@@ -174,7 +174,7 @@ namespace AZ
             }
             else if (GetAttachmentType() == RHI::AttachmentType::Buffer)
             {
-                bool isInputAssembly = RHI::CheckBitsAny(m_descriptor.m_buffer.m_bindFlags, RHI::BufferBindFlags::InputAssembly);
+                bool isInputAssembly = RHI::CheckBitsAny(m_descriptor.m_buffer.m_bindFlags, RHI::BufferBindFlags::InputAssembly | RHI::BufferBindFlags::DynamicInputAssembly);
                 bool isConstant = RHI::CheckBitsAny(m_descriptor.m_buffer.m_bindFlags, RHI::BufferBindFlags::Constant);
 
                 // Since InputAssembly and Constant cannot be inferred they are set manually. If those flags are set we don't want to add inferred flags on top as it may have a performance penalty

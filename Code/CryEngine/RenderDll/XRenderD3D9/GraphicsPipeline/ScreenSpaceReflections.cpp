@@ -73,22 +73,8 @@ void CScreenSpaceReflectionsPass::Execute()
         0.5f, 0.5f, 0,    1.0f);
     const uint32 numGPUs = rd->GetActiveGPUCount();
 
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    const CCamera& camera = rd->m_RP.m_TI[rd->m_RP.m_nProcessThreadID].m_cam;
-    const AZ::EntityId cameraID = camera.GetEntityId();
-    const int frameID = camera.GetFrameUpdateId();
-    const uint32 prevViewProjID = max((frameID - (int)numGPUs) % MAX_GPU_NUM, 0);
-    auto iter = m_prevViewProj[prevViewProjID].find(cameraID);
-    if (iter == m_prevViewProj[prevViewProjID].end())
-    {
-        // initialize with the current view projection in case this is a one-off render.
-        m_prevViewProj[prevViewProjID].insert({cameraID, mViewProj});
-    }
-    Matrix44 mViewProjPrev = m_prevViewProj[prevViewProjID][cameraID] * mViewport;
-#else
     const int frameID = SPostEffectsUtils::m_iFrameCounter;
     Matrix44 mViewProjPrev = m_prevViewProj[max((frameID - (int)numGPUs) % MAX_GPU_NUM, 0)] * mViewport;
-#endif //if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
 
     int texStateLinear = CTexture::GetTexState(STexState(FILTER_LINEAR, true));
     int texStatePoint = CTexture::GetTexState(STexState(FILTER_POINT, true));
@@ -176,12 +162,8 @@ void CScreenSpaceReflectionsPass::Execute()
         m_passComposition.Execute();
     }
 
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    m_prevViewProj[frameID % MAX_GPU_NUM][cameraID] = mViewProj;
-#else
     // Update array used for MGPU support
     m_prevViewProj[frameID % MAX_GPU_NUM] = mViewProj;
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
 
     // Restore original state
     rd->m_RP.m_TI[rd->m_RP.m_nProcessThreadID].m_PersFlags = prevPersFlags;
