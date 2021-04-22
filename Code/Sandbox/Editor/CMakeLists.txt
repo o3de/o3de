@@ -125,7 +125,6 @@ ly_add_target(
             Gem::Atom_RPI.Public
             Gem::Atom_Feature_Common.Static
             Gem::AtomToolsFramework.Static
-            AZ::ToolsCrashHandler
             ${additional_dependencies}
         PUBLIC
             3rdParty::AWSNativeSDK::Core

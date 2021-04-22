@@ -36,7 +36,6 @@ ly_add_target(
             AZ::AzToolsFramework
             AZ::GridMate
             AZ::AzQtComponents
-            AZ::ToolsCrashHandler
             ${additional_dependencies}
     COMPILE_DEFINITIONS 
         PRIVATE
