@@ -14,8 +14,8 @@ set(FILES
     Include/Atom/Window/MaterialEditorWindowNotificationBus.h
     Include/Atom/Window/MaterialEditorWindowRequestBus.h
     Include/Atom/Window/MaterialEditorWindowFactoryRequestBus.h
-    Source/Window/MaterialBrowserInteractions.h
-    Source/Window/MaterialBrowserInteractions.cpp
+    Source/Window/MaterialEditorBrowserInteractions.h
+    Source/Window/MaterialEditorBrowserInteractions.cpp
     Source/Window/MaterialEditorWindow.h
     Source/Window/MaterialEditorWindow.cpp
     Source/Window/MaterialEditorWindowModule.cpp
