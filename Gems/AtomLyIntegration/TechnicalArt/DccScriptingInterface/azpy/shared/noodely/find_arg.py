@@ -23,7 +23,7 @@ __author__ = 'HogJonny'
 # -------------------------------------------------------------------------
 
 
-def find_arg(argPosIndex=None, argTag=None, removeKwarg=None,
+def find_arg(arg_pos_index=None, argTag=None, removeKwarg=None,
              inArgs=None, inKwargs=None, defaultValue=None):
     """
     # finds and returns an arg...
@@ -41,15 +41,15 @@ def find_arg(argPosIndex=None, argTag=None, removeKwarg=None,
     #
     #    foundArg, args, kwargs = find_arg(0, 'name',)
     """
-    if argPosIndex != None:
-        if not isinstance(argPosIndex, int):
+    if arg_pos_index != None:
+        if not isinstance(arg_pos_index, int):
             raise TypeError('argPosIndex: accepts a index integer!\r'
-                            'got: {0}'.format(argPosIndex))
+                            'got: {0}'.format(arg_pos_index))
 
         # positional args ... check the position
         if len(inArgs) > 0:
             try:
-                foundArg = inArgs[argPosIndex]
+                foundArg = inArgs[arg_pos_index]
             except:
                 pass
 
@@ -88,10 +88,10 @@ if __name__ == "__main__":
             super().__init__()
             self._name, kwargs = find_arg(argTag='foo', removeKwarg=True,
                                           inArgs=args, inKwargs=kwargs)
-            self._name, kwargs = find_arg(argPosIndex=0, argTag='name',
+            self._name, kwargs = find_arg(arg_pos_index=0, argTag='name',
                                           removeKwarg=True,
                                           inArgs=args, inKwargs=kwargs)  # <-- first positional OR kwarg
-            self._parent, kwargs = find_arg(argPosIndex=1, argTag='parent',
+            self._parent, kwargs = find_arg(arg_pos_index=1, argTag='parent',
                                             removeKwarg=True,
                                             inArgs=args, inKwargs=kwargs)  # <-- second positional OR kwarg
 

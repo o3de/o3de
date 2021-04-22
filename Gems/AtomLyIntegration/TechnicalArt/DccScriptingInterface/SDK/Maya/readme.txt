@@ -74,7 +74,9 @@ Now your local maya install is all set up with pip so you can install additional
 
 Now you will want to run the following file to finish setup...
 We have a requirements.txt file with the extension packages we use in the DCCsi.
-You'll need the repo/branch path of your Lumberyard(O3DE) install.
-And you'll need to know where the DCCsi, we will install package dependancies there.
+You'll need the repo/branch path of your O3DE (aka Lumberyard) install.
+And you'll need to know where the DCCsi is located, we will install package dependancies there.
 
-C:\Program Files\Autodesk\Maya2020\bin>mayapy -m pip install -r C:\Depot\Lumberyard\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\SDK\Maya\requirements.txt -t C:\Depot\Lumberyard\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\3rdParty\Python\Lib\2.x\2.7.x\site-packages
+Note: you may need to update the paths below to match your local o3de engine install!
+
+C:\Program Files\Autodesk\Maya2020\bin>mayapy -m pip install -r C:\Depot\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\SDK\Maya\requirements.txt -t C:\Depot\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\3rdParty\Python\Lib\2.x\2.7.x\site-packages
