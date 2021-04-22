@@ -59,6 +59,8 @@ class TestAreaComponentsSliceCreationAndVisibilityToggle(EditorTestHelper):
             use_terrain=False,
         )
 
+        general.set_current_view_position(512.0, 480.0, 38.0)
+
         # 2) C2627900 Verifies if a slice containing the Vegetation Layer Spawner component can be created.
         # 2.1) Create basic vegetation entity
         position = math.Vector3(512.0, 512.0, 32.0)

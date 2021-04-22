@@ -122,6 +122,7 @@ namespace AzToolsFramework
             }
 
             newInstance->SetTemplateSourcePath(relativeFilePath);
+            newInstance->SetContainerEntityName(relativeFilePath.Stem().Native());
 
             TemplateId newTemplateId = CreateTemplateFromInstance(*newInstance, shouldCreateLinks);
             if (newTemplateId == InvalidTemplateId)

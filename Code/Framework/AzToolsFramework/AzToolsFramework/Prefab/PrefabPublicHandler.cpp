@@ -709,7 +709,7 @@ namespace AzToolsFramework
                 InstanceOptionalReference owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(entity->GetId());
                 AZ_Assert(
                     owningInstance.has_value(),
-                    "An error occored while retrieving entities and prefab instances : "
+                    "An error occurred while retrieving entities and prefab instances : "
                     "Owning instance of entity with id '%llu' couldn't be found",
                     entity->GetId());
 
@@ -793,7 +793,7 @@ namespace AzToolsFramework
                 {
                     AZ_Assert(
                         false,
-                        "An error occored in function EntitiesBelongToSameInstance: "
+                        "An error occurred in function EntitiesBelongToSameInstance: "
                         "Owning instance of entity with id '%llu' couldn't be found",
                         entityId);
                     return false;

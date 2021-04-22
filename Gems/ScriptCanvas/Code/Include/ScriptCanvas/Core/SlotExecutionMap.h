@@ -124,8 +124,6 @@ namespace ScriptCanvas
 
             Map(Outs&& latents);
 
-            AZ::Outcome<AZStd::pair<size_t, size_t>> FindInAndInputIndexOfSlot(const SlotId& slotID) const;
-
             const In* FindInFromInputSlot(const SlotId& slotID) const;
 
             SlotId FindInputSlotIdBySource(VariableId inputSourceId, Grammar::FunctionSourceId inSourceId) const;
