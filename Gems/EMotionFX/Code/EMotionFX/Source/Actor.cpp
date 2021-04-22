@@ -156,6 +156,7 @@ namespace EMotionFX
         result->mRetargetRootNode       = mRetargetRootNode;
         result->mInvBindPoseTransforms  = mInvBindPoseTransforms;
         result->m_optimizeSkeleton      = m_optimizeSkeleton;
+        result->m_skinToSkeletonIndexMap = m_skinToSkeletonIndexMap;
 
         result->RecursiveAddDependencies(this);
 
@@ -1490,18 +1491,19 @@ namespace EMotionFX
             const bool skinMetaAssetExists = DoesSkinMetaAssetExist(meshAssetId);
             const bool morphTargetMetaAssetExists = DoesMorphTargetMetaAssetExist(m_meshAsset.GetId());
 
+            m_skinToSkeletonIndexMap.clear();
+
             // Skin and morph target meta assets are ready, fill the runtime mesh data.
             if ((!skinMetaAssetExists || m_skinMetaAsset.IsReady()) &&
                 (!morphTargetMetaAssetExists || m_morphTargetMetaAsset.IsReady()))
             {
                 // Optional, not all actors have a skinned meshes.
-                AZStd::unordered_map<AZ::u16, AZ::u16> skinToSkeletonIndexMap;
                 if (skinMetaAssetExists)
                 {
-                    skinToSkeletonIndexMap = ConstructSkinToSkeletonIndexMap(m_skinMetaAsset);
+                    m_skinToSkeletonIndexMap = ConstructSkinToSkeletonIndexMap(m_skinMetaAsset);
                 }
 
-                ConstructMeshes(skinToSkeletonIndexMap);
+                ConstructMeshes(m_skinToSkeletonIndexMap);
 
                 // Optional, not all actors have morph targets.
                 if (morphTargetMetaAssetExists)
