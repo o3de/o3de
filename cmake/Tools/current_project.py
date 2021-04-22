@@ -85,20 +85,12 @@ def set_current_project(engine_name: str or None,
             return 1
     try:
         os.unlink(bootstrap_cfg_file)
-        with open(os.path.join(dev_root, 'bootstrap.cfg'), 'r') as s:
-            data = s.read()
-        data = re.sub(r'(.*project_path\s*?[=:]\s*?)([^\n]+)\n', r'\1 {}\n'.format(project_path),
-                      data, flags=re.IGNORECASE)
-        if os.path.isfile(os.path.join(dev_root, 'bootstrap.cfg')):
-            os.unlink(os.path.join(dev_root, 'bootstrap.cfg'))
-        with open(os.path.join(dev_root, 'bootstrap.cfg'), 'w') as s:
-            s.write(data)
     except Exception as e:
         logger.error(f'Failed to unlink bootstrap file {bootstrap_cfg_file}: {str(e)}')
         return 1
-
-    with bootstrap_cfg_file.open('w') as s:
-        s.write(data)
+    else:
+        with bootstrap_cfg_file.open('w') as s:
+            s.write(data)
 
     return 0
 
