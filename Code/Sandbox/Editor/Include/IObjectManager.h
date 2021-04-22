@@ -188,8 +188,6 @@ public:
     virtual void    SetSelection(const QString& name) = 0;
     //! Removes one of named selections.
     virtual void    RemoveSelection(const QString& name) = 0;
-    //! Checks for changes to the current selection and makes adjustments accordingly
-    virtual void    CheckAndFixSelection() = 0;
 
     //! Delete all objects in current selection group.
     virtual void DeleteSelection() = 0;

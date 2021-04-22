@@ -1168,6 +1168,12 @@ namespace {{ Component.attrib['Namespace'] }}
 
     void {{ ComponentBaseName }}::Init()
     {
+        if (m_netBindComponent == nullptr)
+        {
+            AZLOG_ERROR("NetBindComponent is null, ensure NetworkAttach is called prior to activating a networked entity");
+            return;
+        }
+
         {{ DefineComponentServiceProxyGrabs(Component, ClassType, ComponentName)|indent(8) }}
 {% if ComponentDerived %}
         OnInit();

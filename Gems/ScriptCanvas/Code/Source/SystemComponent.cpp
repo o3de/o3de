@@ -37,10 +37,10 @@
 namespace ScriptCanvasSystemComponentCpp
 {
 #if !defined(_RELEASE) && !defined(PERFORMANCE_BUILD)
-    const int k_infiniteLoopDetectionMaxIterations = 3000;
+    const int k_infiniteLoopDetectionMaxIterations = 1000000;
     const int k_maxHandlerStackDepth = 25;
 #else
-    const int k_infiniteLoopDetectionMaxIterations = 10000;
+    const int k_infiniteLoopDetectionMaxIterations = 10000000;
     const int k_maxHandlerStackDepth = 100;
 #endif
 

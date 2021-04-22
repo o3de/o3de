@@ -28,11 +28,11 @@
 #include <LyShine/Bus/UiCanvasBus.h>
 #include <LyShine/UiSerializeHelpers.h>
 #include <LyShine/IRenderGraph.h>
+#include <LyShine/Draw2d.h>
 
 #include <ILocalizationManager.h>
 
 #include "UiSerialize.h"
-#include "Draw2d.h"
 #include "TextMarkup.h"
 #include "UiTextComponentOffsetsSelector.h"
 #include "StringUtfUtils.h"
