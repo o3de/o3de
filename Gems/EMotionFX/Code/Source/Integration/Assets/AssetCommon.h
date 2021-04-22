@@ -38,7 +38,8 @@ namespace EMotionFX
 
             void ReleaseEMotionFXData()
             {
-                m_emfxNativeData = {};
+                m_emfxNativeData.clear();
+                m_emfxNativeData.shrink_to_fit();
             }
 
             AZStd::vector<AZ::u8> m_emfxNativeData;
