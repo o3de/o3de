@@ -124,22 +124,22 @@ class PathNode(Node):
 
         # -- secret keyword -----------------------------------------------
         self._temp_node = False
-        temp_node, kwargs = find_arg(arg_pos_index=None, argTag='temp_node',
-                                     removeKwarg=True, inArgs=args,
-                                     inKwargs=kwargs)  # <-- kwarg only
+        temp_node, kwargs = find_arg(arg_pos_index=None, arg_tag='temp_node',
+                                     remove_kwarg=True, in_args=args,
+                                     in_kwargs=kwargs)  # <-- kwarg only
 
         self._temp_node = temp_node
         if self._temp_node:
             self.k_wargs_dict['temp_node'] = self._temp_node
 
         # -- Node class args/kwargs ---------------------------------------
-        node_name, kwargs = find_arg(arg_pos_index=2, argTag='node_name',
-                                     removeKwarg=True, inArgs=args,
-                                     inKwargs=kwargs)  # <-- third arg, kwarg
+        node_name, kwargs = find_arg(arg_pos_index=2, arg_tag='node_name',
+                                     remove_kwarg=True, in_args=args,
+                                     in_kwargs=kwargs)  # <-- third arg, kwarg
 
-        parent_node, kwargs = find_arg(arg_pos_index=3, argTag='parent_node',
-                                       removeKwarg=True, inArgs=args,
-                                       inKwargs=kwargs)  # <-- fourth arg, kwarg
+        parent_node, kwargs = find_arg(arg_pos_index=3, arg_tag='parent_node',
+                                       remove_kwarg=True, in_args=args,
+                                       in_kwargs=kwargs)  # <-- fourth arg, kwarg
 
         self._root_path = root_path
 

@@ -23,8 +23,8 @@ __author__ = 'HogJonny'
 # -------------------------------------------------------------------------
 
 
-def find_arg(arg_pos_index=None, argTag=None, removeKwarg=None,
-             inArgs=None, inKwargs=None, defaultValue=None):
+def find_arg(arg_pos_index=None, arg_tag=None, remove_kwarg=None,
+             in_args=None, in_kwargs=None, default_value=None):
     """
     # finds and returns an arg...
     # if a positional index is given argPosIndex=0, it checks args first
@@ -41,31 +41,33 @@ def find_arg(arg_pos_index=None, argTag=None, removeKwarg=None,
     #
     #    foundArg, args, kwargs = find_arg(0, 'name',)
     """
+
+    found_arg = None
+
     if arg_pos_index != None:
         if not isinstance(arg_pos_index, int):
             raise TypeError('argPosIndex: accepts a index integer!\r'
                             'got: {0}'.format(arg_pos_index))
 
         # positional args ... check the position
-        if len(inArgs) > 0:
+        if len(in_args) > 0:
             try:
-                foundArg = inArgs[arg_pos_index]
+                found_arg = in_args[arg_pos_index]
             except:
                 pass
 
     # check kwargs ... a set kwarg will ALWAYS take precident over
     # positional arg!!!
-    try:
-        foundArg
-    except:
-        foundArg = inKwargs.get(argTag, defaultValue)  # defaults to None
+    if in_kwargs:
+        found_arg = in_kwargs.get(arg_tag, default_value)  # defaults to None
 
-    if removeKwarg:
-        if argTag in inKwargs:
-            del inKwargs[argTag]
+    if remove_kwarg:
+        if in_kwargs:
+            if arg_tag in in_kwargs:
+                del in_kwargs[arg_tag]
 
     # if we didn't find the arg/kwarg, the defualt return will be None
-    return foundArg, inKwargs
+    return found_arg, in_kwargs
 # -------------------------------------------------------------------------
 
 
@@ -86,14 +88,14 @@ if __name__ == "__main__":
     class TestNode(Foo):
         def __init__(self, *args, **kwargs):
             super().__init__()
-            self._name, kwargs = find_arg(argTag='foo', removeKwarg=True,
-                                          inArgs=args, inKwargs=kwargs)
-            self._name, kwargs = find_arg(arg_pos_index=0, argTag='name',
-                                          removeKwarg=True,
-                                          inArgs=args, inKwargs=kwargs)  # <-- first positional OR kwarg
-            self._parent, kwargs = find_arg(arg_pos_index=1, argTag='parent',
-                                            removeKwarg=True,
-                                            inArgs=args, inKwargs=kwargs)  # <-- second positional OR kwarg
+            self._name, kwargs = find_arg(arg_tag='foo', remove_kwarg=True,
+                                          in_args=args, in_kwargs=kwargs)
+            self._name, kwargs = find_arg(arg_pos_index=0, arg_tag='name',
+                                          remove_kwarg=True,
+                                          in_args=args, in_kwargs=kwargs)  # <-- first positional OR kwarg
+            self._parent, kwargs = find_arg(arg_pos_index=1, arg_tag='parent',
+                                            remove_kwarg=True,
+                                            in_args=args, in_kwargs=kwargs)  # <-- second positional OR kwarg
 
             self._kwargsDict = {}
 
@@ -117,7 +119,7 @@ if __name__ == "__main__":
 
     testNode2 = TestNode(name='fooey', parent=testNode)
 
-    testNode3 = TestNode('kablooey', testNode2, goober='dufus')
+    testNode3 = TestNode('kablooey', testNode2, gomer='pile')
 
     print ('testNode2, name: {0}, parent: {1}'.format(testNode2._name, testNode2._parent))
     print (testNode3)

@@ -143,9 +143,9 @@ class Node(object):
 
         # -- secret keyword -----------------------------------------------
         self._temp_node = False
-        temp_node, kwargs = find_arg(arg_pos_index=None, argTag='temp_node',
-                                     removeKwarg=True, inArgs=args,
-                                     inKwargs=kwargs)  # <-- kwarg only
+        temp_node, kwargs = find_arg(arg_pos_index=None, arg_tag='temp_node',
+                                     remove_kwarg=True, in_args=args,
+                                     in_kwargs=kwargs)  # <-- kwarg only
         self._temp_node = temp_node
         if self._temp_node:
             self._kwargs_dict['temp_node'] = self._temp_node
@@ -153,9 +153,9 @@ class Node(object):
 
         # -- store message header -----------------------------------------
         # setup the .message_header <-- kwarg only
-        message_header, kwargs = find_arg(arg_pos_index=None, argTag='message_header',
-                                          removeKwarg=True, inArgs=args, inKwargs=kwargs,
-                                          defaultValue=('{0}(), Message'
+        message_header, kwargs = find_arg(arg_pos_index=None, arg_tag='message_header',
+                                          remove_kwarg=True, in_args=args, in_kwargs=kwargs,
+                                          default_value=('{0}(), Message'
                                                         .format(self._node_type)))
         self._message_header = message_header
         # -----------------------------------------------------------------
