@@ -1234,7 +1234,6 @@ void MainWindow::InitActions()
     // View actions
     am->AddAction(ID_VIEW_OPENVIEWPANE, tr("Open View Pane"));
     am->AddAction(ID_VIEW_CONSOLEWINDOW, tr(LyViewPane::ConsoleMenuName))
-        .SetShortcut(tr("^"))
         .SetReserved()
         .SetStatusTip(tr("Show or hide the console window"))
         .SetCheckable(true)
