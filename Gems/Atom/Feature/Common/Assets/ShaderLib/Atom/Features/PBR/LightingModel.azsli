@@ -66,7 +66,8 @@ PbrLightingOutput PbrLighting(  VSOutput IN,
                                 float3 vtxBitangent,
                                 float2 anisotropy,  // angle and factor
                                 float3 emissive,
-                                float occlusion,
+                                float diffuseAmbientOcclusion,
+                                float specularOcclusion,
                                 float4 transmissionTintThickness,
                                 float4 transmissionParams,
                                 float clearCoatFactor,
@@ -108,7 +109,8 @@ PbrLightingOutput PbrLighting(  VSOutput IN,
     lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
     
     lightingData.emissiveLighting = emissive;
-    lightingData.occlusion = occlusion;
+    lightingData.diffuseAmbientOcclusion = diffuseAmbientOcclusion;
+    lightingData.specularOcclusion = specularOcclusion;
 
     // Directional light shadow coordinates
     lightingData.shadowCoords = shadowCoords;
@@ -191,7 +193,7 @@ PbrLightingOutput MakeDebugOutput(VSOutput IN, float3 debugColor, float3 normalW
 
     PbrLightingOutput lightingOutput = PbrLighting(IN, baseColor, metallic, roughness, specularF0Factor, 
         normal, IN.m_tangent, IN.m_bitangent, anisotropy,
-        emissive, occlusion, transmissionTintThickness, transmissionParams, clearCoatFactor, clearCoatRoughness, clearCoatNormal, alpha, OpacityMode::Opaque);
+        emissive, occlusion, occlusion, transmissionTintThickness, transmissionParams, clearCoatFactor, clearCoatRoughness, clearCoatNormal, alpha, OpacityMode::Opaque);
 
     return lightingOutput;
 }

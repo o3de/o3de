@@ -120,18 +120,6 @@ struct SDeepSelectionSettings
 };
 
 //////////////////////////////////////////////////////////////////////////
-// Settings for vertex snapping.
-//////////////////////////////////////////////////////////////////////////
-struct SVertexSnappingSettings
-{
-    SVertexSnappingSettings()
-        : vertexCubeSize(0.01f)
-        , bRenderPenetratedBoundBox(false) {}
-    float vertexCubeSize;
-    bool bRenderPenetratedBoundBox;
-};
-
-//////////////////////////////////////////////////////////////////////////
 struct SObjectColors
 {
     SObjectColors()
@@ -473,9 +461,6 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 
     // Object Highlight Settings
     SObjectColors objectColorSettings;
-
-    // Vertex Snapping Settings
-    SVertexSnappingSettings vertexSnappingSettings;
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
     SSmartOpenDialogSettings smartOpenSettings;

@@ -11,6 +11,7 @@
 */
 #include "LyShine_precompiled.h"
 #include "UiMaskComponent.h"
+#include <LyShine/Draw2d.h>
 
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -23,7 +24,6 @@
 #include <LyShine/Bus/UiRenderBus.h>
 #include <LyShine/Bus/UiVisualBus.h>
 #include <LyShine/Bus/UiCanvasBus.h>
-#include <LyShine/IDraw2d.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // PUBLIC MEMBER FUNCTIONS
