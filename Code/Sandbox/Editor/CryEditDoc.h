@@ -216,7 +216,6 @@ protected:
     void OnSliceInstantiationFailed(const AZ::Data::AssetId& sliceAssetId, const AzFramework::SliceInstantiationTicket& /*ticket*/) override;
     //////////////////////////////////////////////////////////////////////////
 
-    QString m_strMasterCDFolder;
     bool m_bLoadFailed;
     QColor m_waterColor;
     XmlNodeRef m_fogTemplate;
