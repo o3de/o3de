@@ -296,15 +296,18 @@ function(ly_setup_others)
     install(DIRECTORY
         ${CMAKE_CURRENT_BINARY_DIR}/bin/$<CONFIG>/Registry
         DESTINATION ./bin/$<CONFIG>
+        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
     install(DIRECTORY
         # This one will change soon, Engine/Registry files will be relocated to Registry
         ${CMAKE_SOURCE_DIR}/Engine/Registry
         DESTINATION ./Engine
+        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
     install(FILES
         ${CMAKE_SOURCE_DIR}/AssetProcessorPlatformConfig.setreg
         DESTINATION ./Registry
+        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
 
     # Qt Binaries
@@ -313,6 +316,7 @@ function(ly_setup_others)
         install(DIRECTORY
             ${CMAKE_CURRENT_BINARY_DIR}/bin/$<CONFIG>/${qt_dir}
             DESTINATION ./bin/$<CONFIG>
+            COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
         )
     endforeach()
 
@@ -320,6 +324,7 @@ function(ly_setup_others)
     install(DIRECTORY
         ${CMAKE_SOURCE_DIR}/Templates
         DESTINATION .
+        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
 
     # Misc
@@ -328,6 +333,7 @@ function(ly_setup_others)
         ${CMAKE_SOURCE_DIR}/LICENSE.txt
         ${CMAKE_SOURCE_DIR}/README.md
         DESTINATION .
+        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
 
 endfunction()
