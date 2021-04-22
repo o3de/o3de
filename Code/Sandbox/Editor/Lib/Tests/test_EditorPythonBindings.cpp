@@ -151,9 +151,6 @@ namespace EditorPythonBindingsUnitTests
         EXPECT_TRUE(behaviorContext->m_methods.find("get_axis_constraint") != behaviorContext->m_methods.end());
         EXPECT_TRUE(behaviorContext->m_methods.find("set_axis_constraint") != behaviorContext->m_methods.end());
 
-        EXPECT_TRUE(behaviorContext->m_methods.find("get_edit_mode") != behaviorContext->m_methods.end());
-        EXPECT_TRUE(behaviorContext->m_methods.find("set_edit_mode") != behaviorContext->m_methods.end());
-
         EXPECT_TRUE(behaviorContext->m_methods.find("get_pak_from_file") != behaviorContext->m_methods.end());
 
         EXPECT_TRUE(behaviorContext->m_methods.find("log") != behaviorContext->m_methods.end());
