@@ -47,14 +47,15 @@ def run():
     
     import azlmbr.legacy.general as general
     
+    from editor_python_test_tools.editor_entity_utils import EditorEntity
+    from editor_python_test_tools.utils import Report
+    
     # Helper file Imports
     import ImportPathHelper as imports
 
     imports.init()
-    from utils import Report
-    from utils import TestHelper as helper
-    from utils import Tracer
-    from editor_entity_utils import EditorEntity
+    from editor_python_test_tools.utils import TestHelper as helper
+    from editor_python_test_tools.utils import Tracer
     
     # Constants
     FRAMES_IN_GAME_MODE = 200
