@@ -125,9 +125,6 @@ bool CGameExporter::Export(unsigned int flags, [[maybe_unused]] EEndian eExportE
     {
         QDir::setCurrent(pEditor->GetPrimaryCDFolder());
 
-        // Close all Editor tools
-        pEditor->SetEditTool(0);
-
         QString sLevelPath = Path::AddSlash(pGameEngine->GetLevelPath());
         if (subdirectory && subdirectory[0] && strcmp(subdirectory, ".") != 0)
         {

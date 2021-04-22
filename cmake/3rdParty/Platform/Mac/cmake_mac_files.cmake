@@ -11,9 +11,6 @@
 
 set(FILES
     BuiltInPackages_mac.cmake
-    civetweb_mac.cmake
-    Clang_mac.cmake
-    DirectXShaderCompiler_mac.cmake
     FbxSdk_mac.cmake
     OpenGLInterface_mac.cmake
     OpenSSL_mac.cmake

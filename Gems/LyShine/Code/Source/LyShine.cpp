@@ -13,8 +13,6 @@
 
 #include "LyShine.h"
 
-#include "Draw2d.h"
-
 #include "UiCanvasComponent.h"
 #include "UiCanvasManager.h"
 #include "LyShineDebug.h"
@@ -55,6 +53,7 @@
 #include <LyShine/Bus/UiCursorBus.h>
 #include <LyShine/Bus/UiDraggableBus.h>
 #include <LyShine/Bus/UiDropTargetBus.h>
+#include <LyShine/Draw2d.h>
 
 #if defined(LYSHINE_INTERNAL_UNIT_TEST)
 #include "TextMarkup.h"
@@ -455,7 +454,6 @@ void CLyShine::Render()
     // Render all the canvases loaded in game
     m_uiCanvasManager->RenderLoadedCanvases();
 
-#ifdef LYSHINE_ATOM_TODO // convert cursor support to use Atom
     m_draw2d->RenderDeferredPrimitives();
 
     // Don't render the UI cursor when in edit mode. For example during UI Preview mode a script could turn on the
@@ -466,7 +464,6 @@ void CLyShine::Render()
     {
         RenderUiCursor();
     }
-#endif
 
     GetUiRenderer()->EndUiFrameRender();
 
@@ -687,9 +684,11 @@ void CLyShine::RenderUiCursor()
     const AZ::Vector2 position = GetUiCursorPosition();
     const AZ::Vector2 dimensions(static_cast<float>(m_uiCursorTexture->GetWidth()), static_cast<float>(m_uiCursorTexture->GetHeight()));
 
+#ifdef LYSHINE_ATOM_TODO // Convert cursor to Atom image
     m_draw2d->BeginDraw2d();
     m_draw2d->DrawImage(m_uiCursorTexture->GetTextureID(), position, dimensions);
     m_draw2d->EndDraw2d();
+#endif
 }
 
 #ifndef _RELEASE

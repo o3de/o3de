@@ -47,7 +47,7 @@ namespace PhysX
 
         CharacterControllerComponent();
         CharacterControllerComponent(AZStd::unique_ptr<Physics::CharacterConfiguration> characterConfig,
-            AZStd::unique_ptr<Physics::ShapeConfiguration> shapeConfig);
+            AZStd::shared_ptr<Physics::ShapeConfiguration> shapeConfig);
         ~CharacterControllerComponent();
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -131,12 +131,12 @@ namespace PhysX
     private:
         void CreateController();
         void DestroyController();
-        void AttachColliders(Physics::Character& character);
+
         void OnPreSimulate(float deltaTime);
 
         AZStd::unique_ptr<Physics::CharacterConfiguration> m_characterConfig;
-        AZStd::unique_ptr<Physics::ShapeConfiguration> m_shapeConfig;
-        AZStd::unique_ptr<PhysX::CharacterController> m_controller;
+        AZStd::shared_ptr<Physics::ShapeConfiguration> m_shapeConfig;
+        PhysX::CharacterController* m_controller = nullptr;
         AzPhysics::SystemEvents::OnPresimulateEvent::Handler m_preSimulateHandler;
     };
 } // namespace PhysX

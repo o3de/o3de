@@ -506,6 +506,7 @@ namespace AZ::SettingsRegistryMergeUtils
 
     void MergeSettingsToRegistry_AddRuntimeFilePaths(SettingsRegistryInterface& registry)
     {
+        using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
         // Binary folder
         AZ::IO::FixedMaxPath path = AZ::Utils::GetExecutableDirectory();
         registry.Set(FilePathKey_BinaryFolder, path.LexicallyNormal().Native());
@@ -514,27 +515,24 @@ namespace AZ::SettingsRegistryMergeUtils
         AZ::IO::FixedMaxPath engineRoot = FindEngineRoot(registry);
         registry.Set(FilePathKey_EngineRootFolder, engineRoot.LexicallyNormal().Native());
 
-        constexpr size_t bufferSize = 64;
-        auto buffer = AZStd::fixed_string<bufferSize>::format("%s/project_path", BootstrapSettingsRootKey);
-
-        AZ::SettingsRegistryInterface::FixedValueString projectPathKey(buffer);
+        auto projectPathKey = FixedValueString::format("%s/project_path", BootstrapSettingsRootKey);
         SettingsRegistryInterface::FixedValueString projectPathValue;
         if (registry.Get(projectPathValue, projectPathKey))
         {
             // Cache folder
             // Get the name of the asset platform assigned by the bootstrap. First check for platform version such as "windows_assets"
             // and if that's missing just get "assets".
-            constexpr char platformName[] = AZ_TRAIT_OS_PLATFORM_CODENAME_LOWER;
-
-            buffer = AZStd::fixed_string<bufferSize>::format("%s/%s_assets", BootstrapSettingsRootKey, platformName);
-            AZStd::string_view assetPlatformKey(buffer);
-            // Use the platform codename to retrieve the default asset platform value
-            SettingsRegistryInterface::FixedValueString assetPlatform = AZ::OSPlatformToDefaultAssetPlatform(AZ_TRAIT_OS_PLATFORM_CODENAME);
-            if (!registry.Get(assetPlatform, assetPlatformKey))
+            FixedValueString assetPlatform;
+            if (auto assetPlatformKey = FixedValueString::format("%s/%s_assets", BootstrapSettingsRootKey, AZ_TRAIT_OS_PLATFORM_CODENAME_LOWER);
+                !registry.Get(assetPlatform, assetPlatformKey))
             {
-                buffer = AZStd::fixed_string<bufferSize>::format("%s/assets", BootstrapSettingsRootKey);
-                assetPlatformKey = AZStd::string_view(buffer);
+                assetPlatformKey = FixedValueString::format("%s/assets", BootstrapSettingsRootKey);
                 registry.Get(assetPlatform, assetPlatformKey);
+            }
+            if (assetPlatform.empty())
+            {
+                // Use the platform codename to retrieve the default asset platform value
+                assetPlatform = AZ::OSPlatformToDefaultAssetPlatform(AZ_TRAIT_OS_PLATFORM_CODENAME);
             }
 
             // Project path - corresponds to the @devassets@ alias
@@ -575,8 +573,7 @@ namespace AZ::SettingsRegistryMergeUtils
             {
                 // Cache: project root - no corresponding fileIO alias, but this is where the asset database lives.
                 // A registry override is accepted using the "project_cache_path" key.
-                buffer = AZStd::fixed_string<bufferSize>::format("%s/project_cache_path", BootstrapSettingsRootKey);
-                AZStd::string_view projectCacheRootOverrideKey(buffer);
+                auto projectCacheRootOverrideKey = FixedValueString::format("%s/project_cache_path", BootstrapSettingsRootKey);
                 // Clear path to make sure that the `project_cache_path` value isn't concatenated to the project path
                 path.clear();
                 if (registry.Get(path.Native(), projectCacheRootOverrideKey))

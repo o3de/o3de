@@ -57,7 +57,7 @@ namespace
     {
         if (excludeAttributeData)
         {
-            AZ::u64 exclusionFlags = AZ::Script::Attributes::ExcludeFlags::List | AZ::Script::Attributes::ExcludeFlags::ListOnly | AZ::ScriptCanvasAttributes::VariableCreationForbidden;
+            AZ::u64 exclusionFlags = AZ::Script::Attributes::ExcludeFlags::List | AZ::Script::Attributes::ExcludeFlags::ListOnly;
 
             if (typeId == AzToolsFramework::Components::EditorComponentBase::TYPEINFO_Uuid())
             {
@@ -140,11 +140,6 @@ namespace
         {
             auto excludeMethodAttributeData = azdynamic_cast<const AZ::Edit::AttributeData<AZ::Script::Attributes::ExcludeFlags>*>(AZ::FindAttribute(AZ::Script::Attributes::ExcludeFrom, method.m_attributes));
             if (ShouldExcludeFromNodeList(excludeMethodAttributeData, behaviorClass->m_azRtti ? behaviorClass->m_azRtti->GetTypeId() : behaviorClass->m_typeId))
-            {
-                return;
-            }
-
-            if (!ScriptCanvas::Data::IsAllowedBehaviorClassVariableType(behaviorClass->m_typeId))
             {
                 return;
             }
@@ -479,38 +474,24 @@ namespace
                 continue;
             }
 
-            // Only bind Behavior Classes marked with the Scope type of Launcher
+            if (auto excludeFromPointer = AZ::FindAttribute(AZ::Script::Attributes::ExcludeFrom, behaviorClass->m_attributes))
+            {
+                AZ::Script::Attributes::ExcludeFlags excludeFlags{};
+                AZ::AttributeReader(nullptr, excludeFromPointer).Read<AZ::Script::Attributes::ExcludeFlags>(excludeFlags);
+
+                if ((excludeFlags & (AZ::Script::Attributes::ExcludeFlags::List | AZ::Script::Attributes::ExcludeFlags::ListOnly)) != 0)
+                {
+                    continue;
+                }
+            }
+
             if (!AZ::Internal::IsInScope(behaviorClass->m_attributes, AZ::Script::Attributes::ScopeFlags::Launcher))
             {
-                continue; // skip this class
+                continue;
             }
 
             // Objects and Object methods
             {
-                bool canCreate = serializeContext->FindClassData(behaviorClass->m_typeId) != nullptr &&
-                    !HasAttribute(behaviorClass, AZ::ScriptCanvasAttributes::VariableCreationForbidden);
-
-                // In order to create variables, the class must have full memory support
-                canCreate = canCreate &&
-                    (behaviorClass->m_allocate
-                        && behaviorClass->m_cloner
-                        && behaviorClass->m_mover
-                        && behaviorClass->m_destructor
-                        && behaviorClass->m_deallocate);
-
-                if (canCreate)
-                {
-                    // Do not allow variable creation for data that derives from AZ::Component
-                    for (auto base : behaviorClass->m_baseClasses)
-                    {
-                        if (AZ::Component::TYPEINFO_Uuid() == base)
-                        {
-                            canCreate = false;
-                            break;
-                        }
-                    }
-                }
-
                 AZStd::string categoryPath;
 
                 AZStd::string translationContext = ScriptCanvasEditor::TranslationHelper::GetContextName(ScriptCanvasEditor::TranslationContextGroup::ClassMethod, behaviorClass->m_name);
@@ -530,17 +511,14 @@ namespace
                     }
                 }
 
-                if (canCreate)
-                {
-                    auto dataRegistry = ScriptCanvas::GetDataRegistry();
-                    ScriptCanvas::Data::Type type = dataRegistry->m_typeIdTraitMap[ScriptCanvas::Data::eType::BehaviorContextObject].m_dataTraits.GetSCType(behaviorClass->m_typeId);
+                auto dataRegistry = ScriptCanvas::GetDataRegistry();
+                ScriptCanvas::Data::Type type = dataRegistry->m_typeIdTraitMap[ScriptCanvas::Data::eType::BehaviorContextObject].m_dataTraits.GetSCType(behaviorClass->m_typeId);
 
-                    if (type.IsValid())
+                if (type.IsValid())
+                {
+                    if (dataRegistry->m_creatableTypes.contains(type))
                     {
-                        if (!AZ::FindAttribute(AZ::ScriptCanvasAttributes::AllowInternalCreation, behaviorClass->m_attributes))
-                        {
-                            ScriptCanvasEditor::VariablePaletteRequestBus::Broadcast(&ScriptCanvasEditor::VariablePaletteRequests::RegisterVariableType, type);
-                        }
+                        ScriptCanvasEditor::VariablePaletteRequestBus::Broadcast(&ScriptCanvasEditor::VariablePaletteRequests::RegisterVariableType, type);
                     }
                 }
 
@@ -576,6 +554,14 @@ namespace
                 else
                 {
                     categoryPath.append(displayName.c_str());
+                }
+
+                for (auto property : behaviorClass->m_properties)
+                {
+                    if (property.second->m_setter)
+                    {
+                        RegisterMethod(nodePaletteModel, behaviorContext, categoryPath, behaviorClass, property.first, *property.second->m_setter, behaviorClass->IsMethodOverloaded(property.first));
+                    }
                 }
 
                 for (auto methodIter : behaviorClass->m_methods)

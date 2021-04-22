@@ -26,8 +26,14 @@
 namespace MaterialEditor
 {
     CreateMaterialDialog::CreateMaterialDialog(QWidget* parent)
+        : CreateMaterialDialog(QString(AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@")) + AZ_CORRECT_FILESYSTEM_SEPARATOR + "Materials", parent)
+    {
+    }
+
+    CreateMaterialDialog::CreateMaterialDialog(const QString& path, QWidget* parent)
         : QDialog(parent)
         , m_ui(new Ui::CreateMaterialDialog)
+        , m_path(path)
     {
         m_ui->setupUi(this);
 
@@ -77,8 +83,7 @@ namespace MaterialEditor
     {
         //Select a default location and unique name for the new material
         m_materialFileInfo = AtomToolsFramework::GetUniqueFileInfo(
-            QString(AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@")) +
-            AZ_CORRECT_FILESYSTEM_SEPARATOR + "Materials" +
+            m_path +
             AZ_CORRECT_FILESYSTEM_SEPARATOR + "untitled." +
             AZ::RPI::MaterialSourceData::Extension).absoluteFilePath();
 

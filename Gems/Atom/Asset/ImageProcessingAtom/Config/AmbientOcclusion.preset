@@ -9,7 +9,10 @@
             "SourceColor": "Linear",
             "DestColor": "Linear",
             "FileMasks": [
-                "_ao"
+                "_ao",
+                "_ambocc",
+                "_amb",
+                "_ambientocclusion"
             ],
             "PixelFormat": "BC4"
         },
@@ -33,7 +36,10 @@
                 "SourceColor": "Linear",
                 "DestColor": "Linear",
                 "FileMasks": [
-                    "_ao"
+                    "_ao",
+                    "_ambocc",
+                    "_amb",
+                    "_ambientocclusion"
                 ],
                 "PixelFormat": "EAC_R11"
             },
@@ -43,7 +49,10 @@
                 "SourceColor": "Linear",
                 "DestColor": "Linear",
                 "FileMasks": [
-                    "_ao"
+                    "_ao",
+                    "_ambocc",
+                    "_amb",
+                    "_ambientocclusion"
                 ],
                 "PixelFormat": "BC4"
             },
@@ -53,7 +62,10 @@
                 "SourceColor": "Linear",
                 "DestColor": "Linear",
                 "FileMasks": [
-                    "_ao"
+                    "_ao",
+                    "_ambocc",
+                    "_amb",
+                    "_ambientocclusion"
                 ],
                 "PixelFormat": "BC4"
             }
