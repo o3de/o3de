@@ -184,7 +184,7 @@ function(ly_setup_cmake_install)
 
     install(DIRECTORY "${CMAKE_SOURCE_DIR}/cmake"
         DESTINATION .
-        REGEX "Findo3de.cmake" EXCLUDE
+        REGEX "Findo3de.cmake" EXCLUDE  
         REGEX "Platform\/.*\/BuiltInPackages_.*\.cmake" EXCLUDE
     )
     install(
@@ -263,6 +263,44 @@ function(ly_setup_others)
         DESTINATION .
         REGEX "downloaded_packages" EXCLUDE
         REGEX "runtime" EXCLUDE
+    )
+
+    # Registry
+    install(DIRECTORY
+        ${CMAKE_CURRENT_BINARY_DIR}/bin/$<CONFIG>/Registry
+        DESTINATION ./bin/$<CONFIG>
+    )
+    install(DIRECTORY
+        # This one will change soon, Engine/Registry files will be relocated to Registry
+        ${CMAKE_SOURCE_DIR}/Engine/Registry
+        DESTINATION ./Engine
+    )
+    install(FILES
+        ${CMAKE_SOURCE_DIR}/AssetProcessorPlatformConfig.setreg
+        DESTINATION ./Registry
+    )
+
+    # Qt Binaries
+    set(QT_BIN_DIRS bearer iconengines imageformats platforms styles translations)
+    foreach(qt_dir ${QT_BIN_DIRS})
+        install(DIRECTORY
+            ${CMAKE_CURRENT_BINARY_DIR}/bin/$<CONFIG>/${qt_dir}
+            DESTINATION ./bin/$<CONFIG>
+        )
+    endforeach()
+
+    # Templates
+    install(DIRECTORY
+        ${CMAKE_SOURCE_DIR}/Templates
+        DESTINATION .
+    )
+
+    # Misc
+    install(FILES
+        ${CMAKE_SOURCE_DIR}/ctest_pytest.ini
+        ${CMAKE_SOURCE_DIR}/LICENSE.txt
+        ${CMAKE_SOURCE_DIR}/README.md
+        DESTINATION .
     )
 
 endfunction()
