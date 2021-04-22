@@ -94,7 +94,7 @@ namespace MaterialEditor
                 AZ_UNUSED(source);
                 const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(target);
                 return property && AtomToolsFramework::ArePropertyValuesEqual(property->GetValue(), property->GetConfig().m_parentValue);
-            });
+            }, groupDisplayName.c_str());
         AddGroup(groupNameId, groupDisplayName, groupDescription, propertyGroupWidget);
     }
 
@@ -126,7 +126,7 @@ namespace MaterialEditor
                 AZ_UNUSED(source);
                 const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(target);
                 return property && AtomToolsFramework::ArePropertyValuesEqual(property->GetValue(), property->GetConfig().m_parentValue);
-            });
+            }, groupDisplayName.c_str());
         AddGroup(groupNameId, groupDisplayName, groupDescription, propertyGroupWidget);
     }
 
@@ -161,7 +161,8 @@ namespace MaterialEditor
                     AZ_UNUSED(source);
                     const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(target);
                     return property && AtomToolsFramework::ArePropertyValuesEqual(property->GetValue(), property->GetConfig().m_parentValue);
-                });
+                },
+                groupDisplayName.c_str());
             AddGroup(groupNameId, groupDisplayName, groupDescription, propertyGroupWidget);
         }
     }

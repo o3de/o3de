@@ -2248,6 +2248,16 @@ namespace AzToolsFramework
         m_impl->m_visibilityCallback = callback;
     }
 
+    void ReflectedPropertyEditor::SetTitle(const QString& title)
+    {
+        m_title = title;
+    }
+
+    const QString& ReflectedPropertyEditor::GetTitle() const
+    {
+        return m_title;
+    }
+
     QWidget* ReflectedPropertyEditor::GetContainerWidget()
     {
         return m_impl->m_containerWidget;

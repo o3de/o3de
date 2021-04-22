@@ -89,7 +89,7 @@ namespace AzToolsFramework
         void dragLeaveEvent(QDragLeaveEvent* event) override;
         void dropEvent(QDropEvent* event) override;
 
-        virtual AssetSelectionModel GetAssetSelectionModel() { return AssetSelectionModel::AssetTypeSelection(GetCurrentAssetType()); }
+        virtual AssetSelectionModel GetAssetSelectionModel();
 
     signals:
         void OnAssetIDChanged(AZ::Data::AssetId newAssetID);
@@ -177,6 +177,9 @@ namespace AzToolsFramework
 
         void HandleFieldClear();
         AZStd::string AddDefaultSuffix(const AZStd::string& filename);
+        
+        template <class Widget_Type>
+        Widget_Type* FindFirstParent(QObject* pParent) const;
 
         //////////////////////////////////////////////////////////////////////////
         // AssetSystemBus
@@ -232,6 +235,22 @@ namespace AzToolsFramework
         const QModelIndex GetSourceIndex(const QModelIndex& index);
         void UpdateThumbnail();
     };
+
+    template<class Widget_Type>
+    Widget_Type* PropertyAssetCtrl::FindFirstParent(QObject* pParent) const
+    {
+        Widget_Type* widget = nullptr;
+        while (pParent)
+        {
+            widget = qobject_cast<Widget_Type*>(pParent);
+            if (widget)
+            {
+                break;
+            }
+            pParent = pParent->parent();
+        }
+        return widget;
+    }
 
     class AssetPropertyHandlerDefault
         : QObject

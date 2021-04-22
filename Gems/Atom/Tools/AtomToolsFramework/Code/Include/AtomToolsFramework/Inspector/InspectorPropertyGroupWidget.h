@@ -44,7 +44,8 @@ namespace AtomToolsFramework
             const AZ::Uuid& instanceClassId,
             AzToolsFramework::IPropertyEditorNotify* instanceNotificationHandler = {},
             QWidget* parent = {},
-            const AzToolsFramework::InstanceDataHierarchy::ValueComparisonFunction& valueComparisonFunction = {});
+            const AzToolsFramework::InstanceDataHierarchy::ValueComparisonFunction& valueComparisonFunction = {},
+            QString title = QString());
 
         void Refresh() override;
         void Rebuild() override;

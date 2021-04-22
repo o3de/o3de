@@ -15,6 +15,8 @@
 #include "PropertyAssetCtrl.hxx"
 
 #include "PropertyQTConstants.h"
+#include "PropertyRowWidget.hxx"
+#include "ReflectedPropertyEditor.hxx"
 
 AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option")
 #include <QtWidgets/QHBoxLayout>
@@ -672,6 +674,28 @@ namespace AzToolsFramework
         }
 
         AzQtComponents::BrowseEdit::removeDropTargetStyle(m_browseEdit);
+    }
+
+    AssetSelectionModel PropertyAssetCtrl::GetAssetSelectionModel()
+    {
+        auto selectionModel = AssetSelectionModel::AssetTypeSelection(GetCurrentAssetType());
+
+        QString title;
+        auto propertyRowWidget = FindFirstParent<PropertyRowWidget>(parent());
+        if (propertyRowWidget)
+        {
+            if (!propertyRowWidget->label().isEmpty())
+            {
+                title = propertyRowWidget->label();
+            }
+            auto reflectedPropertyEditor = FindFirstParent<ReflectedPropertyEditor>(propertyRowWidget->parent());
+            if (reflectedPropertyEditor && !reflectedPropertyEditor->GetTitle().isEmpty())
+            {
+                title = QString("%1 %2").arg(reflectedPropertyEditor->GetTitle()).arg(title);
+            }
+        }
+        selectionModel.SetTitle(title);
+        return selectionModel;
     }
 
     void PropertyAssetCtrl::UpdateTabOrder()
