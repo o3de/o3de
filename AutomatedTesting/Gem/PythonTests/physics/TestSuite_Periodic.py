@@ -521,7 +521,3 @@ class TestAutomation(TestAutomationBase):
     def test_C100000_RigidBody_EnablingGravityWorksPoC(self, request, workspace, editor, launcher_platform):
         from . import C100000_RigidBody_EnablingGravityWorksPoC as test_module
         self._run_test(request, workspace, editor, test_module)
-
-    def test_C111111_RigidBody_EnablingGravityWorksUsingNotificationsPoC(self, request, workspace, editor, launcher_platform):
-        from . import C111111_RigidBody_EnablingGravityWorksUsingNotificationsPoC as test_module
-        self._run_test(request, workspace, editor, test_module)
