@@ -58,6 +58,7 @@ namespace AzToolsFramework
             virtual void UpdatePrefabTemplate(TemplateId templateId, const PrefabDom& updatedDom) = 0;
             virtual void PropagateTemplateChanges(TemplateId templateId) = 0;
 
+            virtual AZStd::unique_ptr<Instance> InstantiatePrefab(AZ::IO::PathView filePath) = 0;
             virtual AZStd::unique_ptr<Instance> InstantiatePrefab(const TemplateId& templateId) = 0;
             virtual AZStd::unique_ptr<Instance> CreatePrefab(const AZStd::vector<AZ::Entity*>& entities,
                 AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume, AZ::IO::PathView filePath,

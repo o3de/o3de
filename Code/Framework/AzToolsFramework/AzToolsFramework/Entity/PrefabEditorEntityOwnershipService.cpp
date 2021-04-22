@@ -19,6 +19,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipService.h>
 #include <AzToolsFramework/Prefab/EditorPrefabComponent.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabLoader.h>
@@ -51,6 +52,10 @@ namespace AzToolsFramework
         m_loaderInterface = AZ::Interface<Prefab::PrefabLoaderInterface>::Get();
         AZ_Assert(m_loaderInterface != nullptr,
             "Couldn't get prefab loader interface, it's a requirement for PrefabEntityOwnership system to work");
+
+        m_instanceEntityMapperInterface = AZ::Interface<Prefab::InstanceEntityMapperInterface>::Get();
+        AZ_Assert(m_instanceEntityMapperInterface != nullptr,
+            "Couldn't get instance entity mapper interface, it's a requirement for PrefabEntityOwnership system to work");
 
         m_rootInstance = AZStd::unique_ptr<Prefab::Instance>(m_prefabSystemComponent->CreatePrefab({}, {}, "NewLevel.prefab"));
 
@@ -301,6 +306,28 @@ namespace AzToolsFramework
                 m_prefabSystemComponent->UpdatePrefabTemplate(addedInstance.GetTemplateId(), serializedInstance);
             }
             
+            return addedInstance;
+        }
+
+        return AZStd::nullopt;
+    }
+
+    Prefab::InstanceOptionalReference PrefabEditorEntityOwnershipService::InstantiatePrefab(
+        AZ::IO::PathView filePath, Prefab::InstanceOptionalReference instanceToParentUnder)
+    {
+        AZStd::unique_ptr<Prefab::Instance> createdPrefabInstance = m_prefabSystemComponent->InstantiatePrefab(filePath);
+
+        if (createdPrefabInstance)
+        {
+            if (!instanceToParentUnder)
+            {
+                instanceToParentUnder = *m_rootInstance;
+            }
+
+            Prefab::Instance& addedInstance = instanceToParentUnder->get().AddInstance(AZStd::move(createdPrefabInstance));
+            AZ::Entity* containerEntity = addedInstance.m_containerEntity.get();
+            HandleEntitiesAdded({containerEntity});
+
             return addedInstance;
         }
 

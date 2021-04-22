@@ -260,6 +260,29 @@ namespace AzToolsFramework
             }
         }
 
+        AZStd::unique_ptr<Instance> PrefabSystemComponent::InstantiatePrefab(AZ::IO::PathView filePath)
+        {
+            // Retrieve the template id for the source prefab filepath
+            Prefab::TemplateId templateId = GetTemplateIdFromFilePath(filePath);
+
+            if (templateId == Prefab::InvalidTemplateId)
+            {
+                // Load the template from the file
+                templateId = m_prefabLoader.LoadTemplateFromFile(filePath);
+            }
+
+            if (templateId == Prefab::InvalidTemplateId)
+            {
+                AZ_Error("Prefab", false,
+                    "Could not load template from path %s during InstantiatePrefab. Unable to proceed",
+                    filePath);
+
+                return nullptr;
+            }
+
+            return InstantiatePrefab(templateId);
+        }
+
         AZStd::unique_ptr<Instance> PrefabSystemComponent::InstantiatePrefab(const TemplateId& templateId)
         {
             TemplateReference instantiatingTemplate = FindTemplate(templateId);

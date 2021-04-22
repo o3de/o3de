@@ -25,6 +25,7 @@ namespace AzToolsFramework
     namespace Prefab
     {
         class Instance;
+        class InstanceEntityMapperInterface;
         class PrefabSystemComponentInterface;
         class PrefabLoaderInterface;
     }
@@ -191,6 +192,9 @@ namespace AzToolsFramework
             const AZStd::vector<AZ::Entity*>& entities, AZStd::vector<AZStd::unique_ptr<Prefab::Instance>>&& nestedPrefabInstances,
             AZ::IO::PathView filePath, Prefab::InstanceOptionalReference instanceToParentUnder) override;
 
+        Prefab::InstanceOptionalReference InstantiatePrefab(
+            AZ::IO::PathView filePath, Prefab::InstanceOptionalReference instanceToParentUnder) override;
+
         Prefab::InstanceOptionalReference GetRootPrefabInstance() override;
         //////////////////////////////////////////////////////////////////////////
 
@@ -205,6 +209,7 @@ namespace AzToolsFramework
 
         AZStd::string m_rootPath;
         AZStd::unique_ptr<Prefab::Instance> m_rootInstance;
+        Prefab::InstanceEntityMapperInterface* m_instanceEntityMapperInterface;
         Prefab::PrefabSystemComponentInterface* m_prefabSystemComponent;
         Prefab::PrefabLoaderInterface* m_loaderInterface;
         AzFramework::EntityContextId m_entityContextId;

@@ -31,11 +31,18 @@ namespace AzToolsFramework
         //! /param entities The entities to put under the new prefab.
         //! /param nestedPrefabInstances The nested prefab instances to put under the new prefab.
         //! /param filePath The filepath corresponding to the prefab file to be created.
-        //! /param instanceToParentUnder The instance under which the newly created prefab instance is parented under.
+        //! /param instanceToParentUnder The instance the newly created prefab instance is parented under.
         //! /return The optional reference to the prefab created.
         virtual Prefab::InstanceOptionalReference CreatePrefab(
             const AZStd::vector<AZ::Entity*>& entities, AZStd::vector<AZStd::unique_ptr<Prefab::Instance>>&& nestedPrefabInstances,
             AZ::IO::PathView filePath, Prefab::InstanceOptionalReference instanceToParentUnder = AZStd::nullopt) = 0;
+
+        //! Instantiate the prefab file provided.
+        //! /param entityToParentUnder The entity the newly created prefab instance is parented under.
+        //! /return The optional reference to the prefab instance.
+        virtual Prefab::InstanceOptionalReference InstantiatePrefab(
+            AZ::IO::PathView filePath, Prefab::InstanceOptionalReference instanceToParentUnder = AZStd::nullopt) = 0;
+
         virtual Prefab::InstanceOptionalReference GetRootPrefabInstance() = 0;
 
         virtual bool LoadFromStream(AZ::IO::GenericStream& stream, AZStd::string_view filename) = 0;
