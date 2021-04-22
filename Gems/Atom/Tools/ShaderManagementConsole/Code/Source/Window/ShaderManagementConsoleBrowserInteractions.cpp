@@ -28,6 +28,7 @@
 #include <AzToolsFramework/Thumbnails/SourceControlThumbnail.h>
 #include <AtomToolsFramework/Util/Util.h>
 
+#include <Atom/RPI.Edit/Shader/ShaderVariantListSourceData.h>
 #include <Atom/Document/ShaderManagementConsoleDocumentSystemRequestBus.h>
 
 #include <Source/Window/ShaderManagementConsoleBrowserInteractions.h>
@@ -81,7 +82,14 @@ namespace ShaderManagementConsole
     {
         menu->addAction("Open", [entry]()
         {
-            QDesktopServices::openUrl(QUrl::fromLocalFile(entry->GetFullPath().c_str()));
+            if (entry->GetExtension().find(AZ::RPI::ShaderVariantListSourceData::Extension) != AZStd::string::npos)
+            {
+                ShaderManagementConsoleDocumentSystemRequestBus::Broadcast(&ShaderManagementConsoleDocumentSystemRequestBus::Events::OpenDocument, entry->GetFullPath().c_str());
+            }
+            else
+            {
+                QDesktopServices::openUrl(QUrl::fromLocalFile(entry->GetFullPath().c_str()));
+            }
         });
 
         menu->addAction("Duplicate...", [entry, caller]()
@@ -100,20 +108,29 @@ namespace ShaderManagementConsole
             }
         });
 
-        menu->addAction("Run Python on Asset...", [entry]()
-            {
-                const QString script = QFileDialog::getOpenFileName(nullptr, "Run Script", QString(), QString("*.py"));
-                if (!script.isEmpty())
-                {
-                    AZStd::vector<AZStd::string_view> pythonArgs { entry->GetFullPath() };
-                    AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(&AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilenameWithArgs, script.toUtf8().constData(), pythonArgs);
-                }
-            });
-
         menu->addAction(AzQtComponents::fileBrowserActionName(), [entry]()
+        {
+            AzQtComponents::ShowFileOnDesktop(entry->GetFullPath().c_str());
+        });
+
+        menu->addSeparator();
+        menu->addAction("Generate Shader Variant List", [entry]() {
+            const QString script = "@engroot@/Gems/Atom/Tools/ShaderManagementConsole/Scripts/GenerateShaderVariantListForMaterials.py";
+            AZStd::vector<AZStd::string_view> pythonArgs{entry->GetFullPath()};
+            AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(
+                &AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilenameWithArgs, script.toUtf8().constData(),
+                pythonArgs);
+        });
+
+        menu->addAction("Run Python on Asset...", [entry]()
+        {
+            const QString script = QFileDialog::getOpenFileName(nullptr, "Run Script", QString(), QString("*.py"));
+            if (!script.isEmpty())
             {
-                AzQtComponents::ShowFileOnDesktop(entry->GetFullPath().c_str());
-            });
+                AZStd::vector<AZStd::string_view> pythonArgs { entry->GetFullPath() };
+                AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(&AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilenameWithArgs, script.toUtf8().constData(), pythonArgs);
+            }
+        });
 
         AddPerforceMenuActions(caller, menu, entry);
     }
