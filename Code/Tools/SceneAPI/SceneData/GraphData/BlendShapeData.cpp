@@ -17,6 +17,8 @@
 
 namespace AZ
 {
+    AZ_TYPE_INFO_SPECIALIZE(SceneAPI::DataTypes::IBlendShapeData::Face, "{C972EC9A-3A5C-47CD-9A92-ECB4C0C0451C}");
+
     namespace SceneData
     {
         namespace GraphData
@@ -37,16 +39,6 @@ namespace AZ
                 BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context);
                 if (behaviorContext)
                 {
-                    //virtual size_t GetUsedControlPointCount() const = 0;
-                    //virtual int GetControlPointIndex(int vertexIndex) const = 0;
-                    //virtual int GetUsedPointIndexForControlPoint(int controlPointIndex) const = 0;
-                    //virtual unsigned int GetVertexCount() const = 0;
-                    //virtual unsigned int GetFaceCount() const = 0;
-                    //virtual const Face& GetFaceInfo(unsigned int index) const = 0;
-                    //virtual const AZ::Vector3& GetPosition(unsigned int index) const = 0;
-                    //virtual const AZ::Vector3& GetNormal(unsigned int index) const = 0;
-                    //virtual unsigned int GetFaceVertexIndex(unsigned int face, unsigned int vertexIndex) const = 0;
-
                     behaviorContext->Class<SceneAPI::DataTypes::IBlendShapeData>()
                         ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                         ->Attribute(AZ::Script::Attributes::Module, "scene")
@@ -60,9 +52,54 @@ namespace AZ
                         ->Method("GetNormal", &SceneAPI::DataTypes::IBlendShapeData::GetNormal)
                         ->Method("GetFaceVertexIndex", &SceneAPI::DataTypes::IBlendShapeData::GetFaceVertexIndex);
 
+                    behaviorContext->Class<SceneAPI::DataTypes::IBlendShapeData::Face>("BlendShapeDataFace")
+                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                        ->Attribute(AZ::Script::Attributes::Module, "scene")
+                        ->Method("GetVertexIndex", [](const SceneAPI::DataTypes::IBlendShapeData::Face& self, int index)
+                        {
+                            if (index >= 0 && index < 3)
+                            {
+                                return self.vertexIndex[index];
+                            }
+                            return aznumeric_cast<unsigned int>(0);
+                        });
+
                     behaviorContext->Class<BlendShapeData>()
                         ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
-                        ->Attribute(AZ::Script::Attributes::Module, "scene");
+                        ->Attribute(AZ::Script::Attributes::Module, "scene")
+                        ->Method("GetUV", &BlendShapeData::GetUV)
+                        ->Method("GetTangent", [](const BlendShapeData& self, size_t index)
+                        {
+                            if (index < self.GetTangents().size())
+                            {
+                                return self.GetTangents().at(index);
+                            }
+                            AZ_Error("SceneGraphData", false, "Cannot get to tangent at index(%zu)", index);
+                            return Vector4::CreateZero();
+                        })
+                        ->Method("GetBitangent", [](const BlendShapeData& self, size_t index)
+                        {
+                            if (index < self.GetBitangents().size())
+                            {
+                                return self.GetBitangents().at(index);
+                            }
+                            AZ_Error("SceneGraphData", false, "Cannot get to bitangents at index(%zu)", index);
+                            return Vector3::CreateZero();
+                        })
+                        ->Method("GetColor", [](const BlendShapeData& self, AZ::u8 colorSetIndex, AZ::u8 colorIndex)
+                        {
+                            SceneAPI::DataTypes::Color color(0,0,0,0);
+                            if (colorSetIndex < MaxNumColorSets)
+                            {
+                                const AZStd::vector<SceneAPI::DataTypes::Color>& colorChannel = self.GetColors(colorSetIndex);
+                                if (colorIndex < colorChannel.size())
+                                {
+                                    return colorChannel[colorIndex];
+                                }
+                            }
+                            AZ_Error("SceneGraphData", false, "Cannot get to color setIndex(%d) at colorIndex(%d)", colorSetIndex, colorIndex);
+                            return color;
+                        });
                 }
             }
 
