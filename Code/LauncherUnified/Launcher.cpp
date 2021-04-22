@@ -46,6 +46,21 @@ extern "C" void CreateStaticModules(AZStd::vector<AZ::Module*>& modulesOut);
 
 namespace
 {
+    void ExecuteCustomConfig(AzFramework::Application& application)
+    {
+        const AZStd::string_view customCfgKey = "customcfg";
+        const AZ::CommandLine* commandLine = application.GetCommandLine();
+        if (commandLine->HasSwitch(customCfgKey) && commandLine->GetNumSwitchValues(customCfgKey) > 0)
+        {
+            const AZStd::string& customCfg = commandLine->GetSwitchValue(customCfgKey, 0);
+            if (!customCfg.empty())
+            {
+                AZStd::string execString = "exec " + customCfg;
+                gEnv->pConsole->ExecuteString(execString.c_str());
+            }
+        }
+    }
+
 #if AZ_TRAIT_LAUNCHER_USE_CRY_DYNAMIC_MODULE_HANDLE
     // mimics AZ::DynamicModuleHandle but uses CryLibrary under the hood,
     // which is necessary to properly load legacy Cry libraries on some platforms
@@ -638,6 +653,8 @@ namespace O3DELauncher
             {
                 // Execute autoexec.cfg to load the initial level
                 gEnv->pConsole->ExecuteString("exec autoexec.cfg");
+
+                ExecuteCustomConfig(gameApplication);
 
                 gEnv->pSystem->ExecuteCommandLine(false);
 
