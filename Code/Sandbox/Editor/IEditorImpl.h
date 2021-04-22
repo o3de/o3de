@@ -181,10 +181,7 @@ public:
     void SelectObject(CBaseObject* obj);
     void LockSelection(bool bLock);
     bool IsSelectionLocked();
-    void PickObject(IPickObjectCallback* callback, const QMetaObject* targetClass = 0, const char* statusText = 0, bool bMultipick = false);
 
-    void CancelPick();
-    bool IsPicking();
     IDataBaseManager* GetDBItemManager(EDataBaseItemType itemType);
     CMaterialManager* GetMaterialManager() { return m_pMaterialManager; }
     CMusicManager* GetMusicManager() { return m_pMusicManager; };
@@ -231,18 +228,6 @@ public:
     EOperationMode GetOperationMode();
     void SetEditMode(int editMode);
     int GetEditMode();
-
-    //! A correct tool is one that corresponds to the previously set edit mode.
-    bool HasCorrectEditTool() const;
-
-    //! Returns the edit tool required for the edit mode specified.
-    CEditTool* CreateCorrectEditTool();
-
-    void SetEditTool(CEditTool* tool, bool bStopCurrentTool = true) override;
-    void SetEditTool(const QString& sEditToolName, bool bStopCurrentTool = true) override;
-    void ReinitializeEditTool() override;
-    //! Returns current edit tool.
-    CEditTool* GetEditTool() override;
 
     ITransformManipulator* ShowTransformManipulator(bool bShow);
     ITransformManipulator* GetTransformManipulator();
@@ -403,13 +388,11 @@ protected:
     CXmlTemplateRegistry m_templateRegistry;
     CDisplaySettings* m_pDisplaySettings;
     CShaderEnum* m_pShaderEnum;
-    _smart_ptr<CEditTool> m_pEditTool;
     CIconManager* m_pIconManager;
     std::unique_ptr<SGizmoParameters> m_pGizmoParameters;
     QString m_primaryCDFolder;
     QString m_userFolder;
     bool m_bSelectionLocked;
-    _smart_ptr<CEditTool> m_pPickTool;
     class CAxisGizmo* m_pAxisGizmo;
     CGameEngine* m_pGameEngine;
     CAnimationContext* m_pAnimationContext;

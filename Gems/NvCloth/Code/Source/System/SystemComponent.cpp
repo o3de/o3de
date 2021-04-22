@@ -10,9 +10,6 @@
  *
  */
 
-#include <ISystem.h>
-#include <IConsole.h>
-
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>

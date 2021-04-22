@@ -585,13 +585,6 @@ AmazonToolbar ToolbarManager::GetEditModeToolbar() const
     t.AddAction(ID_TOOLBAR_WIDGET_UNDO, ORIGINAL_TOOLBAR_VERSION);
     t.AddAction(ID_TOOLBAR_WIDGET_REDO, ORIGINAL_TOOLBAR_VERSION);
 
-    if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        t.AddAction(ID_TOOLBAR_SEPARATOR, ORIGINAL_TOOLBAR_VERSION);
-        t.AddAction(ID_EDITTOOL_LINK, ORIGINAL_TOOLBAR_VERSION);
-        t.AddAction(ID_EDITTOOL_UNLINK, ORIGINAL_TOOLBAR_VERSION);
-    }
-
     t.AddAction(ID_TOOLBAR_SEPARATOR, ORIGINAL_TOOLBAR_VERSION);
 
     if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
@@ -630,10 +623,8 @@ AmazonToolbar ToolbarManager::GetObjectToolbar() const
     AmazonToolbar t = AmazonToolbar("Object", QObject::tr("Object Toolbar"));
     t.SetMainToolbar(true);
     t.AddAction(ID_GOTO_SELECTED, ORIGINAL_TOOLBAR_VERSION);
-    t.AddAction(ID_OBJECTMODIFY_ALIGN, ORIGINAL_TOOLBAR_VERSION);
     t.AddAction(ID_OBJECTMODIFY_ALIGNTOGRID, ORIGINAL_TOOLBAR_VERSION);
     t.AddAction(ID_OBJECTMODIFY_SETHEIGHT, ORIGINAL_TOOLBAR_VERSION);
-    t.AddAction(ID_MODIFY_ALIGNOBJTOSURF, ORIGINAL_TOOLBAR_VERSION);
 
     if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
     {
@@ -641,8 +632,6 @@ AmazonToolbar ToolbarManager::GetObjectToolbar() const
         t.AddAction(ID_EDIT_FREEZE, ORIGINAL_TOOLBAR_VERSION);
         t.AddAction(ID_EDIT_UNFREEZEALL, ORIGINAL_TOOLBAR_VERSION);
     }
-
-    t.AddAction(ID_OBJECTMODIFY_VERTEXSNAPPING, ORIGINAL_TOOLBAR_VERSION);
 
     return t;
 }

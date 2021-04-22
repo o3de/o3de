@@ -73,6 +73,7 @@ namespace AZ
             m_probeGridRenderData.m_probeIrradianceImageViewDescriptor = RHI::ImageViewDescriptor::Create(DiffuseProbeGridRenderData::IrradianceImageFormat, 0, 0);
             m_probeGridRenderData.m_probeDistanceImageViewDescriptor = RHI::ImageViewDescriptor::Create(DiffuseProbeGridRenderData::DistanceImageFormat, 0, 0);
             m_probeGridRenderData.m_probeRelocationImageViewDescriptor = RHI::ImageViewDescriptor::Create(DiffuseProbeGridRenderData::RelocationImageFormat, 0, 0);
+            m_probeGridRenderData.m_probeClassificationImageViewDescriptor = RHI::ImageViewDescriptor::Create(DiffuseProbeGridRenderData::ClassificationImageFormat, 0, 0);
 
             // load shader
             // Note: the shader may not be available on all platforms
