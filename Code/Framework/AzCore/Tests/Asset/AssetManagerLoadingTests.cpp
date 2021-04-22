@@ -2677,7 +2677,8 @@ namespace UnitTest
 #if AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     TEST_F(AssetManagerCancelTests, DISABLED_CancelLoad_NoReferences_LoadCancels)
 #else
-    TEST_F(AssetManagerCancelTests, CancelLoad_NoReferences_LoadCancels)
+    // Asset cancellation is temporarily disabled, re-enable this test when cancellation is more stable
+    TEST_F(AssetManagerCancelTests, DISABLED_CancelLoad_NoReferences_LoadCancels)
 #endif // AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     {
         m_assetHandlerAndCatalog->SetArtificialDelayMilliseconds(0, 100);
@@ -2717,7 +2718,8 @@ namespace UnitTest
 #if AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     TEST_F(AssetManagerCancelTests, DISABLED_CanceledLoad_CanBeLoadedAgainLater)
 #else
-    TEST_F(AssetManagerCancelTests, CanceledLoad_CanBeLoadedAgainLater)
+    // Asset cancellation is temporarily disabled, re-enable this test when cancellation is more stable
+    TEST_F(AssetManagerCancelTests, DISABLED_CanceledLoad_CanBeLoadedAgainLater)
 #endif // AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     {
         m_assetHandlerAndCatalog->SetArtificialDelayMilliseconds(0, 50);
@@ -2766,7 +2768,8 @@ namespace UnitTest
 #if AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     TEST_F(AssetManagerCancelTests, DISABLED_CancelLoad_InProgressLoad_Continues)
 #else
-    TEST_F(AssetManagerCancelTests, CancelLoad_InProgressLoad_Continues)
+    // Asset cancellation is temporarily disabled, re-enable this test when cancellation is more stable
+    TEST_F(AssetManagerCancelTests, DISABLED_CancelLoad_InProgressLoad_Continues)
 #endif // AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     {
         m_assetHandlerAndCatalog->SetArtificialDelayMilliseconds(0, 100);
@@ -2988,8 +2991,9 @@ namespace UnitTest
     TEST_F(AssetManagerClearAssetReferenceTests,
             DISABLED_ContainerLoadTest_AssetLosesAndGainsReferencesDuringLoadAndSuspendedRelease_AssetSuccessfullyFinishesLoading)
 #else
+    // Asset cancellation is temporarily disabled, re-enable this test when cancellation is more stable
     TEST_F(AssetManagerClearAssetReferenceTests,
-            ContainerLoadTest_AssetLosesAndGainsReferencesDuringLoadAndSuspendedRelease_AssetSuccessfullyFinishesLoading)
+            DISABLED_ContainerLoadTest_AssetLosesAndGainsReferencesDuringLoadAndSuspendedRelease_AssetSuccessfullyFinishesLoading)
 #endif // AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
 {
         // Start the load and wait for the dependent asset to hit the loading state.
@@ -3046,7 +3050,8 @@ namespace UnitTest
 #if AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     TEST_F(AssetManagerClearAssetReferenceTests, DISABLED_ContainerLoadTest_RootAssetDestroyedWhileContainerLoading_ContainerFinishesLoad)
 #else
-    TEST_F(AssetManagerClearAssetReferenceTests, ContainerLoadTest_RootAssetDestroyedWhileContainerLoading_ContainerFinishesLoad)
+    // Asset cancellation is temporarily disabled, re-enable this test when cancellation is more stable
+    TEST_F(AssetManagerClearAssetReferenceTests, DISABLED_ContainerLoadTest_RootAssetDestroyedWhileContainerLoading_ContainerFinishesLoad)
 #endif // AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     {
         OnAssetReadyListener assetStatus1(DependentPreloadAssetId, azrtti_typeid<AssetWithAssetReference>());
