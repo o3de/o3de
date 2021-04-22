@@ -21,7 +21,7 @@ import uuid
 import re
 
 from cmake.Tools import utils
-from cmake.Tools import common
+import cmake.Tools.registration as registration
 
 logger = logging.getLogger()
 logging.basicConfig()
@@ -117,7 +117,7 @@ def _transform(s_data: str,
                 end = t_data.find('{END_LICENSE}')
                 end = t_data.find('\n', end)
                 if end != -1:
-                    t_data = t_data[:line_start] + t_data[end+1:]
+                    t_data = t_data[:line_start] + t_data[end + 1:]
     ###################################################################
     return t_data
 
@@ -131,8 +131,6 @@ def _transform_copy(source_file: str,
     :param source_file: the source file to be transformed
     :param destination_file: the destination file, this is the transformed file
     :param replacements: list of transformation pairs A->B
-    :param keep_restricted_in_instance: whether or not you want ot keep the templates restricted files in your instance
-     or separate them out into the restricted folder
     :param keep_license_text: whether or not you want to keep license text
     """
     # if its a known binary type just copy it, else try to transform it.
@@ -159,7 +157,7 @@ def _transform_copy(source_file: str,
             pass
 
 
-def _execute_template_json(json_data: str,
+def _execute_template_json(json_data: dict,
                            destination_path: str,
                            template_path: str,
                            replacements: list,
@@ -203,7 +201,7 @@ def _execute_template_json(json_data: str,
             shutil.copy(in_file, out_file)
 
 
-def _execute_restricted_template_json(json_data: str,
+def _execute_restricted_template_json(json_data: dict,
                                       restricted_platform: str,
                                       destination_name,
                                       template_name,
@@ -215,6 +213,16 @@ def _execute_restricted_template_json(json_data: str,
                                       replacements: list,
                                       keep_restricted_in_instance: bool = False,
                                       keep_license_text: bool = False) -> None:
+    # if we are not keeping restricted in instance make restricted.json if not present
+    if not keep_restricted_in_instance:
+        restricted_json = f"{destination_restricted_path}/restricted.json".replace('//', '/')
+        os.makedirs(os.path.dirname(restricted_json), exist_ok=True)
+        if not os.path.isfile(restricted_json):
+            with open(restricted_json, 'w') as s:
+                restricted_json_data = {}
+                restricted_json_data.update({"restricted_name": destination_name})
+                s.write(json.dumps(restricted_json_data, indent=4))
+
     # create dirs first
     # for each createDirectory entry, transform the folder name
     for create_directory in json_data['createDirectories']:
@@ -258,7 +266,8 @@ def _execute_restricted_template_json(json_data: str,
             shutil.copy(in_file, out_file)
 
 
-def _instantiate_template(destination_name: str,
+def _instantiate_template(template_json_data: dict,
+                          destination_name: str,
                           template_name: str,
                           destination_path: str,
                           template_path: str,
@@ -272,10 +281,15 @@ def _instantiate_template(destination_name: str,
     """
     Internal function to create a concrete instance from a template
 
-    :param destination_path: the folder you want to instantiate the template in, absolute or dev_root relative
+    :param template_json_data: the template json data
+    :param destination_name: the name of folder you want to instantiate the template in
+    :param template_name: the name of the template
+    :param destination_path: the path you want to instantiate the template in
     :param template_path: the path of the template
-    :param template_path_rel: the relative path of the template
+    :param destination_restricted_path: the path of the restricted destination
     :param template_restricted_path: the path of the restricted template
+    :param destination_restricted_platform_relative_path: any path after the Platform of the restricted destination
+    :param template_restricted_platform_relative_path: any path after the Platform of the restricted template
     :param replacements: optional list of strings uses to make concrete names out of templated parameters. X->Y pairs
         Ex. ${Name},TestGem,${Player},TestGemPlayer
         This will cause all references to ${Name} be replaced by TestGem, and all ${Player} replaced by 'TestGemPlayer'
@@ -284,35 +298,30 @@ def _instantiate_template(destination_name: str,
     :param keep_license_text: whether or not you want ot keep the templates license text in your instance.
         template can have license blocks starting with {BEGIN_LICENSE} and ending with {END_LICENSE},
         this controls if you want to keep the license text from the template in the new instance. It is false by default
-        because most customers will not want license text in there instances, but we may want to keep them.
+        because most customers will not want license text in their instances, but we may want to keep them.
     :return: 0 for success or non 0 failure code
     """
-    # make sure the template json is found
-    template_json = f'{template_path}/{template_file_name}'
-    if not os.path.isfile(template_json):
-        logger.error(f'Template json {template_json} not found.')
-        return 1
-
-    # load the template json and execute it
-    with open(template_json, 'r') as s:
-        try:
-            json_data = json.load(s)
-        except Exception as e:
-            logger.error(f'Failed to load {template_json}: ' + str(e))
-            return 1
-        _execute_template_json(json_data,
-                               destination_path,
-                               template_path,
-                               replacements,
-                               keep_license_text)
+    # execute the template json
+    _execute_template_json(template_json_data,
+                           destination_path,
+                           template_path,
+                           replacements,
+                           keep_license_text)
 
     # execute restricted platform jsons if any
-    if os.path.isdir(template_restricted_path):
+    if template_restricted_path:
         for restricted_platform in os.listdir(template_restricted_path):
+            if os.path.isfile(restricted_platform):
+                continue
             template_restricted_platform = f'{template_restricted_path}/{restricted_platform}'
             template_restricted_platform_path_rel = f'{template_restricted_platform}/{template_restricted_platform_relative_path}/{template_name}'
             platform_json = f'{template_restricted_platform_path_rel}/{template_file_name}'.replace('//', '/')
+
             if os.path.isfile(platform_json):
+                if not registration.valid_o3de_template_json(platform_json):
+                    logger.error(f'Template json {platform_json} is invalid.')
+                    return 1
+
                 # load the template json and execute it
                 with open(platform_json, 'r') as s:
                     try:
@@ -320,41 +329,41 @@ def _instantiate_template(destination_name: str,
                     except Exception as e:
                         logger.error(f'Failed to load {platform_json}: ' + str(e))
                         return 1
-                    _execute_restricted_template_json(json_data,
-                                                      restricted_platform,
-                                                      destination_name,
-                                                      template_name,
-                                                      destination_path,
-                                                      destination_restricted_path,
-                                                      template_restricted_path,
-                                                      destination_restricted_platform_relative_path,
-                                                      template_restricted_platform_relative_path,
-                                                      replacements,
-                                                      keep_restricted_in_instance,
-                                                      keep_license_text)
+                    else:
+                        _execute_restricted_template_json(json_data,
+                                                          restricted_platform,
+                                                          destination_name,
+                                                          template_name,
+                                                          destination_path,
+                                                          destination_restricted_path,
+                                                          template_restricted_path,
+                                                          destination_restricted_platform_relative_path,
+                                                          template_restricted_platform_relative_path,
+                                                          replacements,
+                                                          keep_restricted_in_instance,
+                                                          keep_license_text)
 
     return 0
 
 
-def create_template(dev_root: str,
-                    source_path: str,
+def create_template(source_path: str,
                     template_path: str,
-                    source_restricted_path: str,
-                    template_restricted_path: str,
-                    source_restricted_platform_relative_path: str,
-                    template_restricted_platform_relative_path: str,
+                    source_restricted_path: str = None,
+                    template_restricted_path: str = None,
+                    source_restricted_platform_relative_path: str = None,
+                    template_restricted_platform_relative_path: str = None,
                     keep_restricted_in_template: bool = False,
                     keep_license_text: bool = False,
                     replace: list = None) -> int:
     """
     Create a generic template from a source directory using replacement
 
-    :param dev_root: the path to dev root of the engine
-    :param source_path: source folder, absolute or dev_root relative
-    :param template_path: the path of the template to create, can be absolute or relative to dev root/Templates, if none
-     then it will be the source_name
-    :param source_restricted_path: path to the projects restricted folder
+    :param source_path: The path to the source that you want to make into a template
+    :param template_path: the path of the template to create, can be absolute or relative to default templates path
+    :param source_restricted_path: path to the source restricted folder
     :param template_restricted_path: path to the templates restricted folder
+    :param source_restricted_platform_relative_path: any path after the platform in the source restricted
+    :param template_restricted_platform_relative_path: any path after the platform in the template restricted
     :param replace: optional list of strings uses to make templated parameters out of concrete names. X->Y pairs
      Ex. TestGem,${Name},TestGemPlayer,${Player}
      This will cause all references to 'TestGem' be replaced by ${Name}, and all 'TestGemPlayer' replaced by ${Player}
@@ -363,29 +372,17 @@ def create_template(dev_root: str,
      TestGemPlayer will get matched first and become ${Player} and will not become ${Name}Player
     :param keep_restricted_in_template: whether or not you want ot keep the templates restricted in your template.
     :param keep_license_text: whether or not you want ot keep the templates license text in your instance.
-     template can have license blocks starting with {BEGIN_LICENSE} and ending with {END_LICENSE},
+     Templated files can have license blocks starting with {BEGIN_LICENSE} and ending with {END_LICENSE},
      this controls if you want to keep the license text from the template in the new instance. It is false by default
-     because most customers will not want license text in there instances, but we may want to keep them.
+     because most people will not want license text in their instances.
     :return: 0 for success or non 0 failure code
     """
-    # if no dev root error
-    if not dev_root:
-        logger.error('Dev root cannot be empty.')
-        return 1
-    dev_root = dev_root.replace('\\', '/')
-    if not os.path.isabs(dev_root):
-        dev_root = os.path.abspath(dev_root)
-    if not os.path.isdir(dev_root):
-        logger.error(f'Dev root {dev_root} is not a folder.')
-        return 1
 
     # if no src path error
     if not source_path:
         logger.error('Src path cannot be empty.')
         return 1
     source_path = source_path.replace('\\', '/')
-    if not os.path.isabs(source_path):
-        source_path = f'{dev_root}/{source_path}'
     if not os.path.isdir(source_path):
         logger.error(f'Src path {source_path} is not a folder.')
         return 1
@@ -393,13 +390,15 @@ def create_template(dev_root: str,
     # source_name is now the last component of the source_path
     source_name = os.path.basename(source_path)
 
-    # if no new template path error
+    # if no template path, error
     if not template_path:
-        logger.warning('Template path empty. Using source name')
+        logger.info(f'Template path empty. Using source name {source_name}')
         template_path = source_name
     template_path = template_path.replace('\\', '/')
     if not os.path.isabs(template_path):
-        template_path = f'{dev_root}/Templates/{template_path}'
+        default_templates_folder = registration.get_registered(default_folder='templates')
+        template_path = f'{default_templates_folder}/{template_path}'
+        logger.info(f'Template path not a full path. Using default templates folder {template_path}')
     if os.path.isdir(template_path):
         logger.error(f'Template path {template_path} is already exists.')
         return 1
@@ -413,25 +412,76 @@ def create_template(dev_root: str,
         return 1
 
     # source_restricted_path
-    source_restricted_path = source_restricted_path.replace('\\', '/')
-    if not os.path.isabs(source_restricted_path):
-        source_restricted_path = f'{dev_root}/{source_restricted_path}'
-    if not os.path.isdir(source_restricted_path):
-        logger.error(f'Src restricted path {source_restricted_path} is not a folder.')
-        return 1
+    if source_restricted_path:
+        source_restricted_path = source_restricted_path.replace('\\', '/')
+        if not os.path.isabs(source_restricted_path):
+            engine_json = f'{registration.get_this_engine_path()}/engine.json'
+            if not registration.valid_o3de_engine_json(engine_json):
+                logger.error(f"Engine json {engine_json} is not valid.")
+                return 1
+            with open(engine_json) as s:
+                try:
+                    engine_json_data = json.load(s)
+                except Exception as e:
+                    logger.error(f"Failed to read engine json {engine_json}: {str(e)}")
+                    return 1
+                try:
+                    engine_restricted = engine_json_data['restricted']
+                except Exception as e:
+                    logger.error(f"Engine json {engine_json} restricted not found.")
+                    return 1
+            engine_restricted_folder = registration.get_registered(restricted_name=engine_restricted)
+            new_source_restricted_path = f'{engine_restricted_folder}/{source_restricted_path}'
+            logger.info(f'Source restricted path {source_restricted_path} not a full path. We must assume this engines'
+                        f' restricted folder {new_source_restricted_path}')
+        if not os.path.isdir(source_restricted_path):
+            logger.error(f'Source restricted path {source_restricted_path} is not a folder.')
+            return 1
 
     # template_restricted_path
-    template_restricted_path = template_restricted_path.replace('\\', '/')
-    if not os.path.isabs(template_restricted_path):
-        template_restricted_path = f'{dev_root}/{template_restricted_path}'
-    if not os.path.isdir(template_restricted_path):
-        os.makedirs(template_restricted_path)
+    template_restricted_name = template_name
+    if template_restricted_path:
+        template_restricted_path = template_restricted_path.replace('\\', '/')
+        if not os.path.isabs(template_restricted_path):
+            default_templates_restricted_folder = registration.get_registered(restricted_name='templates')
+            new_template_restricted_path = f'{default_templates_restricted_folder}/{template_restricted_path}'
+            logger.info(f'Template restricted path {template_restricted_path} not a full path. We must assume the'
+                        f' default templates restricted folder {new_template_restricted_path}')
+            template_restricted_path = new_template_restricted_path
+
+        if os.path.isdir(template_restricted_path):
+            # see if this is already a restricted path, if it is get the "restricted_name" from the restricted json
+            # so we can set "restricted" to it for this template
+            restricted_json = f'{template_restricted_path}/restricted.json'
+            if os.path.isfile(restricted_json):
+                if not registration.valid_o3de_restricted_json(restricted_json):
+                    logger.error(f'{restricted_json} is not valid.')
+                    return 1
+                with open(restricted_json, 'r') as s:
+                    try:
+                        restricted_json_data = json.load(s)
+                    except Exception as e:
+                        logger.error(f'Failed to load {restricted_json}: ' + str(e))
+                        return 1
+                    try:
+                        template_restricted_name = restricted_json_data['restricted_name']
+                    except Exception as e:
+                        logger.error(f'Failed to read restricted_name from {restricted_json}')
+                        return 1
+        else:
+            os.makedirs(template_restricted_path)
 
     # source restricted relative
-    source_restricted_platform_relative_path = source_restricted_platform_relative_path.replace('\\', '/')
+    if source_restricted_platform_relative_path:
+        source_restricted_platform_relative_path = source_restricted_platform_relative_path.replace('\\', '/')
+    else:
+        source_restricted_platform_relative_path = ''
 
     # template restricted relative
-    template_restricted_platform_relative_path = template_restricted_platform_relative_path.replace('\\', '/')
+    if template_restricted_platform_relative_path:
+        template_restricted_platform_relative_path = template_restricted_platform_relative_path.replace('\\', '/')
+    else:
+        template_restricted_platform_relative_path = ''
 
     logger.info(f'Processing Src: {source_path}')
 
@@ -452,7 +502,7 @@ def create_template(dev_root: str,
     def _transform_into_template(s_data: object) -> (bool, object):
         """
         Internal function to transform any data into templated data
-        :param source_data: the input data, this could be file data or file name data
+        :param s_data: the input data, this could be file data or file name data
         :return: bool: whether or not the returned data MAY need to be transformed to instantiate it
                  t_data: potentially transformed data 0 for success or non 0 failure code
         """
@@ -507,7 +557,7 @@ def create_template(dev_root: str,
                                                      platform: str) -> (bool, object):
         """
         Internal function to transform a restricted platform file name into restricted template file name
-        :param source_data: the input data, this could be file data or file name data
+        :param s_data: the input data, this could be file data or file name data
         :return: bool: whether or not the returned data MAY need to be transformed to instantiate it
                  t_data: potentially transformed data 0 for success or non 0 failure code
         """
@@ -581,14 +631,14 @@ def create_template(dev_root: str,
                     else:
                         after.append(components[x])
             else:
-                for x in range(0, num_components-1):
+                for x in range(0, num_components - 1):
                     relative += f'{components[x]}/'
                     if os.path.isdir(f'{source_path}/{relative}'):
                         before.append(components[x])
                     else:
                         after.append(components[x])
 
-                after.append(components[num_components-1])
+                after.append(components[num_components - 1])
 
             before.append("Platform")
             warn_if_not_platform = f'{source_path}/{"/".join(before)}'
@@ -598,7 +648,8 @@ def create_template(dev_root: str,
             origin_entry_rel = '/'.join(before)
 
             if not os.path.isdir(warn_if_not_platform):
-                logger.warning(f'{entry_abs} -> {origin_entry_rel}: Other Platforms not found in {warn_if_not_platform}')
+                logger.warning(
+                    f'{entry_abs} -> {origin_entry_rel}: Other Platforms not found in {warn_if_not_platform}')
 
             destination_entry_rel = origin_entry_rel
             destination_entry_abs = f'{template_path}/Template/{origin_entry_rel}'
@@ -666,7 +717,8 @@ def create_template(dev_root: str,
                     "dir": destination_entry_rel,
                     "origin": origin_entry_rel
                 })
-                _transform_restricted_into_copyfiles_and_createdirs(source_path, restricted_platform, root_abs, entry_abs)
+                _transform_restricted_into_copyfiles_and_createdirs(source_path, restricted_platform, root_abs,
+                                                                    entry_abs)
 
     def _transform_dir_into_copyfiles_and_createdirs(root_abs: str,
                                                      path_abs: str = None) -> None:
@@ -722,6 +774,11 @@ def create_template(dev_root: str,
             # if not then create a normal relative and abs dst entry name
             _, origin_entry_rel = _transform_into_template(entry_rel)
             if platform and found_platform in restricted_platforms:
+                # if we don't have a template restricted path and we found restricted files... warn and skip
+                # the file/dir
+                if not template_restricted_path:
+                    logger.warning("Restricted platform files found!!! {entry_rel}, {found_platform}")
+                    continue
                 _, destination_entry_rel = _transform_into_template_restricted_filename(entry_rel, found_platform)
                 destination_entry_abs = f'{template_restricted_path}/{found_platform}/{template_restricted_platform_relative_path}/{template_name}/Template/{destination_entry_rel}'
             else:
@@ -831,10 +888,13 @@ def create_template(dev_root: str,
 
     # every src may have a matching restricted folder per restricted platform
     # run the transformation on each src restricted folder
-    for restricted_platform in os.listdir(source_restricted_path):
-        restricted_platform_src_path_abs = f'{source_restricted_path}/{restricted_platform}/{source_restricted_platform_relative_path}/{source_name}'.replace('//', '/')
-        if os.path.isdir(restricted_platform_src_path_abs):
-            _transform_restricted_into_copyfiles_and_createdirs(source_path, restricted_platform, restricted_platform_src_path_abs)
+    if source_restricted_path:
+        for restricted_platform in os.listdir(source_restricted_path):
+            restricted_platform_src_path_abs = f'{source_restricted_path}/{restricted_platform}/{source_restricted_platform_relative_path}/{source_name}'.replace(
+                '//', '/')
+            if os.path.isdir(restricted_platform_src_path_abs):
+                _transform_restricted_into_copyfiles_and_createdirs(source_path, restricted_platform,
+                                                                    restricted_platform_src_path_abs)
 
     # sort
     copy_files.sort(key=lambda x: x['file'])
@@ -851,6 +911,10 @@ def create_template(dev_root: str,
     json_data.update({'canonical_tags': []})
     json_data.update({'user_tags': [f"{template_name}"]})
     json_data.update({'icon_path': "preview.png"})
+    if template_restricted_path:
+        json_data.update({'restricted': template_restricted_name})
+        if template_restricted_platform_relative_path != '':
+            json_data.update({'template_restricted_platform_relative_path': template_restricted_platform_relative_path})
     json_data.update({'copyFiles': copy_files})
     json_data.update({'createDirectories': create_dirs})
 
@@ -862,45 +926,51 @@ def create_template(dev_root: str,
     with open(json_name, 'w') as s:
         s.write(json.dumps(json_data, indent=4))
 
-    #copy the default preview.png
+    # copy the default preview.png
     this_script_parent = os.path.dirname(os.path.realpath(__file__))
     preview_png_src = f'{this_script_parent}/preview.png'
     preview_png_dst = f'{template_path}/Template/preview.png'
     if not os.path.isfile(preview_png_dst):
         shutil.copy(preview_png_src, preview_png_dst)
 
-    # now write out each restricted platform template json separately
-    for restricted_platform in restricted_platform_entries:
-        restricted_template_path = f'{template_restricted_path}/{restricted_platform}/{template_restricted_platform_relative_path}/{template_name}'.replace('//', '/')
+    # if no restricted template path was given and restricted platform files were found
+    if not template_restricted_path and len(restricted_platform_entries):
+        logger.info(f'Restricted platform files found!!! and no template restricted path was found...')
 
-        #sort
-        restricted_platform_entries[restricted_platform]['copyFiles'].sort(key=lambda x: x['file'])
-        restricted_platform_entries[restricted_platform]['createDirs'].sort(key=lambda x: x['dir'])
+    if template_restricted_path:
+        # now write out each restricted platform template json separately
+        for restricted_platform in restricted_platform_entries:
+            restricted_template_path = f'{template_restricted_path}/{restricted_platform}/{template_restricted_platform_relative_path}/{template_name}'.replace(
+                '//', '/')
 
-        json_data = {}
-        json_data.update({'template_name': template_name})
-        json_data.update({'origin': f'The primary repo for {template_name} goes here: i.e. http://www.mydomain.com'})
-        json_data.update({'license': f'What license {template_name} uses goes here: i.e. https://opensource.org/licenses/MIT'})
-        json_data.update({'display_name': template_name})
-        json_data.update({'summary': f"A short description of {template_name}."})
-        json_data.update({'canonical_tags': []})
-        json_data.update({'user_tags': [f'{template_name}']})
-        json_data.update({'icon_path': "preview.png"})
-        json_data.update({'copyFiles': restricted_platform_entries[restricted_platform]['copyFiles']})
-        json_data.update({'createDirectories': restricted_platform_entries[restricted_platform]['createDirs']})
+            # sort
+            restricted_platform_entries[restricted_platform]['copyFiles'].sort(key=lambda x: x['file'])
+            restricted_platform_entries[restricted_platform]['createDirs'].sort(key=lambda x: x['dir'])
 
-        json_name = f'{restricted_template_path}/{template_file_name}'
-        os.makedirs(os.path.dirname(json_name), exist_ok=True)
+            json_data = {}
+            json_data.update({'template_name': template_name})
+            json_data.update({'origin': f'The primary repo for {template_name} goes here: i.e. http://www.mydomain.com'})
+            json_data.update({'license': f'What license {template_name} uses goes here: i.e. https://opensource.org/licenses/MIT'})
+            json_data.update({'display_name': template_name})
+            json_data.update({'summary': f"A short description of {template_name}."})
+            json_data.update({'canonical_tags': []})
+            json_data.update({'user_tags': [f'{template_name}']})
+            json_data.update({'icon_path': "preview.png"})
+            json_data.update({'copyFiles': restricted_platform_entries[restricted_platform]['copyFiles']})
+            json_data.update({'createDirectories': restricted_platform_entries[restricted_platform]['createDirs']})
 
-        # if the json file we are about to write already exists for some reason, delete it
-        if os.path.isfile(json_name):
-            os.unlink(json_name)
-        with open(json_name, 'w') as s:
-            s.write(json.dumps(json_data, indent=4))
+            json_name = f'{restricted_template_path}/{template_file_name}'
+            os.makedirs(os.path.dirname(json_name), exist_ok=True)
 
-        preview_png_dst = f'{restricted_template_path}/Template/preview.png'
-        if not os.path.isfile(preview_png_dst):
-            shutil.copy(preview_png_src, preview_png_dst)
+            # if the json file we are about to write already exists for some reason, delete it
+            if os.path.isfile(json_name):
+                os.unlink(json_name)
+            with open(json_name, 'w') as s:
+                s.write(json.dumps(json_data, indent=4))
+
+            preview_png_dst = f'{restricted_template_path}/Template/preview.png'
+            if not os.path.isfile(preview_png_dst):
+                shutil.copy(preview_png_src, preview_png_dst)
 
     return 0
 
@@ -937,58 +1007,213 @@ def find_all_templates(template_folder_list: list, template_marker_file: str) ->
                 if os.path.isfile(os.path.join(root, dir, template_file_name)) and \
                         os.path.isfile(os.path.join(root, dir, 'Template', template_marker_file)):
                     templates_found.append((dir, os.path.join(root, dir)))
-            break # We only want root folders containing templates, do not recurse
+            break  # We only want root folders containing templates, do not recurse
     return templates_found
 
 
-def create_from_template(dev_root: str,
-                         destination_path: str,
-                         template_path: str,
-                         destination_restricted_path: str,
-                         template_restricted_path: str,
-                         destination_restricted_platform_relative_path: str,
-                         template_restricted_platform_relative_path: str,
+def create_from_template(destination_path: str,
+                         template_path: str = None,
+                         template_name: str = None,
+                         destination_restricted_path: str = None,
+                         destination_restricted_name: str = None,
+                         template_restricted_path: str = None,
+                         template_restricted_name: str = None,
+                         destination_restricted_platform_relative_path: str = None,
+                         template_restricted_platform_relative_path: str = None,
                          keep_restricted_in_instance: bool = False,
                          keep_license_text: bool = False,
                          replace: list = None) -> int:
     """
-    Generic template instantiation.
-    :param dev_root: the path to the dev root of the engine
-    :param destination_path: the folder you want to put the instantiate template in, absolute or dev_root relative
-    :param template_path: the name of the template you want to instance
+    Generic template instantiation for non o3de object templates. This function makes NO assumptions!
+     Assumptions are made only for specializations like create_project or create_gem etc... So this function
+     will NOT try to deduce if the template even if it is an o3de type template and therefore will not link
+     the instance to the restricted! However, it will make the restricted and name it for the destination just
+     as an o3de object would.
+    :param destination_path: the folder you want to instantiate the template into
+    :param template_path: the path to the template you want to instance
+    :param template_name: the name of the template you want to instance
     :param destination_restricted_path: path to the projects restricted folder
-    :param template_restricted_path: path to the templates restricted folder
+    :param destination_restricted_name: name of the projects restricted folder
+    :param template_restricted_path: path of the templates restricted folder
+    :param template_restricted_name: name of the templates restricted folder
+    :param destination_restricted_platform_relative_path: any path after the platform in the destination restricted
+    :param template_restricted_platform_relative_path: any path after the platform in the template restricted
     :param keep_restricted_in_instance: whether or not you want ot keep the templates restricted files in your instance
      or separate them out into the restricted folder
     :param keep_license_text: whether or not you want ot keep the templates license text in your instance.
         template can have license blocks starting with {BEGIN_LICENSE} and ending with {END_LICENSE},
         this controls if you want to keep the license text from the template in the new instance. It is false by default
-        because most customers will not want license text in there instances, but we may want to keep them.
+        because most customers will not want license text in their instances, but we may want to keep them.
     :param replace: optional list of strings uses to make concrete names out of templated parameters. X->Y pairs
         Ex. ${Name},TestGem,${Player},TestGemPlayer
         This will cause all references to ${Name} be replaced by TestGem, and all ${Player} replaced by 'TestGemPlayer'
     :return: 0 for success or non 0 failure code
     """
-    # if no dev root error
-    if not dev_root:
-        logger.error('Dev root cannot be empty.')
-        return 1
-    dev_root = dev_root.replace('\\', '/')
-    if not os.path.isabs(dev_root):
-        dev_root = os.path.abspath(dev_root)
-    if not os.path.isdir(dev_root):
-        logger.error(f'Dev root {dev_root} is not a folder.')
+    if template_name and template_path:
+        logger.error(f'Template Name and Template Path provided, these are mutually exclusive.')
         return 1
 
-    # if no destination_path error
+    if destination_restricted_name and destination_restricted_path:
+        logger.error(f'Destination Restricted Name and Destination Restricted Path provided, these are mutually'
+                     f' exclusive.')
+        return 1
+
+    if template_restricted_name and template_restricted_path:
+        logger.error(f'Template Restricted Name and Template Restricted Path provided, these are mutually exclusive.')
+        return 1
+
+    # need either the template name or path
+    if not template_path and not template_name:
+        logger.error(f'Template Name or Template Path must be specified.')
+        return 1
+
+    if template_name:
+        template_path = registration.get_registered(template_name=template_name)
+
+    if not os.path.isdir(template_path):
+        logger.error(f'Could not find the template {template_name}=>{template_path}')
+        return 1
+
+    # template folder name is now the last component of the template_path
+    template_folder_name = os.path.basename(template_path)
+
+    # the template.json should be in the template_path, make sure it's there a nd valid
+    template_json = f'{template_path}/template.json'
+    if not registration.valid_o3de_template_json(template_json):
+        logger.error(f'Template json {template_path} is invalid.')
+        return 1
+
+    # read in the template.json
+    with open(template_json) as s:
+        try:
+            template_json_data = json.load(s)
+        except Exception as e:
+            logger.error(f'Could read template json {template_json}: {str(e)}.')
+            return 1
+
+    # read template name from the json
+    try:
+        template_name = template_json_data['template_name']
+    except Exception as e:
+        logger.error(f'Could not read "template_name" from template json {template_json}: {str(e)}.')
+        return 1
+
+    # if the user has not specified either a restricted name or restricted path
+    # see if the template itself specifies a restricted name
+    if not template_restricted_name and not template_restricted_path:
+        try:
+            template_json_restricted_name = template_json_data['restricted']
+        except Exception as e:
+            # the template json doesn't have a 'restricted' element warn and use it
+            logger.info(f'The template does not specify a "restricted".')
+        else:
+            template_restricted_name = template_json_restricted_name
+
+    # if no restricted name or path we continue on as if there is no template restricted files.
+    if template_restricted_name or template_restricted_path:
+        # If the user specified a --template-restricted-name we need to check that against the templates
+        # 'restricted' if it has one and see if they match. If they match then we don't have a problem.
+        # If they don't then we error out. If supplied but not present in the template we warn and use it.
+        # If not supplied we set what's in the template. If not supplied and not in the template we continue
+        # on as if there is no template restricted files.
+        if template_restricted_name:
+            # The user specified a --template-restricted-name
+            try:
+                template_json_restricted_name = template_json_data['restricted']
+            except Exception as e:
+                # the template json doesn't have a 'restricted' element warn and use it
+                logger.info(f'The template does not specify a "restricted".'
+                            f' Using supplied {template_restricted_name}')
+            else:
+                if template_json_restricted_name != template_restricted_name:
+                    logger.error(
+                        f'The supplied --template-restricted-name {template_restricted_name} does not match the'
+                        f' templates "restricted". Either the the --template-restricted-name is incorrect or the'
+                        f' templates "restricted" is wrong. Note that since this template specifies "restricted" as'
+                        f' {template_json_restricted_name}, --template-restricted-name need not be supplied.')
+
+            template_restricted_path = registration.get_registered(restricted_name=template_restricted_name)
+        else:
+            # The user has supplied the --template-restricted-path, see if that matches the template specifies.
+            # If it does then we do not have a problem. If it doesn't match then error out. If not specified
+            # in the template then warn and use the --template-restricted-path
+            template_restricted_path = template_restricted_path.replace('\\', '/')
+            try:
+                template_json_restricted_name = template_json_data['restricted']
+            except Exception as e:
+                # the template json doesn't have a 'restricted' element warn and use it
+                logger.info(f'The template does not specify a "restricted".'
+                            f' Using supplied {template_restricted_path}')
+            else:
+                template_json_restricted_path = registration.get_registered(
+                    restricted_name=template_json_restricted_name)
+                if template_json_restricted_path != template_restricted_path:
+                    logger.error(
+                        f'The supplied --template-restricted-path {template_restricted_path} does not match the'
+                        f' templates "restricted" {template_restricted_name} => {template_json_restricted_path}.'
+                        f' Either the the supplied --template-restricted-path is incorrect or the templates'
+                        f' "restricted" is wrong. Note that since this template specifies "restricted" as'
+                        f' {template_json_restricted_name} --template-restricted-path need not be supplied'
+                        f' and {template_json_restricted_path} will be used.')
+                    return 1
+
+        # check and make sure the restricted exists
+        if not os.path.isdir(template_restricted_path):
+            logger.error(f'Template restricted path {template_restricted_path} does not exist.')
+            return 1
+
+        # If the user specified a --template-restricted-platform-relative-path we need to check that against
+        # the templates 'restricted_platform_relative_path' and see if they match. If they match we don't have
+        # a problem. If they don't match then we error out. If supplied but not present in the template we warn
+        # and use --template-restricted-platform-relative-path. If not supplied we set what's in the template.
+        # If not supplied and not in the template set empty string.
+        if template_restricted_platform_relative_path:
+            # The user specified a --template-restricted-platform-relative-path
+            template_restricted_platform_relative_path = template_restricted_platform_relative_path.replace(
+                '\\', '/')
+            try:
+                template_json_restricted_platform_relative_path = template_json_data[
+                    'restricted_platform_relative_path']
+            except Exception as e:
+                # the template json doesn't have a 'restricted_platform_relative_path' element warn and use it
+                logger.info(f'The template does not specify a "restricted_platform_relative_path".'
+                            f' Using {template_restricted_platform_relative_path}')
+            else:
+                # the template has a 'restricted_platform_relative_path', if it matches we are fine, if not
+                # something is wrong with either the --template-restricted-platform-relative or the template is.
+                if template_restricted_platform_relative_path != template_json_restricted_platform_relative_path:
+                    logger.error(f'The supplied --template-restricted-platform-relative-path does not match the'
+                                 f' templates "restricted_platform_relative_path". Either'
+                                 f' --template-restricted-platform-relative-path is incorrect or the templates'
+                                 f' "restricted_platform_relative_path" is wrong. Note that since this template'
+                                 f' specifies "restricted_platform_relative_path" it need not be supplied and'
+                                 f' {template_json_restricted_platform_relative_path} will be used.')
+                    return 1
+    else:
+        # The user has not supplied --template-restricted-platform-relative-path, try to read it from
+        # the template json.
+        try:
+            template_restricted_platform_relative_path = template_json_data[
+                'restricted_platform_relative_path']
+        except Exception as e:
+            # The template json doesn't have a 'restricted_platform_relative_path' element, set empty string.
+            template_restricted_platform_relative_path = ''
+
+    if not template_restricted_platform_relative_path:
+        template_restricted_platform_relative_path = ''
+
+    # if no destination_path, error
     if not destination_path:
-        logger.error('Dst path cannot be empty.')
+        logger.error('Destination path cannot be empty.')
         return 1
     destination_path = destination_path.replace('\\', '/')
-    if not os.path.isabs(destination_path):
-        destination_path = f'{dev_root}/{destination_path}'
+    if os.path.isdir(destination_path):
+        logger.error(f'Destination path {destination_path} already exists.')
+        return 1
+    else:
+        os.makedirs(destination_path)
 
-    # dst name is now the last component of the destination_path
+    # destination name is now the last component of the destination_path
     destination_name = os.path.basename(destination_path)
 
     # destination name cannot be the same as a restricted platform name
@@ -996,40 +1221,31 @@ def create_from_template(dev_root: str,
         logger.error(f'Destination path cannot be a restricted name. {destination_name}')
         return 1
 
-    # if no template_path error
-    if not template_path:
-        logger.error('Template path cannot be empty.')
-        return 1
-    template_path = template_path.replace('\\', '/')
-    if not os.path.isabs(template_path):
-        template_path = f'{dev_root}/Templates/{template_path}'
-    if not os.path.isdir(template_path):
-        logger.error(f'Could not find the template {template_path}')
-        return 1
+    # destination restricted name
+    if destination_restricted_name:
+        destination_restricted_path = registration.get_registered(restricted_name=destination_restricted_name)
 
-    # template name is now the last component of the template_path
-    template_name = os.path.basename(template_path)
-
-    # destination_restricted_path
-    destination_restricted_path = destination_restricted_path.replace('\\', '/')
-    if not os.path.isabs(destination_restricted_path):
-        destination_restricted_path = f'{dev_root}/{destination_restricted_path}'
-    if not os.path.isdir(destination_restricted_path):
-        os.makedirs(destination_restricted_path)
-
-    # template_restricted_path
-    template_restricted_path = template_restricted_path.replace('\\', '/')
-    if not os.path.isabs(template_restricted_path):
-        template_restricted_path = f'{dev_root}/{template_restricted_path}'
-    if not os.path.isdir(template_restricted_path):
-        logger.error(f'Template restricted path {template_restricted_path} is not a folder.')
-        return 1
+    # destination restricted path
+    elif destination_restricted_path:
+        destination_restricted_path = destination_restricted_path.replace('\\', '/')
+        if os.path.isabs(destination_restricted_path):
+            restricted_default_path = registration.get_registered(default='restricted')
+            new_destination_restricted_path = f'{restricted_default_path}/{destination_restricted_path}'
+            logger.info(f'{destination_restricted_path} is not a full path, making it relative'
+                        f' to default restricted path = {new_destination_restricted_path}')
+            destination_restricted_path = new_destination_restricted_path
+    else:
+        restricted_default_path = registration.get_registered(default='restricted')
+        new_destination_restricted_path = f'{restricted_default_path}/{destination_name}'
+        logger.info(f'--destination-restricted-path is not specified, using default restricted path / destination name'
+                    f' = {new_destination_restricted_path}')
+        destination_restricted_path = new_destination_restricted_path
 
     # destination restricted relative
-    destination_restricted_platform_relative_path = destination_restricted_platform_relative_path.replace('\\', '/')
-
-    # template restricted relative
-    template_restricted_platform_relative_path = template_restricted_platform_relative_path.replace('\\', '/')
+    if destination_restricted_platform_relative_path:
+        destination_restricted_platform_relative_path = destination_restricted_platform_relative_path.replace('\\', '/')
+    else:
+        destination_restricted_platform_relative_path = ''
 
     # any user supplied replacements
     replacements = list()
@@ -1043,23 +1259,54 @@ def create_from_template(dev_root: str,
     replacements.append(("${NameUpper}", destination_name.upper()))
     replacements.append(("${NameLower}", destination_name.lower()))
 
-    return _instantiate_template(destination_name,
-                                 template_name,
-                                 destination_path,
-                                 template_path,
-                                 template_restricted_path,
-                                 replacements,
-                                 keep_restricted_in_instance,
-                                 keep_license_text)
+    if _instantiate_template(template_json_data,
+                             destination_name,
+                             template_name,
+                             destination_path,
+                             template_path,
+                             destination_restricted_path,
+                             template_restricted_path,
+                             destination_restricted_platform_relative_path,
+                             template_restricted_platform_relative_path,
+                             replacements,
+                             keep_restricted_in_instance,
+                             keep_license_text):
+        logger.error(f'Instantiation of the template has failed.')
+        return 1
+
+    # We created the destination, now do anything extra that a destination requires
+
+    # If we are not keeping the restricted in the destination read the destination restricted this might be a new
+    # restricted folder, so make sure the restricted has this destinations name
+    # Note there is no linking of non o3de objects to o3de restricted. So this will make no attempt to figure out
+    # if this destination was actually an o3de object and try to alter the <type>.json
+    if not keep_restricted_in_instance:
+        if destination_restricted_path and os.path.isdir(destination_restricted_path):
+            # read the restricted_name from the destination restricted.json
+            restricted_json = f"{destination_restricted_path}/restricted.json".replace('//', '/')
+            if not os.path.isfile(restricted_json):
+                with open(restricted_json, 'w') as s:
+                    restricted_json_data = {}
+                    restricted_json_data.update({'restricted_name': destination_name})
+                    s.write(json.dumps(restricted_json_data, indent=4))
+
+    logger.warning(f'Instantiation successful. NOTE: This is a generic instantiation of the template. If this'
+                   f' was a template of an o3de object like a project, gem, template, etc. then you should have used'
+                   f' specialization that knows how to link that object type via its project.json or gem.json, etc.'
+                   f' Create from template is meant only to instance a template of a non o3de object.')
+
+    return 0
 
 
-def create_project(dev_root: str,
-                   project_path: str,
-                   template_path: str,
-                   project_restricted_path: str = "restricted",
-                   template_restricted_path: str = "restricted",
-                   project_restricted_platform_relative_path: str or None = '',
-                   template_restricted_platform_relative_path: str = "Templates",
+def create_project(project_path: str,
+                   template_path: str = None,
+                   template_name: str = None,
+                   project_restricted_path: str = None,
+                   project_restricted_name: str = None,
+                   template_restricted_path: str = None,
+                   template_restricted_name: str = None,
+                   project_restricted_platform_relative_path: str = None,
+                   template_restricted_platform_relative_path: str = None,
                    keep_restricted_in_project: bool = False,
                    keep_license_text: bool = False,
                    replace: list = None,
@@ -1069,59 +1316,194 @@ def create_project(dev_root: str,
     """
     Template instantiation that make all default assumptions for a Project template instantiation, reducing the effort
         needed in instancing a project
-    :param dev_root: the path to the dev root of the engine
-    :param project_path: the project path, can be absolute or dev_root relative
-    :param template_path: the path to the template you want to instance, can be abs or relative,
-     defaults to DefaultProject
-    :param project_restricted_path: path to the projects restricted folder
-    :param template_restricted_path: path to the templates restricted folder
-    :param project_restricted_platform_relative_path: path to append to the project-restricted-path
-    :param template_restricted_platform_relative_path: path to append to the template_restricted_path
+    :param project_path: the project path, can be absolute or relative to default projects path
+    :param template_path: the path to the template you want to instance, can be absolute or relative to default templates path
+    :param template_name: the name the registered template you want to instance, defaults to DefaultProject
+    :param project_restricted_path: path to the projects restricted folder, can be absolute or relative to the restricted='projects'
+    :param project_restricted_name: name of the registered projects restricted path
+    :param template_restricted_path: templates restricted path can be absolute or relative to restricted='templates'
+    :param template_restricted_name: name of the registered templates restricted path
+    :param project_restricted_platform_relative_path: any path after the platform to append to the project_restricted_path
+    :param template_restricted_platform_relative_path: any path after the platform to append to the template_restricted_path
     :param keep_restricted_in_project: whether or not you want ot keep the templates restricted files in your project or
      separate them out into the restricted folder
     :param keep_license_text: whether or not you want ot keep the templates license text in your instance.
         template can have license blocks starting with {BEGIN_LICENSE} and ending with {END_LICENSE},
         this controls if you want to keep the license text from the template in the new instance. It is false by default
-        because most customers will not want license text in there instances, but we may want to keep them.
+        because most customers will not want license text in their instances, but we may want to keep them.
     :param replace: optional list of strings uses to make concrete names out of templated parameters. X->Y pairs
         Ex. ${Name},TestGem,${Player},TestGemPlayer
         This will cause all references to ${Name} be replaced by TestGem, and all ${Player} replaced by 'TestGemPlayer'
     :param system_component_class_id: optionally specify a uuid for the system component class, default is random uuid
-    :param editor_system_component_class_id: optionally specify a uuid for the editor system component class, default is random uuid
+    :param editor_system_component_class_id: optionally specify a uuid for the editor system component class, default is
+     random uuid
     :param module_id: optionally specify a uuid for the module class, default is random uuid
     :return: 0 for success or non 0 failure code
     """
-    # if no dev root error
-    if not dev_root:
-        logger.error('Dev root cannot be empty.')
-        return 1
-    dev_root = dev_root.replace('\\', '/')
-    if not os.path.isabs(dev_root):
-        dev_root = os.path.abspath(dev_root)
-    if not os.path.isdir(dev_root):
-        logger.error(f'Dev root {dev_root} is not a folder.')
+    if template_name and template_path:
+        logger.error(f'Template Name and Template Path provided, these are mutually exclusive.')
         return 1
 
-    if not template_path:
-        logger.error('Template path cannot be empty.')
+    if project_restricted_name and project_restricted_path:
+        logger.error(f'Project Restricted Name and Project Restricted Path provided, these are mutually exclusive.')
         return 1
-    template_path = template_path.replace('\\', '/')
-    if not os.path.isabs(template_path):
-        template_path = f'{dev_root}/Templates/{template_path}'
+
+    if template_restricted_name and template_restricted_path:
+        logger.error(f'Template Restricted Name and Template Restricted Path provided, these are mutually exclusive.')
+        return 1
+
+    if not template_path and not template_name:
+        template_name = 'DefaultProject'
+
+    if template_name:
+        template_path = registration.get_registered(template_name=template_name)
+
     if not os.path.isdir(template_path):
-        logger.error(f'Could not find the template {template_path}')
+        logger.error(f'Could not find the template {template_name}=>{template_path}')
         return 1
 
-    # template name is now the last component of the template_path
-    template_name = os.path.basename(template_path)
+    # template folder name is now the last component of the template_path
+    template_folder_name = os.path.basename(template_path)
 
-    # project path
+    # the template.json should be in the template_path, make sure it's there and valid
+    template_json = f'{template_path}/template.json'
+    if not registration.valid_o3de_template_json(template_json):
+        logger.error(f'Template json {template_path} is not valid.')
+        return 1
+
+    # read in the template.json
+    with open(template_json) as s:
+        try:
+            template_json_data = json.load(s)
+        except Exception as e:
+            logger.error(f'Could read template json {template_json}: {str(e)}.')
+            return 1
+
+    # read template name from the json
+    try:
+        template_name = template_json_data['template_name']
+    except Exception as e:
+        logger.error(f'Could not read "template_name" from template json {template_json}: {str(e)}.')
+        return 1
+
+    # if the user has not specified either a restricted name or restricted path
+    # see if the template itself specifies a restricted name
+    if not template_restricted_name and not template_restricted_path:
+        try:
+            template_json_restricted_name = template_json_data['restricted']
+        except Exception as e:
+            # the template json doesn't have a 'restricted' element warn and use it
+            logger.info(f'The template does not specify a "restricted".')
+        else:
+            template_restricted_name = template_json_restricted_name
+
+    # if no restricted name or path we continue on as if there is no template restricted files.
+    if template_restricted_name or template_restricted_path:
+        # If the user specified a --template-restricted-name we need to check that against the templates
+        # 'restricted' if it has one and see if they match. If they match then we don't have a problem.
+        # If they don't then we error out. If supplied but not present in the template we warn and use it.
+        # If not supplied we set what's in the template. If not supplied and not in the template we continue
+        # on as if there is no template restricted files.
+        if template_restricted_name:
+            # The user specified a --template-restricted-name
+            try:
+                template_json_restricted_name = template_json_data['restricted']
+            except Exception as e:
+                # the template json doesn't have a 'restricted' element warn and use it
+                logger.info(f'The template does not specify a "restricted".'
+                            f' Using supplied {template_restricted_name}')
+            else:
+                if template_json_restricted_name != template_restricted_name:
+                    logger.error(
+                        f'The supplied --template-restricted-name {template_restricted_name} does not match the'
+                        f' templates "restricted". Either the the --template-restricted-name is incorrect or the'
+                        f' templates "restricted" is wrong. Note that since this template specifies "restricted" as'
+                        f' {template_json_restricted_name}, --template-restricted-name need not be supplied.')
+
+            template_restricted_path = registration.get_registered(restricted_name=template_restricted_name)
+        else:
+            # The user has supplied the --template-restricted-path, see if that matches the template specifies.
+            # If it does then we do not have a problem. If it doesn't match then error out. If not specified
+            # in the template then warn and use the --template-restricted-path
+            template_restricted_path = template_restricted_path.replace('\\', '/')
+            try:
+                template_json_restricted_name = template_json_data['restricted']
+            except Exception as e:
+                # the template json doesn't have a 'restricted' element warn and use it
+                logger.info(f'The template does not specify a "restricted".'
+                            f' Using supplied {template_restricted_path}')
+            else:
+                template_json_restricted_path = registration.get_registered(
+                    restricted_name=template_json_restricted_name)
+                if template_json_restricted_path != template_restricted_path:
+                    logger.error(
+                        f'The supplied --template-restricted-path {template_restricted_path} does not match the'
+                        f' templates "restricted" {template_restricted_name} => {template_json_restricted_path}.'
+                        f' Either the the supplied --template-restricted-path is incorrect or the templates'
+                        f' "restricted" is wrong. Note that since this template specifies "restricted" as'
+                        f' {template_json_restricted_name} --template-restricted-path need not be supplied'
+                        f' and {template_json_restricted_path} will be used.')
+                    return 1
+
+        # check and make sure the restricted exists
+        if not os.path.isdir(template_restricted_path):
+            logger.error(f'Template restricted path {template_restricted_path} does not exist.')
+            return 1
+
+        # If the user specified a --template-restricted-platform-relative-path we need to check that against
+        # the templates 'restricted_platform_relative_path' and see if they match. If they match we don't have
+        # a problem. If they don't match then we error out. If supplied but not present in the template we warn
+        # and use --template-restricted-platform-relative-path. If not supplied we set what's in the template.
+        # If not supplied and not in the template set empty string.
+        if template_restricted_platform_relative_path:
+            # The user specified a --template-restricted-platform-relative-path
+            template_restricted_platform_relative_path = template_restricted_platform_relative_path.replace('\\', '/')
+            try:
+                template_json_restricted_platform_relative_path = template_json_data[
+                    'restricted_platform_relative_path']
+            except Exception as e:
+                # the template json doesn't have a 'restricted_platform_relative_path' element warn and use it
+                logger.info(f'The template does not specify a "restricted_platform_relative_path".'
+                            f' Using {template_restricted_platform_relative_path}')
+            else:
+                # the template has a 'restricted_platform_relative_path', if it matches we are fine, if not
+                # something is wrong with either the --template-restricted-platform-relative or the template is.
+                if template_restricted_platform_relative_path != template_json_restricted_platform_relative_path:
+                    logger.error(f'The supplied --template-restricted-platform-relative-path does not match the'
+                                 f' templates "restricted_platform_relative_path". Either'
+                                 f' --template-restricted-platform-relative-path is incorrect or the templates'
+                                 f' "restricted_platform_relative_path" is wrong. Note that since this template'
+                                 f' specifies "restricted_platform_relative_path" it need not be supplied and'
+                                 f' {template_json_restricted_platform_relative_path} will be used.')
+                    return 1
+        else:
+            # The user has not supplied --template-restricted-platform-relative-path, try to read it from
+            # the template json.
+            try:
+                template_restricted_platform_relative_path = template_json_data[
+                    'restricted_platform_relative_path']
+            except Exception as e:
+                # The template json doesn't have a 'restricted_platform_relative_path' element, set empty string.
+                template_restricted_platform_relative_path = ''
+    if not template_restricted_platform_relative_path:
+        template_restricted_platform_relative_path = ''
+
+    # if no project path, error
     if not project_path:
         logger.error('Project path cannot be empty.')
         return 1
     project_path = project_path.replace('\\', '/')
     if not os.path.isabs(project_path):
-        project_path = f'{dev_root}/{project_path}'
+        default_projects_folder = registration.get_registered(default_folder='projects')
+        new_project_path = f'{default_projects_folder}/{project_path}'
+        logger.info(f'Project Path {project_path} is not a full path, we must assume its relative'
+                    f' to default projects path = {new_project_path}')
+        project_path = new_project_path
+    if os.path.isdir(project_path):
+        logger.error(f'Project path {project_path} already exists.')
+        return 1
+    else:
+        os.makedirs(project_path)
 
     # project name is now the last component of the project_path
     project_name = os.path.basename(project_path)
@@ -1131,26 +1513,31 @@ def create_project(dev_root: str,
         logger.error(f'Project path cannot be a restricted name. {project_name}')
         return 1
 
-    # project_restricted_path
-    project_restricted_path = project_restricted_path.replace('\\', '/')
-    if not os.path.isabs(project_restricted_path):
-        project_restricted_path = f'{dev_root}/{project_restricted_path}'
-    if not os.path.isdir(project_restricted_path):
-        os.makedirs(project_restricted_path)
+    # project restricted name
+    if project_restricted_name:
+        project_restricted_path = registration.get_registered(restricted_name=project_restricted_name)
 
-    # template_restricted_path
-    template_restricted_path = template_restricted_path.replace('\\', '/')
-    if not os.path.isabs(template_restricted_path):
-        template_restricted_path = f'{dev_root}/{template_restricted_path}'
-    if not os.path.isdir(template_restricted_path):
-        logger.error(f'Template restricted path {template_restricted_path} is not a folder.')
-        return 1
+    # project restricted path
+    elif project_restricted_path:
+        project_restricted_path = project_restricted_path.replace('\\', '/')
+        if not os.path.isabs(project_restricted_path):
+            default_projects_restricted_folder = registration.get_registered(restricted_name='projects')
+            new_project_restricted_path = f'{default_projects_restricted_folder}/{project_restricted_path}'
+            logger.info(f'Project restricted path {project_restricted_path} is not a full path, we must assume its'
+                        f' relative to default projects restricted path = {new_project_restricted_path}')
+            project_restricted_path = new_project_restricted_path
+    else:
+        project_restricted_default_path = registration.get_registered(restricted_name='projects')
+        new_project_restricted_path = f'{project_restricted_default_path}/{project_name}'
+        logger.info(f'--project-restricted-path is not specified, using default project restricted path / project name'
+                    f' = {new_project_restricted_path}')
+        project_restricted_path = new_project_restricted_path
 
-    # project restricted relative
-    project_restricted_platform_relative_path = project_restricted_platform_relative_path.replace('\\', '/')
-
-    # template restricted relative
-    template_restricted_platform_relative_path = template_restricted_platform_relative_path.replace('\\', '/')
+    # project restricted relative path
+    if project_restricted_platform_relative_path:
+        project_restricted_platform_relative_path = project_restricted_platform_relative_path.replace('\\', '/')
+    else:
+        project_restricted_platform_relative_path = ''
 
     # any user supplied replacements
     replacements = list()
@@ -1185,14 +1572,15 @@ def create_project(dev_root: str,
     if editor_system_component_class_id:
         if '{' not in editor_system_component_class_id or '-' not in editor_system_component_class_id:
             logger.error(
-                f'Editor System component class id {editor_system_component_class_id} is malformed. Should look like Ex.' +
-                '{b60c92eb-3139-454b-a917-a9d3c5819594}')
+                f'Editor System component class id {editor_system_component_class_id} is malformed. Should look like'
+                f' Ex.' + '{b60c92eb-3139-454b-a917-a9d3c5819594}')
             return 1
         replacements.append(("${EditorSysCompClassId}", editor_system_component_class_id))
     else:
         replacements.append(("${EditorSysCompClassId}", '{' + str(uuid.uuid4()) + '}'))
 
-    if _instantiate_template(project_name,
+    if _instantiate_template(template_json_data,
+                             project_name,
                              template_name,
                              project_path,
                              template_path,
@@ -1202,14 +1590,63 @@ def create_project(dev_root: str,
                              template_restricted_platform_relative_path,
                              replacements,
                              keep_restricted_in_project,
-                             keep_license_text) == 0:
+                             keep_license_text):
+        logger.error(f'Instantiation of the template has failed.')
+        return 1
 
-        # we created the project, now do anything extra that a project requires
+    # We created the project, now do anything extra that a project requires
 
-        # If we do not keep the restricted folders in the project then we have to make sure
-        # the restricted project folder has a CMakeLists.txt file in it so that when the restricted
-        # folders CMakeLists.txt is executed it will find a CMakeLists.txt in the restricted project root
-        if not keep_restricted_in_project:
+    # If we are not keeping the restricted in the project read the name of the restricted folder from the
+    # restricted json and set that as this projects restricted
+    if not keep_restricted_in_project:
+        if project_restricted_path and os.path.isdir(project_restricted_path):
+            # read the restricted_name from the projects restricted.json
+            restricted_json = f"{project_restricted_path}/restricted.json".replace('//', '/')
+            if os.path.isfile(restricted_json):
+                if not registration.valid_o3de_restricted_json(restricted_json):
+                    logger.error(f'Restricted json {restricted_json} is not valid.')
+                    return 1
+            else:
+                with open(restricted_json, 'w') as s:
+                    restricted_json_data = {}
+                    restricted_json_data.update({'restricted_name': project_name})
+                    s.write(json.dumps(restricted_json_data, indent=4))
+
+            with open(restricted_json, 'r') as s:
+                try:
+                    restricted_json_data = json.load(s)
+                except Exception as e:
+                    logger.error(f'Failed to load restricted json {restricted_json}.')
+                    return 1
+
+            try:
+                restricted_name = restricted_json_data["restricted_name"]
+            except Exception as e:
+                logger.error(f'Failed to read "restricted_name" from restricted json {restricted_json}.')
+                return 1
+
+            # set the "restricted": "restricted_name" element of the project.json
+            project_json = f"{project_path}/project.json".replace('//', '/')
+            if not registration.valid_o3de_project_json(project_json):
+                logger.error(f'Project json {project_json} is not valid.')
+                return 1
+
+            with open(project_json, 'r') as s:
+                try:
+                    project_json_data = json.load(s)
+                except Exception as e:
+                    logger.error(f'Failed to load project json {project_json}.')
+                    return 1
+
+            project_json_data.update({"restricted": restricted_name})
+            os.unlink(project_json)
+            with open(project_json, 'w') as s:
+                try:
+                    s.write(json.dumps(project_json_data, indent=4))
+                except Exception as e:
+                    logger.error(f'Failed to write project json {project_json}.')
+                    return 1
+
             for restricted_platform in restricted_platforms:
                 restricted_project = f'{project_restricted_path}/{restricted_platform}/{project_name}'
                 os.makedirs(restricted_project, exist_ok=True)
@@ -1218,25 +1655,38 @@ def create_project(dev_root: str,
                     with open(cmakelists_file_name, 'w') as d:
                         if keep_license_text:
                             d.write('# {BEGIN_LICENSE}\n')
-                            d.write('# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or\n')
+                            d.write('# All or portions of this file Copyright (c) Amazon.com, Inc. or its'
+                                    ' affiliates or\n')
                             d.write('# its licensors.\n')
                             d.write('#\n')
-                            d.write('# For complete copyright and license terms please see the LICENSE at the root of this\n')
-                            d.write('# distribution (the "License"). All use of this software is governed by the License,\n')
-                            d.write('# or, if provided, by the license below or the license accompanying this file. Do not\n')
-                            d.write('# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,\n')
+                            d.write('# For complete copyright and license terms please see the LICENSE at the'
+                                    ' root of this\n')
+                            d.write('# distribution (the "License"). All use of this software is governed by'
+                                    ' the License,\n')
+                            d.write('# or, if provided, by the license below or the license accompanying this'
+                                    ' file. Do not\n')
+                            d.write('# remove or modify any license notices. This file is distributed on an'
+                                    ' "AS IS" BASIS,\n')
                             d.write('# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n')
                             d.write('# {END_LICENSE}\n')
+
+    # copy the o3de_manifest.cmake into the project root
+    engine_path = registration.get_this_engine_path()
+    o3de_manifest_cmake = f'{engine_path}/cmake/o3de_manifest.cmake'
+    shutil.copy(o3de_manifest_cmake, project_path)
+
     return 0
 
 
-def create_gem(dev_root: str,
-               gem_path: str,
-               template_path: str,
-               gem_restricted_path: str,
-               template_restricted_path: str,
-               gem_restricted_platform_relative_path: str or None,
-               template_restricted_platform_relative_path: str,
+def create_gem(gem_path: str,
+               template_path: str = None,
+               template_name: str = None,
+               gem_restricted_path: str = None,
+               gem_restricted_name: str = None,
+               template_restricted_path: str = None,
+               template_restricted_name: str = None,
+               gem_restricted_platform_relative_path: str = None,
+               template_restricted_platform_relative_path: str = None,
                keep_restricted_in_gem: bool = False,
                keep_license_text: bool = False,
                replace: list = None,
@@ -1246,44 +1696,192 @@ def create_gem(dev_root: str,
     """
     Template instantiation that make all default assumptions for a Gem template instantiation, reducing the effort
         needed in instancing a gem
-    :param dev_root: the path to the dev root of the engine
-    :param gem_path: the gem path, can be absolute or dev_root/Gems relative
-    :param gem_restricted_path: the gem restricted path, can be absolute or dev_root/Gems relative
-    :param template_path: the template path you want to instance, abs or dev_root/Templates relative,
-     defaults to DefaultGem
-    :param template_restricted_path: path to the templates restricted folder
+    :param gem_path: the gem path, can be absolute or relative to default gems path
+    :param template_path: the template path you want to instance, can be absolute or relative to default templates path
+    :param template_name: the name of the registered template you want to instance, defaults to DefaultGem
+    :param gem_restricted_path: path to the gems restricted folder, can be absolute or relative to the restricted='gems'
+    :param gem_restricted_name: str = name of the registered gems restricted path
+    :param template_restricted_path: the templates restricted path, can be absolute or relative to the restricted='templates'
+    :param template_restricted_name: name of the registered templates restricted path
+    :param gem_restricted_platform_relative_path: any path after the platform to append to the gem_restricted_path
+    :param template_restricted_platform_relative_path: any path after the platform to append to the template_restricted_path
     :param keep_restricted_in_gem: whether or not you want ot keep the templates restricted files in your instance or
-     seperate them out into the restricted folder
+     separate them out into the restricted folder
     :param keep_license_text: whether or not you want ot keep the templates license text in your instance. template can
      have license blocks starting with {BEGIN_LICENSE} and ending with {END_LICENSE}, this controls if you want to keep
       the license text from the template in the new instance. It is false by default because most customers will not
-       want license text in there instances, but we may want to keep them.
+       want license text in their instances, but we may want to keep them.
     :param replace: optional list of strings uses to make concrete names out of templated parameters. X->Y pairs
         Ex. ${Name},TestGem,${Player},TestGemPlayer
         This will cause all references to ${Name} be replaced by TestGem, and all ${Player} replaced by 'TestGemPlayer'
     :param system_component_class_id: optionally specify a uuid for the system component class, default is random uuid
-    :param editor_system_component_class_id: optionally specify a uuid for the editor system component class, default is random uuid
+    :param editor_system_component_class_id: optionally specify a uuid for the editor system component class, default is
+     random uuid
     :param module_id: optionally specify a uuid for the module class, default is random uuid
     :return: 0 for success or non 0 failure code
     """
-    # if no dev root error
-    if not dev_root:
-        logger.error('Dev root cannot be empty.')
-        return 1
-    dev_root = dev_root.replace('\\', '/')
-    if not os.path.isabs(dev_root):
-        dev_root = os.path.abspath(dev_root)
-    if not os.path.isdir(dev_root):
-        logger.error(f'Dev root {dev_root} is not a folder.')
+    if template_name and template_path:
+        logger.error(f'Template Name and Template Path provided, these are mutually exclusive.')
         return 1
 
-    # if no destination_path error
+    if gem_restricted_name and gem_restricted_path:
+        logger.error(f'Gem Restricted Name and Gem Restricted Path provided, these are mutually exclusive.')
+        return 1
+
+    if template_restricted_name and template_restricted_path:
+        logger.error(f'Template Restricted Name and Template Restricted Path provided, these are mutually exclusive.')
+        return 1
+
+    if not template_name:
+        template_name = 'DefaultGem'
+
+    if template_name:
+        template_path = registration.get_registered(template_name=template_name)
+
+    if not os.path.isdir(template_path):
+        logger.error(f'Could not find the template {template_name}=>{template_path}')
+        return 1
+
+    # template name is now the last component of the template_path
+    template_folder_name = os.path.basename(template_path)
+
+    # the template.json should be in the template_path, make sure it's there and valid
+    template_json = f'{template_path}/template.json'
+    if not registration.valid_o3de_template_json(template_json):
+        logger.error(f'Template json {template_path} is not valid.')
+        return 1
+
+    # read in the template.json
+    with open(template_json) as s:
+        try:
+            template_json_data = json.load(s)
+        except Exception as e:
+            logger.error(f'Could read template json {template_json}: {str(e)}.')
+            return 1
+
+    # read template name from the json
+    try:
+        template_name = template_json_data['template_name']
+    except Exception as e:
+        logger.error(f'Could not read "template_name" from template json {template_json}: {str(e)}.')
+        return 1
+
+    # if the user has not specified either a restricted name or restricted path
+    # see if the template itself specifies a restricted name
+    if not template_restricted_name and not template_restricted_path:
+        try:
+            template_json_restricted_name = template_json_data['restricted']
+        except Exception as e:
+            # the template json doesn't have a 'restricted' element warn and use it
+            logger.info(f'The template does not specify a "restricted".')
+        else:
+            template_restricted_name = template_json_restricted_name
+
+    # if no restricted name or path we continue on as if there is no template restricted files.
+    if template_restricted_name or template_restricted_path:
+        # if the user specified a --template-restricted-name we need to check that against the templates 'restricted'
+        # if it has one and see if they match. If they match then we don't have a problem. If they don't then we error
+        # out. If supplied but not present in the template we warn and use it. If not supplied we set what's in the
+        # template. If not supplied and not in the template we continue on as if there is no template restricted files.
+        if template_restricted_name:
+            # The user specified a --template-restricted-name
+            try:
+                template_json_restricted_name = template_json_data['restricted']
+            except Exception as e:
+                # the template json doesn't have a 'restricted' element warn and use it
+                logger.info(f'The template does not specify a "restricted".'
+                            f' Using supplied {template_restricted_name}')
+            else:
+                if template_json_restricted_name != template_restricted_name:
+                    logger.error(
+                        f'The supplied --template-restricted-name {template_restricted_name} does not match the'
+                        f' templates "restricted". Either the the --template-restricted-name is incorrect or the'
+                        f' templates "restricted" is wrong. Note that since this template specifies "restricted" as'
+                        f' {template_json_restricted_name}, --template-restricted-name need not be supplied.')
+
+            template_restricted_path = registration.get_registered(restricted_name=template_restricted_name)
+        else:
+            # The user has supplied the --template-restricted-path, see if that matches the template specifies.
+            # If it does then we do not have a problem. If it doesn't match then error out. If not specified
+            # in the template then warn and use the --template-restricted-path
+            template_restricted_path = template_restricted_path.replace('\\', '/')
+            try:
+                template_json_restricted_name = template_json_data['restricted']
+            except Exception as e:
+                # the template json doesn't have a 'restricted' element warn and use it
+                logger.info(f'The template does not specify a "restricted".'
+                            f' Using supplied {template_restricted_path}')
+            else:
+                template_json_restricted_path = registration.get_registered(
+                    restricted_name=template_json_restricted_name)
+                if template_json_restricted_path != template_restricted_path:
+                    logger.error(
+                        f'The supplied --template-restricted-path {template_restricted_path} does not match the'
+                        f' templates "restricted" {template_restricted_name} => {template_json_restricted_path}.'
+                        f' Either the the supplied --template-restricted-path is incorrect or the templates'
+                        f' "restricted" is wrong. Note that since this template specifies "restricted" as'
+                        f' {template_json_restricted_name} --template-restricted-path need not be supplied'
+                        f' and {template_json_restricted_path} will be used.')
+                    return 1
+        # check and make sure the restricted path exists
+        if not os.path.isdir(template_restricted_path):
+            logger.error(f'Template restricted path {template_restricted_path} does not exist.')
+            return 1
+
+        # If the user specified a --template-restricted-platform-relative-path we need to check that against
+        # the templates 'restricted_platform_relative_path' and see if they match. If they match we don't have
+        # a problem. If they don't match then we error out. If supplied but not present in the template we warn
+        # and use --template-restricted-platform-relative-path. If not supplied we set what's in the template.
+        # If not supplied and not in the template set empty string.
+        if template_restricted_platform_relative_path:
+            # The user specified a --template-restricted-platform-relative-path
+            template_restricted_platform_relative_path = template_restricted_platform_relative_path.replace('\\', '/')
+            try:
+                template_json_restricted_platform_relative_path = template_json_data[
+                    'restricted_platform_relative_path']
+            except Exception as e:
+                # the template json doesn't have a 'restricted_platform_relative_path' element warn and use it
+                logger.info(f'The template does not specify a "restricted_platform_relative_path".'
+                            f' Using {template_restricted_platform_relative_path}')
+            else:
+                # the template has a 'restricted_platform_relative_path', if it matches we are fine, if not something is
+                # wrong with either the --template-restricted-platform-relative or the template is
+                if template_restricted_platform_relative_path != template_json_restricted_platform_relative_path:
+                    logger.error(f'The supplied --template-restricted-platform-relative-path does not match the'
+                                 f' templates "restricted_platform_relative_path". Either'
+                                 f' --template-restricted-platform-relative-path is incorrect or the templates'
+                                 f' "restricted_platform_relative_path" is wrong. Note that since this template'
+                                 f' specifies "restricted_platform_relative_path" it need not be supplied and'
+                                 f' {template_json_restricted_platform_relative_path} will be used.')
+                    return 1
+        else:
+            # The user has not supplied --template-restricted-platform-relative-path, try to read it from
+            # the template json.
+            try:
+                template_restricted_platform_relative_path = template_json_data[
+                    'restricted_platform_relative_path']
+            except Exception as e:
+                # The template json doesn't have a 'restricted_platform_relative_path' element, set empty string.
+                template_restricted_platform_relative_path = ''
+    if not template_restricted_platform_relative_path:
+        template_restricted_platform_relative_path = ''
+
+    # if no gem_path, error
     if not gem_path:
         logger.error('Gem path cannot be empty.')
         return 1
     gem_path = gem_path.replace('\\', '/')
     if not os.path.isabs(gem_path):
-        gem_path = f'{dev_root}/Gems/{gem_path}'
+        default_gems_folder = registration.get_registered(default_folder='gems')
+        new_gem_path = f'{default_gems_folder}/{gem_path}'
+        logger.info(f'Gem Path {gem_path} is not a full path, we must assume its relative'
+                    f' to default gems path = {new_gem_path}')
+        gem_path = new_gem_path
+    if os.path.isdir(gem_path):
+        logger.error(f'Gem path {gem_path} already exists.')
+        return 1
+    else:
+        os.makedirs(gem_path)
 
     # gem name is now the last component of the gem_path
     gem_name = os.path.basename(gem_path)
@@ -1293,39 +1891,37 @@ def create_gem(dev_root: str,
         logger.error(f'Gem path cannot be a restricted name. {gem_name}')
         return 1
 
-    if not template_path:
-        logger.error('Template path cannot be empty.')
-        return 1
-    template_path = template_path.replace('\\', '/')
-    if not os.path.isabs(template_path):
-        template_path = f'{dev_root}/Templates/{template_path}'
-    if not os.path.isdir(template_path):
-        logger.error(f'Could not find the template {template_path}')
-        return 1
+    # if the user has not specified either a gem restricted name or gem restricted path
+    # see if the template itself specifies a restricted name
+    if not gem_restricted_name and not gem_restricted_path:
+        if template_json_restricted_name:
+            gem_restricted_name = template_json_restricted_name
 
-    # template name is now the last component of the template_path
-    template_name = os.path.basename(template_path)
+    # gem restricted name
+    if gem_restricted_name:
+        gem_restricted_path = registration.get_registered(restricted_name=gem_restricted_name)
 
-    # gem_restricted_path
-    gem_restricted_path = gem_restricted_path.replace('\\', '/')
-    if not os.path.isabs(gem_restricted_path):
-        gem_restricted_path = f'{dev_root}/{gem_restricted_path}'
-    if not os.path.isdir(gem_restricted_path):
-        os.makedirs(gem_restricted_path)
-
-    # template_restricted_path
-    template_restricted_path = template_restricted_path.replace('\\', '/')
-    if not os.path.isabs(template_restricted_path):
-        template_restricted_path = f'{dev_root}/{template_restricted_path}'
-    if not os.path.isdir(template_restricted_path):
-        logger.error(f'Template restricted path {template_restricted_path} is not a folder.')
-        return 1
+    # gem restricted path
+    elif gem_restricted_path:
+        gem_restricted_path = gem_restricted_path.replace('\\', '/')
+        if not os.path.isabs(gem_restricted_path):
+            default_gems_restricted_folder = registration.get_registered(restricted_name='gems')
+            new_gem_restricted_path = f'{default_gems_restricted_folder}/{gem_restricted_path}'
+            logger.info(f'Gem restricted path {gem_restricted_path} is not a full path, we must assume its'
+                        f' relative to default gems restricted path = {new_gem_restricted_path}')
+            gem_restricted_path = new_gem_restricted_path
+    else:
+        gem_restricted_default_path = registration.get_registered(restricted_name='gems')
+        new_gem_restricted_path = f'{gem_restricted_default_path}/{gem_name}'
+        logger.info(f'--gem-restricted-path is not specified, using default gem restricted path / gem name'
+                    f' = {new_gem_restricted_path}')
+        gem_restricted_path = new_gem_restricted_path
 
     # gem restricted relative
-    gem_restricted_platform_relative_path = gem_restricted_platform_relative_path.replace('\\', '/')
-
-    # template restricted relative
-    template_restricted_platform_relative_path = template_restricted_platform_relative_path.replace('\\', '/')
+    if gem_restricted_platform_relative_path:
+        gem_restricted_platform_relative_path = gem_restricted_platform_relative_path.replace('\\', '/')
+    else:
+        gem_restricted_platform_relative_path = ''
 
     # any user supplied replacements
     replacements = list()
@@ -1360,29 +1956,108 @@ def create_gem(dev_root: str,
     if editor_system_component_class_id:
         if '{' not in editor_system_component_class_id or '-' not in editor_system_component_class_id:
             logger.error(
-                f'Editor System component class id {editor_system_component_class_id} is malformed. Should look like Ex.' +
-                '{b60c92eb-3139-454b-a917-a9d3c5819594}')
+                f'Editor System component class id {editor_system_component_class_id} is malformed. Should look like'
+                f' Ex.' + '{b60c92eb-3139-454b-a917-a9d3c5819594}')
             return 1
         replacements.append(("${EditorSysCompClassId}", editor_system_component_class_id))
     else:
         replacements.append(("${EditorSysCompClassId}", '{' + str(uuid.uuid4()) + '}'))
 
-    return _instantiate_template(gem_name,
-                                 template_name,
-                                 gem_path,
-                                 template_path,
-                                 gem_restricted_path,
-                                 template_restricted_path,
-                                 gem_restricted_platform_relative_path,
-                                 template_restricted_platform_relative_path,
-                                 replacements,
-                                 keep_restricted_in_gem,
-                                 keep_license_text)
+    if _instantiate_template(template_json_data,
+                             gem_name,
+                             template_name,
+                             gem_path,
+                             template_path,
+                             gem_restricted_path,
+                             template_restricted_path,
+                             gem_restricted_platform_relative_path,
+                             template_restricted_platform_relative_path,
+                             replacements,
+                             keep_restricted_in_gem,
+                             keep_license_text):
+        logger.error(f'Instantiation of the template has failed.')
+        return 1
+
+    # We created the gem, now do anything extra that a gem requires
+
+    # If we are not keeping the restricted in the gem read the name of the restricted folder from the
+    # restricted json and set that as this gems restricted
+    if not keep_restricted_in_gem:
+        if gem_restricted_path and os.path.isdir(gem_restricted_path):
+            # read the restricted_name from the gems restricted.json
+            restricted_json = f"{gem_restricted_path}/restricted.json".replace('//', '/')
+            if os.path.isfile(restricted_json):
+                if not registration.valid_o3de_restricted_json(restricted_json):
+                    logger.error(f'Restricted json {restricted_json} is not valid.')
+                    return 1
+            else:
+                with open(restricted_json, 'w') as s:
+                    restricted_json_data = {}
+                    restricted_json_data.update({'restricted_name': gem_name})
+                    s.write(json.dumps(restricted_json_data, indent=4))
+
+            with open(restricted_json, 'r') as s:
+                try:
+                    restricted_json_data = json.load(s)
+                except Exception as e:
+                    logger.error(f'Failed to load restricted json {restricted_json}.')
+                    return 1
+
+                try:
+                    restricted_name = restricted_json_data["restricted_name"]
+                except Exception as e:
+                    logger.error(f'Failed to read "restricted_name" from restricted json {restricted_json}.')
+                    return 1
+
+                # set the "restricted": "restricted_name" element of the gem.json
+                gem_json = f"{gem_path}/gem.json".replace('//', '/')
+                if not registration.valid_o3de_gem_json(gem_json):
+                    logger.error(f'Gem json {gem_json} is not valid.')
+                    return 1
+
+                with open(gem_json, 'r') as s:
+                    try:
+                        gem_json_data = json.load(s)
+                    except Exception as e:
+                        logger.error(f'Failed to load gem json {gem_json}.')
+                        return 1
+
+                gem_json_data.update({"restricted": restricted_name})
+                os.unlink(gem_json)
+                with open(gem_json, 'w') as s:
+                    try:
+                        s.write(json.dumps(gem_json_data, indent=4))
+                    except Exception as e:
+                        logger.error(f'Failed to write project json {gem_json}.')
+                        return 1
+
+                for restricted_platform in restricted_platforms:
+                    restricted_gem = f'{gem_restricted_path}/{restricted_platform}/{gem_name}'
+                    os.makedirs(restricted_gem, exist_ok=True)
+                    cmakelists_file_name = f'{restricted_gem}/CMakeLists.txt'
+                    if not os.path.isfile(cmakelists_file_name):
+                        with open(cmakelists_file_name, 'w') as d:
+                            if keep_license_text:
+                                d.write('# {BEGIN_LICENSE}\n')
+                                d.write(
+                                    '# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or\n')
+                                d.write('# its licensors.\n')
+                                d.write('#\n')
+                                d.write(
+                                    '# For complete copyright and license terms please see the LICENSE at the root of this\n')
+                                d.write(
+                                    '# distribution (the "License"). All use of this software is governed by the License,\n')
+                                d.write(
+                                    '# or, if provided, by the license below or the license accompanying this file. Do not\n')
+                                d.write(
+                                    '# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,\n')
+                                d.write('# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n')
+                                d.write('# {END_LICENSE}\n')
+    return 0
 
 
 def _run_create_template(args: argparse) -> int:
-    return create_template(common.determine_engine_root(),
-                           args.source_path,
+    return create_template(args.source_path,
                            args.template_path,
                            args.source_restricted_path,
                            args.template_restricted_path,
@@ -1394,11 +2069,13 @@ def _run_create_template(args: argparse) -> int:
 
 
 def _run_create_from_template(args: argparse) -> int:
-    return create_from_template(common.determine_engine_root(),
-                                args.destination_path,
+    return create_from_template(args.destination_path,
                                 args.template_path,
+                                args.template_name,
                                 args.destination_restricted_path,
+                                args.destination_restricted_name,
                                 args.template_restricted_path,
+                                args.template_restricted_name,
                                 args.destination_restricted_platform_relative_path,
                                 args.template_restricted_platform_relative_path,
                                 args.keep_restricted_in_instance,
@@ -1407,11 +2084,13 @@ def _run_create_from_template(args: argparse) -> int:
 
 
 def _run_create_project(args: argparse) -> int:
-    return create_project(common.determine_engine_root(),
-                          args.project_path,
+    return create_project(args.project_path,
                           args.template_path,
+                          args.template_name,
                           args.project_restricted_path,
+                          args.project_restricted_name,
                           args.template_restricted_path,
+                          args.template_restricted_name,
                           args.project_restricted_platform_relative_path,
                           args.template_restricted_platform_relative_path,
                           args.keep_restricted_in_project,
@@ -1423,11 +2102,13 @@ def _run_create_project(args: argparse) -> int:
 
 
 def _run_create_gem(args: argparse) -> int:
-    return create_gem(common.determine_engine_root(),
-                      args.gem_path,
+    return create_gem(args.gem_path,
                       args.template_path,
+                      args.template_name,
                       args.gem_restricted_path,
+                      args.gem_restricted_name,
                       args.template_restricted_path,
+                      args.template_restricted_name,
                       args.gem_restricted_platform_relative_path,
                       args.template_restricted_platform_relative_path,
                       args.keep_restricted_in_gem,
@@ -1452,49 +2133,43 @@ def add_args(parser, subparsers) -> None:
     # turn a directory into a template
     create_template_subparser = subparsers.add_parser('create-template')
     create_template_subparser.add_argument('-sp', '--source-path', type=str, required=True,
-                                           help='The path to the source that you want to make into a template,'
-                                                ' can be absolute or dev root relative.'
-                                                'Ex. C:/o3de/Test'
-                                                'Test = <source_name>')
+                                           help='The path to the source that you want to make into a template')
+    create_template_subparser.add_argument('-tp', '--template-path', type=str, required=False,
+                                           help='The path to the template to create, can be absolute or relative'
+                                                ' to default templates path')
     create_template_subparser.add_argument('-srp', '--source-restricted-path', type=str, required=False,
-                                           default='restricted',
-                                           help='The path to the src restricted folder if any to read from, can be'
-                                                ' absolute or dev root relative, default is the dev root/restricted.')
-    create_template_subparser.add_argument('-srprp', '--source-restricted-platform-relative-path', type=str, required=False,
-                                           default='',
+                                           default=None,
+                                           help='The path to the source restricted folder.')
+    create_template_subparser.add_argument('-trp', '--template-restricted-path', type=str, required=False,
+                                           default=None,
+                                           help='The path to the templates restricted folder.')
+    create_template_subparser.add_argument('-srprp', '--source-restricted-platform-relative-path', type=str,
+                                           required=False,
+                                           default=None,
                                            help='Any path to append to the --source-restricted-path/<platform>'
-                                                ' to where the restricted source is.'
+                                                ' to where the restricted source is. EX.'
                                                 ' --source-restricted-path C:/restricted'
                                                 ' --source-restricted-platform-relative-path some/folder'
                                                 ' => C:/restricted/<platform>/some/folder/<source_name>')
-    create_template_subparser.add_argument('-tp', '--template-path', type=str, required=False,
-                                           help='The path to the template you wish to create,'
-                                                ' can be absolute or dev root/Templates relative, default is'
-                                                ' source_name which is the last component of source path'
-                                                ' Ex. C:/o3de/TestTemplate'
-                                                ' Test = <template_name>')
-    create_template_subparser.add_argument('-trp', '--template-restricted-path', type=str, required=False,
-                                           default='restricted',
-                                           help='The path to where to put the templates restricted folders write to if'
-                                                ' any, can be absolute or dev root relative, default is'
-                                                ' dev root/restricted.')
     create_template_subparser.add_argument('-trprp', '--template-restricted-platform-relative-path', type=str,
-                                            required=False,
-                                            default='Templates',
-                                            help='Any path to append to the --template-restricted-path/<platform>'
-                                                 ' to where the restricted template source is.'
-                                                 ' --template-restricted-path C:/restricted'
-                                                 ' --template-restricted-platform-relative-path some/folder'
-                                                 ' => C:/restricted/<platform>/some/folder/<template_name>')
+                                           required=False,
+                                           default=None,
+                                           help='Any path to append to the --template-restricted-path/<platform>'
+                                                ' to where the restricted template source is.'
+                                                ' --template-restricted-path C:/restricted'
+                                                ' --template-restricted-platform-relative-path some/folder'
+                                                ' => C:/restricted/<platform>/some/folder/<template_name>')
     create_template_subparser.add_argument('-kr', '--keep-restricted-in-template', action='store_true',
                                            default=False,
                                            help='Should the template keep the restricted platforms in the template, or'
                                                 ' create the restricted files in the restricted folder, default is'
-                                                ' False')
+                                                ' False so it will create a restricted folder by default')
     create_template_subparser.add_argument('-kl', '--keep-license-text', action='store_true',
                                            default=False,
-                                           help='Should license text be kept in the instantiation,'
-                                                ' default is False')
+                                           help='Should license in the template files text be kept in the instantiation,'
+                                                ' default is False, so will not keep license text by default.'
+                                                ' License text is defined as all lines of text starting on a line'
+                                                ' with {BEGIN_LICENSE} and ending line {END_LICENSE}.')
     create_template_subparser.add_argument('-r', '--replace', type=str, required=False,
                                            nargs='*',
                                            help='String that specifies A->B replacement pairs.'
@@ -1505,34 +2180,49 @@ def add_args(parser, subparsers) -> None:
                                                 ' Note: <TEMPLATENAME> is automatically ${NameUpper}')
     create_template_subparser.set_defaults(func=_run_create_template)
 
-    # creation from a template
+    # create from template
     create_from_template_subparser = subparsers.add_parser('create-from-template')
     create_from_template_subparser.add_argument('-dp', '--destination-path', type=str, required=True,
                                                 help='The path to where you want the template instantiated,'
                                                      ' can be absolute or dev root relative.'
                                                      'Ex. C:/o3de/Test'
                                                      'Test = <destination_name>')
-    create_from_template_subparser.add_argument('-drp', '--destination-restricted-path', type=str, required=False,
-                                                default='restricted',
-                                                help='The path to the dst restricted folder to read from if any, can be'
-                                                     ' absolute or dev root relative. default is dev root/restricted')
-    create_from_template_subparser.add_argument('-drprp', '--destination-restricted-platform-relative-path', type=str, required=False,
+
+    group = create_from_template_subparser.add_mutually_exclusive_group(required=True)
+    group.add_argument('-tp', '--template-path', type=str, required=False,
+                       help='The path to the template you want to instantiate, can be absolute'
+                            ' or dev root/Templates relative.'
+                            'Ex. C:/o3de/Template/TestTemplate'
+                            'TestTemplate = <template_name>')
+    group.add_argument('-tn', '--template-name', type=str, required=False,
+                       help='The name to the registered template you want to instantiate.')
+
+    group = create_from_template_subparser.add_mutually_exclusive_group(required=True)
+    group.add_argument('-drp', '--destination-restricted-path', type=str, required=False,
+                       default=None,
+                       help='The destination restricted path is where the restricted files'
+                            ' will be written to.')
+    group.add_argument('-drn', '--destination-restricted-name', type=str, required=False,
+                       default=None,
+                       help='The name the registered restricted path where the restricted files'
+                            ' will be written to.')
+
+    group = create_from_template_subparser.add_mutually_exclusive_group(required=False)
+    group.add_argument('-trp', '--template-restricted-path', type=str, required=False,
+                       default=None,
+                       help='The template restricted path to read from if any')
+    group.add_argument('-trn', '--template-restricted-name', type=str, required=False,
+                       default=None,
+                       help='The name of the registered restricted path to read from if any.')
+
+    create_from_template_subparser.add_argument('-drprp', '--destination-restricted-platform-relative-path', type=str,
+                                                required=False,
                                                 default='',
                                                 help='Any path to append to the --destination-restricted-path/<platform>'
-                                                    ' to where the restricted destination is.'
-                                                    ' --destination-restricted-path C:/instance'
-                                                    ' --destination-restricted-platform-relative-path some/folder'
-                                                    ' => C:/instance/<platform>/some/folder/<destination_name>')
-    create_from_template_subparser.add_argument('-tp', '--template-path', type=str, required=True,
-                                                help='The path to the template you want to instantiate, can be absolute'
-                                                     ' or dev root/Templates relative.'
-                                                     'Ex. C:/o3de/Template/TestTemplate'
-                                                     'TestTemplate = <template_name>')
-    create_from_template_subparser.add_argument('-trp', '--template-restricted-path', type=str, required=False,
-                                                default='restricted',
-                                                help='The path to the template restricted folder to write to if any,'
-                                                     ' can be absolute or dev root relative, default is'
-                                                     ' dev root/restricted')
+                                                     ' to where the restricted destination is.'
+                                                     ' --destination-restricted-path C:/instance'
+                                                     ' --destination-restricted-platform-relative-path some/folder'
+                                                     ' => C:/instance/<platform>/some/folder/<destination_name>')
     create_from_template_subparser.add_argument('-trprp', '--template-restricted-platform-relative-path', type=str,
                                                 required=False,
                                                 default='Templates',
@@ -1548,8 +2238,10 @@ def add_args(parser, subparsers) -> None:
                                                      ' is False')
     create_from_template_subparser.add_argument('-kl', '--keep-license-text', action='store_true',
                                                 default=False,
-                                                help='Should license text be kept in the instantiation,'
-                                                     ' default is False')
+                                                help='Should license in the template files text be kept in the instantiation,'
+                                                     ' default is False, so will not keep license text by default.'
+                                                     ' License text is defined as all lines of text starting on a line'
+                                                     ' with {BEGIN_LICENSE} and ending line {END_LICENSE}.')
     create_from_template_subparser.add_argument('-r', '--replace', type=str, required=False,
                                                 nargs='*',
                                                 help='String that specifies A->B replacement pairs.'
@@ -1567,31 +2259,46 @@ def add_args(parser, subparsers) -> None:
                                                ' can be an absolute path or dev root relative.'
                                                ' Ex. C:/o3de/TestProject'
                                                ' TestProject = <project_name>')
-    create_project_subparser.add_argument('-prp', '--project-restricted-path', type=str, required=False,
-                                          default='restricted',
-                                          help='The path to the project restricted folder to write to if any, can be'
-                                               ' absolute or dev root relative, default is dev root/restricted')
+
+    group = create_project_subparser.add_mutually_exclusive_group(required=False)
+    group.add_argument('-tp', '--template-path', type=str, required=False,
+                       default=None,
+                       help='the path to the template you want to instance, can be absolute or'
+                            ' relative to default templates path')
+    group.add_argument('-tn', '--template-name', type=str, required=False,
+                       default=None,
+                       help='The name the registered template you want to instance, defaults'
+                            ' to DefaultProject')
+
+    group = create_project_subparser.add_mutually_exclusive_group(required=False)
+    group.add_argument('-prp', '--project-restricted-path', type=str, required=False,
+                       default=None,
+                       help='path to the projects restricted folder, can be absolute or relative'
+                            ' to the restricted="projects"')
+    group.add_argument('-prn', '--project-restricted-name', type=str, required=False,
+                       default=None,
+                       help='The name of the registered projects restricted path')
+
+    group = create_project_subparser.add_mutually_exclusive_group(required=False)
+    group.add_argument('-trp', '--template-restricted-path', type=str, required=False,
+                       default=None,
+                       help='The templates restricted path can be absolute or relative to'
+                            ' restricted="templates"')
+    group.add_argument('-trn', '--template-restricted-name', type=str, required=False,
+                       default=None,
+                       help='The name of the registered templates restricted path')
+
     create_project_subparser.add_argument('-prprp', '--project-restricted-platform-relative-path', type=str,
                                           required=False,
-                                          default='',
+                                          default=None,
                                           help='Any path to append to the --project-restricted-path/<platform>'
                                                ' to where the restricted project is.'
                                                ' --project-restricted-path C:/restricted'
                                                ' --project-restricted-platform-relative-path some/folder'
                                                ' => C:/restricted/<platform>/some/folder/<project_name>')
-    create_project_subparser.add_argument('-tp', '--template-path', type=str, required=False,
-                                          default='DefaultProject',
-                                          help='The path to the template you want to instantiate, can be absolute'
-                                               ' or dev root/Templates relative, defaults to the DefaultProject.'
-                                               ' Ex. C:/o3de/Template/TestTemplate'
-                                               ' TestTemplate = <template_name>')
-    create_project_subparser.add_argument('-trp', '--template-restricted-path', type=str, required=False,
-                                          default='restricted',
-                                          help='The path to the template restricted folder to read from if any, can be'
-                                               ' absolute or dev root relative, default is dev root/restricted')
     create_project_subparser.add_argument('-trprp', '--template-restricted-platform-relative-path', type=str,
                                           required=False,
-                                          default='Templates',
+                                          default=None,
                                           help='Any path to append to the --template-restricted-path/<platform>'
                                                ' to where the restricted template is.'
                                                ' --template-restricted-path C:/restricted'
@@ -1603,7 +2310,10 @@ def add_args(parser, subparsers) -> None:
                                                'create the restricted files in the restricted folder, default is False')
     create_project_subparser.add_argument('-kl', '--keep-license-text', action='store_true',
                                           default=False,
-                                          help='Should license text be kept in the instantiation, default is False')
+                                          help='Should license in the template files text be kept in the instantiation,'
+                                               ' default is False, so will not keep license text by default.'
+                                               ' License text is defined as all lines of text starting on a line'
+                                               ' with {BEGIN_LICENSE} and ending line {END_LICENSE}.')
     create_project_subparser.add_argument('-r', '--replace', required=False,
                                           nargs='*',
                                           help='String that specifies ADDITIONAL A->B replacement pairs. ${Name} and'
@@ -1618,9 +2328,10 @@ def add_args(parser, subparsers) -> None:
     create_project_subparser.add_argument('--system-component-class-id', type=utils.validate_uuid4, required=False,
                                           help='The uuid you want to associate with the system class component, default'
                                                ' is a random uuid Ex. {b60c92eb-3139-454b-a917-a9d3c5819594}')
-    create_project_subparser.add_argument('--editor-system-component-class-id', type=utils.validate_uuid4, required=False,
-                                          help='The uuid you want to associate with the editor system class component, default'
-                                               ' is a random uuid Ex. {b60c92eb-3139-454b-a917-a9d3c5819594}')
+    create_project_subparser.add_argument('--editor-system-component-class-id', type=utils.validate_uuid4,
+                                          required=False,
+                                          help='The uuid you want to associate with the editor system class component,'
+                                               ' default is a random uuid Ex. {b60c92eb-3139-454b-a917-a9d3c5819594}')
     create_project_subparser.add_argument('--module-id', type=utils.validate_uuid4, required=False,
                                           help='The uuid you want to associate with the module, default is a random'
                                                ' uuid Ex. {b60c92eb-3139-454b-a917-a9d3c5819594}')
@@ -1629,33 +2340,48 @@ def add_args(parser, subparsers) -> None:
     # creation of a gem from a template (like create from template but makes gem assumptions)
     create_gem_subparser = subparsers.add_parser('create-gem')
     create_gem_subparser.add_argument('-gp', '--gem-path', type=str, required=True,
-                                      help='The path to the gem you want to create, can be absolute or dev root/Gems'
-                                           ' relative.'
-                                           ' Ex. C:/o3de/TestGem'
-                                           ' TestGem = <gem_name>')
-    create_gem_subparser.add_argument('-grp', '--gem-restricted-path', type=str, required=False,
-                                      default='restricted',
-                                      help='The path to the gem restricted to write to folder if any, can be'
-                                           'absolute or dev root relative, default is dev root/restricted.')
+                                      help='The gem path, can be absolute or relative to default gems path')
+
+    group = create_gem_subparser.add_mutually_exclusive_group(required=False)
+    group.add_argument('-tp', '--template-path', type=str, required=False,
+                       default=None,
+                       help='The template path you want to instance, can be absolute or relative'
+                            ' to default templates path')
+    group.add_argument('-tn', '--template-name', type=str, required=False,
+                       default=None,
+                       help='The name of the registered template you want to instance, defaults'
+                            ' to DefaultGem.')
+
+    group = create_gem_subparser.add_mutually_exclusive_group(required=False)
+    group.add_argument('-grp', '--gem-restricted-path', type=str, required=False,
+                       default=None,
+                       help='The path to the gem restricted to write to folder if any, can be'
+                            'absolute or dev root relative, default is dev root/restricted.')
+    group.add_argument('-grn', '--gem-restricted-name', type=str, required=False,
+                       default=None,
+                       help='The path to the gem restricted to write to folder if any, can be'
+                            'absolute or dev root relative, default is dev root/restricted.')
+
+    group = create_gem_subparser.add_mutually_exclusive_group(required=False)
+    group.add_argument('-trp', '--template-restricted-path', type=str, required=False,
+                       default=None,
+                       help='The templates restricted path, can be absolute or relative to'
+                            ' the restricted="templates"')
+    group.add_argument('-trn', '--template-restricted-name', type=str, required=False,
+                       default=None,
+                       help='The name of the registered templates restricted path.')
+
     create_gem_subparser.add_argument('-grprp', '--gem-restricted-platform-relative-path', type=str,
                                       required=False,
-                                      default='Gems',
+                                      default=None,
                                       help='Any path to append to the --gem-restricted-path/<platform>'
                                            ' to where the restricted template is.'
                                            ' --gem-restricted-path C:/restricted'
                                            ' --gem-restricted-platform-relative-path some/folder'
                                            ' => C:/restricted/<platform>/some/folder/<gem_name>')
-    create_gem_subparser.add_argument('-tp', '--template-path', type=str, required=False,
-                                      default='DefaultGem',
-                                      help='The path to the template you want to instantiate, can be absolute or'
-                                           ' relative to the dev root/Templates. Default is DefaultGem.')
-    create_gem_subparser.add_argument('-trp', '--template-restricted-path', type=str, required=False,
-                                      default='restricted',
-                                      help='The path to the gem restricted folder to read from if any, can be'
-                                           'absolute or dev root relative, default is dev root/restricted.')
     create_gem_subparser.add_argument('-trprp', '--template-restricted-platform-relative-path', type=str,
                                       required=False,
-                                      default='Templates',
+                                      default=None,
                                       help='Any path to append to the --template-restricted-path/<platform>'
                                            ' to where the restricted template is.'
                                            ' --template-restricted-path C:/restricted'
@@ -1678,14 +2404,17 @@ def add_args(parser, subparsers) -> None:
                                            'create the restricted files in the restricted folder, default is False')
     create_gem_subparser.add_argument('-kl', '--keep-license-text', action='store_true',
                                       default=False,
-                                      help='Should license text be kept in the instantiation, default is False')
+                                      help='Should license in the template files text be kept in the instantiation,'
+                                           ' default is False, so will not keep license text by default.'
+                                           ' License text is defined as all lines of text starting on a line'
+                                           ' with {BEGIN_LICENSE} and ending line {END_LICENSE}.')
     create_gem_subparser.add_argument('--system-component-class-id', type=utils.validate_uuid4, required=False,
                                       help='The uuid you want to associate with the system class component, default'
                                            ' is a random uuid Ex. {b60c92eb-3139-454b-a917-a9d3c5819594}')
     create_gem_subparser.add_argument('--editor-system-component-class-id', type=utils.validate_uuid4,
                                       required=False,
-                                      help='The uuid you want to associate with the editor system class component, default'
-                                           ' is a random uuid Ex. {b60c92eb-3139-454b-a917-a9d3c5819594}')
+                                      help='The uuid you want to associate with the editor system class component,'
+                                           ' default is a random uuid Ex. {b60c92eb-3139-454b-a917-a9d3c5819594}')
     create_gem_subparser.add_argument('--module-id', type=utils.validate_uuid4, required=False,
                                       help='The uuid you want to associate with the gem module,'
                                            ' default is a random uuid Ex. {b60c92eb-3139-454b-a917-a9d3c5819594}')

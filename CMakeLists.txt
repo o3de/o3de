@@ -23,13 +23,38 @@ endif()
 
 include(cmake/Version.cmake)
 
+# Set the engine_path and engine_json
+set(o3de_engine_path ${CMAKE_CURRENT_LIST_DIR})
+set(o3de_engine_json ${o3de_engine_path}/engine.json)
+
 if(NOT PROJECT_NAME)
     project(O3DE
         LANGUAGES C CXX
         VERSION ${LY_VERSION_STRING}
     )
+
+    set(INSTALLED_ENGINE FALSE)
+    # o3de manifest
+    include(cmake/o3de_manifest.cmake)
 endif()
 
+################################################################################
+# Resolve this engines name and restricted path
+################################################################################
+o3de_engine_name(${o3de_engine_json} o3de_engine_name)
+o3de_restricted_path(${o3de_engine_json} o3de_engine_restricted_path)
+message(STATUS "O3DE Engine Name: ${o3de_engine_name}")
+message(STATUS "O3DE Engine Path: ${o3de_engine_path}")
+if(${o3de_engine_restricted_path})
+    message(STATUS "Engine Restricted Path: ${o3de_engine_restricted_path}")
+endif()
+
+# add the engines cmake folder to the CMAKE_MODULE_PATH
+list(APPEND CMAKE_MODULE_PATH "${o3de_engine_path}/cmake")
+
+################################################################################
+# Initialize
+################################################################################
 include(cmake/Initialize.cmake)
 include(cmake/FileUtil.cmake)
 include(cmake/PAL.cmake)
@@ -58,18 +83,34 @@ include(cmake/Projects.cmake)
 if(NOT INSTALLED_ENGINE)
     # Add the rest of the targets
     add_subdirectory(Code)
-    add_subdirectory(Gems)
 else()
     ly_find_o3de_packages()
 endif()
+
+# Add external subdirectories listed in the manifest
+list(APPEND LY_EXTERNAL_SUBDIRS ${o3de_engine_external_subdirectories})
 
 set(enabled_platforms
     ${PAL_PLATFORM_NAME}
     ${LY_PAL_TOOLS_ENABLED})
 
+################################################################################
+# Add each restricted platform in the engines restricted folder
+# If the enabled restricted platform does not have a folder add one. If the
+# restricted platform folder does not have a CMakeLists.txt, create one so the
+# add_subdirectory on the external folder does not fail.
+################################################################################
 foreach(restricted_platform ${PAL_RESTRICTED_PLATFORMS})
     if(restricted_platform IN_LIST enabled_platforms)
-        add_subdirectory(restricted/${restricted_platform})
+        set(o3de_engine_restricted_platform_folder ${o3de_engine_restricted_path}/${restricted_platform})
+        if(NOT EXISTS ${o3de_engine_restricted_platform_folder})
+            file(MAKE_DIRECTORY ${o3de_engine_restricted_platform_folder})
+        endif()
+        set(o3de_engine_restricted_platform_folder_cmakelists ${o3de_engine_restricted_platform_folder}/CMakeLists.txt)
+        if(NOT EXISTS ${o3de_engine_restricted_platform_folder_cmakelists})
+            file(TOUCH ${o3de_engine_restricted_platform_folder_cmakelists})
+        endif()
+        list(APPEND LY_EXTERNAL_SUBDIRS ${o3de_engine_restricted_platform_folder})
     endif()
 endforeach()
 
