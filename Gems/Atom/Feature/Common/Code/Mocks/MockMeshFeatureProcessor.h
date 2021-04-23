@@ -33,11 +33,12 @@ namespace UnitTest
         MOCK_CONST_METHOD1(GetMaterialAssignmentMap, const AZ::Render::MaterialAssignmentMap&(const MeshHandle&));
         MOCK_METHOD2(ConnectModelChangeEventHandler, void(const MeshHandle&, ModelChangedEvent::Handler&));
         MOCK_METHOD1(SetRequiresCloningCallback, void(const AZStd::function<bool(const AZ::Data::Asset<AZ::RPI::ModelAsset>&)>&));
-        MOCK_METHOD2(SetTransform, void(const MeshHandle&, const AZ::Transform&));
+        MOCK_METHOD3(SetTransform, void(const MeshHandle&, const AZ::Transform&, const AZ::Vector3&));
         MOCK_METHOD2(SetExcludeFromReflectionCubeMaps, void(const MeshHandle&, bool));
         MOCK_METHOD2(SetMaterialAssignmentMap, void(const MeshHandle&, const AZ::Data::Instance<AZ::RPI::Material>&));
         MOCK_METHOD2(SetMaterialAssignmentMap, void(const MeshHandle&, const AZ::Render::MaterialAssignmentMap&));
-        MOCK_METHOD1(GetTransform, AZ::Transform (const MeshHandle&));
+        MOCK_METHOD1(GetTransform, AZ::Transform(const MeshHandle&));
+        MOCK_METHOD1(GetNonUniformScale, AZ::Vector3(const MeshHandle&));
         MOCK_METHOD2(SetSortKey, void (const MeshHandle&, AZ::RHI::DrawItemSortKey));
         MOCK_METHOD1(GetSortKey, AZ::RHI::DrawItemSortKey(const MeshHandle&));
         MOCK_METHOD2(SetLodOverride, void(const MeshHandle&, AZ::RPI::Cullable::LodOverride));

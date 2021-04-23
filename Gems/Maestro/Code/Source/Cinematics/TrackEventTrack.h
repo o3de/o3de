@@ -78,7 +78,7 @@ public:
     void SetKey(int index, IKey* key);
     void InitPostLoad(IAnimSequence* sequence) override;
 
-    static void Reflect(AZ::SerializeContext* serializeContext);
+    static void Reflect(AZ::ReflectContext* context);
 
 private:
     AZStd::intrusive_ptr< IAnimStringTable> m_pStrings;

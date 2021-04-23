@@ -272,17 +272,32 @@ bool CAnimNode::RemoveTrack(IAnimTrack* pTrack)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CAnimNode::Reflect(AZ::SerializeContext* serializeContext)
+static bool AnimNodeVersionConverter(
+    AZ::SerializeContext& serializeContext,
+    AZ::SerializeContext::DataElementNode& rootElement)
 {
-    serializeContext->Class<CAnimNode>()
-        ->Version(2)
-        ->Field("ID", &CAnimNode::m_id)
-        ->Field("Name", &CAnimNode::m_name)
-        ->Field("Flags", &CAnimNode::m_flags)
-        ->Field("Tracks", &CAnimNode::m_tracks)
-        ->Field("Parent", &CAnimNode::m_parentNodeId)
-        ->Field("Type", &CAnimNode::m_nodeType)
-        ->Field("Expanded", &CAnimNode::m_expanded);    
+    if (rootElement.GetVersion() < 3)
+    {
+        rootElement.AddElement(serializeContext, "BaseClass1", azrtti_typeid<IAnimNode>());
+    }
+
+    return true;
+}
+
+void CAnimNode::Reflect(AZ::ReflectContext* context)
+{
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<CAnimNode, IAnimNode>()
+            ->Version(3, &AnimNodeVersionConverter)
+            ->Field("ID", &CAnimNode::m_id)
+            ->Field("Name", &CAnimNode::m_name)
+            ->Field("Flags", &CAnimNode::m_flags)
+            ->Field("Tracks", &CAnimNode::m_tracks)
+            ->Field("Parent", &CAnimNode::m_parentNodeId)
+            ->Field("Type", &CAnimNode::m_nodeType)
+            ->Field("Expanded", &CAnimNode::m_expanded);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////

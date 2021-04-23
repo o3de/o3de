@@ -171,7 +171,7 @@ private:
 
     bool AddObjectsFromSequence(CTrackViewSequence* pSequence, XmlNodeRef seqNode = 0);
     bool IsDuplicateObjectBeingAdded(const QString& newObject);
-    void SetFBXExportSettings(bool bLocalCoordsToSelectedObject, bool bExportOnlyMasterCamera, const float fps);
+    void SetFBXExportSettings(bool bLocalCoordsToSelectedObject, bool bExportOnlyPrimaryCamera, const float fps);
     bool ProcessObjectsForExport();
 
     bool ShowFBXExportDialog();
@@ -193,13 +193,13 @@ private:
 
     float m_FBXBakedExportFPS;
     bool m_bExportLocalCoords;
-    bool m_bExportOnlyMasterCamera;
+    bool m_bExportOnlyPrimaryCamera;
     int m_numberOfExportFrames;
     CEntityObject* m_pivotEntityObject;
     bool m_bBakedKeysSequenceExport;
 
-    QString m_animTimeExportMasterSequenceName;
-    float m_animTimeExportMasterSequenceCurrentTime;
+    QString m_animTimeExportPrimarySequenceName;
+    float m_animTimeExportPrimarySequenceCurrentTime;
     XmlNodeRef m_animTimeNode;
 
     bool m_animKeyTimeExport;

@@ -63,23 +63,41 @@ void CSelectTrack::GetKeyInfo(int key, const char*& description, float& duration
 }
 
 //////////////////////////////////////////////////////////////////////////
-template<>
-inline void TAnimTrack<ISelectKey>::Reflect(AZ::SerializeContext* serializeContext)
+static bool SelectTrackVersionConverter(
+    AZ::SerializeContext& serializeContext,
+    AZ::SerializeContext::DataElementNode& rootElement)
 {
-    serializeContext->Class<TAnimTrack<ISelectKey> >()
-        ->Version(2)
-        ->Field("Flags", &TAnimTrack<ISelectKey>::m_flags)
-        ->Field("Range", &TAnimTrack<ISelectKey>::m_timeRange)
-        ->Field("ParamType", &TAnimTrack<ISelectKey>::m_nParamType)
-        ->Field("Keys", &TAnimTrack<ISelectKey>::m_keys)
-        ->Field("Id", &TAnimTrack<ISelectKey>::m_id);
+    if (rootElement.GetVersion() < 3)
+    {
+        rootElement.AddElement(serializeContext, "BaseClass1", azrtti_typeid<IAnimTrack>());
+    }
+
+    return true;
+}
+
+template<>
+inline void TAnimTrack<ISelectKey>::Reflect(AZ::ReflectContext* context)
+{
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<TAnimTrack<ISelectKey>, IAnimTrack>()
+            ->Version(3, &SelectTrackVersionConverter)
+            ->Field("Flags", &TAnimTrack<ISelectKey>::m_flags)
+            ->Field("Range", &TAnimTrack<ISelectKey>::m_timeRange)
+            ->Field("ParamType", &TAnimTrack<ISelectKey>::m_nParamType)
+            ->Field("Keys", &TAnimTrack<ISelectKey>::m_keys)
+            ->Field("Id", &TAnimTrack<ISelectKey>::m_id);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CSelectTrack::Reflect(AZ::SerializeContext* serializeContext)
+void CSelectTrack::Reflect(AZ::ReflectContext* context)
 {
-    TAnimTrack<ISelectKey>::Reflect(serializeContext);
+    TAnimTrack<ISelectKey>::Reflect(context);
 
-    serializeContext->Class<CSelectTrack, TAnimTrack<ISelectKey> >()
-        ->Version(1);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<CSelectTrack, TAnimTrack<ISelectKey>>()
+            ->Version(1);
+    }
 }

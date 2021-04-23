@@ -404,34 +404,39 @@ inline bool TAnimSplineTrack<Vec2>::VersionConverter(AZ::SerializeContext& conte
     AZ::SerializeContext::DataElementNode& classElement)
 {
     bool result = true;
-    if (classElement.GetVersion() == 1)
+    if (classElement.GetVersion() < 5)
     {
-        bool converted = false;
+        classElement.AddElement(context, "BaseClass1", azrtti_typeid<IAnimTrack>());
 
-        int splineElementIdx = classElement.FindElement(AZ_CRC("Spline", 0x35f655e9));
-        if (splineElementIdx != -1)
+        if (classElement.GetVersion() == 1)
         {
-            // Find & copy the raw pointer node
-            AZ::SerializeContext::DataElementNode& splinePtrNodeRef = classElement.GetSubElement(splineElementIdx);
-            AZ::SerializeContext::DataElementNode splinePtrNodeCopy = splinePtrNodeRef;
+            bool converted = false;
 
-            // Reset the node, then convert it to an intrusive pointer
-            splinePtrNodeRef = AZ::SerializeContext::DataElementNode();
-            if (splinePtrNodeRef.Convert<AZStd::intrusive_ptr<spline::TrackSplineInterpolator<Vec2>>>(context, "Spline"))
+            int splineElementIdx = classElement.FindElement(AZ_CRC("Spline", 0x35f655e9));
+            if (splineElementIdx != -1)
             {
-                // Use the standard name used with the smart pointers serialization
-                // (smart pointers are serialized as containers with one element);
-                // Set the intrusive pointer to the raw pointer value
-                splinePtrNodeCopy.SetName(AZ::SerializeContext::IDataContainer::GetDefaultElementName());
-                splinePtrNodeRef.AddElement(splinePtrNodeCopy);
+                // Find & copy the raw pointer node
+                AZ::SerializeContext::DataElementNode& splinePtrNodeRef = classElement.GetSubElement(splineElementIdx);
+                AZ::SerializeContext::DataElementNode splinePtrNodeCopy = splinePtrNodeRef;
 
-                converted = true;
+                // Reset the node, then convert it to an intrusive pointer
+                splinePtrNodeRef = AZ::SerializeContext::DataElementNode();
+                if (splinePtrNodeRef.Convert<AZStd::intrusive_ptr<spline::TrackSplineInterpolator<Vec2>>>(context, "Spline"))
+                {
+                    // Use the standard name used with the smart pointers serialization
+                    // (smart pointers are serialized as containers with one element);
+                    // Set the intrusive pointer to the raw pointer value
+                    splinePtrNodeCopy.SetName(AZ::SerializeContext::IDataContainer::GetDefaultElementName());
+                    splinePtrNodeRef.AddElement(splinePtrNodeCopy);
+
+                    converted = true;
+                }
             }
-        }
 
-        // Did not convert. Discard unknown versions if failed to convert, and hope for the best
-        AZ_Assert(converted, "Failed to convert TUiAnimSplineTrack<Vec2> version %d to the current version", classElement.GetVersion());
-        result = converted;
+            // Did not convert. Discard unknown versions if failed to convert, and hope for the best
+            AZ_Assert(converted, "Failed to convert TUiAnimSplineTrack<Vec2> version %d to the current version", classElement.GetVersion());
+            result = converted;
+        }
     }
 
     return result;
@@ -439,31 +444,34 @@ inline bool TAnimSplineTrack<Vec2>::VersionConverter(AZ::SerializeContext& conte
 
 //////////////////////////////////////////////////////////////////////////
 template<>
-inline void TAnimSplineTrack<Vec2>::Reflect(AZ::SerializeContext* serializeContext)
+inline void TAnimSplineTrack<Vec2>::Reflect(AZ::ReflectContext* context)
 {
-    spline::SplineKey<Vec2>::Reflect(serializeContext);
-    spline::SplineKeyEx<Vec2>::Reflect(serializeContext);
-
-    spline::TrackSplineInterpolator<Vec2>::Reflect(serializeContext);
-    BezierSplineVec2::Reflect(serializeContext);
-
-    serializeContext->Class<TAnimSplineTrack<Vec2> >()
-        ->Version(4, &TAnimSplineTrack<Vec2>::VersionConverter)
-        ->Field("Flags", &TAnimSplineTrack<Vec2>::m_flags)
-        ->Field("DefaultValue", &TAnimSplineTrack<Vec2>::m_defaultValue)
-        ->Field("ParamType", &TAnimSplineTrack<Vec2>::m_nParamType)
-        ->Field("Spline", &TAnimSplineTrack<Vec2>::m_spline)
-        ->Field("Id", &TAnimSplineTrack<Vec2>::m_id);
-
-    AZ::EditContext* ec = serializeContext->GetEditContext();
-
-    // Preventing the default value from being pushed to slice to keep it from dirtying the slice when updated internally
-    if (ec)
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
     {
-        ec->Class<TAnimSplineTrack<Vec2>>("TAnimSplineTrack Vec2", "Specialization track for Vec2 AnimSpline")->
-            DataElement(AZ::Edit::UIHandlers::Vector2, &TAnimSplineTrack<Vec2>::m_defaultValue, "DefaultValue", "")->
+        spline::SplineKey<Vec2>::Reflect(serializeContext);
+        spline::SplineKeyEx<Vec2>::Reflect(serializeContext);
+
+        spline::TrackSplineInterpolator<Vec2>::Reflect(serializeContext);
+        BezierSplineVec2::Reflect(serializeContext);
+
+        serializeContext->Class<TAnimSplineTrack<Vec2>, IAnimTrack>()
+            ->Version(5, &TAnimSplineTrack<Vec2>::VersionConverter)
+            ->Field("Flags", &TAnimSplineTrack<Vec2>::m_flags)
+            ->Field("DefaultValue", &TAnimSplineTrack<Vec2>::m_defaultValue)
+            ->Field("ParamType", &TAnimSplineTrack<Vec2>::m_nParamType)
+            ->Field("Spline", &TAnimSplineTrack<Vec2>::m_spline)
+            ->Field("Id", &TAnimSplineTrack<Vec2>::m_id);
+
+        AZ::EditContext* ec = serializeContext->GetEditContext();
+
+        // Preventing the default value from being pushed to slice to keep it from dirtying the slice when updated internally
+        if (ec)
+        {
+            ec->Class<TAnimSplineTrack<Vec2>>("TAnimSplineTrack Vec2", "Specialization track for Vec2 AnimSpline")->
+                DataElement(AZ::Edit::UIHandlers::Vector2, &TAnimSplineTrack<Vec2>::m_defaultValue, "DefaultValue", "")->
                 Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide)->
                 Attribute(AZ::Edit::Attributes::SliceFlags, AZ::Edit::SliceFlags::NotPushable);
+        }
     }
 }
 #endif // CRYINCLUDE_CRYMOVIE_ANIMSPLINETRACK_VEC2SPECIALIZATION_H

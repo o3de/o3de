@@ -98,24 +98,42 @@ bool CBoolTrack::Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTr
 }
 
 //////////////////////////////////////////////////////////////////////////
-template<>
-inline void TAnimTrack<IBoolKey>::Reflect(AZ::SerializeContext* serializeContext)
+static bool BoolTrackVersionConverter(
+    AZ::SerializeContext& serializeContext,
+    AZ::SerializeContext::DataElementNode& rootElement)
 {
-    serializeContext->Class<TAnimTrack<IBoolKey> >()
-        ->Version(2)
-        ->Field("Flags", &TAnimTrack<IBoolKey>::m_flags)
-        ->Field("Range", &TAnimTrack<IBoolKey>::m_timeRange)
-        ->Field("ParamType", &TAnimTrack<IBoolKey>::m_nParamType)
-        ->Field("Keys", &TAnimTrack<IBoolKey>::m_keys)
-        ->Field("Id", &TAnimTrack<IBoolKey>::m_id);
+    if (rootElement.GetVersion() < 3)
+    {
+        rootElement.AddElement(serializeContext, "BaseClass1", azrtti_typeid<IAnimTrack>());
+    }
+
+    return true;
+}
+
+template<>
+inline void TAnimTrack<IBoolKey>::Reflect(AZ::ReflectContext* context)
+{
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<TAnimTrack<IBoolKey>, IAnimTrack>()
+            ->Version(3, &BoolTrackVersionConverter)
+            ->Field("Flags", &TAnimTrack<IBoolKey>::m_flags)
+            ->Field("Range", &TAnimTrack<IBoolKey>::m_timeRange)
+            ->Field("ParamType", &TAnimTrack<IBoolKey>::m_nParamType)
+            ->Field("Keys", &TAnimTrack<IBoolKey>::m_keys)
+            ->Field("Id", &TAnimTrack<IBoolKey>::m_id);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CBoolTrack::Reflect(AZ::SerializeContext* serializeContext)
+void CBoolTrack::Reflect(AZ::ReflectContext* context)
 {
-    TAnimTrack<IBoolKey>::Reflect(serializeContext);
+    TAnimTrack<IBoolKey>::Reflect(context);
 
-    serializeContext->Class<CBoolTrack, TAnimTrack<IBoolKey> >()
-        ->Version(1)
-        ->Field("DefaultValue", &CBoolTrack::m_bDefaultValue);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<CBoolTrack, TAnimTrack<IBoolKey>>()
+            ->Version(1)
+            ->Field("DefaultValue", &CBoolTrack::m_bDefaultValue);
+    }
 }

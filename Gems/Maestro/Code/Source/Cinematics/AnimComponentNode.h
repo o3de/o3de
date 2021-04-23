@@ -102,7 +102,7 @@ public:
         m_skipComponentAnimationUpdates = skipAnimationUpdates;
     }
 
-    static void Reflect(AZ::SerializeContext* serializeContext);
+    static void Reflect(AZ::ReflectContext* context);
 
 protected:
     // functions involved in the process to parse and store component behavior context animated properties

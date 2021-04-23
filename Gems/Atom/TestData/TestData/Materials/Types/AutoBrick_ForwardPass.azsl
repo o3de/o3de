@@ -164,7 +164,8 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
     GetSurfaceShape(IN.m_uv, surfaceDepth, surfaceNormal);
     const float3 normal = TangentSpaceToWorld(surfaceNormal, normalize(IN.m_normal), normalize(IN.m_tangent), normalize(IN.m_bitangent));
     
-    const float occlusion = 1.0f - surfaceDepth * AutoBrickSrg::m_aoFactor;
+    const float diffuseAmbientOcclusion = 1.0f - surfaceDepth * AutoBrickSrg::m_aoFactor;
+    const float specularOcclusion = 1;
     const float metallic = 0;
     const float roughness = 1;
     const float specularF0Factor = 0.5;
@@ -179,7 +180,7 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
 
     PbrLightingOutput lightingOutput = PbrLighting(IN, baseColor, metallic, roughness, specularF0Factor, 
         normal, IN.m_tangent, IN.m_bitangent, anisotropy,
-        emissive, occlusion, transmissionTintThickness, transmissionParams, clearCoatFactor, clearCoatRoughness, clearCoatNormal, alpha, OpacityMode::Opaque);
+        emissive, diffuseAmbientOcclusion, specularOcclusion, transmissionTintThickness, transmissionParams, clearCoatFactor, clearCoatRoughness, clearCoatNormal, alpha, OpacityMode::Opaque);
 
     OUT.m_diffuseColor = lightingOutput.m_diffuseColor;
     OUT.m_diffuseColor.w = -1; // Subsurface scattering is disabled
@@ -187,7 +188,6 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
     OUT.m_specularF0 = lightingOutput.m_specularF0;
     OUT.m_albedo = lightingOutput.m_albedo;
     OUT.m_normal = lightingOutput.m_normal;
-    OUT.m_clearCoatNormal = lightingOutput.m_clearCoatNormal;
     OUT.m_scatterDistance = float3(0,0,0);
 
     return OUT;

@@ -12,7 +12,7 @@
 #include "LyShine_precompiled.h"
 
 #include "UiImageSequenceComponent.h"
-#include <LyShine/IDraw2d.h>
+#include <LyShine/Draw2d.h>
 #include <LyShine/ISprite.h>
 #include <LyShine/IRenderGraph.h>
 #include <LyShine/Bus/UiElementBus.h>
