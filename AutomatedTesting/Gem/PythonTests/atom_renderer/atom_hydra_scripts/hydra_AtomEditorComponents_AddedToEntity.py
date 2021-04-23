@@ -40,13 +40,11 @@ import azlmbr.editor as editor
 sys.path.append(os.path.join(azlmbr.paths.devroot, "AutomatedTesting", "Gem", "PythonTests"))
 
 import editor_python_test_tools.hydra_editor_utils as hydra
-from editor_python_test_tools.utils import TestHelper as helper
+from editor_python_test_tools.utils import TestHelper
+from editor_python_test_tools.editor_test_helper import EditorTestHelper
 
 
-class TestAllComponentsBasicTests(object):
-    """
-    Holds shared hydra test functions for this set of tests.
-    """
+EditorTestHelper = EditorTestHelper(log_prefix="AtomEditorComponents")
 
 
 def run():
@@ -76,29 +74,6 @@ def run():
     :return: None
     """
 
-    def after_level_load():
-        """Function to call after creating/opening a level to ensure it loads."""
-        # Give everything a second to initialize.
-        general.idle_enable(True)
-        general.idle_wait(1.0)
-        general.update_viewport()
-        general.idle_wait(0.5)  # half a second is more than enough for updating the viewport.
-
-        # Close out problematic windows, FPS meters, and anti-aliasing.
-        if general.is_helpers_shown():  # Turn off the helper gizmos if visible
-            general.toggle_helpers()
-            general.idle_wait(1.0)
-        if general.is_pane_visible("Error Report"):  # Close Error Report windows that block focus.
-            general.close_pane("Error Report")
-        if general.is_pane_visible("Error Log"):  # Close Error Log windows that block focus.
-            general.close_pane("Error Log")
-        general.idle_wait(1.0)
-        general.run_console("r_displayInfo=0")
-        general.run_console("r_antialiasingmode=0")
-        general.idle_wait(1.0)
-
-        return True
-
     def create_entity_undo_redo_component_addition(component_name):
         new_entity = hydra.Entity(f"{component_name}")
         new_entity.create_entity(math.Vector3(512.0, 512.0, 34.0), [component_name])
@@ -107,13 +82,13 @@ def run():
 
         # undo component addition
         general.undo()
-        helper.wait_for_condition(lambda: not hydra.has_components(new_entity.id, [component_name]), 2.0)
+        TestHelper.wait_for_condition(lambda: not hydra.has_components(new_entity.id, [component_name]), 2.0)
         general.log(f"{component_name}_test: Component removed after UNDO: "
                     f"{not hydra.has_components(new_entity.id, [component_name])}")
 
         # redo component addition
         general.redo()
-        helper.wait_for_condition(lambda: hydra.has_components(new_entity.id, [component_name]), 2.0)
+        TestHelper.wait_for_condition(lambda: hydra.has_components(new_entity.id, [component_name]), 2.0)
         general.log(f"{component_name}_test: Component added after REDO: "
                     f"{hydra.has_components(new_entity.id, [component_name])}")
 
@@ -121,10 +96,10 @@ def run():
 
     def verify_enter_exit_game_mode(component_name):
         general.enter_game_mode()
-        helper.wait_for_condition(lambda: general.is_in_game_mode(), 1.0)
+        TestHelper.wait_for_condition(lambda: general.is_in_game_mode(), 1.0)
         general.log(f"{component_name}_test: Entered game mode: {general.is_in_game_mode()}")
         general.exit_game_mode()
-        helper.wait_for_condition(lambda: not general.is_in_game_mode(), 1.0)
+        TestHelper.wait_for_condition(lambda: not general.is_in_game_mode(), 1.0)
         general.log(f"{component_name}_test: Exit game mode: {not general.is_in_game_mode()}")
 
     def verify_hide_unhide_entity(component_name, entity_obj):
@@ -141,16 +116,16 @@ def run():
 
     def verify_deletion_undo_redo(component_name, entity_obj):
         editor.ToolsApplicationRequestBus(bus.Broadcast, "DeleteEntityById", entity_obj.id)
-        helper.wait_for_condition(lambda: not hydra.find_entity_by_name(entity_obj.name), 1.0)
+        TestHelper.wait_for_condition(lambda: not hydra.find_entity_by_name(entity_obj.name), 1.0)
         general.log(f"{component_name}_test: Entity deleted: {not hydra.find_entity_by_name(entity_obj.name)}")
 
         general.undo()
-        helper.wait_for_condition(lambda: hydra.find_entity_by_name(entity_obj.name) is not None, 1.0)
+        TestHelper.wait_for_condition(lambda: hydra.find_entity_by_name(entity_obj.name) is not None, 1.0)
         general.log(f"{component_name}_test: UNDO entity deletion works: "
                     f"{hydra.find_entity_by_name(entity_obj.name) is not None}")
 
         general.redo()
-        helper.wait_for_condition(lambda: not hydra.find_entity_by_name(entity_obj.name), 1.0)
+        TestHelper.wait_for_condition(lambda: not hydra.find_entity_by_name(entity_obj.name), 1.0)
         general.log(f"{component_name}_test: REDO entity deletion works: "
                     f"{not hydra.find_entity_by_name(entity_obj.name)}")
 
@@ -164,7 +139,7 @@ def run():
             f"{not is_component_enabled(entity_obj.components[0])}")
         for component in components_to_add:
             entity_obj.add_component(component)
-        helper.wait_for_condition(lambda: is_component_enabled(entity_obj.components[0]), 1.0)
+        TestHelper.wait_for_condition(lambda: is_component_enabled(entity_obj.components[0]), 1.0)
         general.log(
             f"{component_name}_test: Entity enabled after adding "
             f"required components: {is_component_enabled(entity_obj.components[0])}"
@@ -174,7 +149,7 @@ def run():
         entity_obj.get_set_test(0, path, value)
 
     # Wait for Editor idle loop before executing Python hydra scripts.
-    helper.init_idle()
+    TestHelper.init_idle()
 
     # Create a new level.
     new_level_name = "tmp_level"  # Specified in TestAllComponentsBasicTests.py
@@ -196,7 +171,7 @@ def run():
         general.log("Unknown error, failed to create level")
     else:
         general.log(f"{new_level_name} level created successfully")
-    after_level_load()
+    EditorTestHelper.after_level_load(bypass_viewport_resize=True)
 
     # Delete all existing entities initially
     search_filter = azlmbr.entity.SearchFilter()

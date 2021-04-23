@@ -39,17 +39,18 @@ class TestAtomEditorComponents(object):
 
         request.addfinalizer(teardown)
 
-    @pytest.mark.test_case_id("C32078130")  # Tone Mapper
-    @pytest.mark.test_case_id("C32078129")  # Light
-    @pytest.mark.test_case_id("C32078131")  # Radius Weight Modifier
-    @pytest.mark.test_case_id("C32078127")  # PostFX Layer
-    @pytest.mark.test_case_id("C32078126")  # Point Light
-    @pytest.mark.test_case_id("C32078125")  # Physical Sky
-    @pytest.mark.test_case_id("C32078115")  # Global Skylight (IBL)
-    @pytest.mark.test_case_id("C32078121")  # Exposure Control
-    @pytest.mark.test_case_id("C32078120")  # Directional Light
-    @pytest.mark.test_case_id("C32078119")  # DepthOfField
-    @pytest.mark.test_case_id("C32078118")  # Decal
+    @pytest.mark.test_case_id(
+        "C32078130",  # Tone Mapper
+        "C32078129",  # Light
+        "C32078131",  # Radius Weight Modifier
+        "C32078127",  # PostFX Layer
+        "C32078126",  # Point Light
+        "C32078125",  # Physical Sky
+        "C32078115",  # Global Skylight (IBL)
+        "C32078121",  # Exposure Control
+        "C32078120",  # Directional Light
+        "C32078119",  # DepthOfField
+        "C32078118")  # Decal
     def test_AtomEditorComponents_AddedToEntity(self, request, editor, level, workspace, project, launcher_platform):
         cfg_args = [level]
 
