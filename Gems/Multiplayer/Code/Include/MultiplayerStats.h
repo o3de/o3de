@@ -14,7 +14,7 @@
 
 #include <AzCore/Time/ITime.h>
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/std/containers/fixed_vector.h>
+#include <AzCore/std/containers/array.h>
 
 namespace AzNetworking
 {
@@ -33,7 +33,7 @@ namespace Multiplayer
         AZ::TimeMs m_totalHistoryTimeMs = AZ::TimeMs{ 0 };
 
         static const uint32_t RingbufferSamples = 32;
-        using MetricRingbuffer = AZStd::fixed_vector<uint64_t, RingbufferSamples>;
+        using MetricRingbuffer = AZStd::array<uint64_t, RingbufferSamples>;
         struct Metric
         {
             uint64_t m_totalCalls = 0;

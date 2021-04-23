@@ -88,6 +88,10 @@ namespace Multiplayer
         void AddConnectionAcquiredHandler(ConnectionAcquiredEvent::Handler& handler) override;
         void AddSessionInitHandler(SessionInitEvent::Handler& handler) override;
         void AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler) override;
+        const char* GetComponentGemName(uint16_t netComponentIndex) const override;
+        const char* GetComponentName(uint16_t netComponentIndex) const override;
+        const char* GetComponentPropertyName(uint16_t netComponentIndex, uint16_t propertyIndex) const override;
+        const char* GetComponentRpcName(uint16_t netComponentIndex, uint16_t rpcIndex) const override;
         //! @}
 
         //! Console commands.

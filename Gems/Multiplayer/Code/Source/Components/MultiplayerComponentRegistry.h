@@ -53,9 +53,9 @@ namespace Multiplayer
 
         //! Returns the Rpc name associated with the provided NetComponentId and rpcId.
         //! @param  netComponentId the NetComponentId to return the property name of
-        //! @param  rpcId          the index off the rpc to return the rpc name of
+        //! @param  rpcIndex       the index of the rpc to return the rpc name of
         //! @return the name of the requested rpc
-        const char* GetComponentRpcName(NetComponentId netComponentId, uint16_t rpcId) const;
+        const char* GetComponentRpcName(NetComponentId netComponentId, uint16_t rpcIndex) const;
 
         //! Retrieves the stored component data for a given NetComponentId.
         //! @param  netComponentId the NetComponentId to return component data for

@@ -52,6 +52,7 @@ namespace Multiplayer
 #endif
     private:
         bool m_displayStats = false;
+        bool m_displayComponentStats = false;
         bool m_displayPropertyStats = false;
         bool m_displayRpcStats = false;
     };

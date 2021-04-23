@@ -91,6 +91,9 @@ namespace Multiplayer
             //}
 
             ImGui::Checkbox("Multiplayer Stats", &m_displayStats);
+            ImGui::Checkbox("Component Stats", &m_displayComponentStats);
+            ImGui::Checkbox("Property Stats", &m_displayPropertyStats);
+            ImGui::Checkbox("Rpc Stats", &m_displayRpcStats);
             ImGui::EndMenu();
         }
     }
@@ -105,8 +108,8 @@ namespace Multiplayer
             summedBytes += metric.m_byteHistory[index];
         }
         const float totalTimeSeconds = static_cast<float>(stats.m_totalHistoryTimeMs) / 1000.0f;
-        outCallsPerSecond = static_cast<float>(summedCalls) / totalTimeSeconds;
-        outBytesPerSecond = static_cast<float>(summedBytes) / totalTimeSeconds;
+        outCallsPerSecond = (summedCalls > 0 && totalTimeSeconds > 0.0f) ? static_cast<float>(summedCalls) / totalTimeSeconds : 0.0f;
+        outBytesPerSecond = (summedBytes > 0 && totalTimeSeconds > 0.0f) ? static_cast<float>(summedBytes) / totalTimeSeconds : 0.0f;
     }
 
     void DrawMetricTitle(const ImVec4& entryColour)
@@ -158,9 +161,111 @@ namespace Multiplayer
 
                 DrawMetricTitle(titleColour);
                 DrawMetricRow("Total", "PropertyUpdates Sent", entryColour, stats, propertyUpdatesSent);
-                DrawMetricRow("Total", "PropertyUpdates Received", entryColour, stats, propertyUpdatesRecv);
+                DrawMetricRow("Total", "PropertyUpdates Recv", entryColour, stats, propertyUpdatesRecv);
                 DrawMetricRow("Total", "Rpcs Sent", entryColour, stats, rpcsSent);
-                DrawMetricRow("Total", "Rpcs Received", entryColour, stats, rpcsRecv);
+                DrawMetricRow("Total", "Rpcs Recv", entryColour, stats, rpcsRecv);
+                ImGui::Columns(1);
+                ImGui::End();
+            }
+        }
+
+        if (m_displayComponentStats)
+        {
+            if (ImGui::Begin("Component Stats", &m_displayComponentStats, ImGuiWindowFlags_HorizontalScrollbar))
+            {
+                IMultiplayer* multiplayer = AZ::Interface<IMultiplayer>::Get();
+                const Multiplayer::MultiplayerStats& stats = multiplayer->GetStats();
+
+                DrawMetricTitle(titleColour);
+                for (AZStd::size_t index = 0; index < stats.m_componentStats.size(); ++index)
+                {
+                    const uint16_t componentIndex = aznumeric_cast<uint16_t>(index);
+
+                    const MultiplayerStats::Metric propertyUpdatesSent = stats.CalculateComponentPropertyUpdateSentMetrics(componentIndex);
+                    const MultiplayerStats::Metric propertyUpdatesRecv = stats.CalculateComponentPropertyUpdateRecvMetrics(componentIndex);
+                    const MultiplayerStats::Metric rpcsSent = stats.CalculateComponentRpcsSentMetrics(componentIndex);
+                    const MultiplayerStats::Metric rpcsRecv = stats.CalculateComponentRpcsRecvMetrics(componentIndex);
+
+                    using StringLabel = AZStd::fixed_string<128>;
+                    const StringLabel gemName = multiplayer->GetComponentGemName(componentIndex);
+                    const StringLabel componentName = multiplayer->GetComponentName(componentIndex);
+                    const StringLabel label = gemName + "::" + componentName;
+
+                    DrawMetricRow(label.c_str(), "PropertyUpdates Sent", entryColour, stats, propertyUpdatesSent);
+                    DrawMetricRow(label.c_str(), "PropertyUpdates Recv", entryColour, stats, propertyUpdatesRecv);
+                    DrawMetricRow(label.c_str(), "Rpcs Sent", entryColour, stats, rpcsSent);
+                    DrawMetricRow(label.c_str(), "Rpcs Recv", entryColour, stats, rpcsRecv);
+                }
+                ImGui::Columns(1);
+                ImGui::End();
+            }
+        }
+
+        if (m_displayPropertyStats)
+        {
+            if (ImGui::Begin("Network Property Stats", &m_displayPropertyStats, ImGuiWindowFlags_HorizontalScrollbar))
+            {
+                IMultiplayer* multiplayer = AZ::Interface<IMultiplayer>::Get();
+                const Multiplayer::MultiplayerStats& stats = multiplayer->GetStats();
+
+                DrawMetricTitle(titleColour);
+                for (AZStd::size_t index = 0; index < stats.m_componentStats.size(); ++index)
+                {
+                    const uint16_t componentIndex = aznumeric_cast<uint16_t>(index);
+                    const MultiplayerStats::ComponentStats& componentStats = stats.m_componentStats[componentIndex];
+                    for (AZStd::size_t index2 = 0; index2 < componentStats.m_propertyUpdatesSent.size(); ++index2)
+                    {
+                        const MultiplayerStats::Metric& propertyUpdatesSent = componentStats.m_propertyUpdatesSent[index2];
+                        const MultiplayerStats::Metric& propertyUpdatesRecv = componentStats.m_propertyUpdatesRecv[index2];
+
+                        using StringLabel = AZStd::fixed_string<128>;
+                        const StringLabel gemName = multiplayer->GetComponentGemName(componentIndex);
+                        const StringLabel componentName = multiplayer->GetComponentName(componentIndex);
+                        const StringLabel propertyName = multiplayer->GetComponentPropertyName(componentIndex, aznumeric_cast<uint16_t>(index2));
+                        const StringLabel label = gemName + "::" + componentName;
+
+                        const StringLabel sentLabel = propertyName + " Sent";
+                        const StringLabel recvLabel = propertyName + " Recv";
+
+                        DrawMetricRow(label.c_str(), sentLabel.c_str(), entryColour, stats, propertyUpdatesSent);
+                        DrawMetricRow(label.c_str(), recvLabel.c_str(), entryColour, stats, propertyUpdatesRecv);
+                    }
+                }
+                ImGui::Columns(1);
+                ImGui::End();
+            }
+        }
+
+        if (m_displayRpcStats)
+        {
+            if (ImGui::Begin("Rpc Stats", &m_displayRpcStats, ImGuiWindowFlags_HorizontalScrollbar))
+            {
+                IMultiplayer* multiplayer = AZ::Interface<IMultiplayer>::Get();
+                const Multiplayer::MultiplayerStats& stats = multiplayer->GetStats();
+
+                DrawMetricTitle(titleColour);
+                for (AZStd::size_t index = 0; index < stats.m_componentStats.size(); ++index)
+                {
+                    const uint16_t componentIndex = aznumeric_cast<uint16_t>(index);
+                    const MultiplayerStats::ComponentStats& componentStats = stats.m_componentStats[componentIndex];
+                    for (AZStd::size_t index2 = 0; index2 < componentStats.m_rpcsSent.size(); ++index2)
+                    {
+                        const MultiplayerStats::Metric& rpcsSent = componentStats.m_rpcsSent[index2];
+                        const MultiplayerStats::Metric& rpcsRecv = componentStats.m_rpcsRecv[index2];
+
+                        using StringLabel = AZStd::fixed_string<128>;
+                        const StringLabel gemName = multiplayer->GetComponentGemName(componentIndex);
+                        const StringLabel componentName = multiplayer->GetComponentName(componentIndex);
+                        const StringLabel rpcName = multiplayer->GetComponentRpcName(componentIndex, aznumeric_cast<uint16_t>(index2));
+                        const StringLabel label = gemName + "::" + componentName;
+
+                        const StringLabel sentLabel = rpcName + " Sent";
+                        const StringLabel recvLabel = rpcName + " Recv";
+
+                        DrawMetricRow(label.c_str(), sentLabel.c_str(), entryColour, stats, rpcsSent);
+                        DrawMetricRow(label.c_str(), recvLabel.c_str(), entryColour, stats, rpcsRecv);
+                    }
+                }
                 ImGui::Columns(1);
                 ImGui::End();
             }

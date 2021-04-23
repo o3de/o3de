@@ -506,6 +506,26 @@ namespace Multiplayer
         handler.Connect(m_shutdownEvent);
     }
 
+    const char* MultiplayerSystemComponent::GetComponentGemName(uint16_t netComponentIndex) const
+    {
+        return GetMultiplayerComponentRegistry()->GetComponentGemName(static_cast<NetComponentId>(netComponentIndex));
+    }
+
+    const char* MultiplayerSystemComponent::GetComponentName(uint16_t netComponentIndex) const
+    {
+        return GetMultiplayerComponentRegistry()->GetComponentName(static_cast<NetComponentId>(netComponentIndex));
+    }
+
+    const char* MultiplayerSystemComponent::GetComponentPropertyName(uint16_t netComponentIndex, uint16_t propertyIndex) const
+    {
+        return GetMultiplayerComponentRegistry()->GetComponentPropertyName(static_cast<NetComponentId>(netComponentIndex), propertyIndex);
+    }
+
+    const char* MultiplayerSystemComponent::GetComponentRpcName(uint16_t netComponentIndex, uint16_t rpcIndex) const
+    {
+        return GetMultiplayerComponentRegistry()->GetComponentRpcName(static_cast<NetComponentId>(netComponentIndex), rpcIndex);
+    }
+
     void MultiplayerSystemComponent::DumpStats([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
         const MultiplayerStats& stats = GetStats();

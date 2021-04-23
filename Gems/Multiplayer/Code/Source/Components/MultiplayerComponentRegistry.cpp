@@ -39,10 +39,10 @@ namespace Multiplayer
         return componentData.m_componentPropertyNameLookupFunction(propertyIndex);
     }
 
-    const char* MultiplayerComponentRegistry::GetComponentRpcName(NetComponentId netComponentId, uint16_t rpcId) const
+    const char* MultiplayerComponentRegistry::GetComponentRpcName(NetComponentId netComponentId, uint16_t rpcIndex) const
     {
         const ComponentData& componentData = GetMultiplayerComponentData(netComponentId);
-        return componentData.m_componentRpcNameLookupFunction(rpcId);
+        return componentData.m_componentRpcNameLookupFunction(rpcIndex);
     }
 
     const MultiplayerComponentRegistry::ComponentData& MultiplayerComponentRegistry::GetMultiplayerComponentData(NetComponentId netComponentId) const

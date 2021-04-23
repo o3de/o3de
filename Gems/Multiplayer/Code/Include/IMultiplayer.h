@@ -74,6 +74,28 @@ namespace Multiplayer
         //! @param handler The SessionShutdownEvent handler to add
         virtual void AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler) = 0;
 
+        //! Returns the gem name associated with the provided component index.
+        //! @param  netComponentIndex the component index to return the gem name of
+        //! @return the name of the gem that contains the requested component
+        virtual const char* GetComponentGemName(uint16_t netComponentIndex) const = 0;
+
+        //! Returns the component name associated with the provided component index.
+        //! @param  netComponentIndex the component index to return the component name of
+        //! @return the name of the component
+        virtual const char* GetComponentName(uint16_t netComponentIndex) const = 0;
+
+        //! Returns the property name associated with the provided component index and property index.
+        //! @param  netComponentIndex the component index to return the property name of
+        //! @param  propertyIndex     the index off the network property to return the property name of
+        //! @return the name of the network property
+        virtual const char* GetComponentPropertyName(uint16_t netComponentIndex, uint16_t propertyIndex) const = 0;
+
+        //! Returns the Rpc name associated with the provided component index and rpc index.
+        //! @param  netComponentIndex the component index to return the property name of
+        //! @param  rpcIndex          the index off the rpc to return the rpc name of
+        //! @return the name of the requested rpc
+        virtual const char* GetComponentRpcName(uint16_t netComponentIndex, uint16_t rpcIndex) const = 0;
+
         //! Retrieve the stats object bound to this multiplayer instance.
         //! @return the stats object bound to this multiplayer instance
         MultiplayerStats& GetStats() { return m_stats; }
