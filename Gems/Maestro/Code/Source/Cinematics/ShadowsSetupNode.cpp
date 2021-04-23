@@ -117,8 +117,11 @@ bool CShadowsSetupNode::GetParamInfoFromType(const CAnimParamType& paramId, SPar
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CShadowsSetupNode::Reflect(AZ::SerializeContext* serializeContext)
+void CShadowsSetupNode::Reflect(AZ::ReflectContext* context)
 {
-    serializeContext->Class<CShadowsSetupNode, CAnimNode>()
-        ->Version(1);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<CShadowsSetupNode, CAnimNode>()
+            ->Version(1);
+    }
 }

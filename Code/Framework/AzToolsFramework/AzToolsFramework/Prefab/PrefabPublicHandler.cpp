@@ -101,6 +101,10 @@ namespace AzToolsFramework
                         nestedInstance->GetInstanceAlias(), nestedInstance->GetLinkId(), undoBatch.GetUndoBatch());
                 }
 
+                PrefabUndoHelpers::UpdatePrefabInstance(
+                    commonRootEntityOwningInstance->get(), "Update prefab instance", commonRootInstanceDomBeforeCreate,
+                    undoBatch.GetUndoBatch());
+
                 auto prefabEditorEntityOwnershipInterface = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
                 if (!prefabEditorEntityOwnershipInterface)
                 {
@@ -118,13 +122,21 @@ namespace AzToolsFramework
                                                      "(A null instance is returned)."));
                 }
 
-                PrefabUndoHelpers::UpdatePrefabInstance(
-                    commonRootEntityOwningInstance->get(), "Update prefab instance", commonRootInstanceDomBeforeCreate, undoBatch.GetUndoBatch());
+                AZ::EntityId containerEntityId = instanceToCreate->get().GetContainerEntityId();
+
+                instanceToCreate->get().GetNestedInstances([&](AZStd::unique_ptr<Instance>& nestedInstance) {
+                    AZ_Assert(nestedInstance, "Invalid nested instance found in the new prefab created.");
+                    EntityOptionalReference nestedInstanceContainerEntity = nestedInstance->GetContainerEntity();
+                    AZ_Assert(
+                        nestedInstanceContainerEntity, "Invalid container entity found for the nested instance used in prefab creation.");
+                    CreateLink(
+                        {&nestedInstanceContainerEntity->get()}, *nestedInstance, instanceToCreate->get().GetTemplateId(),
+                        undoBatch.GetUndoBatch(), containerEntityId);
+                });
 
                 CreateLink(
                     topLevelEntities, instanceToCreate->get(), commonRootEntityOwningInstance->get().GetTemplateId(), undoBatch.GetUndoBatch(),
                     commonRootEntityId);
-                AZ::EntityId containerEntityId = instanceToCreate->get().GetContainerEntityId();
 
                 // Change top level entities to be parented to the container entity
                 // Mark them as dirty so this change is correctly applied to the template
@@ -225,19 +237,7 @@ namespace AzToolsFramework
 
         PrefabOperationResult PrefabPublicHandler::SavePrefab(AZ::IO::Path filePath)
         {
-            auto prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
-            if (!prefabSystemComponentInterface)
-            {
-                AZ_Assert(
-                    false,
-                    "Prefab - PrefabPublicHandler - "
-                    "Prefab System Component Interface could not be found. "
-                    "Check that it is being correctly initialized.");
-                return AZ::Failure(
-                    AZStd::string("SavePrefab - Internal error (Prefab System Component Interface could not be found)."));
-            }
-
-            auto templateId = prefabSystemComponentInterface->GetTemplateIdFromFilePath(filePath.c_str());
+            auto templateId = m_prefabSystemComponentInterface->GetTemplateIdFromFilePath(filePath.c_str());
 
             if (templateId == InvalidTemplateId)
             {
@@ -438,26 +438,14 @@ namespace AzToolsFramework
 
         PrefabRequestResult PrefabPublicHandler::HasUnsavedChanges(AZ::IO::Path prefabFilePath) const
         {
-            auto prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
-            if (!prefabSystemComponentInterface)
-            {
-                AZ_Assert(
-                    false,
-                    "Prefab - PrefabPublicHandler - "
-                    "Prefab System Component Interface could not be found. "
-                    "Check that it is being correctly initialized.");
-                return AZ::Failure(
-                    AZStd::string("HasUnsavedChanges - Internal error (Prefab System Component Interface could not be found)."));
-            }
-
-            auto templateId = prefabSystemComponentInterface->GetTemplateIdFromFilePath(prefabFilePath.c_str());
+            auto templateId = m_prefabSystemComponentInterface->GetTemplateIdFromFilePath(prefabFilePath.c_str());
 
             if (templateId == InvalidTemplateId)
             {
                 return AZ::Failure(AZStd::string("HasUnsavedChanges - Path error. Path could be invalid, or the prefab may not be loaded in this level."));
             }
 
-            return AZ::Success(prefabSystemComponentInterface->IsTemplateDirty(templateId));
+            return AZ::Success(m_prefabSystemComponentInterface->IsTemplateDirty(templateId));
         }
 
         PrefabOperationResult PrefabPublicHandler::DeleteEntitiesInInstance(const EntityIdList& entityIds)

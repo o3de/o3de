@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import PySide2
 
-import pyside_utils
+import editor_python_test_tools.pyside_utils
 
 
 def get_component_combobox_values(component_name, property_name, log_fn=None):
