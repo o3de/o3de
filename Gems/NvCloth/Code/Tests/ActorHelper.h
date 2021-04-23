@@ -62,6 +62,5 @@ namespace UnitTest
         const AZStd::vector<AZ::Vector3>& vertices,
         const AZStd::vector<AZ::u32>& indices,
         const AZStd::vector<VertexSkinInfluences>& skinningInfo = {},
-        const AZStd::vector<AZ::Vector2>& uvs = {},
-        const AZStd::vector<AZ::Color>& clothData = {});
+        const AZStd::vector<AZ::Vector2>& uvs = {});
 } // namespace UnitTest
