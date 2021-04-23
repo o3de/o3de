@@ -158,7 +158,7 @@ namespace AzToolsFramework
         int GetParentWidgetWidth();
         QImage createDragImage();
 
-        enum DropArea
+        enum class DropArea
         {
             Above,
             Below

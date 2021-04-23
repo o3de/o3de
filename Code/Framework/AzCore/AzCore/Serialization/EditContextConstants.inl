@@ -62,7 +62,6 @@ namespace AZ
             const static AZ::Crc32 ButtonTooltip = AZ_CRC("ButtonTooltip", 0x1605a7d2);
             const static AZ::Crc32 CheckboxTooltip = AZ_CRC("CheckboxTooltip", 0x1159eb78);
             const static AZ::Crc32 CheckboxDefaultValue = AZ_CRC("CheckboxDefaultValue", 0x03f117e6);
-            const static AZ::Crc32 UserCanReorderChildren = AZ_CRC("UserCanReorderChildren", 0x391905a2);
             //! Affects the display order of a node relative to it's parent/children.  Higher values display further down (after) lower values.  Default is 0, negative values are allowed.  Must be applied as an attribute to the EditorData element
             const static AZ::Crc32 DisplayOrder = AZ_CRC("DisplayOrder", 0x23660ec2);
             //! Specifies whether the UI should support multi-edit for aggregate instances of this property

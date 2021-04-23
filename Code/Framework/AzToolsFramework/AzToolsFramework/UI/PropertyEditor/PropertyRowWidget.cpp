@@ -951,10 +951,6 @@ namespace AzToolsFramework
         {
             HandleChangeNotifyAttribute(reader, m_sourceNode ? m_sourceNode->GetParent() : nullptr, m_editingCompleteNotifiers);
         }
-        else if ((initial) && (attributeName == AZ::Edit::Attributes::UserCanReorderChildren))
-        {
-            m_canChildrenBeReordered = true;
-        }
     }
 
     void PropertyRowWidget::SetReadOnlyQueryFunction(const ReadOnlyQueryFunction& readOnlyQueryFunction)
@@ -1687,7 +1683,7 @@ namespace AzToolsFramework
 
     bool PropertyRowWidget::CanChildrenBeReordered() const
     {
-        return m_canChildrenBeReordered;
+        return m_containerEditable;
     }
 
     bool PropertyRowWidget::CanBeReordered() const
@@ -1781,8 +1777,9 @@ namespace AzToolsFramework
 
     QImage PropertyRowWidget::createDragImage()
     {
-        // Make the drag box as wide as the containing editor so that it looks correct.
-        int width = GetParentWidgetWidth();
+        // Make the drag box as wide as the containing editor minus a gap each side for the border.
+        static int ParentEditorBorderSize = 2;
+        int width = GetParentWidgetWidth() - ParentEditorBorderSize * 2;
 
         int height = GetHeightOfRowAndVisibleChildren();
         
@@ -1797,7 +1794,7 @@ namespace AzToolsFramework
         dragPainter.setOpacity(0.35f);
         dragPainter.fillRect(imageRect, QColor("#F6F99E"));
 
-        int marginWidth = (imageRect.width() - rect().width()) / 2;
+        int marginWidth = (imageRect.width() - rect().width()) / 2 + ParentEditorBorderSize;
 
         DrawDragImageAndVisibleChildrenInto(dragPainter, marginWidth, 0);
 

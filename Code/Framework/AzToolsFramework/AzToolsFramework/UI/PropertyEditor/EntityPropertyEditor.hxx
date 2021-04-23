@@ -472,6 +472,11 @@ namespace AzToolsFramework
         bool CanDropForComponentTypes(const QMimeData* mimeData) const;
         bool CanDropForComponentAssets(const QMimeData* mimeData) const;
         bool CanDropForAssetBrowserEntries(const QMimeData* mimeData) const;
+        void SetRowWidgetHighlighted(PropertyRowWidget* rowWidget);
+        void SetRowWidgetUnhilighted();
+        PropertyRowWidget* GetHighlightedRowWidget() const;
+        const QImage GetHighlightedRowWidgetImage() const;
+
         AZStd::vector<AZ::s32> ExtractComponentEditorIndicesFromMimeData(const QMimeData* mimeData) const;
         ComponentEditorVector GetComponentEditorsFromIndices(const AZStd::vector<AZ::s32>& indices) const;
         ComponentEditor* GetComponentEditorsFromIndex(const AZ::s32 index) const;
@@ -557,7 +562,10 @@ namespace AzToolsFramework
 
         PropertyRowWidget* m_draggingRowWidget = nullptr;
         PropertyRowWidget* m_currentDropTarget = nullptr;
-        ComponentEditor* m_draggingRowWidgetEditor = nullptr; 
+        ComponentEditor* m_draggingRowWidgetEditor = nullptr;
+
+        PropertyRowWidget* m_highlightedRow = nullptr;
+        QImage m_highlightedRowImage;
 
         QStandardItem* m_comboItems[StatusItems];
         EntityIdSet m_overrideSelectedEntityIds;

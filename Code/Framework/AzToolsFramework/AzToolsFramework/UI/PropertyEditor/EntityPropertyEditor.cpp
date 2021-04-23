@@ -180,6 +180,8 @@ namespace AzToolsFramework
             bool drag = false;
             bool drop = false;
 
+            PropertyRowWidget* highlightedWidget = m_editor->GetHighlightedRowWidget();
+
             ComponentEditor* rowWidgetDragEditor = m_editor->GetEditorContainingDraggedRowWidget();
             if (rowWidgetDragEditor)
             {
@@ -244,6 +246,24 @@ namespace AzToolsFramework
                         }
                     }
                 }
+            }
+            else if (highlightedWidget)
+            {
+                const QImage highlightImage = m_editor->GetHighlightedRowWidgetImage();
+
+                QRect globalRect = m_editor->GetWidgetAndVisibleChildrenGlobalRect(highlightedWidget);
+
+                int top = mapFromGlobal(globalRect.topLeft()).y();
+                currRect = QRect(
+                    QPoint(LeftMargin + 1, top),
+                    QPoint(LeftMargin + 1 + highlightImage.width(), top + highlightImage.height()));
+
+                QStyleOption opt;
+                opt.init(this);
+                opt.rect = currRect;
+                static_cast<AzQtComponents::Style*>(style())->drawDragIndicator(&opt, &painter, this);
+
+                painter.drawImage(currRect, highlightImage);
             }
             else
             {
@@ -1899,6 +1919,7 @@ namespace AzToolsFramework
                 if (!menu.actions().empty())
                 {
                     menu.exec(position);
+                    SetRowWidgetUnhilighted();
                 }
             }
         }
@@ -2075,6 +2096,7 @@ namespace AzToolsFramework
             PropertyRowWidget* widget = componentEditor->GetPropertyEditor()->GetWidgetFromNode(fieldNode);
             if (widget->CanBeReordered())
             {
+                SetRowWidgetHighlighted(widget);
                 QAction* moveUpAction = menu.addAction(tr("Move %1 Up").arg(widget->GetNameLabel()->text()));
                 moveUpAction->setEnabled(false);
 
@@ -4678,6 +4700,28 @@ namespace AzToolsFramework
         
         UpdateOverlay();
         return true;
+    }
+
+    void EntityPropertyEditor::SetRowWidgetHighlighted(PropertyRowWidget* rowWidget)
+    {
+        m_highlightedRow = rowWidget;
+
+        m_highlightedRowImage = m_highlightedRow->createDragImage();
+    }
+
+    void EntityPropertyEditor::SetRowWidgetUnhilighted()
+    {
+        m_highlightedRow = nullptr;
+    }
+
+    PropertyRowWidget* EntityPropertyEditor::GetHighlightedRowWidget() const
+    {
+        return m_highlightedRow;
+    }
+
+    const QImage EntityPropertyEditor::GetHighlightedRowWidgetImage() const
+    {
+        return m_highlightedRowImage;
     }
 
     bool EntityPropertyEditor::HandleDrop(QDropEvent* event)
