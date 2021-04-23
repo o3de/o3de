@@ -43,7 +43,8 @@ namespace AZ
                 m_projectionMatrixChangedEvent.Signal(matrix);
             });
 
-            SetRenderScene(renderScene);        }
+            SetRenderScene(renderScene);
+        }
 
         ViewportContext::~ViewportContext()
         {
