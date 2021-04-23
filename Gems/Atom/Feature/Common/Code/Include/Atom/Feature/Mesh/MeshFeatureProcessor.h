@@ -136,13 +136,13 @@ namespace AZ
                 const MaterialAssignmentMap& materials = {},
                 bool skinnedMeshWithMotion = false,
                 bool rayTracingEnabled = true,
-                const RequiresCloneCallback requiresCloneCallback = {}) override;
+                RequiresCloneCallback requiresCloneCallback = {}) override;
             MeshHandle AcquireMesh(
                 const Data::Asset<RPI::ModelAsset> &modelAsset,
                 const Data::Instance<RPI::Material>& material,
                 bool skinnedMeshWithMotion = false,
                 bool rayTracingEnabled = true,
-                const RequiresCloneCallback requiresCloneCallback = {}) override;
+                RequiresCloneCallback requiresCloneCallback = {}) override;
             bool ReleaseMesh(MeshHandle& meshHandle) override;
             MeshHandle CloneMesh(const MeshHandle& meshHandle) override;
 

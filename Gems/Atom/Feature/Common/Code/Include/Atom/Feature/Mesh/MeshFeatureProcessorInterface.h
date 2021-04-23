@@ -35,8 +35,7 @@ namespace AZ
 
             using MeshHandle = StableDynamicArrayHandle<MeshDataInstance>;
             using ModelChangedEvent = Event<const Data::Instance<RPI::Model>>;
-
-            typedef AZStd::function<bool(const Data::Asset<RPI::ModelAsset>& modelAsset)> RequiresCloneCallback;
+            using RequiresCloneCallback = AZStd::function<bool(const Data::Asset<RPI::ModelAsset>& modelAsset)>;
 
             //! Acquires a model with an optional collection of material assignments.
             //! @param requiresCloneCallback The callback indicates whether cloning is required for a given model asset.
@@ -45,14 +44,14 @@ namespace AZ
                 const MaterialAssignmentMap& materials = {},
                 bool skinnedMeshWithMotion = false,
                 bool rayTracingEnabled = true,
-                const RequiresCloneCallback requiresCloneCallback = {}) = 0;
+                RequiresCloneCallback requiresCloneCallback = {}) = 0;
             //! Acquires a model with a single material applied to all its meshes.
             virtual MeshHandle AcquireMesh(
                 const Data::Asset<RPI::ModelAsset>& modelAsset,
                 const Data::Instance<RPI::Material>& material,
                 bool skinnedMeshWithMotion = false,
                 bool rayTracingEnabled = true,
-                const RequiresCloneCallback requiresCloneCallback = {}) = 0;
+                RequiresCloneCallback requiresCloneCallback = {}) = 0;
             //! Releases the mesh handle
             virtual bool ReleaseMesh(MeshHandle& meshHandle) = 0;
             //! Creates a new instance and handle of a mesh using an existing MeshId. Currently, this will reset the new mesh to default materials.

@@ -153,7 +153,7 @@ namespace AZ
             const MaterialAssignmentMap& materials,
             bool skinnedMeshWithMotion,
             bool rayTracingEnabled,
-            const RequiresCloneCallback requiresCloneCallback)
+            RequiresCloneCallback requiresCloneCallback)
         {
             AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
 
@@ -182,7 +182,7 @@ namespace AZ
             const Data::Instance<RPI::Material>& material,
             bool skinnedMeshWithMotion,
             bool rayTracingEnabled,
-            const RequiresCloneCallback requiresCloneCallback)
+            RequiresCloneCallback requiresCloneCallback)
         {
             Render::MaterialAssignmentMap materials;
             Render::MaterialAssignment& defaultMaterial = materials[AZ::Render::DefaultMaterialAssignmentId];
