@@ -121,7 +121,7 @@ PACKAGE_FILE_LIST=package-list.ubuntu-$UBUNTU_DISTRO.txt
 echo Reading package list $PACKAGE_FILE_LIST
 
 # Read each line (strip out comment tags)
-for LINE in `cat package-list.ubuntu-focal.txt | sed 's/#.*$//g'`
+for LINE in `cat $PACKAGE_FILE_LIST | sed 's/#.*$//g'`
 do
     PACKAGE=`echo $LINE | awk -F / '{print $1}'`
     if [ "$PACKAGE" != "" ]  # Skip blank lines
