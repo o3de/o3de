@@ -404,10 +404,7 @@ namespace NvCloth
         if (m_config.m_removeStaticTriangles && m_actorClothSkinning)
         {
             // Apply skinning to the non-simulated part of the mesh.
-            m_actorClothSkinning->ApplySkinningNotRemapped(m_meshClothInfo.m_particles, renderData.m_particles, m_meshRemappedVertices);
-            m_actorClothSkinning->ApplySkinningVectorsNotRemapped(m_meshClothInfo.m_tangents, renderData.m_tangents, m_meshRemappedVertices);
-            m_actorClothSkinning->ApplySkinningVectorsNotRemapped(m_meshClothInfo.m_bitangents, renderData.m_bitangents, m_meshRemappedVertices);
-            m_actorClothSkinning->ApplySkinningVectorsNotRemapped(m_meshClothInfo.m_normals, renderData.m_normals, m_meshRemappedVertices);
+            m_actorClothSkinning->ApplySkinninOnRemovedVertices(m_meshClothInfo, renderData, m_meshRemappedVertices);
         }
 
         // Calculate normals of the cloth particles (simplified mesh).
