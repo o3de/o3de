@@ -58,7 +58,7 @@ ly_add_target(
         Gem::CertificateManager
 )
 
-if(PAL_TRAIT_BUILD_HOST_TOOLS)
+if (PAL_TRAIT_BUILD_HOST_TOOLS)
 
     ly_add_target(
         NAME Multiplayer.Tools MODULE
