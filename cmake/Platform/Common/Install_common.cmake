@@ -57,10 +57,10 @@ function(ly_install_target ly_install_target_NAME)
 
     install(
         TARGETS ${ly_install_target_NAME}
-        LIBRARY
+        ARCHIVE
             DESTINATION ${archive_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>
             COMPONENT ${ly_install_target_COMPONENT}
-        ARCHIVE
+        LIBRARY
             DESTINATION ${library_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${target_library_output_subdirectory}
             COMPONENT ${ly_install_target_COMPONENT}
         RUNTIME
@@ -153,12 +153,14 @@ function(ly_generate_target_config_file NAME)
     if(NOT target_type STREQUAL INTERFACE_LIBRARY)
 
         unset(target_location)
-        set(runtime_types EXECUTABLE APPLICATION MODULE_LIBRARY)
+        set(runtime_types EXECUTABLE APPLICATION)
         if(target_type IN_LIST runtime_types)
             string(APPEND target_location "\"\${LY_ROOT_FOLDER}/${runtime_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${target_runtime_output_subdirectory}/$<TARGET_FILE_NAME:${NAME}>\"")
+        elseif(target_type STREQUAL MODULE_LIBRARY)
+        string(APPEND target_location "\"\${LY_ROOT_FOLDER}/${library_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${target_library_output_subdirectory}/$<TARGET_FILE_NAME:${NAME}>\"")
         elseif(target_type STREQUAL SHARED_LIBRARY)
             string(APPEND target_location "\"\${LY_ROOT_FOLDER}/${archive_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/$<TARGET_LINKER_FILE_NAME:${NAME}>\"")           
-            string(APPEND target_file_contents "ly_add_dependencies(${NAME} \"\${LY_ROOT_FOLDER}/${runtime_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${target_runtime_output_subdirectory}/$<TARGET_FILE_NAME:${NAME}>\")\n")
+            string(APPEND target_file_contents "ly_add_dependencies(${NAME} \"\${LY_ROOT_FOLDER}/${library_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${target_library_output_subdirectory}/$<TARGET_FILE_NAME:${NAME}>\")\n")
         else() # STATIC_LIBRARY, OBJECT_LIBRARY, INTERFACE_LIBRARY
             string(APPEND target_location "\"\${LY_ROOT_FOLDER}/${archive_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/$<TARGET_LINKER_FILE_NAME:${NAME}>\"")
         endif()
