@@ -146,9 +146,6 @@ namespace AzFramework
 
         // Scale Modifiers
         void SetLocalScale(const AZ::Vector3& scale) override;
-        void SetLocalScaleX(float scaleX) override;
-        void SetLocalScaleY(float scaleY) override;
-        void SetLocalScaleZ(float scaleZ) override;
 
         AZ::Vector3 GetLocalScale() override;
         AZ::Vector3 GetWorldScale() override;

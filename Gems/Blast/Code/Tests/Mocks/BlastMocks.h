@@ -666,18 +666,7 @@ namespace Blast
         MOCK_METHOD1(RotateAroundLocalZ, void(float));
         MOCK_METHOD0(GetLocalRotation, AZ::Vector3());
         MOCK_METHOD0(GetLocalRotationQuaternion, AZ::Quaternion());
-        MOCK_METHOD1(SetScale, void(const AZ::Vector3&));
-        MOCK_METHOD1(SetScaleX, void(float));
-        MOCK_METHOD1(SetScaleY, void(float));
-        MOCK_METHOD1(SetScaleZ, void(float));
-        MOCK_METHOD0(GetScale, AZ::Vector3());
-        MOCK_METHOD0(GetScaleX, float());
-        MOCK_METHOD0(GetScaleY, float());
-        MOCK_METHOD0(GetScaleZ, float());
         MOCK_METHOD1(SetLocalScale, void(const AZ::Vector3&));
-        MOCK_METHOD1(SetLocalScaleX, void(float));
-        MOCK_METHOD1(SetLocalScaleY, void(float));
-        MOCK_METHOD1(SetLocalScaleZ, void(float));
         MOCK_METHOD0(GetLocalScale, AZ::Vector3());
         MOCK_METHOD0(GetWorldScale, AZ::Vector3());
         MOCK_METHOD0(GetParentId, AZ::EntityId());

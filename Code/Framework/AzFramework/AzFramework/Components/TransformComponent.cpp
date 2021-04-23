@@ -517,33 +517,6 @@ namespace AzFramework
         SetLocalTM(newLocalTM);
     }
 
-    void TransformComponent::SetLocalScaleX(float scaleX)
-    {
-        AZ::Transform newLocalTM = m_localTM;
-        AZ::Vector3 newScale = newLocalTM.GetScale();
-        newScale.SetX(scaleX);
-        newLocalTM.SetScale(newScale);
-        SetLocalTM(newLocalTM);
-    }
-
-    void TransformComponent::SetLocalScaleY(float scaleY)
-    {
-        AZ::Transform newLocalTM = m_localTM;
-        AZ::Vector3 newScale = newLocalTM.GetScale();
-        newScale.SetY(scaleY);
-        newLocalTM.SetScale(newScale);
-        SetLocalTM(newLocalTM);
-    }
-
-    void TransformComponent::SetLocalScaleZ(float scaleZ)
-    {
-        AZ::Transform newLocalTM = m_localTM;
-        AZ::Vector3 newScale = newLocalTM.GetScale();
-        newScale.SetZ(scaleZ);
-        newLocalTM.SetScale(newScale);
-        SetLocalTM(newLocalTM);
-    }
-
     AZ::Vector3 TransformComponent::GetLocalScale()
     {
         return m_localTM.GetScale();
@@ -904,9 +877,6 @@ namespace AzFramework
                     ->Attribute("Rotation", AZ::Edit::Attributes::PropertyRotation)
                 ->VirtualProperty("Rotation", "GetLocalRotationQuaternion", "SetLocalRotationQuaternion")
                 ->Event("SetLocalScale", &AZ::TransformBus::Events::SetLocalScale)
-                ->Event("SetLocalScaleX", &AZ::TransformBus::Events::SetLocalScaleX)
-                ->Event("SetLocalScaleY", &AZ::TransformBus::Events::SetLocalScaleY)
-                ->Event("SetLocalScaleZ", &AZ::TransformBus::Events::SetLocalScaleZ)
                 ->Event("GetLocalScale", &AZ::TransformBus::Events::GetLocalScale)
                     ->Attribute("Scale", AZ::Edit::Attributes::PropertyScale)
                 ->VirtualProperty("Scale", "GetLocalScale", "SetLocalScale")

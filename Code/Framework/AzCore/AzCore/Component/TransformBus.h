@@ -291,18 +291,6 @@ namespace AZ
         //! @param scale The new scale to set along three local axes.
         virtual void SetLocalScale([[maybe_unused]] const AZ::Vector3& scale) {}
 
-        //! Set local scale of the transform on x-axis.
-        //! @param scaleX The new x-axis scale to set.
-        virtual void SetLocalScaleX([[maybe_unused]] float scaleX) {}
-
-        //! Set local scale of the transform on y-axis.
-        //! @param scaleY The new y-axis scale to set.
-        virtual void SetLocalScaleY([[maybe_unused]] float scaleY) {}
-
-        //! Set local scale of the transform on z-axis.
-        //! @param scaleZ The new z-axis scale to set.
-        virtual void SetLocalScaleZ([[maybe_unused]] float scaleZ) {}
-
         //! Get the scale value on each axis in local space
         //! @return The scale value of type Vector3 along each axis in local space.
         virtual AZ::Vector3 GetLocalScale() { return AZ::Vector3(FLT_MAX); }

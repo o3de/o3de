@@ -584,51 +584,6 @@ namespace UnitTest
         EXPECT_TRUE(scales.IsClose(expectedScales));
     }
 
-    TEST_F(TransformComponentTransformMatrixSetGet, SetLocalScaleX_SimpleValues_Set)
-    {
-        float sx = 64.336f;
-        Transform tm;
-        TransformBus::EventResult(tm, m_childId, &TransformBus::Events::GetLocalTM);
-        Vector3 expectedScales = tm.GetScale();
-        expectedScales.SetX(sx);
-
-        TransformBus::Event(m_childId, &TransformBus::Events::SetLocalScaleX, sx);
-
-        TransformBus::EventResult(tm, m_childId, &TransformBus::Events::GetLocalTM);
-        Vector3 scales = tm.GetScale();
-        EXPECT_TRUE(scales.IsClose(expectedScales));
-    }
-
-    TEST_F(TransformComponentTransformMatrixSetGet, SetLocalScaleY_SimpleValues_Set)
-    {
-        float sy = 23.754f;
-        Transform tm;
-        TransformBus::EventResult(tm, m_childId, &TransformBus::Events::GetLocalTM);
-        Vector3 expectedScales = tm.GetScale();
-        expectedScales.SetY(sy);
-
-        TransformBus::Event(m_childId, &TransformBus::Events::SetLocalScaleY, sy);
-
-        TransformBus::EventResult(tm, m_childId, &TransformBus::Events::GetLocalTM);
-        Vector3 scales = tm.GetScale();
-        EXPECT_TRUE(scales.IsClose(expectedScales));
-    }
-
-    TEST_F(TransformComponentTransformMatrixSetGet, SetLocalScaleZ_SimpleValues_Set)
-    {
-        float sz = 65.140f;
-        Transform tm;
-        TransformBus::EventResult(tm, m_childId, &TransformBus::Events::GetLocalTM);
-        Vector3 expectedScales = tm.GetScale();
-        expectedScales.SetZ(sz);
-
-        TransformBus::Event(m_childId, &TransformBus::Events::SetLocalScaleZ, sz);
-
-        TransformBus::EventResult(tm, m_childId, &TransformBus::Events::GetLocalTM);
-        Vector3 scales = tm.GetScale();
-        EXPECT_TRUE(scales.IsClose(expectedScales));
-    }
-
     TEST_F(TransformComponentTransformMatrixSetGet, GetLocalScale_SimpleValues_Return)
     {
         float sx = 43.463f;

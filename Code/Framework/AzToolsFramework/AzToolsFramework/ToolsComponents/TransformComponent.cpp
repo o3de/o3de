@@ -649,24 +649,6 @@ namespace AzToolsFramework
             TransformChanged();
         }
 
-        void TransformComponent::SetLocalScaleX(float scaleX)
-        {
-            m_editorTransform.m_scale.SetX(scaleX);
-            TransformChanged();
-        }
-
-        void TransformComponent::SetLocalScaleY(float scaleY)
-        {
-            m_editorTransform.m_scale.SetY(scaleY);
-            TransformChanged();
-        }
-
-        void TransformComponent::SetLocalScaleZ(float scaleZ)
-        {
-            m_editorTransform.m_scale.SetZ(scaleZ);
-            TransformChanged();
-        }
-
         AZ::Vector3 TransformComponent::GetLocalScale()
         {
             return m_editorTransform.m_scale;
