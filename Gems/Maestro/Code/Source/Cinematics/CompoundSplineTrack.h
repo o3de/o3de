@@ -157,7 +157,7 @@ public:
     unsigned int GetId() const override;
     void SetId(unsigned int id) override;
 
-    static void Reflect(AZ::SerializeContext* serializeContext);
+    static void Reflect(AZ::ReflectContext* context);
 
 protected:
     int m_refCount;

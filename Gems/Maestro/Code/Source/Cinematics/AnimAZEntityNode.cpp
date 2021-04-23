@@ -88,11 +88,14 @@ void CAnimAzEntityNode::SetSkipInterpolatedCameraNode(const bool skipNodeCameraA
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CAnimAzEntityNode::Reflect(AZ::SerializeContext* serializeContext)
+void CAnimAzEntityNode::Reflect(AZ::ReflectContext* context)
 {
-    serializeContext->Class<CAnimAzEntityNode, CAnimNode>()
-        ->Version(1)
-        ->Field("Entity", &CAnimAzEntityNode::m_entityId);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<CAnimAzEntityNode, CAnimNode>()
+            ->Version(1)
+            ->Field("Entity", &CAnimAzEntityNode::m_entityId);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
