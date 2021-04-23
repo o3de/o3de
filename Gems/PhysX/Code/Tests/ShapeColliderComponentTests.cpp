@@ -241,7 +241,7 @@ namespace PhysXEditorTests
         SetPolygonPrismHeight(entityId, 2.0f);
 
         // update the transform scale and non-uniform scale
-        AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetScale, AZ::Vector3(2.0f));
+        AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetLocalScale, AZ::Vector3(2.0f));
         AZ::NonUniformScaleRequestBus::Event(entityId, &AZ::NonUniformScaleRequests::SetScale, AZ::Vector3(0.5f, 1.5f, 2.0f));
 
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());

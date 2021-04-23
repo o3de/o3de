@@ -287,46 +287,6 @@ namespace AZ
 
         //! Scale modifiers
         //! @{
-        //! @deprecated Use SetLocalScale()
-        //! Scales the entity along the world's axes. The origin of the axes is the entity's position in the world.
-        //! @param scale A three-dimensional vector that represents the multipliers with which to scale the entity in world space.
-        virtual void SetScale([[maybe_unused]] const AZ::Vector3& scale) {}
-
-        //! @deprecated Use SetLocalScaleX()
-        //! Scales the entity along the world's X axis. The origin of the axis is the entity's position in the world.
-        //! @param scaleX The multiplier by which to scale the entity along the X axis in world space.
-        virtual void SetScaleX([[maybe_unused]] float scaleX) {}
-
-        //! @deprecated Use SetLocalScaleY()
-        //! Scales the entity along the world's Y axis. The origin of the axis is the entity's position in the world.
-        //! @param scaleY The multiplier by which to scale the entity along the Y axis in world space.
-        virtual void SetScaleY([[maybe_unused]] float scaleY) {}
-
-        //! @deprecated Use SetLocalScaleZ()
-        //! Scales the entity along the world's Z axis. The origin of the axis is the entity's position in the world.
-        //! @param scaleZ The multiplier by which to scale the entity along the Z axis in world space.
-        virtual void SetScaleZ([[maybe_unused]] float scaleZ) {}
-
-        //! @deprecated Use GetLocalScale()
-        //! Gets the scale of the entity in world space.
-        //! @return A three-dimensional vector that represents the scale of the entity in world space.
-        virtual AZ::Vector3 GetScale() { return AZ::Vector3(FLT_MAX); }
-
-        //! @deprecated Use GetLocalScale()
-        //! Gets the amount by which an entity is scaled along the world's X axis.
-        //! @return The amount by which an entity is scaled along the X axis in world space.
-        virtual float GetScaleX() { return FLT_MAX; }
-
-        //! @deprecated Use GetLocalScale()
-        //! Gets the amount by which an entity is scaled along the world's Y axis.
-        //! @return The amount by which an entity is scaled along the Y axis in world space.
-        virtual float GetScaleY() { return FLT_MAX; }
-
-        //! @deprecated Use GetLocalScale()
-        //! Gets the amount by which an entity is scaled along the world's Z axis.
-        //! @return The amount by which an entity is scaled along the Z axis in world space.
-        virtual float GetScaleZ() { return FLT_MAX; }
-
         //! Set local scale of the transform.
         //! @param scale The new scale to set along three local axes.
         virtual void SetLocalScale([[maybe_unused]] const AZ::Vector3& scale) {}
