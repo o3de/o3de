@@ -152,7 +152,8 @@ namespace AZ
             const Data::Asset<RPI::ModelAsset>& modelAsset,
             const MaterialAssignmentMap& materials,
             bool skinnedMeshWithMotion,
-            bool rayTracingEnabled)
+            bool rayTracingEnabled,
+            const RequiresCloneCallback requiresCloneCallback)
         {
             AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
 
@@ -170,7 +171,7 @@ namespace AZ
             meshDataHandle->m_materialAssignments = materials;
             meshDataHandle->m_objectId = m_transformService->ReserveObjectId();
             meshDataHandle->m_originalModelAsset = modelAsset;
-            meshDataHandle->m_requiresCloningCallback = m_requiresCloningCallback;
+            meshDataHandle->m_requiresCloningCallback = requiresCloneCallback;
             meshDataHandle->m_meshLoader = AZStd::make_unique<MeshDataInstance::MeshLoader>(modelAsset, &*meshDataHandle);
 
             return meshDataHandle;
@@ -180,13 +181,14 @@ namespace AZ
             const Data::Asset<RPI::ModelAsset>& modelAsset,
             const Data::Instance<RPI::Material>& material,
             bool skinnedMeshWithMotion,
-            bool rayTracingEnabled)
+            bool rayTracingEnabled,
+            const RequiresCloneCallback requiresCloneCallback)
         {
             Render::MaterialAssignmentMap materials;
             Render::MaterialAssignment& defaultMaterial = materials[AZ::Render::DefaultMaterialAssignmentId];
             defaultMaterial.m_materialInstance = material;
 
-            return AcquireMesh(modelAsset, materials, skinnedMeshWithMotion, rayTracingEnabled);
+            return AcquireMesh(modelAsset, materials, skinnedMeshWithMotion, rayTracingEnabled, requiresCloneCallback);
         }
 
         bool MeshFeatureProcessor::ReleaseMesh(MeshHandle& meshHandle)
@@ -269,12 +271,6 @@ namespace AZ
             {
                 handler.Connect(meshHandle->m_meshLoader->GetModelChangedEvent());
             }
-        }
-
-        void MeshFeatureProcessor::SetRequiresCloningCallback(
-            const MeshFeatureProcessorInterface::RequiresCloneCallback& requiresCloningCallback)
-        {
-            m_requiresCloningCallback = requiresCloningCallback;
         }
 
         void MeshFeatureProcessor::SetTransform(const MeshHandle& meshHandle, const AZ::Transform& transform, const AZ::Vector3& nonUniformScale)

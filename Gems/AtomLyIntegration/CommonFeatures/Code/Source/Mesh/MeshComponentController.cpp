@@ -187,10 +187,6 @@ namespace AZ
 
             m_meshFeatureProcessor = RPI::Scene::GetFeatureProcessorForEntity<MeshFeatureProcessorInterface>(m_entityId);
             AZ_Error("MeshComponentController", m_meshFeatureProcessor, "Unable to find a MeshFeatureProcessorInterface on the entityId.");
-            if (m_meshFeatureProcessor)
-            {
-                m_meshFeatureProcessor->SetRequiresCloningCallback(&MeshComponentController::RequiresCloning);
-            }
 
             m_cachedNonUniformScale = AZ::Vector3::CreateOne();
             AZ::NonUniformScaleRequestBus::EventResult(m_cachedNonUniformScale, m_entityId, &AZ::NonUniformScaleRequests::GetScale);
@@ -312,7 +308,8 @@ namespace AZ
                 MaterialComponentRequestBus::EventResult(materials, m_entityId, &MaterialComponentRequests::GetMaterialOverrides);
 
                 m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
-                m_meshHandle = m_meshFeatureProcessor->AcquireMesh(m_configuration.m_modelAsset, materials);
+                m_meshHandle = m_meshFeatureProcessor->AcquireMesh(m_configuration.m_modelAsset, materials,
+                    /*skinnedMeshWithMotion=*/false, /*rayTracingEnabled=*/true, RequiresCloning);
                 m_meshFeatureProcessor->ConnectModelChangeEventHandler(m_meshHandle, m_changeEventHandler);
 
                 const AZ::Transform& transform = m_transformInterface ? m_transformInterface->GetWorldTM() : AZ::Transform::CreateIdentity();

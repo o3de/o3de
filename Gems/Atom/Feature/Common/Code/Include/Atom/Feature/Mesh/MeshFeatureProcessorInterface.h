@@ -36,18 +36,23 @@ namespace AZ
             using MeshHandle = StableDynamicArrayHandle<MeshDataInstance>;
             using ModelChangedEvent = Event<const Data::Instance<RPI::Model>>;
 
+            typedef AZStd::function<bool(const Data::Asset<RPI::ModelAsset>& modelAsset)> RequiresCloneCallback;
+
             //! Acquires a model with an optional collection of material assignments.
+            //! @param requiresCloneCallback The callback indicates whether cloning is required for a given model asset.
             virtual MeshHandle AcquireMesh(
                 const Data::Asset<RPI::ModelAsset>& modelAsset,
                 const MaterialAssignmentMap& materials = {},
                 bool skinnedMeshWithMotion = false,
-                bool rayTracingEnabled = true) = 0;
+                bool rayTracingEnabled = true,
+                const RequiresCloneCallback requiresCloneCallback = {}) = 0;
             //! Acquires a model with a single material applied to all its meshes.
             virtual MeshHandle AcquireMesh(
                 const Data::Asset<RPI::ModelAsset>& modelAsset,
                 const Data::Instance<RPI::Material>& material,
                 bool skinnedMeshWithMotion = false,
-                bool rayTracingEnabled = true) = 0;
+                bool rayTracingEnabled = true,
+                const RequiresCloneCallback requiresCloneCallback = {}) = 0;
             //! Releases the mesh handle
             virtual bool ReleaseMesh(MeshHandle& meshHandle) = 0;
             //! Creates a new instance and handle of a mesh using an existing MeshId. Currently, this will reset the new mesh to default materials.
@@ -66,13 +71,6 @@ namespace AZ
             virtual const MaterialAssignmentMap& GetMaterialAssignmentMap(const MeshHandle& meshHandle) const = 0;
             //! Connects a handler to any changes to an RPI::Model. Changes include loading and reloading.
             virtual void ConnectModelChangeEventHandler(const MeshHandle& meshHandle, ModelChangedEvent::Handler& handler) = 0;
-
-            //! Set callback that indicates whether cloning is required for a given model asset.
-            //! Return true in case the model asset needs to be cloned before creating the model. False if there is a 1:1 relationship between
-            //! the model asset and the model and it is static and shared. In the second case the m_originalModelAsset is equal to the model
-            //! asset that the model is linked to.
-            typedef AZStd::function<bool(const Data::Asset<RPI::ModelAsset>& modelAsset)> RequiresCloneCallback;
-            virtual void SetRequiresCloningCallback(const RequiresCloneCallback& requiresCloningCallback) = 0;
 
             //! Sets the transform for a given mesh handle.
             virtual void SetTransform(const MeshHandle& meshHandle, const Transform& transform,

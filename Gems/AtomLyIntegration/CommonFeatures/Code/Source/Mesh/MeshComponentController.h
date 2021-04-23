@@ -119,7 +119,9 @@ namespace AZ
 
             //! Check if the model asset requires to be cloned (e.g. cloth) for unique model instances.
             //! @param modelAsset The model asset to check.
-            //! @result True in case e.g. a cloth buffer is found, false if no indication is found that requires unique model instances.
+            //! @result True in case the model asset needs to be cloned before creating the model. False if there is a 1:1 relationship between
+            //! the model asset and the model and it is static and shared. In the second case the m_originalModelAsset of the mesh handle is
+            //! equal to the model asset that the model is linked to.
             static bool RequiresCloning(const Data::Asset<RPI::ModelAsset>& modelAsset);
 
             void HandleModelChange(Data::Instance<RPI::Model> model);

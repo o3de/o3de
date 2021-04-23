@@ -135,12 +135,14 @@ namespace AZ
                 const Data::Asset<RPI::ModelAsset>& modelAsset,
                 const MaterialAssignmentMap& materials = {},
                 bool skinnedMeshWithMotion = false,
-                bool rayTracingEnabled = true) override;
+                bool rayTracingEnabled = true,
+                const RequiresCloneCallback requiresCloneCallback = {}) override;
             MeshHandle AcquireMesh(
                 const Data::Asset<RPI::ModelAsset> &modelAsset,
                 const Data::Instance<RPI::Material>& material,
                 bool skinnedMeshWithMotion = false,
-                bool rayTracingEnabled = true) override;
+                bool rayTracingEnabled = true,
+                const RequiresCloneCallback requiresCloneCallback = {}) override;
             bool ReleaseMesh(MeshHandle& meshHandle) override;
             MeshHandle CloneMesh(const MeshHandle& meshHandle) override;
 
@@ -150,8 +152,6 @@ namespace AZ
             void SetMaterialAssignmentMap(const MeshHandle& meshHandle, const MaterialAssignmentMap& materials) override;
             const MaterialAssignmentMap& GetMaterialAssignmentMap(const MeshHandle& meshHandle) const override;
             void ConnectModelChangeEventHandler(const MeshHandle& meshHandle, ModelChangedEvent::Handler& handler) override;
-
-            void SetRequiresCloningCallback(const MeshFeatureProcessorInterface::RequiresCloneCallback& requiresCloningCallback) override;
 
             void SetTransform(const MeshHandle& meshHandle, const AZ::Transform& transform,
                 const AZ::Vector3& nonUniformScale = AZ::Vector3::CreateOne()) override;
@@ -191,7 +191,6 @@ namespace AZ
             RayTracingFeatureProcessor* m_rayTracingFeatureProcessor = nullptr;
             AZ::RPI::ShaderSystemInterface::GlobalShaderOptionUpdatedEvent::Handler m_handleGlobalShaderOptionUpdate;
             bool m_forceRebuildDrawPackets = false;
-            MeshFeatureProcessorInterface::RequiresCloneCallback m_requiresCloningCallback;
         };
     } // namespace Render
 } // namespace AZ

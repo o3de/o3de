@@ -485,7 +485,7 @@ namespace AZ
             {
                 // Last boolean parameter indicates if motion vector is enabled
                 m_meshHandle = AZStd::make_shared<MeshFeatureProcessorInterface::MeshHandle>(
-                    m_meshFeatureProcessor->AcquireMesh(m_skinnedMeshInstance->m_model->GetModelAsset(), materials, true));
+                    m_meshFeatureProcessor->AcquireMesh(m_skinnedMeshInstance->m_model->GetModelAsset(), materials, /*skinnedMeshWithMotion=*/true));
             }
 
             // If render proxies already exist, they will be auto-freed
