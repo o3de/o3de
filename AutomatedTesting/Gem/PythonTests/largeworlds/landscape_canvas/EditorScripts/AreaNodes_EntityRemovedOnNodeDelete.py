@@ -21,7 +21,7 @@ import azlmbr.math as math
 import azlmbr.paths
 
 sys.path.append(os.path.join(azlmbr.paths.devroot, 'AutomatedTesting', 'Gem', 'PythonTests'))
-from automatedtesting_shared.editor_test_helper import EditorTestHelper
+from editor_python_test_tools.editor_test_helper import EditorTestHelper
 
 editorId = azlmbr.globals.property.LANDSCAPE_CANVAS_EDITOR_ID
 createdEntityId = None
