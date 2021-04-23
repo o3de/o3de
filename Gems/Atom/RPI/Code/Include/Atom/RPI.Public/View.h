@@ -189,7 +189,7 @@ namespace AZ
             bool m_worldToClipMatrixChanged = true;
             bool m_worldToClipPrevMatrixNeedsUpdate = false;
 
-            MatrixChangedEvent m_oWworldToClipMatrixChange;
+            MatrixChangedEvent m_onworldToClipMatrixChange;
             MatrixChangedEvent m_onWorldToViewMatrixChange;
         };
 

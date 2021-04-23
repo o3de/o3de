@@ -105,7 +105,7 @@ namespace AZ
             m_worldToClipMatrixChanged = true;
 
             m_onWorldToViewMatrixChange.Signal(m_worldToViewMatrix);
-            m_oWworldToClipMatrixChange.Signal(m_worldToClipMatrix);
+            m_onworldToClipMatrixChange.Signal(m_worldToClipMatrix);
 
             InvalidateSrg();
         }
