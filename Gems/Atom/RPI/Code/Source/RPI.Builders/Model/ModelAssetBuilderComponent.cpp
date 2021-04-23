@@ -22,6 +22,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzFramework/StringFunc/StringFunc.h>
 
 #include <Atom/RPI.Reflect/Buffer/BufferAssetCreator.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
@@ -205,7 +206,7 @@ namespace AZ
             const auto isNonOptimizedMesh = [](const SceneAPI::Containers::SceneGraph& graph, SceneAPI::Containers::SceneGraph::NodeIndex& index)
             {
                 return SceneAPI::Utilities::SceneGraphSelector::IsMesh(graph, index) &&
-                    !AZStd::string_view{graph.GetNodeName(index).GetName(), graph.GetNodeName(index).GetNameLength()}.ends_with("_optimized");
+                    !AZStd::string_view{graph.GetNodeName(index).GetName(), graph.GetNodeName(index).GetNameLength()}.ends_with(SceneAPI::Utilities::OptimizedMeshSuffix);
             };
 
             if (lodRule)
@@ -315,10 +316,9 @@ namespace AZ
                     // this process transparent for the end-asset generated, the name assigned to the source mesh
                     // content will not include the "_optimized" prefix.
                     AZStd::string sourceMeshName = meshName;
-                    const AZStd::string optimizedSuffix = "_optimized";
-                    if (sourceMeshName.ends_with(optimizedSuffix))
+                    if (sourceMeshName.ends_with(SceneAPI::Utilities::OptimizedMeshSuffix))
                     {
-                        sourceMeshName = sourceMeshName.substr(0, sourceMeshName.size() - optimizedSuffix.size());
+                        AZ::StringFunc::RChop(sourceMeshName, strlen(SceneAPI::Utilities::OptimizedMeshSuffix));
                     }
                     sourceMesh.m_name = sourceMeshName;
 

@@ -54,6 +54,7 @@
 #include <SceneAPI/SceneCore/Events/GenerateEventContext.h>
 #include <SceneAPI/SceneCore/Events/ProcessingResult.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
+#include <SceneAPI/SceneCore/Utilities/SceneGraphSelector.h>
 #include <SceneAPI/SceneData/GraphData/BlendShapeData.h>
 #include <SceneAPI/SceneData/GraphData/MeshData.h>
 #include <SceneAPI/SceneData/GraphData/MeshVertexBitangentData.h>
@@ -281,7 +282,7 @@ namespace AZ::SceneGenerationComponents
 
                 const AZStd::string name =
                     AZStd::string(graph.GetNodeName(nodeIndex).GetName(), graph.GetNodeName(nodeIndex).GetNameLength())
-                    + "_optimized";
+                    + SceneAPI::Utilities::OptimizedMeshSuffix;
                 if (graph.Find(name).IsValid())
                 {
                     AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "Optimized mesh already exists at '%s', there must be multiple mesh groups that have selected this mesh. Skipping the additional ones.", name.c_str());

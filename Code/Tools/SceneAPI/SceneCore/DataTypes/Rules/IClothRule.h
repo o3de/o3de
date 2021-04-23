@@ -13,11 +13,13 @@
 #pragma once
 
 #include <AzCore/Math/Color.h>
+#include <AzFramework/StringFunc/StringFunc.h>
 
 #include <SceneAPI/SceneCore/DataTypes/Rules/IRule.h>
 #include <SceneAPI/SceneCore/Containers/SceneGraph.h>
 #include <SceneAPI/SceneCore/Containers/RuleContainer.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
+#include <SceneAPI/SceneCore/Utilities/SceneGraphSelector.h>
 
 namespace AZ
 {
@@ -52,10 +54,9 @@ namespace AZ
 
                     AZStd::string meshNodeName = graph.GetNodeName(meshNodeIndex).GetPath();
 
-                    const AZStd::string optimizedSuffix = "_optimized";
-                    if (meshNodeName.ends_with(optimizedSuffix))
+                    if (meshNodeName.ends_with(Utilities::OptimizedMeshSuffix))
                     {
-                        meshNodeName = meshNodeName.substr(0, meshNodeName.size() - optimizedSuffix.size());
+                        AZ::StringFunc::RChop(meshNodeName, strlen(Utilities::OptimizedMeshSuffix));
                     }
 
                     for (size_t ruleIndex = 0; ruleIndex < rules.GetRuleCount(); ++ruleIndex)
