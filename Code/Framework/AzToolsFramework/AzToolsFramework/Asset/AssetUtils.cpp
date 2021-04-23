@@ -218,13 +218,6 @@ namespace AzToolsFramework::AssetUtils
         AZStd::vector<AZ::IO::Path> configFiles;
         AZ::IO::Path configRoot(engineRoot);
 
-        AZ::IO::Path rootConfigFile = configRoot / AssetProcessorPlatformConfigFileName;
-        configFiles.push_back(rootConfigFile);
-
-        // Add a file entry for the Engine Root AssetProcessor setreg file
-        rootConfigFile = configRoot / AssetProcessorPlatformConfigSetreg;
-        configFiles.push_back(rootConfigFile);
-
         if (addPlatformConfigs)
         {
             AddPlatformConfigFilePaths(engineRoot, configFiles);

@@ -170,7 +170,7 @@ TEST_F(PlatformConfigurationUnitTests, TestReadScanFolderRoot_FromSettingsRegist
     EXPECT_TRUE(settingsRegistry->Get(scanOrder, AZ::SettingsRegistryInterface::FixedValueString(AssetProcessor::AssetProcessorSettingsKey)
         + "/ScanFolder SettingsRegistryTest/order"));
 
-    // These test values come from the <dev_root>/Engine/Registry/AssetProcessorPlatformConfig.setreg file
+    // These test values come from the <dev_root>/Registry/AssetProcessorPlatformConfig.setreg file
     EXPECT_STREQ("_TestPath", watchPath.c_str());
     EXPECT_FALSE(recurseScanFolder);
     EXPECT_EQ(20000, scanOrder);
@@ -200,7 +200,7 @@ public:
         m_config.reset();
         PlatformConfigurationUnitTests::TearDown();
     }
-    
+
     AZStd::vector<AssetBuilderSDK::PlatformInfo> m_platforms;
     AZStd::unique_ptr<UnitTestPlatformConfiguration> m_config;
     AZStd::unique_ptr<QTemporaryDir> m_tempEngineRoot = nullptr; // this actually creates the folder in its constructor, so hold off until setup..
@@ -280,7 +280,7 @@ TEST_F(PlatformConfigurationUnitTests_OnePCHostFixture, GetOverridingFile_Exists
     UnitTestUtils::CreateDummyFile(differentCaseDummyFileName, QString("testcase2\n"));
     m_config->AddScanFolder(ScanFolderInfo(scanfolder1Path, "ScanFolder1", "sf1", "", false, true, m_platforms), true);
     m_config->AddScanFolder(ScanFolderInfo(scanfolder2Path, "ScanFolder2", "sf2", "", false, true, m_platforms), true);
-    
+
     // Perform the test by asking it whether the existing real winning file is being overridden by anyone.
     QString overrider = m_config->GetOverridingFile("TestCase.tXt", scanfolder1Path);
 
@@ -325,7 +325,7 @@ TEST_F(PlatformConfigurationUnitTests_OnePCHostFixture, FindFirstMatchingFile_Do
 
 // note that we do not guarantee that FindFirstMatchingFile always returns the correct case, as it is a super hot path
 // function, and the only time case could be incorrect is in the situation where a file with different case overrides
-// an underlying file, ie, 
+// an underlying file, ie,
 // Engine/EngineAssets/Textures/StartScreen.tif
 // MyGame/EngineAssets/textures/startscreen.tif <-- would override the above because game has higher / more important priority.
 
