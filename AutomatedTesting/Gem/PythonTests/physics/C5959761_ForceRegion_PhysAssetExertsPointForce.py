@@ -76,8 +76,8 @@ def C5959761_ForceRegion_PhysAssetExertsPointForce():
     import azlmbr.bus as bus
     import azlmbr.math
 
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     TIMEOUT = 2.0
 
@@ -147,5 +147,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C5959761_ForceRegion_PhysAssetExertsPointForce)

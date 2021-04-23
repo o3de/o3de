@@ -84,7 +84,7 @@ namespace AZ
                     NoneCheckable,              // No nodes can be checked.
                     OnlyFilterTypesCheckable    // Only nodes in the filter type list can be checked.
                 };
-                // Updates the tree to include/exclude check boxes and the master selection. Call "BuildTree()" to rebuild the tree.
+                // Updates the tree to include/exclude check boxes and the primary selection. Call "BuildTree()" to rebuild the tree.
                 virtual void MakeCheckable(CheckableOption option);
                 // Add a type to filter for. Filter types are used to determine if a check box is added and/or to be shown if
                 //      the type is an end point. See "IncludeEndPoints" and "MakeCheckable" for more details.

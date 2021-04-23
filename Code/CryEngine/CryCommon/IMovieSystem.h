@@ -327,7 +327,16 @@ struct IMovieCallback
 */
 struct IAnimTrack
 {
-    AZ_RTTI(IAnimTrack, "{AA0D5170-FB28-426F-BA13-7EFF6BB3AC67}")
+    AZ_RTTI(IAnimTrack, "{AA0D5170-FB28-426F-BA13-7EFF6BB3AC67}");
+    AZ_CLASS_ALLOCATOR(IAnimTrack, AZ::SystemAllocator, 0);
+
+    static void Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<IAnimTrack>();
+        }
+    }
 
     //! Flags that can be set on animation track.
     enum EAnimTrackFlags
@@ -594,7 +603,16 @@ struct IAnimNodeOwner
 struct IAnimNode
 {
 public:
-    AZ_RTTI(IAnimNode, "{0A096354-7F26-4B18-B8C0-8F10A3E0440A}")
+    AZ_RTTI(IAnimNode, "{0A096354-7F26-4B18-B8C0-8F10A3E0440A}");
+    AZ_CLASS_ALLOCATOR(IAnimNode, AZ::SystemAllocator, 0);
+
+    static void Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<IAnimNode>();
+        }
+    }
 
     //////////////////////////////////////////////////////////////////////////
     // Supported params.
@@ -922,7 +940,7 @@ struct IAnimSequence
 
     static void Reflect(AZ::ReflectContext* context)
     {
-        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context); serializeContext != nullptr)
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<IAnimSequence>();
         }

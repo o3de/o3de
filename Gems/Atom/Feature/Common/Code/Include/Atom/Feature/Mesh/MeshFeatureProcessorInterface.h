@@ -62,9 +62,12 @@ namespace AZ
             //! Connects a handler to any changes to an RPI::Model. Changes include loading and reloading.
             virtual void ConnectModelChangeEventHandler(const MeshHandle& meshHandle, ModelChangedEvent::Handler& handler) = 0;
             //! Sets the transform for a given mesh handle.
-            virtual void SetTransform(const MeshHandle& meshHandle, const AZ::Transform& transform) = 0;
+            virtual void SetTransform(const MeshHandle& meshHandle, const Transform& transform,
+                const Vector3& nonUniformScale = Vector3::CreateOne()) = 0;
             //! Gets the transform for a given mesh handle.
             virtual Transform GetTransform(const MeshHandle& meshHandle) = 0;
+            //! Gets the non-uniform scale for a given mesh handle.
+            virtual Vector3 GetNonUniformScale(const MeshHandle& meshHandle) = 0;
             //! Sets the sort key for a given mesh handle.
             virtual void SetSortKey(const MeshHandle& meshHandle, RHI::DrawItemSortKey sortKey) = 0;
             //! Gets the sort key for a given mesh handle.
