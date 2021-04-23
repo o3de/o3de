@@ -511,7 +511,7 @@ namespace UnitTest
         }
 
         AZ::Data::Asset<AZ::RPI::ModelAsset> m_GetMeshAssetOutput;
-        const AZ::Data::Asset<AZ::RPI::ModelAsset>& GetModelAsset() const override
+        AZ::Data::Asset<const AZ::RPI::ModelAsset> GetModelAsset() const override
         {
             return m_GetMeshAssetOutput;
         }
@@ -546,7 +546,7 @@ namespace UnitTest
             return m_modelAssetPathOutput;
         }
 
-        const AZ::Data::Instance<AZ::RPI::Model> GetModel() const override
+        AZ::Data::Instance<AZ::RPI::Model> GetModel() const override
         {
             return AZ::Data::Instance<AZ::RPI::Model>();
         }
