@@ -15,7 +15,7 @@ import pytest
 
 import ly_test_tools.environment.file_system as file_system
 
-import automatedtesting_shared.hydra_test_utils as hydra
+import editor_python_test_tools.hydra_test_utils as hydra
 
 logger = logging.getLogger(__name__)
 EDITOR_TIMEOUT = 60
@@ -210,7 +210,7 @@ class TestAtomEditorComponents(object):
             request,
             TEST_DIRECTORY,
             editor,
-            "hydra_AtomEditorComponentsTest_AddedToEntity.py",
+            "hydra_AtomEditorComponents_AddedToEntity.py",
             timeout=EDITOR_TIMEOUT,
             expected_lines=expected_lines,
             unexpected_lines=unexpected_lines,

@@ -40,8 +40,8 @@ import azlmbr.render as render
 
 sys.path.append(os.path.join(azlmbr.paths.devroot, "AutomatedTesting", "Gem", "PythonTests"))
 
-import automatedtesting_shared.hydra_editor_utils as hydra
-from automatedtesting_shared.utils import TestHelper as helper
+import editor_python_test_tools.hydra_editor_utils as hydra
+from editor_python_test_tools.utils import TestHelper as helper
 
 
 class TestAllComponentsBasicTests(object):

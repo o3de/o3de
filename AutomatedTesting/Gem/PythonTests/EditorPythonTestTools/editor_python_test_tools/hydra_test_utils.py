@@ -58,7 +58,7 @@ def launch_and_validate_results(request, test_directory, editor, editor_script, 
     if auto_test_mode:
         editor.args.extend(["--autotest_mode"])
     if null_renderer:
-        editor.args.extend(["-NullRenderer"])
+        editor.args.extend(["-rhi=null"])
 
     with editor.start():
 
