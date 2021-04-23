@@ -105,14 +105,24 @@ namespace ScriptCanvas
         AZ_Error("Script Canvas", it.second, "Cannot register a second Trait struct with the same ScriptCanvas type(%u)", it.first->first);
     }
 
-    void DataRegistry::RegisterType(const AZ::TypeId& typeId, TypeProperties typeProperties)
+    void DataRegistry::RegisterType(const AZ::TypeId& typeId, TypeProperties typeProperties, Createability registration)
     {
         Data::Type behaviorContextType = Data::FromAZType(typeId);
         if (behaviorContextType.GetType() == Data::eType::BehaviorContextObject && !behaviorContextType.GetAZType().IsNull())
         {
-            if (m_creatableTypes.find(behaviorContextType) == m_creatableTypes.end())
+            if (registration == Createability::SlotAndVariable)
             {
-                m_creatableTypes[behaviorContextType] = typeProperties;
+                if (m_creatableTypes.find(behaviorContextType) == m_creatableTypes.end())
+                {
+                    m_creatableTypes[behaviorContextType] = typeProperties;
+                }
+            }
+            else if (registration == Createability::SlotOnly)
+            {
+                if (m_slottableTypes.find(behaviorContextType) == m_slottableTypes.end())
+                {
+                    m_slottableTypes[behaviorContextType] = typeProperties;
+                }
             }
         }
     }
@@ -124,5 +134,16 @@ namespace ScriptCanvas
         {
             m_creatableTypes.erase(behaviorContextType);
         }
+    }
+
+    bool DataRegistry::IsUseableInSlot(const Data::Type& scType) const
+    {
+        return m_creatableTypes.contains(scType) || m_slottableTypes.contains(scType);
+    }
+
+    bool DataRegistry::IsUseableInSlot(const AZ::TypeId& typeId) const
+    {
+        Data::Type scType = Data::FromAZType(typeId);
+        return IsUseableInSlot(scType);
     }
 }

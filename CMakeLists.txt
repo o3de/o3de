@@ -75,9 +75,6 @@ foreach(restricted_platform ${PAL_RESTRICTED_PLATFORMS})
     endif()
 endforeach()
 
-# Recurse into directory of general python test scripts
-add_subdirectory(ctest_scripts)
-
 add_subdirectory(scripts)
 
 # SPEC-1417 will investigate and fix this
@@ -123,7 +120,10 @@ endif()
 include(cmake/RuntimeDependencies.cmake)
 # 5. Perform test impact framework post steps once all of the targets have been enumerated
 ly_test_impact_post_step()
-# 6. Generate the O3DE find file and setup install locations for scripts, tools, assets etc., required by the engine 
+# 6. Generate the O3DE find file and setup install locations for scripts, tools, assets etc., required by the engine
 if(NOT INSTALLED_ENGINE)
     ly_setup_o3de_install()
+
+    # IMPORTANT: must be included last
+    include(cmake/CPack.cmake)
 endif()

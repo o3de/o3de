@@ -91,19 +91,6 @@ namespace ScriptCanvas
             AZ_Error("ScriptCanvas", m_nodeable, "null Nodeable in NodeableNode::ConfigureSlots");
         }
 
-        AZ::Outcome<AZStd::pair<size_t, size_t>> NodeableNode::FindMethodAndInputIndexOfSlot(const SlotId& slotID) const
-        {
-            if (auto thisSlot = GetSlot(slotID))
-            {
-                if (thisSlot->GetType() == CombinedSlotType::DataIn)
-                {
-                    return m_slotExecutionMap.FindInAndInputIndexOfSlot(slotID);
-                }
-            }
-
-            return AZ::Failure();
-        }
-
         AZ::Outcome<const AZ::BehaviorClass*, AZStd::string> NodeableNode::GetBehaviorContextClass() const
         {
             AZ::BehaviorContext* behaviorContext = NodeableNodeCpp::GetBehaviorContext();

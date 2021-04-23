@@ -22,12 +22,10 @@
 #include "Settings.h"
 #include "DisplaySettings.h"
 #include "EntityObject.h"
-#include "NullEditTool.h"
 #include "Viewport.h"
 #include "GizmoManager.h"
 #include "AxisGizmo.h"
 #include "ObjectPhysicsManager.h"
-#include "EditMode/ObjectMode.h"
 #include "GameEngine.h"
 #include "WaitProgress.h"
 #include "Util/Image.h"
@@ -838,8 +836,6 @@ void CObjectManager::Update()
 
     QWidget* prevActiveWindow = QApplication::activeWindow();
 
-    CheckAndFixSelection();
-
     // Restore focus if it changed.
     if (prevActiveWindow && QApplication::activeWindow() != prevActiveWindow)
     {
@@ -1230,60 +1226,6 @@ void CObjectManager::RemoveSelection(const QString& name)
     }
 }
 
-//! Checks the state of the current selection and fixes it if necessary - Used when AZ Code modifies the selection
-void CObjectManager::CheckAndFixSelection()
-{
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
-    bool bObjectMode = qobject_cast<CObjectMode*>(GetIEditor()->GetEditTool()) != nullptr;
-
-    if (m_currSelection->GetCount() == 0)
-    {
-        // Nothing selected.
-        EndEditParams();
-        if (bObjectMode)
-        {
-            GetIEditor()->ShowTransformManipulator(false);
-        }
-    }
-    else if (m_currSelection->GetCount() == 1)
-    {
-        if (!m_bSingleSelection)
-        {
-            EndEditParams();
-        }
-
-        CBaseObject* newSelObject = m_currSelection->GetObject(0);
-        // Single object selected.
-        if (m_currEditObject != m_currSelection->GetObject(0))
-        {
-            m_bSelectionChanged = false;
-            if (!m_currEditObject || (m_currEditObject->metaObject() != newSelObject->metaObject()))
-            {
-                // If old object and new objects are of different classes.
-                EndEditParams();
-            }
-            if (GetIEditor()->GetEditTool() && GetIEditor()->GetEditTool()->IsUpdateUIPanel())
-            {
-                BeginEditParams(newSelObject, OBJECT_EDIT);
-            }
-
-            //AfxGetMainWnd()->SetFocus();
-        }
-    }
-    else if (m_currSelection->GetCount() > 1)
-    {
-        // Multiple objects are selected.
-        if (m_bSelectionChanged && bObjectMode)
-        {
-            m_bSelectionChanged = false;
-            m_nLastSelCount = m_currSelection->GetCount();
-            EndEditParams();
-
-            m_currEditObject = m_currSelection->GetObject(0);
-        }
-    }
-}
-
 void CObjectManager::SelectCurrent()
 {
     AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
@@ -1404,8 +1346,6 @@ void CObjectManager::FindDisplayableObjects(DisplayContext& dc, bool bDisplay)
     pDispayedViewObjects->ClearObjects();
     pDispayedViewObjects->Reserve(m_visibleObjects.size());
 
-    CEditTool* pEditTool = GetIEditor()->GetEditTool();
-
     const bool newViewportInteractionModelEnabled = GetIEditor()->IsNewViewportInteractionModelEnabled();
 
     if (dc.flags & DISPLAY_2D)
@@ -1425,11 +1365,6 @@ void CObjectManager::FindDisplayableObjects(DisplayContext& dc, bool bDisplay)
                     if (!newViewportInteractionModelEnabled)
                     {
                         obj->Display(dc);
-                    }
-
-                    if (pEditTool)
-                    {
-                        pEditTool->DrawObjectHelpers(obj, dc);
                     }
                 }
             }
@@ -1475,11 +1410,6 @@ void CObjectManager::FindDisplayableObjects(DisplayContext& dc, bool bDisplay)
                         if (!newViewportInteractionModelEnabled)
                         {
                             obj->Display(dc);
-                        }
-
-                        if (pEditTool)
-                        {
-                            pEditTool->DrawObjectHelpers(obj, dc);
                         }
                     }
                 }
@@ -1736,12 +1666,6 @@ bool CObjectManager::HitTestObject(CBaseObject* obj, HitContext& hc)
         else if (!obj->HitTestRect(hc))
         {
             return false;
-        }
-
-        CEditTool* pEditTool = GetIEditor()->GetEditTool();
-        if (pEditTool && pEditTool->HitTest(obj, hc))
-        {
-            return true;
         }
     }
 
@@ -2742,10 +2666,6 @@ void CObjectManager::SelectObjectInRect(CBaseObject* pObj, CViewport* view, HitC
 
 void CObjectManager::EnteredComponentMode(const AZStd::vector<AZ::Uuid>& /*componentModeTypes*/)
 {
-    // provide an EditTool that does nothing.
-    // note: will hide rotation gizmo when active (CRotateTool)
-    GetIEditor()->SetEditTool(new NullEditTool());
-
     // hide current gizmo for entity (translate/rotate/scale)
     IGizmoManager* gizmoManager = GetGizmoManager();
     const size_t gizmoCount = static_cast<size_t>(gizmoManager->GetGizmoCount());
@@ -2757,9 +2677,6 @@ void CObjectManager::EnteredComponentMode(const AZStd::vector<AZ::Uuid>& /*compo
 
 void CObjectManager::LeftComponentMode(const AZStd::vector<AZ::Uuid>& /*componentModeTypes*/)
 {
-    // return to default EditTool (in whatever transform mode is set)
-    GetIEditor()->SetEditTool(nullptr);
-
     // show translate/rotate/scale gizmo again
     if (IGizmoManager* gizmoManager = GetGizmoManager())
     {

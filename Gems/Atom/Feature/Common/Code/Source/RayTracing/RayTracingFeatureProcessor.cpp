@@ -143,7 +143,7 @@ namespace AZ
             m_meshInfoBufferNeedsUpdate = true;
         }
 
-        void RayTracingFeatureProcessor::SetMeshTransform(const ObjectId objectId, AZ::Transform transform)
+        void RayTracingFeatureProcessor::SetMeshTransform(const ObjectId objectId, const AZ::Transform transform, const AZ::Vector3 nonUniformScale)
         {
             if (!m_rayTracingEnabled)
             {
@@ -154,6 +154,7 @@ namespace AZ
             if (itMesh != m_meshes.end())
             {
                 itMesh->second.m_transform = transform;
+                itMesh->second.m_nonUniformScale = nonUniformScale;
                 m_revision++;
             }
 
