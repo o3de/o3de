@@ -74,7 +74,7 @@ namespace ScriptCanvasDeveloperEditor
             DumpBehaviorContextMethods(tsDoc);
             DumpBehaviorContextEbuses(tsDoc);
 
-            tsDoc->WriteToDisk(tsFileName.c_str());
+            tsDoc->WriteToDisk(translationScriptPath.c_str());
         }
         
         void DumpBehaviorContextMethods(const XMLDocPtr& doc)
