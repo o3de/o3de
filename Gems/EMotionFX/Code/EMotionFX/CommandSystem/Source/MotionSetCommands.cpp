@@ -260,7 +260,10 @@ namespace CommandSystem
             const AZStd::string commandString = AZStd::string::format("AdjustMotionSet -motionSetID %i -dirtyFlag true", mOldParentSetID);
             GetCommandManager()->ExecuteCommandInsideCommand(commandString, outResult);
         }
-        
+
+        // Update unique datas for all anim graph instances using the given motion set.
+        EMotionFX::GetAnimGraphManager().UpdateInstancesUniqueDataUsingMotionSet(motionSet);
+
         // Destroy the motion set.
         EMotionFX::GetMotionManager().RemoveMotionSet(motionSet, true);
 
@@ -277,9 +280,6 @@ namespace CommandSystem
 
             animGraph->RecursiveReinit();
         }
-
-        // Update unique datas for all anim graph instances using the given motion set.
-        EMotionFX::GetAnimGraphManager().UpdateInstancesUniqueDataUsingMotionSet(motionSet);
 
         // Mark the workspace as dirty.
         mOldWorkspaceDirtyFlag = GetCommandManager()->GetWorkspaceDirtyFlag();
