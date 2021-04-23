@@ -88,30 +88,22 @@ namespace AzToolsFramework
         QWidget::paintEvent(e);
     }
 
-#pragma optimize("", off)
     void ThumbnailPropertyCtrl::enterEvent(QEvent* e)
     {
         m_dropDownArrow->setPixmap(QPixmap(":/stylesheet/img/triangle0_highlighted.png"));
         if (!m_thumbnailEnlarged && m_key)
         {
-            QWidget* rootWidget = QApplication::activeWindow();
-            if (!rootWidget)
-                return;
-            QPoint rootPosition = rootWidget->pos();
-            QPoint myPosition = pos();
-            QPoint position = mapToGlobal(myPosition - QPoint(185, 0));
+            QPoint position = mapToGlobal(pos() - QPoint(185, 0));
             QSize size(180, 180);
             m_thumbnailEnlarged = new Thumbnailer::ThumbnailWidget();
             m_thumbnailEnlarged->setFixedSize(size);
             m_thumbnailEnlarged->move(position);
-            m_thumbnailEnlarged->setWindowTitle("test");
             m_thumbnailEnlarged->setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
             m_thumbnailEnlarged->SetThumbnailKey(m_key);
             m_thumbnailEnlarged->show();
         }
         QWidget::enterEvent(e);
     }
-#pragma optimize("", on)
 
     void ThumbnailPropertyCtrl::leaveEvent(QEvent* e)
     {
