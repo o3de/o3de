@@ -237,6 +237,7 @@ namespace NvCloth
             {
                 continue;
             }
+
             // Blending matrices the same way done in GPU shaders, by adding each weighted matrix element by element.
             // This way the skinning results are much similar to the skinning performed in GPU.
             for (int i = 0; i < 3; ++i)
