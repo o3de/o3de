@@ -12,7 +12,6 @@
 ################################################################################
 # Atom Renderer: Automated Tests
 # Runs EditorPythonBindings (hydra) scripts inside the Editor to verify test results for the Atom renderer.
-# Utilizes a combination of screenshot comparisons and log files to verify test results.
 ################################################################################
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedTesting IN_LIST LY_PROJECTS)
@@ -21,7 +20,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedT
         TEST_SUITE main
         PATH ${CMAKE_CURRENT_LIST_DIR}/test_Atom_MainSuite.py
         TEST_SERIAL
-        TIMEOUT 1200
+        TIMEOUT 300
         RUNTIME_DEPENDENCIES
             AssetProcessor
             AutomatedTesting.Assets
