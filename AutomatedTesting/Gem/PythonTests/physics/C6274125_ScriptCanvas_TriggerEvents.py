@@ -75,12 +75,11 @@ def C6274125_ScriptCanvas_TriggerEvents():
 
     imports.init()
 
-
     import azlmbr.legacy.general as general
     import azlmbr.bus
 
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     helper.init_idle()
 
@@ -136,5 +135,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C6274125_ScriptCanvas_TriggerEvents)

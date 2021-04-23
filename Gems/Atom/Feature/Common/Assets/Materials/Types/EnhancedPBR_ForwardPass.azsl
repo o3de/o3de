@@ -213,9 +213,9 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     float3 emissive = GetEmissiveInput(MaterialSrg::m_emissiveMap, MaterialSrg::m_sampler, emissiveUv, MaterialSrg::m_emissiveIntensity, MaterialSrg::m_emissiveColor.rgb, o_emissiveEnabled, o_emissive_useTexture);
 
     // ------- Occlusion -------
-
-    float2 occlusionUv = IN.m_uv[MaterialSrg::m_ambientOcclusionMapUvIndex];
-    float occlusion = GetOcclusionInput(MaterialSrg::m_ambientOcclusionMap, MaterialSrg::m_sampler, occlusionUv, MaterialSrg::m_ambientOcclusionFactor, o_ambientOcclusion_useTexture);
+    
+    float diffuseAmbientOcclusion = GetOcclusionInput(MaterialSrg::m_diffuseOcclusionMap, MaterialSrg::m_sampler, IN.m_uv[MaterialSrg::m_diffuseOcclusionMapUvIndex], MaterialSrg::m_diffuseOcclusionFactor, o_diffuseOcclusion_useTexture);
+    float specularOcclusion = GetOcclusionInput(MaterialSrg::m_specularOcclusionMap, MaterialSrg::m_sampler, IN.m_uv[MaterialSrg::m_specularOcclusionMapUvIndex], MaterialSrg::m_specularOcclusionFactor, o_specularOcclusion_useTexture);
 
     // ------- Subsurface -------
 
@@ -252,7 +252,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     PbrLightingOutput lightingOutput = PbrLighting(IN,
         baseColor, metallic, roughness, specularF0Factor, 
         normal, IN.m_tangent, IN.m_bitangent, anisotropy,
-        emissive, occlusion, transmissionTintThickness, MaterialSrg::m_transmissionParams, clearCoatFactor, clearCoatRoughness, clearCoatNormal, alpha, o_opacity_mode);
+        emissive, diffuseAmbientOcclusion, specularOcclusion, transmissionTintThickness, MaterialSrg::m_transmissionParams, clearCoatFactor, clearCoatRoughness, clearCoatNormal, alpha, o_opacity_mode);
 
     // ------- Opacity -------
 
@@ -311,7 +311,6 @@ ForwardPassOutputWithDepth EnhancedPbr_ForwardPassPS(VSOutput IN, bool isFrontFa
     OUT.m_specularF0 = lightingOutput.m_specularF0;
     OUT.m_albedo = lightingOutput.m_albedo;
     OUT.m_normal = lightingOutput.m_normal;
-    OUT.m_clearCoatNormal = lightingOutput.m_clearCoatNormal;
     OUT.m_scatterDistance = lightingOutput.m_scatterDistance;
     OUT.m_depth = depth;
     return OUT;
@@ -330,7 +329,6 @@ ForwardPassOutput EnhancedPbr_ForwardPassPS_EDS(VSOutput IN, bool isFrontFace : 
     OUT.m_specularF0 = lightingOutput.m_specularF0;
     OUT.m_albedo = lightingOutput.m_albedo;
     OUT.m_normal = lightingOutput.m_normal;
-    OUT.m_clearCoatNormal = lightingOutput.m_clearCoatNormal;
     OUT.m_scatterDistance = lightingOutput.m_scatterDistance;
 
     return OUT;

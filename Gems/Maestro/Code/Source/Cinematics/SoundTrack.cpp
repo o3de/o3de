@@ -60,23 +60,41 @@ void CSoundTrack::GetKeyInfo(int key, const char*& description, float& duration)
 }
 
 //////////////////////////////////////////////////////////////////////////
-template<>
-inline void TAnimTrack<ISoundKey>::Reflect(AZ::SerializeContext* serializeContext)
+static bool SoundTrackVersionConverter(
+    AZ::SerializeContext& serializeContext,
+    AZ::SerializeContext::DataElementNode& rootElement)
 {
-    serializeContext->Class<TAnimTrack<ISoundKey> >()
-        ->Version(2)
-        ->Field("Flags", &TAnimTrack<ISoundKey>::m_flags)
-        ->Field("Range", &TAnimTrack<ISoundKey>::m_timeRange)
-        ->Field("ParamType", &TAnimTrack<ISoundKey>::m_nParamType)
-        ->Field("Keys", &TAnimTrack<ISoundKey>::m_keys)
-        ->Field("Id", &TAnimTrack<ISoundKey>::m_id);
+    if (rootElement.GetVersion() < 3)
+    {
+        rootElement.AddElement(serializeContext, "BaseClass1", azrtti_typeid<IAnimTrack>());
+    }
+
+    return true;
+}
+
+template<>
+inline void TAnimTrack<ISoundKey>::Reflect(AZ::ReflectContext* context)
+{
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<TAnimTrack<ISoundKey>, IAnimTrack>()
+            ->Version(3, &SoundTrackVersionConverter)
+            ->Field("Flags", &TAnimTrack<ISoundKey>::m_flags)
+            ->Field("Range", &TAnimTrack<ISoundKey>::m_timeRange)
+            ->Field("ParamType", &TAnimTrack<ISoundKey>::m_nParamType)
+            ->Field("Keys", &TAnimTrack<ISoundKey>::m_keys)
+            ->Field("Id", &TAnimTrack<ISoundKey>::m_id);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CSoundTrack::Reflect(AZ::SerializeContext* serializeContext)
+void CSoundTrack::Reflect(AZ::ReflectContext* context)
 {
-    TAnimTrack<ISoundKey>::Reflect(serializeContext);
+    TAnimTrack<ISoundKey>::Reflect(context);
 
-    serializeContext->Class<CSoundTrack, TAnimTrack<ISoundKey> >()
-        ->Version(1);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<CSoundTrack, TAnimTrack<ISoundKey>>()
+            ->Version(1);
+    }
 }

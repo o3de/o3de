@@ -98,5 +98,6 @@ namespace MaterialEditor
         AZStd::unordered_set<AZ::Uuid> m_documentIdsToRebuild;
         AZStd::unordered_set<AZ::Uuid> m_documentIdsToReopen;
         AZStd::unique_ptr<MaterialEditorSettings> m_settings;
+        const size_t m_maxMessageBoxLineCount = 15;
     };
 }

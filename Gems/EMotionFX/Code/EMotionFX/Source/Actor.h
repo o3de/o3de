@@ -893,6 +893,8 @@ namespace EMotionFX
         const AZ::Data::Asset<AZ::RPI::SkinMetaAsset>& GetSkinMetaAsset() const { return m_skinMetaAsset; }
         const AZ::Data::Asset<AZ::RPI::MorphTargetMetaAsset>& GetMorphTargetMetaAsset() const { return m_morphTargetMetaAsset; }
 
+        const AZStd::unordered_map<AZ::u16, AZ::u16>& GetSkinToSkeletonIndexMap() const { return m_skinToSkeletonIndexMap; }
+
         void SetMeshAsset(AZ::Data::Asset<AZ::RPI::ModelAsset> asset) { m_meshAsset = asset; }
         void SetSkinMetaAsset(AZ::Data::Asset<AZ::RPI::SkinMetaAsset> asset) { m_skinMetaAsset = asset; }
         void SetMorphTargetMetaAsset(AZ::Data::Asset<AZ::RPI::MorphTargetMetaAsset> asset) { m_morphTargetMetaAsset = asset; }
@@ -954,6 +956,7 @@ namespace EMotionFX
         AZ::Data::Asset<AZ::RPI::SkinMetaAsset> m_skinMetaAsset;
         AZ::Data::Asset<AZ::RPI::MorphTargetMetaAsset> m_morphTargetMetaAsset;
         AZStd::recursive_mutex m_mutex;
+        AZStd::unordered_map<AZ::u16, AZ::u16> m_skinToSkeletonIndexMap; //!< Mapping joint indices in skin metadata to skeleton indices.
 
         static AZ::Data::AssetId ConstructSkinMetaAssetId(const AZ::Data::AssetId& meshAssetId);
         static bool DoesSkinMetaAssetExist(const AZ::Data::AssetId& meshAssetId);

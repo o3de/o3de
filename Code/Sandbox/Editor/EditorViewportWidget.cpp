@@ -1217,13 +1217,18 @@ void EditorViewportWidget::SetViewportId(int id)
     CViewport::SetViewportId(id);
 
     // Now that we have an ID, we can initialize our viewport.
-    m_renderViewport = new AtomToolsFramework::RenderViewportWidget(id, this);
-    m_defaultViewportContextName = m_renderViewport->GetViewportContext()->GetName();
+    m_renderViewport = new AtomToolsFramework::RenderViewportWidget(this, false);
+    if (!m_renderViewport->InitializeViewportContext(id))
+    {
+        AZ_Warning("EditorViewportWidget", false, "Failed to initialize RenderViewportWidget's ViewportContext");
+        return;
+    }
+    auto viewportContext = m_renderViewport->GetViewportContext();
+    m_defaultViewportContextName = viewportContext->GetName();
     QBoxLayout* layout = new QBoxLayout(QBoxLayout::Direction::TopToBottom, this);
     layout->setContentsMargins(QMargins());
     layout->addWidget(m_renderViewport);
 
-    auto viewportContext = m_renderViewport->GetViewportContext();
     viewportContext->ConnectViewMatrixChangedHandler(m_cameraViewMatrixChangeHandler);
     viewportContext->ConnectProjectionMatrixChangedHandler(m_cameraProjectionMatrixChangeHandler);
 

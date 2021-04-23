@@ -539,8 +539,8 @@ namespace ImGui
                     {
                         int assertLevelValue = gAssertLevelCVAR->GetIVal();
                         int dragIntVal = assertLevelValue;
-                        ImGui::Text("sys_asserts: %d ( 0-off | 1-log | 2-popup )", assertLevelValue);
-                        ImGui::SliderInt("##sys_asserts", &dragIntVal, 0, 2);
+                        ImGui::Text("sys_asserts: %d ( 0-off | 1-log | 2-popup | 3-crash )", assertLevelValue);
+                        ImGui::SliderInt("##sys_asserts", &dragIntVal, 0, 3);
                         if (dragIntVal != assertLevelValue)
                         {
                             gAssertLevelCVAR->Set(dragIntVal);
