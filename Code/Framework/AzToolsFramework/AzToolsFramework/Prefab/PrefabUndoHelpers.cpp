@@ -33,7 +33,7 @@ namespace AzToolsFramework
                 state->Redo();
             }
 
-            void CreateLink(
+            LinkId CreateLink(
                 TemplateId sourceTemplateId, TemplateId targetTemplateId, PrefabDomReference patch,
                 const InstanceAlias& instanceAlias, UndoSystem::URSequencePoint* undoBatch)
             {
@@ -41,6 +41,8 @@ namespace AzToolsFramework
                 linkAddUndo->Capture(targetTemplateId, sourceTemplateId, instanceAlias, patch, InvalidLinkId);
                 linkAddUndo->SetParent(undoBatch);
                 linkAddUndo->Redo();
+
+                return linkAddUndo->GetLinkId();
             }
 
             void RemoveLink(
