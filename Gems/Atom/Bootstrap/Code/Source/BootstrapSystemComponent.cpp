@@ -282,7 +282,7 @@ namespace AZ
                 m_defaultFrameworkScene = AzFramework::SceneSystemInterface::Get()->GetScene(AzFramework::Scene::MainSceneName);
                 // This should never happen unless scene creation has changed.
                 AZ_Assert(m_defaultFrameworkScene, "Error: Scenes missing during system component initialization");
-                m_defaultScene = GetOrCreateAtomSceneFromAzScene(m_defaultFrameworkScene);
+                m_defaultScene = GetOrCreateAtomSceneFromAzScene(m_defaultFrameworkScene.get());
             }
 
             bool BootstrapSystemComponent::EnsureDefaultRenderPipelineInstalledForScene(AZ::RPI::ScenePtr scene, AZ::RPI::ViewportContextPtr viewportContext)
@@ -406,7 +406,7 @@ namespace AZ
 
             void BootstrapSystemComponent::SceneAboutToBeRemoved(AzFramework::Scene& scene)
             {
-                if (&scene == m_defaultFrameworkScene)
+                if (&scene == m_defaultFrameworkScene.get())
                 {
                     // Set to nullptr so we don't try to unbind the RPI::Scene from it later.
                     m_defaultFrameworkScene = nullptr;

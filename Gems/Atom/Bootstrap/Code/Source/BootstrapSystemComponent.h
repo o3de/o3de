@@ -109,7 +109,7 @@ namespace AZ
                 RPI::ViewportContextPtr m_viewportContext;
 
                 RPI::ScenePtr m_defaultScene = nullptr;
-                AzFramework::Scene* m_defaultFrameworkScene = nullptr;
+                AZStd::shared_ptr<AzFramework::Scene> m_defaultFrameworkScene = nullptr;
 
                 float m_simulateTime = 0;
                 float m_deltaTime = 0.016f;

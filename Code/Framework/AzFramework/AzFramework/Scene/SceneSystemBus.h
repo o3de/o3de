@@ -13,6 +13,7 @@
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzFramework/Entity/EntityContext.h>
 
 namespace AzFramework
@@ -33,19 +34,20 @@ namespace AzFramework
         //! Creates a scene with a given name.
         //!  - If there is already a scene with the provided name this will return AZ::Failure(). 
         //!  - If isDefault is set to true and there is already a default scene, the default scene will be switched to this one. 
-        virtual AZ::Outcome<Scene*, AZStd::string> CreateScene(AZStd::string_view name) = 0;
+        virtual AZ::Outcome<AZStd::shared_ptr<Scene>, AZStd::string> CreateScene(AZStd::string_view name) = 0;
 
         //! Creates a scene with a given name and a parent.
         //!  - If there is already a scene with the provided name this will return AZ::Failure().
         //!  - If isDefault is set to true and there is already a default scene, the default scene will be switched to this one.
-        virtual AZ::Outcome<Scene*, AZStd::string> CreateSceneWithParent(AZStd::string_view name, Scene* parent) = 0;
+        virtual AZ::Outcome<AZStd::shared_ptr<Scene>, AZStd::string> CreateSceneWithParent(
+            AZStd::string_view name, AZStd::shared_ptr<Scene> parent) = 0;
 
         //! Gets a scene with a given name
         //!  - If a scene does not exist with the given name, nullptr is returned.
-        virtual Scene* GetScene(AZStd::string_view name) = 0;
+        virtual AZStd::shared_ptr<Scene> GetScene(AZStd::string_view name) = 0;
 
         //! Gets all the scenes that currently exist.
-        virtual AZStd::vector<Scene*> GetAllScenes() = 0;
+        virtual AZStd::vector<AZStd::shared_ptr<Scene>> GetAllScenes() = 0;
 
         //! Remove a scene with a given name and return if the operation was successful.
         //!  - If the removed scene is the default scene, there will no longer be a default scene.
@@ -53,7 +55,7 @@ namespace AzFramework
 
         //! Get the scene associated with an EntityContextId
         //!  - If no scene is found for the provided EntityContextId, nullptr is returned.
-        virtual Scene* GetSceneFromEntityContextId(EntityContextId entityContextId) = 0;
+        virtual AZStd::shared_ptr<Scene> GetSceneFromEntityContextId(EntityContextId entityContextId) = 0;
     };
 
     using SceneSystemInterface = AZ::Interface<ISceneSystem>;

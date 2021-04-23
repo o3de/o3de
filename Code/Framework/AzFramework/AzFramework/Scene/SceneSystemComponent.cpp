@@ -14,6 +14,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Scene/Scene.h>
 
 namespace AzFramework
@@ -57,28 +58,27 @@ namespace AzFramework
         incompatible.push_back(AZ_CRC("SceneSystemComponentService", 0xd8975435));
     }
 
-    AZ::Outcome<Scene*, AZStd::string> SceneSystemComponent::CreateScene(AZStd::string_view name)
+    AZ::Outcome<AZStd::shared_ptr<Scene>, AZStd::string> SceneSystemComponent::CreateScene(AZStd::string_view name)
     {
         return CreateSceneWithParent(name, nullptr);
     }
 
-    AZ::Outcome<Scene*, AZStd::string> SceneSystemComponent::CreateSceneWithParent(AZStd::string_view name, Scene* parent)
+    AZ::Outcome<AZStd::shared_ptr<Scene>, AZStd::string> SceneSystemComponent::CreateSceneWithParent(
+        AZStd::string_view name, AZStd::shared_ptr<Scene> parent)
     {
-        Scene* existingScene = GetScene(name);
-
+        const AZStd::shared_ptr<Scene>& existingScene = GetScene(name);
         if (existingScene)
         {
             return AZ::Failure<AZStd::string>("A scene already exists with this name.");
         }
 
-        auto newScene = AZStd::make_unique<Scene>(name, parent);
-        Scene* scenePointer = newScene.get();
-        m_scenes.push_back(AZStd::move(newScene));
-        SceneSystemNotificationBus::Broadcast(&SceneSystemNotificationBus::Events::SceneCreated, *scenePointer);
-        return AZ::Success(scenePointer);
+        auto newScene = AZStd::make_shared<Scene>(name, AZStd::move(parent));
+        m_scenes.push_back(newScene);
+        SceneSystemNotificationBus::Broadcast(&SceneSystemNotificationBus::Events::SceneCreated, *newScene);
+        return AZ::Success(AZStd::move(newScene));
     }
 
-    Scene* SceneSystemComponent::GetScene(AZStd::string_view name)
+    AZStd::shared_ptr<Scene> SceneSystemComponent::GetScene(AZStd::string_view name)
     {
         auto sceneIterator = AZStd::find_if(m_scenes.begin(), m_scenes.end(),
             [name](auto& scene) -> bool
@@ -87,24 +87,24 @@ namespace AzFramework
             }
         );
 
-        return sceneIterator == m_scenes.end() ? nullptr : sceneIterator->get();
+        return sceneIterator == m_scenes.end() ? nullptr : *sceneIterator;
     }
 
-    AZStd::vector<Scene*> SceneSystemComponent::GetAllScenes()
+    AZStd::vector<AZStd::shared_ptr<Scene>> SceneSystemComponent::GetAllScenes()
     {
-        AZStd::vector<Scene*> scenes;
-        scenes.resize_no_construct(m_scenes.size());
-
+        AZStd::vector<AZStd::shared_ptr<Scene>> scenes;
+        scenes.reserve(m_scenes.size());
+        
         for (size_t i = 0; i < m_scenes.size(); ++i)
         {
-            scenes.at(i) = m_scenes.at(i).get();
+            scenes.push_back(m_scenes[i]);
         }
         return scenes;
     }
 
     bool SceneSystemComponent::RemoveScene(AZStd::string_view name)
     {
-        for (AZStd::unique_ptr<Scene>& scene : m_scenes)
+        for (AZStd::shared_ptr<Scene>& scene : m_scenes)
         {
             if (scene->GetName() == name)
             {
@@ -120,14 +120,14 @@ namespace AzFramework
         return false;
     }
 
-    Scene* SceneSystemComponent::GetSceneFromEntityContextId(EntityContextId entityContextId)
+    AZStd::shared_ptr<Scene> SceneSystemComponent::GetSceneFromEntityContextId(EntityContextId entityContextId)
     {
-        for (AZStd::unique_ptr<Scene>& scene : m_scenes)
+        for (AZStd::shared_ptr<Scene>& scene : m_scenes)
         {
             EntityContext** entityContext = scene->FindSubsystem<EntityContext::SceneStorageType>();
             if (entityContext && (*entityContext)->GetContextId() == entityContextId)
             {
-                return scene.get();
+                return scene;
             }
         }
         return nullptr;

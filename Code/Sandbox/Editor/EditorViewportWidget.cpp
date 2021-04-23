@@ -2823,7 +2823,7 @@ void EditorViewportWidget::UpdateScene()
     auto sceneSystem = AzFramework::SceneSystemInterface::Get();
     if (sceneSystem)
     {
-        AzFramework::Scene* mainScene = sceneSystem->GetScene(AzFramework::Scene::MainSceneName);
+        AZStd::shared_ptr<AzFramework::Scene> mainScene = sceneSystem->GetScene(AzFramework::Scene::MainSceneName);
         if (mainScene)
         {
             AZ::RPI::SceneNotificationBus::Handler::BusDisconnect();

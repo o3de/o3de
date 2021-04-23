@@ -102,10 +102,10 @@ namespace AZ
                 // Bind m_defaultScene to the GameEntityContext's AzFramework::Scene
                 auto* sceneSystem = AzFramework::SceneSystemInterface::Get();
                 AZ_Assert(sceneSystem, "Thumbnail system failed to get scene system implementation.");
-                Outcome<AzFramework::Scene*, AZStd::string> createSceneOutcome = sceneSystem->CreateScene(data->m_sceneName);
+                Outcome<AZStd::shared_ptr<AzFramework::Scene>, AZStd::string> createSceneOutcome =
+                    sceneSystem->CreateScene(data->m_sceneName);
                 AZ_Assert(createSceneOutcome, createSceneOutcome.GetError().c_str()); // This should never happen unless scene creation has changed.
-                createSceneOutcome.GetValue()->SetSubsystem(data->m_scene);
-                data->m_frameworkScene = createSceneOutcome.GetValue();
+                data->m_frameworkScene = createSceneOutcome.TakeValue();
                 data->m_frameworkScene->SetSubsystem(data->m_scene);
 
                 data->m_frameworkScene->SetSubsystem(data->m_entityContext.get());

@@ -33,7 +33,7 @@ namespace AzFramework
 
             auto sceneSystem = SceneSystemInterface::Get();
             AZ_Assert(sceneSystem, "Intersect requires during construction the scene system but there's no implementation available.");
-            Scene* scene = sceneSystem->GetSceneFromEntityContextId(m_contextId);
+            AZStd::shared_ptr<Scene> scene = sceneSystem->GetSceneFromEntityContextId(m_contextId);
             if (scene)
             {
                 scene->SetSubsystem(this);
@@ -47,7 +47,7 @@ namespace AzFramework
 
             auto sceneSystem = SceneSystemInterface::Get();
             AZ_Assert(sceneSystem, "Intersect requires during destruction the scene system but there's no implementation available.");
-            Scene* scene = sceneSystem->GetSceneFromEntityContextId(m_contextId);
+            AZStd::shared_ptr<Scene> scene = sceneSystem->GetSceneFromEntityContextId(m_contextId);
             if (scene)
             {
                 [[maybe_unused]] bool result = scene->UnsetSubsystem(this);

@@ -42,21 +42,19 @@ namespace AzFramework
         //////////////////////////////////////////////////////////////////////////
         // SceneSystemInterface overrides
         //////////////////////////////////////////////////////////////////////////
-        AZ::Outcome<Scene*, AZStd::string> CreateScene(AZStd::string_view name) override;
-        AZ::Outcome<Scene*, AZStd::string> CreateSceneWithParent(AZStd::string_view name, Scene* parent) override;
-        Scene* GetScene(AZStd::string_view name) override;
-        AZStd::vector<Scene*> GetAllScenes() override;
+        AZ::Outcome<AZStd::shared_ptr<Scene>, AZStd::string> CreateScene(AZStd::string_view name) override;
+        AZ::Outcome<AZStd::shared_ptr<Scene>, AZStd::string> CreateSceneWithParent(
+            AZStd::string_view name, AZStd::shared_ptr<Scene> parent) override;
+        AZStd::shared_ptr<Scene> GetScene(AZStd::string_view name) override;
+        AZStd::vector<AZStd::shared_ptr<Scene>> GetAllScenes() override;
         bool RemoveScene(AZStd::string_view name) override;
-        Scene* GetSceneFromEntityContextId(EntityContextId entityContextId) override;
+        AZStd::shared_ptr<Scene> GetSceneFromEntityContextId(EntityContextId entityContextId) override;
 
     private:
 
         AZ_DISABLE_COPY(SceneSystemComponent);
 
         // Container of scene in order of creation
-        AZStd::vector<AZStd::unique_ptr<Scene>> m_scenes;
-
-        // Map of entity context Ids to scenes. Using a vector because lookups will be common, but the size will be small.
-        AZStd::vector<AZStd::pair<EntityContextId, Scene*>> m_entityContextToScenes;
+        AZStd::vector<AZStd::shared_ptr<Scene>> m_scenes;
     };
 }

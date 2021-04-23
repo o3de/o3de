@@ -73,7 +73,7 @@ namespace AZ
             // Find the scene for this entity context.
             auto* sceneSystem = AzFramework::SceneSystemInterface::Get();
             AZ_Assert(sceneSystem, "RPI::Scene requires the scene system, but it doesn't have an implementation.");
-            AzFramework::Scene* scene = sceneSystem->GetSceneFromEntityContextId(entityContextId);
+            AZStd::shared_ptr<AzFramework::Scene> scene = sceneSystem->GetSceneFromEntityContextId(entityContextId);
             if (scene)
             {
                 // Get the RPI::Scene subsystem from the AZFramework Scene.

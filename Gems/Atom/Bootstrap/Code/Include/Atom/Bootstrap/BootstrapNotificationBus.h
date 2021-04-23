@@ -45,7 +45,7 @@ namespace AZ
                         // Check if bootstrap scene already exists and fire notifications if it does
                         auto sceneSystem = AzFramework::SceneSystemInterface::Get();
                         AZ_Assert(sceneSystem, "Notification bus called before the scene system has been initialized.");
-                        AzFramework::Scene* mainScene = sceneSystem->GetScene(AzFramework::Scene::MainSceneName);
+                        AZStd::shared_ptr<AzFramework::Scene> mainScene = sceneSystem->GetScene(AzFramework::Scene::MainSceneName);
                         AZ_Assert(mainScene, "AzFramework didn't set up any scenes.");
 
                         // Assume first scene is the default scene

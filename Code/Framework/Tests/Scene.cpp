@@ -155,11 +155,11 @@ namespace SceneUnitTest
     TEST_F(SceneTest, CreateScene)
     {   
         // A scene should be able to be created with a given name.
-        AZ::Outcome<Scene*, AZStd::string> createSceneOutcome = m_sceneSystem->CreateScene("TestScene");
+        AZ::Outcome<AZStd::shared_ptr<Scene>, AZStd::string> createSceneOutcome = m_sceneSystem->CreateScene("TestScene");
         EXPECT_TRUE(createSceneOutcome.IsSuccess()) << "Unable to create a scene.";
     
         // The scene pointer returned should be valid
-        Scene* scene = createSceneOutcome.GetValue();
+        AZStd::shared_ptr<Scene> scene = createSceneOutcome.TakeValue();
         EXPECT_NE(scene, nullptr) << "Scene creation reported success, but no scene actually was actually returned.";
 
         // Attempting to create another scene with the same name should fail.
@@ -172,16 +172,16 @@ namespace SceneUnitTest
     {
         constexpr AZStd::string_view sceneName = "TestScene";
 
-        AZ::Outcome<Scene*, AZStd::string> createSceneOutcome = m_sceneSystem->CreateScene(sceneName);
-        Scene* createdScene = createSceneOutcome.GetValue();
+        AZ::Outcome<AZStd::shared_ptr<Scene>, AZStd::string> createSceneOutcome = m_sceneSystem->CreateScene(sceneName);
+        AZStd::shared_ptr<Scene> createdScene = createSceneOutcome.TakeValue();
 
         // Should be able to get a scene by name, and it should match the scene that was created.
-        Scene* retrievedScene = m_sceneSystem->GetScene(sceneName);
+        AZStd::shared_ptr<Scene> retrievedScene = m_sceneSystem->GetScene(sceneName);
         EXPECT_NE(retrievedScene, nullptr) << "Attempting to get scene by name resulted in nullptr.";
         EXPECT_EQ(retrievedScene, createdScene) << "Retrieved scene does not match created scene.";
 
         // An invalid name should return a null scene.
-        Scene* nullScene = m_sceneSystem->GetScene("non-existant scene");
+        AZStd::shared_ptr<Scene> nullScene = m_sceneSystem->GetScene("non-existant scene");
         EXPECT_EQ(nullScene, nullptr) << "Should not be able to retrieve a scene that wasn't created.";
     }
 
@@ -189,7 +189,7 @@ namespace SceneUnitTest
     {
         constexpr AZStd::string_view sceneName = "TestScene";
 
-        AZ::Outcome<Scene*, AZStd::string> createSceneOutcome = m_sceneSystem->CreateScene(sceneName);
+        AZ::Outcome<AZStd::shared_ptr<Scene>, AZStd::string> createSceneOutcome = m_sceneSystem->CreateScene(sceneName);
         bool success = m_sceneSystem->RemoveScene(sceneName);
         EXPECT_TRUE(success) << "Failed to remove the scene that was just created.";
 
@@ -201,16 +201,16 @@ namespace SceneUnitTest
     {
         constexpr size_t NumScenes = 5;
 
-        Scene* scenes[NumScenes] = { nullptr };
+        AZStd::shared_ptr<Scene> scenes[NumScenes] = {nullptr};
 
         for (size_t i = 0; i < NumScenes; ++i)
         {
             AZStd::string sceneName = AZStd::string::format("scene %zu", i);
-            AZ::Outcome<Scene*, AZStd::string> createSceneOutcome = m_sceneSystem->CreateScene(sceneName); 
-            scenes[i] = createSceneOutcome.GetValue();
+            AZ::Outcome<AZStd::shared_ptr<Scene>, AZStd::string> createSceneOutcome = m_sceneSystem->CreateScene(sceneName); 
+            scenes[i] = createSceneOutcome.TakeValue();
         }
 
-        AZStd::vector<Scene*> retrievedScenes = m_sceneSystem->GetAllScenes();
+        AZStd::vector<AZStd::shared_ptr<Scene>> retrievedScenes = m_sceneSystem->GetAllScenes();
         EXPECT_EQ(NumScenes, retrievedScenes.size()) << "GetAllScenes() returned a different number of scenes than those created.";
 
         for (size_t i = 0; i < NumScenes; ++i)
@@ -234,8 +234,8 @@ namespace SceneUnitTest
     TEST_F(SceneTest, SceneSystem)
     {
         // Create the scene
-        AZ::Outcome<Scene*, AZStd::string> createSceneOutcome = m_sceneSystem->CreateScene("TestScene");
-        AzFramework::Scene* scene = createSceneOutcome.GetValue();
+        AZ::Outcome<AZStd::shared_ptr<Scene>, AZStd::string> createSceneOutcome = m_sceneSystem->CreateScene("TestScene");
+        AZStd::shared_ptr<Scene> scene = createSceneOutcome.TakeValue();
 
         // Set a class on the Scene
         Foo1* foo1a = new Foo1();

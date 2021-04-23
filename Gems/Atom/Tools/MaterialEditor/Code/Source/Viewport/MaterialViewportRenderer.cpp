@@ -90,7 +90,7 @@ namespace MaterialEditor
         // Bind m_defaultScene to the GameEntityContext's AzFramework::Scene
         auto sceneSystem = AzFramework::SceneSystemInterface::Get();
         AZ_Assert(sceneSystem, "MaterialViewportRenderer was unable to get the scene system during construction.");
-        AzFramework::Scene* mainScene = sceneSystem->GetScene(AzFramework::Scene::MainSceneName);
+        AZStd::shared_ptr<AzFramework::Scene> mainScene = sceneSystem->GetScene(AzFramework::Scene::MainSceneName);
         // This should never happen unless scene creation has changed.
         AZ_Assert(mainScene, "Main scenes missing during system component initialization");
         mainScene->SetSubsystem(m_scene);
@@ -279,7 +279,7 @@ namespace MaterialEditor
 
         auto sceneSystem = AzFramework::SceneSystemInterface::Get();
         AZ_Assert(sceneSystem, "MaterialViewportRenderer was unable to get the scene system during destruction.");
-        AzFramework::Scene* mainScene = sceneSystem->GetScene(AzFramework::Scene::MainSceneName);
+        AZStd::shared_ptr<AzFramework::Scene> mainScene = sceneSystem->GetScene(AzFramework::Scene::MainSceneName);
         // This should never happen unless scene creation has changed.
         AZ_Assert(mainScene, "Main scenes missing during system component destruction");
         mainScene->UnsetSubsystem(m_scene);

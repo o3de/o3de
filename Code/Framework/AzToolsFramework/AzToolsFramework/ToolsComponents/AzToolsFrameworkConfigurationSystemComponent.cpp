@@ -64,10 +64,10 @@ namespace AzToolsFramework
         {
             auto sceneSystem = AzFramework::SceneSystemInterface::Get();
             AZ_Assert(sceneSystem, "Scene system not available to create the editor scene.");
-            AzFramework::Scene* mainScene = sceneSystem->GetScene(AzFramework::Scene::MainSceneName);
+            AZStd::shared_ptr<AzFramework::Scene> mainScene = sceneSystem->GetScene(AzFramework::Scene::MainSceneName);
             if (mainScene)
             {
-                AZ::Outcome<AzFramework::Scene*, AZStd::string> editorScene =
+                AZ::Outcome<AZStd::shared_ptr<AzFramework::Scene>, AZStd::string> editorScene =
                     sceneSystem->CreateSceneWithParent(AzFramework::Scene::EditorMainSceneName, mainScene);
                 if (editorScene.IsSuccess())
                 {

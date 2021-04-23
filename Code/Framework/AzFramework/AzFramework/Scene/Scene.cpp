@@ -19,9 +19,9 @@ namespace AzFramework
     {
     }
 
-    Scene::Scene(AZStd::string name, Scene* parent)
+    Scene::Scene(AZStd::string name, AZStd::shared_ptr<Scene> parent)
         : m_name(AZStd::move(name))
-        , m_parent(parent)
+        , m_parent(AZStd::move(parent))
     {
     }
 

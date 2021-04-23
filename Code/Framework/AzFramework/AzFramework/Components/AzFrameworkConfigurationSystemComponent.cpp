@@ -50,10 +50,11 @@ namespace AzFramework
 
     void AzFrameworkConfigurationSystemComponent::Activate()
     {
-        AZ::Outcome<Scene*, AZStd::string> createSceneOutcome = SceneSystemInterface::Get()->CreateScene(Scene::MainSceneName);
+        AZ::Outcome<AZStd::shared_ptr<Scene>, AZStd::string> createSceneOutcome =
+            SceneSystemInterface::Get()->CreateScene(Scene::MainSceneName);
         if (createSceneOutcome)
         {
-            Scene* scene = createSceneOutcome.GetValue();
+            AZStd::shared_ptr<Scene> scene = createSceneOutcome.TakeValue();
             EntityContext* gameEntityContext = nullptr;
             GameEntityContextRequestBus::BroadcastResult(gameEntityContext, &GameEntityContextRequests::GetGameEntityContextInstance);
             if (gameEntityContext != nullptr)
