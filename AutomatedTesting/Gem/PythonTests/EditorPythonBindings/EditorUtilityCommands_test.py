@@ -33,7 +33,6 @@ class TestEditorAutomation(object):
             "SetCVarFromFloat worked",
             "SetCVarFromString worked",
             "SetCVarFromInteger worked",
-            "edit mode works",
             "axis constraint works",
             "end of editor utility tests"
         ]
@@ -48,7 +47,6 @@ class TestEditorAutomation(object):
             "set_cvar_float worked",
             "set_cvar_string worked",
             "set_cvar_integer worked",
-            "edit mode works",
             "axis constraint works",
             "end of editor utility tests"
             ]

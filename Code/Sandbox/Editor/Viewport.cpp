@@ -30,7 +30,6 @@
 #include "Util/Ruler.h"
 #include "PluginManager.h"
 #include "Include/IRenderListener.h"
-#include "EditTool.h"
 #include "GameEngine.h"
 #include "Settings.h"
 
@@ -207,8 +206,6 @@ QtViewport::QtViewport(QWidget* parent)
 
     GetIEditor()->GetViewManager()->RegisterViewport(this);
 
-    m_pLocalEditTool = 0;
-
     m_nCurViewportID = MAX_NUM_VIEWPORTS - 1;
     m_dropCallback = nullptr; // Leroy@Conffx
 
@@ -232,8 +229,6 @@ QtViewport::QtViewport(QWidget* parent)
 //////////////////////////////////////////////////////////////////////////
 QtViewport::~QtViewport()
 {
-    if (m_pLocalEditTool)
-        m_pLocalEditTool->deleteLater();
     delete m_pVisibleObjectsCache;
 
     GetIEditor()->GetViewManager()->UnregisterViewport(this);
@@ -255,42 +250,6 @@ void QtViewport::GetDimensions(int* pWidth, int* pHeight) const
     if (pHeight)
     {
         *pHeight = height();
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-CEditTool* QtViewport::GetEditTool()
-{
-    if (m_pLocalEditTool)
-    {
-        return m_pLocalEditTool;
-    }
-    return GetIEditor()->GetEditTool();
-}
-
-//////////////////////////////////////////////////////////////////////////
-void QtViewport::SetEditTool(CEditTool* pEditTool, bool bLocalToViewport /*=false */)
-{
-    if (m_pLocalEditTool == pEditTool)
-    {
-        return;
-    }
-
-    if (m_pLocalEditTool)
-    {
-        m_pLocalEditTool->EndEditParams();
-    }
-    m_pLocalEditTool = 0;
-
-    if (bLocalToViewport)
-    {
-        m_pLocalEditTool = pEditTool;
-        m_pLocalEditTool->BeginEditParams(GetIEditor(), 0);
-    }
-    else
-    {
-        m_pLocalEditTool = 0;
-        GetIEditor()->SetEditTool(pEditTool);
     }
 }
 
@@ -466,12 +425,6 @@ void QtViewport::Update()
 
     m_bAdvancedSelectMode = false;
     bool bSpaceClick = false;
-    CEditTool* pEditTool = GetIEditor()->GetEditTool();
-    if (pEditTool && pEditTool->IsNeedSpecificBehaviorForSpaceAcce())
-    {
-        bSpaceClick = CheckVirtualKey(Qt::Key_Space);
-    }
-    else
     {
         bSpaceClick = CheckVirtualKey(Qt::Key_Space) & !CheckVirtualKey(Qt::Key_Shift) /*& !CheckVirtualKey(Qt::Key_Control)*/;
     }
@@ -726,10 +679,6 @@ void QtViewport::OnMouseMove(Qt::KeyboardModifiers modifiers, Qt::MouseButtons b
 //////////////////////////////////////////////////////////////////////////
 void QtViewport::OnSetCursor()
 {
-    if (GetEditTool())
-    {
-        GetEditTool()->OnSetCursor(this);
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -803,38 +752,22 @@ void QtViewport::OnRButtonDblClk(Qt::KeyboardModifiers modifiers, const QPoint& 
 }
 
 //////////////////////////////////////////////////////////////////////////
-void QtViewport::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+void QtViewport::OnKeyDown([[maybe_unused]] UINT nChar, [[maybe_unused]] UINT nRepCnt, [[maybe_unused]] UINT nFlags)
 {
     if (GetIEditor()->IsInGameMode())
     {
         // Ignore key downs while in game.
         return;
-    }
-
-    if (GetEditTool())
-    {
-        if (GetEditTool()->OnKeyDown(this, nChar, nRepCnt, nFlags))
-        {
-            return;
-        }
     }
 }
 
 //////////////////////////////////////////////////////////////////////////
-void QtViewport::OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
+void QtViewport::OnKeyUp([[maybe_unused]] UINT nChar, [[maybe_unused]] UINT nRepCnt, [[maybe_unused]] UINT nFlags)
 {
     if (GetIEditor()->IsInGameMode())
     {
         // Ignore key downs while in game.
         return;
-    }
-
-    if (GetEditTool())
-    {
-        if (GetEditTool()->OnKeyUp(this, nChar, nRepCnt, nFlags))
-        {
-            return;
-        }
     }
 }
 
@@ -1451,28 +1384,6 @@ bool QtViewport::MouseCallback(EMouseEvent event, const QPoint& point, Qt::Keybo
             {
                 return true;
             }
-        }
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // Asks current edit tool to handle mouse callback.
-    CEditTool* pEditTool = GetEditTool();
-    if (pEditTool)
-    {
-        if (pEditTool->MouseCallback(this, event, tempPoint, flags))
-        {
-            return true;
-        }
-
-        // Ask all chain of parent tools if they are handling mouse event.
-        CEditTool* pParentTool = pEditTool->GetParentTool();
-        while (pParentTool)
-        {
-            if (pParentTool->MouseCallback(this, event, tempPoint, flags))
-            {
-                return true;
-            }
-            pParentTool = pParentTool->GetParentTool();
         }
     }
 

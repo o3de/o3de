@@ -19,6 +19,9 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/containers/vector.h>
+#include <Atom/RPI.Public/ViewportContext.h>
+#include <Atom/RPI.Public/ViewportContextBus.h>
+#include <Atom/RPI.Public/ViewProviderBus.h>
 
 namespace AZ
 {
@@ -586,9 +589,11 @@ namespace AZ
             }
             else
             {
-                Camera::ActiveCameraRequestBus::BroadcastResult(
-                    cameraTransform,
-                    &Camera::ActiveCameraRequestBus::Events::GetActiveCameraTransform);
+                if (const auto& viewportContext = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get()->GetDefaultViewportContext())
+                {
+                    cameraTransform = viewportContext->GetCameraTransform();
+                }
+
             }
             if (cameraTransform == m_lastCameraTransform)
             {

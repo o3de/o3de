@@ -24,7 +24,6 @@
 #include "RenderHelpers/AxisHelper.h"
 #include "RenderHelpers/AxisHelperExtended.h"
 #include "IObjectManager.h"
-#include "EditTool.h"
 
 //////////////////////////////////////////////////////////////////////////
 // CAxisGizmo implementation.
@@ -138,36 +137,6 @@ void CAxisGizmo::GetWorldBounds(AABB& bbox)
 void CAxisGizmo::DrawAxis(DisplayContext& dc)
 {
     m_pAxisHelper->SetHighlightAxis(m_highlightAxis);
-    // Only enable axis planes when editor is in Move mode.
-    int nEditMode = GetIEditor()->GetEditMode();
-    int nModeFlags = 0;
-    switch (nEditMode)
-    {
-    case eEditModeMove:
-        nModeFlags |= CAxisHelper::MOVE_MODE;
-        break;
-    case eEditModeRotate:
-        nModeFlags |= CAxisHelper::ROTATE_MODE;
-        nModeFlags &= ~(CAxisHelper::ROTATE_CIRCLE_MODE);
-        break;
-    case eEditModeRotateCircle:
-        nModeFlags |= CAxisHelper::ROTATE_CIRCLE_MODE;
-        nModeFlags &= ~(CAxisHelper::ROTATE_MODE);
-        break;
-    case eEditModeScale:
-        nModeFlags |= CAxisHelper::SCALE_MODE;
-        break;
-    case eEditModeSelect:
-        nModeFlags |= CAxisHelper::SELECT_MODE;
-        break;
-    case eEditModeSelectArea:
-        nModeFlags |= CAxisHelper::SELECT_MODE;
-        break;
-    }
-
-    //nModeFlags |= CAxisHelper::MOVE_MODE | CAxisHelper::ROTATE_MODE | CAxisHelper::SCALE_MODE;
-
-    m_pAxisHelper->SetMode(nModeFlags);
 
     Matrix34 tm = GetTransformation(m_bAlwaysUseLocal ? COORDS_LOCAL : GetIEditor()->GetReferenceCoordSys(), dc.view);
     m_pAxisHelper->DrawAxis(tm, GetIEditor()->GetGlobalGizmoParameters(), dc);
@@ -177,21 +146,6 @@ void CAxisGizmo::DrawAxis(DisplayContext& dc)
         m_object->GetBoundBox(objectBox);
 
         m_pAxisHelper->DrawDome(tm, GetIEditor()->GetGlobalGizmoParameters(), dc, objectBox);
-    }
-    //////////////////////////////////////////////////////////////////////////
-    // Draw extended infinite-axis gizmo
-    //////////////////////////////////////////////////////////////////////////
-    if (!(dc.flags & DISPLAY_2D) &&
-        (nModeFlags == CAxisHelper::MOVE_MODE ||
-         nModeFlags == CAxisHelper::ROTATE_MODE))
-    {
-        bool bClickedShift = CheckVirtualKey(Qt::Key_Shift);
-        if (bClickedShift && (m_axisGizmoCount == 1 || m_highlightAxis || (m_axisGizmoCount == 2 && m_object && m_object->IsSkipSelectionHelper())))
-        {
-            bool bClickedAlt = CheckVirtualKey(Qt::Key_Menu);
-            bool bUsePhysicalProxy = !bClickedAlt;
-            m_pAxisHelperExtended->DrawAxes(dc, tm, bUsePhysicalProxy);
-        }
     }
 }
 
@@ -325,7 +279,7 @@ Matrix34 CAxisGizmo::GetTransformation(RefCoordSys coordSys, IDisplayViewport* v
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CAxisGizmo::MouseCallback(CViewport* view, EMouseEvent event, QPoint& point, int nFlags)
+bool CAxisGizmo::MouseCallback(CViewport* view, EMouseEvent event, QPoint& point, [[maybe_unused]] int nFlags)
 {
     AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
 
@@ -365,28 +319,6 @@ bool CAxisGizmo::MouseCallback(CViewport* view, EMouseEvent event, QPoint& point
             m_cMouseDownPos = point;
             m_initPos = GetTransformation(COORDS_WORLD).GetTranslation();
 
-            switch (hc.manipulatorMode)
-            {
-            case 1:
-                view->SetCurrentCursor(STD_CURSOR_MOVE);
-                GetIEditor()->SetEditMode(eEditModeMove);
-                break;
-            case 2:
-                view->SetCurrentCursor(STD_CURSOR_ROTATE);
-                GetIEditor()->SetEditMode(eEditModeRotate);
-                break;
-            case 3:
-                view->SetCurrentCursor(STD_CURSOR_SCALE);
-                GetIEditor()->SetEditMode(eEditModeScale);
-                break;
-            }
-
-            CEditTool* pEditTool = view->GetEditTool();
-            if (pEditTool)
-            {
-                pEditTool->OnManipulatorMouseEvent(view, this, event, point, nFlags);
-            }
-
             return true;
         }
     }
@@ -394,158 +326,6 @@ bool CAxisGizmo::MouseCallback(CViewport* view, EMouseEvent event, QPoint& point
     {
         if (m_bDragging)
         {
-            bool bCallBack = true;
-            Vec3 vDragValue(0, 0, 0);
-            // Dragging transform manipulator.
-            switch (GetIEditor()->GetEditMode())
-            {
-            case eEditModeMove:
-            {
-                view->SetCurrentCursor(STD_CURSOR_MOVE);
-
-                if (view->GetAxisConstrain() == AXIS_TERRAIN)
-                {
-                    if (nFlags & MK_CONTROL)
-                    {
-                        bool bCollideWithTerrain;
-                        Vec3 posOnTerrain = view->ViewToWorld(point, &bCollideWithTerrain, true);
-                        if (!bCollideWithTerrain)
-                        {
-                            return true;
-                        }
-                        vDragValue = posOnTerrain - m_initPos;
-                    }
-                    else
-                    {
-                        Vec3 p1 = view->SnapToGrid(view->ViewToWorld(m_cMouseDownPos));
-                        Vec3 p2 = view->SnapToGrid(view->ViewToWorld(point));
-                        vDragValue = p2 - p1;
-                        vDragValue.z = 0;
-                    }
-                }
-                else
-                {
-                    Vec3 p1 = view->MapViewToCP(m_cMouseDownPos);
-                    Vec3 p2 = view->MapViewToCP(point);
-                    if (p1.IsZero() || p2.IsZero())
-                    {
-                        return true;
-                    }
-                    vDragValue = view->GetCPVector(p1, p2);
-                }
-            }
-            break;
-            case eEditModeRotate:
-            {
-                view->SetCurrentCursor(STD_CURSOR_ROTATE);
-
-                Ang3 ang(0, 0, 0);
-                float ax = (point.x() - m_cMouseDownPos.x());
-                float ay = (point.y() - m_cMouseDownPos.y());
-                switch (view->GetAxisConstrain())
-                {
-                case AXIS_X:
-                    ang.x = ay;
-                    break;
-                case AXIS_Y:
-                    ang.y = ay;
-                    break;
-                case AXIS_Z:
-                    ang.z = ay;
-                    break;
-                case AXIS_XY:
-                    ang(ax, ay, 0);
-                    break;
-                case AXIS_XZ:
-                    ang(ax, 0, ay);
-                    break;
-                case AXIS_YZ:
-                    ang(0, ay, ax);
-                    break;
-                case AXIS_TERRAIN:
-                    ang(ax, ay, 0);
-                    break;
-                }
-                ;
-                ang = gSettings.pGrid->SnapAngle(ang);
-                vDragValue = Vec3(DEG2RAD(ang));
-            }
-            break;
-            case eEditModeScale:
-            {
-                Vec3 scl(0, 0, 0);
-                float ay = 1.0f - 0.01f * (point.y() - m_cMouseDownPos.y());
-                if (ay < 0.01f)
-                {
-                    ay = 0.01f;
-                }
-                scl(ay, ay, ay);
-                switch (view->GetAxisConstrain())
-                {
-                case AXIS_X:
-                    scl(ay, 1, 1);
-                    break;
-                case AXIS_Y:
-                    scl(1, ay, 1);
-                    break;
-                case AXIS_Z:
-                    scl(1, 1, ay);
-                    break;
-                case AXIS_XY:
-                    scl(ay, ay, ay);
-                    break;
-                case AXIS_XZ:
-                    scl(ay, ay, ay);
-                    break;
-                case AXIS_YZ:
-                    scl(ay, ay, ay);
-                    break;
-                case AXIS_XYZ:
-                    scl(ay, ay, ay);
-                    break;
-                case AXIS_TERRAIN:
-                    scl(ay, ay, ay);
-                    break;
-                }
-                ;
-                view->SetCurrentCursor(STD_CURSOR_SCALE);
-                vDragValue = scl;
-            }
-            break;
-            case eEditModeRotateCircle:
-            {
-                Matrix34 tm = GetTransformation(m_bAlwaysUseLocal ? COORDS_LOCAL : GetIEditor()->GetReferenceCoordSys());
-                Vec3 v0, v1;
-                Vec3 vHitNormal;
-                if (m_pAxisHelper->HitTestForRotationCircle(tm, view, m_cMouseDownPos, 0.05f, &v0, &vHitNormal) && m_pAxisHelper->HitTestForRotationCircle(tm, view, point, 2.0f, &v1, &vHitNormal))
-                {
-                    Vec3 vDir0 = (v0 - tm.GetTranslation()).GetNormalized();
-                    Vec3 vDir1 = (v1 - tm.GetTranslation()).GetNormalized();
-
-                    Vec3 vCurlDir = vDir0.Cross(vDir1).GetNormalized();
-                    if (vHitNormal.Dot(vCurlDir) > 0)
-                    {
-                        vDragValue = Vec3(std::acos(vDir0.Dot(vDir1)), 0, 0);
-                    }
-                    else
-                    {
-                        vDragValue = Vec3(-std::acos(vDir0.Dot(vDir1)), 0, 0);
-                    }
-                }
-                else
-                {
-                    bCallBack = false;
-                }
-            }
-            break;
-            }
-
-            CEditTool* pEditTool = view->GetEditTool();
-            if (pEditTool && bCallBack)
-            {
-                pEditTool->OnManipulatorDrag(view, this, m_cMouseDownPos, point, vDragValue);
-            }
-
             return true;
         }
         else
@@ -573,12 +353,6 @@ bool CAxisGizmo::MouseCallback(CViewport* view, EMouseEvent event, QPoint& point
                 }
                 bHit = true;
             }
-
-            CEditTool* pEditTool = view->GetEditTool();
-            if (pEditTool)
-            {
-                pEditTool->OnManipulatorMouseEvent(view, this, event, point, nFlags, bHit);
-            }
         }
     }
     else if (event == eMouseLUp)
@@ -592,12 +366,6 @@ bool CAxisGizmo::MouseCallback(CViewport* view, EMouseEvent event, QPoint& point
             if (m_bAlwaysUseLocal)
             {
                 GetIEditor()->SetReferenceCoordSys(m_coordSysBackUp);
-            }
-
-            CEditTool* pEditTool = view->GetEditTool();
-            if (pEditTool)
-            {
-                pEditTool->OnManipulatorMouseEvent(view, this, event, point, nFlags);
             }
         }
     }

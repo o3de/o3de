@@ -30,7 +30,7 @@ def run():
     import sys
     import WhiteBoxInit as init
     import ImportPathHelper as imports
-    import Tests.ly_shared.hydra_editor_utils as hydra
+    import editor_python_test_tools.hydra_editor_utils as hydra
     imports.init()
 
     import azlmbr.whitebox.api as api
@@ -40,8 +40,9 @@ def run():
     import azlmbr.entity as entity
     import azlmbr.legacy.general as general
 
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+
+    from editor_python_test_tools.utils import TestHelper as helper
 
     # open level
     helper.init_idle()

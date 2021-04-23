@@ -40,7 +40,7 @@ public:
     //!
     void ValidateKeyOrder() { CheckValid(); }
 
-    static void Reflect(AZ::SerializeContext* serializeContext);
+    static void Reflect(AZ::ReflectContext* context);
 };
 
 #endif // CRYINCLUDE_CRYMOVIE_COMMENTTRACK_H

@@ -99,13 +99,12 @@ def C4888315_Material_AddModifyDeleteOnCollider():
 
     imports.init()
 
-
     import azlmbr.legacy.general as general
     import azlmbr.math as lymath
 
     from Physmaterial_Editor import Physmaterial_Editor
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
     from AddModifyDelete_Utils import Box
 
     FORCE_IMPULSE = lymath.Vector3(5.0, 0.0, 0.0)
@@ -184,5 +183,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C4888315_Material_AddModifyDeleteOnCollider)

@@ -20,7 +20,7 @@ class CEditorMock
     : public IEditor
 {
 public:
-    // GMock does not work with a variadic function (https://github.com/google/googlemock/blob/master/googlemock/docs/FrequentlyAskedQuestions.md)
+    // GMock does not work with a variadic function
     void ExecuteCommand(const char* sCommand, ...) override
     {
         va_list args;
@@ -90,9 +90,6 @@ public:
     MOCK_METHOD0(IsSelectionLocked, bool());
     MOCK_METHOD0(GetObjectManager, struct IObjectManager* ());
     MOCK_METHOD0(GetSettingsManager, CSettingsManager* ());
-    MOCK_METHOD4(PickObject, void(IPickObjectCallback*,const QMetaObject*,const char* ,bool bMultipick));
-    MOCK_METHOD0(CancelPick, void());
-    MOCK_METHOD0(IsPicking, bool());
     MOCK_METHOD1(GetDBItemManager, IDataBaseManager* (EDataBaseItemType));
     MOCK_METHOD0(GetMaterialManager, CMaterialManager* ());
     MOCK_METHOD0(GetMaterialManagerLibrary, IBaseLibraryManager* ()); 
@@ -126,12 +123,6 @@ public:
     MOCK_METHOD0(GetRuler, CRuler* ());
     MOCK_METHOD1(SetOperationMode, void(EOperationMode ));
     MOCK_METHOD0(GetOperationMode, EOperationMode());
-    MOCK_METHOD1(SetEditMode, void(int ));
-    MOCK_METHOD0(GetEditMode, int());
-    MOCK_METHOD2(SetEditTool, void(CEditTool*, bool));
-    MOCK_METHOD2(SetEditTool, void(const QString&, bool));
-    MOCK_METHOD0(ReinitializeEditTool, void());
-    MOCK_METHOD0(GetEditTool, CEditTool* ());
     MOCK_METHOD1(ShowTransformManipulator, ITransformManipulator* (bool));
     MOCK_METHOD0(GetTransformManipulator, ITransformManipulator* ());
     MOCK_METHOD1(SetAxisConstraints, void(AxisConstrains ));

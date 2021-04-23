@@ -256,7 +256,7 @@ namespace AZ
             }
         }
 
-        void MeshFeatureProcessor::SetTransform(const MeshHandle& meshHandle, const AZ::Transform& transform)
+        void MeshFeatureProcessor::SetTransform(const MeshHandle& meshHandle, const AZ::Transform& transform, const AZ::Vector3& nonUniformScale)
         {
             if (meshHandle.IsValid())
             {
@@ -264,12 +264,12 @@ namespace AZ
                 meshData.m_cullBoundsNeedsUpdate = true;
                 meshData.m_objectSrgNeedsUpdate = true;
 
-                m_transformService->SetTransformForId(meshHandle->m_objectId, transform);
+                m_transformService->SetTransformForId(meshHandle->m_objectId, transform, nonUniformScale);
 
                 // ray tracing data needs to be updated with the new transform
                 if (m_rayTracingFeatureProcessor)
                 {
-                    m_rayTracingFeatureProcessor->SetMeshTransform(meshHandle->m_objectId, transform);
+                    m_rayTracingFeatureProcessor->SetMeshTransform(meshHandle->m_objectId, transform, nonUniformScale);
                 }
             }
         }
@@ -284,6 +284,19 @@ namespace AZ
             {
                 AZ_Assert(false, "Invalid mesh handle");
                 return Transform::CreateIdentity();
+            }
+        }
+
+        Vector3 MeshFeatureProcessor::GetNonUniformScale(const MeshHandle& meshHandle)
+        {
+            if (meshHandle.IsValid())
+            {
+                return m_transformService->GetNonUniformScaleForId(meshHandle->m_objectId);
+            }
+            else
+            {
+                AZ_Assert(false, "Invalid mesh handle");
+                return Vector3::CreateOne();
             }
         }
 
@@ -845,10 +858,13 @@ namespace AZ
             AZ_Assert(m_model, "The model has not finished loading yet");
 
             Transform localToWorld = transformService->GetTransformForId(m_objectId);
+            Vector3 nonUniformScale = transformService->GetNonUniformScaleForId(m_objectId);
 
             Vector3 center;
             float radius;
             Aabb localAabb = m_model->GetAabb();
+            localAabb.MultiplyByScale(nonUniformScale);
+
             localAabb.GetTransformedAabb(localToWorld).GetAsSphere(center, radius);
 
             m_cullable.m_cullData.m_boundingSphere = Sphere(center, radius);

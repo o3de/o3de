@@ -64,9 +64,8 @@ def C13351703_COM_NotIncludeTriggerShapes():
 
     imports.init()
 
-
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     import azlmbr.legacy.general as general
     import azlmbr.bus
@@ -101,5 +100,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C13351703_COM_NotIncludeTriggerShapes)
