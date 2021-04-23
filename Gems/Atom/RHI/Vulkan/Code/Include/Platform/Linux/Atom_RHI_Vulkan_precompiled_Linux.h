@@ -11,5 +11,11 @@
 */
 #pragma once
 
-#include <Atom_RHI_Vulkan_precompiled_Linux.h>
+#include <AzCore/base.h>
+#include <AzCore/PlatformIncl.h>
+#include <AzCore/std/algorithm.h>
+#include <vulkan/vulkan.h>
+#include <limits.h>
+#include <RHI/Vulkan.h>
 
+#define AZ_VULKAN_SURFACE_EXTENSION_NAME VK_KHR_XCB_SURFACE_EXTENSION_NAME
