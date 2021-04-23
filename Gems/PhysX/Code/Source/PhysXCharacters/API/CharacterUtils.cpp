@@ -177,14 +177,13 @@ namespace PhysX
                     return nullptr;
                 }
 
-                Ragdoll* ragdoll = aznew Ragdoll(sceneHandle);
+                AZStd::unique_ptr<Ragdoll> ragdoll = AZStd::make_unique<Ragdoll>(sceneHandle);
                 ragdoll->SetParentIndices(configuration.m_parentIndices);
 
                 auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
                 if (sceneInterface == nullptr)
                 {
                     AZ_Error("PhysX Ragdoll", false, "Unable to Create Ragdoll, Physics Scene Interface is missing.");
-                    delete ragdoll;
                     return nullptr;
                 }
 
@@ -207,7 +206,6 @@ namespace PhysX
                             else
                             {
                                 AZ_Error("PhysX Ragdoll", false, "Failed to create collider shape for ragdoll node %s", nodeConfig.m_debugName.c_str());
-                                delete ragdoll;
                                 return nullptr;
                             }
                         }
@@ -289,7 +287,6 @@ namespace PhysX
                         else
                         {
                             AZ_Error("PhysX Ragdoll", false, "Failed to create joint for node index %i.", nodeIndex);
-                            delete ragdoll;
                             return nullptr;
                         }
                     }
@@ -301,8 +298,8 @@ namespace PhysX
                 }
 
                 ragdoll->SetRootIndex(rootIndex);
-
-                return ragdoll;
+                
+                return ragdoll.release();
             }
 
             physx::PxD6JointDrive CreateD6JointDrive(float stiffness, float dampingRatio, float forceLimit)
