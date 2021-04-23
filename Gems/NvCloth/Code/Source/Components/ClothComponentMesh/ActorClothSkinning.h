@@ -78,9 +78,14 @@ namespace NvCloth
         //! Returns true if it has valid skinning pose of the actor.
         virtual bool HasSkinningPoseData() = 0;
 
-        //! Computes vertex skinning
-        virtual AZ::Vector4 ComputeSkinning(
-            const AZ::Vector4& original,
+        //! Computes skinning on a position
+        virtual AZ::Vector3 ComputeSkinningPosition(
+            const AZ::Vector3& originalPosition,
+            const SkinningInfo& skinningInfo) = 0;
+
+        //! Computes skinning on a vector
+        virtual AZ::Vector3 ComputeSkinningVector(
+            const AZ::Vector3& originalVector,
             const SkinningInfo& skinningInfo) = 0;
 
         AZ::EntityId m_entityId;

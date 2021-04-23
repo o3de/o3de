@@ -204,9 +204,15 @@ namespace NvCloth
 
     protected:
         bool HasSkinningPoseData() override;
-        AZ::Vector4 ComputeSkinning(
-            const AZ::Vector4& original,
+        AZ::Vector3 ComputeSkinningPosition(
+            const AZ::Vector3& originalPosition,
             const SkinningInfo& skinningInfo) override;
+        AZ::Vector3 ComputeSkinningVector(
+            const AZ::Vector3& originalVector,
+            const SkinningInfo& skinningInfo) override;
+
+    private:
+        AZ::Matrix3x4 ComputeSkinningMatrix(const SkinningInfo& skinningInfo);
 
         const AZ::Matrix3x4* m_skinningMatrices = nullptr;
     };
@@ -223,9 +229,21 @@ namespace NvCloth
         return m_skinningMatrices != nullptr;
     }
 
-    AZ::Vector4 ActorClothSkinningLinear::ComputeSkinning(
-        const AZ::Vector4& original,
+    AZ::Vector3 ActorClothSkinningLinear::ComputeSkinningPosition(
+        const AZ::Vector3& originalPosition,
         const SkinningInfo& skinningInfo)
+    {
+        return ComputeSkinningMatrix(skinningInfo) * originalPosition;
+    }
+
+    AZ::Vector3 ActorClothSkinningLinear::ComputeSkinningVector(
+        const AZ::Vector3& originalVector,
+        const SkinningInfo& skinningInfo)
+    {
+        return (ComputeSkinningMatrix(skinningInfo) * AZ::Vector4::CreateFromVector3AndFloat(originalVector, 0.0f)).GetAsVector3().GetNormalized();
+    }
+
+    AZ::Matrix3x4 ActorClothSkinningLinear::ComputeSkinningMatrix(const SkinningInfo& skinningInfo)
     {
         AZ::Matrix3x4 clothSkinningMatrix = AZ::Matrix3x4::CreateZero();
         for (size_t weightIndex = 0; weightIndex < skinningInfo.m_jointWeights.size(); ++weightIndex)
@@ -246,8 +264,7 @@ namespace NvCloth
             }
         }
 
-        // Transforms a vector (w=0) or position (w=1)
-        return clothSkinningMatrix * original;
+        return clothSkinningMatrix;
     }
 
     // Specialized class that applies dual quaternion blending skinning
@@ -264,9 +281,15 @@ namespace NvCloth
 
     protected:
         bool HasSkinningPoseData() override;
-        AZ::Vector4 ComputeSkinning(
-            const AZ::Vector4& original,
+        AZ::Vector3 ComputeSkinningPosition(
+            const AZ::Vector3& originalPosition,
             const SkinningInfo& skinningInfo) override;
+        AZ::Vector3 ComputeSkinningVector(
+            const AZ::Vector3& originalVector,
+            const SkinningInfo& skinningInfo) override;
+
+    private:
+        DualQuat ComputeSkinningDualQuaternion(const SkinningInfo& skinningInfo);
 
         AZStd::unordered_map<AZ::u16, DualQuat> m_skinningDualQuaternions;
     };
@@ -284,9 +307,21 @@ namespace NvCloth
         return !m_skinningDualQuaternions.empty();
     }
 
-    AZ::Vector4 ActorClothSkinningDualQuaternion::ComputeSkinning(
-        const AZ::Vector4& original,
+    AZ::Vector3 ActorClothSkinningDualQuaternion::ComputeSkinningPosition(
+        const AZ::Vector3& originalPosition,
         const SkinningInfo& skinningInfo)
+    {
+        return LYVec3ToAZVec3(ComputeSkinningDualQuaternion(skinningInfo) * AZVec3ToLYVec3(originalPosition));
+    }
+
+    AZ::Vector3 ActorClothSkinningDualQuaternion::ComputeSkinningVector(
+        const AZ::Vector3& originalVector,
+        const SkinningInfo& skinningInfo)
+    {
+        return LYVec3ToAZVec3(ComputeSkinningDualQuaternion(skinningInfo).nq * AZVec3ToLYVec3(originalVector)).GetNormalized();
+    }
+
+    DualQuat ActorClothSkinningDualQuaternion::ComputeSkinningDualQuaternion(const SkinningInfo& skinningInfo)
     {
         DualQuat clothSkinningDualQuaternion(type_zero::ZERO);
         for (size_t weightIndex = 0; weightIndex < skinningInfo.m_jointWeights.size(); ++weightIndex)
@@ -303,18 +338,7 @@ namespace NvCloth
         }
         clothSkinningDualQuaternion.Normalize();
 
-        AZ::Vector3 result;
-        if (AZ::IsClose(original.GetW(), 0.0f))
-        {
-            // Transforms a vector
-            result = LYVec3ToAZVec3(clothSkinningDualQuaternion.nq * AZVec3ToLYVec3(original.GetAsVector3()));
-        }
-        else
-        {
-            // Transforms a position
-            result = LYVec3ToAZVec3(clothSkinningDualQuaternion * AZVec3ToLYVec3(original.GetAsVector3()));
-        }
-        return AZ::Vector4::CreateFromVector3AndFloat(result, original.GetW());
+        return clothSkinningDualQuaternion;
     }
 
     AZStd::unique_ptr<ActorClothSkinning> ActorClothSkinning::Create(
@@ -405,12 +429,12 @@ namespace NvCloth
             const int remappedIndex = meshRemappedVertices[index];
             if (remappedIndex >= 0 && !skinnedIndices.contains(remappedIndex))
             {
-                const AZ::Vector4 skinnedPosition = ComputeSkinning(
-                    AZ::Vector4::CreateFromVector3AndFloat(originalPositions[remappedIndex].GetAsVector3(), 1.0f),
+                const AZ::Vector3 skinnedPosition = ComputeSkinningPosition(
+                    originalPositions[remappedIndex].GetAsVector3(),
                     m_skinningData[index]);
 
                 // Avoid overwriting the w component
-                positions[remappedIndex].Set(skinnedPosition.GetAsVector3(), positions[remappedIndex].GetW());
+                positions[remappedIndex].Set(skinnedPosition, positions[remappedIndex].GetW());
 
                 skinnedIndices.emplace(remappedIndex);
             }
@@ -437,24 +461,24 @@ namespace NvCloth
         {
             if (meshRemappedVertices[index] < 0)
             {
-                const AZ::Vector4 skinnedPosition = ComputeSkinning(
-                    AZ::Vector4::CreateFromVector3AndFloat(originalData.m_particles[index].GetAsVector3(), 1.0f),
+                const AZ::Vector3 skinnedPosition = ComputeSkinningPosition(
+                    originalData.m_particles[index].GetAsVector3(),
                     m_skinningData[index]);
 
                 // Avoid overwriting the w component
-                renderData.m_particles[index].Set(skinnedPosition.GetAsVector3(), renderData.m_particles[index].GetW());
+                renderData.m_particles[index].Set(skinnedPosition, renderData.m_particles[index].GetW());
 
-                renderData.m_tangents[index] = ComputeSkinning(
-                    AZ::Vector4::CreateFromVector3AndFloat(originalData.m_tangents[index], 0.0f),
-                    m_skinningData[index]).GetAsVector3();
+                renderData.m_tangents[index] = ComputeSkinningVector(
+                    originalData.m_tangents[index],
+                    m_skinningData[index]);
 
-                renderData.m_bitangents[index] = ComputeSkinning(
-                    AZ::Vector4::CreateFromVector3AndFloat(originalData.m_bitangents[index], 0.0f),
-                    m_skinningData[index]).GetAsVector3();
+                renderData.m_bitangents[index] = ComputeSkinningVector(
+                    originalData.m_bitangents[index],
+                    m_skinningData[index]);
 
-                renderData.m_normals[index] = ComputeSkinning(
-                    AZ::Vector4::CreateFromVector3AndFloat(originalData.m_normals[index], 0.0f),
-                    m_skinningData[index]).GetAsVector3();
+                renderData.m_normals[index] = ComputeSkinningVector(
+                    originalData.m_normals[index],
+                    m_skinningData[index]);
             }
         }
     }
