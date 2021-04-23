@@ -78,23 +78,41 @@ void CCommentTrack::SerializeKey(ICommentKey& key, XmlNodeRef& keyNode, bool bLo
 
 
 //////////////////////////////////////////////////////////////////////////
-template<>
-inline void TAnimTrack<ICommentKey>::Reflect(AZ::SerializeContext* serializeContext)
+static bool CommentTrackVersionConverter(
+    AZ::SerializeContext& serializeContext,
+    AZ::SerializeContext::DataElementNode& rootElement)
 {
-    serializeContext->Class<TAnimTrack<ICommentKey> >()
-        ->Version(2)
-        ->Field("Flags", &TAnimTrack<ICommentKey>::m_flags)
-        ->Field("Range", &TAnimTrack<ICommentKey>::m_timeRange)
-        ->Field("ParamType", &TAnimTrack<ICommentKey>::m_nParamType)
-        ->Field("Keys", &TAnimTrack<ICommentKey>::m_keys)
-        ->Field("Id", &TAnimTrack<ICommentKey>::m_id);
+    if (rootElement.GetVersion() < 3)
+    {
+        rootElement.AddElement(serializeContext, "BaseClass1", azrtti_typeid<IAnimTrack>());
+    }
+
+    return true;
+}
+
+template<>
+inline void TAnimTrack<ICommentKey>::Reflect(AZ::ReflectContext* context)
+{
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<TAnimTrack<ICommentKey>, IAnimTrack>()
+            ->Version(3, &CommentTrackVersionConverter)
+            ->Field("Flags", &TAnimTrack<ICommentKey>::m_flags)
+            ->Field("Range", &TAnimTrack<ICommentKey>::m_timeRange)
+            ->Field("ParamType", &TAnimTrack<ICommentKey>::m_nParamType)
+            ->Field("Keys", &TAnimTrack<ICommentKey>::m_keys)
+            ->Field("Id", &TAnimTrack<ICommentKey>::m_id);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CCommentTrack::Reflect(AZ::SerializeContext* serializeContext)
+void CCommentTrack::Reflect(AZ::ReflectContext* context)
 {
-    TAnimTrack<ICommentKey>::Reflect(serializeContext);
+    TAnimTrack<ICommentKey>::Reflect(context);
 
-    serializeContext->Class<CCommentTrack, TAnimTrack<ICommentKey> >()
-        ->Version(1);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<CCommentTrack, TAnimTrack<ICommentKey>>()
+            ->Version(1);
+    }
 }
