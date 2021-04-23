@@ -24,9 +24,9 @@ endif()
 if(CPACK_IFW_ROOT)
     if(NOT EXISTS ${CPACK_IFW_ROOT})
         message(FATAL_ERROR "Invalid path supplied for LY_QTIFW_PATH argument or QTIFWDIR environment variable")
-        return()
     endif()
 else()
+    # early out as no path to QtIFW has been supplied effectively disabling support
     return()
 endif()
 
@@ -39,7 +39,7 @@ set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Installation Tool")
 string(TOLOWER ${PROJECT_NAME} _project_name_lower)
 set(CPACK_PACKAGE_FILE_NAME "${_project_name_lower}_installer")
 
-set(DEFAULT_LICENSE_NAME "Apache 2.0")
+set(DEFAULT_LICENSE_NAME "Apache-2.0")
 set(DEFAULT_LICENSE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt")
 
 set(CPACK_RESOURCE_FILE_LICENSE ${DEFAULT_LICENSE_FILE})
