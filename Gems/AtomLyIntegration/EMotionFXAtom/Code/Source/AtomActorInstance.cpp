@@ -512,10 +512,9 @@ namespace AZ
                 MaterialReceiverNotificationBus::Event(m_entityId, &MaterialReceiverNotificationBus::Events::OnMaterialAssignmentsChanged);
                 RegisterActor();
 
-                // [TODO ATOM-14478, LYN-1890]
+                // [TODO ATOM-15288]
                 // Temporary workaround for cloth to make sure the output skinned buffers are filled at least once.
-                // When the blend weights buffer can be unique per instance and updated by cloth component,
-                // FillSkinnedMeshInstanceBuffers can be removed.
+                // When meshes with cloth data are not dispatched for skinning FillSkinnedMeshInstanceBuffers can be removed.
                 FillSkinnedMeshInstanceBuffers();
             }
             else
