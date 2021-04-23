@@ -55,11 +55,18 @@ namespace AssetBundler
 
     void BundleListTabWidget::Reload()
     {
+        // The act of cracking open paks kicks off a DirectoryChanged event. We need to temporarily remove the Bundles
+        // directory from our watched paths to prevent an infinite loop of events. 
+        m_guiApplicationManager->RemoveWatchedPaths(m_watchedFolders);
+
         // Reload all the bundle files
         m_fileTableModel->Reload(AzToolsFramework::AssetBundleSettings::GetBundleFileExtension(), m_watchedFolders, m_watchedFiles);
 
         // Update the selected row
         FileSelectionChanged();
+
+        // Start recieving DirectoryChanged events for these folders again
+        m_guiApplicationManager->AddWatchedPaths(m_watchedFolders);
     }
 
     void BundleListTabWidget::SetModelDataSource()

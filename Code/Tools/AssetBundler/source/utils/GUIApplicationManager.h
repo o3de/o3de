@@ -33,13 +33,8 @@
 //ZALADANE TODO list of broken stuff (so far):
 // The "Project Source" column in the Seeds tab is displaying garbage characters
     // NOTE: the word "engine" displayed fine, but when I made a new Seed List for my project, "AutomatedTesting" didn't display properly
-// figure out how to get gem dependencies. The gem-specific seed list files aren't in the seeds tab
-// what am i gonna do about the project-specific _dependencies.xml files? Those used to come from the gem templates
-// Generating a Bundle takes so long I killed it after 20 min. On the CLI, it was near instantaneous. Something is
-    // very wrong here.
-// If you launch the GUI with a valid bundle in the Bundles folder, it will stall (forever?) as it tries to read in the
-    // bundle manifest. I have no idea why it's hanging, but it might be some bad input into the core functions?
-    // Maybe they changed in a way that still compiles but doesn't actually work?
+// what am I gonna do about the project-specific _dependencies.xml files? Those used to come from the gem templates
+    // NOTE: it seems like the BundlerBatch is getting that file just fine, look into it
 
 namespace AssetBundler
 {
