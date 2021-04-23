@@ -11,11 +11,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import logging
 import os
-from pathlib import PurePath
 import pytest
 
-# Bail on the test if ly_test_tools doesn't exist.
-pytest.importorskip("ly_test_tools")
 import ly_test_tools.environment.file_system as file_system
 
 import automatedtesting_shared.hydra_test_utils as hydra
@@ -24,17 +21,11 @@ logger = logging.getLogger(__name__)
 EDITOR_TIMEOUT = 60
 TEST_DIRECTORY = os.path.join(os.path.dirname(__file__), "atom_hydra_scripts")
 
-# Go to the project root directory
-PROJECT_DIRECTORY = PurePath(TEST_DIRECTORY)
-if len(PROJECT_DIRECTORY.parents) > 5:
-    for _ in range(5):
-        PROJECT_DIRECTORY = PROJECT_DIRECTORY.parent
-
 
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("level", ["tmp_level"])
-class TestAtomLevels(object):
+class TestAtomEditorComponents(object):
     @pytest.fixture(autouse=True)
     def setup_teardown(self, request, workspace, project, level):
         # Cleanup our temp level
@@ -48,16 +39,167 @@ class TestAtomLevels(object):
 
         request.addfinalizer(teardown)
 
-    @pytest.mark.test_case_id("C34428174")  # Level: ShadowTest
-    def test_AllLevels_OpenClose(self, request, editor, level, workspace, project, launcher_platform):
-
+    @pytest.mark.test_case_id("C32078130")  # Tone Mapper
+    @pytest.mark.test_case_id("C32078129")  # Light
+    @pytest.mark.test_case_id("C32078131")  # Radius Weight Modifier
+    @pytest.mark.test_case_id("C32078127")  # PostFX Layer
+    @pytest.mark.test_case_id("C32078126")  # Point Light
+    @pytest.mark.test_case_id("C32078125")  # Physical Sky
+    @pytest.mark.test_case_id("C32078115")  # Global Skylight (IBL)
+    @pytest.mark.test_case_id("C32078121")  # Exposure Control
+    @pytest.mark.test_case_id("C32078120")  # Directional Light
+    @pytest.mark.test_case_id("C32078119")  # DepthOfField
+    @pytest.mark.test_case_id("C32078118")  # Decal
+    def test_AtomEditorComponents_AddedToEntity(self, request, editor, level, workspace, project, launcher_platform):
         cfg_args = [level]
-        test_levels = os.listdir(os.path.join(str(PROJECT_DIRECTORY), project, "Levels", "AtomLevels"))
-        test_levels.append(level)
 
-        expected_lines = []
-        for level in test_levels:
-            expected_lines.append(f"Successfully opened {level}")
+        expected_lines = [
+            # Area Light Component
+            "Area Light Entity successfully created",
+            "Area Light_test: Component added to the entity: True",
+            "Area Light_test: Component removed after UNDO: True",
+            "Area Light_test: Component added after REDO: True",
+            "Area Light_test: Entered game mode: True",
+            # Disabled, see ATOM-: "Area Light_test: Exit game mode: True",
+            "Area Light_test: Entity disabled initially: True",
+            "Area Light_test: Entity enabled after adding required components: True",
+            "Area Light_test: Entity is hidden: True",
+            "Area Light_test: Entity is shown: True",
+            "Area Light_test: Entity deleted: True",
+            "Area Light_test: UNDO entity deletion works: True",
+            "Area Light_test: REDO entity deletion works: True",
+            # Decal Component
+            "Decal Entity successfully created",
+            "Decal_test: Component added to the entity: True",
+            "Decal_test: Component removed after UNDO: True",
+            "Decal_test: Component added after REDO: True",
+            "Decal_test: Entered game mode: True",
+            "Decal_test: Exit game mode: True",
+            "Decal Settings|Decal Settings|Material: SUCCESS",
+            "Decal_test: Entity is hidden: True",
+            "Decal_test: Entity is shown: True",
+            "Decal_test: Entity deleted: True",
+            "Decal_test: UNDO entity deletion works: True",
+            "Decal_test: REDO entity deletion works: True",
+            # DepthOfField Component
+            "DepthOfField Entity successfully created",
+            "DepthOfField_test: Component added to the entity: True",
+            "DepthOfField_test: Component removed after UNDO: True",
+            "DepthOfField_test: Component added after REDO: True",
+            "DepthOfField_test: Entered game mode: True",
+            "DepthOfField_test: Exit game mode: True",
+            "DepthOfField_test: Entity disabled initially: True",
+            "DepthOfField_test: Entity enabled after adding required components: True",
+            "DepthOfField Controller|Configuration|Camera Entity: SUCCESS",
+            "DepthOfField_test: Entity is hidden: True",
+            "DepthOfField_test: Entity is shown: True",
+            "DepthOfField_test: Entity deleted: True",
+            "DepthOfField_test: UNDO entity deletion works: True",
+            "DepthOfField_test: REDO entity deletion works: True",
+            # Directional Light Component
+            "Directional Light Entity successfully created",
+            "Directional Light_test: Component added to the entity: True",
+            "Directional Light_test: Component removed after UNDO: True",
+            "Directional Light_test: Component added after REDO: True",
+            "Directional Light_test: Entered game mode: True",
+            "Directional Light_test: Exit game mode: True",
+            "Directional Light Controller|Configuration|Shadow|Camera: SUCCESS",
+            "Directional Light_test: Entity is hidden: True",
+            "Directional Light_test: Entity is shown: True",
+            "Directional Light_test: Entity deleted: True",
+            "Directional Light_test: UNDO entity deletion works: True",
+            "Directional Light_test: REDO entity deletion works: True",
+            # Exposure Control Component
+            "Exposure Control Entity successfully created",
+            "Exposure Control_test: Component added to the entity: True",
+            "Exposure Control_test: Component removed after UNDO: True",
+            "Exposure Control_test: Component added after REDO: True",
+            "Exposure Control_test: Entered game mode: True",
+            "Exposure Control_test: Exit game mode: True",
+            "Exposure Control_test: Entity disabled initially: True",
+            "Exposure Control_test: Entity enabled after adding required components: True",
+            "Exposure Control_test: Entity is hidden: True",
+            "Exposure Control_test: Entity is shown: True",
+            "Exposure Control_test: Entity deleted: True",
+            "Exposure Control_test: UNDO entity deletion works: True",
+            "Exposure Control_test: REDO entity deletion works: True",
+            # Global Skylight (IBL) Component
+            "Global Skylight (IBL) Entity successfully created",
+            "Global Skylight (IBL)_test: Component added to the entity: True",
+            "Global Skylight (IBL)_test: Component removed after UNDO: True",
+            "Global Skylight (IBL)_test: Component added after REDO: True",
+            "Global Skylight (IBL)_test: Entered game mode: True",
+            "Global Skylight (IBL)_test: Exit game mode: True",
+            "Global Skylight (IBL) Controller|Configuration|Diffuse Image: SUCCESS",
+            "Global Skylight (IBL) Controller|Configuration|Specular Image: SUCCESS",
+            "Global Skylight (IBL)_test: Entity is hidden: True",
+            "Global Skylight (IBL)_test: Entity is shown: True",
+            "Global Skylight (IBL)_test: Entity deleted: True",
+            "Global Skylight (IBL)_test: UNDO entity deletion works: True",
+            "Global Skylight (IBL)_test: REDO entity deletion works: True",
+            # Physical Sky Component
+            "Physical Sky Entity successfully created",
+            "Physical Sky component was added to entity",
+            "Entity has a Physical Sky component",
+            "Physical Sky_test: Component added to the entity: True",
+            "Physical Sky_test: Component removed after UNDO: True",
+            "Physical Sky_test: Component added after REDO: True",
+            "Physical Sky_test: Entered game mode: True",
+            "Physical Sky_test: Exit game mode: True",
+            "Physical Sky_test: Entity is hidden: True",
+            "Physical Sky_test: Entity is shown: True",
+            "Physical Sky_test: Entity deleted: True",
+            "Physical Sky_test: UNDO entity deletion works: True",
+            "Physical Sky_test: REDO entity deletion works: True",
+            # Point Light Component
+            "Point Light Entity successfully created",
+            "Point Light_test: Component added to the entity: True",
+            "Point Light_test: Component removed after UNDO: True",
+            "Point Light_test: Component added after REDO: True",
+            "Point Light_test: Entered game mode: True",
+            "Point Light_test: Exit game mode: True",
+            "Point Light_test: Entity is hidden: True",
+            "Point Light_test: Entity is shown: True",
+            "Point Light_test: Entity deleted: True",
+            "Point Light_test: UNDO entity deletion works: True",
+            "Point Light_test: REDO entity deletion works: True",
+            # PostFX Layer Component
+            "PostFX Layer Entity successfully created",
+            "PostFX Layer_test: Component added to the entity: True",
+            "PostFX Layer_test: Component removed after UNDO: True",
+            "PostFX Layer_test: Component added after REDO: True",
+            "PostFX Layer_test: Entered game mode: True",
+            "PostFX Layer_test: Exit game mode: True",
+            "PostFX Layer_test: Entity is hidden: True",
+            "PostFX Layer_test: Entity is shown: True",
+            "PostFX Layer_test: Entity deleted: True",
+            "PostFX Layer_test: UNDO entity deletion works: True",
+            "PostFX Layer_test: REDO entity deletion works: True",
+            # Radius Weight Modifier Component
+            "Radius Weight Modifier Entity successfully created",
+            "Radius Weight Modifier_test: Component added to the entity: True",
+            "Radius Weight Modifier_test: Component removed after UNDO: True",
+            "Radius Weight Modifier_test: Component added after REDO: True",
+            "Radius Weight Modifier_test: Entered game mode: True",
+            "Radius Weight Modifier_test: Exit game mode: True",
+            "Radius Weight Modifier_test: Entity is hidden: True",
+            "Radius Weight Modifier_test: Entity is shown: True",
+            "Radius Weight Modifier_test: Entity deleted: True",
+            "Radius Weight Modifier_test: UNDO entity deletion works: True",
+            "Radius Weight Modifier_test: REDO entity deletion works: True",
+            # Light Component
+            "Light Entity successfully created",
+            "Light_test: Component added to the entity: True",
+            "Light_test: Component removed after UNDO: True",
+            "Light_test: Component added after REDO: True",
+            "Light_test: Entered game mode: True",
+            "Light_test: Exit game mode: True",
+            "Light_test: Entity is hidden: True",
+            "Light_test: Entity is shown: True",
+            "Light_test: Entity deleted: True",
+            "Light_test: UNDO entity deletion works: True",
+            "Light_test: REDO entity deletion works: True",
+        ]
 
         unexpected_lines = [
             "failed to open",
@@ -68,10 +210,11 @@ class TestAtomLevels(object):
             request,
             TEST_DIRECTORY,
             editor,
-            "hydra_AllLevels_OpenClose.py",
+            "hydra_AtomEditorComponentsTest_AddedToEntity.py",
             timeout=EDITOR_TIMEOUT,
             expected_lines=expected_lines,
             unexpected_lines=unexpected_lines,
             halt_on_unexpected=True,
+            null_renderer=True,
             cfg_args=cfg_args,
         )
