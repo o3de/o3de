@@ -394,7 +394,6 @@ ForwardPassOutputWithDepth ForwardPassPS(VSOutput IN, bool isFrontFace : SV_IsFr
     OUT.m_specularF0 = lightingOutput.m_specularF0;
     OUT.m_albedo = lightingOutput.m_albedo;
     OUT.m_normal = lightingOutput.m_normal;
-    OUT.m_clearCoatNormal = lightingOutput.m_clearCoatNormal;
     OUT.m_scatterDistance = lightingOutput.m_scatterDistance;
     OUT.m_depth = depth;
     return OUT;
@@ -413,7 +412,6 @@ ForwardPassOutput ForwardPassPS_EDS(VSOutput IN, bool isFrontFace : SV_IsFrontFa
     OUT.m_specularF0 = lightingOutput.m_specularF0;
     OUT.m_albedo = lightingOutput.m_albedo;
     OUT.m_normal = lightingOutput.m_normal;
-    OUT.m_clearCoatNormal = lightingOutput.m_clearCoatNormal;
     OUT.m_scatterDistance = lightingOutput.m_scatterDistance;
 
     return OUT;

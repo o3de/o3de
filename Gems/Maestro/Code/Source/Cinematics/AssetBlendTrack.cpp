@@ -163,16 +163,31 @@ float CAssetBlendTrack::GetKeyDuration(int key) const
 }
 
 //////////////////////////////////////////////////////////////////////////
-template<>
-inline void TAnimTrack<AZ::IAssetBlendKey>::Reflect(AZ::SerializeContext* serializeContext)
+static bool AssetBlendTrackVersionConverter(
+    AZ::SerializeContext& serializeContext,
+    AZ::SerializeContext::DataElementNode& rootElement)
 {
-    serializeContext->Class<TAnimTrack<AZ::IAssetBlendKey> >()
-        ->Version(2)
-        ->Field("Flags", &TAnimTrack<AZ::IAssetBlendKey>::m_flags)
-        ->Field("Range", &TAnimTrack<AZ::IAssetBlendKey>::m_timeRange)
-        ->Field("ParamType", &TAnimTrack<AZ::IAssetBlendKey>::m_nParamType)
-        ->Field("Keys", &TAnimTrack<AZ::IAssetBlendKey>::m_keys)
-        ->Field("Id", &TAnimTrack<AZ::IAssetBlendKey>::m_id);
+    if (rootElement.GetVersion() < 3)
+    {
+        rootElement.AddElement(serializeContext, "BaseClass1", azrtti_typeid<IAnimTrack>());
+    }
+
+    return true;
+}
+
+template<>
+inline void TAnimTrack<AZ::IAssetBlendKey>::Reflect(AZ::ReflectContext* context)
+{
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<TAnimTrack<AZ::IAssetBlendKey>, IAnimTrack>()
+            ->Version(3, &AssetBlendTrackVersionConverter)
+            ->Field("Flags", &TAnimTrack<AZ::IAssetBlendKey>::m_flags)
+            ->Field("Range", &TAnimTrack<AZ::IAssetBlendKey>::m_timeRange)
+            ->Field("ParamType", &TAnimTrack<AZ::IAssetBlendKey>::m_nParamType)
+            ->Field("Keys", &TAnimTrack<AZ::IAssetBlendKey>::m_keys)
+            ->Field("Id", &TAnimTrack<AZ::IAssetBlendKey>::m_id);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -277,10 +292,13 @@ float CAssetBlendTrack::GetEndTime() const
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CAssetBlendTrack::Reflect(AZ::SerializeContext* serializeContext)
+void CAssetBlendTrack::Reflect(AZ::ReflectContext* context)
 {
-    TAnimTrack<AZ::IAssetBlendKey>::Reflect(serializeContext);
+    TAnimTrack<AZ::IAssetBlendKey>::Reflect(context);
 
-    serializeContext->Class<CAssetBlendTrack, TAnimTrack<AZ::IAssetBlendKey> >()
-        ->Version(1);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<CAssetBlendTrack, TAnimTrack<AZ::IAssetBlendKey>>()
+            ->Version(1);
+    }
 }
