@@ -60,8 +60,6 @@ class TestAtomEditorComponents(object):
             "Area Light_test: Component removed after UNDO: True",
             "Area Light_test: Component added after REDO: True",
             "Area Light_test: Entered game mode: True",
-            # Disabled, see ATOM-: "Area Light_test: Exit game mode: True",
-            "Area Light_test: Entity disabled initially: True",
             "Area Light_test: Entity enabled after adding required components: True",
             "Area Light_test: Entity is hidden: True",
             "Area Light_test: Entity is shown: True",

@@ -18,7 +18,6 @@
 if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedTesting IN_LIST LY_PROJECTS)
     ly_add_pytest(
         NAME AtomRenderer::HydraTestsMain
-        TEST_REQUIRES gpu
         TEST_SUITE main
         PATH ${CMAKE_CURRENT_LIST_DIR}/test_Atom_MainSuite.py
         TEST_SERIAL

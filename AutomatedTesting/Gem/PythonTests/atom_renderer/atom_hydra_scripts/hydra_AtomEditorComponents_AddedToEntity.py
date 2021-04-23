@@ -36,7 +36,6 @@ import azlmbr.asset as asset
 import azlmbr.entity as entity
 import azlmbr.legacy.general as general
 import azlmbr.editor as editor
-import azlmbr.render as render
 
 sys.path.append(os.path.join(azlmbr.paths.devroot, "AutomatedTesting", "Gem", "PythonTests"))
 
