@@ -158,7 +158,6 @@ def bootstrap_dccsi_py_libs(dccsi_dirpath=return_stub_dir()):
     """Builds and adds local site dir libs based on py version"""
 
     from azpy.constants import STR_DCCSI_PYTHON_LIB_PATH  # a path string constructor
-    #_DCCSI_PYTHON_LIB_PATH = "E:\\P4\\jromnoa_spectra_atom_2\\dev\\Tools\\Python\\3.7.5\\windows\\Lib\\site-packages"
     _DCCSI_PYTHON_LIB_PATH = STR_DCCSI_PYTHON_LIB_PATH.format(dccsi_dirpath,
                                                               sys.version_info[0],
                                                               sys.version_info[1])
