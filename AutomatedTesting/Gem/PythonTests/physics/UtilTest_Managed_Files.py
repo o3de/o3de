@@ -22,8 +22,8 @@ def run():
 
     imports.init()
 
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     helper.init_idle()
     Report.success(Tests.passed)

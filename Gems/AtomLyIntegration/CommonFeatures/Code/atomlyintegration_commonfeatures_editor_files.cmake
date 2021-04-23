@@ -41,6 +41,8 @@ set(FILES
     Source/Material/EditorMaterialModelUvNameMapInspector.h
     Source/Material/EditorMaterialSystemComponent.cpp
     Source/Material/EditorMaterialSystemComponent.h
+    Source/Material/MaterialBrowserInteractions.h
+    Source/Material/MaterialBrowserInteractions.cpp
     Source/Material/MaterialThumbnail.cpp
     Source/Material/MaterialThumbnail.h
     Source/Mesh/EditorMeshComponent.h
