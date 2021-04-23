@@ -150,7 +150,7 @@ namespace AzToolsFramework
         }
 
         PrefabOperationResult PrefabPublicHandler::InstantiatePrefab(
-            AZStd::string_view filePath, AZ::EntityId parent, AZ::Vector3 position)
+            AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position)
         {
             auto prefabEditorEntityOwnershipInterface = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
             if (!prefabEditorEntityOwnershipInterface)
