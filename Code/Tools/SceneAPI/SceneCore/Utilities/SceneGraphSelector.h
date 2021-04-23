@@ -22,7 +22,7 @@ namespace AZ::SceneAPI::DataTypes { class ISceneNodeSelectionList; }
 
 namespace AZ::SceneAPI::Utilities
 {
-    const char* const OptimizedMeshSuffix = "_optimized";
+    inline constexpr AZStd::string_view OptimizedMeshSuffix = "_optimized";
 
     // SceneGraphSelector provides utilities including converting selected and unselected node lists
     // in the MeshGroup into the final target node list.

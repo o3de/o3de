@@ -22,7 +22,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-#include <AzFramework/StringFunc/StringFunc.h>
 
 #include <Atom/RPI.Reflect/Buffer/BufferAssetCreator.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
@@ -315,10 +314,10 @@ namespace AZ
                     // Although the nodes used to gather mesh content are the optimized ones (when found), to make
                     // this process transparent for the end-asset generated, the name assigned to the source mesh
                     // content will not include the "_optimized" prefix.
-                    AZStd::string sourceMeshName = meshName;
+                    AZStd::string_view sourceMeshName = meshName;
                     if (sourceMeshName.ends_with(SceneAPI::Utilities::OptimizedMeshSuffix))
                     {
-                        AZ::StringFunc::RChop(sourceMeshName, strlen(SceneAPI::Utilities::OptimizedMeshSuffix));
+                        sourceMeshName.remove_suffix(SceneAPI::Utilities::OptimizedMeshSuffix.size());
                     }
                     sourceMesh.m_name = sourceMeshName;
 

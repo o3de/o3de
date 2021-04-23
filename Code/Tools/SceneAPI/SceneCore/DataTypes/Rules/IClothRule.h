@@ -13,7 +13,6 @@
 #pragma once
 
 #include <AzCore/Math/Color.h>
-#include <AzFramework/StringFunc/StringFunc.h>
 
 #include <SceneAPI/SceneCore/DataTypes/Rules/IRule.h>
 #include <SceneAPI/SceneCore/Containers/SceneGraph.h>
@@ -52,11 +51,11 @@ namespace AZ
                 {
                     AZStd::vector<AZ::Color> clothData;
 
-                    AZStd::string meshNodeName = graph.GetNodeName(meshNodeIndex).GetPath();
+                    AZStd::string_view meshNodeName = graph.GetNodeName(meshNodeIndex).GetPath();
 
                     if (meshNodeName.ends_with(Utilities::OptimizedMeshSuffix))
                     {
-                        AZ::StringFunc::RChop(meshNodeName, strlen(Utilities::OptimizedMeshSuffix));
+                        meshNodeName.remove_suffix(Utilities::OptimizedMeshSuffix.size());
                     }
 
                     for (size_t ruleIndex = 0; ruleIndex < rules.GetRuleCount(); ++ruleIndex)
