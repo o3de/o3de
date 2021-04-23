@@ -74,7 +74,7 @@ public:
     // will be animating these components during interpolation.
     void SetSkipInterpolatedCameraNode(const bool skipNodeCameraAnimation) override;
 
-    static void Reflect(AZ::SerializeContext* serializeContext);
+    static void Reflect(AZ::ReflectContext* context);
 
 private:
 

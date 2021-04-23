@@ -17,7 +17,7 @@ from ActorSplitsAfterDamage import Tests
 
 def run():
     from ActorSplitsAfterDamage import run as internal_run
-    from Utils import Constants
+    from editor_python_test_tools.utils import Constants
 
     def StressDamage(target_id, position):
         force = azlmbr.object.construct('Vector3', 0.0, 0.0, -100.0)  # Should be enough to break `brittle` objects

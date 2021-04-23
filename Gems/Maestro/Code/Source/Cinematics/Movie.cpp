@@ -1196,13 +1196,16 @@ void CMovieSystem::Callback(IMovieCallback::ECallbackReason reason, IAnimNode* p
 }
 
 //////////////////////////////////////////////////////////////////////////
-/*static*/ void CMovieSystem::Reflect(AZ::SerializeContext* serializeContext)
+void CMovieSystem::Reflect(AZ::ReflectContext* context)
 {
-    serializeContext->Class<CMovieSystem>()
-        ->Version(1)
-        ->Field("Sequences", &CMovieSystem::m_sequences);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<CMovieSystem>()
+            ->Version(1)
+            ->Field("Sequences", &CMovieSystem::m_sequences);
+    }
 
-    AnimSerializer::ReflectAnimTypes(serializeContext);
+    AnimSerializer::ReflectAnimTypes(context);
 }
 
 //////////////////////////////////////////////////////////////////////////
