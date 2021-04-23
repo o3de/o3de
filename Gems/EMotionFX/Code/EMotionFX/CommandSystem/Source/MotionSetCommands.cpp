@@ -177,7 +177,7 @@ namespace CommandSystem
         }
 
         // Update unique datas for all anim graph instances using the given motion set.
-        EMotionFX::GetAnimGraphManager().UpdateInstancesUniqueDataUsingMotionSet(motionSet);
+        EMotionFX::GetAnimGraphManager().InvalidateInstanceUniqueDataUsingMotionSet(motionSet);
 
         // Mark the workspace as dirty
         mOldWorkspaceDirtyFlag = GetCommandManager()->GetWorkspaceDirtyFlag();
@@ -262,7 +262,9 @@ namespace CommandSystem
         }
 
         // Update unique datas for all anim graph instances using the given motion set.
-        EMotionFX::GetAnimGraphManager().UpdateInstancesUniqueDataUsingMotionSet(motionSet);
+        // After removing a motion set, the used motion set from an anim graph instance will be reset. If we call this function after
+        // RemoveMotionSet, the anim graph instance would hold a nullptr for motion set, and wouldn't be invalidated.
+        EMotionFX::GetAnimGraphManager().InvalidateInstanceUniqueDataUsingMotionSet(motionSet);
 
         // Destroy the motion set.
         EMotionFX::GetMotionManager().RemoveMotionSet(motionSet, true);
@@ -487,7 +489,7 @@ namespace CommandSystem
         }
 
         // Update unique datas for all anim graph instances using the given motion set.
-        EMotionFX::GetAnimGraphManager().UpdateInstancesUniqueDataUsingMotionSet(motionSet);
+        EMotionFX::GetAnimGraphManager().InvalidateInstanceUniqueDataUsingMotionSet(motionSet);
 
         // Return the id of the newly created motion set.
         AZStd::to_string(outResult, motionSet->GetID());
@@ -610,7 +612,7 @@ namespace CommandSystem
         }
 
         // Update unique datas for all anim graph instances using the given motion set.
-        EMotionFX::GetAnimGraphManager().UpdateInstancesUniqueDataUsingMotionSet(motionSet);
+        EMotionFX::GetAnimGraphManager().InvalidateInstanceUniqueDataUsingMotionSet(motionSet);
 
         // Check if we were able to remove all requested motion entries.
         if (!failedToRemoveMotionIdsString.empty())
@@ -806,7 +808,7 @@ namespace CommandSystem
         }
 
         // Update unique datas for all anim graph instances using the given motion set.
-        EMotionFX::GetAnimGraphManager().UpdateInstancesUniqueDataUsingMotionSet(motionSet);
+        EMotionFX::GetAnimGraphManager().InvalidateInstanceUniqueDataUsingMotionSet(motionSet);
 
         // Set the dirty flag.
         const AZStd::string command = AZStd::string::format("AdjustMotionSet -motionSetID %i -dirtyFlag true", motionSetID);
