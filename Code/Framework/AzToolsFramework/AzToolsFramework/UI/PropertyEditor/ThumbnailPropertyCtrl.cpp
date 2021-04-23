@@ -19,12 +19,14 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // 4251: 'QRawFon
 #include <QPainter>
 #include <UI/UICore/AspectRatioAwarePixmapWidget.hxx>
 #include <Thumbnails/ThumbnailWidget.h>
+#include <QApplication>
 AZ_POP_DISABLE_WARNING
-#include "ThumbnailDropDown.h"
+#include "ThumbnailPropertyCtrl.h"
 
 namespace AzToolsFramework
 {
-    ThumbnailDropDown::ThumbnailDropDown(QWidget* parent)
+
+    ThumbnailPropertyCtrl::ThumbnailPropertyCtrl(QWidget* parent)
         : QWidget(parent)
     {
         QHBoxLayout* pLayout = new QHBoxLayout();
@@ -51,19 +53,20 @@ namespace AzToolsFramework
         setLayout(pLayout);
     }
 
-    void ThumbnailDropDown::SetThumbnailKey(Thumbnailer::SharedThumbnailKey key, const char* contextName)
+    void ThumbnailPropertyCtrl::SetThumbnailKey(Thumbnailer::SharedThumbnailKey key, const char* contextName)
     {
+        m_key = key;
         m_emptyThumbnail->setVisible(false);
         m_thumbnail->SetThumbnailKey(key, contextName);
     }
 
-    void ThumbnailDropDown::ClearThumbnail()
+    void ThumbnailPropertyCtrl::ClearThumbnail()
     {
         m_emptyThumbnail->setVisible(true);
         m_thumbnail->ClearThumbnail();
     }
 
-    bool ThumbnailDropDown::event(QEvent* e)
+    bool ThumbnailPropertyCtrl::event(QEvent* e)
     {
         if (isEnabled())
         {
@@ -77,7 +80,7 @@ namespace AzToolsFramework
         return QWidget::event(e);
     }
 
-    void ThumbnailDropDown::paintEvent(QPaintEvent* e)
+    void ThumbnailPropertyCtrl::paintEvent(QPaintEvent* e)
     {
         QPainter p(this);
         QRect targetRect(QPoint(), QSize(40, 24));
@@ -85,17 +88,41 @@ namespace AzToolsFramework
         QWidget::paintEvent(e);
     }
 
-    void ThumbnailDropDown::enterEvent(QEvent* e)
+#pragma optimize("", off)
+    void ThumbnailPropertyCtrl::enterEvent(QEvent* e)
     {
         m_dropDownArrow->setPixmap(QPixmap(":/stylesheet/img/triangle0_highlighted.png"));
+        if (!m_thumbnailEnlarged && m_key)
+        {
+            QWidget* rootWidget = QApplication::activeWindow();
+            if (!rootWidget)
+                return;
+            QPoint rootPosition = rootWidget->pos();
+            QPoint myPosition = pos();
+            QPoint position = mapToGlobal(myPosition - QPoint(185, 0));
+            QSize size(180, 180);
+            m_thumbnailEnlarged = new Thumbnailer::ThumbnailWidget();
+            m_thumbnailEnlarged->setFixedSize(size);
+            m_thumbnailEnlarged->move(position);
+            m_thumbnailEnlarged->setWindowTitle("test");
+            m_thumbnailEnlarged->setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
+            m_thumbnailEnlarged->SetThumbnailKey(m_key);
+            m_thumbnailEnlarged->show();
+        }
         QWidget::enterEvent(e);
     }
+#pragma optimize("", on)
 
-    void ThumbnailDropDown::leaveEvent(QEvent* e)
+    void ThumbnailPropertyCtrl::leaveEvent(QEvent* e)
     {
         m_dropDownArrow->setPixmap(QPixmap(":/stylesheet/img/triangle0.png"));
+        if (m_thumbnailEnlarged)
+        {
+            delete m_thumbnailEnlarged;
+            m_thumbnailEnlarged = nullptr;
+        }
         QWidget::leaveEvent(e);
     }
 }
 
-#include "UI/PropertyEditor/moc_ThumbnailDropDown.cpp"
+#include "UI/PropertyEditor/moc_ThumbnailPropertyCtrl.cpp"

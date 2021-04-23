@@ -45,7 +45,7 @@ namespace AzToolsFramework
 {
     class AssetCompleterModel;
     class AssetCompleterListView;
-    class ThumbnailDropDown;
+    class ThumbnailPropertyCtrl;
 
     namespace Thumbnailer
     {
@@ -95,8 +95,7 @@ namespace AzToolsFramework
         void OnAssetIDChanged(AZ::Data::AssetId newAssetID);
 
     protected:
-        ThumbnailDropDown* m_thumbnailDropDown = nullptr;
-        Thumbnailer::ThumbnailWidget* m_thumbnail = nullptr;
+        ThumbnailPropertyCtrl* m_thumbnail = nullptr;
         QPushButton* m_errorButton = nullptr;
         QToolButton* m_editButton = nullptr;
 
@@ -158,8 +157,6 @@ namespace AzToolsFramework
 
         bool m_showThumbnail = false;
 
-        bool m_showThumbnailDropDown = false;
-
         // ! Default suffix used in the field's placeholder text when a default value is set.
         const char* m_DefaultSuffix = " (default)";
 
@@ -209,8 +206,6 @@ namespace AzToolsFramework
 
         void SetShowThumbnail(bool enable);
         bool GetShowThumbnail() const;
-        void SetShowThumbnailDropDown(bool enable);
-        bool GetShowThumbnailDropDown() const;
 
         void SetSelectedAssetID(const AZ::Data::AssetId& newID);
         void SetCurrentAssetType(const AZ::Data::AssetType& newType);
