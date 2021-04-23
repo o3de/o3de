@@ -21,6 +21,7 @@ if(CMAKE_VERSION VERSION_EQUAL 3.19)
     cmake_policy(SET CMP0111 OLD)
 endif()
 
+include(cmake/LySet.cmake)
 include(cmake/Version.cmake)
 include(cmake/OutputDirectory.cmake)
 
