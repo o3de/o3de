@@ -21,7 +21,7 @@ namespace Multiplayer
 {
     using namespace AzNetworking;
 
-    AZ_CVAR(bool, editorsv_enabled, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
+    AZ_CVAR(bool, editorsv_enabled, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "Whether Editor launching a local server to connect to is supported");
     AZ_CVAR(AZ::CVarFixedString, editorsv_process, "", nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "The server executable that should be run. Empty to use the current project's ServerLauncher");
