@@ -18,5 +18,6 @@ set(FILES
     FindOpenGLInterface.cmake
     FindOpenSSL.cmake
     FindRadTelemetry.cmake
+    FindVkValidation.cmake
     FindWwise.cmake
 )
