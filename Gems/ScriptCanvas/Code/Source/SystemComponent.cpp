@@ -23,7 +23,6 @@
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Core/Nodeable.h>
 #include <ScriptCanvas/Core/Slot.h>
-#include <ScriptCanvas/Data/DataRegistry.h>
 #include <ScriptCanvas/Execution/ExecutionPerformanceTimer.h>
 #include <ScriptCanvas/Execution/Interpreted/ExecutionInterpretedAPI.h>
 #include <ScriptCanvas/Execution/RuntimeComponent.h>
@@ -285,6 +284,72 @@ namespace ScriptCanvas
         m_ownedObjectsByAddress.erase(object);
     }
 
+    AZStd::pair<DataRegistry::Createability, TypeProperties> SystemComponent::GetCreatibility(AZ::SerializeContext* serializeContext, AZ::BehaviorClass* behaviorClass)
+    {
+        TypeProperties typeProperties;
+
+        bool canCreate{};
+        // BehaviorContext classes with the ExcludeFrom attribute with a value of the ExcludeFlags::List is not creatable
+        const AZ::u64 exclusionFlags = AZ::Script::Attributes::ExcludeFlags::List;
+        auto excludeClassAttributeData = azrtti_cast<const AZ::Edit::AttributeData<AZ::Script::Attributes::ExcludeFlags>*>(AZ::FindAttribute(AZ::Script::Attributes::ExcludeFrom, behaviorClass->m_attributes));
+
+        const AZ::u64 flags = excludeClassAttributeData ? excludeClassAttributeData->Get(nullptr) : 0;
+        bool listOnly = ((flags & AZ::Script::Attributes::ExcludeFlags::ListOnly) == AZ::Script::Attributes::ExcludeFlags::ListOnly); // ListOnly exclusions may create variables
+        canCreate = listOnly || (!excludeClassAttributeData || (!(flags & exclusionFlags)));
+        canCreate = canCreate && (serializeContext->FindClassData(behaviorClass->m_typeId));
+        canCreate = canCreate && !ScriptCanvasSystemComponentCpp::IsDeprecated(behaviorClass->m_attributes);
+
+        if (canCreate)
+        {
+            for (auto base : behaviorClass->m_baseClasses)
+            {
+                if (AZ::Component::TYPEINFO_Uuid() == base)
+                {
+                    canCreate = false;
+                    break; // only out of the for : base classes loop. DO NOT break out of the parent loop.
+                }
+            }
+        }
+
+        // Assets are not safe enough for variable creation, yet. They can be created with one Az type (Data::Asset<T>), but set to nothing.
+        // When read back in, they will (if lucky) just be Data::Asset<Data>, which breaks type safety at best, and requires a lot of sanity checking.
+        // This is NOT blacked at the createable types or BehaviorContext level, since they could be used to at least pass information through,
+        // and may be used other scripting contexts.
+        AZ::IRttiHelper* rttiHelper = behaviorClass->m_azRtti;
+        if (rttiHelper && rttiHelper->GetGenericTypeId() == azrtti_typeid<AZ::Data::Asset>())
+        {
+            canCreate = false;
+        }
+
+        if (AZ::FindAttribute(AZ::ScriptCanvasAttributes::AllowInternalCreation, behaviorClass->m_attributes))
+        {
+            canCreate = true;
+            typeProperties.m_isTransient = true;
+        }
+
+        // create able variables must have full memory support
+        canCreate = canCreate &&
+            (behaviorClass->m_allocate
+                && behaviorClass->m_cloner
+                && behaviorClass->m_mover
+                && behaviorClass->m_destructor
+                && behaviorClass->m_deallocate) &&
+            AZStd::none_of(behaviorClass->m_baseClasses.begin(), behaviorClass->m_baseClasses.end(), [](const AZ::TypeId& base) { return azrtti_typeid<AZ::Component>() == base; });
+
+        if (!canCreate)
+        {
+            return { DataRegistry::Createability::None , TypeProperties{} };
+        }
+        else if (!AZ::FindAttribute(AZ::ScriptCanvasAttributes::VariableCreationForbidden, behaviorClass->m_attributes))
+        {
+            return { DataRegistry::Createability::SlotAndVariable, typeProperties };
+        }
+        else
+        {
+            return { DataRegistry::Createability::SlotOnly, typeProperties };
+        }
+    }
+
     void SystemComponent::RegisterCreatableTypes()
     {
         AZ::SerializeContext* serializeContext{};
@@ -297,40 +362,11 @@ namespace ScriptCanvas
         auto dataRegistry = ScriptCanvas::GetDataRegistry();
         for (const auto& classIter : behaviorContext->m_classes)
         {
-            TypeProperties typeProperties;
-
-            bool canCreate{};
-            const AZ::BehaviorClass* behaviorClass = classIter.second;
-            // BehaviorContext classes with the ExcludeFrom attribute with a value of the ExcludeFlags::List is not creatable
-            const AZ::u64 exclusionFlags = AZ::Script::Attributes::ExcludeFlags::List;
-            auto excludeClassAttributeData = azrtti_cast<const AZ::Edit::AttributeData<AZ::Script::Attributes::ExcludeFlags>*>(AZ::FindAttribute(AZ::Script::Attributes::ExcludeFrom, behaviorClass->m_attributes));
-
-            const AZ::u64 flags = excludeClassAttributeData ? excludeClassAttributeData->Get(nullptr) : 0;
-            bool listOnly = ((flags & AZ::Script::Attributes::ExcludeFlags::ListOnly) == AZ::Script::Attributes::ExcludeFlags::ListOnly); // ListOnly exclusions may create variables
-
-            canCreate = listOnly || (!excludeClassAttributeData || (!(flags & exclusionFlags)));
-            canCreate = canCreate && (serializeContext->FindClassData(behaviorClass->m_typeId));
-            canCreate = canCreate && !ScriptCanvasSystemComponentCpp::IsDeprecated(behaviorClass->m_attributes);
-
-            if (AZ::FindAttribute(AZ::ScriptCanvasAttributes::AllowInternalCreation, behaviorClass->m_attributes))
-            {
-                canCreate = true;
-                typeProperties.m_isTransient = true;
-            }
-
-            // create able variables must have full memory support
-            canCreate = canCreate &&
-                    ( behaviorClass->m_allocate
-                    && behaviorClass->m_cloner
-                    && behaviorClass->m_mover
-                    && behaviorClass->m_destructor
-                    && behaviorClass->m_deallocate) &&
-                AZStd::none_of(behaviorClass->m_baseClasses.begin(), behaviorClass->m_baseClasses.end(), [](const AZ::TypeId& base) { return azrtti_typeid<AZ::Component>() == base; });
-
-            if (canCreate)
-            {
-                dataRegistry->RegisterType(behaviorClass->m_typeId, typeProperties);
-            }
+           auto createability = GetCreatibility(serializeContext, classIter.second);
+           if (createability.first != DataRegistry::Createability::None)
+           {
+               dataRegistry->RegisterType(classIter.second->m_typeId, createability.second, createability.first);
+           }
         }
     }
 
@@ -339,33 +375,19 @@ namespace ScriptCanvas
         auto dataRegistry = ScriptCanvas::GetDataRegistry();
         if (!dataRegistry)
         {
+            AZ_Warning("ScriptCanvas", false, "Data registry not available. Can't register new class.");
+
             return;
         }
+
         AZ::SerializeContext* serializeContext{};
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
-        AZ_Assert(serializeContext, "Serialize Context should not be missing at this point");
+        AZ_Assert(serializeContext, "Serialize Context missing. Can't register new class.");
 
-        TypeProperties typeProperties;
-
-        // BehaviorContext classes with the ExcludeFrom attribute with a value of the ExcludeFlags::List is not creatable
-        const AZ::u64 exclusionFlags = AZ::Script::Attributes::ExcludeFlags::List;
-        auto excludeClassAttributeData = azrtti_cast<const AZ::Edit::AttributeData<AZ::Script::Attributes::ExcludeFlags>*>(AZ::FindAttribute(AZ::Script::Attributes::ExcludeFrom, behaviorClass->m_attributes));
-        bool canCreate = !excludeClassAttributeData || !(excludeClassAttributeData->Get(nullptr) & exclusionFlags);
-        canCreate = canCreate && (serializeContext->FindClassData(behaviorClass->m_typeId) || AZ::FindAttribute(AZ::ScriptCanvasAttributes::AllowInternalCreation, behaviorClass->m_attributes));
-        canCreate = canCreate && !ScriptCanvasSystemComponentCpp::IsDeprecated(behaviorClass->m_attributes);
-        
-        // create able variables must have full memory support
-        canCreate = canCreate &&
-            (behaviorClass->m_allocate
-                && behaviorClass->m_cloner
-                && behaviorClass->m_mover
-                && behaviorClass->m_destructor
-                && behaviorClass->m_deallocate) &&
-            AZStd::none_of(behaviorClass->m_baseClasses.begin(), behaviorClass->m_baseClasses.end(), [](const AZ::TypeId& base) { return azrtti_typeid<AZ::Component>() == base; });
-
-        if (canCreate)
+        auto createability = GetCreatibility(serializeContext, behaviorClass);
+        if (createability.first != DataRegistry::Createability::None)
         {
-            dataRegistry->RegisterType(behaviorClass->m_typeId, typeProperties);
+            dataRegistry->RegisterType(behaviorClass->m_typeId, createability.second, createability.first);
         }
     }
 

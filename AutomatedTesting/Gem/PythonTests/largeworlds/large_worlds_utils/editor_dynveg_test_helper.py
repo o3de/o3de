@@ -21,7 +21,7 @@ import azlmbr.areasystem as areasystem
 import azlmbr.paths
 
 sys.path.append(os.path.join(azlmbr.paths.devroot, 'AutomatedTesting', 'Gem', 'PythonTests'))
-import automatedtesting_shared.hydra_editor_utils as hydra
+import editor_python_test_tools.hydra_editor_utils as hydra
 
 
 def create_surface_entity(name, center_point, box_size_x, box_size_y, box_size_z):

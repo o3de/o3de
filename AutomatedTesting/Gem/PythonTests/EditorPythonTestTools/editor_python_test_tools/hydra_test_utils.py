@@ -12,10 +12,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import logging
 import os
 import tempfile
+
 import ly_test_tools.log.log_monitor
 import ly_test_tools.environment.process_utils as process_utils
 import ly_test_tools.environment.waiter as waiter
-from automatedtesting_shared.network_utils import check_for_listening_port
 from ly_remote_console.remote_console_commands import RemoteConsole as RemoteConsole
 from ly_remote_console.remote_console_commands import send_command_and_expect_response as send_command_and_expect_response
 logger = logging.getLogger(__name__)
@@ -86,6 +86,19 @@ def launch_and_validate_results_launcher(launcher, level, remote_console_instanc
     :param log_monitor_timeout: Timeout for monitoring for lines in Game.log
     :param remote_console_port: The port used to communicate with the Remote Console.
     """
+
+    def _check_for_listening_port(port):
+        """
+        Checks to see if the connection to the designated port was established.
+        :param port: Port to listen to.
+        :return: True if port is listening.
+        """
+        port_listening = False
+        for conn in psutil.net_connections():
+            if 'port={}'.format(port) in str(conn):
+                port_listening = True
+        return port_listening
+        
     if null_renderer:
         launcher.args.extend(["-NullRenderer"])
 
@@ -94,7 +107,7 @@ def launch_and_validate_results_launcher(launcher, level, remote_console_instanc
 
         # Ensure Remote Console can be reached
         waiter.wait_for(
-            lambda: check_for_listening_port(remote_console_port),
+            lambda: _check_for_listening_port(remote_console_port),
             port_listener_timeout,
             exc=AssertionError("Port {} not listening.".format(remote_console_port)),
         )

@@ -23,7 +23,6 @@
 #include <memory> // for shared_ptr
 #include <QMap>
 #include <QApplication>
-#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
 #include <AzCore/std/string/string.h>
 
@@ -86,13 +85,12 @@ namespace AssetDatabase
 
 class CEditorImpl 
     : public IEditor
-    , protected AzToolsFramework::EditorEntityContextNotificationBus::Handler
 {
     Q_DECLARE_TR_FUNCTIONS(CEditorImpl)
 
 public:
     CEditorImpl();
-    ~CEditorImpl();
+    virtual ~CEditorImpl();
 
     void Initialize();
     void OnBeginShutdownSequence();
@@ -226,8 +224,6 @@ public:
     void SetDataModified();
     void SetOperationMode(EOperationMode mode);
     EOperationMode GetOperationMode();
-    void SetEditMode(int editMode);
-    int GetEditMode();
 
     ITransformManipulator* ShowTransformManipulator(bool bShow);
     ITransformManipulator* GetTransformManipulator();
@@ -348,23 +344,15 @@ public:
 
 protected:
 
-    //////////////////////////////////////////////////////////////////////////
-    // EditorEntityContextNotificationBus implementation
-    void OnStartPlayInEditor() override;
-    //////////////////////////////////////////////////////////////////////////
     AZStd::string LoadProjectIdFromProjectData();
 
     void DetectVersion();
     void RegisterTools();
     void SetPrimaryCDFolder();
 
-    void LoadSettings();
-    void SaveSettings() const;
-
     //! List of all notify listeners.
     std::list<IEditorNotifyListener*> m_listeners;
 
-    EEditMode m_currEditMode;
     EOperationMode m_operationMode;
     ISystem* m_pSystem;
     IFileUtil* m_pFileUtil;
@@ -378,8 +366,6 @@ protected:
     AABB m_selectedRegion;
     AxisConstrains m_selectedAxis;
     RefCoordSys m_refCoordsSys;
-    AxisConstrains m_lastAxis[16];
-    RefCoordSys m_lastCoordSys[16];
     bool m_bAxisVectorLock;
     bool m_bUpdates;
     bool m_bTerrainAxisIgnoreObjects;

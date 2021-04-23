@@ -15,11 +15,12 @@
 import sys
 import time
 from typing import Sequence
-from .report import Report
 
 # Open 3D Engine specific imports
 import azlmbr.legacy.general as general
 import azlmbr.legacy.settings as settings
+
+from editor_python_test_tools.utils import Report
 
 
 class EditorTestHelper:
@@ -117,7 +118,8 @@ class EditorTestHelper:
         # Set the viewport back to whatever size it was at the start and restore the pane layout
         general.set_viewport_size(int(self.viewport_size.x), int(self.viewport_size.y))
         general.set_viewport_expansion_policy("AutoExpand")
-        general.set_view_pane_layout(self.viewport_layout)
+        # Temporarily disabling reset of view pane layout: LYN-3120
+        # general.set_view_pane_layout(self.viewport_layout)
         general.update_viewport()
 
         self.log("test finished")
