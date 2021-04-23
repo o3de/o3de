@@ -138,17 +138,4 @@ namespace AzFramework
         AZ_Warning("SceneSystemComponent", false, R"(Attempting to remove scene name "%.*s", but that scene was not found.)", AZ_STRING_ARG(name));
         return false;
     }
-
-    AZStd::shared_ptr<Scene> SceneSystemComponent::GetSceneFromEntityContextId(EntityContextId entityContextId)
-    {
-        for (AZStd::shared_ptr<Scene>& scene : m_activeScenes)
-        {
-            EntityContext** entityContext = scene->FindSubsystem<EntityContext::SceneStorageType>();
-            if (entityContext && (*entityContext)->GetContextId() == entityContextId)
-            {
-                return scene;
-            }
-        }
-        return nullptr;
-    }
-} // AzFramework
+} // namespace AzFramework

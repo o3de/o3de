@@ -121,4 +121,42 @@ namespace AzFramework
         }
         return m_parent ? m_parent->FindSubsystem<T>() : nullptr;
     }
+
+    template<typename T>
+    T* Scene::FindSubsystemInScene()
+    {
+        const AZ::TypeId& targetType = azrtti_typeid<T>();
+        const size_t m_systemKeysCount = m_systemKeys.size();
+        for (size_t i = 0; i < m_systemKeysCount; ++i)
+        {
+            if (m_systemKeys[i] != targetType)
+            {
+                continue;
+            }
+            else
+            {
+                return AZStd::any_cast<T>(&m_systemObjects[i]);
+            }
+        }
+        return nullptr;
+    }
+
+    template<typename T>
+    const T* Scene::FindSubsystemInScene() const
+    {
+        const AZ::TypeId& targetType = azrtti_typeid<T>();
+        const size_t m_systemKeysCount = m_systemKeys.size();
+        for (size_t i = 0; i < m_systemKeysCount; ++i)
+        {
+            if (m_systemKeys[i] != targetType)
+            {
+                continue;
+            }
+            else
+            {
+                return AZStd::any_cast<const T>(&m_systemObjects[i]);
+            }
+        }
+        return nullptr;
+    }
 } // namespace AzFramework

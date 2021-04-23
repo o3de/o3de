@@ -17,6 +17,7 @@
 #include <AzCore/Component/EntityBus.h>
 #include <AzCore/Serialization/ObjectStream.h>
 #include <AzCore/Serialization/IdUtils.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/Entity/SliceEntityOwnershipService.h>
 
@@ -27,6 +28,8 @@ namespace AZ
 
 namespace AzFramework
 {
+    class Scene;
+
     /**
      * Provides services for a group of entities under the umbrella of a given context.
      *
@@ -75,6 +78,7 @@ namespace AzFramework
         //////////////////////////////////////////////////////////////////////////
 
         static void Reflect(AZ::ReflectContext* context);
+        static AZStd::shared_ptr<Scene> FindContainingScene(const EntityContextId& contextId);
 
     protected:
 

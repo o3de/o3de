@@ -18,6 +18,8 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/std/containers/stack.h>
+#include <AzFramework/Scene/Scene.h>
+#include <AzFramework/Scene/SceneSystemBus.h>
 
 #include "EntityContext.h"
 
@@ -35,6 +37,28 @@ namespace AzFramework
                 ->Version(1)
                 ;
         }
+    }
+
+    AZStd::shared_ptr<Scene> EntityContext::FindContainingScene(const EntityContextId& contextId)
+    {
+        auto sceneSystem = SceneSystemInterface::Get();
+        AZ_Assert(sceneSystem, "Attempting to retrieve the scene containing a entity context before the scene system is available.");
+
+        AZStd::shared_ptr<Scene> result;
+        sceneSystem->IterateActiveScenes([&result, &contextId](const AZStd::shared_ptr<Scene>& scene)
+            {
+                EntityContext** entityContext = scene->FindSubsystemInScene<EntityContext::SceneStorageType>();
+                if (entityContext && (*entityContext)->GetContextId() == contextId)
+                {
+                    result = scene;
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
+            });
+        return result;
     }
 
     //=========================================================================

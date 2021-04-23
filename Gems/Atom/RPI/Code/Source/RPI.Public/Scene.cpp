@@ -28,6 +28,8 @@
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Jobs/JobEmpty.h>
 
+#include <AzFramework/Entity/EntityContext.h>
+
 namespace AZ
 {
     namespace RPI
@@ -71,9 +73,7 @@ namespace AZ
         Scene* Scene::GetSceneForEntityContextId(AzFramework::EntityContextId entityContextId)
         {
             // Find the scene for this entity context.
-            auto* sceneSystem = AzFramework::SceneSystemInterface::Get();
-            AZ_Assert(sceneSystem, "RPI::Scene requires the scene system, but it doesn't have an implementation.");
-            AZStd::shared_ptr<AzFramework::Scene> scene = sceneSystem->GetSceneFromEntityContextId(entityContextId);
+            AZStd::shared_ptr<AzFramework::Scene> scene = AzFramework::EntityContext::FindContainingScene(entityContextId);
             if (scene)
             {
                 // Get the RPI::Scene subsystem from the AZFramework Scene.

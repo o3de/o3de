@@ -60,10 +60,6 @@ namespace AzFramework
         //! Remove a scene with a given name and return if the operation was successful.
         //!  - If the removed scene is the default scene, there will no longer be a default scene.
         virtual bool RemoveScene(AZStd::string_view name) = 0;
-
-        //! Get the scene associated with an EntityContextId
-        //!  - If no scene is found for the provided EntityContextId, nullptr is returned.
-        virtual AZStd::shared_ptr<Scene> GetSceneFromEntityContextId(EntityContextId entityContextId) = 0;
     };
 
     using SceneSystemInterface = AZ::Interface<ISceneSystem>;

@@ -34,6 +34,9 @@ namespace AzFramework
         Scene(AZStd::string name, AZStd::shared_ptr<Scene> parent);
 
         const AZStd::string& GetName() const;
+
+        const AZStd::shared_ptr<Scene>& GetParent();
+        AZStd::shared_ptr<const Scene> GetParent() const;
         
         // Set the instance of a subsystem associated with this scene.
         template <typename T>
@@ -48,13 +51,22 @@ namespace AzFramework
         template<typename T>
         bool UnsetSubsystem(const T& system);
 
-        // Get the instance of a subsystem associated with this scene.
+        // Get the instance of a subsystem associated with this scene. This call will also look in parent scenes if not found on the target scene.
         template <typename T>
         T* FindSubsystem();
 
-        // Get the instance of a subsystem associated with this scene.
+        // Get the instance of a subsystem associated with this scene. This call will also look in parent scenes if not found on the target
+        // scene.
         template<typename T>
         const T* FindSubsystem() const;
+
+        // Get the instance of a subsystem associated with this scene. This call will only look in the selected scene.
+        template<typename T>
+        T* FindSubsystemInScene();
+
+        // Get the instance of a subsystem associated with this scene. This call will only look in the selected scene.
+        template<typename T>
+        const T* FindSubsystemInScene() const;
 
     private:
         // Storing keys separate from data to optimize for fast key search.

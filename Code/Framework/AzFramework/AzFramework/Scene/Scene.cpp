@@ -29,4 +29,14 @@ namespace AzFramework
     {
         return m_name;
     }
+
+    const AZStd::shared_ptr<Scene>& Scene::GetParent()
+    {
+        return m_parent;
+    }
+
+    AZStd::shared_ptr<const Scene> Scene::GetParent() const
+    {
+        return m_parent;
+    }
 }
