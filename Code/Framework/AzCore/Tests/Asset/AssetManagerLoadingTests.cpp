@@ -589,7 +589,7 @@ namespace UnitTest
         }
     };
 
-    TEST_F(AssetJobsFloodTest, Cancel)
+    TEST_F(AssetJobsFloodTest, RapidAcquireAndRelease)
     {
         DebugListener listener;  
         auto assetUuids = {
