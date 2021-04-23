@@ -14,6 +14,7 @@ set(FILES
     3rdPartyPackages.cmake
     CommandExecution.cmake
     Configurations.cmake
+    CPack.cmake
     Dependencies.cmake
     Deployment.cmake
     EngineFinder.cmake
