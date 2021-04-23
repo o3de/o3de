@@ -21,7 +21,7 @@ namespace AZ
     namespace RPI
     {
         ViewportContext::ViewportContext(ViewportContextManager* manager, AzFramework::ViewportId id, const AZ::Name& name, RHI::Device& device, AzFramework::NativeWindowHandle nativeWindow, ScenePtr renderScene)
-            : m_rootScene(renderScene)
+            : m_rootScene(nullptr)
             , m_id(id)
             , m_windowContext(AZStd::make_shared<WindowContext>())
             , m_manager(manager)
@@ -33,6 +33,8 @@ namespace AZ
                 nativeWindow,
                 &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
             AzFramework::WindowNotificationBus::Handler::BusConnect(nativeWindow);
+
+            SetRenderScene(renderScene);
         }
 
         ViewportContext::~ViewportContext()
