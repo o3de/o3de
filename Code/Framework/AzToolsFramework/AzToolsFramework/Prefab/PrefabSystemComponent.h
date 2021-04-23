@@ -187,7 +187,10 @@ namespace AzToolsFramework
             * @param entities A vector of entities that will be used in the new instance. May be empty
             * @param instances A vector of Prefab Instances that will be nested in the new instance, will be consumed and moved.
             *                  May be empty
-            * @param filePath the path to associate the template of the new instance to
+            * @param filePath the path to associate the template of the new instance to.
+            * @param containerEntity The container entity for the prefab to be created. It will be created if a nullptr is provided.
+            * @param shouldCreateLinks The flag indicating if links should be created between the templates of the instance
+            *        and its nested instances.
             * @return A pointer to the newly created instance. nullptr on failure
             */
             AZStd::unique_ptr<Instance> CreatePrefab(
@@ -199,11 +202,11 @@ namespace AzToolsFramework
 
             /**
              * Updates a template with the given updated DOM.
-             * 
+             *
              * @param templateId The id of the template to update.
              * @param updatedDom The DOM to update the template with.
              */
-            void UpdatePrefabTemplate(TemplateId templateId, const PrefabDom& updatedDom, bool shouldPropagateTemplateChanges = true) override;
+            void UpdatePrefabTemplate(TemplateId templateId, const PrefabDom& updatedDom) override;
 
             void PropagateTemplateChanges(TemplateId templateId) override;
 
@@ -262,7 +265,9 @@ namespace AzToolsFramework
             /**
             * Takes a prefab instance and generates a new Prefab Template
             * along with any new Prefab Links representing any of the nested instances present
-            * @param instance The instance used to generate the new Template
+            * @param instance The instance used to generate the new Template.
+            * @param shouldCreateLinks The flag indicating if links should be created between the templates of the instance
+            *        and its nested instances.
             */
             TemplateId CreateTemplateFromInstance(Instance& instance, bool shouldCreateLinks);
 

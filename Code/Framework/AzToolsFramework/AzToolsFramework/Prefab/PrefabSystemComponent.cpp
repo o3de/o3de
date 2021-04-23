@@ -159,7 +159,7 @@ namespace AzToolsFramework
             }
         }
 
-        void PrefabSystemComponent::UpdatePrefabTemplate(TemplateId templateId, const PrefabDom& updatedDom, bool shouldPropagateTemplateChanges)
+        void PrefabSystemComponent::UpdatePrefabTemplate(TemplateId templateId, const PrefabDom& updatedDom)
         {
             auto templateToUpdate = FindTemplate(templateId);
             if (templateToUpdate)
@@ -169,10 +169,7 @@ namespace AzToolsFramework
                 {
                     templateDomToUpdate.CopyFrom(updatedDom, templateDomToUpdate.GetAllocator());
                     templateToUpdate->get().MarkAsDirty(true);
-                    if (shouldPropagateTemplateChanges)
-                    {
-                        PropagateTemplateChanges(templateId);
-                    }
+                    PropagateTemplateChanges(templateId);
                 }
             }
         }

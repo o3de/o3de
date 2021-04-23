@@ -298,7 +298,7 @@ namespace AzToolsFramework
             Prefab::PrefabDom serializedInstance;
             if (Prefab::PrefabDomUtils::StoreInstanceInPrefabDom(addedInstance, serializedInstance))
             {
-                m_prefabSystemComponent->UpdatePrefabTemplate(addedInstance.GetTemplateId(), serializedInstance, false);
+                m_prefabSystemComponent->UpdatePrefabTemplate(addedInstance.GetTemplateId(), serializedInstance);
             }
             
             return addedInstance;
