@@ -74,9 +74,6 @@ foreach(restricted_platform ${PAL_RESTRICTED_PLATFORMS})
     endif()
 endforeach()
 
-# Recurse into directory of general python test scripts
-add_subdirectory(ctest_scripts)
-
 add_subdirectory(scripts)
 
 # SPEC-1417 will investigate and fix this
