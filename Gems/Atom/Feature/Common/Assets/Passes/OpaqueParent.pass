@@ -181,6 +181,13 @@
                             }
                         },
                         {
+                            "LocalSlot": "AlbedoInput",
+                            "AttachmentRef": {
+                                "Pass": "ForwardMSAAPass",
+                                "Attachment": "AlbedoOutput"
+                            }
+                        },
+                        {
                             "LocalSlot": "DepthStencilInputOutput",
                             "AttachmentRef": {
                                 "Pass": "ForwardMSAAPass",

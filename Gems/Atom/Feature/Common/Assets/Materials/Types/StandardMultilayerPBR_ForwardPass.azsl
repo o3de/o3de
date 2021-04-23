@@ -268,10 +268,15 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
 
     // ------- Occlusion -------
     
-    float layer1_occlusion = GetOcclusionInput(MaterialSrg::m_layer1_m_ambientOcclusionMap, MaterialSrg::m_sampler, uvLayer1[MaterialSrg::m_layer1_m_ambientOcclusionMapUvIndex], MaterialSrg::m_layer1_m_ambientOcclusionFactor, o_layer1_o_ambientOcclusion_useTexture);
-    float layer2_occlusion = GetOcclusionInput(MaterialSrg::m_layer2_m_ambientOcclusionMap, MaterialSrg::m_sampler, uvLayer2[MaterialSrg::m_layer2_m_ambientOcclusionMapUvIndex], MaterialSrg::m_layer2_m_ambientOcclusionFactor, o_layer2_o_ambientOcclusion_useTexture);
-    float layer3_occlusion = GetOcclusionInput(MaterialSrg::m_layer3_m_ambientOcclusionMap, MaterialSrg::m_sampler, uvLayer3[MaterialSrg::m_layer3_m_ambientOcclusionMapUvIndex], MaterialSrg::m_layer3_m_ambientOcclusionFactor, o_layer3_o_ambientOcclusion_useTexture);
-    float occlusion = BlendLayers(layer1_occlusion, layer2_occlusion, layer3_occlusion, blendMaskValues);
+    float layer1_diffuseAmbientOcclusion = GetOcclusionInput(MaterialSrg::m_layer1_m_diffuseOcclusionMap, MaterialSrg::m_sampler, uvLayer1[MaterialSrg::m_layer1_m_diffuseOcclusionMapUvIndex], MaterialSrg::m_layer1_m_diffuseOcclusionFactor, o_layer1_o_diffuseOcclusion_useTexture);
+    float layer2_diffuseAmbientOcclusion = GetOcclusionInput(MaterialSrg::m_layer2_m_diffuseOcclusionMap, MaterialSrg::m_sampler, uvLayer2[MaterialSrg::m_layer2_m_diffuseOcclusionMapUvIndex], MaterialSrg::m_layer2_m_diffuseOcclusionFactor, o_layer2_o_diffuseOcclusion_useTexture);
+    float layer3_diffuseAmbientOcclusion = GetOcclusionInput(MaterialSrg::m_layer3_m_diffuseOcclusionMap, MaterialSrg::m_sampler, uvLayer3[MaterialSrg::m_layer3_m_diffuseOcclusionMapUvIndex], MaterialSrg::m_layer3_m_diffuseOcclusionFactor, o_layer3_o_diffuseOcclusion_useTexture);
+    float diffuseAmbientOcclusion = BlendLayers(layer1_diffuseAmbientOcclusion, layer2_diffuseAmbientOcclusion, layer3_diffuseAmbientOcclusion, blendMaskValues);
+
+    float layer1_specularOcclusion = GetOcclusionInput(MaterialSrg::m_layer1_m_specularOcclusionMap, MaterialSrg::m_sampler, uvLayer1[MaterialSrg::m_layer1_m_specularOcclusionMapUvIndex], MaterialSrg::m_layer1_m_specularOcclusionFactor, o_layer1_o_specularOcclusion_useTexture);
+    float layer2_specularOcclusion = GetOcclusionInput(MaterialSrg::m_layer2_m_specularOcclusionMap, MaterialSrg::m_sampler, uvLayer2[MaterialSrg::m_layer2_m_specularOcclusionMapUvIndex], MaterialSrg::m_layer2_m_specularOcclusionFactor, o_layer2_o_specularOcclusion_useTexture);
+    float layer3_specularOcclusion = GetOcclusionInput(MaterialSrg::m_layer3_m_specularOcclusionMap, MaterialSrg::m_sampler, uvLayer3[MaterialSrg::m_layer3_m_specularOcclusionMapUvIndex], MaterialSrg::m_layer3_m_specularOcclusionFactor, o_layer3_o_specularOcclusion_useTexture);
+    float specularOcclusion = BlendLayers(layer1_specularOcclusion, layer2_specularOcclusion, layer3_specularOcclusion, blendMaskValues);
 
     // ------- Subsurface -------
 
@@ -350,7 +355,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     PbrLightingOutput lightingOutput = PbrLighting(IN,
         baseColor, metallic, roughness, specularF0Factor, 
         normalWS, tangents[0], bitangents[0], anisotropy,
-        emissive, occlusion, transmissionTintThickness, MaterialSrg::m_transmissionParams, clearCoatFactor, clearCoatRoughness, clearCoatNormal, alpha, o_opacity_mode);
+        emissive, diffuseAmbientOcclusion, specularOcclusion, transmissionTintThickness, MaterialSrg::m_transmissionParams, clearCoatFactor, clearCoatRoughness, clearCoatNormal, alpha, o_opacity_mode);
 
     // ------- Opacity -------
 

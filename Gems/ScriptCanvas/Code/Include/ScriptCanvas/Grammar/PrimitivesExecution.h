@@ -170,6 +170,8 @@ namespace ScriptCanvas
 
             VariableConstPtr GetNodeable() const;
 
+            AZStd::optional<size_t> GetOutCallIndex() const;
+
             ExecutionTreeConstPtr GetParent() const;
 
             ExecutionTreeConstPtr GetRoot() const;
@@ -252,6 +254,8 @@ namespace ScriptCanvas
 
             void SetNodeable(VariableConstPtr nodeable);
 
+            void SetOutCallIndex(size_t index);
+
             void SetParent(ExecutionTreePtr parent);
 
             void SetScope(ScopePtr scope);
@@ -285,6 +289,8 @@ namespace ScriptCanvas
             bool m_isStart = false;
 
             bool m_hasExplicitUserOutCalls = false;
+
+            size_t m_outCallIndex = std::numeric_limits<size_t>::max();
 
             // The node and the activation slot. The execution in, or the event or latent out slot.
             ExecutionId m_in;

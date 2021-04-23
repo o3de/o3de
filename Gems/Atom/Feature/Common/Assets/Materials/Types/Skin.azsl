@@ -272,6 +272,11 @@ PbrLightingOutput SkinPS_Common(VSOutput IN)
     float roughness = GetRoughnessInput(MaterialSrg::m_roughnessMap, MaterialSrg::m_sampler, roughnessUv, MaterialSrg::m_roughnessFactor,
                                         MaterialSrg::m_roughnessLowerBound, MaterialSrg::m_roughnessUpperBound, o_roughness_useTexture);
 
+    // ------- Occlusion -------
+    
+    float diffuseAmbientOcclusion = GetOcclusionInput(MaterialSrg::m_diffuseOcclusionMap, MaterialSrg::m_sampler, IN.m_uv[MaterialSrg::m_diffuseOcclusionMapUvIndex], MaterialSrg::m_diffuseOcclusionFactor, o_diffuseOcclusion_useTexture);
+    float specularOcclusion = GetOcclusionInput(MaterialSrg::m_specularOcclusionMap, MaterialSrg::m_sampler, IN.m_uv[MaterialSrg::m_specularOcclusionMapUvIndex], MaterialSrg::m_specularOcclusionFactor, o_specularOcclusion_useTexture);
+
     // ------- Specular -------
 
     float2 specularUv = IN.m_uv[MaterialSrg::m_specularF0MapUvIndex];
@@ -300,7 +305,6 @@ PbrLightingOutput SkinPS_Common(VSOutput IN)
 
     float metallic = 0;
     float3 emissive = float3(0,0,0);
-    float occlusion = 1;
     float2 anisotropy = float2(0,0);
     float clearCoatFactor = 0.0;
     float clearCoatRoughness = 0.0;
@@ -309,7 +313,7 @@ PbrLightingOutput SkinPS_Common(VSOutput IN)
 
     PbrLightingOutput lightingOutput = PbrLighting(IN, baseColor, metallic, roughness, specularF0Factor, 
         normalWS, tangents[0], bitangents[0], anisotropy,
-        emissive, occlusion, transmissionTintThickness, MaterialSrg::m_transmissionParams, clearCoatFactor, clearCoatRoughness, clearCoatNormal, alpha, o_opacity_mode);
+        emissive, diffuseAmbientOcclusion, specularOcclusion, transmissionTintThickness, MaterialSrg::m_transmissionParams, clearCoatFactor, clearCoatRoughness, clearCoatNormal, alpha, o_opacity_mode);
         
     // ------- Preparing output -------
 

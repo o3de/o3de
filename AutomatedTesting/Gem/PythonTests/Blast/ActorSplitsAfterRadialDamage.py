@@ -17,7 +17,7 @@ from ActorSplitsAfterDamage import Tests
 
 def run():
     from ActorSplitsAfterDamage import run as internal_run
-    from Utils import Constants
+    from editor_python_test_tools.utils import Constants
 
     def RadialDamage(target_id, position):
         azlmbr.destruction.BlastFamilyDamageRequestBus(azlmbr.bus.Event, "Radial Damage", target_id,

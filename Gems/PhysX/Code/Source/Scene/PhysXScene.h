@@ -73,7 +73,6 @@ namespace PhysX
         void* GetNativePointer() const override;
 
         physx::PxControllerManager* GetOrCreateControllerManager();
-        void DeferDelete(AZStd::unique_ptr<AzPhysics::SimulatedBody> worldBody);
 
     private:
         void EnableSimulationOfBodyInternal(AzPhysics::SimulatedBody& body);
@@ -93,7 +92,6 @@ namespace PhysX
 
         AZStd::vector<AZStd::pair<AZ::Crc32, AzPhysics::SimulatedBody*>> m_simulatedBodies; //this will become a SimulatedBody with LYN-1334
         AZStd::vector<AzPhysics::SimulatedBody*> m_deferredDeletions;
-        AZStd::vector<AZStd::unique_ptr<AzPhysics::SimulatedBody>> m_deferredDeletions_uniquePtrs; // this is to support Character as it stores itself in a unique pointer currently.
         AZStd::queue<AzPhysics::SimulatedBodyIndex> m_freeSceneSlots;
 
         AzPhysics::SystemEvents::OnConfigurationChangedEvent::Handler m_physicsSystemConfigChanged;

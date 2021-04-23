@@ -18,6 +18,11 @@
                     "ScopeAttachmentUsage": "Shader"
                 },
                 {
+                    "Name": "AlbedoInput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
                     "Name": "DepthStencilInputOutput",
                     "SlotType": "InputOutput",
                     "ScopeAttachmentUsage": "DepthStencil"
@@ -120,6 +125,13 @@
                             "AttachmentRef": {
                                 "Pass": "Parent",
                                 "Attachment": "SpecularF0Input"
+                            }
+                        },
+                        {
+                            "LocalSlot": "AlbedoInput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "AlbedoInput"
                             }
                         },
                         {

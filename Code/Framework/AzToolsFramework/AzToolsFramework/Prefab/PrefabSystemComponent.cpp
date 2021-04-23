@@ -91,8 +91,9 @@ namespace AzToolsFramework
             m_instanceUpdateExecutor.UpdateTemplateInstancesInQueue();
         }
 
-        AZStd::unique_ptr<Instance> PrefabSystemComponent::CreatePrefab(const AZStd::vector<AZ::Entity*>& entities, AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume,
-            AZ::IO::PathView filePath, AZStd::unique_ptr<AZ::Entity> containerEntity)
+        AZStd::unique_ptr<Instance> PrefabSystemComponent::CreatePrefab(
+            const AZStd::vector<AZ::Entity*>& entities, AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume,
+            AZ::IO::PathView filePath, AZStd::unique_ptr<AZ::Entity> containerEntity, bool shouldCreateLinks)
         {
             AZ::IO::Path relativeFilePath = m_prefabLoader.GetRelativePathToProject(filePath);
             if (GetTemplateIdFromFilePath(relativeFilePath) != InvalidTemplateId)
@@ -123,7 +124,7 @@ namespace AzToolsFramework
             newInstance->SetTemplateSourcePath(relativeFilePath);
             newInstance->SetContainerEntityName(relativeFilePath.Stem().Native());
 
-            TemplateId newTemplateId = CreateTemplateFromInstance(*newInstance);
+            TemplateId newTemplateId = CreateTemplateFromInstance(*newInstance, shouldCreateLinks);
             if (newTemplateId == InvalidTemplateId)
             {
                 AZ_Error("Prefab", false,
@@ -289,7 +290,7 @@ namespace AzToolsFramework
             return newInstance;
         }
 
-        TemplateId PrefabSystemComponent::CreateTemplateFromInstance(Instance& instance)
+        TemplateId PrefabSystemComponent::CreateTemplateFromInstance(Instance& instance, bool shouldCreateLinks)
         {
             // We will register the template to match the path the instance has
             const AZ::IO::Path& templateSourcePath = instance.GetTemplateSourcePath();
@@ -323,14 +324,15 @@ namespace AzToolsFramework
                 return InvalidTemplateId;
             }
 
-            if (!GenerateLinksForNewTemplate(newTemplateId, instance))
+            if (shouldCreateLinks)
             {
-                // Clear new template and any links associated with it
-                RemoveTemplate(newTemplateId);
-
-                return InvalidTemplateId;
+                if (!GenerateLinksForNewTemplate(newTemplateId, instance))
+                {
+                    // Clear new template and any links associated with it
+                    RemoveTemplate(newTemplateId);
+                    return InvalidTemplateId;
+                }
             }
-
             return newTemplateId;
         }
 
