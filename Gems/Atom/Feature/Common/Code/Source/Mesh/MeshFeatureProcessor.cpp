@@ -240,6 +240,8 @@ namespace AZ
                 {
                     meshHandle->m_materialAssignments = materials;
                 }
+
+                meshHandle->m_objectSrgNeedsUpdate = true;
             }
         }
 
@@ -560,6 +562,8 @@ namespace AZ
             drawPacketListOut.clear();
             drawPacketListOut.reserve(meshCount);
 
+            m_hasForwardPassIblSpecularMaterial = false;
+
             for (size_t meshIndex = 0; meshIndex < meshCount; ++meshIndex)
             {
                 Data::Instance<RPI::Material> material = modelLod.GetMeshes()[meshIndex].m_material;
@@ -615,7 +619,16 @@ namespace AZ
                     AZ_Warning("MeshDrawPacket", false, "Failed to set o_meshUseForwardPassIBLSpecular on mesh draw packet");
                 }
 
-                drawPacket.SetStencilRef(m_useForwardPassIblSpecular || MaterialRequiresForwardPassIblSpecular(material) ? Render::StencilRefs::None : Render::StencilRefs::UseIBLSpecularPass);
+                bool materialRequiresForwardPassIblSpecular = MaterialRequiresForwardPassIblSpecular(material);
+
+                // track whether any materials in this mesh require ForwardPassIblSpecular, we need this information when the ObjectSrg is updated
+                m_hasForwardPassIblSpecularMaterial |= materialRequiresForwardPassIblSpecular;
+
+                // stencil bits
+                uint8_t stencilRef = m_useForwardPassIblSpecular || materialRequiresForwardPassIblSpecular ? Render::StencilRefs::None : Render::StencilRefs::UseIBLSpecularPass;
+                stencilRef |= Render::StencilRefs::UseDiffuseGIPass;
+
+                drawPacket.SetStencilRef(stencilRef);
                 drawPacket.SetSortKey(m_sortKey);
                 drawPacket.Update(*m_scene, false);
                 drawPacketListOut.emplace_back(AZStd::move(drawPacket));
@@ -907,7 +920,9 @@ namespace AZ
                 return;
             }
 
-            if (m_useForwardPassIblSpecular)
+            ReflectionProbeFeatureProcessor* reflectionProbeFeatureProcessor = m_scene->GetFeatureProcessor<ReflectionProbeFeatureProcessor>();
+
+            if (reflectionProbeFeatureProcessor && (m_useForwardPassIblSpecular || m_hasForwardPassIblSpecularMaterial))
             {
                 // retrieve probe constant indices
                 AZ::RHI::ShaderInputConstantIndex posConstantIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_reflectionProbeData.m_aabbPos"));
@@ -940,7 +955,6 @@ namespace AZ
                 TransformServiceFeatureProcessor* transformServiceFeatureProcessor = m_scene->GetFeatureProcessor<TransformServiceFeatureProcessor>();
                 Transform transform = transformServiceFeatureProcessor->GetTransformForId(m_objectId);
 
-                ReflectionProbeFeatureProcessor* reflectionProbeFeatureProcessor = m_scene->GetFeatureProcessor<ReflectionProbeFeatureProcessor>();
                 ReflectionProbeFeatureProcessor::ReflectionProbeVector reflectionProbes;
                 reflectionProbeFeatureProcessor->FindReflectionProbes(transform.GetTranslation(), reflectionProbes);
 
@@ -968,10 +982,25 @@ namespace AZ
 
         bool MeshDataInstance::MaterialRequiresForwardPassIblSpecular(Data::Instance<RPI::Material> material) const
         {
-            RPI::MaterialPropertyIndex propertyIndex = material->FindPropertyIndex(AZ::Name("general.forwardPassIBLSpecular"));
-            if (propertyIndex.IsValid())
+            // look for a shader that has the o_materialUseForwardPassIBLSpecular option set
+            // Note: this should be changed to have the material automatically set the forwardPassIBLSpecular
+            // property and look for that instead of the shader option.
+            // [GFX TODO][ATOM-5040] Address Property Metadata Feedback Loop
+            for (auto& shaderItem : material->GetShaderCollection())
             {
-               return material->GetPropertyValue<bool>(propertyIndex);
+                if (shaderItem.IsEnabled())
+                {
+                    RPI::ShaderOptionIndex index = shaderItem.GetShaderOptionGroup().GetShaderOptionLayout()->FindShaderOptionIndex(Name{ "o_materialUseForwardPassIBLSpecular" });
+                    if (index.IsValid())
+                    {
+                        RPI::ShaderOptionValue value = shaderItem.GetShaderOptionGroup().GetValue(Name{ "o_materialUseForwardPassIBLSpecular" });
+                        if (value.GetIndex() == 1)
+                        {
+                            return true;
+                        }
+                    }
+
+                }
             }
 
             return false;

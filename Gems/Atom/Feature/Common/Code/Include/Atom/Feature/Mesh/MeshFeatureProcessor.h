@@ -99,6 +99,7 @@ namespace AZ
             bool m_rayTracingEnabled = true;
             bool m_visible = true;
             bool m_useForwardPassIblSpecular = false;
+            bool m_hasForwardPassIblSpecularMaterial = false;
         };
 
         //! This feature processor handles static and dynamic non-skinned meshes.

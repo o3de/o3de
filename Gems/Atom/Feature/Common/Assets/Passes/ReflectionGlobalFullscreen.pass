@@ -34,11 +34,6 @@
                     "ScopeAttachmentUsage": "Shader"
                 },
                 {
-                    "Name": "ClearCoatNormalInput",
-                    "SlotType": "Input",
-                    "ScopeAttachmentUsage": "Shader"
-                },
-                {
                     "Name": "ReflectionBlendWeightInput",
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader"
