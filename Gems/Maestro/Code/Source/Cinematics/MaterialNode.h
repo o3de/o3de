@@ -49,7 +49,7 @@ public:
     virtual void InitializeTrack(IAnimTrack* pTrack, const CAnimParamType& paramType);
     
 
-    static void Reflect(AZ::SerializeContext* serializeContext);
+    static void Reflect(AZ::ReflectContext* context);
 protected:
     virtual bool GetParamInfoFromType(const CAnimParamType& paramId, SParamInfo& info) const;
 

@@ -4,10 +4,9 @@
     "parentMaterial": "",
     "propertyLayoutVersion": 3,
     "properties": {
-        "ambientOcclusion": {
-            "enable": true,
-            "factor": 0.30000001192092898,
-            "textureMap": "Materials/PaintedPlaster015_8K/PaintedPlaster015_8K_AmbientOcclusion.png"
+        "occlusion": {
+            "diffuseFactor": 0.30000001192092898,
+            "diffuseTextureMap": "Materials/PaintedPlaster015_8K/PaintedPlaster015_8K_AmbientOcclusion.png"
         },
         "baseColor": {
             "textureMap": "Materials/PaintedPlaster015_8K/PaintedPlaster015_8K_BaseColor.png"

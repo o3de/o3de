@@ -219,7 +219,7 @@ namespace AZ
             AZ_Assert(false, "AtomActorInstance::SetModelAsset not supported");
         }
 
-        const Data::Asset<RPI::ModelAsset>& AtomActorInstance::GetModelAsset() const
+        Data::Asset<const RPI::ModelAsset> AtomActorInstance::GetModelAsset() const
         {
             AZ_Assert(GetActor(), "Expecting a Atom Actor Instance having a valid Actor.");
             return GetActor()->GetMeshAsset();
@@ -253,7 +253,7 @@ namespace AZ
             return GetModelAsset().GetHint();
         }
 
-        const AZ::Data::Instance<RPI::Model> AtomActorInstance::GetModel() const
+        AZ::Data::Instance<RPI::Model> AtomActorInstance::GetModel() const
         {
             return m_skinnedMeshInstance->m_model;
         }
@@ -459,7 +459,7 @@ namespace AZ
             MeshComponentRequestBus::Handler::BusConnect(m_entityId);
 
             const Data::Instance<RPI::Model> model = m_meshFeatureProcessor->GetModel(*m_meshHandle);
-            MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnModelReady, model->GetModelAsset(), model);
+            MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnModelReady, GetModelAsset(), model);
         }
 
         void AtomActorInstance::UnregisterActor()
@@ -485,7 +485,7 @@ namespace AZ
             {
                 // Last boolean parameter indicates if motion vector is enabled
                 m_meshHandle = AZStd::make_shared<MeshFeatureProcessorInterface::MeshHandle>(
-                    m_meshFeatureProcessor->AcquireMesh(m_skinnedMeshInstance->m_model->GetModelAsset(), materials, true));
+                    m_meshFeatureProcessor->AcquireMesh(m_skinnedMeshInstance->m_model->GetModelAsset(), materials, /*skinnedMeshWithMotion=*/true));
             }
 
             // If render proxies already exist, they will be auto-freed

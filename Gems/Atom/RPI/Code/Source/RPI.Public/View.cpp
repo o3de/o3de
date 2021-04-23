@@ -104,6 +104,9 @@ namespace AZ
             m_worldToClipMatrix = m_viewToClipMatrix * m_worldToViewMatrix;
             m_worldToClipMatrixChanged = true;
 
+            m_onWorldToViewMatrixChange.Signal(m_worldToViewMatrix);
+            m_onWorldToClipMatrixChange.Signal(m_worldToClipMatrix);
+
             InvalidateSrg();
         }
 
@@ -131,6 +134,9 @@ namespace AZ
             m_worldToClipMatrix = m_viewToClipMatrix * m_worldToViewMatrix;
             m_clipToWorldMatrix = m_viewToWorldMatrix * m_clipToViewMatrix;
             m_worldToClipMatrixChanged = true;
+
+            m_onWorldToViewMatrixChange.Signal(m_worldToViewMatrix);
+            m_onWorldToClipMatrixChange.Signal(m_worldToClipMatrix);
 
             InvalidateSrg();
         }        
@@ -165,6 +171,8 @@ namespace AZ
             m_unprojectionConstants.SetY(float(-2.0 * tanHalfFovY));
             m_unprojectionConstants.SetZ(float(-tanHalfFovX));
             m_unprojectionConstants.SetW(float(tanHalfFovY));
+
+            m_onWorldToClipMatrixChange.Signal(m_worldToClipMatrix);
 
             InvalidateSrg();
         }
@@ -223,6 +231,16 @@ namespace AZ
         {
             const Pass* passWithDrawListTag = (*m_passesByDrawList)[tag];
             passWithDrawListTag->SortDrawList(drawList);
+        }
+
+        void View::ConnectWorldToViewMatrixChangedHandler(View::MatrixChangedEvent::Handler& handler)
+        {
+            handler.Connect(m_onWorldToViewMatrixChange);
+        }
+
+        void View::ConnectWorldToClipMatrixChangedHandler(View::MatrixChangedEvent::Handler& handler)
+        {
+            handler.Connect(m_onWorldToClipMatrixChange);
         }
 
         // [GFX TODO] This function needs unit tests and might need to be reworked 

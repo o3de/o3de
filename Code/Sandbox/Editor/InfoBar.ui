@@ -58,42 +58,6 @@
     </widget>
    </item>
    <item>
-    <widget class="AzQtComponents::VectorInput" name="m_posCtrl" native="true">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="toolTip">
-      <string>Position</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QToolButton" name="m_setVector">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="text">
-      <string>XYZ</string>
-     </property>
-     <property name="icon">
-      <iconset resource="InfoBar.qrc">
-       <normaloff>:/InfoBar/XYZ-default.svg</normaloff>:/InfoBar/XYZ-default.svg</iconset>
-     </property>
-     <property name="iconSize">
-      <size>
-       <width>22</width>
-       <height>18</height>
-      </size>
-     </property>
-    </widget>
-   </item>
-   <item>
     <widget class="QToolButton" name="m_gotoPos">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -121,68 +85,6 @@
    </item>
    <item>
     <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeType">
-      <enum>QSizePolicy::Fixed</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>1</width>
-       <height>18</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item>
-    <widget class="QToolButton" name="m_lockSelection">
-     <property name="toolTip">
-      <string>Lock Object Selection</string>
-     </property>
-     <property name="text">
-      <string>Lock Selection</string>
-     </property>
-     <property name="icon">
-      <iconset resource="InfoBar.qrc">
-       <normaloff>:/InfoBar/LockSelection-default.svg</normaloff>:/InfoBar/LockSelection-default.svg</iconset>
-     </property>
-     <property name="iconSize">
-      <size>
-       <width>18</width>
-       <height>18</height>
-      </size>
-     </property>
-     <property name="checkable">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QToolButton" name="m_vectorLock">
-     <property name="toolTip">
-      <string>Lock Scale Axis Vectors</string>
-     </property>
-     <property name="text">
-      <string>Lock Scale</string>
-     </property>
-     <property name="icon">
-      <iconset resource="InfoBar.qrc">
-       <normaloff>:/InfoBar/LockScale-default.svg</normaloff>:/InfoBar/LockScale-default.svg</iconset>
-     </property>
-     <property name="iconSize">
-      <size>
-       <width>18</width>
-       <height>18</height>
-      </size>
-     </property>
-     <property name="checkable">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <spacer name="verticalSpacer_2">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>
@@ -424,13 +326,6 @@
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>AzQtComponents::VectorInput</class>
-   <extends>QWidget</extends>
-   <header location="global">AzQtComponents/Components/Widgets/VectorInput.h</header>
-  </customwidget>
- </customwidgets>
  <resources>
   <include location="InfoBar.qrc"/>
  </resources>

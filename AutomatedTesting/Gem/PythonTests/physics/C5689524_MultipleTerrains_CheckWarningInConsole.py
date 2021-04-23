@@ -72,9 +72,9 @@ def C5689524_MultipleTerrains_CheckWarningInConsole():
 
     import azlmbr.legacy.general as general
 
-    from utils import Report
-    from utils import TestHelper as helper
-    from utils import Tracer
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
+    from editor_python_test_tools.utils import Tracer
 
     import azlmbr.bus
 
@@ -114,5 +114,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C5689524_MultipleTerrains_CheckWarningInConsole)

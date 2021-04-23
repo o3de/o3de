@@ -104,7 +104,7 @@ namespace Maestro
         AZStd::intrusive_ptr<IAnimSequence> m_sequence;
 
         // Reflects the entire CryMovie library
-        static void ReflectCinematicsLib(AZ::SerializeContext* context);
+        static void ReflectCinematicsLib(AZ::ReflectContext* context);
     };
 
 } // namespace Maestro
