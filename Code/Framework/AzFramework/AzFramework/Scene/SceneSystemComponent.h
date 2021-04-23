@@ -46,15 +46,15 @@ namespace AzFramework
         AZ::Outcome<AZStd::shared_ptr<Scene>, AZStd::string> CreateSceneWithParent(
             AZStd::string_view name, AZStd::shared_ptr<Scene> parent) override;
         AZStd::shared_ptr<Scene> GetScene(AZStd::string_view name) override;
-        AZStd::vector<AZStd::shared_ptr<Scene>> GetAllScenes() override;
+        void IterateActiveScenes(const ActiveIterationCallback& callback) override;
+        void IterateZombieScenes(const ZombieIterationCallback& callback) override;
         bool RemoveScene(AZStd::string_view name) override;
         AZStd::shared_ptr<Scene> GetSceneFromEntityContextId(EntityContextId entityContextId) override;
 
     private:
-
         AZ_DISABLE_COPY(SceneSystemComponent);
 
-        // Container of scene in order of creation
-        AZStd::vector<AZStd::shared_ptr<Scene>> m_scenes;
+        AZStd::vector<AZStd::shared_ptr<Scene>> m_activeScenes;
+        AZStd::vector<AZStd::weak_ptr<Scene>> m_zombieScenes;
     };
 }

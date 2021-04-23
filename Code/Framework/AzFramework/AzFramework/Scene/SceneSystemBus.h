@@ -14,6 +14,7 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzCore/std/functional.h>
 #include <AzFramework/Entity/EntityContext.h>
 
 namespace AzFramework
@@ -31,6 +32,9 @@ namespace AzFramework
         ISceneSystem() = default;
         virtual ~ISceneSystem() = default;
 
+        using ActiveIterationCallback = AZStd::function<bool(const AZStd::shared_ptr<Scene>& scene)>;
+        using ZombieIterationCallback = AZStd::function<bool(Scene& scene)>;
+
         //! Creates a scene with a given name.
         //!  - If there is already a scene with the provided name this will return AZ::Failure(). 
         //!  - If isDefault is set to true and there is already a default scene, the default scene will be switched to this one. 
@@ -46,8 +50,12 @@ namespace AzFramework
         //!  - If a scene does not exist with the given name, nullptr is returned.
         virtual AZStd::shared_ptr<Scene> GetScene(AZStd::string_view name) = 0;
 
-        //! Gets all the scenes that currently exist.
-        virtual AZStd::vector<AZStd::shared_ptr<Scene>> GetAllScenes() = 0;
+        //! Iterates over all scenes that are in active use. Iteration stops if the callback returns false or all scenes have been listed.
+        virtual void IterateActiveScenes(const ActiveIterationCallback& callback) = 0;
+        //! Iterates over all zombie scenes. Zombie scenes are scenes that have been removed but still have references held on to. This can
+        //! happen because scenes hold on to subsystems that can't immediately be deleted. These subsystems may still require being called
+        //! such as a periodic tick. Iteration stops if the callback returns false or all scenes have been listed.
+        virtual void IterateZombieScenes(const ZombieIterationCallback& callback) = 0;
 
         //! Remove a scene with a given name and return if the operation was successful.
         //!  - If the removed scene is the default scene, there will no longer be a default scene.

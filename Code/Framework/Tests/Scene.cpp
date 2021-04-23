@@ -197,7 +197,7 @@ namespace SceneUnitTest
         EXPECT_FALSE(success) << "Remove scene returned success for a non-existant scene.";
     }
 
-    TEST_F(SceneTest, GetAllScenes)
+    TEST_F(SceneTest, IterateActiveScenes)
     {
         constexpr size_t NumScenes = 5;
 
@@ -206,17 +206,61 @@ namespace SceneUnitTest
         for (size_t i = 0; i < NumScenes; ++i)
         {
             AZStd::string sceneName = AZStd::string::format("scene %zu", i);
-            AZ::Outcome<AZStd::shared_ptr<Scene>, AZStd::string> createSceneOutcome = m_sceneSystem->CreateScene(sceneName); 
+            AZ::Outcome<AZStd::shared_ptr<Scene>, AZStd::string> createSceneOutcome = m_sceneSystem->CreateScene(sceneName);
             scenes[i] = createSceneOutcome.TakeValue();
         }
 
-        AZStd::vector<AZStd::shared_ptr<Scene>> retrievedScenes = m_sceneSystem->GetAllScenes();
-        EXPECT_EQ(NumScenes, retrievedScenes.size()) << "GetAllScenes() returned a different number of scenes than those created.";
+        size_t index = 0;
+        m_sceneSystem->IterateActiveScenes([&index, &scenes](const AZStd::shared_ptr<Scene>& scene)
+            {
+                EXPECT_EQ(scenes[index++], scene);
+                return true;
+            });
+    }
 
+    TEST_F(SceneTest, IterateZombieScenes)
+    {
+        constexpr size_t NumScenes = 5;
+
+        AZStd::shared_ptr<Scene> scenes[NumScenes] = {nullptr};
+
+        // Create zombies.
         for (size_t i = 0; i < NumScenes; ++i)
         {
-            EXPECT_EQ(scenes[i], retrievedScenes[i]) << "GetAllScenes() returned scenes in a different order than they were created.";
+            AZStd::string sceneName = AZStd::string::format("scene %zu", i);
+            AZ::Outcome<AZStd::shared_ptr<Scene>, AZStd::string> createSceneOutcome = m_sceneSystem->CreateScene(sceneName);
+            scenes[i] = createSceneOutcome.TakeValue();
+            m_sceneSystem->RemoveScene(sceneName);
         }
+
+        // Check to make sure there are no more active scenes.
+        size_t index = 0;
+        m_sceneSystem->IterateActiveScenes([&index, &scenes](const AZStd::shared_ptr<Scene>&)
+            {
+                index++;
+                return true;
+            });
+        EXPECT_EQ(0, index);
+
+        // Check that the scenes are still returned as zombies.
+        index = 0;
+        m_sceneSystem->IterateZombieScenes([&index, &scenes](Scene& scene)
+            {
+                EXPECT_EQ(scenes[index++].get(), &scene);
+                return true;
+            });
+
+        // Check that all scenes are removed when there are no more handles.
+        for (size_t i = 0; i < NumScenes; ++i)
+        {
+            scenes[i].reset();
+        }
+        index = 0;
+        m_sceneSystem->IterateZombieScenes([&index, &scenes](Scene&) {
+            index++;
+            return true;
+        });
+        EXPECT_EQ(0, index);
     }
 
     // Test classes for use in the SceneSystem test. These can't be defined in the test itself due to some functions created by AZ_RTTI not having a body which breaks VS2015.

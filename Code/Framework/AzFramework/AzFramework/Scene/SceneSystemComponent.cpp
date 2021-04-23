@@ -73,45 +73,64 @@ namespace AzFramework
         }
 
         auto newScene = AZStd::make_shared<Scene>(name, AZStd::move(parent));
-        m_scenes.push_back(newScene);
+        m_activeScenes.push_back(newScene);
         SceneSystemNotificationBus::Broadcast(&SceneSystemNotificationBus::Events::SceneCreated, *newScene);
         return AZ::Success(AZStd::move(newScene));
     }
 
     AZStd::shared_ptr<Scene> SceneSystemComponent::GetScene(AZStd::string_view name)
     {
-        auto sceneIterator = AZStd::find_if(m_scenes.begin(), m_scenes.end(),
+        auto sceneIterator = AZStd::find_if(m_activeScenes.begin(), m_activeScenes.end(),
             [name](auto& scene) -> bool
             {
                 return scene->GetName() == name;
             }
         );
 
-        return sceneIterator == m_scenes.end() ? nullptr : *sceneIterator;
+        return sceneIterator == m_activeScenes.end() ? nullptr : *sceneIterator;
     }
 
-    AZStd::vector<AZStd::shared_ptr<Scene>> SceneSystemComponent::GetAllScenes()
+    void SceneSystemComponent::IterateActiveScenes(const ActiveIterationCallback& callback)
     {
-        AZStd::vector<AZStd::shared_ptr<Scene>> scenes;
-        scenes.reserve(m_scenes.size());
-        
-        for (size_t i = 0; i < m_scenes.size(); ++i)
+        bool keepGoing = true;
+        auto end = m_activeScenes.end();
+        for (auto it = m_activeScenes.begin(); it != end && keepGoing; ++it)
         {
-            scenes.push_back(m_scenes[i]);
+            keepGoing = callback(*it);
         }
-        return scenes;
+    }
+
+    void SceneSystemComponent::IterateZombieScenes(const ZombieIterationCallback& callback)
+    {
+        bool keepGoing = true;
+        auto end = m_zombieScenes.end();
+        for (auto it = m_zombieScenes.begin(); it != end && keepGoing;)
+        {
+            if (!it->expired())
+            {
+                keepGoing = callback(*(it->lock()));
+                ++it;
+            }
+            else
+            {
+                *it = m_zombieScenes.back();
+                m_zombieScenes.pop_back();
+                end = m_zombieScenes.end();
+            }
+        }
     }
 
     bool SceneSystemComponent::RemoveScene(AZStd::string_view name)
     {
-        for (AZStd::shared_ptr<Scene>& scene : m_scenes)
+        for (AZStd::shared_ptr<Scene>& scene : m_activeScenes)
         {
             if (scene->GetName() == name)
             {
                 SceneSystemNotificationBus::Broadcast(&SceneSystemNotificationBus::Events::SceneAboutToBeRemoved, *scene);
                 
-                scene = AZStd::move(m_scenes.back());
-                m_scenes.pop_back();
+                m_zombieScenes.push_back(scene);
+                scene = AZStd::move(m_activeScenes.back());
+                m_activeScenes.pop_back();
                 return true;
             }
         }
@@ -122,7 +141,7 @@ namespace AzFramework
 
     AZStd::shared_ptr<Scene> SceneSystemComponent::GetSceneFromEntityContextId(EntityContextId entityContextId)
     {
-        for (AZStd::shared_ptr<Scene>& scene : m_scenes)
+        for (AZStd::shared_ptr<Scene>& scene : m_activeScenes)
         {
             EntityContext** entityContext = scene->FindSubsystem<EntityContext::SceneStorageType>();
             if (entityContext && (*entityContext)->GetContextId() == entityContextId)
