@@ -159,23 +159,41 @@ void CTrackEventTrack::GetKeyInfo(int key, const char*& description, float& dura
 }
 
 //////////////////////////////////////////////////////////////////////////
-template<>
-inline void TAnimTrack<IEventKey>::Reflect(AZ::SerializeContext* serializeContext)
+static bool EventTrackVersionConverter(
+    AZ::SerializeContext& serializeContext,
+    AZ::SerializeContext::DataElementNode& rootElement)
 {
-    serializeContext->Class<TAnimTrack<IEventKey> >()
-        ->Version(2)
-        ->Field("Flags", &TAnimTrack<IEventKey>::m_flags)
-        ->Field("Range", &TAnimTrack<IEventKey>::m_timeRange)
-        ->Field("ParamType", &TAnimTrack<IEventKey>::m_nParamType)
-        ->Field("Keys", &TAnimTrack<IEventKey>::m_keys)
-        ->Field("Id", &TAnimTrack<IEventKey>::m_id);
+    if (rootElement.GetVersion() < 3)
+    {
+        rootElement.AddElement(serializeContext, "BaseClass1", azrtti_typeid<IAnimTrack>());
+    }
+
+    return true;
+}
+
+template<>
+inline void TAnimTrack<IEventKey>::Reflect(AZ::ReflectContext* context)
+{
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<TAnimTrack<IEventKey>, IAnimTrack>()
+            ->Version(3, &EventTrackVersionConverter)
+            ->Field("Flags", &TAnimTrack<IEventKey>::m_flags)
+            ->Field("Range", &TAnimTrack<IEventKey>::m_timeRange)
+            ->Field("ParamType", &TAnimTrack<IEventKey>::m_nParamType)
+            ->Field("Keys", &TAnimTrack<IEventKey>::m_keys)
+            ->Field("Id", &TAnimTrack<IEventKey>::m_id);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CTrackEventTrack::Reflect(AZ::SerializeContext* serializeContext)
+void CTrackEventTrack::Reflect(AZ::ReflectContext* context)
 {
-    TAnimTrack<IEventKey>::Reflect(serializeContext);
+    TAnimTrack<IEventKey>::Reflect(context);
 
-    serializeContext->Class<CTrackEventTrack, TAnimTrack<IEventKey> >()
-        ->Version(1);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<CTrackEventTrack, TAnimTrack<IEventKey>>()
+            ->Version(1);
+    }
 }

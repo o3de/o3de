@@ -20,8 +20,8 @@ import azlmbr.math as math
 import azlmbr.paths
 
 sys.path.append(os.path.join(azlmbr.paths.devroot, "AutomatedTesting", "Gem", "PythonTests"))
-import automatedtesting_shared.hydra_editor_utils as hydra
-from automatedtesting_shared.editor_test_helper import EditorTestHelper
+import editor_python_test_tools.hydra_editor_utils as hydra
+from editor_python_test_tools.editor_test_helper import EditorTestHelper
 from largeworlds.large_worlds_utils import editor_dynveg_test_helper as dynveg
 
 
@@ -52,6 +52,8 @@ class TestAltitudeFilterFilterStageToggle(EditorTestHelper):
             terrain_texture_resolution=4096,
             use_terrain=False,
         )
+
+        general.set_current_view_position(512.0, 480.0, 38.0)
 
         # Create basic vegetation entity
         position = math.Vector3(512.0, 512.0, 32.0)

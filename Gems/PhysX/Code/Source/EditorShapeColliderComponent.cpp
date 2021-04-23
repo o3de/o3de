@@ -666,6 +666,7 @@ namespace PhysX
         Physics::WorldBodyRequestBus::Handler::BusDisconnect();
         m_colliderDebugDraw.Disconnect();
 
+        m_nonUniformScaleChangedHandler.Disconnect();
         PhysX::ColliderShapeRequestBus::Handler::BusDisconnect();
         LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
@@ -686,8 +687,14 @@ namespace PhysX
     {
         if (auto* physXSystem = GetPhysXSystem())
         {
-            physXSystem->RegisterSystemConfigurationChangedEvent(m_physXConfigChangedHandler);
-            physXSystem->RegisterOnDefaultMaterialLibraryChangedEventHandler(m_onDefaultMaterialLibraryChangedEventHandler);
+            if (!m_physXConfigChangedHandler.IsConnected())
+            {
+                physXSystem->RegisterSystemConfigurationChangedEvent(m_physXConfigChangedHandler);
+            }
+            if (!m_onDefaultMaterialLibraryChangedEventHandler.IsConnected())
+            {
+                physXSystem->RegisterOnDefaultMaterialLibraryChangedEventHandler(m_onDefaultMaterialLibraryChangedEventHandler);
+            }
         }
     }
 

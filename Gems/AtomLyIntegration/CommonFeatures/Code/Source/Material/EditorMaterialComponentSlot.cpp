@@ -269,6 +269,8 @@ namespace AZ
 
             QAction* action = nullptr;
 
+            menu.addAction("Open Material Editor", [this]() { EditorMaterialSystemComponentRequestBus::Broadcast(&EditorMaterialSystemComponentRequestBus::Events::OpenInMaterialEditor, ""); });
+
             action = menu.addAction("Clear", [this]() { Clear(); });
             action->setEnabled(m_materialAsset.GetId().IsValid() || !m_propertyOverrides.empty() || !m_matModUvOverrides.empty());
 

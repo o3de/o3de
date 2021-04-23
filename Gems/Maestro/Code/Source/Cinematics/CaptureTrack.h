@@ -33,7 +33,7 @@ public:
     void SerializeKey(ICaptureKey& key, XmlNodeRef& keyNode, bool bLoading);
     void GetKeyInfo(int key, const char*& description, float& duration);
 
-    static void Reflect(AZ::SerializeContext* serializeContext);
+    static void Reflect(AZ::ReflectContext* context);
 };
 
 #endif // CRYINCLUDE_CRYMOVIE_CAPTURETRACK_H

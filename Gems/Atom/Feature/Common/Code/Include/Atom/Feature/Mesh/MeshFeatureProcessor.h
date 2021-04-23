@@ -21,6 +21,7 @@
 #include <RayTracing/RayTracingFeatureProcessor.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AtomCore/std/parallel/concurrency_checker.h>
+#include <AzCore/Console/Console.h>
 
 namespace AZ
 {
@@ -98,6 +99,7 @@ namespace AZ
             bool m_rayTracingEnabled = true;
             bool m_visible = true;
             bool m_useForwardPassIblSpecular = false;
+            bool m_hasForwardPassIblSpecularMaterial = false;
         };
 
         //! This feature processor handles static and dynamic non-skinned meshes.
@@ -144,8 +146,10 @@ namespace AZ
             const MaterialAssignmentMap& GetMaterialAssignmentMap(const MeshHandle& meshHandle) const override;
             void ConnectModelChangeEventHandler(const MeshHandle& meshHandle, ModelChangedEvent::Handler& handler) override;
 
-            void SetTransform(const MeshHandle& meshHandle, const AZ::Transform& transform) override;
+            void SetTransform(const MeshHandle& meshHandle, const AZ::Transform& transform,
+                const AZ::Vector3& nonUniformScale = AZ::Vector3::CreateOne()) override;
             Transform GetTransform(const MeshHandle& meshHandle) override;
+            Vector3 GetNonUniformScale(const MeshHandle& meshHandle) override;
 
             void SetSortKey(const MeshHandle& meshHandle, RHI::DrawItemSortKey sortKey) override;
             RHI::DrawItemSortKey GetSortKey(const MeshHandle& meshHandle) override;
@@ -160,8 +164,14 @@ namespace AZ
 
             // called when reflection probes are modified in the editor so that meshes can re-evaluate their probes
             void UpdateMeshReflectionProbes();
-
         private:
+            void ForceRebuildDrawPackets(const AZ::ConsoleCommandContainer& arguments);
+            AZ_CONSOLEFUNC(MeshFeatureProcessor,
+                ForceRebuildDrawPackets,
+                AZ::ConsoleFunctorFlags::Null,
+                "(For Testing) Invalidates all mesh draw packets, causing them to rebuild on the next frame."
+            );
+
             MeshFeatureProcessor(const MeshFeatureProcessor&) = delete;
 
             // RPI::SceneNotificationBus::Handler overrides...

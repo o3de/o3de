@@ -400,6 +400,9 @@ namespace AzToolsFramework
     {
         initEntityPropertyEditorResources();
 
+        m_prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
+        AZ_Assert(m_prefabPublicInterface != nullptr, "EntityPropertyEditor requires a PrefabPublicInterface instance on Initialize.");
+
         setObjectName("EntityPropertyEditor");
         setAcceptDrops(true);
 
@@ -494,8 +497,6 @@ namespace AzToolsFramework
 
         CreateActions();
         UpdateContents();
-
-        m_prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
 
         EditorEntityContextNotificationBus::Handler::BusConnect();
 
@@ -783,11 +784,38 @@ namespace AzToolsFramework
         m_gui->m_entityIcon->repaint();
     }
 
+    EntityPropertyEditor::InspectorLayout EntityPropertyEditor::GetCurrentInspectorLayout() const
+    {
+        if (!m_prefabsAreEnabled)
+        {
+            return m_isLevelEntityEditor ? InspectorLayout::LEVEL : InspectorLayout::ENTITY;
+        }
+
+        AZ::EntityId levelContainerEntityId = m_prefabPublicInterface->GetLevelInstanceContainerEntityId();
+        if (AZStd::find(m_selectedEntityIds.begin(), m_selectedEntityIds.end(), levelContainerEntityId) != m_selectedEntityIds.end())
+        {
+            if (m_selectedEntityIds.size() > 1)
+            {
+                return InspectorLayout::INVALID;
+            }
+            else
+            {
+                return InspectorLayout::LEVEL;
+            }
+        }
+        else
+        {
+            return InspectorLayout::ENTITY;
+        }
+    }
+
     void EntityPropertyEditor::UpdateEntityDisplay()
     {
         UpdateStatusComboBox();
 
-        if (m_isLevelEntityEditor)
+        InspectorLayout layout = GetCurrentInspectorLayout();
+
+        if (layout == InspectorLayout::LEVEL)
         {
             AZStd::string levelName;
             AzToolsFramework::EditorRequestBus::BroadcastResult(levelName, &AzToolsFramework::EditorRequests::GetLevelName);
@@ -827,11 +855,18 @@ namespace AzToolsFramework
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
         SelectionEntityTypeInfo result = SelectionEntityTypeInfo::None;
 
-        if (m_isLevelEntityEditor)
+        InspectorLayout layout = GetCurrentInspectorLayout();
+
+        if (layout == InspectorLayout::LEVEL)
         {
             // The Level Inspector should only have a list of selectable components after the
             // level entity itself is valid (i.e. "selected").
             return selection.empty() ? SelectionEntityTypeInfo::None : SelectionEntityTypeInfo::LevelEntity;
+        }
+
+        if (layout == InspectorLayout::INVALID)
+        {
+            return SelectionEntityTypeInfo::Mixed;
         }
 
         for (AZ::EntityId selectedEntityId : selection)
@@ -999,16 +1034,18 @@ namespace AzToolsFramework
             }
         }
 
+        bool isLevelLayout = GetCurrentInspectorLayout() == InspectorLayout::LEVEL;
+
         m_gui->m_entityDetailsLabel->setText(entityDetailsLabelText);
         m_gui->m_entityDetailsLabel->setVisible(entityDetailsVisible);
         m_gui->m_entityNameEditor->setVisible(hasEntitiesDisplayed);
         m_gui->m_entityNameLabel->setVisible(hasEntitiesDisplayed);
         m_gui->m_entityIcon->setVisible(hasEntitiesDisplayed);
-        m_gui->m_pinButton->setVisible(m_overrideSelectedEntityIds.empty() && hasEntitiesDisplayed && !m_isSystemEntityEditor && !m_isLevelEntityEditor);
-        m_gui->m_statusLabel->setVisible(hasEntitiesDisplayed && !m_isSystemEntityEditor && !m_isLevelEntityEditor);
-        m_gui->m_statusComboBox->setVisible(hasEntitiesDisplayed && !m_isSystemEntityEditor && !m_isLevelEntityEditor);
-        m_gui->m_entityIdLabel->setVisible(hasEntitiesDisplayed && !m_isSystemEntityEditor && !m_isLevelEntityEditor);
-        m_gui->m_entityIdText->setVisible(hasEntitiesDisplayed && !m_isSystemEntityEditor && !m_isLevelEntityEditor);
+        m_gui->m_pinButton->setVisible(m_overrideSelectedEntityIds.empty() && hasEntitiesDisplayed && !m_isSystemEntityEditor);
+        m_gui->m_statusLabel->setVisible(hasEntitiesDisplayed && !m_isSystemEntityEditor && !isLevelLayout);
+        m_gui->m_statusComboBox->setVisible(hasEntitiesDisplayed && !m_isSystemEntityEditor && !isLevelLayout);
+        m_gui->m_entityIdLabel->setVisible(hasEntitiesDisplayed && !m_isSystemEntityEditor && !isLevelLayout);
+        m_gui->m_entityIdText->setVisible(hasEntitiesDisplayed && !m_isSystemEntityEditor && !isLevelLayout);
 
         bool displayComponentSearchBox = hasEntitiesDisplayed;
         if (hasEntitiesDisplayed)
@@ -1031,7 +1068,7 @@ namespace AzToolsFramework
             UpdateEntityDisplay();
         }
 
-        m_gui->m_darkBox->setVisible(displayComponentSearchBox && !m_isSystemEntityEditor && !m_isLevelEntityEditor);
+        m_gui->m_darkBox->setVisible(displayComponentSearchBox && !m_isSystemEntityEditor && !isLevelLayout);
         m_gui->m_entitySearchBox->setVisible(displayComponentSearchBox);
 
         bool displayAddComponentMenu = CanAddComponentsToSelection(selectionEntityTypeInfo);

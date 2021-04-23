@@ -55,9 +55,9 @@ bool CFBXExporterDialog::GetExportCoordsLocalToTheSelectedObject() const
     return m_ui->m_exportLocalCoordsCheckbox->isChecked();
 }
 
-bool CFBXExporterDialog::GetExportOnlyMasterCamera() const
+bool CFBXExporterDialog::GetExportOnlyPrimaryCamera() const
 {
-    return m_ui->m_exportOnlyMasterCameraCheckBox->isChecked();
+    return m_ui->m_exportOnlyPrimaryCameraCheckBox->isChecked();
 }
 
 void CFBXExporterDialog::SetExportLocalCoordsCheckBoxEnable(bool checked)
@@ -100,7 +100,7 @@ int CFBXExporterDialog::exec()
     if (m_bDisplayOnlyFPSSetting)
     {
         m_ui->m_exportLocalCoordsCheckbox->setEnabled(false);
-        m_ui->m_exportOnlyMasterCameraCheckBox->setEnabled(false);
+        m_ui->m_exportOnlyPrimaryCameraCheckBox->setEnabled(false);
     }
 
     m_ui->m_fpsCombo->addItem("24");

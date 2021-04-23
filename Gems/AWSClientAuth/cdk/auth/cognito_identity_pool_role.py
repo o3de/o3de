@@ -56,8 +56,7 @@ class CognitoIdentityPoolRole:
         # basic permissions
         stack_statement = iam.PolicyStatement(
             actions=[
-                's3:Get*',
-                's3:List*'
+                's3:ListBuckets'
             ],
             effect=iam.Effect.ALLOW,
             resources=[

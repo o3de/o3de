@@ -33,8 +33,9 @@ def run():
     import azlmbr.editor as editor
     import azlmbr.legacy.general as general
 
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    
+    from editor_python_test_tools.utils import TestHelper as helper
 
     # open level
     helper.init_idle()

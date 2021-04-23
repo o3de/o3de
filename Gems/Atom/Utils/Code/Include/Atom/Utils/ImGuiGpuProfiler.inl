@@ -16,6 +16,8 @@
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/Scene.h>
 
+#include <inttypes.h>
+
 namespace AZ
 {
     namespace Render
@@ -725,7 +727,7 @@ namespace AZ
                                     ImGui::BeginTooltip();
                                     ImGui::Text("Name: %s", passEntry->m_name.GetCStr());
                                     ImGui::Text("Path: %s", passEntry->m_path.GetCStr());
-                                    ImGui::Text("Duration in ticks: %lu", passEntry->m_timestampResult.GetDurationInTicks());
+                                    ImGui::Text("Duration in ticks: %" PRIu64, passEntry->m_timestampResult.GetDurationInTicks());
                                     ImGui::Text("Duration in microsecond: %.3f us", passEntry->m_timestampResult.GetDurationInNanoseconds()/1000.f);
                                     ImGui::EndTooltip();
                                 }

@@ -393,6 +393,11 @@ namespace ScriptCanvas
                 return false;
             }
 
+            AZStd::optional<size_t> EBusEventHandler::GetEventIndex(AZStd::string eventName) const
+            {
+                return m_handler->GetFunctionIndex(eventName.c_str());
+            }
+
             const EBusEventEntry* EBusEventHandler::FindEvent(const AZStd::string& name) const
             {
                 AZ::Crc32 key = AZ::Crc32(name.c_str());
