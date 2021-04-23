@@ -33,7 +33,6 @@ namespace NvCloth
             AZ::EntityId entityId, 
             const MeshNodeInfo& meshNodeInfo,
             const size_t numSimParticles,
-            const AZStd::vector<int>& meshRemappedVertices,
             AZStd::vector<SkinningInfo>& skinningData)
         {
             AZ::Data::Asset<AZ::RPI::ModelAsset> modelAsset;
@@ -115,14 +114,7 @@ namespace NvCloth
 
                 for (int vertexIndex = 0; vertexIndex < subMeshInfo.m_numVertices; ++vertexIndex)
                 {
-                    const int skinnedDataIndex = meshRemappedVertices[subMeshInfo.m_verticesFirstIndex + vertexIndex];
-                    if (skinnedDataIndex < 0)
-                    {
-                        // Removed particle
-                        continue;
-                    }
-
-                    SkinningInfo& skinningInfo = skinningData[skinnedDataIndex];
+                    SkinningInfo& skinningInfo = skinningData[subMeshInfo.m_verticesFirstIndex + vertexIndex];
                     skinningInfo.m_jointIndices.resize(influenceCount);
                     skinningInfo.m_jointWeights.resize(influenceCount);
 
@@ -212,11 +204,24 @@ namespace NvCloth
         void UpdateSkinning() override;
         void ApplySkinning(
             const AZStd::vector<AZ::Vector4>& originalPositions,
-            AZStd::vector<AZ::Vector4>& positions) override;
+            AZStd::vector<AZ::Vector4>& positions,
+            const AZStd::vector<int>& meshRemappedVertices) override;
+        void ApplySkinningVectors(
+            const AZStd::vector<AZ::Vector3>& originalVectors,
+            AZStd::vector<AZ::Vector3>& vectors,
+            const AZStd::vector<int>& meshRemappedVertices) override;
+        void ApplySkinningNotRemapped(
+            const AZStd::vector<AZ::Vector4>& originalPositions,
+            AZStd::vector<AZ::Vector4>& positions,
+            const AZStd::vector<int>& meshRemappedVertices) override;
+        void ApplySkinningVectorsNotRemapped(
+            const AZStd::vector<AZ::Vector3>& originalVectors,
+            AZStd::vector<AZ::Vector3>& vectors,
+            const AZStd::vector<int>& meshRemappedVertices) override;
 
     private:
-        AZ::Vector3 ComputeSkinnedPosition(
-            const AZ::Vector3& originalPosition,
+        AZ::Vector4 ComputeSkinning(
+            const AZ::Vector4& original,
             const SkinningInfo& skinningInfo,
             const AZ::Matrix3x4* skinningMatrices);
 
@@ -232,9 +237,79 @@ namespace NvCloth
 
     void ActorClothSkinningLinear::ApplySkinning(
         const AZStd::vector<AZ::Vector4>& originalPositions,
-        AZStd::vector<AZ::Vector4>& positions)
+        AZStd::vector<AZ::Vector4>& positions,
+        const AZStd::vector<int>& meshRemappedVertices)
     {
-        if (!m_skinningMatrices)
+        if (!m_skinningMatrices ||
+            originalPositions.empty() ||
+            originalPositions.size() != positions.size() ||
+            m_skinningData.size() != meshRemappedVertices.size())
+        {
+            return;
+        }
+
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+
+        AZStd::unordered_set<int> skinnedIndices;
+        for (size_t index = 0; index < meshRemappedVertices.size(); ++index)
+        {
+            const int remappedIndex = meshRemappedVertices[index];
+            if (remappedIndex >= 0 && !skinnedIndices.contains(remappedIndex))
+            {
+                const AZ::Vector4 skinnedPosition = ComputeSkinning(
+                    AZ::Vector4::CreateFromVector3AndFloat(originalPositions[remappedIndex].GetAsVector3(), 1.0f),
+                    m_skinningData[index],
+                    m_skinningMatrices);
+
+                // Avoid overwriting the w component
+                positions[remappedIndex].Set(skinnedPosition.GetAsVector3(), positions[remappedIndex].GetW());
+
+                skinnedIndices.emplace(remappedIndex);
+            }
+        }
+    }
+
+    void ActorClothSkinningLinear::ApplySkinningVectors(
+        const AZStd::vector<AZ::Vector3>& originalVectors,
+        AZStd::vector<AZ::Vector3>& vectors,
+        const AZStd::vector<int>& meshRemappedVertices)
+    {
+        if (!m_skinningMatrices ||
+            originalVectors.empty() ||
+            originalVectors.size() != vectors.size() ||
+            m_skinningData.size() != meshRemappedVertices.size())
+        {
+            return;
+        }
+
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+
+        AZStd::unordered_set<int> skinnedIndices;
+        for (size_t index = 0; index < meshRemappedVertices.size(); ++index)
+        {
+            const int remappedIndex = meshRemappedVertices[index];
+            if (remappedIndex >= 0 && !skinnedIndices.contains(remappedIndex))
+            {
+                vectors[remappedIndex] = ComputeSkinning(
+                    AZ::Vector4::CreateFromVector3AndFloat(originalVectors[remappedIndex], 0.0f),
+                    m_skinningData[index],
+                    m_skinningMatrices).GetAsVector3();
+
+                skinnedIndices.emplace(remappedIndex);
+            }
+        }
+    }
+
+    void ActorClothSkinningLinear::ApplySkinningNotRemapped(
+        const AZStd::vector<AZ::Vector4>& originalPositions,
+        AZStd::vector<AZ::Vector4>& positions,
+        const AZStd::vector<int>& meshRemappedVertices)
+    {
+        if (!m_skinningMatrices ||
+            originalPositions.empty() ||
+            originalPositions.size() != positions.size() ||
+            originalPositions.size() != m_skinningData.size() ||
+            m_skinningData.size() != meshRemappedVertices.size())
         {
             return;
         }
@@ -243,18 +318,51 @@ namespace NvCloth
 
         for (size_t index = 0; index < originalPositions.size(); ++index)
         {
-            const AZ::Vector3 skinnedPosition = ComputeSkinnedPosition(
-                originalPositions[index].GetAsVector3(),
-                m_skinningData[index],
-                m_skinningMatrices);
+            const int remappedIndex = meshRemappedVertices[index];
+            if (remappedIndex < 0)
+            {
+                const AZ::Vector4 skinnedPosition = ComputeSkinning(
+                    AZ::Vector4::CreateFromVector3AndFloat(originalPositions[index].GetAsVector3(), 1.0f),
+                    m_skinningData[index],
+                    m_skinningMatrices);
 
-            // Avoid overwriting the w component
-            positions[index].Set(skinnedPosition, positions[index].GetW());
+                // Avoid overwriting the w component
+                positions[index].Set(skinnedPosition.GetAsVector3(), positions[index].GetW());
+            }
         }
     }
 
-    AZ::Vector3 ActorClothSkinningLinear::ComputeSkinnedPosition(
-        const AZ::Vector3& originalPosition,
+    void ActorClothSkinningLinear::ApplySkinningVectorsNotRemapped(
+        const AZStd::vector<AZ::Vector3>& originalVectors,
+        AZStd::vector<AZ::Vector3>& vectors,
+        const AZStd::vector<int>& meshRemappedVertices)
+    {
+        if (!m_skinningMatrices ||
+            originalVectors.empty() ||
+            originalVectors.size() != vectors.size() ||
+            originalVectors.size() != m_skinningData.size() ||
+            m_skinningData.size() != meshRemappedVertices.size())
+        {
+            return;
+        }
+
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+
+        for (size_t index = 0; index < originalVectors.size(); ++index)
+        {
+            const int remappedIndex = meshRemappedVertices[index];
+            if (remappedIndex < 0)
+            {
+                vectors[index] = ComputeSkinning(
+                    AZ::Vector4::CreateFromVector3AndFloat(originalVectors[index], 0.0f),
+                    m_skinningData[index],
+                    m_skinningMatrices).GetAsVector3();
+            }
+        }
+    }
+
+    AZ::Vector4 ActorClothSkinningLinear::ComputeSkinning(
+        const AZ::Vector4& original,
         const SkinningInfo& skinningInfo,
         const AZ::Matrix3x4* skinningMatrices)
     {
@@ -277,7 +385,7 @@ namespace NvCloth
             }
         }
 
-        return clothSkinningMatrix * originalPosition;
+        return clothSkinningMatrix * original;
     }
 
     // Specialized class that applies dual quaternion blending skinning
@@ -294,11 +402,24 @@ namespace NvCloth
         void UpdateSkinning() override;
         void ApplySkinning(
             const AZStd::vector<AZ::Vector4>& originalPositions,
-            AZStd::vector<AZ::Vector4>& positions) override;
+            AZStd::vector<AZ::Vector4>& positions,
+            const AZStd::vector<int>& meshRemappedVertices) override;
+        void ApplySkinningVectors(
+            const AZStd::vector<AZ::Vector3>& originalVectors,
+            AZStd::vector<AZ::Vector3>& vectors,
+            const AZStd::vector<int>& meshRemappedVertices) override;
+        void ApplySkinningNotRemapped(
+            const AZStd::vector<AZ::Vector4>& originalPositions,
+            AZStd::vector<AZ::Vector4>& positions,
+            const AZStd::vector<int>& meshRemappedVertices) override;
+        void ApplySkinningVectorsNotRemapped(
+            const AZStd::vector<AZ::Vector3>& originalVectors,
+            AZStd::vector<AZ::Vector3>& vectors,
+            const AZStd::vector<int>& meshRemappedVertices) override;
 
     private:
-        AZ::Vector3 ComputeSkinnedPosition(
-            const AZ::Vector3& originalPosition,
+        AZ::Vector4 ComputeSkinning(
+            const AZ::Vector4& original,
             const SkinningInfo& skinningInfo,
             const AZStd::unordered_map<AZ::u16, DualQuat>& skinningDualQuaternions);
 
@@ -315,9 +436,79 @@ namespace NvCloth
 
     void ActorClothSkinningDualQuaternion::ApplySkinning(
         const AZStd::vector<AZ::Vector4>& originalPositions,
-        AZStd::vector<AZ::Vector4>& positions)
+        AZStd::vector<AZ::Vector4>& positions,
+        const AZStd::vector<int>& meshRemappedVertices)
     {
-        if (m_skinningDualQuaternions.empty())
+        if (m_skinningDualQuaternions.empty() ||
+            originalPositions.empty() ||
+            originalPositions.size() != positions.size() ||
+            m_skinningData.size() != meshRemappedVertices.size())
+        {
+            return;
+        }
+
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+
+        AZStd::unordered_set<int> skinnedIndices;
+        for (size_t index = 0; index < meshRemappedVertices.size(); ++index)
+        {
+            const int remappedIndex = meshRemappedVertices[index];
+            if (remappedIndex >= 0 && !skinnedIndices.contains(remappedIndex))
+            {
+                const AZ::Vector4 skinnedPosition = ComputeSkinning(
+                    AZ::Vector4::CreateFromVector3AndFloat(originalPositions[remappedIndex].GetAsVector3(), 1.0f),
+                    m_skinningData[index],
+                    m_skinningDualQuaternions);
+
+                // Avoid overwriting the w component
+                positions[remappedIndex].Set(skinnedPosition.GetAsVector3(), positions[remappedIndex].GetW());
+
+                skinnedIndices.emplace(remappedIndex);
+            }
+        }
+    }
+
+    void ActorClothSkinningDualQuaternion::ApplySkinningVectors(
+        const AZStd::vector<AZ::Vector3>& originalVectors,
+        AZStd::vector<AZ::Vector3>& vectors,
+        const AZStd::vector<int>& meshRemappedVertices)
+    {
+        if (m_skinningDualQuaternions.empty() ||
+            originalVectors.empty() ||
+            originalVectors.size() != vectors.size() ||
+            m_skinningData.size() != meshRemappedVertices.size())
+        {
+            return;
+        }
+
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+
+        AZStd::unordered_set<int> skinnedIndices;
+        for (size_t index = 0; index < meshRemappedVertices.size(); ++index)
+        {
+            const int remappedIndex = meshRemappedVertices[index];
+            if (remappedIndex >= 0 && !skinnedIndices.contains(remappedIndex))
+            {
+                vectors[remappedIndex] = ComputeSkinning(
+                    AZ::Vector4::CreateFromVector3AndFloat(originalVectors[remappedIndex], 0.0f),
+                    m_skinningData[index],
+                    m_skinningDualQuaternions).GetAsVector3();
+
+                skinnedIndices.emplace(remappedIndex);
+            }
+        }
+    }
+
+    void ActorClothSkinningDualQuaternion::ApplySkinningNotRemapped(
+        const AZStd::vector<AZ::Vector4>& originalPositions,
+        AZStd::vector<AZ::Vector4>& positions,
+        const AZStd::vector<int>& meshRemappedVertices)
+    {
+        if (m_skinningDualQuaternions.empty() ||
+            originalPositions.empty() ||
+            originalPositions.size() != positions.size() ||
+            originalPositions.size() != m_skinningData.size() ||
+            m_skinningData.size() != meshRemappedVertices.size())
         {
             return;
         }
@@ -326,18 +517,51 @@ namespace NvCloth
 
         for (size_t index = 0; index < originalPositions.size(); ++index)
         {
-            const AZ::Vector3 skinnedPosition = ComputeSkinnedPosition(
-                originalPositions[index].GetAsVector3(),
-                m_skinningData[index],
-                m_skinningDualQuaternions);
+            const int remappedIndex = meshRemappedVertices[index];
+            if (remappedIndex < 0)
+            {
+                const AZ::Vector4 skinnedPosition = ComputeSkinning(
+                    AZ::Vector4::CreateFromVector3AndFloat(originalPositions[index].GetAsVector3(), 1.0f),
+                    m_skinningData[index],
+                    m_skinningDualQuaternions);
 
-            // Avoid overwriting the w component
-            positions[index].Set(skinnedPosition, positions[index].GetW());
+                // Avoid overwriting the w component
+                positions[index].Set(skinnedPosition.GetAsVector3(), positions[index].GetW());
+            }
         }
     }
 
-    AZ::Vector3 ActorClothSkinningDualQuaternion::ComputeSkinnedPosition(
-        const AZ::Vector3& originalPosition,
+    void ActorClothSkinningDualQuaternion::ApplySkinningVectorsNotRemapped(
+        const AZStd::vector<AZ::Vector3>& originalVectors,
+        AZStd::vector<AZ::Vector3>& vectors,
+        const AZStd::vector<int>& meshRemappedVertices)
+    {
+        if (m_skinningDualQuaternions.empty() ||
+            originalVectors.empty() ||
+            originalVectors.size() != vectors.size() ||
+            originalVectors.size() != m_skinningData.size() ||
+            m_skinningData.size() != meshRemappedVertices.size())
+        {
+            return;
+        }
+
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+
+        for (size_t index = 0; index < originalVectors.size(); ++index)
+        {
+            const int remappedIndex = meshRemappedVertices[index];
+            if (remappedIndex < 0)
+            {
+                vectors[index] = ComputeSkinning(
+                    AZ::Vector4::CreateFromVector3AndFloat(originalVectors[index], 0.0f),
+                    m_skinningData[index],
+                    m_skinningDualQuaternions).GetAsVector3();
+            }
+        }
+    }
+
+    AZ::Vector4 ActorClothSkinningDualQuaternion::ComputeSkinning(
+        const AZ::Vector4& original,
         const SkinningInfo& skinningInfo,
         const AZStd::unordered_map<AZ::u16, DualQuat>& skinningDualQuaternions)
     {
@@ -356,17 +580,25 @@ namespace NvCloth
         }
         clothSkinningDualQuaternion.Normalize();
 
-        return LYVec3ToAZVec3(clothSkinningDualQuaternion * AZVec3ToLYVec3(originalPosition));
+        AZ::Vector3 result;
+        if (AZ::IsClose(original.GetW(), 0.0f))
+        {
+            result = LYVec3ToAZVec3(clothSkinningDualQuaternion.nq * AZVec3ToLYVec3(original.GetAsVector3()));
+        }
+        else
+        {
+            result = LYVec3ToAZVec3(clothSkinningDualQuaternion * AZVec3ToLYVec3(original.GetAsVector3()));
+        }
+        return AZ::Vector4::CreateFromVector3AndFloat(result, original.GetW());
     }
 
     AZStd::unique_ptr<ActorClothSkinning> ActorClothSkinning::Create(
         AZ::EntityId entityId, 
         const MeshNodeInfo& meshNodeInfo,
-        const size_t numSimParticles,
-        const AZStd::vector<int>& meshRemappedVertices)
+        const size_t numSimParticles)
     {
         AZStd::vector<SkinningInfo> skinningData;
-        if (!Internal::ObtainSkinningData(entityId, meshNodeInfo, numSimParticles, meshRemappedVertices, skinningData))
+        if (!Internal::ObtainSkinningData(entityId, meshNodeInfo, numSimParticles, skinningData))
         {
             return nullptr;
         }

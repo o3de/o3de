@@ -42,8 +42,7 @@ namespace NvCloth
         static AZStd::unique_ptr<ActorClothSkinning> Create(
             AZ::EntityId entityId, 
             const MeshNodeInfo& meshNodeInfo,
-            const size_t numSimParticles,
-            const AZStd::vector<int>& meshRemappedVertices);
+            const size_t numSimParticles);
 
         explicit ActorClothSkinning(AZ::EntityId entityId);
 
@@ -54,7 +53,27 @@ namespace NvCloth
         //! @note w components are not affected.
         virtual void ApplySkinning(
             const AZStd::vector<AZ::Vector4>& originalPositions, 
-            AZStd::vector<AZ::Vector4>& positions) = 0;
+            AZStd::vector<AZ::Vector4>& positions,
+            const AZStd::vector<int>& meshRemappedVertices) = 0;
+
+        //! Applies skinning to a list of vectors.
+        virtual void ApplySkinningVectors(
+            const AZStd::vector<AZ::Vector3>& originalVectors,
+            AZStd::vector<AZ::Vector3>& vectors,
+            const AZStd::vector<int>& meshRemappedVertices) = 0;
+
+        //! Applies skinning to a list of positions (not remapped only).
+        //! @note w components are not affected.
+        virtual void ApplySkinningNotRemapped(
+            const AZStd::vector<AZ::Vector4>& originalPositions,
+            AZStd::vector<AZ::Vector4>& positions,
+            const AZStd::vector<int>& meshRemappedVertices) = 0;
+
+        //! Applies skinning to a list of vectors (not remapped only).
+        virtual void ApplySkinningVectorsNotRemapped(
+            const AZStd::vector<AZ::Vector3>& originalVectors,
+            AZStd::vector<AZ::Vector3>& vectors,
+            const AZStd::vector<int>& meshRemappedVertices) = 0;
 
         //! Updates visibility variables.
         void UpdateActorVisibility();
