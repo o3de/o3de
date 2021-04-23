@@ -105,7 +105,7 @@ namespace AZ
             m_worldToClipMatrixChanged = true;
 
             m_onWorldToViewMatrixChange.Signal(m_worldToViewMatrix);
-            m_onworldToClipMatrixChange.Signal(m_worldToClipMatrix);
+            m_onWorldToClipMatrixChange.Signal(m_worldToClipMatrix);
 
             InvalidateSrg();
         }
@@ -136,7 +136,7 @@ namespace AZ
             m_worldToClipMatrixChanged = true;
 
             m_onWorldToViewMatrixChange.Signal(m_worldToViewMatrix);
-            m_onworldToClipMatrixChange.Signal(m_worldToClipMatrix);
+            m_onWorldToClipMatrixChange.Signal(m_worldToClipMatrix);
 
             InvalidateSrg();
         }        
@@ -172,7 +172,7 @@ namespace AZ
             m_unprojectionConstants.SetZ(float(-tanHalfFovX));
             m_unprojectionConstants.SetW(float(tanHalfFovY));
 
-            m_onworldToClipMatrixChange.Signal(m_worldToClipMatrix);
+            m_onWorldToClipMatrixChange.Signal(m_worldToClipMatrix);
 
             InvalidateSrg();
         }
@@ -240,7 +240,7 @@ namespace AZ
 
         void View::ConnectWorldToClipMatrixChangedHandler(View::MatrixChangedEvent::Handler& handler)
         {
-            handler.Connect(m_onworldToClipMatrixChange);
+            handler.Connect(m_onWorldToClipMatrixChange);
         }
 
         // [GFX TODO] This function needs unit tests and might need to be reworked 
