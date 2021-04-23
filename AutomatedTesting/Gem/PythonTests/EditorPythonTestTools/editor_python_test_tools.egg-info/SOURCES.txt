@@ -1,0 +1,7 @@
+README.txt
+setup.py
+editor_python_test_tools.egg-info/PKG-INFO
+editor_python_test_tools.egg-info/SOURCES.txt
+editor_python_test_tools.egg-info/dependency_links.txt
+editor_python_test_tools.egg-info/requires.txt
+editor_python_test_tools.egg-info/top_level.txt

@@ -54,9 +54,9 @@ def Opening_Closing_Pane():
 
     imports.init()
 
-    from utils import Report
-    from utils import TestHelper as helper
-    import pyside_utils
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
+    import editor_python_test_tools.pyside_utils as pyside_utils
 
     # Open 3D Engine Imports
     import azlmbr.legacy.general as general
@@ -123,6 +123,6 @@ if __name__ == "__main__":
 
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
 
     Report.start_test(Opening_Closing_Pane)
