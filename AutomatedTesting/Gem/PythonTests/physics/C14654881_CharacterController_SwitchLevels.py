@@ -62,8 +62,8 @@ def C14654881_CharacterController_SwitchLevels():
 
     imports.init()
 
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
     import azlmbr.legacy.general as general
     import azlmbr.bus
 
@@ -100,5 +100,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C14654881_CharacterController_SwitchLevels)

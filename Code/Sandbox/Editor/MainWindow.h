@@ -77,19 +77,6 @@ namespace AzToolsFramework
 // Subclassing so we can add slots to our toolbar widgets
 // Using lambdas is crashy since the lamdba doesn't know when the widget is deleted.
 
-class RefCoordComboBox
-    : public QComboBox
-{
-    Q_OBJECT
-public:
-    explicit RefCoordComboBox(QWidget* parent);
-public Q_SLOTS:
-    void ToggleRefCoordSys();
-    void UpdateRefCoordSys();
-private:
-    QStringList coordSysList() const;
-};
-
 class UndoRedoToolButton
     : public QToolButton
 {
@@ -229,8 +216,6 @@ private:
     QWidget* CreateSnapToGridWidget();
     QWidget* CreateSnapToAngleWidget();
     QWidget* CreateSpacerRightWidget();
-
-    QComboBox* CreateRefCoordComboBox();
 
     QToolButton* CreateUndoRedoButton(int command);
 

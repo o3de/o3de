@@ -837,9 +837,7 @@ static bool AnimSequenceVersionConverter(
 
 void CAnimSequence::Reflect(AZ::ReflectContext* context)
 {
-    IAnimSequence::Reflect(context);
-
-    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context); serializeContext != nullptr)
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
     {
         serializeContext->Class<CAnimSequence, IAnimSequence>()
             ->Version(IAnimSequence::kSequenceVersion, &AnimSequenceVersionConverter)
