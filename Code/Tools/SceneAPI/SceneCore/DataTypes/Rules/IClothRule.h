@@ -50,7 +50,13 @@ namespace AZ
                 {
                     AZStd::vector<AZ::Color> clothData;
 
-                    const char* meshNodeName = graph.GetNodeName(meshNodeIndex).GetPath();
+                    AZStd::string meshNodeName = graph.GetNodeName(meshNodeIndex).GetPath();
+
+                    const AZStd::string optimizedSuffix = "_optimized";
+                    if (meshNodeName.ends_with(optimizedSuffix))
+                    {
+                        meshNodeName = meshNodeName.substr(0, meshNodeName.size() - optimizedSuffix.size());
+                    }
 
                     for (size_t ruleIndex = 0; ruleIndex < rules.GetRuleCount(); ++ruleIndex)
                     {

@@ -310,7 +310,17 @@ namespace AZ
 
                     // Gather mesh content
                     SourceMeshContent sourceMesh;
-                    sourceMesh.m_name = meshName;
+
+                    // Although the nodes used to gather mesh content are the optimized ones (when found), to make
+                    // this process transparent for the end-asset generated, the name assigned to the source mesh
+                    // content will not include the "_optimized" prefix.
+                    AZStd::string sourceMeshName = meshName;
+                    const AZStd::string optimizedSuffix = "_optimized";
+                    if (sourceMeshName.ends_with(optimizedSuffix))
+                    {
+                        sourceMeshName = sourceMeshName.substr(0, sourceMeshName.size() - optimizedSuffix.size());
+                    }
+                    sourceMesh.m_name = sourceMeshName;
 
                     const auto node = sceneGraph.Find(meshPath);
                     sourceMesh.m_worldTransform = AZ::SceneAPI::Utilities::DetermineWorldTransform(scene, node, context.m_group.GetRuleContainerConst());
