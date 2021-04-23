@@ -272,7 +272,7 @@ function(ly_setup_others)
     )
     install(DIRECTORY
         ${CMAKE_SOURCE_DIR}/Registry
-        DESTINATION ./Registry
+        DESTINATION .
     )
     install(FILES
         ${CMAKE_SOURCE_DIR}/AssetProcessorPlatformConfig.setreg
