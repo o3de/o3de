@@ -82,7 +82,7 @@ namespace ShaderManagementConsole
     {
         menu->addAction("Open", [entry]()
         {
-            if (entry->GetExtension().find(AZ::RPI::ShaderVariantListSourceData::Extension) != AZStd::string::npos)
+            if (AzFramework::StringFunc::Path::IsExtension(entry->GetFullPath().c_str(), AZ::RPI::ShaderVariantListSourceData::Extension))
             {
                 ShaderManagementConsoleDocumentSystemRequestBus::Broadcast(&ShaderManagementConsoleDocumentSystemRequestBus::Events::OpenDocument, entry->GetFullPath().c_str());
             }
@@ -116,10 +116,8 @@ namespace ShaderManagementConsole
         menu->addSeparator();
         menu->addAction("Generate Shader Variant List", [entry]() {
             const QString script = "@engroot@/Gems/Atom/Tools/ShaderManagementConsole/Scripts/GenerateShaderVariantListForMaterials.py";
-            AZStd::vector<AZStd::string_view> pythonArgs{entry->GetFullPath()};
-            AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(
-                &AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilenameWithArgs, script.toUtf8().constData(),
-                pythonArgs);
+            AZStd::vector<AZStd::string_view> pythonArgs{ entry->GetFullPath() };
+            AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(&AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilenameWithArgs, script.toUtf8().constData(), pythonArgs);
         });
 
         menu->addAction("Run Python on Asset...", [entry]()

@@ -369,7 +369,6 @@ namespace ShaderManagementConsole
         auto tableView = new QTableView(m_centralWidget);
         tableView->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
         tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
-        tableView->setSelectionMode(QAbstractItemView::SingleSelection);
 
         auto model = new QStandardItemModel();
         tableView->setModel(model);
