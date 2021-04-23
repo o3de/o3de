@@ -114,6 +114,7 @@ namespace AzToolsFramework
             void GetConstEntities(const AZStd::function<bool(const AZ::Entity&)>& callback);
             void GetNestedEntities(const AZStd::function<bool(AZStd::unique_ptr<AZ::Entity>&)>& callback);
             void GetEntities(const AZStd::function<bool(AZStd::unique_ptr<AZ::Entity>&)>& callback);
+            void GetNestedInstances(const AZStd::function<void(AZStd::unique_ptr<Instance>&)>& callback);
 
             /**
             * Gets the alias for a given EnitityId in the Instance DOM.

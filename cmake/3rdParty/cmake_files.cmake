@@ -12,7 +12,6 @@
 set(FILES
     BuiltInPackages.cmake
     FindClang.cmake
-    FindDirectXShaderCompiler.cmake
     Finddyad.cmake
     FindFbxSdk.cmake
     Findlibav.cmake
