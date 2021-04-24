@@ -3,8 +3,8 @@
 
 namespace AzToolsFramework::ViewportUi::Internal
 {
-    ViewportUiSwitcher::ViewportUiSwitcher(AZStd::shared_ptr<Cluster> switcher, ButtonId currentMode)
-        : m_switcher(switcher)
+    ViewportUiSwitcher::ViewportUiSwitcher(AZStd::shared_ptr<ButtonGroup> buttonGroup, ButtonId currentMode)
+        : m_buttonGroup(buttonGroup)
         , m_currentMode(currentMode)
     {
         setOrientation(Qt::Orientation::Horizontal);
@@ -12,7 +12,7 @@ namespace AzToolsFramework::ViewportUi::Internal
                               "QToolButton {background-color: #464646; border: outset; border-color: white; border-radius: 7px; "
                               "border-width: 2px; padding: 7px; color: white;}"));
 
-        const AZStd::vector<Button*> buttons = switcher->GetButtons();
+        const AZStd::vector<Button*> buttons = buttonGroup->GetButtons();
 
         for (auto button : buttons)
         {
@@ -63,7 +63,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         // resize to fit new action with minimum extra space
         resize(minimumSizeHint());
 
-        const AZStd::function<void()>&callback = [this, button]() { m_switcher->PressButton(button->m_buttonId); };
+        const AZStd::function<void()>& callback = [this, button]() { m_buttonGroup->PressButton(button->m_buttonId); };
         const AZStd::function<void(QAction*)>& updateCallback = [button](QAction* action) {
             action->setChecked(button->m_state == Button::State::Selected);
         };
@@ -94,8 +94,8 @@ namespace AzToolsFramework::ViewportUi::Internal
 
     void ViewportUiSwitcher::SetActiveMode(ButtonId buttonId)
     {
-        // Change the toolbutton's name and icon to that button
-        const AZStd::vector<Button*> buttons = m_switcher->GetButtons();
+        // Change the tool button's name and icon to that button
+        const AZStd::vector<Button*> buttons = m_buttonGroup->GetButtons();
         for (auto button : buttons)
         {
             if (button->m_buttonId == buttonId)

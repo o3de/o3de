@@ -56,12 +56,12 @@ namespace AzToolsFramework::ViewportUi::Internal
         ViewportUiDisplay(QWidget* parent, QWidget* renderOverlay);
         ~ViewportUiDisplay();
 
-        void AddCluster(AZStd::shared_ptr<Cluster> cluster);
+        void AddCluster(AZStd::shared_ptr<ButtonGroup> buttonGroup);
         void AddClusterButton(ViewportUiElementId clusterId, Button* button);
         void RemoveClusterButton(ViewportUiElementId clusterId, ButtonId buttonId);
         void UpdateCluster(const ViewportUiElementId clusterId);
 
-        void AddSwitcher(AZStd::shared_ptr<Cluster> cluster, ButtonId currMode);
+        void AddSwitcher(AZStd::shared_ptr<ButtonGroup> buttonGroup, ButtonId currMode);
         void AddSwitcherButton(ViewportUiElementId clusterId, Button* button);
         void RemoveSwitcherButton(ViewportUiElementId clusterId, ButtonId buttonId);
         void UpdateSwitcher(const ViewportUiElementId clusterId);

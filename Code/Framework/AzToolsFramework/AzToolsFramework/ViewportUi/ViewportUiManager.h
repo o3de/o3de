@@ -32,13 +32,15 @@ namespace AzToolsFramework::ViewportUi
         
         // ViewportUiRequestBus ...
         const ClusterId CreateCluster() override;
-        const ClusterId CreateSwitcher(ButtonId currMode) override;
+        const SwitcherId CreateSwitcher(ButtonId currMode) override;
         void SetClusterActiveButton(ClusterId clusterId, ButtonId buttonId) override;
-        void SetSwitcherActiveButton(ClusterId clusterId, ButtonId buttonId) override;
+        void SetSwitcherActiveButton(SwitcherId switcherId, ButtonId buttonId) override;
         const ButtonId CreateClusterButton(ClusterId clusterId, const AZStd::string& icon) override;
-        const ButtonId CreateSwitcherButton(ClusterId clusterId, const AZStd::string& icon, const AZStd::string& name = AZStd::string()) override;
+        const ButtonId CreateSwitcherButton(SwitcherId switcherId, const AZStd::string& icon, const AZStd::string& name = AZStd::string()) override;
         void RegisterClusterEventHandler(ClusterId clusterId, AZ::Event<ButtonId>::Handler& handler) override;
+        void RegisterSwitcherEventHandler(SwitcherId switcherId, AZ::Event<ButtonId>::Handler& handler) override;
         void RemoveCluster(ClusterId clusterId) override;
+        void RemoveSwitcher(SwitcherId switcherId) override;
         void SetClusterVisible(ClusterId clusterId, bool visible);
         void SetClusterGroupVisible(const AZStd::vector<ClusterId>& clusterGroup, bool visible) override;
         const TextFieldId CreateTextField(
@@ -51,7 +53,9 @@ namespace AzToolsFramework::ViewportUi
         void SetTextFieldVisible(TextFieldId textFieldId, bool visible) override;
         void CreateComponentModeBorder(const AZStd::string& borderTitle) override;
         void RemoveComponentModeBorder() override;
+
         void PressButton(ClusterId clusterId, ButtonId buttonId) override;
+        void PressButton(SwitcherId switcherId, ButtonId buttonId) override;
 
         //! Connects to the correct viewportId bus address.
         void ConnectViewportUiBus(const int viewportId);
@@ -63,19 +67,22 @@ namespace AzToolsFramework::ViewportUi
         void Update();
 
     protected:
-        AZStd::unordered_map<ClusterId, AZStd::shared_ptr<Internal::Cluster>> m_clusters; //!< A map of all registered clusters.
+        AZStd::unordered_map<ClusterId, AZStd::shared_ptr<Internal::ButtonGroup>> m_clusterButtonGroups; //!< A map of all registered clusters.
+        AZStd::unordered_map<SwitcherId, AZStd::shared_ptr<Internal::ButtonGroup>> m_switcherButtonGroups; //!< A map of all registered clusters.
+
         AZStd::unordered_map<TextFieldId, AZStd::shared_ptr<Internal::TextField>> m_textFields; //!< A map of all registered textFields.
         AZStd::unique_ptr<Internal::ViewportUiDisplay> m_viewportUi; //!< The lower level graphical API for Viewport UI.
 
     private:
         //! Register a new cluster and return its id.
-        ClusterId RegisterNewCluster(AZStd::shared_ptr<Internal::Cluster>& cluster);
+        ClusterId RegisterNewCluster(AZStd::shared_ptr<Internal::ButtonGroup>& buttonGroup);
+        //! Register a new cluster and return its id.
+        SwitcherId RegisterNewSwitcher(AZStd::shared_ptr<Internal::ButtonGroup>& buttonGroup);
+
         //! Register a new text field and return its id.
         TextFieldId RegisterNewTextField(AZStd::shared_ptr<Internal::TextField>& textField);
         //! Update the corresponding ui element for the given cluster.
-        void UpdateClusterUi(Internal::Cluster* cluster);
-        //! Update the corresponding ui element for the given cluster.
-        void UpdateSwitcherUi(Internal::Cluster* cluster);
+        void UpdateButtonGroupUi(Internal::ButtonGroup* buttonGroup);
         //! Update the corresponding ui element for the given text field.
         void UpdateTextFieldUi(Internal::TextField* textField);
     };

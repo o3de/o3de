@@ -441,11 +441,11 @@ namespace AzToolsFramework
             clusterId);
     }
   
-    static void RemoveTestSwitcher(const ViewportUi::ClusterId clusterId)
+    static void RemoveTestSwitcher(const ViewportUi::SwitcherId switcherId)
     {
         ViewportUi::ViewportUiRequestBus::Event(
-            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RemoveCluster,
-            clusterId);
+            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RemoveSwitcher,
+            switcherId);
     }
 
     static void SetViewportUiClusterVisible(ViewportUi::ClusterId clusterId, bool visible)
@@ -476,12 +476,12 @@ namespace AzToolsFramework
     }
 
     static ViewportUi::ButtonId RegisterSwitcherButton(
-        ViewportUi::ClusterId clusterId, const char* iconName, const char* buttonName)
+        ViewportUi::SwitcherId switcherId, const char* iconName, const char* buttonName)
     {
         ViewportUi::ButtonId buttonId;
         ViewportUi::ViewportUiRequestBus::EventResult(
             buttonId, ViewportUi::DefaultViewportId,
-            &ViewportUi::ViewportUiRequestBus::Events::CreateSwitcherButton, clusterId,
+            &ViewportUi::ViewportUiRequestBus::Events::CreateSwitcherButton, switcherId,
             AZStd::string::format("Editor/Icons/Switcher/%s.svg", iconName), buttonName);
 
         return buttonId;
@@ -2624,7 +2624,7 @@ namespace AzToolsFramework
 
         m_testSwitcherHandler = AZ::Event<ViewportUi::ButtonId>::Handler(onButtonClicked);
         ViewportUi::ViewportUiRequestBus::Event(
-            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler, m_testSwitcherId,
+            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RegisterSwitcherEventHandler, m_testSwitcherId,
             m_testSwitcherHandler);
     }
 

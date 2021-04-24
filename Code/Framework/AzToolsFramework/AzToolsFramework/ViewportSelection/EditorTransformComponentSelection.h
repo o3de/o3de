@@ -285,7 +285,7 @@ namespace AzToolsFramework
         //! Create the Viewport UI Switcher. TEST
         void CreateTestSwitcher();
 
-        ViewportUi::ClusterId m_testSwitcherId;
+        ViewportUi::SwitcherId m_testSwitcherId;
         ViewportUi::ButtonId m_boxShapeButtonId;
         ViewportUi::ButtonId m_physxColliderButtonId;
         ViewportUi::ButtonId m_transformButtonId;
