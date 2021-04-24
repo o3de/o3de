@@ -27,6 +27,7 @@ namespace AzFramework
 
         m_systemKeys.push_back(targetType);
         m_systemObjects.emplace_back(AZStd::forward<T>(system));
+        m_subsystemEvent.Signal(*this, SubsystemEventType::Added, targetType);
         return true;
     }
 
@@ -43,10 +44,7 @@ namespace AzFramework
             }
             else
             {
-                m_systemKeys[i] = m_systemKeys.back();
-                m_systemObjects[i] = AZStd::move(m_systemObjects.back());
-                m_systemKeys.pop_back();
-                m_systemObjects.pop_back();
+                RemoveSubsystem(i, targetType);
                 return true;
             }
         }
@@ -66,19 +64,12 @@ namespace AzFramework
             }
             else
             {
-                T* instance = AZStd::any_cast<T>(&m_systemObjects[i]);
-                if (instance && *instance == system)
-                {
-                    m_systemKeys[i] = m_systemKeys.back();
-                    m_systemObjects[i] = AZStd::move(m_systemObjects.back());
-                    m_systemKeys.pop_back();
-                    m_systemObjects.pop_back();
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
+                [[maybe_unused]] T* instance = AZStd::any_cast<T>(&m_systemObjects[i]);
+                AZ_Assert(
+                    instance && *instance == system,
+                    "Subsystem being released matched type, but wasn't pointing to the same system that was stored.");
+                RemoveSubsystem(i, targetType);
+                return true;
             }
         }
         return false;
@@ -88,75 +79,31 @@ namespace AzFramework
     T* Scene::FindSubsystem()
     {
         const AZ::TypeId& targetType = azrtti_typeid<T>();
-        const size_t m_systemKeysCount = m_systemKeys.size();
-        for (size_t i = 0; i < m_systemKeysCount; ++i)
-        {
-            if (m_systemKeys[i] != targetType)
-            {
-                continue;
-            }
-            else
-            {
-                return AZStd::any_cast<T>(&m_systemObjects[i]);
-            }
-        }
-        return m_parent ? m_parent->FindSubsystem<T>() : nullptr;
+        AZStd::any* subSystem = FindSubsystem(targetType);
+        return subSystem ? AZStd::any_cast<T>(subSystem) : nullptr;
     }
 
     template<typename T>
     const T* Scene::FindSubsystem() const
     {
         const AZ::TypeId& targetType = azrtti_typeid<T>();
-        const size_t m_systemKeysCount = m_systemKeys.size();
-        for (size_t i = 0; i < m_systemKeysCount; ++i)
-        {
-            if (m_systemKeys[i] != targetType)
-            {
-                continue;
-            }
-            else
-            {
-                return AZStd::any_cast<const T>(&m_systemObjects[i]);
-            }
-        }
-        return m_parent ? m_parent->FindSubsystem<T>() : nullptr;
+        const AZStd::any* subSystem = FindSubsystem(targetType);
+        return subSystem ? AZStd::any_cast<const T>(subSystem) : nullptr;
     }
 
     template<typename T>
     T* Scene::FindSubsystemInScene()
     {
         const AZ::TypeId& targetType = azrtti_typeid<T>();
-        const size_t m_systemKeysCount = m_systemKeys.size();
-        for (size_t i = 0; i < m_systemKeysCount; ++i)
-        {
-            if (m_systemKeys[i] != targetType)
-            {
-                continue;
-            }
-            else
-            {
-                return AZStd::any_cast<T>(&m_systemObjects[i]);
-            }
-        }
-        return nullptr;
+        AZStd::any* subSystem = FindSubsystemInScene(targetType);
+        return subSystem ? AZStd::any_cast<T>(subSystem) : nullptr;
     }
 
     template<typename T>
     const T* Scene::FindSubsystemInScene() const
     {
         const AZ::TypeId& targetType = azrtti_typeid<T>();
-        const size_t m_systemKeysCount = m_systemKeys.size();
-        for (size_t i = 0; i < m_systemKeysCount; ++i)
-        {
-            if (m_systemKeys[i] != targetType)
-            {
-                continue;
-            }
-            else
-            {
-                return AZStd::any_cast<const T>(&m_systemObjects[i]);
-            }
-        }
-        return nullptr;
+        const AZStd::any* subSystem = FindSubsystemInScene(targetType);
+        return subSystem ? AZStd::any_cast<const T>(subSystem) : nullptr;
     }
 } // namespace AzFramework

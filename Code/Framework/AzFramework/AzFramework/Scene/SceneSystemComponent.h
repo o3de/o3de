@@ -46,7 +46,7 @@ namespace AzFramework
         AZ::Outcome<AZStd::shared_ptr<Scene>, AZStd::string> CreateScene(AZStd::string_view name) override;
         AZ::Outcome<AZStd::shared_ptr<Scene>, AZStd::string> CreateSceneWithParent(
             AZStd::string_view name, AZStd::shared_ptr<Scene> parent) override;
-        AZStd::shared_ptr<Scene> GetScene(AZStd::string_view name) override;
+        [[nodiscard]] AZStd::shared_ptr<Scene> GetScene(AZStd::string_view name) override;
         void IterateActiveScenes(const ActiveIterationCallback& callback) override;
         void IterateZombieScenes(const ZombieIterationCallback& callback) override;
         bool RemoveScene(AZStd::string_view name) override;

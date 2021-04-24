@@ -282,7 +282,8 @@ namespace AZ
                 m_defaultFrameworkScene = AzFramework::SceneSystemInterface::Get()->GetScene(AzFramework::Scene::MainSceneName);
                 // This should never happen unless scene creation has changed.
                 AZ_Assert(m_defaultFrameworkScene, "Error: Scenes missing during system component initialization");
-                m_sceneRemovalHandler = AzFramework::Scene::RemovalEvent::Handler([this](AzFramework::Scene::RemovalEventType eventType)
+                m_sceneRemovalHandler = AzFramework::Scene::RemovalEvent::Handler(
+                    [this](AzFramework::Scene&, AzFramework::Scene::RemovalEventType eventType)
                     {
                         if (eventType == AzFramework::Scene::RemovalEventType::Zombified)
                         {

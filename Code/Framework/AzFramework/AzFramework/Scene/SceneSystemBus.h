@@ -56,7 +56,7 @@ namespace AzFramework
 
         //! Gets a scene with a given name
         //!  - If a scene does not exist with the given name, nullptr is returned.
-        virtual AZStd::shared_ptr<Scene> GetScene(AZStd::string_view name) = 0;
+        [[nodiscard]] virtual AZStd::shared_ptr<Scene> GetScene(AZStd::string_view name) = 0;
 
         //! Iterates over all scenes that are in active use. Iteration stops if the callback returns false or all scenes have been listed.
         virtual void IterateActiveScenes(const ActiveIterationCallback& callback) = 0;

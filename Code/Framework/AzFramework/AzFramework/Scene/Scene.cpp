@@ -27,7 +27,7 @@ namespace AzFramework
 
     Scene::~Scene()
     {
-        m_removalEvent.Signal(RemovalEventType::Destroyed);
+        m_removalEvent.Signal(*this, RemovalEventType::Destroyed);
     }
 
     const AZStd::string& Scene::GetName() const
@@ -55,9 +55,56 @@ namespace AzFramework
         handler.Connect(m_removalEvent);
     }
 
+    void Scene::ConnectToEvents(SubsystemEvent::Handler& handler)
+    {
+        handler.Connect(m_subsystemEvent);
+    }
+
+    AZStd::any* Scene::FindSubsystem(const AZ::TypeId& typeId)
+    {
+        AZStd::any* result = FindSubsystemInScene(typeId);
+        return (!result && m_parent) ? m_parent->FindSubsystem(typeId) : result;
+    }
+
+    const AZStd::any* Scene::FindSubsystem(const AZ::TypeId& typeId) const
+    {
+        return const_cast<Scene*>(this)->FindSubsystem(typeId);
+    }
+
+    AZStd::any* Scene::FindSubsystemInScene(const AZ::TypeId& typeId)
+    {
+        const size_t m_systemKeysCount = m_systemKeys.size();
+        for (size_t i = 0; i < m_systemKeysCount; ++i)
+        {
+            if (m_systemKeys[i] != typeId)
+            {
+                continue;
+            }
+            else
+            {
+                return &m_systemObjects[i];
+            }
+        }
+        return nullptr;
+    }
+
+    const AZStd::any* Scene::FindSubsystemInScene(const AZ::TypeId& typeId) const
+    {
+        return const_cast<Scene*>(this)->FindSubsystemInScene(typeId);
+    }
+
     void Scene::MarkForDestruction()
     {
         m_isAlive = false;
-        m_removalEvent.Signal(RemovalEventType::Zombified);
+        m_removalEvent.Signal(*this, RemovalEventType::Zombified);
+    }
+
+    void Scene::RemoveSubsystem(size_t index, const AZ::TypeId& subsystemType)
+    {
+        m_systemKeys[index] = m_systemKeys.back();
+        m_systemObjects[index] = AZStd::move(m_systemObjects.back());
+        m_systemKeys.pop_back();
+        m_systemObjects.pop_back();
+        m_subsystemEvent.Signal(*this, SubsystemEventType::Removed, subsystemType);
     }
 }
