@@ -97,7 +97,7 @@ namespace AzToolsFramework
         m_thumbnail->setFixedSize(QSize(40, 24));
         m_thumbnail->setVisible(false);
 
-        connect(m_thumbnail, &ThumbnailPropertyCtrl::clicked, this, &PropertyAssetCtrl::OnEditButtonClicked);
+        connect(m_thumbnail, &ThumbnailPropertyCtrl::clicked, [&]() { PropertyAssetCtrl::OnEditButtonClicked(m_thumbnailCallback); });
 
         m_editButton = new QToolButton(this);
         m_editButton->setAutoRaise(true);
@@ -105,7 +105,7 @@ namespace AzToolsFramework
         m_editButton->setToolTip("Edit asset");
         m_editButton->setVisible(false);
 
-        connect(m_editButton, &QToolButton::clicked, this, &PropertyAssetCtrl::OnEditButtonClicked);
+        connect(m_editButton, &QToolButton::clicked, [&]() { PropertyAssetCtrl::OnEditButtonClicked(m_editNotifyCallback); });
 
         pLayout->addWidget(m_thumbnail);
         pLayout->addWidget(m_browseEdit);
@@ -704,13 +704,13 @@ namespace AzToolsFramework
         AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
     }
 
-    void PropertyAssetCtrl::OnEditButtonClicked()
+    void PropertyAssetCtrl::OnEditButtonClicked(EditCallbackType* editNotifyCallback)
     {
         const AZ::Data::AssetId assetID = GetCurrentAssetID();
-        if (m_editNotifyCallback)
+        if (editNotifyCallback)
         {
             AZ_Error("Asset Property", m_editNotifyTarget, "No notification target set for edit callback.");
-            m_editNotifyCallback->Invoke(m_editNotifyTarget, assetID, GetCurrentAssetType());
+            editNotifyCallback->Invoke(m_editNotifyTarget, assetID, GetCurrentAssetType());
             return;
         }
         else
@@ -1089,6 +1089,7 @@ namespace AzToolsFramework
 
         if (m_showThumbnail)
         {
+            m_thumbnail->ShowDropDownArrow(m_showThumbnailDropDownButton);
             const AZ::Data::AssetId assetID = GetCurrentAssetID();
             if (assetID.IsValid())
             {
@@ -1143,6 +1144,21 @@ namespace AzToolsFramework
     bool PropertyAssetCtrl::GetShowThumbnail() const
     {
         return m_showThumbnail;
+    }
+
+    void PropertyAssetCtrl::SetShowThumbnailDropDownButton(bool enable)
+    {
+        m_showThumbnailDropDownButton = enable;
+    }
+
+    bool PropertyAssetCtrl::GetShowThumbnailDropDownButton() const
+    {
+        return m_showThumbnailDropDownButton;
+    }
+
+    void PropertyAssetCtrl::SetThumbnailCallback(EditCallbackType* editNotifyCallback)
+    {
+        m_thumbnailCallback = editNotifyCallback;
     }
 
     const AZ::Uuid& AssetPropertyHandlerDefault::GetHandledType() const
@@ -1256,14 +1272,20 @@ namespace AzToolsFramework
         }
         else if (attrib == AZ_CRC_CE("Thumbnail"))
         {
+            GUI->SetShowThumbnail(true);
+        }
+        else if (attrib == AZ_CRC_CE("ThumbnailCallback"))
+        {
             PropertyAssetCtrl::EditCallbackType* func = azdynamic_cast<PropertyAssetCtrl::EditCallbackType*>(attrValue->GetAttribute());
             if (func)
             {
                 GUI->SetShowThumbnail(true);
-                GUI->SetEditNotifyCallback(func);
+                GUI->SetShowThumbnailDropDownButton(true);
+                GUI->SetThumbnailCallback(func);
             }
             else
             {
+                GUI->SetShowThumbnailDropDownButton(false);
                 GUI->SetEditNotifyCallback(nullptr);
             }
         }

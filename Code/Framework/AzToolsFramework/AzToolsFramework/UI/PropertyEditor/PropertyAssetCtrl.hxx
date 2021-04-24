@@ -156,6 +156,8 @@ namespace AzToolsFramework
         bool m_showProductAssetName = true;
 
         bool m_showThumbnail = false;
+        bool m_showThumbnailDropDownButton = false;
+        EditCallbackType* m_thumbnailCallback = nullptr;
 
         // ! Default suffix used in the field's placeholder text when a default value is set.
         const char* m_DefaultSuffix = " (default)";
@@ -206,6 +208,9 @@ namespace AzToolsFramework
 
         void SetShowThumbnail(bool enable);
         bool GetShowThumbnail() const;
+        void SetShowThumbnailDropDownButton(bool enable);
+        bool GetShowThumbnailDropDownButton() const;
+        void SetThumbnailCallback(EditCallbackType* editNotifyCallback);
 
         void SetSelectedAssetID(const AZ::Data::AssetId& newID);
         void SetCurrentAssetType(const AZ::Data::AssetType& newType);
@@ -216,7 +221,7 @@ namespace AzToolsFramework
         void OnClearButtonClicked();
         void UpdateAssetDisplay();
         void OnLineEditFocus(bool focus);
-        virtual void OnEditButtonClicked();
+        virtual void OnEditButtonClicked(EditCallbackType* editNotifyCallback);
         void OnCompletionModelReset();
         void OnAutocomplete(const QModelIndex& index);
         void OnTextChange(const QString& text);

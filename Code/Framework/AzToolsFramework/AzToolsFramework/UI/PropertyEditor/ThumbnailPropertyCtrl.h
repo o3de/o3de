@@ -42,6 +42,8 @@ namespace AzToolsFramework
         //! Remove current thumbnail
         void ClearThumbnail();
 
+        void ShowDropDownArrow(bool visible);
+
         bool event(QEvent* e) override;
 
     Q_SIGNALS:

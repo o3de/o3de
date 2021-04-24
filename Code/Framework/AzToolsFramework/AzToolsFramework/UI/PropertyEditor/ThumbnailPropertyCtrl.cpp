@@ -39,6 +39,7 @@ namespace AzToolsFramework
         m_dropDownArrow = new AspectRatioAwarePixmapWidget(this);
         m_dropDownArrow->setPixmap(QPixmap(":/stylesheet/img/triangle0.png"));
         m_dropDownArrow->setFixedSize(QSize(8, 24));
+        ShowDropDownArrow(false);
 
         m_emptyThumbnail = new QLabel(this);
         m_emptyThumbnail->setPixmap(QPixmap(":/stylesheet/img/line.png"));
@@ -64,6 +65,19 @@ namespace AzToolsFramework
     {
         m_emptyThumbnail->setVisible(true);
         m_thumbnail->ClearThumbnail();
+    }
+
+    void ThumbnailPropertyCtrl::ShowDropDownArrow(bool visible)
+    {
+        if (visible)
+        {
+            setFixedSize(QSize(40, 24));
+        }
+        else
+        {
+            setFixedSize(QSize(24, 24));
+        }
+        m_dropDownArrow->setVisible(visible);
     }
 
     bool ThumbnailPropertyCtrl::event(QEvent* e)
