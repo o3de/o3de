@@ -91,7 +91,7 @@ namespace AZ
 
             if (BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context))
             {
-                behaviorContext->Class<Item>()
+                behaviorContext->Class<Item>("ShaderCollectionItem")
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                     ->Attribute(AZ::Script::Attributes::Category, "Shader")
                     ->Attribute(AZ::Script::Attributes::Module, "shader")
