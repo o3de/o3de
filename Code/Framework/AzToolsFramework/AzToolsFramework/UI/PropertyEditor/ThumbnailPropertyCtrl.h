@@ -57,7 +57,7 @@ namespace AzToolsFramework
     private:
         Thumbnailer::SharedThumbnailKey m_key;
         Thumbnailer::ThumbnailWidget* m_thumbnail = nullptr;
-        Thumbnailer::ThumbnailWidget* m_thumbnailEnlarged = nullptr;
+        QScopedPointer<Thumbnailer::ThumbnailWidget> m_thumbnailEnlarged;
         QLabel* m_emptyThumbnail = nullptr;
         AspectRatioAwarePixmapWidget* m_dropDownArrow = nullptr;
     };

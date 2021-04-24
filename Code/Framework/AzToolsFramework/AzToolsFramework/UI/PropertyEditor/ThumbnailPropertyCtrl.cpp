@@ -109,7 +109,7 @@ namespace AzToolsFramework
         {
             QPoint position = mapToGlobal(pos() - QPoint(185, 0));
             QSize size(180, 180);
-            m_thumbnailEnlarged = new Thumbnailer::ThumbnailWidget();
+            m_thumbnailEnlarged.reset(new Thumbnailer::ThumbnailWidget());
             m_thumbnailEnlarged->setFixedSize(size);
             m_thumbnailEnlarged->move(position);
             m_thumbnailEnlarged->setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
@@ -124,8 +124,7 @@ namespace AzToolsFramework
         m_dropDownArrow->setPixmap(QPixmap(":/stylesheet/img/triangle0.png"));
         if (m_thumbnailEnlarged)
         {
-            delete m_thumbnailEnlarged;
-            m_thumbnailEnlarged = nullptr;
+            m_thumbnailEnlarged.reset();
         }
         QWidget::leaveEvent(e);
     }
