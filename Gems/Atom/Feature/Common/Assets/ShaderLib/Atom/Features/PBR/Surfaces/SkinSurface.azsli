@@ -40,7 +40,7 @@ class Surface //: BasePbrSurfaceData
     void CalculateRoughnessA();
 
     //! Sets albedo and specularF0 using metallic workflow
-    void SetAlbedoAndSpecularF0(float3 baseColor, float inSpecularF0);
+    void SetAlbedoAndSpecularF0(float3 baseColor, float specularF0Factor);
 
 };
 
@@ -79,9 +79,9 @@ void Surface::CalculateRoughnessA()
     }
 }
 
-void Surface::SetAlbedoAndSpecularF0(float3 baseColor, float inSpecularF0)
+void Surface::SetAlbedoAndSpecularF0(float3 baseColor, float specularF0Factor)
 {
     albedo = baseColor;
-    specularF0 = MaxDielectricSpecularF0 * inSpecularF0;
+    specularF0 = MaxDielectricSpecularF0 * specularF0Factor;
 }
 

@@ -295,9 +295,9 @@ PbrLightingOutput SkinPS_Common(VSOutput IN)
     // ------- Specular -------
 
     float2 specularUv = IN.m_uv[MaterialSrg::m_specularF0MapUvIndex];
-    float specularF0 = GetSpecularInput(MaterialSrg::m_specularF0Map, MaterialSrg::m_sampler, specularUv, MaterialSrg::m_specularF0Factor, o_specularF0_useTexture);
+    float specularF0Factor = GetSpecularInput(MaterialSrg::m_specularF0Map, MaterialSrg::m_sampler, specularUv, MaterialSrg::m_specularF0Factor, o_specularF0_useTexture);
 
-    surface.SetAlbedoAndSpecularF0(baseColor, specularF0);
+    surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor);
 
     // ------- Roughness -------
 

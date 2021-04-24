@@ -71,8 +71,8 @@ ForwardPassOutput MinimalPBR_MainPassPS(VSOutput IN)
     surface.CalculateRoughnessA();
 
     // Albedo, SpecularF0
-    const float specularF0 = 0.5f;
-    surface.SetAlbedoAndSpecularF0(MinimalPBRSrg::m_baseColor, specularF0, MinimalPBRSrg::m_metallic);
+    const float specularF0Factor = 0.5f;
+    surface.SetAlbedoAndSpecularF0(MinimalPBRSrg::m_baseColor, specularF0Factor, MinimalPBRSrg::m_metallic);
 
     // Clear Coat, Transmission
     surface.clearCoat.InitializeToZero();

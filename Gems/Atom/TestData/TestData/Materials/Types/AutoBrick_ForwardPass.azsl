@@ -176,8 +176,8 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
 
     // Albedo, SpecularF0
     const float metallic = 0.0f;
-    const float specularF0 = 0.5f;
-    surface.SetAlbedoAndSpecularF0(baseColor, specularF0, metallic);
+    const float specularF0Factor = 0.5f;
+    surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
 
     // Clear Coat, Transmission
     surface.clearCoat.InitializeToZero();
