@@ -40,7 +40,6 @@ namespace AZ
     class AtomFont
         : public ICryFont
         , public AzFramework::FontQueryInterface
-        , public AzFramework::SceneSystemNotificationBus::Handler
     {
         friend class FFont;
 
@@ -92,8 +91,7 @@ namespace AZ
         AzFramework::FontDrawInterface* GetFontDrawInterface(AzFramework::FontId fontId) const override;
         AzFramework::FontDrawInterface* GetDefaultFontDrawInterface() const override;
 
-        // SceneSystemNotificationBus handlers
-        void SceneAboutToBeRemoved(AzFramework::Scene& scene) override;
+        void SceneAboutToBeRemoved(AzFramework::Scene& scene);
 
 
         // Atom DynamicDraw interface management
@@ -137,6 +135,8 @@ namespace AZ
         XmlNodeRef LoadFontFamilyXml(const char* fontFamilyName, string& outputDirectory, string& outputFullPath);
 
     private:
+        AzFramework::ISceneSystem::SceneEvent::Handler m_sceneEventHandler;
+
         FontMap m_fonts;
         FontFamilyMap m_fontFamilies; //!< Map font family names to weak ptrs so we can construct shared_ptrs but not keep a ref ourselves.
         FontFamilyReverseLookupMap m_fontFamilyReverseLookup; //<! FontFamily pointer reverse-lookup for quick removal

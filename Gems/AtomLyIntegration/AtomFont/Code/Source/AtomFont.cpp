@@ -353,6 +353,18 @@ AZ::AtomFont::AtomFont(ISystem* system)
         "Reload all fonts");
 #endif
     AZ::Interface<AzFramework::FontQueryInterface>::Register(this);
+
+    m_sceneEventHandler = AzFramework::ISceneSystem::SceneEvent::Handler(
+        [this](AzFramework::ISceneSystem::EventType eventType, const AZStd::shared_ptr<AzFramework::Scene>& scene)
+        {
+            if (eventType == AzFramework::ISceneSystem::EventType::ScenePendingRemoval)
+            {
+                SceneAboutToBeRemoved(*scene);
+            }
+        });
+    auto sceneSystem = AzFramework::SceneSystemInterface::Get();
+    AZ_Assert(sceneSystem, "Font created before the scene system is available.");
+    sceneSystem->ConnectToEvents(m_sceneEventHandler);
 }
 
 AZ::AtomFont::~AtomFont()

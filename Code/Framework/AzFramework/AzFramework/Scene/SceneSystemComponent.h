@@ -13,6 +13,7 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/std/containers/map.h>
+#include <AzCore/std/parallel/mutex.h>
 #include <AzFramework/Scene/SceneSystemBus.h>
 #include <AzFramework/Entity/EntityContext.h>
 
@@ -49,11 +50,14 @@ namespace AzFramework
         void IterateActiveScenes(const ActiveIterationCallback& callback) override;
         void IterateZombieScenes(const ZombieIterationCallback& callback) override;
         bool RemoveScene(AZStd::string_view name) override;
+        void ConnectToEvents(SceneEvent::Handler& handler) override;
 
     private:
         AZ_DISABLE_COPY(SceneSystemComponent);
 
         AZStd::vector<AZStd::shared_ptr<Scene>> m_activeScenes;
         AZStd::vector<AZStd::weak_ptr<Scene>> m_zombieScenes;
+        AZStd::mutex m_eventMutex; // Using a mutex instead of a regular mutex because during a signal the handlers can be unregistered.
+        SceneEvent m_events;
     };
 }

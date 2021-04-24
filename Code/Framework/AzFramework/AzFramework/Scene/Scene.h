@@ -11,6 +11,7 @@
  */
 #pragma once
 
+#include <AzCore/EBus/Event.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -27,16 +28,30 @@ namespace AzFramework
         AZ_TYPE_INFO(Scene, "{DB449BB3-7A95-434D-BC61-47ACBB1F3436}");
         AZ_CLASS_ALLOCATOR(Scene, AZ::SystemAllocator, 0);
 
+        friend class ISceneSystem;
+
         constexpr static AZStd::string_view MainSceneName = "Main";
         constexpr static AZStd::string_view EditorMainSceneName = "Editor";
 
+        enum class RemovalEventType
+        {
+            Zombified, // The scene has be marked for destruction and is no longer visible in the scene system.
+            Destroyed, // The scene has been destroyed.
+        };
+        using RemovalEvent = AZ::Event<RemovalEventType>;
+
         explicit Scene(AZStd::string name);
         Scene(AZStd::string name, AZStd::shared_ptr<Scene> parent);
+        ~Scene();
 
         const AZStd::string& GetName() const;
 
         const AZStd::shared_ptr<Scene>& GetParent();
         AZStd::shared_ptr<const Scene> GetParent() const;
+
+        bool IsAlive() const;
+
+        void ConnectToEvents(RemovalEvent::Handler& handler);
         
         // Set the instance of a subsystem associated with this scene.
         template <typename T>
@@ -69,6 +84,10 @@ namespace AzFramework
         const T* FindSubsystemInScene() const;
 
     private:
+        void MarkForDestruction();
+
+        RemovalEvent m_removalEvent;
+
         // Storing keys separate from data to optimize for fast key search.
         AZStd::vector<AZ::TypeId> m_systemKeys;
         AZStd::vector<AZStd::any> m_systemObjects;
@@ -77,6 +96,9 @@ namespace AzFramework
         AZStd::string m_name;
         // Parent to this scene. Any subsystems are inherited from the parent but can be overwritten locally.
         AZStd::shared_ptr<Scene> m_parent;
+        // If false, the scene has been removed from scene system and can no longer be found. As soon as all handles to the scene are
+        // released it will be destroyed.
+        bool m_isAlive{ true };
     };
 } // AzFramework
 

@@ -15,7 +15,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-#include <AzFramework/Scene/Scene.h>
 
 namespace AzFramework
 {
@@ -74,7 +73,10 @@ namespace AzFramework
 
         auto newScene = AZStd::make_shared<Scene>(name, AZStd::move(parent));
         m_activeScenes.push_back(newScene);
-        SceneSystemNotificationBus::Broadcast(&SceneSystemNotificationBus::Events::SceneCreated, *newScene);
+        {
+            AZStd::lock_guard lock(m_eventMutex);
+            m_events.Signal(EventType::SceneCreated, newScene);
+        }
         return AZ::Success(AZStd::move(newScene));
     }
 
@@ -126,7 +128,11 @@ namespace AzFramework
         {
             if (scene->GetName() == name)
             {
-                SceneSystemNotificationBus::Broadcast(&SceneSystemNotificationBus::Events::SceneAboutToBeRemoved, *scene);
+                MarkSceneForDestruction(*scene);
+                {
+                    AZStd::lock_guard lock(m_eventMutex);
+                    m_events.Signal(EventType::ScenePendingRemoval, scene);
+                }
                 
                 m_zombieScenes.push_back(scene);
                 scene = AZStd::move(m_activeScenes.back());
@@ -137,5 +143,11 @@ namespace AzFramework
 
         AZ_Warning("SceneSystemComponent", false, R"(Attempting to remove scene name "%.*s", but that scene was not found.)", AZ_STRING_ARG(name));
         return false;
+    }
+
+    void SceneSystemComponent::ConnectToEvents(SceneEvent::Handler& handler)
+    {
+        AZStd::lock_guard lock(m_eventMutex);
+        handler.Connect(m_events);
     }
 } // namespace AzFramework

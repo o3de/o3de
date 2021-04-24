@@ -45,7 +45,6 @@ namespace AZ
                 , public TickBus::Handler
                 , public AzFramework::WindowNotificationBus::Handler
                 , public AzFramework::AssetCatalogEventBus::Handler
-                , private AzFramework::SceneSystemNotificationBus::Handler
                 , public AzFramework::WindowSystemNotificationBus::Handler
                 , public AzFramework::WindowSystemRequestBus::Handler
                 , public Render::Bootstrap::DefaultWindowBus::Handler
@@ -90,9 +89,6 @@ namespace AZ
                 // AzFramework::AssetCatalogEventBus::Handler overrides ...
                 void OnCatalogLoaded(const char* catalogFile) override;
 
-                // AzFramework::SceneSystemNotificationBus::Handler overrides ...
-                void SceneAboutToBeRemoved(AzFramework::Scene& scene) override;
-
                 // AzFramework::WindowSystemNotificationBus::Handler overrides ...
                 void OnWindowCreated(AzFramework::NativeWindowHandle windowHandle) override;
 
@@ -103,6 +99,8 @@ namespace AZ
                 void RemoveRenderPipeline();
 
                 void CreateWindowContext();
+
+                AzFramework::Scene::RemovalEvent::Handler m_sceneRemovalHandler;
 
                 AZStd::unique_ptr<AzFramework::NativeWindow> m_nativeWindow;
                 AzFramework::NativeWindowHandle m_windowHandle = nullptr;

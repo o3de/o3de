@@ -25,6 +25,11 @@ namespace AzFramework
     {
     }
 
+    Scene::~Scene()
+    {
+        m_removalEvent.Signal(RemovalEventType::Destroyed);
+    }
+
     const AZStd::string& Scene::GetName() const
     {
         return m_name;
@@ -38,5 +43,21 @@ namespace AzFramework
     AZStd::shared_ptr<const Scene> Scene::GetParent() const
     {
         return m_parent;
+    }
+
+    bool Scene::IsAlive() const
+    {
+        return m_isAlive;
+    }
+
+    void Scene::ConnectToEvents(RemovalEvent::Handler& handler)
+    {
+        handler.Connect(m_removalEvent);
+    }
+
+    void Scene::MarkForDestruction()
+    {
+        m_isAlive = false;
+        m_removalEvent.Signal(RemovalEventType::Zombified);
     }
 }

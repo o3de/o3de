@@ -12,22 +12,30 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/EBus/Event.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/functional.h>
 #include <AzFramework/Entity/EntityContext.h>
+#include <AzFramework/Scene/Scene.h>
 
 namespace AzFramework
 {
-    // Forward declarations
-    class Scene;
-
     //! Interface used to create, get, or destroy scenes.
+    //! This interface is single thread and is intended to be called from a single thread, commonly the main thread. The exception
+    //! is connecting events, which is thread safe.
     class ISceneSystem
     {
     public:
         AZ_RTTI(AzFramework::ISceneSystem, "{DAE482A8-88AE-4BD3-8A5B-52D19A96E15F}");
         AZ_DISABLE_COPY_MOVE(ISceneSystem);
+
+        enum class EventType
+        {
+            SceneCreated,
+            ScenePendingRemoval
+        };
+        using SceneEvent = AZ::Event<EventType, const AZStd::shared_ptr<Scene>&>;
 
         ISceneSystem() = default;
         virtual ~ISceneSystem() = default;
@@ -60,28 +68,14 @@ namespace AzFramework
         //! Remove a scene with a given name and return if the operation was successful.
         //!  - If the removed scene is the default scene, there will no longer be a default scene.
         virtual bool RemoveScene(AZStd::string_view name) = 0;
+
+        //! Connects the provided handler to the events that are called after scenes are created or before they get removed.
+        virtual void ConnectToEvents(SceneEvent::Handler& handler) = 0;
+
+    protected:
+        // Strictly a forwarding function to call private functions on the scene.
+        void MarkSceneForDestruction(Scene& scene) { scene.MarkForDestruction(); }
     };
 
     using SceneSystemInterface = AZ::Interface<ISceneSystem>;
-
-    //! Interface used for notifications from the scene system
-    class SceneSystemNotifications
-        : public AZ::EBusTraits
-    {
-    public:
-
-        virtual ~SceneSystemNotifications() = default;
-
-        //! There can be multiple listeners to changes in the scene system.
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
-
-        //! Called when a scene has been created.
-        virtual void SceneCreated(Scene& /*scene*/) {};
-
-        //! Called just before a scene is removed.
-        virtual void SceneAboutToBeRemoved(Scene& /*scene*/) {};
-
-    };
-
-    using SceneSystemNotificationBus = AZ::EBus<SceneSystemNotifications>;
 } // AzFramework

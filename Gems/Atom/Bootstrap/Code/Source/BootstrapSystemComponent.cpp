@@ -282,6 +282,14 @@ namespace AZ
                 m_defaultFrameworkScene = AzFramework::SceneSystemInterface::Get()->GetScene(AzFramework::Scene::MainSceneName);
                 // This should never happen unless scene creation has changed.
                 AZ_Assert(m_defaultFrameworkScene, "Error: Scenes missing during system component initialization");
+                m_sceneRemovalHandler = AzFramework::Scene::RemovalEvent::Handler([this](AzFramework::Scene::RemovalEventType eventType)
+                    {
+                        if (eventType == AzFramework::Scene::RemovalEventType::Zombified)
+                        {
+                            m_defaultFrameworkScene = false;
+                        }
+                    });
+                m_defaultFrameworkScene->ConnectToEvents(m_sceneRemovalHandler);
                 m_defaultScene = GetOrCreateAtomSceneFromAzScene(m_defaultFrameworkScene.get());
             }
 
@@ -402,15 +410,6 @@ namespace AZ
                 m_viewportContext.reset();
                 AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
                 AzFramework::WindowNotificationBus::Handler::BusDisconnect();
-            }
-
-            void BootstrapSystemComponent::SceneAboutToBeRemoved(AzFramework::Scene& scene)
-            {
-                if (&scene == m_defaultFrameworkScene.get())
-                {
-                    // Set to nullptr so we don't try to unbind the RPI::Scene from it later.
-                    m_defaultFrameworkScene = nullptr;
-                }
             }
 
             AzFramework::NativeWindowHandle BootstrapSystemComponent::GetDefaultWindowHandle()
