@@ -9,8 +9,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-set(FILES
-    RHI/WSISurface_Linux.cpp
-    Vulkan_Traits_Linux.h
-    Vulkan_Traits_Platform.h
+set(GLAD_VULKAN_COMPILE_DEFINITIONS 
+    VK_USE_PLATFORM_XCB_KHR
 )
