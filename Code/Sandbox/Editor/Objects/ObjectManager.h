@@ -226,8 +226,6 @@ public:
     //! Set one of name selections as current selection.
     void    SetSelection(const QString& name);
     void    RemoveSelection(const QString& name);
-    //! Checks for changes to the current selection and makes adjustments accordingly
-    void    CheckAndFixSelection() override;
 
     bool IsObjectDeletionAllowed(CBaseObject* pObject);
 

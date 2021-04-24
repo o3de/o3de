@@ -35,7 +35,7 @@ public:
     void GetKeyInfo(int key, const char*& description, float& duration);
     void SerializeKey(ISelectKey& key, XmlNodeRef& keyNode, bool bLoading);
 
-    static void Reflect(AZ::SerializeContext* serializeContext);
+    static void Reflect(AZ::ReflectContext* context);
 };
 
 #endif // CRYINCLUDE_CRYMOVIE_SELECTTRACK_H

@@ -421,6 +421,10 @@
                 "Path": "Passes/DiffuseProbeGridRelocation.pass"
             },
             {
+                "Name": "DiffuseProbeGridClassificationPassTemplate",
+                "Path": "Passes/DiffuseProbeGridClassification.pass"
+            },
+            {
                 "Name": "DiffuseGlobalIlluminationPassTemplate",
                 "Path": "Passes/DiffuseGlobalIllumination.pass"
             },

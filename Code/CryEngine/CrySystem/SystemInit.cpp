@@ -1294,7 +1294,7 @@ bool CSystem::OpenRenderLibrary(int type, const SSystemInitParams& initParams)
     const char* libname = "";
     if (AZ::Interface<AzFramework::AtomActiveInterface>::Get())
     {
-        libname = "CryRenderOther";
+        libname = DLL_RENDERER_NULL;
     }
     else if (type == R_DX9_RENDERER)
     {
@@ -4094,6 +4094,7 @@ void CSystem::CreateSystemVars()
         "0 = Suppress Asserts\n"
         "1 = Log Asserts\n"
         "2 = Show Assert Dialog\n"
+        "3 = Crashes the Application on Assert\n"
         "Note: when set to '0 = Suppress Asserts', assert expressions are still evaluated. To turn asserts into a no-op, undefine AZ_ENABLE_TRACING and recompile.",
         OnAssertLevelCvarChanged);
     CSystem::SetAssertLevel(defaultAssertValue);

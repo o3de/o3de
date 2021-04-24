@@ -65,7 +65,6 @@
 #include "Util/fastlib.h"
 #include "CryEditDoc.h"
 #include "GameEngine.h"
-#include "EditTool.h"
 #include "ViewManager.h"
 #include "Objects/DisplayContext.h"
 #include "DisplaySettings.h"
@@ -276,9 +275,6 @@ void EditorViewportWidget::paintEvent([[maybe_unused]] QPaintEvent* event)
     if ((ge && ge->IsLevelLoaded()) || (GetType() != ET_ViewportCamera))
     {
         setRenderOverlayVisible(true);
-        m_isOnPaint = true;
-        Update();
-        m_isOnPaint = false;
     }
     else
     {
@@ -682,6 +678,11 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
             }
             SetCurrentCursor(STD_CURSOR_GAME);
         }
+
+        if (m_renderViewport)
+        {
+            m_renderViewport->GetControllerList()->SetEnabled(false);
+        }
     }
     break;
 
@@ -699,6 +700,11 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
             m_bInZoomMode = false;
 
             RestoreViewportAfterGameMode();
+        }
+
+        if (m_renderViewport)
+        {
+            m_renderViewport->GetControllerList()->SetEnabled(true);
         }
         break;
 
@@ -730,6 +736,8 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
             // meters above the terrain (default terrain height is 32)
             viewTM.SetTranslation(Vec3(sx * 0.5f, sy * 0.5f, 34.0f));
             SetViewTM(viewTM);
+
+            UpdateScene();
         }
         break;
 
@@ -809,6 +817,10 @@ void EditorViewportWidget::OnBeginPrepareRender()
         return;
     }
 
+    m_isOnPaint = true;
+    Update();
+    m_isOnPaint = false;
+
     float fNearZ = GetIEditor()->GetConsoleVar("cl_DefaultNearPlane");
     float fFarZ = m_Camera.GetFarPlane();
 
@@ -874,11 +886,15 @@ void EditorViewportWidget::OnBeginPrepareRender()
                 fov = 2 * atanf((h * tan(fov / 2)) / maxTargetHeight);
             }
         }
-
         m_Camera.SetFrustum(w, h, fov, fNearZ, gEnv->p3DEngine->GetMaxViewDistance());
     }
 
     GetIEditor()->GetSystem()->SetViewCamera(m_Camera);
+
+    if (GetIEditor()->IsInGameMode())
+    {
+        return;
+    }
 
     PreWidgetRendering();
 
@@ -905,11 +921,6 @@ void EditorViewportWidget::OnBeginPrepareRender()
     m_debugDisplay->DepthTestOn();
 
     PostWidgetRendering();
-
-    if (!m_renderer->IsStereoEnabled())
-    {
-        GetIEditor()->GetSystem()->RenderStatistics();
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1206,13 +1217,18 @@ void EditorViewportWidget::SetViewportId(int id)
     CViewport::SetViewportId(id);
 
     // Now that we have an ID, we can initialize our viewport.
-    m_renderViewport = new AtomToolsFramework::RenderViewportWidget(id, this);
-    m_defaultViewportContextName = m_renderViewport->GetViewportContext()->GetName();
+    m_renderViewport = new AtomToolsFramework::RenderViewportWidget(this, false);
+    if (!m_renderViewport->InitializeViewportContext(id))
+    {
+        AZ_Warning("EditorViewportWidget", false, "Failed to initialize RenderViewportWidget's ViewportContext");
+        return;
+    }
+    auto viewportContext = m_renderViewport->GetViewportContext();
+    m_defaultViewportContextName = viewportContext->GetName();
     QBoxLayout* layout = new QBoxLayout(QBoxLayout::Direction::TopToBottom, this);
     layout->setContentsMargins(QMargins());
     layout->addWidget(m_renderViewport);
 
-    auto viewportContext = m_renderViewport->GetViewportContext();
     viewportContext->ConnectViewMatrixChangedHandler(m_cameraViewMatrixChangeHandler);
     viewportContext->ConnectProjectionMatrixChangedHandler(m_cameraProjectionMatrixChangeHandler);
 

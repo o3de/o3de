@@ -32,7 +32,6 @@ namespace AZ
             AZ_CLASS_ALLOCATOR(ModelPreset, AZ::SystemAllocator, 0);
             static void Reflect(AZ::ReflectContext* context);
 
-            bool m_autoSelect = false;
             AZStd::string m_displayName;
             AZ::Data::Asset<AZ::RPI::ModelAsset> m_modelAsset;
             AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_previewImageAsset;

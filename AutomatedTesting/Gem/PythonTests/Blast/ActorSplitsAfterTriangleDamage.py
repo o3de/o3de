@@ -17,7 +17,7 @@ from ActorSplitsAfterDamage import Tests
 
 def run():
     from ActorSplitsAfterDamage import run as internal_run
-    from Utils import Constants
+    from editor_python_test_tools.utils import Constants
 
     def TriangleDamage(target_id, position):
         # Some points that form a triangle that contains the given position

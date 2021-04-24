@@ -47,7 +47,7 @@ namespace AZ
             Containers::SceneGraph::NodeIndex SceneGraphSelector::RemapToOptimizedMesh(const Containers::SceneGraph& graph, const Containers::SceneGraph::NodeIndex& index)
             {
                 const auto& nodeName = graph.GetNodeName(index);
-                const AZStd::string optimizedName = AZStd::string(nodeName.GetPath(), nodeName.GetPathLength()) + "_optimized";
+                const AZStd::string optimizedName = AZStd::string(nodeName.GetPath(), nodeName.GetPathLength()).append(OptimizedMeshSuffix);
                 if (auto optimizedIndex = graph.Find(optimizedName); optimizedIndex.IsValid())
                 {
                     return optimizedIndex;

@@ -77,6 +77,8 @@ namespace AZ
             void OnRenderPipelineAdded(RenderPipelinePtr pipeline) override;
             //! Ensures our default view remains set when our scene's render pipelines are modified.
             void OnRenderPipelineRemoved(RenderPipeline* pipeline) override;
+            //! OnBeginPrepareRender is forwarded to our RenderTick notification to allow subscribers to do rendering.
+            void OnBeginPrepareRender() override;
 
             //WindowNotificationBus interface
             //! Used to fire a notification when our window resizes
@@ -123,7 +125,9 @@ namespace AZ
             AzFramework::WindowSize m_viewportSize;
             SizeChangedEvent m_sizeChangedEvent;
             MatrixChangedEvent m_viewMatrixChangedEvent;
+            MatrixChangedEvent::Handler m_onViewMatrixChangedHandler;
             MatrixChangedEvent m_projectionMatrixChangedEvent;
+            MatrixChangedEvent::Handler m_onProjectionMatrixChangedHandler;
             SceneChangedEvent m_sceneChangedEvent;
             ViewportContextManager* m_manager;
             RenderPipelinePtr m_currentPipeline;

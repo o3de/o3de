@@ -58,12 +58,32 @@ namespace AZ
             auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
             const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
             AZ::RPI::ViewportContextNotificationBus::Handler::BusConnect(contextName);
+
+            m_initialized = false;
+            InitializeViewportSizeIfNeeded();
         }
 
         void ImguiAtomSystemComponent::Deactivate()
         {
             ImGui::OtherActiveImGuiRequestBus::Handler::BusDisconnect();
             AZ::RPI::ViewportContextNotificationBus::Handler::BusDisconnect();
+        }
+
+        void ImguiAtomSystemComponent::InitializeViewportSizeIfNeeded()
+        {
+#if defined(IMGUI_ENABLED)
+            if (m_initialized)
+            {
+                return;
+            }
+            auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+            auto defaultViewportContext = atomViewportRequests->GetDefaultViewportContext();
+            if (defaultViewportContext)
+            {
+                // If this succeeds, m_initialized will be set to true.
+                OnViewportSizeChanged(defaultViewportContext->GetViewportSize());
+            }
+#endif
         }
 
         void ImguiAtomSystemComponent::RenderImGuiBuffers(const ImDrawData& drawData)
@@ -74,7 +94,25 @@ namespace AZ
         void ImguiAtomSystemComponent::OnRenderTick()
         {
 #if defined(IMGUI_ENABLED)
+            InitializeViewportSizeIfNeeded();
             ImGui::ImGuiManagerListenerBus::Broadcast(&ImGui::IImGuiManagerListener::Render);
+#endif
+        }
+
+        void ImguiAtomSystemComponent::OnViewportSizeChanged(AzFramework::WindowSize size)
+        {
+#if defined(IMGUI_ENABLED)
+            ImGui::ImGuiManagerListenerBus::Broadcast([this, size](ImGui::ImGuiManagerListenerBus::Events* imgui)
+            {
+                imgui->OverrideRenderWindowSize(size.m_width, size.m_height);
+                // ImGuiManagerListenerBus may not have been connected when this system component is activated
+                // as ImGuiManager is not part of a system component we can  require and instead just listens for ESYSTEM_EVENT_GAME_POST_INIT.
+                // Let our ImguiAtomSystemComponent know once we successfully connect and update the viewport size.
+                if (!m_initialized)
+                {
+                    m_initialized = true;
+                }
+            });
 #endif
         }
     }

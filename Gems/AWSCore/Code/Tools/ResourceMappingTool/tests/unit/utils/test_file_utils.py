@@ -30,10 +30,6 @@ class TestFileUtils(TestCase):
         self.addCleanup(path_patcher.stop)
         self._mock_path: MagicMock = path_patcher.start()
 
-        windows_path_patcher: patch = patch("pathlib.WindowsPath")
-        self.addCleanup(windows_path_patcher.stop)
-        self._mock_windows_path: MagicMock = windows_path_patcher.start()
-
     def test_check_path_exists_returns_true(self) -> None:
         mocked_path: MagicMock = self._mock_path.return_value
         mocked_path.exists.return_value = True
@@ -105,12 +101,35 @@ class TestFileUtils(TestCase):
         assert not actual_files
 
     def test_join_path_return_expected_result(self) -> None:
-        mocked_windows_path: MagicMock = self._mock_windows_path.return_value
+        mocked_path: MagicMock = self._mock_path.return_value
         expected_join_path_name: str = f"{TestFileUtils._expected_path_name}{TestFileUtils._expected_file_name}"
-        mocked_windows_path.joinpath.return_value = expected_join_path_name
+        mocked_path.joinpath.return_value = expected_join_path_name
 
         actual_join_path_name: str = file_utils.join_path(TestFileUtils._expected_path_name,
                                                           TestFileUtils._expected_file_name)
-        self._mock_windows_path.assert_called_once_with(TestFileUtils._expected_path_name)
-        mocked_windows_path.joinpath.assert_called_once_with(TestFileUtils._expected_file_name)
+        self._mock_path.assert_called_once_with(TestFileUtils._expected_path_name)
+        mocked_path.joinpath.assert_called_once_with(TestFileUtils._expected_file_name)
         assert actual_join_path_name == expected_join_path_name
+
+    def test_normalize_file_path_return_empty_when_input_is_empty(self) -> None:
+        actual_normalized_path: str = file_utils.normalize_file_path("")
+        assert actual_normalized_path == ""
+
+    def test_normalize_file_path_return_expected_result(self) -> None:
+        mocked_path: MagicMock = self._mock_path.return_value
+        expected_resolve_path: str = TestFileUtils._expected_path_name
+        mocked_path.resolve.return_value = expected_resolve_path
+
+        actual_resolve_path: str = file_utils.normalize_file_path("dummy")
+        self._mock_path.assert_called_once()
+        mocked_path.resolve.assert_called_once()
+        assert actual_resolve_path == expected_resolve_path
+
+    def test_normalize_file_path_return_empty_when_exception_raised(self) -> None:
+        mocked_path: MagicMock = self._mock_path.return_value
+        mocked_path.resolve.side_effect = RuntimeError()
+
+        actual_resolve_path: str = file_utils.normalize_file_path("dummy")
+        self._mock_path.assert_called_once()
+        mocked_path.resolve.assert_called_once()
+        assert actual_resolve_path == ""

@@ -148,22 +148,6 @@
                         },
                         "LoadAction": "Clear"
                     }
-                },
-                {
-                    "Name": "ClearCoatNormalOutput",
-                    "SlotType": "Output",
-                    "ScopeAttachmentUsage": "RenderTarget",
-                    "LoadStoreAction": {
-                        "ClearValue": {
-                            "Value": [
-                                0.0,
-                                0.0,
-                                0.0,
-                                0.0
-                            ]
-                        },
-                        "LoadAction": "Clear"
-                    }
                 }
             ],
             "ImageAttachments": [
@@ -258,23 +242,6 @@
                     "AssetRef": {
                         "FilePath": "Textures/BRDFTexture.attimage"
                     }
-                },
-                {
-                    "Name": "ClearCoatNormalImage",
-                    "SizeSource": {
-                        "Source": {
-                            "Pass": "Parent",
-                            "Attachment": "SwapChainOutput"
-                        }
-                    },
-                    "MultisampleSource": {
-                        "Pass": "This",
-                        "Attachment": "DepthStencilInputOutput"
-                    },                                         
-                    "ImageDescriptor": {
-                        "Format": "R16G16B16A16_FLOAT",
-                        "SharedQueueMask": "Graphics"
-                    }
                 }
             ],
             "Connections": [
@@ -318,13 +285,6 @@
                     "AttachmentRef": {
                         "Pass": "This",
                         "Attachment": "BRDFTexture"
-                    }
-                },
-                {
-                    "LocalSlot": "ClearCoatNormalOutput",
-                    "AttachmentRef": {
-                        "Pass": "This",
-                        "Attachment": "ClearCoatNormalImage"
                     }
                 }
             ]

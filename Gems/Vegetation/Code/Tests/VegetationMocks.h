@@ -165,10 +165,6 @@ namespace UnitTest
         void DestroyAllInstances() override {}
 
         void Cleanup() override {}
-
-        void RegisterMergedMeshInstance([[maybe_unused]] Vegetation::InstancePtr instance, [[maybe_unused]] IRenderNode* mergedMeshNode) override {}
-        void ReleaseMergedMeshInstance([[maybe_unused]] Vegetation::InstancePtr instance) override {}
-
     };
 
     struct MockGradientRequestHandler
@@ -511,7 +507,7 @@ namespace UnitTest
         }
 
         AZ::Data::Asset<AZ::RPI::ModelAsset> m_GetMeshAssetOutput;
-        const AZ::Data::Asset<AZ::RPI::ModelAsset>& GetModelAsset() const override
+        AZ::Data::Asset<const AZ::RPI::ModelAsset> GetModelAsset() const override
         {
             return m_GetMeshAssetOutput;
         }
@@ -546,7 +542,7 @@ namespace UnitTest
             return m_modelAssetPathOutput;
         }
 
-        const AZ::Data::Instance<AZ::RPI::Model> GetModel() const override
+        AZ::Data::Instance<AZ::RPI::Model> GetModel() const override
         {
             return AZ::Data::Instance<AZ::RPI::Model>();
         }

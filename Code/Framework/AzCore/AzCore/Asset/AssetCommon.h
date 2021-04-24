@@ -1104,8 +1104,11 @@ namespace AZ
             // If we either already had valid asset data, or just created it via FindOrCreateAsset, try to queue the load.
             if (m_assetData && m_assetData->GetId().IsValid())
             {
-                // Only try to queue if the asset isn't already loading or loaded.
-                if (m_assetData->GetStatus() == AZ::Data::AssetData::AssetStatus::NotLoaded)
+                // Try to queue if the asset isn't already loading or loaded.
+                // Also try to queue if the asset *is* already loading or loaded, but we're the only one with a strong reference
+                // (i.e. use count == 1), because that means it was in the process of being garbage-collected.
+                if ((m_assetData->GetStatus() == AZ::Data::AssetData::AssetStatus::NotLoaded) ||
+                    (m_assetData->GetUseCount() == 1))
                 {
                     *this = AssetInternal::GetAsset(m_assetData->GetId(), m_assetData->GetType(), loadBehavior, loadParams);
                 }
