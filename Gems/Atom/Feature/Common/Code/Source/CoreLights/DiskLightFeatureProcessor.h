@@ -84,7 +84,7 @@ namespace AZ
             template <typename Functor, typename ParamType>
             void SetShadowSetting(LightHandle handle, Functor&&, ParamType&& param);
 
-            ProjectedShadowFeatureProcessor* m_shadowFeatureProcessor;
+            ProjectedShadowFeatureProcessor* m_shadowFeatureProcessor = nullptr;
 
             IndexedDataVector<DiskLightData> m_diskLightData;
             GpuBufferHandler m_lightBufferHandler;

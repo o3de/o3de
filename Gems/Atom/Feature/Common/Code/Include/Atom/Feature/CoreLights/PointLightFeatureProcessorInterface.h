@@ -14,6 +14,7 @@
 
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
+#include <Atom/Feature/CoreLights/ShadowConstants.h>
 
 namespace AZ
 {
@@ -48,6 +49,8 @@ namespace AZ
             virtual void SetAttenuationRadius(LightHandle handle, float attenuationRadius) = 0;
             //! Sets the bulb radius for the provided LightHandle. Values greater than zero effectively make it a spherical light.
             virtual void SetBulbRadius(LightHandle handle, float bulbRadius) = 0;
+            //! Sets if shadows are enabled
+            virtual void SetShadowsEnabled(LightHandle handle, bool enabled) = 0;
         };
     } // namespace Render
 } // namespace AZ
