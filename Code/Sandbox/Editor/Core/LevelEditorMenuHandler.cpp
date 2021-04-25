@@ -577,16 +577,6 @@ void LevelEditorMenuHandler::PopulateEditMenu(ActionManager::MenuWrapper& editMe
         modifyMenu.AddAction(ID_MODIFY_LINK);
         modifyMenu.AddAction(ID_MODIFY_UNLINK);
         modifyMenu.AddSeparator();
-
-        auto alignMenu = modifyMenu.AddMenu(tr("Align"));
-        alignMenu.AddAction(ID_OBJECTMODIFY_ALIGNTOGRID);
-
-        auto constrainMenu = modifyMenu.AddMenu(tr("Constrain"));
-        constrainMenu.AddAction(ID_SELECT_AXIS_X);
-        constrainMenu.AddAction(ID_SELECT_AXIS_Y);
-        constrainMenu.AddAction(ID_SELECT_AXIS_Z);
-        constrainMenu.AddAction(ID_SELECT_AXIS_XY);
-        constrainMenu.AddAction(ID_SELECT_AXIS_TERRAIN);
     }
 
     auto snapMenu = modifyMenu.AddMenu(tr("Snap"));
@@ -608,19 +598,9 @@ void LevelEditorMenuHandler::PopulateEditMenu(ActionManager::MenuWrapper& editMe
     }
 
     auto transformModeMenu = modifyMenu.AddMenu(tr("Transform Mode"));
-    if (!newViewportInteractionModelEnabled)
-    {
-        transformModeMenu.AddAction(ID_EDITMODE_SELECT);
-    }
-
     transformModeMenu.AddAction(ID_EDITMODE_MOVE);
     transformModeMenu.AddAction(ID_EDITMODE_ROTATE);
     transformModeMenu.AddAction(ID_EDITMODE_SCALE);
-
-    if (!newViewportInteractionModelEnabled)
-    {
-        transformModeMenu.AddAction(ID_EDITMODE_SELECTAREA);
-    }
 
     editMenu.AddSeparator();
 

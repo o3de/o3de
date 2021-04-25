@@ -136,7 +136,7 @@ namespace
             return;
         }
 
-        if (behaviorClass)
+        if (behaviorClass && !isOverloaded)
         {
             auto excludeMethodAttributeData = azdynamic_cast<const AZ::Edit::AttributeData<AZ::Script::Attributes::ExcludeFlags>*>(AZ::FindAttribute(AZ::Script::Attributes::ExcludeFrom, method.m_attributes));
             if (ShouldExcludeFromNodeList(excludeMethodAttributeData, behaviorClass->m_azRtti ? behaviorClass->m_azRtti->GetTypeId() : behaviorClass->m_typeId))

@@ -25,4 +25,4 @@ namespace ScriptCanvas
 
         static void Reflect(AZ::ReflectContext* reflectContext);
     };
-} 
+}
