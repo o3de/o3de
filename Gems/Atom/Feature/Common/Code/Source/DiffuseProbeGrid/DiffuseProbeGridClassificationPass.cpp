@@ -10,14 +10,18 @@
 *
 */
 
-#include <DiffuseProbeGrid/DiffuseProbeGridBlendDistancePass.h>
+#include <DiffuseProbeGrid/DiffuseProbeGridClassificationPass.h>
 #include <Atom/RHI/Factory.h>
+#include <Atom/RHI/PipelineState.h>
 #include <Atom/RHI/FrameGraphInterface.h>
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
 #include <Atom/RHI/Device.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/RPIUtils.h>
+#include <Atom/RPI.Reflect/Pass/PassTemplate.h>
+#include <Atom/RPI.Public/View.h>
+#include <Atom/RPI.Public/Scene.h>
 #include <DiffuseProbeGrid/DiffuseProbeGridFeatureProcessor.h>
 #include <RayTracing/RayTracingFeatureProcessor.h>
 
@@ -25,23 +29,23 @@ namespace AZ
 {
     namespace Render
     {
-        RPI::Ptr<DiffuseProbeGridBlendDistancePass> DiffuseProbeGridBlendDistancePass::Create(const RPI::PassDescriptor& descriptor)
+        RPI::Ptr<DiffuseProbeGridClassificationPass> DiffuseProbeGridClassificationPass::Create(const RPI::PassDescriptor& descriptor)
         {
-            RPI::Ptr<DiffuseProbeGridBlendDistancePass> pass = aznew DiffuseProbeGridBlendDistancePass(descriptor);
+            RPI::Ptr<DiffuseProbeGridClassificationPass> pass = aznew DiffuseProbeGridClassificationPass(descriptor);
             return AZStd::move(pass);
         }
 
-        DiffuseProbeGridBlendDistancePass::DiffuseProbeGridBlendDistancePass(const RPI::PassDescriptor& descriptor)
+        DiffuseProbeGridClassificationPass::DiffuseProbeGridClassificationPass(const RPI::PassDescriptor& descriptor)
             : RPI::RenderPass(descriptor)
         {
             LoadShader();
         }
 
-        void DiffuseProbeGridBlendDistancePass::LoadShader()
+        void DiffuseProbeGridClassificationPass::LoadShader()
         {
             // load shader
             // Note: the shader may not be available on all platforms
-            AZStd::string shaderFilePath = "Shaders/DiffuseGlobalIllumination/DiffuseProbeGridBlendDistance.azshader";
+            AZStd::string shaderFilePath = "Shaders/DiffuseGlobalIllumination/DiffuseProbeGridClassification.azshader";
             m_shader = RPI::LoadShader(shaderFilePath);
             if (m_shader == nullptr)
             {
@@ -72,7 +76,7 @@ namespace AZ
 
                 if (!validArgs)
                 {
-                    AZ_Error("PassSystem", false, "[DiffuseProbeGridBlendDistancePass '%s']: Shader '%s' contains invalid numthreads arguments.", GetPathName().GetCStr(), shaderFilePath.c_str());
+                    AZ_Error("PassSystem", false, "[DiffuseProbeClassificationPass '%s']: Shader '%s' contains invalid numthreads arguments.", GetPathName().GetCStr(), shaderFilePath.c_str());
                     return;
                 }
 
@@ -82,7 +86,7 @@ namespace AZ
             }
         }
 
-        void DiffuseProbeGridBlendDistancePass::FrameBeginInternal(FramePrepareParams params)
+        void DiffuseProbeGridClassificationPass::FrameBeginInternal(FramePrepareParams params)
         {
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
@@ -94,7 +98,7 @@ namespace AZ
             }
 
             RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
-            AZ_Assert(rayTracingFeatureProcessor, "DiffuseProbeGridBlendDistancePass requires the RayTracingFeatureProcessor");
+            AZ_Assert(rayTracingFeatureProcessor, "DiffuseProbeGridClassificationPass requires the RayTracingFeatureProcessor");
 
             if (!rayTracingFeatureProcessor->GetSubMeshCount())
             {
@@ -105,7 +109,7 @@ namespace AZ
             RenderPass::FrameBeginInternal(params);
         }
 
-        void DiffuseProbeGridBlendDistancePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
+        void DiffuseProbeGridClassificationPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
             RenderPass::SetupFrameGraphDependencies(frameGraph);
 
@@ -123,16 +127,6 @@ namespace AZ
                     frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::ReadWrite);
                 }
 
-                // probe distance image
-                {
-                    RHI::ImageScopeAttachmentDescriptor desc;
-                    desc.m_attachmentId = diffuseProbeGrid->GetDistanceImageAttachmentId();
-                    desc.m_imageViewDescriptor = diffuseProbeGrid->GetRenderData()->m_probeDistanceImageViewDescriptor;
-                    desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
-
-                    frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::ReadWrite);
-                }
-
                 // probe classification image
                 {
                     RHI::ImageScopeAttachmentDescriptor desc;
@@ -145,31 +139,29 @@ namespace AZ
             }
         }
 
-        void DiffuseProbeGridBlendDistancePass::CompileResources([[maybe_unused]] const RHI::FrameGraphCompileContext& context)
+        void DiffuseProbeGridClassificationPass::CompileResources([[maybe_unused]] const RHI::FrameGraphCompileContext& context)
         {
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
-
             for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetProbeGrids())
             {
                 // the diffuse probe grid Srg must be updated in the Compile phase in order to successfully bind the ReadWrite shader inputs
                 // (see ValidateSetImageView() in ShaderResourceGroupData.cpp)
-                diffuseProbeGrid->UpdateBlendDistanceSrg(m_srgAsset);
-
-                diffuseProbeGrid->GetBlendDistanceSrg()->Compile();
+                diffuseProbeGrid->UpdateClassificationSrg(m_srgAsset);
+                diffuseProbeGrid->GetClassificationSrg()->Compile();
             }
         }
 
-        void DiffuseProbeGridBlendDistancePass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
+        void DiffuseProbeGridClassificationPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
         {
             RHI::CommandList* commandList = context.GetCommandList();
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
 
-            // submit the DispatchItem for each DiffuseProbeGrid
+            // submit the DispatchItems for each DiffuseProbeGrid
             for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetProbeGrids())
             {
-                const RHI::ShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetBlendDistanceSrg()->GetRHIShaderResourceGroup();
+                const RHI::ShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetClassificationSrg()->GetRHIShaderResourceGroup();
                 commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
 
                 uint32_t probeCountX;
@@ -179,8 +171,8 @@ namespace AZ
                 RHI::DispatchItem dispatchItem;
                 dispatchItem.m_arguments = m_dispatchArgs;
                 dispatchItem.m_pipelineState = m_pipelineState;
-                dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = probeCountX * dispatchItem.m_arguments.m_direct.m_threadsPerGroupX;
-                dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY = probeCountY * dispatchItem.m_arguments.m_direct.m_threadsPerGroupY;
+                dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = probeCountX;
+                dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY = probeCountY;
                 dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsZ = 1;
 
                 commandList->Submit(dispatchItem);

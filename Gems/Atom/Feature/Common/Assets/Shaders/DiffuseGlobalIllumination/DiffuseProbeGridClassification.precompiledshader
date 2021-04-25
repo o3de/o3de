@@ -1,0 +1,32 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PrecompiledShaderAssetSourceData",
+    "ClassData":
+    {
+        "ShaderAssetFileName": "diffuseprobegridclassification.azshader",
+        "PlatformIdentifiers": 
+        [
+            "pc"
+        ],
+        "ShaderResourceGroupAssets":
+        [
+            "diffuseprobegridclassification_passsrg.azsrg"
+        ],
+        "RootShaderVariantAssets":
+        [
+            {
+                "APIName": "dx12",
+                "RootShaderVariantAssetFileName": "diffuseprobegridclassification_dx12_0.azshadervariant"
+            },
+            {
+                "APIName": "vulkan",
+                "RootShaderVariantAssetFileName": "diffuseprobegridclassification_vulkan_0.azshadervariant"
+            },
+            {
+                "APIName": "null",
+                "RootShaderVariantAssetFileName": "diffuseprobegridclassification_null_0.azshadervariant"
+            }
+        ]
+    }
+}
