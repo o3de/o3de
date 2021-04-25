@@ -189,6 +189,12 @@ namespace AzFramework
             SetFileIOAliases();
         }
 
+        if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); !nativeUI)
+        {
+            m_nativeUI = AZStd::make_unique<AZ::NativeUI::NativeUISystemComponent>();
+            AZ::Interface<AZ::NativeUI::NativeUIRequests>::Register(m_nativeUI.get());
+        }
+
         ApplicationRequests::Bus::Handler::BusConnect();
         AZ::UserSettingsFileLocatorBus::Handler::BusConnect();
         NetSystemRequestBus::Handler::BusConnect();
@@ -204,6 +210,12 @@ namespace AzFramework
         NetSystemRequestBus::Handler::BusDisconnect();
         AZ::UserSettingsFileLocatorBus::Handler::BusDisconnect();
         ApplicationRequests::Bus::Handler::BusDisconnect();
+
+        if (AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get() == m_nativeUI.get())
+        {
+            AZ::Interface<AZ::NativeUI::NativeUIRequests>::Unregister(m_nativeUI.get());
+        }
+        m_nativeUI.reset();
 
         // Unset the Archive file IO if it is set as the direct instance
         if (AZ::IO::FileIOBase::GetInstance() == m_archiveFileIO.get())
@@ -303,7 +315,6 @@ namespace AzFramework
             azrtti_typeid<AZ::AssetManagerComponent>(),
             azrtti_typeid<AZ::UserSettingsComponent>(),
             azrtti_typeid<AZ::Debug::FrameProfilerComponent>(),
-            azrtti_typeid<AZ::NativeUI::NativeUISystemComponent>(),
             azrtti_typeid<AZ::SliceComponent>(),
             azrtti_typeid<AZ::SliceSystemComponent>(),
 
@@ -372,7 +383,6 @@ namespace AzFramework
             azrtti_typeid<AZ::UserSettingsComponent>(),
             azrtti_typeid<AZ::ScriptSystemComponent>(),
             azrtti_typeid<AZ::JobManagerComponent>(),
-            azrtti_typeid<AZ::NativeUI::NativeUISystemComponent>(),
             azrtti_typeid<AZ::SliceSystemComponent>(),
 
             azrtti_typeid<AzFramework::AssetCatalogComponent>(),
