@@ -41,4 +41,4 @@ namespace ScriptCanvas
         AZStd::string ToValueString(const Datum& datum, const Configuration& config);
     } 
 
-} 
+}

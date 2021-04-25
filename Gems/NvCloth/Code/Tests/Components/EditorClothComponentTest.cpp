@@ -253,7 +253,7 @@ namespace UnitTest
             auto actor = AZStd::make_unique<ActorHelper>("actor_test");
             actor->AddJoint(JointRootName);
             auto meshNodeIndex = actor->AddJoint(MeshNodeName, AZ::Transform::CreateIdentity(), JointRootName);
-            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(MeshVertices, MeshIndices, {}, MeshUVs, MeshClothData));
+            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(MeshVertices, MeshIndices, {}, MeshUVs/*, MeshClothData*/));
             actor->FinishSetup();
 
             editorActorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));
@@ -284,7 +284,7 @@ namespace UnitTest
             auto actor = AZStd::make_unique<ActorHelper>("actor_test");
             actor->AddJoint(JointRootName);
             auto meshNodeIndex = actor->AddJoint(MeshNodeName, AZ::Transform::CreateIdentity(), JointRootName);
-            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(MeshVertices, MeshIndices, {}, MeshUVs, meshClothDataNoBackstop));
+            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(MeshVertices, MeshIndices, {}, MeshUVs/*, meshClothDataNoBackstop*/));
             actor->FinishSetup();
 
             editorActorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));
@@ -310,7 +310,7 @@ namespace UnitTest
             auto actor = AZStd::make_unique<ActorHelper>("actor_test");
             actor->AddJoint(JointRootName);
             auto meshNodeIndex = actor->AddJoint(MeshNodeName, AZ::Transform::CreateIdentity(), JointRootName);
-            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(MeshVertices, MeshIndices, {}, MeshUVs, MeshClothData));
+            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(MeshVertices, MeshIndices, {}, MeshUVs/*, MeshClothData*/));
             actor->FinishSetup();
 
             editorActorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));
@@ -337,7 +337,7 @@ namespace UnitTest
             auto actor = AZStd::make_unique<ActorHelper>("actor_test");
             actor->AddJoint(JointRootName);
             auto meshNodeIndex = actor->AddJoint(MeshNodeName, AZ::Transform::CreateIdentity(), JointRootName);
-            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(MeshVertices, MeshIndices, {}, MeshUVs, MeshClothData));
+            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(MeshVertices, MeshIndices, {}, MeshUVs/*, MeshClothData*/));
             actor->FinishSetup();
 
             editorActorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));

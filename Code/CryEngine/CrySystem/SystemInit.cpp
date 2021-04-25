@@ -1294,7 +1294,7 @@ bool CSystem::OpenRenderLibrary(int type, const SSystemInitParams& initParams)
     const char* libname = "";
     if (AZ::Interface<AzFramework::AtomActiveInterface>::Get())
     {
-        libname = "CryRenderOther";
+        libname = DLL_RENDERER_NULL;
     }
     else if (type == R_DX9_RENDERER)
     {
