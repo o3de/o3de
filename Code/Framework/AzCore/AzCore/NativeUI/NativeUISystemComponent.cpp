@@ -17,17 +17,17 @@
 
 namespace AZ::NativeUI
 {
-    NativeUISystemComponent::NativeUISystemComponent()
+    NativeUISystem::NativeUISystem()
     {
         NativeUIRequestBus::Handler::BusConnect();
     }
 
-    NativeUISystemComponent::~NativeUISystemComponent()
+    NativeUISystem::~NativeUISystem()
     {
         NativeUIRequestBus::Handler::BusDisconnect();
     }
 
-    AssertAction NativeUISystemComponent::DisplayAssertDialog(const AZStd::string& message) const
+    AssertAction NativeUISystem::DisplayAssertDialog(const AZStd::string& message) const
     {
         static const char* buttonNames[3] = { "Ignore", "Ignore All", "Break" };
         AZStd::vector<AZStd::string> options;
@@ -49,7 +49,7 @@ namespace AZ::NativeUI
         return AssertAction::NONE;
     }
 
-    AZStd::string NativeUISystemComponent::DisplayOkDialog(const AZStd::string& title, const AZStd::string& message, bool showCancel) const
+    AZStd::string NativeUISystem::DisplayOkDialog(const AZStd::string& title, const AZStd::string& message, bool showCancel) const
     {
         AZStd::vector<AZStd::string> options;
 
@@ -62,7 +62,7 @@ namespace AZ::NativeUI
         return DisplayBlockingDialog(title, message, options);
     }
 
-    AZStd::string NativeUISystemComponent::DisplayYesNoDialog(const AZStd::string& title, const AZStd::string& message, bool showCancel) const
+    AZStd::string NativeUISystem::DisplayYesNoDialog(const AZStd::string& title, const AZStd::string& message, bool showCancel) const
     {
         AZStd::vector<AZStd::string> options;
 

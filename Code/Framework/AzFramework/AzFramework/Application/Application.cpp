@@ -191,7 +191,7 @@ namespace AzFramework
 
         if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); !nativeUI)
         {
-            m_nativeUI = AZStd::make_unique<AZ::NativeUI::NativeUISystemComponent>();
+            m_nativeUI = AZStd::make_unique<AZ::NativeUI::NativeUISystem>();
             AZ::Interface<AZ::NativeUI::NativeUIRequests>::Register(m_nativeUI.get());
         }
 
