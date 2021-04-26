@@ -44,26 +44,6 @@
                                             ]
                                         },
                                         {
-                                            "name": "def_c_neck_joint",
-                                            "shapes": [
-                                                [
-                                                    {
-                                                        "Visible": true,
-                                                        "Position": [
-                                                            0.08189810067415238,
-                                                            -2.4586914726398847e-9,
-                                                            -0.4713243842124939
-                                                        ],
-                                                        "propertyVisibilityFlags": 248
-                                                    },
-                                                    {
-                                                        "$type": "SphereShapeConfiguration",
-                                                        "Radius": 0.2406993955373764
-                                                    }
-                                                ]
-                                            ]
-                                        },
-                                        {
                                             "name": "def_c_spine_end",
                                             "shapes": [
                                                 [
@@ -79,33 +59,6 @@
                                                     {
                                                         "$type": "SphereShapeConfiguration",
                                                         "Radius": 0.24875959753990174
-                                                    }
-                                                ]
-                                            ]
-                                        },
-                                        {
-                                            "name": "def_c_feather2_joint",
-                                            "shapes": [
-                                                [
-                                                    {
-                                                        "Visible": true,
-                                                        "Position": [
-                                                            0.06151500344276428,
-                                                            0.1300000101327896,
-                                                            7.729977369308472e-8
-                                                        ],
-                                                        "Rotation": [
-                                                            0.0,
-                                                            0.7071062922477722,
-                                                            0.0,
-                                                            0.7071072459220886
-                                                        ],
-                                                        "propertyVisibilityFlags": 248
-                                                    },
-                                                    {
-                                                        "$type": "CapsuleShapeConfiguration",
-                                                        "Height": 0.5730299949645996,
-                                                        "Radius": 0.06151498109102249
                                                     }
                                                 ]
                                             ]
