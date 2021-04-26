@@ -80,9 +80,9 @@ def return_stub_dir(stub_file='dccsi_stub'):
 
 
 # -------------------------------------------------------------------------
-def get_stub_check_path(in_path=os.getcwd(), check_stub='engineroot.txt'):
+def get_stub_check_path(in_path=os.getcwd(), check_stub='engine.json'):
     '''
-    Returns the branch root directory of the dev\\'engineroot.txt'
+    Returns the branch root directory of the dev\\'engine.json'
     (... or you can pass it another known stub)
 
     so we can safely build relative filepaths within that branch.
@@ -158,10 +158,9 @@ def bootstrap_dccsi_py_libs(dccsi_dirpath=return_stub_dir()):
     """Builds and adds local site dir libs based on py version"""
 
     from azpy.constants import STR_DCCSI_PYTHON_LIB_PATH  # a path string constructor
-    _DCCSI_PYTHON_LIB_PATH = "E:\\P4\\jromnoa_spectra_atom_2\\dev\\Tools\\Python\\3.7.5\\windows\\Lib\\site-packages"
-    # _DCCSI_PYTHON_LIB_PATH = STR_DCCSI_PYTHON_LIB_PATH.format(dccsi_dirpath,
-    #                                                           sys.version_info[0],
-    #                                                           sys.version_info[1])
+    _DCCSI_PYTHON_LIB_PATH = STR_DCCSI_PYTHON_LIB_PATH.format(dccsi_dirpath,
+                                                              sys.version_info[0],
+                                                              sys.version_info[1])
 
     if os.path.exists(_DCCSI_PYTHON_LIB_PATH):
         _LOGGER.debug('Performed site.addsitedir({})'.format(_DCCSI_PYTHON_LIB_PATH))
@@ -193,9 +192,9 @@ if __name__ == '__main__':
     _config = get_dccsi_config()
     _LOGGER.info('DCCSI_CONFIG_PATH: {}'.format(_config))
 
-    _LOGGER.info('LY_DEV: {}'.format(get_stub_check_path('engineroot.txt')))
+    _LOGGER.info('LY_DEV: {}'.format(get_stub_check_path('engine.json')))
 
-    _LOGGER.info('LY_PROJECT: {}'.format(get_current_project(get_stub_check_path('engineroot.txt'))))
+    _LOGGER.info('LY_PROJECT: {}'.format(get_current_project(get_stub_check_path('bootstrap.cfg'))))
 
     _LOGGER.info('DCCSI_PYTHON_LIB_PATH: {}'.format(bootstrap_dccsi_py_libs(return_stub_dir('dccsi_stub'))))
 
