@@ -7,24 +7,9 @@ distribution (the "License"). All use of this software is governed by the Licens
 or, if provided, by the license below or the license accompanying this file. Do not
 remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+
+Hydra script that creates an entity and attaches Atom components to it for test verification.
 """
-
-# This module does a bulk test and update of many components at once.
-# Each test case is listed below in the format:
-#     "Test Case ID: Test Case Title (URL)"
-
-# C32078130: Tone Mapper (https://testrail.agscollab.com/index.php?/cases/view/32078130)
-# C32078129: Light (https://testrail.agscollab.com/index.php?/cases/view/32078129)
-# C32078131: Radius Weight Modifier (https://testrail.agscollab.com/index.php?/cases/view/32078131)
-# C32078127: PostFX Layer (https://testrail.agscollab.com/index.php?/cases/view/32078127)
-# C32078126: Point Light (https://testrail.agscollab.com/index.php?/cases/view/32078126)
-# C32078125: Physical Sky (https://testrail.agscollab.com/index.php?/cases/view/32078125)
-# C32078115: Global Skylight (IBL) (https://testrail.agscollab.com/index.php?/cases/view/32078115)
-# C32078121: Exposure Control (https://testrail.agscollab.com/index.php?/cases/view/32078121)
-# C32078120: Directional Light (https://testrail.agscollab.com/index.php?/cases/view/32078120)
-# C32078119: DepthOfField (https://testrail.agscollab.com/index.php?/cases/view/32078119)
-# C32078118: Decal (https://testrail.agscollab.com/index.php?/cases/view/32078118)
-# C32078117: Area Light (https://testrail.agscollab.com/index.php?/cases/view/32078117)
 
 import os
 import sys
@@ -151,28 +136,6 @@ def run():
     # Wait for Editor idle loop before executing Python hydra scripts.
     TestHelper.init_idle()
 
-    # Create a new level.
-    new_level_name = "tmp_level"  # Specified in TestAllComponentsBasicTests.py
-    heightmap_resolution = 512
-    heightmap_meters_per_pixel = 1
-    terrain_texture_resolution = 412
-    use_terrain = False
-
-    # Return codes are ECreateLevelResult defined in CryEdit.h
-    return_code = general.create_level_no_prompt(
-        new_level_name, heightmap_resolution, heightmap_meters_per_pixel, terrain_texture_resolution, use_terrain)
-    if return_code == 1:
-        general.log(f"{new_level_name} level already exists")
-    elif return_code == 2:
-        general.log("Failed to create directory")
-    elif return_code == 3:
-        general.log("Directory length is too long")
-    elif return_code != 0:
-        general.log("Unknown error, failed to create level")
-    else:
-        general.log(f"{new_level_name} level created successfully")
-    EditorTestHelper.after_level_load(bypass_viewport_resize=True)
-
     # Delete all existing entities initially
     search_filter = azlmbr.entity.SearchFilter()
     all_entities = entity.SearchBus(azlmbr.bus.Broadcast, "SearchEntities", search_filter)
@@ -209,7 +172,7 @@ def run():
             entity_obj, ["Capsule Shape"], area_light))
 
     # Decal Component
-    material_asset_path = os.path.join("Materials", "decal", "aiirship_nose_number_decal.material")
+    material_asset_path = os.path.join("Materials", "basic_grey.material")
     material_asset = asset.AssetCatalogRequestBus(
         bus.Broadcast, "GetAssetIdByPath", material_asset_path, math.Uuid(), False)
     ComponentTests(
@@ -263,8 +226,11 @@ def run():
     # Radius Weight Modifier Component
     ComponentTests("Radius Weight Modifier")
 
-    # Spot Light Component
+    # Light Component
     ComponentTests("Light")
+
+    # Display Mapper Component
+    ComponentTests("Display Mapper")
 
 
 if __name__ == "__main__":
