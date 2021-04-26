@@ -101,20 +101,14 @@ void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingD
         {
 			const float3 Directions[6] = {float3(0,0,1), float3(0,0,-1), float3(0,1,0), float3(0,-1,0), float3(1,0,0), float3(-1,0,0)};					
 			const int shadowDirectionIndex = GetShadowDirectionIndex(surface.position, light.m_position);
-			
-			{
-			
-				litRatio *= ProjectedShadow::GetVisibility(
-					GetShadowIndex(light, shadowDirectionIndex),
+			const int shadowIndex = GetShadowIndex(light, shadowDirectionIndex);
+			litRatio *= ProjectedShadow::GetVisibility(
+					shadowIndex,
 					light.m_position,
 					surface.position,
 					Directions[shadowDirectionIndex],
 					surface.normal);
-			
-			}
-			
-             
-			 /*
+						
             // Use backShadowRatio to carry thickness from shadow map for thick mode
             backShadowRatio = 1.0 - litRatio;
             if (o_transmission_mode == TransmissionMode::ThickObject)
@@ -122,7 +116,7 @@ void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingD
                 backShadowRatio = ProjectedShadow::GetThickness(
                     shadowIndex,
                     surface.position);
-            }		*/
+            }		
 			
 		}
 

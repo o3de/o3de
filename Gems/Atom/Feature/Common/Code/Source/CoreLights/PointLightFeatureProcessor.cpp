@@ -234,7 +234,7 @@ namespace AZ
                 ProjectedShadowFeatureProcessorInterface::ProjectedShadowDescriptor desc = m_shadowFeatureProcessor->GetShadowProperties(shadowId);
                 Vector3 position = Vector3::CreateFromFloat3(pointLight.m_position.data());
 
-                desc.m_fieldOfViewYRadians = 1.58825f;
+                desc.m_fieldOfViewYRadians = DegToRad(90.5f); // Make it slightly larger than 90 degrees to avoid artifacts on the boundary between 2 cubemap faces
                 desc.m_transform = Transform::CreateLookAt(position, position + m_directions[i]);
                 desc.m_aspectRatio = 1.0f;
                 desc.m_nearPlaneDistance = 0.1f;
