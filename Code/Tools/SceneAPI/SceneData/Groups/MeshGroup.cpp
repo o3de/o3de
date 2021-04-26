@@ -98,9 +98,9 @@ namespace AZ
                             ->Attribute("AutoExpand", true)
                             ->Attribute(Edit::Attributes::NameLabelOverride, "")
                         ->DataElement(AZ_CRC("ManifestName", 0x5215b349), &MeshGroup::m_name, "Name mesh",
-                            "Name the mesh as you want it to appear in the Lumberyard Asset Browser.")
+                            "Name the mesh as you want it to appear in the Open 3D Engine Asset Browser.")
                             ->Attribute("FilterType", DataTypes::IMeshGroup::TYPEINFO_Uuid())
-                        ->DataElement(Edit::UIHandlers::Default, &MeshGroup::m_nodeSelectionList, "Select meshes", "Select 1 or more meshes to add to this asset in the Lumberyard Asset Browser.")
+                        ->DataElement(Edit::UIHandlers::Default, &MeshGroup::m_nodeSelectionList, "Select meshes", "Select 1 or more meshes to add to this asset in the Open 3D Engine Asset Browser.")
                             ->Attribute("FilterName", "meshes")
                             ->Attribute("FilterType", DataTypes::IMeshData::TYPEINFO_Uuid())
                         ->DataElement(Edit::UIHandlers::Default, &MeshGroup::m_rules, "", "Add or remove rules to fine-tune the export process.")

@@ -40,7 +40,7 @@ def C4982800_PhysXColliderShape_CanBeSelected():
      6) Verify they have been changed
 
     Note:
-     - This test file must be called from the Lumberyard Editor command terminal
+     - This test file must be called from the Open 3D Engine Editor command terminal
      - Any passed and failed tests are written to the Editor.log file.
             Parsing the file or running a log_monitor are required to observe the test results.
 
@@ -50,11 +50,11 @@ def C4982800_PhysXColliderShape_CanBeSelected():
     import ImportPathHelper as imports
 
     imports.init()
-    from utils import Report
-    from utils import TestHelper as helper
-    from editor_entity_utils import EditorEntity as Entity
+    from editor_python_test_tools.editor_entity_utils import EditorEntity as Entity
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
-    # Lumberyard Imports
+    # Open 3D Engine Imports
     import azlmbr.math as math
 
     SPHERE_SHAPETYPE_ENUM = 0
@@ -98,5 +98,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C4982800_PhysXColliderShape_CanBeSelected)

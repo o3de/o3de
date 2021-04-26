@@ -73,11 +73,20 @@ namespace ScriptCanvasEditor
     {
         ui->setupUi(this);
 
+        ui->variablePalette->SetActiveScene(scriptCanvasId);
+
         ui->searchFilter->setClearButtonEnabled(true);
         QObject::connect(ui->searchFilter, &QLineEdit::textChanged, this, &SlotTypeSelectorWidget::OnQuickFilterChanged);
         QObject::connect(ui->slotName, &QLineEdit::returnPressed, this, &SlotTypeSelectorWidget::OnReturnPressed);
         QObject::connect(ui->slotName, &QLineEdit::textChanged, this, &SlotTypeSelectorWidget::OnNameChanged);
         QObject::connect(ui->variablePalette, &QTableView::clicked, this, [this]() { ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true); });
+        QObject::connect(ui->variablePalette, &VariablePaletteTableView::CreateNamedVariable, this, [this](const AZStd::string& variableName, const ScriptCanvas::Data::Type& variableType)
+            {
+                // only emitted on container types
+                OnCreateVariable(variableType);
+                OnNameChanged(variableName.c_str());
+                accept();
+            });
 
         // Tell the widget to auto create our context menu, for now
         setContextMenuPolicy(Qt::ActionsContextMenu);
@@ -197,6 +206,7 @@ namespace ScriptCanvasEditor
         const AZStd::unordered_map<ScriptCanvas::VariableId, ScriptCanvas::GraphVariable>* properties = nullptr;
         ScriptCanvas::GraphVariableManagerRequestBus::EventResult(properties, m_scriptCanvasId, &ScriptCanvas::GraphVariableManagerRequests::GetVariables);
 
+        int numInUse = 0;
         if (properties)
         {
             for (const auto& variablePair : (*properties))
@@ -205,7 +215,7 @@ namespace ScriptCanvasEditor
                 if (testName.compare(variablePair.second.GetVariableName()) == 0)
                 {
                     nameInUse = true;
-                    break;
+                    ++numInUse;
                 }
             }
         }
@@ -214,7 +224,7 @@ namespace ScriptCanvasEditor
 
         if (nameInUse)
         {
-            m_slotName.append(" (duplicate)");
+            m_slotName.append(AZStd::string::format(" (%d)", numInUse));
             ui->slotName->setText(m_slotName.c_str());
         }
     }

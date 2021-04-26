@@ -10,7 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Pytest fixture for standardizing key external project file locations.
 Houses a mock workspace for the external project. Only has enough information
-to satisfy a ly_test_tools.lumberyard.asset_processor.AssetProcessor object.
+to satisfy a ly_test_tools.o3de.asset_processor.AssetProcessor object.
 
 """
 

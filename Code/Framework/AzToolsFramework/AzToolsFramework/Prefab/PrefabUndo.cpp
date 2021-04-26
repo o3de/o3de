@@ -35,8 +35,8 @@ namespace AzToolsFramework
         }
 
         void PrefabUndoInstance::Capture(
-            PrefabDom& initialState,
-            PrefabDom& endState,
+            const PrefabDom& initialState,
+            const PrefabDom& endState,
             const TemplateId& templateId)
         {
             m_templateId = templateId;
@@ -79,13 +79,16 @@ namespace AzToolsFramework
 
             //generate undo/redo patches
             m_instanceToTemplateInterface->GeneratePatch(m_redoPatch, initialState, endState);
+            m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(m_redoPatch, entityId);
             m_instanceToTemplateInterface->GeneratePatch(m_undoPatch, endState, initialState);
+            m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(m_undoPatch, entityId);
         }
 
         void PrefabUndoEntityUpdate::Undo()
         {
-            bool isPatchApplicationSuccessful =
-                m_instanceToTemplateInterface->PatchEntityInTemplate(m_undoPatch, m_entityAlias, m_templateId);
+            [[maybe_unused]] bool isPatchApplicationSuccessful =
+                m_instanceToTemplateInterface->PatchTemplate(m_undoPatch, m_templateId);
+
             AZ_Error(
                 "Prefab", isPatchApplicationSuccessful,
                 "Applying the undo patch on the entity with alias '%s' in template with id '%llu' was unsuccessful", m_entityAlias.c_str(),
@@ -94,8 +97,9 @@ namespace AzToolsFramework
 
         void PrefabUndoEntityUpdate::Redo()
         {
-            bool isPatchApplicationSuccessful =
-                m_instanceToTemplateInterface->PatchEntityInTemplate(m_redoPatch, m_entityAlias, m_templateId);
+            [[maybe_unused]] bool isPatchApplicationSuccessful =
+                m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId);
+
             AZ_Error(
                 "Prefab", isPatchApplicationSuccessful,
                 "Applying the redo patch on the entity with alias '%s' in template with id '%llu' was unsuccessful", m_entityAlias.c_str(),
@@ -120,7 +124,7 @@ namespace AzToolsFramework
             const TemplateId& targetId,
             const TemplateId& sourceId,
             const InstanceAlias& instanceAlias,
-            const PrefabDomReference linkDom,
+            PrefabDomReference linkDom,
             const LinkId linkId)
         {
             m_targetId = targetId;

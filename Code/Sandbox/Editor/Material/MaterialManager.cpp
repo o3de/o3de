@@ -537,7 +537,7 @@ void CMaterialManager::ReloadDirtyMaterials()
 
         allMaterials.reserve(mtlCount);
 
-        uint32 mtlCountPrev = mtlCount;
+        [[maybe_unused]] uint32 mtlCountPrev = mtlCount;
         runtimeMaterialManager->GetLoadedMaterials(&allMaterials, mtlCount);
         AZ_Assert(mtlCountPrev == mtlCount && mtlCount == allMaterials.size(), "It appears GetLoadedMaterials was not used correctly.");
 
@@ -550,7 +550,6 @@ void CMaterialManager::ReloadDirtyMaterials()
             }
         }
     }
-
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -665,7 +664,7 @@ void CMaterialManager::AddSourceFileOpeners(const char* fullSourceFileName, [[ma
             }
         };
 
-        openers.push_back({ "Lumberyard_MaterialEditor", "Open In Material Editor...", QIcon(), materialCallback });
+        openers.push_back({ "O3DE_MaterialEditor", "Open In Material Editor...", QIcon(), materialCallback });
     }
 }
 

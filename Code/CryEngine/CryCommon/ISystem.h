@@ -1470,7 +1470,7 @@ struct ISystem
     virtual int GetApplicationInstance() = 0;
 
     // Summary:
-    //   Get log index of the currently running lumberyard application. (0 = first instance, 1 = second instance, etc)
+    //   Get log index of the currently running Open 3D Engine application. (0 = first instance, 1 = second instance, etc)
     virtual int GetApplicationLogInstance(const char* logFilePath) = 0;
 
     // Summary:

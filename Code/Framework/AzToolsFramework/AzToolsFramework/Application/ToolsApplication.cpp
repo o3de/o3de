@@ -92,7 +92,7 @@ namespace AzToolsFramework
     namespace Internal
     {
         static const char* s_engineConfigFileName = "engine.json";
-        static const char* s_engineConfigEngineVersionKey = "LumberyardVersion";
+        static const char* s_engineConfigEngineVersionKey = "O3DEVersion";
 
         static const char* s_startupLogWindow = "Startup";
 
@@ -224,112 +224,6 @@ namespace AzToolsFramework
 
     } // Internal
 
-#define AZ_MAX_ENGINE_VERSION_LEN   64
-    // Private Implementation class to manage the engine root and version
-    // Note: We are not using any AzCore classes because the ToolsApplication
-    // initialization happens early on, before the Allocators get instantiated,
-    // so we are using Qt privately instead
-    class ToolsApplication::EngineConfigImpl
-    {
-    private:
-        friend class ToolsApplication;
-
-        typedef QMap<QString, QString> EngineJsonMap;
-
-        EngineConfigImpl(const char* logWindow, const char* fileName)
-            : m_logWindow(logWindow)
-            , m_fileName(fileName)
-        {
-            m_engineRoot[0] = '\0';
-            m_engineVersion[0] = '\0';
-        }
-
-        char            m_engineRoot[AZ_MAX_PATH_LEN];
-        char            m_engineVersion[AZ_MAX_ENGINE_VERSION_LEN];
-        EngineJsonMap   m_engineConfigMap;
-        const char*     m_logWindow;
-        const char*     m_fileName;
-
-
-        // Read an engine configuration into a map of key/value pairs
-        bool ReadEngineConfigIntoMap(QString engineJsonPath, EngineJsonMap& engineJsonMap)
-        {
-            QFile engineJsonFile(engineJsonPath);
-            if (!engineJsonFile.open(QIODevice::ReadOnly | QIODevice::Text))
-            {
-                AZ_Warning(m_logWindow, false, "Unable to open file '%s' in the current root directory", engineJsonPath.toUtf8().data());
-                return false;
-            }
-
-            QByteArray engineJsonData = engineJsonFile.readAll();
-            engineJsonFile.close();
-            QJsonDocument engineJsonDoc(QJsonDocument::fromJson(engineJsonData));
-            if (engineJsonDoc.isNull())
-            {
-                AZ_Warning(m_logWindow, false, "Unable to read file '%s' in the current root directory", engineJsonPath.toUtf8().data());
-                return false;
-            }
-
-            QJsonObject engineJsonRoot = engineJsonDoc.object();
-            for (const QString& configKey : engineJsonRoot.keys())
-            {
-                QJsonValue configValue = engineJsonRoot[configKey];
-                if (configValue.isString() || configValue.isDouble())
-                {
-                    // Only map strings and numbers, ignore every other type
-                    engineJsonMap[configKey] = configValue.toString();
-                }
-                else
-                {
-                    AZ_Warning(m_logWindow, false, "Ignoring key '%s' from '%s', unsupported type.", configKey.toUtf8().data(), engineJsonPath.toUtf8().data());
-                }
-            }
-            return true;
-        }
-
-        // Initialize the engine config object based on the current
-        bool Initialize(const char* currentEngineRoot)
-        {
-            // Start with the app root as the engine root (legacy), but check to see if the engine root
-            // is external to the app root
-            azstrncpy(m_engineRoot, AZ_ARRAY_SIZE(m_engineRoot), currentEngineRoot, strlen(currentEngineRoot) + 1);
-
-            // From the appRoot, check and see if we can read any external engine reference in engine.json
-            QString engineJsonFileName = QString(m_fileName);
-            QString engineJsonFilePath = QDir(currentEngineRoot).absoluteFilePath(engineJsonFileName);
-
-            // From the appRoot, check and see if we can read any external engine reference in engine.json
-            if (!QFile::exists(engineJsonFilePath))
-            {
-                AZ_Warning(m_logWindow, false, "Unable to find '%s' in the current app root directory.", m_fileName);
-                return false;
-            }
-            if (!ReadEngineConfigIntoMap(engineJsonFilePath, m_engineConfigMap))
-            {
-                AZ_Warning(m_logWindow, false, "Defaulting root engine path to '%s'", currentEngineRoot);
-                return false;
-            }
-
-            // Read in the local engine version value
-            auto localEngineVersionValue = m_engineConfigMap.find(QString(AzToolsFramework::Internal::s_engineConfigEngineVersionKey));
-            QString localEngineVersion(localEngineVersionValue.value());
-            azstrncpy(m_engineVersion, AZ_ARRAY_SIZE(m_engineVersion), localEngineVersion.toUtf8().data(), localEngineVersion.length() + 1);
-
-            return true;
-        }
-
-        const char* GetEngineRoot() const
-        {
-            return m_engineRoot;
-        }
-
-        const char* GetEngineVersion() const
-        {
-            return m_engineVersion;
-        }
-    };
-
-
     ToolsApplication::ToolsApplication(int* argc, char*** argv)
         : AzFramework::Application(argc, argv)
         , m_selectionBounds(AZ::Aabb())
@@ -339,7 +233,6 @@ namespace AzToolsFramework
         , m_isInIsolationMode(false)
     {
         ToolsApplicationRequests::Bus::Handler::BusConnect();
-        m_engineConfigImpl.reset(new ToolsApplication::EngineConfigImpl(AzToolsFramework::Internal::s_startupLogWindow, AzToolsFramework::Internal::s_engineConfigFileName));
 
         m_undoCache.RegisterToUndoCacheInterface();
     }
@@ -391,20 +284,11 @@ namespace AzToolsFramework
     void ToolsApplication::Start(const Descriptor& descriptor, const StartupParameters& startupParameters/* = StartupParameters()*/)
     {
         Application::Start(descriptor, startupParameters);
-        InitializeEngineConfig();
 
         m_editorEntityManager.Start();
 
         m_editorEntityAPI = AZ::Interface<EditorEntityAPI>::Get();
         AZ_Assert(m_editorEntityAPI, "ToolsApplication - Could not retrieve instance of EditorEntityAPI");
-    }
-
-    void ToolsApplication::InitializeEngineConfig()
-    {
-        if (!m_engineConfigImpl->Initialize(GetEngineRoot()))
-        {
-            AZ_Warning(AzToolsFramework::Internal::s_startupLogWindow, false, "Defaulting engine root path to '%s'", GetEngineRoot());
-        }
     }
 
     void ToolsApplication::StartCommon(AZ::Entity* systemEntity)
@@ -1830,16 +1714,6 @@ namespace AzToolsFramework
     bool ToolsApplication::IsEditorInIsolationMode()
     {
         return m_isInIsolationMode;
-    }
-
-    const char* ToolsApplication::GetEngineRootPath() const
-    {
-        return m_engineConfigImpl->GetEngineRoot();
-    }
-
-    const char* ToolsApplication::GetEngineVersion() const
-    {
-        return m_engineConfigImpl->GetEngineVersion();
     }
 
     void ToolsApplication::CreateAndAddEntityFromComponentTags(const AZStd::vector<AZ::Crc32>& requiredTags, const char* entityName)

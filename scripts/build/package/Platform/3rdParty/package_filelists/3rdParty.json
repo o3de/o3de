@@ -2,8 +2,7 @@
     "@3rdParty": {
         "3rdParty.txt": "#include",
         "AWS/AWSNativeSDK/1.7.167-az.2/**": "#include",
-        "AWS/GameLift/3.4.0/**": "#include",
-        "civetweb/civetweb-20160922-az.2/**": "#include",
+        "CMake/3.19.1/**": "#include",
         "DirectXShaderCompiler/1.0.1-az.1/**": "#include",
         "DirectXShaderCompiler/2020.08.07/**": "#include",
         "DirectXShaderCompiler/5.0.0-az/**": "#include",
@@ -13,7 +12,6 @@
         "FbxSdk/2016.1.2-az.1/**": "#include",
         "libav/11.7/**": "#include",
         "OpenSSL/1.1.1b-noasm-az/**": "#include",
-
         "Qt/5.15.1.2-az/**": "#include",
         "RadTelemetry/3.5.0.17/**": "#include",
         "tiff/3.9.5-az.3/**": "#include",

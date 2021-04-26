@@ -277,6 +277,7 @@ namespace PhysX
             force.Deactivate();
         }
 
+        m_nonUniformScaleChangedHandler.Disconnect();
         AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
         EditorComponentBase::Deactivate();
     }
@@ -422,12 +423,11 @@ namespace PhysX
             AZ::ConstSplinePtr splinePtr = nullptr;
             LmbrCentral::SplineComponentRequestBus::EventResult(splinePtr, GetEntityId()
                 , &LmbrCentral::SplineComponentRequestBus::Events::GetSpline);
-            AZ::Entity* entity = GetEntity();
             AZ_Warning("PhysX EditorForceRegionComponent"
                 , splinePtr!=nullptr
                 , "Please add spline shape for force region in entity <%s: %s>."
-                , entity->GetName().c_str()
-                , entity->GetId().ToString().c_str());
+                , GetEntity()->GetName().c_str()
+                , GetEntity()->GetId().ToString().c_str());
         }
 
         ForceRegionNotificationBus::Broadcast(

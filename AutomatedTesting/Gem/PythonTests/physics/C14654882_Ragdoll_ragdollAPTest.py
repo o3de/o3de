@@ -65,7 +65,7 @@ def C14654882_Ragdoll_ragdollAPTest():
         5.3) Search the recorded lines for an Unexpected Line
 
     Note:
-    - This test file must be called from the Lumberyard Editor command terminal
+    - This test file must be called from the Open 3D Engine Editor command terminal
     - Any passed and failed tests are written to the Editor.log file.
         Parsing the file or running a log_monitor are required to observe the test results.
 
@@ -78,9 +78,8 @@ def C14654882_Ragdoll_ragdollAPTest():
 
     imports.init()
 
-
-    from utils import TestHelper as helper
-    from utils import Report
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     helper.init_idle()
 
@@ -137,5 +136,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C14654882_Ragdoll_ragdollAPTest)

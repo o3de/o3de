@@ -16,7 +16,7 @@ import pytest
 # Bail on the test if ly_test_tools doesn't exist.
 pytest.importorskip('ly_test_tools')
 
-import automatedtesting_shared.hydra_test_utils as hydra
+import editor_python_test_tools.hydra_test_utils as hydra
 import ly_test_tools.environment.file_system as file_system
 
 test_directory = os.path.join(os.path.dirname(__file__), 'EditorScripts')
@@ -34,18 +34,18 @@ class TestMeshBlocker(object):
 
         def teardown():
             # delete temp level
-            file_system.delete([os.path.join(workspace.paths.dev(), project, "Levels", level)], True, True)
+            file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
 
         # Setup - add the teardown finalizer
         request.addfinalizer(teardown)
         # Make sure the temp level doesn't already exist
-        file_system.delete([os.path.join(workspace.paths.dev(), project, "Levels", level)], True, True)
+        file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
 
     """
     C3980834: A simple Vegetation Blocker Mesh can be created
     """
     @pytest.mark.test_case_id("C3980834")
-    @pytest.mark.SUITE_main
+    @pytest.mark.SUITE_periodic
     def test_MeshBlocker_InstancesBlockedByMesh(self, request, editor, level, launcher_platform):
         expected_lines = [
             "'Instance Spawner' created",
@@ -68,14 +68,14 @@ class TestMeshBlocker(object):
     C4766030: Mesh Height Percent Min/Max values can be set to fine tune the blocked area
     """
     @pytest.mark.test_case_id("C4766030")
-    @pytest.mark.SUITE_main
+    @pytest.mark.SUITE_periodic
     def test_MeshBlocker_InstancesBlockedByMeshHeightTuning(self, request, editor, level, launcher_platform):
         expected_lines = [
             "'Instance Spawner' created",
             "'Surface Entity' created",
             "'Blocker Entity' created",
             "Blocker Entity Configuration|Mesh Height Percent Max: SUCCESS",
-            "instance count validation: True (found=117, expected=117)",
+            "instance count validation: True (found=127, expected=127)",
             "MeshBlocker_InstancesBlockedByMeshHeightTuning:  result=SUCCESS",
         ]
 

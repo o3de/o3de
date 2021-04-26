@@ -46,7 +46,7 @@ def run():
      7) Enter GameMode and check for warnings
 
     Note:
-     - This test file must be called from the Lumberyard Editor command terminal
+     - This test file must be called from the Open 3D Engine Editor command terminal
      - Any passed and failed tests are written to the Editor.log file.
         Parsing the file or running a log_monitor are required to observe the test results.
 
@@ -59,17 +59,17 @@ def run():
     import ImportPathHelper as imports
 
     imports.init()
-    from utils import Report
-    from utils import TestHelper as helper
-    from utils import Tracer
-    from editor_entity_utils import EditorEntity as Entity
+    from editor_python_test_tools.editor_entity_utils import EditorEntity as Entity
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
+    from editor_python_test_tools.utils import Tracer
     from asset_utils import Asset
 
-    # Lumberyard Imports
+    # Open 3D Engine Imports
     import azlmbr.asset as azasset
 
     # Asset paths
-    STATIC_MESH = os.path.join("assets", "c14861504_rendermeshasset_withnopxasset", "test_asset.cgf")
+    STATIC_MESH = os.path.join("assets", "c14861504_rendermeshasset_withnopxasset", "test_asset.azmodel")
 
     helper.init_idle()
     # 1) Load the empty level
@@ -85,8 +85,8 @@ def run():
 
     # 4) Assign a render mesh asset to Mesh component (the fbx mesh having both Static mesh and PhysX collision Mesh)
     mesh_asset = Asset.find_asset_by_path(STATIC_MESH)
-    mesh_component.set_component_property_value("MeshComponentRenderNode|Mesh asset", mesh_asset.id)
-    mesh_asset.id = mesh_component.get_component_property_value("MeshComponentRenderNode|Mesh asset")
+    mesh_component.set_component_property_value("Controller|Configuration|Mesh Asset", mesh_asset.id)
+    mesh_asset.id = mesh_component.get_component_property_value("Controller|Configuration|Mesh Asset")
     Report.result(Tests.assign_mesh_asset, mesh_asset.get_path() == STATIC_MESH.replace(os.sep, "/"))
 
     # 5) Add PhysX Collider component

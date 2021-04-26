@@ -17,6 +17,7 @@
 #include <AzCore/JSON/pointer.h>
 #include <AzCore/JSON/prettywriter.h>
 #include <AzCore/JSON/writer.h>
+#include <AzCore/PlatformId/PlatformDefaults.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Settings/CommandLine.h>
 #include <AzCore/std/string/conversions.h>
@@ -30,18 +31,6 @@
 
 namespace AZ::Internal
 {
-    AZ::IO::FixedMaxPath GetExecutableDirectory()
-    {
-        AZStd::fixed_string<AZ::IO::MaxPathLength> value;
-
-        // Binary folder
-        AZ::Utils::ExecutablePathResult pathResult = Utils::GetExecutableDirectory(value.data(), value.capacity());
-        // Update the size value of the executable directory fixed string to correctly be the length of the null-terminated string stored within it
-        value.resize_no_construct(AZStd::char_traits<char>::length(value.data()));
-
-        return value;
-    }
-
     AZ::SettingsRegistryInterface::FixedValueString GetEngineMonikerForProject(
         SettingsRegistryInterface& settingsRegistry, const AZ::IO::FixedMaxPath& projectPath)
     {
@@ -144,23 +133,14 @@ namespace AZ::Internal
 
     AZ::IO::FixedMaxPath ScanUpRootLocator(AZStd::string_view rootFileToLocate)
     {
-
-        AZStd::fixed_string<AZ::IO::MaxPathLength> executableDir;
-        if (Utils::GetExecutableDirectory(executableDir.data(), executableDir.capacity()) == Utils::ExecutablePathResult::Success)
-        {
-            // Update the size value of the executable directory fixed string to correctly be the length of the null-terminated string
-            // stored within it
-            executableDir.resize_no_construct(AZStd::char_traits<char>::length(executableDir.data()));
-        }
-
-        AZ::IO::FixedMaxPath engineRootCandidate{ executableDir };
+        AZ::IO::FixedMaxPath rootCandidate{ AZ::Utils::GetExecutableDirectory() };
 
         bool rootPathVisited = false;
         do
         {
-            if (AZ::IO::SystemFile::Exists((engineRootCandidate / rootFileToLocate).c_str()))
+            if (AZ::IO::SystemFile::Exists((rootCandidate / rootFileToLocate).c_str()))
             {
-                return engineRootCandidate;
+                return rootCandidate;
             }
 
             // Note for posix filesystems the parent directory of '/' is '/' and for windows
@@ -168,38 +148,69 @@ namespace AZ::Internal
 
             // Validate that the parent directory isn't itself, that would imply
             // that it is the filesystem root path
-            AZ::IO::PathView parentPath = engineRootCandidate.ParentPath();
-            rootPathVisited = (engineRootCandidate == parentPath);
+            AZ::IO::PathView parentPath = rootCandidate.ParentPath();
+            rootPathVisited = (rootCandidate == parentPath);
             // Recurse upwards one directory
-            engineRootCandidate = AZStd::move(parentPath);
+            rootCandidate = AZStd::move(parentPath);
 
         } while (!rootPathVisited);
 
         return {};
     }
 
+    void InjectSettingToCommandLineFront(AZ::SettingsRegistryInterface& settingsRegistry,
+        AZStd::string_view path, AZStd::string_view value)
+    {
+        AZ::CommandLine commandLine;
+        AZ::SettingsRegistryMergeUtils::GetCommandLineFromRegistry(settingsRegistry, commandLine);
+        AZ::CommandLine::ParamContainer paramContainer;
+        commandLine.Dump(paramContainer);
+
+        auto projectPathOverride = AZStd::string::format(R"(--regset="%.*s=%.*s")",
+            aznumeric_cast<int>(path.size()), path.data(), aznumeric_cast<int>(value.size()), value.data());
+        paramContainer.emplace(paramContainer.begin(), AZStd::move(projectPathOverride));
+        commandLine.Parse(paramContainer);
+        AZ::SettingsRegistryMergeUtils::StoreCommandLineToRegistry(settingsRegistry, commandLine);
+    }
 } // namespace AZ::Internal
 
 namespace AZ::SettingsRegistryMergeUtils
 {
+    constexpr AZStd::string_view InternalScanUpEngineRootKey{ "/O3DE/Settings/Internal/engine_root_scan_up_path" };
+    constexpr AZStd::string_view InternalScanUpProjectRootKey{ "/O3DE/Settings/Internal/project_root_scan_up_path" };
+
     AZ::IO::FixedMaxPath FindEngineRoot(SettingsRegistryInterface& settingsRegistry)
     {
         AZ::IO::FixedMaxPath engineRoot;
-
         // This is the 'external' engine root key, as in passed from command-line or .setreg files.
         auto engineRootKey = SettingsRegistryInterface::FixedValueString::format("%s/engine_path", BootstrapSettingsRootKey);
+
+        // Step 1 Run the scan upwards logic once to find the location of the engine.json if it exist
+        // Once this step is run the {InternalScanUpEngineRootKey} is set in the Settings Registry
+        // to have this scan logic only run once InternalScanUpEngineRootKey the supplied registry
+        if (settingsRegistry.GetType(InternalScanUpEngineRootKey) == SettingsRegistryInterface::Type::NoType)
+        {
+            // We can scan up from exe directory to find engine.json, use that for engine root if it exists.
+            engineRoot = Internal::ScanUpRootLocator("engine.json");
+            // Set the {InternalScanUpEngineRootKey} to make sure this code path isn't called again for this settings registry
+            settingsRegistry.Set(InternalScanUpEngineRootKey, engineRoot.Native());
+            if (!engineRoot.empty())
+            {
+                settingsRegistry.Set(engineRootKey, engineRoot.Native());
+                // Inject the engine root into the front of the command line settings
+                Internal::InjectSettingToCommandLineFront(settingsRegistry, engineRootKey, engineRoot.Native());
+                return engineRoot;
+            }
+        }
+
+        // Step 2 check if the engine_path key has been supplied
         if (settingsRegistry.Get(engineRoot.Native(), engineRootKey); !engineRoot.empty())
         {
             return engineRoot;
         }
 
-        // We can scan up from exe directory to find engine.json, use that for engine root if it exists.
-        if (engineRoot = Internal::ScanUpRootLocator("engine.json"); !engineRoot.empty())
-        {
-            settingsRegistry.Set(engineRootKey, engineRoot.c_str());
-            return engineRoot;
-        }
-
+        // Step 3 locate the project root and attempt to find the engine root using the registered engine
+        // for the project in the project.json file
         AZ::IO::FixedMaxPath projectRoot = FindProjectRoot(settingsRegistry);
         if (projectRoot.empty())
         {
@@ -219,16 +230,30 @@ namespace AZ::SettingsRegistryMergeUtils
     AZ::IO::FixedMaxPath FindProjectRoot(SettingsRegistryInterface& settingsRegistry)
     {
         AZ::IO::FixedMaxPath projectRoot;
-        // This is the 'external' project root key, as in passed from command-line or .setreg files.
-        auto projectRootKey = SettingsRegistryInterface::FixedValueString::format("%s/project_path", BootstrapSettingsRootKey);
-        if (settingsRegistry.Get(projectRoot.Native(), projectRootKey))
+        const auto projectRootKey = SettingsRegistryInterface::FixedValueString::format("%s/project_path", BootstrapSettingsRootKey);
+
+        // Step 1 Run the scan upwards logic once to find the location of the project.json if it exist
+        // Once this step is run the {InternalScanUpProjectRootKey} is set in the Settings Registry
+        // to have this scan logic only run once for the supplied registry
+        // SettingsRegistryInterface::GetType is used to check if a key is set
+        if (settingsRegistry.GetType(InternalScanUpProjectRootKey) == SettingsRegistryInterface::Type::NoType)
         {
-            return projectRoot;
+            projectRoot = Internal::ScanUpRootLocator("project.json");
+            // Set the {InternalScanUpProjectRootKey} to make sure this code path isn't called again for this settings registry
+            settingsRegistry.Set(InternalScanUpProjectRootKey, projectRoot.Native());
+            if (!projectRoot.empty())
+            {
+                settingsRegistry.Set(projectRootKey, projectRoot.c_str());
+                // Inject the project root into the front of the command line settings
+                Internal::InjectSettingToCommandLineFront(settingsRegistry, projectRootKey, projectRoot.Native());
+                return projectRoot;
+            }
         }
 
-        if (projectRoot = Internal::ScanUpRootLocator("project.json"); !projectRoot.empty())
+        // Step 2 Check the project-path key
+        // This is the project path root key, as in passed from command-line or .setreg files.
+        if (settingsRegistry.Get(projectRoot.Native(), projectRootKey))
         {
-            settingsRegistry.Set(projectRootKey, projectRoot.c_str());
             return projectRoot;
         }
 
@@ -475,52 +500,39 @@ namespace AZ::SettingsRegistryMergeUtils
     void MergeSettingsToRegistry_Bootstrap(SettingsRegistryInterface& registry)
     {
         ConfigParserSettings parserSettings;
-        parserSettings.m_commentPrefixFunc = [](AZStd::string_view line) -> AZStd::string_view
-        {
-            constexpr AZStd::string_view commentPrefixes[]{ "--", ";","#" };
-            for (AZStd::string_view commentPrefix : commentPrefixes)
-            {
-                if (size_t commentOffset = line.find(commentPrefix); commentOffset != AZStd::string_view::npos)
-                {
-                    return line.substr(0, commentOffset);
-                }
-            }
-            return line;
-        };
         parserSettings.m_registryRootPointerPath = BootstrapSettingsRootKey;
         MergeSettingsToRegistry_ConfigFile(registry, "bootstrap.cfg", parserSettings);
     }
 
     void MergeSettingsToRegistry_AddRuntimeFilePaths(SettingsRegistryInterface& registry)
     {
+        using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
         // Binary folder
-        AZ::IO::FixedMaxPath path = Internal::GetExecutableDirectory();
+        AZ::IO::FixedMaxPath path = AZ::Utils::GetExecutableDirectory();
         registry.Set(FilePathKey_BinaryFolder, path.LexicallyNormal().Native());
 
         // Engine root folder - corresponds to the @engroot@ and @devroot@ aliases
         AZ::IO::FixedMaxPath engineRoot = FindEngineRoot(registry);
         registry.Set(FilePathKey_EngineRootFolder, engineRoot.LexicallyNormal().Native());
 
-        constexpr size_t bufferSize = 64;
-        auto buffer = AZStd::fixed_string<bufferSize>::format("%s/project_path", BootstrapSettingsRootKey);
-
-        AZ::SettingsRegistryInterface::FixedValueString projectPathKey(buffer);
+        auto projectPathKey = FixedValueString::format("%s/project_path", BootstrapSettingsRootKey);
         SettingsRegistryInterface::FixedValueString projectPathValue;
         if (registry.Get(projectPathValue, projectPathKey))
         {
             // Cache folder
             // Get the name of the asset platform assigned by the bootstrap. First check for platform version such as "windows_assets"
             // and if that's missing just get "assets".
-            constexpr char platformName[] = AZ_TRAIT_OS_PLATFORM_CODENAME_LOWER;
-
-            SettingsRegistryInterface::FixedValueString assetPlatform;
-            buffer = AZStd::fixed_string<bufferSize>::format("%s/%s_assets", BootstrapSettingsRootKey, platformName);
-            AZStd::string_view assetPlatformKey(buffer);
-            if (!registry.Get(assetPlatform, assetPlatformKey))
+            FixedValueString assetPlatform;
+            if (auto assetPlatformKey = FixedValueString::format("%s/%s_assets", BootstrapSettingsRootKey, AZ_TRAIT_OS_PLATFORM_CODENAME_LOWER);
+                !registry.Get(assetPlatform, assetPlatformKey))
             {
-                buffer = AZStd::fixed_string<bufferSize>::format("%s/assets", BootstrapSettingsRootKey);
-                assetPlatformKey = AZStd::string_view(buffer);
+                assetPlatformKey = FixedValueString::format("%s/assets", BootstrapSettingsRootKey);
                 registry.Get(assetPlatform, assetPlatformKey);
+            }
+            if (assetPlatform.empty())
+            {
+                // Use the platform codename to retrieve the default asset platform value
+                assetPlatform = AZ::OSPlatformToDefaultAssetPlatform(AZ_TRAIT_OS_PLATFORM_CODENAME);
             }
 
             // Project path - corresponds to the @devassets@ alias
@@ -561,8 +573,7 @@ namespace AZ::SettingsRegistryMergeUtils
             {
                 // Cache: project root - no corresponding fileIO alias, but this is where the asset database lives.
                 // A registry override is accepted using the "project_cache_path" key.
-                buffer = AZStd::fixed_string<bufferSize>::format("%s/project_cache_path", BootstrapSettingsRootKey);
-                AZStd::string_view projectCacheRootOverrideKey(buffer);
+                auto projectCacheRootOverrideKey = FixedValueString::format("%s/project_cache_path", BootstrapSettingsRootKey);
                 // Clear path to make sure that the `project_cache_path` value isn't concatenated to the project path
                 path.clear();
                 if (registry.Get(path.Native(), projectCacheRootOverrideKey))
@@ -588,20 +599,38 @@ namespace AZ::SettingsRegistryMergeUtils
                 aznumeric_cast<int>(projectPathKey.size()), projectPathKey.data());
         }
 
-#if !AZ_TRAIT_USE_ASSET_CACHE_FOLDER
-        // Setup the cache and user paths for Platforms where the Asset Cache Folder isn't used
+#if !AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
+        // Setup the cache and user paths when to platform specific locations when running on non-host platforms
         path = engineRoot;
-        registry.Set(FilePathKey_CacheProjectRootFolder, path.LexicallyNormal().Native());
-        registry.Set(FilePathKey_CacheRootFolder, path.LexicallyNormal().Native());
-        registry.Set(FilePathKey_DevWriteStorage, path.LexicallyNormal().Native());
-        registry.Set(FilePathKey_ProjectUserPath, (path / "user").LexicallyNormal().Native());
-#endif // AZ_TRAIT_USE_ASSET_CACHE_FOLDER
+        if (AZStd::optional<AZ::IO::FixedMaxPathString> nonHostCacheRoot = Utils::GetDefaultAppRootPath();
+            nonHostCacheRoot)
+        {
+            registry.Set(FilePathKey_CacheProjectRootFolder, *nonHostCacheRoot);
+            registry.Set(FilePathKey_CacheRootFolder, *nonHostCacheRoot);
+        }
+        else
+        {
+            registry.Set(FilePathKey_CacheProjectRootFolder, path.LexicallyNormal().Native());
+            registry.Set(FilePathKey_CacheRootFolder, path.LexicallyNormal().Native());
+        }
+        if (AZStd::optional<AZ::IO::FixedMaxPathString> devWriteStorage = Utils::GetDevWriteStoragePath();
+            devWriteStorage)
+        {
+            registry.Set(FilePathKey_DevWriteStorage, *devWriteStorage);
+            registry.Set(FilePathKey_ProjectUserPath, *devWriteStorage);
+        }
+        else
+        {
+            registry.Set(FilePathKey_DevWriteStorage, path.LexicallyNormal().Native());
+            registry.Set(FilePathKey_ProjectUserPath, (path / "user").LexicallyNormal().Native());
+        }
+#endif // AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
     }
 
     void MergeSettingsToRegistry_TargetBuildDependencyRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
         const SettingsRegistryInterface::Specializations& specializations, AZStd::vector<char>* scratchBuffer)
     {
-        AZ::IO::FixedMaxPath mergePath = Internal::GetExecutableDirectory();
+        AZ::IO::FixedMaxPath mergePath = AZ::Utils::GetExecutableDirectory();
         if (!mergePath.empty())
         {
             registry.MergeSettingsFolder((mergePath / SettingsRegistryInterface::RegistryFolder).Native(),
@@ -801,6 +830,11 @@ namespace AZ::SettingsRegistryMergeUtils
             ++argumentIndex;
             commandLinePath.resize(commandLineRootSize);
         }
+
+        // This key is used allow Notification Handlers to know when the command line has been updated within the
+        // registry. The value itself is meaningless. The JSON path of {CommandLineValueChangedKey}
+        // being passed to the Notification Event Handler indicates that the command line has be updated
+        registry.Set(CommandLineValueChangedKey, true);
     }
 
     bool GetCommandLineFromRegistry(SettingsRegistryInterface& registry, AZ::CommandLine& commandLine)
@@ -817,8 +851,14 @@ namespace AZ::SettingsRegistryMergeUtils
                 }
                 else if (valueName == "Value" && !value.empty())
                 {
-                    m_arguments.push_back(value);
+                    // Make sure value types are in quotes in case they start with a command option prefix
+                    m_arguments.push_back(QuoteArgument(value));
                 }
+            }
+
+            AZStd::string QuoteArgument(AZStd::string_view arg)
+            {
+                return !arg.empty() ? AZStd::string::format(R"("%.*s")", aznumeric_cast<int>(arg.size()), arg.data()) : AZStd::string{ arg };
             }
 
             // The first parameter is skipped by the ComamndLine::Parse function so initialize
@@ -998,4 +1038,12 @@ namespace AZ::SettingsRegistryMergeUtils
 
         return visitor.Finalize();
     }
+
+    bool IsPathAncestorDescendantOrEqual(AZStd::string_view candidatePath, AZStd::string_view inputPath)
+    {
+        AZ::IO::PathView candidateView{ candidatePath, AZ::IO::PosixPathSeparator };
+        AZ::IO::PathView inputView{ inputPath, AZ::IO::PosixPathSeparator };
+        return inputView.empty() || candidateView.IsRelativeTo(inputView) || inputView.IsRelativeTo(candidateView);
+    }
+
 }

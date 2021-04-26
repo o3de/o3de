@@ -21,7 +21,7 @@ namespace Multiplayer
     // Forwards
     class NetBindComponent;
 
-    AZ_TYPE_SAFE_INTEGRAL(NetworkInputId, uint16_t);
+    AZ_TYPE_SAFE_INTEGRAL(ClientInputId, uint16_t);
 
     //! @class NetworkInput
     //! @brief A single networked client input command.
@@ -38,9 +38,13 @@ namespace Multiplayer
         NetworkInput(const NetworkInput&);
         NetworkInput& operator= (const NetworkInput&);
 
-        void SetNetworkInputId(NetworkInputId inputId);
-        NetworkInputId GetNetworkInputId() const;
-        NetworkInputId& ModifyNetworkInputId();
+        void SetClientInputId(ClientInputId inputId);
+        ClientInputId GetClientInputId() const;
+        ClientInputId& ModifyClientInputId();
+
+        void SetServerTimeMs(AZ::TimeMs serverTimeMs);
+        AZ::TimeMs GetServerTimeMs() const;
+        AZ::TimeMs& ModifyServerTimeMs();
 
         void AttachNetBindComponent(NetBindComponent* netBindComponent);
 
@@ -67,10 +71,11 @@ namespace Multiplayer
         void CopyInternal(const NetworkInput& rhs);
 
         MultiplayerComponentInputVector m_componentInputs;
-        NetworkInputId m_inputId = NetworkInputId{ 0 };
+        ClientInputId m_inputId = ClientInputId{ 0 };
+        AZ::TimeMs m_serverTimeMs = AZ::TimeMs{ 0 };
         ConstNetworkEntityHandle m_owner;
         bool m_wasAttached = false;
     };
 }
 
-AZ_TYPE_SAFE_INTEGRAL_SERIALIZEBINDING(Multiplayer::NetworkInputId);
+AZ_TYPE_SAFE_INTEGRAL_SERIALIZEBINDING(Multiplayer::ClientInputId);

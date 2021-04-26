@@ -21,6 +21,11 @@
 #include <QtCore/qnamespace.h>
 #include <QPoint>
 
+namespace AzFramework
+{
+    struct ScreenPoint;
+}
+
 namespace SandboxEditor
 {
     class LegacyViewportCameraControllerInstance final
@@ -30,6 +35,7 @@ namespace SandboxEditor
         explicit LegacyViewportCameraControllerInstance(AzFramework::ViewportId viewport);
 
         bool HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event) override;
+        void ResetInputChannels() override;
         void UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event) override;
 
     private:
@@ -45,14 +51,16 @@ namespace SandboxEditor
 
         AZ::RPI::ViewportContextPtr GetViewportContext();
 
-        bool HandleMouseMove(const QPoint& currentMousePos, const QPoint& previousMousePos);
+        bool HandleMouseMove(const AzFramework::ScreenPoint& currentMousePos, const AzFramework::ScreenPoint& previousMousePos);
         bool HandleMouseWheel(float zDelta);
         bool IsKeyDown(Qt::Key key) const;
+        void UpdateCursorCapture(bool shouldCaptureCursor);
 
         bool m_inRotateMode = false;
         bool m_inMoveMode = false;
         bool m_inOrbitMode = false;
         bool m_inZoomMode = false;
+        int m_totalMouseMoveDelta = 0;
         float m_orbitDistance = 10.f;
         float m_moveSpeed = 1.f;
         AZ::Vector3 m_orbitTarget = {};

@@ -187,7 +187,6 @@ namespace LmbrCentral
                 Handler<BehaviorSplineComponentNotificationBusHandler>();
 
             behaviorContext->EBus<SplineComponentRequestBus>("SplineComponentRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::Preview)
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                 ->Attribute(AZ::Edit::Attributes::Category, "Shape")
                 ->Attribute(AZ::Script::Attributes::Module, "shape")

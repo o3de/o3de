@@ -11,8 +11,6 @@
 
 set(FILES
     BuiltInPackages_android.cmake
-    civetweb_android.cmake
-    FreeType2_android.cmake
     VkValidation_android.cmake
     Wwise_android.cmake
 )

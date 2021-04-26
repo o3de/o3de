@@ -338,26 +338,39 @@ namespace AZ
             const RayTracingPipelineState* rayTracingPipelineState = static_cast<const RayTracingPipelineState*>(dispatchRaysItem.m_rayTracingPipelineState);
             commandList->SetComputeRootSignature(rayTracingPipelineState->GetGlobalRootSignature());
 
-            // we only bind resources for the GlobalSrg during the ray tracing dispatch call,
-            // the local root signatures and resources are bound by the GPU during the ray tracing operation
             const PipelineState* globalPipelineState = static_cast<const PipelineState*>(dispatchRaysItem.m_globalPipelineState);
             const PipelineLayout& globalPipelineLayout = globalPipelineState->GetPipelineLayout();              
-            const uint32_t srgBindingSlot = dispatchRaysItem.m_globalSrg->GetBindingSlot();
 
-            // retrieve binding
-            const size_t srgBindingIndex = globalPipelineLayout.GetIndexBySlot(srgBindingSlot);
-            RootParameterBinding binding = globalPipelineLayout.GetRootParameterBindingByIndex(srgBindingIndex);
-            const ShaderResourceGroup* globalSrg = static_cast<const ShaderResourceGroup*>(dispatchRaysItem.m_globalSrg);
-            const ShaderResourceGroupCompiledData& compiledData = globalSrg->GetCompiledData();
-
-            if (binding.m_resourceTable.IsValid())
+            // bind ShaderResourceGroups
+            for (uint32_t srgIndex = 0; srgIndex < dispatchRaysItem.m_shaderResourceGroupCount; ++srgIndex)
             {
-                GetCommandList()->SetComputeRootDescriptorTable(binding.m_resourceTable.GetIndex(), compiledData.m_gpuViewsDescriptorHandle);
-            }
+                const uint32_t srgBindingSlot = dispatchRaysItem.m_shaderResourceGroups[srgIndex]->GetBindingSlot();
 
-            if (binding.m_constantBuffer.IsValid())
-            {
-                GetCommandList()->SetComputeRootConstantBufferView(binding.m_constantBuffer.GetIndex(), compiledData.m_gpuConstantAddress);
+                // retrieve binding
+                const size_t srgBindingIndex = globalPipelineLayout.GetIndexBySlot(srgBindingSlot);
+                RootParameterBinding binding = globalPipelineLayout.GetRootParameterBindingByIndex(srgBindingIndex);
+                const ShaderResourceGroup* srg = static_cast<const ShaderResourceGroup*>(dispatchRaysItem.m_shaderResourceGroups[srgIndex]);
+                const ShaderResourceGroupCompiledData& compiledData = srg->GetCompiledData();
+
+                if (binding.m_resourceTable.IsValid())
+                {
+                    GetCommandList()->SetComputeRootDescriptorTable(binding.m_resourceTable.GetIndex(), compiledData.m_gpuViewsDescriptorHandle);
+                }
+
+                for (uint32_t unboundedArrayIndex = 0; unboundedArrayIndex < ShaderResourceGroupCompiledData::MaxUnboundedArrays; ++unboundedArrayIndex)
+                {
+                    if (binding.m_unboundedArrayResourceTables[unboundedArrayIndex].IsValid())
+                    {
+                        GetCommandList()->SetComputeRootDescriptorTable(
+                            binding.m_unboundedArrayResourceTables[unboundedArrayIndex].GetIndex(),
+                            compiledData.m_gpuUnboundedArraysDescriptorHandles[unboundedArrayIndex]);
+                    }
+                }
+
+                if (binding.m_constantBuffer.IsValid())
+                {
+                    GetCommandList()->SetComputeRootConstantBufferView(binding.m_constantBuffer.GetIndex(), compiledData.m_gpuConstantAddress);
+                }
             }
 
             // set RayTracing pipeline state

@@ -177,7 +177,7 @@ namespace NvCloth
         m_actorClothColliders = ActorClothColliders::Create(m_entityId);
 
         // It will return a valid instance if it's an actor with skinning data.
-        m_actorClothSkinning = ActorClothSkinning::Create(m_entityId, m_config.m_meshNode, m_cloth->GetParticles().size(), m_meshRemappedVertices);
+        m_actorClothSkinning = ActorClothSkinning::Create(m_entityId, m_meshNodeInfo, m_cloth->GetParticles().size(), m_meshRemappedVertices);
         m_numberOfClothSkinningUpdates = 0;
 
         m_clothConstraints = ClothConstraints::Create(
@@ -387,9 +387,14 @@ namespace NvCloth
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
 
+        if (!m_cloth)
+        {
+            return;
+        }
+
         // Calculate normals of the cloth particles (simplified mesh).
         AZStd::vector<AZ::Vector3> normals;
-        bool normalsCalculated =
+        [[maybe_unused]] bool normalsCalculated =
             AZ::Interface<ITangentSpaceHelper>::Get()->CalculateNormals(particles, m_cloth->GetInitialIndices(), normals);
         AZ_Assert(normalsCalculated, "Cloth component mesh failed to calculate normals.");
 
@@ -416,7 +421,7 @@ namespace NvCloth
         }
 
         // Calculate tangents and bitangents for the full mesh.
-        bool tangentsAndBitangentsCalculated =
+        [[maybe_unused]] bool tangentsAndBitangentsCalculated =
             AZ::Interface<ITangentSpaceHelper>::Get()->CalculateTangentsAndBitagents(
                 renderData.m_particles, m_meshClothInfo.m_indices,
                 m_meshClothInfo.m_uvs, renderData.m_normals,
@@ -443,10 +448,19 @@ namespace NvCloth
         const auto& renderTangents = renderData.m_tangents;
         const auto& renderBitangents = renderData.m_bitangents;
 
-        AZ::Data::Asset<AZ::RPI::ModelAsset> modelAsset;
-        AZ::Render::MeshComponentRequestBus::EventResult(modelAsset, m_entityId,
-            &AZ::Render::MeshComponentRequestBus::Events::GetModelAsset);
-        if (!modelAsset.GetId().IsValid())
+        // Since Atom has a 1:1 relation with between ModelAsset buffers and Model buffers,
+        // internally it created a new asset for the model instance. So it's important to
+        // get the asset from the model when we want to write to them, instead of getting the
+        // ModelAsset directly from the bus (which returns the original asset shared by all entities).
+        AZ::Data::Instance<AZ::RPI::Model> model;
+        AZ::Render::MeshComponentRequestBus::EventResult(model, m_entityId, &AZ::Render::MeshComponentRequestBus::Events::GetModel);
+        if (!model)
+        {
+            return;
+        }
+
+        AZ::Data::Asset<AZ::RPI::ModelAsset> modelAsset = model->GetModelAsset();
+        if (!modelAsset.IsReady())
         {
             return;
         }

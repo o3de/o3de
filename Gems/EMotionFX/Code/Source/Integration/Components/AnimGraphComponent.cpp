@@ -144,7 +144,6 @@ namespace EMotionFX
                 behaviorContext->Constant("InvalidParameterIndex", BehaviorConstant(static_cast<AZ::u32>(MCORE_INVALIDINDEX32)));
 
                 behaviorContext->EBus<AnimGraphComponentRequestBus>("AnimGraphComponentRequestBus")
-                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::Preview)
                     // General API
                     ->Event("FindParameterIndex", &AnimGraphComponentRequestBus::Events::FindParameterIndex)
                     ->Event("FindParameterName", &AnimGraphComponentRequestBus::Events::FindParameterName)
@@ -192,7 +191,6 @@ namespace EMotionFX
                 ;
 
                 behaviorContext->EBus<AnimGraphComponentNetworkRequestBus>("AnimGraphComponentNetworkRequestBus")
-                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                     ->Attribute(AZ::Script::Attributes::Category, "Animation")
                     ->Event("IsAssetReady", &AnimGraphComponentNetworkRequestBus::Events::IsAssetReady)
                     ->Event("HasSnapshot", &AnimGraphComponentNetworkRequestBus::Events::HasSnapshot)
@@ -348,13 +346,20 @@ namespace EMotionFX
 
         void AnimGraphComponent::CreateSnapshot(bool isAuthoritative)
         {
-            AZ_Error("EMotionFX", m_animGraphInstance, "Call create snapshot function only when anim graph is ready in this component.");
-            m_animGraphInstance->CreateSnapshot(isAuthoritative);
-            m_animGraphInstance->OnNetworkConnected();
+            if (m_animGraphInstance)
+            {
+                m_animGraphInstance->CreateSnapshot(isAuthoritative);
+                m_animGraphInstance->OnNetworkConnected();
 
-            // This will stop the MCore Job schedule update the actor instance and anim graph for authoritative entity.
-            // After doing so, we will have to update this actor manuelly in the networking update.
-            m_animGraphInstance->GetActorInstance()->SetIsEnabled(!isAuthoritative);
+                // This will stop the MCore Job schedule update the actor instance and anim graph for authoritative entity.
+                // After doing so, we will have to update this actor manually in the networking update.
+                m_animGraphInstance->GetActorInstance()->SetIsEnabled(!isAuthoritative);
+            }
+            else
+            {
+                AZ_Error("EMotionFX", false, "Cannot create snapshot as anim graph instance has not been created yet. "
+                    "Please make sure you selected an anim graph in the anim graph component.");
+            }
         }
 
         void AnimGraphComponent::SetActiveStates(const AZStd::vector<AZ::u32>& activeStates)
@@ -373,18 +378,36 @@ namespace EMotionFX
             }
         }
 
+        NodeIndexContainer AnimGraphComponent::s_emptyNodeIndexContainer = {};
         const NodeIndexContainer& AnimGraphComponent::GetActiveStates() const
         {
-            const AZStd::shared_ptr<AnimGraphSnapshot> snapshot = m_animGraphInstance->GetSnapshot();
-            AZ_Error("EMotionFX", snapshot, "Call GetActiveStates function but no snapshot is created for this instance.");
-            return snapshot->GetActiveNodes();
+            if (m_animGraphInstance)
+            {
+                const AZStd::shared_ptr<AnimGraphSnapshot> snapshot = m_animGraphInstance->GetSnapshot();
+                if (snapshot)
+                {
+                    AZ_Warning("EMotionFX", false, "Call GetActiveStates function but no snapshot is created for this instance.");
+                    return snapshot->GetActiveNodes();
+                }
+            }
+
+            return s_emptyNodeIndexContainer;
         }
 
+        MotionNodePlaytimeContainer AnimGraphComponent::s_emptyMotionNodePlaytimeContainer = {};
         const MotionNodePlaytimeContainer& AnimGraphComponent::GetMotionPlaytimes() const
         {
-            const AZStd::shared_ptr<AnimGraphSnapshot> snapshot = m_animGraphInstance->GetSnapshot();
-            AZ_Error("EMotionFX", snapshot, "Call GetActiveStates function but no snapshot is created for this instance.");
-            return snapshot->GetMotionNodePlaytimes();
+            if (m_animGraphInstance)
+            {
+                const AZStd::shared_ptr<AnimGraphSnapshot> snapshot = m_animGraphInstance->GetSnapshot();
+                if (snapshot)
+                {
+                    AZ_Warning("EMotionFX", false, "Call GetActiveStates function but no snapshot is created for this instance.");
+                    return snapshot->GetMotionNodePlaytimes();
+                }
+            }
+
+            return s_emptyMotionNodePlaytimeContainer;
         }
 
         void AnimGraphComponent::UpdateActorExternal(float deltatime)
@@ -451,7 +474,6 @@ namespace EMotionFX
                 AnimGraphInstancePostCreate();
 
                 // Apply parameter defaults.
-                EMotionFX::AnimGraph* animGraph = cfg.m_animGraphAsset.Get()->GetAnimGraph();
                 for (AZ::ScriptProperty* parameter : cfg.m_parameterDefaults.m_parameters)
                 {
                     const char* paramName = parameter->m_name.c_str();

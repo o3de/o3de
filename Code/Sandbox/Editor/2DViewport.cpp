@@ -20,7 +20,6 @@
 #include "2DViewport.h"
 #include "CryEditDoc.h"
 #include "DisplaySettings.h"
-#include "EditTool.h"
 #include "GameEngine.h"
 #include "Settings.h"
 #include "ViewManager.h"
@@ -384,18 +383,11 @@ void Q2DViewport::OnMouseMove(Qt::KeyboardModifiers modifiers, Qt::MouseButtons 
             CaptureMouse();
         }
 
-        QRect rc;
         // You can only scroll while the middle mouse button is down
         if (buttons & Qt::RightButton || buttons & Qt::MiddleButton)
         {
             if (modifiers & Qt::ShiftModifier)
             {
-                // Get the dimensions of the window
-                rc = rect();
-
-                int w = rc.right();
-                int h = rc.bottom();
-
                 // Zoom to mouse position.
                 float z = m_prevZoomFactor + (point.y() - m_RMouseDownPos.y()) * 0.02f;
                 SetZoom(z, m_RMouseDownPos);
@@ -481,8 +473,6 @@ void Q2DViewport::SetZoom(float fZoomFactor, const QPoint& center)
     {
         fZoomFactor = m_maxZoom;
     }
-
-    float prevz = GetZoomFactor();
 
     // Zoom to mouse position.
     float ofsx, ofsy;
@@ -831,12 +821,6 @@ void Q2DViewport::DrawGrid(DisplayContext& dc, bool bNoXNumbers)
         }
     }
 
-    int firstGridLineX = origin[0] / gridSize - 1;
-    int firstGridLineY = origin[1] / gridSize - 1;
-
-    int numGridLinesX = (m_rcClient.width() / fScale) / gridSize + 1;
-    int numGridLinesY = (m_rcClient.height() / fScale) / gridSize + 1;
-
     Matrix34 viewTM = GetViewTM().GetInverted() * m_screenTM_Inverted;
     Matrix34 viewTM_Inv = m_screenTM * GetViewTM();
 
@@ -961,8 +945,6 @@ void Q2DViewport::DrawGrid(DisplayContext& dc, bool bNoXNumbers)
 //////////////////////////////////////////////////////////////////////////
 void Q2DViewport::DrawAxis(DisplayContext& dc)
 {
-    int ix = 0;
-    int iy = 0;
     float cl = 0.85f;
     char xstr[2], ystr[2], zstr[2];
     Vec3 colx, coly, colz;
@@ -1005,7 +987,6 @@ void Q2DViewport::DrawAxis(DisplayContext& dc)
         break;
     }
 
-    int width = m_rcClient.width();
     int height = m_rcClient.height();
 
     int size = 25;
@@ -1135,18 +1116,12 @@ void Q2DViewport::DrawObjects(DisplayContext& dc)
         GetIEditor()->GetObjectManager()->Display(dc);
     }
 
-    // Display editing tool.
-    if (GetEditTool())
-    {
-        GetEditTool()->Display(dc);
-    }
     dc.PopMatrix();
 }
 
 //////////////////////////////////////////////////////////////////////////
 void Q2DViewport::MakeConstructionPlane([[maybe_unused]] int axis)
 {
-    RefCoordSys coordSys = GetIEditor()->GetReferenceCoordSys();
     m_constructionMatrix[COORDS_VIEW] = GetViewTM();
 
     Vec3 p(0, 0, 0);

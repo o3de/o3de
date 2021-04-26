@@ -418,8 +418,11 @@ void CLayoutWnd::CreateLayout(EViewLayout layout, bool bBindViewports, EViewport
     QRect rcView = rect();
     rcView.setBottom(rcView.bottom() - m_infoBar->height());
 
+    // Ensure we delete our old view immediately so it can relinquish its backing ViewportContext
     if (m_maximizedView)
-        m_maximizedView->deleteLater();
+    {
+        delete m_maximizedView;
+    }
 
     m_maximizedView = new CLayoutViewPane(this);
     m_maximizedView->SetId(0);
@@ -633,7 +636,6 @@ bool CLayoutWnd::LoadConfig()
     {
         const QString str = settings.value("Viewports").toString();
         int nIndex = 1;
-        int curPos = 0;
         for (auto resToken : str.split(","))
         {
             if (nIndex >= MAX_VIEWPORTS)

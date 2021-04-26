@@ -32,7 +32,7 @@ class QByteArray;
 
 namespace AzQtComponents
 {
-    class LumberyardStylesheet;
+    class O3DEStylesheet;
 }
 
 enum EEditorNotifyEvent;
@@ -118,7 +118,7 @@ namespace Editor
         void UninstallFilters();
         void maybeProcessIdle();
 
-        AzQtComponents::LumberyardStylesheet* m_stylesheet;
+        AzQtComponents::O3DEStylesheet* m_stylesheet;
 
         bool m_inWinEventFilter = false;
 

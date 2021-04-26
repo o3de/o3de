@@ -144,7 +144,7 @@ namespace ImageProcessingAtom
         AZ::u32 reserved;
     };
 
-    // Dds header for lumberyard dds format.
+    // Dds header for O3DE dds format.
     // It has same size as standard dds header but uses several reserved slots for customized information
     struct DDS_HEADER_LEGACY
     {

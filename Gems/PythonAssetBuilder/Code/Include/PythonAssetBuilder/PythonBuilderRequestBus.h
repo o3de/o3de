@@ -17,7 +17,7 @@
 
 namespace PythonAssetBuilder
 {
-    //! A request bus to help produce Lumberyard asset data
+    //! A request bus to help produce Open 3D Engine asset data
     class PythonBuilderRequests
         : public AZ::EBusTraits
     {

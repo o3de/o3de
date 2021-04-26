@@ -11,12 +11,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import os
 import sys
+
+import azlmbr.bus as bus
+import azlmbr.components as components
+import azlmbr.editor as editor
+import azlmbr.legacy.general as general
 import azlmbr.math as math
 import azlmbr.paths
 
 sys.path.append(os.path.join(azlmbr.paths.devroot, "AutomatedTesting", "Gem", "PythonTests"))
-import automatedtesting_shared.hydra_editor_utils as hydra
-from automatedtesting_shared.editor_test_helper import EditorTestHelper
+import editor_python_test_tools.hydra_editor_utils as hydra
+from editor_python_test_tools.editor_test_helper import EditorTestHelper
 from largeworlds.large_worlds_utils import editor_dynveg_test_helper as dynveg
 
 
@@ -36,8 +41,8 @@ class TestAltitudeFilterFilterStageToggle(EditorTestHelper):
         :return: None
         """
 
-        PREPROCESS_INSTANCE_COUNT = 16
-        POSTPROCESS_INSTANCE_COUNT = 13
+        PREPROCESS_INSTANCE_COUNT = 24
+        POSTPROCESS_INSTANCE_COUNT = 18
 
         # Create empty level
         self.test_success = self.create_level(
@@ -47,6 +52,8 @@ class TestAltitudeFilterFilterStageToggle(EditorTestHelper):
             terrain_texture_resolution=4096,
             use_terrain=False,
         )
+
+        general.set_current_view_position(512.0, 480.0, 38.0)
 
         # Create basic vegetation entity
         position = math.Vector3(512.0, 512.0, 32.0)
@@ -60,7 +67,22 @@ class TestAltitudeFilterFilterStageToggle(EditorTestHelper):
         dynveg.create_surface_entity("Surface_Entity_Parent", position, 16.0, 16.0, 1.0)
 
         # Add entity with Mesh to replicate creation of hills
-        dynveg.create_mesh_surface_entity_with_slopes("hill", position, 40.0, 40.0, 40.0)
+        hill_entity = dynveg.create_mesh_surface_entity_with_slopes("hill", position, 40.0, 40.0, 40.0)
+
+        # Disable/Re-enable Mesh component due to ATOM-14299
+        general.idle_wait(1.0)
+        editor.EditorComponentAPIBus(bus.Broadcast, 'DisableComponents', [hill_entity.components[0]])
+        is_enabled = editor.EditorComponentAPIBus(bus.Broadcast, 'IsComponentEnabled', hill_entity.components[0])
+        if is_enabled:
+            print("Mesh component is still enabled")
+        else:
+            print("Mesh component was disabled")
+        editor.EditorComponentAPIBus(bus.Broadcast, 'EnableComponents', [hill_entity.components[0]])
+        is_enabled = editor.EditorComponentAPIBus(bus.Broadcast, 'IsComponentEnabled', hill_entity.components[0])
+        if is_enabled:
+            print("Mesh component is now enabled")
+        else:
+            print("Mesh component is still disabled")
 
         # Increase Box Shape size to encompass the hills
         vegetation.get_set_test(1, "Box Shape|Box Configuration|Dimensions", math.Vector3(100.0, 100.0, 100.0))
@@ -69,8 +91,8 @@ class TestAltitudeFilterFilterStageToggle(EditorTestHelper):
         vegetation.get_set_test(3, "Configuration|Altitude Min", 38.0)
         vegetation.get_set_test(3, "Configuration|Altitude Max", 40.0)
 
-        # Create a new entity as a child of the vegetation area entity with Random Noise Gradient Generator, Gradient Transform Modifier,
-        # and Box Shape component
+        # Create a new entity as a child of the vegetation area entity with Random Noise Gradient Generator, Gradient
+        # Transform Modifier, and Box Shape component
         random_noise = hydra.Entity("random_noise")
         random_noise.create_entity(position, ["Random Noise Gradient", "Gradient Transform Modifier", "Box Shape"])
         random_noise.set_test_parent_entity(vegetation)

@@ -5,8 +5,6 @@
         "Depth" : { "Enable" : false }
     },
 
-    "CompilerVersion" : "1.0",
-
     "ProgramSettings":
     {
       "EntryPoints":

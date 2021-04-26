@@ -30,11 +30,11 @@
 
 namespace ImGui
 {
-    class ImGuiManager : public ISystem::CrySystemNotificationBus::Handler
-                       , public AzFramework::InputChannelEventListener
-                       , public AzFramework::InputTextEventListener
-                       , public ImGuiManagerListenerBus::Handler
-                       , public AzFramework::WindowNotificationBus::Handler
+    class ImGuiManager
+        : public AzFramework::InputChannelEventListener
+        , public AzFramework::InputTextEventListener
+        , public ImGuiManagerListenerBus::Handler
+        , public AzFramework::WindowNotificationBus::Handler
     {
     public:
         void Initialize();
@@ -60,12 +60,10 @@ namespace ImGui
         void SetResolutionMode(ImGuiResolutionMode mode) override { m_resolutionMode = mode; }
         const ImVec2& GetImGuiRenderResolution() const override { return m_renderResolution; }
         void SetImGuiRenderResolution(const ImVec2& res) override { m_renderResolution = res; }
+        void OverrideRenderWindowSize(uint32_t width, uint32_t height) override;
+        void RestoreRenderWindowSizeToDefault() override;
+        void Render() override;
         // -- ImGuiManagerListenerBus Interface -------------------------------------------------------------------
-
-        // -- ISystem::CrySystemNotificationBus Interface --------------------------------------------------------------------
-        void OnPreRender() override;
-        void OnPostRender() override;
-        // -- ISystem::CrySystemNotificationBusInterface --------------------------------------------------------------------
 
         // -- AzFramework::InputChannelEventListener and AzFramework::InputTextEventListener Interface ------------
         bool OnInputChannelEventFiltered(const AzFramework::InputChannel& inputChannel) override;
@@ -83,6 +81,7 @@ namespace ImGui
         void ToggleThroughImGuiVisibleState(int controllerIndex);
 
     private:
+        ImGuiContext* m_imguiContext = nullptr;
         int m_fontTextureId = -1;
         DisplayState m_clientMenuBarState = DisplayState::Hidden;
         DisplayState m_editorWindowState = DisplayState::Hidden;
@@ -92,6 +91,7 @@ namespace ImGui
         ImVec2 m_renderResolution = ImVec2(1920.0f, 1080.0f);
         ImVec2 m_lastRenderResolution;
         AzFramework::WindowSize m_windowSize = AzFramework::WindowSize(1920, 1080);
+        bool m_overridingWindowSize = false;
 
         // Rendering buffers
         std::vector<SVF_P3F_C4B_T2F> m_vertBuffer;

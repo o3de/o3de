@@ -60,7 +60,6 @@ AZ_POP_DISABLE_WARNING
 
 // Editor
 #include "Resource.h"
-#include "EditTool.h"
 #include "Core/LevelEditorMenuHandler.h"
 #include "ShortcutDispatcher.h"
 #include "LayoutWnd.h"
@@ -92,7 +91,6 @@ AZ_POP_DISABLE_WARNING
 
 #include "TrackView/TrackViewDialog.h"
 #include "ErrorReportDialog.h"
-#include "Material/MaterialDialog.h"
 #include "LensFlareEditor/LensFlareEditor.h"
 #include "TimeOfDayDialog.h"
 
@@ -271,15 +269,6 @@ namespace
         return QtViewPaneManager::instance()->IsVisible(viewClassName);
     }
 
-    AZStd::string PyGetStatusText()
-    {
-        if (GetIEditor()->GetEditTool())
-        {
-            return AZStd::string(GetIEditor()->GetEditTool()->GetStatusText().toUtf8().data());
-        }
-        return AZStd::string("");
-    }
-
     AZStd::vector<AZStd::string> PyGetViewPaneNames()
     {
         const QtViewPanes panes = QtViewPaneManager::instance()->GetRegisteredPanes();
@@ -406,7 +395,7 @@ MainWindow::MainWindow(QWidget* parent)
     , m_undoStateAdapter(new UndoStackStateAdapter(this))
     , m_keyboardCustomization(nullptr)
     , m_activeView(nullptr)
-    , m_settings("amazon", "lumberyard") // TODO_KDAB: Replace with a central settings class
+    , m_settings("amazon", "O3DE") // TODO_KDAB: Replace with a central settings class
     , m_toolbarManager(new ToolbarManager(m_actionManager, this))
     , m_assetImporterManager(new AssetImporterManager(this))
     , m_levelEditorMenuHandler(new LevelEditorMenuHandler(this, m_viewPaneManager, m_settings))
@@ -637,8 +626,6 @@ MainWindow* MainWindow::instance()
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
-    auto cryEdit = CCryEditApp::instance();
-
     gSettings.Save();
 
     AzFramework::SystemCursorState currentCursorState;
@@ -696,7 +683,6 @@ void MainWindow::closeEvent(QCloseEvent* event)
     }
     // Close all edit panels.
     GetIEditor()->ClearSelection();
-    GetIEditor()->SetEditTool(0);
     GetIEditor()->GetObjectManager()->EndEditParams();
 
     // force clean up of all deferred deletes, so that we don't have any issues with windows from plugins not being deleted yet
@@ -763,11 +749,6 @@ void MainWindow::InitActions()
     cryEdit->RegisterActionHandlers();
 
     am->AddAction(ID_TOOLBAR_SEPARATOR, QString());
-
-    if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-       am->AddAction(ID_TOOLBAR_WIDGET_REF_COORD, QString());
-    }
 
     am->AddAction(ID_TOOLBAR_WIDGET_UNDO, QString());
     am->AddAction(ID_TOOLBAR_WIDGET_REDO, QString());
@@ -1009,18 +990,6 @@ void MainWindow::InitActions()
     am->AddAction(ID_EDIT_RENAMEOBJECT, tr("Rename Object(s)..."))
         .SetStatusTip(tr("Rename Object"));
 
-    if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        am->AddAction(ID_EDITMODE_SELECT, tr("Select mode"))
-            .SetIcon(Style::icon("Select"))
-            .SetApplyHoverEffect()
-            .SetShortcut(tr("1"))
-            .SetToolTip(tr("Select mode (1)"))
-            .SetCheckable(true)
-            .SetStatusTip(tr("Select object(s)"))
-            .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateEditmodeSelect);
-    }
-
     am->AddAction(ID_EDITMODE_MOVE, tr("Move"))
         .SetIcon(Style::icon("Move"))
         .SetApplyHoverEffect()
@@ -1045,83 +1014,6 @@ void MainWindow::InitActions()
         .SetCheckable(true)
         .SetStatusTip(tr("Select and scale selected object(s)"))
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateEditmodeScale);
-
-    if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        am->AddAction(ID_EDITMODE_SELECTAREA, tr("Select terrain"))
-            .SetIcon(Style::icon("Select_terrain"))
-            .SetApplyHoverEffect()
-            .SetShortcut(tr("5"))
-            .SetToolTip(tr("Select terrain (5)"))
-            .SetCheckable(true)
-            .SetStatusTip(tr("Switch to terrain selection mode"))
-            .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateEditmodeSelectarea);
-        am->AddAction(ID_SELECT_AXIS_X, tr("Constrain to X axis"))
-            .SetIcon(Style::icon("X_axis"))
-            .SetApplyHoverEffect()
-            .SetShortcut(tr("Ctrl+1"))
-            .SetToolTip(tr("Constrain to X axis (Ctrl+1)"))
-            .SetCheckable(true)
-            .SetStatusTip(tr("Lock movement on X axis"))
-            .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSelectAxisX);
-        am->AddAction(ID_SELECT_AXIS_Y, tr("Constrain to Y axis"))
-            .SetIcon(Style::icon("Y_axis"))
-            .SetApplyHoverEffect()
-            .SetShortcut(tr("Ctrl+2"))
-            .SetToolTip(tr("Constrain to Y axis (Ctrl+2)"))
-            .SetCheckable(true)
-            .SetStatusTip(tr("Lock movement on Y axis"))
-            .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSelectAxisY);
-        am->AddAction(ID_SELECT_AXIS_Z, tr("Constrain to Z axis"))
-            .SetIcon(Style::icon("Z_axis"))
-            .SetApplyHoverEffect()
-            .SetShortcut(tr("Ctrl+3"))
-            .SetToolTip(tr("Constrain to Z axis (Ctrl+3)"))
-            .SetCheckable(true)
-            .SetStatusTip(tr("Lock movement on Z axis"))
-            .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSelectAxisZ);
-        am->AddAction(ID_SELECT_AXIS_XY, tr("Constrain to XY plane"))
-            .SetIcon(Style::icon("XY2_copy"))
-            .SetApplyHoverEffect()
-            .SetShortcut(tr("Ctrl+4"))
-            .SetToolTip(tr("Constrain to XY plane (Ctrl+4)"))
-            .SetCheckable(true)
-            .SetStatusTip(tr("Lock movement on XY plane"))
-            .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSelectAxisXy);
-        am->AddAction(ID_SELECT_AXIS_TERRAIN, tr("Constrain to terrain/geometry"))
-            .SetIcon(Style::icon("Object_follow_terrain"))
-            .SetApplyHoverEffect()
-            .SetShortcut(tr("Ctrl+5"))
-            .SetToolTip(tr("Constrain to terrain/geometry (Ctrl+5)"))
-            .SetCheckable(true)
-            .SetStatusTip(tr("Lock object movement to follow terrain"))
-            .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSelectAxisTerrain);
-        am->AddAction(ID_SELECT_AXIS_SNAPTOALL, tr("Follow terrain and snap to objects"))
-            .SetIcon(Style::icon("Follow_terrain"))
-            .SetApplyHoverEffect()
-            .SetShortcut(tr("Ctrl+6"))
-            .SetToolTip(tr("Follow terrain and snap to objects (Ctrl+6)"))
-            .SetCheckable(true)
-            .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSelectAxisSnapToAll);
-        am->AddAction(ID_OBJECTMODIFY_ALIGNTOGRID, tr("Align to grid"))
-            .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSelected)
-            .SetIcon(Style::icon("Align_to_grid"))
-            .SetApplyHoverEffect();
-        am->AddAction(ID_OBJECTMODIFY_ALIGN, tr("Align to object")).SetCheckable(true)
-#if AZ_TRAIT_OS_PLATFORM_APPLE
-            .SetStatusTip(tr(u8"\u2318: Align an object to a bounding box, \u2325 : Keep Rotation of the moved object, Shift : Keep Scale of the moved object"))
-#else
-            .SetStatusTip(tr("Ctrl: Align an object to a bounding box, Alt : Keep Rotation of the moved object, Shift : Keep Scale of the moved object"))
-#endif
-            .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateAlignObject)
-            .SetIcon(Style::icon("Align_to_Object"))
-            .SetApplyHoverEffect();
-        am->AddAction(ID_MODIFY_ALIGNOBJTOSURF, tr("Align object to surface (Hold CTRL)")).SetCheckable(true)
-            .SetToolTip(tr("Align object to surface  (Hold CTRL)"))
-            .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateAlignToVoxel)
-            .SetIcon(Style::icon("Align_object_to_surface"))
-            .SetApplyHoverEffect();
-    }
 
     am->AddAction(ID_SNAP_TO_GRID, tr("Snap to grid"))
         .SetIcon(Style::icon("Grid"))
@@ -1181,7 +1073,6 @@ void MainWindow::InitActions()
     am->AddAction(ID_CHANGEMOVESPEED_CHANGESTEP, tr("Change Step"))
         .SetStatusTip(tr("Change Flycam Movement Step"));
     am->AddAction(ID_DISPLAY_GOTOPOSITION, tr("Go to Position..."));
-    am->AddAction(ID_DISPLAY_SETVECTOR, tr("Display Set Vector"));
     am->AddAction(ID_MODIFY_GOTO_SELECTION, tr("Center on Selection"))
         .SetShortcut(tr("Z"))
         .SetToolTip(tr("Center on Selection (Z)"))
@@ -1375,7 +1266,7 @@ void MainWindow::InitActions()
 
     am->AddAction(ID_DOCUMENTATION_GLOSSARY, tr("Glossary"))
         .SetReserved();
-    am->AddAction(ID_DOCUMENTATION_LUMBERYARD, tr("Lumberyard Documentation"))
+    am->AddAction(ID_DOCUMENTATION_O3DE, tr("Open 3D Engine Documentation"))
         .SetReserved();
     am->AddAction(ID_DOCUMENTATION_GAMELIFT, tr("GameLift Documentation"))
         .SetReserved();
@@ -1393,11 +1284,11 @@ void MainWindow::InitActions()
 
     am->AddAction(ID_DOCUMENTATION_FEEDBACK, tr("Give Us Feedback"))
         .SetReserved();
-    am->AddAction(ID_APP_ABOUT, tr("&About Lumberyard"))
+    am->AddAction(ID_APP_ABOUT, tr("&About Open 3D Engine"))
         .SetStatusTip(tr("Display program information, version number and copyright"))
         .SetReserved();
     am->AddAction(ID_APP_SHOW_WELCOME, tr("&Welcome"))
-        .SetStatusTip(tr("Show the Welcome to Lumberyard dialog box"))
+        .SetStatusTip(tr("Show the Welcome to Open 3D Engine dialog box"))
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateShowWelcomeScreen);
 
     // Editors Toolbar actions
@@ -1452,15 +1343,6 @@ void MainWindow::InitActions()
         .SetApplyHoverEffect();
 
     // Edit Mode Toolbar Actions
-    am->AddAction(ID_EDITTOOL_LINK, tr("Link an object to parent"))
-        .SetIcon(Style::icon("add_link"))
-        .SetApplyHoverEffect()
-        .SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateEditToolLink);
-    am->AddAction(ID_EDITTOOL_UNLINK, tr("Unlink all selected objects"))
-        .SetIcon(Style::icon("remove_link"))
-        .SetApplyHoverEffect()
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateEditToolUnlink);
     am->AddAction(IDC_SELECTION_MASK, tr("Selected Object Types"));
     am->AddAction(ID_REF_COORDS_SYS, tr("Reference coordinate system"))
         .SetShortcut(tr("Ctrl+W"))
@@ -1480,10 +1362,6 @@ void MainWindow::InitActions()
             .SetIcon(QIcon(":/MainWindow/toolbars/object_toolbar-03.svg"))
             .SetApplyHoverEffect()
             .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSelected);
-        // vertex snapping not yet supported when the new Viewport Interaction Model is enabled
-        am->AddAction(ID_OBJECTMODIFY_VERTEXSNAPPING, tr("Vertex snapping"))
-            .SetIcon(Style::icon("Vertex_snapping"))
-            .SetApplyHoverEffect();
     }
 
     // Misc Toolbar Actions
@@ -1531,8 +1409,6 @@ void MainWindow::OnEscapeAction()
         {
             AzToolsFramework::EditorEvents::Bus::Broadcast(
                 &AzToolsFramework::EditorEvents::OnEscape);
-
-            CCryEditApp::instance()->OnEditEscape();
         }
     }
 }
@@ -1541,62 +1417,6 @@ void MainWindow::InitToolBars()
 {
     m_toolbarManager->LoadToolbars();
     AdjustToolBarIconSize(static_cast<AzQtComponents::ToolBar::ToolBarIconSize>(gSettings.gui.nToolbarIconSize));
-}
-
-QComboBox* MainWindow::CreateRefCoordComboBox()
-{
-    // ID_REF_COORDS_SYS;
-    auto coordSysCombo = new RefCoordComboBox(this);
-
-    connect(this, &MainWindow::ToggleRefCoordSys, coordSysCombo, &RefCoordComboBox::ToggleRefCoordSys);
-    connect(this, &MainWindow::UpdateRefCoordSys, coordSysCombo, &RefCoordComboBox::UpdateRefCoordSys);
-
-    return coordSysCombo;
-}
-
-RefCoordComboBox::RefCoordComboBox(QWidget* parent)
-    : QComboBox(parent)
-{
-    addItems(coordSysList());
-    setCurrentIndex(0);
-
-    connect(this, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [](int index)
-    {
-        if (index >= 0 && index < LAST_COORD_SYSTEM)
-        {
-            RefCoordSys coordSys = (RefCoordSys)index;
-            if (GetIEditor()->GetReferenceCoordSys() != index)
-            {
-                GetIEditor()->SetReferenceCoordSys(coordSys);
-            }
-        }
-    });
-
-    UpdateRefCoordSys();
-}
-
-QStringList RefCoordComboBox::coordSysList() const
-{
-    static QStringList list = { tr("View"), tr("Local"), tr("Parent"), tr("World"), tr("Custom") };
-    return list;
-}
-
-void RefCoordComboBox::UpdateRefCoordSys()
-{
-    RefCoordSys coordSys = GetIEditor()->GetReferenceCoordSys();
-    if (coordSys >= 0 && coordSys < LAST_COORD_SYSTEM)
-    {
-        setCurrentIndex(coordSys);
-    }
-}
-
-void RefCoordComboBox::ToggleRefCoordSys()
-{
-    QStringList coordSys = coordSysList();
-    const int localIndex = coordSys.indexOf(tr("Local"));
-    const int worldIndex = coordSys.indexOf(tr("World"));
-    const int newIndex = currentIndex() == localIndex ? worldIndex : localIndex;
-    setCurrentIndex(newIndex);
 }
 
 QToolButton* MainWindow::CreateUndoRedoButton(int command)
@@ -1819,7 +1639,6 @@ void MainWindow::OnUpdateSnapToGrid(QAction* action)
     bool bEnabled = gSettings.pGrid->IsEnabled();
     action->setChecked(bEnabled);
 
-    float gridSize = gSettings.pGrid->size;
     action->setText(QObject::tr("Snap To Grid"));
 }
 
@@ -1846,7 +1665,14 @@ void MainWindow::OpenViewPane(QtViewPane* pane)
     }
     else
     {
-        qWarning() << Q_FUNC_INFO << "Invalid pane" << pane->m_id << pane->m_category << pane->m_name;
+        if (pane)
+        {
+            qWarning() << Q_FUNC_INFO << "Invalid pane" << pane->m_id << pane->m_category << pane->m_name;
+        }
+        else
+        {
+            qWarning() << Q_FUNC_INFO << "Invalid pane";
+        }
     }
 }
 
@@ -1970,7 +1796,6 @@ void MainWindow::RegisterStdViewClasses()
 
     if (!AZ::Interface<AzFramework::AtomActiveInterface>::Get())
     {
-        CMaterialDialog::RegisterViewClass();
         CLensFlareEditor::RegisterViewClass();
         CTimeOfDayDialog::RegisterViewClass();
     }
@@ -2558,9 +2383,6 @@ QWidget* MainWindow::CreateToolbarWidget(int actionId)
     case ID_TOOLBAR_WIDGET_REDO:
         w = CreateUndoRedoButton(ID_REDO);
         break;
-    case ID_TOOLBAR_WIDGET_REF_COORD:
-        w = CreateRefCoordComboBox();
-        break;
     case ID_TOOLBAR_WIDGET_SNAP_GRID:
         w = CreateSnapToGridWidget();
         break;
@@ -2656,7 +2478,6 @@ namespace AzToolsFramework
             addLegacyGeneral(behaviorContext->Method("exit", PyExit, nullptr, "Exits the editor."));
             addLegacyGeneral(behaviorContext->Method("exit_no_prompt", PyExitNoPrompt, nullptr, "Exits the editor without prompting to save first."));
             addLegacyGeneral(behaviorContext->Method("report_test_result", PyReportTest, nullptr, "Report test information."));
-            addLegacyGeneral(behaviorContext->Method("get_status_text", PyGetStatusText, nullptr, "Gets the status text from the Editor's current edit tool"));
         }
     }
 }

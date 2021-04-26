@@ -1,0 +1,305 @@
+{
+  "clean": {
+    "TAGS": [],
+    "COMMAND": "clean_windows.cmd",
+    "PARAMETERS": {
+      "OUTPUT_DIRECTORY": "build",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting"
+    }
+  },
+  "validation_pipe": {
+    "TAGS": [
+      "default"
+    ],
+    "steps": [
+      "validation"
+    ]
+  },
+  "debug_vs2019_pipe": {
+    "TAGS": [
+      "nightly"
+    ],
+    "steps": [
+      "debug_vs2019",
+      "test_debug_vs2019"
+    ]
+  },
+  "profile_vs2019_pipe": {
+    "TAGS": [
+      "default"
+    ],
+    "steps": [
+      "profile_vs2019",
+      "asset_profile_vs2019",
+      "test_cpu_profile_vs2019"
+    ]
+  },
+  "scrubbing": {
+    "TAGS": [],
+    "COMMAND": "python_windows.cmd",
+    "PARAMETERS": {
+      "SCRIPT_PATH": "scripts/build/scrubbing_job.py"
+    }
+  },
+  "validation": {
+    "TAGS": [],
+    "COMMAND": "python_windows.cmd",
+    "PARAMETERS": {
+      "SCRIPT_PATH": "scripts/commit_validation/validate_file_or_folder.py"
+    }
+  },
+  "metrics": {
+    "TAGS": [
+      "weekly"
+    ],
+    "COMMAND": "python_windows.cmd",
+    "PARAMETERS": {
+      "SCRIPT_PATH": "scripts/build/ci_build_metrics.py",
+      "SCRIPT_PARAMETERS": "--platform Windows --jobname \"!JOB_NAME!\" --jobnumber \"!BUILD_NUMBER!\" --jobnode \"!NODE_NAME!\" --changelist \"!CHANGE_ID!\""
+    }
+  },
+  "windows_packaging_all": {
+    "TAGS": [
+      "packaging"
+    ],
+    "COMMAND": "python_windows.cmd",
+    "PARAMETERS": {
+      "SCRIPT_PATH": "scripts/build/package/package.py",
+      "SCRIPT_PARAMETERS": "--platform Windows --type all"
+    }
+  },
+  "3rdParty_all": {
+    "TAGS": [
+      "packaging"
+    ],
+    "COMMAND": "python_windows.cmd",
+    "PARAMETERS": {
+      "SCRIPT_PATH": "scripts/build/package/package.py",
+      "SCRIPT_PARAMETERS": "--platform 3rdParty --type 3rdParty_all"
+    }
+  },
+  "debug_vs2019": {
+    "TAGS": [
+        "weekly-build-metrics"
+    ],
+    "COMMAND": "build_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION": "debug",
+      "OUTPUT_DIRECTORY": "build\\windows_vs2019",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DLY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG=FALSE",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "ALL_BUILD",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
+    }
+  },
+  "test_debug_vs2019": {
+    "TAGS": [
+        "weekly-build-metrics"
+    ],
+    "COMMAND": "build_test_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION": "debug",
+      "OUTPUT_DIRECTORY": "build\\windows_vs2019",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DLY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG=FALSE",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "TEST_SUITE_smoke TEST_SUITE_main",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
+      "CTEST_OPTIONS": "-L \"(SUITE_smoke|SUITE_main)\" -LE \"(REQUIRES_gpu)\" -T Test",
+      "TEST_METRICS": "True"
+    }
+  },
+  "profile_vs2019": {
+    "TAGS": [
+      "project",
+      "daily-pipeline-metrics",
+      "weekly-build-metrics"
+    ],
+    "COMMAND": "build_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build\\windows_vs2019",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "ALL_BUILD",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
+    }
+  },
+  "profile_vs2019_nounity": {
+    "TAGS": [
+      "nightly",
+      "weekly-build-metrics"
+    ],
+    "COMMAND": "build_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build\\windows_vs2019",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=FALSE",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "ALL_BUILD",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
+    }
+  },
+  "test_cpu_profile_vs2019": {
+    "TAGS": [
+        "daily-pipeline-metrics",
+        "weekly-build-metrics"
+    ],
+    "COMMAND": "build_test_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build\\windows_vs2019",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "TEST_SUITE_smoke TEST_SUITE_main",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
+      "CTEST_OPTIONS": "-L \"(SUITE_smoke|SUITE_main)\" -LE \"(REQUIRES_gpu)\" -T Test",
+      "TEST_METRICS": "True"
+    }
+  },
+  "test_gpu_profile_vs2019": {
+    "TAGS":[
+        "nightly"
+    ],
+    "PIPELINE_ENV":{
+        "NODE_LABEL":"windows-gpu"
+    },
+    "COMMAND": "build_test_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build\\windows_vs2019",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "TEST_SUITE_smoke TEST_SUITE_main",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
+      "CTEST_OPTIONS": "-L \"(SUITE_smoke_REQUIRES_gpu|SUITE_main_REQUIRES_gpu)\" -T Test",
+      "TEST_METRICS": "True"
+    }
+  },
+  "asset_profile_vs2019": {
+    "TAGS": [
+        "weekly-build-metrics"
+    ],
+    "COMMAND": "build_asset_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build\\windows_vs2019",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "AssetProcessorBatch",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
+      "ASSET_PROCESSOR_BINARY": "bin\\profile\\AssetProcessorBatch.exe",
+      "ASSET_PROCESSOR_OPTIONS": "/zeroAnalysisMode",
+      "ASSET_PROCESSOR_PLATFORMS": "pc,server"
+    }
+  },
+  "asset_clean_profile_vs2019": {
+    "TAGS": [
+      "nightly"
+    ],
+    "PIPELINE_ENV": {
+      "CLEAN_ASSETS": "1"
+    },
+    "steps": [
+      "clean",
+      "asset_profile_vs2019"
+    ]
+  },
+  "periodic_test_profile_vs2019": {
+    "TAGS": [
+      "nightly",
+      "weekly-build-metrics"
+    ],
+    "COMMAND": "build_test_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build\\windows_vs2019",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "TEST_SUITE_periodic",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
+      "CTEST_OPTIONS": "-L \"(SUITE_periodic)\" -T Test",
+      "TEST_METRICS": "True"
+    }
+  },
+  "sandbox_test_profile_vs2019": {
+    "TAGS": [
+      "nightly",
+      "weekly-build-metrics"
+    ],
+    "PIPELINE_ENV": {
+      "ON_FAILURE_MARK": "UNSTABLE"
+    },
+    "COMMAND": "build_test_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build\\windows_vs2019",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "TEST_SUITE_sandbox",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
+      "CTEST_OPTIONS": "-L \"(SUITE_sandbox)\" -T Test",
+      "TEST_METRICS": "True"
+    }
+  },
+  "benchmark_test_profile_vs2019": {
+    "TAGS": [
+      "nightly",
+      "weekly-build-metrics"
+    ],
+    "COMMAND": "build_test_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build\\windows_vs2019",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "TEST_SUITE_benchmark",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
+      "CTEST_OPTIONS": "-L \"(SUITE_benchmark)\" -T Test",
+      "TEST_METRICS": "True"
+    }
+  },
+  "release_vs2019": {
+    "TAGS": [
+      "nightly",
+      "weekly-build-metrics"
+    ],
+    "COMMAND": "build_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION": "release",
+      "OUTPUT_DIRECTORY": "build\\windows_vs2019",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "ALL_BUILD",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
+    }
+  },
+  "monolithic_release_vs2019": {
+    "TAGS": [
+      "nightly",
+      "weekly-build-metrics"
+    ],
+    "COMMAND": "build_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION": "release",
+      "OUTPUT_DIRECTORY": "build\\mono_windows_vs2019",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_MONOLITHIC_GAME=TRUE -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "ALL_BUILD",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
+    }
+  },
+  "install_profile_vs2019": {
+    "TAGS": [
+      "nightly"
+    ],
+    "COMMAND": "build_windows.cmd",
+    "PARAMETERS": {
+        "CONFIGURATION": "profile",
+        "OUTPUT_DIRECTORY": "build\\windows_vs2019",
+        "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DLY_DISABLE_TEST_MODULES=TRUE -DCMAKE_INSTALL_PREFIX=install",
+        "CMAKE_LY_PROJECTS": "",
+        "CMAKE_TARGET": "INSTALL",
+        "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
+    }
+  }
+}

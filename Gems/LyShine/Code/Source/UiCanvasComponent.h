@@ -42,6 +42,7 @@ namespace AZ
 }
 
 struct SDepthTexture;
+class CDraw2d;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 class UiCanvasComponent
@@ -241,7 +242,7 @@ public: // member functions
     // ~UiCanvasComponentImplementationInterface
 
     void UpdateCanvas(float deltaTime, bool isInGame);
-    void RenderCanvas(bool isInGame, AZ::Vector2 viewportSize);
+    void RenderCanvas(bool isInGame, AZ::Vector2 viewportSize, UiRenderer* uiRenderer = nullptr);
 
     AZ::Entity* GetRootElement() const;
 
@@ -287,8 +288,8 @@ public: // member functions
 
     void DebugReportDrawCalls(AZ::IO::HandleType fileHandle, LyShineDebug::DebugInfoDrawCallReport& reportInfo, void* context) const;
 
-    void DebugDisplayElemBounds(IDraw2d* draw2d) const;
-    void DebugDisplayChildElemBounds(IDraw2d* draw2d, const AZ::EntityId entity) const;
+    void DebugDisplayElemBounds(CDraw2d* draw2d) const;
+    void DebugDisplayChildElemBounds(CDraw2d* draw2d, const AZ::EntityId entity) const;
 #endif
 
 public: // static member functions

@@ -51,7 +51,7 @@ class TestWindowsResourceLocator(object):
 
     def test_PlatformConfigFile_HasPath_ReturnsPath(self):
         expected = os.path.join(
-            windows_resource_locator.dev(),
+            windows_resource_locator.engine_root(),
             CONFIG_FILE)
 
         assert windows_resource_locator.platform_config_file() == expected

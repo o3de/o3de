@@ -11,6 +11,7 @@
 */
 
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/std/algorithm.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/numeric.h>
 #include <AzCore/Jobs/JobFunction.h>
@@ -46,20 +47,15 @@ namespace AZ::MeshBuilder
         for (size_t d = 0; d < numDuplicates; ++d)
         {
             // check if the submitted vertex data is equal in all layers for the current duplicate
-            bool allDataEqual = true;
-            const size_t numLayers = m_layers.size();
-            for (size_t layer = 0; layer < numLayers && allDataEqual; ++layer)
+            const bool allDataEqual = AZStd::all_of(begin(m_layers), end(m_layers), [orgVertexNr, d](const AZStd::unique_ptr<MeshBuilderVertexAttributeLayer>& layer)
             {
-                if (m_layers[layer]->CheckIfIsVertexEqual(orgVertexNr, d) == false)
-                {
-                    allDataEqual = false;
-                }
-            }
+                return layer->CheckIfIsVertexEqual(orgVertexNr, d);
+            });
 
             // if so, we have found a matching vertex!
             if (allDataEqual)
             {
-                return MeshBuilderVertexLookup(orgVertexNr, d);
+                return {orgVertexNr, d};
             }
         }
 
@@ -131,67 +127,47 @@ namespace AZ::MeshBuilder
         AZStd::vector<size_t> polyJointList;
         ExtractBonesForPolygon(orgVertexNumbers, polyJointList);
 
-        // create our list of possible submeshes, start value are all submeshes available
-        AZStd::vector<MeshBuilderSubMesh*> possibleSubMeshes;
-        possibleSubMeshes.reserve(m_subMeshes.size());
-        for (const AZStd::unique_ptr<MeshBuilderSubMesh>& subMesh : m_subMeshes)
+        // find the submesh with the most similar bones
+        size_t maxMatchings = 0;
+        const auto* bestMatchingSubMesh = m_subMeshes.cend();
+        for (const auto* subMesh = m_subMeshes.cbegin(); subMesh != m_subMeshes.cend(); ++subMesh)
         {
-            possibleSubMeshes.emplace_back(subMesh.get());
+            // get the number of matching bones from the current submesh and the given polygon
+            const size_t currentNumMatches = (*subMesh)->CalcNumSimilarJoints(polyJointList);
+
+            // if the current submesh has more similar bones than the current maximum we found a better one
+            if (currentNumMatches > maxMatchings)
+            {
+                maxMatchings = currentNumMatches;
+                bestMatchingSubMesh = subMesh;
+
+                // check if this submesh already our perfect match
+                if (currentNumMatches == polyJointList.size())
+                {
+                    break;
+                }
+            }
         }
 
-        while (!possibleSubMeshes.empty())
+        // if we cannot find a submesh with enough similar joints, find any one that can handle the polygon
+        if (bestMatchingSubMesh == m_subMeshes.cend())
         {
-            size_t maxMatchings = 0;
-            size_t foundSubMeshNr = InvalidIndex;
-            const size_t numPossibleSubMeshes  = possibleSubMeshes.size();
-
-            // iterate over all submeshes and find the one with the most similar bones
-            for (size_t i = 0; i < numPossibleSubMeshes; ++i)
+            bestMatchingSubMesh = AZStd::find_if(m_subMeshes.cbegin(), m_subMeshes.cend(), [&orgVertexNumbers, &materialIndex, &polyJointList](const auto& subMesh)
             {
-                // get the number of matching bones from the current submesh and the given polygon
-                const size_t currentNumMatches = possibleSubMeshes[i]->CalcNumSimilarJoints(polyJointList);
+                return subMesh->CanHandlePolygon(orgVertexNumbers, materialIndex, polyJointList);
+            });
 
-                // if the current submesh has more similar bones than the current maximum we found a better one
-                if (currentNumMatches > maxMatchings)
-                {
-                    // check if this submesh already our perfect match
-                    if (currentNumMatches == polyJointList.size())
-                    {
-                        // check if the submesh which has the most common bones with the given polygon can handle it
-                        if (possibleSubMeshes[i]->CanHandlePolygon(orgVertexNumbers, materialIndex, polyJointList))
-                        {
-                            return possibleSubMeshes[i];
-                        }
-                    }
-
-                    maxMatchings    = currentNumMatches;
-                    foundSubMeshNr  = i;
-                }
-            }
-
-            // if we cannot find a submesh return nullptr and create a new one
-            if (foundSubMeshNr == InvalidIndex)
+            if (bestMatchingSubMesh != m_subMeshes.cend())
             {
-                for (MeshBuilderSubMesh* possibleSubMesh : possibleSubMeshes)
-                {
-                    // check if the submesh which has the most common bones with the given polygon can handle it
-                    if (possibleSubMesh->CanHandlePolygon(orgVertexNumbers, materialIndex, polyJointList))
-                    {
-                        return possibleSubMesh;
-                    }
-                }
-
-                return nullptr;
+                return (*bestMatchingSubMesh).get();
             }
+            return nullptr;
+        }
 
-            // check if the submesh which has the most common bones with the given polygon can handle it
-            if (possibleSubMeshes[foundSubMeshNr]->CanHandlePolygon(orgVertexNumbers, materialIndex, polyJointList))
-            {
-                return possibleSubMeshes[foundSubMeshNr];
-            }
-
-            // remove the found submesh from the possible submeshes directly so that we can don't find the same one in the next iteration again
-            possibleSubMeshes.erase(possibleSubMeshes.begin() + foundSubMeshNr);
+        // check if the submesh which has the most common bones with the given polygon can handle it
+        if ((*bestMatchingSubMesh)->CanHandlePolygon(orgVertexNumbers, materialIndex, polyJointList))
+        {
+            return (*bestMatchingSubMesh).get();
         }
 
         return nullptr;
@@ -217,19 +193,6 @@ namespace AZ::MeshBuilder
         // add the polygon to the submesh
         ExtractBonesForPolygon(orgVertexNumbers, m_polyJointList);
         subMesh->AddPolygon(indices, m_polyJointList);
-    }
-
-    void MeshBuilder::OptimizeTriangleList()
-    {
-        if (!CheckIfIsTriangleMesh())
-        {
-            return;
-        }
-
-        for (const AZStd::unique_ptr<MeshBuilderSubMesh>& subMesh : m_subMeshes)
-        {
-            subMesh->Optimize();
-        }
     }
 
     void MeshBuilder::ExtractBonesForPolygon(const AZStd::vector<size_t>& orgVertexNumbers, AZStd::vector<size_t>& outPolyJointList) const
@@ -302,16 +265,6 @@ namespace AZ::MeshBuilder
         jobCompletion.StartAndWaitForCompletion();
     }
 
-    bool MeshBuilder::CheckIfIsTriangleMesh() const
-    {
-        return AZStd::all_of(begin(m_polyVertexCounts), end(m_polyVertexCounts), [](AZ::u8 count) { return count == 3; });
-    }
-
-    bool MeshBuilder::CheckIfIsQuadMesh() const
-    {
-        return AZStd::all_of(begin(m_polyVertexCounts), end(m_polyVertexCounts), [](AZ::u8 count) { return count == 4; });
-    }
-
     void MeshBuilder::SetSkinningInfo(AZStd::unique_ptr<MeshBuilderSkinningInfo> skinningInfo)
     {
         m_skinningInfo = AZStd::move(skinningInfo);
@@ -330,20 +283,27 @@ namespace AZ::MeshBuilder
         return InvalidIndex;
     }
 
-    const MeshBuilder::SubMeshVertex* MeshBuilder::FindSubMeshVertex(MeshBuilderSubMesh* subMesh, size_t orgVtx, size_t dupeNr) const
+    void MeshBuilder::SetRealVertexNrForSubMeshVertex(const MeshBuilderSubMesh* subMesh, size_t orgVtx, size_t dupeNr, size_t realVertexNr)
     {
-        for (const SubMeshVertex& subMeshVertex : m_vertices[orgVtx])
+        SubMeshVertex* subMeshVertex = FindSubMeshVertex(subMesh, orgVtx, dupeNr);
+        if (!subMeshVertex)
         {
-            if (subMeshVertex.m_subMesh == subMesh && subMeshVertex.m_dupeNr == dupeNr)
-            {
-                return &subMeshVertex;
-            }
+            return;
         }
-
-        return nullptr;
+        subMeshVertex->m_realVertexNr = realVertexNr;
     }
 
-    size_t MeshBuilder::CalcNumVertexDuplicates(MeshBuilderSubMesh* subMesh, size_t orgVtx) const
+
+    const MeshBuilder::SubMeshVertex* MeshBuilder::FindSubMeshVertex(const MeshBuilderSubMesh* subMesh, size_t orgVtx, size_t dupeNr) const
+    {
+        auto subMeshVertex = AZStd::find_if(m_vertices[orgVtx].begin(), m_vertices[orgVtx].end(), [subMesh, dupeNr](const SubMeshVertex& vertex)
+        {
+            return vertex.m_subMesh == subMesh && vertex.m_dupeNr == dupeNr;
+        });
+        return (subMeshVertex == m_vertices[orgVtx].end()) ? nullptr : subMeshVertex;
+    }
+
+    size_t MeshBuilder::CalcNumVertexDuplicates(const MeshBuilderSubMesh* subMesh, size_t orgVtx) const
     {
         size_t numDupes = 0;
         for (const SubMeshVertex& subMeshVertex : m_vertices[orgVtx])

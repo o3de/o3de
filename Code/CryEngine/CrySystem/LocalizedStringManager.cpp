@@ -172,7 +172,6 @@ void CLocalizedStringsManager::LocalizationDumpLoadedInfo([[maybe_unused]] ICons
 {
     CLocalizedStringsManager* pLoca = (CLocalizedStringsManager*) gEnv->pSystem->GetLocalizationManager();
 
-    const char* pTagName = "";
     for (TTagFileNames::iterator tagit = pLoca->m_tagFileNames.begin(); tagit != pLoca->m_tagFileNames.end(); ++tagit)
     {
         CryLogAlways("Tag %s (%d)", tagit->first.c_str(), tagit->second.id);
@@ -1817,8 +1816,6 @@ bool CLocalizedStringsManager::LocalizeStringInternal(const char* pStr, size_t l
     string out;
 
     // scan the string
-    bool done = false;
-    int curpos = 0;
     const char* pPos = pStr;
     const char* pEnd = pStr + len;
     while (true)
@@ -1955,7 +1952,10 @@ string CLocalizedStringsManager::SLocalizedStringEntry::GetTranslatedText(const 
             nDecompTicks = CryGetTicks() - nDecompTicks;
 #endif  //LOG_DECOMP_TIMES
 
-            size_t len = strnlen((const char*)decompressionBuffer, COMPRESSION_FIXED_BUFFER_LENGTH);
+#if !defined(NDEBUG)
+            size_t len =
+#endif
+                strnlen((const char*)decompressionBuffer, COMPRESSION_FIXED_BUFFER_LENGTH);
             assert(len < COMPRESSION_FIXED_BUFFER_LENGTH && "Buffer not null-terminated");
 
 

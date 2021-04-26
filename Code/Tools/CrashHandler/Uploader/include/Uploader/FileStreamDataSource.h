@@ -16,7 +16,7 @@
 #include <handler/user_stream_data_source.h>
 #include "base/files/file_path.h"
 
-namespace Lumberyard
+namespace O3de
 {
     class FileStreamDataSource : public crashpad::UserStreamDataSource
     {

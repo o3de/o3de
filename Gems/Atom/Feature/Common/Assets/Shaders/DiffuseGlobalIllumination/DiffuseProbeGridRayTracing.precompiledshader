@@ -5,6 +5,10 @@
     "ClassData":
     {
         "ShaderAssetFileName": "diffuseprobegridraytracing.azshader",
+        "PlatformIdentifiers": 
+        [
+            "pc"
+        ],
         "ShaderResourceGroupAssets":
         [
             "diffuseprobegridraytracingcommon_raytracingglobalsrg.azsrg"
@@ -18,6 +22,10 @@
             {
                 "APIName": "vulkan",
                 "RootShaderVariantAssetFileName": "diffuseprobegridraytracing_vulkan_0.azshadervariant"
+            },
+            {
+                "APIName": "null",
+                "RootShaderVariantAssetFileName": "diffuseprobegridraytracing_null_0.azshadervariant"
             }
         ]
     }

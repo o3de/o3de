@@ -11,16 +11,20 @@
 */
 
 #include <AzCore/Component/Entity.h>
+#include <AzCore/Component/TransformBus.h>
 #include <AzCore/Script/ScriptSystemBus.h>
 #include <AzFramework/API/ApplicationAPI.h>
+#include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Spawnable/RootSpawnableInterface.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipService.h>
 #include <AzToolsFramework/Prefab/EditorPrefabComponent.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabLoader.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
+#include <AzToolsFramework/Prefab/PrefabUndoHelpers.h>
 
 namespace AzToolsFramework
 {
@@ -91,23 +95,48 @@ namespace AzToolsFramework
             m_prefabSystemComponent->RemoveTemplate(templateId);
         }
         m_rootInstance->Reset();
+        m_rootInstance->SetContainerEntityName("Level");
+
+        AzFramework::EntityOwnershipServiceNotificationBus::Event(
+            m_entityContextId, &AzFramework::EntityOwnershipServiceNotificationBus::Events::OnEntityOwnershipServiceReset);
     }
 
     void PrefabEditorEntityOwnershipService::AddEntity(AZ::Entity* entity)
     {
         AZ_Assert(IsInitialized(), "Tried to add an entity without initializing the Entity Ownership Service");
+        ScopedUndoBatch undoBatch("Undo adding entity");
+        Prefab::PrefabDom instanceDomBeforeUpdate;
+        Prefab::PrefabDomUtils::StoreInstanceInPrefabDom(*m_rootInstance, instanceDomBeforeUpdate);
+
         m_rootInstance->AddEntity(*entity);
         HandleEntitiesAdded({ entity });
+        AZ::TransformBus::Event(entity->GetId(), &AZ::TransformInterface::SetParent, m_rootInstance->m_containerEntity->GetId());
+
+        Prefab::PrefabUndoHelpers::UpdatePrefabInstance(
+            *m_rootInstance, "Undo adding entity", instanceDomBeforeUpdate, undoBatch.GetUndoBatch());
     }
 
     void PrefabEditorEntityOwnershipService::AddEntities(const EntityList& entities)
     {
         AZ_Assert(IsInitialized(), "Tried to add entities without initializing the Entity Ownership Service");
+        ScopedUndoBatch undoBatch("Undo adding entities");
+        Prefab::PrefabDom instanceDomBeforeUpdate;
+        Prefab::PrefabDomUtils::StoreInstanceInPrefabDom(*m_rootInstance, instanceDomBeforeUpdate);
+
         for (AZ::Entity* entity : entities)
         {
             m_rootInstance->AddEntity(*entity);
         }
+
         HandleEntitiesAdded(entities);
+
+        for (AZ::Entity* entity : entities)
+        {
+            AZ::TransformBus::Event(entity->GetId(), &AZ::TransformInterface::SetParent, m_rootInstance->m_containerEntity->GetId());
+        }
+
+        Prefab::PrefabUndoHelpers::UpdatePrefabInstance(
+            *m_rootInstance, "Undo adding entities", instanceDomBeforeUpdate, undoBatch.GetUndoBatch());
     }
 
     bool PrefabEditorEntityOwnershipService::DestroyEntity(AZ::Entity* entity)
@@ -171,7 +200,9 @@ namespace AzToolsFramework
 
         m_rootInstance->SetTemplateId(templateId);
         m_rootInstance->SetTemplateSourcePath(m_loaderInterface->GetRelativePathToProject(filename));
+        m_rootInstance->SetContainerEntityName("Level");
         m_prefabSystemComponent->PropagateTemplateChanges(templateId);
+
         return true;
     }
 
@@ -249,20 +280,51 @@ namespace AzToolsFramework
         AZ::IO::PathView filePath, Prefab::InstanceOptionalReference instanceToParentUnder)
     {
         AZStd::unique_ptr<Prefab::Instance> createdPrefabInstance =
-            m_prefabSystemComponent->CreatePrefab(entities, AZStd::move(nestedPrefabInstances), filePath);
-
-        if (!instanceToParentUnder)
-        {
-            instanceToParentUnder = *m_rootInstance;
-        }
+            m_prefabSystemComponent->CreatePrefab(entities, AZStd::move(nestedPrefabInstances), filePath, nullptr, false);
 
         if (createdPrefabInstance)
         {
+            if (!instanceToParentUnder)
+            {
+                instanceToParentUnder = *m_rootInstance;
+            }
+
+            Prefab::Instance& addedInstance = instanceToParentUnder->get().AddInstance(AZStd::move(createdPrefabInstance));
+            AZ::Entity* containerEntity = addedInstance.m_containerEntity.get();
+            containerEntity->AddComponent(aznew Prefab::EditorPrefabComponent());
+            HandleEntitiesAdded({containerEntity});
+            HandleEntitiesAdded(entities);
+            
+            // Update the template of the instance since we modified the entities of the instance by calling HandleEntitiesAdded.
+            Prefab::PrefabDom serializedInstance;
+            if (Prefab::PrefabDomUtils::StoreInstanceInPrefabDom(addedInstance, serializedInstance))
+            {
+                m_prefabSystemComponent->UpdatePrefabTemplate(addedInstance.GetTemplateId(), serializedInstance);
+            }
+            
+            return addedInstance;
+        }
+
+        return AZStd::nullopt;
+    }
+
+    Prefab::InstanceOptionalReference PrefabEditorEntityOwnershipService::InstantiatePrefab(
+        AZ::IO::PathView filePath, Prefab::InstanceOptionalReference instanceToParentUnder)
+    {
+        AZStd::unique_ptr<Prefab::Instance> createdPrefabInstance = m_prefabSystemComponent->InstantiatePrefab(filePath);
+
+        if (createdPrefabInstance)
+        {
+            if (!instanceToParentUnder)
+            {
+                instanceToParentUnder = *m_rootInstance;
+            }
+
             Prefab::Instance& addedInstance = instanceToParentUnder->get().AddInstance(AZStd::move(createdPrefabInstance));
             HandleEntitiesAdded({addedInstance.m_containerEntity.get()});
             return addedInstance;
         }
-        HandleEntitiesAdded(entities);
+
         return AZStd::nullopt;
     }
 
@@ -295,6 +357,9 @@ namespace AzToolsFramework
 
     void PrefabEditorEntityOwnershipService::StartPlayInEditor()
     {
+        // This is a workaround until the replacement for GameEntityContext is done
+        AzFramework::GameEntityContextEventBus::Broadcast(&AzFramework::GameEntityContextEventBus::Events::OnPreGameEntitiesStarted);
+
         if (m_rootInstance && !m_playInEditorData.m_isEnabled)
         {
             // Construct the runtime entities and products 
@@ -339,11 +404,16 @@ namespace AzToolsFramework
                             m_playInEditorData.m_assets.emplace_back(product.ReleaseAsset().release(), AZ::Data::AssetLoadBehavior::Default);
                         }
 
+
                         if (rootSpawnableIndex != NoRootSpawnable)
                         {
                             m_playInEditorData.m_entities.Reset(m_playInEditorData.m_assets[rootSpawnableIndex]);
                             m_playInEditorData.m_entities.SpawnAllEntities();
                         }
+
+                        // This is a workaround until the replacement for GameEntityContext is done
+                        AzFramework::GameEntityContextEventBus::Broadcast(
+                            &AzFramework::GameEntityContextEventBus::Events::OnGameEntitiesStarted);
                     }
                     else
                     {
@@ -402,6 +472,9 @@ namespace AzToolsFramework
                     AZ::ScriptSystemRequestBus::Broadcast(&AZ::ScriptSystemRequests::GarbageCollect);
                 });
             m_playInEditorData.m_entities.Clear();
+
+            // This is a workaround until the replacement for GameEntityContext is done
+            AzFramework::GameEntityContextEventBus::Broadcast(&AzFramework::GameEntityContextEventBus::Events::OnGameEntitiesReset);
         }
 
         m_playInEditorData.m_isEnabled = false;

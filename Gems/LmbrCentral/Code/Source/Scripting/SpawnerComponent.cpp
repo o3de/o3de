@@ -68,9 +68,11 @@ namespace LmbrCentral
     // modern editor-component or game-component.
     bool ConvertLegacySpawnerComponent(AZ::SerializeContext& serializeContext, AZ::SerializeContext::DataElementNode& classNode)
     {
+#ifdef LMBR_CENTRAL_EDITOR
         // To determine whether we want an editor or runtime component, we check
         // if the old component was contained within GenericComponentWrapper::m_template.
         bool isEditorComponent = (classNode.GetName() == AZ::Crc32("m_template"));
+#endif
 
         // Get Component::m_id from the base class.
         AZ::u64 componentId = 0;
@@ -146,6 +148,7 @@ namespace LmbrCentral
                 ->Event("GetCurrentEntitiesFromSpawnedSlice", &SpawnerComponentRequestBus::Events::GetCurrentEntitiesFromSpawnedSlice)
                 ->Event("GetAllCurrentlySpawnedEntities", &SpawnerComponentRequestBus::Events::GetAllCurrentlySpawnedEntities)
                 ->Event("SetDynamicSlice", &SpawnerComponentRequestBus::Events::SetDynamicSliceByAssetId)
+                ->Event("IsReadyToSpawn", &SpawnerComponentRequestBus::Events::IsReadyToSpawn)
                 ;
 
             behaviorContext->EBus<SpawnerComponentNotificationBus>("SpawnerComponentNotificationBus")
@@ -248,17 +251,15 @@ namespace LmbrCentral
     //=========================================================================
     void SpawnerComponent::SetDynamicSliceByAssetId(AZ::Data::AssetId& assetId)
     {
-        auto sliceAsset = AZ::Data::AssetManager::Instance().GetAsset(assetId, AZ::AzTypeInfo<AZ::DynamicSliceAsset>::Uuid(), m_sliceAsset.GetAutoLoadBehavior());
+        if (m_sliceAsset.GetId() == assetId)
+        {
+            return;
+        }
 
-        if (sliceAsset.IsReady())
-        {
-            m_sliceAsset = sliceAsset;
-        }
-        else
-        {
-            AZ::Data::AssetBus::Handler::BusDisconnect();
-            AZ::Data::AssetBus::Handler::BusConnect(assetId);
-        }
+        m_sliceAsset = AZ::Data::AssetManager::Instance().GetAsset(
+            assetId, AZ::AzTypeInfo<AZ::DynamicSliceAsset>::Uuid(), m_sliceAsset.GetAutoLoadBehavior());
+        AZ::Data::AssetBus::Handler::BusDisconnect();
+        AZ::Data::AssetBus::Handler::BusConnect(assetId);
     }
 
     //=========================================================================
@@ -440,6 +441,12 @@ namespace LmbrCentral
         }
 
         return entities;
+    }
+
+    //=========================================================================
+    bool SpawnerComponent::IsReadyToSpawn()
+    {
+        return m_sliceAsset.IsReady();
     }
 
     //=========================================================================

@@ -33,8 +33,8 @@ import azlmbr.paths
 import azlmbr.entity as EntityId
 
 sys.path.append(os.path.join(azlmbr.paths.devroot, 'AutomatedTesting', 'Gem', 'PythonTests'))
-import automatedtesting_shared.hydra_editor_utils as hydra
-from automatedtesting_shared.editor_test_helper import EditorTestHelper
+import editor_python_test_tools.hydra_editor_utils as hydra
+from editor_python_test_tools.editor_test_helper import EditorTestHelper
 
 
 class TestGradientPreviewSettings(EditorTestHelper):
@@ -65,7 +65,7 @@ class TestGradientPreviewSettings(EditorTestHelper):
          10) Create entity with Perlin Noise Gradient and verify gradient position after clearing pinned entity
 
         Note:
-        - This test file must be called from the Lumberyard Editor command terminal
+        - This test file must be called from the Open 3D Engine Editor command terminal
         - Any passed and failed tests are written to the Editor.log file.
                 Parsing the file or running a log_monitor are required to observe the test results.
 

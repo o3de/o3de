@@ -34,11 +34,6 @@ void CObjManager::RenderDecalAndRoad(IRenderNode* pEnt,
 {
     FUNCTION_PROFILER_3DENGINE;
 
-#ifdef _DEBUG
-    const char* szName = pEnt->GetName();
-    const char* szClassName = pEnt->GetEntityClassName();
-#endif // _DEBUG
-
     // do not draw if marked to be not drawn or already drawn in this frame
     unsigned int nRndFlags = pEnt->GetRndFlags();
 
@@ -135,11 +130,6 @@ void CObjManager::RenderObject(IRenderNode* pEnt,
     FUNCTION_PROFILER_3DENGINE;
 
     const CVars* pCVars = GetCVars();
-
-#ifdef _DEBUG
-    const char* szName = pEnt->GetName();
-    const char* szClassName = pEnt->GetEntityClassName();
-#endif // _DEBUG
 
     // do not draw if marked to be not drawn or already drawn in this frame
     unsigned int nRndFlags = pEnt->GetRndFlags();
@@ -287,8 +277,8 @@ void CObjManager::RenderObject(IRenderNode* pEnt,
 
     if (eERType != eERType_Light && (pEnt->m_nInternalFlags & IRenderNode::REQUIRES_NEAREST_CUBEMAP))
     {
-        uint16 nCubemapTexId = 0;
-        if (!(nCubemapTexId = CheckCachedNearestCubeProbe(pEnt)) || !pCVars->e_CacheNearestCubePicking)
+        uint16 nCubemapTexId = CheckCachedNearestCubeProbe(pEnt);
+        if (!nCubemapTexId || !pCVars->e_CacheNearestCubePicking)
         {
             nCubemapTexId = GetNearestCubeProbe(pVisArea, objBox);
         }
@@ -304,7 +294,8 @@ void CObjManager::RenderObject(IRenderNode* pEnt,
 
     if (pCVars->e_Dissolve && eERType != eERType_Light && passInfo.IsGeneralPass())
     {
-        if (DrawParams.nDissolveRef = GetDissolveRef(fEntDistance, pEnt->m_fWSMaxViewDist))
+        DrawParams.nDissolveRef = GetDissolveRef(fEntDistance, pEnt->m_fWSMaxViewDist);
+        if (DrawParams.nDissolveRef)
         {
             DrawParams.dwFObjFlags |= FOB_DISSOLVE | FOB_DISSOLVE_OUT;
             if (DrawParams.nDissolveRef == 255)
@@ -462,8 +453,7 @@ bool CObjManager::RayRenderMeshIntersection(IRenderMesh* pRenderMesh, const Vec3
 
     // get indices
     vtx_idx* pInds = pRenderMesh->GetIndexPtr(FSL_READ);
-    int nInds = pRenderMesh->GetIndicesCount();
-    assert(nInds % 3 == 0);
+    assert(pRenderMesh->GetIndicesCount() % 3 == 0);
 
     float fClosestHitDistance = -1;
 

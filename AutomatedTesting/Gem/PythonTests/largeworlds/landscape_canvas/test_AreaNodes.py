@@ -18,10 +18,11 @@ C13815873 - All Filters/Modifiers/Selectors can be added to/removed from a Layer
 
 import os
 import pytest
+
 # Bail on the test if ly_test_tools doesn't exist.
 pytest.importorskip('ly_test_tools')
 import ly_test_tools.environment.file_system as file_system
-import automatedtesting_shared.hydra_test_utils as hydra
+import automateeditor_python_test_toolsdtesting_shared.hydra_test_utils as hydra
 
 test_directory = os.path.join(os.path.dirname(__file__), 'EditorScripts')
 
@@ -35,14 +36,14 @@ class TestAreaNodes(object):
     @pytest.fixture(autouse=True)
     def setup_teardown(self, request, workspace, project, level):
         def teardown():
-            file_system.delete([os.path.join(workspace.paths.dev(), project, "Levels", level)], True, True)
+            file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
 
         request.addfinalizer(teardown)
 
-        file_system.delete([os.path.join(workspace.paths.dev(), project, "Levels", level)], True, True)
+        file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
 
     @pytest.mark.test_case_id('C13815919')
-    @pytest.mark.SUITE_main
+    @pytest.mark.SUITE_periodic
     def test_LandscapeCanvas_AreaNodes_DependentComponentsAdded(self, request, editor, level, launcher_platform):
         cfg_args = [level]
 
@@ -60,7 +61,7 @@ class TestAreaNodes(object):
                                           expected_lines, cfg_args=cfg_args)
 
     @pytest.mark.test_case_id('C13767844')
-    @pytest.mark.SUITE_main
+    @pytest.mark.SUITE_periodic
     def test_LandscapeCanvas_AreaNodes_EntityCreatedOnNodeAdd(self, request, editor, level, launcher_platform):
         """
         Verifies all Area nodes can be successfully added to a Landscape Canvas graph, and the proper entity
@@ -83,7 +84,7 @@ class TestAreaNodes(object):
                                           expected_lines, cfg_args=cfg_args)
 
     @pytest.mark.test_case_id('C17605868')
-    @pytest.mark.SUITE_main
+    @pytest.mark.SUITE_periodic
     def test_LandscapeCanvas_AreaNodes_EntityRemovedOnNodeDelete(self, request, editor, level, launcher_platform):
         """
         Verifies all Area nodes can be successfully removed from a Landscape Canvas graph, and the proper entity
@@ -106,7 +107,7 @@ class TestAreaNodes(object):
                                           'AreaNodes_EntityRemovedOnNodeDelete.py', expected_lines, cfg_args=cfg_args)
 
     @pytest.mark.test_case_id('C13815873')
-    @pytest.mark.SUITE_main
+    @pytest.mark.SUITE_periodic
     def test_LandscapeCanvas_LayerExtenderNodes_ComponentEntitySync(self, request, editor, level, launcher_platform):
         """
         Verifies all Area Extender nodes can be successfully added to and removed from a Landscape Canvas graph, and the

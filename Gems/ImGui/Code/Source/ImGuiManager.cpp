@@ -12,6 +12,7 @@
 
 #include "ImGui_precompiled.h"
 #include "ImGuiManager.h"
+#include <ImGuiContextScope.h>
 #include <AzCore/PlatformIncl.h>
 #include <OtherActiveImGuiBus.h>
 
@@ -141,13 +142,7 @@ namespace
 
 void ImGuiManager::Initialize()
 {
-    if (!gEnv || !gEnv->pRenderer)
-    {
-        AZ_Warning("ImGuiManager", false, "%s %s", __func__, "gEnv Invalid -- Skipping ImGui Initialization.");
-        return;
-    }
     // Register for Buses
-    ISystem::CrySystemNotificationBus::Handler::BusConnect();
     ImGuiManagerListenerBus::Handler::BusConnect();
 
     // Register for Input Notifications
@@ -171,12 +166,8 @@ void ImGuiManager::Initialize()
 #endif // defined(LOAD_IMGUI_LIB_DYNAMICALLY)  && !defined(AZ_MONOLITHIC_BUILD)
 
     // Create ImGui Context
-    ImGui::CreateContext();
-
-    if (AZ::Interface<AzFramework::AtomActiveInterface>::Get())
-    {
-        InitWindowSize();
-    }
+    m_imguiContext = ImGui::CreateContext();
+    ImGui::ImGuiContextScope contextScope(m_imguiContext);
 
     // Set config file
     ImGuiIO& io = ImGui::GetIO();
@@ -227,23 +218,13 @@ void ImGuiManager::Initialize()
     s_lyInputToImGuiNavIndexMap.insert(LyButtonImGuiNavIndexPair(InputDeviceGamepad::ThumbStickDirection::LL, ImGuiNavInput_LStickLeft));
     s_lyInputToImGuiNavIndexMap.insert(LyButtonImGuiNavIndexPair(InputDeviceGamepad::ThumbStickDirection::LR, ImGuiNavInput_LStickRight));
 
-    // Set the Display Size
-    IRenderer* renderer = gEnv->pRenderer;
-    io.DisplaySize.x = static_cast<float>(renderer->GetWidth());
-    io.DisplaySize.y = static_cast<float>(renderer->GetHeight());
+    // Set the initial Display Size (gets updated each frame anyway)
+    io.DisplaySize.x = 1920;
+    io.DisplaySize.y = 1080;
 
-    // Create Font Texture
-    unsigned char* pixels;
-    int width, height;
-    io.Fonts->GetTexDataAsAlpha8(&pixels, &width, &height);
-    ITexture* fontTexture =
-        renderer->Create2DTexture("ImGuiFont", width, height, 1, FT_ALPHA, pixels, eTF_A8);
-
-    if (fontTexture)
-    {
-        m_fontTextureId = fontTexture->GetTextureID();
-        io.Fonts->SetTexID(static_cast<void*>(fontTexture));
-    }
+    // Create a default font
+    io.Fonts->AddFontDefault();
+    io.Fonts->Build();
 
     // Broadcast ImGui Ready to Listeners
     ImGuiUpdateListenerBus::Broadcast(&IImGuiUpdateListener::OnImGuiInitialize);
@@ -272,36 +253,40 @@ void ImGuiManager::Shutdown()
 #endif
 
     // Unregister from Buses
-    ISystem::CrySystemNotificationBus::Handler::BusDisconnect();
     ImGuiManagerListenerBus::Handler::BusDisconnect();
     InputChannelEventListener::Disconnect();
     InputTextEventListener::Disconnect();
     AzFramework::WindowNotificationBus::Handler::BusDisconnect();
 
-    if (!AZ::Interface<AzFramework::AtomActiveInterface>::Get())
-    {
-        // Destroy ImGui Font Texture
-        if (gEnv->pRenderer && m_fontTextureId > 0)
-        {
-            ImGuiIO& io = ImGui::GetIO();
-            io.Fonts->SetTexID(nullptr);
-            gEnv->pRenderer->RemoveTexture(m_fontTextureId);
-        }
-    }
-
     // Finally, destroy the ImGui Context.
-    ImGui::DestroyContext();
+    ImGui::DestroyContext(m_imguiContext);
 }
 
-void ImGuiManager::OnPreRender()
+void ImGui::ImGuiManager::OverrideRenderWindowSize(uint32_t width, uint32_t height)
+{
+    m_windowSize.m_width = width;
+    m_windowSize.m_height = height;
+    m_overridingWindowSize = true;
+    // Don't listen for window updates if our window size is being overridden
+    AzFramework::WindowNotificationBus::Handler::BusDisconnect();
+}
+
+void ImGui::ImGuiManager::RestoreRenderWindowSizeToDefault()
+{
+    m_overridingWindowSize = false;
+    InitWindowSize();
+}
+
+void ImGuiManager::Render()
 {
     if (m_clientMenuBarState == DisplayState::Hidden && m_editorWindowState == DisplayState::Hidden)
     {
         return;
     }
 
+    ImGui::ImGuiContextScope contextScope(m_imguiContext);
+
     // Update Display Size
-    IRenderer* renderer = gEnv->pRenderer;
     ImGuiIO& io = ImGui::GetIO();
     io.DisplaySize = m_lastRenderResolution;
 
@@ -332,6 +317,7 @@ void ImGuiManager::OnPreRender()
                 systemCursorPositionNormalized,
                 InputDeviceMouse::Id,
                 &InputSystemCursorRequests::GetSystemCursorPositionNormalized);
+                       
             io.MousePos.x = systemCursorPositionNormalized.GetX() * m_lastRenderResolution.x;
             io.MousePos.y = systemCursorPositionNormalized.GetY() * m_lastRenderResolution.y;
             m_controllerMousePosition[0] = io.MousePos.x;
@@ -375,14 +361,6 @@ void ImGuiManager::OnPreRender()
 
     // Start New Frame
     ImGui::NewFrame();
-}
-
-void ImGuiManager::OnPostRender()
-{
-    if (m_clientMenuBarState == DisplayState::Hidden && m_editorWindowState == DisplayState::Hidden)
-    {
-        return;
-    }
 
     //// START FROM PREUPDATE
     ICVar* consoleDisabled = gEnv->pConsole->GetCVar("sys_DeactivateConsole");
@@ -393,11 +371,9 @@ void ImGuiManager::OnPostRender()
     }
 
     // Advance ImGui by Elapsed Frame Time
-    ImGuiIO& io = ImGui::GetIO();
     io.DeltaTime = gEnv->pTimer->GetFrameTime();
     //// END FROM PREUPDATE
 
-    IRenderer* renderer = gEnv->pRenderer;
     TransformationMatrices backupSceneMatrices;
 
     AZ::u32 backBufferWidth = 0;
@@ -407,11 +383,6 @@ void ImGuiManager::OnPostRender()
     {
         backBufferWidth = m_windowSize.m_width;
         backBufferHeight = m_windowSize.m_height;
-    }
-    else
-    {
-        backBufferWidth = renderer->GetBackBufferWidth();
-        backBufferHeight = renderer->GetBackBufferHeight();
     }
 
     // Find ImGui Render Resolution. 
@@ -452,24 +423,8 @@ void ImGuiManager::OnPostRender()
     m_lastRenderResolution.x = static_cast<float>(renderRes[0]);
     m_lastRenderResolution.y = static_cast<float>(renderRes[1]);
 
-    if (!AZ::Interface<AzFramework::AtomActiveInterface>::Get())
-    {
-        // Configure Renderer for 2D ImGui Rendering
-        renderer->SetCullMode(R_CULL_DISABLE);
-        renderer->Set2DMode(renderRes[0], renderRes[1], backupSceneMatrices);
-        renderer->SetColorOp(eCO_REPLACE, eCO_MODULATE, eCA_Diffuse, DEF_TEXARG0);
-        renderer->SetSrgbWrite(false);
-        renderer->SetState(GS_BLSRC_SRCALPHA | GS_BLDST_ONEMINUSSRCALPHA | GS_NODEPTHTEST);
-    }
-
     // Render!
     RenderImGuiBuffers(scaleRects);
-
-    if (!AZ::Interface<AzFramework::AtomActiveInterface>::Get())
-    {
-        // Cleanup Renderer Settings
-        renderer->Unset2DMode(backupSceneMatrices);
-    }
 
     // Clear the simulated backspace key
     if (m_simulateBackspaceKeyPressed)
@@ -484,6 +439,8 @@ void ImGuiManager::OnPostRender()
  */
 bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
 {
+    ImGui::ImGuiContextScope contextScope(m_imguiContext);
+
     ImGuiIO& io = ImGui::GetIO();
     const InputChannelId& inputChannelId = inputChannel.GetInputChannelId();
     const InputDeviceId& inputDeviceId = inputChannel.GetInputDevice().GetInputDeviceId();
@@ -654,19 +611,11 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
     if (m_clientMenuBarState == DisplayState::Visible
         || m_editorWindowState == DisplayState::Visible)
     {
-        io.WantCaptureMouse = true;
-        io.WantCaptureKeyboard = true;
-        
         // If we have the Discrete Input Mode Enabled.. then consume the input here. 
         if (m_enableDiscreteInputMode)
         {
             return true;
         }
-    }
-    else
-    {
-        io.WantCaptureMouse = false;
-        io.WantCaptureKeyboard = false;
     }
 
     return false;
@@ -679,6 +628,8 @@ bool ImGuiManager::IsControllerSupportModeEnabled(ImGuiControllerModeFlags::Flag
 
 void ImGuiManager::EnableControllerSupportMode(ImGuiControllerModeFlags::FlagType controllerMode, bool enable)
 {
+    ImGui::ImGuiContextScope contextScope(m_imguiContext);
+
     if (enable)
     {
         // Enable - Add flag by or'ing in.
@@ -710,6 +661,8 @@ void ImGuiManager::EnableControllerSupportMode(ImGuiControllerModeFlags::FlagTyp
 
 bool ImGuiManager::OnInputTextEventFiltered(const AZStd::string& textUTF8)
 {
+    ImGui::ImGuiContextScope contextScope(m_imguiContext);
+
     ImGuiIO& io = ImGui::GetIO();
     io.AddInputCharactersUTF8(textUTF8.c_str());
 
@@ -720,11 +673,13 @@ bool ImGuiManager::OnInputTextEventFiltered(const AZStd::string& textUTF8)
         m_simulateBackspaceKeyPressed = true;
     }
 
-    return io.WantCaptureKeyboard && m_clientMenuBarState == DisplayState::Visible;
+    return io.WantTextInput && m_clientMenuBarState == DisplayState::Visible;;
 }
 
 void ImGuiManager::ToggleThroughImGuiVisibleState(int controllerIndex)
 {
+    ImGui::ImGuiContextScope contextScope(m_imguiContext);
+
     switch (m_clientMenuBarState)
     {
         case DisplayState::Hidden:
@@ -733,6 +688,21 @@ void ImGuiManager::ToggleThroughImGuiVisibleState(int controllerIndex)
             
             // Draw the ImGui Mouse cursor if either the hardware mouse is connected, or the controller mouse is enabled.
             ImGui::GetIO().MouseDrawCursor = m_hardwardeMouseConnected || IsControllerSupportModeEnabled(ImGuiControllerModeFlags::Mouse);
+
+            // Disable system cursor if it's in editor and it's not editor game mode
+            if (gEnv->IsEditor() && !gEnv->IsEditorGameMode())
+            {
+                // Constrain and hide the system cursor
+                AzFramework::InputSystemCursorRequestBus::Event(
+                    AzFramework::InputDeviceMouse::Id, &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
+                    AzFramework::SystemCursorState::ConstrainedAndHidden);
+
+                // Disable discrete input mode
+                m_enableDiscreteInputMode = false;
+            }
+
+            // get window size if it wasn't initialized
+            InitWindowSize();
             break;
 
         case DisplayState::Visible:
@@ -749,6 +719,15 @@ void ImGuiManager::ToggleThroughImGuiVisibleState(int controllerIndex)
         default:
             m_clientMenuBarState = DisplayState::Hidden;
             m_currentControllerIndex = -1;
+
+            // Enable system cursor if it's in editor and it's not editor game mode
+            if (gEnv->IsEditor() && !gEnv->IsEditorGameMode())
+            {
+                // unconstrain and show the system cursor
+                AzFramework::InputSystemCursorRequestBus::Event(
+                    AzFramework::InputDeviceMouse::Id, &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
+                    AzFramework::SystemCursorState::UnconstrainedAndVisible);
+            }
             break;
     }
 
@@ -757,6 +736,8 @@ void ImGuiManager::ToggleThroughImGuiVisibleState(int controllerIndex)
 
 void ImGuiManager::RenderImGuiBuffers(const ImVec2& scaleRects)
 {
+    ImGui::ImGuiContextScope contextScope(m_imguiContext);
+
     // Trigger all listeners to run their updates
     EBUS_EVENT(ImGuiUpdateListenerBus, OnImGuiUpdate);
 
@@ -778,91 +759,6 @@ void ImGuiManager::RenderImGuiBuffers(const ImVec2& scaleRects)
         {
             OtherActiveImGuiRequestBus::Broadcast(&OtherActiveImGuiRequestBus::Events::RenderImGuiBuffers, *drawData);
         }
-        else
-        {
-            IRenderer* renderer = gEnv->pRenderer;
-
-            // Expand vertex buffer if necessary
-            m_vertBuffer.reserve(drawData->TotalVtxCount);
-            if (m_vertBuffer.size() < drawData->TotalVtxCount)
-            {
-                m_vertBuffer.insert(m_vertBuffer.end(),
-                                    drawData->TotalVtxCount - m_vertBuffer.size(),
-                                    SVF_P3F_C4B_T2F());
-            }
-
-            // Expand index buffer if necessary
-            m_idxBuffer.reserve(drawData->TotalIdxCount);
-            if (m_idxBuffer.size() < drawData->TotalIdxCount)
-            {
-                m_idxBuffer.insert(m_idxBuffer.end(), drawData->TotalIdxCount - m_idxBuffer.size(), 0);
-            }
-
-            // Process each draw command list individually
-            for (int n = 0; n < drawData->CmdListsCount; n++)
-            {
-                const ImDrawList* cmd_list = drawData->CmdLists[n];
-
-                // Cache max vert count for easy access
-                int numVerts = cmd_list->VtxBuffer.Size;
-
-                // Copy command list verts into buffer
-                for (int i = 0; i < numVerts; ++i)
-                {
-                    const ImDrawVert& imguiVert = cmd_list->VtxBuffer[i];
-                    SVF_P3F_C4B_T2F& vert = m_vertBuffer[i];
-
-                    vert.xyz = Vec3(imguiVert.pos.x, imguiVert.pos.y, 0.0f);
-                    // Convert color from RGBA to ARGB
-                    vert.color.dcolor = (imguiVert.col & 0xFF00FF00)
-                                        | ((imguiVert.col & 0xFF0000) >> 16)
-                                        | ((imguiVert.col & 0xFF) << 16);
-                    vert.st = Vec2(imguiVert.uv.x, imguiVert.uv.y);
-                }
-
-                // Copy command list indices into buffer
-                for (int i = 0; i < cmd_list->IdxBuffer.Size; ++i)
-                {
-                    m_idxBuffer[i] = uint16(cmd_list->IdxBuffer[i]);
-                }
-
-                // Use offset pointer to step along rendering operation
-                uint16* idxBufferDataOffset = m_idxBuffer.data();
-
-                // Process each draw command individually
-                for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.size(); cmd_i++)
-                {
-                    const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];
-
-                    // Defer to user rendering callback, if appropriate
-                    if (pcmd->UserCallback)
-                    {
-                        pcmd->UserCallback(cmd_list, pcmd);
-                    }
-                    // Otherwise render our buffers
-                    else
-                    {
-                        int textureId = ((ITexture*)pcmd->TextureId)->GetTextureID();
-                        renderer->SetTexture(textureId);
-                        renderer->SetScissor((int)pcmd->ClipRect.x,
-                                                (int)(pcmd->ClipRect.y),
-                                                (int)(pcmd->ClipRect.z - pcmd->ClipRect.x),
-                                                (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
-                        renderer->DrawDynVB(m_vertBuffer.data(),
-                                            idxBufferDataOffset,
-                                            numVerts,
-                                            pcmd->ElemCount,
-                                            prtTriangleList);
-                    }
-
-                    // Update offset pointer into command list's index buffer
-                    idxBufferDataOffset += pcmd->ElemCount;
-                }
-            }
-
-            // Reset scissor usage on renderer
-            renderer->SetScissor();
-        }
     }
 }
 
@@ -876,7 +772,7 @@ void ImGuiManager::InitWindowSize()
 {
     // We only need to initialize the window size by querying the window the first time.
     // After that we will get OnWindowResize notifications
-    if (!AzFramework::WindowNotificationBus::Handler::BusIsConnected())
+    if (!m_overridingWindowSize && !AzFramework::WindowNotificationBus::Handler::BusIsConnected())
     {
         AzFramework::NativeWindowHandle windowHandle = nullptr;
         AzFramework::WindowSystemRequestBus::BroadcastResult(windowHandle, &AzFramework::WindowSystemRequestBus::Events::GetDefaultWindowHandle);

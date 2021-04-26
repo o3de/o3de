@@ -417,6 +417,8 @@ set(FILES
     UI/PropertyEditor/GrowTextEdit.cpp
     UI/PropertyEditor/MultiLineTextEditHandler.h
     UI/PropertyEditor/MultiLineTextEditHandler.cpp
+    UI/PropertyEditor/ThumbnailDropDown.h
+    UI/PropertyEditor/ThumbnailDropDown.cpp
     UI/Slice/SlicePushWidget.cpp
     UI/Slice/SlicePushWidget.hxx
     UI/Slice/SliceOverridesNotificationWindow.cpp
@@ -649,6 +651,15 @@ set(FILES
     Prefab/Instance/TemplateInstanceMapperInterface.h
     Prefab/Link/Link.h
     Prefab/Link/Link.cpp
+    Prefab/PrefabPublicHandler.h
+    Prefab/PrefabPublicHandler.cpp
+    Prefab/PrefabPublicInterface.h
+    Prefab/PrefabUndo.h
+    Prefab/PrefabUndo.cpp
+    Prefab/PrefabUndoCache.cpp
+    Prefab/PrefabUndoCache.h
+    Prefab/PrefabUndoHelpers.cpp
+    Prefab/PrefabUndoHelpers.h
     Prefab/Spawnable/ComponentRequirementsValidator.h
     Prefab/Spawnable/ComponentRequirementsValidator.cpp
     Prefab/Spawnable/EditorInfoRemover.h
@@ -674,13 +685,6 @@ set(FILES
     Prefab/Spawnable/SpawnableUtils.cpp
     Prefab/Template/Template.h
     Prefab/Template/Template.cpp
-    Prefab/PrefabUndo.h
-    Prefab/PrefabUndo.cpp
-    Prefab/PrefabUndoCache.cpp
-    Prefab/PrefabUndoCache.h
-    Prefab/PrefabPublicHandler.h
-    Prefab/PrefabPublicHandler.cpp
-    Prefab/PrefabPublicInterface.h
     UI/Outliner/EntityOutlinerDisplayOptionsMenu.h
     UI/Outliner/EntityOutlinerDisplayOptionsMenu.cpp
     UI/Outliner/EntityOutlinerTreeView.hxx
@@ -705,6 +709,8 @@ set(FILES
     UI/EditorEntityUi/EditorEntityUiSystemComponent.cpp
     UI/Layer/LayerUiHandler.h
     UI/Layer/LayerUiHandler.cpp
+    UI/Prefab/LevelRootUiHandler.h
+    UI/Prefab/LevelRootUiHandler.cpp
     UI/Prefab/PrefabEditInterface.h
     UI/Prefab/PrefabEditManager.h
     UI/Prefab/PrefabEditManager.cpp

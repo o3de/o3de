@@ -66,7 +66,6 @@ namespace Vegetation
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<SurfaceAltitudeFilterConfig>()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Constructor()
                 ->Property("filterStage",
@@ -121,7 +120,6 @@ namespace Vegetation
             behaviorContext->Class<SurfaceAltitudeFilterComponent>()->RequestBus("SurfaceAltitudeFilterRequestBus");
 
             behaviorContext->EBus<SurfaceAltitudeFilterRequestBus>("SurfaceAltitudeFilterRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Event("GetAllowOverrides", &SurfaceAltitudeFilterRequestBus::Events::GetAllowOverrides)
                 ->Event("SetAllowOverrides", &SurfaceAltitudeFilterRequestBus::Events::SetAllowOverrides)

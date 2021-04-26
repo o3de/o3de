@@ -16,10 +16,11 @@ C18055051 - All Gradient Modifier nodes can be removed from a graph
 
 import os
 import pytest
+
 # Bail on the test if ly_test_tools doesn't exist.
 pytest.importorskip('ly_test_tools')
 import ly_test_tools.environment.file_system as file_system
-import automatedtesting_shared.hydra_test_utils as hydra
+import editor_python_test_tools.hydra_test_utils as hydra
 
 test_directory = os.path.join(os.path.dirname(__file__), 'EditorScripts')
 
@@ -33,13 +34,13 @@ class TestGradientModifierNodes(object):
     @pytest.fixture(autouse=True)
     def setup_teardown(self, request, workspace, project, level):
         def teardown():
-            file_system.delete([os.path.join(workspace.paths.dev(), project, "Levels", level)], True, True)
+            file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
         request.addfinalizer(teardown)
 
-        file_system.delete([os.path.join(workspace.paths.dev(), project, "Levels", level)], True, True)
+        file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
 
     @pytest.mark.test_case_id('C13767841')
-    @pytest.mark.SUITE_main
+    @pytest.mark.SUITE_periodic
     def test_LandscapeCanvas_GradientModifierNodes_EntityCreatedOnNodeAdd(self, request, editor, level,
                                                                           launcher_platform):
         """
@@ -67,7 +68,7 @@ class TestGradientModifierNodes(object):
                                           expected_lines, cfg_args=cfg_args)
 
     @pytest.mark.test_case_id('C18055051')
-    @pytest.mark.SUITE_main
+    @pytest.mark.SUITE_periodic
     def test_LandscapeCanvas_GradientModifierNodes_EntityRemovedOnNodeDelete(self, request, editor, level,
                                                                              launcher_platform):
         """

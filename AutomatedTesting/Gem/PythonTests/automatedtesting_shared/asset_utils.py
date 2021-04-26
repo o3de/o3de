@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # Built-in Imports
 from __future__ import annotations
 
-# Lumberyard Imports
+# Open 3D Engine Imports
 import azlmbr.bus as bus
 import azlmbr.asset as azasset
 import azlmbr.math as math
@@ -22,7 +22,7 @@ class Asset:
     """
     Used to find Asset Id by its path and path of asset by its Id
     If a component has any asset property, then this class object can be called as:
-        asset_id = editor_entity_utils.EditorComponent.get_component_property_value(<arguments>)
+        asset_id = editor_python_test_tools.editor_entity_utils.EditorComponent.get_component_property_value(<arguments>)
         asset = asset_utils.Asset(asset_id)
     """
     def __init__(self, id: azasset.AssetId):

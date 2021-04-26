@@ -16,6 +16,7 @@
 #include "TimeInfoWidget.h"
 #include "TrackHeaderWidget.h"
 #include "TimeViewToolBar.h"
+#include <QDir>
 #include <QPainter>
 #include <QToolTip>
 #include <QPaintEvent>
@@ -90,8 +91,8 @@ namespace EMStudio
         mDataFont.setPixelSize(13);
 
         // load the time handle top image
-        QString imageName = MysticQt::GetMysticQt()->GetDataDir().c_str();
-        mTimeHandleTop = QPixmap(imageName + "Images/Icons/TimeHandleTop.png");
+        QDir imageName{ QString(MysticQt::GetMysticQt()->GetDataDir().c_str()) };
+        mTimeHandleTop = QPixmap(imageName.filePath("Images/Icons/TimeHandleTop.png"));
 
         setMouseTracking(true);
         setAcceptDrops(true);
@@ -428,8 +429,6 @@ namespace EMStudio
             const int numSteps = numDegrees / 15;
             float delta = numSteps / 10.0f;
 
-            double zoomDelta = delta * 4 * MCore::Clamp(plugin->GetTimeScale() / 2.0, 1.0, 22.0);
-
             if (EMotionFX::GetRecorder().GetIsRecording() == false)
             {
                 if (delta > 0)
@@ -503,7 +502,7 @@ namespace EMStudio
         // calculate the pixel offsets
         double animEndPixel     = mPlugin->TimeToPixel(animationLength);
         double clipStartPixel   = mPlugin->TimeToPixel(clipStart);
-        double clipEndPixel     = mPlugin->TimeToPixel(clipEnd);
+        //double clipEndPixel     = mPlugin->TimeToPixel(clipEnd);
 
         // fill with the background color
         QRect motionRect        = rect;

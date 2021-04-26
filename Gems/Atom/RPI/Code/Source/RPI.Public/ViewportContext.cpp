@@ -21,7 +21,7 @@ namespace AZ
     namespace RPI
     {
         ViewportContext::ViewportContext(ViewportContextManager* manager, AzFramework::ViewportId id, const AZ::Name& name, RHI::Device& device, AzFramework::NativeWindowHandle nativeWindow, ScenePtr renderScene)
-            : m_rootScene(renderScene)
+            : m_rootScene(nullptr)
             , m_id(id)
             , m_windowContext(AZStd::make_shared<WindowContext>())
             , m_manager(manager)
@@ -33,6 +33,17 @@ namespace AZ
                 nativeWindow,
                 &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
             AzFramework::WindowNotificationBus::Handler::BusConnect(nativeWindow);
+
+            m_onProjectionMatrixChangedHandler = ViewportContext::MatrixChangedEvent::Handler([this](const AZ::Matrix4x4& matrix)
+            {
+                m_projectionMatrixChangedEvent.Signal(matrix);
+            });
+            m_onViewMatrixChangedHandler = ViewportContext::MatrixChangedEvent::Handler([this](const AZ::Matrix4x4& matrix)
+            {
+                m_projectionMatrixChangedEvent.Signal(matrix);
+            });
+
+            SetRenderScene(renderScene);
         }
 
         ViewportContext::~ViewportContext()
@@ -101,10 +112,17 @@ namespace AZ
 
         void ViewportContext::RenderTick()
         {
-            if (m_currentPipeline)
+            // add the current pipeline to next render tick if it's not already added.
+            if (m_currentPipeline && m_currentPipeline->GetRenderMode() != RenderPipeline::RenderMode::RenderOnce)
             {
                 m_currentPipeline->AddToRenderTickOnce();
             }
+        }
+
+        void ViewportContext::OnBeginPrepareRender()
+        {
+            ViewportContextNotificationBus::Event(GetName(), &ViewportContextNotificationBus::Events::OnRenderTick);
+            ViewportContextIdNotificationBus::Event(GetId(), &ViewportContextIdNotificationBus::Events::OnRenderTick);
         }
 
         AZ::Name ViewportContext::GetName() const
@@ -166,7 +184,6 @@ namespace AZ
         void ViewportContext::SetCameraProjectionMatrix(const AZ::Matrix4x4& matrix)
         {
             GetDefaultView()->SetViewToClipMatrix(matrix);
-            m_projectionMatrixChangedEvent.Signal(matrix);
         }
 
         AZ::Transform ViewportContext::GetCameraTransform() const
@@ -183,15 +200,23 @@ namespace AZ
         {
             const auto view = GetDefaultView();
             view->SetCameraTransform(AZ::Matrix3x4::CreateFromTransform(transform.GetOrthogonalized()));
-            m_viewMatrixChangedEvent.Signal(view->GetWorldToViewMatrix());
         }
 
         void ViewportContext::SetDefaultView(ViewPtr view)
         {
             if (m_defaultView != view)
             {
+                m_onProjectionMatrixChangedHandler.Disconnect();
+                m_onViewMatrixChangedHandler.Disconnect();
+
                 m_defaultView = view;
                 UpdatePipelineView();
+
+                m_viewMatrixChangedEvent.Signal(view->GetWorldToViewMatrix());
+                m_projectionMatrixChangedEvent.Signal(view->GetViewToClipMatrix());
+
+                view->ConnectWorldToViewMatrixChangedHandler(m_onViewMatrixChangedHandler);
+                view->ConnectWorldToClipMatrixChangedHandler(m_onProjectionMatrixChangedHandler);
             }
         }
 

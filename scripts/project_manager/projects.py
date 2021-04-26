@@ -216,9 +216,7 @@ class ProjectDialog(QObject):
         return os.path.basename(self.path_for_selection())
 
     def get_launch_project(self) -> str:
-        # We can't currently pass an absolute path, so we need to assume the folder lives under engine and just pass
-        # the base name of the selected project
-        return os.path.basename(os.path.normpath(self.path_for_selection()))
+        return os.path.normpath(self.path_for_selection())
 
     def get_executable_launch_params(self) -> list:
         """
@@ -551,7 +549,7 @@ class ProjectDialog(QObject):
                 self.add_new_project(project_folder[0], validate=False)
                 msg_box = QMessageBox(parent=self.dialog)
                 msg_box.setWindowTitle("O3DE")
-                msg_box.setText(f"Project {os.path.basename(os.path.normpath(project_folder[0]))} created." 
+                msg_box.setText(f"Project {os.path.basename(os.path.normpath(project_folder[0]))} created."
                                 "  Build your\nnew project before hitting OK to launch.")
                 msg_box.exec()
                 return

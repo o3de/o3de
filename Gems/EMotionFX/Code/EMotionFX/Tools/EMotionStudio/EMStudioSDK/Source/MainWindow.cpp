@@ -50,6 +50,7 @@
 // include MCore related
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
@@ -1808,8 +1809,7 @@ namespace EMStudio
         mLayoutsMenu->clear();
 
         // generate the layouts path
-        QString layoutsPath = MysticQt::GetDataDir().c_str();
-        layoutsPath += "Layouts/";
+        QDir layoutsPath = QDir{ QString(MysticQt::GetDataDir().c_str()) }.filePath("Layouts");
 
         // open the dir
         QDir dir(layoutsPath);
@@ -1866,6 +1866,12 @@ namespace EMStudio
             // add each layout in the remove menu
             for (uint32 i = 0; i < numLayoutNames; ++i)
             {
+                // User cannot remove the default layout. This layout is referenced in the qrc file, removing it will
+                // cause compiling issue too.
+                if (mLayoutNames[i] == "AnimGraph")
+                {
+                    continue;
+                }
                 QAction* action = removeMenu->addAction(mLayoutNames[i].c_str());
                 connect(action, &QAction::triggered, this, &MainWindow::OnRemoveLayout);
             }
@@ -1911,8 +1917,7 @@ namespace EMStudio
         SavePreferences();
 
         // generate the filename
-        AZStd::string filename;
-        filename = AZStd::string::format("%sLayouts/%s.layout", MysticQt::GetDataDir().c_str(), FromQtString(text).c_str());
+        const auto filename = AZ::IO::Path(MysticQt::GetDataDir()) / AZStd::string::format("Layouts/%s.layout", FromQtString(text).c_str());
 
         // try to load it
         if (GetLayoutManager()->LoadLayout(filename.c_str()) == false)
@@ -1970,7 +1975,7 @@ namespace EMStudio
     {
         // generate the filename
         QAction* action = qobject_cast<QAction*>(sender());
-        m_layoutFileBeingRemoved = QString(MysticQt::GetDataDir().c_str()) + "Layouts/" + action->text() + ".layout";
+        m_layoutFileBeingRemoved = QDir(MysticQt::GetDataDir().c_str()).filePath(QString("Layouts/") + action->text() + ".layout");
         m_removeLayoutNameText = action->text();
 
         // make sure we really want to remove it
@@ -1998,8 +2003,7 @@ namespace EMStudio
         SavePreferences();
 
         // generate the filename
-        AZStd::string filename;
-        filename = AZStd::string::format("%sLayouts/%s.layout", MysticQt::GetDataDir().c_str(), FromQtString(action->text()).c_str());
+        const auto filename = AZ::IO::Path(MysticQt::GetDataDir()) / AZStd::string::format("Layouts/%s.layout", FromQtString(action->text()).c_str());
 
         // try to load it
         if (GetLayoutManager()->LoadLayout(filename.c_str()))

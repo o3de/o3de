@@ -40,7 +40,7 @@ def run():
      3) Enter game mode
 
     Note:
-     - This test file must be called from the Lumberyard Editor command terminal
+     - This test file must be called from the Open 3D Engine Editor command terminal
      - Any passed and failed tests are written to the Editor.log file.
             Parsing the file or running a log_monitor are required to observe the test results.
 
@@ -50,9 +50,9 @@ def run():
     import ImportPathHelper as imports
 
     imports.init()
-    from utils import Report
-    from utils import TestHelper as helper
-    from editor_entity_utils import EditorEntity as Entity
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.editor_entity_utils import EditorEntity as Entity
+    from editor_python_test_tools.utils import TestHelper as helper
 
     ACTIVE_STATUS = azlmbr.globals.property.EditorEntityStartStatus_StartActive
 

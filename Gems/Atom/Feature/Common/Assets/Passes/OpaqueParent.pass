@@ -17,11 +17,11 @@
                     "SlotType": "Input"
                 },
                 {
-                    "Name": "SpotLightShadowmap",
+                    "Name": "ProjectedShadowmap",
                     "SlotType": "Input"
                 },
                 {
-                    "Name": "SpotLightESM",
+                    "Name": "ProjectedESM",
                     "SlotType": "Input"
                 },
                 {
@@ -82,17 +82,17 @@
                             }
                         },
                         {
-                            "LocalSlot": "SpotLightShadowmap",
+                            "LocalSlot": "ProjectedShadowmap",
                             "AttachmentRef": {
                                 "Pass": "Parent",
-                                "Attachment": "SpotLightShadowmap"
+                                "Attachment": "ProjectedShadowmap"
                             }
                         },
                         {
-                            "LocalSlot": "ExponentialShadowmapSpot",
+                            "LocalSlot": "ExponentialShadowmapProjected",
                             "AttachmentRef": {
                                 "Pass": "Parent",
-                                "Attachment": "SpotLightESM"
+                                "Attachment": "ProjectedESM"
                             }
                         },
                         {
@@ -181,10 +181,10 @@
                             }
                         },
                         {
-                            "LocalSlot": "ClearCoatNormalInput",
+                            "LocalSlot": "AlbedoInput",
                             "AttachmentRef": {
                                 "Pass": "ForwardMSAAPass",
-                                "Attachment": "ClearCoatNormalOutput"
+                                "Attachment": "AlbedoOutput"
                             }
                         },
                         {
@@ -262,7 +262,7 @@
                         "ShaderAsset": {
                             "FilePath": "Shaders/Reflections/ReflectionComposite.shader"
                         },
-                        "StencilRef": 1,
+                        "StencilRef": 1, // See RenderCommon.h and ReflectionComposite.shader
                         "PipelineViewTag": "MainCamera"
                     }
                 },

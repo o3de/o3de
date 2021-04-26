@@ -250,6 +250,7 @@ namespace AZ
                 Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::All)->
                 Attribute(Script::Attributes::Storage, Script::Attributes::StorageType::Value)->
                 Attribute(Script::Attributes::GenericConstructorOverride, &Internal::TransformDefaultConstructor)->
+                Constructor<const Vector3&, const Quaternion&, const Vector3&>()->
                 Method("GetBasis", &Transform::GetBasis)->
                 Method("GetBasisX", &Transform::GetBasisX)->
                 Method("GetBasisY", &Transform::GetBasisY)->
@@ -354,7 +355,7 @@ namespace AZ
 
         targetForward.Normalize();
 
-        // Lumberyard is Z-up and is right-handed.
+        // Open 3D Engine is Z-up and is right-handed.
         Vector3 up = Vector3::CreateAxisZ();
 
         // We have a degenerate case if target forward is parallel to the up axis,
@@ -371,7 +372,7 @@ namespace AZ
         up.Normalize();
 
         // Passing in forwardAxis allows you to force a particular local-space axis to look
-        // at the target point.  In Lumberyard, the default is forward is along Y+.
+        // at the target point.  In Open 3D Engine, the default is forward is along Y+.
         switch (forwardAxis)
         {
         case Axis::XPositive:

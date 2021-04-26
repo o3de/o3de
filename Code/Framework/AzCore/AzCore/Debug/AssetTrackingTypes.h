@@ -79,9 +79,9 @@ namespace AZ
             AssetTrackingString m_id;
         };
 
-        // Master information about an asset.
+        // Primary information about an asset.
         // Currently just contains the ID of the asset, but in the future may carry additional information about that asset (such as where in code it was initialized).
-        struct AssetMasterInfo
+        struct AssetPrimaryInfo
         {
             const AssetTrackingId* m_id;
         };
@@ -90,8 +90,8 @@ namespace AZ
         class AssetTreeNodeBase
         {
         public:
-            virtual const AssetMasterInfo* GetAssetMasterInfo() const = 0;
-            virtual AssetTreeNodeBase* FindOrAddChild(const AssetTrackingId& id, const AssetMasterInfo* info) = 0;
+            virtual const AssetPrimaryInfo* GetAssetPrimaryInfo() const = 0;
+            virtual AssetTreeNodeBase* FindOrAddChild(const AssetTrackingId& id, const AssetPrimaryInfo* info) = 0;
         };
 
         // Base class for an asset tree. Implemented by the template AssetTree<>.

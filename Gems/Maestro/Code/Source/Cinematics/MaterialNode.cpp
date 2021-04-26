@@ -395,9 +395,9 @@ void CAnimMaterialNode::AnimateNamedParameter(SAnimContext& ec, IRenderShaderRes
 
 _smart_ptr<IMaterial> CAnimMaterialNode::GetMaterialByName(const char* pName)
 {
-    const char* pCh;
+    const char* pCh = strstr(pName, ".[");
 
-    if (pCh = strstr(pName, ".["))
+    if (pCh)
     {
         char MatName[256];
         cry_strcpy(MatName, pName, (size_t)(pCh - pName));
@@ -432,10 +432,13 @@ void CAnimMaterialNode::AddTrack(IAnimTrack* track)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CAnimMaterialNode::Reflect(AZ::SerializeContext* serializeContext)
+void CAnimMaterialNode::Reflect(AZ::ReflectContext* context)
 {
-    serializeContext->Class<CAnimMaterialNode, CAnimNode>()
-        ->Version(1);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<CAnimMaterialNode, CAnimNode>()
+            ->Version(1);
+    }
 }
 
 #undef s_nodeParamsInitialized

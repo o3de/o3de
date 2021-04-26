@@ -670,9 +670,13 @@ void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, con
         action = menu->addAction(QObject::tr("Create layer"));
         QObject::connect(action, &QAction::triggered, [this] { ContextMenu_NewLayer(); });
 
+        AzToolsFramework::EntityIdList entities;
+        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+            entities,
+            &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
+
         SetupLayerContextMenu(menu);
-        AzToolsFramework::EntityIdSet flattenedSelection;
-        GetSelectedEntitiesSetWithFlattenedHierarchy(flattenedSelection);
+        AzToolsFramework::EntityIdSet flattenedSelection = AzToolsFramework::GetCulledEntityHierarchy(entities);
         AzToolsFramework::SetupAddToLayerMenu(menu, flattenedSelection, [this] { return ContextMenu_NewLayer(); });
 
         SetupSliceContextMenu(menu);
@@ -699,11 +703,14 @@ void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, con
         }
     }
 
-    action = menu->addAction(QObject::tr("Delete"));
-    QObject::connect(action, &QAction::triggered, action, [this] { ContextMenu_DeleteSelected(); });
-    if (selected.size() == 0)
+    if (!prefabSystemEnabled)
     {
-        action->setDisabled(true);
+        action = menu->addAction(QObject::tr("Delete"));
+        QObject::connect(action, &QAction::triggered, action, [this] { ContextMenu_DeleteSelected(); });
+        if (selected.size() == 0)
+        {
+            action->setDisabled(true);
+        }
     }
 
     menu->addSeparator();
@@ -1217,10 +1224,14 @@ void SandboxIntegrationManager::CloneSelection(bool& handled)
 {
     AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
-    AzToolsFramework::EntityIdSet duplicationSet;
-    GetSelectedEntitiesSetWithFlattenedHierarchy(duplicationSet);
+    AzToolsFramework::EntityIdList entities;
+    AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+        entities,
+        &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
 
-    if (duplicationSet.size() > 0)
+    AzToolsFramework::EntityIdSet duplicationSet = AzToolsFramework::GetCulledEntityHierarchy(entities);
+
+    if (!duplicationSet.empty())
     {
         AZStd::unordered_set<AZ::EntityId> clonedEntities;
         handled = AzToolsFramework::CloneInstantiatedEntities(duplicationSet, clonedEntities);
@@ -1372,11 +1383,6 @@ void SandboxIntegrationManager::SetShowCircularDependencyError(const bool& showC
 }
 
 //////////////////////////////////////////////////////////////////////////
-void SandboxIntegrationManager::SetEditTool(const char* tool)
-{
-    GetIEditor()->SetEditTool(tool);
-}
-
 void SandboxIntegrationManager::LaunchLuaEditor(const char* files)
 {
     CCryEditApp::instance()->OpenLUAEditor(files);
@@ -2769,26 +2775,6 @@ AZ::u32 SandboxIntegrationManager::SetState(AZ::u32 state)
     if (m_dc)
     {
         return m_dc->SetState(state);
-    }
-
-    return 0;
-}
-
-AZ::u32 SandboxIntegrationManager::SetStateFlag(AZ::u32 state)
-{
-    if (m_dc)
-    {
-        return m_dc->SetStateFlag(state);
-    }
-
-    return 0;
-}
-
-AZ::u32 SandboxIntegrationManager::ClearStateFlag(AZ::u32 state)
-{
-    if (m_dc)
-    {
-        return m_dc->ClearStateFlag(state);
     }
 
     return 0;

@@ -54,7 +54,7 @@ def C4976207_PhysXRigidBodies_KinematicBehavior():
     8) Exit game mode and close editor
 
     Note:
-    - This test file must be called from the Lumberyard Editor command terminal
+    - This test file must be called from the Open 3D Engine Editor command terminal
     - Any passed and failed tests are written to the Editor.log file.
             Parsing the file or running a log_monitor are required to observe the test results.
 
@@ -70,8 +70,8 @@ def C4976207_PhysXRigidBodies_KinematicBehavior():
 
     import azlmbr.legacy.general as general
     import azlmbr.bus
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     # Specific wait times in seconds
     TIME_OUT = 3.0
@@ -139,5 +139,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C4976207_PhysXRigidBodies_KinematicBehavior)

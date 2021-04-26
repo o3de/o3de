@@ -100,6 +100,7 @@ namespace AZ
             AzToolsFramework::EditorMenuNotificationBus::Handler::BusConnect();
 
             SetupThumbnails();
+            m_materialBrowserInteractions.reset(aznew MaterialBrowserInteractions);
         }
 
         void EditorMaterialSystemComponent::Deactivate()
@@ -111,6 +112,7 @@ namespace AZ
             AzToolsFramework::EditorMenuNotificationBus::Handler::BusDisconnect();
 
             TeardownThumbnails();
+            m_materialBrowserInteractions.reset();
 
             if (m_openMaterialEditorAction)
             {

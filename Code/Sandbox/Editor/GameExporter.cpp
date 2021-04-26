@@ -123,12 +123,7 @@ bool CGameExporter::Export(unsigned int flags, [[maybe_unused]] EEndian eExportE
     }
     else
     {
-        CObjectManager* pObjectManager = static_cast<CObjectManager*>(pEditor->GetObjectManager());
-
         QDir::setCurrent(pEditor->GetPrimaryCDFolder());
-
-        // Close all Editor tools
-        pEditor->SetEditTool(0);
 
         QString sLevelPath = Path::AddSlash(pGameEngine->GetLevelPath());
         if (subdirectory && subdirectory[0] && strcmp(subdirectory, ".") != 0)
@@ -283,8 +278,6 @@ void CGameExporter::ExportVisAreas(const char* pszGamePath, EEndian eExportEndia
     // remove old files
     sprintf_s(szFileOutputPath, "%s%s", pszGamePath, COMPILED_VISAREA_MAP_FILE_NAME);
     m_levelPak.m_pakFile.RemoveFile(szFileOutputPath);
-
-    SHotUpdateInfo* pExportInfo = NULL;
 
     SHotUpdateInfo exportInfo;
     I3DEngine* p3DEngine = pEditor->Get3DEngine();

@@ -21,7 +21,7 @@ import pytest
 # Bail on the test if ly_test_tools doesn't exist.
 pytest.importorskip("ly_test_tools")
 import ly_test_tools.environment.file_system as file_system
-import automatedtesting_shared.hydra_test_utils as hydra
+import editor_python_test_tools.hydra_test_utils as hydra
 
 test_directory = os.path.join(os.path.dirname(__file__), "EditorScripts")
 
@@ -34,16 +34,16 @@ class TestGeneralGraphFunctionality(object):
     @pytest.fixture(autouse=True)
     def setup_teardown(self, request, workspace, project, level):
         def teardown():
-            file_system.delete([os.path.join(workspace.paths.dev(), project, "Levels", level)], True, True)
-            file_system.delete([os.path.join(workspace.paths.dev(), project, "slices", "TestSlice.slice")], True, True)
+            file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
+            file_system.delete([os.path.join(workspace.paths.engine_root(), project, "slices", "TestSlice.slice")], True, True)
 
         request.addfinalizer(teardown)
 
-        file_system.delete([os.path.join(workspace.paths.dev(), project, "Levels", level)], True, True)
-        file_system.delete([os.path.join(workspace.paths.dev(), project, "slices", "TestSlice.slice")], True, True)
+        file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
+        file_system.delete([os.path.join(workspace.paths.engine_root(), project, "slices", "TestSlice.slice")], True, True)
 
     @pytest.mark.test_case_id("C2735988", "C13815862", "C13767840")
-    @pytest.mark.SUITE_main
+    @pytest.mark.SUITE_periodic
     def test_LandscapeCanvas_NewGraph_CreatedSuccessfully(self, request, editor, level, launcher_platform):
         cfg_args = [level]
 
@@ -66,7 +66,7 @@ class TestGeneralGraphFunctionality(object):
         )
 
     @pytest.mark.test_case_id("C2735990")
-    @pytest.mark.SUITE_main
+    @pytest.mark.SUITE_periodic
     def test_LandscapeCanvas_Component_AddedRemoved(self, request, editor, level, launcher_platform):
         cfg_args = [level]
 
@@ -86,7 +86,7 @@ class TestGeneralGraphFunctionality(object):
         )
 
     @pytest.mark.test_case_id("C14212352")
-    @pytest.mark.SUITE_main
+    @pytest.mark.SUITE_periodic
     def test_LandscapeCanvas_GraphClosed_OnLevelChange(self, request, editor, level, launcher_platform):
         cfg_args = [level]
 
@@ -108,7 +108,7 @@ class TestGeneralGraphFunctionality(object):
         )
 
     @pytest.mark.test_case_id("C17488412")
-    @pytest.mark.SUITE_main
+    @pytest.mark.SUITE_periodic
     def test_LandscapeCanvas_GraphClosed_OnEntityDelete(self, request, editor, level, launcher_platform):
         cfg_args = [level]
 
@@ -129,7 +129,7 @@ class TestGeneralGraphFunctionality(object):
         )
 
     @pytest.mark.test_case_id("C15167461")
-    @pytest.mark.SUITE_main
+    @pytest.mark.SUITE_periodic
     def test_LandscapeCanvas_GraphClosed_TabbedGraphClosesIndependently(self, request, editor, level,
                                                                         launcher_platform):
         cfg_args = [level]
@@ -154,7 +154,7 @@ class TestGeneralGraphFunctionality(object):
         )
 
     @pytest.mark.test_case_id("C22602016")
-    @pytest.mark.SUITE_main
+    @pytest.mark.SUITE_periodic
     def test_LandscapeCanvas_SliceCreateInstantiate(self, request, editor, level, workspace, launcher_platform):
         cfg_args = [level]
 

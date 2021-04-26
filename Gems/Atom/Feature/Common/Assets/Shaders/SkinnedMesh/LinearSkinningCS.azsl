@@ -17,7 +17,9 @@
 
 option enum class SkinningMethod { LinearSkinning, DualQuaternion } o_skinningMethod = SkinningMethod::LinearSkinning;
 option bool o_applyMorphTargets = false;
+option bool o_applyColorMorphTargets = false;
 
+// Apply a morph target delta with three components
 void ApplyMorphTargetDelta(uint streamOffset, uint vertexIndex, inout float3 modifiedValue)
 {
     // Get the start of the current delta
@@ -38,6 +40,32 @@ void ApplyMorphTargetDelta(uint streamOffset, uint vertexIndex, inout float3 mod
     float3 decodedFloats = DecodeIntsToFloats(encodedInts, InstanceSrg::m_morphTargetDeltaInverseIntegerEncoding);
     modifiedValue += decodedFloats;
 }
+
+// Apply a morph target delta with four components
+
+void ApplyMorphTargetDelta(uint streamOffset, uint vertexIndex, inout float4 modifiedValue)
+{
+    // Get the start of the current delta
+    uint offset = streamOffset + vertexIndex * 4;
+
+    // Read in the encoded deltas
+    uint4 encodedInts;
+    encodedInts.x = asint(PassSrg::m_skinnedMeshOutputStream[offset]);
+    encodedInts.y = asint(PassSrg::m_skinnedMeshOutputStream[offset + 1]);
+    encodedInts.z = asint(PassSrg::m_skinnedMeshOutputStream[offset + 2]);
+    encodedInts.w = asint(PassSrg::m_skinnedMeshOutputStream[offset + 3]);
+
+    // Since we're done reading, re-set the accumulation to 0 for the next frame
+    PassSrg::m_skinnedMeshOutputStream[offset] = asfloat(0);
+    PassSrg::m_skinnedMeshOutputStream[offset + 1] = asfloat(0);
+    PassSrg::m_skinnedMeshOutputStream[offset + 2] = asfloat(0);
+    PassSrg::m_skinnedMeshOutputStream[offset + 3] = asfloat(0);
+
+    // Now decode and apply the delta
+    float4 decodedFloats = DecodeIntsToFloats(encodedInts, InstanceSrg::m_morphTargetDeltaInverseIntegerEncoding);
+    modifiedValue += decodedFloats;
+}
+
 
 //! Utility function for vertex shaders to transform vertex tangent, bitangent, and normal vectors into world space based on MikkT conventions.
 //! Structured like ConstructTBN from TangentSpace.azsli, but uses a float3x3 for the localToWorld matrix.
@@ -131,7 +159,8 @@ void MainCS(uint3 thread_id: SV_DispatchThreadID)
         blendWeights.z = InstanceSrg::m_sourceBlendWeights[i * 4 + 2];
         blendWeights.w = InstanceSrg::m_sourceBlendWeights[i * 4 + 3];
 
-        // When all the blend weights of a vertex are zero it means its data is set by the CPU directly
+        // [TODO ATOM-15288]
+        // Temporary workaround. When all the blend weights of a vertex are zero it means its data is set by the CPU directly
         // and skinning must be skipped to not overwrite it (e.g. cloth simulation).
         if(!any(blendWeights))
         {
@@ -167,6 +196,16 @@ void MainCS(uint3 thread_id: SV_DispatchThreadID)
             ApplyMorphTargetDelta(InstanceSrg::m_morphTargetNormalDeltaOffset, i, normal);
             ApplyMorphTargetDelta(InstanceSrg::m_morphTargetTangentDeltaOffset, i, tangent.xyz);
             ApplyMorphTargetDelta(InstanceSrg::m_morphTargetBitangentDeltaOffset, i, bitangent);
+        }
+
+        if (o_applyColorMorphTargets)
+        {
+            float4 color = InstanceSrg::m_sourceColors[i];
+            ApplyMorphTargetDelta(InstanceSrg::m_morphTargetColorDeltaOffset, i, color);
+            PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetColors + i * 4] = color.r;
+            PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetColors + i * 4 + 1] = color.g;
+            PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetColors + i * 4 + 2] = color.b;
+            PassSrg::m_skinnedMeshOutputStream[InstanceSrg::m_targetColors + i * 4 + 3] = color.a;
         }
         
         switch(o_skinningMethod)

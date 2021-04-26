@@ -49,7 +49,7 @@ namespace AzToolsFramework
              * @param filePath The path for the new prefab file.
              * @return An outcome object; on failure, it comes with an error message detailing the cause of the error.
              */
-            virtual PrefabOperationResult CreatePrefab(const AZStd::vector<AZ::EntityId>& entityIds, AZStd::string_view filePath) = 0;
+            virtual PrefabOperationResult CreatePrefab(const AZStd::vector<AZ::EntityId>& entityIds, AZ::IO::PathView filePath) = 0;
 
             /**
              * Instantiate a prefab from a prefab file.
@@ -58,7 +58,7 @@ namespace AzToolsFramework
              * @param position The position in world space the prefab should be instantiated in.
              * @return An outcome object; on failure, it comes with an error message detailing the cause of the error.
              */
-            virtual PrefabOperationResult InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parent, AZ::Vector3 position) = 0;
+            virtual PrefabOperationResult InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position) = 0;
 
             /**
              * Saves changes to prefab to disk.

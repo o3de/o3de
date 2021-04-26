@@ -4,6 +4,9 @@
     "parentMaterial": "",
     "propertyLayoutVersion": 3,
     "properties": {
+        "occlusion": {
+            "diffuseTextureMap": "Textures/floor_1k_ao.png"
+        },
         "baseColor": {
             "color": [
                 0.800000011920929,
@@ -13,6 +16,23 @@
             ],
             "textureMap": "Textures/floor_1k_basecolor.png"
         },
+        "clearCoat": {
+            "enable": true,
+            "influenceMap": "Textures/floor_1k_ao.png",
+            "normalMap": "Textures/floor_1k_normal.png",
+            "roughness": 0.25
+        },
+        "general": {
+            "applySpecularAA": true
+        },
+        "irradiance": {
+            "color": [
+                1.0,
+                0.9404135346412659,
+                0.8688944578170776,
+                1.0
+            ]
+        },
         "normal": {
             "textureMap": "Textures/floor_1k_normal.png"
         },
@@ -21,7 +41,6 @@
         },
         "parallax": {
             "algorithm": "POM",
-            "enable": true,
             "factor": 0.012000000104308129,
             "pdo": true,
             "textureMap": "Textures/floor_1k_height.png"

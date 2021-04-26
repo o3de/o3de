@@ -23,6 +23,7 @@ namespace AZ
         ViewportContextManager::ViewportContextManager()
         {
             AZ::Interface<ViewportContextRequestsInterface>::Register(this);
+            m_defaultViewportContextName = AZ::Name(s_defaultViewportContextName);
         }
 
         ViewportContextManager::~ViewportContextManager()
@@ -56,9 +57,14 @@ namespace AZ
                     return;
                 }
                 viewportData.context = viewportContext;
-                auto onSizeChanged = [contextName, viewportId](AzFramework::WindowSize size)
+                auto onSizeChanged = [this, viewportId](AzFramework::WindowSize size)
                 {
-                    ViewportContextNotificationBus::Event(contextName, &ViewportContextNotificationBus::Events::OnViewportSizeChanged, size);
+                    // Ensure we emit OnViewportSizeChanged with the correct name.
+                    auto viewportContext = this->GetViewportContextById(viewportId);
+                    if (viewportContext)
+                    {
+                        ViewportContextNotificationBus::Event(viewportContext->GetName(), &ViewportContextNotificationBus::Events::OnViewportSizeChanged, size);
+                    }
                     ViewportContextIdNotificationBus::Event(viewportId, &ViewportContextIdNotificationBus::Events::OnViewportSizeChanged, size);
                 };
                 viewportContext->m_name = contextName;
@@ -142,7 +148,7 @@ namespace AZ
                 params.renderScene
             );
             viewportContext->GetWindowContext()->RegisterAssociatedViewportContext(viewportContext);
-            RegisterViewportContext(contextName, viewportContext);
+            RegisterViewportContext(nameToUse, viewportContext);
             return viewportContext;
         }
 
@@ -170,7 +176,11 @@ namespace AZ
                 AZ_Assert(false, "Attempted to rename ViewportContext \"%s\" to \"%s\", but \"%s\" is already assigned to another ViewportContext", viewportContext->m_name.GetCStr(), newContextName.GetCStr(), newContextName.GetCStr());
                 return;
             }
-            RegisterViewportContext(newContextName, viewportContext);
+            GetOrCreateViewStackForContext(newContextName);
+            viewportContext->m_name = newContextName;
+            UpdateViewForContext(newContextName);
+            // Ensure anyone listening on per-name viewport size updates gets notified.
+            ViewportContextNotificationBus::Event(newContextName, &ViewportContextNotificationBus::Events::OnViewportSizeChanged, viewportContext->GetViewportSize());
         }
 
         void ViewportContextManager::EnumerateViewportContexts(AZStd::function<void(ViewportContextPtr)> visitorFunction)
@@ -185,7 +195,12 @@ namespace AZ
 
         AZ::Name ViewportContextManager::GetDefaultViewportContextName() const
         {
-            return AZ::Name(s_defaultViewportContextName);
+            return m_defaultViewportContextName;
+        }
+
+        ViewportContextPtr ViewportContextManager::GetDefaultViewportContext() const
+        {
+            return GetViewportContextByName(m_defaultViewportContextName);
         }
 
         void ViewportContextManager::PushView(const Name& context, ViewPtr view)

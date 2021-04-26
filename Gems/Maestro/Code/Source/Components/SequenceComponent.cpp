@@ -34,6 +34,7 @@
 #include <Cinematics/SelectTrack.h>
 #include <Cinematics/SequenceTrack.h>
 #include <Cinematics/SoundTrack.h>
+#include <Cinematics/TimeRangesTrack.h>
 #include <Cinematics/TrackEventTrack.h>
 
 #include <Cinematics/AnimSequence.h>
@@ -105,24 +106,21 @@ namespace Maestro
     {
     }
 
-    /*static*/ void SequenceComponent::Reflect(AZ::ReflectContext* context)
+    void SequenceComponent::Reflect(AZ::ReflectContext* context)
     {
-        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
-        
-        if (serializeContext)
+        // Reflect the Cinematics library
+        ReflectCinematicsLib(context);
+
+        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<SequenceComponent, AZ::Component>()
                 ->Version(2)
                 ->Field("Sequence", &SequenceComponent::m_sequence);
-
-            // Reflect the Cinematics library
-            ReflectCinematicsLib(serializeContext);
         }
 
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->EBus<SequenceComponentRequestBus>("SequenceComponentRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Event("Play", &SequenceComponentRequestBus::Events::Play)
                 ->Event("PlayBetweenTimes", &SequenceComponentRequestBus::Events::PlayBetweenTimes)
                 ->Event("Stop", &SequenceComponentRequestBus::Events::Stop)
@@ -135,21 +133,20 @@ namespace Maestro
                 ->Event("GetCurrentPlayTime", &SequenceComponentRequestBus::Events::GetCurrentPlayTime)
                 ->Event("GetPlaySpeed", &SequenceComponentRequestBus::Events::GetPlaySpeed)
                 ;
-            behaviorContext->Class<SequenceComponent>()->RequestBus("SequenceComponentRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview);
+            behaviorContext->Class<SequenceComponent>()->RequestBus("SequenceComponentRequestBus");
 
             behaviorContext->EBus<SequenceComponentNotificationBus>("SequenceComponentNotificationBus")->
-                Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)->
                 Handler<BehaviorSequenceComponentNotificationBusHandler>();
         }
     }
 
-    /*static*/ void SequenceComponent::ReflectCinematicsLib(AZ::SerializeContext* context)
+    void SequenceComponent::ReflectCinematicsLib(AZ::ReflectContext* context)
     {
         // The Movie System itself
         CMovieSystem::Reflect(context);
         
         // Tracks
+        IAnimTrack::Reflect(context);
         TAnimSplineTrack<Vec2>::Reflect(context);
         CBoolTrack::Reflect(context);
         CCaptureTrack::Reflect(context);
@@ -166,10 +163,13 @@ namespace Maestro
         CSoundTrack::Reflect(context);
         CTrackEventTrack::Reflect(context);
         CAssetBlendTrack::Reflect(context);
+        CTimeRangesTrack::Reflect(context);
 
         // Nodes
+        IAnimSequence::Reflect(context);
         CAnimSequence::Reflect(context);
         CAnimSceneNode::Reflect(context);
+        IAnimNode::Reflect(context);
         CAnimNode::Reflect(context);
         CAnimAzEntityNode::Reflect(context);
         CAnimComponentNode::Reflect(context);
@@ -249,7 +249,6 @@ namespace Maestro
     void SequenceComponent::GetAnimatedPropertyValue(AnimatedValue& returnValue, const AZ::EntityId& animatedEntityId, const AnimatablePropertyAddress& animatableAddress)
     {
         const Maestro::SequenceAgentEventBusId ebusId(GetEntityId(), animatedEntityId);
-        float retVal = .0f;
 
         EBUS_EVENT_ID(ebusId, Maestro::SequenceAgentComponentRequestBus, GetAnimatedPropertyValue, returnValue, animatableAddress);
     }

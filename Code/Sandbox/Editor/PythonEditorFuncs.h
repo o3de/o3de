@@ -95,10 +95,6 @@ namespace AzToolsFramework
 
         void SetAxisConstraint(AZStd::string_view pConstrain) override;
 
-        const char* GetEditMode() override;
-
-        void SetEditMode(AZStd::string_view pEditMode) override;
-
         const char* GetPakFromFile(const char* filename) override;
 
         void Log(const char* pMessage) override;

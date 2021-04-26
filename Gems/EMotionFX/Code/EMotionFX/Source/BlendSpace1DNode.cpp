@@ -75,6 +75,11 @@ namespace EMotionFX
 
     void BlendSpace1DNode::UniqueData::Reset()
     {
+        BlendSpaceNode::ClearMotionInfos(m_motionInfos);
+        m_currentSegment.m_segmentIndex = MCORE_INVALIDINDEX32;
+        m_motionCoordinates.clear();
+        m_sortedMotions.clear();
+
         Invalidate();
     }
 
@@ -165,6 +170,11 @@ namespace EMotionFX
 
     void BlendSpace1DNode::Output(AnimGraphInstance* animGraphInstance)
     {
+        if (!AnimGraphInstanceExists(animGraphInstance))
+        {
+            return;
+        }
+
         // If the node is disabled, simply output a bind pose.
         if (mDisabled)
         {
@@ -247,7 +257,7 @@ namespace EMotionFX
 
     void BlendSpace1DNode::TopDownUpdate(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
     {
-        if (mDisabled)
+        if (!AnimGraphInstanceExists(animGraphInstance))
         {
             return;
         }
@@ -318,6 +328,11 @@ namespace EMotionFX
 
     void BlendSpace1DNode::PostUpdate(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
     {
+        if (!AnimGraphInstanceExists(animGraphInstance))
+        {
+            return;
+        }
+
         UniqueData* uniqueData = static_cast<UniqueData*>(FindOrCreateUniqueNodeData(animGraphInstance));
 
         if (mDisabled)
@@ -355,6 +370,12 @@ namespace EMotionFX
 
     bool BlendSpace1DNode::UpdateMotionInfos(UniqueData* uniqueData)
     {
+        AZ_Assert(uniqueData, "uniqueData is nullptr.");
+        if (!uniqueData)
+        {
+            return false;
+        }
+
         const AnimGraphInstance* animGraphInstance = uniqueData->GetAnimGraphInstance();
         ActorInstance* actorInstance = animGraphInstance->GetActorInstance();
         if (!actorInstance)
@@ -481,6 +502,11 @@ namespace EMotionFX
 
     void BlendSpace1DNode::ComputeMotionCoordinates(const AZStd::string& motionId, AnimGraphInstance* animGraphInstance, AZ::Vector2& position)
     {
+        if (!AnimGraphInstanceExists(animGraphInstance))
+        {
+            return;
+        }
+
         UniqueData* uniqueData = static_cast<UniqueData*>(FindOrCreateUniqueNodeData(animGraphInstance));
         AZ_Assert(uniqueData, "Unique data not found for blend space 1D node '%s'.", GetName());
 
@@ -605,6 +631,11 @@ namespace EMotionFX
 
     float BlendSpace1DNode::GetCurrentSamplePosition(AnimGraphInstance* animGraphInstance, UniqueData& uniqueData)
     {
+        if (!AnimGraphInstanceExists(animGraphInstance))
+        {
+            return 0.0f;
+        }
+
         if (IsInInteractiveMode())
         {
             return m_currentPositionSetInteractively;
@@ -700,6 +731,11 @@ namespace EMotionFX
 
     void BlendSpace1DNode::SetBindPoseAtOutput(AnimGraphInstance* animGraphInstance)
     {
+        if (!AnimGraphInstanceExists(animGraphInstance))
+        {
+            return;
+        }
+
         RequestPoses(animGraphInstance);
         AnimGraphPose* outputPose = GetOutputPose(animGraphInstance, OUTPUTPORT_POSE)->GetValue();
         ActorInstance* actorInstance = animGraphInstance->GetActorInstance();
@@ -709,6 +745,11 @@ namespace EMotionFX
 
     void BlendSpace1DNode::Rewind(AnimGraphInstance* animGraphInstance)
     {
+        if (!AnimGraphInstanceExists(animGraphInstance))
+        {
+            return;
+        }
+
         UniqueData* uniqueData = static_cast<BlendSpace1DNode::UniqueData*>(animGraphInstance->FindOrCreateUniqueObjectData(this));
         RewindMotions(uniqueData->m_motionInfos);
     }
@@ -839,6 +880,13 @@ namespace EMotionFX
         return true;
     }
 
+    bool BlendSpace1DNode::AnimGraphInstanceExists(AnimGraphInstance* animGraphInstance)
+    {
+        AZ_Assert(animGraphInstance, "animGraphInstance is nullptr.");
+        return animGraphInstance != nullptr;
+    }
+
+
     void BlendSpace1DNode::Reflect(AZ::ReflectContext* context)
     {
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
@@ -888,4 +936,5 @@ namespace EMotionFX
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::HideChildren)
         ;
     }
+
 } // namespace EMotionFX

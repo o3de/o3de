@@ -63,11 +63,6 @@ void CEditorPreferencesPage_General::Reflect(AZ::SerializeContext& serialize)
         ->Field("DeepSelectionRange", &DeepSelection::m_deepSelectionRange)
         ->Field("StickDuplicate", &DeepSelection::m_stickDuplicate);
 
-    serialize.Class<VertexSnapping>()
-        ->Version(1)
-        ->Field("VertexCubeSize", &VertexSnapping::m_vertexCubeSize)
-        ->Field("RenderPenetratedBoundBox", &VertexSnapping::m_bRenderPenetratedBoundBox);
-
     serialize.Class<SliceSettings>()
         ->Version(1)
         ->Field("DynamicByDefault", &SliceSettings::m_slicesDynamicByDefault);
@@ -78,7 +73,6 @@ void CEditorPreferencesPage_General::Reflect(AZ::SerializeContext& serialize)
         ->Field("Messaging", &CEditorPreferencesPage_General::m_messaging)
         ->Field("Undo", &CEditorPreferencesPage_General::m_undo)
         ->Field("Deep Selection", &CEditorPreferencesPage_General::m_deepSelection)
-        ->Field("Vertex Snapping", &CEditorPreferencesPage_General::m_vertexSnapping)
         ->Field("Slice Settings", &CEditorPreferencesPage_General::m_sliceSettings);
 
 
@@ -101,10 +95,10 @@ void CEditorPreferencesPage_General::Reflect(AZ::SerializeContext& serialize)
             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &GeneralSettings::m_stylusMode, "Stylus Mode", "Stylus Mode for tablets and other pointing devices")
             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &GeneralSettings::m_restoreViewportCamera, EditorPreferencesGeneralRestoreViewportCameraSettingName, "Keep the original editor viewport transform when exiting game mode.")
             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &GeneralSettings::m_enableSceneInspector, "Enable Scene Inspector (EXPERIMENTAL)", "Enable the option to inspect the internal data loaded from scene files like .fbx. This is an experimental feature. Restart the Scene Settings if the option is not visible under the Help menu.")
-            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &GeneralSettings::m_enablePrefabSystem, "Enable Prefab System (EXPERIMENTAL)", "Enable this option to preview Lumberyard's new prefab system. Enabling this setting removes slice support for level entities; you will need to restart the Editor for the change to take effect.");
+            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &GeneralSettings::m_enablePrefabSystem, "Enable Prefab System (EXPERIMENTAL)", "Enable this option to preview Open 3D Engine's new prefab system. Enabling this setting removes slice support for level entities; you will need to restart the Editor for the change to take effect.");
 
         editContext->Class<Messaging>("Messaging", "")
-            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Messaging::m_showDashboard, "Show Welcome to Lumberyard at startup", "Show Welcome to Lumberyard at startup")
+            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Messaging::m_showDashboard, "Show Welcome to Open 3D Engine at startup", "Show Welcome to Open 3D Engine at startup")
             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Messaging::m_showCircularDependencyError, "Show Error: Circular dependency", "Show an error message when adding a slice instance to the target slice would create a cyclic asset dependency. All other valid overrides will be saved even if this is turned off.");
 
         editContext->Class<Undo>("Undo", "")
@@ -119,12 +113,6 @@ void CEditorPreferencesPage_General::Reflect(AZ::SerializeContext& serialize)
             ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
             ->Attribute(AZ::Edit::Attributes::Max, 1000.0f);
 
-        editContext->Class<VertexSnapping>("Vertex Snapping", "")
-            ->DataElement(AZ::Edit::UIHandlers::SpinBox, &VertexSnapping::m_vertexCubeSize, "Vertex Cube Size", "Vertex Cube Size")
-            ->Attribute(AZ::Edit::Attributes::Min, 0.0001f)
-            ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &VertexSnapping::m_bRenderPenetratedBoundBox, "Render Penetrated BoundBoxes", "Render Penetrated BoundBoxes");
-
         editContext->Class<SliceSettings>("Slices", "")
             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &SliceSettings::m_slicesDynamicByDefault, "New Slices Dynamic By Default", "When creating slices, they will be set to dynamic by default");
 
@@ -135,7 +123,6 @@ void CEditorPreferencesPage_General::Reflect(AZ::SerializeContext& serialize)
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_messaging, "Messaging", "Messaging")
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_undo, "Undo", "Undo Preferences")
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_deepSelection, "Selection", "Selection")
-            ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_vertexSnapping, "Vertex Snapping", "Vertex Snapping")
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_sliceSettings, "Slices", "Slice Settings");
     }
 }
@@ -189,10 +176,6 @@ void CEditorPreferencesPage_General::OnApply()
     gSettings.deepSelectionSettings.fRange = m_deepSelection.m_deepSelectionRange;
     gSettings.deepSelectionSettings.bStickDuplicate = m_deepSelection.m_stickDuplicate;
 
-    //vertex snapping
-    gSettings.vertexSnappingSettings.vertexCubeSize = m_vertexSnapping.m_vertexCubeSize;
-    gSettings.vertexSnappingSettings.bRenderPenetratedBoundBox = m_vertexSnapping.m_bRenderPenetratedBoundBox;
-
     //slices
     gSettings.sliceSettings.dynamicByDefault = m_sliceSettings.m_slicesDynamicByDefault;
 
@@ -235,10 +218,6 @@ void CEditorPreferencesPage_General::InitializeSettings()
     //deep selection
     m_deepSelection.m_deepSelectionRange = gSettings.deepSelectionSettings.fRange;
     m_deepSelection.m_stickDuplicate = gSettings.deepSelectionSettings.bStickDuplicate;
-
-    //vertex snapping
-    m_vertexSnapping.m_vertexCubeSize = gSettings.vertexSnappingSettings.vertexCubeSize;
-    m_vertexSnapping.m_bRenderPenetratedBoundBox = gSettings.vertexSnappingSettings.bRenderPenetratedBoundBox;
 
     //slices
     m_sliceSettings.m_slicesDynamicByDefault = gSettings.sliceSettings.dynamicByDefault;

@@ -50,7 +50,7 @@ namespace ImageProcessing
         const BuilderSettings* GetBuilderSetting(const PlatformName& platform);
 
         /**
-        * Attempts to translate a legacy preset name into Lumberyard preset name.
+        * Attempts to translate a legacy preset name into Open 3D Engine preset name.
         * @param legacy preset name string
         * @return A translated preset name. If no translation is available, returns the same value as input argument.
         */

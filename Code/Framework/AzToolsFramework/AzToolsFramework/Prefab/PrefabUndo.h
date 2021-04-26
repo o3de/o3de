@@ -51,8 +51,8 @@ namespace AzToolsFramework
             explicit PrefabUndoInstance(const AZStd::string& undoOperationName);
 
             void Capture(
-                PrefabDom& initialState,
-                PrefabDom& endState,
+                const PrefabDom& initialState,
+                const PrefabDom& endState,
                 const TemplateId& templateId);
 
             void Undo() override;
@@ -101,7 +101,7 @@ namespace AzToolsFramework
                 const TemplateId& targetId,
                 const TemplateId& sourceId,
                 const InstanceAlias& instanceAlias,
-                const PrefabDomReference linkDom = PrefabDomReference(),
+                PrefabDomReference linkDom = PrefabDomReference(),
                 const LinkId linkId = InvalidLinkId);
 
             void Undo() override;

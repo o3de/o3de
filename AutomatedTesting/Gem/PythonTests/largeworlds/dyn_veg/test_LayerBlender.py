@@ -22,14 +22,14 @@ pytest.importorskip("ly_test_tools")
 
 import time as time
 
+import editor_python_test_tools.hydra_test_utils as hydra
 import ly_test_tools.launchers.launcher_helper as launcher_helper
-import ly_remote_console.remote_console_commands as remote_console_commands
-from ly_remote_console.remote_console_commands import send_command_and_expect_response as send_command_and_expect_response
 import ly_test_tools.environment.waiter as waiter
 import ly_test_tools.environment.file_system as file_system
-import automatedtesting_shared.hydra_test_utils as hydra
-import automatedtesting_shared.screenshot_utils as screenshot_utils
+import ly_remote_console.remote_console_commands as remote_console_commands
+from ly_remote_console.remote_console_commands import send_command_and_expect_response as send_command_and_expect_response
 
+import automatedtesting_shared.screenshot_utils as screenshot_utils
 from automatedtesting_shared.network_utils import check_for_listening_port
 
 
@@ -57,11 +57,11 @@ class TestLayerBlender(object):
 
     @pytest.mark.test_case_id("C2627906")
     @pytest.mark.BAT
-    @pytest.mark.SUITE_main
+    @pytest.mark.SUITE_periodic
     @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
     def test_LayerBlender_E2E_Editor(self, workspace, request, editor, project, level, launcher_platform):
         # Make sure temp level doesn't already exist
-        file_system.delete([os.path.join(workspace.paths.dev(), project, "Levels", level)], True, True)
+        file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
 
         expected_lines = [
             "'Purple Spawner' created",
@@ -94,7 +94,7 @@ class TestLayerBlender(object):
 
     @pytest.mark.test_case_id("C2627906")
     @pytest.mark.BAT
-    @pytest.mark.SUITE_main
+    @pytest.mark.SUITE_periodic
     @pytest.mark.xfail
     @pytest.mark.parametrize("launcher_platform", ['windows'])
     def test_LayerBlender_E2E_Launcher(self, workspace, project, launcher, level, remote_console_instance,
@@ -112,4 +112,4 @@ class TestLayerBlender(object):
         assert ret_code == 0, "Test failed. See Game.log for details"
 
         # Cleanup our temp level
-        file_system.delete([os.path.join(workspace.paths.dev(), project, "Levels", level)], True, True)
+        file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)

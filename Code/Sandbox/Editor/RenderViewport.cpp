@@ -66,7 +66,6 @@
 #include "Util/fastlib.h"
 #include "CryEditDoc.h"
 #include "GameEngine.h"
-#include "EditTool.h"
 #include "ViewManager.h"
 #include "Objects/DisplayContext.h"
 #include "DisplaySettings.h"
@@ -94,9 +93,6 @@
 AZ_CVAR(
     bool, ed_visibility_use, true, nullptr, AZ::ConsoleFunctorFlags::Null,
     "Enable/disable using the new IVisibilitySystem for Entity visibility determination");
-AZ_CVAR(
-    bool, ed_visibility_logTiming, false, nullptr, AZ::ConsoleFunctorFlags::Null,
-    "Output the timing of the new IVisibilitySystem query");
 
 CRenderViewport* CRenderViewport::m_pPrimaryViewport = nullptr;
 
@@ -1394,13 +1390,6 @@ void CRenderViewport::Update()
         auto start = std::chrono::steady_clock::now();
 
         m_entityVisibilityQuery.UpdateVisibility(GetCameraState());
-
-        if (ed_visibility_logTiming)
-        {
-            auto stop = std::chrono::steady_clock::now();
-            std::chrono::duration<double> diff = stop - start;
-            AZ_Printf("Visibility", "FindVisibleEntities (new) - Duration: %f", diff);
-        }
     }
 
     {
@@ -1556,7 +1545,6 @@ void CRenderViewport::OnEditorNotifyEvent(EEditorNotifyEvent event)
                 m_previousContext = SetCurrentContext();
             }
             SetCurrentCursor(STD_CURSOR_GAME);
-            AzFramework::InputSystemCursorConstraintRequestBus::Handler::BusConnect();
         }
     }
     break;
@@ -1564,7 +1552,6 @@ void CRenderViewport::OnEditorNotifyEvent(EEditorNotifyEvent event)
     case eNotify_OnEndGameMode:
         if (GetIEditor()->GetViewManager()->GetGameViewport() == this)
         {
-            AzFramework::InputSystemCursorConstraintRequestBus::Handler::BusDisconnect();
             SetCurrentCursor(STD_CURSOR_DEFAULT);
             if (m_renderer->GetCurrentContextHWND() != renderOverlayHWND())
             {
@@ -1959,12 +1946,6 @@ void CRenderViewport::RenderAll()
             AzFramework::ViewportInfo{ GetViewportId() }, *debugDisplay);
 
         m_entityVisibilityQuery.DisplayVisibility(*debugDisplay);
-
-        if (GetEditTool())
-        {
-            // display editing tool
-            GetEditTool()->Display(displayContext);
-        }
 
         if (m_manipulatorManager != nullptr)
         {
@@ -2422,9 +2403,7 @@ void CRenderViewport::SetWindowTitle(const AZStd::string& title)
 
 AzFramework::WindowSize CRenderViewport::GetClientAreaSize() const
 {
-    const QWidget* window = this->window();
-    QSize windowSize = window->size();
-    return AzFramework::WindowSize(windowSize.width(), windowSize.height());
+    return AzFramework::WindowSize(m_rcClient.width(), m_rcClient.height());
 }
 
 
@@ -2462,10 +2441,14 @@ void CRenderViewport::ConnectViewportInteractionRequestBus()
     AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler::BusConnect(GetViewportId());
     AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequestBus::Handler::BusConnect(GetViewportId());
     m_viewportUi.ConnectViewportUiBus(GetViewportId());
+
+    AzFramework::InputSystemCursorConstraintRequestBus::Handler::BusConnect();
 }
 
 void CRenderViewport::DisconnectViewportInteractionRequestBus()
 {
+    AzFramework::InputSystemCursorConstraintRequestBus::Handler::BusDisconnect();
+
     m_viewportUi.DisconnectViewportUiBus();
     AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequestBus::Handler::BusDisconnect();
     AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler::BusDisconnect();
@@ -2785,35 +2768,6 @@ void CRenderViewport::OnMouseWheel(Qt::KeyboardModifiers modifiers, short zDelta
             MouseInteractionEvent(mouseInteraction, zDelta));
 
         handled = result != MouseInteractionResult::None;
-    }
-    else
-    {
-        if (m_manipulatorManager == nullptr || m_manipulatorManager->ConsumeViewportMouseWheel(mouseInteraction))
-        {
-            return;
-        }
-
-        if (AzToolsFramework::ComponentModeFramework::InComponentMode())
-        {
-            AzToolsFramework::EditorInteractionSystemViewportSelectionRequestBus::EventResult(
-                handled, AzToolsFramework::GetEntityContextId(),
-                &EditorInteractionSystemViewportSelectionRequestBus::Events::InternalHandleMouseViewportInteraction,
-                MouseInteractionEvent(mouseInteraction, zDelta));
-        }
-        else
-        {
-            //////////////////////////////////////////////////////////////////////////
-            // Asks current edit tool to handle mouse callback.
-            CEditTool* pEditTool = GetEditTool();
-            if (pEditTool && (modifiers & Qt::ControlModifier))
-            {
-                QPoint tempPoint(scaledPoint.x(), scaledPoint.y());
-                if (pEditTool->MouseCallback(this, eMouseWheel, tempPoint, zDelta))
-                {
-                    handled = true;
-                }
-            }
-        }
     }
 
     if (!handled)
@@ -4347,17 +4301,8 @@ void CRenderViewport::RenderSnappingGrid()
     {
         return;
     }
-    if (GetIEditor()->GetEditMode() != eEditModeMove
-        && GetIEditor()->GetEditMode() != eEditModeRotate)
-    {
-        return;
-    }
     CGrid* pGrid = GetViewManager()->GetGrid();
     if (pGrid->IsEnabled() == false && pGrid->IsAngleSnapEnabled() == false)
-    {
-        return;
-    }
-    if (GetIEditor()->GetEditTool() && !GetIEditor()->GetEditTool()->IsDisplayGrid())
     {
         return;
     }
@@ -4367,76 +4312,6 @@ void CRenderViewport::RenderSnappingGrid()
     int prevState = dc.GetState();
     dc.DepthWriteOff();
 
-    Vec3 p = pSelGroup->GetObject(0)->GetWorldPos();
-
-    AABB bbox;
-    pSelGroup->GetObject(0)->GetBoundBox(bbox);
-    float size = 2 * bbox.GetRadius();
-    float alphaMax = 1.0f, alphaMin = 0.2f;
-    dc.SetLineWidth(3);
-
-    if (GetIEditor()->GetEditMode() == eEditModeMove && pGrid->IsEnabled())
-    // Draw the translation grid.
-    {
-        Vec3 u = m_constructionPlaneAxisX;
-        Vec3 v = m_constructionPlaneAxisY;
-        float step = pGrid->scale * pGrid->size;
-        const int MIN_STEP_COUNT = 5;
-        const int MAX_STEP_COUNT = 300;
-        int nSteps = std::min(std::max(FloatToIntRet(size / step), MIN_STEP_COUNT), MAX_STEP_COUNT);
-        size = nSteps * step;
-        for (int i = -nSteps; i <= nSteps; ++i)
-        {
-            // Draw u lines.
-            float alphaCur = alphaMax - fabsf(float(i) / float(nSteps)) * (alphaMax - alphaMin);
-            dc.DrawLine(p + v * (step * i), p + u * size + v * (step * i),
-                ColorF(0, 0, 0, alphaCur), ColorF(0, 0, 0, alphaMin));
-            dc.DrawLine(p + v * (step * i), p - u * size + v * (step * i),
-                ColorF(0, 0, 0, alphaCur), ColorF(0, 0, 0, alphaMin));
-            // Draw v lines.
-            dc.DrawLine(p + u * (step * i), p + v * size + u * (step * i),
-                ColorF(0, 0, 0, alphaCur), ColorF(0, 0, 0, alphaMin));
-            dc.DrawLine(p + u * (step * i), p - v * size + u * (step * i),
-                ColorF(0, 0, 0, alphaCur), ColorF(0, 0, 0, alphaMin));
-        }
-    }
-    else if (GetIEditor()->GetEditMode() == eEditModeRotate && pGrid->IsAngleSnapEnabled())
-    // Draw the rotation grid.
-    {
-        int nAxis(GetAxisConstrain());
-        if (nAxis == AXIS_X || nAxis == AXIS_Y || nAxis == AXIS_Z)
-        {
-            RefCoordSys coordSys = GetIEditor()->GetReferenceCoordSys();
-            Vec3 xAxis(1, 0, 0);
-            Vec3 yAxis(0, 1, 0);
-            Vec3 zAxis(0, 0, 1);
-            Vec3 rotAxis;
-            if (nAxis == AXIS_X)
-            {
-                rotAxis = m_constructionMatrix[coordSys].TransformVector(xAxis);
-            }
-            else if (nAxis == AXIS_Y)
-            {
-                rotAxis = m_constructionMatrix[coordSys].TransformVector(yAxis);
-            }
-            else if (nAxis == AXIS_Z)
-            {
-                rotAxis = m_constructionMatrix[coordSys].TransformVector(zAxis);
-            }
-            Vec3 anotherAxis = m_constructionPlane.n * size;
-            float step = pGrid->angleSnap;
-            int nSteps = FloatToIntRet(180.0f / step);
-            for (int i = 0; i < nSteps; ++i)
-            {
-                AngleAxis rot(i* step* gf_PI / 180.0, rotAxis);
-                Vec3 dir = rot * anotherAxis;
-                dc.DrawLine(p, p + dir,
-                    ColorF(0, 0, 0, alphaMax), ColorF(0, 0, 0, alphaMin));
-                dc.DrawLine(p, p - dir,
-                    ColorF(0, 0, 0, alphaMax), ColorF(0, 0, 0, alphaMin));
-            }
-        }
-    }
     dc.SetState(prevState);
 }
 
@@ -4615,6 +4490,22 @@ void CRenderViewport::BuildDragDropContext(AzQtComponents::ViewportDragContext& 
 {
     const auto scaledPoint = WidgetToViewport(pt);
     QtViewport::BuildDragDropContext(context, scaledPoint);
+}
+
+void* CRenderViewport::GetSystemCursorConstraintWindow() const
+{
+    AzFramework::SystemCursorState systemCursorState = AzFramework::SystemCursorState::Unknown;
+
+    AzFramework::InputSystemCursorRequestBus::EventResult(
+        systemCursorState,
+        AzFramework::InputDeviceMouse::Id,
+        &AzFramework::InputSystemCursorRequests::GetSystemCursorState);
+
+    const bool systemCursorConstrained =
+        (systemCursorState == AzFramework::SystemCursorState::ConstrainedAndHidden ||
+         systemCursorState == AzFramework::SystemCursorState::ConstrainedAndVisible);
+
+    return systemCursorConstrained ? renderOverlayHWND() : nullptr;
 }
 
 void CRenderViewport::RestoreViewportAfterGameMode()

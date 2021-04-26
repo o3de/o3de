@@ -117,7 +117,6 @@ void CD3D9Renderer::RT_DrawDynVBUI(SVF_P2F_C4B_T2F_F4B* pBuf, uint16* pInds, uin
 
 void CD3D9Renderer::RT_Draw2dImageInternal(C2dImage* images, uint32 numImages, bool stereoLeftEye)
 {
-    bool bSaveZTest = ((m_RP.m_CurState & GS_NODEPTHTEST) == 0);
     SetCullMode(R_CULL_DISABLE);
 
     float maxParallax = 0;
@@ -308,7 +307,6 @@ void CD3D9Renderer::RT_DrawLines(Vec3 v[], int nump, ColorF& col, int flags, flo
 
     int i;
     int st;
-    HRESULT hr = S_OK;
 
     EF_SetColorOp(eCO_MODULATE, eCO_MODULATE, eCA_Texture | (eCA_Diffuse << 3), eCA_Texture | (eCA_Diffuse << 3));
     EF_SetSrgbWrite(false);

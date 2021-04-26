@@ -177,7 +177,6 @@ bool CSunShafts::SunShaftsGen(CTexture* pSunShafts, CTexture* pPingPongRT)
     int iTempX, iTempY, iWidth, iHeight;
     gcpRendD3D->GetViewport(&iTempX, &iTempY, &iWidth, &iHeight);
 
-    CTexture* pBackBufferTex = CTexture::s_ptexBackBuffer;
 
     //moved here because used later on
     static CCryNameR pParam1Name("SunShafts_SunPos");

@@ -21,7 +21,10 @@
 #include <QViewportSettings.h>
 
 #include <LyShine/Bus/UiEditorCanvasBus.h>
+#include <LyShine/Draw2d.h>
 
+#include "LyShine.h"
+#include "UiRenderer.h"
 #include "ViewportNudge.h"
 #include "ViewportPivot.h"
 #include "ViewportSnap.h"
@@ -33,6 +36,9 @@
 #include <QtGui/private/qhighdpiscaling_p.h>
 
 #include <QGridLayout>
+
+#include <Atom/RPI.Public/Scene.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
 
 #define UICANVASEDITOR_SETTINGS_VIEWPORTWIDGET_DRAW_ELEMENT_BORDERS_KEY         "ViewportWidget::m_drawElementBordersFlags"
 #define UICANVASEDITOR_SETTINGS_VIEWPORTWIDGET_DRAW_ELEMENT_BORDERS_DEFAULT     ( ViewportWidget::DrawElementBorders_Unselected )
@@ -198,7 +204,7 @@ namespace
 } // anonymous namespace.
 
 ViewportWidget::ViewportWidget(EditorWindow* parent)
-    : QViewport(parent)
+    : AtomToolsFramework::RenderViewportWidget(parent)
     , m_editorWindow(parent)
     , m_viewportInteraction(new ViewportInteraction(m_editorWindow))
     , m_viewportAnchor(new ViewportAnchor())
@@ -213,29 +219,11 @@ ViewportWidget::ViewportWidget(EditorWindow* parent)
     , m_rulersVisible(GetPersistentRulerVisibility())
     , m_guidesVisible(GetPersistentGuideVisibility())
 {
-    QObject::connect(this,
-        SIGNAL(SignalRender(const SRenderContext&)),
-        SLOT(HandleSignalRender(const SRenderContext&)));
-
-    // Turn off all fancy visuals in the viewport.
-    {
-        SViewportSettings tweakedSettings = GetSettings();
-
-        tweakedSettings.grid.showGrid = false;
-        tweakedSettings.grid.origin = false;
-        tweakedSettings.rendering.fps = false;
-        tweakedSettings.rendering.wireframe = false;
-        tweakedSettings.lighting.m_brightness = 0.0f;
-        tweakedSettings.camera.showViewportOrientation = false;
-
-        SetSettings(tweakedSettings);
-    }
-
     setAcceptDrops(true);
 
-    SetUseArrowsForNavigation(false);
-
     UpdateViewportBackground();
+
+    InitUiRenderer();
 
     SetupShortcuts();
 
@@ -264,12 +252,34 @@ ViewportWidget::ViewportWidget(EditorWindow* parent)
         });
 
     FontNotificationBus::Handler::BusConnect();
+    AZ::TickBus::Handler::BusConnect();
 }
 
 ViewportWidget::~ViewportWidget()
 {
     AzToolsFramework::EditorPickModeNotificationBus::Handler::BusDisconnect();
     FontNotificationBus::Handler::BusDisconnect();
+    AZ::TickBus::Handler::BusDisconnect();
+
+    m_uiRenderer.reset();
+
+    // Notify LyShine that this is no longer a valid UiRenderer.
+    // Only one viewport/renderer is currently supported in the UI Editor
+    CLyShine* lyShine = static_cast<CLyShine*>(gEnv->pLyShine);
+    lyShine->SetUiRendererForEditor(nullptr);
+}
+
+void ViewportWidget::InitUiRenderer()
+{
+    m_uiRenderer = AZStd::make_shared<UiRenderer>(GetViewportContext());
+
+    // Notify LyShine that this is the UiRenderer to be used for rendering
+    // UI canvases that are loaded in the UI Editor.
+    // Only one viewport/renderer is currently supported in the UI Editor
+    CLyShine* lyShine = static_cast<CLyShine*>(gEnv->pLyShine);
+    lyShine->SetUiRendererForEditor(m_uiRenderer);
+
+    m_draw2d = AZStd::make_shared<CDraw2d>(GetViewportContext());
 }
 
 ViewportInteraction* ViewportWidget::GetViewportInteraction()
@@ -292,17 +302,15 @@ void ViewportWidget::ToggleDrawElementBorders(uint32 flags)
 
 void ViewportWidget::UpdateViewportBackground()
 {
-    SViewportSettings tweakedSettings = GetSettings();
-    ColorB backgroundColor(ViewportHelpers::backgroundColorDark.GetR8(),
+    const QColor backgroundColor(ViewportHelpers::backgroundColorDark.GetR8(),
         ViewportHelpers::backgroundColorDark.GetG8(),
         ViewportHelpers::backgroundColorDark.GetB8(),
         ViewportHelpers::backgroundColorDark.GetA8());
-    tweakedSettings.background.useGradient = false;
-    tweakedSettings.background.topColor = backgroundColor;
-    tweakedSettings.background.bottomColor = backgroundColor;
-    tweakedSettings.lighting.m_ambientColor = backgroundColor;
 
-    SetSettings(tweakedSettings);
+    QPalette pal(palette());
+    pal.setColor(QPalette::Window, backgroundColor);
+    setPalette(pal);
+    setAutoFillBackground(true);
 }
 
 void ViewportWidget::ActiveCanvasChanged()
@@ -344,8 +352,10 @@ void ViewportWidget::ClearUntilSafeToRedraw()
     // set flag so that Update will just clear the screen rather than rendering canvas
     m_canvasRenderIsEnabled = false;
 
+#ifdef LYSHINE_ATOM_TODO // check if still needed
     // Force an update
     Update();
+#endif
 
     // Schedule a timer to set the m_canvasRenderIsEnabled flag
     // using a time of zero just waits until there is nothing on the event queue
@@ -454,9 +464,10 @@ void ViewportWidget::contextMenuEvent(QContextMenuEvent* e)
         }
     }
 
-    QViewport::contextMenuEvent(e);
+    RenderViewportWidget::contextMenuEvent(e);
 }
 
+#ifdef LYSHINE_ATOM_TODO // check if still needed
 void ViewportWidget::HandleSignalRender([[maybe_unused]] const SRenderContext& context)
 {
     // Called from QViewport when redrawing the viewport.
@@ -477,6 +488,7 @@ void ViewportWidget::HandleSignalRender([[maybe_unused]] const SRenderContext& c
         }
     }
 }
+#endif
 
 void ViewportWidget::UserSelectionChanged(HierarchyItemRawPtrList* items)
 {
@@ -497,8 +509,34 @@ void ViewportWidget::EnableCanvasRender()
     RefreshTick();
 }
 
+void ViewportWidget::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+{
+    if (!m_uiRenderer->IsReady() || !m_canvasRenderIsEnabled)
+    {
+        return;
+    }
+
+#ifdef LYSHINE_ATOM_TODO
+    gEnv->pRenderer->SetSrgbWrite(true);
+#endif
+
+    // Set up to render a frame to this viewport's window
+    GetViewportContext()->RenderTick();
+
+    UiEditorMode editorMode = m_editorWindow->GetEditorMode();
+    if (editorMode == UiEditorMode::Edit)
+    {
+        RenderEditMode(deltaTime);
+    }
+    else // if (editorMode == UiEditorMode::Preview)
+    {
+        RenderPreviewMode(deltaTime);
+    }
+}
+
 void ViewportWidget::RefreshTick()
 {
+#ifdef LYSHINE_EDITOR_TODO // still need this?
     if (m_refreshRequested)
     {
         if (m_canvasRenderIsEnabled)
@@ -511,6 +549,7 @@ void ViewportWidget::RefreshTick()
         // in case we were called manually, reset the timer
         m_updateTimer.start();
     }
+#endif
 }
 
 void ViewportWidget::mousePressEvent(QMouseEvent* ev)
@@ -636,7 +675,7 @@ void ViewportWidget::wheelEvent(QWheelEvent* ev)
         m_viewportInteraction->MouseWheelEvent(&scaledEvent);
     }
 
-    QViewport::wheelEvent(ev);
+    RenderViewportWidget::wheelEvent(ev);
 
     Refresh();
 }
@@ -698,7 +737,7 @@ void ViewportWidget::keyPressEvent(QKeyEvent* event)
         bool handled = m_viewportInteraction->KeyPressEvent(event);
         if (!handled)
         {
-            QViewport::keyPressEvent(event);
+            RenderViewportWidget::keyPressEvent(event);
         }
     }
     else // if (editorMode == UiEditorMode::Preview)
@@ -739,7 +778,7 @@ void ViewportWidget::keyReleaseEvent(QKeyEvent* event)
         bool handled = m_viewportInteraction->KeyReleaseEvent(event);
         if (!handled)
         {
-            QViewport::keyReleaseEvent(event);
+            RenderViewportWidget::keyReleaseEvent(event);
         }
     }
     else if (editorMode == UiEditorMode::Preview)
@@ -790,7 +829,7 @@ void ViewportWidget::resizeEvent(QResizeEvent* ev)
         }
     }
 
-    QViewport::resizeEvent(ev);
+    RenderViewportWidget::resizeEvent(ev);
 }
 
 bool ViewportWidget::AcceptsMimeData(const QMimeData* mimeData)
@@ -863,7 +902,7 @@ QPointF ViewportWidget::WidgetToViewport(const QPointF & point) const
     return point * WidgetToViewportFactor();
 }
 
-void ViewportWidget::RenderEditMode()
+void ViewportWidget::RenderEditMode(float deltaTime)
 {
     if (m_fontTextureHasChanged)
     {
@@ -878,7 +917,7 @@ void ViewportWidget::RenderEditMode()
         return; // this can happen if a render happens during a restart
     }
 
-    Draw2dHelper draw2d;    // sets and resets 2D draw mode in constructor/destructor
+    Draw2dHelper draw2d(m_draw2d.get());    // sets and resets 2D draw mode in constructor/destructor
 
     QTreeWidgetItemRawPtrQList selection = m_editorWindow->GetHierarchy()->selectedItems();
 
@@ -893,16 +932,18 @@ void ViewportWidget::RenderEditMode()
     AZ::Vector2 viewportSize(aznumeric_cast<float>(size().width()), aznumeric_cast<float>(size().height()));
     viewportSize *= QHighDpiScaling::factor(windowHandle()->screen());
 
+#ifdef LYSHINE_ATOM_TODO
     // clear the stencil buffer before rendering each canvas - required for masking
     // NOTE: the FRT_CLEAR_IMMEDIATE is required since we will not be setting the render target
     ColorF viewportBackgroundColor(0, 0, 0, 0); // if clearing color we want to set alpha to zero also
     gEnv->pRenderer->ClearTargetsImmediately(FRT_CLEAR_STENCIL, viewportBackgroundColor);
+#endif
 
     // Set the target size of the canvas
     EBUS_EVENT_ID(canvasEntityId, UiCanvasBus, SetTargetCanvasSize, false, canvasSize);
 
     // Update this canvas (must be done after SetTargetCanvasSize)
-    EBUS_EVENT_ID(canvasEntityId, UiEditorCanvasBus, UpdateCanvasInEditorViewport, GetLastFrameTime(), false);
+    EBUS_EVENT_ID(canvasEntityId, UiEditorCanvasBus, UpdateCanvasInEditorViewport, deltaTime, false);
 
     // Render this canvas
     EBUS_EVENT_ID(canvasEntityId, UiEditorCanvasBus, RenderCanvasInEditorViewport, false, viewportSize);
@@ -999,7 +1040,7 @@ void ViewportWidget::RenderEditMode()
     }
 }
 
-void ViewportWidget::RenderPreviewMode()
+void ViewportWidget::RenderPreviewMode(float deltaTime)
 {
     AZ::EntityId canvasEntityId = m_editorWindow->GetPreviewModeCanvas();
 
@@ -1059,7 +1100,7 @@ void ViewportWidget::RenderPreviewMode()
         EBUS_EVENT_ID(canvasEntityId, UiCanvasBus, SetTargetCanvasSize, true, canvasSize);
 
         // Update this canvas (must be done after SetTargetCanvasSize)
-        EBUS_EVENT_ID(canvasEntityId, UiEditorCanvasBus, UpdateCanvasInEditorViewport, GetLastFrameTime(), true);
+        EBUS_EVENT_ID(canvasEntityId, UiEditorCanvasBus, UpdateCanvasInEditorViewport, deltaTime, true);
 
         // Execute events that have been queued during the canvas update
         gEnv->pLyShine->ExecuteQueuedEvents();
@@ -1090,20 +1131,24 @@ void ViewportWidget::RenderPreviewMode()
         canvasToViewportMatrix.SetTranslation(translation);
         EBUS_EVENT_ID(canvasEntityId, UiCanvasBus, SetCanvasToViewportMatrix, canvasToViewportMatrix);
 
+#ifdef LYSHINE_ATOM_TODO
         // clear the stencil buffer before rendering each canvas - required for masking
         // NOTE: the FRT_CLEAR_IMMEDIATE is required since we will not be setting the render target
         // We also clear the color to a mid grey so that we can see the bounds of the canvas
         ColorF viewportBackgroundColor(0.5f, 0.5f, 0.5f, 0); // if clearing color we want to set alpha to zero also
         gEnv->pRenderer->ClearTargetsImmediately(FRT_CLEAR, viewportBackgroundColor);
+#endif
 
+#ifdef LYSHINE_ATOM_TODO
         // Render a black rectangle covering the canvas area. This allows the canvas bounds to be visible when the canvas size is
         // not exactly the same as the viewport size
         AZ::Vector2 topLeftInViewportSpace = CanvasHelpers::GetViewportPoint(canvasEntityId, AZ::Vector2(0.0f, 0.0f));
         AZ::Vector2 bottomRightInViewportSpace = CanvasHelpers::GetViewportPoint(canvasEntityId, canvasSize);
         AZ::Vector2 sizeInViewportSpace = bottomRightInViewportSpace - topLeftInViewportSpace;
-        Draw2dHelper draw2d;
+        Draw2dHelper draw2d(m_draw2d.get())
         int texId = gEnv->pRenderer->GetBlackTextureId();
         draw2d.DrawImage(texId, topLeftInViewportSpace, sizeInViewportSpace);
+#endif
 
         // Render this canvas
         // NOTE: the displayBounds param is always false. If we wanted a debug option to display the bounds

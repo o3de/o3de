@@ -105,8 +105,9 @@ bool CD3DProfilingGPUTimer::Init()
 {
 #ifdef ENABLE_PROFILING_GPU_TIMERS
     return CD3DGPUTimer::Init();
-#endif
+#else
     return false;
+#endif
 }
 
 CD3DGPUTimer::CD3DGPUTimer()

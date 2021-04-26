@@ -19,6 +19,10 @@ the following tools:
      A library to manipulate Lumberyard installations
  * Launchers:
      A library to test the game in a variety of platforms
+ * O3DE:
+     Contains various modules to test o3de specific executables
+ * Environment:
+     Contains various modules to assist with environmental dependencies
 
 
 REQUIREMENTS
@@ -38,10 +42,6 @@ Assuming CMake is already setup on your operating system, below are some sample 
     mkdir windows_vs2019
     cd windows_vs2019
     cmake -E time cmake --build . --target ALL_BUILD --config profile
-NOTE:
-Using the above command also adds LyTestTools to the PYTHONPATH OS environment variable.
-Additionally, some CTest scripts will add the Python interpreter path to the PYTHON OS environment variable.
-There is some LyTestTools functionality that will search for these, so feel free to populate them manually.
 
 To manually install the project in development mode using your own installed Python interpreter:
     cd /path/to/lumberyard/dev/Tools/LyTestTools/
@@ -67,14 +67,14 @@ PACKAGE STRUCTURE
 
 The project is organized into packages. Each package corresponds to a tool:
 
-- LyTestTools.ly_test_tools._internal: contains logging setup, pytest fixture, and lumberyard workspace manager modules
+- LyTestTools.ly_test_tools._internal: contains logging setup, pytest fixture, and o3de workspace manager modules
 - LyTestTools.ly_test_tools.builtin: builtin helpers and fixtures for quickly writing tests
 - LyTestTools.ly_test_tools.console: modules used for consoles
 - LyTestTools.ly_test_tools.environment: functions related to file/process management and cleanup
 - LyTestTools.ly_test_tools.image: modules related to image capturing and processing
 - LyTestTools.ly_test_tools.launchers: game launchers library
 - LyTestTools.ly_test_tools.log: modules for interacting with generated or existing log files
-- LyTestTools.ly_test_tools.lumberyard: modules used to interact with lumberyard
+- LyTestTools.ly_test_tools.o3de: modules used to interact with Open 3D Engine
 - LyTestTools.ly_test_tools.mobile: modules used for android/ios
 - LyTestTools.ly_test_tools.report: modules used for reporting
 - LyTestTools.tests: LyTestTools integration, unit, and example usage tests

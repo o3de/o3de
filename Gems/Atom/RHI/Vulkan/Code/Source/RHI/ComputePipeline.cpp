@@ -53,7 +53,6 @@ namespace AZ
         RHI::ResultCode ComputePipeline::BuildNativePipeline(const Descriptor& descriptor, const PipelineLayout& pipelineLayout)
         {
             const auto* computeDescriptor = static_cast<const RHI::PipelineStateDescriptorForDispatch*>(descriptor.m_pipelineDescritor);
-            const VkPipelineCache pipelineCache = descriptor.m_pipelineLibrary ? descriptor.m_pipelineLibrary->GetNativePipelineCache() : VK_NULL_HANDLE;
 
             VkComputePipelineCreateInfo createInfo = {};
             createInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;

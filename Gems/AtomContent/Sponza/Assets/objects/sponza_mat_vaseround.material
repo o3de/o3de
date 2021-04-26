@@ -4,6 +4,9 @@
     "parentMaterial": "",
     "propertyLayoutVersion": 3,
     "properties": {
+        "occlusion": {
+            "diffuseTextureMap": "Textures/vaseRound_1k_ao.png"
+        },
         "baseColor": {
             "color": [
                 0.800000011920929,
@@ -13,6 +16,24 @@
             ],
             "textureMap": "Textures/vaseRound_1k_basecolor.png"
         },
+        "clearCoat": {
+            "enable": true,
+            "factor": 0.5,
+            "influenceMap": "Textures/vaseRound_1k_ao.png",
+            "normalMap": "Textures/vaseRound_1k_normal.jpg",
+            "roughness": 0.25
+        },
+        "general": {
+            "applySpecularAA": true
+        },
+        "irradiance": {
+            "color": [
+                1.0,
+                0.5939116477966309,
+                0.29176774621009829,
+                1.0
+            ]
+        },
         "normal": {
             "textureMap": "Textures/vaseRound_1k_normal.jpg"
         },
@@ -21,7 +42,6 @@
         },
         "parallax": {
             "algorithm": "POM",
-            "enable": true,
             "factor": 0.019999999552965165,
             "pdo": true,
             "quality": "High",
@@ -29,6 +49,9 @@
         },
         "roughness": {
             "textureMap": "Textures/vaseRound_1k_roughness.png"
+        },
+        "specularF0": {
+            "enableMultiScatterCompensation": true
         }
     }
 }

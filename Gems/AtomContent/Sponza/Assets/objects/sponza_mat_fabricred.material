@@ -4,6 +4,9 @@
     "parentMaterial": "",
     "propertyLayoutVersion": 3,
     "properties": {
+        "occlusion": {
+            "diffuseTextureMap": "Textures/fabric_ao.png"
+        },
         "baseColor": {
             "color": [
                 0.800000011920929,
@@ -13,10 +16,22 @@
             ],
             "textureMap": "Textures/fabricRed_1k_basecolor.png"
         },
+        "general": {
+            "applySpecularAA": true
+        },
+        "irradiance": {
+            "color": [
+                1.0,
+                0.08197146654129029,
+                0.10267795622348786,
+                1.0
+            ]
+        },
         "metallic": {
             "textureMap": "Textures/fabric_metallic.png"
         },
         "normal": {
+            "factor": 0.5,
             "textureMap": "Textures/fabric_normal.jpg"
         },
         "opacity": {

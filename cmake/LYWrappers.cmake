@@ -12,7 +12,6 @@
 set(LY_UNITY_BUILD OFF CACHE BOOL "UNITY builds")
 
 include(CMakeFindDependencyMacro)
-include(CMakeParseArguments)
 include(cmake/LyAutoGen.cmake)
 
 ly_get_absolute_pal_filename(pal_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Platform/${PAL_PLATFORM_NAME})
@@ -38,7 +37,7 @@ define_property(TARGET PROPERTY GEM_MODULE
 #
 # Adds a target (static/dynamic library, executable) and convenient wrappers around most
 # common parameters that need to be set.
-# This function also creates an interface to use for dependencies. The interface will be 
+# This function also creates an interface to use for dependencies. The interface will be
 # named as "NAMESPACE::NAME"
 # Some examples:
 #     ly_add_target(NAME mystaticlib STATIC FILES_CMAKE somestatic_files.cmake)
@@ -53,6 +52,8 @@ define_property(TARGET PROPERTY GEM_MODULE
 # \arg:HEADERONLY (bool) defines this target to be a header only library. A ${NAME}_HEADERS project will be created for the IDE
 # \arg:EXECUTABLE (bool) defines this target to be an executable
 # \arg:APPLICATION (bool) defines this target to be an application (executable that is not a console)
+# \arg:UNKNOWN (bool) defines this target to be unknown. This is used when importing installed targets from Find files
+# \arg:IMPORTED (bool) defines this target to be imported.
 # \arg:NAMESPACE namespace declaration for this target. It will be used for IDE and dependencies
 # \arg:OUTPUT_NAME (optional) overrides the name of the output target. If not specified, the name will be used.
 # \arg:OUTPUT_SUBDIRECTORY places the runtime binary in a subfolder within the output folder (this only affects to runtime binaries)
@@ -75,18 +76,20 @@ define_property(TARGET PROPERTY GEM_MODULE
 # \arg:AUTOGEN_RULES a set of AutoGeneration rules to be passed to the AzAutoGen expansion system
 function(ly_add_target)
 
-    set(options STATIC SHARED MODULE GEM_MODULE HEADERONLY EXECUTABLE APPLICATION AUTOMOC AUTOUIC AUTORCC NO_UNITY)
+    set(options STATIC SHARED MODULE GEM_MODULE HEADERONLY EXECUTABLE APPLICATION UNKNOWN IMPORTED AUTOMOC AUTOUIC AUTORCC NO_UNITY)
     set(oneValueArgs NAME NAMESPACE OUTPUT_SUBDIRECTORY OUTPUT_NAME)
     set(multiValueArgs FILES_CMAKE GENERATED_FILES INCLUDE_DIRECTORIES COMPILE_DEFINITIONS BUILD_DEPENDENCIES RUNTIME_DEPENDENCIES PLATFORM_INCLUDE_FILES TARGET_PROPERTIES AUTOGEN_RULES)
 
     cmake_parse_arguments(ly_add_target "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-    
+
     # Validate input arguments
     if(NOT ly_add_target_NAME)
         message(FATAL_ERROR "You must provide a name for the target")
     endif()
-    if(NOT ly_add_target_FILES_CMAKE)
-        message(FATAL_ERROR "You must provide a list of _files.cmake files for the target")
+    if(NOT ly_add_target_IMPORTED)
+        if(NOT ly_add_target_FILES_CMAKE)
+            message(FATAL_ERROR "You must provide a list of _files.cmake files for the target")
+        endif()
     endif()
 
     # If the GEM_MODULE tag is passed set the normal MODULE argument
@@ -125,8 +128,12 @@ function(ly_add_target)
         set(linking_options APPLICATION)
         set(linking_count "${linking_count}1")
     endif()
+    if(ly_add_target_UNKNOWN)
+        set(linking_options UNKNOWN)
+        set(linking_count "${linking_count}1")
+    endif()
     if(NOT ("${linking_count}" STREQUAL "1"))
-        message(FATAL_ERROR "More than one of the following options [STATIC | SHARED | MODULE | HEADERONLY | EXECUTABLE | APPLICATION] was specified and they are mutually exclusive")
+        message(FATAL_ERROR "More than one of the following options [STATIC | SHARED | MODULE | HEADERONLY | EXECUTABLE | APPLICATION | UNKNOWN] was specified and they are mutually exclusive")
     endif()
 
     if(ly_add_target_NAMESPACE)
@@ -157,6 +164,11 @@ function(ly_add_target)
             SOURCES ${ALLFILES} ${ly_add_target_GENERATED_FILES}
         )
         set(project_NAME ${ly_add_target_NAME}_HEADERS)
+    elseif(ly_add_target_UNKNOWN)
+        add_library(${ly_add_target_NAME}
+            ${linking_options}
+            IMPORTED
+        )
     else()
         add_library(${ly_add_target_NAME}
             ${linking_options}
@@ -177,7 +189,7 @@ function(ly_add_target)
     endif()
 
     if(ly_add_target_OUTPUT_NAME)
-        set_target_properties(${ly_add_target_NAME} PROPERTIES 
+        set_target_properties(${ly_add_target_NAME} PROPERTIES
             OUTPUT_NAME ${ly_add_target_OUTPUT_NAME}
         )
     endif()
@@ -197,12 +209,12 @@ function(ly_add_target)
     endif()
 
     if (ly_add_target_INCLUDE_DIRECTORIES)
-        target_include_directories(${ly_add_target_NAME}
+        ly_target_include_directories(${ly_add_target_NAME}
             ${ly_add_target_INCLUDE_DIRECTORIES}
         )
     endif()
 
-    # Parse the 3rdParty library dependencies 
+    # Parse the 3rdParty library dependencies
     ly_parse_third_party_dependencies("${ly_add_target_BUILD_DEPENDENCIES}")
     ly_target_link_libraries(${ly_add_target_NAME}
         ${ly_add_target_BUILD_DEPENDENCIES}
@@ -240,7 +252,7 @@ function(ly_add_target)
             )
         endif()
     endif()
-    
+
     # IDE organization
     ly_source_groups_from_folders("${ALLFILES}")
     source_group("Generated Files" REGULAR_EXPRESSION "(${CMAKE_BINARY_DIR})") # Any file coming from the output folder
@@ -264,8 +276,8 @@ function(ly_add_target)
 
     # Handle Qt MOC, RCC, UIC
     # https://gitlab.kitware.com/cmake/cmake/issues/18749
-    # AUTOMOC is supposed to always rebuild because it checks files that are not listed in the sources (like extra 
-    # "_p.h" headers) and which may change outside the visibility of the generator. 
+    # AUTOMOC is supposed to always rebuild because it checks files that are not listed in the sources (like extra
+    # "_p.h" headers) and which may change outside the visibility of the generator.
     # We are not using AUTOUIC because of:
     # https://gitlab.kitware.com/cmake/cmake/-/issues/18741
     # To overcome this problem, we manually wrap all the ui files listed in the target with qt5_wrap_ui
@@ -320,17 +332,33 @@ function(ly_add_target)
         ly_add_autogen(
             NAME ${ly_add_target_NAME}
             INCLUDE_DIRECTORIES ${ly_add_target_INCLUDE_DIRECTORIES}
-            AUTOGEN_RULES ${ly_add_target_AUTOGEN_RULES} 
+            AUTOGEN_RULES ${ly_add_target_AUTOGEN_RULES}
             ALLFILES ${ALLFILES}
+        )
+    endif()
+
+    if(NOT ly_add_target_IMPORTED)
+        if(NOT ly_add_target_INSTALL_COMPONENT)
+            set(ly_add_target_INSTALL_COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT})
+        endif()
+
+        ly_install_target(
+            ${ly_add_target_NAME}
+            NAMESPACE ${ly_add_target_NAMESPACE}
+            INCLUDE_DIRECTORIES ${ly_add_target_INCLUDE_DIRECTORIES}
+            BUILD_DEPENDENCIES ${ly_add_target_BUILD_DEPENDENCIES}
+            RUNTIME_DEPENDENCIES ${ly_add_target_RUNTIME_DEPENDENCIES}
+            COMPILE_DEFINITIONS ${ly_add_target_COMPILE_DEFINITIONS}
+            COMPONENT ${ly_add_target_INSTALL_COMPONENT}
         )
     endif()
 
 endfunction()
 
 #! ly_target_link_libraries: wraps target_link_libraries handling also MODULE linkage.
-#  MODULE libraries cannot be passed to target_link_libraries. MODULE libraries are shared libraries that we 
+#  MODULE libraries cannot be passed to target_link_libraries. MODULE libraries are shared libraries that we
 #  dont want to link against because they will be loaded dynamically. However, we want to include their public headers
-#  and transition their public dependencies. 
+#  and transition their public dependencies.
 #  To achieve this, we delay the target_link_libraries call to after all targets are declared (see ly_delayed_target_link_libraries)
 #
 #  Signature is the same as target_link_libraries:
@@ -341,26 +369,26 @@ function(ly_target_link_libraries TARGET)
     if(NOT TARGET)
         message(FATAL_ERROR "You must provide a target")
     endif()
-    
+
     set_property(GLOBAL APPEND PROPERTY LY_DELAYED_LINK_${TARGET} ${ARGN})
     set_property(GLOBAL APPEND PROPERTY LY_DELAYED_LINK_TARGETS ${TARGET}) # to walk them at the end
 
 endfunction()
 
 #! ly_delayed_target_link_libraries: internal function called by the root CMakeLists.txt after all targets
-#  have been declared to determine if they are regularly 
+#  have been declared to determine if they are regularly
 #  1) If a MODULE is passed in the list of items, it will add the INTERFACE_INCLUDE_DIRECTORIES as include
 #     directories of TARGET. It will also add the "INTERFACE_LINK_LIBRARIES" to TARGET. MODULEs cannot be
 #     directly linked, but we can include the public headers and link against the things the MODULE expose
 #     to link.
 #  2) If a target that has not yet been declared is passed, then it will defer it to after all targets are
-#     declared. This way we can do a check again. We could delay the link to when 
+#     declared. This way we can do a check again. We could delay the link to when
 #     target is declared. This is needed for (1) since we dont know the type of target. This also addresses
 #     another issue with target_link_libraries where it will only validate that a MODULE is not being passed
 #     if the target is already declared, if not, it will fail later at linking time.
 
 function(ly_delayed_target_link_libraries)
-    
+
     set(visibilities PRIVATE PUBLIC INTERFACE)
 
     get_property(additional_module_paths GLOBAL PROPERTY LY_ADDITIONAL_MODULE_PATH)
@@ -368,15 +396,15 @@ function(ly_delayed_target_link_libraries)
 
     get_property(delayed_targets GLOBAL PROPERTY LY_DELAYED_LINK_TARGETS)
     foreach(target ${delayed_targets})
-        
+
         get_property(delayed_link GLOBAL PROPERTY LY_DELAYED_LINK_${target})
         if(delayed_link)
-        
+
             cmake_parse_arguments(ly_delayed_target_link_libraries "" "" "${visibilities}" ${delayed_link})
 
             foreach(visibility ${visibilities})
                 foreach(item ${ly_delayed_target_link_libraries_${visibility}})
-                    
+
                     if(TARGET ${item})
                         get_target_property(item_type ${item} TYPE)
                     else()
@@ -384,12 +412,12 @@ function(ly_delayed_target_link_libraries)
                     endif()
 
                     if(item_type STREQUAL MODULE_LIBRARY)
-                        target_include_directories(${target} ${visibility} $<TARGET_PROPERTY:${item},INTERFACE_INCLUDE_DIRECTORIES>)
+                        ly_target_include_directories(${target} ${visibility} $<TARGET_PROPERTY:${item},INTERFACE_INCLUDE_DIRECTORIES>)
                         target_link_libraries(${target} ${visibility} $<TARGET_PROPERTY:${item},INTERFACE_LINK_LIBRARIES>)
                         target_compile_definitions(${target} ${visibility} $<TARGET_PROPERTY:${item},INTERFACE_COMPILE_DEFINITIONS>)
                         target_compile_options(${target} ${visibility} $<TARGET_PROPERTY:${item},INTERFACE_COMPILE_OPTIONS>)
                         # Add it also as a manual dependency so runtime_dependencies walks it through
-                        ly_add_dependencies(${target} ${item}) 
+                        ly_add_dependencies(${target} ${item})
                     else()
                         ly_parse_third_party_dependencies(${item})
                         target_link_libraries(${target} ${visibility} ${item})
@@ -461,7 +489,7 @@ function(detect_qt_dependency TARGET_NAME OUTPUT_VARIABLE)
 endfunction()
 
 #! ly_parse_third_party_dependencies: Validates any 3rdParty library dependencies through the find_package command
-# 
+#
 # \arg:ly_THIRD_PARTY_LIBRARIES name of the target libraries to validate existance of through the find_package command.
 #
 function(ly_parse_third_party_dependencies ly_THIRD_PARTY_LIBRARIES)
@@ -485,7 +513,7 @@ endfunction()
 # Looks at the the following variables within the platform include file to set the equivalent target properties
 # LY_FILES_CMAKE -> extract list of files -> target_sources
 # LY_FILES -> target_source
-# LY_INCLUDE_DIRECTORIES -> target_include_directories
+# LY_INCLUDE_DIRECTORIES -> ly_target_include_directories
 # LY_COMPILE_DEFINITIONS -> target_compile_definitions
 # LY_COMPILE_OPTIONS -> target_compile_options
 # LY_LINK_OPTIONS -> target_link_options
@@ -495,7 +523,7 @@ endfunction()
 #
 macro(ly_configure_target_platform_properties)
     foreach(platform_include_file ${ly_add_target_PLATFORM_INCLUDE_FILES})
-        
+
         set(LY_FILES_CMAKE)
         set(LY_FILES)
         set(LY_INCLUDE_DIRECTORIES)
@@ -505,17 +533,13 @@ macro(ly_configure_target_platform_properties)
         set(LY_BUILD_DEPENDENCIES)
         set(LY_RUNTIME_DEPENDENCIES)
         set(LY_TARGET_PROPERTIES)
-        
+
         include(${platform_include_file} RESULT_VARIABLE ly_platform_cmake_file)
         if(NOT ly_platform_cmake_file)
             message(FATAL_ERROR "The supplied PLATFORM_INCLUDE_FILE(${platform_include_file}) cannot be included.\
  Parsing of target will halt")
         endif()
-        if(ly_add_target_HEADERONLY)
-            target_sources(${ly_add_target_NAME} INTERFACE ${platform_include_file})
-        else()
-            target_sources(${ly_add_target_NAME} PRIVATE ${platform_include_file})
-        endif()
+        target_sources(${ly_add_target_NAME} PRIVATE ${platform_include_file})
         ly_source_groups_from_folders("${platform_include_file}")
 
         if(LY_FILES_CMAKE)
@@ -531,7 +555,7 @@ macro(ly_configure_target_platform_properties)
             target_sources(${ly_add_target_NAME} PRIVATE ${LY_FILES})
         endif()
         if (LY_INCLUDE_DIRECTORIES)
-            target_include_directories(${ly_add_target_NAME} ${LY_INCLUDE_DIRECTORIES})
+            ly_target_include_directories(${ly_add_target_NAME} ${LY_INCLUDE_DIRECTORIES})
         endif()
         if(LY_COMPILE_DEFINITIONS)
             target_compile_definitions(${ly_add_target_NAME} ${LY_COMPILE_DEFINITIONS})
@@ -559,7 +583,7 @@ endmacro()
 #
 # \arg:TARGETS name of the targets that depends on this file
 # \arg:FILES files to copy
-# \arg:OUTPUT_SUBDIRECTORY (OPTIONAL) where to place the files relative to TARGET_NAME's output dir. 
+# \arg:OUTPUT_SUBDIRECTORY (OPTIONAL) where to place the files relative to TARGET_NAME's output dir.
 #      If not specified, they are located in the same folder as TARGET_NAME
 #
 function(ly_add_target_files)
@@ -577,9 +601,9 @@ function(ly_add_target_files)
     if(NOT ly_add_target_files_FILES)
         message(FATAL_ERROR "You must provide at least a file to copy")
     endif()
-   
+
     foreach(target ${ly_add_target_files_TARGETS})
-    
+
         foreach(file ${ly_add_target_files_FILES})
             set_property(TARGET ${target} APPEND PROPERTY INTERFACE_LY_TARGET_FILES "${file}\n${ly_add_target_files_OUTPUT_SUBDIRECTORY}")
         endforeach()
@@ -631,6 +655,42 @@ function(ly_add_source_properties)
             APPEND PROPERTY ${ly_add_source_properties_PROPERTY} ${ly_add_source_properties_VALUES}
         )
     endif()
+
+endfunction()
+
+function(ly_target_include_directories TARGET)
+
+    # Add the includes to the build and install interface
+    set(reserved_keywords PRIVATE PUBLIC INTERFACE)
+    unset(last_keyword)
+    foreach(include ${ARGN})
+        if(${include} IN_LIST reserved_keywords)
+            list(APPEND adapted_includes ${include})
+        elseif(IS_ABSOLUTE ${include})
+            list(APPEND adapted_includes
+                $<BUILD_INTERFACE:${include}>
+            )
+        else()
+            string(GENEX_STRIP ${include} include_genex_expr)
+            if(include_genex_expr STREQUAL include) # only for cases where there are no generation expressions
+                # We will be installing the includes using the same directory structure used in our source tree.
+                # The INSTALL_INTERFACE path tells CMake the location of the includes relative to the install prefix.
+                # When the target is imported into an external project, cmake will find these includes at <install_prefix>/include/<path_relative_to_root>
+                # where <install_prefix> is the location of the lumberyard install on disk.
+                file(REAL_PATH ${include} include_real)
+                file(RELATIVE_PATH install_dir ${CMAKE_SOURCE_DIR} ${include_real})
+                list(APPEND adapted_includes
+                    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${include}>
+                    $<INSTALL_INTERFACE:include/${install_dir}>
+                )
+            else()
+                list(APPEND adapted_includes
+                    ${include}
+                )
+            endif()
+        endif()
+    endforeach()
+    target_include_directories(${TARGET} ${adapted_includes})
 
 endfunction()
 

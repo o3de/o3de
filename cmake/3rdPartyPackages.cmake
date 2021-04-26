@@ -13,7 +13,7 @@ include_guard()
 include(cmake/LySet.cmake)
 
 # OVERVIEW:
-# this is the Lumberyard Package system.
+# this is the Open 3D Engine Package system.
 # It allows you to host a package on a server and download it as needed when a target
 # requests that specific package, or manually whenever you want to do so.
 # Most users will just call ly_associate_package(...) to associate a package with a target
@@ -621,7 +621,6 @@ endfunction()
 # - this waill cause it to automatically download and activate this package if it finds a target that
 # depends on '3rdParty::zlib' in its runtime or its build time dependency list.
 # - note that '3rdParty' is implied, do not specify it in the TARGETS list.
-
 function(ly_associate_package)
     set(_oneValueArgs PACKAGE_NAME PACKAGE_HASH)
     set(_multiValueArgs TARGETS)
@@ -643,6 +642,9 @@ function(ly_associate_package)
         set_property(GLOBAL PROPERTY LY_PACKAGE_ASSOCIATION_${find_package_name} ${ly_associate_package_PACKAGE_NAME})
         set_property(GLOBAL PROPERTY LY_PACKAGE_HASH_${ly_associate_package_PACKAGE_NAME} ${ly_associate_package_PACKAGE_HASH})
     endforeach()
+
+    set_property(GLOBAL APPEND PROPERTY LY_PACKAGE_NAMES ${ly_associate_package_PACKAGE_NAME})
+    set_property(GLOBAL PROPERTY LY_PACKAGE_TARGETS_${ly_associate_package_PACKAGE_NAME} ${ly_associate_package_TARGETS})
 endfunction()
 
 #!  Given a package find_package name (eg, 'zlib' not the actual package name)

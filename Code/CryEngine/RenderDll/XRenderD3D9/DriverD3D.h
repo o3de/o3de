@@ -1722,7 +1722,6 @@ public:
 
     _inline void FX_DrawRE(CShader* sh, SShaderPass* sl)
     {
-        int bFogOverrided = 0;
         // Unlock all VB (if needed) and set current streams
         FX_CommitStreams(sl);
 

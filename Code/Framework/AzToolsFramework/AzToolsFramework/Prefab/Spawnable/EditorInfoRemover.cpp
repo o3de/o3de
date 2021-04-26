@@ -41,7 +41,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         }
 
         prefabProcessorContext.ListPrefabs(
-            [this, &serializeContext, &prefabProcessorContext](AZStd::string_view prefabName, PrefabDom& prefab)
+            [this, &serializeContext, &prefabProcessorContext]([[maybe_unused]] AZStd::string_view prefabName, PrefabDom& prefab)
             {
                 auto result = RemoveEditorInfo(prefab, serializeContext, prefabProcessorContext);
                 if (!result)

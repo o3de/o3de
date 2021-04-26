@@ -21,10 +21,7 @@
 
 #include <LmbrCentral/Rendering/MaterialAsset.h>
 #include <LmbrCentral/Rendering/MeshAsset.h>
-#include <MathConversion.h>
-#include <I3DEngine.h>
-#include <ISystem.h>
-#include <Tarray.h>
+
 #include <Vegetation/Ebuses/AreaInfoBus.h>
 #include <Vegetation/Ebuses/AreaSystemRequestBus.h>
 #include <Vegetation/Ebuses/DebugNotificationBus.h>
@@ -41,33 +38,6 @@ namespace Vegetation
             static const int s_minTaskBatchSize = 1;
             static const int s_maxTaskBatchSize = 2000; //prevents user from reserving excessive space as batches are processed faster than they can be filled
         }
-
-        void ApplyConfigurationToConsoleVars(ISystem* system, const InstanceSystemConfig& config)
-        {
-            if (!system)
-            {
-                return;
-            }
-
-            auto* console = system->GetIConsole();
-            if (!console)
-            {
-                return;
-            }
-
-            if (console && console->GetCVar("e_MergedMeshesLodRatio"))
-            {
-                console->GetCVar("e_MergedMeshesLodRatio")->Set(config.m_mergedMeshesLodRatio);
-            }
-            if (console && console->GetCVar("e_MergedMeshesViewDistRatio"))
-            {
-                console->GetCVar("e_MergedMeshesViewDistRatio")->Set(config.m_mergedMeshesViewDistanceRatio);
-            }
-            if (console && console->GetCVar("e_MergedMeshesInstanceDist"))
-            {
-                console->GetCVar("e_MergedMeshesInstanceDist")->Set(config.m_mergedMeshesInstanceDistance);
-            }
-        }
     };
 
     //////////////////////////////////////////////////////////////////////////
@@ -78,12 +48,9 @@ namespace Vegetation
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<InstanceSystemConfig, AZ::ComponentConfig>()
-                ->Version(2)
+                ->Version(3)
                 ->Field("MaxInstanceProcessTimeMicroseconds", &InstanceSystemConfig::m_maxInstanceProcessTimeMicroseconds)
                 ->Field("MaxInstanceTaskBatchSize", &InstanceSystemConfig::m_maxInstanceTaskBatchSize)
-                ->Field("MergedMeshesLodRatio", &InstanceSystemConfig::m_mergedMeshesLodRatio)
-                ->Field("MergedMeshesViewDistanceRatio", &InstanceSystemConfig::m_mergedMeshesViewDistanceRatio)
-                ->Field("MergedMeshesInstanceDistance", &InstanceSystemConfig::m_mergedMeshesInstanceDistance)
                 ;
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
@@ -98,23 +65,6 @@ namespace Vegetation
                     ->DataElement(0, &InstanceSystemConfig::m_maxInstanceTaskBatchSize, "Max Instance Task Batch Size", "Maximum number of instance management tasks that can be batch processed together")
                         ->Attribute(AZ::Edit::Attributes::Min, InstanceSystemUtil::Constants::s_minTaskBatchSize)
                         ->Attribute(AZ::Edit::Attributes::Max, InstanceSystemUtil::Constants::s_maxTaskBatchSize)
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Merged Meshes")
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(0, &InstanceSystemConfig::m_mergedMeshesLodRatio, "LOD Distance Ratio", "Controls the distance where the merged mesh vegetation use less detailed models")
-                            ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                            ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
-                            ->Attribute(AZ::Edit::Attributes::SoftMin, 1.0f)
-                            ->Attribute(AZ::Edit::Attributes::SoftMax, 1024.0f)
-                        ->DataElement(0, &InstanceSystemConfig::m_mergedMeshesViewDistanceRatio, "View Distance Ratio", "Controls the maximum view distance for merged mesh vegetation instances")
-                            ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                            ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
-                            ->Attribute(AZ::Edit::Attributes::SoftMin, 1.0f)
-                            ->Attribute(AZ::Edit::Attributes::SoftMax, 1024.0f)
-                        ->DataElement(0, &InstanceSystemConfig::m_mergedMeshesInstanceDistance, "Instance Animation Distance", "Relates to the distance at which animated vegetation will be processed")
-                            ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                            ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
-                            ->Attribute(AZ::Edit::Attributes::SoftMin, 1.0f)
-                            ->Attribute(AZ::Edit::Attributes::SoftMax, 1024.0f)
                     ;
             }
         }
@@ -122,7 +72,6 @@ namespace Vegetation
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<InstanceSystemConfig>()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Constructor()
                 ->Property("maxInstanceProcessTimeMicroseconds", BehaviorValueProperty(&InstanceSystemConfig::m_maxInstanceProcessTimeMicroseconds))
@@ -186,36 +135,20 @@ namespace Vegetation
 
     void InstanceSystemComponent::Activate()
     {
-        m_system = GetISystem();
-        m_engine = m_system ? m_system->GetI3DEngine() : nullptr;
         Cleanup();
         AZ::TickBus::Handler::BusConnect();
         InstanceSystemRequestBus::Handler::BusConnect();
         InstanceSystemStatsRequestBus::Handler::BusConnect();
-        InstanceStatObjEventBus::Handler::BusConnect();
         SystemConfigurationRequestBus::Handler::BusConnect();
-        CrySystemEventBus::Handler::BusConnect();
-
-        InstanceSystemUtil::ApplyConfigurationToConsoleVars(m_system, m_configuration);
     }
 
     void InstanceSystemComponent::Deactivate()
     {
-        auto environment = m_system ? m_system->GetGlobalEnvironment() : nullptr;
-        if (environment)
-        {
-            environment->SetDynamicMergedMeshGenerationEnabled(environment->IsEditor());
-        }
-
-        InstanceStatObjEventBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
         InstanceSystemRequestBus::Handler::BusDisconnect();
         InstanceSystemStatsRequestBus::Handler::BusDisconnect();
         SystemConfigurationRequestBus::Handler::BusDisconnect();
-        CrySystemEventBus::Handler::BusDisconnect();
         Cleanup();
-        m_system = nullptr;
-        m_engine = nullptr;
     }
 
     bool InstanceSystemComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
@@ -467,43 +400,14 @@ namespace Vegetation
         GarbageCollectUniqueDescriptors();
     }
 
-    void InstanceSystemComponent::ReleaseData()
-    {
-        DestroyAllInstances();
-    }
-
     void InstanceSystemComponent::UpdateSystemConfig(const AZ::ComponentConfig* baseConfig)
     {
         ReadInConfig(baseConfig);
-        InstanceSystemUtil::ApplyConfigurationToConsoleVars(m_system, m_configuration);
     }
 
     void InstanceSystemComponent::GetSystemConfig(AZ::ComponentConfig* outBaseConfig) const
     {
         WriteOutConfig(outBaseConfig);
-    }
-
-    void InstanceSystemComponent::OnCrySystemInitialized(ISystem& system, [[maybe_unused]] const SSystemInitParams& systemInitParams)
-    {
-        auto environment = system.GetGlobalEnvironment();
-        if (environment)
-        {
-            environment->SetDynamicMergedMeshGenerationEnabled(true);
-        }
-        m_system = &system;
-        m_engine = m_system ? m_system->GetI3DEngine() : nullptr;
-    }
-
-    void InstanceSystemComponent::OnCrySystemShutdown(ISystem& system)
-    {
-        auto environment = system.GetGlobalEnvironment();
-        if (environment)
-        {
-            environment->SetDynamicMergedMeshGenerationEnabled(environment->IsEditor());
-        }
-        Cleanup();
-        m_system = nullptr;
-        m_engine = nullptr;
     }
 
     InstanceId InstanceSystemComponent::CreateInstanceId()
@@ -550,12 +454,6 @@ namespace Vegetation
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
 
-        if (!m_engine)
-        {
-            AZ_Error("vegetation", m_engine, "Could not acquire I3DEngine!");
-            return;
-        }
-
         if (IsInstanceSkippable(instanceData))
         {
             return;
@@ -590,63 +488,6 @@ namespace Vegetation
             AZ_Assert(m_instanceMap.find(instanceData.m_instanceId) == m_instanceMap.end(), "InstanceId %llu is already in use!", instanceData.m_instanceId);
             m_instanceMap[instanceData.m_instanceId] = AZStd::make_pair(instanceData.m_descriptorPtr, opaqueInstanceData);
             m_instanceCount = m_instanceMap.size();
-        }
-    }
-
-    void InstanceSystemComponent::RegisterMergedMeshInstance(InstancePtr instance, IRenderNode* mergedMeshNode)
-    {
-        if (instance && mergedMeshNode)
-        {
-            //merged mesh nodes should only refresh once for a batch of instances
-            m_instanceNodeToMergedMeshNodeRegistrationMap[instance] = mergedMeshNode;
-        }
-    }
-
-    void InstanceSystemComponent::ReleaseMergedMeshInstance(InstancePtr instance)
-    {
-        //stop tracking this node for registration
-        m_instanceNodeToMergedMeshNodeRegistrationMap.erase(instance);
-    }
-
-    void InstanceSystemComponent::CreateInstanceNodeBegin()
-    {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
-
-        AZ_Error("vegetation", m_instanceNodeToMergedMeshNodeRegistrationMap.empty(), "m_instanceNodeToMergedMeshNodeRegistrationMap should be empty!");
-        m_instanceNodeToMergedMeshNodeRegistrationMap.clear();
-    }
-
-    void InstanceSystemComponent::CreateInstanceNodeEnd()
-    {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
-
-        if (!m_engine)
-        {
-            AZ_Error("vegetation", m_engine, "Could not acquire I3DEngine!");
-            m_instanceNodeToMergedMeshNodeRegistrationMap.clear();
-            return;
-        }
-
-        //gather all unique mesh nodes to re-register
-        m_mergedMeshNodeRegistrationSet.clear();
-        m_mergedMeshNodeRegistrationSet.reserve(m_instanceNodeToMergedMeshNodeRegistrationMap.size());
-
-        for (auto nodePair : m_instanceNodeToMergedMeshNodeRegistrationMap)
-        {
-            InstancePtr instanceNode = nodePair.first;
-            IRenderNode* mergedMeshNode = nodePair.second;
-            if (instanceNode && mergedMeshNode)
-            {
-                m_mergedMeshNodeRegistrationSet.insert(mergedMeshNode);
-            }
-        }
-        m_instanceNodeToMergedMeshNodeRegistrationMap.clear();
-
-        //re-register final merged mesh nodes
-        for (auto mergedMeshNode : m_mergedMeshNodeRegistrationSet)
-        {
-            m_engine->UnRegisterEntityAsJob(mergedMeshNode);
-            m_engine->RegisterEntity(mergedMeshNode);
         }
     }
 
@@ -753,9 +594,7 @@ namespace Vegetation
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
 
-        CreateInstanceNodeBegin();
         ExecuteTasks();
-        CreateInstanceNodeEnd();
     }
 
 }

@@ -14,7 +14,7 @@
 #define DEPLOYMENTSWIDGET_H
 
 #if !defined(Q_MOC_RUN)
-#include "StyleGallery/ui_deploymentswidget.h"
+#include <AzQtComponents/StyleGallery/ui_deploymentswidget.h>
 
 #include <QWidget>
 #include <QScopedPointer>

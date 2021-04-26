@@ -82,7 +82,7 @@ namespace AZ
             }
 
             RHI::RenderAttachmentLayout layout;
-            RHI::ResultCode result = builder.End(layout);
+            [[maybe_unused]] RHI::ResultCode result = builder.End(layout);
             AZ_Assert(result == RHI::ResultCode::Success, "RenderPass [%s] failed to create render attachment layout", GetPathName().GetCStr());
             return RHI::RenderAttachmentConfiguration{ layout, 0 };
         }
@@ -539,7 +539,7 @@ namespace AZ
                 const uint32_t TimestampResultQueryCount = 2u;
                 uint64_t timestampResult[TimestampResultQueryCount] = {0};
                 query->GetLatestResult(&timestampResult, sizeof(uint64_t) * TimestampResultQueryCount);
-                m_timestampResult = TimestampResult(timestampResult[0], timestampResult[1]);
+                m_timestampResult = TimestampResult(timestampResult[0], timestampResult[1], RHI::HardwareQueueClass::Graphics);
             });
 
             ExecuteOnPipelineStatisticsQuery([this](RHI::Ptr<Query> query)

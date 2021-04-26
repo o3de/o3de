@@ -19,10 +19,6 @@ set(FILES
     Source/CoreLights/EditorAreaLightComponent.cpp
     Source/CoreLights/EditorDirectionalLightComponent.h
     Source/CoreLights/EditorDirectionalLightComponent.cpp
-    Source/CoreLights/EditorPointLightComponent.h
-    Source/CoreLights/EditorPointLightComponent.cpp
-    Source/CoreLights/EditorSpotLightComponent.h
-    Source/CoreLights/EditorSpotLightComponent.cpp
     Source/Decals/EditorDecalComponent.h
     Source/Decals/EditorDecalComponent.cpp
     Source/DiffuseProbeGrid/EditorDiffuseProbeGridComponent.h
@@ -45,6 +41,8 @@ set(FILES
     Source/Material/EditorMaterialModelUvNameMapInspector.h
     Source/Material/EditorMaterialSystemComponent.cpp
     Source/Material/EditorMaterialSystemComponent.h
+    Source/Material/MaterialBrowserInteractions.h
+    Source/Material/MaterialBrowserInteractions.cpp
     Source/Material/MaterialThumbnail.cpp
     Source/Material/MaterialThumbnail.h
     Source/Mesh/EditorMeshComponent.h
@@ -111,5 +109,7 @@ set(FILES
     Source/Thumbnails/Rendering/ThumbnailRendererSteps/ReleaseResourcesStep.h
     Source/Scripting/EditorEntityReferenceComponent.cpp
     Source/Scripting/EditorEntityReferenceComponent.h
+    Source/SurfaceData/EditorSurfaceDataMeshComponent.cpp
+    Source/SurfaceData/EditorSurfaceDataMeshComponent.h
     Resources/AtomLyIntegrationResources.qrc
 )

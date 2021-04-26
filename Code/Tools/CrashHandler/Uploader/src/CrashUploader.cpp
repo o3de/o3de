@@ -25,7 +25,7 @@
 #include <memory>
 
 
-namespace Lumberyard
+namespace O3de
 {
     using namespace crashpad;
 

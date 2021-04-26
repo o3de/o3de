@@ -21,6 +21,7 @@
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzCore/Module/ModuleManager.h>
 #include <AzCore/Outcome/Outcome.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/ReflectionManager.h>
@@ -193,8 +194,7 @@ namespace AZ
          * You will need to setup all system components manually.
          * \returns pointer to the system entity.
          */
-        virtual Entity* Create(const Descriptor& descriptor,
-            const StartupParameters& startupParameters = StartupParameters());
+        virtual Entity* Create(const Descriptor& descriptor, const StartupParameters& startupParameters = StartupParameters());
         virtual void Destroy();
         virtual void DestroyAllocator(); // Called at the end of Destroy(). Applications can override to do tear down work right before allocator is destroyed.
 
@@ -202,11 +202,14 @@ namespace AZ
         // ComponentApplicationRequests
         void RegisterComponentDescriptor(const ComponentDescriptor* descriptor) override final;
         void UnregisterComponentDescriptor(const ComponentDescriptor* descriptor) override final;
+        void RegisterEntityAddedEventHandler(EntityAddedEvent::Handler& handler) override final;
+        void RegisterEntityRemovedEventHandler(EntityRemovedEvent::Handler& handler) override final;
         bool AddEntity(Entity* entity) override;
         bool RemoveEntity(Entity* entity) override;
         bool DeleteEntity(const EntityId& id) override;
         Entity* FindEntity(const EntityId& id) override;
         AZStd::string GetEntityName(const EntityId& id) override;
+        bool SetEntityName(const EntityId& id, const AZStd::string_view name) override;
         void EnumerateEntities(const ComponentApplicationRequests::EntityCallback& callback) override;
         ComponentApplication* GetApplication() override { return this; }
         /// Returns the serialize context that has been registered with the app, if there is one.
@@ -380,6 +383,8 @@ namespace AZ
         float                                       m_deltaTime{ 0.0f };
         AZStd::unique_ptr<ModuleManager>            m_moduleManager;
         AZStd::unique_ptr<SettingsRegistryInterface> m_settingsRegistry;
+        EntityAddedEvent                            m_entityAddedEvent;
+        EntityRemovedEvent                          m_entityRemovedEvent;
         AZ::IConsole*                               m_console{};
         Descriptor                                  m_descriptor;
         bool                                        m_isStarted{ false };
@@ -389,9 +394,9 @@ namespace AZ
         void*                                       m_fixedMemoryBlock{ nullptr }; //!< Pointer to the memory block allocator, so we can free it OnDestroy.
         IAllocatorAllocate*                         m_osAllocator{ nullptr };
         EntitySetType                               m_entities;
-        AZ::IO::FixedMaxPathString                  m_exeDirectory;
-        AZ::IO::FixedMaxPathString                  m_engineRoot;
-        AZ::IO::FixedMaxPathString                  m_appRoot;
+        AZ::IO::FixedMaxPath                        m_exeDirectory;
+        AZ::IO::FixedMaxPath                        m_engineRoot;
+        AZ::IO::FixedMaxPath                        m_appRoot;
 
         AZ::SettingsRegistryInterface::NotifyEventHandler m_projectChangedHandler;
 

@@ -18,7 +18,7 @@
 
 struct IOutputPrintSink;
 
-namespace LumberyardLauncher
+namespace O3DELauncher
 {
     struct CryAllocatorsRAII
     {
@@ -98,7 +98,7 @@ namespace LumberyardLauncher
 
     const char* GetReturnCodeString(ReturnCode code);
 
-    //! The main entry point for all lumberyard launchers
+    //! The main entry point for all O3DE launchers
     ReturnCode Run(const PlatformMainInfo& mainInfo = PlatformMainInfo());
 
     //////////////////////////////////////////////////////////////////////////

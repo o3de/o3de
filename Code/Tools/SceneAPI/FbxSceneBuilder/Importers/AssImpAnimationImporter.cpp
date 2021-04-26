@@ -42,7 +42,109 @@ namespace AZ
 
             // Downstream only supports 30 frames per second sample rate. Adjusting to 60 doubles the
             // length of the animations, they still play back at 30 frames per second.
-            const double AssImpAnimationImporter::s_defaultTimeStepSampleRate = 1.0 / 30.0;
+            const double AssImpAnimationImporter::s_defaultTimeStepBetweenFrames = 1.0 / 30.0;
+
+            AZ::u32 GetNumKeyFrames(AZ::u32 keysSize, double duration, double ticksPerSecond)
+            {
+                if (AZ::IsClose(ticksPerSecond, 0))
+                {
+                    AZ_Warning("AnimationImporter", false, "Animation ticks per second should not be zero, defaulting to %d keyframes for animation.", keysSize);
+                    return keysSize;
+                }
+
+                const double totalTicks = duration / ticksPerSecond;
+                AZ::u32 numKeys = keysSize;
+                // +1 because the animation is from [0, duration] - we have a keyframe at the end of the duration which needs to be included
+                double totalFramesAtDefaultTimeStep = totalTicks / AssImpAnimationImporter::s_defaultTimeStepBetweenFrames + 1;
+                if (!AZ::IsClose(totalFramesAtDefaultTimeStep, numKeys, 1))
+                {
+                    numKeys = AZStd::ceilf(totalFramesAtDefaultTimeStep);
+                }
+                return numKeys;
+            }
+
+            double GetTimeForFrame(AZ::u32 frame, double ticksPerSecond)
+            {
+                return frame * AssImpAnimationImporter::s_defaultTimeStepBetweenFrames * ticksPerSecond;
+            }
+
+            // Helper class to store key data, when translating from AssImp layout to the engine's scene format.
+            struct KeyData
+            {
+                KeyData(float value, float time) :
+                    mValue(value),
+                    mTime(time)
+                {
+
+                }
+
+                bool operator<(const KeyData& other) const
+                {
+                    return mTime < other.mTime;
+                }
+
+                float mValue = 0;
+                float mTime = 0;
+            };
+
+            template<class T>
+            void LerpTemplate(T& start, const T& end, float t)
+            {
+                start = start * (1.0f - t) + end * t;
+            }
+
+            template<>
+            void LerpTemplate(aiQuaternion& start, const aiQuaternion& end, float t)
+            {
+                aiQuaternion::Interpolate(start, start, end, t);
+            }
+
+            template<>
+            void LerpTemplate(float& start, const float& end, float t)
+            {
+                start = AZ::Lerp(start, end, t);
+            }
+
+            template<class KeyContainerType, class FrameValueType>
+            bool SampleKeyFrame(FrameValueType& result, const KeyContainerType& keys, AZ::u32 numKeys, double time, AZ::u32& lastIndex)
+            {
+                if (numKeys == 0)
+                {
+                    AZ_Error("AnimationImporter", numKeys > 0, "Animation key set must have at least 1 key");
+                    return false;
+                }
+                if (numKeys == 1)
+                {
+                    result = keys[0].mValue;
+                    return true;
+                }
+
+                while (lastIndex < numKeys - 1 && time >= keys[lastIndex + 1].mTime)
+                {
+                    ++lastIndex;
+                }
+                result = keys[lastIndex].mValue;
+                if (lastIndex < numKeys - 1)
+                {
+                    auto nextValue = keys[lastIndex + 1].mValue;
+                    float normalizedTimeBetweenFrames = 0;
+                    if (keys[lastIndex + 1].mTime != keys[lastIndex].mTime)
+                    {
+                        normalizedTimeBetweenFrames =
+                            (time - keys[lastIndex].mTime) / (keys[lastIndex + 1].mTime - keys[lastIndex].mTime);
+                    }
+                    else
+                    {
+                        AZ_Warning("AnimationImporter", false,
+                            "Animation has keys with duplicate time %5.5f, at indices %d and %d. The second will be ignored.",
+                            keys[lastIndex].mTime,
+                            lastIndex,
+                            lastIndex + 1);
+                    }
+                    LerpTemplate(result, nextValue, normalizedTimeBetweenFrames);
+                }
+                return true;
+            }
 
             AssImpAnimationImporter::AssImpAnimationImporter()
             {
@@ -199,6 +301,14 @@ namespace AZ
                 for (AZ::u32 animIndex = 0; animIndex < scene->mNumAnimations; ++animIndex)
                 {
                     const aiAnimation* animation = scene->mAnimations[animIndex];
+                    if (animation->mTicksPerSecond == 0)
+                    {
+                        AZ_Error(
+                            "AnimationImporter", false,
+                            "Animation name %s has a sample rate of 0 ticks per second and cannot be processed.",
+                            animation->mName.C_Str());
+                        return Events::ProcessingResult::Failure;
+                    }
                     
                     mapAnimationsFunc(animation->mNumChannels, animation->mChannels, animation, boneAnimations);
 
@@ -313,10 +423,12 @@ namespace AZ
                     // If there is no bone animation on the current node, then generate one here.
                     AZStd::shared_ptr<SceneData::GraphData::AnimationData> createdAnimationData =
                         AZStd::make_shared<SceneData::GraphData::AnimationData>();
-                    createdAnimationData->ReserveKeyFrames(
-                        animation->mDuration +
-                        1); // +1 because we start at 0 and the last keyframe is at mDuration instead of mDuration-1
-                    createdAnimationData->SetTimeStepBetweenFrames(1.0 / animation->mTicksPerSecond);
+
+                    const size_t numKeyframes = animation->mDuration + 1; // +1 because we start at 0 and the last keyframe is at mDuration instead of mDuration-1
+                    createdAnimationData->ReserveKeyFrames(numKeyframes);
+
+                    const double timeStepBetweenFrames = 1.0 / animation->mTicksPerSecond;
+                    createdAnimationData->SetTimeStepBetweenFrames(timeStepBetweenFrames);
 
                     // Set every frame of the animation to the start location of the node.
                     aiMatrix4x4 combinedTransform = GetConcatenatedLocalTransform(currentNode);
@@ -410,73 +522,42 @@ namespace AZ
                             anim->mNumPositionKeys, anim->mNumRotationKeys, anim->mNumScalingKeys);
                         return Events::ProcessingResult::Failure;
                     }
-                    
-                    auto sampleKeyFrame = [](const auto& keys, AZ::u32 numKeys, double time, AZ::u32& lastIndex)
-                    {
-                        AZ_Error("AnimationImporter", numKeys > 0, "Animation key set must have at least 1 key");
-
-                        if (numKeys == 1)
-                        {
-                            return keys[0].mValue;
-                        }
-
-                        auto returnValue = keys[0].mValue;
-
-                        for (AZ::u32 keyIndex = lastIndex; keyIndex < numKeys; ++keyIndex)
-                        {
-                            const auto& key = keys[keyIndex];
-                            lastIndex = keyIndex;
-
-                            // We want to return the key that exactly matches the time if possible, otherwise we'll keep track of the previous time
-                            // If we don't find an exact match and end up going past the desired time (or run out of keyframes) then we return the previous key
-                            if (key.mTime < time)
-                            {
-                                returnValue = key.mValue;
-                            }
-                            else if (AZ::IsClose(key.mTime, time))
-                            {
-                                return key.mValue;
-                            }
-                            else
-                            {
-                                return returnValue;
-                            }
-                        }
-                        
-                        return returnValue;
-                    };
 
                     // Resample the animations at a fixed time step. This matches the behaviour of
                     // the previous SDK used. Longer term, this could be data driven, or based on the
                     // smallest time step between key frames.
                     // AssImp has an animation->mTicksPerSecond and animation->mDuration, but those
                     // are less predictable than just using a fixed time step.
-                    const double duration = animation->mDuration / animation->mTicksPerSecond;
+                    // AssImp documentation claims animation->mDuration is the duration of the animation in ticks, but
+                    // not all animations we've tested follow that pattern. Sometimes duration is in seconds.
+                    const size_t numKeyFrames = GetNumKeyFrames(
+                        AZStd::max(AZStd::max(anim->mNumScalingKeys, anim->mNumPositionKeys), anim->mNumRotationKeys),
+                        animation->mDuration,
+                        animation->mTicksPerSecond);
 
-                    AZ::u32 numKeyFrames = AZStd::max(AZStd::max(anim->mNumScalingKeys, anim->mNumPositionKeys), anim->mNumRotationKeys);
-                    if (!AZ::IsClose(duration / s_defaultTimeStepSampleRate, numKeyFrames, 1))
-                    {
-                        double dT = duration / s_defaultTimeStepSampleRate;
-                        numKeyFrames = AZStd::ceilf(dT) + 1; // +1 because the animation is from [0, duration] - we have a keyframe at the end of the duration which needs to be included
-                    }
-                    
                     AZStd::shared_ptr<SceneData::GraphData::AnimationData> createdAnimationData =
                        AZStd::make_shared<SceneData::GraphData::AnimationData>();
                     createdAnimationData->ReserveKeyFrames(numKeyFrames);
-                    createdAnimationData->SetTimeStepBetweenFrames(s_defaultTimeStepSampleRate);
+                    createdAnimationData->SetTimeStepBetweenFrames(s_defaultTimeStepBetweenFrames);
 
                     AZ::u32 lastScaleIndex = 0;
                     AZ::u32 lastPositionIndex = 0;
                     AZ::u32 lastRotationIndex = 0;
                     for (AZ::u32 frame = 0; frame < numKeyFrames; ++frame)
                     {
-                        double time = frame * s_defaultTimeStepSampleRate * animation->mTicksPerSecond;
-                        aiVector3D scale = sampleKeyFrame(anim->mScalingKeys, anim->mNumScalingKeys, time, lastScaleIndex);
-                        aiVector3D position = sampleKeyFrame(anim->mPositionKeys, anim->mNumPositionKeys, time, lastPositionIndex);
-                        aiQuaternion rotation = sampleKeyFrame(anim->mRotationKeys, anim->mNumRotationKeys, time, lastRotationIndex);
+                        const double time = GetTimeForFrame(frame, animation->mTicksPerSecond);
+
+                        aiVector3D scale(1.0f, 1.0f, 1.0f);
+                        aiVector3D position(0.0f, 0.0f, 0.0f);
+                        aiQuaternion rotation(1.0f, 0.0f, 0.0f, 0.0f);
+                        if (!SampleKeyFrame(scale, anim->mScalingKeys, anim->mNumScalingKeys, time, lastScaleIndex) ||
+                            !SampleKeyFrame(position, anim->mPositionKeys, anim->mNumPositionKeys, time, lastPositionIndex) ||
+                            !SampleKeyFrame(rotation, anim->mRotationKeys, anim->mNumRotationKeys, time, lastRotationIndex))
+                        {
+                            return Events::ProcessingResult::Failure;
+                        }
                         
                         aiMatrix4x4 transform(scale, rotation, position);
-                        
                         DataTypes::MatrixType animTransform = AssImpSDKWrapper::AssImpTypeConverter::ToTransform(transform);
 
                         context.m_sourceSceneSystem.SwapTransformForUpAxis(animTransform);
@@ -507,7 +588,6 @@ namespace AZ
                     return Events::ProcessingResult::Ignored;
                 }
                 Events::ProcessingResultCombiner combinedAnimationResult;
-                aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
 
                 // In:
                 //  Key index
@@ -521,28 +601,6 @@ namespace AZ
                 //      SetTimeStepBetweenFrames set on the animation data
                 //      Keyframes. Weights (Values in FBX SDK) per key time.
                 //      Keyframes generated for every single frame of the animation.
-
-                // Helper class to store key data, when translating from AssImp layout to the engine's scene format.
-                struct KeyData
-                {
-                    KeyData(float weight, float time) :
-                        m_weight(weight),
-                        m_time(time)
-                    {
-
-                    }
-
-                    bool operator<(const KeyData& other) const
-                    {
-                        return m_time < other.m_time;
-                    }
-
-                    // Naming in the previous SDK (FBX SDK) and in the engine's scene format
-                    // doesn't match AssImp's naming convention.
-                    // weight here is the AssImp's name for the data, it was named value in FBX SDK.
-                    float m_weight = 0;
-                    float m_time = 0;
-                };
                 typedef AZStd::map<int, AZStd::vector<KeyData>> ValueToKeyDataMap;
                 ValueToKeyDataMap valueToKeyDataMap;
 
@@ -563,46 +621,28 @@ namespace AZ
                 {
                     AZStd::shared_ptr<SceneData::GraphData::BlendShapeAnimationData> morphAnimNode =
                         AZStd::make_shared<SceneData::GraphData::BlendShapeAnimationData>();
-                    morphAnimNode->ReserveKeyFrames(animation->mDuration + 1);
-                    morphAnimNode->SetTimeStepBetweenFrames(1.0 / animation->mTicksPerSecond);
+
+                    const size_t numKeyFrames = GetNumKeyFrames(keys.size(), animation->mDuration, animation->mTicksPerSecond);
+                    morphAnimNode->ReserveKeyFrames(numKeyFrames);
+                    morphAnimNode->SetTimeStepBetweenFrames(s_defaultTimeStepBetweenFrames);
 
                     aiAnimMesh* aiAnimMesh = mesh->mAnimMeshes[meshIdx];
                     AZStd::string_view nodeName(aiAnimMesh->mName.C_Str());
 
                     const AZ::u32 maxKeys = keys.size();
                     AZ::u32 keyIdx = 0;
-                    for (AZ::u32 time = 0; time <= animation->mDuration; ++time)
+                    for (AZ::u32 frame = 0; frame < numKeyFrames; ++frame)
                     {
-                        if (keyIdx < maxKeys - 1 && time >= keys[keyIdx+1].m_time)
-                        {
-                            ++keyIdx;
-                        }
-                        float weight_value = keys[keyIdx].m_weight;
-                        if (keyIdx < maxKeys - 1)
-                        {
-                            float nextWeight = keys[keyIdx+1].m_weight;
-                            float normalizedTimeBetweenFrames = 0;
+                        const double time = GetTimeForFrame(frame, animation->mTicksPerSecond);
 
-                            if (keys[keyIdx + 1].m_time != keys[keyIdx].m_time)
-                            {
-                                normalizedTimeBetweenFrames =
-                                    (time - keys[keyIdx].m_time) / (keys[keyIdx + 1].m_time - keys[keyIdx].m_time);
-                            }
-                            else
-                            {
-                                AZ_Warning("AnimationImporter", false,
-                                    "Morph target mesh %s has keys with duplicate time, at indices %d and %d. The second will be ignored.",
-                                    nodeName.data(),
-                                    keyIdx,
-                                    keyIdx+1);
-                            }
-
-                            // AssImp and FBX both only support linear interpolation for blend shapes.
-                            weight_value = AZ::Lerp(weight_value, nextWeight, normalizedTimeBetweenFrames);
+                        float weight = 0;
+                        if (!SampleKeyFrame(weight, keys, keys.size(), time, keyIdx))
+                        {
+                            return Events::ProcessingResult::Failure;
                         }
-                        morphAnimNode->AddKeyFrame(weight_value);
+
+                        morphAnimNode->AddKeyFrame(weight);
                     }
-
 
                     const size_t dotIndex = nodeName.find_last_of('.');
                     nodeName = nodeName.substr(dotIndex + 1);

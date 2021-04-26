@@ -11,8 +11,10 @@
 */
 
 #include "LegacyViewportCameraController.h"
+
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
+#include <AzFramework/Viewport/ScreenGeometry.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Atom/RPI.Public/ViewportContext.h>
@@ -73,7 +75,8 @@ AZ::RPI::ViewportContextPtr LegacyViewportCameraControllerInstance::GetViewportC
     return viewportContextManager->GetViewportContextById(GetViewportId());
 }
 
-bool LegacyViewportCameraControllerInstance::HandleMouseMove(const QPoint& currentMousePos, const QPoint& previousMousePos)
+bool LegacyViewportCameraControllerInstance::HandleMouseMove(
+    const AzFramework::ScreenPoint& currentMousePos, const AzFramework::ScreenPoint& previousMousePos)
 {
     if (previousMousePos == currentMousePos)
     {
@@ -93,6 +96,11 @@ bool LegacyViewportCameraControllerInstance::HandleMouseMove(const QPoint& curre
         speedScale *= gSettings.cameraFastMoveSpeed;
     }
 
+    if (m_inMoveMode || m_inOrbitMode || m_inRotateMode || m_inZoomMode)
+    {
+        m_totalMouseMoveDelta += (QPoint(currentMousePos.m_x, currentMousePos.m_y)-QPoint(previousMousePos.m_x, previousMousePos.m_y)).manhattanLength();
+    }
+
     if ((m_inRotateMode && m_inMoveMode) || m_inZoomMode)
     {
         Matrix34 m = AZTransformToLYTransform(viewportContext->GetCameraTransform());
@@ -100,7 +108,7 @@ bool LegacyViewportCameraControllerInstance::HandleMouseMove(const QPoint& curre
         Vec3 ydir = m.GetColumn1().GetNormalized();
         Vec3 pos = m.GetTranslation();
 
-        const float posDelta = 0.2f * (previousMousePos.y() - currentMousePos.y()) * speedScale;
+        const float posDelta = 0.2f * (previousMousePos.m_y - currentMousePos.m_y) * speedScale;
         pos = pos - ydir * posDelta;
         m_orbitDistance = m_orbitDistance + posDelta;
         m_orbitDistance = fabs(m_orbitDistance);
@@ -111,7 +119,7 @@ bool LegacyViewportCameraControllerInstance::HandleMouseMove(const QPoint& curre
     }
     else if (m_inRotateMode)
     {
-        Ang3 angles(-currentMousePos.y() + previousMousePos.y(), 0, -currentMousePos.x() + previousMousePos.x());
+        Ang3 angles(-currentMousePos.m_y + previousMousePos.m_y, 0, -currentMousePos.m_x + previousMousePos.m_x);
         angles = angles * 0.002f * gSettings.cameraRotateSpeed;
         if (gSettings.invertYRotation)
         {
@@ -143,7 +151,7 @@ bool LegacyViewportCameraControllerInstance::HandleMouseMove(const QPoint& curre
         }
 
         Vec3 pos = m.GetTranslation();
-        pos += 0.1f * xdir * (currentMousePos.x() - previousMousePos.x()) * speedScale + 0.1f * zdir * (previousMousePos.y() - currentMousePos.y()) * speedScale;
+        pos += 0.1f * xdir * (currentMousePos.m_x - previousMousePos.m_x) * speedScale + 0.1f * zdir * (previousMousePos.m_y - currentMousePos.m_y) * speedScale;
         m.SetTranslation(pos);
 
         AZ::Transform transform = viewportContext->GetCameraTransform();
@@ -153,7 +161,7 @@ bool LegacyViewportCameraControllerInstance::HandleMouseMove(const QPoint& curre
     }
     else if (m_inOrbitMode)
     {
-        Ang3 angles(-currentMousePos.y() + previousMousePos.y(), 0, -currentMousePos.x() + previousMousePos.x());
+        Ang3 angles(-currentMousePos.m_y + previousMousePos.m_y, 0, -currentMousePos.m_x + previousMousePos.m_x);
         angles = angles * 0.002f * gSettings.cameraRotateSpeed;
 
         if (gSettings.invertPan)
@@ -289,14 +297,13 @@ bool LegacyViewportCameraControllerInstance::HandleInputChannelEvent(const AzFra
 
     if (id == AzFramework::InputDeviceMouse::SystemCursorPosition)
     {
-        QPoint screenPosition = QPoint();
         bool result = false;
         AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Event(
             GetViewportId(),
             [this, &result](AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequests* mouseRequests)
             {
-                auto previousMousePosition = mouseRequests->PreviousViewportCursorScreenPosition();
-                if (previousMousePosition.has_value())
+                if (auto previousMousePosition = mouseRequests->PreviousViewportCursorScreenPosition();
+                    previousMousePosition.has_value())
                 {
                     result = HandleMouseMove(mouseRequests->ViewportCursorScreenPosition(), previousMousePosition.value());
                 }
@@ -340,13 +347,16 @@ bool LegacyViewportCameraControllerInstance::HandleInputChannelEvent(const AzFra
                 m_inRotateMode = true;
             }
 
-            shouldConsumeEvent = true;
             shouldCaptureCursor = true;
+            // Record how much the cursor has been moved to see if we should own the mouse up event.
+            m_totalMouseMoveDelta = 0;
         }
         else if (state == InputChannel::State::Ended)
         {
             m_inZoomMode = false;
             m_inRotateMode = false;
+            // If we've moved the cursor more than a couple pixels, we should eat this mouse up event to prevent the context menu controller from seeing it.
+            shouldConsumeEvent = m_totalMouseMoveDelta > 2;
             shouldCaptureCursor = false;
         }
     }
@@ -398,6 +408,13 @@ bool LegacyViewportCameraControllerInstance::HandleInputChannelEvent(const AzFra
         }
     }
 
+    UpdateCursorCapture(shouldCaptureCursor);
+
+    return shouldConsumeEvent;
+}
+
+void LegacyViewportCameraControllerInstance::UpdateCursorCapture(bool shouldCaptureCursor)
+{
     if (m_capturingCursor != shouldCaptureCursor)
     {
         if (shouldCaptureCursor)
@@ -417,8 +434,14 @@ bool LegacyViewportCameraControllerInstance::HandleInputChannelEvent(const AzFra
 
         m_capturingCursor = shouldCaptureCursor;
     }
+}
 
-    return shouldConsumeEvent;
+void LegacyViewportCameraControllerInstance::ResetInputChannels()
+{
+    m_modifiers = 0;
+    m_pressedKeys.clear();
+    UpdateCursorCapture(false);
+    m_inRotateMode = m_inMoveMode = m_inOrbitMode = m_inZoomMode = false;
 }
 
 void LegacyViewportCameraControllerInstance::UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event)

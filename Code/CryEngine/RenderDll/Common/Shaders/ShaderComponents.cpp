@@ -148,13 +148,15 @@ const char* CShaderMan::mfGetShaderParamName(ECGParam ePR)
 {
     int n = 0;
     const char* szName;
-    while (szName = sParams[n].szName)
+    szName = sParams[n].szName;
+    while (szName)
     {
         if (sParams[n].eParamType == ePR)
         {
             return szName;
         }
         n++;
+        szName = sParams[n].szName;
     }
     if (ePR == ECGP_PM_Tweakable)
     {
@@ -167,7 +169,8 @@ SParamDB* CShaderMan::mfGetShaderParamDB(const char* szSemantic)
 {
     const char* szName;
     int n = 0;
-    while (szName = sParams[n].szName)
+    szName = sParams[n].szName;
+    while (szName)
     {
         int nLen = strlen(szName);
         if (!_strnicmp(szName, szSemantic, nLen) || (sParams[n].szAliasName && !_strnicmp(sParams[n].szAliasName, szSemantic, strlen(sParams[n].szAliasName))))
@@ -175,6 +178,7 @@ SParamDB* CShaderMan::mfGetShaderParamDB(const char* szSemantic)
             return &sParams[n];
         }
         n++;
+        szName = sParams[n].szName;
     }
     return NULL;
 }
@@ -231,7 +235,8 @@ bool CShaderMan::mfParseParamComp(int comp, SCGParam* pCurParam, const char* szS
     }
     const char* szName;
     int n = 0;
-    while (szName = sParams[n].szName)
+    szName = sParams[n].szName;
+    while (szName)
     {
         int nLen = strlen(szName);
         if (!_strnicmp(szName, szSemantic, nLen) || (sParams[n].szAliasName && !_strnicmp(sParams[n].szAliasName, szSemantic, strlen(sParams[n].szAliasName))))
@@ -295,6 +300,7 @@ bool CShaderMan::mfParseParamComp(int comp, SCGParam* pCurParam, const char* szS
             break;
         }
         n++;
+        szName = sParams[n].szName;
     }
     if (!szName)
     {
@@ -324,7 +330,9 @@ bool CShaderMan::mfParseCGParam(char* scr, const char* szAnnotations, SShaderFXP
         {0, 0}
     };
     SCGParam vpp;
+#if defined(AZ_ENABLE_TRACING)
     int n = pParams->size();
+#endif
     bool bRes = true;
 
     while ((cmd = shGetObject (&scr, commands, &name, &params)) > 0)
@@ -521,7 +529,8 @@ bool CShaderMan::mfParseFXSampler([[maybe_unused]] SShaderFXParams& FXParams, SF
     const char* szSemantic = pr->m_Semantic.c_str();
     const char* szName;
     int n = 0;
-    while (szName = sSamplers[n].szName)
+    szName = sSamplers[n].szName;
+    while (szName)
     {
         if (!azstricmp(szName, szSemantic))
         {
@@ -533,6 +542,7 @@ bool CShaderMan::mfParseFXSampler([[maybe_unused]] SShaderFXParams& FXParams, SF
             break;
         }
         n++;
+        szName = sSamplers[n].szName;
     }
     if (!szName)
     {
@@ -668,7 +678,8 @@ bool CShaderMan::mfParseFXTexture(
     // Texture semantic exists and will be used to compare to the semantic texture table
     // Handling textures that are not material based textures, but parsed from the shader.
     // An example of this will be:  Texture2D<float4> sceneGBufferA : TS_SceneNormals;
-    while (szName = sTextures[n].szName)
+    szName = sTextures[n].szName;
+    while (szName)
     {   // Run over all slots and try to associates the semantic name.
         // The semantic enum will be used in 'mfSetTexture' for setting texture 
         // loading and default properties.
@@ -683,6 +694,7 @@ bool CShaderMan::mfParseFXTexture(
             break;
         }
         n++;
+        szName = sTextures[n].szName;
     }
     return szName != nullptr;
 }
@@ -813,7 +825,8 @@ bool sGetPublic(const CCryNameR& n, float* v, int nID)
     bool bFound = false;
     CShaderResources* pRS;
     const char* cName = n.c_str();
-    if (pRS = rd->m_RP.m_pShaderResources)
+    pRS = rd->m_RP.m_pShaderResources;
+    if (pRS)
     {
         bFound = SShaderParam::GetValue(cName, &pRS->m_ShaderParams, v, nID);
     }
@@ -858,7 +871,8 @@ SCGTexture::SCGTexture(const SCGTexture& sp)
     if (!sp.m_pAnimInfo)
     {
         m_pAnimInfo = nullptr;
-        if (m_pTexture = sp.m_pTexture)
+        m_pTexture = sp.m_pTexture;
+        if (m_pTexture)
         {
             m_pTexture->AddRef();
         }
@@ -866,7 +880,8 @@ SCGTexture::SCGTexture(const SCGTexture& sp)
     else
     {
         m_pTexture = nullptr;
-        if (m_pAnimInfo = sp.m_pAnimInfo)
+        m_pAnimInfo = sp.m_pAnimInfo;
+        if (m_pAnimInfo)
         {
             m_pAnimInfo->AddRef();
         }

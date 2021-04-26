@@ -685,7 +685,7 @@ namespace AZ
             using BindFlags = RHI::BufferBindFlags;
             VkBufferUsageFlags usageFlags{ 0 };
 
-            if (RHI::CheckBitsAny(bindFlags, BindFlags::InputAssembly))
+            if (RHI::CheckBitsAny(bindFlags, BindFlags::InputAssembly | BindFlags::DynamicInputAssembly))
             {
                 usageFlags |=
                     VK_BUFFER_USAGE_INDEX_BUFFER_BIT |
@@ -932,7 +932,7 @@ namespace AZ
         VkPipelineStageFlags GetResourcePipelineStateFlags(const RHI::BufferBindFlags& bindFlags)
         {
             VkPipelineStageFlags stagesFlags = {};
-            if (RHI::CheckBitsAny(bindFlags, RHI::BufferBindFlags::InputAssembly))
+            if (RHI::CheckBitsAny(bindFlags, RHI::BufferBindFlags::InputAssembly | RHI::BufferBindFlags::DynamicInputAssembly))
             {
                 stagesFlags |= VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT | VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
             }
@@ -1042,7 +1042,7 @@ namespace AZ
         VkAccessFlags GetResourceAccessFlags(const RHI::BufferBindFlags& bindFlags)
         {
             VkAccessFlags accessFlags = {};
-            if (RHI::CheckBitsAny(bindFlags, RHI::BufferBindFlags::InputAssembly))
+            if (RHI::CheckBitsAny(bindFlags, RHI::BufferBindFlags::InputAssembly | RHI::BufferBindFlags::DynamicInputAssembly))
             {
                 accessFlags |= VK_ACCESS_INDIRECT_COMMAND_READ_BIT | VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT | VK_ACCESS_INDEX_READ_BIT;
             }

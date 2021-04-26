@@ -90,6 +90,7 @@ namespace AZ
                 AZStd::vector<AZStd::shared_ptr<const UVData>> m_meshUVData;
                 AZStd::vector<AZStd::shared_ptr<const ColorData>> m_meshColorData;
                 AZStd::vector<AZStd::shared_ptr<const SkinData>> m_skinData;
+                AZStd::vector<AZ::Color> m_meshClothData;
                 AZStd::vector<MaterialUid> m_materials;
                 bool m_isMorphed = false;
 
@@ -110,6 +111,7 @@ namespace AZ
                 AZStd::vector<AZ::Name> m_uvCustomNames;
                 AZStd::vector<AZStd::vector<float>> m_colorSets;
                 AZStd::vector<AZ::Name> m_colorCustomNames;
+                AZStd::vector<float> m_clothData;
 
                 //! Joint index per vertex in range [0, numJoints].
                 //! Note: The joint indices have to match the used skeleton when applying skinning.
@@ -121,7 +123,8 @@ namespace AZ
                 AZStd::vector<RPI::PackedCompressedMorphTargetDelta> m_morphTargetVertexData;
 
                 MaterialUid m_materialUid;
-                bool CanBeMerged() const { return true; }
+                bool CanBeMerged() const { return m_clothData.empty(); }
+                bool m_hasMorphedColors = false;
             };
             using ProductMeshContentList = AZStd::vector<ProductMeshContent>;
 
@@ -143,6 +146,7 @@ namespace AZ
                 size_t m_normalsFloatCount = 0;
                 size_t m_tangentsFloatCount = 0;
                 size_t m_bitangentsFloatCount = 0;
+                size_t m_clothDataFloatCount = 0;
                 AZStd::vector<size_t> m_uvSetFloatCounts;
                 AZStd::vector<size_t> m_colorSetFloatCounts;
                 size_t m_skinInfluencesCount = 0;
@@ -173,6 +177,8 @@ namespace AZ
 
                 RHI::BufferViewDescriptor m_morphTargetVertexDataView;
 
+                RHI::BufferViewDescriptor m_clothDataView;
+
                 MaterialUid m_materialUid;
             };
             using ProductMeshViewList = AZStd::vector<ProductMeshView>;
@@ -192,18 +198,23 @@ namespace AZ
                 AZStd::unordered_map<AZStd::string, uint16_t>& jointNameToIndexMap,
                 MorphTargetMetaAssetCreator& morphTargetMetaCreator);
 
+            //! Checks if this is a skinned mesh and if soe,
+            //! adds some extra padding to make vertex streams align for skinning
+            //! Skinning is applied on an entire lod at once, so it presumes that
+            //! Each vertex stream that is modified by skinning is the same length
+            void PadVerticesForSkinning(ProductMeshContentList& productMeshList);
+
             //! Takes in a ProductMeshContentList and merges all elements that share the same MaterialUid.
             ProductMeshContentList MergeMeshesByMaterialUid(
                 const ProductMeshContentList& productMeshList);
 
             //! Simple helper to create a MeshView that views an entire given ProductMeshContent object as one mesh.
-            ProductMeshView CreateViewToEntireMesh(const ModelAssetBuilderContext& context, const ProductMeshContent& mesh);
+            ProductMeshView CreateViewToEntireMesh(const ProductMeshContent& mesh);
 
             //! Takes a ProductMeshContentList and merges all elements into a single ProductMeshContent object.
             //! This also produces a ProductMeshViewList that contains views to all
             //! the original meshes described in the lodMeshList collection.
             void MergeMeshesToCommonBuffers(
-                const ModelAssetBuilderContext& context,
                 const ProductMeshContentList& lodMeshList,
                 ProductMeshContent& lodMeshContent,
                 ProductMeshViewList& meshViewsPerLodBuffer);
@@ -274,7 +285,6 @@ namespace AZ
             //! 
             //! Returns false if an error occurs
             bool CreateModelLodBuffers(
-                const ModelAssetBuilderContext& context,
                 const ProductMeshContent& lodBufferContent,
                 BufferAssetView& outIndexBuffer,
                 AZStd::vector<ModelLodAsset::Mesh::StreamBufferInfo>& outStreamBuffers,
@@ -356,6 +366,9 @@ namespace AZ
             AZStd::string m_lodName;
             AZStd::string m_meshName;
 
+            size_t m_numSkinJointInfluencesPerVertex = 0;
+            float m_skinWeightThreshold = 0.0f;
+
             AZStd::set<uint32_t> m_createdSubId;
 
             // NOTE: This is explicitly fetched from a filename. In the future, this should be fetched from the RPI system
@@ -366,15 +379,13 @@ namespace AZ
             SceneAPI::DataTypes::MatrixType GetWorldTransform(const SceneAPI::Containers::SceneGraph& sceneGraph, SceneAPI::Containers::SceneGraph::NodeIndex node);
 
         private:
-            //! Collects skinning influences from the SceneAPI source mesh and fills them in the resulting mesh
-            void GatherSkinningInfluences(
-                const ModelAssetBuilderContext& context,
+            //! Collects skinning influences of a vertex from the SceneAPI source mesh and fills them in the resulting mesh
+            void GatherVertexSkinningInfluences(
                 const SourceMeshContent& sourceMesh,
                 ProductMeshContent& productMesh,
                 AZStd::unordered_map<AZStd::string, uint16_t>& jointNameToIndexMap,
-                size_t vertexIndex) const;
-
-            AZ::u32 ExtractMaxNumInfluencesPerVertex(const SceneAPI::DataTypes::ISkinRule* skinRule) const;
+                size_t vertexIndex,
+                bool& warnedExcessOfSkinInfluences) const;
         };
     } // namespace RPI
 } // namespace AZ

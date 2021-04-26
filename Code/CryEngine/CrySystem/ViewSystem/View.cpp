@@ -103,8 +103,6 @@ void CView::Update(float frameTime, bool isActive)
 
         // [VR] specific
         // Modify FOV based on the HMD device configuration
-        bool hmdActive = false;
-
         bool isRenderingToHMD = gEnv->pRenderer ? gEnv->pRenderer->GetIStereoRenderer()->IsRenderingToHMD() : false;
         if (isRenderingToHMD)
         {

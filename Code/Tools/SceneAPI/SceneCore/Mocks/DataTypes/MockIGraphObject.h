@@ -36,6 +36,8 @@ namespace AZ
                 {}
                 ~MockIGraphObject() override = default;
 
+                void CloneAttributesFrom([[maybe_unused]] const IGraphObject* sourceObject) override {}
+
                 int m_id;
             };
 
@@ -53,6 +55,8 @@ namespace AZ
                     : m_id(id)
                 {}
                 ~MockIGraphObjectAlt() override = default;
+
+                void CloneAttributesFrom([[maybe_unused]] const IGraphObject* sourceObject) override {}
 
                 int m_id;
             };

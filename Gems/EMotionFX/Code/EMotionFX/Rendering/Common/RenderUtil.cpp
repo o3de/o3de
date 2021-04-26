@@ -569,7 +569,6 @@ namespace MCommon
         PrepareForMesh(mesh, worldTM);
 
         AZ::Vector3* normals = (AZ::Vector3*)mesh->FindVertexData(EMotionFX::Mesh::ATTRIB_NORMALS);
-        AZ::Vector3* positions = (AZ::Vector3*)mesh->FindVertexData(EMotionFX::Mesh::ATTRIB_POSITIONS);
 
         // render face normals
         if (faceNormals)
@@ -613,7 +612,6 @@ namespace MCommon
                 const uint32 numVertices = subMesh->GetNumVertices();
                 const uint32 startVertex = subMesh->GetStartVertex();
                 const uint32 startIndex = subMesh->GetStartIndex();
-                const uint32* indices = subMesh->GetIndices();
 
                 for (uint32 j = 0; j < numVertices; ++j)
                 {
