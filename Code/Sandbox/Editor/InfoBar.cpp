@@ -22,7 +22,6 @@
 #include "Include/ITransformManipulator.h"
 #include "ActionManager.h"
 #include "Settings.h"
-#include "Objects/SelectionGroup.h"
 #include "Include/IObjectManager.h"
 #include "MathConversion.h"
 
@@ -191,10 +190,12 @@ void CInfoBar::IdleUpdate()
 
     Vec3 marker = GetIEditor()->GetMarkerPosition();
 
-    CSelectionGroup* selection = GetIEditor()->GetSelection();
-    if (selection->GetCount() != m_numSelected)
+    int selectedEntitiesCount = 0;
+    AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+        selectedEntitiesCount, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntitiesCount);
+    if (selectedEntitiesCount != m_numSelected)
     {
-        m_numSelected = selection->GetCount();
+        m_numSelected = selectedEntitiesCount;
         updateUI = true;
     }
 
