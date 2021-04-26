@@ -886,7 +886,7 @@ void EditorViewportWidget::OnBeginPrepareRender()
                 fov = 2 * atanf((h * tan(fov / 2)) / maxTargetHeight);
             }
         }
-        m_Camera.SetFrustum(w, h, fov, fNearZ, gEnv->p3DEngine->GetMaxViewDistance());
+        m_Camera.SetFrustum(w, h, fov, fNearZ);
     }
 
     GetIEditor()->GetSystem()->SetViewCamera(m_Camera);
