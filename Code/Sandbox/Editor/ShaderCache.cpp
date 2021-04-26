@@ -138,6 +138,7 @@ bool CLevelShaderCache::SaveBuffer(QString& textBuffer)
 void CLevelShaderCache::Update()
 {
     IRenderer* pRenderer = gEnv->pRenderer;
+    if (pRenderer)
     {
         QString buf;
         char* str = NULL;
