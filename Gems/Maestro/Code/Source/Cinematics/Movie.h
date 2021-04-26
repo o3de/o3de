@@ -204,7 +204,7 @@ public:
 
     void OnSequenceActivated(IAnimSequence* sequence) override;
 
-    static void Reflect(AZ::SerializeContext* serializeContext);
+    static void Reflect(AZ::ReflectContext* context);
 
 private:
 

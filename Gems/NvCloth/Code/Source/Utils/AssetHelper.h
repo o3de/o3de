@@ -88,9 +88,6 @@ namespace NvCloth
             MeshNodeInfo& meshNodeInfo,
             MeshClothInfo& meshClothInfo) = 0;
 
-        //! Returns whether the asset has support for skinned animation or not.
-        virtual bool DoesSupportSkinnedAnimation() const = 0;
-
     protected:
         static float ConvertBackstopOffset(float backstopOffset);
 

@@ -51,7 +51,7 @@ namespace AZ
 
                 AZStd::unique_ptr<SDKScene::SceneWrapperBase> m_sceneWrapper;
                 AZStd::shared_ptr<FbxSceneSystem> m_sceneSystem;
-                bool m_useAssetImporterSDK = false;
+                bool m_useAssetImporterSDK = true;
             };
         } // namespace FbxSceneBuilder
     } // namespace SceneAPI

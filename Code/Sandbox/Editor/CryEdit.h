@@ -28,7 +28,6 @@
 
 class CCryDocManager;
 class CQuickAccessBar;
-class CMatEditMainDlg;
 class CCryEditDoc;
 class CEditCommandLineInfo;
 class CMainFrame;
@@ -225,52 +224,23 @@ public:
     void OnEditmodeMove();
     void OnEditmodeRotate();
     void OnEditmodeScale();
-    void OnEditToolLink();
-    void OnUpdateEditToolLink(QAction* action);
-    void OnEditToolUnlink();
-    void OnUpdateEditToolUnlink(QAction* action);
-    void OnEditmodeSelect();
-    void OnEditEscape();
     void OnObjectSetArea();
     void OnObjectSetHeight();
-    void OnObjectVertexSnapping();
-    void OnUpdateEditmodeVertexSnapping(QAction* action);
-    void OnUpdateEditmodeSelect(QAction* action);
     void OnUpdateEditmodeMove(QAction* action);
     void OnUpdateEditmodeRotate(QAction* action);
     void OnUpdateEditmodeScale(QAction* action);
     void OnObjectmodifyFreeze();
     void OnObjectmodifyUnfreeze();
-    void OnEditmodeSelectarea();
-    void OnUpdateEditmodeSelectarea(QAction* action);
-    void OnSelectAxisX();
-    void OnSelectAxisY();
-    void OnSelectAxisZ();
-    void OnSelectAxisXy();
-    void OnUpdateSelectAxisX(QAction* action);
-    void OnUpdateSelectAxisXy(QAction* action);
-    void OnUpdateSelectAxisY(QAction* action);
-    void OnUpdateSelectAxisZ(QAction* action);
     void OnUndo();
-    void OnEditClone();
     void OnSelectionSave();
     void OnOpenAssetImporter();
     void OnSelectionLoad();
     void OnUpdateSelected(QAction* action);
-    void OnAlignObject();
-    void OnAlignToVoxel();
-    void OnAlignToGrid();
-    void OnUpdateAlignObject(QAction* action);
-    void OnUpdateAlignToVoxel(QAction* action);
     void OnLockSelection();
     void OnEditLevelData();
     void OnFileEditLogFile();
     void OnFileResaveSlices();
     void OnFileEditEditorini();
-    void OnSelectAxisTerrain();
-    void OnSelectAxisSnapToAll();
-    void OnUpdateSelectAxisTerrain(QAction* action);
-    void OnUpdateSelectAxisSnapToAll(QAction* action);
     void OnPreferences();
     void OnReloadTextures();
     void OnReloadGeometry();
@@ -367,7 +337,6 @@ private:
     //! Autotest mode: Special mode meant for automated testing, things like blocking dialogs or error report windows won't appear
     bool m_bAutotestMode = false;
 
-    CMatEditMainDlg* m_pMatEditDlg = nullptr;
     CConsoleDialog* m_pConsoleDialog = nullptr;
 
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
@@ -462,7 +431,6 @@ private:
     void OnToolsScriptHelp();
     void OnViewCycle2dviewport();
     void OnDisplayGotoPosition();
-    void OnDisplaySetVector();
     void OnSnapangle();
     void OnUpdateSnapangle(QAction* action);
     void OnRuler();
@@ -499,7 +467,6 @@ private:
     void OnOpenAudioControlsEditor();
     void OnOpenUICanvasEditor();
     void OnGotoViewportSearch();
-    void OnMaterialPicktool();
     void OnTimeOfDay();
     void OnChangeGameSpec(UINT nID);
     void SetGameSpecCheck(ESystemConfigSpec spec, ESystemConfigPlatform platform, int &nCheck, bool &enable);

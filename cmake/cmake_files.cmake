@@ -14,6 +14,7 @@ set(FILES
     3rdPartyPackages.cmake
     CommandExecution.cmake
     Configurations.cmake
+    CPack.cmake
     Dependencies.cmake
     Deployment.cmake
     EngineFinder.cmake
@@ -29,6 +30,7 @@ set(FILES
     PAL.cmake
     PALTools.cmake
     Projects.cmake
+    run_epbtest.cmake
     RuntimeDependencies.cmake
     SettingsRegistry.cmake
     UnitTest.cmake

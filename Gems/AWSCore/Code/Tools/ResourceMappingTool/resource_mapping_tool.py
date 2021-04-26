@@ -9,32 +9,56 @@ remove or modify any license notices. This file is distributed on an "AS IS" BAS
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
 
+from argparse import (ArgumentParser, Namespace)
 import logging
 import sys
 
-from PySide2.QtCore import Qt
-from PySide2.QtWidgets import QApplication
-
-from manager.configuration_manager import ConfigurationManager
-from manager.controller_manager import ControllerManager
-from manager.thread_manager import ThreadManager
-from manager.view_manager import ViewManager
-from style import azqtcomponents_resources
+from utils import environment_utils
 from utils import file_utils
 
+# arguments setup
+argument_parser: ArgumentParser = ArgumentParser()
+argument_parser.add_argument('--binaries_path', help='Path to QT Binaries necessary for PySide.')
+argument_parser.add_argument('--debug', action='store_true', help='Execute on debug mode.')
+arguments: Namespace = argument_parser.parse_args()
+
 # logging setup
-logging.basicConfig(filename="resource_mapping_tool.log", filemode='w', level=logging.INFO,
+logging_level: int = logging.INFO
+if arguments.debug:
+    logging_level = logging.DEBUG
+logging_path: str = file_utils.join_path(file_utils.get_parent_directory_path(__file__),
+                                         'resource_mapping_tool.log')
+logging.basicConfig(filename=logging_path, filemode='w', level=logging_level,
                     format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s', datefmt='%H:%M:%S')
 logging.getLogger('boto3').setLevel(logging.CRITICAL)
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('s3transfer').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
-
 logger = logging.getLogger(__name__)
+
 if __name__ == "__main__":
+    if arguments.binaries_path and not environment_utils.is_qt_linked():
+        logger.info("Setting up Qt environment ...")
+        environment_utils.setup_qt_environment(arguments.binaries_path)
+
+    try:
+        logger.info("Importing tool required modules ...")
+        from PySide2.QtCore import Qt
+        from PySide2.QtWidgets import QApplication
+        from manager.configuration_manager import ConfigurationManager
+        from manager.controller_manager import ControllerManager
+        from manager.thread_manager import ThreadManager
+        from manager.view_manager import ViewManager
+        from style import azqtcomponents_resources
+    except ImportError as e:
+        logger.error(f"Failed to import module [{e.name}] {e}")
+        environment_utils.cleanup_qt_environment()
+        exit(-1)
+
     QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
     QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
     app: QApplication = QApplication(sys.argv)
+    app.aboutToQuit.connect(environment_utils.cleanup_qt_environment)
 
     try:
         style_sheet_path: str = file_utils.join_path(file_utils.get_parent_directory_path(__file__),
@@ -62,5 +86,5 @@ if __name__ == "__main__":
     controller_manager.setup()
     
     view_manager.show()
-    
+
     sys.exit(app.exec_())

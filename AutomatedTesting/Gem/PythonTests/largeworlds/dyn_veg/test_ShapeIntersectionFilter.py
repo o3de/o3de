@@ -12,10 +12,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import os
 import pytest
 import logging
+
 # Bail on the test if ly_test_tools doesn't exist.
 pytest.importorskip('ly_test_tools')
 import ly_test_tools.environment.file_system as file_system
-import automatedtesting_shared.hydra_test_utils as hydra
+import editor_python_test_tools.hydra_test_utils as hydra
 
 logger = logging.getLogger(__name__)
 test_directory = os.path.join(os.path.dirname(__file__), 'EditorScripts')

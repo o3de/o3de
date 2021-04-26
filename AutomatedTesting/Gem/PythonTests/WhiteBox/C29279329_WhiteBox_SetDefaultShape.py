@@ -37,8 +37,9 @@ def run():
     import azlmbr.bus as bus
     import azlmbr.legacy.general as general
     
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    
+    from editor_python_test_tools.utils import TestHelper as helper
 
     def check_shape_result(success_fail_tuple, condition):
         result = Report.result(success_fail_tuple, condition)

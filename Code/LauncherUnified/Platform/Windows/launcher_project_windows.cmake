@@ -9,17 +9,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-if (LY_MONOLITHIC_GAME) # only Atom is supported in monolithic
-    set(LY_BUILD_DEPENDENCIES
-        PUBLIC
-            Legacy::CryRenderOther
-    )
-else()
-    set(LY_BUILD_DEPENDENCIES
-        PRIVATE
-            Legacy::CryRenderD3D11
-    )
-endif()
+set(LY_BUILD_DEPENDENCIES
+    PRIVATE
+        Legacy::CryRenderD3D11
+)
 
 set(ICON_FILE ${project_real_path}/Gem/Resources/GameSDK.ico)
 if(NOT EXISTS ${ICON_FILE})

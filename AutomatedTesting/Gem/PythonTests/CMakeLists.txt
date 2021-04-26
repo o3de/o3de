@@ -16,6 +16,7 @@
 ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
 
 add_subdirectory(assetpipeline)
+add_subdirectory(atom_renderer)
 
 ## Physics ##
 # DISABLED - see LYN-2536
@@ -134,11 +135,30 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 endif()
 
+## Python Asset Builder ##
+if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
+    ly_add_pytest(
+        NAME AutomatedTesting::PythonAssetBuilder
+        TEST_SUITE periodic
+        TEST_SERIAL
+        PATH ${CMAKE_CURRENT_LIST_DIR}/PythonAssetBuilder
+        TIMEOUT 3600
+        RUNTIME_DEPENDENCIES
+            Legacy::Editor
+            Legacy::CryRenderNULL
+            AZ::AssetProcessor
+            AutomatedTesting.Assets
+            Gem::EditorPythonBindings.Editor
+            Gem::PythonAssetBuilder.Editor
+        COMPONENT TestTools
+    )
+endif()
+
 ## Blast ##
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_pytest(
         NAME AutomatedTesting::BlastTests
-        TEST_SUITE sandbox
+        TEST_SUITE periodic
         TEST_SERIAL TRUE
         PATH ${CMAKE_CURRENT_LIST_DIR}/Blast/TestSuite_Active.py
         TIMEOUT 3600
