@@ -453,8 +453,11 @@ void CAnimPostFXNode::OnReset()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CAnimPostFXNode::Reflect(AZ::SerializeContext* serializeContext)
+void CAnimPostFXNode::Reflect(AZ::ReflectContext* context)
 {
-    serializeContext->Class<CAnimPostFXNode, CAnimNode>()
-        ->Version(1);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<CAnimPostFXNode, CAnimNode>()
+            ->Version(1);
+    }
 }

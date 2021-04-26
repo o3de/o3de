@@ -51,6 +51,7 @@ namespace AZ
                     AZ_Warning("AnimationImporter", false, "Animation ticks per second should not be zero, defaulting to %d keyframes for animation.", keysSize);
                     return keysSize;
                 }
+
                 const double totalTicks = duration / ticksPerSecond;
                 AZ::u32 numKeys = keysSize;
                 // +1 because the animation is from [0, duration] - we have a keyframe at the end of the duration which needs to be included
@@ -422,10 +423,12 @@ namespace AZ
                     // If there is no bone animation on the current node, then generate one here.
                     AZStd::shared_ptr<SceneData::GraphData::AnimationData> createdAnimationData =
                         AZStd::make_shared<SceneData::GraphData::AnimationData>();
-                    createdAnimationData->ReserveKeyFrames(
-                        animation->mDuration +
-                        1); // +1 because we start at 0 and the last keyframe is at mDuration instead of mDuration-1
-                    createdAnimationData->SetTimeStepBetweenFrames(1.0 / animation->mTicksPerSecond);
+
+                    const size_t numKeyframes = animation->mDuration + 1; // +1 because we start at 0 and the last keyframe is at mDuration instead of mDuration-1
+                    createdAnimationData->ReserveKeyFrames(numKeyframes);
+
+                    const double timeStepBetweenFrames = 1.0 / animation->mTicksPerSecond;
+                    createdAnimationData->SetTimeStepBetweenFrames(timeStepBetweenFrames);
 
                     // Set every frame of the animation to the start location of the node.
                     aiMatrix4x4 combinedTransform = GetConcatenatedLocalTransform(currentNode);
@@ -527,7 +530,7 @@ namespace AZ
                     // are less predictable than just using a fixed time step.
                     // AssImp documentation claims animation->mDuration is the duration of the animation in ticks, but
                     // not all animations we've tested follow that pattern. Sometimes duration is in seconds.
-                    const AZ::u32 numKeyFrames = GetNumKeyFrames(
+                    const size_t numKeyFrames = GetNumKeyFrames(
                         AZStd::max(AZStd::max(anim->mNumScalingKeys, anim->mNumPositionKeys), anim->mNumRotationKeys),
                         animation->mDuration,
                         animation->mTicksPerSecond);
@@ -543,8 +546,10 @@ namespace AZ
                     for (AZ::u32 frame = 0; frame < numKeyFrames; ++frame)
                     {
                         const double time = GetTimeForFrame(frame, animation->mTicksPerSecond);
-                        aiVector3D scale = aiVector3D(1.f, 1.f, 1.f), position = aiVector3D(0.f, 0.f, 0.f);
-                        aiQuaternion rotation(1.f, 0.f, 0.f, 0.f);
+
+                        aiVector3D scale(1.0f, 1.0f, 1.0f);
+                        aiVector3D position(0.0f, 0.0f, 0.0f);
+                        aiQuaternion rotation(1.0f, 0.0f, 0.0f, 0.0f);
                         if (!SampleKeyFrame(scale, anim->mScalingKeys, anim->mNumScalingKeys, time, lastScaleIndex) ||
                             !SampleKeyFrame(position, anim->mPositionKeys, anim->mNumPositionKeys, time, lastPositionIndex) ||
                             !SampleKeyFrame(rotation, anim->mRotationKeys, anim->mNumRotationKeys, time, lastRotationIndex))
@@ -553,7 +558,6 @@ namespace AZ
                         }
                         
                         aiMatrix4x4 transform(scale, rotation, position);
-                        
                         DataTypes::MatrixType animTransform = AssImpSDKWrapper::AssImpTypeConverter::ToTransform(transform);
 
                         context.m_sourceSceneSystem.SwapTransformForUpAxis(animTransform);
@@ -618,7 +622,7 @@ namespace AZ
                     AZStd::shared_ptr<SceneData::GraphData::BlendShapeAnimationData> morphAnimNode =
                         AZStd::make_shared<SceneData::GraphData::BlendShapeAnimationData>();
 
-                    const AZ::u32 numKeyFrames = GetNumKeyFrames(keys.size(), animation->mDuration, animation->mTicksPerSecond);
+                    const size_t numKeyFrames = GetNumKeyFrames(keys.size(), animation->mDuration, animation->mTicksPerSecond);
                     morphAnimNode->ReserveKeyFrames(numKeyFrames);
                     morphAnimNode->SetTimeStepBetweenFrames(s_defaultTimeStepBetweenFrames);
 
@@ -627,7 +631,7 @@ namespace AZ
 
                     const AZ::u32 maxKeys = keys.size();
                     AZ::u32 keyIdx = 0;
-                    for (AZ::u32 frame = 0; frame <= numKeyFrames; ++frame)
+                    for (AZ::u32 frame = 0; frame < numKeyFrames; ++frame)
                     {
                         const double time = GetTimeForFrame(frame, animation->mTicksPerSecond);
 
@@ -639,7 +643,6 @@ namespace AZ
 
                         morphAnimNode->AddKeyFrame(weight);
                     }
-
 
                     const size_t dotIndex = nodeName.find_last_of('.');
                     nodeName = nodeName.substr(dotIndex + 1);

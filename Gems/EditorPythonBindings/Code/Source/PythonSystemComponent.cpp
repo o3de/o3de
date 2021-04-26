@@ -550,7 +550,7 @@ namespace EditorPythonBindings
         }
         if (appended)
         {
-            ExecuteByString(pathAppend.c_str(), true);
+            ExecuteByString(pathAppend.c_str(), false);
             return true;
         }
         return false;

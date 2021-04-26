@@ -1238,6 +1238,8 @@ namespace AZ
 
         void DirectionalLightFeatureProcessor::SetFilterParameterToPass(LightHandle handle, const RPI::View* cameraView)
         {
+            AZ_ATOM_PROFILE_FUNCTION("DirectionalLightFeatureProcessor", "DirectionalLightFeatureProcessor::SetFilterParameterToPass");
+
             if (handle != m_shadowingLightHandle)
             {
                 return;

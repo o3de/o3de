@@ -21,7 +21,7 @@ namespace AzToolsFramework
             void UpdatePrefabInstance(
                 const Instance& instance, AZStd::string_view undoMessage, const PrefabDom& instanceDomBeforeUpdate,
                 UndoSystem::URSequencePoint* undoBatch);
-            void CreateLink(
+            LinkId CreateLink(
                 TemplateId sourceTemplateId, TemplateId targetTemplateId, PrefabDomReference patch,
                 const InstanceAlias& instanceAlias, UndoSystem::URSequencePoint* undoBatch);
             void RemoveLink(

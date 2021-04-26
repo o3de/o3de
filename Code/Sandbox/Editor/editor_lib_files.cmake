@@ -484,9 +484,6 @@ set(FILES
     SelectLightAnimationDialog.h
     SelectSequenceDialog.cpp
     SelectSequenceDialog.h
-    SetVectorDlg.cpp
-    SetVectorDlg.h
-    SetVectorDlg.ui
     ShadersDialog.cpp
     ShadersDialog.h
     ShadersDialog.ui

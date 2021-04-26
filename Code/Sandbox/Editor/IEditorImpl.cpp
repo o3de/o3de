@@ -144,8 +144,7 @@ namespace
 const char* CEditorImpl::m_crashLogFileName = "SessionStatus/editor_statuses.json";
 
 CEditorImpl::CEditorImpl()
-    : m_currEditMode(eEditModeSelect)
-    , m_operationMode(eOperationModeNone)
+    : m_operationMode(eOperationModeNone)
     , m_pSystem(nullptr)
     , m_pFileUtil(nullptr)
     , m_pClassFactory(nullptr)
@@ -236,18 +235,6 @@ CEditorImpl::CEditorImpl()
     m_pRuler = new CRuler;
     m_selectedRegion.min = Vec3(0, 0, 0);
     m_selectedRegion.max = Vec3(0, 0, 0);
-    ZeroStruct(m_lastAxis);
-    m_lastAxis[eEditModeSelect] = AXIS_TERRAIN;
-    m_lastAxis[eEditModeSelectArea] = AXIS_TERRAIN;
-    m_lastAxis[eEditModeMove] = AXIS_TERRAIN;
-    m_lastAxis[eEditModeRotate] = AXIS_Z;
-    m_lastAxis[eEditModeScale] = AXIS_XY;
-    ZeroStruct(m_lastCoordSys);
-    m_lastCoordSys[eEditModeSelect] = COORDS_LOCAL;
-    m_lastCoordSys[eEditModeSelectArea] = COORDS_LOCAL;
-    m_lastCoordSys[eEditModeMove] = COORDS_WORLD;
-    m_lastCoordSys[eEditModeRotate] = COORDS_WORLD;
-    m_lastCoordSys[eEditModeScale] = COORDS_WORLD;
     DetectVersion();
     RegisterTools();
 
@@ -256,8 +243,6 @@ CEditorImpl::CEditorImpl()
     m_pAssetDatabaseLocationListener = nullptr;
     m_pAssetBrowserRequestHandler = nullptr;
     m_assetEditorRequestsHandler = nullptr;
-
-    AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
 
     AZ::IO::SystemFile::CreateDir("SessionStatus");
     QFile::setPermissions(m_crashLogFileName, QFileDevice::ReadOther | QFileDevice::WriteOther);
@@ -282,8 +267,6 @@ void CEditorImpl::Initialize()
 
     // Activate QT immediately so that its available as soon as CEditorImpl is (and thus GetIEditor())
     InitializeEditorCommon(GetIEditor());
-
-    LoadSettings();
 }
 
 //The only purpose of that function is to be called at the very begining of the shutdown sequence so that we can instrument and track
@@ -298,8 +281,6 @@ void CEditorImpl::OnEarlyExitShutdownSequence()
 
 void CEditorImpl::Uninitialize()
 {
-    SaveSettings();
-
     if (m_pSystem)
     {
         UninitializeEditorCommonISystem(m_pSystem);
@@ -360,8 +341,6 @@ void CEditorImpl::LoadPlugins()
 
 CEditorImpl::~CEditorImpl()
 {
-    AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
-
     gSettings.Save();
     m_bExiting = true; // Can't save level after this point (while Crash)
     SAFE_RELEASE(m_pSourceControl);
@@ -650,40 +629,6 @@ IMainStatusBar* CEditorImpl::GetMainStatusBar()
     return MainWindow::instance()->StatusBar();
 }
 
-int CEditorImpl::GetEditMode()
-{
-    return m_currEditMode;
-}
-
-void CEditorImpl::SetEditMode(int editMode)
-{
-    bool isEditorInGameMode = false;
-    EBUS_EVENT_RESULT(isEditorInGameMode, AzToolsFramework::EditorEntityContextRequestBus, IsEditorRunningGame);
-
-    if (isEditorInGameMode)
-    {
-        if (editMode != eEditModeSelect)
-        {
-            if (SelectionContainsComponentEntities())
-            {
-                return;
-            }
-        }
-    }
-
-    EEditMode newEditMode = (EEditMode)editMode;
-    if (m_currEditMode == newEditMode)
-    {
-        return;
-    }
-
-    m_currEditMode = newEditMode;
-    AABB box(Vec3(0, 0, 0), Vec3(0, 0, 0));
-    SetSelectedRegion(box);
-
-    Notify(eNotify_OnEditModeChange);
-}
-
 void CEditorImpl::SetOperationMode(EOperationMode mode)
 {
     m_operationMode = mode;
@@ -728,7 +673,6 @@ ITransformManipulator* CEditorImpl::GetTransformManipulator()
 void CEditorImpl::SetAxisConstraints(AxisConstrains axisFlags)
 {
     m_selectedAxis = axisFlags;
-    m_lastAxis[m_currEditMode] = m_selectedAxis;
     m_pViewManager->SetAxisConstrain(axisFlags);
     SetTerrainAxisIgnoreObjects(false);
 
@@ -754,7 +698,6 @@ bool CEditorImpl::IsTerrainAxisIgnoreObjects()
 void CEditorImpl::SetReferenceCoordSys(RefCoordSys refCoords)
 {
     m_refCoordsSys = refCoords;
-    m_lastCoordSys[m_currEditMode] = m_refCoordsSys;
 
     // Update all views.
     UpdateViews(eUpdateObjects, NULL);
@@ -1882,60 +1825,6 @@ void CEditorImpl::DestroyQMimeData(QMimeData* data) const
 bool CEditorImpl::IsNewViewportInteractionModelEnabled() const
 {
     return m_isNewViewportInteractionModelEnabled;
-}
-
-void CEditorImpl::OnStartPlayInEditor()
-{
-    if (SelectionContainsComponentEntities())
-    {
-        SetEditMode(eEditModeSelect);
-    }
-}
-
-namespace
-{
-    const std::vector<std::pair<EEditMode, QString>> s_editModeNames = {
-        { eEditModeSelect, QStringLiteral("Select") },
-        { eEditModeSelectArea, QStringLiteral("SelectArea") },
-        { eEditModeMove, QStringLiteral("Move") },
-        { eEditModeRotate, QStringLiteral("Rotate") },
-        { eEditModeScale, QStringLiteral("Scale") }
-    };
-}
-
-void CEditorImpl::LoadSettings()
-{
-    QSettings settings(QStringLiteral("Amazon"), QStringLiteral("O3DE"));
-
-    settings.beginGroup(QStringLiteral("Editor"));
-    settings.beginGroup(QStringLiteral("CoordSys"));
-
-    for (const auto& editMode : s_editModeNames)
-    {
-        if (settings.contains(editMode.second))
-        {
-            m_lastCoordSys[editMode.first] = static_cast<RefCoordSys>(settings.value(editMode.second).toInt());
-        }
-    }
-
-    settings.endGroup(); // CoordSys
-    settings.endGroup(); // Editor
-}
-
-void CEditorImpl::SaveSettings() const
-{
-    QSettings settings(QStringLiteral("Amazon"), QStringLiteral("O3DE"));
-
-    settings.beginGroup(QStringLiteral("Editor"));
-    settings.beginGroup(QStringLiteral("CoordSys"));
-
-    for (const auto& editMode : s_editModeNames)
-    {
-        settings.setValue(editMode.second, static_cast<int>(m_lastCoordSys[editMode.first]));
-    }
-
-    settings.endGroup(); // CoordSys
-    settings.endGroup(); // Editor
 }
 
 IEditorPanelUtils* CEditorImpl::GetEditorPanelUtils()
