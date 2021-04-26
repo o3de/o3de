@@ -26,10 +26,6 @@ sys.path.append(os.path.join(azlmbr.paths.devroot, "AutomatedTesting", "Gem", "P
 
 import editor_python_test_tools.hydra_editor_utils as hydra
 from editor_python_test_tools.utils import TestHelper
-from editor_python_test_tools.editor_test_helper import EditorTestHelper
-
-
-EditorTestHelper = EditorTestHelper(log_prefix="AtomEditorComponents")
 
 
 def run():
