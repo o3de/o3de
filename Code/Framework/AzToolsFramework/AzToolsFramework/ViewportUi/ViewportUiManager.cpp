@@ -76,7 +76,7 @@ namespace AzToolsFramework::ViewportUi
         }
     }
 
-    void ViewportUiManager::RegisterSwitcherEventHandler(SwitcherId switcherId, AZ::Event<ButtonId>::Handler& handler)
+    void ViewportUiManager::RegisterSwitcherEventHandler(const SwitcherId switcherId, AZ::Event<ButtonId>::Handler& handler)
     {
         if (auto switcherIt = m_switcherButtonGroups.find(switcherId); switcherIt != m_switcherButtonGroups.end())
         {
@@ -146,10 +146,19 @@ namespace AzToolsFramework::ViewportUi
 
     void ViewportUiManager::SetClusterVisible(ClusterId clusterId, bool visible)
     {
-        if (auto clusterEntry = m_clusterButtonGroups.find(clusterId); clusterEntry != m_clusterButtonGroups.end())
+        if (auto clusterIt = m_clusterButtonGroups.find(clusterId); clusterIt != m_clusterButtonGroups.end())
         {
-            auto cluster = clusterEntry->second;
+            auto cluster = clusterIt->second;
             SetViewportUiElementVisible(m_viewportUi.get(), cluster->GetViewportUiElementId(), visible);
+        }
+    }
+
+    void ViewportUiManager::SetSwitcherVisible(SwitcherId switcherId, bool visible)
+    {
+        if (auto switcherIt = m_switcherButtonGroups.find(switcherId); switcherIt != m_switcherButtonGroups.end())
+        {
+            auto switcher = switcherIt->second;
+            SetViewportUiElementVisible(m_viewportUi.get(), switcher->GetViewportUiElementId(), visible);
         }
     }
 
@@ -174,9 +183,9 @@ namespace AzToolsFramework::ViewportUi
 
     void ViewportUiManager::SetTextFieldText(TextFieldId textFieldId, const AZStd::string& text)
     {
-        if (auto textFieldEntry = m_textFields.find(textFieldId); textFieldEntry != m_textFields.end())
+        if (auto textFieldIt = m_textFields.find(textFieldId); textFieldIt != m_textFields.end())
         {
-            auto textField = textFieldEntry->second;
+            auto textField = textFieldIt->second;
             textField->m_fieldText = text;
             UpdateTextFieldUi(textField.get());
         }
@@ -185,27 +194,27 @@ namespace AzToolsFramework::ViewportUi
     void ViewportUiManager::RegisterTextFieldCallback(
         TextFieldId textFieldId, AZ::Event<AZStd::string>::Handler& handler) 
     {
-        if (auto textFieldEntry = m_textFields.find(textFieldId); textFieldEntry != m_textFields.end())
+        if (auto textFieldIt = m_textFields.find(textFieldId); textFieldIt != m_textFields.end())
         {
-            auto textField = textFieldEntry->second;
+            auto textField = textFieldIt->second;
             textField->ConnectEventHandler(handler);
         }
     }
 
     void ViewportUiManager::RemoveTextField(TextFieldId textFieldId)
     {
-        if (auto textFieldEntry = m_textFields.find(textFieldId); textFieldEntry != m_textFields.end())
+        if (auto textFieldIt = m_textFields.find(textFieldId); textFieldIt != m_textFields.end())
         {
-            m_textFields.erase(textFieldEntry);
-            m_viewportUi->RemoveViewportUiElement(textFieldEntry->second->m_viewportId);
+            m_textFields.erase(textFieldIt);
+            m_viewportUi->RemoveViewportUiElement(textFieldIt->second->m_viewportId);
         }
     }
 
     void ViewportUiManager::SetTextFieldVisible(TextFieldId textFieldId, bool visible)
     {
-        if (auto textFieldEntry = m_textFields.find(textFieldId); textFieldEntry != m_textFields.end())
+        if (auto textFieldIt = m_textFields.find(textFieldId); textFieldIt != m_textFields.end())
         {
-            auto textField = textFieldEntry->second;
+            auto textField = textFieldIt->second;
             SetViewportUiElementVisible(m_viewportUi.get(), textField->m_viewportId, visible);
         }
     }
@@ -224,19 +233,19 @@ namespace AzToolsFramework::ViewportUi
     void ViewportUiManager::PressButton(ClusterId clusterId, ButtonId buttonId)
     {
         // Find cluster using ID and cluster map
-        if (auto clusterEntry = m_clusterButtonGroups.find(clusterId);
-            clusterEntry != m_clusterButtonGroups.end())
+        if (auto clusterIt = m_clusterButtonGroups.find(clusterId);
+            clusterIt != m_clusterButtonGroups.end())
         {
-            clusterEntry->second->PressButton(buttonId);
+            clusterIt->second->PressButton(buttonId);
         }
     }
 
     void ViewportUiManager::PressButton(SwitcherId switcherId, ButtonId buttonId)
     {
         // Find cluster using ID and cluster map
-        if (auto switcherEntry = m_switcherButtonGroups.find(switcherId); switcherEntry != m_switcherButtonGroups.end())
+        if (auto switcherIt = m_switcherButtonGroups.find(switcherId); switcherIt != m_switcherButtonGroups.end())
         {
-            switcherEntry->second->PressButton(buttonId);
+            switcherIt->second->PressButton(buttonId);
         }
     }
 
@@ -264,9 +273,9 @@ namespace AzToolsFramework::ViewportUi
         {
             UpdateButtonGroupUi(buttonGroup.second.get());
         }
-        for (auto textFieldEntry : m_textFields)
+        for (auto textField : m_textFields)
         {
-            UpdateTextFieldUi(textFieldEntry.second.get());
+            UpdateTextFieldUi(textField.second.get());
         }
     }
 
