@@ -51,6 +51,8 @@ namespace AZ
             virtual void SetBulbRadius(LightHandle handle, float bulbRadius) = 0;
             //! Sets if shadows are enabled
             virtual void SetShadowsEnabled(LightHandle handle, bool enabled) = 0;
+            //! Sets the shadowmap size (width and height) of the light.			
+            virtual void SetShadowmapMaxResolution(LightHandle handle, ShadowmapSize shadowmapSize) = 0;
         };
     } // namespace Render
 } // namespace AZ

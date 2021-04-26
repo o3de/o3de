@@ -32,8 +32,11 @@ namespace AZ
             float m_invAttenuationRadiusSquared = 0.0f; // Inverse of the distance at which this light no longer has an effect, squared. Also used for falloff calculations.
             AZStd::array<float, 3> m_rgbIntensity = { { 0.0f, 0.0f, 0.0f } };
             float m_bulbRadius = 0.0f; // Radius of spherical light in meters.
-            uint32_t m_shadowIndex;
-            uint32_t m_padding[3];
+
+            static const int NumShadowFaces = 6;
+
+            AZStd::array<uint16_t, NumShadowFaces> m_shadowIndices = {{0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF}};
+            uint32_t m_padding;
         };
 
         class PointLightFeatureProcessor final
@@ -62,6 +65,7 @@ namespace AZ
             void SetAttenuationRadius(LightHandle handle, float attenuationRadius) override;
             void SetBulbRadius(LightHandle handle, float bulbRadius) override;
             void SetShadowsEnabled(LightHandle handle, bool enabled) override;
+            void SetShadowmapMaxResolution(LightHandle handle, ShadowmapSize shadowmapSize) override;
 
             const Data::Instance<RPI::Buffer>  GetLightBuffer() const;
             uint32_t GetLightCount()const;
@@ -74,12 +78,14 @@ namespace AZ
             void UpdateShadow(LightHandle handle);
             // Convenience function for forwarding requests to the ProjectedShadowFeatureProcessor
             template<typename Functor, typename ParamType>
-            void SetShadowSetting(LightHandle handle, Functor&&, ParamType&& param);
+            void SetShadowSetting(LightHandle handle, Functor&&, ParamType&& param, const int lightIndex);
             ProjectedShadowFeatureProcessor* m_shadowFeatureProcessor = nullptr;
 
             IndexedDataVector<PointLightData> m_pointLightData;
             GpuBufferHandler m_lightBufferHandler;
             bool m_deviceBufferNeedsUpdate = false;
+
+            AZStd::array<AZ::Vector3, PointLightData::NumShadowFaces> m_directions;
         };
     } // namespace Render
 } // namespace AZ

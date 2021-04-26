@@ -44,6 +44,12 @@ namespace AZ
         PointLightFeatureProcessor::PointLightFeatureProcessor()
             : PointLightFeatureProcessorInterface()
         {
+            m_directions[0] = AZ::Vector3::CreateAxisZ();
+            m_directions[1] = -AZ::Vector3::CreateAxisZ();
+            m_directions[2] = AZ::Vector3::CreateAxisY();
+            m_directions[3] = -AZ::Vector3::CreateAxisY();
+            m_directions[4] = AZ::Vector3::CreateAxisX();
+            m_directions[5] = -AZ::Vector3::CreateAxisX();
         }
 
         void PointLightFeatureProcessor::Activate()
@@ -84,11 +90,15 @@ namespace AZ
         {
             if (handle.IsValid())
             {
-                ShadowId shadowId = ShadowId(m_pointLightData.GetData(handle.GetIndex()).m_shadowIndex);
-                if (shadowId.IsValid())
+                for (int i = 0; i < PointLightData::NumShadowFaces; ++i)
                 {
-                    m_shadowFeatureProcessor->ReleaseShadow(shadowId);
+                    ShadowId shadowId = ShadowId(m_pointLightData.GetData(handle.GetIndex()).m_shadowIndices[i]);
+                    if (shadowId.IsValid())
+                    {
+                        m_shadowFeatureProcessor->ReleaseShadow(shadowId);
+                    }
                 }
+
                 m_pointLightData.RemoveIndex(handle.GetIndex());
                 m_deviceBufferNeedsUpdate = true;
                 handle.Reset();
@@ -154,6 +164,7 @@ namespace AZ
             lightPosition.StoreToFloat3(position.data());
 
             m_deviceBufferNeedsUpdate = true;
+            UpdateShadow(handle);
         }
 
         void PointLightFeatureProcessor::SetAttenuationRadius(LightHandle handle, float attenuationRadius)
@@ -186,76 +197,68 @@ namespace AZ
         void PointLightFeatureProcessor::SetShadowsEnabled(LightHandle handle, bool enabled)
         {
             auto& light = m_pointLightData.GetData(handle.GetIndex());
-            ShadowId shadowId = ShadowId(light.m_shadowIndex);
-            if (shadowId.IsValid() && enabled == false)
+            for (int i = 0; i < PointLightData::NumShadowFaces; ++i)
             {
-                // Disable shadows
-                m_shadowFeatureProcessor->ReleaseShadow(shadowId);
-                shadowId.Reset();
-                light.m_shadowIndex = shadowId.GetIndex();
-                m_deviceBufferNeedsUpdate = true;
-            }
-            else if (shadowId.IsNull() && enabled == true)
-            {
-                // Enable shadows
-                light.m_shadowIndex = m_shadowFeatureProcessor->AcquireShadow().GetIndex();
+                ShadowId shadowId = ShadowId(light.m_shadowIndices[i]);
+                if (shadowId.IsValid() && enabled == false)
+                {
+                    // Disable shadows
+                    m_shadowFeatureProcessor->ReleaseShadow(shadowId);
+                    shadowId.Reset();
+                    light.m_shadowIndices[i] = shadowId.GetIndex();
+                    m_deviceBufferNeedsUpdate = true;
+                }
+                else if (shadowId.IsNull() && enabled == true)
+                {
+                    // Enable shadows
+                    light.m_shadowIndices[i] = m_shadowFeatureProcessor->AcquireShadow().GetIndex();
 
-                UpdateShadow(handle);
-                m_deviceBufferNeedsUpdate = true;
+                    UpdateShadow(handle);
+                    m_deviceBufferNeedsUpdate = true;
+                }
             }
         }
 
         void PointLightFeatureProcessor::UpdateShadow(LightHandle handle)
         {
-            const auto& pointLight = m_pointLightData.GetData(handle.GetIndex());
-            ShadowId shadowId = ShadowId(pointLight.m_shadowIndex);
-            if (shadowId.IsNull())
+            for (int i = 0; i < PointLightData::NumShadowFaces; ++i)
             {
-                // Early out if shadows are disabled.
-                return;
+                const auto& pointLight = m_pointLightData.GetData(handle.GetIndex());
+                ShadowId shadowId = ShadowId(pointLight.m_shadowIndices[i]);
+                if (shadowId.IsNull())
+                {
+                    // Early out if shadows are disabled.
+                    return;
+                }
+
+                ProjectedShadowFeatureProcessorInterface::ProjectedShadowDescriptor desc = m_shadowFeatureProcessor->GetShadowProperties(shadowId);
+                Vector3 position = Vector3::CreateFromFloat3(pointLight.m_position.data());
+
+                desc.m_fieldOfViewYRadians = 1.58825f;
+                desc.m_transform = Transform::CreateLookAt(position, position + m_directions[i]);
+                desc.m_aspectRatio = 1.0f;
+                desc.m_nearPlaneDistance = 0.1f;
+
+                const float invRadiusSquared = pointLight.m_invAttenuationRadiusSquared;
+                if (invRadiusSquared <= 0.f)
+                {
+                    AZ_Assert(false, "Attenuation radius have to be set before use the light.");
+                    return;
+                }
+                const float attenuationRadius = sqrtf(1.f / invRadiusSquared);
+                desc.m_farPlaneDistance = attenuationRadius;
+
+                m_shadowFeatureProcessor->SetShadowProperties(shadowId, desc);
             }
-
-            ProjectedShadowFeatureProcessorInterface::ProjectedShadowDescriptor desc =
-                m_shadowFeatureProcessor->GetShadowProperties(shadowId);
-
-            Vector3 position = Vector3::CreateFromFloat3(pointLight.m_position.data());
-
-            constexpr float SmallAngle = 0.01f;
-            desc.m_fieldOfViewYRadians = 1.57f;
-
-            // To handle bulb radius, set the position of the shadow caster behind the actual light depending on the radius of the bulb
-            //
-            //   \         /
-            //    \       /
-            //     \_____/  <-- position of light itself (and forward plane of shadow casting view)
-            //      .   .
-            //       . .
-            //        *     <-- position of shadow casting view
-            //
-            desc.m_transform = Transform::CreateLookAt(position, AZ::Vector3::CreateZero());
-
-            desc.m_aspectRatio = 1.0f;
-            desc.m_nearPlaneDistance = 0.1f;
-
-            const float invRadiusSquared = pointLight.m_invAttenuationRadiusSquared;
-            if (invRadiusSquared <= 0.f)
-            {
-                AZ_Assert(false, "Attenuation radius have to be set before use the light.");
-                return;
-            }
-            const float attenuationRadius = sqrtf(1.f / invRadiusSquared);
-            desc.m_farPlaneDistance = attenuationRadius;
-
-            m_shadowFeatureProcessor->SetShadowProperties(shadowId, desc);
         }
 
         template<typename Functor, typename ParamType>
-        void PointLightFeatureProcessor::SetShadowSetting(LightHandle handle, Functor&& functor, ParamType&& param)
+        void PointLightFeatureProcessor::SetShadowSetting(LightHandle handle, Functor&& functor, ParamType&& param, const int lightIndex)
         {
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to PointLightFeatureProcessor::SetShadowSetting().");
 
             auto& light = m_pointLightData.GetData(handle.GetIndex());
-            ShadowId shadowId = ShadowId(light.m_shadowIndex);
+            ShadowId shadowId = ShadowId(light.m_shadowIndices[lightIndex]);
 
             AZ_Assert(shadowId.IsValid(), "Attempting to set a shadow property when shadows are not enabled.");
             if (shadowId.IsValid())
@@ -264,5 +267,12 @@ namespace AZ
             }
         }
 
+        void PointLightFeatureProcessor::SetShadowmapMaxResolution(LightHandle handle, ShadowmapSize shadowmapSize)
+        {
+            for (int i = 0; i < PointLightData::NumShadowFaces; ++i)
+            {
+                SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetShadowmapMaxResolution, shadowmapSize, i);
+            }
+        }
     } // namespace Render
 } // namespace AZ
