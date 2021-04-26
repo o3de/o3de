@@ -29,23 +29,26 @@ namespace AZ
             {
                 DrawRequest() = default;
 
-                /// The filter tag used to direct the draw item.
+                //! The filter tag used to direct the draw item.
                 DrawListTag m_listTag;
 
-                /// The stencil ref value used for this draw item.
+                //! The stencil ref value used for this draw item.
                 uint8_t m_stencilRef = 0;
 
-                /// The array of stream buffers to bind for this draw item.
+                //! The array of stream buffers to bind for this draw item.
                 AZStd::array_view<StreamBufferView> m_streamBufferViews;
 
-                /// Shader resource group unique for this draw request
+                //! Shader resource group unique for this draw request
                 const ShaderResourceGroup* m_uniqueShaderResourceGroup = nullptr;
 
-                /// The pipeline state assigned to this draw item.
+                //! The pipeline state assigned to this draw item.
                 const PipelineState* m_pipelineState = nullptr;
 
-                /// The sort key assigned to this draw item.
+                //! The sort key assigned to this draw item.
                 DrawItemSortKey m_sortKey = 0;
+
+                //! The filter associates to this draw item. 
+                DrawFilterMask m_drawFilterMask = DrawFilterMaskDefaultValue;
             };
 
             // NOTE: This is configurable; just used to control the amount of memory held by the builder.
@@ -69,6 +72,8 @@ namespace AZ
 
             void AddShaderResourceGroup(const ShaderResourceGroup* shaderResourceGroup);
 
+            void SetDrawFilterMask(DrawFilterMask filterMask);
+
             void AddDrawItem(const DrawRequest& request);
 
             const DrawPacket* End();
@@ -79,6 +84,7 @@ namespace AZ
             IAllocatorAllocate* m_allocator = nullptr;
             DrawArguments m_drawArguments;
             DrawListMask m_drawListMask = 0;
+            DrawFilterMask m_drawFilterMask = DrawFilterMaskDefaultValue;
             size_t m_streamBufferViewCount = 0;
             IndexBufferView m_indexBufferView;
             AZStd::fixed_vector<DrawRequest, DrawItemCountMax> m_drawRequests;

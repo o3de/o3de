@@ -17,6 +17,7 @@
 #include <Atom/RPI.Public/DynamicDraw/DynamicBuffer.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawContext.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
 
 #include <Atom/RPI.Public/View.h>
 
@@ -604,6 +605,7 @@ namespace AZ
                 RHI::DrawItemKeyPair drawItemKeyPair;
                 drawItemKeyPair.m_sortKey = sortKey;
                 drawItemKeyPair.m_item = &drawItemInfo.m_drawItem;
+                drawItemKeyPair.m_drawFilterMask = m_drawFilter;
                 view->AddDrawItem(m_drawListTag, drawItemKeyPair);
                 sortKey++;
             }

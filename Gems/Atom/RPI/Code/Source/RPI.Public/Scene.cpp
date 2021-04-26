@@ -269,6 +269,8 @@ namespace AZ
                 return;
             }
 
+            pipeline->SetDrawFilterTag(m_drawFilterTagRegistry.AcquireTag(pipelineId));
+
             m_pipelines.push_back(pipeline);
 
             // Set this pipeline as default if the default pipeline was empty. This pipeline should be the first pipeline be added to the scene
@@ -302,6 +304,8 @@ namespace AZ
                     {
                         m_defaultPipeline = nullptr;
                     }
+
+                    m_drawFilterTagRegistry.ReleaseTag(pipelineToRemove->GetDrawFilterTag());
 
                     pipelineToRemove->OnRemovedFromScene(this);
                     m_pipelines.erase(it);

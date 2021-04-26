@@ -61,7 +61,6 @@ namespace AZ
                 return;
             }
             
-            m_drawListTagRegistry = RHI::DrawListTagRegistry::Create();
             m_pipelineStateCache = RHI::PipelineStateCache::Create(*m_device);
 
             frameSchedulerDescriptor.m_transientAttachmentPoolDescriptor.m_renderTargetBudgetInBytes = m_platformLimitsDescriptor->m_transientAttachmentPoolBudgets.m_renderTargetBudgetInBytes;
@@ -107,7 +106,7 @@ namespace AZ
             // Register draw list tags declared from content.
             for (const Name& drawListName : descriptor.m_drawListTags)
             {
-                RHI::DrawListTag drawListTag = m_drawListTagRegistry->AcquireTag(drawListName);
+                RHI::DrawListTag drawListTag = m_drawListTagRegistry.AcquireTag(drawListName);
 
                 AZ_Warning("RHISystem", drawListTag.IsValid(), "Failed to register draw list tag '%s'. Registry at capacity.", drawListName.GetCStr());
             }
@@ -199,7 +198,6 @@ namespace AZ
             m_frameScheduler.Shutdown();
 
             m_platformLimitsDescriptor = nullptr;
-            m_drawListTagRegistry = nullptr;
             m_pipelineStateCache = nullptr;
             m_device->PreShutdown();
             AZ_Assert(m_device->use_count()==1, "The ref count for Device is %i but it should be 1 here to ensure all the resources are released", m_device->use_count());
@@ -252,7 +250,7 @@ namespace AZ
 
         RHI::DrawListTagRegistry* RHISystem::GetDrawListTagRegistry()
         {
-            return m_drawListTagRegistry.get();
+            return &m_drawListTagRegistry;
         }
 
         const RHI::FrameSchedulerCompileRequest& RHISystem::GetFrameSchedulerCompileRequest() const

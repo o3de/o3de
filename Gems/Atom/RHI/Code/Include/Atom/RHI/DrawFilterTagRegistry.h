@@ -11,13 +11,13 @@
 */
 #pragma once
 
-#include <Atom/RHI/DrawList.h>
+#include <Atom/RHI/DrawItem.h>
 #include <Atom/RHI/TagRegistry.h>
 
 namespace AZ
 {
     namespace RHI
     {
-        using DrawListTagRegistry = TagRegistry<DrawListTag, Limits::Pipeline::DrawListTagCountMax>;
+        using DrawFilterTagRegistry = TagRegistry<DrawFilterTag, Limits::Pipeline::DrawFilterTagCountMax>;
     }
 }

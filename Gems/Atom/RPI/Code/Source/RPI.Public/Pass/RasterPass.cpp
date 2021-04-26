@@ -197,7 +197,10 @@ namespace AZ
 
             for (const RHI::DrawItemKeyPair& drawItemKeyPair : drawListViewPartition)
             {
-                commandList->Submit(*drawItemKeyPair.m_item);
+                if (drawItemKeyPair.m_drawFilterMask & m_pipeline->GetDrawFilterMask())
+                {
+                    commandList->Submit(*drawItemKeyPair.m_item);
+                }
             }
         }
 

@@ -14,6 +14,7 @@
 
 #include <Atom/RHI/DrawList.h>
 #include <Atom/RHI/PipelineStateDescriptor.h>
+#include <Atom/RHI/DrawFilterTagRegistry.h>
 #include <Atom/RHI.Reflect/FrameSchedulerEnums.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
 #include <Atom/RPI.Reflect/System/SceneDescriptor.h>
@@ -234,6 +235,9 @@ namespace AZ
 
             // reference of dynamic draw system (from RPISystem)
             DynamicDrawSystem* m_dynamicDrawSystem = nullptr;
+
+            // Registry which allocates draw filter tag for RenderPipeline
+            RHI::DrawFilterTagRegistry m_drawFilterTagRegistry;
         };
 
         // --- Template functions ---

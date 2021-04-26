@@ -65,7 +65,7 @@ namespace AZ
             RHI::Ptr<RHI::Device> InitInternalDevice();
 
             RHI::Ptr<RHI::Device> m_device;
-            RHI::Ptr<RHI::DrawListTagRegistry> m_drawListTagRegistry;
+            RHI::DrawListTagRegistry m_drawListTagRegistry;
             RHI::Ptr<RHI::PipelineStateCache> m_pipelineStateCache;
             RHI::FrameScheduler m_frameScheduler;
             RHI::FrameSchedulerCompileRequest m_compileRequest;
