@@ -38,3 +38,7 @@ class TestAtomEditorComponents(object):
                 [os.path.join(workspace.paths.engine_root(), project, "Levels", "AtomLevels", level)], True, True)
 
         request.addfinalizer(teardown)
+
+    # It requires at least one test
+    def test_Dummy(self, request, editor, level, workspace, project, launcher_platform):
+        pass
