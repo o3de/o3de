@@ -805,7 +805,10 @@ namespace LmbrCentral
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
 
-        gEnv->p3DEngine->FreeRenderNodeState(&m_cubemapPreview);
+        if (!gEnv->p3DEngine)
+        {
+            gEnv->p3DEngine->FreeRenderNodeState(&m_cubemapPreview);
+        }
 
         m_light.DestroyRenderLight();
         m_light.SetEntity(AZ::EntityId());
@@ -903,6 +906,11 @@ namespace LmbrCentral
 
     void EditorLightComponent::OnViewCubemapChanged()
     {
+        if (!gEnv->p3DEngine)
+        {
+            return;
+        }
+
         if (m_viewCubemap)
         {
             gEnv->p3DEngine->RegisterEntity(&m_cubemapPreview);
@@ -1942,6 +1950,11 @@ namespace LmbrCentral
         if (!m_editor)
         {
             AzToolsFramework::EditorRequestBus::BroadcastResult(m_editor, &AzToolsFramework::EditorRequests::GetEditor);
+        }
+
+        if (!m_editor->Get3DEngine())
+        {
+            return;
         }
 
         if (!m_materialManager)
