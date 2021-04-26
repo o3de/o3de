@@ -193,7 +193,7 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
 
     // Shadow
     lightingData.shadowCoords = IN.m_shadowCoords;
-    lightingData.occlusion = 1.0f - surfaceDepth * AutoBrickSrg::m_aoFactor;
+    lightingData.diffuseAmbientOcclusion = 1.0f - surfaceDepth * AutoBrickSrg::m_aoFactor;
 
     // Diffuse and Specular response
     lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);

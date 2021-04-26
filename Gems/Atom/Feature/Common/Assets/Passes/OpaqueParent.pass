@@ -216,13 +216,6 @@
                                 "Pass": "ForwardMSAAPass",
                                 "Attachment": "NormalOutput"
                             }
-                        },
-                        {
-                            "LocalSlot": "ClearCoatNormalOutput",
-                            "AttachmentRef": {
-                                "Pass": "ForwardMSAAPass",
-                                "Attachment": "ClearCoatNormalOutput"
-                            }
                         }
                     ],
                     "PassData": {

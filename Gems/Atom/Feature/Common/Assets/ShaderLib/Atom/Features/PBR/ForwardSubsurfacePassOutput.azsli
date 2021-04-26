@@ -18,8 +18,7 @@ struct ForwardPassOutput
     float4 m_albedo : SV_Target2;
     float4 m_specularF0 : SV_Target3;
     float4 m_normal : SV_Target4;
-    float4 m_clearCoatNormal : SV_Target5;
-    float3 m_scatterDistance : SV_Target6;
+    float3 m_scatterDistance : SV_Target5;
 };
 
 struct ForwardPassOutputWithDepth
@@ -30,7 +29,6 @@ struct ForwardPassOutputWithDepth
     float4 m_albedo : SV_Target2;
     float4 m_specularF0 : SV_Target3;
     float4 m_normal : SV_Target4;
-    float4 m_clearCoatNormal : SV_Target5;
-    float3 m_scatterDistance : SV_Target6;
+    float3 m_scatterDistance : SV_Target5;
     float m_depth : SV_Depth;
 };

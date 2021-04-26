@@ -4,15 +4,6 @@
     "parentMaterial": "",
     "propertyLayoutVersion": 3,
     "properties": {
-        "emissive": {
-            "color": [
-                1.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "intensity": 4.119999885559082
-        },
         "subsurfaceScattering": {
             "enableSubsurfaceScattering": true,
             "influenceMap": "TestData/Textures/checker8x8_512.png",
@@ -23,11 +14,7 @@
                 1.0
             ],
             "scatterDistance": 40.0,
-            "subsurfaceScatterFactor": 1.0,
-            "thickness": 0.41999998688697817,
-            "transmissionMode": "ThinObject",
-            "transmissionScale": 6.599999904632568,
-            "useThicknessMap": false
+            "subsurfaceScatterFactor": 1.0
         }
     }
 }

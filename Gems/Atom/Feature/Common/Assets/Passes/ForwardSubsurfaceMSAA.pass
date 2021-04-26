@@ -93,11 +93,6 @@
                     "SlotType": "InputOutput",
                     "ScopeAttachmentUsage": "RenderTarget"
                 },
-                {
-                    "Name": "ClearCoatNormalOutput",
-                    "SlotType": "InputOutput",
-                    "ScopeAttachmentUsage": "RenderTarget"
-                },
                 // Outputs...
                 {
                     "Name": "ScatterDistanceOutput",

@@ -191,16 +191,8 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
 
     // ------- Subsurface -------
 
-    float2 subsurfaceUv = IN.m_uv[MaterialSrg::m_subsurfaceScatteringInfluenceMapUvIndex];
-    float surfaceScatteringFactor = GetSubsurfaceInput(MaterialSrg::m_subsurfaceScatteringInfluenceMap, MaterialSrg::m_sampler, subsurfaceUv, MaterialSrg::m_subsurfaceScatteringFactor);
-
-    // ------- Transmission -------
-
-    float2 transmissionUv = IN.m_uv[MaterialSrg::m_transmissionThicknessMapUvIndex];
-    float4 transmissionTintThickness = GeTransmissionInput(MaterialSrg::m_transmissionThicknessMap, MaterialSrg::m_sampler, transmissionUv, MaterialSrg::m_transmissionTintThickness);
-    surface.transmission.tint = transmissionTintThickness.rgb;
-    surface.transmission.thickness = transmissionTintThickness.w;
-    surface.transmission.transmissionParams = MaterialSrg::m_transmissionParams;
+    float surfaceScatteringFactor = 0.0f;
+    surface.transmission.InitializeToZero();
 
     // ------- Lighting Data -------
 

@@ -84,7 +84,6 @@ struct PbrLightingOutput
     float4 m_albedo;
     float4 m_specularF0;
     float4 m_normal;
-    float4 m_clearCoatNormal;
     float3 m_scatterDistance;
 };
 
@@ -98,13 +97,10 @@ PbrLightingOutput GetPbrLightingOutput(Surface surface, LightingData lightingDat
 
     // albedo, specularF0, roughness, and normals for later passes (specular IBL, Diffuse GI, SSR, AO, etc)
     lightingOutput.m_specularF0 = float4(surface.specularF0, surface.roughnessLinear);
-    lightingOutput.m_albedo.rgb = surface.albedo * lightingData.diffuseResponse;
-    lightingOutput.m_albedo.a = lightingData.occlusion;
+    lightingOutput.m_albedo.rgb = surface.albedo * lightingData.diffuseResponse * lightingData.diffuseAmbientOcclusion;
+    lightingOutput.m_albedo.a = lightingData.specularOcclusion;
     lightingOutput.m_normal.rgb = EncodeNormalSignedOctahedron(surface.normal);
     lightingOutput.m_normal.a = o_specularF0_enableMultiScatterCompensation ? 1.0f : 0.0f;
     
-    // layout: (packedNormal.x, packedNormal.y, strength factor, clear coat roughness (not base material's roughness))
-    lightingOutput.m_clearCoatNormal = float4(EncodeNormalSphereMap(surface.clearCoat.normal), o_clearCoat_feature_enabled ? surface.clearCoat.factor : 0.0, surface.clearCoat.roughness);
-
     return lightingOutput;
 }
