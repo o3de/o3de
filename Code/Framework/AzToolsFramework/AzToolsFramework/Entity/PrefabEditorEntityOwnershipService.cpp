@@ -242,19 +242,6 @@ namespace AzToolsFramework
                 return false;
             }
         }
-        else  
-        {
-            // The template is already loaded, this is the case of either saving as same name or different name(loaded from before).
-            // Update the template with the changes
-            AzToolsFramework::Prefab::PrefabDom dom;
-            bool success = AzToolsFramework::Prefab::PrefabDomUtils::StoreInstanceInPrefabDom(*m_rootInstance, dom);
-            if (!success)
-            {
-                AZ_Error("Prefab", false, "Failed to convert current root instance into a DOM when saving file '%.*s'", AZ_STRING_ARG(filename));
-                return false;
-            }
-            m_prefabSystemComponent->UpdatePrefabTemplate(templateId, dom);
-        }
 
         Prefab::TemplateId prevTemplateId = m_rootInstance->GetTemplateId();
         m_rootInstance->SetTemplateId(templateId);
