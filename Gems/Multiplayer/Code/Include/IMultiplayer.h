@@ -92,6 +92,10 @@ namespace Multiplayer
         //! @return the stats object bound to this multiplayer instance
         MultiplayerStats& GetStats() { return m_stats; }
 
+        //! Sends a packet telling if entity update messages can be sent
+        //! @param readyForEntityUpdates Ready for entity updates or not
+        virtual void SendReadyForEntityUpdates(bool readyForEntityUpdates) = 0;
+
     private:
         MultiplayerStats m_stats;
     };
