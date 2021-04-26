@@ -177,7 +177,7 @@ namespace NvCloth
         m_actorClothColliders = ActorClothColliders::Create(m_entityId);
 
         // It will return a valid instance if it's an actor with skinning data.
-        m_actorClothSkinning = ActorClothSkinning::Create(m_entityId, m_config.m_meshNode, m_cloth->GetParticles().size(), m_meshRemappedVertices);
+        m_actorClothSkinning = ActorClothSkinning::Create(m_entityId, m_meshNodeInfo, m_cloth->GetParticles().size(), m_meshRemappedVertices);
         m_numberOfClothSkinningUpdates = 0;
 
         m_clothConstraints = ClothConstraints::Create(
