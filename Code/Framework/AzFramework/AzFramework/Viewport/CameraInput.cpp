@@ -51,21 +51,21 @@ namespace AzFramework
         return nextCamera;
     }
 
-    void Cameras::AddCamera(AZStd::shared_ptr<CameraInput> camera_input)
+    void Cameras::AddCamera(AZStd::shared_ptr<CameraInput> cameraInput)
     {
-        m_idleCameraInputs.push_back(AZStd::move(camera_input));
+        m_idleCameraInputs.push_back(AZStd::move(cameraInput));
     }
 
     void Cameras::HandleEvents(const InputEvent& event)
     {
-        for (auto& camera_input : m_activeCameraInputs)
+        for (auto& cameraInput : m_activeCameraInputs)
         {
-            camera_input->HandleEvents(event);
+            cameraInput->HandleEvents(event);
         }
 
-        for (auto& camera_input : m_idleCameraInputs)
+        for (auto& cameraInput : m_idleCameraInputs)
         {
-            camera_input->HandleEvents(event);
+            cameraInput->HandleEvents(event);
         }
     }
 
@@ -73,14 +73,14 @@ namespace AzFramework
     {
         for (int i = 0; i < m_idleCameraInputs.size();)
         {
-            auto& camera_input = m_idleCameraInputs[i];
-            const bool can_begin = camera_input->Beginning() &&
+            auto& cameraInput = m_idleCameraInputs[i];
+            const bool canBegin = cameraInput->Beginning() &&
                 std::all_of(m_activeCameraInputs.cbegin(), m_activeCameraInputs.cend(),
                             [](const auto& input) { return !input->Exclusive(); }) &&
-                (!camera_input->Exclusive() || (camera_input->Exclusive() && m_activeCameraInputs.empty()));
-            if (can_begin)
+                (!cameraInput->Exclusive() || (cameraInput->Exclusive() && m_activeCameraInputs.empty()));
+            if (canBegin)
             {
-                m_activeCameraInputs.push_back(camera_input);
+                m_activeCameraInputs.push_back(cameraInput);
                 using AZStd::swap;
                 swap(m_idleCameraInputs[i], m_idleCameraInputs[m_idleCameraInputs.size() - 1]);
                 m_idleCameraInputs.pop_back();
@@ -93,25 +93,25 @@ namespace AzFramework
 
         // accumulate
         Camera nextCamera = targetCamera;
-        for (auto& camera_input : m_activeCameraInputs)
+        for (auto& cameraInput : m_activeCameraInputs)
         {
-            nextCamera = camera_input->StepCamera(nextCamera, cursorDelta, scrollDelta, deltaTime);
+            nextCamera = cameraInput->StepCamera(nextCamera, cursorDelta, scrollDelta, deltaTime);
         }
 
         for (int i = 0; i < m_activeCameraInputs.size();)
         {
-            auto& camera_input = m_activeCameraInputs[i];
-            if (camera_input->Ending())
+            auto& cameraInput = m_activeCameraInputs[i];
+            if (cameraInput->Ending())
             {
-                camera_input->ClearActivation();
-                m_idleCameraInputs.push_back(camera_input);
+                cameraInput->ClearActivation();
+                m_idleCameraInputs.push_back(cameraInput);
                 using AZStd::swap;
                 swap(m_activeCameraInputs[i], m_activeCameraInputs[m_activeCameraInputs.size() - 1]);
                 m_activeCameraInputs.pop_back();
             }
             else
             {
-                camera_input->ContinueActivation();
+                cameraInput->ContinueActivation();
                 i++;
             }
         }
@@ -154,14 +154,14 @@ namespace AzFramework
     {
         Camera nextCamera = targetCamera;
 
-        nextCamera.m_pitch += float(cursorDelta.m_y) * m_props.m_rotateSpeed;
-        nextCamera.m_yaw += float(cursorDelta.m_x) * m_props.m_rotateSpeed;
+        nextCamera.m_pitch -= float(cursorDelta.m_y) * m_props.m_rotateSpeed;
+        nextCamera.m_yaw -= float(cursorDelta.m_x) * m_props.m_rotateSpeed;
 
-        auto clamp_rotation = [](const float angle) { return std::fmod(angle + AZ::Constants::TwoOverPi, AZ::Constants::TwoOverPi); };
+        auto clamp_rotation = [](const float angle) { return std::fmod(angle + AZ::Constants::TwoPi, AZ::Constants::TwoPi); };
 
         nextCamera.m_yaw = clamp_rotation(nextCamera.m_yaw);
         // clamp pitch to be +-90 degrees
-        nextCamera.m_pitch = AZ::GetClamp(nextCamera.m_pitch, -AZ::Constants::Pi * 0.5f, AZ::Constants::Pi * 0.5f);
+        nextCamera.m_pitch = AZ::GetClamp(nextCamera.m_pitch, -AZ::Constants::HalfPi, AZ::Constants::HalfPi);
 
         return nextCamera;
     }

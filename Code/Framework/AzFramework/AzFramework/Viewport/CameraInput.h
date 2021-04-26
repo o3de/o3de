@@ -51,8 +51,8 @@ namespace AzFramework
 
     inline AZ::Transform Camera::Transform() const
     {
-        return AZ::Transform::CreateTranslation(m_lookAt) * AZ::Transform::CreateRotationX(m_pitch) *
-            AZ::Transform::CreateRotationZ(m_yaw) * AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisZ(m_lookDist));
+        return AZ::Transform::CreateTranslation(m_lookAt) * AZ::Transform::CreateRotationZ(m_yaw) *
+            AZ::Transform::CreateRotationX(m_pitch) * AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisZ(m_lookDist));
     }
 
     inline AZ::Matrix3x3 Camera::Rotation() const
@@ -308,7 +308,7 @@ namespace AzFramework
         enum class TranslationType
         {
             // clang-format off
-            Nil     = 0,
+            Nil      = 0,
             Forward  = 1 << 0,
             Backward = 1 << 1,
             Left     = 1 << 2,
