@@ -18,8 +18,8 @@ import azlmbr.math as math
 import azlmbr.paths
 
 sys.path.append(os.path.join(azlmbr.paths.devroot, 'AutomatedTesting', 'Gem', 'PythonTests'))
-import automatedtesting_shared.hydra_editor_utils as hydra
-from automatedtesting_shared.editor_test_helper import EditorTestHelper
+import editor_python_test_tools.hydra_editor_utils as hydra
+from editor_python_test_tools.editor_test_helper import EditorTestHelper
 from largeworlds.large_worlds_utils import editor_dynveg_test_helper as dynveg
 
 
@@ -43,6 +43,7 @@ class TestEmptyInstanceSpawner(EditorTestHelper):
             use_terrain=False,
         )
         general.idle_wait(1.0)
+        general.set_current_view_position(512.0, 480.0, 38.0)
 
         # Grab the UUID that we need for creating an Empty Spawner
         empty_spawner_uuid = azlmbr.math.Uuid_CreateString('{23C40FD4-A55F-4BD3-BE5B-DC5423F217C2}', 0)

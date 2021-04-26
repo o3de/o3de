@@ -49,7 +49,7 @@ public:
     virtual unsigned int GetParamCount() const;
     virtual CAnimParamType GetParamType(unsigned int nIndex) const;
 
-    static void Reflect(AZ::SerializeContext* serializeContext);
+    static void Reflect(AZ::ReflectContext* context);
 
 protected:
     virtual bool GetParamInfoFromType(const CAnimParamType& paramId, SParamInfo& info) const;

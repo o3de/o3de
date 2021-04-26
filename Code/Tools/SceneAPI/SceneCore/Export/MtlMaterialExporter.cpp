@@ -86,7 +86,7 @@ namespace AZ
 
                     if (sourceFileExists && !updateMaterial)
                     {
-                        // Don't write to the cache if there's a source material as this will be the master material.
+                        // Don't write to the cache if there's a source material as this will be the primary material.
                         continue;
                     }
 

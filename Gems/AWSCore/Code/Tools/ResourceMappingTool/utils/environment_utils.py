@@ -1,0 +1,70 @@
+"""
+All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+its licensors.
+
+For complete copyright and license terms please see the LICENSE at the root of this
+distribution (the "License"). All use of this software is governed by the License,
+or, if provided, by the license below or the license accompanying this file. Do not
+remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+"""
+
+import logging
+import os
+from typing import Dict
+
+from utils import file_utils
+
+"""
+Environment Utils provide functions to setup python environment libs for resource mapping tool
+"""
+logger = logging.getLogger(__name__)
+
+qt_binaries_linked: bool = False
+old_os_env: Dict[str, str] = os.environ.copy()
+
+
+def setup_qt_environment(bin_path: str) -> None:
+    """
+    Setup Qt binaries for o3de python runtime environment
+    :param bin_path: The path of Qt binaries
+    """
+    if is_qt_linked():
+        logger.info("Qt binaries have already been linked, skip Qt setup")
+        return
+    global old_os_env
+    old_os_env = os.environ.copy()
+    binaries_path: str = file_utils.normalize_file_path(bin_path)
+    os.environ["QT_PLUGIN_PATH"] = binaries_path
+
+    path = os.environ['PATH']
+
+    new_path = os.pathsep.join([binaries_path, path])
+    os.environ['PATH'] = new_path
+
+    global qt_binaries_linked
+    qt_binaries_linked = True
+
+
+def is_qt_linked() -> bool:
+    """
+    Check whether Qt binaries have been linked in o3de python runtime environment
+    :return: True if Qt binaries have been linked; False if not
+    """
+    return qt_binaries_linked
+
+
+def cleanup_qt_environment() -> None:
+    """
+    Clean up the linked Qt binaries in o3de python runtime environment
+    """
+    if not is_qt_linked():
+        logger.info("Qt binaries have not been linked, skip Qt uninstall")
+        return
+    global old_os_env
+    if old_os_env.get("QT_PLUGIN_PATH"):
+        old_os_env.pop("QT_PLUGIN_PATH")
+    os.environ = old_os_env
+
+    global qt_binaries_linked
+    qt_binaries_linked = False
