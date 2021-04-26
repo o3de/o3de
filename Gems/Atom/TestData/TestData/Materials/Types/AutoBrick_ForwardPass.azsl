@@ -188,10 +188,9 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
     OUT.m_specularF0 = lightingOutput.m_specularF0;
     OUT.m_albedo = lightingOutput.m_albedo;
     OUT.m_normal = lightingOutput.m_normal;
-    OUT.m_clearCoatNormal = lightingOutput.m_clearCoatNormal;
     OUT.m_scatterDistance = float3(0,0,0);
 
     return OUT;
 }
  
- 
+

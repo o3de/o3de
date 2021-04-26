@@ -93,7 +93,7 @@ namespace AZ::Render
             else
             {
                 debugDisplay.DrawWireDisk(Vector3::CreateZero(), Vector3::CreateAxisZ(), radius);
-                debugDisplay.DrawArc(Vector3::CreateZero(), radius, 90.0f, 180.0f, -3.0f, 0);
+                debugDisplay.DrawArc(Vector3::CreateZero(), radius, 270.0f, 180.0f, 3.0f, 0);
                 debugDisplay.DrawArc(Vector3::CreateZero(), radius, 0.0f, 180.0f, 3.0f, 1);
             }
             debugDisplay.PopMatrix();

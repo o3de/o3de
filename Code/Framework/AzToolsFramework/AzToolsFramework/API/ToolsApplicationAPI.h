@@ -349,6 +349,11 @@ namespace AzToolsFramework
         virtual bool AreAnyEntitiesSelected() = 0;
 
         /*!
+         * Returns the number of selected entities.
+         */
+        virtual int GetSelectedEntitiesCount() = 0;
+
+        /*!
          * Retrieves the set of selected entities.
          * \return a list of entity Ids.
          */

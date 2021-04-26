@@ -21,8 +21,8 @@ import azlmbr.legacy.general as general
 import azlmbr.paths
 
 sys.path.append(os.path.join(azlmbr.paths.devroot, 'AutomatedTesting', 'Gem', 'PythonTests'))
-from automatedtesting_shared.editor_test_helper import EditorTestHelper
-import automatedtesting_shared.pyside_utils as pyside_utils
+from editor_python_test_tools.editor_test_helper import EditorTestHelper
+import editor_python_test_tools.pyside_utils as pyside_utils
 
 
 class AssetBrowserTreeNavigationTest(EditorTestHelper):
@@ -66,7 +66,7 @@ class AssetBrowserTreeNavigationTest(EditorTestHelper):
             return collapse_success and expand_success
 
         # This is the hierarchy we are expanding (4 steps inside)
-        self.file_path = ("AutomatedTesting", "Assets", "ImageGradients", "lumberyard_gsi.png")
+        self.file_path = ("AutomatedTesting", "Assets", "ImageGradients", "image_grad_test_gsi.png")
 
         # 1) Open a new level
         self.test_success = self.create_level(

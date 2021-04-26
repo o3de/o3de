@@ -410,6 +410,14 @@ class ViewEditPage(QWidget):
     def rescan_button(self) -> QPushButton:
         return self._rescan_button
 
+    @property
+    def notification_frame(self) -> NotificationFrame:
+        return self._notification_frame
+
+    @property
+    def notification_page_frame(self) -> NotificationFrame:
+        return self._notification_page_frame
+
     def set_current_main_view_index(self, index: int) -> None:
         """Switch main view page based on given index"""
         if index == ViewEditPageConstants.NOTIFICATION_PAGE_INDEX:
@@ -436,11 +444,13 @@ class ViewEditPage(QWidget):
         self._config_file_combobox.setCurrentIndex(-1)
 
         if config_files:
-            self._notification_page_frame.set_text(notification_label_text.VIEW_EDIT_PAGE_SELECT_CONFIG_FILE_MESSAGE)
+            self._notification_page_frame.set_frame_text_receiver(
+                notification_label_text.VIEW_EDIT_PAGE_SELECT_CONFIG_FILE_MESSAGE)
             self._create_new_button.setVisible(False)
             self._rescan_button.setVisible(False)
         else:
-            self._notification_page_frame.set_text(notification_label_text.VIEW_EDIT_PAGE_NO_CONFIG_FILE_FOUND_MESSAGE)
+            self._notification_page_frame.set_frame_text_receiver(
+                notification_label_text.VIEW_EDIT_PAGE_NO_CONFIG_FILE_FOUND_MESSAGE)
             self._create_new_button.setVisible(True)
             self._rescan_button.setVisible(True)
 
@@ -454,16 +464,6 @@ class ViewEditPage(QWidget):
         elided_text: str = metrics.elidedText(config_location, Qt.ElideMiddle, self._config_location_text.width())
         self._config_location_text.setText(elided_text)
         self._config_location_text.setToolTip(config_location)
-
-    def set_notification_page_text(self, text: str) -> None:
-        self._notification_page_frame.set_text(text)
-
-    def hide_notification_frame(self) -> None:
-        self._notification_frame.setVisible(False)
-
-    def set_notification_frame_text(self, text: str) -> None:
-        self._notification_frame.set_text(text)
-        self._notification_frame.setVisible(True)
 
     def set_table_view_page_interactions_enabled(self, enabled: bool) -> None:
         self._table_view_page.setEnabled(enabled)

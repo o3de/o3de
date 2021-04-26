@@ -4301,11 +4301,6 @@ void CRenderViewport::RenderSnappingGrid()
     {
         return;
     }
-    if (GetIEditor()->GetEditMode() != eEditModeMove
-        && GetIEditor()->GetEditMode() != eEditModeRotate)
-    {
-        return;
-    }
     CGrid* pGrid = GetViewManager()->GetGrid();
     if (pGrid->IsEnabled() == false && pGrid->IsAngleSnapEnabled() == false)
     {
@@ -4317,76 +4312,6 @@ void CRenderViewport::RenderSnappingGrid()
     int prevState = dc.GetState();
     dc.DepthWriteOff();
 
-    Vec3 p = pSelGroup->GetObject(0)->GetWorldPos();
-
-    AABB bbox;
-    pSelGroup->GetObject(0)->GetBoundBox(bbox);
-    float size = 2 * bbox.GetRadius();
-    float alphaMax = 1.0f, alphaMin = 0.2f;
-    dc.SetLineWidth(3);
-
-    if (GetIEditor()->GetEditMode() == eEditModeMove && pGrid->IsEnabled())
-    // Draw the translation grid.
-    {
-        Vec3 u = m_constructionPlaneAxisX;
-        Vec3 v = m_constructionPlaneAxisY;
-        float step = pGrid->scale * pGrid->size;
-        const int MIN_STEP_COUNT = 5;
-        const int MAX_STEP_COUNT = 300;
-        int nSteps = std::min(std::max(FloatToIntRet(size / step), MIN_STEP_COUNT), MAX_STEP_COUNT);
-        size = nSteps * step;
-        for (int i = -nSteps; i <= nSteps; ++i)
-        {
-            // Draw u lines.
-            float alphaCur = alphaMax - fabsf(float(i) / float(nSteps)) * (alphaMax - alphaMin);
-            dc.DrawLine(p + v * (step * i), p + u * size + v * (step * i),
-                ColorF(0, 0, 0, alphaCur), ColorF(0, 0, 0, alphaMin));
-            dc.DrawLine(p + v * (step * i), p - u * size + v * (step * i),
-                ColorF(0, 0, 0, alphaCur), ColorF(0, 0, 0, alphaMin));
-            // Draw v lines.
-            dc.DrawLine(p + u * (step * i), p + v * size + u * (step * i),
-                ColorF(0, 0, 0, alphaCur), ColorF(0, 0, 0, alphaMin));
-            dc.DrawLine(p + u * (step * i), p - v * size + u * (step * i),
-                ColorF(0, 0, 0, alphaCur), ColorF(0, 0, 0, alphaMin));
-        }
-    }
-    else if (GetIEditor()->GetEditMode() == eEditModeRotate && pGrid->IsAngleSnapEnabled())
-    // Draw the rotation grid.
-    {
-        int nAxis(GetAxisConstrain());
-        if (nAxis == AXIS_X || nAxis == AXIS_Y || nAxis == AXIS_Z)
-        {
-            RefCoordSys coordSys = GetIEditor()->GetReferenceCoordSys();
-            Vec3 xAxis(1, 0, 0);
-            Vec3 yAxis(0, 1, 0);
-            Vec3 zAxis(0, 0, 1);
-            Vec3 rotAxis;
-            if (nAxis == AXIS_X)
-            {
-                rotAxis = m_constructionMatrix[coordSys].TransformVector(xAxis);
-            }
-            else if (nAxis == AXIS_Y)
-            {
-                rotAxis = m_constructionMatrix[coordSys].TransformVector(yAxis);
-            }
-            else if (nAxis == AXIS_Z)
-            {
-                rotAxis = m_constructionMatrix[coordSys].TransformVector(zAxis);
-            }
-            Vec3 anotherAxis = m_constructionPlane.n * size;
-            float step = pGrid->angleSnap;
-            int nSteps = FloatToIntRet(180.0f / step);
-            for (int i = 0; i < nSteps; ++i)
-            {
-                AngleAxis rot(i* step* gf_PI / 180.0, rotAxis);
-                Vec3 dir = rot * anotherAxis;
-                dc.DrawLine(p, p + dir,
-                    ColorF(0, 0, 0, alphaMax), ColorF(0, 0, 0, alphaMin));
-                dc.DrawLine(p, p - dir,
-                    ColorF(0, 0, 0, alphaMax), ColorF(0, 0, 0, alphaMin));
-            }
-        }
-    }
     dc.SetState(prevState);
 }
 

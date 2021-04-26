@@ -10,5 +10,4 @@
 #
 
 set(FILES
-    ../Common/Unimplemented/Empty_Unimplemented.cpp
 )
