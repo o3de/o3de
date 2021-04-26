@@ -22,13 +22,13 @@ class Tests():
 # fmt:on
 
 
-def run():
+def C28798205_WhiteBox_SetInvisible():
     # note: This automated test does not fully replicate the test case in Test Rail as it's
     # not currently possible using the Hydra API to get an EntityComponentIdPair at runtime,
     # in future game_mode will be activated and a runtime White Box Component queried
     import os
     import sys
-    import WhiteBoxInit as init
+    from Gems.WhiteBox.Editor.Scripts import WhiteBoxInit as init
     import ImportPathHelper as imports
     import editor_python_test_tools.hydra_editor_utils as hydra
     imports.init()
@@ -68,4 +68,8 @@ def run():
 
 
 if __name__ == "__main__":
-    run()
+    import ImportPathHelper as imports
+    imports.init()
+    
+    from editor_python_test_tools.utils import Report
+    Report.start_test(C28798205_WhiteBox_SetInvisible)
