@@ -29,6 +29,8 @@
 #include <SceneAPI/SceneData/GraphData/MeshVertexColorData.h>
 #include <SceneAPI/SceneData/GraphData/MeshVertexTangentData.h>
 #include <SceneAPI/SceneData/GraphData/MeshVertexUVData.h>
+#include <SceneAPI/SceneData/GraphData/AnimationData.h>
+#include <SceneAPI/SceneData/GraphData/BlendShapeData.h>
 
 namespace AZ
 {
@@ -99,6 +101,53 @@ namespace AZ
                         tangentData->AppendTangent(AZ::Vector4{0.21f, 0.43f, 0.65f, 0.87f});
                         tangentData->SetTangentSpace(AZ::SceneAPI::DataTypes::TangentSpace::EMotionFX);
                         tangentData->SetTangentSetIndex(2);
+                        return true;
+                    }
+                    else if (data.get_type_info().m_id == azrtti_typeid<AZ::SceneData::GraphData::AnimationData>())
+                    {
+                        auto* animationData = AZStd::any_cast<AZ::SceneData::GraphData::AnimationData>(&data);
+                        animationData->ReserveKeyFrames(3);
+                        animationData->AddKeyFrame(DataTypes::MatrixType::CreateFromValue(1.0));
+                        animationData->AddKeyFrame(DataTypes::MatrixType::CreateFromValue(2.0));
+                        animationData->AddKeyFrame(DataTypes::MatrixType::CreateFromValue(3.0));
+                        animationData->SetTimeStepBetweenFrames(4.0);
+                        return true;
+                    }
+                    else if (data.get_type_info().m_id == azrtti_typeid<AZ::SceneData::GraphData::BlendShapeAnimationData>())
+                    {
+                        auto* blendShapeAnimationData = AZStd::any_cast<AZ::SceneData::GraphData::BlendShapeAnimationData>(&data);
+                        blendShapeAnimationData->SetBlendShapeName("mockBlendShapeName");
+                        blendShapeAnimationData->ReserveKeyFrames(3);
+                        blendShapeAnimationData->AddKeyFrame(1.0);
+                        blendShapeAnimationData->AddKeyFrame(2.0);
+                        blendShapeAnimationData->AddKeyFrame(3.0);
+                        blendShapeAnimationData->SetTimeStepBetweenFrames(4.0);
+                        return true;
+                    }
+                    else if (data.get_type_info().m_id == azrtti_typeid<AZ::SceneData::GraphData::BlendShapeData>())
+                    {
+                        auto* blendShapeData = AZStd::any_cast<AZ::SceneData::GraphData::BlendShapeData>(&data);
+                        blendShapeData->AddPosition({ 1.0, 2.0, 3.0 });
+                        blendShapeData->AddPosition({ 2.0, 3.0, 4.0 });
+                        blendShapeData->AddPosition({ 3.0, 4.0, 5.0 });
+                        blendShapeData->AddNormal({ 0.1, 0.2, 0.3 });
+                        blendShapeData->AddNormal({ 0.2, 0.3, 0.4 });
+                        blendShapeData->AddNormal({ 0.3, 0.4, 0.5 });
+                        blendShapeData->AddTangentAndBitangent(Vector4{ 0.1f, 0.2f, 0.3f, 0.4f }, { 0.0, 0.1, 0.2 });
+                        blendShapeData->AddTangentAndBitangent(Vector4{ 0.2f, 0.3f, 0.4f, 0.5f }, { 0.1, 0.2, 0.3 });
+                        blendShapeData->AddTangentAndBitangent(Vector4{ 0.3f, 0.4f, 0.5f, 0.6f }, { 0.2, 0.3, 0.4 });
+                        blendShapeData->AddUV(Vector2{ 0.9, 0.8 }, 0);
+                        blendShapeData->AddUV(Vector2{ 0.7, 0.7 }, 1);
+                        blendShapeData->AddUV(Vector2{ 0.6, 0.6 }, 2);
+                        blendShapeData->AddColor(DataTypes::Color{ 0.1, 0.2, 0.3, 0.4 }, 0);
+                        blendShapeData->AddColor(DataTypes::Color{ 0.2, 0.3, 0.4, 0.5 }, 1);
+                        blendShapeData->AddColor(DataTypes::Color{ 0.3, 0.4, 0.5, 0.6 }, 2);
+                        blendShapeData->AddFace({ 0, 1, 2 });
+                        blendShapeData->AddFace({ 1, 2, 0 });
+                        blendShapeData->AddFace({ 2, 0, 1 });
+                        blendShapeData->SetVertexIndexToControlPointIndexMap(0, 1);
+                        blendShapeData->SetVertexIndexToControlPointIndexMap(1, 2);
+                        blendShapeData->SetVertexIndexToControlPointIndexMap(2, 0);
                         return true;
                     }
                     return false;
@@ -295,6 +344,116 @@ namespace AZ
                 ExpectExecute("TestExpectFloatEquals(tangentData.w, 0.29)");
                 ExpectExecute("TestExpectIntegerEquals(meshVertexTangentData:GetTangentSetIndex(), 2)");
                 ExpectExecute("TestExpectTrue(meshVertexTangentData:GetTangentSpace(), MeshVertexTangentData.EMotionFX)");
+            }
+
+            TEST_F(GrapDatahBehaviorScriptTest, SceneGraph_AnimationData_AccessWorks)
+            {
+                ExpectExecute("animationData = AnimationData()");
+                ExpectExecute("TestExpectTrue(animationData ~= nil)");
+                ExpectExecute("MockGraphData.FillData(animationData)");
+                ExpectExecute("TestExpectIntegerEquals(animationData:GetKeyFrameCount(), 3)");
+                ExpectExecute("TestExpectFloatEquals(animationData:GetTimeStepBetweenFrames(), 4.0)");
+                ExpectExecute("TestExpectFloatEquals(animationData:GetKeyFrame(0).basisX.x, 1.0)");
+                ExpectExecute("TestExpectFloatEquals(animationData:GetKeyFrame(1).basisX.y, 2.0)");
+                ExpectExecute("TestExpectFloatEquals(animationData:GetKeyFrame(2).basisX.z, 3.0)");
+            }
+
+            TEST_F(GrapDatahBehaviorScriptTest, SceneGraph_BlendShapeAnimationData_AccessWorks)
+            {
+                ExpectExecute("blendShapeAnimationData = BlendShapeAnimationData()");
+                ExpectExecute("TestExpectTrue(blendShapeAnimationData ~= nil)");
+                ExpectExecute("MockGraphData.FillData(blendShapeAnimationData)");
+                ExpectExecute("TestExpectTrue(blendShapeAnimationData:GetBlendShapeName() == 'mockBlendShapeName')");
+                ExpectExecute("TestExpectIntegerEquals(blendShapeAnimationData:GetKeyFrameCount(), 3)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeAnimationData:GetKeyFrame(0), 1.0)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeAnimationData:GetKeyFrame(1), 2.0)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeAnimationData:GetKeyFrame(2), 3.0)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeAnimationData:GetTimeStepBetweenFrames(), 4.0)");
+            }
+
+            TEST_F(GrapDatahBehaviorScriptTest, SceneGraph_BlendShapeData_AccessWorks)
+            {
+                ExpectExecute("blendShapeData = BlendShapeData()");
+                ExpectExecute("TestExpectTrue(blendShapeData ~= nil)");
+                ExpectExecute("MockGraphData.FillData(blendShapeData)");
+                ExpectExecute("TestExpectIntegerEquals(blendShapeData:GetUsedControlPointCount(), 3)");
+                ExpectExecute("TestExpectIntegerEquals(blendShapeData:GetVertexCount(), 3)");
+                ExpectExecute("TestExpectIntegerEquals(blendShapeData:GetFaceCount(), 3)");
+                ExpectExecute("TestExpectIntegerEquals(blendShapeData:GetFaceVertexIndex(0, 2), 2)");
+                ExpectExecute("TestExpectIntegerEquals(blendShapeData:GetFaceVertexIndex(1, 0), 1)");
+                ExpectExecute("TestExpectIntegerEquals(blendShapeData:GetFaceVertexIndex(2, 1), 0)");
+                ExpectExecute("TestExpectIntegerEquals(blendShapeData:GetControlPointIndex(0), 1)");
+                ExpectExecute("TestExpectIntegerEquals(blendShapeData:GetControlPointIndex(1), 2)");
+                ExpectExecute("TestExpectIntegerEquals(blendShapeData:GetControlPointIndex(2), 0)");
+                ExpectExecute("TestExpectIntegerEquals(blendShapeData:GetUsedPointIndexForControlPoint(0), 2)");
+                ExpectExecute("TestExpectIntegerEquals(blendShapeData:GetUsedPointIndexForControlPoint(1), 0)");
+                ExpectExecute("TestExpectIntegerEquals(blendShapeData:GetUsedPointIndexForControlPoint(2), 1)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetPosition(0).x, 1.0)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetPosition(0).y, 2.0)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetPosition(0).z, 3.0)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetPosition(1).x, 2.0)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetPosition(1).y, 3.0)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetPosition(1).z, 4.0)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetPosition(2).x, 3.0)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetPosition(2).y, 4.0)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetPosition(2).z, 5.0)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetNormal(0).x, 0.1)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetNormal(0).y, 0.2)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetNormal(0).z, 0.3)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetNormal(1).x, 0.2)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetNormal(1).y, 0.3)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetNormal(1).z, 0.4)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetNormal(2).x, 0.3)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetNormal(2).y, 0.4)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetNormal(2).z, 0.5)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetFaceInfo(0):GetVertexIndex(0), 0)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetFaceInfo(0):GetVertexIndex(1), 1)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetFaceInfo(0):GetVertexIndex(2), 2)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetFaceInfo(1):GetVertexIndex(0), 1)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetFaceInfo(1):GetVertexIndex(1), 2)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetFaceInfo(1):GetVertexIndex(2), 0)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetFaceInfo(2):GetVertexIndex(0), 2)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetFaceInfo(2):GetVertexIndex(1), 0)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetFaceInfo(2):GetVertexIndex(2), 1)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetUV(0, 0).x, 0.9)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetUV(0, 0).y, 0.8)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetUV(0, 1).x, 0.7)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetUV(0, 1).y, 0.7)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetUV(0, 2).x, 0.6)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetUV(0, 2).y, 0.6)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetColor(0, 0).red, 0.1)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetColor(0, 0).green, 0.2)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetColor(0, 0).blue, 0.3)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetColor(0, 0).alpha, 0.4)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetColor(1, 0).red, 0.2)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetColor(1, 0).green, 0.3)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetColor(1, 0).blue, 0.4)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetColor(1, 0).alpha, 0.5)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetColor(2, 0).red, 0.3)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetColor(2, 0).green, 0.4)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetColor(2, 0).blue, 0.5)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetColor(2, 0).alpha, 0.6)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetTangent(0).x, 0.1)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetTangent(0).y, 0.2)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetTangent(0).z, 0.3)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetTangent(0).w, 0.4)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetTangent(1).x, 0.2)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetTangent(1).y, 0.3)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetTangent(1).z, 0.4)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetTangent(1).w, 0.5)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetTangent(2).x, 0.3)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetTangent(2).y, 0.4)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetTangent(2).z, 0.5)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetTangent(2).w, 0.6)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetBitangent(0).x, 0.0)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetBitangent(0).y, 0.1)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetBitangent(0).z, 0.2)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetBitangent(1).x, 0.1)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetBitangent(1).y, 0.2)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetBitangent(1).z, 0.3)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetBitangent(2).x, 0.2)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetBitangent(2).y, 0.3)");
+                ExpectExecute("TestExpectFloatEquals(blendShapeData:GetBitangent(2).z, 0.4)");
             }
         }
     }
