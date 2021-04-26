@@ -38,10 +38,10 @@ namespace AzToolsFramework::ViewportUi
         return RegisterNewCluster(cluster);
     }
 
-    const ClusterId ViewportUiManager::CreateSwitcher(ButtonId currMode)
+    const ClusterId ViewportUiManager::CreateSwitcher()
     {
         auto cluster = AZStd::make_shared<Internal::Cluster>();
-        m_viewportUi->AddSwitcher(cluster, currMode);
+        m_viewportUi->AddSwitcher(cluster);
 
         return RegisterNewCluster(cluster);
     }
@@ -62,7 +62,7 @@ namespace AzToolsFramework::ViewportUi
         {
             auto cluster = clusterEntry->second;
             cluster->SetHighlightedButton(buttonId);
-            m_viewportUi->SetSwitcherActiveMode(cluster->GetViewportUiElementId(), buttonId);
+            m_viewportUi->SetSwitcherActiveButton(cluster->GetViewportUiElementId(), buttonId);
             UpdateSwitcherUi(cluster.get());
         }
     }

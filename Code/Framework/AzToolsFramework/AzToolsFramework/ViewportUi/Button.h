@@ -27,12 +27,12 @@ namespace AzToolsFramework::ViewportUi::Internal
             Deselected
         };
 
-        explicit Button(AZStd::string icon, ButtonId buttonId);
+        Button(AZStd::string icon, ButtonId buttonId);
         Button(AZStd::string icon, AZStd::string name, ButtonId buttonId);
         ~Button() = default;
 
         AZStd::string m_icon; //!< The icon for this button, string path to an image.
-        AZStd::string m_name; //!< The icon for this button, string path to an image.
+        AZStd::string m_name; //!< The name displayed as a label next to the button's icon.
         State m_state = State::Deselected; 
         ButtonId m_buttonId; 
     };

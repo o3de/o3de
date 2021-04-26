@@ -61,11 +61,11 @@ namespace AzToolsFramework::ViewportUi::Internal
         void RemoveClusterButton(ViewportUiElementId clusterId, ButtonId buttonId);
         void UpdateCluster(const ViewportUiElementId clusterId);
 
-        void AddSwitcher(AZStd::shared_ptr<Cluster> cluster, ButtonId currMode);
+        void AddSwitcher(AZStd::shared_ptr<Cluster> cluster);
         void AddSwitcherButton(ViewportUiElementId clusterId, Button* button);
         void RemoveSwitcherButton(ViewportUiElementId clusterId, ButtonId buttonId);
-        void UpdateSwitcher(const ViewportUiElementId clusterId);
-        void SetSwitcherActiveMode(ViewportUiElementId clusterId, ButtonId buttonId);
+        void UpdateSwitcher(ViewportUiElementId clusterId);
+        void SetSwitcherActiveButton(ViewportUiElementId clusterId, ButtonId buttonId);
 
         void AddTextField(AZStd::shared_ptr<TextField> textField);
         void UpdateTextField(ViewportUiElementId textFieldId);

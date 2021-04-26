@@ -441,7 +441,7 @@ namespace AzToolsFramework
             clusterId);
     }
   
-    static void RemoveTestSwitcher(const ViewportUi::ClusterId clusterId)
+    static void RemoveComponentModeSwitcher(const ViewportUi::ClusterId clusterId)
     {
         ViewportUi::ViewportUiRequestBus::Event(
             ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RemoveCluster,
@@ -475,14 +475,13 @@ namespace AzToolsFramework
         return buttonId;
     }
 
-    static ViewportUi::ButtonId RegisterSwitcherButton(
-        ViewportUi::ClusterId clusterId, const char* iconName, const char* buttonName)
+    static ViewportUi::ButtonId RegisterSwitcherButton(ViewportUi::ClusterId clusterId, const char* iconPath, const char* buttonName)
     {
         ViewportUi::ButtonId buttonId;
         ViewportUi::ViewportUiRequestBus::EventResult(
             buttonId, ViewportUi::DefaultViewportId,
             &ViewportUi::ViewportUiRequestBus::Events::CreateSwitcherButton, clusterId,
-            AZStd::string::format("Editor/Icons/Switcher/%s.svg", iconName), buttonName);
+            iconPath, buttonName);
 
         return buttonId;
     }
@@ -1043,7 +1042,7 @@ namespace AzToolsFramework
         EditorEntityLockComponentNotificationBus::Router::BusRouterConnect();
         EditorManipulatorCommandUndoRedoRequestBus::Handler::BusConnect(entityContextId);
 
-        CreateTestSwitcher();
+        CreateComponentModeSwitcher();
 
         CreateTransformModeSelectionCluster();
         RegisterActions();
@@ -1059,7 +1058,7 @@ namespace AzToolsFramework
         DestroyTransformModeSelectionCluster(m_transformModeClusterId);
         UnregisterActions();
 
-        RemoveTestSwitcher(m_testSwitcherId);
+        RemoveComponentModeSwitcher(m_testSwitcherId);
 
         m_pivotOverrideFrame.Reset();
 
@@ -2584,20 +2583,25 @@ namespace AzToolsFramework
             m_transformModeSelectionHandler);
     }
 
-    void EditorTransformComponentSelection::CreateTestSwitcher()
+    void EditorTransformComponentSelection::CreateComponentModeSwitcher()
     {
-        // Create test switcher
-        // & Set Current Active Mode
+        // Create the switcher
         ViewportUi::ViewportUiRequestBus::EventResult(
-            m_testSwitcherId, ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateSwitcher,
-            ViewportUi::ButtonId(1));
+            m_testSwitcherId, ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateSwitcher);
 
-        // create and register the buttons
-        m_boxShapeButtonId = RegisterSwitcherButton(m_testSwitcherId, "BoxShape", "Box Shape");
-        m_physxColliderButtonId = RegisterSwitcherButton(m_testSwitcherId, "PhysXCollider", "PhysX Collider");
-        m_transformButtonId = RegisterSwitcherButton(m_testSwitcherId, "Transform", "Transform");
+        // Create and register the buttons
+        m_boxShapeButtonId =
+            RegisterSwitcherButton(m_testSwitcherId, AZStd::string::format("Editor/Icons/Switcher/%s.svg", "BoxShape").c_str(), "Box Shape");
+        m_physxColliderButtonId = RegisterSwitcherButton(
+            m_testSwitcherId, AZStd::string::format("Editor/Icons/Switcher/%s.svg", "PhysXCollider").c_str(), "PhysX Collider");
+        m_transformButtonId = RegisterSwitcherButton(
+            m_testSwitcherId, AZStd::string::format("Editor/Icons/Switcher/%s.svg", "Transform").c_str(), "Transform");
 
-        // Change current active button for now
+        // Set the initial active button
+        ViewportUi::ViewportUiRequestBus::Event(
+            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton, m_testSwitcherId,
+            m_physxColliderButtonId);
+
         const auto onButtonClicked = [this](ViewportUi::ButtonId buttonId) {
             if (buttonId == m_boxShapeButtonId)
             {

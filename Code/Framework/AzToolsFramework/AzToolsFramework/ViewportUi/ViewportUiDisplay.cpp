@@ -94,14 +94,14 @@ namespace AzToolsFramework::ViewportUi::Internal
         }
     }
 
-    void ViewportUiDisplay::AddSwitcher(AZStd::shared_ptr<Cluster> cluster, ButtonId currMode)
+    void ViewportUiDisplay::AddSwitcher(AZStd::shared_ptr<Cluster> cluster)
     {
         if (!cluster.get())
         {
             return;
         }
 
-        auto viewportUiSwitcher = AZStd::make_shared<ViewportUiSwitcher>(cluster, currMode);
+        auto viewportUiSwitcher = AZStd::make_shared<ViewportUiSwitcher>(cluster);
         auto id = AddViewportUiElement(viewportUiSwitcher);
         cluster->SetViewportUiElementId(id);
         PositionViewportUiElementAnchored(id, Qt::AlignTop | Qt::AlignLeft);
@@ -131,11 +131,11 @@ namespace AzToolsFramework::ViewportUi::Internal
         }
     }
 
-    void ViewportUiDisplay::SetSwitcherActiveMode(ViewportUiElementId clusterId, ButtonId buttonId)
+    void ViewportUiDisplay::SetSwitcherActiveButton(ViewportUiElementId clusterId, ButtonId buttonId)
     {
         if (auto viewportUiSwitcher = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(clusterId).get()))
         {
-            viewportUiSwitcher->SetActiveMode(buttonId);
+            viewportUiSwitcher->SetActiveButton(buttonId);
         }
     }
 
