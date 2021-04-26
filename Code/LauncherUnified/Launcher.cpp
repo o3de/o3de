@@ -26,7 +26,6 @@
 #include <AzGameFramework/Application/GameApplication.h>
 
 #include <CryLibrary.h>
-#include <IConsole.h>
 #include <ISystem.h>
 #include <ITimer.h>
 #include <LegacyAllocator.h>
@@ -46,17 +45,20 @@ extern "C" void CreateStaticModules(AZStd::vector<AZ::Module*>& modulesOut);
 
 namespace
 {
-    void ExecuteCustomConfig(AzFramework::Application& application)
+    void ExecuteConsoleCommandFile(AzFramework::Application& application)
     {
-        const AZStd::string_view customCfgKey = "customcfg";
+        const AZStd::string_view customConCmdKey = "console_command_file";
         const AZ::CommandLine* commandLine = application.GetCommandLine();
-        if (commandLine->HasSwitch(customCfgKey) && commandLine->GetNumSwitchValues(customCfgKey) > 0)
+        AZStd::size_t numSwitchValues = commandLine->GetNumSwitchValues(customConCmdKey);
+        if (numSwitchValues > 0)
         {
-            const AZStd::string& customCfg = commandLine->GetSwitchValue(customCfgKey, 0);
-            if (!customCfg.empty())
+            // The expectations for command line parameters is that the "last one wins"
+            // That way it allows users and test scripts to override previous command line options by just listing them later on the invocation line
+            const AZStd::string& consoleCmd = commandLine->GetSwitchValue(customConCmdKey, numSwitchValues - 1);
+            if (!consoleCmd.empty())
             {
-                AZStd::string execString = "exec " + customCfg;
-                gEnv->pConsole->ExecuteString(execString.c_str());
+                AZStd::string execString = "exec " + consoleCmd;
+                AZ::Interface<AZ::IConsole>::Get()->PerformCommand(execString.c_str());
             }
         }
     }
@@ -652,9 +654,11 @@ namespace O3DELauncher
             if (gEnv && gEnv->pConsole)
             {
                 // Execute autoexec.cfg to load the initial level
-                gEnv->pConsole->ExecuteString("exec autoexec.cfg");
+                AZ::Interface<AZ::IConsole>::Get()->PerformCommand("exec autoexec.cfg");
 
-                ExecuteCustomConfig(gameApplication);
+                // Find out if console command file was passed 
+                // via --console_command_file=%filename% and execute it
+                ExecuteConsoleCommandFile(gameApplication);
 
                 gEnv->pSystem->ExecuteCommandLine(false);
 
