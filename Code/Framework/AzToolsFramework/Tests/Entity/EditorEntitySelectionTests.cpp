@@ -106,6 +106,9 @@ namespace UnitTest
             anyEntitySelected, &ToolsApplicationRequests::AreAnyEntitiesSelected);
 
         ToolsApplicationRequestBus::BroadcastResult(
+            selectedEntitiesCount, &ToolsApplicationRequests::GetSelectedEntitiesCount);
+
+        ToolsApplicationRequestBus::BroadcastResult(
             selectedEntityIds, &ToolsApplicationRequests::GetSelectedEntities);
 
         EXPECT_FALSE(testEntitySelected);
