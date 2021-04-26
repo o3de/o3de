@@ -221,7 +221,8 @@ namespace AzToolsFramework
         void OnClearButtonClicked();
         void UpdateAssetDisplay();
         void OnLineEditFocus(bool focus);
-        virtual void OnEditButtonClicked(EditCallbackType* editNotifyCallback);
+        virtual void OnEditButtonClicked();
+        void OnThumbnailClicked();
         void OnCompletionModelReset();
         void OnAutocomplete(const QModelIndex& index);
         void OnTextChange(const QString& text);

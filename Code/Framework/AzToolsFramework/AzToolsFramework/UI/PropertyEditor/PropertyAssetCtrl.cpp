@@ -97,7 +97,7 @@ namespace AzToolsFramework
         m_thumbnail->setFixedSize(QSize(40, 24));
         m_thumbnail->setVisible(false);
 
-        connect(m_thumbnail, &ThumbnailPropertyCtrl::clicked, [&]() { PropertyAssetCtrl::OnEditButtonClicked(m_thumbnailCallback); });
+        connect(m_thumbnail, &ThumbnailPropertyCtrl::clicked, this, &PropertyAssetCtrl::OnThumbnailClicked);
 
         m_editButton = new QToolButton(this);
         m_editButton->setAutoRaise(true);
@@ -105,7 +105,7 @@ namespace AzToolsFramework
         m_editButton->setToolTip("Edit asset");
         m_editButton->setVisible(false);
 
-        connect(m_editButton, &QToolButton::clicked, [&]() { PropertyAssetCtrl::OnEditButtonClicked(m_editNotifyCallback); });
+        connect(m_editButton, &QToolButton::clicked, this, &PropertyAssetCtrl::OnEditButtonClicked);
 
         pLayout->addWidget(m_thumbnail);
         pLayout->addWidget(m_browseEdit);
@@ -180,6 +180,17 @@ namespace AzToolsFramework
         else
         {
             SetSelectedAssetID(GetCurrentAssetID());
+        }
+    }
+
+    void PropertyAssetCtrl::OnThumbnailClicked()
+    {
+        const AZ::Data::AssetId assetID = GetCurrentAssetID();
+        if (m_thumbnailCallback)
+        {
+            AZ_Error("Asset Property", m_editNotifyTarget, "No notification target set for edit callback.");
+            m_thumbnailCallback->Invoke(m_editNotifyTarget, assetID, GetCurrentAssetType());
+            return;
         }
     }
 
@@ -704,13 +715,13 @@ namespace AzToolsFramework
         AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
     }
 
-    void PropertyAssetCtrl::OnEditButtonClicked(EditCallbackType* editNotifyCallback)
+    void PropertyAssetCtrl::OnEditButtonClicked()
     {
         const AZ::Data::AssetId assetID = GetCurrentAssetID();
-        if (editNotifyCallback)
+        if (m_editNotifyCallback)
         {
             AZ_Error("Asset Property", m_editNotifyTarget, "No notification target set for edit callback.");
-            editNotifyCallback->Invoke(m_editNotifyTarget, assetID, GetCurrentAssetType());
+            m_editNotifyCallback->Invoke(m_editNotifyTarget, assetID, GetCurrentAssetType());
             return;
         }
         else
@@ -1286,7 +1297,7 @@ namespace AzToolsFramework
             else
             {
                 GUI->SetShowThumbnailDropDownButton(false);
-                GUI->SetEditNotifyCallback(nullptr);
+                GUI->SetThumbnailCallback(nullptr);
             }
         }
     }
