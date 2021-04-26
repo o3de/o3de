@@ -407,7 +407,7 @@ namespace LmbrCentral
     template <typename ConfigurationType, typename ConfigToLightParamsFunc>
     void LightInstance::CreateRenderLightInternal(const ConfigurationType& configuration, ConfigToLightParamsFunc configToLightParams)
     {
-        if (m_renderLight || !configuration.m_visible)
+        if (m_renderLight || !configuration.m_visible || !gEnv->p3DEngine)
         {
             return;
         }
