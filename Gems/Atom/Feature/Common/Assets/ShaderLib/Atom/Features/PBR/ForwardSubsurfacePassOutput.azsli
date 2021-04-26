@@ -12,21 +12,23 @@
 
 struct ForwardPassOutput
 {
-    float4 m_diffuseColor  : SV_Target0;     //!< RGB = Diffuse Lighting, A = Blend Alpha (for blended surfaces) OR A = special encoding of surfaceScatteringFactor, m_subsurfaceScatteringQuality, o_enableSubsurfaceScattering
-    float4 m_specularColor : SV_Target1;     //!< RGB = Specular Lighting, A = Unused
-    float4 m_albedo : SV_Target2;            //!< RGB = Surface albedo pre-multiplied by other factors that will be multiplied later by diffuse GI, A = specularOcclusion
-    float4 m_specularF0 : SV_Target3;        //!< RGB = Specular F0, A = roughness
-    float4 m_normal : SV_Target4;            //!< RGB10 = EncodeNormalSignedOctahedron(worldNormal), A2 = multiScatterCompensationEnabled
-};
-
-struct ForwardPassOutputWithDepth
-{
-    // See above for descriptions of special encodings
-
+    // m_diffuseColor.a should be encoded with subsurface scattering's strength factor and quality factor if enabled
     float4 m_diffuseColor  : SV_Target0;
     float4 m_specularColor : SV_Target1;
     float4 m_albedo : SV_Target2;
     float4 m_specularF0 : SV_Target3;
     float4 m_normal : SV_Target4;
+    float3 m_scatterDistance : SV_Target5;
+};
+
+struct ForwardPassOutputWithDepth
+{
+    // m_diffuseColor.a should be encoded with subsurface scattering's strength factor and quality factor if enabled
+    float4 m_diffuseColor  : SV_Target0;
+    float4 m_specularColor : SV_Target1;
+    float4 m_albedo : SV_Target2;
+    float4 m_specularF0 : SV_Target3;
+    float4 m_normal : SV_Target4;
+    float3 m_scatterDistance : SV_Target5;
     float m_depth : SV_Depth;
 };
