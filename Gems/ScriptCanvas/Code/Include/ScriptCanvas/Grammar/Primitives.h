@@ -90,11 +90,11 @@ namespace ScriptCanvas
             AZ_CLASS_ALLOCATOR(EBusHandling, AZ::SystemAllocator, 0);
 
             bool m_isAddressed = false;
+            const Node* m_node = nullptr;
             VariableConstPtr m_startingAdress;
             AZStd::string m_ebusName;
             AZStd::string m_handlerName;
             AZStd::vector<AZStd::pair<AZStd::string, ExecutionTreeConstPtr>> m_events;
-            
             void Clear();
         };
 

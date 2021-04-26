@@ -9,13 +9,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-set(sdkwrapper_dir ${CMAKE_CURRENT_LIST_DIR}/../SDKWrapper)
-
 if (NOT PAL_TRAIT_BUILD_HOST_TOOLS)
     return()
 endif()
 
-ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
+set(sdkwrapper_dir ${CMAKE_CURRENT_LIST_DIR}/../SDKWrapper)
 
 ly_add_target(
     NAME FbxSDKWrapper STATIC

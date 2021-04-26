@@ -62,7 +62,6 @@ namespace AZ
             , public AzFramework::BoundsRequestBus::Handler
             , public AZ::Render::MaterialComponentNotificationBus::Handler
             , public AZ::Render::MeshComponentRequestBus::Handler
-            , public LmbrCentral::MeshComponentRequestBus::Handler
             , private AZ::Render::SkinnedMeshFeatureProcessorNotificationBus::Handler
             , private AZ::Render::SkinnedMeshOutputStreamNotificationBus::Handler
             , private LmbrCentral::SkeletalHierarchyRequestBus::Handler
@@ -129,26 +128,18 @@ namespace AZ
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // MeshComponentRequestBus::Handler overrides...
             void SetModelAsset(Data::Asset<RPI::ModelAsset> modelAsset) override;
-            const Data::Asset<RPI::ModelAsset>& GetModelAsset() const override;
+            Data::Asset<const RPI::ModelAsset> GetModelAsset() const override;
             void SetModelAssetId(Data::AssetId modelAssetId) override;
             Data::AssetId GetModelAssetId() const override;
             void SetModelAssetPath(const AZStd::string& modelAssetPath) override;
             AZStd::string GetModelAssetPath() const override;
-            const AZ::Data::Instance<RPI::Model> GetModel() const override;
+            AZ::Data::Instance<RPI::Model> GetModel() const override;
             void SetSortKey(RHI::DrawItemSortKey sortKey) override;
             RHI::DrawItemSortKey GetSortKey() const override;
             void SetLodOverride(RPI::Cullable::LodOverride lodOverride) override;
             RPI::Cullable::LodOverride GetLodOverride() const override;
             void SetVisibility(bool visible) override;
             bool GetVisibility() const override;
-            // GetWorldBounds/GetLocalBounds already overridden by BoundsRequestBus::Handler
-
-            //////////////////////////////////////////////////////////////////////////
-            // LmbrCentral::MeshComponentRequestBus::Handler
-            void SetMeshAsset(const AZ::Data::AssetId& id) override;
-            AZ::Data::Asset<AZ::Data::AssetData> GetMeshAsset() override;
-            bool GetVisibility() override;
-            // SetVisibility already overridden by MeshComponentRequestBus::Handler
             // GetWorldBounds/GetLocalBounds already overridden by BoundsRequestBus::Handler
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////

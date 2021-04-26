@@ -1,45 +1,8 @@
 {
     "gem_name": "NvCloth",
-    "GemFormatVersion": 4,
-    "Uuid": "6ab53783d9f54c9e97a15ad729e7c182",
-    "Name": "NvCloth",
-    "DisplayName": "NVIDIA Cloth [PREVIEW]",
-    "Version": "0.1.0",
-    "LinkType": "Dynamic",
-    "Summary": "Provides the functionality needed to add cloth simulation.",
-    "Tags": ["Physics"],
-    "IconPath": "preview.png",
-    "Modules": [
-        {
-            "Type": "GameModule"
-        },
-        {
-            "Name": "Editor",
-            "Type": "EditorModule",
-            "Extends": "GameModule"
-        }
-    ],
-    "Dependencies": [
-        {
-            "Uuid": "ff06785f7145416b9d46fde39098cb0c",
-            "VersionConstraints": [
-                "~>0.1"
-            ],
-            "_comment": "LmbrCentral"
-        },
-        {
-            "Uuid": "4e981f3b17394f5d84d674fff0f54f4f",
-            "VersionConstraints": [
-                "~>0.1"
-            ],
-            "_comment": "AtomLyIntegration_CommonFeatures"
-        },
-        {
-            "Uuid": "044a63ea67d04479aa5daf62ded9d9ca",
-            "VersionConstraints": [
-                "~>0.1"
-            ],
-            "_comment": "EMotionFX"
-        }
-    ]
+    "display_name": "NVIDIA Cloth [PREVIEW]",
+    "summary": "Provides the functionality needed to add cloth simulation.",
+    "canonical_tags": ["Gem"],
+    "user_tags": ["Physics"],
+    "icon_path": "preview.png"
 }

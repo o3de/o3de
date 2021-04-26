@@ -14,6 +14,7 @@
 
 #include <AzCore/base.h>
 #include <AzCore/Math/Vector2.h>
+#include <AzCore/Math/Vector3.h>
 #include <AzCore/RTTI/TypeInfo.h>
 
 namespace AZ
@@ -131,6 +132,18 @@ namespace AzFramework
     inline const bool operator!=(const ScreenVector& lhs, const ScreenVector& rhs)
     {
         return !operator==(lhs, rhs);
+    }
+
+    inline ScreenPoint ScreenPointFromNDC(const AZ::Vector3& screenNDC, const AZ::Vector2& viewportSize)
+    {
+        return ScreenPoint(
+            aznumeric_caster(std::round(screenNDC.GetX() * viewportSize.GetX())),
+            aznumeric_caster(std::round((1.0f - screenNDC.GetY()) * viewportSize.GetY())));
+    }
+
+    inline AZ::Vector2 NDCFromScreenPoint(const ScreenPoint& screenPoint, const AZ::Vector2& viewportSize)
+    {
+        return AZ::Vector2(aznumeric_cast<float>(screenPoint.m_x), viewportSize.GetY() - aznumeric_cast<float>(screenPoint.m_y)) / viewportSize;
     }
 
     //! Return an AZ::Vector2 from a ScreenPoint.

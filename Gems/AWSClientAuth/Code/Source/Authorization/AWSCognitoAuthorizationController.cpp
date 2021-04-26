@@ -71,15 +71,15 @@ namespace AWSClientAuth
 
         if (m_awsAccountId.empty() || m_cognitoIdentityPoolId.empty())
         {
-            AZ_Warning("AWSCognitoUserManagementController", m_awsAccountId.empty(), "Missing AWS account id in resource mappings.");
-            AZ_Warning("AWSCognitoUserManagementController", m_cognitoIdentityPoolId.empty(), "Missing Cognito Identity pool id in resource mappings.");
+            AZ_Warning("AWSCognitoAuthorizationController", !m_awsAccountId.empty(), "Missing AWS account id not configured.");
+            AZ_Warning("AWSCognitoAuthorizationController", !m_cognitoIdentityPoolId.empty(), "Missing Cognito Identity pool id in resource mappings.");
             return false;
         }
 
         AZStd::string userPoolId;
         AWSCore::AWSResourceMappingRequestBus::BroadcastResult(
             userPoolId, &AWSCore::AWSResourceMappingRequests::GetResourceNameId, CognitoUserPoolIdResourceMappingKey);
-        AZ_Warning("AWSCognitoUserManagementController", userPoolId.empty(), "Missing Cognito USer pool id in resource mappings. Cognito IDP authenticated identities will no work.");
+        AZ_Warning("AWSCognitoAuthorizationController", !userPoolId.empty(), "Missing Cognito User pool id in resource mappings. Cognito IDP authenticated identities will no work.");
 
         AZStd::string defaultRegion;
         AWSCore::AWSResourceMappingRequestBus::BroadcastResult(

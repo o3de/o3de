@@ -51,4 +51,5 @@ class ControllerManager(object):
         logger.info("Setting up ViewEdit and ImportResource controllers ...")
         self._view_edit_controller.setup()
         self._import_resources_controller.setup()
-        self._import_resources_controller.add_import_resources.connect(self._view_edit_controller.add_import_resources)
+        self._import_resources_controller.add_import_resources_sender.connect(
+            self._view_edit_controller.add_import_resources_receiver)

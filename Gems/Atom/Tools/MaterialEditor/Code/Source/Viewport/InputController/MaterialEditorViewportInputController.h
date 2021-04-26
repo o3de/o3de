@@ -45,6 +45,7 @@ namespace MaterialEditor
         void GetExtents(float& distanceMin, float& distanceMax) const override;
         void Reset() override;
         void SetFieldOfView(float value) override;
+        bool IsCameraCentered() const override;
 
         // AzFramework::ViewportControllerInstance interface overrides...
         bool HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event) override;
@@ -95,6 +96,8 @@ namespace MaterialEditor
         float m_distanceMin = 1.0f;
         //! Maximum distance from camera to target
         float m_distanceMax = 10.0f;
+        //! True if camera is centered on a model
+        bool m_isCameraCentered = true;
 
         static constexpr float MaxDistanceMultiplier = 2.5f;
         static constexpr float StartingDistanceMultiplier = 2.0f;

@@ -34,6 +34,7 @@ namespace AZ
             DrawIndirectCount,
             NullDescriptor,
             SeparateDepthStencil,
+            DescriptorIndexing,
             Count // Must be last
         };
 
@@ -57,6 +58,7 @@ namespace AZ
             const VkPhysicalDeviceDepthClipEnableFeaturesEXT& GetPhysicalDeviceDepthClipEnableFeatures() const;
             const VkPhysicalDeviceRobustness2FeaturesEXT& GetPhysicalDeviceRobutness2Features() const;
             const VkPhysicalDeviceShaderFloat16Int8FeaturesKHR& GetPhysicalDeviceFloat16Int8Features() const;
+            const VkPhysicalDeviceDescriptorIndexingFeaturesEXT& GetPhysicalDeviceDescriptorIndexingFeatures() const;
             const VkPhysicalDeviceVulkan12Features& GetPhysicalDeviceVulkan12Features() const;
             const VkPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR& GetPhysicalDeviceSeparateDepthStencilFeatures() const;
             const VkPhysicalDeviceAccelerationStructurePropertiesKHR& GetPhysicalDeviceAccelerationStructureProperties() const;
@@ -70,7 +72,6 @@ namespace AZ
 
         private:
             PhysicalDevice() = default;
-
             void Init(VkPhysicalDevice vkPhysicalDevice);
 
             ///////////////////////////////////////////////////////////////////
@@ -88,6 +89,7 @@ namespace AZ
             VkPhysicalDeviceDepthClipEnableFeaturesEXT m_dephClipEnableFeatures{};
             VkPhysicalDeviceRobustness2FeaturesEXT m_robutness2Features{};
             VkPhysicalDeviceShaderFloat16Int8FeaturesKHR m_float16Int8Features{};
+            VkPhysicalDeviceDescriptorIndexingFeaturesEXT m_descriptorIndexingFeatures{};
             VkPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR m_separateDepthStencilFeatures{};
             VkPhysicalDeviceAccelerationStructurePropertiesKHR m_accelerationStructureProperties{};
             VkPhysicalDeviceRayTracingPipelinePropertiesKHR m_rayTracingPipelineProperties{};

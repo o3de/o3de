@@ -21,20 +21,18 @@ if(CMAKE_VERSION VERSION_EQUAL 3.19)
     cmake_policy(SET CMP0111 OLD)
 endif()
 
+include(cmake/LySet.cmake)
 include(cmake/Version.cmake)
-
-set(INSTALLED_ENGINE TRUE)
+include(cmake/OutputDirectory.cmake)
 
 if(NOT PROJECT_NAME)
     project(O3DE
         LANGUAGES C CXX
         VERSION ${LY_VERSION_STRING}
     )
-
-    set(INSTALLED_ENGINE FALSE)
 endif()
 
-include(cmake/Initialize.cmake)
+include(cmake/GeneralSettings.cmake)
 include(cmake/FileUtil.cmake)
 include(cmake/PAL.cmake)
 include(cmake/PALTools.cmake)
@@ -76,9 +74,6 @@ foreach(restricted_platform ${PAL_RESTRICTED_PLATFORMS})
         add_subdirectory(restricted/${restricted_platform})
     endif()
 endforeach()
-
-# Recurse into directory of general python test scripts
-add_subdirectory(ctest_scripts)
 
 add_subdirectory(scripts)
 
@@ -125,7 +120,10 @@ endif()
 include(cmake/RuntimeDependencies.cmake)
 # 5. Perform test impact framework post steps once all of the targets have been enumerated
 ly_test_impact_post_step()
-# 6. Generate the O3DE find file and setup install locations for scripts, tools, assets etc., required by the engine 
+# 6. Generate the O3DE find file and setup install locations for scripts, tools, assets etc., required by the engine
 if(NOT INSTALLED_ENGINE)
     ly_setup_o3de_install()
+
+    # IMPORTANT: must be included last
+    include(cmake/CPack.cmake)
 endif()

@@ -162,7 +162,6 @@ private:
     bool GetUndoSliceOverrideSaveValue() override;
     bool GetShowCircularDependencyError() override;
     void SetShowCircularDependencyError(const bool& showCircularDependencyError) override;
-    void SetEditTool(const char* tool) override;
     void LaunchLuaEditor(const char* files) override;
     bool IsLevelDocumentOpen() override;
     AZStd::string GetLevelName() override;
@@ -268,8 +267,6 @@ private:
     bool SetDrawInFrontMode(bool bOn) override;
     AZ::u32 GetState() override;
     AZ::u32 SetState(AZ::u32 state) override;
-    AZ::u32 SetStateFlag(AZ::u32 state) override;
-    AZ::u32 ClearStateFlag(AZ::u32 state) override;
     void PushMatrix(const AZ::Transform& tm) override;
     void PopMatrix() override;
 

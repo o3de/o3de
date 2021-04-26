@@ -10,36 +10,32 @@
 *
 */
 
-#include <AzQtComponents/Utilities/DesktopUtilities.h>
-
-#include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
-#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
-#include <AzToolsFramework/AssetBrowser/Search/Filter.h>
-#include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
-
-#include <Atom/RPI.Reflect/Material/MaterialAsset.h>
-#include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
-
-#include <Atom/Document/MaterialDocumentSystemRequestBus.h>
 #include <Atom/Document/MaterialDocumentRequestBus.h>
+#include <Atom/Document/MaterialDocumentSystemRequestBus.h>
+#include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
+#include <Atom/RPI.Reflect/Material/MaterialAsset.h>
+#include <AzQtComponents/Utilities/DesktopUtilities.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
+#include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
+#include <AzToolsFramework/AssetBrowser/Search/Filter.h>
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
 
 #include <Source/Window/MaterialBrowserWidget.h>
-
 #include <Source/Window/ui_MaterialBrowserWidget.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
-#include <QDesktopServices>
-#include <QUrl>
-#include <QMessageBox>
-#include <QMenu>
 #include <QAction>
-#include <QCursor>
-#include <QPushButton>
-#include <QList>
 #include <QByteArray>
+#include <QCursor>
+#include <QDesktopServices>
+#include <QList>
+#include <QMenu>
+#include <QMessageBox>
+#include <QPushButton>
+#include <QUrl>
 AZ_POP_DISABLE_WARNING
 
 namespace MaterialEditor
@@ -73,7 +69,7 @@ namespace MaterialEditor
         m_filterModel->SetFilter(CreateFilter());
 
         m_ui->m_assetBrowserTreeViewWidget->setModel(m_filterModel);
-        m_ui->m_assetBrowserTreeViewWidget->SetShowSourceControlIcons(true);
+        m_ui->m_assetBrowserTreeViewWidget->SetShowSourceControlIcons(false);
         m_ui->m_assetBrowserTreeViewWidget->setSelectionMode(QAbstractItemView::SelectionMode::ExtendedSelection);
 
         // Maintains the tree expansion state between runs
@@ -99,7 +95,6 @@ namespace MaterialEditor
             }
         });
 
-        AssetBrowserModelNotificationBus::Handler::BusConnect();
         MaterialDocumentNotificationBus::Handler::BusConnect();
     }
 
@@ -108,26 +103,37 @@ namespace MaterialEditor
         // Maintains the tree expansion state between runs
         m_ui->m_assetBrowserTreeViewWidget->SaveState();
         MaterialDocumentNotificationBus::Handler::BusDisconnect();
-        AssetBrowserModelNotificationBus::Handler::BusDisconnect();
+        AZ::TickBus::Handler::BusDisconnect();
     }
 
     AzToolsFramework::AssetBrowser::FilterConstType MaterialBrowserWidget::CreateFilter() const
     {
         using namespace AzToolsFramework::AssetBrowser;
 
+        // Material Browser uses the following filters:
+        // 1. [All source files (no products) that contain products matching the assetType specified by searchWidget (default is materials and textures)]
+        // 2. [All folders (including empty folders)]
+        // 3. [All Sources and folders matching the search text typed in search widget]
+        // Final filter = ((1 OR 2) AND 3)
+
         QSharedPointer<EntryTypeFilter> sourceFilter(new EntryTypeFilter);
         sourceFilter->SetEntryType(AssetBrowserEntry::AssetEntryType::Source);
+
+        QSharedPointer<CompositeFilter> assetTypeFilter(new CompositeFilter(CompositeFilter::LogicOperatorType::AND));
+        assetTypeFilter->AddFilter(sourceFilter);
+        assetTypeFilter->AddFilter(m_ui->m_searchWidget->GetTypesFilter());
 
         QSharedPointer<EntryTypeFilter> folderFilter(new EntryTypeFilter);
         folderFilter->SetEntryType(AssetBrowserEntry::AssetEntryType::Folder);
 
         QSharedPointer<CompositeFilter> sourceOrFolderFilter(new CompositeFilter(CompositeFilter::LogicOperatorType::OR));
-        sourceOrFolderFilter->AddFilter(sourceFilter);
+        sourceOrFolderFilter->AddFilter(assetTypeFilter);
         sourceOrFolderFilter->AddFilter(folderFilter);
 
         QSharedPointer<CompositeFilter> finalFilter(new CompositeFilter(CompositeFilter::LogicOperatorType::AND));
         finalFilter->AddFilter(sourceOrFolderFilter);
-        finalFilter->AddFilter(m_ui->m_searchWidget->GetFilter());
+        finalFilter->AddFilter(m_ui->m_searchWidget->GetStringFilter());
+        finalFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
 
         return finalFilter;
     }
@@ -151,59 +157,20 @@ namespace MaterialEditor
 
         for (const AssetBrowserEntry* entry : entries)
         {
-            const SourceAssetBrowserEntry* sourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(entry);
-            if (!sourceEntry)
+            if (entry)
             {
-                const ProductAssetBrowserEntry* productEntry = azrtti_cast<const ProductAssetBrowserEntry*>(entry);
-                if (productEntry)
+                if (AzFramework::StringFunc::Path::IsExtension(entry->GetFullPath().c_str(), MaterialExtension))
                 {
-                    sourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(productEntry->GetParent());
+                    MaterialDocumentSystemRequestBus::Broadcast(&MaterialDocumentSystemRequestBus::Events::OpenDocument, entry->GetFullPath());
                 }
-            }
-
-            if (sourceEntry)
-            {
-                if (AzFramework::StringFunc::Path::IsExtension(sourceEntry->GetFullPath().c_str(), MaterialExtension))
-                {
-                    MaterialDocumentSystemRequestBus::Broadcast(&MaterialDocumentSystemRequestBus::Events::OpenDocument, sourceEntry->GetFullPath());
-                }
-                else if (AzFramework::StringFunc::Path::IsExtension(sourceEntry->GetFullPath().c_str(), MaterialTypeExtension))
+                else if (AzFramework::StringFunc::Path::IsExtension(entry->GetFullPath().c_str(), MaterialTypeExtension))
                 {
                     //ignore MaterialTypeExtension
                 }
                 else
                 {
-                    QDesktopServices::openUrl(QUrl::fromLocalFile(sourceEntry->GetFullPath().c_str()));
+                    QDesktopServices::openUrl(QUrl::fromLocalFile(entry->GetFullPath().c_str()));
                 }
-            }
-        }
-    }
-
-    void MaterialBrowserWidget::EntryAdded(const AssetBrowserEntry* entry)
-    {
-        if (m_pathToSelect.empty())
-        {
-            return;
-        }
-
-        const SourceAssetBrowserEntry* sourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(entry);
-        if (!sourceEntry)
-        {
-            const ProductAssetBrowserEntry* productEntry = azrtti_cast<const ProductAssetBrowserEntry*>(entry);
-            if (productEntry)
-            {
-                sourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(productEntry->GetParent());
-            }
-        }
-
-        if (sourceEntry)
-        {
-            AZStd::string sourcePath = sourceEntry->GetFullPath();
-            AzFramework::StringFunc::Path::Normalize(sourcePath);
-            if (m_pathToSelect == sourcePath)
-            {
-                m_ui->m_assetBrowserTreeViewWidget->SelectFileAtPath(m_pathToSelect);
-                m_pathToSelect.clear();
             }
         }
     }
@@ -214,9 +181,41 @@ namespace MaterialEditor
         MaterialDocumentRequestBus::EventResult(absolutePath, documentId, &MaterialDocumentRequestBus::Events::GetAbsolutePath);
         if (!absolutePath.empty())
         {
+            // Selecting a new asset in the browser is not guaranteed to happen immediately.
+            // The asset browser model notifications are sent before the model is updated.
+            // Instead of relying on the notifications, queue the selection and process it on tick until this change occurs.
             m_pathToSelect = absolutePath;
             AzFramework::StringFunc::Path::Normalize(m_pathToSelect);
-            m_ui->m_assetBrowserTreeViewWidget->SelectFileAtPath(m_pathToSelect);
+            AZ::TickBus::Handler::BusConnect();
+        }
+    }
+
+    void MaterialBrowserWidget::OnTick(float deltaTime, AZ::ScriptTimePoint time)
+    {
+        AZ_UNUSED(time);
+        AZ_UNUSED(deltaTime);
+
+        if (!m_pathToSelect.empty())
+        {
+            // Attempt to select the new path
+            AzToolsFramework::AssetBrowser::AssetBrowserViewRequestBus::Broadcast(
+                &AzToolsFramework::AssetBrowser::AssetBrowserViewRequestBus::Events::SelectFileAtPath, m_pathToSelect);
+
+            // Iterate over the selected entries to verify if the selection was made 
+            for (const AssetBrowserEntry* entry : m_ui->m_assetBrowserTreeViewWidget->GetSelectedAssets())
+            {
+                if (entry)
+                {
+                    AZStd::string sourcePath = entry->GetFullPath();
+                    AzFramework::StringFunc::Path::Normalize(sourcePath);
+                    if (m_pathToSelect == sourcePath)
+                    {
+                        // Once the selection is confirmed, cancel the operation and disconnect
+                        AZ::TickBus::Handler::BusDisconnect();
+                        m_pathToSelect.clear();
+                    }
+                }
+            }
         }
     }
 

@@ -70,7 +70,8 @@ namespace LmbrCentral
         AZStd::vector<AzFramework::SliceInstantiationTicket> GetCurrentlySpawnedSlices() override;
         bool HasAnyCurrentlySpawnedSlices() override;
         AZStd::vector<AZ::EntityId> GetCurrentEntitiesFromSpawnedSlice(const AzFramework::SliceInstantiationTicket& ticket) override;
-        AZStd::vector<AZ::EntityId> GetAllCurrentlySpawnedEntities();
+        AZStd::vector<AZ::EntityId> GetAllCurrentlySpawnedEntities() override;
+        bool IsReadyToSpawn() override;
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
