@@ -17,7 +17,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Debug/Trace.h>
 #include <AzFramework/Scene/Scene.h>
-#include <AzFramework/Scene/SceneSystemBus.h>
+#include <AzFramework/Scene/SceneSystemInterface.h>
 #include <AzFramework/Entity/GameEntityContextComponent.h>
 
 namespace AzFramework

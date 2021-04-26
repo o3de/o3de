@@ -16,7 +16,7 @@
 #include <AzCore/Serialization/EditContext.h>
 
 #include <AzFramework/Scene/Scene.h>
-#include <AzFramework/Scene/SceneSystemBus.h>
+#include <AzFramework/Scene/SceneSystemInterface.h>
 
 #include <AzToolsFramework/Editor/EditorSettingsAPIBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextComponent.h>

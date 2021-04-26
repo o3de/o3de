@@ -19,7 +19,7 @@
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/std/containers/stack.h>
 #include <AzFramework/Scene/Scene.h>
-#include <AzFramework/Scene/SceneSystemBus.h>
+#include <AzFramework/Scene/SceneSystemInterface.h>
 
 #include "EntityContext.h"
 

@@ -24,7 +24,7 @@
 #include <map>
 
 #include <AzFramework/Font/FontInterface.h>
-#include <AzFramework/Scene/SceneSystemBus.h>
+#include <AzFramework/Scene/SceneSystemInterface.h>
 
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawContext.h>
 

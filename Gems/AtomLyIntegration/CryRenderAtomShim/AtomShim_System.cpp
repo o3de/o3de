@@ -22,7 +22,7 @@
 #include <AzCore/Math/MatrixUtils.h>
 
 #include <AzFramework/Scene/Scene.h>
-#include <AzFramework/Scene/SceneSystemBus.h>
+#include <AzFramework/Scene/SceneSystemInterface.h>
 #include <AzFramework/Windowing/WindowBus.h>
 
 #include <Atom/RPI.Public/RenderPipeline.h>

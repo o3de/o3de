@@ -14,7 +14,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/parallel/mutex.h>
-#include <AzFramework/Scene/SceneSystemBus.h>
+#include <AzFramework/Scene/SceneSystemInterface.h>
 #include <AzFramework/Entity/EntityContext.h>
 
 namespace AzFramework

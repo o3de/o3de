@@ -196,9 +196,9 @@ set(FILES
     Scene/Scene.h
     Scene/Scene.inl
     Scene/Scene.cpp
-    Scene/SceneSystemBus.h
     Scene/SceneSystemComponent.h
     Scene/SceneSystemComponent.cpp
+    Scene/SceneSystemInterface.h
     Script/ScriptComponent.h
     Script/ScriptComponent.cpp
     Script/ScriptDebugAgentBus.h

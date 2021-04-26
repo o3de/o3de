@@ -34,7 +34,7 @@
 #include <AzCore/Script/ScriptTimePoint.h>
 
 #include <AzFramework/Scene/Scene.h>
-#include <AzFramework/Scene/SceneSystemBus.h>
+#include <AzFramework/Scene/SceneSystemInterface.h>
 
 namespace AZ
 {

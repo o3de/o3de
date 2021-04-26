@@ -14,7 +14,7 @@
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <AzFramework/Scene/Scene.h>
-#include <AzFramework/Scene/SceneSystemBus.h>
+#include <AzFramework/Scene/SceneSystemInterface.h>
 #include <Thumbnails/Rendering/ThumbnailRendererContext.h>
 #include <Thumbnails/Rendering/ThumbnailRendererData.h>
 #include <Thumbnails/Rendering/ThumbnailRendererSteps/ReleaseResourcesStep.h>
