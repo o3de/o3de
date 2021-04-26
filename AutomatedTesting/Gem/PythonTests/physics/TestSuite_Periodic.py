@@ -27,26 +27,16 @@ from base import TestAutomationBase
 revert_physics_config = fm.file_revert_list(['physxdebugconfiguration.setreg', 'physxdefaultsceneconfiguration.setreg', 'physxsystemconfiguration.setreg'], 'AutomatedTesting/Registry')
 
 
-@pytest.mark.SUITE_main
+@pytest.mark.SUITE_periodic
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomation(TestAutomationBase):
-
-    # Marking the test as an expected failure due to sporadic failure on Automated Review: SPEC-3146
-    # The test still runs, but a failure of the test doesn't result in the test run failing
-    @pytest.mark.xfail(
-        reason="This test seems to fail sometimes due to it being the first test in the testsuite, we'll duplicate it temporarly."
-               "Need to figure out the reason why this is the case")
-    @revert_physics_config
-    def test_C000000_RigidBody_EnablingGravityWorksPoC_DUPLICATE(self, request, workspace, editor, launcher_platform):
-        from . import C100000_RigidBody_EnablingGravityWorksPoC as test_module
-        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_C3510642_Terrain_NotCollideWithTerrain(self, request, workspace, editor, launcher_platform):
         from . import C3510642_Terrain_NotCollideWithTerrain as test_module
         self._run_test(request, workspace, editor, test_module)
-
+        
     @revert_physics_config
     def test_C4976195_RigidBodies_InitialLinearVelocity(self, request, workspace, editor, launcher_platform):
         from . import C4976195_RigidBodies_InitialLinearVelocity as test_module
@@ -530,8 +520,4 @@ class TestAutomation(TestAutomationBase):
 
     def test_C100000_RigidBody_EnablingGravityWorksPoC(self, request, workspace, editor, launcher_platform):
         from . import C100000_RigidBody_EnablingGravityWorksPoC as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    def test_C111111_RigidBody_EnablingGravityWorksUsingNotificationsPoC(self, request, workspace, editor, launcher_platform):
-        from . import C111111_RigidBody_EnablingGravityWorksUsingNotificationsPoC as test_module
         self._run_test(request, workspace, editor, test_module)
