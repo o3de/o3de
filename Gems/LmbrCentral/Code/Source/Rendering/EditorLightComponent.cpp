@@ -805,7 +805,7 @@ namespace LmbrCentral
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
 
-        if (!gEnv->p3DEngine)
+        if (gEnv->p3DEngine)
         {
             gEnv->p3DEngine->FreeRenderNodeState(&m_cubemapPreview);
         }
