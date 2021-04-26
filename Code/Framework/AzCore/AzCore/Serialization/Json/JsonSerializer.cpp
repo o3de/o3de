@@ -104,13 +104,12 @@ namespace AZ
         auto serializer = context.GetRegistrationContext()->GetSerializerForType(classData.m_typeId);
         if (serializer)
         {
-            if (storeTypeId == StoreTypeId::Yes)
+            ResultCode result = serializer->Store(node, object, defaultObject, classData.m_typeId, context);
+            if (storeTypeId == StoreTypeId::Yes && result.GetProcessing() != Processing::Halted)
             {
-                return context.Report(Tasks::WriteValue, Outcomes::Catastrophic,
-                    "Unable to store type information in a JSON Serializer primitive.");
+                result.Combine(InsertTypeId(node, classData, context));
             }
-
-            return serializer->Store(node, object, defaultObject, classData.m_typeId, context);
+            return result;
         }
 
         if (classData.m_azRtti && (classData.m_azRtti->GetTypeTraits() & AZ::TypeTraits::is_enum) == AZ::TypeTraits::is_enum)
@@ -128,13 +127,12 @@ namespace AZ
             serializer = context.GetRegistrationContext()->GetSerializerForType(classData.m_azRtti->GetGenericTypeId());
             if (serializer)
             {
-                if (storeTypeId == StoreTypeId::Yes)
+                ResultCode result = serializer->Store(node, object, defaultObject, classData.m_typeId, context);
+                if (storeTypeId == StoreTypeId::Yes && result.GetProcessing() != Processing::Halted)
                 {
-                    return context.Report(Tasks::WriteValue, Outcomes::Catastrophic,
-                        "Unable to store type information in a JSON Serializer primitive.");
+                    result.Combine(InsertTypeId(node, classData, context));
                 }
-
-                return serializer->Store(node, object, defaultObject, classData.m_typeId, context);
+                return result;
             }
         }
         
@@ -149,6 +147,7 @@ namespace AZ
             ResultCode result(Tasks::WriteValue);
             if (storeTypeId == StoreTypeId::Yes)
             {
+                // Not using InsertTypeId here to avoid needing to create the temporary value and swap it in that call.
                 node.AddMember(rapidjson::StringRef(JsonSerialization::TypeIdFieldIdentifier),
                     StoreTypeName(classData, context), context.GetJsonAllocator());
                 result = ResultCode(Tasks::WriteValue, Outcomes::Success);
@@ -566,6 +565,31 @@ namespace AZ
             output = JsonSerializer::GetExplicitDefault();
             return context.Report(Tasks::RetrieveInfo, Outcomes::Unknown,
                 AZStd::string::format("Unable to retrieve description for type %s.", typeId.ToString<AZStd::string>().c_str()));
+        }
+    }
+
+    JsonSerializationResult::ResultCode JsonSerializer::InsertTypeId(
+        rapidjson::Value& output, const SerializeContext::ClassData& classData, JsonSerializerContext& context)
+    {
+        using namespace JsonSerializationResult;
+
+        if (output.IsObject())
+        {
+            rapidjson::Value insertedObject(rapidjson::kObjectType);
+            insertedObject.AddMember(
+                rapidjson::StringRef(JsonSerialization::TypeIdFieldIdentifier), StoreTypeName(classData, context),
+                context.GetJsonAllocator());
+
+            for (auto& [key, element] : output.GetObject())
+            {
+                insertedObject.AddMember(AZStd::move(key), AZStd::move(element), context.GetJsonAllocator());
+            }
+            output = AZStd::move(insertedObject);
+            return ResultCode(Tasks::WriteValue, Outcomes::Success);
+        }
+        else
+        {
+            return context.Report(Tasks::WriteValue, Outcomes::Catastrophic, "Only able to store type information in a JSON Object.");
         }
     }
 
