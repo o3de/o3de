@@ -17,7 +17,7 @@ from ActorSplitsAfterDamage import Tests
 
 def run():
     from ActorSplitsAfterDamage import run as internal_run
-    from Utils import Constants
+    from editor_python_test_tools.utils import Constants
 
     def CapsuleDamage(target_id, position0):
         position1 = azlmbr.object.construct('Vector3', position0.x + 1.0, position0.y, position0.z)

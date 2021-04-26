@@ -4,9 +4,8 @@
     "parentMaterial": "TestData\\Materials\\StandardPbrTestCases\\UvTilingBase.material",
     "propertyLayoutVersion": 3,
     "properties": {
-        "ambientOcclusion": {
-            "enable": true,
-            "textureMap": "TestData/Objects/cube/cube_diff.tif"
+        "occlusion": {
+            "diffuseTextureMap": "TestData/Objects/cube/cube_diff.tif"
         }
     }
 }

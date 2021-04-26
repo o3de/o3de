@@ -163,6 +163,8 @@ namespace ScriptCanvas
 
         bool IsUserFunctionCall(const ExecutionTreeConstPtr& execution);
 
+        bool IsUserFunctionCallPure(const ExecutionTreeConstPtr& execution);
+
         bool IsUserFunctionDefinition(const ExecutionTreeConstPtr& execution);
 
         const ScriptCanvas::Nodes::Core::FunctionDefinitionNode* IsUserOutNode(const Node* node);

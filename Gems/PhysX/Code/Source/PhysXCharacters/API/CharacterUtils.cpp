@@ -96,25 +96,17 @@ namespace PhysX
                 }
             }
 
-            AZStd::unique_ptr<CharacterController> CreateCharacterController(const Physics::CharacterConfiguration& characterConfig,
-                const Physics::ShapeConfiguration& shapeConfig, AzPhysics::SceneHandle sceneHandle)
+            CharacterController* CreateCharacterController(PhysXScene* scene,
+                const Physics::CharacterConfiguration& characterConfig)
             {
-                physx::PxControllerManager* manager = nullptr;
-                AzPhysics::Scene* scene = nullptr;
-                PhysX::PhysXScene* physxScene = nullptr;
-                if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
+                if (scene == nullptr)
                 {
-                    scene = physicsSystem->GetScene(sceneHandle);
-                    if (scene)
-                    {
-                        physxScene = azrtti_cast<PhysX::PhysXScene*>(scene);
-                        if (physxScene)
-                        {
-                            manager = physxScene->GetOrCreateControllerManager();
-                        }
-                    }
+                    AZ_Error("PhysX Character Controller", false, "Failed to create character controller as the scene is null");
+                    return nullptr;
                 }
-                if (!manager || !scene)
+
+                physx::PxControllerManager* manager = scene->GetOrCreateControllerManager();
+                if (manager == nullptr)
                 {
                     AZ_Error("PhysX Character Controller", false, "Could not retrieve character controller manager.");
                     return nullptr;
@@ -123,41 +115,47 @@ namespace PhysX
                 auto callbackManager = AZStd::make_unique<CharacterControllerCallbackManager>();
 
                 physx::PxController* pxController = nullptr;
-                auto* pxScene = static_cast<physx::PxScene*>(physxScene->GetNativePointer());
+                auto* pxScene = static_cast<physx::PxScene*>(scene->GetNativePointer());
 
-                if (shapeConfig.GetShapeType() == Physics::ShapeType::Capsule)
+                switch (characterConfig.m_shapeConfig->GetShapeType())
                 {
-                    physx::PxCapsuleControllerDesc capsuleDesc;
+                case Physics::ShapeType::Capsule:
+                    {
+                        physx::PxCapsuleControllerDesc capsuleDesc;
 
-                    const Physics::CapsuleShapeConfiguration& capsuleConfig = static_cast<const Physics::CapsuleShapeConfiguration&>(shapeConfig);
-                    // LY height means total height, PhysX means height of straight section
-                    capsuleDesc.height = AZ::GetMax(epsilon, capsuleConfig.m_height - 2.0f * capsuleConfig.m_radius);
-                    capsuleDesc.radius = capsuleConfig.m_radius;
-                    capsuleDesc.climbingMode = physx::PxCapsuleClimbingMode::eCONSTRAINED;
+                        const Physics::CapsuleShapeConfiguration& capsuleConfig = static_cast<const Physics::CapsuleShapeConfiguration&>(*characterConfig.m_shapeConfig);
+                        // LY height means total height, PhysX means height of straight section
+                        capsuleDesc.height = AZ::GetMax(epsilon, capsuleConfig.m_height - 2.0f * capsuleConfig.m_radius);
+                        capsuleDesc.radius = capsuleConfig.m_radius;
+                        capsuleDesc.climbingMode = physx::PxCapsuleClimbingMode::eCONSTRAINED;
 
-                    AppendShapeIndependentProperties(capsuleDesc, characterConfig, callbackManager.get());
-                    AppendPhysXSpecificProperties(capsuleDesc, characterConfig);
-                    PHYSX_SCENE_WRITE_LOCK(pxScene);
-                    pxController = manager->createController(capsuleDesc); // This internally adds the controller's actor to the scene
-                }
-                else if (shapeConfig.GetShapeType() == Physics::ShapeType::Box)
-                {
-                    physx::PxBoxControllerDesc boxDesc;
+                        AppendShapeIndependentProperties(capsuleDesc, characterConfig, callbackManager.get());
+                        AppendPhysXSpecificProperties(capsuleDesc, characterConfig);
+                        PHYSX_SCENE_WRITE_LOCK(pxScene);
+                        pxController = manager->createController(capsuleDesc); // This internally adds the controller's actor to the scene
+                    }
+                    break;
+                case Physics::ShapeType::Box:
+                    {
+                        physx::PxBoxControllerDesc boxDesc;
 
-                    const Physics::BoxShapeConfiguration& boxConfig = static_cast<const Physics::BoxShapeConfiguration&>(shapeConfig);
-                    boxDesc.halfHeight = 0.5f * boxConfig.m_dimensions.GetZ();
-                    boxDesc.halfSideExtent = 0.5f * boxConfig.m_dimensions.GetY();
-                    boxDesc.halfForwardExtent = 0.5f * boxConfig.m_dimensions.GetX();
+                        const Physics::BoxShapeConfiguration& boxConfig = static_cast<const Physics::BoxShapeConfiguration&>(*characterConfig.m_shapeConfig);
+                        boxDesc.halfHeight = 0.5f * boxConfig.m_dimensions.GetZ();
+                        boxDesc.halfSideExtent = 0.5f * boxConfig.m_dimensions.GetY();
+                        boxDesc.halfForwardExtent = 0.5f * boxConfig.m_dimensions.GetX();
 
-                    AppendShapeIndependentProperties(boxDesc, characterConfig, callbackManager.get());
-                    AppendPhysXSpecificProperties(boxDesc, characterConfig);
-                    PHYSX_SCENE_WRITE_LOCK(pxScene);
-                    pxController = manager->createController(boxDesc); // This internally adds the controller's actor to the scene
-                }
-                else
-                {
-                    AZ_Error("PhysX Character Controller", false, "PhysX only supports box and capsule shapes for character controllers.");
-                    return nullptr;
+                        AppendShapeIndependentProperties(boxDesc, characterConfig, callbackManager.get());
+                        AppendPhysXSpecificProperties(boxDesc, characterConfig);
+                        PHYSX_SCENE_WRITE_LOCK(pxScene);
+                        pxController = manager->createController(boxDesc); // This internally adds the controller's actor to the scene
+                    }
+                    break;
+                default:
+                    {
+                        AZ_Error("PhysX Character Controller", false, "PhysX only supports box and capsule shapes for character controllers.");
+                        return nullptr;
+                    }
+                    break;
                 }
 
                 if (!pxController)
@@ -166,8 +164,7 @@ namespace PhysX
                     return nullptr;
                 }
 
-                auto controller = AZStd::make_unique<CharacterController>(pxController, AZStd::move(callbackManager), sceneHandle);
-                return controller;
+                return aznew CharacterController(pxController, AZStd::move(callbackManager), scene->GetSceneHandle());
             }
 
             AZStd::unique_ptr<Ragdoll> CreateRagdoll(Physics::RagdollConfiguration& configuration,

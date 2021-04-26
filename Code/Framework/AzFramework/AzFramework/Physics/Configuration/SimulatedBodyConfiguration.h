@@ -29,7 +29,7 @@ namespace AzPhysics
     struct SimulatedBodyConfiguration
     {
         AZ_CLASS_ALLOCATOR_DECL;
-        AZ_RTTI(SimulatedBodyConfiguration, "{52844E3D-79C8-4F34-AF63-5C45ADE77F85}");
+        AZ_RTTI(AzPhysics::SimulatedBodyConfiguration, "{52844E3D-79C8-4F34-AF63-5C45ADE77F85}");
         static void Reflect(AZ::ReflectContext* context);
 
         SimulatedBodyConfiguration() = default;

@@ -36,7 +36,7 @@ public:
 
     float GetFPS() const;
     bool GetExportCoordsLocalToTheSelectedObject() const;
-    bool GetExportOnlyMasterCamera() const;
+    bool GetExportOnlyPrimaryCamera() const;
     void SetExportLocalCoordsCheckBoxEnable(bool checked);
 
     int exec() override;
@@ -44,7 +44,7 @@ public:
 protected:
     void OnFPSChange();
     void SetExportLocalToTheSelectedObjectCheckBox();
-    void SetExportOnlyMasterCameraCheckBox();
+    void SetExportOnlyPrimaryCameraCheckBox();
 
     void accept() override;
 

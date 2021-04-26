@@ -39,36 +39,124 @@ else
 fi
 
 #
-# Always install the latest version of cmake (from kitware)
+# Install curl if its not installed
 #
-echo Installing CMake package $CMAKE_DISTRO_VERSION
-
-# Remove any pre-existing version of cmake 
-apt purge --auto-remove cmake -y
-wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | sudo tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
-CMAKE_DEB_REPO="'deb https://apt.kitware.com/ubuntu/ $UBUNTU_DISTRO main'"
-
-# Add the appropriate kitware repository to apt
-if [ "$UBUNTU_DISTRO" == "bionic" ]
+curl --version >/dev/null 2>&1
+if [ $? -ne 0 ]
 then
-    CMAKE_DISTRO_VERSION=3.20.1-0kitware1ubuntu20.04.1
-    apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main'
-elif [ "$UBUNTU_DISTRO" == "focal" ]
-then
-    CMAKE_DISTRO_VERSION=3.20.1-0kitware1ubuntu18.04.1
-    apt-add-repository 'deb https://apt.kitware.com/ubuntu/ focal main'
+    echo "Installing curl"
+    apt-get install curl -y
 fi
-apt-get update
 
-# Install cmake
-apt-get install cmake $CMAKE_DISTRO_VERSION -y
+#
+# If the linux distro is 20.04 (focal), we need libffi.so.6, which is not part of the focal distro. We 
+# will install it from the bionic distro manually into focal. This is needed since Ubuntu 20.04 supports
+# python 3.8 out of the box, but we are using 3.7
+#
+LIBFFI6_COUNT=`apt list --installed 2>/dev/null | grep libffi6 | wc -l`
+if [ "$UBUNTU_DISTRO" == "focal" ] && [ $LIBFFI6_COUNT -eq 0 ]
+then
+    echo "Installing libffi for Ubuntu 20.04"
+
+    pushd /tmp >/dev/null
+
+    LIBFFI_PACKAGE_NAME=libffi6_3.2.1-8_amd64.deb
+    LIBFFI_PACKAGE_URL=http://mirrors.kernel.org/ubuntu/pool/main/libf/libffi/
+
+    curl --location $LIBFFI_PACKAGE_URL/$LIBFFI_PACKAGE_NAME -o $LIBFFI_PACKAGE_NAME
+    if [ $? -ne 0 ]
+    then
+        echo Unable to download $LIBFFI_PACKAGE_URL/$LIBFFI_PACKAGE_NAME
+        popd
+        exit 1
+    fi
+
+    apt install ./$LIBFFI_PACKAGE_NAME -y
+    if [ $? -ne 0 ]
+    then
+        echo Unable to install $LIBFFI_PACKAGE_NAME
+        rm -f ./$LIBFFI_PACKAGE_NAME
+        popd
+        exit 1
+    fi
+
+    rm -f ./$LIBFFI_PACKAGE_NAME
+    popd
+    echo "libffi.so.6 installed"
+fi
 
 
 #
-# Make sure that Ninja is installed
+# Add the kitware repository for cmake if necessary
 #
-echo Installing Ninja
-apt-get install ninja-build -y
+
+KITWARE_REPO_COUNT=`cat /etc/apt/sources.list | grep ^deb | grep https://apt.kitware.com/ubuntu/ | wc -l`
+
+if [ $KITWARE_REPO_COUNT -eq 0 ]
+then
+    echo Adding Kitware Repository for the cmake
+
+    wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | sudo tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
+    CMAKE_DEB_REPO="'deb https://apt.kitware.com/ubuntu/ $UBUNTU_DISTRO main'"
+
+    # Add the appropriate kitware repository to apt
+    if [ "$UBUNTU_DISTRO" == "bionic" ]
+    then
+        CMAKE_DISTRO_VERSION=3.20.1-0kitware1ubuntu18.04.1
+        apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main'
+    elif [ "$UBUNTU_DISTRO" == "focal" ]
+    then
+        CMAKE_DISTRO_VERSION=3.20.1-0kitware1ubuntu20.04.1
+        apt-add-repository 'deb https://apt.kitware.com/ubuntu/ focal main'
+    fi
+    apt-get update
+else
+    echo  Kitware Repository repo already set
+fi
 
 
-echo Build Tools Setup Complete
+# Read from the package list and process each package
+PACKAGE_FILE_LIST=package-list.ubuntu-$UBUNTU_DISTRO.txt
+
+echo Reading package list $PACKAGE_FILE_LIST
+
+# Read each line (strip out comment tags)
+for LINE in `cat $PACKAGE_FILE_LIST | sed 's/#.*$//g'`
+do
+    PACKAGE=`echo $LINE | awk -F / '{print $1}'`
+    if [ "$PACKAGE" != "" ]  # Skip blank lines
+    then
+        PACKAGE_VER=`echo $LINE | awk -F / '{print $2}'`
+        if [ "$PACKAGE_VER" == "" ]
+        then
+            # Process non-versioned packages
+            INSTALLED_COUNT=`apt list --installed 2>/dev/null | grep ^$PACKAGE/ | wc -l`
+            if [ $INSTALLED_COUNT -eq 0 ]
+            then
+                echo Installing $PACKAGE
+                apt-get install $PACKAGE -y
+            else
+                INSTALLED_VERSION=`apt list --installed 2>/dev/null | grep ^$PACKAGE/ | awk '{print $2}'`
+                echo $PACKAGE already installed \(version $INSTALLED_VERSION\)
+            fi
+        else
+            # Process versioned packages
+            INSTALLED_COUNT=`apt list --installed 2>/dev/null | grep ^$PACKAGE/ | wc -l`
+            if [ $INSTALLED_COUNT -eq 0 ]
+            then
+                echo Installing $PACKAGE \( $PACKAGE_VER \)
+                apt-get install $PACKAGE=$PACKAGE_VER -y
+            else
+                INSTALLED_VERSION=`apt list --installed 2>/dev/null | grep ^$PACKAGE/ | awk '{print $2}'`
+                if [ "$INSTALLED_VERSION" != "$PACKAGE_VER" ]
+                then
+                    echo $PACKAGE already installed but with the wrong version. Purging the package
+                    apt purge --auto-remove $PACKAGE -y
+                fi
+                echo $PACKAGE already installed \(version $INSTALLED_VERSION\)
+            fi
+        fi
+    fi
+
+done
+

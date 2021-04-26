@@ -22,7 +22,7 @@ import ly_test_tools.environment.file_system as file_system
 import ly_test_tools.log.log_monitor
 import ly_test_tools.environment.waiter as waiter
 
-@pytest.mark.SUITE_sandbox
+@pytest.mark.SUITE_periodic
 @pytest.mark.parametrize('launcher_platform', ['windows_editor'])
 @pytest.mark.parametrize('project', ['AutomatedTesting'])
 @pytest.mark.parametrize('level', ['auto_test'])
@@ -31,14 +31,13 @@ class TestPythonAssetProcessing(object):
         unexpected_lines = []
         expected_lines = [
             'Mock asset exists',
-            'Expected subId for asset (gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_center.azmodel) found',
-            'Expected subId for asset (gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_X_negative.azmodel) found',
-            'Expected subId for asset (gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_X_positive.azmodel) found',
-            'Expected subId for asset (gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_center.azmodel) found',
-            'Expected subId for asset (gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_center.azmodel) found',
-            'Expected subId for asset (gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_center.azmodel) found',
-            'Expected subId for asset (gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_center.azmodel) found',
-            'Expected subId for asset (gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_center.azmodel) found'
+            'Expected subId for asset (gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_z_positive_1.azmodel) found',
+            'Expected subId for asset (gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_z_negative_1.azmodel) found',
+            'Expected subId for asset (gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_y_positive_1.azmodel) found',
+            'Expected subId for asset (gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_y_negative_1.azmodel) found',
+            'Expected subId for asset (gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_x_positive_1.azmodel) found',
+            'Expected subId for asset (gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_x_negative_1.azmodel) found',
+            'Expected subId for asset (gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_center_1.azmodel) found'
         ]
         timeout = 180
         halt_on_unexpected = False

@@ -172,9 +172,9 @@ namespace UnitTest
             auto meshNode1Index = actor->AddJoint(MeshNode1Name, AZ::Transform::CreateTranslation(AZ::Vector3(3.0f, -2.0f, 0.0f)), RootNodeName);
             auto otherNodeIndex = actor->AddJoint(OtherNodeName, AZ::Transform::CreateTranslation(AZ::Vector3(0.5f, 0.0f, 0.0f)), RootNodeName);
             auto meshNode2Index = actor->AddJoint(MeshNode2Name, AZ::Transform::CreateTranslation(AZ::Vector3(0.2f, 0.6f, 1.0f)), OtherNodeName);
-            actor->SetMesh(LodLevel, meshNode1Index, CreateEMotionFXMesh(MeshVertices, MeshIndices, MeshSkinningInfo, MeshUVs, MeshClothData));
+            actor->SetMesh(LodLevel, meshNode1Index, CreateEMotionFXMesh(MeshVertices, MeshIndices, MeshSkinningInfo, MeshUVs/*, MeshClothData*/));
             actor->SetMesh(LodLevel, otherNodeIndex, CreateEMotionFXMesh(MeshVertices, MeshIndices));
-            actor->SetMesh(LodLevel, meshNode2Index, CreateEMotionFXMesh(MeshVertices, MeshIndices, MeshSkinningInfo, MeshUVs, MeshClothData));
+            actor->SetMesh(LodLevel, meshNode2Index, CreateEMotionFXMesh(MeshVertices, MeshIndices, MeshSkinningInfo, MeshUVs/*, MeshClothData*/));
             actor->FinishSetup();
 
             m_actorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));
@@ -202,9 +202,9 @@ namespace UnitTest
             auto meshNode1Index = actor->AddJoint(MeshNode1Name, AZ::Transform::CreateTranslation(AZ::Vector3(3.0f, -2.0f, 0.0f)), RootNodeName);
             auto otherNodeIndex = actor->AddJoint(OtherNodeName, AZ::Transform::CreateTranslation(AZ::Vector3(0.5f, 0.0f, 0.0f)), RootNodeName);
             auto meshNode2Index = actor->AddJoint(MeshNode2Name, AZ::Transform::CreateTranslation(AZ::Vector3(0.2f, 0.6f, 1.0f)), OtherNodeName);
-            actor->SetMesh(LodLevel, meshNode1Index, CreateEMotionFXMesh(MeshVertices, MeshIndices, MeshSkinningInfo, MeshUVs, MeshClothData));
+            actor->SetMesh(LodLevel, meshNode1Index, CreateEMotionFXMesh(MeshVertices, MeshIndices, MeshSkinningInfo, MeshUVs/*, MeshClothData*/));
             actor->SetMesh(LodLevel, otherNodeIndex, CreateEMotionFXMesh(MeshVertices, MeshIndices));
-            actor->SetMesh(LodLevel, meshNode2Index, CreateEMotionFXMesh(MeshVertices, MeshIndices, MeshSkinningInfo, MeshUVs, MeshClothData));
+            actor->SetMesh(LodLevel, meshNode2Index, CreateEMotionFXMesh(MeshVertices, MeshIndices, MeshSkinningInfo, MeshUVs/*, MeshClothData*/));
             actor->FinishSetup();
 
             m_actorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));

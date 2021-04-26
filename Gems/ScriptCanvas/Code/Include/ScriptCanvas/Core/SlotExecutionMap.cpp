@@ -152,22 +152,6 @@ namespace ScriptCanvas
             return nullptr;
         }
 
-        AZ::Outcome<AZStd::pair<size_t, size_t>> Map::FindInAndInputIndexOfSlot(const SlotId& slotID) const
-        {
-            for (const auto& in : m_ins)
-            {
-                auto inputIter = find_if(in.inputs, [&slotID](const Input& input) { return input.slotId == slotID; });
-                if (inputIter != in.inputs.end())
-                {
-                    const size_t inIndex = &in - m_ins.begin();
-                    const size_t inputIndex = inputIter - in.inputs.begin();
-                    return AZ::Success(AZStd::make_pair(inIndex, inputIndex));
-                }
-            }
-
-            return AZ::Failure();
-        }
-
         const In* Map::FindInFromInputSlot(const SlotId& slotID) const
         {
             auto iter = find_if

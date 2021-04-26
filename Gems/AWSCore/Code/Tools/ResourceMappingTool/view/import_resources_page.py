@@ -136,7 +136,6 @@ class ImportResourcesPage(QWidget):
         self._back_button.setObjectName("Secondary")
         self._back_button.setText(f"   {notification_label_text.IMPORT_RESOURCES_PAGE_BACK_TEXT}")
         self._back_button.setIcon(QIcon(":/Breadcrumb/img/UI20/Breadcrumb/arrow_left-default.svg"))
-        self._back_button.setFlat(True)
         self._back_button.setMinimumSize(view_size_constants.BACK_BUTTON_WIDTH,
                                          view_size_constants.INTERACTION_COMPONENT_HEIGHT)
         header_area_layout.addWidget(self._back_button)
@@ -325,6 +324,10 @@ class ImportResourcesPage(QWidget):
     def search_version(self) -> str:
         return self._search_version
 
+    @property
+    def notification_frame(self) -> NotificationFrame:
+        return self._notification_frame
+
     @search_version.setter
     def search_version(self, new_search_version: str) -> None:
         self._search_version = new_search_version
@@ -343,10 +346,3 @@ class ImportResourcesPage(QWidget):
     def set_current_main_view_index(self, index: int) -> None:
         """Switch main view page based on given index"""
         self._stacked_pages.setCurrentIndex(index)
-
-    def hide_notification_frame(self) -> None:
-        self._notification_frame.setVisible(False)
-
-    def set_notification_frame_text(self, text: str) -> None:
-        self._notification_frame.set_text(text)
-        self._notification_frame.setVisible(True)

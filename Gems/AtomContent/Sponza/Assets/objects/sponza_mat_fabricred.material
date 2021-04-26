@@ -4,9 +4,8 @@
     "parentMaterial": "",
     "propertyLayoutVersion": 3,
     "properties": {
-        "ambientOcclusion": {
-            "enable": true,
-            "textureMap": "Textures/fabric_ao.png"
+        "occlusion": {
+            "diffuseTextureMap": "Textures/fabric_ao.png"
         },
         "baseColor": {
             "color": [
