@@ -24,7 +24,7 @@
 
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
-    Texture2D<float4> m_albedo;       // RGB8 = Albedo, A = Occlusion
+    Texture2D<float4> m_albedo;       // RGB8 = Albedo with pre-multiplied factors, A = Unused here
     Texture2D<float4> m_normal;       // RGB10 = Normal (Encoded), A2 = Flags
     Texture2D<float>  m_depth;
 }
@@ -44,7 +44,7 @@ VSOutput MainVS(VSInput input)
 }
 
 // retrieve irradiance from the global IBL diffuse cubemap
-float3 SampleGlobalIBL(uint sampleIndex, uint2 screenCoords, float depth, float3 normal, float3 albedo)
+float3 SampleGlobalIBL(uint sampleIndex, uint2 screenCoords, float depth, float3 normal)
 {
     uint2 dimensions;
     PassSrg::m_depth.GetDimensions(dimensions.x, dimensions.y);
@@ -78,13 +78,9 @@ PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
     float4 encodedNormal = PassSrg::m_normal.Load(int3(screenCoords, 0));
     float3 normal = DecodeNormalSignedOctahedron(encodedNormal.rgb);
     float4 albedo = PassSrg::m_albedo.Load(int3(screenCoords, 0));
-    float occlusion = albedo.a;
 
-    float3 irradiance = SampleGlobalIBL(sampleIndex, screenCoords, depth, normal, albedo);
+    float3 irradiance = SampleGlobalIBL(sampleIndex, screenCoords, depth, normal);
     float3 diffuse = albedo * irradiance;
-
-    // apply ambient occlusion to indirect diffuse
-    diffuse *= occlusion;
 
     // adjust IBL lighting by exposure.
     float iblExposureFactor = pow(2.0, SceneSrg::m_iblExposure);

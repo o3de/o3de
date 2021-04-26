@@ -78,9 +78,8 @@ def C14654882_Ragdoll_ragdollAPTest():
 
     imports.init()
 
-
-    from utils import TestHelper as helper
-    from utils import Report
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     helper.init_idle()
 
@@ -137,5 +136,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C14654882_Ragdoll_ragdollAPTest)

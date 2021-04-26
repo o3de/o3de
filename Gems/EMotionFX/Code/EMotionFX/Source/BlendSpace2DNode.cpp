@@ -152,6 +152,13 @@ namespace EMotionFX
 
     void BlendSpace2DNode::UniqueData::Reset()
     {
+        BlendSpaceNode::ClearMotionInfos(m_motionInfos);
+        m_currentTriangle.m_triangleIndex = MCORE_INVALIDINDEX32;
+        m_currentEdge.m_edgeIndex = MCORE_INVALIDINDEX32;
+        m_motionCoordinates.clear();
+        m_normMotionPositions.clear();
+        m_blendInfos.clear();
+
         Invalidate();
     }
 
