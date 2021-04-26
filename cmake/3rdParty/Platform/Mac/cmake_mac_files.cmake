@@ -15,6 +15,5 @@ set(FILES
     Clang_mac.cmake
     etc2comp_mac.cmake
     FbxSdk_mac.cmake
-    OpenSSL_mac.cmake
     Wwise_mac.cmake
 )
