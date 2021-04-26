@@ -98,7 +98,7 @@ namespace WhiteBox
 
         // specify the data format for vertex stream data
         AZ::RHI::BufferDescriptor bufferDescriptor;
-        bufferDescriptor.m_bindFlags = AZ::RHI::BufferBindFlags::DynamicInputAssembly | AZ::RHI::BufferBindFlags::ShaderRead;
+        bufferDescriptor.m_bindFlags = AZ::RHI::BufferBindFlags::InputAssembly | AZ::RHI::BufferBindFlags::ShaderRead;
         bufferDescriptor.m_byteCount = bufferSize;
         bufferDescriptor.m_alignment = elementSize;
 
