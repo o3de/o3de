@@ -216,6 +216,7 @@ private:
     QWidget* CreateSnapToGridWidget();
     QWidget* CreateSnapToAngleWidget();
     QWidget* CreateSpacerRightWidget();
+    QWidget* CreateSwitchToGameButton();
 
     QToolButton* CreateUndoRedoButton(int command);
 

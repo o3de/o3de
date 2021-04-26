@@ -1172,7 +1172,8 @@ void MainWindow::InitActions()
         .Connect(&QAction::triggered, this, &MainWindow::OnRefreshAudioSystem);
 
     // Fame actions
-    am->AddAction(ID_VIEW_SWITCHTOGAME, tr("Play Console"))
+    am->AddAction(ID_TOOLBAR_WIDGET_SWITCHTOGAME, tr("Play Console"))
+        .SetIcon(QIcon(":/stylesheet/img/UI20/toolbar/Play.svg"))
         .SetShortcut(tr("Ctrl+G"))
         .SetToolTip(tr("Play Console (Ctrl+G)"))
         .SetStatusTip(tr("Activate the game input mode"))
@@ -1498,6 +1499,24 @@ QWidget* MainWindow::CreateSpacerRightWidget()
     return spacer;
 }
 
+QWidget* MainWindow::CreateSwitchToGameButton()
+{
+    QWidget* playConsole = new QWidget();
+    QHBoxLayout* layout = new QHBoxLayout();
+    playConsole->setLayout(layout);
+
+    QLabel* label = new QLabel();
+    label->setText(tr("Play Console"));
+
+    QToolButton*play = new QToolButton();
+    play->setAutoRaise(true);
+    play->setDefaultAction(m_actionManager->GetAction(ID_TOOLBAR_WIDGET_SWITCHTOGAME));
+    layout->addWidget(label);
+    layout->addWidget(play);
+    return playConsole;
+}
+
+
 void MainWindow::InitEnvironmentModeMenu(CVarMenu* environmentModeMenu)
 {
     environmentModeMenu->clear();
@@ -1705,7 +1724,7 @@ void MainWindow::OnGameModeChanged(bool inGameMode)
 {
     menuBar()->setDisabled(inGameMode);
     m_toolbarManager->SetEnabled(!inGameMode);
-    QAction* action = m_actionManager->GetAction(ID_VIEW_SWITCHTOGAME);
+    QAction* action = m_actionManager->GetAction(ID_TOOLBAR_WIDGET_SWITCHTOGAME);
     action->blockSignals(true); // avoid a loop
     action->setChecked(inGameMode);
     action->blockSignals(false);
@@ -2406,6 +2425,9 @@ QWidget* MainWindow::CreateToolbarWidget(int actionId)
         break;
     case ID_TOOLBAR_WIDGET_SPACER_RIGHT:
         w = CreateSpacerRightWidget();
+        break; 
+    case ID_TOOLBAR_WIDGET_SWITCHTOGAME:
+        w = CreateSwitchToGameButton();
         break;
     default:
         qWarning() << Q_FUNC_INFO << "Unknown id " << actionId;
