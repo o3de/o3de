@@ -33,6 +33,15 @@ namespace AZ
                 nativeWindow,
                 &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
             AzFramework::WindowNotificationBus::Handler::BusConnect(nativeWindow);
+
+            m_onProjectionMatrixChangedHandler = ViewportContext::MatrixChangedEvent::Handler([this](const AZ::Matrix4x4& matrix)
+            {
+                m_projectionMatrixChangedEvent.Signal(matrix);
+            });
+            m_onViewMatrixChangedHandler = ViewportContext::MatrixChangedEvent::Handler([this](const AZ::Matrix4x4& matrix)
+            {
+                m_projectionMatrixChangedEvent.Signal(matrix);
+            });
         }
 
         ViewportContext::~ViewportContext()
@@ -173,7 +182,6 @@ namespace AZ
         void ViewportContext::SetCameraProjectionMatrix(const AZ::Matrix4x4& matrix)
         {
             GetDefaultView()->SetViewToClipMatrix(matrix);
-            m_projectionMatrixChangedEvent.Signal(matrix);
         }
 
         AZ::Transform ViewportContext::GetCameraTransform() const
@@ -190,18 +198,23 @@ namespace AZ
         {
             const auto view = GetDefaultView();
             view->SetCameraTransform(AZ::Matrix3x4::CreateFromTransform(transform.GetOrthogonalized()));
-            m_viewMatrixChangedEvent.Signal(view->GetWorldToViewMatrix());
         }
 
         void ViewportContext::SetDefaultView(ViewPtr view)
         {
             if (m_defaultView != view)
             {
+                m_onProjectionMatrixChangedHandler.Disconnect();
+                m_onViewMatrixChangedHandler.Disconnect();
+
                 m_defaultView = view;
                 UpdatePipelineView();
 
                 m_viewMatrixChangedEvent.Signal(view->GetWorldToViewMatrix());
                 m_projectionMatrixChangedEvent.Signal(view->GetViewToClipMatrix());
+
+                view->ConnectWorldToViewMatrixChangedHandler(m_onViewMatrixChangedHandler);
+                view->ConnectWorldToClipMatrixChangedHandler(m_onProjectionMatrixChangedHandler);
             }
         }
 

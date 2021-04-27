@@ -82,7 +82,10 @@ namespace ScriptCanvas
         {
             for (auto& iter : m_events)
             {
-                AZStd::const_pointer_cast<ExecutionTree>(iter.second)->Clear();
+                if (auto event = AZStd::const_pointer_cast<ExecutionTree>(iter.second))
+                {
+                    event->Clear();
+                }
             }
         }
 
@@ -90,7 +93,10 @@ namespace ScriptCanvas
         {
             m_eventNode = nullptr;
             m_eventSlot = nullptr;
-            AZStd::const_pointer_cast<ExecutionTree>(m_eventHandlerFunction)->Clear();
+            if (auto function = AZStd::const_pointer_cast<ExecutionTree>(m_eventHandlerFunction))
+            {
+                function->Clear();
+            }
         }
 
         void FunctionPrototype::Clear()
@@ -152,7 +158,10 @@ namespace ScriptCanvas
 
             for (auto& iter : m_latents)
             {
-                AZStd::const_pointer_cast<ExecutionTree>(iter.second)->Clear();
+                if (auto latent = AZStd::const_pointer_cast<ExecutionTree>(iter.second))
+                {
+                    latent->Clear();
+                }
             }
 
             m_latents.clear();

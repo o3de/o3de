@@ -41,7 +41,7 @@ class TestDynamicSliceInstanceSpawner(object):
         return console
 
     @pytest.mark.test_case_id("C28851763")
-    @pytest.mark.SUITE_main
+    @pytest.mark.SUITE_periodic
     @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
     def test_DynamicSliceInstanceSpawner_DynamicSliceSpawnerWorks(self, request, editor, level, workspace, project,
                                                                   launcher_platform):

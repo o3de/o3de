@@ -829,6 +829,9 @@ ITexture* CAtomShimRenderer::EF_LoadTexture(const char * nameTex, const uint32 f
         streamingImageAssetId.m_subId = RPI::StreamingImageAsset::GetImageAssetSubId();
 
         auto streamingImageAsset = Data::AssetManager::Instance().FindOrCreateAsset<RPI::StreamingImageAsset>(streamingImageAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
+        // Force a synchronous load for now - this will be replaced with a new system in future releases
+        streamingImageAsset.QueueLoad();
+        streamingImageAsset.BlockUntilLoadComplete();
 
         if (!streamingImageAsset.IsReady())
         {

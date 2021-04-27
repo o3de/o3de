@@ -303,7 +303,8 @@ namespace EMotionFX
 
         if (GetFinalNode() == nodeToRemove)
         {
-            SetFinalNodeId(AnimGraphNodeId::InvalidId);
+            m_finalNodeId = AnimGraphNodeId::InvalidId;
+            m_finalNode = nullptr;
         }
 
         // call it for all children

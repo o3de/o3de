@@ -100,12 +100,12 @@ namespace AZ
                 bufferPoolDesc.m_hostMemoryAccess = RHI::HostMemoryAccess::Write;
                 break;
             case CommonBufferPoolType::StaticInputAssembly:
-                bufferPoolDesc.m_bindFlags = RHI::BufferBindFlags::InputAssembly;
+                bufferPoolDesc.m_bindFlags = RHI::BufferBindFlags::InputAssembly | RHI::BufferBindFlags::ShaderRead;
                 bufferPoolDesc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
                 bufferPoolDesc.m_hostMemoryAccess = RHI::HostMemoryAccess::Write;
                 break;
             case CommonBufferPoolType::DynamicInputAssembly:
-                bufferPoolDesc.m_bindFlags = RHI::BufferBindFlags::InputAssembly;
+                bufferPoolDesc.m_bindFlags = RHI::BufferBindFlags::InputAssembly | RHI::BufferBindFlags::ShaderRead;
                 bufferPoolDesc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Host;
                 bufferPoolDesc.m_hostMemoryAccess = RHI::HostMemoryAccess::Write;
                 break;
