@@ -132,6 +132,7 @@
 #define ID_EDIT_HOLD                               33464
 #define ID_EDIT_FETCH                              33465
 #define ID_FILE_EXPORTTOGAMENOSURFACETEXTURE       33473
+#define ID_VIEW_SWITCHTOGAME                       33477
 #define ID_EDIT_DELETE                             33480
 #define ID_MOVE_OBJECT                             33481
 #define ID_RENAME_OBJ                              33483
@@ -397,5 +398,5 @@
 #define ID_TOOLBAR_WIDGET_ENVIRONMENT_MODE   50011
 #define ID_TOOLBAR_WIDGET_DEBUG_MODE         50012
 #define ID_TOOLBAR_WIDGET_SPACER_RIGHT       50013
-#define ID_TOOLBAR_WIDGET_SWITCHTOGAME       50014
+#define ID_TOOLBAR_WIDGET_PLAYCONSOLE_LABEL  50014
 #define ID_TOOLBAR_WIDGET_LAST               50020

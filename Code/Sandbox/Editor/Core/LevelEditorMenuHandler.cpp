@@ -685,7 +685,7 @@ QMenu* LevelEditorMenuHandler::CreateGameMenu()
     auto gameMenu = m_actionManager->AddMenu(tr("&Game"), s_gameMenuId);
 
     // Play Game
-    gameMenu.AddAction(ID_TOOLBAR_WIDGET_SWITCHTOGAME);
+    gameMenu.AddAction(ID_VIEW_SWITCHTOGAME);
 
     // Enable Physics/AI
     gameMenu.AddAction(ID_SWITCH_PHYSICS);

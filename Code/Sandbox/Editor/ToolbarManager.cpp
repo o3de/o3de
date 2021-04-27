@@ -520,7 +520,6 @@ void ToolbarManager::InitializeStandardToolbars()
             m_standardToolbars.push_back(GetMiscToolbar());
         }
 
-
         std::copy(std::begin(macroToolbars), std::end(macroToolbars), std::back_inserter(m_standardToolbars));
 
         // Save that default state to future versions can reason about updating modified standard toolbars
@@ -624,12 +623,13 @@ AmazonToolbar ToolbarManager::GetObjectToolbar() const
 
 AmazonToolbar ToolbarManager::GetPlayConsoleToolbar() const
 {
-    AmazonToolbar t = AmazonToolbar("PlayConsole", QObject::tr("Play Console Toolbar"));
+    AmazonToolbar t = AmazonToolbar("PlayConsole", QObject::tr("Play Console"));
     t.SetMainToolbar(true);
 
-    t.AddAction(ID_TOOLBAR_WIDGET_SPACER_RIGHT, ORIGINAL_TOOLBAR_VERSION);
+    t.AddAction(ID_TOOLBAR_WIDGET_SPACER_RIGHT, ORIGINAL_TOOLBAR_VERSION); 
     t.AddAction(ID_TOOLBAR_SEPARATOR, ORIGINAL_TOOLBAR_VERSION);
-    t.AddAction(ID_TOOLBAR_WIDGET_SWITCHTOGAME, TOOLBARS_WITH_PLAY_GAME);
+    t.AddAction(ID_TOOLBAR_WIDGET_PLAYCONSOLE_LABEL, ORIGINAL_TOOLBAR_VERSION);
+    t.AddAction(ID_VIEW_SWITCHTOGAME, TOOLBARS_WITH_PLAY_GAME);
     return t;
 }
 
