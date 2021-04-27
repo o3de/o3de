@@ -191,6 +191,9 @@ namespace AzToolsFramework
             const AZStd::vector<AZ::Entity*>& entities, AZStd::vector<AZStd::unique_ptr<Prefab::Instance>>&& nestedPrefabInstances,
             AZ::IO::PathView filePath, Prefab::InstanceOptionalReference instanceToParentUnder) override;
 
+        Prefab::InstanceOptionalReference InstantiatePrefab(
+            AZ::IO::PathView filePath, Prefab::InstanceOptionalReference instanceToParentUnder) override;
+
         Prefab::InstanceOptionalReference GetRootPrefabInstance() override;
         //////////////////////////////////////////////////////////////////////////
 

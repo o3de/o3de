@@ -62,7 +62,8 @@ class TestImportResourcesController(TestCase):
         self._mocked_proxy_model: MagicMock = self._mocked_tree_view.resource_proxy_model
 
         self._test_import_resources_controller: ImportResourcesController = ImportResourcesController()
-        self._test_import_resources_controller.add_import_resources = MagicMock()
+        self._test_import_resources_controller.add_import_resources_sender = MagicMock()
+        self._test_import_resources_controller.set_notification_frame_text_sender = MagicMock()
         self._test_import_resources_controller.setup()
 
     def test_reset_page_resetting_page_with_expected_state(self) -> None:
@@ -116,7 +117,7 @@ class TestImportResourcesController(TestCase):
             self._mocked_import_resources_page.typed_resources_search_button.clicked.connect.call_args[0]
 
         mocked_call_args[0]()  # triggering search_button connected function
-        self._mocked_import_resources_page.set_notification_frame_text.assert_called_once()
+        self._test_import_resources_controller.set_notification_frame_text_sender.emit.assert_called_once()
         self._mocked_tree_view.reset_view.assert_not_called()
         self._mocked_import_resources_page.set_current_main_view_index.assert_not_called()
 
@@ -170,7 +171,7 @@ class TestImportResourcesController(TestCase):
         mock_aws_utils.list_cloudformation_stacks.assert_called_once_with(
             TestImportResourcesController._expected_region)
         mock_aws_utils.list_cloudformation_stack_resources.assert_not_called()
-        self._mocked_import_resources_page.set_notification_frame_text.assert_called_once()
+        self._test_import_resources_controller.set_notification_frame_text_sender.emit.assert_called_once()
         self._mocked_proxy_model.load_resource.assert_not_called()
         self._mocked_proxy_model.emit_source_model_layout_changed.assert_called_once()
         self._mocked_import_resources_page.set_current_main_view_index.assert_called_with(
@@ -195,7 +196,7 @@ class TestImportResourcesController(TestCase):
             TestImportResourcesController._expected_region)
         mock_aws_utils.list_cloudformation_stack_resources.assert_called_once_with(
             TestImportResourcesController._expected_cfn_stack_name, TestImportResourcesController._expected_region)
-        self._mocked_import_resources_page.set_notification_frame_text.assert_called_once()
+        self._test_import_resources_controller.set_notification_frame_text_sender.emit.assert_called_once()
         self._mocked_proxy_model.load_resource.assert_not_called()
         self._mocked_proxy_model.emit_source_model_layout_changed.assert_called_once()
         self._mocked_import_resources_page.set_current_main_view_index.assert_called_with(
@@ -258,8 +259,8 @@ class TestImportResourcesController(TestCase):
             self._mocked_import_resources_page.cfn_stacks_import_button.clicked.connect.call_args[0]
 
         mocked_call_args[0]()  # triggering cfn_stacks_import_button connected function
-        self._test_import_resources_controller.add_import_resources.emit.assert_not_called()
-        self._mocked_import_resources_page.set_notification_frame_text.assert_called_once()
+        self._test_import_resources_controller.add_import_resources_sender.emit.assert_not_called()
+        self._test_import_resources_controller.set_notification_frame_text_sender.emit.assert_called_once()
 
     def test_page_cfn_stacks_import_button_emit_signal_with_expected_resources_and_switch_to_expected_page(self) -> None:
         self._mocked_proxy_model.deduplicate_selected_import_resources.return_value = \
@@ -268,7 +269,7 @@ class TestImportResourcesController(TestCase):
             self._mocked_import_resources_page.cfn_stacks_import_button.clicked.connect.call_args[0]
 
         mocked_call_args[0]()  # triggering cfn_stacks_import_button connected function
-        self._test_import_resources_controller.add_import_resources.emit.assert_called_once_with(
+        self._test_import_resources_controller.add_import_resources_sender.emit.assert_called_once_with(
             [TestImportResourcesController._expected_lambda_resource])
         self._mocked_view_manager.switch_to_view_edit_page.assert_called_once()
         self._mocked_tree_view.reset_view.assert_called_once()
@@ -329,7 +330,7 @@ class TestImportResourcesController(TestCase):
 
         mock_aws_utils.list_lambda_functions.assert_called_once_with(
             TestImportResourcesController._expected_region)
-        self._mocked_import_resources_page.set_notification_frame_text.assert_called_once()
+        self._test_import_resources_controller.set_notification_frame_text_sender.emit.assert_called_once()
         self._mocked_proxy_model.load_resource.assert_not_called()
         self._mocked_proxy_model.emit_source_model_layout_changed.assert_called_once()
         self._mocked_import_resources_page.set_current_main_view_index.assert_called_with(
@@ -348,7 +349,7 @@ class TestImportResourcesController(TestCase):
         mocked_async_call_args: call = mock_thread_manager.get_instance.return_value.start.call_args[0]
         mocked_async_call_args[0].run()  # triggering async function
 
-        self._mocked_import_resources_page.set_notification_frame_text.assert_called_once()
+        self._test_import_resources_controller.set_notification_frame_text_sender.emit.assert_called_once()
         self._mocked_proxy_model.load_resource.assert_not_called()
         self._mocked_proxy_model.emit_source_model_layout_changed.assert_called_once()
         self._mocked_import_resources_page.set_current_main_view_index.assert_called_with(
@@ -383,8 +384,8 @@ class TestImportResourcesController(TestCase):
             self._mocked_import_resources_page.typed_resources_import_button.clicked.connect.call_args[0]
 
         mocked_call_args[0]()  # triggering typed_resources_import_button connected function
-        self._test_import_resources_controller.add_import_resources.emit.assert_not_called()
-        self._mocked_import_resources_page.set_notification_frame_text.assert_called_once()
+        self._test_import_resources_controller.add_import_resources_sender.emit.assert_not_called()
+        self._test_import_resources_controller.set_notification_frame_text_sender.emit.assert_called_once()
 
     def test_page_typed_resources_import_button_emit_signal_with_expected_resources_and_switch_to_expected_page(self) -> None:
         self._mocked_proxy_model.deduplicate_selected_import_resources.return_value = \
@@ -393,7 +394,7 @@ class TestImportResourcesController(TestCase):
             self._mocked_import_resources_page.typed_resources_import_button.clicked.connect.call_args[0]
 
         mocked_call_args[0]()  # triggering typed_resources_import_button connected function
-        self._test_import_resources_controller.add_import_resources.emit.assert_called_once_with(
+        self._test_import_resources_controller.add_import_resources_sender.emit.assert_called_once_with(
             [TestImportResourcesController._expected_lambda_resource])
         self._mocked_view_manager.switch_to_view_edit_page.assert_called_once()
         self._mocked_tree_view.reset_view.assert_called_once()

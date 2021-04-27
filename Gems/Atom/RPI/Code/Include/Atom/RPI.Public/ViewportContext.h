@@ -125,7 +125,9 @@ namespace AZ
             AzFramework::WindowSize m_viewportSize;
             SizeChangedEvent m_sizeChangedEvent;
             MatrixChangedEvent m_viewMatrixChangedEvent;
+            MatrixChangedEvent::Handler m_onViewMatrixChangedHandler;
             MatrixChangedEvent m_projectionMatrixChangedEvent;
+            MatrixChangedEvent::Handler m_onProjectionMatrixChangedHandler;
             SceneChangedEvent m_sceneChangedEvent;
             ViewportContextManager* m_manager;
             RenderPipelinePtr m_currentPipeline;

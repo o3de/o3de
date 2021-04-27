@@ -116,8 +116,15 @@ namespace AzToolsFramework
             void RemoveAllTemplates() override;
 
             /**
+            * Generates a new Prefab Instance based on the Template whose source is stored in filepath.
+            * @param filePath the path to the prefab source file containing the template being instantiated.
+            * @return A unique_ptr to the newly instantiated instance. Null if operation failed.
+            */
+            AZStd::unique_ptr<Instance> InstantiatePrefab(AZ::IO::PathView filePath) override;
+
+            /**
             * Generates a new Prefab Instance based on the Template referenced by templateId
-            * @param templateId the id of the template being instantiated
+            * @param templateId the id of the template being instantiated.
             * @return A unique_ptr to the newly instantiated instance. Null if operation failed.
             */
             AZStd::unique_ptr<Instance> InstantiatePrefab(const TemplateId& templateId) override;

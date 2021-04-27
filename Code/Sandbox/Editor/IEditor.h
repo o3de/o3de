@@ -318,17 +318,6 @@ enum EOperationMode
     eModellingMode // Geometry modeling mode
 };
 
-enum EEditMode
-{
-    eEditModeSelect,
-    eEditModeSelectArea,
-    eEditModeMove,
-    eEditModeRotate,
-    eEditModeScale,
-    eEditModeTool,
-    eEditModeRotateCircle,
-};
-
 //! Mouse events that viewport can send
 enum EMouseEvent
 {
@@ -619,9 +608,6 @@ struct IEditor
 
     virtual void SetOperationMode(EOperationMode mode) = 0;
     virtual EOperationMode GetOperationMode() = 0;
-    //! editMode - EEditMode
-    virtual void SetEditMode(int editMode) = 0;
-    virtual int GetEditMode() = 0;
     //! Shows/Hides transformation manipulator.
     //! if bShow is true also returns a valid ITransformManipulator pointer.
     virtual ITransformManipulator* ShowTransformManipulator(bool bShow) = 0;

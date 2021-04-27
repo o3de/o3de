@@ -61,8 +61,15 @@ namespace AZ
             //! Otherwise false is returned and result is left untouched.
             bool End(Data::Asset<BufferAsset>& result);
 
-        private:
+            //! Clone the given source buffer asset.
+            //! @param sourceAsset The source buffer asset to clone.
+            //! @param clonedResult The resulting, cloned buffer asset.
+            //! @param inOutLastCreatedAssetId The asset id from the model lod asset that owns the cloned buffer asset. The sub id will be increased and
+            //!                                used as the asset id for the cloned asset.
+            //! @result True in case the asset got cloned successfully, false in case an error happened and the clone process got cancelled.
+            static bool Clone(const Data::Asset<BufferAsset>& sourceAsset, Data::Asset<BufferAsset>& clonedResult, Data::AssetId& inOutLastCreatedAssetId);
 
+        private:
             bool ValidateBuffer();
         };
     } // namespace RPI

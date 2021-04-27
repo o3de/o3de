@@ -146,7 +146,10 @@ namespace ScriptCanvas
 
             for (auto iter : m_functions)
             {
-                AZStd::const_pointer_cast<ExecutionTree>(iter)->Clear();
+                if (auto mutableIter = AZStd::const_pointer_cast<ExecutionTree>(iter))
+                {
+                    mutableIter->Clear();
+                }
             }
             m_functions.clear();
  
@@ -155,24 +158,36 @@ namespace ScriptCanvas
 
             for (auto iter : m_ebusHandlingByNode)
             {
-                iter.second->Clear();
+                if (iter.second)
+                {
+                    iter.second->Clear();
+                }
             }
             m_ebusHandlingByNode.clear();
 
             for (auto iter : m_eventHandlingByNode)
             {
-                iter.second->Clear();
+                if (iter.second)
+                {
+                    iter.second->Clear();
+                }
             }
 
             for (auto iter : m_nodeablesByNode)
             {
-                AZStd::const_pointer_cast<NodeableParse>(iter.second)->Clear();
+                if (auto mutableIter = AZStd::const_pointer_cast<NodeableParse>(iter.second))
+                {
+                    mutableIter->Clear();
+                }
             }
             m_nodeablesByNode.clear();
 
             for (auto iter : m_variableWriteHandlingBySlot)
             {
-                AZStd::const_pointer_cast<VariableWriteHandling>(iter.second)->Clear();
+                if (auto mutableIter = AZStd::const_pointer_cast<VariableWriteHandling>(iter.second))
+                {
+                    mutableIter->Clear();
+                }
             }
             m_variableWriteHandlingBySlot.clear();
             m_variableWriteHandlingByVariable.clear();
@@ -794,13 +809,6 @@ namespace ScriptCanvas
                     variables.push_back(*iter);
                 }
             }
-
-            AZ_Assert(variables.size() == constructionNodeables.size() + constructionInputVariables.size() + entityIds.size()
-                , "ctor var size: %zu, nodeables: %zu, inputs: %zu, entity ids: %zu"
-                , variables.size()
-                , constructionNodeables.size()
-                , constructionInputVariables.size()
-                , entityIds.size());
 
             return variables;
         }

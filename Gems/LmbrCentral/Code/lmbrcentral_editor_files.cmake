@@ -58,8 +58,6 @@ set(FILES
     Source/Rendering/EditorMeshComponent.cpp
     Source/Rendering/EditorHighQualityShadowComponent.h
     Source/Rendering/EditorHighQualityShadowComponent.cpp
-    Source/Rendering/EditorFogVolumeComponent.h
-    Source/Rendering/EditorFogVolumeComponent.cpp
     Source/Rendering/EditorGeomCacheComponent.h
     Source/Rendering/EditorGeomCacheComponent.cpp
     Source/Scripting/EditorLookAtComponent.h

@@ -15,13 +15,13 @@
 #include <AzCore/Name/Name.h>
 #include <AzCore/EBus/EBus.h>
 #include <Atom/RHI.Reflect/FrameSchedulerEnums.h>
+#include <Atom/RHI/DrawListTagRegistry.h>
 
 namespace AZ
 {
     namespace RHI
     {
         class Device;
-        class DrawListTagRegistry;
         class FrameGraphBuilder;
         class PipelineState;
         class PipelineStateCache;
