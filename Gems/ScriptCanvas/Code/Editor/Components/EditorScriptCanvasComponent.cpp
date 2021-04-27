@@ -528,8 +528,10 @@ namespace ScriptCanvasEditor
         {
             const auto& variableId = varConfig.m_graphVariable.GetVariableId();
 
+            // We only add component sourced graph properties to the script canvas component, so if this variable was switched to a graph-only property remove it.
+            // Also be sure to remove this variable if it's been deleted entirely.
             auto graphVariable = graphVarData.FindVariable(variableId);
-            if (!graphVariable->IsComponentProperty())
+            if (!graphVariable || !graphVariable->IsComponentProperty())
             {
                 oldVariableIds.push_back(variableId);
             }
