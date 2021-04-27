@@ -713,7 +713,7 @@ to ensure that the address is correct. Asset Processor won't be running in serve
         }
 
         // Update Settings Registry with new token
-        AZStd::string azNewAllowedList{ newAllowedList.join(', ').toUtf8().constData() };
+        AZStd::string azNewAllowedList{ newAllowedList.join(',').toUtf8().constData() };
         settingsRegistry->Set(allowedListKey, azNewAllowedList);
 
         return AssetUtilsInternal::DumpAssetProcessorUserSettingsToFile(*settingsRegistry, assetProcessorUserSetregPath);
