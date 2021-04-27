@@ -33,13 +33,13 @@ namespace Multiplayer
         return componentData.m_componentName.GetCStr();
     }
 
-    const char* MultiplayerComponentRegistry::GetComponentPropertyName(NetComponentId netComponentId, uint16_t propertyIndex) const
+    const char* MultiplayerComponentRegistry::GetComponentPropertyName(NetComponentId netComponentId, PropertyIndex propertyIndex) const
     {
         const ComponentData& componentData = GetMultiplayerComponentData(netComponentId);
         return componentData.m_componentPropertyNameLookupFunction(propertyIndex);
     }
 
-    const char* MultiplayerComponentRegistry::GetComponentRpcName(NetComponentId netComponentId, uint16_t rpcIndex) const
+    const char* MultiplayerComponentRegistry::GetComponentRpcName(NetComponentId netComponentId, RpcIndex rpcIndex) const
     {
         const ComponentData& componentData = GetMultiplayerComponentData(netComponentId);
         return componentData.m_componentRpcNameLookupFunction(rpcIndex);

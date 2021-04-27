@@ -15,6 +15,7 @@
 #include <AzCore/Time/ITime.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/array.h>
+#include <Include/MultiplayerTypes.h>
 
 namespace AzNetworking
 {
@@ -51,17 +52,17 @@ namespace Multiplayer
         };
         AZStd::vector<ComponentStats> m_componentStats;
 
-        void ReserveComponentStats(uint16_t netComponentId, uint16_t propertyCount, uint16_t rpcCount);
-        void RecordPropertySent(uint16_t netComponentId, uint16_t propertyId, uint32_t totalBytes);
-        void RecordPropertyReceived(uint16_t netComponentId, uint16_t propertyId, uint32_t totalBytes);
-        void RecordRpcSent(uint16_t netComponentId, uint16_t rpcId, uint32_t totalBytes);
-        void RecordRpcReceived(uint16_t netComponentId, uint16_t rpcId, uint32_t totalBytes);
+        void ReserveComponentStats(NetComponentId netComponentId, uint16_t propertyCount, uint16_t rpcCount);
+        void RecordPropertySent(NetComponentId netComponentId, PropertyIndex propertyId, uint32_t totalBytes);
+        void RecordPropertyReceived(NetComponentId netComponentId, PropertyIndex propertyId, uint32_t totalBytes);
+        void RecordRpcSent(NetComponentId netComponentId, RpcIndex rpcId, uint32_t totalBytes);
+        void RecordRpcReceived(NetComponentId netComponentId, RpcIndex rpcId, uint32_t totalBytes);
         void TickStats(AZ::TimeMs metricFrameTimeMs);
 
-        Metric CalculateComponentPropertyUpdateSentMetrics(uint16_t netComponentId) const;
-        Metric CalculateComponentPropertyUpdateRecvMetrics(uint16_t netComponentId) const;
-        Metric CalculateComponentRpcsSentMetrics(uint16_t netComponentId) const;
-        Metric CalculateComponentRpcsRecvMetrics(uint16_t netComponentId) const;
+        Metric CalculateComponentPropertyUpdateSentMetrics(NetComponentId netComponentId) const;
+        Metric CalculateComponentPropertyUpdateRecvMetrics(NetComponentId netComponentId) const;
+        Metric CalculateComponentRpcsSentMetrics(NetComponentId netComponentId) const;
+        Metric CalculateComponentRpcsRecvMetrics(NetComponentId netComponentId) const;
         Metric CalculateTotalPropertyUpdateSentMetrics() const;
         Metric CalculateTotalPropertyUpdateRecvMetrics() const;
         Metric CalculateTotalRpcsSentMetrics() const;

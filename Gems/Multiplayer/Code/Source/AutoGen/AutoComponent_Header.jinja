@@ -227,7 +227,7 @@ AZStd::fixed_vector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }
 #include <Source/Components/MultiplayerController.h>
 #include <Source/NetworkInput/IMultiplayerComponentInput.h>
 #include <Source/NetworkTime/RewindableObject.h>
-#include <Source/MultiplayerTypes.h>
+#include <Include/MultiplayerTypes.h>
 {% call(Include) AutoComponentMacros.ParseIncludes(Component) %}
 #include <{{ Include.attrib['File'] }}>
 {% endcall %}
@@ -250,9 +250,6 @@ namespace {{ Component.attrib['Namespace'] }}
     //! Forward declarations
     class {{ ComponentName }};
     class {{ ControllerName }};
-
-    //! Returns a human readable name for the provided remoteProcedureId.
-    const char* GetRemoteProcedureName(uint16_t remoteProcedureId);
 
 {% set RecordName = ComponentName + "Record" %}
     //! @class {{RecordName }}
@@ -487,8 +484,8 @@ namespace {{ Component.attrib['Namespace'] }}
         void NotifyChangesAutonomousToAuthorityProperties(const {{ RecordName }}& replicationRecord) const;
 
         //! Debug name helpers
-        static const char* GetNetworkPropertyName(uint16_t propertyIndex);
-        static const char* GetRpcName(uint16_t rpcIndex);
+        static const char* GetNetworkPropertyName(PropertyIndex propertyIndex);
+        static const char* GetRpcName(RpcIndex rpcIndex);
 
         AZStd::unique_ptr<{{ RecordName }}> m_currentRecord;
         AZStd::unique_ptr<{{ ControllerName }}> m_controller;

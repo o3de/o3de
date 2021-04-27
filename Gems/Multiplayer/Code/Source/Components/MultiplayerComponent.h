@@ -16,7 +16,7 @@
 #include <AzNetworking/Serialization/ISerializer.h>
 #include <AzNetworking/DataStructures/FixedSizeBitsetView.h>
 #include <Source/NetworkEntity/NetworkEntityHandle.h>
-#include <Source/MultiplayerTypes.h>
+#include <Include/MultiplayerTypes.h>
 #include <Include/IMultiplayer.h>
 
 //! Macro to declare bindings for a multiplayer component inheriting from MultiplayerComponent
@@ -110,8 +110,8 @@ namespace Multiplayer
         int32_t bitIndex, 
         TYPE& value, 
         const char* name, 
-        uint16_t componentId, 
-        uint16_t propertyId, 
+        NetComponentId componentId, 
+        PropertyIndex propertyIndex, 
         MultiplayerStats& stats
     )
     {
@@ -132,11 +132,11 @@ namespace Multiplayer
             {
                 if (modifyRecord)
                 {
-                    stats.RecordPropertyReceived(componentId, propertyId, updateSize);
+                    stats.RecordPropertyReceived(componentId, propertyIndex, updateSize);
                 }
                 else
                 {
-                    stats.RecordPropertySent(componentId, propertyId, updateSize);
+                    stats.RecordPropertySent(componentId, propertyIndex, updateSize);
                 }
             }
         }

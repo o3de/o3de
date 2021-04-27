@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include <Source/MultiplayerTypes.h>
+#include <Include/MultiplayerTypes.h>
 #include <Source/NetworkEntity/NetworkEntityHandle.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/EBus/Event.h>

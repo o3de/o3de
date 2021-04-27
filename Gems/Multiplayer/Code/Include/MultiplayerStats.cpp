@@ -14,48 +14,57 @@
 
 namespace Multiplayer
 {
-    void MultiplayerStats::ReserveComponentStats(uint16_t netComponentId, uint16_t propertyCount, uint16_t rpcCount)
+    void MultiplayerStats::ReserveComponentStats(NetComponentId netComponentId, uint16_t propertyCount, uint16_t rpcCount)
     {
-        if (m_componentStats.size() <= netComponentId)
+        const uint16_t netComponentIndex = aznumeric_cast<uint16_t>(netComponentId);
+        if (m_componentStats.size() <= netComponentIndex)
         {
-            m_componentStats.resize(netComponentId + 1);
+            m_componentStats.resize(netComponentIndex + 1);
         }
-        m_componentStats[netComponentId].m_propertyUpdatesSent.resize(propertyCount);
-        m_componentStats[netComponentId].m_propertyUpdatesRecv.resize(propertyCount);
-        m_componentStats[netComponentId].m_rpcsSent.resize(rpcCount);
-        m_componentStats[netComponentId].m_rpcsRecv.resize(rpcCount);
+        m_componentStats[netComponentIndex].m_propertyUpdatesSent.resize(propertyCount);
+        m_componentStats[netComponentIndex].m_propertyUpdatesRecv.resize(propertyCount);
+        m_componentStats[netComponentIndex].m_rpcsSent.resize(rpcCount);
+        m_componentStats[netComponentIndex].m_rpcsRecv.resize(rpcCount);
     }
 
-    void MultiplayerStats::RecordPropertySent(uint16_t netComponentId, uint16_t propertyId, uint32_t totalBytes)
+    void MultiplayerStats::RecordPropertySent(NetComponentId netComponentId, PropertyIndex propertyId, uint32_t totalBytes)
     {
-        m_componentStats[netComponentId].m_propertyUpdatesSent[propertyId].m_totalCalls++;
-        m_componentStats[netComponentId].m_propertyUpdatesSent[propertyId].m_totalBytes += totalBytes;
-        m_componentStats[netComponentId].m_propertyUpdatesSent[propertyId].m_callHistory[m_recordMetricIndex]++;
-        m_componentStats[netComponentId].m_propertyUpdatesSent[propertyId].m_byteHistory[m_recordMetricIndex] += totalBytes;
+        const uint16_t netComponentIndex = aznumeric_cast<uint16_t>(netComponentId);
+        const uint16_t propertyIndex = aznumeric_cast<uint16_t>(propertyId);
+        m_componentStats[netComponentIndex].m_propertyUpdatesSent[propertyIndex].m_totalCalls++;
+        m_componentStats[netComponentIndex].m_propertyUpdatesSent[propertyIndex].m_totalBytes += totalBytes;
+        m_componentStats[netComponentIndex].m_propertyUpdatesSent[propertyIndex].m_callHistory[m_recordMetricIndex]++;
+        m_componentStats[netComponentIndex].m_propertyUpdatesSent[propertyIndex].m_byteHistory[m_recordMetricIndex] += totalBytes;
     }
 
-    void MultiplayerStats::RecordPropertyReceived(uint16_t netComponentId, uint16_t propertyId, uint32_t totalBytes)
+    void MultiplayerStats::RecordPropertyReceived(NetComponentId netComponentId, PropertyIndex propertyId, uint32_t totalBytes)
     {
-        m_componentStats[netComponentId].m_propertyUpdatesRecv[propertyId].m_totalCalls++;
-        m_componentStats[netComponentId].m_propertyUpdatesRecv[propertyId].m_totalBytes += totalBytes;
-        m_componentStats[netComponentId].m_propertyUpdatesRecv[propertyId].m_callHistory[m_recordMetricIndex]++;
-        m_componentStats[netComponentId].m_propertyUpdatesRecv[propertyId].m_byteHistory[m_recordMetricIndex] += totalBytes;
+        const uint16_t netComponentIndex = aznumeric_cast<uint16_t>(netComponentId);
+        const uint16_t propertyIndex = aznumeric_cast<uint16_t>(propertyId);
+        m_componentStats[netComponentIndex].m_propertyUpdatesRecv[propertyIndex].m_totalCalls++;
+        m_componentStats[netComponentIndex].m_propertyUpdatesRecv[propertyIndex].m_totalBytes += totalBytes;
+        m_componentStats[netComponentIndex].m_propertyUpdatesRecv[propertyIndex].m_callHistory[m_recordMetricIndex]++;
+        m_componentStats[netComponentIndex].m_propertyUpdatesRecv[propertyIndex].m_byteHistory[m_recordMetricIndex] += totalBytes;
     }
 
-    void MultiplayerStats::RecordRpcSent(uint16_t netComponentId, uint16_t rpcId, uint32_t totalBytes)
+    void MultiplayerStats::RecordRpcSent(NetComponentId netComponentId, RpcIndex rpcId, uint32_t totalBytes)
     {
-        m_componentStats[netComponentId].m_rpcsSent[rpcId].m_totalCalls++;
-        m_componentStats[netComponentId].m_rpcsSent[rpcId].m_totalBytes += totalBytes;
-        m_componentStats[netComponentId].m_rpcsSent[rpcId].m_callHistory[m_recordMetricIndex]++;
-        m_componentStats[netComponentId].m_rpcsSent[rpcId].m_byteHistory[m_recordMetricIndex] += totalBytes;
+        const uint16_t netComponentIndex = aznumeric_cast<uint16_t>(netComponentId);
+        const uint16_t rpcIndex = aznumeric_cast<uint16_t>(rpcId);
+        m_componentStats[netComponentIndex].m_rpcsSent[rpcIndex].m_totalCalls++;
+        m_componentStats[netComponentIndex].m_rpcsSent[rpcIndex].m_totalBytes += totalBytes;
+        m_componentStats[netComponentIndex].m_rpcsSent[rpcIndex].m_callHistory[m_recordMetricIndex]++;
+        m_componentStats[netComponentIndex].m_rpcsSent[rpcIndex].m_byteHistory[m_recordMetricIndex] += totalBytes;
     }
 
-    void MultiplayerStats::RecordRpcReceived(uint16_t netComponentId, uint16_t rpcId, uint32_t totalBytes)
+    void MultiplayerStats::RecordRpcReceived(NetComponentId netComponentId, RpcIndex rpcId, uint32_t totalBytes)
     {
-        m_componentStats[netComponentId].m_rpcsRecv[rpcId].m_totalCalls++;
-        m_componentStats[netComponentId].m_rpcsRecv[rpcId].m_totalBytes += totalBytes;
-        m_componentStats[netComponentId].m_rpcsRecv[rpcId].m_callHistory[m_recordMetricIndex]++;
-        m_componentStats[netComponentId].m_rpcsRecv[rpcId].m_byteHistory[m_recordMetricIndex] += totalBytes;
+        const uint16_t netComponentIndex = aznumeric_cast<uint16_t>(netComponentId);
+        const uint16_t rpcIndex = aznumeric_cast<uint16_t>(rpcId);
+        m_componentStats[netComponentIndex].m_rpcsRecv[rpcIndex].m_totalCalls++;
+        m_componentStats[netComponentIndex].m_rpcsRecv[rpcIndex].m_totalBytes += totalBytes;
+        m_componentStats[netComponentIndex].m_rpcsRecv[rpcIndex].m_callHistory[m_recordMetricIndex]++;
+        m_componentStats[netComponentIndex].m_rpcsRecv[rpcIndex].m_byteHistory[m_recordMetricIndex] += totalBytes;
     }
 
     void MultiplayerStats::TickStats(AZ::TimeMs metricFrameTimeMs)
@@ -85,24 +94,28 @@ namespace Multiplayer
         return result;
     }
 
-    MultiplayerStats::Metric MultiplayerStats::CalculateComponentPropertyUpdateSentMetrics(uint16_t netComponentId) const
+    MultiplayerStats::Metric MultiplayerStats::CalculateComponentPropertyUpdateSentMetrics(NetComponentId netComponentId) const
     {
-        return SumMetricVector(m_componentStats[netComponentId].m_propertyUpdatesSent);
+        const uint16_t netComponentIndex = aznumeric_cast<uint16_t>(netComponentId);
+        return SumMetricVector(m_componentStats[netComponentIndex].m_propertyUpdatesSent);
     }
 
-    MultiplayerStats::Metric MultiplayerStats::CalculateComponentPropertyUpdateRecvMetrics(uint16_t netComponentId) const
+    MultiplayerStats::Metric MultiplayerStats::CalculateComponentPropertyUpdateRecvMetrics(NetComponentId netComponentId) const
     {
-        return SumMetricVector(m_componentStats[netComponentId].m_propertyUpdatesRecv);
+        const uint16_t netComponentIndex = aznumeric_cast<uint16_t>(netComponentId);
+        return SumMetricVector(m_componentStats[netComponentIndex].m_propertyUpdatesRecv);
     }
 
-    MultiplayerStats::Metric MultiplayerStats::CalculateComponentRpcsSentMetrics(uint16_t netComponentId) const
+    MultiplayerStats::Metric MultiplayerStats::CalculateComponentRpcsSentMetrics(NetComponentId netComponentId) const
     {
-        return SumMetricVector(m_componentStats[netComponentId].m_rpcsSent);
+        const uint16_t netComponentIndex = aznumeric_cast<uint16_t>(netComponentId);
+        return SumMetricVector(m_componentStats[netComponentIndex].m_rpcsSent);
     }
 
-    MultiplayerStats::Metric MultiplayerStats::CalculateComponentRpcsRecvMetrics(uint16_t netComponentId) const
+    MultiplayerStats::Metric MultiplayerStats::CalculateComponentRpcsRecvMetrics(NetComponentId netComponentId) const
     {
-        return SumMetricVector(m_componentStats[netComponentId].m_rpcsRecv);
+        const uint16_t netComponentIndex = aznumeric_cast<uint16_t>(netComponentId);
+        return SumMetricVector(m_componentStats[netComponentIndex].m_rpcsRecv);
     }
 
     MultiplayerStats::Metric MultiplayerStats::CalculateTotalPropertyUpdateSentMetrics() const
@@ -110,7 +123,8 @@ namespace Multiplayer
         Metric result;
         for (AZStd::size_t index = 0; index < m_componentStats.size(); ++index)
         {
-            CombineMetrics(result, CalculateComponentPropertyUpdateSentMetrics(index));
+            const NetComponentId netComponentId = aznumeric_cast<NetComponentId>(index);
+            CombineMetrics(result, CalculateComponentPropertyUpdateSentMetrics(netComponentId));
         }
         return result;
     }
@@ -120,7 +134,8 @@ namespace Multiplayer
         Metric result;
         for (AZStd::size_t index = 0; index < m_componentStats.size(); ++index)
         {
-            CombineMetrics(result, CalculateComponentPropertyUpdateRecvMetrics(index));
+            const NetComponentId netComponentId = aznumeric_cast<NetComponentId>(index);
+            CombineMetrics(result, CalculateComponentPropertyUpdateRecvMetrics(netComponentId));
         }
         return result;
     }
@@ -130,7 +145,8 @@ namespace Multiplayer
         Metric result;
         for (AZStd::size_t index = 0; index < m_componentStats.size(); ++index)
         {
-            CombineMetrics(result, CalculateComponentRpcsSentMetrics(index));
+            const NetComponentId netComponentId = aznumeric_cast<NetComponentId>(index);
+            CombineMetrics(result, CalculateComponentRpcsSentMetrics(netComponentId));
         }
         return result;
     }
@@ -140,7 +156,8 @@ namespace Multiplayer
         Metric result;
         for (AZStd::size_t index = 0; index < m_componentStats.size(); ++index)
         {
-            CombineMetrics(result, CalculateComponentRpcsRecvMetrics(index));
+            const NetComponentId netComponentId = aznumeric_cast<NetComponentId>(index);
+            CombineMetrics(result, CalculateComponentRpcsRecvMetrics(netComponentId));
         }
         return result;
     }

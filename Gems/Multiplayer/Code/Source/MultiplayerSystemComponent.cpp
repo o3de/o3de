@@ -506,24 +506,24 @@ namespace Multiplayer
         handler.Connect(m_shutdownEvent);
     }
 
-    const char* MultiplayerSystemComponent::GetComponentGemName(uint16_t netComponentIndex) const
+    const char* MultiplayerSystemComponent::GetComponentGemName(NetComponentId netComponentId) const
     {
-        return GetMultiplayerComponentRegistry()->GetComponentGemName(static_cast<NetComponentId>(netComponentIndex));
+        return GetMultiplayerComponentRegistry()->GetComponentGemName(netComponentId);
     }
 
-    const char* MultiplayerSystemComponent::GetComponentName(uint16_t netComponentIndex) const
+    const char* MultiplayerSystemComponent::GetComponentName(NetComponentId netComponentId) const
     {
-        return GetMultiplayerComponentRegistry()->GetComponentName(static_cast<NetComponentId>(netComponentIndex));
+        return GetMultiplayerComponentRegistry()->GetComponentName(netComponentId);
     }
 
-    const char* MultiplayerSystemComponent::GetComponentPropertyName(uint16_t netComponentIndex, uint16_t propertyIndex) const
+    const char* MultiplayerSystemComponent::GetComponentPropertyName(NetComponentId netComponentId, PropertyIndex propertyIndex) const
     {
-        return GetMultiplayerComponentRegistry()->GetComponentPropertyName(static_cast<NetComponentId>(netComponentIndex), propertyIndex);
+        return GetMultiplayerComponentRegistry()->GetComponentPropertyName(netComponentId, propertyIndex);
     }
 
-    const char* MultiplayerSystemComponent::GetComponentRpcName(uint16_t netComponentIndex, uint16_t rpcIndex) const
+    const char* MultiplayerSystemComponent::GetComponentRpcName(NetComponentId netComponentId, RpcIndex rpcIndex) const
     {
-        return GetMultiplayerComponentRegistry()->GetComponentRpcName(static_cast<NetComponentId>(netComponentIndex), rpcIndex);
+        return GetMultiplayerComponentRegistry()->GetComponentRpcName(netComponentId, rpcIndex);
     }
 
     void MultiplayerSystemComponent::DumpStats([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)

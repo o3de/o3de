@@ -39,7 +39,7 @@ namespace {{ Namespace }}
             componentData.m_componentPropertyNameLookupFunction = {{ ComponentBaseName }}::GetNetworkPropertyName;
             componentData.m_componentRpcNameLookupFunction = {{ ComponentBaseName }}::GetRpcName;
             {{ ComponentBaseName }}::s_netComponentId = multiplayerComponentRegistry->RegisterMultiplayerComponent(componentData);
-            stats.ReserveComponentStats(static_cast<uint16_t>({{ ComponentBaseName }}::s_netComponentId), static_cast<uint16_t>({{ NetworkPropertyCount }}), static_cast<uint16_t>({{ RpcCount }}));
+            stats.ReserveComponentStats({{ ComponentBaseName }}::s_netComponentId, static_cast<uint16_t>({{ NetworkPropertyCount }}), static_cast<uint16_t>({{ RpcCount }}));
         }
 {% endfor %}
     }

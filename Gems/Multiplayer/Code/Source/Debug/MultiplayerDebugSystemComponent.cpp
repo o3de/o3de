@@ -60,36 +60,6 @@ namespace Multiplayer
     {
         if (ImGui::BeginMenu("Multiplayer"))
         {
-            //{
-            //    static int lossPercent{ 0 };
-            //    lossPercent = static_cast<int>(net_UdpDebugLossPercent);
-            //    if (ImGui::SliderInt("UDP Loss Percent", &lossPercent, 0, 100))
-            //    {
-            //        net_UdpDebugLossPercent = lossPercent;
-            //        m_ClientAgent.UpdateConnectionCvars(net_UdpDebugLossPercent);
-            //    }
-            //}
-            //
-            //{
-            //    static int latency{ 0 };
-            //    latency = static_cast<int>(net_UdpDebugLatencyMs);
-            //    if (ImGui::SliderInt("UDP Latency Ms", &latency, 0, 3000))
-            //    {
-            //        net_UdpDebugLatencyMs = latency;
-            //        m_ClientAgent.UpdateConnectionCvars(net_UdpDebugLatencyMs);
-            //    }
-            //}
-            //
-            //{
-            //    static int variance{ 0 };
-            //    variance = static_cast<int>(net_UdpDebugVarianceMs);
-            //    if (ImGui::SliderInt("UDP Variance Ms", &variance, 0, 1000))
-            //    {
-            //        net_UdpDebugVarianceMs = variance;
-            //        m_ClientAgent.UpdateConnectionCvars(net_UdpDebugVarianceMs);
-            //    }
-            //}
-
             ImGui::Checkbox("Networking Stats", &m_displayNetworkingStats);
             ImGui::Checkbox("Multiplayer Stats", &m_displayMultiplayerStats);
             ImGui::EndMenu();
@@ -147,12 +117,12 @@ namespace Multiplayer
         return DrawMetricsRow(name, true, totalCalls, totalBytes, callsPerSecond, bytesPerSecond);
     }
 
-    bool DrawComponentRow(const char* name, const MultiplayerStats& stats, uint16_t componentIndex)
+    bool DrawComponentRow(const char* name, const MultiplayerStats& stats, NetComponentId netComponentId)
     {
-        const MultiplayerStats::Metric propertyUpdatesSent = stats.CalculateComponentPropertyUpdateSentMetrics(componentIndex);
-        const MultiplayerStats::Metric propertyUpdatesRecv = stats.CalculateComponentPropertyUpdateRecvMetrics(componentIndex);
-        const MultiplayerStats::Metric rpcsSent = stats.CalculateComponentRpcsSentMetrics(componentIndex);
-        const MultiplayerStats::Metric rpcsRecv = stats.CalculateComponentRpcsRecvMetrics(componentIndex);
+        const MultiplayerStats::Metric propertyUpdatesSent = stats.CalculateComponentPropertyUpdateSentMetrics(netComponentId);
+        const MultiplayerStats::Metric propertyUpdatesRecv = stats.CalculateComponentPropertyUpdateRecvMetrics(netComponentId);
+        const MultiplayerStats::Metric rpcsSent = stats.CalculateComponentRpcsSentMetrics(netComponentId);
+        const MultiplayerStats::Metric rpcsRecv = stats.CalculateComponentRpcsRecvMetrics(netComponentId);
 
         const uint64_t totalCalls = propertyUpdatesSent.m_totalCalls + propertyUpdatesRecv.m_totalCalls + rpcsSent.m_totalCalls + rpcsRecv.m_totalCalls;
         const uint64_t totalBytes = propertyUpdatesSent.m_totalBytes + propertyUpdatesRecv.m_totalBytes + rpcsSent.m_totalBytes + rpcsRecv.m_totalBytes;
@@ -166,20 +136,21 @@ namespace Multiplayer
         return DrawMetricsRow(name, true, totalCalls, totalBytes, callsPerSecond, bytesPerSecond);
     }
 
-    void DrawComponentDetails(const MultiplayerStats& stats, uint16_t componentIndex)
+    void DrawComponentDetails(const MultiplayerStats& stats, NetComponentId netComponentId)
     {
         IMultiplayer* multiplayer = AZ::Interface<IMultiplayer>::Get();
         {
-            const MultiplayerStats::Metric metric = stats.CalculateComponentPropertyUpdateSentMetrics(componentIndex);
+            const MultiplayerStats::Metric metric = stats.CalculateComponentPropertyUpdateSentMetrics(netComponentId);
             float callsPerSecond = 0.0f;
             float bytesPerSecond = 0.0f;
             AccumulatePerSecondValues(stats, metric, callsPerSecond, bytesPerSecond);
             if (DrawMetricsRow("PropertyUpdates Sent", true, metric.m_totalCalls, metric.m_totalBytes, callsPerSecond, bytesPerSecond))
             {
-                const MultiplayerStats::ComponentStats& componentStats = stats.m_componentStats[componentIndex];
+                const MultiplayerStats::ComponentStats& componentStats = stats.m_componentStats[aznumeric_cast<AZStd::size_t>(netComponentId)];
                 for (AZStd::size_t index = 0; index < componentStats.m_propertyUpdatesSent.size(); ++index)
                 {
-                    const char* propertyName = multiplayer->GetComponentPropertyName(componentIndex, aznumeric_cast<uint16_t>(index));
+                    const PropertyIndex propertyIndex = aznumeric_cast<PropertyIndex>(index);
+                    const char* propertyName = multiplayer->GetComponentPropertyName(netComponentId, propertyIndex);
                     const MultiplayerStats::Metric& subMetric = componentStats.m_propertyUpdatesSent[index];
                     callsPerSecond = 0.0f;
                     bytesPerSecond = 0.0f;
@@ -191,16 +162,17 @@ namespace Multiplayer
         }
 
         {
-            const MultiplayerStats::Metric metric = stats.CalculateComponentPropertyUpdateRecvMetrics(componentIndex);
+            const MultiplayerStats::Metric metric = stats.CalculateComponentPropertyUpdateRecvMetrics(netComponentId);
             float callsPerSecond = 0.0f;
             float bytesPerSecond = 0.0f;
             AccumulatePerSecondValues(stats, metric, callsPerSecond, bytesPerSecond);
             if (DrawMetricsRow("PropertyUpdates Recv", true, metric.m_totalCalls, metric.m_totalBytes, callsPerSecond, bytesPerSecond))
             {
-                const MultiplayerStats::ComponentStats& componentStats = stats.m_componentStats[componentIndex];
+                const MultiplayerStats::ComponentStats& componentStats = stats.m_componentStats[aznumeric_cast<AZStd::size_t>(netComponentId)];
                 for (AZStd::size_t index = 0; index < componentStats.m_propertyUpdatesRecv.size(); ++index)
                 {
-                    const char* propertyName = multiplayer->GetComponentPropertyName(componentIndex, aznumeric_cast<uint16_t>(index));
+                    const PropertyIndex propertyIndex = aznumeric_cast<PropertyIndex>(index);
+                    const char* propertyName = multiplayer->GetComponentPropertyName(netComponentId, propertyIndex);
                     const MultiplayerStats::Metric& subMetric = componentStats.m_propertyUpdatesRecv[index];
                     callsPerSecond = 0.0f;
                     bytesPerSecond = 0.0f;
@@ -212,16 +184,17 @@ namespace Multiplayer
         }
 
         {
-            const MultiplayerStats::Metric metric = stats.CalculateComponentRpcsSentMetrics(componentIndex);
+            const MultiplayerStats::Metric metric = stats.CalculateComponentRpcsSentMetrics(netComponentId);
             float callsPerSecond = 0.0f;
             float bytesPerSecond = 0.0f;
             AccumulatePerSecondValues(stats, metric, callsPerSecond, bytesPerSecond);
             if (DrawMetricsRow("RemoteProcedures Sent", true, metric.m_totalCalls, metric.m_totalBytes, callsPerSecond, bytesPerSecond))
             {
-                const MultiplayerStats::ComponentStats& componentStats = stats.m_componentStats[componentIndex];
+                const MultiplayerStats::ComponentStats& componentStats = stats.m_componentStats[aznumeric_cast<AZStd::size_t>(netComponentId)];
                 for (AZStd::size_t index = 0; index < componentStats.m_rpcsSent.size(); ++index)
                 {
-                    const char* rpcName = multiplayer->GetComponentRpcName(componentIndex, aznumeric_cast<uint16_t>(index));
+                    const RpcIndex rpcIndex = aznumeric_cast<RpcIndex>(index);
+                    const char* rpcName = multiplayer->GetComponentRpcName(netComponentId, rpcIndex);
                     const MultiplayerStats::Metric& subMetric = componentStats.m_rpcsSent[index];
                     callsPerSecond = 0.0f;
                     bytesPerSecond = 0.0f;
@@ -233,16 +206,17 @@ namespace Multiplayer
         }
 
         {
-            const MultiplayerStats::Metric metric = stats.CalculateComponentRpcsRecvMetrics(componentIndex);
+            const MultiplayerStats::Metric metric = stats.CalculateComponentRpcsRecvMetrics(netComponentId);
             float callsPerSecond = 0.0f;
             float bytesPerSecond = 0.0f;
             AccumulatePerSecondValues(stats, metric, callsPerSecond, bytesPerSecond);
             if (DrawMetricsRow("RemoteProcedures Recv", true, metric.m_totalCalls, metric.m_totalBytes, callsPerSecond, bytesPerSecond))
             {
-                const MultiplayerStats::ComponentStats& componentStats = stats.m_componentStats[componentIndex];
+                const MultiplayerStats::ComponentStats& componentStats = stats.m_componentStats[aznumeric_cast<AZStd::size_t>(netComponentId)];
                 for (AZStd::size_t index = 0; index < componentStats.m_rpcsRecv.size(); ++index)
                 {
-                    const char* rpcName = multiplayer->GetComponentRpcName(componentIndex, aznumeric_cast<uint16_t>(index));
+                    const RpcIndex rpcIndex = aznumeric_cast<RpcIndex>(index);
+                    const char* rpcName = multiplayer->GetComponentRpcName(netComponentId, rpcIndex);
                     const MultiplayerStats::Metric& subMetric = componentStats.m_rpcsRecv[index];
                     callsPerSecond = 0.0f;
                     bytesPerSecond = 0.0f;
@@ -258,11 +232,6 @@ namespace Multiplayer
     {
         const float TEXT_BASE_WIDTH = ImGui::CalcTextSize("A").x;
         const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
-
-        if (m_displayNetworkingStats)
-        {
-
-        }
 
         if (m_displayMultiplayerStats)
         {
@@ -296,14 +265,14 @@ namespace Multiplayer
                     {
                         for (AZStd::size_t index = 0; index < stats.m_componentStats.size(); ++index)
                         {
-                            const uint16_t componentIndex = aznumeric_cast<uint16_t>(index);
+                            const NetComponentId netComponentId = aznumeric_cast<NetComponentId>(index);
                             using StringLabel = AZStd::fixed_string<128>;
-                            const StringLabel gemName = multiplayer->GetComponentGemName(componentIndex);
-                            const StringLabel componentName = multiplayer->GetComponentName(componentIndex);
+                            const StringLabel gemName = multiplayer->GetComponentGemName(netComponentId);
+                            const StringLabel componentName = multiplayer->GetComponentName(netComponentId);
                             const StringLabel label = gemName + "::" + componentName;
-                            if (DrawComponentRow(label.c_str(), stats, componentIndex))
+                            if (DrawComponentRow(label.c_str(), stats, netComponentId))
                             {
-                                DrawComponentDetails(stats, componentIndex);
+                                DrawComponentDetails(stats, netComponentId);
                                 ImGui::TreePop();
                             }
                         }

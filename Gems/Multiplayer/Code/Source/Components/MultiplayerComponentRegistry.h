@@ -21,13 +21,14 @@ namespace Multiplayer
     class MultiplayerComponentRegistry
     {
     public:
-        using NameLookupFunction = AZStd::function<const char*(uint16_t index)>;
+        using PropertyNameLookupFunction = AZStd::function<const char*(PropertyIndex index)>;
+        using RpcNameLookupFunction = AZStd::function<const char* (RpcIndex index)>;
         struct ComponentData
         {
             AZ::Name m_gemName;
             AZ::Name m_componentName;
-            NameLookupFunction m_componentPropertyNameLookupFunction;
-            NameLookupFunction m_componentRpcNameLookupFunction;
+            PropertyNameLookupFunction m_componentPropertyNameLookupFunction;
+            RpcNameLookupFunction m_componentRpcNameLookupFunction;
         };
 
         //! Registers a multiplayer component with the multiplayer system.
@@ -49,13 +50,13 @@ namespace Multiplayer
         //! @param  netComponentId the NetComponentId to return the property name of
         //! @param  propertyIndex  the index off the network property to return the property name of
         //! @return the name of the network property
-        const char* GetComponentPropertyName(NetComponentId netComponentId, uint16_t propertyIndex) const;
+        const char* GetComponentPropertyName(NetComponentId netComponentId, PropertyIndex propertyIndex) const;
 
         //! Returns the Rpc name associated with the provided NetComponentId and rpcId.
         //! @param  netComponentId the NetComponentId to return the property name of
         //! @param  rpcIndex       the index of the rpc to return the rpc name of
         //! @return the name of the requested rpc
-        const char* GetComponentRpcName(NetComponentId netComponentId, uint16_t rpcIndex) const;
+        const char* GetComponentRpcName(NetComponentId netComponentId, RpcIndex rpcIndex) const;
 
         //! Retrieves the stored component data for a given NetComponentId.
         //! @param  netComponentId the NetComponentId to return component data for

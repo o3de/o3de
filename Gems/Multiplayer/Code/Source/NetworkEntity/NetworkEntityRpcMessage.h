@@ -14,7 +14,7 @@
 
 #include <AzNetworking/Serialization/ISerializer.h>
 #include <AzNetworking/DataStructures/ByteBuffer.h>
-#include <Source/MultiplayerTypes.h>
+#include <Include/MultiplayerTypes.h>
 
 namespace Multiplayer
 {
@@ -35,12 +35,12 @@ namespace Multiplayer
         NetworkEntityRpcMessage(const NetworkEntityRpcMessage& rhs);
 
         //! Fill explicit constructor.
-        //! @param rpcDeliveryType the delivery type (origin and target) for this RPC
-        //! @param entityId        the networked entityId of the entity handling this RPC
-        //! @param componentType   the networked componentId of the component handling this RPC
-        //! @param rpcMessageType  the component defined RPC type, so the component knows which RPC this message corresponds to
-        //! @param isReliable      whether or not this RPC should be sent reliably
-        explicit NetworkEntityRpcMessage(RpcDeliveryType rpcDeliveryType, NetEntityId entityId, NetComponentId componentId, uint16_t rpcMessageType, ReliabilityType isReliable);
+        //! @param rpcDeliveryType the delivery type (origin and target) for this rpc
+        //! @param entityId        the networked entityId of the entity handling this rpc
+        //! @param componentType   the networked componentId of the component handling this rpc
+        //! @param rpcIndex        the component defined rpc index, so the component knows which rpc this message corresponds to
+        //! @param isReliable      whether or not this rpc should be sent reliably
+        explicit NetworkEntityRpcMessage(RpcDeliveryType rpcDeliveryType, NetEntityId entityId, NetComponentId componentId, RpcIndex rpcIndex, ReliabilityType isReliable);
 
         NetworkEntityRpcMessage& operator =(NetworkEntityRpcMessage&& rhs);
         NetworkEntityRpcMessage& operator =(const NetworkEntityRpcMessage& rhs);
@@ -67,9 +67,9 @@ namespace Multiplayer
         //! @return the current value of EntityComponentType
         NetComponentId GetComponentId() const;
 
-        //! Gets the current value of RpcMessageType.
-        //! @return the current value of RpcMessageType
-        uint16_t GetRpcMessageType() const;
+        //! Gets the current value of RpcIndex.
+        //! @return the current value of RpcIndex
+        RpcIndex GetRpcIndex() const;
 
         //! Writes the data contained inside a_Params to this NetworkEntityRpcMessage's blob buffer.
         //! @param params the parameters to save inside this NetworkEntityRpcMessage instance
@@ -98,7 +98,7 @@ namespace Multiplayer
         RpcDeliveryType m_rpcDeliveryType = RpcDeliveryType::None;
         NetEntityId     m_entityId        = InvalidNetEntityId;
         NetComponentId  m_componentId     = InvalidNetComponentId;
-        uint16_t        m_rpcMessageType  = 0;
+        RpcIndex        m_rpcIndex        = RpcIndex{ 0 };
 
         // Only allocated if we actually have data
         // This is to prevent blowing out stack memory if we declare an array of these EntityUpdateMessages
