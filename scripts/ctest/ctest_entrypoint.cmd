@@ -13,7 +13,7 @@ REM Continuous Integration CLI entrypoint script to start CTest, triggering post
 REM
 SETLOCAL
 
-SET DEV_DIR=%~dp0\..
+SET DEV_DIR=%~dp0\..\..
 SET PYTHON=%DEV_DIR%\python\python.cmd
 SET CTEST_SCRIPT=%~dp0\ctest_driver.py
 

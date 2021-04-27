@@ -63,7 +63,7 @@ AZ_POP_DISABLE_WARNING
 
 #include <UI/PropertyEditor/Model/AssetCompleterModel.h>
 #include <UI/PropertyEditor/View/AssetCompleterListView.h>
-#include <UI/PropertyEditor/ThumbnailDropDown.h>
+#include <UI/PropertyEditor/ThumbnailPropertyCtrl.h>
 
 namespace AzToolsFramework
 {
@@ -93,15 +93,11 @@ namespace AzToolsFramework
 
         setAcceptDrops(true);
 
-        m_thumbnail = new Thumbnailer::ThumbnailWidget(this);
-        m_thumbnail->setFixedSize(QSize(24, 24));
+        m_thumbnail = new ThumbnailPropertyCtrl(this);
+        m_thumbnail->setFixedSize(QSize(40, 24));
         m_thumbnail->setVisible(false);
 
-        m_thumbnailDropDown = new ThumbnailDropDown(this);
-        m_thumbnailDropDown->setFixedSize(QSize(40, 24));
-        m_thumbnailDropDown->setVisible(false);
-
-        connect(m_thumbnailDropDown, &ThumbnailDropDown::clicked, this, &PropertyAssetCtrl::OnEditButtonClicked);
+        connect(m_thumbnail, &ThumbnailPropertyCtrl::clicked, this, &PropertyAssetCtrl::OnThumbnailClicked);
 
         m_editButton = new QToolButton(this);
         m_editButton->setAutoRaise(true);
@@ -112,7 +108,6 @@ namespace AzToolsFramework
         connect(m_editButton, &QToolButton::clicked, this, &PropertyAssetCtrl::OnEditButtonClicked);
 
         pLayout->addWidget(m_thumbnail);
-        pLayout->addWidget(m_thumbnailDropDown);
         pLayout->addWidget(m_browseEdit);
         pLayout->addWidget(m_editButton);
 
@@ -185,6 +180,17 @@ namespace AzToolsFramework
         else
         {
             SetSelectedAssetID(GetCurrentAssetID());
+        }
+    }
+
+    void PropertyAssetCtrl::OnThumbnailClicked()
+    {
+        const AZ::Data::AssetId assetID = GetCurrentAssetID();
+        if (m_thumbnailCallback)
+        {
+            AZ_Error("Asset Property", m_editNotifyTarget, "No notification target set for edit callback.");
+            m_thumbnailCallback->Invoke(m_editNotifyTarget, assetID, GetCurrentAssetType());
+            return;
         }
     }
 
@@ -1091,10 +1097,10 @@ namespace AzToolsFramework
     void PropertyAssetCtrl::UpdateThumbnail()
     {
         m_thumbnail->setVisible(m_showThumbnail);
-        m_thumbnailDropDown->setVisible(m_showThumbnailDropDown);
 
-        if (m_showThumbnail || m_showThumbnailDropDown)
+        if (m_showThumbnail)
         {
+            m_thumbnail->ShowDropDownArrow(m_showThumbnailDropDownButton);
             const AZ::Data::AssetId assetID = GetCurrentAssetID();
             if (assetID.IsValid())
             {
@@ -1112,17 +1118,12 @@ namespace AzToolsFramework
                     {
                         m_thumbnail->SetThumbnailKey(thumbnailKey, Thumbnailer::ThumbnailContext::DefaultContext);
                     }
-                    if (m_showThumbnailDropDown)
-                    {
-                        m_thumbnailDropDown->SetThumbnailKey(thumbnailKey, Thumbnailer::ThumbnailContext::DefaultContext);
-                    }
                     return;
                 }
             }
         }
 
         m_thumbnail->ClearThumbnail();
-        m_thumbnailDropDown->ClearThumbnail();
     }
 
     void PropertyAssetCtrl::SetClearButtonEnabled(bool enable)
@@ -1156,14 +1157,19 @@ namespace AzToolsFramework
         return m_showThumbnail;
     }
 
-    void PropertyAssetCtrl::SetShowThumbnailDropDown(bool enable)
+    void PropertyAssetCtrl::SetShowThumbnailDropDownButton(bool enable)
     {
-        m_showThumbnailDropDown = enable;
+        m_showThumbnailDropDownButton = enable;
     }
 
-    bool PropertyAssetCtrl::GetShowThumbnailDropDown() const
+    bool PropertyAssetCtrl::GetShowThumbnailDropDownButton() const
     {
-        return m_showThumbnailDropDown;
+        return m_showThumbnailDropDownButton;
+    }
+
+    void PropertyAssetCtrl::SetThumbnailCallback(EditCallbackType* editNotifyCallback)
+    {
+        m_thumbnailCallback = editNotifyCallback;
     }
 
     const AZ::Uuid& AssetPropertyHandlerDefault::GetHandledType() const
@@ -1277,23 +1283,21 @@ namespace AzToolsFramework
         }
         else if (attrib == AZ_CRC_CE("Thumbnail"))
         {
-            bool showThumbnail = false;
-            if (attrValue->Read<bool>(showThumbnail))
-            {
-                GUI->SetShowThumbnail(showThumbnail);
-            }
+            GUI->SetShowThumbnail(true);
         }
-        else if (attrib == AZ_CRC_CE("ThumbnailWithDropDown"))
+        else if (attrib == AZ_CRC_CE("ThumbnailCallback"))
         {
             PropertyAssetCtrl::EditCallbackType* func = azdynamic_cast<PropertyAssetCtrl::EditCallbackType*>(attrValue->GetAttribute());
             if (func)
             {
-                GUI->SetShowThumbnailDropDown(true);
-                GUI->SetEditNotifyCallback(func);
+                GUI->SetShowThumbnail(true);
+                GUI->SetShowThumbnailDropDownButton(true);
+                GUI->SetThumbnailCallback(func);
             }
             else
             {
-                GUI->SetEditNotifyCallback(nullptr);
+                GUI->SetShowThumbnailDropDownButton(false);
+                GUI->SetThumbnailCallback(nullptr);
             }
         }
     }

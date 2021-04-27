@@ -443,9 +443,12 @@ namespace DebugDraw
                 AZ::TransformBus::EventResult(sphereElement.m_worldLocation, sphereElement.m_targetEntityId, &AZ::TransformBus::Events::GetWorldTranslation);
             }
 
-            ColorB lyColor(sphereElement.m_color.ToU32());
-            Vec3 worldLocation(AZVec3ToLYVec3(sphereElement.m_worldLocation));
-            gEnv->pRenderer->GetIRenderAuxGeom()->DrawSphere(worldLocation, sphereElement.m_radius, lyColor, true);
+            if (gEnv->pRenderer)
+            {
+                ColorB lyColor(sphereElement.m_color.ToU32());
+                Vec3 worldLocation(AZVec3ToLYVec3(sphereElement.m_worldLocation));
+                gEnv->pRenderer->GetIRenderAuxGeom()->DrawSphere(worldLocation, sphereElement.m_radius, lyColor, true);
+            }
         }
 
         removeExpiredDebugElementsFromVector(m_activeSpheres);

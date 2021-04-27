@@ -30,16 +30,19 @@ namespace AzToolsFramework
         class ThumbnailWidget;
     }
 
-    class ThumbnailDropDown : public QWidget
+    //! Used by PropertyAssetCtrl to display thumbnail preview of the asset as well as additional drop-down actions
+    class ThumbnailPropertyCtrl : public QWidget
     {
         Q_OBJECT
     public:
-        explicit ThumbnailDropDown(QWidget* parent = nullptr);
+        explicit ThumbnailPropertyCtrl(QWidget* parent = nullptr);
 
         //! Call this to set what thumbnail widget will display
         void SetThumbnailKey(Thumbnailer::SharedThumbnailKey key, const char* contextName = "Default");
         //! Remove current thumbnail
         void ClearThumbnail();
+
+        void ShowDropDownArrow(bool visible);
 
         bool event(QEvent* e) override;
 
@@ -52,7 +55,9 @@ namespace AzToolsFramework
         void leaveEvent(QEvent* e) override;
 
     private:
+        Thumbnailer::SharedThumbnailKey m_key;
         Thumbnailer::ThumbnailWidget* m_thumbnail = nullptr;
+        QScopedPointer<Thumbnailer::ThumbnailWidget> m_thumbnailEnlarged;
         QLabel* m_emptyThumbnail = nullptr;
         AspectRatioAwarePixmapWidget* m_dropDownArrow = nullptr;
     };
