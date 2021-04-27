@@ -57,40 +57,59 @@ namespace AZ
                 aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
                 const aiScene* scene = context.m_sourceScene.GetAssImpScene();
 
-                GetMeshDataFromParentResult meshDataResult(GetMeshDataFromParent(context));
-                if (!meshDataResult.IsSuccess())
+                int vertexCount = 0;
+                int expectedColorChannels = -1;
+
+                // AssImp separates meshes that have multiple materials.
+                // This code re-combines them to match previous FBX SDK behavior,
+                // so they can be separated by engine code instead.
+                for (int sdkMeshIndex = 0; sdkMeshIndex < currentNode->mNumMeshes; ++sdkMeshIndex)
                 {
-                    return meshDataResult.GetError();
+                    aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[sdkMeshIndex]];
+                    if (expectedColorChannels < 0)
+                    {
+                        expectedColorChannels = mesh->GetNumColorChannels();
+                    }
+                    else if(expectedColorChannels != mesh->GetNumColorChannels())
+                    {
+                        AZ_Error(
+                            Utilities::ErrorWindow,
+                            false,
+                            "Color channel count %d for node %s, for mesh %s at index %d does not match expected count %d",
+                            mesh->GetNumColorChannels(),
+                            currentNode->mName.C_Str(),
+                            mesh->mName.C_Str(),
+                            sdkMeshIndex,
+                            expectedColorChannels);
+                        return Events::ProcessingResult::Failure;
+                    }
+                    vertexCount += mesh->mNumVertices * mesh->GetNumColorChannels();
                 }
-                const SceneData::GraphData::MeshData* const parentMeshData(meshDataResult.GetValue());
-
-                size_t vertexCount = parentMeshData->GetVertexCount();
-
-                int sdkMeshIndex = parentMeshData->GetSdkMeshIndex();
-                if (sdkMeshIndex < 0)
+                if (vertexCount == 0)
                 {
-                    AZ_Error(Utilities::ErrorWindow, false,
-                        "Tried to construct color stream attribute for invalid or non-mesh parent data, mesh index is missing");
-                    return Events::ProcessingResult::Failure;
+                    return Events::ProcessingResult::Ignored;
                 }
-
-                aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[sdkMeshIndex]];
 
                 Events::ProcessingResultCombiner combinedVertexColorResults;
-                for (int colorSetIndex = 0; colorSetIndex < mesh->GetNumColorChannels(); ++colorSetIndex)
+                for (int colorSetIndex = 0; colorSetIndex < expectedColorChannels; ++colorSetIndex)
                 {
+
                     AZStd::shared_ptr<SceneData::GraphData::MeshVertexColorData> vertexColors =
                         AZStd::make_shared<AZ::SceneData::GraphData::MeshVertexColorData>();
                     vertexColors->ReserveContainerSpace(vertexCount);
 
-                    for (int v = 0; v < mesh->mNumVertices; ++v)
+                    for (int sdkMeshIndex = 0; sdkMeshIndex < currentNode->mNumMeshes; ++sdkMeshIndex)
                     {
-                        AZ::SceneAPI::DataTypes::Color vertexColor(
-                            AssImpSDKWrapper::AssImpTypeConverter::ToColor(mesh->mColors[colorSetIndex][v]));
-                        vertexColors->AppendColor(vertexColor);
+                        aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[sdkMeshIndex]];
+                        for (int v = 0; v < mesh->mNumVertices; ++v)
+                        {
+                            AZ::SceneAPI::DataTypes::Color vertexColor(
+                                AssImpSDKWrapper::AssImpTypeConverter::ToColor(mesh->mColors[colorSetIndex][v]));
+                            vertexColors->AppendColor(vertexColor);
+                        }
                     }
 
-                    AZStd::string nodeName(AZStd::string::format("%s%d",m_defaultNodeName,colorSetIndex));
+                    AZStd::string nodeName(AZStd::string::format("%s%d", m_defaultNodeName, colorSetIndex));
                     Containers::SceneGraph::NodeIndex newIndex =
                         context.m_scene.GetGraph().AddChild(context.m_currentGraphPosition, nodeName.c_str());
 
@@ -105,9 +124,7 @@ namespace AZ
 
                     combinedVertexColorResults += colorMapResults;
                 }
-
                 return combinedVertexColorResults.GetResult();
-
             }
 
         } // namespace FbxSceneBuilder

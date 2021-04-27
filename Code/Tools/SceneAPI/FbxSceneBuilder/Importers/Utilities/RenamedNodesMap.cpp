@@ -28,6 +28,7 @@ namespace AZ
                 Containers::SceneGraph::NodeIndex parentNode, const char* defaultName)
             {
                 AZ_TraceContext("Node name", name);
+                AZStd::string originalNodeName(name);
 
                 bool isNameUpdated = false;
                 // Nodes can't have an empty name, except of the root, otherwise nodes can't be referenced.
@@ -72,7 +73,8 @@ namespace AZ
                 if (isNameUpdated)
                 {
                     AZ_TraceContext("New node name", name);
-                    AZ_TracePrintf(Utilities::WarningWindow, "The name of the node was invalid or conflicting and was updated.");
+                    AZ_TracePrintf(Utilities::WarningWindow, "The name of the node '%s' was invalid or conflicting and was updated to '%s'.",
+                        originalNodeName.c_str(), name.c_str());
                 }
 
                 return isNameUpdated;

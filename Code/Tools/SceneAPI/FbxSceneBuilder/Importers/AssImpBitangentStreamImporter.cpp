@@ -57,47 +57,48 @@ namespace AZ
                 aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
                 const aiScene* scene = context.m_sourceScene.GetAssImpScene();
 
-                GetMeshDataFromParentResult meshDataResult(GetMeshDataFromParent(context));
-                if (!meshDataResult.IsSuccess())
+                // AssImp separates meshes that have multiple materials.
+                // This code re-combines them to match previous FBX SDK behavior,
+                // so they can be separated by engine code instead.
+                int vertexCount = 0;
+                for (int sdkMeshIndex = 0; sdkMeshIndex < currentNode->mNumMeshes; ++sdkMeshIndex)
                 {
-                    return meshDataResult.GetError();
+                    aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[sdkMeshIndex]];
+                    if (!mesh->HasTangentsAndBitangents())
+                    {
+                        continue;
+                    }
+                    vertexCount += mesh->mNumVertices;
                 }
-                const SceneData::GraphData::MeshData* const parentMeshData(meshDataResult.GetValue());
-
-                size_t vertexCount = parentMeshData->GetVertexCount();
-
-                int sdkMeshIndex = parentMeshData->GetSdkMeshIndex();
-                if (sdkMeshIndex < 0 || sdkMeshIndex >= currentNode->mNumMeshes)
-                {
-                    AZ_Error(Utilities::ErrorWindow, false,
-                        "Tried to construct bitangent stream attribute for invalid or non-mesh parent data, mesh index is invalid");
-                    return Events::ProcessingResult::Failure;
-                }
-
-                aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[sdkMeshIndex]];
-
-                if (!mesh->HasTangentsAndBitangents())
+                if (vertexCount == 0)
                 {
                     return Events::ProcessingResult::Ignored;
                 }
 
                 AZStd::shared_ptr<SceneData::GraphData::MeshVertexBitangentData> bitangentStream =
                     AZStd::make_shared<AZ::SceneData::GraphData::MeshVertexBitangentData>();
-
                 // AssImp only has one bitangentStream per mesh.
                 bitangentStream->SetBitangentSetIndex(0);
 
                 bitangentStream->SetTangentSpace(AZ::SceneAPI::DataTypes::TangentSpace::FromFbx);
                 bitangentStream->ReserveContainerSpace(vertexCount);
-
-                for (int v = 0; v < mesh->mNumVertices; ++v)
+                for (int sdkMeshIndex = 0; sdkMeshIndex < currentNode->mNumMeshes; ++sdkMeshIndex)
                 {
-                    const Vector3 bitangent(
-                        AssImpSDKWrapper::AssImpTypeConverter::ToVector3(mesh->mBitangents[v]));
-                    bitangentStream->AppendBitangent(bitangent);
+                    aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[sdkMeshIndex]];
+
+                    if (!mesh->HasTangentsAndBitangents())
+                    {
+                        continue;
+                    }
+                    for (int v = 0; v < mesh->mNumVertices; ++v)
+                    {
+                        const Vector3 bitangent(
+                            AssImpSDKWrapper::AssImpTypeConverter::ToVector3(mesh->mBitangents[v]));
+                        bitangentStream->AppendBitangent(bitangent);
+                    }
                 }
 
-                AZStd::string nodeName(AZStd::string::format("%s",m_defaultNodeName));
+                AZStd::string nodeName(AZStd::string::format("%s", m_defaultNodeName));
                 Containers::SceneGraph::NodeIndex newIndex =
                     context.m_scene.GetGraph().AddChild(context.m_currentGraphPosition, nodeName.c_str());
 
@@ -109,7 +110,6 @@ namespace AZ
                 {
                     bitangentResults = AddAttributeDataNodeWithContexts(dataPopulated);
                 }
-
                 return bitangentResults;
             }
 

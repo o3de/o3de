@@ -57,44 +57,42 @@ namespace AZ
                 aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
                 const aiScene* scene = context.m_sourceScene.GetAssImpScene();
 
-                GetMeshDataFromParentResult meshDataResult(GetMeshDataFromParent(context));
-                if (!meshDataResult.IsSuccess())
+                int vertexCount = 0;
+                for (int sdkMeshIndex = 0; sdkMeshIndex < currentNode->mNumMeshes; ++sdkMeshIndex)
                 {
-                    return meshDataResult.GetError();
+                    aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[sdkMeshIndex]];
+                    if (!mesh->HasTangentsAndBitangents())
+                    {
+                        continue;
+                    }
+                    vertexCount += mesh->mNumVertices;
                 }
-                const SceneData::GraphData::MeshData* const parentMeshData(meshDataResult.GetValue());
-
-                size_t vertexCount = parentMeshData->GetVertexCount();
-
-                int sdkMeshIndex = parentMeshData->GetSdkMeshIndex();
-                if (sdkMeshIndex < 0 || sdkMeshIndex >= currentNode->mNumMeshes)
-                {
-                    AZ_Error(Utilities::ErrorWindow, false,
-                        "Tried to construct tangent stream attribute for invalid or non-mesh parent data, mesh index is invalid");
-                    return Events::ProcessingResult::Failure;
-                }
-
-                aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[sdkMeshIndex]];
-
-                if (!mesh->HasTangentsAndBitangents())
+                if (vertexCount == 0)
                 {
                     return Events::ProcessingResult::Ignored;
                 }
 
                 AZStd::shared_ptr<SceneData::GraphData::MeshVertexTangentData> tangentStream =
                     AZStd::make_shared<AZ::SceneData::GraphData::MeshVertexTangentData>();
-
                 // AssImp only has one tangentStream per mesh.
                 tangentStream->SetTangentSetIndex(0);
 
                 tangentStream->SetTangentSpace(AZ::SceneAPI::DataTypes::TangentSpace::FromFbx);
                 tangentStream->ReserveContainerSpace(vertexCount);
-
-                for (int v = 0; v < mesh->mNumVertices; ++v)
+                for (int sdkMeshIndex = 0; sdkMeshIndex < currentNode->mNumMeshes; ++sdkMeshIndex)
                 {
-                    // Vector4's constructor that takes in a vector3 sets w to 1.0f automatically.
-                    const Vector4 tangent(AssImpSDKWrapper::AssImpTypeConverter::ToVector3(mesh->mTangents[v]));
-                    tangentStream->AppendTangent(tangent);
+                    aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[sdkMeshIndex]];
+
+                    if (!mesh->HasTangentsAndBitangents())
+                    {
+                        continue;
+                    }
+                    for (int v = 0; v < mesh->mNumVertices; ++v)
+                    {
+                        const Vector4 tangent(
+                            AssImpSDKWrapper::AssImpTypeConverter::ToVector3(mesh->mTangents[v]));
+                        tangentStream->AppendTangent(tangent);
+                    }
                 }
 
                 AZStd::string nodeName(AZStd::string::format("%s", m_defaultNodeName));
@@ -109,7 +107,6 @@ namespace AZ
                 {
                     tangentResults = AddAttributeDataNodeWithContexts(dataPopulated);
                 }
-
                 return tangentResults;
             }
 

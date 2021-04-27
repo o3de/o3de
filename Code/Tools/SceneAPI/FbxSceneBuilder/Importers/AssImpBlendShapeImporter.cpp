@@ -74,37 +74,69 @@ namespace AZ
                 {
                     return meshDataResult.GetError();
                 }
-                const SceneData::GraphData::MeshData* const parentMeshData(meshDataResult.GetValue());
-                int parentMeshIndex = parentMeshData->GetSdkMeshIndex();
 
                 Events::ProcessingResultCombiner combinedBlendShapeResult;
 
+                // 1. Loop through meshes & anims
+                //      Create storage: Anim to meshes
+                // 2. Loop through anims & meshes
+                //      Create an anim mesh for each anim, with meshes re-combined.
+                // AssImp separates meshes that have multiple materials.
+                // This code re-combines them to match previous FBX SDK behavior,
+                // so they can be separated by engine code instead.
+                AZStd::map<AZStd::string, AZStd::vector<int>> animToMeshIndices;
                 for (int nodeMeshIdx = 0; nodeMeshIdx < numMesh; nodeMeshIdx++)
                 {
                     int sceneMeshIdx = context.m_sourceNode.GetAssImpNode()->mMeshes[nodeMeshIdx];
                     const aiMesh* aiMesh = context.m_sourceScene.GetAssImpScene()->mMeshes[sceneMeshIdx];
-
-                    // Each mesh gets its own node in the scene graph, so only generate
-                    // morph targets for the current mesh.
-                    if (parentMeshIndex != nodeMeshIdx || !aiMesh->mNumAnimMeshes)
+                    if (!aiMesh->mNumAnimMeshes)
                     {
                         continue;
                     }
-
                     for (int animIdx = 0; animIdx < aiMesh->mNumAnimMeshes; animIdx++)
                     {
-                        AZStd::shared_ptr<SceneData::GraphData::BlendShapeData> blendShapeData =
-                            AZStd::make_shared<SceneData::GraphData::BlendShapeData>();
-
                         aiAnimMesh* aiAnimMesh = aiMesh->mAnimMeshes[animIdx];
-                        AZStd::string nodeName(aiAnimMesh->mName.C_Str());
-                        size_t dotIndex = nodeName.rfind('.');
-                        if (dotIndex != AZStd::string::npos)
+                        animToMeshIndices[aiAnimMesh->mName.C_Str()].push_back(nodeMeshIdx);
+                    }
+                }
+
+                for (const auto& animToMeshIndex : animToMeshIndices)
+                {
+                    AZStd::shared_ptr<SceneData::GraphData::BlendShapeData> blendShapeData =
+                        AZStd::make_shared<SceneData::GraphData::BlendShapeData>();
+                    AZStd::string nodeName(animToMeshIndex.first);
+                    size_t dotIndex = nodeName.rfind('.');
+                    if (dotIndex != AZStd::string::npos)
+                    {
+                        nodeName.erase(0, dotIndex + 1);
+                    }
+                    RenamedNodesMap::SanitizeNodeName(nodeName, context.m_scene.GetGraph(), context.m_currentGraphPosition, "BlendShape");
+                    AZ_TraceContext("Blend shape name", nodeName);
+                    for (const auto& meshIndex : animToMeshIndex.second)
+                    {
+                        int sceneMeshIdx = context.m_sourceNode.GetAssImpNode()->mMeshes[meshIndex];
+                        const aiMesh* aiMesh = context.m_sourceScene.GetAssImpScene()->mMeshes[sceneMeshIdx];
+                        int foundAnimIdx = -1;
+                        for (int animIdx = 0; animIdx < aiMesh->mNumAnimMeshes; animIdx++)
                         {
-                            nodeName.erase(0, dotIndex + 1);
+                            if (strcmp(aiMesh->mAnimMeshes[animIdx]->mName.C_Str(), animToMeshIndex.first.c_str()) == 0)
+                            {
+                                foundAnimIdx = animIdx;
+                                break;
+                            }
                         }
-                        RenamedNodesMap::SanitizeNodeName(nodeName, context.m_scene.GetGraph(), context.m_currentGraphPosition, "BlendShape");
-                        AZ_TraceContext("Blend shape name", nodeName);
+                        if (foundAnimIdx == -1)
+                        {
+                            AZ_Error(
+                                Utilities::ErrorWindow,
+                                false,
+                                "Animations for node %s do not match for all meshes. Could not find animation %s on mesh %s.",
+                                context.m_sourceNode.GetAssImpNode()->mName.C_Str(),
+                                animToMeshIndex.first.c_str(),
+                                aiMesh->mName.C_Str());
+                            return Events::ProcessingResult::Failure;
+                        }
+                        aiAnimMesh* aiAnimMesh = aiMesh->mAnimMeshes[foundAnimIdx];
 
                         AZStd::bitset<SceneData::GraphData::BlendShapeData::MaxNumUVSets> uvSetUsedFlags;
                         for (AZ::u8 uvSetIndex = 0; uvSetIndex < SceneData::GraphData::BlendShapeData::MaxNumUVSets; ++uvSetIndex)
@@ -197,27 +229,29 @@ namespace AZ
                             blendShapeData->AddFace(blendFace);
                         }
 
-                        // Report problem if no vertex or face converted to MeshData
-                        if (blendShapeData->GetVertexCount() <= 0 || blendShapeData->GetFaceCount() <= 0)
-                        {
-                            AZ_Error(Utilities::ErrorWindow, false, "Missing geometry data in blendshape node %s.", nodeName.c_str());
-                            return Events::ProcessingResult::Failure;
-                        }
 
-                        Containers::SceneGraph::NodeIndex newIndex =
-                            context.m_scene.GetGraph().AddChild(context.m_currentGraphPosition, nodeName.c_str());
-
-                        Events::ProcessingResult blendShapeResult;
-                        AssImpSceneAttributeDataPopulatedContext dataPopulated(context, blendShapeData, newIndex, nodeName);
-                        blendShapeResult = Events::Process(dataPopulated);
-
-                        if (blendShapeResult != Events::ProcessingResult::Failure)
-                        {
-                            blendShapeResult = AddAttributeDataNodeWithContexts(dataPopulated);
-                        }
-                        combinedBlendShapeResult += blendShapeResult;
                     }
 
+
+                    // Report problem if no vertex or face converted to MeshData
+                    if (blendShapeData->GetVertexCount() <= 0 || blendShapeData->GetFaceCount() <= 0)
+                    {
+                        AZ_Error(Utilities::ErrorWindow, false, "Missing geometry data in blendshape node %s.", nodeName.c_str());
+                        return Events::ProcessingResult::Failure;
+                    }
+
+                    Containers::SceneGraph::NodeIndex newIndex =
+                        context.m_scene.GetGraph().AddChild(context.m_currentGraphPosition, nodeName.c_str());
+
+                    Events::ProcessingResult blendShapeResult;
+                    AssImpSceneAttributeDataPopulatedContext dataPopulated(context, blendShapeData, newIndex, nodeName);
+                    blendShapeResult = Events::Process(dataPopulated);
+
+                    if (blendShapeResult != Events::ProcessingResult::Failure)
+                    {
+                        blendShapeResult = AddAttributeDataNodeWithContexts(dataPopulated);
+                    }
+                    combinedBlendShapeResult += blendShapeResult;
                 }
 
                 return combinedBlendShapeResult.GetResult();

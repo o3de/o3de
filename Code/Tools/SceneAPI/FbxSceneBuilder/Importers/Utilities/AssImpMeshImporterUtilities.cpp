@@ -34,16 +34,17 @@ namespace AZ::SceneAPI::FbxSceneBuilder
         {
             return false;
         }
+        auto newMesh = makeMeshFunc();
 
+        newMesh->SetUnitSizeInMeters(sceneSystem.GetUnitSizeInMeters());
+        newMesh->SetOriginalUnitSizeInMeters(sceneSystem.GetOriginalUnitSizeInMeters());
+
+        // AssImp separates meshes that have multiple materials.
+        // This code re-combines them to match previous FBX SDK behavior,
+        // so they can be separated by engine code instead.
+        int vertOffset = 0;
         for (int m = 0; m < currentNode->mNumMeshes; ++m)
         {
-            auto newMesh = makeMeshFunc();
-
-            newMesh->SetUnitSizeInMeters(sceneSystem.GetUnitSizeInMeters());
-            newMesh->SetOriginalUnitSizeInMeters(sceneSystem.GetOriginalUnitSizeInMeters());
-
-            newMesh->SetSdkMeshIndex(m);
-
             aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[m]];
 
             // Lumberyard materials are created in order based on mesh references in the scene
@@ -59,7 +60,7 @@ namespace AZ::SceneAPI::FbxSceneBuilder
                 sceneSystem.SwapVec3ForUpAxis(vertex);
                 sceneSystem.ConvertUnit(vertex);
                 newMesh->AddPosition(vertex);
-                newMesh->SetVertexIndexToControlPointIndexMap(vertIdx, vertIdx);
+                newMesh->SetVertexIndexToControlPointIndexMap(vertIdx + vertOffset, vertIdx + vertOffset);
 
                 if (mesh->HasNormals())
                 {
@@ -86,14 +87,15 @@ namespace AZ::SceneAPI::FbxSceneBuilder
                 }
                 for (int idx = 0; idx < face.mNumIndices; ++idx)
                 {
-                    meshFace.vertexIndex[idx] = face.mIndices[idx];
+                    meshFace.vertexIndex[idx] = face.mIndices[idx] + vertOffset;
                 }
 
                 newMesh->AddFace(meshFace, assImpMatIndexToLYIndex[mesh->mMaterialIndex]);
             }
+            vertOffset += mesh->mNumVertices;
 
-            meshes.push_back(newMesh);
         }
+        meshes.push_back(newMesh);
 
         return true;
     }

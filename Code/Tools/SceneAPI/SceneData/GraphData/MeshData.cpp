@@ -45,7 +45,6 @@ namespace AZ
                     behaviorContext->Class<MeshData>()
                         ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                         ->Attribute(AZ::Script::Attributes::Module, "scene")
-                        ->Method("GetSdkMeshIndex", &MeshData::GetSdkMeshIndex)
                         ->Method("GetControlPointIndex", &MeshData::GetControlPointIndex)
                         ->Method("GetUsedControlPointCount", &MeshData::GetUsedControlPointCount)
                         ->Method("GetUsedPointIndexForControlPoint", &MeshData::GetUsedPointIndexForControlPoint)
@@ -77,10 +76,6 @@ namespace AZ
             void MeshData::CloneAttributesFrom(const IGraphObject* sourceObject)
             {
                 IMeshData::CloneAttributesFrom(sourceObject);
-                if (const auto* typedSource = azrtti_cast<const MeshData*>(sourceObject))
-                {
-                    SetSdkMeshIndex(typedSource->GetSdkMeshIndex());
-                }
             }
 
             void MeshData::AddPosition(const AZ::Vector3& position)
@@ -109,15 +104,6 @@ namespace AZ
             {
                 m_faceList.push_back(face);
                 m_faceMaterialIds.push_back(faceMaterialId);
-            }
-
-            void MeshData::SetSdkMeshIndex(int sdkMeshIndex)
-            {
-                m_sdkMeshIndex = sdkMeshIndex;
-            }
-            int MeshData::GetSdkMeshIndex() const
-            {
-                return m_sdkMeshIndex;
             }
 
             void MeshData::SetVertexIndexToControlPointIndexMap(int vertexIndex, int controlPointIndex)
