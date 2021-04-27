@@ -98,10 +98,10 @@ namespace Multiplayer
         static constexpr uint32_t sizeOfFields = sizeof(RpcDeliveryType)
             + sizeof(NetEntityId)
             + sizeof(NetComponentId)
-            + sizeof(uint16_t);
+            + sizeof(RpcIndex);
 
         // 2-byte size header + the actual blob payload itself
-        const uint32_t sizeOfBlob = (m_data != nullptr) ? sizeof(RpcIndex) + m_data->GetSize() : 0;
+        const uint32_t sizeOfBlob = (m_data != nullptr) ? sizeof(uint16_t) + m_data->GetSize() : 0;
 
         // No sliceId, remote replicator already exists so we don't need to know what type of entity this is
         return sizeOfFields + sizeOfBlob;
