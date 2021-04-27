@@ -287,8 +287,8 @@ namespace AZ
             }
             else if (!rasterState.m_depthClipEnable)
             {
-                AZ_Error("Vulkan", false, "Depth clipping is being used but it's not supported on this device");
-                return RHI::ResultCode::InvalidArgument;
+                // depth clamp must be disabled if physical device does not support it
+                info.depthClampEnable = VK_FALSE;
             }
 
             switch (rasterState.m_fillMode)
