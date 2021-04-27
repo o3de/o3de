@@ -23,6 +23,20 @@ namespace AZ
 
     namespace Render
     {
+        struct PointLightData
+        {
+            AZStd::array<float, 3> m_position = {{0.0f, 0.0f, 0.0f}};
+            float m_invAttenuationRadiusSquared =
+                0.0f; // Inverse of the distance at which this light no longer has an effect, squared. Also used for falloff calculations.
+            AZStd::array<float, 3> m_rgbIntensity = {{0.0f, 0.0f, 0.0f}};
+            float m_bulbRadius = 0.0f; // Radius of spherical light in meters.
+
+            static const int NumShadowFaces = 6;
+
+            AZStd::array<uint16_t, NumShadowFaces> m_shadowIndices = {{0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF}};
+            uint32_t m_padding;
+        };
+
         //! PointLightFeatureProcessorInterface provides an interface to acquire, release, and update a point light.
         class PointLightFeatureProcessorInterface
             : public RPI::FeatureProcessor
@@ -53,6 +67,20 @@ namespace AZ
             virtual void SetShadowsEnabled(LightHandle handle, bool enabled) = 0;
             //! Sets the shadowmap size (width and height) of the light.			
             virtual void SetShadowmapMaxResolution(LightHandle handle, ShadowmapSize shadowmapSize) = 0;
+            //! Specifies filter method of shadows.
+            virtual void SetShadowFilterMethod(LightHandle handle, ShadowFilterMethod method) = 0;
+            //! Specifies the width of boundary between shadowed area and lit area in radians. The degree ofshadowed gradually changes on
+            //! the boundary. 0 disables softening.
+            virtual void SetSofteningBoundaryWidthAngle(LightHandle handle, float boundaryWidthRadians) = 0;
+            //! Sets sample count to predict boundary of shadow (up to 16). It will be clamped to be less than or equal to the filtering
+            //! sample count.
+            virtual void SetPredictionSampleCount(LightHandle handle, uint16_t count) = 0;
+            //! Sets sample count for filtering of shadow boundary (up to 64)
+            virtual void SetFilteringSampleCount(LightHandle handle, uint16_t count) = 0;
+            //! Sets the shadowmap Pcf (percentage closer filtering) method.
+            virtual void SetPcfMethod(LightHandle handle, PcfMethod method) = 0;
+            //! Sets all of the the point data for the provided LightHandle.
+            virtual void SetPointData(LightHandle handle, const PointLightData& data) = 0;
         };
     } // namespace Render
 } // namespace AZ

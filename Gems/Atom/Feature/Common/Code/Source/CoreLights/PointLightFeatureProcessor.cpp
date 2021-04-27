@@ -219,6 +219,15 @@ namespace AZ
             }
         }
 
+        void PointLightFeatureProcessor::SetPointData(LightHandle handle, const PointLightData& data)
+        {
+            AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to PointLightFeatureProcessor::SetDiskData().");
+
+            m_pointLightData.GetData(handle.GetIndex()) = data;
+            m_deviceBufferNeedsUpdate = true;
+            UpdateShadow(handle);
+        }
+
         void PointLightFeatureProcessor::UpdateShadow(LightHandle handle)
         {
             for (int i = 0; i < PointLightData::NumShadowFaces; ++i)
@@ -237,7 +246,7 @@ namespace AZ
                 desc.m_fieldOfViewYRadians = DegToRad(90.5f); // Make it slightly larger than 90 degrees to avoid artifacts on the boundary between 2 cubemap faces
                 desc.m_transform = Transform::CreateLookAt(position, position + m_directions[i]);
                 desc.m_aspectRatio = 1.0f;
-                desc.m_nearPlaneDistance = 0.1f;
+                desc.m_nearPlaneDistance = 0.0f; 
 
                 const float invRadiusSquared = pointLight.m_invAttenuationRadiusSquared;
                 if (invRadiusSquared <= 0.f)
@@ -246,33 +255,59 @@ namespace AZ
                     return;
                 }
                 const float attenuationRadius = sqrtf(1.f / invRadiusSquared);
-                desc.m_farPlaneDistance = attenuationRadius;
+                desc.m_farPlaneDistance = attenuationRadius + pointLight.m_bulbRadius;
 
                 m_shadowFeatureProcessor->SetShadowProperties(shadowId, desc);
             }
         }
 
         template<typename Functor, typename ParamType>
-        void PointLightFeatureProcessor::SetShadowSetting(LightHandle handle, Functor&& functor, ParamType&& param, const int lightIndex)
+        void PointLightFeatureProcessor::SetShadowSetting(LightHandle handle, Functor&& functor, ParamType&& param)
         {
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to PointLightFeatureProcessor::SetShadowSetting().");
 
             auto& light = m_pointLightData.GetData(handle.GetIndex());
-            ShadowId shadowId = ShadowId(light.m_shadowIndices[lightIndex]);
-
-            AZ_Assert(shadowId.IsValid(), "Attempting to set a shadow property when shadows are not enabled.");
-            if (shadowId.IsValid())
+            for (int lightIndex = 0; lightIndex < PointLightData::NumShadowFaces; ++lightIndex)
             {
-                AZStd::invoke(AZStd::forward<Functor>(functor), m_shadowFeatureProcessor, shadowId, AZStd::forward<ParamType>(param));
+                ShadowId shadowId = ShadowId(light.m_shadowIndices[lightIndex]);
+
+                AZ_Assert(shadowId.IsValid(), "Attempting to set a shadow property when shadows are not enabled.");
+                if (shadowId.IsValid())
+                {
+                    AZStd::invoke(AZStd::forward<Functor>(functor), m_shadowFeatureProcessor, shadowId, AZStd::forward<ParamType>(param));
+                }
             }
         }
 
         void PointLightFeatureProcessor::SetShadowmapMaxResolution(LightHandle handle, ShadowmapSize shadowmapSize)
         {
-            for (int i = 0; i < PointLightData::NumShadowFaces; ++i)
-            {
-                SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetShadowmapMaxResolution, shadowmapSize, i);
-            }
+            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetShadowmapMaxResolution, shadowmapSize);
         }
+
+        void PointLightFeatureProcessor::SetShadowFilterMethod(LightHandle handle, ShadowFilterMethod method)
+        {
+            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetShadowFilterMethod, method);
+        }
+
+        void PointLightFeatureProcessor::SetSofteningBoundaryWidthAngle(LightHandle handle, float boundaryWidthRadians)
+        {
+            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetSofteningBoundaryWidthAngle, boundaryWidthRadians);
+        }
+
+        void PointLightFeatureProcessor::SetPredictionSampleCount(LightHandle handle, uint16_t count)
+        {
+            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetPredictionSampleCount, count);
+        }
+
+        void PointLightFeatureProcessor::SetFilteringSampleCount(LightHandle handle, uint16_t count)
+        {
+            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetFilteringSampleCount, count);
+        }
+
+        void PointLightFeatureProcessor::SetPcfMethod(LightHandle handle, PcfMethod method)
+        {
+            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetPcfMethod, method);
+        }
+
     } // namespace Render
 } // namespace AZ

@@ -25,20 +25,6 @@ namespace AZ
 
     namespace Render
     {
-
-        struct PointLightData
-        {
-            AZStd::array<float, 3> m_position = { { 0.0f, 0.0f, 0.0f } };
-            float m_invAttenuationRadiusSquared = 0.0f; // Inverse of the distance at which this light no longer has an effect, squared. Also used for falloff calculations.
-            AZStd::array<float, 3> m_rgbIntensity = { { 0.0f, 0.0f, 0.0f } };
-            float m_bulbRadius = 0.0f; // Radius of spherical light in meters.
-
-            static const int NumShadowFaces = 6;
-
-            AZStd::array<uint16_t, NumShadowFaces> m_shadowIndices = {{0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF}};
-            uint32_t m_padding;
-        };
-
         class PointLightFeatureProcessor final
             : public PointLightFeatureProcessorInterface
         {
@@ -66,6 +52,12 @@ namespace AZ
             void SetBulbRadius(LightHandle handle, float bulbRadius) override;
             void SetShadowsEnabled(LightHandle handle, bool enabled) override;
             void SetShadowmapMaxResolution(LightHandle handle, ShadowmapSize shadowmapSize) override;
+            void SetShadowFilterMethod(LightHandle handle, ShadowFilterMethod method) override;
+            void SetSofteningBoundaryWidthAngle(LightHandle handle, float boundaryWidthRadians) override;
+            void SetPredictionSampleCount(LightHandle handle, uint16_t count) override;
+            void SetFilteringSampleCount(LightHandle handle, uint16_t count) override;
+            void SetPcfMethod(LightHandle handle, PcfMethod method) override;
+            void SetPointData(LightHandle handle, const PointLightData& data) override;
 
             const Data::Instance<RPI::Buffer>  GetLightBuffer() const;
             uint32_t GetLightCount()const;
@@ -78,7 +70,7 @@ namespace AZ
             void UpdateShadow(LightHandle handle);
             // Convenience function for forwarding requests to the ProjectedShadowFeatureProcessor
             template<typename Functor, typename ParamType>
-            void SetShadowSetting(LightHandle handle, Functor&&, ParamType&& param, const int lightIndex);
+            void SetShadowSetting(LightHandle handle, Functor&&, ParamType&& param);
             ProjectedShadowFeatureProcessor* m_shadowFeatureProcessor = nullptr;
 
             IndexedDataVector<PointLightData> m_pointLightData;
