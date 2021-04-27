@@ -170,7 +170,7 @@ endif()
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_pytest(
         NAME AutomatedTesting::BlastTests
-        TEST_SUITE periodic
+        TEST_SUITE main
         TEST_SERIAL TRUE
         PATH ${CMAKE_CURRENT_LIST_DIR}/Blast/TestSuite_Active.py
         TIMEOUT 3600
@@ -178,6 +178,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
             Legacy::Editor
             AZ::AssetProcessor
             AutomatedTesting.Assets
+        COMPONENT Blast
     )
 endif()
 
