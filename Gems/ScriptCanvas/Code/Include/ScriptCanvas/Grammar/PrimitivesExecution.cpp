@@ -72,7 +72,10 @@ namespace ScriptCanvas
 
             for (auto returnValue : m_returnValues)
             {
-                AZStd::const_pointer_cast<ReturnValue>(returnValue.second)->Clear();
+                if (auto returnValuePtr = AZStd::const_pointer_cast<ReturnValue>(returnValue.second))
+                {
+                    returnValuePtr->Clear();
+                }
             }
             m_returnValues.clear();
 

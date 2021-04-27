@@ -321,7 +321,6 @@ namespace AzToolsFramework
                 removedNestedInstance = AZStd::move(nestedInstanceIterator->second);
 
                 removedNestedInstance->m_parent = nullptr;
-                removedNestedInstance->m_alias = InstanceAlias();
 
                 m_nestedInstances.erase(instanceAlias);
             }
@@ -393,6 +392,14 @@ namespace AzToolsFramework
             for (auto& [instanceAlias, instance] : m_nestedInstances)
             {
                 instance->GetNestedEntities(callback);
+            }
+        }
+
+        void Instance::GetNestedInstances(const AZStd::function<void(AZStd::unique_ptr<Instance>&)>& callback)
+        {
+            for (auto& [instanceAlias, instance] : m_nestedInstances)
+            {
+                callback(instance);
             }
         }
 

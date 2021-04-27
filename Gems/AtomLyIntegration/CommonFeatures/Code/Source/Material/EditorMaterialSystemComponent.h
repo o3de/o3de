@@ -22,6 +22,8 @@
 
 #include <AtomLyIntegration/CommonFeatures/Material/EditorMaterialSystemComponentRequestBus.h>
 
+#include <Material/MaterialBrowserInteractions.h>
+
 namespace AZ
 {
     namespace Render
@@ -76,6 +78,8 @@ namespace AZ
             AzFramework::TargetInfo m_materialEditorTarget;
 
             QAction* m_openMaterialEditorAction = nullptr;
+
+            AZStd::unique_ptr<MaterialBrowserInteractions> m_materialBrowserInteractions;
         };
     } // namespace Render
 } // namespace AZ

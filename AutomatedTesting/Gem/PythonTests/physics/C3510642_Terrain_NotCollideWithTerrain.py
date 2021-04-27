@@ -74,12 +74,11 @@ def C3510642_Terrain_NotCollideWithTerrain():
 
     imports.init()
 
-
     import azlmbr.legacy.general as general
     import azlmbr.bus
 
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     # Constants
     TIMEOUT = 2.0
@@ -176,5 +175,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C3510642_Terrain_NotCollideWithTerrain)

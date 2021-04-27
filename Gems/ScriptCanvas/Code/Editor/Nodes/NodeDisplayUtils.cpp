@@ -332,7 +332,8 @@ namespace ScriptCanvasEditor::Nodes
             contextGroup = TranslationContextGroup::ClassMethod;
             break;
         default:
-            AZ_Assert(false, "Invalid node type");
+            AZ_Error("ScriptCanvas", false, "Invalid method node type, node creation failed. This node nodes to be deleted.");
+            break;
         }
 
         graphCanvasEntity->Init();

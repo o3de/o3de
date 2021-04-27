@@ -36,6 +36,7 @@ set(FILES
     Include/Atom/RHI/CopyItem.h
     Include/Atom/RHI/ConstantsData.h
     Include/Atom/RHI/DispatchItem.h
+    Include/Atom/RHI/DrawFilterTagRegistry.h
     Include/Atom/RHI/DrawItem.h
     Include/Atom/RHI/DrawList.h
     Include/Atom/RHI/DrawListTagRegistry.h
@@ -48,7 +49,6 @@ set(FILES
     Source/RHI/ConstantsData.cpp
     Source/RHI/DrawList.cpp
     Source/RHI/DrawListContext.cpp
-    Source/RHI/DrawListTagRegistry.cpp
     Source/RHI/DrawPacket.cpp
     Source/RHI/DrawPacketBuilder.cpp
     Include/Atom/RHI/Device.h
@@ -201,4 +201,5 @@ set(FILES
     Include/Atom/RHI/CpuProfiler.h
     Include/Atom/RHI/CpuProfilerImpl.h
     Source/RHI/CpuProfilerImpl.cpp
+    Include/Atom/RHI/TagRegistry.h
 )

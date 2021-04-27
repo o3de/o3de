@@ -432,10 +432,13 @@ void CAnimMaterialNode::AddTrack(IAnimTrack* track)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CAnimMaterialNode::Reflect(AZ::SerializeContext* serializeContext)
+void CAnimMaterialNode::Reflect(AZ::ReflectContext* context)
 {
-    serializeContext->Class<CAnimMaterialNode, CAnimNode>()
-        ->Version(1);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<CAnimMaterialNode, CAnimNode>()
+            ->Version(1);
+    }
 }
 
 #undef s_nodeParamsInitialized

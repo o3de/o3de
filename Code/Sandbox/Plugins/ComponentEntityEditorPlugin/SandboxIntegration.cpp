@@ -1383,11 +1383,6 @@ void SandboxIntegrationManager::SetShowCircularDependencyError(const bool& showC
 }
 
 //////////////////////////////////////////////////////////////////////////
-void SandboxIntegrationManager::SetEditTool(const char* tool)
-{
-    GetIEditor()->SetEditTool(tool);
-}
-
 void SandboxIntegrationManager::LaunchLuaEditor(const char* files)
 {
     CCryEditApp::instance()->OpenLUAEditor(files);
