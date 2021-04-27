@@ -72,7 +72,6 @@ namespace AZ
         void ImguiAtomSystemComponent::InitializeViewportSizeIfNeeded()
         {
 #if defined(IMGUI_ENABLED)
-            ImGui::ImGuiManagerBus::Broadcast(&ImGui::IImGuiManager::SetResolutionMode, ImGui::ImGuiResolutionMode::LockToResolution);
             if (m_initialized)
             {
                 return;
