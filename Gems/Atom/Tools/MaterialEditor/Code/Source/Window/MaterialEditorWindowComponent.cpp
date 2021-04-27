@@ -98,7 +98,7 @@ namespace MaterialEditor
 
     void MaterialEditorWindowComponent::CreateMaterialEditorWindow()
     {
-        m_materialBrowserInteractions.reset(aznew MaterialBrowserInteractions);
+        m_materialEditorBrowserInteractions.reset(aznew MaterialEditorBrowserInteractions);
 
         m_window.reset(aznew MaterialEditorWindow);
         m_window->show();

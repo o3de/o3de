@@ -258,7 +258,8 @@ namespace AZ
                 Method("CreateFromMatrix3x3", &Quaternion::CreateFromMatrix3x3)->
                 Method("CreateFromMatrix4x4", &Quaternion::CreateFromMatrix4x4)->
                 Method("CreateFromAxisAngle", &Quaternion::CreateFromAxisAngle)->
-                Method("CreateShortestArc", &Quaternion::CreateShortestArc)
+                Method("CreateShortestArc", &Quaternion::CreateShortestArc)->
+                Method("CreateFromEulerAnglesDegrees", &Quaternion::CreateFromEulerAnglesDegrees)
                 ;
         }
     }

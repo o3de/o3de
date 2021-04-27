@@ -81,8 +81,8 @@ def C12712453_ScriptCanvas_MultipleRaycastNode():
 
     imports.init()
 
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     import azlmbr.legacy.general as general
     import azlmbr.bus
@@ -203,6 +203,6 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     # Disabled until Script Canvas merges the new backend
     #Report.start_test(C12712453_ScriptCanvas_MultipleRaycastNode)

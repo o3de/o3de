@@ -179,23 +179,41 @@ bool CScreenFaderTrack::SetActiveTexture(int index)
 }
 
 //////////////////////////////////////////////////////////////////////////
-template<>
-inline void TAnimTrack<IScreenFaderKey>::Reflect(AZ::SerializeContext* serializeContext)
+static bool ScreenFaderTrackVersionConverter(
+    AZ::SerializeContext& serializeContext,
+    AZ::SerializeContext::DataElementNode& rootElement)
 {
-    serializeContext->Class<TAnimTrack<IScreenFaderKey> >()
-        ->Version(2)
-        ->Field("Flags", &TAnimTrack<IScreenFaderKey>::m_flags)
-        ->Field("Range", &TAnimTrack<IScreenFaderKey>::m_timeRange)
-        ->Field("ParamType", &TAnimTrack<IScreenFaderKey>::m_nParamType)
-        ->Field("Keys", &TAnimTrack<IScreenFaderKey>::m_keys)
-        ->Field("Id", &TAnimTrack<IScreenFaderKey>::m_id);
+    if (rootElement.GetVersion() < 3)
+    {
+        rootElement.AddElement(serializeContext, "BaseClass1", azrtti_typeid<IAnimTrack>());
+    }
+
+    return true;
+}
+
+template<>
+inline void TAnimTrack<IScreenFaderKey>::Reflect(AZ::ReflectContext* context)
+{
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<TAnimTrack<IScreenFaderKey>, IAnimTrack>()
+            ->Version(3, &ScreenFaderTrackVersionConverter)
+            ->Field("Flags", &TAnimTrack<IScreenFaderKey>::m_flags)
+            ->Field("Range", &TAnimTrack<IScreenFaderKey>::m_timeRange)
+            ->Field("ParamType", &TAnimTrack<IScreenFaderKey>::m_nParamType)
+            ->Field("Keys", &TAnimTrack<IScreenFaderKey>::m_keys)
+            ->Field("Id", &TAnimTrack<IScreenFaderKey>::m_id);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CScreenFaderTrack::Reflect(AZ::SerializeContext* serializeContext)
+void CScreenFaderTrack::Reflect(AZ::ReflectContext* context)
 {
-    TAnimTrack<IScreenFaderKey>::Reflect(serializeContext);
+    TAnimTrack<IScreenFaderKey>::Reflect(context);
 
-    serializeContext->Class<CScreenFaderTrack, TAnimTrack<IScreenFaderKey> >()
-        ->Version(1);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<CScreenFaderTrack, TAnimTrack<IScreenFaderKey>>()
+            ->Version(1);
+    }
 }

@@ -45,7 +45,6 @@ struct DisplayContext;
 class CCryEditDoc;
 class CLayoutViewPane;
 class CViewManager;
-class CEditTool;
 class CBaseObjectsCache;
 struct HitContext;
 struct IRenderListener;
@@ -254,8 +253,6 @@ public:
     virtual void SetCurrentCursor(EStdCursor stdCursor, const QString& str) = 0;
     virtual void SetSupplementaryCursorStr(const QString& str) = 0;
     virtual void SetCursorString(const QString& str) = 0;
-
-    virtual CEditTool* GetEditTool() = 0;
 
     virtual void SetFocus() = 0;
     virtual void Invalidate(BOOL bErase = 1) = 0;
@@ -488,10 +485,6 @@ public:
     void ResetCursor();
     void SetSupplementaryCursorStr(const QString& str);
 
-    virtual CEditTool* GetEditTool();
-    // Assign an edit tool to viewport
-    virtual void SetEditTool(CEditTool* pEditTool, bool bLocalToViewport = false);
-
     //////////////////////////////////////////////////////////////////////////
     // Return visble objects cache.
     CBaseObjectsCache* GetVisibleObjectsCache() { return m_pVisibleObjectsCache; };
@@ -626,8 +619,6 @@ protected:
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     // Same construction matrix is shared by all viewports.
     Matrix34 m_constructionMatrix[LAST_COORD_SYSTEM];
-
-    QPointer<CEditTool> m_pLocalEditTool;
 
     std::vector<IRenderListener*>           m_cRenderListeners;
 

@@ -39,6 +39,10 @@ namespace AzToolsFramework
 
             QSharedPointer<CompositeFilter> GetFilter() const;
 
+            QSharedPointer<CompositeFilter> GetStringFilter() const;
+
+            QSharedPointer<CompositeFilter> GetTypesFilter() const;
+
             QString GetFilterString() const { return textFilter(); }
             void ClearStringFilter() { ClearTextFilter(); }
 

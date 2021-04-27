@@ -65,6 +65,9 @@ namespace NvCloth
         AZStd::vector<SimUVType> m_uvs;
         AZStd::vector<float> m_motionConstraints;
         AZStd::vector<AZ::Vector2> m_backstopData; //!< X contains offset, Y contains radius.
+        AZStd::vector<AZ::Vector3> m_tangents;
+        AZStd::vector<AZ::Vector3> m_bitangents;
+        AZStd::vector<AZ::Vector3> m_normals;
     };
 
     //! Interface to obtain cloth information from inside an Asset.
@@ -87,9 +90,6 @@ namespace NvCloth
             const AZStd::string& meshNode,
             MeshNodeInfo& meshNodeInfo,
             MeshClothInfo& meshClothInfo) = 0;
-
-        //! Returns whether the asset has support for skinned animation or not.
-        virtual bool DoesSupportSkinnedAnimation() const = 0;
 
     protected:
         static float ConvertBackstopOffset(float backstopOffset);

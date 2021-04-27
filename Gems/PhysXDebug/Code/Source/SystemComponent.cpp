@@ -511,13 +511,13 @@ namespace PhysXDebug
 
     void SystemComponent::RenderBuffers()
     {
-        if (gEnv && !m_linePoints.empty())
+        if (gEnv && gEnv->pRenderer && !m_linePoints.empty())
         {
             AZ_Assert(m_linePoints.size() == m_lineColors.size(), "Lines: Expected an equal number of points to colors.");
             gEnv->pRenderer->GetIRenderAuxGeom()->DrawLines(m_linePoints.begin(), m_linePoints.size(), m_lineColors.begin(), 1.0f);
         }
 
-        if (gEnv && !m_trianglePoints.empty())
+        if (gEnv && gEnv->pRenderer && !m_trianglePoints.empty())
         {
             AZ_Assert(m_trianglePoints.size() == m_triangleColors.size(), "Triangles: Expected an equal number of points to colors.");
             gEnv->pRenderer->GetIRenderAuxGeom()->DrawTriangles(m_trianglePoints.begin(), m_trianglePoints.size(), m_triangleColors.begin());
@@ -829,7 +829,7 @@ namespace PhysXDebug
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
 
-        if (m_settings.m_visualizationEnabled && m_culling.m_boxWireframe)
+        if (gEnv && gEnv->pRenderer && m_settings.m_visualizationEnabled && m_culling.m_boxWireframe)
         {
             ColorB wireframeColor = MapOriginalPhysXColorToUserDefinedValues(1);
             AABB lyAABB(AZAabbToLyAABB(cullingBoxAabb));

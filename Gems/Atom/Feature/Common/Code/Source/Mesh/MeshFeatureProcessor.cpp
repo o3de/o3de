@@ -21,6 +21,8 @@
 #include <Atom/RPI.Public/Culling.h>
 #include <Atom/Utils/StableDynamicArray.h>
 
+#include <Atom/RPI.Reflect/Model/ModelAssetCreator.h>
+
 #include <AtomCore/Instance/InstanceDatabase.h>
 
 #include <AzCore/Console/IConsole.h>
@@ -150,7 +152,8 @@ namespace AZ
             const Data::Asset<RPI::ModelAsset>& modelAsset,
             const MaterialAssignmentMap& materials,
             bool skinnedMeshWithMotion,
-            bool rayTracingEnabled)
+            bool rayTracingEnabled,
+            RequiresCloneCallback requiresCloneCallback)
         {
             AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
 
@@ -166,8 +169,9 @@ namespace AZ
 
             meshDataHandle->m_scene = GetParentScene();
             meshDataHandle->m_materialAssignments = materials;
-
             meshDataHandle->m_objectId = m_transformService->ReserveObjectId();
+            meshDataHandle->m_originalModelAsset = modelAsset;
+            meshDataHandle->m_requiresCloningCallback = requiresCloneCallback;
             meshDataHandle->m_meshLoader = AZStd::make_unique<MeshDataInstance::MeshLoader>(modelAsset, &*meshDataHandle);
 
             return meshDataHandle;
@@ -177,13 +181,14 @@ namespace AZ
             const Data::Asset<RPI::ModelAsset>& modelAsset,
             const Data::Instance<RPI::Material>& material,
             bool skinnedMeshWithMotion,
-            bool rayTracingEnabled)
+            bool rayTracingEnabled,
+            RequiresCloneCallback requiresCloneCallback)
         {
             Render::MaterialAssignmentMap materials;
             Render::MaterialAssignment& defaultMaterial = materials[AZ::Render::DefaultMaterialAssignmentId];
             defaultMaterial.m_materialInstance = material;
 
-            return AcquireMesh(modelAsset, materials, skinnedMeshWithMotion, rayTracingEnabled);
+            return AcquireMesh(modelAsset, materials, skinnedMeshWithMotion, rayTracingEnabled, requiresCloneCallback);
         }
 
         bool MeshFeatureProcessor::ReleaseMesh(MeshHandle& meshHandle)
@@ -205,7 +210,7 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                MeshHandle clone = AcquireMesh(meshHandle->m_model->GetModelAsset(), meshHandle->m_materialAssignments);
+                MeshHandle clone = AcquireMesh(meshHandle->m_originalModelAsset, meshHandle->m_materialAssignments);
                 return clone;
             }
             return MeshFeatureProcessor::MeshHandle();
@@ -214,6 +219,16 @@ namespace AZ
         Data::Instance<RPI::Model> MeshFeatureProcessor::GetModel(const MeshHandle& meshHandle) const
         {
             return meshHandle.IsValid() ? meshHandle->m_model : nullptr;
+        }
+
+        Data::Asset<RPI::ModelAsset> MeshFeatureProcessor::GetModelAsset(const MeshHandle& meshHandle) const
+        {
+            if (meshHandle.IsValid())
+            {
+                return meshHandle->m_originalModelAsset;
+            }
+
+            return {};
         }
 
         void MeshFeatureProcessor::SetMaterialAssignmentMap(const MeshHandle& meshHandle, const Data::Instance<RPI::Material>& material)
@@ -240,6 +255,8 @@ namespace AZ
                 {
                     meshHandle->m_materialAssignments = materials;
                 }
+
+                meshHandle->m_objectSrgNeedsUpdate = true;
             }
         }
 
@@ -256,7 +273,7 @@ namespace AZ
             }
         }
 
-        void MeshFeatureProcessor::SetTransform(const MeshHandle& meshHandle, const AZ::Transform& transform)
+        void MeshFeatureProcessor::SetTransform(const MeshHandle& meshHandle, const AZ::Transform& transform, const AZ::Vector3& nonUniformScale)
         {
             if (meshHandle.IsValid())
             {
@@ -264,12 +281,12 @@ namespace AZ
                 meshData.m_cullBoundsNeedsUpdate = true;
                 meshData.m_objectSrgNeedsUpdate = true;
 
-                m_transformService->SetTransformForId(meshHandle->m_objectId, transform);
+                m_transformService->SetTransformForId(meshHandle->m_objectId, transform, nonUniformScale);
 
                 // ray tracing data needs to be updated with the new transform
                 if (m_rayTracingFeatureProcessor)
                 {
-                    m_rayTracingFeatureProcessor->SetMeshTransform(meshHandle->m_objectId, transform);
+                    m_rayTracingFeatureProcessor->SetMeshTransform(meshHandle->m_objectId, transform, nonUniformScale);
                 }
             }
         }
@@ -284,6 +301,19 @@ namespace AZ
             {
                 AZ_Assert(false, "Invalid mesh handle");
                 return Transform::CreateIdentity();
+            }
+        }
+
+        Vector3 MeshFeatureProcessor::GetNonUniformScale(const MeshHandle& meshHandle)
+        {
+            if (meshHandle.IsValid())
+            {
+                return m_transformService->GetNonUniformScaleForId(meshHandle->m_objectId);
+            }
+            else
+            {
+                AZ_Assert(false, "Invalid mesh handle");
+                return Vector3::CreateOne();
             }
         }
 
@@ -415,7 +445,6 @@ namespace AZ
         }
 
         // MeshDataInstance::MeshLoader...
-
         MeshDataInstance::MeshLoader::MeshLoader(const Data::Asset<RPI::ModelAsset>& modelAsset, MeshDataInstance* parent)
             : m_modelAsset(modelAsset)
             , m_parent(parent)
@@ -428,10 +457,13 @@ namespace AZ
                 return;
             }
 
-            // Check if the model is in the instance database
+            // Check if the model is in the instance database and skip the loading process in this case.
+            // The model asset id is used as instance id to indicate that it is a static and shared.
             Data::Instance<RPI::Model> model = Data::InstanceDatabase<RPI::Model>::Instance().Find(Data::InstanceId::CreateFromAssetId(m_modelAsset.GetId()));
             if (model)
             {
+                // In case the mesh asset requires instancing (e.g. when containing a cloth buffer), the model will always be cloned and there will not be a
+                // model instance with the asset id as instance id as searched above.
                 m_parent->Init(model);
                 m_modelChangedEvent.Signal(AZStd::move(model));
                 return;
@@ -455,8 +487,35 @@ namespace AZ
         void MeshDataInstance::MeshLoader::OnAssetReady(Data::Asset<Data::AssetData> asset)
         {
             AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            Data::Asset<RPI::ModelAsset> modelAsset = asset;
 
-            Data::Instance<RPI::Model> model = RPI::Model::FindOrCreate(asset);
+            // Assign the fully loaded asset back to the mesh handle to not only hold asset id, but the actual data as well.
+            m_parent->m_originalModelAsset = asset;
+
+            Data::Instance<RPI::Model> model;
+            // Check if a requires cloning callback got set and if so check if cloning the model asset is requested.
+            if (m_parent->m_requiresCloningCallback &&
+                m_parent->m_requiresCloningCallback(modelAsset))
+            {
+                // Clone the model asset to force create another model instance.
+                AZ::Data::AssetId newId(AZ::Uuid::CreateRandom(), /*subId=*/0);
+                Data::Asset<RPI::ModelAsset> clonedAsset;
+                if (AZ::RPI::ModelAssetCreator::Clone(modelAsset, clonedAsset, newId))
+                {
+                    model = RPI::Model::FindOrCreate(clonedAsset);
+                }
+                else
+                {
+                    AZ_Error("MeshDataInstance", false, "Cannot clone model for '%s'. Cloth simulation results won't be individual per entity.", modelAsset->GetName().GetCStr());
+                    model = RPI::Model::FindOrCreate(modelAsset);
+                }
+            }
+            else
+            {
+                // Static mesh, no cloth buffer present.
+                model = RPI::Model::FindOrCreate(modelAsset);
+            }
+            
             if (model)
             {
                 m_parent->Init(model);
@@ -547,6 +606,8 @@ namespace AZ
             drawPacketListOut.clear();
             drawPacketListOut.reserve(meshCount);
 
+            m_hasForwardPassIblSpecularMaterial = false;
+
             for (size_t meshIndex = 0; meshIndex < meshCount; ++meshIndex)
             {
                 Data::Instance<RPI::Material> material = modelLod.GetMeshes()[meshIndex].m_material;
@@ -602,7 +663,16 @@ namespace AZ
                     AZ_Warning("MeshDrawPacket", false, "Failed to set o_meshUseForwardPassIBLSpecular on mesh draw packet");
                 }
 
-                drawPacket.SetStencilRef(m_useForwardPassIblSpecular || MaterialRequiresForwardPassIblSpecular(material) ? Render::StencilRefs::None : Render::StencilRefs::UseIBLSpecularPass);
+                bool materialRequiresForwardPassIblSpecular = MaterialRequiresForwardPassIblSpecular(material);
+
+                // track whether any materials in this mesh require ForwardPassIblSpecular, we need this information when the ObjectSrg is updated
+                m_hasForwardPassIblSpecularMaterial |= materialRequiresForwardPassIblSpecular;
+
+                // stencil bits
+                uint8_t stencilRef = m_useForwardPassIblSpecular || materialRequiresForwardPassIblSpecular ? Render::StencilRefs::None : Render::StencilRefs::UseIBLSpecularPass;
+                stencilRef |= Render::StencilRefs::UseDiffuseGIPass;
+
+                drawPacket.SetStencilRef(stencilRef);
                 drawPacket.SetSortKey(m_sortKey);
                 drawPacket.Update(*m_scene, false);
                 drawPacketListOut.emplace_back(AZStd::move(drawPacket));
@@ -845,10 +915,13 @@ namespace AZ
             AZ_Assert(m_model, "The model has not finished loading yet");
 
             Transform localToWorld = transformService->GetTransformForId(m_objectId);
+            Vector3 nonUniformScale = transformService->GetNonUniformScaleForId(m_objectId);
 
             Vector3 center;
             float radius;
             Aabb localAabb = m_model->GetAabb();
+            localAabb.MultiplyByScale(nonUniformScale);
+
             localAabb.GetTransformedAabb(localToWorld).GetAsSphere(center, radius);
 
             m_cullable.m_cullData.m_boundingSphere = Sphere(center, radius);
@@ -891,7 +964,9 @@ namespace AZ
                 return;
             }
 
-            if (m_useForwardPassIblSpecular)
+            ReflectionProbeFeatureProcessor* reflectionProbeFeatureProcessor = m_scene->GetFeatureProcessor<ReflectionProbeFeatureProcessor>();
+
+            if (reflectionProbeFeatureProcessor && (m_useForwardPassIblSpecular || m_hasForwardPassIblSpecularMaterial))
             {
                 // retrieve probe constant indices
                 AZ::RHI::ShaderInputConstantIndex posConstantIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_reflectionProbeData.m_aabbPos"));
@@ -924,7 +999,6 @@ namespace AZ
                 TransformServiceFeatureProcessor* transformServiceFeatureProcessor = m_scene->GetFeatureProcessor<TransformServiceFeatureProcessor>();
                 Transform transform = transformServiceFeatureProcessor->GetTransformForId(m_objectId);
 
-                ReflectionProbeFeatureProcessor* reflectionProbeFeatureProcessor = m_scene->GetFeatureProcessor<ReflectionProbeFeatureProcessor>();
                 ReflectionProbeFeatureProcessor::ReflectionProbeVector reflectionProbes;
                 reflectionProbeFeatureProcessor->FindReflectionProbes(transform.GetTranslation(), reflectionProbes);
 
@@ -952,10 +1026,25 @@ namespace AZ
 
         bool MeshDataInstance::MaterialRequiresForwardPassIblSpecular(Data::Instance<RPI::Material> material) const
         {
-            RPI::MaterialPropertyIndex propertyIndex = material->FindPropertyIndex(AZ::Name("general.forwardPassIBLSpecular"));
-            if (propertyIndex.IsValid())
+            // look for a shader that has the o_materialUseForwardPassIBLSpecular option set
+            // Note: this should be changed to have the material automatically set the forwardPassIBLSpecular
+            // property and look for that instead of the shader option.
+            // [GFX TODO][ATOM-5040] Address Property Metadata Feedback Loop
+            for (auto& shaderItem : material->GetShaderCollection())
             {
-               return material->GetPropertyValue<bool>(propertyIndex);
+                if (shaderItem.IsEnabled())
+                {
+                    RPI::ShaderOptionIndex index = shaderItem.GetShaderOptionGroup().GetShaderOptionLayout()->FindShaderOptionIndex(Name{ "o_materialUseForwardPassIBLSpecular" });
+                    if (index.IsValid())
+                    {
+                        RPI::ShaderOptionValue value = shaderItem.GetShaderOptionGroup().GetValue(Name{ "o_materialUseForwardPassIBLSpecular" });
+                        if (value.GetIndex() == 1)
+                        {
+                            return true;
+                        }
+                    }
+
+                }
             }
 
             return false;
