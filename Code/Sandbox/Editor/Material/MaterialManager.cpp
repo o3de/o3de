@@ -525,6 +525,11 @@ void CMaterialManager::OnEditorNotifyEvent(EEditorNotifyEvent event)
 //////////////////////////////////////////////////////////////////////////
 void CMaterialManager::ReloadDirtyMaterials()
 {
+    if (!GetIEditor()->Get3DEngine())
+    {
+        return;
+    }
+
     IMaterialManager* runtimeMaterialManager = GetIEditor()->Get3DEngine()->GetMaterialManager();
 
     uint32 mtlCount = 0;
@@ -743,12 +748,15 @@ int CMaterialManager::GetHighlightFlags(CMaterial* pMaterial) const
         result |= eHighlight_NoSurfaceType;
     }
 
-    if (ISurfaceTypeManager* pSurfaceManager = GetIEditor()->Get3DEngine()->GetMaterialManager()->GetSurfaceTypeManager())
+    if (GetIEditor()->Get3DEngine())
     {
-        const ISurfaceType* pSurfaceType =  pSurfaceManager->GetSurfaceTypeByName(surfaceTypeName.toUtf8().data());
-        if (pSurfaceType && pSurfaceType->GetBreakability() != 0)
+        if (ISurfaceTypeManager* pSurfaceManager = GetIEditor()->Get3DEngine()->GetMaterialManager()->GetSurfaceTypeManager())
         {
-            result |= eHighlight_Breakable;
+            const ISurfaceType* pSurfaceType = pSurfaceManager->GetSurfaceTypeByName(surfaceTypeName.toUtf8().data());
+            if (pSurfaceType && pSurfaceType->GetBreakability() != 0)
+            {
+                result |= eHighlight_Breakable;
+            }
         }
     }
 
