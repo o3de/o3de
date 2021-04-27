@@ -19,3 +19,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # return it to the caller. In this sanity test, always return success.
 #return_code = 0
 #framework.Terminate(return_code)
+
+import azlmbr.bus
+import azlmbr.editor
+azlmbr.editor.EditorToolsApplicationRequestBus(azlmbr.bus.Broadcast, 'ExitNoPrompt')
