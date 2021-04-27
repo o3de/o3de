@@ -25,6 +25,8 @@ execute_process(
     COMMAND ${CMD_ARG_EDITOR} -NullRenderer --skipWelcomeScreenDialog --autotest_mode --regset="/Amazon/AzCore/Bootstrap/project_path=${CMD_ARG_TEST_PROJECT}" --runpython ${CMD_ARG_PYTHON_SCRIPT}
     TIMEOUT 1800
     RESULT_VARIABLE TEST_CMD_RESULT
+    ECHO_OUTPUT_VARIABLE
+    ECHO_ERROR_VARIABLE
 )
 
 if(${PLATFORM} STREQUAL "Windows")
