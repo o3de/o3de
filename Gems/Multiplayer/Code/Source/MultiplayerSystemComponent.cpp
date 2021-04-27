@@ -384,7 +384,7 @@ namespace Multiplayer
     bool MultiplayerSystemComponent::HandleRequest( AzNetworking::IConnection* connection,
         [[maybe_unused]] const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::ReadyForEntityUpdates& packet)
     {
-        auto* connectionData = reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData());
+        IConnectionData* connectionData = reinterpret_cast<IConnectionData*>(connection->GetUserData());
         if (connectionData)
         {
             connectionData->SetCanSendUpdates(packet.GetReadyForEntityUpdates());

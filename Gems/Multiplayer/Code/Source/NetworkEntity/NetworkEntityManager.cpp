@@ -462,9 +462,9 @@ namespace Multiplayer
 
         m_rootSpawnableAsset = netSpawnableAsset;
 
-        auto* iMultiplayer = AZ::Interface<IMultiplayer>::Get();
+        auto* multiplayer = AZ::Interface<IMultiplayer>::Get();
 
-        const auto agentType = iMultiplayer->GetAgentType();
+        const auto agentType = multiplayer->GetAgentType();
         const bool spawnImmediately =
             (agentType == MultiplayerAgentType::ClientServer || agentType == MultiplayerAgentType::DedicatedServer);
 
@@ -476,7 +476,7 @@ namespace Multiplayer
         {
             // If we don't spawn net entities immediately (i.e. it is a client),
             // tell the server/host it can start sending updates that will instantiate entities.
-            iMultiplayer->SendReadyForEntityUpdates(true);
+            multiplayer->SendReadyForEntityUpdates(true);
         }
     }
 
