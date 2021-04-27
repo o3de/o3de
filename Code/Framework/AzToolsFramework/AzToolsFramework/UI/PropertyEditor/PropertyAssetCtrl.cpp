@@ -679,22 +679,7 @@ namespace AzToolsFramework
     AssetSelectionModel PropertyAssetCtrl::GetAssetSelectionModel()
     {
         auto selectionModel = AssetSelectionModel::AssetTypeSelection(GetCurrentAssetType());
-
-        QString title;
-        auto propertyRowWidget = FindFirstParent<PropertyRowWidget>(parent());
-        if (propertyRowWidget)
-        {
-            if (!propertyRowWidget->label().isEmpty())
-            {
-                title = propertyRowWidget->label();
-            }
-            auto reflectedPropertyEditor = FindFirstParent<ReflectedPropertyEditor>(propertyRowWidget->parent());
-            if (reflectedPropertyEditor && !reflectedPropertyEditor->GetTitle().isEmpty())
-            {
-                title = QString("%1 %2").arg(reflectedPropertyEditor->GetTitle()).arg(title);
-            }
-        }
-        selectionModel.SetTitle(title);
+        selectionModel.SetTitle(m_title);
         return selectionModel;
     }
 
@@ -1076,6 +1061,11 @@ namespace AzToolsFramework
         m_editButton->setIcon(icon);
     }
 
+    void PropertyAssetCtrl::SetTitle(const QString& title)
+    {
+        m_title = title;
+    }
+
     void PropertyAssetCtrl::SetEditNotifyTarget(void* editNotifyTarget)
     {
         m_editNotifyTarget = editNotifyTarget;
@@ -1211,7 +1201,16 @@ namespace AzToolsFramework
     {
         (void)debugName;
 
-        if (attrib == AZ_CRC("EditCallback", 0xb74f2ee1))
+        if (attrib == AZ_CRC_CE("AssetPickerTitle"))
+        {
+            AZStd::string title;
+            attrValue->Read<AZStd::string>(title);
+            if (!title.empty())
+            {
+                GUI->SetTitle(title.c_str());
+            }
+        }
+        else if (attrib == AZ_CRC("EditCallback", 0xb74f2ee1))
         {
             PropertyAssetCtrl::EditCallbackType* func = azdynamic_cast<PropertyAssetCtrl::EditCallbackType*>(attrValue->GetAttribute());
             if (func)

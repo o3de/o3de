@@ -95,6 +95,7 @@ namespace AzToolsFramework
         void OnAssetIDChanged(AZ::Data::AssetId newAssetID);
 
     protected:
+        QString m_title;
         ThumbnailDropDown* m_thumbnailDropDown = nullptr;
         Thumbnailer::ThumbnailWidget* m_thumbnail = nullptr;
         QPushButton* m_errorButton = nullptr;
@@ -178,9 +179,6 @@ namespace AzToolsFramework
         void HandleFieldClear();
         AZStd::string AddDefaultSuffix(const AZStd::string& filename);
         
-        template <class Widget_Type>
-        Widget_Type* FindFirstParent(QObject* pParent) const;
-
         //////////////////////////////////////////////////////////////////////////
         // AssetSystemBus
         void SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid sourceUUID) override;
@@ -195,6 +193,7 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
 
     public slots:
+        void SetTitle(const QString& title);
         void SetEditNotifyTarget(void* editNotifyTarget);
         void SetEditNotifyCallback(EditCallbackType* editNotifyCallback); // This is meant to be used with the "EditCallback" Attribute
         void SetClearNotifyCallback(ClearCallbackType* clearNotifyCallback); // This is meant to be used with the "ClearNotify" Attribute
@@ -235,22 +234,6 @@ namespace AzToolsFramework
         const QModelIndex GetSourceIndex(const QModelIndex& index);
         void UpdateThumbnail();
     };
-
-    template<class Widget_Type>
-    Widget_Type* PropertyAssetCtrl::FindFirstParent(QObject* pParent) const
-    {
-        Widget_Type* widget = nullptr;
-        while (pParent)
-        {
-            widget = qobject_cast<Widget_Type*>(pParent);
-            if (widget)
-            {
-                break;
-            }
-            pParent = pParent->parent();
-        }
-        return widget;
-    }
 
     class AssetPropertyHandlerDefault
         : QObject

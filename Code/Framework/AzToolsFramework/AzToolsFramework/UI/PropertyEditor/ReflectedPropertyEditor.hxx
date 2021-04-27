@@ -156,9 +156,6 @@ namespace AzToolsFramework
         using VisibilityCallback = AZStd::function<void(InstanceDataNode* node, NodeDisplayVisibility& visibility, bool& checkChildVisibility)>;
         void SetVisibilityCallback(VisibilityCallback callback);
 
-        void SetTitle(const QString& title);
-        const QString& GetTitle() const;
-
     signals:
         void OnExpansionContractionDone();
     private:
@@ -166,7 +163,6 @@ namespace AzToolsFramework
         std::unique_ptr<Impl> m_impl;
         
         AZStd::string m_currentFilterString;
-        QString m_title;
 
         virtual void paintEvent(QPaintEvent* event) override;
         int m_updateDepth = 0;
