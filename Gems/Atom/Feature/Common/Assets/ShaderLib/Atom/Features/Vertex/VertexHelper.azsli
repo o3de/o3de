@@ -13,7 +13,9 @@
 #pragma once
 
 // ------------------------------------------------------------------------------
-// NOTE: VSInput, VSOutput, ObjectSrg must be defined before including this file.
+// NOTE: The following must be included or defined before including this file:
+//       - VSInput          - ObjectSrg
+//       - VSOutput         - PassSrg
 // ---------------------------------------------------------------------------------
 
 // Options
@@ -23,8 +25,6 @@
 #include <viewsrg.srgi>
 #include <scenesrg.srgi>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
-#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
-#include <Atom/Features/PBR/ForwardPassSrg.azsli>
 
 // Math
 #include <Atom/RPI/Math.azsli>
@@ -32,7 +32,6 @@
 
 // Shadow Coords
 #include <Atom/Features/Shadow/DirectionalLightShadow.azsli>
-
 
 //! @param skipShadowCoords can be useful for example when PixelDepthOffset is enable, because the pixel shader will have to run before the final world position is known
 void VertexHelper(in VSInput IN, inout VSOutput OUT, float3 worldPosition, bool skipShadowCoords = false)

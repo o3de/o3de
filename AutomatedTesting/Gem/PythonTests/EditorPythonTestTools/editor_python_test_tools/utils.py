@@ -278,6 +278,12 @@ class Tracer:
             self.function = args[3]
             self.message = args[4]
             
+        def __str__(self):
+            return f"Warning: [{self.filename}:{self.function}:{self.line}]: [{self.window}] {self.message}"
+            
+        def __repr__(self):
+            return f"[Warning: {self.message}]"
+            
     class ErrorInfo:
         def __init__(self, args):
             self.window = args[0]
@@ -285,6 +291,12 @@ class Tracer:
             self.line = args[2]
             self.function = args[3]
             self.message = args[4]
+            
+        def __str__(self):
+            return f"Error: [{self.filename}:{self.function}:{self.line}]: [{self.window}] {self.message}"
+        
+        def __repr__(self):
+            return f"[Error: {self.message}]"
     
     class AssertInfo:
         def __init__(self, args):
@@ -292,6 +304,12 @@ class Tracer:
             self.line = args[1]
             self.function = args[2]
             self.message = args[3]
+        
+        def __str__(self):
+            return f"Assert: [{self.filename}:{self.function}:{self.line}]: {self.message}"
+            
+        def __repr__(self):
+            return f"[Assert: {self.message}]"
     
     def _on_warning(self, args):
         warningInfo = Tracer.WarningInfo(args)
