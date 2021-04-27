@@ -55,7 +55,7 @@ namespace AzPhysics
 
         //! Flag to determine if the body is part of the simulation.
         //! When true the body will be affected by any forces, collisions, and found with scene queries.
-        bool m_simulating = true;
+        bool m_simulating = false;
 
         //! Helper functions for setting user data.
         //! @param userData Can be a pointer to any type as internally will be cast to a void*. Object lifetime not managed by the SimulatedBody.

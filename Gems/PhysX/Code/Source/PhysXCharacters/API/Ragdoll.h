@@ -19,8 +19,6 @@
 
 namespace PhysX
 {
-    using ParentIndices = AZStd::vector<size_t>;
-
     /// PhysX specific implementation of generic physics API Ragdoll class.
     class Ragdoll
         : public Physics::Ragdoll
@@ -29,7 +27,7 @@ namespace PhysX
         friend class RagdollComponent;
 
         AZ_CLASS_ALLOCATOR(Ragdoll, AZ::SystemAllocator, 0);
-        AZ_TYPE_INFO_LEGACY(PhysX::Ragdoll, "{55D477B5-B922-4D3E-89FE-7FB7B9FDD635}", Physics::Ragdoll);
+        AZ_RTTI(PhysX::Ragdoll, "{55D477B5-B922-4D3E-89FE-7FB7B9FDD635}", Physics::Ragdoll);
         static void Reflect(AZ::ReflectContext* context);
 
         Ragdoll() = default;
@@ -38,7 +36,7 @@ namespace PhysX
         ~Ragdoll();
 
         void AddNode(AZStd::unique_ptr<RagdollNode> node);
-        void SetParentIndices(const ParentIndices& parentIndices);
+        void SetParentIndices(const Physics::ParentIndices& parentIndices);
         void SetRootIndex(size_t nodeIndex);
         physx::PxRigidDynamic* GetPxRigidDynamic(size_t nodeIndex) const;
         physx::PxTransform GetRootPxTransform() const;
@@ -75,7 +73,7 @@ namespace PhysX
         void ApplyQueuedDisableSimulation();
 
         AZStd::vector<AZStd::unique_ptr<RagdollNode>> m_nodes;
-        ParentIndices m_parentIndices;
+        Physics::ParentIndices m_parentIndices;
         AZ::Outcome<size_t> m_rootIndex = AZ::Failure();
         
         /// Queued initial state for the ragdoll, for EnableSimulationQueued, to be applied prior to the world update.
