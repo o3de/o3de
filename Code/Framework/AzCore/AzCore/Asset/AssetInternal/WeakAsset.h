@@ -141,13 +141,17 @@ namespace AZ::Data::AssetInternal
 
         if (assetData)
         {
-            assetData->AcquireWeak();
+            // This should be AcquireWeak but we're using strong references for now to disable asset cancellation
+            // until it is more stable
+            assetData->Acquire();
             m_assetId = assetData->GetId();
         }
 
         if (m_assetData)
         {
-            m_assetData->ReleaseWeak();
+            // This should be ReleaseWeak but we're using strong references for now to disable asset cancellation
+            // until it is more stable
+            m_assetData->Release();
         }
 
         m_assetData = assetData;
