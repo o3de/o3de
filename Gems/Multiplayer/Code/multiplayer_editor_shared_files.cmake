@@ -12,6 +12,8 @@
 set(FILES
     Source/MultiplayerGem.cpp
     Source/MultiplayerGem.h
+    Source/MultiplayerEditorGem.cpp
+    Source/MultiplayerEditorGem.h
     Source/Editor/MultiplayerEditorSystemComponent.cpp
     Source/Editor/MultiplayerEditorSystemComponent.h
 )

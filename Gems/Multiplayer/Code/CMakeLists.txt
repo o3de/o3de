@@ -101,7 +101,6 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzFramework
                 AZ::AzNetworking
                 AZ::AzToolsFramework
-                AZ::GFxFramework
                 Gem::Multiplayer.Static
     )
 
@@ -120,8 +119,6 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PRIVATE
                 Gem::Multiplayer.Editor.Static
-        RUNTIME_DEPENDENCIES
-            Gem::LmbrCentral.Editor
     )
 
 endif()

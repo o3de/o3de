@@ -13,38 +13,37 @@
 #include <Source/Multiplayer_precompiled.h>
 #include <Source/MultiplayerGem.h>
 #include <Source/MultiplayerSystemComponent.h>
-#include <Source/Components/NetBindComponent.h>
-#include <Source/AutoGen/AutoComponentTypes.h>
-#include <Source/Pipeline/NetBindMarkerComponent.h>
-#include <Source/Pipeline/NetworkSpawnableHolderComponent.h>
+#include <Source/MultiplayerEditorGem.h>
 #include <AzNetworking/Framework/NetworkingSystemComponent.h>
+
+#include <Source/Editor/MultiplayerEditorSystemComponent.h>
 
 namespace Multiplayer
 {
-    MultiplayerModule::MultiplayerModule()
-        : AZ::Module()
-    {
-        m_descriptors.insert(m_descriptors.end(), {
-            AzNetworking::NetworkingSystemComponent::CreateDescriptor(),
-            MultiplayerSystemComponent::CreateDescriptor(),
-            NetBindComponent::CreateDescriptor(),
-            NetBindMarkerComponent::CreateDescriptor(),
-            NetworkSpawnableHolderComponent::CreateDescriptor(),
-        });
+    AZ_CLASS_ALLOCATOR_IMPL(MultiplayerEditorModule, AZ::SystemAllocator, 0)
 
-        CreateComponentDescriptors(m_descriptors);
+    MultiplayerEditorModule::MultiplayerEditorModule()
+        : MultiplayerModule()
+    {
+        // Append Editor specific descriptors
+        m_descriptors.insert(
+            m_descriptors.end(),
+            {
+                MultiplayerEditorSystemComponent::CreateDescriptor(),
+            });
     }
 
-    AZ::ComponentTypeList MultiplayerModule::GetRequiredSystemComponents() const
+    MultiplayerEditorModule::~MultiplayerEditorModule() = default;
+
+    AZ::ComponentTypeList MultiplayerEditorModule::GetRequiredSystemComponents() const
     {
         return AZ::ComponentTypeList
         {
             azrtti_typeid<AzNetworking::NetworkingSystemComponent>(),
             azrtti_typeid<MultiplayerSystemComponent>(),
+            azrtti_typeid<MultiplayerEditorSystemComponent>(),
         };
     }
-}
+} // namespace Multiplayer
 
-#if !defined(MULTIPLAYER_EDITOR)
-AZ_DECLARE_MODULE_CLASS(Gem_Multiplayer, Multiplayer::MultiplayerModule);
-#endif
+AZ_DECLARE_MODULE_CLASS(Gem_MultiplayerEditor, Multiplayer::MultiplayerEditorModule)

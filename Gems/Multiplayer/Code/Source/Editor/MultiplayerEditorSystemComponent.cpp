@@ -67,6 +67,7 @@ namespace Multiplayer
 
     void MultiplayerEditorSystemComponent::NotifyRegisterViews()
     {
+        AZ_Assert(m_editor == nullptr, "NotifyRegisterViews occurred twice!");
         m_editor = nullptr;
         AzToolsFramework::EditorRequests::Bus::BroadcastResult(m_editor, &AzToolsFramework::EditorRequests::GetEditor);
         m_editor->RegisterNotifyListener(this);
@@ -121,9 +122,13 @@ namespace Multiplayer
             break;
         }
         case eNotify_OnQuit:
-            m_editor->UnregisterNotifyListener(this);
-            m_editor = nullptr;
-            // Fall through here as the cleanup steps in EndGameMode are good sanity
+            AZ_Warning("Multiplayer Editor", m_editor != nullptr, "Multiplayer Editor received On Quit without an Editor pointer.");
+            if (m_editor)
+            {
+                m_editor->UnregisterNotifyListener(this);
+                m_editor = nullptr;
+            }
+            [[fallthrough]];
         case eNotify_OnEndGameMode:
             AZ::TickBus::Handler::BusDisconnect();
             // Kill the configured server if it's active
