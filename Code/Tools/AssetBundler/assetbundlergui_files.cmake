@@ -29,8 +29,7 @@ set(FILES
     source/ui/style/AssetBundler.qrc
     source/ui/style/AssetBundler.qss
     source/ui/style/AssetBundlerConfig.ini
-    source/ui/style/AssetBundlerIcon.ico
-    source/ui/style/AssetBundlerIcon_16x16.ico
+    source/ui/style/AssetBundler-Icon-256x256@x2.ico
     source/ui/AddSeedDialog.h
     source/ui/AddSeedDialog.cpp
     source/ui/AddSeedDialog.ui

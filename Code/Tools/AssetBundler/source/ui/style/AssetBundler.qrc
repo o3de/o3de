@@ -2,6 +2,6 @@
     <qresource prefix="/AssetBundler/style">
         <file>AssetBundler.qss</file>
         <file>AssetBundlerConfig.ini</file>
-        <file>AssetBundlerIcon.ico</file>
+        <file>AssetBundler-Icon-256x256@x2.ico</file>
     </qresource>
 </RCC>

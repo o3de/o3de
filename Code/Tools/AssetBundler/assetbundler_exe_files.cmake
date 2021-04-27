@@ -11,5 +11,5 @@
 
 set(FILES
     source/main.cpp
-    source/AssetBundlerBatch.rc
+    source/AssetBundler.rc
 )

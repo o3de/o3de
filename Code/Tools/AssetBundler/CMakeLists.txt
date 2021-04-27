@@ -38,7 +38,7 @@ ly_add_target(
     NAME AssetBundlerBatch EXECUTABLE
     NAMESPACE AZ
     FILES_CMAKE
-        assetbundler_exe_files.cmake
+        assetbundlerbatch_exe_files.cmake
     COMPILE_DEFINITIONS
         PRIVATE
             AB_BATCH_MODE

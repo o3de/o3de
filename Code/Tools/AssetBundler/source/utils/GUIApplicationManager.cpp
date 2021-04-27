@@ -197,7 +197,7 @@ namespace AssetBundler
         AzQtComponents::ConfigHelpers::loadConfig<Config, GUIApplicationManager>(&m_fileWatcher, &m_config, QStringLiteral("style:AssetBundlerConfig.ini"), this, std::bind(&GUIApplicationManager::ApplyConfig, this));
         ApplyConfig();
 
-        qApp->setWindowIcon(QIcon("style:AssetBundlerIcon.ico"));
+        qApp->setWindowIcon(QIcon("style:AssetBundler-Icon-256x256@x2.ico"));
 
         // Set up the Main Window
         auto wrapper = new AzQtComponents::WindowDecorationWrapper(Platform::GetWindowDecorationWrapperOption());
