@@ -63,7 +63,7 @@ class TestAtomEditorComponentsMain(object):
             "Decal (Atom)_test: Component added after REDO: True",
             "Decal (Atom)_test: Entered game mode: True",
             "Decal (Atom)_test: Exit game mode: True",
-            "Decal (Atom) Settings|Decal (Atom) Settings|Material: SUCCESS",
+            "Decal (Atom) Controller|Configuration|Material: SUCCESS",
             "Decal (Atom)_test: Entity is hidden: True",
             "Decal (Atom)_test: Entity is shown: True",
             "Decal (Atom)_test: Entity deleted: True",
