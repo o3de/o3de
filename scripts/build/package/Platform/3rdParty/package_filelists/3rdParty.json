@@ -12,7 +12,6 @@
         "etc2comp/2017_04_24-az.2/**": "#include",
         "expat/2.1.0-pkg.3/**": "#include",
         "FbxSdk/2016.1.2-az.1/**": "#include",
-        "libav/11.7/**": "#include",
         "OpenSSL/1.1.1b-noasm-az/**": "#include",
         "Qt/5.15.1.2-az/**": "#include",
         "RadTelemetry/3.5.0.17/**": "#include",

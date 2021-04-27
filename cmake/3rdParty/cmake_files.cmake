@@ -17,7 +17,6 @@ set(FILES
     Finddyad.cmake
     Findetc2comp.cmake
     FindFbxSdk.cmake
-    Findlibav.cmake
     FindRadTelemetry.cmake
     FindVkValidation.cmake
     FindWwise.cmake
