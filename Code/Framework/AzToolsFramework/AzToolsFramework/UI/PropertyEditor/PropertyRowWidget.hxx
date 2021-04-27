@@ -175,8 +175,6 @@ namespace AzToolsFramework
         QLabel* m_defaultLabel; // if there is no handler, we use a m_defaultLabel label
         InstanceDataNode* m_sourceNode;
 
-        QString m_title;
-        QString m_groupTitle;
         QString m_currentFilterString;
 
         struct ChangeNotification

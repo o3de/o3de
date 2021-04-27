@@ -387,17 +387,17 @@ namespace AzToolsFramework
 
     QString PropertyRowWidget::label() const
     {
-        return m_title;
+        return m_nameLabel->text();
     }
 
     void PropertyRowWidget::SetNameLabel(const char* text)
     {
-        m_title = text;
-        m_nameLabel->setText(m_title);
-        m_nameLabel->setVisible(!m_title.isEmpty());
+        QString label{ text };
+        m_nameLabel->setText(label);
+        m_nameLabel->setVisible(!label.isEmpty());
         // setting the stretches to 0 in case of an empty label really hides the label (i.e. even the reserved space)
-        m_mainLayout->setStretch(0, m_title.isEmpty() ? 0 : LabelColumnStretch);
-        m_mainLayout->setStretch(1, m_title.isEmpty() ? 0 : ValueColumnStretch);
+        m_mainLayout->setStretch(0, label.isEmpty() ? 0 : LabelColumnStretch);
+        m_mainLayout->setStretch(1, label.isEmpty() ? 0 : ValueColumnStretch);
         m_identifier = AZ::Crc32(text);
     }
 

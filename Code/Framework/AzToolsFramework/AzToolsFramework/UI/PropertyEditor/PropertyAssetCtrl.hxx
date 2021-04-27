@@ -178,7 +178,7 @@ namespace AzToolsFramework
 
         void HandleFieldClear();
         AZStd::string AddDefaultSuffix(const AZStd::string& filename);
-        
+
         //////////////////////////////////////////////////////////////////////////
         // AssetSystemBus
         void SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid sourceUUID) override;

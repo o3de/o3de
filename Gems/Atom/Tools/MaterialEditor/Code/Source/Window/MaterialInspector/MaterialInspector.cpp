@@ -93,8 +93,6 @@ namespace MaterialEditor
             [this](const AzToolsFramework::InstanceDataNode* source, const AzToolsFramework::InstanceDataNode* target) {
                 AZ_UNUSED(source);
                 const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(target);
-               
-                //property->AddEditDataAttributeMemberFunction(AZ::Edit::Attributes::NameLabelOverride, &DynamicProperty::GetDisplayName);
                 return property && AtomToolsFramework::ArePropertyValuesEqual(property->GetValue(), property->GetConfig().m_parentValue);
             });
         AddGroup(groupNameId, groupDisplayName, groupDescription, propertyGroupWidget);

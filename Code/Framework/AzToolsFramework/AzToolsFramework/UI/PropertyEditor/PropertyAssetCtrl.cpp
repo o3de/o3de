@@ -15,8 +15,6 @@
 #include "PropertyAssetCtrl.hxx"
 
 #include "PropertyQTConstants.h"
-#include "PropertyRowWidget.hxx"
-#include "ReflectedPropertyEditor.hxx"
 
 AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option")
 #include <QtWidgets/QHBoxLayout>
