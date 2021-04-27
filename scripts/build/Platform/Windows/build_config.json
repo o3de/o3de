@@ -109,7 +109,6 @@
   },
   "profile_vs2019": {
     "TAGS": [
-      "project",
       "daily-pipeline-metrics",
       "weekly-build-metrics"
     ],
@@ -295,5 +294,17 @@
         "CMAKE_TARGET": "INSTALL",
         "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
     }
+  },
+  "project_profile_vs2019": {
+    "TAGS": [
+      "project"
+    ],
+    "PIPELINE_ENV": {
+      "EXECUTE_FROM_PROJECT": "1",
+      "CMAKE_LY_PROJECTS": " "
+    },
+    "steps": [
+      "profile_vs2019"
+    ]
   }
 }
