@@ -1234,8 +1234,15 @@ namespace AZ::AtomBridge
         int srcOffsetX [[maybe_unused]], 
         int srcOffsetY [[maybe_unused]])
     {
+        // abort draw if draw is invalid or font query interface is missing.
+        if (!text || size == 0.0f || !AZ::Interface<AzFramework::FontQueryInterface>::Get())
+        {
+            return;
+        }
+
         AzFramework::FontDrawInterface* fontDrawInterface = AZ::Interface<AzFramework::FontQueryInterface>::Get()->GetDefaultFontDrawInterface();
-        if (!fontDrawInterface || !text || size == 0.0f)
+        // abort draw if font draw interface is missing
+        if (!fontDrawInterface)
         {
             return;
         }
@@ -1263,8 +1270,15 @@ namespace AZ::AtomBridge
         const char* text, 
         bool center)
     {
+        // abort draw if draw is invalid or font query interface is missing.
+        if (!text || size == 0.0f || !AZ::Interface<AzFramework::FontQueryInterface>::Get())
+        {
+            return;
+        }
+
         AzFramework::FontDrawInterface* fontDrawInterface = AZ::Interface<AzFramework::FontQueryInterface>::Get()->GetDefaultFontDrawInterface();
-        if (!fontDrawInterface || !text || size == 0.0f)
+        // abort draw if font draw interface is missing
+        if (!fontDrawInterface)
         {
             return;
         }
