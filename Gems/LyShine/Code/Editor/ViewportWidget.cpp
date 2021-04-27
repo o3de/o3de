@@ -21,6 +21,7 @@
 #include <QViewportSettings.h>
 
 #include <LyShine/Bus/UiEditorCanvasBus.h>
+#include <LyShine/Draw2d.h>
 
 #include "LyShine.h"
 #include "UiRenderer.h"
@@ -277,6 +278,8 @@ void ViewportWidget::InitUiRenderer()
     // Only one viewport/renderer is currently supported in the UI Editor
     CLyShine* lyShine = static_cast<CLyShine*>(gEnv->pLyShine);
     lyShine->SetUiRendererForEditor(m_uiRenderer);
+
+    m_draw2d = AZStd::make_shared<CDraw2d>(GetViewportContext());
 }
 
 ViewportInteraction* ViewportWidget::GetViewportInteraction()
@@ -914,7 +917,7 @@ void ViewportWidget::RenderEditMode(float deltaTime)
         return; // this can happen if a render happens during a restart
     }
 
-    Draw2dHelper draw2d;    // sets and resets 2D draw mode in constructor/destructor
+    Draw2dHelper draw2d(m_draw2d.get());    // sets and resets 2D draw mode in constructor/destructor
 
     QTreeWidgetItemRawPtrQList selection = m_editorWindow->GetHierarchy()->selectedItems();
 
@@ -1142,7 +1145,7 @@ void ViewportWidget::RenderPreviewMode(float deltaTime)
         AZ::Vector2 topLeftInViewportSpace = CanvasHelpers::GetViewportPoint(canvasEntityId, AZ::Vector2(0.0f, 0.0f));
         AZ::Vector2 bottomRightInViewportSpace = CanvasHelpers::GetViewportPoint(canvasEntityId, canvasSize);
         AZ::Vector2 sizeInViewportSpace = bottomRightInViewportSpace - topLeftInViewportSpace;
-        Draw2dHelper draw2d;
+        Draw2dHelper draw2d(m_draw2d.get())
         int texId = gEnv->pRenderer->GetBlackTextureId();
         draw2d.DrawImage(texId, topLeftInViewportSpace, sizeInViewportSpace);
 #endif
