@@ -197,7 +197,7 @@ namespace PhysX
                     if (colliderNodeConfig)
                     {
                         AZStd::vector<AZStd::shared_ptr<Physics::Shape>> shapes;
-                        for (const auto [colliderConfig, shapeConfig] : colliderNodeConfig->m_shapes)
+                        for (const auto& [colliderConfig, shapeConfig] : colliderNodeConfig->m_shapes)
                         {
                             if (colliderConfig == nullptr || shapeConfig == nullptr)
                             {

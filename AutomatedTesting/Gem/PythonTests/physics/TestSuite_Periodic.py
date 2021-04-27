@@ -270,7 +270,7 @@ class TestAutomation(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.xfail(
-        reason="Something with the CryRenderer disabling is causeing this test to fail now.")
+        reason="Something with the CryRenderer disabling is causing this test to fail now.")
     @revert_physics_config
     def test_C13895144_Ragdoll_ChangeLevel(self, request, workspace, editor, launcher_platform):
         from . import C13895144_Ragdoll_ChangeLevel as test_module
