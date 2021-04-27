@@ -23,8 +23,6 @@
 #include <MCore/Source/Endian.h>
 #include <MCore/Source/Stream.h>
 
-#pragma optimize("", off)
-
 namespace EMotionFX
 {
     MotionLinkCache::MotionLinkCache()
