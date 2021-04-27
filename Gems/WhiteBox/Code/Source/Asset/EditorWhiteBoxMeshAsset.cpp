@@ -86,7 +86,7 @@ namespace WhiteBox
             {
                 success = assetHandler->SaveAssetData(meshAsset, &fileStream);
                 AZ_Printf(
-                    "EditorWhiteBoxComponent", "Save %s. Location: %s", success ? "succeeded" : "failed",
+                    "EditorWhiteBoxMeshAsset", "Save %s. Location: %s", success ? "succeeded" : "failed",
                     absoluteFilePath.c_str());
             }
         }
@@ -229,7 +229,15 @@ namespace WhiteBox
     {
         if (asset == m_meshAsset)
         {
-            AZ_Warning("EditorWhiteBoxComponent", false, "OnAssetError: %s", asset.GetHint().c_str());
+            AZ_Warning("EditorWhiteBoxMeshAsset", false, "OnAssetError: %s", asset.GetHint().c_str());
+        }
+    }
+
+    void EditorWhiteBoxMeshAsset::OnAssetReloadError(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    {
+        if (asset == m_meshAsset)
+        {
+            AZ_Warning("EditorWhiteBoxMeshAsset", false, "OnAssetReloadError: %s", asset.GetHint().c_str());
         }
     }
 

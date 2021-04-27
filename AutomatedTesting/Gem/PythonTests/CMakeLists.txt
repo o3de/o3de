@@ -177,26 +177,25 @@ include(${pal_dir}/PAL_traits_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_LARGE_WORLDS_TEST_SUPPORTED)
 
 ## DynVeg ##
-    ly_add_pytest(
-        NAME DynamicVegetationTests_Main_GPU
-        TEST_REQUIRES gpu
-        TEST_SERIAL
-        TEST_SUITE main
-        PATH ${CMAKE_CURRENT_LIST_DIR}/largeworlds/dyn_veg
-        PYTEST_MARKS "not SUITE_sandbox and not SUITE_periodic and not SUITE_benchmark"
-        TIMEOUT 36000
-        RUNTIME_DEPENDENCIES
-            AZ::AssetProcessor
-            Legacy::Editor
-            AutomatedTesting.GameLauncher
-            AutomatedTesting.Assets
-        COMPONENT
-            LargeWorlds
-    )
+    # Temporarily moving all tests to periodic suite - SPEC-6553
+    #ly_add_pytest(
+    #    NAME AutomatedTesting::DynamicVegetationTests_Main
+    #    TEST_SERIAL
+    #    TEST_SUITE main
+    #    PATH ${CMAKE_CURRENT_LIST_DIR}/largeworlds/dyn_veg
+    #    PYTEST_MARKS "not SUITE_sandbox and not SUITE_periodic and not SUITE_benchmark"
+    #    TIMEOUT 36000
+    #    RUNTIME_DEPENDENCIES
+    #        AZ::AssetProcessor
+    #        Legacy::Editor
+    #        AutomatedTesting.GameLauncher
+    #        AutomatedTesting.Assets
+    #    COMPONENT
+    #        LargeWorlds
+    #)
 
     ly_add_pytest(
-        NAME DynamicVegetationTests_Sandbox_GPU
-        TEST_REQUIRES gpu
+        NAME AutomatedTesting::DynamicVegetationTests_Sandbox
         TEST_SERIAL
         TEST_SUITE sandbox
         PATH ${CMAKE_CURRENT_LIST_DIR}/largeworlds/dyn_veg
@@ -212,8 +211,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
     )
 
     ly_add_pytest(
-        NAME DynamicVegetationTests_Periodic_GPU
-        TEST_REQUIRES gpu
+        NAME AutomatedTesting::DynamicVegetationTests_Periodic
         TEST_SERIAL
         TEST_SUITE periodic
         PATH ${CMAKE_CURRENT_LIST_DIR}/largeworlds/dyn_veg
@@ -228,25 +226,24 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
     )
 
 ## LandscapeCanvas ##
-    ly_add_pytest(
-        NAME LandscapeCanvasTests_Main
-        TEST_REQUIRES gpu
-        TEST_SERIAL
-        TEST_SUITE main
-        PATH ${CMAKE_CURRENT_LIST_DIR}/largeworlds/landscape_canvas
-        PYTEST_MARKS "not SUITE_sandbox and not SUITE_periodic and not SUITE_benchmark"
-        TIMEOUT 3600
-        RUNTIME_DEPENDENCIES
-           AZ::AssetProcessor
-           Legacy::Editor
-           AutomatedTesting.Assets
-        COMPONENT
-            LargeWorlds
-    )
+    # Temporarily moving all tests to periodic suite - SPEC-6553
+    #ly_add_pytest(
+    #    NAME AutomatedTesting::LandscapeCanvasTests_Main
+    #    TEST_SERIAL
+    #    TEST_SUITE main
+    #    PATH ${CMAKE_CURRENT_LIST_DIR}/largeworlds/landscape_canvas
+    #    PYTEST_MARKS "not SUITE_sandbox and not SUITE_periodic and not SUITE_benchmark"
+    #    TIMEOUT 3600
+    #    RUNTIME_DEPENDENCIES
+    #       AZ::AssetProcessor
+    #       Legacy::Editor
+    #       AutomatedTesting.Assets
+    #    COMPONENT
+    #        LargeWorlds
+    #)
 
     ly_add_pytest(
-        NAME LandscapeCanvasTests_Periodic
-        TEST_REQUIRES gpu
+        NAME AutomatedTesting::LandscapeCanvasTests_Periodic
         TEST_SERIAL
         TEST_SUITE periodic
         PATH ${CMAKE_CURRENT_LIST_DIR}/largeworlds/landscape_canvas
@@ -262,8 +259,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
 
 ## GradientSignal ##
     ly_add_pytest(
-        NAME GradientSignalTests_Periodic
-        TEST_REQUIRES gpu
+        NAME AutomatedTesting::GradientSignalTests_Periodic
         TEST_SERIAL
         TEST_SUITE periodic
         PATH ${CMAKE_CURRENT_LIST_DIR}/largeworlds/gradient_signal
@@ -281,7 +277,7 @@ endif()
 ## Editor ##
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_FOUNDATION_TEST_SUPPORTED)
     ly_add_pytest(
-        NAME EditorTests_Periodic
+        NAME AutomatedTesting::EditorTests_Periodic
         TEST_SUITE periodic
         TEST_SERIAL
         PATH ${CMAKE_CURRENT_LIST_DIR}/editor

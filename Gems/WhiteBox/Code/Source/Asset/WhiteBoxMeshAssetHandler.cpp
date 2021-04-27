@@ -112,16 +112,21 @@ namespace WhiteBox
 
             const auto size = stream->GetLength();
 
-            AZStd::vector<AZ::u8> whiteBoxData(size);
+            Api::WhiteBoxMeshStream whiteBoxData;
+            whiteBoxData.resize(size);
+
             stream->Read(size, whiteBoxData.data());
 
             auto whiteBoxMesh = WhiteBox::Api::CreateWhiteBoxMesh();
-            const bool success = WhiteBox::Api::ReadMesh(*whiteBoxMesh, whiteBoxData);
+            const auto result = WhiteBox::Api::ReadMesh(*whiteBoxMesh, whiteBoxData);
 
+            // if result is not 'Full', then whiteBoxMeshAsset could be empty which is most likely an error
+            // as no data was loaded from the asset, or it was not correctly read in stream->Read(..)
+            const auto success = result == Api::ReadResult::Full;
             if (success)
             {
                 whiteBoxMeshAsset->SetMesh(AZStd::move(whiteBoxMesh));
-                whiteBoxMeshAsset->SetWhiteBoxData(whiteBoxData);
+                whiteBoxMeshAsset->SetWhiteBoxData(AZStd::move(whiteBoxData));
             }
 
             return success ? AZ::Data::AssetHandler::LoadResult::LoadComplete

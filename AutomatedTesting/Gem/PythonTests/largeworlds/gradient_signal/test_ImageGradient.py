@@ -57,7 +57,7 @@ class TestImageGradientRequiresShape(object):
             "Entity has a Image Gradient component",
             "Entity has a Gradient Transform Modifier component",
             "Entity has a Box Shape component",
-            "lumberyard_gsi.png was found in the workspace",
+            "image_grad_test_gsi.png was found in the workspace",
             "Entity Configuration|Image Asset: SUCCESS",
             "ImageGradient_ProcessedImageAssignedSucessfully:  result=SUCCESS",
         ]

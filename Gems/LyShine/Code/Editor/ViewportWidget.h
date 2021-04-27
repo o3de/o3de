@@ -25,6 +25,7 @@
 class RulerWidget;
 class QMimeData;
 class UiRenderer;
+class CDraw2d;
 
 class ViewportWidget
     : public AtomToolsFramework::RenderViewportWidget
@@ -201,4 +202,5 @@ private: // data
     bool     m_fontTextureHasChanged = false;
 
     AZStd::shared_ptr<UiRenderer> m_uiRenderer;
+    AZStd::shared_ptr<CDraw2d> m_draw2d;
 };

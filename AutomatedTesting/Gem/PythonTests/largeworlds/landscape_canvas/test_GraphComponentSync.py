@@ -43,7 +43,7 @@ class TestGraphComponentSync(object):
 
     @pytest.mark.test_case_id('C4705586')
     @pytest.mark.BAT
-    @pytest.mark.SUITE_main
+    @pytest.mark.SUITE_periodic
     def test_LandscapeCanvas_SlotConnections_UpdateComponentReferences(self, request, editor, level, launcher_platform):
         cfg_args = [level]
 
@@ -116,7 +116,7 @@ class TestGraphComponentSync(object):
                                           expected_lines, unexpected_lines=unexpected_lines, cfg_args=cfg_args)
 
     @pytest.mark.test_case_id('C15987206')
-    @pytest.mark.SUITE_main
+    @pytest.mark.SUITE_periodic
     def test_LandscapeCanvas_GradientMixerNodeConstruction(self, request, editor, level, launcher_platform):
         """
         Verifies a Gradient Mixer can be setup in Landscape Canvas and all references are property set.

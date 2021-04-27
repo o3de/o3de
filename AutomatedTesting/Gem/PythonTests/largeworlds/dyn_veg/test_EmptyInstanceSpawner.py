@@ -36,7 +36,7 @@ class TestEmptyInstanceSpawner(object):
         file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
 
     @pytest.mark.test_case_id("C28851762")
-    @pytest.mark.SUITE_main
+    @pytest.mark.SUITE_periodic
     def test_EmptyInstanceSpawner_EmptySpawnerWorks(self, request, editor, level, launcher_platform):
         cfg_args = [level]
 
