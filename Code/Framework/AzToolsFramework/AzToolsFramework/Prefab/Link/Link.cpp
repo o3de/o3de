@@ -230,6 +230,10 @@ namespace AzToolsFramework
                 AZ_Assert(instanceDom.IsObject(), "Link Id '%u' cannot be added because the DOM of the instance is not an object.", m_id);
                 instanceDom.AddMember(rapidjson::StringRef(PrefabDomUtils::LinkIdName), rapidjson::Value().SetUint64(m_id), allocator);
             }
+            else
+            {
+                linkIdReference->get().SetUint64(m_id);
+            }
         }
 
     } // namespace Prefab

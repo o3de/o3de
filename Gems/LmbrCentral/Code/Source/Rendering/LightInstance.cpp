@@ -136,13 +136,16 @@ namespace
             const char* texturePath = configuration.m_projectorTexture.GetAssetPath().c_str();
             const int flags = FT_DONT_STREAM;
 
-            lightParams.m_pLightImage = gEnv->pRenderer->EF_LoadTexture(texturePath, flags);
-
-            if (!lightParams.m_pLightImage || !lightParams.m_pLightImage->IsTextureLoaded())
+            if (gEnv->pRenderer)
             {
-                GetISystem()->Warning(VALIDATOR_MODULE_RENDERER, VALIDATOR_WARNING, 0, texturePath,
-                    "Light projector texture not found: %s", texturePath);
-                lightParams.m_pLightImage = gEnv->pRenderer->EF_LoadTexture("Textures/defaults/red.dds", flags);
+                lightParams.m_pLightImage = gEnv->pRenderer->EF_LoadTexture(texturePath, flags);
+
+                if (!lightParams.m_pLightImage || !lightParams.m_pLightImage->IsTextureLoaded())
+                {
+                    GetISystem()->Warning(VALIDATOR_MODULE_RENDERER, VALIDATOR_WARNING, 0, texturePath,
+                        "Light projector texture not found: %s", texturePath);
+                    lightParams.m_pLightImage = gEnv->pRenderer->EF_LoadTexture("Textures/defaults/red.dds", flags);
+                }
             }
         }
         break;
@@ -180,8 +183,11 @@ namespace
                     diffuseMap.insert(dotPos, "_diff");
                 }
 
-                lightParams.SetSpecularCubemap(gEnv->pRenderer->EF_LoadCubemapTexture(specularMap.c_str(), FT_DONT_STREAM));
-                lightParams.SetDiffuseCubemap(gEnv->pRenderer->EF_LoadCubemapTexture(diffuseMap.c_str(), FT_DONT_STREAM));
+                if (gEnv->pRenderer)
+                {
+                    lightParams.SetSpecularCubemap(gEnv->pRenderer->EF_LoadCubemapTexture(specularMap.c_str(), FT_DONT_STREAM));
+                    lightParams.SetDiffuseCubemap(gEnv->pRenderer->EF_LoadCubemapTexture(diffuseMap.c_str(), FT_DONT_STREAM));
+                }
 
                 if (lightParams.GetDiffuseCubemap() && lightParams.GetSpecularCubemap())
                 {
@@ -401,7 +407,7 @@ namespace LmbrCentral
     template <typename ConfigurationType, typename ConfigToLightParamsFunc>
     void LightInstance::CreateRenderLightInternal(const ConfigurationType& configuration, ConfigToLightParamsFunc configToLightParams)
     {
-        if (m_renderLight || !configuration.m_visible)
+        if (m_renderLight || !configuration.m_visible || !gEnv->p3DEngine)
         {
             return;
         }
