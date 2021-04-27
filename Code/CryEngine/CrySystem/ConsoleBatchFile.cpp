@@ -23,26 +23,8 @@
 #include <stdio.h>
 #include "System.h"
 #include <AzCore/IO/FileIO.h>
-#include <AzCore/Console/IConsole.h>
 
 IConsole* CConsoleBatchFile::m_pConsole = NULL;
-
-namespace
-{
-    static void exec(const AZ::ConsoleCommandContainer& args)
-    {
-        if (args.size() == 1)
-        {
-            CConsoleBatchFile::ExecuteConfigFile(args.front().data());
-        }
-        else
-        {
-            AZ_Warning("editor", false, "exec requires exactly one file name.");
-        }
-    }
-
-    AZ_CONSOLEFREEFUNC(exec, AZ::ConsoleFunctorFlags::Null, "Executes a batch file of console commands.");
-}
 
 void CConsoleBatchFile::Init()
 {

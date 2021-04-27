@@ -57,8 +57,7 @@ namespace
             const AZStd::string& consoleCmd = commandLine->GetSwitchValue(customConCmdKey, numSwitchValues - 1);
             if (!consoleCmd.empty())
             {
-                AZStd::string execString = "exec " + consoleCmd;
-                AZ::Interface<AZ::IConsole>::Get()->PerformCommand(execString.c_str());
+                AZ::Interface<AZ::IConsole>::Get()->ExecuteConfigFile(consoleCmd.c_str());
             }
         }
     }
@@ -654,7 +653,7 @@ namespace O3DELauncher
             if (gEnv && gEnv->pConsole)
             {
                 // Execute autoexec.cfg to load the initial level
-                AZ::Interface<AZ::IConsole>::Get()->PerformCommand("exec autoexec.cfg");
+                AZ::Interface<AZ::IConsole>::Get()->ExecuteConfigFile("autoexec.cfg");
 
                 // Find out if console command file was passed 
                 // via --console_command_file=%filename% and execute it
