@@ -59,6 +59,11 @@ namespace AZ
 
         RHI::Ptr<DynamicDrawContext> DynamicDrawSystem::CreateDynamicDrawContext(Scene* scene)
         {
+            if (!scene)
+            {
+                AZ_Error("RPI", false, "Failed to create a DynamicDrawContext: the input scene is invalid");
+                return nullptr;
+            }
             RHI::Ptr<DynamicDrawContext> drawContext = aznew DynamicDrawContext();
             drawContext->m_scene = scene;
 
@@ -67,11 +72,17 @@ namespace AZ
             return drawContext;
         }
 
-        // [GFX TODO][ATOM-13185] Add support for creating DynamicDrawContext for Pass
-        RHI::Ptr<DynamicDrawContext> DynamicDrawSystem::CreateDynamicDrawContext([[maybe_unused]] Pass* pass)
+        RHI::Ptr<DynamicDrawContext> DynamicDrawSystem::CreateDynamicDrawContext(RenderPipeline* pipeline)
         {
-            AZ_Error("RPI", false, "Unimplemented function");
-            return nullptr;
+            if (!pipeline || !pipeline->GetScene())
+            {
+                AZ_Error("RPI", false, "Failed to create a DynamicDrawContext: the input RenderPipeline is invalid or wasn't added to a Scene");
+                return nullptr;
+            }
+
+            auto context = CreateDynamicDrawContext(pipeline->GetScene());
+            context->m_drawFilter = pipeline->GetDrawFilterMask();
+            return context;
         }
 
         // [GFX TODO][ATOM-13184] Add support of draw geometry with material for DynamicDrawSystemInterface
