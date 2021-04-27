@@ -697,7 +697,7 @@ namespace ScriptCanvas
             AZ_Assert(lua_islightuserdata(lua, 2), "Error in compiled lua file, 2nd argument to UnpackDependencyArgs is not userdata (AZStd::vector<AZ::Data::Asset<RuntimeAsset>>*), but a :%s", lua_typename(lua, 2));
             auto dependentAssets = reinterpret_cast<AZStd::vector<AZ::Data::Asset<RuntimeAsset>>*>(lua_touserdata(lua, 2));
             AZ_Assert(lua_isinteger(lua, 3), "Error in compiled Lua file, 3rd argument to UnpackDependencyArgs is not a number");
-            const size_t dependentAssetsIndex = lua_tointeger(lua, 3);
+            const size_t dependentAssetsIndex = aznumeric_caster(lua_tointeger(lua, 3));
 
             return DependencyConstructionPack{ executionState, dependentAssets, dependentAssetsIndex, (*dependentAssets)[dependentAssetsIndex].Get()->m_runtimeData };
         }
