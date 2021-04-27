@@ -285,11 +285,6 @@ namespace AZ
                 // This is not 100% correct, but in most cases it will give us the correct result.
                 info.depthClampEnable = rasterState.m_depthClipEnable ? VK_FALSE : VK_TRUE;
             }
-            else if (!rasterState.m_depthClipEnable)
-            {
-                // depth clamp must be disabled if physical device does not support it
-                info.depthClampEnable = VK_FALSE;
-            }
 
             switch (rasterState.m_fillMode)
             {
