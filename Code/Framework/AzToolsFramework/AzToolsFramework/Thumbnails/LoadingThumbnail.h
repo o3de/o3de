@@ -29,7 +29,7 @@ namespace AzToolsFramework
         {
             Q_OBJECT
         public:
-            explicit LoadingThumbnail(int thumbnailSize);
+            LoadingThumbnail();
             ~LoadingThumbnail() override;
 
             void UpdateTime(float /*deltaTime*/) override;

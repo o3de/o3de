@@ -24,7 +24,7 @@ namespace AzToolsFramework
         {
             Q_OBJECT
         public:
-            explicit MissingThumbnail(int thumbnailSize);
+            MissingThumbnail();
         };
     } // namespace Thumbnailer
 } // namespace AzToolsFramework

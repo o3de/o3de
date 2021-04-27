@@ -53,7 +53,7 @@ namespace LUAEditor
             services.push_back(AZ_CRC("ThumbnailerService", 0x65422b97));
         }
 
-        void ThumbnailerNullComponent::RegisterContext(const char* /*contextName*/, int /*thumbnailSize*/)
+        void ThumbnailerNullComponent::RegisterContext(const char* /*contextName*/)
         {
         }
 
