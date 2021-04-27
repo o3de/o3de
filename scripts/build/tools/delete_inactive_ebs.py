@@ -30,19 +30,20 @@ def get_tag_values(tag_name):
     response = client.get_tag_values(
         Key=tag_name
     )
+    tag_values += response['TagValues']
     while response and response.get('PaginationToken', ''):
-        tag_values += response['TagValues']
         response = client.get_tag_values(
             PaginationToken=response['PaginationToken'],
             Key=tag_name
         )
+        tag_values += response['TagValues']
     return tag_values
 
 
 def delete_volumes(inactive_dates):
     """
     Find and delete all EBS volumes that have AttachDate tag value in inactive_dates
-    :param inactive_dates: Set of String that considered as inactive dates, for example, {"2021-04-27", "2021-04-26"}
+    :param inactive_dates: List of String that considered as inactive dates, for example, {"2021-04-27", "2021-04-26"}
     :return: Number of EBS volumes that are deleted successfully, number of EBS volumes that are not deleted.
     """
     success = 0
@@ -55,7 +56,7 @@ def delete_volumes(inactive_dates):
         },
         {
             'Name': 'status',
-            'Values': 'available'
+            'Values': ['available']
         },
     ])
     log.info(f'Deleting inactive EBS volumes that haven\'t been used for {INACTIVE_DAY_THRESHOLD} days...')
@@ -77,14 +78,16 @@ def delete_volumes(inactive_dates):
 def main():
     tag_values = get_tag_values(ATTACH_DATE_TAG_NAME)
     date_today = datetime.today().date()
+    # Exclude dates of last {INACTIVE_DAY_THRESHOLD} days from tag values, the rest values are considered as inactive dates.
     dates_to_exclude = []
     for i in range(INACTIVE_DAY_THRESHOLD):
         dates_to_exclude.append(str(date_today - timedelta(i)))
     inactive_dates = set(tag_values).difference(dates_to_exclude)
-    success, failure = delete_volumes(inactive_dates)
-    log.info(f'{success} EBS volumes are deleted successfully.')
-    if failure:
-        log.info(f'{failure} EBS volumes are not deleted due to errors. See logs for more information.')
+    if inactive_dates:
+        success, failure = delete_volumes(list(inactive_dates))
+        log.info(f'{success} EBS volumes are deleted successfully.')
+        if failure:
+            log.info(f'{failure} EBS volumes are not deleted due to errors. See logs for more information.')
 
 
 if __name__ == "__main__":
