@@ -25,8 +25,8 @@ fi
 
 for project in $(echo $CMAKE_LY_PROJECTS | sed "s/;/ /g")
 do
-    echo  [ci_build] $ASSET_PROCESSOR_BINARY $ASSET_PROCESSOR_OPTIONS --project-path=$project --platforms=$ASSET_PROCESSOR_PLATFORMS
-    $ASSET_PROCESSOR_BINARY $ASSET_PROCESSOR_OPTIONS --project-path=$project --platforms=$ASSET_PROCESSOR_PLATFORMS
+    echo  [ci_build] ${ASSET_PROCESSOR_BINARY} $ASSET_PROCESSOR_OPTIONS --project-path=$project --platforms=$ASSET_PROCESSOR_PLATFORMS
+    ${ASSET_PROCESSOR_BINARY} $ASSET_PROCESSOR_OPTIONS --project-path=$project --platforms=$ASSET_PROCESSOR_PLATFORMS
 done
 
 popd
