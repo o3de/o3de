@@ -31,12 +31,21 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AzCore/Preprocessor/EnumReflectUtils.h>
+#include <AzCore/Console/Console.h>
 #include <OpenImageIO/imageio.h>
 
 namespace AZ
 {
     namespace Render
     {
+        AZ_CVAR(unsigned int,
+            r_pngCompressionLevel,
+            3,
+            nullptr,
+            ConsoleFunctorFlags::Null,
+            "Sets the compression level for saving png screenshots. Valid values are from 0 to 8"
+        );
+
         AZ_ENUM_DEFINE_REFLECT_UTILITIES(FrameCaptureResult);
 
         FrameCaptureOutputResult PngFrameCaptureOutput(
@@ -49,8 +58,9 @@ namespace AZ
                 ImageSpec spec(
                     readbackResult.m_imageDescriptor.m_size.m_width,
                     readbackResult.m_imageDescriptor.m_size.m_height,
-                    AZ::RHI::GetFormatComponentCount(readbackResult.m_imageDescriptor.m_format));
-                spec.attribute("png:compressionLevel", 3);
+                    AZ::RHI::GetFormatComponentCount(readbackResult.m_imageDescriptor.m_format)
+                );
+                spec.attribute("png:compressionLevel", r_pngCompressionLevel);
 
                 if (out->open(outputFilePath.c_str(), spec))
                 {
