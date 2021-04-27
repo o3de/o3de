@@ -580,9 +580,9 @@ namespace AZ
                 rapidjson::StringRef(JsonSerialization::TypeIdFieldIdentifier), StoreTypeName(classData, context),
                 context.GetJsonAllocator());
 
-            for (auto& [key, element] : output.GetObject())
+            for (auto& element : output.GetObject())
             {
-                insertedObject.AddMember(AZStd::move(key), AZStd::move(element), context.GetJsonAllocator());
+                insertedObject.AddMember(AZStd::move(element.name), AZStd::move(element.value), context.GetJsonAllocator());
             }
             output = AZStd::move(insertedObject);
             return ResultCode(Tasks::WriteValue, Outcomes::Success);
