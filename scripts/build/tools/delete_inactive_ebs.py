@@ -27,17 +27,22 @@ def get_tag_values(tag_name):
     """
     client = boto3.client('resourcegroupstaggingapi')
     tag_values = []
-    response = client.get_tag_values(
-        Key=tag_name
-    )
-    tag_values += response['TagValues']
-    while response and response.get('PaginationToken', ''):
+    try:
         response = client.get_tag_values(
-            PaginationToken=response['PaginationToken'],
             Key=tag_name
         )
         tag_values += response['TagValues']
-    return tag_values
+        while response and response.get('PaginationToken', ''):
+            response = client.get_tag_values(
+                PaginationToken=response['PaginationToken'],
+                Key=tag_name
+            )
+            tag_values += response['TagValues']
+        return tag_values
+    except Exception as e:
+        log.error(f'Failed to get tag values for {tag_name}.')
+        log.error(e)
+        return []
 
 
 def delete_volumes(inactive_dates):
