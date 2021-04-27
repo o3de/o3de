@@ -45,3 +45,4 @@ ly_associate_package(PACKAGE_NAME googlebenchmark-1.5.0-rev2-linux  TARGETS Goog
 ly_associate_package(PACKAGE_NAME unwind-1.2.1-linux                TARGETS unwind          PACKAGE_HASH 3453265fb056e25432f611a61546a25f60388e315515ad39007b5925dd054a77)
 ly_associate_package(PACKAGE_NAME qt-5.15.2-linux                   TARGETS Qt              PACKAGE_HASH 3857fbb2fc5581cdb71d80a7f9298c83ef06073d4e1ccd86a32b4f88782b6f14)
 ly_associate_package(PACKAGE_NAME libsamplerate-0.2.1-rev2-linux    TARGETS libsamplerate   PACKAGE_HASH 41643c31bc6b7d037f895f89d8d8d6369e906b92eff42b0fe05ee6a100f06261)
+ly_associate_package(PACKAGE_NAME OpenSSL-1.1.1b-rev2-linux         TARGETS OpenSSL         PACKAGE_HASH b779426d1e9c5ddf71160d5ae2e639c3b956e0fb5e9fcaf9ce97c4526024e3bc)
