@@ -47,3 +47,8 @@ class TestAutomation(TestAutomationBase):
         # Fixme:    unexpected_lines.append(f"GroupName: {group}")
         # Fixme: expected_lines=["GroupName: "]
         self._run_test(request, workspace, editor, test_module)
+
+    @revert_physics_config
+    def test_C13895144_Ragdoll_ChangeLevel(self, request, workspace, editor, launcher_platform):
+        from . import C13895144_Ragdoll_ChangeLevel as test_module
+        self._run_test(request, workspace, editor, test_module)
