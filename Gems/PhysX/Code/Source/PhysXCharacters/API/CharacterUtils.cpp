@@ -197,9 +197,15 @@ namespace PhysX
                     if (colliderNodeConfig)
                     {
                         AZStd::vector<AZStd::shared_ptr<Physics::Shape>> shapes;
-                        for (const auto& shapeConfig : colliderNodeConfig->m_shapes)
+                        for (const auto [colliderConfig, shapeConfig] : colliderNodeConfig->m_shapes)
                         {
-                            if (auto shape = AZStd::make_shared<Shape>(*shapeConfig.first, *shapeConfig.second))
+                            if (colliderConfig == nullptr || shapeConfig == nullptr)
+                            {
+                                AZ_Error("PhysX Ragdoll", false, "Failed to create collider shape for ragdoll node %s", nodeConfig.m_debugName.c_str());
+                                return nullptr;
+                            }
+
+                            if (auto shape = AZStd::make_shared<Shape>(*colliderConfig, *shapeConfig))
                             {
                                 shapes.emplace_back(shape);
                             }
