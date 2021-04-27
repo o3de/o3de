@@ -40,13 +40,22 @@ namespace AZ
                 // Dependent asset references aren't guaranteed to finish loading by the time this asset is serialized, only by
                 // the time this asset load is completed.  But since the data is needed here, we will deliberately block until the
                 // shader asset has finished loading.
-                shaderVariantReference->m_shaderAsset.QueueLoad();
-                shaderVariantReference->m_shaderAsset.BlockUntilLoadComplete();
+                if (shaderVariantReference->m_shaderAsset.QueueLoad())
+                {
+                    shaderVariantReference->m_shaderAsset.BlockUntilLoadComplete();
+                }
 
-                shaderVariantReference->m_shaderOptionGroup = ShaderOptionGroup{
-                    shaderVariantReference->m_shaderAsset->GetShaderOptionGroupLayout(),
-                    shaderVariantReference->m_shaderVariantId
-                };
+                if (shaderVariantReference->m_shaderAsset.IsReady())
+                {
+                    shaderVariantReference->m_shaderOptionGroup = ShaderOptionGroup{
+                        shaderVariantReference->m_shaderAsset->GetShaderOptionGroupLayout(),
+                        shaderVariantReference->m_shaderVariantId
+                    };
+                }
+                else
+                {
+                    shaderVariantReference->m_shaderOptionGroup = {};
+                }
             }
         };
 
