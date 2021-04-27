@@ -496,7 +496,16 @@ namespace AZ
                 skinnedMeshLod.SetIndexBufferAsset(mesh0.GetIndexBufferAssetView().GetBufferAsset());
                 skinnedMeshLod.SetStaticBufferAsset(mesh0.GetSemanticBufferAssetView(Name{ "UV" })->GetBufferAsset(), SkinnedMeshStaticVertexStreams::UV_0);
 
-                const RPI::BufferAssetView* morphBufferAssetView = mesh0.GetSemanticBufferAssetView(Name{ "MORPHTARGET_VERTEXDELTAS" });
+                const RPI::BufferAssetView* morphBufferAssetView = nullptr;
+                for (const auto& mesh : modelLodAsset->GetMeshes())
+                {
+                    morphBufferAssetView = mesh.GetSemanticBufferAssetView(Name{ "MORPHTARGET_VERTEXDELTAS" });
+                    if (morphBufferAssetView)
+                    {
+                        break;
+                    }
+                }
+
                 if (morphBufferAssetView)
                 {
                     ProcessMorphsForLod(actor, morphBufferAssetView->GetBufferAsset(), lodIndex, fullFileName, skinnedMeshLod);
