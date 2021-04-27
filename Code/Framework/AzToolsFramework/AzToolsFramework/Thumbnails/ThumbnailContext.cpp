@@ -28,10 +28,15 @@ namespace AzToolsFramework
             : m_missingThumbnail(new MissingThumbnail(thumbnailSize))
             , m_loadingThumbnail(new LoadingThumbnail(thumbnailSize))
             , m_thumbnailSize(thumbnailSize)
+            , m_threadPool(this)
         {
+            ThumbnailContextRequestBus::Handler::BusConnect();
         }
 
-        ThumbnailContext::~ThumbnailContext() = default;
+        ThumbnailContext::~ThumbnailContext()
+        {
+            ThumbnailContextRequestBus::Handler::BusDisconnect();
+        }
 
         bool ThumbnailContext::IsLoading(SharedThumbnailKey key)
         {
@@ -51,6 +56,11 @@ namespace AzToolsFramework
         void ThumbnailContext::RedrawThumbnail()
         {
             AzToolsFramework::AssetBrowser::AssetBrowserViewRequestBus::Broadcast(&AzToolsFramework::AssetBrowser::AssetBrowserViewRequests::Update);
+        }
+
+        QThreadPool* ThumbnailContext::GetThreadPool()
+        {
+            return &m_threadPool;
         }
 
         SharedThumbnail ThumbnailContext::GetThumbnail(SharedThumbnailKey key)

@@ -86,8 +86,6 @@ namespace ScriptCanvas
 
                 bool IsObjectClass(AZStd::string_view objectClass) const { return objectClass.compare(m_className) == 0; }
 
-                
-
                 //! Attempts to initialize node with a BehaviorContext BehaviorMethod
                 //! If the className is empty, then the methodName is searched on the BehaviorContext
                 //! If className is not empty the className is used to look for a registered BehaviorEBus in the BehaviorContext
@@ -101,6 +99,8 @@ namespace ScriptCanvas
                 void InitializeEvent(const NamespacePath& namespaces, AZStd::string_view busName, AZStd::string_view eventName);
 
                 void InitializeFree(const NamespacePath& namespaces, AZStd::string_view methodName);
+
+                bool InitializeOverloaded(const NamespacePath& namespaces, AZStd::string_view className, AZStd::string_view methodName);
 
                 AZ_INLINE bool IsValid() const { return m_method != nullptr; }
 

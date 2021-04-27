@@ -7,10 +7,13 @@
         "general": {
             "texcoord": 0
         },
-        "ambientOcclusion": {
-            "factor": 1.0,
-            "useTexture": false,
-            "textureMap": ""
+        "occlusion": {
+            "diffuseFactor": 1.0,
+            "diffuseUseTexture": false,
+            "diffuseTextureMap": "",
+            "specularFactor": 1.0,
+            "specularUseTexture": false,
+            "specularTextureMap": ""
         },
         "baseColor": {
             "color": [

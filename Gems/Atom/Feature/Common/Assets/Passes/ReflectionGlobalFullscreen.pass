@@ -28,7 +28,8 @@
                     "ScopeAttachmentUsage": "Shader"
                 },
                 {
-                    "Name": "ClearCoatNormalInput",
+                    // This is needed for the alpha channel which has specularOcclusion factor
+                    "Name": "AlbedoInput",
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader"
                 },

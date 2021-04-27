@@ -17,8 +17,8 @@
 // This shader stencils the pixels covered by inner probe volumes.  This will
 // exclude them from blending operations in the later passes since inner volumes
 // always blend at 100%.  Note that this shader only considers pixels that were
-// stenciled with the UseSpecularIBLPass value when they were rendered in the forward pass.
-// It increases the stencil value if they are in an inner volume (i.e., makes their stencil > 1).
+// stenciled with the UseIBLSpecularPass value when they were rendered in the forward pass.
+// It increases the stencil value if they are in an inner volume.
 
 #include <viewsrg.srgi>
 

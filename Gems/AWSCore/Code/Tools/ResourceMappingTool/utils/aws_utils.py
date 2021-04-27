@@ -44,15 +44,26 @@ class AWSConstants(object):
     S3_SERVICE_NAME: str = "s3"
 
 
+def _close_client_connection(client: BaseClient) -> None:
+    session: boto3.session.Session = client._endpoint.http_session
+    managers: List[object] = [session._manager, *session._proxy_managers.values()]
+    for manager in managers:
+        manager.clear()
+
+
 def _initialize_boto3_aws_client(service: str, region: str = "") -> BaseClient:
     if region:
-        return boto3.client(service, region_name=region)
+        boto3_client: BaseClient = boto3.client(service, region_name=region)
     else:
-        return boto3.client(service)
+        boto3_client: BaseClient = boto3.client(service)
+    boto3_client.meta.events.register(
+        f"after-call.{service}.*", lambda **kwargs: _close_client_connection(boto3_client)
+    )
+    return boto3_client
 
 
 def get_default_account_id() -> str:
-    sts_client: BaseClient = boto3.client(AWSConstants.STS_SERVICE_NAME)
+    sts_client: BaseClient = _initialize_boto3_aws_client(AWSConstants.STS_SERVICE_NAME)
     try:
         return sts_client.get_caller_identity()["Account"]
     except ClientError as error:
@@ -65,7 +76,7 @@ def get_default_region() -> str:
     if region:
         return region
     
-    sts_client: BaseClient = boto3.client(AWSConstants.STS_SERVICE_NAME)
+    sts_client: BaseClient = _initialize_boto3_aws_client(AWSConstants.STS_SERVICE_NAME)
     region = sts_client.meta.region_name
     if region:
         return region

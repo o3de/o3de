@@ -13,16 +13,17 @@
 #include <Cry_Math.h> // Needed for DualQuat
 #include <MathConversion.h>
 
+#include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
 #include <Integration/ActorComponentBus.h>
 
 // Needed to access the Mesh information inside Actor.
 #include <EMotionFX/Source/TransformData.h>
-#include <EMotionFX/Source/SkinningInfoVertexAttributeLayer.h>
-#include <EMotionFX/Source/Node.h>
-#include <EMotionFX/Source/Mesh.h>
 #include <EMotionFX/Source/ActorInstance.h>
 
 #include <Components/ClothComponentMesh/ActorClothSkinning.h>
+#include <Utils/AssetHelper.h>
+
+#include <AzCore/Math/PackedVector3.h>
 
 namespace NvCloth
 {
@@ -30,11 +31,29 @@ namespace NvCloth
     {
         bool ObtainSkinningData(
             AZ::EntityId entityId, 
-            const AZStd::string& meshNode, 
+            const MeshNodeInfo& meshNodeInfo,
             const size_t numSimParticles,
-            const AZStd::vector<int>& meshRemappedVertices,
             AZStd::vector<SkinningInfo>& skinningData)
         {
+            AZ::Data::Asset<AZ::RPI::ModelAsset> modelAsset;
+            AZ::Render::MeshComponentRequestBus::EventResult(
+                modelAsset, entityId, &AZ::Render::MeshComponentRequestBus::Events::GetModelAsset);
+            if (!modelAsset.IsReady())
+            {
+                return false;
+            }
+
+            if (modelAsset->GetLodCount() < meshNodeInfo.m_lodLevel)
+            {
+                return false;
+            }
+
+            const AZ::Data::Asset<AZ::RPI::ModelLodAsset>& modelLodAsset = modelAsset->GetLodAssets()[meshNodeInfo.m_lodLevel];
+            if (!modelLodAsset.GetId().IsValid())
+            {
+                return false;
+            }
+
             EMotionFX::ActorInstance* actorInstance = nullptr;
             EMotionFX::Integration::ActorComponentRequestBus::EventResult(actorInstance, entityId, &EMotionFX::Integration::ActorComponentRequestBus::Events::GetActorInstance);
             if (!actorInstance)
@@ -48,111 +67,74 @@ namespace NvCloth
                 return false;
             }
 
-            const uint32 numNodes = actor->GetNumNodes();
-            const uint32 numLODs = actor->GetNumLODLevels();
-
-            const EMotionFX::Mesh* emfxMesh = nullptr;
-
-            // Find the render data of the mesh node
-            for (uint32 lodLevel = 0; lodLevel < numLODs; ++lodLevel)
-            {
-                for (uint32 nodeIndex = 0; nodeIndex < numNodes; ++nodeIndex)
-                {
-                    const EMotionFX::Mesh* mesh = actor->GetMesh(lodLevel, nodeIndex);
-                    if (!mesh || mesh->GetIsCollisionMesh())
-                    {
-                        // Skip invalid and collision meshes.
-                        continue;
-                    }
-
-                    const EMotionFX::Node* node = actor->GetSkeleton()->GetNode(nodeIndex);
-                    if (meshNode != node->GetNameString())
-                    {
-                        // Skip nodes other than the one we're looking for.
-                        continue;
-                    }
-
-                    emfxMesh = mesh;
-                    break;
-                }
-
-                if (emfxMesh)
-                {
-                    break;
-                }
-            }
-
-            if (!emfxMesh)
-            {
-                return false;
-            }
-
-            const AZ::u32* sourceOriginalVertex = static_cast<AZ::u32*>(emfxMesh->FindOriginalVertexData(EMotionFX::Mesh::ATTRIB_ORGVTXNUMBERS));
-            EMotionFX::SkinningInfoVertexAttributeLayer* sourceSkinningInfo = 
-                static_cast<EMotionFX::SkinningInfoVertexAttributeLayer*>(
-                    emfxMesh->FindSharedVertexAttributeLayer(EMotionFX::SkinningInfoVertexAttributeLayer::TYPE_ID));
-
-            if (!sourceOriginalVertex || !sourceSkinningInfo)
-            {
-                return false;
-            }
-
-            const int numVertices = emfxMesh->GetNumVertices();
-            if (numVertices == 0)
-            {
-                AZ_Error("ActorClothSkinning", false, "Invalid mesh data");
-                return false;
-            }
-
-            if (meshRemappedVertices.size() != numVertices)
-            {
-                AZ_Error("ActorClothSkinning", false,
-                    "Number of vertices (%d) doesn't match the mesh remapping size (%zu)",
-                    numVertices, meshRemappedVertices.size());
-                return false;
-            }
+            const auto& skinToSkeletonIndexMap = actor->GetSkinToSkeletonIndexMap();
 
             skinningData.resize(numSimParticles);
-            for (int index = 0; index < numVertices; ++index)
+
+            // For each submesh...
+            for (const auto& subMeshInfo : meshNodeInfo.m_subMeshes)
             {
-                const int skinnedDataIndex = meshRemappedVertices[index];
-                if (skinnedDataIndex < 0)
+                if (modelLodAsset->GetMeshes().size() < subMeshInfo.m_primitiveIndex)
                 {
-                    // Removed particle
+                    AZ_Error("ActorClothSkinning", false,
+                        "Unable to access submesh %d from lod asset '%s' as it only has %d submeshes.",
+                        subMeshInfo.m_primitiveIndex,
+                        modelAsset.GetHint().c_str(),
+                        modelLodAsset->GetMeshes().size());
+                    return false;
+                }
+
+                const AZ::RPI::ModelLodAsset::Mesh& subMesh = modelLodAsset->GetMeshes()[subMeshInfo.m_primitiveIndex];
+
+                const auto sourcePositions = subMesh.GetSemanticBufferTyped<AZ::PackedVector3f>(AZ::Name("POSITION"));
+                if (sourcePositions.size() != subMeshInfo.m_numVertices)
+                {
+                    AZ_Error("ActorClothSkinning", false,
+                        "Number of vertices (%zu) in submesh %d doesn't match the cloth's submesh (%d)",
+                        sourcePositions.size(), subMeshInfo.m_primitiveIndex, subMeshInfo.m_numVertices);
+                    return false;
+                }
+
+                const auto sourceSkinJointIndices = subMesh.GetSemanticBufferTyped<uint16_t>(AZ::Name("SKIN_JOINTINDICES"));
+                const auto sourceSkinWeights = subMesh.GetSemanticBufferTyped<float>(AZ::Name("SKIN_WEIGHTS"));
+
+                if (sourceSkinJointIndices.empty() || sourceSkinWeights.empty())
+                {
+                    continue;
+                }
+                AZ_Assert(sourceSkinJointIndices.size() == sourceSkinWeights.size(),
+                    "Size of skin joint indices buffer (%zu) different from skin weights buffer (%zu)",
+                    sourceSkinJointIndices.size(), sourceSkinWeights.size());
+
+                const size_t influenceCount = sourceSkinWeights.size() / sourcePositions.size();
+                if (influenceCount == 0)
+                {
                     continue;
                 }
 
-                SkinningInfo& skinningInfo = skinningData[skinnedDataIndex];
-
-                const AZ::u32 originalVertex = sourceOriginalVertex[index];
-                const AZ::u32 influenceCount = AZ::GetMin<AZ::u32>(MaxSkinningBones, sourceSkinningInfo->GetNumInfluences(originalVertex));
-                AZ::u32 influenceIndex = 0;
-                AZ::u8 weightError = 255;
-
-                for (; influenceIndex < influenceCount; ++influenceIndex)
+                for (int vertexIndex = 0; vertexIndex < subMeshInfo.m_numVertices; ++vertexIndex)
                 {
-                    EMotionFX::SkinInfluence* influence = sourceSkinningInfo->GetInfluence(originalVertex, influenceIndex);
-                    skinningInfo.m_jointIndices[influenceIndex] = influence->GetNodeNr();
-                    skinningInfo.m_jointWeights[influenceIndex] = static_cast<AZ::u8>(AZ::GetClamp<float>(influence->GetWeight() * 255.0f, 0.0f, 255.0f));
-                    if (skinningInfo.m_jointWeights[influenceIndex] >= weightError)
-                    {
-                        skinningInfo.m_jointWeights[influenceIndex] = weightError;
-                        weightError = 0;
-                        influenceIndex++;
-                        break;
-                    }
-                    else
-                    {
-                        weightError -= skinningInfo.m_jointWeights[influenceIndex];
-                    }
-                }
+                    SkinningInfo& skinningInfo = skinningData[subMeshInfo.m_verticesFirstIndex + vertexIndex];
+                    skinningInfo.m_jointIndices.resize(influenceCount);
+                    skinningInfo.m_jointWeights.resize(influenceCount);
 
-                skinningInfo.m_jointWeights[0] += weightError;
+                    for (size_t influenceIndex = 0; influenceIndex < influenceCount; ++influenceIndex)
+                    {
+                        const AZ::u16 jointIndex = sourceSkinJointIndices[vertexIndex * influenceCount + influenceIndex];
+                        const float weight = sourceSkinWeights[vertexIndex * influenceCount + influenceIndex];
 
-                for (; influenceIndex < MaxSkinningBones; ++influenceIndex)
-                {
-                    skinningInfo.m_jointIndices[influenceIndex] = 0;
-                    skinningInfo.m_jointWeights[influenceIndex] = 0;
+                        auto skeletonIndexIt = skinToSkeletonIndexMap.find(jointIndex);
+                        if (skeletonIndexIt == skinToSkeletonIndexMap.end())
+                        {
+                            AZ_Error("ActorClothSkinning", false,
+                                "Joint index %d from model asset not found in map to skeleton indices",
+                                jointIndex);
+                            return false;
+                        }
+
+                        skinningInfo.m_jointIndices[influenceIndex] = skeletonIndexIt->second;
+                        skinningInfo.m_jointWeights[influenceIndex] = weight;
+                    }
                 }
             }
 
@@ -218,19 +200,17 @@ namespace NvCloth
         {
         }
 
+    protected:
         // ActorClothSkinning overrides ...
         void UpdateSkinning() override;
-        void ApplySkinning(
-            const AZStd::vector<AZ::Vector4>& originalPositions,
-            AZStd::vector<AZ::Vector4>& positions) override;
+        bool HasSkinningTransformData() override;
+        void ComputeVertexSkinnningTransform(const SkinningInfo& skinningInfo) override;
+        AZ::Vector3 ComputeSkinningPosition(const AZ::Vector3& originalPosition) override;
+        AZ::Vector3 ComputeSkinningVector(const AZ::Vector3& originalVector) override;
 
     private:
-        AZ::Vector3 ComputeSkinnedPosition(
-            const AZ::Vector3& originalPosition,
-            const SkinningInfo& skinningInfo,
-            const AZ::Matrix3x4* skinningMatrices);
-
         const AZ::Matrix3x4* m_skinningMatrices = nullptr;
+        AZ::Matrix3x4 m_vertexSkinningTransform = AZ::Matrix3x4::CreateIdentity();
     };
 
     void ActorClothSkinningLinear::UpdateSkinning()
@@ -240,54 +220,41 @@ namespace NvCloth
         m_skinningMatrices = Internal::ObtainSkinningMatrices(m_entityId);
     }
 
-    void ActorClothSkinningLinear::ApplySkinning(
-        const AZStd::vector<AZ::Vector4>& originalPositions,
-        AZStd::vector<AZ::Vector4>& positions)
+    bool ActorClothSkinningLinear::HasSkinningTransformData()
     {
-        if (!m_skinningMatrices)
-        {
-            return;
-        }
-
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
-
-        for (size_t index = 0; index < originalPositions.size(); ++index)
-        {
-            const AZ::Vector3 skinnedPosition = ComputeSkinnedPosition(
-                originalPositions[index].GetAsVector3(),
-                m_skinningData[index],
-                m_skinningMatrices);
-
-            // Avoid overwriting the w component
-            positions[index].Set(skinnedPosition, positions[index].GetW());
-        }
+        return m_skinningMatrices != nullptr;
     }
 
-    AZ::Vector3 ActorClothSkinningLinear::ComputeSkinnedPosition(
-        const AZ::Vector3& originalPosition,
-        const SkinningInfo& skinningInfo,
-        const AZ::Matrix3x4* skinningMatrices)
+    void ActorClothSkinningLinear::ComputeVertexSkinnningTransform(const SkinningInfo& skinningInfo)
     {
-        AZ::Matrix3x4 clothSkinningMatrix = AZ::Matrix3x4::CreateZero();
-        for (int weightIndex = 0; weightIndex < MaxSkinningBones; ++weightIndex)
+        m_vertexSkinningTransform = AZ::Matrix3x4::CreateZero();
+        for (size_t weightIndex = 0; weightIndex < skinningInfo.m_jointWeights.size(); ++weightIndex)
         {
-            if (skinningInfo.m_jointWeights[weightIndex] == 0)
+            const AZ::u16 jointIndex = skinningInfo.m_jointIndices[weightIndex];
+            const float jointWeight = skinningInfo.m_jointWeights[weightIndex];
+
+            if (AZ::IsClose(jointWeight, 0.0f))
             {
                 continue;
             }
-
-            const AZ::u16 jointIndex = skinningInfo.m_jointIndices[weightIndex];
-            const float jointWeight = skinningInfo.m_jointWeights[weightIndex] / 255.0f;
 
             // Blending matrices the same way done in GPU shaders, by adding each weighted matrix element by element.
             // This way the skinning results are much similar to the skinning performed in GPU.
             for (int i = 0; i < 3; ++i)
             {
-                clothSkinningMatrix.SetRow(i, clothSkinningMatrix.GetRow(i) + skinningMatrices[jointIndex].GetRow(i) * jointWeight);
+                m_vertexSkinningTransform.SetRow(i, m_vertexSkinningTransform.GetRow(i) + m_skinningMatrices[jointIndex].GetRow(i) * jointWeight);
             }
         }
+    }
 
-        return clothSkinningMatrix * originalPosition;
+    AZ::Vector3 ActorClothSkinningLinear::ComputeSkinningPosition(const AZ::Vector3& originalPosition)
+    {
+        return m_vertexSkinningTransform * originalPosition;
+    }
+
+    AZ::Vector3 ActorClothSkinningLinear::ComputeSkinningVector(const AZ::Vector3& originalVector)
+    {
+        return (m_vertexSkinningTransform * AZ::Vector4::CreateFromVector3AndFloat(originalVector, 0.0f)).GetAsVector3().GetNormalized();
     }
 
     // Specialized class that applies dual quaternion blending skinning
@@ -300,21 +267,18 @@ namespace NvCloth
         {
         }
 
+    protected:
         // ActorClothSkinning overrides ...
         void UpdateSkinning() override;
-        void ApplySkinning(
-            const AZStd::vector<AZ::Vector4>& originalPositions,
-            AZStd::vector<AZ::Vector4>& positions) override;
+        bool HasSkinningTransformData() override;
+        void ComputeVertexSkinnningTransform(const SkinningInfo& skinningInfo) override;
+        AZ::Vector3 ComputeSkinningPosition(const AZ::Vector3& originalPosition) override;
+        AZ::Vector3 ComputeSkinningVector(const AZ::Vector3& originalVector) override;
 
     private:
-        AZ::Vector3 ComputeSkinnedPosition(
-            const AZ::Vector3& originalPosition,
-            const SkinningInfo& skinningInfo,
-            const AZStd::unordered_map<AZ::u16, DualQuat>& skinningDualQuaternions);
-
         AZStd::unordered_map<AZ::u16, DualQuat> m_skinningDualQuaternions;
+        DualQuat m_vertexSkinningTransform = DualQuat(type_identity::IDENTITY);
     };
-
 
     void ActorClothSkinningDualQuaternion::UpdateSkinning()
     {
@@ -323,60 +287,46 @@ namespace NvCloth
         m_skinningDualQuaternions = Internal::ObtainSkinningDualQuaternions(m_entityId, m_jointIndices);
     }
 
-    void ActorClothSkinningDualQuaternion::ApplySkinning(
-        const AZStd::vector<AZ::Vector4>& originalPositions,
-        AZStd::vector<AZ::Vector4>& positions)
+    bool ActorClothSkinningDualQuaternion::HasSkinningTransformData()
     {
-        if (m_skinningDualQuaternions.empty())
-        {
-            return;
-        }
-
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
-
-        for (size_t index = 0; index < originalPositions.size(); ++index)
-        {
-            const AZ::Vector3 skinnedPosition = ComputeSkinnedPosition(
-                originalPositions[index].GetAsVector3(),
-                m_skinningData[index],
-                m_skinningDualQuaternions);
-
-            // Avoid overwriting the w component
-            positions[index].Set(skinnedPosition, positions[index].GetW());
-        }
+        return !m_skinningDualQuaternions.empty();
     }
 
-    AZ::Vector3 ActorClothSkinningDualQuaternion::ComputeSkinnedPosition(
-        const AZ::Vector3& originalPosition,
-        const SkinningInfo& skinningInfo,
-        const AZStd::unordered_map<AZ::u16, DualQuat>& skinningDualQuaternions)
+    void ActorClothSkinningDualQuaternion::ComputeVertexSkinnningTransform(const SkinningInfo& skinningInfo)
     {
-        DualQuat clothSkinningDualQuaternion(type_zero::ZERO);
-        for (int weightIndex = 0; weightIndex < MaxSkinningBones; ++weightIndex)
+        m_vertexSkinningTransform = DualQuat(type_zero::ZERO);
+        for (size_t weightIndex = 0; weightIndex < skinningInfo.m_jointWeights.size(); ++weightIndex)
         {
-            if (skinningInfo.m_jointWeights[weightIndex] == 0)
+            const AZ::u16 jointIndex = skinningInfo.m_jointIndices[weightIndex];
+            const float jointWeight = skinningInfo.m_jointWeights[weightIndex];
+
+            if (AZ::IsClose(jointWeight, 0.0f))
             {
                 continue;
             }
 
-            const AZ::u16 jointIndex = skinningInfo.m_jointIndices[weightIndex];
-            const float jointWeight = skinningInfo.m_jointWeights[weightIndex] / 255.0f;
-
-            clothSkinningDualQuaternion += skinningDualQuaternions.at(jointIndex) * jointWeight;
+            m_vertexSkinningTransform += m_skinningDualQuaternions.at(jointIndex) * jointWeight;
         }
-        clothSkinningDualQuaternion.Normalize();
+        m_vertexSkinningTransform.Normalize();
+    }
 
-        return LYVec3ToAZVec3(clothSkinningDualQuaternion * AZVec3ToLYVec3(originalPosition));
+    AZ::Vector3 ActorClothSkinningDualQuaternion::ComputeSkinningPosition(const AZ::Vector3& originalPosition)
+    {
+        return LYVec3ToAZVec3(m_vertexSkinningTransform * AZVec3ToLYVec3(originalPosition));
+    }
+
+    AZ::Vector3 ActorClothSkinningDualQuaternion::ComputeSkinningVector(const AZ::Vector3& originalVector)
+    {
+        return LYVec3ToAZVec3(m_vertexSkinningTransform.nq * AZVec3ToLYVec3(originalVector)).GetNormalized();
     }
 
     AZStd::unique_ptr<ActorClothSkinning> ActorClothSkinning::Create(
         AZ::EntityId entityId, 
-        const AZStd::string& meshNode,
-        const size_t numSimParticles,
-        const AZStd::vector<int>& meshRemappedVertices)
+        const MeshNodeInfo& meshNodeInfo,
+        const size_t numSimParticles)
     {
         AZStd::vector<SkinningInfo> skinningData;
-        if (!Internal::ObtainSkinningData(entityId, meshNode, numSimParticles, meshRemappedVertices, skinningData))
+        if (!Internal::ObtainSkinningData(entityId, meshNodeInfo, numSimParticles, skinningData))
         {
             return nullptr;
         }
@@ -411,14 +361,17 @@ namespace NvCloth
         AZStd::set<AZ::u16> jointIndices;
         for (size_t particleIndex = 0; particleIndex < numSimParticles; ++particleIndex)
         {
-            for (int weightIndex = 0; weightIndex < MaxSkinningBones; ++weightIndex)
+            const SkinningInfo& skinningInfo = skinningData[particleIndex];
+            for (size_t weightIndex = 0; weightIndex < skinningInfo.m_jointWeights.size(); ++weightIndex)
             {
-                if (skinningData[particleIndex].m_jointWeights[weightIndex] == 0)
+                const AZ::u16 jointIndex = skinningInfo.m_jointIndices[weightIndex];
+                const float jointWeight = skinningInfo.m_jointWeights[weightIndex];
+
+                if (AZ::IsClose(jointWeight, 0.0f))
                 {
                     continue;
                 }
 
-                const AZ::u16 jointIndex = skinningData[particleIndex].m_jointIndices[weightIndex];
                 jointIndices.insert(jointIndex);
             }
         }
@@ -432,6 +385,69 @@ namespace NvCloth
     ActorClothSkinning::ActorClothSkinning(AZ::EntityId entityId)
         : m_entityId(entityId)
     {
+    }
+
+    void ActorClothSkinning::ApplySkinning(
+        const AZStd::vector<AZ::Vector4>& originalPositions,
+        AZStd::vector<AZ::Vector4>& positions,
+        const AZStd::vector<int>& meshRemappedVertices)
+    {
+        if (!HasSkinningTransformData() ||
+            originalPositions.empty() ||
+            originalPositions.size() != positions.size() ||
+            m_skinningData.size() != meshRemappedVertices.size())
+        {
+            return;
+        }
+
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+
+        AZStd::unordered_set<int> skinnedIndices;
+        for (size_t index = 0; index < meshRemappedVertices.size(); ++index)
+        {
+            const int remappedIndex = meshRemappedVertices[index];
+            if (remappedIndex >= 0 && !skinnedIndices.contains(remappedIndex))
+            {
+                ComputeVertexSkinnningTransform(m_skinningData[index]);
+
+                const AZ::Vector3 skinnedPosition = ComputeSkinningPosition(originalPositions[remappedIndex].GetAsVector3());
+                positions[remappedIndex].Set(skinnedPosition, positions[remappedIndex].GetW()); // Avoid overwriting the w component
+
+                skinnedIndices.emplace(remappedIndex); // Avoid computing this index again
+            }
+        }
+    }
+
+    void ActorClothSkinning::ApplySkinninOnRemovedVertices(
+        const MeshClothInfo& originalData,
+        ClothComponentMesh::RenderData& renderData,
+        const AZStd::vector<int>& meshRemappedVertices)
+    {
+        if (!HasSkinningTransformData() ||
+            originalData.m_particles.empty() ||
+            originalData.m_particles.size() != renderData.m_particles.size() ||
+            originalData.m_particles.size() != m_skinningData.size() ||
+            m_skinningData.size() != meshRemappedVertices.size())
+        {
+            return;
+        }
+
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+
+        for (size_t index = 0; index < originalData.m_particles.size(); ++index)
+        {
+            if (meshRemappedVertices[index] < 0)
+            {
+                ComputeVertexSkinnningTransform(m_skinningData[index]);
+
+                const AZ::Vector3 skinnedPosition = ComputeSkinningPosition(originalData.m_particles[index].GetAsVector3());
+                renderData.m_particles[index].Set(skinnedPosition, renderData.m_particles[index].GetW()); // Avoid overwriting the w component
+
+                renderData.m_tangents[index] = ComputeSkinningVector(originalData.m_tangents[index]);
+                renderData.m_bitangents[index] = ComputeSkinningVector(originalData.m_bitangents[index]);
+                renderData.m_normals[index] = ComputeSkinningVector(originalData.m_normals[index]);
+            }
+        }
     }
 
     void ActorClothSkinning::UpdateActorVisibility()

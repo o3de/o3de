@@ -11,7 +11,6 @@
 
 # shared by other platforms:
 ly_associate_package(PACKAGE_NAME zlib-1.2.8-rev2-multiplatform                          TARGETS zlib                       PACKAGE_HASH e6f34b8ac16acf881e3d666ef9fd0c1aee94c3f69283fb6524d35d6f858eebbb)
-ly_associate_package(PACKAGE_NAME Lua-5.3.5-rev3-multiplatform                           TARGETS Lua                        PACKAGE_HASH 171dcdd60bd91fb325feaab0e53dd185c9d6e7b701d53e66fc6c2c6ee91d8bff)
 ly_associate_package(PACKAGE_NAME ilmbase-2.3.0-rev4-multiplatform                       TARGETS ilmbase                    PACKAGE_HASH 97547fdf1fbc4d81b8ccf382261f8c25514ed3b3c4f8fd493f0a4fa873bba348)
 ly_associate_package(PACKAGE_NAME hdf5-1.0.11-rev2-multiplatform                         TARGETS hdf5                       PACKAGE_HASH 11d5e04df8a93f8c52a5684a4cacbf0d9003056360983ce34f8d7b601082c6bd)
 ly_associate_package(PACKAGE_NAME alembic-1.7.11-rev3-multiplatform                      TARGETS alembic                    PACKAGE_HASH ba7a7d4943dd752f5a662374f6c48b93493df1d8e2c5f6a8d101f3b50700dd25)
@@ -41,10 +40,12 @@ ly_associate_package(PACKAGE_NAME PVRTexTool-4.24.0-rev4-multiplatform          
 ly_associate_package(PACKAGE_NAME freetype-2.10.4.14-mac-ios         TARGETS freetype        PACKAGE_HASH 67b4f57aed92082d3fd7c16aa244a7d908d90122c296b0a63f73e0a0b8761977)
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-mac-ios              TARGETS tiff            PACKAGE_HASH a23ae1f8991a29f8e5df09d6d5b00d7768a740f90752cef465558c1768343709)
 ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev3-mac      TARGETS AWSNativeSDK    PACKAGE_HASH 21920372e90355407578b45ac19580df1463a39a25a867bcd0ffd8b385c8254a)
+ly_associate_package(PACKAGE_NAME Lua-5.3.5-rev5-mac                 TARGETS Lua             PACKAGE_HASH d63357a73f9f8f297cf770fa4b92dca1fdd5761d4a2215e38f6e96fa274b28aa)
 ly_associate_package(PACKAGE_NAME PhysX-4.1.0.25992954-rev1-mac      TARGETS PhysX           PACKAGE_HASH 149f5e9b44bd27291b1c4772f5e89a1e0efa88eef73c7e0b188935ed4d0c4a70)
 ly_associate_package(PACKAGE_NAME etc2comp-9cd0f9cae0-rev1-mac       TARGETS etc2comp        PACKAGE_HASH 1966ab101c89db7ecf30984917e0a48c0d02ee0e4d65b798743842b9469c0818)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-mac              TARGETS mikkelsen       PACKAGE_HASH 83af99ca8bee123684ad254263add556f0cf49486c0b3e32e6d303535714e505)
 ly_associate_package(PACKAGE_NAME googletest-1.8.1-rev4-mac          TARGETS googletest      PACKAGE_HASH cbf020d5ef976c5db8b6e894c6c63151ade85ed98e7c502729dd20172acae5a8)
 ly_associate_package(PACKAGE_NAME googlebenchmark-1.5.0-rev2-mac     TARGETS GoogleBenchmark PACKAGE_HASH ad25de0146769c91e179953d845de2bec8ed4a691f973f47e3eb37639381f665)
+ly_associate_package(PACKAGE_NAME OpenSSL-1.1.1b-rev1-mac            TARGETS OpenSSL         PACKAGE_HASH 28adc1c0616ac0482b2a9d7b4a3a3635a1020e87b163f8aba687c501cf35f96c)
 ly_associate_package(PACKAGE_NAME qt-5.15.2-mac                      TARGETS Qt              PACKAGE_HASH ac248833d65838e4bcef50f30c9ff02ba9464ff64b9ada52de2ad6045d38baec)
 ly_associate_package(PACKAGE_NAME libsamplerate-0.2.1-rev2-mac       TARGETS libsamplerate   PACKAGE_HASH b912af40c0ac197af9c43d85004395ba92a6a859a24b7eacd920fed5854a97fe)
