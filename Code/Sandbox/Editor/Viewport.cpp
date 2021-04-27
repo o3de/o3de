@@ -1182,7 +1182,6 @@ bool QtViewport::HitTest(const QPoint& point, HitContext& hitInfo)
 
     const int viewportId = GetViewportId();
 
-    // TODO: Use the EditorVisibleEntityDataCache instead once we are able to move to EditorViewportWidget
     AzToolsFramework::EntityIdList visibleEntityIds;
     AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequestBus::Event(
         viewportId,
@@ -1190,8 +1189,12 @@ bool QtViewport::HitTest(const QPoint& point, HitContext& hitInfo)
         visibleEntityIds);
 
     // Look through all visible entities to find the closest one to the specified mouse point
+    using namespace AzToolsFramework::ViewportInteraction;
     AZ::EntityId entityIdUnderCursor;
     float closestDistance = std::numeric_limits<float>::max();
+    MouseInteraction mouseInteraction = BuildMouseInteraction(QGuiApplication::mouseButtons(),
+        QGuiApplication::queryKeyboardModifiers(),
+        point);
     for (auto entityId : visibleEntityIds)
     {
         using AzFramework::ViewportInfo;
@@ -1199,12 +1202,6 @@ bool QtViewport::HitTest(const QPoint& point, HitContext& hitInfo)
         if (const AZ::Aabb aabb = AzToolsFramework::CalculateEditorEntitySelectionBounds(entityId, ViewportInfo{ viewportId });
             aabb.IsValid())
         {
-            using namespace AzToolsFramework::ViewportInteraction;
-
-            MouseInteraction mouseInteraction = BuildMouseInteraction(QGuiApplication::mouseButtons(),
-                QGuiApplication::queryKeyboardModifiers(),
-                point);
-
             // Coarse grain check
             if (AzToolsFramework::AabbIntersectMouseRay(mouseInteraction, aabb))
             {
