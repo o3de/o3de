@@ -24,7 +24,6 @@ class CUsedResources;
 class CSelectionGroup;
 class CObjectClassDesc;
 class CObjectArchive;
-class CObjectPhysicsManager;
 class CViewport;
 struct HitContext;
 enum class ImageRotationDegrees;
@@ -246,10 +245,6 @@ public:
     virtual bool IsCreateGameObjects() const = 0;
 
     virtual IGizmoManager* GetGizmoManager() = 0;
-
-    //////////////////////////////////////////////////////////////////////////
-    //! Get acess to object physics manager
-    virtual CObjectPhysicsManager* GetPhysicsManager() = 0;
 
     //////////////////////////////////////////////////////////////////////////
     //! Invalidate visibily settings of objects.

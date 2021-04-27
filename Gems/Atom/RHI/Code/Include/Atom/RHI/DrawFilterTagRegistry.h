@@ -9,22 +9,15 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 *
 */
-
 #pragma once
 
-#include <AzCore/Interface/Interface.h>
-#include <AzCore/Serialization/SerializeContext.h>
+#include <Atom/RHI/DrawItem.h>
+#include <Atom/RHI/TagRegistry.h>
 
-namespace AzToolsFramework
+namespace AZ
 {
-    class EntityOutlinerWidgetInterface
+    namespace RHI
     {
-    public:
-        AZ_RTTI(EntityOutlinerWidgetInterface, "{30C0F252-EC84-4196-BF59-EB9E73B8ADCB}");
-
-        virtual void SetUpdatesEnabled(bool enable) = 0;
-        virtual void ExpandEntityChildren(AZ::EntityId entityId) = 0;
-    };
-
-} // namespace AzToolsFramework
-
+        using DrawFilterTagRegistry = TagRegistry<DrawFilterTag, Limits::Pipeline::DrawFilterTagCountMax>;
+    }
+}
