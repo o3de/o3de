@@ -190,18 +190,18 @@ namespace AzFramework
     {
         Camera nextCamera = targetCamera;
 
-        const auto pan_axes = m_panAxesFn(nextCamera);
+        const auto panAxes = m_panAxesFn(nextCamera);
 
-        const auto delta_pan_x = float(cursorDelta.m_x) * pan_axes.m_horizontalAxis * m_props.m_panSpeed;
-        const auto delta_pan_y = float(cursorDelta.m_y) * pan_axes.m_verticalAxis * m_props.m_panSpeed;
+        const auto deltaPanX = float(cursorDelta.m_x) * panAxes.m_horizontalAxis * m_props.m_panSpeed;
+        const auto deltaPanY = float(cursorDelta.m_y) * panAxes.m_verticalAxis * m_props.m_panSpeed;
 
         const auto inv = [](const bool invert) {
             constexpr float Dir[] = {1.0f, -1.0f};
             return Dir[static_cast<int>(invert)];
         };
 
-        nextCamera.m_lookAt += delta_pan_x * inv(m_props.m_panInvertX);
-        nextCamera.m_lookAt += delta_pan_y * -inv(m_props.m_panInvertY);
+        nextCamera.m_lookAt += deltaPanX * inv(m_props.m_panInvertX);
+        nextCamera.m_lookAt += deltaPanY * -inv(m_props.m_panInvertY);
 
         return nextCamera;
     }
@@ -344,10 +344,6 @@ namespace AzFramework
         {
             if (input->m_channelId == InputDeviceKeyboard::Key::ModifierAltL)
             {
-                if (input->m_state == InputChannel::State::Updated)
-                {
-                    goto end;
-                }
                 if (input->m_state == InputChannel::State::Began)
                 {
                     BeginActivation();
@@ -358,7 +354,7 @@ namespace AzFramework
                 }
             }
         }
-    end:
+
         if (Active())
         {
             m_orbitCameras.HandleEvents(event);
@@ -388,7 +384,6 @@ namespace AzFramework
 
         if (Active())
         {
-            // todo: need to return nested cameras to idle state when ending
             nextCamera = m_orbitCameras.StepCamera(nextCamera, cursorDelta, scrollDelta, deltaTime);
         }
 
