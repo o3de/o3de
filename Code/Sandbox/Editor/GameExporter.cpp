@@ -139,7 +139,10 @@ bool CGameExporter::Export(unsigned int flags, [[maybe_unused]] EEndian eExportE
 
         // Make sure we unload any unused CGFs before exporting so that they don't end up in
         // the level data.
-        pEditor->Get3DEngine()->FreeUnusedCGFResources();
+        if (pEditor->Get3DEngine())
+        {
+            pEditor->Get3DEngine()->FreeUnusedCGFResources();
+        }
 
         CCryEditDoc* pDocument = pEditor->GetDocument();
 
@@ -282,7 +285,7 @@ void CGameExporter::ExportVisAreas(const char* pszGamePath, EEndian eExportEndia
     SHotUpdateInfo exportInfo;
     I3DEngine* p3DEngine = pEditor->Get3DEngine();
 
-    if (eExportEndian == GetPlatformEndian()) // skip second export, this data is common for PC and consoles
+    if (p3DEngine && (eExportEndian == GetPlatformEndian())) // skip second export, this data is common for PC and consoles
     {
         std::vector<struct IStatObj*>* pTempBrushTable = NULL;
         std::vector<_smart_ptr<IMaterial>>* pTempMatsTable = NULL;
@@ -367,25 +370,28 @@ void CGameExporter::ExportLevelData(const QString& path, bool bExportMission)
     QString missionFileName;
     QString currentMissionFileName;
     I3DEngine* p3DEngine = pEditor->Get3DEngine();
-    for (int i = 0; i < pDocument->GetMissionCount(); i++)
+    if (p3DEngine)
     {
-        CMission* pMission = pDocument->GetMission(i);
-
-        QString name = pMission->GetName();
-        name.replace(' ', '_');
-        missionFileName = QStringLiteral("Mission_%1.xml").arg(name);
-
-        XmlNodeRef missionDescNode = missionsNode->newChild("Mission");
-        missionDescNode->setAttr("Name", pMission->GetName().toUtf8().data());
-        missionDescNode->setAttr("File", missionFileName.toUtf8().data());
-        missionDescNode->setAttr("CGFCount", p3DEngine->GetLoadedObjectCount());
-
-        int nProgressBarRange = m_numExportedMaterials / 10 + p3DEngine->GetLoadedObjectCount();
-        missionDescNode->setAttr("ProgressBarRange", nProgressBarRange);
-
-        if (pMission == pCurrentMission)
+        for (int i = 0; i < pDocument->GetMissionCount(); i++)
         {
-            currentMissionFileName = missionFileName;
+            CMission* pMission = pDocument->GetMission(i);
+
+            QString name = pMission->GetName();
+            name.replace(' ', '_');
+            missionFileName = QStringLiteral("Mission_%1.xml").arg(name);
+
+            XmlNodeRef missionDescNode = missionsNode->newChild("Mission");
+            missionDescNode->setAttr("Name", pMission->GetName().toUtf8().data());
+            missionDescNode->setAttr("File", missionFileName.toUtf8().data());
+            missionDescNode->setAttr("CGFCount", p3DEngine->GetLoadedObjectCount());
+
+            int nProgressBarRange = m_numExportedMaterials / 10 + p3DEngine->GetLoadedObjectCount();
+            missionDescNode->setAttr("ProgressBarRange", nProgressBarRange);
+
+            if (pMission == pCurrentMission)
+            {
+                currentMissionFileName = missionFileName;
+            }
         }
     }
 
@@ -413,7 +419,10 @@ void CGameExporter::ExportLevelData(const QString& path, bool bExportMission)
         XmlNodeRef missionNode = rootAction->createNode("Mission");
         pCurrentMission->Export(missionNode, objectsNode);
 
-        missionNode->setAttr("CGFCount", p3DEngine->GetLoadedObjectCount());
+        if (p3DEngine)
+        {
+            missionNode->setAttr("CGFCount", p3DEngine->GetLoadedObjectCount());
+        }
 
         //if (!CFileUtil::OverwriteFile( path+currentMissionFileName ))
         //          return;
@@ -483,6 +492,11 @@ void CGameExporter::ExportLevelInfo(const QString& path)
 //////////////////////////////////////////////////////////////////////////
 void CGameExporter::ExportMapInfo(XmlNodeRef& node)
 {
+    if (!GetIEditor()->Get3DEngine())
+    {
+        return;
+    }
+
     XmlNodeRef info = node->newChild("LevelInfo");
 
     IEditor* pEditor = GetIEditor();

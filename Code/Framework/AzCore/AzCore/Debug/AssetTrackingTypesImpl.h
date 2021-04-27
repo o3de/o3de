@@ -29,18 +29,18 @@ namespace AZ
         class AssetTreeNode : public AssetTreeNodeBase
         {
         public:
-            AssetTreeNode(const AssetMasterInfo* masterInfo = nullptr, AssetTreeNode* parent = nullptr) :
-                m_masterInfo(masterInfo),
+            AssetTreeNode(const AssetPrimaryInfo* primaryInfo = nullptr, AssetTreeNode* parent = nullptr) :
+                m_primaryinfo(primaryInfo),
                 m_parent(parent)
             {
             }
 
-            const AssetMasterInfo* GetAssetMasterInfo() const override
+            const AssetPrimaryInfo* GetAssetPrimaryInfo() const override
             {
-                return m_masterInfo;
+                return m_primaryinfo;
             }
 
-            AssetTreeNodeBase* FindOrAddChild(const AssetTrackingId& id, const AssetMasterInfo* info) override
+            AssetTreeNodeBase* FindOrAddChild(const AssetTrackingId& id, const AssetPrimaryInfo* info) override
             {
                 AssetTreeNodeBase* result = nullptr;
                 auto childItr = m_children.find(id);
@@ -61,7 +61,7 @@ namespace AZ
 
             using AssetMap = AssetTrackingMap<AssetTrackingId, AssetTreeNode>;
 
-            const AssetMasterInfo* m_masterInfo;
+            const AssetPrimaryInfo* m_primaryinfo;
             AssetTreeNode* m_parent;
             AssetMap m_children;
             AssetDataT m_data;

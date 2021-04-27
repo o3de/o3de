@@ -151,9 +151,6 @@ namespace EditorPythonBindingsUnitTests
         EXPECT_TRUE(behaviorContext->m_methods.find("get_axis_constraint") != behaviorContext->m_methods.end());
         EXPECT_TRUE(behaviorContext->m_methods.find("set_axis_constraint") != behaviorContext->m_methods.end());
 
-        EXPECT_TRUE(behaviorContext->m_methods.find("get_edit_mode") != behaviorContext->m_methods.end());
-        EXPECT_TRUE(behaviorContext->m_methods.find("set_edit_mode") != behaviorContext->m_methods.end());
-
         EXPECT_TRUE(behaviorContext->m_methods.find("get_pak_from_file") != behaviorContext->m_methods.end());
 
         EXPECT_TRUE(behaviorContext->m_methods.find("log") != behaviorContext->m_methods.end());
@@ -200,8 +197,6 @@ namespace EditorPythonBindingsUnitTests
             EXPECT_TRUE(behaviorBus->m_events.find("OpenFileBox") != behaviorBus->m_events.end());
             EXPECT_TRUE(behaviorBus->m_events.find("GetAxisConstraint") != behaviorBus->m_events.end());
             EXPECT_TRUE(behaviorBus->m_events.find("SetAxisConstraint") != behaviorBus->m_events.end());
-            EXPECT_TRUE(behaviorBus->m_events.find("GetEditMode") != behaviorBus->m_events.end());
-            EXPECT_TRUE(behaviorBus->m_events.find("SetEditMode") != behaviorBus->m_events.end());
             EXPECT_TRUE(behaviorBus->m_events.find("GetPakFromFile") != behaviorBus->m_events.end());
             EXPECT_TRUE(behaviorBus->m_events.find("Log") != behaviorBus->m_events.end());
             EXPECT_TRUE(behaviorBus->m_events.find("Undo") != behaviorBus->m_events.end());

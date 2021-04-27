@@ -40,7 +40,6 @@ namespace AZ
             const RPI::Cullable& GetCullable() { return m_cullable; }
 
         private:
-
             class MeshLoader
                 : private Data::AssetBus::Handler
             {
@@ -84,6 +83,11 @@ namespace AZ
             MaterialAssignmentMap m_materialAssignments;
 
             Data::Instance<RPI::Model> m_model;
+
+            //! A reference to the original model asset in case it got cloned before creating the model instance.
+            Data::Asset<RPI::ModelAsset> m_originalModelAsset;
+            MeshFeatureProcessorInterface::RequiresCloneCallback m_requiresCloningCallback;
+
             Data::Instance<RPI::ShaderResourceGroup> m_shaderResourceGroup;
             AZStd::unique_ptr<MeshLoader> m_meshLoader;
             RPI::Scene* m_scene = nullptr;
@@ -99,6 +103,7 @@ namespace AZ
             bool m_rayTracingEnabled = true;
             bool m_visible = true;
             bool m_useForwardPassIblSpecular = false;
+            bool m_hasForwardPassIblSpecularMaterial = false;
         };
 
         //! This feature processor handles static and dynamic non-skinned meshes.
@@ -130,16 +135,19 @@ namespace AZ
                 const Data::Asset<RPI::ModelAsset>& modelAsset,
                 const MaterialAssignmentMap& materials = {},
                 bool skinnedMeshWithMotion = false,
-                bool rayTracingEnabled = true) override;
+                bool rayTracingEnabled = true,
+                RequiresCloneCallback requiresCloneCallback = {}) override;
             MeshHandle AcquireMesh(
                 const Data::Asset<RPI::ModelAsset> &modelAsset,
                 const Data::Instance<RPI::Material>& material,
                 bool skinnedMeshWithMotion = false,
-                bool rayTracingEnabled = true) override;
+                bool rayTracingEnabled = true,
+                RequiresCloneCallback requiresCloneCallback = {}) override;
             bool ReleaseMesh(MeshHandle& meshHandle) override;
             MeshHandle CloneMesh(const MeshHandle& meshHandle) override;
 
             Data::Instance<RPI::Model> GetModel(const MeshHandle& meshHandle) const override;
+            Data::Asset<RPI::ModelAsset> GetModelAsset(const MeshHandle& meshHandle) const override;
             void SetMaterialAssignmentMap(const MeshHandle& meshHandle, const Data::Instance<RPI::Material>& material) override;
             void SetMaterialAssignmentMap(const MeshHandle& meshHandle, const MaterialAssignmentMap& materials) override;
             const MaterialAssignmentMap& GetMaterialAssignmentMap(const MeshHandle& meshHandle) const override;
