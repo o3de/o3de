@@ -27,6 +27,8 @@ execute_process(
     RESULT_VARIABLE TEST_CMD_RESULT
     ECHO_OUTPUT_VARIABLE
     ECHO_ERROR_VARIABLE
+    OUTPUT_VARIABLE TEST_CMD_OUTPUT
+    ERROR_VARIABLE TEST_CMD_ERROR
 )
 
 if(${PLATFORM} STREQUAL "Windows")
@@ -41,4 +43,6 @@ endif()
 
 if(TEST_CMD_RESULT)
     message(FATAL_ERROR "Error running EditorPythonBindings Test via CMake Wrapper, result ${TEST_CMD_RESULT}")
+    message(FATAL_ERROR "Error running EditorPythonBindings Test via CMake Wrapper, TEST_CMD_OUTPUT ${TEST_CMD_OUTPUT}")
+    message(FATAL_ERROR "Error running EditorPythonBindings Test via CMake Wrapper, TEST_CMD_ERROR ${TEST_CMD_ERROR}")
 endif()
