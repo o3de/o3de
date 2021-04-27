@@ -20,9 +20,9 @@
 #include <AzToolsFramework/Prefab/Instance/TemplateInstanceMapperInterface.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
+#include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Template/Template.h>
-#include <AzToolsFramework/UI/Outliner/EntityOutlinerWidgetInterface.h>
 
 namespace AzToolsFramework
 {
@@ -89,16 +89,12 @@ namespace AzToolsFramework
 
                 if (instanceCountToUpdateInBatch > 0)
                 {
+                    // Notify Propagation has begun
+                    PrefabPublicNotificationBus::Broadcast(&PrefabPublicNotifications::OnPrefabInstancePropagationBegin);
+
                     EntityIdList selectedEntityIds;
                     ToolsApplicationRequestBus::BroadcastResult(selectedEntityIds, &ToolsApplicationRequests::GetSelectedEntities);
                     ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, EntityIdList());
-
-                    // Disable the Outliner to avoid showing the propagation steps
-                    EntityOutlinerWidgetInterface* entityOutlinerWidgetInterface = AZ::Interface<EntityOutlinerWidgetInterface>::Get();
-                    if (entityOutlinerWidgetInterface)
-                    {
-                        entityOutlinerWidgetInterface->SetUpdatesEnabled(false);
-                    }
 
                     for (int i = 0; i < instanceCountToUpdateInBatch; ++i)
                     {
@@ -144,18 +140,8 @@ namespace AzToolsFramework
 
                     ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, selectedEntityIds);
 
-                    // Enable the Outliner
-                    if (entityOutlinerWidgetInterface)
-                    {
-                        entityOutlinerWidgetInterface->SetUpdatesEnabled(true);
-
-                        auto prefabPublicInterface = AZ::Interface<PrefabPublicInterface>::Get();
-                        if (prefabPublicInterface)
-                        {
-                            AZ::EntityId rootEntityId = prefabPublicInterface->GetLevelInstanceContainerEntityId();
-                            entityOutlinerWidgetInterface->ExpandEntityChildren(rootEntityId);
-                        }
-                    }
+                    // Notify Propagation has ended
+                    PrefabPublicNotificationBus::Broadcast(&PrefabPublicNotifications::OnPrefabInstancePropagationEnd);
                 }
 
                 m_updatingTemplateInstancesInQueue = false;

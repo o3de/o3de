@@ -652,6 +652,7 @@ set(FILES
     Prefab/PrefabPublicHandler.h
     Prefab/PrefabPublicHandler.cpp
     Prefab/PrefabPublicInterface.h
+    Prefab/PrefabPublicNotificationBus.h
     Prefab/PrefabUndo.h
     Prefab/PrefabUndo.cpp
     Prefab/PrefabUndoCache.cpp
@@ -687,7 +688,6 @@ set(FILES
     UI/Outliner/EntityOutlinerDisplayOptionsMenu.cpp
     UI/Outliner/EntityOutlinerTreeView.hxx
     UI/Outliner/EntityOutlinerTreeView.cpp
-    UI/Outliner/EntityOutlinerWidgetInterface.h
     UI/Outliner/EntityOutlinerWidget.hxx
     UI/Outliner/EntityOutlinerWidget.cpp
     UI/Outliner/EntityOutlinerCacheBus.h
