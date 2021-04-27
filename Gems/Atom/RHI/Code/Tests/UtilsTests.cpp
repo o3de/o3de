@@ -42,7 +42,9 @@ namespace UnitTest
         AZStd::string testFilePath = TestDataFolder + AZStd::string("HelloWorld.txt");
         AZ::Outcome<AZStd::string, AZStd::string> outcome = AZ::RHI::LoadFileString(testFilePath.c_str());
         EXPECT_TRUE(outcome.IsSuccess());
-        EXPECT_EQ(AZStd::string("Hello World!"), outcome.GetValue());
+        auto& str = outcome.GetValue();
+        str.erase(AZStd::remove(str.begin(), str.end(), '\r'));
+        EXPECT_EQ(AZStd::string("Hello World!\n"), str);
     }
 
     TEST_F(UtilsTests, LoadFileBytes)
@@ -50,8 +52,10 @@ namespace UnitTest
         AZStd::string testFilePath = TestDataFolder + AZStd::string("HelloWorld.txt");
         AZ::Outcome<AZStd::vector<uint8_t>, AZStd::string> outcome = AZ::RHI::LoadFileBytes(testFilePath.c_str());
         EXPECT_TRUE(outcome.IsSuccess());
-        AZStd::string expectedText = "Hello World!";
-        EXPECT_EQ(AZStd::vector<uint8_t>(expectedText.begin(), expectedText.end()), outcome.GetValue());
+        AZStd::string expectedText = "Hello World!\n";
+        auto& str = outcome.GetValue();
+        str.erase(AZStd::remove(str.begin(), str.end(), '\r'));
+        EXPECT_EQ(AZStd::vector<uint8_t>(expectedText.begin(), expectedText.end()), str);
     }
 
     TEST_F(UtilsTests, LoadFileString_Error_DoesNotExist)

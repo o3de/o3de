@@ -133,6 +133,11 @@ namespace AZ
             return m_float16Int8Features;
         }
 
+        const VkPhysicalDeviceDescriptorIndexingFeaturesEXT& PhysicalDevice::GetPhysicalDeviceDescriptorIndexingFeatures() const
+        {
+            return m_descriptorIndexingFeatures;
+        }
+
         const VkPhysicalDeviceVulkan12Features& PhysicalDevice::GetPhysicalDeviceVulkan12Features() const
         {
             return m_vulkan12Features;
@@ -233,6 +238,7 @@ namespace AZ
             m_features.set(static_cast<size_t>(DeviceFeature::SeparateDepthStencil),
                 (m_separateDepthStencilFeatures.separateDepthStencilLayouts && VK_DEVICE_EXTENSION_SUPPORTED(KHR_separate_depth_stencil_layouts)) ||
                 (m_vulkan12Features.separateDepthStencilLayouts));
+            m_features.set(static_cast<size_t>(DeviceFeature::DescriptorIndexing), VK_DEVICE_EXTENSION_SUPPORTED(EXT_descriptor_indexing));
         }
 
         void PhysicalDevice::CompileMemoryStatistics(RHI::MemoryStatisticsBuilder& builder) const
@@ -266,9 +272,14 @@ namespace AZ
             if (VK_INSTANCE_EXTENSION_SUPPORTED(KHR_get_physical_device_properties2))
             {
                 // features
+                VkPhysicalDeviceDescriptorIndexingFeaturesEXT& descriptorIndexingFeatures = m_descriptorIndexingFeatures;
+                descriptorIndexingFeatures = {};
+                descriptorIndexingFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT;
+
                 VkPhysicalDeviceDepthClipEnableFeaturesEXT& dephClipEnableFeatures = m_dephClipEnableFeatures;
                 dephClipEnableFeatures = {};
                 dephClipEnableFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_ENABLE_FEATURES_EXT;
+                descriptorIndexingFeatures.pNext = &dephClipEnableFeatures;
 
                 VkPhysicalDeviceRobustness2FeaturesEXT& robustness2Feature = m_robutness2Features;
                 robustness2Feature = {};
@@ -292,7 +303,7 @@ namespace AZ
 
                 VkPhysicalDeviceFeatures2 deviceFeatures2 = {};
                 deviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-                deviceFeatures2.pNext = &dephClipEnableFeatures;
+                deviceFeatures2.pNext = &descriptorIndexingFeatures;
 
                 vkGetPhysicalDeviceFeatures2KHR(vkPhysicalDevice, &deviceFeatures2);
                 m_deviceFeatures = deviceFeatures2.features;
@@ -302,7 +313,7 @@ namespace AZ
                 m_conservativeRasterProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CONSERVATIVE_RASTERIZATION_PROPERTIES_EXT;
                 deviceProps2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR;
                 deviceProps2.pNext = &m_conservativeRasterProperties;
-                
+
                 m_rayTracingPipelineProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR;
                 m_conservativeRasterProperties.pNext = &m_rayTracingPipelineProperties;
 

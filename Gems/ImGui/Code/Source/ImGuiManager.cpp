@@ -266,6 +266,21 @@ void ImGuiManager::Shutdown()
     ImGui::DestroyContext(m_imguiContext);
 }
 
+void ImGui::ImGuiManager::OverrideRenderWindowSize(uint32_t width, uint32_t height)
+{
+    m_windowSize.m_width = width;
+    m_windowSize.m_height = height;
+    m_overridingWindowSize = true;
+    // Don't listen for window updates if our window size is being overridden
+    AzFramework::WindowNotificationBus::Handler::BusDisconnect();
+}
+
+void ImGui::ImGuiManager::RestoreRenderWindowSizeToDefault()
+{
+    m_overridingWindowSize = false;
+    InitWindowSize();
+}
+
 void ImGuiManager::Render()
 {
     if (m_clientMenuBarState == DisplayState::Hidden && m_editorWindowState == DisplayState::Hidden)
@@ -761,7 +776,7 @@ void ImGuiManager::InitWindowSize()
 {
     // We only need to initialize the window size by querying the window the first time.
     // After that we will get OnWindowResize notifications
-    if (!AzFramework::WindowNotificationBus::Handler::BusIsConnected())
+    if (!m_overridingWindowSize && !AzFramework::WindowNotificationBus::Handler::BusIsConnected())
     {
         AzFramework::NativeWindowHandle windowHandle = nullptr;
         AzFramework::WindowSystemRequestBus::BroadcastResult(windowHandle, &AzFramework::WindowSystemRequestBus::Events::GetDefaultWindowHandle);

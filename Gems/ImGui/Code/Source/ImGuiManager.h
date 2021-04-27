@@ -60,6 +60,8 @@ namespace ImGui
         void SetResolutionMode(ImGuiResolutionMode mode) override { m_resolutionMode = mode; }
         const ImVec2& GetImGuiRenderResolution() const override { return m_renderResolution; }
         void SetImGuiRenderResolution(const ImVec2& res) override { m_renderResolution = res; }
+        void OverrideRenderWindowSize(uint32_t width, uint32_t height) override;
+        void RestoreRenderWindowSizeToDefault() override;
         void Render() override;
         // -- ImGuiManagerBus Interface -------------------------------------------------------------------
 
@@ -89,6 +91,7 @@ namespace ImGui
         ImVec2 m_renderResolution = ImVec2(1920.0f, 1080.0f);
         ImVec2 m_lastRenderResolution;
         AzFramework::WindowSize m_windowSize = AzFramework::WindowSize(1920, 1080);
+        bool m_overridingWindowSize = false;
 
         // Rendering buffers
         std::vector<SVF_P3F_C4B_T2F> m_vertBuffer;

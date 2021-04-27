@@ -85,7 +85,8 @@ class TestAltitudeFilter(object):
 
     @pytest.mark.test_case_id("C4847478")
     @pytest.mark.SUITE_periodic
-    def test_AltitudeFilterFilterStageToggle(self, request, editor, level, workspace, launcher_platform):
+    @pytest.mark.xfail  # LYN-3275
+    def test_AltitudeFilter_FilterStageToggle(self, request, editor, level, workspace, launcher_platform):
         cfg_args = [level]
 
         expected_lines = [
