@@ -11,11 +11,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Sanity test for EditorPythonBindings CTest wrapper
 
-import azlmbr.framework as framework
+#import azlmbr.framework as framework
 
-print("EditorPythonBindings CTest Sanity Test")
+#print("EditorPythonBindings CTest Sanity Test")
 
 # A test should have logic to determine success (zero) or failure (non-zero) and 
 # return it to the caller. In this sanity test, always return success.
-return_code = 0
-framework.Terminate(return_code)
+#return_code = 0
+#framework.Terminate(return_code)
