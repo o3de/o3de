@@ -8,11 +8,17 @@ or, if provided, by the license below or the license accompanying this file. Do 
 remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
-import azlmbr.asset
-import azlmbr.asset.builder
-import azlmbr.bus
-import azlmbr.math
-import os, traceback, binascii, sys
+assetBuilderReady = True
+try:
+    import azlmbr.asset
+    import azlmbr.asset.builder
+    from azlmbr.asset.builder import AssetBuilderPattern
+    import azlmbr.bus
+    import azlmbr.math
+    import os, traceback, binascii, sys
+except:
+    # skip if the azlmbr.asset.builder is not enabled
+    assetBuilderReady = False
 
 jobKeyName = 'Mock Asset'
 
@@ -111,11 +117,12 @@ def register_asset_builder(busId):
         return handler
 
 # create the asset builder handler
-busIdString = '{CF5C74C1-9ED4-5851-95B1-0B15090DBEC7}'
-busId = azlmbr.math.Uuid_CreateString(busIdString, 0)
 handler = None
 try:
-    handler = register_asset_builder(busId)
+    if (assetBuilderReady):
+        busIdString = '{CF5C74C1-9ED4-5851-95B1-0B15090DBEC7}'
+        busId = azlmbr.math.Uuid_CreateString(busIdString, 0)
+        handler = register_asset_builder(busId)
 except:
     handler = None
     log_exception_traceback()
