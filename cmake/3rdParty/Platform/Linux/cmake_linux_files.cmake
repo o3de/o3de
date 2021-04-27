@@ -17,6 +17,5 @@ set(FILES
     dyad_linux.cmake
     etc2comp_linux.cmake
     FbxSdk_linux.cmake
-    OpenSSL_linux.cmake
     Wwise_linux.cmake
 )

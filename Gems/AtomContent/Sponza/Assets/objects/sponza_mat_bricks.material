@@ -4,6 +4,10 @@
     "parentMaterial": "",
     "propertyLayoutVersion": 3,
     "properties": {
+        "ambientOcclusion": {
+            "enable": true,
+            "textureMap": "Textures/bricks_1k_ao.png"
+        },
         "baseColor": {
             "color": [
                 0.800000011920929,
@@ -12,6 +16,23 @@
                 1.0
             ],
             "textureMap": "Textures/bricks_1k_basecolor.png"
+        },
+        "clearCoat": {
+            "enable": true,
+            "factor": 0.5,
+            "normalMap": "Textures/bricks_1k_normal.jpg",
+            "roughness": 0.5
+        },
+        "general": {
+            "applySpecularAA": true
+        },
+        "irradiance": {
+            "color": [
+                1.0,
+                0.9703211784362793,
+                0.9703211784362793,
+                1.0
+            ]
         },
         "metallic": {
             "textureMap": "Textures/bricks_1k_metallic.png"
@@ -23,11 +44,9 @@
             "factor": 1.0
         },
         "parallax": {
-            "algorithm": "POM",
-            "enable": true,
+            "algorithm": "ContactRefinement",
             "factor": 0.03500000014901161,
-            "pdo": true,
-            "quality": "High",
+            "quality": "Medium",
             "textureMap": "Textures/bricks_1k_height.png"
         },
         "roughness": {
