@@ -168,7 +168,7 @@ namespace AZ
                 return;
             }
 
-            if (m_rayTracingSceneSrg->IsQueuedForCompile())
+            if (!m_rayTracingSceneSrg || m_rayTracingSceneSrg->IsQueuedForCompile())
             {
                 //[GFX TODO][ATOM-14792] AtomSampleViewer: Reset scene and feature processors before switching to sample
                 return;
