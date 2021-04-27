@@ -28,6 +28,8 @@
 #include <AzCore/Memory/AllocatorManager.h>
 #include <AzCore/Memory/MallocSchema.h>
 
+#include <AzCore/NativeUI/NativeUIRequests.h>
+
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/ObjectStream.h>
 #include <AzCore/Serialization/Utils.h>
@@ -232,8 +234,14 @@ namespace AZ
             // Update old Project path before attempting to merge in new Settings Registry values in order to prevent recursive calls
             m_oldProjectPath = newProjectPath;
 
+            AZ::IO::FixedMaxPath engineRoot{AZ::Utils::GetEnginePath()};
+            if (engineRoot.empty())
+            {
+                engineRoot = AZ::SettingsRegistryMergeUtils::FindEngineRoot(m_registry);
+            }
+
             // Merge the project.json file into settings registry under ProjectSettingsRootKey path.
-            AZ::IO::FixedMaxPath projectMetadataFile{ AZ::SettingsRegistryMergeUtils::FindEngineRoot(m_registry) / newProjectPath };
+            AZ::IO::FixedMaxPath projectMetadataFile{engineRoot / newProjectPath};
             projectMetadataFile /= "project.json";
             m_registry.MergeSettingsFile(projectMetadataFile.Native(),
                 AZ::SettingsRegistryInterface::Format::JsonMergePatch, AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey);
@@ -517,9 +525,41 @@ namespace AZ
         DestroyAllocator();
     }
 
+
+    void HandleBadEngineRoot()
+    {
+        AZStd::string errorMessage = {"Unable to determine a valid path to the engine.\n"
+                                      "Check parameters such as --project-path and --engine-path and make sure they are valid.\n"};
+        if (auto registry = AZ::Interface<AZ::SettingsRegistryInterface>::Get(); registry != nullptr)
+        {
+            AZ::SettingsRegistryInterface::FixedValueString filePathErrorStr;
+            if (registry->Get(filePathErrorStr, AZ::SettingsRegistryMergeUtils::FilePathKey_ErrorText); !filePathErrorStr.empty())
+            {
+                errorMessage += "Additional Info:\n";
+                errorMessage += filePathErrorStr.c_str();
+            }
+        }
+
+        if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); nativeUI != nullptr)
+        {
+            nativeUI->DisplayOkDialog("O3DE Fatal Error", errorMessage.c_str(), false);
+        }
+        else
+        {
+            AZ_Error("ComponentApplication", false, "O3DE Fatal Error: %s\n", errorMessage.c_str());
+        }
+    }
+
+
     Entity* ComponentApplication::Create(const Descriptor& descriptor, const StartupParameters& startupParameters)
     {
         AZ_Assert(!m_isStarted, "Component application already started!");
+
+        if (m_engineRoot.empty())
+        {
+            HandleBadEngineRoot();
+            return nullptr;
+        }
 
         m_startupParameters = startupParameters;
 

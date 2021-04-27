@@ -55,6 +55,9 @@ namespace AZ::SettingsRegistryMergeUtils
     //! Development write storage path may be considered temporary or cache storage on some platforms
     inline static constexpr char FilePathKey_DevWriteStorage[] = "/Amazon/AzCore/Runtime/FilePaths/DevWriteStorage";
 
+    //! Stores error text regarding engine boot sequence when engine and project roots cannot be determined
+    inline static constexpr char FilePathKey_ErrorText[] = "/Amazon/AzCore/Runtime/FilePaths/ErrorText";
+
     //! Root key for where command line are stored at within the settings registry
     inline static constexpr char CommandLineRootKey[] = "/Amazon/AzCore/Runtime/CommandLine";
     //! Key set to trigger a notification that the CommandLine has been stored within the settings registry

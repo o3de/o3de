@@ -32,17 +32,12 @@
 namespace AZ::Internal
 {
     AZ::SettingsRegistryInterface::FixedValueString GetEngineMonikerForProject(
-        SettingsRegistryInterface& settingsRegistry, const AZ::IO::FixedMaxPath& projectPath)
+        SettingsRegistryInterface& settingsRegistry, const AZ::IO::FixedMaxPath& projectJsonPath)
     {
         // projectPath needs to be an absolute path here.
         using namespace AZ::SettingsRegistryMergeUtils;
-        bool projectJsonMerged = false;
-        auto projectJsonPath = projectPath / "project.json";
-        if (AZ::IO::SystemFile::Exists(projectJsonPath.c_str()))
-        {
-            projectJsonMerged = settingsRegistry.MergeSettingsFile(
-                projectJsonPath.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, ProjectSettingsRootKey);
-        }
+        bool projectJsonMerged = settingsRegistry.MergeSettingsFile(
+            projectJsonPath.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, ProjectSettingsRootKey);
 
         AZ::SettingsRegistryInterface::FixedValueString engineMoniker;
         if (projectJsonMerged)
@@ -105,12 +100,12 @@ namespace AZ::Internal
 
             const auto engineMonikerKey = AZ::SettingsRegistryInterface::FixedValueString::format("%s/engine_name", EngineSettingsRootKey);
 
+            AZStd::set<AZ::IO::FixedMaxPath> projectPathsNotFound;
+
             for (EngineInfo& engineInfo : pathVisitor.m_enginePaths)
             {
-                AZ::IO::FixedMaxPath engineSettingsPath{engineInfo.m_path};
-                engineSettingsPath /= "engine.json";
-
-                if (AZ::IO::SystemFile::Exists(engineSettingsPath.c_str()))
+                if (auto engineSettingsPath = AZ::IO::FixedMaxPath{engineInfo.m_path} / "engine.json";
+                    AZ::IO::SystemFile::Exists(engineSettingsPath.c_str()))
                 {
                     if (settingsRegistry.MergeSettingsFile(
                             engineSettingsPath.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, EngineSettingsRootKey))
@@ -119,12 +114,61 @@ namespace AZ::Internal
                     }
                 }
 
-                auto engineMoniker = Internal::GetEngineMonikerForProject(settingsRegistry, engineInfo.m_path / projectPath);
-                if (!engineMoniker.empty() && engineMoniker == engineInfo.m_moniker)
+                if (auto projectJsonPath = (engineInfo.m_path / projectPath / "project.json").LexicallyNormal();
+                    AZ::IO::SystemFile::Exists(projectJsonPath.c_str()))
                 {
-                    engineRoot = engineInfo.m_path;
-                    break;
+                    if (auto engineMoniker = Internal::GetEngineMonikerForProject(settingsRegistry, projectJsonPath);
+                        !engineMoniker.empty() && engineMoniker == engineInfo.m_moniker)
+                    {
+                        engineRoot = engineInfo.m_path;
+                        break;
+                    }
                 }
+                else
+                {
+                    projectPathsNotFound.insert(projectJsonPath);
+                }
+
+                // Continue looking for candidates, remove the previous engine and project settings that were merged above.
+                settingsRegistry.Remove(ProjectSettingsRootKey);
+                settingsRegistry.Remove(EngineSettingsRootKey);
+            }
+
+            if (engineRoot.empty())
+            {
+                AZStd::string errorStr;
+                if (!projectPathsNotFound.empty())
+                {
+                    // This case is usually encountered when a project path is given as a relative path,
+                    // which is assumed to be relative to an engine root.
+                    // When no project.json files are found this way, dump this error message about
+                    // which project paths were checked.
+                    AZStd::string projectPathsTested;
+                    for (const auto& path : projectPathsNotFound)
+                    {
+                        projectPathsTested.append(AZStd::string::format("\t%s\n", path.c_str()));
+                    }
+                    errorStr = AZStd::string::format("No valid project was found at these locations:\n%s"
+                        "Please supply a valid --project-path to the application.",
+                        projectPathsTested.c_str());
+                }
+                else
+                {
+                    // The other case is that a project.json was found, but after checking all the registered engines
+                    // none of them matched the engine moniker.
+                    AZStd::string enginePathsChecked;
+                    for (const auto& engineInfo : pathVisitor.m_enginePaths)
+                    {
+                        enginePathsChecked.append(AZStd::string::format("\t%s (%s)\n", engineInfo.m_path.c_str(), engineInfo.m_moniker.c_str()));
+                    }
+                    errorStr = AZStd::string::format(
+                        "No engine was found in o3de_manifest.json with a name that matches the one set in the project.json.\n"
+                        "Engines that were checked:\n%s"
+                        "Please check that your engine and project have both been registered with scripts/o3de.py.", enginePathsChecked.c_str()
+                    );
+                }
+
+                settingsRegistry.Set(FilePathKey_ErrorText, errorStr.c_str());
             }
         }
 
@@ -158,7 +202,7 @@ namespace AZ::Internal
         return {};
     }
 
-    void InjectSettingToCommandLineFront(AZ::SettingsRegistryInterface& settingsRegistry,
+    void InjectSettingToCommandLineBack(AZ::SettingsRegistryInterface& settingsRegistry,
         AZStd::string_view path, AZStd::string_view value)
     {
         AZ::CommandLine commandLine;
@@ -168,7 +212,7 @@ namespace AZ::Internal
 
         auto projectPathOverride = AZStd::string::format(R"(--regset="%.*s=%.*s")",
             aznumeric_cast<int>(path.size()), path.data(), aznumeric_cast<int>(value.size()), value.data());
-        paramContainer.emplace(paramContainer.begin(), AZStd::move(projectPathOverride));
+        paramContainer.emplace(paramContainer.end(), AZStd::move(projectPathOverride));
         commandLine.Parse(paramContainer);
         AZ::SettingsRegistryMergeUtils::StoreCommandLineToRegistry(settingsRegistry, commandLine);
     }
@@ -197,8 +241,8 @@ namespace AZ::SettingsRegistryMergeUtils
             if (!engineRoot.empty())
             {
                 settingsRegistry.Set(engineRootKey, engineRoot.Native());
-                // Inject the engine root into the front of the command line settings
-                Internal::InjectSettingToCommandLineFront(settingsRegistry, engineRootKey, engineRoot.Native());
+                // Inject the engine root to the end of the command line settings
+                Internal::InjectSettingToCommandLineBack(settingsRegistry, engineRootKey, engineRoot.Native());
                 return engineRoot;
             }
         }
@@ -244,8 +288,8 @@ namespace AZ::SettingsRegistryMergeUtils
             if (!projectRoot.empty())
             {
                 settingsRegistry.Set(projectRootKey, projectRoot.c_str());
-                // Inject the project root into the front of the command line settings
-                Internal::InjectSettingToCommandLineFront(settingsRegistry, projectRootKey, projectRoot.Native());
+                // Inject the project root into the end of the command line settings
+                Internal::InjectSettingToCommandLineBack(settingsRegistry, projectRootKey, projectRoot.Native());
                 return projectRoot;
             }
         }
@@ -376,7 +420,12 @@ namespace AZ::SettingsRegistryMergeUtils
     bool MergeSettingsToRegistry_ConfigFile(SettingsRegistryInterface& registry, AZStd::string_view filePath,
         const ConfigParserSettings& configParserSettings)
     {
-        auto configPath = FindEngineRoot(registry) / filePath;
+        AZ::IO::FixedMaxPath engineRoot{AZ::Utils::GetEnginePath()};
+        if (engineRoot.empty())
+        {
+            engineRoot = FindEngineRoot(registry);
+        }
+        auto configPath = engineRoot / filePath;
         IO::SystemFile configFile;
         if (!configFile.Open(configPath.c_str(), IO::SystemFile::OpenMode::SF_OPEN_READ_ONLY))
         {
@@ -512,7 +561,11 @@ namespace AZ::SettingsRegistryMergeUtils
         registry.Set(FilePathKey_BinaryFolder, path.LexicallyNormal().Native());
 
         // Engine root folder - corresponds to the @engroot@ and @devroot@ aliases
-        AZ::IO::FixedMaxPath engineRoot = FindEngineRoot(registry);
+        AZ::IO::FixedMaxPath engineRoot{AZ::Utils::GetEnginePath()};
+        if (engineRoot.empty())
+        {
+            engineRoot = FindEngineRoot(registry);
+        }
         registry.Set(FilePathKey_EngineRootFolder, engineRoot.LexicallyNormal().Native());
 
         auto projectPathKey = FixedValueString::format("%s/project_path", BootstrapSettingsRootKey);
