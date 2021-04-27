@@ -510,7 +510,7 @@ namespace ScriptCanvas
             AZ_Assert(lua_isuserdata(lua, 1), "CallExecutionOut: Error in compiled lua file, 1st argument to SetExecutionOut is not userdata (Nodeable)");
             AZ_Assert(lua_isnumber(lua, 2), "CallExecutionOut: Error in compiled lua file, 2nd argument to SetExecutionOut is not a number");
             Nodeable* nodeable = AZ::ScriptValue<Nodeable*>::StackRead(lua, 1); 
-            size_t index = aznumeric_caster(lua_tointeger(lua, -2));
+            size_t index = aznumeric_caster(lua_tointeger(lua, 2));
             nodeable->CallOut(index, nullptr, nullptr, argsCount - 2);
             // Lua: results...
             return lua_gettop(lua);
