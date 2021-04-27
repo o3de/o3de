@@ -172,7 +172,7 @@ def run():
     material_asset = asset.AssetCatalogRequestBus(
         bus.Broadcast, "GetAssetIdByPath", material_asset_path, math.Uuid(), False)
     ComponentTests(
-        "Decal", lambda entity_obj: verify_set_property(
+        "Decal (Atom)", lambda entity_obj: verify_set_property(
             entity_obj, "Settings|Decal Settings|Material", material_asset))
 
     # DepthOfField Component
