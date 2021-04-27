@@ -13,6 +13,7 @@
 
 #include <LyShine/IDraw2d.h>
 #include <LyShine/ILyShine.h>
+#include <LyShine/Bus/UiTransformBus.h>
 
 #include <Atom/Bootstrap/BootstrapNotificationBus.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
@@ -127,6 +128,19 @@ public: // member functions
     //! \param textOptions  Pointer to an options struct. If null the default options are used
     void DrawText(const char* textString, AZ::Vector2 position, float pointSize,
         float opacity = 1.0f, TextOptions* textOptions = nullptr);
+
+    //! Draw a rectangular outline with a texture
+    //
+    //! \param image        The texture to be used for drawing the outline
+    //! \param points       The rect's vertices (top left, top right, bottom right, bottom left)
+    //! \param rightVec     Right vector. Specified because the rect's width/height could be 0 
+    //! \param downVec      Down vectorl. Specified because the rect's width/height could be 0
+    //! \param color        The color of the outline
+    void DrawRectOutlineTextured(AZ::Data::Instance<AZ::RPI::Image> image,
+        UiTransformInterface::RectPoints points,
+        AZ::Vector2 rightVec,
+        AZ::Vector2 downVec,
+        AZ::Color color);
 
     //! Get the width and height (in pixels) that would be used to draw the given text string.
     //
@@ -243,6 +257,27 @@ protected: // types and constants
         std::string         m_string;
     };
 
+    class DeferredRectOutline
+        : public DeferredPrimitive
+    {
+    public:
+        ~DeferredRectOutline() override {};
+        void Draw(AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynamicDraw,
+            const Draw2dShaderData& shaderData,
+            AZ::RPI::ViewportContextPtr viewportContext) const override;
+
+        AZ::Data::Instance<AZ::RPI::Image> m_image;
+
+        static const int32 NUM_VERTS = 8;
+        AZ::Vector2 m_verts2d[NUM_VERTS];
+        AZ::Vector2 m_uvs[NUM_VERTS];
+
+        static const int32 NUM_INDICES = 24;
+        uint16 m_indicies[NUM_INDICES];
+
+        AZ::Color m_color;
+    };
+
 protected: // member functions
 
     //! Rotate an array of points around the z-axis at the pivot point.
@@ -260,6 +295,9 @@ protected: // member functions
 
     //! Draw or defer a line
     void DrawOrDeferLine(const DeferredLine* line);
+
+    //! Draw or defer a rect outline
+    void DrawOrDeferRectOutline(const DeferredRectOutline* outlineRect);
 
     //! Get specified viewport context or default viewport context if not specified
     AZ::RPI::ViewportContextPtr GetViewportContext() const;
@@ -391,6 +429,21 @@ public: // member functions
         if (m_draw2d)
         {
             m_draw2d->DrawLineTextured(image, verts, blendMode, pixelRounding, baseState);
+        }
+    }
+
+    //! Draw a rect outline with a texture
+    //
+    //! See IDraw2d:DrawRectOutlineTextured for parameter descriptions
+    void DrawRectOutlineTextured(AZ::Data::Instance<AZ::RPI::Image> image,
+        UiTransformInterface::RectPoints points,
+        AZ::Vector2 rightVec,
+        AZ::Vector2 downVec,
+        AZ::Color color)
+    {
+        if (m_draw2d)
+        {
+            m_draw2d->DrawRectOutlineTextured(image, points, rightVec, downVec, color);
         }
     }
 
