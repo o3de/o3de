@@ -84,7 +84,7 @@ namespace AZ
                 // AssImp separates meshes that have multiple materials.
                 // This code re-combines them to match previous FBX SDK behavior,
                 // so they can be separated by engine code instead.
-                AZStd::map<AZStd::string, AZStd::vector<int>> animToMeshIndices;
+                AZStd::map<AZStd::string, AZStd::vector<AZStd::pair<int, int>>> animToMeshToAnimMeshIndices;
                 for (int nodeMeshIdx = 0; nodeMeshIdx < numMesh; nodeMeshIdx++)
                 {
                     int sceneMeshIdx = context.m_sourceNode.GetAssImpNode()->mMeshes[nodeMeshIdx];
@@ -96,11 +96,11 @@ namespace AZ
                     for (int animIdx = 0; animIdx < aiMesh->mNumAnimMeshes; animIdx++)
                     {
                         aiAnimMesh* aiAnimMesh = aiMesh->mAnimMeshes[animIdx];
-                        animToMeshIndices[aiAnimMesh->mName.C_Str()].push_back(nodeMeshIdx);
+                        animToMeshToAnimMeshIndices[aiAnimMesh->mName.C_Str()].push_back(AZStd::pair<int,int>(nodeMeshIdx, animIdx));
                     }
                 }
 
-                for (const auto& animToMeshIndex : animToMeshIndices)
+                for (const auto& animToMeshIndex : animToMeshToAnimMeshIndices)
                 {
                     AZStd::shared_ptr<SceneData::GraphData::BlendShapeData> blendShapeData =
                         AZStd::make_shared<SceneData::GraphData::BlendShapeData>();
@@ -114,29 +114,9 @@ namespace AZ
                     AZ_TraceContext("Blend shape name", nodeName);
                     for (const auto& meshIndex : animToMeshIndex.second)
                     {
-                        int sceneMeshIdx = context.m_sourceNode.GetAssImpNode()->mMeshes[meshIndex];
+                        int sceneMeshIdx = context.m_sourceNode.GetAssImpNode()->mMeshes[meshIndex.first];
                         const aiMesh* aiMesh = context.m_sourceScene.GetAssImpScene()->mMeshes[sceneMeshIdx];
-                        int foundAnimIdx = -1;
-                        for (int animIdx = 0; animIdx < aiMesh->mNumAnimMeshes; animIdx++)
-                        {
-                            if (strcmp(aiMesh->mAnimMeshes[animIdx]->mName.C_Str(), animToMeshIndex.first.c_str()) == 0)
-                            {
-                                foundAnimIdx = animIdx;
-                                break;
-                            }
-                        }
-                        if (foundAnimIdx == -1)
-                        {
-                            AZ_Error(
-                                Utilities::ErrorWindow,
-                                false,
-                                "Animations for node %s do not match for all meshes. Could not find animation %s on mesh %s.",
-                                context.m_sourceNode.GetAssImpNode()->mName.C_Str(),
-                                animToMeshIndex.first.c_str(),
-                                aiMesh->mName.C_Str());
-                            return Events::ProcessingResult::Failure;
-                        }
-                        aiAnimMesh* aiAnimMesh = aiMesh->mAnimMeshes[foundAnimIdx];
+                        aiAnimMesh* aiAnimMesh = aiMesh->mAnimMeshes[meshIndex.second];
 
                         AZStd::bitset<SceneData::GraphData::BlendShapeData::MaxNumUVSets> uvSetUsedFlags;
                         for (AZ::u8 uvSetIndex = 0; uvSetIndex < SceneData::GraphData::BlendShapeData::MaxNumUVSets; ++uvSetIndex)
