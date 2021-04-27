@@ -95,7 +95,6 @@ namespace AZ
         void ImguiAtomSystemComponent::OnRenderTick()
         {
 #if defined(IMGUI_ENABLED)
-            ImGui::ImGuiManagerBus::Broadcast(&ImGui::IImGuiManager::Render);
             InitializeViewportSizeIfNeeded();
             ImGui::ImGuiManagerBus::Broadcast(&ImGui::IImGuiManager::Render);
 #endif
@@ -104,11 +103,10 @@ namespace AZ
         void ImguiAtomSystemComponent::OnViewportSizeChanged(AzFramework::WindowSize size)
         {
 #if defined(IMGUI_ENABLED)
-            ImGui::ImGuiManagerBus::Broadcast(&ImGui::IImGuiManager::SetImGuiRenderResolution, ImVec2{aznumeric_cast<float>(size.m_width), aznumeric_cast<float>(size.m_height)});
             ImGui::ImGuiManagerBus::Broadcast([this, size](ImGui::ImGuiManagerBus::Events* imgui)
             {
                 imgui->OverrideRenderWindowSize(size.m_width, size.m_height);
-                // ImGuiManagerBus may not have been connected when this system component is activated
+                // ImGuiManagerListenerBus may not have been connected when this system component is activated
                 // as ImGuiManager is not part of a system component we can  require and instead just listens for ESYSTEM_EVENT_GAME_POST_INIT.
                 // Let our ImguiAtomSystemComponent know once we successfully connect and update the viewport size.
                 if (!m_initialized)
