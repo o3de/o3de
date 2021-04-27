@@ -12,25 +12,28 @@
 
 #pragma once
 
-#include <AzFramework/Viewport/CameraInput.h>
+#include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Viewport/MultiViewportController.h>
 
 namespace SandboxEditor
 {
-    class ModernViewportCameraControllerInstance final : public AzFramework::MultiViewportControllerInstanceInterface
+    class ModernViewportCameraControllerInstance final : public AzFramework::MultiViewportControllerInstanceInterface,
+                                                         private AzFramework::ViewportDebugDisplayEventBus::Handler
     {
     public:
         explicit ModernViewportCameraControllerInstance(AzFramework::ViewportId viewportId);
+        ~ModernViewportCameraControllerInstance();
 
         // MultiViewportControllerInstanceInterface overrides ...
         bool HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event) override;
         void UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event) override;
 
+        // AzFramework::ViewportDebugDisplayEventBus ...
+        void DisplayViewport(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay) override;
+
     private:
-        AzFramework::Camera m_camera;
-        AzFramework::Camera m_targetCamera;
-        AzFramework::SmoothProps m_smoothProps;
-        AzFramework::CameraSystem m_cameraSystem;
+        struct Impl;
+        AZStd::unique_ptr<Impl> m_impl;
     };
 
     using ModernViewportCameraController = AzFramework::MultiViewportController<ModernViewportCameraControllerInstance>;

@@ -19,7 +19,7 @@
 
 namespace AzFramework
 {
-    void CameraSystem::HandleEvents(const InputEvent& event)
+    bool CameraSystem::HandleEvents(const InputEvent& event)
     {
         if (const auto& cursor_motion = AZStd::get_if<CursorMotionEvent>(&event))
         {
@@ -30,7 +30,7 @@ namespace AzFramework
             m_scrollDelta = scroll->m_delta;
         }
 
-        m_cameras.HandleEvents(event);
+        return m_cameras.HandleEvents(event);
     }
 
     Camera CameraSystem::StepCamera(const Camera& targetCamera, const float deltaTime)
@@ -56,17 +56,21 @@ namespace AzFramework
         m_idleCameraInputs.push_back(AZStd::move(cameraInput));
     }
 
-    void Cameras::HandleEvents(const InputEvent& event)
+    bool Cameras::HandleEvents(const InputEvent& event)
     {
+        bool handling = false;
         for (auto& cameraInput : m_activeCameraInputs)
         {
             cameraInput->HandleEvents(event);
+            handling = !cameraInput->Idle() || handling;
         }
 
         for (auto& cameraInput : m_idleCameraInputs)
         {
             cameraInput->HandleEvents(event);
         }
+
+        return handling;
     }
 
     Camera Cameras::StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, const float deltaTime)
@@ -504,6 +508,11 @@ namespace AzFramework
         const auto& inputChannelId = inputChannel.GetInputChannelId();
         const auto& inputDeviceId = inputChannel.GetInputDevice().GetInputDeviceId();
 
+        const bool wasMouseButton =
+            AZStd::any_of(InputDeviceMouse::Button::All.begin(), InputDeviceMouse::Button::All.end(), [inputChannelId](const auto& button) {
+                return button == inputChannelId;
+            });
+
         if (inputChannelId == InputDeviceMouse::SystemCursorPosition)
         {
             AZ::Vector2 systemCursorPositionNormalized = AZ::Vector2::CreateZero();
@@ -517,7 +526,7 @@ namespace AzFramework
         {
             return ScrollEvent{inputChannel.GetValue()};
         }
-        else if (InputDeviceMouse::IsMouseDevice(inputDeviceId) || InputDeviceKeyboard::IsKeyboardDevice(inputDeviceId))
+        else if ((InputDeviceMouse::IsMouseDevice(inputDeviceId) && wasMouseButton) || InputDeviceKeyboard::IsKeyboardDevice(inputDeviceId))
         {
             return DiscreteInputEvent{inputChannelId, inputChannel.GetState()};
         }
