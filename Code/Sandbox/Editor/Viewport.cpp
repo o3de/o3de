@@ -21,6 +21,9 @@
 // AzQtComponents
 #include <AzQtComponents/DragAndDrop/ViewportDragAndDrop.h>
 
+#include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
+#include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
+
 // Editor
 #include "ViewManager.h"
 #include "Include/ITransformManipulator.h"
@@ -1158,6 +1161,13 @@ void QtViewport::SetAxisConstrain(int axis)
     m_activeAxis = axis;
 };
 
+AzToolsFramework::ViewportInteraction::MouseInteraction QtViewport::BuildMouseInteraction(
+    [[maybe_unused]] Qt::MouseButtons buttons, [[maybe_unused]] Qt::KeyboardModifiers modifiers, [[maybe_unused]] const QPoint& point)
+{
+    // Implemented by sub-class
+    return AzToolsFramework::ViewportInteraction::MouseInteraction();
+}
+
 //////////////////////////////////////////////////////////////////////////
 bool QtViewport::HitTest(const QPoint& point, HitContext& hitInfo)
 {
@@ -1170,7 +1180,54 @@ bool QtViewport::HitTest(const QPoint& point, HitContext& hitInfo)
         hitInfo.bUseSelectionHelpers = true;
     }
 
-    return GetIEditor()->GetObjectManager()->HitTest(hitInfo);
+    const int viewportId = GetViewportId();
+
+    // TODO: Use the EditorVisibleEntityDataCache instead once we are able to move to EditorViewportWidget
+    AzToolsFramework::EntityIdList visibleEntityIds;
+    AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequestBus::Event(
+        viewportId,
+        &AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequests::FindVisibleEntities,
+        visibleEntityIds);
+
+    // Look through all visible entities to find the closest one to the specified mouse point
+    AZ::EntityId entityIdUnderCursor;
+    float closestDistance = std::numeric_limits<float>::max();
+    for (auto entityId : visibleEntityIds)
+    {
+        using AzFramework::ViewportInfo;
+        // Check if components provide an aabb
+        if (const AZ::Aabb aabb = AzToolsFramework::CalculateEditorEntitySelectionBounds(entityId, ViewportInfo{ viewportId });
+            aabb.IsValid())
+        {
+            using namespace AzToolsFramework::ViewportInteraction;
+
+            MouseInteraction mouseInteraction = BuildMouseInteraction(QGuiApplication::mouseButtons(),
+                QGuiApplication::queryKeyboardModifiers(),
+                point);
+
+            // Coarse grain check
+            if (AzToolsFramework::AabbIntersectMouseRay(mouseInteraction, aabb))
+            {
+                // If success, pick against specific component
+                if (AzToolsFramework::PickEntity(
+                    entityId, mouseInteraction,
+                    closestDistance, viewportId))
+                {
+                    entityIdUnderCursor = entityId;
+                }
+            }
+        }
+    }
+
+    // If we hit a valid Entity, then store the distance in the HitContext
+    // so that the caller can use this for calculations
+    if (entityIdUnderCursor.IsValid())
+    {
+        hitInfo.dist = closestDistance;
+        return true;
+    }
+
+    return false;
 }
 
 //////////////////////////////////////////////////////////////////////////
