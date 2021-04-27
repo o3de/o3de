@@ -46,6 +46,7 @@ namespace AzPhysics
                 ->Field("orientation", &SimulatedBodyConfiguration::m_orientation)
                 ->Field("scale", &SimulatedBodyConfiguration::m_scale)
                 ->Field("entityId", &SimulatedBodyConfiguration::m_entityId)
+                ->Field("startSimulationEnabled", &SimulatedBodyConfiguration::m_startSimulationEnabled)
                 ;
         }
     }
