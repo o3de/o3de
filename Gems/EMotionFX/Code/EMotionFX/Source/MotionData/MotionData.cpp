@@ -23,6 +23,8 @@
 #include <MCore/Source/Endian.h>
 #include <MCore/Source/Stream.h>
 
+#pragma optimize("", off)
+
 namespace EMotionFX
 {
     MotionLinkCache::MotionLinkCache()
@@ -461,16 +463,17 @@ namespace EMotionFX
     {
         AZ_Assert(motionLinkData, "Expecting valid motionLinkData pointer.");
 
+        const Pose* bindPose = actorInstance->GetTransformData()->GetBindPose();
+        const AZStd::vector<AZ::u32>& jointLinks = motionLinkData->GetJointDataLinks();
+
         // Special case handling on translation of root nodes.
         // Scale the translation amount based on the height difference between the bind pose height of the
         // retarget root node and the bind pose of that node stored in the motion.
         // All other nodes get their translation data displaced based on the position difference between the
         // parent relative space positions in the actor instance's bind pose and the motion bind pose.
-        const Pose* bindPose = actorInstance->GetTransformData()->GetBindPose();
         const Actor* actor = actorInstance->GetActor();
         const AZ::u32 retargetRootIndex = actor->GetRetargetRootNodeIndex();
         const Node* joint = actor->GetSkeleton()->GetNode(jointIndex);
-        const AZStd::vector<AZ::u32>& jointLinks = motionLinkData->GetJointDataLinks();
         bool needsDisplacement = true;
         if ((retargetRootIndex == jointIndex || joint->GetIsRootNode()) && retargetRootIndex != InvalidIndex32)
         {
@@ -487,20 +490,23 @@ namespace EMotionFX
             }
         }
 
-        const Transform& bindPoseTransform = bindPose->GetLocalSpaceTransform(jointIndex);
         const AZ::u16 jointDataIndex = jointLinks[jointIndex];
-        const Transform& motionBindPose = m_staticJointData[jointDataIndex].m_bindTransform;
-        if (needsDisplacement)
+        if (jointDataIndex != InvalidIndex16)
         {
-            const AZ::Vector3 displacement = bindPoseTransform.mPosition - motionBindPose.mPosition;
-            inOutTransform.mPosition += displacement;
-        }
+            const Transform& bindPoseTransform = bindPose->GetLocalSpaceTransform(jointIndex);
+            const Transform& motionBindPose = m_staticJointData[jointDataIndex].m_bindTransform;
+            if (needsDisplacement)
+            {
+                const AZ::Vector3 displacement = bindPoseTransform.mPosition - motionBindPose.mPosition;
+                inOutTransform.mPosition += displacement;
+            }
 
-        EMFX_SCALECODE
-        (
-            const AZ::Vector3 scaleOffset = bindPoseTransform.mScale - motionBindPose.mScale;
-            inOutTransform.mScale += scaleOffset;
-        )
+            EMFX_SCALECODE
+            (
+                const AZ::Vector3 scaleOffset = bindPoseTransform.mScale - motionBindPose.mScale;
+                inOutTransform.mScale += scaleOffset;
+            )
+        }
     }
 
     // Based on a given time value, find the two keyframes to interpolate between, and calculate the t value, which is the interpolation weight between 0 and 1.
