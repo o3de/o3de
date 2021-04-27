@@ -124,7 +124,7 @@ namespace LmbrCentral
     {
         AZ::Transform offset = AZ::ConvertEulerDegreesToTransform(m_rotationOffset);
         offset.SetTranslation(m_positionOffset);
-        offset.MultiplyByScale(m_scaleOffset);
+        offset.MultiplyByUniformScale(m_scaleOffset.GetMaxElement());
         return offset;
     }
 

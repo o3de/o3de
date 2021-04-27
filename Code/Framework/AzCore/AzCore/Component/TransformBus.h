@@ -288,18 +288,26 @@ namespace AZ
         //! Scale modifiers
         //! @{
         //! Set local scale of the transform.
-        //! @param scale The new scale to set along three local axes.
+        //! @param scale The new scale to set.
         virtual void SetLocalScale([[maybe_unused]] const AZ::Vector3& scale) {}
 
-        //! Get the scale value on each axis in local space
-        //! @return The scale value of type Vector3 along each axis in local space.
+        //! Get the scale value in local space.
+        //! @return The scale value in local space.
         virtual AZ::Vector3 GetLocalScale() { return AZ::Vector3(FLT_MAX); }
 
-        //! Get the scale value on each axis in world space.
-        //! Note the transform will be skewed when it is rotated and has a parent transform scaled, in which
-        //! case the returned world-scale from this function will be inaccurate.
-        //! @return The scale value of type Vector3 along each axis in world space.
+        //! Get the scale value in world space.
+        //! @return The scale value in world space.
         virtual AZ::Vector3 GetWorldScale() { return AZ::Vector3(FLT_MAX); }
+
+
+        virtual void SetLocalUniformScale([[maybe_unused]] float scale) {}
+
+        virtual float GetLocalUniformScale() { return FLT_MAX; }
+
+        virtual float GetWorldUniformScale() { return FLT_MAX; }
+
+
+
         //! @}
 
         //! Transform hierarchy

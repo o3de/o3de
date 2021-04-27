@@ -146,9 +146,12 @@ namespace AzFramework
 
         // Scale Modifiers
         void SetLocalScale(const AZ::Vector3& scale) override;
-
         AZ::Vector3 GetLocalScale() override;
         AZ::Vector3 GetWorldScale() override;
+
+        void SetLocalUniformScale(float scale) override;
+        float GetLocalUniformScale() override;
+        float GetWorldUniformScale() override;
 
         // Transform hierarchy
         AZStd::vector<AZ::EntityId> GetChildren() override;

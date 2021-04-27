@@ -24,6 +24,8 @@
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 
+#include <AZTestShared/Math/MathTestHelpers.h>
+
 using namespace AZ;
 using namespace AzFramework;
 
@@ -362,8 +364,8 @@ namespace UnitTest
     TEST_F(TransformComponentTransformMatrixSetGet, SetLocalRotation_SimpleValues_Set)
     {
         // add some scale first
-        float sx = 1.03f, sy = 0.67f, sz = 1.23f;
-        Transform tm = Transform::CreateScale(Vector3(sx, sy, sz));
+        float scale = 1.23f;
+        Transform tm = Transform::CreateUniformScale(scale);
         TransformBus::Event(m_childId, &TransformBus::Events::SetLocalTM, tm);
 
         float rx = 42.435f;
@@ -379,13 +381,13 @@ namespace UnitTest
         Matrix3x3 finalRotate = rotateX * rotateY * rotateZ;
 
         Vector3 basisX = tm.GetBasisX();
-        Vector3 expectedBasisX = finalRotate.GetBasisX() * sx;
+        Vector3 expectedBasisX = finalRotate.GetBasisX() * scale;
         EXPECT_TRUE(basisX.IsClose(expectedBasisX));
         Vector3 basisY = tm.GetBasisY();
-        Vector3 expectedBasisY = finalRotate.GetBasisY() * sy;
+        Vector3 expectedBasisY = finalRotate.GetBasisY() * scale;
         EXPECT_TRUE(basisY.IsClose(expectedBasisY));
         Vector3 basisZ = tm.GetBasisZ();
-        Vector3 expectedBasisZ = finalRotate.GetBasisZ() * sz;
+        Vector3 expectedBasisZ = finalRotate.GetBasisZ() * scale;
         EXPECT_TRUE(basisZ.IsClose(expectedBasisZ));
     }
 
@@ -476,18 +478,15 @@ namespace UnitTest
         {
             TransformBus::Event(m_childId, &TransformBus::Events::RotateAroundLocalX, rx);
         }
-        Vector3 localScale;
-        TransformBus::EventResult(localScale, m_childId, &TransformBus::Events::GetLocalScale);
-        EXPECT_TRUE(localScale.IsClose(Vector3(1.0f, 1.0f, 1.0f)));
+        float localScale = FLT_MAX;
+        TransformBus::EventResult(localScale, m_childId, &TransformBus::Events::GetLocalUniformScale);
+        EXPECT_NEAR(localScale, 1.0f, AZ::Constants::Tolerance);
     }
 
     TEST_F(TransformComponentTransformMatrixSetGet, RotateAroundLocalX_ScaleDoesNotSkewRotation)
     {
-        float sx = 42.564f;
-        float sy = 12.460f;
-        float sz = 28.692f;
-        Vector3 expectedScales(sx, sy, sz);
-        TransformBus::Event(m_childId, &TransformBus::Events::SetLocalScale, expectedScales);
+        float expectedScale = 42.564f;
+        TransformBus::Event(m_childId, &TransformBus::Events::SetLocalUniformScale, expectedScale);
 
         float rx = 1.43f;
         TransformBus::Event(m_childId, &TransformBus::Events::RotateAroundLocalX, rx);
@@ -513,18 +512,15 @@ namespace UnitTest
         {
             TransformBus::Event(m_childId, &TransformBus::Events::RotateAroundLocalY, ry);
         }
-        Vector3 localScale;
-        TransformBus::EventResult(localScale, m_childId, &TransformBus::Events::GetLocalScale);
-        EXPECT_TRUE(localScale.IsClose(Vector3(1.0f, 1.0f, 1.0f)));
+        float localScale = FLT_MAX;
+        TransformBus::EventResult(localScale, m_childId, &TransformBus::Events::GetLocalUniformScale);
+        EXPECT_NEAR(localScale, 1.0f, AZ::Constants::Tolerance);
     }
 
     TEST_F(TransformComponentTransformMatrixSetGet, RotateAroundLocalY_ScaleDoesNotSkewRotation)
     {
-        float sx = 42.564f;
-        float sy = 12.460f;
-        float sz = 28.692f;
-        Vector3 expectedScales(sx, sy, sz);
-        TransformBus::Event(m_childId, &TransformBus::Events::SetLocalScale, expectedScales);
+        float expectedScale = 42.564f;
+        TransformBus::Event(m_childId, &TransformBus::Events::SetLocalUniformScale, expectedScale);
 
         float ry = 1.43f;
         TransformBus::Event(m_childId, &TransformBus::Events::RotateAroundLocalY, ry);
@@ -550,18 +546,15 @@ namespace UnitTest
         {
             TransformBus::Event(m_childId, &TransformBus::Events::RotateAroundLocalZ, rz);
         }
-        Vector3 localScale;
-        TransformBus::EventResult(localScale, m_childId, &TransformBus::Events::GetLocalScale);
-        EXPECT_TRUE(localScale.IsClose(Vector3(1.0f, 1.0f, 1.0f)));
+        float localScale = FLT_MAX;
+        TransformBus::EventResult(localScale, m_childId, &TransformBus::Events::GetLocalUniformScale);
+        EXPECT_NEAR(localScale, 1.0f, AZ::Constants::Tolerance);
     }
 
     TEST_F(TransformComponentTransformMatrixSetGet, RotateAroundLocalZ_ScaleDoesNotSkewRotation)
     {
-        float sx = 42.564f;
-        float sy = 12.460f;
-        float sz = 28.692f;
-        Vector3 expectedScales(sx, sy, sz);
-        TransformBus::Event(m_childId, &TransformBus::Events::SetLocalScale, expectedScales);
+        float expectedScale = 42.564f;
+        TransformBus::Event(m_childId, &TransformBus::Events::SetLocalUniformScale, expectedScale);
 
         float rz = 1.43f;
         TransformBus::Event(m_childId, &TransformBus::Events::RotateAroundLocalZ, rz);
@@ -572,65 +565,50 @@ namespace UnitTest
 
     TEST_F(TransformComponentTransformMatrixSetGet, SetLocalScale_SimpleValues_Set)
     {
-        float sx = 42.564f;
-        float sy = 12.460f;
-        float sz = 28.692f;
-        Vector3 expectedScales(sx, sy, sz);
-        TransformBus::Event(m_childId, &TransformBus::Events::SetLocalScale, expectedScales);
+        float expectedScale = 42.564f;
+        TransformBus::Event(m_childId, &TransformBus::Events::SetLocalUniformScale, expectedScale);
 
-        Transform tm ;
+        Transform tm;
         TransformBus::EventResult(tm, m_childId, &TransformBus::Events::GetLocalTM);
-        Vector3 scales = tm.GetScale();
-        EXPECT_TRUE(scales.IsClose(expectedScales));
+        float scale = tm.GetUniformScale();
+        EXPECT_NEAR(scale, expectedScale, AZ::Constants::Tolerance);
     }
 
     TEST_F(TransformComponentTransformMatrixSetGet, GetLocalScale_SimpleValues_Return)
     {
-        float sx = 43.463f;
-        float sy = 346.22f;
-        float sz = 863.32f;
-        Vector3 expectedScales(sx, sy, sz);
-        Transform scaleTM = Transform::CreateScale(expectedScales);
+        float expectedScale = 43.463f;
+        Transform scaleTM = Transform::CreateUniformScale(expectedScale);
         TransformBus::Event(m_childId, &TransformBus::Events::SetLocalTM, scaleTM);
 
-        Vector3 scales;
-        TransformBus::EventResult(scales, m_childId, &TransformBus::Events::GetLocalScale);
-        EXPECT_TRUE(scales.IsClose(expectedScales));
+        float scale;
+        TransformBus::EventResult(scale, m_childId, &TransformBus::Events::GetLocalUniformScale);
+        EXPECT_NEAR(scale, expectedScale, AZ::Constants::Tolerance);
     }
 
     TEST_F(TransformComponentTransformMatrixSetGet, GetWorldScale_ChildHasNoScale_ReturnScaleSameAsParent)
     {
-        float sx = 43.463f;
-        float sy = 346.22f;
-        float sz = 863.32f;
-        Vector3 expectedScales(sx, sy, sz);
-        Transform scaleTM = Transform::CreateScale(expectedScales);
+        float expectedScale = 43.463f;
+        Transform scaleTM = Transform::CreateUniformScale(expectedScale);
         TransformBus::Event(m_parentId, &TransformBus::Events::SetLocalTM, scaleTM);
 
-        Vector3 scales;
-        TransformBus::EventResult(scales, m_childId, &TransformBus::Events::GetWorldScale);
-        EXPECT_TRUE(scales.IsClose(expectedScales));
+        float scale = FLT_MAX;
+        TransformBus::EventResult(scale, m_childId, &TransformBus::Events::GetWorldUniformScale);
+        EXPECT_NEAR(scale, expectedScale, AZ::Constants::Tolerance);
     }
 
     TEST_F(TransformComponentTransformMatrixSetGet, GetWorldScale_ChildHasScale_ReturnCompoundScale)
     {
-        float sx = 4.463f;
-        float sy = 3.22f;
-        float sz = 8.32f;
-        Vector3 parentScales(sx, sy, sz);
-        Transform parentScaleTM = Transform::CreateScale(parentScales);
+        float parentScale = 4.463f;
+        Transform parentScaleTM = Transform::CreateUniformScale(parentScale);
         TransformBus::Event(m_parentId, &TransformBus::Events::SetLocalTM, parentScaleTM);
 
-        float csx = 1.64f;
-        float csy = 9.35f;
-        float csz = 1.57f;
-        Vector3 childScales(csx, csy, csz);
-        Transform childScaleTM = Transform::CreateScale(childScales);
+        float childScale = 1.64f;
+        Transform childScaleTM = Transform::CreateUniformScale(childScale);
         TransformBus::Event(m_childId, &TransformBus::Events::SetLocalTM, childScaleTM);
 
-        Vector3 scales;
-        TransformBus::EventResult(scales, m_childId, &TransformBus::Events::GetWorldScale);
-        EXPECT_TRUE(scales.IsClose(parentScales * childScales));
+        float scale = FLT_MAX;
+        TransformBus::EventResult(scale, m_childId, &TransformBus::Events::GetWorldUniformScale);
+        EXPECT_NEAR(scale, parentScale * childScale, AZ::Constants::Tolerance);
     }
 
     class TransformComponentHierarchy

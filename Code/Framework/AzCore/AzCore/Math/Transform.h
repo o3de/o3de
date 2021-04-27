@@ -63,7 +63,7 @@ namespace AZ
         Transform() = default;
 
         //! Construct a transform from components.
-        Transform(const Vector3& translation, const Quaternion& rotation, const Vector3& scale);
+        Transform(const Vector3& translation, const Quaternion& rotation, const float scale);
 
         //! Creates an identity transform.
         static Transform CreateIdentity();
@@ -89,8 +89,11 @@ namespace AZ
 
         static Transform CreateFromMatrix3x4(const Matrix3x4& value);
 
-        //! Sets the matrix to be a scale matrix, translation is set to zero.
-        static Transform CreateScale(const Vector3& scale);
+        //! Sets the transform to apply (uniform) scale only, no rotation or translation.
+        static Transform CreateScale(const AZ::Vector3& scale);
+
+        //! Sets the transform to apply (uniform) scale only, no rotation or translation.
+        static Transform CreateUniformScale(const float scale);
 
         //! Sets the matrix to be a translation matrix, rotation part is set to identity.
         static Transform CreateTranslation(const Vector3& translation);
@@ -119,13 +122,19 @@ namespace AZ
         const Quaternion& GetRotation() const;
         void SetRotation(const Quaternion& rotation);
 
-        const Vector3& GetScale() const;
+        Vector3 GetScale() const;
+        float GetUniformScale() const;
         void SetScale(const Vector3& v);
+        void SetUniformScale(const float scale);
 
-        //! Sets the transforms scale to a unit value and returns the previous scale value.
+        //! Sets the transform's scale to a unit value and returns the previous scale value.
         Vector3 ExtractScale();
 
-        void MultiplyByScale(const Vector3& scale);
+        //! Sets the transform's scale to a unit value and returns the previous scale value.
+        float ExtractUniformScale();
+
+        void MultiplyByScale(const AZ::Vector3& scale);
+        void MultiplyByUniformScale(float scale);
 
         Transform operator*(const Transform& rhs) const;
         Transform& operator*=(const Transform& rhs);
@@ -159,7 +168,7 @@ namespace AZ
     private:
 
         Quaternion m_rotation;
-        Vector3 m_scale;
+        float m_scale;
         Vector3 m_translation;
     };
 

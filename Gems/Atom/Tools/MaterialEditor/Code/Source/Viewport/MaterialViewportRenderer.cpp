@@ -16,6 +16,7 @@
 #include <AzCore/Component/Component.h>
 
 #include <AzFramework/Components/TransformComponent.h>
+#include <AzFramework/Components/NonUniformScaleComponent.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 
 #include <AtomCore/Instance/InstanceDatabase.h>
@@ -178,9 +179,10 @@ namespace MaterialEditor
         m_shadowCatcherEntity->CreateComponent(AZ::Render::MeshComponentTypeId);
         m_shadowCatcherEntity->CreateComponent(AZ::Render::MaterialComponentTypeId);
         m_shadowCatcherEntity->CreateComponent(azrtti_typeid<AzFramework::TransformComponent>());
+        m_shadowCatcherEntity->CreateComponent(azrtti_typeid<AzFramework::NonUniformScaleComponent>());
         m_shadowCatcherEntity->Activate();
 
-        AZ::TransformBus::Event(m_shadowCatcherEntity->GetId(), &AZ::TransformBus::Events::SetLocalScale, AZ::Vector3{ 100, 100, 1.0 });
+        AZ::NonUniformScaleRequestBus::Event(m_shadowCatcherEntity->GetId(), &AZ::NonUniformScaleRequests::SetScale, AZ::Vector3{ 100, 100, 1.0 });
 
         AZ::Data::AssetId shadowCatcherModelAssetId = RPI::AssetUtils::GetAssetIdForProductPath("materialeditor/viewportmodels/plane_1x1.azmodel", RPI::AssetUtils::TraceLevel::Error);
         AZ::Render::MeshComponentRequestBus::Event(m_shadowCatcherEntity->GetId(),

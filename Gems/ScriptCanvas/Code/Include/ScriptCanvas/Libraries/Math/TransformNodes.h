@@ -26,9 +26,9 @@ namespace ScriptCanvas
         using namespace MathNodeUtilities;
         static const char* k_categoryName = "Math/Transform";
 
-        AZ_INLINE std::tuple<Vector3Type, TransformType> ExtractScale(TransformType source)
+        AZ_INLINE std::tuple<NumberType, TransformType> ExtractScale(TransformType source)
         {
-            auto scale(source.ExtractScale());
+            auto scale(source.ExtractUniformScale());
             return std::make_tuple( scale, source );
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_MULTI_RESULTS_NODE(ExtractScale, k_categoryName, "{8DFE5247-0950-4CD1-87E6-0CAAD42F1637}", "returns a vector which is the length of the scale components, and a transform with the scale extracted ", "Source", "Scale", "Extracted");

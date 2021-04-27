@@ -130,7 +130,7 @@ namespace AZ
         const Transform* transform = reinterpret_cast<const Transform*>(classPtr);
         float data[NumFloats];
         transform->GetRotation().StoreToFloat4(data);
-        transform->GetScale().StoreToFloat3(&data[4]);
+        Vector3(transform->GetScale()).StoreToFloat3(&data[4]);
         transform->GetTranslation().StoreToFloat3(&data[7]);
 
         for (int i = 0; i < NumFloats; i++)
@@ -220,7 +220,7 @@ namespace AZ
         Vector3 translation = Vector3::CreateFromFloat3(&data[7]);
 
         *reinterpret_cast<Transform*>(classPtr) =
-            Transform::CreateFromQuaternionAndTranslation(rotation, translation) * Transform::CreateScale(scale);
+            Transform::CreateFromQuaternionAndTranslation(rotation, translation) * Transform::CreateUniformScale(scale.GetMaxElement());
         return true;
     }
 
@@ -250,7 +250,7 @@ namespace AZ
                 Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::All)->
                 Attribute(Script::Attributes::Storage, Script::Attributes::StorageType::Value)->
                 Attribute(Script::Attributes::GenericConstructorOverride, &Internal::TransformDefaultConstructor)->
-                Constructor<const Vector3&, const Quaternion&, const Vector3&>()->
+                Constructor<const Vector3&, const Quaternion&, const float>()->
                 Method("GetBasis", &Transform::GetBasis)->
                 Method("GetBasisX", &Transform::GetBasisX)->
                 Method("GetBasisY", &Transform::GetBasisY)->
@@ -284,7 +284,7 @@ namespace AZ
                 Method("GetRotation", &Transform::GetRotation)->
                 Method<void (Transform::*)(const Quaternion&)>("SetRotation", &Transform::SetRotation)->
                 Method("GetScale", &Transform::GetScale)->
-                Method<void (Transform::*)(const Vector3&)>("SetScale", &Transform::SetScale)->
+                Method<void (Transform::*)(const Vector3&)>("SetScale", static_cast<void(Transform::*)(const Vector3&)>(&Transform::SetScale))->
                 Method("ExtractScale", &Transform::ExtractScale)->
                     Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::All)->
                 Method("MultiplyByScale", &Transform::MultiplyByScale)->
@@ -315,7 +315,7 @@ namespace AZ
     {
         Transform result;
         Matrix3x3 tmp = value;
-        result.m_scale = tmp.ExtractScale();
+        result.m_scale = tmp.ExtractScale().GetMaxElement();
         result.m_rotation = Quaternion::CreateFromMatrix3x3(tmp);
         result.m_translation = Vector3::CreateZero();
         return result;
@@ -325,7 +325,7 @@ namespace AZ
     {
         Transform result;
         Matrix3x3 tmp = value;
-        result.m_scale = tmp.ExtractScale();
+        result.m_scale = tmp.ExtractScale().GetMaxElement();
         result.m_rotation = Quaternion::CreateFromMatrix3x3(tmp);
         result.m_translation = p;
         return result;
@@ -335,7 +335,7 @@ namespace AZ
     {
         Transform result;
         Matrix3x4 tmp = value;
-        result.m_scale = tmp.ExtractScale();
+        result.m_scale = tmp.ExtractScale().GetMaxElement();
         result.m_rotation = Quaternion::CreateFromMatrix3x4(tmp);
         result.m_translation = value.GetTranslation();
         return result;

@@ -42,12 +42,7 @@ namespace LmbrCentral
             return;
         }
 
-        // only uniform scale is supported in physics so the debug visuals reflect this fact
-        AZ::Transform worldFromLocalWithUniformScale = worldFromLocal;
-        const AZ::Vector3 scale = worldFromLocalWithUniformScale.ExtractScale();
-        worldFromLocalWithUniformScale.MultiplyByScale(AZ::Vector3(scale.GetMaxElement()));
-
-        debugDisplay.PushMatrix(worldFromLocalWithUniformScale);
+        debugDisplay.PushMatrix(worldFromLocal);
 
         drawShape(debugDisplay);
 

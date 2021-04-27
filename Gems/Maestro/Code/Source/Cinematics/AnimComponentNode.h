@@ -71,12 +71,12 @@ public:
 
     void SetPos(float time, const Vec3& pos) override;
     void SetRotate(float time, const Quat& quat) override;
-    void SetScale(float time, const Vec3& scale) override;
+    void SetScale(float time, float scale) override;
 
     Vec3 GetPos() override;
     Quat GetRotate() override;
     Quat GetRotate(float time) override;
-    Vec3 GetScale() override;
+    float GetScale() override;
 
     void Activate(bool bActivate) override;
     //////////////////////////////////////////////////////////////////////////
@@ -128,7 +128,7 @@ private:
     void GetParentWorldTransform(AZ::Transform& retTransform) const;
     void ConvertBetweenWorldAndLocalPosition(Vec3& position, ETransformSpaceConversionDirection conversionDirection) const;
     void ConvertBetweenWorldAndLocalRotation(Quat& rotation, ETransformSpaceConversionDirection conversionDirection) const;
-    void ConvertBetweenWorldAndLocalScale(Vec3& scale, ETransformSpaceConversionDirection conversionDirection) const;
+    void ConvertBetweenWorldAndLocalScale(float& scale, ETransformSpaceConversionDirection conversionDirection) const;
 
     // Utility function to query the units for a track and set the track multiplier if needed. Returns true if track multiplier was set.
     bool SetTrackMultiplier(IAnimTrack* track) const;

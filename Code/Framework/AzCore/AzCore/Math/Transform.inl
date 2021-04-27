@@ -12,7 +12,7 @@
 
 namespace AZ
 {
-    AZ_MATH_INLINE Transform::Transform(const Vector3& translation, const Quaternion& rotation, const Vector3& scale)
+    AZ_MATH_INLINE Transform::Transform(const Vector3& translation, const Quaternion& rotation, const float scale)
         : m_translation(translation)
         , m_rotation(rotation)
         , m_scale(scale)
@@ -25,7 +25,7 @@ namespace AZ
     {
         Transform result;
         result.m_rotation = Quaternion::CreateIdentity();
-        result.m_scale = Vector3::CreateOne();
+        result.m_scale = 1.0f;
         result.m_translation = Vector3::CreateZero();
         return result;
     }
@@ -49,7 +49,7 @@ namespace AZ
     {
         Transform result;
         result.m_rotation = q;
-        result.m_scale = Vector3::CreateOne();
+        result.m_scale = 1.0f;
         result.m_translation = Vector3::CreateZero();
         return result;
     }
@@ -58,12 +58,22 @@ namespace AZ
     {
         Transform result;
         result.m_rotation = q;
-        result.m_scale = Vector3::CreateOne();
+        result.m_scale = 1.0f;
         result.m_translation = p;
         return result;
     }
 
-    AZ_MATH_INLINE Transform Transform::CreateScale(const Vector3& scale)
+    AZ_MATH_INLINE Transform Transform::CreateScale(const AZ::Vector3& scale)
+    {
+        AZ_Warning("Transform", false, "CreateScale is deprecated, please use CreateUniformScale instead.");
+        Transform result;
+        result.m_rotation = Quaternion::CreateIdentity();
+        result.m_scale = scale.GetMaxElement();
+        result.m_translation = Vector3::CreateZero();
+        return result;
+    }
+
+    AZ_MATH_INLINE Transform Transform::CreateUniformScale(float scale)
     {
         Transform result;
         result.m_rotation = Quaternion::CreateIdentity();
@@ -76,7 +86,7 @@ namespace AZ
     {
         Transform result;
         result.m_rotation = Quaternion::CreateIdentity();
-        result.m_scale = Vector3::CreateOne();
+        result.m_scale = 1.0f;
         result.m_translation = translation;
         return result;
     }
@@ -104,17 +114,17 @@ namespace AZ
 
     AZ_MATH_INLINE Vector3 Transform::GetBasisX() const
     {
-        return m_rotation.TransformVector(Vector3::CreateAxisX(m_scale.GetX()));
+        return m_rotation.TransformVector(Vector3::CreateAxisX(m_scale));
     }
 
     AZ_MATH_INLINE Vector3 Transform::GetBasisY() const
     {
-        return m_rotation.TransformVector(Vector3::CreateAxisY(m_scale.GetY()));
+        return m_rotation.TransformVector(Vector3::CreateAxisY(m_scale));
     }
 
     AZ_MATH_INLINE Vector3 Transform::GetBasisZ() const
     {
-        return m_rotation.TransformVector(Vector3::CreateAxisZ(m_scale.GetZ()));
+        return m_rotation.TransformVector(Vector3::CreateAxisZ(m_scale));
     }
 
     AZ_MATH_INLINE void Transform::GetBasisAndTranslation(Vector3* basisX, Vector3* basisY, Vector3* basisZ, Vector3* pos) const
@@ -150,24 +160,50 @@ namespace AZ
         m_rotation = rotation;
     }
 
-    AZ_MATH_INLINE const Vector3& Transform::GetScale() const
+    AZ_MATH_INLINE Vector3 Transform::GetScale() const
+    {
+        AZ_Warning("Transform", false, "GetScale is deprecated, please use GetUniformScale instead.");
+        return Vector3(m_scale);
+    }
+
+    AZ_MATH_INLINE float Transform::GetUniformScale() const
     {
         return m_scale;
     }
 
     AZ_MATH_INLINE void Transform::SetScale(const Vector3& scale)
     {
+        AZ_Warning("Transform", false, "SetScale is deprecated, please use SetUniformScale instead.");
+        m_scale = scale.GetMaxElement();
+    }
+
+    AZ_MATH_INLINE void Transform::SetUniformScale(const float scale)
+    {
         m_scale = scale;
     }
 
     AZ_MATH_INLINE Vector3 Transform::ExtractScale()
     {
-        const Vector3 scale = m_scale;
-        m_scale = Vector3::CreateOne();
+        AZ_Warning("Transform", false, "ExtractScale is deprecated, please use ExtractUniformScale instead.");
+        const float scale = m_scale;
+        m_scale = 1.0f;
+        return Vector3(scale);
+    }
+
+    AZ_MATH_INLINE float Transform::ExtractUniformScale()
+    {
+        const float scale = m_scale;
+        m_scale = 1.0f;
         return scale;
     }
 
-    AZ_MATH_INLINE void Transform::MultiplyByScale(const Vector3& scale)
+    AZ_MATH_INLINE void Transform::MultiplyByScale(const AZ::Vector3& scale)
+    {
+        AZ_Warning("Transform", false, "MultiplyByScale is deprecated, please use MultiplyByUniformScale instead.");
+        m_scale *= scale.GetMaxElement();
+    }
+
+    AZ_MATH_INLINE void Transform::MultiplyByUniformScale(float scale)
     {
         m_scale *= scale;
     }
@@ -207,7 +243,7 @@ namespace AZ
         // note - need to be careful about how to calculate inverse when there is non-uniform scale
         Transform out;
         out.m_rotation = m_rotation.GetConjugate();
-        out.m_scale = m_scale.GetReciprocal();
+        out.m_scale = 1.0f / m_scale;
         out.m_translation = -out.m_scale * (out.m_rotation.TransformVector(m_translation));
         return out;
     }
@@ -219,27 +255,27 @@ namespace AZ
 
     AZ_MATH_INLINE bool Transform::IsOrthogonal(float tolerance) const
     {
-        return m_scale.IsClose(Vector3::CreateOne(), tolerance);
+        return AZ::IsClose(m_scale, 1.0f, tolerance);
     }
 
     AZ_MATH_INLINE Transform Transform::GetOrthogonalized() const
     {
         Transform result;
         result.m_rotation = m_rotation;
-        result.m_scale = Vector3::CreateOne();
+        result.m_scale = 1.0f;
         result.m_translation = m_translation;
         return result;
     }
 
     AZ_MATH_INLINE void Transform::Orthogonalize()
     {
-        *this = GetOrthogonalized();
+        m_scale = 1.0f;
     }
 
     AZ_MATH_INLINE bool Transform::IsClose(const Transform& rhs, float tolerance) const
     {
         return m_rotation.IsClose(rhs.m_rotation, tolerance)
-            && m_scale.IsClose(rhs.m_scale, tolerance)
+            && AZ::IsClose(m_scale, rhs.m_scale, tolerance)
             && m_translation.IsClose(rhs.m_translation, tolerance);
     }
 
@@ -268,21 +304,21 @@ namespace AZ
     AZ_MATH_INLINE void Transform::SetFromEulerDegrees(const Vector3& eulerDegrees)
     {
         m_translation = Vector3::CreateZero();
-        m_scale = Vector3::CreateOne();
+        m_scale = 1.0f;
         m_rotation.SetFromEulerDegrees(eulerDegrees);
     }
 
     AZ_MATH_INLINE void Transform::SetFromEulerRadians(const Vector3& eulerRadians)
     {
         m_translation = Vector3::CreateZero();
-        m_scale = Vector3::CreateOne();
+        m_scale = 1.0f;
         m_rotation.SetFromEulerRadians(eulerRadians);
     }
 
     AZ_MATH_INLINE bool Transform::IsFinite() const
     {
         return m_rotation.IsFinite()
-            && m_scale.IsFinite()
+            && IsFiniteFloat(m_scale)
             && m_translation.IsFinite();
     }
 

@@ -447,29 +447,12 @@ namespace AzFramework
 
     static AZ::Transform RotateAroundLocalHelper(float eulerAngleRadian, const AZ::Transform& localTM, AZ::Vector3 axis)
     {
-        //get the existing translation and scale
-        AZ::Vector3 translation = localTM.GetTranslation();
-        AZ::Vector3 scale = localTM.GetScale();
-
         //normalize the axis before creating rotation
         axis.Normalize();
         AZ::Quaternion rotate = AZ::Quaternion::CreateFromAxisAngle(axis, eulerAngleRadian);
 
-        //create new rotation transform
-        AZ::Quaternion currentRotate = localTM.GetRotation();
-        AZ::Quaternion newRotate = rotate * currentRotate;
-        newRotate.Normalize();
-
-        //scale
-        AZ::Transform newLocalTM = AZ::Transform::CreateScale(scale);
-
-        //rotate
-        AZ::Transform rotateLocalTM = AZ::Transform::CreateFromQuaternion(newRotate);
-        newLocalTM = rotateLocalTM * newLocalTM;
-
-        //translate
-        newLocalTM.SetTranslation(translation);
-
+        AZ::Transform newLocalTM = localTM;
+        newLocalTM.SetRotation((rotate * localTM.GetRotation()).GetNormalized());
         return newLocalTM;
     }
 
@@ -525,6 +508,23 @@ namespace AzFramework
     AZ::Vector3 TransformComponent::GetWorldScale()
     {
         return m_worldTM.GetScale();
+    }
+
+    void TransformComponent::SetLocalUniformScale(float scale)
+    {
+        AZ::Transform newLocalTM = m_localTM;
+        newLocalTM.SetUniformScale(scale);
+        SetLocalTM(newLocalTM);
+    }
+
+    float TransformComponent::GetLocalUniformScale()
+    {
+        return m_localTM.GetUniformScale();
+    }
+
+    float TransformComponent::GetWorldUniformScale()
+    {
+        return m_worldTM.GetUniformScale();
     }
 
     AZStd::vector<AZ::EntityId> TransformComponent::GetChildren()

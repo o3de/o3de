@@ -184,12 +184,12 @@ namespace UnitTest
 
     TEST(MATH_Transform, CreateScale)
     {
-        const AZ::Vector3 scale(1.7f, 0.3f, 2.4f);
-        const AZ::Transform transform = AZ::Transform::CreateScale(scale);
+        const float scale = 1.7f;
+        const AZ::Transform transform = AZ::Transform::CreateUniformScale(scale);
         const AZ::Vector3 vector(0.2f, -1.6f, 0.4f);
         EXPECT_THAT(transform.GetTranslation(), IsClose(AZ::Vector3::CreateZero()));
         const AZ::Vector3 transformedVector = transform.TransformPoint(vector);
-        const AZ::Vector3 expected(0.34f, -0.48f, 0.96f);
+        const AZ::Vector3 expected(0.34f, -2.72f, 0.68f);
         EXPECT_THAT(transformedVector, IsClose(expected));
     }
 
@@ -237,10 +237,10 @@ namespace UnitTest
     TEST(MATH_Transform, MultiplyByTransform)
     {
         const AZ::Transform transform1 = AZ::Transform::CreateRotationY(0.3f);
-        const AZ::Transform transform2 = AZ::Transform::CreateScale(AZ::Vector3(1.3f, 1.5f, 0.4f));
+        const AZ::Transform transform2 = AZ::Transform::CreateUniformScale(1.3f);
         const AZ::Transform transform3 = AZ::Transform::CreateFromQuaternionAndTranslation(
             AZ::Quaternion(0.42f, 0.46f, -0.66f, 0.42f), AZ::Vector3(2.8f, -3.7f, 1.6f));
-        const AZ::Transform transform4 = AZ::Transform::CreateRotationX(-0.7f) * AZ::Transform::CreateScale(AZ::Vector3(0.6f, 1.3f, 0.7f));
+        const AZ::Transform transform4 = AZ::Transform::CreateRotationX(-0.7f) * AZ::Transform::CreateUniformScale(0.6f);
         AZ::Transform transform5 = transform1;
         transform5 *= transform4;
         const AZ::Vector3 vector(1.9f, 2.3f, 0.2f);
@@ -341,10 +341,10 @@ namespace UnitTest
         AZ::Transform unscaledTransform = orthogonalTransform;
         unscaledTransform.ExtractScale();
         EXPECT_THAT(unscaledTransform.GetScale(), IsClose(AZ::Vector3::CreateOne()));
-        const AZ::Vector3 scale(2.8f, 0.7f, 1.3f);
+        const float scale = 2.8f;
         AZ::Transform scaledTransform = orthogonalTransform;
-        scaledTransform.MultiplyByScale(scale);
-        EXPECT_THAT(scaledTransform.GetScale(), IsClose(scale));
+        scaledTransform.MultiplyByUniformScale(scale);
+        EXPECT_NEAR(scaledTransform.GetUniformScale(), scale, AZ::Constants::Tolerance);
     }
 
     INSTANTIATE_TEST_CASE_P(MATH_Transform, TransformScaleFixture, ::testing::ValuesIn(MathTestData::OrthogonalTransforms));
@@ -353,24 +353,11 @@ namespace UnitTest
     {
         EXPECT_TRUE(AZ::Transform::CreateIdentity().IsOrthogonal());
         EXPECT_TRUE(AZ::Transform::CreateRotationZ(0.3f).IsOrthogonal());
-        EXPECT_FALSE(AZ::Transform::CreateScale(AZ::Vector3(0.8f, 0.3f, 1.2f)).IsOrthogonal());
+        EXPECT_FALSE(AZ::Transform::CreateUniformScale(0.8f).IsOrthogonal());
         EXPECT_TRUE(AZ::Transform::CreateFromQuaternion(AZ::Quaternion(-0.52f, -0.08f, 0.56f, 0.64f)).IsOrthogonal());
         AZ::Transform transform;
         transform.SetFromEulerRadians(AZ::Vector3(0.2f, 0.4f, 0.1f));
         EXPECT_TRUE(transform.IsOrthogonal());
-
-        // want to test each possible way the transform could fail to be orthogonal, which we can do by testing for one
-        // axis, then using a rotation which cycles the axes
-        const AZ::Transform axisCycle = AZ::Transform::CreateFromQuaternion(AZ::Quaternion(0.5f, 0.5f, 0.5f, 0.5f));
-
-        // a transform which is normalized in 2 axes, but not the third
-        AZ::Transform nonOrthogonalTransform1 = AZ::Transform::CreateScale(AZ::Vector3(1.0f, 1.0f, 2.0f));
-
-        for (int i = 0; i < 3; i++)
-        {
-            EXPECT_FALSE(nonOrthogonalTransform1.IsOrthogonal());
-            nonOrthogonalTransform1 = axisCycle * nonOrthogonalTransform1;
-        }
     }
 
     using TransformSetFromEulerDegreesFixture = ::testing::TestWithParam<AZ::Vector3>;
@@ -465,10 +452,11 @@ namespace UnitTest
         AZ::Transform* deserializedTransform = AZ::Utils::LoadObjectFromBuffer<AZ::Transform>(objectStreamBuffer, strlen(objectStreamBuffer) + 1);
 
         const AZ::Vector3 expectedTranslation(513.7845459f, 492.5420837f, 32.0000000f);
-        const AZ::Vector3 expectedScale(1.5f, 0.5f, 1.2f);
+        const float expectedScale = 1.5f;
         const AZ::Quaternion expectedRotation(0.2624075f, 0.4405251f, 0.2029076f, 0.8342113f);
         const AZ::Transform expectedTransform =
-            AZ::Transform::CreateFromQuaternionAndTranslation(expectedRotation, expectedTranslation) * AZ::Transform::CreateScale(expectedScale);
+            AZ::Transform::CreateFromQuaternionAndTranslation(expectedRotation, expectedTranslation) *
+            AZ::Transform::CreateUniformScale(expectedScale);
 
         EXPECT_TRUE(deserializedTransform->IsClose(expectedTransform));
         azfree(deserializedTransform);

@@ -139,7 +139,7 @@ namespace UnitTest
         AZ::Entity entity;
         CreateTube(
             AZ::Transform::CreateTranslation(AZ::Vector3(-40.0f, 6.0f, 1.0f)) *
-            AZ::Transform::CreateScale(AZ::Vector3(2.5f, 1.0f, 1.0f)), // test max scale
+            AZ::Transform::CreateUniformScale(2.5f),
             1.0f,
             entity);
 

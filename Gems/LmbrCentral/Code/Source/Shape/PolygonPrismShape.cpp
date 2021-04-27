@@ -437,22 +437,18 @@ namespace LmbrCentral
             const float height = polygonPrism.GetHeight();
             const AZ::Vector3& nonUniformScale = polygonPrism.GetNonUniformScale();
 
-            AZ::Transform worldFromLocalUniformScale = worldFromLocal;
-            const float entityScale = worldFromLocalUniformScale.ExtractScale().GetMaxElement();
-            worldFromLocalUniformScale *= AZ::Transform::CreateScale(AZ::Vector3(entityScale));
-
             AZ::Aabb aabb = AZ::Aabb::CreateNull();
             // check base of prism
             for (const AZ::Vector2& vertex : vertexContainer.GetVertices())
             {
-                aabb.AddPoint(worldFromLocalUniformScale.TransformPoint(nonUniformScale * AZ::Vector3(vertex.GetX(), vertex.GetY(), 0.0f)));
+                aabb.AddPoint(worldFromLocal.TransformPoint(nonUniformScale * AZ::Vector3(vertex.GetX(), vertex.GetY(), 0.0f)));
             }
 
             // check top of prism
             // set aabb to be height of prism - ensure entire polygon prism shape is enclosed in aabb
             for (const AZ::Vector2& vertex : vertexContainer.GetVertices())
             {
-                aabb.AddPoint(worldFromLocalUniformScale.TransformPoint(nonUniformScale * AZ::Vector3(vertex.GetX(), vertex.GetY(), height)));
+                aabb.AddPoint(worldFromLocal.TransformPoint(nonUniformScale * AZ::Vector3(vertex.GetX(), vertex.GetY(), height)));
             }
 
             return aabb;
@@ -468,14 +464,10 @@ namespace LmbrCentral
             const AZStd::vector<AZ::Vector2>& vertices = polygonPrism.m_vertexContainer.GetVertices();
             const size_t vertexCount = vertices.size();
 
-            AZ::Transform worldFromLocalWithUniformScale = worldFromLocal;
-            const float transformScale = worldFromLocalWithUniformScale.ExtractScale().GetMaxElement();
-            worldFromLocalWithUniformScale *= AZ::Transform::CreateScale(AZ::Vector3(transformScale));
-
             // transform point to local space
             // it's fine to invert the transform including scale here, because it won't affect whether the point is inside the prism
             const AZ::Vector3 localPoint =
-                worldFromLocalWithUniformScale.GetInverse().TransformPoint(point) / polygonPrism.GetNonUniformScale();
+                worldFromLocal.GetInverse().TransformPoint(point) / polygonPrism.GetNonUniformScale();
 
             // ensure the point is not above or below the prism (in its local space)
             if (localPoint.GetZ() < 0.0f || localPoint.GetZ() > polygonPrism.GetHeight())
@@ -534,7 +526,7 @@ namespace LmbrCentral
             // but inverting any scale in the transform would mess up the distance, so extract that first and apply scale separately to the
             // prism
             AZ::Transform worldFromLocalNoScale = worldFromLocal;
-            const float transformScale = worldFromLocalNoScale.ExtractScale().GetMaxElement();
+            const float transformScale = worldFromLocalNoScale.ExtractUniformScale();
             const AZ::Vector3 combinedScale = transformScale * nonUniformScale;
             const float scaledHeight = height * combinedScale.GetZ();
 
@@ -610,9 +602,9 @@ namespace LmbrCentral
             }
 
             // transform ray into local space
-            AZ::Transform worldFromLocalNomalized = worldFromLocal;
-            const float entityScale = worldFromLocalNomalized.ExtractScale().GetMaxElement();
-            const AZ::Transform localFromWorldNormalized = worldFromLocalNomalized.GetInverse();
+            AZ::Transform worldFromLocalNormalized = worldFromLocal;
+            const float entityScale = worldFromLocalNormalized.ExtractUniformScale();
+            const AZ::Transform localFromWorldNormalized = worldFromLocalNormalized.GetInverse();
             const float rayLength = 1000.0f;
             const AZ::Vector3 localSrc = localFromWorldNormalized.TransformPoint(src);
             const AZ::Vector3 localDir = localFromWorldNormalized.TransformVector(dir);

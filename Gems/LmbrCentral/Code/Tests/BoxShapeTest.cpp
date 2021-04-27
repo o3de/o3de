@@ -262,7 +262,7 @@ namespace UnitTest
             AZ::Transform::CreateFromQuaternionAndTranslation(
                 AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisY(), AZ::Constants::QuarterPi),
                 AZ::Vector3(0.0f, 0.0f, 5.0f)) *
-            AZ::Transform::CreateScale(AZ::Vector3(3.0f)),
+            AZ::Transform::CreateUniformScale(3.0f),
             AZ::Vector3(2.0f, 4.0f, 1.0f), entity);
 
         bool rayHit = false;
@@ -295,7 +295,7 @@ namespace UnitTest
     {
         AZ::Entity entity;
         AZ::Transform transform = AZ::Transform::CreateTranslation(AZ::Vector3(2.0f, -5.0f, 3.0f));
-        transform.MultiplyByScale(AZ::Vector3(0.5f));
+        transform.MultiplyByUniformScale(0.5f);
         const AZ::Vector3 dimensions(2.2f, 1.8f, 0.4f);
         const AZ::Vector3 nonUniformScale(0.2f, 2.6f, 1.2f);
         CreateBoxWithNonUniformScale(transform, dimensions, nonUniformScale, entity);
@@ -340,7 +340,7 @@ namespace UnitTest
         AZ::Entity entity;
         AZ::Transform transform = AZ::Transform::CreateFromQuaternionAndTranslation(
             AZ::Quaternion(0.50f, 0.10f, 0.02f, 0.86f), AZ::Vector3(4.0f, 1.0f, -2.0f));
-        transform.MultiplyByScale(AZ::Vector3(1.5f));
+        transform.MultiplyByUniformScale(1.5f);
         const AZ::Vector3 dimensions(1.2f, 0.7f, 2.1f);
         const AZ::Vector3 nonUniformScale(0.8f, 0.6f, 0.7f);
         CreateBoxWithNonUniformScale(transform, dimensions, nonUniformScale, entity);
@@ -433,7 +433,7 @@ namespace UnitTest
             AZ::Transform::CreateFromQuaternionAndTranslation(
                 AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisY(), AZ::Constants::QuarterPi),
                 AZ::Vector3::CreateZero()) *
-            AZ::Transform::CreateScale(AZ::Vector3(3.0f)),
+            AZ::Transform::CreateUniformScale(3.0f),
             AZ::Vector3(2.0f, 4.0f, 1.0f), entity);
 
         AZ::Aabb aabb;
@@ -483,7 +483,7 @@ namespace UnitTest
         AZ::Transform transformIn = AZ::Transform::CreateFromQuaternionAndTranslation(
             AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisX(), AZ::Constants::QuarterPi) * AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisY(), AZ::Constants::QuarterPi),
             AZ::Vector3(9.0f, 11.0f, 13.0f));
-        transformIn.MultiplyByScale(AZ::Vector3(3.0f));
+        transformIn.MultiplyByUniformScale(3.0f);
         CreateBox(transformIn, AZ::Vector3(1.5f, 3.5f, 5.5f), entity);
 
         AZ::Transform transformOut;
@@ -500,7 +500,7 @@ namespace UnitTest
         AZ::Entity entity;
         AZ::Transform transformIn = AZ::Transform::CreateFromQuaternionAndTranslation(
             AZ::Quaternion(0.62f, 0.62f, 0.14f, 0.46f), AZ::Vector3(0.8f, -1.2f, 2.7f));
-        transformIn.MultiplyByScale(AZ::Vector3(2.0f));
+        transformIn.MultiplyByUniformScale(2.0f);
         const AZ::Vector3 nonUniformScale(1.5f, 2.0f, 0.4f);
         const AZ::Vector3 boxDimensions(2.0f, 1.7f, 0.5f);
         CreateBoxWithNonUniformScale(transformIn, nonUniformScale, boxDimensions, entity);
@@ -531,7 +531,7 @@ namespace UnitTest
             AZ::Transform::CreateFromQuaternionAndTranslation(
                 AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisZ(), AZ::Constants::QuarterPi),
                 AZ::Vector3(23.0f, 12.0f, 40.0f)) *
-            AZ::Transform::CreateScale(AZ::Vector3(3.0f)),
+            AZ::Transform::CreateUniformScale(3.0f),
             AZ::Vector3(2.0f, 6.0f, 3.5f), entity);
 
         // test some pairs of nearby points which should be just either side of the surface of the box
@@ -551,7 +551,7 @@ namespace UnitTest
             AZ::Transform::CreateTranslation(AZ::Vector3(23.0f, 12.0f, 40.0f)) *
             AZ::Transform::CreateRotationX(-AZ::Constants::QuarterPi) *
             AZ::Transform::CreateRotationZ(AZ::Constants::QuarterPi) *
-            AZ::Transform::CreateScale(AZ::Vector3(2.0f)),
+            AZ::Transform::CreateUniformScale(2.0f),
             AZ::Vector3(4.0f, 7.0f, 3.5f), entity);
 
         // test some pairs of nearby points which should be just either side of the surface of the box
@@ -588,8 +588,8 @@ namespace UnitTest
         CreateBox(
             AZ::Transform::CreateTranslation(AZ::Vector3(10.0f, 37.0f, 32.0f)) *
             AZ::Transform::CreateRotationZ(AZ::Constants::QuarterPi) *
-            AZ::Transform::CreateScale(AZ::Vector3(3.0f, 1.0f, 1.0f)),
-            AZ::Vector3(4.0f, 2.0f, 10.0f), entity);
+            AZ::Transform::CreateUniformScale(2.0f),
+            AZ::Vector3(6.0f, 1.0f, 5.0f), entity);
 
         float distance;
         LmbrCentral::ShapeComponentRequestsBus::EventResult(
@@ -606,8 +606,8 @@ namespace UnitTest
             AZ::Transform::CreateTranslation(AZ::Vector3(10.0f, 37.0f, 32.0f)) *
             AZ::Transform::CreateRotationX(AZ::Constants::HalfPi) *
             AZ::Transform::CreateRotationY(AZ::Constants::HalfPi) *
-            AZ::Transform::CreateScale(AZ::Vector3(3.0f, 1.0f, 1.0f)),
-            AZ::Vector3(4.0f, 2.0f, 10.0f), entity);
+            AZ::Transform::CreateUniformScale(0.5f),
+            AZ::Vector3(24.0f, 4.0f, 20.0f), entity);
 
         float distance;
         LmbrCentral::ShapeComponentRequestsBus::EventResult(
@@ -621,7 +621,7 @@ namespace UnitTest
         AZ::Entity entity;
         AZ::Transform transform = AZ::Transform::CreateFromQuaternionAndTranslation(
             AZ::Quaternion::CreateRotationY(AZ::DegToRad(30.0f)), AZ::Vector3(3.0f, 4.0f, 5.0f));
-        transform.MultiplyByScale(AZ::Vector3(2.0f));
+        transform.MultiplyByUniformScale(2.0f);
         const AZ::Vector3 dimensions(2.0f, 3.0f, 1.5f);
         const AZ::Vector3 nonUniformScale(1.4f, 2.2f, 0.8f);
         CreateBoxWithNonUniformScale(transform, nonUniformScale, dimensions, entity);
@@ -638,7 +638,7 @@ namespace UnitTest
         AZ::Entity entity;
         AZ::Transform transform = AZ::Transform::CreateFromQuaternionAndTranslation(
             AZ::Quaternion(0.70f, 0.10f, 0.34f, 0.62f), AZ::Vector3(3.0f, -1.0f, 2.0f));
-        transform.MultiplyByScale(AZ::Vector3(2.0f));
+        transform.MultiplyByUniformScale(2.0f);
         const AZ::Vector3 dimensions(1.2f, 0.8f, 1.7f);
         const AZ::Vector3 nonUniformScale(2.4f, 1.3f, 1.8f);
         CreateBoxWithNonUniformScale(transform, nonUniformScale, dimensions, entity);

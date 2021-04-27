@@ -186,7 +186,7 @@ namespace Benchmark
         {
             for (auto& testData : m_testDataArray)
             {
-                AZ::Transform result = AZ::Transform::CreateScale(testData.v3);
+                AZ::Transform result = AZ::Transform::CreateUniformScale(testData.value[0]);
                 benchmark::DoNotOptimize(result);
             }
         }
@@ -350,7 +350,7 @@ namespace Benchmark
         {
             for (auto& testData : m_testDataArray)
             {
-                AZ::Vector3 result = testData.t1.GetScale();
+                float result = testData.t1.GetUniformScale();
                 benchmark::DoNotOptimize(result);
             }
         }
@@ -376,7 +376,7 @@ namespace Benchmark
             for (auto& testData : m_testDataArray)
             {
                 AZ::Transform testTransform = testData.t2;
-                AZ::Vector3 result = testTransform.ExtractScale();
+                float result = testTransform.ExtractUniformScale();
                 benchmark::DoNotOptimize(result);
             }
         }

@@ -159,7 +159,6 @@ namespace PhysX
         AzPhysics::RigidBody* m_rigidBody = nullptr;
         AzPhysics::SceneHandle m_attachedSceneHandle = AzPhysics::InvalidSceneHandle;
 
-        AZ::Vector3 m_initialScale = AZ::Vector3::CreateOne();
         bool m_staticTransformAtActivation = false; ///< Whether the transform was static when the component last activated.
         bool m_isLastMovementFromKinematicSource = false; ///< True when the source of the movement comes from SetKinematicTarget as opposed to coming from a Transform change
         bool m_rigidBodyTransformNeedsUpdateOnPhysReEnable = false; ///< True if rigid body transform needs to be synced to the entity's when physics is re-enabled

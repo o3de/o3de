@@ -212,8 +212,8 @@ namespace AzToolsFramework
         void CopyOrientationToSelectedEntitiesIndividual(const AZ::Quaternion& orientation);
         void CopyOrientationToSelectedEntitiesGroup(const AZ::Quaternion& orientation);
         void ResetOrientationForSelectedEntitiesLocal();
-        void CopyScaleToSelectedEntitiesIndividualLocal(const AZ::Vector3& scale);
-        void CopyScaleToSelectedEntitiesIndividualWorld(const AZ::Vector3& scale);
+        void CopyScaleToSelectedEntitiesIndividualLocal(float scale);
+        void CopyScaleToSelectedEntitiesIndividualWorld(float scale);
 
         // EditorManipulatorCommandUndoRedoRequestBus ...
         void UndoRedoEntityManipulatorCommand(
@@ -248,7 +248,7 @@ namespace AzToolsFramework
         void SetEntityWorldTranslation(AZ::EntityId entityId, const AZ::Vector3& worldTranslation);
         void SetEntityLocalTranslation(AZ::EntityId entityId, const AZ::Vector3& localTranslation);
         void SetEntityWorldTransform(AZ::EntityId entityId, const AZ::Transform& worldTransform);
-        void SetEntityLocalScale(AZ::EntityId entityId, const AZ::Vector3& localScale);
+        void SetEntityLocalScale(AZ::EntityId entityId, float localScale);
         void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Vector3& localRotation);
 
         AZ::EntityId m_hoveredEntityId; ///< What EntityId is the mouse currently hovering over (if any).
@@ -316,7 +316,7 @@ namespace AzToolsFramework
         void SetEntityWorldTranslation(AZ::EntityId entityId, const AZ::Vector3& worldTranslation, bool& internal);
         void SetEntityLocalTranslation(AZ::EntityId entityId, const AZ::Vector3& localTranslation, bool& internal);
         void SetEntityWorldTransform(AZ::EntityId entityId, const AZ::Transform& worldTransform, bool& internal);
-        void SetEntityLocalScale(AZ::EntityId entityId, const AZ::Vector3& localScale, bool& internal);
+        void SetEntityLocalScale(AZ::EntityId entityId, float localScale, bool& internal);
         void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Vector3& localRotation, bool& internal);
     } // namespace ETCS
 } // namespace AzToolsFramework

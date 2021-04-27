@@ -203,9 +203,8 @@ namespace PhysX
             AZ::Quaternion newRotation = AZ::Quaternion::CreateIdentity();
             m_interpolator->GetInterpolated(newPosition, newRotation, deltaTime);
 
-            AZ::Transform interpolatedTransform = AZ::Transform::CreateFromQuaternionAndTranslation(newRotation, newPosition);
-            interpolatedTransform.MultiplyByScale(m_initialScale);
-            AZ::TransformBus::Event(GetEntityId(), &AZ::TransformInterface::SetWorldTM, interpolatedTransform);
+            AZ::TransformBus::Event(GetEntityId(), &AZ::TransformInterface::SetRotationQuaternion, newRotation);
+            AZ::TransformBus::Event(GetEntityId(), &AZ::TransformInterface::SetWorldTranslation, newPosition);
         }
     }
 
@@ -244,14 +243,8 @@ namespace PhysX
         }
         else
         {
-            AZ::Transform transform = m_rigidBody->GetTransform();
-
-            // Maintain scale (this must be precise).
-            AZ::Transform entityTransform = AZ::Transform::Identity();
-            AZ::TransformBus::EventResult(entityTransform, GetEntityId(), &AZ::TransformInterface::GetWorldTM);
-            transform.MultiplyByScale(m_initialScale);
-
-            AZ::TransformBus::Event(GetEntityId(), &AZ::TransformInterface::SetWorldTM, transform);
+            AZ::TransformBus::Event(GetEntityId(), &AZ::TransformInterface::SetRotationQuaternion, m_rigidBody->GetOrientation());
+            AZ::TransformBus::Event(GetEntityId(), &AZ::TransformInterface::SetWorldTranslation, m_rigidBody->GetPosition());
         }
         m_isLastMovementFromKinematicSource = false;
     }
@@ -337,8 +330,6 @@ namespace PhysX
 
         m_interpolator = std::make_unique<TransformForwardTimeInterpolator>();
         m_interpolator->Reset(transform.GetTranslation(), rotation);
-
-        m_initialScale = transform.ExtractScale();
 
         Physics::RigidBodyNotificationBus::Event(GetEntityId(), &Physics::RigidBodyNotificationBus::Events::OnPhysicsEnabled);
         Physics::WorldBodyNotificationBus::Event(GetEntityId(), &Physics::WorldBodyNotifications::OnPhysicsEnabled);

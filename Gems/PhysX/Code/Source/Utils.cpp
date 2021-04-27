@@ -920,9 +920,9 @@ namespace PhysX
 
         AZ::Vector3 GetTransformScale(AZ::EntityId entityId)
         {
-            AZ::Vector3 worldScale = AZ::Vector3::CreateOne();
-            AZ::TransformBus::EventResult(worldScale, entityId, &AZ::TransformBus::Events::GetWorldScale);
-            return worldScale;
+            float worldScale = 1.0f;
+            AZ::TransformBus::EventResult(worldScale, entityId, &AZ::TransformBus::Events::GetWorldUniformScale);
+            return AZ::Vector3(worldScale);
         }
 
         AZ::Vector3 GetUniformScale(AZ::EntityId entityId)

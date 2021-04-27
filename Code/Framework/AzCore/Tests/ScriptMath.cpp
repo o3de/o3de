@@ -1275,10 +1275,10 @@ namespace UnitTest
         script->Execute("AZTestAssert(t1:TransformVector(Vector3(1, 0, 0)):IsClose(Vector3(1, 0, 0)))");
         script->Execute("AZTestAssert(t1:TransformVector(Vector3(0, 1, 0)):IsClose(Vector3(0, 0.866, 0.5)))");
         script->Execute("AZTestAssert(t1:TransformVector(Vector3(0, 0, 1)):IsClose(Vector3(0, -0.5, 0.866)))");
-        script->Execute("t1 = Transform.CreateScale(Vector3(1, 2, 3))");
-        script->Execute("AZTestAssert(t1:TransformVector(Vector3(1, 0, 0)):IsClose(Vector3(1, 0, 0)))");
+        script->Execute("t1 = Transform.CreateScale(2)");
+        script->Execute("AZTestAssert(t1:TransformVector(Vector3(1, 0, 0)):IsClose(Vector3(2, 0, 0)))");
         script->Execute("AZTestAssert(t1:TransformVector(Vector3(0, 1, 0)):IsClose(Vector3(0, 2, 0)))");
-        script->Execute("AZTestAssert(t1:TransformVector(Vector3(0, 0, 1)):IsClose(Vector3(0, 0, 3)))");
+        script->Execute("AZTestAssert(t1:TransformVector(Vector3(0, 0, 1)):IsClose(Vector3(0, 0, 2)))");
         script->Execute("t1 = Transform.CreateTranslation(Vector3(1, 2, 3))");
         script->Execute("AZTestAssert(t1:TransformVector(Vector3(1, 0, 0)):IsClose(Vector3(1, 0, 0)))");
         script->Execute("AZTestAssert(t1:TransformVector(Vector3(0, 1, 0)):IsClose(Vector3(0, 1, 0)))");
@@ -1341,19 +1341,19 @@ namespace UnitTest
         script->Execute("AZTestAssert(t3:GetTranslation():IsClose(Vector3(-5.90, 25.415, 19.645), 0.001))");
 
         ////test inverse, should handle non-orthogonal matrices
-        script->Execute("t1 = Transform.CreateRotationX(1) * Transform.CreateScale(Vector3(1, 2, 3))");
+        script->Execute("t1 = Transform.CreateRotationX(1) * Transform.CreateScale(2)");
         script->Execute("AZTestAssert((t1*t1:GetInverse()):IsClose(Transform.CreateIdentity()))");
 
         ////scale access
-        script->Execute("t1 = Transform.CreateRotationX(Math.DegToRad(40)) * Transform.CreateScale(Vector3(2, 3, 4))");
-        script->Execute("AZTestAssert(t1:GetScale():IsClose(Vector3(2, 3, 4)))");
-        script->Execute("AZTestAssert(t1:ExtractScale():IsClose(Vector3(2, 3, 4)))");
-        script->Execute("AZTestAssert(t1:GetScale():IsClose(Vector3.CreateOne()))");
-        script->Execute("t1:MultiplyByScale(Vector3(3, 4, 5))");
-        script->Execute("AZTestAssert(t1:GetScale():IsClose(Vector3(3, 4, 5)))");
+        script->Execute("t1 = Transform.CreateRotationX(Math.DegToRad(40)) * Transform.CreateScale(3)");
+        script->Execute("AZTestAssert(t1:GetScale():IsClose(3))");
+        script->Execute("AZTestAssert(t1:ExtractScale():IsClose(3))");
+        script->Execute("AZTestAssert(t1:GetScale():IsClose(1))");
+        script->Execute("t1:MultiplyByScale(2)");
+        script->Execute("AZTestAssert(t1:GetScale():IsClose(2))");
 
         ////orthogonalize
-        script->Execute("t1 = Transform.CreateRotationX(Math.DegToRad(30)) * Transform.CreateScale(Vector3(2, 3, 4))");
+        script->Execute("t1 = Transform.CreateRotationX(Math.DegToRad(30)) * Transform.CreateScale(3)");
         script->Execute("t1:SetTranslation(Vector3(1,2,3))");
         script->Execute("t2 = t1:GetOrthogonalized()");
         script->Execute("AZTestAssertFloatClose(t2:GetBasisX():GetLength(), 1)");
@@ -1372,7 +1372,7 @@ namespace UnitTest
         script->Execute("t1 = Transform.CreateRotationX(Math.DegToRad(30))");
         script->Execute("t1:SetTranslation(Vector3(1, 2, 3))");
         script->Execute("AZTestAssert(t1:IsOrthogonal(0.05))");
-        script->Execute("t1 = Transform.CreateRotationX(Math.DegToRad(30)) * Transform.CreateScale(Vector3(2, 3, 4))");
+        script->Execute("t1 = Transform.CreateRotationX(Math.DegToRad(30)) * Transform.CreateScale(2)");
         script->Execute("AZTestAssert( not t1:IsOrthogonal(0.05))");
 
         ////IsClose

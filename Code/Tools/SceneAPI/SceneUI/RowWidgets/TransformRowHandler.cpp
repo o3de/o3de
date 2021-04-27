@@ -13,6 +13,7 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyVectorCtrl.hxx>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyDoubleSpinCtrl.hxx>
 #include <SceneAPI/SceneUI/RowWidgets/TransformRowHandler.h>
 
 namespace AZ
@@ -58,10 +59,11 @@ namespace AZ
                 }
                 else
                 {
-                    AzToolsFramework::Vector3PropertyHandler handler;
-                    handler.ConsumeAttribute(widget->GetTranslationWidget(), attrib, attrValue, debugName);
-                    handler.ConsumeAttribute(widget->GetRotationWidget(), attrib, attrValue, debugName);
-                    handler.ConsumeAttribute(widget->GetScaleWidget(), attrib, attrValue, debugName);
+                    AzToolsFramework::Vector3PropertyHandler vector3Handler;
+                    vector3Handler.ConsumeAttribute(widget->GetTranslationWidget(), attrib, attrValue, debugName);
+                    vector3Handler.ConsumeAttribute(widget->GetRotationWidget(), attrib, attrValue, debugName);
+                    AzToolsFramework::doublePropertySpinboxHandler spinboxHandler;
+                    spinboxHandler.ConsumeAttribute(widget->GetScaleWidget(), attrib, attrValue, debugName);
                 }
             }
 
