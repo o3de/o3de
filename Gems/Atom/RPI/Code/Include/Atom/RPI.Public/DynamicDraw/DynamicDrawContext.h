@@ -214,6 +214,10 @@ namespace AZ
             Scene* m_scene = nullptr;
             RHI::DrawListTag m_drawListTag;
 
+            // All draw items use this filter when submit them to views
+            // It's set to RenderPipeline's draw filter mask if the DynamicDrawContext was created for a render pipeline.
+            RHI::DrawFilterMask m_drawFilter = RHI::DrawFilterMaskDefaultValue;
+
             // Cached draw data
             AZStd::vector<RHI::StreamBufferView> m_cachedStreamBufferViews;
             AZStd::vector<RHI::IndexBufferView> m_cachedIndexBufferViews;
