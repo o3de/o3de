@@ -915,7 +915,7 @@ m_{{ LowerFirst(Property.attrib['Name']) }} = m_{{ LowerFirst(Property.attrib['N
 
 namespace {{ Component.attrib['Namespace'] }}
 {
-    NetComponentId {{ UpperFirst(Component.attrib['Name']) }}::s_netComponentId = InvalidNetComponentId;
+    NetComponentId {{ UpperFirst(ComponentBaseName) }}::s_netComponentId = InvalidNetComponentId;
 
     namespace {{ UpperFirst(Component.attrib['Name']) }}Internal
     {
