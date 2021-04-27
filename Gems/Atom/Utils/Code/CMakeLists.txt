@@ -16,6 +16,8 @@ ly_add_target(
     NAMESPACE Gem
     FILES_CMAKE
         atom_utils_files.cmake
+    PLATFORM_INCLUDE_FILES
+        ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
             Source

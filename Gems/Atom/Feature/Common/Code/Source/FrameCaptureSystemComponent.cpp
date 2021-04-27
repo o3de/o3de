@@ -31,12 +31,37 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AzCore/Preprocessor/EnumReflectUtils.h>
+#include <OpenImageIO/imageio.h>
 
 namespace AZ
 {
     namespace Render
     {
         AZ_ENUM_DEFINE_REFLECT_UTILITIES(FrameCaptureResult);
+
+        FrameCaptureOutputResult PngFrameCaptureOutput(
+            const AZStd::string& outputFilePath, const AZ::RPI::AttachmentReadback::ReadbackResult& readbackResult)
+        {
+            using namespace OIIO;
+            AZStd::unique_ptr<ImageOutput> out = ImageOutput::create(outputFilePath.c_str());
+            if (out)
+            {
+                ImageSpec spec(
+                    readbackResult.m_imageDescriptor.m_size.m_width,
+                    readbackResult.m_imageDescriptor.m_size.m_height,
+                    AZ::RHI::GetFormatComponentCount(readbackResult.m_imageDescriptor.m_format));
+                spec.attribute("png:compressionLevel", 3);
+
+                if (out->open(outputFilePath.c_str(), spec))
+                {
+                    out->write_image(TypeDesc::UINT8, readbackResult.m_dataBuffer->data());
+                    out->close();
+                    return FrameCaptureOutputResult{FrameCaptureResult::Success, AZStd::nullopt};
+                }
+            }
+
+            return FrameCaptureOutputResult{FrameCaptureResult::InternalError, "Unable to save frame capture output to " + outputFilePath};
+        }
 
         FrameCaptureOutputResult DdsFrameCaptureOutput(
             const AZStd::string& outputFilePath, const AZ::RPI::AttachmentReadback::ReadbackResult& readbackResult)
@@ -377,7 +402,6 @@ namespace AZ
                 if (readbackResult.m_attachmentType == AZ::RHI::AttachmentType::Buffer)
                 {
                     // write buffer data to the data file
-
                     AZ::IO::FileIOStream fileStream(m_outputFilePath.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath);
                     if (fileStream.IsOpen())
                     {
@@ -396,7 +420,17 @@ namespace AZ
                     AzFramework::StringFunc::Path::GetExtension(m_outputFilePath.c_str(), extension, false);
                     AZStd::to_lower(extension.begin(), extension.end());
 
-                    if (extension == "ppm")
+                    if (extension == "png")
+                    {
+                        AZStd::string folderPath;
+                        AzFramework::StringFunc::Path::GetFolderPath(m_outputFilePath.c_str(), folderPath);
+                        AZ::IO::SystemFile::CreateDir(folderPath.c_str());
+
+                        const auto frameCaptureResult = PngFrameCaptureOutput(m_outputFilePath, readbackResult);
+                        m_result = frameCaptureResult.m_result;
+                        m_latestCaptureInfo = frameCaptureResult.m_errorMessage.value_or("");
+                    }
+                    else if (extension == "ppm")
                     {
                         if (readbackResult.m_imageDescriptor.m_format == RHI::Format::R8G8B8A8_UNORM ||
                             readbackResult.m_imageDescriptor.m_format == RHI::Format::B8G8R8A8_UNORM)
