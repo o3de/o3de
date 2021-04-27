@@ -47,6 +47,9 @@ namespace AZ
             void DisplayEntityViewport(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay) override;
         private:
 
+            // validation
+            AZ::Outcome<void, AZStd::string> OnUseBakedCubemapValidate(void* newValue, const AZ::Uuid& valueType);
+
             // change notifications
             AZ::u32 OnUseBakedCubemapChanged();
             AZ::u32 OnAuthoredCubemapChanged();
