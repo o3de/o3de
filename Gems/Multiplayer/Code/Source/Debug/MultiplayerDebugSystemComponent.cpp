@@ -90,15 +90,13 @@ namespace Multiplayer
             //    }
             //}
 
-            ImGui::Checkbox("Multiplayer Stats", &m_displayStats);
-            ImGui::Checkbox("Component Stats", &m_displayComponentStats);
-            ImGui::Checkbox("Property Stats", &m_displayPropertyStats);
-            ImGui::Checkbox("Rpc Stats", &m_displayRpcStats);
+            ImGui::Checkbox("Networking Stats", &m_displayNetworkingStats);
+            ImGui::Checkbox("Multiplayer Stats", &m_displayMultiplayerStats);
             ImGui::EndMenu();
         }
     }
 
-    void ComputePerSecondValues(const MultiplayerStats& stats, const MultiplayerStats::Metric& metric, float& outCallsPerSecond, float& outBytesPerSecond)
+    void AccumulatePerSecondValues(const MultiplayerStats& stats, const MultiplayerStats::Metric& metric, float& outCallsPerSecond, float& outBytesPerSecond)
     {
         uint64_t summedCalls = 0;
         uint64_t summedBytes = 0;
@@ -108,44 +106,167 @@ namespace Multiplayer
             summedBytes += metric.m_byteHistory[index];
         }
         const float totalTimeSeconds = static_cast<float>(stats.m_totalHistoryTimeMs) / 1000.0f;
-        outCallsPerSecond = (summedCalls > 0 && totalTimeSeconds > 0.0f) ? static_cast<float>(summedCalls) / totalTimeSeconds : 0.0f;
-        outBytesPerSecond = (summedBytes > 0 && totalTimeSeconds > 0.0f) ? static_cast<float>(summedBytes) / totalTimeSeconds : 0.0f;
+        outCallsPerSecond += (summedCalls > 0 && totalTimeSeconds > 0.0f) ? static_cast<float>(summedCalls) / totalTimeSeconds : 0.0f;
+        outBytesPerSecond += (summedBytes > 0 && totalTimeSeconds > 0.0f) ? static_cast<float>(summedBytes) / totalTimeSeconds : 0.0f;
     }
 
-    void DrawMetricTitle(const ImVec4& entryColour)
+    bool DrawMetricsRow(const char* name, bool expandable, uint64_t totalCalls, uint64_t totalBytes, float callsPerSecond, float bytesPerSecond)
     {
-        ImGui::Columns(6);
-
-        ImGui::TextColored(entryColour, "Name"); ImGui::NextColumn();
-        ImGui::TextColored(entryColour, "Category"); ImGui::NextColumn();
-        ImGui::TextColored(entryColour, "Total Calls"); ImGui::NextColumn();
-        ImGui::TextColored(entryColour, "Total Bytes"); ImGui::NextColumn();
-        ImGui::TextColored(entryColour, "Calls/Sec"); ImGui::NextColumn();
-        ImGui::TextColored(entryColour, "Bytes/Sec"); ImGui::NextColumn();
+        const ImGuiTreeNodeFlags flags = expandable ? ImGuiTreeNodeFlags_SpanFullWidth
+                                       : (ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_SpanFullWidth);
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+        const bool open = ImGui::TreeNodeEx(name, flags);
+        ImGui::TableNextColumn();
+        ImGui::Text("%11llu", aznumeric_cast<AZ::u64>(totalCalls));
+        ImGui::TableNextColumn();
+        ImGui::Text("%11llu", aznumeric_cast<AZ::u64>(totalBytes));
+        ImGui::TableNextColumn();
+        ImGui::Text("%11.2f", callsPerSecond);
+        ImGui::TableNextColumn();
+        ImGui::Text("%11.2f", bytesPerSecond);
+        return open;
     }
 
-    void DrawMetricRow(const char* name, const char* category, const ImVec4& entryColour, const MultiplayerStats& stats, const MultiplayerStats::Metric& metric)
+    bool DrawSummaryRow(const char* name, const MultiplayerStats& stats)
     {
+        const MultiplayerStats::Metric propertyUpdatesSent = stats.CalculateTotalPropertyUpdateSentMetrics();
+        const MultiplayerStats::Metric propertyUpdatesRecv = stats.CalculateTotalPropertyUpdateRecvMetrics();
+        const MultiplayerStats::Metric rpcsSent = stats.CalculateTotalRpcsSentMetrics();
+        const MultiplayerStats::Metric rpcsRecv = stats.CalculateTotalRpcsRecvMetrics();
+
+        const uint64_t totalCalls = propertyUpdatesSent.m_totalCalls + propertyUpdatesRecv.m_totalCalls + rpcsSent.m_totalCalls + rpcsRecv.m_totalCalls;
+        const uint64_t totalBytes = propertyUpdatesSent.m_totalBytes + propertyUpdatesRecv.m_totalBytes + rpcsSent.m_totalBytes + rpcsRecv.m_totalBytes;
         float callsPerSecond = 0.0f;
         float bytesPerSecond = 0.0f;
-        ComputePerSecondValues(stats, metric, callsPerSecond, bytesPerSecond);
+        AccumulatePerSecondValues(stats, propertyUpdatesSent, callsPerSecond, bytesPerSecond);
+        AccumulatePerSecondValues(stats, propertyUpdatesRecv, callsPerSecond, bytesPerSecond);
+        AccumulatePerSecondValues(stats, rpcsSent, callsPerSecond, bytesPerSecond);
+        AccumulatePerSecondValues(stats, rpcsRecv, callsPerSecond, bytesPerSecond);
 
-        ImGui::TextColored(entryColour, "%s", name); ImGui::NextColumn();
-        ImGui::TextColored(entryColour, "%s", category); ImGui::NextColumn();
-        ImGui::TextColored(entryColour, "%10llu", aznumeric_cast<AZ::u64>(metric.m_totalCalls)); ImGui::NextColumn();
-        ImGui::TextColored(entryColour, "%10llu", aznumeric_cast<AZ::u64>(metric.m_totalBytes)); ImGui::NextColumn();
-        ImGui::TextColored(entryColour, "%10.2f", callsPerSecond); ImGui::NextColumn();
-        ImGui::TextColored(entryColour, "%10.2f", bytesPerSecond); ImGui::NextColumn();
+        return DrawMetricsRow(name, true, totalCalls, totalBytes, callsPerSecond, bytesPerSecond);
+    }
+
+    bool DrawComponentRow(const char* name, const MultiplayerStats& stats, uint16_t componentIndex)
+    {
+        const MultiplayerStats::Metric propertyUpdatesSent = stats.CalculateComponentPropertyUpdateSentMetrics(componentIndex);
+        const MultiplayerStats::Metric propertyUpdatesRecv = stats.CalculateComponentPropertyUpdateRecvMetrics(componentIndex);
+        const MultiplayerStats::Metric rpcsSent = stats.CalculateComponentRpcsSentMetrics(componentIndex);
+        const MultiplayerStats::Metric rpcsRecv = stats.CalculateComponentRpcsRecvMetrics(componentIndex);
+
+        const uint64_t totalCalls = propertyUpdatesSent.m_totalCalls + propertyUpdatesRecv.m_totalCalls + rpcsSent.m_totalCalls + rpcsRecv.m_totalCalls;
+        const uint64_t totalBytes = propertyUpdatesSent.m_totalBytes + propertyUpdatesRecv.m_totalBytes + rpcsSent.m_totalBytes + rpcsRecv.m_totalBytes;
+        float callsPerSecond = 0.0f;
+        float bytesPerSecond = 0.0f;
+        AccumulatePerSecondValues(stats, propertyUpdatesSent, callsPerSecond, bytesPerSecond);
+        AccumulatePerSecondValues(stats, propertyUpdatesRecv, callsPerSecond, bytesPerSecond);
+        AccumulatePerSecondValues(stats, rpcsSent, callsPerSecond, bytesPerSecond);
+        AccumulatePerSecondValues(stats, rpcsRecv, callsPerSecond, bytesPerSecond);
+
+        return DrawMetricsRow(name, true, totalCalls, totalBytes, callsPerSecond, bytesPerSecond);
+    }
+
+    void DrawComponentDetails(const MultiplayerStats& stats, uint16_t componentIndex)
+    {
+        IMultiplayer* multiplayer = AZ::Interface<IMultiplayer>::Get();
+        {
+            const MultiplayerStats::Metric metric = stats.CalculateComponentPropertyUpdateSentMetrics(componentIndex);
+            float callsPerSecond = 0.0f;
+            float bytesPerSecond = 0.0f;
+            AccumulatePerSecondValues(stats, metric, callsPerSecond, bytesPerSecond);
+            if (DrawMetricsRow("PropertyUpdates Sent", true, metric.m_totalCalls, metric.m_totalBytes, callsPerSecond, bytesPerSecond))
+            {
+                const MultiplayerStats::ComponentStats& componentStats = stats.m_componentStats[componentIndex];
+                for (AZStd::size_t index = 0; index < componentStats.m_propertyUpdatesSent.size(); ++index)
+                {
+                    const char* propertyName = multiplayer->GetComponentPropertyName(componentIndex, aznumeric_cast<uint16_t>(index));
+                    const MultiplayerStats::Metric& subMetric = componentStats.m_propertyUpdatesSent[index];
+                    callsPerSecond = 0.0f;
+                    bytesPerSecond = 0.0f;
+                    AccumulatePerSecondValues(stats, subMetric, callsPerSecond, bytesPerSecond);
+                    DrawMetricsRow(propertyName, false, subMetric.m_totalCalls, subMetric.m_totalBytes, callsPerSecond, bytesPerSecond);
+                }
+                ImGui::TreePop();
+            }
+        }
+
+        {
+            const MultiplayerStats::Metric metric = stats.CalculateComponentPropertyUpdateRecvMetrics(componentIndex);
+            float callsPerSecond = 0.0f;
+            float bytesPerSecond = 0.0f;
+            AccumulatePerSecondValues(stats, metric, callsPerSecond, bytesPerSecond);
+            if (DrawMetricsRow("PropertyUpdates Recv", true, metric.m_totalCalls, metric.m_totalBytes, callsPerSecond, bytesPerSecond))
+            {
+                const MultiplayerStats::ComponentStats& componentStats = stats.m_componentStats[componentIndex];
+                for (AZStd::size_t index = 0; index < componentStats.m_propertyUpdatesRecv.size(); ++index)
+                {
+                    const char* propertyName = multiplayer->GetComponentPropertyName(componentIndex, aznumeric_cast<uint16_t>(index));
+                    const MultiplayerStats::Metric& subMetric = componentStats.m_propertyUpdatesRecv[index];
+                    callsPerSecond = 0.0f;
+                    bytesPerSecond = 0.0f;
+                    AccumulatePerSecondValues(stats, subMetric, callsPerSecond, bytesPerSecond);
+                    DrawMetricsRow(propertyName, false, subMetric.m_totalCalls, subMetric.m_totalBytes, callsPerSecond, bytesPerSecond);
+                }
+                ImGui::TreePop();
+            }
+        }
+
+        {
+            const MultiplayerStats::Metric metric = stats.CalculateComponentRpcsSentMetrics(componentIndex);
+            float callsPerSecond = 0.0f;
+            float bytesPerSecond = 0.0f;
+            AccumulatePerSecondValues(stats, metric, callsPerSecond, bytesPerSecond);
+            if (DrawMetricsRow("RemoteProcedures Sent", true, metric.m_totalCalls, metric.m_totalBytes, callsPerSecond, bytesPerSecond))
+            {
+                const MultiplayerStats::ComponentStats& componentStats = stats.m_componentStats[componentIndex];
+                for (AZStd::size_t index = 0; index < componentStats.m_rpcsSent.size(); ++index)
+                {
+                    const char* rpcName = multiplayer->GetComponentRpcName(componentIndex, aznumeric_cast<uint16_t>(index));
+                    const MultiplayerStats::Metric& subMetric = componentStats.m_rpcsSent[index];
+                    callsPerSecond = 0.0f;
+                    bytesPerSecond = 0.0f;
+                    AccumulatePerSecondValues(stats, subMetric, callsPerSecond, bytesPerSecond);
+                    DrawMetricsRow(rpcName, false, subMetric.m_totalCalls, subMetric.m_totalBytes, callsPerSecond, bytesPerSecond);
+                }
+                ImGui::TreePop();
+            }
+        }
+
+        {
+            const MultiplayerStats::Metric metric = stats.CalculateComponentRpcsRecvMetrics(componentIndex);
+            float callsPerSecond = 0.0f;
+            float bytesPerSecond = 0.0f;
+            AccumulatePerSecondValues(stats, metric, callsPerSecond, bytesPerSecond);
+            if (DrawMetricsRow("RemoteProcedures Recv", true, metric.m_totalCalls, metric.m_totalBytes, callsPerSecond, bytesPerSecond))
+            {
+                const MultiplayerStats::ComponentStats& componentStats = stats.m_componentStats[componentIndex];
+                for (AZStd::size_t index = 0; index < componentStats.m_rpcsRecv.size(); ++index)
+                {
+                    const char* rpcName = multiplayer->GetComponentRpcName(componentIndex, aznumeric_cast<uint16_t>(index));
+                    const MultiplayerStats::Metric& subMetric = componentStats.m_rpcsRecv[index];
+                    callsPerSecond = 0.0f;
+                    bytesPerSecond = 0.0f;
+                    AccumulatePerSecondValues(stats, subMetric, callsPerSecond, bytesPerSecond);
+                    DrawMetricsRow(rpcName, false, subMetric.m_totalCalls, subMetric.m_totalBytes, callsPerSecond, bytesPerSecond);
+                }
+                ImGui::TreePop();
+            }
+        }
     }
 
     void MultiplayerDebugSystemComponent::OnImGuiUpdate()
     {
-        const ImVec4 titleColour = ImColor(1.00f, 0.80f, 0.12f);
-        const ImVec4 entryColour = ImColor(0.32f, 1.00f, 1.00f);
+        const float TEXT_BASE_WIDTH = ImGui::CalcTextSize("A").x;
+        const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
 
-        if (m_displayStats)
+        if (m_displayNetworkingStats)
         {
-            if (ImGui::Begin("Multiplayer Stats", &m_displayStats, ImGuiWindowFlags_HorizontalScrollbar))
+
+        }
+
+        if (m_displayMultiplayerStats)
+        {
+            if (ImGui::Begin("Multiplayer Stats", &m_displayMultiplayerStats, ImGuiWindowFlags_HorizontalScrollbar))
             {
                 IMultiplayer* multiplayer = AZ::Interface<IMultiplayer>::Get();
                 const Multiplayer::MultiplayerStats& stats = multiplayer->GetStats();
@@ -153,120 +274,42 @@ namespace Multiplayer
                 ImGui::Text("Total networked entities: %llu", aznumeric_cast<AZ::u64>(stats.m_entityCount));
                 ImGui::Text("Total client connections: %llu", aznumeric_cast<AZ::u64>(stats.m_clientConnectionCount));
                 ImGui::Text("Total server connections: %llu", aznumeric_cast<AZ::u64>(stats.m_serverConnectionCount));
+                ImGui::NewLine();
 
-                const MultiplayerStats::Metric propertyUpdatesSent = stats.CalculateTotalPropertyUpdateSentMetrics();
-                const MultiplayerStats::Metric propertyUpdatesRecv = stats.CalculateTotalPropertyUpdateRecvMetrics();
-                const MultiplayerStats::Metric rpcsSent = stats.CalculateTotalRpcsSentMetrics();
-                const MultiplayerStats::Metric rpcsRecv = stats.CalculateTotalRpcsRecvMetrics();
+                static ImGuiTableFlags flags = ImGuiTableFlags_BordersV
+                                             | ImGuiTableFlags_BordersOuterH
+                                             | ImGuiTableFlags_Resizable
+                                             | ImGuiTableFlags_RowBg
+                                             | ImGuiTableFlags_NoBordersInBody;
 
-                DrawMetricTitle(titleColour);
-                DrawMetricRow("Total", "PropertyUpdates Sent", entryColour, stats, propertyUpdatesSent);
-                DrawMetricRow("Total", "PropertyUpdates Recv", entryColour, stats, propertyUpdatesRecv);
-                DrawMetricRow("Total", "Rpcs Sent", entryColour, stats, rpcsSent);
-                DrawMetricRow("Total", "Rpcs Recv", entryColour, stats, rpcsRecv);
-                ImGui::Columns(1);
-                ImGui::End();
-            }
-        }
-
-        if (m_displayComponentStats)
-        {
-            if (ImGui::Begin("Component Stats", &m_displayComponentStats, ImGuiWindowFlags_HorizontalScrollbar))
-            {
-                IMultiplayer* multiplayer = AZ::Interface<IMultiplayer>::Get();
-                const Multiplayer::MultiplayerStats& stats = multiplayer->GetStats();
-
-                DrawMetricTitle(titleColour);
-                for (AZStd::size_t index = 0; index < stats.m_componentStats.size(); ++index)
+                if (ImGui::BeginTable("", 5, flags))
                 {
-                    const uint16_t componentIndex = aznumeric_cast<uint16_t>(index);
+                    // The first column will use the default _WidthStretch when ScrollX is Off and _WidthFixed when ScrollX is On
+                    ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_NoHide, TEXT_BASE_WIDTH * 36.0f);
+                    ImGui::TableSetupColumn("Total Calls", ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 12.0f);
+                    ImGui::TableSetupColumn("Total Bytes", ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 12.0f);
+                    ImGui::TableSetupColumn("Calls/Sec", ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 12.0f);
+                    ImGui::TableSetupColumn("Bytes/Sec", ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 12.0f);
+                    ImGui::TableHeadersRow();
 
-                    const MultiplayerStats::Metric propertyUpdatesSent = stats.CalculateComponentPropertyUpdateSentMetrics(componentIndex);
-                    const MultiplayerStats::Metric propertyUpdatesRecv = stats.CalculateComponentPropertyUpdateRecvMetrics(componentIndex);
-                    const MultiplayerStats::Metric rpcsSent = stats.CalculateComponentRpcsSentMetrics(componentIndex);
-                    const MultiplayerStats::Metric rpcsRecv = stats.CalculateComponentRpcsRecvMetrics(componentIndex);
-
-                    using StringLabel = AZStd::fixed_string<128>;
-                    const StringLabel gemName = multiplayer->GetComponentGemName(componentIndex);
-                    const StringLabel componentName = multiplayer->GetComponentName(componentIndex);
-                    const StringLabel label = gemName + "::" + componentName;
-
-                    DrawMetricRow(label.c_str(), "PropertyUpdates Sent", entryColour, stats, propertyUpdatesSent);
-                    DrawMetricRow(label.c_str(), "PropertyUpdates Recv", entryColour, stats, propertyUpdatesRecv);
-                    DrawMetricRow(label.c_str(), "Rpcs Sent", entryColour, stats, rpcsSent);
-                    DrawMetricRow(label.c_str(), "Rpcs Recv", entryColour, stats, rpcsRecv);
-                }
-                ImGui::Columns(1);
-                ImGui::End();
-            }
-        }
-
-        if (m_displayPropertyStats)
-        {
-            if (ImGui::Begin("Network Property Stats", &m_displayPropertyStats, ImGuiWindowFlags_HorizontalScrollbar))
-            {
-                IMultiplayer* multiplayer = AZ::Interface<IMultiplayer>::Get();
-                const Multiplayer::MultiplayerStats& stats = multiplayer->GetStats();
-
-                DrawMetricTitle(titleColour);
-                for (AZStd::size_t index = 0; index < stats.m_componentStats.size(); ++index)
-                {
-                    const uint16_t componentIndex = aznumeric_cast<uint16_t>(index);
-                    const MultiplayerStats::ComponentStats& componentStats = stats.m_componentStats[componentIndex];
-                    for (AZStd::size_t index2 = 0; index2 < componentStats.m_propertyUpdatesSent.size(); ++index2)
+                    if (DrawSummaryRow("Totals", stats))
                     {
-                        const MultiplayerStats::Metric& propertyUpdatesSent = componentStats.m_propertyUpdatesSent[index2];
-                        const MultiplayerStats::Metric& propertyUpdatesRecv = componentStats.m_propertyUpdatesRecv[index2];
-
-                        using StringLabel = AZStd::fixed_string<128>;
-                        const StringLabel gemName = multiplayer->GetComponentGemName(componentIndex);
-                        const StringLabel componentName = multiplayer->GetComponentName(componentIndex);
-                        const StringLabel propertyName = multiplayer->GetComponentPropertyName(componentIndex, aznumeric_cast<uint16_t>(index2));
-                        const StringLabel label = gemName + "::" + componentName;
-
-                        const StringLabel sentLabel = propertyName + " Sent";
-                        const StringLabel recvLabel = propertyName + " Recv";
-
-                        DrawMetricRow(label.c_str(), sentLabel.c_str(), entryColour, stats, propertyUpdatesSent);
-                        DrawMetricRow(label.c_str(), recvLabel.c_str(), entryColour, stats, propertyUpdatesRecv);
+                        for (AZStd::size_t index = 0; index < stats.m_componentStats.size(); ++index)
+                        {
+                            const uint16_t componentIndex = aznumeric_cast<uint16_t>(index);
+                            using StringLabel = AZStd::fixed_string<128>;
+                            const StringLabel gemName = multiplayer->GetComponentGemName(componentIndex);
+                            const StringLabel componentName = multiplayer->GetComponentName(componentIndex);
+                            const StringLabel label = gemName + "::" + componentName;
+                            if (DrawComponentRow(label.c_str(), stats, componentIndex))
+                            {
+                                DrawComponentDetails(stats, componentIndex);
+                                ImGui::TreePop();
+                            }
+                        }
                     }
+                    ImGui::EndTable();
                 }
-                ImGui::Columns(1);
-                ImGui::End();
-            }
-        }
-
-        if (m_displayRpcStats)
-        {
-            if (ImGui::Begin("Rpc Stats", &m_displayRpcStats, ImGuiWindowFlags_HorizontalScrollbar))
-            {
-                IMultiplayer* multiplayer = AZ::Interface<IMultiplayer>::Get();
-                const Multiplayer::MultiplayerStats& stats = multiplayer->GetStats();
-
-                DrawMetricTitle(titleColour);
-                for (AZStd::size_t index = 0; index < stats.m_componentStats.size(); ++index)
-                {
-                    const uint16_t componentIndex = aznumeric_cast<uint16_t>(index);
-                    const MultiplayerStats::ComponentStats& componentStats = stats.m_componentStats[componentIndex];
-                    for (AZStd::size_t index2 = 0; index2 < componentStats.m_rpcsSent.size(); ++index2)
-                    {
-                        const MultiplayerStats::Metric& rpcsSent = componentStats.m_rpcsSent[index2];
-                        const MultiplayerStats::Metric& rpcsRecv = componentStats.m_rpcsRecv[index2];
-
-                        using StringLabel = AZStd::fixed_string<128>;
-                        const StringLabel gemName = multiplayer->GetComponentGemName(componentIndex);
-                        const StringLabel componentName = multiplayer->GetComponentName(componentIndex);
-                        const StringLabel rpcName = multiplayer->GetComponentRpcName(componentIndex, aznumeric_cast<uint16_t>(index2));
-                        const StringLabel label = gemName + "::" + componentName;
-
-                        const StringLabel sentLabel = rpcName + " Sent";
-                        const StringLabel recvLabel = rpcName + " Recv";
-
-                        DrawMetricRow(label.c_str(), sentLabel.c_str(), entryColour, stats, rpcsSent);
-                        DrawMetricRow(label.c_str(), recvLabel.c_str(), entryColour, stats, rpcsRecv);
-                    }
-                }
-                ImGui::Columns(1);
                 ImGui::End();
             }
         }

@@ -60,7 +60,7 @@ namespace AZ
             AZ::RPI::ViewportContextNotificationBus::Handler::BusConnect(contextName);
 
 #if defined(IMGUI_ENABLED)
-            ImGui::ImGuiManagerListenerBus::Broadcast(&ImGui::IImGuiManagerListener::SetResolutionMode, ImGui::ImGuiResolutionMode::LockToResolution);
+            ImGui::ImGuiManagerBus::Broadcast(&ImGui::IImGuiManager::SetResolutionMode, ImGui::ImGuiResolutionMode::LockToResolution);
             auto defaultViewportContext = atomViewportRequests->GetDefaultViewportContext();
             if (defaultViewportContext)
             {
@@ -83,14 +83,14 @@ namespace AZ
         void ImguiAtomSystemComponent::OnRenderTick()
         {
 #if defined(IMGUI_ENABLED)
-            ImGui::ImGuiManagerListenerBus::Broadcast(&ImGui::IImGuiManagerListener::Render);
+            ImGui::ImGuiManagerBus::Broadcast(&ImGui::IImGuiManager::Render);
 #endif
         }
 
         void ImguiAtomSystemComponent::OnViewportSizeChanged(AzFramework::WindowSize size)
         {
 #if defined(IMGUI_ENABLED)
-            ImGui::ImGuiManagerListenerBus::Broadcast(&ImGui::IImGuiManagerListener::SetImGuiRenderResolution, ImVec2{aznumeric_cast<float>(size.m_width), aznumeric_cast<float>(size.m_height)});
+            ImGui::ImGuiManagerBus::Broadcast(&ImGui::IImGuiManager::SetImGuiRenderResolution, ImVec2{aznumeric_cast<float>(size.m_width), aznumeric_cast<float>(size.m_height)});
 #endif
         }
     }

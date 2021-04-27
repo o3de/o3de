@@ -51,9 +51,7 @@ namespace Multiplayer
         //! @}
 #endif
     private:
-        bool m_displayStats = false;
-        bool m_displayComponentStats = false;
-        bool m_displayPropertyStats = false;
-        bool m_displayRpcStats = false;
+        bool m_displayNetworkingStats = false;
+        bool m_displayMultiplayerStats = false;
     };
 }
