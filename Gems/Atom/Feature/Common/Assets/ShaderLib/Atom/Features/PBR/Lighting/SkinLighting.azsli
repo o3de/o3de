@@ -17,7 +17,7 @@
 
 // Then include custom surface and lighting data types
 #include <Atom/Features/PBR/Lighting/LightingData.azsli>
-#include <Atom/Features/PBR/Surfaces/StandardSurface.azsli>
+#include <Atom/Features/PBR/Surfaces/SkinSurface.azsli>
 
 #include <Atom/Features/PBR/LightingUtils.azsli>
 #include <Atom/Features/PBR/Microfacet/Brdf.azsli>
@@ -25,7 +25,16 @@
 // Then define the Diffuse and Specular lighting functions
 float3 GetDiffuseLighting(Surface surface, LightingData lightingData, float3 lightIntensity, float3 dirToLight)
 {
-    float3 diffuse = DiffuseLambertian(surface.albedo, surface.normal, dirToLight);
+    float3 diffuse;
+    if(o_enableSubsurfaceScattering)
+    {
+        // Use diffuse brdf contains double Fresnel (enter/exit surface) terms if subsurface scattering is enabled
+        diffuse = NormalizedDisneyDiffuse(surface.albedo, surface.normal, lightingData.dirToCamera, dirToLight, surface.roughnessLinear);
+    }
+    else
+    {
+        diffuse = DiffuseLambertian(surface.albedo, surface.normal, dirToLight);
+    }
 
     if(o_clearCoat_feature_enabled)
     {
@@ -79,12 +88,12 @@ struct PbrLightingOutput
 };
 
 
-PbrLightingOutput GetPbrLightingOutput(Surface surface, LightingData lightingData, float alpha)
+PbrLightingOutput GetPbrLightingOutput(Surface surface, LightingData lightingData)
 {
     PbrLightingOutput lightingOutput;
 
-    lightingOutput.m_diffuseColor = float4(lightingData.diffuseLighting, alpha);
-    lightingOutput.m_specularColor = float4(lightingData.specularLighting, 1.0);
+    lightingOutput.m_diffuseColor = float4(lightingData.diffuseLighting, 1.0f);
+    lightingOutput.m_specularColor = float4(lightingData.specularLighting, 1.0f);
 
     // albedo, specularF0, roughness, and normals for later passes (specular IBL, Diffuse GI, SSR, AO, etc)
     lightingOutput.m_specularF0 = float4(surface.specularF0, surface.roughnessLinear);
@@ -94,16 +103,4 @@ PbrLightingOutput GetPbrLightingOutput(Surface surface, LightingData lightingDat
     lightingOutput.m_normal.a = o_specularF0_enableMultiScatterCompensation ? 1.0f : 0.0f;
     
     return lightingOutput;
-}
-
-PbrLightingOutput DebugOutput(float3 color)
-{
-    PbrLightingOutput output = (PbrLightingOutput)0;
-
-    float defaultNormal = float3(0.0f, 0.0f, 1.0f);
-
-    output.m_diffuseColor = float4(color.rgb, 1.0f);
-    output.m_normal.rgb = EncodeNormalSignedOctahedron(defaultNormal);
-
-    return output;
 }

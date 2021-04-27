@@ -19,6 +19,7 @@
 
 class Surface
 {
+    AnisotropicSurfaceData anisotropy;
     ClearCoatSurfaceData clearCoat;
     TransmissionSurfaceData transmission;
 
