@@ -34,11 +34,21 @@ namespace ScriptCanvas
         AZ_TYPE_INFO(DataRegistry, "{41049FA8-EA56-401F-9720-6FE9028A1C01}");
         AZ_CLASS_ALLOCATOR(DataRegistry, AZ::SystemAllocator, 0);
 
-        void RegisterType(const AZ::TypeId& typeId, TypeProperties typeProperties);
+        enum class Createability
+        {
+            None,
+            SlotAndVariable,
+            SlotOnly,
+        };
+        void RegisterType(const AZ::TypeId& typeId, TypeProperties typeProperties, Createability registration);
         void UnregisterType(const AZ::TypeId& typeId);
+
+        bool IsUseableInSlot(const AZ::TypeId& typeId) const;
+        bool IsUseableInSlot(const Data::Type& type) const;
 
         AZStd::unordered_map<Data::eType, Data::TypeErasedTraits> m_typeIdTraitMap; // Creates a mapping of the Data::eType TypeId to the trait structure
         AZStd::unordered_map<Data::Type, TypeProperties> m_creatableTypes;
+        AZStd::unordered_map<Data::Type, TypeProperties> m_slottableTypes;
     };
 
     void InitDataRegistry();

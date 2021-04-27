@@ -43,7 +43,7 @@ class BasePbrSurfaceData
     void CalculateRoughnessA();
 
     //! Sets albedo and specularF0 using metallic workflow
-    void SetAlbedoAndSpecularF0(float3 baseColor, float inSpecularF0, float metallic);
+    void SetAlbedoAndSpecularF0(float3 baseColor, float specularF0Factor, float metallic);
 };
 
 // ------- Functions -------
@@ -63,6 +63,9 @@ void BasePbrSurfaceData::ApplySpecularAA()
     float kernelRoughnessA2 = min(2.0 * variance , varianceThresh );
     float filteredRoughnessA2 = saturate ( roughnessA2 + kernelRoughnessA2 );
     roughnessA2 = filteredRoughnessA2;
+
+    roughnessA = sqrt(roughnessA2);
+    roughnessLinear = sqrt(roughnessA);
 }
 
 void BasePbrSurfaceData::CalculateRoughnessA()
@@ -82,9 +85,9 @@ void BasePbrSurfaceData::CalculateRoughnessA()
     }
 }
 
-void BasePbrSurfaceData::SetAlbedoAndSpecularF0(float3 baseColor, float inSpecularF0, float metallic)
+void BasePbrSurfaceData::SetAlbedoAndSpecularF0(float3 baseColor, float specularF0Factor, float metallic)
 {
-    float3 dielectricSpecularF0 = MaxDielectricSpecularF0 * inSpecularF0;
+    float3 dielectricSpecularF0 = MaxDielectricSpecularF0 * specularF0Factor;
 
     // Compute albedo and specularF0 based on metalness
     albedo = lerp(baseColor, float3(0.0f, 0.0f, 0.0f), metallic);

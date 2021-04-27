@@ -125,7 +125,6 @@ AZ_POP_DISABLE_WARNING
 #include "AnimationContext.h"
 
 #include "GotoPositionDlg.h"
-#include "SetVectorDlg.h"
 
 #include "ConsoleDialog.h"
 #include "Controls/ConsoleSCB.h"
@@ -395,29 +394,20 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_EDITMODE_MOVE, OnEditmodeMove)
     ON_COMMAND(ID_EDITMODE_ROTATE, OnEditmodeRotate)
     ON_COMMAND(ID_EDITMODE_SCALE, OnEditmodeScale)
-    ON_COMMAND(ID_EDITMODE_SELECT, OnEditmodeSelect)
     ON_COMMAND(ID_OBJECTMODIFY_SETAREA, OnObjectSetArea)
     ON_COMMAND(ID_OBJECTMODIFY_SETHEIGHT, OnObjectSetHeight)
     ON_COMMAND(ID_OBJECTMODIFY_FREEZE, OnObjectmodifyFreeze)
     ON_COMMAND(ID_OBJECTMODIFY_UNFREEZE, OnObjectmodifyUnfreeze)
-    ON_COMMAND(ID_EDITMODE_SELECTAREA, OnEditmodeSelectarea)
-    ON_COMMAND(ID_SELECT_AXIS_X, OnSelectAxisX)
-    ON_COMMAND(ID_SELECT_AXIS_Y, OnSelectAxisY)
-    ON_COMMAND(ID_SELECT_AXIS_Z, OnSelectAxisZ)
-    ON_COMMAND(ID_SELECT_AXIS_XY, OnSelectAxisXy)
     ON_COMMAND(ID_UNDO, OnUndo)
     ON_COMMAND(ID_TOOLBAR_WIDGET_REDO, OnUndo)     // Can't use the same ID, because for the menu we can't have a QWidgetAction, while for the toolbar we want one
     ON_COMMAND(ID_SELECTION_SAVE, OnSelectionSave)
     ON_COMMAND(ID_IMPORT_ASSET, OnOpenAssetImporter)
     ON_COMMAND(ID_SELECTION_LOAD, OnSelectionLoad)
-    ON_COMMAND(ID_OBJECTMODIFY_ALIGNTOGRID, OnAlignToGrid)
     ON_COMMAND(ID_LOCK_SELECTION, OnLockSelection)
     ON_COMMAND(ID_EDIT_LEVELDATA, OnEditLevelData)
     ON_COMMAND(ID_FILE_EDITLOGFILE, OnFileEditLogFile)
     ON_COMMAND(ID_FILE_RESAVESLICES, OnFileResaveSlices)
     ON_COMMAND(ID_FILE_EDITEDITORINI, OnFileEditEditorini)
-    ON_COMMAND(ID_SELECT_AXIS_TERRAIN, OnSelectAxisTerrain)
-    ON_COMMAND(ID_SELECT_AXIS_SNAPTOALL, OnSelectAxisSnapToAll)
     ON_COMMAND(ID_PREFERENCES, OnPreferences)
     ON_COMMAND(ID_RELOAD_GEOMETRY, OnReloadGeometry)
     ON_COMMAND(ID_REDO, OnRedo)
@@ -484,7 +474,6 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_VIEW_CYCLE2DVIEWPORT, OnViewCycle2dviewport)
 #endif
     ON_COMMAND(ID_DISPLAY_GOTOPOSITION, OnDisplayGotoPosition)
-    ON_COMMAND(ID_DISPLAY_SETVECTOR, OnDisplaySetVector)
     ON_COMMAND(ID_SNAPANGLE, OnSnapangle)
     ON_COMMAND(ID_RULER, OnRuler)
     ON_COMMAND(ID_ROTATESELECTION_XAXIS, OnRotateselectionXaxis)
@@ -2755,85 +2744,31 @@ void CCryEditApp::OnSetHeight()
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnEditmodeMove()
 {
-    if (GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        using namespace AzToolsFramework;
-        EditorTransformComponentSelectionRequestBus::Event(
-            GetEntityContextId(),
-            &EditorTransformComponentSelectionRequests::SetTransformMode,
-            EditorTransformComponentSelectionRequests::Mode::Translation);
-    }
-    else
-    {
-        GetIEditor()->SetEditMode(eEditModeMove);
-    }
+    using namespace AzToolsFramework;
+    EditorTransformComponentSelectionRequestBus::Event(
+        GetEntityContextId(),
+        &EditorTransformComponentSelectionRequests::SetTransformMode,
+        EditorTransformComponentSelectionRequests::Mode::Translation);
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnEditmodeRotate()
 {
-    if (GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        using namespace AzToolsFramework;
-        EditorTransformComponentSelectionRequestBus::Event(
-            GetEntityContextId(),
-            &EditorTransformComponentSelectionRequests::SetTransformMode,
-            EditorTransformComponentSelectionRequests::Mode::Rotation);
-    }
-    else
-    {
-        GetIEditor()->SetEditMode(eEditModeRotate);
-    }
+    using namespace AzToolsFramework;
+    EditorTransformComponentSelectionRequestBus::Event(
+        GetEntityContextId(),
+        &EditorTransformComponentSelectionRequests::SetTransformMode,
+        EditorTransformComponentSelectionRequests::Mode::Rotation);
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnEditmodeScale()
 {
-    if (GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        using namespace AzToolsFramework;
-        EditorTransformComponentSelectionRequestBus::Event(
-            GetEntityContextId(),
-            &EditorTransformComponentSelectionRequests::SetTransformMode,
-            EditorTransformComponentSelectionRequests::Mode::Scale);
-    }
-    else
-    {
-        GetIEditor()->SetEditMode(eEditModeScale);
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnEditmodeSelect()
-{
-    if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        GetIEditor()->SetEditMode(eEditModeSelect);
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnEditmodeSelectarea()
-{
-    // TODO: Add your command handler code here
-    GetIEditor()->SetEditMode(eEditModeSelectArea);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnUpdateEditmodeSelectarea(QAction* action)
-{
-    Q_ASSERT(action->isCheckable());
-    action->setChecked(GetIEditor()->GetEditMode() == eEditModeSelectArea);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnUpdateEditmodeSelect(QAction* action)
-{
-    Q_ASSERT(action->isCheckable());
-    if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        action->setChecked(GetIEditor()->GetEditMode() == eEditModeSelect);
-    }
+    using namespace AzToolsFramework;
+    EditorTransformComponentSelectionRequestBus::Event(
+        GetEntityContextId(),
+        &EditorTransformComponentSelectionRequests::SetTransformMode,
+        EditorTransformComponentSelectionRequests::Mode::Scale);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2841,19 +2776,12 @@ void CCryEditApp::OnUpdateEditmodeMove(QAction* action)
 {
     Q_ASSERT(action->isCheckable());
 
-    if (GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        AzToolsFramework::EditorTransformComponentSelectionRequests::Mode mode;
-        AzToolsFramework::EditorTransformComponentSelectionRequestBus::EventResult(
-            mode, AzToolsFramework::GetEntityContextId(),
-            &AzToolsFramework::EditorTransformComponentSelectionRequests::GetTransformMode);
+    AzToolsFramework::EditorTransformComponentSelectionRequests::Mode mode;
+    AzToolsFramework::EditorTransformComponentSelectionRequestBus::EventResult(
+        mode, AzToolsFramework::GetEntityContextId(),
+        &AzToolsFramework::EditorTransformComponentSelectionRequests::GetTransformMode);
 
-        action->setChecked(mode == AzToolsFramework::EditorTransformComponentSelectionRequests::Mode::Translation);
-    }
-    else
-    {
-        action->setChecked(GetIEditor()->GetEditMode() == eEditModeMove);
-    }
+    action->setChecked(mode == AzToolsFramework::EditorTransformComponentSelectionRequests::Mode::Translation);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2861,20 +2789,12 @@ void CCryEditApp::OnUpdateEditmodeRotate(QAction* action)
 {
     Q_ASSERT(action->isCheckable());
 
-    if (GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        AzToolsFramework::EditorTransformComponentSelectionRequests::Mode mode;
-        AzToolsFramework::EditorTransformComponentSelectionRequestBus::EventResult(
-            mode, AzToolsFramework::GetEntityContextId(),
-            &AzToolsFramework::EditorTransformComponentSelectionRequests::GetTransformMode);
+    AzToolsFramework::EditorTransformComponentSelectionRequests::Mode mode;
+    AzToolsFramework::EditorTransformComponentSelectionRequestBus::EventResult(
+        mode, AzToolsFramework::GetEntityContextId(),
+        &AzToolsFramework::EditorTransformComponentSelectionRequests::GetTransformMode);
 
-        action->setChecked(mode == AzToolsFramework::EditorTransformComponentSelectionRequests::Mode::Rotation);
-    }
-    else
-    {
-        action->setChecked(GetIEditor()->GetEditMode() == eEditModeRotate);
-        action->setEnabled(true);
-    }
+    action->setChecked(mode == AzToolsFramework::EditorTransformComponentSelectionRequests::Mode::Rotation);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2882,20 +2802,12 @@ void CCryEditApp::OnUpdateEditmodeScale(QAction* action)
 {
     Q_ASSERT(action->isCheckable());
 
-    if (GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        AzToolsFramework::EditorTransformComponentSelectionRequests::Mode mode;
-        AzToolsFramework::EditorTransformComponentSelectionRequestBus::EventResult(
-            mode, AzToolsFramework::GetEntityContextId(),
-            &AzToolsFramework::EditorTransformComponentSelectionRequests::GetTransformMode);
+    AzToolsFramework::EditorTransformComponentSelectionRequests::Mode mode;
+    AzToolsFramework::EditorTransformComponentSelectionRequestBus::EventResult(
+        mode, AzToolsFramework::GetEntityContextId(),
+        &AzToolsFramework::EditorTransformComponentSelectionRequests::GetTransformMode);
 
-        action->setChecked(mode == AzToolsFramework::EditorTransformComponentSelectionRequests::Mode::Scale);
-    }
-    else
-    {
-        action->setChecked(GetIEditor()->GetEditMode() == eEditModeScale);
-        action->setEnabled(true);
-    }
+    action->setChecked(mode == AzToolsFramework::EditorTransformComponentSelectionRequests::Mode::Scale);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -3076,101 +2988,6 @@ void CCryEditApp::OnViewSwitchToGame()
     GetIEditor()->SetInGameMode(inGame);
 }
 
-void CCryEditApp::OnSelectAxisX()
-{
-    AxisConstrains axis = (GetIEditor()->GetAxisConstrains() != AXIS_X) ? AXIS_X : AXIS_NONE;
-    GetIEditor()->SetAxisConstraints(axis);
-}
-
-void CCryEditApp::OnSelectAxisY()
-{
-    AxisConstrains axis = (GetIEditor()->GetAxisConstrains() != AXIS_Y) ? AXIS_Y : AXIS_NONE;
-    GetIEditor()->SetAxisConstraints(axis);
-}
-
-void CCryEditApp::OnSelectAxisZ()
-{
-    AxisConstrains axis = (GetIEditor()->GetAxisConstrains() != AXIS_Z) ? AXIS_Z : AXIS_NONE;
-    GetIEditor()->SetAxisConstraints(axis);
-}
-
-void CCryEditApp::OnSelectAxisXy()
-{
-    AxisConstrains axis = (GetIEditor()->GetAxisConstrains() != AXIS_XY) ? AXIS_XY : AXIS_NONE;
-    GetIEditor()->SetAxisConstraints(axis);
-}
-
-void CCryEditApp::OnUpdateSelectAxisX(QAction* action)
-{
-    Q_ASSERT(action->isCheckable());
-    action->setChecked(GetIEditor()->GetAxisConstrains() == AXIS_X);
-}
-
-void CCryEditApp::OnUpdateSelectAxisXy(QAction* action)
-{
-    Q_ASSERT(action->isCheckable());
-    action->setChecked(GetIEditor()->GetAxisConstrains() == AXIS_XY);
-}
-
-void CCryEditApp::OnUpdateSelectAxisY(QAction* action)
-{
-    Q_ASSERT(action->isCheckable());
-    action->setChecked(GetIEditor()->GetAxisConstrains() == AXIS_Y);
-}
-
-void CCryEditApp::OnUpdateSelectAxisZ(QAction* action)
-{
-    Q_ASSERT(action->isCheckable());
-    action->setChecked(GetIEditor()->GetAxisConstrains() == AXIS_Z);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnSelectAxisTerrain()
-{
-    IEditor* editor = GetIEditor();
-    bool isAlreadyEnabled = (editor->GetAxisConstrains() == AXIS_TERRAIN) && (editor->IsTerrainAxisIgnoreObjects());
-    if (!isAlreadyEnabled)
-    {
-        editor->SetAxisConstraints(AXIS_TERRAIN);
-        editor->SetTerrainAxisIgnoreObjects(true);
-    }
-    else
-    {
-        // behave like a toggle button - click on the same thing again to disable.
-        editor->SetAxisConstraints(AXIS_NONE);
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnSelectAxisSnapToAll()
-{
-    IEditor* editor = GetIEditor();
-    bool isAlreadyEnabled = (editor->GetAxisConstrains() == AXIS_TERRAIN) && (!editor->IsTerrainAxisIgnoreObjects());
-    if (!isAlreadyEnabled)
-    {
-        editor->SetAxisConstraints(AXIS_TERRAIN);
-        editor->SetTerrainAxisIgnoreObjects(false);
-    }
-    else
-    {
-        // behave like a toggle button - click on the same thing again to disable.
-        editor->SetAxisConstraints(AXIS_NONE);
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnUpdateSelectAxisTerrain(QAction* action)
-{
-    Q_ASSERT(action->isCheckable());
-    action->setChecked(GetIEditor()->GetAxisConstrains() == AXIS_TERRAIN && GetIEditor()->IsTerrainAxisIgnoreObjects());
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnUpdateSelectAxisSnapToAll(QAction* action)
-{
-    action->setChecked(GetIEditor()->GetAxisConstrains() == AXIS_TERRAIN && !GetIEditor()->IsTerrainAxisIgnoreObjects());
-}
-
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnExportSelectedObjects()
 {
@@ -3349,26 +3166,6 @@ void CCryEditApp::OnSelectionLoad()
 void CCryEditApp::OnUpdateSelected(QAction* action)
 {
     action->setEnabled(!GetIEditor()->GetSelection()->IsEmpty());
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnAlignToGrid()
-{
-    CSelectionGroup* sel = GetIEditor()->GetSelection();
-    if (!sel->IsEmpty())
-    {
-        CUndo undo("Align To Grid");
-        Matrix34 tm;
-        for (int i = 0; i < sel->GetCount(); i++)
-        {
-            CBaseObject* obj = sel->GetObject(i);
-            tm = obj->GetWorldTM();
-            Vec3 snaped = gSettings.pGrid->Snap(tm.GetTranslation());
-            tm.SetTranslation(snaped);
-            obj->SetWorldTM(tm, eObjectUpdateFlags_UserInput);
-            obj->OnEvent(EVENT_ALIGN_TOGRID);
-        }
-    }
 }
 
 void CCryEditApp::OnShowHelpers()
@@ -4531,13 +4328,6 @@ void CCryEditApp::OnDisplayGotoPosition()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnDisplaySetVector()
-{
-    CSetVectorDlg dlg;
-    dlg.exec();
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnSnapangle()
 {
     gSettings.pGrid->EnableAngleSnap(!gSettings.pGrid->IsAngleSnapEnabled());
@@ -5442,6 +5232,13 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
     AzQtComponents::Utilities::HandleDpiAwareness(AzQtComponents::Utilities::SystemDpiAware);
     Editor::EditorQtApplication app(argc, argv);
 
+    if (app.arguments().contains("-autotest_mode"))
+    {
+        // Nullroute all stdout to null for automated tests, this way we make sure
+        // that the test result output is not polluted with unrelated output data.
+        theApp->RedirectStdoutToNull();
+    }
+
     // Hook the trace bus to catch errors, boot the AZ app after the QApplication is up
     int ret = 0;
 
@@ -5457,13 +5254,6 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
         if (!AZToolsApp.Start())
         {
             return -1;
-        }
-
-        if (app.arguments().contains("-autotest_mode"))
-        {
-            // Nullroute all stdout to null for automated tests, this way we make sure
-            // that the test result output is not polluted with unrelated output data.
-            theApp->RedirectStdoutToNull();
         }
 
         AzToolsFramework::EditorEvents::Bus::Broadcast(&AzToolsFramework::EditorEvents::NotifyQtApplicationAvailable, &app);

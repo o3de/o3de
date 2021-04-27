@@ -70,6 +70,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME AWSCore.Editor MODULE
         NAMESPACE Gem
+        OUTPUT_SUBDIRECTORY AWSCoreEditorPlugins
         FILES_CMAKE
             awscore_editor_shared_files.cmake
         INCLUDE_DIRECTORIES

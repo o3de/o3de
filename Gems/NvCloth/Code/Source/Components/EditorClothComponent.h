@@ -70,7 +70,7 @@ namespace NvCloth
         // This list is not serialized, it's compiled when the asset has been received via MeshComponentNotificationBus.
         MeshNodeList m_meshNodeList;
 
-        AZStd::string m_previousMeshNode;
+        AZStd::string m_lastKnownMeshNode;
 
         AZStd::unordered_set<AZStd::string> m_meshNodesWithBackstopData;
 

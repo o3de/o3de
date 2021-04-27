@@ -2144,7 +2144,7 @@ namespace AZ
             if (curIter != m_assetContainers.end())
             {
                 auto newRef = curIter->second.lock();
-                if (newRef)
+                if (newRef && newRef->IsValid())
                 {
                     return newRef;
                 }

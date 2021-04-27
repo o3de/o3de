@@ -18,10 +18,11 @@ C13815873 - All Filters/Modifiers/Selectors can be added to/removed from a Layer
 
 import os
 import pytest
+
 # Bail on the test if ly_test_tools doesn't exist.
 pytest.importorskip('ly_test_tools')
 import ly_test_tools.environment.file_system as file_system
-import automatedtesting_shared.hydra_test_utils as hydra
+import editor_python_test_tools.hydra_test_utils as hydra
 
 test_directory = os.path.join(os.path.dirname(__file__), 'EditorScripts')
 

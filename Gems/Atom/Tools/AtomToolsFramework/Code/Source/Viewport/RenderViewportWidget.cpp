@@ -31,12 +31,35 @@
 
 namespace AtomToolsFramework
 {
-    RenderViewportWidget::RenderViewportWidget(AzFramework::ViewportId id, QWidget* parent)
+    RenderViewportWidget::RenderViewportWidget(QWidget* parent, bool shouldInitializeViewportContext)
         : QWidget(parent)
         , AzFramework::InputChannelEventListener(AzFramework::InputChannelEventListener::GetPriorityDefault())
     {
+        if (shouldInitializeViewportContext)
+        {
+            InitializeViewportContext();
+        }
+
+        setUpdatesEnabled(false);
+        setFocusPolicy(Qt::FocusPolicy::WheelFocus);
+        setMouseTracking(true);
+    }
+
+    bool RenderViewportWidget::InitializeViewportContext(AzFramework::ViewportId id)
+    {
+        if (m_viewportContext != nullptr)
+        {
+            AZ_Assert(id == AzFramework::InvalidViewportId || m_viewportContext->GetId() == id, "Attempted to reinitialize RenderViewportWidget with a different ID");
+            return true;
+        }
+
         auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
-        AZ_Assert(viewportContextManager, "Attempted to construct RenderViewportWidget without ViewportContextManager");
+        AZ_Assert(viewportContextManager, "Attempted to initialize RenderViewportWidget without ViewportContextManager");
+
+        if (viewportContextManager == nullptr)
+        {
+            return false;
+        }
 
         // Before we do anything else, we must create a ViewportContext which will give us a ViewportId if we didn't manually specify one.
         AZ::RPI::ViewportContextRequestsInterface::CreationParameters params;
@@ -45,6 +68,11 @@ namespace AtomToolsFramework
         params.id = id;
         AzFramework::WindowRequestBus::Handler::BusConnect(params.windowHandle);
         m_viewportContext = viewportContextManager->CreateViewportContext(AZ::Name(), params);
+
+        if (m_viewportContext == nullptr)
+        {
+            return false;
+        }
 
         SetControllerList(AZStd::make_shared<AzFramework::ViewportControllerList>());
 
@@ -58,9 +86,7 @@ namespace AtomToolsFramework
         AZ::TickBus::Handler::BusConnect();
         AzFramework::WindowRequestBus::Handler::BusConnect(params.windowHandle);
 
-        setUpdatesEnabled(false);
-        setFocusPolicy(Qt::FocusPolicy::WheelFocus);
-        setMouseTracking(true);
+        return true;
     }
 
     RenderViewportWidget::~RenderViewportWidget()

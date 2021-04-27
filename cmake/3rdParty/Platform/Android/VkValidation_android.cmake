@@ -9,4 +9,4 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-set(VKVALIDATION_RUNTIME_DEPENDENCIES $<$<NOT:$<CONFIG:Release>>:${BASE_PATH}/sources/third_party/vulkan/src/build-android/jniLibs/arm64-v8a/libVkLayer_khronos_validation.so>)
+set(VKVALIDATION_RUNTIME_DEPENDENCIES $<$<NOT:$<CONFIG:Release>>:${LY_NDK_DIR}/sources/third_party/vulkan/src/build-android/jniLibs/arm64-v8a/libVkLayer_khronos_validation.so>)

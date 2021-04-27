@@ -22,6 +22,7 @@
 #include <ScriptCanvas/Core/ScriptCanvasBus.h>
 #include <ScriptCanvas/Variable/VariableCore.h>
 #include <ScriptCanvas/PerformanceTracker.h>
+#include <ScriptCanvas/Data/DataRegistry.h>
 
 namespace AZ
 {
@@ -64,6 +65,8 @@ namespace ScriptCanvas
     protected:
 
         inline bool IsAnyScriptInterpreted() const { return true; }
+
+        AZStd::pair<DataRegistry::Createability, TypeProperties> GetCreatibility(AZ::SerializeContext* serializeContext, AZ::BehaviorClass* behaviorClass);
 
         // SystemRequestBus::Handler...
         bool IsScriptUnitTestingInProgress() override;
