@@ -241,121 +241,124 @@ namespace
     }
 }
 
-namespace AZ::NativeUI
+namespace AZ
 {
-    AZStd::string NativeUISystem::DisplayBlockingDialog(const AZStd::string& title, const AZStd::string& message, const AZStd::vector<AZStd::string>& options) const
+    namespace NativeUI
     {
-        if (options.size() >= MAX_ITEMS)
+        AZStd::string NativeUISystem::DisplayBlockingDialog(const AZStd::string& title, const AZStd::string& message, const AZStd::vector<AZStd::string>& options) const
         {
-            AZ_Assert(false, "Cannot create dialog box with more than %d buttons", (MAX_ITEMS - 1));
+            if (options.size() >= MAX_ITEMS)
+            {
+                AZ_Assert(false, "Cannot create dialog box with more than %d buttons", (MAX_ITEMS - 1));
+                return "";
+            }
+
+            MessageDimensions messageDimensions;
+
+            // Compute all the dimensions.
+            messageDimensions = ComputeMessageDimensions(message);
+
+            AZStd::vector<ButtonDimensions> buttonDimensions;
+            ComputeButtonDimensions(options, buttonDimensions);
+
+            AZStd::vector<ButtonRow> buttonRows;
+            ComputeButtonRows(buttonDimensions, buttonRows);
+
+            int buttonRowsWidth = 0;
+            for (int i = 0; i < buttonRows.size(); i++)
+            {
+                if (buttonRows[i].m_width > buttonRowsWidth)
+                {
+                    buttonRowsWidth = buttonRows[i].m_width;
+                }
+            }
+
+            int buttonRowsHeight = static_cast<int>((buttonRows.size() * BUTTON_HEIGHT) + ((buttonRows.size() - 1) * BUTTON_TO_BUTTON_Y_DELTA));
+
+            int dialogWidth = AZ::GetMax(buttonRowsWidth, messageDimensions.m_width) + DIALOG_LEFT_MARGIN + DIALOG_RIGHT_MARGIN;
+            int dialogHeight;
+
+            int totalHeight = DIALOG_TOP_MARGIN + messageDimensions.m_height + MESSAGE_TO_BUTTON_Y_DELTA + buttonRowsHeight + DIALOG_BOTTOM_MARGIN;
+            if (totalHeight <= MAX_DIALOG_HEIGHT)
+            {
+                dialogHeight = totalHeight;
+            }
+            else
+            {
+                messageDimensions.m_height -= (totalHeight - MAX_DIALOG_HEIGHT);
+                dialogHeight = MAX_DIALOG_HEIGHT;
+            }
+
+            // Create the template with the computed dimensions.
+            DlgTemplate dlgTemplate;
+
+            dlgTemplate.m_dlgTemplate.style = DS_CENTER | WS_POPUP | WS_CAPTION | WS_VISIBLE | WS_SYSMENU | WS_THICKFRAME;
+            dlgTemplate.m_dlgTemplate.dwExtendedStyle = WS_EX_TOPMOST;
+            dlgTemplate.m_dlgTemplate.cdit = static_cast<WORD>(options.size() + 1);
+            dlgTemplate.m_dlgTemplate.x = dlgTemplate.m_dlgTemplate.y = 0;
+            dlgTemplate.m_dlgTemplate.cx = static_cast<short>(dialogWidth);
+            dlgTemplate.m_dlgTemplate.cy = static_cast<short>(dialogHeight);
+            dlgTemplate.m_menu = dlgTemplate.m_dialogClass = 0;
+            MultiByteToWideChar(CP_ACP, 0, "", -1, &dlgTemplate.m_title, 1);
+
+            int dialogUsableWidth = dialogWidth - DIALOG_LEFT_MARGIN - DIALOG_RIGHT_MARGIN;
+
+            dlgTemplate.m_itemTemplates[0].m_itemTemplate.style = SS_LEFT | WS_CHILD | WS_VISIBLE;
+            dlgTemplate.m_itemTemplates[0].m_itemTemplate.dwExtendedStyle = 0;
+            dlgTemplate.m_itemTemplates[0].m_itemTemplate.x = static_cast<short>(DIALOG_LEFT_MARGIN + (dialogUsableWidth - messageDimensions.m_width) / 2);
+            dlgTemplate.m_itemTemplates[0].m_itemTemplate.y = DIALOG_TOP_MARGIN;
+            dlgTemplate.m_itemTemplates[0].m_itemTemplate.cx = static_cast<short>(messageDimensions.m_width);
+            dlgTemplate.m_itemTemplates[0].m_itemTemplate.cy = static_cast<short>(messageDimensions.m_height);
+            dlgTemplate.m_itemTemplates[0].m_itemTemplate.id = 0;
+            dlgTemplate.m_itemTemplates[0].m_itemClass[0] = WINDOW_CLASS;
+            dlgTemplate.m_itemTemplates[0].m_itemClass[1] = STATIC_ITEM_CLASS;
+            dlgTemplate.m_itemTemplates[0].m_creationData = 0;
+            MultiByteToWideChar(CP_ACP, 0, " ", -1, dlgTemplate.m_itemTemplates[0].m_padding, 2);
+
+            int buttonXOffset = 0;
+            int buttonYOffset = DIALOG_TOP_MARGIN + messageDimensions.m_height + MESSAGE_TO_BUTTON_Y_DELTA;
+            for (int i = 0, buttonRow = 0, buttonRowIndex = 0; i < options.size(); i++, buttonRowIndex++)
+            {
+                if (buttonRowIndex >= buttonRows[buttonRow].m_numButtons)
+                {
+                    buttonRowIndex = 0;
+                    buttonRow++;
+                    buttonXOffset = 0;
+                    buttonYOffset += BUTTON_HEIGHT + BUTTON_TO_BUTTON_Y_DELTA;
+                }
+
+                dlgTemplate.m_itemTemplates[i + 1].m_itemTemplate.style = BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP;
+                dlgTemplate.m_itemTemplates[i + 1].m_itemTemplate.dwExtendedStyle = 0;
+                dlgTemplate.m_itemTemplates[i + 1].m_itemTemplate.x = static_cast<short>(DIALOG_LEFT_MARGIN + (dialogUsableWidth - buttonRows[buttonRow].m_width) / 2 + buttonXOffset);
+                dlgTemplate.m_itemTemplates[i + 1].m_itemTemplate.y = static_cast<short>(buttonYOffset);
+                dlgTemplate.m_itemTemplates[i + 1].m_itemTemplate.cx = static_cast<short>(buttonDimensions[i].m_width);
+                dlgTemplate.m_itemTemplates[i + 1].m_itemTemplate.cy = static_cast<short>(buttonDimensions[i].m_height);
+                dlgTemplate.m_itemTemplates[i + 1].m_itemTemplate.id = static_cast<WORD>(i + 1);
+                dlgTemplate.m_itemTemplates[i + 1].m_itemClass[0] = WINDOW_CLASS;
+                dlgTemplate.m_itemTemplates[i + 1].m_itemClass[1] = BUTTONS_ITEM_CLASS;
+                dlgTemplate.m_itemTemplates[i + 1].m_creationData = 0;
+                MultiByteToWideChar(CP_ACP, 0, " ", -1, dlgTemplate.m_itemTemplates[i + 1].m_padding, 2);
+
+                buttonXOffset += (buttonDimensions[i].m_width + BUTTON_TO_BUTTON_X_DELTA);
+            }
+
+            // Pass the title, message, and options to the callback so we can set the text there.
+            DlgInfo info;
+            info.m_title = title;
+            info.m_message = message;
+            info.m_options = options;
+            info.m_buttonChosen = -1;
+
+            LRESULT ret = DialogBoxIndirectParam(GetModuleHandle(NULL), (DLGTEMPLATE*)&dlgTemplate, GetDesktopWindow(), DlgProc, (LPARAM)&info);
+            AZ_UNUSED(ret);
+            AZ_Assert(ret != -1, "Error displaying native UI dialog.");
+
+            if (info.m_buttonChosen > 0 && info.m_buttonChosen <= options.size())
+            {
+                return options[info.m_buttonChosen - 1];
+            }
+
             return "";
         }
-
-        MessageDimensions messageDimensions;
-
-        // Compute all the dimensions.
-        messageDimensions = ComputeMessageDimensions(message);
-
-        AZStd::vector<ButtonDimensions> buttonDimensions;
-        ComputeButtonDimensions(options, buttonDimensions);
-
-        AZStd::vector<ButtonRow> buttonRows;
-        ComputeButtonRows(buttonDimensions, buttonRows);
-
-        int buttonRowsWidth = 0;
-        for (int i = 0; i < buttonRows.size(); i++)
-        {
-            if (buttonRows[i].m_width > buttonRowsWidth)
-            {
-                buttonRowsWidth = buttonRows[i].m_width;
-            }
-        }
-
-        int buttonRowsHeight = static_cast<int>((buttonRows.size() * BUTTON_HEIGHT) + ((buttonRows.size() - 1) * BUTTON_TO_BUTTON_Y_DELTA));
-
-        int dialogWidth = AZ::GetMax(buttonRowsWidth, messageDimensions.m_width) + DIALOG_LEFT_MARGIN + DIALOG_RIGHT_MARGIN;
-        int dialogHeight;
-
-        int totalHeight = DIALOG_TOP_MARGIN + messageDimensions.m_height + MESSAGE_TO_BUTTON_Y_DELTA + buttonRowsHeight + DIALOG_BOTTOM_MARGIN;
-        if (totalHeight <= MAX_DIALOG_HEIGHT)
-        {
-            dialogHeight = totalHeight;
-        }
-        else
-        {
-            messageDimensions.m_height -= (totalHeight - MAX_DIALOG_HEIGHT);
-            dialogHeight = MAX_DIALOG_HEIGHT;
-        }
-
-        // Create the template with the computed dimensions.
-        DlgTemplate dlgTemplate;
-
-        dlgTemplate.m_dlgTemplate.style = DS_CENTER | WS_POPUP | WS_CAPTION | WS_VISIBLE | WS_SYSMENU | WS_THICKFRAME;
-        dlgTemplate.m_dlgTemplate.dwExtendedStyle = WS_EX_TOPMOST;
-        dlgTemplate.m_dlgTemplate.cdit = static_cast<WORD>(options.size() + 1);
-        dlgTemplate.m_dlgTemplate.x = dlgTemplate.m_dlgTemplate.y = 0;
-        dlgTemplate.m_dlgTemplate.cx = static_cast<short>(dialogWidth);
-        dlgTemplate.m_dlgTemplate.cy = static_cast<short>(dialogHeight);
-        dlgTemplate.m_menu = dlgTemplate.m_dialogClass = 0;
-        MultiByteToWideChar(CP_ACP, 0, "", -1, &dlgTemplate.m_title, 1);
-
-        int dialogUsableWidth = dialogWidth - DIALOG_LEFT_MARGIN - DIALOG_RIGHT_MARGIN;
-
-        dlgTemplate.m_itemTemplates[0].m_itemTemplate.style = SS_LEFT | WS_CHILD | WS_VISIBLE;
-        dlgTemplate.m_itemTemplates[0].m_itemTemplate.dwExtendedStyle = 0;
-        dlgTemplate.m_itemTemplates[0].m_itemTemplate.x = static_cast<short>(DIALOG_LEFT_MARGIN + (dialogUsableWidth - messageDimensions.m_width) / 2);
-        dlgTemplate.m_itemTemplates[0].m_itemTemplate.y = DIALOG_TOP_MARGIN;
-        dlgTemplate.m_itemTemplates[0].m_itemTemplate.cx = static_cast<short>(messageDimensions.m_width);
-        dlgTemplate.m_itemTemplates[0].m_itemTemplate.cy = static_cast<short>(messageDimensions.m_height);
-        dlgTemplate.m_itemTemplates[0].m_itemTemplate.id = 0;
-        dlgTemplate.m_itemTemplates[0].m_itemClass[0] = WINDOW_CLASS;
-        dlgTemplate.m_itemTemplates[0].m_itemClass[1] = STATIC_ITEM_CLASS;
-        dlgTemplate.m_itemTemplates[0].m_creationData = 0;
-        MultiByteToWideChar(CP_ACP, 0, " ", -1, dlgTemplate.m_itemTemplates[0].m_padding, 2);
-
-        int buttonXOffset = 0;
-        int buttonYOffset = DIALOG_TOP_MARGIN + messageDimensions.m_height + MESSAGE_TO_BUTTON_Y_DELTA;
-        for (int i = 0, buttonRow = 0, buttonRowIndex = 0; i < options.size(); i++, buttonRowIndex++)
-        {
-            if (buttonRowIndex >= buttonRows[buttonRow].m_numButtons)
-            {
-                buttonRowIndex = 0;
-                buttonRow++;
-                buttonXOffset = 0;
-                buttonYOffset += BUTTON_HEIGHT + BUTTON_TO_BUTTON_Y_DELTA;
-            }
-
-            dlgTemplate.m_itemTemplates[i + 1].m_itemTemplate.style = BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP;
-            dlgTemplate.m_itemTemplates[i + 1].m_itemTemplate.dwExtendedStyle = 0;
-            dlgTemplate.m_itemTemplates[i + 1].m_itemTemplate.x = static_cast<short>(DIALOG_LEFT_MARGIN + (dialogUsableWidth - buttonRows[buttonRow].m_width) / 2 + buttonXOffset);
-            dlgTemplate.m_itemTemplates[i + 1].m_itemTemplate.y = static_cast<short>(buttonYOffset);
-            dlgTemplate.m_itemTemplates[i + 1].m_itemTemplate.cx = static_cast<short>(buttonDimensions[i].m_width);
-            dlgTemplate.m_itemTemplates[i + 1].m_itemTemplate.cy = static_cast<short>(buttonDimensions[i].m_height);
-            dlgTemplate.m_itemTemplates[i + 1].m_itemTemplate.id = static_cast<WORD>(i + 1);
-            dlgTemplate.m_itemTemplates[i + 1].m_itemClass[0] = WINDOW_CLASS;
-            dlgTemplate.m_itemTemplates[i + 1].m_itemClass[1] = BUTTONS_ITEM_CLASS;
-            dlgTemplate.m_itemTemplates[i + 1].m_creationData = 0;
-            MultiByteToWideChar(CP_ACP, 0, " ", -1, dlgTemplate.m_itemTemplates[i + 1].m_padding, 2);
-
-            buttonXOffset += (buttonDimensions[i].m_width + BUTTON_TO_BUTTON_X_DELTA);
-        }
-
-        // Pass the title, message, and options to the callback so we can set the text there.
-        DlgInfo info;
-        info.m_title = title;
-        info.m_message = message;
-        info.m_options = options;
-        info.m_buttonChosen = -1;
-
-        LRESULT ret = DialogBoxIndirectParam(GetModuleHandle(NULL), (DLGTEMPLATE*)&dlgTemplate, GetDesktopWindow(), DlgProc, (LPARAM)&info);
-        AZ_UNUSED(ret);
-        AZ_Assert(ret != -1, "Error displaying native UI dialog.");
-
-        if (info.m_buttonChosen > 0 && info.m_buttonChosen <= options.size())
-        {
-            return options[info.m_buttonChosen - 1];
-        }
-
-        return "";
     }
 }

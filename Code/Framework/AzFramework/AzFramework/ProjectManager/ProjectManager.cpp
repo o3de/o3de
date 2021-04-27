@@ -24,7 +24,7 @@
 
 namespace AzFramework::ProjectManager
 {
-    // See als ComponentApplication::ParseCommandLine
+    // See also ComponentApplication::ParseCommandLine
     void ParseCommandLine(AZ::CommandLine& commandLine)
     {
         struct OptionKeyToRegsetKey
