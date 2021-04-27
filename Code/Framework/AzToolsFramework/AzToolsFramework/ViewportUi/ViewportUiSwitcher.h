@@ -19,18 +19,19 @@ namespace AzToolsFramework::ViewportUi::Internal
         Q_OBJECT
 
     public:
-        ViewportUiSwitcher(AZStd::shared_ptr<ButtonGroup> buttonGroup, ButtonId currentMode);
+        ViewportUiSwitcher(AZStd::shared_ptr<ButtonGroup> buttonGroup);
         ~ViewportUiSwitcher();
-        //! Adds a new button to the cluster.
+        //! Adds a new button to the switcher.
         void AddButton(Button* button);
-        //! Removes a button from the cluster.
+        //! Removes a button from the switcher.
         void RemoveButton(ButtonId buttonId);
         void Update();
-        void SetActiveMode(ButtonId buttonId);
+        //! Changes the m_activeButton.
+        void SetActiveButton(ButtonId buttonId);
 
     private:
-        QToolButton* m_activeButton;
-        ButtonId m_currentMode;
+        QToolButton* m_activeButton; //!< The first button in the toolbar. Only button with a label/text.
+        ButtonId m_activeButtonId = ButtonId(0); //!< ButtonId corresponding to the active button in the buttonActionMap.
         AZStd::shared_ptr<ButtonGroup> m_buttonGroup; //!< Data structure which the cluster will be displaying to the Viewport UI.
         AZStd::unordered_map<ButtonId, QPointer<QAction>> m_buttonActionMap; //!< Map for buttons to their corresponding actions.
         ViewportUiWidgetCallbacks m_widgetCallbacks; //!< Registers actions and manages updates.

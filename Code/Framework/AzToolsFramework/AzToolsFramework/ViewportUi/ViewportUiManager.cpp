@@ -38,10 +38,10 @@ namespace AzToolsFramework::ViewportUi
         return RegisterNewCluster(buttonGroup);
     }
 
-    const SwitcherId ViewportUiManager::CreateSwitcher(ButtonId currMode)
+    const SwitcherId ViewportUiManager::CreateSwitcher()
     {
         auto buttonGroup = AZStd::make_shared<Internal::ButtonGroup>();
-        m_viewportUi->AddSwitcher(buttonGroup, currMode);
+        m_viewportUi->AddSwitcher(buttonGroup);
 
         return RegisterNewSwitcher(buttonGroup);
     }
@@ -62,7 +62,7 @@ namespace AzToolsFramework::ViewportUi
         {
             auto switcher = switcherIt->second;
             switcher->SetHighlightedButton(buttonId);
-            m_viewportUi->SetSwitcherActiveMode(switcher->GetViewportUiElementId(), buttonId);
+            m_viewportUi->SetSwitcherActiveButton(switcher->GetViewportUiElementId(), buttonId);
             UpdateButtonGroupUi(switcher.get());
         }
     }
@@ -144,7 +144,7 @@ namespace AzToolsFramework::ViewportUi
         }
     }
 
-    void ViewportUiManager::SetClusterVisible(ClusterId clusterId, bool visible)
+    void ViewportUiManager::SetClusterVisible(const ClusterId clusterId, bool visible)
     {
         if (auto clusterIt = m_clusterButtonGroups.find(clusterId); clusterIt != m_clusterButtonGroups.end())
         {
@@ -153,7 +153,7 @@ namespace AzToolsFramework::ViewportUi
         }
     }
 
-    void ViewportUiManager::SetSwitcherVisible(SwitcherId switcherId, bool visible)
+    void ViewportUiManager::SetSwitcherVisible(const SwitcherId switcherId, bool visible)
     {
         if (auto switcherIt = m_switcherButtonGroups.find(switcherId); switcherIt != m_switcherButtonGroups.end())
         {

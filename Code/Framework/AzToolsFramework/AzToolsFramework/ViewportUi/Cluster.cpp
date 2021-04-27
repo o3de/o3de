@@ -50,7 +50,7 @@ namespace AzToolsFramework::ViewportUi::Internal
     {
         auto buttonId = ButtonId(m_buttons.size() + 1);
 
-        if (name == AZStd::string())
+        if (name.empty())
         {
             m_buttons.insert({buttonId, AZStd::make_unique<Button>(icon, buttonId)});
         }

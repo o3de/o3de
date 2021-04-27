@@ -62,8 +62,8 @@ def C14861502_PhysXCollider_AssetAutoAssigned():
     # Open 3D Engine Imports
     import azlmbr.legacy.general as general
 
-    MESH_ASSET_PATH = os.path.join("Objects", "SphereBot", "r0-b_body.cgf")
-    MESH_PROPERTY_PATH = "MeshComponentRenderNode|Mesh asset"
+    MESH_ASSET_PATH = os.path.join("Objects", "SphereBot", "r0-b_body.azmodel")
+    MESH_PROPERTY_PATH = "Controller|Configuration|Mesh Asset"
     TESTED_PROPERTY_PATH = "Shape Configuration|Asset|PhysX Mesh"
 
     helper.init_idle()

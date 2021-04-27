@@ -32,7 +32,7 @@ namespace AzToolsFramework::ViewportUi
 
         // ViewportUiRequestBus ...
         const ClusterId CreateCluster() override;
-        const SwitcherId CreateSwitcher(ButtonId currMode) override;
+        const SwitcherId CreateSwitcher() override;
         void SetClusterActiveButton(ClusterId clusterId, ButtonId buttonId) override;
         void SetSwitcherActiveButton(SwitcherId switcherId, ButtonId buttonId) override;
         const ButtonId CreateClusterButton(ClusterId clusterId, const AZStd::string& icon) override;

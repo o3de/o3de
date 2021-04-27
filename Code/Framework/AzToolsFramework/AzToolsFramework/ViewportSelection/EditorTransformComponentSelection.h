@@ -283,7 +283,7 @@ namespace AzToolsFramework
         AZ::Event<ViewportUi::ButtonId>::Handler m_transformModeSelectionHandler; ///< Event handler for the Viewport UI cluster.
 
         //! Create the Viewport UI Switcher. TEST
-        void CreateTestSwitcher();
+        void CreateComponentModeSwitcher();
 
         ViewportUi::SwitcherId m_testSwitcherId;
         ViewportUi::ButtonId m_boxShapeButtonId;
