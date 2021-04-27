@@ -14,7 +14,7 @@
 
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzToolsFramework/ViewportUi/Button.h>
-#include <AzToolsFramework/ViewportUi/Cluster.h>
+#include <AzToolsFramework/ViewportUi/ButtonGroup.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiManager.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiDisplay.h>
 

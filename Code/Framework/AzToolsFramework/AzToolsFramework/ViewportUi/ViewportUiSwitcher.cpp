@@ -1,4 +1,16 @@
-#include <AzToolsFramework/ViewportUi/Cluster.h>
+/*
+ * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+ * its licensors.
+ *
+ * For complete copyright and license terms please see the LICENSE at the root of this
+ * distribution (the "License"). All use of this software is governed by the License,
+ * or, if provided, by the license below or the license accompanying this file. Do not
+ * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ */
+
+#include <AzToolsFramework/ViewportUi/ButtonGroup.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiSwitcher.h>
 
 namespace AzToolsFramework::ViewportUi::Internal
@@ -9,7 +21,8 @@ namespace AzToolsFramework::ViewportUi::Internal
         setOrientation(Qt::Orientation::Horizontal);
         setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
         setStyleSheet(QString("QToolBar {background-color: none; border: none; spacing: 3px;}"
-                              "QToolButton {background-color: black; border: outset; border-color: white; border-radius: 7px; border-width: 2px; padding: 7px; color: white;}"));
+                              "QToolButton {background-color: black; border: outset; border-color: white; border-radius: 7px; "
+                              "border-width: 2px; padding: 7px; color: white;}"));
 
         // Add am empty active button (is set in the call to SetActiveMode)
         m_activeButton = new QToolButton();
@@ -51,7 +64,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         action->setProperty("IconHasHoverEffect", true);
 
         // add the action
-        addAction(action); 
+        addAction(action);
 
         // resize to fit new action with minimum extra space
         resize(minimumSizeHint());
@@ -68,14 +81,12 @@ namespace AzToolsFramework::ViewportUi::Internal
         }
 
         // register the action
-        m_widgetCallbacks.AddWidget(action, [updateCallback](QPointer<QObject> object)
-        {
-            updateCallback(static_cast<QAction*>(object.data()));
-        });
+        m_widgetCallbacks.AddWidget(
+            action, [updateCallback](QPointer<QObject> object) { updateCallback(static_cast<QAction*>(object.data())); });
 
         m_buttonActionMap.insert({button->m_buttonId, action});
     }
-   
+
     void ViewportUiSwitcher::RemoveButton(ButtonId buttonId)
     {
         if (auto actionEntry = m_buttonActionMap.find(buttonId); actionEntry != m_buttonActionMap.end())
@@ -124,12 +135,12 @@ namespace AzToolsFramework::ViewportUi::Internal
             QIcon buttonIcon = QString(((*buttonIt)->m_icon).c_str());
             m_activeButton->setIcon(buttonIcon);
             m_activeButton->setText(buttonName);
-        }  
+        }
 
         // Look up button ID in map then remove it from its current position
         auto itr = m_buttonActionMap.find(buttonId);
         QAction* action = itr->second;
-        removeAction(action); 
+        removeAction(action);
 
         if (!initialActiveMode)
         {
@@ -139,7 +150,7 @@ namespace AzToolsFramework::ViewportUi::Internal
                 itr = m_buttonActionMap.find(m_activeButtonId);
                 action = itr->second;
                 addAction(action);
-            }          
+            }
         }
 
         m_activeButtonId = buttonId;

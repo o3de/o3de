@@ -12,7 +12,6 @@
 
 #pragma once
 
-#include <AzToolsFramework/ViewportUi/Cluster.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
 
 namespace AzToolsFramework::ViewportUi::Internal

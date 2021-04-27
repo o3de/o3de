@@ -13,7 +13,7 @@
 #pragma once
 
 #include <AzToolsFramework/ViewportUi/Button.h>
-#include <AzToolsFramework/ViewportUi/Cluster.h>
+#include <AzToolsFramework/ViewportUi/ButtonGroup.h>
 #include <AzToolsFramework/ViewportUi/TextField.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiDisplayLayout.h>

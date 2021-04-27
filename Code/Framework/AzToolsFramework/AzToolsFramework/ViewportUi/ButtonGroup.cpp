@@ -11,7 +11,7 @@
 */
 
 #include <AzToolsFramework/ViewportUi/Button.h>
-#include <AzToolsFramework/ViewportUi/Cluster.h>
+#include <AzToolsFramework/ViewportUi/ButtonGroup.h>
 
 #pragma optimize("", off)
 #pragma inline_depth(0)

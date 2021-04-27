@@ -13,7 +13,6 @@
 #pragma once
 
 #include <AzToolsFramework/ViewportUi/Button.h>
-#include <AzToolsFramework/ViewportUi/Cluster.h>
 #include <AzToolsFramework/ViewportUi/TextField.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiDisplay.h>
 
@@ -21,6 +20,7 @@ namespace AzToolsFramework::ViewportUi
 {
     namespace Internal
     {
+        class ButtonGroup;
         class ViewportUiDisplay;
     }
 
