@@ -20,10 +20,8 @@ namespace LUAEditor
 {
     namespace Thumbnailer
     {
-        const int DEFAULT_THUMBNAIL_SIZE = 100;
-
         ThumbnailerNullComponent::ThumbnailerNullComponent() :
-            m_nullThumbnail(new AzToolsFramework::Thumbnailer::MissingThumbnail(DEFAULT_THUMBNAIL_SIZE))
+            m_nullThumbnail(new AzToolsFramework::Thumbnailer::MissingThumbnail())
         {
         }
 
