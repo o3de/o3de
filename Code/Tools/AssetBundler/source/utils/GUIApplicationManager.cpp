@@ -208,19 +208,6 @@ namespace AssetBundler
 
         qApp->setQuitOnLastWindowClosed(true);
 
-        // ZALADANE TODO
-        AZStd::fixed_vector<AZStd::string, AzFramework::NumPlatforms> platformStrings =
-            AzFramework::PlatformHelper::GetPlatformsInterpreted(m_enabledPlatforms);
-        if (platformStrings.empty())
-        {
-            AZ_Warning("ZALADANE TODO", false, "CURRENT PLATFORMS VECTOR EMPTY");
-        }
-
-        for (const auto& platformStr : platformStrings)
-        {
-            AZ_Warning("ZALADANE TODO", false, "%s", platformStr.c_str());
-        }
-
         // Run the application
         return qApp->exec();
     }

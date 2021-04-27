@@ -1533,7 +1533,7 @@ namespace AssetBundler
                 }
             }
 
-            AZStd::vector<AZStd::string> defaultSeeds = GetDefaultSeeds(GetEngineRoot(), AZ::Utils::GetProjectPath(), m_currentProjectName);
+            AZStd::vector<AZStd::string> defaultSeeds = GetDefaultSeeds(AZ::Utils::GetProjectPath(), m_currentProjectName);
             if (defaultSeeds.empty())
             {
                 // Error has already been thrown

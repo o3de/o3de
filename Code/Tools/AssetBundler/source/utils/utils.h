@@ -223,16 +223,13 @@ namespace AssetBundler
         const AZStd::vector<AzFramework::GemInfo>& gemInfoList, AzFramework::PlatformFlags platformFlags);
 
     //! Returns a vector of relative paths to Assets that should be included as default Seeds, but are not already in a Seed List file.
-    AZStd::vector<AZStd::string> GetDefaultSeeds(AZStd::string_view enginePath, AZStd::string_view projectPath, AZStd::string_view projectName);
+    AZStd::vector<AZStd::string> GetDefaultSeeds(AZStd::string_view projectPath, AZStd::string_view projectName);
 
     //! Returns the absolute path of {ProjectName}_Dependencies.xml
     AZ::IO::Path GetProjectDependenciesFile(AZStd::string_view productPath, AZStd::string_view projectName);
 
-    //! Returns the absolute path of the project dependencies file in the default project template
-    AZ::IO::Path GetProjectDependenciesFileTemplate(AZStd::string_view enginePath);
-
     //! Creates the ProjectName_Dependencies.xml file if it does not exist, and adds returns the relative path to the asset in the Cache.
-    AZ::IO::Path GetProjectDependenciesAssetPath(AZStd::string_view enginePath, AZStd::string_view projectPath, AZStd::string_view projectName);
+    AZ::IO::Path GetProjectDependenciesAssetPath(AZStd::string_view projectPath, AZStd::string_view projectName);
 
     //! Returns the map from gem seed list file path to gem name
     AZStd::unordered_map<AZStd::string, AZStd::string> GetGemSeedListFilePathToGemNameMap(const AZStd::vector<AzFramework::GemInfo>& gemInfoList, AzFramework::PlatformFlags platformFlags);

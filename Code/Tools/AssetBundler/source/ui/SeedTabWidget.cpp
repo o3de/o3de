@@ -138,12 +138,12 @@ namespace AssetBundler
         m_watchedFolders.insert(m_guiApplicationManager->GetSeedListsFolder().c_str());
 
         // Get the list of default Seed List files
-        const char* projectName = m_guiApplicationManager->GetCurrentProjectName().c_str();
-        m_filePathToGemNameMap = AssetBundler::GetDefaultSeedListFiles(GetCachedEngineRoot().c_str(), projectName, m_guiApplicationManager->GetGemInfoList(), m_guiApplicationManager->GetEnabledPlatforms());
+        m_filePathToGemNameMap = AssetBundler::GetDefaultSeedListFiles(GetCachedEngineRoot().c_str(), m_guiApplicationManager->GetCurrentProjectName(),
+            m_guiApplicationManager->GetGemInfoList(), m_guiApplicationManager->GetEnabledPlatforms());
 
         // Get the list of default Seeds that are not stored in a Seed List file on-disk
-        AZStd::vector<AZStd::string> defaultSeeds = GetDefaultSeeds(GetCachedEngineRoot().c_str(), AZ::Utils::GetProjectPath(), projectName);
-        m_fileTableModel->AddDefaultSeedsToInMemoryList(defaultSeeds, projectName, m_guiApplicationManager->GetEnabledPlatforms());
+        AZStd::vector<AZStd::string> defaultSeeds = GetDefaultSeeds(AZ::Utils::GetProjectPath(), m_guiApplicationManager->GetCurrentProjectName());
+        m_fileTableModel->AddDefaultSeedsToInMemoryList(defaultSeeds, m_guiApplicationManager->GetCurrentProjectName().c_str(), m_guiApplicationManager->GetEnabledPlatforms());
 
         // Set the new watched filess for the model
         m_watchedFiles.clear();

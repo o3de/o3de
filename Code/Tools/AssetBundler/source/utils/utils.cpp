@@ -274,11 +274,11 @@ namespace AssetBundler
         return defaultSeedLists;
     }
 
-    AZStd::vector<AZStd::string> GetDefaultSeeds(AZStd::string_view enginePath, AZStd::string_view projectPath, AZStd::string_view projectName)
+    AZStd::vector<AZStd::string> GetDefaultSeeds(AZStd::string_view projectPath, AZStd::string_view projectName)
     {
         AZStd::vector<AZStd::string> defaultSeeds;
 
-        defaultSeeds.emplace_back(GetProjectDependenciesAssetPath(enginePath, projectPath, projectName));
+        defaultSeeds.emplace_back(GetProjectDependenciesAssetPath(projectPath, projectName));
 
         return defaultSeeds;
     }
@@ -292,34 +292,12 @@ namespace AssetBundler
         return projectDependenciesFilePath.LexicallyNormal();
     }
 
-    AZ::IO::Path GetProjectDependenciesFileTemplate(AZStd::string_view engineRoot)
-    {
-        AZ::IO::Path projectDependenciesFileTemplate = engineRoot;
-        projectDependenciesFileTemplate /= DefaultProjectTemplatePath;
-        projectDependenciesFileTemplate /= AZStd::string::format("%s%s", ProjectName, DependenciesFileSuffix);
-        projectDependenciesFileTemplate.ReplaceExtension(DependenciesFileExtension);
-        return projectDependenciesFileTemplate.LexicallyNormal();
-    }
-
-    AZ::IO::Path GetProjectDependenciesAssetPath(AZStd::string_view enginePath, AZStd::string_view projectPath, AZStd::string_view projectName)
+    AZ::IO::Path GetProjectDependenciesAssetPath(AZStd::string_view projectPath, AZStd::string_view projectName)
     {
         AZ::IO::Path projectDependenciesFile = GetProjectDependenciesFile(projectPath, projectName);
         if (!AZ::IO::FileIOBase::GetInstance()->Exists(projectDependenciesFile.c_str()))
         {
-            AZ_TracePrintf(AssetBundler::AppWindowName, "Project dependencies file %s doesn't exist.\n", projectDependenciesFile.c_str());
-
-            AZ::IO::Path projectDependenciesFileTemplate = GetProjectDependenciesFileTemplate(enginePath);
-            if (AZ::IO::FileIOBase::GetInstance()->Copy(projectDependenciesFileTemplate.c_str(), projectDependenciesFile.c_str()))
-            {
-                AZ_TracePrintf(AssetBundler::AppWindowName, "Copied project dependencies file template %s to the current project.\n",
-                    projectDependenciesFile.c_str());
-            }
-            else
-            {
-                AZ_Error(AppWindowName, false, "Failed to copy project dependencies file template %s from default project"
-                    " template to the current project.\n", projectDependenciesFileTemplate.c_str());
-                return {};
-            }
+            AZ_Error(AssetBundler::AppWindowName, false, "Project dependencies file %s doesn't exist.\n", projectDependenciesFile.c_str());
         }
 
         // Turn the absolute path into a cache-relative path

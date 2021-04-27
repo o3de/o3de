@@ -195,7 +195,7 @@ namespace AssetBundler
             return;
         }
 
-        const char* projectNameOnDisplay = projectName.c_str();
+        AZStd::string projectNameOnDisplay = projectName;
         if (projectName.empty())
         {
             auto outcome = AssetBundler::GetCurrentProjectName();
@@ -205,10 +205,10 @@ namespace AssetBundler
                 return;
             }
 
-            projectNameOnDisplay = outcome.TakeValue().c_str();
+            projectNameOnDisplay = outcome.TakeValue();
         }
 
-        m_seedListFileInfoMap[key].reset(new SeedListFileInfo(absoluteFilePath, QString(fileName.c_str()), QString(projectNameOnDisplay), true, isDefaultFile));
+        m_seedListFileInfoMap[key].reset(new SeedListFileInfo(absoluteFilePath, QString(fileName.c_str()), QString(projectNameOnDisplay.c_str()), true, isDefaultFile));
         AddFileKey(key);
     }
 
