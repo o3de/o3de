@@ -60,6 +60,6 @@ namespace AWSCore
         void SetAWSFeatureActionsEnabled(const AZStd::string actionText);
 
         // To improve experience, use process watcher to keep track of ongoing tool process
-        AzFramework::ProcessWatcher* m_resourceMappingToolWatcher;
+        AZStd::unique_ptr<AzFramework::ProcessWatcher> m_resourceMappingToolWatcher;
     };
 } // namespace AWSCore

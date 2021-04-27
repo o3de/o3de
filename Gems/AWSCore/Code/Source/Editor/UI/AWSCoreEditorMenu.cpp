@@ -53,8 +53,7 @@ namespace AWSCore
             {
                 m_resourceMappingToolWatcher->TerminateProcess(AZ::u32(-1));
             }
-            delete m_resourceMappingToolWatcher;
-            m_resourceMappingToolWatcher = nullptr;
+            m_resourceMappingToolWatcher.reset();
         }
         QList<QAction*> registeredActions = this->actions();
         for (QList<QAction*>::iterator itr = registeredActions.begin(); itr != registeredActions.end(); itr++)
@@ -85,17 +84,16 @@ namespace AWSCore
                 }
                 if (m_resourceMappingToolWatcher)
                 {
-                    delete m_resourceMappingToolWatcher;
-                    m_resourceMappingToolWatcher = nullptr;
+                    m_resourceMappingToolWatcher.reset();
                 }
 
                 AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
                 processLaunchInfo.m_commandlineParameters = launchCommand;
                 processLaunchInfo.m_showWindow = false;
-                m_resourceMappingToolWatcher = AzFramework::ProcessWatcher::LaunchProcess(
-                    processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_NONE);
+                m_resourceMappingToolWatcher = AZStd::unique_ptr<AzFramework::ProcessWatcher>(
+                    AzFramework::ProcessWatcher::LaunchProcess(processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_NONE));
 
-                if (!m_resourceMappingToolWatcher)
+                if (!m_resourceMappingToolWatcher || !m_resourceMappingToolWatcher->IsProcessRunning())
                 {
                     AZStd::string resourceMappingToolLogPath = resourceMappingTool->GetToolLogPath();
                     AZStd::string message = AZStd::string::format(AWSResourceMappingToolLogWarningText, resourceMappingToolLogPath.c_str());

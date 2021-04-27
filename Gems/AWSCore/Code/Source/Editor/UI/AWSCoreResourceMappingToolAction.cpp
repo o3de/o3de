@@ -70,7 +70,7 @@ namespace AWSCore
             auto result = AZ::Utils::GetExecutablePath(executablePath, AZ_MAX_PATH_LEN);
             if (result.m_pathStored != AZ::Utils::ExecutablePathResult::Success)
             {
-                AZ_Error("AWSCoreEditor", false, "Filed to find engine executable path.");
+                AZ_Error("AWSCoreEditor", false, "Failed to find engine executable path.");
             }
             else
             {
@@ -102,7 +102,7 @@ namespace AWSCore
         }
     }
 
-    AZStd::string AWSCoreResourceMappingToolAction::GetToolLaunchCommand()
+    AZStd::string AWSCoreResourceMappingToolAction::GetToolLaunchCommand() const
     {
         if (m_enginePythonEntryPath.empty() || m_toolScriptPath.empty() || m_toolQtBinDirectoryPath.empty())
         {
@@ -122,12 +122,12 @@ namespace AWSCore
         }
     }
 
-    AZStd::string AWSCoreResourceMappingToolAction::GetToolLogPath()
+    AZStd::string AWSCoreResourceMappingToolAction::GetToolLogPath() const
     {
         return m_toolLogPath;
     }
 
-    AZStd::string AWSCoreResourceMappingToolAction::GetToolReadMePath()
+    AZStd::string AWSCoreResourceMappingToolAction::GetToolReadMePath() const
     {
         return m_toolReadMePath;
     }

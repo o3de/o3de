@@ -26,9 +26,9 @@ namespace AWSCore
 
         AWSCoreResourceMappingToolAction(const QString& text);
 
-        AZStd::string GetToolLaunchCommand();
-        AZStd::string GetToolLogPath();
-        AZStd::string GetToolReadMePath();
+        AZStd::string GetToolLaunchCommand() const;
+        AZStd::string GetToolLogPath() const;
+        AZStd::string GetToolReadMePath() const;
 
     private:
         bool m_isDebug;
