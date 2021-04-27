@@ -87,6 +87,7 @@ namespace AZ
             m_id = Uuid::CreateRandom();
             m_cullingScene = aznew CullingScene();
             SceneRequestBus::Handler::BusConnect(m_id);
+            m_drawFilterTagRegistry = RHI::DrawFilterTagRegistry::Create();
         }
 
         Scene::~Scene()
@@ -269,7 +270,7 @@ namespace AZ
                 return;
             }
 
-            pipeline->SetDrawFilterTag(m_drawFilterTagRegistry.AcquireTag(pipelineId));
+            pipeline->SetDrawFilterTag(m_drawFilterTagRegistry->AcquireTag(pipelineId));
 
             m_pipelines.push_back(pipeline);
 
@@ -305,7 +306,7 @@ namespace AZ
                         m_defaultPipeline = nullptr;
                     }
 
-                    m_drawFilterTagRegistry.ReleaseTag(pipelineToRemove->GetDrawFilterTag());
+                    m_drawFilterTagRegistry->ReleaseTag(pipelineToRemove->GetDrawFilterTag());
 
                     pipelineToRemove->OnRemovedFromScene(this);
                     m_pipelines.erase(it);

@@ -602,11 +602,11 @@ namespace AZ
                     drawItemInfo.m_drawItem.m_streamBufferViews = &m_cachedStreamBufferViews[drawItemInfo.m_vertexBufferViewIndex];
                 }
 
-                RHI::DrawItemKeyPair drawItemKeyPair;
-                drawItemKeyPair.m_sortKey = sortKey;
-                drawItemKeyPair.m_item = &drawItemInfo.m_drawItem;
-                drawItemKeyPair.m_drawFilterMask = m_drawFilter;
-                view->AddDrawItem(m_drawListTag, drawItemKeyPair);
+                RHI::DrawItemProperties drawItemProperties;
+                drawItemProperties.m_sortKey = sortKey;
+                drawItemProperties.m_item = &drawItemInfo.m_drawItem;
+                drawItemProperties.m_drawFilterMask = m_drawFilter;
+                view->AddDrawItem(m_drawListTag, drawItemProperties);
                 sortKey++;
             }
         }

@@ -47,7 +47,7 @@ namespace AZ
                 //! The sort key assigned to this draw item.
                 DrawItemSortKey m_sortKey = 0;
 
-                //! The filter associates to this draw item. 
+                //! The filter associated to this draw item. 
                 DrawFilterMask m_drawFilterMask = DrawFilterMaskDefaultValue;
             };
 

@@ -187,6 +187,7 @@ namespace AZ
             //! Get draw filter tag
             RHI::DrawFilterTag GetDrawFilterTag() const;
 
+            //! Get draw filter mask
             RHI::DrawFilterMask GetDrawFilterMask() const;
 
         private:
@@ -261,7 +262,9 @@ namespace AZ
             // A tag to filter draw items submitted by passes of this render pipeline.
             // This tag is allocated when it's added to a scene. It's set to invalid when it's removed to the scene.
             RHI::DrawFilterTag m_drawFilterTag;
-            RHI::DrawFilterMask m_drawFilterMask = 0; // The corresponding mask of the m_drawFilterTag
+            // A mask to filter draw items submitted by passes of this render pipeline.
+            // This mask is created from the value of m_drawFilterTag.
+            RHI::DrawFilterMask m_drawFilterMask = 0; 
         };
 
     } // namespace RPI

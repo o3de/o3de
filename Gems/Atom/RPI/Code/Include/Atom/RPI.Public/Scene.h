@@ -237,7 +237,7 @@ namespace AZ
             DynamicDrawSystem* m_dynamicDrawSystem = nullptr;
 
             // Registry which allocates draw filter tag for RenderPipeline
-            RHI::DrawFilterTagRegistry m_drawFilterTagRegistry;
+            RHI::Ptr<RHI::DrawFilterTagRegistry> m_drawFilterTagRegistry;
         };
 
         // --- Template functions ---

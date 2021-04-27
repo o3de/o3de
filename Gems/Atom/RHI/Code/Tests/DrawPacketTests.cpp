@@ -80,11 +80,11 @@ namespace UnitTest
             m_indexBufferView = RHI::IndexBufferView(*m_bufferEmpty, random.GetRandom(), random.GetRandom(), RHI::IndexFormat::Uint16);
         }
 
-        void ValidateDrawItem(const DrawItemData& drawItemData, RHI::DrawItemKeyPair itemKeyPair) const
+        void ValidateDrawItem(const DrawItemData& drawItemData, RHI::DrawItemProperties itemProperties) const
         {
-            const RHI::DrawItem* drawItem = itemKeyPair.m_item;
+            const RHI::DrawItem* drawItem = itemProperties.m_item;
 
-            EXPECT_EQ(itemKeyPair.m_sortKey, drawItemData.m_sortKey);
+            EXPECT_EQ(itemProperties.m_sortKey, drawItemData.m_sortKey);
             EXPECT_EQ(drawItem->m_stencilRef, drawItemData.m_stencilRef);
             EXPECT_EQ(drawItem->m_pipelineState, drawItemData.m_pipelineState);
 
@@ -170,10 +170,12 @@ namespace UnitTest
             RHITestFixture::SetUp();
 
             m_factory.reset(aznew Factory());
+            m_drawListTagRegistry = RHI::DrawListTagRegistry::Create();
         }
 
         void TearDown() override
         {
+            m_drawListTagRegistry = nullptr;
             m_factory.reset();
 
             RHITestFixture::TearDown();
@@ -182,7 +184,7 @@ namespace UnitTest
     protected:
         static const uint32_t s_randomSeed = 1234;
 
-        RHI::DrawListTagRegistry m_drawListTagRegistry;
+        RHI::Ptr<RHI::DrawListTagRegistry> m_drawListTagRegistry;
         RHI::DrawListContext m_drawListContext;
 
         AZStd::unique_ptr<Factory> m_factory;
@@ -190,12 +192,12 @@ namespace UnitTest
 
     TEST_F(DrawPacketTest, TestDrawListTagRegistryNullCase)
     {
-        RHI::DrawListTag nullTag = m_drawListTagRegistry.AcquireTag(Name());
+        RHI::DrawListTag nullTag = m_drawListTagRegistry->AcquireTag(Name());
         EXPECT_TRUE(nullTag.IsNull());
-        EXPECT_EQ(m_drawListTagRegistry.GetAllocatedTagCount(), 0);
+        EXPECT_EQ(m_drawListTagRegistry->GetAllocatedTagCount(), 0);
 
-        m_drawListTagRegistry.ReleaseTag(nullTag);
-        EXPECT_EQ(m_drawListTagRegistry.GetAllocatedTagCount(), 0);
+        m_drawListTagRegistry->ReleaseTag(nullTag);
+        EXPECT_EQ(m_drawListTagRegistry->GetAllocatedTagCount(), 0);
     }
 
     TEST_F(DrawPacketTest, TestDrawListTagRegistrySimple)
@@ -203,39 +205,39 @@ namespace UnitTest
         const Name forwardName1("Forward");
         const Name forwardName2("forward");
 
-        RHI::DrawListTag forwardTag1 = m_drawListTagRegistry.AcquireTag(forwardName1);
-        RHI::DrawListTag forwardTag2 = m_drawListTagRegistry.AcquireTag(forwardName2);
+        RHI::DrawListTag forwardTag1 = m_drawListTagRegistry->AcquireTag(forwardName1);
+        RHI::DrawListTag forwardTag2 = m_drawListTagRegistry->AcquireTag(forwardName2);
 
         EXPECT_FALSE(forwardTag1.IsNull());
         EXPECT_FALSE(forwardTag2.IsNull());
         EXPECT_NE(forwardTag1, forwardTag2);
 
-        RHI::DrawListTag forwardTag3 = m_drawListTagRegistry.AcquireTag(forwardName1);
+        RHI::DrawListTag forwardTag3 = m_drawListTagRegistry->AcquireTag(forwardName1);
         EXPECT_EQ(forwardTag1, forwardTag3);
 
-        m_drawListTagRegistry.ReleaseTag(forwardTag1);
-        m_drawListTagRegistry.ReleaseTag(forwardTag2);
-        m_drawListTagRegistry.ReleaseTag(forwardTag3);
+        m_drawListTagRegistry->ReleaseTag(forwardTag1);
+        m_drawListTagRegistry->ReleaseTag(forwardTag2);
+        m_drawListTagRegistry->ReleaseTag(forwardTag3);
 
-        EXPECT_EQ(m_drawListTagRegistry.GetAllocatedTagCount(), 0);
+        EXPECT_EQ(m_drawListTagRegistry->GetAllocatedTagCount(), 0);
     }
 
     TEST_F(DrawPacketTest, TestDrawListTagRegistryDeAllocateAssert)
     {
         AZ_TEST_START_ASSERTTEST;
-        EXPECT_EQ(m_drawListTagRegistry.GetAllocatedTagCount(), 0);
+        EXPECT_EQ(m_drawListTagRegistry->GetAllocatedTagCount(), 0);
 
         const Name tagName{"Test"};
 
-        RHI::DrawListTag tag = m_drawListTagRegistry.AcquireTag(tagName);
-        m_drawListTagRegistry.AcquireTag(tagName);
-        m_drawListTagRegistry.AcquireTag(tagName);
-        m_drawListTagRegistry.ReleaseTag(tag);
-        m_drawListTagRegistry.ReleaseTag(tag);
-        m_drawListTagRegistry.ReleaseTag(tag);
+        RHI::DrawListTag tag = m_drawListTagRegistry->AcquireTag(tagName);
+        m_drawListTagRegistry->AcquireTag(tagName);
+        m_drawListTagRegistry->AcquireTag(tagName);
+        m_drawListTagRegistry->ReleaseTag(tag);
+        m_drawListTagRegistry->ReleaseTag(tag);
+        m_drawListTagRegistry->ReleaseTag(tag);
 
         // One additional forfeit should assert.
-        m_drawListTagRegistry.ReleaseTag(tag);
+        m_drawListTagRegistry->ReleaseTag(tag);
         AZ_TEST_STOP_ASSERTTEST(1);
     }
 
@@ -254,15 +256,15 @@ namespace UnitTest
             // Acquire
             if (random.GetRandom() % 2)
             {
-                RHI::DrawListTag tag = m_drawListTagRegistry.AcquireTag(tagNameUnique);
+                RHI::DrawListTag tag = m_drawListTagRegistry->AcquireTag(tagNameUnique);
 
                 if (tag.IsNull())
                 {
-                    EXPECT_EQ(m_drawListTagRegistry.GetAllocatedTagCount(), RHI::Limits::Pipeline::DrawListTagCountMax);
+                    EXPECT_EQ(m_drawListTagRegistry->GetAllocatedTagCount(), RHI::Limits::Pipeline::DrawListTagCountMax);
                 }
                 else
                 {
-                    EXPECT_LT(m_drawListTagRegistry.GetAllocatedTagCount(), RHI::Limits::Pipeline::DrawListTagCountMax);
+                    EXPECT_LT(m_drawListTagRegistry->GetAllocatedTagCount(), RHI::Limits::Pipeline::DrawListTagCountMax);
                     acquiredTags.emplace_back(tag);
                 }
             }
@@ -274,26 +276,26 @@ namespace UnitTest
 
                 RHI::DrawListTag tag = acquiredTags[tagIndex];
 
-                size_t allocationCountBefore = m_drawListTagRegistry.GetAllocatedTagCount();
-                m_drawListTagRegistry.ReleaseTag(tag);
-                size_t allocationCountAfter = m_drawListTagRegistry.GetAllocatedTagCount();
+                size_t allocationCountBefore = m_drawListTagRegistry->GetAllocatedTagCount();
+                m_drawListTagRegistry->ReleaseTag(tag);
+                size_t allocationCountAfter = m_drawListTagRegistry->GetAllocatedTagCount();
 
                 EXPECT_EQ(allocationCountBefore - allocationCountAfter, 1);
 
                 acquiredTags.erase(acquiredTags.begin() + tagIndex);
             }
 
-            EXPECT_EQ(acquiredTags.size(), m_drawListTagRegistry.GetAllocatedTagCount());
+            EXPECT_EQ(acquiredTags.size(), m_drawListTagRegistry->GetAllocatedTagCount());
         }
 
         // Erase all references, make sure the registry is empty again.
         for (RHI::DrawListTag tag : acquiredTags)
         {
-            m_drawListTagRegistry.ReleaseTag(tag);
+            m_drawListTagRegistry->ReleaseTag(tag);
         }
         acquiredTags.clear();
 
-        EXPECT_EQ(m_drawListTagRegistry.GetAllocatedTagCount(), 0);
+        EXPECT_EQ(m_drawListTagRegistry->GetAllocatedTagCount(), 0);
     }
 
     TEST_F(DrawPacketTest, DrawPacketEmpty)

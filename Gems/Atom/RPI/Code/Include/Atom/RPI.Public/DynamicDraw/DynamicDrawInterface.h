@@ -58,7 +58,8 @@ namespace AZ
             virtual RHI::Ptr<DynamicDrawContext> CreateDynamicDrawContext(Scene* scene) = 0;
                                     
             //! Create a DynamicDrawContext for specified render pipeline
-            //! This allows draw calls are only submitted to selected render pipeline (viewport)
+            //! Draw calls submitted through the context created by this function are only submitted
+            //! to the supplied render pipeline (viewport)
             virtual RHI::Ptr<DynamicDrawContext> CreateDynamicDrawContext(RenderPipeline* pipeline) = 0;
 
             //! Get a DynamicBuffer from DynamicDrawSystem.

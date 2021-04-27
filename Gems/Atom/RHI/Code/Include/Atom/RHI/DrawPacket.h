@@ -25,7 +25,7 @@ namespace AZ
         //! DrawPacket is a packed data structure (one contiguous allocation) containing a collection of
         //! DrawItems and their associated array data. Each draw item in the packet is associated
         //! with a DrawListTag. All draw items in the packet share the same set of shader resource
-        //! groups, index buffer, and draw arguments.
+        //! groups, index buffer, one DrawFilterMask, and draw arguments.
         //! 
         //! Some notes about design and usage:
         //!   - Draw packets should be used to 'broadcast' variations of the same 'object' to multiple passes.
@@ -42,7 +42,7 @@ namespace AZ
         {
             friend class DrawPacketBuilder;
         public:
-            using DrawItemVisitor = AZStd::function<void(DrawListTag, DrawItemKeyPair)>;
+            using DrawItemVisitor = AZStd::function<void(DrawListTag, DrawItemProperties)>;
 
             //! Draw packets cannot be move constructed or copied, as they contain an additional memory payload.
             AZ_DISABLE_COPY_MOVE(DrawPacket);
@@ -53,8 +53,8 @@ namespace AZ
             //! Returns the number of draw items stored in the packet.
             size_t GetDrawItemCount() const;
 
-            //! Returns the draw item / sort key associated with the provided index.
-            DrawItemKeyPair GetDrawItem(size_t index) const;
+            //! Returns the draw item and its properties associated with the provided index.
+            DrawItemProperties GetDrawItem(size_t index) const;
 
             //! Returns the draw list tag associated with the provided index.
             DrawListTag GetDrawListTag(size_t index) const;

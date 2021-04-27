@@ -36,6 +36,10 @@ namespace AZ
             : public AZStd::intrusive_base
         {
         public:
+            AZ_CLASS_ALLOCATOR(TagRegistry, AZ::SystemAllocator, 0);
+            AZ_DISABLE_COPY_MOVE(TagRegistry);
+
+            static Ptr<TagRegistry> Create();
 
             //! Resets the registry back to an empty state. All references are released.
             void Reset();
@@ -43,24 +47,25 @@ namespace AZ
             //! Acquires a tag from the provided name (case sensitive). If the tag already existed, it is ref-counted.
             //! Returns a valid tag on success; returns a null tag if the registry is at full capacity. You must
             //! call ReleaseTag() if successful.
-            TagType AcquireTag(const Name& drawListName);
+            TagType AcquireTag(const Name& tagName);
 
             //! Releases a reference to a tag. Tags are ref-counted, so it's necessary to maintain ownership of the
             //! tag and release when its no longer needed.
-            void ReleaseTag(TagType drawListTag);
+            void ReleaseTag(TagType tagName);
 
            //! Finds the tag associated with the provided name (case sensitive). If a tag exists with that name, the tag
            //! is returned. The reference count is NOT incremented on success; ownership is not passed to the user. If
            //! the tag does not exist, a null tag is returned.
-            TagType FindTag(const Name& drawListName) const;
+            TagType FindTag(const Name& tagName) const;
 
-            //! Returns the name of the given DrawListTag, or empty string if the tag is not registered.
+            //! Returns the name of the given tag, or empty string if the tag is not registered.
             Name GetName(TagType tag) const;
 
             //! Returns the number of allocated tags in the registry.
             size_t GetAllocatedTagCount() const;
 
         private:
+            TagRegistry() = default;
 
             struct Entry
             {
@@ -72,6 +77,12 @@ namespace AZ
             AZStd::array<Entry, MaxTagCount> m_entriesByTag;
             size_t m_allocatedTagCount = 0;
         };
+
+        template<typename TagType, size_t MaxTagCount>
+        Ptr<TagRegistry<TagType, MaxTagCount>> TagRegistry<TagType, MaxTagCount>::Create()
+        {
+            return aznew TagRegistry<TagType, MaxTagCount>();
+        }
 
         template<typename TagType, size_t MaxTagCount>
         void TagRegistry<TagType, MaxTagCount>::Reset()
