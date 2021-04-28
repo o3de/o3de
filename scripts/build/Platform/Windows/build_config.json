@@ -307,7 +307,7 @@
     ],
     "PIPELINE_ENV": {
       "EXECUTE_FROM_PROJECT": "1",
-      "CMAKE_LY_PROJECTS": " "
+      "CMAKE_LY_PROJECTS": ""
     },
     "steps": [
       "profile_vs2019"
