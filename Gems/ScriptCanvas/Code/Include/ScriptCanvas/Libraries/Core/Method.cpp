@@ -276,7 +276,7 @@ namespace ScriptCanvas
 
                 if (IsMethodOverloaded() && BehaviorContextUtils::FindExplicitOverload(method, bcClass, className, methodName, &prettyClassName))
                 {
-                    MethodConfiguration config(*method, method->IsMember() ? MethodType::Member : MethodType::Free);
+                    MethodConfiguration config(*method, MethodType::Member);
                     config.m_class = bcClass;
                     config.m_namespaces = &m_namespaces;
                     config.m_className = &className;

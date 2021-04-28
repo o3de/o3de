@@ -95,14 +95,14 @@ namespace AZ
         {
 #if defined(IMGUI_ENABLED)
             InitializeViewportSizeIfNeeded();
-            ImGui::ImGuiManagerListenerBus::Broadcast(&ImGui::IImGuiManagerListener::Render);
+            ImGui::ImGuiManagerBus::Broadcast(&ImGui::IImGuiManager::Render);
 #endif
         }
 
         void ImguiAtomSystemComponent::OnViewportSizeChanged(AzFramework::WindowSize size)
         {
 #if defined(IMGUI_ENABLED)
-            ImGui::ImGuiManagerListenerBus::Broadcast([this, size](ImGui::ImGuiManagerListenerBus::Events* imgui)
+            ImGui::ImGuiManagerBus::Broadcast([this, size](ImGui::ImGuiManagerBus::Events* imgui)
             {
                 imgui->OverrideRenderWindowSize(size.m_width, size.m_height);
                 // ImGuiManagerListenerBus may not have been connected when this system component is activated
