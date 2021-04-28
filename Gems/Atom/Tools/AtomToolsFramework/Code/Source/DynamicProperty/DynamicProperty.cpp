@@ -135,6 +135,7 @@ namespace AtomToolsFramework
             m_editData.m_elementId = AZ::Edit::UIHandlers::Default;
 
             AddEditDataAttributeMemberFunction(AZ::Edit::Attributes::NameLabelOverride, &DynamicProperty::GetDisplayName);
+            AddEditDataAttributeMemberFunction(AZ::Edit::Attributes::AssetPickerTitle, &DynamicProperty::GetAssetPickerTitle);
             AddEditDataAttributeMemberFunction(AZ::Edit::Attributes::DescriptionTextOverride, &DynamicProperty::GetDescription);
             AddEditDataAttributeMemberFunction(AZ::Edit::Attributes::ReadOnly, &DynamicProperty::IsReadOnly);
             AddEditDataAttributeMemberFunction(AZ::Edit::Attributes::EnumValues, &DynamicProperty::GetEnumValues);
@@ -195,6 +196,16 @@ namespace AtomToolsFramework
     AZStd::string DynamicProperty::GetDisplayName() const
     {
         return !m_config.m_displayName.empty() ? m_config.m_displayName : m_config.m_nameId;
+    }
+
+    AZStd::string DynamicProperty::GetGroupName() const
+    {
+        return m_config.m_groupName;
+    }
+
+    AZStd::string DynamicProperty::GetAssetPickerTitle() const
+    {
+        return GetGroupName().empty() ? GetDisplayName() : GetGroupName() + " " + GetDisplayName();
     }
 
     AZStd::string DynamicProperty::GetDescription() const

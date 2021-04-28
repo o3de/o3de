@@ -262,9 +262,6 @@ namespace ScriptCanvas
 
             void SetSymbol(Symbol val);
 
-        protected:
-            VariableConstPtr m_nodeable;
-
         private:
             // the (possible) slot(s) through which execution exited, along with associated output
             AZStd::vector<ExecutionChild> m_children;
@@ -315,6 +312,8 @@ namespace ScriptCanvas
             ScopePtr m_scope;
 
             Symbol m_symbol = Symbol::FunctionCall;
+
+            VariableConstPtr m_nodeable;
 
             size_t FindIndexOfChild(ExecutionTreeConstPtr child) const;
         };

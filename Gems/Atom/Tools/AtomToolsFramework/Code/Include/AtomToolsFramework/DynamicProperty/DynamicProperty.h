@@ -49,6 +49,7 @@ namespace AtomToolsFramework
         AZ::Name m_id;
         AZStd::string m_nameId;
         AZStd::string m_displayName;
+        AZStd::string m_groupName;
         AZStd::string m_description;
         AZStd::any m_defaultValue;
         AZStd::any m_parentValue;
@@ -108,6 +109,8 @@ namespace AtomToolsFramework
     private:
         // Functions used to configure edit data attributes.
         AZStd::string GetDisplayName() const;
+        AZStd::string GetGroupName() const;
+        AZStd::string GetAssetPickerTitle() const;
         AZStd::string GetDescription() const;
         AZStd::vector<AZ::Edit::EnumConstant<uint32_t>> GetEnumValues() const;
 

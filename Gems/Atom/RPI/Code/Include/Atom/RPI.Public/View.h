@@ -75,7 +75,7 @@ namespace AZ
             void AddDrawPacket(const RHI::DrawPacket* drawPacket, Vector3 worldPosition);
 
             //! Add a draw item to this view with its associated draw list tag
-            void AddDrawItem(RHI::DrawListTag drawListTag, const RHI::DrawItemKeyPair& drawItemKeyPair);
+            void AddDrawItem(RHI::DrawListTag drawListTag, const RHI::DrawItemProperties& drawItemProperties);
 
             //! Sets the worldToView matrix and recalculates the other matrices.
             void SetWorldToViewMatrix(const AZ::Matrix4x4& worldToView);

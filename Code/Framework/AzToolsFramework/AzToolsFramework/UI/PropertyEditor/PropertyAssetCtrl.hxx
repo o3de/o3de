@@ -89,12 +89,13 @@ namespace AzToolsFramework
         void dragLeaveEvent(QDragLeaveEvent* event) override;
         void dropEvent(QDropEvent* event) override;
 
-        virtual AssetSelectionModel GetAssetSelectionModel() { return AssetSelectionModel::AssetTypeSelection(GetCurrentAssetType()); }
+        virtual AssetSelectionModel GetAssetSelectionModel();
 
     signals:
         void OnAssetIDChanged(AZ::Data::AssetId newAssetID);
 
     protected:
+        QString m_title;
         ThumbnailPropertyCtrl* m_thumbnail = nullptr;
         QPushButton* m_errorButton = nullptr;
         QToolButton* m_editButton = nullptr;
@@ -191,6 +192,7 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
 
     public slots:
+        void SetTitle(const QString& title);
         void SetEditNotifyTarget(void* editNotifyTarget);
         void SetEditNotifyCallback(EditCallbackType* editNotifyCallback); // This is meant to be used with the "EditCallback" Attribute
         void SetClearNotifyCallback(ClearCallbackType* clearNotifyCallback); // This is meant to be used with the "ClearNotify" Attribute
