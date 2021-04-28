@@ -54,7 +54,7 @@ namespace AZ
                 AZ_Assert(sceneSystem, "Thumbnail system failed to get scene system implementation.");
                 [[maybe_unused]] bool sceneRemovedSuccessfully = sceneSystem->RemoveScene(m_context->GetData()->m_sceneName);
                 AZ_Assert(
-                    sceneRemovedSuccessfully, "Thumbnail system was unable to remove scene '%' from the scene system.",
+                    sceneRemovedSuccessfully, "Thumbnail system was unable to remove scene '%s' from the scene system.",
                     m_context->GetData()->m_sceneName.c_str());
                 m_context->GetData()->m_scene = nullptr;
                 m_context->GetData()->m_renderPipeline = nullptr;

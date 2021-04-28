@@ -45,12 +45,10 @@ namespace AzFramework
 
         //! Creates a scene with a given name.
         //!  - If there is already a scene with the provided name this will return AZ::Failure(). 
-        //!  - If isDefault is set to true and there is already a default scene, the default scene will be switched to this one. 
         virtual AZ::Outcome<AZStd::shared_ptr<Scene>, AZStd::string> CreateScene(AZStd::string_view name) = 0;
 
         //! Creates a scene with a given name and a parent.
         //!  - If there is already a scene with the provided name this will return AZ::Failure().
-        //!  - If isDefault is set to true and there is already a default scene, the default scene will be switched to this one.
         virtual AZ::Outcome<AZStd::shared_ptr<Scene>, AZStd::string> CreateSceneWithParent(
             AZStd::string_view name, AZStd::shared_ptr<Scene> parent) = 0;
 
@@ -66,7 +64,6 @@ namespace AzFramework
         virtual void IterateZombieScenes(const ZombieIterationCallback& callback) = 0;
 
         //! Remove a scene with a given name and return if the operation was successful.
-        //!  - If the removed scene is the default scene, there will no longer be a default scene.
         virtual bool RemoveScene(AZStd::string_view name) = 0;
 
         //! Connects the provided handler to the events that are called after scenes are created or before they get removed.
@@ -78,4 +75,14 @@ namespace AzFramework
     };
 
     using SceneSystemInterface = AZ::Interface<ISceneSystem>;
+
+    // EBus wrapper for ScriptCanvas
+    class ISceneSystemRequests
+        : public AZ::EBusTraits
+    {
+    public:
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+    };
+    using ILoggerRequestBus = AZ::EBus<ISceneSystem, ISceneSystemRequests>;
 } // AzFramework

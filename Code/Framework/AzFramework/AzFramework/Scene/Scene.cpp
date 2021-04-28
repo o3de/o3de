@@ -73,6 +73,11 @@ namespace AzFramework
 
     AZStd::any* Scene::FindSubsystemInScene(const AZ::TypeId& typeId)
     {
+        // Spot check that the internal arrays remain consistent.
+        AZ_Assert(
+            m_systemKeys.size() == m_systemObjects.size(), "Key and object list in AzFramework::Scene '%s' have gone out of sync.",
+            m_name.c_str());
+
         const size_t m_systemKeysCount = m_systemKeys.size();
         for (size_t i = 0; i < m_systemKeysCount; ++i)
         {

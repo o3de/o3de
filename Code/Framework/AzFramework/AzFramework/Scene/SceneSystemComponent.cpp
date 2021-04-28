@@ -133,10 +133,18 @@ namespace AzFramework
                     AZStd::lock_guard lock(m_eventMutex);
                     m_events.Signal(EventType::ScenePendingRemoval, scene);
                 }
-                
+
+                // Zombies are weak pointers that are kept around for situations where there's a delay in deleting the scene. This can happen
+                // if there are outstanding calls like in-progress async calls or resources locked by hardware. A weak_ptr of the original
+                // scene is kept so the zombie scene can still be found through iteration as it may require additional calls such as Tick calls.
                 m_zombieScenes.push_back(scene);
                 scene = AZStd::move(m_activeScenes.back());
                 m_activeScenes.pop_back();
+                // The scene may not be held onto anymore, so check here to see if the previously added zombie can be released.
+                if (m_zombieScenes.back().expired())
+                {
+                    m_zombieScenes.pop_back();
+                }
                 return true;
             }
         }

@@ -279,6 +279,7 @@ namespace SceneUnitTest
     {
         // Create the scene
         AZ::Outcome<AZStd::shared_ptr<Scene>, AZStd::string> createSceneOutcome = m_sceneSystem->CreateScene("TestScene");
+        EXPECT_TRUE(createSceneOutcome.IsSuccess());
         AZStd::shared_ptr<Scene> scene = createSceneOutcome.TakeValue();
 
         // Set a class on the Scene
@@ -293,6 +294,23 @@ namespace SceneUnitTest
         EXPECT_FALSE(scene->SetSubsystem(foo1b));
         delete foo1b;
 
+        // Add a child scene
+        createSceneOutcome = m_sceneSystem->CreateSceneWithParent("ChildScene", scene);
+        EXPECT_TRUE(createSceneOutcome.IsSuccess());
+        AZStd::shared_ptr<Scene> childScene = createSceneOutcome.TakeValue();
+
+        // Get class back from parent scene.
+        EXPECT_EQ(foo1a, *childScene->FindSubsystem<Foo1*>());
+
+        // Find overloaded version of class on child scene.
+        Foo1* foo1c = new Foo1();
+        EXPECT_TRUE(childScene->SetSubsystem(foo1c));
+        EXPECT_EQ(foo1c, *childScene->FindSubsystem<Foo1*>());
+
+        // Unset system on child scene, using alternative unset function.
+        EXPECT_TRUE(childScene->UnsetSubsystem(foo1c));
+        delete foo1c;
+
         // Try to un-set a class that was never set, this should fail.
         EXPECT_FALSE(scene->UnsetSubsystem<Foo2>());
 
@@ -300,7 +318,7 @@ namespace SceneUnitTest
         EXPECT_TRUE(scene->UnsetSubsystem<Foo1>());
         delete foo1a;
 
-        // Make sure that the previsouly set class was really removed.
+        // Make sure that the previously set class was really removed.
         EXPECT_EQ(nullptr, scene->FindSubsystem<Foo1*>());
     }
 } // UnitTest

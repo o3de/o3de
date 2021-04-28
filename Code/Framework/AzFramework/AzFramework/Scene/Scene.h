@@ -69,7 +69,7 @@ namespace AzFramework
         bool UnsetSubsystem();
 
         // Unset the instance of the exact system associated with this scene.
-        // Use this to make sure the expected instance is removed or to make sure type deduction is done in the same was as during setting.
+        // Use this to make sure the expected instance is removed or to make sure type deduction is done in the same way as during setting.
         template<typename T>
         bool UnsetSubsystem(const T& system);
 

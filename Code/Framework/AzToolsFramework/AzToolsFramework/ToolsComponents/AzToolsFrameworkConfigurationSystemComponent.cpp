@@ -56,7 +56,7 @@ namespace AzToolsFramework
 
     void AzToolsFrameworkConfigurationSystemComponent::Activate()
     {
-        // Associate the EditorEntityContext with the default scene.
+        // Create the editor specific child scene to the main scene and add the editor entity context to it.
         AzFramework::EntityContextId editorEntityContextId;
         EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
 

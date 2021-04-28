@@ -57,7 +57,10 @@ namespace AzFramework
 
         AZStd::vector<AZStd::shared_ptr<Scene>> m_activeScenes;
         AZStd::vector<AZStd::weak_ptr<Scene>> m_zombieScenes;
-        AZStd::mutex m_eventMutex; // Using a mutex instead of a regular mutex because during a signal the handlers can be unregistered.
+        // Using a mutex around the events as other threads may respond to a new/deleted scene by making
+        // local updates and unregistering themselves. Since Scene is single threaded, no updates (other
+        // then unregistering an event) should be done from other threads though.
+        AZStd::recursive_mutex m_eventMutex;
         SceneEvent m_events;
     };
 }

@@ -69,7 +69,7 @@ namespace AzFramework
         }
         else
         {
-            AZ_Assert(false, "Unable to create main scene due to: %s", createSceneOutcome.GetError().data());
+            AZ_Assert(false, "Unable to create main scene due to: %s", createSceneOutcome.GetError().c_str());
         }
 
     }

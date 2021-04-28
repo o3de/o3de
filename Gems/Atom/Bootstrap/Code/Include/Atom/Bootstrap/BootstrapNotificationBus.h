@@ -48,7 +48,6 @@ namespace AZ
                         AZStd::shared_ptr<AzFramework::Scene> mainScene = sceneSystem->GetScene(AzFramework::Scene::MainSceneName);
                         AZ_Assert(mainScene, "AzFramework didn't set up any scenes.");
 
-                        // Assume first scene is the default scene
                         AZ::RPI::ScenePtr* defaultScene = mainScene->FindSubsystem<AZ::RPI::ScenePtr>();
                         if (defaultScene && *defaultScene && (*defaultScene)->GetDefaultRenderPipeline())
                         {

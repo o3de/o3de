@@ -51,10 +51,12 @@ namespace AzFramework
                 if (entityContext && (*entityContext)->GetContextId() == contextId)
                 {
                     result = scene;
+                    // Result found, returning.
                     return false;
                 }
                 else
                 {
+                    // No match, continuing to search for containing scene.
                     return true;
                 }
             });

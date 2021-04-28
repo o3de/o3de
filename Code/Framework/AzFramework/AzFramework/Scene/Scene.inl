@@ -16,10 +16,9 @@ namespace AzFramework
     bool Scene::SetSubsystem(T&& system)
     {
         const AZ::TypeId& targetType = azrtti_typeid<T>();
-        const size_t m_systemKeysCount = m_systemKeys.size();
-        for (size_t i = 0; i < m_systemKeysCount; ++i)
+        for (const AZ::TypeId& key : m_systemKeys)
         {
-            if (m_systemKeys[i] == targetType)
+            if (key == targetType)
             {
                 return false;
             }
@@ -55,8 +54,8 @@ namespace AzFramework
     bool Scene::UnsetSubsystem(const T& system)
     {
         const AZ::TypeId& targetType = azrtti_typeid<T>();
-        const size_t m_systemKeysCount = m_systemKeys.size();
-        for (size_t i = 0; i < m_systemKeysCount; ++i)
+        const size_t systemKeysCount = m_systemKeys.size();
+        for (size_t i = 0; i < systemKeysCount; ++i)
         {
             if (m_systemKeys[i] != targetType)
             {
