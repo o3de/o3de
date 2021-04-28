@@ -39,7 +39,7 @@ set(LY_ASSET_DEPLOY_ASSET_TYPE "es3" CACHE STRING "Set the asset type for deploy
 
 # Set the python cmd tool
 if(PAL_HOST_PLATFORM_NAME_LOWERCASE STREQUAL "windows")
-    ly_set(LY_PYTHON_CMD ${CMAKE_CURRENT_SOURCE_DIR}/Tools/Python/python3.cmd)
+    ly_set(LY_PYTHON_CMD ${CMAKE_CURRENT_SOURCE_DIR}/python/python.cmd)
 else()
-    ly_set(LY_PYTHON_CMD ${CMAKE_CURRENT_SOURCE_DIR}/Tools/Python/python3.sh)
+    ly_set(LY_PYTHON_CMD ${CMAKE_CURRENT_SOURCE_DIR}/python/python.sh)
 endif()
