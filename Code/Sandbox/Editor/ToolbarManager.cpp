@@ -511,6 +511,7 @@ void ToolbarManager::InitializeStandardToolbars()
         m_standardToolbars.reserve(5 + macroToolbars.size());
         m_standardToolbars.push_back(GetEditModeToolbar());
         m_standardToolbars.push_back(GetObjectToolbar());
+        m_standardToolbars.push_back(GetPlayConsoleToolbar());
 
         IPlugin* pGamePlugin = GetIEditor()->GetPluginManager()->GetPluginByGUID("{71CED8AB-54E2-4739-AA78-7590A5DC5AEB}");
         IPlugin* pDescriptionEditorPlugin = GetIEditor()->GetPluginManager()->GetPluginByGUID("{4B9B7074-2D58-4AFD-BBE1-BE469D48456A}");
@@ -587,26 +588,11 @@ AmazonToolbar ToolbarManager::GetEditModeToolbar() const
 
     t.AddAction(ID_TOOLBAR_SEPARATOR, ORIGINAL_TOOLBAR_VERSION);
 
-    if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        t.AddAction(ID_EDITMODE_SELECT, ORIGINAL_TOOLBAR_VERSION);
-    }
-
     t.AddAction(ID_EDITMODE_MOVE, ORIGINAL_TOOLBAR_VERSION);
     t.AddAction(ID_EDITMODE_ROTATE, ORIGINAL_TOOLBAR_VERSION);
     t.AddAction(ID_EDITMODE_SCALE, ORIGINAL_TOOLBAR_VERSION);
-    t.AddAction(ID_EDITMODE_SELECTAREA, ORIGINAL_TOOLBAR_VERSION);
-
-    t.AddAction(ID_VIEW_SWITCHTOGAME, TOOLBARS_WITH_PLAY_GAME);
 
     t.AddAction(ID_TOOLBAR_SEPARATOR, ORIGINAL_TOOLBAR_VERSION);
-    t.AddAction(ID_TOOLBAR_WIDGET_REF_COORD, ORIGINAL_TOOLBAR_VERSION);
-    t.AddAction(ID_SELECT_AXIS_X, ORIGINAL_TOOLBAR_VERSION);
-    t.AddAction(ID_SELECT_AXIS_Y, ORIGINAL_TOOLBAR_VERSION);
-    t.AddAction(ID_SELECT_AXIS_Z, ORIGINAL_TOOLBAR_VERSION);
-    t.AddAction(ID_SELECT_AXIS_XY, ORIGINAL_TOOLBAR_VERSION);
-    t.AddAction(ID_SELECT_AXIS_TERRAIN, ORIGINAL_TOOLBAR_VERSION);
-    t.AddAction(ID_SELECT_AXIS_SNAPTOALL, ORIGINAL_TOOLBAR_VERSION);
     t.AddAction(ID_TOOLBAR_WIDGET_SNAP_GRID, ORIGINAL_TOOLBAR_VERSION);
     t.AddAction(ID_TOOLBAR_WIDGET_SNAP_ANGLE, ORIGINAL_TOOLBAR_VERSION);
     t.AddAction(ID_RULER, ORIGINAL_TOOLBAR_VERSION);
@@ -623,7 +609,6 @@ AmazonToolbar ToolbarManager::GetObjectToolbar() const
     AmazonToolbar t = AmazonToolbar("Object", QObject::tr("Object Toolbar"));
     t.SetMainToolbar(true);
     t.AddAction(ID_GOTO_SELECTED, ORIGINAL_TOOLBAR_VERSION);
-    t.AddAction(ID_OBJECTMODIFY_ALIGNTOGRID, ORIGINAL_TOOLBAR_VERSION);
     t.AddAction(ID_OBJECTMODIFY_SETHEIGHT, ORIGINAL_TOOLBAR_VERSION);
 
     if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
@@ -633,6 +618,18 @@ AmazonToolbar ToolbarManager::GetObjectToolbar() const
         t.AddAction(ID_EDIT_UNFREEZEALL, ORIGINAL_TOOLBAR_VERSION);
     }
 
+    return t;
+}
+
+AmazonToolbar ToolbarManager::GetPlayConsoleToolbar() const
+{
+    AmazonToolbar t = AmazonToolbar("PlayConsole", QObject::tr("Play Console"));
+    t.SetMainToolbar(true);
+
+    t.AddAction(ID_TOOLBAR_WIDGET_SPACER_RIGHT, ORIGINAL_TOOLBAR_VERSION); 
+    t.AddAction(ID_TOOLBAR_SEPARATOR, ORIGINAL_TOOLBAR_VERSION);
+    t.AddAction(ID_TOOLBAR_WIDGET_PLAYCONSOLE_LABEL, ORIGINAL_TOOLBAR_VERSION);
+    t.AddAction(ID_VIEW_SWITCHTOGAME, TOOLBARS_WITH_PLAY_GAME);
     return t;
 }
 
@@ -767,7 +764,7 @@ void ToolbarManager::InstantiateToolbars()
     for (int i = 0; i < numToolbars; ++i)
     {
         InstantiateToolbar(i);
-        if (i == 1)
+        if (i == 2)
         {
             // Hack. Just copying how it was
             m_mainWindow->addToolBarBreak();

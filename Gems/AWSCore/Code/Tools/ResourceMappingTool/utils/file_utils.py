@@ -20,8 +20,8 @@ path, check file existence, etc
 logger = logging.getLogger(__name__)
 
 
-def check_path_exists(full_path: str) -> bool:
-    return pathlib.Path(full_path).exists()
+def check_path_exists(file_path: str) -> bool:
+    return pathlib.Path(file_path).exists()
 
 
 def get_current_directory_path() -> str:
@@ -42,8 +42,16 @@ def find_files_with_suffix_under_directory(dir_path: str, suffix: str) -> List[s
         if matched_path.is_file():
             results.append(str(matched_path.name))
     return results
-    
-    
-def join_path(dir_path: str, file_name: str) -> str:
-    # TODO: expand usage to support Mac and Linux
-    return str(pathlib.WindowsPath(dir_path).joinpath(file_name))
+
+
+def normalize_file_path(file_path: str) -> str:
+    if file_path:
+        try:
+            return str(pathlib.Path(file_path).resolve(True))
+        except (FileNotFoundError, RuntimeError):
+            logger.warning(f"Failed to normalize file path {file_path}, return empty string instead")
+    return ""
+
+
+def join_path(this_path: str, other_path: str) -> str:
+    return str(pathlib.Path(this_path).joinpath(other_path))

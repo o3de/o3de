@@ -21,6 +21,7 @@ if(CMAKE_VERSION VERSION_EQUAL 3.19)
     cmake_policy(SET CMP0111 OLD)
 endif()
 
+include(cmake/LySet.cmake)
 include(cmake/Version.cmake)
 include(cmake/OutputDirectory.cmake)
 
@@ -97,9 +98,6 @@ set(enabled_platforms
 # Add any engine restricted platforms as external subdirs
 o3de_add_engine_restricted_platform_external_subdirs()
 
-# Recurse into directory of general python test scripts
-add_subdirectory(ctest_scripts)
-
 add_subdirectory(scripts)
 
 # SPEC-1417 will investigate and fix this
@@ -145,7 +143,10 @@ endif()
 include(cmake/RuntimeDependencies.cmake)
 # 5. Perform test impact framework post steps once all of the targets have been enumerated
 ly_test_impact_post_step()
-# 6. Generate the O3DE find file and setup install locations for scripts, tools, assets etc., required by the engine 
+# 6. Generate the O3DE find file and setup install locations for scripts, tools, assets etc., required by the engine
 if(NOT INSTALLED_ENGINE)
     ly_setup_o3de_install()
+
+    # IMPORTANT: must be included last
+    include(cmake/CPack.cmake)
 endif()

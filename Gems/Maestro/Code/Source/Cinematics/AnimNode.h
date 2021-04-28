@@ -162,7 +162,7 @@ public:
     void SetExpanded(bool expanded) override;
     bool GetExpanded() const override;
 
-    static void Reflect(AZ::SerializeContext* serializeContext);
+    static void Reflect(AZ::ReflectContext* context);
 
 protected:
     virtual void UpdateDynamicParamsInternal() {};

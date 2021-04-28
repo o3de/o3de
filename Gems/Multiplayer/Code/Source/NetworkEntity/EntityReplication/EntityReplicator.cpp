@@ -449,8 +449,7 @@ namespace Multiplayer
     {
         // Received rpc metrics, log rpc sent, number of bytes, and the componentId/rpcId for bandwidth metrics
         MultiplayerStats& stats = AZ::Interface<IMultiplayer>::Get()->GetStats();
-        stats.m_rpcsSent++;
-        stats.m_rpcsSentBytes += entityRpcMessage.GetEstimatedSerializeSize();
+        stats.RecordRpcSent(entityRpcMessage.GetComponentId(), entityRpcMessage.GetRpcIndex(), entityRpcMessage.GetEstimatedSerializeSize());
 
         m_replicationManager.AddDeferredRpcMessage(entityRpcMessage);
     }
@@ -604,7 +603,7 @@ namespace Multiplayer
                     aznumeric_cast<uint32_t>(GetRemoteNetworkRole()),
                     aznumeric_cast<uint32_t>(entityRpcMessage.GetRpcDeliveryType()),
                     aznumeric_cast<uint32_t>(entityRpcMessage.GetComponentId()),
-                    aznumeric_cast<uint32_t>(entityRpcMessage.GetRpcMessageType()),
+                    aznumeric_cast<uint32_t>(entityRpcMessage.GetRpcIndex()),
                     entityRpcMessage.GetReliability() == ReliabilityType::Reliable ? "true" : "false",
                     IsMarkedForRemoval() ? "true" : "false"
                 );
@@ -621,7 +620,7 @@ namespace Multiplayer
                 aznumeric_cast<uint32_t>(GetRemoteNetworkRole()),
                 aznumeric_cast<uint32_t>(entityRpcMessage.GetRpcDeliveryType()),
                 aznumeric_cast<uint32_t>(entityRpcMessage.GetComponentId()),
-                aznumeric_cast<uint32_t>(entityRpcMessage.GetRpcMessageType()),
+                aznumeric_cast<uint32_t>(entityRpcMessage.GetRpcIndex()),
                 entityRpcMessage.GetReliability() == ReliabilityType::Reliable ? "true" : "false",
                 IsMarkedForRemoval() ? "true" : "false"
             );
@@ -633,8 +632,7 @@ namespace Multiplayer
     {
         // Received rpc metrics, log rpc received, time spent, number of bytes, and the componentId/rpcId for bandwidth metrics
         MultiplayerStats& stats = AZ::Interface<IMultiplayer>::Get()->GetStats();
-        stats.m_rpcsRecv++;
-        stats.m_rpcsRecvBytes += entityRpcMessage.GetEstimatedSerializeSize();
+        stats.RecordRpcReceived(entityRpcMessage.GetComponentId(), entityRpcMessage.GetRpcIndex(), entityRpcMessage.GetEstimatedSerializeSize());
 
         if (!m_netBindComponent)
         {
@@ -646,7 +644,7 @@ namespace Multiplayer
                 aznumeric_cast<uint32_t>(GetRemoteNetworkRole()),
                 aznumeric_cast<uint32_t>(entityRpcMessage.GetRpcDeliveryType()),
                 aznumeric_cast<uint32_t>(entityRpcMessage.GetComponentId()),
-                aznumeric_cast<uint32_t>(entityRpcMessage.GetRpcMessageType()),
+                aznumeric_cast<uint32_t>(entityRpcMessage.GetRpcIndex()),
                 entityRpcMessage.GetReliability() == ReliabilityType::Reliable ? "true" : "false",
                 IsMarkedForRemoval() ? "true" : "false"
             );

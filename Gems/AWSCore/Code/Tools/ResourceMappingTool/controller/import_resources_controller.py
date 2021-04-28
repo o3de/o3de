@@ -28,13 +28,12 @@ logger = logging.getLogger(__name__)
 
 
 class ImportResourcesController(QObject):
-    add_import_resources = Signal(list)
+    add_import_resources_sender: Signal = Signal(list)
+    set_notification_frame_text_sender: Signal = Signal(str)
 
     """
     ImportResourcesController is the place to bind ImportResource view with its
     corresponding behavior
-    
-    TODO: add error handling once it is ready
     """
 
     def __init__(self) -> None:
@@ -44,6 +43,8 @@ class ImportResourcesController(QObject):
         self._view_manager: ViewManager = ViewManager.get_instance()
         # Initialize view and model related references
         self._import_resources_page: ImportResourcesPage = self._view_manager.get_import_resources_page()
+        self.set_notification_frame_text_sender.connect(
+            self._import_resources_page.notification_frame.set_frame_text_receiver)
         self._tree_view: ResourceTreeView = self._import_resources_page.tree_view
         self._proxy_model: ResourceProxyModel = self._tree_view.resource_proxy_model
 
@@ -60,11 +61,10 @@ class ImportResourcesController(QObject):
             self._proxy_model.deduplicate_selected_import_resources(self._tree_view.selectedIndexes())
         if unique_resources:
             logger.debug(f"Importing selected resources: {unique_resources} ...")
-            self.add_import_resources.emit(unique_resources)
+            self.add_import_resources_sender.emit(unique_resources)
             self._back_to_view_edit_page()
         else:
-            self._import_resources_page.set_notification_frame_text(
-                error_messages.IMPORT_RESOURCES_PAGE_NO_RESOURCES_SELECTED_ERROR_MESSAGE)
+            self.set_notification_frame_text_sender.emit(error_messages.IMPORT_RESOURCES_PAGE_NO_RESOURCES_SELECTED_ERROR_MESSAGE)
 
     def _start_search_resources_async(self) -> None:
         configuration: Configuration = self._configuration_manager.configuration
@@ -77,8 +77,7 @@ class ImportResourcesController(QObject):
             async_worker = FunctionWorker(self._request_cfn_resources_callback, configuration.region)
             async_worker.signals.result.connect(self._load_cfn_resources_callback)
         else:
-            self._import_resources_page.set_notification_frame_text(
-                error_messages.IMPORT_RESOURCES_PAGE_SEARCH_VERSION_ERROR_MESSAGE)
+            self.set_notification_frame_text_sender.emit(error_messages.IMPORT_RESOURCES_PAGE_SEARCH_VERSION_ERROR_MESSAGE)
             return
 
         self._tree_view.reset_view()
@@ -100,7 +99,7 @@ class ImportResourcesController(QObject):
                 resources[stack_name] = resource_type_and_names
             return resources
         except RuntimeError as e:
-            self._import_resources_page.set_notification_frame_text(str(e))
+            self.set_notification_frame_text_sender.emit(str(e))
 
     def _request_typed_resources_callback(self, region: str) -> List[str]:
         resource_type_index: int = self._import_resources_page.typed_resources_combobox.currentIndex()
@@ -115,12 +114,11 @@ class ImportResourcesController(QObject):
             elif resource_type_index == constants.AWS_RESOURCE_S3_BUCKET_INDEX:
                 resources = aws_utils.list_s3_buckets(region)
             else:
-                self._import_resources_page.set_notification_frame_text(
-                    error_messages.IMPORT_RESOURCES_PAGE_RESOURCE_TYPE_ERROR_MESSAGE)
+                self.set_notification_frame_text_sender.emit(error_messages.IMPORT_RESOURCES_PAGE_RESOURCE_TYPE_ERROR_MESSAGE)
 
             return resources
         except RuntimeError as e:
-            self._import_resources_page.set_notification_frame_text(str(e))
+            self.set_notification_frame_text_sender.emit(str(e))
 
     def _load_cfn_resources_callback(self, resources: Dict[str, List[BasicResourceAttributes]]) -> None:
         if not resources:
@@ -179,7 +177,7 @@ class ImportResourcesController(QObject):
     def reset_page(self):
         """Reset import resources page to its default state"""
         self._tree_view.reset_view()
-        self._import_resources_page.hide_notification_frame()
+        self._import_resources_page.notification_frame.setVisible(False)
         self._import_resources_page.set_current_main_view_index(ImportResourcesPageConstants.TREE_VIEW_PAGE_INDEX)
         self._import_resources_page.typed_resources_combobox.setCurrentIndex(-1)
         self._import_resources_page.search_version = None

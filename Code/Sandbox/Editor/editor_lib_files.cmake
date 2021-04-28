@@ -484,9 +484,6 @@ set(FILES
     SelectLightAnimationDialog.h
     SelectSequenceDialog.cpp
     SelectSequenceDialog.h
-    SetVectorDlg.cpp
-    SetVectorDlg.h
-    SetVectorDlg.ui
     ShadersDialog.cpp
     ShadersDialog.h
     ShadersDialog.ui
@@ -641,8 +638,6 @@ set(FILES
     Objects/ObjectManager.h
     Objects/ObjectManagerLegacyUndo.cpp
     Objects/ObjectManagerLegacyUndo.h
-    Objects/ObjectPhysicsManager.cpp
-    Objects/ObjectPhysicsManager.h
     Objects/DisplayContext.cpp
     Objects/DisplayContext.h
     Objects/EntityObject.cpp

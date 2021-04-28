@@ -73,7 +73,7 @@ namespace AZ
                 SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
                 if (serializeContext)
                 {
-                    serializeContext->Class<FbxImporter, SceneCore::LoadingComponent>()->Version(1);
+                    serializeContext->Class<FbxImporter, SceneCore::LoadingComponent>()->Version(2); // SPEC-5776
                 }
             }
 

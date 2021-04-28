@@ -22,8 +22,8 @@ import azlmbr.entity as entity
 import azlmbr.paths
 
 sys.path.append(os.path.join(azlmbr.paths.devroot, 'AutomatedTesting', 'Gem', 'PythonTests'))
-from automatedtesting_shared.editor_test_helper import EditorTestHelper
-import automatedtesting_shared.pyside_utils as pyside_utils
+from editor_python_test_tools.editor_test_helper import EditorTestHelper
+import editor_python_test_tools.pyside_utils as pyside_utils
 
 
 class TestDockingBasicDockedTools(EditorTestHelper):

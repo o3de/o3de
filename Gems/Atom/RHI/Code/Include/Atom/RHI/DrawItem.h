@@ -11,6 +11,7 @@
 */
 #pragma once
 
+#include <Atom/RHI.Reflect/Handle.h>
 #include <Atom/RHI.Reflect/Limits.h>
 #include <Atom/RHI/StreamBufferView.h>
 #include <Atom/RHI/IndexBufferView.h>
@@ -152,36 +153,53 @@ namespace AZ
         };
 
         using DrawItemSortKey = int64_t;
-
-        struct DrawItemKeyPair
+                
+        // A filter associate to a DrawItem which can be used to filter the DrawItem when submitting to command list
+        using DrawFilterTag = Handle<uint8_t>;
+        using DrawFilterMask = uint32_t; // AZStd::bitset's impelmentation is too expensive.
+        constexpr uint32_t DrawFilterMaskDefaultValue = uint32_t(-1);  // Default all bit to 1.
+        static_assert(sizeof(DrawFilterMask) * 8 >= Limits::Pipeline::DrawFilterTagCountMax, "DrawFilterMask doesn't have enough bits for maximum tag count");
+     
+        struct DrawItemProperties
         {
-            DrawItemKeyPair() = default;
+            DrawItemProperties() = default;
 
-            DrawItemKeyPair(const DrawItem* item, DrawItemSortKey sortKey)
+            DrawItemProperties(const DrawItem* item, DrawItemSortKey sortKey = 0, DrawFilterMask filterMask = DrawFilterMaskDefaultValue)
                 : m_item{item}
                 , m_sortKey{sortKey}
-            {}
+                , m_drawFilterMask{filterMask}
+            {
+            }
 
-            bool operator == (const DrawItemKeyPair& rhs) const
+            bool operator==(const DrawItemProperties& rhs) const
             {
                 return m_item == rhs.m_item &&
                     m_sortKey == rhs.m_sortKey &&
-                    m_depth == rhs.m_depth;
+                    m_depth == rhs.m_depth &&
+                    m_drawFilterMask == rhs.m_drawFilterMask
+                    ;
             }
 
-            bool operator != (const DrawItemKeyPair& rhs) const
+            bool operator!=(const DrawItemProperties& rhs) const
             {
                 return !(*this == rhs);
             }
 
-            bool operator < (const DrawItemKeyPair& rhs) const
+            bool operator<(const DrawItemProperties& rhs) const
             {
                 return m_sortKey < rhs.m_sortKey;
             }
 
+            //! A pointer to the draw item
             const DrawItem* m_item = nullptr;
+            //! A sorting key of this draw item which is used for sorting draw items in DrawList
+            // Check RHI::SortDrawList() function for detail
             DrawItemSortKey m_sortKey = 0;
+            //! A depth value this draw item which is used for sorting draw items in DrawList
+            //! Check RHI::SortDrawList() function for detail
             float m_depth = 0.0f;
+            //! A filter mask which helps decide whether to submit this draw item to a Scope's command list or not
+            DrawFilterMask m_drawFilterMask = DrawFilterMaskDefaultValue;
         };
 
     }

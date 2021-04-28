@@ -141,18 +141,12 @@
 #define ID_EDITMODE_ROTATE                         33506
 #define ID_EDITMODE_SCALE                          33507
 #define ID_EDITMODE_MOVE                           33508
-#define ID_EDITMODE_SELECT                         33509
-#define ID_EDITMODE_SELECTAREA                     33510
 #define ID_SELECTION_DELETE                        33512
 #define ID_EDIT_ESCAPE                             33513
 #define ID_OBJECTMODIFY_SETAREA                    33514
 #define ID_OBJECTMODIFY_SETHEIGHT                  33515
 #define ID_OBJECTMODIFY_FREEZE                     33517
 #define ID_OBJECTMODIFY_UNFREEZE                   33518
-#define ID_SELECT_AXIS_XY                          33520
-#define ID_SELECT_AXIS_X                           33521
-#define ID_SELECT_AXIS_Y                           33522
-#define ID_SELECT_AXIS_Z                           33523
 #define ID_UNDO                                    33524
 #define ID_EDIT_CLONE                              33525
 #define ID_SELECTION_SAVE                          33527
@@ -161,7 +155,6 @@
 #define ID_EDIT_LEVELDATA                          33542
 #define ID_FILE_EDITEDITORINI                      33543
 #define ID_FILE_EDITLOGFILE                        33544
-#define ID_SELECT_AXIS_TERRAIN                     33545
 #define ID_PREFERENCES                             33546
 #define ID_RELOAD_GEOMETRY                         33549
 #define ID_REDO                                    33550
@@ -213,7 +206,6 @@
 #define ID_TV_NEXTKEY                              33603
 #define ID_PLAY_LOOP                               33607
 #define ID_TERRAIN                                 33611
-#define ID_OBJECTMODIFY_ALIGNTOGRID                33619
 #define ID_PANEL_VEG_EXPORT                        33672
 #define ID_PANEL_VEG_IMPORT                        33673
 #define ID_PANEL_VEG_DISTRIBUTE                    33674
@@ -226,7 +218,6 @@
 #define ID_PANEL_VEG_ADDCATEGORY                   33682
 #define ID_PANEL_VEG_RENAMECATEGORY                33683
 #define ID_PANEL_VEG_REMOVECATEGORY                33684
-#define ID_SELECT_AXIS_SNAPTOALL                   33685
 #define ID_TOOLS_PREFERENCES                       33691
 #define ID_EDIT_INVERTSELECTION                    33692
 #define ID_TOOLTERRAINMODIFY_SMOOTH                33695
@@ -279,7 +270,6 @@
 #define ID_DISPLAY_GOTOPOSITION                    34004
 #define ID_PHYSICS_SIMULATEOBJECTS                 34007
 #define ID_TERRAIN_TEXTURE_EXPORT                  34008
-#define ID_DISPLAY_SETVECTOR                       34010
 #define ID_TV_SEQUENCE_NEW                         34049
 #define ID_TV_MODE_DOPESHEET                       34052
 #define ID_VIEW_LAYOUTS                            34053
@@ -403,9 +393,10 @@
 #define ID_TOOLBAR_WIDGET_FIRST              50003
 #define ID_TOOLBAR_WIDGET_UNDO               50003
 #define ID_TOOLBAR_WIDGET_REDO               50004
-#define ID_TOOLBAR_WIDGET_REF_COORD          50006
 #define ID_TOOLBAR_WIDGET_SNAP_ANGLE         50007
 #define ID_TOOLBAR_WIDGET_SNAP_GRID          50008
 #define ID_TOOLBAR_WIDGET_ENVIRONMENT_MODE   50011
 #define ID_TOOLBAR_WIDGET_DEBUG_MODE         50012
+#define ID_TOOLBAR_WIDGET_SPACER_RIGHT       50013
+#define ID_TOOLBAR_WIDGET_PLAYCONSOLE_LABEL  50014
 #define ID_TOOLBAR_WIDGET_LAST               50020
