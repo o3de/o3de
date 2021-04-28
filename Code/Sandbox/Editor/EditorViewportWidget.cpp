@@ -230,9 +230,6 @@ EditorViewportWidget::~EditorViewportWidget()
 //////////////////////////////////////////////////////////////////////////
 int EditorViewportWidget::OnCreate()
 {
-    m_renderer = GetIEditor()->GetRenderer();
-    m_engine = GetIEditor()->Get3DEngine();
-
     CreateRenderContext();
 
     return 0;
@@ -426,7 +423,7 @@ void EditorViewportWidget::Update()
         return;
     }
 
-    if (!m_engine || m_rcClient.isEmpty() || GetIEditor()->IsInMatEditMode())
+    if (m_rcClient.isEmpty() || GetIEditor()->IsInMatEditMode())
     {
         return;
     }
@@ -795,10 +792,6 @@ void EditorViewportWidget::OnRender()
         if (GetIEditor()->GetRenderer())
         {
             GetIEditor()->GetRenderer()->SetCamera(gEnv->pSystem->GetViewCamera());
-        }
-        if (m_engine)
-        {
-            m_engine->RenderWorld(0, SRenderingPassInfo::CreateGeneralPassRenderingInfo(m_Camera), __FUNCTION__);
         }
         return;
     }
@@ -1814,11 +1807,6 @@ void EditorViewportWidget::SetViewTM(const Matrix34& viewTM, bool bMoveOnly)
 //////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::RenderSelectedRegion()
 {
-    if (!m_engine)
-    {
-        return;
-    }
-
     AABB box;
     GetIEditor()->GetSelectedRegion(box);
     if (box.IsEmpty())

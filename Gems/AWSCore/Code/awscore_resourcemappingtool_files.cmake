@@ -9,4 +9,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-add_subdirectory(Code)
+set(FILES
+    Include/Private/Editor/UI/AWSCoreResourceMappingToolAction.h
+    Source/Editor/UI/AWSCoreResourceMappingToolAction.cpp
+)

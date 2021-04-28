@@ -232,9 +232,7 @@ public:
     void OnObjectmodifyFreeze();
     void OnObjectmodifyUnfreeze();
     void OnUndo();
-    void OnSelectionSave();
     void OnOpenAssetImporter();
-    void OnSelectionLoad();
     void OnUpdateSelected(QAction* action);
     void OnLockSelection();
     void OnEditLevelData();

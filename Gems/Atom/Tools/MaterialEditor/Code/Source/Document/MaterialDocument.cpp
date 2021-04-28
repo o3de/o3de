@@ -771,6 +771,7 @@ namespace MaterialEditor
             if (propertyIndexInBounds)
             {
                 AtomToolsFramework::ConvertToPropertyConfig(propertyConfig, propertyDefinition);
+                propertyConfig.m_showThumbnail = true;
                 propertyConfig.m_originalValue = AtomToolsFramework::ConvertToEditableType(m_materialAsset->GetPropertyValues()[propertyIndex.GetIndex()]);
                 propertyConfig.m_parentValue = AtomToolsFramework::ConvertToEditableType(parentPropertyValues[propertyIndex.GetIndex()]);
                 propertyConfig.m_groupName = m_materialTypeSourceData.FindGroup(groupNameId)->m_displayName;
@@ -810,6 +811,7 @@ namespace MaterialEditor
         propertyConfig.m_originalValue = propertyConfig.m_defaultValue;
         propertyConfig.m_parentValue = propertyConfig.m_defaultValue;
         propertyConfig.m_readOnly = true;
+        propertyConfig.m_showThumbnail = true;
 
         m_properties[propertyConfig.m_id] = AtomToolsFramework::DynamicProperty(propertyConfig);
 

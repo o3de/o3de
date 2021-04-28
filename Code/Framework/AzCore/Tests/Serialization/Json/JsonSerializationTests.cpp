@@ -449,6 +449,46 @@ namespace JsonSerializationTests
 
     }
 
+    TEST_F(JsonSerializationTests, Load_PrimitiveForInheritedClass_LoadsCorrectClass)
+    {
+        using namespace AZ::JsonSerializationResult;
+        using namespace ::testing;
+
+        AZStd::string json = AZStd::string::format(R"(
+            {
+                "%s": "SimpleInheritence",
+                "base_var": -88.0,
+                "var1": 88,
+                "var2": 42
+            })",
+            AZ::JsonSerialization::TypeIdFieldIdentifier);
+        m_jsonDocument->Parse(json.c_str());
+
+        SimpleInheritence::Reflect(m_serializeContext, true);
+        m_serializeContext->RegisterGenericType<AZStd::unique_ptr<BaseClass>>();
+        m_jsonRegistrationContext->Serializer<JsonSerializerMock>()->HandlesType<SimpleInheritence>();
+        JsonSerializerMock* mock =
+            reinterpret_cast<JsonSerializerMock*>(m_jsonRegistrationContext->GetSerializerForType(azrtti_typeid<SimpleInheritence>()));
+        EXPECT_CALL(*mock, Load(_, _, _, _))
+            .Times(Exactly(1))
+            .WillRepeatedly(Return(Result(m_deserializationSettings->m_reporting, "Test", Tasks::ReadField, Outcomes::Success, "")));
+
+        AZStd::unique_ptr<BaseClass> instance;
+        ResultCode result = AZ::JsonSerialization::Load(instance, *m_jsonDocument, *m_deserializationSettings);
+        EXPECT_NE(Processing::Halted, result.GetProcessing());
+
+        EXPECT_EQ(azrtti_typeid<SimpleInheritence>(), azrtti_typeid(*instance));
+
+        m_serializeContext->EnableRemoveReflection();
+        SimpleInheritence::Reflect(m_serializeContext, true);
+        m_serializeContext->DisableRemoveReflection();
+
+        m_jsonRegistrationContext->EnableRemoveReflection();
+        m_serializeContext->RegisterGenericType<AZStd::unique_ptr<BaseClass>>();
+        m_jsonRegistrationContext->Serializer<JsonSerializerMock>()->HandlesType<SimpleInheritence>();
+        m_jsonRegistrationContext->DisableRemoveReflection();
+    }
+
     TEST_F(JsonSerializationTests, Store_TemplatedClassWithRegisteredHandler_StoreOnHandlerCalled)
     {
         using namespace AZ::JsonSerializationResult;
@@ -471,6 +511,52 @@ namespace JsonSerializationTests
 
         m_jsonRegistrationContext->EnableRemoveReflection();
         m_jsonRegistrationContext->Serializer<JsonSerializerMock>()->HandlesType<TemplatedClass>();
+        m_jsonRegistrationContext->DisableRemoveReflection();
+    }
+
+    TEST_F(JsonSerializationTests, Store_PrimitiveForInheritedClass_StoreSucceedsAndTypeIdIsAdded)
+    {
+        using namespace AZ::JsonSerializationResult;
+        using namespace ::testing;
+
+        SimpleInheritence::Reflect(m_serializeContext, true);
+        m_serializeContext->RegisterGenericType<AZStd::unique_ptr<BaseClass>>();
+        m_jsonRegistrationContext->Serializer<JsonSerializerMock>()->HandlesType<SimpleInheritence>();
+        JsonSerializerMock* mock =
+            reinterpret_cast<JsonSerializerMock*>(m_jsonRegistrationContext->GetSerializerForType(azrtti_typeid<SimpleInheritence>()));
+        EXPECT_CALL(*mock, Store(_, _, _, _, _))
+            .Times(Exactly(1))
+            .WillRepeatedly(Invoke([](rapidjson::Value& output, const void*, const void*, const AZ::Uuid&, AZ::JsonSerializerContext& context)
+                {
+                    // Insert some values to allow verification later on.
+                    output.SetObject();
+                    output.AddMember("base_var", -88.0, context.GetJsonAllocator());
+                    output.AddMember("var1", 88, context.GetJsonAllocator());
+                    output.AddMember("var2", 42, context.GetJsonAllocator());
+                    return context.Report(Tasks::WriteValue, Outcomes::Success, "");
+                }));
+
+        AZStd::unique_ptr<BaseClass> instance{ aznew SimpleInheritence() };
+        ResultCode result = AZ::JsonSerialization::Store(*m_jsonDocument, m_jsonDocument->GetAllocator(), instance, *m_serializationSettings);
+        EXPECT_NE(Processing::Halted, result.GetProcessing());
+
+        AZStd::string compare = AZStd::string::format(R"(
+            {
+                "%s": "SimpleInheritence",
+                "base_var": -88.0,
+                "var1": 88,
+                "var2": 42
+            })",
+            AZ::JsonSerialization::TypeIdFieldIdentifier);
+        Expect_DocStrEq(compare.c_str());
+
+        m_serializeContext->EnableRemoveReflection();
+        m_serializeContext->RegisterGenericType<AZStd::unique_ptr<BaseClass>>();
+        SimpleInheritence::Reflect(m_serializeContext, true);
+        m_serializeContext->DisableRemoveReflection();
+
+        m_jsonRegistrationContext->EnableRemoveReflection();
+        m_jsonRegistrationContext->Serializer<JsonSerializerMock>()->HandlesType<SimpleInheritence>();
         m_jsonRegistrationContext->DisableRemoveReflection();
     }
 
