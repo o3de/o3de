@@ -21,13 +21,13 @@ ly_add_target(
         tools_crash_handler_files.cmake
         Platform/${PAL_PLATFORM_NAME}/tools_crash_handler_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     INCLUDE_DIRECTORIES
-        PRIVATE
+        PUBLIC
             .
     BUILD_DEPENDENCIES
+        PUBLIC
+            AZ::CrashHandler
         PRIVATE
             3rdParty::Qt::Core
-            AZ::CrashHandler
-            AZ::CrashSupport
             AZ::AzToolsFramework
 )
 
@@ -41,18 +41,14 @@ ly_add_target(
         Platform/${PAL_PLATFORM_NAME}/tools_crash_uploader_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
-            .
             Uploader
     BUILD_DEPENDENCIES
         PRIVATE
             3rdParty::Qt::Core
             3rdParty::Qt::Gui
             3rdParty::Qt::Widgets
-            3rdParty::Crashpad
-            3rdParty::Crashpad::Handler
             AZ::CrashUploaderSupport
             AZ::AzQtComponents
-            AZ::CrashSupport
     TARGET_PROPERTIES
         Qt5_NO_LINK_QTMAIN TRUE
 )

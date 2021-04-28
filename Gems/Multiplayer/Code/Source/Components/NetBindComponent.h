@@ -23,7 +23,7 @@
 #include <Source/NetworkEntity/EntityReplication/ReplicationRecord.h>
 #include <Source/NetworkEntity/NetworkEntityHandle.h>
 #include <Source/NetworkInput/IMultiplayerComponentInput.h>
-#include <Source/MultiplayerTypes.h>
+#include <Include/MultiplayerTypes.h>
 #include <AzCore/EBus/Event.h>
 
 namespace Multiplayer

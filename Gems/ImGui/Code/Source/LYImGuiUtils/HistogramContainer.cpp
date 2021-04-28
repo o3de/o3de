@@ -96,7 +96,7 @@ namespace ImGui
             }
 
             // Toggle collapsing when double clicking this "window"
-            if (ImGui::IsMouseDoubleClicked(0) && ImGui::IsMouseHoveringWindow())
+            if (ImGui::IsMouseDoubleClicked(0) && ImGui::IsWindowHovered())
             {
                 m_collapsed = !m_collapsed;
             }
