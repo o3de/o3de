@@ -12,6 +12,7 @@
 
 #include <PhysX_precompiled.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 #include <PhysXCharacters/API/RagdollNode.h>
 #include <PhysX/NativeTypeIdentifiers.h>
@@ -30,14 +31,14 @@ namespace PhysX
         }
     }
 
-    RagdollNode::RagdollNode(AzPhysics::RigidBody* rigidBody, AzPhysics::SimulatedBodyHandle rigidBodyHandle)
-        : m_rigidBody(rigidBody)
-        , m_rigidBodyHandle(rigidBodyHandle)
+    RagdollNode::RagdollNode(AzPhysics::SceneHandle sceneHandle, Physics::RagdollNodeConfiguration& nodeConfig)
     {
-        physx::PxRigidDynamic* pxRigidDynamic = static_cast<physx::PxRigidDynamic*>(m_rigidBody->GetNativePointer());
-        m_actorUserData = PhysX::ActorData(pxRigidDynamic);
-        m_actorUserData.SetRagdollNode(this);
-        m_actorUserData.SetEntityId(m_rigidBody->GetEntityId());
+        CreatePhysicsBody(sceneHandle, nodeConfig);
+    }
+
+    RagdollNode::~RagdollNode()
+    {
+        DestroyPhysicsBody();
     }
 
     void RagdollNode::SetJoint(const AZStd::shared_ptr<Physics::Joint>& joint)
@@ -124,4 +125,47 @@ namespace PhysX
     {
         return m_rigidBodyHandle;
     }
+
+    void RagdollNode::CreatePhysicsBody(AzPhysics::SceneHandle sceneHandle, Physics::RagdollNodeConfiguration& nodeConfig)
+    {
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            m_rigidBodyHandle = sceneInterface->AddSimulatedBody(sceneHandle, &nodeConfig);
+            if (m_rigidBodyHandle == AzPhysics::InvalidSimulatedBodyHandle)
+            {
+                AZ_Error("PhysX RagdollNode", false, "Failed to create rigid body for ragdoll node %s", nodeConfig.m_debugName.c_str());
+                return;
+            }
+            m_rigidBody = azdynamic_cast<AzPhysics::RigidBody*>(sceneInterface->GetSimulatedBodyFromHandle(sceneHandle, m_rigidBodyHandle));
+        }
+        if (m_rigidBody == nullptr)
+        {
+            AZ_Error("PhysX RagdollNode", false, "Failed to create rigid body for ragdoll node %s", nodeConfig.m_debugName.c_str());
+            return;
+        }
+        m_sceneOwner = sceneHandle;
+
+        physx::PxRigidDynamic* pxRigidDynamic = static_cast<physx::PxRigidDynamic*>(m_rigidBody->GetNativePointer());
+        physx::PxTransform transform(PxMathConvert(nodeConfig.m_position), PxMathConvert(nodeConfig.m_orientation));
+        pxRigidDynamic->setGlobalPose(transform);
+
+        m_actorUserData = PhysX::ActorData(pxRigidDynamic);
+        m_actorUserData.SetRagdollNode(this);
+        m_actorUserData.SetEntityId(m_rigidBody->GetEntityId());
+    }
+
+    void RagdollNode::DestroyPhysicsBody()
+    {
+        if (m_rigidBody != nullptr)
+        {
+            if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+            {
+                sceneInterface->RemoveSimulatedBody(m_sceneOwner, m_rigidBodyHandle);
+            }
+            m_rigidBody = nullptr;
+            m_rigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
+            m_sceneOwner = AzPhysics::InvalidSceneHandle;
+        }
+    }
+
 } // namespace PhysX
