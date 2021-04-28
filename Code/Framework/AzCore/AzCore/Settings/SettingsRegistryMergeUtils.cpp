@@ -420,12 +420,7 @@ namespace AZ::SettingsRegistryMergeUtils
     bool MergeSettingsToRegistry_ConfigFile(SettingsRegistryInterface& registry, AZStd::string_view filePath,
         const ConfigParserSettings& configParserSettings)
     {
-        AZ::IO::FixedMaxPath engineRoot{AZ::Utils::GetEnginePath()};
-        if (engineRoot.empty())
-        {
-            engineRoot = FindEngineRoot(registry);
-        }
-        auto configPath = engineRoot / filePath;
+        auto configPath = FindEngineRoot(registry) / filePath;
         IO::SystemFile configFile;
         if (!configFile.Open(configPath.c_str(), IO::SystemFile::OpenMode::SF_OPEN_READ_ONLY))
         {
