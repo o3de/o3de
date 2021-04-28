@@ -487,6 +487,43 @@ namespace AZ
     }
 
 
+    AZ_MATH_INLINE Matrix3x4 Matrix3x4::operator+(const Matrix3x4& rhs) const
+    {
+        return Matrix3x4
+        (
+            Simd::Vec4::Add(m_rows[0].GetSimdValue(), rhs.m_rows[0].GetSimdValue()),
+            Simd::Vec4::Add(m_rows[1].GetSimdValue(), rhs.m_rows[1].GetSimdValue()),
+            Simd::Vec4::Add(m_rows[2].GetSimdValue(), rhs.m_rows[2].GetSimdValue())
+        );
+    }
+
+
+    AZ_MATH_INLINE Matrix3x4& Matrix3x4::operator+=(const Matrix3x4& rhs)
+    {
+        *this = *this + rhs;
+        return *this;
+    }
+
+
+    AZ_MATH_INLINE Matrix3x4 Matrix3x4::operator*(float scalar) const
+    {
+        const Vector4 vector4Scalar(scalar);
+        return Matrix3x4
+        (
+            Simd::Vec4::Mul(m_rows[0].GetSimdValue(), vector4Scalar.GetSimdValue()),
+            Simd::Vec4::Mul(m_rows[1].GetSimdValue(), vector4Scalar.GetSimdValue()),
+            Simd::Vec4::Mul(m_rows[2].GetSimdValue(), vector4Scalar.GetSimdValue())
+        );
+    }
+
+
+    AZ_MATH_INLINE Matrix3x4& Matrix3x4::operator*=(float scalar)
+    {
+        *this = *this * scalar;
+        return *this;
+    }
+
+
     AZ_MATH_INLINE Vector3 Matrix3x4::operator*(const Vector3& rhs) const
     {
         return Vector3
