@@ -12,6 +12,8 @@
 
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
 
+#include <NvCloth/ITangentSpaceHelper.h>
+
 #include <Utils/MeshAssetHelper.h>
 
 namespace NvCloth
@@ -223,6 +225,13 @@ namespace NvCloth
 
             meshClothInfo.m_indices.insert(meshClothInfo.m_indices.end(), sourceIndices.begin(), sourceIndices.end());
         }
+
+        // Calculate tangent space for the mesh.
+        [[maybe_unused]] bool tangentSpaceCalculated =
+            AZ::Interface<ITangentSpaceHelper>::Get()->CalculateTangentSpace(
+                meshClothInfo.m_particles, meshClothInfo.m_indices, meshClothInfo.m_uvs,
+                meshClothInfo.m_tangents, meshClothInfo.m_bitangents, meshClothInfo.m_normals);
+        AZ_Assert(tangentSpaceCalculated, "Failed to calculate tangent space.");
 
         return true;
     }

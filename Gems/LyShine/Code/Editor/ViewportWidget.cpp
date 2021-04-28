@@ -204,7 +204,7 @@ namespace
 } // anonymous namespace.
 
 ViewportWidget::ViewportWidget(EditorWindow* parent)
-    : AtomToolsFramework::RenderViewportWidget(AzFramework::InvalidViewportId, parent)
+    : AtomToolsFramework::RenderViewportWidget(parent)
     , m_editorWindow(parent)
     , m_viewportInteraction(new ViewportInteraction(m_editorWindow))
     , m_viewportAnchor(new ViewportAnchor())
@@ -570,7 +570,8 @@ void ViewportWidget::mousePressEvent(QMouseEvent* ev)
             if (ev->button() == Qt::LeftButton)
             {
                 // Send event to this canvas
-                const AZ::Vector2 viewportPosition(aznumeric_cast<float>(ev->x()), aznumeric_cast<float>(ev->y()));
+                QPointF scaledPos = WidgetToViewport(ev->localPos());
+                const AZ::Vector2 viewportPosition(aznumeric_cast<float>(scaledPos.x()), aznumeric_cast<float>(scaledPos.y()));
                 const AzFramework::InputChannel::Snapshot inputSnapshot(AzFramework::InputDeviceMouse::Button::Left,
                                                                         AzFramework::InputDeviceMouse::Id,
                                                                         AzFramework::InputChannel::State::Began);
@@ -604,7 +605,8 @@ void ViewportWidget::mouseMoveEvent(QMouseEvent* ev)
         AZ::EntityId canvasEntityId = m_editorWindow->GetPreviewModeCanvas();
         if (canvasEntityId.IsValid())
         {
-            const AZ::Vector2 viewportPosition(aznumeric_cast<float>(ev->x()), aznumeric_cast<float>(ev->y()));
+            QPointF scaledPos = WidgetToViewport(ev->localPos());
+            const AZ::Vector2 viewportPosition(aznumeric_cast<float>(scaledPos.x()), aznumeric_cast<float>(scaledPos.y()));
             const AzFramework::InputChannelId& channelId = (ev->buttons() & Qt::LeftButton) ?
                                                             AzFramework::InputDeviceMouse::Button::Left :
                                                             AzFramework::InputDeviceMouse::SystemCursorPosition;
@@ -640,7 +642,8 @@ void ViewportWidget::mouseReleaseEvent(QMouseEvent* ev)
             if (ev->button() == Qt::LeftButton)
             {
                 // Send event to this canvas
-                const AZ::Vector2 viewportPosition(aznumeric_cast<float>(ev->x()), aznumeric_cast<float>(ev->y()));
+                QPointF scaledPos = WidgetToViewport(ev->localPos());
+                const AZ::Vector2 viewportPosition(aznumeric_cast<float>(scaledPos.x()), aznumeric_cast<float>(scaledPos.y()));
                 const AzFramework::InputChannel::Snapshot inputSnapshot(AzFramework::InputDeviceMouse::Button::Left,
                                                                         AzFramework::InputDeviceMouse::Id,
                                                                         AzFramework::InputChannel::State::Ended);

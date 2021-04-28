@@ -15,8 +15,6 @@
 #include <AzCore/Component/ComponentBus.h>
 #include <Vegetation/Descriptor.h>
 
-struct IRenderNode;
-
 namespace Vegetation
 {
     struct InstanceData;
@@ -48,12 +46,6 @@ namespace Vegetation
         virtual void DestroyAllInstances() = 0;
 
         virtual void Cleanup() = 0;
-
-        // Notify the instance system whenever a merged mesh instance is created / destroyed.
-        // This is necessary because we only want to refresh a full merged mesh once per set of
-        // changes, not once per instance change.
-        virtual void RegisterMergedMeshInstance(InstancePtr instance, IRenderNode* mergedMeshNode) = 0;
-        virtual void ReleaseMergedMeshInstance(InstancePtr instance) = 0;
     };
 
     using InstanceSystemRequestBus = AZ::EBus<InstanceSystemRequests>;

@@ -9,6 +9,7 @@ remove or modify any license notices. This file is distributed on an "AS IS" BAS
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
 
+from PySide2.QtCore import Slot
 from PySide2.QtGui import (QIcon, QPixmap)
 from PySide2.QtWidgets import (QFrame, QHBoxLayout, QLabel, QLayout, QLineEdit, QPushButton,
                                QSizePolicy, QWidget)
@@ -58,5 +59,7 @@ class NotificationFrame(QFrame):
 
         self.setVisible(False)
 
-    def set_text(self, text: str) -> None:
+    @Slot(str)
+    def set_frame_text_receiver(self, text: str) -> None:
         self._title_label.setText(text)
+        self.setVisible(True)

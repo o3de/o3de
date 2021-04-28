@@ -149,7 +149,6 @@ AZ_POP_DISABLE_WARNING
 #include "LevelFileDialog.h"
 #include "LevelIndependentFileMan.h"
 #include "WelcomeScreen/WelcomeScreenDialog.h"
-#include "Dialogs/DuplicatedObjectsHandlerDlg.h"
 
 #include "Controls/ReflectedPropertyControl/PropertyCtrl.h"
 #include "Controls/ReflectedPropertyControl/ReflectedVar.h"
@@ -400,9 +399,7 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_OBJECTMODIFY_UNFREEZE, OnObjectmodifyUnfreeze)
     ON_COMMAND(ID_UNDO, OnUndo)
     ON_COMMAND(ID_TOOLBAR_WIDGET_REDO, OnUndo)     // Can't use the same ID, because for the menu we can't have a QWidgetAction, while for the toolbar we want one
-    ON_COMMAND(ID_SELECTION_SAVE, OnSelectionSave)
     ON_COMMAND(ID_IMPORT_ASSET, OnOpenAssetImporter)
-    ON_COMMAND(ID_SELECTION_LOAD, OnSelectionLoad)
     ON_COMMAND(ID_LOCK_SELECTION, OnLockSelection)
     ON_COMMAND(ID_EDIT_LEVELDATA, OnEditLevelData)
     ON_COMMAND(ID_FILE_EDITLOGFILE, OnFileEditLogFile)
@@ -3019,147 +3016,10 @@ void CCryEditApp::OnFileExportOcclusionMesh()
     pExportManager->Export(levelName.toUtf8().data(), "ocm", levelPath.toUtf8().data(), false, false, true);
 }
 
-void CCryEditApp::OnSelectionSave()
-{
-    char szFilters[] = "Object Group Files (*.grp)";
-    QtUtil::QtMFCScopedHWNDCapture cap;
-    CAutoDirectoryRestoreFileDialog dlg(QFileDialog::AcceptSave, QFileDialog::AnyFile, "grp", {}, szFilters, {}, {}, cap);
-
-    if (dlg.exec())
-    {
-        QWaitCursor wait;
-        CSelectionGroup* sel = GetIEditor()->GetSelection();
-        //CXmlArchive xmlAr( "Objects" );
-
-
-        XmlNodeRef root = XmlHelpers::CreateXmlNode("Objects");
-        CObjectArchive ar(GetIEditor()->GetObjectManager(), root, false);
-        // Save all objects to XML.
-        for (int i = 0; i < sel->GetCount(); i++)
-        {
-            ar.SaveObject(sel->GetObject(i));
-        }
-        QString fileName = dlg.selectedFiles().first();
-        XmlHelpers::SaveXmlNode(GetIEditor()->GetFileUtil(), root, fileName.toStdString().c_str());
-        //xmlAr.Save( dlg.GetPathName() );
-    }
-}
-
 //////////////////////////////////////////////////////////////////////////
-struct SDuplicatedObject
-{
-    SDuplicatedObject(const QString& name, const GUID& id)
-    {
-        m_name = name;
-        m_id = id;
-    }
-    QString m_name;
-    GUID m_id;
-};
-
-void GatherAllObjects(XmlNodeRef node, std::vector<SDuplicatedObject>& outDuplicatedObjects)
-{
-    if (!azstricmp(node->getTag(), "Object"))
-    {
-        GUID guid;
-        if (node->getAttr("Id", guid))
-        {
-            if (GetIEditor()->GetObjectManager()->FindObject(guid))
-            {
-                QString name;
-                node->getAttr("Name", name);
-                outDuplicatedObjects.push_back(SDuplicatedObject(name, guid));
-            }
-        }
-    }
-
-    for (int i = 0, nChildCount(node->getChildCount()); i < nChildCount; ++i)
-    {
-        XmlNodeRef childNode = node->getChild(i);
-        if (childNode == NULL)
-        {
-            continue;
-        }
-        GatherAllObjects(childNode, outDuplicatedObjects);
-    }
-}
-
 void CCryEditApp::OnOpenAssetImporter()
 {
     QtViewPaneManager::instance()->OpenPane(LyViewPane::SceneSettings);
-}
-
-void CCryEditApp::OnSelectionLoad()
-{
-    // Load objects from .grp file.
-    QtUtil::QtMFCScopedHWNDCapture cap;
-    CAutoDirectoryRestoreFileDialog dlg(QFileDialog::AcceptOpen, QFileDialog::ExistingFile, "grp", {}, "Object Group Files (*.grp)", {}, {}, cap);
-    if (dlg.exec() != QDialog::Accepted)
-    {
-        return;
-    }
-
-    QWaitCursor wait;
-
-    XmlNodeRef root = XmlHelpers::LoadXmlFromFile(dlg.selectedFiles().first().toStdString().c_str());
-    if (!root)
-    {
-        QMessageBox::critical(AzToolsFramework::GetActiveWindow(), QString(), QObject::tr("Error at loading group file."));
-        return;
-    }
-
-    std::vector<SDuplicatedObject> duplicatedObjects;
-    GatherAllObjects(root, duplicatedObjects);
-
-    CDuplicatedObjectsHandlerDlg::EResult result(CDuplicatedObjectsHandlerDlg::eResult_None);
-    int nDuplicatedObjectSize(duplicatedObjects.size());
-
-    if (!duplicatedObjects.empty())
-    {
-        QString msg = QObject::tr("The following object(s) already exist(s) in the level.\r\n\r\n");
-
-        for (int i = 0; i < nDuplicatedObjectSize; ++i)
-        {
-            msg += QStringLiteral("\t");
-            msg += duplicatedObjects[i].m_name;
-            if (i < nDuplicatedObjectSize - 1)
-            {
-                msg += QStringLiteral("\r\n");
-            }
-        }
-
-        CDuplicatedObjectsHandlerDlg confirmDlg(msg);
-        if (confirmDlg.exec() == QDialog::Rejected)
-        {
-            return;
-        }
-        result = confirmDlg.GetResult();
-    }
-
-    CUndo undo("Load Objects");
-    GetIEditor()->ClearSelection();
-
-    CObjectArchive ar(GetIEditor()->GetObjectManager(), root, true);
-
-    if (result == CDuplicatedObjectsHandlerDlg::eResult_Override)
-    {
-        for (int i = 0; i < nDuplicatedObjectSize; ++i)
-        {
-            CBaseObject* pObj = GetIEditor()->GetObjectManager()->FindObject(duplicatedObjects[i].m_id);
-            if (pObj)
-            {
-                GetIEditor()->GetObjectManager()->DeleteObject(pObj);
-            }
-        }
-    }
-    else if (result == CDuplicatedObjectsHandlerDlg::eResult_CreateCopies)
-    {
-        ar.MakeNewIds(true);
-    }
-
-    GetIEditor()->GetObjectManager()->LoadObjects(ar, true);
-    GetIEditor()->SetModifiedFlag();
-    GetIEditor()->SetModifiedModule(eModifiedBrushes);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -5232,6 +5092,13 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
     AzQtComponents::Utilities::HandleDpiAwareness(AzQtComponents::Utilities::SystemDpiAware);
     Editor::EditorQtApplication app(argc, argv);
 
+    if (app.arguments().contains("-autotest_mode"))
+    {
+        // Nullroute all stdout to null for automated tests, this way we make sure
+        // that the test result output is not polluted with unrelated output data.
+        theApp->RedirectStdoutToNull();
+    }
+
     // Hook the trace bus to catch errors, boot the AZ app after the QApplication is up
     int ret = 0;
 
@@ -5247,13 +5114,6 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
         if (!AZToolsApp.Start())
         {
             return -1;
-        }
-
-        if (app.arguments().contains("-autotest_mode"))
-        {
-            // Nullroute all stdout to null for automated tests, this way we make sure
-            // that the test result output is not polluted with unrelated output data.
-            theApp->RedirectStdoutToNull();
         }
 
         AzToolsFramework::EditorEvents::Bus::Broadcast(&AzToolsFramework::EditorEvents::NotifyQtApplicationAvailable, &app);
