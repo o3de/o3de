@@ -25,7 +25,7 @@ set(LY_TEST_IMPACT_WORKING_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestImpactFram
 set(LY_TEST_IMPACT_TEMP_DIR "${LY_TEST_IMPACT_WORKING_DIR}/Temp")
 
 # Directory for static artifacts produced as part of the build system generation process
-set(LY_TEST_IMPACT_ARTIFACT_DIR "${LY_TEST_IMPACT_WORKING_DIR}/Artefact")
+set(LY_TEST_IMPACT_ARTIFACT_DIR "${LY_TEST_IMPACT_WORKING_DIR}/Artifact")
 
 # Directory for source to build target mappings
 set(LY_TEST_IMPACT_SOURCE_TARGET_MAPPING_DIR "${LY_TEST_IMPACT_ARTIFACT_DIR}/Mapping")
@@ -77,28 +77,28 @@ function(ly_test_impact_rebase_files_to_repo_root INPUT_FILES OUTPUT_FILES RELAT
     set(${OUTPUT_FILES} ${rebased_files} PARENT_SCOPE)
 endfunction()
 
-#! ly_test_impact_get_target_type_string: gets the target type string (either executable, dynalib or unknown) for the specified target.
+#! ly_test_impact_get_test_launch_method: gets the launch method (either standalone or testrunner) for the specified target.
 #
 # \arg:TARGET_NAME name of the target
-# \arg:TARGET_TYPE the type string for the specified target
-function(ly_test_impact_get_target_type_string TARGET_NAME TARGET_TYPE)
-    # Get the test impact framework-friendly target type string
+# \arg:LAUNCH_METHOD the type string for the specified target
+function(ly_test_impact_get_test_launch_method TARGET_NAME LAUNCH_METHOD)
+    # Get the test impact framework-friendly launch method string
     get_target_property(target_type ${TARGET_NAME} TYPE)
     if("${target_type}" STREQUAL "SHARED_LIBRARY" OR "${target_type}" STREQUAL "MODULE_LIBRARY")
-        set(${TARGET_TYPE} "dynlib" PARENT_SCOPE)
+        set(${LAUNCH_METHOD} "test_runner" PARENT_SCOPE)
     elseif("${target_type}" STREQUAL "EXECUTABLE")
-        set(${TARGET_TYPE} "executable" PARENT_SCOPE)
+        set(${LAUNCH_METHOD} "stand_alone" PARENT_SCOPE)
     else()
-        set(${TARGET_TYPE} "unknown" PARENT_SCOPE)
+        message(FATAL_ERROR "Cannot deduce test target launch method for the target type ${target_type}")
     endif()
 endfunction()
 
 #! ly_test_impact_extract_google_test: explodes a composite google test string into namespace, test and suite components.
 #
 # \arg:COMPOSITE_TEST test in the form 'namespace::test'
-# \arg:TEST_QUALIFER qualifier for the test (namespace)
+# \arg:TEST_NAMESPACE namespace for the test
 # \arg:TEST_NAME name of test
-function(ly_test_impact_extract_google_test COMPOSITE_TEST TEST_QUALIFER TEST_NAME)
+function(ly_test_impact_extract_google_test COMPOSITE_TEST TEST_NAMESPACE TEST_NAME)
     get_property(test_components GLOBAL PROPERTY LY_ALL_TESTS_${COMPOSITE_TEST}_TEST_NAME)
     # Namespace and test are mandetiry
     string(REPLACE "::" ";" test_components ${test_components})
@@ -107,19 +107,19 @@ function(ly_test_impact_extract_google_test COMPOSITE_TEST TEST_QUALIFER TEST_NA
         message(FATAL_ERROR "The test ${test_components} appears to have been specified without a namespace, i.e.:\ly_add_googletest/benchmark(NAME ${test_components})\nInstead of (perhaps):\ly_add_googletest/benchmark(NAME Gem::${test_components})\nPlease add the missing namespace before proceeding.")
     endif()
 
-    list(GET test_components 0 test_qualifier)
+    list(GET test_components 0 test_namespace)
     list(GET test_components 1 test_name)
-    set(${TEST_QUALIFER} ${test_qualifier} PARENT_SCOPE)
+    set(${TEST_NAMESPACE} ${test_namespace} PARENT_SCOPE)
     set(${TEST_NAME} ${test_name} PARENT_SCOPE)
 endfunction()
 
 #! ly_test_impact_extract_python_test: explodes a composite python test string into filename, namespace, test and suite components.
 #
 # \arg:COMPOSITE_TEST test in form 'namespace::test' or 'test'
-# \arg:TEST_QUALIFER qualifier for the test (optional)
+# \arg:TEST_NAMESPACE namespace for the test (optional)
 # \arg:TEST_NAME name of test
 # \arg:TEST_FILE the Python script path for this test
-function(ly_test_impact_extract_python_test COMPOSITE_TEST TEST_QUALIFER TEST_NAME TEST_FILE)
+function(ly_test_impact_extract_python_test COMPOSITE_TEST TEST_NAMESPACE TEST_NAME TEST_FILE)
     get_property(test_components GLOBAL PROPERTY LY_ALL_TESTS_${COMPOSITE_TEST}_TEST_NAME)
     get_property(test_file GLOBAL PROPERTY LY_ALL_TESTS_${COMPOSITE_TEST}_SCRIPT_PATH)
     
@@ -127,10 +127,10 @@ function(ly_test_impact_extract_python_test COMPOSITE_TEST TEST_QUALIFER TEST_NA
     string(REPLACE "::" ";" test_components ${test_components})
     list(LENGTH test_components num_test_components)
     if(num_test_components GREATER 1)
-        list(GET test_components 0 test_qualifier)
+        list(GET test_components 0 test_namespace)
         list(GET test_components 1 test_name)
     else()
-        set(test_qualifier "")
+        set(test_namespace "")
         set(test_name ${test_components})
     endif()
 
@@ -141,7 +141,7 @@ function(ly_test_impact_extract_python_test COMPOSITE_TEST TEST_QUALIFER TEST_NA
         ${LY_ROOT_FOLDER}
     )
 
-    set(${TEST_QUALIFER} ${test_qualifier} PARENT_SCOPE)
+    set(${TEST_NAMESPACE} ${test_namespace} PARENT_SCOPE)
     set(${TEST_NAME} ${test_name} PARENT_SCOPE)
     set(${TEST_FILE} ${test_file} PARENT_SCOPE)
 endfunction()
@@ -166,24 +166,24 @@ function(ly_test_impact_write_test_enumeration_file TEST_ENUMERATION_TEMPLATE_FI
         get_property(test_suite GLOBAL PROPERTY LY_ALL_TESTS_${test}_TEST_SUITE)
         if("${test_type}" STREQUAL "pytest")
             # Python tests
-            ly_test_impact_extract_python_test(${test} test_qualifier test_name test_file)
-            list(APPEND python_tests "{ name = \"${test_name}\", qualifier = \"${test_qualifier}\", suite = \"${test_suite}\", path = \"${test_file}\" }")
+            ly_test_impact_extract_python_test(${test} test_namespace test_name test_file)
+            list(APPEND python_tests "        { \"name\": \"${test_name}\", \"namespace\": \"${test_namespace}\", \"suite\": \"${test_suite}\", \"path\": \"${test_file}\" }")
         elseif("${test_type}" STREQUAL "pytest_editor")
             # Python editor tests
-            ly_test_impact_extract_python_test(${test} test_qualifier test_name test_file)
-            list(APPEND python_editor_tests "{ name = \"${test_name}\", qualifier = \"${test_qualifier}\", suite = \"${test_suite}\", path = \"${test_file}\" }")
+            ly_test_impact_extract_python_test(${test} test_namespace test_name test_file)
+            list(APPEND python_editor_tests "        { \"name\": \"${test_name}\", \"namespace\": \"${test_namespace}\", \"suite\": \"${test_suite}\", \"path\": \"${test_file}\" }")
         elseif("${test_type}" STREQUAL "googletest")
             # Google tests
-            ly_test_impact_extract_google_test(${test} test_qualifier test_name)
-            ly_test_impact_get_target_type_string(${test_name} target_type)
-            list(APPEND google_tests "{ name = \"${test_name}\", qualifier = \"${test_qualifier}\", suite = \"${test_suite}\", build_type = \"${target_type}\" }")
+            ly_test_impact_extract_google_test(${test} test_namespace test_name)
+            ly_test_impact_get_test_launch_method(${test_name} launch_method)
+            list(APPEND google_tests "        { \"name\": \"${test_name}\", \"namespace\": \"${test_namespace}\", \"suite\": \"${test_suite}\", \"launch_method\": \"${launch_method}\" }")
         elseif("${test_type}" STREQUAL "googlebenchmark")
             # Google benchmarks
-            ly_test_impact_extract_google_test(${test} test_qualifier test_name)
-            list(APPEND google_benchmarks "{ name = \"${test_name}\", qualifier = \"${test_qualifier}\", suite = \"${test_suite}\" }")
+            ly_test_impact_extract_google_test(${test} test_namespace test_name)
+            list(APPEND google_benchmarks "        { \"name\": \"${test_name}\", \"namespace\": \"${test_namespace}\", \"suite\": \"${test_suite}\" }")
         else()
             message("${test} is of unknown type (TEST_LIBRARY property is empty)")
-            list(APPEND unknown_tests "{ name = \"${test}\" }")
+            list(APPEND unknown_tests "        { \"name\": \"${test}\" }")
         endif()
     endforeach()
 
@@ -279,7 +279,7 @@ function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE PERSISTENT_DATA_D
     if(NOT LY_TEST_IMPACT_INSTRUMENTATION_BIN)
         message(FATAL_ERROR "No test impact framework instrumentation binary was specified, please provide the path with option LY_TEST_IMPACT_INSTRUMENTATION_BIN")
     endif()
-    set(instrumentation_bin ${LY_TEST_IMPACT_INSTRUMENTATION_BIN})
+    file(TO_CMAKE_PATH ${LY_TEST_IMPACT_INSTRUMENTATION_BIN} instrumentation_bin)
     
     # test impact framework working dir
     ly_test_impact_rebase_file_to_repo_root(
@@ -323,7 +323,7 @@ function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE PERSISTENT_DATA_D
         ${LY_ROOT_FOLDER}
     )
     
-    # Bild dependency artifact dir
+    # Build dependency artifact dir
     ly_test_impact_rebase_file_to_repo_root(
         "${LY_TEST_IMPACT_TARGET_DEPENDENCY_DIR}"
         target_dependency_dir
