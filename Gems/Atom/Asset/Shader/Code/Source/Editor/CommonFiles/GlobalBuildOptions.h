@@ -33,6 +33,6 @@ namespace AZ
             RHI::ShaderCompilerArguments m_compilerArguments;
         };
 
-        GlobalBuildOptions ReadBuildOptions(const char* builderName);
+        GlobalBuildOptions ReadBuildOptions(const char* builderName, const char* optionalIncludeFolder = nullptr);
     }
 }

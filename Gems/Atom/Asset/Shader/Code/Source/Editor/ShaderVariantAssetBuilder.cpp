@@ -420,15 +420,6 @@ namespace AZ
                 return;
             }
 
-            if (jobParameters.find(ShouldExitEarlyFromProcessJobParam) != jobParameters.end())
-            {
-                AZ_TracePrintf(
-                    ShaderVariantAssetBuilderName, "Doing nothing on behalf of [%s] because it's been overriden by game project.",
-                    jobParameters.at(ShaderVariantLoadErrorParam).c_str());
-                response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-                return;
-            }
-
             AssetBuilderSDK::JobCancelListener jobCancelListener(request.m_jobId);
             if (jobCancelListener.IsCancelled())
             {
@@ -589,7 +580,7 @@ namespace AZ
             if (shaderSourceDataDescriptor.m_programSettings.m_entryPoints.empty())
             {
                 AZ_TracePrintf(ShaderVariantAssetBuilderName, "ProgramSettings do not specify entry points, will use GetDefaultEntryPointsFromShader()\n");
-                ShaderVariantAssetBuilder::GetDefaultEntryPointsFromAzslData(azslData, shaderEntryPoints);
+                ShaderBuilderUtility::GetDefaultEntryPointsFromFunctionDataList(azslData.m_functions, shaderEntryPoints);
             }
             else
             {
@@ -778,7 +769,7 @@ namespace AZ
                 }
 
                 // Time to save the asset in the cache tmp folder.
-                const uint32_t productSubID = RPI::ShaderVariantAsset::GetAssetSubId(shaderPlatformInterface->GetAPIUniqueIndex(), shaderVariantAsset->GetStableId());
+                const uint32_t productSubID = RPI::ShaderVariantAsset::MakeAssetProductSubId(shaderPlatformInterface->GetAPIUniqueIndex(), shaderVariantAsset->GetStableId());
                 AssetBuilderSDK::JobProduct assetProduct;
                 if (!SerializeOutShaderVariantAsset(shaderVariantAsset, shaderSourceFileFullPath, request.m_tempDirPath, *shaderPlatformInterface, productSubID, assetProduct))
                 {
@@ -788,64 +779,19 @@ namespace AZ
                 response.m_outputProducts.push_back(assetProduct);
 
                 // add byproducts as job output products:
+                uint32_t subProductType = aznumeric_cast<uint32_t>(RPI::ShaderAssetSubId::GeneratedHlslSource) + 1;
                 for (const AZStd::string& byproduct : byproducts.m_intermediatePaths)
                 {
                     AssetBuilderSDK::JobProduct jobProduct;
                     jobProduct.m_productFileName = byproduct;
                     jobProduct.m_productAssetType = Uuid::CreateName("DebugInfoByProduct-PdbOrDxilTxt");
-                    jobProduct.m_productSubID = ShaderBuilderUtility::MakeDebugByproductSubId(shaderPlatformInterface->GetAPIType(), byproduct);
+                    jobProduct.m_productSubID = RPI::ShaderVariantAsset::MakeAssetProductSubId(
+                        shaderPlatformInterface->GetAPIType(), shaderVariantAsset->GetStableId(), subProductType++);
                     response.m_outputProducts.push_back(AZStd::move(jobProduct));
                 }
             }
 
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        }
-
-
-        /// Returns a list of acceptable default entry point names
-        static void GetAcceptableDefaultEntryPoints(const AzslData& shaderData, AZStd::unordered_map<AZStd::string, RPI::ShaderStageType>& defaultEntryPoints)
-        {
-            for (const auto& func : shaderData.m_topData.m_functions)
-            {
-                if (!func.m_hasShaderStageVaryings)
-                {
-                    // Not declaring any semantics for a shader entry is valid, but unusual.
-                    // A shader entry with no semantics must be explicitly listed and won't be selected by default.
-                    continue;
-                }
-
-                if (func.m_name.starts_with("VS") || func.m_name.ends_with("VS"))
-                {
-                    defaultEntryPoints[func.m_name] = RPI::ShaderStageType::Vertex;
-                    AZ_TracePrintf(ShaderVariantAssetBuilderName, "Assuming \"%s\" is a valid Vertex shader entry point.\n", func.m_name.c_str());
-                }
-                else if (func.m_name.starts_with("PS") || func.m_name.ends_with("PS"))
-                {
-                    defaultEntryPoints[func.m_name] = RPI::ShaderStageType::Fragment;
-                    AZ_TracePrintf(ShaderVariantAssetBuilderName, "Assuming \"%s\" is a valid Fragment shader entry point.\n", func.m_name.c_str());
-                }
-                else if (func.m_name.starts_with("CS") || func.m_name.ends_with("CS"))
-                {
-                    defaultEntryPoints[func.m_name] = RPI::ShaderStageType::Compute;
-                    AZ_TracePrintf(ShaderVariantAssetBuilderName, "Assuming \"%s\" is a valid Compute shader entry point.\n", func.m_name.c_str());
-                }
-            }
-        }
-
-        /// Returns a list of acceptable default entry point names as a single string for messages
-        static AZStd::string GetAcceptableDefaultEntryPointNames(const AzslData& shaderData)
-        {
-            AZStd::unordered_map<AZStd::string, RPI::ShaderStageType> defaultEntryPointList;
-            GetAcceptableDefaultEntryPoints(shaderData, defaultEntryPointList);
-
-            AZStd::vector<AZStd::string> defaultEntryPointNamesList;
-            for (const auto& shaderEntryPoint : defaultEntryPointList)
-            {
-                defaultEntryPointNamesList.push_back(shaderEntryPoint.first);
-            }
-            AZStd::string shaderEntryPoints;
-            AzFramework::StringFunc::Join(shaderEntryPoints, defaultEntryPointNamesList.begin(), defaultEntryPointNamesList.end(), ", ");
-            return AZStd::move(shaderEntryPoints);
         }
 
         static bool CreateShaderVariant(
@@ -945,7 +891,7 @@ namespace AZ
 
             if (!hasRasterProgram && !hasComputeProgram && !hasRayTracingProgram)
             {
-                AZStd::string entryPointNames = GetAcceptableDefaultEntryPointNames(azslData);
+                AZStd::string entryPointNames = ShaderBuilderUtility::GetAcceptableDefaultEntryPointNames(azslData);
 
                 AZ_Error(ShaderVariantAssetBuilderName, false, "Shader asset descriptor has a program variant that does not define any entry points. Either declare entry points in the .shader file, or use one of the available default names (not case-sensitive): [%s]", entryPointNames.data());
 
@@ -990,198 +936,6 @@ namespace AZ
             return isVariantValid;
         }
 
-        static bool IsSystemValueSemantic(const AZStd::string_view semantic)
-        {
-            // https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-semantics#system-value-semantics
-            return AzFramework::StringFunc::StartsWith(semantic, "sv_", false);
-        }
-
-        static bool CreateShaderInputContract(
-            const AzslData& azslData,
-            const AZStd::string& vertexShaderName,
-            const RPI::ShaderOptionGroupLayout& shaderOptionGroupLayout,
-            RPI::ShaderInputContract& contract,
-            const AZStd::string& pathToIaJson)
-        {
-            StructData inputStruct;
-            inputStruct.m_id = "";
-
-            auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(pathToIaJson);
-            if (!jsonOutcome.IsSuccess())
-            {
-                AZ_Error(ShaderVariantAssetBuilderName, false, "%s", jsonOutcome.GetError().c_str());
-                return AssetBuilderSDK::ProcessJobResult_Failed;
-            }
-
-            AzslCompiler azslc(azslData.m_preprocessedFullPath);
-            if (!azslc.ParseIaPopulateStructData(jsonOutcome.GetValue(), vertexShaderName, inputStruct))
-            {
-                AZ_Error(ShaderVariantAssetBuilderName, false, "Failed to parse input layout\n");
-                return false;
-            }
-
-            if (inputStruct.m_id.empty())
-            {
-                AZ_Error(ShaderVariantAssetBuilderName, false, "Failed to find the input struct for vertex shader %s.", vertexShaderName.c_str());
-                return false;
-            }
-
-            for (const auto& member : inputStruct.m_members)
-            {
-                RHI::ShaderSemantic streamChannelSemantic{
-                    Name{ member.m_semanticText },
-                    static_cast<uint32_t>(member.m_semanticIndex) };
-
-                // Semantics that represent a system-generated value do not map to an input stream
-                if (IsSystemValueSemantic(streamChannelSemantic.m_name.GetStringView()))
-                {
-                    continue;
-                }
-
-                contract.m_streamChannels.push_back();
-                contract.m_streamChannels.back().m_semantic = streamChannelSemantic;
-
-                if (member.m_variable.m_typeModifier == MatrixMajor::ColumnMajor)
-                {
-                    contract.m_streamChannels.back().m_componentCount = member.m_variable.m_cols;
-                }
-                else
-                {
-                    contract.m_streamChannels.back().m_componentCount = member.m_variable.m_rows;
-                }
-
-                // [GFX_TODO][ATOM-14475]: Come up with a more elegant way to mark optional channels and their corresponding shader option
-                static const char OptionalInputStreamPrefix[] = "m_optional_";
-                if (AzFramework::StringFunc::StartsWith(member.m_variable.m_name, OptionalInputStreamPrefix, true))
-                {
-                    AZStd::string expectedOptionName = AZStd::string::format("o_%s_isBound", member.m_variable.m_name.substr(strlen(OptionalInputStreamPrefix)).c_str());
-
-                    RPI::ShaderOptionIndex shaderOptionIndex = shaderOptionGroupLayout.FindShaderOptionIndex(Name{expectedOptionName});
-                    if (!shaderOptionIndex.IsValid())
-                    {
-                        AZ_Error(ShaderVariantAssetBuilderName, false, "Shader option '%s' not found for optional input stream '%s'", expectedOptionName.c_str(), member.m_variable.m_name.c_str());
-                        return false;
-                    }
-
-                    const RPI::ShaderOptionDescriptor& option = shaderOptionGroupLayout.GetShaderOption(shaderOptionIndex);
-                    if (option.GetType() != RPI::ShaderOptionType::Boolean)
-                    {
-                        AZ_Error(ShaderVariantAssetBuilderName, false, "Shader option '%s' must be a bool.", expectedOptionName.c_str());
-                        return false;
-                    }
-
-                    if (option.GetDefaultValue().GetStringView() != "false")
-                    {
-                        AZ_Error(ShaderVariantAssetBuilderName, false, "Shader option '%s' must default to false.", expectedOptionName.c_str());
-                        return false;
-                    }
-
-                    contract.m_streamChannels.back().m_isOptional = true;
-                    contract.m_streamChannels.back().m_streamBoundIndicatorIndex = shaderOptionIndex;
-                }
-            }
-
-            return true;
-        }
-
-        static bool CreateShaderOutputContract(
-            const AzslData& azslData,
-            const AZStd::string& fragmentShaderName,
-            RPI::ShaderOutputContract& contract,
-            const AZStd::string& pathToOmJson)
-        {
-            StructData outputStruct;
-            outputStruct.m_id = "";
-
-            auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(pathToOmJson);
-            if (!jsonOutcome.IsSuccess())
-            {
-                AZ_Error(ShaderVariantAssetBuilderName, false, "%s", jsonOutcome.GetError().c_str());
-                return AssetBuilderSDK::ProcessJobResult_Failed;
-            }
-
-            AzslCompiler azslc(azslData.m_preprocessedFullPath);
-            if (!azslc.ParseOmPopulateStructData(jsonOutcome.GetValue(), fragmentShaderName, outputStruct))
-            {
-                AZ_Error(ShaderVariantAssetBuilderName, false, "Failed to parse output layout\n");
-                return false;
-            }
-
-            for (const auto& member : outputStruct.m_members)
-            {
-                RHI::ShaderSemantic semantic = RHI::ShaderSemantic::Parse(member.m_semanticText);
-
-                bool depthFound = false;
-
-                if (semantic.m_name.GetStringView() == "SV_Target")
-                {
-                    contract.m_requiredColorAttachments.push_back();
-                    // Render targets only support 1-D vector types and those are always column-major (per DXC)
-                    contract.m_requiredColorAttachments.back().m_componentCount = member.m_variable.m_cols;
-                }
-                else if (semantic.m_name.GetStringView() == "SV_Depth" ||
-                    semantic.m_name.GetStringView() == "SV_DepthGreaterEqual" ||
-                    semantic.m_name.GetStringView() == "SV_DepthLessEqual")
-                {
-                    if (depthFound)
-                    {
-                        AZ_Error(ShaderVariantAssetBuilderName, false, "SV_Depth specified more than once in the fragment shader output structure");
-                        return false;
-                    }
-                    depthFound = true;
-                }
-                else
-                {
-                    AZ_Error(ShaderVariantAssetBuilderName, false, "Unsupported shader output semantic '%s'.", semantic.m_name.GetCStr());
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        static bool CreateShaderInputAndOutputContracts(
-            const AzslData& azslData,
-            const MapOfStringToStageType& shaderEntryPoints,
-            const RPI::ShaderOptionGroupLayout& shaderOptionGroupLayout,
-            RPI::ShaderInputContract& shaderInputContract,
-            RPI::ShaderOutputContract& shaderOutputContract,
-            size_t& colorAttachmentCount,
-            const AZStd::string& pathToOmJson,
-            const AZStd::string& pathToIaJson)
-        {
-            bool success = true;
-            for (const auto& shaderEntryPoint : shaderEntryPoints)
-            {
-                auto shaderEntryName = shaderEntryPoint.first;
-                auto shaderStageType = shaderEntryPoint.second;
-
-                if (shaderStageType == RPI::ShaderStageType::Vertex)
-                {
-                    const bool layoutCreated = CreateShaderInputContract(azslData, shaderEntryName, shaderOptionGroupLayout, shaderInputContract, pathToIaJson);
-                    if (!layoutCreated)
-                    {
-                        success = false;
-                        AZ_Error(ShaderVariantAssetBuilderName, false, "Could not create the input contract for the vertex function %s", shaderEntryName.c_str());
-                        continue; // Using continue to report all the errors found
-                    }
-                }
-
-                if (shaderStageType == RPI::ShaderStageType::Fragment)
-                {
-                    const bool layoutCreated = CreateShaderOutputContract(azslData, shaderEntryName, shaderOutputContract, pathToOmJson);
-                    if (!layoutCreated)
-                    {
-                        success = false;
-                        AZ_Error(ShaderVariantAssetBuilderName, false, "Could not create the output contract for the fragment function %s", shaderEntryName.c_str());
-                        continue; // Using continue to report all the errors found
-                    }
-
-                    colorAttachmentCount = shaderOutputContract.m_requiredColorAttachments.size();
-                }
-            }
-            return success;
-        }
 
         AZ::Outcome<Data::Asset<RPI::ShaderVariantAsset>, AZStd::string>  ShaderVariantAssetBuilder::CreateShaderVariantAssetForAPI(
             const RPI::ShaderVariantListSourceData::VariantInfo& variantInfo,
@@ -1195,8 +949,8 @@ namespace AZ
             RPI::ShaderInputContract shaderInputContract;
             RPI::ShaderOutputContract shaderOutputContract;
             size_t colorAttachmentCount = 0;
-            CreateShaderInputAndOutputContracts(azslData, variantCreationContext.m_shaderEntryPoints, variantCreationContext.m_shaderOptionGroupLayout,
-                shaderInputContract, shaderOutputContract, colorAttachmentCount, pathToOmJson, pathToIaJson);
+            ShaderBuilderUtility::CreateShaderInputAndOutputContracts(azslData, variantCreationContext.m_shaderEntryPoints, variantCreationContext.m_shaderOptionGroupLayout, pathToOmJson,
+                pathToIaJson, shaderInputContract, shaderOutputContract, colorAttachmentCount);
 
             const RPI::ShaderOptionGroupLayout& shaderOptionGroupLayout = variantCreationContext.m_shaderOptionGroupLayout;
             // Temporary structure used for sorting and caching intermediate results
@@ -1282,25 +1036,6 @@ namespace AZ
             Data::Asset<RPI::ShaderVariantAsset> shaderVariantAsset;
             shaderVariantAssetCreator.End(shaderVariantAsset);
             return AZ::Success(AZStd::move(shaderVariantAsset));
-        }
-
-        void ShaderVariantAssetBuilder::GetDefaultEntryPointsFromAzslData(const AzslData& shaderData, AZStd::unordered_map<AZStd::string, RPI::ShaderStageType>& shaderEntryPoints)
-        {
-            AZStd::unordered_map<AZStd::string, RPI::ShaderStageType> defaultEntryPoints;
-            GetAcceptableDefaultEntryPoints(shaderData, defaultEntryPoints);
-
-            for (const auto& functionData : shaderData.m_topData.m_functions)
-            {
-                for (const auto& defaultEntryPoint : defaultEntryPoints)
-                {
-                    // Equal defaults to case insensitive compares...
-                    if (AzFramework::StringFunc::Equal(defaultEntryPoint.first.c_str(), functionData.m_name.c_str()))
-                    {
-                        shaderEntryPoints[defaultEntryPoint.first] = defaultEntryPoint.second;
-                        break; // stop looping default entry points and go to the next shader function
-                    }
-                }
-            }
         }
 
         bool ShaderVariantAssetBuilder::SerializeOutShaderVariantAsset(const Data::Asset<RPI::ShaderVariantAsset> shaderVariantAsset, const AZStd::string& shaderSourceFileFullPath, const AZStd::string& tempDirPath,

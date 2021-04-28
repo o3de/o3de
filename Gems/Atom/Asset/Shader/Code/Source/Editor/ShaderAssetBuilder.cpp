@@ -141,7 +141,7 @@ namespace AZ
                         AZStd::string originalLocation;
                         AzFramework::StringFunc::Path::GetFullPath(fullPath.c_str(), originalLocation);
                         AZStd::string prependedPath = ShaderBuilderUtility::DumpAzslPrependedCode(
-                            ShaderAssetBuilderName, prependedAzslSourceCode, originalLocation, ShaderBuilderUtility::ExtractStemName(fullPath.c_str()), shaderPlatformInterface->GetAPIName().GetStringView());
+                            ShaderAssetBuilderName, prependedAzslSourceCode, originalLocation, ShaderBuilderUtility::GetFileName(fullPath.c_str()), shaderPlatformInterface->GetAPIName().GetStringView());
                         PreprocessorData output;
                         buildOptions.m_compilerArguments.Merge(descriptorParseOutput.GetValue().m_compiler);
                         PreprocessFile(azslFullPath, output, buildOptions.m_preprocessorSettings, true, true);
@@ -164,17 +164,6 @@ namespace AZ
             }  // for all request.m_enabledPlatforms
 
             response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
-        }
-
-        static uint32_t GetRootVariantAssetSubId(const RHI::ShaderPlatformInterface& shaderPlatformInterface)
-        {
-            //The 2 Most significant bits encode the the RHI::API unique index.
-            const uint32_t apiUniqueIndex = shaderPlatformInterface.GetAPIUniqueIndex();
-            AZ_Assert(apiUniqueIndex <= RHI::Limits::APIType::PerPlatformApiUniqueIndexMax,
-                "Invalid api unique index [%u] from ShaderPlatformInterface [%s]", apiUniqueIndex, shaderPlatformInterface.GetAPIName().GetCStr());
-            const uint32_t rhiApiSubId = apiUniqueIndex << 30;
-            const uint32_t productSubID = rhiApiSubId | static_cast<uint32_t>(RPI::ShaderAssetSubId::RootShaderVariantAsset);
-            return productSubID;
         }
 
         static AssetBuilderSDK::ProcessJobResultCode CompileForAPI(
@@ -201,7 +190,7 @@ namespace AZ
             if (shaderSourceDataDescriptor.m_programSettings.m_entryPoints.empty())
             {
                 AZ_TracePrintf(ShaderAssetBuilderName, "ProgramSettings do not specify entry points, will use GetDefaultEntryPointsFromShader()\n");
-                ShaderVariantAssetBuilder::GetDefaultEntryPointsFromAzslData(azslData, shaderEntryPoints);
+                ShaderBuilderUtility::GetDefaultEntryPointsFromFunctionDataList(azslData.m_functions, shaderEntryPoints);
             }
             else
             {
@@ -249,7 +238,9 @@ namespace AZ
             // so the root ShaderVariantAsset is found when the ShaderAsset is deserialized.
             AZStd::string fullSourcePath;
             AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.c_str(), request.m_sourceFile.c_str(), fullSourcePath, true);
-            const uint32_t productSubID = GetRootVariantAssetSubId(*shaderPlatformInterface);
+            const uint32_t productSubID = RPI::ShaderAsset::MakeAssetProductSubId(
+                shaderPlatformInterface->GetAPIUniqueIndex(),
+                aznumeric_cast<uint32_t>(RPI::ShaderAssetSubId::RootShaderVariantAsset));
             auto assetIdOutcome = RPI::AssetUtils::MakeAssetId(fullSourcePath, productSubID);
             AZ_Assert(assetIdOutcome.IsSuccess(), "Failed to get AssetId from shader %s", fullSourcePath.c_str());
             const Data::AssetId variantAssetId = assetIdOutcome.TakeValue();
@@ -288,12 +279,13 @@ namespace AZ
             // add byproducts as job output products:
             if (variantCreationContext.m_outputByproducts)
             {
+                uint32_t subProductType = aznumeric_cast<uint32_t>(RPI::ShaderAssetSubId::GeneratedHlslSource) + 1;
                 for (const AZStd::string& byproduct : variantCreationContext.m_outputByproducts->m_intermediatePaths)
                 {
                     AssetBuilderSDK::JobProduct jobProduct;
                     jobProduct.m_productFileName = byproduct;
                     jobProduct.m_productAssetType = Uuid::CreateName("DebugInfoByProduct-PdbOrDxilTxt");
-                    jobProduct.m_productSubID = ShaderBuilderUtility::MakeDebugByproductSubId(shaderPlatformInterface->GetAPIType(), byproduct);
+                    jobProduct.m_productSubID = RPI::ShaderAsset::MakeAssetProductSubId(shaderPlatformInterface->GetAPIUniqueIndex(), subProductType++);
                     response.m_outputProducts.push_back(AZStd::move(jobProduct));
                 }
             }
@@ -305,12 +297,12 @@ namespace AZ
             attributeMaps.resize(RHI::ShaderStageCount);
             for (const auto& shaderEntry : shaderSourceDataDescriptor.m_programSettings.m_entryPoints)
             {
-                auto findId = AZStd::find_if(AZ_BEGIN_END(azslData.m_topData.m_functions), [&shaderEntry](const auto& func)
+                auto findId = AZStd::find_if(AZ_BEGIN_END(azslData.m_functions), [&shaderEntry](const auto& func)
                     {
                         return func.m_name == shaderEntry.m_name;
                     });
 
-                if (findId == azslData.m_topData.m_functions.end())
+                if (findId == azslData.m_functions.end())
                 {
                     // shaderData.m_functions only contains Vertex, Fragment and Compute entries for now
                     // Tessellation shaders will need to be handled too

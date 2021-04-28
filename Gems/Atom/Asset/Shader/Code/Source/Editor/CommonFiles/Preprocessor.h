@@ -47,8 +47,12 @@ namespace AZ
             //! folders are relative to the dev folder of the project
             AZStd::vector<AZStd::string> m_projectIncludePaths;
 
-            //! passed as -D macro1[=value1] -D macro2 ...
+            //! Each string is of the type "name[=value]"
+            //! passed as -Dmacro1[=value1] -Dmacro2 ... to MCPP.
             AZStd::vector<AZStd::string> m_predefinedMacros;
+
+            //! Removes all macros from @m_predefinedMacros that appear in @macroNames
+            void RemovePredefinedMacros(const AZStd::vector<AZStd::string>& macroNames);
 
             //! if needed, we may add configurations like
             //!   "keep comments" or "don't predefine non-standard macros"
@@ -59,7 +63,7 @@ namespace AZ
         //! It will populate your option with a default base of include folders given by the Asset Processor scan folders.
         //! This is going to look for a Config/shader_global_build_options.json in one of the scan folders
         //!  (that file can specify additional include files and preprocessor macros).
-        void InitializePreprocessorOptions(PreprocessorOptions& options, const char* builderName);
+        void InitializePreprocessorOptions(PreprocessorOptions& options, const char* builderName, const char* optionalIncludeFolder = nullptr);
 
         /**
         * Runs the preprocessor on the given source file path, and stores results in outputData.

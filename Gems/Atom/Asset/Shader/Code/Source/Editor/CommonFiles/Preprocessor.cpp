@@ -58,6 +58,38 @@ namespace AZ
             }
         }
 
+        void PreprocessorOptions::RemovePredefinedMacros(const AZStd::vector<AZStd::string>& macroNames)
+        {
+                m_predefinedMacros.erase(
+                    AZStd::remove_if(
+                        m_predefinedMacros.begin(), m_predefinedMacros.end(),
+                        [&](const AZStd::string& predefinedMacro)
+                        {
+                            for (const auto& macroName : macroNames)
+                            {
+                                //                                             Haystack       , Needle 
+                                const auto pos = AzFramework::StringFunc::Find(predefinedMacro, macroName, 0 /*pos*/, false /*reverse*/, true /*bCaseSensitive*/);
+                                if (pos != 0)
+                                {
+                                    return false;
+                                }
+                                // If found, let's make sure it is not just a substring. 
+                                if (predefinedMacro.size() == macroName.size())
+                                {
+                                    return true;
+                                }
+                                // The predefinedMacro can be a string like "macro=value". If we find '=' it is a match.
+                                if (predefinedMacro.c_str()[macroName.size()] == '=')
+                                {
+                                    return true;
+                                }
+                                return false;
+                            }
+                            return false;
+                        }),
+                    m_predefinedMacros.end());
+        }
+
         //! Binder helper to Matsui C-Pre-Processor library
         class McppBinder
         {
@@ -286,7 +318,8 @@ namespace AZ
         }
 
         // populate options with scan folders and contents of parsing shader_global_build_options.json
-        void InitializePreprocessorOptions(PreprocessorOptions& options, [[maybe_unused]] const char* builderName)
+        void InitializePreprocessorOptions(
+            PreprocessorOptions& options, [[maybe_unused]] const char* builderName, const char* optionalIncludeFolder)
         {
             AZ_TraceContext("Init include-paths lookup options", "preprocessor");
 
@@ -303,6 +336,10 @@ namespace AZ
             // Add the project path to list of include paths
             AZ::IO::FixedMaxPathString projectPath = AZ::Utils::GetProjectPath();
             scanFoldersSet.emplace(projectPath.c_str(), projectPath.size());
+            if (optionalIncludeFolder)
+            {
+                scanFoldersSet.emplace(optionalIncludeFolder, strnlen(optionalIncludeFolder, AZ::IO::MaxPathLength));
+            }
             // but while we transfer to the set, we're going to keep only folders where +/ShaderLib exists
             for (AZStd::string folder : scanFoldersVector)
             {
