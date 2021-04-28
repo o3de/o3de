@@ -48,7 +48,7 @@ def get_tag_values(tag_name):
 def delete_volumes(inactive_dates):
     """
     Find and delete all EBS volumes that have AttachDate tag value in inactive_dates
-    :param inactive_dates: List of String that considered as inactive dates, for example, {"2021-04-27", "2021-04-26"}
+    :param inactive_dates: List of String that considered as inactive dates, for example, ["2021-04-27", "2021-04-26"]
     :return: Number of EBS volumes that are deleted successfully, number of EBS volumes that are not deleted.
     """
     success = 0
