@@ -20,10 +20,8 @@ namespace LUAEditor
 {
     namespace Thumbnailer
     {
-        const int DEFAULT_THUMBNAIL_SIZE = 100;
-
         ThumbnailerNullComponent::ThumbnailerNullComponent() :
-            m_nullThumbnail(new AzToolsFramework::Thumbnailer::MissingThumbnail(DEFAULT_THUMBNAIL_SIZE))
+            m_nullThumbnail(new AzToolsFramework::Thumbnailer::MissingThumbnail())
         {
         }
 
@@ -53,7 +51,7 @@ namespace LUAEditor
             services.push_back(AZ_CRC("ThumbnailerService", 0x65422b97));
         }
 
-        void ThumbnailerNullComponent::RegisterContext(const char* /*contextName*/, int /*thumbnailSize*/)
+        void ThumbnailerNullComponent::RegisterContext(const char* /*contextName*/)
         {
         }
 

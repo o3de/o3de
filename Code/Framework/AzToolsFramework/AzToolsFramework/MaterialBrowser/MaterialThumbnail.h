@@ -28,7 +28,7 @@ namespace AzToolsFramework
         {
             Q_OBJECT
         public:
-            MaterialThumbnail(Thumbnailer::SharedThumbnailKey key, int thumbnailSize);
+            MaterialThumbnail(Thumbnailer::SharedThumbnailKey key);
         };
 
         namespace
