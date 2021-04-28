@@ -149,8 +149,6 @@
 #define ID_OBJECTMODIFY_UNFREEZE                   33518
 #define ID_UNDO                                    33524
 #define ID_EDIT_CLONE                              33525
-#define ID_SELECTION_SAVE                          33527
-#define ID_SELECTION_LOAD                          33529
 #define ID_GOTO_SELECTED                           33535
 #define ID_EDIT_LEVELDATA                          33542
 #define ID_FILE_EDITEDITORINI                      33543
@@ -397,4 +395,6 @@
 #define ID_TOOLBAR_WIDGET_SNAP_GRID          50008
 #define ID_TOOLBAR_WIDGET_ENVIRONMENT_MODE   50011
 #define ID_TOOLBAR_WIDGET_DEBUG_MODE         50012
+#define ID_TOOLBAR_WIDGET_SPACER_RIGHT       50013
+#define ID_TOOLBAR_WIDGET_PLAYCONSOLE_LABEL  50014
 #define ID_TOOLBAR_WIDGET_LAST               50020

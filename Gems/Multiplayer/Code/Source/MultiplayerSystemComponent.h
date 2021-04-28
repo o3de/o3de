@@ -71,6 +71,7 @@ namespace Multiplayer
         bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::ClientMigration& packet);
         bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::NotifyClientMigration& packet);
         bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::EntityMigration& packet);
+        bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::ReadyForEntityUpdates& packet);
 
         //! IConnectionListener interface
         //! @{
@@ -88,6 +89,11 @@ namespace Multiplayer
         void AddConnectionAcquiredHandler(ConnectionAcquiredEvent::Handler& handler) override;
         void AddSessionInitHandler(SessionInitEvent::Handler& handler) override;
         void AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler) override;
+        void SendReadyForEntityUpdates(bool readyForEntityUpdates) override;
+        const char* GetComponentGemName(NetComponentId netComponentId) const override;
+        const char* GetComponentName(NetComponentId netComponentId) const override;
+        const char* GetComponentPropertyName(NetComponentId netComponentId, PropertyIndex propertyIndex) const override;
+        const char* GetComponentRpcName(NetComponentId netComponentId, RpcIndex rpcIndex) const override;
         //! @}
 
         //! Console commands.

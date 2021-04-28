@@ -12,8 +12,13 @@
 
 namespace Multiplayer
 {
-    inline bool ClientToServerConnectionData::CanSendUpdates()
+    inline bool ClientToServerConnectionData::CanSendUpdates() const
     {
         return m_canSendUpdates;
+    }
+
+    inline void ClientToServerConnectionData::SetCanSendUpdates(bool canSendUpdates)
+    {
+        m_canSendUpdates = canSendUpdates;
     }
 }

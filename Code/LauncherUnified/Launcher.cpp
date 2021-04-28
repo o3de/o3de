@@ -26,7 +26,6 @@
 #include <AzGameFramework/Application/GameApplication.h>
 
 #include <CryLibrary.h>
-#include <IConsole.h>
 #include <ISystem.h>
 #include <ITimer.h>
 #include <LegacyAllocator.h>
@@ -46,6 +45,23 @@ extern "C" void CreateStaticModules(AZStd::vector<AZ::Module*>& modulesOut);
 
 namespace
 {
+    void ExecuteConsoleCommandFile(AzFramework::Application& application)
+    {
+        const AZStd::string_view customConCmdKey = "console-command-file";
+        const AZ::CommandLine* commandLine = application.GetCommandLine();
+        AZStd::size_t numSwitchValues = commandLine->GetNumSwitchValues(customConCmdKey);
+        if (numSwitchValues > 0)
+        {
+            // The expectations for command line parameters is that the "last one wins"
+            // That way it allows users and test scripts to override previous command line options by just listing them later on the invocation line
+            const AZStd::string& consoleCmd = commandLine->GetSwitchValue(customConCmdKey, numSwitchValues - 1);
+            if (!consoleCmd.empty())
+            {
+                AZ::Interface<AZ::IConsole>::Get()->ExecuteConfigFile(consoleCmd.c_str());
+            }
+        }
+    }
+
 #if AZ_TRAIT_LAUNCHER_USE_CRY_DYNAMIC_MODULE_HANDLE
     // mimics AZ::DynamicModuleHandle but uses CryLibrary under the hood,
     // which is necessary to properly load legacy Cry libraries on some platforms
@@ -637,7 +653,11 @@ namespace O3DELauncher
             if (gEnv && gEnv->pConsole)
             {
                 // Execute autoexec.cfg to load the initial level
-                gEnv->pConsole->ExecuteString("exec autoexec.cfg");
+                AZ::Interface<AZ::IConsole>::Get()->ExecuteConfigFile("autoexec.cfg");
+
+                // Find out if console command file was passed 
+                // via --console-command-file=%filename% and execute it
+                ExecuteConsoleCommandFile(gameApplication);
 
                 gEnv->pSystem->ExecuteCommandLine(false);
 
