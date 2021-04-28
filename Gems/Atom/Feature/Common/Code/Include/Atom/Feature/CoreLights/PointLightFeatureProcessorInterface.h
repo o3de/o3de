@@ -1,20 +1,20 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+ * its licensors.
+ *
+ * For complete copyright and license terms please see the LICENSE at the root of this
+ * distribution (the "License"). All use of this software is governed by the License,
+ * or, if provided, by the license below or the license accompanying this file. Do not
+ * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ */
 
 #pragma once
 
-#include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
 #include <Atom/Feature/CoreLights/ShadowConstants.h>
+#include <Atom/RPI.Public/FeatureProcessor.h>
 
 namespace AZ
 {
@@ -38,8 +38,7 @@ namespace AZ
         };
 
         //! PointLightFeatureProcessorInterface provides an interface to acquire, release, and update a point light.
-        class PointLightFeatureProcessorInterface
-            : public RPI::FeatureProcessor
+        class PointLightFeatureProcessorInterface : public RPI::FeatureProcessor
         {
         public:
             AZ_RTTI(AZ::Render::PointLightFeatureProcessorInterface, "{D3E0B016-F3C6-4C7A-A29E-0B3A4FA87806}", AZ::RPI::FeatureProcessor);
@@ -48,7 +47,8 @@ namespace AZ
             using LightHandle = RHI::Handle<uint16_t, class PointLight>;
             static constexpr PhotometricUnit PhotometricUnitType = PhotometricUnit::Candela;
 
-            //! Creates a new point light which can be referenced by the returned LightHandle. Must be released via ReleaseLight() when no longer needed.
+            //! Creates a new point light which can be referenced by the returned LightHandle. Must be released via ReleaseLight() when no
+            //! longer needed.
             virtual LightHandle AcquireLight() = 0;
             //! Releases a LightHandle which removes the point light.
             virtual bool ReleaseLight(LightHandle& handle) = 0;
@@ -65,7 +65,7 @@ namespace AZ
             virtual void SetBulbRadius(LightHandle handle, float bulbRadius) = 0;
             //! Sets if shadows are enabled
             virtual void SetShadowsEnabled(LightHandle handle, bool enabled) = 0;
-            //! Sets the shadowmap size (width and height) of the light.			
+            //! Sets the shadowmap size (width and height) of the light.
             virtual void SetShadowmapMaxResolution(LightHandle handle, ShadowmapSize shadowmapSize) = 0;
             //! Specifies filter method of shadows.
             virtual void SetShadowFilterMethod(LightHandle handle, ShadowFilterMethod method) = 0;
