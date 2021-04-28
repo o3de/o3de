@@ -77,7 +77,7 @@ namespace AZ
             GpuBufferHandler m_lightBufferHandler;
             bool m_deviceBufferNeedsUpdate = false;
 
-            AZStd::array<AZ::Vector3, PointLightData::NumShadowFaces> m_directions;
+            AZStd::array<AZ::Transform, PointLightData::NumShadowFaces> m_pointShadowTransforms;
         };
     } // namespace Render
 } // namespace AZ

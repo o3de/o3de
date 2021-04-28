@@ -44,12 +44,13 @@ namespace AZ
         PointLightFeatureProcessor::PointLightFeatureProcessor()
             : PointLightFeatureProcessorInterface()
         {
-            m_directions[0] = -AZ::Vector3::CreateAxisX();
-            m_directions[1] = AZ::Vector3::CreateAxisX();
-            m_directions[2] = -AZ::Vector3::CreateAxisY();
-            m_directions[3] = AZ::Vector3::CreateAxisY();
-            m_directions[4] = -AZ::Vector3::CreateAxisZ();
-            m_directions[5] = AZ::Vector3::CreateAxisZ();
+            // Note must match PointShadowDirections in PointLight.azsli
+            m_pointShadowTransforms[0] = AZ::Transform::CreateLookAt(AZ::Vector3::CreateZero(), -AZ::Vector3::CreateAxisX());
+            m_pointShadowTransforms[1] = AZ::Transform::CreateLookAt(AZ::Vector3::CreateZero(), AZ::Vector3::CreateAxisX());
+            m_pointShadowTransforms[2] = AZ::Transform::CreateLookAt(AZ::Vector3::CreateZero(), -AZ::Vector3::CreateAxisY());
+            m_pointShadowTransforms[3] = AZ::Transform::CreateLookAt(AZ::Vector3::CreateZero(), AZ::Vector3::CreateAxisY());
+            m_pointShadowTransforms[4] = AZ::Transform::CreateLookAt(AZ::Vector3::CreateZero(), -AZ::Vector3::CreateAxisZ());
+            m_pointShadowTransforms[5] = AZ::Transform::CreateLookAt(AZ::Vector3::CreateZero(), AZ::Vector3::CreateAxisZ());
         }
 
         void PointLightFeatureProcessor::Activate()
@@ -241,10 +242,9 @@ namespace AZ
                 }
 
                 ProjectedShadowFeatureProcessorInterface::ProjectedShadowDescriptor desc = m_shadowFeatureProcessor->GetShadowProperties(shadowId);
-                Vector3 position = Vector3::CreateFromFloat3(pointLight.m_position.data());
-
                 desc.m_fieldOfViewYRadians = DegToRad(90.5f); // Make it slightly larger than 90 degrees to avoid artifacts on the boundary between 2 cubemap faces
-                desc.m_transform = Transform::CreateLookAt(position, position + m_directions[i]);
+                desc.m_transform = m_pointShadowTransforms[i];
+                desc.m_transform.SetTranslation(pointLight.m_position[0], pointLight.m_position[1], pointLight.m_position[2]);
                 desc.m_aspectRatio = 1.0f;
                 desc.m_nearPlaneDistance = 0.0f; 
 
