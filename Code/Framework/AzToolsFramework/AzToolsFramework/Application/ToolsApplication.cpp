@@ -284,6 +284,10 @@ namespace AzToolsFramework
     void ToolsApplication::Start(const Descriptor& descriptor, const StartupParameters& startupParameters/* = StartupParameters()*/)
     {
         Application::Start(descriptor, startupParameters);
+        if (!m_isStarted)
+        {
+            return;
+        }
 
         m_editorEntityManager.Start();
 
