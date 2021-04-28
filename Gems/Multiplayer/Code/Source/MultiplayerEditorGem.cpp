@@ -37,12 +37,9 @@ namespace Multiplayer
 
     AZ::ComponentTypeList MultiplayerEditorModule::GetRequiredSystemComponents() const
     {
-        return AZ::ComponentTypeList
-        {
-            azrtti_typeid<AzNetworking::NetworkingSystemComponent>(),
-            azrtti_typeid<MultiplayerSystemComponent>(),
-            azrtti_typeid<MultiplayerEditorSystemComponent>(),
-        };
+        AZ::ComponentTypeList requiredComponents = MultiplayerModule::GetRequiredSystemComponents();
+        requiredComponents.push_back(azrtti_typeid<MultiplayerEditorSystemComponent>());
+        return requiredComponents;
     }
 } // namespace Multiplayer
 
