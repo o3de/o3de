@@ -1,9 +1,11 @@
-[Platforms]
-;pc=enabled
-es3=enabled
-;ios=enabled
-;osx_gl=enabled
-;provo=enabled
-;server=enabled
-
-
+{
+    "Amazon": {
+        "AssetProcessor": {
+            "Settings": {
+                "Platforms": {
+                    "es3": "enabled"
+                }
+            }
+        }
+    }
+}
