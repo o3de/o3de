@@ -1,0 +1,82 @@
+/*
+ * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+ * its licensors.
+ *
+ * For complete copyright and license terms please see the LICENSE at the root of this
+ * distribution (the "License"). All use of this software is governed by the License,
+ * or, if provided, by the license below or the license accompanying this file. Do not
+ * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ */
+
+#pragma once
+
+#include <Dependency/TestImpactSourceDependency.h>
+#include <Target/TestImpactBuildTarget.h>
+#include <Target/TestImpactProductionTarget.h>
+#include <Target/TestImpactTestTarget.h>
+
+namespace TestImpact
+{
+    ParentTarget::ParentTarget(const TestTarget* target)
+        : m_buildTarget(target)
+        , m_target(target)
+    {
+    }
+
+    ParentTarget::ParentTarget(const ProductionTarget* target)
+        : m_buildTarget(target)
+        , m_target(target)
+    {
+    }
+
+    bool ParentTarget::operator==(const ParentTarget& other) const
+    {
+        return m_buildTarget == other.m_buildTarget;
+    }
+
+    const BuildTarget* ParentTarget::GetBuildTarget() const
+    {
+        return m_buildTarget;
+    }
+
+    const AZStd::variant<const ProductionTarget*, const TestTarget*>& ParentTarget::GetTarget() const
+    {
+        return m_target;
+    }
+
+    SourceDependency::SourceDependency(
+        const AZStd::string& path,
+        DependencyData&& dependencyData)
+        : m_path(path)
+        , m_dependencyData(AZStd::move(dependencyData))
+    {        
+    }
+
+    const AZStd::string& SourceDependency::GetPath() const
+    {
+        return m_path;
+    }
+
+    size_t SourceDependency::GetNumParentTargets() const
+    {
+        return m_dependencyData.m_parentTargets.size();
+    }
+
+    size_t SourceDependency::GetNumCoveringTestTargets() const
+    {
+        return m_dependencyData.m_coveringTestTargets.size();
+    }
+
+    const AZStd::unordered_set<ParentTarget>& SourceDependency::GetParentTargets() const
+    {
+        return m_dependencyData.m_parentTargets;
+    }
+
+    const AZStd::unordered_set<const TestTarget*>& SourceDependency::GetCoveringTestTargets() const
+    {
+        return m_dependencyData.m_coveringTestTargets;
+    }
+
+} // namespace TestImpact

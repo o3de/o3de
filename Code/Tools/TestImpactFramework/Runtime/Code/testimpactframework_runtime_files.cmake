@@ -52,7 +52,15 @@ set(FILES
     Source/Process/JobRunner/TestImpactProcessJobRunner.h
     Source/Process/Scheduler/TestImpactProcessScheduler.cpp
     Source/Process/Scheduler/TestImpactProcessScheduler.h
-
+    Source/Dependency/TestImpactDynamicDependencyMap.cpp
+    Source/Dependency/TestImpactDynamicDependencyMap.h
+    Source/Dependency/TestImpactChangeDependencyList.cpp
+    Source/Dependency/TestImpactChangeDependencyList.h
+    Source/Dependency/TestImpactDependencyException.h
+    Source/Dependency/TestImpactSourceDependency.h
+    Source/Dependency/TestImpactSourceDependency.cpp
+    Source/Dependency/TestImpactSourceCoveringTestsList.h
+    Source/Dependency/TestImpactSourceCoveringTestsList.cpp
     Source/Target/TestImpactBuildTarget.cpp
     Source/Target/TestImpactBuildTarget.h
     Source/Target/TestImpactBuildTargetList.h
