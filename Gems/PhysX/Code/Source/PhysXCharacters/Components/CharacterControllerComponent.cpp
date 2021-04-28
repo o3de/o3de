@@ -412,7 +412,6 @@ namespace PhysX
         AZ::TransformBus::EventResult(entityTranslation, GetEntityId(), &AZ::TransformBus::Events::GetWorldTranslation);
         m_characterConfig->m_position = entityTranslation;
 
-        AZ_Assert(m_controller == nullptr, "Calling create CharacterControllerComponent::CreateController() with an already created controller.");
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
             AzPhysics::SimulatedBodyHandle bodyHandle = sceneInterface->AddSimulatedBody(defaultSceneHandle, m_characterConfig.get());
@@ -451,8 +450,8 @@ namespace PhysX
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
             sceneInterface->RemoveSimulatedBody(m_controller->m_sceneOwner, m_controller->m_bodyHandle);
-            m_controller = nullptr;
         }
+        m_controller = nullptr;
 
         m_preSimulateHandler.Disconnect();
 

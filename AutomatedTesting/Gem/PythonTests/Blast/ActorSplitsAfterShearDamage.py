@@ -15,9 +15,9 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from ActorSplitsAfterDamage import Tests
 
-def run():
-    from ActorSplitsAfterDamage import run as internal_run
-    from editor_python_test_tools.utils import Constants
+def ActorSplitsAfterShearDamage():
+    from ActorSplitsAfterDamage import base_run as internal_run
+    from BlastUtils import Constants
 
     def ShearDamage(target_id, position):
         normal = azlmbr.object.construct('Vector3', 1.0, 0.0, 0.0)
@@ -29,4 +29,8 @@ def run():
 
 
 if __name__ == "__main__":
-    run()
+    import ImportPathHelper as imports
+    imports.init()
+
+    from editor_python_test_tools.utils import Report
+    Report.start_test(ActorSplitsAfterShearDamage)

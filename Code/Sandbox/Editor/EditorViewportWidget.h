@@ -234,11 +234,8 @@ public:
     QPoint ViewportToWidget(const QPoint& point) const;
     QSize WidgetToViewport(const QSize& size) const;
 
-    /// Take raw input and create a final mouse interaction.
-    /// @attention Do not map **point** from widget to viewport explicitly,
-    /// this is handled internally by BuildMouseInteraction - just pass directly.
     AzToolsFramework::ViewportInteraction::MouseInteraction BuildMouseInteraction(
-        Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, const QPoint& point);
+        Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, const QPoint& point) override;
 
     void SetPlayerPos()
     {

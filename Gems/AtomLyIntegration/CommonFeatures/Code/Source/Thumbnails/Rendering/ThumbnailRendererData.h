@@ -52,6 +52,7 @@ namespace AZ
 
                 double m_simulateTime = 0.0f;
                 float m_deltaTime = 0.0f;
+                int m_thumbnailSize = 512;
 
                 //! Incoming thumbnail requests are appended to this queue and processed one at a time in OnTick function.
                 AZStd::queue<AzToolsFramework::Thumbnailer::SharedThumbnailKey> m_thumbnailQueue;
