@@ -1,9 +1,9 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
-    <file alias="EngineAssets/Editor/Style/Editor.qss">Editor.qss</file>
-    <file alias="EngineAssets/Editor/Style/EditorPreferencesDialog.qss">EditorPreferencesDialog.qss</file>
-    <file alias="EngineAssets/Editor/Style/LayoutConfigDialog.qss">LayoutConfigDialog.qss</file>
-    <file alias="EngineAssets/Editor/Style/GraphicsSettingsDialog.qss">GraphicsSettingsDialog.qss</file>
-    <file alias="EngineAssets/Editor/Style/LensFlareEditor.qss">LensFlareEditor.qss</file>
+    <file alias="Assets/Editor/Style/Editor.qss">Editor.qss</file>
+    <file alias="Assets/Editor/Style/EditorPreferencesDialog.qss">EditorPreferencesDialog.qss</file>
+    <file alias="Assets/Editor/Style/LayoutConfigDialog.qss">LayoutConfigDialog.qss</file>
+    <file alias="Assets/Editor/Style/GraphicsSettingsDialog.qss">GraphicsSettingsDialog.qss</file>
+    <file alias="Assets/Editor/Style/LensFlareEditor.qss">LensFlareEditor.qss</file>
 </qresource>
 </RCC>

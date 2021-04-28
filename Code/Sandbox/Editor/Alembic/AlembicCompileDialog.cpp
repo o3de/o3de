@@ -72,7 +72,7 @@ void CAlembicCompileDialog::OnInitDialog()
 
     SDirectoryEnumeratorHelper dirHelper;
 
-    auto engineAssetSourceRoot = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / "EngineAssets";
+    auto engineAssetSourceRoot = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / "Assets";
     dirHelper.ScanDirectoryRecursive(gEnv->pCryPak, engineAssetSourceRoot.c_str(), "Editor/Presets/GeomCache", filePattern, presetFiles);
 
     for (auto iter = presetFiles.begin(); iter != presetFiles.end(); ++iter)

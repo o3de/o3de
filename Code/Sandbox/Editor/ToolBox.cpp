@@ -335,7 +335,7 @@ void CToolBoxManager::Load(ActionManager* actionManager)
 
     if (actionManager)
     {
-        auto engineSourceAssetPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / "EngineAssets";
+        auto engineSourceAssetPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / "Assets";
         LoadShelves((engineSourceAssetPath / "Editor" / "Scripts").c_str(),
             (engineSourceAssetPath / "Editor" / "Scripts" / "Shelves").c_str(), actionManager);
     }

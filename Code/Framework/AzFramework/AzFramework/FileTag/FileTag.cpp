@@ -33,7 +33,7 @@ namespace AzFramework
         const char* ExcludeFileName = "exclude";
         const char* IncludeFileName = "include";
         const char* FileTags[] = { "ignore", "error", "productdependency", "editoronly", "shader" };
-        constexpr AZ::IO::PathView EngineAssetSourceRelPath = "EngineAssets/Engine";
+        constexpr AZ::IO::PathView EngineAssetSourceRelPath = "Assets/Engine";
 
         void LowerCaseFileTags(AZStd::vector<AZStd::string>& fileTags)
         {
@@ -109,7 +109,7 @@ namespace AzFramework
         }
 
         AZ::Outcome<AZStd::string, AZStd::string> FileTagManager::AddTagsInternal(AZStd::string filePath, FileTagType fileTagType, AZStd::vector<AZStd::string> fileTags, AzFramework::FileTag::FilePatternType filePatternType)
-        {   
+        {
             if (!NormalizeFileAndLowerCaseTags(filePath, filePatternType, fileTags))
             {
                 return AZ::Failure(AZStd::string::format("Unable to normalize file (%s). Unable to remove the file.\n", filePath.c_str()));

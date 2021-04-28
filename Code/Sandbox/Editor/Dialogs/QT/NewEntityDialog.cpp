@@ -89,7 +89,7 @@ void NewEntityDialog::accept()
     {
         return;
     }
-    auto engineAssetsPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / "EngineAssets";
+    auto engineAssetsPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / "Assets";
     QDir engineAssetSourceRoot(QString::fromUtf8(engineAssetsPath.c_str(), aznumeric_cast<int>(engineAssetsPath.Native().size())));
     QFile entTemplateFile(engineAssetSourceRoot.filePath("Editor/NewEntityTemplate.ent_template"));
     QFile luaTemplateFile(engineAssetSourceRoot.filePath("Editor/NewEntityTemplate.lua_template"));

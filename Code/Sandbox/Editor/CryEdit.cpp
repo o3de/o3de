@@ -1157,9 +1157,9 @@ BOOL CCryEditApp::CheckIfAlreadyRunning()
         m_mutexApplication = new QSharedMemory(O3DEApplicationName);
         if (!m_mutexApplication->create(16))
         {
-            // Don't prompt the user in non-interactive export mode.  Instead, default to allowing multiple instances to 
-            // run simultaneously, so that multiple level exports can be run in parallel on the same machine.  
-            // NOTE:  If you choose to do this, be sure to export *different* levels, since nothing prevents multiple runs 
+            // Don't prompt the user in non-interactive export mode.  Instead, default to allowing multiple instances to
+            // run simultaneously, so that multiple level exports can be run in parallel on the same machine.
+            // NOTE:  If you choose to do this, be sure to export *different* levels, since nothing prevents multiple runs
             // from trying to write to the same level at the same time.
             // If we're running interactively, let's ask and make sure the user actually intended to do this.
             if (!m_bExportMode && QMessageBox::question(AzToolsFramework::GetActiveWindow(), QObject::tr("Too many apps"), QObject::tr("There is already an Open 3D Engine application running\nDo you want to start another one?")) != QMessageBox::Yes)
@@ -1720,7 +1720,7 @@ BOOL CCryEditApp::InitInstance()
     AzQtComponents::StyleManager::addSearchPaths(
         QStringLiteral("style"),
         engineRoot.filePath(QStringLiteral("Code/Sandbox/Editor/Style")),
-        QStringLiteral(":/EngineAssets/Editor/Style"),
+        QStringLiteral(":/Assets/Editor/Style"),
         engineRootPath);
     AzQtComponents::StyleManager::setStyleSheet(mainWindow, QStringLiteral("style:Editor.qss"));
 

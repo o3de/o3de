@@ -250,9 +250,9 @@ namespace AzQtComponents
             // STYLESHEETIMAGES:something.txt
             // UI:blah/blah.png
             // EDITOR:blah/something.txt
-            QDir::addSearchPath("STYLESHEETIMAGES", appPath.filePath("EngineAssets/Editor/Styles/StyleSheetImages"));
-            QDir::addSearchPath("UI", appPath.filePath("EngineAssets/Editor/UI"));
-            QDir::addSearchPath("EDITOR", appPath.filePath("EngineAssets/Editor"));
+            QDir::addSearchPath("STYLESHEETIMAGES", appPath.filePath("Assets/Editor/Styles/StyleSheetImages"));
+            QDir::addSearchPath("UI", appPath.filePath("Assets/Editor/UI"));
+            QDir::addSearchPath("EDITOR", appPath.filePath("Assets/Editor"));
         }
     }
 

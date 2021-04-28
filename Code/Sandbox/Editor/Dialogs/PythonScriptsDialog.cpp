@@ -71,7 +71,7 @@ CPythonScriptsDialog::CPythonScriptsDialog(QWidget* parent)
     AzQtComponents::LineEdit::applySearchStyle(ui->searchField);
 
     QStringList scriptFolders;
-    auto engineScriptPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / "EngineAssets" / "Editor" / "Scripts";
+    auto engineScriptPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / "Assets" / "Editor" / "Scripts";
     scriptFolders.push_back(engineScriptPath.c_str());
 
     AZ::IO::FixedMaxPathString projectPath = AZ::Utils::GetProjectPath();
