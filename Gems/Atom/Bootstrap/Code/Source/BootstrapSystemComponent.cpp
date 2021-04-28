@@ -287,7 +287,7 @@ namespace AZ
                     {
                         if (eventType == AzFramework::Scene::RemovalEventType::Zombified)
                         {
-                            m_defaultFrameworkScene = false;
+                            m_defaultFrameworkScene.reset();
                         }
                     });
                 m_defaultFrameworkScene->ConnectToEvents(m_sceneRemovalHandler);

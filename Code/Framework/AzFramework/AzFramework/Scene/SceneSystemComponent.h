@@ -53,7 +53,7 @@ namespace AzFramework
         void ConnectToEvents(SceneEvent::Handler& handler) override;
 
     private:
-        AZ_DISABLE_COPY(SceneSystemComponent);
+        AZ_DISABLE_COPY_MOVE(SceneSystemComponent);
 
         AZStd::vector<AZStd::shared_ptr<Scene>> m_activeScenes;
         AZStd::vector<AZStd::weak_ptr<Scene>> m_zombieScenes;
