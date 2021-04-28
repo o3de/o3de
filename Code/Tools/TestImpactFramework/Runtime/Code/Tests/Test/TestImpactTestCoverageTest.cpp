@@ -19,12 +19,12 @@ namespace UnitTest
 {
     namespace
     {
-        AZ::IO::Path GenerateSourcePath(AZ::u32 index)
+        AZStd::string GenerateSourcePath(AZ::u32 index)
         {
             return AZStd::string::format("SourceFile%u", index);
         }
 
-        AZ::IO::Path GenerateModulePath(AZ::u32 index)
+        AZStd::string GenerateModulePath(AZ::u32 index)
         {
             return AZStd::string::format("Module%u", index);
         }
@@ -47,7 +47,7 @@ namespace UnitTest
             sourceCoverage.m_path = GenerateSourcePath(index);
             if (coverageLevel == TestImpact::CoverageLevel::Line)
             {
-                sourceCoverage.m_coverage.emplace(GenerateLineCoverages(index + 1));
+                sourceCoverage.m_coverage = GenerateLineCoverages(index + 1);
             }
 
             return sourceCoverage;
@@ -152,9 +152,9 @@ namespace UnitTest
                 if (m_coverageLevel == TestImpact::CoverageLevel::Line)
                 {
                     // Expect there to actually be line coverage data if this coverage was procedurally generated with line data
-                    EXPECT_TRUE(sourceCoverage.m_coverage.has_value());
+                    EXPECT_FALSE(sourceCoverage.m_coverage.empty());
 
-                    const AZStd::vector<TestImpact::LineCoverage>& lineCoverages = sourceCoverage.m_coverage.value();
+                    const AZStd::vector<TestImpact::LineCoverage>& lineCoverages = sourceCoverage.m_coverage;
 
                     // Expect the source's number of lines to match that of the corresponding procedurally generated source
                     EXPECT_EQ(lineCoverages.size(), sourceIndex + 1);
@@ -171,7 +171,7 @@ namespace UnitTest
                 else
                 {
                     // Do not expect there to actually be line coverage data if this coverage was not procedurally generated with line data
-                    EXPECT_FALSE(sourceCoverage.m_coverage.has_value());
+                    EXPECT_TRUE(sourceCoverage.m_coverage.empty());
                 }
             }
         }

@@ -20,4 +20,4 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::TestImpact.Runtime.Static
-)
+)   

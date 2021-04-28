@@ -12,9 +12,8 @@
 
 #pragma once
 
-#include <AzCore/IO/Path/Path.h>
+#include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/std/optional.h>
 
 namespace TestImpact
 {
@@ -28,14 +27,14 @@ namespace TestImpact
     //! Coverage information about a particular source file.
     struct SourceCoverage
     {
-        AZ::IO::Path m_path; //!< Source file path.
-        AZStd::optional<AZStd::vector<LineCoverage>> m_coverage; //!< Source file line coverage (empty if source level coverage only).
+        AZStd::string m_path; //!< Source file path.
+        AZStd::vector<LineCoverage> m_coverage; //!< Source file line coverage (empty if source level coverage only).
     };
 
     //! Coverage information about a particular module (executable, shared library).
     struct ModuleCoverage
     {
-        AZ::IO::Path m_path; //!< Module path.
+        AZStd::string m_path; //!< Module path.
         AZStd::vector<SourceCoverage> m_sources; //!< Sources of this module that are covered.
     };
 } // namespace TestImpact

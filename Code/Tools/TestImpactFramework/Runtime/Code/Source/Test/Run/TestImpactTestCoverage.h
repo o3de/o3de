@@ -38,7 +38,7 @@ namespace TestImpact
         size_t GetNumModulesCovered() const;
 
         //! Returns the sorted set of unique sources covered (empty if no coverage).
-        const AZStd::vector<AZ::IO::Path>& GetSourcesCovered() const;
+        const AZStd::vector<AZStd::string>& GetSourcesCovered() const;
 
         //! Returns the modules covered (empty if no coverage).
         const AZStd::vector<ModuleCoverage>& GetModuleCoverages() const;
@@ -48,7 +48,7 @@ namespace TestImpact
 
     private:
         AZStd::vector<ModuleCoverage> m_modules;
-        AZStd::vector<AZ::IO::Path> m_sourcesCovered;
+        AZStd::vector<AZStd::string> m_sourcesCovered;
         AZStd::optional<CoverageLevel> m_coverageLevel;
     };
 } // namespace TestImpact
