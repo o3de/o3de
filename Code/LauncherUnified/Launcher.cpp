@@ -47,7 +47,7 @@ namespace
 {
     void ExecuteConsoleCommandFile(AzFramework::Application& application)
     {
-        const AZStd::string_view customConCmdKey = "console_command_file";
+        const AZStd::string_view customConCmdKey = "console-command-file";
         const AZ::CommandLine* commandLine = application.GetCommandLine();
         AZStd::size_t numSwitchValues = commandLine->GetNumSwitchValues(customConCmdKey);
         if (numSwitchValues > 0)
@@ -656,7 +656,7 @@ namespace O3DELauncher
                 AZ::Interface<AZ::IConsole>::Get()->ExecuteConfigFile("autoexec.cfg");
 
                 // Find out if console command file was passed 
-                // via --console_command_file=%filename% and execute it
+                // via --console-command-file=%filename% and execute it
                 ExecuteConsoleCommandFile(gameApplication);
 
                 gEnv->pSystem->ExecuteCommandLine(false);
