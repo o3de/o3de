@@ -60,7 +60,8 @@ namespace Multiplayer
         //! Creates new entities of the given archetype
         //! @param prefabEntryId the name of the spawnable to spawn
         virtual EntityList CreateEntitiesImmediate(
-            const PrefabEntityId& prefabEntryId, NetEntityId netEntityId, NetEntityRole netEntityRole, const AZ::Transform& transform) = 0;
+            const PrefabEntityId& prefabEntryId, NetEntityId netEntityId, NetEntityRole netEntityRole, AutoActivate autoActivate,
+            const AZ::Transform& transform) = 0;
 
         //! Returns an ConstEntityPtr for the provided entityId.
         //! @param netEntityId the netEntityId to get an ConstEntityPtr for

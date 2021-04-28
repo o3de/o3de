@@ -14,6 +14,10 @@
         <Member Type="Multiplayer::HostId" Name="hostId" Init="Multiplayer::InvalidHostId" />
         <Member Type="Multiplayer::LongNetworkString" Name="map" />
     </Packet>
+  
+    <Packet Name="ReadyForEntityUpdates" Desc="Client confirming it is ready to receive entity updates">
+      <Member Type="bool" Name="readyForEntityUpdates" />
+    </Packet>
 
     <Packet Name="SyncConsole" Desc="Packet for synchornizing cvars between hosts">
         <Member Type="Multiplayer::LongNetworkString" Name="commandSet" Container="Vector" Count="32" />
