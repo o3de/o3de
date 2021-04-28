@@ -209,6 +209,13 @@ namespace PhysX
             return controller;
         }
 
+        AzPhysics::SimulatedBody* CreateRagdollBody(PhysXScene* scene,
+            const Physics::RagdollConfiguration* ragdollConfig)
+        {
+            return Utils::Characters::CreateRagdoll(const_cast<Physics::RagdollConfiguration&>(*ragdollConfig),
+                scene->GetSceneHandle());
+        }
+
         //helper to perform a ray cast
         AzPhysics::SceneQueryHits RayCast(const AzPhysics::RayCastRequest* raycastRequest,
             AZStd::vector<physx::PxRaycastHit>& raycastBuffer,
@@ -622,6 +629,15 @@ namespace PhysX
         {
             newBody = Internal::CreateCharacterBody(this, azdynamic_cast<const Physics::CharacterConfiguration*>(simulatedBodyConfig));
         }
+        else if (azrtti_istypeof<Physics::RagdollConfiguration>(simulatedBodyConfig))
+        {
+            newBody = Internal::CreateRagdollBody(this, azdynamic_cast<const Physics::RagdollConfiguration*>(simulatedBodyConfig));
+        }
+        else
+        {
+            AZ_Warning("PhysXScene", false, "Unknown SimulatedBodyConfiguration.");
+            return AzPhysics::InvalidSimulatedBodyHandle;
+        }
 
         if (newBody != nullptr)
         {
@@ -648,8 +664,11 @@ namespace PhysX
             newBody->m_bodyHandle = newBodyHandle;
             m_simulatedBodyAddedEvent.Signal(m_sceneHandle, newBodyHandle);
 
-            // Enable simulation by default (not signaling OnSimulationBodySimulationEnabled event) 
-            EnableSimulationOfBodyInternal(*newBody);
+            // Enable simulation by default (not signaling OnSimulationBodySimulationEnabled event)
+            if (simulatedBodyConfig->m_startSimulationEnabled)
+            {
+                EnableSimulationOfBodyInternal(*newBody);
+            }
 
             return newBodyHandle;
         }
@@ -878,7 +897,8 @@ namespace PhysX
     void PhysXScene::EnableSimulationOfBodyInternal(AzPhysics::SimulatedBody& body)
     {
         //character controller is a special actor and only needs the m_simulating flag set, 
-        if (!azrtti_istypeof<PhysX::CharacterController>(body))
+        if (!azrtti_istypeof<PhysX::CharacterController>(body) &&
+            !azrtti_istypeof<PhysX::Ragdoll>(body))
         {
             auto pxActor = static_cast<physx::PxActor*>(body.GetNativePointer());
             AZ_Assert(pxActor, "Simulated Body doesn't have a valid physx actor");
@@ -904,7 +924,8 @@ namespace PhysX
     void PhysXScene::DisableSimulationOfBodyInternal(AzPhysics::SimulatedBody& body)
     {
         //character controller is a special actor and only needs the m_simulating flag set, 
-        if (!azrtti_istypeof<PhysX::CharacterController>(body))
+        if (!azrtti_istypeof<PhysX::CharacterController>(body) &&
+            !azrtti_istypeof<PhysX::Ragdoll>(body))
         {
             auto pxActor = static_cast<physx::PxActor*>(body.GetNativePointer());
             AZ_Assert(pxActor, "Simulated Body doesn't have a valid physx actor");
@@ -948,11 +969,14 @@ namespace PhysX
 
     void PhysXScene::ClearDeferedDeletions()
     {
-        for (auto& simulatedBody : m_deferredDeletions)
+        // swap the deletions in case the simulated body
+        // manages more bodies and removes them on destruction (ie. Ragdoll).
+        AZStd::vector<AzPhysics::SimulatedBody*> deletions;
+        deletions.swap(m_deferredDeletions);
+        for (auto* simulatedBody : deletions)
         {
             delete simulatedBody;
         }
-        m_deferredDeletions.clear();
     }
 
     void PhysXScene::ProcessTriggerEvents()

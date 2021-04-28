@@ -638,8 +638,6 @@ set(FILES
     Objects/ObjectManager.h
     Objects/ObjectManagerLegacyUndo.cpp
     Objects/ObjectManagerLegacyUndo.h
-    Objects/ObjectPhysicsManager.cpp
-    Objects/ObjectPhysicsManager.h
     Objects/DisplayContext.cpp
     Objects/DisplayContext.h
     Objects/EntityObject.cpp

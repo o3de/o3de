@@ -19,6 +19,6 @@ ly_add_target(
         PUBLIC
             include
     BUILD_DEPENDENCIES
-        PRIVATE
+        PUBLIC
             AZ::AzCore
 )
