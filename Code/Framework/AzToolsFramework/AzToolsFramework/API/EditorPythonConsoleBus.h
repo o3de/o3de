@@ -14,6 +14,11 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Interface/Interface.h>
 
+namespace AZ
+{
+    struct BehaviorParameter;
+}
+
 namespace AzToolsFramework
 {
     //! Interface into the Python virtual machine's data
@@ -40,6 +45,8 @@ namespace AzToolsFramework
         };
         using GlobalFunctionCollection = AZStd::vector<GlobalFunction>;
         virtual void GetGlobalFunctionList(GlobalFunctionCollection& globalFunctionCollection) const = 0;
+
+        virtual AZStd::string_view FetchPythonTypeName(const AZ::BehaviorParameter& param) = 0;
     };
 
     //! Interface to signal the phases for the Python virtual machine
