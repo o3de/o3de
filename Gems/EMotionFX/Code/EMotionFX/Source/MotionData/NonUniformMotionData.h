@@ -83,6 +83,14 @@ namespace EMotionFX
         void ClearFloatSamples(size_t floatDataIndex) override;
 
         bool VerifyIntegrity() const;
+
+        //! Animation tracks in the DCC tool formats are often stored individually, each having its own duration.
+        //! For the motion data, it is required to have tracks with the same duration and e.g. a position track
+        //! has to match the duration of a morph track. This will be automatically fixed by adding missing
+        //! keyframes at the end of the tracks to match the animation's global duration. The value of these
+        //! are the same as the last one of the given track so that they freeze at that value.
+        void FixMissingEndKeyframes();
+
         void ScaleData(float scaleFactor) override;
         void UpdateDuration() override;
 
@@ -154,6 +162,9 @@ namespace EMotionFX
         void RemoveJointSampleData(size_t jointDataIndex) override;
         void RemoveMorphSampleData(size_t morphDataIndex) override;
         void RemoveFloatSampleData(size_t floatDataIndex) override;
+
+        template<class KeyTrackType>
+        void FixMissingEndKeyframes(KeyTrackType& keytrack, float endTimeToMatch);
 
     private:
         AZStd::vector<JointData> m_jointData;
