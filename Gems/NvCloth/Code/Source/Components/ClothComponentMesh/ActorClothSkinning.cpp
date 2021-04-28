@@ -115,6 +115,7 @@ namespace NvCloth
                     SkinningInfo& skinningInfo = skinningData[subMeshInfo.m_verticesFirstIndex + vertexIndex];
                     skinningInfo.m_jointIndices.resize(influenceCount);
                     skinningInfo.m_jointWeights.resize(influenceCount);
+                    skinningInfo.m_skipJoint.resize(influenceCount);
 
                     for (size_t influenceIndex = 0; influenceIndex < influenceCount; ++influenceIndex)
                     {
@@ -132,6 +133,7 @@ namespace NvCloth
 
                         skinningInfo.m_jointIndices[influenceIndex] = skeletonIndexIt->second;
                         skinningInfo.m_jointWeights[influenceIndex] = weight;
+                        skinningInfo.m_skipJoint[influenceIndex] = AZ::IsClose(weight, 0.0f);
                     }
                 }
             }
@@ -296,15 +298,13 @@ namespace NvCloth
         const size_t jointWeightsCount = skinningInfo.m_jointWeights.size();
         for (size_t weightIndex = 0; weightIndex < jointWeightsCount; ++weightIndex)
         {
-            const AZ::u16 jointIndex = skinningInfo.m_jointIndices[weightIndex];
-            const float jointWeight = skinningInfo.m_jointWeights[weightIndex];
-
-            if (AZ::IsClose(jointWeight, 0.0f))
+            if (!skinningInfo.m_skipJoint[weightIndex])
             {
-                continue;
-            }
+                const AZ::u16 jointIndex = skinningInfo.m_jointIndices[weightIndex];
+                const float jointWeight = skinningInfo.m_jointWeights[weightIndex];
 
-            vertexSkinningTransform += m_skinningMatrices[jointIndex] * jointWeight;
+                vertexSkinningTransform += m_skinningMatrices[jointIndex] * jointWeight;
+            }
         }
         return vertexSkinningTransform;
     }
@@ -416,15 +416,13 @@ namespace NvCloth
         const size_t jointWeightsCount = skinningInfo.m_jointWeights.size();
         for (size_t weightIndex = 0; weightIndex < jointWeightsCount; ++weightIndex)
         {
-            const AZ::u16 jointIndex = skinningInfo.m_jointIndices[weightIndex];
-            const float jointWeight = skinningInfo.m_jointWeights[weightIndex];
-
-            if (AZ::IsClose(jointWeight, 0.0f))
+            if (!skinningInfo.m_skipJoint[weightIndex])
             {
-                continue;
-            }
+                const AZ::u16 jointIndex = skinningInfo.m_jointIndices[weightIndex];
+                const float jointWeight = skinningInfo.m_jointWeights[weightIndex];
 
-            vertexSkinningTransform += m_skinningDualQuaternions.at(jointIndex) * jointWeight;
+                vertexSkinningTransform += m_skinningDualQuaternions.at(jointIndex) * jointWeight;
+            }
         }
         vertexSkinningTransform.Normalize();
         return vertexSkinningTransform;
@@ -475,15 +473,10 @@ namespace NvCloth
             const size_t jointWeightsCount = skinningInfo.m_jointWeights.size();
             for (size_t weightIndex = 0; weightIndex < jointWeightsCount; ++weightIndex)
             {
-                const AZ::u16 jointIndex = skinningInfo.m_jointIndices[weightIndex];
-                const float jointWeight = skinningInfo.m_jointWeights[weightIndex];
-
-                if (AZ::IsClose(jointWeight, 0.0f))
+                if (!skinningInfo.m_skipJoint[weightIndex])
                 {
-                    continue;
+                    jointIndices.insert(skinningInfo.m_jointIndices[weightIndex]);
                 }
-
-                jointIndices.insert(jointIndex);
             }
         }
         actorClothSkinning->m_jointIndices.assign(jointIndices.begin(), jointIndices.end());

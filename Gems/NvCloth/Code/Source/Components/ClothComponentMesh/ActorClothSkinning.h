@@ -30,6 +30,9 @@ namespace NvCloth
 
         //! List of joints that influence the particle.
         AZStd::vector<AZ::u16> m_jointIndices;
+
+        //! List indicating which joints must be skipped during skinning.
+        AZStd::vector<bool> m_skipJoint;
     };
 
     //! Class to retrieve skinning information from an actor on the same entity
