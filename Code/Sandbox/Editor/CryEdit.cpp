@@ -5232,6 +5232,13 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
     AzQtComponents::Utilities::HandleDpiAwareness(AzQtComponents::Utilities::SystemDpiAware);
     Editor::EditorQtApplication app(argc, argv);
 
+    if (app.arguments().contains("-autotest_mode"))
+    {
+        // Nullroute all stdout to null for automated tests, this way we make sure
+        // that the test result output is not polluted with unrelated output data.
+        theApp->RedirectStdoutToNull();
+    }
+
     // Hook the trace bus to catch errors, boot the AZ app after the QApplication is up
     int ret = 0;
 
@@ -5247,13 +5254,6 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
         if (!AZToolsApp.Start())
         {
             return -1;
-        }
-
-        if (app.arguments().contains("-autotest_mode"))
-        {
-            // Nullroute all stdout to null for automated tests, this way we make sure
-            // that the test result output is not polluted with unrelated output data.
-            theApp->RedirectStdoutToNull();
         }
 
         AzToolsFramework::EditorEvents::Bus::Broadcast(&AzToolsFramework::EditorEvents::NotifyQtApplicationAvailable, &app);

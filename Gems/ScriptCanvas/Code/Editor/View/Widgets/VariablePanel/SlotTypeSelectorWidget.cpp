@@ -80,6 +80,13 @@ namespace ScriptCanvasEditor
         QObject::connect(ui->slotName, &QLineEdit::returnPressed, this, &SlotTypeSelectorWidget::OnReturnPressed);
         QObject::connect(ui->slotName, &QLineEdit::textChanged, this, &SlotTypeSelectorWidget::OnNameChanged);
         QObject::connect(ui->variablePalette, &QTableView::clicked, this, [this]() { ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true); });
+        QObject::connect(ui->variablePalette, &VariablePaletteTableView::CreateNamedVariable, this, [this](const AZStd::string& variableName, const ScriptCanvas::Data::Type& variableType)
+            {
+                // only emitted on container types
+                OnCreateVariable(variableType);
+                OnNameChanged(variableName.c_str());
+                accept();
+            });
 
         // Tell the widget to auto create our context menu, for now
         setContextMenuPolicy(Qt::ActionsContextMenu);

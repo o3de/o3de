@@ -549,7 +549,7 @@ namespace EditorPythonBindings
         }
         if (appended)
         {
-            ExecuteByString(pathAppend.c_str(), true);
+            ExecuteByString(pathAppend.c_str(), false);
             return true;
         }
         return false;
@@ -652,8 +652,8 @@ namespace EditorPythonBindings
         }
         else
         {
-            // something when wrong with executing the test script
-            AZ::Debug::Trace::Terminate(1);
+            // something went wrong with executing the test script
+            AZ::Debug::Trace::Terminate(0xF);
         }
     }
 

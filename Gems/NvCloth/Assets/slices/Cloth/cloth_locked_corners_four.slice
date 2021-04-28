@@ -200,7 +200,7 @@
 										</Class>
 										<Class name="AZ::Render::MeshComponentController" field="Controller" type="{D0F35FAC-4194-4C89-9487-D000DDB8B272}">
 											<Class name="AZ::Render::MeshComponentConfig" field="Configuration" version="1" type="{63737345-51B1-472B-9355-98F99993909B}">
-												<Class name="Asset" field="ModelAsset" value="id={89C91D92-7B4E-5EB5-945D-0053111859EE}:10a5006e,type={2C7477B6-69C5-45BE-8163-BCD6A275B6D8},hint={objects/cloth/environment/cloth_locked_corners_four.azmodel},loadBehavior=0" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
+												<Class name="Asset" field="ModelAsset" value="id={89C91D92-7B4E-5EB5-945D-0053111859EE}:10a5006e,type={2C7477B6-69C5-45BE-8163-BCD6A275B6D8},hint={objects/cloth/environment/cloth_locked_corners_four.azmodel},loadBehavior=1" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
 												<Class name="AZ::s64" field="SortKey" value="0" type="{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}"/>
 												<Class name="unsigned char" field="LodOverride" value="255" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
 												<Class name="bool" field="ExcludeFromReflectionCubeMaps" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
@@ -228,7 +228,7 @@
 															<Class name="AZ::u64" field="lodIndex" value="18446744073709551615" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 															<Class name="AssetId" field="materialAssetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 																<Class name="AZ::Uuid" field="guid" value="{89C91D92-7B4E-5EB5-945D-0053111859EE}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-																<Class name="unsigned int" field="subId" value="3644789410" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+																<Class name="unsigned int" field="subId" value="902256226" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 															</Class>
 														</Class>
 														<Class name="AZ::Render::MaterialAssignment" field="value2" version="1" type="{C66E5214-A24B-4722-B7F0-5991E6F8F163}">
@@ -260,7 +260,7 @@
 											<Class name="AZ::u64" field="lodIndex" value="18446744073709551615" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 											<Class name="AssetId" field="materialAssetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 												<Class name="AZ::Uuid" field="guid" value="{89C91D92-7B4E-5EB5-945D-0053111859EE}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-												<Class name="unsigned int" field="subId" value="3644789410" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+												<Class name="unsigned int" field="subId" value="902256226" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 											</Class>
 										</Class>
 										<Class name="Asset" field="materialAsset" value="id={838EA487-0F74-5448-AABE-947B138CD6C2}:0,type={522C7BE0-501D-463E-92C6-15184A2B7AD8},hint={objects/cloth/environment/cloth_locked_corners_four.azmaterial},loadBehavior=1" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
@@ -276,7 +276,7 @@
 												<Class name="AZ::u64" field="lodIndex" value="0" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 												<Class name="AssetId" field="materialAssetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 													<Class name="AZ::Uuid" field="guid" value="{89C91D92-7B4E-5EB5-945D-0053111859EE}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-													<Class name="unsigned int" field="subId" value="3644789410" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+													<Class name="unsigned int" field="subId" value="902256226" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 												</Class>
 											</Class>
 											<Class name="Asset" field="materialAsset" value="id={00000000-0000-0000-0000-000000000000}:0,type={522C7BE0-501D-463E-92C6-15184A2B7AD8},hint={},loadBehavior=1" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>

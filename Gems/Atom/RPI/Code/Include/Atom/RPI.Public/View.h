@@ -75,7 +75,7 @@ namespace AZ
             void AddDrawPacket(const RHI::DrawPacket* drawPacket, Vector3 worldPosition);
 
             //! Add a draw item to this view with its associated draw list tag
-            void AddDrawItem(RHI::DrawListTag drawListTag, const RHI::DrawItemKeyPair& drawItemKeyPair);
+            void AddDrawItem(RHI::DrawListTag drawListTag, const RHI::DrawItemProperties& drawItemProperties);
 
             //! Sets the worldToView matrix and recalculates the other matrices.
             void SetWorldToViewMatrix(const AZ::Matrix4x4& worldToView);
@@ -117,6 +117,12 @@ namespace AZ
 
             //! Update View's SRG values and compile. This should only be called once per frame before execute command lists.
             void UpdateSrg();
+
+            using MatrixChangedEvent = AZ::Event<const AZ::Matrix4x4&>;
+            //! Notifies consumers when the world to view matrix has changed.
+            void ConnectWorldToViewMatrixChangedHandler(MatrixChangedEvent::Handler& handler);
+            //! Notifies consumers when the world to clip matrix has changed.
+            void ConnectWorldToClipMatrixChangedHandler(MatrixChangedEvent::Handler& handler);
 
         private:
             View() = delete;
@@ -182,6 +188,9 @@ namespace AZ
             // view class doesn't contain subroutines called at the end of each frame
             bool m_worldToClipMatrixChanged = true;
             bool m_worldToClipPrevMatrixNeedsUpdate = false;
+
+            MatrixChangedEvent m_onWorldToClipMatrixChange;
+            MatrixChangedEvent m_onWorldToViewMatrixChange;
         };
 
         AZ_DEFINE_ENUM_BITWISE_OPERATORS(View::UsageFlags);
