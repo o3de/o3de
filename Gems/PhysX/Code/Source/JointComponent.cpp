@@ -189,7 +189,7 @@ namespace PhysX
         if (!m_configuration.m_leadEntity.IsValid() || entityId == m_configuration.m_leadEntity)
         {
             InitNativeJoint(); // Invoke overriden specific joint type instantiation
-            InitGenericProperties();
+            //InitGenericProperties();
         }
         // Else, follower entity is activated, subscribe to be notified that lead entity is activated.
         else
