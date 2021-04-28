@@ -561,11 +561,7 @@ namespace AZ::SettingsRegistryMergeUtils
         registry.Set(FilePathKey_BinaryFolder, path.LexicallyNormal().Native());
 
         // Engine root folder - corresponds to the @engroot@ and @devroot@ aliases
-        AZ::IO::FixedMaxPath engineRoot{AZ::Utils::GetEnginePath()};
-        if (engineRoot.empty())
-        {
-            engineRoot = FindEngineRoot(registry);
-        }
+        AZ::IO::FixedMaxPath engineRoot = FindEngineRoot(registry);
         registry.Set(FilePathKey_EngineRootFolder, engineRoot.LexicallyNormal().Native());
 
         auto projectPathKey = FixedValueString::format("%s/project_path", BootstrapSettingsRootKey);

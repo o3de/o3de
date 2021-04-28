@@ -234,14 +234,8 @@ namespace AZ
             // Update old Project path before attempting to merge in new Settings Registry values in order to prevent recursive calls
             m_oldProjectPath = newProjectPath;
 
-            AZ::IO::FixedMaxPath engineRoot{AZ::Utils::GetEnginePath()};
-            if (engineRoot.empty())
-            {
-                engineRoot = AZ::SettingsRegistryMergeUtils::FindEngineRoot(m_registry);
-            }
-
             // Merge the project.json file into settings registry under ProjectSettingsRootKey path.
-            AZ::IO::FixedMaxPath projectMetadataFile{engineRoot / newProjectPath};
+            AZ::IO::FixedMaxPath projectMetadataFile{ AZ::SettingsRegistryMergeUtils::FindEngineRoot(m_registry) / newProjectPath };
             projectMetadataFile /= "project.json";
             m_registry.MergeSettingsFile(projectMetadataFile.Native(),
                 AZ::SettingsRegistryInterface::Format::JsonMergePatch, AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey);
