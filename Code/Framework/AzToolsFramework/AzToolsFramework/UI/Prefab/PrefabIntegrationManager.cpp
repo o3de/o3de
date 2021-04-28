@@ -151,32 +151,36 @@ namespace AzToolsFramework
                 {
                     if (!selectedEntities.empty())
                     {
-                        bool layerInSelection = false;
-
-                        for (AZ::EntityId entityId : selectedEntities)
+                        // Hide if the only selected entity is the Level Container
+                        if (selectedEntities.size() > 1 || !s_prefabPublicInterface->IsLevelInstanceContainerEntity(selectedEntities[0]))
                         {
-                            if (!layerInSelection)
-                            {
-                                AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
-                                    layerInSelection, entityId,
-                                    &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
+                            bool layerInSelection = false;
 
-                                if (layerInSelection)
+                            for (AZ::EntityId entityId : selectedEntities)
+                            {
+                                if (!layerInSelection)
                                 {
-                                    break;
+                                    AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
+                                        layerInSelection, entityId,
+                                        &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
+
+                                    if (layerInSelection)
+                                    {
+                                        break;
+                                    }
                                 }
                             }
-                        }
 
-                        // Layers can't be in prefabs.
-                        if (!layerInSelection)
-                        {
-                            QAction* createAction = menu->addAction(QObject::tr("Create Prefab..."));
-                            createAction->setToolTip(QObject::tr("Creates a prefab out of the currently selected entities."));
+                            // Layers can't be in prefabs.
+                            if (!layerInSelection)
+                            {
+                                QAction* createAction = menu->addAction(QObject::tr("Create Prefab..."));
+                                createAction->setToolTip(QObject::tr("Creates a prefab out of the currently selected entities."));
 
-                            QObject::connect(createAction, &QAction::triggered, createAction, [this, selectedEntities] {
-                                ContextMenu_CreatePrefab(selectedEntities);
-                            });
+                                QObject::connect(createAction, &QAction::triggered, createAction, [this, selectedEntities] {
+                                    ContextMenu_CreatePrefab(selectedEntities);
+                                });
+                            }
                         }
                     }
                 }

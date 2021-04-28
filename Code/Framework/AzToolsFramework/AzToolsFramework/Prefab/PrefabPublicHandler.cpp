@@ -89,7 +89,7 @@ namespace AzToolsFramework
                 if (!RetrieveAndSortPrefabEntitiesAndInstances(inputEntityList, commonRootEntityOwningInstance->get(), entities, instances))
                 {
                     return AZ::Failure(
-                        AZStd::string("Could not create a new prefab out of the entities provided - entities do not share a common root."));
+                        AZStd::string("Could not create a new prefab out of the entities provided - invalid selection."));
                 }
 
                 // When we create a prefab with other prefab instances, we have to remove the existing links between the source and 
@@ -142,9 +142,13 @@ namespace AzToolsFramework
                 // Mark them as dirty so this change is correctly applied to the template
                 for (AZ::Entity* topLevelEntity : topLevelEntities)
                 {
-                    m_prefabUndoCache.UpdateCache(topLevelEntity->GetId());
-                    undoBatch.MarkEntityDirty(topLevelEntity->GetId());
-                    AZ::TransformBus::Event(topLevelEntity->GetId(), &AZ::TransformBus::Events::SetParent, containerEntityId);
+                    AZ::EntityId topLevelEntityId = topLevelEntity->GetId();
+                    if (topLevelEntityId.IsValid() && !IsLevelInstanceContainerEntity(topLevelEntityId))
+                    {
+                        m_prefabUndoCache.UpdateCache(topLevelEntityId);
+                        undoBatch.MarkEntityDirty(topLevelEntityId);
+                        AZ::TransformBus::Event(topLevelEntityId, &AZ::TransformBus::Events::SetParent, containerEntityId);
+                    }
                 }
                 
                 // Select Container Entity
@@ -222,6 +226,14 @@ namespace AzToolsFramework
         {
             // Retrieve entityList from entityIds
             inputEntityList = EntityIdListToEntityList(entityIds);
+
+            // Remove Level Container Entity if it's part of the list
+            AZ::Entity* levelEntity = GetEntityById(GetLevelInstanceContainerEntityId());
+            auto levelEntityIter = AZStd::find(inputEntityList.begin(), inputEntityList.end(), levelEntity);
+            if (levelEntityIter != inputEntityList.end())
+            {
+                inputEntityList.erase(levelEntityIter);
+            }
 
             // Find common root and top level entities
             bool entitiesHaveCommonRoot = false;
@@ -840,7 +852,7 @@ namespace AzToolsFramework
                 outInstances.push_back(AZStd::move(commonRootEntityOwningInstance.DetachNestedInstance(instancePtr->GetInstanceAlias())));
             }
 
-            return true;
+            return (outEntities.size() + outInstances.size()) > 0;
         }
 
         bool PrefabPublicHandler::EntitiesBelongToSameInstance(const EntityIdList& entityIds) const
