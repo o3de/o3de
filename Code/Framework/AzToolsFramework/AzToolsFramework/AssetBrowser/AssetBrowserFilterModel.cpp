@@ -62,6 +62,7 @@ namespace AzToolsFramework
                 invalidateFilter();
                 m_invalidateFilter = false;
             }
+            Q_EMIT entriesUpdated();
         }
 
         bool AssetBrowserFilterModel::filterAcceptsRow(int source_row, const QModelIndex& source_parent) const
@@ -162,6 +163,7 @@ namespace AzToolsFramework
                 {
                     m_alreadyRecomputingFilters = false;
                     FilterUpdatedSlotImmediate();
+                    //beginInsertRows()
                 }
                 );
             }

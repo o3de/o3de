@@ -5,7 +5,7 @@
 #include <AzCore/std/containers/vector.h>
 
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
-//#include <AzToolsFramework/AssetBrowser/AssetBrowserTableFilterModel.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserTableModel.h>
 
 #include <QModelIndex>
 #include <QPointer>
@@ -17,7 +17,7 @@ namespace AzToolsFramework
     namespace AssetBrowser
     {
         class AssetBrowserEntry;
-        class AssetBrowserModel;
+        class AssetBrowserTableModel;
         class AssetBrowserFilterModel;
         class EntryDelegate;
 
@@ -45,11 +45,20 @@ namespace AzToolsFramework
 
             //////////////////////////////////////////////////////////////////////////
             // AssetBrowserComponentNotificationBus
-            //void OnAssetBrowserComponentReady() override;
+            void OnAssetBrowserComponentReady() override;
             //////////////////////////////////////////////////////////////////////////
+
+        private Q_SLOTS:
+            void OnContextMenu(const QPoint& point);
+
+            //! Get all visible source entries and place them in a queue to update their source control status
+            //void OnUpdateSCThumbnailsList();
+
         private:
             QString m_name;
-
+            QPointer<AssetBrowserFilterModel> m_sourceFilterModel = nullptr;
+            QPointer<AssetBrowserTableModel> m_sourceModel = nullptr;
+            EntryDelegate* m_delegate = nullptr;
 
         };
     } // namespace AssetBrowser

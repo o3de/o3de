@@ -29,8 +29,24 @@ namespace AzToolsFramework
 
             QModelIndex mapToSource(const QModelIndex &proxyIndex) const override;
             QModelIndex mapFromSource(const QModelIndex &sourceIndex) const override;
-            QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
+            //QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
             QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+
+        public Q_SLOTS:
+            void UpdateMap();
+
+        protected:
+            bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const override;
+            bool filterAcceptsColumn(int source_column, const QModelIndex& /*source_parent*/) const override;
+
+        private:
+            int BuildMap(const QAbstractItemModel* model, const QModelIndex& parent = QModelIndex(), int row = 0);
+            AssetBrowserEntry* GetAssetEntry(QModelIndex index) const;
+
+        private:
+            AZStd::fixed_unordered_set<int, 3, static_cast<int>(AssetBrowserEntry::Column::Count)> m_showColumn;
+            QMap<int, QModelIndex> m_indexMap;
+            QMap<QModelIndex, int> m_rowMap;
         };
     }
 }

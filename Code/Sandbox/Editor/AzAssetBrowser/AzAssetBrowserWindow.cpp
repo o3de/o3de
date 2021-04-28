@@ -78,12 +78,16 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     m_filterModel->setSourceModel(m_assetBrowserModel);
     m_filterModel->SetFilter(m_ui->m_searchWidget->GetFilter());
 
+    m_tableModel->setFilterRole(Qt::DisplayRole);
     m_tableModel->setSourceModel(m_filterModel.data());
+    //m_tableModel->setSourceModel(m_assetBrowserModel);
 
     m_ui->m_assetBrowserTreeViewWidget->setModel(m_filterModel.data());
     m_ui->m_assetBrowserTableViewWidget->setModel(m_tableModel.data());
 
     m_ui->m_assetBrowserTableViewWidget->setVisible(false);
+
+    connect(m_filterModel.data(), &AssetBrowserFilterModel::entriesUpdated, m_tableModel.data(), &AssetBrowserTableModel::UpdateMap);
 
     connect(m_ui->m_searchWidget->GetFilter().data(), &AssetBrowserEntryFilter::updatedSignal,
         m_filterModel.data(), &AssetBrowserFilterModel::filterUpdatedSlot);
