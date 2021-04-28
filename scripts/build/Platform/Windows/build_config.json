@@ -338,7 +338,7 @@
       "project"
     ],
     "steps": [
-      "install_vs2019",
+      "install_profile_vs2019",
       "project_engineinstall_profile_vs2019"
     ]
   }
