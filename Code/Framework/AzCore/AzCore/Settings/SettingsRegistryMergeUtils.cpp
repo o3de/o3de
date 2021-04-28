@@ -928,6 +928,49 @@ namespace AZ::SettingsRegistryMergeUtils
         return true;
     }
 
+    void ParseCommandLine(AZ::CommandLine& commandLine)
+    {
+        struct OptionKeyToRegsetKey
+        {
+            AZStd::string_view m_optionKey;
+            AZStd::string m_regsetKey;
+        };
+
+        // Provide overrides for the engine root, the project root and the project cache root
+        AZStd::array commandOptions = {
+            OptionKeyToRegsetKey{
+                "engine-path", AZStd::string::format("%s/engine_path", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)},
+            OptionKeyToRegsetKey{
+                "project-path", AZStd::string::format("%s/project_path", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)},
+            OptionKeyToRegsetKey{
+                "project-cache-path",
+                AZStd::string::format("%s/project_cache_path", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)}};
+
+        AZStd::fixed_vector<AZStd::string, commandOptions.size()> overrideArgs;
+
+        for (auto&& [optionKey, regsetKey] : commandOptions)
+        {
+            if (size_t optionCount = commandLine.GetNumSwitchValues(optionKey); optionCount > 0)
+            {
+                // Use the last supplied command option value to override previous values
+                auto overrideArg = AZStd::string::format(
+                    R"(--regset="%s=%s")", regsetKey.c_str(), commandLine.GetSwitchValue(optionKey, optionCount - 1).c_str());
+                overrideArgs.emplace_back(AZStd::move(overrideArg));
+            }
+        }
+
+        if (!overrideArgs.empty())
+        {
+            // Dump the input command line, add the additional option overrides
+            // and Parse the new command line args (write back) into the input command line.
+            AZ::CommandLine::ParamContainer commandLineArgs;
+            commandLine.Dump(commandLineArgs);
+            commandLineArgs.insert(
+                commandLineArgs.end(), AZStd::make_move_iterator(overrideArgs.begin()), AZStd::make_move_iterator(overrideArgs.end()));
+            commandLine.Parse(commandLineArgs);
+        }
+    }
+
     bool DumpSettingsRegistryToStream(SettingsRegistryInterface& registry, AZStd::string_view key,
         AZ::IO::GenericStream& stream, const DumperSettings& dumperSettings)
     {

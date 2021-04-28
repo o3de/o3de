@@ -24,48 +24,6 @@
 
 namespace AzFramework::ProjectManager
 {
-    // See also ComponentApplication::ParseCommandLine
-    void ParseCommandLine(AZ::CommandLine& commandLine)
-    {
-        struct OptionKeyToRegsetKey
-        {
-            AZStd::string_view m_optionKey;
-            AZStd::string m_regsetKey;
-        };
-
-        // Provide overrides for the engine root, the project root and the project cache root
-        AZStd::array commandOptions = {
-            OptionKeyToRegsetKey{
-                "engine-path", AZStd::string::format("%s/engine_path", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)},
-            OptionKeyToRegsetKey{
-                "project-path", AZStd::string::format("%s/project_path", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)}
-        };
-
-        AZStd::fixed_vector<AZStd::string, commandOptions.size()> overrideArgs;
-
-        for (auto&& [optionKey, regsetKey] : commandOptions)
-        {
-            if (size_t optionCount = commandLine.GetNumSwitchValues(optionKey); optionCount > 0)
-            {
-                // Use the last supplied command option value to override previous values
-                auto overrideArg = AZStd::string::format(
-                    R"(--regset="%s=%s")", regsetKey.c_str(), commandLine.GetSwitchValue(optionKey, optionCount - 1).c_str());
-                overrideArgs.emplace_back(AZStd::move(overrideArg));
-            }
-        }
-
-        if (!overrideArgs.empty())
-        {
-            // Dump the input command line, add the additional option overrides
-            // and Parse the new command line into the Component Application command line
-            AZ::CommandLine::ParamContainer commandLineArgs;
-            commandLine.Dump(commandLineArgs);
-            commandLineArgs.insert(
-                commandLineArgs.end(), AZStd::make_move_iterator(overrideArgs.begin()), AZStd::make_move_iterator(overrideArgs.end()));
-            commandLine.Parse(commandLineArgs);
-        }
-    }
-
     AZStd::tuple<AZ::IO::FixedMaxPath, AZ::IO::FixedMaxPath> FindProjectAndEngineRootPaths(const int argc, char* argv[])
     {
         bool ownsAllocator = false;
@@ -83,10 +41,10 @@ namespace AzFramework::ProjectManager
             // at the end of the function
             AZ::CommandLine commandLine;
             commandLine.Parse(argc, argv);
-            ParseCommandLine(commandLine);
-            AZ::SettingsRegistryImpl settingsRegistry;
-            // Store the Command line to the Setting Registry
+            AZ::SettingsRegistryMergeUtils::ParseCommandLine(commandLine);
 
+            // Store the Command line to the Setting Registry
+            AZ::SettingsRegistryImpl settingsRegistry;
             AZ::SettingsRegistryMergeUtils::StoreCommandLineToRegistry(settingsRegistry, commandLine);
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_Bootstrap(settingsRegistry);
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(settingsRegistry, AZ_TRAIT_OS_PLATFORM_CODENAME, {});

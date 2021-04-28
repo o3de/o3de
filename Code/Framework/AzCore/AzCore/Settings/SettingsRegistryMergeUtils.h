@@ -222,6 +222,9 @@ namespace AZ::SettingsRegistryMergeUtils
     //! into the AZ::CommandLine instance
     bool GetCommandLineFromRegistry(SettingsRegistryInterface& registry, AZ::CommandLine& commandLine);
 
+    //! Parse a CommandLine and transform certain options into formal "regset" options
+    void ParseCommandLine(AZ::CommandLine& commandLine);
+
     //! Structure for configuring how values should be dumped from the Settings Registry
     struct DumperSettings
     {
