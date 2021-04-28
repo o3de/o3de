@@ -11,19 +11,19 @@
  */
 
 #include <Source/NetworkEntity/NetworkEntityManager.h>
-#include <Source/Components/NetBindComponent.h>
-#include <Include/IMultiplayer.h>
-#include <AzCore/Interface/Interface.h>
+
+#include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Slice/SliceMetadataInfoComponent.h>
+#include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
-#include <AzFramework/Components/TransformComponent.h>
 #include <Include/IMultiplayer.h>
 #include <Pipeline/NetworkSpawnableHolderComponent.h>
-#include <AzCore/Asset/AssetManager.h>
+#include <Source/Components/NetBindComponent.h>
 
 namespace Multiplayer
 {
@@ -361,7 +361,7 @@ namespace Multiplayer
 
     INetworkEntityManager::EntityList NetworkEntityManager::CreateEntitiesImmediate(
         const PrefabEntityId& prefabEntryId, NetEntityId netEntityId, NetEntityRole netEntityRole,
-        const AZ::Transform& transform)
+        AutoActivate autoActivate, const AZ::Transform& transform)
     {
         INetworkEntityManager::EntityList returnList;
 
@@ -405,6 +405,11 @@ namespace Multiplayer
                 if (transformComponent)
                 {
                     transformComponent->SetWorldTM(transform);
+                }
+
+                if (autoActivate == AutoActivate::DoNotActivate)
+                {
+                    clone->SetRuntimeActiveByDefault(false);
                 }
 
                 AzFramework::GameEntityContextRequestBus::Broadcast(
@@ -462,13 +467,21 @@ namespace Multiplayer
 
         m_rootSpawnableAsset = netSpawnableAsset;
 
-        const auto agentType = AZ::Interface<IMultiplayer>::Get()->GetAgentType();
+        auto* multiplayer = AZ::Interface<IMultiplayer>::Get();
+
+        const auto agentType = multiplayer->GetAgentType();
         const bool spawnImmediately =
             (agentType == MultiplayerAgentType::ClientServer || agentType == MultiplayerAgentType::DedicatedServer);
 
         if (spawnImmediately)
         {
             CreateEntitiesImmediate(*netSpawnable, NetEntityRole::Authority);
+        }
+        else
+        {
+            // If we don't spawn net entities immediately (i.e. it is a client),
+            // tell the server/host it can start sending updates that will instantiate entities.
+            multiplayer->SendReadyForEntityUpdates(true);
         }
     }
 
