@@ -756,6 +756,7 @@ void MainWindow::InitActions()
     am->AddAction(ID_TOOLBAR_WIDGET_SNAP_GRID, QString());
     am->AddAction(ID_TOOLBAR_WIDGET_ENVIRONMENT_MODE, QString());
     am->AddAction(ID_TOOLBAR_WIDGET_DEBUG_MODE, QString());
+    am->AddAction(ID_TOOLBAR_WIDGET_SPACER_RIGHT, QString());
 
     // File actions
     am->AddAction(ID_FILE_NEW, tr("New Level"))
@@ -1170,14 +1171,17 @@ void MainWindow::InitActions()
     am->AddAction(ID_AUDIO_REFRESH_AUDIO_SYSTEM, tr("Refresh Audio"))
         .Connect(&QAction::triggered, this, &MainWindow::OnRefreshAudioSystem);
 
-    // Fame actions
+    // Game actions
     am->AddAction(ID_VIEW_SWITCHTOGAME, tr("Play &Game"))
+        .SetIcon(QIcon(":/stylesheet/img/UI20/toolbar/Play.svg"))
         .SetShortcut(tr("Ctrl+G"))
         .SetToolTip(tr("Play Game (Ctrl+G)"))
         .SetStatusTip(tr("Activate the game input mode"))
         .SetApplyHoverEffect()
         .SetCheckable(true)
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdatePlayGame);
+    am->AddAction(ID_TOOLBAR_WIDGET_PLAYCONSOLE_LABEL, tr("Play Console"))
+        .SetText(tr("Play Console"));
     am->AddAction(ID_SWITCH_PHYSICS, tr("Simulate"))
         .SetShortcut(tr("Ctrl+P"))
         .SetToolTip(tr("Simulate (Ctrl+P)"))
@@ -1487,6 +1491,14 @@ QToolButton* MainWindow::CreateDebugModeButton()
     debugModeButton->setMenu(debugModeMenu);
 
     return debugModeButton;
+}
+
+QWidget* MainWindow::CreateSpacerRightWidget()
+{
+    QWidget* spacer = new QWidget();
+    spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    spacer->setVisible(true);
+    return spacer;
 }
 
 void MainWindow::InitEnvironmentModeMenu(CVarMenu* environmentModeMenu)
@@ -2395,6 +2407,9 @@ QWidget* MainWindow::CreateToolbarWidget(int actionId)
     case ID_TOOLBAR_WIDGET_DEBUG_MODE:
         w = CreateDebugModeButton();
         break;
+    case ID_TOOLBAR_WIDGET_SPACER_RIGHT:
+        w = CreateSpacerRightWidget();
+        break; 
     default:
         qWarning() << Q_FUNC_INFO << "Unknown id " << actionId;
         return nullptr;

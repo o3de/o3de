@@ -362,7 +362,7 @@ namespace ImGui
                 ImGui::NextColumn();
                 // A Small Legend and Hints section for help using this thing
                 ImGui::BeginChild("MouseHoverLegendChild", ImVec2(250.0f, 30.0f), true);
-                if (ImGui::IsMouseHoveringWindow())
+                if (ImGui::IsWindowHovered())
                 {
                     ImGui::BeginTooltip();
                     ImGui::TextColored(ImGui::Colors::s_NiceLabelColor, "Legend:");
@@ -389,7 +389,7 @@ namespace ImGui
                     ImGui::EndTooltip();
                 }
                 
-                ImGui::TextColored(ImGui::IsMouseHoveringWindow() ? ImGui::Colors::s_NiceLabelColor : ImGui::Colors::s_PlainLabelColor, "Mouse Over For Legend and Tips");
+                ImGui::TextColored(ImGui::IsWindowHovered() ? ImGui::Colors::s_NiceLabelColor : ImGui::Colors::s_PlainLabelColor, "Mouse Over For Legend and Tips");
                 ImGui::EndChild(); // MouseHover Child
                 ImGui::NextColumn();
 

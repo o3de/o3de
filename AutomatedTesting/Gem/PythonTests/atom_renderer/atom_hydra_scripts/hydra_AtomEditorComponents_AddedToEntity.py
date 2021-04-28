@@ -168,12 +168,12 @@ def run():
             entity_obj, ["Capsule Shape"], area_light))
 
     # Decal Component
-    material_asset_path = os.path.join("Materials", "basic_grey.material")
+    material_asset_path = os.path.join("AutomatedTesting", "Materials", "basic_grey.material")
     material_asset = asset.AssetCatalogRequestBus(
         bus.Broadcast, "GetAssetIdByPath", material_asset_path, math.Uuid(), False)
     ComponentTests(
-        "Decal", lambda entity_obj: verify_set_property(
-            entity_obj, "Settings|Decal Settings|Material", material_asset))
+        "Decal (Atom)", lambda entity_obj: verify_set_property(
+            entity_obj, "Controller|Configuration|Material", material_asset))
 
     # DepthOfField Component
     camera_entity = hydra.Entity("camera_entity")

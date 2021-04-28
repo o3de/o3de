@@ -41,7 +41,6 @@ namespace AZ
 
         BuilderComponent::~BuilderComponent()
         {
-            AZ::Component::~Component();
             AZ::Interface<AzFramework::AtomActiveInterface>::Unregister(this);
         }
 
