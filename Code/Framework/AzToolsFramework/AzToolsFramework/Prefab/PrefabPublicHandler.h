@@ -96,6 +96,14 @@ namespace AzToolsFramework
                 const AZStd::vector<AZ::EntityId>& entityIds, EntityList& inputEntityList, EntityList& topLevelEntities,
                 AZ::EntityId& commonRootEntityId, InstanceOptionalReference& commonRootEntityOwningInstance);
 
+            /* Detects whether an instance of prefabTemplateId is present in the hierarchy of ancestors of instance.
+             *
+             * \param prefabTemplateId The template id to test for
+             * \param instance The instance whose ancestor hierarchy prefabTemplateId will be tested against.
+             * \return true if an instance of the template of id prefabTemplateId could be found in the ancestor hierarchy of instance, false otherwise.
+             */
+            bool IsPrefabInInstanceAncestorHierarchy(TemplateId prefabTemplateId, const Instance& instance);
+
             static Instance* GetParentInstance(Instance* instance);
             static Instance* GetAncestorOfInstanceThatIsChildOfRoot(const Instance* ancestor, Instance* descendant);
             static void GenerateContainerEntityTransform(const EntityList& topLevelEntities, AZ::Vector3& translation, AZ::Quaternion& rotation);

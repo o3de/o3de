@@ -184,6 +184,16 @@ namespace AzToolsFramework
                 instanceToParentUnder = prefabEditorEntityOwnershipInterface->GetRootPrefabInstance();
                 parent = instanceToParentUnder->get().GetContainerEntityId();
             }
+
+            //Detect whether this instantiation would produce a cyclical dependency
+            auto relativePath = m_prefabLoaderInterface->GetRelativePathToProject(filePath);
+            Prefab::TemplateId templateId = m_prefabSystemComponentInterface->GetTemplateIdFromFilePath(relativePath);
+
+            // If the template isn't currently loaded, there's no way for it to be in the hierarchy so we just skip the check.
+            if (templateId != Prefab::InvalidTemplateId && IsPrefabInInstanceAncestorHierarchy(templateId, instanceToParentUnder->get()))
+            {
+                return AZ::Failure(AZStd::string("Instantiate Prefab operation aborted - Instantiation would have introduced a cyclical dependency."));
+            }
             
             {
                 // Initialize Undo Batch object
@@ -194,7 +204,7 @@ namespace AzToolsFramework
                     instanceToParentUnderDomBeforeCreate, instanceToParentUnder->get());
 
                 // Instantiate the Prefab
-                auto instanceToCreate = prefabEditorEntityOwnershipInterface->InstantiatePrefab(filePath, instanceToParentUnder);
+                auto instanceToCreate = prefabEditorEntityOwnershipInterface->InstantiatePrefab(relativePath, instanceToParentUnder);
 
                 if (!instanceToCreate)
                 {
@@ -242,11 +252,28 @@ namespace AzToolsFramework
             {
                 AZ_Assert(
                     false,
-                    "Failed to create prefab : Couldn't get a valid owning instance for the common root entity of the enities provided");
+                    "Failed to create prefab : Couldn't get a valid owning instance for the common root entity of the entities provided");
                 return AZ::Failure(AZStd::string(
-                    "Failed to create prefab : Couldn't get a valid owning instance for the common root entity of the enities provided"));
+                    "Failed to create prefab : Couldn't get a valid owning instance for the common root entity of the entities provided"));
             }
             return AZ::Success();
+        }
+
+        bool PrefabPublicHandler::IsPrefabInInstanceAncestorHierarchy(TemplateId prefabTemplateId, const Instance& instance)
+        {
+            const Instance* currentInstance = &instance;
+
+            while (currentInstance != nullptr)
+            {
+                if (currentInstance->GetTemplateId() == prefabTemplateId)
+                {
+                    return true;
+                }
+
+                currentInstance = &currentInstance->GetParentInstance()->get();
+            }
+
+            return false;
         }
 
         void PrefabPublicHandler::CreateLink(
