@@ -316,6 +316,22 @@ void {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(par
 {#
 
 #}
+{% macro ReflectRpcInvocations(Component, ClassName, InvokeFrom, HandleOn) %}
+{% call(Property) AutoComponentMacros.ParseRemoteProcedures(Component, InvokeFrom, HandleOn) %}
+{%    if Property.attrib['CanScript']|booleanTrue == true %}
+{%     set paramNames   = [] %}
+{%     set paramTypes   = [] %}
+{%     set paramDefines = [] %}
+{{     AutoComponentMacros.ParseRpcParams(Property, paramNames, paramTypes, paramDefines) }}
+            ->Method("{{ UpperFirst(Property.attrib['Name']) }}", [](const {{ ClassName }}* self, {{ ', '.join(paramDefines) }}) {
+                        self->m_controller->{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(paramNames) }});
+                    })
+{%    endif %}
+{% endcall %}
+{% endmacro %}
+{#
+
+#}
 {% macro DeclareRpcHandleCases(Component, ComponentDerived, InvokeFrom, HandleOn, ValidationFunction) %}
 {% call(Property) AutoComponentMacros.ParseRemoteProcedures(Component, InvokeFrom, HandleOn) %}
 case {{ UpperFirst(Component.attrib['Name']) }}Internal::RemoteProcedure::{{ UpperFirst(Property.attrib['Name']) }}:
@@ -1114,6 +1130,7 @@ namespace {{ Component.attrib['Namespace'] }}
                 {{ DefineArchetypePropertyReflection(Component, ComponentBaseName)|indent(16) }};
         }
         ReflectToEditContext(context);
+        ReflectToBehaviorContext(context);
     }
 
     void {{ ComponentBaseName }}::{{ ComponentBaseName }}::ReflectToEditContext(AZ::ReflectContext* context)
@@ -1136,6 +1153,23 @@ namespace {{ Component.attrib['Namespace'] }}
                     {{ DefineArchetypePropertyEditReflection(Component, ComponentName)|indent(20) }};
             }
         }
+    }
+
+    void {{ ComponentBaseName }}::{{ ComponentBaseName }}::ReflectToBehaviorContext(AZ::ReflectContext* context)
+    {
+        AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context);
+        if (behaviorContext)
+        {
+            behaviorContext->Class<{{ ComponentName }}>("{{ ComponentName }}")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Category, "Multiplayer")
+                ->Attribute(AZ::Script::Attributes::Module, "Multiplayer")
+                {{ ReflectRpcInvocations(Component, ComponentName, 'Server', 'Authority')|indent(4) -}}
+                {{ ReflectRpcInvocations(Component, ComponentName, 'Autonomous', 'Authority')|indent(4) -}}
+                {{ ReflectRpcInvocations(Component, ComponentName, 'Authority', 'Autonomous')|indent(4) -}}
+                {{ ReflectRpcInvocations(Component, ComponentName, 'Authority', 'Client')|indent(4) -}}
+                ;
+            }
     }
 
     void {{ ComponentBaseName }}::{{ ComponentBaseName }}::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
