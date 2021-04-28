@@ -47,7 +47,7 @@ if(NOT PROJECT_NAME)
     o3de_restricted_path(${o3de_project_json} o3de_project_restricted_path)
     message(STATUS "O3DE Project Name: ${o3de_project_name}")
     message(STATUS "O3DE Project Path: ${o3de_project_path}")
-    if(${o3de_project_restricted_path})
+    if(o3de_project_restricted_path)
         message(STATUS "O3DE Project Restricted Path: ${o3de_project_restricted_path}")
     endif()
 
@@ -57,7 +57,7 @@ if(NOT PROJECT_NAME)
     # add subdirectory on the engine path for this project
     add_subdirectory(${o3de_engine_path} o3de)
 
-    # add this --project-path argumens to visual studio debugger
+    # add this --project-path arguments to visual studio debugger
     add_vs_debugger_arguments()
 
 else()
@@ -67,7 +67,7 @@ else()
     o3de_project_name(${o3de_project_json} o3de_project_name)
     o3de_restricted_path(${o3de_project_json} o3de_project_restricted_path)
 
-    # Currently we are in the TestDP folder: ${CMAKE_CURRENT_LIST_DIR}
+    # Currently we are in the folder: ${CMAKE_CURRENT_LIST_DIR}
     # Get the platform specific folder ${pal_dir} for the folder: ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME}
     # Note: ly_get_list_relative_pal_filename will take care of the details for us, as this may be a restricted platform
     #       in which case it will see if that platform is present here or in the restricted folder.

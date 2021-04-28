@@ -24,7 +24,6 @@ import zipfile
 import urllib.parse
 import urllib.request
 
-
 logger = logging.getLogger()
 logging.basicConfig()
 
@@ -38,7 +37,8 @@ def backup_file(file_name: str or pathlib.Path) -> None:
         if not backup_file_name.is_file():
             file_name = pathlib.Path(file_name).resolve()
             file_name.rename(backup_file_name)
-            renamed = True
+            if backup_file_name.is_file():
+                renamed = True
 
 
 def backup_folder(folder: str or pathlib.Path) -> None:
@@ -50,21 +50,34 @@ def backup_folder(folder: str or pathlib.Path) -> None:
         if not backup_folder_name.is_dir():
             folder = pathlib.Path(folder).resolve()
             folder.rename(backup_folder_name)
-            renamed = True
+            if backup_folder_name.is_dir():
+                renamed = True
 
 
 def get_this_engine_path() -> pathlib.Path:
-    return pathlib.Path(os.path.realpath(__file__)).parent.parent.parent.resolve()
+    return pathlib.Path(os.path.realpath(__file__)).parents[2].resolve()
+
+
+override_home_folder = None
 
 
 def get_home_folder() -> pathlib.Path:
-    return pathlib.Path(os.path.expanduser("~")).resolve()
+    if override_home_folder:
+        return pathlib.Path(override_home_folder).resolve()
+    else:
+        return pathlib.Path(os.path.expanduser("~")).resolve()
 
 
 def get_o3de_folder() -> pathlib.Path:
     o3de_folder = get_home_folder() / '.o3de'
     o3de_folder.mkdir(parents=True, exist_ok=True)
     return o3de_folder
+
+
+def get_o3de_registry_folder() -> pathlib.Path:
+    registry_folder = get_o3de_folder() / 'Registry'
+    registry_folder.mkdir(parents=True, exist_ok=True)
+    return registry_folder
 
 
 def get_o3de_cache_folder() -> pathlib.Path:
@@ -114,232 +127,101 @@ def register_shipped_engine_o3de_objects() -> int:
 
     ret_val = 0
 
+    # directories with engines
+    starting_engines_directories = [
+    ]
+    for engines_directory in reversed(sorted(starting_engines_directories)):
+        error_code = register_all_engines_in_folder(engines_path=engines_directory)
+        if error_code:
+            ret_val = error_code
+
+    # specific engines
+    starting_engines = [
+    ]
+    for engine_path in reversed(sorted(starting_engines)):
+        error_code = register(engine_path=engine_path)
+        if error_code:
+            ret_val = error_code
+
+    # directories with projects
+    starting_projects_directories = [
+    ]
+    for projects_directory in reversed(sorted(starting_projects_directories)):
+        error_code = register_all_projects_in_folder(engine_path=engine_path, projects_path=projects_directory)
+        if error_code:
+            ret_val = error_code
+
+    # specific projects
     starting_projects = [
         f'{engine_path}/AutomatedTesting'
     ]
-    for project_path in reversed(starting_projects):
+    for project_path in reversed(sorted(starting_projects)):
         error_code = register(engine_path=engine_path, project_path=project_path)
         if error_code:
             ret_val = error_code
 
-    starting_gems = [
-        f'{engine_path}/Gems/AWSClientAuth',
-        f'{engine_path}/Gems/AWSCore',
-        f'{engine_path}/Gems/AWSMetrics',
-        f'{engine_path}/Gems/Achievements',
-        f'{engine_path}/Gems/AssetMemoryAnalyzer',
-        f'{engine_path}/Gems/AssetValidation',
-        f'{engine_path}/Gems/Atom/Asset/ImageProcessingAtom',
-        f'{engine_path}/Gems/Atom/Asset/Shader',
-        f'{engine_path}/Gems/Atom/Bootstrap',
-        f'{engine_path}/Gems/Atom/Component/DebugCamera',
-        f'{engine_path}/Gems/Atom/Feature/Common',
-        f'{engine_path}/Gems/Atom/RHI',
-        f'{engine_path}/Gems/Atom/RHI/DX12',
-        f'{engine_path}/Gems/Atom/RHI/Metal',
-        f'{engine_path}/Gems/Atom/RHI/Null',
-        f'{engine_path}/Gems/Atom/RHI/Vulkan',
-        f'{engine_path}/Gems/Atom/RPI',
-        f'{engine_path}/Gems/Atom/Tools/AtomToolsFramework',
-        f'{engine_path}/Gems/Atom/Tools/MaterialEditor',
-        f'{engine_path}/Gems/Atom/Tools/ShaderManagementConsole',
-        f'{engine_path}/Gems/Atom/Utils',
-        f'{engine_path}/Gems/AtomContent/LookDevelopmentStudioPixar',
-        f'{engine_path}/Gems/AtomContent/ReferenceMaterials',
-        f'{engine_path}/Gems/AtomContent/Sponza',
-        f'{engine_path}/Gems/AtomLyIntegration/AtomBridge',
-        f'{engine_path}/Gems/AtomLyIntegration/AtomFont',
-        f'{engine_path}/Gems/AtomLyIntegration/AtomImGuiTools',
-        f'{engine_path}/Gems/AtomLyIntegration/CommonFeatures',
-        f'{engine_path}/Gems/AtomLyIntegration/EMotionFXAtom',
-        f'{engine_path}/Gems/AtomLyIntegration/ImguiAtom',
-        f'{engine_path}/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface',
-        f'{engine_path}/Gems/AtomTressFX',
-        f'{engine_path}/Gems/AudioEngineWwise',
-        f'{engine_path}/Gems/AudioSystem',
-        f'{engine_path}/Gems/AutomatedLauncherTesting',
-        f'{engine_path}/Gems/Blast',
-        f'{engine_path}/Gems/Camera',
-        f'{engine_path}/Gems/CameraFramework',
-        f'{engine_path}/Gems/CertificateManager',
-        f'{engine_path}/Gems/CrashReporting',
-        f'{engine_path}/Gems/CustomAssetExample',
-        f'{engine_path}/Gems/DebugDraw',
-        f'{engine_path}/Gems/DevTextures',
-        f'{engine_path}/Gems/EMotionFX',
-        f'{engine_path}/Gems/EditorPythonBindings',
-        f'{engine_path}/Gems/ExpressionEvaluation',
-        f'{engine_path}/Gems/FastNoise',
-        f'{engine_path}/Gems/GameEffectSystem',
-        f'{engine_path}/Gems/GameState',
-        f'{engine_path}/Gems/GameStateSamples',
-        f'{engine_path}/Gems/Gestures',
-        f'{engine_path}/Gems/GradientSignal',
-        f'{engine_path}/Gems/GraphCanvas',
-        f'{engine_path}/Gems/GraphModel',
-        f'{engine_path}/Gems/HttpRequestor',
-        f'{engine_path}/Gems/ImGui',
-        f'{engine_path}/Gems/ImageProcessing',
-        f'{engine_path}/Gems/InAppPurchases',
-        f'{engine_path}/Gems/LandscapeCanvas',
-        f'{engine_path}/Gems/LmbrCentral',
-        f'{engine_path}/Gems/LocalUser',
-        f'{engine_path}/Gems/LyShine',
-        f'{engine_path}/Gems/LyShineExamples',
-        f'{engine_path}/Gems/Maestro',
-        f'{engine_path}/Gems/MessagePopup',
-        f'{engine_path}/Gems/Metastream',
-        f'{engine_path}/Gems/Microphone',
-        f'{engine_path}/Gems/Multiplayer',
-        f'{engine_path}/Gems/MultiplayerCompression',
-        f'{engine_path}/Gems/NvCloth',
-        f'{engine_path}/Gems/PBSreferenceMaterials',
-        f'{engine_path}/Gems/PhysX',
-        f'{engine_path}/Gems/PhysXDebug',
-        f'{engine_path}/Gems/PhysXSamples',
-        f'{engine_path}/Gems/PhysicsEntities',
-        f'{engine_path}/Gems/Presence',
-        f'{engine_path}/Gems/PrimitiveAssets',
-        f'{engine_path}/Gems/PythonAssetBuilder',
-        f'{engine_path}/Gems/QtForPython',
-        f'{engine_path}/Gems/RADTelemetry',
-        f'{engine_path}/Gems/SVOGI',
-        f'{engine_path}/Gems/SaveData',
-        f'{engine_path}/Gems/SceneLoggingExample',
-        f'{engine_path}/Gems/SceneProcessing',
-        f'{engine_path}/Gems/ScriptCanvas',
-        f'{engine_path}/Gems/ScriptCanvasDeveloper',
-        f'{engine_path}/Gems/ScriptCanvasDiagnosticLibrary',
-        f'{engine_path}/Gems/ScriptCanvasPhysics',
-        f'{engine_path}/Gems/ScriptCanvasTesting',
-        f'{engine_path}/Gems/ScriptEvents',
-        f'{engine_path}/Gems/ScriptedEntityTweener',
-        f'{engine_path}/Gems/SliceFavorites',
-        f'{engine_path}/Gems/StartingPointCamera',
-        f'{engine_path}/Gems/StartingPointInput',
-        f'{engine_path}/Gems/StartingPointMovement',
-        f'{engine_path}/Gems/SurfaceData',
-        f'{engine_path}/Gems/TestAssetBuilder',
-        f'{engine_path}/Gems/TextureAtlas',
-        f'{engine_path}/Gems/TickBusOrderViewer',
-        f'{engine_path}/Gems/Twitch',
-        f'{engine_path}/Gems/UiBasics',
-        f'{engine_path}/Gems/Vegetation',
-        f'{engine_path}/Gems/Vegetation_Gem_Assets',
-        f'{engine_path}/Gems/VideoPlaybackFramework',
-        f'{engine_path}/Gems/VirtualGamepad',
-        f'{engine_path}/Gems/Visibility',
-        f'{engine_path}/Gems/WhiteBox'
+    # directories with gems
+    starting_gems_directories = [
+        f'{engine_path}/Gems'
     ]
-    for gem_path in reversed(starting_gems):
+    for gems_directory in reversed(sorted(starting_gems_directories)):
+        error_code = register_all_gems_in_folder(engine_path=engine_path, gems_path=gems_directory)
+        if error_code:
+            ret_val = error_code
+
+    # specific gems
+    starting_gems = [
+    ]
+    for gem_path in reversed(sorted(starting_gems)):
         error_code = register(engine_path=engine_path, gem_path=gem_path)
         if error_code:
             ret_val = error_code
 
-    starting_templates = [
-        f'{engine_path}/Templates/DefaultGem',
-        f'{engine_path}/Templates/DefaultProject'
+    # directories with templates
+    starting_templates_directories = [
+        f'{engine_path}/Templates'
     ]
-    for template_path in reversed(starting_templates):
+    for templates_directory in reversed(sorted(starting_templates_directories)):
+        error_code = register_all_templates_in_folder(engine_path=engine_path, templates_path=templates_directory)
+        if error_code:
+            ret_val = error_code
+
+    # specific templates
+    starting_templates = [
+    ]
+    for template_path in reversed(sorted(starting_templates)):
         error_code = register(engine_path=engine_path, template_path=template_path)
         if error_code:
             ret_val = error_code
 
+    # directories with restricted
+    starting_restricted_directories = [
+    ]
+    for restricted_directory in reversed(sorted(starting_restricted_directories)):
+        error_code = register_all_restricted_in_folder(engine_path=engine_path, restricted_path=restricted_directory)
+        if error_code:
+            ret_val = error_code
+
+    # specific restricted
     starting_restricted = [
     ]
-    for restricted_path in reversed(starting_restricted):
+    for restricted_path in reversed(sorted(starting_restricted)):
         error_code = register(engine_path=engine_path, restricted_path=restricted_path)
         if error_code:
             ret_val = error_code
 
-    starting_external_subdirectories = [
-        f'{engine_path}/Gems/AWSClientAuth',
-        f'{engine_path}/Gems/AWSCore',
-        f'{engine_path}/Gems/AWSMetrics',
-        f'{engine_path}/Gems/Achievements',
-        f'{engine_path}/Gems/AssetMemoryAnalyzer',
-        f'{engine_path}/Gems/AssetValidation',
-        f'{engine_path}/Gems/Atom',
-        f'{engine_path}/Gems/AtomLyIntegration',
-        f'{engine_path}/Gems/AudioEngineWwise',
-        f'{engine_path}/Gems/AudioSystem',
-        f'{engine_path}/Gems/AutomatedLauncherTesting',
-        f'{engine_path}/Gems/Blast',
-        f'{engine_path}/Gems/Camera',
-        f'{engine_path}/Gems/CameraFramework',
-        f'{engine_path}/Gems/CertificateManager',
-        f'{engine_path}/Gems/CrashReporting',
-        f'{engine_path}/Gems/CustomAssetExample',
-        f'{engine_path}/Gems/DebugDraw',
-        f'{engine_path}/Gems/EMotionFX',
-        f'{engine_path}/Gems/EditorPythonBindings',
-        f'{engine_path}/Gems/ExpressionEvaluation',
-        f'{engine_path}/Gems/FastNoise',
-        f'{engine_path}/Gems/GameEffectSystem',
-        f'{engine_path}/Gems/GameState',
-        f'{engine_path}/Gems/GameStateSamples',
-        f'{engine_path}/Gems/Gestures',
-        f'{engine_path}/Gems/GradientSignal',
-        f'{engine_path}/Gems/GraphCanvas',
-        f'{engine_path}/Gems/GraphModel',
-        f'{engine_path}/Gems/HttpRequestor',
-        f'{engine_path}/Gems/ImGui',
-        f'{engine_path}/Gems/ImageProcessing',
-        f'{engine_path}/Gems/InAppPurchases',
-        f'{engine_path}/Gems/LandscapeCanvas',
-        f'{engine_path}/Gems/LmbrCentral',
-        f'{engine_path}/Gems/LocalUser',
-        f'{engine_path}/Gems/LyShine',
-        f'{engine_path}/Gems/LyShineExamples',
-        f'{engine_path}/Gems/Maestro',
-        f'{engine_path}/Gems/MessagePopup',
-        f'{engine_path}/Gems/Metastream',
-        f'{engine_path}/Gems/Microphone',
-        f'{engine_path}/Gems/Multiplayer',
-        f'{engine_path}/Gems/MultiplayerCompression',
-        f'{engine_path}/Gems/NvCloth',
-        f'{engine_path}/Gems/PhysX',
-        f'{engine_path}/Gems/PhysXDebug',
-        f'{engine_path}/Gems/Prefab',
-        f'{engine_path}/Gems/Presence',
-        f'{engine_path}/Gems/PythonAssetBuilder',
-        f'{engine_path}/Gems/QtForPython',
-        f'{engine_path}/Gems/RADTelemetry',
-        f'{engine_path}/Gems/SVOGI',
-        f'{engine_path}/Gems/SaveData',
-        f'{engine_path}/Gems/SceneLoggingExample',
-        f'{engine_path}/Gems/SceneProcessing',
-        f'{engine_path}/Gems/ScriptCanvas',
-        f'{engine_path}/Gems/ScriptCanvasDeveloper',
-        f'{engine_path}/Gems/ScriptCanvasDiagnosticLibrary',
-        f'{engine_path}/Gems/ScriptCanvasPhysics',
-        f'{engine_path}/Gems/ScriptCanvasTesting',
-        f'{engine_path}/Gems/ScriptEvents',
-        f'{engine_path}/Gems/ScriptedEntityTweener',
-        f'{engine_path}/Gems/SliceFavorites',
-        f'{engine_path}/Gems/StartingPointCamera',
-        f'{engine_path}/Gems/StartingPointInput',
-        f'{engine_path}/Gems/StartingPointMovement',
-        f'{engine_path}/Gems/SurfaceData',
-        f'{engine_path}/Gems/TestAssetBuilder',
-        f'{engine_path}/Gems/TextureAtlas',
-        f'{engine_path}/Gems/TickBusOrderViewer',
-        f'{engine_path}/Gems/Twitch',
-        f'{engine_path}/Gems/Vegetation',
-        f'{engine_path}/Gems/VideoPlaybackFramework',
-        f'{engine_path}/Gems/VirtualGamepad',
-        f'{engine_path}/Gems/Visibility',
-        f'{engine_path}/Gems/WhiteBox'
+    # directories with repos
+    starting_repo_directories = [
     ]
-    for external_subdirectory in reversed(starting_external_subdirectories):
-        error_code = add_external_subdirectory(external_subdirectory)
+    for repos_directory in reversed(sorted(starting_repo_directories)):
+        error_code = register_all_repos_in_folder(engine_path=engine_path, repos_path=repos_directory)
         if error_code:
             ret_val = error_code
 
-    # global
+    # specific repos
     staring_repos = [
     ]
-    for repo_uri in reversed(staring_repos):
+    for repo_uri in reversed(sorted(staring_repos)):
         error_code = register(repo_uri=repo_uri)
         if error_code:
             ret_val = error_code
@@ -360,7 +242,6 @@ def register_shipped_engine_o3de_objects() -> int:
     error_code = register_all_restricted_in_folder(get_registered(default_folder='restricted'))
     if error_code:
         ret_val = error_code
-
     error_code = register_all_restricted_in_folder(get_registered(default_folder='projects'))
     if error_code:
         ret_val = error_code
@@ -370,6 +251,97 @@ def register_shipped_engine_o3de_objects() -> int:
     error_code = register_all_restricted_in_folder(get_registered(default_folder='templates'))
     if error_code:
         ret_val = error_code
+
+    starting_external_subdirectories = [
+        f'{engine_path}/Gems/Atom',
+        f'{engine_path}/Gems/AtomLyIntegration'
+    ]
+    for external_subdir in reversed(sorted(starting_external_subdirectories)):
+        error_code = add_external_subdirectory(engine_path=engine_path, external_subdir=external_subdir)
+        if error_code:
+            ret_val = error_code
+
+    json_data = load_o3de_manifest()
+    engine_object = get_engine_data(json_data)
+    gems = json_data['gems'].copy()
+    gems.extend(engine_object['gems'])
+    for gem_path in sorted(gems, key=len):
+        gem_path = pathlib.Path(gem_path).resolve()
+        gem_cmake_lists_txt = gem_path / 'CMakeLists.txt'
+        if gem_cmake_lists_txt.is_file():
+            add_gem_to_cmake(engine_path=engine_path, gem_path=gem_path, supress_errors=True)  # don't care about errors
+
+    return ret_val
+
+
+def register_all_in_folder(folder_path: str or pathlib.Path,
+                           remove: bool = False,
+                           engine_path: str or pathlib.Path = None,
+                           exclude: list = None) -> int:
+    if not folder_path:
+        logger.error(f'Folder path cannot be empty.')
+        return 1
+
+    folder_path = pathlib.Path(folder_path).resolve()
+    if not folder_path.is_dir():
+        logger.error(f'Folder path is not dir.')
+        return 1
+
+    engines_set = set()
+    projects_set = set()
+    gems_set = set()
+    templates_set = set()
+    restricted_set = set()
+    repo_set = set()
+
+    ret_val = 0
+    for root, dirs, files in os.walk(folder_path):
+        if root in exclude:
+            continue
+
+        for name in files:
+            if name == 'engine.json':
+                engines_set.add(root)
+            elif name == 'project.json':
+                projects_set.add(root)
+            elif name == 'gem.json':
+                gems_set.add(root)
+            elif name == 'template.json':
+                templates_set.add(root)
+            elif name == 'restricted.json':
+                restricted_set.add(root)
+            elif name == 'repo.json':
+                repo_set.add(root)
+
+    for engine in reversed(sorted(engines_set)):
+        error_code = register(engine_path=engine, remove=remove)
+        if error_code:
+            ret_val = error_code
+
+    for project in reversed(sorted(projects_set)):
+        error_code = register(engine_path=engine_path, project_path=project, remove=remove)
+        if error_code:
+            ret_val = error_code
+
+    for gem in reversed(sorted(gems_set)):
+        error_code = register(engine_path=engine_path, gem_path=gem, remove=remove)
+        if error_code:
+            ret_val = error_code
+
+    for template in reversed(sorted(templates_set)):
+        error_code = register(engine_path=engine_path, template_path=template, remove=remove)
+        if error_code:
+            ret_val = error_code
+
+    for restricted in reversed(sorted(restricted_set)):
+        error_code = register(engine_path=engine_path, restricted_path=restricted, remove=remove)
+        if error_code:
+            ret_val = error_code
+
+    for repo in reversed(sorted(repo_set)):
+        error_code = register(engine_path=engine_path, repo_uri=repo, remove=remove)
+        if error_code:
+            ret_val = error_code
 
     return ret_val
 
@@ -385,13 +357,19 @@ def register_all_engines_in_folder(engines_path: str or pathlib.Path,
         logger.error(f'Engines path is not dir.')
         return 1
 
+    engines_set = set()
+
     ret_val = 0
-    for root, dirs, files in os.walk(engines_path, topdown=False):
+    for root, dirs, files in os.walk(engines_path):
         for name in files:
-            if name == 'gem.json':
-                error_code = register(engine_path=root, remove=remove)
-                if error_code:
-                    ret_val = error_code
+            if name == 'engine.json':
+                engines_set.add(name)
+
+    for engine in reversed(sorted(engines_set)):
+        error_code = register(engine_path=engine, remove=remove)
+        if error_code:
+            ret_val = error_code
+
     return ret_val
 
 
@@ -407,13 +385,19 @@ def register_all_projects_in_folder(projects_path: str or pathlib.Path,
         logger.error(f'Projects path is not dir.')
         return 1
 
+    projects_set = set()
+
     ret_val = 0
-    for root, dirs, files in os.walk(projects_path, topdown=False):
+    for root, dirs, files in os.walk(projects_path):
         for name in files:
             if name == 'project.json':
-                error_code = register(engine_path=engine_path, project_path=root, remove=remove)
-                if error_code:
-                    ret_val = error_code
+                projects_set.add(root)
+
+    for project in reversed(sorted(projects_set)):
+        error_code = register(engine_path=engine_path, project_path=project, remove=remove)
+        if error_code:
+            ret_val = error_code
+
     return ret_val
 
 
@@ -429,13 +413,19 @@ def register_all_gems_in_folder(gems_path: str or pathlib.Path,
         logger.error(f'Gems path is not dir.')
         return 1
 
+    gems_set = set()
+
     ret_val = 0
-    for root, dirs, files in os.walk(gems_path, topdown=False):
+    for root, dirs, files in os.walk(gems_path):
         for name in files:
             if name == 'gem.json':
-                error_code = register(engine_path=engine_path, gem_path=root, remove=remove)
-                if error_code:
-                    ret_val = error_code
+                gems_set.add(root)
+
+    for gem in reversed(sorted(gems_set)):
+        error_code = register(engine_path=engine_path, gem_path=gem, remove=remove)
+        if error_code:
+            ret_val = error_code
+
     return ret_val
 
 
@@ -451,13 +441,19 @@ def register_all_templates_in_folder(templates_path: str or pathlib.Path,
         logger.error(f'Templates path is not dir.')
         return 1
 
+    templates_set = set()
+
     ret_val = 0
-    for root, dirs, files in os.walk(templates_path, topdown=False):
+    for root, dirs, files in os.walk(templates_path):
         for name in files:
             if name == 'template.json':
-                error_code = register(engine_path=engine_path, template_path=root, remove=remove)
-                if error_code:
-                    ret_val = error_code
+                templates_set.add(root)
+
+    for template in reversed(sorted(templates_set)):
+        error_code = register(engine_path=engine_path, template_path=template, remove=remove)
+        if error_code:
+            ret_val = error_code
+
     return ret_val
 
 
@@ -473,13 +469,19 @@ def register_all_restricted_in_folder(restricted_path: str or pathlib.Path,
         logger.error(f'Restricted path is not dir.')
         return 1
 
+    restricted_set = set()
+
     ret_val = 0
-    for root, dirs, files in os.walk(restricted_path, topdown=False):
+    for root, dirs, files in os.walk(restricted_path):
         for name in files:
             if name == 'restricted.json':
-                error_code = register(engine_path=engine_path, restricted_path=root, remove=remove)
-                if error_code:
-                    ret_val = error_code
+                restricted_set.add(root)
+
+    for restricted in reversed(sorted(restricted_set)):
+        error_code = register(engine_path=engine_path, restricted_path=restricted, remove=remove)
+        if error_code:
+            ret_val = error_code
+
     return ret_val
 
 
@@ -495,22 +497,29 @@ def register_all_repos_in_folder(repos_path: str or pathlib.Path,
         logger.error(f'Repos path is not dir.')
         return 1
 
+    repo_set = set()
+
     ret_val = 0
-    for root, dirs, files in os.walk(repos_path, topdown=False):
+    for root, dirs, files in os.walk(repos_path):
         for name in files:
             if name == 'repo.json':
-                error_code = register(engine_path=engine_path, repo_uri=root, remove=remove)
-                if error_code:
-                    ret_val = error_code
+                repo_set.add(root)
+
+    for repo in reversed(sorted(repo_set)):
+        error_code = register(engine_path=engine_path, repo_uri=repo, remove=remove)
+        if error_code:
+            ret_val = error_code
+
     return ret_val
 
 
 def get_o3de_manifest() -> pathlib.Path:
-    registry_path = get_o3de_folder() / 'o3de_manifest.json'
-    if not registry_path.is_file():
+    manifest_path = get_o3de_folder() / 'o3de_manifest.json'
+    if not manifest_path.is_file():
         username = os.path.split(get_home_folder())[-1]
 
         o3de_folder = get_o3de_folder()
+        default_registry_folder = get_o3de_registry_folder()
         default_cache_folder = get_o3de_cache_folder()
         default_downloads_folder = get_o3de_download_folder()
         default_engines_folder = get_o3de_engines_folder()
@@ -571,10 +580,10 @@ def get_o3de_manifest() -> pathlib.Path:
                 restricted_json_data.update({'restricted_name': 'templates'})
                 s.write(json.dumps(restricted_json_data, indent=4))
 
-        with registry_path.open('w') as s:
+        with manifest_path.open('w') as s:
             s.write(json.dumps(json_data, indent=4))
 
-    return registry_path
+    return manifest_path
 
 
 def load_o3de_manifest() -> dict:
@@ -594,8 +603,8 @@ def get_engine_data(json_data: dict,
     engine_path = pathlib.Path(engine_path).resolve()
 
     for engine_object in json_data['engines']:
-        engine_oject_path = pathlib.Path(engine_object['path']).resolve()
-        if engine_path == engine_oject_path:
+        engine_object_path = pathlib.Path(engine_object['path']).resolve()
+        if engine_path == engine_object_path:
             return engine_object
 
     return None
@@ -796,6 +805,7 @@ def register_template_path(json_data: dict,
         if not engine_data:
             logger.error(f'Engine path {engine_path} is not registered.')
             return 1
+
         while template_path in engine_data['templates']:
             engine_data['templates'].remove(template_path)
 
@@ -2878,30 +2888,91 @@ def find_gem_modules(gem_folder: str or pathlib.Path) -> list:
 
 
 def add_external_subdirectory(external_subdir: str or pathlib.Path,
-                              engine_path: str or pathlib.Path = None) -> int:
+                              engine_path: str or pathlib.Path = None,
+                              supress_errors: bool = False) -> int:
     """
     add external subdirectory to a cmake
     :param external_subdir: external subdirectory to add to cmake
     :param engine_path: optional engine path, defaults to this engine
+    :param supress_errors: optional silence errors
     :return: 0 for success or non 0 failure code
     """
     external_subdir = pathlib.Path(external_subdir).resolve()
     if not external_subdir.is_dir():
-        logger.error(f'Add External Subdirectory Failed: {external_subdir} does not exist.')
+        if not supress_errors:
+            logger.error(f'Add External Subdirectory Failed: {external_subdir} does not exist.')
         return 1
 
     external_subdir_cmake = external_subdir / 'CMakeLists.txt'
     if not external_subdir_cmake.is_file():
-        logger.error(f'Add External Subdirectory Failed: {external_subdir} does not contain a CMakeLists.txt.')
+        if not supress_errors:
+            logger.error(f'Add External Subdirectory Failed: {external_subdir} does not contain a CMakeLists.txt.')
         return 1
 
     json_data = load_o3de_manifest()
     engine_object = get_engine_data(json_data, engine_path)
+    if not engine_object:
+        if not supress_errors:
+            logger.error(f'Add External Subdirectory Failed: {engine_path} not registered.')
+        return 1
 
     while external_subdir.as_posix() in engine_object['external_subdirectories']:
         engine_object['external_subdirectories'].remove(external_subdir.as_posix())
 
+    def parse_cmake_file(cmake_root: str or pathlib.Path,
+                         cmake: str or pathlib.Path,
+                         files: set()):
+        cmake_root = pathlib.Path(cmake_root).resolve()
+        cmake_path = pathlib.Path(cmake).resolve()
+        cmake_file = cmake_path
+        if cmake_path.is_dir():
+            files.add(cmake_path)
+            cmake_file = cmake_path / 'CMakeLists.txt'
+        elif cmake_path.is_file():
+            cmake_path = cmake_path.parent
+        else:
+            return
+
+        with cmake_file.open('r') as s:
+            lines = s.readlines()
+            for line in lines:
+                line = line.strip()
+                start = line.find('include(')
+                if start == 0:
+                    end = line.find(')', start)
+                    if end > start + len('include('):
+                        try:
+                            include_cmake_file = pathlib.Path(cmake_root / line[start + len('include('): end]).resolve()
+                        except Exception as e:
+                            pass
+                        else:
+                            parse_cmake_file(cmake_root, include_cmake_file, files)
+                else:
+                    start = line.find('add_subdirectory(')
+                    if start == 0:
+                        end = line.find(')', start)
+                        if end > start + len('add_subdirectory('):
+                            try:
+                                include_cmake_file = pathlib.Path(
+                                    cmake_path / line[start + len('add_subdirectory('): end]).resolve()
+                            except Exception as e:
+                                pass
+                            else:
+                                parse_cmake_file(cmake_root, include_cmake_file, files)
+
+    cmake_files = set()
+    parse_cmake_file(engine_path, engine_path, cmake_files)
+    for external in engine_object["external_subdirectories"]:
+        parse_cmake_file(engine_path, external, cmake_files)
+
+    if external_subdir in cmake_files:
+        save_o3de_manifest(json_data)
+        if not supress_errors:
+            logger.error(f'External subdirectory {external_subdir.as_posix()} already included by add_subdirectory().')
+        return 1
+
     engine_object['external_subdirectories'].insert(0, external_subdir.as_posix())
+    engine_object['external_subdirectories'] = sorted(engine_object['external_subdirectories'])
 
     save_o3de_manifest(json_data)
 
@@ -2918,6 +2989,9 @@ def remove_external_subdirectory(external_subdir: str or pathlib.Path,
     """
     json_data = load_o3de_manifest()
     engine_object = get_engine_data(json_data, engine_path)
+    if not engine_object:
+        logger.error(f'Remove External Subdirectory Failed: {engine_path} not registered.')
+        return 1
 
     external_subdir = pathlib.Path(external_subdir).resolve()
     while external_subdir.as_posix() in engine_object['external_subdirectories']:
@@ -2931,37 +3005,63 @@ def remove_external_subdirectory(external_subdir: str or pathlib.Path,
 def add_gem_to_cmake(gem_name: str = None,
                      gem_path: str or pathlib.Path = None,
                      engine_name: str = None,
-                     engine_path: str or pathlib.Path = None) -> int:
+                     engine_path: str or pathlib.Path = None,
+                     supress_errors: bool = False) -> int:
     """
-    add a gem to a cmake as an external subdirectory
+    add a gem to a cmake as an external subdirectory for an engine
     :param gem_name: name of the gem to add to cmake
     :param gem_path: the path of the gem to add to cmake
     :param engine_name: name of the engine to add to cmake
-    :param engine_path: the path of the engine to add to cmake, default to this engine
+    :param engine_path: the path of the engine to add external subdirectory to, default to this engine
+    :param supress_errors: optional silence errors
     :return: 0 for success or non 0 failure code
     """
     if not gem_name and not gem_path:
-        logger.error('Must specify either a Gem name or Gem Path.')
+        if not supress_errors:
+            logger.error('Must specify either a Gem name or Gem Path.')
         return 1
 
-    if gem_name:
+    if gem_name and not gem_path:
         gem_path = get_registered(gem_name=gem_name)
 
     if not gem_path:
-        logger.error(f'Gem Path {gem_path} has not been registered.')
+        if not supress_errors:
+            logger.error(f'Gem Path {gem_path} has not been registered.')
+        return 1
+
+    gem_path = pathlib.Path(gem_path).resolve()
+    gem_json = gem_path / 'gem.json'
+    if not gem_json.is_file():
+        if not supress_errors:
+            logger.error(f'Gem json {gem_json} is not present.')
+        return 1
+    if not valid_o3de_gem_json(gem_json):
+        if not supress_errors:
+            logger.error(f'Gem json {gem_json} is not valid.')
         return 1
 
     if not engine_name and not engine_path:
         engine_path = get_this_engine_path()
 
-    if engine_name:
-        engine_path = get_registered(gem_name=gem_name)
+    if engine_name and not engine_path:
+        engine_path = get_registered(engine_name=engine_name)
 
     if not engine_path:
-        logger.error(f'Engine Path {engine_path} has not been registered.')
+        if not supress_errors:
+            logger.error(f'Engine Path {engine_path} has not been registered.')
         return 1
 
-    return add_external_subdirectory(gem_path, engine_path)
+    engine_json = engine_path / 'engine.json'
+    if not engine_json.is_file():
+        if not supress_errors:
+            logger.error(f'Engine json {engine_json} is not present.')
+        return 1
+    if not valid_o3de_engine_json(engine_json):
+        if not supress_errors:
+            logger.error(f'Engine json {engine_json} is not valid.')
+        return 1
+
+    return add_external_subdirectory(external_subdir=gem_path, engine_path=engine_path, supress_errors=supress_errors)
 
 
 def remove_gem_from_cmake(gem_name: str = None,
@@ -2973,14 +3073,14 @@ def remove_gem_from_cmake(gem_name: str = None,
     :param gem_name: name of the gem to remove from cmake
     :param gem_path: the path of the gem to add to cmake
     :param engine_name: optional name of the engine to remove from cmake
-    :param engine_path: the path of the engine to add to cmake, defaults to this engine
+    :param engine_path: the path of the engine to remove external subdirectory from, defaults to this engine
     :return: 0 for success or non 0 failure code
     """
     if not gem_name and not gem_path:
         logger.error('Must specify either a Gem name or Gem Path.')
         return 1
 
-    if gem_name:
+    if gem_name and not gem_path:
         gem_path = get_registered(gem_name=gem_name)
 
     if not gem_path:
@@ -2990,14 +3090,14 @@ def remove_gem_from_cmake(gem_name: str = None,
     if not engine_name and not engine_path:
         engine_path = get_this_engine_path()
 
-    if engine_name:
-        engine_path = get_registered(gem_name=gem_name)
+    if engine_name and not engine_path:
+        engine_path = get_registered(engine_name=engine_name)
 
     if not engine_path:
-        logger.error(f'Engine Path {engine_path} has not been registered.')
+        logger.error(f'Engine Path {engine_path} is not registered.')
         return 1
 
-    return add_external_subdirectory(gem_path, engine_path)
+    return remove_external_subdirectory(external_subdir=gem_path, engine_path=engine_path)
 
 
 def add_gem_to_project(gem_name: str = None,
@@ -3032,7 +3132,7 @@ def add_gem_to_project(gem_name: str = None,
         return 1
 
     # if project name resolve it into a path
-    if project_name:
+    if project_name and not project_path:
         project_path = get_registered(project_name=project_name)
     project_path = pathlib.Path(project_path).resolve()
     if not project_path.is_dir():
@@ -3040,6 +3140,7 @@ def add_gem_to_project(gem_name: str = None,
         return 1
 
     # get the engine name this project is associated with
+    # and resolve that engines path
     project_json = project_path / 'project.json'
     if not valid_o3de_project_json(project_json):
         logger.error(f'Project json {project_json} is not valid.')
@@ -3058,6 +3159,9 @@ def add_gem_to_project(gem_name: str = None,
                 return 1
             else:
                 engine_path = get_registered(engine_name=engine_name)
+                if not engine_path:
+                    logger.error(f'Engine {engine_name} is not registered.')
+                    return 1
 
     # We need either a gem name or path
     if not gem_name and not gem_path:
@@ -3065,7 +3169,7 @@ def add_gem_to_project(gem_name: str = None,
         return 1
 
     # if gem name resolve it into a path
-    if gem_name:
+    if gem_name and not gem_path:
         gem_path = get_registered(gem_name=gem_name)
     gem_path = pathlib.Path(gem_path).resolve()
     # make sure this gem already exists if we're adding.  We can always remove a gem.
@@ -3073,11 +3177,14 @@ def add_gem_to_project(gem_name: str = None,
         logger.error(f'Gem Path {gem_path} does not exist.')
         return 1
 
-    # if add to cmake, make sure the gem.json exists before we proceed
+    # if add to cmake, make sure the gem.json exists and valid before we proceed
     if add_to_cmake:
         gem_json = gem_path / 'gem.json'
         if not gem_json.is_file():
             logger.error(f'Gem json {gem_json} is not present.')
+            return 1
+        if not valid_o3de_gem_json(gem_json):
+            logger.error(f'Gem json {gem_json} is not valid.')
             return 1
 
     # find all available modules in this gem_path
@@ -3151,14 +3258,7 @@ def add_gem_to_project(gem_name: str = None,
                 ret_val = add_gem_dependency(project_server_dependencies_file, gem_target)
 
     if not ret_val and add_to_cmake:
-        with gem_json.open('r') as s:
-            try:
-                gem_json_data = json.load(s)
-            except Exception as e:
-                logger.error(f'Failed to load {gem_json}: {str(e)}')
-                return 1
-            gem_name = gem_json_data['gem_name']
-            ret_val = add_gem_to_cmake(gem_name, engine_path)
+        ret_val = add_gem_to_cmake(gem_path=gem_path, engine_path=engine_path)
 
     return ret_val
 
@@ -3196,7 +3296,7 @@ def remove_gem_from_project(gem_name: str = None,
         return 1
 
     # if project name resolve it into a path
-    if project_name:
+    if project_name and not project_path:
         project_path = get_registered(project_name=project_name)
     project_path = pathlib.Path(project_path).resolve()
     if not project_path.is_dir():
@@ -3209,7 +3309,7 @@ def remove_gem_from_project(gem_name: str = None,
         return 1
 
     # if gem name resolve it into a path
-    if gem_name:
+    if gem_name and not gem_path:
         gem_path = get_registered(gem_name=gem_name)
     gem_path = pathlib.Path(gem_path).resolve()
     # make sure this gem already exists if we're adding.  We can always remove a gem.
@@ -3296,22 +3396,9 @@ def remove_gem_from_project(gem_name: str = None,
                         ret_val = error_code
 
     if remove_from_cmake:
-        gem_json = gem_path / 'gem.json'
-        if not gem_json.is_file():
-            logger.error(f'Remove from cmake failed: {gem_json} is not present.')
-            if not ret_val:
-                ret_val = 1
-        else:
-            with gem_json.open('r') as s:
-                try:
-                    gem_json_data = json.load(s)
-                except Exception as e:
-                    logger.error(f'Failed to load {gem_json}: {str(e)}')
-                    return 1
-                gem_name = gem_json_data['gem_name']
-                error_code = add_gem_to_cmake(gem_name)
-                if error_code:
-                    ret_val = error_code
+        error_code = remove_gem_from_cmake(gem_path=gem_path)
+        if error_code:
+            ret_val = error_code
 
     return ret_val
 
@@ -3355,6 +3442,10 @@ def sha256(file_path: str or pathlib.Path,
 
 
 def _run_get_registered(args: argparse) -> str or pathlib.Path:
+    if args.override_home_folder:
+        global override_home_folder
+        override_home_folder = args.override_home_folder
+
     return get_registered(args.engine_name,
                           args.project_name,
                           args.gem_name,
@@ -3365,6 +3456,10 @@ def _run_get_registered(args: argparse) -> str or pathlib.Path:
 
 
 def _run_register_show(args: argparse) -> int:
+    if args.override_home_folder:
+        global override_home_folder
+        override_home_folder = args.override_home_folder
+
     if args.this_engine:
         register_show_this_engine(args.verbose)
         return 0
@@ -3417,7 +3512,6 @@ def _run_register_show(args: argparse) -> int:
         register_show_all_restricted(args.verbose)
         return 0
 
-
     elif args.downloadables:
         register_show_downloadables(args.verbose)
         return 0
@@ -3439,6 +3533,10 @@ def _run_register_show(args: argparse) -> int:
 
 
 def _run_download(args: argparse) -> int:
+    if args.override_home_folder:
+        global override_home_folder
+        override_home_folder = args.override_home_folder
+
     if args.engine_name:
         return download_engine(args.engine_name,
                                args.dest_path)
@@ -3454,6 +3552,10 @@ def _run_download(args: argparse) -> int:
 
 
 def _run_register(args: argparse) -> int:
+    if args.override_home_folder:
+        global override_home_folder
+        override_home_folder = args.override_home_folder
+
     if args.update:
         remove_invalid_o3de_objects()
         return refresh_repos()
@@ -3491,22 +3593,42 @@ def _run_register(args: argparse) -> int:
 
 
 def _run_add_external_subdirectory(args: argparse) -> int:
+    if args.override_home_folder:
+        global override_home_folder
+        override_home_folder = args.override_home_folder
+
     return add_external_subdirectory(args.external_subdirectory)
 
 
 def _run_remove_external_subdirectory(args: argparse) -> int:
+    if args.override_home_folder:
+        global override_home_folder
+        override_home_folder = args.override_home_folder
+
     return remove_external_subdirectory(args.external_subdirectory)
 
 
 def _run_add_gem_to_cmake(args: argparse) -> int:
-    return add_gem_to_cmake(args.gem_name, args.gem_path)
+    if args.override_home_folder:
+        global override_home_folder
+        override_home_folder = args.override_home_folder
+
+    return add_gem_to_cmake(gem_name=args.gem_name, gem_path=args.gem_path)
 
 
 def _run_remove_gem_from_cmake(args: argparse) -> int:
+    if args.override_home_folder:
+        global override_home_folder
+        override_home_folder = args.override_home_folder
+
     return remove_gem_from_cmake(args.gem_name, args.gem_path)
 
 
 def _run_add_gem_to_project(args: argparse) -> int:
+    if args.override_home_folder:
+        global override_home_folder
+        override_home_folder = args.override_home_folder
+
     return add_gem_to_project(args.gem_name,
                               args.gem_path,
                               args.gem_target,
@@ -3521,6 +3643,10 @@ def _run_add_gem_to_project(args: argparse) -> int:
 
 
 def _run_remove_gem_from_project(args: argparse) -> int:
+    if args.override_home_folder:
+        global override_home_folder
+        override_home_folder = args.override_home_folder
+
     return remove_gem_from_project(args.gem_name,
                                    args.gem_path,
                                    args.gem_target,
@@ -3542,7 +3668,7 @@ def _run_sha256(args: argparse) -> int:
 def add_args(parser, subparsers) -> None:
     """
     add_args is called to add expected parser arguments and subparsers arguments to each command such that it can be
-    invoked locally or downloadabled by a central python file.
+    invoked locally or added by a central python file.
     Ex. Directly run from this file alone with: python register.py register --gem-path "C:/TestGem"
     OR
     o3de.py can downloadable commands by importing engine_template,
@@ -3590,10 +3716,13 @@ def add_args(parser, subparsers) -> None:
                        help='The default templates folder to register/remove.')
     group.add_argument('-drf', '--default-restricted-folder', type=str, required=False,
                        help='The default restricted folder to register/remove.')
-
     group.add_argument('-u', '--update', action='store_true', required=False,
                        default=False,
                        help='Refresh the repo cache.')
+
+    register_subparser.add_argument('-ohf', '--override-home-folder', type=str, required=False,
+                                    help='By default the home folder is the user folder, override it to this folder.')
+
     register_subparser.add_argument('-r', '--remove', action='store_true', required=False,
                                     default=False,
                                     help='Remove entry.')
@@ -3609,7 +3738,6 @@ def add_args(parser, subparsers) -> None:
     group.add_argument('-e', '--engines', action='store_true', required=False,
                        default=False,
                        help='Just the local engines.')
-
     group.add_argument('-p', '--projects', action='store_true', required=False,
                        default=False,
                        help='Just the local projects.')
@@ -3670,10 +3798,14 @@ def add_args(parser, subparsers) -> None:
     group.add_argument('-dt', '--downloadable-templates', action='store_true', required=False,
                        default=False,
                        help='Combine all repos templates into a single list of resources.')
-    group = register_show_subparser.add_mutually_exclusive_group(required=False)
-    group.add_argument('-v', '--verbose', action='count', required=False,
-                       default=0,
-                       help='How verbose do you want the output to be.')
+
+    register_show_subparser.add_argument('-v', '--verbose', action='count', required=False,
+                                         default=0,
+                                         help='How verbose do you want the output to be.')
+
+    register_show_subparser.add_argument('-ohf', '--override-home-folder', type=str, required=False,
+                                         help='By default the home folder is the user folder, override it to this folder.')
+
     register_show_subparser.set_defaults(func=_run_register_show)
 
     # get-registered
@@ -3694,6 +3826,10 @@ def add_args(parser, subparsers) -> None:
                        help='Repo name.')
     group.add_argument('-rsn', '--restricted-name', type=str, required=False,
                        help='Restricted name.')
+
+    get_registered_subparser.add_argument('-ohf', '--override-home-folder', type=str, required=False,
+                                          help='By default the home folder is the user folder, override it to this folder.')
+
     get_registered_subparser.set_defaults(func=_run_get_registered)
 
     # download
@@ -3713,12 +3849,20 @@ def add_args(parser, subparsers) -> None:
                                          ' i.e. download --project-name "StarterGame" --dest-path "C:/projects"'
                                          ' will result in C:/projects/StarterGame'
                                          ' If blank will download to default object type folder')
+
+    download_subparser.add_argument('-ohf', '--override-home-folder', type=str, required=False,
+                                    help='By default the home folder is the user folder, override it to this folder.')
+
     download_subparser.set_defaults(func=_run_download)
 
     # add external subdirectories
     add_external_subdirectory_subparser = subparsers.add_parser('add-external-subdirectory')
     add_external_subdirectory_subparser.add_argument('external_subdirectory', metavar='external_subdirectory', type=str,
                                                      help='add an external subdirectory to cmake')
+
+    add_external_subdirectory_subparser.add_argument('-ohf', '--override-home-folder', type=str, required=False,
+                                                     help='By default the home folder is the user folder, override it to this folder.')
+
     add_external_subdirectory_subparser.set_defaults(func=_run_add_external_subdirectory)
 
     # remove external subdirectories
@@ -3726,6 +3870,10 @@ def add_args(parser, subparsers) -> None:
     remove_external_subdirectory_subparser.add_argument('external_subdirectory', metavar='external_subdirectory',
                                                         type=str,
                                                         help='remove external subdirectory from cmake')
+
+    remove_external_subdirectory_subparser.add_argument('-ohf', '--override-home-folder', type=str, required=False,
+                                                        help='By default the home folder is the user folder, override it to this folder.')
+
     remove_external_subdirectory_subparser.set_defaults(func=_run_remove_external_subdirectory)
 
     # add gems to cmake
@@ -3736,6 +3884,10 @@ def add_args(parser, subparsers) -> None:
                        help='The path to the gem.')
     group.add_argument('-gn', '--gem-name', type=str, required=False,
                        help='The name of the gem.')
+
+    add_gem_to_cmake_subparser.add_argument('-ohf', '--override-home-folder', type=str, required=False,
+                                            help='By default the home folder is the user folder, override it to this folder.')
+
     add_gem_to_cmake_subparser.set_defaults(func=_run_add_gem_to_cmake)
 
     # remove gems from cmake
@@ -3746,6 +3898,10 @@ def add_args(parser, subparsers) -> None:
                        help='The path to the gem.')
     group.add_argument('-gn', '--gem-name', type=str, required=False,
                        help='The name of the gem.')
+
+    remove_gem_from_cmake_subparser.add_argument('-ohf', '--override-home-folder', type=str, required=False,
+                                                 help='By default the home folder is the user folder, override it to this folder.')
+
     remove_gem_from_cmake_subparser.set_defaults(func=_run_remove_gem_from_cmake)
 
     # add a gem to a project
@@ -3781,6 +3937,10 @@ def add_args(parser, subparsers) -> None:
     add_gem_subparser.add_argument('-a', '--add-to-cmake', type=bool, required=False,
                                    default=True,
                                    help='Automatically call add-gem-to-cmake.')
+
+    add_gem_subparser.add_argument('-ohf', '--override-home-folder', type=str, required=False,
+                                   help='By default the home folder is the user folder, override it to this folder.')
+
     add_gem_subparser.set_defaults(func=_run_add_gem_to_project)
 
     # remove a gem from a project
@@ -3816,6 +3976,10 @@ def add_args(parser, subparsers) -> None:
     remove_gem_subparser.add_argument('-r', '--remove-from-cmake', type=bool, required=False,
                                       default=False,
                                       help='Automatically call remove-from-cmake.')
+
+    remove_gem_subparser.add_argument('-ohf', '--override-home-folder', type=str, required=False,
+                                      help='By default the home folder is the user folder, override it to this folder.')
+
     remove_gem_subparser.set_defaults(func=_run_remove_gem_from_project)
 
     # sha256

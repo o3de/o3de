@@ -22,18 +22,36 @@ namespace AZ::Utils
         ::MessageBox(0, message, title, MB_OK | MB_ICONERROR);
     }
 
-    AZ::IO::FixedMaxPathString GetO3deManifestDirectory()
+    AZ::IO::FixedMaxPath overrideHomeDirectory;
+
+    void OverrideHomeDirectory(const AZ::IO::PathView& path)
     {
+        overrideHomeDirectory = path;
+    }
+
+    AZ::IO::FixedMaxPathString GetHomeDirectory()
+    {
+        if (!overrideHomeDirectory.empty())
+        {
+            return overrideHomeDirectory.Native();
+        }
+
         char userProfileBuffer[AZ::IO::MaxPathLength]{};
         size_t variableSize = 0;
         auto err = getenv_s(&variableSize, userProfileBuffer, AZ::IO::MaxPathLength, "USERPROFILE");
         if (!err)
         {
             AZ::IO::FixedMaxPath path{ userProfileBuffer };
-            path /= ".o3de";
             return path.Native();
         }
 
         return {};
+    }
+
+    AZ::IO::FixedMaxPathString GetO3deManifestDirectory()
+    {
+        AZ::IO::FixedMaxPath path = GetHomeDirectory();
+        path /= ".o3de";
+        return path.Native();
     }
 } // namespace AZ::Utils

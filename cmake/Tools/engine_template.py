@@ -227,7 +227,8 @@ def _execute_restricted_template_json(json_data: dict,
     # for each createDirectory entry, transform the folder name
     for create_directory in json_data['createDirectories']:
         # construct the new folder name
-        new_dir = f"{destination_restricted_path}/{restricted_platform}/{destination_restricted_platform_relative_path}/{destination_name}/{create_directory['dir']}".replace('//', '/')
+        new_dir = f"{destination_restricted_path}/{restricted_platform}/{destination_restricted_platform_relative_path}/{destination_name}/{create_directory['dir']}".replace(
+            '//', '/')
         if keep_restricted_in_instance:
             new_dir = f"{destination_path}/{create_directory['origin']}".replace('//', '/')
 
@@ -241,7 +242,8 @@ def _execute_restricted_template_json(json_data: dict,
     # regular copy if not templated
     for copy_file in json_data['copyFiles']:
         # construct the input file name
-        in_file = f"{template_restricted_path}/{restricted_platform}/{template_restricted_platform_relative_path}/{template_name}/Template/{copy_file['file']}".replace('//', '/')
+        in_file = f"{template_restricted_path}/{restricted_platform}/{template_restricted_platform_relative_path}/{template_name}/Template/{copy_file['file']}".replace(
+            '//', '/')
 
         # the file can be marked as optional, if it is and it does not exist skip
         if copy_file['isOptional'] and copy_file['isOptional'] == 'true':
@@ -249,7 +251,8 @@ def _execute_restricted_template_json(json_data: dict,
                 continue
 
         # construct the output file name
-        out_file = f"{destination_restricted_path}/{restricted_platform}/{destination_restricted_platform_relative_path}/{destination_name}/{copy_file['file']}".replace('//', '/')
+        out_file = f"{destination_restricted_path}/{restricted_platform}/{destination_restricted_platform_relative_path}/{destination_name}/{copy_file['file']}".replace(
+            '//', '/')
         if keep_restricted_in_instance:
             out_file = f"{destination_path}/{copy_file['origin']}".replace('//', '/')
 
@@ -349,7 +352,9 @@ def _instantiate_template(template_json_data: dict,
 def create_template(source_path: str,
                     template_path: str,
                     source_restricted_path: str = None,
+                    source_restricted_name: str = None,
                     template_restricted_path: str = None,
+                    template_restricted_name: str = None,
                     source_restricted_platform_relative_path: str = None,
                     template_restricted_platform_relative_path: str = None,
                     keep_restricted_in_template: bool = False,
@@ -361,7 +366,9 @@ def create_template(source_path: str,
     :param source_path: The path to the source that you want to make into a template
     :param template_path: the path of the template to create, can be absolute or relative to default templates path
     :param source_restricted_path: path to the source restricted folder
+    :param source_restricted_name: name of the source restricted folder
     :param template_restricted_path: path to the templates restricted folder
+    :param template_restricted_name: name of the templates restricted folder
     :param source_restricted_platform_relative_path: any path after the platform in the source restricted
     :param template_restricted_platform_relative_path: any path after the platform in the template restricted
     :param replace: optional list of strings uses to make templated parameters out of concrete names. X->Y pairs
@@ -411,6 +418,9 @@ def create_template(source_path: str,
         logger.error(f'Template path cannot be a restricted name. {template_name}')
         return 1
 
+    if source_restricted_name and not source_restricted_path:
+        source_restricted_path = registration.get_registered(restricted_name=source_restricted_name)
+
     # source_restricted_path
     if source_restricted_path:
         source_restricted_path = source_restricted_path.replace('\\', '/')
@@ -438,8 +448,13 @@ def create_template(source_path: str,
             logger.error(f'Source restricted path {source_restricted_path} is not a folder.')
             return 1
 
+    if template_restricted_name and not template_restricted_path:
+        template_restricted_path = registration.get_registered(restricted_name=template_restricted_name)
+
+    if not template_restricted_name:
+        template_restricted_name = template_name
+
     # template_restricted_path
-    template_restricted_name = template_name
     if template_restricted_path:
         template_restricted_path = template_restricted_path.replace('\\', '/')
         if not os.path.isabs(template_restricted_path):
@@ -905,7 +920,8 @@ def create_template(source_path: str,
     json_data = {}
     json_data.update({'template_name': template_name})
     json_data.update({'origin': f'The primary repo for {template_name} goes here: i.e. http://www.mydomain.com'})
-    json_data.update({'license': f'What license {template_name} uses goes here: i.e. https://opensource.org/licenses/MIT'})
+    json_data.update(
+        {'license': f'What license {template_name} uses goes here: i.e. https://opensource.org/licenses/MIT'})
     json_data.update({'display_name': template_name})
     json_data.update({'summary': f"A short description of {template_name}."})
     json_data.update({'canonical_tags': []})
@@ -949,8 +965,10 @@ def create_template(source_path: str,
 
             json_data = {}
             json_data.update({'template_name': template_name})
-            json_data.update({'origin': f'The primary repo for {template_name} goes here: i.e. http://www.mydomain.com'})
-            json_data.update({'license': f'What license {template_name} uses goes here: i.e. https://opensource.org/licenses/MIT'})
+            json_data.update(
+                {'origin': f'The primary repo for {template_name} goes here: i.e. http://www.mydomain.com'})
+            json_data.update(
+                {'license': f'What license {template_name} uses goes here: i.e. https://opensource.org/licenses/MIT'})
             json_data.update({'display_name': template_name})
             json_data.update({'summary': f"A short description of {template_name}."})
             json_data.update({'canonical_tags': []})
@@ -1355,7 +1373,7 @@ def create_project(project_path: str,
     if not template_path and not template_name:
         template_name = 'DefaultProject'
 
-    if template_name:
+    if template_name and not template_path:
         template_path = registration.get_registered(template_name=template_name)
 
     if not os.path.isdir(template_path):
@@ -1404,7 +1422,7 @@ def create_project(project_path: str,
         # If they don't then we error out. If supplied but not present in the template we warn and use it.
         # If not supplied we set what's in the template. If not supplied and not in the template we continue
         # on as if there is no template restricted files.
-        if template_restricted_name:
+        if template_restricted_name and not template_restricted_path:
             # The user specified a --template-restricted-name
             try:
                 template_json_restricted_name = template_json_data['restricted']
@@ -1514,7 +1532,7 @@ def create_project(project_path: str,
         return 1
 
     # project restricted name
-    if project_restricted_name:
+    if project_restricted_name and not project_restricted_path:
         project_restricted_path = registration.get_registered(restricted_name=project_restricted_name)
 
     # project restricted path
@@ -1732,10 +1750,10 @@ def create_gem(gem_path: str,
         logger.error(f'Template Restricted Name and Template Restricted Path provided, these are mutually exclusive.')
         return 1
 
-    if not template_name:
+    if not template_name and not template_path:
         template_name = 'DefaultGem'
 
-    if template_name:
+    if template_name and not template_path:
         template_path = registration.get_registered(template_name=template_name)
 
     if not os.path.isdir(template_path):
@@ -1783,7 +1801,7 @@ def create_gem(gem_path: str,
         # if it has one and see if they match. If they match then we don't have a problem. If they don't then we error
         # out. If supplied but not present in the template we warn and use it. If not supplied we set what's in the
         # template. If not supplied and not in the template we continue on as if there is no template restricted files.
-        if template_restricted_name:
+        if template_restricted_name and not template_restricted_path:
             # The user specified a --template-restricted-name
             try:
                 template_json_restricted_name = template_json_data['restricted']
@@ -1898,7 +1916,7 @@ def create_gem(gem_path: str,
             gem_restricted_name = template_json_restricted_name
 
     # gem restricted name
-    if gem_restricted_name:
+    if gem_restricted_name and not gem_restricted_path:
         gem_restricted_path = registration.get_registered(restricted_name=gem_restricted_name)
 
     # gem restricted path
@@ -2060,7 +2078,9 @@ def _run_create_template(args: argparse) -> int:
     return create_template(args.source_path,
                            args.template_path,
                            args.source_restricted_path,
+                           args.source_restricted_name,
                            args.template_restricted_path,
+                           args.template_restricted_name,
                            args.source_restricted_platform_relative_path,
                            args.template_restricted_platform_relative_path,
                            args.keep_restricted_in_template,
@@ -2137,12 +2157,24 @@ def add_args(parser, subparsers) -> None:
     create_template_subparser.add_argument('-tp', '--template-path', type=str, required=False,
                                            help='The path to the template to create, can be absolute or relative'
                                                 ' to default templates path')
-    create_template_subparser.add_argument('-srp', '--source-restricted-path', type=str, required=False,
-                                           default=None,
-                                           help='The path to the source restricted folder.')
-    create_template_subparser.add_argument('-trp', '--template-restricted-path', type=str, required=False,
-                                           default=None,
-                                           help='The path to the templates restricted folder.')
+    group = create_template_subparser.add_mutually_exclusive_group(required=True)
+    group.add_argument('-srp', '--source-restricted-path', type=str, required=False,
+                       default=None,
+                       help='The path to the source restricted folder.')
+    group.add_argument('-srn', '--source-restricted-name', type=str, required=False,
+                       default=None,
+                       help='The name of the source restricted folder. If supplied this will resolve'
+                            ' the --source-restricted-path.')
+
+    group = create_template_subparser.add_mutually_exclusive_group(required=True)
+    group.add_argument('-trp', '--template-restricted-path', type=str, required=False,
+                       default=None,
+                       help='The path to the templates restricted folder.')
+    group.add_argument('-trn', '--template-restricted-name', type=str, required=False,
+                       default=None,
+                       help='The name of the templates restricted folder. If supplied this will resolve'
+                            ' the --template-restricted-path.')
+
     create_template_subparser.add_argument('-srprp', '--source-restricted-platform-relative-path', type=str,
                                            required=False,
                                            default=None,
@@ -2166,10 +2198,10 @@ def add_args(parser, subparsers) -> None:
                                                 ' False so it will create a restricted folder by default')
     create_template_subparser.add_argument('-kl', '--keep-license-text', action='store_true',
                                            default=False,
-                                           help='Should license in the template files text be kept in the instantiation,'
-                                                ' default is False, so will not keep license text by default.'
-                                                ' License text is defined as all lines of text starting on a line'
-                                                ' with {BEGIN_LICENSE} and ending line {END_LICENSE}.')
+                                           help='Should license in the template files text be kept in the'
+                                                ' instantiation, default is False, so will not keep license text'
+                                                ' by default. License text is defined as all lines of text starting'
+                                                ' on a line with {BEGIN_LICENSE} and ending line {END_LICENSE}.')
     create_template_subparser.add_argument('-r', '--replace', type=str, required=False,
                                            nargs='*',
                                            help='String that specifies A->B replacement pairs.'
@@ -2195,7 +2227,8 @@ def add_args(parser, subparsers) -> None:
                             'Ex. C:/o3de/Template/TestTemplate'
                             'TestTemplate = <template_name>')
     group.add_argument('-tn', '--template-name', type=str, required=False,
-                       help='The name to the registered template you want to instantiate.')
+                       help='The name to the registered template you want to instantiate. If supplied this will'
+                            ' resolve the --template-path.')
 
     group = create_from_template_subparser.add_mutually_exclusive_group(required=True)
     group.add_argument('-drp', '--destination-restricted-path', type=str, required=False,
@@ -2205,7 +2238,7 @@ def add_args(parser, subparsers) -> None:
     group.add_argument('-drn', '--destination-restricted-name', type=str, required=False,
                        default=None,
                        help='The name the registered restricted path where the restricted files'
-                            ' will be written to.')
+                            ' will be written to. If supplied this will resolve the --destination-restricted-path.')
 
     group = create_from_template_subparser.add_mutually_exclusive_group(required=False)
     group.add_argument('-trp', '--template-restricted-path', type=str, required=False,
@@ -2213,7 +2246,8 @@ def add_args(parser, subparsers) -> None:
                        help='The template restricted path to read from if any')
     group.add_argument('-trn', '--template-restricted-name', type=str, required=False,
                        default=None,
-                       help='The name of the registered restricted path to read from if any.')
+                       help='The name of the registered restricted path to read from if any. If supplied this will'
+                            ' resolve the --template-restricted-path.')
 
     create_from_template_subparser.add_argument('-drprp', '--destination-restricted-platform-relative-path', type=str,
                                                 required=False,
@@ -2268,7 +2302,7 @@ def add_args(parser, subparsers) -> None:
     group.add_argument('-tn', '--template-name', type=str, required=False,
                        default=None,
                        help='The name the registered template you want to instance, defaults'
-                            ' to DefaultProject')
+                            ' to DefaultProject. If supplied this will resolve the --template-path.')
 
     group = create_project_subparser.add_mutually_exclusive_group(required=False)
     group.add_argument('-prp', '--project-restricted-path', type=str, required=False,
@@ -2277,7 +2311,8 @@ def add_args(parser, subparsers) -> None:
                             ' to the restricted="projects"')
     group.add_argument('-prn', '--project-restricted-name', type=str, required=False,
                        default=None,
-                       help='The name of the registered projects restricted path')
+                       help='The name of the registered projects restricted path. If supplied this will resolve'
+                            ' the --project-restricted-path.')
 
     group = create_project_subparser.add_mutually_exclusive_group(required=False)
     group.add_argument('-trp', '--template-restricted-path', type=str, required=False,
@@ -2286,7 +2321,8 @@ def add_args(parser, subparsers) -> None:
                             ' restricted="templates"')
     group.add_argument('-trn', '--template-restricted-name', type=str, required=False,
                        default=None,
-                       help='The name of the registered templates restricted path')
+                       help='The name of the registered templates restricted path. If supplied this will resolve'
+                            ' the --template-restricted-path.')
 
     create_project_subparser.add_argument('-prprp', '--project-restricted-platform-relative-path', type=str,
                                           required=False,
@@ -2350,7 +2386,7 @@ def add_args(parser, subparsers) -> None:
     group.add_argument('-tn', '--template-name', type=str, required=False,
                        default=None,
                        help='The name of the registered template you want to instance, defaults'
-                            ' to DefaultGem.')
+                            ' to DefaultGem. If supplied this will resolve the --template-path.')
 
     group = create_gem_subparser.add_mutually_exclusive_group(required=False)
     group.add_argument('-grp', '--gem-restricted-path', type=str, required=False,
@@ -2360,7 +2396,8 @@ def add_args(parser, subparsers) -> None:
     group.add_argument('-grn', '--gem-restricted-name', type=str, required=False,
                        default=None,
                        help='The path to the gem restricted to write to folder if any, can be'
-                            'absolute or dev root relative, default is dev root/restricted.')
+                            'absolute or dev root relative, default is dev root/restricted. If supplied'
+                            ' this will resolve the --gem-restricted-path.')
 
     group = create_gem_subparser.add_mutually_exclusive_group(required=False)
     group.add_argument('-trp', '--template-restricted-path', type=str, required=False,
@@ -2369,7 +2406,8 @@ def add_args(parser, subparsers) -> None:
                             ' the restricted="templates"')
     group.add_argument('-trn', '--template-restricted-name', type=str, required=False,
                        default=None,
-                       help='The name of the registered templates restricted path.')
+                       help='The name of the registered templates restricted path. If supplied'
+                            ' this will resolve the --template-restricted-path.')
 
     create_gem_subparser.add_argument('-grprp', '--gem-restricted-platform-relative-path', type=str,
                                       required=False,

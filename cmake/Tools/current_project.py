@@ -33,18 +33,14 @@ def set_current_project(engine_name: str or None,
     :param project_path: the path of the project you want to set
     :return: 0 for success or non 0 failure code
     """
-    if engine_path and engine_path:
-        logger.error(f'Engine Name and Engine Path provided, these are mutually exclusive.')
-        return 1
-
     if project_path and project_name:
         logger.error(f'Project Name and Project Path provided, these are mutually exclusive.')
         return 1
 
-    if not engine_path and not engine_path:
+    if not engine_name and not engine_path:
         engine_path = registration.get_this_engine_path()
 
-    if engine_name:
+    if engine_name and not engine_path:
         engine_path = registration.get_registered(engine_name=engine_name)
 
     if not engine_path:
@@ -62,7 +58,7 @@ def set_current_project(engine_name: str or None,
         logger.error(f'Bootstrap file {bootstrap_cfg_file} does not exist.')
         return 1
 
-    if project_name:
+    if project_name and not project_path:
         project_path = registration.get_registered(project_name=project_name)
 
     if not project_path:
@@ -103,11 +99,11 @@ def get_current_project(engine_name: str or None,
     :param engine_path: the path of the engine, default is this engine
     :return: project_path or None on failure
     """
-    if engine_path and engine_path:
+    if engine_name and engine_path:
         logger.error(f'Engine Name and Engine Path provided, these are mutually exclusive.')
         return 1
 
-    if not engine_path and not engine_path:
+    if not engine_name and not engine_path:
         engine_path = registration.get_this_engine_path()
 
     if engine_name:
@@ -152,6 +148,9 @@ def _run_get_current_project(args: argparse) -> int:
 
 
 def _run_set_current_project(args: argparse) -> int:
+    if args.override_home_folder:
+        registration.override_home_folder = args.override_home_folder
+
     return set_current_project(args.engine_name,
                                args.engine_path,
                                args.project_name,
@@ -172,22 +171,28 @@ def add_args(parser, subparsers) -> None:
     get_current_project_subparser = subparsers.add_parser('get-current-project')
     group = get_current_project_subparser.add_mutually_exclusive_group(required=False)
     group.add_argument('-en', '--engine-name', required=False,
-                       help='The name of the engine')
+                       help='The name of the engine. If supplied this with resolve the --engine-path.')
     group.add_argument('-ep', '--engine-path', required=False,
-                       help='The path to the engine')
+                       help='The path to the engine.')
+
     get_current_project_subparser.set_defaults(func=_run_get_current_project)
+
 
     set_current_project_subparser = subparsers.add_parser('set-current-project')
     group = set_current_project_subparser.add_mutually_exclusive_group(required=False)
     group.add_argument('-en', '--engine-name', required=False,
-                       help='The name of the engine')
+                       help='The name of the engine. If supplied this with resolve the --engine-path.')
     group.add_argument('-ep', '--engine-path', required=False,
                        help='The path to the engine')
     group = set_current_project_subparser.add_mutually_exclusive_group(required=True)
     group.add_argument('-pn', '--project-name', required=False,
-                       help='The name of the project')
+                       help='The name of the project. If supplied this with resolve the --project-path.')
     group.add_argument('-pp', '--project-path', required=False,
                        help='The path to the project')
+
+    set_current_project_subparser.add_argument('-ohf', '--override-home-folder', type=str, required=False,
+                       help='By default the home folder is the user folder, override it to this folder.')
+
     set_current_project_subparser.set_defaults(func=_run_set_current_project)
 
 

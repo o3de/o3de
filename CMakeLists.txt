@@ -45,8 +45,8 @@ o3de_engine_name(${o3de_engine_json} o3de_engine_name)
 o3de_restricted_path(${o3de_engine_json} o3de_engine_restricted_path)
 message(STATUS "O3DE Engine Name: ${o3de_engine_name}")
 message(STATUS "O3DE Engine Path: ${o3de_engine_path}")
-if(${o3de_engine_restricted_path})
-    message(STATUS "Engine Restricted Path: ${o3de_engine_restricted_path}")
+if(o3de_engine_restricted_path)
+    message(STATUS "O3DE Engine Restricted Path: ${o3de_engine_restricted_path}")
 endif()
 
 # add the engines cmake folder to the CMAKE_MODULE_PATH
@@ -94,25 +94,8 @@ set(enabled_platforms
     ${PAL_PLATFORM_NAME}
     ${LY_PAL_TOOLS_ENABLED})
 
-################################################################################
-# Add each restricted platform in the engines restricted folder
-# If the enabled restricted platform does not have a folder add one. If the
-# restricted platform folder does not have a CMakeLists.txt, create one so the
-# add_subdirectory on the external folder does not fail.
-################################################################################
-foreach(restricted_platform ${PAL_RESTRICTED_PLATFORMS})
-    if(restricted_platform IN_LIST enabled_platforms)
-        set(o3de_engine_restricted_platform_folder ${o3de_engine_restricted_path}/${restricted_platform})
-        if(NOT EXISTS ${o3de_engine_restricted_platform_folder})
-            file(MAKE_DIRECTORY ${o3de_engine_restricted_platform_folder})
-        endif()
-        set(o3de_engine_restricted_platform_folder_cmakelists ${o3de_engine_restricted_platform_folder}/CMakeLists.txt)
-        if(NOT EXISTS ${o3de_engine_restricted_platform_folder_cmakelists})
-            file(TOUCH ${o3de_engine_restricted_platform_folder_cmakelists})
-        endif()
-        list(APPEND LY_EXTERNAL_SUBDIRS ${o3de_engine_restricted_platform_folder})
-    endif()
-endforeach()
+# Add any engine restricted platforms as external subdirs
+o3de_add_engine_restricted_platform_external_subdirs()
 
 # Recurse into directory of general python test scripts
 add_subdirectory(ctest_scripts)
