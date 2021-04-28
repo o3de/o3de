@@ -12,16 +12,18 @@
 
 #pragma once
 
-#include <Source/MultiplayerTypes.h>
+#include <Include/MultiplayerTypes.h>
 #include <Source/NetworkEntity/NetworkEntityHandle.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/EBus/Event.h>
+#include <AzCore/Asset/AssetCommon.h>
 
 namespace Multiplayer
 {
     class NetworkEntityTracker;
     class NetworkEntityAuthorityTracker;
     class NetworkEntityRpcMessage;
+    class MultiplayerComponentRegistry;
 
     using EntityExitDomainEvent = AZ::Event<const ConstNetworkEntityHandle&>;
     using ControllersActivatedEvent = AZ::Event<const ConstNetworkEntityHandle&, EntityIsMigrating>;
@@ -35,6 +37,7 @@ namespace Multiplayer
         AZ_RTTI(INetworkEntityManager, "{109759DE-9492-439C-A0B1-AE46E6FD029C}");
 
         using OwnedEntitySet = AZStd::unordered_set<ConstNetworkEntityHandle>;
+        using EntityList = AZStd::vector<NetworkEntityHandle>;
 
         virtual ~INetworkEntityManager() = default;
 
@@ -46,11 +49,18 @@ namespace Multiplayer
         //! @return the NetworkEntityAuthorityTracker for this INetworkEntityManager instance
         virtual NetworkEntityAuthorityTracker* GetNetworkEntityAuthorityTracker() = 0;
 
+        //! Returns the MultiplayerComponentRegistry for this INetworkEntityManager instance.
+        //! @return the MultiplayerComponentRegistry for this INetworkEntityManager instance
+        virtual MultiplayerComponentRegistry* GetMultiplayerComponentRegistry() = 0;
+
         //! Returns the HostId for this INetworkEntityManager instance.
         //! @return the HostId for this INetworkEntityManager instance
         virtual HostId GetHostId() const = 0;
 
-        // TODO: Spawn methods for entities within slices/prefabs/levels
+        //! Creates new entities of the given archetype
+        //! @param prefabEntryId the name of the spawnable to spawn
+        virtual EntityList CreateEntitiesImmediate(
+            const PrefabEntityId& prefabEntryId, NetEntityId netEntityId, NetEntityRole netEntityRole, const AZ::Transform& transform) = 0;
 
         //! Returns an ConstEntityPtr for the provided entityId.
         //! @param netEntityId the netEntityId to get an ConstEntityPtr for
@@ -138,5 +148,10 @@ namespace Multiplayer
     inline NetworkEntityAuthorityTracker* GetNetworkEntityAuthorityTracker()
     {
         return GetNetworkEntityManager()->GetNetworkEntityAuthorityTracker();
+    }
+
+    inline MultiplayerComponentRegistry* GetMultiplayerComponentRegistry()
+    {
+        return GetNetworkEntityManager()->GetMultiplayerComponentRegistry();
     }
 }

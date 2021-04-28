@@ -31,6 +31,15 @@ namespace AzFramework
     }
 
     template <class TViewportControllerInstance, ViewportControllerPriority Priority>
+    void MultiViewportController<TViewportControllerInstance, Priority>::ResetInputChannels()
+    {
+        for (auto instanceIt = m_instances.begin(); instanceIt != m_instances.end(); ++instanceIt)
+        {
+            instanceIt->second->ResetInputChannels();
+        }
+    }
+
+    template <class TViewportControllerInstance, ViewportControllerPriority Priority>
     void MultiViewportController<TViewportControllerInstance, Priority>::UpdateViewport(const ViewportControllerUpdateEvent& event)
     {
         auto instanceIt = m_instances.find(event.m_viewportId);

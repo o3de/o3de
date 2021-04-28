@@ -34,7 +34,6 @@
 #include "Rendering/EditorEnvProbeComponent.h"
 #include "Rendering/EditorHighQualityShadowComponent.h"
 #include "Rendering/EditorMeshComponent.h"
-#include "Rendering/EditorFogVolumeComponent.h"
 #include "Rendering/EditorGeomCacheComponent.h"
 #include "Scripting/EditorLookAtComponent.h"
 #include "Scripting/EditorRandomTimedSpawnerComponent.h"
@@ -104,7 +103,6 @@ namespace LmbrCentral
             EditorCommentComponent::CreateDescriptor(),
             EditorNavigationAreaComponent::CreateDescriptor(),
             EditorNavigationSeedComponent::CreateDescriptor(),
-            EditorFogVolumeComponent::CreateDescriptor(),
             EditorRandomTimedSpawnerComponent::CreateDescriptor(),
             EditorGeometryCacheComponent::CreateDescriptor(),
             EditorSpawnerComponent::CreateDescriptor(),            

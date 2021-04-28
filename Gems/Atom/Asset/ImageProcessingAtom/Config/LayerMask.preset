@@ -9,7 +9,8 @@
             "SourceColor": "Linear",
             "DestColor": "Linear",
             "FileMasks": [
-                "_layers"
+                "_layers",
+                "_rgbmask"
             ],
             "PixelFormat": "R8G8B8X8"
         },
@@ -20,7 +21,8 @@
                 "SourceColor": "Linear",
                 "DestColor": "Linear",
                 "FileMasks": [
-                    "_layers"
+                    "_layers",
+                    "_rgbmask"
                 ],
                 "PixelFormat": "R8G8B8X8"
             },
@@ -30,7 +32,8 @@
                 "SourceColor": "Linear",
                 "DestColor": "Linear",
                 "FileMasks": [
-                    "_layers"
+                    "_layers",
+                    "_rgbmask"
                 ],
                 "PixelFormat": "R8G8B8X8"
             },
@@ -40,7 +43,8 @@
                 "SourceColor": "Linear",
                 "DestColor": "Linear",
                 "FileMasks": [
-                    "_layers"
+                    "_layers",
+                    "_rgbmask"
                 ],
                 "PixelFormat": "R8G8B8X8"
             },
@@ -50,7 +54,8 @@
                 "SourceColor": "Linear",
                 "DestColor": "Linear",
                 "FileMasks": [
-                    "_layers"
+                    "_layers",
+                    "_rgbmask"
                 ],
                 "PixelFormat": "R8G8B8X8"
             }

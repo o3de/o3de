@@ -73,8 +73,6 @@ namespace ScriptCanvas
             
             void ConfigureSlots() override;
 
-            AZ::Outcome<AZStd::pair<size_t, size_t>> FindMethodAndInputIndexOfSlot(const SlotId& slotID) const;
-
             AZ::Outcome<const AZ::BehaviorClass*, AZStd::string> GetBehaviorContextClass() const;
 
             ConstSlotsOutcome GetBehaviorContextOutName(const Slot& inSlot) const;

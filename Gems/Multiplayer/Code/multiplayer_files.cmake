@@ -11,11 +11,13 @@
 
 set(FILES
     Include/IMultiplayer.h
+    Include/MultiplayerStats.cpp
+    Include/MultiplayerStats.h
+    Include/MultiplayerTypes.h
     Source/Multiplayer_precompiled.cpp
     Source/Multiplayer_precompiled.h
     Source/MultiplayerSystemComponent.cpp
     Source/MultiplayerSystemComponent.h
-    Source/MultiplayerTypes.h
     Source/AutoGen/AutoComponent_Header.jinja
     Source/AutoGen/AutoComponent_Source.jinja
     Source/AutoGen/AutoComponent_Common.jinja
@@ -26,6 +28,8 @@ set(FILES
     Source/AutoGen/NetworkTransformComponent.AutoComponent.xml
     Source/Components/LocalPredictionPlayerInputComponent.cpp
     Source/Components/LocalPredictionPlayerInputComponent.h
+    Source/Components/MultiplayerComponentRegistry.cpp
+    Source/Components/MultiplayerComponentRegistry.h
     Source/Components/MultiplayerComponent.cpp
     Source/Components/MultiplayerComponent.h
     Source/Components/MultiplayerController.cpp
@@ -63,6 +67,8 @@ set(FILES
     Source/NetworkEntity/NetworkEntityHandle.inl
     Source/NetworkEntity/NetworkEntityManager.cpp
     Source/NetworkEntity/NetworkEntityManager.h
+    Source/NetworkEntity/NetworkSpawnableLibrary.cpp
+    Source/NetworkEntity/NetworkSpawnableLibrary.h
     Source/NetworkEntity/NetworkEntityRpcMessage.cpp
     Source/NetworkEntity/NetworkEntityRpcMessage.h
     Source/NetworkEntity/NetworkEntityTracker.cpp
@@ -84,6 +90,10 @@ set(FILES
     Source/NetworkTime/NetworkTime.h
     Source/NetworkTime/RewindableObject.h
     Source/NetworkTime/RewindableObject.inl
+    Source/Pipeline/NetBindMarkerComponent.cpp
+    Source/Pipeline/NetBindMarkerComponent.h
+    Source/Pipeline/NetworkSpawnableHolderComponent.cpp
+    Source/Pipeline/NetworkSpawnableHolderComponent.h
     Source/ReplicationWindows/NullReplicationWindow.cpp
     Source/ReplicationWindows/NullReplicationWindow.h
     Source/ReplicationWindows/IReplicationWindow.h

@@ -16,6 +16,7 @@
 #include <AzCore/Debug/ProfilerBus.h>
 #include <AzCore/std/containers/variant.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzFramework/Physics/Character.h>
 #include <AzFramework/Physics/Collision/CollisionEvents.h>
 #include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
 #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
@@ -27,6 +28,8 @@
 #include <Common/PhysXSceneQueryHelpers.h>
 #include <PhysX/PhysXLocks.h>
 #include <PhysX/Utils.h>
+#include <PhysXCharacters/API/CharacterController.h>
+#include <PhysXCharacters/API/CharacterUtils.h>
 #include <System/PhysXSystem.h>
 
 namespace PhysX
@@ -184,6 +187,33 @@ namespace PhysX
             }
             crc = AZ::Crc32(newBody, sizeof(*newBody));
             return newBody;
+        }
+
+        AzPhysics::SimulatedBody* CreateCharacterBody(PhysXScene* scene,
+            const Physics::CharacterConfiguration* characterConfig)
+        {
+            CharacterController* controller = Utils::Characters::CreateCharacterController(scene, *characterConfig);
+            if (controller == nullptr)
+            {
+                AZ_Error("PhysXScene", false, "Failed to create character controller.");
+                return nullptr;
+            }
+            controller->EnablePhysics(*characterConfig);
+            controller->SetBasePosition(characterConfig->m_position);
+
+            for (auto shape : characterConfig->m_colliders)
+            {
+                controller->AttachShape(shape);
+            }
+
+            return controller;
+        }
+
+        AzPhysics::SimulatedBody* CreateRagdollBody(PhysXScene* scene,
+            const Physics::RagdollConfiguration* ragdollConfig)
+        {
+            return Utils::Characters::CreateRagdoll(const_cast<Physics::RagdollConfiguration&>(*ragdollConfig),
+                scene->GetSceneHandle());
         }
 
         //helper to perform a ray cast
@@ -595,6 +625,19 @@ namespace PhysX
             newBody = Internal::CreateSimulatedBody<StaticRigidBody, AzPhysics::StaticRigidBodyConfiguration>(
                 azdynamic_cast<const AzPhysics::StaticRigidBodyConfiguration*>(simulatedBodyConfig), newBodyCrc);
         }
+        else if (azrtti_istypeof<Physics::CharacterConfiguration>(simulatedBodyConfig))
+        {
+            newBody = Internal::CreateCharacterBody(this, azdynamic_cast<const Physics::CharacterConfiguration*>(simulatedBodyConfig));
+        }
+        else if (azrtti_istypeof<Physics::RagdollConfiguration>(simulatedBodyConfig))
+        {
+            newBody = Internal::CreateRagdollBody(this, azdynamic_cast<const Physics::RagdollConfiguration*>(simulatedBodyConfig));
+        }
+        else
+        {
+            AZ_Warning("PhysXScene", false, "Unknown SimulatedBodyConfiguration.");
+            return AzPhysics::InvalidSimulatedBodyHandle;
+        }
 
         if (newBody != nullptr)
         {
@@ -621,8 +664,11 @@ namespace PhysX
             newBody->m_bodyHandle = newBodyHandle;
             m_simulatedBodyAddedEvent.Signal(m_sceneHandle, newBodyHandle);
 
-            // Enable simulation by default (not signaling OnSimulationBodySimulationEnabled event) 
-            EnableSimulationOfBodyInternal(*newBody);
+            // Enable simulation by default (not signaling OnSimulationBodySimulationEnabled event)
+            if (simulatedBodyConfig->m_startSimulationEnabled)
+            {
+                EnableSimulationOfBodyInternal(*newBody);
+            }
 
             return newBodyHandle;
         }
@@ -850,20 +896,25 @@ namespace PhysX
 
     void PhysXScene::EnableSimulationOfBodyInternal(AzPhysics::SimulatedBody& body)
     {
-        auto pxActor = static_cast<physx::PxActor*>(body.GetNativePointer());
-        AZ_Assert(pxActor, "Simulated Body doesn't have a valid physx actor");
-
+        //character controller is a special actor and only needs the m_simulating flag set, 
+        if (!azrtti_istypeof<PhysX::CharacterController>(body) &&
+            !azrtti_istypeof<PhysX::Ragdoll>(body))
         {
-            PHYSX_SCENE_WRITE_LOCK(m_pxScene);
-            m_pxScene->addActor(*pxActor);
-        }
+            auto pxActor = static_cast<physx::PxActor*>(body.GetNativePointer());
+            AZ_Assert(pxActor, "Simulated Body doesn't have a valid physx actor");
 
-        if (azrtti_istypeof<PhysX::RigidBody>(body))
-        {
-            auto rigidBody = azdynamic_cast<PhysX::RigidBody*>(&body);
-            if (rigidBody->ShouldStartAsleep())
             {
-                rigidBody->ForceAsleep();
+                PHYSX_SCENE_WRITE_LOCK(m_pxScene);
+                m_pxScene->addActor(*pxActor);
+            }
+
+            if (azrtti_istypeof<PhysX::RigidBody>(body))
+            {
+                auto rigidBody = azdynamic_cast<PhysX::RigidBody*>(&body);
+                if (rigidBody->ShouldStartAsleep())
+                {
+                    rigidBody->ForceAsleep();
+                }
             }
         }
 
@@ -872,14 +923,18 @@ namespace PhysX
 
     void PhysXScene::DisableSimulationOfBodyInternal(AzPhysics::SimulatedBody& body)
     {
-        auto pxActor = static_cast<physx::PxActor*>(body.GetNativePointer());
-        AZ_Assert(pxActor, "Simulated Body doesn't have a valid physx actor");
-
+        //character controller is a special actor and only needs the m_simulating flag set, 
+        if (!azrtti_istypeof<PhysX::CharacterController>(body) &&
+            !azrtti_istypeof<PhysX::Ragdoll>(body))
         {
-            PHYSX_SCENE_WRITE_LOCK(m_pxScene);
-            m_pxScene->removeActor(*pxActor);
-        }
+            auto pxActor = static_cast<physx::PxActor*>(body.GetNativePointer());
+            AZ_Assert(pxActor, "Simulated Body doesn't have a valid physx actor");
 
+            {
+                PHYSX_SCENE_WRITE_LOCK(m_pxScene);
+                m_pxScene->removeActor(*pxActor);
+            }
+        }
         body.m_simulating = false;
     }
 
@@ -907,11 +962,6 @@ namespace PhysX
         return m_controllerManager;
     }
 
-    void PhysXScene::DeferDelete(AZStd::unique_ptr<AzPhysics::SimulatedBody> worldBody)
-    {
-        m_deferredDeletions_uniquePtrs.push_back(AZStd::move(worldBody));
-    }
-
     void* PhysXScene::GetNativePointer() const
     {
         return m_pxScene;
@@ -919,12 +969,14 @@ namespace PhysX
 
     void PhysXScene::ClearDeferedDeletions()
     {
-        for (auto& simulatedBody : m_deferredDeletions)
+        // swap the deletions in case the simulated body
+        // manages more bodies and removes them on destruction (ie. Ragdoll).
+        AZStd::vector<AzPhysics::SimulatedBody*> deletions;
+        deletions.swap(m_deferredDeletions);
+        for (auto* simulatedBody : deletions)
         {
             delete simulatedBody;
         }
-        m_deferredDeletions.clear();
-        m_deferredDeletions_uniquePtrs.clear();
     }
 
     void PhysXScene::ProcessTriggerEvents()

@@ -11,7 +11,7 @@
 
 set(FILES
     Source/Draw2d.cpp
-    Source/Draw2d.h
+    Include/LyShine/Draw2d.h
     Source/LyShine.cpp
     Source/LyShine.h
     Source/LyShineDebug.cpp

@@ -83,8 +83,8 @@ def C12868580_ForceRegion_SplineModifiedTransform():
     imports.init()
 
 
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     import itertools
     import azlmbr
@@ -175,5 +175,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C12868580_ForceRegion_SplineModifiedTransform)

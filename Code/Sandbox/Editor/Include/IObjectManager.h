@@ -24,7 +24,6 @@ class CUsedResources;
 class CSelectionGroup;
 class CObjectClassDesc;
 class CObjectArchive;
-class CObjectPhysicsManager;
 class CViewport;
 struct HitContext;
 enum class ImageRotationDegrees;
@@ -188,8 +187,6 @@ public:
     virtual void    SetSelection(const QString& name) = 0;
     //! Removes one of named selections.
     virtual void    RemoveSelection(const QString& name) = 0;
-    //! Checks for changes to the current selection and makes adjustments accordingly
-    virtual void    CheckAndFixSelection() = 0;
 
     //! Delete all objects in current selection group.
     virtual void DeleteSelection() = 0;
@@ -248,10 +245,6 @@ public:
     virtual bool IsCreateGameObjects() const = 0;
 
     virtual IGizmoManager* GetGizmoManager() = 0;
-
-    //////////////////////////////////////////////////////////////////////////
-    //! Get acess to object physics manager
-    virtual CObjectPhysicsManager* GetPhysicsManager() = 0;
 
     //////////////////////////////////////////////////////////////////////////
     //! Invalidate visibily settings of objects.

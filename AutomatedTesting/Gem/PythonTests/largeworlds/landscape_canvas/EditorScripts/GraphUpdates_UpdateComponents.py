@@ -38,10 +38,11 @@ import azlmbr.math as math
 import azlmbr.slice as slice
 import azlmbr.paths
 
+import editor_python_test_tools.hydra_editor_utils as hydra
+from editor_python_test_tools.editor_test_helper import EditorTestHelper
+
 sys.path.append(os.path.join(azlmbr.paths.devroot, 'AutomatedTesting', 'Gem', 'PythonTests'))
-import automatedtesting_shared.hydra_editor_utils as hydra
 import automatedtesting_shared.landscape_canvas_utils as lc
-from automatedtesting_shared.editor_test_helper import EditorTestHelper
 
 
 class TestGraphUpdatesUpdateComponents(EditorTestHelper):
