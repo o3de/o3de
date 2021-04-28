@@ -725,9 +725,11 @@ class AssetProcessor(object):
         test class rather than using the default logs folder which could contain any old data or be used by other
         runs of asset processor.
         """
-        if self._temp_log_root:
+        if self._temp_log_directory:
             logger.info(f'Cleaning up old log root at {self._temp_log_root}')
-            shutil.rmtree(self._temp_log_root, True)
+            # The finalizer will clean up the old temporary directory when the TemporaryDirectory() reference count
+            # hits 0
+            self._temp_log_directory = None
         self._temp_log_directory = tempfile.TemporaryDirectory()
         self._temp_log_root = self._temp_log_directory.name
         self._workspace.paths.set_ap_log_root(self._temp_log_root)
