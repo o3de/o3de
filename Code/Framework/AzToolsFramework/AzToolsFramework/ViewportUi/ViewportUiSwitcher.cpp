@@ -132,7 +132,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         if (auto buttonIt = AZStd::find_if(buttons.begin(), buttons.end(), found); buttonIt != buttons.end())
         {
             QString buttonName = ((*buttonIt)->m_name).c_str();
-            QIcon buttonIcon = QString(((*buttonIt)->m_icon).c_str());
+            QIcon buttonIcon = QIcon(QString(((*buttonIt)->m_icon).c_str()));
             m_activeButton->setIcon(buttonIcon);
             m_activeButton->setText(buttonName);
         }
