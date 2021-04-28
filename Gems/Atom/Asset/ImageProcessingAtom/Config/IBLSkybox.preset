@@ -27,7 +27,7 @@
         },
         "PlatformsPresets": {
             "es3": {
-            	"UUID": "{E6441EAC-9843-484B-8EFC-C03B2935B48D}",
+                "UUID": "{E6441EAC-9843-484B-8EFC-C03B2935B48D}",
                 "Name": "IBLSkybox",
                 "FileMasks": [
                     "_iblskyboxcm"
@@ -61,7 +61,7 @@
                 "MinTextureSize": 256,
                 "IsPowerOf2": true,
                 "CubemapSettings": {
-                	"RequiresConvolve": false,
+                    "RequiresConvolve": false,
                     "GenerateIBLSpecular": true,
                     "IBLSpecularPreset": "{908DA68C-97FB-4C4A-97BC-5A55F30F14FA}",
                     "GenerateIBLDiffuse": true,
@@ -69,7 +69,7 @@
                 }
             },
             "osx_gl": {
-            	"UUID": "{E6441EAC-9843-484B-8EFC-C03B2935B48D}",
+                "UUID": "{E6441EAC-9843-484B-8EFC-C03B2935B48D}",
                 "Name": "IBLSkybox",
                 "FileMasks": [
                     "_iblskyboxcm"

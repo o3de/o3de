@@ -130,7 +130,9 @@ namespace PhysX::Benchmarks
         //! @param colliderType, the collider type to use
         //! @param scene, the scene to spawn the characters controller into
         //! @param genSpawnPosFuncPtr - [optional] function pointer to allow caller to pick the spawn position
-        AZStd::vector<AZStd::unique_ptr<Physics::Character>> CreateCharacterControllers(int numCharacterControllers, CharacterConstants::CharacterSettings::ColliderType colliderType,
+        AZStd::vector<Physics::Character*> CreateCharacterControllers(
+            int numCharacterControllers,
+            CharacterConstants::CharacterSettings::ColliderType colliderType,
             AzPhysics::SceneHandle& sceneHandle,
             GenerateSpawnPositionFuncPtr* genSpawnPosFuncPtr = nullptr)
         {
@@ -139,12 +141,11 @@ namespace PhysX::Benchmarks
             characterConfig.m_maximumSlopeAngle = CharacterConstants::CharacterSettings::MaximumSlopeAngle;
             characterConfig.m_stepHeight = CharacterConstants::CharacterSettings::StepHeight;
 
-            Physics::ShapeConfiguration* shapeConfig = nullptr;
             switch (colliderType)
             {
             case CharacterConstants::CharacterSettings::ColliderType::Box:
                 {
-                    shapeConfig = new Physics::BoxShapeConfiguration(
+                    characterConfig.m_shapeConfig = AZStd::make_shared<Physics::BoxShapeConfiguration>(
                         AZ::Vector3(CharacterConstants::CharacterSettings::CharacterBoxWidth,
                             CharacterConstants::CharacterSettings::CharacterBoxDepth,
                             CharacterConstants::CharacterSettings::CharacterBoxHeight)
@@ -155,26 +156,32 @@ namespace PhysX::Benchmarks
             case CharacterConstants::CharacterSettings::ColliderType::Capsule:
             default:
                 {
-                    shapeConfig = new Physics::CapsuleShapeConfiguration(CharacterConstants::CharacterSettings::CharacterCylinderHeight,
+                    characterConfig.m_shapeConfig = AZStd::make_shared<Physics::CapsuleShapeConfiguration>(
+                        CharacterConstants::CharacterSettings::CharacterCylinderHeight,
                         CharacterConstants::CharacterSettings::CharacterCylinderRadius);
                 }
                 break;
             }
 
-            AZStd::vector<AZStd::unique_ptr<Physics::Character>> controllers;
+            auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
+
+            AZStd::vector<Physics::Character*> controllers;
             controllers.reserve(numCharacterControllers);
             for (int i = 0; i < numCharacterControllers; i++)
             {
-                AZStd::unique_ptr<Physics::Character> controller;
-                Physics::CharacterSystemRequestBus::BroadcastResult(controller,
-                    &Physics::CharacterSystemRequests::CreateCharacter, characterConfig, *shapeConfig, sceneHandle);
-
-                const AZ::Vector3 spawnPosition = genSpawnPosFuncPtr != nullptr ? (*genSpawnPosFuncPtr)(i) : AZ::Vector3::CreateZero(); 
-                controller->SetBasePosition(spawnPosition);
-
-                controllers.emplace_back(AZStd::move(controller));
+                const AZ::Vector3 spawnPosition = genSpawnPosFuncPtr != nullptr ? (*genSpawnPosFuncPtr)(i) : AZ::Vector3::CreateZero();
+                characterConfig.m_position = spawnPosition;
+                AzPhysics::SimulatedBodyHandle newHandle = sceneInterface->AddSimulatedBody(sceneHandle, &characterConfig);
+                if (newHandle != AzPhysics::InvalidSimulatedBodyHandle)
+                {
+                    if (auto* characterPtr = azdynamic_cast<Physics::Character*>(
+                            sceneInterface->GetSimulatedBodyFromHandle(sceneHandle, newHandle)
+                        ))
+                    {
+                        controllers.emplace_back(characterPtr);
+                    }
+                }
             }
-            delete shapeConfig;
 
             return controllers;
         }
@@ -206,7 +213,7 @@ namespace PhysX::Benchmarks
             }
             return AZ::Vector3(x, y, z);
         };
-        AZStd::vector<AZStd::unique_ptr<Physics::Character>> controllers = Utils::CreateCharacterControllers(numCharacters,
+        AZStd::vector<Physics::Character*> controllers = Utils::CreateCharacterControllers(numCharacters,
             static_cast<CharacterConstants::CharacterSettings::ColliderType>(state.range(1)), m_testSceneHandle, &posGenerator);
         
         //setup the sub tick tracker
@@ -262,7 +269,7 @@ namespace PhysX::Benchmarks
             }
             return AZ::Vector3(x, y, z);
         };
-        AZStd::vector<AZStd::unique_ptr<Physics::Character>> controllers = Utils::CreateCharacterControllers(numCharacters,
+        AZStd::vector<Physics::Character*> controllers = Utils::CreateCharacterControllers(numCharacters,
             static_cast<CharacterConstants::CharacterSettings::ColliderType>(state.range(1)), m_testSceneHandle, &posGenerator);
 
         //setup the sub tick tracker
@@ -320,15 +327,15 @@ namespace PhysX::Benchmarks
             const float z = 0.0f;
             return AZ::Vector3(x, y, z);
         };
-        AZStd::vector<AZStd::unique_ptr<Physics::Character>> controllers = Utils::CreateCharacterControllers(numCharacters,
+        AZStd::vector<Physics::Character*> controllers = Utils::CreateCharacterControllers(numCharacters,
             static_cast<CharacterConstants::CharacterSettings::ColliderType>(state.range(1)), m_testSceneHandle, &posGenerator);
 
         //pair up each character controller with a movement vector
-        using ControllerAndMovementDirPair = AZStd::pair<AZStd::unique_ptr<Physics::Character>, AZ::Vector3>;
+        using ControllerAndMovementDirPair = AZStd::pair<Physics::Character*, AZ::Vector3>;
         AZStd::vector<ControllerAndMovementDirPair> targetMoveAndControllers;
         for (auto& controller : controllers)
         {
-            targetMoveAndControllers.emplace_back(ControllerAndMovementDirPair(AZStd::move(controller), AZ::Vector3::CreateZero()));
+            targetMoveAndControllers.emplace_back(ControllerAndMovementDirPair(controller, AZ::Vector3::CreateZero()));
         }
 
         //setup the sub tick tracker

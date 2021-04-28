@@ -11,5 +11,5 @@
 
 set(LY_BUILD_DEPENDENCIES
     PRIVATE
-        Legacy::CryRenderD3D11
+        Legacy::CryRenderNULL
 )

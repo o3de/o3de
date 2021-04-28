@@ -48,14 +48,16 @@ namespace AZ
             void Deactivate() override;
 
         private:
+            void InitializeViewportSizeIfNeeded();
 
             // OtherActiveImGuiRequestBus overrides ...
             void RenderImGuiBuffers(const ImDrawData& drawData) override;
 
             // ViewportContextNotificationBus overrides...
             void OnRenderTick() override;
+            void OnViewportSizeChanged(AzFramework::WindowSize size) override;
 
-            DebugConsole m_debugConsole;
+            bool m_initialized = false;
         };
     } // namespace LYIntegration
 } // namespace AZ

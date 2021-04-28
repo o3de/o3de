@@ -20,7 +20,7 @@ class Tests():
 # fmt: on
 
 
-def run(damage_func):
+def base_run(damage_func):
 
     """
     Summary:
@@ -50,13 +50,13 @@ def run(damage_func):
 
     imports.init()
 
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     import azlmbr.legacy.general as general
     import azlmbr.bus
 
-    from Utils import BlastNotificationHandler
+    from BlastUtils import BlastNotificationHandler
 
     # Constants
     TIMEOUT = 2.0

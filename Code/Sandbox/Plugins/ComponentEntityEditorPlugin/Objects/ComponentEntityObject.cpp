@@ -320,14 +320,6 @@ void CComponentEntityObject::OnSelected()
         // Invoked when selected via tools application, so we notify sandbox.
         const bool wasSelected = IsSelected();
         GetIEditor()->GetObjectManager()->SelectObject(this);
-
-        // If we get here and we're not already selected in sandbox land it means
-        // the selection started in AZ land and we need to clear any edit tool
-        // the user may have selected from the rollup bar
-        if (GetIEditor()->GetEditTool() && !wasSelected)
-        {
-            GetIEditor()->SetEditTool(nullptr);
-        }
     }
 }
 

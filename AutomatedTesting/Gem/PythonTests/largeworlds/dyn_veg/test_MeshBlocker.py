@@ -16,7 +16,7 @@ import pytest
 # Bail on the test if ly_test_tools doesn't exist.
 pytest.importorskip('ly_test_tools')
 
-import automatedtesting_shared.hydra_test_utils as hydra
+import editor_python_test_tools.hydra_test_utils as hydra
 import ly_test_tools.environment.file_system as file_system
 
 test_directory = os.path.join(os.path.dirname(__file__), 'EditorScripts')
@@ -46,6 +46,7 @@ class TestMeshBlocker(object):
     """
     @pytest.mark.test_case_id("C3980834")
     @pytest.mark.SUITE_periodic
+    @pytest.mark.xfail  # LYN-3273
     def test_MeshBlocker_InstancesBlockedByMesh(self, request, editor, level, launcher_platform):
         expected_lines = [
             "'Instance Spawner' created",
@@ -69,6 +70,7 @@ class TestMeshBlocker(object):
     """
     @pytest.mark.test_case_id("C4766030")
     @pytest.mark.SUITE_periodic
+    @pytest.mark.xfail  # LYN-3273
     def test_MeshBlocker_InstancesBlockedByMeshHeightTuning(self, request, editor, level, launcher_platform):
         expected_lines = [
             "'Instance Spawner' created",

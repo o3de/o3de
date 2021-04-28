@@ -103,10 +103,13 @@ void CEventTrack::InitPostLoad(IAnimSequence* sequence)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CEventTrack::Reflect(AZ::SerializeContext* serializeContext)
+void CEventTrack::Reflect(AZ::ReflectContext* context)
 {
     // Note the template base class TAnimTrack<IEventKey>::Reflect() is reflected by CTrackEventTrack::Reflect()
 
-    serializeContext->Class<CEventTrack, TAnimTrack<IEventKey> >()
-        ->Version(1);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<CEventTrack, TAnimTrack<IEventKey>>()
+            ->Version(1);
+    }
 }
