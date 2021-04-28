@@ -57,7 +57,6 @@ namespace AZ
             void OnRenderTick() override;
             void OnViewportSizeChanged(AzFramework::WindowSize size) override;
 
-            DebugConsole m_debugConsole;
             bool m_initialized = false;
         };
     } // namespace LYIntegration

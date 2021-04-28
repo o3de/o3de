@@ -62,6 +62,11 @@ namespace Multiplayer
         return &m_networkEntityAuthorityTracker;
     }
 
+    MultiplayerComponentRegistry* NetworkEntityManager::GetMultiplayerComponentRegistry()
+    {
+        return &m_multiplayerComponentRegistry;
+    }
+
     HostId NetworkEntityManager::GetHostId() const
     {
         return m_hostId;

@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include <Source/MultiplayerTypes.h>
+#include <Include/MultiplayerTypes.h>
 #include <Source/NetworkEntity/NetworkEntityHandle.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/EBus/Event.h>
@@ -23,6 +23,7 @@ namespace Multiplayer
     class NetworkEntityTracker;
     class NetworkEntityAuthorityTracker;
     class NetworkEntityRpcMessage;
+    class MultiplayerComponentRegistry;
 
     using EntityExitDomainEvent = AZ::Event<const ConstNetworkEntityHandle&>;
     using ControllersActivatedEvent = AZ::Event<const ConstNetworkEntityHandle&, EntityIsMigrating>;
@@ -47,6 +48,10 @@ namespace Multiplayer
         //! Returns the NetworkEntityAuthorityTracker for this INetworkEntityManager instance.
         //! @return the NetworkEntityAuthorityTracker for this INetworkEntityManager instance
         virtual NetworkEntityAuthorityTracker* GetNetworkEntityAuthorityTracker() = 0;
+
+        //! Returns the MultiplayerComponentRegistry for this INetworkEntityManager instance.
+        //! @return the MultiplayerComponentRegistry for this INetworkEntityManager instance
+        virtual MultiplayerComponentRegistry* GetMultiplayerComponentRegistry() = 0;
 
         //! Returns the HostId for this INetworkEntityManager instance.
         //! @return the HostId for this INetworkEntityManager instance
@@ -144,5 +149,10 @@ namespace Multiplayer
     inline NetworkEntityAuthorityTracker* GetNetworkEntityAuthorityTracker()
     {
         return GetNetworkEntityManager()->GetNetworkEntityAuthorityTracker();
+    }
+
+    inline MultiplayerComponentRegistry* GetMultiplayerComponentRegistry()
+    {
+        return GetNetworkEntityManager()->GetMultiplayerComponentRegistry();
     }
 }

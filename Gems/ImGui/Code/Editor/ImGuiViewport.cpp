@@ -45,7 +45,7 @@ ImGuiViewportWidget::ImGuiViewportWidget(QWidget* parent)
 ImGuiViewportWidget::~ImGuiViewportWidget()
 {
     DestroyRenderContext();
-    ImGuiManagerListenerBus::Broadcast(&IImGuiManagerListener::SetEditorWindowState,
+    ImGuiManagerBus::Broadcast(&IImGuiManager::SetEditorWindowState,
                                        DisplayState::Hidden);
 }
 
@@ -68,7 +68,7 @@ bool ImGuiViewportWidget::CreateRenderContext()
         editor->GetEnv()->pRenderer->CreateContext(window);
         RestorePreviousContext();
 
-        ImGuiManagerListenerBus::Broadcast(&IImGuiManagerListener::SetEditorWindowState,
+        ImGuiManagerBus::Broadcast(&IImGuiManager::SetEditorWindowState,
                                            DisplayState::Visible);
 
         m_creatingRenderContext = false;
@@ -154,8 +154,8 @@ void ImGuiViewportWidget::Render()
     ColorF stateMessageColor(Col_Gray);
     AZStd::string stateMessage = "No State";
     DisplayState visibilityState = DisplayState::Hidden;
-    ImGuiManagerListenerBus::BroadcastResult(visibilityState,
-                                             &IImGuiManagerListener::GetEditorWindowState);
+    ImGuiManagerBus::BroadcastResult(visibilityState,
+                                             &IImGuiManager::GetEditorWindowState);
     switch (visibilityState)
     {
     case ImGui::DisplayState::Hidden:
