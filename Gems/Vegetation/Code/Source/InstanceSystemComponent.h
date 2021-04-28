@@ -28,9 +28,6 @@
 #include <Vegetation/Ebuses/InstanceSystemRequestBus.h>
 #include <Vegetation/Ebuses/SystemConfigurationBus.h>
 
-#include <StatObjBus.h>
-#include <CrySystemBus.h>
-
 namespace AZ
 {
     class Aabb;
@@ -38,10 +35,6 @@ namespace AZ
     class Transform;
     class EntityId;
 }
-
-struct IRenderNode;
-struct ISystem;
-struct I3DEngine;
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -63,11 +56,6 @@ namespace Vegetation
 
         // maximum number of instance management tasks that can be batch processed together
         int m_maxInstanceTaskBatchSize = 100;
-
-        // merged mesh visual features
-        float m_mergedMeshesViewDistanceRatio = 100.0f;
-        float m_mergedMeshesLodRatio = 3.0f;
-        float m_mergedMeshesInstanceDistance = 4.5f;
     };
 
     /**
@@ -78,9 +66,7 @@ namespace Vegetation
         , private InstanceSystemRequestBus::Handler
         , private InstanceSystemStatsRequestBus::Handler
         , private AZ::TickBus::Handler
-        , private InstanceStatObjEventBus::Handler
         , private SystemConfigurationRequestBus::Handler
-        , private CrySystemEventBus::Handler
     {
         friend class EditorInstanceSystemComponent;
 
@@ -116,9 +102,6 @@ namespace Vegetation
         void DestroyAllInstances() override;
         void Cleanup() override;
 
-        void RegisterMergedMeshInstance(InstancePtr instance, IRenderNode* mergedMeshNode) override;
-        void ReleaseMergedMeshInstance(InstancePtr instance) override;
-
         // InstanceSystemStatsRequestBus
         AZ::u32 GetInstanceCount() const override;
         AZ::u32 GetTotalTaskCount() const override;
@@ -128,18 +111,10 @@ namespace Vegetation
         // AZ::TickBus
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
-        // InstanceStatObjEventBus
-        void ReleaseData() override;
-
         //////////////////////////////////////////////////////////////////
         // SystemConfigurationRequestBus
         void UpdateSystemConfig(const AZ::ComponentConfig* config) override;
         void GetSystemConfig(AZ::ComponentConfig* config) const override;
-
-        ////////////////////////////////////////////////////////////////////////////
-        // CrySystemEvents
-        void OnCrySystemInitialized(ISystem& system, const SSystemInitParams& systemInitParams) override;
-        void OnCrySystemShutdown(ISystem& system) override;
 
         ////////////////////////////////////////////////////////////////
         // vegetation instance id management
@@ -154,9 +129,6 @@ namespace Vegetation
         // vegetation instance management
         bool IsInstanceSkippable(const InstanceData& instanceData) const;
         void CreateInstanceNode(const InstanceData& instanceData);
-
-        void CreateInstanceNodeBegin();
-        void CreateInstanceNodeEnd();
 
         void ReleaseInstanceNode(InstanceId instanceId);
 
@@ -191,15 +163,6 @@ namespace Vegetation
         mutable AZStd::recursive_mutex m_uniqueDescriptorsMutex;
         AZStd::map<DescriptorPtr, DescriptorDetails> m_uniqueDescriptors;
         AZStd::map<DescriptorPtr, DescriptorDetails> m_uniqueDescriptorsToDelete;
-
-        //refresh events can queue the creation and deletion of the same node in the same frame
-        //this map is used to track which nodes remain after all tasks have executed for the frame
-        //registration will only be done on the final set each frame
-        AZStd::unordered_map<InstancePtr, IRenderNode*> m_instanceNodeToMergedMeshNodeRegistrationMap;
-        AZStd::unordered_set<IRenderNode*> m_mergedMeshNodeRegistrationSet;
-
-        ISystem* m_system = nullptr;
-        I3DEngine* m_engine = nullptr;
 
         AZStd::atomic_int m_instanceCount{ 0 };
         AZStd::atomic_int m_createTaskCount{ 0 };

@@ -417,8 +417,8 @@ set(FILES
     UI/PropertyEditor/GrowTextEdit.cpp
     UI/PropertyEditor/MultiLineTextEditHandler.h
     UI/PropertyEditor/MultiLineTextEditHandler.cpp
-    UI/PropertyEditor/ThumbnailDropDown.h
-    UI/PropertyEditor/ThumbnailDropDown.cpp
+    UI/PropertyEditor/ThumbnailPropertyCtrl.h
+    UI/PropertyEditor/ThumbnailPropertyCtrl.cpp
     UI/Slice/SlicePushWidget.cpp
     UI/Slice/SlicePushWidget.hxx
     UI/Slice/SliceOverridesNotificationWindow.cpp
@@ -652,6 +652,7 @@ set(FILES
     Prefab/PrefabPublicHandler.h
     Prefab/PrefabPublicHandler.cpp
     Prefab/PrefabPublicInterface.h
+    Prefab/PrefabPublicNotificationBus.h
     Prefab/PrefabUndo.h
     Prefab/PrefabUndo.cpp
     Prefab/PrefabUndoCache.cpp
@@ -687,7 +688,6 @@ set(FILES
     UI/Outliner/EntityOutlinerDisplayOptionsMenu.cpp
     UI/Outliner/EntityOutlinerTreeView.hxx
     UI/Outliner/EntityOutlinerTreeView.cpp
-    UI/Outliner/EntityOutlinerWidgetInterface.h
     UI/Outliner/EntityOutlinerWidget.hxx
     UI/Outliner/EntityOutlinerWidget.cpp
     UI/Outliner/EntityOutlinerCacheBus.h

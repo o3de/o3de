@@ -186,7 +186,8 @@ namespace UnitTest
         int GetWeakUseCount() { return m_weakUseCount.load(); }
     };
 
-    TEST_F(WeakAssetTest, WeakAsset_ConstructionAndDestruction_UpdatesAssetDataWeakRefCount)
+    // Asset cancellation is temporarily disabled, re-enable this test when cancellation is more stable
+    TEST_F(WeakAssetTest, DISABLED_WeakAsset_ConstructionAndDestruction_UpdatesAssetDataWeakRefCount)
     {
         TestAssetData testData;
         EXPECT_EQ(testData.GetWeakUseCount(), 0);
@@ -202,7 +203,8 @@ namespace UnitTest
         EXPECT_EQ(testData.GetWeakUseCount(), 0);
     }
 
-    TEST_F(WeakAssetTest, WeakAsset_MoveOperatorWithDifferentData_UpdatesOldAssetDataWeakRefCount)
+    // Asset cancellation is temporarily disabled, re-enable this test when cancellation is more stable
+    TEST_F(WeakAssetTest, DISABLED_WeakAsset_MoveOperatorWithDifferentData_UpdatesOldAssetDataWeakRefCount)
     {
         TestAssetData testData;
         EXPECT_EQ(testData.GetWeakUseCount(), 0);
@@ -217,7 +219,8 @@ namespace UnitTest
         AZ_TEST_STOP_TRACE_SUPPRESSION(1);
     }
 
-    TEST_F(WeakAssetTest, WeakAsset_MoveOperatorWithSameData_PreservesAssetDataWeakRefCount)
+    // Asset cancellation is temporarily disabled, re-enable this test when cancellation is more stable
+    TEST_F(WeakAssetTest, DISABLED_WeakAsset_MoveOperatorWithSameData_PreservesAssetDataWeakRefCount)
     {
         TestAssetData testData;
         EXPECT_EQ(testData.GetWeakUseCount(), 0);
@@ -234,7 +237,8 @@ namespace UnitTest
         AZ_TEST_STOP_TRACE_SUPPRESSION(1);
     }
 
-    TEST_F(WeakAssetTest, WeakAsset_AssignmentOperator_CopiesDataAndIncrementsWeakRefCount)
+    // Asset cancellation is temporarily disabled, re-enable this test when cancellation is more stable
+    TEST_F(WeakAssetTest, DISABLED_WeakAsset_AssignmentOperator_CopiesDataAndIncrementsWeakRefCount)
     {
         TestAssetData testData;
         EXPECT_EQ(testData.GetWeakUseCount(), 0);

@@ -197,6 +197,7 @@ namespace AZ
                 AzFramework::InputDeviceKeyboard::Key::EditSpace, // ImGuiKey_Space
                 AzFramework::InputDeviceKeyboard::Key::EditEnter, // ImGuiKey_Enter
                 AzFramework::InputDeviceKeyboard::Key::Escape, // ImGuiKey_Escape
+                AzFramework::InputDeviceKeyboard::Key::NumPadEnter, // ImGuiKey_KeyPadEnter
                 AzFramework::InputDeviceKeyboard::Key::AlphanumericA, // ImGuiKey_A
                 AzFramework::InputDeviceKeyboard::Key::AlphanumericC, // ImGuiKey_C
                 AzFramework::InputDeviceKeyboard::Key::AlphanumericV, // ImGuiKey_V

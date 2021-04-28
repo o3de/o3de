@@ -363,7 +363,7 @@ def TestMetrics(Map options, String workspace, String branchName, String repoNam
             ]
             withCredentials([usernamePassword(credentialsId: "${env.SERVICE_USER}", passwordVariable: 'apitoken', usernameVariable: 'username')]) {
                 def command = "${options.PYTHON_DIR}/python.cmd -u mars/scripts/python/ctest_test_metric_scraper.py " +
-                              "-e jenkins.creds.user ${username} -e jenkins.creds.pass ${apitoken} " +
+                              '-e jenkins.creds.user %username% -e jenkins.creds.pass %apitoken% ' +
                               "-e jenkins.base_url ${env.JENKINS_URL} " +
                               "${cmakeBuildDir} ${branchName} %BUILD_NUMBER% AR ${configuration} ${repoName} "
                 bat label: "Publishing ${buildJobName} Test Metrics",
@@ -518,7 +518,7 @@ try {
                                     CreateBuildStage(pipelineConfig,  platform.key, build_job.key, envVars).call()
                                 }
 
-                                if (env.MARS_REPO && platform.key == 'Windows' && build_job_name.startsWith('test')) {
+                                if (env.MARS_REPO && platform.value.build_types[build_job_name].PARAMETERS.containsKey('TEST_METRICS') && platform.value.build_types[build_job_name].PARAMETERS.TEST_METRICS == 'True') {
                                     def output_directory = platform.value.build_types[build_job_name].PARAMETERS.OUTPUT_DIRECTORY
                                     def configuration = platform.value.build_types[build_job_name].PARAMETERS.CONFIGURATION
                                     CreateTestMetricsStage(pipelineConfig, branchName, envVars, build_job_name, output_directory, configuration).call()

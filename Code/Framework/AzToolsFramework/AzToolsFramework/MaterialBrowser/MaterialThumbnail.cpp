@@ -24,8 +24,8 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
         // MaterialThumbnail
         //////////////////////////////////////////////////////////////////////////
-        MaterialThumbnail::MaterialThumbnail(Thumbnailer::SharedThumbnailKey key, int thumbnailSize)
-            : Thumbnail(key, thumbnailSize)
+        MaterialThumbnail::MaterialThumbnail(Thumbnailer::SharedThumbnailKey key)
+            : Thumbnail(key)
         {
             auto productKey = azrtti_cast<const AzToolsFramework::AssetBrowser::ProductThumbnailKey*>(m_key.data());
             AZ_Assert(productKey, "Incorrect key type, excpected ProductThumbnailKey");
@@ -34,7 +34,8 @@ namespace AzToolsFramework
             MaterialBrowserRequestBus::BroadcastResult(multiMat, &MaterialBrowserRequests::IsMultiMaterial, productKey->GetAssetId());
 
             QString iconPath = multiMat ? MultiMaterialIconPath : SimpleMaterialIconPath;
-            m_pixmap = QPixmap(iconPath).scaled(m_thumbnailSize, m_thumbnailSize, Qt::KeepAspectRatio);
+            m_pixmap.load(iconPath);
+            m_state = m_pixmap.isNull() ? State::Failed : State::Ready;
         }
 
         //////////////////////////////////////////////////////////////////////////

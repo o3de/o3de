@@ -100,6 +100,11 @@ TEST_F(ScriptCanvasTestFixture, InterpretedReadEnumConstant)
     RunUnitTestGraph("LY_SC_UnitTest_ReadEnumConstant");
 }
 
+TEST_F(ScriptCanvasTestFixture, UserBranchSanityCheck)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_UserBranchSanityCheck");
+}
+
 TEST_F(ScriptCanvasTestFixture, InterpretedEventHandlerNoDisconnect)
 {
     GlobalHandler handler;
@@ -128,6 +133,11 @@ TEST_F(ScriptCanvasTestFixture, InterpretedEventHandlerDisconnect)
     };
 
     RunUnitTestGraph("LY_SC_UnitTest_EventHandlerDisconnect", runSpec);
+}
+
+TEST_F(ScriptCanvasTestFixture, FunctionContainerInputTest)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_FunctionContainerInputTest");
 }
 
 TEST_F(ScriptCanvasTestFixture, InterpretedFixBoundMultipleResults)

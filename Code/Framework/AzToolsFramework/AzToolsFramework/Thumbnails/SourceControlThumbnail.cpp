@@ -69,8 +69,8 @@ namespace AzToolsFramework
 
         bool SourceControlThumbnail::m_readyForUpdate = true;
 
-        SourceControlThumbnail::SourceControlThumbnail(SharedThumbnailKey key, int thumbnailSize)
-            : Thumbnail(key, thumbnailSize)
+        SourceControlThumbnail::SourceControlThumbnail(SharedThumbnailKey key)
+            : Thumbnail(key)
         {
             const char* engineRoot = nullptr;
             AzFramework::ApplicationRequests::Bus::BroadcastResult(engineRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
@@ -122,16 +122,16 @@ namespace AzToolsFramework
             {
                 if (fileInfo.HasFlag(AzToolsFramework::SCF_Writeable))
                 {
-                    m_icon = QIcon(m_writableIconPath.c_str());
+                    m_pixmap.load(m_writableIconPath.c_str());
                 }
                 else
                 {
-                    m_icon = QIcon(m_nonWritableIconPath.c_str());
+                    m_pixmap.load(m_nonWritableIconPath.c_str());
                 }
             }
             else
             {
-                m_icon = QIcon();
+                m_pixmap = QPixmap();
             }
             m_readyForUpdate = true;
             emit Updated();

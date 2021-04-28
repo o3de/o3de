@@ -17,6 +17,7 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <AzToolsFramework/Viewport/ViewportTypes.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiManager.h>
 #include <Cry_Color.h>
 #include "IPostRenderer.h"
@@ -404,6 +405,12 @@ public:
     virtual float GetScreenScaleFactor([[maybe_unused]] const Vec3& worldPoint) const { return 1; };
 
     void SetAxisConstrain(int axis);
+
+    /// Take raw input and create a final mouse interaction.
+    /// @attention Do not map **point** from widget to viewport explicitly,
+    /// this is handled internally by BuildMouseInteraction - just pass directly.
+    virtual AzToolsFramework::ViewportInteraction::MouseInteraction BuildMouseInteraction(
+        Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, const QPoint& point);
 
     //////////////////////////////////////////////////////////////////////////
     // Selection.

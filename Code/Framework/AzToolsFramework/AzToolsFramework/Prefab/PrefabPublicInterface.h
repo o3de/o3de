@@ -58,7 +58,7 @@ namespace AzToolsFramework
              * @param position The position in world space the prefab should be instantiated in.
              * @return An outcome object; on failure, it comes with an error message detailing the cause of the error.
              */
-            virtual PrefabOperationResult InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parent, AZ::Vector3 position) = 0;
+            virtual PrefabOperationResult InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position) = 0;
 
             /**
              * Saves changes to prefab to disk.

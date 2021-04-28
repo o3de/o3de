@@ -16,19 +16,20 @@
 
 #include <NvCloth/Types.h>
 
+#include <Components/ClothComponentMesh/ClothComponentMesh.h>
+
 namespace NvCloth
 {
-    //! Maximum number of bones that can influence a particle.
-    static const int MaxSkinningBones = 4;
+    struct MeshNodeInfo;
 
     //! Skinning information of a particle.
     struct SkinningInfo
     {
         //! Weights of each joint that influence the particle.
-        AZStd::array<AZ::u8, MaxSkinningBones> m_jointWeights;
+        AZStd::vector<float> m_jointWeights;
 
         //! List of joints that influence the particle.
-        AZStd::array<AZ::u16, MaxSkinningBones> m_jointIndices;
+        AZStd::vector<AZ::u16> m_jointIndices;
     };
 
     //! Class to retrieve skinning information from an actor on the same entity
@@ -42,9 +43,8 @@ namespace NvCloth
 
         static AZStd::unique_ptr<ActorClothSkinning> Create(
             AZ::EntityId entityId, 
-            const AZStd::string& meshNode,
-            const size_t numSimParticles,
-            const AZStd::vector<int>& meshRemappedVertices);
+            const MeshNodeInfo& meshNodeInfo,
+            const size_t numSimParticles);
 
         explicit ActorClothSkinning(AZ::EntityId entityId);
 
@@ -53,9 +53,17 @@ namespace NvCloth
 
         //! Applies skinning to a list of positions.
         //! @note w components are not affected.
-        virtual void ApplySkinning(
+        void ApplySkinning(
             const AZStd::vector<AZ::Vector4>& originalPositions, 
-            AZStd::vector<AZ::Vector4>& positions) = 0;
+            AZStd::vector<AZ::Vector4>& positions,
+            const AZStd::vector<int>& meshRemappedVertices);
+
+        //! Applies skinning to a list of positions and vectors whose vertices
+        //! have not been used for simulation (remapped index is negative).
+        void ApplySkinninOnRemovedVertices(
+            const MeshClothInfo& originalData,
+            ClothComponentMesh::RenderData& renderData,
+            const AZStd::vector<int>& meshRemappedVertices);
 
         //! Updates visibility variables.
         void UpdateActorVisibility();
@@ -67,6 +75,18 @@ namespace NvCloth
         bool WasActorVisible() const;
 
     protected:
+        //! Returns true if it has valid skinning trasform data.
+        virtual bool HasSkinningTransformData() = 0;
+
+        //! Computes the skinnning transformation to apply to a vertex data.
+        virtual void ComputeVertexSkinnningTransform(const SkinningInfo& skinningInfo) = 0;
+
+        //! Computes skinning on a position.
+        virtual AZ::Vector3 ComputeSkinningPosition(const AZ::Vector3& originalPosition) = 0;
+
+        //! Computes skinning on a vector.
+        virtual AZ::Vector3 ComputeSkinningVector(const AZ::Vector3& originalVector) = 0;
+
         AZ::EntityId m_entityId;
 
         // Skinning information of all particles

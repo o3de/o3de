@@ -10,7 +10,7 @@
 
     <ComponentRelation Constraint="Weak" HasController="true" Name="NetworkTransformComponent" Namespace="Multiplayer" Include="Source/Components/NetworkTransformComponent.h" />
 
-    <Include File="Source/MultiplayerTypes.h"/>
+    <Include File="Include/MultiplayerTypes.h"/>
     <Include File="Source/NetworkInput/NetworkInput.h"/>
     <Include File="Source/NetworkInput/NetworkInputHistory.h"/>
     <Include File="Source/NetworkInput/NetworkInputVector.h"/>

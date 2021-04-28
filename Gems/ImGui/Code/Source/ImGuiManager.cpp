@@ -143,7 +143,7 @@ namespace
 void ImGuiManager::Initialize()
 {
     // Register for Buses
-    ImGuiManagerListenerBus::Handler::BusConnect();
+    ImGuiManagerBus::Handler::BusConnect();
 
     // Register for Input Notifications
     InputChannelEventListener::Connect();
@@ -236,10 +236,14 @@ void ImGuiManager::Initialize()
     //  Future work here could include responding to the mouse being connected and disconnected at run-time, but this is fine for now.
     const AzFramework::InputDevice* mouseDevice = AzFramework::InputDeviceRequests::FindInputDevice(AzFramework::InputDeviceMouse::Id);
     m_hardwardeMouseConnected = mouseDevice && mouseDevice->IsConnected();
+
+    AZ::Interface<ImGui::IImGuiManager>::Register(this);
 }
 
 void ImGuiManager::Shutdown()
 {
+    AZ::Interface<ImGui::IImGuiManager>::Unregister(this);
+
     if (!gEnv)
     {
         AZ_Warning("ImGuiManager", false, "%s %s", __func__, "gEnv Invalid -- Skipping ImGui Shutdown.");
@@ -253,13 +257,28 @@ void ImGuiManager::Shutdown()
 #endif
 
     // Unregister from Buses
-    ImGuiManagerListenerBus::Handler::BusDisconnect();
+    ImGuiManagerBus::Handler::BusDisconnect();
     InputChannelEventListener::Disconnect();
     InputTextEventListener::Disconnect();
     AzFramework::WindowNotificationBus::Handler::BusDisconnect();
 
     // Finally, destroy the ImGui Context.
     ImGui::DestroyContext(m_imguiContext);
+}
+
+void ImGui::ImGuiManager::OverrideRenderWindowSize(uint32_t width, uint32_t height)
+{
+    m_windowSize.m_width = width;
+    m_windowSize.m_height = height;
+    m_overridingWindowSize = true;
+    // Don't listen for window updates if our window size is being overridden
+    AzFramework::WindowNotificationBus::Handler::BusDisconnect();
+}
+
+void ImGui::ImGuiManager::RestoreRenderWindowSizeToDefault()
+{
+    m_overridingWindowSize = false;
+    InitWindowSize();
 }
 
 void ImGuiManager::Render()
@@ -317,7 +336,7 @@ void ImGuiManager::Render()
     }
 
     // If no item and no window is focused, we should artificially add focus to the Main Menu Bar, to save 1 step when navigating with a controller.
-    if (!ImGui::IsAnyItemFocused() && !ImGui::IsAnyWindowFocused())
+    if (!ImGui::IsAnyItemFocused() && !ImGui::IsWindowFocused(ImGuiFocusedFlags_AnyWindow))
     {
         ImGuiWindow* mainMenuWin = ImGui::FindWindowByName("##MainMenuBar");
         if (mainMenuWin)
@@ -757,7 +776,7 @@ void ImGuiManager::InitWindowSize()
 {
     // We only need to initialize the window size by querying the window the first time.
     // After that we will get OnWindowResize notifications
-    if (!AzFramework::WindowNotificationBus::Handler::BusIsConnected())
+    if (!m_overridingWindowSize && !AzFramework::WindowNotificationBus::Handler::BusIsConnected())
     {
         AzFramework::NativeWindowHandle windowHandle = nullptr;
         AzFramework::WindowSystemRequestBus::BroadcastResult(windowHandle, &AzFramework::WindowSystemRequestBus::Events::GetDefaultWindowHandle);
@@ -814,27 +833,27 @@ void OnEnableCameraMonitorCBFunc(ICVar* pArgs)
 
 void OnShowImGuiCBFunc(ICVar* pArgs)
 {
-    ImGui::ImGuiManagerListenerBus::Broadcast(&ImGui::IImGuiManagerListener::SetClientMenuBarState, pArgs->GetIVal() != 0 ? ImGui::DisplayState::Visible : ImGui::DisplayState::Hidden);
+    ImGui::ImGuiManagerBus::Broadcast(&ImGui::IImGuiManager::SetClientMenuBarState, pArgs->GetIVal() != 0 ? ImGui::DisplayState::Visible : ImGui::DisplayState::Hidden);
 }
 
 void OnDiscreteInputModeCBFunc(ICVar* pArgs)
 {
-    ImGui::ImGuiManagerListenerBus::Broadcast(&ImGui::IImGuiManagerListener::SetEnableDiscreteInputMode, pArgs->GetIVal() != 0 );
+    ImGui::ImGuiManagerBus::Broadcast(&ImGui::IImGuiManager::SetEnableDiscreteInputMode, pArgs->GetIVal() != 0 );
 }
 
 void OnEnableControllerCBFunc(ICVar* pArgs)
 {
-    ImGui::ImGuiManagerListenerBus::Broadcast(&ImGui::IImGuiManagerListener::EnableControllerSupportMode, ImGuiControllerModeFlags::Contextual, (pArgs->GetIVal() != 0));
+    ImGui::ImGuiManagerBus::Broadcast(&ImGui::IImGuiManager::EnableControllerSupportMode, ImGuiControllerModeFlags::Contextual, (pArgs->GetIVal() != 0));
 }
 
 void OnEnableControllerMouseCBFunc(ICVar* pArgs)
 {
-    ImGui::ImGuiManagerListenerBus::Broadcast(&ImGui::IImGuiManagerListener::EnableControllerSupportMode, ImGuiControllerModeFlags::Mouse, (pArgs->GetIVal() != 0));
+    ImGui::ImGuiManagerBus::Broadcast(&ImGui::IImGuiManager::EnableControllerSupportMode, ImGuiControllerModeFlags::Mouse, (pArgs->GetIVal() != 0));
 }
 
 void OnControllerMouseSensitivityCBFunc(ICVar* pArgs)
 {
-    ImGui::ImGuiManagerListenerBus::Broadcast(&ImGui::IImGuiManagerListener::SetControllerMouseSensitivity, pArgs->GetFVal());
+    ImGui::ImGuiManagerBus::Broadcast(&ImGui::IImGuiManager::SetControllerMouseSensitivity, pArgs->GetFVal());
 }
 
 
