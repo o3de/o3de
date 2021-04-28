@@ -9,8 +9,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-# Add all cmake files in a project so they can be handled from within the IDE
-ly_include_cmake_file_list(cmake/cmake_files.cmake)
-add_custom_target(CMakeFiles SOURCES ${ALLFILES})
-ly_source_groups_from_folders("${ALLFILES}")
-unset(ALLFILES)
+if(NOT INSTALLED_ENGINE)
+    # Add all cmake files in a project so they can be handled from within the IDE
+    ly_include_cmake_file_list(cmake/cmake_files.cmake)
+    add_custom_target(CMakeFiles SOURCES ${ALLFILES})
+    ly_source_groups_from_folders("${ALLFILES}")
+    unset(ALLFILES)
+endif()

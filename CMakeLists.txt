@@ -58,50 +58,50 @@ include(cmake/CMakeFiles.cmake)
 include(cmake/Projects.cmake)
 
 if(NOT INSTALLED_ENGINE)
+    
     # Add the rest of the targets
     add_subdirectory(Code)
     add_subdirectory(Gems)
-else()
-    ly_find_o3de_packages()
-endif()
+    add_subdirectory(scripts)
 
-set(enabled_platforms
+    # SPEC-1417 will investigate and fix this
+    if(NOT PAL_PLATFORM_NAME STREQUAL "Mac")
+        add_subdirectory(Tools/LyTestTools/tests/)
+        add_subdirectory(Tools/RemoteConsole/ly_remote_console/tests/)
+    endif()
+
+    set(enabled_platforms
     ${PAL_PLATFORM_NAME}
     ${LY_PAL_TOOLS_ENABLED})
 
-foreach(restricted_platform ${PAL_RESTRICTED_PLATFORMS})
-    if(restricted_platform IN_LIST enabled_platforms)
-        add_subdirectory(restricted/${restricted_platform})
-    endif()
-endforeach()
+    foreach(restricted_platform ${PAL_RESTRICTED_PLATFORMS})
+        if(restricted_platform IN_LIST enabled_platforms)
+            add_subdirectory(restricted/${restricted_platform})
+        endif()
+    endforeach()
 
-add_subdirectory(scripts)
+    # Loop over the additional external subdirectories and invoke add_subdirectory on them
+    foreach(external_directory ${LY_EXTERNAL_SUBDIRS})
+        # Hash the extenal_directory name and append it to the Binary Directory section of add_subdirectory
+        # This is to deal with potential situations where multiple external directories has the same last directory name
+        # For example if D:/Company1/RayTracingGem and F:/Company2/Path/RayTracingGem were both added as a subdirectory
+        file(REAL_PATH ${external_directory} full_directory_path)
+        string(SHA256 full_directory_hash ${full_directory_path})
+        # Truncate the full_directory_hash down to 8 characters to avoid hitting the Windows 260 character path limit
+        # when the external subdirectory contains relative paths of significant length
+        string(SUBSTRING ${full_directory_hash} 0 8 full_directory_hash)
+        # Use the last directory as the suffix path to use for the Binary Directory
+        get_filename_component(directory_name ${external_directory} NAME)
+        add_subdirectory(${external_directory} ${CMAKE_BINARY_DIR}/${directory_name}-${full_directory_hash})
+    endforeach()
 
-# SPEC-1417 will investigate and fix this
-if(NOT PAL_PLATFORM_NAME STREQUAL "Mac")
-    add_subdirectory(Tools/LyTestTools/tests/)
-    add_subdirectory(Tools/RemoteConsole/ly_remote_console/tests/)
+else()
+    ly_find_o3de_packages()
 endif()
 
 ################################################################################
 # Post-processing
 ################################################################################
-
-# Loop over the additional external subdirectories and invoke add_subdirectory on them
-foreach(external_directory ${LY_EXTERNAL_SUBDIRS})
-    # Hash the extenal_directory name and append it to the Binary Directory section of add_subdirectory
-    # This is to deal with potential situations where multiple external directories has the same last directory name
-    # For example if D:/Company1/RayTracingGem and F:/Company2/Path/RayTracingGem were both added as a subdirectory
-    file(REAL_PATH ${external_directory} full_directory_path)
-    string(SHA256 full_directory_hash ${full_directory_path})
-    # Truncate the full_directory_hash down to 8 characters to avoid hitting the Windows 260 character path limit
-    # when the external subdirectory contains relative paths of significant length
-    string(SUBSTRING ${full_directory_hash} 0 8 full_directory_hash)
-    # Use the last directory as the suffix path to use for the Binary Directory
-    get_filename_component(directory_name ${external_directory} NAME)
-    add_subdirectory(${external_directory} ${CMAKE_BINARY_DIR}/${directory_name}-${full_directory_hash})
-endforeach()
-
 # The following steps have to be done after all targets are registered:
 # 1. generate a settings registry .setreg file for all ly_add_project_dependencies() and ly_add_target_dependencies() calls
 #    to provide applications with the filenames of gem modules to load
@@ -124,6 +124,6 @@ ly_test_impact_post_step()
 if(NOT INSTALLED_ENGINE)
     ly_setup_o3de_install()
 
-    # IMPORTANT: must be included last
+    # 7. CPack information (to be included after install)
     include(cmake/CPack.cmake)
 endif()
