@@ -1172,7 +1172,7 @@ void MainWindow::InitActions()
         .Connect(&QAction::triggered, this, &MainWindow::OnRefreshAudioSystem);
 
     // Game actions
-    am->AddAction(ID_VIEW_SWITCHTOGAME, tr("Play Game"))
+    am->AddAction(ID_VIEW_SWITCHTOGAME, tr("Play &Game"))
         .SetIcon(QIcon(":/stylesheet/img/UI20/toolbar/Play.svg"))
         .SetShortcut(tr("Ctrl+G"))
         .SetToolTip(tr("Play Game (Ctrl+G)"))
