@@ -1304,7 +1304,11 @@ namespace AzToolsFramework
         }
         else if (attrib == AZ_CRC_CE("Thumbnail"))
         {
-            GUI->SetShowThumbnail(true);
+            bool showThumbnail = false;
+            if (attrValue->Read<bool>(showThumbnail))
+            {
+                GUI->SetShowThumbnail(showThumbnail);
+            }
         }
         else if (attrib == AZ_CRC_CE("ThumbnailCallback"))
         {
