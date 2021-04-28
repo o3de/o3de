@@ -505,8 +505,6 @@ try {
                         }
                         withEnv(GetEnvStringList(envVars)) {
                             try {
-                                def output_directory = platform.value.build_types[build_job_name].PARAMETERS.OUTPUT_DIRECTORY
-                                def configuration = platform.value.build_types[build_job_name].PARAMETERS.CONFIGURATION
                                 def build_job_name = build_job.key
 
                                 CreateSetupStage(pipelineConfig, repositoryName, projectName, pipelineName, branchName, platform.key, build_job.key, envVars).call()
@@ -533,13 +531,10 @@ try {
                                 }
                             }
                             finally {
-                                try {
-                                    if (env.MARS_REPO && platform.value.build_types[build_job_name].PARAMETERS.containsKey('TEST_METRICS') && platform.value.build_types[build_job_name].PARAMETERS.TEST_METRICS == 'True') {
-                                        CreateTestMetricsStage(pipelineConfig, branchName, envVars, build_job_name, output_directory, configuration).call()
-                                    }
-                                }
-                                catch(Exception e) {
-                                    echo "Test metrics failed due to: ${e}"
+                                if (env.MARS_REPO && platform.value.build_types[build_job_name].PARAMETERS.containsKey('TEST_METRICS') && platform.value.build_types[build_job_name].PARAMETERS.TEST_METRICS == 'True') {
+                                    def output_directory = platform.value.build_types[build_job_name].PARAMETERS.OUTPUT_DIRECTORY
+                                    def configuration = platform.value.build_types[build_job_name].PARAMETERS.CONFIGURATION
+                                    CreateTestMetricsStage(pipelineConfig, branchName, envVars, build_job_name, output_directory, configuration).call()
                                 }
                                 CreateTeardownStage(envVars).call()
                             }
