@@ -216,7 +216,9 @@ namespace AzToolsFramework::AssetUtils
         constexpr const char* AssetProcessorGamePlatformConfigFileName = "AssetProcessorGamePlatformConfig.ini";
         constexpr const char* AssetProcessorGamePlatformConfigSetreg = "AssetProcessorGamePlatformConfig.setreg";
         AZStd::vector<AZ::IO::Path> configFiles;
-        AZ::IO::Path configRoot(engineRoot);
+
+        // Add the AssetProcessorPlatformConfig setreg file at the engine root
+        configFiles.push_back(AZ::IO::Path(engineRoot) / AssetProcessorPlatformConfigSetreg);
 
         if (addPlatformConfigs)
         {
