@@ -1350,16 +1350,12 @@ void MainWindow::InitActions()
         .SetShortcut(tr("Ctrl+Alt+Space"))
         .SetToolTip(tr("Show &Quick Access Bar (Ctrl+Alt+Space)"));
 
-    // Disable layouts menu
-    if (CViewManager::IsMultiViewportEnabled())
-    {
-        am->AddAction(ID_VIEW_LAYOUTS, tr("Layouts"));
+    am->AddAction(ID_VIEW_LAYOUTS, tr("Layouts"));
 
-        am->AddAction(ID_VIEW_SAVELAYOUT, tr("Save Layout..."))
-            .Connect(&QAction::triggered, this, &MainWindow::SaveLayout);
-        am->AddAction(ID_VIEW_LAYOUT_LOAD_DEFAULT, tr("Restore Default Layout"))
-            .Connect(&QAction::triggered, [this]() { m_viewPaneManager->RestoreDefaultLayout(true); });
-    }
+    am->AddAction(ID_VIEW_SAVELAYOUT, tr("Save Layout..."))
+        .Connect(&QAction::triggered, this, &MainWindow::SaveLayout);
+    am->AddAction(ID_VIEW_LAYOUT_LOAD_DEFAULT, tr("Restore Default Layout"))
+        .Connect(&QAction::triggered, [this]() { m_viewPaneManager->RestoreDefaultLayout(true); });
 
     am->AddAction(ID_SKINS_REFRESH, tr("Refresh Style"))
         .SetToolTip(tr("Refreshes the editor stylesheet"))
