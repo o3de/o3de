@@ -10,9 +10,9 @@
 #
 
 # Set the user home directory
-set(O3DE_BUILD_SERVER_HOME_PATH "" CACHE PATH "!!!ONLY FOR BUILD SERVERS!!! This will override the home directory")
-if(O3DE_BUILD_SERVER_HOME_PATH)
-    set(home_directory ${O3DE_BUILD_SERVER_HOME_PATH})
+set(O3DE_HOME_PATH "" CACHE PATH "Override the user home to this path")
+if(O3DE_HOME_PATH)
+    set(home_directory ${O3DE_HOME_PATH})
 elseif(CMAKE_HOST_WIN32)
     file(TO_CMAKE_PATH "$ENV{USERPROFILE}" home_directory)
 elseif()
@@ -23,12 +23,12 @@ if (NOT home_directory)
 endif()
 
 ################################################################################
-# O3DE_BUILD_SERVER_REGISTER_ENGINE_PATH
+# O3DE_REGISTER_ENGINE_PATH
 #
 # If you set this Cache Variable it will delete <user>/.o3de folder and recreate
 # it by calling o3de register --this-engine using the supplied engine path.
-# This is really only useful for build servers which have nothing registered and
-# need to register, build and test a specific engine.
+# This is useful for build servers which have nothing registered and
+# need to register --this-engine, build and test a specific engine.
 # Note: If this is run and an o3de object has a restricted set, that restricted
 # must be 'o3de' or registration will fail because the only restricted 'o3de' is
 # registered by default. So theoretically anything we ship as part of the engine
@@ -55,10 +55,9 @@ endif()
 #   RESULT_VARIABLE o3de_register_outside_gem_cmd_result
 #  )
 ################################################################################
-set(O3DE_BUILD_SERVER_REGISTER_ENGINE_PATH "" CACHE PATH "!!!ONLY FOR BUILD SERVERS!!! This will wipe out the <user>/.o3de folder and register --this-engine using the provided engine path.")
-if(O3DE_BUILD_SERVER_REGISTER_ENGINE_PATH)
-    message(STATUS "O3DE_BUILD_SERVER_REGISTER_ENGINE_PATH is set to ${O3DE_BUILD_SERVER_REGISTER_ENGINE_PATH}.")
-    message(STATUS "Delete ${home_directory}/.o3de and try to register --this-engine using the ${O3DE_BUILD_SERVER_REGISTER_ENGINE_PATH}...")
+set(O3DE_REGISTER_ENGINE_PATH "" CACHE PATH "!!!ONLY FOR BUILD SERVERS!!! This will wipe out the <user>/.o3de folder and register --this-engine using the provided engine path.")
+if(O3DE_REGISTER_ENGINE_PATH)
+    message(STATUS "Delete ${home_directory}/.o3de and try to register ${O3DE_REGISTER_ENGINE_PATH}...")
 
     if(EXISTS ${home_directory}/.o3de)
         file(REMOVE_RECURSE ${home_directory}/.o3de)
@@ -66,17 +65,17 @@ if(O3DE_BUILD_SERVER_REGISTER_ENGINE_PATH)
 
     if(CMAKE_HOST_WIN32)
         execute_process(
-                  COMMAND cmd /c ${O3DE_BUILD_SERVER_REGISTER_ENGINE_PATH}/scripts/o3de.bat register --this-engine
+                  COMMAND cmd /c ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.bat register --this-engine
                   RESULT_VARIABLE o3de_register_this_engine_cmd_result
                )
     else()
         execute_process(
-                  COMMAND bash ${O3DE_BUILD_SERVER_REGISTER_ENGINE_PATH}/scripts/o3de.sh register --this-engine
+                  COMMAND bash ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.sh register --this-engine
                   RESULT_VARIABLE o3de_register_this_engine_cmd_result
                )
     endif()
     if(o3de_register_this_engine_cmd_result)
-        message(FATAL_ERROR "An error occured trying to o3de register --this-engine: ${o3de_register_this_engine_cmd_result}")
+        message(FATAL_ERROR "An error occured trying to ${O3DE_REGISTER_ENGINE_PATH}/scripts>o3de register --this-engine: ${o3de_register_this_engine_cmd_result}")
     else()
         message(STATUS "Registration successfull.")
     endif()
