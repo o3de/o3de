@@ -97,7 +97,6 @@ def lambda_handler(event, context):
         # Validate github webhook request here since request body cannot be passed to API Gateway lambda authorizer.
         if verify_signature(headers, payload):
             # Convert payload from string type to json to get repository name and branch name
-            print(payload)
             payload = json.loads(payload)
             repository_name = payload['repository']['full_name']
             if headers['X-GitHub-Event'] == 'delete':
