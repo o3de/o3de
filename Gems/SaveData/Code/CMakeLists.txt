@@ -46,6 +46,9 @@ ly_add_target(
             Gem::SaveData.Static
 )
 
+# the SaveData module above is only used in Clients by default.
+ly_create_alias(NAME SaveData.Clients NAMESPACE Gem TARGETS Gem::SaveData)
+
 ################################################################################
 # Tests
 ################################################################################

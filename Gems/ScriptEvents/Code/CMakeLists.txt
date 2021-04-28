@@ -40,6 +40,11 @@ ly_add_target(
             Gem::ScriptEvents.Static
 )
 
+# the above module is for use in clients and servers
+ly_create_alias(NAME ScriptEvents.Clients NAMESPACE Gem TARGETS Gem::ScriptEvents)
+ly_create_alias(NAME ScriptEvents.Servers NAMESPACE Gem TARGETS Gem::ScriptEvents)
+
+
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME ScriptEvents.Editor GEM_MODULE
@@ -61,6 +66,10 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AssetBuilderSDK
                 Gem::ScriptEvents.Static
     )
+
+    # the above module is for use in dev tools.
+    ly_create_alias(NAME ScriptEvents.Tools    NAMESPACE Gem TARGETS Gem::ScriptEvents.Editor)
+    ly_create_alias(NAME ScriptEvents.Builders NAMESPACE Gem TARGETS Gem::ScriptEvents.Editor)
 endif()
 
 ################################################################################

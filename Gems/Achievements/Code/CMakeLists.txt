@@ -44,3 +44,6 @@ ly_add_target(
         PRIVATE
             Gem::Achievements.Static
 )
+
+# we'll load the above "Gem::Achievements" module in clients only.
+ly_create_alias(NAME Achievements.Clients NAMESPACE Gem TARGETS Gem::Achievements)

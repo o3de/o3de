@@ -22,3 +22,9 @@ ly_add_target(
             Legacy::CryCommon
             AZ::AzFramework
 )
+
+# the above module is for use in all application types (there is no tool specialization)
+ly_create_alias(NAME TextureAtlas.Servers  NAMESPACE Gem TARGETS Gem::TextureAtlas)
+ly_create_alias(NAME TextureAtlas.Clients  NAMESPACE Gem TARGETS Gem::TextureAtlas)
+ly_create_alias(NAME TextureAtlas.Builders NAMESPACE Gem TARGETS Gem::TextureAtlas)
+ly_create_alias(NAME TextureAtlas.Tools    NAMESPACE Gem TARGETS Gem::TextureAtlas)

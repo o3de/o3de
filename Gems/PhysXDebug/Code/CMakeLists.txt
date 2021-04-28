@@ -44,6 +44,9 @@ ly_add_target(
         Gem::PhysX
         Gem::ImGui
 )
+# use the PhysXDebug module in Clients and Servers:
+ly_create_alias(NAME PhysXDebug.Clients NAMESPACE Gem TARGETS Gem::PhysXDebug)
+ly_create_alias(NAME PhysXDebug.Servers NAMESPACE Gem TARGETS Gem::PhysXDebug)
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
@@ -73,4 +76,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             Gem::PhysX.Editor
             Gem::ImGui.Editor
     )
+    # use the PhysXDebug.Editor module in dev tools:
+    ly_create_alias(NAME PhysXDebug.Builders NAMESPACE Gem TARGETS Gem::PhysXDebug.Editor)
+    ly_create_alias(NAME PhysXDebug.Tools    NAMESPACE Gem TARGETS Gem::PhysXDebug.Editor)
+
 endif()

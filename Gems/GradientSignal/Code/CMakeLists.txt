@@ -47,6 +47,10 @@ ly_add_target(
         Gem::SurfaceData
 )
 
+# Load the "Gem::GradientSignal" module in Clients and Servers
+ly_create_alias(NAME GradientSignal.Clients NAMESPACE Gem TARGETS Gem::GradientSignal)
+ly_create_alias(NAME GradientSignal.Servers NAMESPACE Gem TARGETS Gem::GradientSignal)
+
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     
     ly_add_target(
@@ -91,6 +95,11 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             Gem::LmbrCentral.Editor
             Gem::SurfaceData.Editor
     )
+
+    # Load the "Gem::GradientSignal.Editor" module in Builders and Tools
+    ly_create_alias(NAME GradientSignal.Builders NAMESPACE Gem TARGETS Gem::GradientSignal.Editor)
+    ly_create_alias(NAME GradientSignal.Tools    NAMESPACE Gem TARGETS Gem::GradientSignal.Editor)
+
 
 endif()
 

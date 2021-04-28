@@ -719,3 +719,20 @@ function(ly_project_add_subdirectory project_name)
        endif()
     endif()
 endfunction()
+
+# given a target name, returns the "real" name of the target if its an alias.
+# this function recursively de-aliases
+function(ly_de_alias_target target_name output_variable_name)
+    # its not okay to call get_target_property on a non-existant target
+    if (NOT TARGET ${target_name})
+        message(FATAL_ERROR "ly_de_alias_target called on non-existant target: ${target_name}")
+    endif()
+    
+    while(target_name)
+        set(de_aliased_target_name ${target_name})
+        
+        get_target_property(target_name ${target_name} ALIASED_TARGET)
+    endwhile()
+
+    set(${output_variable_name} ${de_aliased_target_name} PARENT_SCOPE)
+endfunction()

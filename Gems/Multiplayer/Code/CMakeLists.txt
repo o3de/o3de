@@ -58,6 +58,33 @@ ly_add_target(
         Gem::CertificateManager
 )
 
+ly_add_target(
+    NAME Multiplayer.Debug ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAMESPACE Gem
+    FILES_CMAKE
+        multiplayer_debug_files.cmake
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            Source
+            .
+        PUBLIC
+            Include
+    BUILD_DEPENDENCIES
+        PRIVATE
+            AZ::AzCore
+            AZ::AtomCore
+            AZ::AzFramework
+            AZ::AzNetworking
+            Gem::Atom_Feature_Common.Static
+            Gem::Multiplayer.Static
+            Gem::ImGui.Static
+)
+
+# The above "Multiplayer" target is used by clients and servers
+# the debug is only used on Clients
+ly_create_alias(NAME Multiplayer.Clients NAMESPACE Gem TARGETS Gem::Multiplayer Gem::Multiplayer.Debug)
+ly_create_alias(NAME Multiplayer.Servers NAMESPACE Gem TARGETS Gem::Multiplayer)
+
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME Multiplayer.Tools.Static STATIC
@@ -124,6 +151,10 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::Multiplayer.Tools
     )
 
+    # use the Multiplayer.Editor module in tools and builders.  Tools also get the visual debug view
+    ly_create_alias(NAME Multiplayer.Tools     NAMESPACE Gem TARGETS Gem::Multiplayer.Editor Gem::Multiplayer.Debug Gem::Multiplayer.PrefabProcessor)
+    ly_create_alias(NAME Multiplayer.Builders  NAMESPACE Gem TARGETS Gem::Multiplayer.Editor Gem::Multiplayer.PrefabProcessor)
+
 endif()
 
 if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
@@ -173,25 +204,3 @@ if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     endif()
 
 endif()
-
-ly_add_target(
-    NAME Multiplayer.Debug ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
-    NAMESPACE Gem
-    FILES_CMAKE
-        multiplayer_debug_files.cmake
-    INCLUDE_DIRECTORIES
-        PRIVATE
-            Source
-            .
-        PUBLIC
-            Include
-    BUILD_DEPENDENCIES
-        PRIVATE
-            AZ::AzCore
-            AZ::AtomCore
-            AZ::AzFramework
-            AZ::AzNetworking
-            Gem::Atom_Feature_Common.Static
-            Gem::Multiplayer.Static
-            Gem::ImGui.Static
-)

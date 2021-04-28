@@ -31,6 +31,26 @@ ly_add_target(
 ################################################################################
 # Gem dependencies
 ################################################################################
+
+# The GameLauncher uses "Client" gem variants:
+ly_enable_gems(PROJECT_NAME AutomatedTesting GEM_FILE enabled_gems.cmake
+    TARGETS AutomatedTesting.GameLauncher
+    VARIANTS Clients)
+
+# The Editor uses Tools gem variants:
+ly_enable_gems(
+    PROJECT_NAME AutomatedTesting GEM_FILE enabled_gems.cmake
+    TARGETS Editor
+    VARIANTS Tools)
+
+# The pipeline tools use Builders gem variants:
+ly_enable_gems(
+    PROJECT_NAME AutomatedTesting GEM_FILE enabled_gems.cmake
+    TARGETS AssetBuilder AssetProcessor AssetProcessorBatch
+    VARIANTS Builders)
+
+# old system (remove when all gems are ported to the new system above)
+
 ly_add_project_dependencies(
     PROJECT_NAME
         AutomatedTesting

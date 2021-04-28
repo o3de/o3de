@@ -47,3 +47,9 @@ ly_add_target(
     RUNTIME_DEPENDENCIES
         Gem::HttpRequestor
 )
+
+# the above module is for use in all application types except builders
+ly_create_alias(NAME Twitch.Servers  NAMESPACE Gem TARGETS Gem::Twitch)
+ly_create_alias(NAME Twitch.Clients  NAMESPACE Gem TARGETS Gem::Twitch)
+ly_create_alias(NAME Twitch.Tools    NAMESPACE Gem TARGETS Gem::Twitch)
+

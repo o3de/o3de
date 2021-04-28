@@ -48,6 +48,11 @@ ly_add_target(
             Gem::LmbrCentral.Static
 )
 
+# by default, load the above "Gem::LmbrCentral" module in Client and Server
+ly_create_alias(NAME LmbrCentral.Clients NAMESPACE Gem TARGETS Gem::LmbrCentral)
+ly_create_alias(NAME LmbrCentral.Servers NAMESPACE Gem TARGETS Gem::LmbrCentral)
+
+
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME LmbrCentral.Editor.Static STATIC
@@ -101,6 +106,10 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
         TARGETS LmbrCentral.Editor
         FILES ${QT_LRELEASE_EXECUTABLE}
     )
+
+    # by default, load the above "Gem::LmbrCentral.Editor" module in dev tools
+    ly_create_alias(NAME LmbrCentral.Builders NAMESPACE Gem TARGETS Gem::LmbrCentral.Editor)
+    ly_create_alias(NAME LmbrCentral.Tools NAMESPACE Gem TARGETS Gem::LmbrCentral.Editor)
 
 endif()
 

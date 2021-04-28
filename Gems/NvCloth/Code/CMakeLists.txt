@@ -56,6 +56,10 @@ ly_add_target(
         Gem::AtomLyIntegration_CommonFeatures
 )
 
+# use the NvCloth module in clients and servers:
+ly_create_alias(NAME NvCloth.Clients NAMESPACE Gem TARGETS Gem::NvCloth)
+ly_create_alias(NAME NvCloth.Servers NAMESPACE Gem TARGETS Gem::NvCloth)
+
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME NvCloth.Editor.Static STATIC
@@ -97,6 +101,10 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         RUNTIME_DEPENDENCIES
             Gem::AtomLyIntegration_CommonFeatures.Editor
     )
+
+    # use the NvCloth.Editor module in dev tools:
+    ly_create_alias(NAME NvCloth.Builders NAMESPACE Gem TARGETS Gem::NvCloth.Editor)
+    ly_create_alias(NAME NvCloth.Tools    NAMESPACE Gem TARGETS Gem::NvCloth.Editor)
 endif()
 
 ################################################################################

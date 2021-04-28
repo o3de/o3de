@@ -51,6 +51,10 @@ ly_add_target(
         Gem::SurfaceData
 )
 
+# the above module is for use in clients and server type applications
+ly_create_alias(NAME Vegetation.Servers NAMESPACE Gem TARGETS Gem::Vegetation)
+ly_create_alias(NAME Vegetation.Clients NAMESPACE Gem TARGETS Gem::Vegetation)
+
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME Vegetation.Editor GEM_MODULE
@@ -75,6 +79,10 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         Gem::GradientSignal.Editor
         Gem::SurfaceData.Editor
     )
+    # the above module is for use in dev tools
+    ly_create_alias(NAME Vegetation.Builders NAMESPACE Gem TARGETS Gem::Vegetation.Editor)
+    ly_create_alias(NAME Vegetation.Tools    NAMESPACE Gem TARGETS Gem::Vegetation.Editor)
+
 endif()
 
 ################################################################################

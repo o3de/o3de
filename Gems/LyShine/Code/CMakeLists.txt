@@ -56,6 +56,9 @@ ly_add_target(
         Gem::TextureAtlas
 )
 
+# by default, load the above "Gem::LyShine" module in Client applications:
+ly_create_alias(NAME LyShine.Clients NAMESPACE Gem TARGETS Gem::LyShine)
+
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME LyShine.Editor.Static STATIC
@@ -123,6 +126,10 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
             Gem::LmbrCentral.Editor
             Gem::TextureAtlas
 )
+
+    # by default, load the above "Gem::LyShine.Editor" module in dev tools:
+    ly_create_alias(NAME LyShine.Builders NAMESPACE Gem TARGETS Gem::LyShine.Editor)
+    ly_create_alias(NAME LyShine.Tools NAMESPACE Gem TARGETS Gem::LyShine.Editor)
 endif()
 
 ################################################################################

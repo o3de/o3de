@@ -42,3 +42,7 @@ ly_add_target(
     RUNTIME_DEPENDENCIES
         Gem::LmbrCentral
 )
+
+# servers and clients use the above module.
+ly_create_alias(NAME AutomatedLauncherTesting.Servers NAMESPACE Gem TARGETS Gem::AutomatedLauncherTesting)
+ly_create_alias(NAME AutomatedLauncherTesting.Clients NAMESPACE Gem TARGETS Gem::AutomatedLauncherTesting)

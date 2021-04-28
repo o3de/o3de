@@ -40,3 +40,10 @@ ly_add_target(
         PRIVATE
             Gem::LyShineExamples.Static
 )
+
+# if enabled, LyShineExamples is used by all kinds of applications
+ly_create_alias(NAME LyShineExamples.Builders NAMESPACE Gem TARGETS Gem::LyShineExamples)
+ly_create_alias(NAME LyShineExamples.Tools    NAMESPACE Gem TARGETS Gem::LyShineExamples)
+ly_create_alias(NAME LyShineExamples.Clients  NAMESPACE Gem TARGETS Gem::LyShineExamples)
+ly_create_alias(NAME LyShineExamples.Servers  NAMESPACE Gem TARGETS Gem::LyShineExamples)
+

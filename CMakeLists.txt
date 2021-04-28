@@ -67,6 +67,7 @@ include(cmake/Deployment.cmake)
 include(cmake/3rdParty.cmake)
 include(cmake/LYPython.cmake)
 include(cmake/LYWrappers.cmake)
+include(cmake/Gems.cmake)
 include(cmake/UnitTest.cmake)
 include(cmake/LYTestWrappers.cmake)
 include(cmake/Monolithic.cmake)
@@ -128,24 +129,32 @@ foreach(external_directory ${LY_EXTERNAL_SUBDIRS})
 endforeach()
 
 # The following steps have to be done after all targets are registered:
-# 1. generate a settings registry .setreg file for all ly_add_project_dependencies() and ly_add_target_dependencies() calls
+# 1. Add any dependencies registered via ly_enable_gems
+ly_enable_gems_delayed()
+
+# 2. generate a settings registry .setreg file for all ly_add_project_dependencies() and ly_add_target_dependencies() calls
 #    to provide applications with the filenames of gem modules to load
 #    This must be done before ly_delayed_target_link_libraries() as that inserts BUILD_DEPENDENCIES as MANUALLY_ADDED_DEPENDENCIES
 #    if the build dependency is a MODULE_LIBRARY. That would cause a false load dependency to be generated
 ly_delayed_generate_settings_registry()
-# 2. link targets where the dependency was yet not declared, we need to have the declaration so we do different
+
+# 3. link targets where the dependency was yet not declared, we need to have the declaration so we do different
 #    linking logic depending on the type of target
 ly_delayed_target_link_libraries()
-# 3. generate a registry file for unit testing for platforms that support unit testing
+
+# 4. generate a registry file for unit testing for platforms that support unit testing
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_delayed_generate_unit_test_module_registry()
 endif()
-# 4. inject runtime dependencies to the targets. We need to do this after (1) since we are going to walk through
+
+# 5. inject runtime dependencies to the targets. We need to do this after (1) since we are going to walk through
 #    the dependencies
 include(cmake/RuntimeDependencies.cmake)
-# 5. Perform test impact framework post steps once all of the targets have been enumerated
+
+# 6. Perform test impact framework post steps once all of the targets have been enumerated
 ly_test_impact_post_step()
-# 6. Generate the O3DE find file and setup install locations for scripts, tools, assets etc., required by the engine
+
+# 7. Generate the O3DE find file and setup install locations for scripts, tools, assets etc., required by the engine
 if(NOT INSTALLED_ENGINE)
     ly_setup_o3de_install()
 

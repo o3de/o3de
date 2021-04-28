@@ -44,6 +44,10 @@ ly_add_target(
         Gem::LmbrCentral
 )
 
+# if enabled, "Maestro" module is used for Clients and Servers:
+ly_create_alias(NAME Maestro.Clients  NAMESPACE Gem TARGETS Gem::Maestro)
+ly_create_alias(NAME Maestro.Servers  NAMESPACE Gem TARGETS Gem::Maestro)
+
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME Maestro.Editor GEM_MODULE
@@ -73,6 +77,10 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral.Editor
     )
+    # the .Editor variant is used in dev tools:
+    ly_create_alias(NAME Maestro.Tools    NAMESPACE Gem TARGETS Gem::Maestro.Editor)
+    ly_create_alias(NAME Maestro.Builders NAMESPACE Gem TARGETS Gem::Maestro.Editor)
+
 endif()
 
 ################################################################################

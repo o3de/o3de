@@ -93,6 +93,9 @@ ly_add_target(
             Gem::AudioEngineWwise.Static
 )
 
+# we'll load the above "Gem::AudioEngineWwise" module in clients.
+ly_create_alias(NAME AudioEngineWwise.Clients NAMESPACE Gem TARGETS Gem::AudioEngineWwise)
+
 ################################################################################
 # Tests
 ################################################################################
@@ -229,6 +232,10 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
         RUNTIME_DEPENDENCIES
             Gem::AudioSystem.Editor
     )
+
+    # by default, we'll load the above "Gem::AudioEngineWwise.Editor" module in builders and tools.
+    ly_create_alias(NAME AudioEngineWwise.Builders NAMESPACE Gem TARGETS Gem::AudioEngineWwise.Editor)
+    ly_create_alias(NAME AudioEngineWwise.Tools NAMESPACE Gem TARGETS Gem::AudioEngineWwise.Editor)
 
     if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         ly_add_target(

@@ -54,6 +54,11 @@ ly_add_target(
         Gem::ScriptCanvas
 )
 
+# By default, the above module is the Client/Server module
+ly_create_alias(NAME ScriptCanvasDeveloper.Clients NAMESPACE Gem TARGETS Gem::ScriptCanvasDeveloper)
+ly_create_alias(NAME ScriptCanvasDeveloper.Servers NAMESPACE Gem TARGETS Gem::ScriptCanvasDeveloper)
+
+
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME ScriptCanvasDeveloper.Editor GEM_MODULE
@@ -82,4 +87,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         RUNTIME_DEPENDENCIES
             Gem::ScriptCanvas.Editor
     )
+    # By Default the above module is the dev tools module
+    ly_create_alias(NAME ScriptCanvasDeveloper.Builders NAMESPACE Gem TARGETS Gem::ScriptCanvasDeveloper.Editor)
+    ly_create_alias(NAME ScriptCanvasDeveloper.Tools    NAMESPACE Gem TARGETS Gem::ScriptCanvasDeveloper.Editor)
+
 endif()

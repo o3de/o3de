@@ -51,6 +51,10 @@ ly_add_target(
             Gem::AWSClientAuth.Static
 )
 
+# servers and clients use the above module.
+ly_create_alias(NAME AWSClientAuth.Servers NAMESPACE Gem TARGETS Gem::AWSClientAuth)
+ly_create_alias(NAME AWSClientAuth.Clients NAMESPACE Gem TARGETS Gem::AWSClientAuth)
+
 ################################################################################
 # Tests
 ################################################################################
