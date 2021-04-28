@@ -44,7 +44,4 @@ ConnectionUnitTest::~ConnectionUnitTest()
 
 }
 
-
-
-REGISTER_UNIT_TEST(ConnectionUnitTest)
-
+// REGISTER_UNIT_TEST(ConnectionUnitTest) // disabling due to intermittent test failure - LYN-3368

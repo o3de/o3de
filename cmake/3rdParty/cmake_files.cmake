@@ -14,7 +14,6 @@ set(FILES
     FindClang.cmake
     Finddyad.cmake
     FindFbxSdk.cmake
-    Findlibav.cmake
     FindOpenGLInterface.cmake
     FindRadTelemetry.cmake
     FindVkValidation.cmake
