@@ -13,9 +13,6 @@
 #include <AzToolsFramework/ViewportUi/Button.h>
 #include <AzToolsFramework/ViewportUi/ButtonGroup.h>
 
-#pragma optimize("", off)
-#pragma inline_depth(0)
-
 namespace AzToolsFramework::ViewportUi::Internal
 {
     ButtonGroup::ButtonGroup()

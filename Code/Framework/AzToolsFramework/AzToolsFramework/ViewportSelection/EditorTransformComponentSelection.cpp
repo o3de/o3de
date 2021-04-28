@@ -440,13 +440,6 @@ namespace AzToolsFramework
             &ViewportUi::ViewportUiRequestBus::Events::RemoveCluster,
             clusterId);
     }
-  
-    static void RemoveComponentModeSwitcher(const ViewportUi::SwitcherId switcherId)
-    {
-        ViewportUi::ViewportUiRequestBus::Event(
-            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RemoveSwitcher,
-            switcherId);
-    }
 
     static void SetViewportUiClusterVisible(const ViewportUi::ClusterId clusterId, const bool visible)
     {
@@ -471,18 +464,6 @@ namespace AzToolsFramework
             buttonId, ViewportUi::DefaultViewportId,
             &ViewportUi::ViewportUiRequestBus::Events::CreateClusterButton,
             clusterId, AZStd::string::format(":/stylesheet/img/UI20/toolbar/%s.svg", iconName));
-
-        return buttonId;
-    }
-
-    static ViewportUi::ButtonId RegisterSwitcherButton(
-        const ViewportUi::SwitcherId switcherId, const char* iconPath, const char* buttonName)
-    {
-        ViewportUi::ButtonId buttonId;
-        ViewportUi::ViewportUiRequestBus::EventResult(
-            buttonId, ViewportUi::DefaultViewportId,
-            &ViewportUi::ViewportUiRequestBus::Events::CreateSwitcherButton, switcherId,
-            iconPath, buttonName);
 
         return buttonId;
     }
@@ -1043,8 +1024,6 @@ namespace AzToolsFramework
         EditorEntityLockComponentNotificationBus::Router::BusRouterConnect();
         EditorManipulatorCommandUndoRedoRequestBus::Handler::BusConnect(entityContextId);
 
-        CreateComponentModeSwitcher();
-
         CreateTransformModeSelectionCluster();
         RegisterActions();
         SetupBoxSelect();
@@ -1058,8 +1037,6 @@ namespace AzToolsFramework
 
         DestroyTransformModeSelectionCluster(m_transformModeClusterId);
         UnregisterActions();
-
-        RemoveComponentModeSwitcher(m_testSwitcherId);
 
         m_pivotOverrideFrame.Reset();
 
@@ -2582,55 +2559,6 @@ namespace AzToolsFramework
             &ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler,
             m_transformModeClusterId,
             m_transformModeSelectionHandler);
-    }
-
-    void EditorTransformComponentSelection::CreateComponentModeSwitcher()
-    {
-        // Create the switcher
-        ViewportUi::ViewportUiRequestBus::EventResult(
-            m_testSwitcherId, ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateSwitcher);
-
-        // Create and register the buttons
-        m_boxShapeButtonId =
-            RegisterSwitcherButton(m_testSwitcherId, AZStd::string::format("Editor/Icons/Switcher/%s.svg", "BoxShape").c_str(), "Box Shape");
-        m_physxColliderButtonId = RegisterSwitcherButton(
-            m_testSwitcherId, AZStd::string::format("Editor/Icons/Switcher/%s.svg", "PhysXCollider").c_str(), "PhysX Collider");
-        m_transformButtonId = RegisterSwitcherButton(
-            m_testSwitcherId, AZStd::string::format("Editor/Icons/Switcher/%s.svg", "Transform").c_str(), "Transform");
-
-        // Set the initial active button
-        ViewportUi::ViewportUiRequestBus::Event(
-            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton, m_testSwitcherId,
-            m_physxColliderButtonId);
-
-        const auto onButtonClicked = [this](ViewportUi::ButtonId buttonId) {
-            if (buttonId == m_boxShapeButtonId)
-            {
-                ViewportUi::ViewportUiRequestBus::Event(
-                    ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton, m_testSwitcherId,
-                    m_boxShapeButtonId);
-                AZ_Printf("ViewportUi", "Box Shape");
-            }
-            else if (buttonId == m_physxColliderButtonId)
-            {
-                ViewportUi::ViewportUiRequestBus::Event(
-                    ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton, m_testSwitcherId,
-                    m_physxColliderButtonId);
-                AZ_Printf("ViewportUi", "PhysXCollider");
-            }
-            else if (buttonId == m_transformButtonId)
-            {
-                ViewportUi::ViewportUiRequestBus::Event(
-                    ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton, m_testSwitcherId,
-                    m_transformButtonId);
-                AZ_Printf("ViewportUi", "Transform");
-            }
-        };
-
-        m_testSwitcherHandler = AZ::Event<ViewportUi::ButtonId>::Handler(onButtonClicked);
-        ViewportUi::ViewportUiRequestBus::Event(
-            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RegisterSwitcherEventHandler, m_testSwitcherId,
-            m_testSwitcherHandler);
     }
 
     EditorTransformComponentSelectionRequests::Mode EditorTransformComponentSelection::GetTransformMode()
