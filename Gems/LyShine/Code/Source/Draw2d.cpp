@@ -325,7 +325,7 @@ void CDraw2d::DrawRectOutlineTextured(AZ::Data::Instance<AZ::RPI::Image> image,
     float rectWidth = widthVec.GetLength();
     float rectHeight = heightVec.GetLength();
 
-    // the outline "width" will be based on the texture height
+    // the outline thickness will be based on the texture height
     float textureHeight = image ? aznumeric_cast<float>(image->GetDescriptor().m_size.m_height) : 0.0f;
     if (textureHeight <= 0.0f)
     {
@@ -840,7 +840,7 @@ void CDraw2d::DeferredRectOutline::Draw(AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext
         vertices[i].st = Vec2(m_uvs[i].GetX(), m_uvs[i].GetY());
     }
 
-    // The indicies are for four quads (one for each side of the rect).
+    // The indices are for four quads (one for each side of the rect).
     // The quads are drawn using a triangle list (simpler than a tri-strip)
     // We draw each quad in the same order that the image component draws quads to
     // maximize chances of things lining up so each quad is drawn as two triangles:
@@ -853,7 +853,8 @@ void CDraw2d::DeferredRectOutline::Draw(AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext
     //
     // The two triangles would be 0,1,2 and 2,1,3
     //
-    uint16 indicies[NUM_INDICES] =
+    static constexpr int32 NUM_INDICES = 24;
+    uint16 indices[NUM_INDICES] =
     {
         0, 1, 4,    4, 1, 5,    // top quad
         6, 7, 2,    2, 7, 3,    // bottom quad
@@ -895,7 +896,7 @@ void CDraw2d::DeferredRectOutline::Draw(AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext
 
     // Add the primitive to the dynamic draw context for drawing
     dynamicDraw->SetPrimitiveType(AZ::RHI::PrimitiveTopology::TriangleList);
-    dynamicDraw->DrawIndexed(vertices, NUM_VERTS, indicies, NUM_INDICES, AZ::RHI::IndexFormat::Uint16, drawSrg);
+    dynamicDraw->DrawIndexed(vertices, NUM_VERTS, indices, NUM_INDICES, AZ::RHI::IndexFormat::Uint16, drawSrg);
 
 }
 
