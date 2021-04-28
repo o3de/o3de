@@ -22,13 +22,13 @@ namespace NvCloth
 {
     struct MeshNodeInfo;
 
-    //! Skinning information of a particle.
+    //! Skinning information of a vertex.
     struct SkinningInfo
     {
-        //! Weights of each joint that influence the particle.
+        //! Weights of each joint that influence the vertex.
         AZStd::vector<float> m_jointWeights;
 
-        //! List of joints that influence the particle.
+        //! List of joints that influence the vertex.
         AZStd::vector<AZ::u16> m_jointIndices;
 
         //! List indicating which joints must be skipped during skinning.
@@ -47,7 +47,9 @@ namespace NvCloth
         static AZStd::unique_ptr<ActorClothSkinning> Create(
             AZ::EntityId entityId, 
             const MeshNodeInfo& meshNodeInfo,
-            const size_t numSimParticles);
+            const size_t numVertices,
+            const size_t numSimulatedVertices,
+            const AZStd::vector<int>& meshRemappedVertices);
 
         explicit ActorClothSkinning(AZ::EntityId entityId);
 
@@ -58,15 +60,13 @@ namespace NvCloth
         //! @note w components are not affected.
         virtual void ApplySkinning(
             const AZStd::vector<AZ::Vector4>& originalPositions, 
-            AZStd::vector<AZ::Vector4>& positions,
-            const AZStd::vector<int>& meshRemappedVertices) = 0;
+            AZStd::vector<AZ::Vector4>& positions) = 0;
 
         //! Applies skinning to a list of positions and vectors whose vertices
-        //! have not been used for simulation (remapped index is negative).
-        virtual void ApplySkinninOnRemovedVertices(
+        //! have not been used for simulation.
+        virtual void ApplySkinninOnNonSimulatedVertices(
             const MeshClothInfo& originalData,
-            ClothComponentMesh::RenderData& renderData,
-            const AZStd::vector<int>& meshRemappedVertices) = 0;
+            ClothComponentMesh::RenderData& renderData) = 0;
 
         //! Updates visibility variables.
         void UpdateActorVisibility();
@@ -80,10 +80,16 @@ namespace NvCloth
     protected:
         AZ::EntityId m_entityId;
 
-        // Skinning information of all particles
+        // Skinning information of all vertices
         AZStd::vector<SkinningInfo> m_skinningData;
 
-        // Collection of skeleton joint indices that influence the particles
+        // Indices to skinning data of vertices that are part of the simulation
+        AZStd::vector<AZ::u32> m_simulatedVertices;
+
+        // Indices to skinning data of vertices that are not part of the simulation
+        AZStd::vector<AZ::u32> m_nonSimulatedVertices;
+
+        // Collection of skeleton joint indices that influence the vertices
         AZStd::vector<AZ::u16> m_jointIndices;
 
         // Visibility variables
