@@ -26,6 +26,7 @@
 namespace
 {
     const char* const spriteExtension = "sprite";
+    const char* const imageExtension = "streamingimage";
 
     // Increment this when the Sprite Serialize(TSerialize) function
     // changes to be incompatible with previous data
@@ -663,9 +664,19 @@ void CSprite::Shutdown()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 CSprite* CSprite::LoadSprite(const string& pathname)
 {
+    AZStd::string sourcePathname = pathname;
+
+    // Strip image product extension if exists
+    AZStd::string extension;
+    AzFramework::StringFunc::Path::GetExtension(pathname.c_str(), extension, false);
+    if (extension.compare(imageExtension) == 0)
+    {
+        AzFramework::StringFunc::Path::StripExtension(sourcePathname);
+    }
+
     AZStd::string spritePath;
     AZStd::string texturePath;
-    bool validAssetPaths = GetAssetPaths(pathname.c_str(), spritePath, texturePath);
+    bool validAssetPaths = GetAssetPaths(sourcePathname, spritePath, texturePath);
     
     if (!validAssetPaths)
     {

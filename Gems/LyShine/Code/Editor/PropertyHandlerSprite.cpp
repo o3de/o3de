@@ -162,12 +162,17 @@ bool PropertyHandlerSprite::ReadValuesIntoGUI(size_t index, PropertySpriteCtrl* 
 
     ctrl->blockSignals(true);
     {
-        ctrl->SetCurrentAssetType(instance.GetAssetType());
+        // Set the asset type for the PropertyAssetCtrl.
+        // Use the hardcoded streaming image asset type instead of the passed in instance's asset type
+        // since the passed in type is the legacy SimpleAssetReference<Texture>, and the asset picker
+        // does not associate this type with streaming images
+        AZ::Data::AssetType assetType = AZ::AzTypeInfo<AZ::RPI::StreamingImageAsset>::Uuid();
+        ctrl->SetCurrentAssetType(assetType);
 
         AZ::Data::AssetId assetId;
         if (!instance.GetAssetPath().empty())
         {
-            EBUS_EVENT_RESULT(assetId, AZ::Data::AssetCatalogRequestBus, GetAssetIdByPath, instance.GetAssetPath().c_str(), instance.GetAssetType(), false);
+            EBUS_EVENT_RESULT(assetId, AZ::Data::AssetCatalogRequestBus, GetAssetIdByPath, instance.GetAssetPath().c_str(), assetType, false);
         }
         ctrl->SetSelectedAssetID(assetId);
     }
