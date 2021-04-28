@@ -14,10 +14,8 @@
 
 namespace Multiplayer
 {
-    static constexpr uint32_t Uint32Max = AZStd::numeric_limits<uint32_t>::max();
-
     // This can be used to help mitigate client side performance when large numbers of entities are created off the network
-    AZ_CVAR(uint32_t, cl_ClientMaxRemoteEntitiesPendingCreationCount, Uint32Max, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Maximum number of entities that we have sent to the client, but have not had a confirmation back from the client");
+    AZ_CVAR(uint32_t, cl_ClientMaxRemoteEntitiesPendingCreationCount, AZStd::numeric_limits<uint32_t>::max(), nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Maximum number of entities that we have sent to the client, but have not had a confirmation back from the client");
     AZ_CVAR(AZ::TimeMs, cl_ClientEntityReplicatorPendingRemovalTimeMs, AZ::TimeMs{ 10000 }, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "How long should wait prior to removing an entity for the client through a change in the replication window, entity deletes are still immediate");
 
     ClientToServerConnectionData::ClientToServerConnectionData

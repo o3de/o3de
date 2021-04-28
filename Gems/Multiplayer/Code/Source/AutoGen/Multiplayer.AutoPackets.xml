@@ -2,7 +2,7 @@
 
 <PacketGroup Name="MultiplayerPackets" PacketStart="CorePackets::PacketType::MAX">
     <Include File="AzNetworking/AutoGen/CorePackets.AutoPackets.h" />
-    <Include File="Source/MultiplayerTypes.h" />
+    <Include File="Include/MultiplayerTypes.h" />
     <Include File="Source/NetworkEntity/NetworkEntityRpcMessage.h" />
     <Include File="Source/NetworkEntity/NetworkEntityUpdateMessage.h" />
 

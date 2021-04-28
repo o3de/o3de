@@ -90,6 +90,10 @@ namespace Multiplayer
         void AddSessionInitHandler(SessionInitEvent::Handler& handler) override;
         void AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler) override;
         void SendReadyForEntityUpdates(bool readyForEntityUpdates) override;
+        const char* GetComponentGemName(NetComponentId netComponentId) const override;
+        const char* GetComponentName(NetComponentId netComponentId) const override;
+        const char* GetComponentPropertyName(NetComponentId netComponentId, PropertyIndex propertyIndex) const override;
+        const char* GetComponentRpcName(NetComponentId netComponentId, RpcIndex rpcIndex) const override;
         //! @}
 
         //! Console commands.
