@@ -175,7 +175,7 @@ namespace AzFramework
         }
 
         // Initializes the IArchive for reading archive(.pak) files
-        if (auto archive = AZ::Interface<AZ::IO::IArchive>::Get(); !archive)
+        if (auto archive = AZ::Interface<AZ::IO::IArchive>::Get(); archive == nullptr)
         {
             m_archive = AZStd::make_unique<AZ::IO::Archive>();
             AZ::Interface<AZ::IO::IArchive>::Register(m_archive.get());
@@ -189,7 +189,7 @@ namespace AzFramework
             SetFileIOAliases();
         }
 
-        if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); !nativeUI)
+        if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); nativeUI == nullptr)
         {
             m_nativeUI = AZStd::make_unique<AZ::NativeUI::NativeUISystem>();
             AZ::Interface<AZ::NativeUI::NativeUIRequests>::Register(m_nativeUI.get());
@@ -222,7 +222,6 @@ namespace AzFramework
         {
             AZ::IO::FileIOBase::SetInstance(nullptr);
         }
-
         m_archiveFileIO.reset();
 
         // Destroy the IArchive instance

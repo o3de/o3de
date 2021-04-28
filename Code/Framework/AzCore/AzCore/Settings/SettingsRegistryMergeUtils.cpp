@@ -146,7 +146,7 @@ namespace AZ::Internal
                     AZStd::string projectPathsTested;
                     for (const auto& path : projectPathsNotFound)
                     {
-                        projectPathsTested.append(AZStd::string::format("\t%s\n", path.c_str()));
+                        projectPathsTested.append(AZStd::string::format("  %s\n", path.c_str()));
                     }
                     errorStr = AZStd::string::format("No valid project was found at these locations:\n%s"
                         "Please supply a valid --project-path to the application.",
@@ -159,7 +159,7 @@ namespace AZ::Internal
                     AZStd::string enginePathsChecked;
                     for (const auto& engineInfo : pathVisitor.m_enginePaths)
                     {
-                        enginePathsChecked.append(AZStd::string::format("\t%s (%s)\n", engineInfo.m_path.c_str(), engineInfo.m_moniker.c_str()));
+                        enginePathsChecked.append(AZStd::string::format("  %s (%s)\n", engineInfo.m_path.c_str(), engineInfo.m_moniker.c_str()));
                     }
                     errorStr = AZStd::string::format(
                         "No engine was found in o3de_manifest.json with a name that matches the one set in the project.json.\n"
@@ -241,7 +241,7 @@ namespace AZ::SettingsRegistryMergeUtils
             if (!engineRoot.empty())
             {
                 settingsRegistry.Set(engineRootKey, engineRoot.Native());
-                // Inject the engine root to the end of the command line settings
+                // Inject the engine root at the end of the command line settings
                 Internal::InjectSettingToCommandLineBack(settingsRegistry, engineRootKey, engineRoot.Native());
                 return engineRoot;
             }
@@ -288,7 +288,7 @@ namespace AZ::SettingsRegistryMergeUtils
             if (!projectRoot.empty())
             {
                 settingsRegistry.Set(projectRootKey, projectRoot.c_str());
-                // Inject the project root into the end of the command line settings
+                // Inject the project root at the end of the command line settings
                 Internal::InjectSettingToCommandLineBack(settingsRegistry, projectRootKey, projectRoot.Native());
                 return projectRoot;
             }

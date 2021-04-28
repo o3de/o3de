@@ -526,11 +526,11 @@ namespace AZ
     }
 
 
-    void HandleBadEngineRoot()
+    void ReportBadEngineRoot()
     {
         AZStd::string errorMessage = {"Unable to determine a valid path to the engine.\n"
                                       "Check parameters such as --project-path and --engine-path and make sure they are valid.\n"};
-        if (auto registry = AZ::Interface<AZ::SettingsRegistryInterface>::Get(); registry != nullptr)
+        if (auto registry = AZ::SettingsRegistry::Get(); registry != nullptr)
         {
             AZ::SettingsRegistryInterface::FixedValueString filePathErrorStr;
             if (registry->Get(filePathErrorStr, AZ::SettingsRegistryMergeUtils::FilePathKey_ErrorText); !filePathErrorStr.empty())
@@ -557,7 +557,7 @@ namespace AZ
 
         if (m_engineRoot.empty())
         {
-            HandleBadEngineRoot();
+            ReportBadEngineRoot();
             return nullptr;
         }
 
