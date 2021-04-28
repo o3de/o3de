@@ -45,7 +45,6 @@ namespace EMStudio
 
     public:
         BlendGraphWidget(AnimGraphPlugin* plugin, QWidget* parent);
-        ~BlendGraphWidget();
 
         // overloaded
         bool CheckIfIsCreateConnectionValid(uint32 portNr, GraphNode* portNode, NodePort* port, bool isInputPort) override;
@@ -120,8 +119,6 @@ namespace EMStudio
         void OnSelectionModelChanged(const QItemSelection& selected, const QItemSelection& deselected);
 
     private:
-        void keyReleaseEvent(QKeyEvent* event) override;
-        void keyPressEvent(QKeyEvent* event) override;
 
         EMotionFX::AnimGraphStateTransition* FindTransitionForConnection(NodeConnection* connection) const;
         EMotionFX::BlendTreeConnection* FindBlendTreeConnection(NodeConnection* connection) const;
