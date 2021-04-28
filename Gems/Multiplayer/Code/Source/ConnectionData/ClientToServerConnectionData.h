@@ -33,9 +33,9 @@ namespace Multiplayer
         AzNetworking::IConnection* GetConnection() const override;
         EntityReplicationManager& GetReplicationManager() override;
         void Update(AZ::TimeMs serverGameTimeMs) override;
+        bool CanSendUpdates() const override;
+        void SetCanSendUpdates(bool canSendUpdates) override;
         //! @}
-
-        bool CanSendUpdates();
 
     private:
         EntityReplicationManager m_entityReplicationManager;

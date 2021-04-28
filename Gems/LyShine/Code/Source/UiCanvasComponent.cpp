@@ -33,6 +33,7 @@
 #include <LyShine/Bus/UiEntityContextBus.h>
 #include <LyShine/Bus/UiCanvasUpdateNotificationBus.h>
 #include <LyShine/UiSerializeHelpers.h>
+#include <LyShine/Draw2d.h>
 
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Memory/Memory.h>
@@ -2224,13 +2225,13 @@ void UiCanvasComponent::DebugReportDrawCalls(AZ::IO::HandleType fileHandle, LySh
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiCanvasComponent::DebugDisplayElemBounds(IDraw2d* draw2d) const
+void UiCanvasComponent::DebugDisplayElemBounds(CDraw2d* draw2d) const
 {
     DebugDisplayChildElemBounds(draw2d, m_rootElement);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiCanvasComponent::DebugDisplayChildElemBounds(IDraw2d* draw2d, const AZ::EntityId entity) const
+void UiCanvasComponent::DebugDisplayChildElemBounds(CDraw2d* draw2d, const AZ::EntityId entity) const
 {
     AZ::u64 time = AZStd::GetTimeUTCMilliSecond();
     uint32 fractionsOfOneSecond = time % 1000;

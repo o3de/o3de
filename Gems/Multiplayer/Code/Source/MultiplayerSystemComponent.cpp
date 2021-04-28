@@ -114,6 +114,9 @@ namespace Multiplayer
         m_networkInterface = AZ::Interface<INetworking>::Get()->CreateNetworkInterface(AZ::Name(s_networkInterfaceName), sv_protocol, TrustZone::ExternalClientToServer, *this);
         m_consoleCommandHandler.Connect(AZ::Interface<AZ::IConsole>::Get()->GetConsoleCommandInvokedEvent());
         AZ::Interface<IMultiplayer>::Register(this);
+
+        //! Register our gems multiplayer components to assign NetComponentIds
+        RegisterMultiplayerComponents();
     }
 
     void MultiplayerSystemComponent::Deactivate()
@@ -133,22 +136,32 @@ namespace Multiplayer
         // Let the network system know the frame is done and we can collect dirty bits
         m_networkEntityManager.NotifyEntitiesDirtied();
 
+        MultiplayerStats& stats = GetStats();
+        stats.m_entityCount = GetNetworkEntityManager()->GetEntityCount();
+        stats.m_serverConnectionCount = 0;
+        stats.m_clientConnectionCount = 0;
+
         // Send out the game state update to all connections
         {
-            auto sendNetworkUpdates = [serverGameTimeMs](IConnection& connection)
+            auto sendNetworkUpdates = [serverGameTimeMs, &stats](IConnection& connection)
             {
                 if (connection.GetUserData() != nullptr)
                 {
                     IConnectionData* connectionData = reinterpret_cast<IConnectionData*>(connection.GetUserData());
                     connectionData->Update(serverGameTimeMs);
+                    if (connectionData->GetConnectionDataType() == ConnectionDataType::ServerToClient)
+                    {
+                        stats.m_clientConnectionCount++;
+                    }
+                    else
+                    {
+                        stats.m_serverConnectionCount++;
+                    }
                 }
             };
 
             m_networkInterface->GetConnectionSet().VisitConnections(sendNetworkUpdates);
         }
-
-        MultiplayerStats& stats = GetStats();
-        stats.m_entityCount = GetNetworkEntityManager()->GetEntityCount();
 
         MultiplayerPackets::SyncConsole packet;
         AZ::ThreadSafeDeque<AZStd::string>::DequeType cvarUpdates;
@@ -371,6 +384,19 @@ namespace Multiplayer
         return false;
     }
 
+    bool MultiplayerSystemComponent::HandleRequest( AzNetworking::IConnection* connection,
+        [[maybe_unused]] const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::ReadyForEntityUpdates& packet)
+    {
+        IConnectionData* connectionData = reinterpret_cast<IConnectionData*>(connection->GetUserData());
+        if (connectionData)
+        {
+            connectionData->SetCanSendUpdates(packet.GetReadyForEntityUpdates());
+            return true;
+        }
+
+        return false;
+    }
+
     ConnectResult MultiplayerSystemComponent::ValidateConnect
     (
         [[maybe_unused]] const IpAddress& remoteAddress,
@@ -493,6 +519,35 @@ namespace Multiplayer
         handler.Connect(m_shutdownEvent);
     }
 
+    void MultiplayerSystemComponent::SendReadyForEntityUpdates(bool readyForEntityUpdates)
+    {
+        IConnectionSet& connectionSet = m_networkInterface->GetConnectionSet();
+        connectionSet.VisitConnections([readyForEntityUpdates](IConnection& connection)
+        {
+            connection.SendReliablePacket(MultiplayerPackets::ReadyForEntityUpdates(readyForEntityUpdates));
+        });
+    }
+
+    const char* MultiplayerSystemComponent::GetComponentGemName(NetComponentId netComponentId) const
+    {
+        return GetMultiplayerComponentRegistry()->GetComponentGemName(netComponentId);
+    }
+
+    const char* MultiplayerSystemComponent::GetComponentName(NetComponentId netComponentId) const
+    {
+        return GetMultiplayerComponentRegistry()->GetComponentName(netComponentId);
+    }
+
+    const char* MultiplayerSystemComponent::GetComponentPropertyName(NetComponentId netComponentId, PropertyIndex propertyIndex) const
+    {
+        return GetMultiplayerComponentRegistry()->GetComponentPropertyName(netComponentId, propertyIndex);
+    }
+
+    const char* MultiplayerSystemComponent::GetComponentRpcName(NetComponentId netComponentId, RpcIndex rpcIndex) const
+    {
+        return GetMultiplayerComponentRegistry()->GetComponentRpcName(netComponentId, rpcIndex);
+    }
+
     void MultiplayerSystemComponent::DumpStats([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
         const MultiplayerStats& stats = GetStats();
@@ -500,14 +555,20 @@ namespace Multiplayer
         AZLOG_INFO("Total networked entities: %llu", aznumeric_cast<AZ::u64>(stats.m_entityCount));
         AZLOG_INFO("Total client connections: %llu", aznumeric_cast<AZ::u64>(stats.m_clientConnectionCount));
         AZLOG_INFO("Total server connections: %llu", aznumeric_cast<AZ::u64>(stats.m_serverConnectionCount));
-        AZLOG_INFO("Total property updates sent: %llu", aznumeric_cast<AZ::u64>(stats.m_propertyUpdatesSent));
-        AZLOG_INFO("Total property updates sent bytes: %llu", aznumeric_cast<AZ::u64>(stats.m_propertyUpdatesSentBytes));
-        AZLOG_INFO("Total property updates received: %llu", aznumeric_cast<AZ::u64>(stats.m_propertyUpdatesRecv));
-        AZLOG_INFO("Total property updates received bytes: %llu", aznumeric_cast<AZ::u64>(stats.m_propertyUpdatesRecvBytes));
-        AZLOG_INFO("Total RPCs sent: %llu", aznumeric_cast<AZ::u64>(stats.m_rpcsSent));
-        AZLOG_INFO("Total RPCs sent bytes: %llu", aznumeric_cast<AZ::u64>(stats.m_rpcsSentBytes));
-        AZLOG_INFO("Total RPCs received: %llu", aznumeric_cast<AZ::u64>(stats.m_rpcsRecv));
-        AZLOG_INFO("Total RPCs received bytes: %llu", aznumeric_cast<AZ::u64>(stats.m_rpcsRecvBytes));
+
+        const MultiplayerStats::Metric propertyUpdatesSent = stats.CalculateTotalPropertyUpdateSentMetrics();
+        const MultiplayerStats::Metric propertyUpdatesRecv = stats.CalculateTotalPropertyUpdateRecvMetrics();
+        const MultiplayerStats::Metric rpcsSent = stats.CalculateTotalRpcsSentMetrics();
+        const MultiplayerStats::Metric rpcsRecv = stats.CalculateTotalRpcsRecvMetrics();
+
+        AZLOG_INFO("Total property updates sent: %llu", aznumeric_cast<AZ::u64>(propertyUpdatesSent.m_totalCalls));
+        AZLOG_INFO("Total property updates sent bytes: %llu", aznumeric_cast<AZ::u64>(propertyUpdatesSent.m_totalBytes));
+        AZLOG_INFO("Total property updates received: %llu", aznumeric_cast<AZ::u64>(propertyUpdatesRecv.m_totalCalls));
+        AZLOG_INFO("Total property updates received bytes: %llu", aznumeric_cast<AZ::u64>(propertyUpdatesRecv.m_totalBytes));
+        AZLOG_INFO("Total RPCs sent: %llu", aznumeric_cast<AZ::u64>(rpcsSent.m_totalCalls));
+        AZLOG_INFO("Total RPCs sent bytes: %llu", aznumeric_cast<AZ::u64>(rpcsSent.m_totalBytes));
+        AZLOG_INFO("Total RPCs received: %llu", aznumeric_cast<AZ::u64>(rpcsRecv.m_totalCalls));
+        AZLOG_INFO("Total RPCs received bytes: %llu", aznumeric_cast<AZ::u64>(rpcsRecv.m_totalBytes));
     }
 
     void MultiplayerSystemComponent::OnConsoleCommandInvoked

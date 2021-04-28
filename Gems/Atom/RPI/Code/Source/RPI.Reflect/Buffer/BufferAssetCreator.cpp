@@ -155,5 +155,21 @@ namespace AZ
             m_asset.SetHint(name);
         }
 
+        bool BufferAssetCreator::Clone(const Data::Asset<BufferAsset>& sourceAsset, Data::Asset<BufferAsset>& clonedResult, Data::AssetId& inOutLastCreatedAssetId)
+        {
+            BufferAssetCreator creator;
+            inOutLastCreatedAssetId.m_subId = inOutLastCreatedAssetId.m_subId + 1;
+            creator.Begin(inOutLastCreatedAssetId);
+
+            creator.SetBufferName(sourceAsset.GetHint());
+            creator.SetUseCommonPool(sourceAsset->GetCommonPoolType());
+            creator.SetPoolAsset(sourceAsset->GetPoolAsset());
+            creator.SetBufferViewDescriptor(sourceAsset->GetBufferViewDescriptor());
+
+            const AZStd::array_view<uint8_t> sourceBuffer = sourceAsset->GetBuffer();
+            creator.SetBuffer(sourceBuffer.data(), sourceBuffer.size(), sourceAsset->GetBufferDescriptor());
+
+            return creator.End(clonedResult);
+        }
     } // namespace RPI
 } // namespace AZ

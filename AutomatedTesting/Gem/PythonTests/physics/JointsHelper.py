@@ -13,7 +13,7 @@ import ImportPathHelper as imports
 
 imports.init()
 
-from utils import Report
+from editor_python_test_tools.utils import Report
 import azlmbr.legacy.general as general
 import azlmbr.bus
 

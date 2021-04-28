@@ -16,7 +16,7 @@ import logging
 # Bail on the test if ly_test_tools doesn't exist.
 pytest.importorskip('ly_test_tools')
 import ly_test_tools.environment.file_system as file_system
-import automatedtesting_shared.hydra_test_utils as hydra
+import editor_python_test_tools.hydra_test_utils as hydra
 from ly_remote_console.remote_console_commands import RemoteConsole as RemoteConsole
 
 logger = logging.getLogger(__name__)
@@ -41,7 +41,7 @@ class TestDynamicSliceInstanceSpawner(object):
         return console
 
     @pytest.mark.test_case_id("C28851763")
-    @pytest.mark.SUITE_main
+    @pytest.mark.SUITE_sandbox
     @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
     def test_DynamicSliceInstanceSpawner_DynamicSliceSpawnerWorks(self, request, editor, level, workspace, project,
                                                                   launcher_platform):

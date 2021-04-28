@@ -65,7 +65,6 @@
 #include "Util/fastlib.h"
 #include "CryEditDoc.h"
 #include "GameEngine.h"
-#include "EditTool.h"
 #include "ViewManager.h"
 #include "Objects/DisplayContext.h"
 #include "DisplaySettings.h"
@@ -233,7 +232,6 @@ int EditorViewportWidget::OnCreate()
 {
     m_renderer = GetIEditor()->GetRenderer();
     m_engine = GetIEditor()->Get3DEngine();
-    assert(m_engine);
 
     CreateRenderContext();
 
@@ -679,6 +677,11 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
             }
             SetCurrentCursor(STD_CURSOR_GAME);
         }
+
+        if (m_renderViewport)
+        {
+            m_renderViewport->GetControllerList()->SetEnabled(false);
+        }
     }
     break;
 
@@ -696,6 +699,11 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
             m_bInZoomMode = false;
 
             RestoreViewportAfterGameMode();
+        }
+
+        if (m_renderViewport)
+        {
+            m_renderViewport->GetControllerList()->SetEnabled(true);
         }
         break;
 
@@ -727,6 +735,8 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
             // meters above the terrain (default terrain height is 32)
             viewTM.SetTranslation(Vec3(sx * 0.5f, sy * 0.5f, 34.0f));
             SetViewTM(viewTM);
+
+            UpdateScene();
         }
         break;
 
@@ -782,8 +792,14 @@ void EditorViewportWidget::OnRender()
         // This is necessary so that automated editor tests using the null renderer to test systems like dynamic vegetation
         // are still able to manipulate the current logical camera position, even if nothing is rendered.
         GetIEditor()->GetSystem()->SetViewCamera(m_Camera);
-        GetIEditor()->GetRenderer()->SetCamera(gEnv->pSystem->GetViewCamera());
-        m_engine->RenderWorld(0, SRenderingPassInfo::CreateGeneralPassRenderingInfo(m_Camera), __FUNCTION__);
+        if (GetIEditor()->GetRenderer())
+        {
+            GetIEditor()->GetRenderer()->SetCamera(gEnv->pSystem->GetViewCamera());
+        }
+        if (m_engine)
+        {
+            m_engine->RenderWorld(0, SRenderingPassInfo::CreateGeneralPassRenderingInfo(m_Camera), __FUNCTION__);
+        }
         return;
     }
 
@@ -875,8 +891,7 @@ void EditorViewportWidget::OnBeginPrepareRender()
                 fov = 2 * atanf((h * tan(fov / 2)) / maxTargetHeight);
             }
         }
-
-        m_Camera.SetFrustum(w, h, fov, fNearZ, gEnv->p3DEngine->GetMaxViewDistance());
+        m_Camera.SetFrustum(w, h, fov, fNearZ);
     }
 
     GetIEditor()->GetSystem()->SetViewCamera(m_Camera);
@@ -1207,13 +1222,18 @@ void EditorViewportWidget::SetViewportId(int id)
     CViewport::SetViewportId(id);
 
     // Now that we have an ID, we can initialize our viewport.
-    m_renderViewport = new AtomToolsFramework::RenderViewportWidget(id, this);
-    m_defaultViewportContextName = m_renderViewport->GetViewportContext()->GetName();
+    m_renderViewport = new AtomToolsFramework::RenderViewportWidget(this, false);
+    if (!m_renderViewport->InitializeViewportContext(id))
+    {
+        AZ_Warning("EditorViewportWidget", false, "Failed to initialize RenderViewportWidget's ViewportContext");
+        return;
+    }
+    auto viewportContext = m_renderViewport->GetViewportContext();
+    m_defaultViewportContextName = viewportContext->GetName();
     QBoxLayout* layout = new QBoxLayout(QBoxLayout::Direction::TopToBottom, this);
     layout->setContentsMargins(QMargins());
     layout->addWidget(m_renderViewport);
 
-    auto viewportContext = m_renderViewport->GetViewportContext();
     viewportContext->ConnectViewMatrixChangedHandler(m_cameraViewMatrixChangeHandler);
     viewportContext->ConnectProjectionMatrixChangedHandler(m_cameraProjectionMatrixChangeHandler);
 
@@ -1489,10 +1509,10 @@ bool EditorViewportWidget::AddCameraMenuItems(QMenu* menu)
     }
 
     action = customCameraMenu->addAction(tr("Look through entity"));
-    AzToolsFramework::EntityIdList selectedEntityList;
-    AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(selectedEntityList, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
-    action->setCheckable(selectedEntityList.size() > 0 || m_viewSourceType == ViewSourceType::AZ_Entity);
-    action->setEnabled(selectedEntityList.size() > 0 || m_viewSourceType == ViewSourceType::AZ_Entity);
+    bool areAnyEntitiesSelected = false;
+    AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(areAnyEntitiesSelected, &AzToolsFramework::ToolsApplicationRequests::AreAnyEntitiesSelected);
+    action->setCheckable(areAnyEntitiesSelected || m_viewSourceType == ViewSourceType::AZ_Entity);
+    action->setEnabled(areAnyEntitiesSelected || m_viewSourceType == ViewSourceType::AZ_Entity);
     action->setChecked(m_viewSourceType == ViewSourceType::AZ_Entity);
     connect(action, &QAction::triggered, this, [this](bool isChecked)
         {
@@ -2408,7 +2428,10 @@ void EditorViewportWidget::SetDefaultCamera()
         return;
     }
     ResetToViewSourceType(ViewSourceType::None);
-    gEnv->p3DEngine->GetPostEffectBaseGroup()->SetParam("Dof_Active", 0.0f);
+    if (gEnv->p3DEngine)
+    {
+        gEnv->p3DEngine->GetPostEffectBaseGroup()->SetParam("Dof_Active", 0.0f);
+    }
     GetViewManager()->SetCameraObjectId(m_cameraObjectId);
     SetName(m_defaultViewName);
     SetViewTM(m_defaultViewTM);
@@ -2591,8 +2614,7 @@ bool EditorViewportWidget::GetActiveCameraPosition(AZ::Vector3& cameraPos)
     {
         if (GetIEditor()->IsInGameMode())
         {
-            const Vec3 camPos = m_engine->GetRenderingCamera().GetPosition();
-            cameraPos = LYVec3ToAZVec3(camPos);
+            cameraPos = m_renderViewport->GetViewportContext()->GetCameraTransform().GetTranslation();
         }
         else
         {

@@ -24,6 +24,8 @@
 
 namespace Physics
 {
+    using ParentIndices = AZStd::vector<size_t>;
+
     class RagdollNodeConfiguration
         : public AzPhysics::RigidBodyConfiguration
     {
@@ -46,7 +48,7 @@ namespace Physics
         AZ_RTTI(RagdollConfiguration, "{7C96D332-61D8-4C58-A2BF-707716D38D14}", AzPhysics::SimulatedBodyConfiguration);
         static void Reflect(AZ::ReflectContext* context);
 
-        RagdollConfiguration() = default;
+        RagdollConfiguration();
         explicit RagdollConfiguration(const RagdollConfiguration& settings) = default;
 
         RagdollNodeConfiguration* FindNodeConfigByName(const AZStd::string& nodeName) const;
@@ -56,6 +58,8 @@ namespace Physics
 
         AZStd::vector<RagdollNodeConfiguration> m_nodes;
         CharacterColliderConfiguration m_colliders;
+        RagdollState m_initialState;
+        ParentIndices m_parentIndices;
     };
 
     /// Represents a single rigid part of a ragdoll.
@@ -79,7 +83,7 @@ namespace Physics
     {
     public:
         AZ_CLASS_ALLOCATOR(Ragdoll, AZ::SystemAllocator, 0);
-        AZ_RTTI(Ragdoll, "{01F09602-80EC-4693-A0E7-C2719239044B}", AzPhysics::SimulatedBody);
+        AZ_RTTI(Physics::Ragdoll, "{01F09602-80EC-4693-A0E7-C2719239044B}", AzPhysics::SimulatedBody);
         virtual ~Ragdoll() = default;
 
         /// Inserts the ragdoll into the physics simulation.

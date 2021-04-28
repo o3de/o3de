@@ -8,7 +8,11 @@
             "Name": "Emissive",
             "RGB_Weight": "CIEXYZ",
             "FileMasks": [
-                "_emissive"
+                    "_emissive",
+                    "_e",
+                    "_glow",
+                    "_em",
+                    "_emit"
             ],
             "PixelFormat": "BC7",
             "DiscardAlpha": true
@@ -33,7 +37,11 @@
                 "Name": "Emissive",
                 "RGB_Weight": "CIEXYZ",
                 "FileMasks": [
-                    "_emissive"
+                    "_emissive",
+                    "_e",
+                    "_glow",
+                    "_em",
+                    "_emit"
                 ],
                 "PixelFormat": "ASTC_6x6",
                 "DiscardAlpha": true
@@ -43,7 +51,11 @@
                 "Name": "Emissive",
                 "RGB_Weight": "CIEXYZ",
                 "FileMasks": [
-                    "_emissive"
+                    "_emissive",
+                    "_e",
+                    "_glow",
+                    "_em",
+                    "_emit"
                 ],
                 "PixelFormat": "BC7",
                 "DiscardAlpha": true
@@ -53,7 +65,11 @@
                 "Name": "Emissive",
                 "RGB_Weight": "CIEXYZ",
                 "FileMasks": [
-                    "_emissive"
+                    "_emissive",
+                    "_e",
+                    "_glow",
+                    "_em",
+                    "_emit"
                 ],
                 "PixelFormat": "BC7",
                 "DiscardAlpha": true

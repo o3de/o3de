@@ -39,7 +39,6 @@
 #include "Rendering/LightComponent.h"
 #include "Rendering/HighQualityShadowComponent.h"
 #include "Rendering/MeshComponent.h"
-#include "Rendering/FogVolumeComponent.h"
 #include "Rendering/GeomCacheComponent.h"
 #include "Ai/NavigationComponent.h"
 #include "Scripting/TagComponent.h"
@@ -241,7 +240,6 @@ namespace LmbrCentral
             StereoRendererComponent::CreateDescriptor(),
             NavigationSystemComponent::CreateDescriptor(),
             GeometrySystemComponent::CreateDescriptor(),
-            FogVolumeComponent::CreateDescriptor(),
             RandomTimedSpawnerComponent::CreateDescriptor(),
             GeometryCacheComponent::CreateDescriptor(),
             SphereShapeDebugDisplayComponent::CreateDescriptor(),
