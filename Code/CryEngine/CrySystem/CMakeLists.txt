@@ -61,7 +61,6 @@ ly_add_target(
             Legacy::RemoteConsoleCore
             AZ::AzFramework
     RUNTIME_DEPENDENCIES
-        Legacy::Cry3DEngine
 )
 
 ly_add_source_properties(

@@ -353,7 +353,6 @@ function(ly_add_editor_python_test)
         RUNTIME_DEPENDENCIES
             ${ly_add_editor_python_test_RUNTIME_DEPENDENCIES}
             Gem::EditorPythonBindings.Editor
-            Legacy::CryRenderNULL
             Legacy::Editor
         TEST_SUITE ${ly_add_editor_python_test_TEST_SUITE}
         LABELS FRAMEWORK_pytest

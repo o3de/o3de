@@ -28,7 +28,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         TIMEOUT 3600
         RUNTIME_DEPENDENCIES
             Legacy::Editor
-            Legacy::CryRenderNULL
             AZ::AssetProcessor
             AutomatedTesting.Assets
         COMPONENT
@@ -42,7 +41,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         TIMEOUT 3600
         RUNTIME_DEPENDENCIES
             Legacy::Editor
-            Legacy::CryRenderNULL
             AZ::AssetProcessor
             AutomatedTesting.Assets
         COMPONENT
@@ -56,7 +54,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         TIMEOUT 3600
         RUNTIME_DEPENDENCIES
             Legacy::Editor
-            Legacy::CryRenderNULL
             AZ::AssetProcessor
             AutomatedTesting.Assets
         COMPONENT
@@ -74,7 +71,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         TIMEOUT 3600
         RUNTIME_DEPENDENCIES
             Legacy::Editor
-            Legacy::CryRenderNULL
             AZ::AssetProcessor
             AutomatedTesting.Assets
         COMPONENT
@@ -88,7 +84,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         TIMEOUT 3600
         RUNTIME_DEPENDENCIES
             Legacy::Editor
-            Legacy::CryRenderNULL
             AZ::AssetProcessor
             AutomatedTesting.Assets
     )
@@ -105,7 +100,6 @@ endif()
 #        TIMEOUT 3600
 #        RUNTIME_DEPENDENCIES
 #            Legacy::Editor
-#            Legacy::CryRenderNULL
 #            AZ::AssetProcessor
 #            AutomatedTesting.Assets
 #        COMPONENT
@@ -124,7 +118,6 @@ endif()
 #        TIMEOUT 3600
 #        RUNTIME_DEPENDENCIES
 #            Legacy::Editor
-#            Legacy::CryRenderNULL
 #            AZ::AssetProcessor
 #            AutomatedTesting.Assets
 #    )
@@ -140,7 +133,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         TIMEOUT 3600
         RUNTIME_DEPENDENCIES
             Legacy::Editor
-            Legacy::CryRenderNULL
             AZ::AssetProcessor
             AutomatedTesting.Assets
             Gem::EditorPythonBindings.Editor
@@ -158,7 +150,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         TIMEOUT 3600
         RUNTIME_DEPENDENCIES
             Legacy::Editor
-            Legacy::CryRenderNULL
             AZ::AssetProcessor
             AutomatedTesting.Assets
             Gem::EditorPythonBindings.Editor
@@ -295,7 +286,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         TIMEOUT 3600
         RUNTIME_DEPENDENCIES
             Legacy::Editor
-            Legacy::CryRenderNULL
             AZ::AssetProcessor
             AutomatedTesting.Assets
         COMPONENT
@@ -314,7 +304,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     #        AZ::AssetProcessor
     #        AZ::AssetProcessorBatch
     #        AutomatedTesting.GameLauncher
-    #        Legacy::CryRenderNULL
     #)
 endif()
 

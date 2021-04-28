@@ -25,7 +25,7 @@
 
 #define INDEX_NOT_OUT_OF_RANGE PREFAST_SUPPRESS_WARNING(6201)
 #define NO_BUFFER_OVERRUN PREFAST_SUPPRESS_WARNING(6385 6386)
-#include "../Cry3DEngine/Cry_LegacyPhysUtils.h"
+#include "Cry_LegacyPhysUtils.h"
 
 #pragma warning (pop)
 
