@@ -39,8 +39,8 @@ namespace AZ
         using DrawListTag = Handle<uint8_t>;
         using DrawListMask = AZStd::bitset<RHI::Limits::Pipeline::DrawListTagCountMax>;
 
-        using DrawList = AZStd::vector<RHI::DrawItemKeyPair>;
-        using DrawListView = AZStd::array_view<RHI::DrawItemKeyPair>;
+        using DrawList = AZStd::vector<RHI::DrawItemProperties>;
+        using DrawListView = AZStd::array_view<RHI::DrawItemProperties>;
 
         /// Contains a table of draw lists, indexed by the tag.
         using DrawListsByTag = AZStd::array<DrawList, RHI::Limits::Pipeline::DrawListTagCountMax>;
