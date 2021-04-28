@@ -395,6 +395,7 @@ namespace AzToolsFramework
                 ->Event("MarkEntityDeselected", &ToolsApplicationRequests::MarkEntityDeselected)
                 ->Event("IsSelected", &ToolsApplicationRequests::IsSelected)
                 ->Event("AreAnyEntitiesSelected", &ToolsApplicationRequests::AreAnyEntitiesSelected)
+                ->Event("GetSelectedEntitiesCount", &ToolsApplicationRequests::GetSelectedEntitiesCount)
                 ;
 
             behaviorContext->EBus<ToolsApplicationNotificationBus>("ToolsApplicationNotificationBus")

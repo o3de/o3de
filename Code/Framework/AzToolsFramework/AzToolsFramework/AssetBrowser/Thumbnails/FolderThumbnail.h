@@ -47,7 +47,7 @@ namespace AzToolsFramework
         {
             Q_OBJECT
         public:
-            FolderThumbnail(SharedThumbnailKey key, int thumbnailSize);
+            FolderThumbnail(SharedThumbnailKey key);
             void LoadThread() override;
         };
 

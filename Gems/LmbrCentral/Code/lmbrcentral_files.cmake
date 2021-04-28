@@ -45,7 +45,6 @@ set(FILES
     include/LmbrCentral/Rendering/MeshComponentBus.h
     include/LmbrCentral/Rendering/MeshModificationBus.h
     include/LmbrCentral/Rendering/RenderNodeBus.h
-    include/LmbrCentral/Rendering/FogVolumeComponentBus.h
     include/LmbrCentral/Rendering/HighQualityShadowComponentBus.h
     include/LmbrCentral/Rendering/GeomCacheComponentBus.h
     include/LmbrCentral/Rendering/GiRegistrationBus.h
@@ -115,12 +114,6 @@ set(FILES
     Source/Rendering/LightInstance.h
     Source/Rendering/LightInstance.cpp
     Source/Rendering/MaterialHandle.cpp
-    Source/Rendering/FogVolumeComponent.h
-    Source/Rendering/FogVolumeComponent.cpp
-    Source/Rendering/FogVolumeCommon.h
-    Source/Rendering/FogVolumeCommon.cpp
-    Source/Rendering/FogVolumeRequestsHandler.h
-    Source/Rendering/FogVolumeRequestsHandler.cpp
     Source/Rendering/MeshAssetHandler.h
     Source/Rendering/MeshAssetHandler.cpp
     Source/Rendering/MeshComponent.h
