@@ -68,6 +68,8 @@ namespace EMotionFX
                 &actorSettings,
                 "");
 
+            assetData->ReleaseEMotionFXData();
+
             if (!assetData->m_emfxActor)
             {
                 AZ_Error("EMotionFX", false, "Failed to initialize actor asset %s", asset.ToString<AZStd::string>().c_str());
@@ -77,7 +79,6 @@ namespace EMotionFX
             assetData->m_emfxActor->SetIsOwnedByRuntime(true);
 
             // Note: Render actor depends on the mesh asset, so we need to manually create it after mesh asset has been loaded.
-
             return static_cast<bool>(assetData->m_emfxActor);
         }
 

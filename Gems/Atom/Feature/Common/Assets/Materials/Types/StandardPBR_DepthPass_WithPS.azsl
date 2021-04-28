@@ -10,7 +10,6 @@
 *
 */
 
-#include <viewsrg.srgi>
 #include <Atom/Features/PBR/AlphaUtils.azsli>
 #include "./StandardPBR_Common.azsli"
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
