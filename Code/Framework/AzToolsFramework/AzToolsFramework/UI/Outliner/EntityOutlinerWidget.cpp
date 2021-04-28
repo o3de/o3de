@@ -286,12 +286,12 @@ namespace AzToolsFramework
         ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusConnect(
             GetEntityContextId());
         EditorEntityInfoNotificationBus::Handler::BusConnect();
-        AZ::Interface<EntityOutlinerWidgetInterface>::Register(this);
+        Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
     }
 
     EntityOutlinerWidget::~EntityOutlinerWidget()
     {
-        AZ::Interface<EntityOutlinerWidgetInterface>::Unregister(this);
+        Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
         ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusDisconnect();
         EditorEntityInfoNotificationBus::Handler::BusDisconnect();
         EditorPickModeNotificationBus::Handler::BusDisconnect();
@@ -1109,25 +1109,18 @@ namespace AzToolsFramework
         setEnabled(true);
         SetEntityOutlinerState(m_gui, true);
     }
-    
-    void EntityOutlinerWidget::SetUpdatesEnabled(bool enable)
+
+    void EntityOutlinerWidget::OnPrefabInstancePropagationBegin()
     {
-        if (enable)
-        {
-            QTimer::singleShot(1, this, [this]() {
-                m_gui->m_objectTree->setUpdatesEnabled(true);
-            });
-        }
-        else
-        {
-            m_gui->m_objectTree->setUpdatesEnabled(false);
-        }
+        m_gui->m_objectTree->setUpdatesEnabled(false);
     }
 
-    void EntityOutlinerWidget::ExpandEntityChildren(AZ::EntityId entityId)
+    void EntityOutlinerWidget::OnPrefabInstancePropagationEnd()
     {
-        QModelIndex index = GetIndexFromEntityId(entityId);
-        m_gui->m_objectTree->expand(index);
+        QTimer::singleShot(1, this, [this]() {
+            m_gui->m_objectTree->setUpdatesEnabled(true);
+            m_gui->m_objectTree->expand(m_proxyModel->index(0,0));
+        });
     }
 
     void EntityOutlinerWidget::OnEntityInfoUpdatedAddChildEnd(AZ::EntityId /*parentId*/, AZ::EntityId childId)

@@ -87,6 +87,7 @@ namespace AZ
             m_id = Uuid::CreateRandom();
             m_cullingScene = aznew CullingScene();
             SceneRequestBus::Handler::BusConnect(m_id);
+            m_drawFilterTagRegistry = RHI::DrawFilterTagRegistry::Create();
         }
 
         Scene::~Scene()
@@ -269,6 +270,8 @@ namespace AZ
                 return;
             }
 
+            pipeline->SetDrawFilterTag(m_drawFilterTagRegistry->AcquireTag(pipelineId));
+
             m_pipelines.push_back(pipeline);
 
             // Set this pipeline as default if the default pipeline was empty. This pipeline should be the first pipeline be added to the scene
@@ -302,6 +305,8 @@ namespace AZ
                     {
                         m_defaultPipeline = nullptr;
                     }
+
+                    m_drawFilterTagRegistry->ReleaseTag(pipelineToRemove->GetDrawFilterTag());
 
                     pipelineToRemove->OnRemovedFromScene(this);
                     m_pipelines.erase(it);

@@ -20,7 +20,7 @@ class Tests():
 # fmt: on
 
 
-def run(damage_func):
+def base_run(damage_func):
 
     """
     Summary:
@@ -56,7 +56,7 @@ def run(damage_func):
     import azlmbr.legacy.general as general
     import azlmbr.bus
 
-    from editor_python_test_tools.utils import BlastNotificationHandler
+    from BlastUtils import BlastNotificationHandler
 
     # Constants
     TIMEOUT = 2.0
