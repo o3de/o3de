@@ -44,12 +44,12 @@ namespace AZ
         PointLightFeatureProcessor::PointLightFeatureProcessor()
             : PointLightFeatureProcessorInterface()
         {
-            m_directions[0] = AZ::Vector3::CreateAxisZ();
-            m_directions[1] = -AZ::Vector3::CreateAxisZ();
-            m_directions[2] = AZ::Vector3::CreateAxisY();
-            m_directions[3] = -AZ::Vector3::CreateAxisY();
-            m_directions[4] = AZ::Vector3::CreateAxisX();
-            m_directions[5] = -AZ::Vector3::CreateAxisX();
+            m_directions[0] = -AZ::Vector3::CreateAxisX();
+            m_directions[1] = AZ::Vector3::CreateAxisX();
+            m_directions[2] = -AZ::Vector3::CreateAxisY();
+            m_directions[3] = AZ::Vector3::CreateAxisY();
+            m_directions[4] = -AZ::Vector3::CreateAxisZ();
+            m_directions[5] = AZ::Vector3::CreateAxisZ();
         }
 
         void PointLightFeatureProcessor::Activate()

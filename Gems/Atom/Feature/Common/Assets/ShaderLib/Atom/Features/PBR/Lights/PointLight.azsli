@@ -23,27 +23,27 @@ int GetShadowDirectionIndex(float3 targetPos, float3 lightPos)
 	const float maxElement = max(abs(toPoint.z), max(abs(toPoint.x), abs(toPoint.y)));
 	if (toPoint.x == -maxElement)
 	{
-		return 5;
+		return 0;
 	}
 	else if (toPoint.x == maxElement)
 	{
-		return 4;
+		return 1;
 	}	
 	else if (toPoint.y == -maxElement)
 	{
-		return 3;
+		return 2;
 	}
 	else if (toPoint.y == maxElement)
 	{
-		return 2;
+		return 3;
 	}
 	else if (toPoint.z == -maxElement)
 	{
-		return 1;
+		return 4;
 	}
 	else 
 	{
-		return 0;
+		return 5;
 	}	
 }
 
@@ -99,7 +99,7 @@ void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingD
         float backShadowRatio = 0.0;
         if (o_enableShadows)
         {
-			const float3 Directions[6] = {float3(0,0,1), float3(0,0,-1), float3(0,1,0), float3(0,-1,0), float3(1,0,0), float3(-1,0,0)};					
+			const float3 Directions[6] = {float3(-1,0,0), float3(1,0,0), float3(0,-1,0), float3(0,1,0), float3(0,0,-1), float3(0,0,1)};					
 			const int shadowDirectionIndex = GetShadowDirectionIndex(surface.position, light.m_position);
 			const int shadowIndex = GetShadowIndex(light, shadowDirectionIndex);
 			litRatio *= ProjectedShadow::GetVisibility(
