@@ -55,11 +55,7 @@ namespace AWSCore
             }
             m_resourceMappingToolWatcher.reset();
         }
-        QList<QAction*> registeredActions = this->actions();
-        for (QList<QAction*>::iterator itr = registeredActions.begin(); itr != registeredActions.end(); itr++)
-        {
-            delete (*itr);
-        }
+        this->clear();
     }
 
     void AWSCoreEditorMenu::InitializeResourceMappingToolAction()
