@@ -44,3 +44,6 @@ sudo installer -pkg /Applications/Xcode.app/Contents/Resources/Packages/MobileDe
 
 echo "Enabling developer mode"
 sudo /usr/sbin/DevToolsSecurity --enable
+
+echo "Installing cmake"
+brew install cmake
