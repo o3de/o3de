@@ -80,6 +80,10 @@ def create_response(status, success=0, failure=0, repository_name=None, branch_n
             'statusCode': 401,
             'body': 'Unauthorized',
             'isBase64Encoded': 'false'
+        },
+        'unsupported': {
+            'statusCode': 204,
+            'isBase64Encoded': 'false'
         }
     }
     return response[status]
@@ -90,17 +94,25 @@ def lambda_handler(event, context):
     if event.get('resource', '') == '/delete-github-branch-ebs':
         headers = event['headers']
         payload = event['body']
-        if headers['X-GitHub-Event'] == 'delete':
-            # Validate github webhook request here since request body cannot be passed to API Gateway lambda authorizer.
-            if verify_signature(headers, payload):
-                # Convert payload from string type to json to get repository name and branch name
-                payload = json.loads(payload)
-                repository_name = payload['repository']['full_name']
+        # Validate github webhook request here since request body cannot be passed to API Gateway lambda authorizer.
+        if verify_signature(headers, payload):
+            # Convert payload from string type to json to get repository name and branch name
+            print(payload)
+            payload = json.loads(payload)
+            repository_name = payload['repository']['full_name']
+            if headers['X-GitHub-Event'] == 'delete':
+                # On Github branch/tag delete event
                 branch_name = payload['ref']
-                (success, failure) = delete_volumes(repository_name, branch_name)
-                if not failure:
-                    return create_response('success', success, failure, repository_name, branch_name)
-                else:
-                    return create_response('failure', success, failure, repository_name, branch_name)
+            elif headers['X-GitHub-Event'] == 'pull_request' and payload['action'] == 'closed':
+                # On Github pull request closed event
+                pull_request_number = payload['number']
+                branch_name = f'PR-{pull_request_number}'
             else:
-                return create_response('unauthorized')
+                return create_response('unsupported')
+            (success, failure) = delete_volumes(repository_name, branch_name)
+            if not failure:
+                return create_response('success', success, failure, repository_name, branch_name)
+            else:
+                return create_response('failure', success, failure, repository_name, branch_name)
+        else:
+            return create_response('unauthorized')
