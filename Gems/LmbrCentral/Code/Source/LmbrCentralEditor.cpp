@@ -25,16 +25,8 @@
 #include "Audio/EditorAudioRtpcComponent.h"
 #include "Audio/EditorAudioSwitchComponent.h"
 #include "Audio/EditorAudioTriggerComponent.h"
-#include "Rendering/EditorDecalComponent.h"
-#include "Rendering/EditorLensFlareComponent.h"
-#include "Rendering/EditorLightComponent.h"
-#include "Rendering/EditorPointLightComponent.h"
-#include "Rendering/EditorAreaLightComponent.h"
-#include "Rendering/EditorProjectorLightComponent.h"
-#include "Rendering/EditorEnvProbeComponent.h"
 #include "Rendering/EditorHighQualityShadowComponent.h"
 #include "Rendering/EditorMeshComponent.h"
-#include "Rendering/EditorGeomCacheComponent.h"
 #include "Scripting/EditorLookAtComponent.h"
 #include "Scripting/EditorRandomTimedSpawnerComponent.h"
 #include "Scripting/EditorSpawnerComponent.h"
@@ -79,13 +71,6 @@ namespace LmbrCentral
             EditorAudioRtpcComponent::CreateDescriptor(),
             EditorAudioSwitchComponent::CreateDescriptor(),
             EditorAudioTriggerComponent::CreateDescriptor(),
-            EditorDecalComponent::CreateDescriptor(),
-            EditorLensFlareComponent::CreateDescriptor(),
-            EditorLightComponent::CreateDescriptor(),
-            EditorPointLightComponent::CreateDescriptor(),
-            EditorAreaLightComponent::CreateDescriptor(),
-            EditorProjectorLightComponent::CreateDescriptor(),
-            EditorEnvProbeComponent::CreateDescriptor(),
             EditorHighQualityShadowComponent::CreateDescriptor(),
             EditorMeshComponent::CreateDescriptor(),
             EditorTagComponent::CreateDescriptor(),
@@ -104,7 +89,6 @@ namespace LmbrCentral
             EditorNavigationAreaComponent::CreateDescriptor(),
             EditorNavigationSeedComponent::CreateDescriptor(),
             EditorRandomTimedSpawnerComponent::CreateDescriptor(),
-            EditorGeometryCacheComponent::CreateDescriptor(),
             EditorSpawnerComponent::CreateDescriptor(),            
             CopyDependencyBuilder::CopyDependencyBuilderComponent::CreateDescriptor(),
             DependencyBuilder::DependencyBuilderComponent::CreateDescriptor(),

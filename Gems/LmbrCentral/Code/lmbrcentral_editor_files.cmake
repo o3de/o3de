@@ -40,20 +40,6 @@ set(FILES
     Source/Builders/BenchmarkAssetBuilder/BenchmarkAssetBuilderComponent.cpp
     Source/Builders/BenchmarkAssetBuilder/BenchmarkAssetBuilderWorker.h
     Source/Builders/BenchmarkAssetBuilder/BenchmarkAssetBuilderWorker.cpp
-    Source/Rendering/EditorDecalComponent.h
-    Source/Rendering/EditorDecalComponent.cpp
-    Source/Rendering/EditorLensFlareComponent.h
-    Source/Rendering/EditorLensFlareComponent.cpp
-    Source/Rendering/EditorLightComponent.h
-    Source/Rendering/EditorLightComponent.cpp
-    Source/Rendering/EditorPointLightComponent.h
-    Source/Rendering/EditorPointLightComponent.cpp
-    Source/Rendering/EditorAreaLightComponent.h
-    Source/Rendering/EditorAreaLightComponent.cpp
-    Source/Rendering/EditorProjectorLightComponent.h
-    Source/Rendering/EditorProjectorLightComponent.cpp
-    Source/Rendering/EditorEnvProbeComponent.h
-    Source/Rendering/EditorEnvProbeComponent.cpp
     Source/Rendering/EditorMeshComponent.h
     Source/Rendering/EditorMeshComponent.cpp
     Source/Rendering/EditorHighQualityShadowComponent.h

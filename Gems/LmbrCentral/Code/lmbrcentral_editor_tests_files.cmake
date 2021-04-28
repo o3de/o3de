@@ -14,7 +14,6 @@ set(FILES
     Tests/LmbrCentralReflectionTest.h
     Tests/LmbrCentralReflectionTest.cpp
     Tests/EditorBoxShapeComponentTests.cpp
-    Tests/EditorLensFlareComponentTests.cpp
     Tests/EditorSphereShapeComponentTests.cpp
     Tests/EditorCapsuleShapeComponentTests.cpp
     Tests/EditorCompoundShapeComponentTests.cpp
