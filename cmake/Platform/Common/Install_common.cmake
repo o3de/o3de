@@ -274,30 +274,24 @@ function(ly_setup_others)
         ${CMAKE_SOURCE_DIR}/Registry
         DESTINATION .
     )
-    install(FILES
-        ${CMAKE_SOURCE_DIR}/AssetProcessorPlatformConfig.setreg
-        DESTINATION ./Registry
-    )
 
     # Engine Source Assets
     install(DIRECTORY
-        ${CMAKE_SOURCE_DIR}/EngineAssets/
-        DESTINATION ./EngineAssets
+        ${CMAKE_SOURCE_DIR}/Assets
+        DESTINATION .
     )
 
     # Gem Source Assets
     # Find all gem directories relative to the CMake Source Dir
-    file(GLOB_RECURSE gems_json_path RELATIVE ${CMAKE_SOURCE_DIR} "Gems/*/gem.json")
-    message(STATUS "Found gem.json at the following paths ${gems_json_path}")
-    foreach (gem_json_path ${gems_json_path})
-        get_filename_component(gem_root_path ${gem_json_path} DIRECTORY)
+    file(GLOB_RECURSE gems_assets_path RELATIVE ${CMAKE_SOURCE_DIR} "Gems/*/Assets")
+    foreach (gem_assets_path ${gems_assets_path})
 
-        set(gem_assets_path ${CMAKE_SOURCE_DIR}/${gem_root_path}/Assets/)
-        if (EXISTS ${gem_assets_path})
+        set(gem_abs_assets_path ${CMAKE_SOURCE_DIR}/${gem_assets_path}/)
+        if (EXISTS ${gem_abs_assets_path})
             # The trailing slash is IMPORTANT here as that is needed to prevent
             # the "Assets" folder from being copied underneath the <gem-root>/Assets folder
-            install(DIRECTORY ${gem_assets_path}
-                DESTINATION ${gem_root_path}/Assets
+            install(DIRECTORY ${gem_abs_assets_path}
+                DESTINATION ${gem_assets_path}
             )
         endif()
     endforeach()
