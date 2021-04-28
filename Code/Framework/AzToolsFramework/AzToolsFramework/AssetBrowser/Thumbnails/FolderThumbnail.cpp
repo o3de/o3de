@@ -53,8 +53,8 @@ namespace AzToolsFramework
         static constexpr const char* FolderIconPath = "Icons/AssetBrowser/Folder_16.svg";
         static constexpr const char* GemIconPath = "Icons/AssetBrowser/GemFolder_16.svg";
 
-        FolderThumbnail::FolderThumbnail(SharedThumbnailKey key, int thumbnailSize)
-            : Thumbnail(key, thumbnailSize)
+        FolderThumbnail::FolderThumbnail(SharedThumbnailKey key)
+            : Thumbnail(key)
         {}
 
         void FolderThumbnail::LoadThread()
@@ -69,7 +69,8 @@ namespace AzToolsFramework
             AZStd::string absoluteIconPath;
             AZ::StringFunc::Path::Join(engineRoot, folderIcon, absoluteIconPath);
 
-            m_icon = QIcon(absoluteIconPath.c_str());
+            m_pixmap.load(absoluteIconPath.c_str());
+            m_state = m_pixmap.isNull() ? State::Failed : State::Ready;
         }
 
         //////////////////////////////////////////////////////////////////////////

@@ -18,13 +18,15 @@ namespace AzToolsFramework
 {
     namespace Thumbnailer
     {
+        static constexpr const int LoadingThumbnailSize = 128;
+
         //////////////////////////////////////////////////////////////////////////
         // LoadingThumbnail
         //////////////////////////////////////////////////////////////////////////
         static const char* LoadingIconPath = "Icons/AssetBrowser/in_progress.gif";
 
-        LoadingThumbnail::LoadingThumbnail(int thumbnailSize)
-            : Thumbnail(MAKE_TKEY(ThumbnailKey), thumbnailSize)
+        LoadingThumbnail::LoadingThumbnail()
+            : Thumbnail(MAKE_TKEY(ThumbnailKey))
             , m_angle(0)
         {
             const char* engineRoot = nullptr;
@@ -34,7 +36,7 @@ namespace AzToolsFramework
             AZ::StringFunc::Path::Join(engineRoot, LoadingIconPath, iconPath);
             m_loadingMovie.setFileName(iconPath.c_str());
             m_loadingMovie.setCacheMode(QMovie::CacheMode::CacheAll);
-            m_loadingMovie.setScaledSize(QSize(m_thumbnailSize, m_thumbnailSize));
+            m_loadingMovie.setScaledSize(QSize(LoadingThumbnailSize, LoadingThumbnailSize));
             m_loadingMovie.start();
             m_pixmap = m_loadingMovie.currentPixmap();
             m_state = State::Ready;

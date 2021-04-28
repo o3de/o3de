@@ -141,6 +141,7 @@ namespace AtomToolsFramework
             AddEditDataAttributeMemberFunction(AZ::Edit::Attributes::EnumValues, &DynamicProperty::GetEnumValues);
             AddEditDataAttributeMemberFunction(AZ::Edit::Attributes::ChangeNotify, &DynamicProperty::OnDataChanged);
             AddEditDataAttribute(AZ::Edit::Attributes::ShowProductAssetFileName, false);
+            AddEditDataAttribute(AZ_CRC_CE("Thumbnail"), m_config.m_showThumbnail);
 
             switch (m_config.m_dataType)
             {

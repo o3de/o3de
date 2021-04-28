@@ -74,6 +74,10 @@ namespace Multiplayer
         //! @param handler The SessionShutdownEvent handler to add
         virtual void AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler) = 0;
 
+        //! Sends a packet telling if entity update messages can be sent
+        //! @param readyForEntityUpdates Ready for entity updates or not
+        virtual void SendReadyForEntityUpdates(bool readyForEntityUpdates) = 0;
+
         //! Returns the gem name associated with the provided component index.
         //! @param  netComponentId the componentId to return the gem name of
         //! @return the name of the gem that contains the requested component
