@@ -65,12 +65,12 @@ if(O3DE_REGISTER_ENGINE_PATH)
 
     if(CMAKE_HOST_WIN32)
         execute_process(
-                  COMMAND cmd /c ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.bat register --this-engine
+                  COMMAND cmd /c ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.bat register --this-engine --override-home-folder ${home_directory}
                   RESULT_VARIABLE o3de_register_this_engine_cmd_result
                )
     else()
         execute_process(
-                  COMMAND bash ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.sh register --this-engine
+                  COMMAND bash ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.sh register --this-engine --override-home-folder ${home_directory}
                   RESULT_VARIABLE o3de_register_this_engine_cmd_result
                )
     endif()
