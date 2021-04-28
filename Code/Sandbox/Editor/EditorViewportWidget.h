@@ -395,9 +395,6 @@ protected:
     };
     void ResetToViewSourceType(const ViewSourceType& viewSourType);
 
-    //! Assigned renderer.
-    IRenderer*  m_renderer = nullptr;
-    I3DEngine*  m_engine = nullptr;
     bool m_bRenderContextCreated = false;
     bool m_bInRotateMode = false;
     bool m_bInMoveMode = false;
