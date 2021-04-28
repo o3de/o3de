@@ -10,15 +10,13 @@
  *
  */
 
-#include <Cry_Math.h> // Needed for DualQuat
-#include <MathConversion.h>
-
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
 #include <Integration/ActorComponentBus.h>
 
 // Needed to access the Mesh information inside Actor.
 #include <EMotionFX/Source/TransformData.h>
 #include <EMotionFX/Source/ActorInstance.h>
+#include <MCore/Source/DualQuaternion.h>
 
 #include <Components/ClothComponentMesh/ActorClothSkinning.h>
 #include <Utils/AssetHelper.h>
@@ -171,7 +169,7 @@ namespace NvCloth
             return transformData->GetSkinningMatrices();
         }
 
-        AZStd::unordered_map<AZ::u16, DualQuat> ObtainSkinningDualQuaternions(
+        AZStd::unordered_map<AZ::u16, MCore::DualQuaternion> ObtainSkinningDualQuaternions(
             AZ::EntityId entityId,
             const AZStd::vector<AZ::u16>& jointIndices)
         {
@@ -181,10 +179,10 @@ namespace NvCloth
                 return {};
             }
 
-            AZStd::unordered_map<AZ::u16, DualQuat> skinningDualQuaternions;
+            AZStd::unordered_map<AZ::u16, MCore::DualQuaternion> skinningDualQuaternions;
             for (AZ::u16 jointIndex : jointIndices)
             {
-                skinningDualQuaternions.emplace(jointIndex, AZMatrix3x4ToLYMatrix3x4(skinningMatrices[jointIndex]));
+                skinningDualQuaternions.emplace(jointIndex, MCore::DualQuaternion(AZ::Transform::CreateFromMatrix3x4(skinningMatrices[jointIndex])));
             }
             return skinningDualQuaternions;
         }
@@ -276,8 +274,8 @@ namespace NvCloth
         AZ::Vector3 ComputeSkinningVector(const AZ::Vector3& originalVector) override;
 
     private:
-        AZStd::unordered_map<AZ::u16, DualQuat> m_skinningDualQuaternions;
-        DualQuat m_vertexSkinningTransform = DualQuat(type_identity::IDENTITY);
+        AZStd::unordered_map<AZ::u16, MCore::DualQuaternion> m_skinningDualQuaternions;
+        MCore::DualQuaternion m_vertexSkinningTransform;
     };
 
     void ActorClothSkinningDualQuaternion::UpdateSkinning()
@@ -294,7 +292,7 @@ namespace NvCloth
 
     void ActorClothSkinningDualQuaternion::ComputeVertexSkinnningTransform(const SkinningInfo& skinningInfo)
     {
-        m_vertexSkinningTransform = DualQuat(type_zero::ZERO);
+        m_vertexSkinningTransform = MCore::DualQuaternion(AZ::Quaternion::CreateZero(), AZ::Quaternion::CreateZero());
         for (size_t weightIndex = 0; weightIndex < skinningInfo.m_jointWeights.size(); ++weightIndex)
         {
             const AZ::u16 jointIndex = skinningInfo.m_jointIndices[weightIndex];
@@ -312,12 +310,12 @@ namespace NvCloth
 
     AZ::Vector3 ActorClothSkinningDualQuaternion::ComputeSkinningPosition(const AZ::Vector3& originalPosition)
     {
-        return LYVec3ToAZVec3(m_vertexSkinningTransform * AZVec3ToLYVec3(originalPosition));
+        return m_vertexSkinningTransform.TransformPoint(originalPosition);
     }
 
     AZ::Vector3 ActorClothSkinningDualQuaternion::ComputeSkinningVector(const AZ::Vector3& originalVector)
     {
-        return LYVec3ToAZVec3(m_vertexSkinningTransform.nq * AZVec3ToLYVec3(originalVector)).GetNormalized();
+        return m_vertexSkinningTransform.TransformVector(originalVector).GetNormalized();
     }
 
     AZStd::unique_ptr<ActorClothSkinning> ActorClothSkinning::Create(
