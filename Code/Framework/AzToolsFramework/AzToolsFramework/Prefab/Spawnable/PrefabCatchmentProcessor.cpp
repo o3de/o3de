@@ -84,8 +84,6 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
             }
             SpawnableUtils::SortEntitiesByTransformHierarchy(*spawnable);
             context.GetProcessedObjects().push_back(AZStd::move(object));
-
-            context.RemovePrefab(prefabName);
         }
         else
         {
