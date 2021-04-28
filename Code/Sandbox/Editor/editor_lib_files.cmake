@@ -511,9 +511,6 @@ set(FILES
     DimensionsDialog.cpp
     DimensionsDialog.h
     DimensionsDialog.ui
-    Dialogs/QT/NewEntityDialog.cpp
-    Dialogs/QT/NewEntityDialog.h
-    Dialogs/QT/NewEntityDialog.ui
     NewLevelDialog.cpp
     NewLevelDialog.h
     NewLevelDialog.ui
@@ -551,7 +548,6 @@ set(FILES
     DatabaseFrameWnd.h
     DatabaseFrameWnd.ui
     DatabaseFrameWnd.qrc
-    Dialogs/DuplicatedObjectsHandlerDlg.h
     DocMultiArchive.h
     EditMode/DeepSelection.h
     FBXExporterDialog.h
@@ -638,8 +634,6 @@ set(FILES
     Objects/ObjectManager.h
     Objects/ObjectManagerLegacyUndo.cpp
     Objects/ObjectManagerLegacyUndo.h
-    Objects/ObjectPhysicsManager.cpp
-    Objects/ObjectPhysicsManager.h
     Objects/DisplayContext.cpp
     Objects/DisplayContext.h
     Objects/EntityObject.cpp
@@ -713,8 +707,6 @@ set(FILES
     graphicssettingsdialog.ui
     AboutDialog.cpp
     DatabaseFrameWnd.cpp
-    Dialogs/DuplicatedObjectsHandlerDlg.cpp
-    Dialogs/DuplicatedObjectsHandlerDlg.ui
     ErrorReportTableModel.h
     ErrorReportTableModel.cpp
     EditMode/DeepSelection.cpp
