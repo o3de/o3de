@@ -395,7 +395,7 @@ namespace AZ
 
                 MOCK_CONST_METHOD1(GetModuleList, void(AZStd::vector<AZStd::string_view>&));
                 MOCK_CONST_METHOD1(GetGlobalFunctionList, void(GlobalFunctionCollection&));
-                MOCK_METHOD1(FetchPythonTypeName, AZStd::string_view(const AZ::BehaviorParameter&));
+                MOCK_METHOD1(FetchPythonTypeName, AZStd::string(const AZ::BehaviorParameter&));
             };
 
             //

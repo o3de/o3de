@@ -34,7 +34,7 @@ namespace AZ
 
         protected:
             bool IsMemberLike(const AZ::BehaviorMethod& method, const AZ::TypeId& typeId) const;
-            AZStd::string_view FetchPythonType(const AZ::BehaviorParameter& param) const;
+            AZStd::string FetchPythonType(const AZ::BehaviorParameter& param) const;
             void WriteMethod(AZStd::string_view methodName, const AZ::BehaviorMethod& behaviorMethod);
 
         private:
@@ -73,7 +73,7 @@ namespace AZ
             return method.IsMember() || (method.GetNumArguments() > 0 && method.GetArgument(0)->m_typeId == typeId);
         }
 
-        AZStd::string_view PythonBehaviorInfo::FetchPythonType(const AZ::BehaviorParameter& param) const
+        AZStd::string PythonBehaviorInfo::FetchPythonType(const AZ::BehaviorParameter& param) const
         {
             using namespace AzToolsFramework;
             EditorPythonConsoleInterface* editorPythonConsoleInterface = AZ::Interface<EditorPythonConsoleInterface>::Get();
