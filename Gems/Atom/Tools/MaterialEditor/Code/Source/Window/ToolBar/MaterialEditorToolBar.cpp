@@ -38,7 +38,7 @@ namespace MaterialEditor
         m_toggleGrid->setCheckable(true);
         connect(m_toggleGrid, &QAction::triggered, [this]() {
             MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Events::SetGridEnabled, m_toggleGrid->isChecked());
-        });
+            });
         bool enableGrid = false;
         MaterialViewportRequestBus::BroadcastResult(enableGrid, &MaterialViewportRequestBus::Events::GetGridEnabled);
         m_toggleGrid->setChecked(enableGrid);
@@ -49,7 +49,7 @@ namespace MaterialEditor
         connect(m_toggleShadowCatcher, &QAction::triggered, [this]() {
             MaterialViewportRequestBus::Broadcast(
                 &MaterialViewportRequestBus::Events::SetShadowCatcherEnabled, m_toggleShadowCatcher->isChecked());
-        });
+            });
         bool enableShadowCatcher = false;
         MaterialViewportRequestBus::BroadcastResult(enableShadowCatcher, &MaterialViewportRequestBus::Events::GetShadowCatcherEnabled);
         m_toggleShadowCatcher->setChecked(enableShadowCatcher);
@@ -58,22 +58,44 @@ namespace MaterialEditor
         //[GFX TODO][ATOM-3992]
         QToolButton* toneMappingButton = new QToolButton(this);
         QMenu* toneMappingMenu = new QMenu(toneMappingButton);
-        toneMappingMenu->addAction("None", [this]() {
-            MaterialEditorSettingsRequestBus::Broadcast(&MaterialEditorSettingsRequests::SetStringProperty, "toneMapping", "None");
-        });
-        toneMappingMenu->addAction("Gamma2.2", [this]() {
-            MaterialEditorSettingsRequestBus::Broadcast(&MaterialEditorSettingsRequests::SetStringProperty, "toneMapping", "Gamma2.2");
-        });
-        toneMappingMenu->addAction("ACES", [this]() {
-            MaterialEditorSettingsRequestBus::Broadcast(&MaterialEditorSettingsRequests::SetStringProperty, "toneMapping", "ACES");
-        });
+        m_aces = toneMappingMenu->addAction("Aces", [this]() {
+            MaterialViewportRequestBus::Broadcast(
+                &MaterialViewportRequestBus::Events::SetDisplayMapperOperationType,
+                AZ::Render::DisplayMapperOperationType::Aces);
+            });
+        m_aces->setCheckable(true);
+        m_aces->setChecked(true);
+        m_acesLut = toneMappingMenu->addAction("AcesLut", [this]() {
+            MaterialViewportRequestBus::Broadcast(
+                &MaterialViewportRequestBus::Events::SetDisplayMapperOperationType,
+                AZ::Render::DisplayMapperOperationType::AcesLut);
+            });
+        m_acesLut->setCheckable(true);
+        m_passthrough = toneMappingMenu->addAction("Passthrough", [this]() {
+            MaterialViewportRequestBus::Broadcast(
+                &MaterialViewportRequestBus::Events::SetDisplayMapperOperationType,
+                AZ::Render::DisplayMapperOperationType::Passthrough);
+            });
+        m_passthrough->setCheckable(true);
+        m_gammaSRGB = toneMappingMenu->addAction("GammaSRGB", [this]() {
+            MaterialViewportRequestBus::Broadcast(
+                &MaterialViewportRequestBus::Events::SetDisplayMapperOperationType,
+                AZ::Render::DisplayMapperOperationType::GammaSRGB);
+            });
+        m_gammaSRGB->setCheckable(true);
+        m_reinhard = toneMappingMenu->addAction("Reinhard", [this]() {
+            MaterialViewportRequestBus::Broadcast(
+                &MaterialViewportRequestBus::Events::SetDisplayMapperOperationType,
+                AZ::Render::DisplayMapperOperationType::Reinhard);
+            });
+        m_reinhard->setCheckable(true);
         toneMappingButton->setMenu(toneMappingMenu);
         toneMappingButton->setText("Tone Mapping");
         toneMappingButton->setIcon(QIcon(":/Icons/toneMapping.svg"));
         toneMappingButton->setPopupMode(QToolButton::InstantPopup);
 
         // hiding button until DisplayMapper supports changing settings at run time
-        toneMappingButton->setVisible(false);
+        toneMappingButton->setVisible(true);
         addWidget(toneMappingButton);
 
         // Add model combo box
@@ -97,6 +119,34 @@ namespace MaterialEditor
     void MaterialEditorToolBar::OnGridEnabledChanged(bool enable)
     {
         m_toggleGrid->setChecked(enable);
+    }
+
+    void MaterialEditorToolBar::OnDisplayMapperOperationTypeChanged(AZ::Render::DisplayMapperOperationType operationType)
+    {
+        m_aces->setChecked(false);
+        m_acesLut->setChecked(false);
+        m_passthrough->setChecked(false);
+        m_gammaSRGB->setChecked(false);
+        m_reinhard->setChecked(false);
+
+        switch (operationType)
+        {
+        case AZ::Render::DisplayMapperOperationType::Aces:
+            m_aces->setChecked(true);
+            break;
+        case AZ::Render::DisplayMapperOperationType::AcesLut:
+            m_acesLut->setChecked(true);
+            break;
+        case AZ::Render::DisplayMapperOperationType::Passthrough:
+            m_passthrough->setChecked(true);
+            break;
+        case AZ::Render::DisplayMapperOperationType::GammaSRGB:
+            m_gammaSRGB->setChecked(true);
+            break;
+        case AZ::Render::DisplayMapperOperationType::Reinhard:
+            m_reinhard->setChecked(true);
+            break;
+        }
     }
 
     void MaterialEditorToolBar::OnShadowCatcherEnabledChanged(bool enable)

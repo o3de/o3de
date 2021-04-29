@@ -33,8 +33,15 @@ namespace MaterialEditor
         // MaterialViewportNotificationBus::Handler overrides...
         void OnShadowCatcherEnabledChanged([[maybe_unused]] bool enable) override;
         void OnGridEnabledChanged([[maybe_unused]] bool enable) override;
+        void OnDisplayMapperOperationTypeChanged(AZ::Render::DisplayMapperOperationType operationType) override;
 
         QAction* m_toggleGrid = {};
         QAction* m_toggleShadowCatcher = {};
+
+        QAction* m_aces = {};
+        QAction* m_acesLut = {};
+        QAction* m_passthrough = {};
+        QAction* m_gammaSRGB = {};
+        QAction* m_reinhard = {};
     };
 } // namespace MaterialEditor

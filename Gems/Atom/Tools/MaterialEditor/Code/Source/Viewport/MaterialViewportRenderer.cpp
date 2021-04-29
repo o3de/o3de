@@ -33,6 +33,7 @@
 #include <Atom/Feature/PostProcessing/PostProcessingConstants.h>
 #include <Atom/Feature/PostProcess/PostProcessFeatureProcessorInterface.h>
 #include <Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessorInterface.h>
+#include <Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h>
 #include <Atom/Component/DebugCamera/NoClipControllerComponent.h>
 
 #include <Atom/Document/MaterialDocumentRequestBus.h>
@@ -145,8 +146,10 @@ namespace MaterialEditor
         m_postProcessEntity->Activate();
 
         // Init directional light processor
-
         m_directionalLightFeatureProcessor = m_scene->GetFeatureProcessor<AZ::Render::DirectionalLightFeatureProcessorInterface>();
+
+        // Init display mapper processor
+        m_displayMapperFeatureProcessor = m_scene->GetFeatureProcessor<Render::DisplayMapperFeatureProcessorInterface>();
 
         // Init Skybox
 
@@ -412,6 +415,13 @@ namespace MaterialEditor
     void MaterialViewportRenderer::OnFieldOfViewChanged(float fieldOfView)
     {
         MaterialEditorViewportInputControllerRequestBus::Broadcast(&MaterialEditorViewportInputControllerRequestBus::Handler::SetFieldOfView, fieldOfView);
+    }
+
+    void MaterialViewportRenderer::OnDisplayMapperOperationTypeChanged(AZ::Render::DisplayMapperOperationType operationType)
+    {
+        AZ::Render::DisplayMapperConfigurationDescriptor desc;
+        desc.m_operationType = operationType;
+        m_displayMapperFeatureProcessor->RegisterDisplayMapperConfiguration(desc);
     }
 
     void MaterialViewportRenderer::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
