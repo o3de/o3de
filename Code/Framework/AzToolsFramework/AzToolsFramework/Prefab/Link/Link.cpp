@@ -108,11 +108,9 @@ namespace AzToolsFramework
             m_targetTemplateId = id;
         }
 
-        void Link::SetTemplatePatches(const PrefabDomValue& patches)
+        void Link::SetLinkDom(const PrefabDomValue& linkDom)
         {
-            PrefabDom newPatches;
-            newPatches.CopyFrom(patches, newPatches.GetAllocator());
-            m_linkDom.Swap(newPatches);
+            m_linkDom.CopyFrom(linkDom, m_linkDom.GetAllocator());
         }
 
         void Link::SetInstanceName(const char* instanceName)

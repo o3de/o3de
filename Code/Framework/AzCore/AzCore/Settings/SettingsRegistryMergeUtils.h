@@ -55,6 +55,9 @@ namespace AZ::SettingsRegistryMergeUtils
     //! Development write storage path may be considered temporary or cache storage on some platforms
     inline static constexpr char FilePathKey_DevWriteStorage[] = "/Amazon/AzCore/Runtime/FilePaths/DevWriteStorage";
 
+    //! Stores error text regarding engine boot sequence when engine and project roots cannot be determined
+    inline static constexpr char FilePathKey_ErrorText[] = "/Amazon/AzCore/Runtime/FilePaths/ErrorText";
+
     //! Root key for where command line are stored at within the settings registry
     inline static constexpr char CommandLineRootKey[] = "/Amazon/AzCore/Runtime/CommandLine";
     //! Key set to trigger a notification that the CommandLine has been stored within the settings registry
@@ -218,6 +221,9 @@ namespace AZ::SettingsRegistryMergeUtils
     //! Query the command line settings from the Setting Registry and stores them
     //! into the AZ::CommandLine instance
     bool GetCommandLineFromRegistry(SettingsRegistryInterface& registry, AZ::CommandLine& commandLine);
+
+    //! Parse a CommandLine and transform certain options into formal "regset" options
+    void ParseCommandLine(AZ::CommandLine& commandLine);
 
     //! Structure for configuring how values should be dumped from the Settings Registry
     struct DumperSettings

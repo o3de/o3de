@@ -441,7 +441,7 @@ namespace AzToolsFramework
             clusterId);
     }
 
-    static void SetViewportUiClusterVisible(ViewportUi::ClusterId clusterId, bool visible)
+    static void SetViewportUiClusterVisible(const ViewportUi::ClusterId clusterId, const bool visible)
     {
         ViewportUi::ViewportUiRequestBus::Event(
             ViewportUi::DefaultViewportId,
@@ -449,7 +449,7 @@ namespace AzToolsFramework
             clusterId, visible);
     }
 
-    static void SetViewportUiClusterActiveButton(ViewportUi::ClusterId clusterId, ViewportUi::ButtonId buttonId)
+    static void SetViewportUiClusterActiveButton(const ViewportUi::ClusterId clusterId, const ViewportUi::ButtonId buttonId)
     {
         ViewportUi::ViewportUiRequestBus::Event(
             ViewportUi::DefaultViewportId,
@@ -457,7 +457,7 @@ namespace AzToolsFramework
             clusterId, buttonId);
     }
 
-    static ViewportUi::ButtonId RegisterClusterButton(ViewportUi::ClusterId clusterId, const char* iconName)
+    static ViewportUi::ButtonId RegisterClusterButton(const ViewportUi::ClusterId clusterId, const char* iconName)
     {
         ViewportUi::ButtonId buttonId;
         ViewportUi::ViewportUiRequestBus::EventResult(
@@ -3494,7 +3494,7 @@ namespace AzToolsFramework
 
         DrawAxisGizmo(viewportInfo, debugDisplay);
 
-        m_boxSelect.Display2d(debugDisplay);
+        m_boxSelect.Display2d(viewportInfo, debugDisplay);
     }
 
     void EditorTransformComponentSelection::RefreshSelectedEntityIds()

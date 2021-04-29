@@ -335,21 +335,9 @@ void CToolBoxManager::Load(ActionManager* actionManager)
 
     if (actionManager)
     {
-        QByteArray array = gSettings.strEditorEnv.toUtf8();
-        AZStd::string actualPath = AZStd::string::format("@engroot@/%s", array.constData());
-        XmlNodeRef envNode = XmlHelpers::LoadXmlFromFile(actualPath.c_str());
-        if (envNode)
-        {
-            int childrenCount = envNode->getChildCount();
-            for (int idx = 0; idx < childrenCount; ++idx)
-            {
-                XmlNodeRef child = envNode->getChild(idx);
-                if (child->haveAttr("scriptPath") && child->haveAttr("shelvesPath"))
-                {
-                    LoadShelves(child->getAttr("scriptPath"), child->getAttr("shelvesPath"), actionManager);
-                }
-            }
-        }
+        auto engineSourceAssetPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / "Assets";
+        LoadShelves((engineSourceAssetPath / "Editor" / "Scripts").c_str(),
+            (engineSourceAssetPath / "Editor" / "Scripts" / "Shelves").c_str(), actionManager);
     }
 }
 

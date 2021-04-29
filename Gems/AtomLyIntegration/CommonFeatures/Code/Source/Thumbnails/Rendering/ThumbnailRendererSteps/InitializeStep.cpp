@@ -100,24 +100,15 @@ namespace AZ
                 data->m_scene->SetShaderResourceGroupCallback(callback);
 
                 // Bind m_defaultScene to the GameEntityContext's AzFramework::Scene
-                Outcome<AzFramework::Scene*, AZStd::string> createSceneOutcome;
-                AzFramework::SceneSystemRequestBus::BroadcastResult(
-                    createSceneOutcome,
-                    &AzFramework::SceneSystemRequests::CreateScene,
-                    data->m_sceneName);
+                auto* sceneSystem = AzFramework::SceneSystemInterface::Get();
+                AZ_Assert(sceneSystem, "Thumbnail system failed to get scene system implementation.");
+                Outcome<AZStd::shared_ptr<AzFramework::Scene>, AZStd::string> createSceneOutcome =
+                    sceneSystem->CreateScene(data->m_sceneName);
                 AZ_Assert(createSceneOutcome, createSceneOutcome.GetError().c_str()); // This should never happen unless scene creation has changed.
-                createSceneOutcome.GetValue()->SetSubsystem(data->m_scene.get());
-                data->m_frameworkScene = createSceneOutcome.GetValue();
-                data->m_frameworkScene->SetSubsystem(data->m_scene.get());
+                data->m_frameworkScene = createSceneOutcome.TakeValue();
+                data->m_frameworkScene->SetSubsystem(data->m_scene);
 
-                bool success = false;
-                AzFramework::SceneSystemRequestBus::BroadcastResult(
-                    success,
-                    &AzFramework::SceneSystemRequests::SetSceneForEntityContextId,
-                    data->m_entityContext->GetContextId(),
-                    data->m_frameworkScene);
-                AZ_Assert(success, "Unable to set entity context on AzFramework::Scene: %s", data->m_sceneName.c_str());
-
+                data->m_frameworkScene->SetSubsystem(data->m_entityContext.get());
                 // Create a render pipeline from the specified asset for the window context and add the pipeline to the scene
                 RPI::RenderPipelineDescriptor pipelineDesc;
                 pipelineDesc.m_mainViewTagName = "MainCamera";
