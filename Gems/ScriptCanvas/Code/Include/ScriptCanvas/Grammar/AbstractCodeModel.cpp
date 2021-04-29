@@ -3257,13 +3257,12 @@ namespace ScriptCanvas
                                 return;
                             }
 
-                            execution->SetNodeable(iter->second->m_nodeable);
+                            child->SetNodeable(iter->second->m_nodeable);
 
                             for (auto& childOutSlot : childOutSlots)
                             {
                                 AZ_Assert(childOutSlot, "null slot in child out slot list");
                                 ExecutionTreePtr internalOut = OpenScope(child, node, childOutSlot);
-                                internalOut->SetNodeable(execution->GetNodeable());
 
                                 const size_t outIndex = node->GetOutIndex(*childOutSlot);
                                 if (outIndex == std::numeric_limits<size_t>::max())

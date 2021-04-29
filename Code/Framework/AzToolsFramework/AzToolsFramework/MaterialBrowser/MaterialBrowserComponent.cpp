@@ -36,8 +36,7 @@ namespace AzToolsFramework
             using namespace Thumbnailer;
             using namespace AssetBrowser;
             const char* contextName = "MaterialBrowser";
-            int thumbnailSize = qApp->style()->pixelMetric(QStyle::PM_SmallIconSize);
-            ThumbnailerRequestsBus::Broadcast(&ThumbnailerRequests::RegisterContext, contextName, thumbnailSize);
+            ThumbnailerRequestsBus::Broadcast(&ThumbnailerRequests::RegisterContext, contextName);
             ThumbnailerRequestsBus::Broadcast(&ThumbnailerRequests::RegisterThumbnailProvider, MAKE_TCACHE(FolderThumbnailCache), contextName);
             ThumbnailerRequestsBus::Broadcast(&ThumbnailerRequests::RegisterThumbnailProvider, MAKE_TCACHE(SourceThumbnailCache), contextName);
             ThumbnailerRequestsBus::Broadcast(&ThumbnailerRequests::RegisterThumbnailProvider, MAKE_TCACHE(MaterialThumbnailCache), contextName);

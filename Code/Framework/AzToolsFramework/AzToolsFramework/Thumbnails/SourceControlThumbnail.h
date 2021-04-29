@@ -55,7 +55,7 @@ namespace AzToolsFramework
         {
             Q_OBJECT
         public:
-            SourceControlThumbnail(SharedThumbnailKey key, int thumbnailSize);
+            SourceControlThumbnail(SharedThumbnailKey key);
             ~SourceControlThumbnail() override;
 
             //////////////////////////////////////////////////////////////////////////

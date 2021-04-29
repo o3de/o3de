@@ -32,11 +32,11 @@ ly_add_target(
         PRIVATE
             ${pal_dir}
     BUILD_DEPENDENCIES
+        PUBLIC
+            AZ::CrashSupport
         PRIVATE
             3rdParty::Crashpad
-            AZ::AzCore
             AZ::AzFramework
-            AZ::CrashSupport
 )
 
 string(REPLACE "." ";" version_list "${LY_VERSION_STRING}")
@@ -67,11 +67,9 @@ ly_add_target(
         PRIVATE
             Uploader/include/Uploader
     BUILD_DEPENDENCIES
-        PRIVATE
-            AZ::AzCore
-            AZ::CrashSupport
         PUBLIC
             3rdParty::Crashpad::Handler
+            AZ::CrashSupport
 )
 
 add_subdirectory(Tools)
