@@ -462,3 +462,13 @@ class TestAutomation(TestAutomationBase):
     def test_C6090547_ForceRegion_ParentChildForceRegions(self, request, workspace, editor, launcher_platform):
         from . import C6090547_ForceRegion_ParentChildForceRegions as test_module
         self._run_test(request, workspace, editor, test_module)
+        
+        @revert_physics_config
+    def test_C19578021_ShapeCollider_CanBeAdded(self, request, workspace, editor, launcher_platform):
+        from . import C19578021_ShapeCollider_CanBeAdded as test_module
+        self._run_test(request, workspace, editor, test_module)
+        
+        @revert_physics_config
+    def test_C15425929_Undo_Redo(self, request, workspace, editor, launcher_platform):
+        from . import C15425929_Undo_Redo as test_module
+        self._run_test(request, workspace, editor, test_module)

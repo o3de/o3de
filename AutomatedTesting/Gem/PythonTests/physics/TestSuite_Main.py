@@ -50,7 +50,7 @@ class TestAutomation(TestAutomationBase):
     def test_C15425929_Undo_Redo(self, request, workspace, editor, launcher_platform):
         from . import C15425929_Undo_Redo as test_module
         self._run_test(request, workspace, editor, test_module)
-
+        
     @revert_physics_config
     def test_C4976243_Collision_SameCollisionGroupDiffCollisionLayers(self, request, workspace, editor,
                                                                       launcher_platform):
@@ -84,11 +84,11 @@ class TestAutomation(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
-    def test_C19578021_ShapeCollider_CanBeAdded(self, request, workspace, editor, launcher_platform):
-        from . import C19578021_ShapeCollider_CanBeAdded as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @revert_physics_config
     def test_C4982803_Enable_PxMesh_Option(self, request, workspace, editor, launcher_platform):
         from . import C4982803_Enable_PxMesh_Option as test_module
+        self._run_test(request, workspace, editor, test_module)
+    
+    @revert_physics_config    
+    def test_C24308873_CylinderShapeCollider_CollidesWithPhysXTerrain(self, request, workspace, editor, launcher_platform):
+        from . import C24308873_CylinderShapeCollider_CollidesWithPhysXTerrain as test_module
         self._run_test(request, workspace, editor, test_module)
