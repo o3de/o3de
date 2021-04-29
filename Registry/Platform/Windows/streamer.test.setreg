@@ -21,7 +21,7 @@
                                 "MaxFileHandles": 1024,
                                 "MaxMetaDataCache": 1024,
                                 "Overcommit": 8,
-                                "EnableFileSharing": false,
+                                "EnableFileSharing": true,
                                 "EnableUnbufferedReads": true,
                                 "MinimalReporting": true
                             },
