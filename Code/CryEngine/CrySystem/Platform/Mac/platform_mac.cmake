@@ -15,7 +15,13 @@
 # is being avoided to prevent overriding functions declared in other targets platfrom
 # specific cmake files
 
-
-set(LY_RUNTIME_DEPENDENCIES
-    Legacy::CryRenderNULL
-)
+if (LY_MONOLITHIC_GAME) # Only Atom is supported in monolithic builds
+    set(LY_BUILD_DEPENDENCIES
+        PUBLIC
+            Legacy::CryRenderOther
+    )
+else()
+    set(LY_RUNTIME_DEPENDENCIES
+        Legacy::CryRenderMetal
+    )
+endif()

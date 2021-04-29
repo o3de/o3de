@@ -14,8 +14,12 @@ set(LY_LINK_OPTIONS
         -ObjC
 )
 
-list(APPEND LY_BUILD_DEPENDENCIES CrySystem.Static)
-set(LY_RUNTIME_DEPENDENCIES Legacy::CryRenderNULL)
+if(LY_MONOLITHIC_GAME) # only Atom is supported in monolithic
+    list(APPEND LY_BUILD_DEPENDENCIES Legacy::CryRenderOther)
+else()
+    list(APPEND LY_BUILD_DEPENDENCIES CrySystem.Static)
+    set(LY_RUNTIME_DEPENDENCIES Legacy::CryRenderMetal)
+endif()
 
 # Add resources and app icons to launchers
 list(APPEND candidate_paths ${project_real_path}/Resources/Platform/iOS)

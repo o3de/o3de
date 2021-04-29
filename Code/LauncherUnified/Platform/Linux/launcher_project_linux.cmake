@@ -9,7 +9,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-set(LY_BUILD_DEPENDENCIES
-    PRIVATE
-        Legacy::CryRenderNULL
-)
+if (LY_MONOLITHIC_GAME) # only Atom is supported in monolithic
+    set(LY_BUILD_DEPENDENCIES
+        PUBLIC
+            Legacy::CryRenderOther
+    )
+else()
+    set(LY_BUILD_DEPENDENCIES
+        PRIVATE
+            Legacy::CryRenderGL
+    )
+endif()
