@@ -276,6 +276,15 @@ namespace AzToolsFramework
             QWidget* activeWindow = QApplication::activeWindow();
             const AZStd::string prefabFilesPath = "@devassets@/Prefabs";
 
+            // Remove Level entity if it's part of the list
+            
+            auto levelContainerIter =
+                AZStd::find(selectedEntities.begin(), selectedEntities.end(), s_prefabPublicInterface->GetLevelInstanceContainerEntityId());
+            if (levelContainerIter != selectedEntities.end())
+            {
+                selectedEntities.erase(levelContainerIter);
+            }
+
             // Set default folder for prefabs
             AZ::IO::FileIOBase* fileIoBaseInstance = AZ::IO::FileIOBase::GetInstance();
 
