@@ -25,7 +25,6 @@
 
 #include <assimp/scene.h>
 #include <assimp/mesh.h>
-#pragma optimize("", off)
 namespace AZ
 {
     namespace SceneAPI
