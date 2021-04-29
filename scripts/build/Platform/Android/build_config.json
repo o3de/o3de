@@ -44,7 +44,7 @@
     "TAGS": [
       "packaging"
     ],
-    "COMMAND": "python_windows.cmd",
+    "COMMAND": "../Windows/python_windows.cmd",
     "PARAMETERS": {
       "SCRIPT_PATH": "scripts/build/package/package.py",
       "SCRIPT_PARAMETERS": "--platform Android --type all"

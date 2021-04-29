@@ -20,7 +20,6 @@
 #include "2DViewport.h"
 #include "CryEditDoc.h"
 #include "DisplaySettings.h"
-#include "EditTool.h"
 #include "GameEngine.h"
 #include "Settings.h"
 #include "ViewManager.h"
@@ -1117,11 +1116,6 @@ void Q2DViewport::DrawObjects(DisplayContext& dc)
         GetIEditor()->GetObjectManager()->Display(dc);
     }
 
-    // Display editing tool.
-    if (GetEditTool())
-    {
-        GetEditTool()->Display(dc);
-    }
     dc.PopMatrix();
 }
 

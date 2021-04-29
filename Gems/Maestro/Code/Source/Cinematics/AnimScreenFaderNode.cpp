@@ -291,10 +291,13 @@ void CAnimScreenFaderNode::Serialize
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CAnimScreenFaderNode::Reflect(AZ::SerializeContext* serializeContext)
+void CAnimScreenFaderNode::Reflect(AZ::ReflectContext* context)
 {
-    serializeContext->Class<CAnimScreenFaderNode, CAnimNode>()
-        ->Version(1);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<CAnimScreenFaderNode, CAnimNode>()
+            ->Version(1);
+    }
 }
 
 //-----------------------------------------------------------------------------

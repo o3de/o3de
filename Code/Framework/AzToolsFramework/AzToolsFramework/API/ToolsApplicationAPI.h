@@ -349,6 +349,11 @@ namespace AzToolsFramework
         virtual bool AreAnyEntitiesSelected() = 0;
 
         /*!
+         * Returns the number of selected entities.
+         */
+        virtual int GetSelectedEntitiesCount() = 0;
+
+        /*!
          * Retrieves the set of selected entities.
          * \return a list of entity Ids.
          */
@@ -814,8 +819,6 @@ namespace AzToolsFramework
 
         /// Hide or show the circular dependency error when saving slices
         virtual void SetShowCircularDependencyError(const bool& /*showCircularDependencyError*/) {}
-
-        virtual void SetEditTool(const char* /*tool*/) {}
 
         /// Launches the Lua editor and opens the specified (space separated) files.
         virtual void LaunchLuaEditor(const char* /*files*/) {}

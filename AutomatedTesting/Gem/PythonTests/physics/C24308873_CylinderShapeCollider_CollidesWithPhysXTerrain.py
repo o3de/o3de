@@ -57,8 +57,8 @@ def C24308873_CylinderShapeCollider_CollidesWithPhysXTerrain():
 
     import azlmbr.legacy.general as general
     import azlmbr.bus
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     # Global time out
     TIME_OUT = 1.0
@@ -119,5 +119,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C24308873_CylinderShapeCollider_CollidesWithPhysXTerrain)

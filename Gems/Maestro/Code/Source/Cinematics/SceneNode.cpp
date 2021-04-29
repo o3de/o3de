@@ -1026,10 +1026,13 @@ void CAnimSceneNode::Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmp
     SetFlags(GetFlags() | eAnimNodeFlags_CanChangeName);
 }
 
-void CAnimSceneNode::Reflect(AZ::SerializeContext* serializeContext)
+void CAnimSceneNode::Reflect(AZ::ReflectContext* context)
 {
-    serializeContext->Class<CAnimSceneNode, CAnimNode>()
-        ->Version(1);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<CAnimSceneNode, CAnimNode>()
+            ->Version(1);
+    }
 }
 
 void CAnimSceneNode::PrecacheStatic(float startTime)

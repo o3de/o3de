@@ -114,7 +114,6 @@ def C15308221_Material_ComponentsInSyncWithLibrary():
 
     imports.init()
 
-
     import azlmbr.legacy.general as general
     import azlmbr.bus as bus
     import azlmbr.components
@@ -122,8 +121,8 @@ def C15308221_Material_ComponentsInSyncWithLibrary():
     import azlmbr.math as lymath
 
     from Physmaterial_Editor import Physmaterial_Editor
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     TIMEOUT = 3.0
     BOUNCE_TOLERANCE = 0.1
@@ -252,5 +251,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C15308221_Material_ComponentsInSyncWithLibrary)

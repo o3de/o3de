@@ -154,7 +154,7 @@
 								</Class>
 								<Class name="EditorTransform" field="Transform Data" version="2" type="{B02B7063-D238-4F40-A724-405F7A6D68CB}">
 									<Class name="Vector3" field="Translate" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
-									<Class name="Vector3" field="Rotate" value="0.0000000 0.0000000 359.9999695" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
+									<Class name="Vector3" field="Rotate" value="0.0000000 0.0000000 -0.0000546" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 									<Class name="Vector3" field="Scale" value="1.0000000 1.0000000 1.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 									<Class name="bool" field="Locked" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
 								</Class>
@@ -379,20 +379,7 @@
 															<Class name="AZ::u64" field="lodIndex" value="18446744073709551615" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 															<Class name="AssetId" field="materialAssetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 																<Class name="AZ::Uuid" field="guid" value="{3E4C6A29-92A4-523E-8739-F3E64957569E}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-																<Class name="unsigned int" field="subId" value="4115391834" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-															</Class>
-														</Class>
-														<Class name="AZ::Render::MaterialAssignment" field="value2" version="1" type="{C66E5214-A24B-4722-B7F0-5991E6F8F163}">
-															<Class name="Asset" field="MaterialAsset" value="id={80F92051-203E-52CE-B4D6-E3AED21795C9}:0,type={522C7BE0-501D-463E-92C6-15184A2B7AD8},hint={objects/cloth/chicken/actor/chicken_mohawkmat.azmaterial},loadBehavior=1" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
-															<Class name="AZStd::unordered_map" field="PropertyOverrides" type="{6E6962E1-04C9-56F9-89C4-361031CC1384}"/>
-														</Class>
-													</Class>
-													<Class name="AZStd::pair" field="element" type="{F652A87A-0FDF-527C-B0ED-340C074A4874}">
-														<Class name="AZ::Render::MaterialAssignmentId" field="value1" version="1" type="{EB603581-4654-4C17-B6DE-AE61E79EDA97}">
-															<Class name="AZ::u64" field="lodIndex" value="18446744073709551615" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-															<Class name="AssetId" field="materialAssetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-																<Class name="AZ::Uuid" field="guid" value="{3E4C6A29-92A4-523E-8739-F3E64957569E}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-																<Class name="unsigned int" field="subId" value="3988576522" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+																<Class name="unsigned int" field="subId" value="1541321207" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 															</Class>
 														</Class>
 														<Class name="AZ::Render::MaterialAssignment" field="value2" version="1" type="{C66E5214-A24B-4722-B7F0-5991E6F8F163}">
@@ -405,11 +392,24 @@
 															<Class name="AZ::u64" field="lodIndex" value="18446744073709551615" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 															<Class name="AssetId" field="materialAssetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 																<Class name="AZ::Uuid" field="guid" value="{3E4C6A29-92A4-523E-8739-F3E64957569E}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-																<Class name="unsigned int" field="subId" value="2328463833" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+																<Class name="unsigned int" field="subId" value="668669130" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 															</Class>
 														</Class>
 														<Class name="AZ::Render::MaterialAssignment" field="value2" version="1" type="{C66E5214-A24B-4722-B7F0-5991E6F8F163}">
 															<Class name="Asset" field="MaterialAsset" value="id={FB34D8F7-E8CA-542D-92A3-F0E04F3A3EC3}:0,type={522C7BE0-501D-463E-92C6-15184A2B7AD8},hint={objects/cloth/chicken/actor/chicken_chicken_body_mat.azmaterial},loadBehavior=1" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
+															<Class name="AZStd::unordered_map" field="PropertyOverrides" type="{6E6962E1-04C9-56F9-89C4-361031CC1384}"/>
+														</Class>
+													</Class>
+													<Class name="AZStd::pair" field="element" type="{F652A87A-0FDF-527C-B0ED-340C074A4874}">
+														<Class name="AZ::Render::MaterialAssignmentId" field="value1" version="1" type="{EB603581-4654-4C17-B6DE-AE61E79EDA97}">
+															<Class name="AZ::u64" field="lodIndex" value="18446744073709551615" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+															<Class name="AssetId" field="materialAssetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
+																<Class name="AZ::Uuid" field="guid" value="{3E4C6A29-92A4-523E-8739-F3E64957569E}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
+																<Class name="unsigned int" field="subId" value="2608524672" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+															</Class>
+														</Class>
+														<Class name="AZ::Render::MaterialAssignment" field="value2" version="1" type="{C66E5214-A24B-4722-B7F0-5991E6F8F163}">
+															<Class name="Asset" field="MaterialAsset" value="id={80F92051-203E-52CE-B4D6-E3AED21795C9}:0,type={522C7BE0-501D-463E-92C6-15184A2B7AD8},hint={objects/cloth/chicken/actor/chicken_mohawkmat.azmaterial},loadBehavior=1" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
 															<Class name="AZStd::unordered_map" field="PropertyOverrides" type="{6E6962E1-04C9-56F9-89C4-361031CC1384}"/>
 														</Class>
 													</Class>
@@ -437,7 +437,7 @@
 											<Class name="AZ::u64" field="lodIndex" value="18446744073709551615" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 											<Class name="AssetId" field="materialAssetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 												<Class name="AZ::Uuid" field="guid" value="{3E4C6A29-92A4-523E-8739-F3E64957569E}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-												<Class name="unsigned int" field="subId" value="2328463833" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+												<Class name="unsigned int" field="subId" value="668669130" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 											</Class>
 										</Class>
 										<Class name="Asset" field="materialAsset" value="id={FB34D8F7-E8CA-542D-92A3-F0E04F3A3EC3}:0,type={522C7BE0-501D-463E-92C6-15184A2B7AD8},hint={objects/cloth/chicken/actor/chicken_chicken_body_mat.azmaterial},loadBehavior=1" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
@@ -449,7 +449,7 @@
 											<Class name="AZ::u64" field="lodIndex" value="18446744073709551615" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 											<Class name="AssetId" field="materialAssetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 												<Class name="AZ::Uuid" field="guid" value="{3E4C6A29-92A4-523E-8739-F3E64957569E}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-												<Class name="unsigned int" field="subId" value="3988576522" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+												<Class name="unsigned int" field="subId" value="1541321207" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 											</Class>
 										</Class>
 										<Class name="Asset" field="materialAsset" value="id={6114C408-26EE-51DC-8733-A07800BF4991}:0,type={522C7BE0-501D-463E-92C6-15184A2B7AD8},hint={objects/cloth/chicken/actor/chicken_chicken_eye_mat.azmaterial},loadBehavior=1" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
@@ -461,7 +461,7 @@
 											<Class name="AZ::u64" field="lodIndex" value="18446744073709551615" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 											<Class name="AssetId" field="materialAssetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 												<Class name="AZ::Uuid" field="guid" value="{3E4C6A29-92A4-523E-8739-F3E64957569E}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-												<Class name="unsigned int" field="subId" value="4115391834" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+												<Class name="unsigned int" field="subId" value="2608524672" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 											</Class>
 										</Class>
 										<Class name="Asset" field="materialAsset" value="id={80F92051-203E-52CE-B4D6-E3AED21795C9}:0,type={522C7BE0-501D-463E-92C6-15184A2B7AD8},hint={objects/cloth/chicken/actor/chicken_mohawkmat.azmaterial},loadBehavior=1" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
@@ -477,7 +477,7 @@
 												<Class name="AZ::u64" field="lodIndex" value="0" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 												<Class name="AssetId" field="materialAssetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 													<Class name="AZ::Uuid" field="guid" value="{3E4C6A29-92A4-523E-8739-F3E64957569E}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-													<Class name="unsigned int" field="subId" value="2328463833" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+													<Class name="unsigned int" field="subId" value="668669130" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 												</Class>
 											</Class>
 											<Class name="Asset" field="materialAsset" value="id={00000000-0000-0000-0000-000000000000}:0,type={522C7BE0-501D-463E-92C6-15184A2B7AD8},hint={},loadBehavior=1" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
@@ -489,7 +489,7 @@
 												<Class name="AZ::u64" field="lodIndex" value="0" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 												<Class name="AssetId" field="materialAssetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 													<Class name="AZ::Uuid" field="guid" value="{3E4C6A29-92A4-523E-8739-F3E64957569E}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-													<Class name="unsigned int" field="subId" value="3988576522" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+													<Class name="unsigned int" field="subId" value="1541321207" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 												</Class>
 											</Class>
 											<Class name="Asset" field="materialAsset" value="id={00000000-0000-0000-0000-000000000000}:0,type={522C7BE0-501D-463E-92C6-15184A2B7AD8},hint={},loadBehavior=1" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
@@ -501,7 +501,7 @@
 												<Class name="AZ::u64" field="lodIndex" value="0" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 												<Class name="AssetId" field="materialAssetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 													<Class name="AZ::Uuid" field="guid" value="{3E4C6A29-92A4-523E-8739-F3E64957569E}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-													<Class name="unsigned int" field="subId" value="4115391834" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+													<Class name="unsigned int" field="subId" value="2608524672" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 												</Class>
 											</Class>
 											<Class name="Asset" field="materialAsset" value="id={00000000-0000-0000-0000-000000000000}:0,type={522C7BE0-501D-463E-92C6-15184A2B7AD8},hint={},loadBehavior=1" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>

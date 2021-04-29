@@ -20,7 +20,6 @@ set(FILES
     Lib/Tests/test_MainWindowPythonBindings.cpp
     Lib/Tests/test_MaterialPythonFuncs.cpp
     Lib/Tests/test_ObjectManagerPythonBindings.cpp
-    Lib/Tests/test_SetVectorDlg.cpp
     Lib/Tests/test_TrackViewPythonBindings.cpp
     Lib/Tests/test_ViewPanePythonBindings.cpp
     Lib/Tests/test_ViewportTitleDlgPythonBindings.cpp
