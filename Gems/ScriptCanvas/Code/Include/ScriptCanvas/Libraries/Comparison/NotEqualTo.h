@@ -39,7 +39,7 @@ namespace ScriptCanvas
                         {
                             editContext->Class<NotEqualTo>("Not Equal To (!=)", "Checks if Value A is not equal to Value B")
                                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                                    ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/ScriptCanvas/Placeholder.png")
+                                    ->Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/Placeholder.png")
                                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                                 ;
                         }

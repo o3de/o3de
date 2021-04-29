@@ -45,7 +45,7 @@ namespace ScriptCanvas
                 "Script Canvas Files (*.scriptcanvas_compiled)",
                 "Script Canvas Runtime",
                 "Script Canvas Runtime",
-                "Editor/Icons/ScriptCanvas/Viewport/ScriptCanvas.png",
+                "Icons/ScriptCanvas/Viewport/ScriptCanvas.png",
                 AZ::Color(1.0f,0.0f,0.0f,1.0f),
                 false
             )
@@ -169,7 +169,7 @@ namespace ScriptCanvas
                 "Script Canvas Compiled Function Interfaces (*.scriptcanvas_fn_compiled)",
                 "Script Canvas Function Interface",
                 "Script Canvas Function Interface",
-                "Editor/Icons/ScriptCanvas/Viewport/ScriptCanvas_Function.png",
+                "Icons/ScriptCanvas/Viewport/ScriptCanvas_Function.png",
                 AZ::Color(1.0f,0.0f,0.0f,1.0f),
                 false
             )

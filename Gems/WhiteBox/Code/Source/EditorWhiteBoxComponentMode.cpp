@@ -465,7 +465,7 @@ namespace WhiteBox
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
             buttonId, AzToolsFramework::ViewportUi::DefaultViewportId,
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateClusterButton, clusterId,
-            AZStd::string::format("Editor/Icons/WhiteBox/%s.svg", iconName));
+            AZStd::string::format("Icons/WhiteBox/%s.svg", iconName));
 
         return buttonId;
     }

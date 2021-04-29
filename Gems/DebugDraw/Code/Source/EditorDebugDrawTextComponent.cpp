@@ -37,7 +37,7 @@ namespace DebugDraw
                     "DebugDraw Text", "Draws debug text on the screen at this entity's location.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Debugging")
-                    ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/DebugDrawText.svg")
+                    ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/DebugDrawText.svg")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->DataElement(0, &EditorDebugDrawTextComponent::m_element, "Text element settings", "Settings for the text element.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDebugDrawTextComponent::OnPropertyUpdate)

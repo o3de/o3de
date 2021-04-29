@@ -6,7 +6,7 @@
 	       PreferredClassName="Add Failure"
            Uuid="{1C4971A7-DE76-4E8E-9381-F579A57B2A78}"
            Base="ScriptCanvas::Node"
-           Icon="Editor/Icons/ScriptCanvas/AddFailure.png"
+           Icon="Icons/ScriptCanvas/AddFailure.png"
            Version="0"
            GeneratePropertyFriend="True"
            Description="adds a failure directly to the unit testing framework"

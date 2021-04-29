@@ -71,9 +71,9 @@ class TestsAssetProcessorBatch_DependenycyTests(object):
         env = ap_setup_fixture
         BATCH_LOG_PATH = env["ap_batch_log_file"]
         asset_processor.create_temp_asset_root()
-        asset_processor.add_relative_source_asset(os.path.join("Engine", "engine_dependencies.xml"))
-        asset_processor.add_scan_folder("Engine")
-        asset_processor.add_relative_source_asset(os.path.join("Engine", "Libs", "MaterialEffects", "surfacetypes.xml"))
+        asset_processor.add_relative_source_asset(os.path.join("Assets", "Engine", "engine_dependencies.xml"))
+        asset_processor.add_scan_folder(os.path.join("Assets", "Engine"))
+        asset_processor.add_relative_source_asset(os.path.join("Assets", "Engine", "Libs", "MaterialEffects", "surfacetypes.xml"))
 
         # Precondition: Assets are all processed
         asset_processor.batch_process()
@@ -103,7 +103,7 @@ class TestsAssetProcessorBatch_DependenycyTests(object):
         assert surfacetypes_missing_logline, "Surfacetypes.xml not seen in the batch log as missing."
 
         # Add the schema file which allows our xml parser to understand dependencies for our engine_dependencies file
-        asset_processor.add_relative_source_asset(os.path.join("Engine", "Schema", "enginedependency.xmlschema"))
+        asset_processor.add_relative_source_asset(os.path.join("Assets", "Engine", "Schema", "enginedependency.xmlschema"))
         asset_processor.batch_process()
 
         _, output = asset_processor.batch_process(capture_output=True,

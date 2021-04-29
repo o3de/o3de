@@ -1,5 +1,5 @@
 <RCC>
-  <qresource prefix="/Editor/Icons">
+  <qresource prefix="/Icons">
     <file alias="Bank_Icon.png">Icons/Bank_Icon.png</file>
     <file alias="Config_Blue_Icon.png">Icons/Config_Blue_Icon.png</file>
     <file alias="Config_Green_Icon.png">Icons/Config_Green_Icon.png</file>

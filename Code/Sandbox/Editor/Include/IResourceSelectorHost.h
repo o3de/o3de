@@ -26,7 +26,7 @@
 //     ...
 //     return previousValue;
 //   }
-//   REGISTER_RESOURCE_SELECTOR("Sound", SoundFileSelector, "Editor/icons/sound_16x16.png")
+//   REGISTER_RESOURCE_SELECTOR("Sound", SoundFileSelector, "Icons/sound_16x16.png")
 //
 // To expose it to serialization:
 //

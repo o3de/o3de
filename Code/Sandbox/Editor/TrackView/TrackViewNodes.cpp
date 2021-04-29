@@ -1137,12 +1137,12 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
                 CTrackViewAnimNodeBundle addedNodes = groupNode->AddSelectedEntities(m_pTrackViewDialog->GetDefaultTracksForEntityNode());
                 undoBatch.MarkEntityDirty(groupNode->GetSequence()->GetSequenceComponentEntityId());
 
-                AzToolsFramework::EntityIdList entityIds;
-                AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
-                    entityIds, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
+                int selectedEntitiesCount = 0;
+                AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+                    selectedEntitiesCount, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntitiesCount);
 
                 // check to make sure all nodes were added and notify user if they weren't
-                if (addedNodes.GetCount() != entityIds.size())
+                if (addedNodes.GetCount() != selectedEntitiesCount)
                 {
                     IMovieSystem* movieSystem = GetIEditor()->GetMovieSystem();
 
