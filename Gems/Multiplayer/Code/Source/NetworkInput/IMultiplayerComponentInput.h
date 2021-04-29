@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include <Source/MultiplayerTypes.h>
+#include <Include/MultiplayerTypes.h>
 #include <AzNetworking/DataStructures/FixedSizeBitset.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>

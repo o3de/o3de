@@ -95,23 +95,22 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
 endif()
 
 ## White Box ##
-# DISABLED - See LYN-2663
-#if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
-#    ly_add_pytest(
-#        NAME AutomatedTesting::WhiteBoxTests
-#        TEST_SUITE main
-#        TEST_SERIAL
-#        PATH ${CMAKE_CURRENT_LIST_DIR}/WhiteBox/TestSuite_Active.py
-#        TIMEOUT 3600
-#        RUNTIME_DEPENDENCIES
-#            Legacy::Editor
-#            Legacy::CryRenderNULL
-#            AZ::AssetProcessor
-#            AutomatedTesting.Assets
-#        COMPONENT
-#            WhiteBox
-#    )
-#endif()
+if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
+    ly_add_pytest(
+        NAME AutomatedTesting::WhiteBoxTests
+        TEST_SUITE main
+        TEST_SERIAL
+        PATH ${CMAKE_CURRENT_LIST_DIR}/WhiteBox/TestSuite_Active.py
+        TIMEOUT 3600
+        RUNTIME_DEPENDENCIES
+            Legacy::Editor
+            Legacy::CryRenderNULL
+            AZ::AssetProcessor
+            AutomatedTesting.Assets
+        COMPONENT
+            WhiteBox
+    )
+endif()
 
 ## NvCloth ##
 # [TODO LYN-1928] Enable when AutomatedTesting runs with Atom
@@ -171,7 +170,7 @@ endif()
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_pytest(
         NAME AutomatedTesting::BlastTests
-        TEST_SUITE periodic
+        TEST_SUITE main
         TEST_SERIAL TRUE
         PATH ${CMAKE_CURRENT_LIST_DIR}/Blast/TestSuite_Active.py
         TIMEOUT 3600
@@ -179,6 +178,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
             Legacy::Editor
             AZ::AssetProcessor
             AutomatedTesting.Assets
+        COMPONENT Blast
     )
 endif()
 
@@ -191,8 +191,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
 
 ## DynVeg ##
     ly_add_pytest(
-        NAME AutomatedTesting::DynamicVegetationTests_Main_GPU
-        TEST_REQUIRES gpu
+        NAME AutomatedTesting::DynamicVegetationTests_Main
         TEST_SERIAL
         TEST_SUITE main
         PATH ${CMAKE_CURRENT_LIST_DIR}/largeworlds/dyn_veg
@@ -208,8 +207,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
     )
 
     ly_add_pytest(
-        NAME AutomatedTesting::DynamicVegetationTests_Sandbox_GPU
-        TEST_REQUIRES gpu
+        NAME AutomatedTesting::DynamicVegetationTests_Sandbox
         TEST_SERIAL
         TEST_SUITE sandbox
         PATH ${CMAKE_CURRENT_LIST_DIR}/largeworlds/dyn_veg
@@ -225,8 +223,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
     )
 
     ly_add_pytest(
-        NAME AutomatedTesting::DynamicVegetationTests_Periodic_GPU
-        TEST_REQUIRES gpu
+        NAME AutomatedTesting::DynamicVegetationTests_Periodic
         TEST_SERIAL
         TEST_SUITE periodic
         PATH ${CMAKE_CURRENT_LIST_DIR}/largeworlds/dyn_veg
@@ -243,7 +240,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
 ## LandscapeCanvas ##
     ly_add_pytest(
         NAME AutomatedTesting::LandscapeCanvasTests_Main
-        TEST_REQUIRES gpu
         TEST_SERIAL
         TEST_SUITE main
         PATH ${CMAKE_CURRENT_LIST_DIR}/largeworlds/landscape_canvas
@@ -259,7 +255,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
 
     ly_add_pytest(
         NAME AutomatedTesting::LandscapeCanvasTests_Periodic
-        TEST_REQUIRES gpu
         TEST_SERIAL
         TEST_SUITE periodic
         PATH ${CMAKE_CURRENT_LIST_DIR}/largeworlds/landscape_canvas
@@ -276,7 +271,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
 ## GradientSignal ##
     ly_add_pytest(
         NAME AutomatedTesting::GradientSignalTests_Periodic
-        TEST_REQUIRES gpu
         TEST_SERIAL
         TEST_SUITE periodic
         PATH ${CMAKE_CURRENT_LIST_DIR}/largeworlds/gradient_signal

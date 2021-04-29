@@ -70,7 +70,6 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME AWSCore.Editor MODULE
         NAMESPACE Gem
-        OUTPUT_SUBDIRECTORY AWSCoreEditorPlugins
         FILES_CMAKE
             awscore_editor_shared_files.cmake
         INCLUDE_DIRECTORIES
@@ -85,6 +84,25 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::AWSCore.Static
                 Gem::AWSCore.Editor.Static
     )
+
+    ly_add_target(
+        NAME AWSCore.ResourceMappintTool MODULE
+        NAMESPACE Gem
+        OUTPUT_SUBDIRECTORY AWSCoreEditorQtBin
+        FILES_CMAKE
+            awscore_resourcemappingtool_files.cmake
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                Include/Private
+            PUBLIC
+                Include/Public
+        BUILD_DEPENDENCIES
+            PRIVATE
+                3rdParty::Qt::Core
+                3rdParty::Qt::Widgets
+                AZ::AzToolsFramework
+    )
+    ly_add_dependencies(AWSCore.Editor AWSCore.ResourceMappintTool)
 endif()
 
 ################################################################################

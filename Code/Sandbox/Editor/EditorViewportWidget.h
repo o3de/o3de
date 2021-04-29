@@ -234,11 +234,8 @@ public:
     QPoint ViewportToWidget(const QPoint& point) const;
     QSize WidgetToViewport(const QSize& size) const;
 
-    /// Take raw input and create a final mouse interaction.
-    /// @attention Do not map **point** from widget to viewport explicitly,
-    /// this is handled internally by BuildMouseInteraction - just pass directly.
     AzToolsFramework::ViewportInteraction::MouseInteraction BuildMouseInteraction(
-        Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, const QPoint& point);
+        Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, const QPoint& point) override;
 
     void SetPlayerPos()
     {
@@ -398,9 +395,6 @@ protected:
     };
     void ResetToViewSourceType(const ViewSourceType& viewSourType);
 
-    //! Assigned renderer.
-    IRenderer*  m_renderer = nullptr;
-    I3DEngine*  m_engine = nullptr;
     bool m_bRenderContextCreated = false;
     bool m_bInRotateMode = false;
     bool m_bInMoveMode = false;
