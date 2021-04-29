@@ -298,7 +298,7 @@ namespace
                 AZ::IO::FixedMaxPathString engineRoot = AZ::Utils::GetEnginePath();
                 QDir engineDir = !engineRoot.empty() ? QDir(QString(engineRoot.c_str())) : QDir::current();
 
-                QString scriptFolder = engineDir.absoluteFilePath("Editor/Scripts/");
+                QString scriptFolder = engineDir.absoluteFilePath("Assets/Editor/Scripts/");
                 Path::ConvertBackSlashToSlash(scriptFolder);
                 path = scriptFolder + pFile;
 
@@ -524,7 +524,7 @@ namespace
                         // for example: Hello
                         return AZStd::make_any<AZStd::string>(stringValue.toUtf8().data());
                     }
-                    else // then it looks like an integer 
+                    else // then it looks like an integer
                     {
                         // for example: 456
                         return AZStd::make_any<AZ::s64>(stringValue.toInt());

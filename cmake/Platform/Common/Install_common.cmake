@@ -315,16 +315,34 @@ function(ly_setup_others)
         COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
     install(DIRECTORY
-        # This one will change soon, Engine/Registry files will be relocated to Registry
-        ${CMAKE_SOURCE_DIR}/Engine/Registry
-        DESTINATION ./Engine
+        ${CMAKE_SOURCE_DIR}/Registry
+        DESTINATION .
         COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
-    install(FILES
-        ${CMAKE_SOURCE_DIR}/AssetProcessorPlatformConfig.setreg
-        DESTINATION ./Registry
+
+    # Engine Source Assets
+    install(DIRECTORY
+        ${CMAKE_SOURCE_DIR}/Assets
+        DESTINATION .
         COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
+
+    # Gem Source Assets
+    # Find all gem directories relative to the CMake Source Dir
+    file(GLOB_RECURSE gems_assets_path RELATIVE ${CMAKE_SOURCE_DIR} "Gems/*/Assets")
+    foreach (gem_assets_path ${gems_assets_path})
+
+        set(gem_abs_assets_path ${CMAKE_SOURCE_DIR}/${gem_assets_path}/)
+        if (EXISTS ${gem_abs_assets_path})
+            # The trailing slash is IMPORTANT here as that is needed to prevent
+            # the "Assets" folder from being copied underneath the <gem-root>/Assets folder
+            install(DIRECTORY ${gem_abs_assets_path}
+                DESTINATION ${gem_assets_path}
+                COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
+            )
+        endif()
+    endforeach()
+
 
     # Qt Binaries
     set(QT_BIN_DIRS bearer iconengines imageformats platforms styles translations)

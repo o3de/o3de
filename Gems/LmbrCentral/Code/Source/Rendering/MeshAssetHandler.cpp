@@ -249,7 +249,7 @@ namespace LmbrCentral
 
     const char* MeshAssetHandler::GetBrowserIcon() const
     {
-        return "Editor/Icons/Components/StaticMesh.svg";
+        return "Icons/Components/StaticMesh.svg";
     }
 
     AZ::Uuid MeshAssetHandler::GetComponentTypeId() const
