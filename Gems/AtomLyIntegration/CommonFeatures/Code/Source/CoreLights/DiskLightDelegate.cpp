@@ -103,12 +103,15 @@ namespace AZ::Render
     void DiskLightDelegate::SetEnableShutters(bool enabled)
     {
         Base::SetEnableShutters(enabled);
-        GetFeatureProcessor()->SetConstrainToConeLight(GetLightHandle(), true);
+        if (GetLightHandle().IsValid())
+        {
+            GetFeatureProcessor()->SetConstrainToConeLight(GetLightHandle(), true);
+        }
     }
 
     void DiskLightDelegate::SetShutterAngles(float innerAngleDegrees, float outerAngleDegrees)
     {
-        if (GetShuttersEnabled())
+        if (GetShuttersEnabled() && GetLightHandle().IsValid())
         {
             GetFeatureProcessor()->SetConeAngles(GetLightHandle(), DegToRad(innerAngleDegrees), DegToRad(outerAngleDegrees));
         }
@@ -117,12 +120,16 @@ namespace AZ::Render
     void DiskLightDelegate::SetEnableShadow(bool enabled)
     {
         Base::SetEnableShadow(enabled);
-        GetFeatureProcessor()->SetShadowsEnabled(GetLightHandle(), enabled);
+        
+        if (GetLightHandle().IsValid())
+        {
+            GetFeatureProcessor()->SetShadowsEnabled(GetLightHandle(), enabled);
+        }
     }
 
     void DiskLightDelegate::SetShadowmapMaxSize(ShadowmapSize size)
     {
-        if (GetShadowsEnabled())
+        if (GetShadowsEnabled() && GetLightHandle().IsValid())
         {
             GetFeatureProcessor()->SetShadowmapMaxResolution(GetLightHandle(), size);
         }
@@ -130,7 +137,7 @@ namespace AZ::Render
 
     void DiskLightDelegate::SetShadowFilterMethod(ShadowFilterMethod method)
     {
-        if (GetShadowsEnabled())
+        if (GetShadowsEnabled() && GetLightHandle().IsValid())
         {
             GetFeatureProcessor()->SetShadowFilterMethod(GetLightHandle(), method);
         }
@@ -138,7 +145,7 @@ namespace AZ::Render
 
     void DiskLightDelegate::SetSofteningBoundaryWidthAngle(float widthInDegrees)
     {
-        if (GetShadowsEnabled())
+        if (GetShadowsEnabled() && GetLightHandle().IsValid())
         {
             GetFeatureProcessor()->SetSofteningBoundaryWidthAngle(GetLightHandle(), DegToRad(widthInDegrees));
         }
@@ -146,7 +153,7 @@ namespace AZ::Render
 
     void DiskLightDelegate::SetPredictionSampleCount(uint32_t count)
     {
-        if (GetShadowsEnabled())
+        if (GetShadowsEnabled() && GetLightHandle().IsValid())
         {
             GetFeatureProcessor()->SetPredictionSampleCount(GetLightHandle(), count);
         }
@@ -154,7 +161,7 @@ namespace AZ::Render
 
     void DiskLightDelegate::SetFilteringSampleCount(uint32_t count)
     {
-        if (GetShadowsEnabled())
+        if (GetShadowsEnabled() && GetLightHandle().IsValid())
         {
             GetFeatureProcessor()->SetFilteringSampleCount(GetLightHandle(), count);
         }
@@ -162,7 +169,7 @@ namespace AZ::Render
 
     void DiskLightDelegate::SetPcfMethod(PcfMethod method)
     {
-        if (GetShadowsEnabled())
+        if (GetShadowsEnabled() && GetLightHandle().IsValid())
         {
             GetFeatureProcessor()->SetPcfMethod(GetLightHandle(), method);
         }

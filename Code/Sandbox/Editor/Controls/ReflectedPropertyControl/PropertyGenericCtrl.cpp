@@ -90,9 +90,6 @@ void ShaderPropertyEditor::onEditClicked()
 }
 void MaterialPropertyEditor::onEditClicked()
 {
-    QString name = GetValue();
-    IDataBaseItem *pItem = GetIEditor()->GetMaterialManager()->FindItemByName(name);
-    GetIEditor()->OpenMaterialLibrary(pItem);
 }
 
 void MaterialPropertyEditor::onButton2Clicked()
