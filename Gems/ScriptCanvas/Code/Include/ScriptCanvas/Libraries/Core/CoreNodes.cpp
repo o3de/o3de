@@ -70,7 +70,7 @@ namespace ScriptCanvas
                 {
                     editContext->Class<Core>("Core", "")->
                         ClassElement(AZ::Edit::ClassElements::EditorData, "")->
-                        Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/ScriptCanvas/Libraries/Core.png")->
+                        Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/Libraries/Core.png")->
                         Attribute(AZ::Edit::Attributes::CategoryStyle, ".time")->
                         Attribute(ScriptCanvas::Attributes::Node::TitlePaletteOverride, "TimeNodeTitlePalette")
                         ;

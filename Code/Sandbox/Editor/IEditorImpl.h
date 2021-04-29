@@ -237,7 +237,6 @@ public:
     RefCoordSys GetReferenceCoordSys();
     XmlNodeRef FindTemplate(const QString& templateName);
     void AddTemplate(const QString& templateName, XmlNodeRef& tmpl);
-    void OpenMaterialLibrary(IDataBaseItem* pItem = NULL);
    
     const QtViewPane* OpenView(QString sViewClassName, bool reuseOpened = true) override;
 

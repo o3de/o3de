@@ -263,7 +263,7 @@ namespace AZ
                 RHI::ImageInitRequest request;
                 request.m_image = m_classificationImage[m_currentImageIndex].get();
                 request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite, width, height, DiffuseProbeGridRenderData::ClassificationImageFormat);
-                RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
+                [[maybe_unused]] RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
                 AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize m_probeClassificationImage image");
             }
 

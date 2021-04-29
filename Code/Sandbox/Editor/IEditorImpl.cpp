@@ -1013,29 +1013,6 @@ IDataBaseManager* CEditorImpl::GetDBItemManager(EDataBaseItemType itemType)
     return 0;
 }
 
-void CEditorImpl::OpenMaterialLibrary(IDataBaseItem* item)
-{
-    EDataBaseItemType type = item ? item->GetType() : EDB_TYPE_MATERIAL;
-    AZ_Assert(type == EDB_TYPE_MATERIAL, "Call to OpenMaterialLibrary with non-material data base item");
-
-    if (type == EDB_TYPE_MATERIAL)
-    {
-        QtViewPaneManager::instance()->OpenPane(LyViewPane::MaterialEditor);
-
-        // This is a workaround for a timing issue where the material editor
-        // gets in a bad state while it is being polished for the first time
-        // while loading a material at the same time, so delay the setting
-        // of the material until the next event queue check
-        QTimer::singleShot(0, [this, item] {
-                IDataBaseManager* pManager = GetDBItemManager(EDB_TYPE_MATERIAL);
-                if (pManager)
-                {
-                    pManager->SetSelectedItem(item);
-                }
-            });
-    }
-}
-
 bool CEditorImpl::SelectColor(QColor& color, QWidget* parent)
 {
     const AZ::Color c = AzQtComponents::fromQColor(color);
