@@ -22,14 +22,14 @@ namespace NvCloth
 {
     struct MeshNodeInfo;
 
-    //! Skinning information of a vertex.
-    struct SkinningInfo
+    //! One skinning influence of a vertex.
+    struct SkinningInfluence
     {
-        //! Weights of each joint that influence the vertex.
-        AZStd::vector<float> m_jointWeights;
+        //! Weight of the joint that influence the vertex.
+        float m_jointWeight;
 
-        //! List of joints that influence the vertex.
-        AZStd::vector<AZ::u16> m_jointIndices;
+        //! Index of the joint that influences the vertex.
+        AZ::u16 m_jointIndex;
     };
 
     //! Class to retrieve skinning information from an actor on the same entity
@@ -77,13 +77,15 @@ namespace NvCloth
     protected:
         AZ::EntityId m_entityId;
 
-        // Skinning information of all vertices
-        AZStd::vector<SkinningInfo> m_skinningData;
+        size_t m_numberOfInfluencesPerVertex = 0;
 
-        // Indices to skinning data of vertices that are part of the simulation
+        // Skinning influences of all vertices
+        AZStd::vector<SkinningInfluence> m_skinningInfluences;
+
+        // Indices to skinning influences that are part of the simulation
         AZStd::vector<AZ::u32> m_simulatedVertices;
 
-        // Indices to skinning data of vertices that are not part of the simulation
+        // Indices to skinning influences that are not part of the simulation
         AZStd::vector<AZ::u32> m_nonSimulatedVertices;
 
         // Collection of skeleton joint indices that influence the vertices
