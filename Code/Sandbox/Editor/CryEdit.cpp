@@ -389,14 +389,9 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_EDIT_DELETE, OnEditDelete)
     ON_COMMAND(ID_MOVE_OBJECT, OnMoveObject)
     ON_COMMAND(ID_RENAME_OBJ, OnRenameObj)
-    ON_COMMAND(ID_SET_HEIGHT, OnSetHeight)
     ON_COMMAND(ID_EDITMODE_MOVE, OnEditmodeMove)
     ON_COMMAND(ID_EDITMODE_ROTATE, OnEditmodeRotate)
     ON_COMMAND(ID_EDITMODE_SCALE, OnEditmodeScale)
-    ON_COMMAND(ID_OBJECTMODIFY_SETAREA, OnObjectSetArea)
-    ON_COMMAND(ID_OBJECTMODIFY_SETHEIGHT, OnObjectSetHeight)
-    ON_COMMAND(ID_OBJECTMODIFY_FREEZE, OnObjectmodifyFreeze)
-    ON_COMMAND(ID_OBJECTMODIFY_UNFREEZE, OnObjectmodifyUnfreeze)
     ON_COMMAND(ID_UNDO, OnUndo)
     ON_COMMAND(ID_TOOLBAR_WIDGET_REDO, OnUndo)     // Can't use the same ID, because for the menu we can't have a QWidgetAction, while for the toolbar we want one
     ON_COMMAND(ID_IMPORT_ASSET, OnOpenAssetImporter)
@@ -424,8 +419,6 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_EDIT_HIDE, OnEditHide)
     ON_COMMAND(ID_EDIT_SHOW_LAST_HIDDEN, OnEditShowLastHidden)
     ON_COMMAND(ID_EDIT_UNHIDEALL, OnEditUnhideall)
-    ON_COMMAND(ID_EDIT_FREEZE, OnEditFreeze)
-    ON_COMMAND(ID_EDIT_UNFREEZEALL, OnEditUnfreezeall)
 
     ON_COMMAND(ID_SNAP_TO_GRID, OnSnap)
 
@@ -477,7 +470,6 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_ROTATESELECTION_YAXIS, OnRotateselectionYaxis)
     ON_COMMAND(ID_ROTATESELECTION_ZAXIS, OnRotateselectionZaxis)
     ON_COMMAND(ID_ROTATESELECTION_ROTATEANGLE, OnRotateselectionRotateangle)
-    ON_COMMAND(ID_MODIFY_OBJECT_HEIGHT, OnObjectSetHeight)
     ON_COMMAND(ID_EDIT_RENAMEOBJECT, OnEditRenameobject)
     ON_COMMAND(ID_CHANGEMOVESPEED_INCREASE, OnChangemovespeedIncrease)
     ON_COMMAND(ID_CHANGEMOVESPEED_DECREASE, OnChangemovespeedDecrease)
@@ -500,7 +492,6 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_OPEN_ASSET_BROWSER, OnOpenAssetBrowserView)
     ON_COMMAND(ID_OPEN_AUDIO_CONTROLS_BROWSER, OnOpenAudioControlsEditor)
 
-    ON_COMMAND(ID_OPEN_MATERIAL_EDITOR, OnOpenMaterialEditor)
     ON_COMMAND(ID_GOTO_VIEWPORTSEARCH, OnGotoViewportSearch)
     ON_COMMAND(ID_DISPLAY_SHOWHELPERS, OnShowHelpers)
     ON_COMMAND(ID_OPEN_TRACKVIEW, OnOpenTrackView)
@@ -2734,10 +2725,6 @@ void CCryEditApp::OnRenameObj()
 {
 }
 
-void CCryEditApp::OnSetHeight()
-{
-}
-
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnEditmodeMove()
 {
@@ -2805,167 +2792,6 @@ void CCryEditApp::OnUpdateEditmodeScale(QAction* action)
         &AzToolsFramework::EditorTransformComponentSelectionRequests::GetTransformMode);
 
     action->setChecked(mode == AzToolsFramework::EditorTransformComponentSelectionRequests::Mode::Scale);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnObjectSetArea()
-{
-    CSelectionGroup* pSelection = GetIEditor()->GetSelection();
-    if (!pSelection->IsEmpty())
-    {
-        bool ok = false;
-        int fractionalDigitCount = 2;
-        float area = aznumeric_caster(QInputDialog::getDouble(AzToolsFramework::GetActiveWindow(), QObject::tr("Insert Value"), QStringLiteral(""), 0, std::numeric_limits<float>::lowest(), std::numeric_limits<float>::max(), fractionalDigitCount, &ok));
-        if (!ok)
-        {
-            return;
-        }
-
-        GetIEditor()->BeginUndo();
-        for (int i = 0; i < pSelection->GetCount(); i++)
-        {
-            CBaseObject* obj = pSelection->GetObject(i);
-            obj->SetArea(area);
-        }
-        GetIEditor()->AcceptUndo("Set Area");
-        GetIEditor()->SetModifiedFlag();
-        GetIEditor()->SetModifiedModule(eModifiedBrushes);
-    }
-    else
-    {
-        QMessageBox::critical(AzToolsFramework::GetActiveWindow(), QString(), QObject::tr("No objects selected"));
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnObjectSetHeight()
-{
-    AzFramework::EntityContextId editorContextId;
-    AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
-        editorContextId, &AzToolsFramework::EditorEntityContextRequests::GetEditorEntityContextId);
-
-    CSelectionGroup* sel = GetIEditor()->GetObjectManager()->GetSelection();
-
-    if (!sel->IsEmpty())
-    {
-        // Retrieve the Z origin from where height is messured from
-        auto getZOrigin = [&](const Vec3& pos, [[maybe_unused]] AZ::EntityId entityId)
-        {
-            float z = GetIEditor()->GetTerrainElevation(pos.x, pos.y);
-            if (z != pos.z)
-            {
-                float zdown = FLT_MAX;
-                float zup = FLT_MAX;
-                AzFramework::RenderGeometry::RayRequest ray;
-                ray.m_startWorldPosition = LYVec3ToAZVec3(pos);
-                ray.m_onlyVisible = true;
-                if (entityId.IsValid()) // Don't check height against self
-                {
-                    ray.m_entityFilter.m_ignoreEntities.insert(entityId);
-                }
-                // Down
-                ray.m_endWorldPosition = LYVec3ToAZVec3(pos - Vec3(0, 0, 4000));
-                {
-                    AzFramework::RenderGeometry::RayResult result;
-                    AzFramework::RenderGeometry::IntersectorBus::EventResult(result, editorContextId,
-                        &AzFramework::RenderGeometry::IntersectorInterface::RayIntersect, ray);
-                    if (result)
-                    {
-                        zdown = result.m_worldPosition.GetZ();
-                    }
-                }
-                // Up
-                ray.m_endWorldPosition = LYVec3ToAZVec3(pos + Vec3(0, 0, 4000));
-                {
-                    AzFramework::RenderGeometry::RayResult result;
-                    AzFramework::RenderGeometry::IntersectorBus::EventResult(result, editorContextId,
-                        &AzFramework::RenderGeometry::IntersectorInterface::RayIntersect, ray);
-                    if (result)
-                    {
-                        zup = result.m_worldPosition.GetZ();
-                    }
-                }
-                if (zdown != FLT_MAX && zup != FLT_MAX)
-                {
-                    if (fabs(zup - z) < fabs(zdown - z))
-                    {
-                        z = zup;
-                    }
-                    else
-                    {
-                        z = zdown;
-                    }
-                }
-                else if (zup != FLT_MAX)
-                {
-                    z = zup;
-                }
-                else if (zdown != FLT_MAX)
-                {
-                    z = zdown;
-                }
-            }
-            return z;
-        };
-
-
-        float height = 0;
-        if (sel->GetCount() == 1)
-        {
-            CBaseObject* obj = sel->GetObject(0);
-            Vec3 pos = obj->GetWorldPos();
-            AZ::EntityId entityId;
-            if (obj->GetType() == OBJTYPE_AZENTITY)
-            {
-                entityId = static_cast<CComponentEntityObject*>(obj)->GetAssociatedEntityId();
-            }
-            height = pos.z - getZOrigin(pos, entityId);
-        }
-
-        bool ok = false;
-        int fractionalDigitCount = 2;
-        height = aznumeric_caster(QInputDialog::getDouble(AzToolsFramework::GetActiveWindow(), QObject::tr("Enter Height"), QStringLiteral(""), height, -10000, 10000, fractionalDigitCount, &ok));
-        if (!ok)
-        {
-            return;
-        }
-
-        CUndo undo("Set Height");
-        for (int i = 0; i < sel->GetCount(); i++)
-        {
-            CBaseObject* obj = sel->GetObject(i);
-            Matrix34 wtm = obj->GetWorldTM();
-            Vec3 pos = wtm.GetTranslation();
-            AZ::EntityId entityId;
-            if (obj->GetType() == OBJTYPE_AZENTITY)
-            {
-                entityId = static_cast<CComponentEntityObject*>(obj)->GetAssociatedEntityId();
-            }
-            float z = getZOrigin(pos, entityId);
-            pos.z = z + height;
-            wtm.SetTranslation(pos);
-            obj->SetWorldTM(wtm, eObjectUpdateFlags_UserInput);
-        }
-
-        GetIEditor()->SetModifiedFlag();
-        GetIEditor()->SetModifiedModule(eModifiedBrushes);
-    }
-    else
-    {
-        QMessageBox::critical(AzToolsFramework::GetActiveWindow(), QString(), QObject::tr("No objects selected"));
-    }
-}
-
-void CCryEditApp::OnObjectmodifyFreeze()
-{
-    // Freeze selection.
-    OnEditFreeze();
-}
-
-void CCryEditApp::OnObjectmodifyUnfreeze()
-{
-    // Unfreeze all.
-    OnEditUnfreezeall();
 }
 
 void CCryEditApp::OnViewSwitchToGame()
@@ -3884,54 +3710,6 @@ void CCryEditApp::OnEditUnhideall()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnEditFreeze()
-{
-    if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        // Freeze selection.
-        CSelectionGroup* sel = GetIEditor()->GetSelection();
-        if (!sel->IsEmpty())
-        {
-            AzToolsFramework::ScopedUndoBatch undo("Lock Selected Entities");
-
-            // We need to iterate over the list of selected objects in reverse order
-            // because when the objects are locked, they are removed from the
-            // selection so you would end up with the last selected object not
-            // being locked
-            int numSelected = sel->GetCount();
-            for (int i = numSelected - 1; i >= 0; --i)
-            {
-                // Duplicated object names can exist in the case of prefab objects so passing a name as a script parameter and processing it couldn't be exact.
-                sel->GetObject(i)->SetFrozen(true);
-            }
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnUpdateEditFreeze(QAction* action)
-{
-    OnUpdateEditHide(action);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnEditUnfreezeall()
-{
-    if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        if (QMessageBox::question(
-            AzToolsFramework::GetActiveWindow(), QObject::tr("Unlock All"),
-            QObject::tr("Are you sure you want to unlock all the objects?"),
-            QMessageBox::Yes | QMessageBox::Cancel) == QMessageBox::Yes)
-        {
-            // Unfreeze all.
-            AzToolsFramework::ScopedUndoBatch undo("Unlock all Entities");
-            GetIEditor()->GetObjectManager()->UnfreezeAll();
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnSnap()
 {
     // Switch current snap to grid state.
@@ -4616,12 +4394,6 @@ void CCryEditApp::OnMaterialResettodefault()
 void CCryEditApp::OnMaterialGetmaterial()
 {
     GetIEditor()->GetMaterialManager()->Command_SelectFromObject();
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnOpenMaterialEditor()
-{
-    QtViewPaneManager::instance()->OpenPane(LyViewPane::MaterialEditor);
 }
 
 //////////////////////////////////////////////////////////////////////////
