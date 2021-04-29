@@ -21,7 +21,6 @@ endif()
 ly_add_target(
     NAME NvCloth.Static STATIC
     NAMESPACE Gem
-    OUTPUT_NAME NvCloth.Static.Gem
     FILES_CMAKE
         nvcloth_files.cmake
     INCLUDE_DIRECTORIES
@@ -65,7 +64,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME NvCloth.Editor.Static STATIC
         NAMESPACE Gem
-        OUTPUT_NAME NvCloth.Editor.Static.Gem
         AUTOMOC
         FILES_CMAKE
             nvcloth_editor_files.cmake

@@ -29,7 +29,6 @@ endif()
 ly_add_target(
     NAME PhysX.Static STATIC
     NAMESPACE Gem
-    OUTPUT_NAME PhysX.Static.Gem
     FILES_CMAKE
         ${physx_files}
     COMPILE_DEFINITIONS
@@ -79,7 +78,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME PhysX.Editor.Static STATIC
         NAMESPACE Gem
-        OUTPUT_NAME PhysX.Editor.Static.Gem
         AUTOMOC
         AUTOUIC
         FILES_CMAKE
