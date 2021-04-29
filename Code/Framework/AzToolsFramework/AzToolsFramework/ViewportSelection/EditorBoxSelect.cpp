@@ -13,6 +13,7 @@
 #include "EditorBoxSelect.h"
 
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
 #include <QApplication>
 
@@ -72,7 +73,7 @@ namespace AzToolsFramework
         m_previousModifiers = mouseInteraction.m_mouseInteraction.m_keyboardModifiers;
     }
 
-    void EditorBoxSelect::Display2d(AzFramework::DebugDisplayRequests& debugDisplay)
+    void EditorBoxSelect::Display2d(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
@@ -82,12 +83,15 @@ namespace AzToolsFramework
             debugDisplay.SetLineWidth(s_boxSelectLineWidth);
             debugDisplay.SetColor(s_boxSelectColor);
 
-            debugDisplay.DrawWireBox(
-                AZ::Vector3(
-                    static_cast<float>(m_boxSelectRegion->x()), static_cast<float>(m_boxSelectRegion->y()), 0.0f),
-                AZ::Vector3(
+            AZ::Vector2 viewportSize = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId).m_viewportSize;
+
+            debugDisplay.DrawWireQuad2d(
+                AZ::Vector2(
+                    static_cast<float>(m_boxSelectRegion->x()), static_cast<float>(m_boxSelectRegion->y())) / viewportSize,
+                AZ::Vector2(
                     static_cast<float>(m_boxSelectRegion->x()) + static_cast<float>(m_boxSelectRegion->width()),
-                    static_cast<float>(m_boxSelectRegion->y()) + static_cast<float>(m_boxSelectRegion->height()), 0.0f));
+                    static_cast<float>(m_boxSelectRegion->y()) + static_cast<float>(m_boxSelectRegion->height())) / viewportSize,
+                0.f);
 
             debugDisplay.DepthTestOn();
 
