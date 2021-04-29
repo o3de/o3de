@@ -48,33 +48,14 @@ int GetPointLightShadowCubemapFace(const float3 targetPos, const float3 lightPos
     }   
 }
 
-int UnpackPointLightShadowIndex(const ViewSrg::PointLight light, const int i)
+// PointLight::m_shadowIndices actually consists of uint16_t x 6 on the CPU, but visible as a uint32_t x 3 on the GPU. 
+// This function returns the proper uint16_t value given an input face in the range 0-5
+int UnpackPointLightShadowIndex(const ViewSrg::PointLight light, const int face)
 {
-    if (i == 0)
-    {
-        return light.m_shadowIndices[0] & 0xFFFF;
-    }
-    else if (i==1)
-    {
-        return (light.m_shadowIndices[0] >> 16) & 0xFFFF;       
-    }
-    else if (i==2)
-    {
-        return (light.m_shadowIndices[1]) & 0xFFFF;             
-    }
-    else if (i==3)
-    {   
-        return (light.m_shadowIndices[1] >> 16) & 0xFFFF;                       
-    }
-    else if (i==4)
-    {
-        return (light.m_shadowIndices[2]) & 0xFFFF;                             
-    }
-    else 
-    {
-        return (light.m_shadowIndices[2] >> 16) & 0xFFFF;                                           
-    }
-}
+    const int index = face >> 1;
+    const int shiftAmount = (face & 1) * 16;
+    return (light.m_shadowIndices[index] >> shiftAmount) & 0xFFFF;
+} 
 
 void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingData lightingData)
 {
