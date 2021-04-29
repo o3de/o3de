@@ -98,7 +98,9 @@ namespace NvCloth
 
                 if (sourceSkinJointIndices.empty() || sourceSkinWeights.empty())
                 {
-                    return false; // No skinning data.
+                    // Ignoring skinning when there is no skin data.
+                    // All submeshes will either have or not have skin data, since they come from the same mesh.
+                    return false;
                 }
                 AZ_Assert(sourceSkinJointIndices.size() == sourceSkinWeights.size(),
                     "Size of skin joint indices buffer (%zu) different from skin weights buffer (%zu)",

@@ -25,7 +25,7 @@ namespace NvCloth
     //! One skinning influence of a vertex.
     struct SkinningInfluence
     {
-        //! Weight of the joint that influence the vertex.
+        //! Weight of the joint that influences the vertex.
         float m_jointWeight;
 
         //! Index of the joint that influences the vertex.
