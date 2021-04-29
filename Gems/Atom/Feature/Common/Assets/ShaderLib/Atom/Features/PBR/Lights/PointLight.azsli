@@ -15,7 +15,10 @@
 #include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
 #include <Atom/Features/Shadow/ProjectedShadow.azsli>
 
-int GetShadowDirectionIndex(const float3 targetPos, const float3 lightPos)
+// The order should match m_pointShadowTransforms in PointLightFeatureProcessor.h/.cpp
+static const float3 PointLightShadowCubemapDirections[6] = {float3(-1,0,0), float3(1,0,0), float3(0,-1,0), float3(0,1,0), float3(0,0,-1), float3(0,0,1)};                  
+
+int GetPointLightShadowCubemapFace(const float3 targetPos, const float3 lightPos)
 {
     const float3 toPoint = targetPos - lightPos;    
     const float maxElement = max(abs(toPoint.z), max(abs(toPoint.x), abs(toPoint.y)));
@@ -45,7 +48,7 @@ int GetShadowDirectionIndex(const float3 targetPos, const float3 lightPos)
     }   
 }
 
-int UnpackShadowIndex(const ViewSrg::PointLight light, const int i)
+int UnpackPointLightShadowIndex(const ViewSrg::PointLight light, const int i)
 {
     if (i == 0)
     {
@@ -97,15 +100,14 @@ void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingD
         float backShadowRatio = 0.0;
         if (o_enableShadows)
         {
-            // The order should match m_pointShadowTransforms in PointLightFeatureProcessor.h/.cpp
-            const float3 PointShadowDirections[6] = {float3(-1,0,0), float3(1,0,0), float3(0,-1,0), float3(0,1,0), float3(0,0,-1), float3(0,0,1)};                  
-            const int shadowDirectionIndex = GetShadowDirectionIndex(surface.position, light.m_position);
-            const int shadowIndex = UnpackShadowIndex(light, shadowDirectionIndex);
+            const int shadowCubemapFace = GetPointLightShadowCubemapFace(surface.position, light.m_position);
+            const int shadowIndex = UnpackPointLightShadowIndex(light, shadowCubemapFace);
+
             litRatio *= ProjectedShadow::GetVisibility(
                     shadowIndex,
                     light.m_position,
                     surface.position,
-                    PointShadowDirections[shadowDirectionIndex],
+                    PointLightShadowCubemapDirections[shadowCubemapFace],
                     surface.normal);
                         
             // Use backShadowRatio to carry thickness from shadow map for thick mode
