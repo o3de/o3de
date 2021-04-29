@@ -21,7 +21,7 @@ endif()
 ly_add_target(
     NAME Blast.Static STATIC
     NAMESPACE Gem
-    OUTPUT_NAME Gem.Blast.Static
+    OUTPUT_NAME Blast.Static.Gem
     FILES_CMAKE
         blast_files.cmake
     INCLUDE_DIRECTORIES
@@ -44,7 +44,7 @@ ly_add_target(
 ly_add_target(
     NAME Blast ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.Blast
+    OUTPUT_NAME Blast.Gem
     FILES_CMAKE
         blast_shared_files.cmake
     INCLUDE_DIRECTORIES
@@ -65,7 +65,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME Blast.Editor.Static STATIC
         NAMESPACE Gem
-        OUTPUT_NAME Gem.Blast.Editor.Static
+        OUTPUT_NAME Blast.Editor.Static.Gem
         AUTOMOC
         AUTOUIC
         FILES_CMAKE
@@ -93,7 +93,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME Blast.Editor GEM_MODULE
         NAMESPACE Gem
-        OUTPUT_NAME Gem.Blast.Editor
+        OUTPUT_NAME Blast.Editor.Gem
         AUTOMOC
         FILES_CMAKE
             blast_editor_shared_files.cmake
@@ -122,7 +122,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
         NAME Blast.Tests MODULE
         NAMESPACE Gem
-        OUTPUT_NAME Gem.Blast.Tests
+        OUTPUT_NAME Blast.Tests.Gem
         FILES_CMAKE
             blast_tests_files.cmake
         INCLUDE_DIRECTORIES
@@ -146,7 +146,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         ly_add_target(
             NAME Blast.Editor.Tests MODULE
             NAMESPACE Gem
-            OUTPUT_NAME Gem.Blast.Editor.Tests
+            OUTPUT_NAME Blast.Editor.Tests.Gem
             FILES_CMAKE
                 blast_editor_tests_files.cmake
             INCLUDE_DIRECTORIES

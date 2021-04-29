@@ -25,7 +25,7 @@ endif()
 ly_add_target(
     NAME PhysXDebug ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME Gem.PhysXDebug
+    OUTPUT_NAME PhysXDebug.Gem
     FILES_CMAKE
         ${physx_files}
     INCLUDE_DIRECTORIES
@@ -49,7 +49,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME PhysXDebug.Editor GEM_MODULE
         NAMESPACE Gem
-        OUTPUT_NAME Gem.PhysXDebug.Editor
+        OUTPUT_NAME PhysXDebug.Editor.Gem
         FILES_CMAKE
             ${physx_editor_files}
         COMPILE_DEFINITIONS
