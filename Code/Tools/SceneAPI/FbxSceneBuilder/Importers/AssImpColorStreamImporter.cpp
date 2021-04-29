@@ -96,7 +96,7 @@ namespace AZ
 
                     });
 
-                if (vertexCount == 0)
+                if (expectedColorChannels == 0)
                 {
                     return Events::ProcessingResult::Ignored;
                 }
@@ -130,10 +130,10 @@ namespace AZ
                             }
                             else
                             {
-                                // An error was already emitted previously if this mesh has less color channels
-                                // than other meshes on the parent node. Append an invalid, arbitrary color value
-                                // so the mesh can still be processed to some degree. It's desired that
-                                // even if input scene files have errors, they can be loaded by the engine to some degree.
+                                // An error was already emitted if this mesh has less color channels
+                                // than other meshes on the parent node. Append an arbitrary color value
+                                // so the mesh can still be processed.
+                                // It's better to let the engine load a partially valid mesh than to completely fail.
                                 AZ::SceneAPI::DataTypes::Color vertexColor(0,0,0,1);
                                 vertexColors->AppendColor(vertexColor);
                             }
