@@ -87,10 +87,10 @@ namespace AzToolsFramework
 
             debugDisplay.DrawWireQuad2d(
                 AZ::Vector2(
-                    static_cast<float>(m_boxSelectRegion->x()), static_cast<float>(m_boxSelectRegion->y())) / viewportSize,
+                    aznumeric_cast<float>(m_boxSelectRegion->x()), aznumeric_cast<float>(m_boxSelectRegion->y())) / viewportSize,
                 AZ::Vector2(
-                    static_cast<float>(m_boxSelectRegion->x()) + static_cast<float>(m_boxSelectRegion->width()),
-                    static_cast<float>(m_boxSelectRegion->y()) + static_cast<float>(m_boxSelectRegion->height())) / viewportSize,
+                    aznumeric_cast<float>(m_boxSelectRegion->x()) + aznumeric_cast<float>(m_boxSelectRegion->width()),
+                    aznumeric_cast<float>(m_boxSelectRegion->y()) + aznumeric_cast<float>(m_boxSelectRegion->height())) / viewportSize,
                 0.f);
 
             debugDisplay.DepthTestOn();
