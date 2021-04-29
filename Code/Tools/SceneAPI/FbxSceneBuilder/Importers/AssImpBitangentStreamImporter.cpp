@@ -11,6 +11,7 @@
  */
 
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/numeric.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/AssImpBitangentStreamImporter.h>
@@ -24,7 +25,7 @@
 
 #include <assimp/scene.h>
 #include <assimp/mesh.h>
-
+#pragma optimize("", off)
 namespace AZ
 {
     namespace SceneAPI
@@ -43,7 +44,7 @@ namespace AZ
                 SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
                 if (serializeContext)
                 {
-                    serializeContext->Class<AssImpBitangentStreamImporter, SceneCore::LoadingComponent>()->Version(2); // LYN-2576
+                    serializeContext->Class<AssImpBitangentStreamImporter, SceneCore::LoadingComponent>()->Version(3); // LYN-3250
                 }
             }
 
@@ -60,17 +61,31 @@ namespace AZ
                 // AssImp separates meshes that have multiple materials.
                 // This code re-combines them to match previous FBX SDK behavior,
                 // so they can be separated by engine code instead.
-                int vertexCount = 0;
-                for (int sdkMeshIndex = 0; sdkMeshIndex < currentNode->mNumMeshes; ++sdkMeshIndex)
-                {
-                    aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[sdkMeshIndex]];
-                    if (!mesh->HasTangentsAndBitangents())
+                bool hasAnyBitangents = false;
+                // Used to assist error reporting and check that all meshes have bitangents or no meshes should have bitangents.
+                int localMeshIndex = -1;
+                const uint64_t vertexCount = AZStd::accumulate(currentNode->mMeshes, currentNode->mMeshes + currentNode->mNumMeshes, uint64_t{ 0u },
+                    [scene, currentNode, &hasAnyBitangents, &localMeshIndex](auto runningTotal, unsigned int meshIndex)
                     {
-                        continue;
-                    }
-                    vertexCount += mesh->mNumVertices;
-                }
-                if (vertexCount == 0)
+                        ++localMeshIndex;
+                        const char* mixedTangentsError =
+                            "Node with name %s has meshes with and without bitangents. "
+                            "Placeholder incorrect bitangents will be generated to allow the data to process, "
+                            "but the source art needs to be fixed to correct this. Either apply bitangents to all meshes on this node, "
+                            "or remove all bitangents from all meshes on this node.";
+                        aiMesh* mesh = scene->mMeshes[meshIndex];
+                        if (!mesh->HasTangentsAndBitangents())
+                        {
+                            AZ_Error(
+                                Utilities::ErrorWindow, !hasAnyBitangents, mixedTangentsError, currentNode->mName.C_Str());
+                            return runningTotal + mesh->mNumVertices;
+                        }
+                        AZ_Error(
+                            Utilities::ErrorWindow, localMeshIndex == 0 || hasAnyBitangents, mixedTangentsError, currentNode->mName.C_Str());
+                        hasAnyBitangents = true;
+                        return runningTotal + mesh->mNumVertices;
+                    });
+                if (!hasAnyBitangents)
                 {
                     return Events::ProcessingResult::Ignored;
                 }
@@ -86,24 +101,31 @@ namespace AZ
                 {
                     aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[sdkMeshIndex]];
 
-                    if (!mesh->HasTangentsAndBitangents())
-                    {
-                        continue;
-                    }
                     for (int v = 0; v < mesh->mNumVertices; ++v)
                     {
-                        const Vector3 bitangent(
-                            AssImpSDKWrapper::AssImpTypeConverter::ToVector3(mesh->mBitangents[v]));
-                        bitangentStream->AppendBitangent(bitangent);
+                        if (!mesh->HasTangentsAndBitangents())
+                        {
+                            // This node has mixed meshes with and without bitangents.
+                            // An error was already thrown above. Output stub bitangents so
+                            // the mesh can still be output in some form, even if the data isn't correct.
+                            // The bitangent count needs to match the vertex count on the associated mesh node.
+                            const Vector3 bitangent(1,0,0);
+                            bitangentStream->AppendBitangent(bitangent);
+                        }
+                        else
+                        {
+                            const Vector3 bitangent(
+                                AssImpSDKWrapper::AssImpTypeConverter::ToVector3(mesh->mBitangents[v]));
+                            bitangentStream->AppendBitangent(bitangent);
+                        }
                     }
                 }
 
-                AZStd::string nodeName(AZStd::string::format("%s", m_defaultNodeName));
                 Containers::SceneGraph::NodeIndex newIndex =
-                    context.m_scene.GetGraph().AddChild(context.m_currentGraphPosition, nodeName.c_str());
+                    context.m_scene.GetGraph().AddChild(context.m_currentGraphPosition, m_defaultNodeName);
 
                 Events::ProcessingResult bitangentResults;
-                AssImpSceneAttributeDataPopulatedContext dataPopulated(context, bitangentStream, newIndex, nodeName.c_str());
+                AssImpSceneAttributeDataPopulatedContext dataPopulated(context, bitangentStream, newIndex, m_defaultNodeName);
                 bitangentResults = Events::Process(dataPopulated);
 
                 if (bitangentResults != Events::ProcessingResult::Failure)

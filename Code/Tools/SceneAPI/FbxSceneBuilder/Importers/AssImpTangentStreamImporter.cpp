@@ -11,6 +11,7 @@
  */
 
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/numeric.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/AssImpTangentStreamImporter.h>
@@ -57,17 +58,34 @@ namespace AZ
                 aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
                 const aiScene* scene = context.m_sourceScene.GetAssImpScene();
 
-                int vertexCount = 0;
-                for (int sdkMeshIndex = 0; sdkMeshIndex < currentNode->mNumMeshes; ++sdkMeshIndex)
-                {
-                    aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[sdkMeshIndex]];
-                    if (!mesh->HasTangentsAndBitangents())
+                // AssImp separates meshes that have multiple materials.
+                // This code re-combines them to match previous FBX SDK behavior,
+                // so they can be separated by engine code instead.
+                bool hasAnyTangents = false;
+                // Used to assist error reporting and check that all meshes have tangents or no meshes should have tangents.
+                int localMeshIndex = -1;
+                const uint64_t vertexCount = AZStd::accumulate(currentNode->mMeshes, currentNode->mMeshes + currentNode->mNumMeshes, uint64_t{ 0u },
+                    [scene, currentNode, &hasAnyTangents, &localMeshIndex](auto runningTotal, unsigned int meshIndex)
                     {
-                        continue;
-                    }
-                    vertexCount += mesh->mNumVertices;
-                }
-                if (vertexCount == 0)
+                        ++localMeshIndex;
+                        const char* mixedTangentsError =
+                            "Node with name %s has meshes with and without tangents. "
+                            "Placeholder incorrect tangents will be generated to allow the data to process, "
+                            "but the source art needs to be fixed to correct this. Either apply tangents to all meshes on this node, "
+                            "or remove all tangents from all meshes on this node.";
+                        aiMesh* mesh = scene->mMeshes[meshIndex];
+                        if (!mesh->HasTangentsAndBitangents())
+                        {
+                            AZ_Error(
+                                Utilities::ErrorWindow, !hasAnyTangents, mixedTangentsError, currentNode->mName.C_Str());
+                            return runningTotal + mesh->mNumVertices;
+                        }
+                        AZ_Error(
+                            Utilities::ErrorWindow, localMeshIndex == 0 || hasAnyTangents, mixedTangentsError, currentNode->mName.C_Str());
+                        hasAnyTangents = true;
+                        return runningTotal + mesh->mNumVertices;
+                    });
+                if (!hasAnyTangents)
                 {
                     return Events::ProcessingResult::Ignored;
                 }
@@ -83,24 +101,31 @@ namespace AZ
                 {
                     aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[sdkMeshIndex]];
 
-                    if (!mesh->HasTangentsAndBitangents())
-                    {
-                        continue;
-                    }
                     for (int v = 0; v < mesh->mNumVertices; ++v)
                     {
-                        const Vector4 tangent(
-                            AssImpSDKWrapper::AssImpTypeConverter::ToVector3(mesh->mTangents[v]));
-                        tangentStream->AppendTangent(tangent);
+                        if (!mesh->HasTangentsAndBitangents())
+                        {
+                            // This node has mixed meshes with and without tangents.
+                            // An error was already thrown above. Output stub tangents so
+                            // the mesh can still be output in some form, even if the data isn't correct.
+                            // The tangent count needs to match the vertex count on the associated mesh node.
+                            const Vector4 tangent(1, 0, 0, 0);
+                            tangentStream->AppendTangent(tangent);
+                        }
+                        else
+                        {
+                            const Vector4 tangent(
+                                AssImpSDKWrapper::AssImpTypeConverter::ToVector3(mesh->mTangents[v]));
+                            tangentStream->AppendTangent(tangent);
+                        }
                     }
                 }
 
-                AZStd::string nodeName(AZStd::string::format("%s", m_defaultNodeName));
                 Containers::SceneGraph::NodeIndex newIndex =
-                    context.m_scene.GetGraph().AddChild(context.m_currentGraphPosition, nodeName.c_str());
+                    context.m_scene.GetGraph().AddChild(context.m_currentGraphPosition, m_defaultNodeName);
 
                 Events::ProcessingResult tangentResults;
-                AssImpSceneAttributeDataPopulatedContext dataPopulated(context, tangentStream, newIndex, nodeName.c_str());
+                AssImpSceneAttributeDataPopulatedContext dataPopulated(context, tangentStream, newIndex, m_defaultNodeName);
                 tangentResults = Events::Process(dataPopulated);
 
                 if (tangentResults != Events::ProcessingResult::Failure)
