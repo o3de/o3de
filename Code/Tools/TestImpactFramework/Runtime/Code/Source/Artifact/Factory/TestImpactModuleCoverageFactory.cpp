@@ -97,7 +97,7 @@ namespace TestImpact
                     {
                         // Module
                         ModuleCoverage moduleCoverage;
-                        moduleCoverage.m_path = AZ::IO::Path(package_node->first_attribute(Keys[NameKey])->value());
+                        moduleCoverage.m_path = package_node->first_attribute(Keys[NameKey])->value();
 
                         const auto classes_node = package_node->first_node(Keys[ClassesKey]);
                         if (classes_node)
@@ -107,13 +107,11 @@ namespace TestImpact
                             {
                                 // Source
                                 SourceCoverage sourceCoverage;
-                                sourceCoverage.m_path = AZ::IO::Path(pathRoot + class_node->first_attribute(Keys[FileNameKey])->value());
+                                sourceCoverage.m_path = pathRoot + class_node->first_attribute(Keys[FileNameKey])->value();
 
                                 const auto lines_node = class_node->first_node(Keys[LinesKey]);
                                 if (lines_node)
                                 {
-                                    AZStd::vector<LineCoverage> lineCoverage;
-
                                     // Lines
                                     for (auto line_node = lines_node->first_node(); line_node; line_node = line_node->next_sibling())
                                     {
@@ -121,12 +119,7 @@ namespace TestImpact
                                         const size_t number =
                                             AZStd::stol(AZStd::string(line_node->first_attribute(Keys[NumberKey])->value()));
                                         const size_t hits = AZStd::stol(AZStd::string(line_node->first_attribute(Keys[HitsKey])->value()));
-                                        lineCoverage.emplace_back(LineCoverage{number, hits});
-                                    }
-
-                                    if (!lineCoverage.empty())
-                                    {
-                                        sourceCoverage.m_coverage.emplace(AZStd::move(lineCoverage));
+                                        sourceCoverage.m_coverage.emplace_back(LineCoverage{number, hits});
                                     }
                                 }
 
