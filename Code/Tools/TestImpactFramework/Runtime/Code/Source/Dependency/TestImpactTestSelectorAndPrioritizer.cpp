@@ -213,7 +213,7 @@ namespace TestImpact
         AZStd::vector<const TestTarget*> selectedTestTargets;
 
         // Prioritization disabled for now
-        // https://jira.agscollab.com/browse/SPEC-6563
+        // SPEC-6563
         for (const auto& [testTarget, dependerTargets] : selectedTestTargetAndDependerMap)
         {
             selectedTestTargets.push_back(testTarget);
@@ -221,4 +221,4 @@ namespace TestImpact
     
         return selectedTestTargets;
     }
-}
+} // namespace TestImpact

@@ -23,4 +23,4 @@ namespace TestImpact
         AZStd::vector<AZStd::string> m_vertexes;
         AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>> m_edges;
     };
-}
+} // namespace TestImpact

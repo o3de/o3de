@@ -74,4 +74,4 @@ namespace TestImpact
         const DynamicDependencyMap* m_dynamicDependencyMap;
         DependencyGraphDataMap m_dependencyGraphDataMap;
     };
-}
+} // namespace TestImpact
