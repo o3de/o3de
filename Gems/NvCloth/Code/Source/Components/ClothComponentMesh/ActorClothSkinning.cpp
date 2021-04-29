@@ -115,7 +115,6 @@ namespace NvCloth
                     SkinningInfo& skinningInfo = skinningData[subMeshInfo.m_verticesFirstIndex + vertexIndex];
                     skinningInfo.m_jointIndices.resize(influenceCount);
                     skinningInfo.m_jointWeights.resize(influenceCount);
-                    skinningInfo.m_skipJoint.resize(influenceCount);
 
                     for (size_t influenceIndex = 0; influenceIndex < influenceCount; ++influenceIndex)
                     {
@@ -133,7 +132,6 @@ namespace NvCloth
 
                         skinningInfo.m_jointIndices[influenceIndex] = skeletonIndexIt->second;
                         skinningInfo.m_jointWeights[influenceIndex] = weight;
-                        skinningInfo.m_skipJoint[influenceIndex] = AZ::IsClose(weight, 0.0f);
                     }
                 }
             }
@@ -284,15 +282,12 @@ namespace NvCloth
         const size_t jointWeightsCount = skinningInfo.m_jointWeights.size();
         for (size_t weightIndex = 0; weightIndex < jointWeightsCount; ++weightIndex)
         {
-            if (!skinningInfo.m_skipJoint[weightIndex])
-            {
-                const AZ::u16 jointIndex = skinningInfo.m_jointIndices[weightIndex];
-                const float jointWeight = skinningInfo.m_jointWeights[weightIndex];
+            const AZ::u16 jointIndex = skinningInfo.m_jointIndices[weightIndex];
+            const float jointWeight = skinningInfo.m_jointWeights[weightIndex];
 
-                // Blending matrices the same way done in GPU shaders, by adding each weighted matrix element by element.
-                // This way the skinning results are much similar to the skinning performed in GPU.
-                vertexSkinningTransform += m_skinningMatrices[jointIndex] * jointWeight;
-            }
+            // Blending matrices the same way done in GPU shaders, by adding each weighted matrix element by element.
+            // This way the skinning results are much similar to the skinning performed in GPU.
+            vertexSkinningTransform += m_skinningMatrices[jointIndex] * jointWeight;
         }
         return vertexSkinningTransform;
     }
@@ -391,16 +386,13 @@ namespace NvCloth
         const size_t jointWeightsCount = skinningInfo.m_jointWeights.size();
         for (size_t weightIndex = 0; weightIndex < jointWeightsCount; ++weightIndex)
         {
-            if (!skinningInfo.m_skipJoint[weightIndex])
-            {
-                const AZ::u16 jointIndex = skinningInfo.m_jointIndices[weightIndex];
-                const float jointWeight = skinningInfo.m_jointWeights[weightIndex];
+            const AZ::u16 jointIndex = skinningInfo.m_jointIndices[weightIndex];
+            const float jointWeight = skinningInfo.m_jointWeights[weightIndex];
 
-                const MCore::DualQuaternion& skinningDualQuaternion = m_skinningDualQuaternions.at(jointIndex);
+            const MCore::DualQuaternion& skinningDualQuaternion = m_skinningDualQuaternions.at(jointIndex);
 
-                float flip = AZ::GetSign(vertexSkinningTransform.mReal.Dot(skinningDualQuaternion.mReal));
-                vertexSkinningTransform += skinningDualQuaternion * jointWeight * flip;
-            }
+            float flip = AZ::GetSign(vertexSkinningTransform.mReal.Dot(skinningDualQuaternion.mReal));
+            vertexSkinningTransform += skinningDualQuaternion * jointWeight * flip;
         }
         // Normalizing the dual quaternion as the GPU shaders do. This will remove the scale from the transform.
         vertexSkinningTransform.Normalize();
@@ -446,18 +438,15 @@ namespace NvCloth
             return nullptr;
         }
 
-        // Insert the indices of the joints that influence the particle (weight is not 0)
+        // Collect all indices of the joints that influence the vertices
         AZStd::set<AZ::u16> jointIndices;
         for (size_t vertexIndex = 0; vertexIndex < numVertices; ++vertexIndex)
         {
             const SkinningInfo& skinningInfo = skinningData[vertexIndex];
-            const size_t jointWeightsCount = skinningInfo.m_jointWeights.size();
-            for (size_t weightIndex = 0; weightIndex < jointWeightsCount; ++weightIndex)
+            const size_t jointIndicesCount = skinningInfo.m_jointIndices.size();
+            for (size_t jointIndex = 0; jointIndex < jointIndicesCount; ++jointIndex)
             {
-                if (!skinningInfo.m_skipJoint[weightIndex])
-                {
-                    jointIndices.insert(skinningInfo.m_jointIndices[weightIndex]);
-                }
+                jointIndices.insert(skinningInfo.m_jointIndices[jointIndex]);
             }
         }
         actorClothSkinning->m_jointIndices.assign(jointIndices.begin(), jointIndices.end());
