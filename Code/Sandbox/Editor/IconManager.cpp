@@ -27,27 +27,27 @@
 #include "Util/ImageUtil.h"
 
 
-#define HELPER_MATERIAL "Editor/Objects/Helper"
+#define HELPER_MATERIAL "Objects/Helper"
 
 namespace
 {
     // Object names in this array must correspond to EObject enumeration.
     const char* g_ObjectNames[eStatObject_COUNT] =
     {
-        "Editor/Objects/Arrow.cgf",
-        "Editor/Objects/Axis.cgf",
-        "Editor/Objects/Sphere.cgf",
-        "Editor/Objects/Anchor.cgf",
-        "Editor/Objects/entrypoint.cgf",
-        "Editor/Objects/hidepoint.cgf",
-        "Editor/Objects/hidepoint_sec.cgf",
-        "Editor/Objects/reinforcement_point.cgf",
+        "Objects/Arrow.cgf",
+        "Objects/Axis.cgf",
+        "Objects/Sphere.cgf",
+        "Objects/Anchor.cgf",
+        "Objects/entrypoint.cgf",
+        "Objects/hidepoint.cgf",
+        "Objects/hidepoint_sec.cgf",
+        "Objects/reinforcement_point.cgf",
     };
 
     const char* g_IconNames[eIcon_COUNT] =
     {
-        "Editor/Icons/ScaleWarning.png",
-        "Editor/Icons/RotationWarning.png",
+        "Icons/ScaleWarning.png",
+        "Icons/RotationWarning.png",
     };
 };
 

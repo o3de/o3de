@@ -28,6 +28,8 @@
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Jobs/JobEmpty.h>
 
+#include <AzFramework/Entity/EntityContext.h>
+
 namespace AZ
 {
     namespace RPI
@@ -71,12 +73,15 @@ namespace AZ
         Scene* Scene::GetSceneForEntityContextId(AzFramework::EntityContextId entityContextId)
         {
             // Find the scene for this entity context.
-            AzFramework::Scene* scene = nullptr;
-            AzFramework::SceneSystemRequestBus::BroadcastResult(scene, &AzFramework::SceneSystemRequestBus::Events::GetSceneFromEntityContextId, entityContextId);
+            AZStd::shared_ptr<AzFramework::Scene> scene = AzFramework::EntityContext::FindContainingScene(entityContextId);
             if (scene)
             {
                 // Get the RPI::Scene subsystem from the AZFramework Scene.
-                return scene->GetSubsystem<RPI::Scene>();
+                RPI::ScenePtr* scenePtr = scene->FindSubsystem<RPI::ScenePtr>();
+                if (scenePtr)
+                {
+                    return scenePtr->get();
+                }
             }
             return nullptr;
         }
