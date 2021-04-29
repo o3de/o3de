@@ -75,13 +75,13 @@ namespace AZ
             void Init(RPI::Scene* scene, ReflectionRenderData* reflectionRenderData);
             void Simulate(uint32_t probeIndex);
 
-            const Vector3& GetPosition() const { return m_position; }
+            const Vector3& GetPosition() const { return m_transform.GetTranslation(); }
             void SetTransform(const AZ::Transform& transform);
 
-            const AZ::Vector3& GetOuterExtents() const { return m_outerExtents; }
+            const AZ::Vector3& GetOuterExtents() const { return m_outerExtents * m_transform.GetScale(); }
             void SetOuterExtents(const AZ::Vector3& outerExtents);
 
-            const AZ::Vector3& GetInnerExtents() const { return m_innerExtents; }
+            const AZ::Vector3& GetInnerExtents() const { return m_innerExtents * m_transform.GetScale(); }
             void SetInnerExtents(const AZ::Vector3& innerExtents);
 
             const Aabb& GetOuterAabbWs() const { return m_outerAabbWs; }
@@ -122,8 +122,8 @@ namespace AZ
             // scene
             RPI::Scene* m_scene = nullptr;
 
-            // probe capture position
-            AZ::Vector3 m_position = AZ::Vector3(0.0f, 0.0f, 0.0f);
+            // probe volume transform
+            AZ::Transform m_transform = AZ::Transform::CreateIdentity();
 
             // extents of the probe volume
             AZ::Vector3 m_outerExtents = AZ::Vector3(0.0f, 0.0f, 0.0f);
