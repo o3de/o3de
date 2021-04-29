@@ -11,6 +11,7 @@
  */
 
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/numeric.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/AssImpColorStreamImporter.h>
@@ -43,7 +44,7 @@ namespace AZ
                 SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
                 if (serializeContext)
                 {
-                    serializeContext->Class<AssImpColorStreamImporter, SceneCore::LoadingComponent>()->Version(2); // LYN-2576
+                    serializeContext->Class<AssImpColorStreamImporter, SceneCore::LoadingComponent>()->Version(3); // LYN-3250
                 }
             }
 
@@ -57,38 +58,56 @@ namespace AZ
                 aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
                 const aiScene* scene = context.m_sourceScene.GetAssImpScene();
 
-                int vertexCount = 0;
                 int expectedColorChannels = -1;
+                int localMeshIndex = -1;
 
                 // AssImp separates meshes that have multiple materials.
                 // This code re-combines them to match previous FBX SDK behavior,
                 // so they can be separated by engine code instead.
-                for (int sdkMeshIndex = 0; sdkMeshIndex < currentNode->mNumMeshes; ++sdkMeshIndex)
-                {
-                    aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[sdkMeshIndex]];
-                    if (expectedColorChannels < 0)
+                uint64_t vertexCount = AZStd::accumulate(currentNode->mMeshes, currentNode->mMeshes + currentNode->mNumMeshes, uint64_t{ 0u },
+                    [scene, currentNode, &expectedColorChannels, &localMeshIndex](auto runningTotal, unsigned int meshIndex)
                     {
-                        expectedColorChannels = mesh->GetNumColorChannels();
-                    }
-                    else if(expectedColorChannels != mesh->GetNumColorChannels())
-                    {
-                        AZ_Error(
-                            Utilities::ErrorWindow,
-                            false,
-                            "Color channel count %d for node %s, for mesh %s at index %d does not match expected count %d",
-                            mesh->GetNumColorChannels(),
-                            currentNode->mName.C_Str(),
-                            mesh->mName.C_Str(),
-                            sdkMeshIndex,
-                            expectedColorChannels);
-                        return Events::ProcessingResult::Failure;
-                    }
-                    vertexCount += mesh->mNumVertices * mesh->GetNumColorChannels();
-                }
+                        ++localMeshIndex;
+                        aiMesh* mesh = scene->mMeshes[meshIndex];
+                        if (expectedColorChannels < 0)
+                        {
+                            expectedColorChannels = mesh->GetNumColorChannels();
+                        }
+                        else if(expectedColorChannels == mesh->GetNumColorChannels())
+                        {
+                            AZ_Error(
+                                Utilities::ErrorWindow,
+                                false,
+                                "Color channel count %d for node %s, for mesh %s at index %d does not match expected count %d. "
+                                "Placeholder incorrect color values will be generated to allow the data to process, but the source art "
+                                "needs to be fixed to correct this. All meshes on this node should have the same number of color channels.",
+                                mesh->GetNumColorChannels(),
+                                currentNode->mName.C_Str(),
+                                mesh->mName.C_Str(),
+                                localMeshIndex,
+                                expectedColorChannels);
+                            if (mesh->GetNumColorChannels() > expectedColorChannels)
+                            {
+                                expectedColorChannels = mesh->GetNumColorChannels();
+                            }
+                        }
+                        // Don't multiply by expected color channels yet, because it may change due to mismatched channels in meshes.
+                        return runningTotal + mesh->mNumVertices;
+
+                    });
+
                 if (vertexCount == 0)
                 {
                     return Events::ProcessingResult::Ignored;
                 }
+                // Adjust the vertex count by the maximum number of color channels across all meshes.
+                // Ideally, this will be identical for all meshes, but there may be an edge case where
+                // meshes have different color channel counts. In that case, it's more desirable to process
+                // the scene file as much as possible even if there are data errors.
+                // Note that this error case is unlikely because multiple meshes on a single AssImp node only
+                // happens if there was a single source mesh that had multiple materials.
+                // AssImp splits that into several child meshes on the node.
+                vertexCount *= expectedColorChannels;
 
                 Events::ProcessingResultCombiner combinedVertexColorResults;
                 for (int colorSetIndex = 0; colorSetIndex < expectedColorChannels; ++colorSetIndex)
@@ -103,9 +122,21 @@ namespace AZ
                         aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[sdkMeshIndex]];
                         for (int v = 0; v < mesh->mNumVertices; ++v)
                         {
-                            AZ::SceneAPI::DataTypes::Color vertexColor(
-                                AssImpSDKWrapper::AssImpTypeConverter::ToColor(mesh->mColors[colorSetIndex][v]));
-                            vertexColors->AppendColor(vertexColor);
+                            if (colorSetIndex < mesh->GetNumColorChannels())
+                            {
+                                AZ::SceneAPI::DataTypes::Color vertexColor(
+                                    AssImpSDKWrapper::AssImpTypeConverter::ToColor(mesh->mColors[colorSetIndex][v]));
+                                vertexColors->AppendColor(vertexColor);
+                            }
+                            else
+                            {
+                                // An error was already emitted previously if this mesh has less color channels
+                                // than other meshes on the parent node. Append an invalid, arbitrary color value
+                                // so the mesh can still be processed to some degree. It's desired that
+                                // even if input scene files have errors, they can be loaded by the engine to some degree.
+                                AZ::SceneAPI::DataTypes::Color vertexColor(0,0,0,1);
+                                vertexColors->AppendColor(vertexColor);
+                            }
                         }
                     }
 
