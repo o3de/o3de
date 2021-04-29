@@ -13,12 +13,14 @@
 #pragma once
 
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#include <AzFramework/Viewport/CameraInput.h>
 #include <AzFramework/Viewport/MultiViewportController.h>
 
 namespace SandboxEditor
 {
     class ModernViewportCameraControllerInstance final : public AzFramework::MultiViewportControllerInstanceInterface,
-                                                         private AzFramework::ViewportDebugDisplayEventBus::Handler
+                                                         private AzFramework::ViewportDebugDisplayEventBus::Handler,
+                                                         private AzFramework::ModernViewportCameraControllerRequestBus::Handler
     {
     public:
         explicit ModernViewportCameraControllerInstance(AzFramework::ViewportId viewportId);
@@ -28,12 +30,17 @@ namespace SandboxEditor
         bool HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event) override;
         void UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event) override;
 
-        // AzFramework::ViewportDebugDisplayEventBus ...
+        // AzFramework::ViewportDebugDisplayEventBus overrides ...
         void DisplayViewport(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay) override;
 
+        // ModernViewportCameraControllerRequestBus overrides ...
+        void SetTargetCameraTransform(const AZ::Transform& transform) override;
+
     private:
-        struct Impl;
-        AZStd::unique_ptr<Impl> m_impl;
+        AzFramework::Camera m_camera;
+        AzFramework::Camera m_targetCamera;
+        AzFramework::SmoothProps m_smoothProps;
+        AzFramework::CameraSystem m_cameraSystem;
     };
 
     using ModernViewportCameraController = AzFramework::MultiViewportController<ModernViewportCameraControllerInstance>;

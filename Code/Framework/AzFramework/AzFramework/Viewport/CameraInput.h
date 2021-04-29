@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/std/containers/variant.h>
@@ -24,6 +25,22 @@
 namespace AzFramework
 {
     struct WindowSize;
+
+    // to be moved
+    class ModernViewportCameraControllerRequests : public AZ::EBusTraits
+    {
+    public:
+        using BusIdType = AzFramework::ViewportId; ///< ViewportId - used to address requests to this EBus.
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+
+        virtual void SetTargetCameraTransform(const AZ::Transform& transform) = 0;
+
+    protected:
+        ~ModernViewportCameraControllerRequests() = default;
+    };
+
+    using ModernViewportCameraControllerRequestBus = AZ::EBus<ModernViewportCameraControllerRequests>;
 
     struct Camera
     {
@@ -411,7 +428,7 @@ namespace AzFramework
 
         struct Props
         {
-            float m_defaultOrbitDistance = 15.0f;
+            float m_defaultOrbitDistance = 60.0f;
             float m_maxOrbitDistance = 100.0f;
         } m_props;
     };

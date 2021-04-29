@@ -12,10 +12,15 @@
 
 #include "CameraInput.h"
 
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Math/Plane.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Windowing/WindowBus.h>
+
+AZ_CVAR(
+    float, ed_newCameraSystemDefaultPlaneHeight, 34.0f, nullptr, AZ::ConsoleFunctorFlags::Null,
+    "What is the default height of the ground plane to do intersection tests against when orbiting");
 
 namespace AzFramework
 {
@@ -373,9 +378,11 @@ namespace AzFramework
         if (Beginning())
         {
             float hit_distance = 0.0f;
-            if (AZ::Plane::CreateFromNormalAndPoint(AZ::Vector3::CreateAxisZ(), AZ::Vector3::CreateZero())
-                    .CastRay(targetCamera.Translation(), targetCamera.Rotation().GetBasisY() * m_props.m_maxOrbitDistance, hit_distance))
+            if (AZ::Plane::CreateFromNormalAndPoint(
+                    AZ::Vector3::CreateAxisZ(), AZ::Vector3::CreateAxisZ(ed_newCameraSystemDefaultPlaneHeight))
+                    .CastRay(targetCamera.Translation(), targetCamera.Rotation().GetBasisY(), hit_distance))
             {
+                hit_distance = AZStd::min(hit_distance, m_props.m_maxOrbitDistance);
                 nextCamera.m_lookDist = -hit_distance;
                 nextCamera.m_lookAt = targetCamera.Translation() + targetCamera.Rotation().GetBasisY() * hit_distance;
             }

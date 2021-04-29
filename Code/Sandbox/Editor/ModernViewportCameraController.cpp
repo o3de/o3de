@@ -16,7 +16,6 @@
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Interface/Interface.h>
-#include <AzFramework/Viewport/CameraInput.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
 #include <AzFramework/Windowing/WindowBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
@@ -42,17 +41,8 @@ namespace SandboxEditor
         return viewportContext;
     }
 
-    struct ModernViewportCameraControllerInstance::Impl
-    {
-        AzFramework::Camera m_camera;
-        AzFramework::Camera m_targetCamera;
-        AzFramework::SmoothProps m_smoothProps;
-        AzFramework::CameraSystem m_cameraSystem;
-    };
-
     ModernViewportCameraControllerInstance::ModernViewportCameraControllerInstance(const AzFramework::ViewportId viewportId)
         : MultiViewportControllerInstanceInterface(viewportId)
-        , m_impl(AZStd::make_unique<Impl>())
     {
         // LYN-2315 TODO - move setup out of constructor, pass cameras in
         auto firstPersonRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(AzFramework::InputDeviceMouse::Button::Right);
@@ -72,27 +62,29 @@ namespace SandboxEditor
         orbitCamera->m_orbitCameras.AddCamera(orbitDollyMoveCamera);
         orbitCamera->m_orbitCameras.AddCamera(orbitPanCamera);
 
-        m_impl->m_cameraSystem.m_cameras.AddCamera(firstPersonRotateCamera);
-        m_impl->m_cameraSystem.m_cameras.AddCamera(firstPersonPanCamera);
-        m_impl->m_cameraSystem.m_cameras.AddCamera(firstPersonTranslateCamera);
-        m_impl->m_cameraSystem.m_cameras.AddCamera(firstPersonWheelCamera);
-        m_impl->m_cameraSystem.m_cameras.AddCamera(orbitCamera);
+        m_cameraSystem.m_cameras.AddCamera(firstPersonRotateCamera);
+        m_cameraSystem.m_cameras.AddCamera(firstPersonPanCamera);
+        m_cameraSystem.m_cameras.AddCamera(firstPersonTranslateCamera);
+        m_cameraSystem.m_cameras.AddCamera(firstPersonWheelCamera);
+        m_cameraSystem.m_cameras.AddCamera(orbitCamera);
 
         if (const auto viewportContext = RetrieveViewportContext(viewportId))
         {
             // set position but not orientation
-            m_impl->m_targetCamera.m_lookAt = viewportContext->GetCameraTransform().GetTranslation();
+            m_targetCamera.m_lookAt = viewportContext->GetCameraTransform().GetTranslation();
 
             // LYN-2315 TODO https://www.geometrictools.com/Documentation/EulerAngles.pdf
 
-            m_impl->m_camera = m_impl->m_targetCamera;
+            m_camera = m_targetCamera;
         }
 
         AzFramework::ViewportDebugDisplayEventBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
+        AzFramework::ModernViewportCameraControllerRequestBus::Handler::BusConnect(viewportId);
     }
 
     ModernViewportCameraControllerInstance::~ModernViewportCameraControllerInstance()
     {
+        AzFramework::ModernViewportCameraControllerRequestBus::Handler::BusDisconnect();
         AzFramework::ViewportDebugDisplayEventBus::Handler::BusDisconnect();
     }
 
@@ -101,18 +93,18 @@ namespace SandboxEditor
         AzFramework::WindowSize windowSize;
         AzFramework::WindowRequestBus::EventResult(
             windowSize, event.m_windowHandle, &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
-        return m_impl->m_cameraSystem.HandleEvents(AzFramework::BuildInputEvent(event.m_inputChannel, windowSize));
+        return m_cameraSystem.HandleEvents(AzFramework::BuildInputEvent(event.m_inputChannel, windowSize));
     }
 
     void ModernViewportCameraControllerInstance::UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event)
     {
         if (auto viewportContext = RetrieveViewportContext(GetViewportId()))
         {
-            m_impl->m_targetCamera = m_impl->m_cameraSystem.StepCamera(m_impl->m_targetCamera, event.m_deltaTime.count());
-            m_impl->m_camera =
-                AzFramework::SmoothCamera(m_impl->m_camera, m_impl->m_targetCamera, m_impl->m_smoothProps, event.m_deltaTime.count());
+            m_targetCamera = m_cameraSystem.StepCamera(m_targetCamera, event.m_deltaTime.count());
+            m_camera =
+                AzFramework::SmoothCamera(m_camera, m_targetCamera, m_smoothProps, event.m_deltaTime.count());
 
-            viewportContext->SetCameraTransform(m_impl->m_camera.Transform());
+            viewportContext->SetCameraTransform(m_camera.Transform());
         }
     }
 
@@ -122,7 +114,12 @@ namespace SandboxEditor
         if (ed_newCameraSystemDebug)
         {
             debugDisplay.SetColor(AZ::Colors::White);
-            debugDisplay.DrawWireSphere(m_impl->m_targetCamera.m_lookAt, 0.5f);
+            debugDisplay.DrawWireSphere(m_targetCamera.m_lookAt, 0.5f);
         }
+    }
+
+    void ModernViewportCameraControllerInstance::SetTargetCameraTransform(const AZ::Transform& transform)
+    {
+        m_targetCamera.m_lookAt = transform.GetTranslation();
     }
 } // namespace SandboxEditor
