@@ -5045,12 +5045,28 @@ extern "C"
 #pragma comment(lib, "Shell32.lib")
 #endif
 
+struct CryAllocatorsRAII
+{
+    CryAllocatorsRAII()
+    {
+        AZ_Assert(!AZ::AllocatorInstance<AZ::LegacyAllocator>::IsReady(), "Expected allocator to not be initialized, hunt down the static that is initializing it");
+        AZ_Assert(!AZ::AllocatorInstance<CryStringAllocator>::IsReady(), "Expected allocator to not be initialized, hunt down the static that is initializing it");
+
+        AZ::AllocatorInstance<AZ::LegacyAllocator>::Create();
+        AZ::AllocatorInstance<CryStringAllocator>::Create();
+    }
+
+    ~CryAllocatorsRAII()
+    {
+        AZ::AllocatorInstance<CryStringAllocator>::Destroy();
+        AZ::AllocatorInstance<AZ::LegacyAllocator>::Destroy();
+    }
+};
+
+
 extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
 {
-    AZ_Assert(!AZ::AllocatorInstance<AZ::LegacyAllocator>::IsReady(), "Expected allocator to not be initialized, hunt down the static that is initializing it");
-    AZ::AllocatorInstance<AZ::LegacyAllocator>::Create();
-    AZ_Assert(!AZ::AllocatorInstance<CryStringAllocator>::IsReady(), "Expected allocator to not be initialized, hunt down the static that is initializing it");
-    AZ::AllocatorInstance<CryStringAllocator>::Create();
+    CryAllocatorsRAII cryAllocatorsRAII;
 
     // ensure the EditorEventsBus context gets created inside EditorLib
     [[maybe_unused]] const auto& editorEventsContext = AzToolsFramework::EditorEvents::Bus::GetOrCreateContext();
@@ -5058,7 +5074,7 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
     // connect relevant buses to global settings
     gSettings.Connect();
 
-    CCryEditApp* theApp = new CCryEditApp();
+    auto theApp = AZStd::make_unique<CCryEditApp>();
     // this does some magic to set the current directory...
     {
         QCoreApplication app(argc, argv);
@@ -5144,8 +5160,6 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
         CCryEditApp::instance()->ExitInstance(exitCode);
 
     }
-
-    delete theApp;
 
     gSettings.Disconnect();
 
