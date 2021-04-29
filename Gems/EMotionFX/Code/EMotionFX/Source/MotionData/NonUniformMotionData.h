@@ -82,7 +82,7 @@ namespace EMotionFX
         void ClearMorphSamples(size_t morphDataIndex) override;
         void ClearFloatSamples(size_t floatDataIndex) override;
 
-        bool VerifyIntegrity() const;
+        bool VerifyIntegrity() const override;
 
         //! Animation tracks in the DCC tool formats are often stored individually, each having its own duration.
         //! For the motion data, it is required to have tracks with the same duration and e.g. a position track
