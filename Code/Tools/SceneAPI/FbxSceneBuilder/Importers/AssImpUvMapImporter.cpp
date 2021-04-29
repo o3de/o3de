@@ -120,24 +120,24 @@ namespace AZ
                         aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[sdkMeshIndex]];
                         if(mesh->mTextureCoords[texCoordIndex])
                         {
-                            if (!customNameFound)
+                            if (mesh->mTextureCoordsNames[texCoordIndex].length > 0)
                             {
-                                if (mesh->mTextureCoordsNames[texCoordIndex].length)
+                                if (!customNameFound)
                                 {
                                     name = mesh->mTextureCoordsNames[texCoordIndex].C_Str();
                                     customNameFound = true;
                                 }
-                            }
-                            else if (mesh->mTextureCoordsNames[texCoordIndex].length)
-                            {
-                                AZ_Warning(Utilities::WarningWindow,
-                                    strcmp(name.c_str(), mesh->mTextureCoordsNames[texCoordIndex].C_Str()) == 0,
-                                    "Node %s has conflicting mesh coordinate names at index %d, %s and %s. Using %s.",
-                                    currentNode->mName.C_Str(),
-                                    texCoordIndex,
-                                    name.c_str(),
-                                    mesh->mTextureCoordsNames[texCoordIndex].C_Str(),
-                                    name.c_str());
+                                else
+                                {
+                                    AZ_Warning(Utilities::WarningWindow,
+                                        strcmp(name.c_str(), mesh->mTextureCoordsNames[texCoordIndex].C_Str()) == 0,
+                                        "Node %s has conflicting mesh coordinate names at index %d, %s and %s. Using %s.",
+                                        currentNode->mName.C_Str(),
+                                        texCoordIndex,
+                                        name.c_str(),
+                                        mesh->mTextureCoordsNames[texCoordIndex].C_Str(),
+                                        name.c_str());
+                                }
                             }
                         }
 

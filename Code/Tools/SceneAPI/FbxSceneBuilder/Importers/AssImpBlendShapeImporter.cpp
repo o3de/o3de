@@ -89,10 +89,6 @@ namespace AZ
                 {
                     int sceneMeshIdx = context.m_sourceNode.GetAssImpNode()->mMeshes[nodeMeshIdx];
                     const aiMesh* aiMesh = context.m_sourceScene.GetAssImpScene()->mMeshes[sceneMeshIdx];
-                    if (!aiMesh->mNumAnimMeshes)
-                    {
-                        continue;
-                    }
                     for (int animIdx = 0; animIdx < aiMesh->mNumAnimMeshes; animIdx++)
                     {
                         aiAnimMesh* aiAnimMesh = aiMesh->mAnimMeshes[animIdx];
@@ -104,6 +100,11 @@ namespace AZ
                 {
                     AZStd::shared_ptr<SceneData::GraphData::BlendShapeData> blendShapeData =
                         AZStd::make_shared<SceneData::GraphData::BlendShapeData>();
+
+                    // Some DCC tools, like Maya, include a full path separated by '.' in the node names.
+                    // For example, "cone_skin_blendShapeNode.cone_squash"
+                    // Downstream processing doesn't want anything but the last part of that node name,
+                    // so find the last '.' and remove anything before it.
                     AZStd::string nodeName(animToMeshIndex.first);
                     size_t dotIndex = nodeName.rfind('.');
                     if (dotIndex != AZStd::string::npos)
