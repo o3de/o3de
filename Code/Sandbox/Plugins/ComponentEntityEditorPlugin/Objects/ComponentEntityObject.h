@@ -27,7 +27,6 @@
 #include <QtViewPane.h>
 
 #include "../Editor/Objects/EntityObject.h"
-#include <LmbrCentral/Rendering/MeshComponentBus.h>
 #include <LmbrCentral/Rendering/RenderBoundsBus.h>
 #endif
 
@@ -44,7 +43,6 @@ class CComponentEntityObject
     , private AzToolsFramework::EditorEntityIconComponentNotificationBus::Handler
     , private AZ::TransformNotificationBus::Handler
     , private LmbrCentral::RenderBoundsNotificationBus::Handler
-    , private LmbrCentral::MeshComponentNotificationBus::Handler
     , private AzToolsFramework::ComponentEntityEditorRequestBus::Handler
     , private AzToolsFramework::ComponentEntityObjectRequestBus::Handler
     , private AZ::EntityBus::Handler
@@ -136,11 +134,6 @@ public:
     //! AZ::TransformNotificationBus::Handler
     void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
     void OnParentChanged(AZ::EntityId oldParent, AZ::EntityId newParent) override;
-    //////////////////////////////////////////////////////////////////////////
-
-    //////////////////////////////////////////////////////////////////////////
-    //! MeshComponentNotificationBus
-    void OnMeshCreated(const AZ::Data::Asset<AZ::Data::AssetData>& asset) override;
     //////////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////////////////////
