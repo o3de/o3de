@@ -275,8 +275,6 @@ void CRenderViewport::resizeEvent(QResizeEvent* event)
 
     gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_RESIZE, width(), height());
 
-    gEnv->pRenderer->EF_DisableTemporalEffects();
-
     if (AZ::Interface<AzFramework::AtomActiveInterface>::Get())
     {
         // We queue the window resize event because the render overlay may be hidden.
