@@ -29,7 +29,6 @@
 
 // LmbrCentral
 #include <LmbrCentral/Rendering/MeshComponentBus.h>
-#include <LmbrCentral/Rendering/GeomCacheComponentBus.h>
 
 
 static const float kEnoughFarDistance(5000.0f);
@@ -236,14 +235,6 @@ void CSurfaceInfoPicker::FindNearestInfoFromEntities(
                         }
                     }
                 }
-            }
-
-            // If the entity has a GeometryCacheComponent it will hit here
-            if (!hit)
-            {
-                IGeomCacheRenderNode* geomCacheRenderNode = nullptr;
-                LmbrCentral::GeometryCacheComponentRequestBus::EventResult(geomCacheRenderNode, id, &LmbrCentral::GeometryCacheComponentRequestBus::Events::GetGeomCacheRenderNode);
-                hit = RayIntersection_IGeomCacheRenderNode(vWorldRaySrc, vWorldRayDir, geomCacheRenderNode, &pickedMaterial, object->GetWorldTM(), outHitInfo);
             }
         }
 

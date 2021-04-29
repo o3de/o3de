@@ -25,7 +25,6 @@
 #include "Audio/EditorAudioRtpcComponent.h"
 #include "Audio/EditorAudioSwitchComponent.h"
 #include "Audio/EditorAudioTriggerComponent.h"
-#include "Rendering/EditorHighQualityShadowComponent.h"
 #include "Rendering/EditorMeshComponent.h"
 #include "Scripting/EditorLookAtComponent.h"
 #include "Scripting/EditorRandomTimedSpawnerComponent.h"
@@ -71,7 +70,6 @@ namespace LmbrCentral
             EditorAudioRtpcComponent::CreateDescriptor(),
             EditorAudioSwitchComponent::CreateDescriptor(),
             EditorAudioTriggerComponent::CreateDescriptor(),
-            EditorHighQualityShadowComponent::CreateDescriptor(),
             EditorMeshComponent::CreateDescriptor(),
             EditorTagComponent::CreateDescriptor(),
             EditorSphereShapeComponent::CreateDescriptor(),

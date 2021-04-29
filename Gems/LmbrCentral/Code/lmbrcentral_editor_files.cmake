@@ -42,10 +42,6 @@ set(FILES
     Source/Builders/BenchmarkAssetBuilder/BenchmarkAssetBuilderWorker.cpp
     Source/Rendering/EditorMeshComponent.h
     Source/Rendering/EditorMeshComponent.cpp
-    Source/Rendering/EditorHighQualityShadowComponent.h
-    Source/Rendering/EditorHighQualityShadowComponent.cpp
-    Source/Rendering/EditorGeomCacheComponent.h
-    Source/Rendering/EditorGeomCacheComponent.cpp
     Source/Scripting/EditorLookAtComponent.h
     Source/Scripting/EditorLookAtComponent.cpp
     Source/Scripting/EditorRandomTimedSpawnerComponent.cpp

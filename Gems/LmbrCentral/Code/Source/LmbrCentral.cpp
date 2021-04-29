@@ -33,9 +33,7 @@
 #include "Audio/AudioSystemComponent.h"
 #include "Audio/AudioTriggerComponent.h"
 #include "Bundling/BundlingSystemComponent.h"
-#include "Rendering/HighQualityShadowComponent.h"
 #include "Rendering/MeshComponent.h"
-#include "Rendering/GeomCacheComponent.h"
 #include "Ai/NavigationComponent.h"
 #include "Scripting/TagComponent.h"
 #include "Scripting/SimpleStateComponent.h"
@@ -211,7 +209,6 @@ namespace LmbrCentral
             LmbrCentralAllocatorComponent::CreateDescriptor(),
             LmbrCentralAssetBuilderAllocatorComponent::CreateDescriptor(),
             LmbrCentralSystemComponent::CreateDescriptor(),
-            HighQualityShadowComponent::CreateDescriptor(),
             MeshComponent::CreateDescriptor(),
             NavigationComponent::CreateDescriptor(),
             SimpleStateComponent::CreateDescriptor(),
@@ -231,7 +228,6 @@ namespace LmbrCentral
             NavigationSystemComponent::CreateDescriptor(),
             GeometrySystemComponent::CreateDescriptor(),
             RandomTimedSpawnerComponent::CreateDescriptor(),
-            GeometryCacheComponent::CreateDescriptor(),
             SphereShapeDebugDisplayComponent::CreateDescriptor(),
             DiskShapeDebugDisplayComponent::CreateDescriptor(),
             BoxShapeDebugDisplayComponent::CreateDescriptor(),
@@ -386,10 +382,6 @@ namespace LmbrCentral
         auto meshAssetHandler = aznew MeshAssetHandler();
         meshAssetHandler->Register(); // registers self with AssetManager
         m_assetHandlers.emplace_back(meshAssetHandler);
-
-        auto geomCacheAssetHandler = aznew GeomCacheAssetHandler();
-        geomCacheAssetHandler->Register(); // registers self with AssetManager
-        m_assetHandlers.emplace_back(geomCacheAssetHandler);
 
         // Add asset types and extensions to AssetCatalog. Uses "AssetCatalogService".
         auto assetCatalog = AZ::Data::AssetCatalogRequestBus::FindFirstHandler();
