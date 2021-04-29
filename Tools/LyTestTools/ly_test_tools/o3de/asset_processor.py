@@ -656,14 +656,14 @@ class AssetProcessor(object):
 
         :return: None
         """
-        for copy_dir in [self._workspace.project, 'Engine']:
+        for copy_dir in [self._workspace.project, 'Assets/Engine', 'Registry']:
             make_dir = os.path.join(self._temp_asset_root, copy_dir)
             if not os.path.isdir(make_dir):
                 os.makedirs(make_dir)
         for copyfile_name in ['bootstrap.cfg',
-                              'AssetProcessorPlatformConfig.setreg',
+                              'Registry/AssetProcessorPlatformConfig.setreg',
                               os.path.join(self._workspace.project, "project.json"),
-                              os.path.join('Engine', 'exclude.filetag')]:
+                              os.path.join('Assets', 'Engine', 'exclude.filetag')]:
             shutil.copyfile(os.path.join(self._workspace.paths.engine_root(), copyfile_name),
                             os.path.join(self._temp_asset_root, copyfile_name))
 
@@ -725,9 +725,11 @@ class AssetProcessor(object):
         test class rather than using the default logs folder which could contain any old data or be used by other
         runs of asset processor.
         """
-        if self._temp_log_root:
+        if self._temp_log_directory:
             logger.info(f'Cleaning up old log root at {self._temp_log_root}')
-            shutil.rmtree(self._temp_log_root, True)
+            # The finalizer will clean up the old temporary directory when the TemporaryDirectory() reference count
+            # hits 0
+            self._temp_log_directory = None
         self._temp_log_directory = tempfile.TemporaryDirectory()
         self._temp_log_root = self._temp_log_directory.name
         self._workspace.paths.set_ap_log_root(self._temp_log_root)

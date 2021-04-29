@@ -6,7 +6,7 @@
 	       PreferredClassName="Send Script Event"
            Uuid="{64A97CC3-2BEA-4B47-809B-6C7DA34FD00F}"
            Base="ScriptCanvas::Nodes::Core::Internal::ScriptEventBase"
-           Icon="Editor/Icons/ScriptCanvas/Bus.png"
+           Icon="Icons/ScriptCanvas/Bus.png"
            Version="4"
            DynamicSlotOrdering="True"
            EditAttributes="AZ::Script::Attributes::ExcludeFrom@AZ::Script::Attributes::ExcludeFlags::All"

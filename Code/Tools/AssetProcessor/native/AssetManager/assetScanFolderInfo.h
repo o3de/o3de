@@ -28,7 +28,6 @@ namespace AssetProcessor
             QString path,
             QString displayName,
             QString portableKey,
-            QString prefix,
             bool isRoot,
             bool recurseSubFolders,
             AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms = AZStd::vector<AssetBuilderSDK::PlatformInfo>{},
@@ -38,7 +37,6 @@ namespace AssetProcessor
             : m_scanPath(path)
             , m_displayName(displayName)
             , m_portableKey (portableKey)
-            , m_outputPrefix(prefix)
             , m_isRoot(isRoot)
             , m_recurseSubFolders(recurseSubFolders)
             , m_order(order)
@@ -60,11 +58,6 @@ namespace AssetProcessor
         QString GetDisplayName() const
         {
             return m_displayName;
-        }
-
-        QString GetOutputPrefix() const
-        {
-            return m_outputPrefix;
         }
 
         bool IsRoot() const
@@ -110,7 +103,6 @@ namespace AssetProcessor
     private:
         QString m_scanPath; // the local path to scan ("C:\\whatever")
         QString m_displayName; // the display name to show in GUIs that show it.
-        QString m_outputPrefix; // the output prefix to target results into (eg, put things in a certain subfolder of @assets@ rather than the relative to assets itself)
         QString m_portableKey; // a key that remains the same even if the asset database is moved from computer to computer.
         bool m_isRoot = false; // is it 'the' root folder?
         bool m_recurseSubFolders = true;

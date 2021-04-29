@@ -33,7 +33,7 @@ namespace ScriptCanvas
                 {
                     editContext->Class<Operators>("Operators", "")->
                         ClassElement(AZ::Edit::ClassElements::EditorData, "")->
-                        Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/ScriptCanvas/Libraries/Operators.png")->
+                        Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/Libraries/Operators.png")->
                         Attribute(AZ::Edit::Attributes::CategoryStyle, ".operators")->
                         Attribute(ScriptCanvas::Attributes::Node::TitlePaletteOverride, "OperatorsNodeTitlePalette")
                         ;

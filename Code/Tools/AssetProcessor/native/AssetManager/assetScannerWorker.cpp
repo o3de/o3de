@@ -126,7 +126,7 @@ void AssetScannerWorker::ScanForSourceFiles(const ScanFolderInfo& scanFolderInfo
         {
             //Entry is a directory
             m_folderList.insert(AZStd::move(assetFileInfo));
-            ScanFolderInfo tempScanFolderInfo(absPath, "", "", "", false, true);
+            ScanFolderInfo tempScanFolderInfo(absPath, "", "", false, true);
             ScanForSourceFiles(tempScanFolderInfo, rootScanFolder);
         }
         else
