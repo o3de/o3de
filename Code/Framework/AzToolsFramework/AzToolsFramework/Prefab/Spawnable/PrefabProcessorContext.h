@@ -29,6 +29,8 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
     {
     public:
         using ProcessedObjectStoreContainer = AZStd::vector<ProcessedObjectStore>;
+        using ProductDependencyContainer =
+            AZStd::unordered_map<AZ::Data::AssetId, AZStd::unordered_set<AZ::Data::AssetId>>;
 
         AZ_CLASS_ALLOCATOR(PrefabProcessorContext, AZ::SystemAllocator, 0);
         AZ_RTTI(PrefabProcessorContext, "{C7D77E3A-C544-486B-B774-7C82C38FE22F}");
@@ -41,12 +43,16 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         virtual void ListPrefabs(const AZStd::function<void(AZStd::string_view, const PrefabDom&)>& callback) const;
         virtual bool HasPrefabs() const;
 
-        virtual void RegisterProductDependency(AZStd::string& prefabName, AZStd::string& dependentPrefabName);
-        virtual void RegisterProductDependency(uint32_t spawnableAssetSubId, uint32_t dependentSpawnableAssetSubId);
-        virtual void RegisterProductDependency(AZ::Data::AssetId& assetId, AZ::Data::AssetId& dependentAssetId);
+        virtual bool RegisterProductDependency(const AZStd::string& prefabName, const AZStd::string& dependentPrefabName);
+        virtual bool RegisterProductDependency(const AZStd::string& prefabName, const AZ::Data::AssetId& dependentAssetId);
+        virtual bool RegisterProductDependency(uint32_t spawnableAssetSubId, uint32_t dependentSpawnableAssetSubId);
+        virtual bool RegisterProductDependency(const AZ::Data::AssetId& assetId, const AZ::Data::AssetId& dependentAssetId);
 
         virtual ProcessedObjectStoreContainer& GetProcessedObjects();
         virtual const ProcessedObjectStoreContainer& GetProcessedObjects() const;
+
+        virtual ProductDependencyContainer& GetRegisteredProductDependencies();
+        virtual const ProductDependencyContainer& GetRegisteredProductDependencies() const;
 
         virtual void SetPlatformTags(AZ::PlatformTagSet tags);
         virtual const AZ::PlatformTagSet& GetPlatformTags() const;
@@ -57,8 +63,6 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
 
     protected:
         using NamedPrefabContainer = AZStd::unordered_map<AZStd::string, PrefabDom>;
-        using ProductDependencyContainer =
-            AZStd::unordered_map<AZ::Data::AssetId, AZStd::unordered_set<AZ::Data::AssetId>>;
         
         NamedPrefabContainer m_prefabs;
         ProcessedObjectStoreContainer m_products;

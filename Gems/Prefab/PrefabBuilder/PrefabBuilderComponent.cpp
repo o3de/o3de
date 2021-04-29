@@ -176,6 +176,7 @@ namespace AZ::Prefab
     bool PrefabBuilderComponent::StoreProducts(
         AZ::IO::PathView tempDirPath,
         const AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext::ProcessedObjectStoreContainer& store,
+        const AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext::ProductDependencyContainer& registeredDependencies,
         AZStd::vector<AssetBuilderSDK::JobProduct>& outputProducts) const
     {
         outputProducts.reserve(store.size());
@@ -214,6 +215,18 @@ namespace AZ::Prefab
             if (AssetBuilderSDK::OutputObject(&object.GetAsset(), object.GetAssetType(), productPath.String(), object.GetAssetType(),
                 object.GetAsset().GetId().m_subId, product))
             {
+                auto findRegisteredDependencies = registeredDependencies.find(object.GetAsset().GetId());
+                if (findRegisteredDependencies != registeredDependencies.end())
+                {
+                    AZStd::transform(findRegisteredDependencies->second.begin(), findRegisteredDependencies->second.end(),
+                        AZStd::back_inserter(product.m_dependencies),
+                        [](const AZ::Data::AssetId& productId) -> AssetBuilderSDK::ProductDependency
+                        {
+                            return AssetBuilderSDK::ProductDependency(productId,
+                                AZ::Data::ProductDependencyInfo::CreateFlags(AZ::Data::AssetLoadBehavior::NoLoad));
+                        });
+                }
+
                 outputProducts.push_back(AZStd::move(product));
             }
 
@@ -250,7 +263,8 @@ namespace AZ::Prefab
             AZ_TracePrintf("Prefab Builder", "Finalizing products.\n");
             if (!context.HasPrefabs())
             {
-                if (StoreProducts(tempDirPath, context.GetProcessedObjects(), jobProducts))
+                if (StoreProducts(tempDirPath, context.GetProcessedObjects(),
+                    context.GetRegisteredProductDependencies(), jobProducts))
                 {
                     return true;
                 }
