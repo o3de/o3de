@@ -40,40 +40,38 @@ if(CRYRENDER_TRAIT_BUILD_NULL_RENDERER_SUPPORTED)
                 Legacy::CryCommon.EngineSettings.Static
     )
 
-    if (NOT LY_MONOLITHIC_GAME) # Only Atom is supported in monolithic builds
+    ly_add_target(
+        NAME CryRenderNULL ${PAL_TRAIT_MONOLITHIC_DRIVEN_LIBRARY_TYPE}
+        NAMESPACE Legacy
+        FILES_CMAKE
+            core_null_renderer_shared_files.cmake
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                .
+        BUILD_DEPENDENCIES
+            PRIVATE
+                Legacy::CryRenderNULL.Static
+    )
+
+    if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+
         ly_add_target(
-            NAME CryRenderNULL ${PAL_TRAIT_MONOLITHIC_DRIVEN_LIBRARY_TYPE}
+            NAME CryRenderNULL.Tests MODULE
             NAMESPACE Legacy
             FILES_CMAKE
-                core_null_renderer_shared_files.cmake
+                core_null_renderer_test_files.cmake
             INCLUDE_DIRECTORIES
                 PRIVATE
                     .
             BUILD_DEPENDENCIES
                 PRIVATE
+                    AZ::AzTest
                     Legacy::CryRenderNULL.Static
         )
-
-        if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
-
-            ly_add_target(
-                NAME CryRenderNULL.Tests MODULE
-                NAMESPACE Legacy
-                FILES_CMAKE
-                    core_null_renderer_test_files.cmake
-                INCLUDE_DIRECTORIES
-                    PRIVATE
-                        .
-                BUILD_DEPENDENCIES
-                    PRIVATE
-                        AZ::AzTest
-                        Legacy::CryRenderNULL.Static
-            )
-            # SPEC-1548: disabling since it fails in mac with memory issues
-            #ly_add_googletest(
-            #    NAME Legacy::CryRenderNULL.Tests
-            #)
-        endif()
+        # SPEC-1548: disabling since it fails in mac with memory issues
+        #ly_add_googletest(
+        #    NAME Legacy::CryRenderNULL.Tests
+        #)
     endif()
 
 endif()

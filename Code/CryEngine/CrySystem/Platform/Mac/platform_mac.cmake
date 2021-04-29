@@ -18,10 +18,10 @@
 if (LY_MONOLITHIC_GAME) # Only Atom is supported in monolithic builds
     set(LY_BUILD_DEPENDENCIES
         PUBLIC
-            Legacy::CryRenderOther
+            Legacy::CryRenderNULL
     )
 else()
     set(LY_RUNTIME_DEPENDENCIES
-        Legacy::CryRenderMetal
+        Legacy::CryRenderNULL
     )
 endif()

@@ -12,11 +12,11 @@
 if (LY_MONOLITHIC_GAME) # only Atom is supported in monolithic
     set(LY_BUILD_DEPENDENCIES
         PUBLIC
-            Legacy::CryRenderOther
+            Legacy::CryRenderNULL
     )
 else()
     set(LY_BUILD_DEPENDENCIES
         PRIVATE
-            Legacy::CryRenderGL
+            Legacy::CryRenderNULL
     )
 endif()

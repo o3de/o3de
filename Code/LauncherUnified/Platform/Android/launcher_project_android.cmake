@@ -10,9 +10,9 @@
 #
 
 if(LY_MONOLITHIC_GAME)  # only Atom is supported in monolithic
-    list(APPEND LY_BUILD_DEPENDENCIES Legacy::CryRenderOther)
+    list(APPEND LY_BUILD_DEPENDENCIES Legacy::CryRenderNULL)
 else()
     set(LY_RUNTIME_DEPENDENCIES
-        Legacy::CryRenderGL
+        Legacy::CryRenderNULL
     )
 endif()

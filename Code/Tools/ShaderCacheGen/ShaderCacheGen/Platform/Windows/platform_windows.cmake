@@ -10,5 +10,5 @@
 #
 
 set(LY_RUNTIME_DEPENDENCIES
-    Legacy::CryRenderD3D11
+    Legacy::CryRenderNULL
 )

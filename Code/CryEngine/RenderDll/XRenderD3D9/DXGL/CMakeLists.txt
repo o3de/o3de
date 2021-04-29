@@ -13,7 +13,7 @@ ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${P
 
 include(${pal_dir}/DXGL_traits_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 
-if(DXGL_TRAIT_BUILD_OPENGL_SUPPORTED AND (NOT LY_MONOLITHIC_GAME OR LY_TRAIT_USE_LEGACY_IN_MONOLITHIC)) # Only Atom is supported in monolithic builds
+if(DXGL_TRAIT_BUILD_OPENGL_SUPPORTED AND LY_TRAIT_USE_LEGACY_IN_MONOLITHIC)
     ly_add_target(
         NAME CryRenderGL.Static STATIC
         NAMESPACE Legacy

@@ -13,7 +13,7 @@ ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${P
 
 include(${pal_dir}/DXMETAL_traits_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 
-if(DXGL_TRAIT_BUILD_DXMETAL_SUPPORTED AND NOT LY_MONOLITHIC_GAME) # Only Atom is supported in monolithic builds
+if(DXGL_TRAIT_BUILD_DXMETAL_SUPPORTED)
     ly_add_target(
         NAME CryRenderMetal.Static STATIC
         NAMESPACE Legacy

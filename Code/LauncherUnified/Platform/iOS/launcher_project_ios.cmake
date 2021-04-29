@@ -15,10 +15,10 @@ set(LY_LINK_OPTIONS
 )
 
 if(LY_MONOLITHIC_GAME) # only Atom is supported in monolithic
-    list(APPEND LY_BUILD_DEPENDENCIES Legacy::CryRenderOther)
+    list(APPEND LY_BUILD_DEPENDENCIES Legacy::CryRenderNULL)
 else()
     list(APPEND LY_BUILD_DEPENDENCIES CrySystem.Static)
-    set(LY_RUNTIME_DEPENDENCIES Legacy::CryRenderMetal)
+    set(LY_RUNTIME_DEPENDENCIES Legacy::CryRenderNULL)
 endif()
 
 # Add resources and app icons to launchers

@@ -11,7 +11,7 @@
 
 set(LY_BUILD_DEPENDENCIES
     PRIVATE
-        Legacy::CryRenderD3D11
+        Legacy::CryRenderNULL
 )
 
 set(ICON_FILE ${project_real_path}/Gem/Resources/GameSDK.ico)

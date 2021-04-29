@@ -108,7 +108,7 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
             Legacy::CryFont
             Legacy::Cry3DEngine
         )
-        if(PAL_TRAIT_BUILD_SERVER_SUPPORTED AND NOT LY_MONOLITHIC_GAME)  # Only Atom is supported in monolithic builds
+        if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
             set(server_runtime_dependencies
                 Legacy::CryRenderNULL
             )
