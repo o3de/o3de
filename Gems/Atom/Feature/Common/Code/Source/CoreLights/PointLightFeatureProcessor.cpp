@@ -222,7 +222,7 @@ namespace AZ
 
         void PointLightFeatureProcessor::SetPointData(LightHandle handle, const PointLightData& data)
         {
-            AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to PointLightFeatureProcessor::SetDiskData().");
+            AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to PointLightFeatureProcessor::SetPointData().");
 
             m_pointLightData.GetData(handle.GetIndex()) = data;
             m_deviceBufferNeedsUpdate = true;
@@ -231,9 +231,9 @@ namespace AZ
 
         void PointLightFeatureProcessor::UpdateShadow(LightHandle handle)
         {
+            const auto& pointLight = m_pointLightData.GetData(handle.GetIndex());
             for (int i = 0; i < PointLightData::NumShadowFaces; ++i)
             {
-                const auto& pointLight = m_pointLightData.GetData(handle.GetIndex());
                 ShadowId shadowId = ShadowId(pointLight.m_shadowIndices[i]);
                 if (shadowId.IsNull())
                 {
@@ -242,7 +242,7 @@ namespace AZ
                 }
 
                 ProjectedShadowFeatureProcessorInterface::ProjectedShadowDescriptor desc = m_shadowFeatureProcessor->GetShadowProperties(shadowId);
-                desc.m_fieldOfViewYRadians = DegToRad(90.5f); // Make it slightly larger than 90 degrees to avoid artifacts on the boundary between 2 cubemap faces
+                desc.m_fieldOfViewYRadians = DegToRad(91.0f); // Make it slightly larger than 90 degrees to avoid artifacts on the boundary between 2 cubemap faces
                 desc.m_transform = m_pointShadowTransforms[i];
                 desc.m_transform.SetTranslation(pointLight.m_position[0], pointLight.m_position[1], pointLight.m_position[2]);
                 desc.m_aspectRatio = 1.0f;
@@ -251,7 +251,7 @@ namespace AZ
                 const float invRadiusSquared = pointLight.m_invAttenuationRadiusSquared;
                 if (invRadiusSquared <= 0.f)
                 {
-                    AZ_Assert(false, "Attenuation radius have to be set before use the light.");
+                    AZ_Assert(false, "Attenuation radius must be set before using the light.");
                     return;
                 }
                 const float attenuationRadius = sqrtf(1.f / invRadiusSquared);
