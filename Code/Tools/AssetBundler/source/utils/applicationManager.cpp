@@ -1259,7 +1259,7 @@ namespace AssetBundler
         auto validateArgsOutcome = ValidateInputArgs(parser, m_allBundleSeedArgs);
         if (!validateArgsOutcome.IsSuccess())
         {
-            OutputHelpBundles();
+            OutputHelpBundleSeed();
             return AZ::Failure(validateArgsOutcome.TakeError());
         }
 
@@ -1314,7 +1314,7 @@ namespace AssetBundler
 
             if (!isValidArg)
             {
-                return AZ::Failure(AZStd::string::format("Unknown argument: \"--%s\" is not an unknown argument for this sub-command.", paramInfo.m_option.c_str()));
+                return AZ::Failure(AZStd::string::format(R"(Invalid argument: "--%s" is not a valid argument for this sub-command.)", paramInfo.m_option.c_str()));
             }
         }
 
