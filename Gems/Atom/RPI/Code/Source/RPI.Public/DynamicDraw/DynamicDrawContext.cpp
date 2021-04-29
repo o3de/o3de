@@ -599,8 +599,7 @@ namespace AZ
             {
                 return;
             }
-
-            uint64_t sortKey = 0; // use the draw order as sort key. 
+ 
             for (auto& drawItemInfo : m_cachedDrawItems)
             {
                 if (drawItemInfo.m_indexBufferViewIndex != InvalidIndex)
@@ -617,7 +616,6 @@ namespace AZ
                 drawItemKeyPair.m_sortKey = drawItemInfo.m_sortKey;
                 drawItemKeyPair.m_item = &drawItemInfo.m_drawItem;
                 view->AddDrawItem(m_drawListTag, drawItemKeyPair);
-                sortKey++;
             }
         }
 
