@@ -184,36 +184,22 @@ def GetEnvStringList(Map envVarMap) {
     return strList
 }
 
-def SetLfsCredentials(cmd, lbl = '') {
-    if (env.IS_UNIX) {
-        sh label: lbl,
-           script: cmd
-    } else {
-        bat label: lbl,
-            script: cmd
-    }
-}
-
 def CheckoutBootstrapScripts(String branchName) {
-    checkout([$class: "GitSCM",
-            branches: [[name: "*/${branchName}"]],
-            doGenerateSubmoduleConfigurations: false,
-            extensions: [
-              [
-                $class: "SparseCheckoutPaths",
-                sparseCheckoutPaths: [
-                  [ $class: "SparseCheckoutPath", path: "scripts/build/Jenkins/" ],
-                  [ $class: "SparseCheckoutPath", path: "scripts/build/bootstrap/" ],
-                  [ $class: "SparseCheckoutPath", path: "scripts/build/Platform" ]
-                ]
-              ],
-              [
-                $class: "CloneOption", depth: 1, noTags: false, reference: "", shallow: true
-              ]
-            ],
-            submoduleCfg: [],
-            userRemoteConfigs: scm.userRemoteConfigs
-          ])
+    checkout([$class: 'GitSCM',
+        branches: [[name: "*/${branchName}"]],
+        doGenerateSubmoduleConfigurations: false,
+        extensions: [
+            [$class: 'PruneStaleBranch'],
+            [$class: 'SparseCheckoutPaths', sparseCheckoutPaths: [
+                [ $class: 'SparseCheckoutPath', path: 'scripts/build/Jenkins/' ],
+                [ $class: 'SparseCheckoutPath', path: 'scripts/build/bootstrap/' ],
+                [ $class: 'SparseCheckoutPath', path: 'scripts/build/Platform' ]
+            ]],
+            [$class: 'CloneOption', depth: 1, noTags: false, reference: '', shallow: true]
+        ],
+        submoduleCfg: [],
+        userRemoteConfigs: scm.userRemoteConfigs
+    ])
 }
 
 def CheckoutRepo(boolean disableSubmodules = false) {
@@ -247,6 +233,7 @@ def CheckoutRepo(boolean disableSubmodules = false) {
             $class: 'GitSCM',
             branches: scm.branches,
             extensions: [
+                [$class: 'PruneStaleBranch'],
                 [$class: 'SubmoduleOption', disableSubmodules: disableSubmodules, recursiveSubmodules: true],
                 [$class: 'CheckoutOption', timeout: 60]
             ],
@@ -256,7 +243,7 @@ def CheckoutRepo(boolean disableSubmodules = false) {
 
     // Run lfs in a separate step. Jenkins is unable to load the credentials for the custom LFS endpoint
     withCredentials([usernamePassword(credentialsId: "${env.GITHUB_USER}", passwordVariable: 'accesstoken', usernameVariable: 'username')]) {
-        SetLfsCredentials("git config -f .lfsconfig lfs.url https://${username}:${accesstoken}@${env.LFS_URL}", 'Set credentials')
+        palSh("git config -f .lfsconfig lfs.url https://${username}:${accesstoken}@${env.LFS_URL}", 'Set credentials', false)
     }
     palSh('git lfs install', 'Git LFS Install')
     palSh('git lfs pull', 'Git LFS Pull')
@@ -338,15 +325,12 @@ def PreBuildCommonSteps(Map pipelineConfig, String repositoryName, String projec
 
 def Build(Map options, String platform, String type, String workspace) {
     timeout(time: env.TIMEOUT, unit: 'MINUTES', activity: true) {
-        def command = "${options.BUILD_ENTRY_POINT} --platform ${platform} --type ${type}"
-        dir("${workspace}/${ENGINE_REPOSITORY_NAME}") {
-            if (env.IS_UNIX) {
-                sh label: "Running ${platform} ${type}",
-                   script: "${options.PYTHON_DIR}/python.sh -u ${command}"
-            } else {
-                bat label: "Running ${platform} ${type}",
-                    script: "${options.PYTHON_DIR}/python.cmd -u ${command}".replace('/','\\')
-            }
+        def command = "${options.PYTHON_DIR}/python"
+        if(env.IS_UNIX) command += '.sh'
+        else command += '.cmd'
+        command += "${options.BUILD_ENTRY_POINT} -u --platform ${platform} --type ${type}"
+        dir(workspace) {
+            palSh(command, "Running ${platform} ${type}")
         }
     }
 }
@@ -393,7 +377,7 @@ def PostBuildCommonSteps(String workspace, boolean mount = true) {
 
 def CreateSetupStage(Map pipelineConfig, String repositoryName, String projectName, String pipelineName, String branchName, String platformName, String jobName, Map environmentVars) {
     return {
-        stage("Setup") {
+        stage('Setup') {
             PreBuildCommonSteps(pipelineConfig, repositoryName, projectName, pipelineName, branchName, platformName, jobName,  environmentVars['WORKSPACE'], environmentVars['MOUNT_VOLUME'])
         }
     }
@@ -417,7 +401,7 @@ def CreateTestMetricsStage(Map pipelineConfig, String branchName, Map environmen
 
 def CreateTeardownStage(Map environmentVars) {
     return {
-        stage("Teardown") {
+        stage('Teardown') {
             PostBuildCommonSteps(environmentVars['WORKSPACE'], environmentVars['MOUNT_VOLUME'])
         }
     }
