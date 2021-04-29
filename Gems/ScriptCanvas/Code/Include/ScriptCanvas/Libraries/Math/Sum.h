@@ -44,7 +44,7 @@ namespace ScriptCanvas
                                     ->Attribute(ScriptCanvas::Attributes::Node::TitlePaletteOverride, "DeprecatedNodeTitlePalette")
                                     ->Attribute(AZ::Script::Attributes::Deprecated, true)
                                     ->Attribute(AZ::Edit::Attributes::Category, "Math/Number/Deprecated")
-                                    ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/ScriptCanvas/Add.png")
+                                    ->Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/Add.png")
                                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                                 ;
                         }

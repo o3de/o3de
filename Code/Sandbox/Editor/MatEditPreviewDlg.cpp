@@ -96,25 +96,25 @@ void CMatEditPreviewDlg::SetupMenuBar()
 //////////////////////////////////////////////////////////////////////////
 void CMatEditPreviewDlg::OnPreviewSphere()
 {
-    m_previewCtrl->LoadModelFile("Editor/Objects/MtlSphere.cgf");
+    m_previewCtrl->LoadModelFile("Objects/MtlSphere.cgf");
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CMatEditPreviewDlg::OnPreviewBox()
 {
-    m_previewCtrl->LoadModelFile("Editor/Objects/MtlBox.cgf");
+    m_previewCtrl->LoadModelFile("Objects/MtlBox.cgf");
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CMatEditPreviewDlg::OnPreviewTeapot()
 {
-    m_previewCtrl->LoadModelFile("Editor/Objects/MtlTeapot.cgf");
+    m_previewCtrl->LoadModelFile("Objects/MtlTeapot.cgf");
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CMatEditPreviewDlg::OnPreviewPlane()
 {
-    m_previewCtrl->LoadModelFile("Editor/Objects/MtlPlane.cgf");
+    m_previewCtrl->LoadModelFile("Objects/MtlPlane.cgf");
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -48,9 +48,9 @@ namespace LmbrCentral
                     "Decal", "The Decal component allows an entity to project a texture or material onto a mesh")->
                     ClassElement(AZ::Edit::ClassElements::EditorData, "")->
                     Attribute(AZ::Edit::Attributes::Category, "Rendering")->
-                    Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/Decal.svg")->
+                    Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Decal.svg")->
                     Attribute(AZ::Edit::Attributes::PrimaryAssetType, AZ::AzTypeInfo<LmbrCentral::MaterialAsset>::Uuid())->
-                    Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/Decal.png")->
+                    Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Decal.png")->
                     Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))->
                     Attribute(AZ::Edit::Attributes::AutoExpand, true)->
                     Attribute(AZ::Edit::Attributes::HelpPageURL, "https://docs.aws.amazon.com/lumberyard/latest/userguide/component-decal.html")->
@@ -190,50 +190,10 @@ namespace LmbrCentral
     void EditorDecalComponent::Activate()
     {
         Base::Activate();
-
-        AZ::EntityId entityId = GetEntityId();
-
-        IEditor* editor = nullptr;
-        EBUS_EVENT_RESULT(editor, AzToolsFramework::EditorRequests::Bus, GetEditor);
-
-        m_configuration.m_editorEntityId = entityId;
-        m_decalRenderNode = static_cast<IDecalRenderNode*>(editor->Get3DEngine()->CreateRenderNode(eERType_Decal));
-        RefreshDecal();
-
-        MaterialOwnerRequestBus::Handler::BusConnect(entityId);
-        AZ::TransformNotificationBus::Handler::BusConnect(entityId);
-        DecalComponentEditorRequests::Bus::Handler::BusConnect(entityId);
-        RenderNodeRequestBus::Handler::BusConnect(entityId);
-        AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(entityId);
-        AzToolsFramework::EditorVisibilityNotificationBus::Handler::BusConnect(entityId);
-        AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
-        AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusConnect(entityId);
-        AzFramework::BoundsRequestBus::Handler::BusConnect(entityId);
     }
 
     void EditorDecalComponent::Deactivate()
     {
-        MaterialOwnerRequestBus::Handler::BusDisconnect();
-        DecalComponentEditorRequests::Bus::Handler::BusDisconnect();
-        RenderNodeRequestBus::Handler::BusDisconnect();
-        AZ::TransformNotificationBus::Handler::BusDisconnect();
-        AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
-        AzToolsFramework::EditorVisibilityNotificationBus::Handler::BusDisconnect();
-        AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
-        AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusDisconnect();
-        AzFramework::BoundsRequestBus::Handler::BusDisconnect();
-
-        m_configuration.m_editorEntityId.SetInvalid();
-
-        if (m_decalRenderNode)
-        {
-            IEditor* editor = nullptr;
-            EBUS_EVENT_RESULT(editor, AzToolsFramework::EditorRequests::Bus, GetEditor);
-            editor->Get3DEngine()->DeleteRenderNode(m_decalRenderNode);
-
-            m_decalRenderNode = nullptr;
-        }
-
         Base::Deactivate();
     }
 

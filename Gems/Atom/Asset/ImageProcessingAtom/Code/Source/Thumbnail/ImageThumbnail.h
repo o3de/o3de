@@ -34,7 +34,7 @@ namespace ImageProcessingAtom
         {
             Q_OBJECT
         public:
-            ImageThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey key, int thumbnailSize);
+            ImageThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey key);
             ~ImageThumbnail() override;
 
             //! AzToolsFramework::ThumbnailerRendererNotificationBus::Handler overrides...

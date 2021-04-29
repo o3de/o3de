@@ -19,7 +19,7 @@ from utils import file_utils
 # arguments setup
 argument_parser: ArgumentParser = ArgumentParser()
 argument_parser.add_argument('--binaries_path', help='Path to QT Binaries necessary for PySide.')
-argument_parser.add_argument('--debug', action='store_true', help='Execute on debug mode.')
+argument_parser.add_argument('--debug', action='store_true', help='Execute on debug mode to enable DEBUG logging level')
 arguments: Namespace = argument_parser.parse_args()
 
 # logging setup
