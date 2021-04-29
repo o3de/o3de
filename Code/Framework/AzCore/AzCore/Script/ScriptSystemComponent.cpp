@@ -853,7 +853,7 @@ const char* ScriptSystemComponent::GetGroup() const
 
 const char* AZ::ScriptSystemComponent::GetBrowserIcon() const
 {
-    return "Editor/Icons/Components/LuaScript.svg";
+    return "Icons/Components/LuaScript.svg";
 }
 
 AZ::Uuid AZ::ScriptSystemComponent::GetComponentTypeId() const

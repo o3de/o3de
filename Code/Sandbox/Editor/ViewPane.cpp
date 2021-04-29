@@ -589,7 +589,7 @@ void CLayoutViewPane::ShowTitleMenu()
     action->setChecked(IsFullscreen());
 
     action = root.addAction(tr("Configure Layout..."));
-    if (AZ::Interface<AzFramework::AtomActiveInterface>::Get())
+    if (!CViewManager::IsMultiViewportEnabled())
     {
         action->setDisabled(true);
     }

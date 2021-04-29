@@ -25,26 +25,26 @@
 #include "MaterialBrowser.h"
 #include "Util/Image.h"
 
-#define ME_BG_TEXTURE "Editor/Materials/Stripes.dds"
+#define ME_BG_TEXTURE "Materials/Stripes.dds"
 
 
-#define MATERIAL_EDITOR_SPHERE_MODEL_FILE "Editor/Objects/MtlSphere.cgf"
+#define MATERIAL_EDITOR_SPHERE_MODEL_FILE "Objects/MtlSphere.cgf"
 #define MATERIAL_EDITOR_SPHERE_CAMERA_RADIUS 1.6f
 #define MATERIAL_EDITOR_SPHERE_CAMERA_FROM_DIRECTION Vec3(0.1f, -1.0f, -0.1f)
 
-#define MATERIAL_EDITOR_BOX_MODEL_FILE "Editor/Objects/MtlBox.cgf"
+#define MATERIAL_EDITOR_BOX_MODEL_FILE "Objects/MtlBox.cgf"
 #define MATERIAL_EDITOR_BOX_CAMERA_RADIUS 2.0f
 #define MATERIAL_EDITOR_BOX_CAMERA_FROM_DIRECTION Vec3(0.75f, -0.75f, -0.5f)
 
-#define MATERIAL_EDITOR_TEAPOT_MODEL_FILE "Editor/Objects/MtlTeapot.cgf"
+#define MATERIAL_EDITOR_TEAPOT_MODEL_FILE "Objects/MtlTeapot.cgf"
 #define MATERIAL_EDITOR_TEAPOT_CAMERA_RADIUS 1.6f
 #define MATERIAL_EDITOR_TEAPOT_CAMERA_FROM_DIRECTION Vec3(0.1f, -0.75f, -0.25f)
 
-#define MATERIAL_EDITOR_PLANE_MODEL_FILE "Editor/Objects/MtlPlane.cgf"
+#define MATERIAL_EDITOR_PLANE_MODEL_FILE "Objects/MtlPlane.cgf"
 #define MATERIAL_EDITOR_PLANE_CAMERA_RADIUS 1.6f
 #define MATERIAL_EDITOR_PLANE_CAMERA_FROM_DIRECTION Vec3(-0.5f, 0.5f, -0.5f)
 
-#define MATERIAL_EDITOR_SWATCH_MODEL_FILE "Editor/Objects/MtlSwatch.cgf"
+#define MATERIAL_EDITOR_SWATCH_MODEL_FILE "Objects/MtlSwatch.cgf"
 #define MATERIAL_EDITOR_SWATCH_CAMERA_RADIUS 1.0f
 #define MATERIAL_EDITOR_SWATCH_CAMERA_FROM_DIRECTION Vec3(0.0f, 0.0f, -1.0f)
 

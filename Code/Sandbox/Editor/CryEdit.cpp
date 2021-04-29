@@ -149,7 +149,6 @@ AZ_POP_DISABLE_WARNING
 #include "LevelFileDialog.h"
 #include "LevelIndependentFileMan.h"
 #include "WelcomeScreen/WelcomeScreenDialog.h"
-#include "Dialogs/DuplicatedObjectsHandlerDlg.h"
 
 #include "Controls/ReflectedPropertyControl/PropertyCtrl.h"
 #include "Controls/ReflectedPropertyControl/ReflectedVar.h"
@@ -400,9 +399,7 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_OBJECTMODIFY_UNFREEZE, OnObjectmodifyUnfreeze)
     ON_COMMAND(ID_UNDO, OnUndo)
     ON_COMMAND(ID_TOOLBAR_WIDGET_REDO, OnUndo)     // Can't use the same ID, because for the menu we can't have a QWidgetAction, while for the toolbar we want one
-    ON_COMMAND(ID_SELECTION_SAVE, OnSelectionSave)
     ON_COMMAND(ID_IMPORT_ASSET, OnOpenAssetImporter)
-    ON_COMMAND(ID_SELECTION_LOAD, OnSelectionLoad)
     ON_COMMAND(ID_LOCK_SELECTION, OnLockSelection)
     ON_COMMAND(ID_EDIT_LEVELDATA, OnEditLevelData)
     ON_COMMAND(ID_FILE_EDITLOGFILE, OnFileEditLogFile)
@@ -1157,9 +1154,9 @@ BOOL CCryEditApp::CheckIfAlreadyRunning()
         m_mutexApplication = new QSharedMemory(O3DEApplicationName);
         if (!m_mutexApplication->create(16))
         {
-            // Don't prompt the user in non-interactive export mode.  Instead, default to allowing multiple instances to 
-            // run simultaneously, so that multiple level exports can be run in parallel on the same machine.  
-            // NOTE:  If you choose to do this, be sure to export *different* levels, since nothing prevents multiple runs 
+            // Don't prompt the user in non-interactive export mode.  Instead, default to allowing multiple instances to
+            // run simultaneously, so that multiple level exports can be run in parallel on the same machine.
+            // NOTE:  If you choose to do this, be sure to export *different* levels, since nothing prevents multiple runs
             // from trying to write to the same level at the same time.
             // If we're running interactively, let's ask and make sure the user actually intended to do this.
             if (!m_bExportMode && QMessageBox::question(AzToolsFramework::GetActiveWindow(), QObject::tr("Too many apps"), QObject::tr("There is already an Open 3D Engine application running\nDo you want to start another one?")) != QMessageBox::Yes)
@@ -1720,7 +1717,7 @@ BOOL CCryEditApp::InitInstance()
     AzQtComponents::StyleManager::addSearchPaths(
         QStringLiteral("style"),
         engineRoot.filePath(QStringLiteral("Code/Sandbox/Editor/Style")),
-        QStringLiteral(":/Editor/Style"),
+        QStringLiteral(":/Assets/Editor/Style"),
         engineRootPath);
     AzQtComponents::StyleManager::setStyleSheet(mainWindow, QStringLiteral("style:Editor.qss"));
 
@@ -3019,147 +3016,10 @@ void CCryEditApp::OnFileExportOcclusionMesh()
     pExportManager->Export(levelName.toUtf8().data(), "ocm", levelPath.toUtf8().data(), false, false, true);
 }
 
-void CCryEditApp::OnSelectionSave()
-{
-    char szFilters[] = "Object Group Files (*.grp)";
-    QtUtil::QtMFCScopedHWNDCapture cap;
-    CAutoDirectoryRestoreFileDialog dlg(QFileDialog::AcceptSave, QFileDialog::AnyFile, "grp", {}, szFilters, {}, {}, cap);
-
-    if (dlg.exec())
-    {
-        QWaitCursor wait;
-        CSelectionGroup* sel = GetIEditor()->GetSelection();
-        //CXmlArchive xmlAr( "Objects" );
-
-
-        XmlNodeRef root = XmlHelpers::CreateXmlNode("Objects");
-        CObjectArchive ar(GetIEditor()->GetObjectManager(), root, false);
-        // Save all objects to XML.
-        for (int i = 0; i < sel->GetCount(); i++)
-        {
-            ar.SaveObject(sel->GetObject(i));
-        }
-        QString fileName = dlg.selectedFiles().first();
-        XmlHelpers::SaveXmlNode(GetIEditor()->GetFileUtil(), root, fileName.toStdString().c_str());
-        //xmlAr.Save( dlg.GetPathName() );
-    }
-}
-
 //////////////////////////////////////////////////////////////////////////
-struct SDuplicatedObject
-{
-    SDuplicatedObject(const QString& name, const GUID& id)
-    {
-        m_name = name;
-        m_id = id;
-    }
-    QString m_name;
-    GUID m_id;
-};
-
-void GatherAllObjects(XmlNodeRef node, std::vector<SDuplicatedObject>& outDuplicatedObjects)
-{
-    if (!azstricmp(node->getTag(), "Object"))
-    {
-        GUID guid;
-        if (node->getAttr("Id", guid))
-        {
-            if (GetIEditor()->GetObjectManager()->FindObject(guid))
-            {
-                QString name;
-                node->getAttr("Name", name);
-                outDuplicatedObjects.push_back(SDuplicatedObject(name, guid));
-            }
-        }
-    }
-
-    for (int i = 0, nChildCount(node->getChildCount()); i < nChildCount; ++i)
-    {
-        XmlNodeRef childNode = node->getChild(i);
-        if (childNode == NULL)
-        {
-            continue;
-        }
-        GatherAllObjects(childNode, outDuplicatedObjects);
-    }
-}
-
 void CCryEditApp::OnOpenAssetImporter()
 {
     QtViewPaneManager::instance()->OpenPane(LyViewPane::SceneSettings);
-}
-
-void CCryEditApp::OnSelectionLoad()
-{
-    // Load objects from .grp file.
-    QtUtil::QtMFCScopedHWNDCapture cap;
-    CAutoDirectoryRestoreFileDialog dlg(QFileDialog::AcceptOpen, QFileDialog::ExistingFile, "grp", {}, "Object Group Files (*.grp)", {}, {}, cap);
-    if (dlg.exec() != QDialog::Accepted)
-    {
-        return;
-    }
-
-    QWaitCursor wait;
-
-    XmlNodeRef root = XmlHelpers::LoadXmlFromFile(dlg.selectedFiles().first().toStdString().c_str());
-    if (!root)
-    {
-        QMessageBox::critical(AzToolsFramework::GetActiveWindow(), QString(), QObject::tr("Error at loading group file."));
-        return;
-    }
-
-    std::vector<SDuplicatedObject> duplicatedObjects;
-    GatherAllObjects(root, duplicatedObjects);
-
-    CDuplicatedObjectsHandlerDlg::EResult result(CDuplicatedObjectsHandlerDlg::eResult_None);
-    int nDuplicatedObjectSize(duplicatedObjects.size());
-
-    if (!duplicatedObjects.empty())
-    {
-        QString msg = QObject::tr("The following object(s) already exist(s) in the level.\r\n\r\n");
-
-        for (int i = 0; i < nDuplicatedObjectSize; ++i)
-        {
-            msg += QStringLiteral("\t");
-            msg += duplicatedObjects[i].m_name;
-            if (i < nDuplicatedObjectSize - 1)
-            {
-                msg += QStringLiteral("\r\n");
-            }
-        }
-
-        CDuplicatedObjectsHandlerDlg confirmDlg(msg);
-        if (confirmDlg.exec() == QDialog::Rejected)
-        {
-            return;
-        }
-        result = confirmDlg.GetResult();
-    }
-
-    CUndo undo("Load Objects");
-    GetIEditor()->ClearSelection();
-
-    CObjectArchive ar(GetIEditor()->GetObjectManager(), root, true);
-
-    if (result == CDuplicatedObjectsHandlerDlg::eResult_Override)
-    {
-        for (int i = 0; i < nDuplicatedObjectSize; ++i)
-        {
-            CBaseObject* pObj = GetIEditor()->GetObjectManager()->FindObject(duplicatedObjects[i].m_id);
-            if (pObj)
-            {
-                GetIEditor()->GetObjectManager()->DeleteObject(pObj);
-            }
-        }
-    }
-    else if (result == CDuplicatedObjectsHandlerDlg::eResult_CreateCopies)
-    {
-        ar.MakeNewIds(true);
-    }
-
-    GetIEditor()->GetObjectManager()->LoadObjects(ar, true);
-    GetIEditor()->SetModifiedFlag();
-    GetIEditor()->SetModifiedModule(eModifiedBrushes);
 }
 
 //////////////////////////////////////////////////////////////////////////

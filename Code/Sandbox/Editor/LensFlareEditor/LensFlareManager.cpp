@@ -228,7 +228,7 @@ AzToolsFramework::AssetBrowser::SourceFileDetails CLensFlareManager::GetSourceFi
 {
     if (IsLensFlareLibraryXML(fullSourceFileName))
     {
-        return AzToolsFramework::AssetBrowser::SourceFileDetails("Editor/Icons/AssetBrowser/LensFlare_16.png");
+        return AzToolsFramework::AssetBrowser::SourceFileDetails("Icons/AssetBrowser/LensFlare_16.png");
     }
     return AzToolsFramework::AssetBrowser::SourceFileDetails();
 }
