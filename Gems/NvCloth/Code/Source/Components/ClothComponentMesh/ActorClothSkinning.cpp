@@ -265,14 +265,16 @@ namespace NvCloth
         for (const AZ::u32 index : m_nonSimulatedVertices)
         {
             const AZ::Matrix3x4 vertexSkinningTransform = ComputeVertexSkinnningTransform(m_skinningData[index]);
-            const AZ::Matrix3x4 vertexSkinningTransformInverseTranspose = vertexSkinningTransform.GetInverseFull().GetTranspose();
 
             const AZ::Vector3 skinnedPosition = vertexSkinningTransform * originalData.m_particles[index].GetAsVector3();
             renderData.m_particles[index].Set(skinnedPosition, renderData.m_particles[index].GetW()); // Avoid overwriting the w component
 
-            renderData.m_tangents[index] = vertexSkinningTransformInverseTranspose.TransformVector(originalData.m_tangents[index]).GetNormalized();
-            renderData.m_bitangents[index] = vertexSkinningTransformInverseTranspose.TransformVector(originalData.m_bitangents[index]).GetNormalized();
-            renderData.m_normals[index] = vertexSkinningTransformInverseTranspose.TransformVector(originalData.m_normals[index]).GetNormalized();
+            // Calculate the reciprocal scale version of the matrix to transform the vectors.
+            const AZ::Matrix3x4 vertexSkinningTransformReciprocalScale = vertexSkinningTransform.GetReciprocalScaled();
+
+            renderData.m_tangents[index] = vertexSkinningTransformReciprocalScale.TransformVector(originalData.m_tangents[index]).GetNormalized();
+            renderData.m_bitangents[index] = vertexSkinningTransformReciprocalScale.TransformVector(originalData.m_bitangents[index]).GetNormalized();
+            renderData.m_normals[index] = vertexSkinningTransformReciprocalScale.TransformVector(originalData.m_normals[index]).GetNormalized();
         }
     }
 
@@ -287,6 +289,8 @@ namespace NvCloth
                 const AZ::u16 jointIndex = skinningInfo.m_jointIndices[weightIndex];
                 const float jointWeight = skinningInfo.m_jointWeights[weightIndex];
 
+                // Blending matrices the same way done in GPU shaders, by adding each weighted matrix element by element.
+                // This way the skinning results are much similar to the skinning performed in GPU.
                 vertexSkinningTransform += m_skinningMatrices[jointIndex] * jointWeight;
             }
         }
@@ -372,6 +376,9 @@ namespace NvCloth
             const AZ::Vector3 skinnedPosition = vertexSkinningTransform.TransformPoint(originalData.m_particles[index].GetAsVector3());
             renderData.m_particles[index].Set(skinnedPosition, renderData.m_particles[index].GetW()); // Avoid overwriting the w component
 
+            // ComputeVertexSkinnningTransform is normalizing the dual quaternion, so it won't have scale
+            // and there is no need to compute the reciprocal scale version for transforming vectors.
+
             renderData.m_tangents[index] = vertexSkinningTransform.TransformVector(originalData.m_tangents[index]).GetNormalized();
             renderData.m_bitangents[index] = vertexSkinningTransform.TransformVector(originalData.m_bitangents[index]).GetNormalized();
             renderData.m_normals[index] = vertexSkinningTransform.TransformVector(originalData.m_normals[index]).GetNormalized();
@@ -389,9 +396,13 @@ namespace NvCloth
                 const AZ::u16 jointIndex = skinningInfo.m_jointIndices[weightIndex];
                 const float jointWeight = skinningInfo.m_jointWeights[weightIndex];
 
-                vertexSkinningTransform += m_skinningDualQuaternions.at(jointIndex) * jointWeight;
+                const MCore::DualQuaternion& skinningDualQuaternion = m_skinningDualQuaternions.at(jointIndex);
+
+                float flip = AZ::GetSign(vertexSkinningTransform.mReal.Dot(skinningDualQuaternion.mReal));
+                vertexSkinningTransform += skinningDualQuaternion * jointWeight * flip;
             }
         }
+        // Normalizing the dual quaternion as the GPU shaders do. This will remove the scale from the transform.
         vertexSkinningTransform.Normalize();
         return vertexSkinningTransform;
     }

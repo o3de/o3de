@@ -620,6 +620,12 @@ namespace AZ
     }
 
 
+    AZ_MATH_INLINE Vector3 Matrix3x4::RetrieveScaleSq() const
+    {
+        return Vector3(GetColumn(0).GetLengthSq(), GetColumn(1).GetLengthSq(), GetColumn(2).GetLengthSq());
+    }
+
+
     AZ_MATH_INLINE Vector3 Matrix3x4::ExtractScale()
     {
         const Vector3 scale = RetrieveScale();
@@ -634,6 +640,14 @@ namespace AZ
         m_rows[0].Set(Simd::Vec4::Mul(m_rows[0].GetSimdValue(), vector4Scale));
         m_rows[1].Set(Simd::Vec4::Mul(m_rows[1].GetSimdValue(), vector4Scale));
         m_rows[2].Set(Simd::Vec4::Mul(m_rows[2].GetSimdValue(), vector4Scale));
+    }
+
+
+    AZ_MATH_INLINE Matrix3x4 Matrix3x4::GetReciprocalScaled() const
+    {
+        Matrix3x4 result = *this;
+        result.MultiplyByScale(RetrieveScaleSq().GetReciprocal());
+        return result;
     }
 
 
