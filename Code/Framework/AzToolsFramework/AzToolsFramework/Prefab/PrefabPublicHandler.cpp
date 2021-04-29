@@ -143,7 +143,7 @@ namespace AzToolsFramework
                 for (AZ::Entity* topLevelEntity : topLevelEntities)
                 {
                     AZ::EntityId topLevelEntityId = topLevelEntity->GetId();
-                    if (topLevelEntityId.IsValid() && !IsLevelInstanceContainerEntity(topLevelEntityId))
+                    if (topLevelEntityId.IsValid())
                     {
                         m_prefabUndoCache.UpdateCache(topLevelEntityId);
                         undoBatch.MarkEntityDirty(topLevelEntityId);
@@ -228,11 +228,18 @@ namespace AzToolsFramework
             inputEntityList = EntityIdListToEntityList(entityIds);
 
             // Remove Level Container Entity if it's part of the list
-            AZ::Entity* levelEntity = GetEntityById(GetLevelInstanceContainerEntityId());
-            auto levelEntityIter = AZStd::find(inputEntityList.begin(), inputEntityList.end(), levelEntity);
-            if (levelEntityIter != inputEntityList.end())
+            AZ::EntityId levelEntityId = GetLevelInstanceContainerEntityId();
+            if (levelEntityId.IsValid())
             {
-                inputEntityList.erase(levelEntityIter);
+                AZ::Entity* levelEntity = GetEntityById(levelEntityId);
+                if (levelEntity)
+                {
+                    auto levelEntityIter = AZStd::find(inputEntityList.begin(), inputEntityList.end(), levelEntity);
+                    if (levelEntityIter != inputEntityList.end())
+                    {
+                        inputEntityList.erase(levelEntityIter);
+                    }
+                }
             }
 
             // Find common root and top level entities
@@ -765,6 +772,11 @@ namespace AzToolsFramework
             const EntityList& inputEntities, Instance& commonRootEntityOwningInstance,
             EntityList& outEntities, AZStd::vector<AZStd::unique_ptr<Instance>>& outInstances) const
         {
+            if (inputEntities.size() == 0)
+            {
+                return false;
+            }
+
             AZStd::queue<AZ::Entity*> entityQueue;
 
             for (auto inputEntity : inputEntities)
