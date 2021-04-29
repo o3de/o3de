@@ -769,12 +769,12 @@ namespace AzToolsFramework
 
     template<typename Vertex>
     void EditorVertexSelectionBase<Vertex>::DisplayViewport2d(
-        const AzFramework::ViewportInfo& /*viewportInfo*/,
+        const AzFramework::ViewportInfo& viewportInfo,
         AzFramework::DebugDisplayRequests& debugDisplay)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
-        m_editorBoxSelect.Display2d(debugDisplay);
+        m_editorBoxSelect.Display2d(viewportInfo, debugDisplay);
     }
 
     template<typename Vertex>

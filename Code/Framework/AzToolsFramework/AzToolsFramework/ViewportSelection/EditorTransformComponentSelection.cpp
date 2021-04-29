@@ -3494,7 +3494,7 @@ namespace AzToolsFramework
 
         DrawAxisGizmo(viewportInfo, debugDisplay);
 
-        m_boxSelect.Display2d(debugDisplay);
+        m_boxSelect.Display2d(viewportInfo, debugDisplay);
     }
 
     void EditorTransformComponentSelection::RefreshSelectedEntityIds()
