@@ -326,7 +326,7 @@ def Build(Map pipelineConfig, String platform, String type, String workspace) {
         if(env.IS_UNIX) command += '.sh'
         else command += '.cmd'
         command += " -u ${pipelineConfig.BUILD_ENTRY_POINT} --platform ${platform} --type ${type}"
-        dir(workspace) {
+        dir("${workspace}/${ENGINE_REPOSITORY_NAME}") {
             palSh(command, "Running ${platform} ${type}")
         }
     }
