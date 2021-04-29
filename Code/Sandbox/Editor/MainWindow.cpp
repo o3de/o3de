@@ -435,13 +435,6 @@ MainWindow::MainWindow(QWidget* parent)
 
     setAcceptDrops(true);
 
-#ifdef Q_OS_WIN
-    if (auto aed = QAbstractEventDispatcher::instance())
-    {
-        aed->installNativeEventFilter(this);
-    }
-#endif
-
     // special handling for escape key (outside ActionManager)
     auto* escapeAction = new QAction(this);
     escapeAction->setShortcut(QKeySequence(Qt::Key_Escape));
@@ -508,13 +501,6 @@ void MainWindow::SetActiveView(CLayoutViewPane* v)
 
 MainWindow::~MainWindow()
 {
-#ifdef Q_OS_WIN
-    if (auto aed = QAbstractEventDispatcher::instance())
-    {
-        aed->removeNativeEventFilter(this);
-    }
-#endif
-
     AzToolsFramework::SourceControlNotificationBus::Handler::BusDisconnect();
 
     delete m_toolbarManager;
@@ -756,6 +742,7 @@ void MainWindow::InitActions()
     am->AddAction(ID_TOOLBAR_WIDGET_SNAP_GRID, QString());
     am->AddAction(ID_TOOLBAR_WIDGET_ENVIRONMENT_MODE, QString());
     am->AddAction(ID_TOOLBAR_WIDGET_DEBUG_MODE, QString());
+    am->AddAction(ID_TOOLBAR_WIDGET_SPACER_RIGHT, QString());
 
     // File actions
     am->AddAction(ID_FILE_NEW, tr("New Level"))
@@ -937,22 +924,6 @@ void MainWindow::InitActions()
         am->AddAction(ID_MODIFY_UNLINK, tr("Un-Parent"));
     }
 
-    if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        // implemented by EditorTransformComponentSelection when the new Viewport Interaction Model is enabled
-        am->AddAction(ID_EDIT_FREEZE, tr("Lock selection"))
-            .SetShortcut(tr("L"))
-            .SetToolTip(tr("Lock selection (L)"))
-            .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateEditFreeze)
-            .SetIcon(Style::icon("Locked"))
-            .SetApplyHoverEffect();
-        am->AddAction(ID_EDIT_UNFREEZEALL, tr("Unlock all"))
-            .SetShortcut(tr("Ctrl+L"))
-            .SetToolTip(tr("Unlock All (Ctrl+L)"))
-            .SetIcon(Style::icon("Unlocked"))
-            .SetApplyHoverEffect();
-    }
-
     am->AddAction(ID_EDIT_HOLD, tr("&Hold"))
         .SetShortcut(tr("Ctrl+Alt+H"))
         .SetToolTip(tr("&Hold (Ctrl+Alt+H)"))
@@ -986,7 +957,6 @@ void MainWindow::InitActions()
     }
 
     // Modify actions
-    am->AddAction(ID_MODIFY_OBJECT_HEIGHT, tr("Set Object(s) Height..."));
     am->AddAction(ID_EDIT_RENAMEOBJECT, tr("Rename Object(s)..."))
         .SetStatusTip(tr("Rename Object"));
 
@@ -1170,14 +1140,17 @@ void MainWindow::InitActions()
     am->AddAction(ID_AUDIO_REFRESH_AUDIO_SYSTEM, tr("Refresh Audio"))
         .Connect(&QAction::triggered, this, &MainWindow::OnRefreshAudioSystem);
 
-    // Fame actions
+    // Game actions
     am->AddAction(ID_VIEW_SWITCHTOGAME, tr("Play &Game"))
+        .SetIcon(QIcon(":/stylesheet/img/UI20/toolbar/Play.svg"))
         .SetShortcut(tr("Ctrl+G"))
         .SetToolTip(tr("Play Game (Ctrl+G)"))
         .SetStatusTip(tr("Activate the game input mode"))
         .SetApplyHoverEffect()
         .SetCheckable(true)
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdatePlayGame);
+    am->AddAction(ID_TOOLBAR_WIDGET_PLAYCONSOLE_LABEL, tr("Play Console"))
+        .SetText(tr("Play Console"));
     am->AddAction(ID_SWITCH_PHYSICS, tr("Simulate"))
         .SetShortcut(tr("Ctrl+P"))
         .SetToolTip(tr("Simulate (Ctrl+P)"))
@@ -1198,10 +1171,6 @@ void MainWindow::InitActions()
 
     if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
     {
-        am->AddAction(ID_GENERATORS_LIGHTING, tr("&Sun Trajectory Tool"))
-            .SetIcon(Style::icon("Lighting"))
-            .SetApplyHoverEffect()
-            .SetStatusTip(tr("Bring up the terrain lighting dialog"));
         am->AddAction(ID_TERRAIN_TIMEOFDAY, tr("Time Of Day"))
             .SetStatusTip(tr("Open Time of Day Editor"));
     }
@@ -1296,14 +1265,6 @@ void MainWindow::InitActions()
         .SetToolTip(tr("Open Asset Browser"))
         .SetApplyHoverEffect();
 
-    if (!AZ::Interface<AzFramework::AtomActiveInterface>::Get())
-    {
-        am->AddAction(ID_OPEN_MATERIAL_EDITOR, tr(LyViewPane::MaterialEditor))
-            .SetToolTip(tr("Open Material Editor"))
-            .SetIcon(Style::icon("Material"))
-            .SetApplyHoverEffect();
-    }
-
     AZ::EBusReduceResult<bool, AZStd::logical_or<bool>> emfxEnabled(false);
     using AnimationRequestBus = AzToolsFramework::EditorAnimationSystemRequestsBus;
     using AnimationSystemType = AzToolsFramework::EditorAnimationSystemRequests::AnimationSystem;
@@ -1355,14 +1316,6 @@ void MainWindow::InitActions()
         .SetIcon(Style::icon("select_object"))
         .SetApplyHoverEffect()
         .Connect(&QAction::triggered, this, &MainWindow::OnGotoSelected);
-
-    if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        am->AddAction(ID_OBJECTMODIFY_SETHEIGHT, tr("Set object(s) height"))
-            .SetIcon(QIcon(":/MainWindow/toolbars/object_toolbar-03.svg"))
-            .SetApplyHoverEffect()
-            .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSelected);
-    }
 
     // Misc Toolbar Actions
     am->AddAction(ID_OPEN_SUBSTANCE_EDITOR, tr("Open Substance Editor"))
@@ -1487,6 +1440,14 @@ QToolButton* MainWindow::CreateDebugModeButton()
     debugModeButton->setMenu(debugModeMenu);
 
     return debugModeButton;
+}
+
+QWidget* MainWindow::CreateSpacerRightWidget()
+{
+    QWidget* spacer = new QWidget();
+    spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    spacer->setVisible(true);
+    return spacer;
 }
 
 void MainWindow::InitEnvironmentModeMenu(CVarMenu* environmentModeMenu)
@@ -2203,35 +2164,6 @@ void MainWindow::RegisterOpenWndCommands()
     }
 }
 
-void MainWindow::MatEditSend(int param)
-{
-    if (param == eMSM_Init || GetIEditor()->IsInMatEditMode())
-    {
-        // In MatEditMode this message is handled by CMatEditMainDlg, which doesn't have
-        // any view panes and opens MaterialDialog directly.
-        return;
-    }
-
-    if (QtViewPaneManager::instance()->OpenPane(LyViewPane::MaterialEditor))
-    {
-        GetIEditor()->GetMaterialManager()->SyncMaterialEditor();
-    }
-}
-
-#ifdef Q_OS_WIN
-bool MainWindow::nativeEventFilter([[maybe_unused]] const QByteArray &eventType, void *message, long *)
-{
-    MSG* msg = static_cast<MSG*>(message);
-    if (msg->message == WM_MATEDITSEND) // For supporting 3ds Max Exporter, Windows Only
-    {
-        MatEditSend(msg->wParam);
-        return true;
-    }
-
-    return false;
-}
-#endif
-
 bool MainWindow::event(QEvent* event)
 {
 #ifdef Q_OS_MAC
@@ -2395,6 +2327,9 @@ QWidget* MainWindow::CreateToolbarWidget(int actionId)
     case ID_TOOLBAR_WIDGET_DEBUG_MODE:
         w = CreateDebugModeButton();
         break;
+    case ID_TOOLBAR_WIDGET_SPACER_RIGHT:
+        w = CreateSpacerRightWidget();
+        break; 
     default:
         qWarning() << Q_FUNC_INFO << "Unknown id " << actionId;
         return nullptr;

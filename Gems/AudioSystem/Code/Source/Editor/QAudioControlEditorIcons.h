@@ -26,26 +26,26 @@ namespace AudioControls
         switch (type)
         {
         case AudioControls::eACET_TRIGGER:
-            iconFile = ":/Editor/Icons/Trigger_Icon.svg";
+            iconFile = ":/Icons/Trigger_Icon.svg";
             break;
         case AudioControls::eACET_RTPC:
-            iconFile = ":/Editor/Icons/RTPC_Icon.svg";
+            iconFile = ":/Icons/RTPC_Icon.svg";
             break;
         case AudioControls::eACET_SWITCH:
-            iconFile = ":/Editor/Icons/Switch_Icon.svg";
+            iconFile = ":/Icons/Switch_Icon.svg";
             break;
         case AudioControls::eACET_SWITCH_STATE:
-            iconFile = ":/Editor/Icons/Property_Icon.svg";
+            iconFile = ":/Icons/Property_Icon.svg";
             break;
         case AudioControls::eACET_ENVIRONMENT:
-            iconFile = ":/Editor/Icons/Environment_Icon.svg";
+            iconFile = ":/Icons/Environment_Icon.svg";
             break;
         case AudioControls::eACET_PRELOAD:
-            iconFile = ":/Editor/Icons/Preload_Icon.svg";
+            iconFile = ":/Icons/Preload_Icon.svg";
             break;
         default:
             // should make a "default"/empty icon...
-            iconFile = ":/Editor/Icons/RTPC_Icon.svg";
+            iconFile = ":/Icons/RTPC_Icon.svg";
         }
 
         QIcon icon(iconFile);
@@ -56,16 +56,16 @@ namespace AudioControls
     //-------------------------------------------------------------------------------------------//
     inline QIcon GetFolderIcon()
     {
-        QIcon icon = QIcon(":/Editor/Icons/Folder_Icon.svg");
-        icon.addFile(":/Editor/Icons/Folder_Icon_Selected.svg", QSize(), QIcon::Selected);
+        QIcon icon = QIcon(":/Icons/Folder_Icon.svg");
+        icon.addFile(":/Icons/Folder_Icon_Selected.svg", QSize(), QIcon::Selected);
         return icon;
     }
 
     //-------------------------------------------------------------------------------------------//
     inline QIcon GetSoundBankIcon()
     {
-        QIcon icon = QIcon(":/Editor/Icons/Preload_Icon.svg");
-        icon.addFile(":/Editor/Icons/Preload_Icon.svg", QSize(), QIcon::Selected);
+        QIcon icon = QIcon(":/Icons/Preload_Icon.svg");
+        icon.addFile(":/Icons/Preload_Icon.svg", QSize(), QIcon::Selected);
         return icon;
     }
 
@@ -78,22 +78,22 @@ namespace AudioControls
         switch (group)
         {
         case 0:
-            path = ":/Editor/Icons/folder purple.svg";
+            path = ":/Icons/folder purple.svg";
             break;
         case 1:
-            path = ":/Editor/Icons/folder blue.svg";
+            path = ":/Icons/folder blue.svg";
             break;
         case 2:
-            path = ":/Editor/Icons/folder green.svg";
+            path = ":/Icons/folder green.svg";
             break;
         case 3:
-            path = ":/Editor/Icons/folder red.svg";
+            path = ":/Icons/folder red.svg";
             break;
         case 4:
-            path = ":/Editor/Icons/folder yellow.svg";
+            path = ":/Icons/folder yellow.svg";
             break;
         default:
-            path = "Editor/Icons/folder red.svg";
+            path = "Icons/folder red.svg";
             break;
         }
 

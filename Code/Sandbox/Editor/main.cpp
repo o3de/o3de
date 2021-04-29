@@ -30,17 +30,14 @@ int main(int argc, char* argv[])
     [[maybe_unused]] const bool loaded = handle->Load(true);
     AZ_Assert(loaded, "EditorLib could not be loaded");
 
+    int ret = 1;
     if (auto fn = handle->GetFunction<CryEditMain>(CryEditMainName); fn != nullptr)
     {
-        const int ret = AZStd::invoke(fn, argc, argv);
-
-        AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();
-        AZ::Environment::Detach();
-
-        return ret;
+        ret = AZStd::invoke(fn, argc, argv);
     }
 
+    handle = {};
     AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();
     AZ::Environment::Detach();
-    return 1;
+    return ret;
 }

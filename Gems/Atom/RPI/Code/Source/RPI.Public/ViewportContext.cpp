@@ -33,6 +33,7 @@ namespace AZ
                 nativeWindow,
                 &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
             AzFramework::WindowNotificationBus::Handler::BusConnect(nativeWindow);
+            AzFramework::ViewportRequestBus::Handler::BusConnect(id);
 
             m_onProjectionMatrixChangedHandler = ViewportContext::MatrixChangedEvent::Handler([this](const AZ::Matrix4x4& matrix)
             {
@@ -48,6 +49,9 @@ namespace AZ
 
         ViewportContext::~ViewportContext()
         {
+            AzFramework::WindowNotificationBus::Handler::BusDisconnect();
+            AzFramework::ViewportRequestBus::Handler::BusDisconnect();
+
             if (m_currentPipeline)
             {
                 m_currentPipeline->RemoveFromRenderTick();
