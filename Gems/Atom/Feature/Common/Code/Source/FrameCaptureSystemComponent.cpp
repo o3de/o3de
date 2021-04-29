@@ -33,7 +33,7 @@
 #include <AzCore/Preprocessor/EnumReflectUtils.h>
 #include <AzCore/Console/Console.h>
 
-#ifdef OPEN_IMAGE_IO_ENABLED
+#if defined(OPEN_IMAGE_IO_ENABLED)
 #include <OpenImageIO/imageio.h>
 #endif
 
@@ -43,7 +43,7 @@ namespace AZ
     {
         AZ_ENUM_DEFINE_REFLECT_UTILITIES(FrameCaptureResult);
 
-#ifdef OPEN_IMAGE_IO_ENABLED
+#if defined(OPEN_IMAGE_IO_ENABLED)
         AZ_CVAR(unsigned int,
             r_pngCompressionLevel,
             3, // A compression level of 3 seems like the best default in terms of file size and saving speeds
@@ -457,7 +457,7 @@ namespace AZ
                         m_result = ddsFrameCapture.m_result;
                         m_latestCaptureInfo = ddsFrameCapture.m_errorMessage.value_or("");
                     }
-#ifdef OPEN_IMAGE_IO_ENABLED
+#if defined(OPEN_IMAGE_IO_ENABLED)
                     else if (extension == "png")
                     {
                         AZStd::string folderPath;
