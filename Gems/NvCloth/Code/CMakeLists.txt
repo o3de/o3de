@@ -21,6 +21,7 @@ endif()
 ly_add_target(
     NAME NvCloth.Static STATIC
     NAMESPACE Gem
+    OUTPUT_NAME Gem.NvCloth.Static
     FILES_CMAKE
         nvcloth_files.cmake
     INCLUDE_DIRECTORIES
@@ -43,6 +44,7 @@ ly_add_target(
 ly_add_target(
     NAME NvCloth ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
+    OUTPUT_NAME Gem.NvCloth
     FILES_CMAKE
         nvcloth_shared_files.cmake
     INCLUDE_DIRECTORIES
@@ -63,6 +65,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME NvCloth.Editor.Static STATIC
         NAMESPACE Gem
+        OUTPUT_NAME Gem.NvCloth.Editor.Static
         AUTOMOC
         FILES_CMAKE
             nvcloth_editor_files.cmake
@@ -83,8 +86,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
     ly_add_target(
         NAME NvCloth.Editor GEM_MODULE
-
         NAMESPACE Gem
+        OUTPUT_NAME Gem.NvCloth.Editor
         FILES_CMAKE
             nvcloth_editor_shared_files.cmake
         INCLUDE_DIRECTORIES
@@ -109,6 +112,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
         NAME NvCloth.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
+        OUTPUT_NAME Gem.NvCloth.Tests
         FILES_CMAKE
             nvcloth_tests_files.cmake
         INCLUDE_DIRECTORIES
@@ -134,6 +138,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         ly_add_target(
             NAME NvCloth.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
             NAMESPACE Gem
+            OUTPUT_NAME Gem.NvCloth.Editor.Tests
             FILES_CMAKE
                 nvcloth_editor_tests_files.cmake
             INCLUDE_DIRECTORIES

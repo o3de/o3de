@@ -29,6 +29,7 @@ endif()
 ly_add_target(
     NAME PhysX.Static STATIC
     NAMESPACE Gem
+    OUTPUT_NAME Gem.PhysX.Static
     FILES_CMAKE
         ${physx_files}
     COMPILE_DEFINITIONS
@@ -52,6 +53,7 @@ ly_add_target(
 ly_add_target(
     NAME PhysX ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
+    OUTPUT_NAME Gem.PhysX
     FILES_CMAKE
         ${physx_shared_files}
     COMPILE_DEFINITIONS
@@ -77,6 +79,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME PhysX.Editor.Static STATIC
         NAMESPACE Gem
+        OUTPUT_NAME Gem.PhysX.Editor.Static
         AUTOMOC
         AUTOUIC
         FILES_CMAKE
@@ -118,8 +121,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
     ly_add_target(
         NAME PhysX.Editor GEM_MODULE
-
         NAMESPACE Gem
+        OUTPUT_NAME Gem.PhysX.Editor
         AUTOMOC
         FILES_CMAKE
             physx_editor_shared_files.cmake
@@ -147,6 +150,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
         NAME PhysX.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
+        OUTPUT_NAME Gem.PhysX.Tests
         FILES_CMAKE
             physx_tests_files.cmake
         INCLUDE_DIRECTORIES
@@ -175,6 +179,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         ly_add_target(
             NAME PhysX.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
             NAMESPACE Gem
+            OUTPUT_NAME Gem.PhysX.Editor.Tests
             FILES_CMAKE
                 physx_editor_tests_files.cmake
             INCLUDE_DIRECTORIES
