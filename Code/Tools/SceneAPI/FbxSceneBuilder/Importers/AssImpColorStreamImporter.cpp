@@ -73,7 +73,7 @@ namespace AZ
                         {
                             expectedColorChannels = mesh->GetNumColorChannels();
                         }
-                        else if(expectedColorChannels == mesh->GetNumColorChannels())
+                        else if(expectedColorChannels != mesh->GetNumColorChannels())
                         {
                             AZ_Error(
                                 Utilities::ErrorWindow,
