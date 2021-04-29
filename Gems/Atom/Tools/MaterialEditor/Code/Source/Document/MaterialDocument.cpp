@@ -771,8 +771,10 @@ namespace MaterialEditor
             if (propertyIndexInBounds)
             {
                 AtomToolsFramework::ConvertToPropertyConfig(propertyConfig, propertyDefinition);
+                propertyConfig.m_showThumbnail = true;
                 propertyConfig.m_originalValue = AtomToolsFramework::ConvertToEditableType(m_materialAsset->GetPropertyValues()[propertyIndex.GetIndex()]);
                 propertyConfig.m_parentValue = AtomToolsFramework::ConvertToEditableType(parentPropertyValues[propertyIndex.GetIndex()]);
+                propertyConfig.m_groupName = m_materialTypeSourceData.FindGroup(groupNameId)->m_displayName;
                 m_properties[propertyConfig.m_id] = AtomToolsFramework::DynamicProperty(propertyConfig);
             }
             return true;
@@ -789,6 +791,7 @@ namespace MaterialEditor
         propertyConfig.m_id = "details.materialType";
         propertyConfig.m_nameId = "materialType";
         propertyConfig.m_displayName = "Material Type";
+        propertyConfig.m_groupName = "Details";
         propertyConfig.m_description = propertyConfig.m_displayName;
         propertyConfig.m_defaultValue = AZStd::any(materialTypeAsset);
         propertyConfig.m_originalValue = propertyConfig.m_defaultValue;
@@ -802,11 +805,13 @@ namespace MaterialEditor
         propertyConfig.m_id = "details.parentMaterial";
         propertyConfig.m_nameId = "parentMaterial";
         propertyConfig.m_displayName = "Parent Material";
+        propertyConfig.m_groupName = "Details";
         propertyConfig.m_description = propertyConfig.m_displayName;
         propertyConfig.m_defaultValue = AZStd::any(parentMaterialAsset);
         propertyConfig.m_originalValue = propertyConfig.m_defaultValue;
         propertyConfig.m_parentValue = propertyConfig.m_defaultValue;
         propertyConfig.m_readOnly = true;
+        propertyConfig.m_showThumbnail = true;
 
         m_properties[propertyConfig.m_id] = AtomToolsFramework::DynamicProperty(propertyConfig);
 
@@ -822,6 +827,7 @@ namespace MaterialEditor
             propertyConfig.m_id = MaterialPropertyId(UvGroupName, shaderInput).GetCStr();
             propertyConfig.m_nameId = shaderInput;
             propertyConfig.m_displayName = shaderInput;
+            propertyConfig.m_groupName = "UV Names";
             propertyConfig.m_description = shaderInput;
             propertyConfig.m_defaultValue = uvName;
             propertyConfig.m_originalValue = uvName;

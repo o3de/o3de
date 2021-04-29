@@ -170,7 +170,7 @@ TEST_F(PlatformConfigurationUnitTests, TestReadScanFolderRoot_FromSettingsRegist
     EXPECT_TRUE(settingsRegistry->Get(scanOrder, AZ::SettingsRegistryInterface::FixedValueString(AssetProcessor::AssetProcessorSettingsKey)
         + "/ScanFolder SettingsRegistryTest/order"));
 
-    // These test values come from the <dev_root>/Engine/Registry/AssetProcessorPlatformConfig.setreg file
+    // These test values come from the <dev_root>/Registry/AssetProcessorPlatformConfig.setreg file
     EXPECT_STREQ("_TestPath", watchPath.c_str());
     EXPECT_FALSE(recurseScanFolder);
     EXPECT_EQ(20000, scanOrder);
@@ -200,7 +200,7 @@ public:
         m_config.reset();
         PlatformConfigurationUnitTests::TearDown();
     }
-    
+
     AZStd::vector<AssetBuilderSDK::PlatformInfo> m_platforms;
     AZStd::unique_ptr<UnitTestPlatformConfiguration> m_config;
     AZStd::unique_ptr<QTemporaryDir> m_tempEngineRoot = nullptr; // this actually creates the folder in its constructor, so hold off until setup..
@@ -213,8 +213,8 @@ TEST_F(PlatformConfigurationUnitTests_OnePCHostFixture, GetScanFolderForFile_Roo
     using namespace AzToolsFramework::AssetSystem;
     using namespace AssetProcessor;
 
-    m_config->AddScanFolder(ScanFolderInfo(m_tempPath.filePath("scanfolder1"), "ScanFolder1", "sf1", "", true, false, m_platforms), true); // a root folder that has watched subfolders, not recursive
-    m_config->AddScanFolder(ScanFolderInfo(m_tempPath.filePath("scanfolder1/Editor"), "Editor", "sf2", "", false, true, m_platforms), true); // a child folder that exists within that scan folder.
+    m_config->AddScanFolder(ScanFolderInfo(m_tempPath.filePath("scanfolder1"), "ScanFolder1", "sf1", true, false, m_platforms), true); // a root folder that has watched subfolders, not recursive
+    m_config->AddScanFolder(ScanFolderInfo(m_tempPath.filePath("scanfolder1/Editor"), "Editor", "sf2", false, true, m_platforms), true); // a child folder that exists within that scan folder.
 
     const ScanFolderInfo* info = m_config->GetScanFolderForFile(m_tempPath.filePath("scanfolder1/something.txt"));
 
@@ -229,8 +229,8 @@ TEST_F(PlatformConfigurationUnitTests_OnePCHostFixture, GetScanFolderForFile_Sub
     using namespace AzToolsFramework::AssetSystem;
     using namespace AssetProcessor;
 
-    m_config->AddScanFolder(ScanFolderInfo(m_tempPath.filePath("scanfolder1"), "ScanFolder1", "sf1", "", true, false, m_platforms), true); // a root folder that has watched subfolders, not recursive
-    m_config->AddScanFolder(ScanFolderInfo(m_tempPath.filePath("scanfolder1/Editor"), "Editor ScanFolder", "sf2", "", false, true, m_platforms), true); // a child folder that exists within that scan folder.
+    m_config->AddScanFolder(ScanFolderInfo(m_tempPath.filePath("scanfolder1"), "ScanFolder1", "sf1", true, false, m_platforms), true); // a root folder that has watched subfolders, not recursive
+    m_config->AddScanFolder(ScanFolderInfo(m_tempPath.filePath("scanfolder1/Editor"), "Editor ScanFolder", "sf2", false, true, m_platforms), true); // a child folder that exists within that scan folder.
 
     const ScanFolderInfo* info = m_config->GetScanFolderForFile(m_tempPath.filePath("scanfolder1/Editor/something.txt"));
 
@@ -254,8 +254,8 @@ TEST_F(PlatformConfigurationUnitTests_OnePCHostFixture, GetOverridingFile_Exists
     QString differentCaseDummyFileName = m_tempPath.absoluteFilePath("scanfolder2/testcase.txt");
     UnitTestUtils::CreateDummyFile(caseSensitiveDummyFileName, QString("testcase1\n"));
     UnitTestUtils::CreateDummyFile(differentCaseDummyFileName, QString("testcase2\n"));
-    m_config->AddScanFolder(ScanFolderInfo(scanfolder1Path, "ScanFolder1", "sf1", "", false, true, m_platforms), true);
-    m_config->AddScanFolder(ScanFolderInfo(scanfolder2Path, "ScanFolder2", "sf2", "", false, true, m_platforms), true);
+    m_config->AddScanFolder(ScanFolderInfo(scanfolder1Path, "ScanFolder1", "sf1", false, true, m_platforms), true);
+    m_config->AddScanFolder(ScanFolderInfo(scanfolder2Path, "ScanFolder2", "sf2", false, true, m_platforms), true);
 
     // Perform the test by asking it whether anyone overrides "testcase" (lowercase) in scanfolder 2.
     QString overrider = m_config->GetOverridingFile("testcase.txt", scanfolder2Path);
@@ -278,9 +278,9 @@ TEST_F(PlatformConfigurationUnitTests_OnePCHostFixture, GetOverridingFile_Exists
     QString differentCaseDummyFileName = m_tempPath.absoluteFilePath("scanfolder2/testcase.txt");
     UnitTestUtils::CreateDummyFile(caseSensitiveDummyFileName, QString("testcase1\n"));
     UnitTestUtils::CreateDummyFile(differentCaseDummyFileName, QString("testcase2\n"));
-    m_config->AddScanFolder(ScanFolderInfo(scanfolder1Path, "ScanFolder1", "sf1", "", false, true, m_platforms), true);
-    m_config->AddScanFolder(ScanFolderInfo(scanfolder2Path, "ScanFolder2", "sf2", "", false, true, m_platforms), true);
-    
+    m_config->AddScanFolder(ScanFolderInfo(scanfolder1Path, "ScanFolder1", "sf1", false, true, m_platforms), true);
+    m_config->AddScanFolder(ScanFolderInfo(scanfolder2Path, "ScanFolder2", "sf2", false, true, m_platforms), true);
+
     // Perform the test by asking it whether the existing real winning file is being overridden by anyone.
     QString overrider = m_config->GetOverridingFile("TestCase.tXt", scanfolder1Path);
 
@@ -297,8 +297,8 @@ TEST_F(PlatformConfigurationUnitTests_OnePCHostFixture, GetOverridingFile_DoesNo
     QString scanfolder1Path = m_tempPath.filePath("scanfolder1");
     QString scanfolder2Path = m_tempPath.filePath("scanfolder2");
 
-    m_config->AddScanFolder(ScanFolderInfo(scanfolder1Path, "ScanFolder1", "sf1", "", false, true, m_platforms), true);
-    m_config->AddScanFolder(ScanFolderInfo(scanfolder2Path, "ScanFolder2", "sf2", "", false, true, m_platforms), true);
+    m_config->AddScanFolder(ScanFolderInfo(scanfolder1Path, "ScanFolder1", "sf1", false, true, m_platforms), true);
+    m_config->AddScanFolder(ScanFolderInfo(scanfolder2Path, "ScanFolder2", "sf2", false, true, m_platforms), true);
 
     // Perform the test by asking it whether anyone overrides "testcase" (lowercase) in scanfolder 2.
     QString overrider = m_config->GetOverridingFile("doesntExist.txt", scanfolder2Path);
@@ -314,8 +314,8 @@ TEST_F(PlatformConfigurationUnitTests_OnePCHostFixture, FindFirstMatchingFile_Do
     // create two scan folders, since its order dependent, the ScanFolder1 is the "winner" in tie breakers.
     QString scanfolder1Path = m_tempPath.filePath("scanfolder1");
     QString scanfolder2Path = m_tempPath.filePath("scanfolder2");
-    m_config->AddScanFolder(ScanFolderInfo(scanfolder1Path, "ScanFolder1", "sf1", "", false, true, m_platforms), true);
-    m_config->AddScanFolder(ScanFolderInfo(scanfolder2Path, "ScanFolder2", "sf2", "", false, true, m_platforms), true);
+    m_config->AddScanFolder(ScanFolderInfo(scanfolder1Path, "ScanFolder1", "sf1", false, true, m_platforms), true);
+    m_config->AddScanFolder(ScanFolderInfo(scanfolder2Path, "ScanFolder2", "sf2", false, true, m_platforms), true);
 
     // Perform the test by asking it whether anyone overrides "testcase" (lowercase) in scanfolder 2.
     QString foundFile = m_config->FindFirstMatchingFile("doesntExist.txt");
@@ -325,7 +325,7 @@ TEST_F(PlatformConfigurationUnitTests_OnePCHostFixture, FindFirstMatchingFile_Do
 
 // note that we do not guarantee that FindFirstMatchingFile always returns the correct case, as it is a super hot path
 // function, and the only time case could be incorrect is in the situation where a file with different case overrides
-// an underlying file, ie, 
+// an underlying file, ie,
 // Engine/EngineAssets/Textures/StartScreen.tif
 // MyGame/EngineAssets/textures/startscreen.tif <-- would override the above because game has higher / more important priority.
 
@@ -335,8 +335,8 @@ TEST_F(PlatformConfigurationUnitTests_OnePCHostFixture, GetScanFolderForFile_Sub
     using namespace AzToolsFramework::AssetSystem;
     using namespace AssetProcessor;
 
-    m_config->AddScanFolder(ScanFolderInfo(m_tempPath.filePath("scanfolder1"), "ScanFolder1", "sf1", "", true, false, m_platforms), true); // a root folder that has watched subfolders, not recursive
-    m_config->AddScanFolder(ScanFolderInfo(m_tempPath.filePath("scanfolder1/Editor"), "Editor ScanFolder", "sf2", "", false, true, m_platforms), true); // a child folder that exists within that scan folder.
+    m_config->AddScanFolder(ScanFolderInfo(m_tempPath.filePath("scanfolder1"), "ScanFolder1", "sf1", true, false, m_platforms), true); // a root folder that has watched subfolders, not recursive
+    m_config->AddScanFolder(ScanFolderInfo(m_tempPath.filePath("scanfolder1/Editor"), "Editor ScanFolder", "sf2", false, true, m_platforms), true); // a child folder that exists within that scan folder.
 
     const ScanFolderInfo* info = m_config->GetScanFolderForFile(m_tempPath.filePath("scanfolder1/Editor"));
     ASSERT_TRUE(info);
@@ -363,20 +363,17 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_RegularScanfolder)
     ASSERT_EQ(config.GetScanFolderCount(), 3); // the two, and then the one that has the same data as prior but different identifier.
     QString scanName = AssetUtilities::ComputeProjectPath() + " Scan Folder";
     ASSERT_EQ(config.GetScanFolderAt(0).GetDisplayName(), scanName);
-    ASSERT_EQ(config.GetScanFolderAt(0).GetOutputPrefix(), QString());
     ASSERT_EQ(config.GetScanFolderAt(0).RecurseSubFolders(), true);
     ASSERT_EQ(config.GetScanFolderAt(0).GetOrder(), 0);
     ASSERT_EQ(config.GetScanFolderAt(0).GetPortableKey(), QString("Game"));
 
     ASSERT_EQ(config.GetScanFolderAt(1).GetDisplayName(), QString("FeatureTests"));
-    ASSERT_EQ(config.GetScanFolderAt(1).GetOutputPrefix(), QString("featuretestsoutputfolder")); // to prove its not related to display name
     ASSERT_EQ(config.GetScanFolderAt(1).RecurseSubFolders(), false);
     ASSERT_EQ(config.GetScanFolderAt(1).GetOrder(), 5000);
     // this proves that the featuretests name is used instead of the output prefix
     ASSERT_EQ(config.GetScanFolderAt(1).GetPortableKey(), QString("FeatureTests"));
 
     ASSERT_EQ(config.GetScanFolderAt(2).GetDisplayName(), QString("FeatureTests2"));
-    ASSERT_EQ(config.GetScanFolderAt(2).GetOutputPrefix(), QString("featuretestsoutputfolder")); // to prove its not related to display name
     ASSERT_EQ(config.GetScanFolderAt(2).RecurseSubFolders(), false);
     ASSERT_EQ(config.GetScanFolderAt(2).GetOrder(), 6000);
     // this proves that the featuretests name is used instead of the output prefix
@@ -613,7 +610,6 @@ TEST_F(PlatformConfigurationUnitTests, Test_GemHandling)
 
     ASSERT_EQ(2, config.GetScanFolderCount());
     EXPECT_FALSE(config.GetScanFolderAt(0).IsRoot());
-    EXPECT_TRUE(config.GetScanFolderAt(0).GetOutputPrefix().isEmpty());
     EXPECT_TRUE(config.GetScanFolderAt(0).RecurseSubFolders());
     // the first one is a game gem, so its order should be above 1 but below 100.
     EXPECT_GE(config.GetScanFolderAt(0).GetOrder(), 100);
@@ -623,7 +619,6 @@ TEST_F(PlatformConfigurationUnitTests, Test_GemHandling)
 
     expectedScanFolder = tempPath.absoluteFilePath("Gems/LmbrCentral/v2/Assets");
     EXPECT_FALSE(config.GetScanFolderAt(1).IsRoot() );
-    EXPECT_TRUE(config.GetScanFolderAt(1).GetOutputPrefix().isEmpty());
     EXPECT_TRUE(config.GetScanFolderAt(1).RecurseSubFolders());
     EXPECT_GT(config.GetScanFolderAt(1).GetOrder(), config.GetScanFolderAt(0).GetOrder());
     EXPECT_EQ(0, config.GetScanFolderAt(1).ScanPath().compare(expectedScanFolder, Qt::CaseInsensitive));

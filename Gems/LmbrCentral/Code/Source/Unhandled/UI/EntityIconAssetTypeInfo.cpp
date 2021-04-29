@@ -50,6 +50,6 @@ namespace LmbrCentral
 
     const char * EntityIconAssetTypeInfo::GetBrowserIcon() const
     {
-        return "Editor/Icons/PropertyEditor/image_icon.svg";
+        return "Icons/PropertyEditor/image_icon.svg";
     }
 } // namespace LmbrCentral

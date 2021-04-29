@@ -317,7 +317,7 @@ namespace AssetProcessorMessagesTests
         using namespace AzToolsFramework::AssetDatabase;
 
         // Setup the database with all needed info
-        ScanFolderDatabaseEntry scanfolder1("scanfolder1", "scanfolder1", "scanfolder1", "");
+        ScanFolderDatabaseEntry scanfolder1("scanfolder1", "scanfolder1", "scanfolder1");
         ASSERT_TRUE(m_dbConn.SetScanFolder(scanfolder1));
 
         SourceDatabaseEntry source1(scanfolder1.m_scanFolderID, "source1.png", AZ::Uuid::CreateRandom(), "Fingerprint");

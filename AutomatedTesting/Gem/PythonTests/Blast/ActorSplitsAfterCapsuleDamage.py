@@ -15,9 +15,9 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from ActorSplitsAfterDamage import Tests
 
-def run():
-    from ActorSplitsAfterDamage import run as internal_run
-    from editor_python_test_tools.utils import Constants
+def ActorSplitsAfterCapsuleDamage():
+    from ActorSplitsAfterDamage import base_run as internal_run
+    from BlastUtils import Constants
 
     def CapsuleDamage(target_id, position0):
         position1 = azlmbr.object.construct('Vector3', position0.x + 1.0, position0.y, position0.z)
@@ -30,4 +30,8 @@ def run():
 
 
 if __name__ == "__main__":
-    run()
+    import ImportPathHelper as imports
+    imports.init()
+
+    from editor_python_test_tools.utils import Report
+    Report.start_test(ActorSplitsAfterCapsuleDamage)

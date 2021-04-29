@@ -21,45 +21,48 @@ namespace AZ
 
     namespace RHI
     {
-        /**
-         * DrawPacket is a packed data structure (one contiguous allocation) containing a collection of
-         * DrawItems and their associated array data. Each draw item in the packet is associated
-         * with a DrawListTag. All draw items in the packet share the same set of shader resource
-         * groups, index buffer, and draw arguments.
-         *
-         * Some notes about design and usage:
-         *   - Draw packets should be used to 'broadcast' variations of the same 'object' to multiple passes.
-         *     For example: 'Shadow', 'Depth', 'Forward'.
-         *
-         *   - Draw packets can be re-used between different views, scenes, or passes. The embedded shader resource groups
-         *     should represent only the local data necessary to describe the 'object', not the full context including
-         *     scene / view / pass specific state. They serve as a 'template'.
-         *
-         *   - The packet is self-contained and does not reference external memory. Use DrawPacketBuilder to construct
-         *     an instance and either store in an RHI::Ptr or call 'delete' to release.
-         */
+        //!
+        //! DrawPacket is a packed data structure (one contiguous allocation) containing a collection of
+        //! DrawItems and their associated array data. Each draw item in the packet is associated
+        //! with a DrawListTag. All draw items in the packet share the same set of shader resource
+        //! groups, index buffer, one DrawFilterMask, and draw arguments.
+        //! 
+        //! Some notes about design and usage:
+        //!   - Draw packets should be used to 'broadcast' variations of the same 'object' to multiple passes.
+        //!     For example: 'Shadow', 'Depth', 'Forward'.
+        //! 
+        //!   - Draw packets can be re-used between different views, scenes, or passes. The embedded shader resource groups
+        //!     should represent only the local data necessary to describe the 'object', not the full context including
+        //!     scene / view / pass specific state. They serve as a 'template'.
+        //! 
+        //!   - The packet is self-contained and does not reference external memory. Use DrawPacketBuilder to construct
+        //!     an instance and either store in an RHI::Ptr or call 'delete' to release.
+        //! 
         class DrawPacket final : public AZStd::intrusive_base
         {
             friend class DrawPacketBuilder;
         public:
-            using DrawItemVisitor = AZStd::function<void(DrawListTag, DrawItemKeyPair)>;
+            using DrawItemVisitor = AZStd::function<void(DrawListTag, DrawItemProperties)>;
 
-            /// Draw packets cannot be move constructed or copied, as they contain an additional memory payload.
+            //! Draw packets cannot be move constructed or copied, as they contain an additional memory payload.
             AZ_DISABLE_COPY_MOVE(DrawPacket);
 
-            /// Returns the mask representing all the draw lists affected by the packet.
+            //! Returns the mask representing all the draw lists affected by the packet.
             DrawListMask GetDrawListMask() const;
 
-            /// Returns the number of draw items stored in the packet.
+            //! Returns the number of draw items stored in the packet.
             size_t GetDrawItemCount() const;
 
-            /// Returns the draw item / sort key associated with the provided index.
-            DrawItemKeyPair GetDrawItem(size_t index) const;
+            //! Returns the draw item and its properties associated with the provided index.
+            DrawItemProperties GetDrawItem(size_t index) const;
 
-            /// Returns the draw list tag associated with the provided index.
+            //! Returns the draw list tag associated with the provided index.
             DrawListTag GetDrawListTag(size_t index) const;
 
-            /// Overloaded operator delete for freeing a draw packet.
+            //! Returns the draw filter mask which applied to all the draw items.
+            DrawFilterMask GetDrawFilterMask() const;
+
+            //! Overloaded operator delete for freeing a draw packet.
             void operator delete(void* p, size_t size);
 
         private:
@@ -71,6 +74,9 @@ namespace AZ
 
             // The bit-mask of all active filter tags.
             DrawListMask m_drawListMask = 0;
+
+            // The draw filter applies to each draw item
+            DrawFilterMask m_drawFilterMask = DrawFilterMaskDefaultValue;
 
             // The index buffer view used when the draw call is indexed.
             IndexBufferView m_indexBufferView;
