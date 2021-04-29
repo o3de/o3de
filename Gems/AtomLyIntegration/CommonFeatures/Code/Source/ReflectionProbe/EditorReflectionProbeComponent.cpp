@@ -172,13 +172,19 @@ namespace AZ
             AZ::Vector3 position = AZ::Vector3::CreateZero();
             AZ::TransformBus::EventResult(position, GetEntityId(), &AZ::TransformBus::Events::GetWorldTranslation);
 
+            AZ::Vector3 scale = AZ::Vector3::CreateOne();
+            AZ::TransformBus::EventResult(position, GetEntityId(), &AZ::TransformBus::Events::GetLocalScale);           
+
             // draw AABB at probe position using the inner dimensions
             Color color(0.0f, 0.0f, 1.0f, 1.0f);
             debugDisplay.SetColor(color);
 
             ReflectionProbeComponentConfig& configuration = m_controller.m_configuration;
-            AZ::Vector3 innerMin(position.GetX() - configuration.m_innerWidth / 2, position.GetY() - configuration.m_innerLength / 2, position.GetZ() - configuration.m_innerHeight / 2);
-            AZ::Vector3 innerMax(position.GetX() + configuration.m_innerWidth / 2, position.GetY() + configuration.m_innerLength / 2, position.GetZ() + configuration.m_innerHeight / 2);
+            AZ::Vector3 innerExtents(configuration.m_innerWidth, configuration.m_innerLength, configuration.m_innerHeight);
+            innerExtents *= scale;
+
+            AZ::Vector3 innerMin(position.GetX() - innerExtents.GetX() / 2, position.GetY() - innerExtents.GetY() / 2, position.GetZ() - innerExtents.GetZ() / 2);
+            AZ::Vector3 innerMax(position.GetX() + innerExtents.GetX() / 2, position.GetY() + innerExtents.GetY() / 2, position.GetZ() + innerExtents.GetZ() / 2);
             debugDisplay.DrawWireBox(innerMin, innerMax);
         }
 
