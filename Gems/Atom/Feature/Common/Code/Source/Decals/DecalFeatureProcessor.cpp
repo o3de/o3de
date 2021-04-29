@@ -262,7 +262,7 @@ namespace AZ
             }
         }
 
-        void DecalFeatureProcessor::SetDecalTransform(DecalHandle handle, const AZ::Transform& world)
+        void DecalFeatureProcessor::SetDecalTransform(DecalHandle handle, const AZ::Transform& world, const AZ::Vector3& nonUniformScale)
         {
             // https://jira.agscollab.com/browse/ATOM-4330
             // Original Open 3D Engine uploads a 4x4 matrix rather than quaternion, rotation, scale.
@@ -274,7 +274,7 @@ namespace AZ
             if (handle.IsValid())
             {
                 Quaternion orientation = world.GetRotation();
-                Vector3 scale = world.GetScale();
+                Vector3 scale = world.GetScale() * nonUniformScale;
 
                 SetDecalHalfSize(handle, scale);
                 SetDecalPosition(handle, world.GetTranslation());
