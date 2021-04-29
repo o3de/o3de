@@ -216,7 +216,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         TEST_SUITE periodic
         PATH ${CMAKE_CURRENT_LIST_DIR}/largeworlds/dyn_veg
         PYTEST_MARKS "SUITE_periodic"
-        TIMEOUT 3600
+        TIMEOUT 36000
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             Legacy::Editor
