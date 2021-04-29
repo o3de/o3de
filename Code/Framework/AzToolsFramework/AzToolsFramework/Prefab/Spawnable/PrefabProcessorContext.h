@@ -63,7 +63,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
 
     protected:
         using NamedPrefabContainer = AZStd::unordered_map<AZStd::string, PrefabDom>;
-        
+
         NamedPrefabContainer m_prefabs;
         ProcessedObjectStoreContainer m_products;
         ProductDependencyContainer m_registeredProductDependencies;
