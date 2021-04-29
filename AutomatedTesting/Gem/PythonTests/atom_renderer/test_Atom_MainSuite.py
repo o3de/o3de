@@ -44,18 +44,6 @@ class TestAtomEditorComponentsMain(object):
         cfg_args = [level]
 
         expected_lines = [
-            # Area Light Component
-            "Area Light Entity successfully created",
-            "Area Light_test: Component added to the entity: True",
-            "Area Light_test: Component removed after UNDO: True",
-            "Area Light_test: Component added after REDO: True",
-            "Area Light_test: Entered game mode: True",
-            "Area Light_test: Entity enabled after adding required components: True",
-            "Area Light_test: Entity is hidden: True",
-            "Area Light_test: Entity is shown: True",
-            "Area Light_test: Entity deleted: True",
-            "Area Light_test: UNDO entity deletion works: True",
-            "Area Light_test: REDO entity deletion works: True",
             # Decal Component
             "Decal (Atom) Entity successfully created",
             "Decal (Atom)_test: Component added to the entity: True",
@@ -139,18 +127,6 @@ class TestAtomEditorComponentsMain(object):
             "Physical Sky_test: Entity deleted: True",
             "Physical Sky_test: UNDO entity deletion works: True",
             "Physical Sky_test: REDO entity deletion works: True",
-            # Point Light Component
-            "Point Light Entity successfully created",
-            "Point Light_test: Component added to the entity: True",
-            "Point Light_test: Component removed after UNDO: True",
-            "Point Light_test: Component added after REDO: True",
-            "Point Light_test: Entered game mode: True",
-            "Point Light_test: Exit game mode: True",
-            "Point Light_test: Entity is hidden: True",
-            "Point Light_test: Entity is shown: True",
-            "Point Light_test: Entity deleted: True",
-            "Point Light_test: UNDO entity deletion works: True",
-            "Point Light_test: REDO entity deletion works: True",
             # PostFX Layer Component
             "PostFX Layer Entity successfully created",
             "PostFX Layer_test: Component added to the entity: True",

@@ -161,12 +161,6 @@ def run():
             # Deletion/Undo/Redo test
             verify_deletion_undo_redo(self.component_name, entity_obj)
 
-    # Area Light Component
-    area_light = "Area Light"
-    ComponentTests(
-        area_light, lambda entity_obj: verify_required_component_addition(
-            entity_obj, ["Capsule Shape"], area_light))
-
     # Decal Component
     material_asset_path = os.path.join("AutomatedTesting", "Materials", "basic_grey.material")
     material_asset = asset.AssetCatalogRequestBus(
@@ -212,9 +206,6 @@ def run():
 
     # Physical Sky Component
     ComponentTests("Physical Sky")
-
-    # Point Light Component
-    ComponentTests("Point Light")
 
     # PostFX Layer Component
     ComponentTests("PostFX Layer")
