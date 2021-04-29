@@ -664,7 +664,7 @@ void CSprite::Shutdown()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 CSprite* CSprite::LoadSprite(const string& pathname)
 {
-    AZStd::string sourcePathname = pathname;
+    AZStd::string sourcePathname(pathname.c_str());
 
     // Strip image product extension if exists
     AZStd::string extension;
