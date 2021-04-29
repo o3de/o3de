@@ -605,19 +605,12 @@ void LevelEditorMenuHandler::PopulateEditMenu(ActionManager::MenuWrapper& editMe
     editMenu.AddSeparator();
 
     // Lock Selection
-    editMenu.AddAction(ID_EDIT_FREEZE);
-
     // NEWMENUS: NEEDS IMPLEMENTATION
     //// Unlock Selection
     //auto unlockSelectionMenu = editMenu.Get()->addAction(tr("Unlock Selection"));
 
     //// Unlock Last Locked
     //auto unlockLastLockedMenu = editMenu.Get()->addAction(tr("Unlock Last Locked"));
-
-    // Unlock All
-    editMenu.AddAction(ID_EDIT_UNFREEZEALL);
-
-    editMenu.AddSeparator();
 
     // Editor Settings
     auto editorSettingsMenu = editMenu.AddMenu(tr("Editor Settings"));

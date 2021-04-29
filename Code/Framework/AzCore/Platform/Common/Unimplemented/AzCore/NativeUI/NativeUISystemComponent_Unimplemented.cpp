@@ -12,16 +12,11 @@
 
 #include <AzCore/NativeUI/NativeUISystemComponent.h>
 
-namespace AZ
+namespace AZ::NativeUI
 {
-    namespace NativeUI
+    AZStd::string NativeUISystem::DisplayBlockingDialog([[maybe_unused]] const AZStd::string& title, [[maybe_unused]] const AZStd::string& message,
+        [[maybe_unused]] const AZStd::vector<AZStd::string>& options) const
     {
-        AZStd::string NativeUISystemComponent::DisplayBlockingDialog(const AZStd::string& title, const AZStd::string& message, const AZStd::vector<AZStd::string>& options) const
-        {
-            AZ_UNUSED(title);
-            AZ_UNUSED(message);
-            AZ_UNUSED(options);
-            return "";
-        }
+        return {};
     }
 }
