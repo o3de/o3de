@@ -87,19 +87,19 @@ namespace PhysXDebug
     {
         AZ_RTTI(ColorMappings, "{021E40A6-568E-430A-9332-EF180DACD3C0}");
         // user defined colors for physx debug primitives
-        ColorB m_defaultColor;
-        ColorB m_black;
-        ColorB m_red;
-        ColorB m_green;
-        ColorB m_blue;
-        ColorB m_yellow;
-        ColorB m_magenta;
-        ColorB m_cyan;
-        ColorB m_white;
-        ColorB m_grey;
-        ColorB m_darkRed;
-        ColorB m_darkGreen;
-        ColorB m_darkBlue;
+        AZ::Vector4 m_defaultColor;
+        AZ::Vector4 m_black;
+        AZ::Vector4 m_red;
+        AZ::Vector4 m_green;
+        AZ::Vector4 m_blue;
+        AZ::Vector4 m_yellow;
+        AZ::Vector4 m_magenta;
+        AZ::Vector4 m_cyan;
+        AZ::Vector4 m_white;
+        AZ::Vector4 m_grey;
+        AZ::Vector4 m_darkRed;
+        AZ::Vector4 m_darkGreen;
+        AZ::Vector4 m_darkBlue;
     };
 
     class SystemComponent
@@ -156,7 +156,7 @@ namespace PhysXDebug
         /// Convert from PhysX Visualization debug colors to user defined colors.
         /// @param originalColor a color from the PhysX debug visualization data.
         /// @return a user specified color mapping (defaulting to the original PhysX color).
-        ColorB MapOriginalPhysXColorToUserDefinedValues(const physx::PxU32& originalColor);
+        AZ::Vector4 MapOriginalPhysXColorToUserDefinedValues(const physx::PxU32& originalColor);
 
         /// Initialise the PhysX debug draw colors based on defaults.
         void InitPhysXColorMappings();
@@ -194,7 +194,7 @@ namespace PhysXDebug
 
 #ifdef IMGUI_ENABLED
         /// Build a specific color picker menu option.
-        void BuildColorPickingMenuItem(const AZStd::string& label, ColorB& color);
+        void BuildColorPickingMenuItem(const AZStd::string& label, AZ::Vector4& color);
 #endif // IMGUI_ENABLED
 
         physx::PxScene* GetCurrentPxScene();
@@ -209,10 +209,10 @@ namespace PhysXDebug
         bool m_editorPhysicsSceneDirty = true;
         static const float m_maxCullingBoxSize;
 
-        AZStd::vector<Vec3> m_linePoints;
-        AZStd::vector<ColorB> m_lineColors;
-        AZStd::vector<Vec3> m_trianglePoints;
-        AZStd::vector<ColorB> m_triangleColors;
+        AZStd::vector<AZ::Vector3> m_linePoints;
+        AZStd::vector<AZ::Vector4> m_lineColors;
+        AZStd::vector<AZ::Vector3> m_trianglePoints;
+        AZStd::vector<AZ::Vector4> m_triangleColors;
 
         // joint limit buffers
         AZStd::vector<AZ::Vector3> m_jointVertexBuffer;
