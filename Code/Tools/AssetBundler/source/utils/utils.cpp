@@ -108,15 +108,15 @@ namespace AssetBundler
 
     const char* AssetCatalogFilename = "assetcatalog.xml";
 
-    
-    const char EngineDirectoryName[] = "Engine";
+
+    constexpr auto EngineDirectoryName = AZ::IO::FixedMaxPath("Assets") / "Engine";
     const char RestrictedDirectoryName[] = "restricted";
     const char PlatformsDirectoryName[] = "Platforms";
     const char GemsDirectoryName[] = "Gems";
     const char GemsAssetsDirectoryName[] = "Assets";
     const char GemsSeedFileName[] = "seedList";
     const char EngineSeedFileName[] = "SeedAssetList";
-    
+
 
     namespace Internal
     {
@@ -203,13 +203,7 @@ namespace AssetBundler
 
     AZ::IO::FixedMaxPath GetEngineRoot()
     {
-        AZ::IO::FixedMaxPath engineRootPath;
-        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
-        {
-            settingsRegistry->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
-        }
-
-        return engineRootPath;
+        return AZ::Utils::GetEnginePath();
     }
 
     void AddPlatformIdentifier(AZStd::string& filePath, const AZStd::string& platformIdentifier)
@@ -259,11 +253,11 @@ namespace AssetBundler
         absoluteEngineSeedFilePath.ReplaceExtension(AzToolsFramework::AssetSeedManager::GetSeedFileExtension());
         if (fileIO->Exists(absoluteEngineSeedFilePath.c_str()))
         {
-            defaultSeedLists[absoluteEngineSeedFilePath.Native()] = EngineDirectoryName;
+            defaultSeedLists[absoluteEngineSeedFilePath.Native()] = EngineDirectoryName.String();
         }
 
         // Add Seed Lists from the Platforms directory
-        Internal::AddPlatformsDirectorySeeds(engineDirectory, EngineDirectoryName, defaultSeedLists, platformFlag);
+        Internal::AddPlatformsDirectorySeeds(engineDirectory, EngineDirectoryName.String(), defaultSeedLists, platformFlag);
 
         auto absoluteProjectDefaultSeedFilePath = AZ::IO::Path(projectPath) / EngineSeedFileName;
         absoluteProjectDefaultSeedFilePath.ReplaceExtension(AzToolsFramework::AssetSeedManager::GetSeedFileExtension());

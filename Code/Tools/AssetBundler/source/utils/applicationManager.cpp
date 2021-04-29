@@ -1335,10 +1335,10 @@ namespace AssetBundler
         }
 
         // If no platform was specified, defaulting to platforms specified in the asset processor config files
-        const char* appRoot = nullptr;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(appRoot, &AzFramework::ApplicationRequests::GetAppRoot);
-
-        AzFramework::PlatformFlags platformFlags = GetEnabledPlatformFlags(GetEngineRoot(), appRoot, AZ::Utils::GetProjectPath().c_str());
+        AzFramework::PlatformFlags platformFlags = GetEnabledPlatformFlags(
+            AZStd::string_view{ AZ::Utils::GetEnginePath() },
+            AZStd::string_view{ AZ::Utils::GetEnginePath() },
+            AZStd::string_view{ AZ::Utils::GetProjectPath() });
         auto platformsString = AzFramework::PlatformHelper::GetCommaSeparatedPlatformList(platformFlags);
 
         AZ_TracePrintf(AppWindowName, "No platform specified, defaulting to platforms ( %s ).\n", platformsString.c_str());
