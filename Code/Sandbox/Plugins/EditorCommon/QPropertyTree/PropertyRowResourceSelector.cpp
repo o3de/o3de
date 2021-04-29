@@ -292,7 +292,7 @@ const QIcon& PropertyRowResourceSelector::buttonIcon(const QPropertyTree* tree, 
     }
     case BUTTON_CREATE:
     {
-        static QIcon addIcon("Editor/Icons/animation/add.png");
+        static QIcon addIcon("Icons/animation/add.png");
         ;
         return addIcon;
     }

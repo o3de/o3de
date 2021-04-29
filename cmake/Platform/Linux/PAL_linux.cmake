@@ -38,4 +38,4 @@ endif()
 set(LY_ASSET_DEPLOY_ASSET_TYPE "pc" CACHE STRING "Set the asset type for deployment.")
 
 # Set the python cmd tool
-ly_set(LY_PYTHON_CMD ${CMAKE_CURRENT_SOURCE_DIR}/Tools/Python/python3.sh)
+ly_set(LY_PYTHON_CMD ${CMAKE_CURRENT_SOURCE_DIR}/python/python.sh)

@@ -45,7 +45,6 @@ namespace AssetProcessor
             "   ScanFolder      TEXT NOT NULL collate nocase, "
             "   DisplayName     TEXT NOT NULL collate nocase, "
             "   PortableKey     TEXT NOT NULL collate nocase, "
-            "   OutputPrefix    TEXT NOT NULL collate nocase, "
             "   IsRoot          INTEGER NOT NULL);";
 
         static const char* CREATE_SOURCES_TABLE = "AssetProcessor::CreateSourceTable";
@@ -254,14 +253,13 @@ namespace AssetProcessor
 
         static const char* INSERT_SCANFOLDER = "AssetProcessor::InsertScanFolder";
         static const char* INSERT_SCANFOLDER_STATEMENT =
-            "INSERT INTO ScanFolders (ScanFolder, DisplayName, PortableKey, OutputPrefix, IsRoot) "
-            "VALUES (:scanfolder, :displayname, :portablekey, :outputprefix, :isroot);";
+            "INSERT INTO ScanFolders (ScanFolder, DisplayName, PortableKey, IsRoot) "
+            "VALUES (:scanfolder, :displayname, :portablekey, :isroot);";
 
         static const auto s_InsertScanfolderQuery = MakeSqlQuery(INSERT_SCANFOLDER, INSERT_SCANFOLDER_STATEMENT, LOG_NAME,
             SqlParam<const char*>(":scanfolder"),
             SqlParam<const char*>(":displayname"),
             SqlParam<const char*>(":portablekey"),
-            SqlParam<const char*>(":outputprefix"),
             SqlParam<AZ::s32>(":isroot"));
 
         static const char* UPDATE_SCANFOLDER = "AssetProcessor::UpdateScanFolder";
@@ -270,7 +268,6 @@ namespace AssetProcessor
             "ScanFolder =   :scanfolder, "
             "DisplayName =  :displayname, "
             "PortableKey =  :portablekey, "
-            "OutputPrefix = :outputprefix, "
             "IsRoot = :isroot "
             "WHERE "
             "ScanFolderID = :scanfolderid;";
@@ -279,7 +276,6 @@ namespace AssetProcessor
             SqlParam<const char*>(":scanfolder"),
             SqlParam<const char*>(":displayname"),
             SqlParam<const char*>(":portablekey"),
-            SqlParam<const char*>(":outputprefix"),
             SqlParam<AZ::s32>(":isroot"),
             SqlParam<AZ::s64>(":scanfolderid"));
 
@@ -1051,6 +1047,10 @@ namespace AssetProcessor
             }
         }
 
+        // Nothing to do for version `AssetDatabase::DatabaseVersion::RemoveOutputPrefixFromScanFolders`
+        // sqlite doesn't not support altering a table to remove a column
+        // This is fine as the extra OutputPrefix column will not be queried
+
         if (foundVersion == CurrentDatabaseVersion())
         {
             dropAllTables = false;
@@ -1433,7 +1433,7 @@ namespace AssetProcessor
 
             //its not in the database, add it
             // it is a single statement, do not wrap it in a transaction, this wastes a lot of time.
-            if (!s_InsertScanfolderQuery.BindAndStep(*m_databaseConnection, entry.m_scanFolder.c_str(), entry.m_displayName.c_str(), entry.m_portableKey.c_str(), entry.m_outputPrefix.c_str(), entry.m_isRoot))
+            if (!s_InsertScanfolderQuery.BindAndStep(*m_databaseConnection, entry.m_scanFolder.c_str(), entry.m_displayName.c_str(), entry.m_portableKey.c_str(), entry.m_isRoot))
             {
                 return false;
             }
@@ -1457,7 +1457,7 @@ namespace AssetProcessor
                 return false;
             }
 
-            return s_UpdateScanfolderQuery.BindAndStep(*m_databaseConnection, entry.m_scanFolder.c_str(), entry.m_displayName.c_str(), entry.m_portableKey.c_str(), entry.m_outputPrefix.c_str(), entry.m_isRoot, entry.m_scanFolderID);
+            return s_UpdateScanfolderQuery.BindAndStep(*m_databaseConnection, entry.m_scanFolder.c_str(), entry.m_displayName.c_str(), entry.m_portableKey.c_str(), entry.m_isRoot, entry.m_scanFolderID);
         }
     }
 

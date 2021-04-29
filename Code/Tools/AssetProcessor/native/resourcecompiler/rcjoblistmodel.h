@@ -96,7 +96,7 @@ namespace AssetProcessor
         RCJob* getItem(int index) const;
         int GetIndexOfProcessingJob(const QueueElementID& elementId);
 
-        ///! EraseJobs expects the database name of the source file.  (So with outputprefix)
+        ///! EraseJobs expects the database name of the source file.
         void EraseJobs(QString sourceFileDatabaseName, AZStd::vector<RCJob*>& pendingJobs);
 
     private:

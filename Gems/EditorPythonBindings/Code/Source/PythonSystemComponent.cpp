@@ -154,7 +154,7 @@ namespace RedirectOutput
 
         RedirectOutputType.tp_new = PyType_GenericNew;
         if (PyType_Ready(&RedirectOutputType) < 0)
-        { 
+        {
             return 0;
         }
 
@@ -189,7 +189,7 @@ namespace RedirectOutput
     void ResetRedirection(const char* funcname, PyObject*& saved, PyObject*& current)
     {
         if (current)
-        { 
+        {
             PySys_SetObject(funcname, saved);
         }
         Py_XDECREF(current);
@@ -204,7 +204,7 @@ namespace RedirectOutput
 
         s_RedirectModule = module;
 
-        SetRedirection("stdout", g_redirect_stdout_saved, g_redirect_stdout, [](const char* msg) 
+        SetRedirection("stdout", g_redirect_stdout_saved, g_redirect_stdout, [](const char* msg)
         {
             EditorPythonConsoleNotificationBus::Broadcast(&EditorPythonConsoleNotificationBus::Events::OnTraceMessage, msg);
         });
@@ -363,8 +363,7 @@ namespace EditorPythonBindings
 
         auto resolveScriptPath = [&pythonPathStack](AZStd::string_view path)
         {
-            AZ::IO::Path editorScriptsPath(path);
-            editorScriptsPath /= "Editor/Scripts";
+            auto editorScriptsPath = AZ::IO::Path(path) / "Editor" / "Scripts";
             if (AZ::IO::SystemFile::Exists(editorScriptsPath.c_str()))
             {
                 pythonPathStack.emplace_back(AZStd::move(editorScriptsPath.LexicallyNormal().Native()));
@@ -372,7 +371,7 @@ namespace EditorPythonBindings
         };
 
         // The discovery order will be:
-        //   1 - engine
+        //   1 - engine-root/EngineAsets
         //   2 - gems
         //   3 - project
         //   4 - user(dev)
@@ -381,7 +380,7 @@ namespace EditorPythonBindings
         AZ::IO::FixedMaxPath engineRoot;
         if (settingsRegistry->Get(engineRoot.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder); !engineRoot.empty())
         {
-            resolveScriptPath(engineRoot.Native());
+            resolveScriptPath((engineRoot / "Assets").Native());
         }
 
         // 2 - gems
@@ -470,7 +469,7 @@ namespace EditorPythonBindings
         }
     }
 
- 
+
 
     bool PythonSystemComponent::StartPythonInterpreter(const PythonPathStack& pythonPathStack)
     {
@@ -502,7 +501,7 @@ namespace EditorPythonBindings
             // ignore system location for sites site-packages
             Py_IsolatedFlag = 1; // -I - Also sets Py_NoUserSiteDirectory.  If removed PyNoUserSiteDirectory should be set.
             Py_IgnoreEnvironmentFlag = 1; // -E
-             
+
             const bool initializeSignalHandlers = true;
             pybind11::initialize_interpreter(initializeSignalHandlers);
 
@@ -555,7 +554,7 @@ namespace EditorPythonBindings
         }
         return false;
     }
-    
+
     bool PythonSystemComponent::StopPythonInterpreter()
     {
         if (Py_IsInitialized())
@@ -704,7 +703,7 @@ namespace EditorPythonBindings
             // Acquire GIL before calling Python code
             AZStd::lock_guard<decltype(m_lock)> lock(m_lock);
             pybind11::gil_scoped_acquire acquire;
-        
+
             // Create standard "argc" / "argv" command-line parameters to pass in to the Python script via sys.argv.
             // argc = number of parameters.  This will always be at least 1, since the first parameter is the script name.
             // argv = the list of parameters, in wchar format.

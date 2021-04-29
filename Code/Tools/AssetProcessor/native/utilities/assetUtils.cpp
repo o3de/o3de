@@ -562,8 +562,8 @@ namespace AssetUtilities
                 }
                 else
                 {
-                    AZ_Warning(AssetProcessor::ConsoleChannel, false, "Invalid server address, please check the AssetProcessorPlatformConfig.setreg file \
-to ensure that the address is correct. Asset Processor won't be running in server mode.");
+                    AZ_Warning(AssetProcessor::ConsoleChannel, false, "Invalid server address, please check the AssetProcessorPlatformConfig.setreg file"
+                        " to ensure that the address is correct. Asset Processor won't be running in server mode.");
                 }
 
                 break;
@@ -804,7 +804,7 @@ to ensure that the address is correct. Asset Processor won't be running in serve
             {
                 QThread::msleep(AssetUtilsInternal::g_RetryWaitInterval);
             }
-            
+
         } while (!timer.hasExpired(waitTimeinSeconds * 1000));
 
         AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Failed to create output directory: %s after %d retries.\n", dir.absolutePath().toUtf8().data(), retries);
@@ -1075,7 +1075,7 @@ to ensure that the address is correct. Asset Processor won't be running in serve
     {
         // it is assumed that m_fingerprintFilesList contains the original file and all dependencies, and is in a stable order without duplicates
         // CRC32 is not an effective hash for this purpose, so we will build a string and then use SHA1 on it.
-        
+
         // to avoid resizing and copying repeatedly we will keep track of the largest reserved capacity ever needed for this function, and reserve that much data
         static size_t s_largestFingerprintCapacitySoFar = 1;
         AZStd::string fingerprintString;
@@ -1207,7 +1207,7 @@ to ensure that the address is correct. Asset Processor won't be running in serve
                 // the navigation system can still be writing to this file when hashing begins, causing the EoF marker to change.
                 AZ::IO::SizeType remainingToRead = AZStd::min(readStream.GetLength() - readStream.GetCurPos(), aznumeric_cast<AZ::IO::SizeType>(AZ_ARRAY_SIZE(buffer)));
                 bytesRead = readStream.Read(remainingToRead, buffer);
-                
+
                 if(bytesReadOut)
                 {
                     *bytesReadOut += bytesRead;
@@ -1234,7 +1234,7 @@ to ensure that the address is correct. Asset Processor won't be running in serve
     }
 
     std::uint64_t AdjustTimestamp(QDateTime timestamp)
-    {       
+    {
         timestamp = timestamp.toUTC();
 
         auto timeMilliseconds = timestamp.toMSecsSinceEpoch();
@@ -1250,7 +1250,7 @@ to ensure that the address is correct. Asset Processor won't be running in serve
     {
         bool fileFound = false;
         AssetProcessor::FileStateInfo fileStateInfo;
-        
+
         auto* fileStateInterface = AZ::Interface<AssetProcessor::IFileStateRequests>::Get();
         if (fileStateInterface)
         {
@@ -1277,7 +1277,7 @@ to ensure that the address is correct. Asset Processor won't be running in serve
             {
                 fileIdentifier = AdjustTimestamp(lastModifiedTime);
             }
-            
+
             // its possible that the dependency has moved to a different file with the same modtime/hash
             // so we add the size of it too.
             // its also possible that it moved to a different file with the same modtime/hash AND size,
@@ -1324,7 +1324,7 @@ to ensure that the address is correct. Asset Processor won't be running in serve
         }
 
         QDir tempRoot;
-        
+
         if (!CreateTempRootFolder(startFolder, tempRoot))
         {
             result.clear();

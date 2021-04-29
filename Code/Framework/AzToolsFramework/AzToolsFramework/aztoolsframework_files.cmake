@@ -487,8 +487,8 @@ set(FILES
     Viewport/ViewportTypes.cpp
     ViewportUi/Button.h
     ViewportUi/Button.cpp
-    ViewportUi/Cluster.h
-    ViewportUi/Cluster.cpp
+    ViewportUi/ButtonGroup.h
+    ViewportUi/ButtonGroup.cpp
     ViewportUi/TextField.h
     ViewportUi/TextField.cpp
     ViewportUi/ViewportUiDisplay.h
@@ -500,6 +500,8 @@ set(FILES
     ViewportUi/ViewportUiTextField.cpp
     ViewportUi/ViewportUiCluster.h
     ViewportUi/ViewportUiCluster.cpp
+    ViewportUi/ViewportUiSwitcher.h
+    ViewportUi/ViewportUiSwitcher.cpp
     ViewportUi/ViewportUiWidgetCallbacks.h
     ViewportUi/ViewportUiWidgetCallbacks.cpp
     ViewportUi/ViewportUiDisplayLayout.h
@@ -729,7 +731,7 @@ set(FILES
 # Prevent the following files from being grouped in UNITY builds
 set(SKIP_UNITY_BUILD_INCLUSION_FILES
     # The following files are skipped from unity to avoid duplicated symbols related to an ebus
-    AzToolsFrameworkModule.cpp 
+    AzToolsFrameworkModule.cpp
     Application/ToolsApplication.cpp
     UI/PropertyEditor/PropertyEntityIdCtrl.cpp
     UI/PropertyEditor/PropertyManagerComponent.cpp
