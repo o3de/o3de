@@ -327,7 +327,7 @@ function(ly_setup_others)
         COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
 
-    # Gem Source Assets
+    # Gem Source Assets and Registry
     # Find all gem directories relative to the CMake Source Dir
     file(
         GLOB_RECURSE
@@ -336,7 +336,7 @@ function(ly_setup_others)
         RELATIVE "${CMAKE_SOURCE_DIR}/"
         "Gems/*"
     )
-    list(FILTER gems_assets_path INCLUDE REGEX "/Assets$")
+    list(FILTER gems_assets_path INCLUDE REGEX "/(Assets|Registry)$")
 
     foreach (gem_assets_path ${gems_assets_path})
         set(gem_abs_assets_path ${CMAKE_SOURCE_DIR}/${gem_assets_path}/)
