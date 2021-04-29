@@ -45,9 +45,9 @@ namespace AzToolsFramework
         {
             Q_OBJECT
         public:
-            AZ_CLASS_ALLOCATOR(ThumbnailContext, AZ::SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR(ThumbnailContext, AZ::SystemAllocator, 0);
 
-            explicit ThumbnailContext(int thumbnailSize);
+            ThumbnailContext();
             ~ThumbnailContext() override;
 
             //! Is the thumbnail currently loading or is about to load.
@@ -82,8 +82,6 @@ namespace AzToolsFramework
             SharedThumbnail m_missingThumbnail;
             //! Default loading thumbnail used when thumbnail is found by is not yet generated
             SharedThumbnail m_loadingThumbnail;
-            //! Thumbnail size (width and height in pixels)
-            int m_thumbnailSize;
             //! There is only a limited number of threads on global threadPool, because there can be many thumbnails rendering at once
             //! an individual threadPool is needed to avoid deadlocks
             QThreadPool m_threadPool;

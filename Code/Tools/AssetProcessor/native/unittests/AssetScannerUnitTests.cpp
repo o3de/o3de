@@ -65,10 +65,10 @@ void AssetScannerUnitTest::StartTest()
     AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms;
     config.PopulatePlatformsForScanFolder(platforms);
     //                                               PATH               DisplayName  PortKey outputfolder  root recurse  platforms
-    config.AddScanFolder(ScanFolderInfo(tempPath.absolutePath(),         "temp",       "ap1",   "",        true,  false, platforms));  // note:  "Recurse" set to false.
-    config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder1"), "",           "ap2",   "",       false,  true,  platforms));
-    config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder2"), "",           "ap3",   "",       false,  true,  platforms));
-    config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder3"), "",           "ap4",   "",       false,  false, platforms)); // note:  "Recurse" set to false.
+    config.AddScanFolder(ScanFolderInfo(tempPath.absolutePath(),         "temp",       "ap1",    true,  false, platforms));  // note:  "Recurse" set to false.
+    config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder1"), "",           "ap2",   false,  true,  platforms));
+    config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder2"), "",           "ap3",   false,  true,  platforms));
+    config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder3"), "",           "ap4",   false,  false, platforms)); // note:  "Recurse" set to false.
     AssetScanner scanner(&config);
 
     QList<AssetFileInfo> filesFound;

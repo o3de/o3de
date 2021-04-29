@@ -98,7 +98,7 @@ namespace UnitTest
     {
         AZ::EntityId entityId;
         AZStd::unique_ptr<NvCloth::ActorClothSkinning> actorClothSkinning =
-            NvCloth::ActorClothSkinning::Create(entityId, {}, 0, {});
+            NvCloth::ActorClothSkinning::Create(entityId, {}, 0);
 
         EXPECT_TRUE(actorClothSkinning.get() == nullptr);
     }
@@ -107,7 +107,7 @@ namespace UnitTest
     {
         AZ::EntityId entityId;
         AZStd::unique_ptr<NvCloth::ActorClothSkinning> actorClothSkinning =
-            NvCloth::ActorClothSkinning::Create(entityId, MeshNodeInfo, MeshRemappedVertices.size(), MeshRemappedVertices);
+            NvCloth::ActorClothSkinning::Create(entityId, MeshNodeInfo, MeshRemappedVertices.size());
 
         EXPECT_TRUE(actorClothSkinning.get() == nullptr);
     }
@@ -122,7 +122,7 @@ namespace UnitTest
         }
 
         AZStd::unique_ptr<NvCloth::ActorClothSkinning> actorClothSkinning =
-            NvCloth::ActorClothSkinning::Create(m_actorComponent->GetEntityId(), {}, 0, {});
+            NvCloth::ActorClothSkinning::Create(m_actorComponent->GetEntityId(), {}, 0);
 
         EXPECT_TRUE(actorClothSkinning.get() == nullptr);
     }
@@ -139,7 +139,7 @@ namespace UnitTest
         }
 
         AZStd::unique_ptr<NvCloth::ActorClothSkinning> actorClothSkinning =
-            NvCloth::ActorClothSkinning::Create(m_actorComponent->GetEntityId(), MeshNodeInfo, MeshVertices.size(), MeshRemappedVertices);
+            NvCloth::ActorClothSkinning::Create(m_actorComponent->GetEntityId(), MeshNodeInfo, MeshVertices.size());
 
         EXPECT_TRUE(actorClothSkinning.get() == nullptr);
     }
@@ -156,7 +156,7 @@ namespace UnitTest
         }
 
         AZStd::unique_ptr<NvCloth::ActorClothSkinning> actorClothSkinning =
-            NvCloth::ActorClothSkinning::Create(m_actorComponent->GetEntityId(), MeshNodeInfo, MeshVertices.size(), MeshRemappedVertices);
+            NvCloth::ActorClothSkinning::Create(m_actorComponent->GetEntityId(), MeshNodeInfo, MeshVertices.size());
 
         EXPECT_TRUE(actorClothSkinning.get() != nullptr);
     }
@@ -184,7 +184,7 @@ namespace UnitTest
         }
 
         AZStd::unique_ptr<NvCloth::ActorClothSkinning> actorClothSkinning =
-            NvCloth::ActorClothSkinning::Create(actorComponent->GetEntityId(), MeshNodeInfo, MeshVertices.size(), MeshRemappedVertices);
+            NvCloth::ActorClothSkinning::Create(actorComponent->GetEntityId(), MeshNodeInfo, MeshVertices.size());
         ASSERT_TRUE(actorClothSkinning.get() != nullptr);
 
         const AZStd::vector<NvCloth::SimParticleFormat> clothParticles = {{
@@ -195,7 +195,7 @@ namespace UnitTest
         AZStd::vector<NvCloth::SimParticleFormat> skinnedClothParticles(clothParticles.size(), NvCloth::SimParticleFormat(0.0f, 0.0f, 0.0f, 1.0f));
 
         actorClothSkinning->UpdateSkinning();
-        actorClothSkinning->ApplySkinning(clothParticles, skinnedClothParticles);
+        actorClothSkinning->ApplySkinning(clothParticles, skinnedClothParticles, MeshRemappedVertices);
 
         EXPECT_THAT(skinnedClothParticles, ::testing::Pointwise(ContainerIsCloseTolerance(Tolerance), clothParticles));
 
@@ -208,7 +208,7 @@ namespace UnitTest
         AZStd::vector<NvCloth::SimParticleFormat> newSkinnedClothParticles(clothParticles.size(), NvCloth::SimParticleFormat(0.0f, 0.0f, 0.0f, 1.0f));
 
         actorClothSkinning->UpdateSkinning();
-        actorClothSkinning->ApplySkinning(clothParticles, newSkinnedClothParticles);
+        actorClothSkinning->ApplySkinning(clothParticles, newSkinnedClothParticles, MeshRemappedVertices);
 
         const AZ::Transform diffTransform = AZ::Transform::CreateRotationY(AZ::DegToRad(90.0f));
         const AZStd::vector<NvCloth::SimParticleFormat> clothParticlesResult = {{
@@ -245,7 +245,7 @@ namespace UnitTest
         }
 
         AZStd::unique_ptr<NvCloth::ActorClothSkinning> actorClothSkinning =
-            NvCloth::ActorClothSkinning::Create(m_actorComponent->GetEntityId(), MeshNodeInfo, MeshVertices.size(), MeshRemappedVertices);
+            NvCloth::ActorClothSkinning::Create(m_actorComponent->GetEntityId(), MeshNodeInfo, MeshVertices.size());
         ASSERT_TRUE(actorClothSkinning.get() != nullptr);
         
         const AZStd::vector<NvCloth::SimParticleFormat> clothParticles = {{
@@ -256,7 +256,7 @@ namespace UnitTest
         AZStd::vector<NvCloth::SimParticleFormat> skinnedClothParticles(clothParticles.size(), NvCloth::SimParticleFormat(0.0f, 0.0f, 0.0f, 1.0f));
 
         actorClothSkinning->UpdateSkinning();
-        actorClothSkinning->ApplySkinning(clothParticles, skinnedClothParticles);
+        actorClothSkinning->ApplySkinning(clothParticles, skinnedClothParticles, MeshRemappedVertices);
 
         EXPECT_THAT(skinnedClothParticles, ::testing::Pointwise(ContainerIsCloseTolerance(Tolerance), clothParticles));
 
@@ -271,7 +271,7 @@ namespace UnitTest
         AZStd::vector<NvCloth::SimParticleFormat> newSkinnedClothParticles(clothParticles.size(), NvCloth::SimParticleFormat(0.0f, 0.0f, 0.0f, 1.0f));
 
         actorClothSkinning->UpdateSkinning();
-        actorClothSkinning->ApplySkinning(clothParticles, newSkinnedClothParticles);
+        actorClothSkinning->ApplySkinning(clothParticles, newSkinnedClothParticles, MeshRemappedVertices);
 
         const AZStd::vector<NvCloth::SimParticleFormat> clothParticlesResult = {{
             NvCloth::SimParticleFormat(-48.4177f, -31.9446f, 45.2279f, 1.0f),
@@ -294,7 +294,7 @@ namespace UnitTest
         }
 
         AZStd::unique_ptr<NvCloth::ActorClothSkinning> actorClothSkinning =
-            NvCloth::ActorClothSkinning::Create(m_actorComponent->GetEntityId(), MeshNodeInfo, MeshVertices.size(), MeshRemappedVertices);
+            NvCloth::ActorClothSkinning::Create(m_actorComponent->GetEntityId(), MeshNodeInfo, MeshVertices.size());
         ASSERT_TRUE(actorClothSkinning.get() != nullptr);
 
         EXPECT_FALSE(actorClothSkinning->IsActorVisible());

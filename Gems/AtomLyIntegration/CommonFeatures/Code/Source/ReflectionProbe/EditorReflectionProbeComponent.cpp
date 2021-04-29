@@ -49,20 +49,24 @@ namespace AZ
                         "Reflection Probe", "The ReflectionProbe component captures an IBL specular reflection at a specific position in the level")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::Category, "Atom")
-                            ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/Component_Placeholder.svg")
-                            ->Attribute(AZ::Edit::Attributes::ViewportIcon, "editor/icons/components/viewport/component_placeholder.png")
+                            ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg")
+                            ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.png")
                             ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                            ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                             ->Attribute(AZ::Edit::Attributes::PrimaryAssetType, AZ::AzTypeInfo<RPI::ModelAsset>::Uuid())
-                        ->ClassElement(AZ::Edit::ClassElements::Group, "Cubemap")
+                        ->ClassElement(AZ::Edit::ClassElements::Group, "Cubemap Bake")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &EditorReflectionProbeComponent::m_useBakedCubemap, "Use Baked Cubemap", "Selects between a cubemap that captures the environment at location in the scene or a preauthored cubemap")
-                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorReflectionProbeComponent::OnUseBakedCubemapChanged)
                             ->UIElement(AZ::Edit::UIHandlers::Button, "Bake Reflection Probe", "Bake Reflection Probe")
                                 ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
                                 ->Attribute(AZ::Edit::Attributes::ButtonText, "Bake Reflection Probe")
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorReflectionProbeComponent::BakeReflectionProbe)
                                 ->Attribute(AZ::Edit::Attributes::Visibility, &EditorReflectionProbeComponent::GetBakedCubemapVisibilitySetting)
+                        ->ClassElement(AZ::Edit::ClassElements::Group, "Cubemap")
+                            ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &EditorReflectionProbeComponent::m_useBakedCubemap, "Use Baked Cubemap", "Selects between a cubemap that captures the environment at location in the scene or a preauthored cubemap")
+                                ->Attribute(AZ::Edit::Attributes::ChangeValidate, &EditorReflectionProbeComponent::OnUseBakedCubemapValidate)
+                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorReflectionProbeComponent::OnUseBakedCubemapChanged)
                             ->DataElement(AZ::Edit::UIHandlers::MultiLineEdit, &EditorReflectionProbeComponent::m_bakedCubeMapRelativePath, "Baked Cubemap Path", "Baked Cubemap Path")
                                 ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
                                 ->Attribute(AZ::Edit::Attributes::Visibility, &EditorReflectionProbeComponent::GetBakedCubemapVisibilitySetting)
@@ -186,6 +190,16 @@ namespace AZ
         bool EditorReflectionProbeComponent::SupportsEditorRayIntersect()
         {
             return false;
+        }
+
+        AZ::Outcome<void, AZStd::string> EditorReflectionProbeComponent::OnUseBakedCubemapValidate([[maybe_unused]] void* newValue, [[maybe_unused]] const AZ::Uuid& valueType)
+        {
+            if (!m_controller.m_featureProcessor)
+            {
+                return AZ::Failure(AZStd::string("This Reflection Probe entity is hidden, it must be visible in order to change the cubemap type."));
+            }
+
+            return AZ::Success();
         }
 
         AZ::u32 EditorReflectionProbeComponent::OnUseBakedCubemapChanged()

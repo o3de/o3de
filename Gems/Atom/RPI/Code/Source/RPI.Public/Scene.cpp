@@ -28,6 +28,8 @@
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Jobs/JobEmpty.h>
 
+#include <AzFramework/Entity/EntityContext.h>
+
 namespace AZ
 {
     namespace RPI
@@ -71,12 +73,15 @@ namespace AZ
         Scene* Scene::GetSceneForEntityContextId(AzFramework::EntityContextId entityContextId)
         {
             // Find the scene for this entity context.
-            AzFramework::Scene* scene = nullptr;
-            AzFramework::SceneSystemRequestBus::BroadcastResult(scene, &AzFramework::SceneSystemRequestBus::Events::GetSceneFromEntityContextId, entityContextId);
+            AZStd::shared_ptr<AzFramework::Scene> scene = AzFramework::EntityContext::FindContainingScene(entityContextId);
             if (scene)
             {
                 // Get the RPI::Scene subsystem from the AZFramework Scene.
-                return scene->GetSubsystem<RPI::Scene>();
+                RPI::ScenePtr* scenePtr = scene->FindSubsystem<RPI::ScenePtr>();
+                if (scenePtr)
+                {
+                    return scenePtr->get();
+                }
             }
             return nullptr;
         }
@@ -87,6 +92,7 @@ namespace AZ
             m_id = Uuid::CreateRandom();
             m_cullingScene = aznew CullingScene();
             SceneRequestBus::Handler::BusConnect(m_id);
+            m_drawFilterTagRegistry = RHI::DrawFilterTagRegistry::Create();
         }
 
         Scene::~Scene()
@@ -269,6 +275,8 @@ namespace AZ
                 return;
             }
 
+            pipeline->SetDrawFilterTag(m_drawFilterTagRegistry->AcquireTag(pipelineId));
+
             m_pipelines.push_back(pipeline);
 
             // Set this pipeline as default if the default pipeline was empty. This pipeline should be the first pipeline be added to the scene
@@ -302,6 +310,8 @@ namespace AZ
                     {
                         m_defaultPipeline = nullptr;
                     }
+
+                    m_drawFilterTagRegistry->ReleaseTag(pipelineToRemove->GetDrawFilterTag());
 
                     pipelineToRemove->OnRemovedFromScene(this);
                     m_pipelines.erase(it);

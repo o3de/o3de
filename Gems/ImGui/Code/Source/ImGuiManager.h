@@ -33,7 +33,7 @@ namespace ImGui
     class ImGuiManager
         : public AzFramework::InputChannelEventListener
         , public AzFramework::InputTextEventListener
-        , public ImGuiManagerListenerBus::Handler
+        , public ImGuiManagerBus::Handler
         , public AzFramework::WindowNotificationBus::Handler
     {
     public:
@@ -45,7 +45,7 @@ namespace ImGui
     protected:
         void RenderImGuiBuffers(const ImVec2& scaleRects);
 
-        // -- ImGuiManagerListenerBus Interface -------------------------------------------------------------------
+        // -- ImGuiManagerBus Interface -------------------------------------------------------------------
         DisplayState GetEditorWindowState() const override { return m_editorWindowState; }
         void SetEditorWindowState(DisplayState state) override { m_editorWindowState = state; }
         DisplayState GetClientMenuBarState() const override { return m_clientMenuBarState; }
@@ -63,7 +63,7 @@ namespace ImGui
         void OverrideRenderWindowSize(uint32_t width, uint32_t height) override;
         void RestoreRenderWindowSizeToDefault() override;
         void Render() override;
-        // -- ImGuiManagerListenerBus Interface -------------------------------------------------------------------
+        // -- ImGuiManagerBus Interface -------------------------------------------------------------------
 
         // -- AzFramework::InputChannelEventListener and AzFramework::InputTextEventListener Interface ------------
         bool OnInputChannelEventFiltered(const AzFramework::InputChannel& inputChannel) override;

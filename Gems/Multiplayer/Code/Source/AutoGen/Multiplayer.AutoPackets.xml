@@ -2,7 +2,7 @@
 
 <PacketGroup Name="MultiplayerPackets" PacketStart="CorePackets::PacketType::MAX">
     <Include File="AzNetworking/AutoGen/CorePackets.AutoPackets.h" />
-    <Include File="Source/MultiplayerTypes.h" />
+    <Include File="Include/MultiplayerTypes.h" />
     <Include File="Source/NetworkEntity/NetworkEntityRpcMessage.h" />
     <Include File="Source/NetworkEntity/NetworkEntityUpdateMessage.h" />
 
@@ -13,6 +13,10 @@
     <Packet Name="Accept" Desc="Server accept packet">
         <Member Type="Multiplayer::HostId" Name="hostId" Init="Multiplayer::InvalidHostId" />
         <Member Type="Multiplayer::LongNetworkString" Name="map" />
+    </Packet>
+  
+    <Packet Name="ReadyForEntityUpdates" Desc="Client confirming it is ready to receive entity updates">
+      <Member Type="bool" Name="readyForEntityUpdates" />
     </Packet>
 
     <Packet Name="SyncConsole" Desc="Packet for synchornizing cvars between hosts">

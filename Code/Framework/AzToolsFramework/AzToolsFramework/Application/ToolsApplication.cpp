@@ -284,6 +284,10 @@ namespace AzToolsFramework
     void ToolsApplication::Start(const Descriptor& descriptor, const StartupParameters& startupParameters/* = StartupParameters()*/)
     {
         Application::Start(descriptor, startupParameters);
+        if (!m_isStarted)
+        {
+            return;
+        }
 
         m_editorEntityManager.Start();
 
@@ -395,6 +399,7 @@ namespace AzToolsFramework
                 ->Event("MarkEntityDeselected", &ToolsApplicationRequests::MarkEntityDeselected)
                 ->Event("IsSelected", &ToolsApplicationRequests::IsSelected)
                 ->Event("AreAnyEntitiesSelected", &ToolsApplicationRequests::AreAnyEntitiesSelected)
+                ->Event("GetSelectedEntitiesCount", &ToolsApplicationRequests::GetSelectedEntitiesCount)
                 ;
 
             behaviorContext->EBus<ToolsApplicationNotificationBus>("ToolsApplicationNotificationBus")
