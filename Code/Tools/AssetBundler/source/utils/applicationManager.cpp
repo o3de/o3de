@@ -372,6 +372,13 @@ namespace AssetBundler
     {
         using namespace AzToolsFramework;
 
+        auto validateArgsOutcome = ValidateInputArgs(parser, m_allSeedsArgs);
+        if (!validateArgsOutcome.IsSuccess())
+        {
+            OutputHelpSeeds();
+            return AZ::Failure(validateArgsOutcome.TakeError());
+        }
+
         SeedsParams params;
 
         params.m_ignoreFileCase = parser->HasSwitch(IgnoreFileCaseFlag);
@@ -462,6 +469,13 @@ namespace AssetBundler
 
     AZ::Outcome<AssetListsParams, AZStd::string> ApplicationManager::ParseAssetListsCommandData(const AZ::CommandLine* parser)
     {
+        auto validateArgsOutcome = ValidateInputArgs(parser, m_allAssetListsArgs);
+        if (!validateArgsOutcome.IsSuccess())
+        {
+            OutputHelpAssetLists();
+            return AZ::Failure(validateArgsOutcome.TakeError());
+        }
+
         AssetListsParams params;
 
         // Read in Platform arg
@@ -525,6 +539,13 @@ namespace AssetBundler
 
     AZ::Outcome<ComparisonRulesParams, AZStd::string> ApplicationManager::ParseComparisonRulesCommandData(const AZ::CommandLine* parser)
     {
+        auto validateArgsOutcome = ValidateInputArgs(parser, m_allComparisonRulesArgs);
+        if (!validateArgsOutcome.IsSuccess())
+        {
+            OutputHelpComparisonRules();
+            return AZ::Failure(validateArgsOutcome.TakeError());
+        }
+
         ScopedTraceHandler traceHandler;
         ComparisonRulesParams params;
 
@@ -907,6 +928,13 @@ namespace AssetBundler
 
     AZ::Outcome<ComparisonParams, AZStd::string> ApplicationManager::ParseCompareCommandData(const AZ::CommandLine* parser)
     {
+        auto validateArgsOutcome = ValidateInputArgs(parser, m_allCompareArgs);
+        if (!validateArgsOutcome.IsSuccess())
+        {
+            OutputHelpCompare();
+            return AZ::Failure(validateArgsOutcome.TakeError());
+        }
+
         ComparisonParams params;
 
         // Read in Platform arg
@@ -998,6 +1026,13 @@ namespace AssetBundler
 
     AZ::Outcome<BundleSettingsParams, AZStd::string> ApplicationManager::ParseBundleSettingsCommandData(const AZ::CommandLine* parser)
     {
+        auto validateArgsOutcome = ValidateInputArgs(parser, m_allBundleSettingsArgs);
+        if (!validateArgsOutcome.IsSuccess())
+        {
+            OutputHelpBundleSettings();
+            return AZ::Failure(validateArgsOutcome.TakeError());
+        }
+
         BundleSettingsParams params;
 
         // Read in Platform arg
@@ -1202,6 +1237,13 @@ namespace AssetBundler
 
     AZ::Outcome<BundlesParamsList, AZStd::string> ApplicationManager::ParseBundlesCommandData(const AZ::CommandLine* parser)
     {
+        auto validateArgsOutcome = ValidateInputArgs(parser, m_allBundlesArgs);
+        if (!validateArgsOutcome.IsSuccess())
+        {
+            OutputHelpBundles();
+            return AZ::Failure(validateArgsOutcome.TakeError());
+        }
+
         auto parseSettingsOutcome = ParseBundleSettingsAndOverrides(parser, BundlesCommand);
         if (!parseSettingsOutcome.IsSuccess())
         {
@@ -1213,6 +1255,14 @@ namespace AssetBundler
 
     AZ::Outcome<BundleSeedParams, AZStd::string> ApplicationManager::ParseBundleSeedCommandData(const AZ::CommandLine* parser)
     {
+
+        auto validateArgsOutcome = ValidateInputArgs(parser, m_allBundleSeedArgs);
+        if (!validateArgsOutcome.IsSuccess())
+        {
+            OutputHelpBundles();
+            return AZ::Failure(validateArgsOutcome.TakeError());
+        }
+
         BundleSeedParams params;
 
         params.m_addSeedList = GetAddSeedArgList(parser);
@@ -1230,6 +1280,12 @@ namespace AssetBundler
 
     AZ::Outcome<void, AZStd::string> ApplicationManager::ValidateInputArgs(const AZ::CommandLine* parser, const AZStd::vector<const char*>& validArgList)
     {
+        constexpr AZStd::string_view ApplicationArgList = "/O3DE/AzCore/Application/ValidCommandOptions";
+        AZStd::vector<AZStd::string> validApplicationArgs;
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            settingsRegistry->GetObject(validApplicationArgs, ApplicationArgList);
+        }
         for (const auto& paramInfo : *parser)
         {
             // Skip positional arguments
@@ -1240,6 +1296,14 @@ namespace AssetBundler
             bool isValidArg = false;
 
             for (const auto& validArg : validArgList)
+            {
+                if (AZ::StringFunc::Equal(paramInfo.m_option, validArg))
+                {
+                    isValidArg = true;
+                    break;
+                }
+            }
+            for (const auto& validArg : validApplicationArgs)
             {
                 if (AZ::StringFunc::Equal(paramInfo.m_option, validArg))
                 {

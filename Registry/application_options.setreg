@@ -1,0 +1,17 @@
+{
+    "O3DE" : {
+        "AzCore": {
+            "Application": {
+                "ValidCommandOptions": [
+                    "project-path",
+                    "engine-path",
+                    "project-cache-path",
+                    "regset",
+                    "regremove",
+                    "regdump",
+                    "regdumpall"
+                ]
+            }
+        }
+    }
+}
