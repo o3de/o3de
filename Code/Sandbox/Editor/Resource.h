@@ -91,10 +91,6 @@
 #define ID_EXPORT_INDOORS                          32915
 #define ID_VIEW_CYCLE2DVIEWPORT                    32916
 #define ID_SNAPANGLE                               32917
-#define ID_ROTATESELECTION_XAXIS                   32918
-#define ID_ROTATESELECTION_YAXIS                   32919
-#define ID_ROTATESELECTION_ZAXIS                   32920
-#define ID_ROTATESELECTION_ROTATEANGLE             32921
 #define ID_EDIT_RENAMEOBJECT                       32925
 #define ID_CHANGEMOVESPEED_INCREASE                32928
 #define ID_CHANGEMOVESPEED_DECREASE                32929
@@ -108,9 +104,7 @@
 #define ID_FILE_SAVELEVELRESOURCES                 32942
 #define ID_VALIDATELEVEL                           32943
 #define ID_TERRAIN_RESIZE                          32944
-#define ID_RULER                                   32945
 #define ID_RELOAD_TEXTURES                         32952
-#define ID_LOCK_SELECTION                          32956
 #define ID_TERRAIN_COLLISION                       32960
 #define ID_TOOL_FIRST                              32972
 #define ID_EDIT_UNFREEZE                           32973
@@ -119,10 +113,8 @@
 #define ID_TOOL_SHELVE_FIRST                       33174
 #define ID_TOOL_SHELVE_LAST                        33375
 #define ID_EDIT_SELECTALL                          33376
-#define ID_EDIT_SELECTNONE                         33377
 #define ID_WIREFRAME                               33410
 #define ID_FILE_GENERATETERRAINTEXTURE             33445
-#define ID_GENERATORS_STATICOBJECTS                33447
 #define ID_GENERATORS_TEXTURE                      33448
 #define ID_FILE_IMPORT                             33457
 #define ID_EDIT_HOLD                               33464
@@ -211,7 +203,6 @@
 #define ID_EDIT_INVERTSELECTION                    33692
 #define ID_TOOLTERRAINMODIFY_SMOOTH                33695
 #define ID_TERRAINMODIFY_SMOOTH                    33696
-#define ID_TERRAIN_VEGETATION                      33697
 #define ID_TERRAIN_PAINTLAYERS                     33698
 #define ID_SWITCHCAMERA_DEFAULTCAMERA              33700
 #define ID_SWITCHCAMERA_SEQUENCECAMERA             33701
@@ -308,8 +299,6 @@
 #define ID_FILE_ANIMDBEDITOR                       34211
 #define ID_SNAP_TO_ANGLE_RANGE_BEGIN    34323
 #define ID_SNAP_TO_ANGLE_RANGE_END      34330
-#define ID_MODIFY_LINK                  34355
-#define ID_MODIFY_UNLINK                34356
 #define ID_MODIFY_GOTO_SELECTION        34358
 #define ID_VIEW_LAYOUT_FIRST            34363
 #define ID_VIEW_LAYOUT_LAST             34377
@@ -320,7 +309,6 @@
 #define ID_CLEAR_REGISTRY                          34470
 #define ID_SOUND_STOPALLSOUNDS                     34476
 #define ID_AUDIO_REFRESH_AUDIO_SYSTEM              34477
-#define ID_EDIT_SHOW_LAST_HIDDEN                   34489
 #define ID_GAME_ANDROID_ENABLELOWSPEC              34490
 #define ID_GAME_ANDROID_ENABLEMEDIUMSPEC           34491
 #define ID_GAME_ANDROID_ENABLEHIGHSPEC             34492

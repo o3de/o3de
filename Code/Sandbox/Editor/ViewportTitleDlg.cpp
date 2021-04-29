@@ -106,28 +106,10 @@ CViewportTitleDlg::CViewportTitleDlg(QWidget* pParent)
     LoadCustomPresets("AspectRatioPresets", "AspectRatioPreset", m_customAspectRatioPresets);
     LoadCustomPresets("ResPresets", "ResPreset", m_customResPresets);
 
-    const bool newViewportInteractionModelEnabled =
-        GetIEditor()->IsNewViewportInteractionModelEnabled();
-
-    m_ui->m_viewportSearch->setEnabled(!newViewportInteractionModelEnabled);
-    m_ui->m_viewportSearch->setVisible(!newViewportInteractionModelEnabled);
+    m_ui->m_viewportSearch->setEnabled(false);
+    m_ui->m_viewportSearch->setVisible(false);
 
     OnInitDialog();
-
-    if (!newViewportInteractionModelEnabled)
-    {
-        m_ui->m_viewportSearch->setClearButtonEnabled(true);
-        connect(m_ui->m_viewportSearch, &AzQtComponents::SearchLineEdit::menuEntryClicked, this, &CViewportTitleDlg::OnViewportSearchButtonClicked);
-        connect(m_ui->m_viewportSearch, &AzQtComponents::SearchLineEdit::returnPressed, this, &CViewportTitleDlg::OnSearchTermChange);
-        connect(m_ui->m_viewportSearch, &QLineEdit::textChanged, this, [this] (const QString& text){
-            if(text.isEmpty())
-            {
-                this->OnViewportSearchClear();
-            }
-        });
-
-        m_ui->m_viewportSearch->setFixedWidth(190);
-    }
 
     connect(m_ui->m_fovLabel, &QWidget::customContextMenuRequested, this, &CViewportTitleDlg::PopUpFOVMenu);
     connect(m_ui->m_fovStaticCtrl, &QWidget::customContextMenuRequested, this, &CViewportTitleDlg::PopUpFOVMenu);
@@ -257,10 +239,7 @@ void CViewportTitleDlg::SetTitle(const QString& title)
     m_title = title;
     m_ui->m_titleBtn->setText(m_title);
 
-    const bool searchVisible =
-        title == QLatin1String("Perspective") && !GetIEditor()->IsNewViewportInteractionModelEnabled();
-
-    m_ui->m_viewportSearch->setVisible(searchVisible);
+    m_ui->m_viewportSearch->setVisible(false);
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -110,7 +110,6 @@ void CComponentEntityObject::AssignEntity(AZ::Entity* entity, bool destroyOld)
 
     if (m_entityId.IsValid())
     {
-        AzToolsFramework::EntitySelectionEvents::Bus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
         LmbrCentral::RenderBoundsNotificationBus::Handler::BusDisconnect();
         LmbrCentral::MeshComponentNotificationBus::Handler::BusDisconnect();
@@ -157,7 +156,6 @@ void CComponentEntityObject::AssignEntity(AZ::Entity* entity, bool destroyOld)
 
         EBUS_EVENT(AzToolsFramework::EditorEntityContextRequestBus, AddRequiredComponents, *entity);
 
-        AzToolsFramework::EntitySelectionEvents::Bus::Handler::BusConnect(m_entityId);
         AZ::TransformNotificationBus::Handler::BusConnect(m_entityId);
         LmbrCentral::RenderBoundsNotificationBus::Handler::BusConnect(m_entityId);
         LmbrCentral::MeshComponentNotificationBus::Handler::BusConnect(m_entityId);
@@ -303,39 +301,6 @@ void CComponentEntityObject::OnEntityNameChanged(const AZStd::string& name)
         EditorActionScope selectionChange(m_nameReentryGuard);
 
         SetName(QString(name.c_str()));
-    }
-}
-
-void CComponentEntityObject::OnSelected()
-{
-    if (GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        return;
-    }
-
-    if (m_selectionReentryGuard)
-    {
-        EditorActionScope selectionChange(m_selectionReentryGuard);
-
-        // Invoked when selected via tools application, so we notify sandbox.
-        const bool wasSelected = IsSelected();
-        GetIEditor()->GetObjectManager()->SelectObject(this);
-    }
-}
-
-void CComponentEntityObject::OnDeselected()
-{
-    if (GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        return;
-    }
-
-    if (m_selectionReentryGuard)
-    {
-        EditorActionScope selectionChange(m_selectionReentryGuard);
-
-        // Invoked when selected via tools application, so we notify sandbox.
-        GetIEditor()->GetObjectManager()->UnselectObject(this);
     }
 }
 
@@ -997,24 +962,12 @@ bool CComponentEntityObject::IsIsolated() const
 
 bool CComponentEntityObject::IsSelected() const
 {
-    if (GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        return AzToolsFramework::IsSelected(m_entityId);
-    }
-
-    // legacy is selected call
-    return CBaseObject::IsSelected();
+    return AzToolsFramework::IsSelected(m_entityId);
 }
 
 bool CComponentEntityObject::IsSelectable() const
 {
-    if (GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        return AzToolsFramework::IsSelectableInViewport(m_entityId);
-    }
-
-    // legacy is selectable call
-    return CBaseObject::IsSelectable();
+    return AzToolsFramework::IsSelectableInViewport(m_entityId);
 }
 
 void CComponentEntityObject::SetWorldPos(const Vec3& pos, int flags)
