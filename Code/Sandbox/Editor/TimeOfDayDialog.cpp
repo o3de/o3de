@@ -1070,7 +1070,7 @@ void CTimeOfDayDialog::OnResetToDefaultValues()
         ITimeOfDay* pTimeOfDay = gEnv->p3DEngine->GetTimeOfDay();
 
         // Load the default time of day settings and use those to reset the time of day.
-        XmlNodeRef root = GetISystem()->LoadXmlFromFile("Editor/default_time_of_day.xml");
+        XmlNodeRef root = GetISystem()->LoadXmlFromFile("default_time_of_day.xml");
         if (root)
         {
             pTimeOfDay->Serialize(root, true);

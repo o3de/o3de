@@ -78,7 +78,7 @@ namespace Benchmark
     }
     BENCHMARK_REGISTER_F(BM_PrefabUpdateInstances, UpdateInstances_SingeEntityInstances)
         ->RangeMultiplier(10)
-        ->Range(100, 10000)
+        ->Range(100, 1000)
         ->Unit(benchmark::kMillisecond)
         ->Complexity();
 

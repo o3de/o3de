@@ -49,8 +49,8 @@ namespace PhysX
                     "PhysX Character Gameplay", "PhysX Character Gameplay")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
-                    ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/PhysXCharacter.svg")
-                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/PhysXCharacter.svg")
+                    ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXCharacter.svg")
+                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/PhysXCharacter.svg")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorCharacterGameplayComponent::m_gameplayConfig,
                         "Gameplay Configuration", "Gameplay Configuration")
