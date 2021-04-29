@@ -10,7 +10,6 @@
 #
 
 set(LY_BUILD_DEPENDENCIES
-    PUBLIC
+    PRIVATE
         3rdParty::OpenImageIO
-        3rdParty::ilmbase
 )

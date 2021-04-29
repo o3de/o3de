@@ -9,3 +9,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
+set(LY_BUILD_DEPENDENCIES
+    PRIVATE
+        3rdParty::OpenImageIO
+        3rdParty::ilmbase
+)
+
+# [GFX-TODO] Add macro defintion in OpenImageIO 3rd party find cmake file
+add_compile_definitions(OPEN_IMAGE_IO_ENABLED)
