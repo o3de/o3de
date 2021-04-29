@@ -40,7 +40,7 @@ namespace LmbrCentral
                 editContext->Class<AudioProxyComponent>("Audio Proxy", "The Audio Proxy component is a required dependency when you add other audio components to an entity")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Audio")
-                        ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/AudioProxy.svg")
+                        ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/AudioProxy.svg")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                         ->Attribute(AZ::Edit::Attributes::AddableByUser, true)
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://docs.aws.amazon.com/lumberyard/latest/userguide/component-audio-proxy.html")

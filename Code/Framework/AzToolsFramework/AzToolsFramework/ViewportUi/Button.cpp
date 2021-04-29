@@ -13,12 +13,18 @@
 #include "AzToolsFramework_precompiled.h"
 
 #include <AzToolsFramework/ViewportUi/Button.h>
-#include <AzToolsFramework/ViewportUi/Cluster.h>
 
 namespace AzToolsFramework::ViewportUi::Internal
 {
     Button::Button(AZStd::string icon, ButtonId buttonId)
         : m_icon(AZStd::move(icon))
+        , m_buttonId(buttonId)
+    {
+    }
+
+    Button::Button(AZStd::string icon, AZStd::string name, ButtonId buttonId)
+        : m_icon(AZStd::move(icon))
+        , m_name(AZStd::move(name))
         , m_buttonId(buttonId)
     {
     }

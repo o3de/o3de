@@ -305,6 +305,89 @@ void CDraw2d::DrawText(const char* textString, AZ::Vector2 position, float point
         actualTextOptions->baseState);
 }
 
+void CDraw2d::DrawRectOutlineTextured(AZ::Data::Instance<AZ::RPI::Image> image,
+    UiTransformInterface::RectPoints points,
+    AZ::Vector2 rightVec,
+    AZ::Vector2 downVec,
+    AZ::Color color)
+{
+    // since the rect can be transformed we have to add the offsets by multiplying them
+    // by unit vectors parallel with the edges of the rect. However, the rect could be
+    // zero width and/or height so we can't use "points" to compute these unit vectors.
+    // So we instead get two transformed unit vectors and then normalize them
+    rightVec.NormalizeSafe();
+    downVec.NormalizeSafe();
+
+    // calculate the transformed width and height of the rect
+    // (in case it is smaller than the texture height)
+    AZ::Vector2 widthVec = points.TopRight() - points.TopLeft();
+    AZ::Vector2 heightVec = points.BottomLeft() - points.TopLeft();
+    float rectWidth = widthVec.GetLength();
+    float rectHeight = heightVec.GetLength();
+
+    // the outline thickness will be based on the texture height
+    float textureHeight = image ? aznumeric_cast<float>(image->GetDescriptor().m_size.m_height) : 0.0f;
+    if (textureHeight <= 0.0f)
+    {
+        AZ_Assert(false, "Attempting to draw a textured rect outline with an image of zero height.");
+        return; // avoiding possible divide by zero later
+    }
+
+    // the outline is centered on the element rect so half the outline is outside
+    // the rect and half is inside the rect
+    float outerOffset = -textureHeight * 0.5f;
+    float innerOffset = textureHeight * 0.5f;
+    float outerV = 0.0f;
+    float innerV = 1.0f;
+
+    // if the rect is small there may not be space for the half of the outline that
+    // is inside the rect. If this is the case reduce the innerOffset so the inner
+    // points are coincident. Adjust the UVs according to keep a 1-1 texel to pixel ratio.
+    float minDimension = min(rectWidth, rectHeight);
+    if (innerOffset > minDimension * 0.5f)
+    {
+        float oldInnerOffset = innerOffset;
+        innerOffset = minDimension * 0.5f;
+        // note oldInnerOffset can't be zero because of early return if textureHeight is zero
+        innerV = 0.5f + 0.5f * innerOffset / oldInnerOffset;
+    }
+
+    DeferredRectOutline rectOutline;
+
+    // fill out the 8 verts to define the 2 rectangles - outer and inner
+    // The vertices are in the order of outer rect then inner rect. e.g.:
+    //  0        1
+    //     4  5
+    //     6  7
+    //  2        3
+    //
+    // four verts of outer rect
+    rectOutline.m_verts2d[0] = points.pt[0] + rightVec * outerOffset + downVec * outerOffset;
+    rectOutline.m_verts2d[1] = points.pt[1] - rightVec * outerOffset + downVec * outerOffset;
+    rectOutline.m_verts2d[2] = points.pt[3] + rightVec * outerOffset - downVec * outerOffset;
+    rectOutline.m_verts2d[3] = points.pt[2] - rightVec * outerOffset - downVec * outerOffset;
+    // four verts of inner rect
+    rectOutline.m_verts2d[4] = points.pt[0] + rightVec * innerOffset + downVec * innerOffset;
+    rectOutline.m_verts2d[5] = points.pt[1] - rightVec * innerOffset + downVec * innerOffset;
+    rectOutline.m_verts2d[6] = points.pt[3] + rightVec * innerOffset - downVec * innerOffset;
+    rectOutline.m_verts2d[7] = points.pt[2] - rightVec * innerOffset - downVec * innerOffset;
+
+    // and define the UV coordinates for these 8 verts
+    rectOutline.m_uvs[0] = AZ::Vector2(0.0f, outerV);
+    rectOutline.m_uvs[1] = AZ::Vector2(1.0f, outerV);
+    rectOutline.m_uvs[2] = AZ::Vector2(1.0f, outerV);
+    rectOutline.m_uvs[3] = AZ::Vector2(0.0f, outerV);
+    rectOutline.m_uvs[4] = AZ::Vector2(0.0f, innerV);
+    rectOutline.m_uvs[5] = AZ::Vector2(1.0f, innerV);
+    rectOutline.m_uvs[6] = AZ::Vector2(1.0f, innerV);
+    rectOutline.m_uvs[7] = AZ::Vector2(0.0f, innerV);
+
+    rectOutline.m_image = image;
+    rectOutline.m_color = color;
+
+    DrawOrDeferRectOutline(&rectOutline);
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // TBD should the size include the offset of the drop shadow (if any)?
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -592,6 +675,20 @@ void CDraw2d::DrawOrDeferLine(const DeferredLine* line)
     }
 }
 
+void CDraw2d::DrawOrDeferRectOutline(const DeferredRectOutline* rectOutline)
+{
+    if (m_deferCalls)
+    {
+        DeferredRectOutline* newRectOutline = new DeferredRectOutline;
+        *newRectOutline = *rectOutline;
+        m_deferredPrimitives.push_back(newRectOutline);
+    }
+    else
+    {
+        rectOutline->Draw(m_dynamicDraw, m_shaderData, GetViewportContext());
+    }
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 AZ::RPI::ViewportContextPtr CDraw2d::GetViewportContext() const
 {
@@ -604,7 +701,6 @@ AZ::RPI::ViewportContextPtr CDraw2d::GetViewportContext() const
 
     // Return the user specified viewport context
     return m_viewportContext;
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -729,6 +825,80 @@ void CDraw2d::DeferredLine::Draw(AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynam
     dynamicDraw->DrawLinear(vertices, NUM_VERTS, drawSrg);
 }
 
+void CDraw2d::DeferredRectOutline::Draw(AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynamicDraw,
+    const Draw2dShaderData& shaderData,
+    AZ::RPI::ViewportContextPtr viewportContext) const
+{
+    // Create the 8 verts in the right vertex format for the dynamic draw context
+    SVF_P3F_C4B_T2F vertices[NUM_VERTS];
+    const float z = 1.0f;   // depth test disabled, if writing Z this will write at far plane
+    uint32 packedColor = (m_color.GetA8() << 24) | (m_color.GetR8() << 16) | (m_color.GetG8() << 8) | m_color.GetB8();
+    for (int i = 0; i < NUM_VERTS; ++i)
+    {
+        vertices[i].xyz = Vec3(m_verts2d[i].GetX(), m_verts2d[i].GetY(), z);
+        vertices[i].color.dcolor = packedColor;
+        vertices[i].st = Vec2(m_uvs[i].GetX(), m_uvs[i].GetY());
+    }
+
+    // The indices are for four quads (one for each side of the rect).
+    // The quads are drawn using a triangle list (simpler than a tri-strip)
+    // We draw each quad in the same order that the image component draws quads to
+    // maximize chances of things lining up so each quad is drawn as two triangles:
+    // top-left, top-right, bottom-left / bottom-left, top-right, bottom-right
+    // e.g. for a quad like this:
+    //
+    // 0   1
+    //  |/|
+    // 2   3
+    //
+    // The two triangles would be 0,1,2 and 2,1,3
+    //
+    static constexpr int32 NUM_INDICES = 24;
+    uint16 indices[NUM_INDICES] =
+    {
+        0, 1, 4,    4, 1, 5,    // top quad
+        6, 7, 2,    2, 7, 3,    // bottom quad
+        0, 4, 2,    2, 4, 6,    // left quad
+        5, 1, 7,    1, 7, 3,    // right quad
+    };
+
+    // Set up per draw SRG
+    AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = dynamicDraw->NewDrawSrg();
+
+    // Set texture
+    const AZ::RHI::ImageView* imageView = m_image ? m_image->GetImageView() : nullptr;
+    if (!imageView)
+    {
+        // Default to white texture
+        auto image = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
+        imageView = image->GetImageView();
+    }
+
+    if (imageView)
+    {
+        drawSrg->SetImageView(shaderData.m_imageInputIndex, imageView, 0);
+    }
+
+    // Set projection matrix
+    auto windowContext = viewportContext->GetWindowContext();
+    const AZ::RHI::Viewport& viewport = windowContext->GetViewport();
+    const float viewX = viewport.m_minX;
+    const float viewY = viewport.m_minY;
+    const float viewWidth = viewport.m_maxX - viewport.m_minX;
+    const float viewHeight = viewport.m_maxY - viewport.m_minY;
+    const float zf = viewport.m_minZ;
+    const float zn = viewport.m_maxZ;
+    AZ::Matrix4x4 modelViewProjMat;
+    AZ::MakeOrthographicMatrixRH(modelViewProjMat, viewX, viewX + viewWidth, viewY + viewHeight, viewY, zn, zf);
+    drawSrg->SetConstant(shaderData.m_viewProjInputIndex, modelViewProjMat);
+
+    drawSrg->Compile();
+
+    // Add the primitive to the dynamic draw context for drawing
+    dynamicDraw->SetPrimitiveType(AZ::RHI::PrimitiveTopology::TriangleList);
+    dynamicDraw->DrawIndexed(vertices, NUM_VERTS, indices, NUM_INDICES, AZ::RHI::IndexFormat::Uint16, drawSrg);
+
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // CDraw2d::DeferredText

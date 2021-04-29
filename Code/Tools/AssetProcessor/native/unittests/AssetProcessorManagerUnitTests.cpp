@@ -46,7 +46,6 @@ namespace AssetProcessor
         friend class AssetProcessorManagerUnitTests;
         friend class AssetProcessorManagerUnitTests_JobKeys;
         friend class AssetProcessorManagerUnitTests_JobDependencies_Fingerprint;
-        friend class AssetProcessorManagerUnitTests_CheckOutputFolders;
 #endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
 
     public:
@@ -64,7 +63,6 @@ namespace AssetProcessor
     REGISTER_UNIT_TEST(AssetProcessorManagerUnitTests)
     REGISTER_UNIT_TEST(AssetProcessorManagerUnitTests_JobKeys)
     REGISTER_UNIT_TEST(AssetProcessorManagerUnitTests_JobDependencies_Fingerprint)
-    REGISTER_UNIT_TEST(AssetProcessorManagerUnitTests_CheckOutputFolders)
 #endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
 
 
@@ -247,11 +245,11 @@ namespace AssetProcessor
         AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms;
         config.PopulatePlatformsForScanFolder(platforms);
         //                                               PATH                 DisplayName  PortKey       outputfolder  root recurse  platforms   order
-        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder4"), "subfolder4", "subfolder4", "",          false, false, platforms, -6)); // subfolder 4 overrides subfolder3
-        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder3"), "subfolder3", "subfolder3", "",          false, false, platforms,-5)); // subfolder 3 overrides subfolder2
-        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder2"), "subfolder2", "subfolder2", "",          false, true,  platforms, -2)); // subfolder 2 overrides subfolder1
-        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder1"), "subfolder1", "subfolder1", "",          false, true,  platforms, -1)); // subfolder1 overrides root
-        config.AddScanFolder(ScanFolderInfo(tempPath.absolutePath(),         "temp",       "tempfolder", "",          true, false,  platforms, 0)); // add the root
+        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder4"), "subfolder4", "subfolder4", false, false, platforms, -6)); // subfolder 4 overrides subfolder3
+        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder3"), "subfolder3", "subfolder3", false, false, platforms,-5)); // subfolder 3 overrides subfolder2
+        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder2"), "subfolder2", "subfolder2", false, true,  platforms, -2)); // subfolder 2 overrides subfolder1
+        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder1"), "subfolder1", "subfolder1", false, true,  platforms, -1)); // subfolder1 overrides root
+        config.AddScanFolder(ScanFolderInfo(tempPath.absolutePath(),         "temp",       "tempfolder", true, false,  platforms, 0)); // add the root
 
 
         config.AddMetaDataType("exportsettings", QString());
@@ -2325,8 +2323,8 @@ namespace AssetProcessor
         AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms;
         config.PopulatePlatformsForScanFolder(platforms);
         //                                               PATH                 DisplayName  PortKey       outputfolder  root recurse order
-        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder1"), "subfolder1", "subfolder1", "", false, true, platforms,-1)); // subfolder1 overrides root
-        config.AddScanFolder(ScanFolderInfo(tempPath.absolutePath(), "temp", "tempfolder", "", true, false, platforms, 0)); // add the root
+        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder1"), "subfolder1", "subfolder1", false, true, platforms,-1)); // subfolder1 overrides root
+        config.AddScanFolder(ScanFolderInfo(tempPath.absolutePath(), "temp", "tempfolder", true, false, platforms, 0)); // add the root
 
         AssetProcessorManager_Test apm(&config);
 
@@ -2534,11 +2532,11 @@ namespace AssetProcessor
         AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms;
         config.PopulatePlatformsForScanFolder(platforms);
         //                                               PATH                 DisplayName  PortKey       outputfolder  root recurse platforms order
-        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder4"), "subfolder4", "subfolder4", "", false, false, platforms, -6)); // subfolder 4 overrides subfolder3
-        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder3"), "subfolder3", "subfolder3", "", false, false, platforms, -5)); // subfolder 3 overrides subfolder2
-        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder2"), "subfolder2", "subfolder2", "", false, true, platforms, -2)); // subfolder 2 overrides subfolder1
-        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder1"), "subfolder1", "subfolder1", "", false, true, platforms, -1)); // subfolder1 overrides root
-        config.AddScanFolder(ScanFolderInfo(tempPath.absolutePath(), "temp", "tempfolder", "", true, false, platforms, 0)); // add the root
+        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder4"), "subfolder4", "subfolder4", false, false, platforms, -6)); // subfolder 4 overrides subfolder3
+        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder3"), "subfolder3", "subfolder3", false, false, platforms, -5)); // subfolder 3 overrides subfolder2
+        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder2"), "subfolder2", "subfolder2", false, true, platforms, -2)); // subfolder 2 overrides subfolder1
+        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder1"), "subfolder1", "subfolder1", false, true, platforms, -1)); // subfolder1 overrides root
+        config.AddScanFolder(ScanFolderInfo(tempPath.absolutePath(), "temp", "tempfolder", true, false, platforms, 0)); // add the root
 
         {
             // create this, which will write those scan folders into the db as-is
@@ -2584,13 +2582,13 @@ namespace AssetProcessor
         config2.PopulatePlatformsForScanFolder(platforms2);
         //                                               PATH                 DisplayName  PortKey       outputfolder  root recurse platforms order
         // case 1:  same absolute path, but the same portable key - should use same ID as before.
-        config2.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder4"), "subfolder4", "subfolder4", "", false, false, platforms2, -6)); // subfolder 4 overrides subfolder3
+        config2.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder4"), "subfolder4", "subfolder4", false, false, platforms2, -6)); // subfolder 4 overrides subfolder3
 
         // case 2:  A new absolute path, but same portable key - should use same id as before
-        config2.AddScanFolder(ScanFolderInfo(tempPath.filePath("newfolder3"), "subfolder3", "subfolder3", "", false, false, platforms2, -5)); // subfolder 3 overrides subfolder2
+        config2.AddScanFolder(ScanFolderInfo(tempPath.filePath("newfolder3"), "subfolder3", "subfolder3", false, false, platforms2, -5)); // subfolder 3 overrides subfolder2
 
         // case 3:  same absolute path, new portable key - should use a new ID
-        config2.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder1"), "subfolder3", "newfolder3", "", false, false, platforms2, -5)); // subfolder 3 overrides subfolder2
+        config2.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder1"), "subfolder3", "newfolder3", false, false, platforms2, -5)); // subfolder 3 overrides subfolder2
 
         // case 4:  subfolder2 is missing - it should be gone.
 
@@ -2775,8 +2773,8 @@ namespace AssetProcessor
         AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms;
         config.PopulatePlatformsForScanFolder(platforms);
         //                                               PATH                 DisplayName  PortKey       outputfolder  root recurse order
-        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder1"), "subfolder1", "subfolder1", "", false, true, platforms, -1)); // subfolder1 overrides root
-        config.AddScanFolder(ScanFolderInfo(tempPath.absolutePath(), "temp", "tempfolder", "", true, false, platforms, 0)); // add the root
+        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder1"), "subfolder1", "subfolder1", false, true, platforms, -1)); // subfolder1 overrides root
+        config.AddScanFolder(ScanFolderInfo(tempPath.absolutePath(), "temp", "tempfolder", true, false, platforms, 0)); // add the root
 
         AssetProcessorManager_Test apm(&config);
 
@@ -3083,255 +3081,6 @@ namespace AssetProcessor
         Q_EMIT UnitTestPassed();
     }
 
-    void AssetProcessorManagerUnitTests_CheckOutputFolders::StartTest()
-    {
-        MockAssetBuilderInfoHandler mockAssetBuilderInfoHandler;
-
-        QDir oldRoot;
-        AssetUtilities::ComputeAssetRoot(oldRoot);
-        AssetUtilities::ResetAssetRoot();
-
-        // the canonicalization of the path here is to get around the fact that on some platforms
-        // the "temporary" folder location could be junctioned into some other folder and getting "QDir::current()"
-        // and other similar functions may actually return a different string but still be referring to the same folder
-        QTemporaryDir dir;
-        QDir tempPath(dir.path());
-        QString canonicalTempDirPath = AssetUtilities::NormalizeDirectoryPath(tempPath.canonicalPath());
-        UnitTestUtils::ScopedDir changeDir(canonicalTempDirPath);
-        tempPath = QDir(canonicalTempDirPath);
-
-        QString gameName = AssetUtilities::ComputeProjectName(AssetProcessorManagerTestGameProject);
-
-        // update the engine root
-        AssetUtilities::ResetAssetRoot();
-        QDir newRoot;
-        AssetUtilities::ComputeAssetRoot(newRoot, &tempPath);
-
-        UNIT_TEST_EXPECT_FALSE(gameName.isEmpty());
-
-        PlatformConfiguration config;
-        config.EnablePlatform({ "pc",{ "desktop", "renderer" } }, true);
-        AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms;
-        config.PopulatePlatformsForScanFolder(platforms);
-        //                                               PATH                 DisplayName  PortKey       outputfolder  root recurse  platforms order
-
-        // note: the crux of this test is that we ar redirecting output into the cache at a different location instead of default.
-        // so our scan folder has a "redirected" folder.
-        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder1"), "subfolder1", "subfolder1", "redirected", false, true, platforms, -1));
-
-        AssetProcessorManager_Test apm(&config);
-
-        QDir cacheRoot;
-        UNIT_TEST_EXPECT_TRUE(AssetUtilities::ComputeProjectCacheRoot(cacheRoot));
-
-        QList<JobDetails> processResults;
-        QList<QPair<QString, QString> > changedInputResults;
-        QList< AzFramework::AssetSystem::AssetNotificationMessage > assetMessages;
-
-        bool idling = false;
-
-        connect(&apm, &AssetProcessorManager::AssetToProcess,
-            this, [&processResults](JobDetails details)
-        {
-            processResults.push_back(AZStd::move(details));
-        });
-
-        connect(&apm, &AssetProcessorManager::AssetMessage,
-            this, [&assetMessages](AzFramework::AssetSystem::AssetNotificationMessage message)
-        {
-            assetMessages.push_back( message);
-        });
-
-        connect(&apm, &AssetProcessorManager::InputAssetProcessed,
-            this, [&changedInputResults](QString relativePath, QString platform)
-        {
-            changedInputResults.push_back(QPair<QString, QString>(relativePath, platform));
-        });
-
-        connect(&apm, &AssetProcessorManager::AssetProcessorManagerIdleState,
-            this, [&idling](bool state)
-        {
-            idling = state;
-        }
-        );
-
-        QString sourceFile = tempPath.absoluteFilePath("subfolder1/basefile.foo");
-        CreateDummyFile(sourceFile);
-
-        mockAssetBuilderInfoHandler.m_numberOfJobsToCreate = 1; //Create two jobs for this file
-
-        QMetaObject::invokeMethod(&apm, "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, sourceFile));
-
-        UNIT_TEST_EXPECT_TRUE(BlockUntil(idling, 5000));
-
-        // block until no more events trickle in:
-        QCoreApplication::processEvents(QEventLoop::AllEvents);
-
-        UNIT_TEST_EXPECT_TRUE(processResults.size() == 1);
-        UNIT_TEST_EXPECT_TRUE((processResults[0].m_jobEntry.m_platformInfo.m_identifier == "pc"));
-        UNIT_TEST_EXPECT_TRUE(processResults[0].m_jobEntry.m_databaseSourceName == "redirected/basefile.foo");
-        UNIT_TEST_EXPECT_TRUE(processResults[0].m_jobEntry.m_pathRelativeToWatchFolder == "basefile.foo");
-        UNIT_TEST_EXPECT_TRUE(processResults[0].m_jobEntry.m_watchFolderPath == tempPath.filePath("subfolder1"));
-
-        QStringList pcouts;
-        pcouts.push_back(cacheRoot.filePath(QString("pc/redirected/basefile.arc1")));
-
-        // Create the product files for the first job
-        UNIT_TEST_EXPECT_TRUE(CreateDummyFile(pcouts[0], "product1"));
-
-        // Invoke Asset Processed for pc platform for the first job
-        AssetBuilderSDK::ProcessJobResponse response;
-        response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(pcouts[0].toUtf8().constData()));
-
-        QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[0].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
-
-        // let events bubble through:
-        UNIT_TEST_EXPECT_TRUE(BlockUntil(idling, 5000));
-
-        UNIT_TEST_EXPECT_TRUE(assetMessages.size() == 1);
-        UNIT_TEST_EXPECT_TRUE(changedInputResults.size() == 1);
-        UNIT_TEST_EXPECT_TRUE(assetMessages[0].m_platform == "pc");
-        UNIT_TEST_EXPECT_TRUE(assetMessages[0].m_data == "redirected/basefile.arc1");
-        UNIT_TEST_EXPECT_TRUE(assetMessages[0].m_type == AzFramework::AssetSystem::AssetNotificationMessage::AssetChanged);
-
-        UNIT_TEST_EXPECT_TRUE(AssetUtilities::NormalizeFilePath(changedInputResults[0].first) == AssetUtilities::NormalizeFilePath(sourceFile));
-
-        // ------------- TEST 1:   Modified source file
-
-        processResults.clear();
-        pcouts.clear();
-        assetMessages.clear();
-        changedInputResults.clear();
-
-        // now, the test is set up.  we can now start poking that file and make sure we emit the appropriate messages.
-        // first, lets modify the file and make sure we get the build request.
-
-#if defined(AZ_PLATFORM_WINDOWS)
-        QThread::msleep(30); // give at least some milliseconds so that the files never share the same timestamp exactly
-#else
-        // on some file systems such as HFS (commonly used on Apple devices, the file time resolution is only a second.
-        // We are forcing a wait here of at least a second to make sure that the file modtime
-        // actually changes.
-        QThread::msleep(1001);
-#endif // defined (AZ_PLATFORM_WINDOWS)
-
-        UNIT_TEST_EXPECT_TRUE(CreateDummyFile(sourceFile, "new data!"));
-
-        QMetaObject::invokeMethod(&apm, "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, sourceFile));
-
-        UNIT_TEST_EXPECT_TRUE(BlockUntil(idling, 5000));
-
-        // block until no more events trickle in:
-        QCoreApplication::processEvents(QEventLoop::AllEvents);
-
-        UNIT_TEST_EXPECT_TRUE(processResults.size() == 1);
-        UNIT_TEST_EXPECT_TRUE((processResults[0].m_jobEntry.m_platformInfo.m_identifier == "pc"));
-        UNIT_TEST_EXPECT_TRUE(processResults[0].m_jobEntry.m_pathRelativeToWatchFolder == "basefile.foo");
-        UNIT_TEST_EXPECT_TRUE(processResults[0].m_jobEntry.m_databaseSourceName == "redirected/basefile.foo");
-        UNIT_TEST_EXPECT_TRUE(processResults[0].m_jobEntry.m_watchFolderPath == tempPath.absoluteFilePath("subfolder1"));
-
-        pcouts.push_back(cacheRoot.filePath(QString("pc/redirected/basefile.arc1")));
-
-        // Create the product files for the first job
-        UNIT_TEST_EXPECT_TRUE(CreateDummyFile(pcouts[0], "product1"));
-
-        // Invoke Asset Processed for pc platform for the first job
-        response.m_outputProducts.clear();
-        response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(pcouts[0].toUtf8().constData()));
-
-        QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[0].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
-
-        // let events bubble through:
-        UNIT_TEST_EXPECT_TRUE(BlockUntil(idling, 5000));
-
-        UNIT_TEST_EXPECT_TRUE(assetMessages.size() == 1);
-        UNIT_TEST_EXPECT_TRUE(changedInputResults.size() == 1);
-        UNIT_TEST_EXPECT_TRUE(assetMessages[0].m_platform == "pc");
-        UNIT_TEST_EXPECT_TRUE(assetMessages[0].m_data == "redirected/basefile.arc1");
-        UNIT_TEST_EXPECT_TRUE(assetMessages[0].m_type == AzFramework::AssetSystem::AssetNotificationMessage::AssetChanged);
-
-        UNIT_TEST_EXPECT_TRUE(AssetUtilities::NormalizeFilePath(changedInputResults[0].first) == AssetUtilities::NormalizeFilePath(sourceFile));
-
-        // ------------- TEST 2:   Deleted product
-
-        processResults.clear();
-        pcouts.clear();
-        assetMessages.clear();
-        changedInputResults.clear();
-
-        QString deletedProductPath = cacheRoot.filePath(QString("pc/redirected/basefile.arc1"));
-
-        QFile::remove(deletedProductPath);
-
-        QMetaObject::invokeMethod(&apm, "AssessDeletedFile", Qt::QueuedConnection, Q_ARG(QString, deletedProductPath));
-
-        UNIT_TEST_EXPECT_TRUE(BlockUntil(idling, 5000));
-
-        // block until no more events trickle in:
-        QCoreApplication::processEvents(QEventLoop::AllEvents);
-
-        UNIT_TEST_EXPECT_TRUE(assetMessages.size() == 0); // asset removed is delayed until actual processing occurs.
-
-        UNIT_TEST_EXPECT_TRUE(processResults.size() == 1);
-        UNIT_TEST_EXPECT_TRUE((processResults[0].m_jobEntry.m_platformInfo.m_identifier == "pc"));
-        UNIT_TEST_EXPECT_TRUE(processResults[0].m_jobEntry.m_pathRelativeToWatchFolder == "basefile.foo");
-        UNIT_TEST_EXPECT_TRUE(processResults[0].m_jobEntry.m_databaseSourceName == "redirected/basefile.foo");
-        UNIT_TEST_EXPECT_TRUE(processResults[0].m_jobEntry.m_watchFolderPath == tempPath.absoluteFilePath("subfolder1"));
-
-        pcouts.push_back(cacheRoot.filePath(QString("pc/redirected/basefile.arc1")));
-
-        // Create the product files for the first job
-        UNIT_TEST_EXPECT_TRUE(CreateDummyFile(pcouts[0], "product1"));
-
-        // Invoke Asset Processed for pc platform for the first job
-        response.m_outputProducts.clear();
-        response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(pcouts[0].toUtf8().constData()));
-
-        changedInputResults.clear();
-        assetMessages.clear();
-
-        QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[0].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
-
-        // let events bubble through:
-        UNIT_TEST_EXPECT_TRUE(BlockUntil(idling, 5000));
-
-        UNIT_TEST_EXPECT_TRUE(assetMessages.size() == 1);
-        UNIT_TEST_EXPECT_TRUE(changedInputResults.size() == 1);
-        UNIT_TEST_EXPECT_TRUE(assetMessages[0].m_platform == "pc");
-        UNIT_TEST_EXPECT_TRUE(assetMessages[0].m_data == "redirected/basefile.arc1");
-        UNIT_TEST_EXPECT_TRUE(assetMessages[0].m_type == AzFramework::AssetSystem::AssetNotificationMessage::AssetChanged);
-
-        UNIT_TEST_EXPECT_TRUE(AssetUtilities::NormalizeFilePath(changedInputResults[0].first) == AssetUtilities::NormalizeFilePath(sourceFile));
-
-        // ------------- TEST 3:   Deleted source - the products should end up deleted!
-
-        processResults.clear();
-        pcouts.clear();
-        assetMessages.clear();
-        changedInputResults.clear();
-
-        QString deletedSourcePath = sourceFile;
-        QFile::remove(deletedSourcePath);
-        QMetaObject::invokeMethod(&apm, "AssessDeletedFile", Qt::QueuedConnection, Q_ARG(QString, deletedSourcePath));
-
-        UNIT_TEST_EXPECT_TRUE(BlockUntil(idling, 5000));
-
-        // block until no more events trickle in:
-        QCoreApplication::processEvents(QEventLoop::AllEvents);
-
-        UNIT_TEST_EXPECT_TRUE(assetMessages.size() == 1);
-        UNIT_TEST_EXPECT_TRUE(assetMessages[0].m_platform == "pc");
-        UNIT_TEST_EXPECT_TRUE(assetMessages[0].m_data == "redirected/basefile.arc1");
-        UNIT_TEST_EXPECT_TRUE(assetMessages[0].m_type == AzFramework::AssetSystem::AssetNotificationMessage::AssetRemoved);
-
-        // also ensure file is actually gone!
-        UNIT_TEST_EXPECT_TRUE(!QFile::exists(deletedProductPath));
-
-        Q_EMIT UnitTestPassed();
-    }
     void AssetProcessorManagerUnitTests_JobDependencies_Fingerprint::GetMatchingBuildersInfo(const AZStd::string& assetPath, AssetProcessor::BuilderInfoList& builderInfoList)
     {
         AZ_UNUSED(assetPath);
