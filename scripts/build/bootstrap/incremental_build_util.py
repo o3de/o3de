@@ -303,7 +303,14 @@ def attach_volume(volume, volume_id, instance_id, timeout=DEFAULT_TIMEOUT):
         if (time.clock() - timeout_init) > timeout:
             print 'ERROR: Timeout reached trying to mount EBS'
             exit(1)
-
+    volume.create_tags(
+        Tags=[
+            {
+                'Key': 'AttachDate',
+                'Value': str(datetime.datetime.today().date())
+            },
+        ]
+    )
     print 'Volume {} has been attached to instance {}'.format(volume_id, instance_id)
 
 

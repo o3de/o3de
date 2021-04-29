@@ -83,7 +83,7 @@ static const char* kHoldFolder = "$tmp_hold"; // conform to the ignored file typ
 static const char* kSaveBackupFolder = "_savebackup";
 static const char* kResizeTempFolder = "$tmp_resize"; // conform to the ignored file types $tmp[0-9]*_ regex
 
-static const char* kBackupOrTempFolders[] = 
+static const char* kBackupOrTempFolders[] =
 {
     kAutoBackupFolder,
     kHoldFolder,
@@ -1164,7 +1164,7 @@ bool CCryEditDoc::OnSaveDocument(const QString& lpszPathName)
         {
             DoSaveDocument(lpszPathName, context);
             saveSuccess = AfterSaveDocument(lpszPathName, context);
-        }     
+        }
     }
 
     return saveSuccess;
@@ -1436,7 +1436,7 @@ bool CCryEditDoc::SaveLevel(const QString& filename)
     // Save AZ entities to the editor level.
 
     bool contentsAllSaved = false; // abort level save if anything within it fails
-    
+
     auto tempFilenameStrData = tempSaveFile.toStdString();
     auto filenameStrData = fullPathName.toStdString();
 
@@ -1458,7 +1458,7 @@ bool CCryEditDoc::SaveLevel(const QString& filename)
             }
         }
 
-        
+
         AZStd::vector<AZ::Entity*> editorEntities;
         AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
             &AzToolsFramework::EditorEntityContextRequestBus::Events::GetLooseEditorEntities,
@@ -1815,7 +1815,7 @@ bool CCryEditDoc::LoadLevel(TDocMultiArchive& arrXmlAr, const QString& absoluteC
     AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
     auto pIPak = GetIEditor()->GetSystem()->GetIPak();
-    
+
     QString folderPath = QFileInfo(absoluteCryFilePath).absolutePath();
 
     OnStartLevelResourceList();
@@ -2391,7 +2391,8 @@ void CCryEditDoc::InitEmptyLevel(int /*resolution*/, int /*unitSize*/, bool /*bU
         GetIEditor()->GetGameEngine()->SetLevelCreated(false);
 
         // Default time of day.
-        XmlNodeRef root = GetISystem()->LoadXmlFromFile("@engroot@/Editor/default_time_of_day.xml");
+        auto defaultTimeOfDayPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / "Assets" / "Editor" / "default_time_of_day.xml";
+        XmlNodeRef root = GetISystem()->LoadXmlFromFile(defaultTimeOfDayPath.c_str());
         if (root)
         {
             ITimeOfDay* pTimeOfDay = gEnv->p3DEngine ? gEnv->p3DEngine->GetTimeOfDay() : nullptr;
@@ -2454,7 +2455,7 @@ void CCryEditDoc::CreateDefaultLevelAssets(int resolution, int unitSize)
 
                     AZ::Transform worldTransform = AZ::Transform::CreateIdentity();
                     worldTransform = AZ::Transform::CreateTranslation(AZ::Vector3(halfTerrainSize, halfTerrainSize, m_envProbeHeight / 2));
-                
+
                     AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusConnect();
                     GetIEditor()->SuspendUndo();
                     AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Broadcast(
@@ -2613,7 +2614,7 @@ void CCryEditDoc::OnSliceInstantiated(const AZ::Data::AssetId& sliceAssetId, AZ:
         sliceAddress.SetReference(nullptr);
         SetModifiedFlag(true);
         SetModifiedModules(eModifiedEntities);
-        
+
         AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusDisconnect();
 
         //save after level default slice fully instantiated

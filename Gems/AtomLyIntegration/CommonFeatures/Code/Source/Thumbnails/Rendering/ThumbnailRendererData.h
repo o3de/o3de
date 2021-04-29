@@ -42,7 +42,7 @@ namespace AZ
                 RPI::ScenePtr m_scene;
                 AZStd::string m_sceneName = "Material Thumbnail Scene";
                 AZStd::string m_pipelineName = "Material Thumbnail Pipeline";
-                AzFramework::Scene* m_frameworkScene = nullptr;
+                AZStd::shared_ptr<AzFramework::Scene> m_frameworkScene;
                 RPI::RenderPipelinePtr m_renderPipeline;
                 AZStd::unique_ptr<AzFramework::EntityContext> m_entityContext;
                 AZStd::vector<AZStd::string> m_passHierarchy;
