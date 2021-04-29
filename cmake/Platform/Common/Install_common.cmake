@@ -333,7 +333,7 @@ function(ly_setup_others)
         GLOB_RECURSE
         gems_assets_path
         LIST_DIRECTORIES TRUE
-        RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/"
+        RELATIVE "${CMAKE_SOURCE_DIR}/"
         "Gems/*"
     )
     list(FILTER gems_assets_path INCLUDE REGEX "/Assets$")
