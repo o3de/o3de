@@ -14,13 +14,14 @@ if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
 endif()
 
 ly_add_target(
-    NAME ProjectLauncher APPLICATION
+    NAME ProjectManager APPLICATION
+    OUTPUT_NAME O3DE
     NAMESPACE AZ
     AUTOMOC
     AUTOUIC
     AUTORCC
     FILES_CMAKE
-        project_launcher_files.cmake
+        project_manager_files.cmake
         Platform/${PAL_PLATFORM_NAME}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
     INCLUDE_DIRECTORIES
         PUBLIC

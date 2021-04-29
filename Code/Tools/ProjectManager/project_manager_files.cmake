@@ -10,12 +10,12 @@
 #
 
 set(FILES
-    project_launcher.qrc
+    project_manager.qrc
     source/main.cpp
     Qt/FirstTimeUse.h
     Qt/FirstTimeUse.cpp
     Qt/FirstTimeUse.ui
-    Qt/LauncherWindow.h
-    Qt/LauncherWindow.cpp
-    Qt/LauncherWindow.ui
+    Qt/ProjectManagerWindow.h
+    Qt/ProjectManagerWindow.cpp
+    Qt/ProjectManagerWindow.ui
 )

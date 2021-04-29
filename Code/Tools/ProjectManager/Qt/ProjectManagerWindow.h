@@ -18,21 +18,20 @@
 
 namespace Ui
 {
-    class LauncherWindowClass;
+    class ProjectManagerWindowClass;
 }
 
-namespace ProjectLauncher
+namespace ProjectManager
 {
-    class LauncherWindow : public QMainWindow
+    class ProjectManagerWindow : public QMainWindow
     {
-        //Q_OBJECT
 
     public:
-        explicit LauncherWindow(QWidget* parent, const AZ::IO::PathView& engineRootPath);
-        ~LauncherWindow();
+        explicit ProjectManagerWindow(QWidget* parent, const AZ::IO::PathView& engineRootPath);
+        ~ProjectManagerWindow();
 
     private:
-        QScopedPointer<Ui::LauncherWindowClass> m_ui;
+        QScopedPointer<Ui::ProjectManagerWindowClass> m_ui;
     };
 
-} // namespace ProjectLauncher
+} // namespace ProjectManager

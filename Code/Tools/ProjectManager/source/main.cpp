@@ -16,7 +16,7 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/IO/Path/Path.h>
 
-#include <Qt/LauncherWindow.h>
+#include <Qt/ProjectManagerWindow.h>
 
 #include <QApplication>
 #include <QCoreApplication>
@@ -24,9 +24,9 @@
 
 int main(int argc, char* argv[])
 {
-    QApplication::setOrganizationName("Amazon");
-    QApplication::setOrganizationDomain("amazon.com");
-    QCoreApplication::setApplicationName("ProjectLauncher");
+    QApplication::setOrganizationName("O3DE");
+    QApplication::setOrganizationDomain("o3de.org");
+    QCoreApplication::setApplicationName("ProjectManager");
     QCoreApplication::setApplicationVersion("1.0");
 
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
@@ -47,7 +47,7 @@ int main(int argc, char* argv[])
     AzQtComponents::StyleManager styleManager(&app);
     styleManager.initialize(&app, engineRootPath);
 
-    ProjectLauncher::LauncherWindow window(nullptr, engineRootPath);
+    ProjectManager::ProjectManagerWindow window(nullptr, engineRootPath);
     window.show();
 
     return app.exec();

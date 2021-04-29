@@ -10,7 +10,7 @@
  *
  */
 
-#include <Qt/LauncherWindow.h>
+#include <Qt/ProjectManagerWindow.h>
 #include <Qt/FirstTimeUse.h>
 
 #include <AzQtComponents/Components/StyleManager.h>
@@ -18,22 +18,22 @@
 
 #include <QDir>
 
-#include <Qt/ui_LauncherWindow.h>
+#include <Qt/ui_ProjectManagerWindow.h>
 
-namespace ProjectLauncher
+namespace ProjectManager
 {
-    LauncherWindow::LauncherWindow(QWidget* parent, const AZ::IO::PathView& engineRootPath)
+    ProjectManagerWindow::ProjectManagerWindow(QWidget* parent, const AZ::IO::PathView& engineRootPath)
         : QMainWindow(parent)
-        , m_ui(new Ui::LauncherWindowClass())
+        , m_ui(new Ui::ProjectManagerWindowClass())
     {
         m_ui->setupUi(this);
 
         QDir rootDir = QString::fromUtf8(engineRootPath.Native().data(), aznumeric_cast<int>(engineRootPath.Native().size()));
-        const auto pathOnDisk = rootDir.absoluteFilePath("Code/Tools/ProjectLauncher/Resources");
-        const auto qrcPath = QStringLiteral(":/LauncherWindow");
-        AzQtComponents::StyleManager::addSearchPaths("launcherwindow", pathOnDisk, qrcPath, engineRootPath);
+        const auto pathOnDisk = rootDir.absoluteFilePath("Code/Tools/ProjectManager/Resources");
+        const auto qrcPath = QStringLiteral(":/ProjectManagerWindow");
+        AzQtComponents::StyleManager::addSearchPaths("progjectmanagerwindow", pathOnDisk, qrcPath, engineRootPath);
 
-        AzQtComponents::StyleManager::setStyleSheet(this, QStringLiteral("launcherwindow:LauncherWindow.qss"));
+        AzQtComponents::StyleManager::setStyleSheet(this, QStringLiteral("projectlauncherwindow:ProjectManagerWindow.qss"));
 
 
         FirstTimeUse* firstTimeUse = new FirstTimeUse(m_ui->centralwidget);
@@ -41,9 +41,9 @@ namespace ProjectLauncher
         firstTimeUse->show();
     }
 
-    LauncherWindow::~LauncherWindow()
+    ProjectManagerWindow::~ProjectManagerWindow()
     {
     }
 
-    //#include <Qt/moc_LauncherWindow.cpp>
-} // namespace ProjectLauncher
+    //#include <Qt/moc_ProjectManagerWindow.cpp>
+} // namespace ProjectManager

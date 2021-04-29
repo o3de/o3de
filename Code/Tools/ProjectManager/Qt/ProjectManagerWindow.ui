@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>LauncherWindowClass</class>
- <widget class="QMainWindow" name="LauncherWindowClass">
+ <class>ProjectManagerWindowClass</class>
+ <widget class="QMainWindow" name="ProjectManagerWindowClass">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>O3DE Launcher</string>
+   <string>O3DE Project Manager</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout"/>
@@ -35,7 +35,7 @@
      <string>Icon</string>
     </property>
     <property name="icon">
-     <iconset resource="../project_launcher.qrc">
+     <iconset resource="../project_manager.qrc">
       <normaloff>:/Resources/o3de_editor.ico</normaloff>:/Resources/o3de_editor.ico</iconset>
     </property>
    </widget>
@@ -46,7 +46,7 @@
    </widget>
    <widget class="QMenu" name="menuSettings">
     <property name="title">
-     <string>Settings</string>
+     <string>Engine</string>
     </property>
    </widget>
    <addaction name="menuIcon"/>
@@ -55,7 +55,7 @@
   </widget>
  </widget>
  <resources>
-  <include location="../project_launcher.qrc"/>
+  <include location="../project_manager.qrc"/>
  </resources>
  <connections/>
 </ui>

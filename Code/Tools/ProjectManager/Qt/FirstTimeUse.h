@@ -10,22 +10,26 @@
  *
  */
 
-#include <Qt/FirstTimeUse.h>
+#if !defined(Q_MOC_RUN)
+#include <QWidget>
+#endif
 
-#include <Qt/ui_FirstTimeUse.h>
-
-namespace ProjectLauncher
+namespace Ui
 {
-    FirstTimeUse::FirstTimeUse(QWidget* parent)
-        : QWidget(parent)
-        , m_ui(new Ui::FirstTimeUseClass())
-    {
-        m_ui->setupUi(this);
-    }
+    class FirstTimeUseClass;
+}
 
-    FirstTimeUse::~FirstTimeUse()
+namespace ProjectManager
+{
+    class FirstTimeUse : public QWidget
     {
-    }
 
-    //#include <Qt/moc_FirstTimeUse.cpp>
-} // namespace ProjectLauncher
+    public:
+        explicit FirstTimeUse(QWidget* parent);
+        ~FirstTimeUse();
+
+    private:
+        QScopedPointer<Ui::FirstTimeUseClass> m_ui;
+    };
+
+} // namespace ProjectManager
