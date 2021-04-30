@@ -78,10 +78,10 @@ namespace AZ
             const Vector3& GetPosition() const { return m_transform.GetTranslation(); }
             void SetTransform(const AZ::Transform& transform);
 
-            const AZ::Vector3& GetOuterExtents() const { return m_outerExtents * m_transform.GetScale(); }
+            AZ::Vector3 GetOuterExtents() const { return m_outerExtents * m_transform.GetScale(); }
             void SetOuterExtents(const AZ::Vector3& outerExtents);
 
-            const AZ::Vector3& GetInnerExtents() const { return m_innerExtents * m_transform.GetScale(); }
+            AZ::Vector3 GetInnerExtents() const { return m_innerExtents * m_transform.GetScale(); }
             void SetInnerExtents(const AZ::Vector3& innerExtents);
 
             const Aabb& GetOuterAabbWs() const { return m_outerAabbWs; }
