@@ -256,7 +256,7 @@ namespace AZ
 
         //! Remove the value at the provided path 
         //! @param path The path to a value that should be removed
-        //! @return Whether or not the value was stored at the provided path. An invalid path will return false;
+        //! @return Whether or not the path was found and removed. An invalid path will return false;
         virtual bool Remove(AZStd::string_view path) = 0;
 
         //! Structure which contains configuration settings for how to parse a single command line argument

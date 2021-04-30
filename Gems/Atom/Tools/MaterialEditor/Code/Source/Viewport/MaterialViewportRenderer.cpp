@@ -89,10 +89,12 @@ namespace MaterialEditor
         m_scene->SetShaderResourceGroupCallback(callback);
 
         // Bind m_defaultScene to the GameEntityContext's AzFramework::Scene
-        AZStd::vector<AzFramework::Scene*> scenes;
-        AzFramework::SceneSystemRequestBus::BroadcastResult(scenes, &AzFramework::SceneSystemRequests::GetAllScenes);
-        AZ_Assert(scenes.size() > 0, "Error: Scenes missing during system component initialization"); // This should never happen unless scene creation has changed.
-        scenes.at(0)->SetSubsystem(m_scene.get());
+        auto sceneSystem = AzFramework::SceneSystemInterface::Get();
+        AZ_Assert(sceneSystem, "MaterialViewportRenderer was unable to get the scene system during construction.");
+        AZStd::shared_ptr<AzFramework::Scene> mainScene = sceneSystem->GetScene(AzFramework::Scene::MainSceneName);
+        // This should never happen unless scene creation has changed.
+        AZ_Assert(mainScene, "Main scenes missing during system component initialization");
+        mainScene->SetSubsystem(m_scene);
 
         // Create a render pipeline from the specified asset for the window context and add the pipeline to the scene
         AZ::Data::Asset<AZ::RPI::AnyAsset> pipelineAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(m_defaultPipelineAssetPath.c_str(), AZ::RPI::AssetUtils::TraceLevel::Error);
@@ -277,6 +279,13 @@ namespace MaterialEditor
             m_directionalLightFeatureProcessor->ReleaseLight(handle);
         }
         m_lightHandles.clear();
+
+        auto sceneSystem = AzFramework::SceneSystemInterface::Get();
+        AZ_Assert(sceneSystem, "MaterialViewportRenderer was unable to get the scene system during destruction.");
+        AZStd::shared_ptr<AzFramework::Scene> mainScene = sceneSystem->GetScene(AzFramework::Scene::MainSceneName);
+        // This should never happen unless scene creation has changed.
+        AZ_Assert(mainScene, "Main scenes missing during system component destruction");
+        mainScene->UnsetSubsystem(m_scene);
 
         m_swapChainPass = nullptr;
         AZ::RPI::RPISystemInterface::Get()->UnregisterScene(m_scene);
