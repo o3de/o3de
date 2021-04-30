@@ -55,46 +55,32 @@ namespace MaterialEditor
         m_toggleShadowCatcher->setChecked(enableShadowCatcher);
 
         // Add mapping selection button
-        //[GFX TODO][ATOM-3992]
+        
         QToolButton* toneMappingButton = new QToolButton(this);
         QMenu* toneMappingMenu = new QMenu(toneMappingButton);
-        m_aces = toneMappingMenu->addAction("Aces", [this]() {
-            MaterialViewportRequestBus::Broadcast(
-                &MaterialViewportRequestBus::Events::SetDisplayMapperOperationType,
-                AZ::Render::DisplayMapperOperationType::Aces);
-            });
-        m_aces->setCheckable(true);
-        m_aces->setChecked(true);
-        m_acesLut = toneMappingMenu->addAction("AcesLut", [this]() {
-            MaterialViewportRequestBus::Broadcast(
-                &MaterialViewportRequestBus::Events::SetDisplayMapperOperationType,
-                AZ::Render::DisplayMapperOperationType::AcesLut);
-            });
-        m_acesLut->setCheckable(true);
-        m_passthrough = toneMappingMenu->addAction("Passthrough", [this]() {
-            MaterialViewportRequestBus::Broadcast(
-                &MaterialViewportRequestBus::Events::SetDisplayMapperOperationType,
-                AZ::Render::DisplayMapperOperationType::Passthrough);
-            });
-        m_passthrough->setCheckable(true);
-        m_gammaSRGB = toneMappingMenu->addAction("GammaSRGB", [this]() {
-            MaterialViewportRequestBus::Broadcast(
-                &MaterialViewportRequestBus::Events::SetDisplayMapperOperationType,
-                AZ::Render::DisplayMapperOperationType::GammaSRGB);
-            });
-        m_gammaSRGB->setCheckable(true);
-        m_reinhard = toneMappingMenu->addAction("Reinhard", [this]() {
-            MaterialViewportRequestBus::Broadcast(
-                &MaterialViewportRequestBus::Events::SetDisplayMapperOperationType,
-                AZ::Render::DisplayMapperOperationType::Reinhard);
-            });
-        m_reinhard->setCheckable(true);
+
+        m_operationNames =
+        {
+            { AZ::Render::DisplayMapperOperationType::Reinhard, "Reinhard" },
+            { AZ::Render::DisplayMapperOperationType::GammaSRGB, "GammaSRGB" },
+            { AZ::Render::DisplayMapperOperationType::Passthrough, "Passthrough" },
+            { AZ::Render::DisplayMapperOperationType::AcesLut, "AcesLut" },
+            { AZ::Render::DisplayMapperOperationType::Aces, "Aces" }
+        };
+        for (auto operationNamePair : m_operationNames)
+        {
+            m_operationActions[operationNamePair.first] = toneMappingMenu->addAction(operationNamePair.second, [operationNamePair]() {
+                MaterialViewportRequestBus::Broadcast(
+                    &MaterialViewportRequestBus::Events::SetDisplayMapperOperationType,
+                    operationNamePair.first);
+                });
+            m_operationActions[operationNamePair.first]->setCheckable(true);
+        }
+        m_operationActions[AZ::Render::DisplayMapperOperationType::Aces]->setChecked(true);
         toneMappingButton->setMenu(toneMappingMenu);
         toneMappingButton->setText("Tone Mapping");
         toneMappingButton->setIcon(QIcon(":/Icons/toneMapping.svg"));
         toneMappingButton->setPopupMode(QToolButton::InstantPopup);
-
-        // hiding button until DisplayMapper supports changing settings at run time
         toneMappingButton->setVisible(true);
         addWidget(toneMappingButton);
 
@@ -123,29 +109,9 @@ namespace MaterialEditor
 
     void MaterialEditorToolBar::OnDisplayMapperOperationTypeChanged(AZ::Render::DisplayMapperOperationType operationType)
     {
-        m_aces->setChecked(false);
-        m_acesLut->setChecked(false);
-        m_passthrough->setChecked(false);
-        m_gammaSRGB->setChecked(false);
-        m_reinhard->setChecked(false);
-
-        switch (operationType)
+        for (auto operationActionPair : m_operationActions)
         {
-        case AZ::Render::DisplayMapperOperationType::Aces:
-            m_aces->setChecked(true);
-            break;
-        case AZ::Render::DisplayMapperOperationType::AcesLut:
-            m_acesLut->setChecked(true);
-            break;
-        case AZ::Render::DisplayMapperOperationType::Passthrough:
-            m_passthrough->setChecked(true);
-            break;
-        case AZ::Render::DisplayMapperOperationType::GammaSRGB:
-            m_gammaSRGB->setChecked(true);
-            break;
-        case AZ::Render::DisplayMapperOperationType::Reinhard:
-            m_reinhard->setChecked(true);
-            break;
+            operationActionPair.second->setChecked(operationActionPair.first == operationType);
         }
     }
 

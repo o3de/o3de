@@ -38,10 +38,7 @@ namespace MaterialEditor
         QAction* m_toggleGrid = {};
         QAction* m_toggleShadowCatcher = {};
 
-        QAction* m_aces = {};
-        QAction* m_acesLut = {};
-        QAction* m_passthrough = {};
-        QAction* m_gammaSRGB = {};
-        QAction* m_reinhard = {};
+        AZStd::unordered_map<AZ::Render::DisplayMapperOperationType, QString> m_operationNames;
+        AZStd::unordered_map<AZ::Render::DisplayMapperOperationType, QAction*> m_operationActions;
     };
 } // namespace MaterialEditor
