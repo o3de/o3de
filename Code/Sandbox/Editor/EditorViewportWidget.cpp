@@ -230,9 +230,6 @@ EditorViewportWidget::~EditorViewportWidget()
 //////////////////////////////////////////////////////////////////////////
 int EditorViewportWidget::OnCreate()
 {
-    m_renderer = GetIEditor()->GetRenderer();
-    m_engine = GetIEditor()->Get3DEngine();
-
     CreateRenderContext();
 
     return 0;
@@ -426,7 +423,7 @@ void EditorViewportWidget::Update()
         return;
     }
 
-    if (!m_engine || m_rcClient.isEmpty() || GetIEditor()->IsInMatEditMode())
+    if (m_rcClient.isEmpty() || GetIEditor()->IsInMatEditMode())
     {
         return;
     }
@@ -795,10 +792,6 @@ void EditorViewportWidget::OnRender()
         if (GetIEditor()->GetRenderer())
         {
             GetIEditor()->GetRenderer()->SetCamera(gEnv->pSystem->GetViewCamera());
-        }
-        if (m_engine)
-        {
-            m_engine->RenderWorld(0, SRenderingPassInfo::CreateGeneralPassRenderingInfo(m_Camera), __FUNCTION__);
         }
         return;
     }
@@ -1509,10 +1502,10 @@ bool EditorViewportWidget::AddCameraMenuItems(QMenu* menu)
     }
 
     action = customCameraMenu->addAction(tr("Look through entity"));
-    AzToolsFramework::EntityIdList selectedEntityList;
-    AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(selectedEntityList, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
-    action->setCheckable(selectedEntityList.size() > 0 || m_viewSourceType == ViewSourceType::AZ_Entity);
-    action->setEnabled(selectedEntityList.size() > 0 || m_viewSourceType == ViewSourceType::AZ_Entity);
+    bool areAnyEntitiesSelected = false;
+    AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(areAnyEntitiesSelected, &AzToolsFramework::ToolsApplicationRequests::AreAnyEntitiesSelected);
+    action->setCheckable(areAnyEntitiesSelected || m_viewSourceType == ViewSourceType::AZ_Entity);
+    action->setEnabled(areAnyEntitiesSelected || m_viewSourceType == ViewSourceType::AZ_Entity);
     action->setChecked(m_viewSourceType == ViewSourceType::AZ_Entity);
     connect(action, &QAction::triggered, this, [this](bool isChecked)
         {
@@ -1814,11 +1807,6 @@ void EditorViewportWidget::SetViewTM(const Matrix34& viewTM, bool bMoveOnly)
 //////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::RenderSelectedRegion()
 {
-    if (!m_engine)
-    {
-        return;
-    }
-
     AABB box;
     GetIEditor()->GetSelectedRegion(box);
     if (box.IsEmpty())
@@ -2826,14 +2814,16 @@ void EditorViewportWidget::RestoreViewportAfterGameMode()
 
 void EditorViewportWidget::UpdateScene()
 {
-    AZStd::vector<AzFramework::Scene*> scenes;
-    AzFramework::SceneSystemRequestBus::BroadcastResult(scenes, &AzFramework::SceneSystemRequests::GetAllScenes);
-    if (scenes.size() > 0)
+    auto sceneSystem = AzFramework::SceneSystemInterface::Get();
+    if (sceneSystem)
     {
-        AZ::RPI::SceneNotificationBus::Handler::BusDisconnect();
-        auto scene = scenes[0];
-        m_renderViewport->SetScene(scene);
-        AZ::RPI::SceneNotificationBus::Handler::BusConnect(m_renderViewport->GetViewportContext()->GetRenderScene()->GetId());
+        AZStd::shared_ptr<AzFramework::Scene> mainScene = sceneSystem->GetScene(AzFramework::Scene::MainSceneName);
+        if (mainScene)
+        {
+            AZ::RPI::SceneNotificationBus::Handler::BusDisconnect();
+            m_renderViewport->SetScene(mainScene);
+            AZ::RPI::SceneNotificationBus::Handler::BusConnect(m_renderViewport->GetViewportContext()->GetRenderScene()->GetId());
+        }
     }
 }
 

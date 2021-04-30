@@ -44,5 +44,13 @@ namespace Multiplayer
         //! Creates and manages sending updates to the remote endpoint.
         //! @param serverGameTimeMs current server game time in milliseconds
         virtual void Update(AZ::TimeMs serverGameTimeMs) = 0;
+
+        //! Returns whether update messages can be sent to the connection.
+        //! @return true if update messages can be sent
+        virtual bool CanSendUpdates() const = 0;
+
+        //! Sets the state of connection whether update messages can be sent or not.
+        //! @param canSendUpdates the state value
+        virtual void SetCanSendUpdates(bool canSendUpdates) = 0;
     };
 }

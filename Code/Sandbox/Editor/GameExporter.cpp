@@ -33,7 +33,6 @@
 #include "Util/CryMemFile.h"
 #include "Objects/ObjectManager.h"
 
-#include "Objects/ObjectPhysicsManager.h"
 #include "Objects/EntityObject.h"
 #include "LensFlareEditor/LensFlareManager.h"
 #include "LensFlareEditor/LensFlareLibrary.h"
@@ -190,14 +189,6 @@ bool CGameExporter::Export(unsigned int flags, [[maybe_unused]] EEndian eExportE
                 Error("Cannot open Pak file " + m_levelPak.m_sPath + " for writing.");
                 exportSuccessful = false;
             }
-        }
-
-        ////////////////////////////////////////////////////////////////////////
-        // Inform all objects that an export is about to begin
-        ////////////////////////////////////////////////////////////////////////
-        if (exportSuccessful)
-        {
-            GetIEditor()->GetObjectManager()->GetPhysicsManager()->PrepareForExport();
         }
 
         ////////////////////////////////////////////////////////////////////////
@@ -519,8 +510,6 @@ void CGameExporter::ExportMapInfo(XmlNodeRef& node)
     CXmlArchive xmlAr;
     xmlAr.bLoading = false;
     xmlAr.root = node;
-
-    GetIEditor()->GetObjectManager()->GetPhysicsManager()->SerializeCollisionClasses(xmlAr);
 }
 
 //////////////////////////////////////////////////////////////////////////

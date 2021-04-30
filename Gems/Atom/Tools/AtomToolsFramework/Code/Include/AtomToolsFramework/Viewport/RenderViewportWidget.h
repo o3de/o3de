@@ -82,7 +82,7 @@ namespace AtomToolsFramework
         AZ::RPI::ConstViewportContextPtr GetViewportContext() const;
         //! Creates an AZ::RPI::ScenePtr for the given scene and assigns it to the current ViewportContext.
         //! If useDefaultRenderPipeline is specified, this will initialize the scene with a rendering pipeline.
-        void SetScene(AzFramework::Scene* scene, bool useDefaultRenderPipeline = true);
+        void SetScene(const AZStd::shared_ptr<AzFramework::Scene>& scene, bool useDefaultRenderPipeline = true);
         //! Gets the default camera that's been automatically registered to our ViewportContext.
         AZ::RPI::ViewPtr GetDefaultCamera();
         AZ::RPI::ConstViewPtr GetDefaultCamera() const;

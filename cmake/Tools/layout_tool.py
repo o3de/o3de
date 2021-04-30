@@ -312,14 +312,15 @@ def create_link(src:pathlib.Path, tgt:pathlib.Path, copy):
     tgt = pathlib.Path(tgt)
     if copy:
         # Remove the exist target
-        if tgt.is_symlink():
-            tgt.unlink()
-        else:
-            def remove_readonly(func, path, _):
-                "Clear the readonly bit and reattempt the removal"
-                os.chmod(path, stat.S_IWRITE)
-                func(path)
-            shutil.rmtree(tgt, onerror=remove_readonly)
+        if tgt.exists():
+            if tgt.is_symlink():
+                tgt.unlink()
+            else:
+                def remove_readonly(func, path, _):
+                    "Clear the readonly bit and reattempt the removal"
+                    os.chmod(path, stat.S_IWRITE)
+                    func(path)
+                shutil.rmtree(tgt, onerror=remove_readonly)
 
         logging.debug(f'Copying from {src} to {tgt}')
         shutil.copytree(str(src), str(tgt), symlinks=False)
