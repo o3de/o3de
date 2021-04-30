@@ -476,11 +476,9 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_OPEN_ASSET_BROWSER, OnOpenAssetBrowserView)
     ON_COMMAND(ID_OPEN_AUDIO_CONTROLS_BROWSER, OnOpenAudioControlsEditor)
 
-    ON_COMMAND(ID_GOTO_VIEWPORTSEARCH, OnGotoViewportSearch)
     ON_COMMAND(ID_DISPLAY_SHOWHELPERS, OnShowHelpers)
     ON_COMMAND(ID_OPEN_TRACKVIEW, OnOpenTrackView)
     ON_COMMAND(ID_OPEN_UICANVASEDITOR, OnOpenUICanvasEditor)
-    ON_COMMAND(ID_GOTO_VIEWPORTSEARCH, OnGotoViewportSearch)
     ON_COMMAND(ID_TERRAIN_TIMEOFDAY, OnTimeOfDay)
     ON_COMMAND(ID_TERRAIN_TIMEOFDAYBUTTON, OnTimeOfDay)
 
@@ -4317,18 +4315,6 @@ void CCryEditApp::OnUpdateGameSpec(QAction* action)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnGotoViewportSearch()
-{
-    if (MainWindow::instance())
-    {
-        CLayoutViewPane* viewPane = MainWindow::instance()->GetActiveView();
-        if (viewPane)
-        {
-            viewPane->SetFocusToViewportSearch();
-        }
-    }
-}
-
 RecentFileList* CCryEditApp::GetRecentFileList()
 {
     static RecentFileList list;

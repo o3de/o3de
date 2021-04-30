@@ -2338,10 +2338,7 @@ void CObjectManager::UpdateVisibilityList()
         // in the view (frustum) to the visible objects list so we can draw feedback for
         // entities being hidden in the viewport when selected in the  entity outliner
         // (EditorVisibleEntityDataCache must be populated even if entities are 'hidden')
-        if (visible)
-        {
-            m_visibleObjects.push_back(obj);
-        }
+        m_visibleObjects.push_back(obj);
     }
 
     m_isUpdateVisibilityList = false;
