@@ -41,6 +41,7 @@ ly_associate_package(PACKAGE_NAME poly2tri-0.3.3-rev2-multiplatform             
 ly_associate_package(PACKAGE_NAME v-hacd-2.0-rev1-multiplatform                          TARGETS v-hacd                     PACKAGE_HASH 5c71aef19cc9787d018d64eec076e9f51ea5a3e0dc6b6e22e57c898f6cc4afe3)
 
 # platform-specific:
+ly_associate_package(PACKAGE_NAME AWSGameLiftServerSDK-3.4.1-rev1-windows                TARGETS AWSGameLiftServerSDK       PACKAGE_HASH a0586b006e4def65cc25f388de17dc475e417dc1e6f9d96749777c88aa8271b0)
 ly_associate_package(PACKAGE_NAME freetype-2.10.4.14-windows         TARGETS freetype        PACKAGE_HASH 88dedc86ccb8c92f14c2c033e51ee7d828fa08eafd6475c6aa963938a99f4bf3)
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.14-windows              TARGETS tiff            PACKAGE_HASH ab60d1398e4e1e375ec0f1a00cdb1d812a07c0096d827db575ce52dd6d714207)
 ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev3-windows  TARGETS AWSNativeSDK    PACKAGE_HASH 929873d4252c464620a9d288e41bd5d47c0bd22750aeb3a1caa68a3da8247c48)
