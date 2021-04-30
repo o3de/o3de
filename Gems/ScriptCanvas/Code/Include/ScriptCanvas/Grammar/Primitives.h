@@ -269,6 +269,7 @@ namespace ScriptCanvas
             bool m_isUnused = false; // used for multiple return situations, and to prevent compile errors
             bool m_isExposedToConstruction = false;
             bool m_isDebugOnly = false;
+            bool m_isFromFunctionDefinitionSlot = false;
 
             Variable() = default;
             Variable(Datum&& datum);

@@ -29,7 +29,7 @@ namespace Multiplayer
     {
     public:
         AZ_CLASS_ALLOCATOR(NetworkPrefabProcessor, AZ::SystemAllocator, 0);
-        AZ_RTTI(NetworkPrefabProcessor, "{AF6C36DA-CBB9-4DF4-AE2D-7BC6CCE65176}", PrefabProcessor);
+        AZ_RTTI(Multiplayer::NetworkPrefabProcessor, "{AF6C36DA-CBB9-4DF4-AE2D-7BC6CCE65176}", PrefabProcessor);
 
         ~NetworkPrefabProcessor() override = default;
 

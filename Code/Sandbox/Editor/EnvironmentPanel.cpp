@@ -19,10 +19,6 @@
 #include "GameEngine.h"
 #include "CryEditDoc.h"
 
-// Cry3DEngine
-#include <Cry3DEngine/Environment/OceanEnvironmentBus.h>
-
-
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <ui_EnvironmentPanel.h>
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
@@ -35,15 +31,6 @@ CEnvironmentPanel::CEnvironmentPanel(QWidget* pParent /*=nullptr*/)
     , ui(new Ui::CEnvironmentPanel)
 {
     XmlNodeRef node = GetIEditor()->GetDocument()->GetEnvironmentTemplate();
-
-    // is the feature toggle enabled?
-    bool bHasOceanFeature = false;
-    AZ::OceanFeatureToggleBus::BroadcastResult(bHasOceanFeature, &AZ::OceanFeatureToggleBus::Events::OceanComponentEnabled);
-    if (bHasOceanFeature)
-    {
-        node->findChild("Ocean")->setAttr("hidden", true);
-        node->findChild("OceanAnimation")->setAttr("hidden", true);
-    }
 
     m_onSetCallback = AZStd::bind(&CCryEditDoc::OnEnvironmentPropertyChanged, GetIEditor()->GetDocument(), AZStd::placeholders::_1);
 
