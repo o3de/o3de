@@ -15,7 +15,7 @@ endif()
 
 ly_add_target(
     NAME ProjectManager APPLICATION
-    OUTPUT_NAME O3DE
+    OUTPUT_NAME o3de
     NAMESPACE AZ
     AUTOMOC
     AUTOUIC
