@@ -159,18 +159,6 @@ void SandboxIntegrationManager::Setup()
     AzToolsFramework::ToolsApplicationEvents::Bus::Handler::BusConnect();
     AzToolsFramework::EditorRequests::Bus::Handler::BusConnect();
     AzToolsFramework::EditorWindowRequests::Bus::Handler::BusConnect();
-
-    // if the new viewport interaction model is enabled, then object picking is handled via
-    // EditorPickEntitySelection and SandboxIntegrationManager is not required
-    if (!IsNewViewportInteractionModelEnabled())
-    {
-        AzFramework::EntityContextId pickModeEntityContextId = GetEntityContextId();
-        if (!pickModeEntityContextId.IsNull())
-        {
-            AzToolsFramework::EditorPickModeNotificationBus::Handler::BusConnect(pickModeEntityContextId);
-        }
-    }
-
     AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
     AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
     AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusConnect();
@@ -184,7 +172,6 @@ void SandboxIntegrationManager::Setup()
 
     AzFramework::DisplayContextRequestBus::Handler::BusConnect();
     SetupFileExtensionMap();
-    AzToolsFramework::NewViewportInteractionModelEnabledRequestBus::Handler::BusConnect();
 
     MainWindow::instance()->GetActionManager()->RegisterActionHandler(ID_FILE_SAVE_SLICE_TO_ROOT, [this]() {
         SaveSlice(false);
@@ -388,7 +375,6 @@ void SandboxIntegrationManager::GetEntitiesInSlices(
 void SandboxIntegrationManager::Teardown()
 {
     AzToolsFramework::Layers::EditorLayerComponentNotificationBus::Handler::BusDisconnect();
-    AzToolsFramework::NewViewportInteractionModelEnabledRequestBus::Handler::BusDisconnect();
     AzFramework::DisplayContextRequestBus::Handler::BusDisconnect();
     if( m_debugDisplayBusImplementationActive)
     {
@@ -398,12 +384,6 @@ void SandboxIntegrationManager::Teardown()
     AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusDisconnect();
     AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
     AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
-
-    if (!IsNewViewportInteractionModelEnabled())
-    {
-        AzToolsFramework::EditorPickModeNotificationBus::Handler::BusDisconnect();
-    }
-
     AzToolsFramework::EditorWindowRequests::Bus::Handler::BusDisconnect();
     AzToolsFramework::EditorRequests::Bus::Handler::BusDisconnect();
     AzToolsFramework::ToolsApplicationEvents::Bus::Handler::BusDisconnect();
@@ -1243,21 +1223,14 @@ void SandboxIntegrationManager::CloneSelection(bool& handled)
     }
 }
 
-void SandboxIntegrationManager::DeleteSelectedEntities(const bool includeDescendants)
+void SandboxIntegrationManager::DeleteSelectedEntities([[maybe_unused]] const bool includeDescendants)
 {
-    if (IsNewViewportInteractionModelEnabled())
-    {
-        AzToolsFramework::EntityIdList selectedEntityIds;
-        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
-            selectedEntityIds, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
+    AzToolsFramework::EntityIdList selectedEntityIds;
+    AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+        selectedEntityIds, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
 
-        AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
-            &AzToolsFramework::ToolsApplicationRequests::DeleteEntitiesAndAllDescendants, selectedEntityIds);
-    }
-    else
-    {
-        CCryEditApp::instance()->DeleteSelectedEntities(includeDescendants);
-    }
+    AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+        &AzToolsFramework::ToolsApplicationRequests::DeleteEntitiesAndAllDescendants, selectedEntityIds);
 }
 
 AZ::EntityId SandboxIntegrationManager::CreateNewEntity(AZ::EntityId parentId)
@@ -2795,11 +2768,6 @@ void SandboxIntegrationManager::PopMatrix()
     {
         m_dc->PopMatrix();
     }
-}
-
-bool SandboxIntegrationManager::IsNewViewportInteractionModelEnabled()
-{
-    return GetIEditor()->IsNewViewportInteractionModelEnabled();
 }
 
 bool SandboxIntegrationManager::DisplayHelpersVisible()
