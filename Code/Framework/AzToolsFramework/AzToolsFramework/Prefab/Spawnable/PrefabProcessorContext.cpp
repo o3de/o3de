@@ -53,11 +53,11 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
     {
         using ConversionUtils = PrefabConversionUtils::ProcessedObjectStore;
 
-        uint32_t spawnableSubId = ConversionUtils::BuildSubId(AZStd::move(prefabName +
-            AzFramework::Spawnable::DotFileExtension));
+        prefabName += AzFramework::Spawnable::DotFileExtension;
+        uint32_t spawnableSubId = ConversionUtils::BuildSubId(AZStd::move(prefabName));
 
-        uint32_t spawnablePrefabSubId = ConversionUtils::BuildSubId(AZStd::move(dependentPrefabName +
-            AzFramework::Spawnable::DotFileExtension));
+        dependentPrefabName += AzFramework::Spawnable::DotFileExtension;
+        uint32_t spawnablePrefabSubId = ConversionUtils::BuildSubId(AZStd::move(dependentPrefabName));
 
         return RegisterSpawnableProductAssetDependency(spawnableSubId, spawnablePrefabSubId);
     }
@@ -66,8 +66,8 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
     {
         using ConversionUtils = PrefabConversionUtils::ProcessedObjectStore;
 
-        uint32_t spawnableSubId = ConversionUtils::BuildSubId(AZStd::move(prefabName +
-            AzFramework::Spawnable::DotFileExtension));
+        prefabName += AzFramework::Spawnable::DotFileExtension;
+        uint32_t spawnableSubId = ConversionUtils::BuildSubId(AZStd::move(prefabName));
 
         AZ::Data::AssetId spawnableAssetId(GetSourceUuid(), spawnableSubId);
 
