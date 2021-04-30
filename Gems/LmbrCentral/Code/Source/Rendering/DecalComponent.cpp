@@ -100,49 +100,10 @@ namespace LmbrCentral
 
     void DecalComponent::Activate()
     {
-        AZ::Transform transform = AZ::Transform::CreateIdentity();
-        EBUS_EVENT_ID_RESULT(transform, GetEntityId(), AZ::TransformBus, GetWorldTM);
-
-        SDecalProperties decalProperties = m_configuration.GetDecalProperties(transform);
-
-        m_decalRenderNode = static_cast<IDecalRenderNode*>(gEnv->p3DEngine->CreateRenderNode(eERType_Decal));
-        if (m_decalRenderNode)
-        {
-            m_decalRenderNode->SetRndFlags(m_decalRenderNode->GetRndFlags() | ERF_COMPONENT_ENTITY);
-            m_decalRenderNode->SetDecalProperties(decalProperties);
-            m_decalRenderNode->SetMinSpec(static_cast<int>(decalProperties.m_minSpec));
-            m_decalRenderNode->SetMatrix(AZTransformToLYTransform(transform));
-            m_decalRenderNode->SetViewDistanceMultiplier(m_configuration.m_viewDistanceMultiplier);
-
-            const int configSpec = gEnv->pSystem->GetConfigSpec(true);
-            if (!m_configuration.m_visible || static_cast<AZ::u32>(configSpec) < static_cast<AZ::u32>(m_configuration.m_minSpec))
-            {
-                Hide();
-            }
-        }
-
-        m_materialBusHandler->Activate(m_decalRenderNode, m_entity->GetId());
-
-        DecalComponentRequestBus::Handler::BusConnect(GetEntityId());
-        RenderNodeRequestBus::Handler::BusConnect(GetEntityId());
-        AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
-        MaterialOwnerRequestBus::Handler::BusConnect(GetEntityId());
     }
 
     void DecalComponent::Deactivate()
     {
-        DecalComponentRequestBus::Handler::BusDisconnect();
-        RenderNodeRequestBus::Handler::BusDisconnect();
-        AZ::TransformNotificationBus::Handler::BusDisconnect();
-        MaterialOwnerRequestBus::Handler::BusDisconnect();
-
-        m_materialBusHandler->Deactivate();
-
-        if (m_decalRenderNode)
-        {
-            gEnv->p3DEngine->DeleteRenderNode(m_decalRenderNode);
-            m_decalRenderNode = nullptr;
-        }
     }
 
     void DecalComponent::OnTransformChanged([[maybe_unused]] const AZ::Transform& local, const AZ::Transform& world)

@@ -1,0 +1,19 @@
+{
+    "Amazon": {
+        "AssetProcessor": {
+            "Settings": {
+                "Platform pc": {
+                    "tags": "tools,renderer"
+                },
+                "Platform osx_gl": {
+                    "tags": "tools,renderer"
+                },
+                "ScanFolder Game": {
+                    "watch": "@PROJECTROOT@",
+                    "recursive": 1,
+                    "order": 0
+                }
+            }
+        }
+    }
+}

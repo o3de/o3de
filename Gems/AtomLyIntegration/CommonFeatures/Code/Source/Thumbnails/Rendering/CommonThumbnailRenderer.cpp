@@ -82,8 +82,9 @@ namespace AZ
                 return m_data;
             }
 
-            void CommonThumbnailRenderer::RenderThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey thumbnailKey, [[maybe_unused]] int thumbnailSize)
+            void CommonThumbnailRenderer::RenderThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey thumbnailKey, int thumbnailSize)
             {
+                m_data->m_thumbnailSize = thumbnailSize;
                 m_data->m_thumbnailQueue.push(thumbnailKey);
                 if (m_currentStep == Step::None)
                 {

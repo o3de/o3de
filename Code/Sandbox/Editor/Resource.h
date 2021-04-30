@@ -75,13 +75,10 @@
 #define IDC_PLATFORM_SALEM                         2759
 #define IDC_GROUPBOX_GLOBALTAGS                    2916
 #define IDC_GROUPBOX_FRAGMENTTAGS                  2917
-#define ID_PARTICLE_EDITOR                         2922
 #define ID_RESOURCES_GENERATECGFTHUMBNAILS         32894
 #define ID_RESOURCES_REDUCEWORKINGSET              32896
 #define ID_EDIT_HIDE                               32898
 #define ID_EDIT_UNHIDEALL                          32899
-#define ID_EDIT_FREEZE                             32900
-#define ID_EDIT_UNFREEZEALL                        32901
 #define ID_RELOAD_TERRAIN                          32902
 #define ID_VIEW_GRIDSETTINGS                       32904
 #define ID_VIEW_CONFIGURELAYOUT                    32906
@@ -125,7 +122,6 @@
 #define ID_EDIT_SELECTNONE                         33377
 #define ID_WIREFRAME                               33410
 #define ID_FILE_GENERATETERRAINTEXTURE             33445
-#define ID_GENERATORS_LIGHTING                     33446
 #define ID_GENERATORS_STATICOBJECTS                33447
 #define ID_GENERATORS_TEXTURE                      33448
 #define ID_FILE_IMPORT                             33457
@@ -136,21 +132,14 @@
 #define ID_EDIT_DELETE                             33480
 #define ID_MOVE_OBJECT                             33481
 #define ID_RENAME_OBJ                              33483
-#define ID_SET_HEIGHT                              33484
 #define ID_FETCH                                   33496
 #define ID_EDITMODE_ROTATE                         33506
 #define ID_EDITMODE_SCALE                          33507
 #define ID_EDITMODE_MOVE                           33508
 #define ID_SELECTION_DELETE                        33512
 #define ID_EDIT_ESCAPE                             33513
-#define ID_OBJECTMODIFY_SETAREA                    33514
-#define ID_OBJECTMODIFY_SETHEIGHT                  33515
-#define ID_OBJECTMODIFY_FREEZE                     33517
-#define ID_OBJECTMODIFY_UNFREEZE                   33518
 #define ID_UNDO                                    33524
 #define ID_EDIT_CLONE                              33525
-#define ID_SELECTION_SAVE                          33527
-#define ID_SELECTION_LOAD                          33529
 #define ID_GOTO_SELECTED                           33535
 #define ID_EDIT_LEVELDATA                          33542
 #define ID_FILE_EDITEDITORINI                      33543
@@ -232,7 +221,6 @@
 #define ID_VIEW_OPENVIEWPANE                       33709
 #define ID_VIEW_OPENPANE_FIRST          33712
 #define ID_VIEW_OPENPANE_LAST           33811
-#define ID_OPEN_MATERIAL_EDITOR                    33822
 #define ID_OPEN_EMOTIONFX_EDITOR                   39742
 #define ID_BRUSH_CSGSUBSTRUCT                      33837
 #define ID_MATERIAL_PICKTOOL                       33842
@@ -322,7 +310,6 @@
 #define ID_SNAP_TO_ANGLE_RANGE_END      34330
 #define ID_MODIFY_LINK                  34355
 #define ID_MODIFY_UNLINK                34356
-#define ID_MODIFY_OBJECT_HEIGHT         34357
 #define ID_MODIFY_GOTO_SELECTION        34358
 #define ID_VIEW_LAYOUT_FIRST            34363
 #define ID_VIEW_LAYOUT_LAST             34377
@@ -397,4 +384,6 @@
 #define ID_TOOLBAR_WIDGET_SNAP_GRID          50008
 #define ID_TOOLBAR_WIDGET_ENVIRONMENT_MODE   50011
 #define ID_TOOLBAR_WIDGET_DEBUG_MODE         50012
+#define ID_TOOLBAR_WIDGET_SPACER_RIGHT       50013
+#define ID_TOOLBAR_WIDGET_PLAYCONSOLE_LABEL  50014
 #define ID_TOOLBAR_WIDGET_LAST               50020

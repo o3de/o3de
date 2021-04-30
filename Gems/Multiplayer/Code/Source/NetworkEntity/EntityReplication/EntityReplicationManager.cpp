@@ -21,6 +21,7 @@
 #include <Source/NetworkEntity/INetworkEntityManager.h>
 #include <Source/Components/NetBindComponent.h>
 #include <Source/AutoGen/Multiplayer.AutoPackets.h>
+#include <Include/IMultiplayer.h>
 #include <AzNetworking/ConnectionLayer/IConnection.h>
 #include <AzNetworking/ConnectionLayer/IConnectionListener.h>
 #include <AzNetworking/PacketLayer/IPacketHeader.h>
@@ -542,11 +543,8 @@ namespace Multiplayer
         // Create an entity if we don't have one
         if (createEntity)
         {
-            // @pereslav
-            //replicatorEntity = GetNetworkEntityManager()->CreateSingleEntityImmediateInternal(prefabEntityId, EntitySpawnType::Replicate, AutoActivate::DoNotActivate, netEntityId, localNetworkRole, AZ::Transform::Identity());
             INetworkEntityManager::EntityList entityList = GetNetworkEntityManager()->CreateEntitiesImmediate(
-                prefabEntityId, netEntityId, localNetworkRole,
-                AZ::Transform::Identity());
+                prefabEntityId, netEntityId, localNetworkRole, AutoActivate::DoNotActivate, AZ::Transform::Identity());
 
             if (entityList.size() == 1)
             {
@@ -825,11 +823,12 @@ namespace Multiplayer
     {
         if (entityReplicator == nullptr)
         {
+            IMultiplayer* multiplayer = AZ::Interface<IMultiplayer>::Get();
             AZLOG_INFO
             (
-                "EntityReplicationManager: Dropping remote RPC message for component %u of rpc type %d, entityId %u has already been deleted",
-                aznumeric_cast<uint32_t>(message.GetComponentId()),
-                message.GetRpcMessageType(),
+                "EntityReplicationManager: Dropping remote RPC message for component %s of rpc index %s, entityId %u has already been deleted",
+                multiplayer->GetComponentName(message.GetComponentId()),
+                multiplayer->GetComponentRpcName(message.GetComponentId(), message.GetRpcIndex()),
                 message.GetEntityId()
             );
             return false;

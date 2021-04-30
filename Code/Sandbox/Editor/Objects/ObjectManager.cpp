@@ -25,7 +25,6 @@
 #include "Viewport.h"
 #include "GizmoManager.h"
 #include "AxisGizmo.h"
-#include "ObjectPhysicsManager.h"
 #include "GameEngine.h"
 #include "WaitProgress.h"
 #include "Util/Image.h"
@@ -109,7 +108,6 @@ CObjectManager::CObjectManager()
     , m_pLoadProgress(nullptr)
     , m_loadedObjects(0)
     , m_totalObjectsToLoad(0)
-    , m_pPhysicsManager(new CObjectPhysicsManager())
     , m_bExiting(false)
     , m_isUpdateVisibilityList(false)
     , m_currentHideCount(CBaseObject::s_invalidHiddenID)
@@ -138,7 +136,6 @@ CObjectManager::~CObjectManager()
     DeleteAllObjects();
 
     delete m_gizmoManager;
-    delete m_pPhysicsManager;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -841,8 +838,6 @@ void CObjectManager::Update()
     {
         prevActiveWindow->setFocus();
     }
-
-    m_pPhysicsManager->Update();
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -43,7 +43,6 @@ namespace LyViewPane
     static const char* const TerrainEditor = "Terrain Editor";
     static const char* const TerrainTool = "Terrain Tool";
     static const char* const TerrainTextureLayers = "Terrain Texture Layers";
-    static const char* const MaterialEditor = "Material Editor";
     static const char* const ParticleEditor = "Particle Editor";
     static const char* const LensFlareEditor = "Lens Flare Editor";
     static const char* const TimeOfDayEditor = "Time Of Day";
