@@ -4265,9 +4265,7 @@ UiCanvasComponent* UiCanvasComponent::FixupPostLoad(AZ::Entity* canvasEntity, AZ
         }
         else
         {
-            AZ::Vector2 viewportSize = uiRenderer->GetViewportSize();
-            targetCanvasSize.SetX(static_cast<float>(viewportSize.GetX()));
-            targetCanvasSize.SetY(static_cast<float>(viewportSize.GetY()));
+            targetCanvasSize = uiRenderer->GetViewportSize();
         }
         canvasComponent->SetTargetCanvasSizeAndUniformScale(!forEditor, targetCanvasSize);
     }
