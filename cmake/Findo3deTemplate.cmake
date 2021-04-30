@@ -29,6 +29,7 @@ endfunction()
 # Since this is external to the project's source, we need to specify an output directory
 # even though we don't build
 macro(o3de_initialize)
+    set(INSTALLED_ENGINE TRUE)
     set(LY_PROJECTS ${CMAKE_SOURCE_DIR})
     o3de_current_file_path(current_path)
     add_subdirectory(${current_path}/.. o3de)

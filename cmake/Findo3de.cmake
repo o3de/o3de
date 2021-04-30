@@ -38,6 +38,7 @@ if(NOT this_engine_name STREQUAL LY_ENGINE_NAME_TO_USE)
 endif()
 
 macro(o3de_initialize)
+    set(INSTALLED_ENGINE FALSE)
     set(LY_PROJECTS ${CMAKE_CURRENT_LIST_DIR})
     o3de_current_file_path(current_path)
     add_subdirectory(${current_path}/.. o3de)
