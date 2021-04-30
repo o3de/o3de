@@ -170,7 +170,7 @@ namespace AssetBundler
         return true;
     }
 
-    void SeedListFileTableModel::Reload(const char* fileExtension, const QSet<QString>& watchedFolders, const QSet<QString>& watchedFiles, AZStd::unordered_map<AZStd::string, AZStd::string> pathToProjectNameMap)
+    void SeedListFileTableModel::Reload(const char* fileExtension, const QSet<QString>& watchedFolders, const QSet<QString>& watchedFiles, const AZStd::unordered_map<AZStd::string, AZStd::string>& pathToProjectNameMap)
     {
         // Load in the Seed List files from disk
         AssetBundlerAbstractFileTableModel::Reload(fileExtension, watchedFolders, watchedFiles, pathToProjectNameMap);

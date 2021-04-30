@@ -77,7 +77,7 @@ namespace AssetBundler
 
         bool DeleteFile(const QModelIndex& index) override;
 
-        void Reload(const char* fileExtension, const QSet<QString>& watchedFolders, const QSet<QString>& watchedFiles = QSet<QString>(), AZStd::unordered_map<AZStd::string, AZStd::string> pathToProjectNameMap = AZStd::unordered_map<AZStd::string, AZStd::string>()) override;
+        void Reload(const char* fileExtension, const QSet<QString>& watchedFolders, const QSet<QString>& watchedFiles = QSet<QString>(), const AZStd::unordered_map<AZStd::string, AZStd::string>& pathToProjectNameMap = AZStd::unordered_map<AZStd::string, AZStd::string>()) override;
 
         void LoadFile(const AZStd::string& absoluteFilePath, const AZStd::string& projectName = "", bool isDefaultFile = false) override;
 

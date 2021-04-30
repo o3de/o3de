@@ -60,7 +60,7 @@ namespace AssetBundler
         //////////////////////////////////////////////////////////////////////////
 
         //! Reload all the data based on the watched folders and files
-        virtual void Reload(const char* fileExtension, const QSet<QString>& watchedFolders, const QSet<QString>& watchedFiles = QSet<QString>(), AZStd::unordered_map<AZStd::string, AZStd::string> pathToProjectNameMap = AZStd::unordered_map<AZStd::string, AZStd::string>());
+        virtual void Reload(const char* fileExtension, const QSet<QString>& watchedFolders, const QSet<QString>& watchedFiles = QSet<QString>(), const AZStd::unordered_map<AZStd::string, AZStd::string>& pathToProjectNameMap = AZStd::unordered_map<AZStd::string, AZStd::string>());
 
         virtual void ReloadFiles(const AZStd::vector<AZStd::string>& absoluteFilePathList, AZStd::unordered_map<AZStd::string, AZStd::string> pathToProjectNameMap = AZStd::unordered_map<AZStd::string, AZStd::string>());
 

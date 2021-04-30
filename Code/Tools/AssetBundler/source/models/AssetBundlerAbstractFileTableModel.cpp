@@ -26,7 +26,7 @@ namespace AssetBundler
     {
     }
 
-    void AssetBundlerAbstractFileTableModel::Reload(const char* fileExtension, const QSet<QString>& watchedFolders, const QSet<QString>& watchedFiles, AZStd::unordered_map<AZStd::string, AZStd::string> pathToProjectNameMap)
+    void AssetBundlerAbstractFileTableModel::Reload(const char* fileExtension, const QSet<QString>& watchedFolders, const QSet<QString>& watchedFiles, const AZStd::unordered_map<AZStd::string, AZStd::string>& pathToProjectNameMap)
     {
         AZStd::vector<AZStd::string> keysToRemove = m_fileListKeys;
 
@@ -41,7 +41,11 @@ namespace AssetBundler
             for (const QString& fileNameAndExtension : filesDir.entryList(QDir::Files))
             {
                 AZStd::string absolutePath = filesDir.absoluteFilePath(fileNameAndExtension).toUtf8().data();
-                AZStd::string projectName = pathToProjectNameMap[absolutePath];
+                AZStd::string projectName;
+                if (pathToProjectNameMap.contains(absolutePath))
+                {
+                    projectName = pathToProjectNameMap.at(absolutePath);
+                }
 
                 // If a project name is already specified, then the associated file is a default file
                 LoadFile(absolutePath, projectName, !projectName.empty());
@@ -55,7 +59,7 @@ namespace AssetBundler
             AZStd::string absolutePath = filePath.toUtf8().data();
             if (AZ::IO::FileIOBase::GetInstance()->Exists(absolutePath.c_str()))
             { 
-                AZStd::string projectName = pathToProjectNameMap[absolutePath];
+                AZStd::string projectName = pathToProjectNameMap.at(absolutePath);
 
                 // If a project name is already specified, then the associated file is a default file
                 LoadFile(absolutePath, projectName, !projectName.empty());
