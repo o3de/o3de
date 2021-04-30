@@ -257,13 +257,13 @@ namespace
     UiRenderer* GetUiRendererForGame()
     {
         CLyShine* lyShine = static_cast<CLyShine*>(gEnv->pLyShine);
-        return lyShine->GetUiRenderer();
+        return lyShine ? lyShine->GetUiRenderer() : nullptr;
     }
 
     UiRenderer* GetUiRendererForEditor()
     {
         CLyShine* lyShine = static_cast<CLyShine*>(gEnv->pLyShine);
-        return lyShine->GetUiRendererForEditor();
+        return lyShine ? lyShine->GetUiRendererForEditor() : nullptr;
     }
 
     bool IsValidInteractable(const AZ::EntityId& entityId)
@@ -4256,8 +4256,7 @@ UiCanvasComponent* UiCanvasComponent::FixupPostLoad(AZ::Entity* canvasEntity, AZ
     // This should be done before calling InGamePostActivate so that the
     // canvas space rects of the elements are accurate
     UiRenderer* uiRenderer = forEditor ? GetUiRendererForEditor() : GetUiRendererForGame();
-    AZ_Assert(uiRenderer, "Attempting to access UiRenderer before it has been initialized");
-    if (uiRenderer)
+    if (uiRenderer) // can be null in automated testing
     {
         AZ::Vector2 targetCanvasSize;
         if (canvasSize)

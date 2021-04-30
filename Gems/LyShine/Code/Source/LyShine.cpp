@@ -72,6 +72,8 @@
 #include <AzFramework/Input/Devices/Touch/InputDeviceTouch.h>
 #include <AzFramework/Metrics/MetricsPlainTextNameRegistration.h>
 
+#include <Atom/RHI/RHIUtils.h>
+
 #include "Animation/UiAnimationSystem.h"
 #include "World/UiCanvasAssetRefComponent.h"
 #include "World/UiCanvasProxyRefComponent.h"
@@ -425,7 +427,10 @@ void CLyShine::Render()
 {
     FRAME_PROFILER(__FUNCTION__, gEnv->pSystem, PROFILE_UI);
 
-    // LYSHINE_ATOM_TODO - early exit if null renderer/server
+    if (AZ::RHI::IsNullRenderer())
+    {
+        return;
+    }
 
     if (m_updatingLoadedCanvases)
     {
