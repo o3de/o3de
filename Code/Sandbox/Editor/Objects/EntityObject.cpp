@@ -1970,50 +1970,6 @@ IOpticsElementBasePtr CEntityObject::GetOpticsElement()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CEntityObject::SetOpticsElement(IOpticsElementBase* pOptics)
-{
-    CDLight* pLight = GetLightProperty();
-    if (pLight == NULL)
-    {
-        return;
-    }
-    pLight->SetLensOpticsElement(pOptics);
-    SetMaterial(NULL);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CEntityObject::ApplyOptics(const QString& opticsFullName, IOpticsElementBasePtr pOptics)
-{
-    if (pOptics == NULL)
-    {
-        CDLight* pLight = GetLightProperty();
-        if (pLight)
-        {
-            pLight->SetLensOpticsElement(NULL);
-        }
-        SetMaterial(NULL);
-    }
-    else
-    {
-        int nOpticsIndex(0);
-        if (!gEnv->pOpticsManager->Load(opticsFullName.toUtf8().data(), nOpticsIndex))
-        {
-            IOpticsElementBasePtr pNewOptics = gEnv->pOpticsManager->Create(eFT_Root);
-            if (!gEnv->pOpticsManager->AddOptics(pNewOptics, opticsFullName.toUtf8().data(), nOpticsIndex))
-            {
-                CDLight* pLight = GetLightProperty();
-                if (pLight)
-                {
-                    pLight->SetLensOpticsElement(NULL);
-                    SetMaterial(NULL);
-                }
-                return;
-            }
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CEntityObject::SetOpticsName(const QString& opticsFullName)
 {
     if (opticsFullName.isEmpty())

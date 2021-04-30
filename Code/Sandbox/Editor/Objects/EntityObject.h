@@ -221,8 +221,6 @@ public:
 
     IVariable* GetLightVariable(const char* name) const;
     IOpticsElementBasePtr GetOpticsElement();
-    void SetOpticsElement(IOpticsElementBase* pOptics);
-    void ApplyOptics(const QString& opticsFullName, IOpticsElementBasePtr pOptics);
     void SetOpticsName(const QString& opticsFullName);
 
     void PreInitLightProperty();
