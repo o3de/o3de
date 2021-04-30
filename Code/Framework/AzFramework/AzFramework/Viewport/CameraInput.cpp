@@ -276,7 +276,7 @@ namespace AzFramework
             }
             else if (input->m_state == InputChannel::State::Ended)
             {
-                m_translation ^= translationFromKey(input->m_channelId);
+                m_translation &= ~(translationFromKey(input->m_channelId));
                 if (m_translation == TranslationType::Nil)
                 {
                     EndActivation();
@@ -521,20 +521,19 @@ namespace AzFramework
                 return button == inputChannelId;
             });
 
-        if (inputChannelId == InputDeviceMouse::SystemCursorPosition)
+        if (inputChannelId == InputDeviceMouse::Movement::X || inputChannelId == InputDeviceMouse::Movement::Y)
         {
-            AZ::Vector2 systemCursorPositionNormalized = AZ::Vector2::CreateZero();
-            InputSystemCursorRequestBus::EventResult(
-                systemCursorPositionNormalized, inputDeviceId, &InputSystemCursorRequestBus::Events::GetSystemCursorPositionNormalized);
+            const auto* position = inputChannel.GetCustomData<AzFramework::InputChannel::PositionData2D>();
+            AZ_Assert(position, "Expected PositionData2D but found nullptr");
 
             return CursorMotionEvent{ScreenPoint(
-                systemCursorPositionNormalized.GetX() * windowSize.m_width, systemCursorPositionNormalized.GetY() * windowSize.m_height)};
+                position->m_normalizedPosition.GetX() * windowSize.m_width, position->m_normalizedPosition.GetY() * windowSize.m_height)};
         }
         else if (inputChannelId == InputDeviceMouse::Movement::Z)
         {
             return ScrollEvent{inputChannel.GetValue()};
         }
-        else if ((InputDeviceMouse::IsMouseDevice(inputDeviceId) && wasMouseButton) || InputDeviceKeyboard::IsKeyboardDevice(inputDeviceId))
+        else if (wasMouseButton || InputDeviceKeyboard::IsKeyboardDevice(inputDeviceId))
         {
             return DiscreteInputEvent{inputChannelId, inputChannel.GetState()};
         }

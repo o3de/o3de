@@ -372,6 +372,11 @@ namespace AzFramework
             return lhs;
         }
 
+        friend TranslationType operator~(const TranslationType lhs)
+        {
+            return static_cast<TranslationType>(~static_cast<std::underlying_type_t<TranslationType>>(lhs));
+        }
+
         static TranslationType translationFromKey(InputChannelId channelId);
 
         TranslationType m_translation = TranslationType::Nil;
