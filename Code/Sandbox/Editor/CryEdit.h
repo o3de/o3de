@@ -116,7 +116,6 @@ public:
     static CCryEditApp* instance();
 
     bool GetRootEnginePath(QDir& rootEnginePath) const;
-    void OnToggleSelection(bool hide);
     bool CreateLevel(bool& wasCreateLevelOperationCancelled);
     void LoadFile(QString fileName);
     void ForceNextIdleProcessing() { m_bForceProcessIdle = true; }
@@ -210,31 +209,21 @@ public:
     void OnExportSelectedObjects();
     void OnEditHold();
     void OnEditFetch();
-    void OnGeneratorsStaticobjects();
     void OnFileExportToGameNoSurfaceTexture();
     void OnViewSwitchToGame();
     void OnViewDeploy();
-    void OnEditSelectAll();
-    void OnEditSelectNone();
-    void OnEditDelete();
     void DeleteSelectedEntities(bool includeDescendants);
     void OnMoveObject();
     void OnRenameObj();
-    void OnSetHeight();
     void OnEditmodeMove();
     void OnEditmodeRotate();
     void OnEditmodeScale();
-    void OnObjectSetArea();
-    void OnObjectSetHeight();
     void OnUpdateEditmodeMove(QAction* action);
     void OnUpdateEditmodeRotate(QAction* action);
     void OnUpdateEditmodeScale(QAction* action);
-    void OnObjectmodifyFreeze();
-    void OnObjectmodifyUnfreeze();
     void OnUndo();
     void OnOpenAssetImporter();
     void OnUpdateSelected(QAction* action);
-    void OnLockSelection();
     void OnEditLevelData();
     void OnFileEditLogFile();
     void OnFileResaveSlices();
@@ -384,13 +373,6 @@ private:
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     friend struct PythonTestOutputHandler;
 
-    void OnEditHide();
-    void OnUpdateEditHide(QAction* action);
-    void OnEditShowLastHidden();
-    void OnEditUnhideall();
-    void OnEditFreeze();
-    void OnUpdateEditFreeze(QAction* action);
-    void OnEditUnfreezeall();
     void OnSnap();
     void OnWireframe();
     void OnUpdateWireframe(QAction* action);
@@ -431,12 +413,6 @@ private:
     void OnDisplayGotoPosition();
     void OnSnapangle();
     void OnUpdateSnapangle(QAction* action);
-    void OnRuler();
-    void OnUpdateRuler(QAction* action);
-    void OnRotateselectionXaxis();
-    void OnRotateselectionYaxis();
-    void OnRotateselectionZaxis();
-    void OnRotateselectionRotateangle();
     void OnEditRenameobject();
     void OnChangemovespeedIncrease();
     void OnChangemovespeedDecrease();
@@ -450,7 +426,6 @@ private:
     void OnValidateObjectPositions();
     void OnToolsPreferences();
     void OnGraphicsSettings();
-    void OnEditInvertselection();
     void OnSwitchToDefaultCamera();
     void OnUpdateSwitchToDefaultCamera(QAction* action);
     void OnSwitchToSequenceCamera();
@@ -459,12 +434,10 @@ private:
     void OnUpdateSwitchToSelectedCamera(QAction* action);
     void OnSwitchcameraNext();
     void OnOpenProceduralMaterialEditor();
-    void OnOpenMaterialEditor();
     void OnOpenAssetBrowserView();
     void OnOpenTrackView();
     void OnOpenAudioControlsEditor();
     void OnOpenUICanvasEditor();
-    void OnGotoViewportSearch();
     void OnTimeOfDay();
     void OnChangeGameSpec(UINT nID);
     void SetGameSpecCheck(ESystemConfigSpec spec, ESystemConfigPlatform platform, int &nCheck, bool &enable);

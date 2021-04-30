@@ -666,12 +666,6 @@ void CLayoutViewPane::SetFullscreenViewport(bool b)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CLayoutViewPane::SetFocusToViewportSearch()
-{
-    m_viewportTitleDlg.SetFocusToSearchField();
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CLayoutViewPane::SetFocusToViewport()
 {
     if (m_viewport)

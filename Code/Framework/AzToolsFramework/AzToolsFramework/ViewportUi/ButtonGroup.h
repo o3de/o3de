@@ -18,23 +18,21 @@ namespace AzToolsFramework::ViewportUi::Internal
 {
     class Button;
 
-    //! Data class for a cluster on the Viewport UI. A cluster is defined as a group of buttons with icons
+    //! Data class for a button group on the Viewport UI. A button group is defined as a group of buttons with icons
     //! each of which can be clicked to trigger an event e.g. toggling between modes.
-    class Cluster
+    //! @note This can be used with either a Cluster or a Switcher with slightly different visuals for each.
+    class ButtonGroup
     {
     public:
-        Cluster();
-        ~Cluster() = default;
+        ButtonGroup();
+        ~ButtonGroup() = default;
 
         void SetHighlightedButton(ButtonId buttonId);
 
         void SetViewportUiElementId(ViewportUiElementId id);
         ViewportUiElementId GetViewportUiElementId() const;
 
-        void SetClusterId(ClusterId id);
-        ClusterId GetClusterId() const;
-
-        ButtonId AddButton(const AZStd::string& icon);
+        ButtonId AddButton(const AZStd::string& icon, const AZStd::string& name = AZStd::string());
         Button* GetButton(ButtonId buttonId);
         AZStd::vector<Button*> GetButtons();
 
@@ -44,7 +42,6 @@ namespace AzToolsFramework::ViewportUi::Internal
     private:
         AZ::Event<ButtonId> m_buttonTriggeredEvent;
         ViewportUiElementId m_viewportUiId;
-        ClusterId m_clusterId;
         AZStd::unordered_map<ButtonId, AZStd::unique_ptr<Button>> m_buttons;
     };
 } // namespace AzToolsFramework::ViewportUi::Internal
