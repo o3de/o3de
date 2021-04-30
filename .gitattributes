@@ -1,7 +1,6 @@
 
 #
 # Git LFS (see https://git-lfs.github.com/)
-#
 *.3ds filter=lfs diff=lfs merge=lfs -text
 *.DLL filter=lfs diff=lfs merge=lfs -text
 *.FBX filter=lfs diff=lfs merge=lfs -text
@@ -117,3 +116,7 @@
 *.wem filter=lfs diff=lfs merge=lfs -text
 *.wxs filter=lfs diff=lfs merge=lfs -text
 *.zip filter=lfs diff=lfs merge=lfs -text
+Gems/Atom/Tools/MaterialEditor/Assets/MaterialEditor/ViewportModels/Hermanubis.fbx filter=lfs diff=lfs merge=lfs -text
+Gems/AtomLyIntegration/CommonFeatures/Assets/Objects/Lucy/Lucy_High.fbx filter=lfs diff=lfs merge=lfs -text
+Gems/AtomLyIntegration/CommonFeatures/Assets/Objects/Lucy/Lucy_low.fbx filter=lfs diff=lfs merge=lfs -text
+File[[:space:]]Gems/AtomLyIntegration/CommonFeatures/Assets/Objects/Lucy/.wip/marmoset_bake.tbscene filter=lfs diff=lfs merge=lfs -text
