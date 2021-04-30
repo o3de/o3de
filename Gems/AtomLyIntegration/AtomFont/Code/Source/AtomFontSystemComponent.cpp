@@ -73,9 +73,9 @@ namespace AZ
             CrySystemEventBus::Handler::BusDisconnect();
         }
 
-        void LoadFont(const AZStd::string& fontName)
+        void LoadFont(ICryFont& cryFont, const AZStd::string& fontName)
         {
-            IFFont* font = gEnv->pCryFont->NewFont(fontName.c_str());
+            IFFont* font = cryFont.NewFont(fontName.c_str());
             AZ_Assert(font, "Could not instantiate font: %s", fontName.c_str());
 
             const AZStd::string fontPath = "Fonts/" + fontName + ".font";
@@ -113,8 +113,11 @@ namespace AZ
         #endif
             }
 
-            LoadFont("default");
-            LoadFont("default-ui");
+            if (gEnv->pCryFont)
+            {
+                LoadFont(*gEnv->pCryFont, "default");
+                LoadFont(*gEnv->pCryFont, "default-ui");
+            }
         }
 
         void AtomFontSystemComponent::OnCrySystemShutdown([[maybe_unused]] ISystem& system)
