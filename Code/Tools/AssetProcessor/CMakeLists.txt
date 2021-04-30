@@ -48,7 +48,6 @@ ly_add_target(
             ${additional_dependencies}
     RUNTIME_DEPENDENCIES
         AZ::AssetBuilder
-        Legacy::RC
 )
 
 # Aggregates all combined AssetBuilders into a single LY_ASSET_BUILDERS #define

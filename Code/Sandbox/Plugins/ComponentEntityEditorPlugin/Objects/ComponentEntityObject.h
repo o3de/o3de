@@ -37,7 +37,6 @@ class QMenu;
 */
 class CComponentEntityObject
     : public CEntityObject
-    , private AzToolsFramework::EntitySelectionEvents::Bus::Handler
     , private AzToolsFramework::EditorLockComponentNotificationBus::Handler
     , private AzToolsFramework::EditorVisibilityNotificationBus::Handler
     , private AzToolsFramework::EditorEntityIconComponentNotificationBus::Handler
@@ -107,12 +106,6 @@ public:
     //////////////////////////////////////////////////////////////////////////
     // AZ::EntityBus::Handler
     void OnEntityNameChanged(const AZStd::string& name) override;
-    //////////////////////////////////////////////////////////////////////////
-
-    //////////////////////////////////////////////////////////////////////////
-    //! AzToolsFramework::EntitySelectionEvents::Bus::Handler
-    void OnSelected() override;
-    void OnDeselected() override;
     //////////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////////////////////
