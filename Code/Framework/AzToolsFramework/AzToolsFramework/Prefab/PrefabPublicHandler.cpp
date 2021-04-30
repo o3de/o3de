@@ -96,9 +96,12 @@ namespace AzToolsFramework
                 // target templates of the other instances.
                 for (auto& nestedInstance : instances)
                 {
-                    PrefabUndoHelpers::RemoveLink(
-                        nestedInstance->GetTemplateId(), commonRootEntityOwningInstance->get().GetTemplateId(),
-                        nestedInstance->GetInstanceAlias(), nestedInstance->GetLinkId(), undoBatch.GetUndoBatch());
+                    PrefabOperationResult removeLinkResult = RemoveLink(
+                        nestedInstance, commonRootEntityOwningInstance->get().GetTemplateId(), undoBatch.GetUndoBatch());
+                    if (!removeLinkResult.IsSuccess())
+                    {
+                        return removeLinkResult;
+                    }
                 }
 
                 PrefabUndoHelpers::UpdatePrefabInstance(
@@ -285,6 +288,49 @@ namespace AzToolsFramework
 
             // Update the cache - this prevents these changes from being stored in the regular undo/redo nodes
             m_prefabUndoCache.Store(containerEntityId, AZStd::move(containerEntityDomAfter));
+        }
+
+        PrefabOperationResult PrefabPublicHandler::RemoveLink(
+            AZStd::unique_ptr<Instance>& sourceInstance, TemplateId targetTemplateId, UndoSystem::URSequencePoint* undoBatch)
+        {
+            LinkReference nestedInstanceLink = m_prefabSystemComponentInterface->FindLink(sourceInstance->GetLinkId());
+            if (!nestedInstanceLink.has_value())
+            {
+                AZ_Assert(false, "A valid link was not found for one of the instances provided as input for the CreatePrefab operation.");
+                return AZ::Failure(
+                    AZStd::string("A valid link was not found for one of the instances provided as input for the CreatePrefab operation."));
+            }
+
+            PrefabDomReference nestedInstanceLinkDom = nestedInstanceLink->get().GetLinkDom();
+            if (!nestedInstanceLinkDom.has_value())
+            {
+                AZ_Assert(
+                    false,
+                    "A valid DOM was not found for the link corresponding to one of the instances provided as input for the "
+                    "CreatePrefab operation.");
+                return AZ::Failure(AZStd::string("A valid DOM was not found for the link corresponding to one of the instances "
+                                                 "provided as input for the CreatePrefab operation."));
+            }
+
+            PrefabDomValueReference nestedInstanceLinkPatches =
+                PrefabDomUtils::FindPrefabDomValue(nestedInstanceLinkDom->get(), PrefabDomUtils::PatchesName);
+            if (!nestedInstanceLinkPatches.has_value())
+            {
+                AZ_Assert(
+                    false,
+                    "A valid DOM for patches was not found for the link corresponding to one of the instances provided as input for the "
+                    "CreatePrefab operation.");
+                return AZ::Failure(AZStd::string("A valid DOM for patcheswas not found for the link corresponding to one of the instances "
+                                                 "provided as input for the CreatePrefab operation."));
+            }
+
+            PrefabDom patchesCopyForUndoSupport;
+            patchesCopyForUndoSupport.CopyFrom(nestedInstanceLinkPatches->get(), patchesCopyForUndoSupport.GetAllocator());
+            PrefabUndoHelpers::RemoveLink(
+                sourceInstance->GetTemplateId(), targetTemplateId, sourceInstance->GetInstanceAlias(), sourceInstance->GetLinkId(),
+                patchesCopyForUndoSupport, undoBatch);
+
+            return AZ::Success();
         }
 
         PrefabOperationResult PrefabPublicHandler::SavePrefab(AZ::IO::Path filePath)

@@ -83,6 +83,17 @@ namespace AzToolsFramework
                 UndoSystem::URSequencePoint* undoBatch, AZ::EntityId commonRootEntityId);
 
             /**
+             * Removes the link between template of the sourceInstance and the template corresponding to targetTemplateId.
+             *
+             * \param sourceInstance The instance corresponding to the source template of the link to be removed.
+             * \param targetTemplateId The id of the target template of the link to be removed.
+             * \param undoBatch The undo batch to set as parent for this remove link action.
+             * \return PrefabOperationResult Indicates whether the removal of link was successful.
+             */
+            PrefabOperationResult RemoveLink(
+                AZStd::unique_ptr<Instance>& sourceInstance, TemplateId targetTemplateId, UndoSystem::URSequencePoint* undoBatch);
+
+            /**
              * Given a list of entityIds, finds the prefab instance that owns the common root entity of the entityIds.
              * 
              * \param entityIds The list of entity ids.
