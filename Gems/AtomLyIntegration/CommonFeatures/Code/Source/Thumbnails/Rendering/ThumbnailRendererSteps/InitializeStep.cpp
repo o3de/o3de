@@ -189,6 +189,7 @@ namespace AZ
                     m_context->GetData()->DefaultModelPath,
                     RPI::ModelAsset::RTTI_Type(),
                     false);
+                AZ_Error("ThumbnailRenderer", defaultModelAssetId.IsValid(), "Default model asset is invalid. Verify the asset %s exists.", m_context->GetData()->DefaultModelPath);
                 if (m_context->GetData()->m_assetsToLoad.emplace(defaultModelAssetId).second)
                 {
                     data->m_defaultModelAsset.Create(defaultModelAssetId);
@@ -203,6 +204,7 @@ namespace AZ
                     m_context->GetData()->DefaultMaterialPath,
                     RPI::MaterialAsset::RTTI_Type(),
                     false);
+                AZ_Error("ThumbnailRenderer", defaultMaterialAssetId.IsValid(), "Default material asset is invalid. Verify the asset %s exists.", m_context->GetData()->DefaultMaterialPath);
                 if (m_context->GetData()->m_assetsToLoad.emplace(defaultMaterialAssetId).second)
                 {
                     data->m_defaultMaterialAsset.Create(defaultMaterialAssetId);
