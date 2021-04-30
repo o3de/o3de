@@ -23,7 +23,7 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
         // LoadingThumbnail
         //////////////////////////////////////////////////////////////////////////
-        static const char* LoadingIconPath = "Icons/AssetBrowser/in_progress.gif";
+        static const char* LoadingIconPath = "Assets/Editor/Icons/AssetBrowser/in_progress.gif";
 
         LoadingThumbnail::LoadingThumbnail()
             : Thumbnail(MAKE_TKEY(ThumbnailKey))

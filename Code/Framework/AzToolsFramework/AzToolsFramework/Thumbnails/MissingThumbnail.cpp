@@ -10,18 +10,26 @@
 *
 */
 
+#include <AzCore/StringFunc/StringFunc.h>
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzToolsFramework/Thumbnails/MissingThumbnail.h>
 
 namespace AzToolsFramework
 {
     namespace Thumbnailer
     {
-        static const char* MISSING_ICON_PATH = "Icons/AssetBrowser/Default_16.svg";
+        static const char* MissingIconPath = "Assets/Editor/Icons/AssetBrowser/Default_16.svg";
 
         MissingThumbnail::MissingThumbnail()
             : Thumbnail(MAKE_TKEY(ThumbnailKey))
         {
-            m_pixmap.load(MISSING_ICON_PATH);
+            const char* engineRoot = nullptr;
+            AzFramework::ApplicationRequests::Bus::BroadcastResult(engineRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
+            AZ_Assert(engineRoot, "Engine Root not initialized");
+            AZStd::string absoluteIconPath;
+            AZ::StringFunc::Path::Join(engineRoot, MissingIconPath, absoluteIconPath);
+
+            m_pixmap.load(absoluteIconPath.c_str());
             m_state = m_pixmap.isNull() ? State::Failed : State::Ready;
         }
 
