@@ -676,17 +676,11 @@ private:
     //! @name Initialization routines
     //@{
     bool InitConsole();
-    bool InitRenderer(WIN_HINSTANCE hinst, WIN_HWND hwnd, const SSystemInitParams& initParams);
-
-    bool InitFont(const SSystemInitParams& initParams);
     bool InitFileSystem();
     bool InitFileSystem_LoadEngineFolders(const SSystemInitParams& initParams);
     bool InitStreamEngine();
-    bool Init3DEngine(const SSystemInitParams& initParams);
     bool InitAudioSystem(const SSystemInitParams& initParams);
     bool InitShine(const SSystemInitParams& initParams);
-    bool OpenRenderLibrary(int type, const SSystemInitParams& initParams);
-    bool OpenRenderLibrary(const char* t_rend, const SSystemInitParams& initParams);
 
     //@}
 
