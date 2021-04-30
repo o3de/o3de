@@ -224,7 +224,6 @@ public:
     void SetOpticsElement(IOpticsElementBase* pOptics);
     void ApplyOptics(const QString& opticsFullName, IOpticsElementBasePtr pOptics);
     void SetOpticsName(const QString& opticsFullName);
-    bool GetValidFlareName(QString& outFlareName) const;
 
     void PreInitLightProperty();
     void UpdateLightProperty();
@@ -235,9 +234,6 @@ public:
     }
 
     static void StoreUndoEntityLink(CSelectionGroup* pGroup);
-
-    static const char* s_LensFlarePropertyName;
-    static const char* s_LensFlareMaterialName;
 
     void RegisterListener(IEntityObjectListener* pListener);
     void UnregisterListener(IEntityObjectListener* pListener);
@@ -321,11 +317,6 @@ protected:
 
     void AdjustLightProperties(CVarBlockPtr& properties, const char* pSubBlock);
     IVariable* FindVariableInSubBlock(CVarBlockPtr& properties, IVariable* pSubBlockVar, const char* pVarName);
-
-    void SetFlareName(const QString& name)
-    {
-        SetEntityPropertyString(s_LensFlarePropertyName, name);
-    }
 
     unsigned int m_bLoadFailed : 1;
     unsigned int m_bCalcPhysics : 1;
