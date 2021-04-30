@@ -10,6 +10,7 @@
 *
 */
 
+#include <AzCore/Utils/Utils.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzToolsFramework/Thumbnails/LoadingThumbnail.h>
 #include <AzFramework/Application/Application.h>
@@ -23,17 +24,14 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
         // LoadingThumbnail
         //////////////////////////////////////////////////////////////////////////
-        static const char* LoadingIconPath = "Assets/Editor/Icons/AssetBrowser/in_progress.gif";
+        static constexpr const char* LoadingIconPath = "Assets/Editor/Icons/AssetBrowser/in_progress.gif";
 
         LoadingThumbnail::LoadingThumbnail()
             : Thumbnail(MAKE_TKEY(ThumbnailKey))
             , m_angle(0)
         {
-            const char* engineRoot = nullptr;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(engineRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
-            AZ_Assert(engineRoot, "Engine Root not initialized");
             AZStd::string iconPath;
-            AZ::StringFunc::Path::Join(engineRoot, LoadingIconPath, iconPath);
+            AZ::StringFunc::Path::Join(AZ::Utils::GetEnginePath().c_str(), LoadingIconPath, iconPath);
             m_loadingMovie.setFileName(iconPath.c_str());
             m_loadingMovie.setCacheMode(QMovie::CacheMode::CacheAll);
             m_loadingMovie.setScaledSize(QSize(LoadingThumbnailSize, LoadingThumbnailSize));

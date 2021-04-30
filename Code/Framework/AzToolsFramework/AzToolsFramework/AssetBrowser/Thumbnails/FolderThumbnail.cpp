@@ -10,6 +10,7 @@
 *
 */
 
+#include <AzCore/Utils/Utils.h>
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzToolsFramework/AssetBrowser/Thumbnails/FolderThumbnail.h>
@@ -62,12 +63,9 @@ namespace AzToolsFramework
             auto folderKey = azrtti_cast<const FolderThumbnailKey*>(m_key.data());
             AZ_Assert(folderKey, "Incorrect key type, excpected FolderThumbnailKey");
 
-            const char* engineRoot = nullptr;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(engineRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
-            AZ_Assert(engineRoot, "Engine Root not initialized");
             const char* folderIcon = folderKey->IsGem() ? GemIconPath : FolderIconPath;
             AZStd::string absoluteIconPath;
-            AZ::StringFunc::Path::Join(engineRoot, folderIcon, absoluteIconPath);
+            AZ::StringFunc::Path::Join(AZ::Utils::GetEnginePath().c_str(), folderIcon, absoluteIconPath);
 
             m_pixmap.load(absoluteIconPath.c_str());
             m_state = m_pixmap.isNull() ? State::Failed : State::Ready;
