@@ -54,9 +54,9 @@ namespace LmbrCentral
                 editContext->Class<EditorMeshComponent>("Mesh", "The Mesh component is the primary method of adding visual geometry to entities")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Rendering")
-                        ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/StaticMesh.svg")
+                        ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/StaticMesh.svg")
                         ->Attribute(AZ::Edit::Attributes::PrimaryAssetType, AZ::AzTypeInfo<LmbrCentral::MeshAsset>::Uuid())
-                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/StaticMesh.png")
+                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/StaticMesh.png")
                         ->Attribute(AZ::Edit::Attributes::DynamicIconOverride, &EditorMeshComponent::GetMeshViewportIconPath)
                         ->Attribute(AZ::Edit::Attributes::PreferNoViewportIcon, true)
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
@@ -457,8 +457,8 @@ namespace LmbrCentral
         }
     }
 
-    AZStd::string_view staticViewportIcon = "Editor/Icons/Components/Viewport/StaticMesh.png";
-    AZStd::string_view dynamicViewportIcon = "Editor/Icons/Components/Viewport/DynamicMesh.png";
+    AZStd::string_view staticViewportIcon = "Icons/Components/Viewport/StaticMesh.png";
+    AZStd::string_view dynamicViewportIcon = "Icons/Components/Viewport/DynamicMesh.png";
     AZStd::string EditorMeshComponent::GetMeshViewportIconPath() const
     {
         if (m_mesh.m_renderOptions.IsStatic())

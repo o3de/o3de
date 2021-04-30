@@ -61,8 +61,8 @@ namespace Blast
                       "Blast Family Mesh Data", "Used to keep track of mesh assets for a Blast family")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Destruction")
-                    ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/Box.png")
-                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/Box.png")
+                    ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Box.png")
+                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Box.png")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->Attribute(
                         AZ::Edit::Attributes::HelpPageURL,

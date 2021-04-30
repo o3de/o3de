@@ -159,15 +159,15 @@ function(ly_generate_target_config_file NAME)
         elseif(target_type STREQUAL MODULE_LIBRARY)
             string(APPEND target_location "\"\${LY_ROOT_FOLDER}/${library_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${target_library_output_subdirectory}/$<TARGET_FILE_NAME:${NAME}>\"")
         elseif(target_type STREQUAL SHARED_LIBRARY)
-            string(APPEND target_location "\"\${LY_ROOT_FOLDER}/${archive_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/$<TARGET_LINKER_FILE_NAME:${NAME}>\"")           
+            string(APPEND target_location "\"\${LY_ROOT_FOLDER}/${archive_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/$<TARGET_LINKER_FILE_NAME:${NAME}>\"")
             string(APPEND target_file_contents "ly_add_dependencies(${NAME} \"\${LY_ROOT_FOLDER}/${library_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${target_library_output_subdirectory}/$<TARGET_FILE_NAME:${NAME}>\")\n")
         else() # STATIC_LIBRARY, OBJECT_LIBRARY, INTERFACE_LIBRARY
             string(APPEND target_location "\"\${LY_ROOT_FOLDER}/${archive_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/$<TARGET_LINKER_FILE_NAME:${NAME}>\"")
         endif()
 
-        string(APPEND target_file_contents 
+        string(APPEND target_file_contents
 "set(target_location ${target_location})
-set_target_properties(${NAME} 
+set_target_properties(${NAME}
     PROPERTIES
         $<$<CONFIG:profile>:IMPORTED_LOCATION \"\${target_location}\">
         IMPORTED_LOCATION_$<UPPER_CASE:$<CONFIG>> \"\${target_location}\"
@@ -315,16 +315,41 @@ function(ly_setup_others)
         COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
     install(DIRECTORY
-        # This one will change soon, Engine/Registry files will be relocated to Registry
-        ${CMAKE_SOURCE_DIR}/Engine/Registry
-        DESTINATION ./Engine
+        ${CMAKE_SOURCE_DIR}/Registry
+        DESTINATION .
         COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
-    install(FILES
-        ${CMAKE_SOURCE_DIR}/AssetProcessorPlatformConfig.setreg
-        DESTINATION ./Registry
+
+    # Engine Source Assets
+    install(DIRECTORY
+        ${CMAKE_SOURCE_DIR}/Assets
+        DESTINATION .
         COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
+
+    # Gem Source Assets and Registry
+    # Find all gem directories relative to the CMake Source Dir
+    file(
+        GLOB_RECURSE
+        gems_assets_path
+        LIST_DIRECTORIES TRUE
+        RELATIVE "${CMAKE_SOURCE_DIR}/"
+        "Gems/*"
+    )
+    list(FILTER gems_assets_path INCLUDE REGEX "/(Assets|Registry)$")
+
+    foreach (gem_assets_path ${gems_assets_path})
+        set(gem_abs_assets_path ${CMAKE_SOURCE_DIR}/${gem_assets_path}/)
+        if (EXISTS ${gem_abs_assets_path})
+            # The trailing slash is IMPORTANT here as that is needed to prevent
+            # the "Assets" folder from being copied underneath the <gem-root>/Assets folder
+            install(DIRECTORY ${gem_abs_assets_path}
+                DESTINATION ${gem_assets_path}
+                COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
+            )
+        endif()
+    endforeach()
+
 
     # Qt Binaries
     set(QT_BIN_DIRS bearer iconengines imageformats platforms styles translations)
