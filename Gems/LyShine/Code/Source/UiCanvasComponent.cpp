@@ -4255,8 +4255,9 @@ UiCanvasComponent* UiCanvasComponent::FixupPostLoad(AZ::Entity* canvasEntity, AZ
     // Initialize the target canvas size and uniform scale
     // This should be done before calling InGamePostActivate so that the
     // canvas space rects of the elements are accurate
-    AZ_Assert(gEnv->pRenderer, "Attempting to access IRenderer before it has been initialized");
-    if (gEnv->pRenderer)
+    UiRenderer* uiRenderer = forEditor ? GetUiRendererForEditor() : GetUiRendererForGame();
+    AZ_Assert(uiRenderer, "Attempting to access UiRenderer before it has been initialized");
+    if (uiRenderer)
     {
         AZ::Vector2 targetCanvasSize;
         if (canvasSize)
@@ -4265,8 +4266,9 @@ UiCanvasComponent* UiCanvasComponent::FixupPostLoad(AZ::Entity* canvasEntity, AZ
         }
         else
         {
-            targetCanvasSize.SetX(static_cast<float>(gEnv->pRenderer->GetOverlayWidth()));
-            targetCanvasSize.SetY(static_cast<float>(gEnv->pRenderer->GetOverlayHeight()));
+            AZ::Vector2 viewportSize = uiRenderer->GetViewportSize();
+            targetCanvasSize.SetX(static_cast<float>(viewportSize.GetX()));
+            targetCanvasSize.SetY(static_cast<float>(viewportSize.GetY()));
         }
         canvasComponent->SetTargetCanvasSizeAndUniformScale(!forEditor, targetCanvasSize);
     }

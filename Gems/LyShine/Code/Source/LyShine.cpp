@@ -425,13 +425,7 @@ void CLyShine::Render()
 {
     FRAME_PROFILER(__FUNCTION__, gEnv->pSystem, PROFILE_UI);
 
-    // LYSHINE_ATOM_TODO - convert to use Atom interface to check for null renderer
-    if (!gEnv || !gEnv->pRenderer || gEnv->pRenderer->GetRenderType() == ERenderType::eRT_Null)
-    {
-        // if the renderer is not initialized or it is the null renderer (e.g. running as a server)
-        // then do nothing
-        return;
-    }
+    // LYSHINE_ATOM_TODO - early exit if null renderer/server
 
     if (m_updatingLoadedCanvases)
     {
