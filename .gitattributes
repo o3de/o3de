@@ -117,6 +117,7 @@
 *.wxs filter=lfs diff=lfs merge=lfs -text
 *.zip filter=lfs diff=lfs merge=lfs -text
 *.tbscene filter=lfs diff=lfs merge=lfs -text
+*.spp filter=lfs diff=lfs merge=lfs -text
 Gems/Atom/Tools/MaterialEditor/Assets/MaterialEditor/ViewportModels/Hermanubis.fbx filter=lfs diff=lfs merge=lfs -text
 Gems/AtomLyIntegration/CommonFeatures/Assets/Objects/Lucy/Lucy_High.fbx filter=lfs diff=lfs merge=lfs -text
 Gems/AtomLyIntegration/CommonFeatures/Assets/Objects/Lucy/Lucy_low.fbx filter=lfs diff=lfs merge=lfs -text
