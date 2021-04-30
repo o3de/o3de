@@ -21,6 +21,7 @@
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
+#include <AzFramework/Viewport/ViewportId.h>
 
 namespace AzFramework
 {

@@ -30,6 +30,10 @@
 #include <AzFramework/API/AtomActiveInterface.h>
 #include <AzFramework/Viewport/CameraInput.h>
 
+// Atom
+#include <Atom/RPI.Public/ViewportContext.h>
+#include <Atom/RPI.Public/ViewportContextBus.h>
+
 // AzToolsFramework
 #include <AzToolsFramework/Slice/SliceUtilities.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
