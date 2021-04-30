@@ -13,12 +13,6 @@ set(LY_TARGET_PROPERTIES
     BUILD_RPATH @executable_path/
 )
 
-if(LY_MONOLITHIC_GAME) # only Atom is supported in monolithic builds
-    list(APPEND LY_BUILD_DEPENDENCIES Legacy::CryRenderOther)
-else()
-    set(LY_RUNTIME_DEPENDENCIES Legacy::CryRenderMetal)
-endif()
-
 # Add resources and app icons to launchers
 list(APPEND candidate_paths ${project_real_path}/Resources/Platform/Mac)
 list(APPEND candidate_paths ${project_real_path}/Gem/Resources/Platform/Mac) # Legacy projects
