@@ -124,8 +124,9 @@ PSDepthOutput MainPS(VertexOutput IN, bool isFrontFace : SV_IsFrontFace)
 
         float3x3 uvMatrix = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrix : CreateIdentity3x3();
         float3x3 uvMatrixInverse = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrixInverse : CreateIdentity3x3();
-
-        GetParallaxInput(IN.m_normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex], MaterialSrg::m_parallaxMainDepthFactor, 
+        
+        float parallaxMainDepthOffset = 0.0;
+        GetParallaxInput(IN.m_normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex], MaterialSrg::m_parallaxMainDepthFactor, parallaxMainDepthOffset,
                          ObjectSrg::GetWorldMatrix(), uvMatrix, uvMatrixInverse,
                          IN.m_uv[MaterialSrg::m_parallaxUvIndex], IN.m_worldPosition, depth);
 

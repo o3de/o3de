@@ -18,6 +18,9 @@ option bool o_parallax_enablePixelDepthOffset;
 
 option enum class ParallaxAlgorithm {Basic, Steep, POM, Relief, Contact} o_parallax_algorithm;
 option enum class ParallaxQuality {Low, Medium, High, Ultra} o_parallax_quality;
+
+option bool o_parallax_feature_enabled;
+option bool o_parallax_highlightClipping;
 option bool o_parallax_shadow;
 
 //! The client shader must define this function.
@@ -34,23 +37,49 @@ float SampleDepthOrHeightMap(bool isHeightmap, Texture2D map, sampler mapSampler
     return abs((isHeightmap * 1.0) - map.SampleGrad(mapSampler, uv, uv_ddx, uv_ddy).r);
 }
 
+float GetClampedDepth(float minSampledDepth, float2 uv, float2 uv_ddx, float2 uv_ddy)
+{
+    float sampledDepthValue = GetDepth(uv, uv_ddx, uv_ddy);
+    sampledDepthValue = max(sampledDepthValue, minSampledDepth);
+    return sampledDepthValue;
+}
+
+struct ParallaxOffset
+{
+    float3 m_offsetTS;  //!< represents the intersection point relative to the geometry surface, in tangent space.
+    bool m_isClipped;   //!< Indicates whether the result is being clipped by the geometry surface, mainly for debug rendering. Only set when o_parallax_highlightClipping is true.
+};
+
 // dirToCameraTS should be in tangent space and normalized
 // From Reat-Time Rendering 3rd edition, p.192
-float3 BasicParallaxMapping(float depthFactor, float2 uv, float3 dirToCameraTS)
+ParallaxOffset BasicParallaxMapping(float depthFactor, float2 uv, float3 dirToCameraTS)
 {
     // the amount to shift
     float2 delta = dirToCameraTS.xy * GetDepth(uv, ddx_fine(uv), ddy_fine(uv)) * depthFactor;
     
-    float3 offset = float3(0,0,0);
-    offset.xy -= delta;
-    return offset;
+    ParallaxOffset result;
+
+    result.m_offsetTS = float3(0,0,0);
+    result.m_offsetTS.xy -= delta;
+    result.m_isClipped = false;
+    return result;
 }
 
-// dirToCameraTS and dirToLightTS should be in tangent space and normalized
-// Adapt from CryEngine shader shadelib.cfi and POM function in https://github.com/a-riccardi/shader-toy
+// Performs ray intersection against a surface with a heightmap.
+// Adapted from CryEngine shader shadelib.cfi and POM function in https://github.com/a-riccardi/shader-toy
 // check https://github.com/UPBGE/blender/issues/1009 for more details.
-float3 AdvancedParallaxMapping(float depthFactor, float2 uv, float3 dirToCameraTS, float3 dirToLightTS, int numSteps, inout float parallaxShadowAttenuation)
+// @param depthFactor - scales the heightmap in tangent space units (which normally ends up being world units).
+// @param depthOffset - offsets the heighmap up or down in tangent space units (which normally ends up being world units).
+// @param uv - the UV coordinates on the surface, where the search will begin, used to sample the heightmap.
+// @param dirToCameraTS - normalized direction to the camera, in tangent space.
+// @param dirToLightTS - normalized direction to a light source, in tangent space, for self-shadowing (if enabled via o_parallax_shadow).
+// @param numSteps - the number of steps to take when marching along the ray searching for intersection.
+// @param parallaxShadowAttenuation - returns a factor for attenuating a light source, for self-shadowing (if enabled via o_parallax_shadow).
+ParallaxOffset AdvancedParallaxMapping(float depthFactor, float depthOffset, float2 uv, float3 dirToCameraTS, float3 dirToLightTS, int numSteps, inout float parallaxShadowAttenuation)
 {
+    ParallaxOffset result;
+    result.m_isClipped = false;
+
     float dirToCameraZInverse = 1.0 / dirToCameraTS.z;
     float step =  1.0 / numSteps;
     float currentStep = 0.0;
@@ -60,22 +89,41 @@ float3 AdvancedParallaxMapping(float depthFactor, float2 uv, float3 dirToCameraT
 
     float2 ddx_uv = ddx_fine(uv);
     float2 ddy_uv = ddy_fine(uv);
+    
+    // This is the relative position at which we begin searching for intersection.
+    // It is adjusted according to the depthOffset, raising or lowering the whole surface by depthOffset units.
+    float3 parallaxOffset = dirToCameraTS.xyz * dirToCameraZInverse * depthOffset;
+    
+    // Note that depthOffset can raise the heightmap toward (and potentially above) the surface of the mesh.
+    // We will clamp the heightmap samples to prevent displacements that lie above the surface, which would cause various 
+    // problems especially when PDO is enabled, like parallax surfaces clipping through foreground geometry, and parallax 
+    // surfaces disappearing at low angles.
+    float minSampledDepth = depthOffset / depthFactor;
+    minSampledDepth = clamp(minSampledDepth, 0, 1);
 
-    float currentSample = GetDepth(uv, ddx_uv, ddy_uv);
+    // Get an initial heightmap sample to start the intersection search, starting at our initial parallaxOffset position.
+    float currentSample = GetClampedDepth(minSampledDepth, uv + parallaxOffset.xy, ddx_uv, ddy_uv);
     float prevSample;
-    float3 parallaxOffset = float3(0,0,0);
+    
+    // Note that when depthOffset > 0, we could actually narrow the search so that instead of going through the entire [0,1] range
+    // of the heightmap, we could go through the range [minSampledDepth,1]. This would give more accurate results and fewer artifacts
+    // in case where depthOffset is significant. But for the sake of simplicity we currently search the whole range in all cases.
 
-    // find the intersect step
+    // Do a basic search for the intersect step
     while(currentSample > currentStep)
     {
         currentStep += step;
         parallaxOffset += delta;
+                
         prevSample = currentSample;
-        currentSample = GetDepth(uv + parallaxOffset.xy, ddx_uv, ddy_uv);
+        currentSample = GetClampedDepth(minSampledDepth, uv + parallaxOffset.xy, ddx_uv, ddy_uv);
     }
 
+    // Depending on the algorithm, we refine the result of the above search
     switch(o_parallax_algorithm)
     {
+        case ParallaxAlgorithm::Steep:
+            break; // This algorithm just relies on the course intersection test loop above
         case ParallaxAlgorithm::POM:
         {
             if(currentStep > 0.0)
@@ -108,7 +156,7 @@ float3 AdvancedParallaxMapping(float depthFactor, float2 uv, float3 dirToCameraT
                     parallaxOffset += reliefDelta * depthSign;
                     currentStep += reliefStep * depthSign;
 
-                    currentSample = GetDepth(uv + parallaxOffset.xy, ddx_uv, ddy_uv);
+                    currentSample = GetClampedDepth(minSampledDepth, uv + parallaxOffset.xy, ddx_uv, ddy_uv);
                 }
             }
             break;
@@ -136,13 +184,30 @@ float3 AdvancedParallaxMapping(float depthFactor, float2 uv, float3 dirToCameraT
                     parallaxOffset += adjustedDelta;
                     prevSample = currentSample;
 
-                    currentSample = GetDepth(uv + parallaxOffset.xy, ddx_uv, ddy_uv);
+                    currentSample = GetClampedDepth(minSampledDepth, uv + parallaxOffset.xy, ddx_uv, ddy_uv);
                 }
             }
             break;
         }
         default:
             break;
+    }
+    
+    // Even though we do a bunch of clamping above when calling GetClampedDepth(), there are still cases where the parallax offset
+    // can be noticeably above the surface and still needs to be clamped here. The main case is when depthFactor==0 and depthOffset>1.
+    if(parallaxOffset.z > 0.0)
+    {
+        result.m_isClipped = o_parallax_highlightClipping;
+        parallaxOffset = float3(0,0,0);
+    }
+    // Extra check to report whether the heightmap is clipped. Inaccuracies in the intersection search make it difficult to rely on 
+    // parallaxOffset.z to determine whether clipping has occurred. The most accurate way to report clipping is to sample the 
+    // heightmap one last time at the final adjusted UV. Since that's expensive, we only do it when the o_parallax_highlightClipping
+    // option is set.
+    else if (o_parallax_highlightClipping)
+    {
+        float sampledDepthValue = GetDepth(uv + parallaxOffset.xy, ddx_uv, ddy_uv);
+        result.m_isClipped = sampledDepthValue < minSampledDepth;
     }
 
     if(o_parallax_shadow && any(dirToLightTS))
@@ -168,7 +233,7 @@ float3 AdvancedParallaxMapping(float depthFactor, float2 uv, float3 dirToCameraT
             }
 
             shadowUV += shadowDelta;
-            currentSample = GetDepth(shadowUV, ddx_uv, ddy_uv);
+            currentSample = GetClampedDepth(minSampledDepth, shadowUV, ddx_uv, ddy_uv);
             currentStep -= step;
         }
 
@@ -181,12 +246,13 @@ float3 AdvancedParallaxMapping(float depthFactor, float2 uv, float3 dirToCameraT
             parallaxShadowAttenuation = 1;
         }
     }
-
-    return parallaxOffset;
+    
+    result.m_offsetTS = parallaxOffset;
+    return result;
 }
 
 // return offset in tangent space
-float3 CalculateParallaxOffset(float depthFactor, float2 uv, float3 dirToCameraTS, float3 dirToLightTS, inout float parallaxShadowAttenuation)
+ParallaxOffset CalculateParallaxOffset(float depthFactor, float depthOffset, float2 uv, float3 dirToCameraTS, float3 dirToLightTS, inout float parallaxShadowAttenuation)
 {
     if(o_parallax_algorithm == ParallaxAlgorithm::Basic)
     {
@@ -194,27 +260,34 @@ float3 CalculateParallaxOffset(float depthFactor, float2 uv, float3 dirToCameraT
     }
     else
     {
-        float3 parallaxOffset;
+        ParallaxOffset parallaxOffset;
         switch(o_parallax_quality)
         {
             case ParallaxQuality::Low:
-                parallaxOffset = AdvancedParallaxMapping(depthFactor, uv, dirToCameraTS, dirToLightTS, 16, parallaxShadowAttenuation);
+                parallaxOffset = AdvancedParallaxMapping(depthFactor, depthOffset, uv, dirToCameraTS, dirToLightTS, 16, parallaxShadowAttenuation);
                 break;
             case ParallaxQuality::Medium:
-                parallaxOffset = AdvancedParallaxMapping(depthFactor, uv, dirToCameraTS, dirToLightTS, 32, parallaxShadowAttenuation);
+                parallaxOffset = AdvancedParallaxMapping(depthFactor, depthOffset, uv, dirToCameraTS, dirToLightTS, 32, parallaxShadowAttenuation);
                 break;
             case ParallaxQuality::High:
-                parallaxOffset = AdvancedParallaxMapping(depthFactor, uv, dirToCameraTS, dirToLightTS, 64, parallaxShadowAttenuation);
+                parallaxOffset = AdvancedParallaxMapping(depthFactor, depthOffset, uv, dirToCameraTS, dirToLightTS, 64, parallaxShadowAttenuation);
                 break;
             case ParallaxQuality::Ultra:
-                parallaxOffset = AdvancedParallaxMapping(depthFactor, uv, dirToCameraTS, dirToLightTS, 128, parallaxShadowAttenuation);
+                parallaxOffset = AdvancedParallaxMapping(depthFactor, depthOffset, uv, dirToCameraTS, dirToLightTS, 128, parallaxShadowAttenuation);
                 break;
         }
         return parallaxOffset;
     }
 }
 
-float3 GetParallaxOffset( float depthFactor, 
+// Performs ray intersection against a surface with a heightmap, to determine an offset amount required for a parallax effect.
+// @param depthFactor - scales the heightmap in tangent space units (which normally ends up being world units).
+// @param depthOffset - offsets the heighmap up or down in tangent space units (which normally ends up being world units).
+// @param uv - the UV coordinates on the surface, where the search will begin, used to sample the heightmap.
+// @param dirToCameraTS - normalized direction to the camera, in tangent space.
+// @param dirToLightTS - normalized direction to a light source, in tangent space, for self-shadowing (if enabled via o_parallax_shadow).
+ParallaxOffset GetParallaxOffset( float depthFactor, 
+                          float depthOffset,
                           float2 uv,
                           float3 dirToCameraWS,
                           float3 tangentWS,
@@ -236,7 +309,7 @@ float3 GetParallaxOffset( float depthFactor,
     float4 dirToCameraTransformed = mul(uv3DTransform, float4(dirToCameraTS, 0.0));
 
     float dummy = 1;
-    return CalculateParallaxOffset(depthFactor, uv, normalize(dirToCameraTransformed.xyz), float3(0,0,0), dummy);
+    return CalculateParallaxOffset(depthFactor, depthOffset, uv, normalize(dirToCameraTransformed.xyz), float3(0,0,0), dummy);
 }
 
 struct PixelDepthOffset

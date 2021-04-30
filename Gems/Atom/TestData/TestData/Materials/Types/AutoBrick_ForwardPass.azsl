@@ -136,15 +136,18 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
           0,1,0,
           0,0,1 };
           
-    float3 tangentOffset = GetParallaxOffset( AutoBrickSrg::m_lineDepth,
-                                                IN.m_uv,
-                                                ViewSrg::m_worldPosition.xyz - IN.m_worldPosition, 
-                                                IN.m_tangent,
-                                                IN.m_bitangent,
-                                                IN.m_normal,
-                                                identityUvMatrix);
+    float depthOffset = 0.0;
+
+    ParallaxOffset tangentOffset = GetParallaxOffset( AutoBrickSrg::m_lineDepth,
+                                                      depthOffset,
+                                                      IN.m_uv,
+                                                      ViewSrg::m_worldPosition.xyz - IN.m_worldPosition, 
+                                                      IN.m_tangent,
+                                                      IN.m_bitangent,
+                                                      IN.m_normal,
+                                                      identityUvMatrix);
     
-    IN.m_uv += tangentOffset.xy;
+    IN.m_uv += tangentOffset.m_offsetTS.xy;
  
     float3 baseColor = float3(1,1,1);
     const float noise = AutoBrickSrg::m_noise.Sample(AutoBrickSrg::m_sampler, IN.m_uv).r;

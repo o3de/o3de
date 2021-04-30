@@ -107,31 +107,14 @@ PSDepthOutput MainPS(VertexOutput IN, bool isFrontFace : SV_IsFrontFace)
         float3 bitangents[UvSetCount] = { IN.m_bitangent.xyz, float3(0, 0, 0) };
         PrepareGeneratedTangent(IN.m_normal, IN.m_worldPosition, isFrontFace, IN.m_uv, UvSetCount, tangents, bitangents, 1);
 
-        float3 tangent = tangents[MaterialSrg::m_parallaxUvIndex];
-        float3 bitangent = bitangents[MaterialSrg::m_parallaxUvIndex];
-
         float3x3 uvMatrix = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrix : CreateIdentity3x3();
         float3x3 uvMatrixInverse = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrixInverse : CreateIdentity3x3();
 
-        float3 tangentOffset = GetParallaxOffset( MaterialSrg::m_depthFactor,
-                                                  IN.m_uv[MaterialSrg::m_parallaxUvIndex],
-                                                  dirToCamera,
-                                                  tangent,
-                                                  bitangent,
-                                                  IN.m_normal,
-                                                  uvMatrix);
+        GetParallaxInput(IN.m_normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex], MaterialSrg::m_depthFactor, MaterialSrg::m_depthOffset,
+                         ObjectSrg::GetWorldMatrix(), uvMatrix, uvMatrixInverse,
+                         IN.m_uv[MaterialSrg::m_parallaxUvIndex], IN.m_worldPosition, OUT.m_depth);
 
-        PixelDepthOffset pdo = CalcPixelDepthOffset(MaterialSrg::m_depthFactor,
-                                                    tangentOffset,
-                                                    IN.m_worldPosition,
-                                                    tangent,
-                                                    bitangent,
-                                                    IN.m_normal,
-                                                    uvMatrixInverse,
-                                                    ObjectSrg::GetWorldMatrix(),
-                                                    ViewSrg::m_viewProjectionMatrix);
-
-        OUT.m_depth = pdo.m_depth + ShadowMapDepthBias;
+        OUT.m_depth += ShadowMapDepthBias;
     }
     return OUT;
 }
