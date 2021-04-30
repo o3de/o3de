@@ -420,15 +420,7 @@ namespace EMStudio
                     productFilename,
                     sourceAssetFilename);
 
-                AZStd::string usedFilename;
-                if (sourceAssetFound)
-                {
-                    usedFilename = sourceAssetFilename;
-                }
-                else
-                {
-                    usedFilename = dirtyFileNames[i];
-                }
+                const AZStd::string usedFilename = sourceAssetFound ? sourceAssetFilename : dirtyFileNames[i];
 
                 // Separate the path from the filename, so that we can display the filename in bold.
                 AZStd::string fullPath;
