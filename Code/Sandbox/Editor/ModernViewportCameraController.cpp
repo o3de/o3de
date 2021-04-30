@@ -89,8 +89,7 @@ namespace SandboxEditor
         if (auto viewportContext = RetrieveViewportContext(GetViewportId()))
         {
             m_targetCamera = m_cameraSystem.StepCamera(m_targetCamera, event.m_deltaTime.count());
-            m_camera =
-                AzFramework::SmoothCamera(m_camera, m_targetCamera, m_smoothProps, event.m_deltaTime.count());
+            m_camera = AzFramework::SmoothCamera(m_camera, m_targetCamera, m_smoothProps, event.m_deltaTime.count());
 
             viewportContext->SetCameraTransform(m_camera.Transform());
         }
@@ -99,8 +98,11 @@ namespace SandboxEditor
     void ModernViewportCameraControllerInstance::DisplayViewport(
         [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {
-        debugDisplay.SetColor(1.0f, 1.0f, 1.0f, AZStd::min(-m_camera.m_lookDist / 5.0f, 1.0f));
-        debugDisplay.DrawWireSphere(m_camera.m_lookAt, 0.5f);
+        if (const float alpha = AZStd::min(-m_camera.m_lookDist / 5.0f, 1.0f); alpha > AZ::Constants::FloatEpsilon)
+        {
+            debugDisplay.SetColor(1.0f, 1.0f, 1.0f, alpha);
+            debugDisplay.DrawWireSphere(m_camera.m_lookAt, 0.5f);
+        }
     }
 
     void ModernViewportCameraControllerInstance::SetTargetCameraTransform(const AZ::Transform& transform)
