@@ -78,7 +78,7 @@ namespace AzFramework
         return handling;
     }
 
-    Camera Cameras::StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, const float deltaTime)
+    Camera Cameras::StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, const float scrollDelta, const float deltaTime)
     {
         for (int i = 0; i < m_idleCameraInputs.size();)
         {
@@ -87,6 +87,7 @@ namespace AzFramework
                 std::all_of(m_activeCameraInputs.cbegin(), m_activeCameraInputs.cend(),
                             [](const auto& input) { return !input->Exclusive(); }) &&
                 (!cameraInput->Exclusive() || (cameraInput->Exclusive() && m_activeCameraInputs.empty()));
+
             if (canBegin)
             {
                 m_activeCameraInputs.push_back(cameraInput);
