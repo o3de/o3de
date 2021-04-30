@@ -12,19 +12,15 @@
 
 #pragma once
 
-#include <SceneAPI/FbxSceneBuilder/ImportContexts/FbxImportContexts.h>
+#include <SceneAPI/FbxSceneBuilder/ImportContexts/ImportContexts.h>
+#include <SceneAPI/SceneCore/Containers/Scene.h>
+#include <SceneAPI/SceneCore/Containers/SceneGraph.h>
 #include <SceneAPI/SceneCore/DataTypes/MatrixType.h>
 #include <SceneAPI/SceneCore/Events/CallProcessorBus.h>
 
 namespace AZ
 {
     struct Uuid;
-
-    namespace FbxSDKWrapper
-    {
-        class FbxNodeWrapper;
-        class FbxSceneWrapper;
-    }
 
     namespace SceneAPI
     {
@@ -42,7 +38,6 @@ namespace AZ
                 const AZ::Uuid& uuid);
             inline bool NodeHasAncestorOfType(const CoreSceneGraph& graph, CoreGraphNodeIndex nodeIndex,
                 const AZ::Uuid& uuid);
-            inline bool IsSkinnedMesh(const FbxSDKWrapper::FbxNodeWrapper& sourceNode);
             CoreProcessingResult AddDataNodeWithContexts(SceneDataPopulatedContextBase& dataContext);
             CoreProcessingResult AddAttributeDataNodeWithContexts(SceneAttributeDataPopulatedContextBase& dataContext);
             bool AreSceneGraphsEqual(const CoreSceneGraph& lhsGraph, const CoreSceneGraph& rhsGraph);
@@ -51,12 +46,8 @@ namespace AZ
             bool IsGraphDataEqual(const AZStd::shared_ptr<const DataTypes::IGraphObject>& lhs,
                 const AZStd::shared_ptr<const DataTypes::IGraphObject>& rhs);
 
-            // If the scene contains bindpose information for the node, returns true and sets "xf" to the local transform
-            // of the node in bindpose. Returns false if bindpose info is not available for the node.
-            bool GetBindPoseLocalTransform(const FbxSDKWrapper::FbxSceneWrapper& sceneWrapper,
-                FbxSDKWrapper::FbxNodeWrapper& nodeWrapper, DataTypes::MatrixType& xf);
         } // namespace FbxSceneBuilder
     } // namespace SceneAPI
 } // namespace AZ
 
-#include <SceneAPI/FbxSceneBuilder/Importers/FbxImporterUtilities.inl>
+#include <SceneAPI/FbxSceneBuilder/Importers/ImporterUtilities.inl>

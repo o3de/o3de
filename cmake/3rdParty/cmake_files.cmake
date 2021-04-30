@@ -13,7 +13,6 @@ set(FILES
     BuiltInPackages.cmake
     FindClang.cmake
     Finddyad.cmake
-    FindFbxSdk.cmake
     Findlibav.cmake
     FindRadTelemetry.cmake
     FindVkValidation.cmake
