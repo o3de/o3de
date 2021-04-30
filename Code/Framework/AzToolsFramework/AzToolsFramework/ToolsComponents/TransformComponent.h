@@ -23,6 +23,7 @@
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Commands/SelectionCommand.h>
+#include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponent.h>
 
 #include "EditorComponentBase.h"
 #include "TransformComponentBus.h"
@@ -31,6 +32,15 @@ namespace AzToolsFramework
 {
     namespace Components
     {
+        class AddNonUniformScaleButton
+        {
+        public:
+            AZ_TYPE_INFO(AddNonUniformScaleButton, "{92ECB8B6-DD25-4FC0-A5EE-4CEBAF51A780}")
+            static void Reflect(AZ::ReflectContext* context);
+        private:
+            void OnAddNonUniformScaleButtonPressed() {};
+        };
+
         /// Manages transform data as separate vector fields for editing purposes.
         /// The TransformComponent is referenced by other components in the same entity, it is not an asset.
         class TransformComponent
@@ -228,6 +238,8 @@ namespace AzToolsFramework
 
             void CheckApplyCachedWorldTransform(const AZ::Transform& parentWorld);
 
+            AZ::Crc32 OnAddNonUniformScaleButtonPressed();
+
             // Drives transform behavior when parent activates. See AZ::TransformConfig::ParentActivationTransformMode for details.
             AZ::TransformConfig::ParentActivationTransformMode m_parentActivationTransformMode;
 
@@ -259,6 +271,7 @@ namespace AzToolsFramework
             bool m_localTransformDirty = true;
             bool m_worldTransformDirty = true;
             bool m_isStatic = false;
+            AddNonUniformScaleButton m_addNonUniformScaleButton;
 
             // Deprecated
             AZ::InterpolationMode m_interpolatePosition;

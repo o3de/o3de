@@ -25,11 +25,13 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Components/TransformComponent.h>
+#include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/TransformScalePropertyHandler.h>
+#include <AzToolsFramework/ToolsComponents/EditorInspectorComponentBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
@@ -37,10 +39,29 @@
 
 #include <QMenu>
 
+#pragma optimize("", off)
+
 namespace AzToolsFramework
 {
     namespace Components
     {
+        void AddNonUniformScaleButton::Reflect(AZ::ReflectContext* context)
+        {
+            if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+            {
+                serializeContext->Class<AddNonUniformScaleButton>()->
+                    Version(1);
+
+                if (AZ::EditContext* ptrEdit = serializeContext->GetEditContext())
+                {
+                    ptrEdit->Class<AddNonUniformScaleButton>("AddNonUniformScaleButton", "")->
+                        UIElement(AZ::Edit::UIHandlers::Button, "", "Add non-uniform scale component")->
+                        Attribute(AZ::Edit::Attributes::ButtonText, "Add non-uniform scale")
+                        ;
+                }
+            }
+        }
+
         namespace Internal
         {
             const AZ::u32 ParentEntityCRC = AZ_CRC("Parent Entity", 0x5b1b276c);
@@ -1196,8 +1217,55 @@ namespace AzToolsFramework
             destinationComponent->SetWorldTM(const_cast<TransformComponent*>(sourceComponent)->GetWorldTM());
         }
 
+        AZ::Crc32 TransformComponent::OnAddNonUniformScaleButtonPressed()
+        {
+            // if there is already a non-uniform scale component, do nothing
+            if (GetEntity()->FindComponent<EditorNonUniformScaleComponent>())
+            {
+                return AZ::Edit::PropertyRefreshLevels::None;
+            }
+
+            const AZStd::vector<AZ::EntityId> entityList = { GetEntityId() };
+            const AZ::ComponentTypeList componentsToAdd = { EditorNonUniformScaleComponent::TYPEINFO_Uuid() };
+
+            AzToolsFramework::EntityCompositionRequests::AddComponentsOutcome outcome;
+            AzToolsFramework::EntityCompositionRequestBus::BroadcastResult(outcome,
+                &AzToolsFramework::EntityCompositionRequests::AddComponentsToEntities, entityList, componentsToAdd);
+
+            auto nonUniformScaleComponent = GetEntity()->FindComponent<EditorNonUniformScaleComponent>();
+
+            if (!outcome.IsSuccess() || nonUniformScaleComponent == nullptr)
+            {
+                AZ_Warning("Transform component", false, "Failed to add non-uniform scale component.");
+                return AZ::Edit::PropertyRefreshLevels::None;
+            }
+
+            AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+                &AzToolsFramework::ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
+
+            ComponentOrderArray componentOrderArray;
+            EditorInspectorComponentRequestBus::EventResult(componentOrderArray, GetEntityId(),
+                &EditorInspectorComponentRequests::GetComponentOrderArray);
+
+            // find the id for the non-uniform scale component and move it immediately after the transform component in the sort order
+            auto nonUniformScaleComponentIter = AZStd::find(componentOrderArray.begin(), componentOrderArray.end(), nonUniformScaleComponent->GetId());
+            auto transformComponentIter = AZStd::find(componentOrderArray.begin(), componentOrderArray.end(), GetId());
+            if (nonUniformScaleComponentIter != componentOrderArray.end() && transformComponentIter != componentOrderArray.end())
+            {
+                componentOrderArray.erase(nonUniformScaleComponentIter);
+                transformComponentIter = AZStd::find(componentOrderArray.begin(), componentOrderArray.end(), GetId());
+                componentOrderArray.insert(++transformComponentIter, nonUniformScaleComponent->GetId());
+                EditorInspectorComponentRequestBus::Event(GetEntityId(),
+                    &EditorInspectorComponentRequests::SetComponentOrderArray, componentOrderArray);
+            }
+
+            return AZ::Edit::PropertyRefreshLevels::EntireTree;
+        }
+
         void TransformComponent::Reflect(AZ::ReflectContext* context)
         {
+            AddNonUniformScaleButton::Reflect(context);
+
             // reflect data for script, serialization, editing..
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
@@ -1211,6 +1279,7 @@ namespace AzToolsFramework
                 serializeContext->Class<Components::TransformComponent, EditorComponentBase>()->
                     Field("Parent Entity", &TransformComponent::m_parentEntityId)->
                     Field("Transform Data", &TransformComponent::m_editorTransform)->
+                    Field("AddNonUniformScaleButton", &TransformComponent::m_addNonUniformScaleButton)->
                     Field("Cached World Transform", &TransformComponent::m_cachedWorldTransform)->
                     Field("Cached World Transform Parent", &TransformComponent::m_cachedWorldTransformParent)->
                     Field("Parent Activation Transform Mode", &TransformComponent::m_parentActivationTransformMode)->
@@ -1234,6 +1303,10 @@ namespace AzToolsFramework
                         DataElement(AZ::Edit::UIHandlers::Default, &TransformComponent::m_editorTransform, "Values", "")->
                             Attribute(AZ::Edit::Attributes::ChangeNotify, &TransformComponent::TransformChanged)->
                             Attribute(AZ::Edit::Attributes::AutoExpand, true)->
+                        DataElement(AZ::Edit::UIHandlers::Default, &TransformComponent::m_addNonUniformScaleButton, "", "")->
+                            Attribute(AZ::Edit::Attributes::AutoExpand, true)->
+                            Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)->
+                            Attribute(AZ::Edit::Attributes::ChangeNotify, &TransformComponent::OnAddNonUniformScaleButtonPressed)->
                         DataElement(AZ::Edit::UIHandlers::ComboBox, &TransformComponent::m_parentActivationTransformMode,
                             "Parent activation", "Configures relative transform behavior when parent activates.")->
                             EnumAttribute(AZ::TransformConfig::ParentActivationTransformMode::MaintainOriginalRelativeTransform, "Original relative transform")->
