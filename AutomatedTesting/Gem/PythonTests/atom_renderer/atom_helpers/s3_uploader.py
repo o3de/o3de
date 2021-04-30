@@ -19,11 +19,16 @@ import os
 import ly_test_tools.environment.file_system as file_system
 
 logger = logging.getLogger(__name__)
-s3 = boto3.client('s3')
+s3 = boto3.resource('s3')
 
 
 class BucketDoesNotExistError(Exception):
     """Raised when a bucket_name param references an s3 bucket that doesn't exist."""
+    pass
+
+
+class BucketExistsError(Exception):
+    """Raised when a bucket_name param references an s3 bucket that exists."""
     pass
 
 
@@ -34,6 +39,11 @@ class FileKeyExistsError(Exception):
 
 class KeyDoesNotExistError(Exception):
     """Raised when a referenced file key does not exist."""
+    pass
+
+
+class S3UploaderError(Exception):
+    """Raised when the s3 uploader fails to perform an expected function."""
     pass
 
 
@@ -75,6 +85,18 @@ def _key_exists_in_bucket(bucket_name, file_key):
     return key_exists
 
 
+def create_bucket(bucket_name):
+    """
+    Given a bucket name, creates a new bucket using the current s3 client info from boto3.
+    :param bucket_name: name of the bucket to create
+    :return:
+    """
+    if not _bucket_exists_in_s3(bucket_name):
+        s3.meta.client.create_bucket(Bucket=bucket_name)
+    else:
+        raise BucketExistsError(f'Bucket "{bucket_name}" already exists, cannot create a bucket with that name.')
+
+
 def create_folder_in_bucket(bucket_name, folder_key):
     """
     Given bucket name and folder key will create specified folder if it doesn't exist
@@ -105,7 +127,9 @@ def upload_to_bucket(bucket_name, file_path, file_key=None, overwrite=False):
     :param overwrite: Overwrite the key if it exists.
     """
     if not _bucket_exists_in_s3(bucket_name):
-        s3.create_bucket(Bucket=bucket_name)
+        raise BucketDoesNotExistError(
+            f'S3 Bucket: {bucket_name} does not exist, please create it first or '
+            f'set the bucket_must_exist param to False.')
 
     s3_bucket = s3.Bucket(bucket_name)
 
@@ -147,8 +171,3 @@ def download_from_bucket(bucket_name, file_key, destination_dir, file_name=None)
     destination_path = os.path.join(destination_dir, file_name)
     s3.Object(bucket_name, file_key).download_file(destination_path)
     logger.info(f"Downloading {file_key} to {destination_path}")
-
-
-if __name__ == "__main__":
-    import pdb
-    pdb.set_trace()

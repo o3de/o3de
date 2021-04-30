@@ -167,7 +167,7 @@ def run():
         area_light, lambda entity_obj: verify_required_component_addition(
             entity_obj, ["Capsule Shape"], area_light))
 
-    # Decal Component
+    # Decal (Atom) Component
     material_asset_path = os.path.join("AutomatedTesting", "Materials", "basic_grey.material")
     material_asset = asset.AssetCatalogRequestBus(
         bus.Broadcast, "GetAssetIdByPath", material_asset_path, math.Uuid(), False)

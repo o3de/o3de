@@ -8,18 +8,26 @@ or, if provided, by the license below or the license accompanying this file. Do 
 remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
-Main suite tests for the Atom renderer.
+Main suite tests for the Atom renderer:
+1. These tests will gate code submissions in the pipeline if they fail.
+2. Failures will trigger an s3 bucket upload of the test artifacts from the failed run.
+3. The failure log output will include a link to these test artifacts for ease of debugging.
 """
+
+import datetime
 import logging
 import os
 
 import pytest
 
 import editor_python_test_tools.hydra_test_utils as hydra
+from .atom_helpers import s3_uploader, collect_atom_test_artifacts
 
 logger = logging.getLogger(__name__)
-EDITOR_TIMEOUT = 120
-TEST_DIRECTORY = os.path.join(os.path.dirname(__file__), "atom_hydra_scripts")
+
+EDITOR_TIMEOUT = 180  # Time limit for main suite tests is 3 minutes.
+HYDRA_SCRIPT_DIRECTORY = os.path.join(os.path.dirname(__file__), "atom_hydra_scripts")
+S3_BUCKET_NAME = 'testing-atom-artifacts-for-github'
 
 
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
@@ -39,7 +47,7 @@ class TestAtomEditorComponentsMain(object):
         "C32078121",  # Exposure Control
         "C32078120",  # Directional Light
         "C32078119",  # DepthOfField
-        "C32078118")  # Decal
+        "C32078118")  # Decal (Atom)
     def test_AtomEditorComponents_AddedToEntity(self, request, editor, level, workspace, project, launcher_platform):
         cfg_args = [level]
 
@@ -56,7 +64,7 @@ class TestAtomEditorComponentsMain(object):
             "Area Light_test: Entity deleted: True",
             "Area Light_test: UNDO entity deletion works: True",
             "Area Light_test: REDO entity deletion works: True",
-            # Decal Component
+            # Decal (Atom) Component
             "Decal (Atom) Entity successfully created",
             "Decal (Atom)_test: Component added to the entity: True",
             "Decal (Atom)_test: Component removed after UNDO: True",
@@ -205,16 +213,33 @@ class TestAtomEditorComponentsMain(object):
             "failed to open",
             "Traceback (most recent call last):",
         ]
+        try:
+            hydra.launch_and_validate_results(
+                request,
+                HYDRA_SCRIPT_DIRECTORY,
+                editor,
+                "hydra_AtomEditorComponents_AddedToEntity.py",
+                timeout=EDITOR_TIMEOUT,
+                expected_lines=expected_lines,
+                unexpected_lines=unexpected_lines,
+                halt_on_unexpected=True,
+                null_renderer=True,
+                cfg_args=cfg_args,
+            )
+        finally:
+            # Create s3 folder to upload test artifacts to.
+            s3_folder_timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')  # For unique folder string.
+            s3_folder_name = f"{s3_folder_timestamp}_Atom_AutomatedTesting_TestArtifacts"
+            s3_uploader.create_folder_in_bucket(bucket_name=S3_BUCKET_NAME, folder_key=s3_folder_name)
 
-        hydra.launch_and_validate_results(
-            request,
-            TEST_DIRECTORY,
-            editor,
-            "hydra_AtomEditorComponents_AddedToEntity.py",
-            timeout=EDITOR_TIMEOUT,
-            expected_lines=expected_lines,
-            unexpected_lines=unexpected_lines,
-            halt_on_unexpected=True,
-            null_renderer=True,
-            cfg_args=cfg_args,
-        )
+            # Upload the test artifacts to the newly created s3 folder.
+            atom_test_artifacts = collect_atom_test_artifacts.get_atom_test_artifacts(
+                engine_root=workspace.paths.engine_root())
+            for atom_test_artifact in atom_test_artifacts:
+                s3_uploader.upload_to_bucket(
+                    bucket_name=S3_BUCKET_NAME,
+                    file_path=atom_test_artifact,
+                    file_key=s3_folder_name,
+                    overwrite=False
+                )
+
