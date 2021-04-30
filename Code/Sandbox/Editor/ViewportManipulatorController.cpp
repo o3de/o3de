@@ -27,8 +27,8 @@ static const auto InteractionPriority = AzFramework::ViewportControllerPriority:
 namespace SandboxEditor
 {
 
-ViewportManipulatorControllerInstance::ViewportManipulatorControllerInstance(AzFramework::ViewportId viewport)
-    : AzFramework::MultiViewportControllerInstanceInterface(viewport)
+ViewportManipulatorControllerInstance::ViewportManipulatorControllerInstance(AzFramework::ViewportId viewport, ViewportManipulatorController* controller)
+    : AzFramework::MultiViewportControllerInstanceInterface<ViewportManipulatorController>(viewport, controller)
 {
 }
 

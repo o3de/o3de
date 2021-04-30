@@ -17,10 +17,17 @@
 
 namespace SandboxEditor
 {
-    class ModernViewportCameraControllerInstance final : public AzFramework::MultiViewportControllerInstanceInterface
+    class ModernViewportCameraControllerInstance;
+    class ModernViewportCameraController : public AzFramework::MultiViewportController<ModernViewportCameraControllerInstance>
     {
     public:
-        explicit ModernViewportCameraControllerInstance(AzFramework::ViewportId viewportId);
+        AzFramework::Cameras GetCameras() const;
+    };
+
+    class ModernViewportCameraControllerInstance final : public AzFramework::MultiViewportControllerInstanceInterface<ModernViewportCameraController>
+    {
+    public:
+        explicit ModernViewportCameraControllerInstance(AzFramework::ViewportId viewportId, ModernViewportCameraController* controller);
 
         // MultiViewportControllerInstanceInterface overrides ...
         bool HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event) override;
@@ -32,6 +39,4 @@ namespace SandboxEditor
         AzFramework::SmoothProps m_smoothProps;
         AzFramework::CameraSystem m_cameraSystem;
     };
-
-    using ModernViewportCameraController = AzFramework::MultiViewportController<ModernViewportCameraControllerInstance>;
 } // namespace SandboxEditor

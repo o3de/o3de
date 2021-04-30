@@ -17,8 +17,8 @@ namespace AzFramework
     MultiViewportController<TViewportControllerInstance, Priority>::~MultiViewportController()
     {
         static_assert(
-            AZStd::is_constructible<TViewportControllerInstance, ViewportId>::value,
-            "TViewportControllerInstance must implement a TViewportControllerInstance(ViewportId) constructor"
+            AZStd::is_same<TViewportControllerInstance, decltype(TViewportControllerInstance(0, nullptr))>::value,
+            "TViewportControllerInstance must implement a TViewportControllerInstance(ViewportId, ViewportController) constructor"
         );
     }
 
@@ -50,7 +50,7 @@ namespace AzFramework
     template <class TViewportControllerInstance, ViewportControllerPriority Priority>
     void MultiViewportController<TViewportControllerInstance, Priority>::RegisterViewportContext(ViewportId viewport)
     {
-        m_instances[viewport] = AZStd::make_unique<TViewportControllerInstance>(viewport);
+        m_instances[viewport] = AZStd::make_unique<TViewportControllerInstance>(viewport, static_cast<TViewportControllerInstance::ControllerType*>(this));
     }
 
     template <class TViewportControllerInstance, ViewportControllerPriority Priority>

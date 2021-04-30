@@ -37,10 +37,9 @@ namespace SandboxEditor
         return viewportContext;
     }
 
-    ModernViewportCameraControllerInstance::ModernViewportCameraControllerInstance(const AzFramework::ViewportId viewportId)
-        : MultiViewportControllerInstanceInterface(viewportId)
+    AzFramework::Cameras ModernViewportCameraController::GetCameras() const
     {
-        // LYN-2315 TODO - move setup out of constructor, pass cameras in
+        AzFramework::Cameras cameras;
         auto firstPersonRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(AzFramework::InputDeviceMouse::Button::Right);
         auto firstPersonPanCamera = AZStd::make_shared<AzFramework::PanCameraInput>(AzFramework::LookPan);
         auto firstPersonTranslateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(AzFramework::LookTranslation);
@@ -58,11 +57,19 @@ namespace SandboxEditor
         orbitCamera->m_orbitCameras.AddCamera(orbitDollyMoveCamera);
         orbitCamera->m_orbitCameras.AddCamera(orbitPanCamera);
 
-        m_cameraSystem.m_cameras.AddCamera(firstPersonRotateCamera);
-        m_cameraSystem.m_cameras.AddCamera(firstPersonPanCamera);
-        m_cameraSystem.m_cameras.AddCamera(firstPersonTranslateCamera);
-        m_cameraSystem.m_cameras.AddCamera(firstPersonWheelCamera);
-        m_cameraSystem.m_cameras.AddCamera(orbitCamera);
+        cameras.AddCamera(firstPersonRotateCamera);
+        cameras.AddCamera(firstPersonPanCamera);
+        cameras.AddCamera(firstPersonTranslateCamera);
+        cameras.AddCamera(firstPersonWheelCamera);
+        cameras.AddCamera(orbitCamera);
+        return AZStd::move(cameras);
+    }
+
+    ModernViewportCameraControllerInstance::ModernViewportCameraControllerInstance(const AzFramework::ViewportId viewportId, ModernViewportCameraController* controller)
+        : MultiViewportControllerInstanceInterface<ModernViewportCameraController>(viewportId, controller)
+    {
+        // LYN-2315 TODO - move setup out of constructor, pass cameras in
+        m_cameraSystem.m_cameras = controller->GetCameras();
 
         if (const auto viewportContext = RetrieveViewportContext(viewportId))
         {
