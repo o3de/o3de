@@ -399,6 +399,11 @@ namespace LmbrCentral
         const ShapeDrawParams& shapeDrawParams, const PolygonPrismMesh& polygonPrismMesh,
         AzFramework::DebugDisplayRequests& debugDisplay)
     {
+        if (!gEnv->pRenderer)
+        {
+            return;
+        }
+
         auto geomRenderer = gEnv->pRenderer->GetIRenderAuxGeom();
 
         const SAuxGeomRenderFlags oldFlags = geomRenderer->GetRenderFlags();
