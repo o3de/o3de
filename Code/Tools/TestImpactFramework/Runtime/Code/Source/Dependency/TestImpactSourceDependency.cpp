@@ -20,28 +20,33 @@
 namespace TestImpact
 {
     ParentTarget::ParentTarget(const TestTarget* target)
-        : m_buildTarget(target)
-        , m_target(target)
+        : m_target(target)
     {
     }
 
     ParentTarget::ParentTarget(const ProductionTarget* target)
-        : m_buildTarget(target)
-        , m_target(target)
+        : m_target(target)
     {
     }
 
     bool ParentTarget::operator==(const ParentTarget& other) const
     {
-        return m_buildTarget == other.m_buildTarget;
+        return GetBuildTarget() == other.GetBuildTarget();
     }
 
     const BuildTarget* ParentTarget::GetBuildTarget() const
     {
-        return m_buildTarget;
+        const BuildTarget* buildTarget;
+        AZStd::visit([&buildTarget](auto&& target)
+        {
+            buildTarget = target;
+
+        }, m_target);
+
+        return buildTarget;
     }
 
-    const AZStd::variant<const ProductionTarget*, const TestTarget*>& ParentTarget::GetTarget() const
+    const Target& ParentTarget::GetTarget() const
     {
         return m_target;
     }

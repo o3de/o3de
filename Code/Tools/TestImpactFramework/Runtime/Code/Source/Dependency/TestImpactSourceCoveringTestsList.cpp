@@ -16,6 +16,11 @@
 
 namespace TestImpact
 {
+    SourceCoveringTests::SourceCoveringTests(const AZStd::string& path)
+        : m_path(path)
+    {
+    }
+
     SourceCoveringTests::SourceCoveringTests(const AZStd::string& path, AZStd::vector<AZStd::string>&& coveringTestTargets)
         : m_path(path)
         , m_coveringTestTargets(AZStd::move(coveringTestTargets))
@@ -55,4 +60,4 @@ namespace TestImpact
     {
         return m_coverage;
     }
-}
+} // namespace TestImpact

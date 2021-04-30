@@ -21,6 +21,7 @@ namespace TestImpact
     class SourceCoveringTests
     {
     public:
+        explicit SourceCoveringTests(const AZStd::string& path);
         SourceCoveringTests(const AZStd::string& path, AZStd::vector<AZStd::string>&& coveringTestTargets);
 
         //! Returns the path of this source file.
@@ -40,7 +41,7 @@ namespace TestImpact
     class SourceCoveringTestsList
     {
     public:
-        SourceCoveringTestsList(AZStd::vector<SourceCoveringTests>&& sourceCoveringTests);
+        explicit SourceCoveringTestsList(AZStd::vector<SourceCoveringTests>&& sourceCoveringTests);
 
         //! Returns the number of source files in the collection.
         size_t GetNumSources() const;

@@ -12,15 +12,15 @@
 
 #pragma once
 
+#include <Target/TestImpactBuildTarget.h>
+
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/std/containers/variant.h>
 
 namespace TestImpact
 {
-    class BuildTarget;
     class ProductionTarget;
     class TestTarget;
 
@@ -38,12 +38,11 @@ namespace TestImpact
         const BuildTarget* GetBuildTarget() const;
 
         //! Returns the specialized target pointer for this parent.
-        const AZStd::variant<const ProductionTarget*, const TestTarget*>& GetTarget() const;
+        const Target& GetTarget() const;
 
         bool operator==(const ParentTarget& other) const;
     private:
-        const BuildTarget* m_buildTarget; //! The base built target pointer for this parent.
-        AZStd::variant<const ProductionTarget*, const TestTarget*> m_target; //! The specialized target pointer for this parent.
+        Target m_target; //! The specialized target pointer for this parent.
     };
 }
 
@@ -91,6 +90,6 @@ namespace TestImpact
         const AZStd::unordered_set<const TestTarget*>& GetCoveringTestTargets() const;
     private:
         AZStd::string m_path; //!< The path of this source file.
-        DependencyData m_dependencyData; //!< 
+        DependencyData m_dependencyData; //!< The dependency data for this source file.
     };
 } // namespace TestImpact

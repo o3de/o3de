@@ -14,10 +14,20 @@
 
 #include <Artifact/Static/TestImpactBuildTargetDescriptor.h>
 
+#include <AzCore/std/containers/variant.h>
 #include <AzCore/std/string/string.h>
 
 namespace TestImpact
 {
+    class TestTarget;
+    class ProductionTarget;
+
+    //! Holder for specializations of BuildTarget.
+    using Target = AZStd::variant<const TestTarget*, const ProductionTarget*>;
+
+    //! Optional holder for specializations of BuildTarget.
+    using OptionalTarget = AZStd::variant<AZStd::monostate, const TestTarget*, const ProductionTarget*>;
+
     //! Type id for querying specialized derived target types from base pointer/reference.
     enum class TargetType : bool
     {

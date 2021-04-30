@@ -25,7 +25,8 @@ namespace TestImpact
         {
             for (const auto& source : target->GetSources().m_staticSources)
             {
-                if (auto mapping = m_sourceDependencyMap.find(source); mapping != m_sourceDependencyMap.end())
+                if (auto mapping = m_sourceDependencyMap.find(source);
+                    mapping != m_sourceDependencyMap.end())
                 {
                     // This is an existing entry in the dependency map so update the parent build targets with this target
                     mapping->second.m_parentTargets.insert(target);
@@ -97,13 +98,15 @@ namespace TestImpact
         return buildTarget;
     }
 
-    AZStd::variant<AZStd::monostate, const TestTarget*, const ProductionTarget*> DynamicDependencyMap::GetTarget(const AZStd::string& name) const
+    OptionalTarget DynamicDependencyMap::GetTarget(const AZStd::string& name) const
     {
-        if (auto testTarget = m_testTargets.GetTarget(name); testTarget != nullptr)
+        if (const auto testTarget = m_testTargets.GetTarget(name);
+            testTarget != nullptr)
         {
             return testTarget;
         }
-        else if (auto productionTarget = m_productionTargets.GetTarget(name); productionTarget != nullptr)
+        else if (auto productionTarget = m_productionTargets.GetTarget(name);
+            productionTarget != nullptr)
         {
             return productionTarget;
         }
@@ -111,9 +114,9 @@ namespace TestImpact
         return AZStd::monostate{};
     }
 
-    AZStd::variant<const TestTarget*, const ProductionTarget*> DynamicDependencyMap::GetTargetOrThrow(const AZStd::string& name) const
+    Target DynamicDependencyMap::GetTargetOrThrow(const AZStd::string& name) const
     {
-        AZStd::variant<const TestTarget*, const ProductionTarget*> buildTarget;
+        Target buildTarget;
         AZStd::visit([&buildTarget, &name](auto&& target)
         {
             if constexpr (IsProductionTarget<decltype(target)> || IsTestTarget<decltype(target)>)
@@ -148,8 +151,8 @@ namespace TestImpact
             // Update the dependency with any new coverage data
             for (const auto& unresolvedTestTarget : sourceCoverage.GetCoveringTestTargets())
             {
-                const TestTarget* testTarget = m_testTargets.GetTarget(unresolvedTestTarget);
-                if (testTarget)
+                if (const TestTarget* testTarget = m_testTargets.GetTarget(unresolvedTestTarget);
+                    testTarget)
                 {
                     // Source to covering test target mapping
                     sourceDependency.m_coveringTestTargets.insert(testTarget);
@@ -179,12 +182,13 @@ namespace TestImpact
     {
         for (const auto& path : paths)
         {
-            if (const auto outputSources = m_autogenInputToOutputMap.find(path); outputSources != m_autogenInputToOutputMap.end())
+            if (const auto outputSources = m_autogenInputToOutputMap.find(path);
+                outputSources != m_autogenInputToOutputMap.end())
             {
                 // Clearing the coverage data of an autogen input source instead clears the coverage data of its output sources
                 for (const auto& outputSource : outputSources->second)
                 {
-                    ReplaceSourceCoverage(SourceCoveringTestsList({ SourceCoveringTests(outputSource, { }) }));
+                    ReplaceSourceCoverage(SourceCoveringTestsList({ SourceCoveringTests(outputSource) }));
                 }
             }
             else
@@ -207,7 +211,8 @@ namespace TestImpact
     AZStd::vector<const TestTarget*> DynamicDependencyMap::GetCoveringTestTargetsForProductionTarget(const ProductionTarget& productionTarget) const
     {
         AZStd::vector<const TestTarget*> coveringTestTargets;
-        if (const auto coverage = m_buildTargetCoverage.find(&productionTarget); coverage != m_buildTargetCoverage.end())
+        if (const auto coverage = m_buildTargetCoverage.find(&productionTarget);
+            coverage != m_buildTargetCoverage.end())
         {
             coveringTestTargets.reserve(coverage->second.size());
             AZStd::copy(coverage->second.begin(), coverage->second.end(), AZStd::back_inserter(coveringTestTargets));
@@ -280,7 +285,7 @@ namespace TestImpact
             coverage.push_back(SourceCoveringTests(path, AZStd::move(souceCoveringTests)));
         }
 
-        return coverage;
+        return SourceCoveringTestsList(AZStd::move(coverage));
     }
 
     AZStd::vector<AZStd::string> DynamicDependencyMap::GetOrphanSourceFiles() const
@@ -313,31 +318,18 @@ namespace TestImpact
             auto sourceDependency = GetSourceDependency(createdFile);
             if (sourceDependency.has_value())
             {
+                if (sourceDependency->GetNumCoveringTestTargets())
+                {
+                    const AZStd::string msg = AZStd::string::format("The newly-created file %s belongs to a build target yet "
+                        "still has coverage data in the source covering test list implying that a delete CRUD operation has been "
+                        "missed, thus the integrity of the source covering test list has been compromised", createdFile.c_str());
+                    AZ_Error("File Creation", false, msg.c_str());
+                    throw DependencyException(msg);
+                }
+
                 if (sourceDependency->GetNumParentTargets())
                 {
-                    if (sourceDependency->GetNumCoveringTestTargets())
-                    {                        
-                        const AZStd::string msg = AZStd::string::format("The newly-created file %s belongs to a build target yet "
-                            "still has coverage data in the source covering test list implying that a delete CRUD operation has been "
-                            "missed, thus the integrity of the source covering test list has been compromised", createdFile.c_str());
-                        AZ_Error("File Creation", false, msg.c_str());
-                        throw DependencyException(msg); 
-                    }
-                    else
-                    {
-                        createDependencies.emplace_back(AZStd::move(*sourceDependency));
-                    }
-                }
-                else
-                {
-                    if (sourceDependency->GetNumCoveringTestTargets())
-                    {
-                        const AZStd::string msg = AZStd::string::format("The newly-created file %s does not belong to a build target "
-                            "yet still has coverage data in the source covering test list, implying that a delete CRUD operation has been "
-                            "missed, thus the integrity of the source covering test list has been compromised", createdFile.c_str());
-                        AZ_Error("File Creation", false, msg.c_str());
-                        throw DependencyException(msg);
-                    }
+                    createDependencies.emplace_back(AZStd::move(*sourceDependency));
                 }
             }
         }
@@ -373,33 +365,35 @@ namespace TestImpact
         for (const auto& deletedFile : changeList.m_deletedFiles)
         {
             auto sourceDependency = GetSourceDependency(deletedFile);
-            if (sourceDependency.has_value())
+            if (!sourceDependency.has_value())
             {
-                if (sourceDependency->GetNumParentTargets())
+                continue;
+            }
+
+            if (sourceDependency->GetNumParentTargets())
+            {
+                if (sourceDependency->GetNumCoveringTestTargets())
                 {
-                    if (sourceDependency->GetNumCoveringTestTargets())
-                    {
-                        const AZStd::string msg = AZStd::string::format("The deleted file %s still belongs to a build target and still "
-                            "has coverage data in the source covering test list, implying that the integrity of both the source to target "
-                            "mappings and the source covering test list has been compromised", deletedFile.c_str());
-                        AZ_Error("File Delete", false, msg.c_str());
-                        throw DependencyException(msg);
-                    }
-                    else
-                    {
-                        const AZStd::string msg = AZStd::string::format("The deleted file %s still belongs to a build target implying "
-                            "that the integrity of the source to target mappings has been compromised", deletedFile.c_str());
-                        AZ_Error("File Delete", false, msg.c_str());
-                        throw DependencyException(msg);
-                    }
+                    const AZStd::string msg = AZStd::string::format("The deleted file %s still belongs to a build target and still "
+                        "has coverage data in the source covering test list, implying that the integrity of both the source to target "
+                        "mappings and the source covering test list has been compromised", deletedFile.c_str());
+                    AZ_Error("File Delete", false, msg.c_str());
+                    throw DependencyException(msg);
                 }
                 else
                 {
-                    if (sourceDependency->GetNumCoveringTestTargets())
-                    {
-                        deleteDependencies.emplace_back(AZStd::move(*sourceDependency));
-                        coverageToDelete.push_back(deletedFile);
-                    }
+                    const AZStd::string msg = AZStd::string::format("The deleted file %s still belongs to a build target implying "
+                        "that the integrity of the source to target mappings has been compromised", deletedFile.c_str());
+                    AZ_Error("File Delete", false, msg.c_str());
+                    throw DependencyException(msg);
+                }
+            }
+            else
+            {
+                if (sourceDependency->GetNumCoveringTestTargets())
+                {
+                    deleteDependencies.emplace_back(AZStd::move(*sourceDependency));
+                    coverageToDelete.push_back(deletedFile);
                 }
             }
         }
@@ -411,4 +405,4 @@ namespace TestImpact
 
         return ChangeDependencyList(AZStd::move(createDependencies), AZStd::move(updateDependencies), AZStd::move(deleteDependencies));
     }
-}
+} // namespace TestImpact

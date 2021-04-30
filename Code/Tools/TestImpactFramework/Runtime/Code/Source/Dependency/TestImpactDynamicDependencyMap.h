@@ -24,7 +24,6 @@
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/std/containers/variant.h>
 
 namespace TestImpact
 {
@@ -56,11 +55,11 @@ namespace TestImpact
         //! Attempts to get the specified target's specialized type.
         //! @param name The name of the target to get.
         //! @returns If found, the pointer to the specialized target, otherwise AZStd::monostate.
-        AZStd::variant<AZStd::monostate, const TestTarget*, const ProductionTarget*> GetTarget(const AZStd::string& name) const;
+        OptionalTarget GetTarget(const AZStd::string& name) const;
 
         //! Attempts to get the specified target's specialized type or throw TargetException.
         //! @param name The name of the target to get.
-        AZStd::variant<const TestTarget*, const ProductionTarget*> GetTargetOrThrow(const AZStd::string& name) const;
+        Target GetTargetOrThrow(const AZStd::string& name) const;
 
         //! Get the list of production targets in the repository.
         const ProductionTargetList& GetProductionTargetList() const;
