@@ -24,8 +24,8 @@ ly_set(LY_PYTEST_EXECUTABLE ${LY_PYTHON_CMD} -B -m pytest -v --tb=short --show-c
 ly_set(LY_TEST_GLOBAL_KNOWN_SUITE_NAMES "smoke" "main" "periodic" "benchmark" "sandbox")
 ly_set(LY_TEST_GLOBAL_KNOWN_REQUIREMENTS "gpu")
 
-# Set default to 20 minutes
-ly_set(LY_TEST_DEFAULT_TIMEOUT 1200)
+# Set default test aborts to 25 minutes, avoids hitting the CI pipeline inactivity timeout usually set to 30 minutes
+ly_set(LY_TEST_DEFAULT_TIMEOUT 1500)
 
 # Add the CMake Test targets for each suite if testing is supported
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
@@ -115,6 +115,8 @@ function(ly_add_test)
     # Set default test module timeout
     if(NOT ly_add_test_TIMEOUT)
         set(ly_add_test_TIMEOUT ${LY_TEST_DEFAULT_TIMEOUT})
+    elseif(ly_add_test_TIMEOUT GREATER LY_TEST_DEFAULT_TIMEOUT)
+        message(WARNING "TIMEOUT for test ${ly_add_test_NAME} set at ${ly_add_test_TIMEOUT} seconds which is longer than the default of ${LY_TEST_DEFAULT_TIMEOUT}. Allowing a single module to run exceedingly long creates problems in a CI pipeline.")
     endif()
 
     if(NOT ly_add_test_TEST_COMMAND)
