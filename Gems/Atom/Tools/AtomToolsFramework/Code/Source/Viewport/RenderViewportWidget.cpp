@@ -416,9 +416,7 @@ namespace AtomToolsFramework
         }
         AzFramework::ScreenPoint position = AzFramework::WorldToScreen(
             worldPosition,
-            currentView->GetViewToWorldMatrix(),
-            currentView->GetViewToClipMatrix(),
-            AZ::Vector2{aznumeric_cast<float>(width()), aznumeric_cast<float>(height())}
+            GetCameraState()
         );
         return {position.m_x, position.m_y};
     }

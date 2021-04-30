@@ -25,7 +25,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         TEST_SUITE main
         TEST_SERIAL
         PATH ${CMAKE_CURRENT_LIST_DIR}/physics/TestSuite_Main.py
-        TIMEOUT 3600
+        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             Legacy::Editor
             Legacy::CryRenderNULL
@@ -39,7 +39,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         TEST_SUITE periodic
         TEST_SERIAL
         PATH ${CMAKE_CURRENT_LIST_DIR}/physics/TestSuite_Periodic.py
-        TIMEOUT 3600
+        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             Legacy::Editor
             Legacy::CryRenderNULL
@@ -71,7 +71,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         TEST_SUITE periodic
         TEST_SERIAL
         PATH ${CMAKE_CURRENT_LIST_DIR}/scripting/TestSuite_Active.py
-        TIMEOUT 3600
+        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             Legacy::Editor
             Legacy::CryRenderNULL
@@ -85,7 +85,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         TEST_SUITE sandbox
         TEST_SERIAL
         PATH ${CMAKE_CURRENT_LIST_DIR}/scripting/TestSuite_Sandbox.py
-        TIMEOUT 3600
+        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             Legacy::Editor
             Legacy::CryRenderNULL
@@ -101,7 +101,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         TEST_SUITE main
         TEST_SERIAL
         PATH ${CMAKE_CURRENT_LIST_DIR}/WhiteBox/TestSuite_Active.py
-        TIMEOUT 3600
+        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             Legacy::Editor
             Legacy::CryRenderNULL
@@ -120,7 +120,7 @@ endif()
 #        TEST_SUITE main
 #        TEST_SERIAL
 #        PATH ${CMAKE_CURRENT_LIST_DIR}/NvCloth/TestSuite_Active.py
-#        TIMEOUT 3600
+#        TIMEOUT 1500
 #        RUNTIME_DEPENDENCIES
 #            Legacy::Editor
 #            Legacy::CryRenderNULL
@@ -136,7 +136,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         TEST_SUITE sandbox
         TEST_SERIAL
         PATH ${CMAKE_CURRENT_LIST_DIR}/EditorPythonBindings
-        TIMEOUT 3600
+        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             Legacy::Editor
             Legacy::CryRenderNULL
@@ -154,7 +154,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         TEST_SUITE periodic
         TEST_SERIAL
         PATH ${CMAKE_CURRENT_LIST_DIR}/PythonAssetBuilder
-        TIMEOUT 3600
+        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             Legacy::Editor
             Legacy::CryRenderNULL
@@ -173,7 +173,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         TEST_SUITE main
         TEST_SERIAL TRUE
         PATH ${CMAKE_CURRENT_LIST_DIR}/Blast/TestSuite_Active.py
-        TIMEOUT 3600
+        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             Legacy::Editor
             AZ::AssetProcessor
@@ -196,7 +196,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         TEST_SUITE main
         PATH ${CMAKE_CURRENT_LIST_DIR}/largeworlds/dyn_veg
         PYTEST_MARKS "not SUITE_sandbox and not SUITE_periodic and not SUITE_benchmark"
-        TIMEOUT 36000
+        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             Legacy::Editor
@@ -212,7 +212,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         TEST_SUITE sandbox
         PATH ${CMAKE_CURRENT_LIST_DIR}/largeworlds/dyn_veg
         PYTEST_MARKS "SUITE_sandbox"
-        TIMEOUT 36000
+        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             Legacy::Editor
@@ -228,7 +228,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         TEST_SUITE periodic
         PATH ${CMAKE_CURRENT_LIST_DIR}/largeworlds/dyn_veg
         PYTEST_MARKS "SUITE_periodic"
-        TIMEOUT 3600
+        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             Legacy::Editor
@@ -244,7 +244,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         TEST_SUITE main
         PATH ${CMAKE_CURRENT_LIST_DIR}/largeworlds/landscape_canvas
         PYTEST_MARKS "not SUITE_sandbox and not SUITE_periodic and not SUITE_benchmark"
-        TIMEOUT 3600
+        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
            AZ::AssetProcessor
            Legacy::Editor
@@ -259,7 +259,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         TEST_SUITE periodic
         PATH ${CMAKE_CURRENT_LIST_DIR}/largeworlds/landscape_canvas
         PYTEST_MARKS "SUITE_periodic"
-        TIMEOUT 3600
+        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
            AZ::AssetProcessor
            Legacy::Editor
@@ -274,7 +274,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         TEST_SERIAL
         TEST_SUITE periodic
         PATH ${CMAKE_CURRENT_LIST_DIR}/largeworlds/gradient_signal
-        TIMEOUT 3600
+        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             Legacy::Editor
@@ -292,7 +292,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         TEST_SUITE periodic
         TEST_SERIAL
         PATH ${CMAKE_CURRENT_LIST_DIR}/editor
-        TIMEOUT 3600
+        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             Legacy::Editor
             Legacy::CryRenderNULL
