@@ -43,8 +43,6 @@
 #include <StringUtils.h>
 #include <IThreadManager.h>
 
-#include "CryFontBus.h"
-
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/IO/LocalFileIO.h>
 
@@ -3781,25 +3779,4 @@ bool CSystem::IsAssertDialogVisible() const
 void CSystem::SetAssertVisible(bool bAssertVisble)
 {
     m_bIsAsserting = bAssertVisble;
-}
-
-bool CSystem::LoadFontInternal(IFFont*& font, const string& fontName)
-{
-    font = m_env.pCryFont->NewFont(fontName);
-    if (!font)
-    {
-        AZ_Assert(false, "Could not instantiate the default font.");
-        return false;
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    string szFontPath = "Fonts/" + fontName + ".font";
-
-    if (!font->Load(szFontPath.c_str()))
-    {
-        AZ_Error(AZ_TRACE_SYSTEM_WINDOW, false, "Could not load font: %s.  Make sure the program is running from the correct working directory.", szFontPath.c_str());
-        return false;
-    }
-
-    return true;
 }

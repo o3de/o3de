@@ -732,9 +732,6 @@ private:
     bool GetWinGameFolder(char* szMyDocumentsPath, int maxPathSize);
 #endif
 
-    //! \brief Initializes the given IFFont member variable with the given name (internal use only).
-    bool LoadFontInternal(IFFont*& font, const string& fontName);
-
 public:
     void EnableFloatExceptions(int type);
 
