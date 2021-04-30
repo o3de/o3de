@@ -38,6 +38,9 @@ namespace AZ
         {
             AZ_TracePrintf(SceneAPI::Utilities::LogWindow, "AssImpSceneWrapper::LoadSceneFromFile %s", fileName);
             AZ_TraceContext("Filename", fileName);
+            // aiProcess_JoinIdenticalVertices is not enabled because O3DE has a mesh optimizer that also does this,
+            // this flag is disabled to keep AssImp output similar to FBX SDK to reduce downstream bugs for the initial AssImp release.
+            // There's currently a minimum of properties and flags set to maximize compatibility with the existing node graph.
             m_importer.SetPropertyBool(AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, false);
             m_importer.SetPropertyBool(AI_CONFIG_IMPORT_FBX_OPTIMIZE_EMPTY_ANIMATION_CURVES, false);
             m_sceneFileName = fileName;
