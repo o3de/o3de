@@ -37,6 +37,7 @@ class TestEmptyInstanceSpawner(object):
 
     @pytest.mark.test_case_id("C28851762")
     @pytest.mark.SUITE_periodic
+    @pytest.mark.dynveg_area
     def test_EmptyInstanceSpawner_EmptySpawnerWorks(self, request, editor, level, launcher_platform):
         cfg_args = [level]
 

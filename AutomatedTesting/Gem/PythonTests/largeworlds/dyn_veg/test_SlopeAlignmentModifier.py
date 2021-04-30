@@ -40,6 +40,7 @@ class TestSlopeAlignmentModifier(object):
 
     @pytest.mark.test_case_id("C4896941")
     @pytest.mark.SUITE_periodic
+    @pytest.mark.dynveg_modifier
     @pytest.mark.skip   # ATOM-14299
     def test_SlopeAlignmentModifier_InstanceSurfaceAlignment(self, request, editor, level, launcher_platform):
 
@@ -62,6 +63,7 @@ class TestSlopeAlignmentModifier(object):
 
     @pytest.mark.test_case_id("C4814459")
     @pytest.mark.SUITE_periodic
+    @pytest.mark.dynveg_modifier
     @pytest.mark.skip  # ATOM-14299
     def test_SlopeAlignmentModifierOverrides_InstanceSurfaceAlignment(self, request, editor, level, launcher_platform):
 

@@ -43,6 +43,7 @@ class TestInstanceSpawnerPriority(object):
 
     @pytest.mark.test_case_id("C5747383", "C4762382")
     @pytest.mark.SUITE_periodic
+    @pytest.mark.dynveg_misc
     def test_InstanceSpawnerPriority_LayerAndSubPriority_HigherValuesPlantOverLower(self, request, editor, level,
                                                                                     launcher_platform):
 

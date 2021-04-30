@@ -46,6 +46,7 @@ class TestMeshBlocker(object):
     """
     @pytest.mark.test_case_id("C3980834")
     @pytest.mark.SUITE_periodic
+    @pytest.mark.dynveg_area
     @pytest.mark.xfail  # LYN-3273
     def test_MeshBlocker_InstancesBlockedByMesh(self, request, editor, level, launcher_platform):
         expected_lines = [
@@ -70,6 +71,7 @@ class TestMeshBlocker(object):
     """
     @pytest.mark.test_case_id("C4766030")
     @pytest.mark.SUITE_periodic
+    @pytest.mark.dynveg_area
     @pytest.mark.xfail  # LYN-3273
     def test_MeshBlocker_InstancesBlockedByMeshHeightTuning(self, request, editor, level, launcher_platform):
         expected_lines = [
