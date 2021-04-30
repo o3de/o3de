@@ -37,10 +37,21 @@ namespace SandboxEditor
         void SetTargetCameraTransform(const AZ::Transform& transform) override;
 
     private:
+        enum class CameraMode
+        {
+            Control,
+            Animation
+        };
+
         AzFramework::Camera m_camera;
         AzFramework::Camera m_targetCamera;
         AzFramework::SmoothProps m_smoothProps;
         AzFramework::CameraSystem m_cameraSystem;
+
+        AZ::Transform m_transformStart;
+        AZ::Transform m_transformEnd;
+        float m_animationT = 0.0f;
+        CameraMode m_cameraMode = CameraMode::Control;
     };
 
     using ModernViewportCameraController = AzFramework::MultiViewportController<ModernViewportCameraControllerInstance>;
