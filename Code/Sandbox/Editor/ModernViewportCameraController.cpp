@@ -20,8 +20,6 @@
 #include <AzFramework/Windowing/WindowBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
-AZ_CVAR(bool, ed_newCameraSystemDebug, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Enable debug drawing for the new camera system");
-
 namespace SandboxEditor
 {
     static AZ::RPI::ViewportContextPtr RetrieveViewportContext(const AzFramework::ViewportId viewportId)
@@ -68,16 +66,6 @@ namespace SandboxEditor
         m_cameraSystem.m_cameras.AddCamera(firstPersonWheelCamera);
         m_cameraSystem.m_cameras.AddCamera(orbitCamera);
 
-        if (const auto viewportContext = RetrieveViewportContext(viewportId))
-        {
-            // set position but not orientation
-            m_targetCamera.m_lookAt = viewportContext->GetCameraTransform().GetTranslation();
-
-            // LYN-2315 TODO https://www.geometrictools.com/Documentation/EulerAngles.pdf
-
-            m_camera = m_targetCamera;
-        }
-
         AzFramework::ViewportDebugDisplayEventBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
         AzFramework::ModernViewportCameraControllerRequestBus::Handler::BusConnect(viewportId);
     }
@@ -111,15 +99,12 @@ namespace SandboxEditor
     void ModernViewportCameraControllerInstance::DisplayViewport(
         [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {
-        if (ed_newCameraSystemDebug)
-        {
-            debugDisplay.SetColor(AZ::Colors::White);
-            debugDisplay.DrawWireSphere(m_targetCamera.m_lookAt, 0.5f);
-        }
+        debugDisplay.SetColor(1.0f, 1.0f, 1.0f, AZStd::min(-m_camera.m_lookDist / 5.0f, 1.0f));
+        debugDisplay.DrawWireSphere(m_camera.m_lookAt, 0.5f);
     }
 
     void ModernViewportCameraControllerInstance::SetTargetCameraTransform(const AZ::Transform& transform)
     {
-        m_targetCamera.m_lookAt = transform.GetTranslation();
+        AzFramework::UpdateCameraFromTransform(m_targetCamera, transform);
     }
 } // namespace SandboxEditor

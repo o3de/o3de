@@ -43,6 +43,9 @@ namespace AzFramework
 
     using ModernViewportCameraControllerRequestBus = AZ::EBus<ModernViewportCameraControllerRequests>;
 
+    // https://www.geometrictools.com/Documentation/EulerAngles.pdf
+    AZ::Vector3 EulerAngles(const AZ::Matrix3x3& orientation);
+
     struct Camera
     {
         AZ::Vector3 m_lookAt = AZ::Vector3::CreateZero(); //!< Position of camera when m_lookDist is zero,
@@ -82,6 +85,8 @@ namespace AzFramework
     {
         return Transform().GetTranslation();
     }
+
+    void UpdateCameraFromTransform(Camera& camera, const AZ::Transform& transform);
 
     struct CursorMotionEvent
     {

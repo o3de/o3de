@@ -24,6 +24,48 @@ AZ_CVAR(
 
 namespace AzFramework
 {
+    // Based on paper by David Eberly - https://www.geometrictools.com/Documentation/EulerAngles.pdf
+    AZ::Vector3 EulerAngles(const AZ::Matrix3x3& orientation)
+    {
+        float x;
+        float y;
+        float z;
+
+        // 2.4 Factor as RzRyRx
+        if (orientation.GetElement(2, 0) < 1.0f)
+        {
+            if (orientation.GetElement(2, 0) > -1.0f)
+            {
+                x = std::atan2(orientation.GetElement(2, 1), orientation.GetElement(2, 2));
+                y = std::asin(-orientation.GetElement(2, 0));
+                z = std::atan2(orientation.GetElement(1, 0), orientation.GetElement(0, 0));
+            }
+            else
+            {
+                x = 0.0f;
+                y = AZ::Constants::Pi * 0.5f;
+                z = -std::atan2(-orientation.GetElement(2, 1), orientation.GetElement(1, 1));
+            }
+        }
+        else
+        {
+            x = 0.0f;
+            y = -AZ::Constants::Pi * 0.5f;
+            z = std::atan2(-orientation.GetElement(1, 2), orientation.GetElement(1, 1));
+        }
+
+        return {x, y, z};
+    }
+
+    void UpdateCameraFromTransform(Camera& camera, const AZ::Transform& transform)
+    {
+        const auto eulerAngles = AzFramework::EulerAngles(AZ::Matrix3x3::CreateFromTransform(transform));
+
+        camera.m_lookAt = transform.GetTranslation();
+        camera.m_pitch = eulerAngles.GetX();
+        camera.m_yaw = eulerAngles.GetZ();
+    }
+
     bool CameraSystem::HandleEvents(const InputEvent& event)
     {
         if (const auto& cursor_motion = AZStd::get_if<CursorMotionEvent>(&event))
