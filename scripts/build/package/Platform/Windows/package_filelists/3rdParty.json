@@ -17,12 +17,6 @@
             "bin/linux/**":"#include",
             "lib/linux/**":"#include"
         },
-        "AWS/GameLift/3.4.0":{
-            "*":"#include",
-            "include/**":"#include",
-            "bin/windows/**":"#include",
-            "lib/linux/libstdcxx/**":"#include"
-        },
         "civetweb/civetweb-20160922-az.2":{
             "src/**":"#include",
             "include/**":"#include",

@@ -175,7 +175,7 @@ namespace AzFramework
         }
 
         // Initializes the IArchive for reading archive(.pak) files
-        if (auto archive = AZ::Interface<AZ::IO::IArchive>::Get(); !archive)
+        if (auto archive = AZ::Interface<AZ::IO::IArchive>::Get(); archive == nullptr)
         {
             m_archive = AZStd::make_unique<AZ::IO::Archive>();
             AZ::Interface<AZ::IO::IArchive>::Register(m_archive.get());
@@ -187,6 +187,12 @@ namespace AzFramework
             m_archiveFileIO = AZStd::make_unique<AZ::IO::ArchiveFileIO>(m_archive.get());
             AZ::IO::FileIOBase::SetInstance(m_archiveFileIO.get());
             SetFileIOAliases();
+        }
+
+        if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); nativeUI == nullptr)
+        {
+            m_nativeUI = AZStd::make_unique<AZ::NativeUI::NativeUISystem>();
+            AZ::Interface<AZ::NativeUI::NativeUIRequests>::Register(m_nativeUI.get());
         }
 
         ApplicationRequests::Bus::Handler::BusConnect();
@@ -205,12 +211,17 @@ namespace AzFramework
         AZ::UserSettingsFileLocatorBus::Handler::BusDisconnect();
         ApplicationRequests::Bus::Handler::BusDisconnect();
 
+        if (AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get() == m_nativeUI.get())
+        {
+            AZ::Interface<AZ::NativeUI::NativeUIRequests>::Unregister(m_nativeUI.get());
+        }
+        m_nativeUI.reset();
+
         // Unset the Archive file IO if it is set as the direct instance
         if (AZ::IO::FileIOBase::GetInstance() == m_archiveFileIO.get())
         {
             AZ::IO::FileIOBase::SetInstance(nullptr);
         }
-
         m_archiveFileIO.reset();
 
         // Destroy the IArchive instance
@@ -303,7 +314,6 @@ namespace AzFramework
             azrtti_typeid<AZ::AssetManagerComponent>(),
             azrtti_typeid<AZ::UserSettingsComponent>(),
             azrtti_typeid<AZ::Debug::FrameProfilerComponent>(),
-            azrtti_typeid<AZ::NativeUI::NativeUISystemComponent>(),
             azrtti_typeid<AZ::SliceComponent>(),
             azrtti_typeid<AZ::SliceSystemComponent>(),
 
@@ -372,7 +382,6 @@ namespace AzFramework
             azrtti_typeid<AZ::UserSettingsComponent>(),
             azrtti_typeid<AZ::ScriptSystemComponent>(),
             azrtti_typeid<AZ::JobManagerComponent>(),
-            azrtti_typeid<AZ::NativeUI::NativeUISystemComponent>(),
             azrtti_typeid<AZ::SliceSystemComponent>(),
 
             azrtti_typeid<AzFramework::AssetCatalogComponent>(),

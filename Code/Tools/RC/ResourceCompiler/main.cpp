@@ -579,6 +579,8 @@ int rcmain(int argc, char** argv, [[maybe_unused]] char** envp)
             // on the command line
             AZ::CommandLine commandLine;
             commandLine.Parse(argc, argv);
+            AZ::SettingsRegistryMergeUtils::ParseCommandLine(commandLine);
+
             AZ::SettingsRegistryImpl settingsRegistry;
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_Bootstrap(settingsRegistry);
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(settingsRegistry, AZ_TRAIT_OS_PLATFORM_CODENAME, {});

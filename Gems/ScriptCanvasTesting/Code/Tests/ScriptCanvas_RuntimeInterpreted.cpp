@@ -100,6 +100,11 @@ TEST_F(ScriptCanvasTestFixture, InterpretedReadEnumConstant)
     RunUnitTestGraph("LY_SC_UnitTest_ReadEnumConstant");
 }
 
+TEST_F(ScriptCanvasTestFixture, UserBranchSanityCheck)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_UserBranchSanityCheck");
+}
+
 TEST_F(ScriptCanvasTestFixture, InterpretedEventHandlerNoDisconnect)
 {
     GlobalHandler handler;

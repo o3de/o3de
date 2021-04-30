@@ -785,17 +785,13 @@ QMenu* LevelEditorMenuHandler::CreateViewMenu()
     viewMenu.AddAction(ID_OPEN_QUICK_ACCESS_BAR);
 
     // Layouts
-    if (CViewManager::IsMultiViewportEnabled()) // Only supports 1 viewport for now.
-    {
-        // Disable Layouts menu
-        m_layoutsMenu = viewMenu.AddMenu(tr("Layouts"));
-        connect(m_viewPaneManager, &QtViewPaneManager::savedLayoutsChanged, this, [this]()
-            {
-                UpdateViewLayoutsMenu(m_layoutsMenu);
-            });
+    m_layoutsMenu = viewMenu.AddMenu(tr("Layouts"));
+    connect(m_viewPaneManager, &QtViewPaneManager::savedLayoutsChanged, this, [this]()
+        {
+            UpdateViewLayoutsMenu(m_layoutsMenu);
+        });
 
-        UpdateViewLayoutsMenu(m_layoutsMenu);
-    }
+    UpdateViewLayoutsMenu(m_layoutsMenu);
 
     // Viewport
     auto viewportViewsMenuWrapper = viewMenu.AddMenu(tr("Viewport"));

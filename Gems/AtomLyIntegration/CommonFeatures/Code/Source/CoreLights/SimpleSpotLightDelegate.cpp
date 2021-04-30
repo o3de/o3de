@@ -24,8 +24,11 @@ namespace AZ::Render
     
     void SimpleSpotLightDelegate::HandleShapeChanged()
     {
-        GetFeatureProcessor()->SetPosition(GetLightHandle(), GetTransform().GetTranslation());
-        GetFeatureProcessor()->SetDirection(GetLightHandle(), GetTransform().GetBasisZ());
+        if (GetLightHandle().IsValid())
+        {
+            GetFeatureProcessor()->SetPosition(GetLightHandle(), GetTransform().GetTranslation());
+            GetFeatureProcessor()->SetDirection(GetLightHandle(), GetTransform().GetBasisZ());
+        }
     }
 
     float SimpleSpotLightDelegate::CalculateAttenuationRadius(float lightThreshold) const
@@ -42,7 +45,10 @@ namespace AZ::Render
     
     void SimpleSpotLightDelegate::SetShutterAngles(float innerAngleDegrees, float outerAngleDegrees)
     {
-        GetFeatureProcessor()->SetConeAngles(GetLightHandle(), DegToRad(innerAngleDegrees), DegToRad(outerAngleDegrees));
+        if (GetLightHandle().IsValid())
+        {
+            GetFeatureProcessor()->SetConeAngles(GetLightHandle(), DegToRad(innerAngleDegrees), DegToRad(outerAngleDegrees));
+        }
     }
 
     void SimpleSpotLightDelegate::DrawDebugDisplay(const Transform& transform, const Color& color, AzFramework::DebugDisplayRequests& debugDisplay, bool isSelected) const
