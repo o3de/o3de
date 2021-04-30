@@ -17,12 +17,6 @@
             "bin/linux/**":"#include",
             "lib/linux/**":"#include"
         },
-        "civetweb/civetweb-20160922-az.2":{
-            "src/**":"#include",
-            "include/**":"#include",
-            "lib/Windows/**":"#include",
-            "*":"#include"
-        },
         "DirectXShaderCompiler/1.0.1-az.1":{
             "*":"#include",
             "src/**":"#include",

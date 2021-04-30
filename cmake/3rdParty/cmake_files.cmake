@@ -11,7 +11,6 @@
 
 set(FILES
     BuiltInPackages.cmake
-    Findcivetweb.cmake
     FindClang.cmake
     Finddyad.cmake
     FindFbxSdk.cmake
