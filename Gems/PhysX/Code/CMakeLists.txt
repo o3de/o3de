@@ -52,6 +52,7 @@ ly_add_target(
 ly_add_target(
     NAME PhysX ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
+    OUTPUT_NAME PhysX.Gem
     FILES_CMAKE
         ${physx_shared_files}
     COMPILE_DEFINITIONS
@@ -118,8 +119,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
     ly_add_target(
         NAME PhysX.Editor GEM_MODULE
-
         NAMESPACE Gem
+        OUTPUT_NAME PhysX.Editor.Gem
         AUTOMOC
         FILES_CMAKE
             physx_editor_shared_files.cmake
@@ -147,6 +148,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
         NAME PhysX.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
+        OUTPUT_NAME PhysX.Tests.Gem
         FILES_CMAKE
             physx_tests_files.cmake
         INCLUDE_DIRECTORIES
@@ -166,7 +168,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_googlebenchmark(
         NAME Gem::PhysX.Benchmarks
         TARGET Gem::PhysX.Tests
-        TIMEOUT 2400 #40mins
+        TIMEOUT 1500 #25mins
     )
 
     list(APPEND testTargets PhysX.Tests)
@@ -175,6 +177,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         ly_add_target(
             NAME PhysX.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
             NAMESPACE Gem
+            OUTPUT_NAME PhysX.Editor.Tests.Gem
             FILES_CMAKE
                 physx_editor_tests_files.cmake
             INCLUDE_DIRECTORIES

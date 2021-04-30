@@ -11,10 +11,14 @@
  */
 #pragma once
 
+#include <AzCore/EBus/Event.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/std/any.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzCore/std/string/string_view.h>
 
 namespace AzFramework
 {
@@ -24,71 +28,100 @@ namespace AzFramework
         AZ_TYPE_INFO(Scene, "{DB449BB3-7A95-434D-BC61-47ACBB1F3436}");
         AZ_CLASS_ALLOCATOR(Scene, AZ::SystemAllocator, 0);
 
-        explicit Scene(AZStd::string_view name);
+        friend class ISceneSystem;
 
-        const AZStd::string& GetName();
+        constexpr static AZStd::string_view MainSceneName = "Main";
+        constexpr static AZStd::string_view EditorMainSceneName = "Editor";
+
+        enum class RemovalEventType
+        {
+            Zombified, // The scene has be marked for destruction and is no longer visible in the scene system.
+            Destroyed, // The scene has been destroyed.
+        };
+        using RemovalEvent = AZ::Event<Scene&, RemovalEventType>;
+        enum class SubsystemEventType
+        {
+            Added,
+            Removed
+        };
+        using SubsystemEvent = AZ::Event<Scene&, SubsystemEventType, const AZ::TypeId&>;
+
+        explicit Scene(AZStd::string name);
+        Scene(AZStd::string name, AZStd::shared_ptr<Scene> parent);
+        ~Scene();
+
+        [[nodiscard]] const AZStd::string& GetName() const;
+
+        [[nodiscard]] const AZStd::shared_ptr<Scene>& GetParent();
+        [[nodiscard]] AZStd::shared_ptr<const Scene> GetParent() const;
+
+        [[nodiscard]] bool IsAlive() const;
+
+        void ConnectToEvents(RemovalEvent::Handler& handler);
+        void ConnectToEvents(SubsystemEvent::Handler& handler);
         
         // Set the instance of a subsystem associated with this scene.
         template <typename T>
-        bool SetSubsystem(T* system);
+        bool SetSubsystem(T&& system);
 
         // Unset the instance of a subsystem associated with this scene.
         template <typename T>
         bool UnsetSubsystem();
 
-        // Get the instance of a subsystem associated with this scene.
+        // Unset the instance of the exact system associated with this scene.
+        // Use this to make sure the expected instance is removed or to make sure type deduction is done in the same way as during setting.
+        template<typename T>
+        bool UnsetSubsystem(const T& system);
+
+        // Get the instance of a subsystem associated with this scene. This call will also look in parent scenes if not found on the target
+        // scene. Returns a pointer to the subsystem if found, otherwise returns a nullptr.
+        [[nodiscard]] AZStd::any* FindSubsystem(const AZ::TypeId& typeId);
+        // Get the instance of a subsystem associated with this scene. This call will also look in parent scenes if not found on the target
+        // scene. Returns a pointer to the subsystem if found, otherwise returns a nullptr.
+        [[nodiscard]] const AZStd::any* FindSubsystem(const AZ::TypeId& typeId) const;
+        // Get the instance of a subsystem associated with this scene. This call will also look in parent scenes if not found on the target
+        // scene. Returns a pointer to the subsystem if found, otherwise returns a nullptr.
         template <typename T>
-        T* GetSubsystem();
+        [[nodiscard]] T* FindSubsystem();
+        // Get the instance of a subsystem associated with this scene. This call will also look in parent scenes if not found on the target
+        // scene. Returns a pointer to the subsystem if found, otherwise returns a nullptr.
+        template<typename T>
+        [[nodiscard]] const T* FindSubsystem() const;
+
+        // Get the instance of a subsystem associated with this scene. This call will only look in the selected scene. Returns a pointer to
+        // the subsystem if found, otherwise returns a nullptr.
+        [[nodiscard]] AZStd::any* FindSubsystemInScene(const AZ::TypeId& typeId);
+        // Get the instance of a subsystem associated with this scene. This call will only look in the selected scene. Returns a pointer to
+        // the subsystem if found, otherwise returns a nullptr.
+        [[nodiscard]] const AZStd::any* FindSubsystemInScene(const AZ::TypeId& typeId) const;
+        // Get the instance of a subsystem associated with this scene. This call will only look in the selected scene. Returns a pointer to
+        // the subsystem if found, otherwise returns a nullptr.
+        template<typename T>
+        [[nodiscard]] T* FindSubsystemInScene();
+        // Get the instance of a subsystem associated with this scene. This call will only look in the selected scene. Returns a pointer to
+        // the subsystem if found, otherwise returns a nullptr.
+        template<typename T>
+        [[nodiscard]] const T* FindSubsystemInScene() const;
 
     private:
+        void MarkForDestruction();
+        void RemoveSubsystem(size_t index, const AZ::TypeId& subsystemType);
 
-        AZStd::string m_name;
+        RemovalEvent m_removalEvent;
+        SubsystemEvent m_subsystemEvent;
 
         // Storing keys separate from data to optimize for fast key search.
         AZStd::vector<AZ::TypeId> m_systemKeys;
-        AZStd::vector<void*> m_systemPointers;
+        AZStd::vector<AZStd::any> m_systemObjects;
+
+        // Name that identifies the scene.
+        AZStd::string m_name;
+        // Parent to this scene. Any subsystems are inherited from the parent but can be overwritten locally.
+        AZStd::shared_ptr<Scene> m_parent;
+        // If false, the scene has been removed from scene system and can no longer be found. As soon as all handles to the scene are
+        // released it will be destroyed.
+        bool m_isAlive{ true };
     };
-    
-    template <typename T>
-    bool Scene::SetSubsystem(T* system)
-    {
-        if (GetSubsystem<T>() != nullptr)
-        {
-            return false;
-        }
-        m_systemKeys.push_back(T::RTTI_Type());
-        m_systemPointers.push_back(system);
-        return true;
-    }
-
-    template <typename T>
-    bool Scene::UnsetSubsystem()
-    {
-        for (size_t i = 0; i < m_systemKeys.size(); ++i)
-        {
-            if (m_systemKeys.at(i) == T::RTTI_Type())
-            {
-                m_systemKeys.at(i) = m_systemKeys.back();
-                m_systemKeys.pop_back();
-                m_systemPointers.at(i) = m_systemPointers.back();
-                m_systemPointers.pop_back();
-                return true;
-            }
-        }
-        return false;
-    }
-
-    template <typename T>
-    T* Scene::GetSubsystem()
-    {
-        for (size_t i = 0; i < m_systemKeys.size(); ++i)
-        {
-            if (m_systemKeys.at(i) == T::RTTI_Type())
-            {
-                return reinterpret_cast<T*>(m_systemPointers.at(i));
-            }
-        }
-        return nullptr;
-    }
-
 } // AzFramework
+
+#include <AzFramework/Scene/Scene.inl>

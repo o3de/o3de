@@ -118,7 +118,7 @@ namespace AtomToolsFramework
         return m_viewportContext;
     }
 
-    void RenderViewportWidget::SetScene(AzFramework::Scene* scene, bool useDefaultRenderPipeline)
+    void RenderViewportWidget::SetScene(const AZStd::shared_ptr<AzFramework::Scene>& scene, bool useDefaultRenderPipeline)
     {
         if (scene == nullptr)
         {
@@ -128,7 +128,7 @@ namespace AtomToolsFramework
         AZ::RPI::ScenePtr atomScene;
         auto initializeScene = [&](AZ::Render::Bootstrap::Request* bootstrapRequests)
         {
-            atomScene = bootstrapRequests->GetOrCreateAtomSceneFromAzScene(scene);
+            atomScene = bootstrapRequests->GetOrCreateAtomSceneFromAzScene(scene.get());
             if (useDefaultRenderPipeline)
             {
                 // atomScene may already have a default render pipeline installed.
@@ -416,9 +416,7 @@ namespace AtomToolsFramework
         }
         AzFramework::ScreenPoint position = AzFramework::WorldToScreen(
             worldPosition,
-            currentView->GetViewToWorldMatrix(),
-            currentView->GetViewToClipMatrix(),
-            AZ::Vector2{aznumeric_cast<float>(width()), aznumeric_cast<float>(height())}
+            GetCameraState()
         );
         return {position.m_x, position.m_y};
     }
