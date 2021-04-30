@@ -34,9 +34,6 @@
 #include "Objects/ObjectManager.h"
 
 #include "Objects/EntityObject.h"
-#include "LensFlareEditor/LensFlareManager.h"
-#include "LensFlareEditor/LensFlareLibrary.h"
-#include "LensFlareEditor/LensFlareItem.h"
 
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 
@@ -210,7 +207,6 @@ bool CGameExporter::Export(unsigned int flags, [[maybe_unused]] EEndian eExportE
 
             ExportLevelInfo(sLevelPath);
 
-            ExportLevelLensFlares(sLevelPath);
             ExportLevelResourceList(sLevelPath);
             ExportLevelUsedResourceList(sLevelPath);
             ExportLevelShaderCache(sLevelPath);
@@ -552,67 +548,6 @@ void CGameExporter::ExportMaterials(XmlNodeRef& levelDataNode, const QString& pa
         m_levelPak.m_pakFile.RemoveFile(filename.toUtf8().data());
     }
     m_numExportedMaterials = numMtls;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CGameExporter::ExportLevelLensFlares(const QString& path)
-{
-    GetIEditor()->SetStatusText(QObject::tr("Exporting Lens Flares..."));
-    std::vector<CBaseObject*> objects;
-    GetIEditor()->GetObjectManager()->FindObjectsOfType(&CEntityObject::staticMetaObject, objects);
-    std::set<QString> flareNameSet;
-    for (int i = 0, iObjectSize(objects.size()); i < iObjectSize; ++i)
-    {
-        CEntityObject* pEntity = (CEntityObject*)objects[i];
-        if (!pEntity->IsLight())
-        {
-            continue;
-        }
-        QString flareName = pEntity->GetEntityPropertyString(CEntityObject::s_LensFlarePropertyName);
-        if (flareName.isEmpty() || flareName == "@root")
-        {
-            continue;
-        }
-        flareNameSet.insert(flareName);
-    }
-
-    XmlNodeRef pRootNode = GetIEditor()->GetSystem()->CreateXmlNode("LensFlareList");
-    pRootNode->setAttr("Version", FLARE_EXPORT_FILE_VERSION);
-
-    CLensFlareManager* pLensManager = GetIEditor()->GetLensFlareManager();
-
-    if (CLensFlareLibrary* pLevelLib = (CLensFlareLibrary*)pLensManager->GetLevelLibrary())
-    {
-        for (int i = 0; i < pLevelLib->GetItemCount(); i++)
-        {
-            CLensFlareItem* pItem = (CLensFlareItem*)pLevelLib->GetItem(i);
-
-            if (flareNameSet.find(pItem->GetFullName()) == flareNameSet.end())
-            {
-                continue;
-            }
-
-            CBaseLibraryItem::SerializeContext ctx(pItem->CreateXmlData(), false);
-            pRootNode->addChild(ctx.node);
-            pItem->Serialize(ctx);
-            flareNameSet.erase(pItem->GetFullName());
-        }
-    }
-
-    std::set<QString>::iterator iFlareNameSet = flareNameSet.begin();
-    for (; iFlareNameSet != flareNameSet.end(); ++iFlareNameSet)
-    {
-        QString flareName = *iFlareNameSet;
-        XmlNodeRef pFlareNode = GetIEditor()->GetSystem()->CreateXmlNode("LensFlare");
-        pFlareNode->setAttr("name", flareName.toUtf8().data());
-        pRootNode->addChild(pFlareNode);
-    }
-
-    CCryMemFile lensFlareNames;
-    lensFlareNames.Write(pRootNode->getXMLData()->GetString(), pRootNode->getXMLData()->GetStringLength());
-
-    QString exportPathName = path + FLARE_EXPORT_FILE;
-    m_levelPak.m_pakFile.UpdateFile(exportPathName.toUtf8().data(), lensFlareNames);
 }
 
 //////////////////////////////////////////////////////////////////////////

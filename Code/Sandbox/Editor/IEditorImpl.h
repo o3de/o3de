@@ -42,7 +42,6 @@ class CUndoManager;
 class CGameEngine;
 class CExportManager;
 class CErrorsDlg;
-class CLensFlareManager;
 class CIconManager;
 class CBackgroundTaskManager;
 class CTrackViewSequenceManager;
@@ -183,7 +182,6 @@ public:
     IDataBaseManager* GetDBItemManager(EDataBaseItemType itemType);
     CMaterialManager* GetMaterialManager() { return m_pMaterialManager; }
     CMusicManager* GetMusicManager() { return m_pMusicManager; };
-    CLensFlareManager* GetLensFlareManager()    { return m_pLensFlareManager; };
 
     IBackgroundTaskManager* GetBackgroundTaskManager() override;
     IBackgroundScheduleManager* GetBackgroundScheduleManager() override;
@@ -384,7 +382,6 @@ protected:
     CMaterialManager* m_pMaterialManager;
     CAlembicCompiler* m_pAlembicCompiler;
     CMusicManager* m_pMusicManager;
-    CLensFlareManager* m_pLensFlareManager;
     CErrorReport* m_pErrorReport;
     //! Contains the error reports for the last loaded level.
     CErrorReport* m_pLasLoadedLevelErrorReport;
