@@ -50,7 +50,6 @@ class CMaterialManager;
 class CMusicManager;
 class CMaterail;
 struct IEditorParticleManager;
-class CLensFlareManager;
 class CEAXPresetManager;
 class CErrorReport;
 class CBaseLibraryItem;
@@ -555,8 +554,6 @@ struct IEditor
     virtual IEditorPanelUtils* GetEditorPanelUtils() = 0;
     //! Get Music Manager.
     virtual CMusicManager* GetMusicManager() = 0;
-    //! Get Lens Flare Manager.
-    virtual CLensFlareManager* GetLensFlareManager() = 0;
     virtual float GetTerrainElevation(float x, float y) = 0;
     virtual Editor::EditorQtApplication* GetEditorQtApplication() = 0;
     virtual const QColor& GetColorByName(const QString& name) = 0;

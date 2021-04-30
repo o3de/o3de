@@ -58,7 +58,6 @@ namespace Prop
         { IVariable::DT_USERITEMCB, "User", ePropertyUser, -1 },
         { IVariable::DT_SEQUENCE_ID, "SequenceId", ePropertySequenceId, -1 },
         { IVariable::DT_LIGHT_ANIMATION, "LightAnimation", ePropertyLightAnimation, -1 },
-        { IVariable::DT_FLARE, "Flare", ePropertyFlare, 7 },
         { IVariable::DT_PARTICLE_EFFECT, "ParticleEffect", ePropertyParticleName, 3 },
         { IVariable::DT_GEOM_CACHE, "Geometry Cache", ePropertyGeomCache, 5 },
         { IVariable::DT_AUDIO_TRIGGER, "Audio Trigger", ePropertyAudioTrigger, 6 },

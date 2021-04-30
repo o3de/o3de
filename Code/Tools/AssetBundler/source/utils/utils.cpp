@@ -31,6 +31,7 @@ AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option")
 #include <QDir>
 #include <QString>
 #include <QStringList>
+#include <QJsonDocument>
 AZ_POP_DISABLE_WARNING
 
 namespace AssetBundler
@@ -128,7 +129,7 @@ namespace AssetBundler
             AZStd::unordered_map<AZStd::string, AZStd::string>& defaultSeedLists,
             AzFramework::PlatformFlags platformFlags)
         {
-            AZ::IO::FixedMaxPath engineRoot(GetEngineRoot());
+            AZ::IO::FixedMaxPath engineRoot(AZ::Utils::GetEnginePath());
             AZ::IO::FixedMaxPath engineRestrictedRoot = engineRoot / RestrictedDirectoryName;
 
             AZ::IO::FixedMaxPath engineLocalPath = AZ::IO::PathView(engineDirectory.LexicallyRelative(engineRoot));
@@ -201,11 +202,6 @@ namespace AssetBundler
         }
     }
 
-    AZ::IO::FixedMaxPath GetEngineRoot()
-    {
-        return AZ::Utils::GetEnginePath();
-    }
-
     void AddPlatformIdentifier(AZStd::string& filePath, const AZStd::string& platformIdentifier)
     {
         AZStd::string fileName;
@@ -270,11 +266,11 @@ namespace AssetBundler
         return defaultSeedLists;
     }
 
-    AZStd::vector<AZStd::string> GetDefaultSeeds(AZStd::string_view enginePath, AZStd::string_view projectPath, AZStd::string_view projectName)
+    AZStd::vector<AZStd::string> GetDefaultSeeds(AZStd::string_view projectPath, AZStd::string_view projectName)
     {
         AZStd::vector<AZStd::string> defaultSeeds;
 
-        defaultSeeds.emplace_back(GetProjectDependenciesAssetPath(enginePath, projectPath, projectName));
+        defaultSeeds.emplace_back(GetProjectDependenciesAssetPath(projectPath, projectName));
 
         return defaultSeeds;
     }
@@ -288,34 +284,12 @@ namespace AssetBundler
         return projectDependenciesFilePath.LexicallyNormal();
     }
 
-    AZ::IO::Path GetProjectDependenciesFileTemplate(AZStd::string_view engineRoot)
-    {
-        AZ::IO::Path projectDependenciesFileTemplate = engineRoot;
-        projectDependenciesFileTemplate /= DefaultProjectTemplatePath;
-        projectDependenciesFileTemplate /= AZStd::string::format("%s%s", ProjectName, DependenciesFileSuffix);
-        projectDependenciesFileTemplate.ReplaceExtension(DependenciesFileExtension);
-        return projectDependenciesFileTemplate.LexicallyNormal();
-    }
-
-    AZ::IO::Path GetProjectDependenciesAssetPath(AZStd::string_view enginePath, AZStd::string_view projectPath, AZStd::string_view projectName)
+    AZ::IO::Path GetProjectDependenciesAssetPath(AZStd::string_view projectPath, AZStd::string_view projectName)
     {
         AZ::IO::Path projectDependenciesFile = GetProjectDependenciesFile(projectPath, projectName);
         if (!AZ::IO::FileIOBase::GetInstance()->Exists(projectDependenciesFile.c_str()))
         {
-            AZ_TracePrintf(AssetBundler::AppWindowName, "Project dependencies file %s doesn't exist.\n", projectDependenciesFile.c_str());
-
-            AZ::IO::Path projectDependenciesFileTemplate = GetProjectDependenciesFileTemplate(enginePath);
-            if (AZ::IO::FileIOBase::GetInstance()->Copy(projectDependenciesFileTemplate.c_str(), projectDependenciesFile.c_str()))
-            {
-                AZ_TracePrintf(AssetBundler::AppWindowName, "Copied project dependencies file template %s to the current project.\n",
-                    projectDependenciesFile.c_str());
-            }
-            else
-            {
-                AZ_Error(AppWindowName, false, "Failed to copy project dependencies file template %s from default project"
-                    " template to the current project.\n", projectDependenciesFileTemplate.c_str());
-                return {};
-            }
+            AZ_Error(AssetBundler::AppWindowName, false, "Project dependencies file %s doesn't exist.\n", projectDependenciesFile.c_str());
         }
 
         // Turn the absolute path into a cache-relative path
@@ -530,6 +504,14 @@ namespace AssetBundler
             settingsRegistry->Get(platformSpecificCacheFolderPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheProjectRootFolder);
         }
         return platformSpecificCacheFolderPath;
+    }
+
+    AZStd::string GenerateKeyFromAbsolutePath(const AZStd::string& absoluteFilePath)
+    {
+        AZStd::string key(absoluteFilePath);
+        AzFramework::StringFunc::Path::Normalize(key);
+        AzFramework::StringFunc::Path::StripDrive(key);
+        return key;
     }
 
     void ConvertToRelativePath(AZStd::string_view parentFolderPath, AZStd::string& absoluteFilePath)
@@ -815,5 +797,27 @@ namespace AssetBundler
             }
         }
         return false;
+    }
+
+    QJsonObject ReadJson(const AZStd::string& filePath)
+    {
+        QByteArray byteArray;
+        QFile jsonFile;
+        jsonFile.setFileName(filePath.c_str());
+        jsonFile.open(QIODevice::ReadOnly | QIODevice::Text);
+        byteArray = jsonFile.readAll();
+        jsonFile.close();
+
+        return QJsonDocument::fromJson(byteArray).object();
+    }
+
+    void SaveJson(const AZStd::string& filePath, const QJsonObject& jsonObject)
+    {
+        QFile jsonFile(filePath.c_str());
+        QJsonDocument JsonDocument;
+        JsonDocument.setObject(jsonObject);
+        jsonFile.open(QFile::WriteOnly | QFile::Text | QFile::Truncate);
+        jsonFile.write(JsonDocument.toJson());
+        jsonFile.close();
     }
 }
