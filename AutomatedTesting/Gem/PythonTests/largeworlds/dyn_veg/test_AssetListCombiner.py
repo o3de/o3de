@@ -38,6 +38,7 @@ class TestAssetListCombiner(object):
 
     @pytest.mark.test_case_id("C4762374", "C4762373")
     @pytest.mark.SUITE_periodic
+    @pytest.mark.dynveg_misc
     def test_AssetListCombiner_CombinedDescriptorsExpressInConfiguredArea(self, request, editor, level,
                                                                           launcher_platform):
 
