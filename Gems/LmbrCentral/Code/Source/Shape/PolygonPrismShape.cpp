@@ -399,33 +399,23 @@ namespace LmbrCentral
         const ShapeDrawParams& shapeDrawParams, const PolygonPrismMesh& polygonPrismMesh,
         AzFramework::DebugDisplayRequests& debugDisplay)
     {
-        if (!gEnv->pRenderer)
-        {
-            return;
-        }
-
-        auto geomRenderer = gEnv->pRenderer->GetIRenderAuxGeom();
-
-        const SAuxGeomRenderFlags oldFlags = geomRenderer->GetRenderFlags();
-        SAuxGeomRenderFlags newFlags = oldFlags;
-
-        // ensure render state is configured correctly - we want to read the depth
-        // buffer but do not want to write to it (ensure objects inside the volume are not obscured)
-        newFlags.SetAlphaBlendMode(e_AlphaBlended);
-        newFlags.SetDepthWriteFlag(e_DepthWriteOff);
-        newFlags.SetDepthTestFlag(e_DepthTestOn);
-
-        geomRenderer->SetRenderFlags(newFlags);
-
         if (shapeDrawParams.m_filled)
         {
             if (!polygonPrismMesh.m_triangles.empty())
             {
+                auto rendererState = debugDisplay.GetState();
+
+                // ensure render state is configured correctly - we want to read the depth
+                // buffer but do not want to write to it (ensure objects inside the volume are not obscured)
+                debugDisplay.DepthWriteOff();
+                debugDisplay.DepthTestOn();
+
                 debugDisplay.DrawTriangles(polygonPrismMesh.m_triangles, shapeDrawParams.m_shapeColor);
+
+                // restore the previous renderer state
+                debugDisplay.SetState(rendererState);
             }
         }
-
-        geomRenderer->SetRenderFlags(oldFlags);
 
         if (!polygonPrismMesh.m_lines.empty())
         {
