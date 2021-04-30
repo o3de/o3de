@@ -37,6 +37,7 @@ int main(int argc, char* argv[])
 
     QApplication app(argc, argv);
 
+    // Need to use settings registry to get EngineRootFolder
     AZ::IO::FixedMaxPath engineRootPath;
     {
         AZ::ComponentApplication componentApplication;
