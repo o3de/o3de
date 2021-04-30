@@ -39,7 +39,8 @@ static const float fDEFAULT_PROFILE_SMOOTHING = 1.0f;
 
 
 
-#define DEFAULT_FRAME_SMOOTHING 1
+
+#define DEFAULT_FRAME_SMOOTHING 0
 
 /////////////////////////////////////////////////////
 CTimer::CTimer()

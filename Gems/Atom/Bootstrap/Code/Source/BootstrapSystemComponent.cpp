@@ -401,7 +401,12 @@ namespace AZ
             {
                 m_windowHandle = nullptr;
                 m_viewportContext.reset();
-                AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
+                AZ::ApplicationTypeQuery appType;
+                ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
+                if (appType.IsGame())
+                {
+                    AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
+                }
                 AzFramework::WindowNotificationBus::Handler::BusDisconnect();
             }
 
