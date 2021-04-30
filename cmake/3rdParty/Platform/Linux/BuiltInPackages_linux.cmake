@@ -43,6 +43,6 @@ ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-linux           TARGETS mikk
 ly_associate_package(PACKAGE_NAME googletest-1.8.1-rev4-linux       TARGETS googletest      PACKAGE_HASH 7b7ad330f369450c316a4c4592d17fbb4c14c731c95bd8f37757203e8c2bbc1b)
 ly_associate_package(PACKAGE_NAME googlebenchmark-1.5.0-rev2-linux  TARGETS GoogleBenchmark PACKAGE_HASH 4038878f337fc7e0274f0230f71851b385b2e0327c495fc3dd3d1c18a807928d)
 ly_associate_package(PACKAGE_NAME unwind-1.2.1-linux                TARGETS unwind          PACKAGE_HASH 3453265fb056e25432f611a61546a25f60388e315515ad39007b5925dd054a77)
-ly_associate_package(PACKAGE_NAME qt-5.15.2-linux                   TARGETS Qt              PACKAGE_HASH 3857fbb2fc5581cdb71d80a7f9298c83ef06073d4e1ccd86a32b4f88782b6f14)
+ly_associate_package(PACKAGE_NAME qt-5.15.2-rev3-linux              TARGETS Qt              PACKAGE_HASH b7d9932647f4b138b3f0b124d70debd250d2a8a6dca52b04dcbe82c6369d48ca)
 ly_associate_package(PACKAGE_NAME libsamplerate-0.2.1-rev2-linux    TARGETS libsamplerate   PACKAGE_HASH 41643c31bc6b7d037f895f89d8d8d6369e906b92eff42b0fe05ee6a100f06261)
 ly_associate_package(PACKAGE_NAME OpenSSL-1.1.1b-rev2-linux         TARGETS OpenSSL         PACKAGE_HASH b779426d1e9c5ddf71160d5ae2e639c3b956e0fb5e9fcaf9ce97c4526024e3bc)
