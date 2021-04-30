@@ -135,6 +135,16 @@ TEST_F(ScriptCanvasTestFixture, InterpretedEventHandlerDisconnect)
     RunUnitTestGraph("LY_SC_UnitTest_EventHandlerDisconnect", runSpec);
 }
 
+TEST_F(ScriptCanvasTestFixture, FunctionLocalStaticsUnique)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_FunctionLocalStaticsUnique");
+}
+
+TEST_F(ScriptCanvasTestFixture, FunctionContainerInputTest)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_FunctionContainerInputTest");
+}
+
 TEST_F(ScriptCanvasTestFixture, InterpretedFixBoundMultipleResults)
 {
     RunUnitTestGraph("LY_SC_UnitTest_FixBoundMultipleResults");
