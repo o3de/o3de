@@ -13,24 +13,7 @@ if(NOT PAL_TRAIT_BUILD_CPACK_SUPPORTED)
     return()
 endif()
 
-set(LY_QTIFW_PATH "" CACHE PATH "Path to the Qt Installer Framework install path")
-
-if(LY_QTIFW_PATH)
-    file(TO_CMAKE_PATH ${LY_QTIFW_PATH} CPACK_IFW_ROOT)
-elseif(DEFINED ENV{QTIFWDIR})
-    file(TO_CMAKE_PATH $ENV{QTIFWDIR} CPACK_IFW_ROOT)
-endif()
-
-if(CPACK_IFW_ROOT)
-    if(NOT EXISTS ${CPACK_IFW_ROOT})
-        message(FATAL_ERROR "Invalid path supplied for LY_QTIFW_PATH argument or QTIFWDIR environment variable")
-    endif()
-else()
-    # early out as no path to QtIFW has been supplied effectively disabling support
-    return()
-endif()
-
-set(CPACK_GENERATOR "IFW")
+set(CPACK_GENERATOR "ZIP")
 
 set(CPACK_PACKAGE_VENDOR "${PROJECT_NAME}")
 set(CPACK_PACKAGE_VERSION "${LY_VERSION_STRING}")
@@ -44,15 +27,8 @@ set(DEFAULT_LICENSE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt")
 
 set(CPACK_RESOURCE_FILE_LICENSE ${DEFAULT_LICENSE_FILE})
 
-set(CPACK_IFW_PACKAGE_TITLE "${PROJECT_NAME} Installer")
-set(CPACK_IFW_PACKAGE_PUBLISHER "${PROJECT_NAME}")
-
-set(CPACK_IFW_TARGET_DIRECTORY "@ApplicationsDir@/${PROJECT_NAME}/${LY_VERSION_STRING}")
-set(CPACK_IFW_PACKAGE_START_MENU_DIRECTORY "${PROJECT_NAME}")
-
 # IMPORTANT: required to be included AFTER setting all property overrides
 include(CPack REQUIRED)
-include(CPackIFW REQUIRED)
 
 function(ly_configure_cpack_component ly_configure_cpack_component_NAME)
 
@@ -64,11 +40,9 @@ function(ly_configure_cpack_component ly_configure_cpack_component_NAME)
 
     # default to optional
     set(component_type DISABLED)
-    set(ifw_component_type)
 
     if(ly_configure_cpack_component_REQUIRED)
         set(component_type REQUIRED)
-        set(ifw_component_type FORCED_INSTALLATION)
     endif()
 
     set(license_name ${DEFAULT_LICENSE_NAME})
@@ -85,13 +59,6 @@ function(ly_configure_cpack_component ly_configure_cpack_component_NAME)
         ${ly_configure_cpack_component_NAME} ${component_type}
         DISPLAY_NAME ${ly_configure_cpack_component_DISPLAY_NAME}
         DESCRIPTION ${ly_configure_cpack_component_DESCRIPTION}
-    )
-
-    cpack_ifw_configure_component(
-        ${ly_configure_cpack_component_NAME} ${ifw_component_type}
-        LICENSES
-            ${license_name}
-            ${license_file}
     )
 endfunction()
 
