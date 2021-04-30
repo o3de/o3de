@@ -176,7 +176,7 @@ namespace AZ::Prefab
     bool PrefabBuilderComponent::StoreProducts(
         AZ::IO::PathView tempDirPath,
         const AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext::ProcessedObjectStoreContainer& store,
-        const AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext::ProductDependencyContainer& registeredDependencies,
+        const AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext::ProductAssetDependencyContainer& registeredDependencies,
         AZStd::vector<AssetBuilderSDK::JobProduct>& outputProducts) const
     {
         outputProducts.reserve(store.size());
@@ -264,7 +264,7 @@ namespace AZ::Prefab
             if (!context.HasPrefabs())
             {
                 if (StoreProducts(tempDirPath, context.GetProcessedObjects(),
-                    context.GetRegisteredProductDependencies(), jobProducts))
+                    context.GetRegisteredProductAssetDependencies(), jobProducts))
                 {
                     return true;
                 }
