@@ -192,7 +192,13 @@ namespace AzToolsFramework
             // If the template isn't currently loaded, there's no way for it to be in the hierarchy so we just skip the check.
             if (templateId != Prefab::InvalidTemplateId && IsPrefabInInstanceAncestorHierarchy(templateId, instanceToParentUnder->get()))
             {
-                return AZ::Failure(AZStd::string("Instantiate Prefab operation aborted - Instantiation would have introduced a cyclical dependency."));
+                return AZ::Failure(
+                    AZStd::string::format(
+                        "Instantiate Prefab operation aborted - Cyclical dependency detected\n(%s depends on %s).",
+                        relativePath.Native().c_str(),
+                        instanceToParentUnder->get().GetTemplateSourcePath().Native().c_str()
+                    )
+                );
             }
             
             {
@@ -259,18 +265,16 @@ namespace AzToolsFramework
             return AZ::Success();
         }
 
-        bool PrefabPublicHandler::IsPrefabInInstanceAncestorHierarchy(TemplateId prefabTemplateId, const Instance& instance)
+        bool PrefabPublicHandler::IsPrefabInInstanceAncestorHierarchy(TemplateId prefabTemplateId, InstanceOptionalReference instance)
         {
-            const Instance* currentInstance = &instance;
-
-            while (currentInstance != nullptr)
+            while (instance.has_value())
             {
-                if (currentInstance->GetTemplateId() == prefabTemplateId)
+                if (instance->get().GetTemplateId() == prefabTemplateId)
                 {
                     return true;
                 }
 
-                currentInstance = &currentInstance->GetParentInstance()->get();
+                instance = instance->get().GetParentInstance();
             }
 
             return false;
