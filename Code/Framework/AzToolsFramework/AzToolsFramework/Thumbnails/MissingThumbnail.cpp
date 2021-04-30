@@ -11,7 +11,6 @@
 */
 
 #include <AzCore/Utils/Utils.h>
-#include <AzCore/StringFunc/StringFunc.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzToolsFramework/Thumbnails/MissingThumbnail.h>
 
@@ -24,9 +23,7 @@ namespace AzToolsFramework
         MissingThumbnail::MissingThumbnail()
             : Thumbnail(MAKE_TKEY(ThumbnailKey))
         {
-            AZStd::string absoluteIconPath;
-            AZ::StringFunc::Path::Join(AZ::Utils::GetEnginePath().c_str(), MissingIconPath, absoluteIconPath);
-
+            auto absoluteIconPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / MissingIconPath;
             m_pixmap.load(absoluteIconPath.c_str());
             m_state = m_pixmap.isNull() ? State::Failed : State::Ready;
         }

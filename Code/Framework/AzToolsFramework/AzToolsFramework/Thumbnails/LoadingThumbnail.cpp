@@ -11,7 +11,6 @@
 */
 
 #include <AzCore/Utils/Utils.h>
-#include <AzCore/StringFunc/StringFunc.h>
 #include <AzToolsFramework/Thumbnails/LoadingThumbnail.h>
 #include <AzFramework/Application/Application.h>
 
@@ -30,9 +29,8 @@ namespace AzToolsFramework
             : Thumbnail(MAKE_TKEY(ThumbnailKey))
             , m_angle(0)
         {
-            AZStd::string iconPath;
-            AZ::StringFunc::Path::Join(AZ::Utils::GetEnginePath().c_str(), LoadingIconPath, iconPath);
-            m_loadingMovie.setFileName(iconPath.c_str());
+            auto absoluteIconPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / LoadingIconPath;
+            m_loadingMovie.setFileName(absoluteIconPath.c_str());
             m_loadingMovie.setCacheMode(QMovie::CacheMode::CacheAll);
             m_loadingMovie.setScaledSize(QSize(LoadingThumbnailSize, LoadingThumbnailSize));
             m_loadingMovie.start();

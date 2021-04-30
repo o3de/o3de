@@ -12,7 +12,6 @@
 
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/Debug/Trace.h>
-#include <AzCore/StringFunc/StringFunc.h>
 #include <AzToolsFramework/AssetBrowser/Thumbnails/FolderThumbnail.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <QPixmap>
@@ -64,9 +63,7 @@ namespace AzToolsFramework
             AZ_Assert(folderKey, "Incorrect key type, excpected FolderThumbnailKey");
 
             const char* folderIcon = folderKey->IsGem() ? GemIconPath : FolderIconPath;
-            AZStd::string absoluteIconPath;
-            AZ::StringFunc::Path::Join(AZ::Utils::GetEnginePath().c_str(), folderIcon, absoluteIconPath);
-
+            auto absoluteIconPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / folderIcon;
             m_pixmap.load(absoluteIconPath.c_str());
             m_state = m_pixmap.isNull() ? State::Failed : State::Ready;
         }
