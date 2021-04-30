@@ -54,8 +54,7 @@ namespace AssetMemoryAnalyzer
 namespace AssetMemoryAnalyzer
 {
     class AnalyzerImpl :
-        public AZ::Debug::MemoryDrillerBus::Handler,
-        public Render::Debug::VRAMDrillerBus::Handler
+        public AZ::Debug::MemoryDrillerBus::Handler
     {
     public:
         AZ_TYPE_INFO(AnalyzerImpl, "{E460E4DE-2160-4171-A4B6-3C2DB6692C32}");
@@ -72,13 +71,6 @@ namespace AssetMemoryAnalyzer
         void UnregisterAllocation(AZ::IAllocator* allocator, void* address, size_t byteSize, size_t alignment, AZ::Debug::AllocationInfo* info) override;
         void ReallocateAllocation(AZ::IAllocator* allocator, void* prevAddress, void* newAddress, size_t newByteSize, size_t newAlignment) override;
         void ResizeAllocation(AZ::IAllocator* allocator, void* address, size_t newSize) override;
-
-        // VRAMDrillerBus
-        void RegisterCategory(Render::Debug::VRAMAllocationCategory category, const char* categoryName, const Render::Debug::VRAMSubCategoryType& subcategories) override;
-        void UnregisterAllCategories() override;
-        void RegisterAllocation(void* address, size_t byteSize, const char* allocationName, Render::Debug::VRAMAllocationCategory category, Render::Debug::VRAMAllocationSubcategory subcategories) override;
-        void UnregisterAllocation(void* address) override;
-        void GetCurrentVRAMStats(Render::Debug::VRAMAllocationCategory category, Render::Debug::VRAMAllocationSubcategory subcategory, AZStd::string& categoryName, AZStd::string& subcategoryName, size_t& numberBytesAllocated, size_t& numberAllocations) override;
 
         AZStd::shared_ptr<FrameAnalysis> GetAnalysis();
 
@@ -112,13 +104,11 @@ namespace AssetMemoryAnalyzer
         m_assetTracking(&m_assetTree, &m_allocationTable)
     {
         AZ::Debug::MemoryDrillerBus::Handler::BusConnect();
-        Render::Debug::VRAMDrillerBus::Handler::BusConnect();
     }
 
     AnalyzerImpl::~AnalyzerImpl()
     {
         AZ::Debug::MemoryDrillerBus::Handler::BusDisconnect();
-        Render::Debug::VRAMDrillerBus::Handler::BusDisconnect();
     }
 
     void AnalyzerImpl::RegisterAllocator(AZ::IAllocator* allocator)
@@ -179,44 +169,6 @@ namespace AssetMemoryAnalyzer
         }
 
         m_allocationTable.ResizeAllocation(address, newSize);
-    }
-
-    void AnalyzerImpl::RegisterCategory(Render::Debug::VRAMAllocationCategory category, const char* categoryName, const Render::Debug::VRAMSubCategoryType& subcategories)
-    {
-        AZ_UNUSED(category);
-        AZ_UNUSED(categoryName);
-        AZ_UNUSED(subcategories);
-    }
-
-    void AnalyzerImpl::UnregisterAllCategories()
-    {
-    }
-
-    void AnalyzerImpl::RegisterAllocation(void* address, size_t byteSize, const char* allocationName, Render::Debug::VRAMAllocationCategory category, Render::Debug::VRAMAllocationSubcategory subcategories)
-    {
-        // Bit-flip address so that it won't collide with heap allocations (calls to the VRAM driller tend to use the same pointers from the heap objects that own the VRAM)
-        address = (void*)~(size_t)address;
-
-        Data::AllocationData::CategoryInfo categoryInfo;
-        categoryInfo.m_vramInfo.m_category = category;
-        categoryInfo.m_vramInfo.m_subcategories = subcategories;
-        RegisterAllocationCommon(address, byteSize, allocationName, 0, categoryInfo, Data::AllocationCategories::VRAM);
-    }
-
-    void AnalyzerImpl::UnregisterAllocation(void* address)
-    {
-        address = (void*)~(size_t)address;
-        UnregisterAllocationCommon(address);
-    }
-
-    void AnalyzerImpl::GetCurrentVRAMStats(Render::Debug::VRAMAllocationCategory category, Render::Debug::VRAMAllocationSubcategory subcategory, AZStd::string& categoryName, AZStd::string& subcategoryName, size_t& numberBytesAllocated, size_t& numberAllocations)
-    {
-        AZ_UNUSED(category);
-        AZ_UNUSED(subcategory);
-        AZ_UNUSED(categoryName);
-        AZ_UNUSED(subcategoryName);
-        AZ_UNUSED(numberBytesAllocated);
-        AZ_UNUSED(numberAllocations);
     }
 
     void AnalyzerImpl::RegisterAllocationCommon(void* address, size_t byteSize, const char* fileName, int lineNum, Data::AllocationData::CategoryInfo categoryInfo, Data::AllocationCategories category)

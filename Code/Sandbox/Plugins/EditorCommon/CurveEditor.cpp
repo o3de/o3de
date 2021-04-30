@@ -38,7 +38,7 @@ AZ_POP_DISABLE_WARNING
 
 #define NO_BUFFER_OVERRUN PREFAST_SUPPRESS_WARNING(6385 6386)
 #include <ISplines.h>
-#include "../Cry3DEngine/Cry_LegacyPhysUtils.h"
+#include "Cry_LegacyPhysUtils.h"
 
 namespace CurveEditorHelpers
 {
