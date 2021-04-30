@@ -1224,8 +1224,8 @@ namespace AzToolsFramework
                 {
                     ptrEdit->Class<TransformComponent>("Transform", "Controls the placement of the entity in the world in 3d")->
                         ClassElement(AZ::Edit::ClassElements::EditorData, "")->
-                            Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/Transform.svg")->
-                            Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/Transform.png")->
+                            Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Transform.svg")->
+                            Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Transform.png")->
                             Attribute(AZ::Edit::Attributes::AutoExpand, true)->
                         DataElement(AZ::Edit::UIHandlers::Default, &TransformComponent::m_parentEntityId, "Parent entity", "")->
                             Attribute(AZ::Edit::Attributes::ChangeValidate, &TransformComponent::ValidatePotentialParent)->

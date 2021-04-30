@@ -175,7 +175,7 @@ CDockTitleBarWidget::CDockTitleBarWidget(QDockWidget* dockWidget)
     m_layout->addLayout(m_buttonLayout, 0);
 
     m_floatButton = new CDockWidgetTitleButton(dockWidget);
-    m_floatButton->setIcon(QIcon("Editor/Icons/float.png"));
+    m_floatButton->setIcon(QIcon("Icons/float.png"));
     m_floatButton->setVisible(opt.floatable);
     m_floatButton->setToolTip("Toggle Floating");
     connect(m_floatButton, SIGNAL(clicked()), SLOT(OnFloatButtonPressed()));
@@ -185,7 +185,7 @@ CDockTitleBarWidget::CDockTitleBarWidget(QDockWidget* dockWidget)
     // close.png is a standard icon that looks similar to one in Fusion theme but
     // uses alpha so it can be used on dark theme as well.
     // style()->standardIcon(QStyle::SP_TitleBarCloseButton, &opt, dockWidget)
-    QIcon closeIcon("Editor/Icons/close.png");
+    QIcon closeIcon("Icons/close.png");
     m_closeButton->setIcon(closeIcon);
     m_closeButton->setVisible(opt.closable);
     m_closeButton->setToolTip("Close");

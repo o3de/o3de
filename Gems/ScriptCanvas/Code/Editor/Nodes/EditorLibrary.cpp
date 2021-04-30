@@ -35,7 +35,7 @@ namespace ScriptCanvasEditor
                 {
                     editContext->Class<Editor>("Editor", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/All.png")
+                        ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/All.png")
                         ;
                 }
             }

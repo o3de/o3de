@@ -167,6 +167,7 @@ public:
     AmazonToolbar GetObjectToolbar() const;
     AmazonToolbar GetEditorsToolbar() const;
     AmazonToolbar GetMiscToolbar() const;
+    AmazonToolbar GetPlayConsoleToolbar() const;
 
 private:
     Q_DISABLE_COPY(ToolbarManager);

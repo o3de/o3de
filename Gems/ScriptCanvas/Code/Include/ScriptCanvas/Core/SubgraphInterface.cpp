@@ -127,7 +127,7 @@ namespace ScriptCanvas
                 return false;
             }
 
-            if (!(datum == rhs.datum))
+            if (!(datum.GetType() == rhs.datum.GetType()))
             {
                 return false;
             }

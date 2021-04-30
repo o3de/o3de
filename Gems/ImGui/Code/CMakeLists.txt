@@ -26,7 +26,7 @@ ly_add_target(
         PRIVATE
             Source
         INTERFACE
-            ../External/ImGui/v1.70
+            ../External/ImGui/v1.82
         PUBLIC
             Include
     COMPILE_DEFINITIONS

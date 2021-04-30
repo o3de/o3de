@@ -3,45 +3,44 @@
 
 ## Setup aws config and credential
 Resource mapping tool is using boto3 to interact with aws services:
- * Follow boto3
+ * Read boto3
    [Configuration](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html) to setup default aws region.
- * Follow boto3
+ * Read boto3
    [Credentials](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html) to setup default profile or credential keys.
 
 Or follow **AWS CLI** configuration which can be reused by boto3 lib:
  * Follow
    [Quick configuration with aws configure](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-config)
 
-**In Progress** - Override default aws profile in resource mapping tool
-
 ## Python Environment Setup Options
-### 1. Engine python environment
-In order to use engine python environment, it requires to link Qt binaries for this tool.
+### 1. Engine python environment (Including Editor)
+1. In order to use engine python environment, it requires to link Qt binaries for this tool.
 Follow cmake instructions to configure your project, for example:
+   ```
+   $ cmake -B <BUILD_FOLDER> -S . -G "Visual Studio 16 2019" -DLY_3RDPARTY_PATH=<PATH_TO_3RDPARTY> -DLY_PROJECTS=<PROJECT_NAME>
+   ```
 
-```
-$ cmake -B <BUILD_FOLDER> -S . -G "Visual Studio 16 2019" -DLY_3RDPARTY_PATH=<PATH_TO_3RDPARTY> -DLY_PROJECTS=<PROJECT_NAME>
-```
+2. At this point, double check engine python environment gets setup under *<ENGINE_ROOT_PATH>/python/runtime* directory
 
-Build project with **AWSCore.Editor** target to generate required Qt binaries.
-(Or use **Editor** target)
+3. Build project with **AWSCore.Editor** (or **AWSCore.ResourceMappintTool**, or **Editor**) target to generate required Qt binaries.
+   ```
+   $ cmake --build <BUILD_FOLDER> --target AWSCore.Editor --config <CONFIG> -j <NUM_JOBS>
+   ```
 
-```
-$ cmake --build <BUILD_FOLDER> --target AWSCore.Editor --config <CONFIG> -j <NUM_JOBS>
-```
+4. At this point, double check Qt binaries gets generated under *<BUILD_FOLDER>/bin/<CONFIG_FOLDER>/AWSCoreEditorQtBin* directory
 
-Launch resource mapping tool under engine root folder:
-
-#### Windows
-##### release mode
-```
-$ python\python.cmd Gems\AWSCore\Code\Tools\ResourceMappingTool\resource_mapping_tool.py --binaries_path <PATH_TO_BUILD_FOLDER>\bin\profile\AWSCoreEditorPlugins
-```
-##### debug mode
-```
-$ python\python.cmd debug Gems\AWSCore\Code\Tools\ResourceMappingTool\resource_mapping_tool.py --binaries_path <PATH_TO_BUILD_FOLDER>\bin\debug\AWSCoreEditorPlugins
-```
-
+5. Launch resource mapping tool under engine root folder:
+   * Windows
+      * release mode
+      ```
+      $ python\python.cmd Gems\AWSCore\Code\Tools\ResourceMappingTool\resource_mapping_tool.py --binaries_path <PATH_TO_BUILD_FOLDER>\bin\profile\AWSCoreEditorQtBin
+      ```
+      * debug mode
+      ```
+      $ python\python.cmd debug Gems\AWSCore\Code\Tools\ResourceMappingTool\resource_mapping_tool.py --binaries_path <PATH_TO_BUILD_FOLDER>\bin\debug\AWSCoreEditorQtBin
+      ```
+* Note - Editor is integrated with the same engine python environment to launch Resource Mapping Tool. If it is failed to launch the tool
+in Editor, please follow above steps to make sure expected scripts/binaries are present.
 
 ### 2. Python virtual environment
 This project is set up like a standard Python project. The initialization
@@ -51,47 +50,42 @@ directory.  To create the virtualenv it assumes that there is a `python3`
 package. If for any reason the automatic creation of the virtualenv fails,
 you can create the virtualenv manually.
 
-To manually create a virtualenv on MacOS and Linux:
+1. To manually create a virtualenv:
+   * Windows
+   ```
+   $ python -m venv .env
+   ```
+   * Mac or Linux
+   ```
+   $ python3 -m venv .env
+   ```
 
-```
-$ python -m venv .env
-```
+2. Once the virtualenv is created, you can use the following step to activate your virtualenv:
+   * Windows
+   ```
+   % .env\Scripts\activate.bat
+   ```
+   * Mac or Linux
+   ```
+   $ source .env/bin/activate
+   ```
 
-Once the virtualenv is created, you can use the following step to activate your virtualenv.
+3. Once the virtualenv is activated, you can install the required dependencies:
+   * Windows
+   ```
+   $ pip install -r requirements.txt
+   ```
+   * Mac or Linux
+   ```
+   $ pip3 install -r requirements.txt
+   ```
 
-```
-$ source .env/bin/activate
-```
-
-If you are a Windows platform, you would activate the virtualenv like this:
-
-```
-% .env\Scripts\activate.bat
-```
-
-Once the virtualenv is activated, you can install the required dependencies.
-
-```
-$ pip install -r requirements.txt
-```
-
-#### 2.1 Launch Options
-##### 2.1.1 Launch Resource Mapping Tool from python directly
-At this point you can launch tool like other standard python project.
-
-```
-$ python resource_mapping_tool.py
-```
-
-##### 2.1.2 Launch Resource Mapping Tool from batch script/Editor
-Update `resource_mapping_tool.cmd` with your virtualenv full path.
-
- * **VIRTUALENV_PATH**: Fill this variable with your virtualenv full path.
-
-Then you can launch the resource mapping tool by running the batch script directly.
-
-```
-$ resource_mapping_tool.cmd
-```
-
-Or you can launch the resource mapping tool from menu action Cloud services/AWS Resource Mapping Tool...
+4. At this point you can launch tool like other standard python project.
+   * Windows
+   ```
+   $ python resource_mapping_tool.py
+   ```
+   * Mac or Linux
+   ```
+   $ python3 resource_mapping_tool.py
+   ```

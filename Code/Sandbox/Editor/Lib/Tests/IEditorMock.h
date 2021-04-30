@@ -135,7 +135,6 @@ public:
     MOCK_METHOD0(GetReferenceCoordSys, RefCoordSys());
     MOCK_METHOD1(FindTemplate, XmlNodeRef(const QString& ));
     MOCK_METHOD2(AddTemplate, void(const QString& , XmlNodeRef& ));
-    MOCK_METHOD1(OpenMaterialLibrary, void (IDataBaseItem*));
     MOCK_METHOD2(OpenView, const QtViewPane* (QString , bool ));
     MOCK_METHOD1(FindView, QWidget* (QString ));
     MOCK_METHOD1(CloseView, bool(const char* ));
@@ -201,7 +200,6 @@ public:
     MOCK_METHOD0(GetLogFile, ILogFile* ());  
     MOCK_METHOD0(UnloadPlugins, void());
     MOCK_METHOD0(LoadPlugins, void());
-    MOCK_CONST_METHOD0(IsNewViewportInteractionModelEnabled, bool());
     MOCK_METHOD1(GetSearchPath, QString(EEditorPathName));
     MOCK_METHOD0(GetEditorPanelUtils, IEditorPanelUtils* ());
 

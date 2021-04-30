@@ -108,11 +108,9 @@ namespace AzToolsFramework
             m_targetTemplateId = id;
         }
 
-        void Link::SetTemplatePatches(const PrefabDomValue& patches)
+        void Link::SetLinkDom(const PrefabDomValue& linkDom)
         {
-            PrefabDom newPatches;
-            newPatches.CopyFrom(patches, newPatches.GetAllocator());
-            m_linkDom.Swap(newPatches);
+            m_linkDom.CopyFrom(linkDom, m_linkDom.GetAllocator());
         }
 
         void Link::SetInstanceName(const char* instanceName)
@@ -229,6 +227,10 @@ namespace AzToolsFramework
             {
                 AZ_Assert(instanceDom.IsObject(), "Link Id '%u' cannot be added because the DOM of the instance is not an object.", m_id);
                 instanceDom.AddMember(rapidjson::StringRef(PrefabDomUtils::LinkIdName), rapidjson::Value().SetUint64(m_id), allocator);
+            }
+            else
+            {
+                linkIdReference->get().SetUint64(m_id);
             }
         }
 

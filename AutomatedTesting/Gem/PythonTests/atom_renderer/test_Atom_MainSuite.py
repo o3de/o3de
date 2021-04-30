@@ -7,40 +7,29 @@ distribution (the "License"). All use of this software is governed by the Licens
 or, if provided, by the license below or the license accompanying this file. Do not
 remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-"""
 
+Main suite tests for the Atom renderer.
+"""
 import logging
 import os
-import pytest
 
-import ly_test_tools.environment.file_system as file_system
+import pytest
 
 import editor_python_test_tools.hydra_test_utils as hydra
 
 logger = logging.getLogger(__name__)
-EDITOR_TIMEOUT = 60
+EDITOR_TIMEOUT = 120
 TEST_DIRECTORY = os.path.join(os.path.dirname(__file__), "atom_hydra_scripts")
 
 
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
-@pytest.mark.parametrize("level", ["tmp_level"])
-class TestAtomEditorComponents(object):
-    @pytest.fixture(autouse=True)
-    def setup_teardown(self, request, workspace, project, level):
-        # Cleanup our temp level
-        file_system.delete(
-            [os.path.join(workspace.paths.engine_root(), project, "Levels", "AtomLevels", level)], True, True)
-
-        def teardown():
-            # Cleanup our temp level
-            file_system.delete(
-                [os.path.join(workspace.paths.engine_root(), project, "Levels", "AtomLevels", level)], True, True)
-
-        request.addfinalizer(teardown)
+@pytest.mark.parametrize("level", ["auto_test"])
+class TestAtomEditorComponentsMain(object):
 
     @pytest.mark.test_case_id(
-        "C32078130",  # Tone Mapper
+        "C32078117",  # Area Light
+        "C32078130",  # Display Mapper
         "C32078129",  # Light
         "C32078131",  # Radius Weight Modifier
         "C32078127",  # PostFX Layer
@@ -68,18 +57,18 @@ class TestAtomEditorComponents(object):
             "Area Light_test: UNDO entity deletion works: True",
             "Area Light_test: REDO entity deletion works: True",
             # Decal Component
-            "Decal Entity successfully created",
-            "Decal_test: Component added to the entity: True",
-            "Decal_test: Component removed after UNDO: True",
-            "Decal_test: Component added after REDO: True",
-            "Decal_test: Entered game mode: True",
-            "Decal_test: Exit game mode: True",
-            "Decal Settings|Decal Settings|Material: SUCCESS",
-            "Decal_test: Entity is hidden: True",
-            "Decal_test: Entity is shown: True",
-            "Decal_test: Entity deleted: True",
-            "Decal_test: UNDO entity deletion works: True",
-            "Decal_test: REDO entity deletion works: True",
+            "Decal (Atom) Entity successfully created",
+            "Decal (Atom)_test: Component added to the entity: True",
+            "Decal (Atom)_test: Component removed after UNDO: True",
+            "Decal (Atom)_test: Component added after REDO: True",
+            "Decal (Atom)_test: Entered game mode: True",
+            "Decal (Atom)_test: Exit game mode: True",
+            "Decal (Atom) Controller|Configuration|Material: SUCCESS",
+            "Decal (Atom)_test: Entity is hidden: True",
+            "Decal (Atom)_test: Entity is shown: True",
+            "Decal (Atom)_test: Entity deleted: True",
+            "Decal (Atom)_test: UNDO entity deletion works: True",
+            "Decal (Atom)_test: REDO entity deletion works: True",
             # DepthOfField Component
             "DepthOfField Entity successfully created",
             "DepthOfField_test: Component added to the entity: True",
@@ -198,6 +187,18 @@ class TestAtomEditorComponents(object):
             "Light_test: Entity deleted: True",
             "Light_test: UNDO entity deletion works: True",
             "Light_test: REDO entity deletion works: True",
+            # Display Mapper Component
+            "Display Mapper Entity successfully created",
+            "Display Mapper_test: Component added to the entity: True",
+            "Display Mapper_test: Component removed after UNDO: True",
+            "Display Mapper_test: Component added after REDO: True",
+            "Display Mapper_test: Entered game mode: True",
+            "Display Mapper_test: Exit game mode: True",
+            "Display Mapper_test: Entity is hidden: True",
+            "Display Mapper_test: Entity is shown: True",
+            "Display Mapper_test: Entity deleted: True",
+            "Display Mapper_test: UNDO entity deletion works: True",
+            "Display Mapper_test: REDO entity deletion works: True",
         ]
 
         unexpected_lines = [

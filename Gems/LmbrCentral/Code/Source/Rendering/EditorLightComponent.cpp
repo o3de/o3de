@@ -805,7 +805,10 @@ namespace LmbrCentral
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
 
-        gEnv->p3DEngine->FreeRenderNodeState(&m_cubemapPreview);
+        if (gEnv->p3DEngine)
+        {
+            gEnv->p3DEngine->FreeRenderNodeState(&m_cubemapPreview);
+        }
 
         m_light.DestroyRenderLight();
         m_light.SetEntity(AZ::EntityId());
@@ -903,6 +906,11 @@ namespace LmbrCentral
 
     void EditorLightComponent::OnViewCubemapChanged()
     {
+        if (!gEnv->p3DEngine)
+        {
+            return;
+        }
+
         if (m_viewCubemap)
         {
             gEnv->p3DEngine->RegisterEntity(&m_cubemapPreview);
@@ -1944,12 +1952,17 @@ namespace LmbrCentral
             AzToolsFramework::EditorRequestBus::BroadcastResult(m_editor, &AzToolsFramework::EditorRequests::GetEditor);
         }
 
+        if (!m_editor->Get3DEngine())
+        {
+            return;
+        }
+
         if (!m_materialManager)
         {
             m_materialManager = m_editor->Get3DEngine()->GetMaterialManager();
         }
 
-        _smart_ptr<IMaterial> material = m_materialManager->LoadMaterial("Editor/Objects/envcube", false, true);
+        _smart_ptr<IMaterial> material = m_materialManager->LoadMaterial("Objects/envcube", false, true);
         QString matName = Path::GetFileName(textureName);
         if (material)
         {
@@ -1968,7 +1981,7 @@ namespace LmbrCentral
             }
         }
 
-        m_statObj = m_editor->Get3DEngine()->LoadStatObjAutoRef("Editor/Objects/envcube.cgf", nullptr, nullptr, false);
+        m_statObj = m_editor->Get3DEngine()->LoadStatObjAutoRef("Objects/envcube.cgf", nullptr, nullptr, false);
         if (m_statObj)
         {
             // We need to clone the object in order for multiple Environment Probes to not stomp each other's preview materials.

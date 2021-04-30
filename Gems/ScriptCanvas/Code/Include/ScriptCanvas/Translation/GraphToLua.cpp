@@ -582,7 +582,7 @@ namespace ScriptCanvas
 
         void GraphToLua::TranslateExecutionTreeFunctionCall(Grammar::ExecutionTreeConstPtr execution)
         {
-            TranslateNodeableOuts(execution);
+            TranslateNodeableOuts(execution->GetNodeable(), execution);
             WriteDebugInfoIn(execution, "TranslateExecutionTreeFunctionCall begin");
             m_dotLua.WriteIndent();
             WriteLocalOutputInitialization(execution);
@@ -955,7 +955,7 @@ namespace ScriptCanvas
                 for (auto& out : nodeAndParse->m_latents)
                 {
                     m_dotLua.WriteNewLine();
-                    TranslateNodeableOut(out.second);
+                    TranslateNodeableOut(nodeAndParse->m_nodeable, out.second);
                 }
 
                 if (!nodeAndParse->m_latents.empty())
@@ -1017,7 +1017,7 @@ namespace ScriptCanvas
             m_dotLua.WriteNewLine();
         }
 
-        void GraphToLua::TranslateNodeableOut(Grammar::ExecutionTreeConstPtr execution)
+        void GraphToLua::TranslateNodeableOut(Grammar::VariableConstPtr host, Grammar::ExecutionTreeConstPtr execution)
         {
             auto outCallIndexOptional = execution->GetOutCallIndex();
             if (!outCallIndexOptional)
@@ -1037,7 +1037,7 @@ namespace ScriptCanvas
 
             m_dotLua.WriteLineIndented("%s(self.%s, %zu, -- %s"
                 , setExecutionOutName
-                , execution->GetNodeable()->m_name.data()
+                , host->m_name.data()
                 , outIndex
                 , execution->GetName().data());
 
@@ -1048,14 +1048,14 @@ namespace ScriptCanvas
             m_dotLua.Outdent();
         }
 
-        void GraphToLua::TranslateNodeableOuts(Grammar::ExecutionTreeConstPtr execution)
+        void GraphToLua::TranslateNodeableOuts(Grammar::VariableConstPtr host, Grammar::ExecutionTreeConstPtr execution)
         {
             const auto outs = execution->GetInternalOuts();
             
             for (const auto& out : outs)
             {
                 m_dotLua.WriteNewLine();
-                TranslateNodeableOut(out);
+                TranslateNodeableOut(host, out);
             }
 
             if (!outs.empty())

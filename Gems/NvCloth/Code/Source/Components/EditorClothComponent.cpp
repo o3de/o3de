@@ -49,8 +49,8 @@ namespace NvCloth
                     "Cloth", "The mesh node behaves like a piece of cloth.")
                      ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
-                        ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/Cloth.svg")
-                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Cloth.svg")
+                        ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Cloth.svg")
+                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Cloth.svg")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://docs.aws.amazon.com/lumberyard/latest/userguide/component-cloth.html")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
@@ -482,14 +482,14 @@ namespace NvCloth
         {
             bool foundNode = AZStd::find(m_meshNodeList.cbegin(), m_meshNodeList.cend(), m_config.m_meshNode) != m_meshNodeList.cend();
 
-            if (!foundNode && !m_previousMeshNode.empty())
+            if (!foundNode && !m_lastKnownMeshNode.empty())
             {
                 // Check the if the mesh node previously selected is still part of the mesh list
                 // to keep using it and avoid the user to select it again in the combo box.
-                foundNode = AZStd::find(m_meshNodeList.cbegin(), m_meshNodeList.cend(), m_previousMeshNode) != m_meshNodeList.cend();
+                foundNode = AZStd::find(m_meshNodeList.cbegin(), m_meshNodeList.cend(), m_lastKnownMeshNode) != m_meshNodeList.cend();
                 if (foundNode)
                 {
-                    m_config.m_meshNode = m_previousMeshNode;
+                    m_config.m_meshNode = m_lastKnownMeshNode;
                 }
             }
 
@@ -502,7 +502,7 @@ namespace NvCloth
             }
         }
 
-        m_previousMeshNode = "";
+        m_lastKnownMeshNode = "";
 
         if (m_simulateInEditor)
         {
@@ -517,7 +517,12 @@ namespace NvCloth
 
     void EditorClothComponent::OnModelPreDestroy()
     {
-        m_previousMeshNode = m_config.m_meshNode;
+        if (m_config.m_meshNode != Internal::StatusMessageSelectNode &&
+            m_config.m_meshNode != Internal::StatusMessageNoAsset &&
+            m_config.m_meshNode != Internal::StatusMessageNoClothNodes)
+        {
+            m_lastKnownMeshNode = m_config.m_meshNode;
+        }
 
         m_meshNodeList = { {Internal::StatusMessageNoAsset} };
         m_config.m_meshNode = Internal::StatusMessageNoAsset;
