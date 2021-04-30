@@ -15,7 +15,7 @@
 #include <AzNetworking/DataStructures/FixedSizeVectorBitset.h>
 #include <AzNetworking/Serialization/ISerializer.h>
 #include <AzNetworking/Utilities/NetworkCommon.h>
-#include <Source/MultiplayerTypes.h>
+#include <Include/MultiplayerTypes.h>
 
 namespace Multiplayer
 {

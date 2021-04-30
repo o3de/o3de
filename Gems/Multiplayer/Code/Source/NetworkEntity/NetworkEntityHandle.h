@@ -13,7 +13,7 @@
 #pragma once
 
 #include <AzCore/Component/Entity.h>
-#include <Source/MultiplayerTypes.h>
+#include <Include/MultiplayerTypes.h>
 
 namespace Multiplayer
 {

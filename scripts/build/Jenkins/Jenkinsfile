@@ -504,9 +504,8 @@ try {
                             envVars['IS_UNIX'] = 1
                         }
                         withEnv(GetEnvStringList(envVars)) {
+                            def build_job_name = build_job.key
                             try {
-                                def build_job_name = build_job.key
-
                                 CreateSetupStage(pipelineConfig, repositoryName, projectName, pipelineName, branchName, platform.key, build_job.key, envVars).call()
 
                                 if(build_job.value.steps) { //this is a pipe with many steps so create all the build stages
@@ -516,12 +515,6 @@ try {
                                     }
                                 } else {
                                     CreateBuildStage(pipelineConfig,  platform.key, build_job.key, envVars).call()
-                                }
-
-                                if (env.MARS_REPO && platform.value.build_types[build_job_name].PARAMETERS.containsKey('TEST_METRICS') && platform.value.build_types[build_job_name].PARAMETERS.TEST_METRICS == 'True') {
-                                    def output_directory = platform.value.build_types[build_job_name].PARAMETERS.OUTPUT_DIRECTORY
-                                    def configuration = platform.value.build_types[build_job_name].PARAMETERS.CONFIGURATION
-                                    CreateTestMetricsStage(pipelineConfig, branchName, envVars, build_job_name, output_directory, configuration).call()
                                 }
                             }
                             catch(Exception e) {
@@ -537,6 +530,11 @@ try {
                                 }
                             }
                             finally {
+                                if (env.MARS_REPO && platform.value.build_types[build_job_name].PARAMETERS.containsKey('TEST_METRICS') && platform.value.build_types[build_job_name].PARAMETERS.TEST_METRICS == 'True') {
+                                    def output_directory = platform.value.build_types[build_job_name].PARAMETERS.OUTPUT_DIRECTORY
+                                    def configuration = platform.value.build_types[build_job_name].PARAMETERS.CONFIGURATION
+                                    CreateTestMetricsStage(pipelineConfig, branchName, envVars, build_job_name, output_directory, configuration).call()
+                                }
                                 CreateTeardownStage(envVars).call()
                             }
                         }

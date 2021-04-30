@@ -1668,25 +1668,13 @@ void CMaterialManager::InitMatSender()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CMaterialManager::GotoMaterial(CMaterial* pMaterial)
+void CMaterialManager::GotoMaterial([[maybe_unused]] CMaterial* pMaterial)
 {
-    if (pMaterial)
-    {
-        GetIEditor()->OpenMaterialLibrary(pMaterial);
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CMaterialManager::GotoMaterial(_smart_ptr<IMaterial> pMtl)
+void CMaterialManager::GotoMaterial([[maybe_unused]] _smart_ptr<IMaterial> pMtl)
 {
-    if (pMtl)
-    {
-        CMaterial* pEdMaterial = FromIMaterial(pMtl);
-        if (pEdMaterial)
-        {
-            GetIEditor()->OpenMaterialLibrary(pEdMaterial);
-        }
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////

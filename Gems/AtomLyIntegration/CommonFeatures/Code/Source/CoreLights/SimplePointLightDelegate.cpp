@@ -23,7 +23,10 @@ namespace AZ
             : LightDelegateBase<SimplePointLightFeatureProcessorInterface>(entityId, isVisible)
         {
             InitBase(entityId);
-            GetFeatureProcessor()->SetPosition(GetLightHandle(), GetTransform().GetTranslation());
+            if (GetLightHandle().IsValid())
+            {
+                GetFeatureProcessor()->SetPosition(GetLightHandle(), GetTransform().GetTranslation());
+            }
         }
         float SimplePointLightDelegate::CalculateAttenuationRadius(float lightThreshold) const
         {
@@ -39,7 +42,10 @@ namespace AZ
         
         void SimplePointLightDelegate::HandleShapeChanged()
         {
-            GetFeatureProcessor()->SetPosition(GetLightHandle(), GetTransform().GetTranslation());
+            if (GetLightHandle().IsValid())
+            {
+                GetFeatureProcessor()->SetPosition(GetLightHandle(), GetTransform().GetTranslation());
+            }
         }
 
         void SimplePointLightDelegate::DrawDebugDisplay(const Transform& transform, const Color& color, AzFramework::DebugDisplayRequests& debugDisplay, bool isSelected) const
