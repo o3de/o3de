@@ -764,12 +764,6 @@ void UiParticleEmitterComponent::InGamePostActivate()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiParticleEmitterComponent::Render(LyShine::IRenderGraph* renderGraph)
 {
-    const char* profileMarker = "UI_PARTICLESYS";
-    if (gEnv->pRenderer)
-    {
-        gEnv->pRenderer->PushProfileMarker(profileMarker);
-    }
-
     AZ::Matrix4x4 transform = AZ::Matrix4x4::CreateIdentity();
 
     AZ::Vector2 emitterOffset = AZ::Vector2::CreateZero();
@@ -843,11 +837,6 @@ void UiParticleEmitterComponent::Render(LyShine::IRenderGraph* renderGraph)
     m_cachedPrimitive.m_numVertices = totalVerticesInserted;
     m_cachedPrimitive.m_numIndices = totalParticlesInserted * indicesPerParticle;
     renderGraph->AddPrimitive(&m_cachedPrimitive, texture, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, m_blendMode);
-
-    if (gEnv->pRenderer)
-    {
-        gEnv->pRenderer->PopProfileMarker(profileMarker);
-    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
