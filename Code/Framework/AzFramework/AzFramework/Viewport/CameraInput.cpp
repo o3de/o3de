@@ -20,7 +20,7 @@
 
 AZ_CVAR(
     float, ed_newCameraSystemDefaultPlaneHeight, 34.0f, nullptr, AZ::ConsoleFunctorFlags::Null,
-    "What is the default height of the ground plane to do intersection tests against when orbiting");
+    "The default height of the ground plane to do intersection tests against when orbiting");
 
 namespace AzFramework
 {
