@@ -17,10 +17,11 @@
 
 namespace TestImpact
 {
+    //! Raw representation of the dependency graph for a given build target.
     struct DependencyGraphData
     {
-        AZStd::string m_root;
-        AZStd::vector<AZStd::string> m_vertexes;
-        AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>> m_edges;
+        AZStd::string m_root; //!< The build target this dependency graph is for.
+        AZStd::vector<AZStd::string> m_vertices; //!< The depender/depending built targets in this graph.
+        AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>> m_edges; //!< The dependency connectivity of the build targets in this graph.
     };
 } // namespace TestImpact

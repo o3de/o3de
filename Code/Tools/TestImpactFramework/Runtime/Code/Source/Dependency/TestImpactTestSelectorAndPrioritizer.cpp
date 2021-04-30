@@ -17,13 +17,15 @@
 
 namespace TestImpact
 {
-    TestSelectorAndPrioritizer::TestSelectorAndPrioritizer(const DynamicDependencyMap* dynamicDependencyMap, DependencyGraphDataMap&& dependencyGraphDataMap)
+    TestSelectorAndPrioritizer::TestSelectorAndPrioritizer(
+        const DynamicDependencyMap* dynamicDependencyMap, DependencyGraphDataMap&& dependencyGraphDataMap)
         : m_dynamicDependencyMap(dynamicDependencyMap)
         , m_dependencyGraphDataMap(AZStd::move(dependencyGraphDataMap))
     {
     }
 
-    AZStd::vector<const TestTarget*> TestSelectorAndPrioritizer::SelectTestTargets(const ChangeDependencyList& changeDependencyList, TestSelectionStrategy testSelectionStrategy)
+    AZStd::vector<const TestTarget*> TestSelectorAndPrioritizer::SelectTestTargets(
+        const ChangeDependencyList& changeDependencyList, TestSelectionStrategy testSelectionStrategy)
     {
         const auto selectedTestTargetAndDependerMap = SelectTestTargets(changeDependencyList);
         const auto prioritizedSelectedTests = PrioritizeSelectedTestTargets(selectedTestTargetAndDependerMap, testSelectionStrategy);
