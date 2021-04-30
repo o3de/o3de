@@ -10,10 +10,7 @@
 *
 */
 
-#include <SceneAPI/FbxSceneBuilder/ImportContexts/FbxImportContexts.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/FbxImporterUtilities.h>
-#include <SceneAPI/FbxSDKWrapper/FbxNodeWrapper.h>
-#include <SceneAPI/FbxSDKWrapper/FbxSkinWrapper.h>
+#include <SceneAPI/FbxSceneBuilder/Importers/ImporterUtilities.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/DataTypes/IGraphObject.h>
 
@@ -55,12 +52,6 @@ namespace AZ
                 }
 
                 return false;
-            }
-
-            bool IsSkinnedMesh(const FbxSDKWrapper::FbxNodeWrapper& sourceNode)
-            {
-                const std::shared_ptr<FbxSDKWrapper::FbxMeshWrapper> fbxMesh = sourceNode.GetMesh();
-                return (fbxMesh && (fbxMesh->GetDeformerCount(FbxDeformer::eSkin) > 0 || fbxMesh->GetDeformerCount(FbxDeformer::eBlendShape) > 0));
             }
 
             bool AreScenesEqual(const CoreScene& lhs, const CoreScene& rhs)
