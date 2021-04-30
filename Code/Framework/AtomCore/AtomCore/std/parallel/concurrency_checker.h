@@ -24,6 +24,8 @@ namespace AZStd
     //! This is *not* a synchronization primitive, and is intended simply for checking that no concurrency issues exist.
     //! It will be compiled out in release builds.
     //! Use concurrency_checker like a mutex (i.e. call soft_lock() and soft_unlock() around all instances of your data access).
+    //! Use soft_lock_shared and soft_unlock_shared around places where multiple threads are allowed to have read access
+    //! at the same time as long as nothing else already has a soft lock
     //! It will assert if there are multiple threads accessing the locked code/data at the same time.
     //! Expected use case is for defensive programming: when you do not expect any concurrent access within a system,
     //! but want to verify that it stays that way in the future, without incurring the overhead of a mutex.
@@ -34,7 +36,7 @@ namespace AZStd
         {
 #ifdef AZ_CONCURRENCY_CHECKER_ENABLED
             uint32_t count = ++m_concurrencyCounter;
-            AZ_Assert(count == 1, "Concurrency check failed. Multiple threads are trying to access data at the same time, or there is a lock/unlock mismatch.");
+            AZ_Assert(count == 1 && m_sharedConcurrencyCounter == 0, "Concurrency check failed. Multiple threads are trying to access data at the same time, or there is a lock/unlock mismatch.");
 #endif
         }
 
@@ -46,9 +48,27 @@ namespace AZStd
 #endif
         }
 
+        AZ_FORCE_INLINE void soft_lock_shared()
+        {
+#ifdef AZ_CONCURRENCY_CHECKER_ENABLED
+            ++m_sharedConcurrencyCounter;
+            AZ_Assert(m_concurrencyCounter == 0, "Concurrency check failed. Multiple threads are trying to access data at the same time, or there is a lock/unlock mismatch.");
+#endif
+        }
+
+        AZ_FORCE_INLINE void soft_unlock_shared()
+        {
+#ifdef AZ_CONCURRENCY_CHECKER_ENABLED
+            --m_sharedConcurrencyCounter;
+            AZ_Assert(m_concurrencyCounter == 0, "Concurrency check failed. If the assert in soft_lock() has not triggered already, then most likely there is a lock/unlock mismatch.");
+#endif
+        }
+
+
     private:
 #ifdef AZ_CONCURRENCY_CHECKER_ENABLED
         AZStd::atomic_uint32_t m_concurrencyCounter = 0;
+        AZStd::atomic_uint32_t m_sharedConcurrencyCounter = 0;
 #endif
     };
 
