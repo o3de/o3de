@@ -265,10 +265,11 @@ if (NOT CMAKE_SCRIPT_MODE_FILE)
 
         # we also need to make sure any custom packages are installed.
         # this costs a moment of time though, so we'll only do it based on stamp files.
-
-        ly_pip_install_local_package_editable(${LY_ROOT_FOLDER}/Tools/LyTestTools ly-test-tools)
-        ly_pip_install_local_package_editable(${LY_ROOT_FOLDER}/Tools/RemoteConsole/ly_remote_console ly-remote-console)
-        ly_pip_install_local_package_editable(${LY_ROOT_FOLDER}/AutomatedTesting/Gem/PythonTests/EditorPythonTestTools editor-python-test-tools)
+        if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND NOT INSTALLED_ENGINE)
+            ly_pip_install_local_package_editable(${LY_ROOT_FOLDER}/Tools/LyTestTools ly-test-tools)
+            ly_pip_install_local_package_editable(${LY_ROOT_FOLDER}/Tools/RemoteConsole/ly_remote_console ly-remote-console)
+            ly_pip_install_local_package_editable(${LY_ROOT_FOLDER}/AutomatedTesting/Gem/PythonTests/EditorPythonTestTools editor-python-test-tools)
+        endif()
     endif()
 endif()
 

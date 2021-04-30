@@ -9,5 +9,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-ly_get_absolute_pal_filename(pal_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Platform/${PAL_PLATFORM_NAME})
-include(${pal_dir}/Install_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+if(NOT INSTALLED_ENGINE)
+    ly_get_absolute_pal_filename(pal_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Platform/${PAL_PLATFORM_NAME})
+    include(${pal_dir}/Install_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+else()
+    
+    # Provide empty implementation so ly_add_target continues working
+    function(ly_install_target ly_install_target_NAME)
+    endfunction()
+
+endif()
