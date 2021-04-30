@@ -13,7 +13,7 @@
 
 #include <AzCore/EBus/EBus.h>
 
-#include <AzFramework/Scene/SceneSystemBus.h>
+#include <AzFramework/Scene/SceneSystemInterface.h>
 #include <Atom/RPI.Public/Scene.h>
 
 namespace AZ::Render::Bootstrap

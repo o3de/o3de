@@ -2814,14 +2814,16 @@ void EditorViewportWidget::RestoreViewportAfterGameMode()
 
 void EditorViewportWidget::UpdateScene()
 {
-    AZStd::vector<AzFramework::Scene*> scenes;
-    AzFramework::SceneSystemRequestBus::BroadcastResult(scenes, &AzFramework::SceneSystemRequests::GetAllScenes);
-    if (scenes.size() > 0)
+    auto sceneSystem = AzFramework::SceneSystemInterface::Get();
+    if (sceneSystem)
     {
-        AZ::RPI::SceneNotificationBus::Handler::BusDisconnect();
-        auto scene = scenes[0];
-        m_renderViewport->SetScene(scene);
-        AZ::RPI::SceneNotificationBus::Handler::BusConnect(m_renderViewport->GetViewportContext()->GetRenderScene()->GetId());
+        AZStd::shared_ptr<AzFramework::Scene> mainScene = sceneSystem->GetScene(AzFramework::Scene::MainSceneName);
+        if (mainScene)
+        {
+            AZ::RPI::SceneNotificationBus::Handler::BusDisconnect();
+            m_renderViewport->SetScene(mainScene);
+            AZ::RPI::SceneNotificationBus::Handler::BusConnect(m_renderViewport->GetViewportContext()->GetRenderScene()->GetId());
+        }
     }
 }
 
