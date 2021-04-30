@@ -27,11 +27,6 @@
 // ComponentEntityEditorPlugin
 #include "Plugins/ComponentEntityEditorPlugin/Objects/ComponentEntityObject.h"
 
-// LmbrCentral
-#include <LmbrCentral/Rendering/MeshComponentBus.h>
-#include <LmbrCentral/Rendering/GeomCacheComponentBus.h>
-
-
 static const float kEnoughFarDistance(5000.0f);
 
 CSurfaceInfoPicker::CSurfaceInfoPicker()
@@ -185,19 +180,6 @@ void CSurfaceInfoPicker::FindNearestInfoFromEntities(
             AZ::EntityId id;
             AzToolsFramework::ComponentEntityObjectRequestBus::EventResult(id, entityObject, &AzToolsFramework::ComponentEntityObjectRequestBus::Events::GetAssociatedEntityId);
 
-            AZ::EBusAggregateResults<IStatObj*> statObjs;
-            LmbrCentral::LegacyMeshComponentRequestBus::EventResult(statObjs, id, &LmbrCentral::LegacyMeshComponentRequestBus::Events::GetStatObj);
-            
-            // If the entity has a MeshComponent, it will hit here
-            for (IStatObj* statObj : statObjs.values)
-            {
-                hit = RayIntersection(vWorldRaySrc, vWorldRayDir, nullptr, statObj, object->GetWorldTM(), outHitInfo, &statObjDefaultMaterial);
-                if (hit)
-                {
-                    break;
-                }
-            }
-
             // If the entity has an ActorComponent or another component that overrides RenderNodeRequestBus, it will hit here
             if (!hit)
             {
@@ -236,14 +218,6 @@ void CSurfaceInfoPicker::FindNearestInfoFromEntities(
                         }
                     }
                 }
-            }
-
-            // If the entity has a GeometryCacheComponent it will hit here
-            if (!hit)
-            {
-                IGeomCacheRenderNode* geomCacheRenderNode = nullptr;
-                LmbrCentral::GeometryCacheComponentRequestBus::EventResult(geomCacheRenderNode, id, &LmbrCentral::GeometryCacheComponentRequestBus::Events::GetGeomCacheRenderNode);
-                hit = RayIntersection_IGeomCacheRenderNode(vWorldRaySrc, vWorldRayDir, geomCacheRenderNode, &pickedMaterial, object->GetWorldTM(), outHitInfo);
             }
         }
 
