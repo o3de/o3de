@@ -254,8 +254,6 @@ SEditorSettings::SEditorSettings()
 
     bForceSkyUpdate = true;
 
-    bIsSearchFilterActive = false;
-
     backgroundUpdatePeriod = 0;
     g_TemporaryLevelName = nullptr;
 
