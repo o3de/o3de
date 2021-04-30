@@ -42,7 +42,7 @@ namespace ScriptCanvas
                             // And is unmodifiable(essentially an external constant). As such, we hide it from the node palette.
                             editContext->Class<EntityRef>("EntityID", "Stores a reference to an entity")
                                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                                ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/ScriptCanvas/EntityRef.png")
+                                ->Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/EntityRef.png")
                                 ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::List)
                                 ;
                         }

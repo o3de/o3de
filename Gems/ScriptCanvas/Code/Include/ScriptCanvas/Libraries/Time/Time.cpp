@@ -36,7 +36,7 @@ namespace ScriptCanvas
                 {
                     editContext->Class<Time>("Timing", "Time related operations.")->
                         ClassElement(AZ::Edit::ClassElements::EditorData, "")->
-                        Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/ScriptCanvas/Libraries/Math.png")->
+                        Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/Libraries/Math.png")->
                         Attribute(AZ::Edit::Attributes::CategoryStyle, ".time")->
                         Attribute(ScriptCanvas::Attributes::Node::TitlePaletteOverride, "TimeNodeTitlePalette")
                         ;
