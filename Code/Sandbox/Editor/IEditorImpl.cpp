@@ -1799,11 +1799,6 @@ void CEditorImpl::DestroyQMimeData(QMimeData* data) const
     delete data;
 }
 
-bool CEditorImpl::IsNewViewportInteractionModelEnabled() const
-{
-    return m_isNewViewportInteractionModelEnabled;
-}
-
 IEditorPanelUtils* CEditorImpl::GetEditorPanelUtils()
 {
     return m_panelEditorUtils;
