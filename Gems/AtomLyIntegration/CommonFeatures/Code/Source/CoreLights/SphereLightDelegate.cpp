@@ -67,12 +67,16 @@ namespace AZ
         void SphereLightDelegate::SetEnableShadow(bool enabled)
         {
             Base::SetEnableShadow(enabled);
-            GetFeatureProcessor()->SetShadowsEnabled(GetLightHandle(), enabled);
+
+            if (GetLightHandle().IsValid())
+            {
+                GetFeatureProcessor()->SetShadowsEnabled(GetLightHandle(), enabled);
+            }
         }
 
         void SphereLightDelegate::SetShadowmapMaxSize(ShadowmapSize size)
         {
-            if (GetShadowsEnabled())
+            if (GetShadowsEnabled() && GetLightHandle().IsValid())
             {
                 GetFeatureProcessor()->SetShadowmapMaxResolution(GetLightHandle(), size);
             }
@@ -80,7 +84,7 @@ namespace AZ
 
         void SphereLightDelegate::SetShadowFilterMethod(ShadowFilterMethod method)
         {
-            if (GetShadowsEnabled())
+            if (GetShadowsEnabled() && GetLightHandle().IsValid())
             {
                 GetFeatureProcessor()->SetShadowFilterMethod(GetLightHandle(), method);
             }
@@ -88,7 +92,7 @@ namespace AZ
 
         void SphereLightDelegate::SetSofteningBoundaryWidthAngle(float widthInDegrees)
         {
-            if (GetShadowsEnabled())
+            if (GetShadowsEnabled() && GetLightHandle().IsValid())
             {
                 GetFeatureProcessor()->SetSofteningBoundaryWidthAngle(GetLightHandle(), DegToRad(widthInDegrees));
             }
@@ -96,7 +100,7 @@ namespace AZ
 
         void SphereLightDelegate::SetPredictionSampleCount(uint32_t count)
         {
-            if (GetShadowsEnabled())
+            if (GetShadowsEnabled() && GetLightHandle().IsValid())
             {
                 GetFeatureProcessor()->SetPredictionSampleCount(GetLightHandle(), count);
             }
@@ -104,7 +108,7 @@ namespace AZ
 
         void SphereLightDelegate::SetFilteringSampleCount(uint32_t count)
         {
-            if (GetShadowsEnabled())
+            if (GetShadowsEnabled() && GetLightHandle().IsValid())
             {
                 GetFeatureProcessor()->SetFilteringSampleCount(GetLightHandle(), count);
             }
@@ -112,7 +116,7 @@ namespace AZ
 
         void SphereLightDelegate::SetPcfMethod(PcfMethod method)
         {
-            if (GetShadowsEnabled())
+            if (GetShadowsEnabled() && GetLightHandle().IsValid())
             {
                 GetFeatureProcessor()->SetPcfMethod(GetLightHandle(), method);
             }

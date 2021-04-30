@@ -231,6 +231,8 @@ namespace AZ
 
         void PointLightFeatureProcessor::UpdateShadow(LightHandle handle)
         {
+            constexpr float SqrtHalf = 0.707106781187f; // sqrt(0.5);
+
             const auto& pointLight = m_pointLightData.GetData(handle.GetIndex());
             for (int i = 0; i < PointLightData::NumShadowFaces; ++i)
             {
@@ -246,7 +248,7 @@ namespace AZ
                 desc.m_transform = m_pointShadowTransforms[i];
                 desc.m_transform.SetTranslation(pointLight.m_position[0], pointLight.m_position[1], pointLight.m_position[2]);
                 desc.m_aspectRatio = 1.0f;
-                desc.m_nearPlaneDistance = 0.0f; 
+                desc.m_nearPlaneDistance = SqrtHalf * pointLight.m_bulbRadius;
 
                 const float invRadiusSquared = pointLight.m_invAttenuationRadiusSquared;
                 if (invRadiusSquared <= 0.f)
