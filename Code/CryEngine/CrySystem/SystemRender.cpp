@@ -58,75 +58,6 @@
 extern CMTSafeHeap* g_pPakHeap;
 #if defined(AZ_PLATFORM_ANDROID)
 #include <AzCore/Android/Utils.h>
-#elif defined(AZ_PLATFORM_IOS)
-
-#if defined(AZ_MONOLITHIC_BUILD)
-extern bool UIKitGetPrimaryPhysicalDisplayDimensions(int& o_widthPixels, int& o_heightPixels);
-#else
-
-using NativeScreenType = UIScreen;
-using NativeWindowType = UIWindow;
-
-////////////////////////////////////////////////////////////////////////////////
-bool UIKitGetPrimaryPhysicalDisplayDimensions(int& o_widthPixels, int& o_heightPixels)
-{
-
-    NativeScreenType* nativeScreen = [NativeScreenType mainScreen];
-    CGRect screenBounds = [nativeScreen bounds];
-    CGFloat screenScale = [nativeScreen scale];
-    o_widthPixels = static_cast<int>(screenBounds.size.width * screenScale);
-    o_heightPixels = static_cast<int>(screenBounds.size.height * screenScale);
-
-    const bool isScreenLandscape = o_widthPixels > o_heightPixels;
-
-    UIInterfaceOrientation uiOrientation = UIInterfaceOrientationUnknown;
-#if defined(__IPHONE_13_0) || defined(__TVOS_13_0)
-    if(@available(iOS 13.0, tvOS 13.0, *))
-    {
-        UIWindow* foundWindow = nil;
-        
-        //Find the key window
-        NSArray* windows = [[UIApplication sharedApplication] windows];
-        for (UIWindow* window in windows)
-        {
-            if (window.isKeyWindow)
-            {
-                foundWindow = window;
-                break;
-            }
-        }
-        
-        //Check if the key window is found
-        if(foundWindow)
-        {
-            uiOrientation = foundWindow.windowScene.interfaceOrientation;
-        }
-        else
-        {
-            //If no key window is found create a temporary window in order to extract the orientation
-            //This can happen as this function gets called before the renderer is initialized
-            CGRect screenBounds = [[NativeScreenType mainScreen] bounds];
-            UIWindow* tempWindow = [[NativeWindowType alloc] initWithFrame: screenBounds];
-            uiOrientation = tempWindow.windowScene.interfaceOrientation;
-            [tempWindow release];
-        }
-    }
-#else
-    uiOrientation = UIApplication.sharedApplication.statusBarOrientation;
-#endif
-    
-    const bool isInterfaceLandscape = UIInterfaceOrientationIsLandscape(uiOrientation);
-    if (isScreenLandscape != isInterfaceLandscape)
-    {
-        const int width = o_widthPixels;
-        o_widthPixels = o_heightPixels;
-        o_heightPixels = width;
-    }
-
-    return true;
-}
-#endif
-
 #endif
 
 extern int CryMemoryGetAllocatedSize();
@@ -151,8 +82,6 @@ bool CSystem::GetPrimaryPhysicalDisplayDimensions([[maybe_unused]] int& o_widthP
     return true;
 #elif defined(AZ_PLATFORM_ANDROID)
     return AZ::Android::Utils::GetWindowSize(o_widthPixels, o_heightPixels);
-#elif defined(AZ_PLATFORM_IOS)
-    return UIKitGetPrimaryPhysicalDisplayDimensions(o_widthPixels, o_heightPixels);
 #else
     return false;
 #endif

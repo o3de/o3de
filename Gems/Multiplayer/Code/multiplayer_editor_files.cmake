@@ -9,6 +9,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-add_subdirectory(CryCommon)
-add_subdirectory(CryFont)
-add_subdirectory(CrySystem)
+set(FILES
+    Source/Editor/MultiplayerEditorDispatcher.cpp
+    Source/Editor/MultiplayerEditorDispatcher.h
+)

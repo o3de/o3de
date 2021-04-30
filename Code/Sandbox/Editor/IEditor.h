@@ -759,8 +759,6 @@ struct IEditor
 
     // reloads the plugins
     virtual void LoadPlugins() = 0;
-
-    virtual bool IsNewViewportInteractionModelEnabled() const = 0;
 };
 
 //! Callback used by editor when initializing for info in UI dialogs
