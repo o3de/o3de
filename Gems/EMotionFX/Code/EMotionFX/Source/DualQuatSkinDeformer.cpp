@@ -12,8 +12,6 @@
 
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Jobs/JobCompletion.h>
-#include <AzCore/Jobs/JobManagerBus.h>
-#include <AzCore/Jobs/JobContext.h>
 #include "EMotionFXConfig.h"
 #include "DualQuatSkinDeformer.h"
 #include "Mesh.h"
@@ -91,15 +89,14 @@ namespace EMotionFX
         for (BoneInfo& boneInfo : m_bones)
         {
             const uint32 nodeIndex = boneInfo.mNodeNr;
-            Transform skinTransform = actor->GetInverseBindPoseTransform(nodeIndex);
-            skinTransform.Multiply(pose->GetModelSpaceTransform(nodeIndex));
+            const Transform skinTransform = actor->GetInverseBindPoseTransform(nodeIndex) * pose->GetModelSpaceTransform(nodeIndex);
             boneInfo.mDualQuat.FromRotationTranslation(skinTransform.mRotation, skinTransform.mPosition);
         }
 
         AZ::JobCompletion jobCompletion;
 
-        // Split up the to be skinned vertices into batches.
-        const AZ::u32 numBatches = aznumeric_cast<AZ::u32>(ceilf(aznumeric_cast<float>(numVertices) / aznumeric_cast<float>(s_numVerticesPerBatch)));
+        // Split up the skinned vertices into batches.
+        const AZ::u32 numBatches = aznumeric_caster(ceilf(aznumeric_cast<float>(numVertices) / aznumeric_cast<float>(s_numVerticesPerBatch)));
         for (AZ::u32 batchIndex = 0; batchIndex < numBatches; ++batchIndex)
         {
             const AZ::u32 startVertex = batchIndex * s_numVerticesPerBatch;
@@ -124,10 +121,9 @@ namespace EMotionFX
         SkinningInfoVertexAttributeLayer* layer = (SkinningInfoVertexAttributeLayer*)mesh->FindSharedVertexAttributeLayer(SkinningInfoVertexAttributeLayer::TYPE_ID);
         AZ_Assert(layer, "Cannot find skinning layer.");
 
-        AZ::Vector3 newPos, newNormal, newTangent, newBitangent;
+        AZ::Vector3 newTangent;
         AZ::Vector3 vtxPos, normal, tangent, bitangent;
         AZ::u32 orgVertex;
-        SkinInfluence* influence;
         float weight;
 
         AZ::Vector3* positions = static_cast<AZ::Vector3*>(mesh->FindVertexData(Mesh::ATTRIB_POSITIONS));
@@ -141,12 +137,6 @@ namespace EMotionFX
         {
             for (AZ::u32 v = startVertex; v < endVertex; ++v)
             {
-                // reset the skinned values
-                newPos = AZ::Vector3::CreateZero();
-                newNormal = AZ::Vector3::CreateZero();
-                newTangent = AZ::Vector3::CreateZero();
-                newBitangent = AZ::Vector3::CreateZero();
-
                 orgVertex = orgVerts[v];
                 vtxPos = positions[v];
                 normal = normals[v];
@@ -166,7 +156,7 @@ namespace EMotionFX
 
                     for (size_t i = 0; i < numInfluences; ++i)
                     {
-                        influence = layer->GetInfluence(orgVertex, i);
+                        SkinInfluence* influence = layer->GetInfluence(orgVertex, i);
                         weight = influence->GetWeight();
 
                         // check if we need to invert the dual quat
@@ -184,36 +174,27 @@ namespace EMotionFX
                     skinQuat.Normalize();
 
                     // perform skinning
-                    newPos = skinQuat.TransformPoint(vtxPos);
-                    newNormal = skinQuat.TransformVector(normal);
+                    positions[v] = skinQuat.TransformPoint(vtxPos);
+                    normals[v] = skinQuat.TransformVector(normal);
                     newTangent = skinQuat.TransformVector(tangent);
-                    newBitangent = skinQuat.TransformVector(bitangent);
+                    tangents[v].Set(newTangent.GetX(), newTangent.GetY(), newTangent.GetZ(), tangentW);
+                    bitangents[v] = skinQuat.TransformVector(bitangent);
                 }
                 else
                 {
                     // no skinning influences, just copy the values
-                    newPos = vtxPos;
-                    newNormal = normal;
+                    positions[v] = vtxPos;
+                    normals[v] = normal;
                     newTangent = tangent;
-                    newBitangent = bitangent;
+                    tangents[v].Set(newTangent.GetX(), newTangent.GetY(), newTangent.GetZ(), tangentW);
+                    bitangents[v] = bitangent;
                 }
-
-                // output the skinned values
-                positions[v] = newPos;
-                normals[v] = newNormal;
-                tangents[v].Set(newTangent.GetX(), newTangent.GetY(), newTangent.GetZ(), tangentW);
-                bitangents[v] = newBitangent;
             }
         }
         else if (tangents && !bitangents) // tangents but no bitangents
         {
             for (AZ::u32 v = startVertex; v < endVertex; ++v)
             {
-                // reset the skinned values
-                newPos = AZ::Vector3::CreateZero();
-                newNormal = AZ::Vector3::CreateZero();
-                newTangent = AZ::Vector3::CreateZero();
-
                 orgVertex = orgVerts[v];
                 vtxPos = positions[v];
                 normal = normals[v];
@@ -232,7 +213,7 @@ namespace EMotionFX
 
                     for (size_t i = 0; i < numInfluences; ++i)
                     {
-                        influence = layer->GetInfluence(orgVertex, i);
+                        SkinInfluence* influence = layer->GetInfluence(orgVertex, i);
                         weight = influence->GetWeight();
 
                         // check if we need to invert the dual quat
@@ -250,32 +231,25 @@ namespace EMotionFX
                     skinQuat.Normalize();
 
                     // perform skinning
-                    newPos = skinQuat.TransformPoint(vtxPos);
-                    newNormal = skinQuat.TransformVector(normal);
+                    positions[v] = skinQuat.TransformPoint(vtxPos);
+                    normals[v] = skinQuat.TransformVector(normal);
                     newTangent = skinQuat.TransformVector(tangent);
+                    tangents[v].Set(newTangent.GetX(), newTangent.GetY(), newTangent.GetZ(), tangentW);
                 }
                 else
                 {
                     // no skinning influences, just copy the values
-                    newPos = vtxPos;
-                    newNormal = normal;
+                    positions[v] = vtxPos;
+                    normals[v] = normal;
                     newTangent = tangent;
+                    tangents[v].Set(newTangent.GetX(), newTangent.GetY(), newTangent.GetZ(), tangentW);
                 }
-
-                // output the skinned values
-                positions[v] = newPos;
-                normals[v] = newNormal;
-                tangents[v].Set(newTangent.GetX(), newTangent.GetY(), newTangent.GetZ(), tangentW);
             }
         }
         else // there are no tangents and bitangents to skin
         {
             for (AZ::u32 v = startVertex; v < endVertex; ++v)
             {
-                // reset the skinned values
-                newPos = AZ::Vector3::CreateZero();
-                newNormal = AZ::Vector3::CreateZero();
-
                 orgVertex = orgVerts[v];
                 vtxPos = positions[v];
                 normal = normals[v];
@@ -292,7 +266,7 @@ namespace EMotionFX
 
                     for (size_t i = 0; i < numInfluences; ++i)
                     {
-                        influence = layer->GetInfluence(orgVertex, i);
+                        SkinInfluence* influence = layer->GetInfluence(orgVertex, i);
                         weight = influence->GetWeight();
 
                         // check if we need to invert the dual quat
@@ -310,19 +284,15 @@ namespace EMotionFX
                     skinQuat.Normalize();
 
                     // perform skinning
-                    newPos = skinQuat.TransformPoint(vtxPos);
-                    newNormal = skinQuat.TransformVector(normal);
+                    positions[v] = skinQuat.TransformPoint(vtxPos);
+                    normals[v] = skinQuat.TransformVector(normal);
                 }
                 else
                 {
                     // no skinning influences, just copy the values
-                    newPos = vtxPos;
-                    newNormal = normal;
+                    positions[v] = vtxPos;
+                    normals[v] = normal;
                 }
-
-                // output the skinned values
-                positions[v] = newPos;
-                normals[v] = newNormal;
             }
         }
     }
