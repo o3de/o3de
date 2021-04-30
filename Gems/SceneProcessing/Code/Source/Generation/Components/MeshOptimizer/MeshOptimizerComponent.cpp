@@ -445,7 +445,7 @@ namespace AZ::SceneGenerationComponents
             meshBuilder.BeginPolygon(baseMesh->GetFaceMaterialId(faceIndex));
             for (const AZ::u32 vertexIndex : meshData->GetFaceInfo(faceIndex).vertexIndex)
             {
-                const int orgVertexNumber = meshData->GetUsedPointIndexForControlPoint(meshData->GetControlPointIndex(vertexIndex));
+                const int orgVertexNumber = meshData->GetUsedPointIndexForControlPoint(vertexIndex);
                 AZ_Assert(orgVertexNumber >= 0, "Invalid vertex number");
                 orgVtxLayer->SetCurrentVertexValue(orgVertexNumber);
 

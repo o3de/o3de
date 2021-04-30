@@ -111,6 +111,7 @@ namespace AZ
                     {
                         nodeName.erase(0, dotIndex + 1);
                     }
+                    int vertexOffset = 0;
                     RenamedNodesMap::SanitizeNodeName(nodeName, context.m_scene.GetGraph(), context.m_currentGraphPosition, "BlendShape");
                     AZ_TraceContext("Blend shape name", nodeName);
                     for (const auto& meshIndex : animToMeshIndex.second)
@@ -141,7 +142,7 @@ namespace AZ
                             context.m_sourceSceneSystem.ConvertUnit(vertex);
 
                             blendShapeData->AddPosition(vertex);
-                            blendShapeData->SetVertexIndexToControlPointIndexMap(vertIdx, vertIdx);
+                            blendShapeData->SetVertexIndexToControlPointIndexMap(vertIdx + vertexOffset, vertIdx + vertexOffset);
 
                             // Add normals
                             if (aiAnimMesh->HasNormals())
@@ -204,11 +205,12 @@ namespace AZ
                             }
                             for (int idx = 0; idx < face.mNumIndices; ++idx)
                             {
-                                blendFace.vertexIndex[idx] = face.mIndices[idx];
+                                blendFace.vertexIndex[idx] = face.mIndices[idx] + vertexOffset;
                             }
 
                             blendShapeData->AddFace(blendFace);
                         }
+                        vertexOffset += aiMesh->mNumVertices;
 
 
                     }
