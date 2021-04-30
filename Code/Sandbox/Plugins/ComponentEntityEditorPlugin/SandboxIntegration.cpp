@@ -172,7 +172,6 @@ void SandboxIntegrationManager::Setup()
 
     AzFramework::DisplayContextRequestBus::Handler::BusConnect();
     SetupFileExtensionMap();
-    AzToolsFramework::NewViewportInteractionModelEnabledRequestBus::Handler::BusConnect();
 
     MainWindow::instance()->GetActionManager()->RegisterActionHandler(ID_FILE_SAVE_SLICE_TO_ROOT, [this]() {
         SaveSlice(false);
@@ -376,7 +375,6 @@ void SandboxIntegrationManager::GetEntitiesInSlices(
 void SandboxIntegrationManager::Teardown()
 {
     AzToolsFramework::Layers::EditorLayerComponentNotificationBus::Handler::BusDisconnect();
-    AzToolsFramework::NewViewportInteractionModelEnabledRequestBus::Handler::BusDisconnect();
     AzFramework::DisplayContextRequestBus::Handler::BusDisconnect();
     if( m_debugDisplayBusImplementationActive)
     {
@@ -2770,11 +2768,6 @@ void SandboxIntegrationManager::PopMatrix()
     {
         m_dc->PopMatrix();
     }
-}
-
-bool SandboxIntegrationManager::IsNewViewportInteractionModelEnabled()
-{
-    return GetIEditor()->IsNewViewportInteractionModelEnabled();
 }
 
 bool SandboxIntegrationManager::DisplayHelpersVisible()
