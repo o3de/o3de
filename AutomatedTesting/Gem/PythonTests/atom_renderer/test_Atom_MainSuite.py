@@ -27,6 +27,7 @@ TEST_DIRECTORY = os.path.join(os.path.dirname(__file__), "atom_hydra_scripts")
 @pytest.mark.parametrize("level", ["auto_test"])
 class TestAtomEditorComponentsMain(object):
 
+    @pytest.mark.SUITE_sandbox
     @pytest.mark.test_case_id(
         "C32078117",  # Area Light
         "C32078130",  # Display Mapper
