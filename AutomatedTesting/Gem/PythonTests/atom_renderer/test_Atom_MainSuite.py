@@ -25,7 +25,7 @@ from .atom_helpers import s3_uploader, collect_atom_test_artifacts
 
 logger = logging.getLogger(__name__)
 
-EDITOR_TIMEOUT = 180  # Time limit for main suite tests is 3 minutes.
+EDITOR_TIMEOUT = 200
 HYDRA_SCRIPT_DIRECTORY = os.path.join(os.path.dirname(__file__), "atom_hydra_scripts")
 S3_BUCKET_NAME = 'testing-atom-artifacts-for-github'
 
@@ -240,6 +240,12 @@ class TestAtomEditorComponentsMain(object):
                     bucket_name=S3_BUCKET_NAME,
                     file_path=atom_test_artifact,
                     file_key=s3_folder_name,
-                    overwrite=False
-                )
+                    overwrite=False)
 
+            # Link to the s3 test artifact storage for failure debugging.
+            s3_link = ''
+            atom_test_artifact_file_types = collect_atom_test_artifacts.VALID_ARTIFACT_FILE_TYPES
+            logger.error(
+                'test_Atom_MainSuite.test_AtomEditorComponents_AddedToEntity failed.\n'
+                f'Review the {project} Atom renderer test artifacts on s3 for debugging: {s3_link}\n'
+                f'Atom renderer test artifact file types uploaded to s3 are: {atom_test_artifact_file_types}')

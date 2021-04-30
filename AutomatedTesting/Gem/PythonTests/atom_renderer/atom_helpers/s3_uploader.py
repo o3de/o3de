@@ -8,18 +8,27 @@ or, if provided, by the license below or the license accompanying this file. Do 
 remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
-Used for uploading test artifacts to s3 to debug failures.
+Used for uploading Atom test artifacts to s3 to debug failures.
 """
 
 import boto3
 import botocore.exceptions
 import logging
 import os
+from botocore.config import Config
 
 import ly_test_tools.environment.file_system as file_system
 
 logger = logging.getLogger(__name__)
-s3 = boto3.resource('s3')
+s3 = boto3.resource(
+    's3',
+    config=Config(
+        region_name='us-west-2',
+        signature_version='v4',
+        retries={
+            'max_attempts': 10,
+            'mode': 'standard'})
+)
 
 
 class BucketDoesNotExistError(Exception):
