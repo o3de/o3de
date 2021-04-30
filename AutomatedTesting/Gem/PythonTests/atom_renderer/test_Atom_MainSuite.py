@@ -210,6 +210,7 @@ class TestAtomEditorComponentsMain(object):
         ]
 
         unexpected_lines = [
+            "Trace::Error",
             "failed to open",
             "Traceback (most recent call last):",
         ]
