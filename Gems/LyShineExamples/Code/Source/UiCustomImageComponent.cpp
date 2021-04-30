@@ -97,7 +97,7 @@ namespace LyShineExamples
         if (!texture)
         {
             // if there is no texture we will just use a white texture
-            texture = gEnv->pRenderer->EF_GetTextureByID(gEnv->pRenderer->GetWhiteTextureId());
+            //texture = gEnv->pRenderer->EF_GetTextureByID(gEnv->pRenderer->GetWhiteTextureId());
         }
 
         if (m_isRenderCacheDirty)
