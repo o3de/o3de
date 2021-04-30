@@ -9,8 +9,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-add_subdirectory(Cry3DEngine)
 add_subdirectory(CryCommon)
 add_subdirectory(CryFont)
 add_subdirectory(CrySystem)
-add_subdirectory(RenderDll)

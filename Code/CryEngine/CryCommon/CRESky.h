@@ -17,7 +17,7 @@
 //=============================================================
 
 #include "VertexFormats.h"
-#include "../RenderDll/Common/Shaders/Vertex.h"
+#include <Vertex.h>
 
 struct SSkyLightRenderParams;
 
