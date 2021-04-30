@@ -28,7 +28,7 @@
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/std/optional.h>
 #include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
-#include <AzFramework/Scene/SceneSystemBus.h>
+#include <AzFramework/Scene/SceneSystemInterface.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
