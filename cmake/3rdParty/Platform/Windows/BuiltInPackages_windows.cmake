@@ -47,6 +47,7 @@ ly_associate_package(PACKAGE_NAME tiff-4.2.0.14-windows              TARGETS tif
 ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev3-windows  TARGETS AWSNativeSDK    PACKAGE_HASH 929873d4252c464620a9d288e41bd5d47c0bd22750aeb3a1caa68a3da8247c48)
 ly_associate_package(PACKAGE_NAME Lua-5.3.5-rev5-windows             TARGETS Lua             PACKAGE_HASH 136faccf1f73891e3fa3b95f908523187792e56f5b92c63c6a6d7e72d1158d40)
 ly_associate_package(PACKAGE_NAME PhysX-4.1.0.25992954-rev1-windows  TARGETS PhysX           PACKAGE_HASH 198bed89d1aae7caaf5dadba24cee56235fe41725d004b64040d4e50d0f3aa1a)
+ly_associate_package(PACKAGE_NAME etc2comp-9cd0f9cae0-rev1-windows   TARGETS etc2comp        PACKAGE_HASH fc9ae937b2ec0d42d5e7d0e9e8c80e5e4d257673fb33bc9b7d6db76002117123)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-windows          TARGETS mikkelsen       PACKAGE_HASH 872c4d245a1c86139aa929f2b465b63ea4ea55b04ced50309135dd4597457a4e)
 ly_associate_package(PACKAGE_NAME googletest-1.8.1-rev4-windows      TARGETS googletest      PACKAGE_HASH 7e8f03ae8a01563124e3daa06386f25a2b311c10bb95bff05cae6c41eff83837)
 ly_associate_package(PACKAGE_NAME googlebenchmark-1.5.0-rev2-windows TARGETS GoogleBenchmark PACKAGE_HASH 0c94ca69ae8e7e4aab8e90032b5c82c5964410429f3dd9dbb1f9bf4fe032b1d4)
@@ -57,3 +58,4 @@ ly_associate_package(PACKAGE_NAME qt-5.15.2-windows                  TARGETS Qt 
 ly_associate_package(PACKAGE_NAME libsamplerate-0.2.1-rev2-windows   TARGETS libsamplerate   PACKAGE_HASH dcf3c11a96f212a52e2c9241abde5c364ee90b0f32fe6eeb6dcdca01d491829f)
 ly_associate_package(PACKAGE_NAME OpenMesh-8.1-rev1-windows          TARGETS OpenMesh        PACKAGE_HASH 1c1df639358526c368e790dfce40c45cbdfcfb1c9a041b9d7054a8949d88ee77)
 ly_associate_package(PACKAGE_NAME OpenSSL-1.1.1b-rev2-windows        TARGETS OpenSSL         PACKAGE_HASH 9af1c50343f89146b4053101a7aeb20513319a3fe2f007e356d7ce25f9241040)
+ly_associate_package(PACKAGE_NAME Crashpad-0.8.0-rev1-windows        TARGETS Crashpad        PACKAGE_HASH d162aa3070147bc0130a44caab02c5fe58606910252caf7f90472bd48d4e31e2)

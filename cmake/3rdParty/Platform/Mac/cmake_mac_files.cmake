@@ -13,6 +13,5 @@ set(FILES
     BuiltInPackages_mac.cmake
     civetweb_mac.cmake
     Clang_mac.cmake
-    etc2comp_mac.cmake
     Wwise_mac.cmake
 )
