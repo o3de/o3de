@@ -200,7 +200,6 @@ public:
     MOCK_METHOD0(GetLogFile, ILogFile* ());  
     MOCK_METHOD0(UnloadPlugins, void());
     MOCK_METHOD0(LoadPlugins, void());
-    MOCK_CONST_METHOD0(IsNewViewportInteractionModelEnabled, bool());
     MOCK_METHOD1(GetSearchPath, QString(EEditorPathName));
     MOCK_METHOD0(GetEditorPanelUtils, IEditorPanelUtils* ());
 
