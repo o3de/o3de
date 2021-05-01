@@ -279,7 +279,6 @@ void ReflectedPropertyItem::SetVariable(IVariable *var)
     case ePropertyLocalString:
     case ePropertyLightAnimation:
     case ePropertyParticleName:
-    case ePropertyFlare:
         m_reflectedVarAdapter = new ReflectedVarGenericPropertyAdapter(desc.m_type);
         break;
     case ePropertyTexture:
