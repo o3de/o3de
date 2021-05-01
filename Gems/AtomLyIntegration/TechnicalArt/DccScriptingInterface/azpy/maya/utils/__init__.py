@@ -9,4 +9,8 @@
 # -- This line is 75 characters -------------------------------------------
 
 # define api package for each IDE supported
+<<<<<<< HEAD
 __all__ = ['simple_command_port', 'execute_wing_code', 'wing_to_maya']
+=======
+__all__ = ['simple_command_port', 'execute_wing_code', 'wing_to_maya', 'maya_server', 'maya_client']
+>>>>>>> c57ef4d57 (Updates to the DCCsi)

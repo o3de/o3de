@@ -32,7 +32,12 @@ _TYPE_TAG = 'module'
 
 _PACKAGENAME = _TOOL_TAG
 
+<<<<<<< HEAD
 __all__ = ['config_utils', 'render',
+=======
+__all__ = ['initialize_logger', 'shared',
+           'config_utils', 'render',
+>>>>>>> c57ef4d57 (Updates to the DCCsi)
            'constants', 'return_stub', 'synthetic_env',
            'env_base', 'env_bool', 'test', 'dev',
            'lumberyard', 'marmoset']  # 'blender', 'maya', 'substance', 'houdini']

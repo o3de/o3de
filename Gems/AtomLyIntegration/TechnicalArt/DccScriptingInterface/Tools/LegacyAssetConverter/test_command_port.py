@@ -3,55 +3,6 @@ import pickle
 import traceback
 import sys
 
-# BUFFER_SIZE = 4096
-# port = 20201
-#
-# if len(sys.argv) > 1:
-#     port = sys.argv[1]
-#
-# def SendCommand(target_command):
-#     maya_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-#     maya_socket.connect(('localhost', port))
-#
-#     try:
-#         maya_socket.send("import maya.cmds as cmds".encode())
-#         data = maya_socket.recv(BUFFER_SIZE)
-#         maya_socket.send("cmds.polySphere()".encode())
-#         data = maya_socket.recv(BUFFER_SIZE)
-#
-#         # This is a workaround for replacing "null bytes" and converting
-#         # return information as a list (as opposed to a string)
-#         result = eval(data.decode().replace('\x00', ''))
-#         print(result[0])
-#     except Exception as e:
-#         print ('Connection Failed: {}'.format(e))
-#     finally:
-#         maya_socket.close()
-#
-#
-#     # maya.send('import maya.cmds as mc; mc.polyCube()')
-#     # maya.close()
-#
-# if __name__=='__main__':
-#     target_command = "import maya.cmds as mc; mc.polySphere();"
-#     SendCommand(target_command)
-
-
-
-
-#Port Number 20201
-# MayaVersion + 0 (Mel) or 1 (Python)
-#
-# import maya.cmds as mc
-# mc.commandPort(name=":20201", sourceType="python")
-#
-#
-# His user setup has this in it:
-#
-# if not mc.about(batch=True):
-#     mc.commandPort(name=":20200", sourceType="mel")
-#     mc.commandPort(name=":20201", sourceType="python")
-
 
 class MayaClient(object):
     PORT = 20201
@@ -66,7 +17,7 @@ class MayaClient(object):
             self.port = port
         try:
             self.maya_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.maya_socket.connect(('localhost', self.PORT))
+            self.maya_socket.connect(('localhost', self.port))
         except:
             traceback.print_exc()
             return False
@@ -146,8 +97,6 @@ if __name__ == '__main__':
             print('Disconnected successfully')
     else:
         print('Failed to connect')
-
-
 
 
 if __name__ == "__main__":

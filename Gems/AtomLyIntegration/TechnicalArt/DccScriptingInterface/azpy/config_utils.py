@@ -219,12 +219,17 @@ if __name__ == '__main__':
     _LOGGER.info('DCCSI_CONFIG_PATH: {}'.format(_config))
 
     _LOGGER.info('LY_DEV: {}'.format(get_stub_check_path('engine.json')))
+<<<<<<< HEAD
 
     # this will be deprecated and shouldn't work soon (returns None)
     _LOGGER.info('LY_PROJECT: {}'.format(get_current_project_cfg(get_stub_check_path('bootstrap.cfg'))))
 
     # new o3de version
     _LOGGER.info('LY_PROJECT: {}'.format(get_current_project()))
+=======
+
+    _LOGGER.info('LY_PROJECT: {}'.format(get_current_project(get_stub_check_path('engine.json'))))
+>>>>>>> c57ef4d57 (Updates to the DCCsi)
 
     _LOGGER.info('DCCSI_PYTHON_LIB_PATH: {}'.format(bootstrap_dccsi_py_libs(return_stub_dir('dccsi_stub'))))
 

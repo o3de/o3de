@@ -1,0 +1,1 @@
+print('hello from texture assign')

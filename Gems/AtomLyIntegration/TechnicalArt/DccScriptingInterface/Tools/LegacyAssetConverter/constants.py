@@ -14,7 +14,7 @@
 # File Description:
 # This is an area to make customized changes in how the script looks for and processes files
 # -------------------------------------------------------------------------
-
+import os
 
 IMAGE_TYPES = ['.tif', '.tiff', '.png', '.jpg', '.jpeg', '.tga']
 
@@ -75,3 +75,11 @@ FBX_ASSIGNED_GEO = 'assigned'
 # id mask images when no UVs present
 EMPTY_IMAGE_LOW = 260000
 EMPTY_IMAGE_LOW = 270000
+
+EXTERNAL_SCRIPTS = {
+    'Attach Textures': ['maya', f'{os.environ["DCCSIG_PATH"]}\\azpy\\maya\\stingray_texture_assignments.py'],
+    'Create ID Maps': 'tbd',
+    'Create Metallic Map': 'tbd',
+    'Set Maya Workspace': 'tbd',
+    'Archive Asset': 'tbd'
+}

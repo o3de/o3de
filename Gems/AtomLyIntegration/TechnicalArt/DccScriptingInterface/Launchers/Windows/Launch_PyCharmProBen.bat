@@ -22,10 +22,10 @@ PUSHD %~dp0
 
 :: Constant Vars (Global)
 :: global debug (propogates)
-IF "%DCCSI_GDEBUG%"=="" (set DCCSI_GDEBUG=False)
+IF "%DCCSI_GDEBUG%"=="" (set DCCSI_GDEBUG=True)
 echo     DCCSI_GDEBUG = %DCCSI_GDEBUG%
 :: initiates debugger connection
-IF "%DCCSI_DEV_MODE%"=="" (set DCCSI_DEV_MODE=False)
+IF "%DCCSI_DEV_MODE%"=="" (set DCCSI_DEV_MODE=True)
 echo     DCCSI_DEV_MODE = %DCCSI_DEV_MODE%
 :: sets debugger, options: WING, PYCHARM
 IF "%DCCSI_GDEBUGGER%"=="" (set DCCSI_GDEBUGGER=WING)
