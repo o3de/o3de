@@ -194,7 +194,7 @@ if __name__ == '__main__':
 
     _LOGGER.info('LY_DEV: {}'.format(get_stub_check_path('engine.json')))
 
-    _LOGGER.info('LY_PROJECT: {}'.format(get_current_project(get_stub_check_path('bootstrap.cfg'))))
+    _LOGGER.info('LY_PROJECT: {}'.format(get_current_project(get_stub_check_path('engine.json'))))
 
     _LOGGER.info('DCCSI_PYTHON_LIB_PATH: {}'.format(bootstrap_dccsi_py_libs(return_stub_dir('dccsi_stub'))))
 

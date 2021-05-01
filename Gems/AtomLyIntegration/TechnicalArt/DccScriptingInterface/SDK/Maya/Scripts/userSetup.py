@@ -14,12 +14,12 @@
 from __future__ import unicode_literals
 
 """
-This module fullfils the maya bootstrap pattern as described in their docs
+This module fulfills the maya bootstrap pattern as described in their docs
 https://tinyurl.com/y2aoz8es
 
 Pattern is similar to Lumberyard Editor\\Scripts\\bootstrap.py
 
-For now the proper way to initiate Maya boostrapping the DCCsi, is to use
+For now the proper way to initiate Maya bootstrapping the DCCsi, is to use
 the provided env and launcher bat files.
 
 If you are developing for the DCCsi you can use this launcher to start Maya:
@@ -49,6 +49,7 @@ from azpy.env_base import _BASE_ENVVAR_DICT
 from azpy.env_bool import env_bool
 from azpy.constants import ENVAR_DCCSI_GDEBUG
 from azpy.constants import ENVAR_DCCSI_DEV_MODE
+from azpy.maya.utils import maya_server as server
 
 # -- maya imports
 import maya.cmds as cmds
@@ -76,7 +77,7 @@ _LOGGER.info('DCCSI_GDEBUG: {0}.'.format({_G_DEBUG}))
 _LOGGER.info('DCCSI_DEV_MODE: {0}.'.format({_DCCSI_DEV_MODE}))
 
 # flag to turn off setting up callbacks, until they are fully implemented
-# To Do: consider making it a settings option to define and enable/disable
+# TODO: consider making it a settings option to define and enable/disable
 _G_LOAD_CALLBACKS = True  # couple bugs, couple NOT IMPLEMENTED
 _LOGGER.info('DCCSI_MAYA_SET_CALLBACKS: {0}.'.format({_G_LOAD_CALLBACKS}))
 
@@ -193,7 +194,7 @@ _LY_AZPY_PATH = _BASE_ENVVAR_DICT[ENVAR_DCCSI_AZPY_PATH]
 
 
 # -------------------------------------------------------------------------
-# To Do: implement data driven config
+# TODO: implement data driven config
 # Currently not used, but will be where we store the ordered dict
 # which is parsed from the project bootstrapping config files.
 _G_app_config = {}
@@ -209,7 +210,7 @@ _fix_paths = None
 # -------------------------------------------------------------------------
 # add appropriate common tools paths to the maya environment variables
 def startup():
-    """Early starup execution before mayautils.executeDeferred(). 
+    """Early starup execution before mayautils.executeDeferred().
     Some things like UI and plugins should be defered to avoid failure"""
     _LOGGER.info('startup() fired')
 
@@ -270,7 +271,7 @@ def post_startup():
     # this ensures the fixPaths callback is loaded
     # even when the other global callbacks are disabled
     from set_callbacks import install_fix_paths
-    install_fix_paths()    
+    install_fix_paths()
 
     # set the project workspace
     #_LY_PROJECT_PATH = _BASE_ENVVAR_DICT[ENVAR_LY_PROJECT_PATH]
@@ -302,13 +303,39 @@ def post_startup():
     # manage custom menu in a sub-module
     from set_menu import set_main_menu
     set_main_menu()
-    
-    # To Do: manage custom shelf in a sub-module
+
+    # TODO: manage custom shelf in a sub-module
 
     _LOGGER.info('post_startup(), COMPLETE')
     _LOGGER.info('DCCsi Bootstrap, COMPLETE')
     return 0
 # -------------------------------------------------------------------------
+
+# Jonny- this should be at least printing that the server cannot start when launching Maya from the bat file. I have
+# checked sys.path in Maya on launch and the path to the userSetup file is there... does this whole entire module
+# need to be wrapped in a evalDeferred? I'm kind of out of ideas tonight, but will try some more tomorrow. Thanks for
+# taking a look. Also, if you want to test out the maya_client and maya_server setup- maya_server is what Maya needs
+# launch. From there, if you run maya client from your idea you will see both modules trace out messages verifying
+# they are connected. I'll be online a little later- if you do have time to look at this and gain any insight as to
+# how to get this userSetup file to launch ping me!
+
+# Launch Communication Server
+def initialize():
+    print('UserSetup is runnning')
+    # Temporary server import
+    try:
+        # I tried adding these paths in my userSetup.py file in maya scripts and the module partially worked. Unfortunately
+        # it can't seem to find the "shared" module where the base classes reside
+        sys.path.append("E:/Depot/o3de_dccsi/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/azpy")
+        sys.path.append("E:/Depot/o3de_dccsi/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/azpy/maya/utils")
+        import maya_server
+        maya_server.start_server()
+        print('Successfully started server')
+    except Exception as e:
+        print('Could not start server: {}'.format(e))
+
+
+cmds.evalDeferred(initialize, lp=True)
 
 
 # -------------------------------------------------------------------------

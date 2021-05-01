@@ -47,6 +47,7 @@ from shutil import copyfile
 
 # azpy bootstrapping and extensions
 import azpy.config_utils
+import azpy.maya.utils.simple_command_port as command_port
 
 _config = azpy.config_utils.get_dccsi_config()
 print(_config)
@@ -103,7 +104,7 @@ _LOGGER.debug('Initializing: {0}.'.format({module_name}))
 
 
 class LegacyFilesConverter(QtWidgets.QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, cli_enabled=False, parent=None):
         super(LegacyFilesConverter, self).__init__(parent)
 
         self.app = QtWidgets.QApplication.instance()
@@ -120,6 +121,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         self.p = None
         self.modal_dialog = None
         self.logger_enabled = True
+        self.cli_enabled = cli_enabled
         self.image_key_dictionary = {
             'ddn': ['ddn'],
             'ddna': ['ddna'],
@@ -184,7 +186,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         self.input_directory_label.setFont(self.bold_font)
         self.input_directory_label.setFixedWidth(80)
         self.input_field_layout.addWidget(self.input_directory_label)
-        self.input_path_field = QtWidgets.QLineEdit('C:/Users/benblac/Desktop/MadWorld/dlc/')
+        self.input_path_field = QtWidgets.QLineEdit('C:/Users/benblac/Desktop/StarterGameTesting/AAGun')
         self.input_path_field.textChanged.connect(self.set_io_directories)
         self.input_path_field.setFixedHeight(25)
         self.input_field_layout.addWidget(self.input_path_field)
@@ -200,7 +202,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         self.output_directory_label.setFont(self.bold_font)
         self.output_directory_label.setFixedWidth(80)
         self.output_field_layout.addWidget(self.output_directory_label)
-        self.output_path_field = QtWidgets.QLineEdit('C:/Users/benblac/Desktop/MadWorld/dlc/')
+        self.output_path_field = QtWidgets.QLineEdit('C:/Users/benblac/Desktop/StarterGameOutput')
         self.output_path_field.textChanged.connect(self.set_io_directories)
         self.output_path_field.setFixedHeight(25)
         self.output_field_layout.addWidget(self.output_path_field)
@@ -247,7 +249,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         self.create_material_files_checkbox.setChecked(True)
         self.left_checkbox_items.addWidget(self.create_material_files_checkbox)
         self.create_maya_files_checkbox = QtWidgets.QCheckBox('Create Maya Files')
-        self.create_maya_files_checkbox.setChecked(False)
+        self.create_maya_files_checkbox.setChecked(True)
         self.left_checkbox_items.addWidget(self.create_maya_files_checkbox)
 
         # Center Column
@@ -285,6 +287,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
 
         self.window_tabs = QtWidgets.QTabWidget()
         self.main_container.addWidget(self.window_tabs)
+        self.main_container.addSpacing(10)
 
         # +++++++++++++++++++---->>
         # DATA TAB --------------->>
@@ -498,11 +501,8 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         self.run_script_groupbox = QtWidgets.QGroupBox("Run Script")
         self.run_script_groupbox.setLayout(self.run_script_layout)
         self.run_script_combobox = QtWidgets.QComboBox()
-        self.run_script_items = ['Attach Textures', 'Create ID Maps', 'Create Metallic Map', 'Set Maya Workspace',
-                                 'Archive Asset']
-        self.run_script_combobox.addItems(self.run_script_items)
+        self.run_script_combobox.addItems([i for i in constants.EXTERNAL_SCRIPTS.keys()])
         self.run_script_combobox.setFixedHeight(25)
-        self.run_script_combobox.setStyleSheet('QComboBox:item {padding-left:30px;}')
         self.run_script_layout.addWidget(self.run_script_combobox)
         self.run_button = QtWidgets.QPushButton('Run')
         self.run_button.clicked.connect(self.run_script_clicked)
@@ -520,6 +520,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         self.update_spreadsheet_button.setFixedHeight(27)
         self.update_date_button = QtWidgets.QPushButton('Update All')
         self.update_date_button.setFixedHeight(27)
+        self.update_date_button.clicked.connect(self.update_all_clicked)
         self.checklist_layout.addWidget(self.update_spreadsheet_button)
         self.checklist_layout.addWidget(self.update_date_button)
         self.checklist_script_combo_layout.addWidget(self.checklist_groupbox)
@@ -573,20 +574,50 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         on startup to display in the tool's main window in the UI if previously ran.
         :return:
         """
-        self.mayapy_path = self.get_mayapy_path()
-        self.set_io_directories()
-        self.asset_data_window.setText('Ready.')
-        self.initialize_qprocess()
-
         # Get Material Definition Template
         with open(self.default_material_definition) as json_file:
             self.template_lumberyard_material = json.load(json_file)
 
-        if os.path.exists(os.path.join(Path.cwd(), 'materialsdb.dat')):
-            if self.materials_db:
-                self.set_data_window()
-            else:
-                self.asset_data_window.setText('Ready.')
+        self.mayapy_path = self.get_mayapy_path()
+
+        if self.cli_enabled:
+            _LOGGER.info(f'CLI ACCESS:::::::::::\nValues passed: {self.cli_enabled}')
+            source_path = Path(self.cli_enabled['src'])
+            destination_path = Path(self.cli_enabled['dst'])
+
+            # Set processing options ---------------->>
+            if source_path.is_file() and source_path.suffix.lower() == '.fbx':
+                _LOGGER.info('FBX as source path- Single file processing initiated.')
+                self.use_file_radio_button.setChecked(True)
+                self.texture_path_root = self.cli_enabled['base']
+            elif source_path == destination_path:
+                self.texture_path_root = self.cli_enabled['base']
+
+            self.input_path_field.setText(str(source_path))
+            self.output_path_field.setText(str(destination_path))
+
+            if not self.cli_enabled['material']:
+                self.create_material_files_checkbox.setChecked(False)
+
+            if not self.cli_enabled['logs']:
+                self.create_logs_checkbox.setChecked(False)
+
+            if self.cli_enabled['overwrite']:
+                self.reprocess_checkbox.setChecked(True)
+
+            self.set_io_directories()
+            self.initialize_qprocess()
+            self.process_files_clicked()
+
+        else:
+            if os.path.exists(os.path.join(Path.cwd(), 'materialsdb.dat')):
+                if self.materials_db:
+                    self.set_data_window()
+                else:
+                    self.asset_data_window.setText('Ready.')
+            self.show()
+            self.set_io_directories()
+            self.initialize_qprocess()
 
     def process_directory(self, directory_path):
         """
@@ -1592,7 +1623,8 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         if self.input_directory == self.output_directory:
             destination_directory = self.output_directory
         else:
-            destination_directory = self.output_directory / 'Assets\Objects' / target_directory_name
+            destination_directory = Path(self.output_directory) / 'Assets\Objects' / target_directory_name
+            _LOGGER.info(f'DestinationDirectory: {destination_directory}')
             if not destination_directory.is_dir():
                 _LOGGER.info(f'Making Destination Directory: {destination_directory}')
                 destination_directory.mkdir()
@@ -1672,13 +1704,15 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         :param progress: This contains the type of event and the name of the generated asset
         :return:
         """
+        _LOGGER.info(f'HMM::::: [{progress}]')
         event_type = progress.split('_')[0]
-        progress_weight = constants.LOAD_WEIGHTS[event_type]
-        self.load_events[0] += progress_weight
-        _LOGGER.info(f'LoadEvent----->>>>> {self.load_events}')
-        load_percentage = int((self.load_events[0] / self.load_events[1]) * 100)
-        self.progress_bar.setValue(load_percentage)
-        self.app.processEvents()
+        if event_type in constants.LOAD_WEIGHTS:
+            progress_weight = constants.LOAD_WEIGHTS[event_type]
+            self.load_events[0] += progress_weight
+            _LOGGER.info(f'LoadEvent----->>>>> {self.load_events}')
+            load_percentage = int((self.load_events[0] / self.load_events[1]) * 100)
+            self.progress_bar.setValue(load_percentage)
+            self.app.processEvents()
 
     def maya_processing_complete(self, db_updates):
         self.reformat_materials_db(False, db_updates)
@@ -1757,11 +1791,14 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                     self.process_directory(input_directory_path)
                 else:
                     # This is executed for in-place conversion. Get base directory for texture relative path
-                    text, ok = QtWidgets.QInputDialog.getText(self, 'Set Relative Texture Path Base',
-                                                              'Enter the base directory for relative material texture paths:')
-                    if ok:
-                        self.texture_path_root = text
+                    if self.cli_enabled:
                         self.process_directories_in_place(self.input_directory)
+                    else:
+                        text, ok = QtWidgets.QInputDialog.getText(self, 'Set Relative Texture Path Base',
+                                                                  'Enter the base directory for relative material texture paths:')
+                        if ok:
+                            self.texture_path_root = text
+                            self.process_directories_in_place(self.input_directory)
             else:
                 invalid_path = 'Please enter a valid directory path.'
 
@@ -1772,11 +1809,14 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                 self.output_directory = os.path.normpath(self.output_path_field.text())
                 if os.path.isdir(self.output_directory) and self.output_directory == self.input_directory:
                     # This is executed for in-place conversion. Get base directory for texture relative path
-                    text, ok = QtWidgets.QInputDialog.getText(self, 'Set Relative Texture Path Base',
-                                                    'Enter the base directory for relative material texture paths:')
-                    if ok:
-                        self.texture_path_root = text
+                    if self.cli_enabled:
                         self.process_single_asset(fbx_path, True)
+                    else:
+                        text, ok = QtWidgets.QInputDialog.getText(self, 'Set Relative Texture Path Base',
+                                                        'Enter the base directory for relative material texture paths:')
+                        if ok:
+                            self.texture_path_root = text
+                            self.process_single_asset(fbx_path, True)
                 else:
                     self.set_output_directory()
                     self.process_single_asset(fbx_path)
@@ -1799,6 +1839,9 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                 if k == search_text:
                     self.inspect_asset(section_data)
                     return
+
+    def update_all_clicked(self):
+        _LOGGER.info(':::>\n{}'.format(self.materials_db['0']))
 
     def display_combobox_changed(self):
         self.find_field.clear()
@@ -1855,10 +1898,13 @@ class LegacyFilesConverter(QtWidgets.QDialog):
 
     def run_script_clicked(self):
         """
-        Sends commands from the standalone window to an open Maya session.
+        Sends commands from the standalone window to a DCC application.
         :return:
         """
-        pass
+        script_info = constants.EXTERNAL_SCRIPTS[self.run_script_combobox.currentText()]
+        _LOGGER.info(f'Running script [{self.run_script_combobox.currentText()}]: Info: {script_info}')
+
+        # Launch Maya via Launcher
 
     def back_button_clicked(self):
         _LOGGER.info('Back button clicked')
@@ -1896,9 +1942,14 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                                     return
 
 
+def run_cli(options):
+    _LOGGER.info(f'Running CLI from Main. Options: {options}')
+    QApplication(sys.argv)
+    LegacyFilesConverter(options)
+
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     app.setStyle('Fusion')
-    converter = LegacyFilesConverter()
-    converter.show()
+    LegacyFilesConverter(False)
     sys.exit(app.exec_())
