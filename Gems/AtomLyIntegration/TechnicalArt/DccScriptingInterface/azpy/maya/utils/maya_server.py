@@ -22,7 +22,7 @@ import time
 from PySide2 import QtWidgets
 
 shared_path = os.path.join(os.environ['DCCSIG_PATH'], 'azpy', 'shared')
-from azpy.shared import server_base
+from azpy.shared.server_base import ServerBase
 
 # -- Extension Modules --
 # -
@@ -38,7 +38,7 @@ from azpy.shared import server_base
 
 
 # -------------------------------------------------------------------------
-class MayaServer(server_base.ServerBase):
+class MayaServer(ServerBase):
     PORT = 17337
 
     def __init__(self, parent_window):
