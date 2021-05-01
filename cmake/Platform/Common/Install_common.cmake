@@ -13,6 +13,10 @@ set(CMAKE_INSTALL_MESSAGE NEVER) # Simplify messages to reduce output noise
 
 ly_set(LY_DEFAULT_INSTALL_COMPONENT "Core")
 
+file(RELATIVE_PATH runtime_output_directory ${CMAKE_BINARY_DIR} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+file(RELATIVE_PATH library_output_directory ${CMAKE_BINARY_DIR} ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+set(install_output_folder "${CMAKE_INSTALL_PREFIX}/${runtime_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>")
+
 #! ly_install_target: registers the target to be installed by cmake install.
 #
 # \arg:NAME name of the target
@@ -47,13 +51,11 @@ function(ly_install_target ly_install_target_NAME)
     if(target_runtime_output_directory)
         file(RELATIVE_PATH target_runtime_output_subdirectory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} ${target_runtime_output_directory})
     endif()
-    file(RELATIVE_PATH runtime_output_directory ${CMAKE_BINARY_DIR} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
     get_target_property(target_library_output_directory ${ly_install_target_NAME} LIBRARY_OUTPUT_DIRECTORY)
     if(target_library_output_directory)
         file(RELATIVE_PATH target_library_output_subdirectory ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} ${target_library_output_directory})
     endif()
-    file(RELATIVE_PATH library_output_directory ${CMAKE_BINARY_DIR} ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 
     install(
         TARGETS ${ly_install_target_NAME}
@@ -84,6 +86,28 @@ function(ly_install_target ly_install_target_NAME)
         DESTINATION cmake
         COMPONENT ${ly_install_target_COMPONENT}
     )
+
+    get_target_property(target_type ${ly_install_target_NAME} TYPE)
+    set(runtime_dependencies_list SHARED MODULE EXECUTABLE APPLICATION) # Only have to deploy for dlls/exes
+    if(target_type IN_LIST runtime_dependencies_list)
+        get_property(has_qt_dependency GLOBAL PROPERTY LY_DETECT_QT_DEPENDENCY_${ly_install_target_NAME})
+        if(has_qt_dependency)
+            # Qt deploy needs to be done after the binary is copied to the output, so we do a install(CODE) which effectively
+            # puts it as a postbuild step of the "install" target. Binaries are copied at that point.
+            if(NOT EXISTS ${WINDEPLOYQT_EXECUTABLE})
+                message(FATAL_ERROR "Qt deploy executable not found: ${WINDEPLOYQT_EXECUTABLE}")
+            endif()
+            set(target_output "${install_output_folder}/${target_runtime_output_subdirectory}/$<TARGET_FILE_NAME:${ly_install_target_NAME}>")
+            install(CODE
+"execute_process(COMMAND \"${WINDEPLOYQT_EXECUTABLE}\" --verbose 0 --no-compiler-runtime \"${target_output}\" ERROR_VARIABLE deploy_error RESULT_VARIABLE deploy_result)
+if (NOT \${deploy_result} EQUAL 0)
+    if(NOT deploy_result MATCHES \"does not seem to be a Qt executable\" )
+        message(SEND_ERROR \"Deploying qt for ${target_output} returned \${result}: \${deploy_error}\")
+    endif()
+endif()
+")
+        endif()
+    endif()
 
 endfunction()
 
@@ -310,8 +334,8 @@ function(ly_setup_others)
 
     # Registry
     install(DIRECTORY
-        ${CMAKE_CURRENT_BINARY_DIR}/bin/$<CONFIG>/Registry
-        DESTINATION ./bin/$<CONFIG>
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>/Registry
+        DESTINATION ./${runtime_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>
         COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
     install(DIRECTORY
@@ -329,8 +353,7 @@ function(ly_setup_others)
 
     # Gem Source Assets and Registry
     # Find all gem directories relative to the CMake Source Dir
-    file(
-        GLOB_RECURSE
+    file(GLOB_RECURSE
         gems_assets_path
         LIST_DIRECTORIES TRUE
         RELATIVE "${CMAKE_SOURCE_DIR}/"
@@ -348,17 +371,6 @@ function(ly_setup_others)
                 COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
             )
         endif()
-    endforeach()
-
-
-    # Qt Binaries
-    set(QT_BIN_DIRS bearer iconengines imageformats platforms styles translations)
-    foreach(qt_dir ${QT_BIN_DIRS})
-        install(DIRECTORY
-            ${CMAKE_CURRENT_BINARY_DIR}/bin/$<CONFIG>/${qt_dir}
-            DESTINATION ./bin/$<CONFIG>
-            COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
-        )
     endforeach()
 
     # Templates
