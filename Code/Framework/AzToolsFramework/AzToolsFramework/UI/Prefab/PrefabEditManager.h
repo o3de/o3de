@@ -30,8 +30,9 @@ namespace AzToolsFramework
             // PrefabEditInterface...
             void EditOwningPrefab(AZ::EntityId entityId) override;
             bool IsOwningPrefabBeingEdited(AZ::EntityId entityId) override;
+            bool IsOwningPrefabInEditStack(AZ::EntityId entityId) override;
 
-            AZ::EntityId m_instanceBeingEdited;
+            AZStd::deque<AZ::EntityId> m_instanceEditStack;
 
             PrefabPublicInterface* m_prefabPublicInterface;
         };

@@ -165,7 +165,7 @@ namespace AzToolsFramework
         // OutlinerModelNotificationBus::Handler
         // Receive notification from the outliner model that we should scroll
         // to a given entity
-        void QueueScrollToNewContent(const AZ::EntityId& entityId) override;
+        void QueueScrollToNewContent(AZ::EntityId entityId) override;
 
         void SetDefaultTreeViewEditTriggers();
 

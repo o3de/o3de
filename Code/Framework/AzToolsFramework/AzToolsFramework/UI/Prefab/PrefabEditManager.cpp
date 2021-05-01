@@ -8,6 +8,7 @@
 #include <AzToolsFramework/UI/Prefab/PrefabEditManager.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzToolsFramework/UI/Outliner/EntityOutlinerCacheBus.h>
 
 namespace AzToolsFramework
 {
@@ -33,13 +34,33 @@ namespace AzToolsFramework
 
         void PrefabEditManager::EditOwningPrefab(AZ::EntityId entityId)
         {
-            m_instanceBeingEdited = m_prefabPublicInterface->GetInstanceContainerEntityId(entityId);
+            // TODO - make sure the new instance is s child of the one on top of the stack before pushing...
+            // Will likely need to change this API
+            m_instanceEditStack.push_back(m_prefabPublicInterface->GetInstanceContainerEntityId(entityId));
+
+            EntityOutlinerCacheNotificationBus::Broadcast(&EntityOutlinerCacheNotifications::EntityCacheChanged, entityId);
         }
 
         bool PrefabEditManager::IsOwningPrefabBeingEdited(AZ::EntityId entityId)
         {
+            if (m_instanceEditStack.size() == 0)
+            {
+                return false;
+            }
+
             AZ::EntityId containerEntity = m_prefabPublicInterface->GetInstanceContainerEntityId(entityId);
-            return m_instanceBeingEdited == containerEntity;
+            return m_instanceEditStack.back() == containerEntity;
+        }
+
+        bool PrefabEditManager::IsOwningPrefabInEditStack(AZ::EntityId entityId)
+        {
+            if (m_instanceEditStack.size() == 0)
+            {
+                return false;
+            }
+
+            AZ::EntityId containerEntity = m_prefabPublicInterface->GetInstanceContainerEntityId(entityId);
+            return AZStd::find(m_instanceEditStack.begin(), m_instanceEditStack.end(), containerEntity) != m_instanceEditStack.end();
         }
     }
 }

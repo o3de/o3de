@@ -38,17 +38,17 @@ namespace AzToolsFramework
     public:
         /// The entity has changed in such a way that its outliner representation has changed and should be redrawn
         /// invalidate now is true if the item needs to be redrawn immediately.
-        virtual void EntityCacheChanged(const AZ::EntityId& /*entityId*/) {}
+        virtual void EntityCacheChanged(AZ::EntityId /*entityId*/) {}
 
         /// The outliner cache item associated with the given entity has been selected
         /// and is requesting that a notification be sent to the tree view.
         /// These requests should be handled, considered, and either acted on or queued
-        virtual void EntityCacheSelectionRequest(const AZ::EntityId&  /*entityId*/) {}
+        virtual void EntityCacheSelectionRequest(AZ::EntityId  /*entityId*/) {}
 
         /// The outliner cache item associated with the given entity has been deselected
         /// and is requesting that the a notification be sent to the tree view.
         /// These requests should be handled, considered, and either acted on or queued
-        virtual void EntityCacheDeselectionRequest(const AZ::EntityId&  /*entityId*/) {}
+        virtual void EntityCacheDeselectionRequest(AZ::EntityId  /*entityId*/) {}
     };
 
     /// \ref EditorVisibilityNotifications
@@ -63,7 +63,7 @@ namespace AzToolsFramework
         /// and is requesting that a notification be sent to the tree view.
         /// These requests should be handled, considered, and either acted on or queued
         virtual void ModelEntitySelectionChanged(const AZStd::unordered_set<AZ::EntityId>& /*selectedEntityIdList*/, const AZStd::unordered_set<AZ::EntityId>& /*deselectedEntityIdList*/) {}
-        virtual void QueueScrollToNewContent(const AZ::EntityId& /*entityId*/) {}
+        virtual void QueueScrollToNewContent(AZ::EntityId /*entityId*/) {}
     };
 
     /// \ref EditorVisibilityNotifications

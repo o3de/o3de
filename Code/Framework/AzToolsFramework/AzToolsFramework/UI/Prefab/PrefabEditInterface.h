@@ -35,6 +35,13 @@ namespace AzToolsFramework
              * @return True if the prefab owning this entity is being edited, false otherwise.
              */
             virtual bool IsOwningPrefabBeingEdited(AZ::EntityId entityId) = 0;
+            
+            /**
+             * Queries the Edit Manager to know if the provided entity is part of a prefab that is currently in the edit stack.
+             * @param entityId The entity whose prefab editing state we want to query.
+             * @return True if the prefab owning this entity is in the edit stack, false otherwise.
+             */
+            virtual bool IsOwningPrefabInEditStack(AZ::EntityId entityId) = 0;
         };
 
     } // namespace Prefab

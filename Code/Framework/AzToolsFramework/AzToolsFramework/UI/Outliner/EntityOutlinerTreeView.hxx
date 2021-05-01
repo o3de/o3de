@@ -72,6 +72,8 @@ namespace AzToolsFramework
         QImage createDragImage(const QModelIndexList& indexList);
 
         void PaintBranchBackground(QPainter* painter, const QRect& rect, const QModelIndex& index) const;
+
+        bool IsExpanderHidden(const QModelIndex& index) const;
         
         QMouseEvent* m_queuedMouseEvent;
         bool m_draggingUnselectedItem; // This is set when an item is dragged outside its bounding box.
@@ -81,6 +83,8 @@ namespace AzToolsFramework
 
         const QColor m_selectedColor = QColor(255, 255, 255, 45);
         const QColor m_hoverColor = QColor(255, 255, 255, 30);
+        const QIcon m_expandedIcon;
+        const QIcon m_collapsedIcon;
 
         EditorEntityUiInterface* m_editorEntityFrameworkInterface;
     };

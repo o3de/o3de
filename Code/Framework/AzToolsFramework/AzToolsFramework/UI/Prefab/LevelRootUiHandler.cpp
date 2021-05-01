@@ -69,6 +69,16 @@ namespace AzToolsFramework
         return infoString;
     }
 
+    bool LevelRootUiHandler::IsOverridingExpandedState(AZ::EntityId /*entityId*/) const
+    {
+        return true;
+    }
+
+    bool LevelRootUiHandler::GenerateOverriddenExpandedState(AZ::EntityId /*entityId*/) const
+    {
+        return true;
+    }
+
     bool LevelRootUiHandler::CanToggleLockVisibility(AZ::EntityId /*entityId*/) const
     {
         return false;

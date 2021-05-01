@@ -31,6 +31,11 @@ AzToolsFramework--EntityOutlinerWidget QTreeView::branch:selected
     background: rgba(255, 255, 255, 45);
 }
 
+AzToolsFramework--EntityOutlinerWidget QTreeView::branch:open:has-children
+, AzToolsFramework--EntityOutlinerWidget QTreeView::branch:closed:has-children
+{
+    image: none;
+}
 
 /* --- VISIBILITY AND LOCK --- */
 

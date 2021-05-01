@@ -61,6 +61,16 @@ namespace AzToolsFramework
         return true;
     }
 
+    bool EditorEntityUiHandlerBase::IsOverridingExpandedState(AZ::EntityId /*entityId*/) const
+    {
+        return false;
+    }
+    
+    bool EditorEntityUiHandlerBase::GenerateOverriddenExpandedState(AZ::EntityId /*entityId*/) const
+    {
+        return false;
+    }
+
     void EditorEntityUiHandlerBase::PaintItemBackground(QPainter* /*painter*/, const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/) const
     {
     }

@@ -21,6 +21,7 @@
 #include <AzToolsFramework/Entity/EditorEntityRuntimeActivationBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
+#include <AzToolsFramework/UI/Outliner/EntityOutlinerCacheBus.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerSearchWidget.h>
 #include <AzToolsFramework/UI/SearchWidget/SearchCriteriaWidget.hxx>
 
@@ -52,6 +53,7 @@ namespace AzToolsFramework
         , private EntityCompositionNotificationBus::Handler
         , private EditorEntityRuntimeActivationChangeNotificationBus::Handler
         , private AZ::EntitySystemBus::Handler
+        , private EntityOutlinerCacheNotificationBus::Handler
     {
         Q_OBJECT;
 
@@ -213,6 +215,9 @@ namespace AzToolsFramework
 
         // EditorEntityRuntimeActivationChangeNotificationBus::Handler
         void OnEntityRuntimeActivationChanged(AZ::EntityId entityId, bool activeOnStart) override;
+
+        // EntityOutlinerCacheNotificationBus...
+        void EntityCacheChanged(AZ::EntityId entityId) override;
 
         // Drag/Drop of components from Component Palette.
         bool dropMimeDataComponentPalette(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent);

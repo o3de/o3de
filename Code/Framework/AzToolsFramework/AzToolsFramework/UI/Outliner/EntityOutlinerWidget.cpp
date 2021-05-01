@@ -31,9 +31,11 @@
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerListModel.hxx>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerSortFilterProxyModel.hxx>
 
+#include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Utilities/QtPluginPaths.h>
 #include <AzQtComponents/Utilities/QtViewPaneEffects.h>
+
 
 #include <QApplication>
 #include <QDir>
@@ -199,6 +201,8 @@ namespace AzToolsFramework
         m_proxyModel->setSourceModel(m_listModel);
         m_gui->m_objectTree->setModel(m_proxyModel);
 
+        AzQtComponents::Style::addClass(m_gui->m_objectTree, QStringLiteral("DisableArrowPainting"));
+
         // Link up signals for informing the model of tree changes using the proxy as an intermediary
         connect(m_gui->m_objectTree, &QTreeView::clicked, this, &EntityOutlinerWidget::OnTreeItemClicked);
         connect(m_gui->m_objectTree, &QTreeView::doubleClicked, this, &EntityOutlinerWidget::OnTreeItemDoubleClicked);
@@ -210,6 +214,10 @@ namespace AzToolsFramework
         connect(m_listModel, &EntityOutlinerListModel::EnableSelectionUpdates, this, &EntityOutlinerWidget::OnEnableSelectionUpdates);
         connect(m_listModel, &EntityOutlinerListModel::ResetFilter, this, &EntityOutlinerWidget::ClearFilter);
         connect(m_listModel, &EntityOutlinerListModel::ReapplyFilter, this, &EntityOutlinerWidget::InvalidateFilter);
+
+        connect(m_listModel, &EntityOutlinerListModel::modelReset, this, [this]() {
+            m_gui->m_objectTree->expandToDepth(1);
+        });
 
         QToolButton* display_options = new QToolButton(this);
         display_options->setObjectName(QStringLiteral("m_display_options"));
@@ -988,7 +996,7 @@ namespace AzToolsFramework
         m_focusInEntityOutliner = false;
     }
 
-    void EntityOutlinerWidget::QueueScrollToNewContent(const AZ::EntityId& entityId)
+    void EntityOutlinerWidget::QueueScrollToNewContent(AZ::EntityId entityId)
     {
         if (m_dropOperationInProgress)
         {
@@ -1138,7 +1146,6 @@ namespace AzToolsFramework
     {
         QTimer::singleShot(1, this, [this]() {
             m_gui->m_objectTree->setUpdatesEnabled(true);
-            m_gui->m_objectTree->expand(m_proxyModel->index(0,0));
         });
     }
 

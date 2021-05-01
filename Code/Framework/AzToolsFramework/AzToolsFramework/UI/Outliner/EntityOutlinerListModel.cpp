@@ -84,6 +84,7 @@ namespace AzToolsFramework
 
     EntityOutlinerListModel::~EntityOutlinerListModel()
     {
+        EntityOutlinerCacheNotificationBus::Handler::BusDisconnect();
         EditorEntityInfoNotificationBus::Handler::BusDisconnect();
         EditorEntityContextNotificationBus::Handler::BusDisconnect();
         ToolsApplicationEvents::Bus::Handler::BusDisconnect();
@@ -100,6 +101,7 @@ namespace AzToolsFramework
         EditorEntityInfoNotificationBus::Handler::BusConnect();
         EntityCompositionNotificationBus::Handler::BusConnect();
         AZ::EntitySystemBus::Handler::BusConnect();
+        EntityOutlinerCacheNotificationBus::Handler::BusConnect();
 
         m_editorEntityFrameworkInterface = AZ::Interface<AzToolsFramework::EditorEntityUiInterface>::Get();
 
@@ -1272,6 +1274,14 @@ namespace AzToolsFramework
         }
     }
 
+    void EntityOutlinerListModel::EntityCacheChanged(AZ::EntityId entityId)
+    {
+        OnEntityInfoResetBegin();
+        QueueEntityToExpand(entityId, true);
+        OnEntityInfoResetEnd();
+    }
+
+
     void EntityOutlinerListModel::OnEntityInfoResetBegin()
     {
         emit EnableSelectionUpdates(false);
@@ -1599,8 +1609,19 @@ namespace AzToolsFramework
 
     bool EntityOutlinerListModel::IsExpanded(const AZ::EntityId& entityId) const
     {
-        auto expandedItr = m_entityExpansionState.find(entityId);
-        return expandedItr != m_entityExpansionState.end() && expandedItr->second;
+        // Retrieve the Entity UI Handler
+        auto entityUiHandler = m_editorEntityFrameworkInterface->GetHandler(entityId);
+
+        // Check if expanded state is overridden
+        if (entityUiHandler != nullptr && entityUiHandler->IsOverridingExpandedState(entityId))
+        {
+            return entityUiHandler->GenerateOverriddenExpandedState(entityId);
+        }
+        else
+        {
+            auto expandedItr = m_entityExpansionState.find(entityId);
+            return expandedItr != m_entityExpansionState.end() && expandedItr->second;
+        }
     }
 
     void EntityOutlinerListModel::RestoreDescendantExpansion(const AZ::EntityId& entityId)

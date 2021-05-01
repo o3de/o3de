@@ -90,6 +90,16 @@ namespace AzToolsFramework
         return QPixmap(m_prefabIconPath);
     }
 
+    bool PrefabUiHandler::IsOverridingExpandedState(AZ::EntityId /*entityId*/) const
+    {
+        return true;
+    }
+
+    bool PrefabUiHandler::GenerateOverriddenExpandedState(AZ::EntityId entityId) const
+    {
+        return m_prefabEditInterface->IsOwningPrefabInEditStack(entityId);
+    }
+
     void PrefabUiHandler::PaintItemBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
     {
         if (!painter)
