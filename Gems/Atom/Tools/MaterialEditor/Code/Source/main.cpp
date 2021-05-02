@@ -64,5 +64,3 @@ int main(int argc, char** argv)
     app.Stop();
     return 0;
 }
-
-#include "main.moc"
