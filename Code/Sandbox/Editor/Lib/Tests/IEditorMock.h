@@ -96,7 +96,6 @@ public:
     MOCK_METHOD0(GetIEditorMaterialManager, IEditorMaterialManager* ()); 
     MOCK_METHOD0(GetIconManager, IIconManager* ());
     MOCK_METHOD0(GetMusicManager, CMusicManager* ());
-    MOCK_METHOD0(GetLensFlareManager, CLensFlareManager* ());
     MOCK_METHOD2(GetTerrainElevation, float(float , float ));
     MOCK_METHOD0(GetVegetationMap, class CVegetationMap* ());
     MOCK_METHOD0(GetEditorQtApplication, Editor::EditorQtApplication* ());
@@ -200,7 +199,6 @@ public:
     MOCK_METHOD0(GetLogFile, ILogFile* ());  
     MOCK_METHOD0(UnloadPlugins, void());
     MOCK_METHOD0(LoadPlugins, void());
-    MOCK_CONST_METHOD0(IsNewViewportInteractionModelEnabled, bool());
     MOCK_METHOD1(GetSearchPath, QString(EEditorPathName));
     MOCK_METHOD0(GetEditorPanelUtils, IEditorPanelUtils* ());
 

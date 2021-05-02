@@ -91,7 +91,6 @@ AZ_POP_DISABLE_WARNING
 
 #include "TrackView/TrackViewDialog.h"
 #include "ErrorReportDialog.h"
-#include "LensFlareEditor/LensFlareEditor.h"
 #include "TimeOfDayDialog.h"
 
 #include "Dialogs/PythonScriptsDialog.h"
@@ -878,52 +877,6 @@ void MainWindow::InitActions()
         .SetStatusTip(tr("Redo last undo operation"))
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateRedo);
 
-    if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        am->AddAction(ID_EDIT_SELECTALL, tr("Select &All"))
-            .SetShortcut(tr("Ctrl+A"))
-            .SetStatusTip(tr("Select all objects"))
-            ->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-        am->AddAction(ID_EDIT_SELECTNONE, tr("Deselect All"))
-            .SetShortcut(tr("Ctrl+Shift+D"))
-            .SetStatusTip(tr("Remove selection from all objects"));
-        am->AddAction(ID_EDIT_INVERTSELECTION, tr("&Invert Selection"))
-            .SetShortcut(tr("Ctrl+Shift+I"));
-    }
-
-    if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        am->AddAction(ID_LOCK_SELECTION, tr("Lock Selection"))
-            .SetShortcut(tr("Ctrl+Shift+Space"))
-            .SetToolTip(tr("Lock Selection (Ctrl+Shift+Space)"))
-            .SetStatusTip(tr("Lock Current Selection."));
-    }
-
-    if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        // implemented by EditorTransformComponentSelection when the new Viewport Interaction Model is enabled
-        am->AddAction(ID_EDIT_HIDE, tr("Hide Selection"))
-            .SetShortcut(tr("H"))
-            .SetToolTip(tr("Hide Selection (H)"))
-            .SetStatusTip(tr("Hide selected object(s)."))
-            .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateEditHide);
-        am->AddAction(ID_EDIT_UNHIDEALL, tr("Unhide All"))
-            .SetShortcut(tr("Ctrl+H"))
-            .SetToolTip(tr("Unhide All (Ctrl+H)"))
-            .SetStatusTip(tr("Unhide all hidden objects."));
-    }
-
-    am->AddAction(ID_EDIT_SHOW_LAST_HIDDEN, tr("Show Last Hidden"))
-        .SetShortcut(tr("Shift+H"))
-        .SetToolTip(tr("Show Last Hidden (Shift+H)"))
-        .SetStatusTip(tr("Show last hidden object."));
-
-    if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        am->AddAction(ID_MODIFY_LINK, tr("Parent"));
-        am->AddAction(ID_MODIFY_UNLINK, tr("Un-Parent"));
-    }
-
     am->AddAction(ID_EDIT_HOLD, tr("&Hold"))
         .SetShortcut(tr("Ctrl+Alt+H"))
         .SetToolTip(tr("&Hold (Ctrl+Alt+H)"))
@@ -933,29 +886,6 @@ void MainWindow::InitActions()
         .SetToolTip(tr("&Fetch (Ctrl+Alt+F)"))
         .SetStatusTip(tr("Restore saved state (Fetch)"));
 
-    if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        // implemented by EditorTransformComponentSelection when the new Viewport Interaction Model is enabled
-        am->AddAction(ID_EDIT_DELETE, tr("&Delete"))
-            .SetShortcut(QKeySequence::Delete)
-            .SetStatusTip(tr("Delete selected objects."))
-            ->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-
-        bool isPrefabSystemEnabled = false;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
-        bool prefabWipFeaturesEnabled = false;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
-
-        if (!isPrefabSystemEnabled || (isPrefabSystemEnabled && prefabWipFeaturesEnabled))
-        {
-            am->AddAction(ID_EDIT_CLONE, tr("Duplicate"))
-                .SetShortcut(tr("Ctrl+D"))
-                .SetToolTip(tr("Duplicate (Ctrl+D)"))
-                .SetStatusTip(tr("Duplicate selected objects."));
-        }
-    }
-
     // Modify actions
     am->AddAction(ID_EDIT_RENAMEOBJECT, tr("Rename Object(s)..."))
         .SetStatusTip(tr("Rename Object"));
@@ -963,24 +893,24 @@ void MainWindow::InitActions()
     am->AddAction(ID_EDITMODE_MOVE, tr("Move"))
         .SetIcon(Style::icon("Move"))
         .SetApplyHoverEffect()
-        .SetShortcut(GetIEditor()->IsNewViewportInteractionModelEnabled() ? tr("1") : tr("2"))
-        .SetToolTip(GetIEditor()->IsNewViewportInteractionModelEnabled() ? tr("Move (1)") : tr("Move (2)"))
+        .SetShortcut(tr("1"))
+        .SetToolTip(tr("Move (1)"))
         .SetCheckable(true)
         .SetStatusTip(tr("Select and move selected object(s)"))
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateEditmodeMove);
     am->AddAction(ID_EDITMODE_ROTATE, tr("Rotate"))
         .SetIcon(Style::icon("Translate"))
         .SetApplyHoverEffect()
-        .SetShortcut(GetIEditor()->IsNewViewportInteractionModelEnabled() ? tr("2") : tr("3"))
-        .SetToolTip(GetIEditor()->IsNewViewportInteractionModelEnabled() ? tr("Rotate (2)") : tr("Rotate (3)"))
+        .SetShortcut(tr("2"))
+        .SetToolTip(tr("Rotate (2)"))
         .SetCheckable(true)
         .SetStatusTip(tr("Select and rotate selected object(s)"))
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateEditmodeRotate);
     am->AddAction(ID_EDITMODE_SCALE, tr("Scale"))
         .SetIcon(Style::icon("Scale"))
         .SetApplyHoverEffect()
-        .SetShortcut(GetIEditor()->IsNewViewportInteractionModelEnabled() ? tr("3") : tr("4"))
-        .SetToolTip(GetIEditor()->IsNewViewportInteractionModelEnabled() ? tr("Scale (3)") : tr("Scale (4)"))
+        .SetShortcut(tr("3"))
+        .SetToolTip(tr("Scale (3)"))
         .SetCheckable(true)
         .SetStatusTip(tr("Select and scale selected object(s)"))
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateEditmodeScale);
@@ -1000,14 +930,6 @@ void MainWindow::InitActions()
         .SetCheckable(true)
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSnapangle);
 
-    if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        am->AddAction(ID_ROTATESELECTION_XAXIS, tr("Rotate X Axis"));
-        am->AddAction(ID_ROTATESELECTION_YAXIS, tr("Rotate Y Axis"));
-        am->AddAction(ID_ROTATESELECTION_ZAXIS, tr("Rotate Z Axis"));
-        am->AddAction(ID_ROTATESELECTION_ROTATEANGLE, tr("Rotate Angle..."));
-    }
-
     // Display actions
     am->AddAction(ID_WIREFRAME, tr("&Wireframe"))
         .SetShortcut(tr("F3"))
@@ -1015,16 +937,6 @@ void MainWindow::InitActions()
         .SetCheckable(true)
         .SetStatusTip(tr("Render in Wireframe Mode."))
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateWireframe);
-
-    if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        am->AddAction(ID_RULER, tr("Ruler"))
-            .SetCheckable(true)
-            .SetIcon(Style::icon("Measure"))
-            .SetApplyHoverEffect()
-            .SetStatusTip(tr("Create temporary ruler to measure distance"))
-            .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateRuler);
-    }
 
     am->AddAction(ID_VIEW_GRIDSETTINGS, tr("Grid Settings..."));
     am->AddAction(ID_SWITCHCAMERA_DEFAULTCAMERA, tr("Default Camera")).SetCheckable(true)
@@ -1169,12 +1081,6 @@ void MainWindow::InitActions()
     am->AddAction(ID_PHYSICS_SIMULATEOBJECTS, tr("Simulate Objects"))
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSelected);
 
-    if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        am->AddAction(ID_TERRAIN_TIMEOFDAY, tr("Time Of Day"))
-            .SetStatusTip(tr("Open Time of Day Editor"));
-    }
-
     // Tools actions
     am->AddAction(ID_RELOAD_TEXTURES, tr("Reload Textures/Shaders"))
         .SetStatusTip(tr("Reload all textures."));
@@ -1278,13 +1184,6 @@ void MainWindow::InitActions()
         QObject::connect(action, &QAction::triggered, this, []() {
             QtViewPaneManager::instance()->OpenPane(LyViewPane::AnimationEditor);
         });
-    }
-
-    if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        am->AddAction(ID_OPEN_TRACKVIEW, tr("TrackView"))
-            .SetToolTip(tr("Open Track View"))
-            .SetApplyHoverEffect();
     }
 
     am->AddAction(ID_OPEN_AUDIO_CONTROLS_BROWSER, tr("Audio Controls Editor"))
@@ -1757,7 +1656,6 @@ void MainWindow::RegisterStdViewClasses()
 
     if (!AZ::Interface<AzFramework::AtomActiveInterface>::Get())
     {
-        CLensFlareEditor::RegisterViewClass();
         CTimeOfDayDialog::RegisterViewClass();
     }
 #ifdef ThumbnailDemo
