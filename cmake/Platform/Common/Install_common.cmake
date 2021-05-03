@@ -303,25 +303,21 @@ function(ly_setup_others)
 
     # Scripts
     file(GLOB o3de_scripts "${CMAKE_SOURCE_DIR}/scripts/o3de.*")
-    foreach(o3de_script ${o3de_scripts})
-        install(FILES
-            ${o3de_script}
-            DESTINATION ./scripts
-            COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
-        )
-    endforeach()
+    install(FILES
+        ${o3de_scripts}
+        DESTINATION ./scripts
+        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
+    )
 
-    set(SCRIPTS_DIRS bundler project_manager)
-    foreach(script_dir ${SCRIPTS_DIRS})
-        install(DIRECTORY
-            ${CMAKE_SOURCE_DIR}/scripts/${script_dir}
-            DESTINATION ./scripts
-            COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
-            PATTERN "__pycache__" EXCLUDE
-            PATTERN "CMakeLists.txt" EXCLUDE
-            PATTERN "tests" EXCLUDE
-        )
-    endforeach()
+    install(DIRECTORY
+        ${CMAKE_SOURCE_DIR}/scripts/bundler
+        ${CMAKE_SOURCE_DIR}/scripts/project_manager
+        DESTINATION ./scripts
+        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
+        PATTERN "__pycache__" EXCLUDE
+        PATTERN "CMakeLists.txt" EXCLUDE
+        PATTERN "tests" EXCLUDE
+    )
 
     install(DIRECTORY "${CMAKE_SOURCE_DIR}/python"
         DESTINATION .
@@ -373,14 +369,13 @@ function(ly_setup_others)
     endforeach()
 
     # Qt Binaries
-    set(QT_BIN_DIRS bearer iconengines imageformats platforms styles translations)
-    foreach(qt_dir ${QT_BIN_DIRS})
-        install(DIRECTORY
-            ${CMAKE_CURRENT_BINARY_DIR}/bin/$<CONFIG>/${qt_dir}
-            DESTINATION ./bin/${PAL_PLATFORM_NAME}/$<CONFIG>
-            COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
-        )
-    endforeach()
+    set(QT_DIRS bearer iconengines imageformats platforms styles translations)
+    list(TRANSFORM QT_DIRS PREPEND "${CMAKE_CURRENT_BINARY_DIR}/bin/$<CONFIG>/" OUTPUT_VARIABLE QT_BIN_DIRS)
+    install(DIRECTORY
+        ${QT_BIN_DIRS}
+        DESTINATION ./bin/${PAL_PLATFORM_NAME}/$<CONFIG>
+        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
+    )
 
     # Templates
     install(DIRECTORY
