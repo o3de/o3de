@@ -27,6 +27,7 @@ set(FILES
     Tests/PhysXForceRegionTest.cpp
     Tests/PhysXMaterialLibraryTest.cpp
     Tests/PhysXCollisionFilteringTest.cpp
+    Tests/PhysXColliderPrefabTests.cpp
     Tests/PhysXJointsTest.cpp
     Tests/PhysXSceneTests.cpp
     Tests/PhysXSceneQueryTests.cpp

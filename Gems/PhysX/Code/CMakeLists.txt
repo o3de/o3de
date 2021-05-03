@@ -45,6 +45,7 @@ ly_add_target(
             ${physx_dependency}
             AZ::AzCore
             AZ::AzFramework
+            AZ::AzToolsFramework
             Legacy::CryCommon
             Gem::LmbrCentral
 )
