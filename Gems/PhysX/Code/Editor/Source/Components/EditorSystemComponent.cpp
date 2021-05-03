@@ -48,11 +48,6 @@ namespace PhysX
                 AzToolsFramework::EditorRequests::Bus::BroadcastResult(editor, &AzToolsFramework::EditorRequests::GetEditor);
 
                 ISurfaceTypeEnumerator* surfaceTypeEnumerator = nullptr;
-                if (editor)
-                {
-                    surfaceTypeEnumerator = editor->Get3DEngine()->GetMaterialManager()->GetSurfaceTypeManager()->GetEnumerator();
-                }
-
                 if (surfaceTypeEnumerator)
                 {
                     // Enumerate through CryEngine surface types and create a Physics API material for each of them
