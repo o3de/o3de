@@ -9,34 +9,29 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *
  */
-#pragma once
 
-#if !defined(Q_MOC_RUN)
-#include <Qt/ScreenWidget.h>
-#endif
+#include <Qt/EngineSettings.h>
 
-namespace Ui
-{
-    class FirstTimeUseClass;
-}
+#include <Qt/ui_EngineSettings.h>
 
 namespace ProjectManager
 {
-    class FirstTimeUse : public ScreenWidget
+    EngineSettings::EngineSettings(ProjectManagerWindow* window)
+        : ScreenWidget(window)
+        , m_ui(new Ui::EngineSettingsClass())
     {
-    public:
-        explicit FirstTimeUse(ProjectManagerWindow* window);
-        ~FirstTimeUse();
+        m_ui->setupUi(this);
 
-    protected:
-        void ConnectSlotsAndSignals() override;
+        Setup();
+    }
 
-    protected slots:
-        void HandleNewProjectButton();
-        void HandleOpenProjectButton();
+    EngineSettings::~EngineSettings()
+    {
+    }
 
-    private:
-        QScopedPointer<Ui::FirstTimeUseClass> m_ui;
-    };
+    void EngineSettings::ConnectSlotsAndSignals()
+    {
+        // Do nothing for now
+    }
 
 } // namespace ProjectManager

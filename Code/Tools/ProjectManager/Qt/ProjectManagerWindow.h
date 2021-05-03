@@ -12,7 +12,10 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <ScreenDefs.h>
+
 #include <QMainWindow>
+#include <QStackedWidget>
 
 #include <AzCore/IO/Path/Path_fwd.h>
 #endif
@@ -26,10 +29,25 @@ namespace ProjectManager
 {
     class ProjectManagerWindow : public QMainWindow
     {
+        Q_OBJECT
 
     public:
         explicit ProjectManagerWindow(QWidget* parent, const AZ::IO::PathView& engineRootPath);
         ~ProjectManagerWindow();
+
+        void BuildScreens();
+        QStackedWidget* GetScreenStack();
+
+    public slots:
+        void ChangeToScreen(ProjectManagerScreen screen);
+        void ResetScreen(ProjectManagerScreen screen);
+
+    protected:
+        void ConnectSlotsAndSignals();
+
+    protected slots:
+        void HandleProjectsMenu();
+        void HandleEngineMenu();
 
     private:
         QScopedPointer<Ui::ProjectManagerWindowClass> m_ui;

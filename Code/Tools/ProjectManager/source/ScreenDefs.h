@@ -11,32 +11,15 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
-#include <Qt/ScreenWidget.h>
-#endif
-
-namespace Ui
-{
-    class FirstTimeUseClass;
-}
-
 namespace ProjectManager
 {
-    class FirstTimeUse : public ScreenWidget
+    enum class ProjectManagerScreen
     {
-    public:
-        explicit FirstTimeUse(ProjectManagerWindow* window);
-        ~FirstTimeUse();
-
-    protected:
-        void ConnectSlotsAndSignals() override;
-
-    protected slots:
-        void HandleNewProjectButton();
-        void HandleOpenProjectButton();
-
-    private:
-        QScopedPointer<Ui::FirstTimeUseClass> m_ui;
+        FirstTimeUse,
+        NewProjectSettings,
+        GemCatalog,
+        ProjectsHome,
+        ProjectSettings,
+        EngineSettings
     };
-
 } // namespace ProjectManager

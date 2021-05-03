@@ -17,26 +17,22 @@
 
 namespace Ui
 {
-    class FirstTimeUseClass;
+    class EngineSettingsClass;
 }
 
 namespace ProjectManager
 {
-    class FirstTimeUse : public ScreenWidget
+    class EngineSettings : public ScreenWidget
     {
     public:
-        explicit FirstTimeUse(ProjectManagerWindow* window);
-        ~FirstTimeUse();
+        explicit EngineSettings(ProjectManagerWindow* window);
+        ~EngineSettings();
 
     protected:
         void ConnectSlotsAndSignals() override;
 
-    protected slots:
-        void HandleNewProjectButton();
-        void HandleOpenProjectButton();
-
     private:
-        QScopedPointer<Ui::FirstTimeUseClass> m_ui;
+        QScopedPointer<Ui::EngineSettingsClass> m_ui;
     };
 
 } // namespace ProjectManager
