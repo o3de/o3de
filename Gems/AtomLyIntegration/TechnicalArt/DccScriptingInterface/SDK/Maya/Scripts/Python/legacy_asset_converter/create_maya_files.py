@@ -106,7 +106,7 @@ class CreateMayaFiles(QtCore.QObject):
                     _LOGGER.info('Error Processing File: {} -- {}'.format(e, target_file_path))
             else:
                 mc.file(maya_file_name, force=True, o=True)
-                self.get_file_information(fbx_file, false)
+                self.get_file_information(fbx_file, False)
         try:
             return_dictionary = {self.target_database_listing: self.transfer_data}
             json.dump(return_dictionary, sys.stdout)

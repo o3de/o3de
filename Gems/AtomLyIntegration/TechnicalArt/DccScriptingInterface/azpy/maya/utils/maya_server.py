@@ -94,4 +94,4 @@ def start_server():
     window.show()
     app.exec_()
 
-
+start_server()

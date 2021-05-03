@@ -124,7 +124,7 @@ set DCCSI_MAYA_SCRIPT_PY_PATH=%DCCSI_SDK_MAYA_PATH%\Scripts\Python
 set MAYA_SCRIPT_PATH=%DCCSI_MAYA_SCRIPT_PY_PATH%;%MAYA_SCRIPT_PATH%
 echo     DCCSI_MAYA_SCRIPT_PY_PATH = %DCCSI_MAYA_SCRIPT_PY_PATH%
 
-:: DCCsi Maya boostrap, userSetup.py access (ours)
+:: DCCsi Maya bootstrap, userSetup.py access (ours)
 set DCCSI_MAYA_SCRIPT_PATH=%DCCSI_SDK_MAYA_PATH%\Scripts
 :: also attached to maya's built-it env var
 set MAYA_SCRIPT_PATH=%DCCSI_MAYA_SCRIPT_PATH%;%MAYA_SCRIPT_PATH%
