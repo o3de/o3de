@@ -517,18 +517,6 @@ namespace ImGui
                 ImGui::EndChild(); // End the "Meshes in Scene" Child
             }
         }
-
-        // Check to make sure the Tick Bus Connection status matches the debug enabled flag
-        if (m_meshDebugEnabled && !AZ::TickBus::Handler::BusIsConnected())
-        {
-            // Connect to the Tick Bus
-            AZ::TickBus::Handler::BusConnect();
-        }
-        else if (!m_meshDebugEnabled && AZ::TickBus::Handler::BusIsConnected())
-        {
-            // Disconnect from the Tick Bus
-            AZ::TickBus::Handler::BusDisconnect();
-        }
     }
 
     // Mesh Mouse Over Helper function
@@ -596,10 +584,6 @@ namespace ImGui
         instanceOptions.m_mousedOverForDraw |= ImGui::IsItemHovered();
     }
 
-    void ImGuiLYAssetExplorer::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
-    {
-    }
-
     MeshInstanceDisplayList& ImGuiLYAssetExplorer::FindOrCreateMeshInstanceList(const char* meshName)
     {
         // Walk the list and see if an entry for this mesh exists already. If we find one, return it!
@@ -624,160 +608,6 @@ namespace ImGui
         m_meshInstanceDisplayList.push_back(meshList);
         return m_meshInstanceDisplayList.back();
     }
-
-    // Scan the scene for Meshes!
-    void ImGuiLYAssetExplorer::OnTick_FindAssets()
-    {
-    }
-
-    // We know we want to draw this Entity/Mesh ( depending on distance from Cam ).. so draw!
-    void ImGuiLYAssetExplorer::OnTick_DrawEntity(const AZ::EntityId& entity, const AZ::Data::AssetId& assetId, IRenderer* renderer, const AZ::Vector3& cameraPos)
-    {
-        // Get the Entity Position so we can see how far from the camera we are.
-        AZ::Vector3 worldPos = AZ::Vector3::CreateZero();
-        AZ::TransformBus::EventResult(worldPos, entity, &AZ::TransformBus::Events::GetWorldTranslation);
-         
-        // Get Our Distance From The Camera! ( Used just for draw alpha value )
-        float distFromCamera = m_distanceFilter_far + 1.0f; // Default to just outside camera view ( i.e. Don't draw )
-        if (m_anyMousedOverForDraw || m_selectionFilter || !m_distanceFilter)
-        {
-            // If we have either the Selection Filter or Mouse Over state on or the distance filter is off, and we made it this far, we are the lucky selected one! Draw ourselves by setting dist to 0.0f
-            distFromCamera = 0.0;
-        }
-        else if (m_distanceFilter)
-        {
-            // Distance filter is on and we aren't selected, so actually find the distance from the camera
-            distFromCamera = worldPos.GetDistance(cameraPos);
-        }
-
-        // Only draw things within view distance ( cheese it to zero above to force drawing far things )
-        if (distFromCamera <= m_distanceFilter_far)
-        {
-            // Find an interpolated Alpha.. 1.0f while inside near radius, interp 1.0 -> 0.0 while heading toward far radius
-            float alpha = (distFromCamera <= m_distanceFilter_near) ? 1.0f : (1.0f - ((distFromCamera - m_distanceFilter_near) / (m_distanceFilter_far - m_distanceFilter_near)));
-
-            // The string to hold label text we will build.
-            AZStd::string entityLabel;
-            
-            // Grab the Asset Info to get the mesh path name.
-            AZ::Data::AssetInfo assetInfo;
-            AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequests::GetAssetInfoById, assetId);
-
-            // Start the label with either the EntName and Mesh, or just Mesh
-            if (m_inWorld_label_entityName)
-            {
-                AZ::ComponentApplicationBus::BroadcastResult(entityLabel, &AZ::ComponentApplicationBus::Events::GetEntityName, entity);
-                entityLabel = AZStd::string::format("Entity: %s %s\nMesh:    %s", entity.ToString().c_str(), entityLabel.c_str(), assetInfo.m_relativePath.c_str());
-            }
-            else
-            {
-                entityLabel = AZStd::string::format("Mesh:    %s", assetInfo.m_relativePath.c_str());
-            }
-            
-            // See if we should add the Material!
-            if (m_inWorld_label_materialName)
-            {
-                _smart_ptr<IMaterial> material;
-                LmbrCentral::MaterialOwnerRequestBus::EventResult(material, entity, &LmbrCentral::MaterialOwnerRequests::GetMaterial);
-                if (material)
-                {
-                    entityLabel.append(AZStd::string::format("\nMaterial: %s", material->GetName()));
-                }
-            }
-            
-            // Get The Render Node for mesh debug draw and Lod Info
-            IRenderNode* renderNode = nullptr;
-            LmbrCentral::RenderNodeRequestBus::EventResult(renderNode, entity, &LmbrCentral::RenderNodeRequests::GetRenderNode);
-
-            if (renderNode != nullptr && renderNode->GetEntityStatObj())
-            {
-                // Debug Draw Mesh
-                if (m_inWorld_debugDrawMesh)
-                {
-                    SGeometryDebugDrawInfo dd;
-                    dd.color.Set(0.0f, 0.0f, 255.0f, 0.5f * alpha);
-                    dd.lineColor.Set(255.0f, 0.0f, 0.0f, 0.75f * alpha);
-                    renderNode->GetEntityStatObj()->DebugDraw(dd, 0.2f);
-                }
-                // Draw Total Lods info
-                if (m_inWorld_label_totalLods)
-                {
-                    entityLabel.append(AZStd::string::format("\nTotal Lods: %d", renderNode->GetEntityStatObj()->GetLoadedLodsNum()));
-                }
-                // Draw Misc Lod Info
-                if (m_inWorld_label_miscLod)
-                {
-                    entityLabel.append(AZStd::string::format("\nFirst Lod Distance: %f", renderNode->GetFirstLodDistance()));
-                    float distances[SMeshLodInfo::s_nMaxLodCount];
-                    renderNode->GetLodDistances(gEnv->p3DEngine->GetFrameLodInfo(), distances);
-                    for (int i = 0; i < SMeshLodInfo::s_nMaxLodCount; i++)
-                    {
-                        entityLabel.append(AZStd::string::format("\n  frameLod: %d - %f", i, distances[i]));
-                    }
-                }
-            }
-
-            // Draw the label in the world
-            if (m_inWorld_drawLabel)
-            {
-                SDrawTextInfo ti;
-                ti.xscale = ti.yscale = m_inWorld_labelTextSize * alpha;
-                ti.flags = eDrawText_FixedSize | eDrawText_Center | eDrawText_800x600;
-                if (m_inWorld_label_framed)
-                {
-                    ti.flags |= eDrawText_Framed;
-                }
-                if (m_inWorld_label_monoSpace)
-                {
-                    ti.flags |= eDrawText_Monospace;
-                }
-
-                {
-                    ti.color[0] = m_inWorld_label_textColor.Value.x;
-                    ti.color[1] = m_inWorld_label_textColor.Value.y;
-                    ti.color[2] = m_inWorld_label_textColor.Value.z;
-                    ti.color[3] = alpha;
-                }
-                Vec3 labelPos(worldPos.GetX(), worldPos.GetY(), worldPos.GetZ() - m_inWorld_originSphereRadius);
-                renderer->DrawTextQueued(labelPos, ti, entityLabel.c_str());
-            }
-
-            // Draw the sphere and/or AABB in the world
-            if (m_inWorld_drawOriginSphere || m_inWorld_drawAABB)
-            {
-                IRenderAuxGeom* pAuxGeom = renderer->GetIRenderAuxGeom();
-                if (pAuxGeom)
-                {
-                    const ColorF sphereColor(m_inWorld_label_textColor.Value.x, m_inWorld_label_textColor.Value.y, m_inWorld_label_textColor.Value.z, alpha);
-                    Vec3 spherePos(worldPos.GetX(), worldPos.GetY(), worldPos.GetZ());
-
-                    // draw a sample sphere
-                    SAuxGeomRenderFlags oldFlags = pAuxGeom->GetRenderFlags();
-                    SAuxGeomRenderFlags flags = oldFlags;
-                    flags.SetDepthWriteFlag(e_DepthWriteOff);
-                    flags.SetDepthTestFlag(e_DepthTestOff);
-                    flags.SetDrawInFrontMode(e_DrawInFrontOn);
-                    flags.SetFillMode(e_FillModeSolid);
-                    flags.SetCullMode(e_CullModeNone);
-                    pAuxGeom->SetRenderFlags(flags);
-
-                    if ( m_inWorld_drawOriginSphere)
-                    {
-                        pAuxGeom->DrawSphere(spherePos, m_inWorld_originSphereRadius, sphereColor, false);
-                    }
-
-                    if (m_inWorld_drawAABB && renderNode)
-                    {
-                        pAuxGeom->DrawAABB(renderNode->GetBBox(), false, sphereColor, EBoundingBoxDrawStyle::eBBD_Extremes_Color_Encoded);
-                    }
-
-                    // Restore rendering state
-                    pAuxGeom->SetRenderFlags(oldFlags);
-                }
-            }
-        }
-    }
-
-} // namespace ImGui
+ } // namespace ImGui
 
 #endif // IMGUI_ENABLED
