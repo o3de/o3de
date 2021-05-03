@@ -18,32 +18,21 @@
 
 namespace Multiplayer
 {
-    //! Multiplayer Tools system component provides serialize context reflection for tools-only systems.
-    class MultiplayerToolsSystemComponent final
-        : public AZ::Component
+
+    void MultiplayerToolsSystemComponent::Reflect(AZ::ReflectContext* context)
     {
-    public:
-        AZ_COMPONENT(MultiplayerToolsSystemComponent, "{65AF5342-0ECE-423B-B646-AF55A122F72B}");
+        NetworkPrefabProcessor::Reflect(context);
+    }
 
-        static void Reflect(AZ::ReflectContext* context)
-        {
-            NetworkPrefabProcessor::Reflect(context);
-        }
+    bool MultiplayerToolsSystemComponent::DidProcessNetworkPrefabs()
+    {
+        return m_didProcessNetPrefabs;
+    }
 
-        MultiplayerToolsSystemComponent() = default;
-        ~MultiplayerToolsSystemComponent() override = default;
-
-        /// AZ::Component overrides.
-        void Activate() override
-        {
-
-        }
-
-        void Deactivate() override
-        {
-
-        }
-    };
+    void MultiplayerToolsSystemComponent::SetDidProcessNetworkPrefabs(bool didProcessNetPrefabs)
+    {
+        m_didProcessNetPrefabs = didProcessNetPrefabs;
+    }
 
     MultiplayerToolsModule::MultiplayerToolsModule()
         : AZ::Module()

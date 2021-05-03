@@ -19,6 +19,7 @@
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
 
+#include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
@@ -34,6 +35,7 @@ namespace Multiplayer
     class MultiplayerEditorSystemComponent final
         : public AZ::Component
         , private AZ::TickBus::Handler
+        , private AzFramework::GameEntityContextEventBus::Handler
         , private AzToolsFramework::EditorEvents::Bus::Handler
         , private IEditorNotifyListener
     {
@@ -66,8 +68,16 @@ namespace Multiplayer
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
         int GetTickOrder() override;
         //! @}
-        //! 
+        
+        //! EditorEvents::Handler overrides
+        //! @{
         void OnEditorNotifyEvent(EEditorNotifyEvent event) override;
+        //! @}
+        
+        //!  GameEntityContextEventBus::Handler overrides
+        //! @{
+        void OnGameEntitiesStarted() override; 
+        //! @}
 
         IEditor* m_editor = nullptr;
         AzFramework::ProcessWatcher* m_serverProcess = nullptr;

@@ -18,6 +18,7 @@
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <Prefab/Spawnable/SpawnableUtils.h>
+#include <Include/IMultiplayerTools.h>
 #include <Source/Components/NetBindComponent.h>
 #include <Source/Pipeline/NetBindMarkerComponent.h>
 #include <Source/Pipeline/NetworkSpawnableHolderComponent.h>
@@ -29,6 +30,8 @@ namespace Multiplayer
 
     void NetworkPrefabProcessor::Process(PrefabProcessorContext& context)
     {
+        IMultiplayerTools* mpTools = AZ::Interface<IMultiplayerTools>::Get();
+        mpTools->SetDidProcessNetworkPrefabs(false);
         context.ListPrefabs([&context](AZStd::string_view prefabName, PrefabDom& prefab) {
             ProcessPrefab(context, prefabName, prefab);
         });

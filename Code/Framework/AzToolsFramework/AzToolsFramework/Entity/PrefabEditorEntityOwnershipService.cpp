@@ -321,6 +321,11 @@ namespace AzToolsFramework
         return *m_rootInstance;
     }
 
+    const AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& PrefabEditorEntityOwnershipService::GetPlayInEditorAssetData()
+    {
+        return m_playInEditorData.m_assets;
+    }
+
     void PrefabEditorEntityOwnershipService::OnEntityRemoved(AZ::EntityId entityId)
     {
         AzFramework::SliceEntityRequestBus::MultiHandler::BusDisconnect(entityId);

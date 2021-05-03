@@ -119,6 +119,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PRIVATE
                 Gem::Multiplayer.Editor.Static
+                Gem::Multiplayer.Tools
     )
 
 endif()

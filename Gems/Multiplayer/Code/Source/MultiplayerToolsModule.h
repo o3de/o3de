@@ -12,10 +12,37 @@
 
 #pragma once
 
+#include <AzCore/Component/Component.h>
 #include <AzCore/Module/Module.h>
+#include <Include/IMultiplayerTools.h>
 
 namespace Multiplayer
 {
+    class MultiplayerToolsSystemComponent final
+        : public AZ::Component
+        , public IMultiplayerTools
+    {
+    public:
+        AZ_COMPONENT(MultiplayerToolsSystemComponent, "{65AF5342-0ECE-423B-B646-AF55A122F72B}");
+
+        static void Reflect(AZ::ReflectContext* context);
+
+        MultiplayerToolsSystemComponent() = default;
+        ~MultiplayerToolsSystemComponent() override = default;
+
+        /// AZ::Component overrides.
+        void Activate() override {};
+
+        void Deactivate() override {};
+
+        bool DidProcessNetworkPrefabs() override;
+
+    private:
+        void SetDidProcessNetworkPrefabs(bool didProcessNetPrefabs) override;
+
+        bool m_didProcessNetPrefabs = false;
+    };
+
     class MultiplayerToolsModule
         : public AZ::Module
     {

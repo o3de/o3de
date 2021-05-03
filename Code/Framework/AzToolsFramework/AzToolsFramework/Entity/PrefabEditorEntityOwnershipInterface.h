@@ -46,6 +46,8 @@ namespace AzToolsFramework
 
         virtual Prefab::InstanceOptionalReference GetRootPrefabInstance() = 0;
 
+        virtual const AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& GetPlayInEditorAssetData() = 0;
+
         virtual bool LoadFromStream(AZ::IO::GenericStream& stream, AZStd::string_view filename) = 0;
         virtual bool SaveToStream(AZ::IO::GenericStream& stream, AZStd::string_view filename) = 0;
         

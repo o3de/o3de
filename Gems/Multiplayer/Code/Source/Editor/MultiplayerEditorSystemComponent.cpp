@@ -10,12 +10,14 @@
  *
  */
 
+#include <Include/IMultiplayerTools.h>
 #include <Source/Editor/MultiplayerEditorSystemComponent.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 
 namespace Multiplayer
 {
@@ -57,12 +59,14 @@ namespace Multiplayer
 
     void MultiplayerEditorSystemComponent::Activate()
     {
+        AzFramework::GameEntityContextEventBus::Handler::BusConnect();
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
     }
 
     void MultiplayerEditorSystemComponent::Deactivate()
     {
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
+        AzFramework::GameEntityContextEventBus::Handler::BusDisconnect();
     }
 
     void MultiplayerEditorSystemComponent::NotifyRegisterViews()
@@ -77,11 +81,42 @@ namespace Multiplayer
     {
         switch (event)
         {
-        case eNotify_OnBeginGameMode:
-        {       
+        case eNotify_OnQuit:
+            AZ_Warning("Multiplayer Editor", m_editor != nullptr, "Multiplayer Editor received On Quit without an Editor pointer.");
+            if (m_editor)
+            {
+                m_editor->UnregisterNotifyListener(this);
+                m_editor = nullptr;
+            }
+            [[fallthrough]];
+        case eNotify_OnEndGameMode:
+            AZ::TickBus::Handler::BusDisconnect();
+            // Kill the configured server if it's active
+            if (m_serverProcess)
+            {
+                m_serverProcess->TerminateProcess(0);
+                m_serverProcess = nullptr;
+            }
+            break;
+        }
+    }
+
+    void MultiplayerEditorSystemComponent::OnGameEntitiesStarted()
+    {
+        // BeginGameMode and Prefab Processing have completed at this point
+        IMultiplayerTools* mpTools = AZ::Interface<IMultiplayerTools>::Get();
+        if (editorsv_enabled && mpTools != nullptr && mpTools->DidProcessNetworkPrefabs())
+        {
             AZ::TickBus::Handler::BusConnect();
 
-            if (editorsv_enabled)
+            auto prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
+            if (!prefabEditorEntityOwnershipInterface)
+            {
+                AZ_Error("MultiplayerEditor", prefabEditorEntityOwnershipInterface != nullptr, "PrefabEditorEntityOwnershipInterface unavailable");
+            }
+            const AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& assetData = prefabEditorEntityOwnershipInterface->GetPlayInEditorAssetData();
+
+            if (assetData.size() > 0)
             {
                 // Assemble the server's path
                 AZ::CVarFixedString serverProcess = editorsv_process;
@@ -111,33 +146,13 @@ namespace Multiplayer
 
                 // Start the configured server if it's available
                 AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
-                processLaunchInfo.m_commandlineParameters =
-                    AZStd::string::format("\"%s\"", serverPath.c_str());
+                processLaunchInfo.m_commandlineParameters = AZStd::string::format("\"%s\"", serverPath.c_str());
                 processLaunchInfo.m_showWindow = true;
                 processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_NORMAL;
 
                 m_serverProcess = AzFramework::ProcessWatcher::LaunchProcess(
                     processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_NONE);
             }
-            break;
-        }
-        case eNotify_OnQuit:
-            AZ_Warning("Multiplayer Editor", m_editor != nullptr, "Multiplayer Editor received On Quit without an Editor pointer.");
-            if (m_editor)
-            {
-                m_editor->UnregisterNotifyListener(this);
-                m_editor = nullptr;
-            }
-            [[fallthrough]];
-        case eNotify_OnEndGameMode:
-            AZ::TickBus::Handler::BusDisconnect();
-            // Kill the configured server if it's active
-            if (m_serverProcess)
-            {
-                m_serverProcess->TerminateProcess(0);
-                m_serverProcess = nullptr;
-            }
-            break;
         }
     }
 
