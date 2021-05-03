@@ -48,7 +48,7 @@ namespace PhysX
                 AzToolsFramework::EditorRequests::Bus::BroadcastResult(editor, &AzToolsFramework::EditorRequests::GetEditor);
 
                 ISurfaceTypeEnumerator* surfaceTypeEnumerator = nullptr;
-                if (editor)
+                if (editor && editor->Get3DEngine())
                 {
                     surfaceTypeEnumerator = editor->Get3DEngine()->GetMaterialManager()->GetSurfaceTypeManager()->GetEnumerator();
                 }

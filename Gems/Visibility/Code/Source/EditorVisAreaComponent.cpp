@@ -188,7 +188,7 @@ namespace Visibility
 
     EditorVisAreaComponent::~EditorVisAreaComponent()
     {
-        if (m_area)
+        if (m_area && GetIEditor()->Get3DEngine())
         {
             // Reset the listener vis area in the unlucky case that we are deleting the
             // vis area where the listener is currently in
@@ -209,7 +209,7 @@ namespace Visibility
         // This means that dynamic slices cannot effectively contain vis areas until we fix the core rendering system to allow that.
 
         const auto visGUID = AZ::u64(entityId);
-        if(!m_area && GetIEditor())
+        if(!m_area && GetIEditor() && GetIEditor()->Get3DEngine())
         {
             m_area = GetIEditor()->Get3DEngine()->CreateVisArea(visGUID);
         }
@@ -347,7 +347,10 @@ namespace Visibility
 
                 const AZStd::string name = AZStd::string("vis-area_") + GetEntity()->GetName();
 
-                GetIEditor()->Get3DEngine()->UpdateVisArea(m_area, &points[0], points.size(), name.c_str(), info, true);
+                if (GetIEditor()->Get3DEngine())
+                {
+                    GetIEditor()->Get3DEngine()->UpdateVisArea(m_area, &points[0], points.size(), name.c_str(), info, true);
+                }
 
                 AzFramework::EntityBoundsUnionRequestBus::Broadcast(
                     &AzFramework::EntityBoundsUnionRequestBus::Events::RefreshEntityLocalBoundsUnion, GetEntityId());

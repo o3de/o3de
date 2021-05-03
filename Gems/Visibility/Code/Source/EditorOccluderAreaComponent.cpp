@@ -161,7 +161,7 @@ namespace Visibility
 
     EditorOccluderAreaComponent::~EditorOccluderAreaComponent()
     {
-        if (m_area)
+        if (m_area && GetIEditor()->Get3DEngine())
         {
             GetIEditor()->Get3DEngine()->DeleteVisArea(m_area);
             m_area = nullptr;
@@ -220,7 +220,7 @@ namespace Visibility
     /// Configuration are set.
     void EditorOccluderAreaComponent::UpdateOccluderAreaObject()
     {
-        if (m_area)
+        if (m_area && GetIEditor()->Get3DEngine())
         {
             AZStd::array<Vec3, 4> verts;
 
