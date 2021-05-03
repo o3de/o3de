@@ -77,7 +77,7 @@ EMPTY_IMAGE_LOW = 260000
 EMPTY_IMAGE_LOW = 270000
 
 EXTERNAL_SCRIPTS = {
-    'Attach Textures': ['maya', f'{os.environ["DCCSIG_PATH"]}\\azpy\\maya\\stingray_texture_assignments.py'],
+    'Attach Textures': ['maya', f'{os.environ["DCCSIG_PATH"]}\\azpy\\maya\\maya_materials.py'],
     'Create ID Maps': 'tbd',
     'Create Metallic Map': 'tbd',
     'Set Maya Workspace': 'tbd',
