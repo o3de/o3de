@@ -96,7 +96,6 @@ public:
     MOCK_METHOD0(GetIEditorMaterialManager, IEditorMaterialManager* ()); 
     MOCK_METHOD0(GetIconManager, IIconManager* ());
     MOCK_METHOD0(GetMusicManager, CMusicManager* ());
-    MOCK_METHOD0(GetLensFlareManager, CLensFlareManager* ());
     MOCK_METHOD2(GetTerrainElevation, float(float , float ));
     MOCK_METHOD0(GetVegetationMap, class CVegetationMap* ());
     MOCK_METHOD0(GetEditorQtApplication, Editor::EditorQtApplication* ());

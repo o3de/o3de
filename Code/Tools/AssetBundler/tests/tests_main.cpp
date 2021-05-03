@@ -113,14 +113,13 @@ namespace AssetBundler
                 AZ::SettingsRegistry::Register(&m_registry);
             }
 
-            const char* engineRoot = nullptr;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(engineRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
-            if (!engineRoot)
+            AssetBundler::g_cachedEngineRoot = m_data->m_application.get()->GetEngineRoot();
+            if (AssetBundler::g_cachedEngineRoot.empty())
             {
                 GTEST_FATAL_FAILURE_(AZStd::string::format("Unable to locate engine root.\n").c_str());
             }
 
-            AzFramework::StringFunc::Path::Join(engineRoot, RelativeTestFolder, m_data->m_testEngineRoot);
+            AzFramework::StringFunc::Path::Join(AssetBundler::g_cachedEngineRoot.c_str(), RelativeTestFolder, m_data->m_testEngineRoot);
 
             m_data->m_localFileIO = aznew AZ::IO::LocalFileIO();
             m_data->m_priorFileIO = AZ::IO::FileIOBase::GetInstance();

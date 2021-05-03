@@ -43,8 +43,6 @@
 #include <StringUtils.h>
 #include <IThreadManager.h>
 
-#include "CryFontBus.h"
-
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/IO/LocalFileIO.h>
 
@@ -246,24 +244,6 @@ CUNIXConsole* pUnixConsole;
 #define CRYENGINE_DEFAULT_LOCALIZATION_LANG "en-US"
 
 #define LOCALIZATION_TRANSLATIONS_LIST_FILE_NAME "Libs/Localization/localization.xml"
-
-#define LOAD_LEGACY_RENDERER_FOR_EDITOR false // If you set this to true you must also set 'ed_useAtomNativeViewport' to false (see /Code/Sandbox/Editor/ViewManager.cpp)
-#define LOAD_LEGACY_RENDERER_FOR_LAUNCHER false
-
-//////////////////////////////////////////////////////////////////////////
-// Where possible, these are defaults used to initialize cvars
-// System.cfg can then be used to override them
-// This includes the Game DLL, although it is loaded elsewhere
-
-#define DLL_FONT           "CryFont"
-#define DLL_3DENGINE       "Cry3DEngine"
-#define DLL_RENDERER_DX9   "CryRenderD3D9"
-#define DLL_RENDERER_DX11  "CryRenderD3D11"
-#define DLL_RENDERER_DX12  "CryRenderD3D12"
-#define DLL_RENDERER_METAL "CryRenderMetal"
-#define DLL_RENDERER_GL    "CryRenderGL"
-#define DLL_RENDERER_NULL  "CryRenderNULL"
-#define DLL_SHINE          "LyShine"
 
 //////////////////////////////////////////////////////////////////////////
 #if defined(WIN32) || defined(LINUX) || defined(APPLE)
@@ -1079,58 +1059,6 @@ void CSystem::ShutdownModuleLibraries()
 #endif // !defined(AZ_MONOLITHIC_BUILD)
 }
 
-//////////////////////////////////////////////////////////////////////////
-bool CSystem::OpenRenderLibrary([[maybe_unused]] const char* t_rend, const SSystemInitParams& initParams)
-{
-    LOADING_TIME_PROFILE_SECTION(GetISystem());
-
-#if defined(AZ_RESTRICTED_PLATFORM)
-#define AZ_RESTRICTED_SECTION SYSTEMINIT_CPP_SECTION_6
-#include AZ_RESTRICTED_FILE(SystemInit_cpp)
-#endif
-#if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
-#undef AZ_RESTRICTED_SECTION_IMPLEMENTED
-#else
-
-    if (gEnv->IsDedicated())
-    {
-        return OpenRenderLibrary(R_NULL_RENDERER, initParams);
-    }
-
-    if (AZ::Interface<AzFramework::AtomActiveInterface>::Get())
-    {
-        return OpenRenderLibrary(R_DX11_RENDERER, initParams);
-    }
-    else if (azstricmp(t_rend, "DX9") == 0)
-    {
-        return OpenRenderLibrary(R_DX9_RENDERER, initParams);
-    }
-    else if (azstricmp(t_rend, "DX11") == 0)
-    {
-        return OpenRenderLibrary(R_DX11_RENDERER, initParams);
-    }
-    else if (azstricmp(t_rend, "DX12") == 0)
-    {
-        return OpenRenderLibrary(R_DX12_RENDERER, initParams);
-    }
-    else if (azstricmp(t_rend, "GL") == 0)
-    {
-        return OpenRenderLibrary(R_GL_RENDERER, initParams);
-    }
-    else if (azstricmp(t_rend, "METAL") == 0)
-    {
-        return OpenRenderLibrary(R_METAL_RENDERER, initParams);
-    }
-    else if (azstricmp(t_rend, "NULL") == 0)
-    {
-        return OpenRenderLibrary(R_NULL_RENDERER, initParams);
-    }
-
-    AZ_Assert(false, "Unknown renderer type: %s", t_rend);
-    return false;
-#endif
-}
-
 /////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
 
@@ -1220,126 +1148,6 @@ wstring GetErrorStringUnsupportedGPU(const char* gpuName, unsigned int gpuVendor
 }
 #endif
 
-bool CSystem::OpenRenderLibrary(int type, const SSystemInitParams& initParams)
-{
-    LOADING_TIME_PROFILE_SECTION;
-#if defined(WIN32) || defined(WIN64)
-    if (!gEnv->IsDedicated())
-    {
-        unsigned int gpuVendorId = 0, gpuDeviceId = 0, totVidMem = 0;
-        char gpuName[256];
-        Win32SysInspect::DXFeatureLevel featureLevel = Win32SysInspect::DXFL_Undefined;
-        Win32SysInspect::GetGPUInfo(gpuName, sizeof(gpuName), gpuVendorId, gpuDeviceId, totVidMem, featureLevel);
-
-        if (m_env.IsEditor())
-        {
-#if defined(EXTERNAL_CRASH_REPORTING)
-            CrashHandler::CrashHandlerBase::AddAnnotation("dx.feature.level", Win32SysInspect::GetFeatureLevelAsString(featureLevel));
-            CrashHandler::CrashHandlerBase::AddAnnotation("gpu.name", gpuName);
-            CrashHandler::CrashHandlerBase::AddAnnotation("gpu.vendorId", std::to_string(gpuVendorId));
-            CrashHandler::CrashHandlerBase::AddAnnotation("gpu.deviceId", std::to_string(gpuDeviceId));
-            CrashHandler::CrashHandlerBase::AddAnnotation("gpu.memory", std::to_string(totVidMem));
-#endif
-        }
-        else
-        {
-            if (featureLevel < Win32SysInspect::DXFL_11_0)
-            {
-                const char logMsgFmt[] ("Unsupported GPU configuration!\n- %s (vendor = 0x%.4x, device = 0x%.4x)\n- Dedicated video memory: %d MB\n- Feature level: %s\n");
-                AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, logMsgFmt, gpuName, gpuVendorId, gpuDeviceId, totVidMem >> 20, GetFeatureLevelAsString(featureLevel));
-
-#if !defined(_RELEASE)
-                const bool allowPrompts = m_env.pSystem->GetICmdLine()->FindArg(eCLAT_Pre, "noprompt") == 0;
-#else
-                const bool allowPrompts = true;
-#endif // !defined(_RELEASE)
-                if (allowPrompts)
-                {
-                    AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Asking user if they wish to continue...");
-                    const int mbRes = MessageBoxW(0, GetErrorStringUnsupportedGPU(gpuName, gpuVendorId, gpuDeviceId).c_str(), L"Open 3D Engine", MB_ICONWARNING | MB_OKCANCEL | MB_DEFBUTTON2 | MB_DEFAULT_DESKTOP_ONLY);
-                    if (mbRes == IDCANCEL)
-                    {
-                        AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "User chose to cancel startup due to unsupported GPU.");
-                        return false;
-                    }
-                }
-                else
-                {
-#if !defined(_RELEASE)
-                    const bool obeyGPUCheck = m_env.pSystem->GetICmdLine()->FindArg(eCLAT_Pre, "anygpu") == 0;
-#else
-                    const bool obeyGPUCheck = true;
-#endif // !defined(_RELEASE)
-                    if (obeyGPUCheck)
-                    {
-                        AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "No prompts allowed and unsupported GPU check active. Treating unsupported GPU as error and exiting.");
-                        return false;
-                    }
-                }
-
-                AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "User chose to continue despite unsupported GPU!");
-            }
-        }
-    }
-#endif
-#if defined(AZ_RESTRICTED_PLATFORM)
-#define AZ_RESTRICTED_SECTION SYSTEMINIT_CPP_SECTION_7
-#include AZ_RESTRICTED_FILE(SystemInit_cpp)
-#endif
-
-    if (gEnv->IsDedicated())
-    {
-        type = R_NULL_RENDERER;
-    }
-    const char* libname = "";
-    if (AZ::Interface<AzFramework::AtomActiveInterface>::Get())
-    {
-        libname = DLL_RENDERER_NULL;
-    }
-    else if (type == R_DX9_RENDERER)
-    {
-        libname = DLL_RENDERER_DX9;
-    }
-    else if (type == R_DX11_RENDERER)
-    {
-        libname = DLL_RENDERER_DX11;
-    }
-    else if (type == R_DX12_RENDERER)
-    {
-        libname = DLL_RENDERER_DX12;
-    }
-    else if (type == R_NULL_RENDERER)
-    {
-        libname = DLL_RENDERER_NULL;
-    }
-    else if (type == R_GL_RENDERER)
-    {
-        libname = DLL_RENDERER_GL;
-    }
-    else if (type == R_METAL_RENDERER)
-    {
-        libname = DLL_RENDERER_METAL;
-    }
-    else
-    {
-        AZ_Assert(false, "Renderer did not initialize correctly; no valid renderer specified.");
-        return false;
-    }
-
-    if (!InitializeEngineModule(libname, "EngineModule_CryRenderer", initParams))
-    {
-        return false;
-    }
-
-    if (!m_env.pRenderer)
-    {
-        AZ_Assert(false, "Renderer did not initialize correctly; it could not be found in the system environment.");
-        return false;
-    }
-
-    return true;
-}
-
 /////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
 bool CSystem::InitConsole()
@@ -1390,123 +1198,6 @@ ICVar* CSystem::attachVariable (const char* szVarName, int* pContainer, const ch
     }
     return pVar;
 }
-
-/////////////////////////////////////////////////////////////////////////////////
-bool CSystem::InitRenderer(WIN_HINSTANCE hinst, WIN_HWND hwnd, const SSystemInitParams& initParams)
-{
-    LOADING_TIME_PROFILE_SECTION(GetISystem());
-
-    if (m_pUserCallback)
-    {
-        m_pUserCallback->OnInitProgress("Initializing Renderer...");
-    }
-
-    if (m_bEditor)
-    {
-        m_env.pConsole->GetCVar("r_Width");
-
-        // save current screen width/height/bpp, so they can be restored on shutdown
-        m_iWidth = m_env.pConsole->GetCVar("r_Width")->GetIVal();
-        m_iHeight = m_env.pConsole->GetCVar("r_Height")->GetIVal();
-        m_iColorBits = m_env.pConsole->GetCVar("r_ColorBits")->GetIVal();
-    }
-
-    if (!OpenRenderLibrary(m_rDriver->GetString(), initParams))
-    {
-        return false;
-    }
-
-#if defined(AZ_PLATFORM_IOS) || defined(AZ_PLATFORM_ANDROID)
-    if (m_rWidthAndHeightAsFractionOfScreenSize->GetFlags() & VF_WASINCONFIG)
-    {
-        int displayWidth = 0;
-        int displayHeight = 0;
-        if (GetPrimaryPhysicalDisplayDimensions(displayWidth, displayHeight))
-        {
-            // Ideally we would probably want to clamp this at the source,
-            // but I don't believe cvars support specifying a valid range.
-            float scaleFactor = 1.0f;
-
-            if(IsTablet())
-            {
-                scaleFactor = AZ::GetClamp(m_rTabletWidthAndHeightAsFractionOfScreenSize->GetFVal(), 0.1f, 1.0f);
-            }
-            else
-            {
-                scaleFactor = AZ::GetClamp(m_rWidthAndHeightAsFractionOfScreenSize->GetFVal(), 0.1f, 1.0f);
-            }
-
-            displayWidth *= scaleFactor;
-            displayHeight *= scaleFactor;
-
-            const int maxWidth = m_rMaxWidth->GetIVal();
-            if (maxWidth > 0 && maxWidth < displayWidth)
-            {
-                const float widthScaleFactor = static_cast<float>(maxWidth) / static_cast<float>(displayWidth);
-                displayWidth *= widthScaleFactor;
-                displayHeight *= widthScaleFactor;
-            }
-
-            const int maxHeight = m_rMaxHeight->GetIVal();
-            if (maxHeight > 0 && maxHeight < displayHeight)
-            {
-                const float heightScaleFactor = static_cast<float>(maxHeight) / static_cast<float>(displayHeight);
-                displayWidth *= heightScaleFactor;
-                displayHeight *= heightScaleFactor;
-            }
-
-            m_rWidth->Set(displayWidth);
-            m_rHeight->Set(displayHeight);
-        }
-    }
-#endif // defined(AZ_PLATFORM_IOS) || defined(AZ_PLATFORM_ANDROID)
-
-    if (m_env.pRenderer)
-    {
-        // This is crucial as textures suffix are hard coded to context and we need to initialize
-        // the texture semantics to look it up.
-        m_env.pRenderer->InitTexturesSemantics();
-
-#ifdef WIN32
-        SCustomRenderInitArgs args;
-        args.appStartedFromMediaCenter = strstr(initParams.szSystemCmdLine, "ReLaunchMediaCenter") != 0;
-
-        m_hWnd = m_env.pRenderer->Init(0, 0, m_rWidth->GetIVal(), m_rHeight->GetIVal(), m_rColorBits->GetIVal(), m_rDepthBits->GetIVal(), m_rStencilBits->GetIVal(), m_rFullscreen->GetIVal() ? true : false, initParams.bEditor, hinst, hwnd, false, &args, initParams.bShaderCacheGen);
-        //Timur, Not very clean code, we need to push new hwnd value to the system init params, so other modules can used when initializing.
-        (const_cast<SSystemInitParams*>(&initParams))->hWnd = m_hWnd;
-
-
-        bool retVal = (initParams.bShaderCacheGen || m_hWnd != 0);
-        AZ_Assert(retVal, "Renderer failed to initialize correctly.");
-        return retVal;
-#else   // WIN32
-        WIN_HWND h = m_env.pRenderer->Init(0, 0, m_rWidth->GetIVal(), m_rHeight->GetIVal(), m_rColorBits->GetIVal(), m_rDepthBits->GetIVal(), m_rStencilBits->GetIVal(), m_rFullscreen->GetIVal() ? true : false, initParams.bEditor, hinst, hwnd, false, nullptr, initParams.bShaderCacheGen);
-
-#if (defined(LINUX) && !defined(AZ_PLATFORM_ANDROID))
-        return true;
-#define AZ_RESTRICTED_SECTION_IMPLEMENTED
-#elif defined(AZ_RESTRICTED_PLATFORM)
-#define AZ_RESTRICTED_SECTION SYSTEMINIT_CPP_SECTION_8
-#include AZ_RESTRICTED_FILE(SystemInit_cpp)
-#endif
-#if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
-#undef AZ_RESTRICTED_SECTION_IMPLEMENTED
-#else
-        bool retVal = (initParams.bShaderCacheGen || h != 0);
-        if (retVal)
-        {
-            return true;
-        }
-
-        AZ_Assert(false, "Renderer failed to initialize correctly.");
-        return false;
-#endif
-#endif
-    }
-    return true;
-}
-
-
 
 /////////////////////////////////////////////////////////////////////////////////
 bool CSystem::InitFileSystem()
@@ -1658,68 +1349,6 @@ bool CSystem::InitStreamEngine()
     }
 
     m_pStreamEngine = new CStreamEngine();
-
-    return true;
-}
-
-/////////////////////////////////////////////////////////////////////////////////
-bool CSystem::InitFont(const SSystemInitParams& initParams)
-{
-    LOADING_TIME_PROFILE_SECTION(GetISystem());
-
-    bool fontInited = false;
-    AZ::CryFontCreationRequestBus::BroadcastResult(fontInited, &AZ::CryFontCreationRequests::CreateCryFont, m_env, initParams);
-    if (!fontInited && !InitializeEngineModule(DLL_FONT, "EngineModule_CryFont", initParams))
-    {
-        return false;
-    }
-
-    if (!m_env.pCryFont)
-    {
-        AZ_Assert(false, "Font System did not initialize correctly; it could not be found in the system environment");
-        return false;
-    }
-
-    if (gEnv->IsDedicated())
-    {
-        return true;
-    }
-
-    if (!LoadFontInternal(m_pIFont, "default"))
-    {
-        return false;
-    }
-
-    if (!LoadFontInternal(m_pIFontUi, "default-ui"))
-    {
-        return false;
-    }
-
-    return true;
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CSystem::Init3DEngine(const SSystemInitParams& initParams)
-{
-    LOADING_TIME_PROFILE_SECTION(GetISystem());
-
-    if (!InitializeEngineModule(DLL_3DENGINE, "EngineModule_Cry3DEngine", initParams))
-    {
-        return false;
-    }
-
-    if (!m_env.p3DEngine)
-    {
-        AZ_Assert(false, "3D Engine did not initialize correctly; it could not be found in the system environment");
-        return false;
-    }
-
-    if (!m_env.p3DEngine->Init())
-    {
-        return false;
-    }
-    m_pProcess = m_env.p3DEngine;
-    m_pProcess->SetFlags(PROC_3DENGINE);
 
     return true;
 }
@@ -2785,42 +2414,6 @@ AZ_POP_DISABLE_WARNING
         }
         InlineInitializationProcessing("CSystem::Init InitLocalizations");
 
-        //////////////////////////////////////////////////////////////////////////
-        // RENDERER
-        //////////////////////////////////////////////////////////////////////////
-        const bool loadLegacyRenderer = gEnv->IsEditor() ?
-                                        LOAD_LEGACY_RENDERER_FOR_EDITOR :
-                                        LOAD_LEGACY_RENDERER_FOR_LAUNCHER;
-        if (loadLegacyRenderer && !startupParams.bSkipRenderer)
-        {
-            AZ_Assert(CryMemory::IsHeapValid(), "CryMemory must be valid before initializing renderer.");
-            AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Renderer initialization");
-
-            if (!InitRenderer(m_hInst, m_hWnd, startupParams))
-            {
-                return false;
-            }
-            AZ_Assert(CryMemory::IsHeapValid(), "CryMemory must be valid after initializing renderer.");
-            if (m_env.pRenderer)
-            {
-                bool bMultiGPUEnabled = false;
-                m_env.pRenderer->EF_Query(EFQ_MultiGPUEnabled, bMultiGPUEnabled);
-                if (bMultiGPUEnabled)
-                {
-                    LoadConfiguration("mgpu.cfg");
-                }
-            }
-
-            InlineInitializationProcessing("CSystem::Init InitRenderer");
-
-            if (m_env.pCryFont)
-            {
-                m_env.pCryFont->SetRendererProperties(m_env.pRenderer);
-            }
-
-            AZ_Assert(m_env.pRenderer || startupParams.bSkipRenderer, "The renderer did not initialize correctly.");
-        }
-
 #if !defined(AZ_RELEASE_BUILD) && defined(AZ_PLATFORM_ANDROID)
         m_thermalInfoHandler = AZStd::make_unique<ThermalInfoAndroidHandler>();
 #endif
@@ -2928,24 +2521,10 @@ AZ_POP_DISABLE_WARNING
             }
         }
 
-        //////////////////////////////////////////////////////////////////////////
-        // FONT
-        //////////////////////////////////////////////////////////////////////////
-        if (!startupParams.bSkipFont)
-        {
-            AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Font initialization");
-            if (!InitFont(startupParams))
-            {
-                return false;
-            }
-        }
 
-        InlineInitializationProcessing("CSystem::Init InitFonts");
-
-        // The last update to the loading screen message was 'Initializing CryFont...'
         // Compiling the default system textures can be the lengthiest portion of
         // editor initialization, so it is useful to inform users that they are waiting on
-        // the necessary default textures to compile, and that they are not waiting on CryFont.
+        // the necessary default textures to compile.
         if (m_pUserCallback)
         {
             m_pUserCallback->OnInitProgress("First time asset processing - may take a minute...");
@@ -3038,28 +2617,6 @@ AZ_POP_DISABLE_WARNING
         if (!InitConsole())
         {
             return false;
-        }
-
-        //////////////////////////////////////////////////////////////////////////
-        // Init 3d engine
-        //////////////////////////////////////////////////////////////////////////
-        if (loadLegacyRenderer && !startupParams.bSkipRenderer && !startupParams.bShaderCacheGen)
-        {
-            AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Initializing 3D Engine");
-            INDENT_LOG_DURING_SCOPE();
-
-            if (!Init3DEngine(startupParams))
-            {
-                return false;
-            }
-
-            // try flush to keep renderer busy
-            if (m_env.pRenderer)
-            {
-                m_env.pRenderer->TryFlush();
-            }
-
-            InlineInitializationProcessing("CSystem::Init Init3DEngine");
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -4222,25 +3779,4 @@ bool CSystem::IsAssertDialogVisible() const
 void CSystem::SetAssertVisible(bool bAssertVisble)
 {
     m_bIsAsserting = bAssertVisble;
-}
-
-bool CSystem::LoadFontInternal(IFFont*& font, const string& fontName)
-{
-    font = m_env.pCryFont->NewFont(fontName);
-    if (!font)
-    {
-        AZ_Assert(false, "Could not instantiate the default font.");
-        return false;
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    string szFontPath = "Fonts/" + fontName + ".font";
-
-    if (!font->Load(szFontPath.c_str()))
-    {
-        AZ_Error(AZ_TRACE_SYSTEM_WINDOW, false, "Could not load font: %s.  Make sure the program is running from the correct working directory.", szFontPath.c_str());
-        return false;
-    }
-
-    return true;
 }
