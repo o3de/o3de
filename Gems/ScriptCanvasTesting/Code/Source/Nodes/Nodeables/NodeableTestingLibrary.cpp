@@ -44,6 +44,7 @@ namespace ScriptCanvasTesting
         ScriptCanvas::Library::AddNodeToRegistry<NodeableTestingLibrary, ::Nodes::ReturnTypeExampleNode>(nodeRegistry);
         ScriptCanvas::Library::AddNodeToRegistry<NodeableTestingLibrary, ::Nodes::InputTypeExampleNode>(nodeRegistry);
         ScriptCanvas::Library::AddNodeToRegistry<NodeableTestingLibrary, ::Nodes::BranchInputTypeExampleNode>(nodeRegistry);
+        ScriptCanvas::Library::AddNodeToRegistry<NodeableTestingLibrary, ::Nodes::PropertyExampleNode>(nodeRegistry);
     }
 
     AZStd::vector<AZ::ComponentDescriptor*> NodeableTestingLibrary::GetComponentDescriptors()
@@ -53,7 +54,8 @@ namespace ScriptCanvasTesting
             ::Nodes::BranchMethodSharedDataSlotExampleNode::CreateDescriptor(),
             ::Nodes::ReturnTypeExampleNode::CreateDescriptor(),
             ::Nodes::InputTypeExampleNode::CreateDescriptor(),
-            ::Nodes::BranchInputTypeExampleNode::CreateDescriptor()
+            ::Nodes::BranchInputTypeExampleNode::CreateDescriptor(),
+            ::Nodes::PropertyExampleNode::CreateDescriptor()
             });
     }
 }
