@@ -31,7 +31,7 @@ namespace AWSCore
 
         ~AWSCoreResourceMappingToolModule() override = default;
 
-        virtual AZ::ComponentTypeList GetRequiredSystemComponents() const override
+        AZ::ComponentTypeList GetRequiredSystemComponents() const override
         {
             return AZ::ComponentTypeList{azrtti_typeid<AWSCoreEditorSystemComponent>()};
         }
