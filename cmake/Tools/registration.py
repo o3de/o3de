@@ -122,6 +122,12 @@ def get_o3de_restricted_folder() -> pathlib.Path:
     return restricted_folder
 
 
+def get_o3de_logs_folder() -> pathlib.Path:
+    restricted_folder = get_o3de_folder() / 'Logs'
+    restricted_folder.mkdir(parents=True, exist_ok=True)
+    return restricted_folder
+
+
 def register_shipped_engine_o3de_objects() -> int:
     engine_path = get_this_engine_path()
 
@@ -522,6 +528,7 @@ def get_o3de_manifest() -> pathlib.Path:
         default_registry_folder = get_o3de_registry_folder()
         default_cache_folder = get_o3de_cache_folder()
         default_downloads_folder = get_o3de_download_folder()
+        default_logs_folder = get_o3de_logs_folder()
         default_engines_folder = get_o3de_engines_folder()
         default_projects_folder = get_o3de_projects_folder()
         default_gems_folder = get_o3de_gems_folder()
