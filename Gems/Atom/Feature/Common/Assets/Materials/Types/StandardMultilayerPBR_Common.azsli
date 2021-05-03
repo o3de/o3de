@@ -14,6 +14,7 @@
 
 #include <Atom/Features/SrgSemantics.azsli>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+#include <Atom/Features/PBR/LightingOptions.azsli>
 
 #include "MaterialInputs/BaseColorInput.azsli"
 #include "MaterialInputs/RoughnessInput.azsli"
@@ -25,6 +26,8 @@
 #include "MaterialInputs/EmissiveInput.azsli"
 #include "MaterialInputs/ParallaxInput.azsli"
 #include "MaterialInputs/UvSetCount.azsli"
+
+// ------ ShaderResourceGroup ----------------------------------------
 
 #define DEFINE_LAYER_SRG_INPUTS(prefix) \
 COMMON_SRG_INPUTS_BASE_COLOR(prefix)    \
@@ -64,10 +67,6 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
     float3x3 m_uvMatrixInverse;
     float4 m_pad5; // [GFX TODO][ATOM-14595] This is a workaround for a data stomping bug. Remove once it's fixed.
     
-    float m_opacityFactor;
-    Texture2D m_opacityMap;
-    uint m_opacityMapUvIndex;
-
     Sampler m_sampler
     {
         AddressU = Wrap;
@@ -109,6 +108,8 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
     uint m_transmissionThicknessMapUvIndex;
 }
 
+// ------ Shader Options ----------------------------------------
+
 enum class DebugDrawMode { None, BlendMaskValues, DepthMaps };
 option DebugDrawMode o_debugDrawMode;
 
@@ -120,6 +121,8 @@ option BlendMaskSource o_blendSource;
 // (search "m_optional_" in ShaderVariantAssetBuilder for details on the naming convention).
 // [GFX TODO][ATOM-14475]: Come up with a more elegant way to associate the isBound flag with the input stream.
 option bool o_blendMask_isBound;
+
+// ------ Blend Utilities ----------------------------------------
 
 //! Returns the BlendMaskSource that will actually be used when rendering (not necessarily the same BlendMaskSource specified by the user)
 BlendMaskSource GetFinalBlendMaskSource()
@@ -179,6 +182,22 @@ float2 BlendLayers(float2 layer1, float2 layer2, float2 layer3, float3 blendMask
 float3 BlendLayers(float3 layer1, float3 layer2, float3 layer3, float3 blendMaskValues)
 {
     return layer1 * blendMaskValues.r + layer2 * blendMaskValues.g + layer3 * blendMaskValues.b;
+}
+
+// ------ Parallax Utilities ----------------------------------------
+
+bool ShouldHandleParallax()
+{
+    // Parallax mapping's non uniform uv transformations break screen space subsurface scattering, disable it when subsurface scattering is enabled.
+    // Also, all the debug draw modes avoid parallax (they early-return before parallax code actually) so you can see exactly where the various maps appear on the surface UV space.
+    return !o_enableSubsurfaceScattering && o_parallax_feature_enabled && o_debugDrawMode == DebugDrawMode::None;
+}
+
+bool ShouldHandleParallaxInDepthShaders()
+{
+    // The depth pass shaders need to calculate parallax when the result could affect the depth buffer (or when
+    // parallax could affect texel clipping but we don't have alpha/clipping support in multilayer PBR).
+    return ShouldHandleParallax() && o_parallax_enablePixelDepthOffset;
 }
 
 // These static values are used to pass extra data to the GetDepth callback function during the parallax depth search.
