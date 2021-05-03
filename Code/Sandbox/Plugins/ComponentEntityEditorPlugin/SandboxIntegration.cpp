@@ -315,17 +315,20 @@ void SandboxIntegrationManager::OnCatalogAssetAdded(const AZ::Data::AssetId& ass
 // operation writing to shared resource is queued on main thread.
 void SandboxIntegrationManager::OnCatalogAssetRemoved(const AZ::Data::AssetId& assetId, const AZ::Data::AssetInfo& assetInfo)
 {
+    bool isPrefabSystemEnabled = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+
     // Check to see if the removed slice asset has any instance in the level, then check if 
     // those dangling instances are directly under the root slice (not sub-slices). If yes,
     // detach them and save necessary information so they can be restored when their slice asset
     // comes back.
 
-    if (assetInfo.m_assetType == AZ::AzTypeInfo<AZ::SliceAsset>::Uuid())
+    if (!isPrefabSystemEnabled && assetInfo.m_assetType == AZ::AzTypeInfo<AZ::SliceAsset>::Uuid())
     {
         AZ::SliceComponent* rootSlice = nullptr;
         AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::BroadcastResult(rootSlice,
             &AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Events::GetEditorRootSlice);
-        AZ_Assert(rootSlice, "Editor root slice missing!");
+        AZ_Assert(rootSlice != nullptr, "Editor root slice missing!");
 
         AZStd::vector<AZ::EntityId> entitiesToDetach;
         const AZ::SliceComponent::SliceList& subSlices = rootSlice->GetSlices();
