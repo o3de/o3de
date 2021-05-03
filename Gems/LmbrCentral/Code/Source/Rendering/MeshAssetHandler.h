@@ -94,40 +94,4 @@ namespace LmbrCentral
 
         AZ::Data::AssetId m_missingMeshAssetId;
     };
-
-    /**
-     * Handler for Alembic Geometry Caches (cax)
-     */
-    class GeomCacheAssetHandler
-        : public AZ::Data::AssetHandler
-        , public AZ::AssetTypeInfoBus::Handler
-        , private MeshAssetHandlerHelper
-    {
-    public:
-
-        AZ_CLASS_ALLOCATOR(GeomCacheAssetHandler, AZ::SystemAllocator, 0);
-
-        ~GeomCacheAssetHandler() override;
-
-        // AZ::Data::AssetHandler
-        AZ::Data::AssetPtr CreateAsset(const AZ::Data::AssetId& id, const AZ::Data::AssetType& type) override;
-        void GetCustomAssetStreamInfoForLoad(AZ::Data::AssetStreamInfo& streamInfo) override;
-        AZ::Data::AssetHandler::LoadResult LoadAssetData(
-            const AZ::Data::Asset<AZ::Data::AssetData>& asset,
-            AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
-            const AZ::Data::AssetFilterCB& assetLoadFilterCB) override;
-        void DestroyAsset(AZ::Data::AssetPtr ptr) override;
-        void GetHandledAssetTypes(AZStd::vector<AZ::Data::AssetType>& assetTypes) override;
-
-        // AZ::AssetTypeInfoBus::Handler
-        AZ::Data::AssetType GetAssetType() const override;
-        const char* GetAssetTypeDisplayName() const override;
-        const char* GetGroup() const override;
-        AZ::Uuid GetComponentTypeId() const override;
-        void GetAssetTypeExtensions(AZStd::vector<AZStd::string>& extensions) override;
-
-        void Register();
-        void Unregister();
-    };
-
 } // namespace LmbrCentral
