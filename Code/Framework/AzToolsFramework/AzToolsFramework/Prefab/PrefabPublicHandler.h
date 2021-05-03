@@ -61,6 +61,8 @@ namespace AzToolsFramework
 
             PrefabOperationResult DetachPrefab(const AZ::EntityId& containerEntityId) override;
 
+            AZ::EntityId OverrideEntitySelectionInViewport(AZ::EntityId entityId) override;
+
         private:
             PrefabOperationResult DeleteFromInstance(const EntityIdList& entityIds, bool deleteDescendants);
             bool RetrieveAndSortPrefabEntitiesAndInstances(const EntityList& inputEntities, Instance& commonRootEntityOwningInstance,

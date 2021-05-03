@@ -1752,5 +1752,10 @@ namespace AzToolsFramework
             linkPatch.Parse(previousPatchString.toUtf8().constData());
         }
 
+        AZ::EntityId PrefabPublicHandler::OverrideEntitySelectionInViewport(AZ::EntityId entityId)
+        {
+            return entityId;
+        }
+        
     } // namespace Prefab
 } // namespace AzToolsFramework

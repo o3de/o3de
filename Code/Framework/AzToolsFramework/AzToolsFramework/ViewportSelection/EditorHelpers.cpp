@@ -175,6 +175,13 @@ namespace AzToolsFramework
             }
         }
 
+        // PREFAB TEST! NOT SURE HOW THIS CODE IS GOING TO BE PLUGGED HERE
+
+        // If the owning prefab isn't 
+
+
+        // PREFAB TEST END
+
         return entityIdUnderCursor;
     }
 
