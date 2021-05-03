@@ -32,6 +32,9 @@ namespace Physics
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
+            serializeContext
+                ->RegisterGenericType<AZStd::shared_ptr<SphereShapeConfiguration>>();
+
             serializeContext->Class<SphereShapeConfiguration, ShapeConfiguration>()
                 ->Version(1)
                 ->Field("Radius", &SphereShapeConfiguration::m_radius)
@@ -60,6 +63,9 @@ namespace Physics
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
+            serializeContext
+                ->RegisterGenericType<AZStd::shared_ptr<BoxShapeConfiguration>>();
+
             serializeContext->Class<BoxShapeConfiguration, ShapeConfiguration>()
                 ->Version(1)
                 ->Field("Configuration", &BoxShapeConfiguration::m_dimensions)
@@ -88,6 +94,9 @@ namespace Physics
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
+            serializeContext
+                ->RegisterGenericType<AZStd::shared_ptr<CapsuleShapeConfiguration>>();
+
             serializeContext->Class<CapsuleShapeConfiguration, ShapeConfiguration>()
                 ->Version(1)
                 ->Field("Height", &CapsuleShapeConfiguration::m_height)
@@ -137,6 +146,9 @@ namespace Physics
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
+            serializeContext
+                ->RegisterGenericType<AZStd::shared_ptr<PhysicsAssetShapeConfiguration>>();
+
             serializeContext->Class<PhysicsAssetShapeConfiguration, ShapeConfiguration>()
                 ->Version(1)
                 ->Field("PhysicsAsset", &PhysicsAssetShapeConfiguration::m_asset)
@@ -169,6 +181,9 @@ namespace Physics
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
+            serializeContext
+                ->RegisterGenericType<AZStd::shared_ptr<NativeShapeConfiguration>>();
+
             serializeContext->Class<NativeShapeConfiguration, ShapeConfiguration>()
                 ->Version(1)
                 ->Field("Scale", &NativeShapeConfiguration::m_nativeShapeScale)
@@ -192,6 +207,9 @@ namespace Physics
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
+            serializeContext
+                ->RegisterGenericType<AZStd::shared_ptr<CookedMeshShapeConfiguration>>();
+
             serializeContext->Class<CookedMeshShapeConfiguration, ShapeConfiguration>()
                 ->Version(1)
                 ->Field("CookedData", &CookedMeshShapeConfiguration::m_cookedData)
