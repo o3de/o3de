@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>addGemsDialog</class>
- <widget class="QDialog" name="addGemsDialog">
+ <class>manageGemTargetsDialog</class>
+ <widget class="QDialog" name="manageGemTargetsDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>635</width>
-    <height>327</height>
+    <width>702</width>
+    <height>297</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Manage Gems</string>
+   <string>Manage Gem Targets</string>
   </property>
   <widget class="QDialogButtonBox" name="close">
    <property name="geometry">
     <rect>
-     <x>460</x>
-     <y>290</y>
-     <width>171</width>
+     <x>310</x>
+     <y>260</y>
+     <width>71</width>
      <height>32</height>
     </rect>
    </property>
@@ -29,10 +29,10 @@
     <set>QDialogButtonBox::Close</set>
    </property>
   </widget>
-  <widget class="QListView" name="addGemsList">
+  <widget class="QListView" name="availableGemTargetsList">
    <property name="geometry">
     <rect>
-     <x>380</x>
+     <x>440</x>
      <y>50</y>
      <width>250</width>
      <height>221</height>
@@ -48,7 +48,7 @@
     <enum>QAbstractItemView::ExtendedSelection</enum>
    </property>
   </widget>
-  <widget class="QListView" name="projectGems">
+  <widget class="QListView" name="enabledGemTargetsList">
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -64,14 +64,14 @@
   <widget class="QLabel" name="label_2">
    <property name="geometry">
     <rect>
-     <x>380</x>
+     <x>440</x>
      <y>30</y>
-     <width>91</width>
+     <width>251</width>
      <height>16</height>
     </rect>
    </property>
    <property name="text">
-    <string>Available Gems</string>
+    <string>Available Gem Targets</string>
    </property>
   </widget>
   <widget class="QLabel" name="label_4">
@@ -79,38 +79,38 @@
     <rect>
      <x>10</x>
      <y>30</y>
-     <width>71</width>
+     <width>251</width>
      <height>16</height>
     </rect>
    </property>
    <property name="text">
-    <string>Enabled Gems</string>
+    <string>Enabled Gem Targets</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="removeGemsButton">
+  <widget class="QPushButton" name="removeGemTargetsButton">
    <property name="geometry">
     <rect>
-     <x>267</x>
+     <x>264</x>
      <y>130</y>
-     <width>105</width>
+     <width>171</width>
      <height>23</height>
     </rect>
    </property>
    <property name="text">
-    <string>Remove Gems   &gt;&gt;</string>
+    <string>Remove Gem Targets   &gt;&gt;</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="addGemsButton">
+  <widget class="QPushButton" name="addGemTargetsButton">
    <property name="geometry">
     <rect>
-     <x>267</x>
+     <x>264</x>
      <y>100</y>
-     <width>105</width>
+     <width>171</width>
      <height>23</height>
     </rect>
    </property>
    <property name="text">
-    <string>&lt;&lt;   Add Gems</string>
+    <string>&lt;&lt;   Add Gem Targets</string>
    </property>
   </widget>
   <widget class="QLabel" name="label">
@@ -118,12 +118,12 @@
     <rect>
      <x>10</x>
      <y>5</y>
-     <width>241</width>
-     <height>16</height>
+     <width>400</width>
+     <height>21</height>
     </rect>
    </property>
    <property name="text">
-    <string>Adding new Gems may require rebuilding</string>
+    <string>Adding new Gem Targets may require rebuilding</string>
    </property>
   </widget>
  </widget>
@@ -132,7 +132,7 @@
   <connection>
    <sender>close</sender>
    <signal>accepted()</signal>
-   <receiver>addGemsDialog</receiver>
+   <receiver>manageGemTargetsDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -148,7 +148,7 @@
   <connection>
    <sender>close</sender>
    <signal>rejected()</signal>
-   <receiver>addGemsDialog</receiver>
+   <receiver>manageGemTargetsDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

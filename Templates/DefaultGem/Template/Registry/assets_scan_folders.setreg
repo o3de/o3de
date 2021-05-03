@@ -1,0 +1,13 @@
+{
+    "Amazon":
+    {
+        "${Name}.Assets":
+        {
+            "SourcePaths":
+            [
+                "Assets",
+                "Registry"
+            ]
+        }
+    }
+}

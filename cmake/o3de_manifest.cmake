@@ -25,62 +25,142 @@ endif()
 ################################################################################
 # O3DE_REGISTER_ENGINE_PATH
 #
-# If you set this Cache Variable it will delete <user>/.o3de folder and recreate
-# it by calling o3de register --this-engine using the supplied engine path.
-# This is useful for build servers which have nothing registered and
-# need to register --this-engine, build and test a specific engine.
+# If you set this Cache Variable it will delete <home_directory>/.o3de folder and recreate
+# it by calling o3de register --this-engine --override-home-folder <home_directory> using the supplied engine path.
+# This is useful for when we have no .o3de folder yet, like a clean install, or want to erase .o3de and re-register.
+# This is handy for build server which need to register this engine without having to manually typing it in.
 # Note: If this is run and an o3de object has a restricted set, that restricted
 # must be 'o3de' or registration will fail because the only restricted 'o3de' is
 # registered by default. So theoretically anything we ship as part of the engine
-# will succeed, anything relying on something outside the engine will fail.
-# For users, you could add anything your build servers need regiatered here:
-# Modify this to register your outside objects by adding the appropriate
-# additional calls after the register --this-engine call. EX:
-# execute_process(
-#   COMMAND cmd /c ${O3DE_ENGINE_PATH}/scripts/o3de.bat register --restricted-path <some/restricted/path>
-#   RESULT_VARIABLE o3de_register_this_engine_cmd_result
-#  )
-#
-# or if you need a certain outside project to always be registered
-#
-# execute_process(
-#   COMMAND cmd /c ${O3DE_ENGINE_PATH}/scripts/o3de.bat register --project-path <some/project/path>
-#   RESULT_VARIABLE o3de_register_outside_project_cmd_result
-#  )
-#
-# or if you need a certain outside gem to always be resitered
-#
-# execute_process(
-#   COMMAND cmd /c ${O3DE_ENGINE_PATH}/scripts/o3de.bat register --gem-path <some/gem/path>
-#   RESULT_VARIABLE o3de_register_outside_gem_cmd_result
-#  )
+# will succeed, anything relying on something outside the engine will fail UNLESS we regiater them here:
 ################################################################################
-set(O3DE_REGISTER_ENGINE_PATH "" CACHE PATH "!!!ONLY FOR BUILD SERVERS!!! This will wipe out the <user>/.o3de folder and register --this-engine using the provided engine path.")
+set(O3DE_REGISTER_ENGINE_PATH "" CACHE PATH "This is the engine which o3de script will run for registering.")
+set(O3DE_REGISTER_THIS_ENGINE "" CACHE BOOL "If we set O3DE_REGISTER_ENGINE_PATH, and this is TRUE this will wipe out the .o3de folder and register --this-engine using the provided path.")
+set(O3DE_REGISTER_RESTRICTED_PATHS "" CACHE PATHS "If we set O3DE_REGISTER_ENGINE_PATH, then will register --restricted-path using the provided paths.")
+set(O3DE_REGISTER_PROJECT_PATHS "" CACHE PATHS "If we set O3DE_REGISTER_ENGINE_PATH, then will register --project-path using the provided paths.")
+set(O3DE_REGISTER_GEM_PATHS "" CACHE PATHS "If we set O3DE_REGISTER_ENGINE_PATH, then will register --gem-path using the provided paths.")
+set(O3DE_REGISTER_TEMPLATE_PATHS "" CACHE PATHS "If we set O3DE_REGISTER_ENGINE_PATH, then will register --template-path using the provided paths.")
+set(O3DE_REGISTER_REPO_URIS "" CACHE STRING "If we set O3DE_REGISTER_ENGINE_PATH, then will register --repo-uri using the provided uris.")
 if(O3DE_REGISTER_ENGINE_PATH)
-    message(STATUS "Delete ${home_directory}/.o3de and try to register ${O3DE_REGISTER_ENGINE_PATH}...")
+    if(O3DE_REGISTER_THIS_ENGINE)
+        message(STATUS "Delete ${home_directory}/.o3de and try to register ${O3DE_REGISTER_ENGINE_PATH}...")
 
-    if(EXISTS ${home_directory}/.o3de)
-        file(REMOVE_RECURSE ${home_directory}/.o3de)
+        if(EXISTS ${home_directory}/.o3de)
+            file(REMOVE_RECURSE ${home_directory}/.o3de)
+        endif()
+        if(CMAKE_HOST_WIN32)
+            execute_process(
+                      COMMAND cmd /c ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.bat register --this-engine --override-home-folder ${home_directory}
+                      RESULT_VARIABLE o3de_register_this_engine_cmd_result
+            )
+        else()
+            execute_process(
+                      COMMAND bash ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.sh register --this-engine --override-home-folder ${home_directory}
+                      RESULT_VARIABLE o3de_register_this_engine_cmd_result
+                   )
+        endif()
+        if(o3de_register_this_engine_cmd_result)
+            message(FATAL_ERROR "An error occured trying to ${O3DE_REGISTER_ENGINE_PATH}/scripts>o3de register --this-engine --override-home-folder ${home_directory}: ${o3de_register_this_engine_cmd_result}")
+        else()
+            message(STATUS "Engine ${O3DE_REGISTER_ENGINE_PATH} Registration successfull.")
+        endif()
     endif()
 
-    if(CMAKE_HOST_WIN32)
-        execute_process(
-                  COMMAND cmd /c ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.bat register --this-engine --override-home-folder ${home_directory}
-                  RESULT_VARIABLE o3de_register_this_engine_cmd_result
-               )
-    else()
-        execute_process(
-                  COMMAND bash ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.sh register --this-engine --override-home-folder ${home_directory}
-                  RESULT_VARIABLE o3de_register_this_engine_cmd_result
-               )
-    endif()
-    if(o3de_register_this_engine_cmd_result)
-        message(FATAL_ERROR "An error occured trying to ${O3DE_REGISTER_ENGINE_PATH}/scripts>o3de register --this-engine: ${o3de_register_this_engine_cmd_result}")
-    else()
-        message(STATUS "Registration successfull.")
-    endif()
+    foreach(restricted_path IN O3DE_REGISTER_RESTRICTED_PATHS)
+        if(CMAKE_HOST_WIN32)
+            execute_process(
+               COMMAND cmd /c ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.bat register --restricted-path ${restricted_path} --override-home-folder ${home_directory}
+               RESULT_VARIABLE o3de_register_restricted_cmd_result
+              )
+        else()
+            execute_process(
+               COMMAND bash ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.sh register --restricted-path ${restricted_path} --override-home-folder ${home_directory}
+               RESULT_VARIABLE o3de_register_restricted_cmd_result
+              )
+        endif()
+        if(o3de_register_restricted_cmd_result)
+            message(FATAL_ERROR "An error occured trying to ${O3DE_REGISTER_ENGINE_PATH}/scripts>o3de register --restricted-path ${restricted_path} --override-home-folder ${home_directory}: ${o3de_register_restricted_cmd_result}")
+        else()
+            message(STATUS "Restricted ${restricted_path} Registration successfull.")
+        endif()
+    endforeach()
+    
+    foreach(project_path IN O3DE_REGISTER_PROJECT_PATHS)
+        if(CMAKE_HOST_WIN32)
+            execute_process(
+               COMMAND cmd /c ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.bat register --project-path ${project_path} --override-home-folder ${home_directory}
+               RESULT_VARIABLE o3de_register_project_cmd_result
+              )
+        else()
+            execute_process(
+               COMMAND bash ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.sh register --project-path ${project_path} --override-home-folder ${home_directory}
+               RESULT_VARIABLE o3de_register_project_cmd_result
+              )
+        endif()
+        if(o3de_register_project_cmd_result)
+            message(FATAL_ERROR "An error occured trying to ${O3DE_REGISTER_ENGINE_PATH}/scripts>o3de register --project-path ${project_path} --override-home-folder ${home_directory}: ${o3de_register_project_cmd_result}")
+        else()
+            message(STATUS "Project ${project_path} Registration successfull.")
+        endif()
+    endforeach()
+    
+    foreach(gem_path IN O3DE_REGISTER_GEM_PATHS)
+        if(CMAKE_HOST_WIN32)
+            execute_process(
+               COMMAND cmd /c ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.bat register --gem-path ${gem_path} --override-home-folder ${home_directory}
+               RESULT_VARIABLE o3de_register_gem_cmd_result
+              )
+        else()
+            execute_process(
+               COMMAND bash ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.sh register --gem-path ${gem_path} --override-home-folder ${home_directory}
+               RESULT_VARIABLE o3de_register_gem_cmd_result
+              )
+        endif()
+        if(o3de_register_gem_cmd_result)
+            message(FATAL_ERROR "An error occured trying to ${O3DE_REGISTER_ENGINE_PATH}/scripts>o3de register --gem-path ${gem_path} --override-home-folder ${home_directory}: ${o3de_register_gem_cmd_result}")
+        else()
+            message(STATUS "Gem ${gem_path} Registration successfull.")
+        endif()
+    endforeach()
+    
+    foreach(template_path IN O3DE_REGISTER_TEMPLATE_PATHS)
+        if(CMAKE_HOST_WIN32)
+            execute_process(
+               COMMAND cmd /c ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.bat register --template-path ${template_path} --override-home-folder ${home_directory}
+               RESULT_VARIABLE o3de_register_template_cmd_result
+              )
+        else()
+            execute_process(
+               COMMAND bash ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.sh register --template-path ${template_path} --override-home-folder ${home_directory}
+               RESULT_VARIABLE o3de_register_template_cmd_result
+              )
+        endif()
+        if(o3de_register_template_cmd_result)
+            message(FATAL_ERROR "An error occured trying to ${O3DE_REGISTER_ENGINE_PATH}/scripts>o3de register --template-path ${template_path} --override-home-folder ${home_directory}: ${o3de_register_template_cmd_result}")
+        else()
+            message(STATUS "Template ${template_path} Registration successfull.")
+        endif()
+    endforeach()
+    
+    foreach(repo_uri IN O3DE_REGISTER_REPO_URIS)
+        if(CMAKE_HOST_WIN32)
+            execute_process(
+               COMMAND cmd /c ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.bat register --repo-uri ${repo_uri} --override-home-folder ${home_directory}
+               RESULT_VARIABLE o3de_register_repo_cmd_result
+              )
+        else()
+            execute_process(
+               COMMAND bash ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.sh register --repo-uri ${repo_uri} --override-home-folder ${home_directory}
+               RESULT_VARIABLE o3de_register_repo_cmd_result
+              )
+        endif()
+        if(o3de_register_repo_cmd_result)
+            message(FATAL_ERROR "An error occured trying to ${O3DE_REGISTER_ENGINE_PATH}/scripts>o3de register --repo-uri ${repo_uri} --override-home-folder ${home_directory}: ${o3de_register_repo_cmd_result}")
+        else()
+            message(STATUS "Repo ${repo_uri} Registration successfull.")
+        endif()
+    endforeach()
 endif()
-
 
 ################################################################################
 # o3de manifest

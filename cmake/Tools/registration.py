@@ -262,7 +262,7 @@ def register_shipped_engine_o3de_objects() -> int:
             ret_val = error_code
 
     json_data = load_o3de_manifest()
-    engine_object = get_engine_data(json_data)
+    engine_object = find_engine_data(json_data)
     gems = json_data['gems'].copy()
     gems.extend(engine_object['gems'])
     for gem_path in sorted(gems, key=len):
@@ -596,20 +596,6 @@ def load_o3de_manifest() -> dict:
             return json_data
 
 
-def get_engine_data(json_data: dict,
-                    engine_path: str or pathlib.Path = None) -> dict or None:
-    if not engine_path:
-        engine_path = get_this_engine_path()
-    engine_path = pathlib.Path(engine_path).resolve()
-
-    for engine_object in json_data['engines']:
-        engine_object_path = pathlib.Path(engine_object['path']).resolve()
-        if engine_path == engine_object_path:
-            return engine_object
-
-    return None
-
-
 def save_o3de_manifest(json_data: dict) -> None:
     with get_o3de_manifest().open('w') as s:
         try:
@@ -666,7 +652,7 @@ def register_gem_path(json_data: dict,
     gem_path = pathlib.Path(gem_path).resolve()
 
     if engine_path:
-        engine_data = get_engine_data(json_data, engine_path)
+        engine_data = find_engine_data(json_data, engine_path)
         if not engine_data:
             logger.error(f'Engine path {engine_path} is not registered.')
             return 1
@@ -718,7 +704,7 @@ def register_project_path(json_data: dict,
     project_path = pathlib.Path(project_path).resolve()
 
     if engine_path:
-        engine_data = get_engine_data(json_data, engine_path)
+        engine_data = find_engine_data(json_data, engine_path)
         if not engine_data:
             logger.error(f'Engine path {engine_path} is not registered.')
             return 1
@@ -801,7 +787,7 @@ def register_template_path(json_data: dict,
     template_path = pathlib.Path(template_path).resolve()
 
     if engine_path:
-        engine_data = get_engine_data(json_data, engine_path)
+        engine_data = find_engine_data(json_data, engine_path)
         if not engine_data:
             logger.error(f'Engine path {engine_path} is not registered.')
             return 1
@@ -853,7 +839,7 @@ def register_restricted_path(json_data: dict,
     restricted_path = pathlib.Path(restricted_path).resolve()
 
     if engine_path:
-        engine_data = get_engine_data(json_data, engine_path)
+        engine_data = find_engine_data(json_data, engine_path)
         if not engine_data:
             logger.error(f'Engine path {engine_path} is not registered.')
             return 1
@@ -1243,14 +1229,15 @@ def register(engine_path: str or pathlib.Path = None,
              project_path: str or pathlib.Path = None,
              gem_path: str or pathlib.Path = None,
              template_path: str or pathlib.Path = None,
+             restricted_path: str or pathlib.Path = None,
+             repo_uri: str or pathlib.Path = None,
              default_engines_folder: str or pathlib.Path = None,
              default_projects_folder: str or pathlib.Path = None,
              default_gems_folder: str or pathlib.Path = None,
              default_templates_folder: str or pathlib.Path = None,
              default_restricted_folder: str or pathlib.Path = None,
-             repo_uri: str or pathlib.Path = None,
-             remove: bool = False,
-             restricted_path: str or pathlib.Path = None) -> int:
+             remove: bool = False
+             ) -> int:
     """
     Adds/Updates entries to the .o3de/o3de_manifest.json
 
@@ -1258,14 +1245,15 @@ def register(engine_path: str or pathlib.Path = None,
     :param project_path: project folder
     :param gem_path: gem folder
     :param template_path: template folder
+    :param restricted_path: restricted folder
+    :param repo_uri: repo uri
     :param default_engines_folder: default engines folder
     :param default_projects_folder: default projects folder
     :param default_gems_folder: default gems folder
     :param default_templates_folder: default templates folder
     :param default_restricted_folder: default restricted code folder
-    :param repo_uri: repo uri
     :param remove: add/remove the entries
-    :param restricted_path: restricted folder
+
     :return: 0 for success or non 0 failure code
     """
 
@@ -1646,7 +1634,7 @@ def get_registered(engine_name: str = None,
                         return engine_path
 
     elif isinstance(project_name, str):
-        engine_object = get_engine_data(json_data)
+        engine_object = find_engine_data(json_data)
         projects = json_data['projects'].copy()
         projects.extend(engine_object['projects'])
         for project_path in projects:
@@ -1663,7 +1651,7 @@ def get_registered(engine_name: str = None,
                         return project_path
 
     elif isinstance(gem_name, str):
-        engine_object = get_engine_data(json_data)
+        engine_object = find_engine_data(json_data)
         gems = json_data['gems'].copy()
         gems.extend(engine_object['gems'])
         for gem_path in gems:
@@ -1680,7 +1668,7 @@ def get_registered(engine_name: str = None,
                         return gem_path
 
     elif isinstance(template_name, str):
-        engine_object = get_engine_data(json_data)
+        engine_object = find_engine_data(json_data)
         templates = json_data['templates'].copy()
         templates.extend(engine_object['templates'])
         for template_path in templates:
@@ -1697,7 +1685,7 @@ def get_registered(engine_name: str = None,
                         return template_path
 
     elif isinstance(restricted_name, str):
-        engine_object = get_engine_data(json_data)
+        engine_object = find_engine_data(json_data)
         restricted = json_data['restricted'].copy()
         restricted.extend(engine_object['restricted'])
         for restricted_path in restricted:
@@ -1750,7 +1738,7 @@ def get_registered(engine_name: str = None,
     return None
 
 
-def print_engines(engines_data: dict) -> None:
+def print_engines_data(engines_data: dict) -> None:
     print('\n')
     print("Engines================================================")
     for engine_object in engines_data:
@@ -1779,7 +1767,7 @@ def print_engines(engines_data: dict) -> None:
         print('\n')
 
 
-def print_projects(projects_data: dict) -> None:
+def print_projects_data(projects_data: dict) -> None:
     print('\n')
     print("Projects================================================")
     for project_uri in projects_data:
@@ -1806,7 +1794,7 @@ def print_projects(projects_data: dict) -> None:
         print('\n')
 
 
-def print_gems(gems_data: dict) -> None:
+def print_gems_data(gems_data: dict) -> None:
     print('\n')
     print("Gems================================================")
     for gem_uri in gems_data:
@@ -1833,7 +1821,7 @@ def print_gems(gems_data: dict) -> None:
         print('\n')
 
 
-def print_templates(templates_data: dict) -> None:
+def print_templates_data(templates_data: dict) -> None:
     print('\n')
     print("Templates================================================")
     for template_uri in templates_data:
@@ -1860,7 +1848,7 @@ def print_templates(templates_data: dict) -> None:
         print('\n')
 
 
-def print_repos(repos_data: dict) -> None:
+def print_repos_data(repos_data: dict) -> None:
     print('\n')
     print("Repos================================================")
     cache_folder = get_o3de_cache_folder()
@@ -1880,7 +1868,7 @@ def print_repos(repos_data: dict) -> None:
         print('\n')
 
 
-def print_restricted(restricted_data: dict) -> None:
+def print_restricted_data(restricted_data: dict) -> None:
     print('\n')
     print("Restricted================================================")
     for restricted_path in restricted_data:
@@ -1896,197 +1884,405 @@ def print_restricted(restricted_data: dict) -> None:
         print('\n')
 
 
-def register_show_this_engine(verbose: int) -> None:
+def get_this_engine() -> dict:
     json_data = load_o3de_manifest()
-    engine_data = get_engine_data(json_data)
+    engine_data = find_engine_data(json_data)
+    return engine_data
+
+
+def get_engines() -> dict:
+    json_data = load_o3de_manifest()
+    return json_data['engines']
+
+
+def get_projects() -> dict:
+    json_data = load_o3de_manifest()
+    return json_data['projects']
+
+
+def get_gems() -> dict:
+    json_data = load_o3de_manifest()
+    return json_data['gems']
+
+
+def get_templates() -> dict:
+    json_data = load_o3de_manifest()
+    return json_data['templates']
+
+
+def get_restricted() -> dict:
+    json_data = load_o3de_manifest()
+    return json_data['restricted']
+
+
+def get_repos() -> dict:
+    json_data = load_o3de_manifest()
+    return json_data['repos']
+
+
+def get_engine_projects() -> dict:
+    json_data = load_o3de_manifest()
+    engine_object = find_engine_data(json_data)
+    return engine_object['projects']
+
+
+def get_engine_gems() -> dict:
+    json_data = load_o3de_manifest()
+    engine_object = find_engine_data(json_data)
+    return engine_object['gems']
+
+
+def get_engine_templates() -> dict:
+    json_data = load_o3de_manifest()
+    engine_object = find_engine_data(json_data)
+    return engine_object['templates']
+
+
+def get_engine_restricted() -> dict:
+    json_data = load_o3de_manifest()
+    engine_object = find_engine_data(json_data)
+    return engine_object['restricted']
+
+
+def get_external_subdirectories() -> dict:
+    json_data = load_o3de_manifest()
+    engine_object = find_engine_data(json_data)
+    return engine_object['external_subdirectories']
+
+
+def get_all_projects() -> dict:
+    json_data = load_o3de_manifest()
+    engine_object = find_engine_data(json_data)
+    projects_data = json_data['projects'].copy()
+    projects_data.extend(engine_object['projects'])
+    return projects_data
+
+
+def get_all_gems() -> dict:
+    json_data = load_o3de_manifest()
+    engine_object = find_engine_data(json_data)
+    gems_data = json_data['gems'].copy()
+    gems_data.extend(engine_object['gems'])
+    return gems_data
+
+
+def get_all_templates() -> dict:
+    json_data = load_o3de_manifest()
+    engine_object = find_engine_data(json_data)
+    templates_data = json_data['templates'].copy()
+    templates_data.extend(engine_object['templates'])
+    return templates_data
+
+
+def get_all_restricted() -> dict:
+    json_data = load_o3de_manifest()
+    engine_object = find_engine_data(json_data)
+    restricted_data = json_data['restricted'].copy()
+    restricted_data.extend(engine_object['restricted'])
+    return restricted_data
+
+
+def print_this_engine(verbose: int) -> None:
+    engine_data = get_this_engine()
     print(json.dumps(engine_data, indent=4))
     if verbose > 0:
-        print_engines(engine_data)
+        print_engines_data(engine_data)
 
 
-def register_show_engines(verbose: int) -> None:
-    json_data = load_o3de_manifest()
-    print(json.dumps(json_data['engines'], indent=4))
+def print_engines(verbose: int) -> None:
+    engines_data = get_engines()
+    print(json.dumps(engines_data, indent=4))
     if verbose > 0:
-        print_engines(json_data['engines'])
+        print_engines_data(engines_data)
 
 
-def register_show_projects(verbose: int) -> None:
-    json_data = load_o3de_manifest()
-    print(json.dumps(json_data['projects'], indent=4))
+def print_projects(verbose: int) -> None:
+    projects_data = get_projects()
+    print(json.dumps(projects_data, indent=4))
     if verbose > 0:
-        print_projects(json_data['projects'])
+        print_projects_data(projects_data)
 
 
-def register_show_gems(verbose: int) -> None:
-    json_data = load_o3de_manifest()
-    print(json.dumps(json_data['gems'], indent=4))
+def print_gems(verbose: int) -> None:
+    gems_data = get_gems()
+    print(json.dumps(gems_data, indent=4))
     if verbose > 0:
-        print_gems(json_data['gems'])
+        print_gems_data(gems_data)
 
 
-def register_show_templates(verbose: int) -> None:
-    json_data = load_o3de_manifest()
-    print(json.dumps(json_data['templates'], indent=4))
+def print_templates(verbose: int) -> None:
+    templates_data = get_templates()
+    print(json.dumps(templates_data, indent=4))
     if verbose > 0:
-        print_templates(json_data['templates'])
+        print_templates_data(templates_data)
 
 
-def register_show_restricted(verbose: int) -> None:
-    json_data = load_o3de_manifest()
-    print(json.dumps(json_data['restricted'], indent=4))
+def print_restricted(verbose: int) -> None:
+    restricted_data = get_restricted()
+    print(json.dumps(restricted_data, indent=4))
     if verbose > 0:
-        print_restricted(json_data['restricted'])
+        print_restricted_data(restricted_data)
 
 
 def register_show_repos(verbose: int) -> None:
-    json_data = load_o3de_manifest()
-    print(json.dumps(json_data['repos'], indent=4))
+    repos_data = get_repos()
+    print(json.dumps(repos_data, indent=4))
     if verbose > 0:
-        print_engines(json_data['repos'])
+        print_repos_data(repos_data)
 
 
-def register_show_engine_projects(verbose: int) -> None:
-    json_data = load_o3de_manifest()
-    engine_object = get_engine_data(json_data)
-    print(json.dumps(engine_object['projects'], indent=4))
+def print_engine_projects(verbose: int) -> None:
+    engine_projects_data = get_engine_projects()
+    print(json.dumps(engine_projects_data, indent=4))
     if verbose > 0:
-        print_projects(engine_object['projects'])
+        print_projects_data(engine_projects_data)
 
 
-def register_show_engine_gems(verbose: int) -> None:
-    json_data = load_o3de_manifest()
-    engine_object = get_engine_data(json_data)
-    print(json.dumps(engine_object['gems'], indent=4))
+def print_engine_gems(verbose: int) -> None:
+    engine_gems_data = get_engine_gems()
+    print(json.dumps(engine_gems_data, indent=4))
     if verbose > 0:
-        print_gems(engine_object['gems'])
+        print_gems_data(engine_gems_data)
 
 
-def register_show_engine_templates(verbose: int) -> None:
-    json_data = load_o3de_manifest()
-    engine_object = get_engine_data(json_data)
-    print(json.dumps(engine_object['templates'], indent=4))
+def print_engine_templates(verbose: int) -> None:
+    engine_templates_data = get_engine_templates()
+    print(json.dumps(engine_templates_data, indent=4))
     if verbose > 0:
-        print_templates(engine_object['templates'])
+        print_templates_data(engine_templates_data)
 
 
-def register_show_engine_restricted(verbose: int) -> None:
-    json_data = load_o3de_manifest()
-    engine_object = get_engine_data(json_data)
-    print(json.dumps(engine_object['restricted'], indent=4))
+def print_engine_restricted(verbose: int) -> None:
+    engine_restricted_data = get_engine_restricted()
+    print(json.dumps(engine_restricted_data, indent=4))
     if verbose > 0:
-        print_restricted(engine_object['restricted'])
+        print_restricted_data(engine_restricted_data)
 
 
-def register_show_external_subdirectories(verbose: int) -> None:
-    json_data = load_o3de_manifest()
-    engine_object = get_engine_data(json_data)
-    print(json.dumps(engine_object['external_subdirectories'], indent=4))
+def print_external_subdirectories(verbose: int) -> None:
+    external_subdirs_data = get_external_subdirectories()
+    print(json.dumps(external_subdirs_data, indent=4))
 
 
-def register_show_all_projects(verbose: int) -> None:
-    json_data = load_o3de_manifest()
-    engine_object = get_engine_data(json_data)
-    projects_data = json_data['projects'].copy()
-    projects_data.extend(engine_object['projects'])
-    print(json.dumps(projects_data, indent=4))
+def print_all_projects(verbose: int) -> None:
+    all_projects_data = get_all_projects()
+    print(json.dumps(all_projects_data, indent=4))
     if verbose > 0:
-        print_projects(projects_data)
+        print_projects_data(all_projects_data)
 
 
-def register_show_all_gems(verbose: int) -> None:
-    json_data = load_o3de_manifest()
-    engine_object = get_engine_data(json_data)
-    gems_data = json_data['gems'].copy()
-    gems_data.extend(engine_object['gems'])
-    print(json.dumps(gems_data, indent=4))
+def print_all_gems(verbose: int) -> None:
+    all_gems_data = get_all_gems()
+    print(json.dumps(all_gems_data, indent=4))
     if verbose > 0:
-        print_gems(gems_data)
+        print_gems_data(all_gems_data)
 
 
-def register_show_all_templates(verbose: int) -> None:
-    json_data = load_o3de_manifest()
-    engine_object = get_engine_data(json_data)
-    templates_data = json_data['templates'].copy()
-    templates_data.extend(engine_object['templates'])
-    print(json.dumps(templates_data, indent=4))
+def print_all_templates(verbose: int) -> None:
+    all_templates_data = get_all_templates()
+    print(json.dumps(all_templates_data, indent=4))
     if verbose > 0:
-        print_templates(templates_data)
+        print_templates_data(all_templates_data)
 
 
-def register_show_all_restricted(verbose: int) -> None:
-    json_data = load_o3de_manifest()
-    engine_object = get_engine_data(json_data)
-    restricted_data = json_data['restricted'].copy()
-    restricted_data.extend(engine_object['restricted'])
-    print(json.dumps(restricted_data, indent=4))
+def print_all_restricted(verbose: int) -> None:
+    all_restricted_data = get_all_restricted()
+    print(json.dumps(all_restricted_data, indent=4))
     if verbose > 0:
-        print_restricted(restricted_data)
+        print_restricted_data(all_restricted_data)
 
 
 def register_show(verbose: int) -> None:
     json_data = load_o3de_manifest()
-    engine_object = get_engine_data(json_data)
-
     print(f"{get_o3de_manifest()}:")
     print(json.dumps(json_data, indent=4))
 
     if verbose > 0:
-        print_engines(json_data['engines'])
-
-        projects_data = json_data['projects'].copy()
-        projects_data.extend(engine_object['projects'])
-        print_projects(projects_data)
-
-        gems_data = json_data['gems'].copy()
-        gems_data.extend(engine_object['gems'])
-        print_gems(gems_data)
-
-        templates_data = json_data['templates'].copy()
-        templates_data.extend(engine_object['templates'])
-        print_templates(templates_data)
-
-        restricted_data = json_data['restricted'].copy()
-        restricted_data.extend(engine_object['restricted'])
-        print_restricted(restricted_data)
-
-        print_repos(json_data['repos'])
+        print_engines_data(get_engines())
+        print_projects_data(get_all_projects())
+        print_gems_data(get_gems())
+        print_templates_data(get_all_templates())
+        print_restricted_data(get_all_restricted())
+        print_repos_data(get_repos())
 
 
-def recurse_downloadables(downloadable_data: dict,
-                          repo_uri: str or pathlib.Path) -> None:
-    cache_folder = get_o3de_cache_folder()
-    repo_sha256 = hashlib.sha256(repo_uri.encode())
-    cache_file = cache_folder / str(repo_sha256.hexdigest() + '.json')
-    if valid_o3de_repo_json(cache_file):
-        with cache_file.open('r') as s:
-            try:
-                repo_json_data = json.load(s)
-            except Exception as e:
-                logger.warn(f'{cache_file} failed to load: {str(e)}')
-            else:
-                for engine in repo_json_data['engines']:
-                    if engine not in downloadable_data['engines']:
-                        downloadable_data['engines'].append(engine)
+def find_engine_data(json_data: dict,
+                     engine_path: str or pathlib.Path = None) -> dict or None:
+    if not engine_path:
+        engine_path = get_this_engine_path()
+    engine_path = pathlib.Path(engine_path).resolve()
 
-                for project in repo_json_data['projects']:
-                    if project not in downloadable_data['projects']:
-                        downloadable_data['projects'].append(project)
+    for engine_object in json_data['engines']:
+        engine_object_path = pathlib.Path(engine_object['path']).resolve()
+        if engine_path == engine_object_path:
+            return engine_object
 
-                for gem in repo_json_data['gems']:
-                    if gem not in downloadable_data['gems']:
-                        downloadable_data['gems'].append(gem)
+    return None
 
-                for template in repo_json_data['templates']:
-                    if template not in downloadable_data['templates']:
-                        downloadable_data['templates'].append(template)
 
-                for repo in repo_json_data['repos']:
-                    if repo not in downloadable_data['repos']:
-                        downloadable_data['repos'].append(repo)
+def get_engine_data(engine_name: str = None,
+                    engine_path: str or pathlib.Path = None, ) -> dict or None:
+    if not engine_name and not engine_path:
+        logger.error('Must specify either a Engine name or Engine Path.')
+        return 1
 
-                for repo_uri in repo_json_data['repos']:
-                    recurse_downloadables(downloadable_data, repo_uri)
+    if engine_name and not engine_path:
+        engine_path = get_registered(engine_name=engine_name)
+
+    if not engine_path:
+        logger.error(f'Engine Path {engine_path} has not been registered.')
+        return 1
+
+    engine_path = pathlib.Path(engine_path).resolve()
+    engine_json = engine_path / 'engine.json'
+    if not engine_json.is_file():
+        logger.error(f'Engine json {engine_json} is not present.')
+        return 1
+    if not valid_o3de_engine_json(engine_json):
+        logger.error(f'Engine json {engine_json} is not valid.')
+        return 1
+
+    with engine_json.open('r') as f:
+        try:
+            engine_json_data = json.load(f)
+        except Exception as e:
+            logger.warn(f'{engine_json} failed to load: {str(e)}')
+        else:
+            return engine_json_data
+
+    return None
+
+
+def get_project_data(project_name: str = None,
+                     project_path: str or pathlib.Path = None, ) -> dict or None:
+    if not project_name and not project_path:
+        logger.error('Must specify either a Project name or Project Path.')
+        return 1
+
+    if project_name and not project_path:
+        project_path = get_registered(project_name=project_name)
+
+    if not project_path:
+        logger.error(f'Project Path {project_path} has not been registered.')
+        return 1
+
+    project_path = pathlib.Path(project_path).resolve()
+    project_json = project_path / 'project.json'
+    if not project_json.is_file():
+        logger.error(f'Project json {project_json} is not present.')
+        return 1
+    if not valid_o3de_project_json(project_json):
+        logger.error(f'Project json {project_json} is not valid.')
+        return 1
+
+    with project_json.open('r') as f:
+        try:
+            project_json_data = json.load(f)
+        except Exception as e:
+            logger.warn(f'{project_json} failed to load: {str(e)}')
+        else:
+            return project_json_data
+
+    return None
+
+
+def get_gem_data(gem_name: str = None,
+                 gem_path: str or pathlib.Path = None, ) -> dict or None:
+    if not gem_name and not gem_path:
+        logger.error('Must specify either a Gem name or Gem Path.')
+        return 1
+
+    if gem_name and not gem_path:
+        gem_path = get_registered(gem_name=gem_name)
+
+    if not gem_path:
+        logger.error(f'Gem Path {gem_path} has not been registered.')
+        return 1
+
+    gem_path = pathlib.Path(gem_path).resolve()
+    gem_json = gem_path / 'gem.json'
+    if not gem_json.is_file():
+        logger.error(f'Gem json {gem_json} is not present.')
+        return 1
+    if not valid_o3de_gem_json(gem_json):
+        logger.error(f'Gem json {gem_json} is not valid.')
+        return 1
+
+    with gem_json.open('r') as f:
+        try:
+            gem_json_data = json.load(f)
+        except Exception as e:
+            logger.warn(f'{gem_json} failed to load: {str(e)}')
+        else:
+            return gem_json_data
+
+    return None
+
+
+def get_template_data(template_name: str = None,
+                      template_path: str or pathlib.Path = None, ) -> dict or None:
+    if not template_name and not template_path:
+        logger.error('Must specify either a Template name or Template Path.')
+        return 1
+
+    if template_name and not template_path:
+        template_path = get_registered(template_name=template_name)
+
+    if not template_path:
+        logger.error(f'Template Path {template_path} has not been registered.')
+        return 1
+
+    template_path = pathlib.Path(template_path).resolve()
+    template_json = template_path / 'template.json'
+    if not template_json.is_file():
+        logger.error(f'Template json {template_json} is not present.')
+        return 1
+    if not valid_o3de_template_json(template_json):
+        logger.error(f'Template json {template_json} is not valid.')
+        return 1
+
+    with template_json.open('r') as f:
+        try:
+            template_json_data = json.load(f)
+        except Exception as e:
+            logger.warn(f'{template_json} failed to load: {str(e)}')
+        else:
+            return template_json_data
+
+    return None
+
+
+def get_restricted_data(restricted_name: str = None,
+                        restricted_path: str or pathlib.Path = None, ) -> dict or None:
+    if not restricted_name and not restricted_path:
+        logger.error('Must specify either a Restricted name or Restricted Path.')
+        return 1
+
+    if restricted_name and not restricted_path:
+        restricted_path = get_registered(restricted_name=restricted_name)
+
+    if not restricted_path:
+        logger.error(f'Restricted Path {restricted_path} has not been registered.')
+        return 1
+
+    restricted_path = pathlib.Path(restricted_path).resolve()
+    restricted_json = restricted_path / 'restricted.json'
+    if not restricted_json.is_file():
+        logger.error(f'Restricted json {restricted_json} is not present.')
+        return 1
+    if not valid_o3de_restricted_json(restricted_json):
+        logger.error(f'Restricted json {restricted_json} is not valid.')
+        return 1
+
+    with restricted_json.open('r') as f:
+        try:
+            restricted_json_data = json.load(f)
+        except Exception as e:
+            logger.warn(f'{restricted_json} failed to load: {str(e)}')
+        else:
+            return restricted_json_data
+
+    return None
 
 
 def get_downloadables() -> dict:
@@ -2096,51 +2292,125 @@ def get_downloadables() -> dict:
     downloadable_data.update({'projects': []})
     downloadable_data.update({'gems': []})
     downloadable_data.update({'templates': []})
-    for repo_uri in json_data['repos']:
-        recurse_downloadables(downloadable_data, repo_uri)
+    downloadable_data.update({'restricted': []})
+
+    def recurse_downloadables(repo_uri: str or pathlib.Path) -> None:
+        cache_folder = get_o3de_cache_folder()
+        repo_sha256 = hashlib.sha256(repo_uri.encode())
+        cache_file = cache_folder / str(repo_sha256.hexdigest() + '.json')
+        if valid_o3de_repo_json(cache_file):
+            with cache_file.open('r') as s:
+                try:
+                    repo_json_data = json.load(s)
+                except Exception as e:
+                    logger.warn(f'{cache_file} failed to load: {str(e)}')
+                else:
+                    for engine in repo_json_data['engines']:
+                        if engine not in downloadable_data['engines']:
+                            downloadable_data['engines'].append(engine)
+
+                    for project in repo_json_data['projects']:
+                        if project not in downloadable_data['projects']:
+                            downloadable_data['projects'].append(project)
+
+                    for gem in repo_json_data['gems']:
+                        if gem not in downloadable_data['gems']:
+                            downloadable_data['gems'].append(gem)
+
+                    for template in repo_json_data['templates']:
+                        if template not in downloadable_data['templates']:
+                            downloadable_data['templates'].append(template)
+
+                    for restricted in repo_json_data['restricted']:
+                        if restricted not in downloadable_data['restricted']:
+                            downloadable_data['restricted'].append(restricted)
+
+                    for repo in repo_json_data['repos']:
+                        if repo not in downloadable_data['repos']:
+                            downloadable_data['repos'].append(repo)
+
+                    for repo in downloadable_data['repos']:
+                        recurse_downloadables(repo)
+
+    for repo_entry in json_data['repos']:
+        recurse_downloadables(repo_entry)
     return downloadable_data
 
 
-def register_show_downloadable_engines(verbose: int) -> None:
+def get_downloadable_engines() -> dict:
     downloadable_data = get_downloadables()
-    for engine_data in downloadable_data['engines']:
+    return downloadable_data['engines']
+
+
+def get_downloadable_projects() -> dict:
+    downloadable_data = get_downloadables()
+    return downloadable_data['projects']
+
+
+def get_downloadable_gems() -> dict:
+    downloadable_data = get_downloadables()
+    return downloadable_data['gems']
+
+
+def get_downloadable_templates() -> dict:
+    downloadable_data = get_downloadables()
+    return downloadable_data['templates']
+
+
+def get_downloadable_restricted() -> dict:
+    downloadable_data = get_downloadables()
+    return downloadable_data['restricted']
+
+
+def print_downloadable_engines(verbose: int) -> None:
+    downloadable_engines = get_downloadable_engines()
+    for engine_data in downloadable_engines:
         print(json.dumps(engine_data, indent=4))
     if verbose > 0:
-        print_engines(downloadable_data)
+        print_engines_data(downloadable_engines)
 
 
-def register_show_downloadable_projects(verbose: int) -> None:
-    downloadable_data = get_downloadables()
-    for projects_data in downloadable_data['projects']:
+def print_downloadable_projects(verbose: int) -> None:
+    downloadable_projects = get_downloadable_projects()
+    for projects_data in downloadable_projects:
         print(json.dumps(projects_data, indent=4))
     if verbose > 0:
-        print_engines(downloadable_data)
+        print_projects_data(downloadable_projects)
 
 
-def register_show_downloadable_gems(verbose: int) -> None:
-    downloadable_data = get_downloadables()
-    for gem_data in downloadable_data['gems']:
+def print_downloadable_gems(verbose: int) -> None:
+    downloadable_gems = get_downloadable_gems()
+    for gem_data in downloadable_gems:
         print(json.dumps(gem_data, indent=4))
     if verbose > 0:
-        print_engines(downloadable_data)
+        print_gems_data(downloadable_gems)
 
 
-def register_show_downloadable_templates(verbose: int) -> None:
-    downloadable_data = get_downloadables()
-    for template_data in downloadable_data['templates']:
+def print_downloadable_templates(verbose: int) -> None:
+    downloadable_templates = get_downloadable_templates()
+    for template_data in downloadable_templates:
         print(json.dumps(template_data, indent=4))
     if verbose > 0:
-        print_engines(downloadable_data)
+        print_engines_data(downloadable_templates)
 
 
-def register_show_downloadables(verbose: int) -> None:
+def print_downloadable_restricted(verbose: int) -> None:
+    downloadable_restricted = get_downloadable_restricted()
+    for restricted_data in downloadable_restricted:
+        print(json.dumps(restricted_data, indent=4))
+    if verbose > 0:
+        print_engines_data(downloadable_restricted)
+
+
+def print_downloadables(verbose: int) -> None:
     downloadable_data = get_downloadables()
     print(json.dumps(downloadable_data, indent=4))
     if verbose > 0:
-        print_engines(downloadable_data['engines'])
-        print_projects(downloadable_data['projects'])
-        print_gems(downloadable_data['gems'])
-        print_templates(downloadable_data['templates'])
+        print_engines_data(downloadable_data['engines'])
+        print_projects_data(downloadable_data['projects'])
+        print_gems_data(downloadable_data['gems'])
+        print_templates_data(downloadable_data['templates'])
+        print_restricted_data(downloadable_data['templates'])
 
 
 def download_engine(engine_name: str,
@@ -2717,34 +2987,134 @@ def add_gem_dependency(cmake_file: str or pathlib.Path,
     return 0
 
 
-def get_project_gem_list(project_path: str or pathlib.Path,
-                         platform: str = 'Common') -> set:
-    runtime_gems = get_gem_list(get_dependencies_cmake(project_path, 'runtime', platform))
-    tool_gems = get_gem_list(get_dependencies_cmake(project_path, 'tool', platform))
-    server_gems = get_gem_list(get_dependencies_cmake(project_path, 'server', platform))
+def get_project_runtime_gem_targets(project_path: str or pathlib.Path,
+                            platform: str = 'Common') -> set:
+    return get_gem_targets_from_cmake_file(get_dependencies_cmake_file(project_path=project_path, dependency_type='runtime', platform=platform))
+
+
+def get_project_tool_gem_targets(project_path: str or pathlib.Path,
+                            platform: str = 'Common') -> set:
+    return get_gem_targets_from_cmake_file(get_dependencies_cmake_file(project_path=project_path, dependency_type='tool', platform=platform))
+
+
+def get_project_server_gem_targets(project_path: str or pathlib.Path,
+                            platform: str = 'Common') -> set:
+    return get_gem_targets_from_cmake_file(get_dependencies_cmake_file(project_path=project_path, dependency_type='server', platform=platform))
+
+
+def get_project_gem_targets(project_path: str or pathlib.Path,
+                            platform: str = 'Common') -> set:
+    runtime_gems = get_gem_targets_from_cmake_file(get_dependencies_cmake_file(project_path=project_path, dependency_type='runtime', platform=platform))
+    tool_gems = get_gem_targets_from_cmake_file(get_dependencies_cmake_file(project_path=project_path, dependency_type='tool', platform=platform))
+    server_gems = get_gem_targets_from_cmake_file(get_dependencies_cmake_file(project_path=project_path, dependency_type='server', platform=platform))
     return runtime_gems.union(tool_gems.union(server_gems))
 
 
-def get_gem_list(cmake_file: str) -> set:
+def get_gem_targets_from_cmake_file(cmake_file: str or pathlib.Path) -> set:
     """
-    Gets a list of declared gem dependencies of a cmake file
+    Gets a list of declared gem targets dependencies of a cmake file
     :param cmake_file: path to the cmake file
-    :return: set of gems found
+    :return: set of gem targets found
     """
-    if not os.path.isfile(cmake_file):
+    cmake_file = pathlib.Path(cmake_file).resolve()
+
+    if not cmake_file.is_file():
         logger.error(f'Failed to locate cmake file {cmake_file}')
         return set()
 
-    gem_list = set()
-    with open(cmake_file, 'r') as s:
+    gem_target_set = set()
+    with cmake_file.open('r') as s:
         for line in s:
             gem_name = line.split('Gem::')
             if len(gem_name) > 1:
                 # Only take the name as everything leading up to the first '.' if found
                 # Gem naming conventions will have GemName.Editor, GemName.Server, and GemName
                 # as different targets of the GemName Gem
-                gem_list.add(gem_name[1].split('.')[0].replace('\n', ''))
-    return gem_list
+                gem_target_set.add(gem_name[1].replace('\n', ''))
+    return gem_target_set
+
+
+def get_project_runtime_gem_names(project_path: str or pathlib.Path,
+                            platform: str = 'Common') -> set:
+    return get_gem_names_from_cmake_file(get_dependencies_cmake_file(project_path=project_path, dependency_type='runtime', platform=platform))
+
+
+def get_project_tool_gem_names(project_path: str or pathlib.Path,
+                            platform: str = 'Common') -> set:
+    return get_gem_names_from_cmake_file(get_dependencies_cmake_file(project_path=project_path, dependency_type='tool', platform=platform))
+
+
+def get_project_server_gem_names(project_path: str or pathlib.Path,
+                            platform: str = 'Common') -> set:
+    return get_gem_names_from_cmake_file(get_dependencies_cmake_file(project_path=project_path, dependency_type='server', platform=platform))
+
+
+def get_project_gem_names(project_path: str or pathlib.Path,
+                     platform: str = 'Common') -> set:
+    runtime_gem_names = get_gem_names_from_cmake_file(get_dependencies_cmake_file(project_path=project_path, dependency_type='runtime', platform=platform))
+    tool_gem_names = get_gem_names_from_cmake_file(get_dependencies_cmake_file(project_path=project_path, dependency_type='tool', platform=platform))
+    server_gem_names = get_gem_names_from_cmake_file(get_dependencies_cmake_file(project_path=project_path, dependency_type='server', platform=platform))
+    return runtime_gem_names.union(tool_gem_names.union(server_gem_names))
+
+
+def get_gem_names_from_cmake_file(cmake_file: str or pathlib.Path) -> set:
+    """
+    Gets a list of declared gem dependencies of a cmake file
+    :param cmake_file: path to the cmake file
+    :return: set of gems found
+    """
+    cmake_file = pathlib.Path(cmake_file).resolve()
+
+    if not cmake_file.is_file():
+        logger.error(f'Failed to locate cmake file {cmake_file}')
+        return set()
+
+    gem_set = set()
+    with cmake_file.open('r') as s:
+        for line in s:
+            gem_name = line.split('Gem::')
+            if len(gem_name) > 1:
+                # Only take the name as everything leading up to the first '.' if found
+                # Gem naming conventions will have GemName.Editor, GemName.Server, and GemName
+                # as different targets of the GemName Gem
+                gem_set.add(gem_name[1].split('.')[0].replace('\n', ''))
+    return gem_set
+
+
+def get_project_runtime_gem_paths(project_path: str or pathlib.Path,
+                          platform: str = 'Common') -> set:
+    gem_names = get_project_runtime_gem_names(project_path, platform)
+    gem_paths = set()
+    for gem_name in gem_names:
+        gem_paths.add(get_registered(gem_name=gem_name))
+    return gem_paths
+
+
+def get_project_tool_gem_paths(project_path: str or pathlib.Path,
+                          platform: str = 'Common') -> set:
+    gem_names = get_project_tool_gem_names(project_path, platform)
+    gem_paths = set()
+    for gem_name in gem_names:
+        gem_paths.add(get_registered(gem_name=gem_name))
+    return gem_paths
+
+
+def get_project_server_gem_paths(project_path: str or pathlib.Path,
+                          platform: str = 'Common') -> set:
+    gem_names = get_project_server_gem_names(project_path, platform)
+    gem_paths = set()
+    for gem_name in gem_names:
+        gem_paths.add(get_registered(gem_name=gem_name))
+    return gem_paths
+
+
+def get_project_gem_paths(project_path: str or pathlib.Path,
+                          platform: str = 'Common') -> set:
+    gem_names = get_project_gem_names(project_path, platform)
+    gem_paths = set()
+    for gem_name in gem_names:
+        gem_paths.add(get_registered(gem_name=gem_name))
+    return gem_paths
 
 
 def remove_gem_dependency(cmake_file: str or pathlib.Path,
@@ -2782,98 +3152,100 @@ def remove_gem_dependency(cmake_file: str or pathlib.Path,
     return 0
 
 
-def get_dependencies_cmake(project_path: str or pathlib.Path,
-                           dependency_type: str = 'runtime',
-                           platform: str = 'Common') -> str:
-    if not project_path:
-        return ''
-    if platform == 'Common':
-        dependencies_file = f'{dependency_type}_dependencies.cmake'
-        gem_path = os.path.join(project_path, 'Gem', 'Code', dependencies_file)
-        if os.path.isfile(gem_path):
-            return gem_path
-        return os.path.join(project_path, 'Code', dependencies_file)
-    else:
-        dependencies_file = f'{platform.lower()}_{dependency_type}_dependencies.cmake'
-        gem_path = os.path.join(project_path, 'Gem', 'Code', 'Platform', platform, dependencies_file)
-        if os.path.isfile(gem_path):
-            return gem_path
-        return os.path.join(project_path, 'Code', 'Platform', platform, dependencies_file)
+def get_project_templates():  # temporary until we have a better way to do this... maybe template_type element
+    project_templates = []
+    for template in get_all_templates():
+        if 'Project' in template:
+            project_templates.append(template)
+    return project_templates
 
 
-# this function is making some not so good assumptions about gem naming
-def find_all_gems(gem_folder_list: list) -> list:
+def get_gem_templates():  # temporary until we have a better way to do this... maybe template_type element
+    gem_templates = []
+    for template in get_all_templates():
+        if 'Gem' in template:
+            gem_templates.append(template)
+    return gem_templates
+
+
+def get_generic_templates():  # temporary until we have a better way to do this... maybe template_type element
+    generic_templates = []
+    for template in get_all_templates():
+        if 'Project' not in template and  'Gem' not in template:
+            generic_templates.append(template)
+    return generic_templates
+
+
+def get_dependencies_cmake_file(project_name: str = None,
+                                project_path: str or pathlib.Path = None,
+                                dependency_type: str = 'runtime',
+                                platform: str = 'Common') -> str or None:
     """
-    Find all Modules which appear to be gems living within a list of folders
-    This method can be replaced or improved on with something more deterministic when LYN-1942 is done
-    :param gem_folder_list:
-    :return: list of gem objects containing gem Name and Path
-    """
-    module_gems = {}
-    for folder in gem_folder_list:
-        root_len = len(os.path.normpath(folder).split(os.sep))
-        for root, dirs, files in os.walk(folder):
-            for file in files:
-                if file == 'CMakeLists.txt':
-                    with open(os.path.join(root, file), 'r') as s:
-                        for line in s:
-                            trimmed = line.lstrip()
-                            if trimmed.startswith('NAME '):
-                                trimmed = trimmed.rstrip(' \n')
-                                split_trimmed = trimmed.split(' ')
-                                # Is this a type indicating a gem lives here
-                                if len(split_trimmed) == 3 and split_trimmed[2] in \
-                                        ['MODULE', 'GEM_MODULE', '${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}']:
-                                    # Hold our "Name parts" such as Gem.MyGem.Editor as ['Gem', 'MyGem', 'Editor']
-                                    name_split = split_trimmed[1].split('.')
-                                    split_folders = os.path.normpath(root).split(os.sep)
-                                    # This verifies we were passed a folder lower in the folder structure than the
-                                    # gem we've found, so we'll name it by the first directory.  This is the common
-                                    # case currently of being handed "Gems" where things that live under Gems are
-                                    # known by the directory name
-                                    if len(split_folders) > root_len:
-                                        # Assume the gem is named by the root folder.  May modules may exist
-                                        # together within the gem that are added collectively
-                                        gem_name = split_folders[root_len]
-                                    else:
-                                        # We were passed the folder with the gem already inside it, we have to name
-                                        # it by the gem name we found
-                                        gem_name = name_split[0]
-                                    this_gem = module_gems.get(gem_name, None)
-                                    if not this_gem:
-                                        if len(split_folders) > root_len:
-                                            # Assume the gem is named by the root folder.  May modules may exist
-                                            # together within the gem that are added collectively
-                                            this_gem = {'Name': gem_name,
-                                                        'Path': os.path.join(folder, split_folders[root_len])}
-                                        else:
-                                            this_gem = {'Name': gem_name, 'Path': folder}
-                                    # Add any module types we know to be tools only here
-                                    if len(name_split) > 1 and name_split[1] in ['Editor', 'Builder']:
-                                        this_gem['Tools'] = True
-                                    else:
-                                        this_gem['Runtime'] = True
-                                        this_gem['Tools'] = True
-
-                                    module_gems[gem_name] = this_gem
-                    break
-
-    return sorted(list(module_gems.values()), key=lambda x: x.get('Name'))
-
-
-def find_gem_modules(gem_folder: str or pathlib.Path) -> list:
-    """
-    Find all gem modules which appear to be gems living in this folder
-    :param gem_folder: the folder to walk down
+    get the standard cmake file name for a particular type of dependency
+    :param gem_name: name of the gem, resolves gem_path
+    :param gem_path: path of the gem
     :return: list of gem targets
     """
+    if not project_name and not project_path:
+        logger.error(f'Must supply either a Project Name or Project Path.')
+        return None
+
+    if project_name and not project_path:
+        project_path = get_registered(project_name=project_name)
+
+    project_path = pathlib.Path(project_path).resolve()
+
+    if platform == 'Common':
+        dependencies_file = f'{dependency_type}_dependencies.cmake'
+        dependencies_file_path = project_path / 'Gem/Code' / dependencies_file
+        if dependencies_file_path.is_file():
+            return dependencies_file_path
+        return project_path / 'Code' / dependencies_file
+    else:
+        dependencies_file = f'{platform.lower()}_{dependency_type}_dependencies.cmake'
+        dependencies_file_path = project_path / 'Gem/Code/Platform' / platform / dependencies_file
+        if dependencies_file_path.is_file():
+            return dependencies_file_path
+        return project_path / 'Code/Platform' / platform / dependencies_file
+
+
+def get_all_gem_targets() -> list:
+    modules = []
+    for gem_path in get_all_gems():
+        this_gems_targets = get_gem_targets(gem_path=gem_path)
+        modules.extend(this_gems_targets)
+    return modules
+
+
+def get_gem_targets(gem_name: str = None,
+                    gem_path: str or pathlib.Path = None) -> list:
+    """
+    Finds gem targets in a gem
+    :param gem_name: name of the gem, resolves gem_path
+    :param gem_path: path of the gem
+    :return: list of gem targets
+    """
+    if not gem_name and not gem_path:
+        return []
+
+    if gem_name and not gem_path:
+        gem_path = get_registered(gem_name=gem_name)
+
+    if not gem_path:
+        return []
+
+    gem_path = pathlib.Path(gem_path).resolve()
+    gem_json = gem_path / 'gem.json'
+    if not valid_o3de_gem_json(gem_json):
+        return []
+
     module_identifiers = [
         'MODULE',
         'GEM_MODULE',
         '${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}'
     ]
     modules = []
-    for root, dirs, files in os.walk(gem_folder):
+    for root, dirs, files in os.walk(gem_path):
         for file in files:
             if file == 'CMakeLists.txt':
                 with open(os.path.join(root, file), 'r') as s:
@@ -2910,7 +3282,7 @@ def add_external_subdirectory(external_subdir: str or pathlib.Path,
         return 1
 
     json_data = load_o3de_manifest()
-    engine_object = get_engine_data(json_data, engine_path)
+    engine_object = find_engine_data(json_data, engine_path)
     if not engine_object:
         if not supress_errors:
             logger.error(f'Add External Subdirectory Failed: {engine_path} not registered.')
@@ -2988,7 +3360,7 @@ def remove_external_subdirectory(external_subdir: str or pathlib.Path,
     :return: 0 for success or non 0 failure code
     """
     json_data = load_o3de_manifest()
-    engine_object = get_engine_data(json_data, engine_path)
+    engine_object = find_engine_data(json_data, engine_path)
     if not engine_object:
         logger.error(f'Remove External Subdirectory Failed: {engine_path} not registered.')
         return 1
@@ -3115,7 +3487,7 @@ def add_gem_to_project(gem_name: str = None,
     add a gem to a project
     :param gem_name: name of the gem to add
     :param gem_path: path to the gem to add
-    :param gem_target: the name of teh cmake gem module
+    :param gem_target: the name of the cmake gem module
     :param project_name: name of to the project to add the gem to
     :param project_path: path to the project to add the gem to
     :param dependencies_file: if this dependency goes/is in a specific file
@@ -3163,7 +3535,7 @@ def add_gem_to_project(gem_name: str = None,
                     logger.error(f'Engine {engine_name} is not registered.')
                     return 1
 
-    # We need either a gem name or path
+    # we need either a gem name or path
     if not gem_name and not gem_path:
         logger.error(f'Must either specify a Gem path or Gem Name.')
         return 1
@@ -3188,74 +3560,74 @@ def add_gem_to_project(gem_name: str = None,
             return 1
 
     # find all available modules in this gem_path
-    modules = find_gem_modules(gem_path)
+    modules = get_gem_targets(gem_path=gem_path)
     if len(modules) == 0:
         logger.error(f'No gem modules found under {gem_path}.')
         return 1
 
-    # if gem target not specified, see if there is only 1 module
-    if not gem_target:
-        if len(modules) == 1:
-            gem_target = modules[0]
-        else:
-            logger.error(f'Gem target not specified: {modules}')
-            return 1
-    elif gem_target not in modules:
+    # if the gem has no modules and the user has specified a target fail
+    if gem_target and not modules:
+        logger.error(f'Gem has no targets, but gem target {gem_target} was specified.')
+        return 1
+
+    # if the gem target is not in the modules
+    if gem_target not in modules:
         logger.error(f'Gem target not in gem modules: {modules}')
         return 1
 
-    # if the user has not specified either we will assume they meant the most common which is runtime
-    if not runtime_dependency and not tool_dependency and not server_dependency and not dependencies_file:
-        logger.warning("Dependency type not specified: Assuming '--runtime-dependency'")
-        runtime_dependency = True
+    if gem_target:
+        # if the user has not specified either we will assume they meant the most common which is runtime
+        if not runtime_dependency and not tool_dependency and not server_dependency and not dependencies_file:
+            logger.warning("Dependency type not specified: Assuming '--runtime-dependency'")
+            runtime_dependency = True
 
-    ret_val = 0
+        ret_val = 0
 
-    # if the user has specified the dependencies file then ignore the runtime_dependency and tool_dependency flags
-    if dependencies_file:
-        dependencies_file = pathlib.Path(dependencies_file).resolve()
-        # make sure this is a project has a dependencies_file
-        if not dependencies_file.is_file():
-            logger.error(f'Dependencies file {dependencies_file} is not present.')
-            return 1
-        # add the dependency
-        ret_val = add_gem_dependency(dependencies_file, gem_target)
+        # if the user has specified the dependencies file then ignore the runtime_dependency and tool_dependency flags
+        if dependencies_file:
+            dependencies_file = pathlib.Path(dependencies_file).resolve()
+            # make sure this is a project has a dependencies_file
+            if not dependencies_file.is_file():
+                logger.error(f'Dependencies file {dependencies_file} is not present.')
+                return 1
+            # add the dependency
+            ret_val = add_gem_dependency(dependencies_file, gem_target)
 
-    else:
-        if ',' in platforms:
-            platforms = platforms.split(',')
         else:
-            platforms = [platforms]
-        for platform in platforms:
-            if runtime_dependency:
-                # make sure this is a project has a runtime_dependencies.cmake file
-                project_runtime_dependencies_file = pathlib.Path(
-                    get_dependencies_cmake(project_path, 'runtime', platform)).resolve()
-                if not project_runtime_dependencies_file.is_file():
-                    logger.error(f'Runtime dependencies file {project_runtime_dependencies_file} is not present.')
-                    return 1
-                # add the dependency
-                ret_val = add_gem_dependency(project_runtime_dependencies_file, gem_target)
+            if ',' in platforms:
+                platforms = platforms.split(',')
+            else:
+                platforms = [platforms]
+            for platform in platforms:
+                if runtime_dependency:
+                    # make sure this is a project has a runtime_dependencies.cmake file
+                    project_runtime_dependencies_file = pathlib.Path(
+                        get_dependencies_cmake_file(project_path=project_path, dependency_type='runtime', platform=platform)).resolve()
+                    if not project_runtime_dependencies_file.is_file():
+                        logger.error(f'Runtime dependencies file {project_runtime_dependencies_file} is not present.')
+                        return 1
+                    # add the dependency
+                    ret_val = add_gem_dependency(project_runtime_dependencies_file, gem_target)
 
-            if (ret_val == 0) and tool_dependency:
-                # make sure this is a project has a tool_dependencies.cmake file
-                project_tool_dependencies_file = pathlib.Path(
-                    get_dependencies_cmake(project_path, 'tool', platform)).resolve()
-                if not project_tool_dependencies_file.is_file():
-                    logger.error(f'Tool dependencies file {project_tool_dependencies_file} is not present.')
-                    return 1
-                # add the dependency
-                ret_val = add_gem_dependency(project_tool_dependencies_file, gem_target)
+                if (ret_val == 0) and tool_dependency:
+                    # make sure this is a project has a tool_dependencies.cmake file
+                    project_tool_dependencies_file = pathlib.Path(
+                        get_dependencies_cmake_file(project_path=project_path, dependency_type='tool', platform=platform)).resolve()
+                    if not project_tool_dependencies_file.is_file():
+                        logger.error(f'Tool dependencies file {project_tool_dependencies_file} is not present.')
+                        return 1
+                    # add the dependency
+                    ret_val = add_gem_dependency(project_tool_dependencies_file, gem_target)
 
-            if (ret_val == 0) and server_dependency:
-                # make sure this is a project has a tool_dependencies.cmake file
-                project_server_dependencies_file = pathlib.Path(
-                    get_dependencies_cmake(project_path, 'server', platform)).resolve()
-                if not project_server_dependencies_file.is_file():
-                    logger.error(f'Server dependencies file {project_server_dependencies_file} is not present.')
-                    return 1
-                # add the dependency
-                ret_val = add_gem_dependency(project_server_dependencies_file, gem_target)
+                if (ret_val == 0) and server_dependency:
+                    # make sure this is a project has a tool_dependencies.cmake file
+                    project_server_dependencies_file = pathlib.Path(
+                        get_dependencies_cmake_file(project_path=project_path, dependency_type='server', platform=platform)).resolve()
+                    if not project_server_dependencies_file.is_file():
+                        logger.error(f'Server dependencies file {project_server_dependencies_file} is not present.')
+                        return 1
+                    # add the dependency
+                    ret_val = add_gem_dependency(project_server_dependencies_file, gem_target)
 
     if not ret_val and add_to_cmake:
         ret_val = add_gem_to_cmake(gem_path=gem_path, engine_path=engine_path)
@@ -3318,10 +3690,12 @@ def remove_gem_from_project(gem_name: str = None,
         return 1
 
     # find all available modules in this gem_path
-    modules = find_gem_modules(gem_path)
+    modules = get_gem_targets(gem_path=gem_path)
     if len(modules) == 0:
         logger.error(f'No gem modules found.')
         return 1
+
+    # if the user has not set a specific gem target remove all of them
 
     # if gem target not specified, see if there is only 1 module
     if not gem_target:
@@ -3362,7 +3736,7 @@ def remove_gem_from_project(gem_name: str = None,
             if runtime_dependency:
                 # make sure this is a project has a runtime_dependencies.cmake file
                 project_runtime_dependencies_file = pathlib.Path(
-                    get_dependencies_cmake(project_path, 'runtime', platform)).resolve()
+                    get_dependencies_cmake_file(project_path=project_path, dependency_type='runtime', platform=platform)).resolve()
                 if not project_runtime_dependencies_file.is_file():
                     logger.error(f'Runtime dependencies file {project_runtime_dependencies_file} is not present.')
                 else:
@@ -3374,7 +3748,7 @@ def remove_gem_from_project(gem_name: str = None,
             if tool_dependency:
                 # make sure this is a project has a tool_dependencies.cmake file
                 project_tool_dependencies_file = pathlib.Path(
-                    get_dependencies_cmake(project_path, 'tool', platform)).resolve()
+                    get_dependencies_cmake_file(project_path=project_path, dependency_type='tool', platform=platform)).resolve()
                 if not project_tool_dependencies_file.is_file():
                     logger.error(f'Tool dependencies file {project_tool_dependencies_file} is not present.')
                 else:
@@ -3386,7 +3760,7 @@ def remove_gem_from_project(gem_name: str = None,
             if server_dependency:
                 # make sure this is a project has a tool_dependencies.cmake file
                 project_server_dependencies_file = pathlib.Path(
-                    get_dependencies_cmake(project_path, 'server', platform)).resolve()
+                    get_dependencies_cmake_file(project_path=project_path, dependency_type='server', platform=platform)).resolve()
                 if not project_server_dependencies_file.is_file():
                     logger.error(f'Server dependencies file {project_server_dependencies_file} is not present.')
                 else:
@@ -3461,71 +3835,71 @@ def _run_register_show(args: argparse) -> int:
         override_home_folder = args.override_home_folder
 
     if args.this_engine:
-        register_show_this_engine(args.verbose)
+        print_this_engine(args.verbose)
         return 0
 
     elif args.engines:
-        register_show_engines(args.verbose)
+        print_engines(args.verbose)
         return 0
     elif args.projects:
-        register_show_projects(args.verbose)
+        print_projects(args.verbose)
         return 0
     elif args.gems:
-        register_show_gems(args.verbose)
+        print_gems(args.verbose)
         return 0
     elif args.templates:
-        register_show_templates(args.verbose)
+        print_templates(args.verbose)
         return 0
     elif args.repos:
         register_show_repos(args.verbose)
         return 0
     elif args.restricted:
-        register_show_restricted(args.verbose)
+        print_restricted(args.verbose)
         return 0
 
     elif args.engine_projects:
-        register_show_engine_projects(args.verbose)
+        print_engine_projects(args.verbose)
         return 0
     elif args.engine_gems:
-        register_show_engine_gems(args.verbose)
+        print_engine_gems(args.verbose)
         return 0
     elif args.engine_templates:
-        register_show_engine_templates(args.verbose)
+        print_engine_templates(args.verbose)
         return 0
     elif args.engine_restricted:
-        register_show_engine_restricted(args.verbose)
+        print_engine_restricted(args.verbose)
         return 0
     elif args.external_subdirectories:
-        register_show_external_subdirectories(args.verbose)
+        print_external_subdirectories(args.verbose)
         return 0
 
     elif args.all_projects:
-        register_show_all_projects(args.verbose)
+        print_all_projects(args.verbose)
         return 0
     elif args.all_gems:
-        register_show_all_gems(args.verbose)
+        print_all_gems(args.verbose)
         return 0
     elif args.all_templates:
-        register_show_all_templates(args.verbose)
+        print_all_templates(args.verbose)
         return 0
     elif args.all_restricted:
-        register_show_all_restricted(args.verbose)
+        print_all_restricted(args.verbose)
         return 0
 
     elif args.downloadables:
-        register_show_downloadables(args.verbose)
+        print_downloadables(args.verbose)
         return 0
     if args.downloadable_engines:
-        register_show_downloadable_engines(args.verbose)
+        print_downloadable_engines(args.verbose)
         return 0
     elif args.downloadable_projects:
-        register_show_downloadable_projects(args.verbose)
+        print_downloadable_projects(args.verbose)
         return 0
     elif args.downloadable_gems:
-        register_show_downloadable_gems(args.verbose)
+        print_downloadable_gems(args.verbose)
         return 0
     elif args.downloadable_templates:
-        register_show_downloadable_templates(args.verbose)
+        print_downloadable_templates(args.verbose)
         return 0
     else:
         register_show(args.verbose)

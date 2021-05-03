@@ -993,42 +993,6 @@ def create_template(source_path: str,
     return 0
 
 
-def find_all_gem_templates(template_folder_list: list) -> list:
-    """
-    Find all subfolders in the given list of folders which appear to be gem templates
-    :param template_folder_list: List of folders to search
-    :return: list of tuples of TemplateName, AbsolutePath
-    """
-    return find_all_templates(template_folder_list, 'gem.json')
-
-
-def find_all_project_templates(template_folder_list: list) -> list:
-    """
-    Find all subfolders in the given list of folders which appear to be project templates
-    :param template_folder_list: List of folders to search
-    :return: list of tuples of TemplateName, AbsolutePath
-    """
-    return find_all_templates(template_folder_list, 'project.json')
-
-
-def find_all_templates(template_folder_list: list, template_marker_file: str) -> list:
-    """
-    Find all subfolders in the given list of folders which appear to be templates
-    :param template_folder_list: List of folders to search
-    :param template_marker_file: file expected in the template folder
-    :return: list of tuples of TemplateName, AbsolutePath
-    """
-    templates_found = []
-    for folder in template_folder_list:
-        for root, dirs, files in os.walk(folder):
-            for dir in dirs:
-                if os.path.isfile(os.path.join(root, dir, template_file_name)) and \
-                        os.path.isfile(os.path.join(root, dir, 'Template', template_marker_file)):
-                    templates_found.append((dir, os.path.join(root, dir)))
-            break  # We only want root folders containing templates, do not recurse
-    return templates_found
-
-
 def create_from_template(destination_path: str,
                          template_path: str = None,
                          template_name: str = None,

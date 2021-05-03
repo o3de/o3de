@@ -14,6 +14,7 @@ import os
 import sys
 import tempfile
 import logging
+import pathlib
 from unittest.mock import MagicMock
 
 logger = logging.getLogger()
@@ -25,38 +26,51 @@ sys.path.append(projects_path)
 from pyside import add_pyside_environment, is_configuration_valid
 from ly_test_tools import WINDOWS
 
-project_marker_file = "project.json"
+sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..')))
+executable_path = ''
+from cmake.Tools import registration
+from cmake.Tools import engine_template
+
 
 class ProjectHelper:
     def __init__(self):
-        self._temp_directory = tempfile.TemporaryDirectory()
-        self.temp_project_root = self._temp_directory.name
-        self.temp_file_dir = os.path.join(self.temp_project_root, "o3de")
+        self._temp_directory = pathlib.Path(tempfile.TemporaryDirectory()).resolve()
+        if not self._temp_directory.is_dir():
+            assert True, f"Temp directory folder not found at {self._temp_directory}"
+
+        self.home_path = self._temp_directory / ".o3de"
+        registration.override_home_folder = self.home_path
+        self.engine_path = registration.get_this_engine_path()
+        if registration.register(engine_path=self.engine_path):
+            assert True, f"Failed to register the engine."
+
+        if registration.register_shipped_engine_o3de_objects():
+            assert True, f"Failed to register shipped engine objects."
+
+        self.projects_folder = registration.get_o3de_projects_folder()
+        if not self.projects_folder.is_folder():
+            assert True
 
         self.application = None
         self.dialog = None
 
-        if not os.path.exists(self.temp_file_dir):
-            os.makedirs(self.temp_file_dir)
-
     def create_empty_projects(self):
-        self.project_1_dir = os.path.join(self.temp_project_root, "Project1")
-        if not os.path.exists(self.project_1_dir):
-            os.makedirs(self.project_1_dir)
-        with open(os.path.join(self.project_1_dir,project_marker_file), 'w') as marker_file:
-            marker_file.write("{}")
-        self.project_2_dir = os.path.join(self.temp_project_root, "Project2")
-        if not os.path.exists(self.project_2_dir):
-            os.makedirs(self.project_2_dir)
-        with open(os.path.join(self.project_2_dir, project_marker_file), 'w') as marker_file:
-            marker_file.write("{}")
-        self.project_3_dir = os.path.join(self.temp_project_root, "Project3")
-        if not os.path.exists(self.project_3_dir):
-            os.makedirs(self.project_3_dir)
-        with open(os.path.join(self.project_3_dir, project_marker_file), 'w') as marker_file:
-            marker_file.write("{}")
-        self.invalid_project_dir = os.path.join(self.temp_project_root, "InvalidProject")
+        self.project_1_dir = self.projects_folder / "Project1"
+        if engine_template.create_project(projects_path=self.project_1_dir):
+            assert True, f"Failed to create Project1."
 
+        self.project_2_dir = self.projects_folder / "Project2"
+        if engine_template.create_project(projects_path=self.project_2_dir):
+            assert True, f"Failed to create Project2."
+
+        self.project_3_dir = self.projects_folder / "Project3"
+        if engine_template.create_project(projects_path=self.project_3_dir):
+            assert True, f"Failed to create Project3."
+
+        self.invalid_project_dir = self.projects_folder / "InvalidProject"
+        self.invalid_project_dir.mkdir(parents=True, exist_ok=True)
+        if not self.invalid_project_dir.is_dir():
+            assert True, f"Failed to create InvalidProject."
 
     def setup_dialog_test(self, workspace):
         add_pyside_environment(workspace.paths.build_directory())
@@ -66,6 +80,7 @@ class ProjectHelper:
             # need to use the profile version of PySide which works with the profile QT libs which aren't in the debug
             # folder we've built.
             return None
+
         from PySide2.QtWidgets import QApplication, QMessageBox
 
         if QApplication.instance():
@@ -77,7 +92,7 @@ class ProjectHelper:
         from projects import ProjectDialog
 
         try:
-            self.dialog = ProjectDialog(settings_folder=self.temp_file_dir)
+            self.dialog = ProjectDialog(settings_folder=self.home_path)
             return self.dialog
         except Exception as e:
             logger.error(f'Failed to create ProjectDialog with error {e}')
@@ -100,11 +115,14 @@ class ProjectHelper:
         ProjectDialog.get_selected_project_template = MagicMock(return_value=self.dialog.project_templates[0])
 
         QFileDialog.exec = MagicMock()
-        create_project_dir = os.path.join(self.temp_project_root, project_name)
-        QFileDialog.selectedFiles = MagicMock(return_value=[create_project_dir])
+        create_project_path = self.projects_folder / project_name
+        QFileDialog.selectedFiles = MagicMock(return_value=[create_project_path])
         self.dialog.create_project_accepted_handler()
-        assert os.path.isdir(create_project_dir), f"Expected project folder not found at {create_project_dir}"
-        assert QWidget.exec.call_count == 2, "Message box confirming project creation failed to show"
+        if create_project_path.is_dir():
+            assert True, f"Expected project creation folder not found at {create_project_path}"
+
+        if QWidget.exec.call_count == 2:
+            assert True, "Message box confirming project creation failed to show"
 
 
 @pytest.fixture
@@ -113,7 +131,7 @@ def project_helper():
 
 
 @pytest.mark.skipif(not WINDOWS, reason="PySide2 only works on windows currently")
-@pytest.mark.parametrize('project', ['']) # Workspace wants a project, but this test is not project dependent
+@pytest.mark.parametrize('project', [''])  # Workspace wants a project, but this test is not project dependent
 def test_logger_handler(workspace, project_helper):
     my_dialog = project_helper.setup_dialog_test(workspace)
     if not my_dialog:
@@ -126,7 +144,7 @@ def test_logger_handler(workspace, project_helper):
 
 
 @pytest.mark.skipif(not WINDOWS, reason="PySide2 only works on windows currently")
-@pytest.mark.parametrize('project', ['']) # Workspace wants a project, but this test is not project dependent
+@pytest.mark.parametrize('project', [''])  # Workspace wants a project, but this test is not project dependent
 def test_mru_list(workspace, project_helper):
     my_dialog = project_helper.setup_dialog_test(workspace)
     if not my_dialog:
@@ -140,16 +158,16 @@ def test_mru_list(workspace, project_helper):
     assert len(mru_list) == 0, f'MRU list unexpectedly had entries: {mru_list}'
 
     QMessageBox.warning = MagicMock()
-    my_dialog.add_new_project('TestProjectInvalid')
+    my_dialog.add_project(project_helper.invalid_project_dir)
     mru_list = my_dialog.get_mru_list()
     assert len(mru_list) == 0, f'MRU list unexpectedly added an invalid project : {mru_list}'
     QMessageBox.warning.assert_called_once()
 
-    my_dialog.add_new_project(project_helper.project_1_dir)
+    my_dialog.add_project(project_helper.project_1_dir)
     mru_list = my_dialog.get_mru_list()
     assert len(mru_list) == 1, f'MRU list failed to add project at {project_helper.project_1_dir}'
 
-    my_dialog.add_new_project(project_helper.project_1_dir)
+    my_dialog.add_project(project_helper.project_1_dir)
     mru_list = my_dialog.get_mru_list()
     assert len(mru_list) == 1, f'MRU list added project at {project_helper.project_1_dir} a second time : {mru_list}'
 
@@ -157,7 +175,7 @@ def test_mru_list(workspace, project_helper):
     mru_list = my_dialog.get_mru_list()
     assert len(mru_list) == 1, f'MRU list added project at {project_helper.project_1_dir} a second time : {mru_list}'
 
-    my_dialog.add_new_project(project_helper.project_2_dir)
+    my_dialog.add_project(project_helper.project_2_dir)
     mru_list = my_dialog.get_mru_list()
     assert len(mru_list) == 2, f'MRU list failed to add project at {project_helper.project_2_dir}'
 
@@ -170,13 +188,13 @@ def test_mru_list(workspace, project_helper):
     assert mru_list[0] == project_helper.project_1_dir, f"{project_helper.project_1_dir} wasn't first item"
     assert mru_list[1] == project_helper.project_2_dir, f"{project_helper.project_2_dir} wasn't second item"
 
-    my_dialog.add_new_project(project_helper.invalid_project_dir)
+    my_dialog.add_project(project_helper.invalid_project_dir)
     mru_list = my_dialog.get_mru_list()
     assert len(mru_list) == 2, f'MRU list added invalid item {mru_list}'
     assert mru_list[0] == project_helper.project_1_dir, f"{project_helper.project_1_dir} wasn't first item"
     assert mru_list[1] == project_helper.project_2_dir, f"{project_helper.project_2_dir} wasn't second item"
 
-    my_dialog.add_new_project(project_helper.project_3_dir)
+    my_dialog.add_project(project_helper.project_3_dir)
     mru_list = my_dialog.get_mru_list()
     assert len(mru_list) == 3, f'MRU list failed to add {project_helper.project_3_dir} : {mru_list}'
     assert mru_list[0] == project_helper.project_3_dir, f"{project_helper.project_3_dir} wasn't first item"
@@ -185,7 +203,7 @@ def test_mru_list(workspace, project_helper):
 
 
 @pytest.mark.skipif(not WINDOWS, reason="PySide2 only works on windows currently")
-@pytest.mark.parametrize('project', ['']) # Workspace wants a project, but this test is not project dependent
+@pytest.mark.parametrize('project', [''])  # Workspace wants a project, but this test is not project dependent
 def test_create_project(workspace, project_helper):
     my_dialog = project_helper.setup_dialog_test(workspace)
     if not my_dialog:
@@ -195,7 +213,7 @@ def test_create_project(workspace, project_helper):
 
 
 @pytest.mark.skipif(not WINDOWS, reason="PySide2 only works on windows currently")
-@pytest.mark.parametrize('project', ['']) # Workspace wants a project, but this test is not project dependent
+@pytest.mark.parametrize('project', [''])  # Workspace wants a project, but this test is not project dependent
 def test_add_remove_gems(workspace, project_helper):
     my_dialog = project_helper.setup_dialog_test(workspace)
     if not my_dialog:
@@ -203,32 +221,32 @@ def test_add_remove_gems(workspace, project_helper):
 
     my_project_name = "TestAddRemoveGems"
 
-    project_helper.create_project_from_template(my_project_name)
-    my_project_path = os.path.join(project_helper.temp_project_root, my_project_name)
+    project_helper.create_project_from_template(projects_path=my_project_name)
+    my_project_path = project_helper.projects_folder / my_project_name
 
     from PySide2.QtWidgets import QWidget, QFileDialog
     from projects import ProjectDialog
 
-    assert my_dialog.path_for_selection() == my_project_path, "Gems project not selected"
+    assert my_dialog.get_selected_project_path() == my_project_path, "TestAddRemoveGems project not selected"
     QWidget.exec = MagicMock()
     my_dialog.manage_gems_handler()
-    assert my_dialog.manage_gems_dialog, "No gem management dialog created"
+    assert my_dialog.manage_gem_targets_dialog, "No gem management dialog created"
     QWidget.exec.assert_called_once()
 
-    assert len(my_dialog.gems_list), 'Failed to find any gems'
-    my_test_gem = my_dialog.gems_list[0]
-    my_test_gem_name = my_test_gem.get("Name")
-    my_test_gem_path = my_test_gem.get("Path")
+    if not len(my_dialog.all_gems_list):
+        assert True, 'Failed to find any gems'
+
+    my_test_gem_path = my_dialog.all_gems_list[0]
+    gem_data = registration.get_gem_data(my_test_gem_path)
     my_test_gem_selection = (my_test_gem_name, my_test_gem_path)
     ProjectDialog.get_selected_add_gems = MagicMock(return_value=[my_test_gem_selection])
 
-
     assert my_test_gem_name, "No Name set in test gem"
     assert my_test_gem_name not in my_dialog.project_gem_list, f'Gem {my_test_gem_name} already in project gem list'
+
     my_dialog.add_gems_handler()
     assert my_test_gem_name in my_dialog.project_gem_list, f'Gem {my_test_gem_name} failed to add to gem list'
+
     ProjectDialog.get_selected_project_gems = MagicMock(return_value=[my_test_gem_name])
     my_dialog.remove_gems_handler()
     assert my_test_gem_name not in my_dialog.project_gem_list, f'Gem {my_test_gem_name} still in project gem list'
-
-
