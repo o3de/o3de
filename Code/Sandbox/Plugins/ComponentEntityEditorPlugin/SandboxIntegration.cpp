@@ -328,7 +328,7 @@ void SandboxIntegrationManager::OnCatalogAssetRemoved(const AZ::Data::AssetId& a
         AZ::SliceComponent* rootSlice = nullptr;
         AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::BroadcastResult(rootSlice,
             &AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Events::GetEditorRootSlice);
-        AZ_Assert(rootSlice != nullptr, "Editor root slice missing!");
+        AZ_Assert(rootSlice, "Editor root slice missing!");
 
         AZStd::vector<AZ::EntityId> entitiesToDetach;
         const AZ::SliceComponent::SliceList& subSlices = rootSlice->GetSlices();
