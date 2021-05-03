@@ -9,9 +9,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-set(GEM_DEPENDENCIES
-    Gem::Atom_RHI_Null.Private
-    Gem::Atom_RHI_Null.Builders
-    Gem::Atom_RHI_Metal.Private
-    Gem::Atom_RHI_Metal.Builders
+set(FILES
+    project_manager.qrc
+    source/main.cpp
+    Qt/FirstTimeUse.h
+    Qt/FirstTimeUse.cpp
+    Qt/FirstTimeUse.ui
+    Qt/ProjectManagerWindow.h
+    Qt/ProjectManagerWindow.cpp
+    Qt/ProjectManagerWindow.ui
 )
