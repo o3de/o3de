@@ -42,7 +42,6 @@ AZ_POP_DISABLE_WARNING
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Network/SocketConnection.h>
 #include <AzFramework/Asset/AssetSystemComponent.h>
-#include <AzFramework/API/AtomActiveInterface.h>
 
 // AzToolsFramework
 #include <AzToolsFramework/Application/Ticker.h>
@@ -1095,7 +1094,7 @@ void MainWindow::InitActions()
     QAction* saveLevelStatsAction =
         am->AddAction(ID_TOOLS_LOGMEMORYUSAGE, tr("Save Level Statistics"))
                 .SetStatusTip(tr("Logs Editor memory usage."));
-    if( saveLevelStatsAction && AZ::Interface<AzFramework::AtomActiveInterface>::Get())
+    if( saveLevelStatsAction )
     {
         saveLevelStatsAction->setEnabled(false);
     }
@@ -1190,13 +1189,6 @@ void MainWindow::InitActions()
         .SetToolTip(tr("Open Audio Controls Editor"))
         .SetIcon(Style::icon("Audio"))
         .SetApplyHoverEffect();
-
-    if (!AZ::Interface<AzFramework::AtomActiveInterface>::Get())
-    {
-        am->AddAction(ID_TERRAIN_TIMEOFDAYBUTTON, tr("Time of Day Editor"))
-            .SetToolTip(tr("Open Time of Day"))
-            .SetApplyHoverEffect();
-    }
 
     am->AddAction(ID_OPEN_UICANVASEDITOR, tr(LyViewPane::UiEditor))
         .SetToolTip(tr("Open UI Editor"))
@@ -1654,10 +1646,6 @@ void MainWindow::RegisterStdViewClasses()
     AzAssetBrowserWindow::RegisterViewClass();
     AssetEditorWindow::RegisterViewClass();
 
-    if (!AZ::Interface<AzFramework::AtomActiveInterface>::Get())
-    {
-        CTimeOfDayDialog::RegisterViewClass();
-    }
 #ifdef ThumbnailDemo
     ThumbnailsSampleWidget::RegisterViewClass();
 #endif

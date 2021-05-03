@@ -15,7 +15,6 @@
 
 #include "IconManager.h"
 
-#include <AzFramework/API/AtomActiveInterface.h>
 #include <AzCore/Interface/Interface.h>
 
 // AzToolsFramework
@@ -115,69 +114,11 @@ int CIconManager::GetIconTexture(const char* iconName)
         return 0;
     }
 
-    if (AZ::Interface<AzFramework::AtomActiveInterface>::Get())
+    ITexture* texture = GetIEditor()->GetRenderer() ? GetIEditor()->GetRenderer()->EF_LoadTexture(iconName) : nullptr;
+    if (texture)
     {
-        ITexture* texture = GetIEditor()->GetRenderer() ? GetIEditor()->GetRenderer()->EF_LoadTexture(iconName) : nullptr;
-        if (texture)
-        {
-            id = texture->GetTextureID();
-            m_textures[iconName] = id;
-        }
-    }
-    else
-    {
-        QString ext = Path::GetExt(iconName);
-        QString actualName = iconName;
-
-        char iconPath[AZ_MAX_PATH_LEN] = { 0 };
-        gEnv->pFileIO->ResolvePath(actualName.toUtf8().data(), iconPath, AZ_MAX_PATH_LEN);
-
-        // if we can't find it at the resolved path, try the devroot if necessary:
-        if (!gEnv->pFileIO->Exists(iconPath))
-        {
-            if (iconName[0] != '@') // it has no specified alias
-            {
-                if (QString::compare(ext, "dds", Qt::CaseInsensitive) != 0) // if its a DDS, it comes out of processed files in @assets@, and assets is assumed by default (legacy renderer)
-                {
-                    // check for a source file
-                    AZStd::string iconFullPath;
-                    bool pathFound = false;
-                    using AssetSysReqBus = AzToolsFramework::AssetSystemRequestBus;
-                    AssetSysReqBus::BroadcastResult(pathFound, &AssetSysReqBus::Events::GetFullSourcePathFromRelativeProductPath, iconName, iconFullPath);
-
-                    if (pathFound)
-                    {
-                        azstrncpy(iconPath, AZ_MAX_PATH_LEN, iconFullPath.c_str(), iconFullPath.length() + 1);
-                    }
-                }
-            }
-        }
-
-        CImageEx image;
-        // Load icon.
-        if (CImageUtil::LoadImage(iconPath, image))
-        {
-            IRenderer* pRenderer(GetIEditor()->GetRenderer());
-            if (pRenderer->GetRenderType() != eRT_DX11)
-            {
-                image.SwapRedAndBlue();
-            }
-
-            if (QString::compare(ext, "bmp", Qt::CaseInsensitive) == 0 || QString::compare(ext, "jpg", Qt::CaseInsensitive) == 0)
-            {
-                int sz = image.GetWidth() * image.GetHeight();
-                uint8* buf = (uint8*)image.GetData();
-                for (int i = 0; i < sz; i++)
-                {
-                    uint32 alpha = max(max(buf[i * 4], buf[i * 4 + 1]), buf[i * 4 + 2]);
-                    alpha *= 2;
-                    buf[i * 4 + 3] = (alpha > 255) ? 255 : alpha;
-                }
-            }
-
-            id = pRenderer->DownLoadToVideoMemory((unsigned char*)image.GetData(), image.GetWidth(), image.GetHeight(), eTF_R8G8B8A8, eTF_R8G8B8A8, 0, 0, 0);
-            m_textures[iconName] = id;
-        }
+        id = texture->GetTextureID();
+        m_textures[iconName] = id;
     }
 
     return id;

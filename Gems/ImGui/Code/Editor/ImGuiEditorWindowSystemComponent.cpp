@@ -18,7 +18,6 @@
 #include "ImGuiEditorWindowSystemComponent.h"
 #include "ImGuiMainWindow.h"
 #include <AzToolsFramework/API/ViewPaneOptions.h>
-#include <AzFramework/API/AtomActiveInterface.h>
 
 static const char* s_ImGuiQtViewPaneName = "ImGui Editor";
 
@@ -60,19 +59,5 @@ namespace ImGui
 
     void ImGuiEditorWindowSystemComponent::NotifyRegisterViews()
     {
-        if (!AZ::Interface<AzFramework::AtomActiveInterface>::Get())
-        {
-            // The Tools->ImGui menu currently crashes trying to enable a render pipeline when this is invoked
-            // Disable this menu item for now
-            // [GFX TODO][ATOM-4607]
-            QtViewOptions options;
-            options.canHaveMultipleInstances = false;
-            AzToolsFramework::EditorRequests::Bus::Broadcast(
-                &AzToolsFramework::EditorRequests::RegisterViewPane,
-                s_ImGuiQtViewPaneName,
-                "Tools",
-                options,
-                [](QWidget* parent = nullptr) { return new ImGui::ImGuiMainWindow(parent); });
-        }
     }
 }

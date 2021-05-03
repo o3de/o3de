@@ -36,12 +36,10 @@ namespace AZ
 
         BuilderComponent::BuilderComponent()
         {
-            AZ::Interface<AzFramework::AtomActiveInterface>::Register(this);
         }
 
         BuilderComponent::~BuilderComponent()
         {
-            AZ::Interface<AzFramework::AtomActiveInterface>::Unregister(this);
         }
 
         void BuilderComponent::Activate()

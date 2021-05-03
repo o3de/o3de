@@ -62,12 +62,10 @@ namespace AZ
 
         AtomBridgeSystemComponent::AtomBridgeSystemComponent()
         {
-            AZ::Interface<AzFramework::AtomActiveInterface>::Register(this);
         }
 
         AtomBridgeSystemComponent::~AtomBridgeSystemComponent()
         {
-            AZ::Interface<AzFramework::AtomActiveInterface>::Unregister(this);
         }
 
         void AtomBridgeSystemComponent::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)

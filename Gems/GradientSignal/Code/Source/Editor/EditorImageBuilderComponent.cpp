@@ -24,7 +24,6 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/IO/LocalFileIO.h>
-#include <AzFramework/API/AtomActiveInterface.h>
 #include <QImageReader>
 #include <QDirIterator>
 #include <GradientSignalSystemComponent.h>
@@ -334,14 +333,7 @@ namespace GradientSignal
 
     AZStd::unique_ptr<ImageAsset> EditorImageBuilderWorker::LoadImageFromPath(const AZStd::string& fullPath)
     {
-        if (AZ::Interface<AzFramework::AtomActiveInterface>::Get())
-        {
-            return AtomLoadImageFromPath(fullPath);
-        }
-        else
-        {
-            return LegacyLoadImageFromPath(fullPath);
-        }
+        return AtomLoadImageFromPath(fullPath);
     }
 
     AZStd::unique_ptr<ImageSettings> EditorImageBuilderWorker::LoadImageSettingsFromPath(const AZStd::string& fullPath)

@@ -822,7 +822,7 @@ namespace EMotionFX
 
         bool EditorActorComponent::IsAtomDisabled() const
         {
-            return !AZ::Interface<AzFramework::AtomActiveInterface>::Get();
+            return false;
         }
 
         void EditorActorComponent::OnActorReady(Actor* actor)

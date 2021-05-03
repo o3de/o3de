@@ -13,7 +13,6 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <AzFramework/API/AtomActiveInterface.h>
 
 namespace AZ
 {
@@ -21,7 +20,6 @@ namespace AZ
     {
         class BuilderComponent final
             : public AZ::Component
-            , public AzFramework::AtomActiveInterface
         {
         public:
             AZ_COMPONENT(BuilderComponent, "{D1FE015B-8431-4155-8FD0-8197F246901A}");
