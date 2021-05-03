@@ -157,9 +157,6 @@ AZ_POP_DISABLE_WARNING
 
 #include "Plugins/ComponentEntityEditorPlugin/Objects/ComponentEntityObject.h"
 
-// LmbrCentral
-#include <LmbrCentral/Rendering/MeshComponentBus.h>
-
 // AWSNativeSDK
 #include <AzToolsFramework/Undo/UndoSystem.h>
 #include <AWSNativeSDKInit/AWSNativeSDKInit.h>

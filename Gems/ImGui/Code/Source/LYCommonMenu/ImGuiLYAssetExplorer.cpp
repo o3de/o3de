@@ -21,7 +21,6 @@
 #include <AzCore/std/sort.h>
 #include <AzCore/std/string/conversions.h>
 #include <LmbrCentral/Rendering/MaterialOwnerBus.h>
-#include <LmbrCentral/Rendering/MeshComponentBus.h>
 #include <LmbrCentral/Rendering/RenderNodeBus.h>
 #include <IRenderAuxGeom.h>
 #include <IViewSystem.h>
@@ -599,77 +598,6 @@ namespace ImGui
 
     void ImGuiLYAssetExplorer::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
-        // Search through all entities for Asset Components
-        OnTick_FindAssets();
-
-        // Check for all relevant pointers here. ( Actually requires checking all of these for different edge cases! :(
-        if (gEnv && gEnv->pRenderer && gEnv->pSystem && 
-            gEnv->pSystem->GetIViewSystem() && gEnv->pSystem->GetIViewSystem()->GetActiveView() &&
-            gEnv->pSystem->GetIViewSystem()->GetActiveView()->GetCurrentParams())
-        {
-            // Get the Camera View Position from the view system.
-            const Vec3& cameraPosVec3 = gEnv->pSystem->GetIViewSystem()->GetActiveView()->GetCurrentParams()->position;
-            const AZ::Vector3 cameraPos(cameraPosVec3.x, cameraPosVec3.y, cameraPosVec3.z);
-
-            // Loop through all Meshes to draw the appropriate ones!
-            for (const MeshInstanceDisplayList& meshInstanceList : m_meshInstanceDisplayList)
-            {
-                // bunch of different ways to filter results. First check for Mesh and Instance Name Filters...
-                bool displayMesh = true;
-                if (m_meshNameFilter)
-                {
-                    displayMesh &= meshInstanceList.m_passesFilter;
-                }
-                if (m_entityNameFilter)
-                {
-                    displayMesh &= meshInstanceList.m_childrenPassFilter;
-                }
-
-                // ..Mouse Overs and Selection Filters should override other filters, so do it after.. Mouse Over THEN Selection Filter for precedence. 
-                if (m_anyMousedOverForDraw)
-                {
-                    displayMesh = meshInstanceList.m_mousedOverForDraw || meshInstanceList.m_childMousedOverForDraw;
-                }
-                else if (m_selectionFilter)
-                {
-                    displayMesh = meshInstanceList.m_selectedForDraw;
-                    for (const auto& meshInstance : meshInstanceList.m_instanceOptionMap)
-                    {
-                        displayMesh |= meshInstance.second.m_selectedForDraw;
-                    }
-                }
-
-                if (displayMesh)
-                {
-                    for (const auto& meshInstance : meshInstanceList.m_instanceOptionMap)
-                    {
-                        AZ::Data::Asset<AZ::Data::AssetData> meshAsset;
-                        LmbrCentral::MeshComponentRequestBus::EventResult(meshAsset, meshInstance.first, &LmbrCentral::MeshComponentRequests::GetMeshAsset);
-                        // See if we pass name filter first.. 
-                        bool displayEntity = true;
-                        if (m_entityNameFilter)
-                        {
-                            displayEntity = meshInstance.second.m_passesFilter;
-                        }
-
-                        // ..Mouse Overs and Selection Filters should override other filters, so do it after.. Mouse Over THEN Selection Filter for precedence. 
-                        if (m_anyMousedOverForDraw)
-                        {
-                            displayEntity = meshInstance.second.m_mousedOverForDraw || meshInstanceList.m_mousedOverForDraw;
-                        }
-                        else if (m_selectionFilter)
-                        {
-                            displayEntity = meshInstance.second.m_selectedForDraw | meshInstanceList.m_selectedForDraw;
-                        }
-
-                        if (displayEntity)
-                        {
-                            OnTick_DrawEntity(meshInstance.first, meshAsset.GetId(), gEnv->pRenderer, cameraPos);
-                        }
-                    }
-                }
-            }
-        }
     }
 
     MeshInstanceDisplayList& ImGuiLYAssetExplorer::FindOrCreateMeshInstanceList(const char* meshName)
@@ -700,96 +628,6 @@ namespace ImGui
     // Scan the scene for Meshes!
     void ImGuiLYAssetExplorer::OnTick_FindAssets()
     {
-        // Retrieve Id map from game entity context (editor->runtime).
-        AzFramework::EntityContextId gameContextId = AzFramework::EntityContextId::CreateNull();
-        AzFramework::GameEntityContextRequestBus::BroadcastResult(gameContextId, &AzFramework::GameEntityContextRequests::GetGameEntityContextId);
-
-        // Get the Root Slice Component
-        AZ::SliceComponent* rootSliceComponent;
-        AzFramework::SliceEntityOwnershipServiceRequestBus::EventResult(rootSliceComponent, gameContextId,
-            &AzFramework::SliceEntityOwnershipServiceRequests::GetRootSlice);
-
-        if (rootSliceComponent)
-        {
-            // Get an unordered_set of all EntityIds in the slice
-            AZ::SliceComponent::EntityIdSet entityIds;
-            rootSliceComponent->GetEntityIds(entityIds);
-
-            // Loop through Mesh Map and "un-verify" them
-            for (MeshInstanceDisplayList& meshInstanceList : m_meshInstanceDisplayList)
-            {
-                for (auto& meshInstance : meshInstanceList.m_instanceOptionMap)
-                {
-                    meshInstance.second.m_verifiedThisFrame = false;
-                }
-            }
-
-            for (auto it = entityIds.begin(); it != entityIds.end(); it++)
-            {
-                AZ::Data::Asset<AZ::Data::AssetData> meshAsset;
-                LmbrCentral::MeshComponentRequestBus::EventResult(meshAsset, *it, &LmbrCentral::MeshComponentRequests::GetMeshAsset);
-
-                if (meshAsset.IsReady())
-                {
-                    // Get the Asset Info so we can get the mesh path
-                    AZ::Data::AssetInfo assetInfo;
-                    AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequests::GetAssetInfoById, meshAsset.GetId());
-
-                    AZStd::string meshPath = assetInfo.m_relativePath;
-                    AZStd::to_lower(meshPath.begin(), meshPath.end());
-                    // Save off this mesh instance into the instance map
-                    MeshInstanceDisplayList& displayList = FindOrCreateMeshInstanceList(meshPath.c_str());
-                    if (!displayList.m_instanceOptionMap.count(*it))
-                    {
-                        // Get the Entity Name, for easy searching later
-                        AZStd::string entityName;
-                        AZ::ComponentApplicationBus::BroadcastResult(entityName, &AZ::ComponentApplicationBus::Events::GetEntityName, *it);
-
-                        // Init the instance entry and options
-                        MeshInstanceOptions& meshOptions = displayList.m_instanceOptionMap[*it];
-                        meshOptions.m_verifiedThisFrame = true;
-                        meshOptions.m_passesFilter = true;
-                        meshOptions.m_selectedForDraw = false;
-                        meshOptions.m_mousedOverForDraw = false;
-                        meshOptions.m_instanceLabel = AZStd::string::format("%s%s", (*it).ToString().c_str(), entityName.c_str());
-                        AZStd::to_lower(meshOptions.m_instanceLabel.begin(), meshOptions.m_instanceLabel.end());
-                    }
-                    else
-                    {
-                        displayList.m_instanceOptionMap[*it].m_verifiedThisFrame = true;
-                    }
-                }
-            }
-
-            // Loop through Mesh Map again and remove any "un-verify"-ed entries!
-            for (auto meshInstanceListIter = m_meshInstanceDisplayList.begin(); meshInstanceListIter != m_meshInstanceDisplayList.end();)
-            {
-                for (auto meshInstanceIter = (*meshInstanceListIter).m_instanceOptionMap.begin(); meshInstanceIter != (*meshInstanceListIter).m_instanceOptionMap.end();)
-                {
-                    if (!(*meshInstanceIter).second.m_verifiedThisFrame)
-                    {
-                        // erase this instance from the map and set the iterator correctly.
-                        meshInstanceIter = (*meshInstanceListIter).m_instanceOptionMap.erase(meshInstanceIter);
-                    }
-                    else
-                    {
-                        // increment the iterator
-                        meshInstanceIter++;
-                    }
-                }
-
-                // Remove the Mesh Entry if there are no instances remaining
-                if ((*meshInstanceListIter).m_instanceOptionMap.empty())
-                {
-                    meshInstanceListIter = m_meshInstanceDisplayList.erase(meshInstanceListIter);
-                }
-                else
-                {
-                    // increment the iterator
-                    meshInstanceListIter++;
-                }
-            }
-        }
     }
 
     // We know we want to draw this Entity/Mesh ( depending on distance from Cam ).. so draw!
