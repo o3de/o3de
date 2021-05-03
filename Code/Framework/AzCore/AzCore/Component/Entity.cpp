@@ -216,12 +216,14 @@ namespace AZ
 
         EBUS_EVENT_ID(m_id, EntityBus, OnEntityActivated, m_id);
         EBUS_EVENT(EntitySystemBus, OnEntityActivated, m_id);
+        AZ::Interface<AZ::ComponentApplicationRequests>::Get()->SignalEntityActivated(this);
     }
 
     void Entity::Deactivate()
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
 
+        AZ::Interface<AZ::ComponentApplicationRequests>::Get()->SignalEntityDeactivated(this);
         EBUS_EVENT_ID(m_id, EntityBus, OnEntityDeactivated, m_id);
         EBUS_EVENT(EntitySystemBus, OnEntityDeactivated, m_id);
 

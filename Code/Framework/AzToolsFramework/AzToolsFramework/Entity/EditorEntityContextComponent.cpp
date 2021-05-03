@@ -190,7 +190,7 @@ namespace AzToolsFramework
 
         EditorLegacyGameModeNotificationBus::Handler::BusConnect();
 
-        m_entityVisibilityBoundsUnionSystem.Connect();
+        //m_entityVisibilityBoundsUnionSystem.Connect();
 
     }
 
@@ -199,7 +199,7 @@ namespace AzToolsFramework
     //=========================================================================
     void EditorEntityContextComponent::Deactivate()
     {
-        m_entityVisibilityBoundsUnionSystem.Disconnect();
+        //m_entityVisibilityBoundsUnionSystem.Disconnect();
 
         EditorLegacyGameModeNotificationBus::Handler::BusDisconnect();
 

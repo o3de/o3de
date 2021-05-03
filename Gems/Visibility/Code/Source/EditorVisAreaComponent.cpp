@@ -349,8 +349,7 @@ namespace Visibility
 
                 GetIEditor()->Get3DEngine()->UpdateVisArea(m_area, &points[0], points.size(), name.c_str(), info, true);
 
-                AzFramework::EntityBoundsUnionRequestBus::Broadcast(
-                    &AzFramework::EntityBoundsUnionRequestBus::Events::RefreshEntityLocalBoundsUnion, GetEntityId());
+                AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->RefreshEntityLocalBoundsUnion(GetEntityId());
             }
         }
     }

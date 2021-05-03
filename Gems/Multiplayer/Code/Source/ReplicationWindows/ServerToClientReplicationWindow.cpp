@@ -146,11 +146,11 @@ namespace Multiplayer
             }
         );
 
+        NetworkEntityTracker* networkEntityTracker = GetNetworkEntityTracker();
+
         // Add all the neighbors
         for (AzFramework::VisibilityEntry* visEntry : gatheredEntries)
         {
-            // TODO: Discard entities that don't have a NetBindComponent
-
             //if (mp_ControlledFilteredEntityComponent && mp_ControlledFilteredEntityComponent->IsEntityFiltered(iterator.Get()))
             //{
             //    continue;
@@ -162,8 +162,12 @@ namespace Multiplayer
             const float gatherDistanceSquared = controlledEntityPosition.GetDistanceSq(closestPosition);
             const float priority = (gatherDistanceSquared > 0.0f) ? 1.0f / gatherDistanceSquared : 0.0f;
             AZ::Entity* entity = static_cast<AZ::Entity*>(visEntry->m_userData);
-            NetworkEntityHandle entityHandle(entity, GetNetworkEntityTracker());
-            AddEntityToReplicationSet(entityHandle, priority, gatherDistanceSquared);
+            NetBindComponent* entryNetBindComponent = entity->template FindComponent<NetBindComponent>();
+            if (entryNetBindComponent != nullptr)
+            {
+                NetworkEntityHandle entityHandle(entryNetBindComponent, networkEntityTracker);
+                AddEntityToReplicationSet(entityHandle, priority, gatherDistanceSquared);
+            }
         }
 
         // Add in Autonomous Entities

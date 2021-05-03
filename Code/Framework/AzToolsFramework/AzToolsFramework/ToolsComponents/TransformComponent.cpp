@@ -9,7 +9,7 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 *
 */
-
+#pragma optimize ("", off)
 #include "AzToolsFramework_precompiled.h"
 #include "TransformComponent.h"
 
@@ -261,6 +261,7 @@ namespace AzToolsFramework
 
                 AZ::TransformNotificationBus::Event(
                     GetEntityId(), &TransformNotification::OnTransformChanged, localTM, worldTM);
+                m_transformChangedEvent.Signal(localTM, worldTM);
             }
         }
 

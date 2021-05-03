@@ -378,9 +378,7 @@ namespace LmbrCentral
     {
         SplineComponentNotificationBus::Event(
             GetEntityId(), &SplineComponentNotificationBus::Events::OnSplineChanged);
-
-        AzFramework::EntityBoundsUnionRequestBus::Broadcast(
-            &AzFramework::EntityBoundsUnionRequestBus::Events::RefreshEntityLocalBoundsUnion, GetEntityId());
+        AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->RefreshEntityLocalBoundsUnion(GetEntityId());
     }
 
     AZ::SplinePtr EditorSplineComponent::GetSpline()

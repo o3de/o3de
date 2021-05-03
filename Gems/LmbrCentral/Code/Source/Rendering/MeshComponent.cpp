@@ -319,8 +319,7 @@ namespace LmbrCentral
 
             UpdateWorldTransform(transformHandler->GetWorldTM());
 
-            AzFramework::EntityBoundsUnionRequestBus::Broadcast(
-                &AzFramework::EntityBoundsUnionRequestBus::Events::RefreshEntityLocalBoundsUnion, GetEntityId());
+            AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->RefreshEntityLocalBoundsUnion(GetEntityId());
 
             m_modificationHelper.Connect(id);
         }
@@ -536,8 +535,7 @@ namespace LmbrCentral
             m_localBoundingBox.Add(m_statObj->GetAABB());
         }
 
-        AzFramework::EntityBoundsUnionRequestBus::Broadcast(
-            &AzFramework::EntityBoundsUnionRequestBus::Events::RefreshEntityLocalBoundsUnion, GetEntityId());
+        AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->RefreshEntityLocalBoundsUnion(GetEntityId());
 
         UpdateWorldBoundingBox();
     }

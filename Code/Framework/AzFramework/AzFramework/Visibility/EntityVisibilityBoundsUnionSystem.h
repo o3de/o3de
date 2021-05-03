@@ -23,12 +23,13 @@ namespace AzFramework
 {
     //! Provide a unified hook between entities and the visibility system.
     class EntityVisibilityBoundsUnionSystem
-        : public EntityBoundsUnionRequestBus::Handler
-        , private AZ::EntitySystemBus::Handler
+        : public IEntityBoundsUnionRequestBus::Handler
         , private AZ::TransformNotificationBus::Router
         , private AZ::TickBus::Handler
     {
     public:
+        EntityVisibilityBoundsUnionSystem();
+
         void Connect();
         void Disconnect();
 
@@ -40,30 +41,29 @@ namespace AzFramework
     private:
         struct EntityVisibilityBoundsUnionInstance
         {
-            AZ::Transform m_worldTransform = AZ::Transform::CreateIdentity(); //!< The world transform of the Entity.
-            AZ::Aabb m_localEntityBoundsUnion =
-                AZ::Aabb::CreateNull(); //!< Entity union bounding volume in local space.
+            AZ::Aabb m_localEntityBoundsUnion = AZ::Aabb::CreateNull(); //!< Entity union bounding volume in local space.
             VisibilityEntry m_visibilityEntry; //!< Hook into the IVisibilitySystem interface.
         };
 
-        using UniqueEntityIds = AZStd::unordered_set<AZ::EntityId>;
+        using UniqueEntities = AZStd::set<AZ::Entity*>;
         using EntityVisibilityBoundsUnionInstanceMapping =
-            AZStd::unordered_map<AZ::EntityId, EntityVisibilityBoundsUnionInstance>;
+            AZStd::unordered_map<AZ::Entity*, EntityVisibilityBoundsUnionInstance>;
+
+        void OnEntityActivated(AZ::Entity* entity);
+        void OnEntityDeactivated(AZ::Entity* entity);
 
         // TickBus overrides ...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
-        // EntitySystemBus overrides ...
-        void OnEntityActivated(const AZ::EntityId& entityId) override;
-        void OnEntityDeactivated(const AZ::EntityId& entityId) override;
-
         // TransformNotificationBus overrides ...
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 
-        void UpdateVisibilitySystem(EntityVisibilityBoundsUnionInstance& instance);
+        void UpdateVisibilitySystem(AZ::Entity* entity, EntityVisibilityBoundsUnionInstance& instance);
 
         EntityVisibilityBoundsUnionInstanceMapping m_entityVisibilityBoundsUnionInstanceMapping;
-        UniqueEntityIds m_entityIdsBoundsDirty;
-        UniqueEntityIds m_entityIdsTransformDirty;
+        UniqueEntities m_entityBoundsDirty;
+
+        AZ::EntityActivatedEvent::Handler m_entityActivatedEventHandler;
+        AZ::EntityDeactivatedEvent::Handler m_entityDeactivatedEventHandler;
     };
 } // namespace AzFramework
