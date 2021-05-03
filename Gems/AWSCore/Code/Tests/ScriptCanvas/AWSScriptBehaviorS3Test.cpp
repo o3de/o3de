@@ -11,6 +11,7 @@
  */
 
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzFramework/StringFunc/StringFunc.h>
 #include <AzTest/AzTest.h>
 
 #include <ScriptCanvas/AWSScriptBehaviorS3.h>
