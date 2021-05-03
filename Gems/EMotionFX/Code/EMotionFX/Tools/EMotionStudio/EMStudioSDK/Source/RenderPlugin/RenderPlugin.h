@@ -124,9 +124,6 @@ namespace EMStudio
         void ViewCloseup(bool selectedInstancesOnly = true, RenderWidget* renderWidget = nullptr, float flightTime = DEFAULT_FLIGHT_TIME);
         void SetSkipFollowCalcs(bool skipFollowCalcs);
 
-        // keyboard shortcuts
-        void RegisterKeyboardShortcuts() override;
-
         // manipulators
         void ReInitTransformationManipulators();
         MCommon::TransformationManipulator* GetActiveManipulator(MCommon::Camera* camera, int32 mousePosX, int32 mousePosY);
@@ -176,6 +173,11 @@ namespace EMStudio
 
         void SaveRenderOptions();
         void LoadRenderOptions();
+
+        inline static constexpr AZStd::string_view s_renderWindowShortcutGroupName = "Render Window";
+        inline static constexpr AZStd::string_view s_showSelectedShortcutName = "Show Selected";
+        inline static constexpr AZStd::string_view s_showEntireSceneShortcutName = "Show Entire Scene";
+        inline static constexpr AZStd::string_view s_toggleSelectionBoxRenderingShortcutName = "Toggle Selection Box Rendering";
 
     public slots:
         void SetManipulatorMode(RenderOptions::ManipulatorMode mode);
