@@ -105,7 +105,7 @@ namespace
             sourcePathname = CSprite::GetImageSourcePathFromProductPath(pathname);
         }
 
-        // the input string could be in any form. So make it normalized
+        // the input string could be in any form. So make it normalized (forward slashes and lower case)
         // NOTE: it should not be a full path at this point. If called from the UI editor it will
         // have been transformed to a game path. If being called with a hard coded path it should be a
         // game path already - it is not good for code to be using full paths.
@@ -807,7 +807,7 @@ bool CSprite::FixUpSourceImagePathFromUserDefinedPath(const AZStd::string& userD
     static const char* textureExtensions[] = { "png", "tif", "tiff", "tga", "jpg", "jpeg", "bmp", "gif" };
 
     AZStd::string sourceRelativePath(userDefinedPath);
-    AZStd::string cacheRelativePath = sourceRelativePath + ".streamingimage";
+    AZStd::string cacheRelativePath = AZStd::string::format("%s.%s", sourceRelativePath.c_str(), streamingImageExtension);
     bool textureExists = CheckIfFileExists(sourceRelativePath, cacheRelativePath);
 
     if (textureExists)
@@ -820,9 +820,9 @@ bool CSprite::FixUpSourceImagePathFromUserDefinedPath(const AZStd::string& userD
     for (const char* extensionReplacement : textureExtensions)
     {
         AzFramework::StringFunc::Path::ReplaceExtension(curSourceImagePath, extensionReplacement);
-        cacheRelativePath = curSourceImagePath + ".streamingimage";
-
+        cacheRelativePath = AZStd::string::format("%s.%s", curSourceImagePath.c_str(), streamingImageExtension);
         textureExists = CheckIfFileExists(curSourceImagePath, cacheRelativePath);
+
         if (textureExists)
         {
             sourceImagePath = curSourceImagePath;
@@ -887,7 +887,7 @@ void CSprite::ReleaseTexture(ITexture*& texture)
 bool CSprite::LoadImage(const AZStd::string& nameTex, AZ::Data::Instance<AZ::RPI::Image>& image)
 {
     AZStd::string sourceRelativePath(nameTex);
-    AZStd::string cacheRelativePath = sourceRelativePath + ".streamingimage";
+    AZStd::string cacheRelativePath = AZStd::string::format("%s.%s", sourceRelativePath.c_str(), streamingImageExtension);
     bool textureExists = CheckIfFileExists(sourceRelativePath, cacheRelativePath);
 
     if (!textureExists)
