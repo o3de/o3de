@@ -90,8 +90,6 @@ ly_add_target(
             AZ::AzCore
             Legacy::CryCommon
             Legacy::CryCommon.EngineSettings.Static
-    RUNTIME_DEPENDENCIES
-        Legacy::CryFont
 )
 
 ################################################################################
