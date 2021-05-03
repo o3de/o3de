@@ -42,7 +42,6 @@ class CUndoManager;
 class CGameEngine;
 class CExportManager;
 class CErrorsDlg;
-class CLensFlareManager;
 class CIconManager;
 class CBackgroundTaskManager;
 class CTrackViewSequenceManager;
@@ -183,7 +182,6 @@ public:
     IDataBaseManager* GetDBItemManager(EDataBaseItemType itemType);
     CMaterialManager* GetMaterialManager() { return m_pMaterialManager; }
     CMusicManager* GetMusicManager() { return m_pMusicManager; };
-    CLensFlareManager* GetLensFlareManager()    { return m_pLensFlareManager; };
 
     IBackgroundTaskManager* GetBackgroundTaskManager() override;
     IBackgroundScheduleManager* GetBackgroundScheduleManager() override;
@@ -237,7 +235,6 @@ public:
     RefCoordSys GetReferenceCoordSys();
     XmlNodeRef FindTemplate(const QString& templateName);
     void AddTemplate(const QString& templateName, XmlNodeRef& tmpl);
-    void OpenMaterialLibrary(IDataBaseItem* pItem = NULL);
    
     const QtViewPane* OpenView(QString sViewClassName, bool reuseOpened = true) override;
 
@@ -340,8 +337,6 @@ public:
     QMimeData* CreateQMimeData() const override;
     void DestroyQMimeData(QMimeData* data) const override;
 
-    bool IsNewViewportInteractionModelEnabled() const override;
-
 protected:
 
     AZStd::string LoadProjectIdFromProjectData();
@@ -387,7 +382,6 @@ protected:
     CMaterialManager* m_pMaterialManager;
     CAlembicCompiler* m_pAlembicCompiler;
     CMusicManager* m_pMusicManager;
-    CLensFlareManager* m_pLensFlareManager;
     CErrorReport* m_pErrorReport;
     //! Contains the error reports for the last loaded level.
     CErrorReport* m_pLasLoadedLevelErrorReport;
@@ -443,7 +437,5 @@ protected:
 
     CryMutex m_pluginMutex; // protect any pointers that come from plugins, such as the source control cached pointer.
     static const char* m_crashLogFileName;
-
-    bool m_isNewViewportInteractionModelEnabled = true;
 };
 

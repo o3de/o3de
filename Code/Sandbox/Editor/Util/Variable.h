@@ -163,7 +163,7 @@ struct IVariable
         DT_LIGHT_ANIMATION, // Light Animation Node in the global Light Animation Set
         DT_PARTICLE_EFFECT,
         DT_GEOM_CACHE, // Geometry cache
-        DT_FLARE,
+        DT_DEPRECATED, // formerly DT_FLARE
         DT_AUDIO_TRIGGER,
         DT_AUDIO_SWITCH,
         DT_AUDIO_SWITCH_STATE,

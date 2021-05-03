@@ -22,7 +22,7 @@
 #include <Integration/Components/AnimAudioComponent.h>
 
 #include <LmbrCentral/Audio/AudioProxyComponentBus.h>
-#include <LmbrCentral/Rendering/MeshComponentBus.h>     // for SkeletalHierarchyRequestBus
+#include <LmbrCentral/Animation/SkeletalHierarchyRequestBus.h>
 
 #include <MathConversion.h>
 

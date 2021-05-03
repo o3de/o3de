@@ -60,7 +60,6 @@ AZ_POP_DISABLE_WARNING
 #include "ToolBox.h"
 #include "MainWindow.h"
 #include "Alembic/AlembicCompiler.h"
-#include "LensFlareEditor/LensFlareManager.h"
 #include "UIEnumsDatabase.h"
 #include "Util/Ruler.h"
 #include "RenderHelpers/AxisHelper.h"
@@ -170,7 +169,6 @@ CEditorImpl::CEditorImpl()
     , m_pToolBoxManager(nullptr)
     , m_pMaterialManager(nullptr)
     , m_pMusicManager(nullptr)
-    , m_pLensFlareManager(nullptr)
     , m_pErrorReport(nullptr)
     , m_pLasLoadedLevelErrorReport(nullptr)
     , m_pErrorsDlg(nullptr)
@@ -230,7 +228,6 @@ CEditorImpl::CEditorImpl()
     m_pAnimationContext = new CAnimationContext;
 
     m_pImageUtil = new CImageUtil_impl();
-    m_pLensFlareManager = new CLensFlareManager;
     m_pResourceSelectorHost.reset(CreateResourceSelectorHost());
     m_pRuler = new CRuler;
     m_selectedRegion.min = Vec3(0, 0, 0);
@@ -1011,29 +1008,6 @@ IDataBaseManager* CEditorImpl::GetDBItemManager(EDataBaseItemType itemType)
         return m_pMaterialManager;
     }
     return 0;
-}
-
-void CEditorImpl::OpenMaterialLibrary(IDataBaseItem* item)
-{
-    EDataBaseItemType type = item ? item->GetType() : EDB_TYPE_MATERIAL;
-    AZ_Assert(type == EDB_TYPE_MATERIAL, "Call to OpenMaterialLibrary with non-material data base item");
-
-    if (type == EDB_TYPE_MATERIAL)
-    {
-        QtViewPaneManager::instance()->OpenPane(LyViewPane::MaterialEditor);
-
-        // This is a workaround for a timing issue where the material editor
-        // gets in a bad state while it is being polished for the first time
-        // while loading a material at the same time, so delay the setting
-        // of the material until the next event queue check
-        QTimer::singleShot(0, [this, item] {
-                IDataBaseManager* pManager = GetDBItemManager(EDB_TYPE_MATERIAL);
-                if (pManager)
-                {
-                    pManager->SetSelectedItem(item);
-                }
-            });
-    }
 }
 
 bool CEditorImpl::SelectColor(QColor& color, QWidget* parent)
@@ -1820,11 +1794,6 @@ QMimeData* CEditorImpl::CreateQMimeData() const
 void CEditorImpl::DestroyQMimeData(QMimeData* data) const
 {
     delete data;
-}
-
-bool CEditorImpl::IsNewViewportInteractionModelEnabled() const
-{
-    return m_isNewViewportInteractionModelEnabled;
 }
 
 IEditorPanelUtils* CEditorImpl::GetEditorPanelUtils()

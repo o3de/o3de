@@ -470,7 +470,7 @@ void ApplicationManager::PopulateApplicationDependencies()
     QDir assetRoot;
     AssetUtilities::ComputeAssetRoot(assetRoot);
 
-    QString globalConfigPath = assetRoot.filePath("AssetProcessorPlatformConfig.setreg");
+    QString globalConfigPath = assetRoot.filePath("Registry/AssetProcessorPlatformConfig.setreg");
     m_filesOfInterest.push_back(globalConfigPath);
 
     QString gamePlatformConfigPath = QDir(AssetUtilities::ComputeProjectPath()).filePath("AssetProcessorGamePlatformConfig.setreg");

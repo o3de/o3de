@@ -27,7 +27,7 @@ public:
     virtual ~CREWaterVolume();
     virtual void mfPrepare(bool bCheckOverflow);
     virtual bool mfDraw(CShader* ef, SShaderPass* sfm);
-    virtual void mfGetPlane(Plane& pl);
+    virtual void mfGetPlane(Plane_tpl<f32>& pl);
     virtual void mfCenter(Vec3& vCenter, CRenderObject* pObj);
 
     virtual void GetMemoryUsage(ICrySizer* pSizer) const
@@ -69,7 +69,7 @@ public:
         Vec3 m_center;
         AABB m_WSBBox;
 
-        Plane m_fogPlane;
+        Plane_tpl<f32> m_fogPlane;
         float m_fogDensity;
         Vec3 m_fogColor;
         bool m_fogColorAffectedBySun;

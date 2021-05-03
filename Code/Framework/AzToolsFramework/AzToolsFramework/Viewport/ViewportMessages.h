@@ -277,20 +277,6 @@ namespace AzToolsFramework
 
     } // namespace ViewportInteraction
 
-    /// Temporary bus to query if the new Viewport Interaction Model mode is enabled or not.
-    class NewViewportInteractionModelEnabledRequests
-        : public AZ::EBusTraits
-    {
-    public:
-        virtual bool IsNewViewportInteractionModelEnabled() = 0;
-
-    protected:
-        ~NewViewportInteractionModelEnabledRequests() = default;
-    };
-
-    /// Type to inherit to implement NewViewportInteractionModelEnabledRequests
-    using NewViewportInteractionModelEnabledRequestBus = AZ::EBus<NewViewportInteractionModelEnabledRequests>;
-
     /// Utility function to return EntityContextId.
     inline AzFramework::EntityContextId GetEntityContextId()
     {
@@ -299,17 +285,5 @@ namespace AzToolsFramework
             entityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
 
         return entityContextId;
-    }
-
-    /// Utility function to return if the new Viewport Interaction Model
-    /// is enabled (wraps NewViewportInteractionModelEnabledRequests).
-    inline bool IsNewViewportInteractionModelEnabled()
-    {
-        bool newViewportInteractionModelEnabled = false;
-        NewViewportInteractionModelEnabledRequestBus::BroadcastResult(
-            newViewportInteractionModelEnabled,
-            &NewViewportInteractionModelEnabledRequests::IsNewViewportInteractionModelEnabled);
-
-        return newViewportInteractionModelEnabled;
     }
 } // namespace AzToolsFramework

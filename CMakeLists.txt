@@ -9,7 +9,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-# Cmake version 3.17 is the minimum version needed for all of Open 3D Engine's supported platforms
+# Cmake version 3.19 is the minimum version needed for all of Open 3D Engine's supported platforms
 cmake_minimum_required(VERSION 3.19)
 
 # CMP0111 introduced in 3.19 has a bug that produces the policy to warn every time there is an

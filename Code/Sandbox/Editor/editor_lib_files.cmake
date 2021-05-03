@@ -511,9 +511,6 @@ set(FILES
     DimensionsDialog.cpp
     DimensionsDialog.h
     DimensionsDialog.ui
-    Dialogs/QT/NewEntityDialog.cpp
-    Dialogs/QT/NewEntityDialog.h
-    Dialogs/QT/NewEntityDialog.ui
     NewLevelDialog.cpp
     NewLevelDialog.h
     NewLevelDialog.ui
@@ -548,10 +545,6 @@ set(FILES
     Geometry/TriMesh.h
     AboutDialog.h
     AboutDialog.ui
-    DatabaseFrameWnd.h
-    DatabaseFrameWnd.ui
-    DatabaseFrameWnd.qrc
-    Dialogs/DuplicatedObjectsHandlerDlg.h
     DocMultiArchive.h
     EditMode/DeepSelection.h
     FBXExporterDialog.h
@@ -575,31 +568,6 @@ set(FILES
     WipFeaturesDlg.qrc
     LevelIndependentFileMan.cpp
     LevelIndependentFileMan.h
-    LensFlareEditor/ILensFlareListener.h
-    LensFlareEditor/LensFlareAtomicList.cpp
-    LensFlareEditor/LensFlareAtomicList.h
-    LensFlareEditor/LensFlareEditor.cpp
-    LensFlareEditor/LensFlareEditor.h
-    LensFlareEditor/LensFlareElement.cpp
-    LensFlareEditor/LensFlareElement.h
-    LensFlareEditor/LensFlareElementTree.cpp
-    LensFlareEditor/LensFlareElementTree.h
-    LensFlareEditor/LensFlareItem.cpp
-    LensFlareEditor/LensFlareItem.h
-    LensFlareEditor/LensFlareItemTree.cpp
-    LensFlareEditor/LensFlareItemTree.h
-    LensFlareEditor/LensFlareLibrary.cpp
-    LensFlareEditor/LensFlareLibrary.h
-    LensFlareEditor/LensFlareLightEntityTree.cpp
-    LensFlareEditor/LensFlareLightEntityTree.h
-    LensFlareEditor/LensFlareManager.cpp
-    LensFlareEditor/LensFlareManager.h
-    LensFlareEditor/LensFlareUndo.cpp
-    LensFlareEditor/LensFlareUndo.h
-    LensFlareEditor/LensFlareUtil.cpp
-    LensFlareEditor/LensFlareUtil.h
-    LensFlareEditor/LensFlareView.cpp
-    LensFlareEditor/LensFlareView.h
     LogFileImpl.cpp
     LogFileImpl.h
     MatEditPreviewDlg.cpp
@@ -710,9 +678,6 @@ set(FILES
     GraphicsSettingsDialog.cpp
     graphicssettingsdialog.ui
     AboutDialog.cpp
-    DatabaseFrameWnd.cpp
-    Dialogs/DuplicatedObjectsHandlerDlg.cpp
-    Dialogs/DuplicatedObjectsHandlerDlg.ui
     ErrorReportTableModel.h
     ErrorReportTableModel.cpp
     EditMode/DeepSelection.cpp

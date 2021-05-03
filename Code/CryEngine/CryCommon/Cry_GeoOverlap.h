@@ -945,29 +945,6 @@ namespace Overlap {
         }
     }
 
-
-    /*!
-    *
-    * we use the SEPARATING-AXIS-TEST for OBB/Plane overlap.
-    *
-    * Example:
-    *  bool result=Overlap::OBB_Plane( pos,obb, plane );
-    *
-    */
-    inline bool OBB_Plane(const Vec3& pos, const OBB& obb, const Plane& plane)
-    {
-        //the new center-position in world-space
-        Vec3 p  =   obb.m33 * obb.c + pos;
-        //extract the orientation-vectors from the columns of the 3x3 matrix
-        //and scale them by the half-lengths
-        Vec3 ax = Vec3(obb.m33.m00, obb.m33.m10, obb.m33.m20) * obb.h.x;
-        Vec3 ay = Vec3(obb.m33.m01, obb.m33.m11, obb.m33.m21) * obb.h.y;
-        Vec3 az = Vec3(obb.m33.m02, obb.m33.m12, obb.m33.m22) * obb.h.z;
-        //check OBB against Plane, using the plane-normal as separating axis
-        return fabsf(plane | p) < (fabsf(plane.n | ax) + fabsf(plane.n | ay) + fabsf(plane.n | az));
-    }
-
-
     /*!
     *
     * we use the SEPARATING AXIS TEST to check if a triangle and AABB overlap.
@@ -1214,7 +1191,7 @@ namespace Overlap {
 
         //test if the box intersects the plane of the triangle
         //compute plane equation of triangle: normal*x+d=0
-        Plane plane = Plane::CreatePlane((e0 % e1), v0);
+        Plane_tpl<f32> plane = Plane_tpl<f32>::CreatePlane((e0 % e1), v0);
 
         Vec3 vmin, vmax;
         if (plane.n.x > 0.0f)
@@ -1505,7 +1482,7 @@ namespace Overlap {
 
         //test if the box overlaps the plane of the triangle
         //compute plane equation of triangle: normal*x+d=0
-        Plane plane = Plane::CreatePlane((e0 % e1), v0);
+        Plane_tpl<f32> plane = Plane_tpl<f32>::CreatePlane((e0 % e1), v0);
 
         Vec3 vmin, vmax;
         if (plane.n.x > 0.0f)
