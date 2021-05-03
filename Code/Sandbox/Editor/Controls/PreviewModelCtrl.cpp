@@ -365,10 +365,6 @@ bool CPreviewModelCtrl::Render()
     }
 
     _smart_ptr<IMaterial> pMaterial;
-    if (m_pCurrentMaterial)
-    {
-        pMaterial = m_pCurrentMaterial->GetMatInfo();
-    }
 
     if (m_bPrecacheMaterial)
     {
@@ -428,11 +424,6 @@ bool CPreviewModelCtrl::Render()
         for (size_t i = 0; i < m_lights.size(); i++)
         {
             m_pRenderer->EF_ADDDlight(&m_lights[i], passInfo);
-        }
-
-        if (m_pCurrentMaterial)
-        {
-            m_pCurrentMaterial->DisableHighlightForFrame();
         }
 
         if (m_bShowObject)
@@ -776,32 +767,6 @@ void CPreviewModelCtrl::Update(bool bForceUpdate)
 void CPreviewModelCtrl::SetRotation(bool bEnable)
 {
     m_bRotate = bEnable;
-}
-
-void CPreviewModelCtrl::SetMaterial(CMaterial* pMaterial)
-{
-    if (pMaterial)
-    {
-        if ((pMaterial->GetFlags() & MTL_FLAG_NOPREVIEW))
-        {
-            m_pCurrentMaterial = 0;
-            if (isVisible())
-            {
-                update();
-            }
-            return;
-        }
-    }
-    m_pCurrentMaterial = pMaterial;
-    if (isVisible())
-    {
-        update();
-    }
-}
-
-CMaterial* CPreviewModelCtrl::GetMaterial()
-{
-    return m_pCurrentMaterial;
 }
 
 void CPreviewModelCtrl::OnEditorNotifyEvent(EEditorNotifyEvent event)
