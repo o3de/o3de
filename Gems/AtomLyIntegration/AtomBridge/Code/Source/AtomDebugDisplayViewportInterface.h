@@ -25,6 +25,7 @@
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/AuxGeom/AuxGeomDraw.h>
 #include <Atom/RPI.Public/ViewportContext.h>
+#include <Atom/RPI.Public/ViewportContextBus.h>
 
 namespace AZ::AtomBridge
 {
@@ -121,6 +122,7 @@ namespace AZ::AtomBridge
 
     class AtomDebugDisplayViewportInterface final
         : public AzFramework::DebugDisplayRequestBus::Handler
+        , public AZ::RPI::ViewportContextIdNotificationBus::Handler
     {
     public:
         AZ_RTTI(AtomDebugDisplayViewportInterface, "{09AF6A46-0100-4FBF-8F94-E6B221322D14}", AzFramework::DebugDisplayRequestBus::Handler);
@@ -198,6 +200,12 @@ namespace AZ::AtomBridge
         void PopMatrix() override;
 
     private:
+
+        // ViewportContextIdNotificationBus handlers
+        void OnViewportDefaultViewChanged(AZ::RPI::ViewPtr view) override;
+
+
+        // internal helper functions
         using LineSegmentFilterFunc = AZStd::function<bool(const AZ::Vector3& lineStart, const AZ::Vector3& lineEnd, int segmentIndex)>;
         enum CircleAxis
         {
@@ -245,6 +253,7 @@ namespace AZ::AtomBridge
         
         const AZ::Matrix3x4& GetCurrentTransform() const;
 
+        void UpdateAuxGeom(RPI::Scene* scene, AZ::RPI::View* view);
         void InitInternal(RPI::Scene* scene, AZ::RPI::ViewportContextPtr viewportContextPtr);
 
         AZ::RPI::ViewportContextPtr GetViewportContext() const;
