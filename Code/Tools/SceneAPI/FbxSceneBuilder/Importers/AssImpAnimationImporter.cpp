@@ -260,7 +260,7 @@ namespace AZ
             {
                 AZ_TraceContext("Importer", "Animation");
 
-                aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
+                const aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
                 const aiScene* scene = context.m_sourceScene.GetAssImpScene();
 
                 // Add check for animation layers at the scene level.
@@ -391,7 +391,7 @@ namespace AZ
                 AZStd::map<AZStd::string, AZ::u32> meshNameToMeshIndex;
                 for (AZ::u32 meshIndex = 0; meshIndex < currentNode->mNumMeshes; ++meshIndex)
                 {
-                    aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[meshIndex]];
+                    const aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[meshIndex]];
                     // A single node has multiple meshes with the same name when it's been split by AssImp to one material per mesh.
                     // The engine's code for importing AssImp re-combines these split meshes so they can be split by the engine
                     // to match the previous SDK's behavior.
@@ -407,7 +407,7 @@ namespace AZ
                     if (NodeToChannelToMorphAnim::iterator channelsForMeshName = meshMorphAnimations.find(meshNameAndIndex.first);
                         channelsForMeshName != meshMorphAnimations.end())
                     {
-                        aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[meshNameAndIndex.second]];
+                        const aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[meshNameAndIndex.second]];
                         const auto [nodeIterName, channels] = *channelsForMeshName;
                         for (const auto& [channel, animAndMorphAnim] : channels)
                         {
@@ -468,8 +468,8 @@ namespace AZ
                 // Go through all the animations and make sure we create animations for bones who's parents don't have an animation
                 for (auto&& anim : boneAnimations)
                 {
-                    aiNode* node = scene->mRootNode->FindNode(anim.first.c_str());
-                    aiNode* parent = node->mParent;
+                    const aiNode* node = scene->mRootNode->FindNode(anim.first.c_str());
+                    const aiNode* parent = node->mParent;
 
                     while (parent && parent != scene->mRootNode)
                     {

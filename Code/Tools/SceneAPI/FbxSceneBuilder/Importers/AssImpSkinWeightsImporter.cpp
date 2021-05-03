@@ -51,7 +51,7 @@ namespace AZ
             {
                 AZ_TraceContext("Importer", "Skin Weights");
 
-                aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
+                const aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
                 const aiScene* scene = context.m_sourceScene.GetAssImpScene();
 
                 if(currentNode->mNumMeshes <= 0)

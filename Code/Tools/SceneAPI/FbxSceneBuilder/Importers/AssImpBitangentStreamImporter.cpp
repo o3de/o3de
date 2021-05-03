@@ -54,7 +54,7 @@ namespace AZ
                 {
                     return Events::ProcessingResult::Ignored;
                 }
-                aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
+                const aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
                 const aiScene* scene = context.m_sourceScene.GetAssImpScene();
 
                 const auto meshHasTangentsAndBitangents = [&scene](const unsigned int meshIndex)
@@ -95,7 +95,7 @@ namespace AZ
                 bitangentStream->ReserveContainerSpace(vertexCount);
                 for (int sdkMeshIndex = 0; sdkMeshIndex < currentNode->mNumMeshes; ++sdkMeshIndex)
                 {
-                    aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[sdkMeshIndex]];
+                    const aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[sdkMeshIndex]];
 
                     for (int v = 0; v < mesh->mNumVertices; ++v)
                     {

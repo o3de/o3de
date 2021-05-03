@@ -57,7 +57,7 @@ namespace AZ
                 {
                     return Events::ProcessingResult::Ignored;
                 }
-                aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
+                const aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
                 const aiScene* scene = context.m_sourceScene.GetAssImpScene();
 
                 // AssImp separates meshes that have multiple materials.
@@ -115,7 +115,7 @@ namespace AZ
                     AZStd::string name(AZStd::string::format("%s%d", m_defaultNodeName, texCoordIndex));
                     for (int sdkMeshIndex = 0; sdkMeshIndex < currentNode->mNumMeshes; ++sdkMeshIndex)
                     {
-                        aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[sdkMeshIndex]];
+                        const aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[sdkMeshIndex]];
                         if(mesh->mTextureCoords[texCoordIndex])
                         {
                             if (mesh->mTextureCoordsNames[texCoordIndex].length > 0)

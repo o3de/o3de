@@ -25,7 +25,7 @@
 
 namespace AZ::SceneAPI::FbxSceneBuilder
 {
-    bool BuildSceneMeshFromAssImpMesh(aiNode* currentNode, const aiScene* scene, const FbxSceneSystem& sceneSystem, AZStd::vector<AZStd::shared_ptr<DataTypes::IGraphObject>>& meshes,
+    bool BuildSceneMeshFromAssImpMesh(const aiNode* currentNode, const aiScene* scene, const FbxSceneSystem& sceneSystem, AZStd::vector<AZStd::shared_ptr<DataTypes::IGraphObject>>& meshes,
         const AZStd::function<AZStd::shared_ptr<SceneData::GraphData::MeshData>()>& makeMeshFunc)
     {
         AZStd::unordered_map<int, int> assImpMatIndexToLYIndex;
@@ -46,7 +46,7 @@ namespace AZ::SceneAPI::FbxSceneBuilder
         int vertOffset = 0;
         for (int m = 0; m < currentNode->mNumMeshes; ++m)
         {
-            aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[m]];
+            const aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[m]];
 
             // Lumberyard materials are created in order based on mesh references in the scene
             if (assImpMatIndexToLYIndex.find(mesh->mMaterialIndex) == assImpMatIndexToLYIndex.end())

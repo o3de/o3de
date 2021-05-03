@@ -56,14 +56,14 @@ namespace AZ
                 {
                     return Events::ProcessingResult::Ignored;
                 }
-                aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
+                const aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
                 const aiScene* scene = context.m_sourceScene.GetAssImpScene();
 
                 // This node has at least one mesh, verify that the color channel counts are the same for all meshes.
                 int expectedColorChannels = scene->mMeshes[currentNode->mMeshes[0]]->GetNumColorChannels();
                 for (int localMeshIndex = 1; localMeshIndex < currentNode->mNumMeshes; ++localMeshIndex)
                 {
-                    aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[localMeshIndex]];
+                    const aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[localMeshIndex]];
                     if (expectedColorChannels != mesh->GetNumColorChannels())
                     {
                         AZ_Error(
@@ -101,7 +101,7 @@ namespace AZ
 
                     for (int sdkMeshIndex = 0; sdkMeshIndex < currentNode->mNumMeshes; ++sdkMeshIndex)
                     {
-                        aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[sdkMeshIndex]];
+                        const aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[sdkMeshIndex]];
                         for (int v = 0; v < mesh->mNumVertices; ++v)
                         {
                             if (colorSetIndex < mesh->GetNumColorChannels())
