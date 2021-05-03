@@ -20,14 +20,12 @@ if ROOT_DEV_PATH not in sys.path:
 
 from cmake.Tools import engine_template
 from cmake.Tools import current_project
-from cmake.Tools import add_remove_gem
 from cmake.Tools import registration
 
 
 def add_args(parser, subparsers) -> None:
     current_project.add_args(parser, subparsers)
     engine_template.add_args(parser, subparsers)
-    add_remove_gem.add_args(parser, subparsers)
     registration.add_args(parser, subparsers)
 
 
