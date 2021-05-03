@@ -92,7 +92,7 @@ namespace AZ
                     for (int animIdx = 0; animIdx < aiMesh->mNumAnimMeshes; animIdx++)
                     {
                         aiAnimMesh* aiAnimMesh = aiMesh->mAnimMeshes[animIdx];
-                        animToMeshToAnimMeshIndices[aiAnimMesh->mName.C_Str()].push_back(AZStd::pair<int,int>(nodeMeshIdx, animIdx));
+                        animToMeshToAnimMeshIndices[aiAnimMesh->mName.C_Str()].emplace_back(AZStd::pair<int,int>(nodeMeshIdx, animIdx));
                     }
                 }
 
@@ -118,7 +118,7 @@ namespace AZ
                     {
                         int sceneMeshIdx = context.m_sourceNode.GetAssImpNode()->mMeshes[meshIndex.first];
                         const aiMesh* aiMesh = context.m_sourceScene.GetAssImpScene()->mMeshes[sceneMeshIdx];
-                        aiAnimMesh* aiAnimMesh = aiMesh->mAnimMeshes[meshIndex.second];
+                        const aiAnimMesh* aiAnimMesh = aiMesh->mAnimMeshes[meshIndex.second];
 
                         AZStd::bitset<SceneData::GraphData::BlendShapeData::MaxNumUVSets> uvSetUsedFlags;
                         for (AZ::u8 uvSetIndex = 0; uvSetIndex < SceneData::GraphData::BlendShapeData::MaxNumUVSets; ++uvSetIndex)

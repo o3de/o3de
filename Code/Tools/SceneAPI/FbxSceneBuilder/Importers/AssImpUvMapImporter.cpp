@@ -154,8 +154,7 @@ namespace AZ
                                 // An error was already emitted if the UV channels for all meshes on this node do not match.
                                 // Append an arbitrary UV value so that the mesh can still be processed.
                                 // It's better to let the engine load a partially valid mesh than to completely fail.
-                                AZ::Vector2 vertexUV(0,0);
-                                uvMap->AppendUV(vertexUV);
+                                uvMap->AppendUV(AZ::Vector2::CreateZero());
                             }
                         }
                     }

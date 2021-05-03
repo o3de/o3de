@@ -60,28 +60,24 @@ namespace AZ
                 const aiScene* scene = context.m_sourceScene.GetAssImpScene();
 
                 // This node has at least one mesh, verify that the color channel counts are the same for all meshes.
-                int expectedColorChannels = scene->mMeshes[currentNode->mMeshes[0]]->GetNumColorChannels();
-                for (int localMeshIndex = 1; localMeshIndex < currentNode->mNumMeshes; ++localMeshIndex)
-                {
-                    const aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[localMeshIndex]];
-                    if (expectedColorChannels != mesh->GetNumColorChannels())
-                    {
-                        AZ_Error(
-                            Utilities::ErrorWindow,
-                            false,
-                            "Color channel count %d for node %s, for mesh %s at index %d does not match expected count %d. "
-                            "Placeholder incorrect color values will be generated to allow the data to process, but the source art "
-                            "needs to be fixed to correct this. All meshes on this node should have the same number of color channels.",
-                            mesh->GetNumColorChannels(),
-                            currentNode->mName.C_Str(),
-                            mesh->mName.C_Str(),
-                            localMeshIndex,
-                            expectedColorChannels);
-                        if (mesh->GetNumColorChannels() > expectedColorChannels)
+                const int expectedColorChannels = scene->mMeshes[currentNode->mMeshes[0]]->GetNumColorChannels();
+                const bool allMeshesHaveSameNumberOfColorChannels =
+                    AZStd::all_of(currentNode->mMeshes + 1, currentNode->mMeshes + currentNode->mNumMeshes, [scene, expectedColorChannels](const unsigned int meshIndex)
                         {
-                            expectedColorChannels = mesh->GetNumColorChannels();
-                        }
-                    }
+                            return scene->mMeshes[meshIndex]->GetNumColorChannels() == expectedColorChannels;
+                        });
+
+
+                if(!allMeshesHaveSameNumberOfColorChannels)
+                {
+                    AZ_Error(
+                        Utilities::ErrorWindow,
+                        false,
+                        "Color channel counts for node %s has meshes with different color channel counts. "
+                        "The color channel count for the first mesh will be used, and placeholder incorrect color values "
+                        "will be generated to allow the data to process, but the source art needs to be fixed to correct this. "
+                        "All meshes on this node should have the same number of color channels.",
+                        currentNode->mName.C_Str());
                 }
 
                 if (expectedColorChannels == 0)
@@ -116,8 +112,7 @@ namespace AZ
                                 // than other meshes on the parent node. Append an arbitrary color value
                                 // so the mesh can still be processed.
                                 // It's better to let the engine load a partially valid mesh than to completely fail.
-                                AZ::SceneAPI::DataTypes::Color vertexColor(0,0,0,1);
-                                vertexColors->AppendColor(vertexColor);
+                                vertexColors->AppendColor(AZ::SceneAPI::DataTypes::Color(0,0,0,1));
                             }
                         }
                     }
