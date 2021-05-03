@@ -3959,18 +3959,18 @@ def _run_register(args: argparse) -> int:
     elif args.all_repo_uri:
         return register_all_repos_in_folder(args.all_restricted_path, args.remove)
     else:
-        return register(args.engine_path,
-                        args.project_path,
-                        args.gem_path,
-                        args.template_path,
-                        args.default_engines_folder,
-                        args.default_projects_folder,
-                        args.default_gems_folder,
-                        args.default_templates_folder,
-                        args.default_restricted_folder,
-                        args.repo_uri,
-                        args.remove,
-                        args.restricted_path)
+        return register(engine_path=args.engine_path,
+                        project_path=args.project_path,
+                        gem_path=args.gem_path,
+                        template_path=args.template_path,
+                        restricted_path=args.restricted_path,
+                        repo_uri=args.repo_uri,
+                        default_engines_folder=args.default_engines_folder,
+                        default_projects_folder=args.default_projects_folder,
+                        default_gems_folder=args.default_gems_folder,
+                        default_templates_folder=args.default_templates_folder,
+                        default_restricted_folder=args.default_restricted_folder,
+                        remove=args.remove)
 
 
 def _run_add_external_subdirectory(args: argparse) -> int:

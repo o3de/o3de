@@ -1216,12 +1216,11 @@ def create_from_template(destination_path: str,
             logger.info(f'{destination_restricted_path} is not a full path, making it relative'
                         f' to default restricted path = {new_destination_restricted_path}')
             destination_restricted_path = new_destination_restricted_path
-    else:
+    elif template_restricted_path:
         restricted_default_path = registration.get_registered(default='restricted')
-        new_destination_restricted_path = f'{restricted_default_path}/{destination_name}'
         logger.info(f'--destination-restricted-path is not specified, using default restricted path / destination name'
-                    f' = {new_destination_restricted_path}')
-        destination_restricted_path = new_destination_restricted_path
+                    f' = {restricted_default_path}')
+        destination_restricted_path = restricted_default_path
 
     # destination restricted relative
     if destination_restricted_platform_relative_path:
@@ -1263,7 +1262,9 @@ def create_from_template(destination_path: str,
     # Note there is no linking of non o3de objects to o3de restricted. So this will make no attempt to figure out
     # if this destination was actually an o3de object and try to alter the <type>.json
     if not keep_restricted_in_instance:
-        if destination_restricted_path and os.path.isdir(destination_restricted_path):
+        if destination_restricted_path:
+            os.makedirs(destination_restricted_path, exist_ok=True)
+
             # read the restricted_name from the destination restricted.json
             restricted_json = f"{destination_restricted_path}/restricted.json".replace('//', '/')
             if not os.path.isfile(restricted_json):
@@ -1508,12 +1509,11 @@ def create_project(project_path: str,
             logger.info(f'Project restricted path {project_restricted_path} is not a full path, we must assume its'
                         f' relative to default projects restricted path = {new_project_restricted_path}')
             project_restricted_path = new_project_restricted_path
-    else:
+    elif template_restricted_path:
         project_restricted_default_path = registration.get_registered(restricted_name='projects')
-        new_project_restricted_path = f'{project_restricted_default_path}/{project_name}'
         logger.info(f'--project-restricted-path is not specified, using default project restricted path / project name'
-                    f' = {new_project_restricted_path}')
-        project_restricted_path = new_project_restricted_path
+                    f' = {project_restricted_default_path}')
+        project_restricted_path = project_restricted_default_path
 
     # project restricted relative path
     if project_restricted_platform_relative_path:
@@ -1581,7 +1581,9 @@ def create_project(project_path: str,
     # If we are not keeping the restricted in the project read the name of the restricted folder from the
     # restricted json and set that as this projects restricted
     if not keep_restricted_in_project:
-        if project_restricted_path and os.path.isdir(project_restricted_path):
+        if project_restricted_path:
+            os.makedirs(project_restricted_path, exist_ok=True)
+
             # read the restricted_name from the projects restricted.json
             restricted_json = f"{project_restricted_path}/restricted.json".replace('//', '/')
             if os.path.isfile(restricted_json):
@@ -1873,12 +1875,6 @@ def create_gem(gem_path: str,
         logger.error(f'Gem path cannot be a restricted name. {gem_name}')
         return 1
 
-    # if the user has not specified either a gem restricted name or gem restricted path
-    # see if the template itself specifies a restricted name
-    if not gem_restricted_name and not gem_restricted_path:
-        if template_json_restricted_name:
-            gem_restricted_name = template_json_restricted_name
-
     # gem restricted name
     if gem_restricted_name and not gem_restricted_path:
         gem_restricted_path = registration.get_registered(restricted_name=gem_restricted_name)
@@ -1892,12 +1888,11 @@ def create_gem(gem_path: str,
             logger.info(f'Gem restricted path {gem_restricted_path} is not a full path, we must assume its'
                         f' relative to default gems restricted path = {new_gem_restricted_path}')
             gem_restricted_path = new_gem_restricted_path
-    else:
+    elif template_restricted_path:
         gem_restricted_default_path = registration.get_registered(restricted_name='gems')
-        new_gem_restricted_path = f'{gem_restricted_default_path}/{gem_name}'
         logger.info(f'--gem-restricted-path is not specified, using default gem restricted path / gem name'
-                    f' = {new_gem_restricted_path}')
-        gem_restricted_path = new_gem_restricted_path
+                    f' = {gem_restricted_default_path}')
+        gem_restricted_path = gem_restricted_default_path
 
     # gem restricted relative
     if gem_restricted_platform_relative_path:
@@ -1965,7 +1960,9 @@ def create_gem(gem_path: str,
     # If we are not keeping the restricted in the gem read the name of the restricted folder from the
     # restricted json and set that as this gems restricted
     if not keep_restricted_in_gem:
-        if gem_restricted_path and os.path.isdir(gem_restricted_path):
+        if gem_restricted_path:
+            os.makedirs(gem_restricted_path, exist_ok=True)
+
             # read the restricted_name from the gems restricted.json
             restricted_json = f"{gem_restricted_path}/restricted.json".replace('//', '/')
             if os.path.isfile(restricted_json):
