@@ -2414,7 +2414,7 @@ void CCryEditDoc::InitEmptyLevel(int /*resolution*/, int /*unitSize*/, bool /*bU
     GetIEditor()->SetStatusText("Ready");
 }
 
-void CCryEditDoc::CreateDefaultLevelAssets(int resolution, int unitSize)
+void CCryEditDoc::CreateDefaultLevelAssets([[maybe_unused]] int resolution, [[maybe_unused]] int unitSize)
 {
     AzToolsFramework::EditorLevelNotificationBus::Broadcast(&AzToolsFramework::EditorLevelNotificationBus::Events::OnNewLevelCreated);
 }
