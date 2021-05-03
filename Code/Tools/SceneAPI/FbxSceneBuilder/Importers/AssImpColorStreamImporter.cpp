@@ -58,56 +58,37 @@ namespace AZ
                 aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
                 const aiScene* scene = context.m_sourceScene.GetAssImpScene();
 
-                int expectedColorChannels = -1;
-                int localMeshIndex = -1;
-
-                // AssImp separates meshes that have multiple materials.
-                // This code re-combines them to match previous FBX SDK behavior,
-                // so they can be separated by engine code instead.
-                uint64_t vertexCount = AZStd::accumulate(currentNode->mMeshes, currentNode->mMeshes + currentNode->mNumMeshes, uint64_t{ 0u },
-                    [scene, currentNode, &expectedColorChannels, &localMeshIndex](auto runningTotal, unsigned int meshIndex)
+                // This node has at least one mesh, verify that the color channel counts are the same for all meshes.
+                int expectedColorChannels = scene->mMeshes[currentNode->mMeshes[0]]->GetNumColorChannels();
+                for (int localMeshIndex = 1; localMeshIndex < currentNode->mNumMeshes; ++localMeshIndex)
+                {
+                    aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[localMeshIndex]];
+                    if (expectedColorChannels != mesh->GetNumColorChannels())
                     {
-                        ++localMeshIndex;
-                        aiMesh* mesh = scene->mMeshes[meshIndex];
-                        if (expectedColorChannels < 0)
+                        AZ_Error(
+                            Utilities::ErrorWindow,
+                            false,
+                            "Color channel count %d for node %s, for mesh %s at index %d does not match expected count %d. "
+                            "Placeholder incorrect color values will be generated to allow the data to process, but the source art "
+                            "needs to be fixed to correct this. All meshes on this node should have the same number of color channels.",
+                            mesh->GetNumColorChannels(),
+                            currentNode->mName.C_Str(),
+                            mesh->mName.C_Str(),
+                            localMeshIndex,
+                            expectedColorChannels);
+                        if (mesh->GetNumColorChannels() > expectedColorChannels)
                         {
                             expectedColorChannels = mesh->GetNumColorChannels();
                         }
-                        else if(expectedColorChannels != mesh->GetNumColorChannels())
-                        {
-                            AZ_Error(
-                                Utilities::ErrorWindow,
-                                false,
-                                "Color channel count %d for node %s, for mesh %s at index %d does not match expected count %d. "
-                                "Placeholder incorrect color values will be generated to allow the data to process, but the source art "
-                                "needs to be fixed to correct this. All meshes on this node should have the same number of color channels.",
-                                mesh->GetNumColorChannels(),
-                                currentNode->mName.C_Str(),
-                                mesh->mName.C_Str(),
-                                localMeshIndex,
-                                expectedColorChannels);
-                            if (mesh->GetNumColorChannels() > expectedColorChannels)
-                            {
-                                expectedColorChannels = mesh->GetNumColorChannels();
-                            }
-                        }
-                        // Don't multiply by expected color channels yet, because it may change due to mismatched channels in meshes.
-                        return runningTotal + mesh->mNumVertices;
-
-                    });
+                    }
+                }
 
                 if (expectedColorChannels == 0)
                 {
                     return Events::ProcessingResult::Ignored;
                 }
-                // Adjust the vertex count by the maximum number of color channels across all meshes.
-                // Ideally, this will be identical for all meshes, but there may be an edge case where
-                // meshes have different color channel counts. In that case, it's more desirable to process
-                // the scene file as much as possible even if there are data errors.
-                // Note that this error case is unlikely because multiple meshes on a single AssImp node only
-                // happens if there was a single source mesh that had multiple materials.
-                // AssImp splits that into several child meshes on the node.
-                vertexCount *= expectedColorChannels;
+
+                const uint64_t vertexCount = GetVertexCountForAllMeshesOnNode(*currentNode, *scene);
 
                 Events::ProcessingResultCombiner combinedVertexColorResults;
                 for (int colorSetIndex = 0; colorSetIndex < expectedColorChannels; ++colorSetIndex)

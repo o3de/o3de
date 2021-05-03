@@ -134,7 +134,7 @@ namespace AZ::SceneGenerationComponents
         {
             for (size_t controlPointIndex = 0; controlPointIndex < skinData.get().GetVertexCount(); ++controlPointIndex)
             {
-                const int usedPointIndex = meshData->GetUsedPointIndexForControlPoint(aznumeric_caster(controlPointIndex));
+                const int usedPointIndex = meshData->GetUsedPointIndexForControlPoint(meshData->GetControlPointIndex(aznumeric_caster(controlPointIndex)));
                 const size_t linkCount = skinData.get().GetLinkCount(controlPointIndex);
 
                 if (usedPointIndex < 0 || linkCount == 0)
@@ -445,7 +445,7 @@ namespace AZ::SceneGenerationComponents
             meshBuilder.BeginPolygon(baseMesh->GetFaceMaterialId(faceIndex));
             for (const AZ::u32 vertexIndex : meshData->GetFaceInfo(faceIndex).vertexIndex)
             {
-                const int orgVertexNumber = meshData->GetUsedPointIndexForControlPoint(vertexIndex);
+                const int orgVertexNumber = meshData->GetUsedPointIndexForControlPoint(meshData->GetControlPointIndex(vertexIndex));
                 AZ_Assert(orgVertexNumber >= 0, "Invalid vertex number");
                 orgVtxLayer->SetCurrentVertexValue(orgVertexNumber);
 

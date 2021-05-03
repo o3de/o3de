@@ -57,38 +57,35 @@ namespace AZ
                 }
                 aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
                 const aiScene* scene = context.m_sourceScene.GetAssImpScene();
+                
+                const auto meshHasTangentsAndBitangents = [&scene](const unsigned int meshIndex)
+                {
+                    return scene->mMeshes[meshIndex]->HasTangentsAndBitangents();
+                };
 
-                // AssImp separates meshes that have multiple materials.
-                // This code re-combines them to match previous FBX SDK behavior,
-                // so they can be separated by engine code instead.
-                bool hasAnyTangents = false;
-                // Used to assist error reporting and check that all meshes have tangents or no meshes should have tangents.
-                int localMeshIndex = -1;
-                const uint64_t vertexCount = AZStd::accumulate(currentNode->mMeshes, currentNode->mMeshes + currentNode->mNumMeshes, uint64_t{ 0u },
-                    [scene, currentNode, &hasAnyTangents, &localMeshIndex](auto runningTotal, unsigned int meshIndex)
-                    {
-                        ++localMeshIndex;
-                        const char* mixedTangentsError =
-                            "Node with name %s has meshes with and without tangents. "
-                            "Placeholder incorrect tangents will be generated to allow the data to process, "
-                            "but the source art needs to be fixed to correct this. Either apply tangents to all meshes on this node, "
-                            "or remove all tangents from all meshes on this node.";
-                        aiMesh* mesh = scene->mMeshes[meshIndex];
-                        if (!mesh->HasTangentsAndBitangents())
-                        {
-                            AZ_Error(
-                                Utilities::ErrorWindow, !hasAnyTangents, mixedTangentsError, currentNode->mName.C_Str());
-                            return runningTotal + mesh->mNumVertices;
-                        }
-                        AZ_Error(
-                            Utilities::ErrorWindow, localMeshIndex == 0 || hasAnyTangents, mixedTangentsError, currentNode->mName.C_Str());
-                        hasAnyTangents = true;
-                        return runningTotal + mesh->mNumVertices;
-                    });
-                if (!hasAnyTangents)
+                // If there are no tangents on any meshes, there's nothing to import in this function.
+                const bool anyMeshHasTangentsAndBitangents = AZStd::any_of(currentNode->mMeshes, currentNode->mMeshes + currentNode->mNumMeshes, meshHasTangentsAndBitangents);
+                if (!anyMeshHasTangentsAndBitangents)
                 {
                     return Events::ProcessingResult::Ignored;
                 }
+
+                // AssImp nodes with multiple meshes on them occur when AssImp split a mesh on material.
+                // This logic recombines those meshes to minimize the changes needed to replace FBX SDK with AssImp, FBX SDK did not separate meshes,
+                // and the engine has code to do this later.
+                const bool allMeshesHaveTangentsAndBitangents = AZStd::all_of(currentNode->mMeshes, currentNode->mMeshes + currentNode->mNumMeshes, meshHasTangentsAndBitangents);
+                if (!allMeshesHaveTangentsAndBitangents)
+                {
+                    const char* mixedTangentsError =
+                        "Node with name %s has meshes with and without tangents. "
+                        "Placeholder incorrect tangents will be generated to allow the data to process, "
+                        "but the source art needs to be fixed to correct this. Either apply tangents to all meshes on this node, "
+                        "or remove all tangents from all meshes on this node.";
+                    AZ_Error(
+                        Utilities::ErrorWindow, false, mixedTangentsError, currentNode->mName.C_Str());
+                }
+
+                const uint64_t vertexCount = GetVertexCountForAllMeshesOnNode(*currentNode, *scene);
 
                 AZStd::shared_ptr<SceneData::GraphData::MeshVertexTangentData> tangentStream =
                     AZStd::make_shared<AZ::SceneData::GraphData::MeshVertexTangentData>();

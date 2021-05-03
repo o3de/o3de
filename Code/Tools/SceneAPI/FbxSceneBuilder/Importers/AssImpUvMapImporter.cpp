@@ -65,28 +65,26 @@ namespace AZ
                 // so they can be separated by engine code instead.
                 bool foundTextureCoordinates = false;
                 int meshesPerTextureCoordinateIndex[AI_MAX_NUMBER_OF_TEXTURECOORDS] = {};
-                const uint64_t vertexCount = AZStd::accumulate(currentNode->mMeshes, currentNode->mMeshes + currentNode->mNumMeshes, uint64_t{ 0u },
-                    [scene, currentNode, &foundTextureCoordinates, &meshesPerTextureCoordinateIndex](auto runningTotal, unsigned int meshIndex)
+                for (int localMeshIndex = 0; localMeshIndex < currentNode->mNumMeshes; ++localMeshIndex)
+                {
+                    aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[localMeshIndex]];
+                    for (int texCoordIndex = 0; texCoordIndex < AI_MAX_NUMBER_OF_TEXTURECOORDS; ++texCoordIndex)
                     {
-                        aiMesh* mesh = scene->mMeshes[meshIndex];
-                        int texCoordCount = 0;
-                        for (int texCoordIndex = 0; texCoordIndex < AI_MAX_NUMBER_OF_TEXTURECOORDS; ++texCoordIndex)
+                        if (!mesh->mTextureCoords[texCoordIndex])
                         {
-                            if (!mesh->mTextureCoords[texCoordIndex])
-                            {
-                                continue;
-                            }
-                            ++meshesPerTextureCoordinateIndex[texCoordIndex];
-                            ++texCoordCount;
-                            foundTextureCoordinates = true;
+                            continue;
                         }
-                        // Don't multiply by expected texture coordinate count yet, because it may change due to mismatched counts in meshes.
-                        return runningTotal + mesh->mNumVertices;
-                    });
+                        ++meshesPerTextureCoordinateIndex[texCoordIndex];
+                        foundTextureCoordinates = true;
+                    }
+                }
+
                 if (!foundTextureCoordinates)
                 {
                     return Events::ProcessingResult::Ignored;
                 }
+
+                const uint64_t vertexCount = GetVertexCountForAllMeshesOnNode(*currentNode, *scene);
 
                 for (int texCoordIndex = 0; texCoordIndex < AI_MAX_NUMBER_OF_TEXTURECOORDS; ++texCoordIndex)
                 {

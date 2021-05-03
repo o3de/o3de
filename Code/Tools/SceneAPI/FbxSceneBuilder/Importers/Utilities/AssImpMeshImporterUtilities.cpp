@@ -13,6 +13,7 @@
 #include <assimp/mesh.h>
 #include <assimp/scene.h>
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/std/numeric.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <SceneAPI/FbxSceneBuilder/FbxSceneSystem.h>
 #include <SceneAPI/FbxSceneBuilder/ImportContexts/AssImpImportContexts.h>
@@ -128,5 +129,14 @@ namespace AZ::SceneAPI::FbxSceneBuilder
         const SceneData::GraphData::MeshData* const parentMeshData =
             azrtti_cast<const SceneData::GraphData::MeshData* const>(parentData);
         return AZ::Success(parentMeshData);
+    }
+
+    uint64_t GetVertexCountForAllMeshesOnNode(const aiNode& node, const aiScene& scene)
+    {
+        return AZStd::accumulate(node.mMeshes, node.mMeshes + node.mNumMeshes, uint64_t{ 0u },
+            [&scene](auto runningTotal, unsigned int meshIndex)
+            {
+                return runningTotal + scene.mMeshes[meshIndex]->mNumVertices;
+            });
     }
 }

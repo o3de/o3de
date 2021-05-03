@@ -66,13 +66,7 @@ namespace AZ
                 AZStd::string skinWeightName;
                 AZStd::shared_ptr<SceneData::GraphData::SkinWeightData> skinWeightData;
 
-                int totalVertices = 0;
-                for (unsigned nodeMeshIndex = 0; nodeMeshIndex < currentNode->mNumMeshes; ++nodeMeshIndex)
-                {
-                    int sceneMeshIndex = currentNode->mMeshes[nodeMeshIndex];
-                    const aiMesh* mesh = scene->mMeshes[sceneMeshIndex];
-                    totalVertices += mesh->mNumVertices;
-                }
+                const uint64_t totalVertices = GetVertexCountForAllMeshesOnNode(*currentNode, *scene);
 
                 int vertexCount = 0;
                 for(unsigned nodeMeshIndex = 0; nodeMeshIndex < currentNode->mNumMeshes; ++nodeMeshIndex)
