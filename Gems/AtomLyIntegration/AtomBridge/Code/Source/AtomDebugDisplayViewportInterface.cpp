@@ -282,12 +282,14 @@ namespace AZ::AtomBridge
             m_auxGeomPtr = nullptr;
             return;
         }
+        // default instance draws to all viewports in the default scene
         if (m_defaultInstance || !view)
         {
             m_auxGeomPtr = auxGeomFP->GetDrawQueue();
         }
         else
         {
+            // cache the aux geom draw interface for the current view (aka camera)
             m_auxGeomPtr = auxGeomFP->GetOrCreateDrawQueueForView(view);
         }
     }
@@ -297,7 +299,7 @@ namespace AZ::AtomBridge
         AzFramework::DebugDisplayRequestBus::Handler::BusDisconnect(m_viewportId);
         UpdateAuxGeom(scene, viewportContextPtr ? viewportContextPtr->GetDefaultView().get() : nullptr);
         AzFramework::DebugDisplayRequestBus::Handler::BusConnect(m_viewportId);
-        if (!m_defaultInstance)
+        if (!m_defaultInstance) // only the per viewport instances need to listen for viewport changes
         {
             AZ::RPI::ViewportContextIdNotificationBus::Handler::BusConnect(viewportContextPtr->GetId());
         }
@@ -307,13 +309,9 @@ namespace AZ::AtomBridge
     void AtomDebugDisplayViewportInterface::OnViewportDefaultViewChanged(AZ::RPI::ViewPtr view)
     {
         ResetRenderState();
-        if (m_defaultInstance)
+        if (!m_defaultInstance)
         {
-            RPI::Scene* scene = RPI::RPISystemInterface::Get()->GetDefaultScene().get();
-            UpdateAuxGeom(scene, nullptr);
-        }
-        else
-        {
+            // handle viewport update (view change, scene change, etc
             auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
             AZ::RPI::ViewportContextPtr viewportContextPtr = viewportContextManager->GetViewportContextById(m_viewportId);
             UpdateAuxGeom(viewportContextPtr->GetRenderScene().get(), viewportContextPtr->GetDefaultView().get());
