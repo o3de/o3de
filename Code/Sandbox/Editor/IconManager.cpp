@@ -26,6 +26,8 @@
 #include "Util/Image.h"
 #include "Util/ImageUtil.h"
 
+#include <IStatObj.h>
+
 #define HELPER_MATERIAL "Objects/Helper"
 
 namespace

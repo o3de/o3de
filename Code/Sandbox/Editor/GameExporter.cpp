@@ -183,8 +183,6 @@ bool CGameExporter::Export(unsigned int flags, [[maybe_unused]] EEndian eExportE
         ////////////////////////////////////////////////////////////////////////
         if (exportSuccessful)
         {
-            ExportVisAreas(sLevelPath.toUtf8().data(), eExportEndian);
-
             ////////////////////////////////////////////////////////////////////////
             // Exporting map setttings
             ////////////////////////////////////////////////////////////////////////
@@ -246,20 +244,6 @@ bool CGameExporter::Export(unsigned int flags, [[maybe_unused]] EEndian eExportE
     return exportSuccessful;
 }
 
-
-//////////////////////////////////////////////////////////////////////////
-void CGameExporter::ExportVisAreas(const char* pszGamePath, EEndian eExportEndian)
-{
-    char szFileOutputPath[_MAX_PATH];
-
-    // export visareas
-    IEditor* pEditor = GetIEditor();
-
-    // remove old files
-    sprintf_s(szFileOutputPath, "%s%s", pszGamePath, COMPILED_VISAREA_MAP_FILE_NAME);
-    m_levelPak.m_pakFile.RemoveFile(szFileOutputPath);
-}
-
 //////////////////////////////////////////////////////////////////////////
 void CGameExporter::ExportOcclusionMesh(const char* pszGamePath)
 {
@@ -284,7 +268,7 @@ void CGameExporter::ExportOcclusionMesh(const char* pszGamePath)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CGameExporter::ExportLevelData(const QString& path, bool bExportMission)
+void CGameExporter::ExportLevelData(const QString& path, bool /*bExportMission*/)
 {
     IEditor* pEditor = GetIEditor();
     pEditor->SetStatusText(QObject::tr("Exporting LevelData.xml..."));
@@ -296,8 +280,6 @@ void CGameExporter::ExportLevelData(const QString& path, bool bExportMission)
     root->setAttr("SandboxVersion", versionString);
     XmlNodeRef rootAction = XmlHelpers::CreateXmlNode("LevelDataAction");
     rootAction->setAttr("SandboxVersion", versionString);
-
-    CCryEditDoc* pDocument = pEditor->GetDocument();
 
     //////////////////////////////////////////////////////////////////////////
     // Save Level Data XML

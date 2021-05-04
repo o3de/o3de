@@ -32,6 +32,8 @@
 #include "HitContext.h"
 #include "Objects/SelectionGroup.h"
 
+#include <IEntityRenderState.h>
+#include <IStatObj.h>
 
 //////////////////////////////////////////////////////////////////////////
 //! Undo Entity Link

@@ -323,11 +323,6 @@ set(FILES
     AzAssetBrowser/AzAssetBrowserWindow.cpp
     AzAssetBrowser/AzAssetBrowserWindow.h
     AzAssetBrowser/AzAssetBrowserWindow.ui
-    AzAssetBrowser/Preview/LegacyPreviewer.cpp
-    AzAssetBrowser/Preview/LegacyPreviewer.h
-    AzAssetBrowser/Preview/LegacyPreviewer.ui
-    AzAssetBrowser/Preview/LegacyPreviewerFactory.cpp
-    AzAssetBrowser/Preview/LegacyPreviewerFactory.h
     AssetDatabase/AssetDatabaseLocationListener.h
     AssetDatabase/AssetDatabaseLocationListener.cpp
     AssetImporter/AssetImporterManager/AssetImporterDragAndDropHandler.cpp
@@ -376,8 +371,7 @@ set(FILES
     Controls/MultiMonHelper.h
     Controls/NumberCtrl.cpp
     Controls/NumberCtrl.h
-    Controls/PreviewModelCtrl.cpp
-    Controls/PreviewModelCtrl.h
+    Controls/NumberCtrl.h
     Controls/SplineCtrl.cpp
     Controls/SplineCtrl.h
     Controls/SplineCtrlEx.cpp
@@ -458,8 +452,6 @@ set(FILES
     LevelFileDialog.qrc
     LevelFileDialog.h
     LevelFileDialog.ui
-    PanelPreview.cpp
-    PanelPreview.h
     QuickAccessBar.cpp
     QuickAccessBar.h
     QuickAccessBar.ui

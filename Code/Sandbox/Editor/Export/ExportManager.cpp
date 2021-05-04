@@ -40,6 +40,9 @@
 #include "Resource.h"
 #include "Plugins/ComponentEntityEditorPlugin/Objects/ComponentEntityObject.h"
 
+#include <IEntityRenderState.h>
+#include <IStatObj.h>
+
 namespace
 {
     void SetTexture(Export::TPath& outName, IRenderShaderResources* pRes, int nSlot)
