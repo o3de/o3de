@@ -12,21 +12,19 @@
 
 #pragma once
 
-
+#include <Atom/Document/MaterialDocumentSystemRequestBus.h>
+#include <Atom/Window/MaterialEditorWindowNotificationBus.h>
+#include <AtomToolsFramework/Communication/LocalServer.h>
+#include <AtomToolsFramework/Communication/LocalSocket.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TickBus.h>
-#include <AzCore/UserSettings/UserSettingsProvider.h>
 #include <AzCore/Debug/TraceMessageBus.h>
-
+#include <AzCore/UserSettings/UserSettingsProvider.h>
 #include <AzFramework/Application/Application.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/Logging/LogFile.h>
-
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
-
-#include <Atom/Document/MaterialDocumentSystemRequestBus.h>
-#include <Atom/Window/MaterialEditorWindowNotificationBus.h>
 
 #include <QApplication>
 #include <QTimer>
@@ -51,7 +49,7 @@ namespace MaterialEditor
         using Base = AzFramework::Application;
 
         MaterialEditorApplication(int* argc, char*** argv);
-        virtual ~MaterialEditorApplication() = default;
+        virtual ~MaterialEditorApplication();
 
         //////////////////////////////////////////////////////////////////////////
         // AzFramework::Application
@@ -110,7 +108,7 @@ namespace MaterialEditor
 
         void CompileCriticalAssets();
 
-        void ProcessCommandLine();
+        void ProcessCommandLine(const AZ::CommandLine& commandLine);
         void WriteStartupLog();
 
         void LoadSettings();
@@ -138,5 +136,8 @@ namespace MaterialEditor
         bool m_activatedLocalUserSettings = false;
 
         QTimer m_timer;
+
+        AtomToolsFramework::LocalSocket m_socket;
+        AtomToolsFramework::LocalServer m_server;
     };
 } // namespace MaterialEditor

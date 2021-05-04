@@ -25,8 +25,8 @@ namespace AzToolsFramework
                 TemplateId sourceTemplateId, TemplateId targetTemplateId, PrefabDomReference patch,
                 const InstanceAlias& instanceAlias, UndoSystem::URSequencePoint* undoBatch);
             void RemoveLink(
-                TemplateId sourceTemplateId, TemplateId targetTemplateId, const InstanceAlias& instanceAlias,
-                LinkId linkId, UndoSystem::URSequencePoint* undoBatch);
+                TemplateId sourceTemplateId, TemplateId targetTemplateId, const InstanceAlias& instanceAlias, LinkId linkId,
+                PrefabDomReference linkPatches, UndoSystem::URSequencePoint* undoBatch);
         }
     } // namespace Prefab
 } // namespace AzToolsFramework

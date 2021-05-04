@@ -24,7 +24,6 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/IO/LocalFileIO.h>
-#include <AzFramework/API/AtomActiveInterface.h>
 #include <QImageReader>
 #include <QDirIterator>
 #include <GradientSignalSystemComponent.h>
@@ -258,39 +257,6 @@ namespace GradientSignal
         return AZ::Uuid::CreateString("{7520DF20-16CA-4CF6-A6DB-D96759A09EE4}");
     }
 
-    static AZStd::unique_ptr<ImageAsset> LegacyLoadImageFromPath(const AZStd::string& fullPath)
-    {
-        ImageProcessing::IImageObjectPtr imageObject;
-        ImageProcessing::ImageProcessingRequestBus::BroadcastResult(imageObject, &ImageProcessing::ImageProcessingRequests::LoadImage,
-            fullPath);
-
-        if (!imageObject)
-        {
-            return {};
-        }
-
-        //create a new image asset
-        auto imageAsset = AZStd::make_unique<ImageAsset>();
-
-        if (!imageAsset)
-        {
-            return {};
-        }
-
-        imageAsset->m_imageWidth = imageObject->GetWidth(0);
-        imageAsset->m_imageHeight = imageObject->GetHeight(0);
-        imageAsset->m_imageFormat = imageObject->GetPixelFormat();
-
-        AZ::u8* mem = nullptr;
-        AZ::u32 pitch = 0;
-        AZ::u32 mipBufferSize = imageObject->GetMipBufSize(0);
-        imageObject->GetImagePointer(0, mem, pitch);
-
-        imageAsset->m_imageData = { mem, mem + mipBufferSize };
-
-        return imageAsset;
-    }
-
     static ImageProcessing::EPixelFormat AtomPixelFormatToLegacyPixelFormat(ImageProcessingAtom::EPixelFormat atomPixFormat)
     {
         // This could be dangerous to do if these enums have differences in the middle.
@@ -334,14 +300,7 @@ namespace GradientSignal
 
     AZStd::unique_ptr<ImageAsset> EditorImageBuilderWorker::LoadImageFromPath(const AZStd::string& fullPath)
     {
-        if (AZ::Interface<AzFramework::AtomActiveInterface>::Get())
-        {
-            return AtomLoadImageFromPath(fullPath);
-        }
-        else
-        {
-            return LegacyLoadImageFromPath(fullPath);
-        }
+        return AtomLoadImageFromPath(fullPath);
     }
 
     AZStd::unique_ptr<ImageSettings> EditorImageBuilderWorker::LoadImageSettingsFromPath(const AZStd::string& fullPath)
