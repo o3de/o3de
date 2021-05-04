@@ -10,13 +10,29 @@
 #
 
 set(FILES
+    Tests/Artifact/TestImpactTargetDescriptorCompilerTest.cpp
+    Tests/Artifact/TestImpactBuildTargetDescriptorFactoryTest.cpp
+    Tests/Artifact/TestImpactModuleCoverageFactoryTest.cpp
+    Tests/Artifact/TestImpactChangeListFactoryTest.cpp
+    Tests/Artifact/TestImpactTestEnumerationSuiteFactoryTest.cpp
+    Tests/Artifact/TestImpactTestRunSuiteFactoryTest.cpp
+    Tests/Artifact/TestImpactTestTargetMetaMapFactoryTest.cpp
+
     Tests/Process/TestImpactProcessSchedulerTest.cpp
+
     Tests/Process/TestImpactProcessTest.cpp
+    Tests/Target/TestImpactBuildTargetTest.cpp
     Tests/TestImpactExceptionTest.cpp
     Tests/TestImpactFrameworkPathTest.cpp
-    Tests/TestImpactProcessSchedulerTest.cpp
-    Tests/TestImpactProcessTest.cpp
-    Tests/TestImpactProcessTestShared.cpp
-    Tests/TestImpactProcessTestShared.h
+    Tests/Test/TestImpactTestEnumeratorTest.cpp
+    Tests/Test/TestImpactTestEumerationSerializerTest.cpp
+    Tests/Test/TestImpactTestRunSerializerTest.cpp
+    Tests/Test/TestImpactTestRunnerTest.cpp
+    Tests/Test/TestImpactInstrumentedTestRunnerTest.cpp
+    Tests/Test/TestImpactTestCoverageTest.cpp
+    Tests/TestImpactTestJobRunnerCommon.h
     Tests/TestImpactTestMain.cpp
+    Tests/TestImpactTestUtils.cpp
+    Tests/TestImpactTestUtils.h
+
 )

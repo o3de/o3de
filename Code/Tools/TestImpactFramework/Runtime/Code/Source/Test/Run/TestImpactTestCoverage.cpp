@@ -25,7 +25,7 @@ namespace TestImpact
             for (const auto& sourceCovered : moduleCovered.m_sources)
             {
                 m_sourcesCovered.emplace_back(sourceCovered.m_path);
-                if (sourceCovered.m_coverage.has_value())
+                if (!sourceCovered.m_coverage.empty())
                 {
                     m_coverageLevel = CoverageLevel::Line;
                 }
@@ -51,7 +51,7 @@ namespace TestImpact
         return m_modules.size();
     }
 
-    const AZStd::vector<AZ::IO::Path>& TestCoverage::GetSourcesCovered() const
+    const AZStd::vector<AZStd::string>& TestCoverage::GetSourcesCovered() const
     {
         return m_sourcesCovered;
     }
