@@ -259,12 +259,21 @@ namespace DebugDraw
     {
         m_currentTime = time.GetSeconds();
 
-        OnTickAabbs();
-        OnTickLines();
-        OnTickObbs();
-        OnTickRays();
-        OnTickSpheres();
-        OnTickText();
+        AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
+        AzFramework::DebugDisplayRequestBus::Bind(
+            debugDisplayBus, AzToolsFramework::ViewportInteraction::g_mainViewportEntityDebugDisplayId);
+        AZ_Assert(debugDisplayBus, "Invalid DebugDisplayRequestBus.");
+
+        AzFramework::DebugDisplayRequests* debugDisplay =
+            AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
+
+
+        OnTickAabbs(*debugDisplay);
+        OnTickLines(*debugDisplay);
+        OnTickObbs(*debugDisplay);
+        OnTickRays(*debugDisplay);
+        OnTickSpheres(*debugDisplay);
+        OnTickText(*debugDisplay);
     }
 
     template <typename F>
@@ -277,7 +286,7 @@ namespace DebugDraw
         vectorToExpire.erase(removalCondition, std::end(vectorToExpire));
     }
 
-    void DebugDrawSystemComponent::OnTickAabbs()
+    void DebugDrawSystemComponent::OnTickAabbs(AzFramework::DebugDisplayRequests& debugDisplay)
     {
         AZStd::lock_guard<AZStd::mutex> locker(m_activeAabbsMutex);
 
@@ -295,17 +304,14 @@ namespace DebugDraw
                 AZ::Vector3 currentCenter = transformedAabb.GetCenter();
                 transformedAabb.Set(transformedAabb.GetMin() - currentCenter + aabbElement.m_worldLocation, transformedAabb.GetMax() - currentCenter + aabbElement.m_worldLocation);
             }
-
-            ColorB lyColor(aabbElement.m_color.ToU32());
-            Vec3 worldLocation(AZVec3ToLYVec3(aabbElement.m_worldLocation));
-            AABB lyAABB(AZAabbToLyAABB(transformedAabb));
-            gEnv->pRenderer->GetIRenderAuxGeom()->DrawAABB(lyAABB, false, lyColor, EBoundingBoxDrawStyle::eBBD_Extremes_Color_Encoded);
+            debugDisplay.SetColor(aabbElement.m_color);
+            debugDisplay.DrawWireBox(transformedAabb.GetMin(), transformedAabb.GetMax());
         }
 
         removeExpiredDebugElementsFromVector(m_activeAabbs);
     }
 
-    void DebugDrawSystemComponent::OnTickLines()
+    void DebugDrawSystemComponent::OnTickLines(AzFramework::DebugDisplayRequests& debugDisplay)
     {
         AZStd::lock_guard<AZStd::mutex> locker(m_activeLinesMutex);
         size_t numActiveLines = m_activeLines.size();
@@ -339,26 +345,14 @@ namespace DebugDraw
                     &AZ::TransformBus::Events::GetWorldTranslation);
             }
 
-            Vec3 start(AZVec3ToLYVec3(lineElement.m_startWorldLocation));
-            Vec3 end(AZVec3ToLYVec3(lineElement.m_endWorldLocation));
-            ColorB lyColor(lineElement.m_color.ToU32());
-
-            m_batchPoints.push_back(start);
-            m_batchPoints.push_back(end);
-
-            m_batchColors.push_back(lyColor);
-            m_batchColors.push_back(lyColor);
-        }
-
-        if (!m_batchPoints.empty())
-        {
-            gEnv->pRenderer->GetIRenderAuxGeom()->DrawLines(m_batchPoints.begin(), m_batchPoints.size(), m_batchColors.begin(), 1.0f);
+            debugDisplay.SetColor(lineElement.m_color);
+            debugDisplay.DrawLine(lineElement.m_startWorldLocation, lineElement.m_endWorldLocation);
         }
 
         removeExpiredDebugElementsFromVector(m_activeLines);
     }
 
-    void DebugDrawSystemComponent::OnTickObbs()
+    void DebugDrawSystemComponent::OnTickObbs(AzFramework::DebugDisplayRequests& debugDisplay)
     {
         AZStd::lock_guard<AZStd::mutex> locker(m_activeObbsMutex);
 
@@ -389,13 +383,13 @@ namespace DebugDraw
             Vec3 worldLocation(AZVec3ToLYVec3(obbElement.m_worldLocation));
             OBB lyOBB(AZObbToLyOBB(transformedObb));
             lyOBB.c = Vec3(0.f);
-            gEnv->pRenderer->GetIRenderAuxGeom()->DrawOBB(lyOBB, worldLocation, false, lyColor, EBoundingBoxDrawStyle::eBBD_Extremes_Color_Encoded);
+            debugDisplay.DrawOBB(lyOBB, worldLocation, false, lyColor, EBoundingBoxDrawStyle::eBBD_Extremes_Color_Encoded);
         }
 
         removeExpiredDebugElementsFromVector(m_activeObbs);
     }
 
-    void DebugDrawSystemComponent::OnTickRays()
+    void DebugDrawSystemComponent::OnTickRays(AzFramework::DebugDisplayRequests& debugDisplay)
     {
         AZStd::lock_guard<AZStd::mutex> locker(m_activeRaysMutex);
 
@@ -430,7 +424,7 @@ namespace DebugDraw
         removeExpiredDebugElementsFromVector(m_activeRays);
     }
 
-    void DebugDrawSystemComponent::OnTickSpheres()
+    void DebugDrawSystemComponent::OnTickSpheres(AzFramework::DebugDisplayRequests& debugDisplay)
     {
         AZStd::lock_guard<AZStd::mutex> locker(m_activeSpheresMutex);
 
@@ -454,7 +448,7 @@ namespace DebugDraw
         removeExpiredDebugElementsFromVector(m_activeSpheres);
     }
 
-    void DebugDrawSystemComponent::OnTickText()
+    void DebugDrawSystemComponent::OnTickText(AzFramework::DebugDisplayRequests& debugDisplay)
     {
         AZStd::lock_guard<AZStd::mutex> locker(m_activeTextsMutex);
 

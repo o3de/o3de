@@ -121,12 +121,12 @@ namespace DebugDraw
         void OnEntityDeactivated(const AZ::EntityId& entityId) override;
 
         // Ticking functions for drawing debug elements
-        void OnTickAabbs();
-        void OnTickLines();
-        void OnTickObbs();
-        void OnTickRays();
-        void OnTickSpheres();
-        void OnTickText();
+        void OnTickAabbs(AzFramework::DebugDisplayRequests& debugDisplay);
+        void OnTickLines(AzFramework::DebugDisplayRequests& debugDisplay);
+        void OnTickObbs(AzFramework::DebugDisplayRequests& debugDisplay);
+        void OnTickRays(AzFramework::DebugDisplayRequests& debugDisplay);
+        void OnTickSpheres(AzFramework::DebugDisplayRequests& debugDisplay);
+        void OnTickText(AzFramework::DebugDisplayRequests& debugDisplay);
 
         // Element creation functions, used when DebugDraw components register themselves
         void CreateAabbEntryForComponent(const AZ::EntityId& componentEntityId, const DebugDrawAabbElement& element);
@@ -154,7 +154,7 @@ namespace DebugDraw
 
         double m_currentTime;
 
-        AZStd::vector<Vec3> m_batchPoints;
-        AZStd::vector<ColorB> m_batchColors;
+        AZStd::vector<AZ::Vector3> m_batchPoints;
+        AZStd::vector<AZ::Color> m_batchColors;
     };
 }
