@@ -27,7 +27,6 @@
 
 // Editor
 #include "ShadersDialog.h"
-#include "Material/MaterialManager.h"
 #include "SelectLightAnimationDialog.h"
 #include "SelectSequenceDialog.h"
 #include "SelectEAXPresetDlg.h"
@@ -87,25 +86,6 @@ void ShaderPropertyEditor::onEditClicked()
         SetValue(cShaders.GetSelection());
     }
 
-}
-void MaterialPropertyEditor::onEditClicked()
-{
-}
-
-void MaterialPropertyEditor::onButton2Clicked()
-{
-    // Open material browser dialog.
-    IDataBaseItem *pItem = GetIEditor()->GetMaterialManager()->GetSelectedItem();
-    if (pItem)
-    {
-        QString value = pItem->GetName();
-        value.replace('\\', '/');
-        if (value.length() >= MAX_PATH)
-            value = value.left(MAX_PATH);
-        SetValue(value);
-    }
-    else
-        SetValue(QString());
 }
 
 void ReverbPresetPropertyEditor::onEditClicked()

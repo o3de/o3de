@@ -39,7 +39,7 @@ enum PropertyType
     ePropertySelection,
     ePropertyList,
     ePropertyShader,
-    ePropertyMaterial,
+    ePropertyDeprecated2, // formerly ePropertyMaterial
     ePropertyEquip,
     ePropertyReverbPreset,
     ePropertyLocalString,

@@ -18,6 +18,7 @@
 #include <EMotionFX/Source/AnimGraphMotionNode.h>
 #include <EMotionFX/Source/AnimGraphStateMachine.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphPlugin.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendGraphViewWidget.h>
 #include <QApplication>
 #include <QtTest>
 #include "qtestsystem.h"
@@ -80,9 +81,8 @@ namespace EMotionFX
         ASSERT_TRUE(modelIndex.isValid()) << "Anim graph transition has an invalid model index.";
         animGraphModel.GetSelectionModel().select(QItemSelection(modelIndex, modelIndex), QItemSelectionModel::Current | QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
 
-        // Delete key pressed.
-        EMStudio::BlendGraphWidget* blendGraphWidget = animGraphPlugin->GetGraphWidget();
-        QTest::keyClick((QWidget*)blendGraphWidget, Qt::Key_Delete);
+        EMStudio::BlendGraphViewWidget* blendGraphViewWidget = animGraphPlugin->GetViewWidget();
+        blendGraphViewWidget->GetAction(EMStudio::BlendGraphViewWidget::EDIT_DELETE)->trigger();
 
         // Check if the transition get deleted.
         ASSERT_EQ(0, m_animGraph->GetRootStateMachine()->GetNumTransitions()) << " Anim Graph transition should be removed";

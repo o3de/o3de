@@ -290,7 +290,7 @@ namespace AZ::SceneGenerationComponents
 
                 const bool hasBlendShapes = HasAnyBlendShapeChild(graph, nodeIndex);
 
-                auto [optimizedMesh, optimizedUVs, optimizedTangents, optimizedBitangents, optimizedVertexColors, optimizedSkinWeights] = OptimizeMesh(mesh, uvDatas, tangentDatas, bitangentDatas, colorDatas, skinWeightDatas, meshGroup, hasBlendShapes);
+                auto [optimizedMesh, optimizedUVs, optimizedTangents, optimizedBitangents, optimizedVertexColors, optimizedSkinWeights] = OptimizeMesh(mesh, mesh, uvDatas, tangentDatas, bitangentDatas, colorDatas, skinWeightDatas, meshGroup, hasBlendShapes);
 
                 const NodeIndex optimizedMeshNodeIndex = graph.AddChild(graph.GetNodeParent(nodeIndex), name.c_str(), AZStd::move(optimizedMesh));
 
@@ -322,7 +322,7 @@ namespace AZ::SceneGenerationComponents
                 for (const NodeIndex& blendShapeNodeIndex : nodeIndexes(Containers::MakeDerivedFilterView<IBlendShapeData>(childNodes(nodeIndex))))
                 {
                     const IBlendShapeData* blendShapeNode = static_cast<IBlendShapeData*>(graph.GetNodeContent(blendShapeNodeIndex).get());
-                    auto [optimizedBlendShape, _1, _2, _3 , _4, _5] = OptimizeMesh(blendShapeNode, {}, {}, {}, {}, {}, meshGroup, hasBlendShapes);
+                    auto [optimizedBlendShape, _1, _2, _3 , _4, _5] = OptimizeMesh(blendShapeNode, mesh, {}, {}, {}, {}, {}, meshGroup, hasBlendShapes);
 
                     const AZStd::string optimizedName {graph.GetNodeName(blendShapeNodeIndex).GetName(), graph.GetNodeName(blendShapeNodeIndex).GetNameLength()};
                     const NodeIndex optimizedNodeIndex = graph.AddChild(optimizedMeshNodeIndex, optimizedName.c_str(), AZStd::move(optimizedBlendShape));
@@ -383,6 +383,7 @@ namespace AZ::SceneGenerationComponents
         AZStd::unique_ptr<AZ::SceneAPI::DataTypes::ISkinWeightData>
     > MeshOptimizerComponent::OptimizeMesh(
         const MeshDataType* meshData,
+        const IMeshData* baseMesh,
         const AZStd::vector<AZStd::reference_wrapper<const IMeshVertexUVData>>& uvs,
         const AZStd::vector<AZStd::reference_wrapper<const IMeshVertexTangentData>>& tangents,
         const AZStd::vector<AZStd::reference_wrapper<const IMeshVertexBitangentData>>& bitangents,
@@ -441,7 +442,7 @@ namespace AZ::SceneGenerationComponents
         const AZ::u32 faceCount = meshData->GetFaceCount();
         for (AZ::u32 faceIndex = 0; faceIndex < faceCount; ++faceIndex)
         {
-            meshBuilder.BeginPolygon(GetFaceMaterialId(meshData, faceIndex));
+            meshBuilder.BeginPolygon(baseMesh->GetFaceMaterialId(faceIndex));
             for (const AZ::u32 vertexIndex : meshData->GetFaceInfo(faceIndex).vertexIndex)
             {
                 const int orgVertexNumber = meshData->GetUsedPointIndexForControlPoint(meshData->GetControlPointIndex(vertexIndex));
@@ -582,15 +583,6 @@ namespace AZ::SceneGenerationComponents
             AZStd::move(optimizedVertexColors),
             AZStd::move(optimizedSkinWeights)
         );
-    }
-
-    unsigned int MeshOptimizerComponent::GetFaceMaterialId([[maybe_unused]] const AZ::SceneAPI::DataTypes::IBlendShapeData* meshData, [[maybe_unused]] unsigned int index)
-    {
-        return 0;
-    }
-    unsigned int MeshOptimizerComponent::GetFaceMaterialId(const AZ::SceneAPI::DataTypes::IMeshData* meshData, unsigned int index)
-    {
-        return meshData->GetFaceMaterialId(index);
     }
 
     void MeshOptimizerComponent::AddFace(AZ::SceneData::GraphData::BlendShapeData* blendShape, unsigned int index1, unsigned int index2, unsigned int index3, [[maybe_unused]] unsigned int faceMaterialId)

@@ -231,6 +231,18 @@ namespace AZ
         //! Compound assignment operator for matrix-matrix multiplication.
         Matrix3x4& operator*=(const Matrix3x4& rhs);
 
+        //! Operator for matrix-matrix addition.
+        [[nodiscard]] Matrix3x4 operator+(const Matrix3x4& rhs) const;
+
+        //! Compound assignment operator for matrix-matrix addition.
+        Matrix3x4& operator+=(const Matrix3x4& rhs);
+
+        //! Operator for multiplying all matrix's elements with a scalar
+        [[nodiscard]] Matrix3x4 operator*(float scalar) const;
+
+        //! Compound assignment operator for multiplying all matrix's elements with a scalar
+        Matrix3x4& operator*=(float scalar);
+
         //! Operator for transforming a Vector3.
         [[nodiscard]] Vector3 operator*(const Vector3& rhs) const;
 
@@ -274,11 +286,17 @@ namespace AZ
         //! Gets the scale part of the transformation (the length of the basis vectors).
         [[nodiscard]] Vector3 RetrieveScale() const;
 
+        //! Gets the squared scale part of the transformation (the squared length of the basis vectors).
+        [[nodiscard]] Vector3 RetrieveScaleSq() const;
+
         //! Gets the scale part of the transformation as in RetrieveScale, and also removes this scaling from the matrix.
         Vector3 ExtractScale();
 
         //! Multiplies the basis vectors of the matrix by the elements of the scale specified.
         void MultiplyByScale(const Vector3& scale);
+
+        //! Returns a matrix with the reciprocal scale, keeping the same rotation and translation.
+        [[nodiscard]] Matrix3x4 GetReciprocalScaled() const;
 
         //! Tests if the 3x3 part of the matrix is orthogonal.
         bool IsOrthogonal(float tolerance = Constants::Tolerance) const;

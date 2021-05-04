@@ -28,6 +28,11 @@
 #include <AzFramework/Archive/IArchive.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/API/AtomActiveInterface.h>
+#include <AzFramework/Viewport/CameraInput.h>
+
+// Atom
+#include <Atom/RPI.Public/ViewportContext.h>
+#include <Atom/RPI.Public/ViewportContextBus.h>
 
 // AzToolsFramework
 #include <AzToolsFramework/Slice/SliceUtilities.h>
@@ -51,7 +56,6 @@
 #include "CryEdit.h"
 #include "ActionManager.h"
 #include "Include/IObjectManager.h"
-#include "Material/MaterialManager.h"
 #include "ErrorReportDialog.h"
 #include "SurfaceTypeValidator.h"
 #include "ShaderCache.h"
@@ -357,8 +361,6 @@ void CCryEditDoc::Save(TDocMultiArchive& arrXmlAr)
             SerializeFogSettings((*arrXmlAr[DMAS_GENERAL]));
             // Serialize Missions //////////////////////////////////////////////////
             SerializeMissions(arrXmlAr, currentMissionName, false);
-            //! Serialize material manager.
-            GetIEditor()->GetMaterialManager()->Serialize((*arrXmlAr[DMAS_GENERAL]).root, (*arrXmlAr[DMAS_GENERAL]).bLoading);
 
             SerializeShaderCache((*arrXmlAr[DMAS_GENERAL_NAMED_DATA]));
             SerializeNameSelection((*arrXmlAr[DMAS_GENERAL]));
@@ -514,14 +516,6 @@ void CCryEditDoc::Load(TDocMultiArchive& arrXmlAr, const QString& szFilename)
                 (*arrXmlAr[DMAS_GENERAL]).root->getAttr("WaterColor", m_waterColor);
 
             //////////////////////////////////////////////////////////////////////////
-            // Load materials.
-            //////////////////////////////////////////////////////////////////////////
-            {
-                CAutoLogTime logtime("Load MaterialManager");
-                GetIEditor()->GetMaterialManager()->Serialize((*arrXmlAr[DMAS_GENERAL]).root, (*arrXmlAr[DMAS_GENERAL]).bLoading);
-            }
-
-            //////////////////////////////////////////////////////////////////////////
             // Load View Settings
             //////////////////////////////////////////////////////////////////////////
             SerializeViewSettings((*arrXmlAr[DMAS_GENERAL]));
@@ -658,11 +652,19 @@ void CCryEditDoc::SerializeViewSettings(CXmlArchive& xmlAr)
 
             CViewport* pVP = GetIEditor()->GetViewManager()->GetView(i);
 
+            Matrix34 tm = Matrix34::CreateRotationXYZ(va);
+            tm.SetTranslation(vp);
+
             if (pVP)
             {
-                Matrix34 tm = Matrix34::CreateRotationXYZ(va);
-                tm.SetTranslation(vp);
                 pVP->SetViewTM(tm);
+            }
+
+            if (auto viewportContext = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get()->GetDefaultViewportContext())
+            {
+                AzFramework::ModernViewportCameraControllerRequestBus::Event(
+                    viewportContext->GetId(), &AzFramework::ModernViewportCameraControllerRequestBus::Events::SetTargetCameraTransform,
+                    LYTransformToAZTransform(tm));
             }
 
             // Load grid.
