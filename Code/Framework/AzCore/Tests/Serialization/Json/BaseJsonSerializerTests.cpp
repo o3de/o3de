@@ -140,7 +140,7 @@ namespace JsonSerializationTests
         ASSERT_NE(nullptr, ptrValue);
         EXPECT_EQ(42, *ptrValue);
 
-        azfree(ptrValue, AZ::SystemAllocator, sizeof(int), AZStd::alignment_of<int>::value);
+        azfree(ptrValue, AZ::SystemAllocator, sizeof(int), alignof(int));
     }
 
     TEST_F(BaseJsonSerializerTests, ContinueLoading_DefaultToNullPointer_ValueLoadedCorrectly)
@@ -155,7 +155,7 @@ namespace JsonSerializationTests
         EXPECT_EQ(Processing::Completed, result.GetProcessing());
         ASSERT_NE(nullptr, ptrValue);
         
-        azfree(ptrValue, AZ::SystemAllocator, sizeof(int), AZStd::alignment_of<int>::value);
+        azfree(ptrValue, AZ::SystemAllocator, sizeof(int), alignof(int));
     }
 
     TEST_F(BaseJsonSerializerTests, ContinueLoading_NullDeletesObject_ValueLoadedCorrectly)
@@ -163,7 +163,7 @@ namespace JsonSerializationTests
         using namespace AZ::JsonSerializationResult;
 
         rapidjson::Value json(rapidjson::kNullType);
-        int* ptrValue = reinterpret_cast<int*>(azmalloc(sizeof(int), AZStd::alignment_of<int>::value, AZ::SystemAllocator));
+        int* ptrValue = reinterpret_cast<int*>(azmalloc(sizeof(int), alignof(int), AZ::SystemAllocator));
 
         ResultCode result = ContinueLoading(&ptrValue, azrtti_typeid<int>(), json, *m_jsonDeserializationContext, Flags::ResolvePointer);
 
