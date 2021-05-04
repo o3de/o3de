@@ -274,7 +274,8 @@ namespace UnitTest
         EXPECT_TRUE(instanceSpawner1 == instanceSpawner2);
     }
 
-    TEST_F(DynamicSliceInstanceSpawnerTests, DifferentSpawnersAreNotEqual)
+    // [SPEC-6600] This test intermittently fails on automated builds, so disabling temporarily until root cause identified
+    TEST_F(DynamicSliceInstanceSpawnerTests, DISABLED_DifferentSpawnersAreNotEqual)
     {
         // Two spawners with different data should *not* be data-equivalent.
 
@@ -310,7 +311,8 @@ namespace UnitTest
         Vegetation::DescriptorNotificationBus::Handler::BusDisconnect();
     }
 
-    TEST_F(DynamicSliceInstanceSpawnerTests, CreateAndDestroyInstance)
+    // [SPEC-6600] This test intermittently fails on automated builds, so disabling temporarily until root cause identified
+    TEST_F(DynamicSliceInstanceSpawnerTests, DISABLED_CreateAndDestroyInstance)
     {
         // The spawner should successfully create and destroy an instance without errors.
 

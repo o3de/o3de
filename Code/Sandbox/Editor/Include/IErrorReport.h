@@ -21,7 +21,6 @@
 #include <IValidator.h>
 
 // forward declarations.
-class CMaterial;
 class CParticleItem;
 class CBaseObject;
 class CBaseLibraryItem;

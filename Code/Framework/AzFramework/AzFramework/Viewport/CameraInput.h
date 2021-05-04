@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/std/containers/variant.h>
@@ -20,10 +21,27 @@
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
+#include <AzFramework/Viewport/ViewportId.h>
 
 namespace AzFramework
 {
     struct WindowSize;
+
+    // to be moved
+    class ModernViewportCameraControllerRequests : public AZ::EBusTraits
+    {
+    public:
+        using BusIdType = AzFramework::ViewportId; ///< ViewportId - used to address requests to this EBus.
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+
+        virtual void SetTargetCameraTransform(const AZ::Transform& transform) = 0;
+
+    protected:
+        ~ModernViewportCameraControllerRequests() = default;
+    };
+
+    using ModernViewportCameraControllerRequestBus = AZ::EBus<ModernViewportCameraControllerRequests>;
 
     struct Camera
     {
@@ -51,8 +69,8 @@ namespace AzFramework
 
     inline AZ::Transform Camera::Transform() const
     {
-        return AZ::Transform::CreateTranslation(m_lookAt) * AZ::Transform::CreateRotationX(m_pitch) *
-            AZ::Transform::CreateRotationZ(m_yaw) * AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisZ(m_lookDist));
+        return AZ::Transform::CreateTranslation(m_lookAt) * AZ::Transform::CreateRotationZ(m_yaw) *
+            AZ::Transform::CreateRotationX(m_pitch) * AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisY(m_lookDist));
     }
 
     inline AZ::Matrix3x3 Camera::Rotation() const
@@ -171,7 +189,7 @@ namespace AzFramework
     {
     public:
         void AddCamera(AZStd::shared_ptr<CameraInput> cameraInput);
-        void HandleEvents(const InputEvent& event);
+        bool HandleEvents(const InputEvent& event);
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime);
         void Reset();
 
@@ -183,7 +201,7 @@ namespace AzFramework
     class CameraSystem
     {
     public:
-        void HandleEvents(const InputEvent& event);
+        bool HandleEvents(const InputEvent& event);
         Camera StepCamera(const Camera& targetCamera, float deltaTime);
 
         Cameras m_cameras;
@@ -308,7 +326,7 @@ namespace AzFramework
         enum class TranslationType
         {
             // clang-format off
-            Nil     = 0,
+            Nil      = 0,
             Forward  = 1 << 0,
             Backward = 1 << 1,
             Left     = 1 << 2,
@@ -369,7 +387,7 @@ namespace AzFramework
 
         struct Props
         {
-            float m_dollySpeed = 0.2f;
+            float m_dollySpeed = 0.02f;
         } m_props;
     };
 
@@ -393,7 +411,7 @@ namespace AzFramework
 
         struct Props
         {
-            float m_translateSpeed = 0.2f;
+            float m_translateSpeed = 0.02f;
         } m_props;
     };
 
@@ -411,7 +429,7 @@ namespace AzFramework
 
         struct Props
         {
-            float m_defaultOrbitDistance = 15.0f;
+            float m_defaultOrbitDistance = 60.0f;
             float m_maxOrbitDistance = 100.0f;
         } m_props;
     };

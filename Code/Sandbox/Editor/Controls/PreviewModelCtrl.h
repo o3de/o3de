@@ -22,8 +22,6 @@
 
 #include <IStatObj.h>
 
-#include <Editor/Material/Material.h>
-
 #endif
 
 struct IRenderNode;
@@ -70,9 +68,6 @@ public:
     void SetAspectRatio(float newAspectRatio);
     int heightForWidth(int w) const override;
     bool hasHeightForWidth() const override;
-
-    void SetMaterial(CMaterial* pMaterial);
-    CMaterial*  GetMaterial();
 
     void GetImageOffscreen(CImageEx& image, const QSize& customSize = QSize(0, 0));
 
@@ -192,7 +187,6 @@ protected:
     float m_tileY;
     float m_tileSizeX;
     float m_tileSizeY;
-    _smart_ptr<CMaterial> m_pCurrentMaterial;
     CameraChangeCallback m_cameraChangeCallback;
     void*   m_pCameraChangeUserData;
 

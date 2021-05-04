@@ -257,13 +257,13 @@ namespace
     UiRenderer* GetUiRendererForGame()
     {
         CLyShine* lyShine = static_cast<CLyShine*>(gEnv->pLyShine);
-        return lyShine->GetUiRenderer();
+        return lyShine ? lyShine->GetUiRenderer() : nullptr;
     }
 
     UiRenderer* GetUiRendererForEditor()
     {
         CLyShine* lyShine = static_cast<CLyShine*>(gEnv->pLyShine);
-        return lyShine->GetUiRendererForEditor();
+        return lyShine ? lyShine->GetUiRendererForEditor() : nullptr;
     }
 
     bool IsValidInteractable(const AZ::EntityId& entityId)
@@ -4255,8 +4255,8 @@ UiCanvasComponent* UiCanvasComponent::FixupPostLoad(AZ::Entity* canvasEntity, AZ
     // Initialize the target canvas size and uniform scale
     // This should be done before calling InGamePostActivate so that the
     // canvas space rects of the elements are accurate
-    AZ_Assert(gEnv->pRenderer, "Attempting to access IRenderer before it has been initialized");
-    if (gEnv->pRenderer)
+    UiRenderer* uiRenderer = forEditor ? GetUiRendererForEditor() : GetUiRendererForGame();
+    if (uiRenderer) // can be null in automated testing
     {
         AZ::Vector2 targetCanvasSize;
         if (canvasSize)
@@ -4265,8 +4265,7 @@ UiCanvasComponent* UiCanvasComponent::FixupPostLoad(AZ::Entity* canvasEntity, AZ
         }
         else
         {
-            targetCanvasSize.SetX(static_cast<float>(gEnv->pRenderer->GetOverlayWidth()));
-            targetCanvasSize.SetY(static_cast<float>(gEnv->pRenderer->GetOverlayHeight()));
+            targetCanvasSize = uiRenderer->GetViewportSize();
         }
         canvasComponent->SetTargetCanvasSizeAndUniformScale(!forEditor, targetCanvasSize);
     }
