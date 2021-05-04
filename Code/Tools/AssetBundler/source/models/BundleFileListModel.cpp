@@ -73,7 +73,8 @@ namespace AssetBundler
         {
             if (AZ::IO::FileIOBase::GetInstance()->IsReadOnly(absolutePath))
             {
-                AZ_Error(AssetBundler::AppWindowName, false, "File (%s) is Read-Only. Please check your version control and try again.", absolutePath);
+                AZ_Error(AssetBundler::AppWindowName, false,
+                    "File (%s) is Read-Only. Please check your version control and try again.", absolutePath);
                 return false;
             }
 
@@ -175,7 +176,10 @@ namespace AssetBundler
         return Column::ColumnFileCreationTime;
     }
 
-    void BundleFileListModel::LoadFile(const AZStd::string& absoluteFilePath, const AZStd::string& /*projectName*/, bool /*isDefaultFile*/)
+    void BundleFileListModel::LoadFile(
+        const AZStd::string& absoluteFilePath,
+        const AZStd::string& /*projectName*/,
+        bool /*isDefaultFile*/)
     {
         AZStd::string key = AssetBundler::GenerateKeyFromAbsolutePath(absoluteFilePath);
 

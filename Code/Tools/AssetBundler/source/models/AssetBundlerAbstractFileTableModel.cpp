@@ -26,7 +26,11 @@ namespace AssetBundler
     {
     }
 
-    void AssetBundlerAbstractFileTableModel::Reload(const char* fileExtension, const QSet<QString>& watchedFolders, const QSet<QString>& watchedFiles, const AZStd::unordered_map<AZStd::string, AZStd::string>& pathToProjectNameMap)
+    void AssetBundlerAbstractFileTableModel::Reload(
+        const char* fileExtension,
+        const QSet<QString>& watchedFolders,
+        const QSet<QString>& watchedFiles,
+        const AZStd::unordered_map<AZStd::string, AZStd::string>& pathToProjectNameMap)
     {
         AZStd::vector<AZStd::string> keysToRemove = m_fileListKeys;
 
@@ -49,7 +53,9 @@ namespace AssetBundler
 
                 // If a project name is already specified, then the associated file is a default file
                 LoadFile(absolutePath, projectName, !projectName.empty());
-                keysToRemove.erase(AZStd::remove(keysToRemove.begin(), keysToRemove.end(), AssetBundler::GenerateKeyFromAbsolutePath(absolutePath)), keysToRemove.end());
+                keysToRemove.erase(
+                    AZStd::remove(keysToRemove.begin(), keysToRemove.end(), AssetBundler::GenerateKeyFromAbsolutePath(absolutePath)),
+                    keysToRemove.end());
             }
         }
 
@@ -63,7 +69,9 @@ namespace AssetBundler
 
                 // If a project name is already specified, then the associated file is a default file
                 LoadFile(absolutePath, projectName, !projectName.empty());
-                keysToRemove.erase(AZStd::remove(keysToRemove.begin(), keysToRemove.end(), AssetBundler::GenerateKeyFromAbsolutePath(absolutePath)), keysToRemove.end());
+                keysToRemove.erase(
+                    AZStd::remove(keysToRemove.begin(), keysToRemove.end(), AssetBundler::GenerateKeyFromAbsolutePath(absolutePath)),
+                    keysToRemove.end());
             }
         }
 
@@ -74,7 +82,9 @@ namespace AssetBundler
         }
     }
 
-    void AssetBundlerAbstractFileTableModel::ReloadFiles(const AZStd::vector<AZStd::string>& absoluteFilePathList, AZStd::unordered_map<AZStd::string, AZStd::string> pathToProjectNameMap)
+    void AssetBundlerAbstractFileTableModel::ReloadFiles(
+        const AZStd::vector<AZStd::string>& absoluteFilePathList,
+        AZStd::unordered_map<AZStd::string, AZStd::string> pathToProjectNameMap)
     {
         for (const AZStd::string& absoluteFilePath : absoluteFilePathList)
         {

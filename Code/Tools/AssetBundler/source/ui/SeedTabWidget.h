@@ -82,7 +82,9 @@ namespace AssetBundler
 
         void ApplyConfig() override;
 
-        void FileSelectionChanged(const QItemSelection& /*selected*/ = QItemSelection(), const QItemSelection& /*deselected*/ = QItemSelection()) override;
+        void FileSelectionChanged(
+            const QItemSelection& /*selected*/ = QItemSelection(),
+            const QItemSelection& /*deselected*/ = QItemSelection()) override;
 
         void UncheckSelectDefaultSeedListsCheckBox();
 

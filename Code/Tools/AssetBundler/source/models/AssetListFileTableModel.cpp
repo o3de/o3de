@@ -104,7 +104,10 @@ namespace AssetBundler
         return true;
     }
 
-    void AssetListFileTableModel::LoadFile(const AZStd::string& absoluteFilePath, const AZStd::string& /*projectName*/, bool /*isDefaultFile*/)
+    void AssetListFileTableModel::LoadFile(
+        const AZStd::string& absoluteFilePath,
+        const AZStd::string& /*projectName*/,
+        bool /*isDefaultFile*/)
     {
         AZStd::string fullFileName;
         AzFramework::StringFunc::Path::GetFullFileName(absoluteFilePath.c_str(), fullFileName);

@@ -91,12 +91,19 @@ namespace AssetBundler
         m_seedTabWidget = nullptr;
     }
 
-    void SeedListFileTableModel::AddDefaultSeedsToInMemoryList(const AZStd::vector<AZStd::string>& defaultSeeds, const char* projectName, const AzFramework::PlatformFlags& platforms)
+    void SeedListFileTableModel::AddDefaultSeedsToInMemoryList(
+        const AZStd::vector<AZStd::string>& defaultSeeds,
+        const char* projectName,
+        const AzFramework::PlatformFlags& platforms)
     {
-        m_inMemoryDefaultSeedList.reset(new SeedListFileInfo(m_inMemoryDefaultSeedListKey, tr("DefaultSeeds"), QString(projectName), false, true, defaultSeeds, platforms));
+        m_inMemoryDefaultSeedList.reset(
+            new SeedListFileInfo(m_inMemoryDefaultSeedListKey, tr("DefaultSeeds"), QString(projectName), false, true, defaultSeeds, platforms));
     }
 
-    AZStd::vector<AZStd::string> SeedListFileTableModel::CreateNewFiles(const AZStd::string& absoluteFilePath, const AzFramework::PlatformFlags& /*platforms*/, const QString& project)
+    AZStd::vector<AZStd::string> SeedListFileTableModel::CreateNewFiles(
+        const AZStd::string& absoluteFilePath,
+        const AzFramework::PlatformFlags& /*platforms*/,
+        const QString& project)
     {
         if (absoluteFilePath.empty())
         {
@@ -111,7 +118,8 @@ namespace AssetBundler
         // Create a Seed List File and save it to disk
         AZStd::string key = AssetBundler::GenerateKeyFromAbsolutePath(absoluteFilePath);
 
-        AZStd::shared_ptr<SeedListFileInfo> newSeedListFile = AZStd::make_shared<SeedListFileInfo>(absoluteFilePath, QString(fileName.c_str()), project, false);
+        AZStd::shared_ptr<SeedListFileInfo> newSeedListFile =
+            AZStd::make_shared<SeedListFileInfo>(absoluteFilePath, QString(fileName.c_str()), project, false);
         newSeedListFile->m_seedListModel->SetHasUnsavedChanges(true);
         bool saveResult = newSeedListFile->SaveSeedFile();
         if (!saveResult)
@@ -151,7 +159,8 @@ namespace AssetBundler
         {
             if (AZ::IO::FileIOBase::GetInstance()->IsReadOnly(absolutePath))
             {
-                AZ_Error(AssetBundler::AppWindowName, false, "File (%s) is Read-Only. Please check your version control and try again.", absolutePath);
+                AZ_Error(AssetBundler::AppWindowName, false,
+                    "File (%s) is Read-Only. Please check your version control and try again.", absolutePath);
                 return false;
             }
 
@@ -170,7 +179,11 @@ namespace AssetBundler
         return true;
     }
 
-    void SeedListFileTableModel::Reload(const char* fileExtension, const QSet<QString>& watchedFolders, const QSet<QString>& watchedFiles, const AZStd::unordered_map<AZStd::string, AZStd::string>& pathToProjectNameMap)
+    void SeedListFileTableModel::Reload(
+        const char* fileExtension,
+        const QSet<QString>& watchedFolders,
+        const QSet<QString>& watchedFiles,
+        const AZStd::unordered_map<AZStd::string, AZStd::string>& pathToProjectNameMap)
     {
         // Load in the Seed List files from disk
         AssetBundlerAbstractFileTableModel::Reload(fileExtension, watchedFolders, watchedFiles, pathToProjectNameMap);
@@ -191,7 +204,8 @@ namespace AssetBundler
         auto fileInfoIt = m_seedListFileInfoMap.find(key);
         if (fileInfoIt != m_seedListFileInfoMap.end() && fileInfoIt->second->HasUnsavedChanges())
         {
-            AZ_Warning(AssetBundler::AppWindowName, false, "Seed List File %s has unsaved changes and couldn't be reloaded", absoluteFilePath.c_str());
+            AZ_Warning(AssetBundler::AppWindowName, false,
+                "Seed List File %s has unsaved changes and couldn't be reloaded", absoluteFilePath.c_str());
             return;
         }
 
@@ -208,7 +222,8 @@ namespace AssetBundler
             projectNameOnDisplay = outcome.TakeValue();
         }
 
-        m_seedListFileInfoMap[key].reset(new SeedListFileInfo(absoluteFilePath, QString(fileName.c_str()), QString(projectNameOnDisplay.c_str()), true, isDefaultFile));
+        m_seedListFileInfoMap[key].reset(
+            new SeedListFileInfo(absoluteFilePath, QString(fileName.c_str()), QString(projectNameOnDisplay.c_str()), true, isDefaultFile));
         AddFileKey(key);
     }
 
@@ -241,7 +256,9 @@ namespace AssetBundler
         emit dataChanged(firstIndex, lastIndex, { Qt::CheckStateRole });
     }
 
-    AZStd::vector<AZStd::string> SeedListFileTableModel::GenerateAssetLists(const AZStd::string& absoluteFilePath, const AzFramework::PlatformFlags& platforms)
+    AZStd::vector<AZStd::string> SeedListFileTableModel::GenerateAssetLists(
+        const AZStd::string& absoluteFilePath,
+        const AzFramework::PlatformFlags& platforms)
     {
         if (!m_checkedSeedListFiles.size())
         {
@@ -280,7 +297,8 @@ namespace AssetBundler
         AZStd::vector<AZStd::string> createdFiles;
         for (const auto& platformIndex : AzFramework::PlatformHelper::GetPlatformIndicesInterpreted(platforms))
         {
-            AZStd::string platformSpecificCachePath = AzToolsFramework::PlatformAddressedAssetCatalog::GetCatalogRegistryPathForPlatform(platformIndex);
+            AZStd::string platformSpecificCachePath =
+                AzToolsFramework::PlatformAddressedAssetCatalog::GetCatalogRegistryPathForPlatform(platformIndex);
             AzFramework::StringFunc::Path::StripFullName(platformSpecificCachePath);
 
             FilePath platformSpecificPath(absoluteFilePath, AZStd::string(AzFramework::PlatformHelper::GetPlatformName(platformIndex)));
@@ -304,7 +322,10 @@ namespace AssetBundler
         return seedFileInfoOutcome.GetValue()->m_seedListModel;
     }
 
-    bool SeedListFileTableModel::SetSeedPlatforms(const QModelIndex& seedFileIndex, const QModelIndex& seedIndex, const AzFramework::PlatformFlags& platforms)
+    bool SeedListFileTableModel::SetSeedPlatforms(
+        const QModelIndex& seedFileIndex,
+        const QModelIndex& seedIndex,
+        const AzFramework::PlatformFlags& platforms)
     {
         AZStd::string key = GetFileKey(seedFileIndex);
         if (key.empty())
@@ -334,7 +355,10 @@ namespace AssetBundler
         return true;
     }
 
-    bool SeedListFileTableModel::AddSeed(const QModelIndex& seedFileIndex, const AZStd::string& seedRelativePath, const AzFramework::PlatformFlags& platforms)
+    bool SeedListFileTableModel::AddSeed(
+        const QModelIndex& seedFileIndex,
+        const AZStd::string& seedRelativePath,
+        const AzFramework::PlatformFlags& platforms)
     {
         AZStd::string key = GetFileKey(seedFileIndex);
         if (key.empty())
