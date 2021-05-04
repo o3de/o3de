@@ -1217,10 +1217,47 @@ namespace AzToolsFramework
             destinationComponent->SetWorldTM(const_cast<TransformComponent*>(sourceComponent)->GetWorldTM());
         }
 
+        AZ::Component* TransformComponent::FindPresentOrPendingComponent(AZ::Uuid componentUuid)
+        {
+            // first check if the component is present and valid
+            AZ::Component* foundComponent = GetEntity()->FindComponent(componentUuid);
+            if (foundComponent)
+            {
+                return foundComponent;
+            }
+
+            // then check to see if there's a component pending because it's in an invalid state
+            AZStd::vector<AZ::Component*> pendingComponents;
+            AzToolsFramework::EditorPendingCompositionRequestBus::Event(GetEntityId(),
+                &AzToolsFramework::EditorPendingCompositionRequests::GetPendingComponents, pendingComponents);
+
+            for (const auto pendingComponent : pendingComponents)
+            {
+                if (pendingComponent->RTTI_IsTypeOf(componentUuid))
+                {
+                    return pendingComponent;
+                }
+            }
+
+            return nullptr;
+        }
+
+        AZ::Crc32 TransformComponent::AddNonUniformScaleButtonVisibility()
+        {
+            // if there is a non-uniform scale component already, hide altogether
+            if (FindPresentOrPendingComponent(EditorNonUniformScaleComponent::TYPEINFO_Uuid()))
+            {
+                return AZ::Edit::PropertyVisibility::Hide;
+            }
+
+            // otherwise, just show children
+            return AZ::Edit::PropertyVisibility::ShowChildrenOnly;
+        }
+
         AZ::Crc32 TransformComponent::OnAddNonUniformScaleButtonPressed()
         {
             // if there is already a non-uniform scale component, do nothing
-            if (GetEntity()->FindComponent<EditorNonUniformScaleComponent>())
+            if (FindPresentOrPendingComponent(EditorNonUniformScaleComponent::TYPEINFO_Uuid()))
             {
                 return AZ::Edit::PropertyRefreshLevels::None;
             }
@@ -1232,17 +1269,11 @@ namespace AzToolsFramework
             AzToolsFramework::EntityCompositionRequestBus::BroadcastResult(outcome,
                 &AzToolsFramework::EntityCompositionRequests::AddComponentsToEntities, entityList, componentsToAdd);
 
-            AZStd::vector<AZ::Component*> pendingComponents;
-            AzToolsFramework::EditorPendingCompositionRequestBus::Event(GetEntityId(),
-                &AzToolsFramework::EditorPendingCompositionRequests::GetPendingComponents, pendingComponents);
-
             AZ::ComponentId nonUniformScaleComponentId = AZ::InvalidComponentId;
-            for (const auto pendingComponent : pendingComponents)
+            auto nonUniformScaleComponent = FindPresentOrPendingComponent(EditorNonUniformScaleComponent::RTTI_Type());
+            if (nonUniformScaleComponent)
             {
-                if (pendingComponent->RTTI_IsTypeOf(AzToolsFramework::Components::EditorNonUniformScaleComponent::RTTI_Type()))
-                {
-                    nonUniformScaleComponentId = pendingComponent->GetId();
-                }
+                nonUniformScaleComponentId = nonUniformScaleComponent->GetId();
             }
 
             if (!outcome.IsSuccess() || nonUniformScaleComponentId == AZ::InvalidComponentId)
@@ -1300,7 +1331,7 @@ namespace AzToolsFramework
                             Attribute(AZ::Edit::Attributes::AutoExpand, true)->
                         DataElement(AZ::Edit::UIHandlers::Default, &TransformComponent::m_addNonUniformScaleButton, "", "")->
                             Attribute(AZ::Edit::Attributes::AutoExpand, true)->
-                            Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)->
+                            Attribute(AZ::Edit::Attributes::Visibility, &TransformComponent::AddNonUniformScaleButtonVisibility)->
                             Attribute(AZ::Edit::Attributes::ChangeNotify, &TransformComponent::OnAddNonUniformScaleButtonPressed)->
                         DataElement(AZ::Edit::UIHandlers::ComboBox, &TransformComponent::m_parentActivationTransformMode,
                             "Parent activation", "Configures relative transform behavior when parent activates.")->

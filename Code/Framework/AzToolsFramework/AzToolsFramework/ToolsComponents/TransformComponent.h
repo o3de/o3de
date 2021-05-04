@@ -37,8 +37,6 @@ namespace AzToolsFramework
         public:
             AZ_TYPE_INFO(AddNonUniformScaleButton, "{92ECB8B6-DD25-4FC0-A5EE-4CEBAF51A780}")
             static void Reflect(AZ::ReflectContext* context);
-        private:
-            void OnAddNonUniformScaleButtonPressed() {};
         };
 
         /// Manages transform data as separate vector fields for editing purposes.
@@ -238,6 +236,8 @@ namespace AzToolsFramework
 
             void CheckApplyCachedWorldTransform(const AZ::Transform& parentWorld);
 
+            AZ::Component* FindPresentOrPendingComponent(AZ::Uuid componentUuid);
+            AZ::Crc32 AddNonUniformScaleButtonVisibility();
             AZ::Crc32 OnAddNonUniformScaleButtonPressed();
 
             // Drives transform behavior when parent activates. See AZ::TransformConfig::ParentActivationTransformMode for details.
