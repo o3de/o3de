@@ -20,7 +20,7 @@ from botocore.config import Config
 import ly_test_tools.environment.file_system as file_system
 
 logger = logging.getLogger(__name__)
-s3 = boto3.resource(
+s3 = boto3.client(
     's3',
     config=Config(
         region_name='us-west-2',
@@ -65,7 +65,7 @@ def _bucket_exists_in_s3(bucket_name):
     bucket_exists = True
 
     try:
-        s3.meta.client.head_bucket(Bucket=bucket_name)
+        s3.head_bucket(Bucket=bucket_name)
     except botocore.exceptions.ClientError as err:
         if err.response['Error']['Code'] == '404':
             bucket_exists = False

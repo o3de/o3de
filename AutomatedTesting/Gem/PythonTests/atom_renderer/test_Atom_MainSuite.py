@@ -21,6 +21,7 @@ import os
 import pytest
 
 import editor_python_test_tools.hydra_test_utils as hydra
+import ly_test_tools.log.log_monitor as log_monitor
 from .atom_helpers import s3_uploader, collect_atom_test_artifacts
 
 logger = logging.getLogger(__name__)
@@ -206,7 +207,7 @@ class TestAtomEditorComponentsMain(object):
             "Display Mapper_test: Entity is shown: True",
             "Display Mapper_test: Entity deleted: True",
             "Display Mapper_test: UNDO entity deletion works: True",
-            "Display Mapper_test: REDO entity deletion works: True",
+            "Display Mapper_test: REDO entity deletion works: asdasdTrue",
         ]
 
         unexpected_lines = [
@@ -214,6 +215,8 @@ class TestAtomEditorComponentsMain(object):
             "failed to open",
             "Traceback (most recent call last):",
         ]
+        import pdb; pdb.set_trace()
+        return
         try:
             hydra.launch_and_validate_results(
                 request,
@@ -227,26 +230,27 @@ class TestAtomEditorComponentsMain(object):
                 null_renderer=True,
                 cfg_args=cfg_args,
             )
-        finally:
+        except (AssertionError, log_monitor.LogMonitorException) as e:
             # Create s3 folder to upload test artifacts to.
             s3_folder_timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')  # For unique folder string.
             s3_folder_name = f"{s3_folder_timestamp}_Atom_AutomatedTesting_TestArtifacts"
             s3_uploader.create_folder_in_bucket(bucket_name=S3_BUCKET_NAME, folder_key=s3_folder_name)
 
             # Upload the test artifacts to the newly created s3 folder.
-            atom_test_artifacts = collect_atom_test_artifacts.get_atom_test_artifacts(
-                engine_root=workspace.paths.engine_root())
-            for atom_test_artifact in atom_test_artifacts:
-                s3_uploader.upload_to_bucket(
-                    bucket_name=S3_BUCKET_NAME,
-                    file_path=atom_test_artifact,
-                    file_key=s3_folder_name,
-                    overwrite=False)
-
-            # Link to the s3 test artifact storage for failure debugging.
-            s3_link = ''
-            atom_test_artifact_file_types = collect_atom_test_artifacts.VALID_ARTIFACT_FILE_TYPES
+            # atom_test_artifacts = collect_atom_test_artifacts.get_atom_test_artifacts(
+            #     engine_root=workspace.paths.engine_root())
+            # for atom_test_artifact in atom_test_artifacts:
+            #     s3_uploader.upload_to_bucket(
+            #         bucket_name=S3_BUCKET_NAME,
+            #         file_path=atom_test_artifact,
+            #         file_key=s3_folder_name,
+            #         overwrite=False)
+            #
+            # # Link to the s3 test artifact storage for failure debugging.
+            # s3_link = ''
+            # atom_test_artifact_file_types = collect_atom_test_artifacts.VALID_ARTIFACT_FILE_TYPES
             logger.error(
-                'test_Atom_MainSuite.test_AtomEditorComponents_AddedToEntity failed.\n'
-                f'Review the {project} Atom renderer test artifacts on s3 for debugging: {s3_link}\n'
-                f'Atom renderer test artifact file types uploaded to s3 are: {atom_test_artifact_file_types}')
+                'test_Atom_MainSuite.test_AtomEditorComponents_AddedToEntity failed.\n')
+                # f'Review the {project} Atom renderer test artifacts on s3 for debugging: {s3_link}\n'
+                # f'Atom renderer test artifact file types uploaded to s3 are: {atom_test_artifact_file_types}')
+            raise e

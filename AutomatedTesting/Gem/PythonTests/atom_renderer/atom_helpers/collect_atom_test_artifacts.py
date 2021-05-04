@@ -29,8 +29,9 @@ def _find_artifact_files(directory):
         # example output for artifact_directory:
         # ('C:\path\to\artifact_directory\', ['Subfolder1', 'Subfolder2'], ['file1', 'file2'])
         artifact_file_path = artifact_directory[0]
+        artifact_file_path_subfolders = artifact_directory[1]
         artifact_files = artifact_directory[2]
-        if artifact_files:
+        if artifact_files and 'JobLogs' or 'LogBackups' not in artifact_file_path_subfolders:
             artifact_file_paths = _build_artifact_file_paths(artifact_file_path, artifact_files)
             directories_with_artifacts.extend(artifact_file_paths)
 
