@@ -1234,6 +1234,7 @@ void EditorViewportWidget::SetViewportId(int id)
 
     if (ed_useNewCameraSystem)
     {
+        AzFramework::ReloadCameraKeyBindings();
         m_renderViewport->GetControllerList()->Add(AZStd::make_shared<SandboxEditor::ModernViewportCameraController>());
     }
     else

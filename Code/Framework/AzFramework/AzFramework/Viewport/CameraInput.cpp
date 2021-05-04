@@ -15,15 +15,104 @@
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Math/Plane.h>
+#include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Windowing/WindowBus.h>
 
-AZ_CVAR(
-    float, ed_newCameraSystemDefaultPlaneHeight, 34.0f, nullptr, AZ::ConsoleFunctorFlags::Null,
-    "The default height of the ground plane to do intersection tests against when orbiting");
-
 namespace AzFramework
 {
+    AZ_CVAR(
+        float, ed_cameraSystemDefaultPlaneHeight, 34.0f, nullptr, AZ::ConsoleFunctorFlags::Null,
+        "The default height of the ground plane to do intersection tests against when orbiting");
+    AZ_CVAR(float, ed_cameraSystemBoostMultiplier, 3.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
+    AZ_CVAR(float, ed_cameraSystemTranslateSpeed, 10.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
+    AZ_CVAR(float, ed_cameraSystemOrbitDollyScrollSpeed, 0.02f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
+    AZ_CVAR(float, ed_cameraSystemOrbitDollyCursorSpeed, 0.01f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
+    AZ_CVAR(float, ed_cameraSystemScrollTranslateSpeed, 0.02f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
+    AZ_CVAR(float, ed_cameraSystemDefaultOrbitDistance, 60.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
+    AZ_CVAR(float, ed_cameraSystemMaxOrbitDistance, 100.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
+    AZ_CVAR(float, ed_cameraSystemLookSmoothness, 5.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
+    AZ_CVAR(float, ed_cameraSystemTranslateSmoothness, 5.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
+    AZ_CVAR(float, ed_cameraSystemRotateSpeed, 0.005f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
+    AZ_CVAR(float, ed_cameraSystemPanSpeed, 0.01f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
+    AZ_CVAR(bool, ed_cameraSystemPanInvertX, true, nullptr, AZ::ConsoleFunctorFlags::Null, "");
+    AZ_CVAR(bool, ed_cameraSystemPanInvertY, true, nullptr, AZ::ConsoleFunctorFlags::Null, "");
+
+    AZ_CVAR(
+        AZ::CVarFixedString, ed_cameraSystemTranslateForwardKey, "keyboard_key_alphanumeric_W", nullptr, AZ::ConsoleFunctorFlags::Null, "");
+    AZ_CVAR(
+        AZ::CVarFixedString, ed_cameraSystemTranslateBackwardKey, "keyboard_key_alphanumeric_S", nullptr, AZ::ConsoleFunctorFlags::Null,
+        "");
+    AZ_CVAR(
+        AZ::CVarFixedString, ed_cameraSystemTranslateLeftKey, "keyboard_key_alphanumeric_A", nullptr, AZ::ConsoleFunctorFlags::Null, "");
+    AZ_CVAR(
+        AZ::CVarFixedString, ed_cameraSystemTranslateRightKey, "keyboard_key_alphanumeric_D", nullptr, AZ::ConsoleFunctorFlags::Null, "");
+    AZ_CVAR(AZ::CVarFixedString, ed_cameraSystemTranslateUpKey, "keyboard_key_alphanumeric_E", nullptr, AZ::ConsoleFunctorFlags::Null, "");
+    AZ_CVAR(
+        AZ::CVarFixedString, ed_cameraSystemTranslateDownKey, "keyboard_key_alphanumeric_Q", nullptr, AZ::ConsoleFunctorFlags::Null, "");
+    AZ_CVAR(
+        AZ::CVarFixedString, ed_cameraSystemTranslateBoostKey, "keyboard_key_modifier_shift_l", nullptr, AZ::ConsoleFunctorFlags::Null, "");
+    AZ_CVAR(AZ::CVarFixedString, ed_cameraSystemOrbitKey, "keyboard_key_modifier_alt_l", nullptr, AZ::ConsoleFunctorFlags::Null, "");
+
+    AZ_CVAR(AZ::CVarFixedString, ed_cameraSystemFreeLookButton, "mouse_button_right", nullptr, AZ::ConsoleFunctorFlags::Null, "");
+    AZ_CVAR(AZ::CVarFixedString, ed_cameraSystemFreePanButton, "mouse_button_middle", nullptr, AZ::ConsoleFunctorFlags::Null, "");
+    AZ_CVAR(AZ::CVarFixedString, ed_cameraSystemOrbitLookButton, "mouse_button_left", nullptr, AZ::ConsoleFunctorFlags::Null, "");
+    AZ_CVAR(AZ::CVarFixedString, ed_cameraSystemOrbitDollyButton, "mouse_button_right", nullptr, AZ::ConsoleFunctorFlags::Null, "");
+    AZ_CVAR(AZ::CVarFixedString, ed_cameraSystemOrbitPanButton, "mouse_button_middle", nullptr, AZ::ConsoleFunctorFlags::Null, "");
+
+    static InputChannelId CameraTranslateForwardId;
+    static InputChannelId CameraTranslateBackwardId;
+    static InputChannelId CameraTranslateLeftId;
+    static InputChannelId CameraTranslateRightId;
+    static InputChannelId CameraTranslateDownId;
+    static InputChannelId CameraTranslateUpId;
+    static InputChannelId CameraTranslateBoostId;
+    static InputChannelId CameraOrbitId;
+
+    // externed elsewhere
+    InputChannelId CameraFreeLookButton;
+    InputChannelId CameraFreePanButton;
+    InputChannelId CameraOrbitLookButton;
+    InputChannelId CameraOrbitDollyButton;
+    InputChannelId CameraOrbitPanButton;
+
+    void ReloadCameraKeyBindings()
+    {
+        const AZ::CVarFixedString& forward = ed_cameraSystemTranslateForwardKey;
+        CameraTranslateForwardId = InputChannelId(forward.c_str());
+        const AZ::CVarFixedString& backward = ed_cameraSystemTranslateBackwardKey;
+        CameraTranslateBackwardId = InputChannelId(backward.c_str());
+        const AZ::CVarFixedString& left = ed_cameraSystemTranslateLeftKey;
+        CameraTranslateLeftId = InputChannelId(left.c_str());
+        const AZ::CVarFixedString& right = ed_cameraSystemTranslateRightKey;
+        CameraTranslateRightId = InputChannelId(right.c_str());
+        const AZ::CVarFixedString& down = ed_cameraSystemTranslateDownKey;
+        CameraTranslateDownId = InputChannelId(down.c_str());
+        const AZ::CVarFixedString& up = ed_cameraSystemTranslateUpKey;
+        CameraTranslateUpId = InputChannelId(up.c_str());
+        const AZ::CVarFixedString& boost = ed_cameraSystemTranslateBoostKey;
+        CameraTranslateBoostId = InputChannelId(boost.c_str());
+        const AZ::CVarFixedString& orbit = ed_cameraSystemOrbitKey;
+        CameraOrbitId = InputChannelId(orbit.c_str());
+        const AZ::CVarFixedString& freeLook = ed_cameraSystemFreeLookButton;
+        CameraFreeLookButton = InputChannelId(freeLook.c_str());
+        const AZ::CVarFixedString& freePan = ed_cameraSystemFreePanButton;
+        CameraFreePanButton = InputChannelId(freePan.c_str());
+        const AZ::CVarFixedString& orbitLook = ed_cameraSystemOrbitLookButton;
+        CameraOrbitLookButton = InputChannelId(orbitLook.c_str());
+        const AZ::CVarFixedString& orbitDolly = ed_cameraSystemOrbitDollyButton;
+        CameraOrbitDollyButton = InputChannelId(orbitDolly.c_str());
+        const AZ::CVarFixedString& orbitPan = ed_cameraSystemOrbitPanButton;
+        CameraOrbitPanButton = InputChannelId(orbitPan.c_str());
+    }
+
+    static void ReloadCameraKeyBindingsConsole(const AZ::ConsoleCommandContainer&)
+    {
+        ReloadCameraKeyBindings();
+    }
+
+    AZ_CONSOLEFREEFUNC(ReloadCameraKeyBindingsConsole, AZ::ConsoleFunctorFlags::Null, "Reload keybindings for the modern camera system");
+
     // Based on paper by David Eberly - https://www.geometrictools.com/Documentation/EulerAngles.pdf
     AZ::Vector3 EulerAngles(const AZ::Matrix3x3& orientation)
     {
@@ -186,7 +275,7 @@ namespace AzFramework
     {
         if (const auto& input = AZStd::get_if<DiscreteInputEvent>(&event))
         {
-            if (input->m_channelId == m_channelId)
+            if (input->m_channelId == m_rotateChannelId)
             {
                 if (input->m_state == InputChannel::State::Began)
                 {
@@ -206,8 +295,8 @@ namespace AzFramework
     {
         Camera nextCamera = targetCamera;
 
-        nextCamera.m_pitch -= float(cursorDelta.m_y) * m_props.m_rotateSpeed;
-        nextCamera.m_yaw -= float(cursorDelta.m_x) * m_props.m_rotateSpeed;
+        nextCamera.m_pitch -= float(cursorDelta.m_y) * ed_cameraSystemRotateSpeed;
+        nextCamera.m_yaw -= float(cursorDelta.m_x) * ed_cameraSystemRotateSpeed;
 
         const auto clampRotation = [](const float angle) { return std::fmod(angle + AZ::Constants::TwoPi, AZ::Constants::TwoPi); };
 
@@ -222,7 +311,7 @@ namespace AzFramework
     {
         if (const auto& input = AZStd::get_if<DiscreteInputEvent>(&event))
         {
-            if (input->m_channelId == InputDeviceMouse::Button::Middle)
+            if (input->m_channelId == m_panChannelId)
             {
                 if (input->m_state == InputChannel::State::Began)
                 {
@@ -244,49 +333,48 @@ namespace AzFramework
 
         const auto panAxes = m_panAxesFn(nextCamera);
 
-        const auto deltaPanX = float(cursorDelta.m_x) * panAxes.m_horizontalAxis * m_props.m_panSpeed;
-        const auto deltaPanY = float(cursorDelta.m_y) * panAxes.m_verticalAxis * m_props.m_panSpeed;
+        const auto deltaPanX = float(cursorDelta.m_x) * panAxes.m_horizontalAxis * ed_cameraSystemPanSpeed;
+        const auto deltaPanY = float(cursorDelta.m_y) * panAxes.m_verticalAxis * ed_cameraSystemPanSpeed;
 
         const auto inv = [](const bool invert) {
             constexpr float Dir[] = {1.0f, -1.0f};
             return Dir[static_cast<int>(invert)];
         };
 
-        nextCamera.m_lookAt += deltaPanX * inv(m_props.m_panInvertX);
-        nextCamera.m_lookAt += deltaPanY * -inv(m_props.m_panInvertY);
+        nextCamera.m_lookAt += deltaPanX * inv(ed_cameraSystemPanInvertX);
+        nextCamera.m_lookAt += deltaPanY * -inv(ed_cameraSystemPanInvertY);
 
         return nextCamera;
     }
 
     TranslateCameraInput::TranslationType TranslateCameraInput::translationFromKey(InputChannelId channelId)
     {
-        // note: remove hard-coded InputDevice keys
-        if (channelId == InputDeviceKeyboard::Key::AlphanumericW)
+        if (channelId == CameraTranslateForwardId)
         {
             return TranslationType::Forward;
         }
 
-        if (channelId == InputDeviceKeyboard::Key::AlphanumericS)
+        if (channelId == CameraTranslateBackwardId)
         {
             return TranslationType::Backward;
         }
 
-        if (channelId == InputDeviceKeyboard::Key::AlphanumericA)
+        if (channelId == CameraTranslateLeftId)
         {
             return TranslationType::Left;
         }
 
-        if (channelId == InputDeviceKeyboard::Key::AlphanumericD)
+        if (channelId == CameraTranslateRightId)
         {
             return TranslationType::Right;
         }
 
-        if (channelId == InputDeviceKeyboard::Key::AlphanumericQ)
+        if (channelId == CameraTranslateDownId)
         {
             return TranslationType::Down;
         }
 
-        if (channelId == InputDeviceKeyboard::Key::AlphanumericE)
+        if (channelId == CameraTranslateUpId)
         {
             return TranslationType::Up;
         }
@@ -311,7 +399,7 @@ namespace AzFramework
                     BeginActivation();
                 }
 
-                if (input->m_channelId == InputDeviceKeyboard::Key::ModifierShiftL)
+                if (input->m_channelId == CameraTranslateBoostId)
                 {
                     m_boost = true;
                 }
@@ -323,7 +411,7 @@ namespace AzFramework
                 {
                     EndActivation();
                 }
-                if (input->m_channelId == InputDeviceKeyboard::Key::ModifierShiftL)
+                if (input->m_channelId == CameraTranslateBoostId)
                 {
                     m_boost = false;
                 }
@@ -342,8 +430,8 @@ namespace AzFramework
         const auto axisY = translationBasis.GetBasisY();
         const auto axisZ = translationBasis.GetBasisZ();
 
-        const float speed = [boost = m_boost, props = m_props]() {
-            return props.m_translateSpeed * (boost ? props.m_boostMultiplier : 1.0f);
+        const float speed = [boost = m_boost]() {
+            return ed_cameraSystemTranslateSpeed * (boost ? ed_cameraSystemBoostMultiplier : 1.0f);
         }();
 
         if ((m_translation & TranslationType::Forward) == TranslationType::Forward)
@@ -394,7 +482,7 @@ namespace AzFramework
     {
         if (const auto* input = AZStd::get_if<DiscreteInputEvent>(&event))
         {
-            if (input->m_channelId == InputDeviceKeyboard::Key::ModifierAltL)
+            if (input->m_channelId == CameraOrbitId)
             {
                 if (input->m_state == InputChannel::State::Began)
                 {
@@ -421,18 +509,17 @@ namespace AzFramework
         if (Beginning())
         {
             float hit_distance = 0.0f;
-            if (AZ::Plane::CreateFromNormalAndPoint(
-                    AZ::Vector3::CreateAxisZ(), AZ::Vector3::CreateAxisZ(ed_newCameraSystemDefaultPlaneHeight))
+            if (AZ::Plane::CreateFromNormalAndPoint(AZ::Vector3::CreateAxisZ(), AZ::Vector3::CreateAxisZ(ed_cameraSystemDefaultPlaneHeight))
                     .CastRay(targetCamera.Translation(), targetCamera.Rotation().GetBasisY(), hit_distance))
             {
-                hit_distance = AZStd::min(hit_distance, m_props.m_maxOrbitDistance);
+                hit_distance = AZStd::min<float>(hit_distance, ed_cameraSystemMaxOrbitDistance);
                 nextCamera.m_lookDist = -hit_distance;
                 nextCamera.m_lookAt = targetCamera.Translation() + targetCamera.Rotation().GetBasisY() * hit_distance;
             }
             else
             {
-                nextCamera.m_lookDist = -m_props.m_defaultOrbitDistance;
-                nextCamera.m_lookAt = targetCamera.Translation() + targetCamera.Rotation().GetBasisY() * m_props.m_defaultOrbitDistance;
+                nextCamera.m_lookDist = -ed_cameraSystemMaxOrbitDistance;
+                nextCamera.m_lookAt = targetCamera.Translation() + targetCamera.Rotation().GetBasisY() * ed_cameraSystemMaxOrbitDistance;
             }
         }
 
@@ -465,7 +552,7 @@ namespace AzFramework
         [[maybe_unused]] const float deltaTime)
     {
         Camera nextCamera = targetCamera;
-        nextCamera.m_lookDist = AZ::GetMin(nextCamera.m_lookDist + scrollDelta * m_props.m_dollySpeed, 0.0f);
+        nextCamera.m_lookDist = AZ::GetMin(nextCamera.m_lookDist + scrollDelta * ed_cameraSystemOrbitDollyScrollSpeed, 0.0f);
         EndActivation();
         return nextCamera;
     }
@@ -474,7 +561,7 @@ namespace AzFramework
     {
         if (const auto& input = AZStd::get_if<DiscreteInputEvent>(&event))
         {
-            if (input->m_channelId == InputDeviceMouse::Button::Right)
+            if (input->m_channelId == m_dollyChannelId)
             {
                 if (input->m_state == InputChannel::State::Began)
                 {
@@ -493,7 +580,7 @@ namespace AzFramework
         [[maybe_unused]] const float deltaTime)
     {
         Camera nextCamera = targetCamera;
-        nextCamera.m_lookDist = AZ::GetMin(nextCamera.m_lookDist + float(cursorDelta.m_y) * m_props.m_dollySpeed, 0.0f);
+        nextCamera.m_lookDist = AZ::GetMin(nextCamera.m_lookDist + float(cursorDelta.m_y) * ed_cameraSystemOrbitDollyCursorSpeed, 0.0f);
         return nextCamera;
     }
 
@@ -514,14 +601,14 @@ namespace AzFramework
         const auto translation_basis = LookTranslation(nextCamera);
         const auto axisY = translation_basis.GetBasisY();
 
-        nextCamera.m_lookAt += axisY * scrollDelta * m_props.m_translateSpeed;
+        nextCamera.m_lookAt += axisY * scrollDelta * ed_cameraSystemScrollTranslateSpeed;
 
         EndActivation();
 
         return nextCamera;
     }
 
-    Camera SmoothCamera(const Camera& currentCamera, const Camera& targetCamera, const SmoothProps& props, const float deltaTime)
+    Camera SmoothCamera(const Camera& currentCamera, const Camera& targetCamera, const float deltaTime)
     {
         const auto clamp_rotation = [](const float angle) { return std::fmod(angle + AZ::Constants::TwoPi, AZ::Constants::TwoPi); };
 
@@ -542,11 +629,11 @@ namespace AzFramework
         Camera camera;
         // note: the math for the lerp smoothing implementation for camera rotation and translation was inspired by this excellent
         // article by Scott Lembcke: https://www.gamasutra.com/blogs/ScottLembcke/20180404/316046/Improved_Lerp_Smoothing.php
-        const float lookRate = std::exp2(props.m_lookSmoothness);
+        const float lookRate = std::exp2(ed_cameraSystemLookSmoothness);
         const float lookT = std::exp2(-lookRate * deltaTime);
         camera.m_pitch = AZ::Lerp(targetCamera.m_pitch, currentCamera.m_pitch, lookT);
         camera.m_yaw = AZ::Lerp(targetYaw, currentYaw, lookT);
-        const float moveRate = std::exp2(props.m_moveSmoothness);
+        const float moveRate = std::exp2(ed_cameraSystemTranslateSmoothness);
         const float moveT = std::exp2(-moveRate * deltaTime);
         camera.m_lookDist = AZ::Lerp(targetCamera.m_lookDist, currentCamera.m_lookDist, moveT);
         camera.m_lookAt = targetCamera.m_lookAt.Lerp(currentCamera.m_lookAt, moveT);
