@@ -67,7 +67,7 @@ if(O3DE_REGISTER_ENGINE_PATH)
     endif()
 
     if(O3DE_REGISTER_RESTRICTED_PATHS)
-        foreach(restricted_path O3DE_REGISTER_RESTRICTED_PATHS)
+        foreach(restricted_path ${O3DE_REGISTER_RESTRICTED_PATHS})
             if(CMAKE_HOST_WIN32)
                 execute_process(
                    COMMAND cmd /c ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.bat register --restricted-path ${restricted_path} --override-home-folder ${home_directory}
@@ -88,7 +88,7 @@ if(O3DE_REGISTER_ENGINE_PATH)
     endif()
 
     if(O3DE_REGISTER_PROJECT_PATHS)
-        foreach(project_path O3DE_REGISTER_PROJECT_PATHS)
+        foreach(project_path ${O3DE_REGISTER_PROJECT_PATHS})
             if(CMAKE_HOST_WIN32)
                 execute_process(
                    COMMAND cmd /c ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.bat register --project-path ${project_path} --override-home-folder ${home_directory}
@@ -109,7 +109,7 @@ if(O3DE_REGISTER_ENGINE_PATH)
     endif()
 
     if(O3DE_REGISTER_GEM_PATHS)
-        foreach(gem_path O3DE_REGISTER_GEM_PATHS)
+        foreach(gem_path ${O3DE_REGISTER_GEM_PATHS})
             if(CMAKE_HOST_WIN32)
                 execute_process(
                    COMMAND cmd /c ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.bat register --gem-path ${gem_path} --override-home-folder ${home_directory}
@@ -130,7 +130,7 @@ if(O3DE_REGISTER_ENGINE_PATH)
     endif()
 
     if(O3DE_REGISTER_TEMPLATE_PATHS)
-        foreach(template_path O3DE_REGISTER_TEMPLATE_PATHS)
+        foreach(template_path ${O3DE_REGISTER_TEMPLATE_PATHS})
             if(CMAKE_HOST_WIN32)
                 execute_process(
                    COMMAND cmd /c ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.bat register --template-path ${template_path} --override-home-folder ${home_directory}
@@ -151,7 +151,7 @@ if(O3DE_REGISTER_ENGINE_PATH)
     endif()
 
     if(O3DE_REGISTER_REPO_URIS)
-        foreach(repo_uri O3DE_REGISTER_REPO_URIS)
+        foreach(repo_uri ${O3DE_REGISTER_REPO_URIS})
             if(CMAKE_HOST_WIN32)
                 execute_process(
                    COMMAND cmd /c ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.bat register --repo-uri ${repo_uri} --override-home-folder ${home_directory}
