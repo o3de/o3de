@@ -230,7 +230,7 @@ namespace AssetBundler
         const char* /*func*/,
         const char* /*message*/)
     {
-        m_hasWarnings = true;
+        m_hasWarningsOrErrors = true;
         return false;
     }
 
@@ -241,7 +241,7 @@ namespace AssetBundler
         const char* /*func*/,
         const char* /*message*/)
     {
-        m_hasWarnings = true;
+        m_hasWarningsOrErrors = true;
         return false;
     }
 
@@ -310,13 +310,13 @@ namespace AssetBundler
             return;
         }
 
-        m_hasWarnings = false;
+        m_hasWarningsOrErrors = false;
         auto createdFiles = m_fileTableModel->GenerateAssetLists(
             m_generateAssetListsDialog->GetAbsoluteFilePath(),
             m_generateAssetListsDialog->GetPlatformFlags());
 
         // Warnings will not prevent the generation of Asset List files, we must track them separately
-        NewFileDialog::FileGenerationResultMessageBox(this, createdFiles, m_hasWarnings);
+        NewFileDialog::FileGenerationResultMessageBox(this, createdFiles, m_hasWarningsOrErrors);
 
         if (createdFiles.empty())
         {

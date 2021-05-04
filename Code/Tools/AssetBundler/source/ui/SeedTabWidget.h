@@ -126,6 +126,6 @@ namespace AssetBundler
         QSharedPointer<EditSeedDialog> m_editSeedDialog;
         QSharedPointer<AddSeedDialog> m_addSeedDialog;
 
-        bool m_hasWarnings = false;
+        bool m_hasWarningsOrErrors = false;
     };
 } // namespace AssetBundler
