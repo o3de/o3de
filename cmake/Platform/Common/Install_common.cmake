@@ -420,6 +420,13 @@ function(ly_setup_others)
         endif()
     endforeach()
 
+    # Additional files needed by gems
+    install(FILES
+        ${CMAKE_SOURCE_DIR}/Gems/ImageProcessing/Code/Source/ImageBuilderDefaultPresets.settings
+        DESTINATION Gems/ImageProcessing/Code/Source
+        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
+    )  
+
     # Templates
     install(DIRECTORY
         ${CMAKE_SOURCE_DIR}/Templates
