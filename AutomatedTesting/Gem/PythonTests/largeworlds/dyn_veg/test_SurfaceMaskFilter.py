@@ -40,6 +40,7 @@ class TestSurfaceMaskFilter(object):
 
     # Simple validation test to ensure that SurfaceTag can be created, set to a value, and compared to another SurfaceTag.
     @pytest.mark.SUITE_periodic
+    @pytest.mark.dynveg_filter
     def test_SurfaceMaskFilter_BasicSurfaceTagCreation(self, request, level, editor, launcher_platform):
 
         expected_lines = [
@@ -61,6 +62,7 @@ class TestSurfaceMaskFilter(object):
 
     @pytest.mark.test_case_id("C2561342")
     @pytest.mark.SUITE_periodic
+    @pytest.mark.dynveg_filter
     def test_SurfaceMaskFilter_ExclusiveSurfaceTags_Function(self, request, editor, level, launcher_platform):
 
         expected_lines = [
@@ -93,6 +95,7 @@ class TestSurfaceMaskFilter(object):
 
     @pytest.mark.test_case_id("C2561341")
     @pytest.mark.SUITE_periodic
+    @pytest.mark.dynveg_filter
     def test_SurfaceMaskFilter_InclusiveSurfaceTags_Function(self, request, editor, level, launcher_platform):
 
         expected_lines = [
@@ -125,6 +128,7 @@ class TestSurfaceMaskFilter(object):
 
     @pytest.mark.test_case_id("C3711666")
     @pytest.mark.SUITE_periodic
+    @pytest.mark.dynveg_filter
     def test_SurfaceMaskFilterOverrides_MultipleDescriptorOverridesPlantAsExpected(self, request, editor, level,
                                                                                    launcher_platform):
 

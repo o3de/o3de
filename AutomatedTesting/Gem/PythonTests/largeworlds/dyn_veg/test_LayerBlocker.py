@@ -38,6 +38,7 @@ class TestLayerBlocker(object):
 
     @pytest.mark.test_case_id("C2793772")
     @pytest.mark.SUITE_periodic
+    @pytest.mark.dynveg_area
     def test_LayerBlocker_InstancesBlockedInConfiguredArea(self, request, editor, level, launcher_platform):
 
         expected_lines = [

@@ -38,6 +38,7 @@ class TestSystemSettings(object):
 
     @pytest.mark.test_case_id("C2646869")
     @pytest.mark.SUITE_periodic
+    @pytest.mark.dynveg_misc
     def test_SystemSettings_SectorPointDensity(self, request, editor, level, launcher_platform):
 
         expected_lines = [
@@ -64,6 +65,7 @@ class TestSystemSettings(object):
 
     @pytest.mark.test_case_id("C2646870")
     @pytest.mark.SUITE_periodic
+    @pytest.mark.dynveg_misc
     def test_SystemSettings_SectorSize(self, request, editor, level, launcher_platform):
 
         expected_lines = [

@@ -41,6 +41,7 @@ class TestScaleOverrideWorksSuccessfully(object):
 
     @pytest.mark.test_case_id("C4814462")
     @pytest.mark.SUITE_periodic
+    @pytest.mark.dynveg_modifier
     def test_ScaleModifierOverrides_InstancesProperlyScale(self, request, editor, level, launcher_platform):
 
         expected_lines = [
@@ -70,6 +71,7 @@ class TestScaleOverrideWorksSuccessfully(object):
 
     @pytest.mark.test_case_id("C4896937")
     @pytest.mark.SUITE_periodic
+    @pytest.mark.dynveg_modifier
     def test_ScaleModifier_InstancesProperlyScale(self, request, editor, level, launcher_platform):
 
         expected_lines = [
