@@ -62,7 +62,7 @@ namespace EditorPythonBindings
         void LogGlobalMethod(AZStd::string_view moduleName, AZStd::string_view methodName, AZ::BehaviorMethod* behaviorMethod) override;
         void LogGlobalProperty(AZStd::string_view moduleName, AZStd::string_view propertyName, AZ::BehaviorProperty* behaviorProperty) override;
         void Finalize() override;
-        AZStd::string_view FetchPythonTypeName(const AZ::BehaviorParameter& param) override;
+        AZStd::string FetchPythonTypeName(const AZ::BehaviorParameter& param) override;
 
         ////////////////////////////////////////////////////////////////////////
         // EditorPythonConsoleInterface
