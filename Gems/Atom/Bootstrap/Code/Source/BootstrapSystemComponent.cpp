@@ -15,6 +15,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Entity.h>
+#include <AzCore/NativeUI/NativeUIRequests.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 
@@ -165,6 +166,18 @@ namespace AZ
                 m_isAssetCatalogLoaded = true;
 
                 RPI::RPISystemInterface::Get()->InitializeSystemAssets();
+
+                if (!RPI::RPISystemInterface::Get()->WasInitialized())
+                {
+                    AZ::OSString msgBoxMessage;
+                    msgBoxMessage.append("RPI System could not initialize correctly. Check log for detail.");
+
+                    AZ::NativeUI::NativeUIRequestBus::Broadcast(
+                        &AZ::NativeUI::NativeUIRequestBus::Events::DisplayOkDialog, "O3DE Fatal Error", msgBoxMessage.c_str(), false);
+                    AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
+                                        
+                    return;
+                }
 
                 // In the case of the game we want to call create and register the scene as a soon as we can
                 // because a level could be loaded in autoexec.cfg and that will assert if there is no scene registered

@@ -347,6 +347,11 @@ namespace AZ
             // Wait for the platformlimits asset to be compiled (if it exists)
             AzFramework::AssetSystemRequestBus::BroadcastResult(
                 status, &AzFramework::AssetSystemRequestBus::Events::CompileAssetSync, platformLimitsFilePath);
+            if (status != AzFramework::AssetSystem::AssetStatus_Compiled)
+            {
+                AZ_Error("RPISystem", false, "Could not compile platform lists file at '%s'", platformLimitsFilePath.c_str());
+                return;
+            }
             Data::Asset<RPI::AnyAsset> platformLimitsAsset = RPI::AssetUtils::LoadAssetByProductPath<RPI::AnyAsset>(platformLimitsFilePath.c_str(), RPI::AssetUtils::TraceLevel::Error); 
             m_descriptor.m_rhiSystemDescriptor.m_platformLimits = RPI::GetDataFromAnyAsset<RHI::PlatformLimits>(platformLimitsAsset);
 
@@ -358,13 +363,26 @@ namespace AZ
             // Wait for the assets be compiled
             AzFramework::AssetSystemRequestBus::BroadcastResult(
                 status, &AzFramework::AssetSystemRequestBus::Events::CompileAssetSync, m_descriptor.m_viewSrgAssetPath);
-            AZ_Error("RPISystem", status == AzFramework::AssetSystem::AssetStatus_Compiled, "Could not compile view SRG at '%s'", m_descriptor.m_viewSrgAssetPath.c_str());
+            if (status != AzFramework::AssetSystem::AssetStatus_Compiled)
+            {
+                AZ_Error("RPISystem", false, "Could not compile view SRG at '%s'", m_descriptor.m_viewSrgAssetPath.c_str());
+                return;
+            }
             AzFramework::AssetSystemRequestBus::BroadcastResult(
                 status, &AzFramework::AssetSystemRequestBus::Events::CompileAssetSync, m_descriptor.m_sceneSrgAssetPath);
-            AZ_Error("RPISystem", status == AzFramework::AssetSystem::AssetStatus_Compiled, "Could not compile scene SRG at '%s'", m_descriptor.m_sceneSrgAssetPath.c_str());
+            if (status != AzFramework::AssetSystem::AssetStatus_Compiled)
+            {
+                AZ_Error("RPISystem", false, "Could not compile scene SRG at '%s'", m_descriptor.m_sceneSrgAssetPath.c_str());
+                return;
+            }
             AzFramework::AssetSystemRequestBus::BroadcastResult(
                 status, &AzFramework::AssetSystemRequestBus::Events::CompileAssetSync, m_descriptor.m_passTemplatesMappingPath);
-            AZ_Error("RPISystem", status == AzFramework::AssetSystem::AssetStatus_Compiled, "Could not compile pass template mapping at '%s'", m_descriptor.m_passTemplatesMappingPath.c_str());
+            if (status != AzFramework::AssetSystem::AssetStatus_Compiled)
+            {
+                AZ_Error(
+                    "RPISystem", false, "Could not compile pass template mapping at '%s'", m_descriptor.m_passTemplatesMappingPath.c_str());
+                return;
+            }
 
             m_viewSrgAsset = AssetUtils::LoadAssetByProductPath<ShaderResourceGroupAsset>(m_descriptor.m_viewSrgAssetPath.c_str(), AssetUtils::TraceLevel::Error);
             m_sceneSrgAsset = AssetUtils::LoadAssetByProductPath<ShaderResourceGroupAsset>(m_descriptor.m_sceneSrgAssetPath.c_str(), AssetUtils::TraceLevel::Error);
@@ -372,6 +390,11 @@ namespace AZ
             // Have pass system load default pass template mapping
             m_passSystem.LoadPassTemplateMappings(m_descriptor.m_passTemplatesMappingPath);
             m_systemAssetsInitialized = true;
+        }
+
+        bool RPISystem::WasInitialized() const
+        {
+            return m_systemAssetsInitialized;
         }
 
         void RPISystem::InitializeSystemAssetsForTests()

@@ -89,7 +89,7 @@ namespace AZ
                         assetId, AZ::Data::AssetLoadBehavior::PreLoad);
                     asset.BlockUntilLoadComplete();
 
-                    if (!asset.Get())
+                    if (!asset.IsReady())
                     {
                         AssetUtilsInternal::ReportIssue(reporting, AZStd::string::format("Could not load '%s'", productPath).c_str());
                         return {};
@@ -117,7 +117,7 @@ namespace AZ
                     );
                     asset.BlockUntilLoadComplete();
 
-                if (!asset.Get())
+                if (!asset.IsReady())
                 {
                     AssetUtilsInternal::ReportIssue(reporting, AZStd::string::format("Could not load '%s'", assetId.ToString<AZStd::string>().c_str()).c_str());
                     return {};
