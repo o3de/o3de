@@ -345,13 +345,13 @@ namespace AZ
             AZStd::to_lower(platformLimitsFilePath.begin(), platformLimitsFilePath.end());
             
             Data::Asset<AnyAsset> platformLimitsAsset;
-            platformLimitsAsset = RPI::AssetUtils::LoadCriticalAsset<AnyAsset>(platformLimitsFilePath.c_str()); 
-            if (!platformLimitsAsset.IsReady())
+            platformLimitsAsset = RPI::AssetUtils::LoadCriticalAsset<AnyAsset>(platformLimitsFilePath.c_str(), RPI::AssetUtils::TraceLevel::None);
+            // Only read the m_platformLimits if the platformLimitsAsset is ready.
+            // The platformLimitsAsset may not exist for null renderer which is allowed
+            if (platformLimitsAsset.IsReady())
             {
-                return;
+                m_descriptor.m_rhiSystemDescriptor.m_platformLimits = RPI::GetDataFromAnyAsset<RHI::PlatformLimits>(platformLimitsAsset);
             }
-
-            m_descriptor.m_rhiSystemDescriptor.m_platformLimits = RPI::GetDataFromAnyAsset<RHI::PlatformLimits>(platformLimitsAsset);
 
             m_rhiSystem.Init(m_descriptor.m_rhiSystemDescriptor);
             m_imageSystem.Init(m_descriptor.m_imageSystemDescriptor);
@@ -380,7 +380,7 @@ namespace AZ
             m_systemAssetsInitialized = true;
         }
 
-        bool RPISystem::WasInitialized() const
+        bool RPISystem::IsInitialized() const
         {
             return m_systemAssetsInitialized;
         }

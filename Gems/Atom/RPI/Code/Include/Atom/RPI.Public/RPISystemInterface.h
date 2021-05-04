@@ -41,7 +41,7 @@ namespace AZ
             virtual void InitializeSystemAssets() = 0;
 
             //! Was the RPI system initialized properly
-            virtual bool WasInitialized() const = 0;
+            virtual bool IsInitialized() const = 0;
 
             //! Register a created scene to RPISystem. Registered scene will be simulated and rendered in RPISystem ticks
             virtual void RegisterScene(ScenePtr scene) = 0;

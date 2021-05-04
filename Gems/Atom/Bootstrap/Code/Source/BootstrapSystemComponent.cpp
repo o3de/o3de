@@ -167,7 +167,7 @@ namespace AZ
 
                 RPI::RPISystemInterface::Get()->InitializeSystemAssets();
 
-                if (!RPI::RPISystemInterface::Get()->WasInitialized())
+                if (!RPI::RPISystemInterface::Get()->IsInitialized())
                 {
                     AZ::OSString msgBoxMessage;
                     msgBoxMessage.append("RPI System could not initialize correctly. Check log for detail.");

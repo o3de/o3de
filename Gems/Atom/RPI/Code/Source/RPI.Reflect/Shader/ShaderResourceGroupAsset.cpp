@@ -41,7 +41,7 @@ namespace AZ
 
         const RHI::ShaderResourceGroupLayout* ShaderResourceGroupAsset::GetLayout() const
         {
-            AZ_Assert(m_currentAPITypeIndex < m_perAPILayout.size(), "Invalid API Type index");
+            AZ_Error("RHI::ShaderResourceGroupLayout", m_currentAPITypeIndex < m_perAPILayout.size(), "Invalid API Type index");
             if (m_currentAPITypeIndex >= m_perAPILayout.size())
             {
                 return nullptr;
