@@ -387,33 +387,18 @@ namespace AZ
                 }
 
                 Events::ProcessingResultCombiner combinedAnimationResult;
-
-                AZStd::map<AZStd::string, AZ::u32> meshNameToMeshIndex;
-                for (AZ::u32 meshIndex = 0; meshIndex < currentNode->mNumMeshes; ++meshIndex)
+                if (context.m_sourceNode.ContainsMesh())
                 {
-                    const aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[meshIndex]];
-                    // A single node has multiple meshes with the same name when it's been split by AssImp to one material per mesh.
-                    // The engine's code for importing AssImp re-combines these split meshes so they can be split by the engine
-                    // to match the previous SDK's behavior.
-                    if (meshNameToMeshIndex.contains(mesh->mName.C_Str()))
-                    {
-                        continue;
-                    }
-                    meshNameToMeshIndex[mesh->mName.C_Str()] = meshIndex;
-                }
-
-                for(auto& meshNameAndIndex : meshNameToMeshIndex)
-                {
-                    if (NodeToChannelToMorphAnim::iterator channelsForMeshName = meshMorphAnimations.find(meshNameAndIndex.first);
+                    const aiMesh* firstMesh = scene->mMeshes[currentNode->mMeshes[0]];
+                    if (NodeToChannelToMorphAnim::iterator channelsForMeshName = meshMorphAnimations.find(firstMesh->mName.C_Str());
                         channelsForMeshName != meshMorphAnimations.end())
                     {
-                        const aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[meshNameAndIndex.second]];
                         const auto [nodeIterName, channels] = *channelsForMeshName;
                         for (const auto& [channel, animAndMorphAnim] : channels)
                         {
                             const auto& [animation, morphAnimation] = animAndMorphAnim;
                             combinedAnimationResult += ImportBlendShapeAnimation(
-                                context, animation, morphAnimation, mesh);
+                                context, animation, morphAnimation, firstMesh);
                         }
                     }
                 }

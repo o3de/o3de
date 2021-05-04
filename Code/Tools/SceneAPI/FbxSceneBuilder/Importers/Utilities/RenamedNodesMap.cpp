@@ -27,7 +27,7 @@ namespace AZ
                 Containers::SceneGraph::NodeIndex parentNode, const char* defaultName)
             {
                 AZ_TraceContext("Node name", name);
-                AZStd::string originalNodeName(name);
+                const AZStd::string originalNodeName(name);
 
                 bool isNameUpdated = false;
                 // Nodes can't have an empty name, except of the root, otherwise nodes can't be referenced.
@@ -57,7 +57,7 @@ namespace AZ
                 // can't reference the same parent in that case. This is to make sure the node can be quickly found as
                 // the full path will be unique. To fix any issues, an index is appended.
                 size_t index = 1;
-                size_t offset = name.length();
+                const size_t offset = name.length();
                 while (graph.Find(parentNode, name).IsValid())
                 {
                     // Remove the previously tried extension.

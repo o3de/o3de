@@ -92,7 +92,7 @@ namespace AZ
                     for (int animIdx = 0; animIdx < aiMesh->mNumAnimMeshes; animIdx++)
                     {
                         aiAnimMesh* aiAnimMesh = aiMesh->mAnimMeshes[animIdx];
-                        animToMeshToAnimMeshIndices[aiAnimMesh->mName.C_Str()].emplace_back(AZStd::pair<int,int>(nodeMeshIdx, animIdx));
+                        animToMeshToAnimMeshIndices[aiAnimMesh->mName.C_Str()].emplace_back(nodeMeshIdx, animIdx);
                     }
                 }
 

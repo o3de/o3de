@@ -107,7 +107,7 @@ namespace AZ
                             // An error was already thrown above. Output stub tangents so
                             // the mesh can still be output in some form, even if the data isn't correct.
                             // The tangent count needs to match the vertex count on the associated mesh node.
-                            tangentStream->AppendTangent(Vector4::CreateAxisY());
+                            tangentStream->AppendTangent(Vector4(0.f, 1.f, 0.f, 1.f));
                         }
                         else
                         {
