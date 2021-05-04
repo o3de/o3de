@@ -243,8 +243,8 @@ namespace AZ
 
             // *After* setting initComplete to true, check to see if the assets are already ready.
             // This check needs to wait until after setting initComplete because if they *are* ready, we want the final call to
-            // RemoveWaitingAsset to trigger the OnAssetContainer* event.  If we call CheckReady() *before* setting initComplete,
-            // if all the assets are ready, the event will never get triggered.
+            // RemoveWaitingAsset to trigger the OnAssetContainerReady/Canceled event.  If we call CheckReady() *before* setting
+            // initComplete, if all the assets are ready, the event will never get triggered.
             CheckReady();
         }
 

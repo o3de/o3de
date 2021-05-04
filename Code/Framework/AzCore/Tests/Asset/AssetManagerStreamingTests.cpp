@@ -351,7 +351,7 @@ namespace UnitTest
                                                           public AZ::Data::AssetCatalog
     {
         static inline const AZ::Uuid TestAssetId{"{E970B177-5F45-44EB-A2C4-9F29D9A0B2A2}"};
-        static inline const char* TestAssetPath{"test"};
+        static inline constexpr AZStd::string_view TestAssetPath = "test";
 
         void SetUp() override
         {
