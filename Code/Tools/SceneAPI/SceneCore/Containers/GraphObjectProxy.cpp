@@ -13,9 +13,135 @@
 #include <SceneAPI/SceneCore/Containers/GraphObjectProxy.h>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzFramework/StringFunc/StringFunc.h>
+#include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 
 namespace AZ
 {
+    namespace Python
+    {
+        static const char* const None = "None";
+
+        class PythonBehaviorInfo final
+        {
+        public:
+            AZ_RTTI(PythonBehaviorInfo, "{8055BD03-5B3B-490D-AEC5-1B1E2616D529}");
+            AZ_CLASS_ALLOCATOR(PythonBehaviorInfo, AZ::SystemAllocator, 0);
+
+            static void Reflect(AZ::ReflectContext* context);
+
+            PythonBehaviorInfo(const AZ::BehaviorClass* behaviorClass);
+            PythonBehaviorInfo() = delete;
+
+        protected:
+            bool IsMemberLike(const AZ::BehaviorMethod& method, const AZ::TypeId& typeId) const;
+            AZStd::string FetchPythonType(const AZ::BehaviorParameter& param) const;
+            void WriteMethod(AZStd::string_view methodName, const AZ::BehaviorMethod& behaviorMethod);
+
+        private:
+            const AZ::BehaviorClass* m_behaviorClass = nullptr;
+            AZStd::vector<AZStd::string> m_methodList;
+        };
+
+        PythonBehaviorInfo::PythonBehaviorInfo(const AZ::BehaviorClass* behaviorClass)
+            : m_behaviorClass(behaviorClass)
+        {
+            AZ_Assert(m_behaviorClass, "PythonBehaviorInfo requires a valid behaviorClass pointer");
+            for (const auto& entry : behaviorClass->m_methods)
+            {
+                WriteMethod(entry.first, *entry.second);
+            }
+        }
+
+        void PythonBehaviorInfo::Reflect(AZ::ReflectContext* context)
+        {
+            AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context);
+            if (behaviorContext)
+            {
+                behaviorContext->Class<PythonBehaviorInfo>()
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                    ->Attribute(AZ::Script::Attributes::Module, "scene.graph")
+                    ->Property("className", [](const PythonBehaviorInfo& self)
+                        { return self.m_behaviorClass->m_name; }, nullptr)
+                    ->Property("classUuid", [](const PythonBehaviorInfo& self)
+                        { return self.m_behaviorClass->m_typeId.ToString<AZStd::string>(); }, nullptr)
+                    ->Property("methodList", BehaviorValueGetter(&PythonBehaviorInfo::m_methodList), nullptr);
+            }
+        }
+
+        bool PythonBehaviorInfo::IsMemberLike(const AZ::BehaviorMethod& method, const AZ::TypeId& typeId) const
+        {
+            return method.IsMember() || (method.GetNumArguments() > 0 && method.GetArgument(0)->m_typeId == typeId);
+        }
+
+        AZStd::string PythonBehaviorInfo::FetchPythonType(const AZ::BehaviorParameter& param) const
+        {
+            using namespace AzToolsFramework;
+            EditorPythonConsoleInterface* editorPythonConsoleInterface = AZ::Interface<EditorPythonConsoleInterface>::Get();
+            if (editorPythonConsoleInterface)
+            {
+                return editorPythonConsoleInterface->FetchPythonTypeName(param);
+            }
+            return None;
+        }
+
+        void PythonBehaviorInfo::WriteMethod(AZStd::string_view methodName, const AZ::BehaviorMethod& behaviorMethod)
+        {
+            // if the method is a static method then it is not a part of the abstract class
+            const bool isMemberLike = IsMemberLike(behaviorMethod, m_behaviorClass->m_typeId);
+            if (isMemberLike == false)
+            {
+                return;
+            }
+
+            AZStd::string buffer;
+            AZStd::vector<AZStd::string> pythonArgs;
+
+            AzFramework::StringFunc::Append(buffer, "def ");
+            AzFramework::StringFunc::Append(buffer, methodName.data());
+            AzFramework::StringFunc::Append(buffer, "(");
+
+            pythonArgs.emplace_back("self");
+
+            AZStd::string bufferArg;
+            for (size_t argIndex = 1; argIndex < behaviorMethod.GetNumArguments(); ++argIndex)
+            {
+                const AZStd::string* name = behaviorMethod.GetArgumentName(argIndex);
+                if (!name || name->empty())
+                {
+                    bufferArg = AZStd::string::format(" arg%zu", argIndex);
+                }
+                else
+                {
+                    bufferArg = *name;
+                }
+
+                AZStd::string_view type = FetchPythonType(*behaviorMethod.GetArgument(argIndex));
+                if (!type.empty())
+                {
+                    AzFramework::StringFunc::Append(bufferArg, ": ");
+                    AzFramework::StringFunc::Append(bufferArg, type.data());
+                }
+
+                pythonArgs.push_back(bufferArg);
+                bufferArg.clear();
+            }
+
+            AZStd::string resultValue{ None };
+            if (behaviorMethod.HasResult() && behaviorMethod.GetResult())
+            {
+                resultValue = FetchPythonType(*behaviorMethod.GetResult());
+            }
+
+            AZStd::string argsList;
+            AzFramework::StringFunc::Join(buffer, pythonArgs.begin(), pythonArgs.end(), ",");
+            AzFramework::StringFunc::Append(buffer, ") -> ");
+            AzFramework::StringFunc::Append(buffer, resultValue.c_str());
+            m_methodList.emplace_back(buffer);
+        }
+    }
+
     namespace SceneAPI
     {
         namespace Containers
@@ -25,6 +151,8 @@ namespace AZ
                 AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context);
                 if (behaviorContext)
                 {
+                    Python::PythonBehaviorInfo::Reflect(context);
+
                     behaviorContext->Class<DataTypes::IGraphObject>();
 
                     behaviorContext->Class<GraphObjectProxy>()
@@ -33,6 +161,19 @@ namespace AZ
                         ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                         ->Method("CastWithTypeName", &GraphObjectProxy::CastWithTypeName)
                         ->Method("Invoke", &GraphObjectProxy::Invoke)
+                        ->Method("GetClassInfo", [](GraphObjectProxy& self) -> Python::PythonBehaviorInfo*
+                            {
+                                if (self.m_pythonBehaviorInfo)
+                                {
+                                    return self.m_pythonBehaviorInfo.get();
+                                }
+                                if (self.m_behaviorClass)
+                                {
+                                    self.m_pythonBehaviorInfo = AZStd::make_shared<Python::PythonBehaviorInfo>(self.m_behaviorClass);
+                                    return self.m_pythonBehaviorInfo.get();
+                                }
+                                return nullptr;
+                            })
                         ;
                 }
             }
