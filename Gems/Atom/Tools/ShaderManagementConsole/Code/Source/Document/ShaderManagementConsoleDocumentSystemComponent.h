@@ -14,7 +14,6 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
-#include <AzFramework/TargetManagement/TargetManagementAPI.h>
 
 #include <Atom/Document/ShaderManagementConsoleDocumentSystemRequestBus.h>
 #include <Atom/RPI.Public/WindowContext.h>
@@ -30,7 +29,6 @@ namespace ShaderManagementConsole
     //! ShaderManagementConsoleDocumentSystemComponent is the central component of the Shader Management Console Core gem
     class ShaderManagementConsoleDocumentSystemComponent
         : public AZ::Component
-        , private AzFramework::TmMsgBus::Handler
         , private ShaderManagementConsoleDocumentSystemRequestBus::Handler
     {
     public:
@@ -54,11 +52,6 @@ namespace ShaderManagementConsole
         void Activate() override;
         void Deactivate() override;
         ////////////////////////////////////////////////////////////////////////
-
-        //////////////////////////////////////////////////////////////////////////
-        // TmMsgBus::Handler overrides...
-        void OnReceivedMsg(AzFramework::TmMsgPtr msg) override;
-        //////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////
         // ShaderManagementConsoleDocumentSystemRequestBus::Handler overrides...

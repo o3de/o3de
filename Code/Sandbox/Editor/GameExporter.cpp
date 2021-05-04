@@ -26,8 +26,6 @@
 #include "CryEditDoc.h"
 #include "ShaderCache.h"
 #include "UsedResources.h"
-#include "Material/MaterialManager.h"
-#include "Material/MaterialLibrary.h"
 #include "WaitProgress.h"
 #include "Util/CryMemFile.h"
 #include "Objects/ObjectManager.h"
@@ -299,11 +297,6 @@ void CGameExporter::ExportLevelData(const QString& path, bool bExportMission)
     XmlNodeRef rootAction = XmlHelpers::CreateXmlNode("LevelDataAction");
     rootAction->setAttr("SandboxVersion", versionString);
 
-    //////////////////////////////////////////////////////////////////////////
-    // Export materials.
-    ExportMaterials(root, path);
-    //////////////////////////////////////////////////////////////////////////
-
     CCryEditDoc* pDocument = pEditor->GetDocument();
 
     //////////////////////////////////////////////////////////////////////////
@@ -351,48 +344,6 @@ void CGameExporter::ExportLevelInfo(const QString& path)
     CCryMemFile file;
     file.Write(xmlData.c_str(), xmlData.length());
     m_levelPak.m_pakFile.UpdateFile(filename.toUtf8().data(), file);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CGameExporter::ExportMaterials(XmlNodeRef& levelDataNode, const QString& path)
-{
-    //////////////////////////////////////////////////////////////////////////
-    // Export materials manager.
-    CMaterialManager* pManager = GetIEditor()->GetMaterialManager();
-    pManager->Export(levelDataNode);
-
-    QString filename = Path::Make(path, MATERIAL_LEVEL_LIBRARY_FILE);
-
-    bool bHaveItems = true;
-
-    int numMtls = 0;
-
-    XmlNodeRef nodeMaterials = XmlHelpers::CreateXmlNode("MaterialsLibrary");
-    // Export Materials local level library.
-    for (int i = 0; i < pManager->GetLibraryCount(); i++)
-    {
-        XmlNodeRef nodeLib = nodeMaterials->newChild("Library");
-        CMaterialLibrary* pLib = (CMaterialLibrary*)pManager->GetLibrary(i);
-        if (pLib->GetItemCount() > 0)
-        {
-            bHaveItems = false;
-            // Export this library.
-            numMtls += pManager->ExportLib(pLib, nodeLib);
-        }
-    }
-    if (!bHaveItems)
-    {
-        XmlString xmlData = nodeMaterials->getXML();
-
-        CCryMemFile file;
-        file.Write(xmlData.c_str(), xmlData.length());
-        m_levelPak.m_pakFile.UpdateFile(filename.toUtf8().data(), file);
-    }
-    else
-    {
-        m_levelPak.m_pakFile.RemoveFile(filename.toUtf8().data());
-    }
-    m_numExportedMaterials = numMtls;
 }
 
 //////////////////////////////////////////////////////////////////////////

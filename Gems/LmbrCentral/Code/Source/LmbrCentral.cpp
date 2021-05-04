@@ -21,7 +21,6 @@
 #include <AzFramework/Metrics/MetricsPlainTextNameRegistration.h>
 
 // Component descriptors
-#include "Animation/AttachmentComponent.h"
 #include "Audio/AudioAreaEnvironmentComponent.h"
 #include "Audio/AudioEnvironmentComponent.h"
 #include "Audio/AudioListenerComponent.h"
@@ -33,7 +32,6 @@
 #include "Audio/AudioSystemComponent.h"
 #include "Audio/AudioTriggerComponent.h"
 #include "Bundling/BundlingSystemComponent.h"
-#include "Rendering/MeshComponent.h"
 #include "Ai/NavigationComponent.h"
 #include "Scripting/TagComponent.h"
 #include "Scripting/SimpleStateComponent.h"
@@ -73,9 +71,6 @@
 #include <LmbrCentral/Rendering/MaterialAsset.h>
 #include <LmbrCentral/Rendering/MeshAsset.h>
 #include <LmbrCentral/Rendering/MaterialHandle.h>
-
-// Asset handlers
-#include <Rendering/MeshAssetHandler.h>
 
 // Scriptable Ebus Registration
 #include "Events/ReflectScriptableEvents.h"
@@ -191,7 +186,6 @@ namespace LmbrCentral
         : AZ::Module()
     {
         m_descriptors.insert(m_descriptors.end(), {
-            AttachmentComponent::CreateDescriptor(),
             AudioAreaEnvironmentComponent::CreateDescriptor(),
             AudioEnvironmentComponent::CreateDescriptor(),
             AudioListenerComponent::CreateDescriptor(),
@@ -206,7 +200,6 @@ namespace LmbrCentral
             LmbrCentralAllocatorComponent::CreateDescriptor(),
             LmbrCentralAssetBuilderAllocatorComponent::CreateDescriptor(),
             LmbrCentralSystemComponent::CreateDescriptor(),
-            MeshComponent::CreateDescriptor(),
             NavigationComponent::CreateDescriptor(),
             SimpleStateComponent::CreateDescriptor(),
             SpawnerComponent::CreateDescriptor(),
@@ -326,13 +319,6 @@ namespace LmbrCentral
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                 ;
             }
-
-            MaterialHandle::Reflect(serializeContext);
-        }
-
-        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-        {
-            MaterialHandle::Reflect(behaviorContext);
         }
 
         ReflectScriptableEvents::Reflect(context);
@@ -375,10 +361,6 @@ namespace LmbrCentral
 
         // Register asset handlers. Requires "AssetDatabaseService"
         AZ_Assert(AZ::Data::AssetManager::IsReady(), "Asset manager isn't ready!");
-
-        auto meshAssetHandler = aznew MeshAssetHandler();
-        meshAssetHandler->Register(); // registers self with AssetManager
-        m_assetHandlers.emplace_back(meshAssetHandler);
 
         // Add asset types and extensions to AssetCatalog. Uses "AssetCatalogService".
         auto assetCatalog = AZ::Data::AssetCatalogRequestBus::FindFirstHandler();
@@ -501,8 +483,6 @@ namespace LmbrCentral
         gEnv = system.GetGlobalEnvironment();
 #endif
 
-        REGISTER_INT(s_meshAssetHandler_AsyncCvar, 1, 0, "Enables asynchronous loading of legacy mesh formats");
-
         // Enable catalog now that application's asset root is set.
         if (system.GetGlobalEnvironment()->IsEditor())
         {
@@ -519,11 +499,6 @@ namespace LmbrCentral
 
     void LmbrCentralSystemComponent::OnCrySystemShutdown([[maybe_unused]] ISystem& system)
     {
-        if (gEnv->pConsole)
-        {
-            gEnv->pConsole->UnregisterVariable(s_meshAssetHandler_AsyncCvar, true);
-        }
-
         EBUS_EVENT(AZ::Data::AssetCatalogRequestBus, StopMonitoringAssets);
 
 #if !defined(AZ_MONOLITHIC_BUILD)

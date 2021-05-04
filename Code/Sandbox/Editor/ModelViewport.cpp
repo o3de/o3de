@@ -28,7 +28,6 @@
 
 // Editor
 #include "FileTypeUtils.h"              // for IsPreviewableFileType
-#include "Material/MaterialManager.h"   // for CMaterialManager
 #include "ErrorRecorder.h"
 
 
@@ -625,32 +624,6 @@ void CModelViewport::Update()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CModelViewport::SetCustomMaterial(CMaterial* pMaterial)
-{
-    m_pCurrentMaterial = pMaterial;
-}
-
-//////////////////////////////////////////////////////////////////////////
-CMaterial* CModelViewport::GetMaterial()
-{
-    if (m_pCurrentMaterial)
-    {
-        return m_pCurrentMaterial;
-    }
-    else
-    {
-        _smart_ptr<IMaterial> pMtl = 0;
-        if (m_object)
-        {
-            pMtl = m_object->GetMaterial();
-        }
-
-        CMaterial* pCMaterial = GetIEditor()->GetMaterialManager()->FromIMaterial(pMtl);
-        return pCMaterial;
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 bool CModelViewport::CanDrop([[maybe_unused]] const QPoint& point, IDataBaseItem* pItem)
 {
     if (!pItem)
@@ -658,26 +631,12 @@ bool CModelViewport::CanDrop([[maybe_unused]] const QPoint& point, IDataBaseItem
         return false;
     }
 
-    if (pItem->GetType() == EDB_TYPE_MATERIAL)
-    {
-        SetCustomMaterial((CMaterial*)pItem);
-    }
     return true;
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CModelViewport::Drop([[maybe_unused]] const QPoint& point, IDataBaseItem* pItem)
+void CModelViewport::Drop([[maybe_unused]] const QPoint& point, [[maybe_unused]] IDataBaseItem* pItem)
 {
-    if (!pItem)
-    {
-        SetCustomMaterial(NULL);
-        return;
-    }
-
-    if (pItem->GetType() == EDB_TYPE_MATERIAL)
-    {
-        SetCustomMaterial((CMaterial*)pItem);
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -760,10 +719,6 @@ void CModelViewport::DrawModel(const SRenderingPassInfo& passInfo)
     }
 
     rp.dwFObjFlags  = 0;
-    if (m_pCurrentMaterial)
-    {
-        rp.pMaterial = m_pCurrentMaterial->GetMatInfo();
-    }
 
     //-----------------------------------------------------------------------------
     //-----            Render Static Object (handled by 3DEngine)              ----

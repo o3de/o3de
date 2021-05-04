@@ -30,8 +30,6 @@
 #include "DisplaySettings.h"
 #include "Undo/Undo.h"
 #include "UsedResources.h"
-#include "Material/Material.h"
-#include "Material/MaterialManager.h"
 #include "GizmoManager.h"
 #include "Include/IIconManager.h"
 #include "Objects/SelectionGroup.h"
@@ -398,7 +396,6 @@ CBaseObject::CBaseObject()
     , m_classDesc(nullptr)
     , m_numRefs(0)
     , m_parent(nullptr)
-    , m_pMaterial(nullptr)
     , m_bInSelectionBox(false)
     , m_pTransformDelegate(nullptr)
     , m_bMatrixInWorldSpace(false)
@@ -438,7 +435,6 @@ bool CBaseObject::Init([[maybe_unused]] IEditor* ie, CBaseObject* prev, [[maybe_
         SetArea(prev->GetArea());
         SetColor(prev->GetColor());
         m_nMaterialLayersMask = prev->m_nMaterialLayersMask;
-        SetMaterial(prev->GetMaterial());
         SetMinSpec(prev->GetMinSpec(), false);
 
         // Copy all basic variables.
@@ -485,12 +481,6 @@ void CBaseObject::Done()
 
     NotifyListeners(CBaseObject::ON_DELETE);
     m_eventListeners.clear();
-
-    if (m_pMaterial)
-    {
-        m_pMaterial->Release();
-        m_pMaterial = NULL;
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1837,11 +1827,6 @@ void CBaseObject::Serialize(CObjectArchive& ar)
         SetFrozen(bFrozen);
         SetHidden(bHidden);
 
-        //////////////////////////////////////////////////////////////////////////
-        // Load material.
-        //////////////////////////////////////////////////////////////////////////
-        SetMaterial(mtlName);
-
         ar.SetResolveCallback(this, parentId, AZStd::bind(&CBaseObject::ResolveParent, this, AZStd::placeholders::_1 ));
         ar.SetResolveCallback(this, lookatId, AZStd::bind(&CBaseObject::SetLookAt, this, AZStd::placeholders::_1));
 
@@ -1911,11 +1896,6 @@ void CBaseObject::Serialize(CObjectArchive& ar)
             xmlNode->setAttr("Flags", flags);
         }
 
-        if (m_pMaterial)
-        {
-            xmlNode->setAttr("Material", GetMaterialName().toUtf8().data());
-        }
-
         if (m_nMinSpec != 0)
         {
             xmlNode->setAttr("MinSpec", (uint32)m_nMinSpec);
@@ -1935,11 +1915,6 @@ XmlNodeRef CBaseObject::Export([[maybe_unused]] const QString& levelPath, XmlNod
 
     objNode->setAttr("Type", GetTypeName().toUtf8().data());
     objNode->setAttr("Name", GetName().toUtf8().data());
-
-    if (m_pMaterial)
-    {
-        objNode->setAttr("Material", m_pMaterial->GetName().toUtf8().data());
-    }
 
     Vec3 pos, scale;
     Quat rotate;
@@ -2925,7 +2900,6 @@ bool CBaseObject::ConvertFromObject(CBaseObject* object)
     {
         object->GetParent()->AttachChild(this);
     }
-    SetMaterial(object->GetMaterial());
     return true;
 }
 
@@ -2980,14 +2954,6 @@ void CBaseObject::Validate(IErrorReport* report)
         report->ReportError(err);
     }
     //////////////////////////////////////////////////////////////////////////
-
-    if (GetMaterial() != NULL && GetMaterial()->IsDummy())
-    {
-        CErrorRecord err;
-        err.error = QStringLiteral("Material: %1 for object: %2 not found,").arg(GetMaterial()->GetName(), GetName());
-        err.pObject = this;
-        report->ReportError(err);
-    }
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -3054,10 +3020,6 @@ void CBaseObject::GatherUsedResources(CUsedResources& resources)
     {
         GetVarBlock()->GatherUsedResources(resources);
     }
-    if (m_pMaterial)
-    {
-        m_pMaterial->GatherUsedResources(resources);
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -3068,50 +3030,6 @@ bool CBaseObject::IsSimilarObject(CBaseObject* pObject)
         return true;
     }
     return false;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CBaseObject::SetMaterial(CMaterial* mtl)
-{
-    if (m_pMaterial == mtl)
-    {
-        return;
-    }
-
-    StoreUndo("Assign Material");
-    if (m_pMaterial)
-    {
-        m_pMaterial->Release();
-    }
-    m_pMaterial = mtl;
-    if (m_pMaterial)
-    {
-        m_pMaterial->AddRef();
-    }
-
-    OnMaterialChanged(MATERIALCHANGE_ALL);
-}
-
-//////////////////////////////////////////////////////////////////////////
-QString CBaseObject::GetMaterialName() const
-{
-    if (m_pMaterial)
-    {
-        return m_pMaterial->GetName();
-    }
-    return "";
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CBaseObject::SetMaterial(const QString& materialName)
-{
-    CMaterial* pMaterial = NULL;
-    CMaterialManager* pManager = GetIEditor()->GetMaterialManager();
-    if (!materialName.isEmpty() && pManager != NULL)
-    {
-        pMaterial = pManager->LoadMaterial(materialName);
-    }
-    SetMaterial(pMaterial);
 }
 
 //////////////////////////////////////////////////////////////////////////

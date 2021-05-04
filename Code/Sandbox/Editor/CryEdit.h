@@ -416,9 +416,6 @@ private:
     void OnChangemovespeedIncrease();
     void OnChangemovespeedDecrease();
     void OnChangemovespeedChangestep();
-    void OnMaterialAssigncurrent();
-    void OnMaterialResettodefault();
-    void OnMaterialGetmaterial();
     void OnFileSavelevelresources();
     void OnClearRegistryData();
     void OnValidatelevel();

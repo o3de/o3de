@@ -22,7 +22,6 @@
 #include <Maestro/Types/AnimParamType.h>
 
 // Editor
-#include "Material/Material.h"
 #include "ViewManager.h"
 #include "OBJExporter.h"
 #include "OCMExporter.h"
@@ -75,47 +74,6 @@ Export::CMesh::CMesh()
 {
     ::ZeroMemory(&material, sizeof(material));
     material.opacity = 1.0f;
-}
-
-
-void Export::CMesh::SetMaterial(CMaterial* pMtl, CBaseObject* pBaseObj)
-{
-    if (!pMtl)
-    {
-        cry_strcpy(material.name, pBaseObj->GetName().toUtf8().data());
-        return;
-    }
-
-    cry_strcpy(material.name, pMtl->GetFullName().toUtf8().data());
-
-    _smart_ptr<IMaterial> matInfo = pMtl->GetMatInfo();
-    IRenderShaderResources* pRes = matInfo->GetShaderItem().m_pShaderResources;
-    if (!pRes)
-    {
-        return;
-    }
-
-    ColorF difColor = pRes->GetColorValue(EFTT_DIFFUSE);
-    material.diffuse.r = difColor.r;
-    material.diffuse.g = difColor.g;
-    material.diffuse.b = difColor.b;
-    material.diffuse.a = difColor.a;
-
-    ColorF specColor = pRes->GetColorValue(EFTT_SPECULAR);
-    material.specular.r = specColor.r;
-    material.specular.g = specColor.g;
-    material.specular.b = specColor.b;
-    material.specular.a = specColor.a;
-
-    material.opacity = pRes->GetStrengthValue(EFTT_OPACITY);
-    material.smoothness = pRes->GetStrengthValue(EFTT_SMOOTHNESS);
-
-    SetTexture(material.mapDiffuse, pRes, EFTT_DIFFUSE);
-    SetTexture(material.mapSpecular, pRes, EFTT_SPECULAR);
-    SetTexture(material.mapOpacity, pRes, EFTT_OPACITY);
-    SetTexture(material.mapNormals, pRes, EFTT_NORMALS);
-    SetTexture(material.mapDecal, pRes, EFTT_DECAL_OVERLAY);
-    SetTexture(material.mapDisplacement, pRes, EFTT_HEIGHT);
 }
 
 
@@ -415,18 +373,6 @@ void CExportManager::AddMesh(Export::CObject* pObj, const IIndexedMesh* pIndMesh
         pObj->m_texCoords.push_back(tc);
     }
 
-    CMaterial* pMtl = 0;
-
-    if (m_pBaseObj)
-    {
-        pMtl = m_pBaseObj->GetRenderMaterial();
-    }
-
-    if (pMtl)
-    {
-        pObj->SetMaterialName(pMtl->GetFullName().toUtf8().data());
-    }
-
     if (pIndMesh->GetSubSetCount() && !(pIndMesh->GetSubSetCount() == 1 && pIndMesh->GetSubSet(0).nNumIndices == 0))
     {
         for (int i = 0; i < pIndMesh->GetSubSetCount(); ++i)
@@ -444,23 +390,6 @@ void CExportManager::AddMesh(Export::CObject* pObj, const IIndexedMesh* pIndMesh
                 face.idx[1] = *(pIndices++) + newOffsetIndex;
                 face.idx[2] = *(pIndices++) + newOffsetIndex;
                 pMesh->m_faces.push_back(face);
-            }
-
-            if (pMtl)
-            {
-                if (pMtl->IsMultiSubMaterial())
-                {
-                    CMaterial* pSubMtl = 0;
-                    if (sms.nMatID < pMtl->GetSubMaterialCount())
-                    {
-                        pSubMtl = pMtl->GetSubMaterial(sms.nMatID);
-                    }
-                    pMesh->SetMaterial(pSubMtl, m_pBaseObj);
-                }
-                else
-                {
-                    pMesh->SetMaterial(pMtl, m_pBaseObj);
-                }
             }
 
             pObj->m_meshes.push_back(pMesh);
@@ -496,10 +425,6 @@ void CExportManager::AddMesh(Export::CObject* pObj, const IIndexedMesh* pIndMesh
             }
         }
 
-        if (m_pBaseObj && pMtl)
-        {
-            pMesh->SetMaterial(pMtl, m_pBaseObj);
-        }
         pObj->m_meshes.push_back(pMesh);
     }
 }

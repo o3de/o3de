@@ -46,9 +46,7 @@ class CGameEngine;
 struct IIconManager;
 class CToolBoxManager;
 class CClassFactory;
-class CMaterialManager;
 class CMusicManager;
-class CMaterail;
 struct IEditorParticleManager;
 class CEAXPresetManager;
 class CErrorReport;
@@ -537,8 +535,6 @@ struct IEditor
     virtual CSettingsManager* GetSettingsManager() = 0;
     //! Get DB manager that own items of specified type.
     virtual IDataBaseManager* GetDBItemManager(EDataBaseItemType itemType) = 0;
-    //! Get Manager of Materials.
-    virtual CMaterialManager* GetMaterialManager() = 0;
     virtual IBaseLibraryManager* GetMaterialManagerLibrary() = 0; // Vladimir@conffx
     virtual IEditorMaterialManager* GetIEditorMaterialManager() = 0; // Vladimir@Conffx
     //! Returns IconManager.

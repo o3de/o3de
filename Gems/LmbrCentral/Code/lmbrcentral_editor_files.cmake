@@ -12,14 +12,11 @@
 set(FILES
     include/LmbrCentral/Rendering/EditorCameraCorrectionBus.h
     include/LmbrCentral/Rendering/EditorLightComponentBus.h
-    include/LmbrCentral/Rendering/EditorMeshBus.h
     include/LmbrCentral/Shape/EditorPolygonPrismShapeComponentBus.h
     include/LmbrCentral/Shape/EditorSplineComponentBus.h
     include/LmbrCentral/Shape/EditorTubeShapeComponentBus.h
     include/LmbrCentral/Component/EditorWrappedComponentBase.h
     include/LmbrCentral/Component/EditorWrappedComponentBase.inl
-    Source/Animation/EditorAttachmentComponent.h
-    Source/Animation/EditorAttachmentComponent.cpp
     Source/Audio/EditorAudioAreaEnvironmentComponent.h
     Source/Audio/EditorAudioAreaEnvironmentComponent.cpp
     Source/Audio/EditorAudioEnvironmentComponent.h
@@ -40,8 +37,6 @@ set(FILES
     Source/Builders/BenchmarkAssetBuilder/BenchmarkAssetBuilderComponent.cpp
     Source/Builders/BenchmarkAssetBuilder/BenchmarkAssetBuilderWorker.h
     Source/Builders/BenchmarkAssetBuilder/BenchmarkAssetBuilderWorker.cpp
-    Source/Rendering/EditorMeshComponent.h
-    Source/Rendering/EditorMeshComponent.cpp
     Source/Scripting/EditorLookAtComponent.h
     Source/Scripting/EditorLookAtComponent.cpp
     Source/Scripting/EditorRandomTimedSpawnerComponent.cpp

@@ -309,15 +309,6 @@ set(FILES
     Util/AffineParts.cpp
     Objects/BaseObject.cpp
     Objects/BaseObject.h
-    Material/Material.cpp
-    Material/Material.h
-    Material/MaterialHelpers.cpp
-    Material/MaterialHelpers.h
-    Material/MaterialDialog.qrc
-    Material/MaterialPreviewModelView.cpp
-    Material/MaterialPreviewModelView.h
-    Material/PreviewModelView.cpp
-    Material/PreviewModelView.h
     Alembic/AlembicCompileDialog.cpp
     Alembic/AlembicCompileDialog.h
     Alembic/AlembicCompileDialog.ui
@@ -543,7 +534,6 @@ set(FILES
     IObservable.h
     IPostRenderer.h
     LightmapCompiler/SimpleTriangleRasterizer.h
-    SurfaceInfoPicker.h
     ToolBox.h
     TrackViewNewSequenceDialog.h
     UndoConfigSpec.h
@@ -560,32 +550,11 @@ set(FILES
     LevelIndependentFileMan.h
     LogFileImpl.cpp
     LogFileImpl.h
-    MatEditPreviewDlg.cpp
-    MatEditPreviewDlg.h
-    Material/MaterialBrowser.cpp
-    Material/MaterialBrowser.h
-    Material/MaterialBrowser.ui
-    Material/MaterialBrowserSearchFilters.cpp
-    Material/MaterialBrowserSearchFilters.h
-    Material/MaterialBrowserFilterModel.cpp
-    Material/MaterialBrowserFilterModel.h
-    Material/MaterialImageListCtrl.cpp
-    Material/MaterialImageListCtrl.h
-    Material/MaterialLibrary.cpp
-    Material/MaterialLibrary.h
-    Material/MaterialManager.cpp
-    Material/MaterialManager.h
-    MaterialSender.h
-    MaterialSender.cpp
-    Material/MaterialPythonFuncs.h
-    Material/MaterialPythonFuncs.cpp
     Objects/ClassDesc.cpp
     Objects/ClassDesc.h
     Objects/IEntityObjectListener.h
     Objects/SelectionGroup.cpp
     Objects/SelectionGroup.h
-    Objects/StatObjValidator.cpp
-    Objects/StatObjValidator.h
     Objects/SubObjSelection.cpp
     Objects/SubObjSelection.h
     Objects/ObjectLoader.cpp
@@ -619,9 +588,7 @@ set(FILES
     QtUI/WaitCursor.h
     QtUI/WaitCursor.cpp
     RenderHelpers/AxisHelper.cpp
-    RenderHelpers/AxisHelperExtended.cpp
     RenderHelpers/AxisHelper.h
-    RenderHelpers/AxisHelperExtended.h
     Serialization.h
     Serialization/VariableOArchive.cpp
     Serialization/VariableOArchive.h
@@ -675,7 +642,6 @@ set(FILES
     LightmapCompiler/SimpleTriangleRasterizer.cpp
     ResourceSelectorHost.cpp
     ResourceSelectorHost.h
-    SurfaceInfoPicker.cpp
     ToolBox.cpp
     TrackViewNewSequenceDialog.cpp
     TrackViewNewSequenceDialog.ui
