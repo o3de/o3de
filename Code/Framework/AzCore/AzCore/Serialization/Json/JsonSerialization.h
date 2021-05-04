@@ -38,6 +38,17 @@ namespace AZ
     };
     
     //! Core class to handle serialization to and from json documents.
+    //! The Json Serialization works by taking a default constructed object and then apply the information found in the JSON document
+    //! on top of that object. This allows the Json Serialization to avoid storing default values and helps guarantee that the final
+    //! object is in a valid state even if non-fatal issues are encountered.
+    //! Note on containers: Containers such as vector or map are always considered to be empty even if there's entries in the provided
+    //!     default object. During deserialization entries will be appended to any existing values. A flag is provided to automatically
+    //!     clear containers during deserialization.
+    //! Note on maps: If the key for map containers such as unordered_map can be interpret as a string the Json Serialization will use
+    //!     a JSON Object to store the data in instead of an array with key/value objects.
+    //! Note on pointers: The Json Serialization assumes that are always constructed, so a default JSON value of "{}" is interpret as
+    //!     creating a new default instance even if the default value is a null pointer. A JSON Null needs to be explicitly stored in
+    //!     the JSON Document in order to default or explicitly set a pointer to null.
     class JsonSerialization final
     {
     public:
