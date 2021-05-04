@@ -555,7 +555,7 @@ namespace UnitTest
         m1.SetRow(1, 5.0f, 6.0f, 7.0f, 8.0f);
         m1.SetRow(2, 9.0f, 10.0f, 11.0f, 12.0f);
         EXPECT_THAT(-(-m1), m1);
-        EXPECT_THAT(-Matrix3x4::CreateZero(), IsClose(Matrix3x4::CreateZero()));
+        EXPECT_THAT(-AZ::Matrix3x4::CreateZero(), IsClose(AZ::Matrix3x4::CreateZero()));
 
         AZ::Matrix3x4 m2 = -m1;
         EXPECT_THAT(m2.GetRow(0), IsClose(Vector4(-1.0f, -2.0f, -3.0f, -4.0f)));
