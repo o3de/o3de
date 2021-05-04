@@ -165,10 +165,6 @@ namespace UnitTest
         void DestroyAllInstances() override {}
 
         void Cleanup() override {}
-
-        void RegisterMergedMeshInstance([[maybe_unused]] Vegetation::InstancePtr instance, [[maybe_unused]] IRenderNode* mergedMeshNode) override {}
-        void ReleaseMergedMeshInstance([[maybe_unused]] Vegetation::InstancePtr instance) override {}
-
     };
 
     struct MockGradientRequestHandler
