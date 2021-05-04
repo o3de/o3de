@@ -59,7 +59,8 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
         float3 m_rgbIntensityCandelas;
         float m_bulbRadius;
-        uint4 m_shadowIndices;
+        uint3 m_shadowIndices;
+        uint m_padding;
     };
 
     struct DiskLight
