@@ -88,7 +88,7 @@ namespace AssetBundler
 
     const char RelativeTestFolder[] = "Code/Tools/AssetBundler/tests";
     const char GemsFolder[] = "Gems";
-    const char EngineFolder[] = "Engine";
+    constexpr auto EngineFolder = AZ::IO::FixedMaxPath("Assets") / "Engine";
     const char PlatformsFolder[] = "Platforms";
     const char DummyProjectFolder[] = "DummyProject";
 
@@ -113,13 +113,14 @@ namespace AssetBundler
                 AZ::SettingsRegistry::Register(&m_registry);
             }
 
-            AssetBundler::g_cachedEngineRoot = m_data->m_application.get()->GetEngineRoot();
-            if (AssetBundler::g_cachedEngineRoot.empty())
+            AZ::IO::FixedMaxPath engineRoot = AZ::Utils::GetEnginePath();
+            if (engineRoot.empty())
             {
                 GTEST_FATAL_FAILURE_(AZStd::string::format("Unable to locate engine root.\n").c_str());
             }
 
-            AzFramework::StringFunc::Path::Join(AssetBundler::g_cachedEngineRoot.c_str(), RelativeTestFolder, m_data->m_testEngineRoot);
+
+            m_data->m_testEngineRoot = (engineRoot / RelativeTestFolder).LexicallyNormal().String();
 
             m_data->m_localFileIO = aznew AZ::IO::LocalFileIO();
             m_data->m_priorFileIO = AZ::IO::FileIOBase::GetInstance();
@@ -131,8 +132,8 @@ namespace AssetBundler
             AddGemData(m_data->m_testEngineRoot.c_str(), "GemA");
             AddGemData(m_data->m_testEngineRoot.c_str(), "GemB");
 
-            AZStd::string absoluteEngineSeedFilePath;
-            AzFramework::StringFunc::Path::ConstructFull(m_data->m_testEngineRoot.c_str(), EngineFolder, "SeedAssetList", AzToolsFramework::AssetSeedManager::GetSeedFileExtension(), absoluteEngineSeedFilePath, true);
+            auto absoluteEngineSeedFilePath = m_data->m_testEngineRoot / EngineFolder / "SeedAssetList";
+            absoluteEngineSeedFilePath.ReplaceExtension(AzToolsFramework::AssetSeedManager::GetSeedFileExtension());
             m_data->m_gemSeedFilePairList.emplace_back(AZStd::make_pair(absoluteEngineSeedFilePath, true));
 
             AddGemData(m_data->m_testEngineRoot.c_str(), "GemC", false);
@@ -212,7 +213,7 @@ namespace AssetBundler
             AZStd::unique_ptr<AzToolsFramework::ToolsApplication> m_application = {};
             AZ::IO::FileIOBase* m_priorFileIO = nullptr;
             AZ::IO::FileIOBase* m_localFileIO = nullptr;
-            AZStd::string m_testEngineRoot;
+            AZ::IO::Path m_testEngineRoot;
         };
 
         const int GemAIndex = 0;

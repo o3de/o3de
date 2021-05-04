@@ -109,17 +109,15 @@ namespace AssetBundler
 
     const char* AssetCatalogFilename = "assetcatalog.xml";
 
-    AZ::IO::FixedMaxPath g_cachedEngineRoot;
 
-    
-    const char EngineDirectoryName[] = "Engine";
+    constexpr auto EngineDirectoryName = AZ::IO::FixedMaxPath("Assets") / "Engine";
     const char RestrictedDirectoryName[] = "restricted";
     const char PlatformsDirectoryName[] = "Platforms";
     const char GemsDirectoryName[] = "Gems";
     const char GemsAssetsDirectoryName[] = "Assets";
     const char GemsSeedFileName[] = "seedList";
     const char EngineSeedFileName[] = "SeedAssetList";
-    
+
 
     namespace Internal
     {
@@ -131,7 +129,7 @@ namespace AssetBundler
             AZStd::unordered_map<AZStd::string, AZStd::string>& defaultSeedLists,
             AzFramework::PlatformFlags platformFlags)
         {
-            AZ::IO::FixedMaxPath engineRoot(GetCachedEngineRoot());
+            AZ::IO::FixedMaxPath engineRoot(AZ::Utils::GetEnginePath());
             AZ::IO::FixedMaxPath engineRestrictedRoot = engineRoot / RestrictedDirectoryName;
 
             AZ::IO::FixedMaxPath engineLocalPath = AZ::IO::PathView(engineDirectory.LexicallyRelative(engineRoot));
@@ -204,12 +202,6 @@ namespace AssetBundler
         }
     }
 
-    AZ::IO::FixedMaxPath GetCachedEngineRoot()
-    {
-        AZ_Error(AppWindowName, !g_cachedEngineRoot.empty(), "Cached Engine Root has not been initialized by the Bundler.");
-        return g_cachedEngineRoot;
-    }
-
     void AddPlatformIdentifier(AZStd::string& filePath, const AZStd::string& platformIdentifier)
     {
         AZStd::string fileName;
@@ -257,11 +249,11 @@ namespace AssetBundler
         absoluteEngineSeedFilePath.ReplaceExtension(AzToolsFramework::AssetSeedManager::GetSeedFileExtension());
         if (fileIO->Exists(absoluteEngineSeedFilePath.c_str()))
         {
-            defaultSeedLists[absoluteEngineSeedFilePath.Native()] = EngineDirectoryName;
+            defaultSeedLists[absoluteEngineSeedFilePath.Native()] = EngineDirectoryName.String();
         }
 
         // Add Seed Lists from the Platforms directory
-        Internal::AddPlatformsDirectorySeeds(engineDirectory, EngineDirectoryName, defaultSeedLists, platformFlag);
+        Internal::AddPlatformsDirectorySeeds(engineDirectory, EngineDirectoryName.String(), defaultSeedLists, platformFlag);
 
         auto absoluteProjectDefaultSeedFilePath = AZ::IO::Path(projectPath) / EngineSeedFileName;
         absoluteProjectDefaultSeedFilePath.ReplaceExtension(AzToolsFramework::AssetSeedManager::GetSeedFileExtension());
