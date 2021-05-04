@@ -29,6 +29,7 @@ namespace AZ::SceneAPI::Utilities
         void Write(const char* name, const AZStd::vector<AZStd::vector<T>>& data);
 
         SCENE_CORE_API void Write(const char* name, const char* data);
+        SCENE_CORE_API void WriteArray(const char* name, const unsigned int* data, int size);
         SCENE_CORE_API void Write(const char* name, const AZStd::string& data);
         SCENE_CORE_API void Write(const char* name, double data);
         SCENE_CORE_API void Write(const char* name, uint64_t data);

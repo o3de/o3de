@@ -11,6 +11,7 @@
  */
 
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/numeric.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/AssImpColorStreamImporter.h>
@@ -44,7 +45,7 @@ namespace AZ
                 SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
                 if (serializeContext)
                 {
-                    serializeContext->Class<AssImpColorStreamImporter, SceneCore::LoadingComponent>()->Version(2); // LYN-2576
+                    serializeContext->Class<AssImpColorStreamImporter, SceneCore::LoadingComponent>()->Version(3); // LYN-3250
                 }
             }
 
@@ -55,43 +56,68 @@ namespace AZ
                 {
                     return Events::ProcessingResult::Ignored;
                 }
-                aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
+                const aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
                 const aiScene* scene = context.m_sourceScene.GetAssImpScene();
 
-                GetMeshDataFromParentResult meshDataResult(GetMeshDataFromParent(context));
-                if (!meshDataResult.IsSuccess())
+                // This node has at least one mesh, verify that the color channel counts are the same for all meshes.
+                const int expectedColorChannels = scene->mMeshes[currentNode->mMeshes[0]]->GetNumColorChannels();
+                const bool allMeshesHaveSameNumberOfColorChannels =
+                    AZStd::all_of(currentNode->mMeshes + 1, currentNode->mMeshes + currentNode->mNumMeshes, [scene, expectedColorChannels](const unsigned int meshIndex)
+                        {
+                            return scene->mMeshes[meshIndex]->GetNumColorChannels() == expectedColorChannels;
+                        });
+
+
+                if(!allMeshesHaveSameNumberOfColorChannels)
                 {
-                    return meshDataResult.GetError();
+                    AZ_Error(
+                        Utilities::ErrorWindow,
+                        false,
+                        "Color channel counts for node %s has meshes with different color channel counts. "
+                        "The color channel count for the first mesh will be used, and placeholder incorrect color values "
+                        "will be generated to allow the data to process, but the source art needs to be fixed to correct this. "
+                        "All meshes on this node should have the same number of color channels.",
+                        currentNode->mName.C_Str());
                 }
-                const SceneData::GraphData::MeshData* const parentMeshData(meshDataResult.GetValue());
 
-                size_t vertexCount = parentMeshData->GetVertexCount();
-
-                int sdkMeshIndex = parentMeshData->GetSdkMeshIndex();
-                if (sdkMeshIndex < 0)
+                if (expectedColorChannels == 0)
                 {
-                    AZ_Error(Utilities::ErrorWindow, false,
-                        "Tried to construct color stream attribute for invalid or non-mesh parent data, mesh index is missing");
-                    return Events::ProcessingResult::Failure;
+                    return Events::ProcessingResult::Ignored;
                 }
 
-                aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[sdkMeshIndex]];
+                const uint64_t vertexCount = GetVertexCountForAllMeshesOnNode(*currentNode, *scene);
 
                 Events::ProcessingResultCombiner combinedVertexColorResults;
-                for (int colorSetIndex = 0; colorSetIndex < mesh->GetNumColorChannels(); ++colorSetIndex)
+                for (int colorSetIndex = 0; colorSetIndex < expectedColorChannels; ++colorSetIndex)
                 {
+
                     AZStd::shared_ptr<SceneData::GraphData::MeshVertexColorData> vertexColors =
                         AZStd::make_shared<AZ::SceneData::GraphData::MeshVertexColorData>();
                     vertexColors->ReserveContainerSpace(vertexCount);
 
-                    for (int v = 0; v < mesh->mNumVertices; ++v)
+                    for (int sdkMeshIndex = 0; sdkMeshIndex < currentNode->mNumMeshes; ++sdkMeshIndex)
                     {
-                        AZ::SceneAPI::DataTypes::Color vertexColor(
-                            AssImpSDKWrapper::AssImpTypeConverter::ToColor(mesh->mColors[colorSetIndex][v]));
-                        vertexColors->AppendColor(vertexColor);
+                        const aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[sdkMeshIndex]];
+                        for (int v = 0; v < mesh->mNumVertices; ++v)
+                        {
+                            if (colorSetIndex < mesh->GetNumColorChannels())
+                            {
+                                AZ::SceneAPI::DataTypes::Color vertexColor(
+                                    AssImpSDKWrapper::AssImpTypeConverter::ToColor(mesh->mColors[colorSetIndex][v]));
+                                vertexColors->AppendColor(vertexColor);
+                            }
+                            else
+                            {
+                                // An error was already emitted if this mesh has less color channels
+                                // than other meshes on the parent node. Append an arbitrary color value
+                                // so the mesh can still be processed.
+                                // It's better to let the engine load a partially valid mesh than to completely fail.
+                                vertexColors->AppendColor(AZ::SceneAPI::DataTypes::Color(0,0,0,1));
+                            }
+                        }
                     }
 
-                    AZStd::string nodeName(AZStd::string::format("%s%d",m_defaultNodeName,colorSetIndex));
+                    AZStd::string nodeName(AZStd::string::format("%s%d", m_defaultNodeName, colorSetIndex));
                     Containers::SceneGraph::NodeIndex newIndex =
                         context.m_scene.GetGraph().AddChild(context.m_currentGraphPosition, nodeName.c_str());
 
@@ -106,9 +132,7 @@ namespace AZ
 
                     combinedVertexColorResults += colorMapResults;
                 }
-
                 return combinedVertexColorResults.GetResult();
-
             }
 
         } // namespace FbxSceneBuilder
