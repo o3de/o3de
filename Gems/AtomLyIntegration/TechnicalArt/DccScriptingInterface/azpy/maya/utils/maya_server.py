@@ -16,10 +16,12 @@ import sys
 import os
 import socket
 import time
-# import logging as _logging
+import logging as _logging
 
 # -- External Python modules --
 from PySide2 import QtWidgets
+from shiboken2 import wrapInstance
+from maya import OpenMayaUI as omui
 
 shared_path = os.path.join(os.environ['DCCSIG_PATH'], 'azpy', 'shared')
 from azpy.shared.server_base import ServerBase
@@ -29,12 +31,15 @@ from azpy.shared.server_base import ServerBase
 
 # --------------------------------------------------------------------------
 # -- Global Definitions --
-# _MODULENAME = 'azpy.maya.utils.maya_server'
-# _LOGGER = _logging.getLogger(_MODULENAME)
-
-# _LOCAL_HOST = socket.gethostbyname(socket.gethostname())
-# _LOGGER.info('local_host: {}'.format(_LOCAL_HOST))
+_MODULENAME = 'azpy.maya.utils.maya_server'
+_LOGGER = _logging.getLogger(_MODULENAME)
+_LOCAL_HOST = socket.gethostbyname(socket.gethostname())
+_LOGGER.info('local_host: {}'.format(_LOCAL_HOST))
 # -------------------------------------------------------------------------
+
+
+mayaMainWindowPtr = omui.MQtUtil.mainWindow()
+mayaMainWindow = wrapInstance(long(mayaMainWindowPtr), QtWidgets.QWidget)
 
 
 # -------------------------------------------------------------------------
@@ -44,6 +49,7 @@ class MayaServer(ServerBase):
     def __init__(self, parent_window):
         super(MayaServer, self).__init__(parent_window)
 
+        self.setParent(mayaMainWindow)
         self.window = parent_window
 
     def process_cmd(self, cmd, data, reply):
@@ -73,25 +79,33 @@ class MayaServer(ServerBase):
 
     def sleep(self, data, reply):
         for i in range(6):
-            print('Sleeping::: {}'.format(i))
-            # _LOGGER.info(f'Sleeping::: {i}')
+            _LOGGER.info('Sleeping::: {}'.format(i))
             time.sleep(1)
 
         reply['result'] = True
         reply['success'] = True
 
 
-def start_server():
-    print('Starting server')
-    app = QtWidgets.QApplication(sys.argv)
+def delete_instances():
+    '''
+    Finds all previously opened instances of the transfer plugin and deletes them before creating a new instance
+    '''
+    for obj in mayaMainWindow.children():
+        if str(type(obj)) == "<class 'maya_server.MayaServer'>":
+            if obj.__class__.__name__ == "MayaServer":
+                obj.setParent(None)
+                obj.deleteLater()
 
+
+def start_server():
+    delete_instances()
     window = QtWidgets.QDialog()
     window.setWindowTitle('Maya Server')
     window.setFixedSize(240, 150)
-
-    QtWidgets.QPlainTextEdit(window)
+    window.move(50, 50)
+    window_layout = QtWidgets.QHBoxLayout(window)
+    window_layout.setContentsMargins(3, 3, 3, 3)
+    text_field = QtWidgets.QPlainTextEdit()
+    window_layout.addWidget(text_field)
     MayaServer(window)
     window.show()
-    app.exec_()
-
-start_server()

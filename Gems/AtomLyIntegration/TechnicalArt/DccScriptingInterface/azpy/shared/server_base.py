@@ -95,7 +95,7 @@ class ServerBase(QtCore.QObject):
 
         if self.socket.state() == QtNetwork.QTcpSocket.ConnectedState:
             header = '{}'.format(len(json_reply.encode())).zfill(ServerBase.HEADER_SIZE)
-            data = QtCore.QByteArray(f'{header}{json_reply}'.encode())
+            data = QtCore.QByteArray('{}{}'.format(header, json_reply).encode())
             self.socket.write(data)
 
     def write_error(self, error_msg):
@@ -126,7 +126,7 @@ class ServerBase(QtCore.QObject):
         self.write(reply)
 
     def process_cmd(self, cmd, data, reply):
-        reply['msg'] = f'Invalid command: {cmd}'
+        reply['msg'] = 'Invalid command: {}'.format(cmd)
 
 
 if __name__ == '__main__':

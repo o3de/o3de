@@ -17,6 +17,11 @@ def process_multiple_files(action, target_files, data):
     pass
 
 
+def attach_stingray_textures(target_maya_file, assignment_list):
+    pass
+
+
+
 def get_materials_in_scene():
     """
     Audits scene to gather all materials present in the Hypershade, and returns them in a list

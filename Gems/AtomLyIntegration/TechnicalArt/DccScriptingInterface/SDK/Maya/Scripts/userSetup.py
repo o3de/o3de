@@ -49,7 +49,6 @@ from azpy.env_base import _BASE_ENVVAR_DICT
 from azpy.env_bool import env_bool
 from azpy.constants import ENVAR_DCCSI_GDEBUG
 from azpy.constants import ENVAR_DCCSI_DEV_MODE
-from azpy.maya.utils import maya_server as server
 
 # -- maya imports
 import maya.cmds as cmds
@@ -304,38 +303,16 @@ def post_startup():
     from set_menu import set_main_menu
     set_main_menu()
 
+    # Add communication server
+    from azpy.maya.utils import maya_server
+    maya_server.start_server()
+
     # TODO: manage custom shelf in a sub-module
 
     _LOGGER.info('post_startup(), COMPLETE')
     _LOGGER.info('DCCsi Bootstrap, COMPLETE')
     return 0
 # -------------------------------------------------------------------------
-
-# Jonny- this should be at least printing that the server cannot start when launching Maya from the bat file. I have
-# checked sys.path in Maya on launch and the path to the userSetup file is there... does this whole entire module
-# need to be wrapped in a evalDeferred? I'm kind of out of ideas tonight, but will try some more tomorrow. Thanks for
-# taking a look. Also, if you want to test out the maya_client and maya_server setup- maya_server is what Maya needs
-# launch. From there, if you run maya client from your idea you will see both modules trace out messages verifying
-# they are connected. I'll be online a little later- if you do have time to look at this and gain any insight as to
-# how to get this userSetup file to launch ping me!
-
-# Launch Communication Server
-def initialize():
-    print('UserSetup is runnning')
-    # Temporary server import
-    try:
-        # I tried adding these paths in my userSetup.py file in maya scripts and the module partially worked. Unfortunately
-        # it can't seem to find the "shared" module where the base classes reside
-        sys.path.append("E:/Depot/o3de_dccsi/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/azpy")
-        sys.path.append("E:/Depot/o3de_dccsi/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/azpy/maya/utils")
-        import maya_server
-        maya_server.start_server()
-        print('Successfully started server')
-    except Exception as e:
-        print('Could not start server: {}'.format(e))
-
-
-cmds.evalDeferred(initialize, lp=True)
 
 
 # -------------------------------------------------------------------------

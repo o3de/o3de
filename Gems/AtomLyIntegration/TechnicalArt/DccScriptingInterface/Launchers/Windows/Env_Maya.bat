@@ -130,6 +130,9 @@ set DCCSI_MAYA_SCRIPT_PATH=%DCCSI_SDK_MAYA_PATH%\Scripts
 set MAYA_SCRIPT_PATH=%DCCSI_MAYA_SCRIPT_PATH%;%MAYA_SCRIPT_PATH%
 echo     DCCSI_MAYA_SCRIPT_PATH = %DCCSI_MAYA_SCRIPT_PATH%
 
+:: set OCIO=%DCCSI_SDK_MAYA_PATH%\Resources\OCIO\aces_1_0_3_config.ocio
+:: echo     OCIO = %OCIO%
+
 echo     MAYA_SCRIPT_PATH = %MAYA_SCRIPT_PATH%
 
 :: add all python related paths to PYTHONPATH for package imports
