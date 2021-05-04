@@ -770,8 +770,8 @@ namespace AzToolsFramework
                 return false;
             }
 
-            Template& sourceTemplate = sourceTemplateReference->get();
 #if defined(AZ_ENABLE_TRACING)
+            Template& sourceTemplate = sourceTemplateReference->get();
             Template& targetTemplate = targetTemplateReference->get();
 #endif
 
