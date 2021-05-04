@@ -68,8 +68,7 @@ namespace AzManipulatorTestFramework
 
     AzFramework::ScreenPoint ViewportInteraction::ViewportWorldToScreen(const AZ::Vector3& worldPosition)
     {
-        auto pos = AzFramework::WorldToScreen(worldPosition, m_cameraState);
-        return AzFramework::ScreenPoint(pos.m_x, pos.m_y);
+        return AzFramework::WorldToScreen(worldPosition, m_cameraState);
     }
 
     void ViewportInteraction::SetCameraState(const AzFramework::CameraState& cameraState)
