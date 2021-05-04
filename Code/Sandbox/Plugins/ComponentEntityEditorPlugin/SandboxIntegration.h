@@ -104,7 +104,6 @@ class SandboxIntegrationManager
     , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
     , private AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler
     , private IUndoManagerListener
-    , private AzToolsFramework::NewViewportInteractionModelEnabledRequestBus::Handler
     , private AzToolsFramework::Layers::EditorLayerComponentNotificationBus::Handler
 {
 public:
@@ -274,9 +273,6 @@ private:
     // AzFramework::DisplayContextRequestBus
     void SetDC(DisplayContext* dc) override;
     DisplayContext* GetDC() override;
-
-    // NewViewportInteractionModelEnabledRequestBus
-    bool IsNewViewportInteractionModelEnabled() override;
 
     // Context menu handlers.
     void ContextMenu_NewEntity();

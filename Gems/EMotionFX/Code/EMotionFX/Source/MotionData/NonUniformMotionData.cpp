@@ -375,10 +375,48 @@ namespace EMotionFX
         return true;
     }
 
+    template<class KeyTrackType>
+    void NonUniformMotionData::FixMissingEndKeyframes(KeyTrackType& keytrack, float endTimeToMatch)
+    {
+        if (keytrack.m_times.empty() || keytrack.m_values.empty())
+        {
+            return;
+        }
+
+        if (!AZ::IsClose(keytrack.m_times.back(), endTimeToMatch, AZ::Constants::FloatEpsilon))
+        {
+            keytrack.m_times.emplace_back(endTimeToMatch);
+            keytrack.m_values.emplace_back(keytrack.m_values.back());
+        }
+    }
+
+    void NonUniformMotionData::FixMissingEndKeyframes()
+    {
+        UpdateDuration();
+
+        for (JointData& jointData : m_jointData)
+        {
+            FixMissingEndKeyframes(jointData.m_positionTrack, m_duration);
+            FixMissingEndKeyframes(jointData.m_rotationTrack, m_duration);
+
+#ifndef EMFX_SCALE_DISABLED
+            FixMissingEndKeyframes(jointData.m_scaleTrack, m_duration);
+#endif
+        }
+
+        for (FloatData& morphData : m_morphData)
+        {
+            FixMissingEndKeyframes(morphData.m_track, m_duration);
+        }
+
+        for (FloatData& floatData : m_floatData)
+        {
+            FixMissingEndKeyframes(floatData.m_track, m_duration);
+        }
+    }
+
     void NonUniformMotionData::UpdateDuration()
     {
-        AZ_Assert(VerifyIntegrity(), "Data integrity issue!");
-
         for (const JointData& jointData : m_jointData)
         {
             if (!jointData.m_positionTrack.m_times.empty())

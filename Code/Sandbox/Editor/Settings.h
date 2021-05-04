@@ -477,7 +477,6 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     bool bVisualizeNavigationAccessibility;
     int  navigationDebugAgentType;
 
-    bool bIsSearchFilterActive;
     int backgroundUpdatePeriod;
     const char* g_TemporaryLevelName;
 

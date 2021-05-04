@@ -126,7 +126,6 @@ namespace UnitTest
     /// Base fixture for ToolsApplication editor tests.
     class ToolsApplicationFixture
         : public AllocatorsTestFixture
-        , private AzToolsFramework::NewViewportInteractionModelEnabledRequestBus::Handler
     {
     public:
         void SetUp() override final
@@ -147,8 +146,6 @@ namespace UnitTest
             // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
             // in the unit tests.
             AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
-
-            AzToolsFramework::NewViewportInteractionModelEnabledRequestBus::Handler::BusConnect();
 
             m_editorActions.Connect();
 
@@ -184,7 +181,6 @@ namespace UnitTest
 
             TearDownEditorFixtureImpl();
             m_editorActions.Disconnect();
-            AzToolsFramework::NewViewportInteractionModelEnabledRequestBus::Handler::BusDisconnect();
 
             // Stop & delete the Application created by this fixture, hence not using GetApplication() here
             if (m_app)
@@ -222,14 +218,6 @@ namespace UnitTest
 
     private:
         AZStd::unique_ptr<ToolsTestApplication> m_app;
-
-        // NewViewportInteractionModelEnabledRequestBus ...
-        bool IsNewViewportInteractionModelEnabled() override
-        {
-            // default to the new viewport interaction model bus being enabled so the
-            // manipulator manager is correctly instantiated in EditorDefaultSelection
-            return true;
-        }
     };
 
     class EditorEntityComponentChangeDetector

@@ -30,6 +30,5 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedT
 #            AssetProcessor
 #            AutomatedTesting.GameLauncher
 #            AutomatedTesting.Assets
-#            Legacy::CryRenderNULL
 #    )
 endif()
