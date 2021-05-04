@@ -856,13 +856,24 @@ namespace AzToolsFramework
 
         AZ::EntityId PrefabPublicHandler::GetInstanceContainerEntityId(AZ::EntityId entityId) const
         {
-            AZ::Entity* entity = GetEntityById(entityId);
-            if (entity)
+            InstanceOptionalReference owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
+            if (owningInstance)
             {
-                InstanceOptionalReference owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(entity->GetId());
-                if (owningInstance)
+                return owningInstance->get().GetContainerEntityId();
+            }
+
+            return AZ::EntityId();
+        }
+
+        AZ::EntityId PrefabPublicHandler::GetParentInstanceContainerEntityId(AZ::EntityId entityId) const
+        {
+            InstanceOptionalReference owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
+            if (owningInstance)
+            {
+                InstanceOptionalReference parentInstance = owningInstance->get().GetParentInstance();
+                if (parentInstance)
                 {
-                    return owningInstance->get().GetContainerEntityId();
+                    return parentInstance->get().GetContainerEntityId();
                 }
             }
 

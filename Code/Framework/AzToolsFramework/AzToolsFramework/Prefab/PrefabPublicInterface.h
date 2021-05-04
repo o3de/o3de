@@ -106,6 +106,13 @@ namespace AzToolsFramework
             virtual AZ::EntityId GetInstanceContainerEntityId(AZ::EntityId entityId) const = 0;
             
             /**
+             * Gets the entity id for the instance container of the parent of the owning instance.
+             * @param entityId The id of the entity to query.
+             * @return The entity id of the instance container for the parent of the instance owning the queried entity.
+             */
+            virtual AZ::EntityId GetParentInstanceContainerEntityId(AZ::EntityId entityId) const = 0;
+            
+            /**
              * Gets the entity id for the instance container of the level instance.
              * @return The entity id of the instance container for the currently loaded level.
              */

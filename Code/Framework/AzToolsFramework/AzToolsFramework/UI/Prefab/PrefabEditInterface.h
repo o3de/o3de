@@ -42,6 +42,10 @@ namespace AzToolsFramework
              * @return True if the prefab owning this entity is in the edit stack, false otherwise.
              */
             virtual bool IsOwningPrefabInEditStack(AZ::EntityId entityId) = 0;
+
+            
+            // Test...
+            virtual AZ::EntityId OverrideEntitySelectionInViewport(AZ::EntityId entityId) = 0;
         };
 
     } // namespace Prefab

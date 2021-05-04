@@ -51,6 +51,7 @@ namespace AzToolsFramework
             bool IsInstanceContainerEntity(AZ::EntityId entityId) const override;
             bool IsLevelInstanceContainerEntity(AZ::EntityId entityId) const override;
             AZ::EntityId GetInstanceContainerEntityId(AZ::EntityId entityId) const override;
+            AZ::EntityId GetParentInstanceContainerEntityId(AZ::EntityId entityId) const override;
             AZ::EntityId GetLevelInstanceContainerEntityId() const override;
             AZ::IO::Path GetOwningInstancePrefabPath(AZ::EntityId entityId) const override;
             PrefabRequestResult HasUnsavedChanges(AZ::IO::Path prefabFilePath) const override;
@@ -60,8 +61,6 @@ namespace AzToolsFramework
             PrefabOperationResult DuplicateEntitiesInInstance(const EntityIdList& entityIds) override;
 
             PrefabOperationResult DetachPrefab(const AZ::EntityId& containerEntityId) override;
-
-            AZ::EntityId OverrideEntitySelectionInViewport(AZ::EntityId entityId) override;
 
         private:
             PrefabOperationResult DeleteFromInstance(const EntityIdList& entityIds, bool deleteDescendants);

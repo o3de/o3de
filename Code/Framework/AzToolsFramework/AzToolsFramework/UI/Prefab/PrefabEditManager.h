@@ -32,6 +32,8 @@ namespace AzToolsFramework
             bool IsOwningPrefabBeingEdited(AZ::EntityId entityId) override;
             bool IsOwningPrefabInEditStack(AZ::EntityId entityId) override;
 
+            AZ::EntityId OverrideEntitySelectionInViewport(AZ::EntityId entityId) override;
+
             AZStd::deque<AZ::EntityId> m_instanceEditStack;
 
             PrefabPublicInterface* m_prefabPublicInterface;

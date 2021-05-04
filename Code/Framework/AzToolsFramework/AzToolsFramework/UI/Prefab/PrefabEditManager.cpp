@@ -62,5 +62,34 @@ namespace AzToolsFramework
             AZ::EntityId containerEntity = m_prefabPublicInterface->GetInstanceContainerEntityId(entityId);
             return AZStd::find(m_instanceEditStack.begin(), m_instanceEditStack.end(), containerEntity) != m_instanceEditStack.end();
         }
+
+        AZ::EntityId PrefabEditManager::OverrideEntitySelectionInViewport(AZ::EntityId entityId)
+        {
+            // Retrieve the Level Container
+            AZ::EntityId levelContainerEntityId = m_prefabPublicInterface->GetLevelInstanceContainerEntityId();
+
+            // Find container entity for owning prefab of passed entity
+            AZ::EntityId containerEntityId =  m_prefabPublicInterface->GetInstanceContainerEntityId(entityId);
+
+            // If the entity belongs to the level instance or an instance that is currently being edited, it can be selected
+            if (containerEntityId == levelContainerEntityId ||
+                AZStd::find(m_instanceEditStack.begin(), m_instanceEditStack.end(), containerEntityId) != m_instanceEditStack.end())
+            {
+                return entityId;
+            }
+
+            // Else keep looping until you can find an instance that is being edited, or the level instance
+            AZ::EntityId parentContainerEntityId = m_prefabPublicInterface->GetParentInstanceContainerEntityId(containerEntityId);
+
+            while (parentContainerEntityId.IsValid() &&  parentContainerEntityId != levelContainerEntityId &&
+                   AZStd::find(m_instanceEditStack.begin(), m_instanceEditStack.end(), parentContainerEntityId) == m_instanceEditStack.end())
+            {
+                // Else keep going up the hierarchy
+                containerEntityId = parentContainerEntityId;
+                parentContainerEntityId = m_prefabPublicInterface->GetParentInstanceContainerEntityId(containerEntityId);
+            }
+
+            return containerEntityId;
+        }
     }
 }

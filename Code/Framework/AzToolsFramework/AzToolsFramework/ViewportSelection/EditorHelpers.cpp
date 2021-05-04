@@ -18,6 +18,8 @@
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/ViewportSelection/EditorVisibleEntityDataCache.h>
 
+#include <AzToolsFramework/UI/Prefab/PrefabEditInterface.h>
+
 AZ_CVAR(
     bool,
     ed_visibility_showAggregateEntitySelectionBounds,
@@ -177,7 +179,15 @@ namespace AzToolsFramework
 
         // PREFAB TEST! NOT SURE HOW THIS CODE IS GOING TO BE PLUGGED HERE
 
-        // If the owning prefab isn't 
+        // TODO - If Prefab Mode is enabled
+
+        
+        auto prefabEditInterface = AZ::Interface<Prefab::PrefabEditInterface>::Get();
+
+        if (prefabEditInterface != nullptr)
+        {
+            entityIdUnderCursor = prefabEditInterface->OverrideEntitySelectionInViewport(entityIdUnderCursor);
+        }
 
 
         // PREFAB TEST END
