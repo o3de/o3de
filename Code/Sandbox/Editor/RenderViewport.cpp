@@ -1105,7 +1105,7 @@ void CRenderViewport::Update()
 
                 AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
                 AzFramework::DebugDisplayRequestBus::Bind(
-                    debugDisplayBus, AzToolsFramework::ViewportInteraction::g_mainViewportEntityDebugDisplayId);
+                    debugDisplayBus, AzFramework::g_defaultSceneEntityDebugDisplayId);
                 AZ_Assert(debugDisplayBus, "Invalid DebugDisplayRequestBus.");
 
                 AzFramework::DebugDisplayRequests* debugDisplay =
@@ -1535,7 +1535,7 @@ void CRenderViewport::OnRender()
 
         AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
         AzFramework::DebugDisplayRequestBus::Bind(
-            debugDisplayBus, AzToolsFramework::ViewportInteraction::g_mainViewportEntityDebugDisplayId);
+            debugDisplayBus, AzFramework::g_defaultSceneEntityDebugDisplayId);
         AZ_Assert(debugDisplayBus, "Invalid DebugDisplayRequestBus.");
 
         AzFramework::DebugDisplayRequests* debugDisplay =
@@ -1681,7 +1681,7 @@ void CRenderViewport::RenderAll()
 
         AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
         AzFramework::DebugDisplayRequestBus::Bind(
-            debugDisplayBus, AzToolsFramework::ViewportInteraction::g_mainViewportEntityDebugDisplayId);
+            debugDisplayBus, AzFramework::g_defaultSceneEntityDebugDisplayId);
         AZ_Assert(debugDisplayBus, "Invalid DebugDisplayRequestBus.");
 
         AzFramework::DebugDisplayRequests* debugDisplay =

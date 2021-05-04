@@ -167,7 +167,7 @@ void SandboxIntegrationManager::Setup()
     {
         m_debugDisplayBusImplementationActive = true;
         AzFramework::DebugDisplayRequestBus::Handler::BusConnect(
-            AzToolsFramework::ViewportInteraction::g_mainViewportEntityDebugDisplayId);
+            AzFramework::g_defaultSceneEntityDebugDisplayId);
     }
 
     AzFramework::DisplayContextRequestBus::Handler::BusConnect();

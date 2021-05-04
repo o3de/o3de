@@ -907,7 +907,7 @@ void CComponentEntityObject::Display(DisplayContext& dc)
 
             AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
             AzFramework::DebugDisplayRequestBus::Bind(
-                debugDisplayBus, AzToolsFramework::ViewportInteraction::g_mainViewportEntityDebugDisplayId);
+                debugDisplayBus, AzFramework::g_defaultSceneEntityDebugDisplayId);
             AZ_Assert(debugDisplayBus, "Invalid DebugDisplayRequestBus.");
 
             AzFramework::DebugDisplayRequests* debugDisplay =
