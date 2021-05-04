@@ -201,7 +201,7 @@ namespace AZ
             for (int i = 0; i < PointLightData::NumShadowFaces; ++i)
             {
                 ShadowId shadowId = ShadowId(light.m_shadowIndices[i]);
-                if (shadowId.IsValid() && enabled == false)
+                if (shadowId.IsValid() && !enabled)
                 {
                     // Disable shadows
                     m_shadowFeatureProcessor->ReleaseShadow(shadowId);
@@ -209,7 +209,7 @@ namespace AZ
                     light.m_shadowIndices[i] = shadowId.GetIndex();
                     m_deviceBufferNeedsUpdate = true;
                 }
-                else if (shadowId.IsNull() && enabled == true)
+                else if (shadowId.IsNull() && enabled)
                 {
                     // Enable shadows
                     light.m_shadowIndices[i] = m_shadowFeatureProcessor->AcquireShadow().GetIndex();
@@ -244,7 +244,8 @@ namespace AZ
                 }
 
                 ProjectedShadowFeatureProcessorInterface::ProjectedShadowDescriptor desc = m_shadowFeatureProcessor->GetShadowProperties(shadowId);
-                desc.m_fieldOfViewYRadians = DegToRad(91.0f); // Make it slightly larger than 90 degrees to avoid artifacts on the boundary between 2 cubemap faces
+                // Make it slightly larger than 90 degrees to avoid artifacts on the boundary between 2 cubemap faces
+                desc.m_fieldOfViewYRadians = DegToRad(91.0f); 
                 desc.m_transform = m_pointShadowTransforms[i];
                 desc.m_transform.SetTranslation(pointLight.m_position[0], pointLight.m_position[1], pointLight.m_position[2]);
                 desc.m_aspectRatio = 1.0f;
