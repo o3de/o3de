@@ -419,7 +419,6 @@ private:
     void OnFileSavelevelresources();
     void OnClearRegistryData();
     void OnValidatelevel();
-    void OnValidateObjectPositions();
     void OnToolsPreferences();
     void OnGraphicsSettings();
     void OnSwitchToDefaultCamera();

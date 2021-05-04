@@ -19,32 +19,32 @@
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Debug/Profiler.h>
 
-#include <ImageProcessing/PixelFormats.h>
+#include <Atom/ImageProcessing/PixelFormats.h>
 #include <GradientSignal/Util.h>
 #include <numeric>
 
 namespace
 {
-    template <ImageProcessing::EPixelFormat>
+    template <ImageProcessingAtom::EPixelFormat>
     float RetrieveValue(const AZ::u8* mem,  size_t index)
     {
         AZ_Assert(false, "Unimplemented!");
     }
 
     template <>
-    float RetrieveValue<ImageProcessing::EPixelFormat::ePixelFormat_Unknown>([[maybe_unused]] const AZ::u8* mem, [[maybe_unused]]  size_t index)
+    float RetrieveValue<ImageProcessingAtom::EPixelFormat::ePixelFormat_Unknown>([[maybe_unused]] const AZ::u8* mem, [[maybe_unused]]  size_t index)
     {
         return 0.0f;
     }
 
     template <>
-    float RetrieveValue<ImageProcessing::EPixelFormat::ePixelFormat_R8>(const AZ::u8* mem,  size_t index)
+    float RetrieveValue<ImageProcessingAtom::EPixelFormat::ePixelFormat_R8>(const AZ::u8* mem,  size_t index)
     {
         return mem[index] / static_cast<float>(std::numeric_limits<AZ::u8>::max());
     }
 
     template <>
-    float RetrieveValue<ImageProcessing::EPixelFormat::ePixelFormat_R16>(const AZ::u8* mem,  size_t index)
+    float RetrieveValue<ImageProcessingAtom::EPixelFormat::ePixelFormat_R16>(const AZ::u8* mem,  size_t index)
     {
         // 16 bits per channel
         auto actualMem = reinterpret_cast<const AZ::u16*>(mem);
@@ -54,7 +54,7 @@ namespace
     }
 
     template <>
-    float RetrieveValue<ImageProcessing::EPixelFormat::ePixelFormat_R32>(const AZ::u8* mem,  size_t index)
+    float RetrieveValue<ImageProcessingAtom::EPixelFormat::ePixelFormat_R32>(const AZ::u8* mem,  size_t index)
     {
         // 32 bits per channel
         auto actualMem = reinterpret_cast<const AZ::u32*>(mem);
@@ -64,7 +64,7 @@ namespace
     }
 
     template <>
-    float RetrieveValue<ImageProcessing::EPixelFormat::ePixelFormat_R32F>(const AZ::u8* mem,  size_t index)
+    float RetrieveValue<ImageProcessingAtom::EPixelFormat::ePixelFormat_R32F>(const AZ::u8* mem,  size_t index)
     {
         // 32 bits per channel
         auto actualMem = reinterpret_cast<const float*>(mem);
@@ -75,7 +75,7 @@ namespace
 
     float RetrieveValue(const AZ::u8* mem, size_t index, ImageProcessingAtom::EPixelFormat format)
     {
-        using namespace ImageProcessing;
+        using namespace ImageProcessingAtom;
 
         switch (format)
         {
@@ -142,9 +142,9 @@ namespace GradientSignal
             }
 
             AZ::SerializeContext::DataElementNode& format = classElement.GetSubElement(formatIndex);
-            if (format.Convert<ImageProcessing::EPixelFormat>(context))
+            if (format.Convert<ImageProcessingAtom::EPixelFormat>(context))
             {
-                format.SetData<ImageProcessing::EPixelFormat>(context, ImageProcessing::EPixelFormat::ePixelFormat_R8);
+                format.SetData<ImageProcessingAtom::EPixelFormat>(context, ImageProcessingAtom::EPixelFormat::ePixelFormat_R8);
             }
 
             int bppIndex = classElement.AddElement<AZ::u8>(context, "BytesPerPixel");

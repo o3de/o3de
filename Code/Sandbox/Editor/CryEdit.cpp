@@ -454,7 +454,6 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_FILE_SAVELEVELRESOURCES, OnFileSavelevelresources)
     ON_COMMAND(ID_CLEAR_REGISTRY, OnClearRegistryData)
     ON_COMMAND(ID_VALIDATELEVEL, OnValidatelevel)
-    ON_COMMAND(ID_TOOLS_VALIDATEOBJECTPOSITIONS, OnValidateObjectPositions)
     ON_COMMAND(ID_TOOLS_PREFERENCES, OnToolsPreferences)
     ON_COMMAND(ID_GRAPHICS_SETTINGS, OnGraphicsSettings)
     ON_COMMAND(ID_SWITCHCAMERA_DEFAULTCAMERA, OnSwitchToDefaultCamera)
@@ -3905,119 +3904,6 @@ void CCryEditApp::OnValidatelevel()
     // TODO: Add your command handler code here
     CLevelInfo levelInfo;
     levelInfo.Validate();
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnValidateObjectPositions()
-{
-    IObjectManager* objMan = GetIEditor()->GetObjectManager();
-
-    if (!objMan)
-    {
-        return;
-    }
-
-    CErrorReport errorReport;
-    errorReport.SetCurrentFile("");
-    errorReport.SetImmediateMode(false);
-
-    int objCount = objMan->GetObjectCount();
-    AABB bbox1;
-    AABB bbox2;
-    int bugNo = 0;
-    QString statTxt("");
-
-    std::vector<CBaseObject*> objects;
-    objMan->GetObjects(objects);
-
-    std::vector<CBaseObject*> foundObjects;
-
-    std::vector<GUID> objIDs;
-
-    for (int i1 = 0; i1 < objCount; ++i1)
-    {
-        CBaseObject* pObj1 = objects[i1];
-
-        if (!pObj1)
-        {
-            continue;
-        }
-
-        // Object must have geometry
-        if (!pObj1->GetGeometry())
-        {
-            continue;
-        }
-
-        pObj1->GetBoundBox(bbox1);
-
-        // Check if object has other objects inside its bbox
-        foundObjects.clear();
-        objMan->FindObjectsInAABB(bbox1, foundObjects);
-
-        for (int i2 = 0; i2 < foundObjects.size(); ++i2)
-        {
-            CBaseObject* pObj2 = objects[i2];
-            if (!pObj2)
-            {
-                continue;
-            }
-
-            if (pObj2->GetId() == pObj1->GetId())
-            {
-                continue;
-            }
-
-            if (pObj2->GetParent())
-            {
-                continue;
-            }
-
-            if (stl::find(objIDs, pObj2->GetId()))
-            {
-                continue;
-            }
-
-            if (!pObj2->GetGeometry())
-            {
-                continue;
-            }
-
-            pObj2->GetBoundBox(bbox2);
-
-            if (!bbox1.IsContainPoint(bbox2.max))
-            {
-                continue;
-            }
-
-            if (!bbox1.IsContainPoint(bbox2.min))
-            {
-                continue;
-            }
-
-            objIDs.push_back(pObj2->GetId());
-
-            CErrorRecord error;
-            error.pObject = pObj2;
-            error.count = bugNo;
-            error.error = tr("%1 inside %2 object").arg(pObj2->GetName(), pObj1->GetName());
-            error.description = "Object left inside other object";
-            errorReport.ReportError(error);
-            ++bugNo;
-        }
-
-        statTxt = tr("%1/%2 [Reported Objects: %3]").arg(i1).arg(objCount).arg(bugNo);
-        GetIEditor()->SetStatusText(statTxt);
-    }
-
-    if (errorReport.GetErrorCount() == 0)
-    {
-        QMessageBox::critical(AzToolsFramework::GetActiveWindow(), QString(), QObject::tr("No Errors Found"));
-    }
-    else
-    {
-        errorReport.Display();
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -37,6 +37,8 @@
 #include "ViewManager.h"
 #include "IEditorImpl.h"
 #include "GameEngine.h"
+#include <IEntityRenderState.h>
+#include <IStatObj.h>
 // To use the Andrew's algorithm in order to make convex hull from the points, this header is needed.
 #include "Util/GeometryUtil.h"
 

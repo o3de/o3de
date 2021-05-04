@@ -1651,7 +1651,7 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
 }
 
 //////////////////////////////////////////////////////////////////////
-bool CSystem::UpdatePostTickBus(int updateFlags, int nPauseMode)
+bool CSystem::UpdatePostTickBus(int updateFlags, int /*nPauseMode*/)
 {
     CTimeValue updateStart = gEnv->pTimer->GetAsyncTime();
 

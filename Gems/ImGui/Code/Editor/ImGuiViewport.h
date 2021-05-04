@@ -17,6 +17,7 @@
 #include <AzCore/std/containers/stack.h>
 #include <AzCore/std/containers/vector.h>
 #include <Cry_Math.h>
+#include <Cry_Camera.h>
 #include <VertexFormats.h>
 #endif
 
