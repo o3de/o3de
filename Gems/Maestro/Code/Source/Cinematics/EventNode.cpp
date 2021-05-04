@@ -112,8 +112,11 @@ void CAnimEventNode::OnReset()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CAnimEventNode::Reflect(AZ::SerializeContext* serializeContext)
+void CAnimEventNode::Reflect(AZ::ReflectContext* context)
 {
-    serializeContext->Class<CAnimEventNode, CAnimNode>()
-        ->Version(1);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<CAnimEventNode, CAnimNode>()
+            ->Version(1);
+    }
 }

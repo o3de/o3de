@@ -10,14 +10,14 @@
 #
 
 set(FILES
-    testdata/config_broken_badplatform/AssetProcessorPlatformConfig.ini
-    testdata/config_broken_noplatform/AssetProcessorPlatformConfig.ini
-    testdata/config_broken_noscans/AssetProcessorPlatformConfig.ini
-    testdata/config_broken_recognizers/AssetProcessorPlatformConfig.ini
-    testdata/config_regular/AssetProcessorPlatformConfig.ini
-    testdata/config_regular_platform_scanfolder/AssetProcessorPlatformConfig.ini
-    testdata/EmptyDummyProject/AssetProcessorGamePlatformConfig.ini
-    testdata/DummyProject/AssetProcessorGamePlatformConfig.ini
+    testdata/config_broken_badplatform/AssetProcessorPlatformConfig.setreg
+    testdata/config_broken_noplatform/AssetProcessorPlatformConfig.setreg
+    testdata/config_broken_noscans/AssetProcessorPlatformConfig.setreg
+    testdata/config_broken_recognizers/AssetProcessorPlatformConfig.setreg
+    testdata/config_regular/AssetProcessorPlatformConfig.setreg
+    testdata/config_regular_platform_scanfolder/AssetProcessorPlatformConfig.setreg
+    testdata/EmptyDummyProject/AssetProcessorGamePlatformConfig.setreg
+    testdata/DummyProject/AssetProcessorGamePlatformConfig.setreg
     native/tests/AssetProcessorTest.h
     native/tests/AssetProcessorTest.cpp
     native/tests/BaseAssetProcessorTest.h

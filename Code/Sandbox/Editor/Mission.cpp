@@ -212,8 +212,11 @@ void CMission::SyncContent(bool bRetrieve, bool bIgnoreObjects, [[maybe_unused]]
     else
     {
         // Save time of day.
-        m_timeOfDay = XmlHelpers::CreateXmlNode("TimeOfDay");
-        GetIEditor()->Get3DEngine()->GetTimeOfDay()->Serialize(m_timeOfDay, false);
+        if (GetIEditor()->Get3DEngine())
+        {
+            m_timeOfDay = XmlHelpers::CreateXmlNode("TimeOfDay");
+            GetIEditor()->Get3DEngine()->GetTimeOfDay()->Serialize(m_timeOfDay, false);
+        }
 
         if (!bIgnoreObjects)
         {

@@ -25,9 +25,12 @@ namespace AZ
                 AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context);
                 if (behaviorContext)
                 {
+                    behaviorContext->Class<DataTypes::IGraphObject>();
+
                     behaviorContext->Class<GraphObjectProxy>()
                         ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                         ->Attribute(AZ::Script::Attributes::Module, "scene.graph")
+                        ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                         ->Method("CastWithTypeName", &GraphObjectProxy::CastWithTypeName)
                         ->Method("Invoke", &GraphObjectProxy::Invoke)
                         ;

@@ -298,7 +298,7 @@ namespace
                 AZ::IO::FixedMaxPathString engineRoot = AZ::Utils::GetEnginePath();
                 QDir engineDir = !engineRoot.empty() ? QDir(QString(engineRoot.c_str())) : QDir::current();
 
-                QString scriptFolder = engineDir.absoluteFilePath("Editor/Scripts/");
+                QString scriptFolder = engineDir.absoluteFilePath("Assets/Editor/Scripts/");
                 Path::ConvertBackSlashToSlash(scriptFolder);
                 path = scriptFolder + pFile;
 
@@ -524,7 +524,7 @@ namespace
                         // for example: Hello
                         return AZStd::make_any<AZStd::string>(stringValue.toUtf8().data());
                     }
-                    else // then it looks like an integer 
+                    else // then it looks like an integer
                     {
                         // for example: 456
                         return AZStd::make_any<AZ::s64>(stringValue.toInt());
@@ -685,68 +685,6 @@ namespace
         else
         {
             throw std::logic_error("Invalid axes.");
-        }
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // Edit Mode
-    //////////////////////////////////////////////////////////////////////////
-    const char* PyGetEditMode()
-    {
-        int actualEditMode = GetIEditor()->GetEditMode();
-        switch (actualEditMode)
-        {
-        case eEditModeSelect:
-            return "SELECT";
-        case eEditModeSelectArea:
-            return "SELECTAREA";
-        case eEditModeMove:
-            return "MOVE";
-        case eEditModeRotate:
-            return "ROTATE";
-        case eEditModeScale:
-            return "SCALE";
-        case eEditModeTool:
-            return "TOOL";
-        default:
-            throw std::logic_error("Invalid edit mode.");
-        }
-    }
-
-    void PySetEditMode(AZStd::string_view pEditMode)
-    {
-        if (pEditMode == "MOVE")
-        {
-            GetIEditor()->SetEditMode(eEditModeMove);
-        }
-        else if (pEditMode == "ROTATE")
-        {
-            GetIEditor()->SetEditMode(eEditModeRotate);
-        }
-        else if (pEditMode == "SCALE")
-        {
-            GetIEditor()->SetEditMode(eEditModeScale);
-        }
-        else if (pEditMode == "SELECT")
-        {
-            GetIEditor()->SetEditMode(eEditModeSelect);
-        }
-        else if (pEditMode == "SELECTAREA")
-        {
-            GetIEditor()->SetEditMode(eEditModeSelectArea);
-        }
-        else if (pEditMode == "TOOL")
-        {
-            GetIEditor()->SetEditMode(eEditModeTool);
-        }
-        else if (pEditMode == "RULER")
-        {
-            CRuler* pRuler = GetIEditor()->GetRuler();
-            pRuler->SetActive(!pRuler->IsActive());
-        }
-        else
-        {
-            throw std::logic_error("Invalid edit mode.");
         }
     }
 
@@ -1031,8 +969,6 @@ namespace AzToolsFramework
                 ->Event("OpenFileBox", &EditorLayerPythonRequestBus::Events::OpenFileBox)
                 ->Event("GetAxisConstraint", &EditorLayerPythonRequestBus::Events::GetAxisConstraint)
                 ->Event("SetAxisConstraint", &EditorLayerPythonRequestBus::Events::SetAxisConstraint)
-                ->Event("GetEditMode", &EditorLayerPythonRequestBus::Events::GetEditMode)
-                ->Event("SetEditMode", &EditorLayerPythonRequestBus::Events::SetEditMode)
                 ->Event("GetPakFromFile", &EditorLayerPythonRequestBus::Events::GetPakFromFile)
                 ->Event("Log", &EditorLayerPythonRequestBus::Events::Log)
                 ->Event("Undo", &EditorLayerPythonRequestBus::Events::Undo)
@@ -1168,16 +1104,6 @@ namespace AzToolsFramework
         return PySetAxisConstraint(pConstrain);
     }
 
-    const char* PythonEditorComponent::GetEditMode()
-    {
-        return PyGetEditMode();
-    }
-
-    void PythonEditorComponent::SetEditMode(AZStd::string_view pEditMode)
-    {
-        return PySetEditMode(pEditMode);
-    }
-
     const char* PythonEditorComponent::GetPakFromFile(const char* filename)
     {
         return PyGetPakFromFile(filename);
@@ -1251,9 +1177,6 @@ namespace AzToolsFramework
 
             addLegacyGeneral(behaviorContext->Method("get_axis_constraint", PyGetAxisConstraint, nullptr, "Gets axis."));
             addLegacyGeneral(behaviorContext->Method("set_axis_constraint", PySetAxisConstraint, nullptr, "Sets axis."));
-
-            addLegacyGeneral(behaviorContext->Method("get_edit_mode", PyGetEditMode, nullptr, "Gets edit mode."));
-            addLegacyGeneral(behaviorContext->Method("set_edit_mode", PySetEditMode, nullptr, "Sets edit mode."));
 
             addLegacyGeneral(behaviorContext->Method("get_pak_from_file", PyGetPakFromFile, nullptr, "Finds a pak file name for a given file."));
 

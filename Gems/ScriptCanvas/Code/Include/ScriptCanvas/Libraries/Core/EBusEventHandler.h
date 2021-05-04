@@ -115,6 +115,7 @@ namespace ScriptCanvas
 
                 AZ::Outcome<AZStd::string, void> GetFunctionCallName(const Slot* /*slot*/) const override;
                 bool IsEBusAddressed() const override;
+                AZStd::optional<size_t> GetEventIndex(AZStd::string eventName) const;
                 const EBusEventEntry* FindEvent(const AZStd::string& name) const;
                 AZStd::string GetEBusName() const override;
                 bool IsAutoConnected() const override;

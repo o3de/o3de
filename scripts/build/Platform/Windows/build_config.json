@@ -104,12 +104,12 @@
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_smoke TEST_SUITE_main",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
-      "CTEST_OPTIONS": "-L \"(SUITE_smoke|SUITE_main)\" -LE \"(REQUIRES_gpu)\" -T Test"
+      "CTEST_OPTIONS": "-L \"(SUITE_smoke|SUITE_main)\" -LE \"(REQUIRES_gpu)\" -T Test",
+      "TEST_METRICS": "True"
     }
   },
   "profile_vs2019": {
     "TAGS": [
-      "project",
       "daily-pipeline-metrics",
       "weekly-build-metrics"
     ],
@@ -151,7 +151,8 @@
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_smoke TEST_SUITE_main",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
-      "CTEST_OPTIONS": "-L \"(SUITE_smoke|SUITE_main)\" -LE \"(REQUIRES_gpu)\" -T Test"
+      "CTEST_OPTIONS": "-L \"(SUITE_smoke|SUITE_main)\" -LE \"(REQUIRES_gpu)\" -T Test",
+      "TEST_METRICS": "True"
     }
   },
   "test_gpu_profile_vs2019": {
@@ -169,7 +170,8 @@
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_smoke TEST_SUITE_main",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
-      "CTEST_OPTIONS": "-L \"(SUITE_smoke_REQUIRES_gpu|SUITE_main_REQUIRES_gpu)\" -T Test"
+      "CTEST_OPTIONS": "-L \"(SUITE_smoke_REQUIRES_gpu|SUITE_main_REQUIRES_gpu)\" -T Test",
+      "TEST_METRICS": "True"
     }
   },
   "asset_profile_vs2019": {
@@ -214,7 +216,8 @@
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_periodic",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
-      "CTEST_OPTIONS": "-L \"(SUITE_periodic)\" -T Test"
+      "CTEST_OPTIONS": "-L \"(SUITE_periodic)\" -T Test",
+      "TEST_METRICS": "True"
     }
   },
   "sandbox_test_profile_vs2019": {
@@ -233,7 +236,8 @@
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_sandbox",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
-      "CTEST_OPTIONS": "-L \"(SUITE_sandbox)\" -T Test"
+      "CTEST_OPTIONS": "-L \"(SUITE_sandbox)\" -T Test",
+      "TEST_METRICS": "True"
     }
   },
   "benchmark_test_profile_vs2019": {
@@ -249,7 +253,8 @@
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_benchmark",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
-      "CTEST_OPTIONS": "-L \"(SUITE_benchmark)\" -T Test"
+      "CTEST_OPTIONS": "-L \"(SUITE_benchmark)\" -T Test",
+      "TEST_METRICS": "True"
     }
   },
   "release_vs2019": {
@@ -290,10 +295,51 @@
     "PARAMETERS": {
         "CONFIGURATION": "profile",
         "OUTPUT_DIRECTORY": "build\\windows_vs2019",
-        "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DCMAKE_INSTALL_PREFIX=build\\install",
+        "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DLY_DISABLE_TEST_MODULES=TRUE -DCMAKE_INSTALL_PREFIX=install",
         "CMAKE_LY_PROJECTS": "",
         "CMAKE_TARGET": "INSTALL",
         "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
     }
+  },
+  "project_enginesource_profile_vs2019": {
+    "TAGS": [
+      "project"
+    ],
+    "PIPELINE_ENV": {
+      "EXECUTE_FROM_PROJECT": "1"
+    },
+    "COMMAND": "build_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build\\windows_vs2019",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DCMAKE_MODULE_PATH=!WORKSPACE!/o3de/cmake",
+      "CMAKE_LY_PROJECTS": "",
+      "CMAKE_TARGET": "ALL_BUILD",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
+    }
+  },
+  "project_engineinstall_profile_vs2019": {
+    "TAGS": [],
+    "PIPELINE_ENV": {
+      "EXECUTE_FROM_PROJECT": "1"
+    },
+    "COMMAND": "build_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build\\windows_vs2019",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DCMAKE_MODULE_PATH=!WORKSPACE!/o3de/build/windows_vs2019/install/cmake",
+      "CMAKE_LY_PROJECTS": "",
+      "CMAKE_TARGET": "ALL_BUILD",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
+    }
+  },
+  "project_engineinstall_profile_vs2019_pipe": {
+    "TAGS": [
+      "project"
+    ],
+    "steps": [
+      "install_profile_vs2019",
+      "project_engineinstall_profile_vs2019"
+    ]
   }
 }

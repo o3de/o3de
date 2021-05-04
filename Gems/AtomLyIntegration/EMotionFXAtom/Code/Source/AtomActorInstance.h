@@ -18,7 +18,7 @@
 
 #include <Integration/Rendering/RenderActorInstance.h>
 
-#include <LmbrCentral/Rendering/MeshComponentBus.h>
+#include <LmbrCentral/Animation/SkeletalHierarchyRequestBus.h>
 
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h>
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
@@ -128,12 +128,12 @@ namespace AZ
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // MeshComponentRequestBus::Handler overrides...
             void SetModelAsset(Data::Asset<RPI::ModelAsset> modelAsset) override;
-            const Data::Asset<RPI::ModelAsset>& GetModelAsset() const override;
+            Data::Asset<const RPI::ModelAsset> GetModelAsset() const override;
             void SetModelAssetId(Data::AssetId modelAssetId) override;
             Data::AssetId GetModelAssetId() const override;
             void SetModelAssetPath(const AZStd::string& modelAssetPath) override;
             AZStd::string GetModelAssetPath() const override;
-            const AZ::Data::Instance<RPI::Model> GetModel() const override;
+            AZ::Data::Instance<RPI::Model> GetModel() const override;
             void SetSortKey(RHI::DrawItemSortKey sortKey) override;
             RHI::DrawItemSortKey GetSortKey() const override;
             void SetLodOverride(RPI::Cullable::LodOverride lodOverride) override;

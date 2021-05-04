@@ -10,8 +10,6 @@
 #
 
 set(FILES
-    NullEditTool.h
-    NullEditTool.cpp
     Translations/editor_en-us.ts
     Translations/assetbrowser_en-us.ts
     DPIAware.xml
@@ -389,8 +387,6 @@ set(FILES
     Controls/NumberCtrl.h
     Controls/PreviewModelCtrl.cpp
     Controls/PreviewModelCtrl.h
-    Controls/QRollupCtrl.cpp
-    Controls/QRollupCtrl.h
     Controls/SplineCtrl.cpp
     Controls/SplineCtrl.h
     Controls/SplineCtrlEx.cpp
@@ -401,8 +397,6 @@ set(FILES
     Controls/TimelineCtrl.h
     Controls/TimeOfDaySlider.cpp
     Controls/TimeOfDaySlider.h
-    Controls/ToolButton.cpp
-    Controls/ToolButton.h
     Controls/WndGridHelper.h
     Controls/ReflectedPropertyControl/PropertyAnimationCtrl.cpp
     Controls/ReflectedPropertyControl/PropertyAnimationCtrl.h
@@ -451,8 +445,6 @@ set(FILES
     CustomResolutionDlg.cpp
     CustomResolutionDlg.ui
     CustomResolutionDlg.h
-    Dialogs/ButtonsPanel.cpp
-    Dialogs/ButtonsPanel.h
     ErrorReportDialog.ui
     ErrorReportDialog.cpp
     ErrorReportDialog.h
@@ -492,9 +484,6 @@ set(FILES
     SelectLightAnimationDialog.h
     SelectSequenceDialog.cpp
     SelectSequenceDialog.h
-    SetVectorDlg.cpp
-    SetVectorDlg.h
-    SetVectorDlg.ui
     ShadersDialog.cpp
     ShadersDialog.h
     ShadersDialog.ui
@@ -522,9 +511,6 @@ set(FILES
     DimensionsDialog.cpp
     DimensionsDialog.h
     DimensionsDialog.ui
-    Dialogs/QT/NewEntityDialog.cpp
-    Dialogs/QT/NewEntityDialog.h
-    Dialogs/QT/NewEntityDialog.ui
     NewLevelDialog.cpp
     NewLevelDialog.h
     NewLevelDialog.ui
@@ -533,18 +519,8 @@ set(FILES
     Dialogs/PythonScriptsDialog.ui
     Dialogs/Generic/UserOptions.cpp
     Dialogs/Generic/UserOptions.h
-    ObjectCloneTool.cpp
-    ObjectCloneTool.h
     EditMode/SubObjectSelectionReferenceFrameCalculator.cpp
     EditMode/SubObjectSelectionReferenceFrameCalculator.h
-    EditMode/ObjectMode.cpp
-    EditMode/ObjectMode.h
-    RotateTool.cpp
-    RotateTool.h
-    EditTool.cpp
-    EditTool.h
-    VoxelAligningTool.cpp
-    VoxelAligningTool.h
     Export/ExportManager.cpp
     Export/ExportManager.h
     Export/OBJExporter.cpp
@@ -569,13 +545,8 @@ set(FILES
     Geometry/TriMesh.h
     AboutDialog.h
     AboutDialog.ui
-    DatabaseFrameWnd.h
-    DatabaseFrameWnd.ui
-    DatabaseFrameWnd.qrc
-    Dialogs/DuplicatedObjectsHandlerDlg.h
     DocMultiArchive.h
     EditMode/DeepSelection.h
-    EditMode/VertexSnappingModeTool.h
     FBXExporterDialog.h
     FileTypeUtils.h
     GridUtils.h
@@ -597,31 +568,6 @@ set(FILES
     WipFeaturesDlg.qrc
     LevelIndependentFileMan.cpp
     LevelIndependentFileMan.h
-    LensFlareEditor/ILensFlareListener.h
-    LensFlareEditor/LensFlareAtomicList.cpp
-    LensFlareEditor/LensFlareAtomicList.h
-    LensFlareEditor/LensFlareEditor.cpp
-    LensFlareEditor/LensFlareEditor.h
-    LensFlareEditor/LensFlareElement.cpp
-    LensFlareEditor/LensFlareElement.h
-    LensFlareEditor/LensFlareElementTree.cpp
-    LensFlareEditor/LensFlareElementTree.h
-    LensFlareEditor/LensFlareItem.cpp
-    LensFlareEditor/LensFlareItem.h
-    LensFlareEditor/LensFlareItemTree.cpp
-    LensFlareEditor/LensFlareItemTree.h
-    LensFlareEditor/LensFlareLibrary.cpp
-    LensFlareEditor/LensFlareLibrary.h
-    LensFlareEditor/LensFlareLightEntityTree.cpp
-    LensFlareEditor/LensFlareLightEntityTree.h
-    LensFlareEditor/LensFlareManager.cpp
-    LensFlareEditor/LensFlareManager.h
-    LensFlareEditor/LensFlareUndo.cpp
-    LensFlareEditor/LensFlareUndo.h
-    LensFlareEditor/LensFlareUtil.cpp
-    LensFlareEditor/LensFlareUtil.h
-    LensFlareEditor/LensFlareView.cpp
-    LensFlareEditor/LensFlareView.h
     LogFileImpl.cpp
     LogFileImpl.h
     MatEditPreviewDlg.cpp
@@ -639,8 +585,6 @@ set(FILES
     Material/MaterialLibrary.h
     Material/MaterialManager.cpp
     Material/MaterialManager.h
-    Material/MaterialPickTool.cpp
-    Material/MaterialPickTool.h
     MaterialSender.h
     MaterialSender.cpp
     Material/MaterialPythonFuncs.h
@@ -662,8 +606,6 @@ set(FILES
     Objects/ObjectManager.h
     Objects/ObjectManagerLegacyUndo.cpp
     Objects/ObjectManagerLegacyUndo.h
-    Objects/ObjectPhysicsManager.cpp
-    Objects/ObjectPhysicsManager.h
     Objects/DisplayContext.cpp
     Objects/DisplayContext.h
     Objects/EntityObject.cpp
@@ -736,13 +678,9 @@ set(FILES
     GraphicsSettingsDialog.cpp
     graphicssettingsdialog.ui
     AboutDialog.cpp
-    DatabaseFrameWnd.cpp
-    Dialogs/DuplicatedObjectsHandlerDlg.cpp
-    Dialogs/DuplicatedObjectsHandlerDlg.ui
     ErrorReportTableModel.h
     ErrorReportTableModel.cpp
     EditMode/DeepSelection.cpp
-    EditMode/VertexSnappingModeTool.cpp
     FBXExporterDialog.cpp
     FBXExporterDialog.ui
     FileTypeUtils.cpp

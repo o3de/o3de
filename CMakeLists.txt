@@ -9,7 +9,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-# Cmake version 3.17 is the minimum version needed for all of Open 3D Engine's supported platforms
+# Cmake version 3.19 is the minimum version needed for all of Open 3D Engine's supported platforms
 cmake_minimum_required(VERSION 3.19)
 
 # CMP0111 introduced in 3.19 has a bug that produces the policy to warn every time there is an
@@ -21,7 +21,9 @@ if(CMAKE_VERSION VERSION_EQUAL 3.19)
     cmake_policy(SET CMP0111 OLD)
 endif()
 
+include(cmake/LySet.cmake)
 include(cmake/Version.cmake)
+include(cmake/OutputDirectory.cmake)
 
 if(NOT PROJECT_NAME)
     project(O3DE
@@ -30,7 +32,7 @@ if(NOT PROJECT_NAME)
     )
 endif()
 
-include(cmake/Initialize.cmake)
+include(cmake/GeneralSettings.cmake)
 include(cmake/FileUtil.cmake)
 include(cmake/PAL.cmake)
 include(cmake/PALTools.cmake)
@@ -73,10 +75,9 @@ foreach(restricted_platform ${PAL_RESTRICTED_PLATFORMS})
     endif()
 endforeach()
 
-# Recurse into directory of general python test scripts
-add_subdirectory(ctest_scripts)
-
-add_subdirectory(scripts)
+if(NOT INSTALLED_ENGINE)
+    add_subdirectory(scripts)
+endif()
 
 # SPEC-1417 will investigate and fix this
 if(NOT PAL_PLATFORM_NAME STREQUAL "Mac")
@@ -121,7 +122,10 @@ endif()
 include(cmake/RuntimeDependencies.cmake)
 # 5. Perform test impact framework post steps once all of the targets have been enumerated
 ly_test_impact_post_step()
-# 6. Generate the O3DE find file and setup install locations for scripts, tools, assets etc., required by the engine 
+# 6. Generate the O3DE find file and setup install locations for scripts, tools, assets etc., required by the engine
 if(NOT INSTALLED_ENGINE)
     ly_setup_o3de_install()
+
+    # IMPORTANT: must be included last
+    include(cmake/CPack.cmake)
 endif()

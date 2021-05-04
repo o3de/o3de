@@ -27,7 +27,7 @@
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/Entity/EntityContext.h>
 #include <AzFramework/Scene/Scene.h>
-#include <AzFramework/Scene/SceneSystemBus.h>
+#include <AzFramework/Scene/SceneSystemInterface.h>
 
 #include <AzCore/RTTI/BehaviorContext.h>
 
@@ -188,6 +188,11 @@ namespace AZ
             m_meshFeatureProcessor = RPI::Scene::GetFeatureProcessorForEntity<MeshFeatureProcessorInterface>(m_entityId);
             AZ_Error("MeshComponentController", m_meshFeatureProcessor, "Unable to find a MeshFeatureProcessorInterface on the entityId.");
 
+            m_cachedNonUniformScale = AZ::Vector3::CreateOne();
+            AZ::NonUniformScaleRequestBus::EventResult(m_cachedNonUniformScale, m_entityId, &AZ::NonUniformScaleRequests::GetScale);
+            AZ::NonUniformScaleRequestBus::Event(m_entityId, &AZ::NonUniformScaleRequests::RegisterScaleChangedEvent,
+                m_nonUniformScaleChangedHandler);
+
             MeshComponentRequestBus::Handler::BusConnect(m_entityId);
             TransformNotificationBus::Handler::BusConnect(m_entityId);
             MaterialReceiverRequestBus::Handler::BusConnect(m_entityId);
@@ -209,6 +214,8 @@ namespace AZ
             MaterialReceiverRequestBus::Handler::BusDisconnect();
             MaterialComponentNotificationBus::Handler::BusDisconnect();
 
+            m_nonUniformScaleChangedHandler.Disconnect();
+
             m_meshFeatureProcessor = nullptr;
             m_transformInterface = nullptr;
             m_entityId = AZ::EntityId(AZ::EntityId::InvalidEntityId);
@@ -229,7 +236,16 @@ namespace AZ
         {
             if (m_meshFeatureProcessor)
             {
-                m_meshFeatureProcessor->SetTransform(m_meshHandle, world);
+                m_meshFeatureProcessor->SetTransform(m_meshHandle, world, m_cachedNonUniformScale);
+            }
+        }
+
+        void MeshComponentController::HandleNonUniformScaleChange(const AZ::Vector3& nonUniformScale)
+        {
+            m_cachedNonUniformScale = nonUniformScale;
+            if (m_meshFeatureProcessor)
+            {
+                m_meshFeatureProcessor->SetTransform(m_meshHandle, m_transformInterface->GetWorldTM(), m_cachedNonUniformScale);
             }
         }
 
@@ -252,12 +268,32 @@ namespace AZ
             }
         }
 
+        bool MeshComponentController::RequiresCloning(const Data::Asset<RPI::ModelAsset>& modelAsset)
+        {
+            // Is the model asset containing a cloth buffer? If yes, we need to clone the model asset for instancing.
+            const AZStd::array_view<AZ::Data::Asset<AZ::RPI::ModelLodAsset>> lodAssets = modelAsset->GetLodAssets();
+            for (const AZ::Data::Asset<AZ::RPI::ModelLodAsset>& lodAsset : lodAssets)
+            {
+                const AZStd::array_view<AZ::RPI::ModelLodAsset::Mesh> meshes = lodAsset->GetMeshes();
+                for (const AZ::RPI::ModelLodAsset::Mesh& mesh : meshes)
+                {
+                    if (mesh.GetSemanticBufferAssetView(AZ::Name("CLOTH_DATA")) != nullptr)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
         void MeshComponentController::HandleModelChange(Data::Instance<RPI::Model> model)
         {
-            if (model)
+            Data::Asset<RPI::ModelAsset> modelAsset = m_meshFeatureProcessor->GetModelAsset(m_meshHandle);
+            if (model && modelAsset)
             {
-                m_configuration.m_modelAsset = model->GetModelAsset();
-                MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnModelReady, model->GetModelAsset(), model);
+                m_configuration.m_modelAsset = modelAsset;
+                MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnModelReady, m_configuration.m_modelAsset, model);
                 MaterialReceiverNotificationBus::Event(m_entityId, &MaterialReceiverNotificationBus::Events::OnMaterialAssignmentsChanged);
                 AzFramework::EntityBoundsUnionRequestBus::Broadcast(
                     &AzFramework::EntityBoundsUnionRequestBus::Events::RefreshEntityLocalBoundsUnion, m_entityId);
@@ -272,11 +308,13 @@ namespace AZ
                 MaterialComponentRequestBus::EventResult(materials, m_entityId, &MaterialComponentRequests::GetMaterialOverrides);
 
                 m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
-                m_meshHandle = m_meshFeatureProcessor->AcquireMesh(m_configuration.m_modelAsset, materials);
+                m_meshHandle = m_meshFeatureProcessor->AcquireMesh(m_configuration.m_modelAsset, materials,
+                    /*skinnedMeshWithMotion=*/false, /*rayTracingEnabled=*/true, RequiresCloning);
                 m_meshFeatureProcessor->ConnectModelChangeEventHandler(m_meshHandle, m_changeEventHandler);
 
-                const AZ::Transform& transform = m_transformInterface ? m_transformInterface->GetWorldTM() : Transform::Identity();
-                m_meshFeatureProcessor->SetTransform(m_meshHandle, transform);
+                const AZ::Transform& transform = m_transformInterface ? m_transformInterface->GetWorldTM() : AZ::Transform::CreateIdentity();
+
+                m_meshFeatureProcessor->SetTransform(m_meshHandle, transform, m_cachedNonUniformScale);
                 m_meshFeatureProcessor->SetSortKey(m_meshHandle, m_configuration.m_sortKey);
                 m_meshFeatureProcessor->SetLodOverride(m_meshHandle, m_configuration.m_lodOverride);
                 m_meshFeatureProcessor->SetExcludeFromReflectionCubeMaps(m_meshHandle, m_configuration.m_excludeFromReflectionCubeMaps);
@@ -328,9 +366,9 @@ namespace AZ
             }
         }
 
-        const Data::Asset<RPI::ModelAsset>& MeshComponentController::GetModelAsset() const
+        Data::Asset<const RPI::ModelAsset> MeshComponentController::GetModelAsset() const
         {
-            return GetModel() ? GetModel()->GetModelAsset() : m_configuration.m_modelAsset;
+            return m_configuration.m_modelAsset;
         }
 
         Data::AssetId MeshComponentController::GetModelAssetId() const
@@ -352,7 +390,7 @@ namespace AZ
             return assetPathString;
         }
 
-        const Data::Instance<RPI::Model> MeshComponentController::GetModel() const
+        Data::Instance<RPI::Model> MeshComponentController::GetModel() const
         {
             return m_meshFeatureProcessor ? m_meshFeatureProcessor->GetModel(m_meshHandle) : Data::Instance<RPI::Model>();
         }
@@ -413,7 +451,16 @@ namespace AZ
         Aabb MeshComponentController::GetLocalBounds()
         {
             const Data::Instance<RPI::Model> model = GetModel();
-            return model ? model->GetAabb() : Aabb::CreateNull();
+            if (model)
+            {
+                Aabb aabb = model->GetAabb();
+                aabb.MultiplyByScale(m_cachedNonUniformScale);
+                return aabb;
+            }
+            else
+            {
+                return Aabb::CreateNull();
+            }
         }
     } // namespace Render
 } // namespace AZ

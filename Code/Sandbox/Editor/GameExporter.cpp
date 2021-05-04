@@ -33,11 +33,7 @@
 #include "Util/CryMemFile.h"
 #include "Objects/ObjectManager.h"
 
-#include "Objects/ObjectPhysicsManager.h"
 #include "Objects/EntityObject.h"
-#include "LensFlareEditor/LensFlareManager.h"
-#include "LensFlareEditor/LensFlareLibrary.h"
-#include "LensFlareEditor/LensFlareItem.h"
 
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 
@@ -125,9 +121,6 @@ bool CGameExporter::Export(unsigned int flags, [[maybe_unused]] EEndian eExportE
     {
         QDir::setCurrent(pEditor->GetPrimaryCDFolder());
 
-        // Close all Editor tools
-        pEditor->SetEditTool(0);
-
         QString sLevelPath = Path::AddSlash(pGameEngine->GetLevelPath());
         if (subdirectory && subdirectory[0] && strcmp(subdirectory, ".") != 0)
         {
@@ -142,7 +135,10 @@ bool CGameExporter::Export(unsigned int flags, [[maybe_unused]] EEndian eExportE
 
         // Make sure we unload any unused CGFs before exporting so that they don't end up in
         // the level data.
-        pEditor->Get3DEngine()->FreeUnusedCGFResources();
+        if (pEditor->Get3DEngine())
+        {
+            pEditor->Get3DEngine()->FreeUnusedCGFResources();
+        }
 
         CCryEditDoc* pDocument = pEditor->GetDocument();
 
@@ -193,14 +189,6 @@ bool CGameExporter::Export(unsigned int flags, [[maybe_unused]] EEndian eExportE
         }
 
         ////////////////////////////////////////////////////////////////////////
-        // Inform all objects that an export is about to begin
-        ////////////////////////////////////////////////////////////////////////
-        if (exportSuccessful)
-        {
-            GetIEditor()->GetObjectManager()->GetPhysicsManager()->PrepareForExport();
-        }
-
-        ////////////////////////////////////////////////////////////////////////
         // Export all data to the game
         ////////////////////////////////////////////////////////////////////////
         if (exportSuccessful)
@@ -219,7 +207,6 @@ bool CGameExporter::Export(unsigned int flags, [[maybe_unused]] EEndian eExportE
 
             ExportLevelInfo(sLevelPath);
 
-            ExportLevelLensFlares(sLevelPath);
             ExportLevelResourceList(sLevelPath);
             ExportLevelUsedResourceList(sLevelPath);
             ExportLevelShaderCache(sLevelPath);
@@ -285,7 +272,7 @@ void CGameExporter::ExportVisAreas(const char* pszGamePath, EEndian eExportEndia
     SHotUpdateInfo exportInfo;
     I3DEngine* p3DEngine = pEditor->Get3DEngine();
 
-    if (eExportEndian == GetPlatformEndian()) // skip second export, this data is common for PC and consoles
+    if (p3DEngine && (eExportEndian == GetPlatformEndian())) // skip second export, this data is common for PC and consoles
     {
         std::vector<struct IStatObj*>* pTempBrushTable = NULL;
         std::vector<_smart_ptr<IMaterial>>* pTempMatsTable = NULL;
@@ -370,25 +357,28 @@ void CGameExporter::ExportLevelData(const QString& path, bool bExportMission)
     QString missionFileName;
     QString currentMissionFileName;
     I3DEngine* p3DEngine = pEditor->Get3DEngine();
-    for (int i = 0; i < pDocument->GetMissionCount(); i++)
+    if (p3DEngine)
     {
-        CMission* pMission = pDocument->GetMission(i);
-
-        QString name = pMission->GetName();
-        name.replace(' ', '_');
-        missionFileName = QStringLiteral("Mission_%1.xml").arg(name);
-
-        XmlNodeRef missionDescNode = missionsNode->newChild("Mission");
-        missionDescNode->setAttr("Name", pMission->GetName().toUtf8().data());
-        missionDescNode->setAttr("File", missionFileName.toUtf8().data());
-        missionDescNode->setAttr("CGFCount", p3DEngine->GetLoadedObjectCount());
-
-        int nProgressBarRange = m_numExportedMaterials / 10 + p3DEngine->GetLoadedObjectCount();
-        missionDescNode->setAttr("ProgressBarRange", nProgressBarRange);
-
-        if (pMission == pCurrentMission)
+        for (int i = 0; i < pDocument->GetMissionCount(); i++)
         {
-            currentMissionFileName = missionFileName;
+            CMission* pMission = pDocument->GetMission(i);
+
+            QString name = pMission->GetName();
+            name.replace(' ', '_');
+            missionFileName = QStringLiteral("Mission_%1.xml").arg(name);
+
+            XmlNodeRef missionDescNode = missionsNode->newChild("Mission");
+            missionDescNode->setAttr("Name", pMission->GetName().toUtf8().data());
+            missionDescNode->setAttr("File", missionFileName.toUtf8().data());
+            missionDescNode->setAttr("CGFCount", p3DEngine->GetLoadedObjectCount());
+
+            int nProgressBarRange = m_numExportedMaterials / 10 + p3DEngine->GetLoadedObjectCount();
+            missionDescNode->setAttr("ProgressBarRange", nProgressBarRange);
+
+            if (pMission == pCurrentMission)
+            {
+                currentMissionFileName = missionFileName;
+            }
         }
     }
 
@@ -416,7 +406,10 @@ void CGameExporter::ExportLevelData(const QString& path, bool bExportMission)
         XmlNodeRef missionNode = rootAction->createNode("Mission");
         pCurrentMission->Export(missionNode, objectsNode);
 
-        missionNode->setAttr("CGFCount", p3DEngine->GetLoadedObjectCount());
+        if (p3DEngine)
+        {
+            missionNode->setAttr("CGFCount", p3DEngine->GetLoadedObjectCount());
+        }
 
         //if (!CFileUtil::OverwriteFile( path+currentMissionFileName ))
         //          return;
@@ -486,6 +479,11 @@ void CGameExporter::ExportLevelInfo(const QString& path)
 //////////////////////////////////////////////////////////////////////////
 void CGameExporter::ExportMapInfo(XmlNodeRef& node)
 {
+    if (!GetIEditor()->Get3DEngine())
+    {
+        return;
+    }
+
     XmlNodeRef info = node->newChild("LevelInfo");
 
     IEditor* pEditor = GetIEditor();
@@ -508,8 +506,6 @@ void CGameExporter::ExportMapInfo(XmlNodeRef& node)
     CXmlArchive xmlAr;
     xmlAr.bLoading = false;
     xmlAr.root = node;
-
-    GetIEditor()->GetObjectManager()->GetPhysicsManager()->SerializeCollisionClasses(xmlAr);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -552,67 +548,6 @@ void CGameExporter::ExportMaterials(XmlNodeRef& levelDataNode, const QString& pa
         m_levelPak.m_pakFile.RemoveFile(filename.toUtf8().data());
     }
     m_numExportedMaterials = numMtls;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CGameExporter::ExportLevelLensFlares(const QString& path)
-{
-    GetIEditor()->SetStatusText(QObject::tr("Exporting Lens Flares..."));
-    std::vector<CBaseObject*> objects;
-    GetIEditor()->GetObjectManager()->FindObjectsOfType(&CEntityObject::staticMetaObject, objects);
-    std::set<QString> flareNameSet;
-    for (int i = 0, iObjectSize(objects.size()); i < iObjectSize; ++i)
-    {
-        CEntityObject* pEntity = (CEntityObject*)objects[i];
-        if (!pEntity->IsLight())
-        {
-            continue;
-        }
-        QString flareName = pEntity->GetEntityPropertyString(CEntityObject::s_LensFlarePropertyName);
-        if (flareName.isEmpty() || flareName == "@root")
-        {
-            continue;
-        }
-        flareNameSet.insert(flareName);
-    }
-
-    XmlNodeRef pRootNode = GetIEditor()->GetSystem()->CreateXmlNode("LensFlareList");
-    pRootNode->setAttr("Version", FLARE_EXPORT_FILE_VERSION);
-
-    CLensFlareManager* pLensManager = GetIEditor()->GetLensFlareManager();
-
-    if (CLensFlareLibrary* pLevelLib = (CLensFlareLibrary*)pLensManager->GetLevelLibrary())
-    {
-        for (int i = 0; i < pLevelLib->GetItemCount(); i++)
-        {
-            CLensFlareItem* pItem = (CLensFlareItem*)pLevelLib->GetItem(i);
-
-            if (flareNameSet.find(pItem->GetFullName()) == flareNameSet.end())
-            {
-                continue;
-            }
-
-            CBaseLibraryItem::SerializeContext ctx(pItem->CreateXmlData(), false);
-            pRootNode->addChild(ctx.node);
-            pItem->Serialize(ctx);
-            flareNameSet.erase(pItem->GetFullName());
-        }
-    }
-
-    std::set<QString>::iterator iFlareNameSet = flareNameSet.begin();
-    for (; iFlareNameSet != flareNameSet.end(); ++iFlareNameSet)
-    {
-        QString flareName = *iFlareNameSet;
-        XmlNodeRef pFlareNode = GetIEditor()->GetSystem()->CreateXmlNode("LensFlare");
-        pFlareNode->setAttr("name", flareName.toUtf8().data());
-        pRootNode->addChild(pFlareNode);
-    }
-
-    CCryMemFile lensFlareNames;
-    lensFlareNames.Write(pRootNode->getXMLData()->GetString(), pRootNode->getXMLData()->GetStringLength());
-
-    QString exportPathName = path + FLARE_EXPORT_FILE;
-    m_levelPak.m_pakFile.UpdateFile(exportPathName.toUtf8().data(), lensFlareNames);
 }
 
 //////////////////////////////////////////////////////////////////////////

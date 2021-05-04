@@ -218,12 +218,10 @@ namespace ImageProcessingAtom
         AZ::Data::Asset<AZ::RPI::StreamingImageAsset> imageAsset = Utils::LoadImageAsset(product->GetAssetId());
         IImageObjectPtr image = Utils::LoadImageFromImageAsset(imageAsset);
 
-        AZStd::string productInfo;
-
-        QImage previewImage;
         if (image)
         {
             // Add product image info
+            AZStd::string productInfo;
             GetImageInfoString(imageAsset, productInfo);
 
             m_fileinfo += QStringLiteral("\r\n");
@@ -242,11 +240,11 @@ namespace ImageProcessingAtom
         m_fileinfo += GetFileSize(source->GetFullPath().c_str());
 
         IImageObjectPtr image = IImageObjectPtr(LoadImageFromFile(source->GetFullPath()));
-        AZStd::string sourceInfo;
-        QImage previewImage;
+
         if (image)
         {
             // Add source image info
+            AZStd::string sourceInfo;
             GetImageInfoString(image, sourceInfo);
 
             m_fileinfo += QStringLiteral("\r\n");

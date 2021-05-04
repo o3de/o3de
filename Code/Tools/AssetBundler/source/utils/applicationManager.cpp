@@ -45,8 +45,16 @@ namespace AssetBundler
 {
     const char compareVariablePrefix = '$';
 
-    ApplicationManager::ApplicationManager(int* argc, char*** argv)
-        : AzToolsFramework::ToolsApplication(argc, argv)
+    GemInfo::GemInfo(AZStd::string name, AZStd::string relativeFilePath, AZStd::string absoluteFilePath)
+        : m_gemName(name)
+        , m_relativeFilePath(relativeFilePath)
+        , m_absoluteFilePath(absoluteFilePath)
+    {
+    }
+
+    ApplicationManager::ApplicationManager(int* argc, char*** argv, QObject* parent)
+        : QObject(parent)
+        , AzToolsFramework::ToolsApplication(argc, argv)
     {
     }
 
@@ -55,7 +63,7 @@ namespace AssetBundler
         DestroyApplication();
     }
 
-    void ApplicationManager::Init()
+    bool ApplicationManager::Init()
     {
         AZ::Debug::TraceMessageBus::Handler::BusConnect();
         Start(AzFramework::Application::Descriptor());
@@ -72,8 +80,11 @@ namespace AssetBundler
         m_assetSeedManager = AZStd::make_unique<AzToolsFramework::AssetSeedManager>();
         AZ_TracePrintf(AssetBundler::AppWindowName, "\n");
 
+        g_cachedEngineRoot = AZ::IO::FixedMaxPath(GetEngineRoot());
+
         // There is no need to update the UserSettings file, so we can avoid a race condition by disabling save on shutdown
         AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
+        return true;
     }
 
     void ApplicationManager::DestroyApplication()
@@ -1522,7 +1533,7 @@ namespace AssetBundler
                 }
             }
 
-            AZStd::vector<AZStd::string> defaultSeeds = GetDefaultSeeds(GetEngineRoot(), AZ::Utils::GetProjectPath(), m_currentProjectName);
+            AZStd::vector<AZStd::string> defaultSeeds = GetDefaultSeeds(AZ::Utils::GetProjectPath(), m_currentProjectName);
             if (defaultSeeds.empty())
             {
                 // Error has already been thrown
@@ -2847,3 +2858,4 @@ namespace AssetBundler
         return !m_showVerboseOutput;
     }
 } // namespace AssetBundler
+#include <source/utils/moc_applicationManager.cpp>

@@ -11,6 +11,8 @@
 */
 #pragma once
 
+#include <Atom/RPI.Reflect/Image/Image.h>
+
 class ViewportIcon
 {
 public:
@@ -48,6 +50,5 @@ public:
     void DrawElementRectOutline(Draw2dHelper& draw2d, AZ::EntityId entityId, AZ::Color color);
 
 private:
-
-    ITexture* m_texture;
+    AZ::Data::Instance<AZ::RPI::Image> m_image;
 };

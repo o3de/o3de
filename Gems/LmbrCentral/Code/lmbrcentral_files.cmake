@@ -17,6 +17,7 @@ set(FILES
     include/LmbrCentral/Ai/NavigationSystemBus.h
     include/LmbrCentral/Ai/NavigationSeedBus.h
     include/LmbrCentral/Animation/AttachmentComponentBus.h
+    include/LmbrCentral/Animation/SkeletalHierarchyRequestBus.h
     include/LmbrCentral/Audio/AudioEnvironmentComponentBus.h
     include/LmbrCentral/Audio/AudioListenerComponentBus.h
     include/LmbrCentral/Audio/AudioMultiPositionComponentBus.h
@@ -35,19 +36,13 @@ set(FILES
     include/LmbrCentral/Physics/ForceVolumeRequestBus.h
     include/LmbrCentral/Physics/WaterNotificationBus.h
     include/LmbrCentral/Rendering/DecalComponentBus.h
-    include/LmbrCentral/Rendering/LensFlareAsset.h
-    include/LmbrCentral/Rendering/LensFlareComponentBus.h
     include/LmbrCentral/Rendering/LightComponentBus.h
     include/LmbrCentral/Rendering/MaterialAsset.h
     include/LmbrCentral/Rendering/MaterialHandle.h
     include/LmbrCentral/Rendering/MaterialOwnerBus.h
     include/LmbrCentral/Rendering/MeshAsset.h
-    include/LmbrCentral/Rendering/MeshComponentBus.h
     include/LmbrCentral/Rendering/MeshModificationBus.h
     include/LmbrCentral/Rendering/RenderNodeBus.h
-    include/LmbrCentral/Rendering/FogVolumeComponentBus.h
-    include/LmbrCentral/Rendering/HighQualityShadowComponentBus.h
-    include/LmbrCentral/Rendering/GeomCacheComponentBus.h
     include/LmbrCentral/Rendering/GiRegistrationBus.h
     include/LmbrCentral/Rendering/RenderBoundsBus.h
     include/LmbrCentral/Rendering/Utils/MaterialOwnerRequestBusHandlerImpl.h
@@ -74,8 +69,6 @@ set(FILES
     include/LmbrCentral/Terrain/TerrainSystemRequestBus.h
     Source/Ai/NavigationSystemComponent.h
     Source/Ai/NavigationSystemComponent.cpp
-    Source/Animation/AttachmentComponent.h
-    Source/Animation/AttachmentComponent.cpp
     Source/Audio/AudioAreaEnvironmentComponent.h
     Source/Audio/AudioAreaEnvironmentComponent.cpp
     Source/Audio/AudioEnvironmentComponent.h
@@ -104,33 +97,6 @@ set(FILES
     Source/Events/ReflectScriptableEvents.cpp
     Source/Geometry/GeometrySystemComponent.h
     Source/Geometry/GeometrySystemComponent.cpp
-    Source/Rendering/DecalComponent.h
-    Source/Rendering/DecalComponent.cpp
-    Source/Rendering/LensFlareAssetHandler.h
-    Source/Rendering/LensFlareAssetHandler.cpp
-    Source/Rendering/LensFlareComponent.h
-    Source/Rendering/LensFlareComponent.cpp
-    Source/Rendering/LightComponent.h
-    Source/Rendering/LightComponent.cpp
-    Source/Rendering/LightInstance.h
-    Source/Rendering/LightInstance.cpp
-    Source/Rendering/MaterialHandle.cpp
-    Source/Rendering/FogVolumeComponent.h
-    Source/Rendering/FogVolumeComponent.cpp
-    Source/Rendering/FogVolumeCommon.h
-    Source/Rendering/FogVolumeCommon.cpp
-    Source/Rendering/FogVolumeRequestsHandler.h
-    Source/Rendering/FogVolumeRequestsHandler.cpp
-    Source/Rendering/MeshAssetHandler.h
-    Source/Rendering/MeshAssetHandler.cpp
-    Source/Rendering/MeshComponent.h
-    Source/Rendering/MeshComponent.cpp
-    Source/Rendering/StereoRendererComponent.h
-    Source/Rendering/StereoRendererComponent.cpp
-    Source/Rendering/HighQualityShadowComponent.h
-    Source/Rendering/HighQualityShadowComponent.cpp
-    Source/Rendering/GeomCacheComponent.h
-    Source/Rendering/GeomCacheComponent.cpp
     Source/Rendering/EntityDebugDisplayComponent.h
     Source/Rendering/EntityDebugDisplayComponent.cpp
     Source/Scripting/LookAtComponent.h

@@ -16,7 +16,6 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/Asset/AssetCommon.h>
-#include <AzFramework/TargetManagement/TargetManagementAPI.h>
 
 #include <Atom/Document/MaterialDocumentNotificationBus.h>
 #include <Atom/Document/MaterialDocumentSystemRequestBus.h>
@@ -35,7 +34,6 @@ namespace MaterialEditor
     class MaterialDocumentSystemComponent
         : public AZ::Component
         , private AZ::TickBus::Handler
-        , private AzFramework::TmMsgBus::Handler
         , private MaterialDocumentNotificationBus::Handler
         , private MaterialDocumentSystemRequestBus::Handler
     {
@@ -72,11 +70,6 @@ namespace MaterialEditor
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
         ////////////////////////////////////////////////////////////////////////
 
-        //////////////////////////////////////////////////////////////////////////
-        // AzFramework::TmMsgBus::Handler overrides...
-        void OnReceivedMsg(AzFramework::TmMsgPtr msg) override;
-        //////////////////////////////////////////////////////////////////////////
-
         ////////////////////////////////////////////////////////////////////////
         // MaterialDocumentSystemRequestBus::Handler overrides...
         AZ::Uuid CreateDocument() override;
@@ -98,5 +91,6 @@ namespace MaterialEditor
         AZStd::unordered_set<AZ::Uuid> m_documentIdsToRebuild;
         AZStd::unordered_set<AZ::Uuid> m_documentIdsToReopen;
         AZStd::unique_ptr<MaterialEditorSettings> m_settings;
+        const size_t m_maxMessageBoxLineCount = 15;
     };
 }

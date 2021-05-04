@@ -731,11 +731,12 @@ namespace AZ
                     }
                 }
             }
-
+            
             // Remove unnecessary camera views in shadow properties
-            for (uint16_t lightIndex = 0; lightIndex < aznumeric_cast<uint16_t>(m_shadowProperties.GetDataCount()); ++lightIndex)
+            auto& shadowPropertiesVector = m_shadowProperties.GetDataVector();
+            for (ShadowProperty& shadowProperty : shadowPropertiesVector)
             {
-                AZStd::unordered_map<const RPI::View*, AZStd::fixed_vector<CascadeSegment, Shadow::MaxNumberOfCascades>>& cascades = m_shadowProperties.GetData(lightIndex).m_segments;
+                auto& cascades = shadowProperty.m_segments;
                 for (auto it = cascades.begin(); it != cascades.end();)
                 {
                     if (AZStd::find(cameraViews.begin(), cameraViews.end(), it->first) != cameraViews.end())
@@ -1238,6 +1239,8 @@ namespace AZ
 
         void DirectionalLightFeatureProcessor::SetFilterParameterToPass(LightHandle handle, const RPI::View* cameraView)
         {
+            AZ_ATOM_PROFILE_FUNCTION("DirectionalLightFeatureProcessor", "DirectionalLightFeatureProcessor::SetFilterParameterToPass");
+
             if (handle != m_shadowingLightHandle)
             {
                 return;

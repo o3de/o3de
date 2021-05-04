@@ -458,7 +458,7 @@ struct SClipVolumeBlendInfo
 {
     static const int BlendPlaneCount = 2;
 
-    Plane blendPlanes[BlendPlaneCount];
+    Plane_tpl<f32> blendPlanes[BlendPlaneCount];
     struct IClipVolume* blendVolumes[BlendPlaneCount];
 };
 

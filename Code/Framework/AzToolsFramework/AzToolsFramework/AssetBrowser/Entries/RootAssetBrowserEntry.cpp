@@ -52,17 +52,16 @@ namespace AzToolsFramework
             return AssetEntryType::Root;
         }
 
-        void RootAssetBrowserEntry::Update(const char* devPath)
+        void RootAssetBrowserEntry::Update(const char* enginePath)
         {
             RemoveChildren();
             EntryCache::GetInstance()->Clear();
-            m_scanFolderOutputPrefixMap.clear();
 
-            m_devPath = devPath;
+            m_enginePath = enginePath;
 
             // there is no "Gems" scan folder registered in db, create one manually
             auto gemFolder = aznew FolderAssetBrowserEntry();
-            gemFolder->m_name = m_devPath + AZ_CORRECT_DATABASE_SEPARATOR + GEMS_FOLDER_NAME;
+            gemFolder->m_name = m_enginePath + AZ_CORRECT_DATABASE_SEPARATOR + GEMS_FOLDER_NAME;
             gemFolder->m_displayName = GEMS_FOLDER_NAME;
             gemFolder->m_isGemsFolder = true;
             AddChild(gemFolder);
@@ -89,11 +88,6 @@ namespace AzToolsFramework
                 const auto scanFolder = CreateFolders(scanFolderDatabaseEntry.m_scanFolder.c_str(), this);
                 scanFolder->m_displayName = QString::fromUtf8(scanFolderDatabaseEntry.m_displayName.c_str());
                 EntryCache::GetInstance()->m_scanFolderIdMap[scanFolderDatabaseEntry.m_scanFolderID] = scanFolder;
-            }
-
-            if (!scanFolderDatabaseEntry.m_outputPrefix.empty())
-            {
-                m_scanFolderOutputPrefixMap[scanFolderDatabaseEntry.m_scanFolderID] = scanFolderDatabaseEntry.m_outputPrefix;
             }
         }
 
@@ -132,7 +126,7 @@ namespace AzToolsFramework
                 return;
             }
 
-            const char* filePath = GetScanFolderOutputAdjustedPath(fileDatabaseEntry, scanFolder);
+            const char* filePath = fileDatabaseEntry.m_fileName.c_str();
 
             AssetBrowserEntry* file;
             // file can be either folder or actual file
@@ -440,34 +434,6 @@ namespace AzToolsFramework
         SharedThumbnailKey RootAssetBrowserEntry::CreateThumbnailKey()
         {
             return MAKE_TKEY(ThumbnailKey);
-        }
-
-        const char* RootAssetBrowserEntry::GetScanFolderOutputAdjustedPath(const AssetDatabase::FileDatabaseEntry& fileDatabaseEntry, const AssetBrowserEntry* scanFolder)
-        {
-            Q_UNUSED(scanFolder);
-
-            const char* filePath = fileDatabaseEntry.m_fileName.c_str();
-
-            // adjust for output prefixes on scan folders (i.e. "editor")
-            auto itScanFolderOutputPrefix = m_scanFolderOutputPrefixMap.find(fileDatabaseEntry.m_scanFolderPK);
-            if (itScanFolderOutputPrefix != m_scanFolderOutputPrefixMap.end())
-            {
-                const AZStd::string& outputPrefix = itScanFolderOutputPrefix->second;
-
-                // Check if the input path starts with the output prefix.
-                // If it doesn't, something probably went seriously wrong,
-                // or someone is calling this function with an absolute path.
-                bool pathStartsWithPrefix = ((strncmp(filePath, outputPrefix.c_str(), outputPrefix.length()) == 0) && (fileDatabaseEntry.m_fileName.length() > (outputPrefix.length() + 1)));
-                AZ_Warning("Asset Browser", pathStartsWithPrefix, "Entry %s reported as under a ScanFolder (%s) with an 'output=%s', but the new entry does not begin with the output prefix! RootAssetBrowserEntry::GetScanFolderOutputAdjustedPath expects relative paths, not absolute; treating the input path as if it does not contain the ScanFolder output prefix.", filePath, scanFolder->m_name.c_str(), outputPrefix.c_str());
-
-                if (pathStartsWithPrefix)
-                {
-                    // move the beginning ahead by the output prefix plus the separator
-                    filePath += (outputPrefix.length() + 1);
-                }
-            }
-
-            return filePath;
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

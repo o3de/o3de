@@ -28,6 +28,8 @@
 #include <AzCore/Memory/AllocatorManager.h>
 #include <AzCore/Memory/MallocSchema.h>
 
+#include <AzCore/NativeUI/NativeUIRequests.h>
+
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/ObjectStream.h>
 #include <AzCore/Serialization/Utils.h>
@@ -341,6 +343,16 @@ namespace AZ
                     ;
             }
         }
+
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->EBus<ComponentApplicationBus>("ComponentApplicationBus")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Category, "Components")
+
+                ->Event("GetEntityName", &ComponentApplicationBus::Events::GetEntityName)
+                ->Event("SetEntityName", &ComponentApplicationBus::Events::SetEntityName);
+        }
     }
 
     //=========================================================================
@@ -414,7 +426,7 @@ namespace AZ
 
         // Now that the Allocators are initialized, the Command Line parameters can be parsed
         m_commandLine.Parse(m_argC, m_argV);
-        ParseCommandLine(m_commandLine);
+        SettingsRegistryMergeUtils::ParseCommandLine(m_commandLine);
 
         // Create the settings registry and register it with the AZ interface system
         // This is done after the AppRoot has been calculated so that the Bootstrap.cfg
@@ -517,9 +529,41 @@ namespace AZ
         DestroyAllocator();
     }
 
+
+    void ReportBadEngineRoot()
+    {
+        AZStd::string errorMessage = {"Unable to determine a valid path to the engine.\n"
+                                      "Check parameters such as --project-path and --engine-path and make sure they are valid.\n"};
+        if (auto registry = AZ::SettingsRegistry::Get(); registry != nullptr)
+        {
+            AZ::SettingsRegistryInterface::FixedValueString filePathErrorStr;
+            if (registry->Get(filePathErrorStr, AZ::SettingsRegistryMergeUtils::FilePathKey_ErrorText); !filePathErrorStr.empty())
+            {
+                errorMessage += "Additional Info:\n";
+                errorMessage += filePathErrorStr.c_str();
+            }
+        }
+
+        if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); nativeUI != nullptr)
+        {
+            nativeUI->DisplayOkDialog("O3DE Fatal Error", errorMessage.c_str(), false);
+        }
+        else
+        {
+            AZ_Error("ComponentApplication", false, "O3DE Fatal Error: %s\n", errorMessage.c_str());
+        }
+    }
+
+
     Entity* ComponentApplication::Create(const Descriptor& descriptor, const StartupParameters& startupParameters)
     {
         AZ_Assert(!m_isStarted, "Component application already started!");
+
+        if (m_engineRoot.empty())
+        {
+            ReportBadEngineRoot();
+            return nullptr;
+        }
 
         m_startupParameters = startupParameters;
 
@@ -861,46 +905,6 @@ namespace AZ
         }
     }
 
-    void ComponentApplication::ParseCommandLine(const AZ::CommandLine& commandLine)
-    {
-        struct OptionKeyToRegsetKey
-        {
-            AZStd::string_view m_optionKey;
-            AZStd::string m_regsetKey;
-        };
-
-        // Provide overrides for the engine root, the project root and the project cache root
-        AZStd::array commandOptions = {
-            OptionKeyToRegsetKey{ "engine-path", AZStd::string::format("%s/engine_path", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) },
-            OptionKeyToRegsetKey{ "project-path", AZStd::string::format("%s/project_path", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) },
-            OptionKeyToRegsetKey{ "project-cache-path", AZStd::string::format("%s/project_cache_path", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) }
-        };
-
-        AZStd::fixed_vector<AZStd::string, commandOptions.size()> overrideArgs;
-
-        for (auto&& [optionKey, regsetKey] : commandOptions)
-        {
-            if (size_t optionCount = commandLine.GetNumSwitchValues(optionKey); optionCount > 0)
-            {
-                // Use the last supplied command option value to override previous values
-                auto overrideArg = AZStd::string::format(R"(--regset="%s=%s")", regsetKey.c_str(),
-                    commandLine.GetSwitchValue(optionKey, optionCount - 1).c_str());
-                overrideArgs.emplace_back(AZStd::move(overrideArg));
-            }
-        }
-
-        if (!overrideArgs.empty())
-        {
-            // Dump the input command line, add the additional option overrides
-            // and Parse the new command line into the Component Application command line
-            AZ::CommandLine::ParamContainer commandLineArgs;
-            commandLine.Dump(commandLineArgs);
-            commandLineArgs.insert(commandLineArgs.end(), AZStd::make_move_iterator(overrideArgs.begin()),
-                AZStd::make_move_iterator(overrideArgs.end()));
-            m_commandLine.Parse(commandLineArgs);
-        }
-    }
-
     void ComponentApplication::MergeSettingsToRegistry(SettingsRegistryInterface& registry)
     {
         SettingsRegistryInterface::Specializations specializations;
@@ -1048,6 +1052,20 @@ namespace AZ
             return entity->GetName();
         }
         return AZStd::string();
+    }
+
+    //=========================================================================
+    // SetEntityName
+    //=========================================================================
+    bool ComponentApplication::SetEntityName(const EntityId& id, const AZStd::string_view name)
+    {
+        Entity* entity = FindEntity(id);
+        if (entity)
+        {
+            entity->SetName(name);
+            return true;
+        }
+        return false;
     }
 
     //=========================================================================

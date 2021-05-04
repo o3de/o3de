@@ -246,26 +246,6 @@ namespace Physics
     using SystemRequests = System;
     using SystemRequestBus = AZ::EBus<SystemRequests, SystemRequestsTraits>;
 
-    /// Physics character system global requests.
-    class CharacterSystemRequests
-        : public AZ::EBusTraits
-    {
-    public:
-        // EBusTraits
-        // singleton pattern
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
-
-        virtual ~CharacterSystemRequests() = default;
-
-        /// Creates the physics representation used to handle basic character interactions (also known as a character
-        /// controller).
-        virtual AZStd::unique_ptr<Character> CreateCharacter(const CharacterConfiguration& characterConfig,
-            const ShapeConfiguration& shapeConfig, AzPhysics::SceneHandle& sceneHandle) = 0;
-    };
-
-    typedef AZ::EBus<CharacterSystemRequests> CharacterSystemRequestBus;
-
     /// Physics system global debug requests.
     class SystemDebugRequests
         : public AZ::EBusTraits

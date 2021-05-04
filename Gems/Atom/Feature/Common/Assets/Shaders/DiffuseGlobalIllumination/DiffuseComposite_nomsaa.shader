@@ -15,11 +15,11 @@
         "Stencil" :
         {
             "Enable" : true,
-            "ReadMask" : "0xFF",
+            "ReadMask" : "0x80",
             "WriteMask" : "0x00",
             "FrontFace" :
             {
-                "Func" : "LessEqual",
+                "Func" : "Equal",
                 "DepthFailOp" : "Keep",
                 "FailOp" : "Keep",
                 "PassOp" : "Keep"

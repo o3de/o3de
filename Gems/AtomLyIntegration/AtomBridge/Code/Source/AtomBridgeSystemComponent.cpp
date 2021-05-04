@@ -146,15 +146,6 @@ namespace AZ
         {
             static const AZ::Uuid legacyRenderComponentUuids[] = {
                 AZ::Uuid("{FC315B86-3280-4D03-B4F0-5553D7D08432}"), // EditorMeshComponent
-                AZ::Uuid("{4B85E77D-91F9-40C5-8FCB-B494000A9E69}"), // EditorLensFlareComponent
-                AZ::Uuid("{7C18B273-5BA3-4E0F-857D-1F30BD6B0733}"), // EditorLightComponent
-                AZ::Uuid("{00818135-138D-42AD-8657-FF3FD38D9E7A}"), // EditorPointLightComponent
-                AZ::Uuid("{1DE624B1-876F-4E0A-96A6-7B248FA2076F}"), // EditorAreaLightComponent
-                AZ::Uuid("{41928E34-B558-4559-82CF-8B5795A38CB4}"), // EditorProjectorLightComponent
-                AZ::Uuid("{BA3890BD-D2E7-4DB6-95CD-7E7D5525567A}"), // EditorDecalComponent
-                AZ::Uuid("{8DBD6035-583E-409F-AFD9-F36829A0655D}"), // EditorEnvProbeComponent
-                AZ::Uuid("{9C86E09D-0727-476E-A4A1-25989CDBF9C6}"), // EditorHighQualityShadowComponent
-                AZ::Uuid("{045C0C58-C13E-49B0-A471-D4AC5D3FC6BD}"), // EditorGeometryCacheComponent
             };
 
             const AZStd::string deprecatedString = "  (DEPRECATED By Atom)";

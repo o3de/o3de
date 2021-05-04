@@ -24,8 +24,9 @@
 #include <AzToolsFramework/ToolsComponents/EditorEntityIconComponentBus.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 
+#include <QtViewPane.h>
+
 #include "../Editor/Objects/EntityObject.h"
-#include <LmbrCentral/Rendering/MeshComponentBus.h>
 #include <LmbrCentral/Rendering/RenderBoundsBus.h>
 #endif
 
@@ -36,13 +37,11 @@ class QMenu;
 */
 class CComponentEntityObject
     : public CEntityObject
-    , private AzToolsFramework::EntitySelectionEvents::Bus::Handler
     , private AzToolsFramework::EditorLockComponentNotificationBus::Handler
     , private AzToolsFramework::EditorVisibilityNotificationBus::Handler
     , private AzToolsFramework::EditorEntityIconComponentNotificationBus::Handler
     , private AZ::TransformNotificationBus::Handler
     , private LmbrCentral::RenderBoundsNotificationBus::Handler
-    , private LmbrCentral::MeshComponentNotificationBus::Handler
     , private AzToolsFramework::ComponentEntityEditorRequestBus::Handler
     , private AzToolsFramework::ComponentEntityObjectRequestBus::Handler
     , private AZ::EntityBus::Handler
@@ -110,12 +109,6 @@ public:
     //////////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////////////////////
-    //! AzToolsFramework::EntitySelectionEvents::Bus::Handler
-    void OnSelected() override;
-    void OnDeselected() override;
-    //////////////////////////////////////////////////////////////////////////
-
-    //////////////////////////////////////////////////////////////////////////
     // AzToolsFramework::EditorLockComponentNotificationBus::Handler
     void OnEntityLockChanged(bool locked) override;
     //////////////////////////////////////////////////////////////////////////
@@ -134,11 +127,6 @@ public:
     //! AZ::TransformNotificationBus::Handler
     void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
     void OnParentChanged(AZ::EntityId oldParent, AZ::EntityId newParent) override;
-    //////////////////////////////////////////////////////////////////////////
-
-    //////////////////////////////////////////////////////////////////////////
-    //! MeshComponentNotificationBus
-    void OnMeshCreated(const AZ::Data::Asset<AZ::Data::AssetData>& asset) override;
     //////////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////////////////////

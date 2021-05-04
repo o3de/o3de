@@ -91,8 +91,9 @@ namespace AzToolsFramework
             m_instanceUpdateExecutor.UpdateTemplateInstancesInQueue();
         }
 
-        AZStd::unique_ptr<Instance> PrefabSystemComponent::CreatePrefab(const AZStd::vector<AZ::Entity*>& entities, AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume,
-            AZ::IO::PathView filePath, AZStd::unique_ptr<AZ::Entity> containerEntity)
+        AZStd::unique_ptr<Instance> PrefabSystemComponent::CreatePrefab(
+            const AZStd::vector<AZ::Entity*>& entities, AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume,
+            AZ::IO::PathView filePath, AZStd::unique_ptr<AZ::Entity> containerEntity, bool shouldCreateLinks)
         {
             AZ::IO::Path relativeFilePath = m_prefabLoader.GetRelativePathToProject(filePath);
             if (GetTemplateIdFromFilePath(relativeFilePath) != InvalidTemplateId)
@@ -104,7 +105,6 @@ namespace AzToolsFramework
                 return nullptr;
             }
 
-             
             AZStd::unique_ptr<Instance> newInstance = AZStd::make_unique<Instance>(AZStd::move(containerEntity));
 
             for (AZ::Entity* entity : entities)
@@ -122,8 +122,9 @@ namespace AzToolsFramework
             }
 
             newInstance->SetTemplateSourcePath(relativeFilePath);
+            newInstance->SetContainerEntityName(relativeFilePath.Stem().Native());
 
-            TemplateId newTemplateId = CreateTemplateFromInstance(*newInstance);
+            TemplateId newTemplateId = CreateTemplateFromInstance(*newInstance, shouldCreateLinks);
             if (newTemplateId == InvalidTemplateId)
             {
                 AZ_Error("Prefab", false,
@@ -142,7 +143,6 @@ namespace AzToolsFramework
 
         void PrefabSystemComponent::PropagateTemplateChanges(TemplateId templateId)
         {
-            UpdatePrefabInstances(templateId);
             auto templateIdToLinkIdsIterator = m_templateToLinkIdsMap.find(templateId);
             if (templateIdToLinkIdsIterator != m_templateToLinkIdsMap.end())
             {
@@ -153,15 +153,24 @@ namespace AzToolsFramework
                     templateIdToLinkIdsIterator->second.end()));
                 UpdateLinkedInstances(linkIdsToUpdateQueue);
             }
+            else
+            {
+                UpdatePrefabInstances(templateId);
+            }
         }
 
         void PrefabSystemComponent::UpdatePrefabTemplate(TemplateId templateId, const PrefabDom& updatedDom)
         {
-            PrefabDom& templateDomToUpdate = FindTemplateDom(templateId);
-            if (AZ::JsonSerialization::Compare(templateDomToUpdate, updatedDom) != AZ::JsonSerializerCompareResult::Equal)
+            auto templateToUpdate = FindTemplate(templateId);
+            if (templateToUpdate)
             {
-                templateDomToUpdate.CopyFrom(updatedDom, templateDomToUpdate.GetAllocator());
-                PropagateTemplateChanges(templateId);
+                PrefabDom& templateDomToUpdate = templateToUpdate->get().GetPrefabDom();
+                if (AZ::JsonSerialization::Compare(templateDomToUpdate, updatedDom) != AZ::JsonSerializerCompareResult::Equal)
+                {
+                    templateDomToUpdate.CopyFrom(updatedDom, templateDomToUpdate.GetAllocator());
+                    templateToUpdate->get().MarkAsDirty(true);
+                    PropagateTemplateChanges(templateId);
+                }
             }
         }
 
@@ -252,6 +261,29 @@ namespace AzToolsFramework
             }
         }
 
+        AZStd::unique_ptr<Instance> PrefabSystemComponent::InstantiatePrefab(AZ::IO::PathView filePath)
+        {
+            // Retrieve the template id for the source prefab filepath
+            Prefab::TemplateId templateId = GetTemplateIdFromFilePath(filePath);
+
+            if (templateId == Prefab::InvalidTemplateId)
+            {
+                // Load the template from the file
+                templateId = m_prefabLoader.LoadTemplateFromFile(filePath);
+            }
+
+            if (templateId == Prefab::InvalidTemplateId)
+            {
+                AZ_Error("Prefab", false,
+                    "Could not load template from path %s during InstantiatePrefab. Unable to proceed",
+                    filePath);
+
+                return nullptr;
+            }
+
+            return InstantiatePrefab(templateId);
+        }
+
         AZStd::unique_ptr<Instance> PrefabSystemComponent::InstantiatePrefab(const TemplateId& templateId)
         {
             TemplateReference instantiatingTemplate = FindTemplate(templateId);
@@ -281,7 +313,7 @@ namespace AzToolsFramework
             return newInstance;
         }
 
-        TemplateId PrefabSystemComponent::CreateTemplateFromInstance(Instance& instance)
+        TemplateId PrefabSystemComponent::CreateTemplateFromInstance(Instance& instance, bool shouldCreateLinks)
         {
             // We will register the template to match the path the instance has
             const AZ::IO::Path& templateSourcePath = instance.GetTemplateSourcePath();
@@ -315,14 +347,15 @@ namespace AzToolsFramework
                 return InvalidTemplateId;
             }
 
-            if (!GenerateLinksForNewTemplate(newTemplateId, instance))
+            if (shouldCreateLinks)
             {
-                // Clear new template and any links associated with it
-                RemoveTemplate(newTemplateId);
-
-                return InvalidTemplateId;
+                if (!GenerateLinksForNewTemplate(newTemplateId, instance))
+                {
+                    // Clear new template and any links associated with it
+                    RemoveTemplate(newTemplateId);
+                    return InvalidTemplateId;
+                }
             }
-
             return newTemplateId;
         }
 
@@ -615,7 +648,12 @@ namespace AzToolsFramework
                 instancesValue = memberFound->value;
             }
 
-            instancesValue->get().AddMember(rapidjson::StringRef(instanceAlias.c_str()), PrefabDomValue(), targetTemplateDom.GetAllocator());
+            // Only add the instance if it's not there already
+            if (instancesValue->get().FindMember(rapidjson::StringRef(instanceAlias.c_str())) == instancesValue->get().MemberEnd())
+            {
+                instancesValue->get().AddMember(
+                    rapidjson::StringRef(instanceAlias.c_str()), PrefabDomValue(), targetTemplateDom.GetAllocator());
+            }
 
             Template& sourceTemplate = sourceTemplateRef->get();
 
@@ -732,8 +770,8 @@ namespace AzToolsFramework
                 return false;
             }
 
-            Template& sourceTemplate = sourceTemplateReference->get();
 #if defined(AZ_ENABLE_TRACING)
+            Template& sourceTemplate = sourceTemplateReference->get();
             Template& targetTemplate = targetTemplateReference->get();
 #endif
 
@@ -744,21 +782,20 @@ namespace AzToolsFramework
             link.SetInstanceName(instanceName.data());
 
             PrefabDomValue& instance = instanceIterator->value;
+            AZ_Assert(instance.IsObject(), "Nested instance DOM provided is not a valid JSON object.");
+            PrefabDomValueReference sourceTemplateName = PrefabDomUtils::FindPrefabDomValue(instance, PrefabDomUtils::SourceName);
+            AZ_Assert(sourceTemplateName, "Couldn't find source template name in the DOM of the nested instance while creating a link.");
+            AZ_Assert(
+                sourceTemplateName->get() == sourceTemplate.GetFilePath().c_str(),
+                "The name of the source template in the nested instance DOM does not match the name of the source template already loaded");
 
             PrefabDomValueReference patchesReference = PrefabDomUtils::FindPrefabDomValue(instance, PrefabDomUtils::PatchesName);
-            if (!patchesReference.has_value())
+            if (patchesReference.has_value())
             {
-                PrefabDom& newLinkDom = link.GetLinkDom();
-
-                newLinkDom.SetObject();
-
-                newLinkDom.AddMember(rapidjson::StringRef(PrefabDomUtils::SourceName),
-                    rapidjson::StringRef(sourceTemplate.GetFilePath().c_str()), newLinkDom.GetAllocator());
+                AZ_Assert(patchesReference->get().IsArray(), "Patches in the nested instance DOM are not represented as an array.");
             }
-            else
-            {
-                link.SetTemplatePatches(patchesReference->get());
-            }
+
+            link.SetLinkDom(instance);
 
             if (!link.UpdateTarget())
             {

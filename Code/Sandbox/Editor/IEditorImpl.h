@@ -23,7 +23,6 @@
 #include <memory> // for shared_ptr
 #include <QMap>
 #include <QApplication>
-#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
 #include <AzCore/std/string/string.h>
 
@@ -43,7 +42,6 @@ class CUndoManager;
 class CGameEngine;
 class CExportManager;
 class CErrorsDlg;
-class CLensFlareManager;
 class CIconManager;
 class CBackgroundTaskManager;
 class CTrackViewSequenceManager;
@@ -86,13 +84,12 @@ namespace AssetDatabase
 
 class CEditorImpl 
     : public IEditor
-    , protected AzToolsFramework::EditorEntityContextNotificationBus::Handler
 {
     Q_DECLARE_TR_FUNCTIONS(CEditorImpl)
 
 public:
     CEditorImpl();
-    ~CEditorImpl();
+    virtual ~CEditorImpl();
 
     void Initialize();
     void OnBeginShutdownSequence();
@@ -185,7 +182,6 @@ public:
     IDataBaseManager* GetDBItemManager(EDataBaseItemType itemType);
     CMaterialManager* GetMaterialManager() { return m_pMaterialManager; }
     CMusicManager* GetMusicManager() { return m_pMusicManager; };
-    CLensFlareManager* GetLensFlareManager()    { return m_pLensFlareManager; };
 
     IBackgroundTaskManager* GetBackgroundTaskManager() override;
     IBackgroundScheduleManager* GetBackgroundScheduleManager() override;
@@ -226,20 +222,6 @@ public:
     void SetDataModified();
     void SetOperationMode(EOperationMode mode);
     EOperationMode GetOperationMode();
-    void SetEditMode(int editMode);
-    int GetEditMode();
-
-    //! A correct tool is one that corresponds to the previously set edit mode.
-    bool HasCorrectEditTool() const;
-
-    //! Returns the edit tool required for the edit mode specified.
-    CEditTool* CreateCorrectEditTool();
-
-    void SetEditTool(CEditTool* tool, bool bStopCurrentTool = true) override;
-    void SetEditTool(const QString& sEditToolName, bool bStopCurrentTool = true) override;
-    void ReinitializeEditTool() override;
-    //! Returns current edit tool.
-    CEditTool* GetEditTool() override;
 
     ITransformManipulator* ShowTransformManipulator(bool bShow);
     ITransformManipulator* GetTransformManipulator();
@@ -253,7 +235,6 @@ public:
     RefCoordSys GetReferenceCoordSys();
     XmlNodeRef FindTemplate(const QString& templateName);
     void AddTemplate(const QString& templateName, XmlNodeRef& tmpl);
-    void OpenMaterialLibrary(IDataBaseItem* pItem = NULL);
    
     const QtViewPane* OpenView(QString sViewClassName, bool reuseOpened = true) override;
 
@@ -356,27 +337,17 @@ public:
     QMimeData* CreateQMimeData() const override;
     void DestroyQMimeData(QMimeData* data) const override;
 
-    bool IsNewViewportInteractionModelEnabled() const override;
-
 protected:
 
-    //////////////////////////////////////////////////////////////////////////
-    // EditorEntityContextNotificationBus implementation
-    void OnStartPlayInEditor() override;
-    //////////////////////////////////////////////////////////////////////////
     AZStd::string LoadProjectIdFromProjectData();
 
     void DetectVersion();
     void RegisterTools();
     void SetPrimaryCDFolder();
 
-    void LoadSettings();
-    void SaveSettings() const;
-
     //! List of all notify listeners.
     std::list<IEditorNotifyListener*> m_listeners;
 
-    EEditMode m_currEditMode;
     EOperationMode m_operationMode;
     ISystem* m_pSystem;
     IFileUtil* m_pFileUtil;
@@ -390,8 +361,6 @@ protected:
     AABB m_selectedRegion;
     AxisConstrains m_selectedAxis;
     RefCoordSys m_refCoordsSys;
-    AxisConstrains m_lastAxis[16];
-    RefCoordSys m_lastCoordSys[16];
     bool m_bAxisVectorLock;
     bool m_bUpdates;
     bool m_bTerrainAxisIgnoreObjects;
@@ -400,7 +369,6 @@ protected:
     CXmlTemplateRegistry m_templateRegistry;
     CDisplaySettings* m_pDisplaySettings;
     CShaderEnum* m_pShaderEnum;
-    _smart_ptr<CEditTool> m_pEditTool;
     CIconManager* m_pIconManager;
     std::unique_ptr<SGizmoParameters> m_pGizmoParameters;
     QString m_primaryCDFolder;
@@ -414,7 +382,6 @@ protected:
     CMaterialManager* m_pMaterialManager;
     CAlembicCompiler* m_pAlembicCompiler;
     CMusicManager* m_pMusicManager;
-    CLensFlareManager* m_pLensFlareManager;
     CErrorReport* m_pErrorReport;
     //! Contains the error reports for the last loaded level.
     CErrorReport* m_pLasLoadedLevelErrorReport;
@@ -470,7 +437,5 @@ protected:
 
     CryMutex m_pluginMutex; // protect any pointers that come from plugins, such as the source control cached pointer.
     static const char* m_crashLogFileName;
-
-    bool m_isNewViewportInteractionModelEnabled = true;
 };
 

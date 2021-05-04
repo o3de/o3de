@@ -40,7 +40,6 @@ struct QMetaObject;
 class CBaseObject;
 class CCryEditDoc;
 class CSelectionGroup;
-class CEditTool;
 class CAnimationContext;
 class CTrackViewSequenceManager;
 class CGameEngine;
@@ -51,7 +50,6 @@ class CMaterialManager;
 class CMusicManager;
 class CMaterail;
 struct IEditorParticleManager;
-class CLensFlareManager;
 class CEAXPresetManager;
 class CErrorReport;
 class CBaseLibraryItem;
@@ -319,17 +317,6 @@ enum EOperationMode
     eModellingMode // Geometry modeling mode
 };
 
-enum EEditMode
-{
-    eEditModeSelect,
-    eEditModeSelectArea,
-    eEditModeMove,
-    eEditModeRotate,
-    eEditModeScale,
-    eEditModeTool,
-    eEditModeRotateCircle,
-};
-
 //! Mouse events that viewport can send
 enum EMouseEvent
 {
@@ -567,8 +554,6 @@ struct IEditor
     virtual IEditorPanelUtils* GetEditorPanelUtils() = 0;
     //! Get Music Manager.
     virtual CMusicManager* GetMusicManager() = 0;
-    //! Get Lens Flare Manager.
-    virtual CLensFlareManager* GetLensFlareManager() = 0;
     virtual float GetTerrainElevation(float x, float y) = 0;
     virtual Editor::EditorQtApplication* GetEditorQtApplication() = 0;
     virtual const QColor& GetColorByName(const QString& name) = 0;
@@ -620,17 +605,6 @@ struct IEditor
 
     virtual void SetOperationMode(EOperationMode mode) = 0;
     virtual EOperationMode GetOperationMode() = 0;
-    //! editMode - EEditMode
-    virtual void SetEditMode(int editMode) = 0;
-    virtual int GetEditMode() = 0;
-    //! Assign current edit tool, destroy previously used edit too.
-    virtual void SetEditTool(CEditTool* tool, bool bStopCurrentTool = true) = 0;
-    //! Assign current edit tool by class name.
-    virtual void SetEditTool(const QString& sEditToolName, bool bStopCurrentTool = true) = 0;
-    //! Reinitializes the current edit tool if one is selected.
-    virtual void ReinitializeEditTool() = 0;
-    //! Returns current edit tool.
-    virtual CEditTool* GetEditTool() = 0;
     //! Shows/Hides transformation manipulator.
     //! if bShow is true also returns a valid ITransformManipulator pointer.
     virtual ITransformManipulator* ShowTransformManipulator(bool bShow) = 0;
@@ -655,9 +629,6 @@ struct IEditor
     virtual RefCoordSys GetReferenceCoordSys() = 0;
     virtual XmlNodeRef FindTemplate(const QString& templateName) = 0;
     virtual void AddTemplate(const QString& templateName, XmlNodeRef& tmpl) = 0;
-    //! Open material library and select specified item.
-    //! If parameter is NULL current selection in material library does not change.
-    virtual void OpenMaterialLibrary(IDataBaseItem* pItem = NULL) = 0;
 
     virtual const QtViewPane* OpenView(QString sViewClassName, bool reuseOpen = true) = 0;
     virtual QWidget* FindView(QString viewClassName) = 0;
@@ -785,8 +756,6 @@ struct IEditor
 
     // reloads the plugins
     virtual void LoadPlugins() = 0;
-
-    virtual bool IsNewViewportInteractionModelEnabled() const = 0;
 };
 
 //! Callback used by editor when initializing for info in UI dialogs
