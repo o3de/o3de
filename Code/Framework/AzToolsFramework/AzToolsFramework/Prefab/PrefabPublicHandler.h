@@ -88,9 +88,8 @@ namespace AzToolsFramework
              * \param sourceInstance The instance corresponding to the source template of the link to be removed.
              * \param targetTemplateId The id of the target template of the link to be removed.
              * \param undoBatch The undo batch to set as parent for this remove link action.
-             * \return PrefabOperationResult Indicates whether the removal of link was successful.
              */
-            PrefabOperationResult RemoveLink(
+            void RemoveLink(
                 AZStd::unique_ptr<Instance>& sourceInstance, TemplateId targetTemplateId, UndoSystem::URSequencePoint* undoBatch);
 
             /**
