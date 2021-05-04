@@ -392,7 +392,7 @@ void CAnimMaterialNode::AnimateNamedParameter(SAnimContext& ec, IRenderShaderRes
     }
 }
 
-_smart_ptr<IMaterial> CAnimMaterialNode::GetMaterialByName(const char* pName)
+_smart_ptr<IMaterial> CAnimMaterialNode::GetMaterialByName(const char*)
 {
     return nullptr;
 }
