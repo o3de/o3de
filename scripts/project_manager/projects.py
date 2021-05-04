@@ -49,7 +49,7 @@ def initialize_pyside_from_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('--executable-path', required=True, help='Path to Executable to launch with project')
     parser.add_argument('--binaries-path', default=None, help='Path to QT Binaries necessary for PySide.  If not'
-                                                              'provided executable_path folder is assumed')
+                                                              ' provided executable_path folder is assumed')
     parser.add_argument('--parent-pid', default=0, help='Process ID of launching process')
 
     args = parser.parse_args()

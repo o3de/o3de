@@ -171,7 +171,7 @@ def add_args(parser, subparsers) -> None:
     get_current_project_subparser = subparsers.add_parser('get-current-project')
     group = get_current_project_subparser.add_mutually_exclusive_group(required=False)
     group.add_argument('-en', '--engine-name', required=False,
-                       help='The name of the engine. If supplied this with resolve the --engine-path.')
+                       help='The name of the engine. If supplied this will resolve the --engine-path.')
     group.add_argument('-ep', '--engine-path', required=False,
                        help='The path to the engine.')
 
@@ -181,12 +181,12 @@ def add_args(parser, subparsers) -> None:
     set_current_project_subparser = subparsers.add_parser('set-current-project')
     group = set_current_project_subparser.add_mutually_exclusive_group(required=False)
     group.add_argument('-en', '--engine-name', required=False,
-                       help='The name of the engine. If supplied this with resolve the --engine-path.')
+                       help='The name of the engine. If supplied this will resolve the --engine-path.')
     group.add_argument('-ep', '--engine-path', required=False,
                        help='The path to the engine')
     group = set_current_project_subparser.add_mutually_exclusive_group(required=True)
     group.add_argument('-pn', '--project-name', required=False,
-                       help='The name of the project. If supplied this with resolve the --project-path.')
+                       help='The name of the project. If supplied this will resolve the --project-path.')
     group.add_argument('-pp', '--project-path', required=False,
                        help='The path to the project')
 

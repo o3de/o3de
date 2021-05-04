@@ -19,7 +19,7 @@ elseif()
     file(TO_CMAKE_PATH "$ENV{HOME}" home_directory)
 endif()
 if (NOT home_directory)
-    message(FATAL_ERROR "Cannot find user home directory, without know the home directory the o3de manifest cannot be found")
+    message(FATAL_ERROR "Cannot find user home directory, without the user home directory the o3de manifest cannot be found")
 endif()
 
 ################################################################################
@@ -30,9 +30,9 @@ endif()
 # This is useful for when we have no .o3de folder yet, like a clean install, or want to erase .o3de and re-register.
 # This is handy for build server which need to register this engine without having to manually typing it in.
 # Note: If this is run and an o3de object has a restricted set, that restricted
-# must be 'o3de' or registration will fail because the only restricted 'o3de' is
+# must be 'o3de' or registration will fail because only restricted 'o3de' is
 # registered by default. So theoretically anything we ship as part of the engine
-# will succeed, anything relying on something outside the engine will fail UNLESS we regiater them here:
+# will succeed, anything relying on something outside the engine will fail UNLESS we register it here:
 ################################################################################
 set(O3DE_REGISTER_ENGINE_PATH "" CACHE PATH "This is the engine which o3de script will run for registering.")
 set(O3DE_REGISTER_THIS_ENGINE "" CACHE BOOL "If we set O3DE_REGISTER_ENGINE_PATH, and this is TRUE this will wipe out the .o3de folder and register --this-engine using the provided path.")
@@ -55,7 +55,7 @@ if(O3DE_REGISTER_ENGINE_PATH)
             )
         else()
             execute_process(
-                      COMMAND bash ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.sh register --this-engine --override-home-folder ${home_directory}
+                      COMMAND sh ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.sh register --this-engine --override-home-folder ${home_directory}
                       RESULT_VARIABLE o3de_register_this_engine_cmd_result
                    )
         endif()
@@ -74,7 +74,7 @@ if(O3DE_REGISTER_ENGINE_PATH)
               )
         else()
             execute_process(
-               COMMAND bash ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.sh register --restricted-path ${restricted_path} --override-home-folder ${home_directory}
+               COMMAND sh ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.sh register --restricted-path ${restricted_path} --override-home-folder ${home_directory}
                RESULT_VARIABLE o3de_register_restricted_cmd_result
               )
         endif()
@@ -93,7 +93,7 @@ if(O3DE_REGISTER_ENGINE_PATH)
               )
         else()
             execute_process(
-               COMMAND bash ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.sh register --project-path ${project_path} --override-home-folder ${home_directory}
+               COMMAND sh ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.sh register --project-path ${project_path} --override-home-folder ${home_directory}
                RESULT_VARIABLE o3de_register_project_cmd_result
               )
         endif()
@@ -112,7 +112,7 @@ if(O3DE_REGISTER_ENGINE_PATH)
               )
         else()
             execute_process(
-               COMMAND bash ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.sh register --gem-path ${gem_path} --override-home-folder ${home_directory}
+               COMMAND sh ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.sh register --gem-path ${gem_path} --override-home-folder ${home_directory}
                RESULT_VARIABLE o3de_register_gem_cmd_result
               )
         endif()
@@ -131,7 +131,7 @@ if(O3DE_REGISTER_ENGINE_PATH)
               )
         else()
             execute_process(
-               COMMAND bash ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.sh register --template-path ${template_path} --override-home-folder ${home_directory}
+               COMMAND sh ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.sh register --template-path ${template_path} --override-home-folder ${home_directory}
                RESULT_VARIABLE o3de_register_template_cmd_result
               )
         endif()
@@ -150,7 +150,7 @@ if(O3DE_REGISTER_ENGINE_PATH)
               )
         else()
             execute_process(
-               COMMAND bash ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.sh register --repo-uri ${repo_uri} --override-home-folder ${home_directory}
+               COMMAND sh ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.sh register --repo-uri ${repo_uri} --override-home-folder ${home_directory}
                RESULT_VARIABLE o3de_register_repo_cmd_result
               )
         endif()

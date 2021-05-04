@@ -136,7 +136,7 @@ def register_shipped_engine_o3de_objects() -> int:
     # directories with engines
     starting_engines_directories = [
     ]
-    for engines_directory in reversed(sorted(starting_engines_directories)):
+    for engines_directory in sorted(starting_engines_directories, reverse=True):
         error_code = register_all_engines_in_folder(engines_path=engines_directory)
         if error_code:
             ret_val = error_code
@@ -144,7 +144,7 @@ def register_shipped_engine_o3de_objects() -> int:
     # specific engines
     starting_engines = [
     ]
-    for engine_path in reversed(sorted(starting_engines)):
+    for engine_path in sorted(starting_engines):
         error_code = register(engine_path=engine_path)
         if error_code:
             ret_val = error_code
@@ -152,7 +152,7 @@ def register_shipped_engine_o3de_objects() -> int:
     # directories with projects
     starting_projects_directories = [
     ]
-    for projects_directory in reversed(sorted(starting_projects_directories)):
+    for projects_directory in sorted(starting_projects_directories, reverse=True):
         error_code = register_all_projects_in_folder(engine_path=engine_path, projects_path=projects_directory)
         if error_code:
             ret_val = error_code
@@ -161,7 +161,7 @@ def register_shipped_engine_o3de_objects() -> int:
     starting_projects = [
         f'{engine_path}/AutomatedTesting'
     ]
-    for project_path in reversed(sorted(starting_projects)):
+    for project_path in sorted(starting_projects, reverse=True):
         error_code = register(engine_path=engine_path, project_path=project_path)
         if error_code:
             ret_val = error_code
@@ -170,7 +170,7 @@ def register_shipped_engine_o3de_objects() -> int:
     starting_gems_directories = [
         f'{engine_path}/Gems'
     ]
-    for gems_directory in reversed(sorted(starting_gems_directories)):
+    for gems_directory in sorted(starting_gems_directories, reverse=True):
         error_code = register_all_gems_in_folder(engine_path=engine_path, gems_path=gems_directory)
         if error_code:
             ret_val = error_code
@@ -178,7 +178,7 @@ def register_shipped_engine_o3de_objects() -> int:
     # specific gems
     starting_gems = [
     ]
-    for gem_path in reversed(sorted(starting_gems)):
+    for gem_path in sorted(starting_gems, reverse=True):
         error_code = register(engine_path=engine_path, gem_path=gem_path)
         if error_code:
             ret_val = error_code
@@ -187,7 +187,7 @@ def register_shipped_engine_o3de_objects() -> int:
     starting_templates_directories = [
         f'{engine_path}/Templates'
     ]
-    for templates_directory in reversed(sorted(starting_templates_directories)):
+    for templates_directory in sorted(starting_templates_directories, reverse=True):
         error_code = register_all_templates_in_folder(engine_path=engine_path, templates_path=templates_directory)
         if error_code:
             ret_val = error_code
@@ -195,7 +195,7 @@ def register_shipped_engine_o3de_objects() -> int:
     # specific templates
     starting_templates = [
     ]
-    for template_path in reversed(sorted(starting_templates)):
+    for template_path in sorted(starting_templates, reverse=True):
         error_code = register(engine_path=engine_path, template_path=template_path)
         if error_code:
             ret_val = error_code
@@ -203,7 +203,7 @@ def register_shipped_engine_o3de_objects() -> int:
     # directories with restricted
     starting_restricted_directories = [
     ]
-    for restricted_directory in reversed(sorted(starting_restricted_directories)):
+    for restricted_directory in sorted(starting_restricted_directories, reverse=True):
         error_code = register_all_restricted_in_folder(engine_path=engine_path, restricted_path=restricted_directory)
         if error_code:
             ret_val = error_code
@@ -211,7 +211,7 @@ def register_shipped_engine_o3de_objects() -> int:
     # specific restricted
     starting_restricted = [
     ]
-    for restricted_path in reversed(sorted(starting_restricted)):
+    for restricted_path in sorted(starting_restricted, reverse=True):
         error_code = register(engine_path=engine_path, restricted_path=restricted_path)
         if error_code:
             ret_val = error_code
@@ -219,15 +219,15 @@ def register_shipped_engine_o3de_objects() -> int:
     # directories with repos
     starting_repo_directories = [
     ]
-    for repos_directory in reversed(sorted(starting_repo_directories)):
+    for repos_directory in sorted(starting_repo_directories, reverse=True):
         error_code = register_all_repos_in_folder(engine_path=engine_path, repos_path=repos_directory)
         if error_code:
             ret_val = error_code
 
     # specific repos
-    staring_repos = [
+    starting_repos = [
     ]
-    for repo_uri in reversed(sorted(staring_repos)):
+    for repo_uri in sorted(starting_repos, reverse=True):
         error_code = register(repo_uri=repo_uri)
         if error_code:
             ret_val = error_code
@@ -262,7 +262,7 @@ def register_shipped_engine_o3de_objects() -> int:
         f'{engine_path}/Gems/Atom',
         f'{engine_path}/Gems/AtomLyIntegration'
     ]
-    for external_subdir in reversed(sorted(starting_external_subdirectories)):
+    for external_subdir in sorted(starting_external_subdirectories, reverse=True):
         error_code = add_external_subdirectory(engine_path=engine_path, external_subdir=external_subdir)
         if error_code:
             ret_val = error_code
@@ -319,32 +319,32 @@ def register_all_in_folder(folder_path: str or pathlib.Path,
             elif name == 'repo.json':
                 repo_set.add(root)
 
-    for engine in reversed(sorted(engines_set)):
+    for engine in sorted(engines_set, reverse=True):
         error_code = register(engine_path=engine, remove=remove)
         if error_code:
             ret_val = error_code
 
-    for project in reversed(sorted(projects_set)):
+    for project in sorted(projects_set, reverse=True):
         error_code = register(engine_path=engine_path, project_path=project, remove=remove)
         if error_code:
             ret_val = error_code
 
-    for gem in reversed(sorted(gems_set)):
+    for gem in sorted(gems_set, reverse=True):
         error_code = register(engine_path=engine_path, gem_path=gem, remove=remove)
         if error_code:
             ret_val = error_code
 
-    for template in reversed(sorted(templates_set)):
+    for template in sorted(templates_set, reverse=True):
         error_code = register(engine_path=engine_path, template_path=template, remove=remove)
         if error_code:
             ret_val = error_code
 
-    for restricted in reversed(sorted(restricted_set)):
+    for restricted in sorted(restricted_set, reverse=True):
         error_code = register(engine_path=engine_path, restricted_path=restricted, remove=remove)
         if error_code:
             ret_val = error_code
 
-    for repo in reversed(sorted(repo_set)):
+    for repo in sorted(repo_set, reverse=True):
         error_code = register(engine_path=engine_path, repo_uri=repo, remove=remove)
         if error_code:
             ret_val = error_code
@@ -371,7 +371,7 @@ def register_all_engines_in_folder(engines_path: str or pathlib.Path,
             if name == 'engine.json':
                 engines_set.add(name)
 
-    for engine in reversed(sorted(engines_set)):
+    for engine in sorted(engines_set, reverse=True):
         error_code = register(engine_path=engine, remove=remove)
         if error_code:
             ret_val = error_code
@@ -399,7 +399,7 @@ def register_all_projects_in_folder(projects_path: str or pathlib.Path,
             if name == 'project.json':
                 projects_set.add(root)
 
-    for project in reversed(sorted(projects_set)):
+    for project in sorted(projects_set, reverse=True):
         error_code = register(engine_path=engine_path, project_path=project, remove=remove)
         if error_code:
             ret_val = error_code
@@ -427,7 +427,7 @@ def register_all_gems_in_folder(gems_path: str or pathlib.Path,
             if name == 'gem.json':
                 gems_set.add(root)
 
-    for gem in reversed(sorted(gems_set)):
+    for gem in sorted(gems_set, reverse=True):
         error_code = register(engine_path=engine_path, gem_path=gem, remove=remove)
         if error_code:
             ret_val = error_code
@@ -455,7 +455,7 @@ def register_all_templates_in_folder(templates_path: str or pathlib.Path,
             if name == 'template.json':
                 templates_set.add(root)
 
-    for template in reversed(sorted(templates_set)):
+    for template in sorted(templates_set, reverse=True):
         error_code = register(engine_path=engine_path, template_path=template, remove=remove)
         if error_code:
             ret_val = error_code
@@ -483,7 +483,7 @@ def register_all_restricted_in_folder(restricted_path: str or pathlib.Path,
             if name == 'restricted.json':
                 restricted_set.add(root)
 
-    for restricted in reversed(sorted(restricted_set)):
+    for restricted in sorted(restricted_set, reverse=True):
         error_code = register(engine_path=engine_path, restricted_path=restricted, remove=remove)
         if error_code:
             ret_val = error_code
@@ -511,7 +511,7 @@ def register_all_repos_in_folder(repos_path: str or pathlib.Path,
             if name == 'repo.json':
                 repo_set.add(root)
 
-    for repo in reversed(sorted(repo_set)):
+    for repo in sorted(repo_set, reverse=True):
         error_code = register(engine_path=engine_path, repo_uri=repo, remove=remove)
         if error_code:
             ret_val = error_code
@@ -3298,10 +3298,8 @@ def add_external_subdirectory(external_subdir: str or pathlib.Path,
     while external_subdir.as_posix() in engine_object['external_subdirectories']:
         engine_object['external_subdirectories'].remove(external_subdir.as_posix())
 
-    def parse_cmake_file(cmake_root: str or pathlib.Path,
-                         cmake: str or pathlib.Path,
+    def parse_cmake_file(cmake: str or pathlib.Path,
                          files: set()):
-        cmake_root = pathlib.Path(cmake_root).resolve()
         cmake_path = pathlib.Path(cmake).resolve()
         cmake_file = cmake_path
         if cmake_path.is_dir():
@@ -3321,11 +3319,11 @@ def add_external_subdirectory(external_subdir: str or pathlib.Path,
                     end = line.find(')', start)
                     if end > start + len('include('):
                         try:
-                            include_cmake_file = pathlib.Path(cmake_root / line[start + len('include('): end]).resolve()
+                            include_cmake_file = pathlib.Path(engine_path / line[start + len('include('): end]).resolve()
                         except Exception as e:
                             pass
                         else:
-                            parse_cmake_file(cmake_root, include_cmake_file, files)
+                            parse_cmake_file(include_cmake_file, files)
                 else:
                     start = line.find('add_subdirectory(')
                     if start == 0:
@@ -3337,12 +3335,12 @@ def add_external_subdirectory(external_subdir: str or pathlib.Path,
                             except Exception as e:
                                 pass
                             else:
-                                parse_cmake_file(cmake_root, include_cmake_file, files)
+                                parse_cmake_file(include_cmake_file, files)
 
     cmake_files = set()
-    parse_cmake_file(engine_path, engine_path, cmake_files)
+    parse_cmake_file(engine_path, cmake_files)
     for external in engine_object["external_subdirectories"]:
-        parse_cmake_file(engine_path, external, cmake_files)
+        parse_cmake_file(external, cmake_files)
 
     if external_subdir in cmake_files:
         save_o3de_manifest(json_data)

@@ -22,18 +22,17 @@ namespace AZ::Utils
         ::MessageBox(0, message, title, MB_OK | MB_ICONERROR);
     }
 
-    AZ::IO::FixedMaxPath overrideHomeDirectory;
-
-    void OverrideHomeDirectory(const AZ::IO::PathView& path)
-    {
-        overrideHomeDirectory = path;
-    }
-
     AZ::IO::FixedMaxPathString GetHomeDirectory()
     {
-        if (!overrideHomeDirectory.empty())
+        constexpr AZStd::string_view overrideHomeDirKey = "/Amazon/Settings/override_home_dir";
+        AZ::IO::FixedMaxPathString overrideHomeDir;
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
         {
-            return overrideHomeDirectory.Native();
+            if (settingsRegistry->Get(overrideHomeDir, overrideHomeDirKey))
+            {
+                AZ::IO::FixedMaxPath path{overrideHomeDir};
+                return path.Native();
+            }
         }
 
         char userProfileBuffer[AZ::IO::MaxPathLength]{};
@@ -46,12 +45,5 @@ namespace AZ::Utils
         }
 
         return {};
-    }
-
-    AZ::IO::FixedMaxPathString GetO3deManifestDirectory()
-    {
-        AZ::IO::FixedMaxPath path = GetHomeDirectory();
-        path /= ".o3de";
-        return path.Native();
     }
 } // namespace AZ::Utils
