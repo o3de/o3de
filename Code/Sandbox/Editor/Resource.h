@@ -75,7 +75,6 @@
 #define IDC_PLATFORM_SALEM                         2759
 #define IDC_GROUPBOX_GLOBALTAGS                    2916
 #define IDC_GROUPBOX_FRAGMENTTAGS                  2917
-#define ID_RESOURCES_GENERATECGFTHUMBNAILS         32894
 #define ID_RESOURCES_REDUCEWORKINGSET              32896
 #define ID_EDIT_HIDE                               32898
 #define ID_EDIT_UNHIDEALL                          32899

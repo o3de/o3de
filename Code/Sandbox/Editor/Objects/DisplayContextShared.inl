@@ -18,8 +18,6 @@
 #include "Include/IIconManager.h"
 #include "Include/IDisplayViewport.h"
 
-#include <I3DEngine.h>
-
 #include <QDateTime>
 #include <QPoint>
 

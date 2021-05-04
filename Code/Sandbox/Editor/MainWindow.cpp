@@ -91,7 +91,6 @@ AZ_POP_DISABLE_WARNING
 
 #include "TrackView/TrackViewDialog.h"
 #include "ErrorReportDialog.h"
-#include "TimeOfDayDialog.h"
 
 #include "Dialogs/PythonScriptsDialog.h"
 #include "Material/MaterialManager.h"
@@ -1365,12 +1364,6 @@ void MainWindow::InitEnvironmentModeMenu(CVarMenu* environmentModeMenu)
     environmentModeMenu->AddCVarToggleItem({ "r_ssdo", tr("Hide Screen Space Directional Occlusion"), 0, 1 });
     environmentModeMenu->AddCVarToggleItem({ "e_DynamicLights", tr("Hide All Dynamic Lights"), 0, 1 });
     environmentModeMenu->AddSeparator();
-    environmentModeMenu->AddCVarValuesItem("e_TimeOfDay", tr("Time of Day"),
-        {
-            {tr("Day (1:00 pm)"), 13},
-            {tr("Night (9:00 pm)"), 21}
-        }, 9);
-    environmentModeMenu->AddSeparator();
     environmentModeMenu->AddCVarToggleItem({ "e_Entities", tr("Hide Entities"), 0, 1 });
     environmentModeMenu->AddSeparator();
     environmentModeMenu->AddCVarToggleItem({ "e_Vegetation", tr("Hide Vegetation"), 0, 1 });
@@ -1654,10 +1647,6 @@ void MainWindow::RegisterStdViewClasses()
     AzAssetBrowserWindow::RegisterViewClass();
     AssetEditorWindow::RegisterViewClass();
 
-    if (!AZ::Interface<AzFramework::AtomActiveInterface>::Get())
-    {
-        CTimeOfDayDialog::RegisterViewClass();
-    }
 #ifdef ThumbnailDemo
     ThumbnailsSampleWidget::RegisterViewClass();
 #endif

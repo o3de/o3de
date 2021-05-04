@@ -116,7 +116,6 @@ public:
     bool IsInitialized() const{ return m_bInitialized; }
     bool SaveDocument();
     ISystem*    GetSystem();
-    I3DEngine*  Get3DEngine();
     IRenderer*  GetRenderer();
     void WriteToConsole(const char* string) { CLogFile::WriteLine(string); };
     void WriteToConsole(const QString& string) { CLogFile::WriteLine(string); };
@@ -322,7 +321,6 @@ public:
     void OnObjectContextMenuOpened(QMenu* pMenu, const CBaseObject* pObject);
     virtual void RegisterObjectContextMenuExtension(TContextMenuExtensionFunc func) override;
 
-    virtual void SetCurrentMissionTime(float time);
     virtual SSystemGlobalEnvironment* GetEnv() override;
     virtual IBaseLibraryManager* GetMaterialManagerLibrary() override; // Vladimir@Conffx
     virtual IEditorMaterialManager* GetIEditorMaterialManager() override; // Vladimir@Conffx

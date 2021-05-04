@@ -87,11 +87,6 @@ void CDisplaySettings::PostInitApply()
 void CDisplaySettings::SetRenderFlags(int flags)
 {
     m_renderFlags = flags;
-
-    if (!GetIEditor()->Get3DEngine())
-    {
-        return;
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////

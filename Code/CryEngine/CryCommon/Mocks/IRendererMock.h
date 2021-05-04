@@ -12,7 +12,6 @@
 #pragma once
 
 #include <IRenderer.h>
-#include <I3DEngine.h> // needed for SRenderingPassInfo definition
 #include <IVideoRenderer.h>
 #include <IImage.h>
 #include <gmock/gmock.h>

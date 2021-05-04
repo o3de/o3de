@@ -866,17 +866,6 @@ namespace ImGui
                 {
                     entityLabel.append(AZStd::string::format("\nTotal Lods: %d", renderNode->GetEntityStatObj()->GetLoadedLodsNum()));
                 }
-                // Draw Misc Lod Info
-                if (m_inWorld_label_miscLod)
-                {
-                    entityLabel.append(AZStd::string::format("\nFirst Lod Distance: %f", renderNode->GetFirstLodDistance()));
-                    float distances[SMeshLodInfo::s_nMaxLodCount];
-                    renderNode->GetLodDistances(gEnv->p3DEngine->GetFrameLodInfo(), distances);
-                    for (int i = 0; i < SMeshLodInfo::s_nMaxLodCount; i++)
-                    {
-                        entityLabel.append(AZStd::string::format("\n  frameLod: %d - %f", i, distances[i]));
-                    }
-                }
             }
 
             // Draw the label in the world

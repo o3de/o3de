@@ -72,7 +72,6 @@ AZ_POP_DISABLE_WARNING
 #include "BackgroundTaskManager.h"
 #include "BackgroundScheduleManager.h"
 #include "EditorFileMonitor.h"
-#include "Mission.h"
 #include "MainStatusBar.h"
 
 #include "SettingsBlock.h"
@@ -412,7 +411,6 @@ void CEditorImpl::SetGameEngine(CGameEngine* ge)
     m_pObjectManager->LoadClassTemplates("Editor");
     m_pObjectManager->RegisterCVars();
 
-    m_pMaterialManager->Set3DEngine();
     m_pAnimationContext->Init();
 }
 
@@ -467,15 +465,6 @@ void CEditorImpl::Update()
 ISystem* CEditorImpl::GetSystem()
 {
     return m_pSystem;
-}
-
-I3DEngine* CEditorImpl::Get3DEngine()
-{
-    if (gEnv)
-    {
-        return gEnv->p3DEngine;
-    }
-    return nullptr;
 }
 
 IRenderer*  CEditorImpl::GetRenderer()
@@ -1749,13 +1738,6 @@ void CEditorImpl::RegisterObjectContextMenuExtension(TContextMenuExtensionFunc f
     m_objectContextMenuExtensions.push_back(func);
 }
 
-void CEditorImpl::SetCurrentMissionTime(float time)
-{
-    if (CMission* pMission = GetIEditor()->GetDocument()->GetCurrentMission())
-    {
-        pMission->SetTime(time);
-    }
-}
 // Vladimir@Conffx
 SSystemGlobalEnvironment* CEditorImpl::GetEnv()
 {

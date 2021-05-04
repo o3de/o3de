@@ -32,7 +32,6 @@ public:
 public:
     MOCK_METHOD0(DeleteThis, void());
     MOCK_METHOD0(GetSystem, ISystem*());
-    MOCK_METHOD0(Get3DEngine, I3DEngine* ());
     MOCK_METHOD0(GetRenderer, IRenderer* ());
     MOCK_METHOD0(GetClassFactory, IEditorClassFactory* ());
     MOCK_METHOD0(GetCommandManager, CEditorCommandManager*());
@@ -192,7 +191,6 @@ public:
     MOCK_METHOD0(GetBackgroundScheduleManager, struct IBackgroundScheduleManager* ());
     MOCK_METHOD1(ShowStatusText, void(bool ));
     MOCK_METHOD1(RegisterObjectContextMenuExtension, void(TContextMenuExtensionFunc ));
-    MOCK_METHOD1(SetCurrentMissionTime, void(float ));
     MOCK_METHOD0(GetEnv, SSystemGlobalEnvironment* ());
     MOCK_METHOD0(GetImageUtil, IImageUtil* ());
     MOCK_METHOD0(GetEditorSettings, SEditorSettings* ());

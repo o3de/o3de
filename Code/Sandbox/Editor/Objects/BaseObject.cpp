@@ -831,9 +831,8 @@ void CBaseObject::GetLocalBounds(AABB& box)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CBaseObject::SetModified(bool boModifiedTransformOnly)
+void CBaseObject::SetModified(bool)
 {
-    ((CObjectManager*)GetObjectManager())->OnObjectModified(this, false, boModifiedTransformOnly);
 }
 
 void CBaseObject::DrawDefault(DisplayContext& dc, const QColor& labelColor)

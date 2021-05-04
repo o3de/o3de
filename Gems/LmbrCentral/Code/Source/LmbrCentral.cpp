@@ -92,9 +92,6 @@
 #include "Shape/SplineComponent.h"
 #include "Shape/PolygonPrismShapeComponent.h"
 
-// Cry interfaces.
-#include <I3DEngine.h>
-
 namespace LmbrCentral
 {
     static const char* s_assetCatalogFilename = "assetcatalog.xml";
@@ -489,20 +486,6 @@ namespace LmbrCentral
             (*allocatorIt)();
         }
         m_allocatorShutdowns.clear();
-    }
-
-    void LmbrCentralSystemComponent::OnAssetEventsDispatchEnd()
-    {
-        AZ_Assert((!gEnv) || (gEnv->mMainThreadId == CryGetCurrentThreadId()), "OnAssetEventsDispatchEnd from a non-main thread - the AssetBus should only be called from the main thread!");
-
-        // Pump deferred engine loading events.
-        if (gEnv && gEnv->mMainThreadId == CryGetCurrentThreadId())
-        {
-            if (gEnv->p3DEngine)
-            {
-                gEnv->p3DEngine->ProcessAsyncStaticObjectLoadRequests();
-            }
-        }
     }
 
     void LmbrCentralSystemComponent::OnCrySystemPreInitialize([[maybe_unused]] ISystem& system, [[maybe_unused]] const SSystemInitParams& systemInitParams)

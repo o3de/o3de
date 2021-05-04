@@ -27,7 +27,6 @@
 
 
 // Editor
-#include "ThumbnailGenerator.h"         // for CThumbnailGenerator
 #include "FileTypeUtils.h"              // for IsPreviewableFileType
 #include "Material/MaterialManager.h"   // for CMaterialManager
 #include "ErrorRecorder.h"
@@ -462,10 +461,6 @@ void CModelViewport::LoadStaticObject(const QString& file)
     }
     m_object->AddRef();
 
-    // Generate thumbnail for this cgf.
-    CThumbnailGenerator thumbGen;
-    thumbGen.GenerateForFile(file);
-
     m_AABB.min = m_object->GetBoxMin();
     m_AABB.max = m_object->GetBoxMax();
 }
@@ -627,29 +622,6 @@ void CModelViewport::Update()
     FUNCTION_PROFILER(GetIEditor()->GetSystem(), PROFILE_EDITOR);
 
     CRenderViewport::Update();
-
-    DrawInfo();
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CModelViewport::DrawInfo() const
-{
-    if (GetIEditor()->Get3DEngine())
-    {
-        ICVar* pDisplayInfo = gEnv->pConsole->GetCVar("r_DisplayInfo");
-        if (pDisplayInfo && pDisplayInfo->GetIVal() != 0)
-        {
-            const float fps = gEnv->pTimer->GetFrameRate();
-            const float x = (float)gEnv->pRenderer->GetWidth() - 5.0f;
-
-            gEnv->p3DEngine->DrawTextRightAligned(x, 1, "FPS: %.2f", fps);
-
-            int nPolygons, nShadowVolPolys;
-            gEnv->pRenderer->GetPolyCount(nPolygons, nShadowVolPolys);
-            int nDrawCalls = gEnv->pRenderer->GetCurrentNumberOfDrawCalls();
-            gEnv->p3DEngine->DrawTextRightAligned(x, 20, "Tris:%2d,%03d - DP:%d", nPolygons / 1000, nPolygons % 1000, nDrawCalls);
-        }
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////

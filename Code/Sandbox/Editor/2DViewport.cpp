@@ -716,7 +716,6 @@ void Q2DViewport::Render()
         dc.settings = GetIEditor()->GetDisplaySettings();
         dc.view = this;
         dc.renderer = m_renderer;
-        dc.engine = GetIEditor()->Get3DEngine();
         dc.flags = DISPLAY_2D;
         dc.box = m_displayBounds;
         dc.camera = &GetIEditor()->GetSystem()->GetViewCamera();

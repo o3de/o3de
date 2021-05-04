@@ -73,7 +73,7 @@ namespace
         return *actualMem;
     }
 
-    float RetrieveValue(const AZ::u8* mem, size_t index, ImageProcessing::EPixelFormat format)
+    float RetrieveValue(const AZ::u8* mem, size_t index, ImageProcessingAtom::EPixelFormat format)
     {
         using namespace ImageProcessing;
 

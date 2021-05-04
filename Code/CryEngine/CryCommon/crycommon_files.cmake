@@ -15,8 +15,6 @@ set(FILES
     Allocator.h
     FinalizingSpline.h
     Gem.h
-    I3DEngine.h
-    I3DEngine_info.h
     IAudioInterfacesCommonData.h
     IAudioSystem.h
     IChunkFile.h
@@ -86,7 +84,6 @@ set(FILES
     ITexture.h
     IThreadManager.h
     IThreadTask.h
-    ITimeOfDay.h
     ITimer.h
     IValidator.h
     IVideoRenderer.h
@@ -317,7 +314,6 @@ set(FILES
     CryPool/STLWrapper.h
     CryPool/ThreadSafe.h
     stl/STLAlignedAlloc.h
-    ILocalMemoryUsage.h
     Serialization/Assert.h
     Serialization/BitVector.h
     Serialization/BitVectorImpl.h

@@ -19,7 +19,6 @@
 #include <AzFramework/Physics/Collision/CollisionEvents.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 
-#include <I3DEngine.h>
 #include <IEditor.h>
 #include <ISurfaceType.h>
 
@@ -44,35 +43,6 @@ namespace PhysX
             Physics::MaterialLibraryAsset* materialLibraryAsset = azrtti_cast<Physics::MaterialLibraryAsset*>(newAsset.GetData());
             if (materialLibraryAsset)
             {
-                IEditor* editor = nullptr;
-                AzToolsFramework::EditorRequests::Bus::BroadcastResult(editor, &AzToolsFramework::EditorRequests::GetEditor);
-
-                ISurfaceTypeEnumerator* surfaceTypeEnumerator = nullptr;
-                if (editor)
-                {
-                    surfaceTypeEnumerator = editor->Get3DEngine()->GetMaterialManager()->GetSurfaceTypeManager()->GetEnumerator();
-                }
-
-                if (surfaceTypeEnumerator)
-                {
-                    // Enumerate through CryEngine surface types and create a Physics API material for each of them
-                    for (ISurfaceType* pSurfaceType = surfaceTypeEnumerator->GetFirst(); pSurfaceType != nullptr;
-                        pSurfaceType = surfaceTypeEnumerator->GetNext())
-                    {
-                        const ISurfaceType::SPhysicalParams& physicalParams = pSurfaceType->GetPhyscalParams();
-
-                        Physics::MaterialFromAssetConfiguration configuration;
-                        configuration.m_configuration = Physics::MaterialConfiguration();
-                        configuration.m_configuration.m_dynamicFriction = AZ::GetMax(0.0f, physicalParams.friction);
-                        configuration.m_configuration.m_staticFriction = AZ::GetMax(0.0f, physicalParams.friction);
-                        configuration.m_configuration.m_restitution = AZ::GetClamp(physicalParams.bouncyness, 0.0f, 1.0f);
-                        configuration.m_configuration.m_surfaceType = pSurfaceType->GetType();
-                        configuration.m_id = Physics::MaterialId::Create();
-
-                        materialLibraryAsset->AddMaterialData(configuration);
-                    }
-                }
-
                 // check it out in the source control system
                 AzToolsFramework::SourceControlCommandBus::Broadcast(
                     &AzToolsFramework::SourceControlCommandBus::Events::RequestEdit, targetFilePath.c_str(), true,

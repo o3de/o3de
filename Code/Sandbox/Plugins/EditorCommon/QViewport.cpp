@@ -17,7 +17,6 @@
 #include <IRenderer.h>
 #include <IRenderAuxGeom.h>
 #include <ITimer.h>
-#include <I3DEngine.h>
 #include <IPhysicsDebugRenderer.h>
 #include <IEditor.h>
 #include <Util/Image.h>
@@ -499,49 +498,6 @@ void QViewport::Update()
     {
         m_averageFrameTime = 0.01f * m_lastFrameTime + 0.99f * m_averageFrameTime;
     }
-
-    if (GetIEditor()->GetEnv()->pRenderer == 0 ||
-        GetIEditor()->GetEnv()->p3DEngine == 0)
-    {
-        return;
-    }
-
-    if (!isVisible())
-    {
-        return;
-    }
-
-    if (!m_renderContextCreated)
-    {
-        return;
-    }
-
-    if (m_updating)
-    {
-        return;
-    }
-
-    AutoBool updating(&m_updating);
-
-    if (m_resizeWindowEvent)
-    {
-        HWND windowHandle = reinterpret_cast<HWND>(QWidget::winId());
-        AzFramework::WindowNotificationBus::Event(windowHandle, &AzFramework::WindowNotificationBus::Handler::OnWindowResized, m_width, m_height);
-        m_resizeWindowEvent = false;
-    }
-
-    if (hasFocus())
-    {
-        ProcessMouse();
-        ProcessKeys();
-    }
-
-    if ((m_width <= 0) || (m_height <= 0))
-    {
-        return;
-    }
-
-    RenderInternal();
 }
 
 void QViewport::CaptureMouse()
@@ -865,7 +821,7 @@ void QViewport::PreRender()
     m_state->lastCameraParentFrame = m_state->cameraParentFrame;
     m_state->lastCameraTarget = currentTM;
 
-    m_camera->SetFrustum(m_width, m_height, fov, m_settings->camera.nearClip, GetIEditor()->GetEnv()->p3DEngine->GetMaxViewDistance());
+    m_camera->SetFrustum(m_width, m_height, fov, m_settings->camera.nearClip);
     m_camera->SetMatrix(Matrix34(m_state->cameraParentFrame * currentTM));
 }
 
@@ -914,32 +870,6 @@ void QViewport::Render()
     //---------------------------------------------------------------------------------------
     //---- add light    -------------------------------------------------------------
     //---------------------------------------------------------------------------------------
-    /////////////////////////////////////////////////////////////////////////////////////
-    // Confetti Start
-    /////////////////////////////////////////////////////////////////////////////////////
-    // If time of day enabled, add sun light to preview - Confetti Vera.
-    if (m_settings->rendering.sunlight)
-    {
-        rp.AmbientColor.r = GetIEditor()->Get3DEngine()->GetSunColor().x / 255.0f * m_settings->lighting.m_brightness;
-        rp.AmbientColor.g = GetIEditor()->Get3DEngine()->GetSunColor().y / 255.0f * m_settings->lighting.m_brightness;
-        rp.AmbientColor.b = GetIEditor()->Get3DEngine()->GetSunColor().z / 255.0f * m_settings->lighting.m_brightness;
-
-        m_private->m_sun.SetPosition(passInfo.GetCamera().GetPosition() + GetIEditor()->Get3DEngine()->GetSunDir());
-        // The radius value respect the sun radius settings in Engine.
-        // Please refer to the function C3DEngine::UpdateSun(const SRenderingPassInfo &passInfo). -- Vera, Confetti
-        m_private->m_sun.m_fRadius = 100000000; //Radius of the sun from Engine.
-        m_private->m_sun.SetLightColor(GetIEditor()->Get3DEngine()->GetSunColor());
-        m_private->m_sun.SetSpecularMult(GetIEditor()->Get3DEngine()->GetGlobalParameter(E3DPARAM_SUN_SPECULAR_MULTIPLIER));
-        m_private->m_sun.m_Flags |= DLF_DIRECTIONAL | DLF_SUN | DLF_THIS_AREA_ONLY | DLF_LM | DLF_SPECULAROCCLUSION |
-            ((GetIEditor()->Get3DEngine()->IsSunShadows() && passInfo.RenderShadows()) ? DLF_CASTSHADOW_MAPS : 0);
-        m_private->m_sun.m_sName = "Sun";
-
-        GetIEditor()->GetEnv()->pRenderer->EF_ADDDlight(&m_private->m_sun, passInfo);
-    }
-    /////////////////////////////////////////////////////////////////////////////////////
-    // Confetti End
-    /////////////////////////////////////////////////////////////////////////////////////
-    else // Add directional light
     {
         rp.AmbientColor.r = m_settings->lighting.m_ambientColor.r / 255.0f * m_settings->lighting.m_brightness;
         rp.AmbientColor.g = m_settings->lighting.m_ambientColor.g / 255.0f * m_settings->lighting.m_brightness;
@@ -1034,7 +964,6 @@ void QViewport::RenderInternal()
 
 
     SetCurrentContext();
-    GetIEditor()->GetEnv()->pSystem->RenderBegin();
 
     ColorF viewportBackgroundColor(m_settings->background.topColor.r / 255.0f, m_settings->background.topColor.g / 255.0f, m_settings->background.topColor.b / 255.0f);
     GetIEditor()->GetEnv()->pRenderer->ClearTargetsImmediately(FRT_CLEAR, viewportBackgroundColor);
@@ -1066,8 +995,6 @@ void QViewport::RenderInternal()
 
     Render();
 
-    bool renderStats = false;
-    GetIEditor()->GetEnv()->pSystem->RenderEnd(renderStats, false);
     RestorePreviousContext();
 }
 

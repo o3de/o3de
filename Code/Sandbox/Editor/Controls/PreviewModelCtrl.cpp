@@ -174,21 +174,7 @@ void CPreviewModelCtrl::LoadFile(const QString& modelFile, bool changeCamera)
 
     if (isCGF)
     {
-        // Load object.
-        m_pObj = GetIEditor()->Get3DEngine()->LoadStatObjAutoRef(modelFile.toUtf8().data(), NULL, NULL, false);
-        if (!m_pObj)
-        {
-            Warning("Loading of geometry object %s failed.", modelFile.toUtf8().constData());
-            if (m_nTimer != 0)
-            {
-                killTimer(m_nTimer);
-            }
-            m_nTimer = 0;
-            update();
-            return;
-        }
-        m_aabb.min = m_pObj->GetBoxMin();
-        m_aabb.max = m_pObj->GetBoxMax();
+        Warning("Loading of geometry object %s failed.", modelFile.toUtf8().constData());
     }
     else
     {

@@ -40,7 +40,6 @@
 #include <IRenderer.h>
 #include <IRenderAuxGeom.h>
 #include <IEntityRenderState.h>
-#include <I3DEngine.h>
 #include <IStreamEngine.h>
 
 #include <CryArray2d.h>

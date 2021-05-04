@@ -286,7 +286,6 @@ struct IRenderNode
     //   Physicalizes node.
     virtual void Physicalize([[maybe_unused]] bool bInstant = false) {}
 
-    // Make sure I3DEngine::FreeRenderNodeState(this) is called in destructor of derived class.
     virtual ~IRenderNode() { assert(!m_pRNTmpData); };
 
     // Summary:

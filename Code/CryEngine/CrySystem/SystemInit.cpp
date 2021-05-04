@@ -87,7 +87,6 @@
 
 #endif //WIN32
 
-#include <I3DEngine.h>
 #include <IRenderer.h>
 #include <AzCore/IO/FileIO.h>
 #include <IMovieSystem.h>
@@ -108,7 +107,6 @@
 #include "PhysRenderer.h"
 #include "LocalizedStringManager.h"
 #include "SystemEventDispatcher.h"
-#include "Statistics/LocalMemoryUsage.h"
 #include "ThreadConfigManager.h"
 #include "Validator.h"
 #include "ServerThrottle.h"
@@ -768,11 +766,6 @@ static void LoadDetectedSpec(ICVar* pVar)
     // override cvars just loaded based on current API version/GPU
 
     GetISystem()->SetConfigSpec(static_cast<ESystemConfigSpec>(spec), platform, false);
-
-    if (gEnv->p3DEngine)
-    {
-        gEnv->p3DEngine->GetMaterialManager()->RefreshMaterialRuntime();
-    }
 
     no_recursive = false;
 }
@@ -2803,12 +2796,6 @@ AZ_POP_DISABLE_WARNING
         {
             m_env.pRenderer->TryFlush();
         }
-
-#if !defined(RELEASE)
-        m_env.pLocalMemoryUsage = new CLocalMemoryUsage();
-#else
-        m_env.pLocalMemoryUsage = nullptr;
-#endif
 
         if (g_cvars.sys_float_exceptions > 0)
         {

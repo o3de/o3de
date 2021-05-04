@@ -36,7 +36,6 @@ class CObjectManager;
 class CGizmo;
 class CObjectArchive;
 class CMaterial;
-class CEdGeometry;
 struct SSubObjSelectionModifyContext;
 struct SRayHitInfo;
 class ISubObjectSelectionReferenceFrameCalculator;
@@ -603,10 +602,6 @@ public:
     virtual void CalculateSubObjectSelectionReferenceFrame([[maybe_unused]] ISubObjectSelectionReferenceFrameCalculator* pCalculator) { };
     virtual void ModifySubObjSelection([[maybe_unused]] SSubObjSelectionModifyContext& modCtx) {};
     virtual void AcceptSubObjectModify() {};
-
-    // Request a geometry pointer from the object.
-    // Return NULL if geometry can not be retrieved or object does not support geometries.
-    virtual CEdGeometry* GetGeometry() { return 0; };
 
     //! In This function variables of the object must be initialized.
     virtual void InitVariables() {};

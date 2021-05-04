@@ -431,7 +431,6 @@ protected:
 
     //! Assigned renderer.
     IRenderer*  m_renderer = nullptr;
-    I3DEngine*  m_engine = nullptr;
     bool m_bRenderContextCreated = false;
     bool m_bInRotateMode = false;
     bool m_bInMoveMode = false;
@@ -517,10 +516,6 @@ protected:
     f32 m_lrGround;
     OBB m_GroundOBB;
     Vec3 m_GroundOBBPos;
-
-    //-------------------------------------------
-    // Render options.
-    bool m_bRenderStats = true;
 
     // Index of camera objects.
     mutable GUID m_cameraObjectId = GUID_NULL;

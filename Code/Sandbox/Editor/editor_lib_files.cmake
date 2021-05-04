@@ -395,8 +395,6 @@ set(FILES
     Controls/TextEditorCtrl.h
     Controls/TimelineCtrl.cpp
     Controls/TimelineCtrl.h
-    Controls/TimeOfDaySlider.cpp
-    Controls/TimeOfDaySlider.h
     Controls/WndGridHelper.h
     Controls/ReflectedPropertyControl/PropertyAnimationCtrl.cpp
     Controls/ReflectedPropertyControl/PropertyAnimationCtrl.h
@@ -504,10 +502,6 @@ set(FILES
     IconListDialog.ui
     UndoDropDown.cpp
     UndoDropDown.h
-    TimeOfDayDialog.cpp
-    TimeOfDayDialog.h
-    TimeOfDayDialog.ui
-    TimeOfDay.qrc
     DimensionsDialog.cpp
     DimensionsDialog.h
     DimensionsDialog.ui
@@ -537,11 +531,7 @@ set(FILES
     GameResourcesExporter.cpp
     GameExporter.h
     GameResourcesExporter.h
-    Geometry/EdGeometry.cpp
-    Geometry/EdMesh.cpp
     Geometry/TriMesh.cpp
-    Geometry/EdGeometry.h
-    Geometry/EdMesh.h
     Geometry/TriMesh.h
     AboutDialog.h
     AboutDialog.ui
@@ -589,8 +579,6 @@ set(FILES
     MaterialSender.cpp
     Material/MaterialPythonFuncs.h
     Material/MaterialPythonFuncs.cpp
-    Mission.cpp
-    Mission.h
     Objects/ClassDesc.cpp
     Objects/ClassDesc.h
     Objects/IEntityObjectListener.h
@@ -688,8 +676,6 @@ set(FILES
     ResourceSelectorHost.cpp
     ResourceSelectorHost.h
     SurfaceInfoPicker.cpp
-    ThumbnailGenerator.cpp
-    ThumbnailGenerator.h
     ToolBox.cpp
     TrackViewNewSequenceDialog.cpp
     TrackViewNewSequenceDialog.ui
@@ -721,9 +707,6 @@ set(FILES
     ShaderEnum.h
     SurfaceTypeValidator.cpp
     SurfaceTypeValidator.h
-    EnvironmentPanel.cpp
-    EnvironmentPanel.h
-    EnvironmentPanel.ui
     TrackView/AtomOutputFrameCapture.cpp
     TrackView/AtomOutputFrameCapture.h
     TrackView/TrackViewDialog.qrc

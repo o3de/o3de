@@ -17,7 +17,6 @@
 
 #include "TypeInfo_impl.h"
 #include "IShader_info.h"
-#include <I3DEngine.h> // <> required for Interfuscator
 
 STRUCT_INFO_BEGIN(SVisAreaManChunkHeader)
 STRUCT_VAR_INFO(nVersion, TYPE_INFO(int8))

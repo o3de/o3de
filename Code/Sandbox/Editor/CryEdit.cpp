@@ -78,7 +78,6 @@ AZ_POP_DISABLE_WARNING
 #include <AzQtComponents/Utilities/QtPluginPaths.h>
 
 // CryCommon
-#include <CryCommon/I3DEngine.h>
 #include <CryCommon/ITimer.h>
 #include <CryCommon/IPhysics.h>
 #include <CryCommon/ILevelSystem.h>
@@ -110,14 +109,12 @@ AZ_POP_DISABLE_WARNING
 #include "GameEngine.h"
 
 #include "StartupTraceHandler.h"
-#include "ThumbnailGenerator.h"
 #include "ToolsConfigPage.h"
 #include "Objects/SelectionGroup.h"
 #include "Include/IObjectManager.h"
 #include "WaitProgress.h"
 
 #include "ToolBox.h"
-#include "Geometry/EdMesh.h"
 #include "LevelInfo.h"
 #include "EditorPreferencesDialog.h"
 #include "GraphicsSettingsDialog.h"
@@ -405,7 +402,6 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_FILE_NEW_SLICE, OnCreateSlice)
     ON_COMMAND(ID_FILE_OPEN_SLICE, OnOpenSlice)
 #endif
-    ON_COMMAND(ID_RESOURCES_GENERATECGFTHUMBNAILS, OnGenerateCgfThumbnails)
     ON_COMMAND(ID_SWITCH_PHYSICS, OnSwitchPhysics)
     ON_COMMAND(ID_GAME_SYNCPLAYER, OnSyncPlayer)
     ON_COMMAND(ID_RESOURCES_REDUCEWORKINGSET, OnResourcesReduceworkingset)
@@ -479,8 +475,6 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_DISPLAY_SHOWHELPERS, OnShowHelpers)
     ON_COMMAND(ID_OPEN_TRACKVIEW, OnOpenTrackView)
     ON_COMMAND(ID_OPEN_UICANVASEDITOR, OnOpenUICanvasEditor)
-    ON_COMMAND(ID_TERRAIN_TIMEOFDAY, OnTimeOfDay)
-    ON_COMMAND(ID_TERRAIN_TIMEOFDAYBUTTON, OnTimeOfDay)
 
     ON_COMMAND_RANGE(ID_GAME_PC_ENABLELOWSPEC, ID_GAME_PC_ENABLEVERYHIGHSPEC, OnChangeGameSpec)
 
@@ -2967,7 +2961,6 @@ void CCryEditApp::OnReloadGeometry()
     CWaitProgress wait("Reloading static geometry");
 
     CLogFile::WriteLine("Reloading Static objects geometries.");
-    CEdMesh::ReloadAllGeometries();
 
     GetIEditor()->GetObjectManager()->SendEvent(EVENT_UNLOAD_GEOM);
 
@@ -2983,18 +2976,6 @@ void CCryEditApp::OnReloadGeometry()
             mvp->RePhysicalize();
         }
     }
-
-    IRenderNode** plist = new IRenderNode*[
-            gEnv->p3DEngine->GetObjectsByType(eERType_StaticMeshRenderComponent,0)
-    ];
-    for (const EERType type : AZStd::array<EERType, 3>{eERType_Dummy_10, eERType_StaticMeshRenderComponent})
-    {
-        for (int j = gEnv->p3DEngine->GetObjectsByType(type, plist) - 1; j >= 0; j--)
-        {
-            plist[j]->Physicalize(true);
-        }
-    }
-    delete[] plist;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -3161,15 +3142,6 @@ void CCryEditApp::OnSyncPlayerUpdate(QAction* action)
     action->setChecked(!GetIEditor()->GetGameEngine()->IsSyncPlayerPosition());
 }
 
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnGenerateCgfThumbnails()
-{
-    qApp->setOverrideCursor(Qt::BusyCursor);
-    CThumbnailGenerator gen;
-    gen.GenerateForDirectory("Objects\\");
-    qApp->restoreOverrideCursor();
-}
-
 void CCryEditApp::OnUpdateNonGameMode(QAction* action)
 {
     action->setEnabled(!GetIEditor()->IsInGameMode());
@@ -3271,7 +3243,6 @@ CCryEditApp::ECreateLevelResult CCryEditApp::CreateLevel(const QString& levelNam
         GetIEditor()->GetGameEngine()->LoadLevel(GetIEditor()->GetGameEngine()->GetMissionName(), true, true);
         GetIEditor()->GetSystem()->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_PRECACHE_START, 0, 0);
 
-        GetIEditor()->GetGameEngine()->ReloadEnvironment();
         GetIEditor()->GetSystem()->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_PRECACHE_END, 0, 0);
     }
 
@@ -4221,12 +4192,6 @@ void CCryEditApp::OnOpenAudioControlsEditor()
 void CCryEditApp::OnOpenUICanvasEditor()
 {
     QtViewPaneManager::instance()->OpenPane(LyViewPane::UiEditor);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnTimeOfDay()
-{
-    GetIEditor()->OpenView("Time Of Day");
 }
 
 //////////////////////////////////////////////////////////////////////////

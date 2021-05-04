@@ -77,12 +77,11 @@ void CIconManager::Done()
 //////////////////////////////////////////////////////////////////////////
 void CIconManager::Reset()
 {
-    I3DEngine* pEngine = GetIEditor()->Get3DEngine();
     // Do not unload objects. but clears them.
     int i;
     for (i = 0; i < sizeof(m_objects) / sizeof(m_objects[0]); i++)
     {
-        if (m_objects[i] && pEngine)
+        if (m_objects[i])
         {
             m_objects[i]->Release();
         }
@@ -196,39 +195,10 @@ int CIconManager::GetIconTexture(EIcon icon)
     return m_icons[icon];
 }
 
-
-//////////////////////////////////////////////////////////////////////////
-_smart_ptr<IMaterial>  CIconManager::GetHelperMaterial()
-{
-    if (!m_pHelperMtl)
-    {
-        m_pHelperMtl = GetIEditor()->Get3DEngine()->GetMaterialManager()->LoadMaterial(HELPER_MATERIAL);
-    }
-    return m_pHelperMtl;
-};
-
 //////////////////////////////////////////////////////////////////////////
 IStatObj*   CIconManager::GetObject(EStatObject object)
 {
-    assert(object >= 0 && object < eStatObject_COUNT);
-
-    if (m_objects[object])
-    {
-        return m_objects[object];
-    }
-
-    // Try to load this object.
-    m_objects[object] = GetIEditor()->Get3DEngine()->LoadStatObjUnsafeManualRef(g_ObjectNames[object], NULL, NULL, false);
-    if (!m_objects[object])
-    {
-        CLogFile::FormatLine("Error: Load Failed: %s", g_ObjectNames[object]);
-    }
-    m_objects[object]->AddRef();
-    if (GetHelperMaterial())
-    {
-        m_objects[object]->SetMaterial(GetHelperMaterial());
-    }
-    return m_objects[object];
+    return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////

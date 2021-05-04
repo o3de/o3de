@@ -133,8 +133,6 @@ protected:
     virtual void DrawLights(const SRenderingPassInfo& passInfo);
     virtual void DrawSkyBox(const SRenderingPassInfo& passInfo);
 
-    void DrawInfo() const;
-
     void SetConsoleVar(const char* var, int value);
 
     void OnEditorNotifyEvent(EEditorNotifyEvent event)
