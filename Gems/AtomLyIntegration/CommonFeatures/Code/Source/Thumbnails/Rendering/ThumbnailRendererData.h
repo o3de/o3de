@@ -36,13 +36,13 @@ namespace AZ
             struct ThumbnailRendererData final
             {
                 static constexpr const char* LightingPresetPath = "lightingpresets/thumbnail.lightingpreset.azasset";
-                static constexpr const char* DefaultModelPath = "materialeditor/viewportmodels/quadsphere.azmodel";
+                static constexpr const char* DefaultModelPath = "models/sphere.azmodel";
                 static constexpr const char* DefaultMaterialPath = "materials/basic_grey.azmaterial";
 
                 RPI::ScenePtr m_scene;
                 AZStd::string m_sceneName = "Material Thumbnail Scene";
                 AZStd::string m_pipelineName = "Material Thumbnail Pipeline";
-                AzFramework::Scene* m_frameworkScene = nullptr;
+                AZStd::shared_ptr<AzFramework::Scene> m_frameworkScene;
                 RPI::RenderPipelinePtr m_renderPipeline;
                 AZStd::unique_ptr<AzFramework::EntityContext> m_entityContext;
                 AZStd::vector<AZStd::string> m_passHierarchy;
@@ -52,6 +52,7 @@ namespace AZ
 
                 double m_simulateTime = 0.0f;
                 float m_deltaTime = 0.0f;
+                int m_thumbnailSize = 512;
 
                 //! Incoming thumbnail requests are appended to this queue and processed one at a time in OnTick function.
                 AZStd::queue<AzToolsFramework::Thumbnailer::SharedThumbnailKey> m_thumbnailQueue;

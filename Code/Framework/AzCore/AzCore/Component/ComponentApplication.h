@@ -209,6 +209,7 @@ namespace AZ
         bool DeleteEntity(const EntityId& id) override;
         Entity* FindEntity(const EntityId& id) override;
         AZStd::string GetEntityName(const EntityId& id) override;
+        bool SetEntityName(const EntityId& id, const AZStd::string_view name) override;
         void EnumerateEntities(const ComponentApplicationRequests::EntityCallback& callback) override;
         ComponentApplication* GetApplication() override { return this; }
         /// Returns the serialize context that has been registered with the app, if there is one.
@@ -326,9 +327,6 @@ namespace AZ
 
         /// Create the drillers
         void        CreateDrillers();
-
-        /// Parse ComponentApplication specific command line arguments
-        void ParseCommandLine(const AZ::CommandLine& commandLine);
 
         virtual void MergeSettingsToRegistry(SettingsRegistryInterface& registry);
 

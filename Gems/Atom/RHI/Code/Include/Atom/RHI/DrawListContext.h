@@ -53,7 +53,7 @@ namespace AZ
 
             /// Adds an individual draw item to the draw list associated with the provided tag. This will
             /// no-op if the tag is not present in the internal draw list mask.
-            void AddDrawItem(DrawListTag drawListTag, DrawItemKeyPair drawItemKeyPair);
+            void AddDrawItem(DrawListTag drawListTag, DrawItemProperties drawItemProperties);
 
             /// Coalesces the draw lists in preparation for access via GetList. This should
             /// be called from a single thread as a sync point between the append / consume phases.

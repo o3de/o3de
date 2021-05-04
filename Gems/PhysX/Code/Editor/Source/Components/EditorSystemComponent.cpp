@@ -18,13 +18,15 @@
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Collision/CollisionEvents.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
-#include <Editor/ConfigStringLineEditCtrl.h>
-#include <Editor/EditorJointConfiguration.h>
 
 #include <I3DEngine.h>
 #include <IEditor.h>
 #include <ISurfaceType.h>
 
+#include <Editor/ConfigStringLineEditCtrl.h>
+#include <Editor/EditorJointConfiguration.h>
+#include <Editor/EditorWindow.h>
+#include <Editor/PropertyTypes.h>
 #include <System/PhysXSystem.h>
 
 namespace PhysX
@@ -46,11 +48,6 @@ namespace PhysX
                 AzToolsFramework::EditorRequests::Bus::BroadcastResult(editor, &AzToolsFramework::EditorRequests::GetEditor);
 
                 ISurfaceTypeEnumerator* surfaceTypeEnumerator = nullptr;
-                if (editor)
-                {
-                    surfaceTypeEnumerator = editor->Get3DEngine()->GetMaterialManager()->GetSurfaceTypeManager()->GetEnumerator();
-                }
-
                 if (surfaceTypeEnumerator)
                 {
                     // Enumerate through CryEngine surface types and create a Physics API material for each of them
@@ -116,18 +113,20 @@ namespace PhysX
         {
             AzPhysics::SceneConfiguration editorWorldConfiguration = physicsSystem->GetDefaultSceneConfiguration();
             editorWorldConfiguration.m_sceneName = AzPhysics::EditorPhysicsSceneName;
-            editorWorldConfiguration.m_sceneName = "EditorScene";
             m_editorWorldSceneHandle = physicsSystem->AddScene(editorWorldConfiguration);
         }
 
         PhysX::RegisterConfigStringLineEditHandler(); // Register custom unique string line edit control
+        PhysX::Editor::RegisterPropertyTypes();
 
+        AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
     }
 
     void EditorSystemComponent::Deactivate()
     {
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
+        AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
         Physics::EditorWorldBus::Handler::BusDisconnect();
 
         if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
@@ -162,6 +161,16 @@ namespace PhysX
                 scene->SetEnabled(true);
             }
         }
+    }
+
+    void EditorSystemComponent::PopulateEditorGlobalContextMenu([[maybe_unused]] QMenu* menu, [[maybe_unused]] const AZ::Vector2& point, [[maybe_unused]] int flags)
+    {
+
+    }
+
+    void EditorSystemComponent::NotifyRegisterViews()
+    {
+        PhysX::Editor::EditorWindow::RegisterViewClass();
     }
 
     AZ::Data::AssetId EditorSystemComponent::GenerateSurfaceTypesLibrary()

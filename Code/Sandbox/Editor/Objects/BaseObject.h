@@ -35,7 +35,6 @@ class CUndoBaseObject;
 class CObjectManager;
 class CGizmo;
 class CObjectArchive;
-class CMaterial;
 class CEdGeometry;
 struct SSubObjSelectionModifyContext;
 struct SRayHitInfo;
@@ -133,13 +132,6 @@ enum ObjectEditFlags
     OBJECT_CREATE   = 0x001,
     OBJECT_EDIT     = 0x002,
     OBJECT_COLLAPSE_OBJECTPANEL = 0x004
-};
-
-///////////////////////////////////////////////////////////////////////////
-enum MaterialChangeFlags
-{
-    MATERIALCHANGE_SURFACETYPE = 0x001,
-    MATERIALCHANGE_ALL = 0xFFFFFFFF,
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -555,22 +547,6 @@ public:
     void RemoveEventListener(EventListener* listener);
 
     //////////////////////////////////////////////////////////////////////////
-    //! Material handling for this base object.
-    //! Override in derived classes.
-    //////////////////////////////////////////////////////////////////////////
-    //! Assign new material to this object.
-    virtual void SetMaterial(CMaterial* mtl);
-    //! Assign new material to this object as a material name.
-    virtual void SetMaterial(const QString& materialName);
-    //! Get assigned material for this object.
-    virtual CMaterial* GetMaterial() const { return m_pMaterial; };
-    // Get actual rendering material for this object.
-    virtual CMaterial* GetRenderMaterial() const { return m_pMaterial; };
-    // Get the material name. Even though the material pointer is null, the material name can exist separately.
-    virtual QString GetMaterialName() const;
-    virtual void OnMaterialChanged([[maybe_unused]] MaterialChangeFlags change) {}
-
-    //////////////////////////////////////////////////////////////////////////
     //! Analyze errors for this object.
     virtual void Validate(IErrorReport* report);
 
@@ -860,9 +836,6 @@ private:
     Childs m_childs;
     //! Pointer to parent node.
     mutable CBaseObject* m_parent;
-
-    //! Material of this object.
-    CMaterial* m_pMaterial;
 
     AABB m_worldBounds;
 

@@ -196,7 +196,6 @@ SEditorSettings::SEditorSettings()
     enableSceneInspector = false;
 
     strStandardTempDirectory = "Temp";
-    strEditorEnv = "Editor/Editor.env";
 
     // Init source safe params.
     enableSourceControl = true;
@@ -254,8 +253,6 @@ SEditorSettings::SEditorSettings()
     gui.hSystemFontItalic = QFont("Ms Shell Dlg 2", lfHeight, QFont::Normal, true);
 
     bForceSkyUpdate = true;
-
-    bIsSearchFilterActive = false;
 
     backgroundUpdatePeriod = 0;
     g_TemporaryLevelName = nullptr;
@@ -532,7 +529,6 @@ void SEditorSettings::Save()
     SaveValue("Settings", "editorConfigSpec", editorConfigSpec);
 
     SaveValue("Settings", "TemporaryDirectory", strStandardTempDirectory);
-    SaveValue("Settings", "EditorEnv", strEditorEnv);
 
     SaveValue("Settings", "ConsoleBackgroundColorThemeV2", (int)consoleBackgroundColorTheme);
 
@@ -654,12 +650,6 @@ void SEditorSettings::Save()
     SaveValue("Settings", "ForceSkyUpdate", gSettings.bForceSkyUpdate);
 
     //////////////////////////////////////////////////////////////////////////
-    // Vertex snapping settings
-    //////////////////////////////////////////////////////////////////////////
-    SaveValue("Settings\\VertexSnapping", "VertexCubeSize", vertexSnappingSettings.vertexCubeSize);
-    SaveValue("Settings\\VertexSnapping", "RenderPenetratedBoundBox", vertexSnappingSettings.bRenderPenetratedBoundBox);
-
-    //////////////////////////////////////////////////////////////////////////
     // Smart file open settings
     //////////////////////////////////////////////////////////////////////////
     SaveValue("Settings\\SmartFileOpen", "LastSearchTerm", smartOpenSettings.lastSearchTerm);
@@ -753,7 +743,6 @@ void SEditorSettings::Load()
 
 
     LoadValue("Settings", "TemporaryDirectory", strStandardTempDirectory);
-    LoadValue("Settings", "EditorEnv", strEditorEnv);
 
     int consoleBackgroundColorThemeInt = (int)consoleBackgroundColorTheme;
     LoadValue("Settings", "ConsoleBackgroundColorThemeV2", consoleBackgroundColorThemeInt);
@@ -766,7 +755,7 @@ void SEditorSettings::Load()
     LoadValue("Settings", "ShowTimeInConsole", bShowTimeInConsole);
 
     LoadValue("Settings", "EnableSceneInspector", enableSceneInspector);
-    
+
     //////////////////////////////////////////////////////////////////////////
     // Viewport Settings.
     //////////////////////////////////////////////////////////////////////////
@@ -885,12 +874,6 @@ void SEditorSettings::Load()
     LoadValue("Settings\\ObjectColors", "ChildGeometryAlpha", objectColorSettings.fChildGeomAlpha);
 
     LoadValue("Settings", "ForceSkyUpdate", gSettings.bForceSkyUpdate);
-
-    //////////////////////////////////////////////////////////////////////////
-    // Vertex snapping settings
-    //////////////////////////////////////////////////////////////////////////
-    LoadValue("Settings\\VertexSnapping", "VertexCubeSize", vertexSnappingSettings.vertexCubeSize);
-    LoadValue("Settings\\VertexSnapping", "RenderPenetratedBoundBox", vertexSnappingSettings.bRenderPenetratedBoundBox);
 
     //////////////////////////////////////////////////////////////////////////
     // Smart file open settings

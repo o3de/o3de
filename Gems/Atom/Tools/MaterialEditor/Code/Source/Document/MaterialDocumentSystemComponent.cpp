@@ -12,32 +12,29 @@
 
 #include <Document/MaterialDocumentSystemComponent.h>
 
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/RTTI/BehaviorContext.h>
-
-#include <AzFramework/Asset/AssetSystemBus.h>
-
-#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
-#include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
-#include <AzToolsFramework/API/ViewPaneOptions.h>
-#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-#include <AtomToolsFramework/Util/Util.h>
-
+#include <Atom/Document/MaterialDocumentNotificationBus.h>
+#include <Atom/Document/MaterialDocumentRequestBus.h>
+#include <Atom/Document/MaterialDocumentSystemRequestBus.h>
 #include <Atom/RPI.Edit/Material/MaterialSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
-
-#include <Atom/Document/MaterialDocumentSystemRequestBus.h>
-#include <Atom/Document/MaterialDocumentRequestBus.h>
-#include <Atom/Document/MaterialDocumentNotificationBus.h>
+#include <AtomToolsFramework/Debug/TraceRecorder.h>
+#include <AtomToolsFramework/Util/Util.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Asset/AssetSystemBus.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/API/ViewPaneOptions.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QApplication>
+#include <QFileDialog>
+#include <QMessageBox>
 #include <QString>
 #include <QStyle>
-#include <QMessageBox>
-#include <QFileDialog>
 AZ_POP_DISABLE_WARNING
 
 namespace MaterialEditor
@@ -112,7 +109,6 @@ namespace MaterialEditor
 
     void MaterialDocumentSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("TargetManagerService", 0x6d5708bc));
         required.push_back(AZ_CRC("AssetProcessorToolsConnection", 0x734669bc));
         required.push_back(AZ_CRC("AssetDatabaseService", 0x3abf5601));
         required.push_back(AZ_CRC("PropertyManagerService", 0x63a3d7ad));
@@ -138,29 +134,14 @@ namespace MaterialEditor
         m_documentMap.clear();
         MaterialDocumentSystemRequestBus::Handler::BusConnect();
         MaterialDocumentNotificationBus::Handler::BusConnect();
-        AzFramework::TmMsgBus::Handler::BusConnect(AZ_CRC("OpenInMaterialEditor", 0x9f92aac8));
     }
 
     void MaterialDocumentSystemComponent::Deactivate()
     {
         AZ::TickBus::Handler::BusDisconnect();
-        AzFramework::TmMsgBus::Handler::BusDisconnect();
         MaterialDocumentNotificationBus::Handler::BusDisconnect();
         MaterialDocumentSystemRequestBus::Handler::BusDisconnect();
         m_documentMap.clear();
-    }
-
-    void MaterialDocumentSystemComponent::OnReceivedMsg(AzFramework::TmMsgPtr msg)
-    {
-        if (msg->GetId() == AZ_CRC("OpenInMaterialEditor", 0x9f92aac8))
-        {
-            const char* documentPath = reinterpret_cast<const char*>(msg->GetCustomBlob());
-            MaterialDocumentSystemRequestBus::Broadcast(&MaterialDocumentSystemRequestBus::Events::OpenDocument, documentPath);
-        }
-        else
-        {
-            AZ_Assert(false, "We received a message of an unrecognized class type!");
-        }
     }
 
     AZ::Uuid MaterialDocumentSystemComponent::CreateDocument()
@@ -212,11 +193,15 @@ namespace MaterialEditor
                 QString("Would you like to reopen the document:\n%1?").arg(documentPath.c_str()),
                 QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)
             {
+                AtomToolsFramework::TraceRecorder traceRecorder(m_maxMessageBoxLineCount);
+
                 bool openResult = false;
                 MaterialDocumentRequestBus::EventResult(openResult, documentId, &MaterialDocumentRequestBus::Events::Open, documentPath);
                 if (!openResult)
                 {
-                    QMessageBox::critical(QApplication::activeWindow(), "Error", QString("Material document could not be opened:\n%1").arg(documentPath.c_str()));
+                    QMessageBox::critical(
+                        QApplication::activeWindow(), QString("Material document could not be opened"),
+                        QString("Failed to open: \n%1\n\n%2").arg(documentPath.c_str()).arg(traceRecorder.GetDump().c_str()));
                     MaterialDocumentSystemRequestBus::Broadcast(&MaterialDocumentSystemRequestBus::Events::CloseDocument, documentId);
                 }
             }
@@ -232,11 +217,15 @@ namespace MaterialEditor
                 QString("Would you like to update the document with these changes:\n%1?").arg(documentPath.c_str()),
                 QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)
             {
+                AtomToolsFramework::TraceRecorder traceRecorder(m_maxMessageBoxLineCount);
+
                 bool openResult = false;
                 MaterialDocumentRequestBus::EventResult(openResult, documentId, &MaterialDocumentRequestBus::Events::Rebuild);
                 if (!openResult)
                 {
-                    QMessageBox::critical(QApplication::activeWindow(), "Error", QString("Material document could not be opened:\n%1").arg(documentPath.c_str()));
+                    QMessageBox::critical(
+                        QApplication::activeWindow(), QString("Material document could not be opened"),
+                        QString("Failed to open: \n%1\n\n%2").arg(documentPath.c_str()).arg(traceRecorder.GetDump().c_str()));
                     MaterialDocumentSystemRequestBus::Broadcast(&MaterialDocumentSystemRequestBus::Events::CloseDocument, documentId);
                 }
             }
@@ -308,11 +297,15 @@ namespace MaterialEditor
             }
         }
 
+        AtomToolsFramework::TraceRecorder traceRecorder(m_maxMessageBoxLineCount);
+
         bool closeResult = true;
         MaterialDocumentRequestBus::EventResult(closeResult, documentId, &MaterialDocumentRequestBus::Events::Close);
         if (!closeResult)
         {
-            QMessageBox::critical(QApplication::activeWindow(), "Error", QString("Material document could not be closed:\n%1").arg(documentPath.c_str()));
+            QMessageBox::critical(
+                QApplication::activeWindow(), QString("Material document could not be closed"),
+                QString("Failed to close: \n%1\n\n%2").arg(documentPath.c_str()).arg(traceRecorder.GetDump().c_str()));
             return false;
         }
 
@@ -370,11 +363,15 @@ namespace MaterialEditor
             return false;
         }
 
+        AtomToolsFramework::TraceRecorder traceRecorder(m_maxMessageBoxLineCount);
+
         bool result = false;
         MaterialDocumentRequestBus::EventResult(result, documentId, &MaterialDocumentRequestBus::Events::Save);
         if (!result)
         {
-            QMessageBox::critical(QApplication::activeWindow(), "Error", QString("Material document could not be saved:\n%1").arg(saveMaterialPath.c_str()));
+            QMessageBox::critical(
+                QApplication::activeWindow(), QString("Material document could not be saved"),
+                QString("Failed to save: \n%1\n\n%2").arg(saveMaterialPath.c_str()).arg(traceRecorder.GetDump().c_str()));
             return false;
         }
 
@@ -396,11 +393,15 @@ namespace MaterialEditor
             return false;
         }
 
+        AtomToolsFramework::TraceRecorder traceRecorder(m_maxMessageBoxLineCount);
+
         bool result = false;
         MaterialDocumentRequestBus::EventResult(result, documentId, &MaterialDocumentRequestBus::Events::SaveAsCopy, saveMaterialPath);
         if (!result)
         {
-            QMessageBox::critical(QApplication::activeWindow(), "Error", QString("Material document could not be saved:\n%1").arg(saveMaterialPath.c_str()));
+            QMessageBox::critical(
+                QApplication::activeWindow(), QString("Material document could not be saved"),
+                QString("Failed to save: \n%1\n\n%2").arg(saveMaterialPath.c_str()).arg(traceRecorder.GetDump().c_str()));
             return false;
         }
 
@@ -422,11 +423,15 @@ namespace MaterialEditor
             return false;
         }
 
+        AtomToolsFramework::TraceRecorder traceRecorder(m_maxMessageBoxLineCount);
+
         bool result = false;
         MaterialDocumentRequestBus::EventResult(result, documentId, &MaterialDocumentRequestBus::Events::SaveAsChild, saveMaterialPath);
         if (!result)
         {
-            QMessageBox::critical(QApplication::activeWindow(), "Error", QString("Material document could not be saved:\n%1").arg(saveMaterialPath.c_str()));
+            QMessageBox::critical(
+                QApplication::activeWindow(), QString("Material document could not be saved"),
+                QString("Failed to save: \n%1\n\n%2").arg(saveMaterialPath.c_str()).arg(traceRecorder.GetDump().c_str()));
             return false;
         }
 
@@ -476,19 +481,27 @@ namespace MaterialEditor
             }
         }
 
+        AtomToolsFramework::TraceRecorder traceRecorder(m_maxMessageBoxLineCount);
+
         AZ::Uuid documentId = AZ::Uuid::CreateNull();
         MaterialDocumentSystemRequestBus::BroadcastResult(documentId, &MaterialDocumentSystemRequestBus::Events::CreateDocument);
         if (documentId.IsNull())
         {
-            QMessageBox::critical(QApplication::activeWindow(), "Error", QString("Material document could not be created:\n%1").arg(requestedPath.c_str()));
+            QMessageBox::critical(
+                QApplication::activeWindow(), QString("Material document could not be created"),
+                QString("Failed to create: \n%1\n\n%2").arg(requestedPath.c_str()).arg(traceRecorder.GetDump().c_str()));
             return AZ::Uuid::CreateNull();
         }
+
+        traceRecorder.GetDump().clear();
 
         bool openResult = false;
         MaterialDocumentRequestBus::EventResult(openResult, documentId, &MaterialDocumentRequestBus::Events::Open, requestedPath);
         if (!openResult)
         {
-            QMessageBox::critical(QApplication::activeWindow(), "Error", QString("Material document could not be opened:\n%1").arg(requestedPath.c_str()));
+            QMessageBox::critical(
+                QApplication::activeWindow(), QString("Material document could not be opened"),
+                QString("Failed to open: \n%1\n\n%2").arg(requestedPath.c_str()).arg(traceRecorder.GetDump().c_str()));
             MaterialDocumentSystemRequestBus::Broadcast(&MaterialDocumentSystemRequestBus::Events::DestroyDocument, documentId);
             return AZ::Uuid::CreateNull();
         }

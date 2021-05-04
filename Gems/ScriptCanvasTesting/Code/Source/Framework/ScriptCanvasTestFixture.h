@@ -122,6 +122,8 @@ namespace ScriptCanvasTests
             ::Nodes::InputTypeExampleNode::Reflect(m_behaviorContext);
             ::Nodes::BranchInputTypeExampleNode::Reflect(m_serializeContext);
             ::Nodes::BranchInputTypeExampleNode::Reflect(m_behaviorContext);
+            ::Nodes::PropertyExampleNode::Reflect(m_serializeContext);
+            ::Nodes::PropertyExampleNode::Reflect(m_behaviorContext);
 
             TestNodeableObject::Reflect(m_serializeContext);
             TestNodeableObject::Reflect(m_behaviorContext);

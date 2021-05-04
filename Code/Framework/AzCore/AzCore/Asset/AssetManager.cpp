@@ -1454,32 +1454,48 @@ namespace AZ
         //=========================================================================
         void AssetManager::ReloadAssetFromData(const Asset<AssetData>& asset)
         {
-            AZ_Assert(asset.Get(), "Asset data for reload is missing.");
-            AZStd::scoped_lock<AZStd::recursive_mutex> assetLock(m_assetMutex);
-            AZ_Assert(m_assets.find(asset.GetId()) != m_assets.end(), "Unable to reload asset %s because its not in the AssetManager's asset list.", asset.ToString<AZStd::string>().c_str());
-            AZ_Assert(m_assets.find(asset.GetId()) == m_assets.end() || asset->RTTI_GetType() == m_assets.find(asset.GetId())->second->RTTI_GetType(),
-                "New and old data types are mismatched!");
+            bool shouldAssignAssetData = false;
 
-            auto found = m_assets.find(asset.GetId());
-            if ((found == m_assets.end()) || (asset->RTTI_GetType() != found->second->RTTI_GetType()))
             {
-                return; // this will just lead to crashes down the line and the above asserts cover this.
-            }
+                AZ_Assert(asset.Get(), "Asset data for reload is missing.");
+                AZStd::scoped_lock<AZStd::recursive_mutex> assetLock(m_assetMutex);
+                AZ_Assert(
+                    m_assets.find(asset.GetId()) != m_assets.end(),
+                    "Unable to reload asset %s because it's not in the AssetManager's asset list.", asset.ToString<AZStd::string>().c_str());
+                AZ_Assert(
+                    m_assets.find(asset.GetId()) == m_assets.end() ||
+                        asset->RTTI_GetType() == m_assets.find(asset.GetId())->second->RTTI_GetType(),
+                    "New and old data types are mismatched!");
 
-            AssetData* newData = asset.Get();
-
-            if (found->second != newData)
-            {
-                // Notify users that we are about to change asset
-                AssetBus::Event(asset.GetId(), &AssetBus::Events::OnAssetPreReload, asset);
-
-                // Resolve the asset handler and account for the new asset instance.
+                auto found = m_assets.find(asset.GetId());
+                if ((found == m_assets.end()) || (asset->RTTI_GetType() != found->second->RTTI_GetType()))
                 {
-                    AssetHandlerMap::iterator handlerIt = m_handlers.find(newData->GetType());
-                    AZ_Assert(handlerIt != m_handlers.end(), "No handler was registered for this asset [type:%s id:%s]!",
-                        newData->GetType().ToString<AZ::OSString>().c_str(), newData->GetId().ToString<AZ::OSString>().c_str());
+                    return; // this will just lead to crashes down the line and the above asserts cover this.
                 }
 
+                AssetData* newData = asset.Get();
+
+                if (found->second != newData)
+                {
+                    // Notify users that we are about to change asset
+                    AssetBus::Event(asset.GetId(), &AssetBus::Events::OnAssetPreReload, asset);
+
+                    // Resolve the asset handler and account for the new asset instance.
+                    {
+                        AssetHandlerMap::iterator handlerIt = m_handlers.find(newData->GetType());
+                        AZ_Assert(
+                            handlerIt != m_handlers.end(), "No handler was registered for this asset [type:%s id:%s]!",
+                            newData->GetType().ToString<AZ::OSString>().c_str(), newData->GetId().ToString<AZ::OSString>().c_str());
+                    }
+
+                    shouldAssignAssetData = true;
+                }
+            }
+
+            // We specifically perform this outside of the m_assetMutex lock so that the lock isn't held at the point that
+            // OnAssetReload is triggered inside of AssignAssetData.  Otherwise, we open up a high potential for deadlocks.
+            if (shouldAssignAssetData)
+            {
                 AssignAssetData(asset);
             }
         }
@@ -2144,7 +2160,7 @@ namespace AZ
             if (curIter != m_assetContainers.end())
             {
                 auto newRef = curIter->second.lock();
-                if (newRef)
+                if (newRef && newRef->IsValid())
                 {
                     return newRef;
                 }

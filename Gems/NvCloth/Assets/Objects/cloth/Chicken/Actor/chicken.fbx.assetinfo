@@ -1,362 +1,244 @@
-<ObjectStream version="3">
-	<Class name="SceneManifest" version="1" type="{9274AD17-3212-4651-9F3B-7DCCB080E467}">
-		<Class name="AZStd::vector" field="values" type="{5D6A7C67-11CA-59A4-829B-0B20B781B292}">
-			<Class name="AZStd::shared_ptr" field="element" type="{EB7522F9-0E87-55A9-A191-E924DC5AE867}">
-				<Class name="ActorGroup" field="element" version="4" type="{D1AC3803-8282-46C5-8610-93CD39B0F843}">
-					<Class name="IActorGroup" field="BaseClass1" version="2" type="{C86945A8-AEE8-4CFC-8FBF-A20E9BC71348}">
-						<Class name="ISceneNodeGroup" field="BaseClass1" version="1" type="{1D20FA11-B184-429E-8C86-745852234845}">
-							<Class name="IGroup" field="BaseClass1" version="1" type="{DE008E67-790D-4672-A73A-5CA0F31EDD2D}">
-								<Class name="IManifestObject" field="BaseClass1" type="{3B839407-1884-4FF4-ABEA-CA9D347E83F7}"/>
-							</Class>
-						</Class>
-					</Class>
-					<Class name="AZStd::string" field="name" value="chicken" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-					<Class name="AZStd::string" field="selectedRootBone" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-					<Class name="SceneNodeSelectionList" field="nodeSelectionList" version="1" type="{D0CE66CE-1BAD-42F5-86ED-3923573B3A02}">
-						<Class name="ISceneNodeSelectionList" field="BaseClass1" version="1" type="{DC3F9996-E550-4780-A03B-80B0DDA1DA45}"/>
-						<Class name="AZStd::vector" field="selectedNodes" type="{99DAD0BC-740E-5E82-826B-8FC7968CC02C}">
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_feet_skin" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_eyes_skin" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_body_skin" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_mohawk" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_feet_skin.SkinWeight_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_feet_skin.map1" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_feet_skin.chicken_body_mat" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_eyes_skin.SkinWeight_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_eyes_skin.uvSet1" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_eyes_skin.chicken_eye_mat" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_body_skin.SkinWeight_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_body_skin.map1" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_body_skin.chicken_body_mat" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_mohawk.SkinWeight_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_mohawk.colorSet1" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_mohawk.map1" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_mohawk.mohawkMat" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-						</Class>
-						<Class name="AZStd::vector" field="unselectedNodes" type="{99DAD0BC-740E-5E82-826B-8FC7968CC02C}">
-							<Class name="AZStd::string" field="element" value="RootNode" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_l_uprLeg_joint" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_r_uprLeg_joint" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_l_uprLeg_joint.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_l_uprLeg_joint.def_l_lwrLeg_joint" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_r_uprLeg_joint.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_r_uprLeg_joint.def_r_lwrLeg_joint" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_l_wing1_joint" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_r_wing1_joint" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_l_uprLeg_joint.def_l_lwrLeg_joint.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_l_uprLeg_joint.def_l_lwrLeg_joint.def_l_foot_joint" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_r_uprLeg_joint.def_r_lwrLeg_joint.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_r_uprLeg_joint.def_r_lwrLeg_joint.def_r_foot_joint" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_tail1_joint" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_l_wing1_joint.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_l_wing1_joint.def_l_wing2_joint" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_r_wing1_joint.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_r_wing1_joint.def_r_wing2_joint" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_l_uprLeg_joint.def_l_lwrLeg_joint.def_l_foot_joint.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_l_uprLeg_joint.def_l_lwrLeg_joint.def_l_foot_joint.def_l_ball_joint" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_r_uprLeg_joint.def_r_lwrLeg_joint.def_r_foot_joint.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_r_uprLeg_joint.def_r_lwrLeg_joint.def_r_foot_joint.def_r_ball_joint" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_tail1_joint.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_tail1_joint.def_c_tail2_joint" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_l_wing1_joint.def_l_wing2_joint.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_l_wing1_joint.def_l_wing2_joint.def_l_wing_end" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_r_wing1_joint.def_r_wing2_joint.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_r_wing1_joint.def_r_wing2_joint.def_r_wing_end" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_l_uprLeg_joint.def_l_lwrLeg_joint.def_l_foot_joint.def_l_ball_joint.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_r_uprLeg_joint.def_r_lwrLeg_joint.def_r_foot_joint.def_r_ball_joint.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_tail1_joint.def_c_tail2_joint.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_feather1_joint" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_mouth_joint" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_waddle1_joint" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_l_wing1_joint.def_l_wing2_joint.def_l_wing_end.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_r_wing1_joint.def_r_wing2_joint.def_r_wing_end.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_feather1_joint.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_feather1_joint.def_c_feather2_joint" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_mouth_joint.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_mouth_joint.def_c_mouth_end" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_waddle1_joint.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_waddle1_joint.def_c_waddle2_joint" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_feather1_joint.def_c_feather2_joint.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_feather1_joint.def_c_feather2_joint.def_c_feather3_joint" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_mouth_joint.def_c_mouth_end.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_waddle1_joint.def_c_waddle2_joint.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_waddle1_joint.def_c_waddle2_joint.def_c_waddle3_joint" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_feather1_joint.def_c_feather2_joint.def_c_feather3_joint.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_feather1_joint.def_c_feather2_joint.def_c_feather3_joint.def_c_feather4_joint" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_waddle1_joint.def_c_waddle2_joint.def_c_waddle3_joint.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_waddle1_joint.def_c_waddle2_joint.def_c_waddle3_joint.def_c_waddle_end" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_feather1_joint.def_c_feather2_joint.def_c_feather3_joint.def_c_feather4_joint.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_feather1_joint.def_c_feather2_joint.def_c_feather3_joint.def_c_feather4_joint.def_c_feather_end" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_waddle1_joint.def_c_waddle2_joint.def_c_waddle3_joint.def_c_waddle_end.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_feather1_joint.def_c_feather2_joint.def_c_feather3_joint.def_c_feather4_joint.def_c_feather_end.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-						</Class>
-					</Class>
-					<Class name="AZ::Uuid" field="id" value="{C086F309-EE7E-5AFD-A9C2-69DE5BA48461}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-					<Class name="RuleContainer" field="rules" version="1" type="{2C20D3DF-57FF-4A31-8680-A4D45302B9CF}">
-						<Class name="AZStd::vector" field="rules" type="{B5BDB053-178F-5D55-8663-70897A71B7C9}">
-							<Class name="AZStd::shared_ptr" field="element" type="{0BB4AFBA-F087-55C7-95DF-01D71F6CB052}">
-								<Class name="CoordinateSystemRule" field="element" version="1" type="{603207E2-4F55-4C33-9AAB-98CA75C1E351}">
-									<Class name="IRule" field="BaseClass1" version="1" type="{81267F8B-3963-423B-9FF7-D276D82CD110}">
-										<Class name="IManifestObject" field="BaseClass1" type="{3B839407-1884-4FF4-ABEA-CA9D347E83F7}"/>
-									</Class>
-									<Class name="int" field="targetCoordinateSystem" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-								</Class>
-							</Class>
-							<Class name="AZStd::shared_ptr" field="element" type="{0BB4AFBA-F087-55C7-95DF-01D71F6CB052}">
-								<Class name="TangentsRule" field="element" version="1" type="{4BD1CE13-D2EB-4CCF-AB21-4877EF69DE7D}">
-									<Class name="IRule" field="BaseClass1" version="1" type="{81267F8B-3963-423B-9FF7-D276D82CD110}">
-										<Class name="IManifestObject" field="BaseClass1" type="{3B839407-1884-4FF4-ABEA-CA9D347E83F7}"/>
-									</Class>
-									<Class name="int" field="tangentSpace" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-									<Class name="int" field="bitangentMethod" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-									<Class name="bool" field="normalize" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-									<Class name="AZ::u64" field="uvSetIndex" value="0" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-								</Class>
-							</Class>
-							<Class name="AZStd::shared_ptr" field="element" type="{0BB4AFBA-F087-55C7-95DF-01D71F6CB052}">
-								<Class name="SkinRule" field="element" version="2" type="{B26E7FC9-86A1-4711-8415-8BE4861C08BA}">
-									<Class name="ISkinRule" field="BaseClass1" version="1" type="{5496ECAF-B096-4455-AE72-D55C5B675443}">
-										<Class name="IRule" field="BaseClass1" version="1" type="{81267F8B-3963-423B-9FF7-D276D82CD110}">
-											<Class name="IManifestObject" field="BaseClass1" type="{3B839407-1884-4FF4-ABEA-CA9D347E83F7}"/>
-										</Class>
-									</Class>
-									<Class name="unsigned int" field="maxWeightsPerVertex" value="4" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-									<Class name="float" field="weightThreshold" value="0.0010000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-								</Class>
-							</Class>
-							<Class name="AZStd::shared_ptr" field="element" type="{0BB4AFBA-F087-55C7-95DF-01D71F6CB052}">
-								<Class name="MeshRule" field="element" version="4" type="{7F115A73-28A2-4E35-8C87-1A1982773034}">
-									<Class name="IMeshRule" field="BaseClass1" version="1" type="{299934A2-22EC-48AF-AB2B-953AFF8E0B19}">
-										<Class name="IRule" field="BaseClass1" version="1" type="{81267F8B-3963-423B-9FF7-D276D82CD110}">
-											<Class name="IManifestObject" field="BaseClass1" type="{3B839407-1884-4FF4-ABEA-CA9D347E83F7}"/>
-										</Class>
-									</Class>
-									<Class name="AZStd::string" field="vertexColorStreamName" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-									<Class name="unsigned char" field="vertexColorMode" value="0" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
-								</Class>
-							</Class>
-							<Class name="AZStd::shared_ptr" field="element" type="{0BB4AFBA-F087-55C7-95DF-01D71F6CB052}">
-								<Class name="ClothRule" field="element" version="2" type="{2F5AC324-314A-4C53-AFFF-DDFA46605DDB}">
-									<Class name="IClothRule" field="BaseClass1" version="1" type="{5185510A-50BF-418A-ACB4-1A9E014C7E43}">
-										<Class name="IRule" field="BaseClass1" version="1" type="{81267F8B-3963-423B-9FF7-D276D82CD110}">
-											<Class name="IManifestObject" field="BaseClass1" type="{3B839407-1884-4FF4-ABEA-CA9D347E83F7}"/>
-										</Class>
-									</Class>
-									<Class name="AZStd::string" field="meshNodeName" value="RootNode.chicken_mohawk" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-									<Class name="AZStd::string" field="inverseMassesStreamName" value="colorSet1" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-									<Class name="unsigned char" field="inverseMassesChannel" value="0" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
-									<Class name="AZStd::string" field="motionConstraintsStreamName" value="Default: 1.0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-									<Class name="unsigned char" field="motionConstraintsChannel" value="0" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
-									<Class name="AZStd::string" field="backstopStreamName" value="None" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-									<Class name="unsigned char" field="backstopOffsetChannel" value="0" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
-									<Class name="unsigned char" field="backstopRadiusChannel" value="1" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
-								</Class>
-							</Class>
-							<Class name="AZStd::shared_ptr" field="element" type="{0BB4AFBA-F087-55C7-95DF-01D71F6CB052}">
-								<Class name="MetaDataRule" field="element" version="2" type="{8D759063-7D2E-4543-8EB3-AB510A5886CF}">
-									<Class name="IManifestObject" field="BaseClass1" type="{3B839407-1884-4FF4-ABEA-CA9D347E83F7}"/>
-									<Class name="AZStd::vector" field="commands" type="{C9984A24-DA9E-518F-9F81-27E51FAEB1F7}"/>
-									<Class name="AZStd::string" field="metaData" value='AdjustActor -actorID $(ACTORID) -name "chicken"
-ActorSetCollisionMeshes -actorID $(ACTORID) -lod 0 -nodeList ""
-AdjustActor -actorID $(ACTORID) -nodesExcludedFromBounds "" -nodeAction "select"
-AdjustActor -actorID $(ACTORID) -nodeAction "replace" -attachmentNodes ""
-' type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-								</Class>
-							</Class>
-							<Class name="AZStd::shared_ptr" field="element" type="{0BB4AFBA-F087-55C7-95DF-01D71F6CB052}">
-								<Class name="ActorPhysicsSetupRule" field="element" version="1" type="{B18E9412-85DC-442D-9AA3-293B583EC1A6}">
-									<Class name="AZStd::shared_ptr" field="data" type="{40A77278-7D0F-51EB-A537-72AE8478D1C0}">
-										<Class name="PhysicsSetup" field="element" version="4" type="{4749DFCB-5CBE-434D-9551-34F4C0CCA428}">
-											<Class name="AnimationConfiguration" field="config" version="3" type="{6D53168F-470E-4B41-986A-612506F09B40}">
-												<Class name="CharacterColliderConfiguration" field="hitDetectionConfig" version="1" type="{4DFF1434-DF5B-4ED5-BE0F-D3E66F9B331A}">
-													<Class name="AZStd::vector" field="nodes" type="{70C9FE19-65A8-5FA9-A447-7561B0C9FA9A}"/>
-												</Class>
-												<Class name="RagdollConfiguration" field="ragdollConfig" version="2" type="{7C96D332-61D8-4C58-A2BF-707716D38D14}">
-													<Class name="WorldBodyConfiguration" field="BaseClass1" version="1" type="{6EEB377C-DC60-4E10-AF12-9626C0763B2D}">
-														<Class name="AZStd::string" field="name" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-													</Class>
-													<Class name="AZStd::vector" field="nodes" type="{023260FD-3D32-570B-A75E-4099359BE960}"/>
-													<Class name="CharacterColliderConfiguration" field="colliders" version="1" type="{4DFF1434-DF5B-4ED5-BE0F-D3E66F9B331A}">
-														<Class name="AZStd::vector" field="nodes" type="{70C9FE19-65A8-5FA9-A447-7561B0C9FA9A}"/>
-													</Class>
-												</Class>
-												<Class name="CharacterColliderConfiguration" field="clothConfig" version="1" type="{4DFF1434-DF5B-4ED5-BE0F-D3E66F9B331A}">
-													<Class name="AZStd::vector" field="nodes" type="{70C9FE19-65A8-5FA9-A447-7561B0C9FA9A}">
-														<Class name="CharacterColliderNodeConfiguration" field="element" version="1" type="{C16F3301-0979-400C-B734-692D83755C39}">
-															<Class name="AZStd::string" field="name" value="def_c_head_joint" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-															<Class name="AZStd::vector" field="shapes" type="{EDCE8AC7-3324-5A75-9B44-27983A0CBFDB}">
-																<Class name="AZStd::pair" field="element" type="{9EEDBBE5-F74D-528D-8089-580876B248C5}">
-																	<Class name="AZStd::shared_ptr" field="value1" type="{FBE2C86C-C034-57E1-A1A3-9066B3F60C0E}">
-																		<Class name="ColliderConfiguration" field="element" version="4" type="{16206828-F867-4DA9-9E4E-549B7B2C6174}">
-																			<Class name="CollisionLayer" field="CollisionLayer" version="1" type="{5AA459C8-2D92-46D2-9154-ED49EE4FE70E}">
-																				<Class name="unsigned char" field="Index" value="0" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
-																			</Class>
-																			<Class name="Id" field="CollisionGroupId" version="1" type="{DFED4FE5-2292-4F07-A318-41C68DAEFE9C}">
-																				<Class name="AZ::Uuid" field="GroupId" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-																			</Class>
-																			<Class name="bool" field="Visible" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-																			<Class name="bool" field="Trigger" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-																			<Class name="bool" field="Simulated" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-																			<Class name="bool" field="InSceneQueries" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-																			<Class name="bool" field="Exclusive" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-																			<Class name="Vector3" field="Position" value="-0.0850560 0.0000000 0.0093709" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
-																			<Class name="Quaternion" field="Rotation" value="0.7071437 0.0000000 0.0000000 0.7089844" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
-																			<Class name="MaterialSelection" field="MaterialSelection" version="2" type="{F571AFF4-C4BB-4590-A204-D11D9EEABBC4}">
-																				<Class name="Asset" field="Material" value="id={00000000-0000-0000-0000-000000000000}:0,type={9E366D8C-33BB-4825-9A1F-FA3ADBE11D0F},hint={},loadBehavior=2" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
-																				<Class name="AZStd::vector" field="MaterialIds" type="{82111EAD-9C65-57F0-BA72-46D6D931B434}">
-																					<Class name="MaterialId" field="element" version="1" type="{744CCE6C-9F69-4E2F-B950-DAB8514F870B}">
-																						<Class name="AZ::Uuid" field="MaterialId" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-																					</Class>
-																				</Class>
-																			</Class>
-																			<Class name="unsigned char" field="propertyVisibilityFlags" value="248" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
-																			<Class name="AZStd::string" field="ColliderTag" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-																			<Class name="float" field="RestOffset" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-																			<Class name="float" field="ContactOffset" value="0.0200000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-																		</Class>
-																	</Class>
-																	<Class name="AZStd::shared_ptr" field="value2" type="{568500E4-F003-54B8-B728-711DB5DF0AE4}">
-																		<Class name="CapsuleShapeConfiguration" field="element" version="1" type="{19C6A07E-5644-46B7-A49E-48703B56ED32}">
-																			<Class name="ShapeConfiguration" field="BaseClass1" version="1" type="{1FD56C72-6055-4B35-9253-07D432B94E91}">
-																				<Class name="Vector3" field="Scale" value="1.0000000 1.0000000 1.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
-																			</Class>
-																			<Class name="float" field="Height" value="0.1912735" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-																			<Class name="float" field="Radius" value="0.0506367" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-																		</Class>
-																	</Class>
-																</Class>
-															</Class>
-														</Class>
-														<Class name="CharacterColliderNodeConfiguration" field="element" version="1" type="{C16F3301-0979-400C-B734-692D83755C39}">
-															<Class name="AZStd::string" field="name" value="def_c_neck_joint" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-															<Class name="AZStd::vector" field="shapes" type="{EDCE8AC7-3324-5A75-9B44-27983A0CBFDB}">
-																<Class name="AZStd::pair" field="element" type="{9EEDBBE5-F74D-528D-8089-580876B248C5}">
-																	<Class name="AZStd::shared_ptr" field="value1" type="{FBE2C86C-C034-57E1-A1A3-9066B3F60C0E}">
-																		<Class name="ColliderConfiguration" field="element" version="4" type="{16206828-F867-4DA9-9E4E-549B7B2C6174}">
-																			<Class name="CollisionLayer" field="CollisionLayer" version="1" type="{5AA459C8-2D92-46D2-9154-ED49EE4FE70E}">
-																				<Class name="unsigned char" field="Index" value="0" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
-																			</Class>
-																			<Class name="Id" field="CollisionGroupId" version="1" type="{DFED4FE5-2292-4F07-A318-41C68DAEFE9C}">
-																				<Class name="AZ::Uuid" field="GroupId" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-																			</Class>
-																			<Class name="bool" field="Visible" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-																			<Class name="bool" field="Trigger" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-																			<Class name="bool" field="Simulated" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-																			<Class name="bool" field="InSceneQueries" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-																			<Class name="bool" field="Exclusive" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-																			<Class name="Vector3" field="Position" value="-0.0381019 0.0000000 -0.0313244" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
-																			<Class name="Quaternion" field="Rotation" value="0.0000000 0.0000000 0.0000000 1.0000000" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
-																			<Class name="MaterialSelection" field="MaterialSelection" version="2" type="{F571AFF4-C4BB-4590-A204-D11D9EEABBC4}">
-																				<Class name="Asset" field="Material" value="id={00000000-0000-0000-0000-000000000000}:0,type={9E366D8C-33BB-4825-9A1F-FA3ADBE11D0F},hint={},loadBehavior=2" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
-																				<Class name="AZStd::vector" field="MaterialIds" type="{82111EAD-9C65-57F0-BA72-46D6D931B434}">
-																					<Class name="MaterialId" field="element" version="1" type="{744CCE6C-9F69-4E2F-B950-DAB8514F870B}">
-																						<Class name="AZ::Uuid" field="MaterialId" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-																					</Class>
-																				</Class>
-																			</Class>
-																			<Class name="unsigned char" field="propertyVisibilityFlags" value="248" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
-																			<Class name="AZStd::string" field="ColliderTag" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-																			<Class name="float" field="RestOffset" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-																			<Class name="float" field="ContactOffset" value="0.0200000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-																		</Class>
-																	</Class>
-																	<Class name="AZStd::shared_ptr" field="value2" type="{568500E4-F003-54B8-B728-711DB5DF0AE4}">
-																		<Class name="SphereShapeConfiguration" field="element" version="1" type="{0B9F3D2E-0780-4B0B-BFEE-B41C5FDE774A}">
-																			<Class name="ShapeConfiguration" field="BaseClass1" version="1" type="{1FD56C72-6055-4B35-9253-07D432B94E91}">
-																				<Class name="Vector3" field="Scale" value="1.0000000 1.0000000 1.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
-																			</Class>
-																			<Class name="float" field="Radius" value="0.1606994" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-																		</Class>
-																	</Class>
-																</Class>
-															</Class>
-														</Class>
-														<Class name="CharacterColliderNodeConfiguration" field="element" version="1" type="{C16F3301-0979-400C-B734-692D83755C39}">
-															<Class name="AZStd::string" field="name" value="def_c_spine_end" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-															<Class name="AZStd::vector" field="shapes" type="{EDCE8AC7-3324-5A75-9B44-27983A0CBFDB}">
-																<Class name="AZStd::pair" field="element" type="{9EEDBBE5-F74D-528D-8089-580876B248C5}">
-																	<Class name="AZStd::shared_ptr" field="value1" type="{FBE2C86C-C034-57E1-A1A3-9066B3F60C0E}">
-																		<Class name="ColliderConfiguration" field="element" version="4" type="{16206828-F867-4DA9-9E4E-549B7B2C6174}">
-																			<Class name="CollisionLayer" field="CollisionLayer" version="1" type="{5AA459C8-2D92-46D2-9154-ED49EE4FE70E}">
-																				<Class name="unsigned char" field="Index" value="0" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
-																			</Class>
-																			<Class name="Id" field="CollisionGroupId" version="1" type="{DFED4FE5-2292-4F07-A318-41C68DAEFE9C}">
-																				<Class name="AZ::Uuid" field="GroupId" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-																			</Class>
-																			<Class name="bool" field="Visible" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-																			<Class name="bool" field="Trigger" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-																			<Class name="bool" field="Simulated" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-																			<Class name="bool" field="InSceneQueries" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-																			<Class name="bool" field="Exclusive" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-																			<Class name="Vector3" field="Position" value="-0.0000002 0.0126462 -0.2410437" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
-																			<Class name="Quaternion" field="Rotation" value="0.0000000 0.0000000 0.0000000 1.0000000" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
-																			<Class name="MaterialSelection" field="MaterialSelection" version="2" type="{F571AFF4-C4BB-4590-A204-D11D9EEABBC4}">
-																				<Class name="Asset" field="Material" value="id={00000000-0000-0000-0000-000000000000}:0,type={9E366D8C-33BB-4825-9A1F-FA3ADBE11D0F},hint={},loadBehavior=2" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
-																				<Class name="AZStd::vector" field="MaterialIds" type="{82111EAD-9C65-57F0-BA72-46D6D931B434}">
-																					<Class name="MaterialId" field="element" version="1" type="{744CCE6C-9F69-4E2F-B950-DAB8514F870B}">
-																						<Class name="AZ::Uuid" field="MaterialId" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-																					</Class>
-																				</Class>
-																			</Class>
-																			<Class name="unsigned char" field="propertyVisibilityFlags" value="248" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
-																			<Class name="AZStd::string" field="ColliderTag" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-																			<Class name="float" field="RestOffset" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-																			<Class name="float" field="ContactOffset" value="0.0200000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-																		</Class>
-																	</Class>
-																	<Class name="AZStd::shared_ptr" field="value2" type="{568500E4-F003-54B8-B728-711DB5DF0AE4}">
-																		<Class name="SphereShapeConfiguration" field="element" version="1" type="{0B9F3D2E-0780-4B0B-BFEE-B41C5FDE774A}">
-																			<Class name="ShapeConfiguration" field="BaseClass1" version="1" type="{1FD56C72-6055-4B35-9253-07D432B94E91}">
-																				<Class name="Vector3" field="Scale" value="1.0000000 1.0000000 1.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
-																			</Class>
-																			<Class name="float" field="Radius" value="0.2487596" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-																		</Class>
-																	</Class>
-																</Class>
-															</Class>
-														</Class>
-													</Class>
-												</Class>
-												<Class name="CharacterColliderConfiguration" field="simulatedObjectColliderConfig" version="1" type="{4DFF1434-DF5B-4ED5-BE0F-D3E66F9B331A}">
-													<Class name="AZStd::vector" field="nodes" type="{70C9FE19-65A8-5FA9-A447-7561B0C9FA9A}"/>
-												</Class>
-											</Class>
-										</Class>
-									</Class>
-								</Class>
-							</Class>
-							<Class name="AZStd::shared_ptr" field="element" type="{0BB4AFBA-F087-55C7-95DF-01D71F6CB052}">
-								<Class name="MaterialRule" field="element" version="2" type="{35620013-A27C-4F6D-87BF-72F11688ACAD}">
-									<Class name="IMaterialRule" field="BaseClass1" version="1" type="{428C9752-6EDF-4FA2-9BDF-DBDFCEB4CC0F}">
-										<Class name="IRule" field="BaseClass1" version="1" type="{81267F8B-3963-423B-9FF7-D276D82CD110}">
-											<Class name="IManifestObject" field="BaseClass1" type="{3B839407-1884-4FF4-ABEA-CA9D347E83F7}"/>
-										</Class>
-									</Class>
-									<Class name="bool" field="updateMaterials" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-									<Class name="bool" field="removeMaterials" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-								</Class>
-							</Class>
-						</Class>
-					</Class>
-				</Class>
-			</Class>
-		</Class>
-	</Class>
-</ObjectStream>
-
+{
+    "values": [
+        {
+            "$type": "ActorGroup",
+            "name": "chicken",
+            "id": "{C086F309-EE7E-5AFD-A9C2-69DE5BA48461}",
+            "rules": {
+                "rules": [
+                    {
+                        "$type": "MetaDataRule",
+                        "metaData": "AdjustActor -actorID $(ACTORID) -name \"chicken\"\nActorSetCollisionMeshes -actorID $(ACTORID) -lod 0 -nodeList \"\"\nAdjustActor -actorID $(ACTORID) -nodesExcludedFromBounds \"\" -nodeAction \"select\"\nAdjustActor -actorID $(ACTORID) -nodeAction \"replace\" -attachmentNodes \"\"\nAdjustActor -actorID $(ACTORID) -mirrorSetup \"\"\n"
+                    },
+                    {
+                        "$type": "ActorPhysicsSetupRule",
+                        "data": {
+                            "config": {
+                                "clothConfig": {
+                                    "nodes": [
+                                        {
+                                            "name": "def_c_head_joint",
+                                            "shapes": [
+                                                [
+                                                    {
+                                                        "Visible": true,
+                                                        "Position": [
+                                                            -0.08505599945783615,
+                                                            0.0,
+                                                            0.009370899759232998
+                                                        ],
+                                                        "Rotation": [
+                                                            0.7071437239646912,
+                                                            0.0,
+                                                            0.0,
+                                                            0.708984375
+                                                        ],
+                                                        "propertyVisibilityFlags": 248
+                                                    },
+                                                    {
+                                                        "$type": "CapsuleShapeConfiguration",
+                                                        "Height": 0.191273495554924,
+                                                        "Radius": 0.05063670128583908
+                                                    }
+                                                ]
+                                            ]
+                                        },
+                                        {
+                                            "name": "def_c_neck_joint",
+                                            "shapes": [
+                                                [
+                                                    {
+                                                        "Visible": true,
+                                                        "Position": [
+                                                            0.08189810067415238,
+                                                            -2.4586914726398847e-9,
+                                                            -0.4713243842124939
+                                                        ],
+                                                        "propertyVisibilityFlags": 248
+                                                    },
+                                                    {
+                                                        "$type": "SphereShapeConfiguration",
+                                                        "Radius": 0.2406993955373764
+                                                    }
+                                                ]
+                                            ]
+                                        },
+                                        {
+                                            "name": "def_c_spine_end",
+                                            "shapes": [
+                                                [
+                                                    {
+                                                        "Visible": true,
+                                                        "Position": [
+                                                            -2.0000000233721949e-7,
+                                                            0.012646200135350228,
+                                                            -0.24104370176792146
+                                                        ],
+                                                        "propertyVisibilityFlags": 248
+                                                    },
+                                                    {
+                                                        "$type": "SphereShapeConfiguration",
+                                                        "Radius": 0.24875959753990174
+                                                    }
+                                                ]
+                                            ]
+                                        },
+                                        {
+                                            "name": "def_c_feather2_joint",
+                                            "shapes": [
+                                                [
+                                                    {
+                                                        "Visible": true,
+                                                        "Position": [
+                                                            0.06151500344276428,
+                                                            0.1300000101327896,
+                                                            7.729977369308472e-8
+                                                        ],
+                                                        "Rotation": [
+                                                            0.0,
+                                                            0.7071062922477722,
+                                                            0.0,
+                                                            0.7071072459220886
+                                                        ],
+                                                        "propertyVisibilityFlags": 248
+                                                    },
+                                                    {
+                                                        "$type": "CapsuleShapeConfiguration",
+                                                        "Height": 0.5730299949645996,
+                                                        "Radius": 0.06151498109102249
+                                                    }
+                                                ]
+                                            ]
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "$type": "{07B356B7-3635-40B5-878A-FAC4EFD5AD86} MeshGroup",
+            "name": "chicken",
+            "nodeSelectionList": {
+                "selectedNodes": [
+                    "RootNode",
+                    "RootNode.chicken_skeleton",
+                    "RootNode.chicken_feet_skin",
+                    "RootNode.chicken_eyes_skin",
+                    "RootNode.chicken_body_skin",
+                    "RootNode.chicken_mohawk",
+                    "RootNode.chicken_skeleton.transform",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint",
+                    "RootNode.chicken_feet_skin.SkinWeight_0",
+                    "RootNode.chicken_feet_skin.transform",
+                    "RootNode.chicken_feet_skin.map1",
+                    "RootNode.chicken_feet_skin.chicken_body_mat",
+                    "RootNode.chicken_eyes_skin.SkinWeight_0",
+                    "RootNode.chicken_eyes_skin.transform",
+                    "RootNode.chicken_eyes_skin.uvSet1",
+                    "RootNode.chicken_eyes_skin.chicken_eye_mat",
+                    "RootNode.chicken_body_skin.SkinWeight_0",
+                    "RootNode.chicken_body_skin.transform",
+                    "RootNode.chicken_body_skin.map1",
+                    "RootNode.chicken_body_skin.chicken_body_mat",
+                    "RootNode.chicken_mohawk.Col0",
+                    "RootNode.chicken_mohawk.SkinWeight_0",
+                    "RootNode.chicken_mohawk.transform",
+                    "RootNode.chicken_mohawk.map1",
+                    "RootNode.chicken_mohawk.mohawkMat",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.transform",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.transform",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_l_uprLeg_joint",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_r_uprLeg_joint",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.transform",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_l_uprLeg_joint.transform",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_l_uprLeg_joint.def_l_lwrLeg_joint",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_r_uprLeg_joint.transform",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_r_uprLeg_joint.def_r_lwrLeg_joint",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.transform",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_l_wing1_joint",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_r_wing1_joint",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_l_uprLeg_joint.def_l_lwrLeg_joint.transform",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_l_uprLeg_joint.def_l_lwrLeg_joint.def_l_foot_joint",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_r_uprLeg_joint.def_r_lwrLeg_joint.transform",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_r_uprLeg_joint.def_r_lwrLeg_joint.def_r_foot_joint",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.transform",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_tail1_joint",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_l_wing1_joint.transform",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_l_wing1_joint.def_l_wing2_joint",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_r_wing1_joint.transform",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_r_wing1_joint.def_r_wing2_joint",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_l_uprLeg_joint.def_l_lwrLeg_joint.def_l_foot_joint.transform",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_l_uprLeg_joint.def_l_lwrLeg_joint.def_l_foot_joint.def_l_ball_joint",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_r_uprLeg_joint.def_r_lwrLeg_joint.def_r_foot_joint.transform",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_r_uprLeg_joint.def_r_lwrLeg_joint.def_r_foot_joint.def_r_ball_joint",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_tail1_joint.transform",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_tail1_joint.def_c_tail2_joint",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.transform",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_l_wing1_joint.def_l_wing2_joint.transform",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_l_wing1_joint.def_l_wing2_joint.def_l_wing_end",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_r_wing1_joint.def_r_wing2_joint.transform",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_r_wing1_joint.def_r_wing2_joint.def_r_wing_end",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_l_uprLeg_joint.def_l_lwrLeg_joint.def_l_foot_joint.def_l_ball_joint.transform",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_r_uprLeg_joint.def_r_lwrLeg_joint.def_r_foot_joint.def_r_ball_joint.transform",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_tail1_joint.def_c_tail2_joint.transform",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.transform",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_feather1_joint",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_mouth_joint",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_waddle1_joint",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_l_wing1_joint.def_l_wing2_joint.def_l_wing_end.transform",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_r_wing1_joint.def_r_wing2_joint.def_r_wing_end.transform",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_feather1_joint.transform",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_feather1_joint.def_c_feather2_joint",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_mouth_joint.transform",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_mouth_joint.def_c_mouth_end",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_waddle1_joint.transform",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_waddle1_joint.def_c_waddle2_joint",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_feather1_joint.def_c_feather2_joint.transform",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_feather1_joint.def_c_feather2_joint.def_c_feather3_joint",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_mouth_joint.def_c_mouth_end.transform",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_waddle1_joint.def_c_waddle2_joint.transform",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_waddle1_joint.def_c_waddle2_joint.def_c_waddle3_joint",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_feather1_joint.def_c_feather2_joint.def_c_feather3_joint.transform",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_feather1_joint.def_c_feather2_joint.def_c_feather3_joint.def_c_feather4_joint",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_waddle1_joint.def_c_waddle2_joint.def_c_waddle3_joint.transform",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_waddle1_joint.def_c_waddle2_joint.def_c_waddle3_joint.def_c_waddle_end",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_feather1_joint.def_c_feather2_joint.def_c_feather3_joint.def_c_feather4_joint.transform",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_feather1_joint.def_c_feather2_joint.def_c_feather3_joint.def_c_feather4_joint.def_c_feather_end",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_waddle1_joint.def_c_waddle2_joint.def_c_waddle3_joint.def_c_waddle_end.transform",
+                    "RootNode.chicken_skeleton.def_c_chickenRoot_joint.def_c_spine1_joint.def_c_spine2_joint.def_c_spine3_joint.def_c_spine_end.def_c_neck_joint.def_c_head_joint.def_c_feather1_joint.def_c_feather2_joint.def_c_feather3_joint.def_c_feather4_joint.def_c_feather_end.transform"
+                ]
+            },
+            "rules": {
+                "rules": [
+                    {
+                        "$type": "SkinRule"
+                    },
+                    {
+                        "$type": "StaticMeshAdvancedRule",
+                        "vertexColorStreamName": "Disabled"
+                    },
+                    {
+                        "$type": "MaterialRule"
+                    },
+                    {
+                        "$type": "ClothRule",
+                        "meshNodeName": "RootNode.chicken_mohawk",
+                        "inverseMassesStreamName": "Col0",
+                        "motionConstraintsStreamName": "Default: 1.0",
+                        "backstopStreamName": "None"
+                    }
+                ]
+            },
+            "id": "{55E26F74-B35F-4BC1-87BB-83E3DE85C346}"
+        }
+    ]
+}

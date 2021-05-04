@@ -327,7 +327,7 @@ namespace EMotionFX
         }
     }
 
-    void AnimGraphManager::UpdateInstancesUniqueDataUsingMotionSet(EMotionFX::MotionSet* motionSet)
+    void AnimGraphManager::InvalidateInstanceUniqueDataUsingMotionSet(EMotionFX::MotionSet* motionSet)
     {
         // Update unique datas for all anim graph instances that use the given motion set.
         for (EMotionFX::AnimGraphInstance* animGraphInstance : mAnimGraphInstances)

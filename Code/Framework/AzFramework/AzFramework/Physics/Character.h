@@ -28,7 +28,7 @@ namespace Physics
     class CharacterColliderNodeConfiguration
     {
     public:
-        AZ_RTTI(CharacterColliderNodeConfiguration, "{C16F3301-0979-400C-B734-692D83755C39}");
+        AZ_RTTI(Physics::CharacterColliderNodeConfiguration, "{C16F3301-0979-400C-B734-692D83755C39}");
         AZ_CLASS_ALLOCATOR_DECL
 
         virtual ~CharacterColliderNodeConfiguration() = default;
@@ -42,7 +42,7 @@ namespace Physics
     class CharacterColliderConfiguration
     {
     public:
-        AZ_RTTI(CharacterColliderConfiguration, "{4DFF1434-DF5B-4ED5-BE0F-D3E66F9B331A}");
+        AZ_RTTI(Physics::CharacterColliderConfiguration, "{4DFF1434-DF5B-4ED5-BE0F-D3E66F9B331A}");
         AZ_CLASS_ALLOCATOR_DECL
 
         virtual ~CharacterColliderConfiguration() = default;
@@ -63,21 +63,23 @@ namespace Physics
     {
     public:
         AZ_CLASS_ALLOCATOR(CharacterConfiguration, AZ::SystemAllocator, 0);
-        AZ_RTTI(CharacterConfiguration, "{58D5A6CA-113B-4AC3-8D53-239DB0C4E240}", AzPhysics::SimulatedBodyConfiguration);
+        AZ_RTTI(Physics::CharacterConfiguration, "{58D5A6CA-113B-4AC3-8D53-239DB0C4E240}", AzPhysics::SimulatedBodyConfiguration);
 
         virtual ~CharacterConfiguration() = default;
 
         static void Reflect(AZ::ReflectContext* context);
 
-        AzPhysics::CollisionGroups::Id m_collisionGroupId; ///< Which layers does this character collide with.
-        AzPhysics::CollisionLayer m_collisionLayer; ///< Which collision layer is this character on.
-        MaterialSelection m_materialSelection; ///< Material selected from library for the body associated with the character.
-        AZ::Vector3 m_upDirection = AZ::Vector3::CreateAxisZ(); ///< Up direction for character orientation and step behavior.
-        float m_maximumSlopeAngle = 30.0f; ///< The maximum slope on which the character can move, in degrees.
-        float m_stepHeight = 0.5f; ///< Affects what size steps the character can climb.
-        float m_minimumMovementDistance = 0.001f; ///< To avoid jittering, the controller will not attempt to move distances below this.
-        float m_maximumSpeed = 100.0f; ///< If the accumulated requested velocity for a tick exceeds this magnitude, it will be clamped.
-        AZStd::string m_colliderTag; ///< Used to identify the collider associated with the character controller.
+        AzPhysics::CollisionGroups::Id m_collisionGroupId; //!< Which layers does this character collide with.
+        AzPhysics::CollisionLayer m_collisionLayer; //!< Which collision layer is this character on.
+        MaterialSelection m_materialSelection; //!< Material selected from library for the body associated with the character.
+        AZ::Vector3 m_upDirection = AZ::Vector3::CreateAxisZ(); //!< Up direction for character orientation and step behavior.
+        float m_maximumSlopeAngle = 30.0f; //!< The maximum slope on which the character can move, in degrees.
+        float m_stepHeight = 0.5f; //!< Affects what size steps the character can climb.
+        float m_minimumMovementDistance = 0.001f; //!< To avoid jittering, the controller will not attempt to move distances below this.
+        float m_maximumSpeed = 100.0f; //!< If the accumulated requested velocity for a tick exceeds this magnitude, it will be clamped.
+        AZStd::string m_colliderTag; //!< Used to identify the collider associated with the character controller.
+        AZStd::shared_ptr<Physics::ShapeConfiguration> m_shapeConfig; //!< The shape to use when creating the character controller.
+        AZStd::vector<AZStd::shared_ptr<Physics::Shape>> m_colliders; //!< The list of colliders to attach to the character controller.
     };
 
     /// Basic implementation of common character-style needs as a WorldBody. Is not a full-functional ship-ready
@@ -88,7 +90,7 @@ namespace Physics
     {
     public:
         AZ_CLASS_ALLOCATOR(Character, AZ::SystemAllocator, 0);
-        AZ_RTTI(Character, "{962E37A1-3401-4672-B896-0A6157CFAC97}", AzPhysics::SimulatedBody);
+        AZ_RTTI(Physics::Character, "{962E37A1-3401-4672-B896-0A6157CFAC97}", AzPhysics::SimulatedBody);
 
         ~Character() override = default;
 

@@ -94,13 +94,6 @@ CViewManager::CViewManager()
     RegisterQtViewPane<QTopRendererWnd>(GetIEditor(), "Map", LyViewPane::CategoryViewport, viewportOptions);
 
     GetIEditor()->RegisterNotifyListener(this);
-
-    if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        // if the legacy interaction model is used, this manager will be the main manager
-        m_manipulatorManager =
-            AZStd::make_shared<AzToolsFramework::ManipulatorManager>(AzToolsFramework::g_mainManipulatorManagerId);
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////

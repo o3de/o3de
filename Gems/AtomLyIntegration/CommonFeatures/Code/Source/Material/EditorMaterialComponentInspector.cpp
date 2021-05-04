@@ -37,6 +37,7 @@
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QApplication>
 #include <QDialog>
+#include <QDialogButtonBox>
 #include <QFileInfo>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -202,6 +203,7 @@ namespace AZ
                     propertyConfig.m_id = AZ::RPI::MaterialPropertyId(groupNameId, shaderInputStr).GetCStr();
                     propertyConfig.m_nameId = shaderInputStr;
                     propertyConfig.m_displayName = shaderInputStr;
+                    propertyConfig.m_groupName = groupDisplayName;
                     propertyConfig.m_description = shaderInputStr;
                     propertyConfig.m_defaultValue = uvName;
                     propertyConfig.m_originalValue = uvName;
@@ -243,10 +245,15 @@ namespace AZ
                         for (const auto& propertyDefinition : propertyListItr->second)
                         {
                             AtomToolsFramework::DynamicPropertyConfig propertyConfig;
+
+                            // Assign id before conversion so it can be used in dynamic description
+                            propertyConfig.m_id = AZ::RPI::MaterialPropertyId(groupNameId, propertyDefinition.m_nameId).GetFullName();
+
                             AtomToolsFramework::ConvertToPropertyConfig(propertyConfig, propertyDefinition);
 
-                            propertyConfig.m_id = AZ::RPI::MaterialPropertyId(groupNameId, propertyDefinition.m_nameId).GetFullName();
+                            propertyConfig.m_groupName = groupDisplayName;
                             const auto& propertyIndex = m_editData.m_materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyConfig.m_id);
+                            propertyConfig.m_showThumbnail = true;
                             propertyConfig.m_defaultValue = AtomToolsFramework::ConvertToEditableType(m_editData.m_materialTypeAsset->GetDefaultPropertyValues()[propertyIndex.GetIndex()]);
                             propertyConfig.m_parentValue = AtomToolsFramework::ConvertToEditableType(m_editData.m_materialTypeAsset->GetDefaultPropertyValues()[propertyIndex.GetIndex()]);
                             propertyConfig.m_originalValue = AtomToolsFramework::ConvertToEditableType(m_editData.m_materialAsset->GetPropertyValues()[propertyIndex.GetIndex()]);
@@ -534,7 +541,7 @@ namespace AZ
                 inspector->Populate();
                 inspector->SetOverrides(propertyOverrideMap);
 
-                // Create the menu bottom row with actions for exporting or canceling the operation
+                // Create the menu button
                 QToolButton* menuButton = new QToolButton(&dialog);
                 menuButton->setAutoRaise(true);
                 menuButton->setIcon(QIcon(":/Cards/img/UI20/Cards/menu_ico.svg"));
@@ -545,10 +552,6 @@ namespace AZ
                     QMenu menu(&dialog);
                     action = menu.addAction("Clear Overrides", [&] { inspector->SetOverrides(MaterialPropertyOverrideMap()); });
                     action = menu.addAction("Revert Changes", [&] { inspector->SetOverrides(propertyOverrideMap); });
-
-                    menu.addSeparator();
-                    action = menu.addAction("Confirm Changes", [&] { dialog.accept(); });
-                    action = menu.addAction("Cancel Changes", [&] { dialog.reject(); });
 
                     menu.addSeparator();
                     action = menu.addAction("Save Material", [&] { inspector->SaveMaterial(); });
@@ -563,12 +566,19 @@ namespace AZ
                     menu.exec(QCursor::pos());
                 });
 
+                QDialogButtonBox* buttonBox = new QDialogButtonBox(&dialog);
+                buttonBox->setStandardButtons(QDialogButtonBox::Cancel | QDialogButtonBox::Ok);
+                QObject::connect(buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+                QObject::connect(buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
                 QObject::connect(&dialog, &QDialog::rejected, &dialog, [&] { inspector->SetOverrides(propertyOverrideMap); });
 
                 QVBoxLayout* dialogLayout = new QVBoxLayout(&dialog);
                 dialogLayout->addWidget(menuButton);
                 dialogLayout->addWidget(inspector);
+                dialogLayout->addWidget(buttonBox);
                 dialog.setLayout(dialogLayout);
+                dialog.setModal(true);
 
                 // Forcing the initial dialog size to accomodate typical content.
                 // Temporarily settng fixed size because dialog.show/exec invokes WindowDecorationWrapper::showEvent.

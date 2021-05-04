@@ -40,18 +40,14 @@ struct QMetaObject;
 class CBaseObject;
 class CCryEditDoc;
 class CSelectionGroup;
-class CEditTool;
 class CAnimationContext;
 class CTrackViewSequenceManager;
 class CGameEngine;
 struct IIconManager;
 class CToolBoxManager;
 class CClassFactory;
-class CMaterialManager;
 class CMusicManager;
-class CMaterail;
 struct IEditorParticleManager;
-class CLensFlareManager;
 class CEAXPresetManager;
 class CErrorReport;
 class CBaseLibraryItem;
@@ -319,17 +315,6 @@ enum EOperationMode
     eModellingMode // Geometry modeling mode
 };
 
-enum EEditMode
-{
-    eEditModeSelect,
-    eEditModeSelectArea,
-    eEditModeMove,
-    eEditModeRotate,
-    eEditModeScale,
-    eEditModeTool,
-    eEditModeRotateCircle,
-};
-
 //! Mouse events that viewport can send
 enum EMouseEvent
 {
@@ -389,21 +374,6 @@ enum EModifiedModule
     eModifiedBrushes = BIT(1),
     eModifiedEntities = BIT(2),
     eModifiedAll = -1
-};
-
-//! Callback class passed to PickObject.
-struct IPickObjectCallback
-{
-    virtual ~IPickObjectCallback() = default;
-
-    //! Called when object picked.
-    virtual void OnPick(CBaseObject* picked) = 0;
-    //! Called when pick mode cancelled.
-    virtual void OnCancelPick() = 0;
-    //! Return true if specified object is pickable.
-    virtual bool OnPickFilter([[maybe_unused]] CBaseObject* filterObject) { return true; };
-    //! If need a specific behavior when holding space, return true or if not, return false.
-    virtual bool IsNeedSpecificBehaviorForSpaceAcce() { return false; }
 };
 
 //! Class provided by editor for various registration functions.
@@ -570,24 +540,8 @@ struct IEditor
     //! Get access to object manager.
     virtual struct IObjectManager* GetObjectManager() = 0;
     virtual CSettingsManager* GetSettingsManager() = 0;
-    //! Set pick object mode.
-    //! When object picked callback will be called, with OnPick
-    //! If pick operation is canceled Cancel will be called
-    //! @param targetClass specifies objects of which class are supposed to be picked
-    //! @param bMultipick if true pick tool will pick multiple object
-    virtual void PickObject(
-        IPickObjectCallback* callback,
-        const QMetaObject* targetClass = 0,
-        const char* statusText = 0,
-        bool bMultipick = false) = 0;
-    //! Cancel current pick operation
-    virtual void CancelPick() = 0;
-    //! Return true if editor now in object picking mode
-    virtual bool IsPicking() = 0;
     //! Get DB manager that own items of specified type.
     virtual IDataBaseManager* GetDBItemManager(EDataBaseItemType itemType) = 0;
-    //! Get Manager of Materials.
-    virtual CMaterialManager* GetMaterialManager() = 0;
     virtual IBaseLibraryManager* GetMaterialManagerLibrary() = 0; // Vladimir@conffx
     virtual IEditorMaterialManager* GetIEditorMaterialManager() = 0; // Vladimir@Conffx
     //! Returns IconManager.
@@ -596,8 +550,6 @@ struct IEditor
     virtual IEditorPanelUtils* GetEditorPanelUtils() = 0;
     //! Get Music Manager.
     virtual CMusicManager* GetMusicManager() = 0;
-    //! Get Lens Flare Manager.
-    virtual CLensFlareManager* GetLensFlareManager() = 0;
     virtual float GetTerrainElevation(float x, float y) = 0;
     virtual Editor::EditorQtApplication* GetEditorQtApplication() = 0;
     virtual const QColor& GetColorByName(const QString& name) = 0;
@@ -649,17 +601,6 @@ struct IEditor
 
     virtual void SetOperationMode(EOperationMode mode) = 0;
     virtual EOperationMode GetOperationMode() = 0;
-    //! editMode - EEditMode
-    virtual void SetEditMode(int editMode) = 0;
-    virtual int GetEditMode() = 0;
-    //! Assign current edit tool, destroy previously used edit too.
-    virtual void SetEditTool(CEditTool* tool, bool bStopCurrentTool = true) = 0;
-    //! Assign current edit tool by class name.
-    virtual void SetEditTool(const QString& sEditToolName, bool bStopCurrentTool = true) = 0;
-    //! Reinitializes the current edit tool if one is selected.
-    virtual void ReinitializeEditTool() = 0;
-    //! Returns current edit tool.
-    virtual CEditTool* GetEditTool() = 0;
     //! Shows/Hides transformation manipulator.
     //! if bShow is true also returns a valid ITransformManipulator pointer.
     virtual ITransformManipulator* ShowTransformManipulator(bool bShow) = 0;
@@ -684,9 +625,6 @@ struct IEditor
     virtual RefCoordSys GetReferenceCoordSys() = 0;
     virtual XmlNodeRef FindTemplate(const QString& templateName) = 0;
     virtual void AddTemplate(const QString& templateName, XmlNodeRef& tmpl) = 0;
-    //! Open material library and select specified item.
-    //! If parameter is NULL current selection in material library does not change.
-    virtual void OpenMaterialLibrary(IDataBaseItem* pItem = NULL) = 0;
 
     virtual const QtViewPane* OpenView(QString sViewClassName, bool reuseOpen = true) = 0;
     virtual QWidget* FindView(QString viewClassName) = 0;
@@ -814,8 +752,6 @@ struct IEditor
 
     // reloads the plugins
     virtual void LoadPlugins() = 0;
-
-    virtual bool IsNewViewportInteractionModelEnabled() const = 0;
 };
 
 //! Callback used by editor when initializing for info in UI dialogs

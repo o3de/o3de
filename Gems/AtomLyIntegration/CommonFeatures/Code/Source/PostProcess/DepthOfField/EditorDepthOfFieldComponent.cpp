@@ -32,8 +32,8 @@ namespace AZ
                         "DepthOfField", "Controls the Depth of Field.")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                         ->Attribute(Edit::Attributes::Category, "Atom")
-                        ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/Component_Placeholder.svg") // [GFX TODO ATOM-2672][PostFX] need to create icons for PostProcessing.
-                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "editor/icons/components/viewport/component_placeholder.png") // [GFX TODO ATOM-2672][PostFX] need to create icons for PostProcessing.y 
+                        ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg") // [GFX TODO ATOM-2672][PostFX] need to create icons for PostProcessing.
+                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.png") // [GFX TODO ATOM-2672][PostFX] need to create icons for PostProcessing.y 
                         ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                         ->Attribute(Edit::Attributes::AutoExpand, true)
                         ->Attribute(Edit::Attributes::HelpPageURL, "https://") // [GFX TODO][ATOM-2672][PostFX] need create page for PostProcessing.

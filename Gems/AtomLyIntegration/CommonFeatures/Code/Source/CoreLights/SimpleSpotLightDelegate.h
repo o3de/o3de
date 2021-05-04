@@ -25,6 +25,8 @@ namespace AZ
         class SimpleSpotLightDelegate final
             : public LightDelegateBase<SimpleSpotLightFeatureProcessorInterface>
         {
+            using Base = LightDelegateBase<SimpleSpotLightFeatureProcessorInterface>;
+
         public:
             SimpleSpotLightDelegate(EntityId entityId, bool isVisible);
 
@@ -34,9 +36,9 @@ namespace AZ
             float GetSurfaceArea() const override;
             float GetEffectiveSolidAngle() const override { return PhotometricValue::DirectionalEffectiveSteradians; }
             void SetShutterAngles(float innerAngleDegrees, float outerAngleDegrees) override;
+
         private:
             virtual void HandleShapeChanged();
-            
         };
 
     } // namespace Render

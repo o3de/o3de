@@ -16,39 +16,50 @@
 ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
 
 add_subdirectory(assetpipeline)
+add_subdirectory(atom_renderer)
 
 ## Physics ##
-# DISABLED - see LYN-2536
-#if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
-#    ly_add_pytest(
-#        NAME AutomatedTesting::PhysicsTests
-#        TEST_SUITE main
-#        TEST_SERIAL
-#        PATH ${CMAKE_CURRENT_LIST_DIR}/physics/TestSuite_Active.py
-#        TIMEOUT 3600
-#        RUNTIME_DEPENDENCIES
-#            Legacy::Editor
-#            Legacy::CryRenderNULL
-#            AZ::AssetProcessor
-#            AutomatedTesting.Assets
-#        COMPONENT
-#            Physics
-#    )
-#    ly_add_pytest(
-#        NAME AutomatedTesting::PhysicsTests_Sandbox
-#        TEST_SUITE sandbox
-#        TEST_SERIAL
-#        PATH ${CMAKE_CURRENT_LIST_DIR}/physics/TestSuite_Sandbox.py
-#        TIMEOUT 3600
-#        RUNTIME_DEPENDENCIES
-#            Legacy::Editor
-#            Legacy::CryRenderNULL
-#            AZ::AssetProcessor
-#            AutomatedTesting.Assets
-#        COMPONENT
-#            Physics
-#    )
-#endif()
+if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
+    ly_add_pytest(
+        NAME AutomatedTesting::PhysicsTests_Main
+        TEST_SUITE main
+        TEST_SERIAL
+        PATH ${CMAKE_CURRENT_LIST_DIR}/physics/TestSuite_Main.py
+        TIMEOUT 1500
+        RUNTIME_DEPENDENCIES
+            Legacy::Editor
+            AZ::AssetProcessor
+            AutomatedTesting.Assets
+        COMPONENT
+            Physics
+    )
+    ly_add_pytest(
+        NAME AutomatedTesting::PhysicsTests_Periodic
+        TEST_SUITE periodic
+        TEST_SERIAL
+        PATH ${CMAKE_CURRENT_LIST_DIR}/physics/TestSuite_Periodic.py
+        TIMEOUT 1500
+        RUNTIME_DEPENDENCIES
+            Legacy::Editor
+            AZ::AssetProcessor
+            AutomatedTesting.Assets
+        COMPONENT
+            Physics
+    )
+    ly_add_pytest(
+        NAME AutomatedTesting::PhysicsTests_Sandbox
+        TEST_SUITE sandbox
+        TEST_SERIAL
+        PATH ${CMAKE_CURRENT_LIST_DIR}/physics/TestSuite_Sandbox.py
+        TIMEOUT 3600
+        RUNTIME_DEPENDENCIES
+            Legacy::Editor
+            AZ::AssetProcessor
+            AutomatedTesting.Assets
+        COMPONENT
+            Physics
+    )
+endif()
 
 ## ScriptCanvas ##
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
@@ -57,10 +68,9 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         TEST_SUITE periodic
         TEST_SERIAL
         PATH ${CMAKE_CURRENT_LIST_DIR}/scripting/TestSuite_Active.py
-        TIMEOUT 3600
+        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             Legacy::Editor
-            Legacy::CryRenderNULL
             AZ::AssetProcessor
             AutomatedTesting.Assets
         COMPONENT
@@ -71,33 +81,30 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         TEST_SUITE sandbox
         TEST_SERIAL
         PATH ${CMAKE_CURRENT_LIST_DIR}/scripting/TestSuite_Sandbox.py
-        TIMEOUT 3600
+        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             Legacy::Editor
-            Legacy::CryRenderNULL
             AZ::AssetProcessor
             AutomatedTesting.Assets
     )
 endif()
 
 ## White Box ##
-# DISABLED - See LYN-2663
-#if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
-#    ly_add_pytest(
-#        NAME AutomatedTesting::WhiteBoxTests
-#        TEST_SUITE main
-#        TEST_SERIAL
-#        PATH ${CMAKE_CURRENT_LIST_DIR}/WhiteBox/TestSuite_Active.py
-#        TIMEOUT 3600
-#        RUNTIME_DEPENDENCIES
-#            Legacy::Editor
-#            Legacy::CryRenderNULL
-#            AZ::AssetProcessor
-#            AutomatedTesting.Assets
-#        COMPONENT
-#            WhiteBox
-#    )
-#endif()
+if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
+    ly_add_pytest(
+        NAME AutomatedTesting::WhiteBoxTests
+        TEST_SUITE main
+        TEST_SERIAL
+        PATH ${CMAKE_CURRENT_LIST_DIR}/WhiteBox/TestSuite_Active.py
+        TIMEOUT 1500
+        RUNTIME_DEPENDENCIES
+            Legacy::Editor
+            AZ::AssetProcessor
+            AutomatedTesting.Assets
+        COMPONENT
+            WhiteBox
+    )
+endif()
 
 ## NvCloth ##
 # [TODO LYN-1928] Enable when AutomatedTesting runs with Atom
@@ -107,10 +114,9 @@ endif()
 #        TEST_SUITE main
 #        TEST_SERIAL
 #        PATH ${CMAKE_CURRENT_LIST_DIR}/NvCloth/TestSuite_Active.py
-#        TIMEOUT 3600
+#        TIMEOUT 1500
 #        RUNTIME_DEPENDENCIES
 #            Legacy::Editor
-#            Legacy::CryRenderNULL
 #            AZ::AssetProcessor
 #            AutomatedTesting.Assets
 #    )
@@ -123,13 +129,30 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         TEST_SUITE sandbox
         TEST_SERIAL
         PATH ${CMAKE_CURRENT_LIST_DIR}/EditorPythonBindings
-        TIMEOUT 3600
+        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             Legacy::Editor
-            Legacy::CryRenderNULL
             AZ::AssetProcessor
             AutomatedTesting.Assets
             Gem::EditorPythonBindings.Editor
+        COMPONENT TestTools
+    )
+endif()
+
+## Python Asset Builder ##
+if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
+    ly_add_pytest(
+        NAME AutomatedTesting::PythonAssetBuilder
+        TEST_SUITE periodic
+        TEST_SERIAL
+        PATH ${CMAKE_CURRENT_LIST_DIR}/PythonAssetBuilder
+        TIMEOUT 1500
+        RUNTIME_DEPENDENCIES
+            Legacy::Editor
+            AZ::AssetProcessor
+            AutomatedTesting.Assets
+            Gem::EditorPythonBindings.Editor
+            Gem::PythonAssetBuilder.Editor
         COMPONENT TestTools
     )
 endif()
@@ -138,13 +161,15 @@ endif()
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_pytest(
         NAME AutomatedTesting::BlastTests
+        TEST_SUITE main
         TEST_SERIAL TRUE
         PATH ${CMAKE_CURRENT_LIST_DIR}/Blast/TestSuite_Active.py
-        TIMEOUT 3600
+        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             Legacy::Editor
             AZ::AssetProcessor
             AutomatedTesting.Assets
+        COMPONENT Blast
     )
 endif()
 
@@ -157,13 +182,12 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
 
 ## DynVeg ##
     ly_add_pytest(
-        NAME DynamicVegetationTests_Main_GPU
-        TEST_REQUIRES gpu
+        NAME AutomatedTesting::DynamicVegetationTests_Main
         TEST_SERIAL
         TEST_SUITE main
         PATH ${CMAKE_CURRENT_LIST_DIR}/largeworlds/dyn_veg
         PYTEST_MARKS "not SUITE_sandbox and not SUITE_periodic and not SUITE_benchmark"
-        TIMEOUT 36000
+        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             Legacy::Editor
@@ -174,13 +198,12 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
     )
 
     ly_add_pytest(
-        NAME DynamicVegetationTests_Sandbox_GPU
-        TEST_REQUIRES gpu
+        NAME AutomatedTesting::DynamicVegetationTests_Sandbox
         TEST_SERIAL
         TEST_SUITE sandbox
         PATH ${CMAKE_CURRENT_LIST_DIR}/largeworlds/dyn_veg
         PYTEST_MARKS "SUITE_sandbox"
-        TIMEOUT 36000
+        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             Legacy::Editor
@@ -191,13 +214,12 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
     )
 
     ly_add_pytest(
-        NAME DynamicVegetationTests_Periodic_GPU
-        TEST_REQUIRES gpu
+        NAME AutomatedTesting::DynamicVegetationTests_Periodic
         TEST_SERIAL
         TEST_SUITE periodic
         PATH ${CMAKE_CURRENT_LIST_DIR}/largeworlds/dyn_veg
         PYTEST_MARKS "SUITE_periodic"
-        TIMEOUT 3600
+        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             Legacy::Editor
@@ -208,13 +230,12 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
 
 ## LandscapeCanvas ##
     ly_add_pytest(
-        NAME LandscapeCanvasTests_Main
-        TEST_REQUIRES gpu
+        NAME AutomatedTesting::LandscapeCanvasTests_Main
         TEST_SERIAL
         TEST_SUITE main
         PATH ${CMAKE_CURRENT_LIST_DIR}/largeworlds/landscape_canvas
         PYTEST_MARKS "not SUITE_sandbox and not SUITE_periodic and not SUITE_benchmark"
-        TIMEOUT 3600
+        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
            AZ::AssetProcessor
            Legacy::Editor
@@ -224,13 +245,12 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
     )
 
     ly_add_pytest(
-        NAME LandscapeCanvasTests_Periodic
-        TEST_REQUIRES gpu
+        NAME AutomatedTesting::LandscapeCanvasTests_Periodic
         TEST_SERIAL
         TEST_SUITE periodic
         PATH ${CMAKE_CURRENT_LIST_DIR}/largeworlds/landscape_canvas
         PYTEST_MARKS "SUITE_periodic"
-        TIMEOUT 3600
+        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
            AZ::AssetProcessor
            Legacy::Editor
@@ -241,12 +261,11 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
 
 ## GradientSignal ##
     ly_add_pytest(
-        NAME GradientSignalTests_Periodic
-        TEST_REQUIRES gpu
+        NAME AutomatedTesting::GradientSignalTests_Periodic
         TEST_SERIAL
         TEST_SUITE periodic
         PATH ${CMAKE_CURRENT_LIST_DIR}/largeworlds/gradient_signal
-        TIMEOUT 3600
+        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             Legacy::Editor
@@ -260,14 +279,13 @@ endif()
 ## Editor ##
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_FOUNDATION_TEST_SUPPORTED)
     ly_add_pytest(
-        NAME EditorTests_Periodic
+        NAME AutomatedTesting::EditorTests_Periodic
         TEST_SUITE periodic
         TEST_SERIAL
         PATH ${CMAKE_CURRENT_LIST_DIR}/editor
-        TIMEOUT 3600
+        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             Legacy::Editor
-            Legacy::CryRenderNULL
             AZ::AssetProcessor
             AutomatedTesting.Assets
         COMPONENT
@@ -278,7 +296,7 @@ endif()
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     # Unstable, SPEC-3838 will restore
     #ly_add_pytest(
-    #    NAME asset_load_benchmark_test
+    #    NAME AutomatedTesting::asset_load_benchmark_test
     #    TEST_SERIAL
     #    TEST_SUITE benchmark
     #    PATH ${CMAKE_CURRENT_LIST_DIR}/streaming/benchmark/asset_load_benchmark_test.py
@@ -286,7 +304,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     #        AZ::AssetProcessor
     #        AZ::AssetProcessorBatch
     #        AutomatedTesting.GameLauncher
-    #        Legacy::CryRenderNULL
     #)
 endif()
 

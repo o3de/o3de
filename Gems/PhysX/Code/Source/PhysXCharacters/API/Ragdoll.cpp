@@ -45,7 +45,7 @@ namespace PhysX
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)
         {
-            serializeContext->Class<Ragdoll>()
+            serializeContext->Class<PhysX::Ragdoll, Physics::Ragdoll>()
                 ->Version(1)
                 ;
         }
@@ -56,7 +56,7 @@ namespace PhysX
         m_nodes.push_back(AZStd::move(node));
     }
 
-    void Ragdoll::SetParentIndices(const ParentIndices& parentIndices)
+    void Ragdoll::SetParentIndices(const Physics::ParentIndices& parentIndices)
     {
         m_parentIndices = parentIndices;
     }
@@ -109,7 +109,6 @@ namespace PhysX
                 this->ApplyQueuedDisableSimulation();
             })
     {
-        m_simulating = false;
         m_sceneOwner = sceneHandle;
     }
 
@@ -117,14 +116,7 @@ namespace PhysX
     {
         m_sceneStartSimHandler.Disconnect();
 
-        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
-        {
-            const size_t numNodes = m_nodes.size();
-            for (size_t nodeIndex = 0; nodeIndex < numNodes; nodeIndex++)
-            {
-                sceneInterface->RemoveSimulatedBody(m_sceneOwner, m_nodes[nodeIndex]->GetRigidBodyHandle());
-            }
-        }
+        m_nodes.clear(); //the nodes destructor will remove the simulated body from the scene.
     }
 
     void Ragdoll::ApplyQueuedEnableSimulation()
@@ -204,7 +196,6 @@ namespace PhysX
 
                 sceneInterface->EnableSimulationOfBody(m_sceneOwner, m_nodes[nodeIndex]->GetRigidBodyHandle());
             }
-
             else
             {
                 AZ_Error("PhysX Ragdoll", false, "Invalid PhysX actor for node index %i", nodeIndex);
@@ -222,8 +213,7 @@ namespace PhysX
         }
 
         sceneInterface->RegisterSceneSimulationStartHandler(m_sceneOwner, m_sceneStartSimHandler);
-
-        m_simulating = true;
+        sceneInterface->EnableSimulationOfBody(m_sceneOwner, m_bodyHandle);
     }
 
     void Ragdoll::EnableSimulationQueued(const Physics::RagdollState& initialState)
@@ -276,7 +266,7 @@ namespace PhysX
             }
         }
 
-        m_simulating = false;
+        sceneInterface->DisableSimulationOfBody(m_sceneOwner, m_bodyHandle);
     }
 
     void Ragdoll::DisableSimulationQueued()

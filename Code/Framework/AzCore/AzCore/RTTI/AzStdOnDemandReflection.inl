@@ -816,7 +816,7 @@ namespace AZ
         template<size_t Index>
         static void ReflectUnpackMethodFold(BehaviorContext::ClassBuilder<ContainerType>& builder)
         {
-            AZStd::string methodName = AZStd::string::format("Get%ld", Index);
+            const AZStd::string methodName = AZStd::string::format("Get%zu", Index);
             builder->Method(methodName.data(), [](ContainerType& value) { return AZStd::get<Index>(value); })
                 ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                 ->Attribute(AZ::ScriptCanvasAttributes::TupleGetFunctionIndex, Index)

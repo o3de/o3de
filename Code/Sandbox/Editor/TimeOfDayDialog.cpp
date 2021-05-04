@@ -34,9 +34,6 @@
 #include "Undo/Undo.h"
 #include "LyViewPaneNames.h"
 
-// Cry3DEngine
-#include <Cry3DEngine/Environment/OceanEnvironmentBus.h>
-
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <ui_TimeOfDayDialog.h>
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
@@ -69,14 +66,6 @@ namespace TimeOfDayDetails
         return static_cast<float>(time.msecsSinceStartOfDay() / 60000) / 60.0;
     }
 
-    // Is the ocean component feature toggle enabled?
-    AZ_INLINE static bool HasOceanFeatureToggle()
-    {
-        bool bHasOceanFeature = false;
-        AZ::OceanFeatureToggleBus::BroadcastResult(bHasOceanFeature, &AZ::OceanFeatureToggleBus::Events::OceanComponentEnabled);
-        return bHasOceanFeature;
-    }
-
     AZ_INLINE static bool SkipUserInterface(int value)
     {
         // Check for obsolete parameters that we still want to keep around to migrate legacy data to new data
@@ -88,13 +77,6 @@ namespace TimeOfDayDetails
         bool skipParameter = (enumValue == ITimeOfDay::PARAM_HDR_DYNAMIC_POWER_FACTOR) ||
             (enumValue == ITimeOfDay::PARAM_TERRAIN_OCCL_MULTIPLIER) ||
             (enumValue == ITimeOfDay::PARAM_SUN_COLOR_MULTIPLIER);
-
-        // Only check the ocean parameters if the ocean feature (aka the Infinite Ocean Component)
-        // has been enabled
-        skipParameter |= HasOceanFeatureToggle() &&
-               ((enumValue == ITimeOfDay::PARAM_OCEANFOG_COLOR) ||
-               (enumValue == ITimeOfDay::PARAM_OCEANFOG_COLOR_MULTIPLIER) ||
-               (enumValue == ITimeOfDay::PARAM_OCEANFOG_DENSITY));
 
         return skipParameter;
     }
@@ -1088,7 +1070,7 @@ void CTimeOfDayDialog::OnResetToDefaultValues()
         ITimeOfDay* pTimeOfDay = gEnv->p3DEngine->GetTimeOfDay();
 
         // Load the default time of day settings and use those to reset the time of day.
-        XmlNodeRef root = GetISystem()->LoadXmlFromFile("Editor/default_time_of_day.xml");
+        XmlNodeRef root = GetISystem()->LoadXmlFromFile("default_time_of_day.xml");
         if (root)
         {
             pTimeOfDay->Serialize(root, true);

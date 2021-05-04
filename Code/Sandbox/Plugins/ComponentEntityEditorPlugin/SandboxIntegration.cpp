@@ -159,18 +159,6 @@ void SandboxIntegrationManager::Setup()
     AzToolsFramework::ToolsApplicationEvents::Bus::Handler::BusConnect();
     AzToolsFramework::EditorRequests::Bus::Handler::BusConnect();
     AzToolsFramework::EditorWindowRequests::Bus::Handler::BusConnect();
-
-    // if the new viewport interaction model is enabled, then object picking is handled via
-    // EditorPickEntitySelection and SandboxIntegrationManager is not required
-    if (!IsNewViewportInteractionModelEnabled())
-    {
-        AzFramework::EntityContextId pickModeEntityContextId = GetEntityContextId();
-        if (!pickModeEntityContextId.IsNull())
-        {
-            AzToolsFramework::EditorPickModeNotificationBus::Handler::BusConnect(pickModeEntityContextId);
-        }
-    }
-
     AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
     AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
     AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusConnect();
@@ -184,7 +172,6 @@ void SandboxIntegrationManager::Setup()
 
     AzFramework::DisplayContextRequestBus::Handler::BusConnect();
     SetupFileExtensionMap();
-    AzToolsFramework::NewViewportInteractionModelEnabledRequestBus::Handler::BusConnect();
 
     MainWindow::instance()->GetActionManager()->RegisterActionHandler(ID_FILE_SAVE_SLICE_TO_ROOT, [this]() {
         SaveSlice(false);
@@ -388,7 +375,6 @@ void SandboxIntegrationManager::GetEntitiesInSlices(
 void SandboxIntegrationManager::Teardown()
 {
     AzToolsFramework::Layers::EditorLayerComponentNotificationBus::Handler::BusDisconnect();
-    AzToolsFramework::NewViewportInteractionModelEnabledRequestBus::Handler::BusDisconnect();
     AzFramework::DisplayContextRequestBus::Handler::BusDisconnect();
     if( m_debugDisplayBusImplementationActive)
     {
@@ -398,12 +384,6 @@ void SandboxIntegrationManager::Teardown()
     AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusDisconnect();
     AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
     AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
-
-    if (!IsNewViewportInteractionModelEnabled())
-    {
-        AzToolsFramework::EditorPickModeNotificationBus::Handler::BusDisconnect();
-    }
-
     AzToolsFramework::EditorWindowRequests::Bus::Handler::BusDisconnect();
     AzToolsFramework::EditorRequests::Bus::Handler::BusDisconnect();
     AzToolsFramework::ToolsApplicationEvents::Bus::Handler::BusDisconnect();
@@ -670,9 +650,13 @@ void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, con
         action = menu->addAction(QObject::tr("Create layer"));
         QObject::connect(action, &QAction::triggered, [this] { ContextMenu_NewLayer(); });
 
+        AzToolsFramework::EntityIdList entities;
+        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+            entities,
+            &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
+
         SetupLayerContextMenu(menu);
-        AzToolsFramework::EntityIdSet flattenedSelection;
-        GetSelectedEntitiesSetWithFlattenedHierarchy(flattenedSelection);
+        AzToolsFramework::EntityIdSet flattenedSelection = AzToolsFramework::GetCulledEntityHierarchy(entities);
         AzToolsFramework::SetupAddToLayerMenu(menu, flattenedSelection, [this] { return ContextMenu_NewLayer(); });
 
         SetupSliceContextMenu(menu);
@@ -1220,10 +1204,14 @@ void SandboxIntegrationManager::CloneSelection(bool& handled)
 {
     AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
-    AzToolsFramework::EntityIdSet duplicationSet;
-    GetSelectedEntitiesSetWithFlattenedHierarchy(duplicationSet);
+    AzToolsFramework::EntityIdList entities;
+    AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+        entities,
+        &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
 
-    if (duplicationSet.size() > 0)
+    AzToolsFramework::EntityIdSet duplicationSet = AzToolsFramework::GetCulledEntityHierarchy(entities);
+
+    if (!duplicationSet.empty())
     {
         AZStd::unordered_set<AZ::EntityId> clonedEntities;
         handled = AzToolsFramework::CloneInstantiatedEntities(duplicationSet, clonedEntities);
@@ -1235,21 +1223,14 @@ void SandboxIntegrationManager::CloneSelection(bool& handled)
     }
 }
 
-void SandboxIntegrationManager::DeleteSelectedEntities(const bool includeDescendants)
+void SandboxIntegrationManager::DeleteSelectedEntities([[maybe_unused]] const bool includeDescendants)
 {
-    if (IsNewViewportInteractionModelEnabled())
-    {
-        AzToolsFramework::EntityIdList selectedEntityIds;
-        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
-            selectedEntityIds, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
+    AzToolsFramework::EntityIdList selectedEntityIds;
+    AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+        selectedEntityIds, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
 
-        AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
-            &AzToolsFramework::ToolsApplicationRequests::DeleteEntitiesAndAllDescendants, selectedEntityIds);
-    }
-    else
-    {
-        CCryEditApp::instance()->DeleteSelectedEntities(includeDescendants);
-    }
+    AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+        &AzToolsFramework::ToolsApplicationRequests::DeleteEntitiesAndAllDescendants, selectedEntityIds);
 }
 
 AZ::EntityId SandboxIntegrationManager::CreateNewEntity(AZ::EntityId parentId)
@@ -1375,11 +1356,6 @@ void SandboxIntegrationManager::SetShowCircularDependencyError(const bool& showC
 }
 
 //////////////////////////////////////////////////////////////////////////
-void SandboxIntegrationManager::SetEditTool(const char* tool)
-{
-    GetIEditor()->SetEditTool(tool);
-}
-
 void SandboxIntegrationManager::LaunchLuaEditor(const char* files)
 {
     CCryEditApp::instance()->OpenLUAEditor(files);
@@ -2777,26 +2753,6 @@ AZ::u32 SandboxIntegrationManager::SetState(AZ::u32 state)
     return 0;
 }
 
-AZ::u32 SandboxIntegrationManager::SetStateFlag(AZ::u32 state)
-{
-    if (m_dc)
-    {
-        return m_dc->SetStateFlag(state);
-    }
-
-    return 0;
-}
-
-AZ::u32 SandboxIntegrationManager::ClearStateFlag(AZ::u32 state)
-{
-    if (m_dc)
-    {
-        return m_dc->ClearStateFlag(state);
-    }
-
-    return 0;
-}
-
 void SandboxIntegrationManager::PushMatrix(const AZ::Transform& tm)
 {
     if (m_dc)
@@ -2812,11 +2768,6 @@ void SandboxIntegrationManager::PopMatrix()
     {
         m_dc->PopMatrix();
     }
-}
-
-bool SandboxIntegrationManager::IsNewViewportInteractionModelEnabled()
-{
-    return GetIEditor()->IsNewViewportInteractionModelEnabled();
 }
 
 bool SandboxIntegrationManager::DisplayHelpersVisible()

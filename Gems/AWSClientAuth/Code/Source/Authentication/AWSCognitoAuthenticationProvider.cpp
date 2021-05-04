@@ -40,7 +40,7 @@ namespace AWSClientAuth
         AZ_UNUSED(settingsRegistry);
         AWSCore::AWSResourceMappingRequestBus::BroadcastResult(
             m_cognitoAppClientId, &AWSCore::AWSResourceMappingRequests::GetResourceNameId, CognitoAppClientIdResourceMappingKey);
-        AZ_Warning("AWSCognitoAuthenticationProvider", m_cognitoAppClientId.empty(), "Missing Cognito App Client Id from resource mappings. Calls to Cognito will fail.");
+        AZ_Warning("AWSCognitoAuthenticationProvider", !m_cognitoAppClientId.empty(), "Missing Cognito App Client Id from resource mappings. Calls to Cognito will fail.");
         return !m_cognitoAppClientId.empty();
     }
 

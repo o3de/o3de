@@ -15,14 +15,15 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Instance/TemplateInstanceMapperInterface.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
+#include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Template/Template.h>
-#include <AzToolsFramework/UI/Outliner/EntityOutlinerWidgetInterface.h>
 
 namespace AzToolsFramework
 {
@@ -89,16 +90,12 @@ namespace AzToolsFramework
 
                 if (instanceCountToUpdateInBatch > 0)
                 {
+                    // Notify Propagation has begun
+                    PrefabPublicNotificationBus::Broadcast(&PrefabPublicNotifications::OnPrefabInstancePropagationBegin);
+
                     EntityIdList selectedEntityIds;
                     ToolsApplicationRequestBus::BroadcastResult(selectedEntityIds, &ToolsApplicationRequests::GetSelectedEntities);
                     ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, EntityIdList());
-
-                    // Disable the Outliner to avoid showing the propagation steps
-                    EntityOutlinerWidgetInterface* entityOutlinerWidgetInterface = AZ::Interface<EntityOutlinerWidgetInterface>::Get();
-                    if (entityOutlinerWidgetInterface)
-                    {
-                        entityOutlinerWidgetInterface->SetUpdatesEnabled(false);
-                    }
 
                     for (int i = 0; i < instanceCountToUpdateInBatch; ++i)
                     {
@@ -116,8 +113,22 @@ namespace AzToolsFramework
                                     "Could not find Template using Id '%llu'. Unable to update Instance.",
                                     currentTemplateId);
 
+                                // Remove the instance from update queue if its corresponding template couldn't be found
                                 isUpdateSuccessful = false;
+                                m_instancesUpdateQueue.pop();
+                                continue;
                             }
+                        }
+
+                        auto findInstancesResult = m_templateInstanceMapperInterface->FindInstancesOwnedByTemplate(instanceTemplateId)->get();
+
+                        if (findInstancesResult.find(instanceToUpdate) == findInstancesResult.end())
+                        {
+                            // Since nested instances get reconstructed during propagation, remove any nested instance that no longer
+                            // maps to a template.
+                            isUpdateSuccessful = false;
+                            m_instancesUpdateQueue.pop();
+                            continue;
                         }
 
                         Template& currentTemplate = currentTemplateReference->get();
@@ -139,23 +150,22 @@ namespace AzToolsFramework
                         }
 
                         m_instancesUpdateQueue.pop();
-
                     }
 
-                    ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, selectedEntityIds);
-
-                    // Enable the Outliner
-                    if (entityOutlinerWidgetInterface)
+                    for (auto entityIdIterator = selectedEntityIds.begin(); entityIdIterator != selectedEntityIds.end(); entityIdIterator++)
                     {
-                        entityOutlinerWidgetInterface->SetUpdatesEnabled(true);
-
-                        auto prefabPublicInterface = AZ::Interface<PrefabPublicInterface>::Get();
-                        if (prefabPublicInterface)
+                        // Since entities get recreated during propagation, we need to check whether the entities correspoding to the list
+                        // of selected entity ids are present or not.
+                        AZ::Entity* entity = GetEntityById(*entityIdIterator);
+                        if (entity == nullptr)
                         {
-                            AZ::EntityId rootEntityId = prefabPublicInterface->GetLevelInstanceContainerEntityId();
-                            entityOutlinerWidgetInterface->ExpandEntityChildren(rootEntityId);
+                            selectedEntityIds.erase(entityIdIterator--);
                         }
                     }
+                    ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, selectedEntityIds);
+
+                    // Notify Propagation has ended
+                    PrefabPublicNotificationBus::Broadcast(&PrefabPublicNotifications::OnPrefabInstancePropagationEnd);
                 }
 
                 m_updatingTemplateInstancesInQueue = false;

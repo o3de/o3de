@@ -145,6 +145,7 @@ set(FILES
     Components/NonUniformScaleComponent.cpp
     FileFunc/FileFunc.h
     FileFunc/FileFunc.cpp
+    Font/FontInterface.h
     Gem/GemInfo.cpp
     Gem/GemInfo.h
     StringFunc/StringFunc.h
@@ -193,10 +194,11 @@ set(FILES
     Logging/MissingAssetLogger.h
     Logging/MissingAssetNotificationBus.h
     Scene/Scene.h
+    Scene/Scene.inl
     Scene/Scene.cpp
-    Scene/SceneSystemBus.h
     Scene/SceneSystemComponent.h
     Scene/SceneSystemComponent.cpp
+    Scene/SceneSystemInterface.h
     Script/ScriptComponent.h
     Script/ScriptComponent.cpp
     Script/ScriptDebugAgentBus.h
@@ -316,7 +318,6 @@ set(FILES
     Terrain/TerrainDataRequestBus.h
     Terrain/TerrainDataRequestBus.cpp
     Platform/PlatformDefaults.h
-    Platform/PlatformDefaults.cpp
     Windowing/WindowBus.h
     Windowing/NativeWindow.cpp
     Windowing/NativeWindow.h

@@ -37,6 +37,7 @@ namespace AzFramework
 
         // ViewportControllerInterface ...
         bool HandleInputChannelEvent(const ViewportControllerInputEvent& event) override;
+        void ResetInputChannels() override;
         void UpdateViewport(const ViewportControllerUpdateEvent& event) override;
         void RegisterViewportContext(ViewportId viewport) override;
         void UnregisterViewportContext(ViewportId viewport) override;
@@ -58,6 +59,7 @@ namespace AzFramework
         ViewportId GetViewportId() const { return m_viewportId; }
 
         virtual bool HandleInputChannelEvent([[maybe_unused]]const ViewportControllerInputEvent& event) { return false; }
+        virtual void ResetInputChannels() {}
         virtual void UpdateViewport([[maybe_unused]]const ViewportControllerUpdateEvent& event) {}
 
     private:

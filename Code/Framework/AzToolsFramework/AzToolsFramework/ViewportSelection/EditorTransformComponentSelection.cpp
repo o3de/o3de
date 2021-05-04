@@ -53,7 +53,7 @@ namespace AzToolsFramework
         float, cl_viewportGizmoAxisLabelOffset, 1.15f, nullptr, AZ::ConsoleFunctorFlags::Null,
         "The offset of the label for the viewport axis gizmo");
     AZ_CVAR(
-        float, cl_viewportGizmoAxisLabelSize, 2.0f, nullptr, AZ::ConsoleFunctorFlags::Null,
+        float, cl_viewportGizmoAxisLabelSize, 1.0f, nullptr, AZ::ConsoleFunctorFlags::Null,
         "The size of each label for the viewport axis gizmo");
     AZ_CVAR(
         AZ::Vector2, cl_viewportGizmoAxisScreenPosition, AZ::Vector2(0.045f, 0.9f), nullptr,
@@ -441,7 +441,7 @@ namespace AzToolsFramework
             clusterId);
     }
 
-    static void SetViewportUiClusterVisible(ViewportUi::ClusterId clusterId, bool visible)
+    static void SetViewportUiClusterVisible(const ViewportUi::ClusterId clusterId, const bool visible)
     {
         ViewportUi::ViewportUiRequestBus::Event(
             ViewportUi::DefaultViewportId,
@@ -449,7 +449,7 @@ namespace AzToolsFramework
             clusterId, visible);
     }
 
-    static void SetViewportUiClusterActiveButton(ViewportUi::ClusterId clusterId, ViewportUi::ButtonId buttonId)
+    static void SetViewportUiClusterActiveButton(const ViewportUi::ClusterId clusterId, const ViewportUi::ButtonId buttonId)
     {
         ViewportUi::ViewportUiRequestBus::Event(
             ViewportUi::DefaultViewportId,
@@ -457,7 +457,7 @@ namespace AzToolsFramework
             clusterId, buttonId);
     }
 
-    static ViewportUi::ButtonId RegisterClusterButton(ViewportUi::ClusterId clusterId, const char* iconName)
+    static ViewportUi::ButtonId RegisterClusterButton(const ViewportUi::ClusterId clusterId, const char* iconName)
     {
         ViewportUi::ButtonId buttonId;
         ViewportUi::ViewportUiRequestBus::EventResult(
@@ -3434,19 +3434,22 @@ namespace AzToolsFramework
         const auto cameraProjection = AzFramework::CameraProjection(gizmoCameraState);
 
         // screen space offset to move the 2d gizmo around
-        const AZ::Vector3 screenPosition =
-            (AZ::Vector2ToVector3(cl_viewportGizmoAxisScreenPosition) - AZ::Vector3(0.5f, 0.5f, 0.0f)) *
-            AZ::Vector2ToVector3(gizmoCameraState.m_viewportSize);
+        const AZ::Vector2 screenOffset = AZ::Vector2(cl_viewportGizmoAxisScreenPosition) - AZ::Vector2(0.5f, 0.5f);
 
         // map from a position in world space (relative to the the gizmo camera near the origin) to a position in
         // screen space
         const auto calculateGizmoAxis =
-            [&cameraView, &cameraProjection, &gizmoCameraState, &screenPosition]
-            (const AZ::Vector3& position)
+            [&cameraView, &cameraProjection, &screenOffset]
+            (const AZ::Vector3& axis)
         {
-            return AZ::Vector2ToVector3(AzFramework::Vector2FromScreenPoint(
-                AzFramework::WorldToScreen(
-                    position, cameraView, cameraProjection, gizmoCameraState.m_viewportSize))) + screenPosition;
+            auto result = AZ::Vector2(
+                AzFramework::WorldToScreenNDC(
+                    axis,
+                    cameraView,
+                    cameraProjection)
+            );
+            result.SetY(1.0f - result.GetY());
+            return result + screenOffset;
         };
 
         // get all important axis positions in screen space
@@ -3456,31 +3459,31 @@ namespace AzToolsFramework
         const auto gizmoEndAxisY = calculateGizmoAxis(-AZ::Vector3::CreateAxisY() * lineLength);
         const auto gizmoEndAxisZ = calculateGizmoAxis(-AZ::Vector3::CreateAxisZ() * lineLength);
 
-        const AZ::Vector3 gizmoAxisX = gizmoEndAxisX - gizmoStart;
-        const AZ::Vector3 gizmoAxisY = gizmoEndAxisY - gizmoStart;
-        const AZ::Vector3 gizmoAxisZ = gizmoEndAxisZ - gizmoStart;
+        const AZ::Vector2 gizmoAxisX = gizmoEndAxisX - gizmoStart;
+        const AZ::Vector2 gizmoAxisY = gizmoEndAxisY - gizmoStart;
+        const AZ::Vector2 gizmoAxisZ = gizmoEndAxisZ - gizmoStart;                                          
 
         // draw the axes of the gizmo
         debugDisplay.SetLineWidth(cl_viewportGizmoAxisLineWidth);
         debugDisplay.SetColor(AZ::Colors::Red);
-        debugDisplay.DrawLine(gizmoStart, gizmoEndAxisX);
+        debugDisplay.DrawLine2d(gizmoStart, gizmoEndAxisX, 1.0f);
         debugDisplay.SetColor(AZ::Colors::Lime);
-        debugDisplay.DrawLine(gizmoStart, gizmoEndAxisY);
+        debugDisplay.DrawLine2d(gizmoStart, gizmoEndAxisY, 1.0f);
         debugDisplay.SetColor(AZ::Colors::Blue);
-        debugDisplay.DrawLine(gizmoStart, gizmoEndAxisZ);
+        debugDisplay.DrawLine2d(gizmoStart, gizmoEndAxisZ, 1.0f);
         debugDisplay.SetLineWidth(1.0f);
 
         const float labelOffset = cl_viewportGizmoAxisLabelOffset;
-        const auto labelOffsetX = gizmoStart + gizmoAxisX * labelOffset;
-        const auto labelOffsetY = gizmoStart + gizmoAxisY * labelOffset;
-        const auto labelOffsetZ = gizmoStart + gizmoAxisZ * labelOffset;
+        const auto labelXScreenPosition = (gizmoStart + (gizmoAxisX * labelOffset)) * editorCameraState.m_viewportSize;
+        const auto labelYScreenPosition = (gizmoStart + (gizmoAxisY * labelOffset)) * editorCameraState.m_viewportSize;
+        const auto labelZScreenPosition = (gizmoStart + (gizmoAxisZ * labelOffset)) * editorCameraState.m_viewportSize;
 
         // draw the label of of each axis for the gizmo
         const float labelSize = cl_viewportGizmoAxisLabelSize;
         debugDisplay.SetColor(AZ::Colors::White);
-        debugDisplay.Draw2dTextLabel(labelOffsetX.GetX(), labelOffsetX.GetY(), labelSize, "X", true);
-        debugDisplay.Draw2dTextLabel(labelOffsetY.GetX(), labelOffsetY.GetY(), labelSize, "Y", true);
-        debugDisplay.Draw2dTextLabel(labelOffsetZ.GetX(), labelOffsetZ.GetY(), labelSize, "Z", true);
+        debugDisplay.Draw2dTextLabel(labelXScreenPosition.GetX(), labelXScreenPosition.GetY(), labelSize, "X", true);
+        debugDisplay.Draw2dTextLabel(labelYScreenPosition.GetX(), labelYScreenPosition.GetY(), labelSize, "Y", true);
+        debugDisplay.Draw2dTextLabel(labelZScreenPosition.GetX(), labelZScreenPosition.GetY(), labelSize, "Z", true);
     }
 
     void EditorTransformComponentSelection::DisplayViewportSelection2d(
@@ -3491,7 +3494,7 @@ namespace AzToolsFramework
 
         DrawAxisGizmo(viewportInfo, debugDisplay);
 
-        m_boxSelect.Display2d(debugDisplay);
+        m_boxSelect.Display2d(viewportInfo, debugDisplay);
     }
 
     void EditorTransformComponentSelection::RefreshSelectedEntityIds()

@@ -5,18 +5,18 @@
     "propertyLayoutVersion": 3,
     "properties": {
         "layer1_baseColor": {
-            "textureMap": "TestData/Textures/cc0/bark1col.jpg"
+            "textureMap": "TestData/Textures/cc0/bark1_col.jpg"
         },
         "layer1_normal": {
-            "textureMap": "TestData/Textures/cc0/bark1norm.jpg"
+            "textureMap": "TestData/Textures/cc0/bark1_norm.jpg"
         },
         "layer1_parallax": {
             "enable": true,
             "factor": 0.03999999910593033,
-            "textureMap": "TestData/Textures/cc0/bark1disp2.jpg"
+            "textureMap": "TestData/Textures/cc0/bark1_disp.jpg"
         },
         "layer1_roughness": {
-            "textureMap": "TestData/Textures/cc0/bark1roughness.jpg"
+            "textureMap": "TestData/Textures/cc0/bark1_roughness.jpg"
         },
         "layer2_baseColor": {
             "textureMap": "TestData/Textures/cc0/Rock030_2K_Color.jpg"
