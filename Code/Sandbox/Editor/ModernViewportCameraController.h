@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include <Atom/RPI.Public/ViewportContext.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Viewport/CameraInput.h>
 #include <AzFramework/Viewport/MultiViewportController.h>
