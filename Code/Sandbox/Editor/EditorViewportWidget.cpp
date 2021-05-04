@@ -1626,8 +1626,8 @@ void EditorViewportWidget::keyPressEvent(QKeyEvent* event)
         QCoreApplication::sendEvent(GetIEditor()->GetEditorMainWindow(), event);
     }
 
-    // NOTE: we keep track of keypresses and releases explicitly because the OS/Qt will insert a slight delay between sending
-    // keyevents when the key is held down. This is standard, but makes responding to key events for game style input silly
+    // NOTE: we keep track of key presses and releases explicitly because the OS/Qt will insert a slight delay between sending
+    // key events when the key is held down. This is standard, but makes responding to key events for game style input silly
     // because we want the movement to be butter smooth.
     if (!event->isAutoRepeat())
     {
