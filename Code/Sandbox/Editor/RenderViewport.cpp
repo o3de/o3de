@@ -2043,14 +2043,14 @@ float CRenderViewport::AngleStep()
     return GetViewManager()->GetGrid()->GetAngleSnap();
 }
 
-AZ::Vector3 CRenderViewport::PickTerrain(const QPoint& point)
+AZ::Vector3 CRenderViewport::PickTerrain(const AzFramework::ScreenPoint& point)
 {
     FUNCTION_PROFILER(GetIEditor()->GetSystem(), PROFILE_EDITOR);
 
-    return LYVec3ToAZVec3(ViewToWorld(point, nullptr, true));
+    return LYVec3ToAZVec3(ViewToWorld(AzToolsFramework::ViewportInteraction::QPointFromScreenPoint(point), nullptr, true));
 }
 
-AZ::EntityId CRenderViewport::PickEntity(const QPoint& point)
+AZ::EntityId CRenderViewport::PickEntity(const AzFramework::ScreenPoint& point)
 {
     FUNCTION_PROFILER(GetIEditor()->GetSystem(), PROFILE_EDITOR);
 
@@ -2059,7 +2059,7 @@ AZ::EntityId CRenderViewport::PickEntity(const QPoint& point)
     AZ::EntityId entityId;
     HitContext hitInfo;
     hitInfo.view = this;
-    if (HitTest(point, hitInfo))
+    if (HitTest(AzToolsFramework::ViewportInteraction::QPointFromScreenPoint(point), hitInfo))
     {
         if (hitInfo.object && (hitInfo.object->GetType() == OBJTYPE_AZENTITY))
         {
@@ -2100,12 +2100,13 @@ void CRenderViewport::FindVisibleEntities(AZStd::vector<AZ::EntityId>& visibleEn
     }
 }
 
-QPoint CRenderViewport::ViewportWorldToScreen(const AZ::Vector3& worldPosition)
+AzFramework::ScreenPoint CRenderViewport::ViewportWorldToScreen(const AZ::Vector3& worldPosition)
 {
     FUNCTION_PROFILER(GetIEditor()->GetSystem(), PROFILE_EDITOR);
 
     PreWidgetRendering();
-    const QPoint screenPosition = WorldToView(AZVec3ToLYVec3(worldPosition));
+    const AzFramework::ScreenPoint screenPosition =
+        AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(WorldToView(AZVec3ToLYVec3(worldPosition)));
     PostWidgetRendering();
 
     return screenPosition;
