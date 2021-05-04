@@ -38,6 +38,13 @@
                     "Gems/PrimitiveAssets"
                 ]
             },
+            "MaterialEditor":
+            {
+                "SourcePaths":
+                [
+                    "Gems/Atom/Tools/MaterialEditor"
+                ]
+            },
             "UiBasics":
             {
                 "SourcePaths":

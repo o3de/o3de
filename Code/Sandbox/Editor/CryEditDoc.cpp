@@ -51,8 +51,6 @@
 #include "CryEdit.h"
 #include "ActionManager.h"
 #include "Include/IObjectManager.h"
-#include "Material/MaterialManager.h"
-#include "LensFlareEditor/LensFlareManager.h"
 #include "ErrorReportDialog.h"
 #include "SurfaceTypeValidator.h"
 #include "ShaderCache.h"
@@ -358,10 +356,6 @@ void CCryEditDoc::Save(TDocMultiArchive& arrXmlAr)
             SerializeFogSettings((*arrXmlAr[DMAS_GENERAL]));
             // Serialize Missions //////////////////////////////////////////////////
             SerializeMissions(arrXmlAr, currentMissionName, false);
-            //! Serialize material manager.
-            GetIEditor()->GetMaterialManager()->Serialize((*arrXmlAr[DMAS_GENERAL]).root, (*arrXmlAr[DMAS_GENERAL]).bLoading);
-            //! Serialize LensFlare manager.
-            GetIEditor()->GetLensFlareManager()->Serialize((*arrXmlAr[DMAS_GENERAL]).root, (*arrXmlAr[DMAS_GENERAL]).bLoading);
 
             SerializeShaderCache((*arrXmlAr[DMAS_GENERAL_NAMED_DATA]));
             SerializeNameSelection((*arrXmlAr[DMAS_GENERAL]));
@@ -515,22 +509,6 @@ void CCryEditDoc::Load(TDocMultiArchive& arrXmlAr, const QString& szFilename)
             // Load water color.
             //////////////////////////////////////////////////////////////////////////
                 (*arrXmlAr[DMAS_GENERAL]).root->getAttr("WaterColor", m_waterColor);
-
-            //////////////////////////////////////////////////////////////////////////
-            // Load materials.
-            //////////////////////////////////////////////////////////////////////////
-            {
-                CAutoLogTime logtime("Load MaterialManager");
-                GetIEditor()->GetMaterialManager()->Serialize((*arrXmlAr[DMAS_GENERAL]).root, (*arrXmlAr[DMAS_GENERAL]).bLoading);
-            }
-
-            //////////////////////////////////////////////////////////////////////////
-            // Load LensFlares.
-            //////////////////////////////////////////////////////////////////////////
-            {
-                CAutoLogTime logtime("Load Flares");
-                GetIEditor()->GetLensFlareManager()->Serialize((*arrXmlAr[DMAS_GENERAL]).root, (*arrXmlAr[DMAS_GENERAL]).bLoading);
-            }
 
             //////////////////////////////////////////////////////////////////////////
             // Load View Settings

@@ -22,7 +22,7 @@
 #include <Cry_Geo.h>
 
 namespace Intersect {
-    inline bool Ray_Plane(const Ray& ray, const Plane& plane, Vec3& output, bool bSingleSidePlane = true)
+    inline bool Ray_Plane(const Ray& ray, const Plane_tpl<f32>& plane, Vec3& output, bool bSingleSidePlane = true)
     {
         float cosine    =   plane.n | ray.direction;
 
@@ -49,7 +49,7 @@ namespace Intersect {
         return true;        //intersection occurred
     }
 
-    inline bool Line_Plane(const Line& line, const Plane& plane, Vec3& output, bool bSingleSidePlane = true)
+    inline bool Line_Plane(const Line& line, const Plane_tpl<f32>& plane, Vec3& output, bool bSingleSidePlane = true)
     {
         float cosine        =   plane.n | line.direction;
 
