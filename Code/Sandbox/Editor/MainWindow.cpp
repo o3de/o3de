@@ -884,9 +884,6 @@ void MainWindow::InitActions()
         .SetStatusTip(tr("Restore saved state (Fetch)"));
 
     // Modify actions
-    am->AddAction(ID_EDIT_RENAMEOBJECT, tr("Rename Object(s)..."))
-        .SetStatusTip(tr("Rename Object"));
-
     am->AddAction(ID_EDITMODE_MOVE, tr("Move"))
         .SetIcon(Style::icon("Move"))
         .SetApplyHoverEffect()
