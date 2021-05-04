@@ -20,9 +20,10 @@ namespace Ui
     class GemCatalogClass;
 }
 
-namespace ProjectManager
+namespace O3de::ProjectManager
 {
-    class GemCatalog : public ScreenWidget
+    class GemCatalog
+        : public ScreenWidget
     {
 
     public:
@@ -40,4 +41,4 @@ namespace ProjectManager
         QScopedPointer<Ui::GemCatalogClass> m_ui;
     };
 
-} // namespace ProjectManager
+} // namespace O3de::ProjectManager

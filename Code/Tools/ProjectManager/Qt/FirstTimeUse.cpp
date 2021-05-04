@@ -14,7 +14,7 @@
 
 #include <Qt/ui_FirstTimeUse.h>
 
-namespace ProjectManager
+namespace O3de::ProjectManager
 {
     FirstTimeUse::FirstTimeUse(ProjectManagerWindow* window)
         : ScreenWidget(window)
@@ -44,4 +44,4 @@ namespace ProjectManager
         m_projectManagerWindow->ChangeToScreen(ProjectManagerScreen::ProjectsHome);
     }
 
-} // namespace ProjectManager
+} // namespace O3de::ProjectManager

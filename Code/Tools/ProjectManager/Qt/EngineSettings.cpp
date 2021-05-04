@@ -14,7 +14,7 @@
 
 #include <Qt/ui_EngineSettings.h>
 
-namespace ProjectManager
+namespace O3de::ProjectManager
 {
     EngineSettings::EngineSettings(ProjectManagerWindow* window)
         : ScreenWidget(window)
@@ -34,4 +34,4 @@ namespace ProjectManager
         // Do nothing for now
     }
 
-} // namespace ProjectManager
+} // namespace O3de::ProjectManager

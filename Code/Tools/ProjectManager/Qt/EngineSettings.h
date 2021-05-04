@@ -20,9 +20,10 @@ namespace Ui
     class EngineSettingsClass;
 }
 
-namespace ProjectManager
+namespace O3de::ProjectManager
 {
-    class EngineSettings : public ScreenWidget
+    class EngineSettings
+        : public ScreenWidget
     {
     public:
         explicit EngineSettings(ProjectManagerWindow* window);
@@ -35,4 +36,4 @@ namespace ProjectManager
         QScopedPointer<Ui::EngineSettingsClass> m_ui;
     };
 
-} // namespace ProjectManager
+} // namespace O3de::ProjectManager

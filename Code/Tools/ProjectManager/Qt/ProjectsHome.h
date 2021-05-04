@@ -20,9 +20,10 @@ namespace Ui
     class ProjectsHomeClass;
 }
 
-namespace ProjectManager
+namespace O3de::ProjectManager
 {
-    class ProjectsHome : public ScreenWidget
+    class ProjectsHome
+        : public ScreenWidget
     {
 
     public:
@@ -41,4 +42,4 @@ namespace ProjectManager
         QScopedPointer<Ui::ProjectsHomeClass> m_ui;
     };
 
-} // namespace ProjectManager
+} // namespace O3de::ProjectManager

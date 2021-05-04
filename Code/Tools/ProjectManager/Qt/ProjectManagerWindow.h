@@ -25,9 +25,10 @@ namespace Ui
     class ProjectManagerWindowClass;
 }
 
-namespace ProjectManager
+namespace O3de::ProjectManager
 {
-    class ProjectManagerWindow : public QMainWindow
+    class ProjectManagerWindow
+        : public QMainWindow
     {
         Q_OBJECT
 
@@ -53,4 +54,4 @@ namespace ProjectManager
         QScopedPointer<Ui::ProjectManagerWindowClass> m_ui;
     };
 
-} // namespace ProjectManager
+} // namespace O3de::ProjectManager

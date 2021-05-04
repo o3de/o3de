@@ -20,7 +20,7 @@
 
 #include <Qt/ui_ProjectManagerWindow.h>
 
-namespace ProjectManager
+namespace O3de::ProjectManager
 {
     ProjectManagerWindow::ProjectManagerWindow(QWidget* parent, const AZ::IO::PathView& engineRootPath)
         : QMainWindow(parent)
@@ -66,13 +66,13 @@ namespace ProjectManager
 
     void ProjectManagerWindow::ChangeToScreen(ProjectManagerScreen screen)
     {
-        int index = static_cast<int>(screen);
+        int index = aznumeric_cast<int, ProjectManagerScreen>(screen);
         m_ui->stackedScreens->setCurrentIndex(index);
     }
 
     void ProjectManagerWindow::ResetScreen(ProjectManagerScreen screen)
     {
-        int index = static_cast<int>(screen);
+        int index = aznumeric_cast<int, ProjectManagerScreen>(screen);
 
         // Fine the old screen if it exists and get rid of it so we can start fresh
         QWidget* oldScreen = m_ui->stackedScreens->widget(index);
@@ -103,4 +103,4 @@ namespace ProjectManager
         ChangeToScreen(ProjectManagerScreen::EngineSettings);
     }
 
-} // namespace ProjectManager
+} // namespace O3de::ProjectManager

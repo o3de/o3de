@@ -14,7 +14,7 @@
 
 #include <Qt/ui_ProjectsHome.h>
 
-namespace ProjectManager
+namespace O3de::ProjectManager
 {
     ProjectsHome::ProjectsHome(ProjectManagerWindow* window)
         : ScreenWidget(window)
@@ -49,4 +49,4 @@ namespace ProjectManager
         m_projectManagerWindow->ChangeToScreen(ProjectManagerScreen::ProjectSettings);
     }
 
-} // namespace ProjectManager
+} // namespace O3de::ProjectManager

@@ -20,9 +20,10 @@ namespace Ui
     class FirstTimeUseClass;
 }
 
-namespace ProjectManager
+namespace O3de::ProjectManager
 {
-    class FirstTimeUse : public ScreenWidget
+    class FirstTimeUse
+        : public ScreenWidget
     {
     public:
         explicit FirstTimeUse(ProjectManagerWindow* window);
@@ -39,4 +40,4 @@ namespace ProjectManager
         QScopedPointer<Ui::FirstTimeUseClass> m_ui;
     };
 
-} // namespace ProjectManager
+} // namespace O3de::ProjectManager

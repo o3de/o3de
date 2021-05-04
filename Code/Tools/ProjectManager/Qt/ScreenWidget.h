@@ -17,14 +17,15 @@
 #include <QWidget>
 #endif
 
-namespace ProjectManager
+namespace O3de::ProjectManager
 {
-    class ScreenWidget : public QWidget
+    class ScreenWidget
+        : public QWidget
     {
     public:
         explicit ScreenWidget(ProjectManagerWindow* window)
-        : QWidget(window->GetScreenStack())
-        , m_projectManagerWindow(window)
+            : QWidget(window->GetScreenStack())
+            , m_projectManagerWindow(window)
         {
         }
 
@@ -38,4 +39,4 @@ namespace ProjectManager
         ProjectManagerWindow* m_projectManagerWindow;
     };
 
-} // namespace ProjectManager
+} // namespace O3de::ProjectManager

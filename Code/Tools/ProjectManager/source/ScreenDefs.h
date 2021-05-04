@@ -11,7 +11,7 @@
  */
 #pragma once
 
-namespace ProjectManager
+namespace O3de::ProjectManager
 {
     enum class ProjectManagerScreen
     {
@@ -22,4 +22,4 @@ namespace ProjectManager
         ProjectSettings,
         EngineSettings
     };
-} // namespace ProjectManager
+} // namespace O3de::ProjectManager
