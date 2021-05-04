@@ -652,19 +652,12 @@ void CCryEditDoc::SerializeViewSettings(CXmlArchive& xmlAr)
 
             CViewport* pVP = GetIEditor()->GetViewManager()->GetView(i);
 
-            Matrix34 tm = Matrix34::CreateRotationXYZ(va);
-            tm.SetTranslation(vp);
 
             if (pVP)
             {
+                Matrix34 tm = Matrix34::CreateRotationXYZ(va);
+                tm.SetTranslation(vp);
                 pVP->SetViewTM(tm);
-            }
-
-            if (auto viewportContext = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get()->GetDefaultViewportContext())
-            {
-                AzFramework::ModernViewportCameraControllerRequestBus::Event(
-                    viewportContext->GetId(), &AzFramework::ModernViewportCameraControllerRequestBus::Events::SetTargetCameraTransform,
-                    LYTransformToAZTransform(tm));
             }
 
             // Load grid.
