@@ -23,11 +23,15 @@ from base import TestAutomationBase
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomation(TestAutomationBase):
-    
+
     def test_Docking_Pane(self, request, workspace, editor, launcher_platform):
         from . import Docking_Pane as test_module
         self._run_test(request, workspace, editor, test_module)
 
     def test_Resizing_Pane(self, request, workspace, editor, launcher_platform):
         from . import Resizing_Pane as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_NodeCategory_ExpandOnClick(self, request, workspace, editor, launcher_platform):
+        from . import NodeCategory_ExpandOnClick as test_module
         self._run_test(request, workspace, editor, test_module)
