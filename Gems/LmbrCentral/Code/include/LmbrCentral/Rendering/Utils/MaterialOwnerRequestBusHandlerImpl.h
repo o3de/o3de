@@ -12,7 +12,6 @@
 #pragma once
 
 #include <LmbrCentral/Rendering/MaterialOwnerBus.h>
-#include <LmbrCentral/Rendering/MeshComponentBus.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Math/Color.h>
 
@@ -28,8 +27,7 @@ namespace LmbrCentral
     //! This does not actually inherit the MaterialOwnerRequestBus::Handler interface because it is
     //! not intended to subscribe to that bus, but it does provide implementations for all the same functions.
     class MaterialOwnerRequestBusHandlerImpl
-        : public MeshComponentNotificationBus::Handler
-        , public AZ::TickBus::Handler
+        : public AZ::TickBus::Handler
         , public MaterialOwnerRequestBus::Handler        
     {
         using MaterialPtr = _smart_ptr < IMaterial >;
@@ -57,14 +55,7 @@ namespace LmbrCentral
 
             if (m_renderNode)
             {
-                if (!m_renderNode->IsReady())
-                {
-                    // Some material owners, in particular MeshComponents, may not be ready upon activation because the
-                    // actual mesh data and default material haven't been loaded yet. Until the RenderNode is ready,
-                    // it's material probably isn't valid.
-                    MeshComponentNotificationBus::Handler::BusConnect(entityId);
-                }
-                else
+                if (m_renderNode->IsReady())
                 {
                     // For some material owner types (like DecalComponent), the material is ready immediately. But we can't
                     // send the event yet because components are still being Activated, so we delay until the first tick.
@@ -81,7 +72,6 @@ namespace LmbrCentral
         void Deactivate()
         {
             m_notificationBus = nullptr;
-            MeshComponentNotificationBus::Handler::BusDisconnect();
             MaterialOwnerRequestBus::Handler::BusDisconnect();
             AZ::TickBus::Handler::BusDisconnect();
         }
@@ -297,16 +287,6 @@ namespace LmbrCentral
             }
 
             return value;
-        }
-        //////////////////////////////////////////////////////////////////////////
-
-        //////////////////////////////////////////////////////////////////////////
-        // MeshComponentNotificationBus interface implementation
-        void OnMeshCreated([[maybe_unused]] const AZ::Data::Asset<AZ::Data::AssetData>& asset) override
-        {
-            AZ_Assert(IsMaterialOwnerReady(), "Got OnMeshCreated but the RenderNode still isn't ready");
-            SendReadyEvent();
-            MeshComponentNotificationBus::Handler::BusDisconnect();
         }
         //////////////////////////////////////////////////////////////////////////
 

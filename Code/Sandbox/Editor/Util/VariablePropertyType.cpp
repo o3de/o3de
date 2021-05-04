@@ -49,7 +49,7 @@ namespace Prop
         { IVariable::DT_SIMPLE, "Selection", ePropertySelection, -1 },
         { IVariable::DT_SIMPLE, "List", ePropertyList, -1 },
         { IVariable::DT_SHADER, "Shader", ePropertyShader, 9 },
-        { IVariable::DT_MATERIAL, "Material", ePropertyMaterial, 14 },
+        { IVariable::DT_DEPRECATED0, "DEPRECATED", ePropertyDeprecated2, -1 },
         { IVariable::DT_EQUIP, "Equip", ePropertyEquip, 11 },
         { IVariable::DT_REVERBPRESET, "ReverbPreset", ePropertyReverbPreset, 11 },
         { IVariable::DT_LOCAL_STRING, "LocalString", ePropertyLocalString, 3 },

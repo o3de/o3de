@@ -31,7 +31,6 @@
 
 #if !defined(Q_MOC_RUN)
 #include "RenderViewport.h"
-#include "Material/Material.h"
 #include "Util/Variable.h"
 #endif
 
@@ -89,14 +88,6 @@ public:
 
 
     void UseWeaponIK([[maybe_unused]] bool val) { m_weaponIK = true; }
-
-    // Set current material to render object.
-    void SetCustomMaterial(CMaterial* pMaterial);
-    // Get custom material that object is rendered with.
-    CMaterial* GetCustomMaterial() { return m_pCurrentMaterial; };
-
-    // Get material the object is actually rendered with.
-    CMaterial* GetMaterial();
 
     void ReleaseObject();
     void RePhysicalize();
@@ -182,7 +173,6 @@ protected:
     class CRESky* m_pRESky;
     struct ICVar* m_pSkyboxName;
     IShader* m_pSkyBoxShader;
-    _smart_ptr<CMaterial> m_pCurrentMaterial;
 
     //---------------------------------------------------
     //---    debug options                            ---

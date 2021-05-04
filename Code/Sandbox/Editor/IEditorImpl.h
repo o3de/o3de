@@ -180,7 +180,6 @@ public:
     bool IsSelectionLocked();
 
     IDataBaseManager* GetDBItemManager(EDataBaseItemType itemType);
-    CMaterialManager* GetMaterialManager() { return m_pMaterialManager; }
     CMusicManager* GetMusicManager() { return m_pMusicManager; };
 
     IBackgroundTaskManager* GetBackgroundTaskManager() override;
@@ -379,7 +378,6 @@ protected:
     CAnimationContext* m_pAnimationContext;
     CTrackViewSequenceManager* m_pSequenceManager;
     CToolBoxManager* m_pToolBoxManager;
-    CMaterialManager* m_pMaterialManager;
     CAlembicCompiler* m_pAlembicCompiler;
     CMusicManager* m_pMusicManager;
     CErrorReport* m_pErrorReport;

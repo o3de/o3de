@@ -220,7 +220,7 @@ namespace EMotionFX
             //mPool->mFreeList.Reserve( numInstances * 2 );
             if (mPool->mFreeList.GetMaxLength() < mPool->mNumInstances)
             {
-                mPool->mFreeList.Reserve(mPool->mNumInstances);
+                mPool->mFreeList.Reserve(mPool->mNumInstances + mPool->mFreeList.GetMaxLength() / 2);
             }
 
             mPool->mFreeList.ResizeFast(startIndex + numInstances);
