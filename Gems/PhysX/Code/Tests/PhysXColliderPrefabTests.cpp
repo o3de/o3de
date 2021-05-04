@@ -96,8 +96,6 @@ namespace PhysX
 
         EXPECT_EQ(AZ::JsonSerializationResult::Processing::Completed, result.GetProcessing());
         EXPECT_NE(nullptr, shapeConfigPtr);
-
-        
     }
 
     TEST_F(PhysXColliderPrefabTests, StoreAndLoad_NonDefaultPhysicsTypes_PointersNotNull)
