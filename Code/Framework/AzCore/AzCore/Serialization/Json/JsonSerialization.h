@@ -49,6 +49,9 @@ namespace AZ
     //! Note on pointers: The Json Serialization assumes that are always constructed, so a default JSON value of "{}" is interpret as
     //!     creating a new default instance even if the default value is a null pointer. A JSON Null needs to be explicitly stored in
     //!     the JSON Document in order to default or explicitly set a pointer to null.
+    //! Note on pointer memory: Objects created/destroyed by the Json Serialization for pointers require that the AZ_CLASS_ALLOCATOR is
+    //!     declared and the object is created using aznew or memory is allocated using azmalloc. Without these the application may
+    //!     crash if the Json Serialization tries to create or destroy an object pointed to by a pointer.
     class JsonSerialization final
     {
     public:
