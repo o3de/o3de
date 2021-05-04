@@ -45,6 +45,7 @@
 
 #include <Atom/Window/MaterialEditorWindowModule.h>
 #include <Atom/Window/MaterialEditorWindowFactoryRequestBus.h>
+#include <Atom/Window/MaterialEditorWindowRequestBus.h>
 #include <AzCore/Utils/Utils.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
@@ -309,6 +310,13 @@ namespace MaterialEditor
 
     void MaterialEditorApplication::ProcessCommandLine(const AZ::CommandLine& commandLine)
     {
+        const AZStd::string activateWindowSwitchName = "activatewindow";
+        if (commandLine.HasSwitch(activateWindowSwitchName))
+        {
+            MaterialEditor::MaterialEditorWindowRequestBus::Broadcast(
+                &MaterialEditor::MaterialEditorWindowRequestBus::Handler::ActivateWindow);
+        }
+
         const AZStd::string timeoputSwitchName = "timeout";
         if (commandLine.HasSwitch(timeoputSwitchName))
         {
@@ -438,6 +446,10 @@ namespace MaterialEditor
             // Handle commmand line params from connected socket
             if (buffer.startsWith("ProcessCommandLine:"))
             {
+                // Bring the material editor to the foreground
+                MaterialEditor::MaterialEditorWindowRequestBus::Broadcast(
+                    &MaterialEditor::MaterialEditorWindowRequestBus::Handler::ActivateWindow);
+
                 // Remove header and parse commands
                 AZStd::string params(buffer.data(), buffer.size());
                 params = params.substr(strlen("ProcessCommandLine:"));
