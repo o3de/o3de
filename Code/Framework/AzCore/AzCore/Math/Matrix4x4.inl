@@ -773,4 +773,10 @@ namespace AZ
         lhs = lhs * rhs;
         return lhs;
     }
-}
+
+
+    AZ_MATH_INLINE Matrix4x4 operator*(float lhs, const Matrix4x4& rhs)
+    {
+        return rhs * lhs;
+    }
+} // namespace AZ

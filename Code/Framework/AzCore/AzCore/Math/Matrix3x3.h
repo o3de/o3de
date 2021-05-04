@@ -264,7 +264,9 @@ namespace AZ
     //! Note that this is not the usual multiplication order for transformations.
     Vector3& operator*=(Vector3& lhs, const Matrix3x3& rhs);
 
+    //! Pre-multiplies the matrix by a scalar.
     Matrix3x3 operator*(float lhs, const Matrix3x3& rhs);
-}
+
+} // namespace AZ
 
 #include <AzCore/Math/Matrix3x3.inl>

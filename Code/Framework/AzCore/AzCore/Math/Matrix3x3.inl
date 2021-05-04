@@ -708,8 +708,6 @@ namespace AZ
 
     AZ_MATH_INLINE Matrix3x3 operator*(float lhs, const Matrix3x3& rhs)
     {
-        const Simd::Vec3::FloatType lhsVec = Simd::Vec3::Splat(lhs);
-        const Simd::Vec3::FloatType* rows = rhs.GetSimdValues();
-        return Matrix3x3(Simd::Vec3::Mul(lhsVec, rows[0]), Simd::Vec3::Mul(lhsVec, rows[1]), Simd::Vec3::Mul(lhsVec, rows[2]));
+        return rhs * lhs;
     }
-}
+} // namespace AZ

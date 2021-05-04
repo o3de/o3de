@@ -760,4 +760,10 @@ namespace AZ
     {
         return reinterpret_cast<Simd::Vec4::FloatType*>(m_rows);
     }
+
+
+    AZ_MATH_INLINE Matrix3x4 operator*(float lhs, const Matrix3x4& rhs)
+    {
+        return rhs * lhs;
+    }
 } // namespace AZ

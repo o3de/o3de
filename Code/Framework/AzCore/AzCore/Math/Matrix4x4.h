@@ -300,6 +300,10 @@ namespace AZ
     //! Pre-multiplies the matrix by a vector in-place.
     //! Note that this is not the usual multiplication order for transformations.
     Vector4& operator*=(Vector4& lhs, const Matrix4x4& rhs);
-}
+
+    //! Pre-multiplies the matrix by a scalar.
+    Matrix4x4 operator*(float lhs, const Matrix4x4& rhs);
+
+} // namespace AZ
 
 #include <AzCore/Math/Matrix4x4.inl>

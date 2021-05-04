@@ -368,6 +368,10 @@ namespace AZ
 
         Vector4 m_rows[RowCount];
     };
+
+    //! Pre-multiplies the matrix by a scalar.
+    Matrix3x4 operator*(float lhs, const Matrix3x4& rhs);
+
 } // namespace AZ
 
 #include <AzCore/Math/Matrix3x4.inl>
