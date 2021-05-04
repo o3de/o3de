@@ -11,7 +11,7 @@
                 0.29372090101242068,
                 1.0
             ],
-            "textureMap": "Objects/Lucy/Lucy_brass_baseColor.tif",
+            "textureMap": "Objects/Lucy/Lucy_bronze_BaseColor.png",
             "useTexture": false
         },
         "detailLayerGroup": {
@@ -30,7 +30,7 @@
         },
         "normal": {
             "flipY": true,
-            "textureMap": "Objects/Lucy/Lucy_normal.tif"
+            "textureMap": "Objects/Lucy/Lucy_normal.png"
         },
         "subsurfaceScattering": {
             "enableSubsurfaceScattering": true,
