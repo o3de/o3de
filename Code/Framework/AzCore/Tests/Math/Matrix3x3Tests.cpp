@@ -14,6 +14,7 @@
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AZTestShared/Math/MathTestHelpers.h>
 
 using namespace AZ;
 
@@ -251,19 +252,19 @@ namespace UnitTest
         m2.SetRow(2, 13.0f, 14.0f, 15.0f);
 
         Matrix3x3 m3 = m1 * m2;
-        AZ_TEST_ASSERT(m3.GetRow(0).IsClose(Vector3(66.0f, 72.0f, 78.0f)));
-        AZ_TEST_ASSERT(m3.GetRow(1).IsClose(Vector3(156.0f, 171.0f, 186.0f)));
-        AZ_TEST_ASSERT(m3.GetRow(2).IsClose(Vector3(246.0f, 270.0f, 294.0f)));
+        EXPECT_THAT(m3.GetRow(0), IsClose(Vector3(66.0f, 72.0f, 78.0f)));
+        EXPECT_THAT(m3.GetRow(1), IsClose(Vector3(156.0f, 171.0f, 186.0f)));
+        EXPECT_THAT(m3.GetRow(2), IsClose(Vector3(246.0f, 270.0f, 294.0f)));
 
         Matrix3x3 m4 = m1;
         m4 *= m2;
-        AZ_TEST_ASSERT(m4.GetRow(0).IsClose(Vector3(66.0f, 72.0f, 78.0f)));
-        AZ_TEST_ASSERT(m4.GetRow(1).IsClose(Vector3(156.0f, 171.0f, 186.0f)));
-        AZ_TEST_ASSERT(m4.GetRow(2).IsClose(Vector3(246.0f, 270.0f, 294.0f)));
+        EXPECT_THAT(m4.GetRow(0), IsClose(Vector3(66.0f, 72.0f, 78.0f)));
+        EXPECT_THAT(m4.GetRow(1), IsClose(Vector3(156.0f, 171.0f, 186.0f)));
+        EXPECT_THAT(m4.GetRow(2), IsClose(Vector3(246.0f, 270.0f, 294.0f)));
         m3 = m1.TransposedMultiply(m2);
-        AZ_TEST_ASSERT(m3.GetRow(0).IsClose(Vector3(138.0f, 150.0f, 162.0f)));
-        AZ_TEST_ASSERT(m3.GetRow(1).IsClose(Vector3(168.0f, 183.0f, 198.0f)));
-        AZ_TEST_ASSERT(m3.GetRow(2).IsClose(Vector3(198.0f, 216.0f, 234.0f)));
+        EXPECT_THAT(m3.GetRow(0), IsClose(Vector3(138.0f, 150.0f, 162.0f)));
+        EXPECT_THAT(m3.GetRow(1), IsClose(Vector3(168.0f, 183.0f, 198.0f)));
+        EXPECT_THAT(m3.GetRow(2), IsClose(Vector3(198.0f, 216.0f, 234.0f)));
     }
 
     TEST(MATH_Matrix3x3, TestVectorMultiplication)
@@ -277,11 +278,11 @@ namespace UnitTest
         m2.SetRow(1, 10.0f, 11.0f, 12.0f);
         m2.SetRow(2, 13.0f, 14.0f, 15.0f);
 
-        AZ_TEST_ASSERT((m1 * Vector3(1.0f, 2.0f, 3.0f)).IsClose(Vector3(14.0f, 32.0f, 50.0f)));
+        EXPECT_THAT((m1 * Vector3(1.0f, 2.0f, 3.0f)), IsClose(Vector3(14.0f, 32.0f, 50.0f)));
         Vector3 v1(1.0f, 2.0f, 3.0f);
-        AZ_TEST_ASSERT((v1 * m1).IsClose(Vector3(30.0f, 36.0f, 42.0f)));
+        EXPECT_THAT((v1 * m1), IsClose(Vector3(30.0f, 36.0f, 42.0f)));
         v1 *= m1;
-        AZ_TEST_ASSERT(v1.IsClose(Vector3(30.0f, 36.0f, 42.0f)));
+        EXPECT_THAT(v1, IsClose(Vector3(30.0f, 36.0f, 42.0f)));
     }
 
     TEST(MATH_Matrix3x3, TestSum)
@@ -296,15 +297,15 @@ namespace UnitTest
         m2.SetRow(2, 13.0f, 14.0f, 15.0f);
 
         Matrix3x3 m3 = m1 + m2;
-        AZ_TEST_ASSERT(m3.GetRow(0).IsClose(Vector3(8.0f, 10.0f, 12.0f)));
-        AZ_TEST_ASSERT(m3.GetRow(1).IsClose(Vector3(14.0f, 16.0f, 18.0f)));
-        AZ_TEST_ASSERT(m3.GetRow(2).IsClose(Vector3(20.0f, 22.0f, 24.0f)));
+        EXPECT_THAT(m3.GetRow(0), IsClose(Vector3(8.0f, 10.0f, 12.0f)));
+        EXPECT_THAT(m3.GetRow(1), IsClose(Vector3(14.0f, 16.0f, 18.0f)));
+        EXPECT_THAT(m3.GetRow(2), IsClose(Vector3(20.0f, 22.0f, 24.0f)));
 
         m3 = m1;
         m3 += m2;
-        AZ_TEST_ASSERT(m3.GetRow(0).IsClose(Vector3(8.0f, 10.0f, 12.0f)));
-        AZ_TEST_ASSERT(m3.GetRow(1).IsClose(Vector3(14.0f, 16.0f, 18.0f)));
-        AZ_TEST_ASSERT(m3.GetRow(2).IsClose(Vector3(20.0f, 22.0f, 24.0f)));
+        EXPECT_THAT(m3.GetRow(0), IsClose(Vector3(8.0f, 10.0f, 12.0f)));
+        EXPECT_THAT(m3.GetRow(1), IsClose(Vector3(14.0f, 16.0f, 18.0f)));
+        EXPECT_THAT(m3.GetRow(2), IsClose(Vector3(20.0f, 22.0f, 24.0f)));
     }
 
     TEST(MATH_Matrix3x3, TestDifference)
@@ -319,14 +320,14 @@ namespace UnitTest
         m2.SetRow(2, 13.0f, 14.0f, 15.0f);
 
         Matrix3x3 m3 = m1 - m2;
-        AZ_TEST_ASSERT(m3.GetRow(0).IsClose(Vector3(-6.0f, -6.0f, -6.0f)));
-        AZ_TEST_ASSERT(m3.GetRow(1).IsClose(Vector3(-6.0f, -6.0f, -6.0f)));
-        AZ_TEST_ASSERT(m3.GetRow(2).IsClose(Vector3(-6.0f, -6.0f, -6.0f)));
+        EXPECT_THAT(m3.GetRow(0), IsClose(Vector3(-6.0f, -6.0f, -6.0f)));
+        EXPECT_THAT(m3.GetRow(1), IsClose(Vector3(-6.0f, -6.0f, -6.0f)));
+        EXPECT_THAT(m3.GetRow(2), IsClose(Vector3(-6.0f, -6.0f, -6.0f)));
         m3 = m1;
         m3 -= m2;
-        AZ_TEST_ASSERT(m3.GetRow(0).IsClose(Vector3(-6.0f, -6.0f, -6.0f)));
-        AZ_TEST_ASSERT(m3.GetRow(1).IsClose(Vector3(-6.0f, -6.0f, -6.0f)));
-        AZ_TEST_ASSERT(m3.GetRow(2).IsClose(Vector3(-6.0f, -6.0f, -6.0f)));
+        EXPECT_THAT(m3.GetRow(0), IsClose(Vector3(-6.0f, -6.0f, -6.0f)));
+        EXPECT_THAT(m3.GetRow(1), IsClose(Vector3(-6.0f, -6.0f, -6.0f)));
+        EXPECT_THAT(m3.GetRow(2), IsClose(Vector3(-6.0f, -6.0f, -6.0f)));
     }
 
     TEST(MATH_Matrix3x3, TestScalarMultiplication)
@@ -341,18 +342,18 @@ namespace UnitTest
         m2.SetRow(2, 13.0f, 14.0f, 15.0f);
 
         Matrix3x3 m3 = m1 * 2.0f;
-        AZ_TEST_ASSERT(m3.GetRow(0).IsClose(Vector3(2.0f, 4.0f, 6.0f)));
-        AZ_TEST_ASSERT(m3.GetRow(1).IsClose(Vector3(8.0f, 10.0f, 12.0f)));
-        AZ_TEST_ASSERT(m3.GetRow(2).IsClose(Vector3(14.0f, 16.0f, 18.0f)));
+        EXPECT_THAT(m3.GetRow(0), IsClose(Vector3(2.0f, 4.0f, 6.0f)));
+        EXPECT_THAT(m3.GetRow(1), IsClose(Vector3(8.0f, 10.0f, 12.0f)));
+        EXPECT_THAT(m3.GetRow(2), IsClose(Vector3(14.0f, 16.0f, 18.0f)));
         m3 = m1;
         m3 *= 2.0f;
-        AZ_TEST_ASSERT(m3.GetRow(0).IsClose(Vector3(2.0f, 4.0f, 6.0f)));
-        AZ_TEST_ASSERT(m3.GetRow(1).IsClose(Vector3(8.0f, 10.0f, 12.0f)));
-        AZ_TEST_ASSERT(m3.GetRow(2).IsClose(Vector3(14.0f, 16.0f, 18.0f)));
+        EXPECT_THAT(m3.GetRow(0), IsClose(Vector3(2.0f, 4.0f, 6.0f)));
+        EXPECT_THAT(m3.GetRow(1), IsClose(Vector3(8.0f, 10.0f, 12.0f)));
+        EXPECT_THAT(m3.GetRow(2), IsClose(Vector3(14.0f, 16.0f, 18.0f)));
         m3 = 2.0f * m1;
-        AZ_TEST_ASSERT(m3.GetRow(0).IsClose(Vector3(2.0f, 4.0f, 6.0f)));
-        AZ_TEST_ASSERT(m3.GetRow(1).IsClose(Vector3(8.0f, 10.0f, 12.0f)));
-        AZ_TEST_ASSERT(m3.GetRow(2).IsClose(Vector3(14.0f, 16.0f, 18.0f)));
+        EXPECT_THAT(m3.GetRow(0), IsClose(Vector3(2.0f, 4.0f, 6.0f)));
+        EXPECT_THAT(m3.GetRow(1), IsClose(Vector3(8.0f, 10.0f, 12.0f)));
+        EXPECT_THAT(m3.GetRow(2), IsClose(Vector3(14.0f, 16.0f, 18.0f)));
     }
 
     TEST(MATH_Matrix3x3, TestScalarDivision)
@@ -367,18 +368,32 @@ namespace UnitTest
         m2.SetRow(2, 13.0f, 14.0f, 15.0f);
 
         Matrix3x3 m3 = m1 / 0.5f;
-        AZ_TEST_ASSERT(m3.GetRow(0).IsClose(Vector3(2.0f, 4.0f, 6.0f)));
-        AZ_TEST_ASSERT(m3.GetRow(1).IsClose(Vector3(8.0f, 10.0f, 12.0f)));
-        AZ_TEST_ASSERT(m3.GetRow(2).IsClose(Vector3(14.0f, 16.0f, 18.0f)));
+        EXPECT_THAT(m3.GetRow(0), IsClose(Vector3(2.0f, 4.0f, 6.0f)));
+        EXPECT_THAT(m3.GetRow(1), IsClose(Vector3(8.0f, 10.0f, 12.0f)));
+        EXPECT_THAT(m3.GetRow(2), IsClose(Vector3(14.0f, 16.0f, 18.0f)));
         m3 = m1;
         m3 /= 0.5f;
-        AZ_TEST_ASSERT(m3.GetRow(0).IsClose(Vector3(2.0f, 4.0f, 6.0f)));
-        AZ_TEST_ASSERT(m3.GetRow(1).IsClose(Vector3(8.0f, 10.0f, 12.0f)));
-        AZ_TEST_ASSERT(m3.GetRow(2).IsClose(Vector3(14.0f, 16.0f, 18.0f)));
-        m3 = -m1;
-        AZ_TEST_ASSERT(m3.GetRow(0).IsClose(Vector3(-1.0f, -2.0f, -3.0f)));
-        AZ_TEST_ASSERT(m3.GetRow(1).IsClose(Vector3(-4.0f, -5.0f, -6.0f)));
-        AZ_TEST_ASSERT(m3.GetRow(2).IsClose(Vector3(-7.0f, -8.0f, -9.0f)));
+        EXPECT_THAT(m3.GetRow(0), IsClose(Vector3(2.0f, 4.0f, 6.0f)));
+        EXPECT_THAT(m3.GetRow(1), IsClose(Vector3(8.0f, 10.0f, 12.0f)));
+        EXPECT_THAT(m3.GetRow(2), IsClose(Vector3(14.0f, 16.0f, 18.0f)));
+    }
+
+    TEST(MATH_Matrix3x3, TestNegation)
+    {
+        Matrix3x3 m1;
+        m1.SetRow(0, 1.0f, 2.0f, 3.0f);
+        m1.SetRow(1, 4.0f, 5.0f, 6.0f);
+        m1.SetRow(2, 7.0f, 8.0f, 9.0f);
+        EXPECT_THAT(-(-m1), IsClose(m1));
+        EXPECT_THAT(-Matrix3x3::CreateZero(), IsClose(Matrix3x3::CreateZero()));
+
+        Matrix3x3 m2 = -m1;
+        EXPECT_THAT(m2.GetRow(0), IsClose(Vector3(-1.0f, -2.0f, -3.0f)));
+        EXPECT_THAT(m2.GetRow(1), IsClose(Vector3(-4.0f, -5.0f, -6.0f)));
+        EXPECT_THAT(m2.GetRow(2), IsClose(Vector3(-7.0f, -8.0f, -9.0f)));
+
+        Matrix3x3 m3 = m1 + (-m1);
+        EXPECT_THAT(m3, IsClose(Matrix3x3::CreateZero()));
     }
 
     TEST(MATH_Matrix3x3, TestTranspose)
@@ -425,11 +440,33 @@ namespace UnitTest
     TEST(MATH_Matrix3x3, TestScaleAccess)
     {
         Matrix3x3 m1 = Matrix3x3::CreateRotationX(DegToRad(40.0f)) * Matrix3x3::CreateScale(Vector3(2.0f, 3.0f, 4.0f));
-        AZ_TEST_ASSERT(m1.RetrieveScale().IsClose(Vector3(2.0f, 3.0f, 4.0f)));
-        AZ_TEST_ASSERT(m1.ExtractScale().IsClose(Vector3(2.0f, 3.0f, 4.0f)));
-        AZ_TEST_ASSERT(m1.RetrieveScale().IsClose(Vector3::CreateOne()));
+        EXPECT_THAT(m1.RetrieveScale(), IsClose(Vector3(2.0f, 3.0f, 4.0f)));
+        EXPECT_THAT(m1.ExtractScale(), IsClose(Vector3(2.0f, 3.0f, 4.0f)));
+        EXPECT_THAT(m1.RetrieveScale(), IsClose(Vector3::CreateOne()));
         m1.MultiplyByScale(Vector3(3.0f, 4.0f, 5.0f));
-        AZ_TEST_ASSERT(m1.RetrieveScale().IsClose(Vector3(3.0f, 4.0f, 5.0f)));
+        EXPECT_THAT(m1.RetrieveScale(), IsClose(Vector3(3.0f, 4.0f, 5.0f)));
+    }
+
+    TEST(MATH_Matrix3x3, TestScaleSqAccess)
+    {
+        Matrix3x3 m1 = Matrix3x3::CreateRotationX(DegToRad(40.0f)) * Matrix3x3::CreateScale(Vector3(2.0f, 3.0f, 4.0f));
+        EXPECT_THAT(m1.RetrieveScaleSq(), IsClose(Vector3(4.0f, 9.0f, 16.0f)));
+        m1.ExtractScale();
+        EXPECT_THAT(m1.RetrieveScaleSq(), IsClose(Vector3::CreateOne()));
+        m1.MultiplyByScale(Vector3(3.0f, 4.0f, 5.0f));
+        EXPECT_THAT(m1.RetrieveScaleSq(), IsClose(Vector3(9.0f, 16.0f, 25.0f)));
+    }
+
+    TEST(MATH_Matrix3x3, TestReciprocalScaled)
+    {
+        Matrix3x3 orthogonalMatrix = Matrix3x3::CreateRotationX(DegToRad(40.0f));
+        EXPECT_THAT(orthogonalMatrix.GetReciprocalScaled(), IsClose(orthogonalMatrix));
+        const AZ::Vector3 scale(2.8f, 0.7f, 1.3f);
+        AZ::Matrix3x3 scaledMatrix = orthogonalMatrix;
+        scaledMatrix.MultiplyByScale(scale);
+        AZ::Matrix3x3 reciprocalScaledMatrix = orthogonalMatrix;
+        reciprocalScaledMatrix.MultiplyByScale(scale.GetReciprocal());
+        EXPECT_THAT(scaledMatrix.GetReciprocalScaled(), IsClose(reciprocalScaledMatrix));
     }
 
     TEST(MATH_Matrix3x3, TestPolarDecomposition)
