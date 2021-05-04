@@ -30,6 +30,7 @@ namespace AssetBundler
 {
 
     extern const char* DateTimeFormat;
+    extern const char* ReadOnlyFileErrorMessage;
 
     //! Provides an abstract model that can be subclassed to create table models used to store information about files found on-disk.
     class AssetBundlerAbstractFileTableModel

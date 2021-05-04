@@ -20,6 +20,7 @@
 namespace AssetBundler
 {
     const char* DateTimeFormat = "hh:mm:ss MMM dd, yyyy";
+    const char* ReadOnlyFileErrorMessage = "File (%s) is Read-Only. Please check your version control and try again.";
 
     AssetBundlerAbstractFileTableModel::AssetBundlerAbstractFileTableModel(QObject* parent)
         : QAbstractTableModel(parent)

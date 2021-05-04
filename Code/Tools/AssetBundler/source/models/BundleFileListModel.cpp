@@ -73,15 +73,15 @@ namespace AssetBundler
         {
             if (AZ::IO::FileIOBase::GetInstance()->IsReadOnly(absolutePath))
             {
-                AZ_Error(AssetBundler::AppWindowName, false,
-                    "File (%s) is Read-Only. Please check your version control and try again.", absolutePath);
+                AZ_Error(AssetBundler::AppWindowName, false, ReadOnlyFileErrorMessage, absolutePath);
                 return false;
             }
 
             auto deleteResult = AZ::IO::FileIOBase::GetInstance()->Remove(absolutePath);
             if (!deleteResult)
             {
-                AZ_Error(AssetBundler::AppWindowName, false, "Unable to delete: %s", absolutePath);
+                AZ_Error(AssetBundler::AppWindowName, false,
+                    "Unable to delete (%s). Result code: %u", absolutePath, deleteResult.GetResultCode());
                 return false;
             }
         }

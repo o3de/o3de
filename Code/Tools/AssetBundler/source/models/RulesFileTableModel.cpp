@@ -119,15 +119,16 @@ namespace AssetBundler
         // Remove file from disk
         if (AZ::IO::FileIOBase::GetInstance()->IsReadOnly(rulesFileInfo->m_absolutePath.c_str()))
         {
-            AZ_Error(AssetBundler::AppWindowName, false,
-                "File (%s) is Read-Only. Please check your version control and try again.", rulesFileInfo->m_absolutePath.c_str());
+            AZ_Error(AssetBundler::AppWindowName, false, ReadOnlyFileErrorMessage, rulesFileInfo->m_absolutePath.c_str());
             return false;
         }
 
         auto deleteResult = AZ::IO::FileIOBase::GetInstance()->Remove(rulesFileInfo->m_absolutePath.c_str());
         if (!deleteResult)
         {
-            AZ_Error(AssetBundler::AppWindowName, false, "Unable to delete: %s", rulesFileInfo->m_absolutePath.c_str());
+            AZ_Error(AssetBundler::AppWindowName, false,
+                "Unable to delete (%s). Result code: %u", rulesFileInfo->m_absolutePath.c_str(),
+                deleteResult.GetResultCode());
             return false;
         }
 
