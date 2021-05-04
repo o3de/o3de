@@ -102,7 +102,6 @@ AZ_POP_DISABLE_WARNING
 #include "ModelViewport.h"
 #include "FileTypeUtils.h"
 #include "PluginManager.h"
-#include "Material/MaterialManager.h"
 
 #include "IEditorImpl.h"
 #include "StartupLogoDialog.h"
@@ -456,9 +455,6 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_CHANGEMOVESPEED_INCREASE, OnChangemovespeedIncrease)
     ON_COMMAND(ID_CHANGEMOVESPEED_DECREASE, OnChangemovespeedDecrease)
     ON_COMMAND(ID_CHANGEMOVESPEED_CHANGESTEP, OnChangemovespeedChangestep)
-    ON_COMMAND(ID_MATERIAL_ASSIGNCURRENT, OnMaterialAssigncurrent)
-    ON_COMMAND(ID_MATERIAL_RESETTODEFAULT, OnMaterialResettodefault)
-    ON_COMMAND(ID_MATERIAL_GETMATERIAL, OnMaterialGetmaterial)
     ON_COMMAND(ID_FILE_SAVELEVELRESOURCES, OnFileSavelevelresources)
     ON_COMMAND(ID_CLEAR_REGISTRY, OnClearRegistryData)
     ON_COMMAND(ID_VALIDATELEVEL, OnValidatelevel)
@@ -4175,25 +4171,6 @@ void CCryEditApp::OnSwitchcameraNext()
     {
         rvp->CycleCamera();
     }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnMaterialAssigncurrent()
-{
-    CUndo undo("Assign Material To Selection");
-    GetIEditor()->GetMaterialManager()->Command_AssignToSelection();
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnMaterialResettodefault()
-{
-    GetIEditor()->GetMaterialManager()->Command_ResetSelection();
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnMaterialGetmaterial()
-{
-    GetIEditor()->GetMaterialManager()->Command_SelectFromObject();
 }
 
 //////////////////////////////////////////////////////////////////////////

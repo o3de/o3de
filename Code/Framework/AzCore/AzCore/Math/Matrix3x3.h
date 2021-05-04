@@ -142,27 +142,44 @@ namespace AZ
         void SetBasis(const Vector3& basisX, const Vector3& basisY, const Vector3& basisZ);
         //! @}
 
-        Matrix3x3 operator*(const Matrix3x3& rhs) const;
-
         //! Calculates (this->GetTranspose() * rhs).
         Matrix3x3 TransposedMultiply(const Matrix3x3& rhs) const;
 
         //! Post-multiplies the matrix by a vector.
         Vector3 operator*(const Vector3& rhs) const;
 
-        Matrix3x3 operator+(const Matrix3x3& rhs) const;
-        Matrix3x3 operator-(const Matrix3x3& rhs) const;
-
-        Matrix3x3 operator*(float multiplier) const;
-        Matrix3x3 operator/(float divisor) const;
-
-        Matrix3x3 operator-() const;
-
-        Matrix3x3& operator*=(const Matrix3x3& rhs);
+        //! Operator for matrix-matrix addition.
+        //! @{
+        [[nodiscard]] Matrix3x3 operator+(const Matrix3x3& rhs) const;
         Matrix3x3& operator+=(const Matrix3x3& rhs);
+        //! @}
+
+        //! Operator for matrix-matrix substraction.
+        //! @{
+        [[nodiscard]] Matrix3x3 operator-(const Matrix3x3& rhs) const;
         Matrix3x3& operator-=(const Matrix3x3& rhs);
+        //! @}
+
+        //! Operator for matrix-matrix multiplication.
+        //! @{
+        [[nodiscard]] Matrix3x3 operator*(const Matrix3x3& rhs) const;
+        Matrix3x3& operator*=(const Matrix3x3& rhs);
+        //! @}
+
+        //! Operator for multiplying all matrix's elements with a scalar
+        //! @{
+        [[nodiscard]] Matrix3x3 operator*(float multiplier) const;
         Matrix3x3& operator*=(float multiplier);
+        //! @}
+
+        //! Operator for dividing all matrix's elements with a scalar
+        //! @{
+        [[nodiscard]] Matrix3x3 operator/(float divisor) const;
         Matrix3x3& operator/=(float divisor);
+        //! @}
+
+        //! Operator for negating all matrix's elements
+        [[nodiscard]] Matrix3x3 operator-() const;
 
         bool operator==(const Matrix3x3& rhs) const;
         bool operator!=(const Matrix3x3& rhs) const;
@@ -187,13 +204,19 @@ namespace AZ
         //! @}
 
         //! Gets the scale part of the transformation, i.e. the length of the scale components.
-        Vector3 RetrieveScale() const;
+        [[nodiscard]] Vector3 RetrieveScale() const;
+
+        //! Gets the squared scale part of the transformation (the squared length of the basis vectors).
+        [[nodiscard]] Vector3 RetrieveScaleSq() const;
 
         //! Gets the scale part of the transformation as in RetrieveScale, and also removes this scaling from the matrix.
         Vector3 ExtractScale();
 
         //! Quick multiplication by a scale matrix, equivalent to m*=Matrix3x3::CreateScale(scale).
         void MultiplyByScale(const Vector3& scale);
+
+        //! Returns a matrix with the reciprocal scale, keeping the same rotation and translation.
+        [[nodiscard]] Matrix3x3 GetReciprocalScaled() const;
 
         //! Polar decomposition, M=U*H, U is orthogonal (unitary) and H is symmetric (hermitian).
         //! This function returns the orthogonal part only
@@ -241,7 +264,9 @@ namespace AZ
     //! Note that this is not the usual multiplication order for transformations.
     Vector3& operator*=(Vector3& lhs, const Matrix3x3& rhs);
 
+    //! Pre-multiplies the matrix by a scalar.
     Matrix3x3 operator*(float lhs, const Matrix3x3& rhs);
-}
+
+} // namespace AZ
 
 #include <AzCore/Math/Matrix3x3.inl>

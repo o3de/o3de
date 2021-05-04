@@ -663,8 +663,9 @@ namespace AzToolsFramework
             newLink.SetSourceTemplateId(linkSourceId);
             newLink.SetInstanceName(instanceAlias.c_str());
             newLink.GetLinkDom().SetObject();
-            newLink.GetLinkDom().AddMember(rapidjson::StringRef(PrefabDomUtils::SourceName),
-                rapidjson::StringRef(sourceTemplate.GetFilePath().c_str()), newLink.GetLinkDom().GetAllocator());
+            newLink.GetLinkDom().AddMember(
+                rapidjson::StringRef(PrefabDomUtils::SourceName), rapidjson::StringRef(sourceTemplate.GetFilePath().c_str()),
+                newLink.GetLinkDom().GetAllocator());
 
             if (linkPatch && linkPatch->get().IsArray() && !(linkPatch->get().Empty()))
             {

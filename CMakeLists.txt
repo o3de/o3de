@@ -127,5 +127,5 @@ if(NOT INSTALLED_ENGINE)
     ly_setup_o3de_install()
 
     # IMPORTANT: must be included last
-    include(cmake/CPack.cmake)
+    include(cmake/Packaging.cmake)
 endif()

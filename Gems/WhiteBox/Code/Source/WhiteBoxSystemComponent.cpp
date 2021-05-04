@@ -19,7 +19,6 @@
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzFramework/API/AtomActiveInterface.h>
 
 namespace WhiteBox
 {
@@ -63,12 +62,7 @@ namespace WhiteBox
         SetRenderMeshInterfaceBuilder(
             []() -> AZStd::unique_ptr<RenderMeshInterface>
             {
-                if (AZ::Interface<AzFramework::AtomActiveInterface>::Get())
-                {
-                    return AZStd::make_unique<AtomRenderMesh>();
-                }
-
-                return AZStd::make_unique<LegacyRenderMesh>();
+                return AZStd::make_unique<AtomRenderMesh>();
             });
 
         WhiteBoxRequestBus::Handler::BusConnect();
