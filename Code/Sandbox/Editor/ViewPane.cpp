@@ -33,7 +33,6 @@
 
 // AzFramework
 #include <AzFramework/StringFunc/StringFunc.h>
-#include <AzFramework/API/AtomActiveInterface.h>
 #include <AzCore/Interface/Interface.h>
 
 // Editor

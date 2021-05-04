@@ -40,7 +40,6 @@
 #   include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
 #endif // defined(AZ_PLATFORM_WINDOWS)
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>                   // for AzFramework::InputDeviceMouse
-#include <AzFramework/API/AtomActiveInterface.h>
 #include <AzFramework/Viewport/ViewportControllerList.h>
 
 // AzQtComponents

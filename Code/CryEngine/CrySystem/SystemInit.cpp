@@ -68,7 +68,6 @@
 #include <LyShine/Bus/UiSystemBus.h>
 #include <AzFramework/Logging/MissingAssetLogger.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
-#include <AzFramework/API/AtomActiveInterface.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Utils/Utils.h>
 
@@ -2462,21 +2461,6 @@ AZ_POP_DISABLE_WARNING
 
                     m_env.pRenderer->SetViewport(0, 0, screenWidth, screenHeight);
 
-                    // Skip splash screen rendering
-                    if (!AZ::Interface<AzFramework::AtomActiveInterface>::Get())
-                    {
-                        // make sure it's rendered in full screen mode when triple buffering is enabled as well
-                        for (size_t n = 0; n < 3; n++)
-                        {
-                            m_env.pRenderer->BeginFrame();
-                            m_env.pRenderer->SetCullMode(R_CULL_NONE);
-                            m_env.pRenderer->SetState(GS_BLSRC_SRCALPHA | GS_BLDST_ONEMINUSSRCALPHA | GS_NODEPTHTEST);
-                            m_env.pRenderer->Draw2dImageStretchMode(true);
-                            m_env.pRenderer->Draw2dImage(x * vx, y * vy, w * vx, h * vy, pTex->GetTextureID(), 0.0f, 1.0f, 1.0f, 0.0f);
-                            m_env.pRenderer->Draw2dImageStretchMode(false);
-                            m_env.pRenderer->EndFrame();
-                        }
-                    }
 #if defined(AZ_PLATFORM_IOS) || defined(AZ_PLATFORM_MAC)
                     // Pump system events in order to update the screen
                     AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::PumpSystemEventLoopUntilEmpty);
