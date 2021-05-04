@@ -43,7 +43,6 @@
 #include <AzToolsFramework/ToolsComponents/EditorEntityIconComponentBus.h>
 #include <AzToolsFramework/Undo/UndoCacheInterface.h>
 #include <LmbrCentral/Rendering/RenderNodeBus.h>
-#include <LmbrCentral/Rendering/MeshComponentBus.h>
 #include <LmbrCentral/Rendering/MaterialOwnerBus.h>
 
 #include <IDisplayViewport.h>
@@ -112,7 +111,6 @@ void CComponentEntityObject::AssignEntity(AZ::Entity* entity, bool destroyOld)
     {
         AZ::TransformNotificationBus::Handler::BusDisconnect();
         LmbrCentral::RenderBoundsNotificationBus::Handler::BusDisconnect();
-        LmbrCentral::MeshComponentNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::ComponentEntityEditorRequestBus::Handler::BusDisconnect();
         AZ::EntityBus::Handler::BusDisconnect();
         AzToolsFramework::ComponentEntityObjectRequestBus::Handler::BusDisconnect();
@@ -158,7 +156,6 @@ void CComponentEntityObject::AssignEntity(AZ::Entity* entity, bool destroyOld)
 
         AZ::TransformNotificationBus::Handler::BusConnect(m_entityId);
         LmbrCentral::RenderBoundsNotificationBus::Handler::BusConnect(m_entityId);
-        LmbrCentral::MeshComponentNotificationBus::Handler::BusConnect(m_entityId);
         AzToolsFramework::ComponentEntityEditorRequestBus::Handler::BusConnect(m_entityId);
         AZ::EntityBus::Handler::BusConnect(m_entityId);
         AzToolsFramework::ComponentEntityObjectRequestBus::Handler::BusConnect(this);
@@ -397,15 +394,6 @@ void CComponentEntityObject::OnEntityIconChanged(const AZ::Data::AssetId& entity
 
 void CComponentEntityObject::OnParentChanged([[maybe_unused]] AZ::EntityId oldParent, [[maybe_unused]] AZ::EntityId newParent)
 {
-}
-
-void CComponentEntityObject::OnMeshCreated(const AZ::Data::Asset<AZ::Data::AssetData>& asset)
-{
-    (void)asset;
-
-    // Need to recalculate bounds when the mesh changes.
-    OnRenderBoundsReset();
-    ValidateMeshStatObject();
 }
 
 void CComponentEntityObject::OnRenderBoundsReset()
@@ -950,9 +938,7 @@ void CComponentEntityObject::DrawDefault(DisplayContext& dc, const QColor& label
 
 IStatObj* CComponentEntityObject::GetIStatObj()
 {
-    IStatObj* statObj = nullptr;
-    LmbrCentral::LegacyMeshComponentRequestBus::EventResult(statObj, m_entityId, &LmbrCentral::LegacyMeshComponentRequests::GetStatObj);
-    return statObj;
+    return nullptr;
 }
 
 bool CComponentEntityObject::IsIsolated() const

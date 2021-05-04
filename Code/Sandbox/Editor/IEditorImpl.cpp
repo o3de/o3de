@@ -60,7 +60,6 @@ AZ_POP_DISABLE_WARNING
 #include "ToolBox.h"
 #include "MainWindow.h"
 #include "Alembic/AlembicCompiler.h"
-#include "LensFlareEditor/LensFlareManager.h"
 #include "UIEnumsDatabase.h"
 #include "Util/Ruler.h"
 #include "RenderHelpers/AxisHelper.h"
@@ -170,7 +169,6 @@ CEditorImpl::CEditorImpl()
     , m_pToolBoxManager(nullptr)
     , m_pMaterialManager(nullptr)
     , m_pMusicManager(nullptr)
-    , m_pLensFlareManager(nullptr)
     , m_pErrorReport(nullptr)
     , m_pLasLoadedLevelErrorReport(nullptr)
     , m_pErrorsDlg(nullptr)
@@ -230,7 +228,6 @@ CEditorImpl::CEditorImpl()
     m_pAnimationContext = new CAnimationContext;
 
     m_pImageUtil = new CImageUtil_impl();
-    m_pLensFlareManager = new CLensFlareManager;
     m_pResourceSelectorHost.reset(CreateResourceSelectorHost());
     m_pRuler = new CRuler;
     m_selectedRegion.min = Vec3(0, 0, 0);

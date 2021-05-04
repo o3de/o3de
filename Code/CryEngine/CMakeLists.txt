@@ -10,5 +10,4 @@
 #
 
 add_subdirectory(CryCommon)
-add_subdirectory(CryFont)
 add_subdirectory(CrySystem)
