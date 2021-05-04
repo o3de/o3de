@@ -94,13 +94,11 @@ AZ_POP_DISABLE_WARNING
 #include "TimeOfDayDialog.h"
 
 #include "Dialogs/PythonScriptsDialog.h"
-#include "Material/MaterialManager.h"
 #include "EngineSettingsManager.h"
 
 #include "AzAssetBrowser/AzAssetBrowserWindow.h"
 #include "AssetEditor/AssetEditorWindow.h"
 #include "GridSettingsDialog.h"
-#include "MaterialSender.h"
 #include "ActionManager.h"
 
 // uncomment this to show thumbnail demo widget

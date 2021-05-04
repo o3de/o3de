@@ -286,8 +286,6 @@ AZ::u32 CReflectedVarGenericProperty::handler()
     {
     case ePropertyShader:
         return AZ_CRC("ePropertyShader", 0xc40932f1);
-    case ePropertyMaterial:
-        return AZ_CRC("ePropertyMaterial", 0xf324dffa);
     case ePropertyEquip:
         return AZ_CRC("ePropertyEquip", 0x66ffd290);
     case ePropertyReverbPreset:
