@@ -225,23 +225,38 @@ namespace AZ
         //! Sets the three basis vectors and the translation.
         void SetBasisAndTranslation(const Vector3& basisX, const Vector3& basisY, const Vector3& basisZ, const Vector3& translation);
 
-        //! Operator for matrix-matrix multiplication.
-        [[nodiscard]] Matrix3x4 operator*(const Matrix3x4& rhs) const;
-
-        //! Compound assignment operator for matrix-matrix multiplication.
-        Matrix3x4& operator*=(const Matrix3x4& rhs);
-
         //! Operator for matrix-matrix addition.
+        //! @{
         [[nodiscard]] Matrix3x4 operator+(const Matrix3x4& rhs) const;
-
-        //! Compound assignment operator for matrix-matrix addition.
         Matrix3x4& operator+=(const Matrix3x4& rhs);
+        //! @}
+
+        //! Operator for matrix-matrix substraction.
+        //! @{
+        [[nodiscard]] Matrix3x4 operator-(const Matrix3x4& rhs) const;
+        Matrix3x4& operator-=(const Matrix3x4& rhs);
+        //! @}
+
+        //! Operator for matrix-matrix multiplication.
+        //! @{
+        [[nodiscard]] Matrix3x4 operator*(const Matrix3x4& rhs) const;
+        Matrix3x4& operator*=(const Matrix3x4& rhs);
+        //! @}
 
         //! Operator for multiplying all matrix's elements with a scalar
-        [[nodiscard]] Matrix3x4 operator*(float scalar) const;
+        //! @{
+        [[nodiscard]] Matrix3x4 operator*(float multiplier) const;
+        Matrix3x4& operator*=(float multiplier);
+        //! @}
 
-        //! Compound assignment operator for multiplying all matrix's elements with a scalar
-        Matrix3x4& operator*=(float scalar);
+        //! Operator for dividing all matrix's elements with a scalar
+        //! @{
+        [[nodiscard]] Matrix3x4 operator/(float divisor) const;
+        Matrix3x4& operator/=(float divisor);
+        //! @}
+
+        //! Operator for negating all matrix's elements
+        [[nodiscard]] Matrix3x4 operator-() const;
 
         //! Operator for transforming a Vector3.
         [[nodiscard]] Vector3 operator*(const Vector3& rhs) const;

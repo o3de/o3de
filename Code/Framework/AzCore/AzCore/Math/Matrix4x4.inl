@@ -480,26 +480,30 @@ namespace AZ
     AZ_MATH_INLINE Matrix4x4 Matrix4x4::operator+(const Matrix4x4& rhs) const
     {
         return Matrix4x4
-            ( Simd::Vec4::Add(m_rows[0].GetSimdValue(), rhs.m_rows[0].GetSimdValue())
-            , Simd::Vec4::Add(m_rows[1].GetSimdValue(), rhs.m_rows[1].GetSimdValue())
-            , Simd::Vec4::Add(m_rows[2].GetSimdValue(), rhs.m_rows[2].GetSimdValue())
-            , Simd::Vec4::Add(m_rows[3].GetSimdValue(), rhs.m_rows[3].GetSimdValue()));
-    }
-
-
-    AZ_MATH_INLINE Matrix4x4 Matrix4x4::operator-(const Matrix4x4& rhs) const
-    {
-        return Matrix4x4
-            ( Simd::Vec4::Sub(m_rows[0].GetSimdValue(), rhs.m_rows[0].GetSimdValue())
-            , Simd::Vec4::Sub(m_rows[1].GetSimdValue(), rhs.m_rows[1].GetSimdValue())
-            , Simd::Vec4::Sub(m_rows[2].GetSimdValue(), rhs.m_rows[2].GetSimdValue())
-            , Simd::Vec4::Sub(m_rows[3].GetSimdValue(), rhs.m_rows[3].GetSimdValue()));
+        (
+            Simd::Vec4::Add(m_rows[0].GetSimdValue(), rhs.m_rows[0].GetSimdValue()),
+            Simd::Vec4::Add(m_rows[1].GetSimdValue(), rhs.m_rows[1].GetSimdValue()),
+            Simd::Vec4::Add(m_rows[2].GetSimdValue(), rhs.m_rows[2].GetSimdValue()),
+            Simd::Vec4::Add(m_rows[3].GetSimdValue(), rhs.m_rows[3].GetSimdValue())
+        );
     }
 
     AZ_MATH_INLINE Matrix4x4& Matrix4x4::operator+=(const Matrix4x4& rhs)
     {
         *this = *this + rhs;
         return *this;
+    }
+
+
+    AZ_MATH_INLINE Matrix4x4 Matrix4x4::operator-(const Matrix4x4& rhs) const
+    {
+        return Matrix4x4
+        (
+            Simd::Vec4::Sub(m_rows[0].GetSimdValue(), rhs.m_rows[0].GetSimdValue()),
+            Simd::Vec4::Sub(m_rows[1].GetSimdValue(), rhs.m_rows[1].GetSimdValue()),
+            Simd::Vec4::Sub(m_rows[2].GetSimdValue(), rhs.m_rows[2].GetSimdValue()),
+            Simd::Vec4::Sub(m_rows[3].GetSimdValue(), rhs.m_rows[3].GetSimdValue())
+        );
     }
 
     AZ_MATH_INLINE Matrix4x4& Matrix4x4::operator-=(const Matrix4x4& rhs)
@@ -520,6 +524,59 @@ namespace AZ
     {
         *this = *this * rhs;
         return *this;
+    }
+
+
+    AZ_MATH_INLINE Matrix4x4 Matrix4x4::operator*(float multiplier) const
+    {
+        const Simd::Vec4::FloatType mulVec = Simd::Vec4::Splat(multiplier);
+        return Matrix4x4
+        (
+            Simd::Vec4::Mul(m_rows[0].GetSimdValue(), mulVec),
+            Simd::Vec4::Mul(m_rows[1].GetSimdValue(), mulVec),
+            Simd::Vec4::Mul(m_rows[2].GetSimdValue(), mulVec),
+            Simd::Vec4::Mul(m_rows[3].GetSimdValue(), mulVec)
+        );
+    }
+
+
+    AZ_MATH_INLINE Matrix4x4& Matrix4x4::operator*=(float multiplier)
+    {
+        *this = *this * multiplier;
+        return *this;
+    }
+
+
+    AZ_MATH_INLINE Matrix4x4 Matrix4x4::operator/(float divisor) const
+    {
+        const Simd::Vec4::FloatType divVec = Simd::Vec4::Splat(divisor);
+        return Matrix4x4
+        (
+            Simd::Vec4::Div(m_rows[0].GetSimdValue(), divVec),
+            Simd::Vec4::Div(m_rows[1].GetSimdValue(), divVec),
+            Simd::Vec4::Div(m_rows[2].GetSimdValue(), divVec),
+            Simd::Vec4::Div(m_rows[3].GetSimdValue(), divVec)
+        );
+    }
+
+
+    AZ_MATH_INLINE Matrix4x4& Matrix4x4::operator/=(float divisor)
+    {
+        *this = *this / divisor;
+        return *this;
+    }
+
+
+    AZ_MATH_INLINE Matrix4x4 Matrix4x4::operator-() const
+    {
+        const Simd::Vec4::FloatType zeroVec = Simd::Vec4::ZeroFloat();
+        return Matrix4x4
+        (
+            Simd::Vec4::Sub(zeroVec, m_rows[0].GetSimdValue()),
+            Simd::Vec4::Sub(zeroVec, m_rows[1].GetSimdValue()),
+            Simd::Vec4::Sub(zeroVec, m_rows[2].GetSimdValue()),
+            Simd::Vec4::Sub(zeroVec, m_rows[3].GetSimdValue())
+        );
     }
 
 
@@ -595,6 +652,12 @@ namespace AZ
     }
 
 
+    AZ_MATH_INLINE Vector3 Matrix4x4::RetrieveScaleSq() const
+    {
+        return Vector3(GetBasisX().GetLengthSq(), GetBasisY().GetLengthSq(), GetBasisZ().GetLengthSq());
+    }
+
+
     AZ_MATH_INLINE Vector3 Matrix4x4::ExtractScale()
     {
         Vector4 x = GetBasisX();
@@ -616,6 +679,14 @@ namespace AZ
         m_rows[0] = m_rows[0] * scalars;
         m_rows[1] = m_rows[1] * scalars;
         m_rows[2] = m_rows[2] * scalars;
+    }
+
+
+    AZ_MATH_INLINE Matrix4x4 Matrix4x4::GetReciprocalScaled() const
+    {
+        Matrix4x4 result = *this;
+        result.MultiplyByScale(RetrieveScaleSq().GetReciprocal());
+        return result;
     }
 
 

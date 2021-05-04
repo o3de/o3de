@@ -171,14 +171,38 @@ namespace AZ
         void SetTranslation(const Vector3& v);
         //! @}
 
-        Matrix4x4 operator+(const Matrix4x4& rhs) const;
+        //! Operator for matrix-matrix addition.
+        //! @{
+        [[nodiscard]] Matrix4x4 operator+(const Matrix4x4& rhs) const;
         Matrix4x4& operator+=(const Matrix4x4& rhs);
+        //! @}
 
-        Matrix4x4 operator-(const Matrix4x4& rhs) const;
+        //! Operator for matrix-matrix substraction.
+        //! @{
+        [[nodiscard]] Matrix4x4 operator-(const Matrix4x4& rhs) const;
         Matrix4x4& operator-=(const Matrix4x4& rhs);
+        //! @}
 
-        Matrix4x4 operator*(const Matrix4x4& rhs) const;
+        //! Operator for matrix-matrix multiplication.
+        //! @{
+        [[nodiscard]] Matrix4x4 operator*(const Matrix4x4& rhs) const;
         Matrix4x4& operator*=(const Matrix4x4& rhs);
+        //! @}
+
+        //! Operator for multiplying all matrix's elements with a scalar
+        //! @{
+        [[nodiscard]] Matrix4x4 operator*(float multiplier) const;
+        Matrix4x4& operator*=(float multiplier);
+        //! @}
+
+        //! Operator for dividing all matrix's elements with a scalar
+        //! @{
+        [[nodiscard]] Matrix4x4 operator/(float divisor) const;
+        Matrix4x4& operator/=(float divisor);
+        //! @}
+
+        //! Operator for negating all matrix's elements
+        [[nodiscard]] Matrix4x4 operator-() const;
 
         //! Post-multiplies the matrix by a vector.
         //! Assumes that the w-component of the Vector3 is 1.0.
@@ -222,13 +246,19 @@ namespace AZ
         //! @}
 
         //! Gets the scale part of the transformation, i.e. the length of the scale components.
-        Vector3 RetrieveScale() const;
+        [[nodiscard]] Vector3 RetrieveScale() const;
+
+        //! Gets the squared scale part of the transformation (the squared length of the basis vectors).
+        [[nodiscard]] Vector3 RetrieveScaleSq() const;
 
         //! Gets the scale part of the transformation as in RetrieveScale, and also removes this scaling from the matrix.
         Vector3 ExtractScale();
 
         //! Quick multiplication by a scale matrix, equivalent to m*=Matrix4x4::CreateScale(scale).
         void MultiplyByScale(const Vector3& scale);
+
+        //! Returns a matrix with the reciprocal scale, keeping the same rotation and translation.
+        [[nodiscard]] Matrix4x4 GetReciprocalScaled() const;
 
         bool IsClose(const Matrix4x4& rhs, float tolerance = Constants::Tolerance) const;
 
