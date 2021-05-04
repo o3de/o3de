@@ -24,7 +24,6 @@ namespace AzFramework
     //! Provide a unified hook between entities and the visibility system.
     class EntityVisibilityBoundsUnionSystem
         : public IEntityBoundsUnionRequestBus::Handler
-        , private AZ::TransformNotificationBus::Router
         , private AZ::TickBus::Handler
     {
     public:
@@ -37,6 +36,7 @@ namespace AzFramework
         void RefreshEntityLocalBoundsUnion(AZ::EntityId entityId) override;
         AZ::Aabb GetEntityLocalBoundsUnion(AZ::EntityId entityId) const override;
         void ProcessEntityBoundsUnionRequests() override;
+        void OnTransformUpdated(AZ::Entity* entity) override;
 
     private:
         struct EntityVisibilityBoundsUnionInstance
@@ -54,9 +54,6 @@ namespace AzFramework
 
         // TickBus overrides ...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
-
-        // TransformNotificationBus overrides ...
-        void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 
         void UpdateVisibilitySystem(AZ::Entity* entity, EntityVisibilityBoundsUnionInstance& instance);
 

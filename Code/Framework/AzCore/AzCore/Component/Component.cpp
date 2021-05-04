@@ -14,6 +14,7 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Math/Sfmt.h>
 #include <AzCore/Math/Crc.h>
 
@@ -173,7 +174,7 @@ namespace AZ
     //=========================================================================
     void ComponentDescriptor::ReleaseDescriptor()
     {
-        EBUS_EVENT(ComponentApplicationBus, UnregisterComponentDescriptor, this);
+        AZ::Interface<AZ::ComponentApplicationRequests>::Get()->UnregisterComponentDescriptor(this);
         delete this;
     }
 } // namespace AZ

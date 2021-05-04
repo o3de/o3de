@@ -112,7 +112,7 @@ namespace AZ
         {
             EBUS_EVENT(EntitySystemBus, OnEntityDestruction, m_id);
             EBUS_EVENT_ID(m_id, EntityBus, OnEntityDestruction, m_id);
-            EBUS_EVENT(ComponentApplicationBus, RemoveEntity, this);
+            AZ::Interface<AZ::ComponentApplicationRequests>::Get()->RemoveEntity(this);
             m_stateEvent.Signal(State::Init, State::Destroying);
         }
 

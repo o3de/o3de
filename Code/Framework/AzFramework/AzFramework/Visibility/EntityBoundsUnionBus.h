@@ -40,6 +40,10 @@ namespace AzFramework
         //! also be called explicitly (e.g. For testing purposes).
         virtual void ProcessEntityBoundsUnionRequests() = 0;
 
+        //! Notifies the EntityBoundsUnion system that an entities transform has been modified.
+        //! @param entity the entity whose transform has been modified.
+        virtual void OnTransformUpdated(AZ::Entity* entity) = 0;
+
     protected:
         virtual ~IEntityBoundsUnion() = default;
     };

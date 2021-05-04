@@ -11,10 +11,12 @@
 */
 
 #include <AzFramework/Components/TransformComponent.h>
+#include <AzFramework/Visibility/EntityBoundsUnionBus.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Quaternion.h>
 
@@ -694,8 +696,7 @@ namespace AzFramework
         }
 #endif
 
-        AZ::Entity* parentEntity = nullptr;
-        EBUS_EVENT_RESULT(parentEntity, AZ::ComponentApplicationBus, FindEntity, parentEntityId);
+        AZ::Entity* parentEntity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(parentEntityId);
         AZ_Assert(parentEntity, "We expect to have a parent entity associated with the provided parent's entity Id.");
         if (parentEntity)
         {
@@ -744,8 +745,7 @@ namespace AzFramework
         m_parentId = parentId;
         if (m_parentId.IsValid())
         {
-            AZ::Entity* parentEntity = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(parentEntity, &AZ::ComponentApplicationBus::Events::FindEntity, m_parentId);
+            AZ::Entity* parentEntity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(m_parentId);
             m_parentActive = parentEntity && (parentEntity->GetState() == AZ::Entity::State::Active);
 
             m_onNewParentKeepWorldTM = isKeepWorldTM;
@@ -832,6 +832,8 @@ namespace AzFramework
 
         EBUS_EVENT_PTR(m_notificationBus, AZ::TransformNotificationBus, OnTransformChanged, m_localTM, m_worldTM);
         m_transformChangedEvent.Signal(m_localTM, m_worldTM);
+
+        AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->OnTransformUpdated(GetEntity());
     }
 
     void TransformComponent::ComputeWorldTM()

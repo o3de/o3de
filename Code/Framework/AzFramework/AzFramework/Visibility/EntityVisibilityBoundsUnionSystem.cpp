@@ -28,7 +28,6 @@ namespace AzFramework
     {
         AZ::Interface<IEntityBoundsUnion>::Register(this);
         IEntityBoundsUnionRequestBus::Handler::BusConnect();
-        AZ::TransformNotificationBus::Router::BusRouterConnect();
         AZ::TickBus::Handler::BusConnect();
 
         AZ::Interface<AZ::ComponentApplicationRequests>::Get()->RegisterEntityActivatedEventHandler(m_entityActivatedEventHandler);
@@ -39,7 +38,6 @@ namespace AzFramework
     {
         AZ::TickBus::Handler::BusDisconnect();
         IEntityBoundsUnionRequestBus::Handler::BusDisconnect();
-        AZ::TransformNotificationBus::Router::BusRouterDisconnect();
         AZ::Interface<IEntityBoundsUnion>::Unregister(this);
     }
 
@@ -156,12 +154,9 @@ namespace AzFramework
         m_entityBoundsDirty.clear();
     }
 
-    void EntityVisibilityBoundsUnionSystem::OnTransformChanged(const AZ::Transform&, const AZ::Transform&)
+    void EntityVisibilityBoundsUnionSystem::OnTransformUpdated(AZ::Entity* entity)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzFramework);
-
-        const AZ::EntityId entityId = *AZ::TransformNotificationBus::GetCurrentBusId();
-        AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(entityId);
 
         // update the world transform of the visibility bounds union
         if (auto instance_it = m_entityVisibilityBoundsUnionInstanceMapping.find(entity);
