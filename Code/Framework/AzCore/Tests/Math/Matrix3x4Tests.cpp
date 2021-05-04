@@ -558,9 +558,9 @@ namespace UnitTest
         EXPECT_THAT(-AZ::Matrix3x4::CreateZero(), IsClose(AZ::Matrix3x4::CreateZero()));
 
         AZ::Matrix3x4 m2 = -m1;
-        EXPECT_THAT(m2.GetRow(0), IsClose(Vector4(-1.0f, -2.0f, -3.0f, -4.0f)));
-        EXPECT_THAT(m2.GetRow(1), IsClose(Vector4(-5.0f, -6.0f, -7.0f, -8.0f)));
-        EXPECT_THAT(m2.GetRow(2), IsClose(Vector4(-9.0f, -10.0f, -11.0f, -12.0f)));
+        EXPECT_THAT(m2.GetRow(0), IsClose(AZ::Vector4(-1.0f, -2.0f, -3.0f, -4.0f)));
+        EXPECT_THAT(m2.GetRow(1), IsClose(AZ::Vector4(-5.0f, -6.0f, -7.0f, -8.0f)));
+        EXPECT_THAT(m2.GetRow(2), IsClose(AZ::Vector4(-9.0f, -10.0f, -11.0f, -12.0f)));
 
         AZ::Matrix3x4 m3 = m1 + (-m1);
         EXPECT_THAT(m3, IsClose(AZ::Matrix3x4::CreateZero()));
