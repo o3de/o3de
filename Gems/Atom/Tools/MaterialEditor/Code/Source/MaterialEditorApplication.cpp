@@ -432,10 +432,16 @@ namespace MaterialEditor
             // Forward commandline options to other application instance.
             QByteArray buffer;
             buffer.append("ProcessCommandLine:");
+
+            // Add the command line options from this process to the message, skipping the executable path
             for (int argi = 1; argi < m_argC; ++argi)
             {
                 buffer.append(QString(m_argV[argi]).append("\n").toUtf8());
             }
+
+            // Inject command line option to always bring the main window to the foreground
+            buffer.append("--activatewindow\n");
+
             m_socket.Send(buffer);
             m_socket.Disconnect();
             return false;
@@ -446,10 +452,6 @@ namespace MaterialEditor
             // Handle commmand line params from connected socket
             if (buffer.startsWith("ProcessCommandLine:"))
             {
-                // Bring the material editor to the foreground
-                MaterialEditor::MaterialEditorWindowRequestBus::Broadcast(
-                    &MaterialEditor::MaterialEditorWindowRequestBus::Handler::ActivateWindow);
-
                 // Remove header and parse commands
                 AZStd::string params(buffer.data(), buffer.size());
                 params = params.substr(strlen("ProcessCommandLine:"));

@@ -128,9 +128,6 @@ namespace AZ
             QStringList arguments;
             arguments.append(sourcePath.c_str());
 
-            // Bring the material editor to the foreground if running
-            arguments.append("--activatewindow");
-
             // Use the same RHI as the main editor
             AZ::Name apiName = AZ::RHI::Factory::Get().GetName();
             if (!apiName.IsEmpty())
