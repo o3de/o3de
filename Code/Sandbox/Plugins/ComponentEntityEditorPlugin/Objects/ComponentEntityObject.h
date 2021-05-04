@@ -79,9 +79,6 @@ public:
     CBaseObject* GetLinkParent() const override;
     XmlNodeRef Export(const QString& levelPath, XmlNodeRef& xmlNode) override;
     void DeleteEntity() override;
-    void SetMaterial(CMaterial* mtl) override;
-    CMaterial* GetMaterial() const override;
-    CMaterial* GetRenderMaterial() const override;
     void DrawDefault(DisplayContext& dc, const QColor& labelColor = QColor(255, 255, 255)) override;
     IStatObj* GetIStatObj() override;
     bool IsIsolated() const override;
@@ -183,8 +180,6 @@ protected:
     void SetupEntityIcon();
 
     void DrawAccent(DisplayContext& dc);
-
-    void ValidateMeshStatObject();
 
     class EditorActionGuard
     {

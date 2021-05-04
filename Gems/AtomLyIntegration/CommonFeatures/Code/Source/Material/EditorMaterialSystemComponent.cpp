@@ -23,6 +23,8 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailContext.h>
 
+#include <Atom/RHI/Factory.h>
+
 #include <AtomToolsFramework/Util/Util.h>
 
 #include <Material/MaterialThumbnail.h>
@@ -125,6 +127,14 @@ namespace AZ
 
             QStringList arguments;
             arguments.append(sourcePath.c_str());
+
+            // Use the same RHI as the main editor
+            AZ::Name apiName = AZ::RHI::Factory::Get().GetName();
+            if (!apiName.IsEmpty())
+            {
+                arguments.append(QString("--rhi=%1").arg(apiName.GetCStr()));
+            }
+
             AtomToolsFramework::LaunchTool("MaterialEditor", ".exe", arguments);
         }
 
@@ -139,7 +149,10 @@ namespace AZ
             {
                 m_openMaterialEditorAction = new QAction("Material Editor");
                 m_openMaterialEditorAction->setShortcut(QKeySequence(Qt::Key_M));
-                QObject::connect(m_openMaterialEditorAction, &QAction::triggered, m_openMaterialEditorAction, [this]()
+                m_openMaterialEditorAction->setCheckable(false);
+                m_openMaterialEditorAction->setChecked(false);
+                QObject::connect(
+                    m_openMaterialEditorAction, &QAction::triggered, m_openMaterialEditorAction, [this]()
                     {
                         OpenInMaterialEditor("");
                     }

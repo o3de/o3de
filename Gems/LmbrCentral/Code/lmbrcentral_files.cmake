@@ -17,6 +17,7 @@ set(FILES
     include/LmbrCentral/Ai/NavigationSystemBus.h
     include/LmbrCentral/Ai/NavigationSeedBus.h
     include/LmbrCentral/Animation/AttachmentComponentBus.h
+    include/LmbrCentral/Animation/SkeletalHierarchyRequestBus.h
     include/LmbrCentral/Audio/AudioEnvironmentComponentBus.h
     include/LmbrCentral/Audio/AudioListenerComponentBus.h
     include/LmbrCentral/Audio/AudioMultiPositionComponentBus.h
@@ -40,7 +41,6 @@ set(FILES
     include/LmbrCentral/Rendering/MaterialHandle.h
     include/LmbrCentral/Rendering/MaterialOwnerBus.h
     include/LmbrCentral/Rendering/MeshAsset.h
-    include/LmbrCentral/Rendering/MeshComponentBus.h
     include/LmbrCentral/Rendering/MeshModificationBus.h
     include/LmbrCentral/Rendering/RenderNodeBus.h
     include/LmbrCentral/Rendering/GiRegistrationBus.h
@@ -69,8 +69,6 @@ set(FILES
     include/LmbrCentral/Terrain/TerrainSystemRequestBus.h
     Source/Ai/NavigationSystemComponent.h
     Source/Ai/NavigationSystemComponent.cpp
-    Source/Animation/AttachmentComponent.h
-    Source/Animation/AttachmentComponent.cpp
     Source/Audio/AudioAreaEnvironmentComponent.h
     Source/Audio/AudioAreaEnvironmentComponent.cpp
     Source/Audio/AudioEnvironmentComponent.h
@@ -99,11 +97,6 @@ set(FILES
     Source/Events/ReflectScriptableEvents.cpp
     Source/Geometry/GeometrySystemComponent.h
     Source/Geometry/GeometrySystemComponent.cpp
-    Source/Rendering/MaterialHandle.cpp
-    Source/Rendering/MeshAssetHandler.h
-    Source/Rendering/MeshAssetHandler.cpp
-    Source/Rendering/MeshComponent.h
-    Source/Rendering/MeshComponent.cpp
     Source/Rendering/EntityDebugDisplayComponent.h
     Source/Rendering/EntityDebugDisplayComponent.cpp
     Source/Scripting/LookAtComponent.h
