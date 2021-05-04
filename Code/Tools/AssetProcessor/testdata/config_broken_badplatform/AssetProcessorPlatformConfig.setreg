@@ -1,0 +1,27 @@
+{
+    "Amazon": {
+        "AssetProcessor": {
+            "Settings": {
+                "Platform pc": {
+                    "tags": "tools,renderer"
+                },
+                "Platform osx_gl": {
+                    "tags": "tools,renderer"
+                },
+                "Platforms": {
+                    "es3": "enabled"
+                },
+                "ScanFolder Game": {
+                    "watch": "@PROJECTROOT@",
+                    "recursive": 1,
+                    "order": 0
+                },
+                "RC i_caf": {
+                    "glob": "*.i_caf",
+                    "params": "copy",
+                    "priority": 5
+                }
+            }
+        }
+    }
+}

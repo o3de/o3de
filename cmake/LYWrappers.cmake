@@ -157,13 +157,8 @@ function(ly_add_target)
     elseif(ly_add_target_HEADERONLY)
         add_library(${ly_add_target_NAME}
             ${linking_options}
+            ${ALLFILES} ${ly_add_target_GENERATED_FILES}
         )
-        # Create a custom target to see it in the IDE
-        # Once this is solved: https://gitlab.kitware.com/cmake/cmake/merge_requests/3113, we can just add the files to the library above
-        add_custom_target(${ly_add_target_NAME}_HEADERS
-            SOURCES ${ALLFILES} ${ly_add_target_GENERATED_FILES}
-        )
-        set(project_NAME ${ly_add_target_NAME}_HEADERS)
     elseif(ly_add_target_UNKNOWN)
         add_library(${ly_add_target_NAME}
             ${linking_options}

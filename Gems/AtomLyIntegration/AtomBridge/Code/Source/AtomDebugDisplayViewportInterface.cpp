@@ -1263,7 +1263,12 @@ namespace AZ::AtomBridge
         const char* text, 
         bool center)
     {
-        AzFramework::FontDrawInterface* fontDrawInterface = AZ::Interface<AzFramework::FontQueryInterface>::Get()->GetDefaultFontDrawInterface();
+        auto fontQueryInterface = AZ::Interface<AzFramework::FontQueryInterface>::Get();
+        if (!fontQueryInterface)
+        {
+            return;
+        }
+        AzFramework::FontDrawInterface* fontDrawInterface = fontQueryInterface->GetDefaultFontDrawInterface();
         if (!fontDrawInterface || !text || size == 0.0f)
         {
             return;

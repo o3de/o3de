@@ -17,7 +17,6 @@
 
 // Editor
 #include "Util/PakFile.h"
-#include "Material/MaterialManager.h"
 #include "WaitProgress.h"
 #include "Include/IObjectManager.h"
 
@@ -238,14 +237,6 @@ void CObjectArchive::ResolveObjects()
             m_pCurrentErrorReport->SetCurrentValidatorObject(obj.pObject);
 
             obj.pObject->CreateGameObject();
-
-            CMaterial* pMaterial = obj.pObject->GetRenderMaterial();
-            CMaterialManager* pManager = GetIEditor()->GetMaterialManager();
-
-            if (pMaterial && pMaterial->GetMatInfo() && pManager)
-            {
-                pManager->OnRequestMaterial(pMaterial->GetMatInfo());
-            }
 
             // unset the current validator object because the wait Step 
             // might generate unrelated errors

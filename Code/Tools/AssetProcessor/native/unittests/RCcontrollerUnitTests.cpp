@@ -520,7 +520,7 @@ void RCcontrollerUnitTests::RunRCControllerTests()
 
     AZ::Uuid uuidOfSource = AZ::Uuid("{D013122E-CF2C-4534-A87D-F82570FBC2CD}");
     MockRCJob rcJob;
-    ScanFolderInfo scanFolderInfo("samplepath", "sampledisplayname", "samplekey", "", false, false);
+    ScanFolderInfo scanFolderInfo("samplepath", "sampledisplayname", "samplekey", false, false);
     AssetProcessor::JobDetails jobDetailsToInitWith;
     jobDetailsToInitWith.m_jobEntry.m_watchFolderPath = tempPath.absoluteFilePath("subfolder4");
     jobDetailsToInitWith.m_jobEntry.m_databaseSourceName = jobDetailsToInitWith.m_jobEntry.m_pathRelativeToWatchFolder = "needsLock.tiff";

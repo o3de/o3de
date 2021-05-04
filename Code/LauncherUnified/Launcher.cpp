@@ -449,18 +449,14 @@ namespace O3DELauncher
 
         // Non-host platforms cannot use the project path that is #defined within the launcher.
         // In this case the the result of AZ::Utils::GetDefaultAppRoot is used instead
+#if !AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
         AZStd::string_view projectPath;
-#if AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
-        // Insert the project_path option to the front of the command line arguments
-        projectPath = GetProjectPath();
-#else
         // Make sure the defaultAppRootPath variable is in scope long enough until the projectPath string_view is used below
         AZStd::optional<AZ::IO::FixedMaxPathString> defaultAppRootPath = AZ::Utils::GetDefaultAppRootPath();
         if (defaultAppRootPath.has_value())
         {
             projectPath = *defaultAppRootPath;
         }
-#endif
         if (!projectPath.empty())
         {
             const auto projectPathKey = FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)
@@ -471,15 +467,14 @@ namespace O3DELauncher
 
             // For non-host platforms set the engine root to be the project root
             // Since the directories available during execution are limited on those platforms
-#if !AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
             AZStd::string_view enginePath = projectPath;
             const auto enginePathKey = FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)
                 + "/engine_path";
             enginePathOptionOverride = FixedValueString ::format(R"(--regset="%s=%.*s")",
                 enginePathKey.c_str(), aznumeric_cast<int>(enginePath.size()), enginePath.data());
             argContainer.emplace_back(enginePathOptionOverride.data());
-#endif
         }
+#endif
 
         AzGameFramework::GameApplication gameApplication(aznumeric_cast<int>(argContainer.size()), argContainer.data());
         // The settings registry has been created by the AZ::ComponentApplication constructor at this point

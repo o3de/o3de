@@ -40,7 +40,7 @@ namespace ScriptCanvas
                         {
                             editContext->Class<String>("String", "Holds a string value")
                                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                                ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/ScriptCanvas/String.png")
+                                ->Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/String.png")
                                 ;
                         }
                     }

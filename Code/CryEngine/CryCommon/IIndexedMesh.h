@@ -22,7 +22,7 @@
 #include <CrySizer.h>
 #include <Cry_Geo.h>    // for AABB
 #include <VertexFormats.h>
-#include <../RenderDll/Common/Shaders/Vertex.h>
+#include <Vertex.h>
 #include <AzCore/Casting/numeric_cast.h>
 
 // Description:

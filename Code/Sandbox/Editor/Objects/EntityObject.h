@@ -21,7 +21,6 @@
 
 #include "IMovieSystem.h"
 #include "IEntityObjectListener.h"
-#include "StatObjValidator.h"
 #include "Gizmo.h"
 #include "CryListenerSet.h"
 #include "StatObjBus.h"
@@ -108,8 +107,6 @@ public:
     void SetEntityPropertyFloat(const char* name, float value);
     void SetEntityPropertyString(const char* name, const QString& value);
 
-    virtual QString GetTooltip() const;
-
     virtual int MouseCreateCallback(CViewport* view, EMouseEvent event, QPoint& point, int flags);
     virtual void OnContextMenu(QMenu* menu);
 
@@ -133,9 +130,6 @@ public:
     void OnEvent(ObjectEvent event);
 
     virtual void SetTransformDelegate(ITransformDelegate* pTransformDelegate) override;
-
-    virtual CMaterial* GetRenderMaterial() const;
-    virtual void OnMaterialChanged(MaterialChangeFlags change);
 
     // Set attach flags and target
     enum EAttachmentType
@@ -221,10 +215,7 @@ public:
 
     IVariable* GetLightVariable(const char* name) const;
     IOpticsElementBasePtr GetOpticsElement();
-    void SetOpticsElement(IOpticsElementBase* pOptics);
-    void ApplyOptics(const QString& opticsFullName, IOpticsElementBasePtr pOptics);
     void SetOpticsName(const QString& opticsFullName);
-    bool GetValidFlareName(QString& outFlareName) const;
 
     void PreInitLightProperty();
     void UpdateLightProperty();
@@ -235,9 +226,6 @@ public:
     }
 
     static void StoreUndoEntityLink(CSelectionGroup* pGroup);
-
-    static const char* s_LensFlarePropertyName;
-    static const char* s_LensFlareMaterialName;
 
     void RegisterListener(IEntityObjectListener* pListener);
     void UnregisterListener(IEntityObjectListener* pListener);
@@ -321,11 +309,6 @@ protected:
 
     void AdjustLightProperties(CVarBlockPtr& properties, const char* pSubBlock);
     IVariable* FindVariableInSubBlock(CVarBlockPtr& properties, IVariable* pSubBlockVar, const char* pVarName);
-
-    void SetFlareName(const QString& name)
-    {
-        SetEntityPropertyString(s_LensFlarePropertyName, name);
-    }
 
     unsigned int m_bLoadFailed : 1;
     unsigned int m_bCalcPhysics : 1;
@@ -415,8 +398,6 @@ protected:
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
     static float m_helperScale;
-
-    CStatObjValidator m_statObjValidator;
 
     EAttachmentType m_attachmentType;
 

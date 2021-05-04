@@ -43,8 +43,6 @@ namespace Export
         virtual int GetFaceCount() const { return m_faces.size(); }
         virtual const Face* GetFaceBuffer() const { return m_faces.size() ? &m_faces[0] : 0; }
 
-        void SetMaterial(CMaterial* pMtl, CBaseObject* pBaseObj);
-
     private:
         std::vector<Face> m_faces;
 

@@ -96,7 +96,7 @@ namespace AssetProcessor
         SourceFileRelocationInfo(const AZStd::string& filePath, const ScanFolderInfo* scanFolder)
         {
             QString relFilePath;
-            PlatformConfiguration::ConvertToRelativePath(filePath.c_str(), scanFolder, relFilePath, true);
+            PlatformConfiguration::ConvertToRelativePath(filePath.c_str(), scanFolder, relFilePath);
             m_oldRelativePath = relFilePath.toUtf8().data();
             AzFramework::StringFunc::Path::ConstructFull(scanFolder->ScanPath().toUtf8().constData(), m_oldRelativePath.c_str(), m_oldAbsolutePath, false);
             m_oldAbsolutePath = AssetUtilities::NormalizeFilePath(m_oldAbsolutePath.c_str()).toUtf8().constData();
@@ -191,7 +191,6 @@ namespace AssetProcessor
         SourceFileRelocator(AZStd::shared_ptr<AzToolsFramework::AssetDatabase::AssetDatabaseConnection> stateData, PlatformConfiguration* platformConfiguration);
         ~SourceFileRelocator();
 
-        static AZStd::string RemoveDatabasePrefix(const ScanFolderInfo* scanFolder, AZStd::string sourceName);
         static void MakePathRelative(const AZStd::string& parentPath, const AZStd::string& childPath, AZStd::string& parentRelative, AZStd::string& childRelative);
 
         static AZ::Outcome<AZStd::string, AZStd::string> HandleWildcard(AZStd::string_view absFile, AZStd::string_view absSearch, AZStd::string destination);
