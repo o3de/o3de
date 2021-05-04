@@ -376,10 +376,6 @@ namespace UnitTest
         EXPECT_THAT(m3.GetRow(0), IsClose(Vector3(2.0f, 4.0f, 6.0f)));
         EXPECT_THAT(m3.GetRow(1), IsClose(Vector3(8.0f, 10.0f, 12.0f)));
         EXPECT_THAT(m3.GetRow(2), IsClose(Vector3(14.0f, 16.0f, 18.0f)));
-        m3 = -m1;
-        EXPECT_THAT(m3.GetRow(0), IsClose(Vector3(-1.0f, -2.0f, -3.0f)));
-        EXPECT_THAT(m3.GetRow(1), IsClose(Vector3(-4.0f, -5.0f, -6.0f)));
-        EXPECT_THAT(m3.GetRow(2), IsClose(Vector3(-7.0f, -8.0f, -9.0f)));
     }
 
     TEST(MATH_Matrix3x3, TestNegation)
@@ -388,7 +384,7 @@ namespace UnitTest
         m1.SetRow(0, 1.0f, 2.0f, 3.0f);
         m1.SetRow(1, 4.0f, 5.0f, 6.0f);
         m1.SetRow(2, 7.0f, 8.0f, 9.0f);
-        EXPECT_THAT(-(-m1), m1);
+        EXPECT_THAT(-(-m1), IsClose(m1));
         EXPECT_THAT(-Matrix3x3::CreateZero(), IsClose(Matrix3x3::CreateZero()));
 
         Matrix3x3 m2 = -m1;
