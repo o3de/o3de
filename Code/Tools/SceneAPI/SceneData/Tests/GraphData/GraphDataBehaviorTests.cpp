@@ -55,7 +55,6 @@ namespace AZ
                         meshData->AddNormal(Vector3{0.1f, 0.2f, 0.3f});
                         meshData->AddNormal(Vector3{0.4f, 0.5f, 0.6f});
                         meshData->SetOriginalUnitSizeInMeters(10.0f);
-                        meshData->SetSdkMeshIndex(1337);
                         meshData->SetUnitSizeInMeters(0.5f);
                         meshData->SetVertexIndexToControlPointIndexMap(0, 10);
                         meshData->SetVertexIndexToControlPointIndexMap(1, 11);
@@ -203,7 +202,6 @@ namespace AZ
                 ExpectExecute("TestExpectFloatEquals(meshData:GetNormal(1).z, 0.6)");
                 ExpectExecute("TestExpectFloatEquals(meshData:GetOriginalUnitSizeInMeters(), 10.0)");
                 ExpectExecute("TestExpectFloatEquals(meshData:GetUnitSizeInMeters(), 0.5)");
-                ExpectExecute("TestExpectIntegerEquals(meshData:GetSdkMeshIndex(), 1337)");
                 ExpectExecute("TestExpectIntegerEquals(meshData:GetUsedControlPointCount(), 4)");
                 ExpectExecute("TestExpectIntegerEquals(meshData:GetControlPointIndex(0), 10)");
                 ExpectExecute("TestExpectIntegerEquals(meshData:GetControlPointIndex(1), 11)");

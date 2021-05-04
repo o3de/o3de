@@ -134,7 +134,7 @@ namespace AZ::SceneGenerationComponents
         {
             for (size_t controlPointIndex = 0; controlPointIndex < skinData.get().GetVertexCount(); ++controlPointIndex)
             {
-                const int usedPointIndex = meshData->GetUsedPointIndexForControlPoint(aznumeric_caster(controlPointIndex));
+                const int usedPointIndex = meshData->GetUsedPointIndexForControlPoint(meshData->GetControlPointIndex(aznumeric_caster(controlPointIndex)));
                 const size_t linkCount = skinData.get().GetLinkCount(controlPointIndex);
 
                 if (usedPointIndex < 0 || linkCount == 0)
