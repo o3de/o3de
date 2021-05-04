@@ -21,6 +21,8 @@ namespace AZ
 {
     namespace Python
     {
+        static const char* const None = "None";
+
         class PythonBehaviorInfo final
         {
         public:
@@ -81,7 +83,7 @@ namespace AZ
             {
                 return editorPythonConsoleInterface->FetchPythonTypeName(param);
             }
-            return "None";
+            return None;
         }
 
         void PythonBehaviorInfo::WriteMethod(AZStd::string_view methodName, const AZ::BehaviorMethod& behaviorMethod)
@@ -126,7 +128,7 @@ namespace AZ
                 bufferArg.clear();
             }
 
-            AZStd::string resultValue{ "None" };
+            AZStd::string resultValue{ None };
             if (behaviorMethod.HasResult() && behaviorMethod.GetResult())
             {
                 resultValue = FetchPythonType(*behaviorMethod.GetResult());
