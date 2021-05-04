@@ -18,7 +18,6 @@ set(FILES
     Lib/Tests/test_EditorUtils.cpp
     Lib/Tests/test_Main.cpp
     Lib/Tests/test_MainWindowPythonBindings.cpp
-    Lib/Tests/test_MaterialPythonFuncs.cpp
     Lib/Tests/test_ObjectManagerPythonBindings.cpp
     Lib/Tests/test_TrackViewPythonBindings.cpp
     Lib/Tests/test_ViewPanePythonBindings.cpp

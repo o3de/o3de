@@ -53,7 +53,6 @@ AZ_POP_DISABLE_WARNING
 #include "KeyboardCustomizationSettings.h"
 #include "Export/ExportManager.h"
 #include "LevelIndependentFileMan.h"
-#include "Material/MaterialManager.h"
 #include "TrackView/TrackViewSequenceManager.h"
 #include "AnimationContext.h"
 #include "GameEngine.h"
@@ -167,7 +166,6 @@ CEditorImpl::CEditorImpl()
     , m_pAnimationContext(nullptr)
     , m_pSequenceManager(nullptr)
     , m_pToolBoxManager(nullptr)
-    , m_pMaterialManager(nullptr)
     , m_pMusicManager(nullptr)
     , m_pErrorReport(nullptr)
     , m_pLasLoadedLevelErrorReport(nullptr)
@@ -222,7 +220,6 @@ CEditorImpl::CEditorImpl()
     m_pIconManager = new CIconManager;
     m_pUndoManager = new CUndoManager;
     m_pToolBoxManager = new CToolBoxManager;
-    m_pMaterialManager = new CMaterialManager(regCtx);
     m_pAlembicCompiler = new CAlembicCompiler();
     m_pSequenceManager = new CTrackViewSequenceManager;
     m_pAnimationContext = new CAnimationContext;
@@ -342,7 +339,6 @@ CEditorImpl::~CEditorImpl()
     m_bExiting = true; // Can't save level after this point (while Crash)
     SAFE_RELEASE(m_pSourceControl);
 
-    SAFE_DELETE(m_pMaterialManager)
     SAFE_DELETE(m_pAlembicCompiler)
     SAFE_DELETE(m_pIconManager)
     SAFE_DELETE(m_pViewManager)
@@ -412,7 +408,6 @@ void CEditorImpl::SetGameEngine(CGameEngine* ge)
     m_pObjectManager->LoadClassTemplates("Editor");
     m_pObjectManager->RegisterCVars();
 
-    m_pMaterialManager->Set3DEngine();
     m_pAnimationContext->Init();
 }
 
@@ -1000,13 +995,8 @@ void CEditorImpl::CloseView(const GUID& classId)
     }
 }
 
-IDataBaseManager* CEditorImpl::GetDBItemManager(EDataBaseItemType itemType)
+IDataBaseManager* CEditorImpl::GetDBItemManager([[maybe_unused]] EDataBaseItemType itemType)
 {
-    switch (itemType)
-    {
-    case EDB_TYPE_MATERIAL:
-        return m_pMaterialManager;
-    }
     return 0;
 }
 
@@ -1772,13 +1762,13 @@ SEditorSettings* CEditorImpl::GetEditorSettings()
 // Vladimir@Conffx
 IBaseLibraryManager* CEditorImpl::GetMaterialManagerLibrary()
 {
-    return m_pMaterialManager;
+    return nullptr;
 }
 
 // Vladimir@Conffx
 IEditorMaterialManager* CEditorImpl::GetIEditorMaterialManager()
 {
-    return m_pMaterialManager;
+    return nullptr;
 }
 
 IImageUtil* CEditorImpl::GetImageUtil()

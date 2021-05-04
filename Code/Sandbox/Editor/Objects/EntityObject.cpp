@@ -25,7 +25,6 @@
 #include "Settings.h"
 #include "Viewport.h"
 #include "LineGizmo.h"
-#include "Material/MaterialManager.h"
 #include "Include/IObjectManager.h"
 #include "Objects/ObjectManager.h"
 #include "ViewManager.h"
@@ -1077,11 +1076,6 @@ XmlNodeRef CEntityObject::Export([[maybe_unused]] const QString& levelPath, XmlN
 
     objNode->setAttr("Name", GetName().toUtf8().data());
 
-    if (GetMaterial())
-    {
-        objNode->setAttr("Material", GetMaterial()->GetName().toUtf8().data());
-    }
-
     Vec3 pos = GetPos(), scale = GetScale();
     Quat rotate = GetRotation();
 
@@ -1861,17 +1855,6 @@ void CEntityObject::OnLoadFailed()
 }
 
 //////////////////////////////////////////////////////////////////////////
-CMaterial* CEntityObject::GetRenderMaterial() const
-{
-    if (GetMaterial())
-    {
-        return GetMaterial();
-    }
-
-    return NULL;
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CEntityObject::SetHelperScale(float scale)
 {
     m_helperScale = scale;
@@ -1944,21 +1927,6 @@ void CEntityObject::OnContextMenu(QMenu* pMenu)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CEntityObject::OnMaterialChanged(MaterialChangeFlags change)
-{
-    if (change & MATERIALCHANGE_SURFACETYPE)
-    {
-        m_statObjValidator.Validate(0, GetRenderMaterial());
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-QString CEntityObject::GetTooltip() const
-{
-    return m_statObjValidator.GetDescription();
-}
-
-//////////////////////////////////////////////////////////////////////////
 IOpticsElementBasePtr CEntityObject::GetOpticsElement()
 {
     CDLight* pLight = GetLightProperty();
@@ -1979,7 +1947,6 @@ void CEntityObject::SetOpticsName(const QString& opticsFullName)
         {
             pLight->SetLensOpticsElement(NULL);
         }
-        SetMaterial(NULL);
     }
 }
 

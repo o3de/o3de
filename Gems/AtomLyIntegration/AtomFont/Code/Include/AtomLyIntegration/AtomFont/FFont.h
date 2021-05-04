@@ -226,7 +226,7 @@ namespace AZ
 
     private:
         virtual ~FFont();
-        bool InitFont();
+        bool InitFont(AZ::RPI::Scene* renderScene);
         bool InitTexture();
         bool InitCache();
 

@@ -112,10 +112,6 @@ void CVariableTypeInfo::SetTypes(CTypeInfo const& TypeInfo, EType eType)
         {
             SetDataType(DT_TEXTURE);
         }
-        else if (m_name == "Material")
-        {
-            SetDataType(DT_MATERIAL);
-        }
         else if (m_name == "Geometry")
         {
             SetDataType(DT_OBJECT);
