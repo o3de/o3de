@@ -17,6 +17,7 @@ file(RELATIVE_PATH runtime_output_directory ${CMAKE_BINARY_DIR} ${CMAKE_RUNTIME_
 file(RELATIVE_PATH library_output_directory ${CMAKE_BINARY_DIR} ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 set(install_output_folder "${CMAKE_INSTALL_PREFIX}/${runtime_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>")
 
+
 #! ly_install_target: registers the target to be installed by cmake install.
 #
 # \arg:NAME name of the target
@@ -86,28 +87,6 @@ function(ly_install_target ly_install_target_NAME)
         DESTINATION cmake
         COMPONENT ${ly_install_target_COMPONENT}
     )
-
-    get_target_property(target_type ${ly_install_target_NAME} TYPE)
-    set(runtime_dependencies_list SHARED MODULE EXECUTABLE APPLICATION) # Only have to deploy for dlls/exes
-    if(target_type IN_LIST runtime_dependencies_list)
-        get_property(has_qt_dependency GLOBAL PROPERTY LY_DETECT_QT_DEPENDENCY_${ly_install_target_NAME})
-        if(has_qt_dependency)
-            # Qt deploy needs to be done after the binary is copied to the output, so we do a install(CODE) which effectively
-            # puts it as a postbuild step of the "install" target. Binaries are copied at that point.
-            if(NOT EXISTS ${WINDEPLOYQT_EXECUTABLE})
-                message(FATAL_ERROR "Qt deploy executable not found: ${WINDEPLOYQT_EXECUTABLE}")
-            endif()
-            set(target_output "${install_output_folder}/${target_runtime_output_subdirectory}/$<TARGET_FILE_NAME:${ly_install_target_NAME}>")
-            install(CODE
-"execute_process(COMMAND \"${WINDEPLOYQT_EXECUTABLE}\" --verbose 0 --no-compiler-runtime \"${target_output}\" ERROR_VARIABLE deploy_error RESULT_VARIABLE deploy_result)
-if (NOT \${deploy_result} EQUAL 0)
-    if(NOT deploy_result MATCHES \"does not seem to be a Qt executable\" )
-        message(SEND_ERROR \"Deploying qt for ${target_output} returned \${result}: \${deploy_error}\")
-    endif()
-endif()
-")
-        endif()
-    endif()
 
 endfunction()
 
@@ -235,6 +214,7 @@ function(ly_setup_o3de_install)
 
     ly_setup_cmake_install()
     ly_setup_target_generator()
+    ly_setup_runtime_dependencies()
     ly_setup_others()
 
 endfunction()
@@ -304,6 +284,73 @@ function(ly_setup_cmake_install)
         COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
 
+endfunction()
+
+#! ly_setup_runtime_dependencies: install runtime dependencies
+function(ly_setup_runtime_dependencies)
+
+    # Common functions used by the bellow code
+    install(CODE
+"function(ly_deploy_qt_install target_output)
+    execute_process(COMMAND \"${WINDEPLOYQT_EXECUTABLE}\" --verbose 0 --no-compiler-runtime \"\${target_output}\" ERROR_VARIABLE deploy_error RESULT_VARIABLE deploy_result)
+    if (NOT \${deploy_result} EQUAL 0)
+        if(NOT deploy_error MATCHES \"does not seem to be a Qt executable\" )
+            message(SEND_ERROR \"Deploying qt for \${target_output} returned \${deploy_result}: \${deploy_error}\")
+        endif()
+    endif()
+endfunction()
+
+function(ly_copy source_file target_directory)
+    file(COPY \"\${source_file}\" DESTINATION \"\${target_directory}\" FILE_PERMISSIONS ${LY_COPY_PERMISSIONS})
+endfunction()"
+        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
+    )
+    
+    unset(runtime_commands)
+    get_property(all_targets GLOBAL PROPERTY LY_ALL_TARGETS)
+    foreach(target IN LISTS all_targets)
+
+        # Exclude targets that dont produce runtime outputs
+        get_target_property(target_type ${target} TYPE)
+        if(NOT target_type IN_LIST LY_TARGET_TYPES_WITH_RUNTIME_OUTPUTS)
+            continue()
+        endif()
+    
+        get_target_property(target_runtime_output_directory ${target} RUNTIME_OUTPUT_DIRECTORY)
+        if(target_runtime_output_directory)
+            file(RELATIVE_PATH target_runtime_output_subdirectory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} ${target_runtime_output_directory})
+        endif()
+        
+        # Qt
+        get_property(has_qt_dependency GLOBAL PROPERTY LY_DETECT_QT_DEPENDENCY_${target})
+        if(has_qt_dependency)
+            # Qt deploy needs to be done after the binary is copied to the output, so we do a install(CODE) which effectively
+            # puts it as a postbuild step of the "install" target. Binaries are copied at that point.
+            if(NOT EXISTS ${WINDEPLOYQT_EXECUTABLE})
+                message(FATAL_ERROR "Qt deploy executable not found: ${WINDEPLOYQT_EXECUTABLE}")
+            endif()
+            set(target_output "${install_output_folder}/${target_runtime_output_subdirectory}/$<TARGET_FILE_NAME:${target}>")
+            list(APPEND runtime_commands "ly_deploy_qt_install(\"${target_output}\")\n")
+        endif()
+
+        # runtime dependencies that need to be copied to the output
+        set(target_file_dir "${install_output_folder}/${target_runtime_output_subdirectory}")
+        ly_get_runtime_dependencies(runtime_dependencies ${target})
+        foreach(runtime_dependency ${runtime_dependencies})
+            unset(runtime_command)
+            ly_get_runtime_dependency_command(runtime_command ${runtime_dependency})
+            string(CONFIGURE "${runtime_command}" runtime_command @ONLY)            
+            list(APPEND runtime_commands ${runtime_command})
+        endforeach()
+
+    endforeach()
+
+    list(REMOVE_DUPLICATES runtime_commands)
+    list(JOIN runtime_commands "    " runtime_commands_str) # the spaces are just to see the right identation in the cmake_install.cmake file
+    install(CODE "${runtime_commands_str}" 
+        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
+    )
+    
 endfunction()
 
 #! ly_setup_others: install directories required by the engine
