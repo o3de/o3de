@@ -594,7 +594,7 @@ public:
     ILINE const Vec3& GetFPVertex(int nId) const; //get far-plane vertices
     ILINE const Vec3& GetPPVertex(int nId) const; //get projection-plane vertices
 
-    ILINE const Plane* GetFrustumPlane(int numplane)    const       { return &m_fp[numplane]; }
+    ILINE const Plane_tpl<f32>* GetFrustumPlane(int numplane)    const       { return &m_fp[numplane]; }
 
     //////////////////////////////////////////////////////////////////////////
     // Z-Buffer ranges.
@@ -720,7 +720,7 @@ private:
     Vec3    m_cltn, m_crtn, m_clbn, m_crbn;        //this are the 4 vertices of the near-plane in cam-space
     Vec3    m_cltf, m_crtf, m_clbf, m_crbf;        //this are the 4 vertices of the farclip-plane in cam-space
 
-    Plane   m_fp [FRUSTUM_PLANES]; //
+    Plane_tpl<f32>   m_fp [FRUSTUM_PLANES]; //
     uint32  m_idx1[FRUSTUM_PLANES], m_idy1[FRUSTUM_PLANES], m_idz1[FRUSTUM_PLANES]; //
     uint32  m_idx2[FRUSTUM_PLANES], m_idy2[FRUSTUM_PLANES], m_idz2[FRUSTUM_PLANES]; //
 
@@ -742,7 +742,7 @@ public:
         m_crtp = arrvVerts[2];
         m_crbp = arrvVerts[3];
     }
-    inline void SetFrustumPlane(int i, const Plane& plane)
+    inline void SetFrustumPlane(int i, const Plane_tpl<f32>& plane)
     {
         m_fp[i] = plane;
         //do not break strict aliasing rules, use union instead of reinterpret_casts
@@ -1180,12 +1180,12 @@ inline void CCamera::UpdateFrustum()
     //-------------------------------------------------------------------------------
     //---  calculate the six frustum-planes using the frustum edges in world-space ---
     //-------------------------------------------------------------------------------
-    m_fp[FR_PLANE_NEAR  ]   =   Plane::CreatePlane(m_crtn + GetPosition(), m_cltn + GetPosition(), m_crbn + GetPosition());
-    m_fp[FR_PLANE_RIGHT ]   =   Plane::CreatePlane(m_crbf + GetPosition(), m_crtf + GetPosition(), GetPosition());
-    m_fp[FR_PLANE_LEFT  ]   =   Plane::CreatePlane(m_cltf + GetPosition(), m_clbf + GetPosition(), GetPosition());
-    m_fp[FR_PLANE_TOP   ]   =   Plane::CreatePlane(m_crtf + GetPosition(), m_cltf + GetPosition(), GetPosition());
-    m_fp[FR_PLANE_BOTTOM]   =   Plane::CreatePlane(m_clbf + GetPosition(), m_crbf + GetPosition(), GetPosition());
-    m_fp[FR_PLANE_FAR   ]   =   Plane::CreatePlane(m_crtf + GetPosition(), m_crbf + GetPosition(), m_cltf + GetPosition());  //clip-plane
+    m_fp[FR_PLANE_NEAR  ]   = Plane_tpl<f32>::CreatePlane(m_crtn + GetPosition(), m_cltn + GetPosition(), m_crbn + GetPosition());
+    m_fp[FR_PLANE_RIGHT ]   = Plane_tpl<f32>::CreatePlane(m_crbf + GetPosition(), m_crtf + GetPosition(), GetPosition());
+    m_fp[FR_PLANE_LEFT  ]   = Plane_tpl<f32>::CreatePlane(m_cltf + GetPosition(), m_clbf + GetPosition(), GetPosition());
+    m_fp[FR_PLANE_TOP   ]   = Plane_tpl<f32>::CreatePlane(m_crtf + GetPosition(), m_cltf + GetPosition(), GetPosition());
+    m_fp[FR_PLANE_BOTTOM]   = Plane_tpl<f32>::CreatePlane(m_clbf + GetPosition(), m_crbf + GetPosition(), GetPosition());
+    m_fp[FR_PLANE_FAR   ]   = Plane_tpl<f32>::CreatePlane(m_crtf + GetPosition(), m_crbf + GetPosition(), m_cltf + GetPosition());  //clip-plane
 
     uint32 rh = m_Matrix.IsOrthonormalRH();
     if (rh == 0)

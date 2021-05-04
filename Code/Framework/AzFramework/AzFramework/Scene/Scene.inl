@@ -51,7 +51,7 @@ namespace AzFramework
     }
 
     template<typename T>
-    bool Scene::UnsetSubsystem(const T& system)
+    bool Scene::UnsetSubsystem([[maybe_unused]] const T& system)
     {
         const AZ::TypeId& targetType = azrtti_typeid<T>();
         const size_t systemKeysCount = m_systemKeys.size();

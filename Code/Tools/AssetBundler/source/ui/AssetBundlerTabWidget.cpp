@@ -15,6 +15,7 @@
 #include <source/utils/GUIApplicationManager.h>
 #include <source/utils/utils.h>
 
+#include <AzCore/Utils/Utils.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzQtComponents/Utilities/DesktopUtilities.h>
@@ -232,8 +233,8 @@ namespace AssetBundler
 
         for (const QJsonValue scanPath : m_watchedFiles + m_watchedFolders)
         {
-            AZStd::string scanFilePathStr = scanPath.toString().toUtf8().data();
-            AzFramework::StringFunc::Path::ConstructFull(GetCachedEngineRoot().c_str(), scanFilePathStr.c_str(), scanFilePathStr);
+            auto scanFilePathStr = (AZ::IO::Path(AZStd::string_view{ AZ::Utils::GetEnginePath() })
+                / scanPath.toString().toUtf8().data()).LexicallyNormal();
 
             // Check whether the file has already been watched
             // Get absolute file paths via QFileInfo to keep consistency in the letter case
@@ -263,8 +264,8 @@ namespace AssetBundler
         for (auto itr = scanPaths.begin(); itr != scanPaths.end(); ++itr)
         {
             QJsonValueRef scanPathValueRef = *itr;
-            AZStd::string scanPath = scanPathValueRef.toString().toUtf8().data();
-            AzFramework::StringFunc::Path::ConstructFull(GetCachedEngineRoot().c_str(), scanPath.c_str(), scanPath);
+            auto scanPath = (AZ::IO::Path(AZStd::string_view{ AZ::Utils::GetEnginePath() })
+                / scanPathValueRef.toString().toUtf8().data()).LexicallyNormal();
 
             // Check whether the file is being watched
             // Get absolute file paths via QFileInfo to keep consistency in the letter case
@@ -316,13 +317,8 @@ namespace AssetBundler
 
         for (const QJsonValue scanPath : scanPaths[AssetBundlingFileTypes[fileType]].toArray())
         {
-            AZStd::string absoluteScanPath = scanPath.toString().toUtf8().data();
-            AZStd::replace(absoluteScanPath.begin(), absoluteScanPath.end(), AZ_WRONG_FILESYSTEM_SEPARATOR, AZ_CORRECT_FILESYSTEM_SEPARATOR);
-
-            if (AzFramework::StringFunc::Path::IsRelative(absoluteScanPath.c_str()))
-            {
-                AzFramework::StringFunc::Path::ConstructFull(GetCachedEngineRoot().c_str(), absoluteScanPath.c_str(), absoluteScanPath);
-            }
+            auto absoluteScanPath = (AZ::IO::Path(AZStd::string_view{ AZ::Utils::GetEnginePath() })
+                / scanPath.toString().toUtf8().data()).LexicallyNormal();
 
             if (AZ::IO::FileIOBase::GetInstance()->IsDirectory(absoluteScanPath.c_str()))
             {

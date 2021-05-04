@@ -152,7 +152,7 @@ struct IVariable
         DT_LOCAL_STRING,
         DT_EQUIP,
         DT_REVERBPRESET,
-        DT_MATERIAL,
+        DT_DEPRECATED0, // formerly DT_MATERIAL
         DT_MATERIALLOOKUP,
         DT_EXTARRAY,    // Extendable Array
         DT_SEQUENCE,    // Movie Sequence (DEPRECATED, use DT_SEQUENCE_ID, instead.)
