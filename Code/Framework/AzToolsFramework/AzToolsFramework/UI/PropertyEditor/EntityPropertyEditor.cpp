@@ -63,6 +63,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/ToolsComponents/EditorOnlyEntityComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorOnlyEntityComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorLayerComponent.h>
+#include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponent.h>
 #include <AzToolsFramework/ToolsMessaging/EntityHighlightBus.h>
 #include <AzToolsFramework/UI/ComponentPalette/ComponentPaletteUtil.hxx>
 #include <AzToolsFramework/UI/ComponentPalette/ComponentPaletteWidget.hxx>
@@ -492,6 +493,11 @@ namespace AzToolsFramework
         {
             ToolsApplicationRequests::Bus::BroadcastResult(selectedEntityIds, &ToolsApplicationRequests::GetSelectedEntities);
         }
+    }
+
+    void EntityPropertyEditor::SetNewComponentId(AZ::ComponentId componentId)
+    {
+        m_newComponentId = componentId;
     }
 
     void EntityPropertyEditor::SetOverrideEntityIds(const AzToolsFramework::EntityIdSet& entities)
@@ -1052,6 +1058,19 @@ namespace AzToolsFramework
                     return false;
                 }
 
+                // If component 1 is a non-uniform scale component, it is sorted earlier (it should appear immediately after transform)
+                if (component1.m_component->RTTI_IsTypeOf(AzToolsFramework::Components::EditorNonUniformScaleComponent::RTTI_Type()))
+                {
+                    return true;
+                }
+
+                // If component 2 is a non-uniform scale component, component 1 is never sorted earlier
+                // (transform will already dominate in the check above)
+                if (component2.m_component->RTTI_IsTypeOf(AzToolsFramework::Components::EditorNonUniformScaleComponent::RTTI_Type()))
+                {
+                    return false;
+                }
+
                 if (!IsComponentRemovable(component1.m_component) && IsComponentRemovable(component2.m_component))
                 {
                     return true;
@@ -1128,10 +1147,7 @@ namespace AzToolsFramework
                 {
                     if (auto attributeData = azdynamic_cast<AZ::Edit::AttributeData<bool>*>(attribute))
                     {
-                        if (!attributeData->Get(nullptr))
-                        {
-                            return false;
-                        }
+                        return attributeData->Get(nullptr);
                     }
                 }
             }
@@ -1164,6 +1180,34 @@ namespace AzToolsFramework
             }
         }
         return true;
+    }
+
+    bool EntityPropertyEditor::IsComponentDraggable(const AZ::Component* component)
+    {
+        auto componentClassData = component ? GetComponentClassData(component) : nullptr;
+        if (componentClassData && componentClassData->m_editData)
+        {
+            if (auto editorDataElement = componentClassData->m_editData->FindElementData(AZ::Edit::ClassElements::EditorData))
+            {
+                if (auto attribute = editorDataElement->FindAttribute(AZ::Edit::Attributes::DraggableByUser))
+                {
+                    if (auto attributeData = azdynamic_cast<AZ::Edit::AttributeData<bool>*>(attribute))
+                    {
+                        if (!attributeData->Get(nullptr))
+                        {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
+
+    bool EntityPropertyEditor::AreComponentsDraggable(const AZ::Entity::ComponentArrayType& components) const
+    {
+        return AZStd::all_of(components.begin(), components.end(), [](AZ::Component* component) {return IsComponentDraggable(component); });
     }
 
     bool EntityPropertyEditor::AreComponentsCopyable(const AZ::Entity::ComponentArrayType& components) const
@@ -3367,7 +3411,9 @@ namespace AzToolsFramework
             sourceComponents.size() == m_selectedEntityIds.size() &&
             targetComponents.size() == m_selectedEntityIds.size() &&
             AreComponentsRemovable(sourceComponents) &&
-            AreComponentsRemovable(targetComponents);
+            AreComponentsRemovable(targetComponents) &&
+            AreComponentsDraggable(sourceComponents) &&
+            AreComponentsDraggable(targetComponents);
     }
 
     bool EntityPropertyEditor::IsMoveComponentsUpAllowed() const
@@ -3681,14 +3727,38 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::ScrollToNewComponent()
     {
-        //force new components to be visible, assuming they are added to the end of the list and layout
-        auto componentEditor = GetComponentEditorsFromIndex(m_componentEditorsUsed - 1);
+        // force new components to be visible
+        // if no component has been explicitly set at the most recently added,
+        // assume new components are added to the end of the list and layout
+        AZ::s32 newComponentIndex = m_componentEditorsUsed - 1;
+
+        // if there is a component id explicitly set as the most recently added, try to find it and make sure it is visible
+        if (m_newComponentId.has_value())
+        {
+            AZ::ComponentId newComponentId = m_newComponentId.value();
+            for (AZ::s32 componentIndex = 0; componentIndex < m_componentEditorsUsed; ++componentIndex)
+            {
+                if (m_componentEditors[componentIndex])
+                {
+                    for (const auto component : m_componentEditors[componentIndex]->GetComponents())
+                    {
+                        if (component->GetId() == newComponentId)
+                        {
+                            newComponentIndex = componentIndex;
+                        }
+                    }
+                }
+            }
+        }
+
+        auto componentEditor = GetComponentEditorsFromIndex(newComponentIndex);
         if (componentEditor)
         {
             m_gui->m_componentList->ensureWidgetVisible(componentEditor);
         }
         m_shouldScrollToNewComponents = false;
         m_shouldScrollToNewComponentsQueued = false;
+        m_newComponentId.reset();
     }
 
     void EntityPropertyEditor::QueueScrollToNewComponent()

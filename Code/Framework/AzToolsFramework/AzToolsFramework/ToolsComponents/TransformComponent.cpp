@@ -26,20 +26,20 @@
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
+#include <AzToolsFramework/API/EntityPropertyEditorRequestsBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/TransformScalePropertyHandler.h>
 #include <AzToolsFramework/ToolsComponents/EditorInspectorComponentBus.h>
+#include <AzToolsFramework/ToolsComponents/EditorPendingCompositionBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 #include <QMessageBox>
 
 #include <QMenu>
-
-#pragma optimize("", off)
 
 namespace AzToolsFramework
 {
@@ -1232,32 +1232,27 @@ namespace AzToolsFramework
             AzToolsFramework::EntityCompositionRequestBus::BroadcastResult(outcome,
                 &AzToolsFramework::EntityCompositionRequests::AddComponentsToEntities, entityList, componentsToAdd);
 
-            auto nonUniformScaleComponent = GetEntity()->FindComponent<EditorNonUniformScaleComponent>();
+            AZStd::vector<AZ::Component*> pendingComponents;
+            AzToolsFramework::EditorPendingCompositionRequestBus::Event(GetEntityId(),
+                &AzToolsFramework::EditorPendingCompositionRequests::GetPendingComponents, pendingComponents);
 
-            if (!outcome.IsSuccess() || nonUniformScaleComponent == nullptr)
+            AZ::ComponentId nonUniformScaleComponentId = AZ::InvalidComponentId;
+            for (const auto pendingComponent : pendingComponents)
+            {
+                if (pendingComponent->RTTI_IsTypeOf(AzToolsFramework::Components::EditorNonUniformScaleComponent::RTTI_Type()))
+                {
+                    nonUniformScaleComponentId = pendingComponent->GetId();
+                }
+            }
+
+            if (!outcome.IsSuccess() || nonUniformScaleComponentId == AZ::InvalidComponentId)
             {
                 AZ_Warning("Transform component", false, "Failed to add non-uniform scale component.");
                 return AZ::Edit::PropertyRefreshLevels::None;
             }
 
-            AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-                &AzToolsFramework::ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
-
-            ComponentOrderArray componentOrderArray;
-            EditorInspectorComponentRequestBus::EventResult(componentOrderArray, GetEntityId(),
-                &EditorInspectorComponentRequests::GetComponentOrderArray);
-
-            // find the id for the non-uniform scale component and move it immediately after the transform component in the sort order
-            auto nonUniformScaleComponentIter = AZStd::find(componentOrderArray.begin(), componentOrderArray.end(), nonUniformScaleComponent->GetId());
-            auto transformComponentIter = AZStd::find(componentOrderArray.begin(), componentOrderArray.end(), GetId());
-            if (nonUniformScaleComponentIter != componentOrderArray.end() && transformComponentIter != componentOrderArray.end())
-            {
-                componentOrderArray.erase(nonUniformScaleComponentIter);
-                transformComponentIter = AZStd::find(componentOrderArray.begin(), componentOrderArray.end(), GetId());
-                componentOrderArray.insert(++transformComponentIter, nonUniformScaleComponent->GetId());
-                EditorInspectorComponentRequestBus::Event(GetEntityId(),
-                    &EditorInspectorComponentRequests::SetComponentOrderArray, componentOrderArray);
-            }
+            AzToolsFramework::EntityPropertyEditorRequestBus::Broadcast(
+                &AzToolsFramework::EntityPropertyEditorRequests::SetNewComponentId, nonUniformScaleComponentId);
 
             return AZ::Edit::PropertyRefreshLevels::EntireTree;
         }

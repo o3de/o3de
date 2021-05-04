@@ -53,6 +53,9 @@ namespace AZ
             //! RemoveableByUser : A bool which determines if the component can be removed by the user.
             //! Setting this to false prevents the user from removing this component. Default behavior is removeable by user.
             const static AZ::Crc32 RemoveableByUser = AZ_CRC("RemoveableByUser", 0x32c7fd50);
+            //! A bool which determines if the component can be dragged to change where it appears in the entity sort order.
+            //! Setting this to false prevents the user from dragging the component. Default behaviour is draggable by user.
+            const static AZ::Crc32 DraggableByUser = AZ_CRC_CE("DraggableByUser");
             const static AZ::Crc32 AppearsInAddComponentMenu = AZ_CRC("AppearsInAddComponentMenu", 0x53790e31);
             const static AZ::Crc32 ForceAutoExpand = AZ_CRC("ForceAutoExpand", 0x1a5c79d2); // Ignores expansion state set by user, enforces expansion.
             const static AZ::Crc32 AutoExpand = AZ_CRC("AutoExpand", 0x306ff5c0); // Expands automatically unless user changes expansion state.
