@@ -10,7 +10,7 @@
 #
 
 set(LY_COPY_PERMISSIONS "OWNER_READ OWNER_WRITE OWNER_EXECUTE")
-set(LY_TARGET_TYPES_WITH_RUNTIME_OUTPUTS MODULE_LIBRARY SHARED_LIBRARY EXECUTABLE)
+set(LY_TARGET_TYPES_WITH_RUNTIME_OUTPUTS MODULE_LIBRARY SHARED_LIBRARY EXECUTABLE APPLICATION)
 
 # There are several runtime dependencies to handle:
 # 1. Dependencies to 3rdparty libraries. This involves copying IMPORTED_LOCATION to the folder where the target is. 
@@ -183,7 +183,7 @@ function(ly_get_runtime_dependency_command ly_RUNTIME_COMMAND ly_TARGET)
     # To support platforms where the binaries end in different places, we are going to assume that all dependencies,
     # including the ones we are building, need to be copied over. However, we add a check to prevent copying something
     # over itself. This detection cannot happen now because the target we are copying for varies.
-    set(runtime_command "ly_copy(\"${source_file}\" \"$<TARGET_FILE_DIR:@target@>${target_directory}\")\n")
+    set(runtime_command "ly_copy(\"${source_file}\" \"@target_file_dir@${target_directory}\")\n")
 
     # Tentative optimization: this is an attempt to solve the first "if" at generation time, making the runtime_dependencies
     # file smaller and faster to run. In platforms where the built target and the dependencies targets end up in the same
@@ -206,47 +206,51 @@ function(ly_get_runtime_dependency_command ly_RUNTIME_COMMAND ly_TARGET)
 
 endfunction()
 
-get_property(additional_module_paths GLOBAL PROPERTY LY_ADDITIONAL_MODULE_PATH)
-list(APPEND CMAKE_MODULE_PATH ${additional_module_paths})
+function(ly_delayed_generate_runtime_dependencies)
 
-get_property(all_targets GLOBAL PROPERTY LY_ALL_TARGETS)
-foreach(target IN LISTS all_targets)
+    get_property(additional_module_paths GLOBAL PROPERTY LY_ADDITIONAL_MODULE_PATH)
+    list(APPEND CMAKE_MODULE_PATH ${additional_module_paths})
 
-    # Exclude targets that dont produce runtime outputs
-    get_target_property(target_type ${target} TYPE)
-    if(NOT target_type IN_LIST LY_TARGET_TYPES_WITH_RUNTIME_OUTPUTS)
-        continue()
-    endif()
+    get_property(all_targets GLOBAL PROPERTY LY_ALL_TARGETS)
+    foreach(target IN LISTS all_targets)
 
-    unset(runtime_dependencies)
-    set(runtime_commands "
-function(ly_copy source_file target_directory)
-    get_filename_component(target_filename \"\${source_file}\" NAME)
-    if(NOT \"\${source_file}\" STREQUAL \"\${target_directory}/\${target_filename}\")
-        if(NOT EXISTS \"\${target_directory}\")
-            file(MAKE_DIRECTORY \"\${target_directory}\")
+        # Exclude targets that dont produce runtime outputs
+        get_target_property(target_type ${target} TYPE)
+        if(NOT target_type IN_LIST LY_TARGET_TYPES_WITH_RUNTIME_OUTPUTS)
+            continue()
         endif()
-        if(\"\${source_file}\" IS_NEWER_THAN \"\${target_directory}/\${target_filename}\")
-            file(LOCK \"\${target_directory}/\${target_filename}.lock\" GUARD FUNCTION TIMEOUT 30)
-            file(COPY \"\${source_file}\" DESTINATION \"\${target_directory}\" FILE_PERMISSIONS ${LY_COPY_PERMISSIONS})
-        endif()
-    endif()    
-endfunction()
-\n")
 
-    ly_get_runtime_dependencies(runtime_dependencies ${target})
-    foreach(runtime_dependency ${runtime_dependencies})
-        unset(runtime_command)
-        ly_get_runtime_dependency_command(runtime_command ${runtime_dependency})
-        string(APPEND runtime_commands ${runtime_command})
+        unset(runtime_dependencies)
+        set(runtime_commands "
+    function(ly_copy source_file target_directory)
+        get_filename_component(target_filename \"\${source_file}\" NAME)
+        if(NOT \"\${source_file}\" STREQUAL \"\${target_directory}/\${target_filename}\")
+            if(NOT EXISTS \"\${target_directory}\")
+                file(MAKE_DIRECTORY \"\${target_directory}\")
+            endif()
+            if(\"\${source_file}\" IS_NEWER_THAN \"\${target_directory}/\${target_filename}\")
+                file(LOCK \"\${target_directory}/\${target_filename}.lock\" GUARD FUNCTION TIMEOUT 30)
+                file(COPY \"\${source_file}\" DESTINATION \"\${target_directory}\" FILE_PERMISSIONS ${LY_COPY_PERMISSIONS})
+            endif()
+        endif()    
+    endfunction()
+    \n")
+
+        ly_get_runtime_dependencies(runtime_dependencies ${target})
+        foreach(runtime_dependency ${runtime_dependencies})
+            unset(runtime_command)
+            ly_get_runtime_dependency_command(runtime_command ${runtime_dependency})
+            string(APPEND runtime_commands ${runtime_command})
+        endforeach()
+        
+        # Generate the output file
+        set(target_file_dir "$<TARGET_FILE_DIR:${target}>")
+        string(CONFIGURE "${runtime_commands}" generated_commands @ONLY)
+        file(GENERATE
+            OUTPUT ${CMAKE_BINARY_DIR}/runtime_dependencies/$<CONFIG>/${target}.cmake
+            CONTENT "${generated_commands}"
+        )
+
     endforeach()
-    
-    # Generate the output file
-    string(CONFIGURE "${runtime_commands}" generated_commands @ONLY)
-    file(GENERATE
-        OUTPUT ${CMAKE_BINARY_DIR}/runtime_dependencies/$<CONFIG>/${target}.cmake
-        CONTENT "${generated_commands}"
-    )
 
-endforeach()
-
+endfunction()

@@ -36,6 +36,7 @@ include(cmake/GeneralSettings.cmake)
 include(cmake/FileUtil.cmake)
 include(cmake/PAL.cmake)
 include(cmake/PALTools.cmake)
+include(cmake/RuntimeDependencies.cmake)
 include(cmake/Install.cmake)
 include(cmake/Configurations.cmake) # Requires to be after PAL so we get platform variable definitions
 include(cmake/Dependencies.cmake)
@@ -117,7 +118,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 endif()
 # 4. inject runtime dependencies to the targets. We need to do this after (1) since we are going to walk through
 #    the dependencies
-include(cmake/RuntimeDependencies.cmake)
+ly_delayed_generate_runtime_dependencies()
 # 5. Perform test impact framework post steps once all of the targets have been enumerated
 ly_test_impact_post_step()
 # 6. Generate the O3DE find file and setup install locations for scripts, tools, assets etc., required by the engine
