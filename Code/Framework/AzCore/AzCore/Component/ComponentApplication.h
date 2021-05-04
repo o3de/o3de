@@ -327,9 +327,6 @@ namespace AZ
         /// Create the drillers
         void        CreateDrillers();
 
-        /// Parse ComponentApplication specific command line arguments
-        void ParseCommandLine(const AZ::CommandLine& commandLine);
-
         virtual void MergeSettingsToRegistry(SettingsRegistryInterface& registry);
 
         //! Sets the specializations that will be used when loading the Settings Registry. Extend this in derived

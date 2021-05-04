@@ -22,11 +22,6 @@
 #include <SceneAPI/FbxSceneBuilder/Importers/AssImpAnimationImporter.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/AssImpImporterUtilities.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/Utilities/RenamedNodesMap.h>
-#include <SceneAPI/FbxSDKWrapper/FbxAnimCurveWrapper.h>
-#include <SceneAPI/FbxSDKWrapper/FbxAnimLayerWrapper.h>
-#include <SceneAPI/FbxSDKWrapper/FbxNodeWrapper.h>
-#include <SceneAPI/FbxSDKWrapper/FbxSceneWrapper.h>
-#include <SceneAPI/FbxSDKWrapper/FbxTimeSpanWrapper.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneData/GraphData/AnimationData.h>
 #include <SceneAPI/SDKWrapper/AssImpNodeWrapper.h>
@@ -265,7 +260,7 @@ namespace AZ
             {
                 AZ_TraceContext("Importer", "Animation");
 
-                aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
+                const aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
                 const aiScene* scene = context.m_sourceScene.GetAssImpScene();
 
                 // Add check for animation layers at the scene level.
@@ -392,11 +387,10 @@ namespace AZ
                 }
 
                 Events::ProcessingResultCombiner combinedAnimationResult;
-                for (AZ::u32 meshIndex = 0; meshIndex < currentNode->mNumMeshes; ++meshIndex)
+                if (context.m_sourceNode.ContainsMesh())
                 {
-                    aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[meshIndex]];
-
-                    if (NodeToChannelToMorphAnim::iterator channelsForMeshName = meshMorphAnimations.find(mesh->mName.C_Str());
+                    const aiMesh* firstMesh = scene->mMeshes[currentNode->mMeshes[0]];
+                    if (NodeToChannelToMorphAnim::iterator channelsForMeshName = meshMorphAnimations.find(firstMesh->mName.C_Str());
                         channelsForMeshName != meshMorphAnimations.end())
                     {
                         const auto [nodeIterName, channels] = *channelsForMeshName;
@@ -404,7 +398,7 @@ namespace AZ
                         {
                             const auto& [animation, morphAnimation] = animAndMorphAnim;
                             combinedAnimationResult += ImportBlendShapeAnimation(
-                                context, animation, morphAnimation, mesh);
+                                context, animation, morphAnimation, firstMesh);
                         }
                     }
                 }
@@ -418,32 +412,40 @@ namespace AZ
                 if (boneAnimations.empty() && !meshMorphAnimations.empty())
                 {
                     const aiAnimation* animation = scene->mAnimations[0];
-
-                    // Morph animations need a regular animation on the node, as well.
-                    // If there is no bone animation on the current node, then generate one here.
-                    AZStd::shared_ptr<SceneData::GraphData::AnimationData> createdAnimationData =
-                        AZStd::make_shared<SceneData::GraphData::AnimationData>();
-
-                    const size_t numKeyframes = animation->mDuration + 1; // +1 because we start at 0 and the last keyframe is at mDuration instead of mDuration-1
-                    createdAnimationData->ReserveKeyFrames(numKeyframes);
-
-                    const double timeStepBetweenFrames = 1.0 / animation->mTicksPerSecond;
-                    createdAnimationData->SetTimeStepBetweenFrames(timeStepBetweenFrames);
-
-                    // Set every frame of the animation to the start location of the node.
-                    aiMatrix4x4 combinedTransform = GetConcatenatedLocalTransform(currentNode);
-                    DataTypes::MatrixType localTransform = AssImpSDKWrapper::AssImpTypeConverter::ToTransform(combinedTransform);
-                    context.m_sourceSceneSystem.SwapTransformForUpAxis(localTransform);
-                    context.m_sourceSceneSystem.ConvertUnit(localTransform);
-                    for (AZ::u32 time = 0; time <= animation->mDuration; ++time)
+                    //const aiAnimation* animation = scene->mAnimations[animIndex];
+                    for (AZ::u32 channelIndex = 0; channelIndex < animation->mNumMorphMeshChannels; ++channelIndex)
                     {
-                        createdAnimationData->AddKeyFrame(localTransform);
+                        const aiMeshMorphAnim* nodeAnim = animation->mMorphMeshChannels[channelIndex];
+                        // Morph animations need a regular animation on the node, as well.
+                        // If there is no bone animation on the current node, then generate one here.
+                        AZStd::shared_ptr<SceneData::GraphData::AnimationData> createdAnimationData =
+                            AZStd::make_shared<SceneData::GraphData::AnimationData>();
+
+                        const size_t numKeyframes = GetNumKeyFrames(
+                            nodeAnim->mNumKeys,
+                            animation->mDuration,
+                            animation->mTicksPerSecond);
+                        createdAnimationData->ReserveKeyFrames(numKeyframes);
+
+                        const double timeStepBetweenFrames = 1.0 / animation->mTicksPerSecond;
+                        createdAnimationData->SetTimeStepBetweenFrames(timeStepBetweenFrames);
+
+                        // Set every frame of the animation to the start location of the node.
+                        aiMatrix4x4 combinedTransform = GetConcatenatedLocalTransform(currentNode);
+                        DataTypes::MatrixType localTransform = AssImpSDKWrapper::AssImpTypeConverter::ToTransform(combinedTransform);
+                        context.m_sourceSceneSystem.SwapTransformForUpAxis(localTransform);
+                        context.m_sourceSceneSystem.ConvertUnit(localTransform);
+                        for (AZ::u32 time = 0; time <= numKeyframes; ++time)
+                        {
+                            createdAnimationData->AddKeyFrame(localTransform);
+                        }
+
+                        const AZStd::string stubBoneAnimForMorphName(AZStd::string::format("%s%s", nodeName.c_str(), nodeAnim->mName.C_Str()));
+                        Containers::SceneGraph::NodeIndex addNode = context.m_scene.GetGraph().AddChild(
+                            context.m_currentGraphPosition, stubBoneAnimForMorphName.c_str(), AZStd::move(createdAnimationData));
+                        context.m_scene.GetGraph().MakeEndPoint(addNode);
                     }
-
-                    Containers::SceneGraph::NodeIndex addNode = context.m_scene.GetGraph().AddChild(
-                        context.m_currentGraphPosition, nodeName.c_str(), AZStd::move(createdAnimationData));
-                    context.m_scene.GetGraph().MakeEndPoint(addNode);
-
+                    
                     return combinedAnimationResult.GetResult();
                 }
                 decltype(boneAnimations) parentFillerAnimations;
@@ -451,8 +453,8 @@ namespace AZ
                 // Go through all the animations and make sure we create animations for bones who's parents don't have an animation
                 for (auto&& anim : boneAnimations)
                 {
-                    aiNode* node = scene->mRootNode->FindNode(anim.first.c_str());
-                    aiNode* parent = node->mParent;
+                    const aiNode* node = scene->mRootNode->FindNode(anim.first.c_str());
+                    const aiNode* parent = node->mParent;
 
                     while (parent && parent != scene->mRootNode)
                     {
@@ -603,7 +605,8 @@ namespace AZ
                 //      Keyframes generated for every single frame of the animation.
                 typedef AZStd::map<int, AZStd::vector<KeyData>> ValueToKeyDataMap;
                 ValueToKeyDataMap valueToKeyDataMap;
-
+                // Key time can be less than zero, normalize to have zero be the lowest time.
+                double keyOffset = 0;
                 for (int keyIdx = 0; keyIdx < meshMorphAnim->mNumKeys; keyIdx++)
                 {
                     aiMeshMorphKey& key = meshMorphAnim->mKeys[keyIdx];
@@ -614,6 +617,10 @@ namespace AZ
                         valueToKeyDataMap[currentValue].insert(
                         AZStd::upper_bound(valueToKeyDataMap[currentValue].begin(), valueToKeyDataMap[currentValue].end(),thisKey),
                             thisKey);
+                        if (key.mTime < keyOffset)
+                        {
+                            keyOffset = key.mTime;
+                        }
                     }
                 }
 
@@ -636,7 +643,7 @@ namespace AZ
                         const double time = GetTimeForFrame(frame, animation->mTicksPerSecond);
 
                         float weight = 0;
-                        if (!SampleKeyFrame(weight, keys, keys.size(), time, keyIdx))
+                        if (!SampleKeyFrame(weight, keys, keys.size(), time + keyOffset, keyIdx))
                         {
                             return Events::ProcessingResult::Failure;
                         }

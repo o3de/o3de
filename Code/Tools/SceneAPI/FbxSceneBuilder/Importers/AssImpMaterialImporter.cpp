@@ -17,7 +17,7 @@
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/FbxImporterUtilities.h>
+#include <SceneAPI/FbxSceneBuilder/Importers/ImporterUtilities.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/Utilities/AssImpMeshImporterUtilities.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/Utilities/RenamedNodesMap.h>
 #include <SceneAPI/SDKWrapper/AssImpNodeWrapper.h>
@@ -62,7 +62,7 @@ namespace AZ
                 for (int idx = 0; idx < context.m_sourceNode.m_assImpNode->mNumMeshes; ++idx)
                 {
                     int meshIndex = context.m_sourceNode.m_assImpNode->mMeshes[idx];
-                    aiMesh* assImpMesh = context.m_sourceScene.GetAssImpScene()->mMeshes[meshIndex];
+                    const aiMesh* assImpMesh = context.m_sourceScene.GetAssImpScene()->mMeshes[meshIndex];
                     AZ_Assert(assImpMesh, "Asset Importer Mesh should not be null.");
                     int materialIndex = assImpMesh->mMaterialIndex;
                     AZ_TraceContext("Material Index", materialIndex);

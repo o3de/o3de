@@ -53,16 +53,20 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::ViewportIcon, "editor/icons/components/viewport/component_placeholder.png")
                             ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                            ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                             ->Attribute(AZ::Edit::Attributes::PrimaryAssetType, AZ::AzTypeInfo<RPI::ModelAsset>::Uuid())
-                        ->ClassElement(AZ::Edit::ClassElements::Group, "Cubemap")
+                        ->ClassElement(AZ::Edit::ClassElements::Group, "Cubemap Bake")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &EditorReflectionProbeComponent::m_useBakedCubemap, "Use Baked Cubemap", "Selects between a cubemap that captures the environment at location in the scene or a preauthored cubemap")
-                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorReflectionProbeComponent::OnUseBakedCubemapChanged)
                             ->UIElement(AZ::Edit::UIHandlers::Button, "Bake Reflection Probe", "Bake Reflection Probe")
                                 ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
                                 ->Attribute(AZ::Edit::Attributes::ButtonText, "Bake Reflection Probe")
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorReflectionProbeComponent::BakeReflectionProbe)
                                 ->Attribute(AZ::Edit::Attributes::Visibility, &EditorReflectionProbeComponent::GetBakedCubemapVisibilitySetting)
+                        ->ClassElement(AZ::Edit::ClassElements::Group, "Cubemap")
+                            ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &EditorReflectionProbeComponent::m_useBakedCubemap, "Use Baked Cubemap", "Selects between a cubemap that captures the environment at location in the scene or a preauthored cubemap")
+                                ->Attribute(AZ::Edit::Attributes::ChangeValidate, &EditorReflectionProbeComponent::OnUseBakedCubemapValidate)
+                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorReflectionProbeComponent::OnUseBakedCubemapChanged)
                             ->DataElement(AZ::Edit::UIHandlers::MultiLineEdit, &EditorReflectionProbeComponent::m_bakedCubeMapRelativePath, "Baked Cubemap Path", "Baked Cubemap Path")
                                 ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
                                 ->Attribute(AZ::Edit::Attributes::Visibility, &EditorReflectionProbeComponent::GetBakedCubemapVisibilitySetting)
@@ -168,13 +172,19 @@ namespace AZ
             AZ::Vector3 position = AZ::Vector3::CreateZero();
             AZ::TransformBus::EventResult(position, GetEntityId(), &AZ::TransformBus::Events::GetWorldTranslation);
 
+            AZ::Vector3 scale = AZ::Vector3::CreateOne();
+            AZ::TransformBus::EventResult(scale, GetEntityId(), &AZ::TransformBus::Events::GetLocalScale);
+
             // draw AABB at probe position using the inner dimensions
             Color color(0.0f, 0.0f, 1.0f, 1.0f);
             debugDisplay.SetColor(color);
 
             ReflectionProbeComponentConfig& configuration = m_controller.m_configuration;
-            AZ::Vector3 innerMin(position.GetX() - configuration.m_innerWidth / 2, position.GetY() - configuration.m_innerLength / 2, position.GetZ() - configuration.m_innerHeight / 2);
-            AZ::Vector3 innerMax(position.GetX() + configuration.m_innerWidth / 2, position.GetY() + configuration.m_innerLength / 2, position.GetZ() + configuration.m_innerHeight / 2);
+            AZ::Vector3 innerExtents(configuration.m_innerWidth, configuration.m_innerLength, configuration.m_innerHeight);
+            innerExtents *= scale;
+
+            AZ::Vector3 innerMin(position.GetX() - innerExtents.GetX() / 2, position.GetY() - innerExtents.GetY() / 2, position.GetZ() - innerExtents.GetZ() / 2);
+            AZ::Vector3 innerMax(position.GetX() + innerExtents.GetX() / 2, position.GetY() + innerExtents.GetY() / 2, position.GetZ() + innerExtents.GetZ() / 2);
             debugDisplay.DrawWireBox(innerMin, innerMax);
         }
 
@@ -186,6 +196,16 @@ namespace AZ
         bool EditorReflectionProbeComponent::SupportsEditorRayIntersect()
         {
             return false;
+        }
+
+        AZ::Outcome<void, AZStd::string> EditorReflectionProbeComponent::OnUseBakedCubemapValidate([[maybe_unused]] void* newValue, [[maybe_unused]] const AZ::Uuid& valueType)
+        {
+            if (!m_controller.m_featureProcessor)
+            {
+                return AZ::Failure(AZStd::string("This Reflection Probe entity is hidden, it must be visible in order to change the cubemap type."));
+            }
+
+            return AZ::Success();
         }
 
         AZ::u32 EditorReflectionProbeComponent::OnUseBakedCubemapChanged()

@@ -138,7 +138,7 @@ namespace O3de
             if (!logFileReader->Open(thisFile))
             {
 #if defined(AZ_PLATFORM_WINDOWS)
-                LOG(ERROR) << "Failed to open " << base::UTF16ToUTF8(thisFile.BaseName().value());
+                LOG(ERROR) << "Failed to open " << base::WideToUTF8(thisFile.BaseName().value());
 #else
                 LOG(ERROR) << "Failed to open " << thisFile.BaseName().value();
 #endif
@@ -149,7 +149,7 @@ namespace O3de
             if (start_offset < 0)
             {
 #if defined(AZ_PLATFORM_WINDOWS)
-                LOG(ERROR) << "Failed to get offset for " << base::UTF16ToUTF8(thisFile.BaseName().value());
+                LOG(ERROR) << "Failed to get offset for " << base::WideToUTF8(thisFile.BaseName().value());
 #else
                 LOG(ERROR) << "Failed to get offset for " << thisFile.BaseName().value();
 #endif
@@ -162,7 +162,7 @@ namespace O3de
 
             std::string fileNameKey{ "attachment_" };
 #if defined(AZ_PLATFORM_WINDOWS)
-            fileNameKey += base::UTF16ToUTF8(thisFile.BaseName().value());
+            fileNameKey += base::WideToUTF8(thisFile.BaseName().value());
 #else
             fileNameKey += thisFile.BaseName().value();
 #endif

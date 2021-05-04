@@ -43,6 +43,7 @@ class TestDynamicSliceInstanceSpawner(EditorTestHelper):
             use_terrain=False,
         )
         general.idle_wait(1.0)
+        general.set_current_view_position(512.0, 480.0, 38.0)
 
         # Grab the UUID that we need for creating an Dynamic Slice Instance Spawner
         dynamic_slice_spawner_uuid = azlmbr.math.Uuid_CreateString('{BBA5CC1E-B4CA-4792-89F7-93711E98FBD1}', 0)
@@ -113,11 +114,8 @@ class TestDynamicSliceInstanceSpawner(EditorTestHelper):
         # This should result in 400 instances, since our box is 16 m x 16 m and by default the veg system plants
         # 20 instances per 16 meters
         spawner_entity.get_set_test(0, 'Configuration|Allow Empty Assets', True)
-        general.idle_wait(1.0)
         num_expected_instances = 20 * 20
-        box = azlmbr.shape.ShapeComponentRequestsBus(bus.Event, 'GetEncompassingAabb', spawner_entity.id)
-        num_found = azlmbr.areasystem.AreaSystemRequestBus(bus.Broadcast, 'GetInstanceCountInAabb', box)
-        property_tree_success = property_tree_success and (num_found == num_expected_instances)
+        property_tree_success = property_tree_success and self.wait_for_condition(lambda: dynveg.validate_instance_count_in_entity_shape(spawner_entity.id, num_expected_instances), 5.0)
         self.test_success = self.test_success and property_tree_success
         self.log(f'Property Tree spawner type test: {property_tree_success}')
 
@@ -126,10 +124,8 @@ class TestDynamicSliceInstanceSpawner(EditorTestHelper):
         # Since we have an empty slice path, we should have 0 instances once we disable 'Allow Empty Assets'
         num_expected_instances = 0
         allow_empty_assets_success = allow_empty_assets_success and spawner_entity.get_set_test(0, 'Configuration|Allow Empty Assets', False)
-        general.idle_wait(1.0)
-        num_found = azlmbr.areasystem.AreaSystemRequestBus(bus.Broadcast, 'GetInstanceCountInAabb', box)
-        self.log(f'Allow Empty Assets test: Found {num_found} instances -- Expected {num_expected_instances} instances')
-        allow_empty_assets_success = allow_empty_assets_success and (num_found == num_expected_instances)
+        self.log('Allow Empty Assets test:')
+        allow_empty_assets_success = allow_empty_assets_success and self.wait_for_condition(lambda: dynveg.validate_instance_count_in_entity_shape(spawner_entity.id, num_expected_instances), 5.0)
         self.test_success = self.test_success and allow_empty_assets_success
         self.log(f'Allow Empty Assets test: {allow_empty_assets_success}')
 
@@ -142,10 +138,8 @@ class TestDynamicSliceInstanceSpawner(EditorTestHelper):
         descriptor = hydra.get_component_property_value(spawner_entity.components[2], 'Configuration|Embedded Assets|[0]')
         descriptor.spawner = dynamic_slice_spawner
         spawns_slices_success = spawns_slices_success and spawner_entity.get_set_test(2, "Configuration|Embedded Assets|[0]", descriptor)
-        general.idle_wait(1.0)
-        num_found = azlmbr.areasystem.AreaSystemRequestBus(bus.Broadcast, 'GetInstanceCountInAabb', box)
-        self.log(f'Spawn dynamic slices test: Found {num_found} instances -- Expected {num_expected_instances} instances')
-        spawns_slices_success = spawns_slices_success and (num_found == num_expected_instances)
+        self.log('Spawn dynamic slices test:')
+        spawns_slices_success = spawns_slices_success and self.wait_for_condition(lambda: dynveg.validate_instance_count_in_entity_shape(spawner_entity.id, num_expected_instances), 5.0)
         self.test_success = self.test_success and spawns_slices_success
         self.log(f'Spawn dynamic slices test: {spawns_slices_success}')
 

@@ -650,7 +650,6 @@ namespace EMotionFX
             }
 
             distance = std::numeric_limits<float>::max();
-            bool isHit = false;
 
             // Get the MCore::Ray used by Mesh::Intersects
             // Convert the input source position and direction to a line segment by using the frustum depth as line length.
@@ -659,12 +658,13 @@ namespace EMotionFX
             const AZ::Vector3 dest = src + dir * frustumDepth;
             const MCore::Ray ray(src, dest);
 
-            // Update the mesh deformers so the intersection test will hit the actor if it is being
-            // animated by a motion component that is previewing the animation in the editor
+            // Update the mesh deformers (apply software skinning and morphing) so the intersection test will hit the actor
+            // if it is being animated by a motion component that is previewing the animation in the editor.
             m_actorInstance->UpdateMeshDeformers(0.0f, true);
 
             const TransformData* transformData = m_actorInstance->GetTransformData();
             const Pose* currentPose = transformData->GetCurrentPose();
+            bool isHit = false;
 
             // Iterate through the meshes in the actor, looking for the closest hit
             const AZ::u32 lodLevel = m_actorInstance->GetLODLevel();

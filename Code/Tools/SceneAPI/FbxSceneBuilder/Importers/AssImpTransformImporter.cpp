@@ -15,7 +15,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
 #include <SceneAPI/FbxSceneBuilder/FbxSceneSystem.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/FbxImporterUtilities.h>
+#include <SceneAPI/FbxSceneBuilder/Importers/ImporterUtilities.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/Utilities/RenamedNodesMap.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 #include <SceneAPI/SceneData/GraphData/TransformData.h>
@@ -50,7 +50,7 @@ namespace AZ
             Events::ProcessingResult AssImpTransformImporter::ImportTransform(AssImpSceneNodeAppendedContext& context)
             {
                 AZ_TraceContext("Importer", "transform");
-                aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
+                const aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
                 const aiScene* scene = context.m_sourceScene.GetAssImpScene();
                 
                 if (currentNode == scene->mRootNode || IsPivotNode(currentNode->mName))

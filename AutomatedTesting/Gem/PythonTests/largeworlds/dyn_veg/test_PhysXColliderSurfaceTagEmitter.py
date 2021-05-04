@@ -38,6 +38,7 @@ class TestPhysXColliderSurfaceTagEmitter(object):
 
     @pytest.mark.test_case_id("C29053640")
     @pytest.mark.SUITE_periodic
+    @pytest.mark.dynveg_surfacetagemitter
     def test_PhysXColliderSurfaceTagEmitter_E2E_Editor(self, request, editor, level, launcher_platform):
 
         expected_lines = [

@@ -10,13 +10,7 @@
 #
 
 set(FILES
-    AWSGameLiftServerSDK_linux.cmake
     BuiltInPackages_linux.cmake
-    civetweb_linux.cmake
     Clang_linux.cmake
-    dyad_linux.cmake
-    etc2comp_linux.cmake
-    FbxSdk_linux.cmake
-    OpenSSL_linux.cmake
     Wwise_linux.cmake
 )

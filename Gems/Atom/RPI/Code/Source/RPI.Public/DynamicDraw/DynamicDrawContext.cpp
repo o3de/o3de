@@ -446,6 +446,7 @@ namespace AZ
                 drawItem.m_viewports = &m_viewport;
             }
 
+            drawItemInfo.m_sortKey = m_sortKey++;
             m_cachedDrawItems.emplace_back(drawItemInfo);
         }
                 
@@ -526,6 +527,7 @@ namespace AZ
                 drawItem.m_viewports = &m_viewport;
             }
 
+            drawItemInfo.m_sortKey = m_sortKey++;
             m_cachedDrawItems.emplace_back(drawItemInfo);
         }
 
@@ -576,6 +578,16 @@ namespace AZ
             return m_shader;
         }
 
+        void DynamicDrawContext::SetSortKey(RHI::DrawItemSortKey key)
+        {
+            m_sortKey = key;
+        }
+
+        RHI::DrawItemSortKey DynamicDrawContext::GetSortKey() const
+        {
+            return m_sortKey;
+        }
+
         void DynamicDrawContext::SubmitDrawData(ViewPtr view)
         {
             if (!m_initialized)
@@ -587,8 +599,7 @@ namespace AZ
             {
                 return;
             }
-
-            uint64_t sortKey = 0; // use the draw order as sort key. 
+ 
             for (auto& drawItemInfo : m_cachedDrawItems)
             {
                 if (drawItemInfo.m_indexBufferViewIndex != InvalidIndex)
@@ -602,15 +613,15 @@ namespace AZ
                 }
 
                 RHI::DrawItemKeyPair drawItemKeyPair;
-                drawItemKeyPair.m_sortKey = sortKey;
+                drawItemKeyPair.m_sortKey = drawItemInfo.m_sortKey;
                 drawItemKeyPair.m_item = &drawItemInfo.m_drawItem;
                 view->AddDrawItem(m_drawListTag, drawItemKeyPair);
-                sortKey++;
             }
         }
 
         void DynamicDrawContext::FrameEnd()
         {
+            m_sortKey = 0;
             m_cachedDrawItems.clear();
             m_cachedStreamBufferViews.clear();
             m_cachedIndexBufferViews.clear();
