@@ -81,7 +81,6 @@ ly_add_source_properties(
 
 ly_add_target(
     NAME ImageProcessing.Editor GEM_MODULE
-
     NAMESPACE Gem
     AUTOMOC
     AUTORCC
