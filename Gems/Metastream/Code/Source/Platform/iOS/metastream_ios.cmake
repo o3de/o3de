@@ -8,11 +8,3 @@
 # remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
-
-set(FILES
-    Source/AtomBridgeEditorModule.cpp
-    Source/AtomBridgeModule.cpp
-    Source/AtomBridgeModule.h
-    Source/Editor/AssetCollectionAsyncLoaderTestComponent.cpp
-    Source/Editor/AssetCollectionAsyncLoaderTestComponent.h
-)

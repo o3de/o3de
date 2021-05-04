@@ -9,10 +9,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-set(FILES
-    Source/AtomBridgeEditorModule.cpp
-    Source/AtomBridgeModule.cpp
-    Source/AtomBridgeModule.h
-    Source/Editor/AssetCollectionAsyncLoaderTestComponent.cpp
-    Source/Editor/AssetCollectionAsyncLoaderTestComponent.h
+set(LY_BUILD_DEPENDENCIES
+    PRIVATE
+        3rdParty::civetweb
 )
