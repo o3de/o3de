@@ -14,7 +14,6 @@
 
 #include "Asset/WhiteBoxMeshAssetHandler.h"
 #include "Rendering/Atom/WhiteBoxAtomRenderMesh.h"
-#include "Rendering/Legacy/WhiteBoxLegacyRenderMesh.h"
 #include "WhiteBoxSystemComponent.h"
 
 #include <AzCore/Serialization/EditContext.h>

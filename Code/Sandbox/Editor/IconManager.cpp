@@ -26,7 +26,6 @@
 #include "Util/Image.h"
 #include "Util/ImageUtil.h"
 
-
 #define HELPER_MATERIAL "Objects/Helper"
 
 namespace
@@ -196,7 +195,7 @@ int CIconManager::GetIconTexture(EIcon icon)
 }
 
 //////////////////////////////////////////////////////////////////////////
-IStatObj*   CIconManager::GetObject(EStatObject object)
+IStatObj*   CIconManager::GetObject(EStatObject)
 {
     return nullptr;
 }
