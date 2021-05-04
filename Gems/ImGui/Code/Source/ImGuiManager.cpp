@@ -27,6 +27,8 @@
 #include <AzFramework/Input/Devices/Touch/InputDeviceTouch.h>
 #include <AzFramework/Input/Devices/VirtualKeyboard/InputDeviceVirtualKeyboard.h>
 #include <AzFramework/API/AtomActiveInterface.h>
+#include <IConsole.h>
+#include <ITimer.h>
 #include <imgui/imgui_internal.h>
 #include <sstream>
 #include <string>
@@ -377,8 +379,6 @@ void ImGuiManager::Render()
     // Advance ImGui by Elapsed Frame Time
     io.DeltaTime = gEnv->pTimer->GetFrameTime();
     //// END FROM PREUPDATE
-
-    TransformationMatrices backupSceneMatrices;
 
     AZ::u32 backBufferWidth = 0;
     AZ::u32 backBufferHeight = 0;
