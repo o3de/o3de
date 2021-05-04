@@ -472,32 +472,6 @@ namespace AssetBundler
             AZ::SettingsRegistryMergeUtils::FilePathKey_CacheProjectRootFolder));
     }
 
-    AZ::Outcome<void, AZStd::string> GetPlatformNamesFromCacheFolder(AZStd::vector<AZStd::string>& platformNames)
-    {
-        AZ::Outcome<AZ::IO::Path, AZStd::string> projectCacheRootFolder = GetProjectCacheFolderPath();
-        if (!projectCacheRootFolder)
-        {
-            return AZ::Failure(projectCacheRootFolder.TakeError());
-        }
-
-        const AZStd::string& projectCacheRootPath = projectCacheRootFolder.GetValue().Native();
-        QDir projectCacheDir(QString::fromUtf8(projectCacheRootPath.c_str(), aznumeric_cast<int>(projectCacheRootPath.size())));
-        auto tempPlatformList = projectCacheDir.entryList(QDir::Filter::Dirs | QDir::Filter::NoDotAndDotDot);
-
-        if (tempPlatformList.empty())
-        {
-            return AZ::Failure(AZStd::string(
-                "Cache is empty. Please run the Open 3D Engine Asset Processor to generate a Cache and build assets."));
-        }
-
-        for (const QString& platform : tempPlatformList)
-        {
-            platformNames.push_back(AZStd::string(platform.toUtf8().data()));
-        }
-
-        return AZ::Success();
-    }
-
     AZ::Outcome<AZ::IO::Path, AZStd::string> GetAssetCatalogFilePath()
     {
         AZ::IO::Path assetCatalogFilePath = GetPlatformSpecificCacheFolderPath();

@@ -159,17 +159,6 @@ namespace AssetBundler
     AZ::Outcome<AZ::IO::Path, AZStd::string> GetProjectCacheFolderPath();
 
     /**
-    * Calculates the list of enabled platforms for the input project by reading the folder names inside the project-specific cache folder.
-    * If the Asset Processor has not been run yet, or has not been run since the enabled platform list inside AssetProcessorPlatformConfig.setreg 
-    *   was changed, the output of this function will be incorrect.
-    *
-    * @param projectCacheFolder The directory of a project-specific cache folder: /ProjectPath/Cache
-    * @param platformNames [out] The list of platforms enabled in the project
-    * @return void on success, error message on failure
-    */
-    AZ::Outcome<void, AZStd::string> GetPlatformNamesFromCacheFolder(AZStd::vector<AZStd::string>& platformNames);
-
-    /**
     * Computes the absolute path to the Asset Catalog file for a specified project and platform.
     * With platform set as "pc" and project as "ProjectName", the path will resemble: C:/ProjectPath/Cache/pc/assetcatalog.xml
     *
