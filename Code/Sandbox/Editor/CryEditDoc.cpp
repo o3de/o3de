@@ -62,6 +62,9 @@
 #include "StatObjBus.h"
 
 // LmbrCentral
+#include <ModernViewportCameraController.h>
+#include <Atom/RPI.Public/ViewportContext.h>
+#include <Atom/RPI.Public/ViewportContextBus.h>
 #include <LmbrCentral/Rendering/EditorLightComponentBus.h>              // for LmbrCentral::EditorLightComponentRequestBus
 
 
