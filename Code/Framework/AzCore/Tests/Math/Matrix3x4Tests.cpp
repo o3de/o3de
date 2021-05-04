@@ -563,7 +563,7 @@ namespace UnitTest
         EXPECT_THAT(m2.GetRow(2), IsClose(Vector4(-9.0f, -10.0f, -11.0f, -12.0f)));
 
         AZ::Matrix3x4 m3 = m1 + (-m1);
-        EXPECT_THAT(m3, IsClose(Matrix3x4::CreateZero()));
+        EXPECT_THAT(m3, IsClose(AZ::Matrix3x4::CreateZero()));
     }
 
     TEST(MATH_Matrix3x4, MultiplyByVector3)
