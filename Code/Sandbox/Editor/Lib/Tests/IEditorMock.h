@@ -91,7 +91,6 @@ public:
     MOCK_METHOD0(GetObjectManager, struct IObjectManager* ());
     MOCK_METHOD0(GetSettingsManager, CSettingsManager* ());
     MOCK_METHOD1(GetDBItemManager, IDataBaseManager* (EDataBaseItemType));
-    MOCK_METHOD0(GetMaterialManager, CMaterialManager* ());
     MOCK_METHOD0(GetMaterialManagerLibrary, IBaseLibraryManager* ()); 
     MOCK_METHOD0(GetIEditorMaterialManager, IEditorMaterialManager* ()); 
     MOCK_METHOD0(GetIconManager, IIconManager* ());

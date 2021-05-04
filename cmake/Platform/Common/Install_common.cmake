@@ -286,7 +286,7 @@ endfunction()
 function(ly_setup_others)
 
     # List of directories we want to install relative to engine root
-    set(DIRECTORIES_TO_INSTALL Tools/LyTestTools Tools/RemoteConsole scripts)
+    set(DIRECTORIES_TO_INSTALL Tools/LyTestTools Tools/RemoteConsole)
     foreach(dir ${DIRECTORIES_TO_INSTALL})
 
         get_filename_component(install_path ${dir} DIRECTORY)
@@ -301,6 +301,24 @@ function(ly_setup_others)
 
     endforeach()
 
+    # Scripts
+    file(GLOB o3de_scripts "${CMAKE_SOURCE_DIR}/scripts/o3de.*")
+    install(FILES
+        ${o3de_scripts}
+        DESTINATION ./scripts
+        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
+    )
+
+    install(DIRECTORY
+        ${CMAKE_SOURCE_DIR}/scripts/bundler
+        ${CMAKE_SOURCE_DIR}/scripts/project_manager
+        DESTINATION ./scripts
+        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
+        PATTERN "__pycache__" EXCLUDE
+        PATTERN "CMakeLists.txt" EXCLUDE
+        PATTERN "tests" EXCLUDE
+    )
+
     install(DIRECTORY "${CMAKE_SOURCE_DIR}/python"
         DESTINATION .
         COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
@@ -311,7 +329,7 @@ function(ly_setup_others)
     # Registry
     install(DIRECTORY
         ${CMAKE_CURRENT_BINARY_DIR}/bin/$<CONFIG>/Registry
-        DESTINATION ./bin/$<CONFIG>
+        DESTINATION ./bin/${PAL_PLATFORM_NAME}/$<CONFIG>
         COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
     install(DIRECTORY
@@ -350,16 +368,14 @@ function(ly_setup_others)
         endif()
     endforeach()
 
-
     # Qt Binaries
-    set(QT_BIN_DIRS bearer iconengines imageformats platforms styles translations)
-    foreach(qt_dir ${QT_BIN_DIRS})
-        install(DIRECTORY
-            ${CMAKE_CURRENT_BINARY_DIR}/bin/$<CONFIG>/${qt_dir}
-            DESTINATION ./bin/$<CONFIG>
-            COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
-        )
-    endforeach()
+    set(QT_DIRS bearer iconengines imageformats platforms styles translations)
+    list(TRANSFORM QT_DIRS PREPEND "${CMAKE_CURRENT_BINARY_DIR}/bin/$<CONFIG>/" OUTPUT_VARIABLE QT_BIN_DIRS)
+    install(DIRECTORY
+        ${QT_BIN_DIRS}
+        DESTINATION ./bin/${PAL_PLATFORM_NAME}/$<CONFIG>
+        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
+    )
 
     # Templates
     install(DIRECTORY

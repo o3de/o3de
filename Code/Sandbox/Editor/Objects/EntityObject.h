@@ -21,7 +21,6 @@
 
 #include "IMovieSystem.h"
 #include "IEntityObjectListener.h"
-#include "StatObjValidator.h"
 #include "Gizmo.h"
 #include "CryListenerSet.h"
 #include "StatObjBus.h"
@@ -108,8 +107,6 @@ public:
     void SetEntityPropertyFloat(const char* name, float value);
     void SetEntityPropertyString(const char* name, const QString& value);
 
-    virtual QString GetTooltip() const;
-
     virtual int MouseCreateCallback(CViewport* view, EMouseEvent event, QPoint& point, int flags);
     virtual void OnContextMenu(QMenu* menu);
 
@@ -133,9 +130,6 @@ public:
     void OnEvent(ObjectEvent event);
 
     virtual void SetTransformDelegate(ITransformDelegate* pTransformDelegate) override;
-
-    virtual CMaterial* GetRenderMaterial() const;
-    virtual void OnMaterialChanged(MaterialChangeFlags change);
 
     // Set attach flags and target
     enum EAttachmentType
@@ -404,8 +398,6 @@ protected:
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
     static float m_helperScale;
-
-    CStatObjValidator m_statObjValidator;
 
     EAttachmentType m_attachmentType;
 

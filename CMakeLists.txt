@@ -98,7 +98,9 @@ set(enabled_platforms
 # Add any engine restricted platforms as external subdirs
 o3de_add_engine_restricted_platform_external_subdirs()
 
-add_subdirectory(scripts)
+if(NOT INSTALLED_ENGINE)
+    add_subdirectory(scripts)
+endif()
 
 # SPEC-1417 will investigate and fix this
 if(NOT PAL_PLATFORM_NAME STREQUAL "Mac")
@@ -148,5 +150,5 @@ if(NOT INSTALLED_ENGINE)
     ly_setup_o3de_install()
 
     # IMPORTANT: must be included last
-    include(cmake/CPack.cmake)
+    include(cmake/Packaging.cmake)
 endif()
